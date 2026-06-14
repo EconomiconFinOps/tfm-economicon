@@ -1,0 +1,12 @@
+{
+  "name": "@finops/processor",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "python -m app.run_all",
+    "build": "python -m compileall app",
+    "lint": "python -m compileall app",
+    "test": "python -m pytest tests",
+    "docker:build": "docker build -t finops-processor ."
+  }
+}
