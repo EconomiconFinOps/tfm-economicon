@@ -50,7 +50,7 @@ p {
 .sidebar {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 24px;
   padding: 32px 24px;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(9, 17, 31, 0.82);
@@ -96,7 +96,8 @@ p {
 }
 
 .dashboard,
-.stack-gap {
+.stack-gap,
+.page-stack {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -191,6 +192,174 @@ p {
   margin-bottom: 18px;
 }
 
+.tenant-panel,
+.session-panel,
+.form-stack,
+.message-list,
+.conversation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.session-panel {
+  margin-top: auto;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.session-copy {
+  margin-top: 6px;
+  color: #8ea2bd;
+}
+
+.field-label,
+.result-label,
+.message-role {
+  font-size: 0.84rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8ea2bd;
+}
+
+.tenant-select,
+.text-input,
+.text-area {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #eef6ff;
+}
+
+.text-area {
+  resize: vertical;
+}
+
+.primary-button,
+.ghost-button {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, #3a7bff, #11bfa0);
+  color: #f4fbff;
+}
+
+.ghost-button {
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef6ff;
+}
+
+.primary-button:hover,
+.ghost-button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-button:disabled,
+.ghost-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+.result-grid,
+.chat-layout {
+  display: grid;
+  gap: 18px;
+}
+
+.result-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.inline-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.conversation-item {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.conversation-item.active {
+  border-color: rgba(97, 183, 255, 0.38);
+  background: rgba(19, 89, 255, 0.16);
+}
+
+.conversation-item span {
+  display: block;
+  margin-top: 6px;
+  color: #8ea2bd;
+  font-size: 0.88rem;
+}
+
+.chat-layout {
+  grid-template-columns: 320px 1fr;
+}
+
+.message-list {
+  max-height: 420px;
+  overflow-y: auto;
+  margin-bottom: 18px;
+}
+
+.message-bubble {
+  padding: 16px;
+  border-radius: 18px;
+  line-height: 1.6;
+}
+
+.message-bubble.user {
+  background: rgba(97, 183, 255, 0.12);
+}
+
+.message-bubble.assistant {
+  background: rgba(17, 191, 160, 0.12);
+}
+
+.error-copy {
+  color: #ffadad;
+  line-height: 1.5;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: min(560px, 100%);
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  background: rgba(8, 19, 35, 0.78);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
+.auth-copy {
+  margin-top: 14px;
+  margin-bottom: 24px;
+  color: #a9bbd3;
+  line-height: 1.7;
+}
+
 .tenant-list,
 .health-stack {
   display: flex;
@@ -251,7 +420,9 @@ p {
   }
 
   .metric-grid,
-  .content-grid {
+  .content-grid,
+  .chat-layout,
+  .result-grid {
     grid-template-columns: 1fr;
   }
 }

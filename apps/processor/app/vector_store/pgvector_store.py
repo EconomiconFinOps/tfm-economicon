@@ -1,6 +1,9 @@
 from datetime import datetime, timezone
+from pathlib import Path
 
 from sqlalchemy import create_engine, text
+
+from app.db.migration_runner import MigrationRunner
 
 
 class PgVectorStore:
@@ -11,54 +14,13 @@ class PgVectorStore:
         self.store_name = "pgvector"
 
     def initialize(self) -> None:
-        with self.engine.begin() as connection:
-            connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-            connection.execute(
-                text(
-                    """
-                    CREATE TABLE IF NOT EXISTS knowledge_documents (
-                        id TEXT PRIMARY KEY,
-                        job_id TEXT UNIQUE NOT NULL,
-                        tenant_id TEXT NOT NULL,
-                        source TEXT NOT NULL,
-                        artifact_uri TEXT,
-                        text_content TEXT NOT NULL,
-                        chunk_count INTEGER NOT NULL,
-                        created_at TIMESTAMPTZ NOT NULL,
-                        updated_at TIMESTAMPTZ NOT NULL
-                    )
-                    """
-                )
-            )
-            connection.execute(
-                text(
-                    """
-                    CREATE TABLE IF NOT EXISTS document_chunks (
-                        id TEXT PRIMARY KEY,
-                        document_id TEXT NOT NULL REFERENCES knowledge_documents(id) ON DELETE CASCADE,
-                        chunk_index INTEGER NOT NULL,
-                        content TEXT NOT NULL,
-                        char_count INTEGER NOT NULL,
-                        created_at TIMESTAMPTZ NOT NULL,
-                        UNIQUE (document_id, chunk_index)
-                    )
-                    """
-                )
-            )
-            connection.execute(
-                text(
-                    f"""
-                    CREATE TABLE IF NOT EXISTS chunk_embeddings (
-                        id TEXT PRIMARY KEY,
-                        chunk_id TEXT UNIQUE NOT NULL REFERENCES document_chunks(id) ON DELETE CASCADE,
-                        embedding vector({self.embedding_dimension}) NOT NULL,
-                        dimension INTEGER NOT NULL,
-                        provider TEXT NOT NULL,
-                        created_at TIMESTAMPTZ NOT NULL
-                    )
-                    """
-                )
-            )
+        runner = MigrationRunner(
+            self.engine,
+            "app.vector_store.migrations",
+            Path(__file__).with_name("migrations"),
+            version_table="vector_schema_migrations",
+        )
+        runner.run()
 
     def ping(self) -> bool:
         try:

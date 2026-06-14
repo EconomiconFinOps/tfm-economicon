@@ -1,4 +1,14 @@
-export function AppShell({ activeView, items, onSelect, children }) {
+export function AppShell({
+  activeView,
+  items,
+  onSelect,
+  user,
+  tenants,
+  activeTenantId,
+  onTenantChange,
+  onLogout,
+  children
+}) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -22,10 +32,36 @@ export function AppShell({ activeView, items, onSelect, children }) {
             </button>
           ))}
         </nav>
+
+        <div className="tenant-panel">
+          <label className="field-label" htmlFor="tenant-selector">Active tenant</label>
+          <select
+            id="tenant-selector"
+            className="tenant-select"
+            value={activeTenantId}
+            onChange={(event) => onTenantChange(event.target.value)}
+          >
+            {tenants.map((tenant) => (
+              <option key={tenant.id} value={tenant.id}>
+                {tenant.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="session-panel">
+          <div>
+            <p className="eyebrow">Signed in</p>
+            <strong>{user.full_name}</strong>
+            <p className="session-copy">{user.email}</p>
+          </div>
+          <button className="ghost-button" type="button" onClick={onLogout}>
+            Logout
+          </button>
+        </div>
       </aside>
 
       <main className="content">{children}</main>
     </div>
   );
 }
-

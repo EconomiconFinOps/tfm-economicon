@@ -1,7 +1,10 @@
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 
 from sqlalchemy import create_engine, text
+
+from app.db.migration_runner import MigrationRunner
 
 
 class Database:
@@ -9,24 +12,13 @@ class Database:
         self.engine = create_engine(database_url, future=True, pool_pre_ping=True)
 
     def initialize(self) -> None:
-        with self.engine.begin() as connection:
-            connection.execute(
-                text(
-                    """
-                    CREATE TABLE IF NOT EXISTS jobs (
-                        id STRING PRIMARY KEY,
-                        tenant_id STRING NOT NULL,
-                        source STRING NOT NULL,
-                        artifact_uri STRING,
-                        payload JSONB NOT NULL,
-                        status STRING NOT NULL,
-                        result JSONB,
-                        created_at TIMESTAMPTZ NOT NULL,
-                        updated_at TIMESTAMPTZ NOT NULL
-                    )
-                    """
-                )
-            )
+        runner = MigrationRunner(
+            self.engine,
+            "app.db.migrations",
+            Path(__file__).with_name("migrations"),
+            version_table="processor_schema_migrations",
+        )
+        runner.run()
 
     def ping(self) -> bool:
         try:
@@ -77,4 +69,3 @@ class Database:
 
     def dispose(self) -> None:
         self.engine.dispose()
-

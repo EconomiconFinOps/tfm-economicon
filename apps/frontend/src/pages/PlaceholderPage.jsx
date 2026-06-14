@@ -1,8 +1,6 @@
 export function PlaceholderPage({ view }) {
   const copy = {
-    costs: "Reserved for cost anomaly views, budgets and optimization levers.",
-    tenants: "Reserved for tenant administration and billing boundaries.",
-    settings: "Reserved for provider credentials, ingestion sources and feature flags."
+    settings: "Reserved for provider credentials, role management and operational feature flags."
   };
 
   return (
@@ -13,4 +11,3 @@ export function PlaceholderPage({ view }) {
     </section>
   );
 }
-

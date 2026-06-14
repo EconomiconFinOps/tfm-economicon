@@ -3,8 +3,22 @@ import { SectionCard } from "../components/SectionCard";
 import { StatusPill } from "../components/StatusPill";
 import { useDashboardData } from "../hooks/useDashboardData";
 
-export function DashboardPage() {
-  const { loading, error, payload } = useDashboardData();
+export function DashboardPage({ token, user, tenants, activeTenant }) {
+  const { loading, error, payload } = useDashboardData({
+    token,
+    tenantId: activeTenant?.id
+  });
+
+  if (!activeTenant) {
+    return (
+      <SectionCard
+        title="Select a tenant"
+        subtitle="The dashboard needs an active tenant to load billing and assistant context."
+      >
+        <p>No tenant is active for this session.</p>
+      </SectionCard>
+    );
+  }
 
   if (loading) {
     return (
@@ -26,22 +40,22 @@ export function DashboardPage() {
     );
   }
 
-  const { profile, tenants, billing, health } = payload;
+  const { billing, health } = payload;
 
   return (
     <div className="dashboard">
       <section className="hero-panel">
         <div>
           <p className="eyebrow">Active operator</p>
-          <h2>{profile.user.full_name}</h2>
+          <h2>{user.full_name}</h2>
           <p className="hero-copy">
-            Tenant-aware FinOps workspace for billing visibility, ingestion control
-            and AI-assisted operational analysis.
+            Tenant-aware FinOps workspace for billing visibility, document ingestion,
+            retrieval-backed chat and async processing with RabbitMQ.
           </p>
         </div>
         <div className="hero-status">
-          <p>API status</p>
-          <StatusPill status={health.status} />
+          <p>Tenant</p>
+          <StatusPill status={activeTenant.slug} />
         </div>
       </section>
 
@@ -49,29 +63,29 @@ export function DashboardPage() {
         <MetricCard
           label="Monthly Spend"
           value={`$${billing.monthly_spend.toLocaleString()}`}
-          detail="Aggregated from current billing summary"
+          detail="Current summary for the active tenant"
           tone="warm"
         />
         <MetricCard
           label="Savings Identified"
           value={`$${billing.savings_identified.toLocaleString()}`}
-          detail="Potential cost actions tracked by the assistant"
+          detail="Opportunities surfaced by the assistant flow"
           tone="success"
         />
         <MetricCard
-          label="Tracked Tenants"
-          value={tenants.items.length}
-          detail="Tenants currently visible from the backend API"
+          label="Visible Tenants"
+          value={tenants.length}
+          detail="Tenants available to the current operator"
         />
       </section>
 
       <div className="content-grid">
         <SectionCard
           title="Tenants"
-          subtitle="Current tenant catalogue loaded from FastAPI."
+          subtitle="Only tenants bound to the authenticated operator are visible here."
         >
           <div className="tenant-list">
-            {tenants.items.map((tenant) => (
+            {tenants.map((tenant) => (
               <article key={tenant.id} className="tenant-row">
                 <div>
                   <strong>{tenant.name}</strong>
@@ -88,10 +102,10 @@ export function DashboardPage() {
           subtitle="Shallow runtime checks from the backend health endpoint."
         >
           <div className="health-stack">
-            {Object.entries(health.services).map(([service, status]) => (
+            {Object.entries(health.services).map(([service, serviceStatus]) => (
               <div key={service} className="health-row">
                 <span>{service}</span>
-                <StatusPill status={status} />
+                <StatusPill status={serviceStatus} />
               </div>
             ))}
           </div>
@@ -100,4 +114,3 @@ export function DashboardPage() {
     </div>
   );
 }
-

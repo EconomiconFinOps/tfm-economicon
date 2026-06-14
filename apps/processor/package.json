@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "python -m app.run_all",
+    "dev:api": "python -m app.run_api",
+    "dev:worker": "python -m app.run_worker",
     "build": "python -m compileall app",
     "lint": "python -m compileall app",
     "test": "python -m pytest tests",

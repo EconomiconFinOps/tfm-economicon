@@ -1,34 +1,42 @@
 # FinOps Assistant Monorepo
 
-Monorepo base para un asistente FinOps con `Turborepo`, `pnpm`, `pip`, `Docker Compose`, `RabbitMQ`, `CockroachDB` y `Postgres + pgvector`.
+## Descripcion
 
-## Arquitectura
+Este repositorio contiene un monorepo para un asistente FinOps dividido en varios submodulos que trabajan juntos.
 
-- `apps/frontend`: dashboard React para operadores y usuarios.
-- `apps/backend`: API principal en FastAPI para auth, tenants, billing y publicacion de jobs.
-- `apps/processor`: servicio Python para orquestacion de pipelines, ingestion, embeddings y ejecucion de agentes internos.
-- `apps/processor/app/agents`: modulo interno LangChain para razonamiento LLM y generacion de insights.
-- `packages/shared-config`: paquete reservado para utilidades y convenciones compartidas del workspace JS.
+El objetivo del proyecto es separar responsabilidades de forma clara:
 
-## Flujo Entre Servicios
+- `frontend` para la interfaz web
+- `backend` para la API principal
+- `processor` para trabajo asincrono, pipelines y embeddings
+- `shared-config` para configuracion compartida del workspace JavaScript
 
-1. El `frontend` consume la API HTTP expuesta por `backend`.
-2. El `backend` persiste metadata operativa en CockroachDB.
-3. El `backend` publica jobs en RabbitMQ para procesamiento asincrono.
-4. El `processor` consume la cola, ejecuta el grafo de trabajo, persiste embeddings en `Postgres + pgvector` y actualiza resultados en CockroachDB.
-5. El modulo interno `agents` aporta generacion de insights y resumenes FinOps dentro del `processor`.
+Ademas, el proyecto usa servicios de infraestructura para mensajeria, persistencia operativa y almacenamiento vectorial.
+
+## Stack
+
+- `Turborepo`
+- `pnpm`
+- `React`
+- `FastAPI`
+- `Python`
+- `RabbitMQ`
+- `CockroachDB`
+- `Postgres + pgvector`
+- `Docker Compose`
+- `TanStack Query`
 
 ## Estructura
 
 ```text
-.
+tfm-economicon
 |-- apps/
 |   |-- backend/
 |   |-- frontend/
 |   `-- processor/
 |-- docs/
-|   |-- architecture/
-|   `-- use/
+|   |-- architecture.md
+|   `-- turborepo_use.md
 |-- packages/
 |   `-- shared-config/
 |-- docker-compose.yml
@@ -37,12 +45,61 @@ Monorepo base para un asistente FinOps con `Turborepo`, `pnpm`, `pip`, `Docker C
 `-- turbo.json
 ```
 
-## Requisitos
+## Como correrlo
 
-- `pnpm` 9+
-- `Docker` y `Docker Compose`
-- `Python` 3.12
-- `Node.js` 20
+### Con Docker Compose
+
+Desde la raiz del repo:
+
+```powershell
+docker compose up --build
+```
+
+Puertos visibles:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000`
+- Processor health: `http://localhost:8001/health`
+- RabbitMQ Console: `http://localhost:15672`
+- pgvector Postgres: `localhost:5433`
+- Cockroach SQL: `localhost:26257`
+- Cockroach Console: `http://localhost:8080`
+
+### Con Turborepo
+
+Desde la raiz del repo:
+
+```powershell
+pnpm install
+Set-Location apps/backend; python -m pip install -r requirements-dev.txt
+Set-Location ../processor; python -m pip install -r requirements-dev.txt
+Set-Location ../..
+pnpm dev
+```
+
+Esto levanta `frontend`, `backend` y `processor` en paralelo.
+
+Puertos visibles:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000`
+- Processor health: `http://localhost:8001/health`
+
+### Individualmente
+
+Puedes ejecutar cada submodulo por separado desde su propia carpeta:
+
+- `apps/frontend`
+- `apps/backend`
+- `apps/processor`
+
+Los detalles concretos estan explicados en los README de cada submodulo.
+
+Puertos habituales:
+
+- Frontend: `5173`
+- Backend: `8000`
+- Processor: `8001`
 
 ## Variables De Entorno
 
@@ -54,74 +111,60 @@ Copy-Item .env.example .env
 
 Variables principales:
 
-- `DATABASE_URL`: conexion SQLAlchemy/psycopg hacia CockroachDB.
-- `RABBITMQ_URL`: URL de RabbitMQ usada por backend y processor.
-- `VECTOR_DATABASE_URL`: conexion hacia PostgreSQL con pgvector para embeddings.
-- `PROCESSOR_QUEUE_NAME`: nombre logico de la cola de jobs.
-- `EMBEDDING_PROVIDER`: provider configurado para generar embeddings.
-- `VITE_API_BASE_URL`: base URL consumida por el frontend.
-- `LLM_PROVIDER`: provider configurado para el modulo interno de agentes.
-
-## Desarrollo Local
-
-### Todo el stack con Docker Compose
-
-```powershell
-docker compose up --build
-```
-
-Puertos por defecto:
-
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:8000`
-- Processor health: `http://localhost:8001/health`
-- RabbitMQ Console: `http://localhost:15672`
-- pgvector Postgres: `localhost:5433`
-- Cockroach SQL: `localhost:26257`
-- Cockroach Console: `http://localhost:8080`
-
-### Orquestacion con Turborepo
-
-Instalar dependencias JS del workspace:
-
-```powershell
-pnpm install
-```
-
-Instalar dependencias Python por servicio:
-
-```powershell
-Set-Location apps/backend; python -m pip install -r requirements-dev.txt
-Set-Location ../processor; python -m pip install -r requirements-dev.txt
-```
-
-Volver a la raiz y ejecutar:
-
-```powershell
-Set-Location ../..
-pnpm dev
-```
+- `DATABASE_URL`: conexion hacia CockroachDB
+- `RABBITMQ_URL`: conexion hacia RabbitMQ
+- `VECTOR_DATABASE_URL`: conexion hacia PostgreSQL con pgvector
+- `PROCESSOR_QUEUE_NAME`: nombre logico de la cola de jobs
+- `AUTH_SECRET_KEY`: secreto para firmar tokens propios del backend
+- `AUTH_TOKEN_TTL_MINUTES`: vida util del token
+- `EMBEDDING_PROVIDER`: provider configurado para embeddings
+- `VITE_API_BASE_URL`: URL base consumida por el frontend
+- `LLM_PROVIDER`: provider configurado para el modulo de agentes
 
 ## Comandos Principales
 
-- `pnpm dev`: arranca frontend, backend y processor en paralelo.
-- `pnpm build`: ejecuta las tareas de build declaradas por cada app.
-- `pnpm test`: ejecuta los tests disponibles.
-- `pnpm docker:build`: construye las imagenes Docker de las apps.
+- `pnpm dev`: arranca frontend, backend y processor en paralelo
+- `pnpm build`: ejecuta las tareas de build declaradas por cada app
+- `pnpm lint`: ejecuta las tareas de lint declaradas por cada app
+- `pnpm test`: ejecuta los tests disponibles
+- `pnpm docker:build`: construye las imagenes Docker de las apps
 
-## Estado De La V1
+## Relacion Entre Submodulos
+
+El flujo principal del sistema es este:
+
+1. El usuario entra en `frontend`
+2. `frontend` llama al `backend`
+3. `backend` autentica al usuario, resuelve su `tenant_id` activo y guarda datos operativos en `CockroachDB`
+4. `backend` publica jobs en `RabbitMQ`
+5. `processor` consume esos jobs
+6. `processor` genera embeddings y los guarda en `Postgres + pgvector`
+7. `backend` recupera contexto vectorial filtrado por tenant para responder en el chat
+8. `processor` actualiza el estado del job en `CockroachDB`
+
+## Documentacion Util
+
+- [docs/architecture.md](/C:/Repositorios/tfm-economicon/docs/architecture.md)
+- [docs/turborepo_use.md](/C:/Repositorios/tfm-economicon/docs/turborepo_use.md)
+
+## Estado Actual
 
 Esta base prioriza:
 
 - estructura clara del monorepo
-- contratos iniciales entre servicios
-- persistencia operativa, cola local y almacenamiento vectorial basico
-- documentacion suficiente para arrancar sin pasos implicitos
+- separacion simple de responsabilidades
+- auth minima propia
+- contexto de tenant obligatorio
+- migraciones formales para CockroachDB y pgvector
+- persistencia operativa
+- cola local para jobs
+- almacenamiento vectorial basico
+- chat con retrieval minimo por tenant
+- documentacion suficiente para arrancar el proyecto
 
 No incluye todavia:
 
 - CI/CD
-- migraciones formales
 - despliegue cloud
 - observabilidad avanzada
-- autenticacion real con identidad externa
+- autenticacion con IdP externo

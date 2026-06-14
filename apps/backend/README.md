@@ -1,16 +1,31 @@
 # Backend
 
-API principal del sistema FinOps, construida con FastAPI.
+## Descripcion
 
-## Responsabilidades
+`apps/backend` es la API principal del sistema.
+
+Su trabajo es recibir peticiones HTTP, validar datos, guardar informacion operativa en CockroachDB y publicar jobs en RabbitMQ para que el `processor` los ejecute en segundo plano.
+
+Responsabilidades principales:
 
 - healthcheck del stack
-- autenticacion base
+- autenticacion propia minima con token
 - gestion inicial de tenants
 - resumen de billing
 - creacion de jobs de ingesta
-- persistencia en CockroachDB
-- publicacion de jobs en RabbitMQ
+- conversaciones y chat con retrieval
+- persistencia operativa
+- publicacion de jobs asincronos
+
+## Stack
+
+- `Python`
+- `FastAPI`
+- `SQLAlchemy`
+- `CockroachDB`
+- `RabbitMQ`
+- `Pydantic`
+- `PyJWT`
 
 ## Estructura
 
@@ -30,36 +45,62 @@ apps/backend
 `-- requirements-dev.txt
 ```
 
+## Como correrlo
+
+### Con Docker Compose
+
+Desde la raiz del repo:
+
+```powershell
+docker compose up --build backend
+```
+
+Puerto visible:
+
+- `http://localhost:8000`
+
+### Con Turborepo
+
+Desde la raiz del repo:
+
+```powershell
+pnpm dev
+```
+
+Esto levanta `frontend`, `backend` y `processor` a la vez.
+
+Puerto visible del backend:
+
+- `http://localhost:8000`
+
+### Individualmente
+
+Desde `apps/backend`:
+
+```powershell
+python -m pip install -r requirements-dev.txt
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Puerto visible:
+
+- `http://localhost:8000`
+
 ## Variables De Entorno
 
 - `API_PORT`
 - `DATABASE_URL`
 - `RABBITMQ_URL`
+- `VECTOR_DATABASE_URL`
 - `PROCESSOR_QUEUE_NAME`
-
-## Instalacion
-
-```powershell
-python -m pip install -r requirements-dev.txt
-```
-
-## Ejecucion Local
-
-```powershell
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+- `EMBEDDING_DIMENSION`
+- `AUTH_SECRET_KEY`
+- `AUTH_TOKEN_TTL_MINUTES`
 
 ## Tests
 
 ```powershell
 python -m pytest tests
-```
-
-## Docker
-
-```powershell
-docker build -t finops-backend .
-docker run --rm -p 8000:8000 --env API_PORT=8000 --env DATABASE_URL=postgresql+psycopg://root@localhost:26257/defaultdb?sslmode=disable --env RABBITMQ_URL=amqp://guest:guest@localhost:5672/%2F finops-backend
 ```
 
 ## Endpoints Iniciales
@@ -70,12 +111,21 @@ docker run --rm -p 8000:8000 --env API_PORT=8000 --env DATABASE_URL=postgresql+p
 - `GET /tenants`
 - `GET /billing/summary`
 - `POST /jobs/ingest`
+- `GET /assistant/conversations`
+- `POST /assistant/conversations`
+- `GET /assistant/conversations/{conversation_id}`
+- `POST /assistant/conversations/{conversation_id}/messages`
 
 `POST /jobs/ingest` requiere `text_content` como fuente principal del pipeline de embeddings.
 
-## Arquitectura
+La cuenta seed local para pruebas es:
 
-- `core/config.py` centraliza configuracion.
-- `db/database.py` encapsula acceso SQLAlchemy y bootstrap de tablas.
-- `services/rabbitmq_queue.py` publica jobs hacia el processor.
-- `api/routes/` agrupa la superficie REST por dominio.
+- email: `operator@finops.local`
+- password: `secret`
+
+## Notas
+
+- `db/database.py` encapsula el acceso a CockroachDB y ejecuta migraciones.
+- `services/rabbitmq_queue.py` publica jobs hacia el `processor`.
+- `services/vector_store.py` consulta el contexto vectorial en pgvector.
+- `api/routes/` agrupa la superficie REST.

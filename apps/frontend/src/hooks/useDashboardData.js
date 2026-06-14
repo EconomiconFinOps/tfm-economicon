@@ -1,55 +1,29 @@
-import { useEffect, useState } from "react";
-import {
-  fetchBillingSummary,
-  fetchHealth,
-  fetchProfile,
-  fetchTenants
-} from "../services/api";
+import { useQueries } from "@tanstack/react-query";
+import { fetchBillingSummary, fetchHealth } from "../services/api";
 
-export function useDashboardData() {
-  const [state, setState] = useState({
-    loading: true,
-    error: null,
-    payload: null
+export function useDashboardData({ token, tenantId }) {
+  const [billingQuery, healthQuery] = useQueries({
+    queries: [
+      {
+        queryKey: ["billing-summary", tenantId],
+        queryFn: () => fetchBillingSummary(token, tenantId),
+        enabled: Boolean(token && tenantId)
+      },
+      {
+        queryKey: ["health"],
+        queryFn: fetchHealth
+      }
+    ]
   });
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const [profile, tenants, billing, health] = await Promise.all([
-          fetchProfile(),
-          fetchTenants(),
-          fetchBillingSummary(),
-          fetchHealth()
-        ]);
-
-        if (!cancelled) {
-          setState({
-            loading: false,
-            error: null,
-            payload: { profile, tenants, billing, health }
-          });
+  return {
+    loading: billingQuery.isLoading || healthQuery.isLoading,
+    error: billingQuery.error?.message || healthQuery.error?.message || null,
+    payload: billingQuery.data && healthQuery.data
+      ? {
+          billing: billingQuery.data,
+          health: healthQuery.data
         }
-      } catch (error) {
-        if (!cancelled) {
-          setState({
-            loading: false,
-            error: error.message,
-            payload: null
-          });
-        }
-      }
-    }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return state;
+      : null
+  };
 }
-
