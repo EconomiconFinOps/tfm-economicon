@@ -7,21 +7,26 @@ from app.core.logging import configure_logging
 from app.db.database import Database
 from app.api.routes.health import router as health_router
 from app.clients.rabbitmq_queue import RabbitMQQueue
+from app.vector_store.pgvector_store import PgVectorStore
 
 
 settings = get_settings()
 configure_logging()
 database = Database(settings.database_url)
 queue = RabbitMQQueue(settings.rabbitmq_url, settings.processor_queue_name)
+vector_store = PgVectorStore(settings.vector_database_url, settings.embedding_dimension)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     database.initialize()
+    vector_store.initialize()
     app.state.database = database
     app.state.queue = queue
+    app.state.vector_store = vector_store
     yield
     queue.close()
+    vector_store.close()
     database.dispose()
 
 

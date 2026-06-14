@@ -1,0 +1,721 @@
+economicon-backend/
+├── src/
+│   ├── main.py
+│   ├── app.py
+│   │
+│   ├── config/
+│   │   ├── settings.py
+│   │   ├── database.py
+│   │   ├── logging.py
+│   │   ├── cloud.py
+│   │   └── llm.py
+│   │
+│   ├── shared/
+│   │   ├── domain/
+│   │   │   ├── entity.py
+│   │   │   ├── value_object.py
+│   │   │   ├── aggregate_root.py
+│   │   │   ├── domain_event.py
+│   │   │   ├── result.py
+│   │   │   └── errors.py
+│   │   │
+│   │   ├── application/
+│   │   │   ├── ports/
+│   │   │   │   ├── logger_port.py
+│   │   │   │   ├── event_publisher_port.py
+│   │   │   │   ├── transaction_manager_port.py
+│   │   │   │   ├── clock_port.py
+│   │   │   │   └── uuid_generator_port.py
+│   │   │   │
+│   │   │   └── errors/
+│   │   │       ├── application_error.py
+│   │   │       ├── not_found_error.py
+│   │   │       └── validation_error.py
+│   │   │
+│   │   └── infrastructure/
+│   │       ├── database/
+│   │       │   ├── sqlalchemy/
+│   │       │   │   ├── base.py
+│   │       │   │   ├── session.py
+│   │       │   │   └── models/
+│   │       │   │
+│   │       │   └── migrations/
+│   │       │       ├── env.py
+│   │       │       └── versions/
+│   │       │
+│   │       ├── logger/
+│   │       │   └── structlog_logger_adapter.py
+│   │       │
+│   │       └── event_bus/
+│   │           ├── in_memory_event_publisher.py
+│   │           └── celery_event_publisher.py
+│   │
+│   ├── modules/  //AQUI VA LA MAGIA
+│   │   ├── auth/
+│   │   ├── tenants/
+│   │   ├── finops/
+│   │   └── assistant/
+│   │
+│   ├── api/
+│   │   ├── routes.py
+│   │   ├── dependencies.py
+│   │   ├── middlewares/
+│   │   │   ├── auth_middleware.py
+│   │   │   ├── error_middleware.py
+│   │   │   └── request_context_middleware.py
+│   │   │
+│   │   └── presenters/
+│   │       └── http_error_presenter.py
+│   │
+│   └── composition_root/
+│       ├── container.py
+│       ├── register_shared.py
+│       ├── register_auth.py
+│       ├── register_organizations.py
+│       ├── register_finops.py
+│       └── register_assistant.py
+│
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+│
+├── pyproject.toml
+├── alembic.ini
+├── .env
+└── README.md
+
+-------------------------------------------------------------------X-------------------------------------------------------------------
+
+/modules/assistant/
+├── domain/
+│   ├── entities/
+│   │   ├── conversation.py
+│   │   ├── message.py
+│   │   ├── assistant_session.py
+│   │   ├── knowledge_document.py
+│   │   └── retrieved_document.py
+│   │
+│   ├── value_objects/
+│   │   ├── prompt.py
+│   │   ├── assistant_answer.py
+│   │   ├── token_usage.py
+│   │   ├── retrieval_query.py
+│   │   ├── model_name.py
+│   │   └── citation.py
+│   │
+│   ├── services/
+│   │   ├── prompt_builder.py
+│   │   ├── conversation_policy.py
+│   │   ├── finops_assistant_policy.py
+│   │   ├── retrieval_policy.py
+│   │   └── answer_guardrail.py
+│   │
+│   └── errors/
+│       ├── invalid_prompt_error.py
+│       ├── conversation_not_found_error.py
+│       └── unsafe_assistant_answer_error.py
+│
+├── application/
+│   ├── use_cases/
+│   │   ├── ask_finops_assistant_use_case.py
+│   │   ├── create_conversation_use_case.py
+│   │   ├── get_conversation_history_use_case.py
+│   │   ├── retrieve_finops_context_use_case.py
+│   │   ├── build_knowledge_base_use_case.py
+│   │   └── summarize_cost_report_use_case.py
+│   │
+│   ├── commands/
+│   │   ├── ask_finops_assistant_command.py
+│   │   ├── create_conversation_command.py
+│   │   └── build_knowledge_base_command.py
+│   │
+│   ├── queries/
+│   │   ├── get_conversation_history_query.py
+│   │   └── retrieve_finops_context_query.py
+│   │
+│   ├── ports/
+│   │   ├── in_/
+│   │   │   ├── ask_finops_assistant_port.py
+│   │   │   ├── create_conversation_port.py
+│   │   │   └── build_knowledge_base_port.py
+│   │   │
+│   │   └── out/
+│   │       ├── llm_provider_port.py
+│   │       ├── embedding_provider_port.py
+│   │       ├── vector_store_port.py
+│   │       ├── conversation_repository_port.py
+│   │       ├── knowledge_document_repository_port.py
+│   │       ├── finops_context_provider_port.py
+│   │       └── token_usage_repository_port.py
+│   │
+│   ├── dto/
+│   │   ├── assistant_response_dto.py
+│   │   ├── conversation_dto.py
+│   │   ├── message_dto.py
+│   │   └── retrieved_context_dto.py
+│   │
+│   └── mappers/
+│       ├── assistant_response_mapper.py
+│       └── conversation_dto_mapper.py
+│
+├── infrastructure/
+│   ├── llm/
+│   │   ├── openai/
+│   │   │   ├── openai_llm_adapter.py
+│   │   │   ├── openai_embedding_adapter.py
+│   │   │   └── openai_message_mapper.py
+│   │   │
+│   │   └── azure_openai/
+│   │       ├── azure_openai_llm_adapter.py
+│   │       └── azure_openai_embedding_adapter.py
+│   │
+│   ├── vector_store/
+│   │   ├── pgvector/
+│   │   │   ├── pgvector_store_adapter.py
+│   │   │   └── pgvector_document_mapper.py
+│   │   │
+│   │   └── qdrant/
+│   │       ├── qdrant_vector_store_adapter.py
+│   │       └── qdrant_document_mapper.py
+│   │
+│   ├── persistence/
+│   │   ├── sqlalchemy/
+│   │   │   ├── models/
+│   │   │   │   ├── conversation_model.py
+│   │   │   │   ├── message_model.py
+│   │   │   │   ├── knowledge_document_model.py
+│   │   │   │   └── token_usage_model.py
+│   │   │   │
+│   │   │   ├── repositories/
+│   │   │   │   ├── sqlalchemy_conversation_repository.py
+│   │   │   │   ├── sqlalchemy_knowledge_document_repository.py
+│   │   │   │   └── sqlalchemy_token_usage_repository.py
+│   │   │   │
+│   │   │   └── mappers/
+│   │   │       ├── conversation_persistence_mapper.py
+│   │   │       ├── message_persistence_mapper.py
+│   │   │       └── knowledge_document_persistence_mapper.py
+│   │   │
+│   │   └── read_models/
+│   │       └── sqlalchemy_conversation_read_model.py
+│   │
+│   ├── finops_context/
+│   │   └── finops_context_provider_adapter.py
+│   │
+│   └── jobs/
+│       ├── build_knowledge_base_job.py
+│       └── generate_embeddings_job.py
+│
+└── interface/
+    └── http/
+        ├── assistant_router.py
+        ├── assistant_controller.py
+        ├── schemas/
+        │   ├── ask_assistant_schema.py
+        │   ├── create_conversation_schema.py
+        │   ├── assistant_response_schema.py
+        │   └── conversation_response_schema.py
+        │
+        └── presenters/
+            ├── assistant_presenter.py
+            └── conversation_presenter.py
+
+-------------------------------------------------------------------X-------------------------------------------------------------------
+
+/modules/finops/
+├── domain/
+│   ├── entities/
+│   │   ├── cloud_account.py
+│   │   ├── cost_entry.py
+│   │   ├── budget.py
+│   │   ├── recommendation.py
+│   │   └── finops_insight.py
+│   │
+│   ├── value_objects/
+│   │   ├── money.py
+│   │   ├── cloud_provider.py
+│   │   ├── cost_period.py
+│   │   ├── resource_id.py
+│   │   ├── resource_type.py
+│   │   └── recommendation_impact.py
+│   │
+│   ├── services/
+│   │   ├── cost_analyzer.py
+│   │   ├── waste_detector.py
+│   │   ├── budget_evaluator.py
+│   │   └── recommendation_prioritizer.py
+│   │
+│   ├── events/
+│   │   ├── costs_synced_event.py
+│   │   ├── budget_exceeded_event.py
+│   │   └── recommendation_generated_event.py
+│   │
+│   └── errors/
+│       ├── invalid_budget_error.py
+│       ├── invalid_cost_period_error.py
+│       └── unsupported_cloud_provider_error.py
+│
+├── application/
+│   ├── use_cases/
+│   │   ├── register_cloud_account_use_case.py
+│   │   ├── sync_cloud_costs_use_case.py
+│   │   ├── get_cost_summary_use_case.py
+│   │   ├── analyze_cost_trends_use_case.py
+│   │   ├── generate_recommendations_use_case.py
+│   │   ├── create_budget_use_case.py
+│   │   └── get_finops_dashboard_use_case.py
+│   │
+│   ├── commands/
+│   │   ├── register_cloud_account_command.py
+│   │   ├── sync_cloud_costs_command.py
+│   │   ├── generate_recommendations_command.py
+│   │   └── create_budget_command.py
+│   │
+│   ├── queries/
+│   │   ├── get_cost_summary_query.py
+│   │   ├── get_cost_breakdown_query.py
+│   │   ├── get_recommendations_query.py
+│   │   └── get_budget_status_query.py
+│   │
+│   ├── ports/
+│   │   ├── in_
+│   │   │   ├── sync_cloud_costs_port.py
+│   │   │   ├── generate_recommendations_port.py
+│   │   │   └── get_finops_dashboard_port.py
+│   │   │
+│   │   └── out/
+│   │       ├── cloud_billing_provider_port.py
+│   │       ├── cloud_inventory_provider_port.py
+│   │       ├── cloud_account_repository_port.py
+│   │       ├── cost_entry_repository_port.py
+│   │       ├── budget_repository_port.py
+│   │       ├── recommendation_repository_port.py
+│   │       └── finops_read_model_port.py
+│   │
+│   ├── dto/
+│   │   ├── cost_summary_dto.py
+│   │   ├── cost_breakdown_dto.py
+│   │   ├── recommendation_dto.py
+│   │   └── finops_dashboard_dto.py
+│   │
+│   └── mappers/
+│       └── recommendation_dto_mapper.py
+│
+├── infrastructure/
+│   ├── persistence/
+│   │   ├── sqlalchemy/
+│   │   │   ├── models/
+│   │   │   │   ├── cloud_account_model.py
+│   │   │   │   ├── cost_entry_model.py
+│   │   │   │   ├── budget_model.py
+│   │   │   │   └── recommendation_model.py
+│   │   │   │
+│   │   │   ├── repositories/
+│   │   │   │   ├── sqlalchemy_cloud_account_repository.py
+│   │   │   │   ├── sqlalchemy_cost_entry_repository.py
+│   │   │   │   ├── sqlalchemy_budget_repository.py
+│   │   │   │   └── sqlalchemy_recommendation_repository.py
+│   │   │   │
+│   │   │   └── mappers/
+│   │   │       ├── cloud_account_persistence_mapper.py
+│   │   │       ├── cost_entry_persistence_mapper.py
+│   │   │       └── recommendation_persistence_mapper.py
+│   │   │
+│   │   └── read_models/
+│   │       └── sqlalchemy_finops_read_model.py
+│   │
+│   ├── cloud/
+│   │   ├── azure/
+│   │   │   ├── azure_billing_provider_adapter.py
+│   │   │   ├── azure_inventory_provider_adapter.py
+│   │   │   ├── azure_credentials_factory.py
+│   │   │   └── azure_cost_mapper.py
+│   │   │
+│   │   └── aws/
+│   │       ├── aws_billing_provider_adapter.py
+│   │       ├── aws_inventory_provider_adapter.py
+│   │       ├── aws_credentials_factory.py
+│   │       └── aws_cost_mapper.py
+│   │
+│   └── jobs/
+│       ├── sync_cloud_costs_job.py
+│       └── generate_recommendations_job.py
+│
+└── interface/
+    └── http/
+        ├── finops_router.py
+        ├── finops_controller.py
+        ├── schemas/
+        │   ├── register_cloud_account_schema.py
+        │   ├── get_cost_summary_schema.py
+        │   ├── create_budget_schema.py
+        │   └── recommendation_response_schema.py
+        │
+        └── presenters/
+            ├── cost_summary_presenter.py
+            └── recommendation_presenter.py
+
+-------------------------------------------------------------------X-------------------------------------------------------------------
+
+/modules/auth/
+├── domain/
+│   ├── entities/
+│   │   ├── user.py
+│   │   ├── session.py
+│   │   ├── refresh_token.py
+│   │   ├── email_verification_token.py
+│   │   └── password_reset_token.py
+│   │
+│   ├── value_objects/
+│   │   ├── user_id.py
+│   │   ├── email.py
+│   │   ├── password_hash.py
+│   │   ├── plain_password.py
+│   │   ├── user_status.py
+│   │   ├── session_id.py
+│   │   ├── token_id.py
+│   │   └── auth_provider.py
+│   │
+│   ├── services/
+│   │   ├── password_policy.py
+│   │   ├── login_policy.py
+│   │   ├── session_policy.py
+│   │   └── token_expiration_policy.py
+│   │
+│   ├── events/
+│   │   ├── user_registered_event.py
+│   │   ├── user_logged_in_event.py
+│   │   ├── user_logged_out_event.py
+│   │   ├── password_changed_event.py
+│   │   ├── password_reset_requested_event.py
+│   │   └── email_verified_event.py
+│   │
+│   └── errors/
+│       ├── invalid_credentials_error.py
+│       ├── user_already_exists_error.py
+│       ├── user_not_found_error.py
+│       ├── inactive_user_error.py
+│       ├── email_not_verified_error.py
+│       ├── invalid_token_error.py
+│       ├── expired_token_error.py
+│       └── weak_password_error.py
+│
+├── application/
+│   ├── use_cases/
+│   │   ├── register_user_use_case.py
+│   │   ├── login_user_use_case.py
+│   │   ├── logout_user_use_case.py
+│   │   ├── refresh_session_use_case.py
+│   │   ├── get_authenticated_user_use_case.py
+│   │   ├── request_password_reset_use_case.py
+│   │   ├── reset_password_use_case.py
+│   │   ├── change_password_use_case.py
+│   │   ├── verify_email_use_case.py
+│   │   └── login_with_identity_provider_use_case.py
+│   │
+│   ├── commands/
+│   │   ├── register_user_command.py
+│   │   ├── login_user_command.py
+│   │   ├── logout_user_command.py
+│   │   ├── refresh_session_command.py
+│   │   ├── request_password_reset_command.py
+│   │   ├── reset_password_command.py
+│   │   ├── change_password_command.py
+│   │   ├── verify_email_command.py
+│   │   └── login_with_identity_provider_command.py
+│   │
+│   ├── queries/
+│   │   ├── get_authenticated_user_query.py
+│   │   └── get_user_by_id_query.py
+│   │
+│   ├── ports/
+│   │   ├── in_/
+│   │   │   ├── register_user_port.py
+│   │   │   ├── login_user_port.py
+│   │   │   ├── logout_user_port.py
+│   │   │   ├── refresh_session_port.py
+│   │   │   ├── get_authenticated_user_port.py
+│   │   │   ├── request_password_reset_port.py
+│   │   │   ├── reset_password_port.py
+│   │   │   └── verify_email_port.py
+│   │   │
+│   │   └── out/
+│   │       ├── user_repository_port.py
+│   │       ├── session_repository_port.py
+│   │       ├── refresh_token_repository_port.py
+│   │       ├── password_reset_token_repository_port.py
+│   │       ├── email_verification_token_repository_port.py
+│   │       ├── password_hasher_port.py
+│   │       ├── token_service_port.py
+│   │       ├── identity_provider_port.py
+│   │       ├── email_sender_port.py
+│   │       └── auth_read_model_port.py
+│   │
+│   ├── dto/
+│   │   ├── authenticated_user_dto.py
+│   │   ├── auth_tokens_dto.py
+│   │   ├── session_dto.py
+│   │   ├── login_result_dto.py
+│   │   └── user_profile_dto.py
+│   │
+│   └── mappers/
+│       ├── authenticated_user_dto_mapper.py
+│       ├── login_result_dto_mapper.py
+│       └── user_profile_dto_mapper.py
+│
+├── infrastructure/
+│   ├── persistence/
+│   │   └── sqlalchemy/
+│   │       ├── models/
+│   │       │   ├── user_model.py
+│   │       │   ├── session_model.py
+│   │       │   ├── refresh_token_model.py
+│   │       │   ├── password_reset_token_model.py
+│   │       │   └── email_verification_token_model.py
+│   │       │
+│   │       ├── repositories/
+│   │       │   ├── sqlalchemy_user_repository.py
+│   │       │   ├── sqlalchemy_session_repository.py
+│   │       │   ├── sqlalchemy_refresh_token_repository.py
+│   │       │   ├── sqlalchemy_password_reset_token_repository.py
+│   │       │   └── sqlalchemy_email_verification_token_repository.py
+│   │       │
+│   │       ├── read_models/
+│   │       │   └── sqlalchemy_auth_read_model.py
+│   │       │
+│   │       └── mappers/
+│   │           ├── user_persistence_mapper.py
+│   │           ├── session_persistence_mapper.py
+│   │           ├── refresh_token_persistence_mapper.py
+│   │           └── password_reset_token_persistence_mapper.py
+│   │
+│   ├── security/
+│   │   ├── bcrypt_password_hasher.py
+│   │   ├── argon2_password_hasher.py
+│   │   ├── jwt_token_service.py
+│   │   ├── refresh_token_generator.py
+│   │   └── password_reset_token_generator.py
+│   │
+│   ├── identity_provider/
+│   │   ├── auth0_identity_provider_adapter.py
+│   │   ├── microsoft_entra_identity_provider_adapter.py
+│   │   └── google_identity_provider_adapter.py
+│   │
+│   └── email/
+│       ├── smtp_email_sender_adapter.py
+│       └── resend_email_sender_adapter.py
+│
+└── interface/
+    └── http/
+        ├── auth_router.py
+        ├── auth_controller.py
+        │
+        ├── schemas/
+        │   ├── register_user_schema.py
+        │   ├── login_user_schema.py
+        │   ├── refresh_session_schema.py
+        │   ├── request_password_reset_schema.py
+        │   ├── reset_password_schema.py
+        │   ├── change_password_schema.py
+        │   ├── verify_email_schema.py
+        │   ├── auth_tokens_response_schema.py
+        │   └── authenticated_user_response_schema.py
+        │
+        └── presenters/
+            ├── authenticated_user_presenter.py
+            ├── auth_tokens_presenter.py
+            └── auth_error_presenter.py
+
+-------------------------------------------------------------------X-------------------------------------------------------------------
+
+/modules/tenants/
+├── domain/
+│   ├── entities/
+│   │   ├── tenant.py
+│   │   ├── tenant_member.py
+│   │   ├── workspace.py
+│   │   ├── tenant_invitation.py
+│   │   └── tenant_settings.py
+│   │
+│   ├── value_objects/
+│   │   ├── tenant_id.py
+│   │   ├── tenant_name.py
+│   │   ├── tenant_slug.py
+│   │   ├── workspace_id.py
+│   │   ├── workspace_name.py
+│   │   ├── member_id.py
+│   │   ├── member_role.py
+│   │   ├── invitation_id.py
+│   │   ├── invitation_status.py
+│   │   └── tenant_permission.py
+│   │
+│   ├── services/
+│   │   ├── tenant_policy.py
+│   │   ├── membership_policy.py
+│   │   ├── invitation_policy.py
+│   │   ├── permission_policy.py
+│   │   └── workspace_policy.py
+│   │
+│   ├── events/
+│   │   ├── tenant_created_event.py
+│   │   ├── member_added_event.py
+│   │   ├── member_removed_event.py
+│   │   ├── member_role_changed_event.py
+│   │   ├── invitation_created_event.py
+│   │   ├── invitation_accepted_event.py
+│   │   └── workspace_created_event.py
+│   │
+│   └── errors/
+│       ├── tenant_not_found_error.py
+│       ├── tenant_already_exists_error.py
+│       ├── member_not_found_error.py
+│       ├── member_already_exists_error.py
+│       ├── cannot_remove_last_owner_error.py
+│       ├── invalid_member_role_error.py
+│       ├── invitation_not_found_error.py
+│       ├── invitation_expired_error.py
+│       ├── invitation_already_accepted_error.py
+│       ├── forbidden_tenant_action_error.py
+│       └── workspace_not_found_error.py
+│
+├── application/
+│   ├── use_cases/
+│   │   ├── create_tenant_use_case.py
+│   │   ├── get_tenant_use_case.py
+│   │   ├── update_tenant_use_case.py
+│   │   ├── delete_tenant_use_case.py
+│   │   ├── list_user_tenants_use_case.py
+│   │   ├── add_member_to_tenant_use_case.py
+│   │   ├── remove_member_from_tenant_use_case.py
+│   │   ├── change_member_role_use_case.py
+│   │   ├── list_tenant_members_use_case.py
+│   │   ├── create_invitation_use_case.py
+│   │   ├── accept_invitation_use_case.py
+│   │   ├── revoke_invitation_use_case.py
+│   │   ├── list_invitations_use_case.py
+│   │   ├── create_workspace_use_case.py
+│   │   ├── get_workspace_use_case.py
+│   │   ├── list_workspaces_use_case.py
+│   │   ├── switch_active_tenant_use_case.py
+│   │   └── check_tenant_permission_use_case.py
+│   │
+│   ├── commands/
+│   │   ├── create_tenant_command.py
+│   │   ├── update_tenant_command.py
+│   │   ├── delete_tenant_command.py
+│   │   ├── add_member_to_tenant_command.py
+│   │   ├── remove_member_from_tenant_command.py
+│   │   ├── change_member_role_command.py
+│   │   ├── create_invitation_command.py
+│   │   ├── accept_invitation_command.py
+│   │   ├── revoke_invitation_command.py
+│   │   ├── create_workspace_command.py
+│   │   └── switch_active_tenant_command.py
+│   │
+│   ├── queries/
+│   │   ├── get_tenant_query.py
+│   │   ├── list_user_tenants_query.py
+│   │   ├── list_tenant_members_query.py
+│   │   ├── list_invitations_query.py
+│   │   ├── get_workspace_query.py
+│   │   ├── list_workspaces_query.py
+│   │   └── check_tenant_permission_query.py
+│   │
+│   ├── ports/
+│   │   ├── in_/
+│   │   │   ├── create_tenant_port.py
+│   │   │   ├── get_tenant_port.py
+│   │   │   ├── list_user_tenants_port.py
+│   │   │   ├── add_member_to_tenant_port.py
+│   │   │   ├── remove_member_from_tenant_port.py
+│   │   │   ├── change_member_role_port.py
+│   │   │   ├── create_invitation_port.py
+│   │   │   ├── accept_invitation_port.py
+│   │   │   ├── create_workspace_port.py
+│   │   │   └── check_tenant_permission_port.py
+│   │   │
+│   │   └── out/
+│   │       ├── tenant_repository_port.py
+│   │       ├── tenant_member_repository_port.py
+│   │       ├── workspace_repository_port.py
+│   │       ├── tenant_invitation_repository_port.py
+│   │       ├── tenant_settings_repository_port.py
+│   │       ├── user_lookup_port.py
+│   │       ├── invitation_email_sender_port.py
+│   │       └── tenant_read_model_port.py
+│   │
+│   ├── dto/
+│   │   ├── tenant_dto.py
+│   │   ├── tenant_member_dto.py
+│   │   ├── tenant_summary_dto.py
+│   │   ├── workspace_dto.py
+│   │   ├── invitation_dto.py
+│   │   ├── tenant_permissions_dto.py
+│   │   └── active_tenant_context_dto.py
+│   │
+│   └── mappers/
+│       ├── tenant_dto_mapper.py
+│       ├── tenant_member_dto_mapper.py
+│       ├── workspace_dto_mapper.py
+│       └── invitation_dto_mapper.py
+│
+├── infrastructure/
+│   ├── persistence/
+│   │   └── sqlalchemy/
+│   │       ├── models/
+│   │       │   ├── tenant_model.py
+│   │       │   ├── tenant_member_model.py
+│   │       │   ├── workspace_model.py
+│   │       │   ├── tenant_invitation_model.py
+│   │       │   └── tenant_settings_model.py
+│   │       │
+│   │       ├── repositories/
+│   │       │   ├── sqlalchemy_tenant_repository.py
+│   │       │   ├── sqlalchemy_tenant_member_repository.py
+│   │       │   ├── sqlalchemy_workspace_repository.py
+│   │       │   ├── sqlalchemy_tenant_invitation_repository.py
+│   │       │   └── sqlalchemy_tenant_settings_repository.py
+│   │       │
+│   │       ├── read_models/
+│   │       │   └── sqlalchemy_tenant_read_model.py
+│   │       │
+│   │       └── mappers/
+│   │           ├── tenant_persistence_mapper.py
+│   │           ├── tenant_member_persistence_mapper.py
+│   │           ├── workspace_persistence_mapper.py
+│   │           └── invitation_persistence_mapper.py
+│   │
+│   ├── user_lookup/
+│   │   └── auth_user_lookup_adapter.py
+│   │
+│   └── email/
+│       ├── smtp_invitation_email_sender_adapter.py
+│       └── resend_invitation_email_sender_adapter.py
+│
+└── interface/
+    └── http/
+        ├── tenants_router.py
+        ├── tenants_controller.py
+        │
+        ├── schemas/
+        │   ├── create_tenant_schema.py
+        │   ├── update_tenant_schema.py
+        │   ├── tenant_response_schema.py
+        │   ├── tenant_summary_response_schema.py
+        │   ├── add_member_schema.py
+        │   ├── change_member_role_schema.py
+        │   ├── tenant_member_response_schema.py
+        │   ├── create_invitation_schema.py
+        │   ├── accept_invitation_schema.py
+        │   ├── invitation_response_schema.py
+        │   ├── create_workspace_schema.py
+        │   ├── workspace_response_schema.py
+        │   └── active_tenant_context_schema.py
+        │
+        └── presenters/
+            ├── tenant_presenter.py
+            ├── tenant_member_presenter.py
+            ├── invitation_presenter.py
+            ├── workspace_presenter.py
+            └── tenant_error_presenter.py

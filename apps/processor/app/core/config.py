@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     processor_queue_name: str = "processor:jobs"
     database_url: str = "postgresql+psycopg://root@localhost:26257/defaultdb?sslmode=disable"
     rabbitmq_url: str = "amqp://guest:guest@localhost:5672/%2F"
+    vector_database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5433/embeddings"
+    embedding_provider: str = "mock"
+    embedding_dimension: int = 8
+    embedding_chunk_size: int = 500
+    embedding_chunk_overlap: int = 50
     llm_provider: str = "mock"
     openai_api_key: str = "replace-me"
 

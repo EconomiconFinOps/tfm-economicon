@@ -1,22 +1,22 @@
 # FinOps Assistant Monorepo
 
-Monorepo base para un asistente FinOps con `Turborepo`, `pnpm`, `pip`, `Docker Compose`, `RabbitMQ` y `CockroachDB`.
+Monorepo base para un asistente FinOps con `Turborepo`, `pnpm`, `pip`, `Docker Compose`, `RabbitMQ`, `CockroachDB` y `Postgres + pgvector`.
 
 ## Arquitectura
 
 - `apps/frontend`: dashboard React para operadores y usuarios.
-- `apps/backend`: API principal en FastAPI para auth, tenants, billing y publicación de jobs.
-- `apps/processor`: servicio Python para orquestación de pipelines, ingestión y ejecución de agentes internos.
-- `apps/processor/app/agents`: módulo interno LangChain para razonamiento LLM y generación de insights.
+- `apps/backend`: API principal en FastAPI para auth, tenants, billing y publicacion de jobs.
+- `apps/processor`: servicio Python para orquestacion de pipelines, ingestion, embeddings y ejecucion de agentes internos.
+- `apps/processor/app/agents`: modulo interno LangChain para razonamiento LLM y generacion de insights.
 - `packages/shared-config`: paquete reservado para utilidades y convenciones compartidas del workspace JS.
 
 ## Flujo Entre Servicios
 
 1. El `frontend` consume la API HTTP expuesta por `backend`.
 2. El `backend` persiste metadata operativa en CockroachDB.
-3. El `backend` publica jobs en RabbitMQ para procesamiento asíncrono.
-4. El `processor` consume la cola, ejecuta el grafo de trabajo y actualiza resultados en CockroachDB.
-5. El módulo interno `agents` aporta generación de insights y resúmenes FinOps dentro del `processor`.
+3. El `backend` publica jobs en RabbitMQ para procesamiento asincrono.
+4. El `processor` consume la cola, ejecuta el grafo de trabajo, persiste embeddings en `Postgres + pgvector` y actualiza resultados en CockroachDB.
+5. El modulo interno `agents` aporta generacion de insights y resumenes FinOps dentro del `processor`.
 
 ## Estructura
 
@@ -26,6 +26,9 @@ Monorepo base para un asistente FinOps con `Turborepo`, `pnpm`, `pip`, `Docker C
 |   |-- backend/
 |   |-- frontend/
 |   `-- processor/
+|-- docs/
+|   |-- architecture/
+|   `-- use/
 |-- packages/
 |   `-- shared-config/
 |-- docker-compose.yml
@@ -51,11 +54,13 @@ Copy-Item .env.example .env
 
 Variables principales:
 
-- `DATABASE_URL`: conexión SQLAlchemy/psycopg hacia CockroachDB.
+- `DATABASE_URL`: conexion SQLAlchemy/psycopg hacia CockroachDB.
 - `RABBITMQ_URL`: URL de RabbitMQ usada por backend y processor.
+- `VECTOR_DATABASE_URL`: conexion hacia PostgreSQL con pgvector para embeddings.
+- `PROCESSOR_QUEUE_NAME`: nombre logico de la cola de jobs.
+- `EMBEDDING_PROVIDER`: provider configurado para generar embeddings.
 - `VITE_API_BASE_URL`: base URL consumida por el frontend.
-- `PROCESSOR_QUEUE_NAME`: nombre lógico de la cola de jobs.
-- `LLM_PROVIDER`: provider configurado para el módulo interno de agentes.
+- `LLM_PROVIDER`: provider configurado para el modulo interno de agentes.
 
 ## Desarrollo Local
 
@@ -71,10 +76,11 @@ Puertos por defecto:
 - Backend: `http://localhost:8000`
 - Processor health: `http://localhost:8001/health`
 - RabbitMQ Console: `http://localhost:15672`
+- pgvector Postgres: `localhost:5433`
 - Cockroach SQL: `localhost:26257`
 - Cockroach Console: `http://localhost:8080`
 
-### Orquestación con Turborepo
+### Orquestacion con Turborepo
 
 Instalar dependencias JS del workspace:
 
@@ -89,7 +95,7 @@ Set-Location apps/backend; python -m pip install -r requirements-dev.txt
 Set-Location ../processor; python -m pip install -r requirements-dev.txt
 ```
 
-Volver a la raíz y ejecutar:
+Volver a la raiz y ejecutar:
 
 ```powershell
 Set-Location ../..
@@ -101,7 +107,7 @@ pnpm dev
 - `pnpm dev`: arranca frontend, backend y processor en paralelo.
 - `pnpm build`: ejecuta las tareas de build declaradas por cada app.
 - `pnpm test`: ejecuta los tests disponibles.
-- `pnpm docker:build`: construye las imágenes Docker de las apps.
+- `pnpm docker:build`: construye las imagenes Docker de las apps.
 
 ## Estado De La V1
 
@@ -109,13 +115,13 @@ Esta base prioriza:
 
 - estructura clara del monorepo
 - contratos iniciales entre servicios
-- persistencia y cola local
-- documentación suficiente para arrancar sin pasos implícitos
+- persistencia operativa, cola local y almacenamiento vectorial basico
+- documentacion suficiente para arrancar sin pasos implicitos
 
-No incluye todavía:
+No incluye todavia:
 
 - CI/CD
 - migraciones formales
 - despliegue cloud
 - observabilidad avanzada
-- autenticación real con identidad externa
+- autenticacion real con identidad externa

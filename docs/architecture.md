@@ -17,10 +17,11 @@ En este proyecto hay varios submodulos importantes:
 - `apps/processor`
 - `packages/shared-config`
 
-Y ademas hay dos servicios de infraestructura:
+Y ademas hay tres servicios de infraestructura:
 
 - `CockroachDB`
 - `RabbitMQ`
+- `Postgres + pgvector`
 
 Cada pieza tiene una responsabilidad distinta.
 
@@ -34,12 +35,12 @@ Es la aplicacion que ve el usuario en el navegador. Su trabajo principal es:
 
 - mostrar informacion
 - pedir datos al backend
-- enseñar el estado general del sistema
+- ensenar el estado general del sistema
 
-El frontend **no habla directamente** con la base de datos ni con RabbitMQ.
+El frontend **no habla directamente** con las bases de datos ni con RabbitMQ.
 Siempre pasa por el backend.
 
-## `apps/backend`
+### `apps/backend`
 
 Es la API principal del sistema.
 
@@ -48,7 +49,7 @@ Su trabajo es recibir peticiones HTTP, validar datos y coordinar operaciones.
 Por ejemplo, el backend:
 
 - responde al frontend
-- consulta o guarda datos en la base de datos
+- consulta o guarda datos en la base de datos operativa
 - crea jobs de procesamiento
 - envia esos jobs a RabbitMQ
 
@@ -62,8 +63,11 @@ No esta pensado para que el usuario hable con el directamente desde la interfaz.
 
 - escuchar jobs pendientes en RabbitMQ
 - procesarlos
+- dividir `text_content` en chunks
+- generar embeddings
+- guardar esos embeddings en pgvector
 - ejecutar el pipeline interno
-- guardar resultados o actualizar estados en la base de datos
+- guardar resultados o actualizar estados en la base de datos operativa
 
 Esto permite que las tareas pesadas o lentas no bloqueen al backend.
 
@@ -71,7 +75,7 @@ Esto permite que las tareas pesadas o lentas no bloqueen al backend.
 
 Es un paquete compartido del monorepo.
 
-Ahora mismo es pequeño, pero su objetivo es ser un lugar comun para poner:
+Ahora mismo es pequeno, pero su objetivo es ser un lugar comun para poner:
 
 - configuraciones compartidas
 - constantes
@@ -80,20 +84,20 @@ Ahora mismo es pequeño, pero su objetivo es ser un lugar comun para poner:
 
 No es un servicio que se ejecute solo. Es una pieza de apoyo.
 
-## 4. Que papel tienen RabbitMQ y CockroachDB
+## 4. Que papel tienen RabbitMQ, CockroachDB y pgvector
 
 ### CockroachDB
 
 Es la base de datos principal del sistema.
 
-Aqui se guarda la informacion importante, por ejemplo:
+Aqui se guarda la informacion operativa importante, por ejemplo:
 
 - tenants
 - jobs
 - estados de ejecucion
 - resultados de procesamiento
 
-Piensa en CockroachDB como la memoria permanente del sistema.
+Piensa en CockroachDB como la memoria permanente del sistema para la parte transaccional.
 
 ### RabbitMQ
 
@@ -109,6 +113,18 @@ Piensa en RabbitMQ como una bandeja de tareas pendientes:
 
 Esto desacopla servicios y hace la arquitectura mas robusta.
 
+### Postgres + pgvector
+
+Es el almacenamiento vectorial del sistema.
+
+Aqui se guardan:
+
+- documentos procesados
+- chunks de texto
+- embeddings de cada chunk
+
+Piensa en `pgvector` como una base especializada para preparar futuras busquedas semanticas o RAG.
+
 ## 5. Relacion entre los submodulos
 
 La relacion principal entre las piezas es esta:
@@ -118,7 +134,7 @@ La relacion principal entre las piezas es esta:
 3. El `backend` guarda o consulta datos en `CockroachDB`
 4. Si hace falta procesamiento asincrono, el `backend` publica un job en `RabbitMQ`
 5. El `processor` consume ese job desde `RabbitMQ`
-6. El `processor` procesa el trabajo y actualiza `CockroachDB`
+6. El `processor` procesa el trabajo, guarda embeddings en `Postgres + pgvector` y actualiza `CockroachDB`
 7. El `backend` puede devolver despues informacion actualizada al `frontend`
 
 ## 6. Flujo simplificado
@@ -135,6 +151,8 @@ Backend (FastAPI)
   |  \--> CockroachDB
   |
   \----> RabbitMQ ----> Processor
+                         | \
+                         |  \--> Postgres + pgvector
                          |
                          v
                     CockroachDB
@@ -185,15 +203,16 @@ Una buena forma de entenderlo es verlo por capas:
 - **capa de interfaz**: `frontend`
 - **capa de API y coordinacion**: `backend`
 - **capa de procesamiento**: `processor`
-- **capa de infraestructura**: `RabbitMQ` y `CockroachDB`
+- **capa de infraestructura**: `RabbitMQ`, `CockroachDB` y `Postgres + pgvector`
 
 Si te preguntas "donde va esta logica", puedes usar estas reglas:
 
 - si es interfaz o experiencia visual, va en `frontend`
 - si es endpoint, validacion o coordinacion de peticiones, va en `backend`
 - si es trabajo asincrono o pipeline interno, va en `processor`
-- si es almacenamiento persistente, va en la base de datos
-- si es paso de trabajos entre servicios, va en RabbitMQ
+- si es almacenamiento transaccional, va en `CockroachDB`
+- si es paso de trabajos entre servicios, va en `RabbitMQ`
+- si es almacenamiento vectorial para embeddings, va en `Postgres + pgvector`
 
 ## 10. Ejemplo real dentro de este repo
 
@@ -205,8 +224,10 @@ Un caso tipico seria este:
 4. El backend publica ese job en RabbitMQ.
 5. El processor recoge el job.
 6. El processor ejecuta el pipeline.
-7. El processor actualiza el estado del job en la base de datos.
-8. El frontend puede consultar despues el estado actualizado a traves del backend.
+7. El processor genera chunks y embeddings.
+8. El processor guarda los embeddings en `Postgres + pgvector`.
+9. El processor actualiza el estado del job en la base de datos.
+10. El frontend puede consultar despues el estado actualizado a traves del backend.
 
 ## 11. Resumen rapido
 
@@ -216,7 +237,8 @@ La arquitectura de este proyecto se basa en dividir responsabilidades:
 - `backend` expone la API y coordina
 - `processor` procesa trabajos en segundo plano
 - `RabbitMQ` mueve jobs entre servicios
-- `CockroachDB` guarda la informacion del sistema
+- `CockroachDB` guarda la informacion operativa del sistema
+- `Postgres + pgvector` guarda embeddings y chunks
 
 Si recuerdas solo una idea, que sea esta:
 

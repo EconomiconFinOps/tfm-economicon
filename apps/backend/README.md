@@ -5,12 +5,12 @@ API principal del sistema FinOps, construida con FastAPI.
 ## Responsabilidades
 
 - healthcheck del stack
-- autenticación base
-- gestión inicial de tenants
+- autenticacion base
+- gestion inicial de tenants
 - resumen de billing
-- creación de jobs de ingesta
+- creacion de jobs de ingesta
 - persistencia en CockroachDB
-- publicación de jobs en RabbitMQ
+- publicacion de jobs en RabbitMQ
 
 ## Estructura
 
@@ -37,13 +37,13 @@ apps/backend
 - `RABBITMQ_URL`
 - `PROCESSOR_QUEUE_NAME`
 
-## Instalación
+## Instalacion
 
 ```powershell
 python -m pip install -r requirements-dev.txt
 ```
 
-## Ejecución Local
+## Ejecucion Local
 
 ```powershell
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -71,9 +71,11 @@ docker run --rm -p 8000:8000 --env API_PORT=8000 --env DATABASE_URL=postgresql+p
 - `GET /billing/summary`
 - `POST /jobs/ingest`
 
+`POST /jobs/ingest` requiere `text_content` como fuente principal del pipeline de embeddings.
+
 ## Arquitectura
 
-- `core/config.py` centraliza configuración.
+- `core/config.py` centraliza configuracion.
 - `db/database.py` encapsula acceso SQLAlchemy y bootstrap de tablas.
 - `services/rabbitmq_queue.py` publica jobs hacia el processor.
 - `api/routes/` agrupa la superficie REST por dominio.

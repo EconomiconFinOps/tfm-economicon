@@ -29,6 +29,22 @@ services:
       timeout: 5s
       retries: 10
 
+  postgres-pgvector:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: embeddings
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgvector-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d embeddings"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   backend:
     build:
       context: ./apps/backend
@@ -64,12 +80,19 @@ services:
       PROCESSOR_QUEUE_NAME: ${PROCESSOR_QUEUE_NAME:-processor:jobs}
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable}
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:-postgresql+psycopg://postgres:postgres@postgres-pgvector:5432/embeddings}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-mock}
+      EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-8}
+      EMBEDDING_CHUNK_SIZE: ${EMBEDDING_CHUNK_SIZE:-500}
+      EMBEDDING_CHUNK_OVERLAP: ${EMBEDDING_CHUNK_OVERLAP:-50}
       LLM_PROVIDER: ${LLM_PROVIDER:-mock}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-replace-me}
     depends_on:
       cockroachdb:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      postgres-pgvector:
         condition: service_healthy
     ports:
       - "${PROCESSOR_PORT:-8001}:8001"
@@ -95,3 +118,4 @@ services:
 
 volumes:
   cockroach-data:
+  pgvector-data:
