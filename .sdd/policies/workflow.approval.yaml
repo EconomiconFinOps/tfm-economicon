@@ -1,0 +1,12 @@
+contract_version: "1.0.0"
+decision: APPROVED
+artifacts:
+  - path: docs/SDD-WORKFLOW.md
+    sha256: 7b120919b866d9146f8d1787748ee87cc9ef28dc2dea814643c9cbd2296efc0a
+  - path: .sdd/policies/workflow.yaml
+    sha256: 1f3569ca938d9d0faa71a91a2109a995e857a714ee748a960c4d4efdefd9045c
+approver:
+  actor_type: human
+  identity: "Paris Arcos <84467828+ParisArcos@users.noreply.github.com>"
+approved_at: "2026-06-20T08:43:40Z"
+comment: null

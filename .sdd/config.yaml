@@ -1,0 +1,37 @@
+config_version: "1.0.0"
+harness_version: "0.1.0"
+
+contracts:
+  workflow: .sdd/policies/workflow.yaml
+  workflow_approval: .sdd/policies/workflow.approval.yaml
+
+schemas:
+  manifest: .sdd/schemas/manifest.schema.json
+  supported_manifest_versions:
+    - "2.0.0"
+  catalog: .sdd/schemas/catalog.yaml
+
+paths:
+  stories: SPEC
+  examples: SPEC/examples
+
+hash_algorithm: sha256
+
+required_references:
+  - docs/ARCHITECTURE.md
+  - docs/architecture-status.md
+  - docs/SDD-WORKFLOW.md
+  - docs/SDD-HARNESS-IMPLEMENTATION-PLAN.md
+
+id_patterns:
+  story: '^HU-(000|[0-9]{3,})$'
+  acceptance_criterion: '^AC-[0-9]{3,}$'
+  requirement: '^REQ-[0-9]{3,}$'
+  decision: '^DEC-[0-9]{3,}$'
+  task: '^TASK-[0-9]{3,}$'
+  test: '^TEST-[0-9]{3,}$'
+  result: '^RESULT-[0-9]{3,}$'
+  finding: '^FIND-[0-9]{3,}$'
+  architecture: '^ARCH-[0-9]{2}$'
+  gap: '^GAP-[0-9]{3}$'
+  adr: '^ADR-[0-9]{3,}$'

@@ -1,0 +1,29 @@
+catalog_version: "1.0.0"
+schemas:
+  manifest@2.0.0: .sdd/schemas/manifest.schema.json
+  command-input@1.0.0: .sdd/schemas/command-input.schema.json
+  command-output@1.0.0: .sdd/schemas/command-output.schema.json
+  artifact/user-story@1.0.0: .sdd/schemas/artifacts/user-story.schema.json
+  artifact/prd@1.0.0: .sdd/schemas/artifacts/prd.schema.json
+  artifact/tdr@1.0.0: .sdd/schemas/artifacts/tdr.schema.json
+  artifact/roadmap@1.0.0: .sdd/schemas/artifacts/roadmap.schema.json
+  artifact/task@1.0.0: .sdd/schemas/artifacts/task.schema.json
+  artifact/execution-summary@1.0.0: .sdd/schemas/artifacts/execution-summary.schema.json
+  artifact/verification-evidence@1.0.0: .sdd/schemas/artifacts/verification-evidence.schema.json
+  artifact/review@1.0.0: .sdd/schemas/artifacts/review.schema.json
+  skill/common-input@1.0.0: .sdd/schemas/skills/common-input.schema.json
+  skill/common-output@1.0.0: .sdd/schemas/skills/common-output.schema.json
+  skill/spec-intake/input@1.0.0: .sdd/schemas/skills/spec-intake/input.schema.json
+  skill/spec-intake/output@1.0.0: .sdd/schemas/skills/spec-intake/output.schema.json
+  skill/prd-generator/input@1.0.0: .sdd/schemas/skills/prd-generator/input.schema.json
+  skill/prd-generator/output@1.0.0: .sdd/schemas/skills/prd-generator/output.schema.json
+  skill/tdr-generator/input@1.0.0: .sdd/schemas/skills/tdr-generator/input.schema.json
+  skill/tdr-generator/output@1.0.0: .sdd/schemas/skills/tdr-generator/output.schema.json
+  skill/task-planner/input@1.0.0: .sdd/schemas/skills/task-planner/input.schema.json
+  skill/task-planner/output@1.0.0: .sdd/schemas/skills/task-planner/output.schema.json
+  skill/plan-executor/input@1.0.0: .sdd/schemas/skills/plan-executor/input.schema.json
+  skill/plan-executor/output@1.0.0: .sdd/schemas/skills/plan-executor/output.schema.json
+  skill/verifier/input@1.0.0: .sdd/schemas/skills/verifier/input.schema.json
+  skill/verifier/output@1.0.0: .sdd/schemas/skills/verifier/output.schema.json
+  skill/reviewer/input@1.0.0: .sdd/schemas/skills/reviewer/input.schema.json
+  skill/reviewer/output@1.0.0: .sdd/schemas/skills/reviewer/output.schema.json

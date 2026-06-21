@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://economicon.local/sdd/command-input.schema.json",
+  "title": "Normalized SDD command input",
+  "oneOf": [
+    { "$ref": "#/$defs/init" }, { "$ref": "#/$defs/storyOnly" },
+    { "$ref": "#/$defs/artifactDecision" }, { "$ref": "#/$defs/revise" }, { "$ref": "#/$defs/review" }, { "$ref": "#/$defs/registerArtifact" },
+    { "$ref": "#/$defs/evidence" }, { "$ref": "#/$defs/contractValidate" }, { "$ref": "#/$defs/taskRun" },
+    { "$ref": "#/$defs/checkRun" }, { "$ref": "#/$defs/storyStatus" }
+  ],
+  "$defs": {
+    "storyId": { "type": "string", "pattern": "^HU-[0-9]{3,}$" },
+    "repoPath": { "type": "string", "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$)).+$" },
+    "base": {
+      "type": "object", "required": ["command", "format"],
+      "properties": { "command": { "type": "string" }, "format": { "enum": ["json", "text"] } }
+    },
+    "init": {
+      "allOf": [{ "$ref": "#/$defs/base" }, {
+        "type": "object", "additionalProperties": false,
+        "required": ["command", "format", "title", "change_type", "components", "affected_data", "affected_flows", "read_paths", "write_paths", "target_gaps"],
+        "properties": {
+          "command": { "const": "init" }, "format": { "enum": ["json", "text"] }, "title": { "type": "string", "minLength": 1 },
+          "change_type": { "enum": ["feature", "remediation", "harness-docs"] },
+          "components": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "affected_data": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "affected_flows": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "read_paths": { "type": "array", "items": { "$ref": "#/$defs/repoPath" } },
+          "write_paths": { "type": "array", "items": { "$ref": "#/$defs/repoPath" } },
+          "target_gaps": { "type": "array", "items": { "type": "string", "pattern": "^GAP-[0-9]{3}$" } }
+        }
+      }]
+    },
+    "storyOnly": {
+      "allOf": [{ "$ref": "#/$defs/base" }, {
+        "type": "object", "additionalProperties": false, "required": ["command", "format", "story"],
+        "properties": { "command": { "enum": ["validate", "status", "next", "recover"] }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" } }
+      }]
+    },
+    "artifactDecision": {
+      "allOf": [{ "$ref": "#/$defs/base" }, {
+        "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "artifact", "decision"],
+        "properties": { "command": { "const": "approve" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "artifact": { "type": "string" }, "decision": { "enum": ["APPROVED", "CHANGES_REQUESTED", "REJECTED"] }, "identity": { "type": "string" }, "comment": { "type": "string" } }
+      }]
+    },
+    "revise": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "artifact", "reason"], "properties": { "command": { "const": "revise" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "artifact": { "type": "string" }, "reason": { "type": "string", "minLength": 1 }, "identity": { "type": "string" } } }]
+    },
+    "review": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "decision"], "properties": { "command": { "const": "review" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "decision": { "enum": ["APPROVED", "CHANGES_REQUESTED"] }, "identity": { "type": "string" }, "cause": { "type": "string" }, "comment": { "type": "string" } } }]
+    },
+    "registerArtifact": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "type", "path"], "properties": { "command": { "const": "artifact register" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "type": { "type": "string" }, "path": { "$ref": "#/$defs/repoPath" } } }]
+    },
+    "evidence": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "condition", "evidence"], "properties": { "command": { "const": "evidence record" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "condition": { "type": "string", "minLength": 1 }, "evidence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/repoPath" } }, "actor_type": { "enum": ["human", "agent", "system"] }, "identity": { "type": "string" } } }]
+    },
+    "contractValidate": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "schema", "input"], "properties": { "command": { "const": "contract validate" }, "format": { "enum": ["json", "text"] }, "schema": { "type": "string", "minLength": 1 }, "input": { "$ref": "#/$defs/repoPath" } } }]
+    },
+    "taskRun": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "task", "to"], "properties": { "command": { "const": "run" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "task": { "type": "string", "pattern": "^TASK-[0-9]{3,}$" }, "to": { "enum": ["PENDING", "RUNNING", "COMPLETED", "FAILED", "BLOCKED"] }, "reason": { "type": "string" }, "identity": { "type": "string" }, "executor_type": { "enum": ["human", "agent", "system"] }, "executor_id": { "type": "string" }, "evidence": { "type": "array", "items": { "$ref": "#/$defs/repoPath" } } } }]
+    },
+    "checkRun": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "check", "exit_code", "evidence"], "properties": { "command": { "const": "run" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "check": { "type": "string", "pattern": "^TEST-[0-9]{3,}$" }, "exit_code": { "type": "integer" }, "evidence": { "$ref": "#/$defs/repoPath" } } }]
+    },
+    "storyStatus": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "to", "reason"], "properties": { "command": { "const": "story" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "to": { "enum": ["ACTIVE", "BLOCKED", "CANCELLED"] }, "reason": { "type": "string", "minLength": 1 }, "identity": { "type": "string" } } }]
+    }
+  }
+}

@@ -1,0 +1,95 @@
+schema_version: "2.0.0"
+correlation_id: "00000000-0000-4000-8000-000000000001"
+
+story:
+  id: HU-000
+  title: Fixture del manifiesto SDD
+  slug: fixture-manifiesto-sdd
+  change_type: harness-docs
+  is_fixture: true
+  runtime_changes: false
+
+workflow:
+  stage: INTAKE
+  status: ACTIVE
+  updated_at: "2026-06-20T09:00:00Z"
+
+scope:
+  components:
+    - sdd-harness
+  affected_data: []
+  affected_flows:
+    - manifest-validation
+  read_paths:
+    - .sdd/**
+    - docs/**
+  write_paths:
+    - SPEC/examples/HU-000-fixture/**
+
+artifacts:
+  - type: user-story
+    schema_version: "1.0.0"
+    path: SPEC/examples/HU-000-fixture/user-story.md
+    version: 1
+    sha256: b634acdd465d0d4b23576644aa65588bfe5e4df99fb32e2ada7d963dc9c4af08
+    status: DRAFT
+    updated_at: "2026-06-20T09:00:00Z"
+    approvals: []
+    invalidated_by: null
+
+architecture:
+  invariants:
+    - ARCH-07
+    - ARCH-12
+    - ARCH-13
+  gaps: []
+  adrs: []
+
+tasks: []
+checks: []
+gate_evidence: []
+findings: []
+execution:
+  baseline: null
+
+traceability:
+  entities:
+    - id: HU-000
+      type: HU
+      artifact_path: SPEC/examples/HU-000-fixture/user-story.md
+    - id: AC-001
+      type: AC
+      artifact_path: SPEC/examples/HU-000-fixture/user-story.md
+    - id: AC-002
+      type: AC
+      artifact_path: SPEC/examples/HU-000-fixture/user-story.md
+    - id: ARCH-07
+      type: ARCH
+      artifact_path: docs/ARCHITECTURE.md
+    - id: ARCH-12
+      type: ARCH
+      artifact_path: docs/ARCHITECTURE.md
+    - id: ARCH-13
+      type: ARCH
+      artifact_path: docs/ARCHITECTURE.md
+  relations:
+    - from: HU-000
+      to: AC-001
+      type: defines
+    - from: HU-000
+      to: AC-002
+      type: defines
+    - from: HU-000
+      to: ARCH-07
+      type: constrained_by
+    - from: HU-000
+      to: ARCH-12
+      type: constrained_by
+    - from: HU-000
+      to: ARCH-13
+      type: constrained_by
+
+journal:
+  path: SPEC/examples/HU-000-fixture/journal.ndjson
+  head_sequence: 1
+  head_hash: 157c0cd60de6f6d568bfd3ffd1c581a405fc04fa1025821f822088656724bfc2

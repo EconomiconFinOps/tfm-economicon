@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://economicon.local/sdd/artifacts/artifact-contract/1.0.0",
+  "$defs": {
+    "docRef": {
+      "type": "object", "additionalProperties": false, "required": ["path", "sha256"],
+      "properties": { "path": { "type": "string", "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$)).+$" }, "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+    },
+    "traceability": {
+      "type": "array", "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^(HU|AC|REQ|DEC|TASK|TEST|RESULT|FIND|ADR)-[0-9]{3,}$|^ARCH-[0-9]{2}$|^GAP-[0-9]{3}$" }
+    },
+    "metadata": {
+      "type": "object", "additionalProperties": false,
+      "required": ["artifact_schema_version", "artifact_type", "story_id", "documentation_consulted", "architecture_invariants", "traceability"],
+      "properties": {
+        "artifact_schema_version": { "const": "1.0.0" },
+        "artifact_type": { "enum": ["user-story", "prd", "tdr", "roadmap", "task", "execution-summary", "verification-evidence", "review"] },
+        "story_id": { "type": "string", "pattern": "^HU-[0-9]{3,}$" },
+        "documentation_consulted": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/docRef" } },
+        "architecture_invariants": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^ARCH-[0-9]{2}$" } },
+        "traceability": { "$ref": "#/$defs/traceability" }
+      }
+    },
+    "base": {
+      "type": "object", "additionalProperties": false, "required": ["metadata", "sections"],
+      "properties": { "metadata": { "$ref": "#/$defs/metadata" }, "sections": { "type": "object" } }
+    },
+    "userStory": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "properties": {
+        "metadata": { "type": "object", "properties": { "artifact_type": { "const": "user-story" } } },
+        "sections": { "type": "object", "additionalProperties": false, "required": ["Contexto", "Objetivo", "Alcance", "Criterios de aceptación"], "properties": { "Contexto": { "type": "string", "minLength": 1 }, "Objetivo": { "type": "string", "minLength": 1 }, "Alcance": { "type": "string", "minLength": 1 }, "Criterios de aceptación": { "type": "string", "minLength": 1 } } }
+      } }]
+    },
+    "prd": { "$ref": "#/$defs/technicalPrd" },
+    "technicalPrd": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "properties": {
+        "metadata": { "type": "object", "properties": { "artifact_type": { "const": "prd" }, "documentation_consulted": { "type": "array", "minItems": 1 }, "architecture_invariants": { "type": "array", "minItems": 1 } } },
+        "sections": { "type": "object", "additionalProperties": false, "required": ["Problema", "Objetivos", "Requisitos", "Supuestos", "Exclusiones", "Criterios de aceptación"], "properties": { "Problema": { "type": "string", "minLength": 1 }, "Objetivos": { "type": "string", "minLength": 1 }, "Requisitos": { "type": "string", "minLength": 1 }, "Supuestos": { "type": "string", "minLength": 1 }, "Exclusiones": { "type": "string", "minLength": 1 }, "Criterios de aceptación": { "type": "string", "minLength": 1 } } }
+      } }]
+    },
+    "tdr": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "properties": {
+        "metadata": { "type": "object", "properties": { "artifact_type": { "const": "tdr" }, "documentation_consulted": { "type": "array", "minItems": 1 }, "architecture_invariants": { "type": "array", "minItems": 1 } } },
+        "sections": { "type": "object", "additionalProperties": false, "required": ["Contexto técnico", "Decisiones", "Componentes y datos", "Failure modes", "Observabilidad", "Migraciones y rollback", "Pruebas", "Riesgos"], "properties": { "Contexto técnico": { "type": "string", "minLength": 1 }, "Decisiones": { "type": "string", "minLength": 1 }, "Componentes y datos": { "type": "string", "minLength": 1 }, "Failure modes": { "type": "string", "minLength": 1 }, "Observabilidad": { "type": "string", "minLength": 1 }, "Migraciones y rollback": { "type": "string", "minLength": 1 }, "Pruebas": { "type": "string", "minLength": 1 }, "Riesgos": { "type": "string", "minLength": 1 } } }
+      } }]
+    },
+    "technicalBase": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "properties": {
+        "metadata": { "type": "object", "properties": { "documentation_consulted": { "type": "array", "minItems": 1 }, "architecture_invariants": { "type": "array", "minItems": 1 } } },
+        "sections": { "type": "object", "minProperties": 2, "additionalProperties": { "type": "string", "minLength": 1 } }
+      } }]
+    },
+    "roadmap": { "allOf": [{ "$ref": "#/$defs/technicalBase" }, { "type": "object", "properties": { "metadata": { "type": "object", "properties": { "artifact_type": { "const": "roadmap" } } }, "sections": { "type": "object", "required": ["Plan", "Tareas", "Dependencias", "Paralelismo"] } } }] },
+    "task": { "allOf": [{ "$ref": "#/$defs/technicalBase" }, { "type": "object", "properties": { "metadata": { "type": "object", "properties": { "artifact_type": { "const": "task" } } }, "sections": { "type": "object", "required": ["Objetivo", "Entradas", "Alcance", "Checks", "Done"] } } }] },
+    "executionSummary": { "allOf": [{ "$ref": "#/$defs/technicalBase" }, { "type": "object", "properties": { "metadata": { "type": "object", "properties": { "artifact_type": { "const": "execution-summary" } } }, "sections": { "type": "object", "required": ["Tareas", "Archivos", "Checks", "Resultado"] } } }] },
+    "verificationEvidence": { "allOf": [{ "$ref": "#/$defs/technicalBase" }, { "type": "object", "properties": { "metadata": { "type": "object", "properties": { "artifact_type": { "const": "verification-evidence" } } }, "sections": { "type": "object", "required": ["Baseline", "Checks", "Evidencias", "Resultado"] } } }] },
+    "review": { "allOf": [{ "$ref": "#/$defs/technicalBase" }, { "type": "object", "properties": { "metadata": { "type": "object", "properties": { "artifact_type": { "const": "review" } } }, "sections": { "type": "object", "required": ["Veredicto", "Hallazgos", "Arquitectura", "Trazabilidad"] } } }] }
+  }
+}

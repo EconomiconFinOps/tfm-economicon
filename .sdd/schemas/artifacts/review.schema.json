@@ -1,0 +1,1 @@
+{ "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://economicon.local/sdd/artifacts/review/1.0.0", "$ref": "https://economicon.local/sdd/artifacts/artifact-contract/1.0.0#/$defs/review" }

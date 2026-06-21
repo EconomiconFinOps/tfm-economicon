@@ -35,9 +35,17 @@ tfm-economicon
 |   |-- frontend/
 |   `-- processor/
 |-- docs/
-|   |-- architecture.md
-|   `-- turborepo_use.md
+|   |-- ARCHITECTURE.md
+|   |-- SYSTEM-OVERVIEW.md
+|   `-- SDD-HARNESS-IMPLEMENTATION-PLAN.md
+|-- .sdd/
+|   |-- config.yaml
+|   |-- schemas/
+|   `-- policies/
+|-- SPEC/
+|   `-- examples/
 |-- packages/
+|   |-- sdd-harness/
 |   `-- shared-config/
 |-- docker-compose.yml
 |-- package.json
@@ -127,6 +135,7 @@ Variables principales:
 - `pnpm build`: ejecuta las tareas de build declaradas por cada app
 - `pnpm lint`: ejecuta las tareas de lint declaradas por cada app
 - `pnpm test`: ejecuta los tests disponibles
+- `pnpm sdd -- <command>`: ejecuta el orquestador determinista SDD
 - `pnpm docker:build`: construye las imagenes Docker de las apps
 
 ## Relacion Entre Submodulos
@@ -144,7 +153,12 @@ El flujo principal del sistema es este:
 
 ## Documentacion Util
 
-- [docs/architecture.md](/C:/Repositorios/tfm-economicon/docs/architecture.md)
+- [Backbone técnico de arquitectura](docs/ARCHITECTURE.md)
+- [Estado de cumplimiento arquitectónico](docs/architecture-status.md)
+- [Plan de implementación del harness SDD](docs/SDD-HARNESS-IMPLEMENTATION-PLAN.md)
+- [Contrato del workflow SDD](docs/SDD-WORKFLOW.md)
+- [Guía de uso del harness SDD](.sdd/README.md)
+- [Visión general del sistema](docs/SYSTEM-OVERVIEW.md)
 - [docs/turborepo_use.md](/C:/Repositorios/tfm-economicon/docs/turborepo_use.md)
 
 ## Estado Actual

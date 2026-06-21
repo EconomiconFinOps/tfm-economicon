@@ -1,0 +1,52 @@
+contract_version: "1.1.0"
+input_schema: .sdd/schemas/command-input.schema.json
+output_schema: .sdd/schemas/command-output.schema.json
+runtime: node20-typescript
+entrypoint: "pnpm sdd -- <command>"
+output:
+  default_format: json
+  optional_format: text
+  exit_codes:
+    success: 0
+    blocked_or_invalid: 1
+    input_or_internal_error: 2
+commands:
+  init:
+    mutates: true
+    required_options: [title, change-type]
+  validate:
+    mutates: false
+    required_options: [story]
+  status:
+    mutates: false
+    required_options: [story]
+  approve:
+    mutates: true
+    required_options: [story, artifact, decision]
+  artifact-register:
+    mutates: true
+    required_options: [story, type, path]
+  revise:
+    mutates: true
+    required_options: [story, artifact, reason]
+  evidence-record:
+    mutates: true
+    required_options: [story, condition, evidence]
+  next:
+    mutates: true
+    required_options: [story]
+  run:
+    mutates: true
+    required_options: [story]
+  review:
+    mutates: true
+    required_options: [story, decision]
+  story:
+    mutates: true
+    required_options: [story, to, reason]
+  recover:
+    mutates: true
+    required_options: [story]
+  contract-validate:
+    mutates: false
+    required_options: [schema, input]

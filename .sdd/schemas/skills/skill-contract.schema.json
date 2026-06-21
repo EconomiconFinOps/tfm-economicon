@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://economicon.local/sdd/skills/skill-contract/1.0.0",
+  "$defs": {
+    "repoPath": { "type": "string", "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$)).+$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "artifactRef": { "type": "object", "additionalProperties": false, "required": ["type", "path", "version", "sha256", "status"], "properties": { "type": { "type": "string", "minLength": 1 }, "path": { "$ref": "#/$defs/repoPath" }, "version": { "type": "integer", "minimum": 1 }, "sha256": { "$ref": "#/$defs/sha256" }, "status": { "enum": ["DRAFT", "CHANGES_REQUESTED", "APPROVED", "REJECTED"] } } },
+    "docRef": { "type": "object", "additionalProperties": false, "required": ["path", "sha256"], "properties": { "path": { "$ref": "#/$defs/repoPath" }, "sha256": { "$ref": "#/$defs/sha256" } } },
+    "scope": { "type": "object", "additionalProperties": false, "required": ["components", "affected_data", "affected_flows", "read_paths", "write_paths"], "properties": { "components": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "affected_data": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "affected_flows": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "read_paths": { "type": "array", "items": { "$ref": "#/$defs/repoPath" } }, "write_paths": { "type": "array", "items": { "$ref": "#/$defs/repoPath" } } } },
+    "docsContext": { "type": "object", "additionalProperties": false, "required": ["inventory", "applicable", "excluded"], "properties": { "inventory": { "type": "array", "items": { "$ref": "#/$defs/repoPath" } }, "applicable": { "type": "array", "items": { "$ref": "#/$defs/docRef" } }, "excluded": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "reason"], "properties": { "path": { "$ref": "#/$defs/repoPath" }, "reason": { "type": "string", "minLength": 1 } } } } } },
+    "error": { "type": "object", "additionalProperties": false, "required": ["code", "message", "path"], "properties": { "code": { "type": "string", "minLength": 1 }, "message": { "type": "string", "minLength": 1 }, "path": { "type": ["string", "null"] } } },
+    "inputBase": { "type": "object", "additionalProperties": false, "required": ["schema_version", "correlation_id", "skill", "story_id", "artifact_versions", "docs_context", "requested_scope", "parameters"], "properties": { "schema_version": { "const": "1.0.0" }, "correlation_id": { "type": "string", "format": "uuid" }, "skill": { "enum": ["spec-intake", "prd-generator", "tdr-generator", "task-planner", "plan-executor", "verifier", "reviewer"] }, "story_id": { "type": "string", "pattern": "^HU-[0-9]{3,}$" }, "artifact_versions": { "type": "array", "items": { "$ref": "#/$defs/artifactRef" } }, "docs_context": { "$ref": "#/$defs/docsContext" }, "requested_scope": { "$ref": "#/$defs/scope" }, "parameters": { "type": "object" } } },
+    "outputBase": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "correlation_id", "skill", "status", "artifacts", "docs_consulted", "doc_conflicts", "traceability", "errors", "result"],
+      "properties": {
+        "schema_version": { "const": "1.0.0" },
+        "correlation_id": { "type": "string", "format": "uuid" },
+        "skill": { "enum": ["spec-intake", "prd-generator", "tdr-generator", "task-planner", "plan-executor", "verifier", "reviewer"] },
+        "status": { "enum": ["COMPLETED", "BLOCKED", "FAILED"] },
+        "artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifactRef" } },
+        "docs_consulted": { "type": "array", "items": { "$ref": "#/$defs/docRef" } },
+        "doc_conflicts": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["code", "paths", "summary", "blocking"], "properties": { "code": { "const": "DOC-CONFLICT" }, "paths": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/repoPath" } }, "summary": { "type": "string", "minLength": 1 }, "blocking": { "type": "boolean" } } } },
+        "traceability": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["from", "to", "type"], "properties": { "from": { "type": "string", "minLength": 1 }, "to": { "type": "string", "minLength": 1 }, "type": { "type": "string", "minLength": 1 } } } },
+        "errors": { "type": "array", "items": { "$ref": "#/$defs/error" } },
+        "result": { "type": "object" }
+      }
+    }
+  }
+}

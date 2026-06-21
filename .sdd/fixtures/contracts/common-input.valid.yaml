@@ -1,0 +1,16 @@
+schema_version: "1.0.0"
+correlation_id: "00000000-0000-4000-8000-000000000010"
+skill: spec-intake
+story_id: HU-001
+artifact_versions: []
+docs_context:
+  inventory: []
+  applicable: []
+  excluded: []
+requested_scope:
+  components: []
+  affected_data: []
+  affected_flows: []
+  read_paths: []
+  write_paths: []
+parameters: {}

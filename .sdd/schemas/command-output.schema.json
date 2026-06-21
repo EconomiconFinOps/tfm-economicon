@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://economicon.local/sdd/command-output.schema.json",
+  "title": "SDD command output envelope",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["ok", "changed", "blockers", "next_actions"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "command": { "type": "string" },
+    "story_id": { "type": "string", "pattern": "^HU-[0-9]{3,}$" },
+    "changed": { "type": "boolean" },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "instance_path", "message"],
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "instance_path": { "type": "string" },
+          "message": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "next_actions": { "type": "array", "items": { "type": "string" } }
+  }
+}

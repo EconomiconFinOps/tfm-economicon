@@ -1,0 +1,340 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://economicon.local/sdd/manifest.schema.json",
+  "title": "SDD story manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "correlation_id",
+    "story",
+    "workflow",
+    "scope",
+    "artifacts",
+    "architecture",
+    "tasks",
+    "checks",
+    "gate_evidence",
+    "findings",
+    "execution",
+    "traceability",
+    "journal"
+  ],
+  "properties": {
+    "schema_version": { "const": "2.0.0" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "story": { "$ref": "#/$defs/story" },
+    "workflow": { "$ref": "#/$defs/workflow" },
+    "scope": { "$ref": "#/$defs/scope" },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact" }
+    },
+    "architecture": { "$ref": "#/$defs/architecture" },
+    "tasks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/task" }
+    },
+    "checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/check" }
+    },
+    "gate_evidence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/gateEvidence" }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "execution": { "$ref": "#/$defs/execution" },
+    "traceability": { "$ref": "#/$defs/traceability" },
+    "journal": { "$ref": "#/$defs/journal" }
+  },
+  "$defs": {
+    "repoPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._*?/-]+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "story": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "slug", "change_type", "is_fixture", "runtime_changes"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^HU-(000|[0-9]{3,})$" },
+        "title": { "type": "string", "minLength": 1 },
+        "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "change_type": { "enum": ["feature", "remediation", "harness-docs"] },
+        "is_fixture": { "type": "boolean" },
+        "runtime_changes": { "type": "boolean" }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "status", "updated_at"],
+      "properties": {
+        "stage": { "enum": ["INTAKE", "PRD", "TDR", "PLAN", "EXECUTION", "VERIFICATION", "REVIEW", "COMPLETED"] },
+        "status": { "enum": ["ACTIVE", "BLOCKED", "COMPLETED", "CANCELLED"] },
+        "updated_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["components", "affected_data", "affected_flows", "read_paths", "write_paths"],
+      "properties": {
+        "components": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "affected_data": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "affected_flows": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "read_paths": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/repoPath" } },
+        "write_paths": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/repoPath" } }
+      }
+    },
+    "approver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_type", "identity"],
+      "properties": {
+        "actor_type": { "const": "human" },
+        "identity": { "type": "string", "minLength": 1 }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "artifact_version", "artifact_sha256", "snapshot_path", "approver", "decided_at", "comment"],
+      "properties": {
+        "decision": { "enum": ["APPROVED", "CHANGES_REQUESTED", "REJECTED"] },
+        "artifact_version": { "type": "integer", "minimum": 1 },
+        "artifact_sha256": { "$ref": "#/$defs/sha256" },
+        "snapshot_path": { "$ref": "#/$defs/repoPath" },
+        "approver": { "$ref": "#/$defs/approver" },
+        "decided_at": { "$ref": "#/$defs/timestamp" },
+        "comment": { "type": ["string", "null"] }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "schema_version", "path", "version", "sha256", "status", "updated_at", "approvals", "invalidated_by"],
+      "properties": {
+        "type": { "enum": ["user-story", "prd", "tdr", "roadmap", "task", "execution-summary", "verification-evidence", "review"] },
+        "schema_version": { "const": "1.0.0" },
+        "path": { "$ref": "#/$defs/repoPath" },
+        "version": { "type": "integer", "minimum": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "status": { "enum": ["DRAFT", "CHANGES_REQUESTED", "APPROVED", "REJECTED"] },
+        "updated_at": { "$ref": "#/$defs/timestamp" },
+        "approvals": { "type": "array", "items": { "$ref": "#/$defs/approval" } }
+        ,"invalidated_by": { "type": ["string", "null"] }
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["invariants", "gaps", "adrs"],
+      "properties": {
+        "invariants": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^ARCH-[0-9]{2}$" } },
+        "gaps": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^GAP-[0-9]{3}$" } },
+        "adrs": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^ADR-[0-9]{3,}$" } }
+      }
+    },
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["number", "status", "started_at", "completed_at", "error", "executor", "evidence"],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "status": { "enum": ["PENDING", "RUNNING", "COMPLETED", "FAILED", "BLOCKED"] },
+        "started_at": { "anyOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] },
+        "completed_at": { "anyOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] },
+        "error": { "type": ["string", "null"] },
+        "executor": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object", "additionalProperties": false, "required": ["actor_type", "identity"],
+              "properties": {
+                "actor_type": { "enum": ["human", "agent", "system"] },
+                "identity": { "type": "string", "minLength": 1 }
+              }
+            }
+          ]
+        },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/fileEvidence" } }
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "status", "depends_on", "required_checks", "attempts"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^TASK-[0-9]{3,}$" },
+        "path": { "$ref": "#/$defs/repoPath" },
+        "status": { "enum": ["PENDING", "RUNNING", "COMPLETED", "FAILED", "BLOCKED"] },
+        "depends_on": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^TASK-[0-9]{3,}$" } },
+        "required_checks": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^TEST-[0-9]{3,}$" } },
+        "attempts": { "type": "array", "items": { "$ref": "#/$defs/attempt" } }
+      }
+    },
+    "checkResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "exit_code", "started_at", "completed_at", "evidence_path"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^RESULT-[0-9]{3,}$" },
+        "exit_code": { "type": "integer" },
+        "started_at": { "$ref": "#/$defs/timestamp" },
+        "completed_at": { "$ref": "#/$defs/timestamp" },
+        "evidence_path": { "$ref": "#/$defs/repoPath" }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "command", "cwd", "status", "result"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^TEST-[0-9]{3,}$" },
+        "name": { "type": "string", "minLength": 1 },
+        "command": { "type": "string", "minLength": 1 },
+        "cwd": { "$ref": "#/$defs/repoPath" },
+        "status": { "enum": ["PENDING", "RUNNING", "COMPLETED", "FAILED", "BLOCKED"] },
+        "result": { "anyOf": [{ "$ref": "#/$defs/checkResult" }, { "type": "null" }] }
+      }
+    },
+    "fileEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/repoPath" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "gateEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition", "satisfied", "evidence", "actor", "recorded_at"],
+      "properties": {
+        "condition": { "type": "string", "minLength": 1 },
+        "satisfied": { "type": "boolean" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/fileEvidence" }
+        },
+        "actor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["actor_type", "identity"],
+          "properties": {
+            "actor_type": { "enum": ["human", "agent", "system"] },
+            "identity": { "type": "string", "minLength": 1 }
+          }
+        },
+        "recorded_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "summary", "severity", "status", "cause", "requirement_ids", "task_ids", "invariant_ids", "evidence", "resolution"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^FIND-[0-9]{3,}$" },
+        "summary": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["BLOCKING", "HIGH", "MEDIUM", "LOW"] },
+        "status": { "enum": ["OPEN", "RESOLVED", "ACCEPTED"] },
+        "cause": { "enum": ["scope_or_story", "requirements", "design_or_architecture", "planning_or_dependencies", "implementation_or_tests", "verification_failure_requires_implementation_change", "verification_evidence_refresh_without_implementation_change"] },
+        "requirement_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^REQ-[0-9]{3,}$" } },
+        "task_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^TASK-[0-9]{3,}$" } },
+        "invariant_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^ARCH-[0-9]{2}$" } },
+        "evidence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/fileEvidence" } },
+        "resolution": {
+          "anyOf": [
+            { "type": "null" },
+            { "type": "object", "additionalProperties": false, "required": ["summary", "actor", "resolved_at"], "properties": {
+              "summary": { "type": "string", "minLength": 1 },
+              "actor": { "$ref": "#/$defs/approver" },
+              "resolved_at": { "$ref": "#/$defs/timestamp" }
+            } }
+          ]
+        }
+      },
+      "anyOf": [
+        { "properties": { "requirement_ids": { "type": "array", "minItems": 1 } } },
+        { "properties": { "task_ids": { "type": "array", "minItems": 1 } } },
+        { "properties": { "invariant_ids": { "type": "array", "minItems": 1 } } }
+      ],
+      "if": { "properties": { "status": { "enum": ["RESOLVED", "ACCEPTED"] } } },
+      "then": { "properties": { "resolution": { "type": "object" } } },
+      "else": { "properties": { "resolution": { "type": "null" } } }
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "captured_at"],
+      "properties": {
+        "path": { "$ref": "#/$defs/repoPath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "captured_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline"],
+      "properties": {
+        "baseline": { "anyOf": [{ "$ref": "#/$defs/baseline" }, { "type": "null" }] }
+      }
+    },
+    "traceEntity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "artifact_path"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^(HU|AC|REQ|DEC|TASK|TEST|RESULT|FIND|ADR)-[0-9]{3,}$|^ARCH-[0-9]{2}$|^GAP-[0-9]{3}$" },
+        "type": { "enum": ["HU", "AC", "REQ", "ARCH", "GAP", "ADR", "DEC", "TASK", "TEST", "RESULT", "FIND"] },
+        "artifact_path": { "anyOf": [{ "$ref": "#/$defs/repoPath" }, { "type": "null" }] }
+      }
+    },
+    "traceRelation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "type"],
+      "properties": {
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["defines", "satisfies", "constrained_by", "implements", "verified_by", "produces", "finds", "closes", "depends_on"] }
+      }
+    },
+    "traceability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entities", "relations"],
+      "properties": {
+        "entities": { "type": "array", "items": { "$ref": "#/$defs/traceEntity" } },
+        "relations": { "type": "array", "items": { "$ref": "#/$defs/traceRelation" } }
+      }
+    },
+    "journal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "head_sequence", "head_hash"],
+      "properties": {
+        "path": { "$ref": "#/$defs/repoPath" },
+        "head_sequence": { "type": "integer", "minimum": 1 },
+        "head_hash": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

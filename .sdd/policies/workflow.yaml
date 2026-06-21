@@ -1,0 +1,523 @@
+contract_version: "1.0.0"
+status: approved
+
+references:
+  architecture: docs/ARCHITECTURE.md
+  architecture_status: docs/architecture-status.md
+  human_contract: docs/SDD-WORKFLOW.md
+  planning_reference: sdd-planing.md
+
+change_types:
+  - feature
+  - remediation
+  - harness-docs
+
+workflow:
+  initial_stage: INTAKE
+  initial_status: ACTIVE
+  stages:
+    - INTAKE
+    - PRD
+    - TDR
+    - PLAN
+    - EXECUTION
+    - VERIFICATION
+    - REVIEW
+    - COMPLETED
+  story_statuses:
+    - ACTIVE
+    - BLOCKED
+    - COMPLETED
+    - CANCELLED
+  terminal_story_statuses:
+    - COMPLETED
+    - CANCELLED
+  artifact_statuses:
+    - DRAFT
+    - CHANGES_REQUESTED
+    - APPROVED
+    - REJECTED
+  terminal_artifact_statuses:
+    - REJECTED
+  execution_statuses:
+    - PENDING
+    - RUNNING
+    - COMPLETED
+    - FAILED
+    - BLOCKED
+  terminal_execution_statuses_per_attempt:
+    - COMPLETED
+
+artifact_transitions:
+  - id: AT-001
+    from: DRAFT
+    to: APPROVED
+    gate: human
+    version_effect: same_version_hash_locked
+  - id: AT-002
+    from: DRAFT
+    to: CHANGES_REQUESTED
+    gate: human
+    version_effect: same_version_not_consumable
+  - id: AT-003
+    from: DRAFT
+    to: REJECTED
+    gate: human
+    version_effect: same_version_terminal
+  - id: AT-004
+    from: CHANGES_REQUESTED
+    to: DRAFT
+    gate: human
+    version_effect: create_incremented_version_preserve_source
+  - id: AT-005
+    from: APPROVED
+    to: DRAFT
+    gate: automatic_on_content_change
+    version_effect: create_incremented_version_preserve_source_and_invalidate_downstream
+  - id: AT-006
+    from: REJECTED
+    to: DRAFT
+    gate: human
+    version_effect: create_incremented_version_with_reason_preserve_terminal_source
+
+execution_transitions:
+  - id: EX-001
+    from: PENDING
+    to: RUNNING
+    gate: automatic
+    conditions: [authorized_executor, scope_current]
+    attempt_effect: same_attempt
+  - id: EX-002
+    from: RUNNING
+    to: COMPLETED
+    gate: automatic
+    conditions: [work_completed, local_checks_passed]
+    attempt_effect: same_attempt_terminal
+  - id: EX-003
+    from: RUNNING
+    to: FAILED
+    gate: automatic
+    conditions: [error_evidence_recorded]
+    attempt_effect: same_attempt
+  - id: EX-004
+    from: RUNNING
+    to: BLOCKED
+    gate: automatic_or_human
+    conditions: [blocking_reason_recorded]
+    attempt_effect: same_attempt
+  - id: EX-005
+    from: FAILED
+    to: PENDING
+    gate: human
+    conditions: [retry_authorized]
+    attempt_effect: create_incremented_attempt_preserve_source
+  - id: EX-006
+    from: BLOCKED
+    to: PENDING
+    gate: human
+    conditions: [resolution_recorded]
+    attempt_effect: create_incremented_attempt_preserve_source
+  - id: EX-007
+    from: COMPLETED
+    to: PENDING
+    gate: automatic_on_invalidation
+    conditions: [applicable_invalidation_recorded]
+    attempt_effect: create_incremented_attempt_preserve_terminal_source
+
+stage_contracts:
+  INTAKE:
+    required_artifacts:
+      - user-story
+    completion_gate: human
+    approval_targets:
+      - user-story
+  PRD:
+    required_artifacts:
+      - user-story
+      - prd
+    completion_gate: human
+    approval_targets:
+      - prd
+  TDR:
+    required_artifacts:
+      - prd
+      - tdr
+    completion_gate: human
+    approval_targets:
+      - tdr
+  PLAN:
+    required_artifacts:
+      - tdr
+      - roadmap
+      - tasks
+    completion_gate: human
+    approval_targets:
+      - roadmap
+      - tasks
+  EXECUTION:
+    required_artifacts:
+      - roadmap
+      - tasks
+      - execution-summary
+    completion_gate: automatic
+    approval_targets: []
+  VERIFICATION:
+    required_artifacts:
+      - execution-summary
+      - verification-evidence
+    completion_gate: automatic
+    approval_targets: []
+  REVIEW:
+    required_artifacts:
+      - verification-evidence
+      - review
+    completion_gate: human
+    approval_targets:
+      - review
+  COMPLETED:
+    required_artifacts:
+      - review
+    completion_gate: terminal
+    approval_targets: []
+
+forward_transitions:
+  - id: TR-001
+    from: __NEW__
+    to: INTAKE
+    gate: automatic
+    conditions:
+      - valid_story_id
+      - title_present
+      - supported_change_type
+  - id: TR-002
+    from: INTAKE
+    to: PRD
+    gate: human
+    conditions:
+      - user_story_approved
+      - approval_hash_current
+  - id: TR-003
+    from: PRD
+    to: TDR
+    gate: human
+    conditions:
+      - prd_approved
+      - approval_hash_current
+      - no_open_functional_questions
+  - id: TR-004
+    from: TDR
+    to: PLAN
+    gate: human
+    conditions:
+      - tdr_approved
+      - approval_hash_current
+      - architecture_invariants_evaluated
+      - architecture_gaps_evaluated
+      - change_type_policy_satisfied
+  - id: TR-005
+    from: PLAN
+    to: EXECUTION
+    gate: human
+    conditions:
+      - roadmap_approved
+      - all_tasks_approved
+      - approval_hashes_current
+      - write_scope_declared
+  - id: TR-006
+    from: EXECUTION
+    to: VERIFICATION
+    gate: automatic
+    conditions:
+      - all_required_tasks_completed
+      - execution_summary_current
+      - source_hashes_current
+  - id: TR-007
+    from: VERIFICATION
+    to: REVIEW
+    gate: automatic
+    conditions:
+      - all_required_checks_executed
+      - all_required_checks_passed
+      - verification_matches_evaluated_commit
+  - id: TR-008
+    from: REVIEW
+    to: COMPLETED
+    gate: human
+    conditions:
+      - review_approved
+      - approval_hash_current
+      - no_blocking_findings
+      - architecture_gates_satisfied
+      - change_type_policy_satisfied
+    story_status_after: COMPLETED
+
+story_status_transitions:
+  - from: ACTIVE
+    to: BLOCKED
+    gate: automatic_or_human
+    conditions:
+      - blocking_reason_recorded
+  - from: BLOCKED
+    to: ACTIVE
+    gate: human
+    conditions:
+      - resolution_recorded
+  - from: ACTIVE
+    to: CANCELLED
+    gate: human
+    conditions:
+      - cancellation_reason_recorded
+  - from: BLOCKED
+    to: CANCELLED
+    gate: human
+    conditions:
+      - cancellation_reason_recorded
+
+correction_returns:
+  - cause: scope_or_story
+    from_stages: [PRD, TDR, PLAN, EXECUTION, VERIFICATION, REVIEW]
+    to: INTAKE
+    new_version_required: user-story
+  - cause: requirements
+    from_stages: [TDR, PLAN, EXECUTION, VERIFICATION, REVIEW]
+    to: PRD
+    new_version_required: prd
+  - cause: design_or_architecture
+    from_stages: [PLAN, EXECUTION, VERIFICATION, REVIEW]
+    to: TDR
+    new_version_required: tdr
+  - cause: planning_or_dependencies
+    from_stages: [EXECUTION, VERIFICATION, REVIEW]
+    to: PLAN
+    new_version_required: roadmap_or_tasks
+  - cause: implementation_or_tests
+    from_stages: [VERIFICATION, REVIEW]
+    to: EXECUTION
+    new_version_required: implementation_or_execution-summary
+  - cause: verification_failure_requires_implementation_change
+    from_stages: [REVIEW]
+    to: EXECUTION
+    new_version_required: implementation_or_tests_and_verification-evidence
+  - cause: verification_evidence_refresh_without_implementation_change
+    from_stages: [REVIEW]
+    to: VERIFICATION
+    new_version_required: verification-evidence
+  - cause: incomplete_review
+    from_stages: [REVIEW]
+    to: REVIEW
+    new_version_required: review
+
+approvals:
+  allowed_actor_type: human
+  roles_required: false
+  required_fields:
+    - decision
+    - artifact.path
+    - artifact.version
+    - artifact.sha256
+    - approver.actor_type
+    - approver.identity
+    - approved_at
+  decision_for_forward_gate: APPROVED
+  hash_algorithm: sha256
+  timestamp_format: rfc3339_utc
+  immutable_history: true
+  same_identity_may_approve_multiple_gates: true
+  agent_approval_forbidden: true
+  on_changes_requested:
+    rejected_version_state: CHANGES_REQUESTED
+    next_version_state: DRAFT
+    version_increment_required: true
+  on_rejected:
+    rejected_version_state: REJECTED
+    rejected_version_terminal: true
+    allowed_actions:
+      - cancel_story
+      - create_new_draft_version
+    human_reason_required: true
+
+contract_approval:
+  record_path: .sdd/policies/workflow.approval.yaml
+  external_to_approved_artifacts: true
+  create_only_after_explicit_human_approval: true
+  required_fields:
+    - contract_version
+    - decision
+    - artifacts
+    - approver.actor_type
+    - approver.identity
+    - approved_at
+  required_artifacts:
+    - docs/SDD-WORKFLOW.md
+    - .sdd/policies/workflow.yaml
+  decision: APPROVED
+  hash_algorithm: sha256
+  approver_actor_type: human
+  timestamp_format: rfc3339_utc
+  exact_hash_match_required: true
+  on_contract_change:
+    invalidate_current_approval: true
+    contract_status: pending_human_approval
+    new_approval_required: true
+
+invalidation_rules:
+  - changed: user-story
+    invalidates: [prd, tdr, roadmap, tasks, execution-summary, verification-evidence, review]
+    return_to: INTAKE
+  - changed: prd
+    invalidates: [tdr, roadmap, tasks, execution-summary, verification-evidence, review]
+    return_to: PRD
+  - changed: tdr
+    invalidates: [roadmap, tasks, execution-summary, verification-evidence, review]
+    return_to: TDR
+  - changed: roadmap_or_tasks
+    invalidates: [execution-summary, verification-evidence, review]
+    return_to: PLAN
+  - changed: source_or_tests
+    invalidates: [verification-evidence, review]
+    return_to: EXECUTION
+  - changed: outside_approved_scope
+    invalidates: [roadmap, tasks, execution-summary, verification-evidence, review]
+    return_to: PLAN
+  - changed: verification-evidence
+    invalidates: [review]
+    return_to: VERIFICATION
+  - changed: review
+    invalidates: [final-approval]
+    return_to: REVIEW
+  - changed: applicable_architecture_or_adr
+    invalidates: [tdr, roadmap, tasks, execution-summary, verification-evidence, review]
+    return_to: TDR
+  - changed: architecture-status_by_same_review
+    invalidates: []
+    return_to: null
+  - changed: applicable_architecture-status_external
+    invalidates: [tdr, roadmap, tasks, execution-summary, verification-evidence, review]
+    return_to: TDR
+
+invalidation_effects:
+  affected_artifacts_become_consumable: false
+  preserve_previous_versions: true
+  preserve_previous_approvals: true
+  journal_required: true
+  required_journal_fields:
+    - cause
+    - source
+    - detector
+    - detected_at
+
+change_type_policies:
+  feature:
+    same_stage_sequence: true
+    required_declarations:
+      - affected_components
+      - affected_data
+      - affected_flows
+    blocked_transitions_when_applicable_gap_open:
+      - TR-004
+      - TR-008
+  remediation:
+    same_stage_sequence: true
+    required_declarations:
+      - target_gaps
+    target_gaps_min_items: 1
+    completion_conditions:
+      - all_declared_gaps_closed
+      - no_new_gaps
+      - no_remaining_gap_worsened
+      - architecture_status_updated_by_review
+  harness-docs:
+    same_stage_sequence: true
+    required_declarations:
+      - runtime_changes
+    runtime_changes_must_equal: false
+    forbidden_effects:
+      - hide_architecture_gap
+      - relax_invariant_without_approved_adr
+    on_runtime_change:
+      return_to: INTAKE
+      reclassification_required: true
+
+cancellation:
+  allowed_from_story_statuses:
+    - ACTIVE
+    - BLOCKED
+  resulting_story_status: CANCELLED
+  gate: human
+  identity_required: true
+  reason_required: true
+  timestamp_required: true
+  preserve_artifacts: true
+  preserve_journal: true
+  reopen_cancelled_story: false
+
+block_codes:
+  WF-INVALID-TRANSITION: transition_not_declared
+  WF-MISSING-ARTIFACT: required_artifact_missing
+  WF-STALE-ARTIFACT: version_or_hash_not_current
+  WF-MISSING-APPROVAL: current_human_approval_missing
+  WF-OPEN-QUESTIONS: blocking_questions_or_decisions_open
+  WF-ARCH-GAP: applicable_architecture_gap_blocks_transition
+  WF-ARCH-VIOLATION: architecture_invariant_violated
+  WF-CHECK-FAILED: required_check_failed
+  WF-OUT-OF-SCOPE: unauthorized_path_or_component_changed
+  WF-HUMAN-DECISION: external_human_decision_required
+  WF-CONTRACT-DRIFT: human_and_machine_contracts_disagree
+
+acceptance_scenarios:
+  - id: WF-SC-001
+    given: feature_without_applicable_blocking_gaps
+    when: all_forward_gates_are_satisfied
+    then: story_reaches_completed
+  - id: WF-SC-002
+    given: feature_with_applicable_blocking_gap
+    when: transition_TR-004_is_requested
+    then: transition_blocked_with_WF-ARCH-GAP
+  - id: WF-SC-003
+    given: remediation_with_all_target_gap_evidence
+    when: transition_TR-008_is_requested
+    then: story_completes_and_architecture_status_is_updated
+  - id: WF-SC-004
+    given: remediation_with_unclosed_or_new_gap
+    when: transition_TR-008_is_requested
+    then: story_remains_in_review_with_WF-ARCH-GAP
+  - id: WF-SC-005
+    given: harness_docs_without_runtime_changes
+    when: unrelated_runtime_gaps_exist
+    then: applicable_gates_allow_progress
+  - id: WF-SC-006
+    given: harness_docs_with_runtime_change
+    when: scope_is_validated
+    then: story_returns_to_intake_with_WF-OUT-OF-SCOPE_and_requires_reclassification
+  - id: WF-SC-007
+    given: approved_prd_receives_changes_requested
+    when: correction_is_accepted
+    then: new_draft_version_is_created_and_downstream_artifacts_are_invalidated
+  - id: WF-SC-008
+    given: artifact_version_is_rejected
+    when: human_decides_to_continue_story
+    then: rejected_version_remains_terminal_and_new_draft_version_is_created
+  - id: WF-SC-009
+    given: active_story_has_external_blocker
+    when: story_is_blocked_and_later_resolved
+    then: stage_is_preserved_and_human_resolution_restores_active_status
+  - id: WF-SC-010
+    given: active_or_blocked_story
+    when: human_cancels_with_reason
+    then: story_is_terminal_cancelled_and_artifacts_and_journal_are_preserved
+  - id: WF-SC-011
+    given: failed_execution_attempt
+    when: human_authorizes_retry
+    then: failed_attempt_is_preserved_and_incremented_pending_attempt_is_created
+  - id: WF-SC-012
+    given: blocked_execution_attempt
+    when: human_records_resolution
+    then: stage_is_preserved_incremented_pending_attempt_is_created_and_story_returns_active
+  - id: WF-SC-013
+    given: approved_artifact_content_changes
+    when: hash_mismatch_is_detected
+    then: approved_version_is_preserved_new_draft_version_is_created_and_downstream_is_invalidated
+  - id: WF-SC-014
+    given: review_finds_verification_problem
+    when: cause_is_classified
+    then: evidence_refresh_returns_to_verification_and_implementation_failure_returns_to_execution

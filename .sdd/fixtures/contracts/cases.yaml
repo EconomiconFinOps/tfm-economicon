@@ -1,0 +1,22 @@
+fixture_version: "1.0.0"
+artifact_schemas:
+  - user-story
+  - prd
+  - tdr
+  - roadmap
+  - task
+  - execution-summary
+  - verification-evidence
+  - review
+skill_schemas:
+  - spec-intake
+  - prd-generator
+  - tdr-generator
+  - task-planner
+  - plan-executor
+  - verifier
+  - reviewer
+directions: [input, output]
+invalid_mutations:
+  artifacts: [missing-frontmatter, unknown-property, wrong-type, missing-section, stale-document]
+  skills: [unknown-property, wrong-skill, missing-specific-field]

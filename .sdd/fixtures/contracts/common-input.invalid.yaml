@@ -1,0 +1,8 @@
+schema_version: "1.0.0"
+correlation_id: not-a-uuid
+skill: unknown-skill
+story_id: ../outside
+artifact_versions: []
+docs_context: {}
+requested_scope: {}
+parameters: {}
