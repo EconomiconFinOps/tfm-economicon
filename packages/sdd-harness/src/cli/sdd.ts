@@ -13,6 +13,8 @@ import { recoverTransaction } from "../orchestrator/store.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { findRepoRoot } from "../repo.js";
+import { prepareSkill, submitSkill, validateSkill } from "../skills/protocol.js";
+import { agentStatus, recoverAbandonedAgent, runAgent } from "../agents/protocol.js";
 
 interface Parsed { positionals: string[]; options: Map<string, string[]> }
 
@@ -72,12 +74,30 @@ export async function executeCli(root: string, args: string[]): Promise<{ result
       result = { ok: report.valid, command: "contract validate", changed: false, blockers: report.errors, next_actions: report.valid ? [] : ["fix contract payload"], data: report };
       break;
     }
+    case "skill": {
+      const action = parsed.positionals[1];
+      const story = required(parsed, "story");
+      if (action === "prepare") result = await prepareSkill(root, story, required(parsed, "skill"), required(parsed, "parameters"));
+      else if (action === "validate") result = await validateSkill(root, story, required(parsed, "run"));
+      else if (action === "submit") result = await submitSkill(root, story, required(parsed, "run"), optionalProducer(parsed));
+      else throw new HarnessInputError("SDD-ARGUMENT", "Usage: skill <prepare|validate|submit> [options]");
+      break;
+    }
+    case "agent": {
+      const action = parsed.positionals[1];
+      const story = required(parsed, "story");
+      if (action === "run") result = await runAgent(root, story, required(parsed, "agent"), required(parsed, "skill"), required(parsed, "parameters"));
+      else if (action === "status") result = await agentStatus(root, story, required(parsed, "run"));
+      else throw new HarnessInputError("SDD-ARGUMENT", "Usage: agent <run|status> [options]");
+      break;
+    }
     case "recover": {
       const story = required(parsed, "story");
       const lock = path.join(storyDirectory(root, story), ".harness", "state.lock");
       const staleLock = await recoverStaleLock(lock);
       const transaction = await withLock(lock, () => recoverTransaction(root, story));
-      result = { ok: true, command, story_id: story, changed: staleLock || transaction, blockers: [], next_actions: ["run sdd validate", "run sdd status"] };
+      const agent = await recoverAbandonedAgent(root, story);
+      result = { ok: true, command, story_id: story, changed: staleLock || transaction || agent, blockers: [], next_actions: ["run sdd validate", "run sdd status"] };
       break;
     }
     default: throw new HarnessInputError("SDD-ARGUMENT", `Unknown command: ${command}\n${usage()}`);
@@ -114,10 +134,15 @@ const specs: Record<string, string[]> = {
   story: ["story", "to", "reason", "identity"],
   recover: ["story"],
   "contract validate": ["schema", "input"],
+  "skill prepare": ["story", "skill", "parameters"],
+  "skill validate": ["story", "run"],
+  "skill submit": ["story", "run", "producer-type", "producer-id"],
+  "agent run": ["story", "agent", "skill", "parameters"],
+  "agent status": ["story", "run"],
 };
 
 function validatePublicInput(parsed: Parsed): void {
-  const key = ["artifact", "evidence", "contract"].includes(parsed.positionals[0] ?? "") ? parsed.positionals.slice(0, 2).join(" ") : parsed.positionals[0]!;
+  const key = ["artifact", "evidence", "contract", "skill", "agent"].includes(parsed.positionals[0] ?? "") ? parsed.positionals.slice(0, 2).join(" ") : parsed.positionals[0]!;
   const allowed = specs[key];
   if (!allowed) throw new HarnessInputError("SDD-ARGUMENT", `Unknown command: ${key}`);
   const expectedPositionals = key.includes(" ") ? 2 : 1;
@@ -131,6 +156,7 @@ function validatePublicInput(parsed: Parsed): void {
   enumValue(parsed, "decision", ["APPROVED", "CHANGES_REQUESTED", "REJECTED"]);
   enumValue(parsed, "actor-type", ["human", "agent", "system"]);
   enumValue(parsed, "executor-type", ["human", "agent", "system"]);
+  enumValue(parsed, "producer-type", ["human", "agent", "system"]);
   enumValue(parsed, "to", key === "story" ? ["ACTIVE", "BLOCKED", "CANCELLED"] : ["PENDING", "RUNNING", "COMPLETED", "FAILED", "BLOCKED"]);
   if (one(parsed, "task") && one(parsed, "check")) throw new HarnessInputError("SDD-ARGUMENT", "run accepts either --task or --check, not both");
 }
@@ -170,13 +196,20 @@ async function optionalExecutor(root: string, parsed: Parsed): Promise<Actor | u
   return { type: type as "agent" | "system", identity };
 }
 
+function optionalProducer(parsed: Parsed): Actor | undefined {
+  const type = one(parsed, "producer-type"); const identity = one(parsed, "producer-id");
+  if (!type && !identity) return undefined;
+  if (!type || !identity) throw new HarnessInputError("SDD-SKILL-PRODUCER", "Producer requires --producer-type and --producer-id");
+  return { type: type as Actor["type"], identity };
+}
+
 function output(result: CommandResult, format: string): void {
   if (format === "json") process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   else if (format === "text") process.stdout.write(`${result.ok ? "OK" : "BLOCKED"} ${result.story_id ?? ""} ${result.stage ?? ""} ${result.status ?? ""}\n${result.blockers.map((item) => `${item.code}: ${item.message}`).join("\n")}\n`);
   else throw new HarnessInputError("SDD-FORMAT", `Unsupported format: ${format}`);
 }
 
-function usage(): string { return "Usage: sdd <init|validate|status|approve|revise|artifact|evidence|next|run|review|story|contract|recover> [options]"; }
+function usage(): string { return "Usage: sdd <init|validate|status|approve|revise|artifact|evidence|next|run|review|story|contract|skill|agent|recover> [options]"; }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().then(() => process.stdout.end(() => process.exit(process.exitCode ?? 0))).catch((error: unknown) => {

@@ -1,0 +1,2 @@
+user_story_path: SPEC/HU-001/user-story.md
+validation_rules: [complete-scope, explicit-acceptance-criteria]

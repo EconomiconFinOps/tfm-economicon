@@ -179,23 +179,23 @@ sdd review
 
 Orden obligatorio:
 
-- [ ] Crear `spec-intake`.
-- [ ] Crear `prd-generator`.
-- [ ] Crear `tdr-generator`.
-- [ ] Crear `task-planner`.
-- [ ] Crear `plan-executor`.
-- [ ] Crear `verifier`.
-- [ ] Crear `reviewer`.
+- [x] Crear `spec-intake`.
+- [x] Crear `prd-generator`.
+- [x] Crear `tdr-generator`.
+- [x] Crear `task-planner`.
+- [x] Crear `plan-executor`.
+- [x] Crear `verifier`.
+- [x] Crear `reviewer`.
 
 Cada skill debe completar este checklist:
 
-- [ ] Declara schema y versiones de entrada/salida.
-- [ ] Declara documentación obligatoria y reglas de precedencia.
-- [ ] Declara archivos de lectura y escritura permitidos.
-- [ ] Declara estados, errores y prohibiciones.
-- [ ] No cambia la etapa ni autoaprueba su salida.
-- [ ] Registra artefactos, documentos consultados, conflictos y trazabilidad.
-- [ ] Incluye casos de prueba positivos, negativos y de bloqueo.
+- [x] Declara schema y versiones de entrada/salida.
+- [x] Declara documentación obligatoria y reglas de precedencia.
+- [x] Declara archivos de lectura y escritura permitidos.
+- [x] Declara estados, errores y prohibiciones.
+- [x] No cambia la etapa ni autoaprueba su salida.
+- [x] Registra artefactos, documentos consultados, conflictos y trazabilidad.
+- [x] Incluye casos de prueba positivos, negativos y de bloqueo.
 
 **Done cuando:** cada skill puede ejecutarse aisladamente con fixtures y el orquestador rechaza cualquier salida que incumpla su contrato.
 
@@ -203,16 +203,18 @@ Cada skill debe completar este checklist:
 
 **Objetivo:** asignar responsabilidades sin solapamientos ni autoaprobación.
 
-- [ ] Crear `product-analyst` para intake y PRD.
-- [ ] Crear `technical-architect` para TDR y cumplimiento `ARCH-*`.
-- [ ] Crear `delivery-planner` para roadmap y tareas.
-- [ ] Crear `implementation-agent` limitado al alcance aprobado.
-- [ ] Crear `review-agent` independiente del implementador.
-- [ ] Definir contratos declarativos de permisos por agente.
-- [ ] Impedir que un agente apruebe su propio trabajo.
-- [ ] Impedir que implementation-agent modifique PRD, TDR o backbone.
-- [ ] Registrar agente, skill, inputs, outputs y resultado de cada ejecución.
-- [ ] Probar intentos de acceso y modificación no autorizados.
+- [x] Crear `product-analyst` para intake y PRD.
+- [x] Crear `technical-architect` para TDR y cumplimiento `ARCH-*`.
+- [x] Crear `delivery-planner` para roadmap y tareas.
+- [x] Crear `implementation-agent` limitado al alcance aprobado.
+- [x] Crear `verification-agent` independiente para la etapa de verificación.
+- [x] Crear `review-agent` independiente del implementador y del verificador.
+- [x] Definir contratos declarativos de permisos por agente.
+- [x] Incorporar un runner controlado de `codex exec` con sandbox dinámico, red deshabilitada y approval policy `never`.
+- [x] Impedir que un agente apruebe su propio trabajo.
+- [x] Impedir que implementation-agent modifique PRD, TDR o backbone.
+- [x] Registrar agente, skill, inputs, outputs, permisos, runtime y resultado de cada ejecución.
+- [x] Probar intentos de acceso y modificación no autorizados, incluida una prueba real del sandbox.
 
 **Done cuando:** los límites de cada rol se validan automáticamente antes y después de su ejecución.
 
@@ -328,3 +330,5 @@ Esta fase solo comienza después de cerrar la Fase 9.
 | 2026-06-20 | Fase 2 | Orquestador determinista, persistencia transaccional, gates, scope y CLI implementados | `.sdd/commands/orchestrator.yaml`, manifest `1.1.0`, `packages/sdd-harness/src/orchestrator/`; lint, 36 tests, build y fixture válido |
 | 2026-06-21 | Fase 2.1 | Hardening de preflight, transacciones, paths, locks, CLI y contrato `EX-*`; Fase 2 revalidada | `.sdd/schemas/command-*.schema.json`, `packages/sdd-harness/src/`; lint, 47 tests, build, CLI subprocess, fixture y hashes de Fase 0 |
 | 2026-06-21 | Fase 3 | Manifest `2.0.0`, catálogo Draft 2020-12, artefactos Markdown tipados, contratos de siete skills, templates, reconciliación documental y CLI `contract validate` | `.sdd/schemas/catalog.yaml`, `.sdd/schemas/artifacts/`, `.sdd/schemas/skills/`, `.sdd/templates/`, `packages/sdd-harness/src/contracts/`; lint, 64 tests, build, fixture HU-000, CLI subprocess y hashes de Fase 0 |
+| 2026-06-22 | Fase 4 | Siete skills de proyecto y protocolo transaccional `prepare -> validate -> submit` implementados sin ejecución de agentes | `.agents/skills/`, `.sdd/skills/catalog.yaml`, `packages/sdd-harness/src/skills/`; lint, 83 tests, build, ciclo completo, CLI subprocess, fixture HU-000 y hashes de Fase 0 |
+| 2026-06-22 | Fase 5 | Seis agentes Codex, catálogo de permisos, runner no interactivo, leases, identidad ligada y auditoría implementados | `.codex/agents/`, `.sdd/agents/catalog.yaml`, `packages/sdd-harness/src/agents/`; lint, 92 tests, build, CLI subprocess, fixture HU-000, smoke real de sandbox y hashes de Fase 0 |

@@ -1,0 +1,62 @@
+catalog_version: "1.0.0"
+run_contract_version: "2.0.0"
+runtime:
+  provider: codex-cli
+  network: disabled
+  approval_policy: never
+  max_output_bytes: 1048576
+  max_error_bytes: 65536
+forbidden_actions:
+  - approve_artifact
+  - advance_stage
+  - mutate_canonical_artifacts
+  - spawn_subagents
+agents:
+  product-analyst:
+    definition: .codex/agents/product-analyst.toml
+    skills: [spec-intake, prd-generator]
+    stages: [INTAKE, PRD]
+    reasoning_effort: medium
+    timeout_seconds: 900
+    may_modify_product_code: false
+    independent_from: []
+  technical-architect:
+    definition: .codex/agents/technical-architect.toml
+    skills: [tdr-generator]
+    stages: [TDR]
+    reasoning_effort: high
+    timeout_seconds: 1200
+    may_modify_product_code: false
+    independent_from: []
+  delivery-planner:
+    definition: .codex/agents/delivery-planner.toml
+    skills: [task-planner]
+    stages: [PLAN]
+    reasoning_effort: medium
+    timeout_seconds: 900
+    may_modify_product_code: false
+    independent_from: []
+  implementation-agent:
+    definition: .codex/agents/implementation-agent.toml
+    skills: [plan-executor]
+    stages: [EXECUTION]
+    reasoning_effort: medium
+    timeout_seconds: 1800
+    may_modify_product_code: true
+    independent_from: []
+  verification-agent:
+    definition: .codex/agents/verification-agent.toml
+    skills: [verifier]
+    stages: [VERIFICATION]
+    reasoning_effort: medium
+    timeout_seconds: 900
+    may_modify_product_code: false
+    independent_from: [implementation-agent]
+  review-agent:
+    definition: .codex/agents/review-agent.toml
+    skills: [reviewer]
+    stages: [REVIEW]
+    reasoning_effort: high
+    timeout_seconds: 1200
+    may_modify_product_code: false
+    independent_from: [implementation-agent, verification-agent]

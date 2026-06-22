@@ -1,0 +1,22 @@
+protocol_version: "2.0.0"
+skills:
+  - spec-intake
+  - prd-generator
+  - tdr-generator
+  - task-planner
+  - plan-executor
+  - verifier
+  - reviewer
+outcomes:
+  - COMPLETED
+  - BLOCKED
+  - FAILED
+invalid_cases:
+  - wrong-stage
+  - stale-input
+  - wrong-correlation
+  - stale-document
+  - traversal
+  - symlink
+  - wrong-artifact-hash
+  - broken-traceability

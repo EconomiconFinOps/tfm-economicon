@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://finops.local/sdd/agents/execution/1.0.0",
+  "type": "object", "additionalProperties": false, "required": ["provider", "status", "started_at", "completed_at", "duration_ms", "exit_code", "codex_version", "model", "thread_id", "usage", "stdout_sha256", "stderr_excerpt"],
+  "properties": {"provider": {"const": "codex-cli"}, "status": {"enum": ["RUNNING", "COMPLETED", "FAILED", "ABORTED"]}, "started_at": {"type": "string", "format": "date-time"}, "completed_at": {"type": ["string", "null"], "format": "date-time"}, "duration_ms": {"type": ["integer", "null"], "minimum": 0}, "exit_code": {"type": ["integer", "null"]}, "codex_version": {"type": ["string", "null"]}, "model": {"type": ["string", "null"]}, "thread_id": {"type": ["string", "null"]}, "usage": {"type": ["object", "null"]}, "stdout_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}, "stderr_excerpt": {"type": "string"}}
+}

@@ -29,7 +29,7 @@ export async function createCatalogValidator(root: string, schemaId: string): Pr
   for (const schemaPath of new Set(Object.values(catalog.schemas))) {
     schemas.push(JSON.parse(await readText(resolveConcreteRepoPath(root, schemaPath))) as JsonObject);
   }
-  const supporting = [".sdd/schemas/artifacts/artifact-contract.schema.json", ".sdd/schemas/skills/skill-contract.schema.json"];
+  const supporting = [".sdd/schemas/artifacts/artifact-contract.schema.json", ".sdd/schemas/skills/skill-contract.schema.json", ".sdd/schemas/skills/v2/skill-contract.schema.json"];
   for (const schemaPath of supporting) {
     try { schemas.push(JSON.parse(await readText(resolveConcreteRepoPath(root, schemaPath))) as JsonObject); } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;

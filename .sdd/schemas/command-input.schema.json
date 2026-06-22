@@ -6,7 +6,7 @@
     { "$ref": "#/$defs/init" }, { "$ref": "#/$defs/storyOnly" },
     { "$ref": "#/$defs/artifactDecision" }, { "$ref": "#/$defs/revise" }, { "$ref": "#/$defs/review" }, { "$ref": "#/$defs/registerArtifact" },
     { "$ref": "#/$defs/evidence" }, { "$ref": "#/$defs/contractValidate" }, { "$ref": "#/$defs/taskRun" },
-    { "$ref": "#/$defs/checkRun" }, { "$ref": "#/$defs/storyStatus" }
+    { "$ref": "#/$defs/checkRun" }, { "$ref": "#/$defs/storyStatus" }, { "$ref": "#/$defs/skillCommand" }, { "$ref": "#/$defs/agentCommand" }
   ],
   "$defs": {
     "storyId": { "type": "string", "pattern": "^HU-[0-9]{3,}$" },
@@ -66,6 +66,12 @@
     },
     "storyStatus": {
       "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "to", "reason"], "properties": { "command": { "const": "story" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "to": { "enum": ["ACTIVE", "BLOCKED", "CANCELLED"] }, "reason": { "type": "string", "minLength": 1 }, "identity": { "type": "string" } } }]
+    },
+    "skillCommand": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "action"], "properties": { "command": { "const": "skill" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "action": { "enum": ["prepare", "validate", "submit"] }, "skill": { "enum": ["spec-intake", "prd-generator", "tdr-generator", "task-planner", "plan-executor", "verifier", "reviewer"] }, "parameters": { "$ref": "#/$defs/repoPath" }, "run": { "type": "string", "format": "uuid" }, "producer_type": { "enum": ["human", "agent", "system"] }, "producer_id": { "type": "string", "minLength": 1 } } }]
+    },
+    "agentCommand": {
+      "allOf": [{ "$ref": "#/$defs/base" }, { "type": "object", "additionalProperties": false, "required": ["command", "format", "story", "action"], "properties": { "command": { "const": "agent" }, "format": { "enum": ["json", "text"] }, "story": { "$ref": "#/$defs/storyId" }, "action": { "enum": ["run", "status"] }, "agent": { "enum": ["product-analyst", "technical-architect", "delivery-planner", "implementation-agent", "verification-agent", "review-agent"] }, "skill": { "enum": ["spec-intake", "prd-generator", "tdr-generator", "task-planner", "plan-executor", "verifier", "reviewer"] }, "parameters": { "$ref": "#/$defs/repoPath" }, "run": { "type": "string", "format": "uuid" } } }]
     }
   }
 }

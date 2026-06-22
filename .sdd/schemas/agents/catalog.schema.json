@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finops.local/sdd/agents/catalog/1.0.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["catalog_version", "run_contract_version", "runtime", "forbidden_actions", "agents"],
+  "properties": {
+    "catalog_version": {"const": "1.0.0"}, "run_contract_version": {"const": "2.0.0"},
+    "runtime": {"type": "object", "additionalProperties": false, "required": ["provider", "network", "approval_policy", "max_output_bytes", "max_error_bytes"], "properties": {"provider": {"const": "codex-cli"}, "network": {"const": "disabled"}, "approval_policy": {"const": "never"}, "max_output_bytes": {"type": "integer", "minimum": 1024}, "max_error_bytes": {"type": "integer", "minimum": 1024}}},
+    "forbidden_actions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+    "agents": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/agent"}}
+  },
+  "$defs": {"agent": {"type": "object", "additionalProperties": false, "required": ["definition", "skills", "stages", "reasoning_effort", "timeout_seconds", "may_modify_product_code", "independent_from"], "properties": {"definition": {"type": "string", "pattern": "^\\.codex/agents/[a-z0-9-]+\\.toml$"}, "skills": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}, "stages": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}, "reasoning_effort": {"enum": ["low", "medium", "high"]}, "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 7200}, "may_modify_product_code": {"type": "boolean"}, "independent_from": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}}}}
+}

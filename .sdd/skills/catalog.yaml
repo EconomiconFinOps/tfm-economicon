@@ -1,0 +1,68 @@
+catalog_version: "1.0.0"
+protocol_version: "2.0.0"
+precedence:
+  - .sdd/policies/workflow.yaml
+  - docs/ARCHITECTURE.md
+  - approved-adrs
+  - approved-upstream-artifacts
+  - docs/architecture-status.md
+  - current-code
+non_normative:
+  - sdd-planing.md
+  - docs/rejected/**
+forbidden_actions:
+  - approve_artifact
+  - advance_stage
+  - execute_agent
+  - execute_llm
+  - execute_external_command
+skills:
+  spec-intake:
+    stage: INTAKE
+    input_schema: skill/spec-intake/input@2.0.0
+    output_schema: skill/spec-intake/output@2.0.0
+    consumes: [{type: user-story, status: DRAFT}]
+    produces: [user-story]
+    targets: ["SPEC/{story}/user-story.md"]
+  prd-generator:
+    stage: PRD
+    input_schema: skill/prd-generator/input@2.0.0
+    output_schema: skill/prd-generator/output@2.0.0
+    consumes: [{type: user-story, status: APPROVED}]
+    produces: [prd]
+    targets: ["SPEC/{story}/prd.md"]
+  tdr-generator:
+    stage: TDR
+    input_schema: skill/tdr-generator/input@2.0.0
+    output_schema: skill/tdr-generator/output@2.0.0
+    consumes: [{type: prd, status: APPROVED}]
+    produces: [tdr]
+    targets: ["SPEC/{story}/tdr.md"]
+  task-planner:
+    stage: PLAN
+    input_schema: skill/task-planner/input@2.0.0
+    output_schema: skill/task-planner/output@2.0.0
+    consumes: [{type: tdr, status: APPROVED}]
+    produces: [roadmap, task]
+    targets: ["SPEC/{story}/roadmap.md", "SPEC/{story}/tasks/*.md"]
+  plan-executor:
+    stage: EXECUTION
+    input_schema: skill/plan-executor/input@2.0.0
+    output_schema: skill/plan-executor/output@2.0.0
+    consumes: [{type: roadmap, status: APPROVED}, {type: task, status: APPROVED}]
+    produces: [execution-summary]
+    targets: ["SPEC/{story}/execution-summary.md"]
+  verifier:
+    stage: VERIFICATION
+    input_schema: skill/verifier/input@2.0.0
+    output_schema: skill/verifier/output@2.0.0
+    consumes: [{type: execution-summary, status: DRAFT}]
+    produces: [verification-evidence]
+    targets: ["SPEC/{story}/verification-evidence.md"]
+  reviewer:
+    stage: REVIEW
+    input_schema: skill/reviewer/input@2.0.0
+    output_schema: skill/reviewer/output@2.0.0
+    consumes: [{type: verification-evidence, status: DRAFT}]
+    produces: [review]
+    targets: ["SPEC/{story}/review.md"]

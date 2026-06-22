@@ -27,3 +27,22 @@ schemas:
   skill/verifier/output@1.0.0: .sdd/schemas/skills/verifier/output.schema.json
   skill/reviewer/input@1.0.0: .sdd/schemas/skills/reviewer/input.schema.json
   skill/reviewer/output@1.0.0: .sdd/schemas/skills/reviewer/output.schema.json
+  skill/spec-intake/input@2.0.0: .sdd/schemas/skills/v2/spec-intake.input.schema.json
+  skill/spec-intake/output@2.0.0: .sdd/schemas/skills/v2/spec-intake.output.schema.json
+  skill/prd-generator/input@2.0.0: .sdd/schemas/skills/v2/prd-generator.input.schema.json
+  skill/prd-generator/output@2.0.0: .sdd/schemas/skills/v2/prd-generator.output.schema.json
+  skill/tdr-generator/input@2.0.0: .sdd/schemas/skills/v2/tdr-generator.input.schema.json
+  skill/tdr-generator/output@2.0.0: .sdd/schemas/skills/v2/tdr-generator.output.schema.json
+  skill/task-planner/input@2.0.0: .sdd/schemas/skills/v2/task-planner.input.schema.json
+  skill/task-planner/output@2.0.0: .sdd/schemas/skills/v2/task-planner.output.schema.json
+  skill/plan-executor/input@2.0.0: .sdd/schemas/skills/v2/plan-executor.input.schema.json
+  skill/plan-executor/output@2.0.0: .sdd/schemas/skills/v2/plan-executor.output.schema.json
+  skill/verifier/input@2.0.0: .sdd/schemas/skills/v2/verifier.input.schema.json
+  skill/verifier/output@2.0.0: .sdd/schemas/skills/v2/verifier.output.schema.json
+  skill/reviewer/input@2.0.0: .sdd/schemas/skills/v2/reviewer.input.schema.json
+  skill/reviewer/output@2.0.0: .sdd/schemas/skills/v2/reviewer.output.schema.json
+  agent/catalog@1.0.0: .sdd/schemas/agents/catalog.schema.json
+  agent/run@2.0.0: .sdd/schemas/agents/run.schema.json
+  agent/permission-profile@1.0.0: .sdd/schemas/agents/permission-profile.schema.json
+  agent/execution@1.0.0: .sdd/schemas/agents/execution.schema.json
+  agent/codex-receipt@1.0.0: .sdd/schemas/agents/codex-receipt.schema.json

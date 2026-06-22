@@ -11,6 +11,13 @@ schemas:
     - "2.0.0"
   catalog: .sdd/schemas/catalog.yaml
 
+skills:
+  catalog: .sdd/skills/catalog.yaml
+
+agents:
+  catalog: .sdd/agents/catalog.yaml
+  receipt_schema: .sdd/schemas/agents/codex-receipt.schema.json
+
 paths:
   stories: SPEC
   examples: SPEC/examples

@@ -1,4 +1,4 @@
-contract_version: "1.1.0"
+contract_version: "1.2.0"
 input_schema: .sdd/schemas/command-input.schema.json
 output_schema: .sdd/schemas/command-output.schema.json
 runtime: node20-typescript
@@ -50,3 +50,19 @@ commands:
   contract-validate:
     mutates: false
     required_options: [schema, input]
+  skill-prepare:
+    mutates: true
+    required_options: [story, skill, parameters]
+  skill-validate:
+    mutates: false
+    required_options: [story, run]
+  skill-submit:
+    mutates: true
+    required_options: [story, run]
+  agent-run:
+    mutates: true
+    invokes_external_runtime: codex-cli
+    required_options: [story, agent, skill, parameters]
+  agent-status:
+    mutates: false
+    required_options: [story, run]

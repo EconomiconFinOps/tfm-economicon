@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { cp, mkdir, mkdtemp, rm } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -41,14 +41,41 @@ describe("public CLI process", () => {
     const unknown = await invoke(repositoryRoot, ["contract", "validate", "--schema", "unknown@1.0.0", "--input", ".sdd/fixtures/contracts/common-input.valid.yaml"]);
     expect(unknown.code).toBe(2);
   });
+
+  it("exposes skill prepare, validate and submit with stable process codes", async () => {
+    const root = await temporaryRepository();
+    expect((await invoke(root, ["init", "--title", "Skill CLI", "--change-type", "harness-docs"])).code).toBe(0);
+    const parameters = "user_story_path: SPEC/HU-001/user-story.md\nvalidation_rules: []\n";
+    await writeFile(path.join(root, ".sdd/fixtures/spec-intake.parameters.yaml"), parameters, "utf8");
+    const prepared = await invoke(root, ["skill", "prepare", "--story", "HU-001", "--skill", "spec-intake", "--parameters", ".sdd/fixtures/spec-intake.parameters.yaml"]);
+    expect(prepared.code).toBe(0);
+    const run = JSON.parse(prepared.stdout).data.run_id;
+    const validated = await invoke(root, ["skill", "validate", "--story", "HU-001", "--run", run, "--format", "text"]);
+    expect(validated.code).toBe(1);
+    const submitted = await invoke(root, ["skill", "submit", "--story", "HU-001", "--run", run, "--producer-type", "agent", "--producer-id", "fixture"]);
+    expect(submitted.code).toBe(1);
+    expect((await invoke(root, ["skill", "submit", "--story", "HU-001", "--run", run])).code).toBe(2);
+  });
+
+  it("exposes controlled agent run and status through the public process", async () => {
+    const root = await temporaryRepository();
+    expect((await invoke(root, ["init", "--title", "Agent CLI", "--change-type", "harness-docs"])).code).toBe(0);
+    await writeFile(path.join(root, ".sdd/fixtures/spec-intake.parameters.yaml"), "user_story_path: SPEC/HU-001/user-story.md\nvalidation_rules: []\n", "utf8");
+    const fake = path.join(root, ".sdd/fixtures/agents/fake-codex.mjs");
+    const executed = await invoke(root, ["agent", "run", "--story", "HU-001", "--agent", "product-analyst", "--skill", "spec-intake", "--parameters", ".sdd/fixtures/spec-intake.parameters.yaml"], { SDD_CODEX_BIN: fake });
+    expect(executed.code).toBe(1);
+    const payload = JSON.parse(executed.stdout); expect(payload).toMatchObject({ command: "agent run", data: { status: "BLOCKED" } });
+    const status = await invoke(root, ["agent", "status", "--story", "HU-001", "--run", payload.data.run_id, "--format", "text"]);
+    expect(status.code).toBe(1); expect(status.stdout).toMatch(/^BLOCKED HU-001/);
+  });
 });
 
-async function invoke(cwd: string, args: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
+async function invoke(cwd: string, args: string[], overrides: Record<string, string> = {}): Promise<{ code: number; stdout: string; stderr: string }> {
   const cli = path.resolve(fileURLToPath(new URL("../src/cli/sdd.ts", import.meta.url)));
   const tsx = path.resolve(fileURLToPath(new URL("../node_modules/tsx/dist/cli.mjs", import.meta.url)));
   const { VITEST: ignored, ...env } = process.env;
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [tsx, cli, ...args], { cwd, env });
+    const child = spawn(process.execPath, [tsx, cli, ...args], { cwd, env: { ...env, ...overrides } });
     let stdout = ""; let stderr = "";
     child.stdout.on("data", (chunk) => { stdout += String(chunk); });
     child.stderr.on("data", (chunk) => { stderr += String(chunk); });
@@ -61,6 +88,7 @@ async function temporaryRepository(): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), "sdd-process-"));
   temporary.push(root);
   await cp(path.join(repositoryRoot, ".sdd"), path.join(root, ".sdd"), { recursive: true });
+  await cp(path.join(repositoryRoot, ".codex"), path.join(root, ".codex"), { recursive: true });
   await mkdir(path.join(root, "docs"), { recursive: true });
   for (const name of ["ARCHITECTURE.md", "architecture-status.md", "SDD-WORKFLOW.md", "SDD-HARNESS-IMPLEMENTATION-PLAN.md"]) {
     await cp(path.join(repositoryRoot, "docs", name), path.join(root, "docs", name));

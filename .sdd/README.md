@@ -12,6 +12,8 @@ Este directorio contiene los contratos y la configuración versionada del harnes
 - `schemas/catalog.yaml`: catálogo versionado de contratos de manifiesto, artefactos y skills.
 - `schemas/artifacts/`: contratos de front matter y secciones Markdown para los ocho tipos de artefacto.
 - `schemas/skills/`: contratos comunes y específicos de entrada y salida de las siete skills previstas.
+- `skills/catalog.yaml`: etapas, artefactos, targets y contratos permitidos para cada skill.
+- `agents/catalog.yaml`: roles, skills, etapas, independencia, timeout y permisos de los agentes Codex.
 - `templates/`: plantillas versionadas para los ocho tipos de artefacto.
 - `fixtures/contracts/`: matriz y payloads de compatibilidad válidos e inválidos.
 - `commands/orchestrator.yaml`: contrato declarativo del CLI y sus exit codes.
@@ -35,11 +37,20 @@ pnpm sdd -- evidence record --story HU-001 --condition no_open_functional_questi
 pnpm sdd -- next --story HU-001
 pnpm sdd -- run --story HU-001 --task TASK-001 --to RUNNING --executor-type agent --executor-id implementation-agent
 pnpm sdd -- contract validate --schema artifact/prd@1.0.0 --input SPEC/HU-001/prd.yaml
+pnpm sdd -- skill prepare --story HU-001 --skill spec-intake --parameters .sdd/fixtures/skills/spec-intake/parameters.valid.yaml
+pnpm sdd -- skill validate --story HU-001 --run 00000000-0000-4000-8000-000000000001
+pnpm sdd -- skill submit --story HU-001 --run 00000000-0000-4000-8000-000000000001 --producer-type human --producer-id developer@example.com
+pnpm sdd -- agent run --story HU-001 --agent product-analyst --skill spec-intake --parameters .sdd/fixtures/skills/spec-intake/parameters.valid.yaml
+pnpm sdd -- agent status --story HU-001 --run 00000000-0000-4000-8000-000000000001
 pnpm sdd -- recover --story HU-001
 ```
 
-Los artefactos Markdown usan front matter YAML normativo y cuerpo legible. Cada entrada del manifest declara su `schema_version`; las versiones desconocidas se rechazan. Los contratos de skills son declarativos y no ejecutan skills ni agentes en esta fase.
+Los artefactos Markdown usan front matter YAML normativo y cuerpo legible. Cada entrada del manifest declara su `schema_version`; las versiones desconocidas se rechazan. Solo `agent run` invoca un runtime externo; las transiciones, aprobaciones, publicación y checks continúan bajo control determinista del harness.
+
+Las skills viven en `.agents/skills/` y usan el protocolo `prepare -> validate -> submit`. El harness genera inputs inmutables, mantiene candidatos en staging y solo publica un output válido mediante una transacción. Ninguna skill aprueba artefactos ni cambia la etapa.
 
 Los comandos read-only nunca recuperan ni reconcilian estado. El primer comando mutante posterior aplica cualquier transacción pendiente o invalidación y detiene la acción solicitada para que el estado reconciliado se revise explícitamente.
 
-El harness detecta, bloquea e invalida cambios fuera del alcance declarado. La prevención física de escritura se aplicará mediante permisos de agentes en la Fase 5.
+Los runs manuales conservan productor explícito. En runs ligados a agentes, la identidad se infiere del binding y no puede proporcionarse por flags.
+
+El harness detecta, bloquea e invalida cambios fuera del alcance declarado. Los agentes se ejecutan mediante `codex exec` con perfiles físicos derivados del rol, la skill y `scope.write_paths`; la red y las solicitudes de permisos permanecen deshabilitadas.

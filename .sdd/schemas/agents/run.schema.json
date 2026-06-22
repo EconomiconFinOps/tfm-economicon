@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://finops.local/sdd/agents/run/2.0.0",
+  "type": "object", "additionalProperties": true,
+  "required": ["schema_version", "run_id", "story_id", "skill", "status", "input_path", "input_sha256", "output_path", "created_at", "submitted_at", "producer"],
+  "properties": {"schema_version": {"enum": ["1.0.0", "2.0.0"]}, "run_id": {"type": "string", "format": "uuid"}, "story_id": {"type": "string", "pattern": "^HU-[0-9]{3,}$"}, "skill": {"type": "string"}, "status": {"enum": ["PREPARED", "RUNNING", "VALID", "BLOCKED", "FAILED", "ABORTED", "SUBMITTED"]}, "input_path": {"type": "string"}, "input_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "output_path": {"type": "string"}, "created_at": {"type": "string", "format": "date-time"}, "submitted_at": {"type": ["string", "null"], "format": "date-time"}, "producer": {"type": ["object", "null"]}, "agent_id": {"type": "string"}, "agent_definition_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "agent_catalog_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "permission_profile": {"$ref": "https://finops.local/sdd/agents/permission-profile/1.0.0"}, "permission_profile_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "execution": {"$ref": "https://finops.local/sdd/agents/execution/1.0.0"}}
+}

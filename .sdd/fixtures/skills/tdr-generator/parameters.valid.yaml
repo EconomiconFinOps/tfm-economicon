@@ -1,0 +1,2 @@
+repository_context: [docs/ARCHITECTURE.md, docs/architecture-status.md]
+technical_constraints: [ARCH-01]

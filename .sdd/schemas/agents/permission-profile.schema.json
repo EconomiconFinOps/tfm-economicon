@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://finops.local/sdd/agents/permission-profile/1.0.0",
+  "type": "object", "additionalProperties": false, "required": ["schema_version", "profile", "read_root", "write_paths", "read_only_paths", "deny_paths", "network"],
+  "properties": {"schema_version": {"const": "1.0.0"}, "profile": {"const": "sdd-agent"}, "read_root": {"const": true}, "write_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}, "read_only_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}, "deny_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}, "network": {"const": false}}
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD PRD Generator"
+  short_description: "Genera requisitos de producto trazables"
+  default_prompt: "Use $prd-generator con el input preparado por el harness para producir el PRD."
+policy:
+  allow_implicit_invocation: false

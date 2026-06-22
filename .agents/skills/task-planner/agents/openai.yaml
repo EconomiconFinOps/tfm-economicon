@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD Task Planner"
+  short_description: "Descompone diseños en tareas trazables"
+  default_prompt: "Use $task-planner con el input preparado por el harness para crear roadmap y tareas."
+policy:
+  allow_implicit_invocation: false

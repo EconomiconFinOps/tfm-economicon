@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD Reviewer"
+  short_description: "Revisa entregas y registra hallazgos"
+  default_prompt: "Use $reviewer con el input preparado por el harness para producir una revisión independiente."
+policy:
+  allow_implicit_invocation: false

@@ -11,6 +11,7 @@ import type { Actor, AnyRecord, CommandResult, JournalEvent } from "../types.js"
 import { createJournalEvent } from "./journal.js";
 import { withLock } from "./lock.js";
 import { relativeRepoPath, storyDirectory, storyManifestPath } from "./paths.js";
+import { assertMutationAllowed } from "../agents/lease.js";
 
 export interface ExtraWrite { path: string; content: string; immutable?: boolean }
 export interface MutationPlan {
@@ -39,6 +40,7 @@ export async function mutateStory(
   storyId: string,
   planner: (manifest: AnyRecord) => Promise<MutationPlan>,
 ): Promise<CommandResult> {
+  await assertMutationAllowed(root, storyId);
   const internal = path.join(storyDirectory(root, storyId), ".harness");
   return withLock(path.join(internal, "state.lock"), async () => {
     await recoverTransaction(root, storyId);
@@ -124,10 +126,13 @@ async function validateIntent(root: string, storyId: string, intent: Transaction
   if (!alreadyApplied && (intent.event.previous_event_hash !== current.journal?.head_hash || intent.event.sequence !== current.journal?.head_sequence + 1)) {
     throw new HarnessInputError("SDD-TRANSACTION-ORDER", "Transaction event does not follow current journal head");
   }
-  const allowedPrefixes = [`SPEC/${storyId}/history/`, `SPEC/${storyId}/.harness/`];
+  const storyPrefix = storyId === "HU-000" ? `SPEC/examples/${storyId}-fixture/` : `SPEC/${storyId}/`;
+  const allowedPrefixes = [`${storyPrefix}history/`, `${storyPrefix}.harness/`];
+  const artifactPaths = new Set((intent.target_manifest.artifacts as AnyRecord[]).map((item) => item.path));
   for (const item of intent.extra_writes) {
     resolveConcreteRepoPath(root, item.path);
-    if (!allowedPrefixes.some((prefix) => item.path.startsWith(prefix))) throw new HarnessInputError("SDD-TRANSACTION-PATH", `Transaction write is outside story-owned state: ${item.path}`);
+    if (!allowedPrefixes.some((prefix) => item.path.startsWith(prefix)) && !artifactPaths.has(item.path)) throw new HarnessInputError("SDD-TRANSACTION-PATH", `Transaction write is outside story-owned state: ${item.path}`);
+    if (item.path.endsWith("/manifest.yaml") || item.path.endsWith("/journal.ndjson")) throw new HarnessInputError("SDD-TRANSACTION-PATH", `Reserved story path: ${item.path}`);
   }
   const overlay = new Map(intent.extra_writes.map((item) => [item.path, item.content]));
   let journal = "";

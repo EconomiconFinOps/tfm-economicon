@@ -10,6 +10,13 @@ export interface HarnessConfig {
     supported_manifest_versions: string[];
     catalog: string;
   };
+  skills: {
+    catalog: string;
+  };
+  agents: {
+    catalog: string;
+    receipt_schema: string;
+  };
   paths: {
     stories: string;
     examples: string;

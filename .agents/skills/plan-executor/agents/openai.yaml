@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD Plan Executor"
+  short_description: "Ejecuta tareas dentro del scope aprobado"
+  default_prompt: "Use $plan-executor con el input preparado por el harness para ejecutar las tareas RUNNING."
+policy:
+  allow_implicit_invocation: false

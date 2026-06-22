@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD Verifier"
+  short_description: "Evalúa checks y evidencias SDD"
+  default_prompt: "Use $verifier con el input preparado por el harness para generar evidencia de verificación."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://finops.local/sdd/agents/codex-receipt/1.0.0",
+  "type": "object", "additionalProperties": false, "required": ["run_id", "status", "output_path"],
+  "properties": {"run_id": {"type": "string", "format": "uuid"}, "status": {"enum": ["COMPLETED", "BLOCKED", "FAILED"]}, "output_path": {"type": "string"}}
+}

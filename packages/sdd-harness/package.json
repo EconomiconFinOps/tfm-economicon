@@ -7,6 +7,7 @@
     "build": "tsc -p tsconfig.json",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
+    "test:codex-smoke": "tsx src/cli/codex-smoke.ts",
     "orchestrate": "tsx src/cli/sdd.ts",
     "validate:manifest": "tsx src/cli/validate-manifest.ts"
   },

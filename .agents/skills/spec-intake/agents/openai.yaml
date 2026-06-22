@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD Spec Intake"
+  short_description: "Normaliza historias de usuario SDD"
+  default_prompt: "Use $spec-intake con el input preparado por el harness para normalizar la historia."
+policy:
+  allow_implicit_invocation: false
