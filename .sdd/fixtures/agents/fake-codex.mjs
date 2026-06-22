@@ -18,8 +18,13 @@ const output = {
   errors: [{ code: "FIXTURE-BLOCKED", message: "fixture", path: null }],
   result: { acceptance_criteria: ["AC-001"], gaps: ["fixture"] },
 };
-await writeFile(outputPath, JSON.stringify(output));
+const outputRaw = JSON.stringify(output);
+await writeFile(outputPath, outputRaw);
 const receiptPath = process.argv[process.argv.indexOf("-o") + 1];
-await writeFile(receiptPath, JSON.stringify({ run_id: run, status: "BLOCKED", output_path: outputPath }));
+await writeFile(receiptPath, JSON.stringify({
+  run_id: run, status: "BLOCKED", output_path: outputPath,
+  input_sha256: createHash("sha256").update(inputRaw).digest("hex"),
+  output_sha256: createHash("sha256").update(outputRaw).digest("hex"),
+}));
 console.log(JSON.stringify({ type: "thread.started", thread_id: "thread-fixture", model: "fixture" }));
 console.log(JSON.stringify({ type: "turn.completed", usage: { input_tokens: 1, output_tokens: 1 } }));

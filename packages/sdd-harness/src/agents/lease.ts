@@ -1,4 +1,4 @@
-import { mkdir, open, readFile, rm } from "node:fs/promises";
+import { mkdir, open, readFile, rename, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -32,11 +32,19 @@ export async function assertMutationAllowed(root: string, storyId: string): Prom
 }
 
 export async function recoverAgentLease(root: string, storyId: string): Promise<AgentLease | null> {
-  const lease = await readLease(root, storyId);
-  if (!lease) return null;
-  if (lease.hostname !== os.hostname() || isAlive(lease.pid)) throw new HarnessInputError("SDD-AGENT-ACTIVE", `Agent process ${lease.pid} is still live or cannot be verified`);
-  await rm(agentLeasePath(root, storyId));
-  return lease;
+  const recoveryPath = `${agentLeasePath(root, storyId)}.recovery`;
+  let handle;
+  try { handle = await open(recoveryPath, "wx"); }
+  catch { throw new HarnessInputError("SDD-AGENT-RECOVERY-ACTIVE", `Another process is recovering ${storyId}`); }
+  try {
+    const lease = await readLease(root, storyId);
+    if (!lease) return null;
+    if (lease.hostname !== os.hostname() || isAlive(lease.pid)) throw new HarnessInputError("SDD-AGENT-ACTIVE", `Agent process ${lease.pid} is still live or cannot be verified`);
+    const claimed: AgentLease = { ...lease, pid: process.pid, process_start_ms: OWNER_START_MS, hostname: os.hostname(), created_at: new Date().toISOString() };
+    const staged = `${agentLeasePath(root, storyId)}.${process.pid}.tmp`;
+    await writeFile(staged, JSON.stringify(claimed), { flag: "wx" }); await rename(staged, agentLeasePath(root, storyId));
+    return claimed;
+  } finally { await handle.close(); await rm(recoveryPath, { force: true }); }
 }
 
 export async function readLease(root: string, storyId: string): Promise<AgentLease | null> {

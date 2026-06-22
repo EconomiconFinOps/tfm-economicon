@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { cp, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -67,6 +67,9 @@ describe("public CLI process", () => {
     const payload = JSON.parse(executed.stdout); expect(payload).toMatchObject({ command: "agent run", data: { status: "BLOCKED" } });
     const status = await invoke(root, ["agent", "status", "--story", "HU-001", "--run", payload.data.run_id, "--format", "text"]);
     expect(status.code).toBe(1); expect(status.stdout).toMatch(/^BLOCKED HU-001/);
+    const failed = path.join(root, ".sdd/fixtures/agents/failed-codex.mjs"); const source = await readFile(fake, "utf8"); await writeFile(failed, source.replace("const prompt =", "process.exit(9);\nconst prompt ="), "utf8");
+    const runtimeError = await invoke(root, ["agent", "run", "--story", "HU-001", "--agent", "product-analyst", "--skill", "spec-intake", "--parameters", ".sdd/fixtures/spec-intake.parameters.yaml"], { SDD_CODEX_BIN: failed });
+    expect(runtimeError.code).toBe(2); expect(JSON.parse(runtimeError.stderr).blockers[0].code).toBe("SDD-CODEX-EXIT");
   });
 });
 

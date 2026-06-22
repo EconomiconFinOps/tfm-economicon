@@ -16,6 +16,7 @@ import { storyDirectory, storyManifestPath } from "../orchestrator/paths.js";
 import { validateScope } from "../orchestrator/scope.js";
 import { loadStoryManifest, type ExtraWrite, type MutationPlan } from "../orchestrator/store.js";
 import { loadAgentCatalog, loadAgentDefinition } from "../agents/catalog.js";
+import { validateStoredRun } from "../agents/run-integrity.js";
 
 interface SkillPolicy {
   stage: string;
@@ -72,7 +73,7 @@ export async function prepareSkill(root: string, storyId: string, skill: string,
       { path: `${prefix}/artifacts/.keep`, content: "", immutable: true },
     ];
     return {
-      event_type: agent ? "agent.prepared" : "skill.prepared", event_data: { run_id: runId, skill, input_sha256: run.input_sha256, ...(agent ? { agent_id: agent.agent_id } : {}) }, actor: { type: "system", identity: "sdd-cli" }, extra_writes: writes,
+      event_type: agent ? "agent.prepared" : "skill.prepared", event_data: { run_id: runId, skill, input_sha256: run.input_sha256, ...(agent ? { agent_id: agent.agent_id, agent_definition_sha256: agent.agent_definition_sha256, agent_catalog_sha256: agent.agent_catalog_sha256 } : {}) }, actor: { type: "system", identity: "sdd-cli" }, extra_writes: writes,
       result: { ok: true, command: "skill prepare", story_id: storyId, changed: true, blockers: [], next_actions: [`invoke $${skill} with ${inputPath} and write ${outputPath}`], data: { run_id: runId, input_path: inputPath, output_path: outputPath, artifacts_path: `${prefix}/artifacts` } },
     };
   });
@@ -84,9 +85,12 @@ export async function validateSkill(root: string, storyId: string, runId: string
 }
 
 export async function submitSkill(root: string, storyId: string, runId: string, suppliedProducer?: Actor): Promise<CommandResult> {
-  const preparedRun = JSON.parse(await readText(resolveConcreteRepoPath(root, `${runPrefix(root, storyId, runId)}/run.json`))) as RunRecord;
-  if (preparedRun.agent_id && suppliedProducer) throw new HarnessInputError("SDD-AGENT-IDENTITY", "Producer flags are forbidden for agent-bound runs");
-  if (!preparedRun.agent_id && !suppliedProducer?.identity) throw new HarnessInputError("SDD-SKILL-PRODUCER", "Producer identity is required for manual runs");
+  const stored = await validateStoredRun(root, storyId, runId, runPrefix(root, storyId, runId));
+  const prepared = stored.events.filter((event) => ["skill.prepared", "agent.prepared"].includes(event.event_type) && event.data?.run_id === runId);
+  const agentBound = prepared.length === 1 && prepared[0]!.event_type === "agent.prepared";
+  if (agentBound && suppliedProducer) throw new HarnessInputError("SDD-AGENT-IDENTITY", "Producer flags are forbidden for agent-bound runs");
+  if (!agentBound && !suppliedProducer?.identity) throw new HarnessInputError("SDD-SKILL-PRODUCER", "Producer identity is required for manual runs");
+  if (stored.issues.length) throw new HarnessBlockedError("Run integrity validation failed", stored.issues);
   return mutateWithReconciliation(root, storyId, "skill submit", async (manifest) => {
     const report = await inspectSkillRun(root, storyId, runId, manifest);
     if (report.issues.length) throw new HarnessBlockedError("Skill output is invalid", report.issues);
@@ -112,7 +116,7 @@ export async function inspectSkillRun(root: string, storyId: string, runId: stri
   if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(runId)) throw new HarnessInputError("SDD-SKILL-RUN", `Invalid run ID: ${runId}`);
   const issues: ValidationIssue[] = [];
   const prefix = runPrefix(root, storyId, runId);
-  const run = JSON.parse(await readText(resolveConcreteRepoPath(root, `${prefix}/run.json`))) as RunRecord;
+  const stored = await validateStoredRun(root, storyId, runId, prefix); const run = stored.run as RunRecord; issues.push(...stored.issues);
   if (run.run_id !== runId || run.story_id !== storyId || !["PREPARED", "RUNNING", "VALID"].includes(run.status)) issues.push(issue("SDD-SKILL-RUN", "/run", "Run is invalid or already closed"));
   if (run.input_path !== `${prefix}/input.json` || run.output_path !== `${prefix}/output.json`) issues.push(issue("SDD-SKILL-RUN", "/run", "Run paths are not canonical"));
   const catalog = await loadSkillCatalog(root);
@@ -134,9 +138,7 @@ export async function inspectSkillRun(root: string, storyId: string, runId: stri
   const input = JSON.parse(inputContent) as AnyRecord;
   if (sha256Text(inputContent) !== run.input_sha256) issues.push(issue("SDD-SKILL-INPUT-HASH", "/input", "Prepared input hash is stale"));
   const manifest = suppliedManifest ?? await loadStoryManifest(root, storyId);
-  const events = (await readText(resolveConcreteRepoPath(root, manifest.journal.path))).split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line) as AnyRecord);
-  const preparedEvent = events.find((event) => ["skill.prepared", "agent.prepared"].includes(event.event_type) && event.data?.run_id === runId);
-  if (!preparedEvent || preparedEvent.data.input_sha256 !== run.input_sha256 || preparedEvent.data.skill !== run.skill || (run.agent_id && preparedEvent.data.agent_id !== run.agent_id)) issues.push(issue("SDD-SKILL-RUN-HASH", "/run", "Run is not anchored to its prepared journal event"));
+  const events = stored.events;
   if (events.some((event) => ["skill.completed", "skill.blocked", "skill.failed", "agent.submitted"].includes(event.event_type) && event.data?.run_id === runId)) issues.push(issue("SDD-SKILL-RUN", "/run", "Run has already been submitted"));
   if (input.state_sha256 !== skillStateHash(manifest)) issues.push(issue("SDD-SKILL-STALE", "/input/state_sha256", "Story state changed after prepare"));
   if (input.correlation_id !== manifest.correlation_id || input.run_id !== runId || input.skill !== run.skill) issues.push(issue("SDD-SKILL-CONTEXT", "/input", "Input context does not match the run"));

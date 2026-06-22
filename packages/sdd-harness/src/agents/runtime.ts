@@ -15,12 +15,10 @@ export interface CodexExecution {
   exit_code: number | null; codex_version: string | null; model: string | null; thread_id: string | null; usage: AnyRecord | null;
   stdout_sha256: string; stderr_excerpt: string;
 }
-export interface RuntimeResult { execution: CodexExecution; events: string; timed_out: boolean }
+export interface RuntimeResult { execution: CodexExecution; events: string; timed_out: boolean; malformed: boolean }
 
 export async function executeCodexAgent(root: string, run: AnyRecord, definition: AgentDefinition, policy: AgentPolicy, catalog: AgentCatalog, permissionToml: string, profile: PermissionProfile): Promise<RuntimeResult> {
-  const command = resolveCodexCommand();
-  const version = await capture(command.file, [...command.prefix, "--version"], 10_000, 16_384, 16_384, root);
-  if (version.code !== 0 || version.timedOut || !compatibleVersion(version.stdout)) throw new HarnessInputError("SDD-CODEX-VERSION", `Codex CLI >= 0.134.0 is required; found: ${version.stdout.trim() || "unknown"}`);
+  const { command, version } = await resolveCodexCommand(root);
   const config = await loadConfig(root);
   const receiptPath = `${path.posix.dirname(run.output_path)}/receipt.json`;
   const args = [...command.prefix, "exec", "--ephemeral", "--json", "--output-schema", resolveConcreteRepoPath(root, config.agents.receipt_schema), "-o", resolveConcreteRepoPath(root, receiptPath), "-C", root,
@@ -33,22 +31,52 @@ export async function executeCodexAgent(root: string, run: AnyRecord, definition
   const parsed = normalizeEvents(result.stdout);
   return {
     execution: { provider: "codex-cli", status: result.code === 0 && !result.timedOut && !parsed.malformed ? "COMPLETED" : "FAILED", started_at: started.toISOString(), completed_at: completed.toISOString(), duration_ms: completed.getTime() - started.getTime(), exit_code: result.code, codex_version: version.stdout.trim() || null, model: parsed.model, thread_id: parsed.threadId, usage: parsed.usage, stdout_sha256: sha256Text(result.stdout), stderr_excerpt: sanitize(parsed.malformed ? `Malformed Codex JSONL event stream. ${result.stderr}` : result.stderr, catalog.runtime.max_error_bytes) },
-    events: parsed.events.map((event) => JSON.stringify(event)).join("\n") + (parsed.events.length ? "\n" : ""), timed_out: result.timedOut,
+    events: parsed.events.map((event) => JSON.stringify(event)).join("\n") + (parsed.events.length ? "\n" : ""), timed_out: result.timedOut, malformed: parsed.malformed,
   };
 }
 
-function resolveCodexCommand(): { file: string; prefix: string[] } {
+export interface CodexCommand { file: string; prefix: string[]; label: string }
+async function resolveCodexCommand(root: string): Promise<{ command: CodexCommand; version: { stdout: string } }> {
   const configured = process.env.SDD_CODEX_BIN;
   if (configured) {
     if (!path.isAbsolute(configured)) throw new HarnessInputError("SDD-CODEX-BIN", "SDD_CODEX_BIN must be absolute");
     if (configured.endsWith(".cmd") || configured.endsWith(".bat")) throw new HarnessInputError("SDD-CODEX-BIN", "Shell wrappers are forbidden; use codex.exe or codex.js");
-    return configured.endsWith(".js") || configured.endsWith(".mjs") ? { file: process.execPath, prefix: [configured] } : { file: configured, prefix: [] };
+    const command = commandFor(configured, "SDD_CODEX_BIN");
+    const probe = await probeCommand(command, root);
+    if (!probe.version) throw new HarnessInputError("SDD-CODEX-VERSION", `Configured Codex CLI is unusable: ${probe.reason}`);
+    return { command, version: { stdout: probe.stdout } };
+  }
+  const candidates: CodexCommand[] = [];
+  const names = process.platform === "win32" ? ["codex.exe"] : ["codex"];
+  for (const directory of (process.env.PATH ?? "").split(path.delimiter).filter(Boolean)) for (const name of names) {
+    const file = path.join(directory.replace(/^"|"$/g, ""), name); if (existsSync(file)) candidates.push(commandFor(file, `PATH:${path.basename(directory)}`));
   }
   if (process.platform === "win32" && process.env.APPDATA) {
     const script = path.join(process.env.APPDATA, "npm", "node_modules", "@openai", "codex", "bin", "codex.js");
-    if (existsSync(script)) return { file: process.execPath, prefix: [script] };
+    if (existsSync(script)) candidates.push(commandFor(script, "npm-global"));
   }
-  return { file: process.platform === "win32" ? "codex.exe" : "codex", prefix: [] };
+  const unique = [...new Map(candidates.map((item) => [`${item.file}\0${item.prefix.join("\0")}`, item])).values()];
+  return selectCompatibleCodex(unique, root);
+}
+
+export async function selectCompatibleCodex(candidates: CodexCommand[], root: string): Promise<{ command: CodexCommand; version: { stdout: string } }> {
+  const probes = await Promise.all(candidates.map(async (command) => ({ command, probe: await probeCommand(command, root) })));
+  const compatible = probes.filter((item) => item.probe.version).sort((a, b) => compareVersion(b.probe.version!, a.probe.version!) || lexical(a.command.label, b.command.label));
+  if (compatible[0]) return { command: compatible[0].command, version: { stdout: compatible[0].probe.stdout } };
+  const details = probes.map((item) => `${item.command.label}: ${item.probe.reason}`).join("; ") || "no candidates discovered";
+  throw new HarnessInputError("SDD-CODEX-VERSION", `Codex CLI >= 0.134.0 was not found (${details})`);
+}
+
+function commandFor(file: string, label: string): CodexCommand { return file.endsWith(".js") || file.endsWith(".mjs") ? { file: process.execPath, prefix: [file], label } : { file, prefix: [], label }; }
+async function probeCommand(command: CodexCommand, root: string): Promise<{ version: [number, number, number] | null; stdout: string; reason: string }> {
+  try {
+    const result = await capture(command.file, [...command.prefix, "--version"], 10_000, 16_384, 16_384, root);
+    const version = parsedVersion(result.stdout);
+    if (result.code !== 0) return { version: null, stdout: result.stdout, reason: `exit ${result.code ?? "null"}` };
+    if (result.timedOut) return { version: null, stdout: result.stdout, reason: "timeout" };
+    if (!version || !compatibleVersionTuple(version)) return { version: null, stdout: result.stdout, reason: `incompatible ${result.stdout.trim() || "unknown"}` };
+    return { version, stdout: result.stdout, reason: "compatible" };
+  } catch (error) { return { version: null, stdout: "", reason: error instanceof Error ? error.message.slice(0, 200) : "probe failed" }; }
 }
 
 function prompt(run: AnyRecord, agentId: string, profile: PermissionProfile): string {
@@ -59,19 +87,37 @@ function prompt(run: AnyRecord, agentId: string, profile: PermissionProfile): st
     `Allowed product write paths: ${profile.write_paths.filter((item) => !item.includes("/.harness/skill-runs/")).join(", ") || "none"}.`,
     "Do not approve, advance stages, run external checks, request permissions, use network access, or spawn subagents.",
     `Your final response must be the receipt JSON for run ${run.run_id}; status must match output.json and output_path must be ${run.output_path}.`,
+    `The receipt must include input_sha256 ${run.input_sha256} and output_sha256 computed from the exact output.json bytes.`,
   ].join("\n");
 }
 
 async function capture(file: string, args: string[], timeoutMs: number, stdoutLimit: number, stderrLimit: number, cwd: string): Promise<{ code: number | null; stdout: string; stderr: string; timedOut: boolean }> {
   return new Promise((resolve, reject) => {
-    const child = spawn(file, args, { shell: false, windowsHide: true, cwd, stdio: ["ignore", "pipe", "pipe"] });
-    let stdout = ""; let stderr = ""; let timedOut = false; let overflow: string | null = null;
-    const timer = setTimeout(() => { timedOut = true; child.kill(); }, timeoutMs);
-    child.stdout.on("data", (chunk) => { if (Buffer.byteLength(stdout) < stdoutLimit) stdout += String(chunk); else { overflow = "stdout"; child.kill(); } });
-    child.stderr.on("data", (chunk) => { if (Buffer.byteLength(stderr) < stderrLimit) stderr += String(chunk); else { overflow = "stderr"; child.kill(); } });
-    child.on("error", (error) => { clearTimeout(timer); reject(new HarnessInputError("SDD-CODEX-SPAWN", error.message)); });
-    child.on("close", (code) => { clearTimeout(timer); if (overflow) reject(new HarnessInputError("SDD-CODEX-OUTPUT-LIMIT", `${overflow} exceeded configured limit`)); else resolve({ code, stdout, stderr, timedOut }); });
+    const child = spawn(file, args, { shell: false, windowsHide: true, cwd, stdio: ["ignore", "pipe", "pipe"], detached: process.platform !== "win32" });
+    const out: Buffer[] = []; const err: Buffer[] = []; let outBytes = 0; let errBytes = 0; let timedOut = false; let overflow: string | null = null; let settled = false;
+    const terminate = (): void => terminateTree(child.pid);
+    const append = (chunk: Buffer, target: Buffer[], current: number, limit: number, stream: string): number => {
+      const remaining = Math.max(0, limit - current); if (remaining) target.push(chunk.subarray(0, remaining));
+      if (chunk.length > remaining && !overflow) { overflow = stream; terminate(); }
+      return current + Math.min(chunk.length, remaining);
+    };
+    const timer = setTimeout(() => { timedOut = true; terminate(); }, timeoutMs);
+    child.stdout.on("data", (chunk: Buffer) => { outBytes = append(chunk, out, outBytes, stdoutLimit, "stdout"); });
+    child.stderr.on("data", (chunk: Buffer) => { errBytes = append(chunk, err, errBytes, stderrLimit, "stderr"); });
+    child.on("error", (error) => { if (settled) return; settled = true; clearTimeout(timer); reject(new HarnessInputError("SDD-CODEX-SPAWN", error.message)); });
+    child.on("close", (code) => { if (settled) return; settled = true; clearTimeout(timer); const stdout = Buffer.concat(out).toString("utf8"); const stderr = Buffer.concat(err).toString("utf8"); if (overflow) reject(new HarnessInputError("SDD-CODEX-OUTPUT-LIMIT", `${overflow} exceeded configured limit`)); else resolve({ code, stdout, stderr, timedOut }); });
   });
+}
+
+function terminateTree(pid: number | undefined): void {
+  if (!pid) return;
+  if (process.platform === "win32") {
+    const killer = spawn("taskkill.exe", ["/PID", String(pid), "/T", "/F"], { shell: false, windowsHide: true, stdio: "ignore" }); killer.unref();
+    const force = setTimeout(() => { try { process.kill(pid, "SIGKILL"); } catch { /* already gone */ } }, 2_000); force.unref();
+  } else {
+    try { process.kill(-pid, "SIGTERM"); } catch { /* already gone */ }
+    const force = setTimeout(() => { try { process.kill(-pid, "SIGKILL"); } catch { /* already gone */ } }, 2_000); force.unref();
+  }
 }
 
 function normalizeEvents(raw: string): { events: AnyRecord[]; threadId: string | null; model: string | null; usage: AnyRecord | null; malformed: boolean } {
@@ -84,7 +130,7 @@ function normalizeEvents(raw: string): { events: AnyRecord[]; threadId: string |
   return { events, threadId, model, usage, malformed };
 }
 function sanitize(value: string, limit: number): string { return value.replace(/(api[_-]?key|token|secret|password)\s*[=:]\s*\S+/gi, "$1=[REDACTED]").slice(0, limit); }
-function compatibleVersion(value: string): boolean {
-  const match = value.match(/codex(?:-cli)?\s+(\d+)\.(\d+)\.(\d+)/i); if (!match) return false;
-  const [major, minor] = [Number(match[1]), Number(match[2])]; return major > 0 || minor >= 134;
-}
+function parsedVersion(value: string): [number, number, number] | null { const match = value.match(/codex(?:-cli)?\s+(\d+)\.(\d+)\.(\d+)/i); return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : null; }
+function compatibleVersionTuple(value: [number, number, number]): boolean { return value[0] > 0 || value[1] >= 134; }
+function compareVersion(a: [number, number, number], b: [number, number, number]): number { return a[0] - b[0] || a[1] - b[1] || a[2] - b[2]; }
+function lexical(a: string, b: string): number { return a < b ? -1 : a > b ? 1 : 0; }

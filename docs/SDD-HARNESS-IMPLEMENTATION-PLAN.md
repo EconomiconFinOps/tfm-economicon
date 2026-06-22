@@ -218,6 +218,21 @@ Cada skill debe completar este checklist:
 
 **Done cuando:** los límites de cada rol se validan automáticamente antes y después de su ejecución.
 
+### Fase 5.1 — Hardening de identidad, runtime y permisos
+
+- [x] Validar todos los runs mediante un contrato estricto y un binding inmutable con el journal.
+- [x] Anclar identidad, catálogo, definición y perfil efectivo de permisos a eventos encadenados.
+- [x] Mantener el lease hasta confirmar el estado terminal y recuperar runs abandonados mediante toma de propiedad.
+- [x] Rechazar cualquier run `RUNNING` sin un lease coincidente.
+- [x] Clasificar fallos contractuales con exit `1` y fallos del runtime Codex con exit `2`.
+- [x] Terminar el árbol de procesos ante timeout o exceso de salida.
+- [x] Seleccionar de forma determinista la versión compatible más alta de Codex.
+- [x] Rechazar symlinks, escapes y sustituciones de roots autorizados antes y después de la ejecución.
+- [x] Validar que receipt, input y output pertenecen al mismo run mediante SHA-256.
+- [x] Cubrir los bypasses originales con pruebas adversariales y subprocess reales.
+
+**Done cuando:** ninguna modificación de `run.json`, journal, lease, receipt o scope puede degradar las garantías de identidad, exclusión mutua o confinamiento sin ser bloqueada.
+
 ## 9. Fase 6 — Integración arquitectónica
 
 **Objetivo:** convertir `ARCHITECTURE.md` y `architecture-status.md` en gates ejecutables.
@@ -332,3 +347,4 @@ Esta fase solo comienza después de cerrar la Fase 9.
 | 2026-06-21 | Fase 3 | Manifest `2.0.0`, catálogo Draft 2020-12, artefactos Markdown tipados, contratos de siete skills, templates, reconciliación documental y CLI `contract validate` | `.sdd/schemas/catalog.yaml`, `.sdd/schemas/artifacts/`, `.sdd/schemas/skills/`, `.sdd/templates/`, `packages/sdd-harness/src/contracts/`; lint, 64 tests, build, fixture HU-000, CLI subprocess y hashes de Fase 0 |
 | 2026-06-22 | Fase 4 | Siete skills de proyecto y protocolo transaccional `prepare -> validate -> submit` implementados sin ejecución de agentes | `.agents/skills/`, `.sdd/skills/catalog.yaml`, `packages/sdd-harness/src/skills/`; lint, 83 tests, build, ciclo completo, CLI subprocess, fixture HU-000 y hashes de Fase 0 |
 | 2026-06-22 | Fase 5 | Seis agentes Codex, catálogo de permisos, runner no interactivo, leases, identidad ligada y auditoría implementados | `.codex/agents/`, `.sdd/agents/catalog.yaml`, `packages/sdd-harness/src/agents/`; lint, 92 tests, build, CLI subprocess, fixture HU-000, smoke real de sandbox y hashes de Fase 0 |
+| 2026-06-22 | Fase 5.1 | Fase 5 reabierta y revalidada tras endurecer identidad, journal, leases, runtime, receipts y paths | `packages/sdd-harness/src/agents/`, schemas de agentes y tests adversariales; lint, 101 tests, build, CLI subprocess, fixture HU-000, smoke real y hashes de Fase 0 |
