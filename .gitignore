@@ -13,7 +13,7 @@ __pycache__/
 *.pyd
 .DS_Store
 .env
+.engram/
 coverage/
 htmlcov/
 *.log
-
