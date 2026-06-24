@@ -28,8 +28,13 @@ Consumers of `GET /health` can see current service status but cannot tell when t
 
 ## Human Approval
 
-- Pre-code approval: approved
+- Change: hu-004-add-health-checked-at
+- Approval type: pre-code
+- Decision: approved
 - Approver: user
 - Date: 2026-06-24
 - Carril: light
-- Notes: Backend-only health response timestamp.
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Main risks: migrated from legacy approval wording
+- Required changes before execution: none
+- Notes: Historical approval normalized to the structured HiTL format.

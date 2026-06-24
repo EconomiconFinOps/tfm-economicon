@@ -29,7 +29,13 @@ The project now has OpenSpec and Engram installed, but the team needs a lightwei
 
 ## Human Approval
 
-- Pre-code approval: approved
+- Change: hu-001-formalize-openspec-hu-workflow
+- Approval type: pre-code
+- Decision: approved
 - Approver: user
 - Date: 2026-06-24
-- Notes: Doc-only pilot; no product code changes.
+- Carril: light
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Main risks: migrated from legacy approval wording
+- Required changes before execution: none
+- Notes: Historical approval normalized to the structured HiTL format.

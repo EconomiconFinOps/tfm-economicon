@@ -28,7 +28,13 @@ HU-001 validated the lightweight OpenSpec workflow, but it exposed practical fri
 
 ## Human Approval
 
-- Pre-code approval: approved
+- Change: hu-002-refine-hu-checklist-from-pilot
+- Approval type: pre-code
+- Decision: approved
 - Approver: user
 - Date: 2026-06-24
-- Notes: Doc-only phase 2; refine checklist from HU-001 friction.
+- Carril: light
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Main risks: migrated from legacy approval wording
+- Required changes before execution: none
+- Notes: Historical approval normalized to the structured HiTL format.

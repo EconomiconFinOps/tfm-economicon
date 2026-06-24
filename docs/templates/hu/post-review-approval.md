@@ -18,3 +18,4 @@ Use this after review and before sync/archive.
 ```
 
 Archive or close only when `Decision` is `approved`.
+This structured block is the only valid HiTL approval format.

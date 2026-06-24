@@ -12,6 +12,7 @@ Copy this into each OpenSpec change and adapt it to the selected carril.
 - [ ] Complete verifiable tasks.
 - [ ] Record pre-code HiTL approval.
 - [ ] Run `pnpm openspec:validate`.
+- [ ] Run `pnpm hu:check:pre-code -- --change <change-name>` before product code changes.
 - [ ] Execute with `/opsx:apply <change-name>`.
 - [ ] Mark completed tasks in `tasks.md`.
 - [ ] Run required checks: install, validate, test, lint, build.
@@ -25,6 +26,8 @@ Copy this into each OpenSpec change and adapt it to the selected carril.
 - [ ] If this HU fixes an existing finding, update its status in `openspec/findings/backlog.md`.
 - [ ] Confirm there are no findings without a decision before HiTL final.
 - [ ] Record post-review HiTL approval.
+- [ ] Run `pnpm hu:check:approval-format`.
+- [ ] Run `pnpm hu:check -- --change <change-name>` before archive.
 - [ ] Sync specs if applicable.
 - [ ] Archive change; use `--skip-specs` for doc-only/process changes.
 ```

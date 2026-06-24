@@ -162,13 +162,27 @@ Registro de aprobacion:
 ```md
 ## Human Approval
 
-- Pre-code approval: approved
-- Approver: <name>
-- Date: YYYY-MM-DD
+- Change: <change-name>
+- Approval type: pre-code
+- Decision: approved
+- Approver: <approver>
+- Date: <YYYY-MM-DD>
+- Carril: light | standard | hotfix
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Main risks: <risks or "none identified">
+- Required changes before execution: <items or "none">
 - Notes: <optional>
 ```
 
 Sin esta seccion aprobada, no se debe pasar a `apply`.
+
+El bloque estructurado con `Approval type` y `Decision` es el unico formato valido de HiTL. El harness bloquea cualquier wording legacy de aprobacion.
+
+Antes de ejecutar cambios de producto, validar el gate pre-code:
+
+```powershell
+pnpm hu:check:pre-code -- --change <change-name>
+```
 
 ### 5. Execution
 
@@ -221,6 +235,8 @@ pnpm openspec:validate
 pnpm test
 pnpm lint
 pnpm build
+pnpm hu:check:approval-format
+pnpm hu:check -- --change <change-name>
 rg -n "sdd-harness|\\.sdd|Spec-Driven|validate-manifest|codex-smoke" .
 ```
 
@@ -281,6 +297,24 @@ Un finding fuera de scope no bloquea la HU si:
 - tiene accion definida,
 - el humano acepta diferirlo en el HiTL final.
 
+### Harness ligero pre-archive
+
+Antes de archivar una HU se debe ejecutar el harness local:
+
+```powershell
+pnpm hu:check -- --change <change-name>
+```
+
+Este comando valida estructura de OpenSpec, aprobaciones HiTL, tasks cerradas, findings enlazados al backlog, `pnpm openspec:validate` y guardrails anti-harness. No ejecuta tests, lint ni build de producto; esos checks siguen siendo parte de la review y deben documentarse ahi.
+
+Checks auxiliares:
+
+```powershell
+pnpm hu:check:approval-format
+pnpm hu:check:findings
+pnpm hu:check:anti-harness
+```
+
 ### 7. HiTL post-review
 
 Objetivo: cerrar solo cuando una persona acepte el resultado revisado.
@@ -298,10 +332,15 @@ Registro recomendado:
 ```md
 ## Human Approval
 
-- Pre-code approval: approved
-- Post-review approval: approved
-- Approver: <name>
-- Date: YYYY-MM-DD
+- Change: <change-name>
+- Approval type: post-review
+- Decision: approved
+- Approver: <approver>
+- Date: <YYYY-MM-DD>
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
 - Notes: <optional>
 ```
 
@@ -492,6 +531,7 @@ Usar esta lista para no saltarse pasos:
 - [ ] Completar tasks verificables.
 - [ ] Registrar HiTL pre-codigo.
 - [ ] Ejecutar `pnpm openspec:validate`.
+- [ ] Ejecutar `pnpm hu:check:pre-code -- --change <change-name>` antes de tocar codigo de producto.
 - [ ] Implementar con `/opsx:apply`.
 - [ ] Marcar tasks completadas.
 - [ ] Ejecutar checks: install, validate, test, lint, build.
@@ -505,6 +545,8 @@ Usar esta lista para no saltarse pasos:
 - [ ] Si esta HU corrige un finding existente, actualizar su estado en `openspec/findings/backlog.md`.
 - [ ] Confirmar que no quedan findings sin decision antes del HiTL final.
 - [ ] Registrar HiTL post-review.
+- [ ] Ejecutar `pnpm hu:check:approval-format`.
+- [ ] Ejecutar `pnpm hu:check -- --change <change-name>` antes de archivar.
 - [ ] Ejecutar sync si aplica.
 - [ ] Archivar change; usar `--skip-specs` si es doc-only/proceso.
 ```

@@ -37,8 +37,26 @@ git ls-files old harness paths -> no matches
 
 ## Human Approval
 
-- Pre-code approval: approved
-- Post-review approval: approved
+- Change: hu-003-add-lightweight-hu-templates
+- Approval type: pre-code
+- Decision: approved
 - Approver: user
 - Date: 2026-06-24
-- Notes: Phase 3 lightweight HU templates reviewed and accepted.
+- Carril: light
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Main risks: migrated from legacy approval wording
+- Required changes before execution: none
+- Notes: Historical approval normalized to the structured HiTL format.
+
+## Human Approval
+
+- Change: hu-003-add-lightweight-hu-templates
+- Approval type: post-review
+- Decision: approved
+- Approver: user
+- Date: 2026-06-24
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: Historical approval normalized to the structured HiTL format.

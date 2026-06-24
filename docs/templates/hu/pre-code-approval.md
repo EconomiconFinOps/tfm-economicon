@@ -18,3 +18,4 @@ Use this before changing product code or execution-relevant documentation.
 ```
 
 Execution must not start until `Decision` is `approved`.
+This structured block is the only valid HiTL approval format.

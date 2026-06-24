@@ -32,8 +32,13 @@ This change adds a lightweight central findings backlog while preserving the HU 
 
 ## Human Approval
 
-- Pre-code approval: approved
+- Change: hu-005-add-trackable-findings-backlog
+- Approval type: pre-code
+- Decision: approved
 - Approver: user
 - Date: 2026-06-24
 - Carril: light
-- Notes: Process-only change to track review findings centrally.
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Main risks: migrated from legacy approval wording
+- Required changes before execution: none
+- Notes: Historical approval normalized to the structured HiTL format.

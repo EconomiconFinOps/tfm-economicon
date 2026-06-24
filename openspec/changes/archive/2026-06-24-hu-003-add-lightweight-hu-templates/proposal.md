@@ -27,7 +27,13 @@ The HU workflow now exists, but repeated manual snippets for approvals, reviews,
 
 ## Human Approval
 
-- Pre-code approval: approved
+- Change: hu-003-add-lightweight-hu-templates
+- Approval type: pre-code
+- Decision: approved
 - Approver: user
 - Date: 2026-06-24
-- Notes: Doc-only phase 3; add lightweight HU templates.
+- Carril: light
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Main risks: migrated from legacy approval wording
+- Required changes before execution: none
+- Notes: Historical approval normalized to the structured HiTL format.

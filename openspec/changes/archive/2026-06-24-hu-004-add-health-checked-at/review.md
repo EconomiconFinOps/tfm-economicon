@@ -49,8 +49,26 @@ The failure is in existing `tests/test_auth_schema.py`, where `LoginRequest(emai
 
 ## Human Approval
 
-- Pre-code approval: approved
-- Post-review approval: approved
+- Change: hu-004-add-health-checked-at
+- Approval type: pre-code
+- Decision: approved
 - Approver: user
 - Date: 2026-06-24
-- Notes: Health timestamp implementation reviewed; unrelated auth baseline failure accepted as separate follow-up.
+- Carril: light
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Main risks: migrated from legacy approval wording
+- Required changes before execution: none
+- Notes: Historical approval normalized to the structured HiTL format.
+
+## Human Approval
+
+- Change: hu-004-add-health-checked-at
+- Approval type: post-review
+- Decision: approved
+- Approver: user
+- Date: 2026-06-24
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: Historical approval normalized to the structured HiTL format.

@@ -30,6 +30,8 @@ pnpm openspec:validate -> <result>
 pnpm test -> <result or documented exception>
 pnpm lint -> <result or documented exception>
 pnpm build -> <result or documented exception>
+pnpm hu:check:approval-format -> <result>
+pnpm hu:check -- --change <change-name> -> <result>
 structural anti-harness checks -> <result>
 rg anti-harness search -> <result and interpretation>
 ```
@@ -38,7 +40,7 @@ rg anti-harness search -> <result and interpretation>
 
 Use `None.` when there are no findings.
 
-| ID | Tipo | Severidad | Scope | Descripción | Acción | Backlog |
+| ID | Tipo | Severidad | Scope | Descripcion | Accion | Backlog |
 |----|------|-----------|-------|-------------|--------|---------|
 | RF-<hu>-001 | <bug/test drift/doc drift/guardrail/debt/risk> | <Low/Medium/High/Critical> | <In scope/Out of scope> | <description> | <fix/defer/accept/create HU> | <Added/Not needed> |
 
