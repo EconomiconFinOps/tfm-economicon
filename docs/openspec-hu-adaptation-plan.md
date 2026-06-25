@@ -534,7 +534,8 @@ Usar esta lista para no saltarse pasos:
 - [ ] Ejecutar `pnpm hu:check:pre-code -- --change <change-name>` antes de tocar codigo de producto.
 - [ ] Implementar con `/opsx:apply`.
 - [ ] Marcar tasks completadas.
-- [ ] Ejecutar checks: install, validate, test, lint, build.
+- [ ] Ejecutar checks: install, validate, test, lint, build, o checks enfocados aceptados para el carril elegido.
+- [ ] Registrar comandos exactos de validacion y cualquier setup de entorno usado para ejecutarlos.
 - [ ] Revisar drift docs/codigo.
 - [ ] Ejecutar checks estructurales anti-harness.
 - [ ] Interpretar `rg` anti-harness como informativo si solo hay referencias documentales.
@@ -543,6 +544,7 @@ Usar esta lista para no saltarse pasos:
 - [ ] Anadir al backlog central cualquier finding fuera de scope, no resuelto o diferido.
 - [ ] Enlazar cada finding del backlog con su HU origen.
 - [ ] Si esta HU corrige un finding existente, actualizar su estado en `openspec/findings/backlog.md`.
+- [ ] Ejecutar `pnpm hu:check:findings` si cambia el backlog de findings.
 - [ ] Confirmar que no quedan findings sin decision antes del HiTL final.
 - [ ] Registrar HiTL post-review.
 - [ ] Ejecutar `pnpm hu:check:approval-format`.

@@ -68,7 +68,16 @@ Archive a completed change in the experimental workflow.
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Perform the archive**
+5. **Run the project HU harness gate**
+
+   Before moving the change to archive, run:
+   ```bash
+   pnpm hu:check -- --change "<name>"
+   ```
+
+   If it fails, STOP before archive. Fix the missing approval, open task, review finding, spec validation, or anti-harness issue first. Document harness failures or workarounds in `review.md`; unresolved, deferred, or out-of-scope harness issues also go to `openspec/findings/backlog.md`.
+
+6. **Perform the archive**
 
    Create an `archive` directory under `planningHome.changesDir` if it doesn't exist:
    ```bash
@@ -85,7 +94,7 @@ Archive a completed change in the experimental workflow.
    mv "<changeRoot>" "<planningHome.changesDir>/archive/YYYY-MM-DD-<name>"
    ```
 
-6. **Display summary**
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name
@@ -110,6 +119,7 @@ All artifacts complete. All tasks complete.
 **Guardrails**
 - Always prompt for change selection if not provided
 - Use artifact graph (openspec status --json) for completion checking
+- Do not archive before `pnpm hu:check -- --change <name>` passes
 - Don't block archive on warnings - just inform and confirm
 - Preserve .openspec.yaml when moving to archive (it moves with the directory)
 - Show clear summary of what happened

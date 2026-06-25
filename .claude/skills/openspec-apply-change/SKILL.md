@@ -36,7 +36,7 @@ Implement tasks from an OpenSpec change.
 3. **Get apply instructions**
 
    ```bash
-   openspec instructions apply --change "<name>" --json
+   pnpm exec openspec instructions apply --change "<name>" --json
    ```
 
    This returns:
@@ -49,6 +49,8 @@ Implement tasks from an OpenSpec change.
    - If `state: "blocked"` (missing artifacts): show message, suggest using openspec-continue-change
    - If `state: "all_done"`: congratulate, suggest archive
    - Otherwise: proceed to implementation
+
+   **Project HU harness gate:** Before editing product code or product execution files, run `pnpm hu:check:pre-code -- --change <name>` and STOP if it fails. Document any harness failure or workaround in the change `review.md`; unresolved, deferred, or out-of-scope harness issues also go to `openspec/findings/backlog.md`.
 
    **Workspace guard:** If status JSON reports `actionContext.mode: "workspace-planning"` and `allowedEditRoots` is empty, explain that full workspace apply is not supported in this slice. Treat linked repos and folders as read-only context, ask the user to select an affected area through an explicit implementation workflow, and STOP before editing files.
 
@@ -144,6 +146,7 @@ What would you like to do?
 **Guardrails**
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
+- Do not edit product code before the project pre-code HU gate passes
 - If task is ambiguous, pause and ask before implementing
 - If implementation reveals issues, pause and suggest artifact updates
 - Keep code changes minimal and scoped to each task

@@ -31,9 +31,14 @@ pnpm test -> <result or documented exception>
 pnpm lint -> <result or documented exception>
 pnpm build -> <result or documented exception>
 pnpm hu:check:approval-format -> <result>
-pnpm hu:check -- --change <change-name> -> <result>
 structural anti-harness checks -> <result>
 rg anti-harness search -> <result and interpretation>
+```
+
+`pnpm hu:check -- --change <change-name>` is the final pre-archive gate. It can fail before the post-review approval exists; run it after recording structured post-review HiTL approval and before archive.
+
+```txt
+pnpm hu:check -- --change <change-name> -> <result after post-review approval>
 ```
 
 ## Review Findings
