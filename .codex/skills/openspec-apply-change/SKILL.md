@@ -52,6 +52,8 @@ Implement tasks from an OpenSpec change.
 
    **Project HU harness gate:** Before editing product code or product execution files, run `pnpm hu:check:pre-code -- --change <name>` and STOP if it fails. Document any harness failure or workaround in the change `review.md`; unresolved, deferred, or out-of-scope harness issues also go to `openspec/findings/backlog.md`.
 
+   **Architecture decision gate:** If implementation introduces or changes a durable/cross-cutting architecture decision, update `design.md` and create or link an ADR in `docs/adr/` before continuing. Accepted architecture decisions must not exist only in Engram.
+
    **Workspace guard:** If status JSON reports `actionContext.mode: "workspace-planning"` and `allowedEditRoots` is empty, explain that full workspace apply is not supported in this slice. Treat linked repos and folders as read-only context, ask the user to select an affected area through an explicit implementation workflow, and STOP before editing files.
 
 4. **Read context files**

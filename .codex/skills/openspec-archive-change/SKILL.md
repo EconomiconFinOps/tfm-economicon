@@ -68,7 +68,13 @@ Archive a completed change in the experimental workflow.
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Run the project HU harness gate**
+5. **Check architecture decision records**
+
+   Before archive, read `design.md` and `review.md` for ADR references or `ADR not applicable`.
+
+   If the change includes a durable/cross-cutting architecture decision and no ADR is linked, STOP before archive and ask for the ADR to be created or linked. Accepted architecture decisions must be reflected in Git/OpenSpec/ADR, not only in Engram.
+
+6. **Run the project HU harness gate**
 
    Before moving the change to archive, run:
    ```bash
@@ -77,7 +83,7 @@ Archive a completed change in the experimental workflow.
 
    If it fails, STOP before archive. Fix the missing approval, open task, review finding, spec validation, or anti-harness issue first. Document harness failures or workarounds in `review.md`; unresolved, deferred, or out-of-scope harness issues also go to `openspec/findings/backlog.md`.
 
-6. **Perform the archive**
+7. **Perform the archive**
 
    Create an `archive` directory under `planningHome.changesDir` if it doesn't exist:
    ```bash
@@ -94,7 +100,7 @@ Archive a completed change in the experimental workflow.
    mv "<changeRoot>" "<planningHome.changesDir>/archive/YYYY-MM-DD-<name>"
    ```
 
-7. **Display summary**
+8. **Display summary**
 
    Show archive completion summary including:
    - Change name
@@ -120,6 +126,7 @@ All artifacts complete. All tasks complete.
 - Always prompt for change selection if not provided
 - Use artifact graph (openspec status --json) for completion checking
 - Do not archive before `pnpm hu:check -- --change <name>` passes
+- Do not archive a change with durable architecture decisions unless its ADR is created/linked or review marks ADR not applicable
 - Don't block archive on warnings - just inform and confirm
 - Preserve .openspec.yaml when moving to archive (it moves with the directory)
 - Show clear summary of what happened

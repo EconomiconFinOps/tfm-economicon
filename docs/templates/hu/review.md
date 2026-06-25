@@ -19,6 +19,7 @@ Accepted | Changes requested | Rejected
 - [ ] Tasks are marked accurately in `tasks.md`.
 - [ ] Tests/checks were executed or exceptions are documented.
 - [ ] `proposal.md`, `design.md`, `specs`, and `tasks.md` match the final state.
+- [ ] Architecture decisions are recorded in ADRs or explicitly marked not applicable.
 - [ ] No product decision exists only in Engram.
 - [ ] No old harness structure was reintroduced.
 

@@ -34,6 +34,7 @@ HiTL -> aprobacion humana final antes de cerrar
 5. **Documentacion primero, documentacion sincronizada.** Si cambia el comportamiento, debe cambiar el artefacto OpenSpec correspondiente.
 6. **Ligero por defecto.** Solo se anade mas ceremonia si el cambio tiene riesgo, impacto transversal, IA, datos, seguridad, multi-tenant o coste relevante.
 7. **Engram es memoria auxiliar.** Puede guardar decisiones, gotchas y contexto, pero los documentos versionados mandan.
+8. **Las decisiones de arquitectura duraderas usan ADRs.** `design.md` captura decisiones locales de la HU; `docs/adr/` captura decisiones transversales o persistentes.
 
 ## Flujo objetivo
 
@@ -92,6 +93,8 @@ En OpenSpec esto debe quedar repartido en los artefactos generados por el change
 - `specs/*/spec.md`: requisitos observables.
 - `tasks.md`: plan ejecutable.
 
+Si la HU introduce o cambia una decision de arquitectura duradera, `design.md` debe enlazar el ADR correspondiente en `docs/adr/`.
+
 Checklist minimo del PRD:
 
 - problema y objetivo,
@@ -116,6 +119,7 @@ Checklist minimo del TD:
 Regla anti-drift:
 
 - Si una decision tecnica cambia durante implementacion, se actualiza `design.md`.
+- Si esa decision es duradera o transversal, se crea o actualiza un ADR.
 - Si un requisito cambia, se actualiza `specs/*/spec.md`.
 - Si una tarea deja de aplicar o aparece una nueva, se actualiza `tasks.md`.
 
@@ -150,6 +154,7 @@ La aprobacion humana debe confirmar:
 
 - PRD entendible y sin preguntas abiertas criticas.
 - TD suficiente para implementar sin decisiones ocultas.
+- ADR creado/enlazado o declarado no aplicable cuando hay decisiones arquitectonicas.
 - TASKs pequenas y ejecutables.
 - Riesgos principales identificados.
 - Carril correcto: `light`, `standard` o `hotfix`.
@@ -200,6 +205,7 @@ Reglas:
 - Marcar cada task completada en `tasks.md`.
 - Mantener cambios pequenos y enfocados.
 - Si aparece una decision nueva, parar y actualizar PRD/TD/TASKs antes de seguir.
+- Si aparece una decision arquitectonica duradera, actualizar `design.md` y crear/enlazar ADR antes de seguir.
 - No usar Engram como sustituto de actualizar los documentos.
 
 Checks minimos antes de pedir review:
@@ -223,9 +229,10 @@ Checklist de review:
 - Todas las tasks aplicables estan marcadas.
 - Los tests cubren los casos esperados.
 - `proposal.md`, `design.md`, `specs` y `tasks.md` siguen reflejando la realidad.
+- Las decisiones de arquitectura estan en ADR o se marco ADR como no aplicable.
 - No se introducen restos del harness SDD viejo.
 - No se ha usado `npm i`.
-- Engram no contiene informacion que deba estar versionada.
+- Engram no contiene informacion que deba estar versionada, incluyendo decisiones de arquitectura aceptadas.
 
 Checks recomendados:
 
@@ -366,6 +373,7 @@ Artefactos minimos:
 
 - proposal breve,
 - design breve si hay decision tecnica,
+- ADR solo si hay decision de arquitectura duradera o transversal,
 - tasks de 1 a 5 items,
 - HiTL pre-codigo,
 - execution,
@@ -438,12 +446,13 @@ Para evitar que la documentacion lleve a fallos:
 
 1. Todo cambio de comportamiento debe tener cambio OpenSpec asociado.
 2. Todo cambio de decision debe reflejarse en `design.md`.
-3. Todo cambio de requisito debe reflejarse en `specs`.
-4. Toda task completada debe marcarse en `tasks.md`.
-5. Todo bypass/hotfix debe tener normalizacion posterior.
-6. Engram puede recordar contexto, pero la verdad final vive en Git.
-7. Antes de archivar se ejecuta `pnpm openspec:validate`.
-8. Antes de cerrar se revisa que no haya drift entre codigo, specs y tasks.
+3. Toda decision de arquitectura duradera debe reflejarse en `docs/adr/`.
+4. Todo cambio de requisito debe reflejarse en `specs`.
+5. Toda task completada debe marcarse en `tasks.md`.
+6. Todo bypass/hotfix debe tener normalizacion posterior.
+7. Engram puede recordar contexto, pero la verdad final vive en Git.
+8. Antes de archivar se ejecuta `pnpm openspec:validate`.
+9. Antes de cerrar se revisa que no haya drift entre codigo, specs y tasks.
 
 ## Checks anti-harness
 
@@ -493,6 +502,7 @@ No guardar solo en Engram:
 
 - requisitos,
 - decisiones finales,
+- decisiones de arquitectura aceptadas,
 - aprobaciones humanas,
 - criterios de aceptacion,
 - resultados de review.
@@ -514,6 +524,7 @@ Plantillas disponibles:
 - `post-review-approval.md`: aprobacion humana final antes de sync/archive.
 - `hotfix-justification.md`: justificacion y normalizacion posterior para hotfix.
 - `hu-checklist.md`: checklist operacional completo por HU.
+- `../adr.md`: plantilla para decisiones de arquitectura duraderas.
 
 Las plantillas son documentacion versionada. No son enforcement automatico ni sustituyen OpenSpec.
 
@@ -529,6 +540,7 @@ Usar esta lista para no saltarse pasos:
 - [ ] Completar TD/design.
 - [ ] Completar specs si aplica.
 - [ ] Completar tasks verificables.
+- [ ] Evaluar si la HU necesita ADR; crearlo/enlazarlo o marcar ADR no aplicable.
 - [ ] Registrar HiTL pre-codigo.
 - [ ] Ejecutar `pnpm openspec:validate`.
 - [ ] Ejecutar `pnpm hu:check:pre-code -- --change <change-name>` antes de tocar codigo de producto.
@@ -540,6 +552,7 @@ Usar esta lista para no saltarse pasos:
 - [ ] Ejecutar checks estructurales anti-harness.
 - [ ] Interpretar `rg` anti-harness como informativo si solo hay referencias documentales.
 - [ ] Registrar review.
+- [ ] Registrar `ADR creado/actualizado` o `ADR no aplicable` en review.
 - [ ] Registrar findings en `review.md`.
 - [ ] Anadir al backlog central cualquier finding fuera de scope, no resuelto o diferido.
 - [ ] Enlazar cada finding del backlog con su HU origen.

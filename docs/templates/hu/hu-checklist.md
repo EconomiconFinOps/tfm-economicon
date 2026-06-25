@@ -10,6 +10,7 @@ Copy this into each OpenSpec change and adapt it to the selected carril.
 - [ ] Complete TD/design.
 - [ ] Complete specs if OpenSpec requires them.
 - [ ] Complete verifiable tasks.
+- [ ] Assess whether the HU needs an ADR; create/link it or mark ADR not applicable.
 - [ ] Record pre-code HiTL approval.
 - [ ] Run `pnpm openspec:validate`.
 - [ ] Run `pnpm hu:check:pre-code -- --change <change-name>` before product code changes.
@@ -21,6 +22,7 @@ Copy this into each OpenSpec change and adapt it to the selected carril.
 - [ ] Run structural anti-harness checks.
 - [ ] Interpret `rg` anti-harness output as informational when matches are documentation-only.
 - [ ] Record review.
+- [ ] Record `ADR created/updated` or `ADR not applicable` in review.
 - [ ] Record review findings in `review.md`.
 - [ ] Add every out-of-scope, unresolved, or deferred finding to `openspec/findings/backlog.md`.
 - [ ] Link each backlog finding to its HU origin.

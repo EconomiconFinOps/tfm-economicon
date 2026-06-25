@@ -123,12 +123,14 @@ If the user mentions a change or you detect one is relevant:
     | New requirement discovered | `specs/<capability>/spec.md` |
     | Requirement changed        | `specs/<capability>/spec.md` |
     | Design decision made       | `design.md`                  |
+    | Durable architecture decision made | `docs/adr/` plus `design.md` link |
     | Scope changed              | `proposal.md`                |
     | New work identified        | `tasks.md`                   |
     | Assumption invalidated     | Relevant artifact              |
 
    Example offers:
    - "That's a design decision. Capture it in design.md?"
+   - "That's a durable architecture decision. Capture it as an ADR and link it from design.md?"
    - "This is a new requirement. Add it to specs?"
    - "This changes scope. Update the proposal?"
 

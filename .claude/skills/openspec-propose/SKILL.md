@@ -16,6 +16,8 @@ I'll create a change with artifacts:
 - design.md (how)
 - tasks.md (implementation steps)
 
+For changes that introduce durable or cross-cutting architecture decisions, assess ADR applicability during design. Link an existing ADR or plan a new `docs/adr/ADR-NNNN-short-slug.md`; use `docs/templates/adr.md`. If no ADR is needed, make that explicit in the change review later.
+
 When ready to implement, run /opsx:apply
 
 ---
