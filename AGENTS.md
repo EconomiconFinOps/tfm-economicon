@@ -12,6 +12,7 @@
   - `pnpm hu:check:findings` when `openspec/findings/backlog.md` changes.
 - Do not edit product code or execution-relevant product files before `pnpm hu:check:pre-code -- --change <change-name>` passes.
 - Do not archive a change before `pnpm hu:check -- --change <change-name>` passes.
+- Once work has started on a HU, do not switch to another HU or perform tasks that are not directly related to the active HU without explicit user authorization. Checks, review notes, findings, docs, and follow-up edits required to complete the active HU are allowed.
 
 ## Happy Path For HU Changes
 
