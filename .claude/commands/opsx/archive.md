@@ -105,6 +105,19 @@ Archive a completed change in the experimental workflow.
    - Spec sync status (synced / sync skipped / no delta specs)
    - Note about any warnings (incomplete artifacts/tasks)
 
+9. **Run post-archive documentation review**
+
+   After the archive move succeeds, use the Skill tool to invoke `openspec-doc-reviewer` for the archived path.
+
+   The reviewer should:
+   - compare the archived artifacts with live documentation
+   - update `docs/architecture.md`, app READMEs, or manuals when clear drift exists
+   - update `docs/hu-release-notes.md` with one short release note, the HU review link, and ADR links when present
+   - suggest an ADR when the completed change introduced a durable architecture decision
+   - avoid product code, archived artifacts, and OpenSpec spec edits unless explicitly requested
+
+   Include the doc review summary in the archive result. If the doc review cannot run, do not undo the archive; report the blocker and the exact reviewer command/request the user should run next.
+
 **Output On Success**
 
 ```
@@ -113,7 +126,8 @@ Archive a completed change in the experimental workflow.
 **Change:** <change-name>
 **Schema:** <schema-name>
 **Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
-**Specs:** ✓ Synced to main specs
+**Specs:** Synced to main specs
+**Docs:** post-archive doc review and HU release note completed (or "needs follow-up: <reason>")
 
 All artifacts complete. All tasks complete.
 ```
@@ -127,6 +141,7 @@ All artifacts complete. All tasks complete.
 **Schema:** <schema-name>
 **Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
 **Specs:** No delta specs
+**Docs:** post-archive doc review and HU release note completed (or "needs follow-up: <reason>")
 
 All artifacts complete. All tasks complete.
 ```
@@ -140,6 +155,7 @@ All artifacts complete. All tasks complete.
 **Schema:** <schema-name>
 **Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
 **Specs:** Sync skipped (user chose to skip)
+**Docs:** post-archive doc review and HU release note completed (or "needs follow-up: <reason>")
 
 **Warnings:**
 - Archived with 2 incomplete artifacts
@@ -173,5 +189,6 @@ Target archive directory already exists.
 - Don't block archive on warnings - just inform and confirm
 - Preserve .openspec.yaml when moving to archive (it moves with the directory)
 - Show clear summary of what happened
+- Run `openspec-doc-reviewer` immediately after a successful archive and include its result in the final summary
 - If sync is requested, use the Skill tool to invoke `openspec-sync-specs` (agent-driven)
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
