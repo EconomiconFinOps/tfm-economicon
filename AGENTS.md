@@ -32,12 +32,22 @@
 14. Run `pnpm hu:check -- --change <change-name>` and stop if it fails.
 15. Sync specs if applicable.
 16. Archive the change.
+17. Run the post-archive documentation reviewer and update docs/release history.
 
 ## Harness Issues
 
 - Any problem, failure, drift, or workaround involving the HU/OpenSpec harness or local HU checks must be documented in the HU `review.md`.
 - If the harness issue is unresolved, deferred, out of scope, or accepted as risk, also add it to `openspec/findings/backlog.md` with a stable `RF-<hu-number>-<sequence>` ID.
 - Do not leave harness problems only in chat, terminal output, or local memory.
+
+## Post-Archive Documentation Review
+
+- After a HU is archived, run `openspec-doc-reviewer` for the archived change path.
+- The reviewer keeps current-state documentation aligned with accepted implementation, especially `docs/architecture.md`, affected app READMEs, manuals, and `docs/hu-release-notes.md`.
+- `docs/hu-release-notes.md` is the lightweight history of implemented HUs. Keep one row per archived HU with date, HU name, a very short release note, the archived `review.md` link, and any ADR links.
+- If the archived HU created or updated ADRs, link them from `docs/hu-release-notes.md`. If no ADR applies, write `None`.
+- If the reviewer detects a durable architecture decision without an ADR, suggest the ADR and record the follow-up clearly instead of hiding the gap.
+- The reviewer must not edit product code, migrations, tests, archived artifacts, or OpenSpec specs unless the user explicitly asks.
 
 ## Engram Usage For Agents
 
