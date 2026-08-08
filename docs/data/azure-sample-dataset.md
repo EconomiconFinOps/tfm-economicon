@@ -5,7 +5,8 @@
 Economicon utilizará como fuente de desarrollo el activo `dataset-examples.zip`
 de Microsoft FinOps Toolkit v14. El ZIP original se conserva fuera de Git y se
 identifica por su checksum. En el repositorio solo se versionan el informe de
-auditoría, el auditor reproducible y fixtures pequeños seudonimizados.
+auditoría, el auditor reproducible y fixtures pequeños con los valores públicos
+originales.
 
 Para JUP-073, la fuente principal recomendada es
 `EA-Cost-Actual.sample.csv`. Permite implementar filtros y agregaciones del
@@ -91,19 +92,21 @@ exponer el CSV como si fuese directamente la respuesta de Azure.
 El detalle completo por columna, incluidos nulos, rangos, cardinalidades y
 estadísticas numéricas, está en `docs/data/azure-dataset-audit.json`.
 
-## Datos sensibles y seguridad
+## Tratamiento de los datos públicos
 
-El contenido parece deliberadamente sintético y utiliza nombres de demostración,
-pero reproduce campos que en una exportación real serían sensibles: correos,
-IDs de suscripción y facturación, resource IDs, reservas y etiquetas. Por ello:
+Microsoft publica este dataset de ejemplo en GitHub como parte de FinOps
+Toolkit. Los fixtures conservan literalmente los valores seleccionados, sin
+anonimización ni seudonimización, lo que mantiene intactas las relaciones y los
+casos de prueba del material original.
 
-1. El ZIP no se sube a Git ni se copia a imágenes Docker.
-2. Los fixtures seudonimizan de forma determinista correos, GUID e
-   identificadores numéricos para conservar relaciones entre registros.
-3. No se deben reutilizar estos scripts con exportaciones reales sin revisar
-   nombres, etiquetas, `AdditionalInfo` y nombres de recursos.
-4. Los logs y respuestas del fake API no deben incluir registros completos por
-   defecto.
+El ZIP completo no se versiona por su tamaño —más de 100 MB comprimido y unos
+934 MB descomprimido—, no por restricciones de privacidad. El checksum, la URL
+de descarga, el aviso MIT y las muestras versionadas permiten reproducir el
+trabajo sin incorporar el archivo completo al repositorio.
+
+Esta decisión aplica únicamente al dataset público de ejemplo. Si en el futuro
+se conectan exportaciones reales de un tenant, su tratamiento deberá definirse
+por separado.
 
 ## Reproducción
 
@@ -118,8 +121,9 @@ python scripts/audit_azure_dataset.py `
 ```
 
 El muestreo depende del checksum y del contenido de cada fila, no del orden de
-ejecución. Si cambia el ZIP, cambiarán el informe, el manifiesto y los fixtures,
-haciendo visible la actualización en la revisión de código.
+ejecución. Los valores seleccionados se copian sin transformaciones. Si cambia
+el ZIP, cambiarán el informe, el manifiesto y los fixtures, haciendo visible la
+actualización en la revisión de código.
 
 ## Criterios para JUP-073
 

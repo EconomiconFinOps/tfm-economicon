@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source_archive_sha256": "d7769d9e759b5968a68affcb364235ad938a705168c546ab86cad5bbb27ff607",
   "source_release": "v14",
-  "redaction": "Deterministic pseudonymization of emails, GUIDs and account/customer identifiers.",
+  "transformation": "None; sampled rows retain the public values published by Microsoft.",
   "files": [
     {
       "path": "EA-Cost-Actual.sample.csv",

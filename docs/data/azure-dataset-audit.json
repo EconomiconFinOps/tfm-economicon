@@ -189,7 +189,7 @@
         "ResourceGroup": 233,
         "MeterCategory": 34
       },
-      "sensitive_like_columns": [
+      "identifier_columns": [
         "AccountOwnerId",
         "SubscriptionId",
         "ResourceId",
@@ -365,7 +365,7 @@
         "ResourceGroup": 233,
         "MeterCategory": 35
       },
-      "sensitive_like_columns": [
+      "identifier_columns": [
         "AccountOwnerId",
         "SubscriptionId",
         "ResourceId",
@@ -651,7 +651,7 @@
         "SubAccountId": 12,
         "x_ResourceGroupName": 233
       },
-      "sensitive_like_columns": [
+      "identifier_columns": [
         "BillingAccountId",
         "ResourceId",
         "Tags",
@@ -942,7 +942,7 @@
         "SubAccountId": 12,
         "x_ResourceGroupName": 233
       },
-      "sensitive_like_columns": [
+      "identifier_columns": [
         "BillingAccountId",
         "ResourceId",
         "Tags",
@@ -1032,7 +1032,7 @@
       "cardinalities": {
         "MeterCategory": 190
       },
-      "sensitive_like_columns": []
+      "identifier_columns": []
     },
     {
       "name": "EA-Reservations-Details.csv",
@@ -1078,7 +1078,7 @@
       "currencies": {},
       "numeric_stats": {},
       "cardinalities": {},
-      "sensitive_like_columns": [
+      "identifier_columns": [
         "ReservationOrderId",
         "ReservationId"
       ]
@@ -1139,7 +1139,7 @@
       "currencies": {},
       "numeric_stats": {},
       "cardinalities": {},
-      "sensitive_like_columns": []
+      "identifier_columns": []
     },
     {
       "name": "EA-Reservations-Transactions.csv",
@@ -1230,7 +1230,7 @@
         }
       },
       "cardinalities": {},
-      "sensitive_like_columns": [
+      "identifier_columns": [
         "AccountOwnerEmail",
         "ReservationOrderId"
       ]
@@ -1279,7 +1279,7 @@
       "currencies": {},
       "numeric_stats": {},
       "cardinalities": {},
-      "sensitive_like_columns": [
+      "identifier_columns": [
         "ReservationOrderId",
         "ReservationId"
       ]
@@ -1340,7 +1340,7 @@
       "currencies": {},
       "numeric_stats": {},
       "cardinalities": {},
-      "sensitive_like_columns": []
+      "identifier_columns": []
     },
     {
       "name": "MCA-Reservations-Transactions.csv",
@@ -1425,7 +1425,7 @@
         }
       },
       "cardinalities": {},
-      "sensitive_like_columns": [
+      "identifier_columns": [
         "BillingProfileId",
         "InvoiceSectionId",
         "ReservationOrderId"

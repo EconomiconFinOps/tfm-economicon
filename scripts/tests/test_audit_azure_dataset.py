@@ -4,11 +4,11 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from scripts.audit_azure_dataset import audit_archive, redact_value, write_fixtures
+from scripts.audit_azure_dataset import audit_archive, write_fixtures
 
 
 class AuditAzureDatasetTests(unittest.TestCase):
-    def test_profiles_csv_and_generates_redacted_fixture(self) -> None:
+    def test_profiles_csv_and_preserves_public_fixture_values(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             archive_path = root / "dataset.zip"
@@ -36,14 +36,10 @@ class AuditAzureDatasetTests(unittest.TestCase):
             with (output / "cost.sample.csv").open(encoding="utf-8", newline="") as fixture:
                 rows = list(csv.DictReader(fixture))
             self.assertEqual(len(rows), 2)
-            self.assertTrue(rows[0]["AccountOwnerEmail"].endswith("@example.invalid"))
-            self.assertNotEqual(
+            self.assertEqual(rows[0]["AccountOwnerEmail"], "owner@example.com")
+            self.assertEqual(
                 rows[0]["SubscriptionId"], "ed570627-0265-4620-bb42-bae06bcfa914"
             )
-
-    def test_redaction_is_stable(self) -> None:
-        value = "acm@testea.onmicrosoft.com"
-        self.assertEqual(redact_value("AccountOwnerId", value), redact_value("AccountOwnerId", value))
 
 
 if __name__ == "__main__":

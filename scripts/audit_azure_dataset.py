@@ -13,8 +13,6 @@ import hashlib
 import heapq
 import io
 import json
-import re
-import uuid
 import zipfile
 from collections import Counter
 from datetime import datetime
@@ -51,7 +49,7 @@ CARDINALITY_COLUMNS = {
     "SubscriptionId",
     "x_ResourceGroupName",
 }
-SENSITIVE_COLUMN_MARKERS = (
+IDENTIFIER_COLUMN_MARKERS = (
     "accountowner",
     "email",
     "resourceid",
@@ -65,14 +63,6 @@ SENSITIVE_COLUMN_MARKERS = (
     "resellerid",
     "tags",
 )
-EMAIL_RE = re.compile(r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b")
-GUID_RE = re.compile(
-    r"(?i)\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b"
-)
-LONG_NUMBER_RE = re.compile(r"\b\d{6,}\b")
-REDACTION_NAMESPACE = uuid.UUID("0cc0bde8-5723-4e7f-b62c-1cc88c763f0d")
-
-
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as source:
@@ -113,47 +103,17 @@ def is_safe_entry(name: str) -> bool:
     return not path.is_absolute() and ".." not in path.parts and "\\" not in name
 
 
-def sensitive_columns(columns: Iterable[str]) -> list[str]:
+def identifier_columns(columns: Iterable[str]) -> list[str]:
     return [
         column
         for column in columns
-        if any(marker in column.casefold() for marker in SENSITIVE_COLUMN_MARKERS)
+        if any(marker in column.casefold() for marker in IDENTIFIER_COLUMN_MARKERS)
     ]
 
 
 def stable_score(seed: str, row_number: int, row: list[str]) -> int:
     payload = f"{seed}:{row_number}:".encode() + "\x1f".join(row).encode("utf-8")
     return int.from_bytes(hashlib.sha256(payload).digest()[:8], "big")
-
-
-def pseudonym(value: str, prefix: str) -> str:
-    return f"{prefix}-{hashlib.sha256(value.encode('utf-8')).hexdigest()[:10]}"
-
-
-def numeric_pseudonym(value: str) -> str:
-    digits = str(int(hashlib.sha256(value.encode()).hexdigest()[:16], 16))
-    return digits.zfill(len(value))[: len(value)]
-
-
-def redact_value(column: str, value: str) -> str:
-    """Pseudonymize identifiers while retaining fixture referential consistency."""
-    if not value:
-        return value
-    result = EMAIL_RE.sub(
-        lambda match: f"user-{hashlib.sha256(match.group(0).lower().encode()).hexdigest()[:10]}@example.invalid",
-        value,
-    )
-    result = GUID_RE.sub(
-        lambda match: str(uuid.uuid5(REDACTION_NAMESPACE, match.group(0).lower())),
-        result,
-    )
-    folded = column.casefold()
-    if "id" in folded or "guid" in folded or "enrollment" in folded:
-        result = LONG_NUMBER_RE.sub(lambda match: numeric_pseudonym(match.group(0)), result)
-    if "customerid" in folded or "resellerid" in folded:
-        if result and not result.startswith("/"):
-            result = pseudonym(result, "id")
-    return result
 
 
 def profile_entry(
@@ -277,7 +237,7 @@ def profile_entry(
             for column, stats in numeric_stats.items()
         },
         "cardinalities": {column: len(values) for column, values in cardinalities.items()},
-        "sensitive_like_columns": sensitive_columns(header),
+        "identifier_columns": identifier_columns(header),
     }
     return report, header, samples
 
@@ -312,7 +272,7 @@ def audit_archive(path: Path, *, sample_size: int = 0) -> tuple[dict[str, Any], 
             entries.append(entry)
             fixtures[info.filename] = {
                 "header": header,
-                "rows": [[redact_value(column, value) for column, value in zip(header, row)] for row in samples],
+                "rows": samples,
             }
 
     report = {
@@ -363,7 +323,7 @@ def write_fixtures(fixtures: dict[str, Any], destination: Path, manifest: dict[s
         "schema_version": 1,
         "source_archive_sha256": manifest["archive"]["sha256"],
         "source_release": manifest["source"]["release"],
-        "redaction": "Deterministic pseudonymization of emails, GUIDs and account/customer identifiers.",
+        "transformation": "None; sampled rows retain the public values published by Microsoft.",
         "files": generated_files,
     }
     (destination / "manifest.json").write_text(
