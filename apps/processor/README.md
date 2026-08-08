@@ -94,6 +94,12 @@ Entry points adicionales:
 
 - `python -m app.run_worker`
 - `python -m app.run_api`
+- `python -m app.run_azure_cost_ingestion --tenant-id <tenant> --subscription-id <subscription>`
+
+La ingesta de Azure Cost recorre todas las páginas, normaliza el coste y las
+dimensiones y persiste una ejecución reproducible en CockroachDB. Una segunda
+ejecución con la misma combinación de tenant, suscripción y consulta reemplaza
+atómicamente sus filas en vez de duplicarlas.
 
 ## Variables De Entorno
 
@@ -134,3 +140,7 @@ python -m pytest tests
 - `clients/azure_cost.py` consume todas las páginas de Azure Cost Management,
   valida `columns/rows`, aplica reintentos acotados y evita reenviar el bearer a
   un `nextLink` de otro origen.
+- `tasks/azure_cost_ingest.py`, `normalization/azure_cost.py` y
+  `repositories/azure_cost.py` implementan el recorrido API → normalización →
+  persistencia. Las tablas son `azure_cost_ingestion_runs` y
+  `azure_cost_records`.
