@@ -70,3 +70,10 @@ La respuesta será `429 TooManyRequests` con `Retry-After`. El documento
 ```powershell
 python -m pytest tests -v
 ```
+
+Desde la raíz del repositorio, para verificar un despliegue completo desde
+fuera del host:
+
+```powershell
+python scripts/smoke_azure_cost_api.py --base-url http://dockerserver:18003
+```

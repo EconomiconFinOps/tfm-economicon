@@ -17,7 +17,7 @@ main (4aee5d7)
   └─ JUP-072  40daa7c + 61262c9  dataset y auditoría
        └─ JUP-073  e4d34e6       contrato Azure Cost Query
             └─ JUP-074  9dae75c  servicio FastAPI normal
-                 └─ JUP-075      resiliencia, auth y paginación
+                 └─ JUP-075  8592829  resiliencia, auth y paginación
 ```
 
 Ramas locales:
