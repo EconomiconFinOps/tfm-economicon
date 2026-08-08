@@ -1,7 +1,7 @@
 model_list:
   - model_name: economicon-chat
     litellm_params:
-      model: openrouter/openai/gpt-5-mini
+      model: openrouter/z-ai/glm-5.2
       api_key: os.environ/OPENROUTER_API_KEY
       max_tokens: 800
       extra_body:
@@ -9,9 +9,9 @@ model_list:
           zdr: true
           data_collection: deny
 
-  - model_name: economicon-chat-candidate
+  - model_name: economicon-chat-deepseek
     litellm_params:
-      model: openrouter/google/gemini-2.5-flash-lite
+      model: openrouter/deepseek/deepseek-v4-pro
       api_key: os.environ/OPENROUTER_API_KEY
       max_tokens: 800
       extra_body:

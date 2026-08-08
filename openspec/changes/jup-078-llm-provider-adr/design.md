@@ -11,12 +11,12 @@ El codigo actual usa mocks. No existe en Discord, Trello ni el repositorio una d
 backend/processor -> LiteLLM (URL + clave interna + alias) -> OpenRouter (clave upstream + modelo)
 ```
 
-Los servicios solo conocen `economicon-chat` y `economicon-embedding`. LiteLLM conserva el mapeo a modelos externos. Cada alias tiene un unico upstream: no se permite fallback silencioso.
+Los servicios solo conocen alias de Economicon. LiteLLM conserva el mapeo a modelos externos. Cada alias tiene un unico upstream: no se permite fallback silencioso.
 
-## Candidate Baseline
+## Selected Model Baseline
 
-- Chat recomendado: `openai/gpt-5-mini`, expuesto como `economicon-chat`.
-- Chat comparativo: `google/gemini-2.5-flash-lite`, expuesto como `economicon-chat-candidate` solo durante el benchmark.
+- Chat principal: `z-ai/glm-5.2`, expuesto como `economicon-chat`.
+- Segundo modelo de chat: `deepseek/deepseek-v4-pro`, expuesto como `economicon-chat-deepseek`.
 - Embeddings: `openai/text-embedding-3-small`, expuesto como `economicon-embedding`, con 1536 dimensiones.
 - Limite provisional: 800 tokens de salida, timeout de 30 segundos y 2 reintentos.
 - Techo provisional de desarrollo: 10 USD/mes mediante clave virtual de LiteLLM; requiere aprobacion.
@@ -31,7 +31,7 @@ Los servicios solo conocen `economicon-chat` y `economicon-embedding`. LiteLLM c
 
 ## Evaluation
 
-`tools/llm-benchmark.py` ejecuta el mismo JSONL contra ambos alias, conserva solo metricas y verifica terminos esperados. La decision requiere despues revision humana sobre exactitud FinOps, citas, formato, latencia y coste. Los resultados mock no son admisibles.
+`tools/llm-benchmark.py` ejecuta el mismo JSONL contra GLM-5.2 y DeepSeek V4 Pro, conserva solo metricas y verifica terminos esperados. El benchmark no decide si DeepSeek debe usarse bajo seleccion explicita para tareas concretas; esa politica requiere revision humana sobre exactitud FinOps, citas, formato, latencia y coste. Los resultados mock no son admisibles.
 
 ## Migration and Rollback
 

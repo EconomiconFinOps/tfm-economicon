@@ -1,6 +1,6 @@
 ## 1. Decision y evidencia
 
-- [x] 1.1 JUP-078 documentar frontera LiteLLM/OpenRouter y candidatos actuales
+- [x] 1.1 JUP-078 documentar frontera LiteLLM/OpenRouter y modelos seleccionados
 - [x] 1.2 JUP-078 fijar limites y presupuesto provisional sujetos a aprobacion
 - [x] 1.3 JUP-078 preparar benchmark reproducible sin credenciales en Git
 - [ ] 1.4 JUP-078 ejecutar benchmark real y adjuntar resultados

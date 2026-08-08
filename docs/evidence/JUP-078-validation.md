@@ -7,7 +7,8 @@
 
 ## Delivered
 
-- ADR-0002 in `Proposed` state with gateway boundary, candidates, scoring rubric and provisional budget.
+- ADR-0002 in `Proposed` state with gateway boundary, selected models, scoring rubric and provisional budget.
+- Model correction requested by Alejandro: GLM-5.2 is the primary chat alias and DeepSeek V4 Pro is the explicit second chat alias; the previous draft selection was removed.
 - OpenSpec change linked to JUP-078 and Trello.
 - Processor startup validation for modes, aliases, gateway key, URL, limits and embedding dimension.
 - LiteLLM example configuration with one upstream per alias and OpenRouter privacy routing.
@@ -39,6 +40,6 @@ It was not modified. Reuse is blocked until ownership and configuration are conf
 
 - Approve or adjust the 10 USD/month development cap.
 - Provision temporary OpenRouter and LiteLLM keys outside Git.
-- Run the real benchmark and review answer quality.
+- Run the real GLM-5.2 versus DeepSeek V4 Pro benchmark and review answer quality.
 - Record approval from Lucia, Paris, Victor and Alejandro.
 - Confirm the canonical GitHub repository and target `develop` branch before push/PR.

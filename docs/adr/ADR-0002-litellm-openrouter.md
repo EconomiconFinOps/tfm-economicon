@@ -11,14 +11,16 @@ Economicon necesita chat y embeddings reales para evaluar su RAG, pero el codigo
 
 No se encontro una decision aprobada en el repositorio ni en la exportacion de Discord. Esta propuesta debe ser revisada por Lucia, Paris, Victor y Alejandro y validada con un benchmark real.
 
+El 8 de agosto de 2026, Alejandro corrigio la seleccion de chat a GLM-5.2 y DeepSeek. Para hacer la configuracion reproducible se fija la variante vigente `deepseek/deepseek-v4-pro`; si el equipo pretendia otra variante de la familia DeepSeek, debera cambiarse de forma explicita antes del benchmark.
+
 ## Decision propuesta
 
 Usar LiteLLM como gateway interno OpenAI-compatible y OpenRouter como unico upstream inicial.
 
 - Los servicios usan `LITELLM_BASE_URL`, `LITELLM_API_KEY` y alias logicos.
-- `economicon-chat` se mapea inicialmente a `openai/gpt-5-mini`.
+- `economicon-chat` se mapea a `z-ai/glm-5.2` como modelo principal.
+- `economicon-chat-deepseek` se mapea a `deepseek/deepseek-v4-pro` como segundo modelo de chat bajo seleccion explicita.
 - `economicon-embedding` se mapea a `openai/text-embedding-3-small` con 1536 dimensiones.
-- `google/gemini-2.5-flash-lite` se mantiene como candidato comparativo por coste, no como fallback.
 - Cada alias tiene un unico despliegue; un fallo se propaga y se observa.
 - Los mocks solo son validos en `test` y `development`; `evaluation` los rechaza.
 
@@ -43,7 +45,7 @@ Un candidato que invente costes, falle privacidad o no cumpla salidas estructura
 - Sin fallback automatico.
 - Los limites definitivos se actualizaran con el benchmark y el volumen esperado.
 
-Como referencia de orden de magnitud, 100 casos con 2.000 tokens de entrada y 500 de salida costarian aproximadamente 0,15 USD con los precios publicados para GPT-5 mini el 8 de agosto de 2026. Esta cifra no incluye variaciones de routing, reintentos ni otros cargos.
+Como referencia de orden de magnitud, ejecutar 100 casos con 2.000 tokens de entrada y 500 de salida contra los dos modelos costaria aproximadamente 0,20 USD con los precios publicados por OpenRouter el 8 de agosto de 2026. Esta cifra no incluye variaciones de routing, reintentos ni otros cargos.
 
 ## Privacidad y secretos
 
@@ -76,8 +78,8 @@ Cambiar el modelo de embeddings o su dimension requerira una coleccion nueva y r
 ## Condiciones para aceptar este ADR
 
 1. Ejecutar el benchmark de `tools/llm-benchmark.py` con credenciales temporales.
-2. Adjuntar resultados de calidad, p95, tokens y coste.
-3. Aprobar modelo, presupuesto y privacidad por los cuatro miembros.
+2. Adjuntar resultados de calidad, p95, tokens y coste para GLM-5.2 y DeepSeek V4 Pro.
+3. Aprobar presupuesto, privacidad y politica de seleccion por los cuatro miembros.
 4. Auditar o aislar la instancia que vaya a desplegarse en `dockerserver`.
 5. Integrar la decision mediante PR en el repositorio confirmado.
 
@@ -85,6 +87,8 @@ Cambiar el modelo de embeddings o su dimension requerira una coleccion nueva y r
 
 - [LiteLLM: gateway, claves virtuales, presupuestos y endpoints compatibles](https://docs.litellm.ai/)
 - [OpenRouter: catalogo de modelos](https://openrouter.ai/api/v1/models)
+- [OpenRouter: GLM-5.2](https://openrouter.ai/z-ai/glm-5.2)
+- [OpenRouter: DeepSeek V4 Pro](https://openrouter.ai/deepseek/deepseek-v4-pro)
 - [OpenRouter: embeddings](https://openrouter.ai/docs/api/reference/embeddings)
 - [OpenRouter: Zero Data Retention](https://openrouter.ai/docs/guides/features/zdr)
 - [OpenRouter: seleccion de providers](https://openrouter.ai/docs/guides/routing/provider-selection)

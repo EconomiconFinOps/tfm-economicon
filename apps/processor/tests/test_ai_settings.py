@@ -25,7 +25,7 @@ def test_litellm_requires_gateway_key(key):
 
 def test_services_cannot_bypass_gateway_with_provider_model_id():
     with pytest.raises(ValidationError, match="logical model alias"):
-        Settings(llm_model="openai/gpt-5-mini", _env_file=None)
+        Settings(llm_model="z-ai/glm-5.2", _env_file=None)
 
 
 def test_real_embeddings_require_decided_dimension():

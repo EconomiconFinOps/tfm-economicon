@@ -8,7 +8,7 @@ Economicon solo dispone de proveedores mock. El equipo necesita decidir y valida
 ## What Changes
 
 - Proponer LiteLLM como gateway interno y OpenRouter como upstream.
-- Fijar alias logicos, candidatos de modelos, dimensiones y limites provisionales.
+- Fijar alias logicos para GLM-5.2 y DeepSeek V4 Pro, dimensiones y limites provisionales.
 - Impedir mocks en el modo de evaluacion y fallar ante configuraciones incompletas.
 - Definir privacidad, secretos, telemetria, coste y un benchmark reproducible.
 - Mantener la decision en estado propuesto hasta la aprobacion de los cuatro miembros y el benchmark real.
