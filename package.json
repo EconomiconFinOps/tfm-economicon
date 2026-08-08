@@ -13,7 +13,10 @@
     "openspec:validate": "openspec validate --all --strict --no-interactive",
     "openspec:archive": "openspec archive",
     "jup:check": "node tools/jup-check.mjs",
-    "jup:check:test": "node --test tools/jup-check.test.mjs"
+    "jup:check:all": "node tools/jup-check.mjs --all",
+    "jup:check:test": "node --test tools/jup-check.test.mjs",
+    "pr:check": "node tools/pr-policy.mjs",
+    "pr:check:test": "node --test tools/pr-policy.test.mjs"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.8.0",

@@ -10,6 +10,15 @@ export function parseChange(argv) {
   return index >= 0 ? argv[index + 1] : undefined;
 }
 
+export function findChanges(root) {
+  const changesDir = path.join(root, "openspec", "changes");
+  if (!fs.existsSync(changesDir)) return [];
+  return fs.readdirSync(changesDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && CHANGE_PATTERN.test(entry.name))
+    .map((entry) => entry.name)
+    .sort();
+}
+
 function findSpecFiles(root) {
   if (!fs.existsSync(root)) return [];
   const files = [];
@@ -54,19 +63,27 @@ export function checkChange(root, change) {
 }
 
 function main() {
-  const change = parseChange(process.argv.slice(2));
-  if (!change) {
-    console.error("Uso: pnpm jup:check --change jup-NNN-descripcion");
+  const argv = process.argv.slice(2);
+  const requestedChange = parseChange(argv);
+  const changes = argv.includes("--all") ? findChanges(process.cwd()) : [requestedChange].filter(Boolean);
+  if (changes.length === 0) {
+    console.error("Uso: pnpm jup:check --change jup-NNN-descripcion | pnpm jup:check:all");
     process.exitCode = 2;
     return;
   }
-  const errors = checkChange(process.cwd(), change);
-  if (errors.length > 0) {
-    for (const error of errors) console.error(`[ERROR] ${error}`);
-    process.exitCode = 1;
-    return;
+  let failed = false;
+  for (const change of changes) {
+    const errors = checkChange(process.cwd(), change);
+    if (errors.length === 0) {
+      console.log(`[OK] ${change} esta enlazado y completo.`);
+      continue;
+    }
+    failed = true;
+    for (const error of errors) console.error(`[ERROR] ${change}: ${error}`);
   }
-  console.log(`[OK] ${change} esta enlazado y completo.`);
+  if (failed) {
+    process.exitCode = 1;
+  }
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
