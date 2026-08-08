@@ -30,6 +30,10 @@ Cada fila tiene además un hash SHA-256 del contenido normalizado y un UUID v5
 derivado de la ejecución, posición y hash. No se persisten tokens Bearer ni se
 incluyen en logs o mensajes de error.
 
+La conexión SQLAlchemy usa el adaptador de CockroachDB y el esquema
+`cockroachdb+psycopg`; el dialecto PostgreSQL genérico no modela correctamente
+las diferencias del servidor.
+
 ## Estados y errores
 
 - `running`: la ejecución se ha registrado antes de llamar a la API;
