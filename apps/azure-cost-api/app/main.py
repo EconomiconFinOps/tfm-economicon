@@ -9,11 +9,19 @@ from fastapi import FastAPI, Path, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from app.auth import authenticate
 from app.config import Settings, get_settings
 from app.errors import ApiError, error_payload
 from app.models import QueryDefinition, QueryResult
+from app.pagination import Paginator, query_fingerprint
 from app.query_engine import QueryEngine
 from app.repository import CostRepository
+from app.scenarios import (
+    SCENARIO_HEADER,
+    apply_after_query,
+    apply_before_query,
+    resolve_scenario,
+)
 
 
 API_VERSION = "2025-03-01"
@@ -22,6 +30,10 @@ QUERY_NAMESPACE = uuid.UUID("0b9c5cc2-f7b1-41bd-a05c-627123f3b2bf")
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     resolved_settings = settings or get_settings()
+    paginator = Paginator(
+        page_size=resolved_settings.azure_cost_page_size,
+        secret=resolved_settings.azure_cost_skiptoken_secret,
+    )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -44,10 +56,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.exception_handler(ApiError)
     async def api_error_handler(_request: Request, exc: ApiError) -> JSONResponse:
-        return JSONResponse(status_code=exc.status_code, content=error_payload(exc.code, exc.message))
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=error_payload(exc.code, exc.message),
+            headers=exc.headers,
+        )
 
     @app.exception_handler(RequestValidationError)
-    async def validation_error_handler(_request: Request, exc: RequestValidationError) -> JSONResponse:
+    async def validation_error_handler(
+        _request: Request,
+        exc: RequestValidationError,
+    ) -> JSONResponse:
         messages = [error["msg"] for error in exc.errors()]
         return JSONResponse(
             status_code=400,
@@ -74,19 +93,38 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         response_model_by_alias=True,
         tags=["cost-management"],
     )
-    def query_subscription_usage(
+    async def query_subscription_usage(
         request: Request,
         definition: QueryDefinition,
         subscription_id: Annotated[str, Path(min_length=1)],
         api_version: Annotated[str, Query(alias="api-version")],
         skip_token: Annotated[str | None, Query(alias="$skiptoken")] = None,
     ) -> QueryResult:
+        authenticate(request.headers.get("Authorization"), resolved_settings)
         if api_version != API_VERSION:
             raise ApiError(400, "BadRequest", f"Only api-version={API_VERSION} is supported.")
-        if skip_token is not None:
-            raise ApiError(400, "BadRequest", "Pagination will be implemented by JUP-075.")
+
+        scenario = resolve_scenario(
+            request.headers.get(SCENARIO_HEADER),
+            resolved_settings.azure_cost_default_scenario,
+        )
+        await apply_before_query(scenario, resolved_settings)
+
         engine: QueryEngine = request.app.state.query_engine
         properties = engine.execute(subscription_id, definition)
+        fingerprint = query_fingerprint(
+            subscription_id,
+            definition,
+            request.app.state.repository.dataset_checksum,
+        )
+        offset = paginator.decode_offset(skip_token, fingerprint)
+        properties = paginator.paginate(
+            properties,
+            offset=offset,
+            fingerprint=fingerprint,
+            request_url=str(request.url),
+        )
+        properties = apply_after_query(scenario, properties)
         canonical = json.dumps(
             {
                 "subscriptionId": subscription_id.casefold(),

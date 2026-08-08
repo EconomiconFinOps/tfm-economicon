@@ -208,7 +208,7 @@ def test_custom_time_period_respects_time_of_day(client):
     assert response.json()["properties"]["rows"] == []
 
 
-def test_skip_token_is_rejected_until_jup_075(client):
+def test_invalid_skip_token_uses_contract_error(client):
     body = CASES_BY_ID["daily-cost-by-resource-group"]["request"]
     response = client.post(
         f"{QUERY_PATH}?api-version=2025-03-01&$skiptoken=opaque",
@@ -216,5 +216,4 @@ def test_skip_token_is_rejected_until_jup_075(client):
     )
 
     assert response.status_code == 400
-    assert response.json()["error"]["code"] == "BadRequest"
-    assert "JUP-075" in response.json()["error"]["message"]
+    assert response.json()["error"]["code"] == "InvalidSkipToken"

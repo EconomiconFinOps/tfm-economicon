@@ -137,6 +137,53 @@
       "requestRef": "daily-cost-by-resource-group",
       "expectedStatus": 401,
       "expectedErrorCode": "AuthenticationFailed"
+    },
+    {
+      "id": "forbidden-simulated-token",
+      "purpose": "authorization-error",
+      "requestRef": "daily-cost-by-resource-group",
+      "scenario": "forbidden-token",
+      "expectedStatus": 403,
+      "expectedErrorCode": "AuthorizationFailed"
+    },
+    {
+      "id": "rate-limit",
+      "purpose": "retryable-error",
+      "requestRef": "daily-cost-by-resource-group",
+      "scenario": "rate-limit",
+      "expectedStatus": 429,
+      "expectedErrorCode": "TooManyRequests"
+    },
+    {
+      "id": "server-error",
+      "purpose": "retryable-error",
+      "requestRef": "daily-cost-by-resource-group",
+      "scenario": "server-error",
+      "expectedStatus": 500,
+      "expectedErrorCode": "InternalServerError"
+    },
+    {
+      "id": "timeout",
+      "purpose": "timeout-simulation",
+      "requestRef": "daily-cost-by-resource-group",
+      "scenario": "timeout",
+      "expectedStatus": 200
+    },
+    {
+      "id": "forced-empty-page",
+      "purpose": "empty-page-simulation",
+      "requestRef": "daily-cost-by-resource-group",
+      "scenario": "empty-page",
+      "expectedStatus": 200,
+      "expectedRows": 0,
+      "expectedNextLink": "non-null"
+    },
+    {
+      "id": "invalid-data",
+      "purpose": "invalid-data-simulation",
+      "requestRef": "daily-cost-by-resource-group",
+      "scenario": "invalid-data",
+      "expectedStatus": 200
     }
   ]
 }

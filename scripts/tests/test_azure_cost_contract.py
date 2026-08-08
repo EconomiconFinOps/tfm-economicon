@@ -31,7 +31,23 @@ class AzureCostContractTests(unittest.TestCase):
         self.assertIn("200", operation["responses"])
         self.assertIn("400", operation["responses"])
         self.assertIn("401", operation["responses"])
+        self.assertIn("403", operation["responses"])
         self.assertIn("404", operation["responses"])
+        self.assertIn("429", operation["responses"])
+        self.assertIn("500", operation["responses"])
+        self.assertTrue(parameters["Authorization"]["required"])
+        self.assertEqual(operation["security"], [{"SimulatedBearer": []}])
+        self.assertEqual(
+            set(parameters["X-Fake-Azure-Scenario"]["schema"]["enum"]),
+            {
+                "normal",
+                "rate-limit",
+                "server-error",
+                "timeout",
+                "empty-page",
+                "invalid-data",
+            },
+        )
 
     def test_mapping_only_references_columns_present_in_fixture(self) -> None:
         fixture = ROOT / self.mapping["sourceFixture"]
@@ -73,6 +89,11 @@ class AzureCostContractTests(unittest.TestCase):
             "version-error",
             "pagination-error",
             "authentication-error",
+            "authorization-error",
+            "retryable-error",
+            "timeout-simulation",
+            "empty-page-simulation",
+            "invalid-data-simulation",
         }
 
         self.assertEqual(len(ids), len(set(ids)))

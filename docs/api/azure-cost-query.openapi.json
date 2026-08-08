@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Economicon Azure Cost Management Query subset",
-    "version": "2025-03-01-jup073",
-    "description": "Contrato de pruebas compatible con el subconjunto de Query Usage utilizado por Economicon. No es un emulador completo de Azure.",
+    "version": "2025-03-01-jup075",
+    "description": "Contrato de pruebas compatible con el subconjunto de Query Usage utilizado por Economicon, incluida la simulación determinista de resiliencia. No es un emulador completo de Azure.",
     "license": {
       "name": "Licencia del proyecto pendiente de decisión del equipo",
       "identifier": "LicenseRef-Pending"
@@ -40,9 +40,19 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": false,
-            "description": "Bearer ficticio. Solo es obligatorio cuando la autenticación simulada está activada.",
+            "required": true,
+            "description": "Bearer ficticio configurado localmente; nunca se valida contra Entra ID.",
             "schema": {"type": "string", "pattern": "^Bearer .+$"}
+          },
+          {
+            "name": "X-Fake-Azure-Scenario",
+            "in": "header",
+            "required": false,
+            "description": "Fuerza un escenario determinista de pruebas. Si se omite, se usa la configuración del servicio.",
+            "schema": {
+              "type": "string",
+              "enum": ["normal", "rate-limit", "server-error", "timeout", "empty-page", "invalid-data"]
+            }
           }
         ],
         "requestBody": {
@@ -93,9 +103,12 @@
           },
           "400": {"$ref": "#/components/responses/BadRequest"},
           "401": {"$ref": "#/components/responses/Unauthorized"},
-          "404": {"$ref": "#/components/responses/NotFound"}
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/NotFound"},
+          "429": {"$ref": "#/components/responses/TooManyRequests"},
+          "500": {"$ref": "#/components/responses/ServerError"}
         },
-        "security": [{"SimulatedBearer": []}, {}]
+        "security": [{"SimulatedBearer": []}]
       }
     }
   },
@@ -273,8 +286,21 @@
         "headers": {"WWW-Authenticate": {"schema": {"type": "string"}}},
         "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
       },
+      "Forbidden": {
+        "description": "La identidad ficticia está autenticada pero no autorizada.",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      },
       "NotFound": {
         "description": "La suscripción no está presente en el fixture.",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      },
+      "TooManyRequests": {
+        "description": "Throttling simulado.",
+        "headers": {"Retry-After": {"schema": {"type": "integer", "minimum": 0}}},
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      },
+      "ServerError": {
+        "description": "Fallo interno simulado.",
         "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
       }
     }
@@ -284,6 +310,7 @@
     "scope": "subscription",
     "clock": "configurable and anchored to fixture dates",
     "pagination": "opaque token bound to request and dataset checksum",
-    "sourceMapping": "azure-cost-query-mapping.json"
+    "sourceMapping": "azure-cost-query-mapping.json",
+    "scenarioHeader": "X-Fake-Azure-Scenario"
   }
 }
