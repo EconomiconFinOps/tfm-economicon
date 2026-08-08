@@ -1,0 +1,36 @@
+model_list:
+  - model_name: economicon-chat
+    litellm_params:
+      model: openrouter/openai/gpt-5-mini
+      api_key: os.environ/OPENROUTER_API_KEY
+      max_tokens: 800
+      extra_body:
+        provider:
+          zdr: true
+          data_collection: deny
+
+  - model_name: economicon-chat-candidate
+    litellm_params:
+      model: openrouter/google/gemini-2.5-flash-lite
+      api_key: os.environ/OPENROUTER_API_KEY
+      max_tokens: 800
+      extra_body:
+        provider:
+          zdr: true
+          data_collection: deny
+
+  - model_name: economicon-embedding
+    litellm_params:
+      model: openrouter/openai/text-embedding-3-small
+      api_key: os.environ/OPENROUTER_API_KEY
+      dimensions: 1536
+      extra_body:
+        provider:
+          zdr: true
+          data_collection: deny
+
+litellm_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  request_timeout: 30
+  num_retries: 2
+  set_verbose: false

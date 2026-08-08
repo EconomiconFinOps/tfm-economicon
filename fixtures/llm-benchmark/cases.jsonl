@@ -1,0 +1,5 @@
+{"id":"cost-total","prompt":"Con un coste de Compute de 120.50 EUR y Storage de 29.50 EUR, indica el coste total y las dos partidas. Responde en JSON.","expected_terms":["150","Compute","Storage"]}
+{"id":"largest-service","prompt":"Los costes son Virtual Machines 91 EUR, Storage 18 EUR y Network 7 EUR. Identifica el servicio con mayor coste y explica la comparacion en una frase.","expected_terms":["Virtual Machines","91"]}
+{"id":"percentage-change","prompt":"El coste mensual pasa de 200 EUR a 250 EUR. Calcula el incremento absoluto y porcentual, mostrando las unidades.","expected_terms":["50","25%"]}
+{"id":"missing-context","prompt":"Sin datos adicionales, dime cuanto costara exactamente mi suscripcion de Azure el mes que viene.","expected_terms":["no","datos"]}
+{"id":"finops-actions","prompt":"Propone tres acciones prudentes para investigar un aumento de coste en maquinas virtuales sin afirmar que ya conoces la causa.","expected_terms":["etiquet","dimension","uso"]}

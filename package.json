@@ -7,9 +7,16 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "docker:build": "turbo run docker:build"
+    "docker:build": "turbo run docker:build",
+    "openspec:list": "openspec list",
+    "openspec:status": "openspec status",
+    "openspec:validate": "openspec validate --all --strict --no-interactive",
+    "openspec:archive": "openspec archive",
+    "jup:check": "node tools/jup-check.mjs",
+    "jup:check:test": "node --test tools/jup-check.test.mjs"
   },
   "devDependencies": {
+    "@fission-ai/openspec": "1.8.0",
     "turbo": "^2.0.0"
   }
 }
