@@ -38,13 +38,15 @@ Servicios:
 
 ```text
 economicon-jup077-azure-cost-api-1  healthy  0.0.0.0:18004->8002
-economicon-jup077-cockroachdb-1     healthy  0.0.0.0:26257->26257
+economicon-jup077-cockroachdb-1     healthy  127.0.0.1:26257->26257
 ```
 
 El build del processor usó un contexto de 70,60 kB y terminó correctamente.
 Se ajustó Compose para que la pila sea autocontenida sin exigir un `.env`
 ignorado, use almacenamiento persistente y permita conectividad SQL en la red
-interna. La conexión utiliza `sqlalchemy-cockroachdb` con psycopg 3.
+interna. La conexión utiliza `sqlalchemy-cockroachdb` con psycopg 3. Los puertos
+SQL y de consola de CockroachDB se enlazan únicamente al loopback del servidor;
+el processor accede por la red privada de Compose.
 
 ## Recorrido correcto e idempotencia
 

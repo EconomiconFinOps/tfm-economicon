@@ -10,8 +10,8 @@ services:
       - --advertise-addr=cockroachdb:26257
       - --http-addr=0.0.0.0:8080
     ports:
-      - "26257:26257"
-      - "8080:8080"
+      - "127.0.0.1:26257:26257"
+      - "127.0.0.1:8080:8080"
     volumes:
       - cockroach-data:/cockroach/cockroach-data
     healthcheck:
