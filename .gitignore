@@ -16,4 +16,5 @@ __pycache__/
 coverage/
 htmlcov/
 *.log
+/data/raw/
 
