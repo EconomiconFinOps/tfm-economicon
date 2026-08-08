@@ -4,6 +4,7 @@ services:
     command:
       - start-single-node
       - --insecure
+      - --store=/cockroach/cockroach-data
       - --listen-addr=0.0.0.0:26257
       - --http-addr=0.0.0.0:8080
     ports:
