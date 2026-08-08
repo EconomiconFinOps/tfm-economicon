@@ -15,6 +15,17 @@ main (4aee5d7)
                  └─ JUP-077  normalización y persistencia E2E
 ```
 
+Cabezas verificadas:
+
+| Tarjeta | Commit |
+| --- | --- |
+| JUP-072 | `61262c9` |
+| JUP-073 | `e4d34e6` |
+| JUP-074 | `9dae75c` |
+| JUP-075 | `2d2f455` |
+| JUP-076 | `215f54c` |
+| JUP-077 (implementación desplegada) | `e81b898` |
+
 Ramas locales:
 
 - `docs/JUP-072-audit-azure-dataset`;
