@@ -9,6 +9,7 @@ El objetivo del proyecto es separar responsabilidades de forma clara:
 - `frontend` para la interfaz web
 - `backend` para la API principal
 - `processor` para trabajo asincrono, pipelines y embeddings
+- `azure-cost-api` para simular el subconjunto de Azure Cost Management Query
 - `shared-config` para configuracion compartida del workspace JavaScript
 
 Ademas, el proyecto usa servicios de infraestructura para mensajeria, persistencia operativa y almacenamiento vectorial.
@@ -33,7 +34,8 @@ tfm-economicon
 |-- apps/
 |   |-- backend/
 |   |-- frontend/
-|   `-- processor/
+|   |-- processor/
+|   `-- azure-cost-api/
 |-- docs/
 |   |-- architecture.md
 |   `-- turborepo_use.md
@@ -60,6 +62,7 @@ Puertos visibles:
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8000`
 - Processor health: `http://localhost:8001/health`
+- Azure Cost API: `http://localhost:8002/health`
 - RabbitMQ Console: `http://localhost:15672`
 - pgvector Postgres: `localhost:5433`
 - Cockroach SQL: `localhost:26257`
@@ -100,6 +103,7 @@ Puertos habituales:
 - Frontend: `5173`
 - Backend: `8000`
 - Processor: `8001`
+- Azure Cost API: `8002`
 
 ## Variables De Entorno
 
