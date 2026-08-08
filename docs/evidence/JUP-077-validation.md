@@ -2,7 +2,7 @@
 
 Fecha: 2026-08-08  
 Rama local: `test/JUP-077-azure-cost-e2e`  
-Commit desplegado y validado: `e81b898`  
+Commit desplegado y validado: `fa93abf`  
 Publicación remota: no realizada
 
 ## Alcance validado
@@ -31,7 +31,7 @@ de prueba por `example.com`. No se cambió el comportamiento de autenticación.
 ## Despliegue aislado
 
 Host: `dockerserver`  
-Directorio: `/home/danteadmin/economicon-deployments/jup-077-e81b898`  
+Directorio: `/home/danteadmin/economicon-deployments/jup-077-fa93abf`  
 Proyecto Compose: `economicon-jup077`
 
 Servicios:
