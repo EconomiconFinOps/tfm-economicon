@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "apiVersion": "2025-03-01",
+  "knownSubscriptionId": "64e355d7-997c-491d-b0c1-8414dccfcf42",
+  "cases": [
+    {
+      "id": "daily-cost-by-resource-group",
+      "purpose": "aggregation-and-grouping",
+      "request": {
+        "type": "ActualCost",
+        "timeframe": "Custom",
+        "timePeriod": {"from": "2024-06-01T00:00:00Z", "to": "2024-06-20T00:00:00Z"},
+        "dataset": {
+          "granularity": "Daily",
+          "aggregation": {"totalCost": {"name": "PreTaxCost", "function": "Sum"}},
+          "grouping": [{"type": "Dimension", "name": "ResourceGroup"}]
+        }
+      },
+      "expectedStatus": 200,
+      "expectedColumns": ["PreTaxCost", "ResourceGroup", "UsageDate", "Currency"]
+    },
+    {
+      "id": "storage-only",
+      "purpose": "dimension-filter",
+      "request": {
+        "type": "Usage",
+        "timeframe": "MonthToDate",
+        "dataset": {
+          "granularity": "None",
+          "aggregation": {"totalCost": {"name": "PreTaxCost", "function": "Sum"}},
+          "filter": {"dimensions": {"name": "ServiceName", "operator": "In", "values": ["Storage"]}}
+        }
+      },
+      "expectedStatus": 200,
+      "expectedColumns": ["PreTaxCost", "Currency"]
+    },
+    {
+      "id": "production-tag",
+      "purpose": "tag-filter",
+      "request": {
+        "type": "ActualCost",
+        "timeframe": "Custom",
+        "timePeriod": {"from": "2024-06-01T00:00:00Z", "to": "2024-06-20T00:00:00Z"},
+        "dataset": {
+          "granularity": "None",
+          "aggregation": {"totalCost": {"name": "PreTaxCost", "function": "Sum"}},
+          "filter": {"tags": {"name": "env", "operator": "In", "values": ["prod"]}}
+        }
+      },
+      "expectedStatus": 200,
+      "expectedColumns": ["PreTaxCost", "Currency"]
+    },
+    {
+      "id": "intermediate-page",
+      "purpose": "pagination-intermediate",
+      "pageSize": 2,
+      "request": {
+        "type": "ActualCost",
+        "timeframe": "Custom",
+        "timePeriod": {"from": "2024-06-01T00:00:00Z", "to": "2024-06-20T00:00:00Z"},
+        "dataset": {
+          "granularity": "Daily",
+          "aggregation": {"totalCost": {"name": "PreTaxCost", "function": "Sum"}},
+          "grouping": [{"type": "Dimension", "name": "ResourceGroup"}]
+        }
+      },
+      "expectedStatus": 200,
+      "expectedNextLink": "non-null"
+    },
+    {
+      "id": "last-page",
+      "purpose": "pagination-last",
+      "requestRef": "intermediate-page",
+      "skipToken": "token-returned-by-penultimate-page",
+      "expectedStatus": 200,
+      "expectedNextLink": null
+    },
+    {
+      "id": "no-data",
+      "purpose": "empty-result",
+      "request": {
+        "type": "ActualCost",
+        "timeframe": "Custom",
+        "timePeriod": {"from": "2030-01-01T00:00:00Z", "to": "2030-02-01T00:00:00Z"},
+        "dataset": {
+          "granularity": "Daily",
+          "aggregation": {"totalCost": {"name": "PreTaxCost", "function": "Sum"}}
+        }
+      },
+      "expectedStatus": 200,
+      "expectedRows": 0,
+      "expectedNextLink": null
+    },
+    {
+      "id": "unknown-subscription",
+      "purpose": "scope-error",
+      "subscriptionId": "00000000-0000-0000-0000-000000000000",
+      "requestRef": "daily-cost-by-resource-group",
+      "expectedStatus": 404,
+      "expectedErrorCode": "SubscriptionNotFound"
+    },
+    {
+      "id": "unsupported-dimension",
+      "purpose": "validation-error",
+      "request": {
+        "type": "ActualCost",
+        "timeframe": "MonthToDate",
+        "dataset": {
+          "granularity": "None",
+          "aggregation": {"totalCost": {"name": "PreTaxCost", "function": "Sum"}},
+          "grouping": [{"type": "Dimension", "name": "UnsupportedDimension"}]
+        }
+      },
+      "expectedStatus": 400,
+      "expectedErrorCode": "BadRequest"
+    },
+    {
+      "id": "unsupported-api-version",
+      "purpose": "version-error",
+      "apiVersion": "2023-03-01",
+      "requestRef": "daily-cost-by-resource-group",
+      "expectedStatus": 400,
+      "expectedErrorCode": "BadRequest"
+    },
+    {
+      "id": "invalid-skip-token",
+      "purpose": "pagination-error",
+      "requestRef": "daily-cost-by-resource-group",
+      "skipToken": "invalid-or-from-another-query",
+      "expectedStatus": 400,
+      "expectedErrorCode": "InvalidSkipToken"
+    },
+    {
+      "id": "missing-simulated-token",
+      "purpose": "authentication-error",
+      "authenticationEnabled": true,
+      "requestRef": "daily-cost-by-resource-group",
+      "expectedStatus": 401,
+      "expectedErrorCode": "AuthenticationFailed"
+    }
+  ]
+}

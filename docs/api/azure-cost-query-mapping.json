@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "sourceFixture": "fixtures/azure-cost/EA-Cost-Actual.sample.csv",
+  "scope": {
+    "type": "subscription",
+    "pathParameter": "subscriptionId",
+    "sourceColumn": "SubscriptionId"
+  },
+  "metrics": {
+    "PreTaxCost": {
+      "sourceColumn": "CostInBillingCurrency",
+      "responseType": "Number",
+      "supportedFunctions": ["Sum"]
+    }
+  },
+  "dimensions": {
+    "ResourceGroup": {"sourceColumn": "ResourceGroup", "responseType": "String"},
+    "ResourceLocation": {"sourceColumn": "ResourceLocation", "responseType": "String"},
+    "SubscriptionId": {"sourceColumn": "SubscriptionId", "responseType": "String"},
+    "SubscriptionName": {"sourceColumn": "SubscriptionName", "responseType": "String"},
+    "ServiceName": {"sourceColumn": "MeterCategory", "responseType": "String"},
+    "MeterCategory": {"sourceColumn": "MeterCategory", "responseType": "String"},
+    "ChargeType": {"sourceColumn": "ChargeType", "responseType": "String"},
+    "PublisherType": {"sourceColumn": "PublisherType", "responseType": "String"},
+    "PricingModel": {"sourceColumn": "PricingModel", "responseType": "String"}
+  },
+  "tags": {
+    "sourceColumn": "Tags",
+    "supportedNames": ["CostCenter", "Project", "env", "org"],
+    "responseType": "String"
+  },
+  "systemColumns": {
+    "UsageDate": {
+      "sourceColumn": "Date",
+      "responseType": "Number",
+      "format": "yyyyMMdd",
+      "includedWhen": "dataset.granularity == Daily"
+    },
+    "Currency": {
+      "sourceColumn": "BillingCurrencyCode",
+      "responseType": "String",
+      "includedWhen": "always"
+    }
+  },
+  "comparison": {
+    "dimensionAndTagFilters": "case-insensitive",
+    "scopeSubscriptionId": "case-insensitive",
+    "outputValues": "preserve source spelling"
+  }
+}
