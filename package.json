@@ -18,6 +18,8 @@
     "hu:check:anti-harness": "node tools/hu-check.mjs anti-harness",
     "hu:check:findings": "node tools/hu-check.mjs findings",
     "hu:check:test": "node --test tools/hu-check.test.mjs",
+    "assistant-corpus:validate": "node tools/assistant-corpus.mjs validate",
+    "assistant-corpus:test": "node --test tools/assistant-corpus.test.mjs",
     "engram": ".\\tools\\engram\\engram.exe",
     "engram:doctor": ".\\tools\\engram\\engram.exe doctor --project tfm-economicon",
     "engram:context": ".\\tools\\engram\\engram.exe context tfm-economicon",
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@fission-ai/openspec": "^1.4.1",
-    "turbo": "^2.0.0"
+    "turbo": "^2.0.0",
+    "yaml": "2.9.0"
   }
 }
