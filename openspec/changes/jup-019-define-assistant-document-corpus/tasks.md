@@ -24,6 +24,6 @@
 
 ## 5. Verification
 
-- [ ] 5.1 Run `pnpm openspec:validate` and the JUP-019 corpus validation command.
-- [ ] 5.2 Run focused tests/checks for changed files and document exact commands and results in `review.md`.
-- [ ] 5.3 Confirm ADR applicability in review, recording `ADR not applicable` unless the manifest becomes a durable runtime RAG contract during implementation.
+- [x] 5.1 Run `pnpm openspec:validate` and the JUP-019 corpus validation command.
+- [x] 5.2 Run focused tests/checks for changed files and document exact commands and results in `review.md`.
+- [x] 5.3 Confirm ADR applicability in review, recording `ADR not applicable` unless the manifest becomes a durable runtime RAG contract during implementation.
