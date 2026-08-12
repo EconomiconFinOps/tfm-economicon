@@ -18,9 +18,9 @@
 
 ## 4. Documentation And Handoff
 
-- [ ] 4.1 Document how downstream JUP-020, JUP-022, JUP-024, and JUP-025 should consume the corpus contract.
-- [ ] 4.2 Document JUP-019 exclusions: real cloud access, real Azure consumption, embeddings, semantic retrieval, LiteLLM/OpenRouter integration, UI changes, and final citation rendering.
-- [ ] 4.3 Record any dataset naming assumptions so JUP-072/JUP-073 can update them deliberately if needed.
+- [x] 4.1 Document how downstream JUP-020, JUP-022, JUP-024, and JUP-025 should consume the corpus contract.
+- [x] 4.2 Document JUP-019 exclusions: real cloud access, real Azure consumption, embeddings, semantic retrieval, LiteLLM/OpenRouter integration, UI changes, and final citation rendering.
+- [x] 4.3 Record any dataset naming assumptions so JUP-072/JUP-073 can update them deliberately if needed.
 
 ## 5. Verification
 

@@ -4,7 +4,7 @@
 
 Este documento define contexto funcional sobre Economicon para un asistente orientado a usuarios del producto. No expone arquitectura interna de implementacion, servicios, bases de datos, colas, endpoints, proveedores cloud ni decisiones de despliegue.
 
-La documentacion tecnica completa de componentes, flujos y dependencias pertenece a JUP-060. JUP-019 solo mantiene una version curada y segura para explicar que hace el producto y que limites tiene en el MVP.
+La documentacion tecnica completa de componentes, flujos y dependencias queda fuera de este documento. Aqui solo se mantiene una version curada y segura para explicar que hace el producto y que limites tiene en el MVP.
 
 ## Vision Del Producto
 
@@ -42,7 +42,7 @@ El MVP trabaja con un dataset simulado y no con datos reales de un tenant de cli
 
 - conocimiento global, valido para cualquier usuario del producto;
 - conocimiento ligado al dataset simulado del MVP;
-- conocimiento tenant-specific futuro, que no esta disponible en JUP-019.
+- conocimiento tenant-specific futuro, que no esta disponible en el corpus MVP.
 
 Cuando una respuesta dependa de datos reales de cliente, el asistente debe indicar que esa informacion no forma parte del corpus MVP.
 
@@ -61,7 +61,7 @@ Si el usuario pregunta por arquitectura tecnica interna, la respuesta debe remit
 
 ## Rol Del Corpus Documental
 
-El corpus bajo `docs/assistant-corpus/` define conocimiento curado para el asistente. Su manifest sera el contrato que indique que documentos son indexables y con que metadata.
+El corpus define conocimiento curado para el asistente. El manifest del corpus indica que documentos son indexables y con que metadata.
 
 El corpus aporta contexto sobre:
 
@@ -71,34 +71,3 @@ El corpus aporta contexto sobre:
 - contexto funcional del producto.
 
 No debe sustituir la documentacion tecnica completa ni la logica de producto.
-
-## Limites De JUP-019
-
-JUP-019 puede crear:
-
-- documentos Markdown del corpus;
-- manifest y metadata;
-- documentacion de uso;
-- validacion estructural.
-
-JUP-019 no puede crear ni modificar:
-
-- servicios internos;
-- flujos runtime;
-- indices vectoriales;
-- embeddings reales;
-- integracion LiteLLM/OpenRouter;
-- UI;
-- cloud real;
-- consumo de Azure real;
-- renderizado final de citas.
-
-## Handoff A Historias Posteriores
-
-- JUP-020 debe usar el manifest como entrada para chunking y embeddings.
-- JUP-022 debe decidir como buscar documentos globales, dataset-scoped y tenant-specific.
-- JUP-024 debe usar el corpus como contexto para prompts y guardrails.
-- JUP-025 debe usar metadata del manifest para citas.
-- JUP-060 debe mantener la arquitectura tecnica completa del producto.
-
-Este documento define contexto funcional para retrieval futuro, pero no implementa retrieval.
