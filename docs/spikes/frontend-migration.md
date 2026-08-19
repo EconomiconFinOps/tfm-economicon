@@ -21,7 +21,7 @@ Tasks            -> pasos verificables dentro de cada HU
 
 | Aspecto              | Origen (Economicon)        | Destino actual (tfm-economicon)                         |
 | -------------------- | -------------------------- | ------------------------------------------------------- |
-| Framework            | React + Vite               | React 18 + Vite                                         |
+| Framework            | React 18.3.1 + Vite 6      | React 18.3.1 + Vite 5                                   |
 | Lenguaje             | **TypeScript**             | **JavaScript** (JSX)                                    |
 | Datos/estado         | `[ASUNCION]` por confirmar | TanStack Query (`@tanstack/react-query`)                |
 | Routing              | `[ASUNCION]` por confirmar | Estado manual `activeView` en `App.jsx` (sin router)    |
@@ -92,7 +92,8 @@ monorepo. La frontera es:
 
 ### Supuestos a confirmar (marcar `[ASUNCION]` hasta inspeccionar Economicon)
 
-- `[ASUNCION]` Economicon usa React 18 compatible (no React 19 con breaking changes).
+- **Confirmado (T1):** React **18.3.1** (peerDeps), compatible con el destino. Vite **6** en el
+  origen frente a Vite **5** en el destino → salto de major a decidir al reconciliar el tooling.
 - `[ASUNCION]` Routing del origen (react-router u otro) y si introduce dependencias nuevas.
 - `[ASUNCION]` Libreria de datos del origen (TanStack Query, Redux, SWR...) y si coincide con la del destino.
 - `[ASUNCION]` Modelo de auth/sesion del origen y si encaja con `Bearer` + `X-Tenant-Id`.

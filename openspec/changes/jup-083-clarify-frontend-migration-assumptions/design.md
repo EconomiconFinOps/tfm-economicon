@@ -51,8 +51,13 @@ lectura y documenta los hallazgos, sin tocar código de producto.
 
 > Esta sección se rellena durante `/opsx:apply` (una entrada por tarea). Estructura a completar:
 
-- **Snapshot del origen:** ruta `../Economicon`, commit hash `<pendiente>`.
-- **T1 · React / Vite:** `<pendiente>` (versiones exactas de `package.json`).
+- **Snapshot del origen:** ruta `../Economicon`, rama `main`, commit
+  `1fe0030c054d81787bfd0c410f238a6f87a688f6`. El frontend vive en `Economicon/frontend/`
+  (paquete `finops-dashboard-frontend`, generado con Figma Make).
+- **T1 · React / Vite:** React **18.3.1** (`peerDependencies` react/react-dom 18.3.1) →
+  compatible con el destino. Vite **6** (`devDependencies` `^6.4.2`, fijado a `6.3.5` vía
+  `pnpm.overrides`), con `@vitejs/plugin-react` 4.7.0. **Salto de major respecto al destino**
+  (Vite 5, `^5.3.3`): habrá que decidir versión de Vite al reconciliar el tooling.
 - **T2 · Routing:** `<pendiente>` (librería y versión; dependencias nuevas).
 - **T3 · Librería de datos/estado:** `<pendiente>` (TanStack Query / Redux / SWR / otro).
 - **T4 · Auth / sesión:** `<pendiente>` (mecanismo; encaje con `Bearer` + `X-Tenant-Id`).

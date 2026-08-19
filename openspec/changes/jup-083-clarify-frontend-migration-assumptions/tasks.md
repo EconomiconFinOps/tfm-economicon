@@ -1,11 +1,11 @@
 ## 1. Preparación
 
-- [ ] 1.1 Anotar el snapshot del origen (ruta `../Economicon` y commit hash actual) en la sección
+- [x] 1.1 Anotar el snapshot del origen (ruta `../Economicon` y commit hash actual) en la sección
   "Inventario del frontend de Economicon" de `design.md`.
 
 ## 2. Confirmar supuestos (una tarea = un supuesto = un commit)
 
-- [ ] 2.1 Confirmar versión de React/Vite desde `../Economicon/package.json`; volcar al inventario de
+- [x] 2.1 Confirmar versión de React/Vite desde `../Economicon/package.json`; volcar al inventario de
   `design.md` y reemplazar el `[ASUNCION]` correspondiente en el spike.
 - [ ] 2.2 Confirmar el routing (librería y versión; dependencias nuevas); inventario + spike.
 - [ ] 2.3 Confirmar la librería de datos/estado (TanStack Query / Redux / SWR / otro); inventario + spike.
