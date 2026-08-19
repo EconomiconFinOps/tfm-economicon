@@ -72,6 +72,12 @@ lectura y documenta los hallazgos, sin tocar código de producto.
   `X-Tenant-Id` y sesión en `localStorage` (`finops.session`, `finops.activeTenant`). → La migración
   deberá **añadir todo el flujo de auth/sesión/tenant** del destino sobre la UI de Economicon.
   **Finding para la épica.**
-- **T5 · Sistema de estilos:** `<pendiente>` (CSS plano / Modules / Tailwind / styled-components).
+- **T5 · Sistema de estilos:** **Tailwind CSS v4** (`@tailwindcss/vite` + `tailwindcss` 4.1.12,
+  `tw-animate-css`, `tailwind-merge`, `class-variance-authority`, `clsx`) + **shadcn/ui** (primitivos
+  Radix UI, carpeta `src/app/components/ui/`) + **MUI 7** (`@mui/material` + `@emotion`) +
+  `next-themes` para theming. Estilos en `src/styles/` (`fonts.css`, `index.css`, `tailwind.css`,
+  `theme.css`); config vía `postcss.config.mjs` y el plugin Tailwind de Vite. → El destino usa un
+  único `src/styles/main.css` plano (tema oscuro); adoptar este stack trae **muchas dependencias
+  nuevas** y un tema propio a reconciliar.
 - **T6 · Assets:** `<pendiente>` (fuentes, imágenes, iconos; licencias).
 - **T7 · Variables de entorno `VITE_*`:** `<pendiente>`.

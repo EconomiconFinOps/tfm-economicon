@@ -27,7 +27,7 @@ Tasks            -> pasos verificables dentro de cada HU
 | Routing              | react-router 7 (`createBrowserRouter`) | Estado manual `activeView` en `App.jsx` (sin router)    |
 | Capa API             | Ninguna (sin `fetch`/`axios`) | `src/services/api.js` centralizado                      |
 | Auth/sesion          | Ninguna (sin login/tenant) | `localStorage` (`finops.session`, `finops.activeTenant`) |
-| Estilos              | `[ASUNCION]` por confirmar | Un unico `src/styles/main.css`, tema oscuro             |
+| Estilos              | Tailwind v4 + shadcn/ui + MUI | Un unico `src/styles/main.css`, tema oscuro             |
 | Empaquetado monorepo | repo independiente         | `@finops/frontend`, pnpm workspace + turbo + Docker     |
 
 **Gap principal:** el origen llega en TypeScript y el destino esta en JavaScript. El reemplazo
@@ -100,7 +100,8 @@ monorepo. La frontera es:
   datos estáticos/mock). El destino usa TanStack Query → la migración añade toda la capa de datos.
 - **Confirmado (T4):** el origen no tiene auth/sesión/tenant. El destino sí (`Bearer` +
   `X-Tenant-Id` + sesión en `localStorage`) → la migración añade el flujo de auth del destino.
-- `[ASUNCION]` Sistema de estilos del origen (CSS plano, CSS Modules, Tailwind, styled-components).
+- **Confirmado (T5):** Tailwind CSS v4 + shadcn/ui (Radix) + MUI 7 + `next-themes`, con estilos en
+  `src/styles/`. El destino usa un único `main.css` plano → cambio grande de sistema de estilos.
 - `[ASUNCION]` Assets estaticos (fuentes, imagenes, iconos) y licencias.
 
 ### Checklist de inspeccion del origen (resolver los `[ASUNCION]`)
