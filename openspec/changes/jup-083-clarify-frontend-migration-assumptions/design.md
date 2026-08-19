@@ -58,7 +58,10 @@ lectura y documenta los hallazgos, sin tocar código de producto.
   compatible con el destino. Vite **6** (`devDependencies` `^6.4.2`, fijado a `6.3.5` vía
   `pnpm.overrides`), con `@vitejs/plugin-react` 4.7.0. **Salto de major respecto al destino**
   (Vite 5, `^5.3.3`): habrá que decidir versión de Vite al reconciliar el tooling.
-- **T2 · Routing:** `<pendiente>` (librería y versión; dependencias nuevas).
+- **T2 · Routing:** **react-router 7.13.0** con `createBrowserRouter` (API de data router).
+  `src/app/routes.tsx` define 5 rutas anidadas bajo un `Layout`: index → `ExecutiveCostDashboard`,
+  `/operational`, `/cuts`, `/anomalies`, `/recommendations`. Dependencia **nueva** respecto al
+  destino, que hoy navega con estado manual `activeView` en `App.jsx` (sin router).
 - **T3 · Librería de datos/estado:** `<pendiente>` (TanStack Query / Redux / SWR / otro).
 - **T4 · Auth / sesión:** `<pendiente>` (mecanismo; encaje con `Bearer` + `X-Tenant-Id`).
 - **T5 · Sistema de estilos:** `<pendiente>` (CSS plano / Modules / Tailwind / styled-components).

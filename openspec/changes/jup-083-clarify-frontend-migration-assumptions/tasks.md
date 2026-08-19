@@ -7,7 +7,7 @@
 
 - [x] 2.1 Confirmar versión de React/Vite desde `../Economicon/package.json`; volcar al inventario de
   `design.md` y reemplazar el `[ASUNCION]` correspondiente en el spike.
-- [ ] 2.2 Confirmar el routing (librería y versión; dependencias nuevas); inventario + spike.
+- [x] 2.2 Confirmar el routing (librería y versión; dependencias nuevas); inventario + spike.
 - [ ] 2.3 Confirmar la librería de datos/estado (TanStack Query / Redux / SWR / otro); inventario + spike.
 - [ ] 2.4 Confirmar el modelo de auth/sesión y su encaje con `Bearer` + `X-Tenant-Id`; inventario + spike.
 - [ ] 2.5 Confirmar el sistema de estilos (CSS plano / Modules / Tailwind / styled-components); inventario + spike.
