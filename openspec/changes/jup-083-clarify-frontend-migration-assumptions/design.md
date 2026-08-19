@@ -79,5 +79,10 @@ lectura y documenta los hallazgos, sin tocar código de producto.
   `theme.css`); config vía `postcss.config.mjs` y el plugin Tailwind de Vite. → El destino usa un
   único `src/styles/main.css` plano (tema oscuro); adoptar este stack trae **muchas dependencias
   nuevas** y un tema propio a reconciliar.
-- **T6 · Assets:** `<pendiente>` (fuentes, imágenes, iconos; licencias).
+- **T6 · Assets:** Mínimos. **Iconos** vía `lucide-react` (24 usos; `@mui/icons-material` está en
+  deps pero no se usa). **Sin `src/assets`** materializado: el plugin `figmaAssetResolver` de
+  `vite.config.ts` apunta a `src/assets` pero no hay imágenes (0 imports `figma:asset`);
+  `ImageWithFallback` recurre a Unsplash. `src/styles/fonts.css` está **vacío** (sin fuentes
+  propias). **Licencias** (`ATTRIBUTIONS.md`): shadcn/ui bajo MIT; fotos de Unsplash bajo su licencia
+  → revisar la licencia de Unsplash si se usan imágenes reales en producción.
 - **T7 · Variables de entorno `VITE_*`:** `<pendiente>`.

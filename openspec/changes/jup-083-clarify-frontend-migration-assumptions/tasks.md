@@ -11,7 +11,7 @@
 - [x] 2.3 Confirmar la librería de datos/estado (TanStack Query / Redux / SWR / otro); inventario + spike.
 - [x] 2.4 Confirmar el modelo de auth/sesión y su encaje con `Bearer` + `X-Tenant-Id`; inventario + spike.
 - [x] 2.5 Confirmar el sistema de estilos (CSS plano / Modules / Tailwind / styled-components); inventario + spike.
-- [ ] 2.6 Confirmar assets estáticos (fuentes, imágenes, iconos) y sus licencias; inventario + spike.
+- [x] 2.6 Confirmar assets estáticos (fuentes, imágenes, iconos) y sus licencias; inventario + spike.
 - [ ] 2.7 Confirmar variables de entorno `VITE_*` requeridas por el origen; inventario + spike.
 
 ## 3. Cierre y verificación

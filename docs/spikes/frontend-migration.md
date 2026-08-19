@@ -102,7 +102,8 @@ monorepo. La frontera es:
   `X-Tenant-Id` + sesión en `localStorage`) → la migración añade el flujo de auth del destino.
 - **Confirmado (T5):** Tailwind CSS v4 + shadcn/ui (Radix) + MUI 7 + `next-themes`, con estilos en
   `src/styles/`. El destino usa un único `main.css` plano → cambio grande de sistema de estilos.
-- `[ASUNCION]` Assets estaticos (fuentes, imagenes, iconos) y licencias.
+- **Confirmado (T6):** iconos vía `lucide-react`; sin `src/assets` materializado ni fuentes propias
+  (`fonts.css` vacío). Licencias en `ATTRIBUTIONS.md`: shadcn/ui (MIT) y fotos de Unsplash.
 
 ### Checklist de inspeccion del origen (resolver los `[ASUNCION]`)
 
