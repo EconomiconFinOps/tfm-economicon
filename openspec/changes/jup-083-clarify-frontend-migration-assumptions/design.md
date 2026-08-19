@@ -67,7 +67,11 @@ lectura y documenta los hallazgos, sin tocar código de producto.
   **datos estáticos/mock** (export de Figma Make). Solo `react-hook-form` 7.55 para formularios.
   → El destino usa TanStack Query; la migración deberá **añadir toda la capa de datos** (traer el
   patrón `services/api.js` + fetching del destino a la UI de Economicon). **Finding para la épica.**
-- **T4 · Auth / sesión:** `<pendiente>` (mecanismo; encaje con `Bearer` + `X-Tenant-Id`).
+- **T4 · Auth / sesión:** **Ninguna.** No hay login, token, `Bearer` ni manejo de tenant en el
+  origen (0 coincidencias). El destino tiene login (`POST /auth/login`), `Authorization: Bearer`,
+  `X-Tenant-Id` y sesión en `localStorage` (`finops.session`, `finops.activeTenant`). → La migración
+  deberá **añadir todo el flujo de auth/sesión/tenant** del destino sobre la UI de Economicon.
+  **Finding para la épica.**
 - **T5 · Sistema de estilos:** `<pendiente>` (CSS plano / Modules / Tailwind / styled-components).
 - **T6 · Assets:** `<pendiente>` (fuentes, imágenes, iconos; licencias).
 - **T7 · Variables de entorno `VITE_*`:** `<pendiente>`.

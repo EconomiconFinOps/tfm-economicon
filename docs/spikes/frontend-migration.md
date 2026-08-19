@@ -26,7 +26,7 @@ Tasks            -> pasos verificables dentro de cada HU
 | Datos/estado         | Ninguna (datos estáticos/mock) | TanStack Query (`@tanstack/react-query`)                |
 | Routing              | react-router 7 (`createBrowserRouter`) | Estado manual `activeView` en `App.jsx` (sin router)    |
 | Capa API             | Ninguna (sin `fetch`/`axios`) | `src/services/api.js` centralizado                      |
-| Auth/sesion          | `[ASUNCION]` por confirmar | `localStorage` (`finops.session`, `finops.activeTenant`) |
+| Auth/sesion          | Ninguna (sin login/tenant) | `localStorage` (`finops.session`, `finops.activeTenant`) |
 | Estilos              | `[ASUNCION]` por confirmar | Un unico `src/styles/main.css`, tema oscuro             |
 | Empaquetado monorepo | repo independiente         | `@finops/frontend`, pnpm workspace + turbo + Docker     |
 
@@ -98,7 +98,8 @@ monorepo. La frontera es:
   Dependencia nueva respecto al destino (hoy sin router). Se adopta el routing del origen.
 - **Confirmado (T3):** ninguna librería de datos/estado ni capa API en el origen (dashboards con
   datos estáticos/mock). El destino usa TanStack Query → la migración añade toda la capa de datos.
-- `[ASUNCION]` Modelo de auth/sesion del origen y si encaja con `Bearer` + `X-Tenant-Id`.
+- **Confirmado (T4):** el origen no tiene auth/sesión/tenant. El destino sí (`Bearer` +
+  `X-Tenant-Id` + sesión en `localStorage`) → la migración añade el flujo de auth del destino.
 - `[ASUNCION]` Sistema de estilos del origen (CSS plano, CSS Modules, Tailwind, styled-components).
 - `[ASUNCION]` Assets estaticos (fuentes, imagenes, iconos) y licencias.
 
