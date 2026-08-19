@@ -62,7 +62,11 @@ lectura y documenta los hallazgos, sin tocar código de producto.
   `src/app/routes.tsx` define 5 rutas anidadas bajo un `Layout`: index → `ExecutiveCostDashboard`,
   `/operational`, `/cuts`, `/anomalies`, `/recommendations`. Dependencia **nueva** respecto al
   destino, que hoy navega con estado manual `activeView` en `App.jsx` (sin router).
-- **T3 · Librería de datos/estado:** `<pendiente>` (TanStack Query / Redux / SWR / otro).
+- **T3 · Librería de datos/estado:** **Ninguna.** No hay TanStack Query, Redux ni SWR; tampoco
+  `fetch`, `axios` ni `import.meta.env` en `src` (0 coincidencias). Los dashboards renderizan
+  **datos estáticos/mock** (export de Figma Make). Solo `react-hook-form` 7.55 para formularios.
+  → El destino usa TanStack Query; la migración deberá **añadir toda la capa de datos** (traer el
+  patrón `services/api.js` + fetching del destino a la UI de Economicon). **Finding para la épica.**
 - **T4 · Auth / sesión:** `<pendiente>` (mecanismo; encaje con `Bearer` + `X-Tenant-Id`).
 - **T5 · Sistema de estilos:** `<pendiente>` (CSS plano / Modules / Tailwind / styled-components).
 - **T6 · Assets:** `<pendiente>` (fuentes, imágenes, iconos; licencias).

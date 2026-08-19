@@ -23,9 +23,9 @@ Tasks            -> pasos verificables dentro de cada HU
 | -------------------- | -------------------------- | ------------------------------------------------------- |
 | Framework            | React 18.3.1 + Vite 6      | React 18.3.1 + Vite 5                                   |
 | Lenguaje             | **TypeScript**             | **JavaScript** (JSX)                                    |
-| Datos/estado         | `[ASUNCION]` por confirmar | TanStack Query (`@tanstack/react-query`)                |
+| Datos/estado         | Ninguna (datos estáticos/mock) | TanStack Query (`@tanstack/react-query`)                |
 | Routing              | react-router 7 (`createBrowserRouter`) | Estado manual `activeView` en `App.jsx` (sin router)    |
-| Capa API             | `[ASUNCION]` por confirmar | `src/services/api.js` centralizado                      |
+| Capa API             | Ninguna (sin `fetch`/`axios`) | `src/services/api.js` centralizado                      |
 | Auth/sesion          | `[ASUNCION]` por confirmar | `localStorage` (`finops.session`, `finops.activeTenant`) |
 | Estilos              | `[ASUNCION]` por confirmar | Un unico `src/styles/main.css`, tema oscuro             |
 | Empaquetado monorepo | repo independiente         | `@finops/frontend`, pnpm workspace + turbo + Docker     |
@@ -96,7 +96,8 @@ monorepo. La frontera es:
   origen frente a Vite **5** en el destino → salto de major a decidir al reconciliar el tooling.
 - **Confirmado (T2):** react-router **7.13.0** con `createBrowserRouter` (5 rutas bajo un `Layout`).
   Dependencia nueva respecto al destino (hoy sin router). Se adopta el routing del origen.
-- `[ASUNCION]` Libreria de datos del origen (TanStack Query, Redux, SWR...) y si coincide con la del destino.
+- **Confirmado (T3):** ninguna librería de datos/estado ni capa API en el origen (dashboards con
+  datos estáticos/mock). El destino usa TanStack Query → la migración añade toda la capa de datos.
 - `[ASUNCION]` Modelo de auth/sesion del origen y si encaja con `Bearer` + `X-Tenant-Id`.
 - `[ASUNCION]` Sistema de estilos del origen (CSS plano, CSS Modules, Tailwind, styled-components).
 - `[ASUNCION]` Assets estaticos (fuentes, imagenes, iconos) y licencias.
