@@ -19,6 +19,6 @@
 - [x] 3.1 Actualizar el "Checklist de inspección del origen" del spike marcando los ítems resueltos.
 - [x] 3.2 Verificar que no queda ningún `[ASUNCION]` en `docs/spikes/frontend-migration.md` y que cada
   uno tiene su entrada en el inventario de `design.md`.
-- [ ] 3.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-083-<secuencia>`)
+- [x] 3.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-083-<secuencia>`)
   cualquier capacidad de Economicon sin equivalente en el backend de este repo.
-- [ ] 3.4 Ejecutar `pnpm openspec:validate` y dejar constancia del resultado.
+- [x] 3.4 Ejecutar `pnpm openspec:validate` y dejar constancia del resultado.
