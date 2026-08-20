@@ -85,4 +85,6 @@ lectura y documenta los hallazgos, sin tocar código de producto.
   `ImageWithFallback` recurre a Unsplash. `src/styles/fonts.css` está **vacío** (sin fuentes
   propias). **Licencias** (`ATTRIBUTIONS.md`): shadcn/ui bajo MIT; fotos de Unsplash bajo su licencia
   → revisar la licencia de Unsplash si se usan imágenes reales en producción.
-- **T7 · Variables de entorno `VITE_*`:** `<pendiente>`.
+- **T7 · Variables de entorno `VITE_*`:** **Ninguna.** El origen no lee `import.meta.env` ni define
+  variables `VITE_*` (0 coincidencias), coherente con la ausencia de capa de datos. El destino usa
+  `VITE_API_BASE_URL` (def. `http://localhost:8000`) → se añadirá al integrar el fetching del destino.
