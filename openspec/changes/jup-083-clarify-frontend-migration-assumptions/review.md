@@ -47,3 +47,16 @@ test / lint / build -> N/A (doc-only, sin código de producto)
 - Decidir versión de Vite (6 vs 5) y el setup de TypeScript (tsconfig) en la HU de tooling (F2).
 - `RF-083-001` bloquea que `pnpm hu:check` (pre-archive) pase en verde hasta que el equipo arregle
   los `hu-011`…`hu-031`; documentar como excepción si se archiva antes.
+
+## Human Approval
+
+- Change: jup-083-clarify-frontend-migration-assumptions
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-08-22
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: HU doc-only completada (7/7 supuestos confirmados, cero `[ASUNCION]` en el spike). Decisión: archivar. El único bloqueo es de ejecución, no de decisión: `pnpm hu:check` (gate pre-archive) falla por `RF-083-001` (changes `hu-011`…`hu-031` de otras HUs sin spec deltas), ajeno a esta HU y aceptado como excepción documentada. El archivado se ejecuta con esa excepción; no requiere volver a cambiar esta aprobación. `RF-083-002` (origen sin backend/auth/datos) queda en el backlog para replanificar la F3 de la épica.
