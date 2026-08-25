@@ -69,6 +69,8 @@ No esta pensado para que el usuario hable con el directamente desde la interfaz.
 
 - escuchar jobs pendientes en RabbitMQ
 - procesarlos
+- consultar la API Azure Cost Management configurada mediante un cliente HTTP
+  con autenticación local, paginación segura y reintentos acotados
 - dividir `text_content` en chunks
 - generar embeddings
 - guardar esos embeddings en pgvector
@@ -98,8 +100,10 @@ proporcionar un endpoint HTTP reproducible para el futuro cliente de ingesta.
 JUP-075 incorpora autenticación Bearer exclusivamente local, paginación con
 tokens opacos firmados y escenarios deterministas de throttling, errores,
 timeout, páginas vacías y datos inválidos. El contenedor conserva ejecución
-sin privilegios y filesystem de solo lectura. JUP-076 conectará el processor
-con este servicio mediante configuración.
+sin privilegios y filesystem de solo lectura. JUP-076 conecta el processor con
+este servicio mediante URL, bearer, timeout, reintentos y límite de páginas
+configurables; JUP-077 incorporará la normalización, persistencia y recorrido
+completo de ingesta.
 
 ### `packages/shared-config`
 
