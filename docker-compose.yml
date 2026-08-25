@@ -45,6 +45,25 @@ services:
       timeout: 5s
       retries: 10
 
+  azure-cost-api:
+    build:
+      context: .
+      dockerfile: apps/azure-cost-api/Dockerfile
+    ports:
+      - "${AZURE_COST_API_PORT:-8002}:8002"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   backend:
     build:
       context: ./apps/backend

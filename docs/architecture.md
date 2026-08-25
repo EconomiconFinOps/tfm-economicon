@@ -15,6 +15,7 @@ En este proyecto hay varios submodulos importantes:
 - `apps/frontend`
 - `apps/backend`
 - `apps/processor`
+- `apps/azure-cost-api`
 - `packages/shared-config`
 
 Y ademas hay tres servicios de infraestructura:
@@ -84,6 +85,18 @@ Esa API del processor no es una API de producto para el frontend.
 El frontend sigue hablando solo con el backend.
 
 Esto permite que las tareas pesadas o lentas no bloqueen al backend, y tambien permite comprobar si el processor esta vivo.
+
+### `apps/azure-cost-api`
+
+Es un servicio FastAPI independiente que simula el subconjunto de Azure Cost
+Management Query aprobado en JUP-073. Lee exclusivamente el fixture público
+`EA-Cost-Actual.sample.csv`, expone healthcheck en `:8002/health` y responde con
+la estructura posicional `columns`/`rows` utilizada por Azure.
+
+No se conecta a un tenant ni valida credenciales Azure reales. Su función es
+proporcionar un endpoint HTTP reproducible para el futuro cliente de ingesta.
+JUP-075 incorporará paginación y fallos deterministas; JUP-076 conectará el
+processor con este servicio mediante configuración.
 
 ### `packages/shared-config`
 

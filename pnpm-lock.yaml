@@ -18,6 +18,8 @@ importers:
         specifier: 2.9.0
         version: 2.9.0
 
+  apps/azure-cost-api: {}
+
   apps/backend: {}
 
   apps/frontend:

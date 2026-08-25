@@ -9,6 +9,7 @@ El objetivo del proyecto es separar responsabilidades de forma clara:
 - `frontend` para la interfaz web
 - `backend` para la API principal
 - `processor` para trabajo asincrono, pipelines y embeddings
+- `azure-cost-api` para simular el subconjunto de Azure Cost Management Query
 - `shared-config` para configuracion compartida del workspace JavaScript
 
 Ademas, el proyecto usa servicios de infraestructura para mensajeria, persistencia operativa y almacenamiento vectorial.
@@ -33,7 +34,8 @@ tfm-economicon
 |-- apps/
 |   |-- backend/
 |   |-- frontend/
-|   `-- processor/
+|   |-- processor/
+|   `-- azure-cost-api/
 |-- docs/
 |   |-- architecture.md
 |   `-- turborepo_use.md
@@ -60,6 +62,7 @@ Puertos visibles:
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8000`
 - Processor health: `http://localhost:8001/health`
+- Azure Cost API: `http://localhost:8002/health`
 - RabbitMQ Console: `http://localhost:15672`
 - pgvector Postgres: `localhost:5433`
 - Cockroach SQL: `localhost:26257`
@@ -100,6 +103,7 @@ Puertos habituales:
 - Frontend: `5173`
 - Backend: `8000`
 - Processor: `8001`
+- Azure Cost API: `8002`
 
 ## Variables De Entorno
 
@@ -144,11 +148,12 @@ El flujo principal del sistema es este:
 
 ## Documentacion Util
 
-- [docs/architecture.md](/C:/Repositorios/tfm-economicon/docs/architecture.md)
-- [docs/turborepo_use.md](/C:/Repositorios/tfm-economicon/docs/turborepo_use.md)
+- [Arquitectura](docs/architecture.md)
+- [Manual de Turborepo](docs/manuals/turborepo_use.md)
 - [Dataset público de Azure](docs/data/azure-sample-dataset.md)
 - [Contrato Azure Cost Management Query](docs/api/azure-cost-query-contract.md)
 - [OpenAPI contractual](docs/api/azure-cost-query.openapi.json)
+- [API Azure Cost simulada](apps/azure-cost-api/README.md)
 
 ## Estado Actual
 
