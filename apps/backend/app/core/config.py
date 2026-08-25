@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     api_port: int = 8000
-    database_url: str = "postgresql+psycopg://root@localhost:26257/defaultdb?sslmode=disable"
+    database_url: str = "cockroachdb+psycopg://root@localhost:26257/defaultdb?sslmode=disable"
     rabbitmq_url: str = "amqp://guest:guest@localhost:5672/%2F"
     vector_database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5433/embeddings"
     processor_queue_name: str = "processor:jobs"

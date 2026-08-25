@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     processor_port: int = 8001
     processor_concurrency: int = 2
     processor_queue_name: str = "processor:jobs"
-    database_url: str = "postgresql+psycopg://root@localhost:26257/defaultdb?sslmode=disable"
+    database_url: str = "cockroachdb+psycopg://root@localhost:26257/defaultdb?sslmode=disable"
     rabbitmq_url: str = "amqp://guest:guest@localhost:5672/%2F"
     vector_database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5433/embeddings"
     embedding_provider: str = "mock"

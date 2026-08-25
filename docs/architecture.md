@@ -71,6 +71,8 @@ No esta pensado para que el usuario hable con el directamente desde la interfaz.
 - procesarlos
 - consultar la API Azure Cost Management configurada mediante un cliente HTTP
   con autenticación local, paginación segura y reintentos acotados
+- normalizar importes, monedas, fechas y dimensiones de Azure, y persistir sus
+  ejecuciones y registros de forma idempotente y aislada por tenant
 - dividir `text_content` en chunks
 - generar embeddings
 - guardar esos embeddings en pgvector
@@ -102,8 +104,9 @@ tokens opacos firmados y escenarios deterministas de throttling, errores,
 timeout, páginas vacías y datos inválidos. El contenedor conserva ejecución
 sin privilegios y filesystem de solo lectura. JUP-076 conecta el processor con
 este servicio mediante URL, bearer, timeout, reintentos y límite de páginas
-configurables; JUP-077 incorporará la normalización, persistencia y recorrido
-completo de ingesta.
+configurables. JUP-077 completa el recorrido dataset → API simulada → cliente →
+normalización → CockroachDB, con ejecuciones idempotentes, trazabilidad por
+tenant y tratamiento explícito de errores sin registros parciales.
 
 ### `packages/shared-config`
 
@@ -134,6 +137,7 @@ Aqui se guarda la informacion operativa importante, por ejemplo:
 - messages
 - estados de ejecucion
 - resultados de procesamiento
+- ejecuciones de ingesta Azure y registros normalizados de costes por tenant
 
 Piensa en CockroachDB como la memoria permanente del sistema para la parte transaccional.
 
