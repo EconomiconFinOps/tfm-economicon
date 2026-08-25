@@ -1,6 +1,6 @@
 # Contrato Azure Cost Management Query de Economicon
 
-Estado: propuesto para revisión del equipo en JUP-073.
+Estado: contrato versionado y validado de JUP-073.
 
 ## Objetivo
 
