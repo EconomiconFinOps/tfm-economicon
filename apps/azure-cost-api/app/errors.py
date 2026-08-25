@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Mapping
 
 
 @dataclass(frozen=True)
@@ -6,6 +7,7 @@ class ApiError(Exception):
     status_code: int
     code: str
     message: str
+    headers: Mapping[str, str] | None = None
 
 
 class ConfigurationError(RuntimeError):

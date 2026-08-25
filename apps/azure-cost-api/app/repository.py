@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import re
 from dataclasses import dataclass
@@ -50,6 +51,7 @@ class CostRepository:
         self.currency_column = self.mapping["systemColumns"]["Currency"]["sourceColumn"]
         self.cost_column = self.mapping["metrics"]["PreTaxCost"]["sourceColumn"]
         self.tags_column = self.mapping["tags"]["sourceColumn"]
+        self.dataset_checksum = self._checksum(dataset_path)
         self.records, self.columns = self._load_records(dataset_path)
         self.subscription_ids = frozenset(
             record.values[self.scope_column] for record in self.records
@@ -62,6 +64,13 @@ class CostRepository:
             return json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             raise DatasetError(f"Cannot load mapping file: {path}") from exc
+
+    @staticmethod
+    def _checksum(path: Path) -> str:
+        try:
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError as exc:
+            raise DatasetError(f"Cannot read Azure cost fixture: {path}") from exc
 
     def _required_columns(self) -> set[str]:
         columns = {self.mapping["scope"]["sourceColumn"]}

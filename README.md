@@ -107,6 +107,11 @@ Puertos habituales:
 
 ## Variables De Entorno
 
+La Azure Cost API simulada exige por defecto el bearer local
+`jupiter-local-token`, pagina resultados y permite activar fallos deterministas
+con `X-Fake-Azure-Scenario`. Consulta `apps/azure-cost-api/README.md` para la
+configuración completa; estos tokens son fixtures locales, no credenciales Azure.
+
 Copiar `.env.example` a `.env` antes de arrancar el stack:
 
 ```powershell

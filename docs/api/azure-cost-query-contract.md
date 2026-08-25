@@ -34,11 +34,12 @@ del MVP y se podrán añadir sin cambiar el cliente para suscripciones.
 
 ## Autenticación simulada
 
-El servicio podrá exigir un bearer configurado fuera del repositorio. No se
+El servicio exige por defecto un bearer ficticio configurable. No se
 validan JWT, Entra ID, tenants, scopes OAuth ni credenciales Azure. En tests
 unitarios la comprobación podrá deshabilitarse. Cuando esté activa:
 
 - token ausente o diferente: `401 AuthenticationFailed`;
+- token reconocido como identidad sin permisos: `403 AuthorizationFailed`;
 - la respuesta incluye `WWW-Authenticate: Bearer`;
 - el mensaje nunca revela el token esperado.
 
@@ -127,9 +128,23 @@ Todos usan `{"error": {"code": "...", "message": "..."}}`.
 | 400 | `BadRequest` | Versión, timeframe, operador, dimensión, tag, agregación o granularidad no soportados |
 | 400 | `InvalidSkipToken` | Token inválido o perteneciente a otra consulta/dataset |
 | 401 | `AuthenticationFailed` | Bearer ficticio ausente o incorrecto con auth activa |
+| 403 | `AuthorizationFailed` | Bearer ficticio válido pero sin permisos |
 | 404 | `SubscriptionNotFound` | Suscripción no presente en el fixture |
+| 429 | `TooManyRequests` | Throttling determinista con `Retry-After` |
+| 500 | `InternalServerError` | Fallo interno determinista |
 
 Los errores no incluyen filas del dataset, secretos ni trazas internas.
+
+## Escenarios deterministas de resiliencia
+
+`X-Fake-Azure-Scenario` permite seleccionar `normal`, `rate-limit`,
+`server-error`, `timeout`, `empty-page` o `invalid-data`. La misma selección
+puede fijarse como valor por defecto mediante configuración. `timeout` retrasa
+la respuesta durante el intervalo configurado; `empty-page` conserva el
+`nextLink` que corresponda pero elimina las filas de esa página; `invalid-data`
+devuelve un valor no numérico en la primera celda de coste. Estos modos existen
+para verificar reintentos, validación y observabilidad del futuro cliente de
+ingesta, y nunca se activan aleatoriamente.
 
 ## Límites deliberados
 
@@ -142,8 +157,9 @@ Los errores no incluyen filas del dataset, secretos ni trazas internas.
 
 ## Compatibilidad con las tareas siguientes
 
-- JUP-074 implementará este OpenAPI en `apps/azure-cost-api`.
-- JUP-075 añadirá fallos deterministas sin modificar el contrato normal.
+- JUP-074 implementa este OpenAPI en `apps/azure-cost-api`.
+- JUP-075 incorpora paginación, autenticación local y fallos deterministas
+  sin modificar la estructura de una respuesta normal.
 - JUP-076 consumirá `columns`, `rows` y `nextLink` sin conocer el CSV.
 - JUP-077 verificará el cambio entre URL simulada y URL real mediante
   configuración, sin afirmar que se ha probado contra un tenant real.

@@ -95,8 +95,11 @@ la estructura posicional `columns`/`rows` utilizada por Azure.
 
 No se conecta a un tenant ni valida credenciales Azure reales. Su función es
 proporcionar un endpoint HTTP reproducible para el futuro cliente de ingesta.
-JUP-075 incorporará paginación y fallos deterministas; JUP-076 conectará el
-processor con este servicio mediante configuración.
+JUP-075 incorpora autenticación Bearer exclusivamente local, paginación con
+tokens opacos firmados y escenarios deterministas de throttling, errores,
+timeout, páginas vacías y datos inválidos. El contenedor conserva ejecución
+sin privilegios y filesystem de solo lectura. JUP-076 conectará el processor
+con este servicio mediante configuración.
 
 ### `packages/shared-config`
 

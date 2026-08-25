@@ -49,6 +49,15 @@ services:
     build:
       context: .
       dockerfile: apps/azure-cost-api/Dockerfile
+    environment:
+      AZURE_COST_AUTH_ENABLED: "${AZURE_COST_AUTH_ENABLED:-true}"
+      AZURE_COST_VALID_TOKENS: "${AZURE_COST_VALID_TOKENS:-jupiter-local-token}"
+      AZURE_COST_FORBIDDEN_TOKENS: "${AZURE_COST_FORBIDDEN_TOKENS:-jupiter-forbidden-token}"
+      AZURE_COST_PAGE_SIZE: "${AZURE_COST_PAGE_SIZE:-10}"
+      AZURE_COST_SKIPTOKEN_SECRET: "${AZURE_COST_SKIPTOKEN_SECRET:-jupiter-local-skiptoken-secret}"
+      AZURE_COST_DEFAULT_SCENARIO: "${AZURE_COST_DEFAULT_SCENARIO:-normal}"
+      AZURE_COST_FAKE_TIMEOUT_SECONDS: "${AZURE_COST_FAKE_TIMEOUT_SECONDS:-2}"
+      AZURE_COST_RETRY_AFTER_SECONDS: "${AZURE_COST_RETRY_AFTER_SECONDS:-1}"
     ports:
       - "${AZURE_COST_API_PORT:-8002}:8002"
     init: true
