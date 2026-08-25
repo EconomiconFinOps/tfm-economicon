@@ -1,64 +1,67 @@
 # Evidencia de validación JUP-077
 
-- Fecha: 2026-08-08
-- Rama local: `test/JUP-077-azure-cost-e2e`
-- Commit desplegado y validado: `fa93abf`
-- Publicación remota: no realizada
+- Fecha: 2026-08-25.
+- Repositorio oficial: `EconomiconFinOps/tfm-economicon`.
+- Rama: `test/JUP-077-azure-cost-e2e`, con destino `develop`.
+- Tarjeta: https://trello.com/c/2ZCQUbhr.
+- Liderazgo: Alejandro Aguado; pairing: Lucia Mateo; revisión: Paris Arcos
+  Martin; validación, pruebas y documentación: Victor Mendez.
 
 ## Alcance validado
 
-- dataset público de ejemplo → Azure Cost fake API;
-- recorrido de las tres páginas por el cliente de JUP-076;
-- normalización de coste, moneda, fecha y dimensiones;
-- migraciones y persistencia en CockroachDB;
-- repetición idempotente de la misma ejecución;
-- estado fallido y ausencia de filas parciales ante un `401` controlado;
-- logs estructurados sin token Bearer.
+- Dataset público Microsoft → API simulada Azure Cost → cliente HTTP resiliente.
+- Tres páginas contractuales y normalización de 30 filas públicas.
+- Preservación de costes positivos, cero y negativos sin anonimización.
+- Validación de decimales finitos, divisas, fechas, dimensiones y scopes.
+- Migraciones, clave foránea, estados válidos y persistencia CockroachDB.
+- Identidades reproducibles, repetición idempotente y aislamiento por tenant.
+- Fallo `401` controlado, cero filas residuales y logs sin token Bearer.
+- Base de datos persistente con SQL y consola publicados solo en loopback.
+- Compatibilidad con las tareas JUP-072 a JUP-076 ya integradas en `develop`.
 
-## Pruebas locales
+## Reproducción local
 
-```text
-scripts/tests:       8 passed
-apps/azure-cost-api: 34 passed, 1 warning de deprecación de TestClient
-apps/processor:      34 passed
-apps/backend:        7 passed, 2 warnings de longitud de clave en fixture de test
-git diff --check:    sin errores
+```powershell
+corepack pnpm install --frozen-lockfile
+corepack pnpm build
+corepack pnpm test
+corepack pnpm openspec:validate
+corepack pnpm jup:check -- --change jup-077-azure-cost-e2e
+corepack pnpm jup:cleanup:check
+python -m unittest discover -s scripts/tests -v
 ```
 
-La suite del backend requirió reemplazar el dominio reservado `.local` del dato
-de prueba por `example.com`. No se cambió el comportamiento de autenticación.
-
-## Despliegue aislado
-
-- Host: `dockerserver`
-- Directorio: `/home/danteadmin/economicon-deployments/jup-077-fa93abf`
-- Proyecto Compose: `economicon-jup077`
-
-Servicios:
+Las suites específicas comprueban cliente y API Azure, parser contractual,
+normalización, scopes, estados, frontend, backend y pipeline preexistente.
 
 ```text
-economicon-jup077-azure-cost-api-1  healthy  0.0.0.0:18004->8002
-economicon-jup077-cockroachdb-1     healthy  127.0.0.1:26257->26257
+apps/processor:      94 passed
+apps/azure-cost-api: 58 passed
+apps/backend:        10 passed
+scripts/tests:       21 passed
+jup:check:test:       6 passed
+jup:cleanup:test:     6 passed
+OpenSpec:            12 passed, 0 failed
+pnpm build/test:      4 servicios verificados correctamente
 ```
 
-El build del processor usó un contexto de 70,60 kB y terminó correctamente.
-Se ajustó Compose para que la pila sea autocontenida sin exigir un `.env`
-ignorado, use almacenamiento persistente y permita conectividad SQL en la red
-interna. La conexión utiliza `sqlalchemy-cockroachdb` con psycopg 3. Los puertos
-SQL y de consola de CockroachDB se enlazan únicamente al loopback del servidor;
-el processor accede por la red privada de Compose.
+La advertencia de `TestClient` y las dos advertencias de longitud de clave del
+fixture JWT ya existían en las suites de desarrollo y no afectan al resultado.
 
-## Recorrido correcto e idempotencia
+## Recorrido Docker reproducible
 
-La misma orden se ejecutó dos veces:
+Con API simulada y CockroachDB disponibles en la red de Docker:
 
-```text
-python -m app.run_azure_cost_ingestion \
-  --tenant-id tenant-e2e \
+```powershell
+docker compose run --rm --no-deps processor python -m app.run_azure_cost_ingestion `
+  --tenant-id tenant-e2e `
   --subscription-id 64e355d7-997c-491d-b0c1-8414dccfcf42
 ```
 
-Ambas devolvieron el mismo identificador y el mismo resumen:
+La primera ejecución crea las migraciones formales, consulta las tres páginas y
+persiste exactamente 30 registros. La segunda conserva el mismo identificador
+de ejecución y reemplaza sus 30 filas sin duplicarlas. Otro tenant produce una
+ejecución independiente con sus propios 30 registros.
 
 ```json
 {
@@ -72,40 +75,34 @@ Ambas devolvieron el mismo identificador y el mismo resumen:
 }
 ```
 
-Tras la segunda ejecución CockroachDB conserva exactamente 30 filas, no 60.
-Las fechas persistidas abarcan del `2024-06-02` al `2024-06-19`.
-
-## Error controlado
-
-Se repitió el recorrido con otro tenant y un Bearer inválido. El proceso terminó
-con código `1` y salida segura:
+Si se repite la misma ejecución con un bearer incorrecto, el comando finaliza
+con código `1`, marca el estado `failed` y elimina en la misma transacción los
+registros anteriores para evitar residuos o métricas inconsistentes:
 
 ```json
 {"error_code": "AzureCostHttpError", "status": "failed"}
 ```
 
-Estado final consultado directamente en CockroachDB:
+Consulta final directa en CockroachDB tras repetir el `401` sobre una ejecución
+que antes había completado correctamente:
 
 ```text
-tenant-e2e        completed  pages=3  rows=30  error=NULL
-tenant-e2e-error  failed     pages=0  rows=0   error=AzureCostHttpError
+tenant-e2e        failed     pages=0  rows=0   persisted=0  AzureCostHttpError
+tenant-e2e-other  completed  pages=3  rows=30  persisted=30 NULL
+migrations: 001, 002
 ```
 
-La ejecución fallida tiene cero filas asociadas. Los logs contienen evento,
-tenant, ruta, página, métricas e identificador de ejecución, pero no el Bearer.
+Esto demuestra simultáneamente limpieza de datos obsoletos, ausencia de filas
+parciales e independencia de la ejecución del otro tenant.
 
-## Incidencias descubiertas durante la prueba
+La salida y los eventos estructurados contienen únicamente scopes, IDs,
+contadores y clases de error; nunca credenciales Bearer. El adaptador SQL
+utiliza `cockroachdb+psycopg` y `sqlalchemy-cockroachdb` tanto en processor como
+en backend, conservando el resto del comportamiento previo del equipo.
 
-1. La entrada Docker de CockroachDB `v24.1.11` rechaza un `--listen-addr`
-   personalizado para `start-single-node`. Compose usa directamente el binario,
-   una dirección anunciada resoluble en la red y el volumen persistente.
-2. El dialecto PostgreSQL genérico de SQLAlchemy no reconoce la cadena de
-   versión de CockroachDB. Se añadió el adaptador específico y se cambiaron los
-   valores por defecto a `cockroachdb+psycopg://`.
+## Referencias de trazabilidad
 
-## Pendiente antes de integrar
-
-- confirmación del repositorio remoto oficial;
-- acuerdo y creación de `origin/develop`;
-- revisión humana según los roles de JUP-076/JUP-077;
-- publicación de una rama integradora y draft PR, solo después de lo anterior.
+- Diseño: `docs/architecture/azure-cost-e2e.md`.
+- Decisión: `docs/adr/ADR-0001-azure-cost-api-simulation.md`.
+- OpenSpec: `openspec/changes/jup-077-azure-cost-e2e/`.
+- Secuencia integrada: `docs/integration/JUP-072-077-stacked-integration.md`.

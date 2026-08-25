@@ -17,7 +17,11 @@ from app.normalization.azure_cost import (
     AzureCostNormalizer,
     NormalizedCostRecord,
 )
-from app.tasks.azure_cost_ingest import AzureCostIngestionService, ingestion_run_id
+from app.tasks.azure_cost_ingest import (
+    AzureCostIngestionScopeError,
+    AzureCostIngestionService,
+    ingestion_run_id,
+)
 
 
 DEFINITION = {"type": "ActualCost", "dataset": {"granularity": "Daily"}}
@@ -81,13 +85,43 @@ def test_normalizer_hash_is_deterministic():
     assert len(first.source_row_hash) == 64
 
 
+def test_normalizer_hash_ignores_equivalent_cost_and_currency_representations():
+    first = AzureCostNormalizer().normalize(
+        result({"PreTaxCost": 1, "Currency": "eur", "UsageDate": 20240601})
+    )[0]
+    second = AzureCostNormalizer().normalize(
+        result({"PreTaxCost": 1.0, "Currency": " EUR ", "UsageDate": 20240601})
+    )[0]
+
+    assert first.source_row_hash == second.source_row_hash
+
+
+def test_normalizer_allows_missing_usage_date_and_preserves_empty_result():
+    record = AzureCostNormalizer().normalize(
+        result({"PreTaxCost": -0.0, "Currency": "EUR"})
+    )[0]
+
+    assert record.usage_date is None
+    assert record.pretax_cost == Decimal("0")
+    assert AzureCostNormalizer().normalize(result()) == ()
+
+
 @pytest.mark.parametrize(
     ("field", "value"),
     [
         ("PreTaxCost", "not-a-number"),
+        ("PreTaxCost", "12.5"),
+        ("PreTaxCost", True),
+        ("PreTaxCost", float("nan")),
+        ("PreTaxCost", float("inf")),
         ("Currency", ""),
+        ("Currency", "EU"),
+        ("Currency", "EU4"),
+        ("Currency", "ÉUR"),
         ("UsageDate", 20240231),
         ("UsageDate", "20240601"),
+        ("UsageDate", 2024061),
+        ("UsageDate", True),
     ],
 )
 def test_normalizer_rejects_invalid_values(field, value):
@@ -158,6 +192,11 @@ class FailureClient:
         raise AzureCostHttpError(401, "Unauthorized")
 
 
+class InvalidRowClient:
+    def query_all(self, subscription_id, definition):
+        return result({"PreTaxCost": 1.0, "Currency": "NOT-A-CURRENCY"})
+
+
 def test_service_persists_completed_run_and_structured_logs(caplog):
     repository = MemoryRepository()
     service = AzureCostIngestionService(
@@ -195,6 +234,58 @@ def test_service_marks_failed_run_and_rethrows():
     assert repository.failed == [
         (repository.started[0][0], "AzureCostHttpError")
     ]
+
+
+def test_service_marks_normalization_failure_without_partial_records():
+    repository = MemoryRepository()
+    service = AzureCostIngestionService(
+        InvalidRowClient(), AzureCostNormalizer(), repository
+    )
+
+    with pytest.raises(AzureCostNormalizationError):
+        service.ingest("tenant-demo", "subscription-demo", DEFINITION)
+
+    assert repository.completed == []
+    assert repository.failed == [
+        (repository.started[0][0], "AzureCostNormalizationError")
+    ]
+
+
+@pytest.mark.parametrize(
+    ("tenant_id", "subscription_id"),
+    [
+        ("", "subscription-demo"),
+        (" tenant-demo", "subscription-demo"),
+        ("tenant-demo\nother", "subscription-demo"),
+        ("tenant-demo", ""),
+        ("tenant-demo", " subscription-demo "),
+        ("tenant-demo", "subscription\x7fdemo"),
+    ],
+)
+def test_service_rejects_unsafe_scope_before_persistence(tenant_id, subscription_id):
+    repository = MemoryRepository()
+    service = AzureCostIngestionService(
+        SuccessClient(), AzureCostNormalizer(), repository
+    )
+
+    with pytest.raises(AzureCostIngestionScopeError):
+        service.ingest(tenant_id, subscription_id, DEFINITION)
+
+    assert repository.started == []
+    assert repository.completed == []
+    assert repository.failed == []
+
+
+def test_service_normalizes_subscription_case_before_persistence():
+    repository = MemoryRepository()
+    service = AzureCostIngestionService(
+        SuccessClient(), AzureCostNormalizer(), repository
+    )
+
+    summary = service.ingest("tenant-demo", "SUBSCRIPTION-DEMO", DEFINITION)
+
+    assert summary.subscription_id == "subscription-demo"
+    assert repository.started[0][2] == "subscription-demo"
 
 
 def test_ingestion_run_id_is_stable_and_scoped():

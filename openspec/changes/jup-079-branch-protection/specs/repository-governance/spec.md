@@ -1,7 +1,7 @@
 ## Purpose
 
-Define the testable repository governance required by JUP-079 without claiming
-remote protection before an administrator enables it.
+Define and verify the active repository governance required by JUP-079 without
+claiming collaborator access or peer approvals that GitHub does not confirm.
 
 ## ADDED Requirements
 
@@ -22,8 +22,8 @@ accept only develop as a pull-request source for main.
 - **THEN** the JUP policy check fails and explains that develop is required
 
 ### Requirement: JUP and Trello traceability
-Every pull request SHALL contain a JUP-XXX identifier consistent with its
-source branch and a direct Trello card URL.
+Every pull request SHALL contain the same JUP-XXX identifier in its title,
+body and source branch, plus a direct Trello card URL.
 
 #### Scenario: Mismatched identifier
 - **WHEN** the pull-request title and branch contain different JUP identifiers
@@ -31,11 +31,25 @@ source branch and a direct Trello card URL.
 
 ### Requirement: Four rotating roles
 Every pull request SHALL identify concrete people for leadership,
-pairing/co-authorship, PR review, and validation/tests/documentation.
+pairing/co-authorship, PR review, and validation/tests/documentation; the four
+roles SHALL identify four different people.
 
 #### Scenario: Role left pending
 - **WHEN** a pull-request role is empty or contains a placeholder
 - **THEN** the policy check fails and names the missing role
+
+#### Scenario: Same teammate occupies multiple rotating roles
+- **WHEN** the same person is assigned to two or more pull-request roles
+- **THEN** the policy check rejects the missing four-person participation
+
+### Requirement: Administrator continuity without direct pushes
+Repository administrators SHALL bypass an unavailable peer approval only
+through an auditable existing pull request; the bypass SHALL NOT permit direct
+pushes to `main` or `develop`.
+
+#### Scenario: Administrator tries to update a protected branch directly
+- **WHEN** an administrator pushes directly to a protected branch
+- **THEN** the PR-only bypass does not apply and GitHub rejects the update
 
 ### Requirement: Required automated checks
 Pull requests to main and develop SHALL pass governance validation, all Python

@@ -13,9 +13,9 @@
 
 ## 3. Remote activation
 
-- [ ] 3.1 JUP-079 confirm the canonical GitHub repository
+- [x] 3.1 JUP-079 confirm the canonical GitHub repository
 - [ ] 3.2 JUP-079 add the four collaborators and confirm Lucia and Victor usernames
-- [ ] 3.3 JUP-079 create remote develop from the agreed integrated commit
+- [x] 3.3 JUP-079 confirm remote develop from the agreed integrated commit
 - [ ] 3.4 JUP-079 enable branch rulesets with required checks and reviews
 - [ ] 3.5 JUP-079 prove that direct pushes to main and develop are rejected
 - [ ] 3.6 JUP-079 open, review and link the pull request

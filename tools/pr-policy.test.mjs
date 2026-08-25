@@ -48,6 +48,28 @@ test("rejects mismatched JUP identifiers", () => {
   assert.ok(errors.some((error) => error.includes("debe coincidir")));
 });
 
+test("requires the body identifier to match the title and branch", () => {
+  const errors = checkPullRequest({
+    title: "chore(JUP-079): protect repository branches",
+    body: BODY.replace("- ID: JUP-079", "- ID: JUP-080"),
+    head: "chore/JUP-079-branch-protection",
+    base: "develop",
+  });
+
+  assert.ok(errors.some((error) => error.includes("cuerpo y el titulo")));
+});
+
+test("rejects a missing body identifier", () => {
+  const errors = checkPullRequest({
+    title: "chore(JUP-079): protect repository branches",
+    body: BODY.replace("- ID: JUP-079", "- ID: pendiente"),
+    head: "chore/JUP-079-branch-protection",
+    base: "develop",
+  });
+
+  assert.ok(errors.some((error) => error.includes("cuerpo debe identificar")));
+});
+
 test("rejects an invalid branch and unsupported base", () => {
   const errors = checkPullRequest({ title: "JUP-079 invalid", body: BODY, head: "random", base: "release" });
   assert.ok(errors.some((error) => error.includes("base")));
@@ -71,6 +93,17 @@ test("requires every rotating role to be filled", () => {
     base: "develop",
   });
   assert.ok(errors.some((error) => error.includes("Revision de PR")));
+});
+
+test("requires four different people across the rotating roles", () => {
+  const errors = checkPullRequest({
+    title: "chore(JUP-079): protect repository branches",
+    body: BODY.replace("- Revision de PR: Alejandro", "- Revision de PR: Paris"),
+    head: "chore/JUP-079-branch-protection",
+    base: "develop",
+  });
+
+  assert.ok(errors.some((error) => error.includes("cuatro personas distintas")));
 });
 
 test("parses GitHub pull request events", () => {

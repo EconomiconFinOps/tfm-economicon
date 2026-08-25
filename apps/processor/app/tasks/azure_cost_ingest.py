@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 RUN_NAMESPACE = uuid.UUID("7f921f96-d309-43df-b219-0b61dfe6864a")
 
 
+class AzureCostIngestionScopeError(RuntimeError):
+    """Reject an unsafe tenant or subscription before touching persistence."""
+
+
 @dataclass(frozen=True)
 class AzureCostIngestionSummary:
     run_id: str
@@ -44,6 +48,8 @@ class AzureCostIngestionService:
         subscription_id: str,
         definition: dict,
     ) -> AzureCostIngestionSummary:
+        tenant_id = _validated_scope("tenant_id", tenant_id)
+        subscription_id = _validated_scope("subscription_id", subscription_id).casefold()
         run_id = ingestion_run_id(tenant_id, subscription_id, definition)
         self.repository.start_run(run_id, tenant_id, subscription_id, definition)
         _log(
@@ -101,3 +107,14 @@ def ingestion_run_id(tenant_id: str, subscription_id: str, definition: dict) -> 
 
 def _log(event: str, **fields: object) -> None:
     logger.info(json.dumps({"event": event, **fields}, sort_keys=True))
+
+
+def _validated_scope(name: str, value: str) -> str:
+    if (
+        not isinstance(value, str)
+        or not value
+        or value != value.strip()
+        or any(ord(character) < 32 or ord(character) == 127 for character in value)
+    ):
+        raise AzureCostIngestionScopeError(f"{name} must be a non-empty safe identifier")
+    return value

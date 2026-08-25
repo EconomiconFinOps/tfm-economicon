@@ -3,8 +3,9 @@
 - [x] 1.1 JUP-078 documentar frontera LiteLLM/OpenRouter y modelos seleccionados
 - [x] 1.2 JUP-078 fijar limites y presupuesto provisional sujetos a aprobacion
 - [x] 1.3 JUP-078 preparar benchmark reproducible sin credenciales en Git
-- [ ] 1.4 JUP-078 ejecutar benchmark real y adjuntar resultados
+- [x] 1.4 JUP-078 ejecutar benchmark real y adjuntar resultados
 - [ ] 1.5 JUP-078 obtener aprobacion de Lucia, Paris, Victor y Alejandro
+- [x] 1.6 JUP-078 verificar modelos, contexto y precios contra el catalogo oficial
 
 ## 2. Configuracion tecnica
 
@@ -12,10 +13,12 @@
 - [x] 2.2 JUP-078 documentar secretos y separacion entre gateway, upstream y servicios
 - [x] 2.3 JUP-078 rechazar mocks en evaluacion, bypass del gateway y dimensiones incompatibles
 - [x] 2.4 JUP-078 dejar la implementacion de clientes reales fuera de alcance para una tarjeta posterior
+- [x] 2.5 JUP-078 corregir master key, privacidad y fallback explicito del gateway
+- [x] 2.6 JUP-078 impedir redirecciones, URLs inseguras y filtrado de secretos
 
 ## 3. Verificacion y trazabilidad
 
 - [x] 3.1 JUP-078 cubrir configuracion valida e invalida con tests
 - [x] 3.2 JUP-078 ejecutar `openspec:validate`, `jup:check` y tests aplicables del monorepo
 - [x] 3.3 JUP-078 registrar rama, commit y evidencia tecnica en Trello
-- [ ] 3.4 JUP-078 abrir PR cuando se confirme el repositorio y la rama `develop`
+- [x] 3.4 JUP-078 preparar y publicar PR en el repositorio confirmado hacia `develop`

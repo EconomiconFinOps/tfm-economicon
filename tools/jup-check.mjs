@@ -21,6 +21,7 @@ export function findChanges(root) {
 
 function findSpecFiles(root) {
   if (!fs.existsSync(root)) return [];
+
   const files = [];
   for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
     const target = path.join(root, entry.name);
@@ -31,51 +32,84 @@ function findSpecFiles(root) {
 }
 
 export function checkChange(root, change) {
-  const errors = [];
   const match = CHANGE_PATTERN.exec(change ?? "");
-  if (!match) return ["El change debe usar jup-NNN-descripcion-en-kebab-case."];
+  if (!match) {
+    return ["El change debe usar jup-NNN-descripcion-en-kebab-case."];
+  }
 
-  const jupId = `JUP-${match[1]}`;
+  const jupId = "JUP-" + match[1];
   const changeDir = path.join(root, "openspec", "changes", change);
-  if (!fs.existsSync(changeDir)) return [`No existe ${path.relative(root, changeDir)}.`];
+  if (!fs.existsSync(changeDir)) {
+    return ["No existe " + path.relative(root, changeDir) + "."];
+  }
 
+  const errors = [];
   const metadata = path.join(changeDir, ".openspec.yaml");
   if (!fs.existsSync(metadata)) errors.push("Falta .openspec.yaml.");
+
   for (const file of REQUIRED_FILES) {
-    if (!fs.existsSync(path.join(changeDir, file))) errors.push(`Falta ${file}.`);
+    if (!fs.existsSync(path.join(changeDir, file))) {
+      errors.push("Falta " + file + ".");
+    }
   }
 
   const specs = findSpecFiles(path.join(changeDir, "specs"));
-  if (specs.length === 0) errors.push("Falta al menos un delta spec en specs/.");
+  if (specs.length === 0) {
+    errors.push("Falta al menos un delta spec en specs/.");
+  }
 
-  const textFiles = [metadata, ...REQUIRED_FILES.map((file) => path.join(changeDir, file)), ...specs]
-    .filter((file) => fs.existsSync(file));
-  const combined = textFiles.map((file) => fs.readFileSync(file, "utf8")).join("\n");
+  const textFiles = [
+    metadata,
+    ...REQUIRED_FILES.map((file) => path.join(changeDir, file)),
+    ...specs,
+  ].filter((file) => fs.existsSync(file));
+  const combined = textFiles
+    .map((file) => fs.readFileSync(file, "utf8"))
+    .join("\n");
   const proposalPath = path.join(changeDir, "proposal.md");
-  const proposal = fs.existsSync(proposalPath) ? fs.readFileSync(proposalPath, "utf8") : "";
+  const designPath = path.join(changeDir, "design.md");
+  const proposal = fs.existsSync(proposalPath)
+    ? fs.readFileSync(proposalPath, "utf8")
+    : "";
+  const design = fs.existsSync(designPath)
+    ? fs.readFileSync(designPath, "utf8")
+    : "";
 
-  if (!combined.includes(jupId)) errors.push(`Los artefactos no contienen ${jupId}.`);
-  if (!/^Trello:\s+https:\/\/trello\.com\/c\/[A-Za-z0-9]+/m.test(proposal)) {
+  if (!new RegExp("^JUP:\\s+" + jupId + "\\s*$", "m").test(proposal)) {
+    errors.push("proposal.md debe identificar exactamente " + jupId + ".");
+  }
+  if (!design.includes(jupId)) {
+    errors.push("design.md debe identificar " + jupId + ".");
+  }
+  if (!/^Trello:\s+https:\/\/trello\.com\/c\/[A-Za-z0-9]+(?:\/\S*)?\s*$/m.test(proposal)) {
     errors.push("proposal.md no contiene una URL directa de Trello.");
   }
-  if (/\bHU-\d{3}\b/i.test(combined)) errors.push("Se detecto una numeracion paralela.");
+  if (/\bHU-\d{3}\b/i.test(combined)) {
+    errors.push("Se detectó una numeración HU paralela.");
+  }
+
   return errors;
 }
 
 function main() {
   const argv = process.argv.slice(2);
   const requestedChange = parseChange(argv);
-  const changes = argv.includes("--all") ? findChanges(process.cwd()) : [requestedChange].filter(Boolean);
+  const changes = argv.includes("--all")
+    ? findChanges(process.cwd())
+    : [requestedChange].filter(Boolean);
   if (changes.length === 0) {
-    console.error("Uso: pnpm jup:check --change jup-NNN-descripcion | pnpm jup:check:all");
+    console.error(
+      "Uso: pnpm jup:check -- --change jup-NNN-descripcion | pnpm jup:check:all",
+    );
     process.exitCode = 2;
     return;
   }
+
   let failed = false;
   for (const change of changes) {
     const errors = checkChange(process.cwd(), change);
     if (errors.length === 0) {
-      console.log(`[OK] ${change} esta enlazado y completo.`);
+      console.log(`[OK] ${change} está enlazado con Trello y completo.`);
       continue;
     }
     failed = true;
@@ -86,4 +120,9 @@ function main() {
   }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+if (
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
+  main();
+}

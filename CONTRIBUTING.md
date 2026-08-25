@@ -16,16 +16,17 @@ Ordinary pull requests target develop. Only develop may target main.
 
 Use the repository template and provide:
 
-- the same JUP-XXX used by the branch and title;
+- the same JUP-XXX used by the branch, title and body;
 - a direct link to the Trello card;
 - a concise scope and validation evidence;
-- concrete people for leadership, pairing/co-authorship, PR review, and
+- four distinct people for leadership, pairing/co-authorship, PR review, and
   validation/tests/documentation.
 
 Run the applicable local checks before requesting review:
 
     corepack pnpm jup:check:all
     corepack pnpm pr:check:test
+    corepack pnpm ci:check:test
     corepack pnpm openspec:validate
     corepack pnpm test
     corepack pnpm build
@@ -36,3 +37,6 @@ from Trello.
 
 The desired GitHub rules and their administrator activation procedure are in
 docs/governance/github-branch-protection.md.
+
+The repository-admin continuity exception applies only to an existing pull
+request and never authorizes direct pushes to `main` or `develop`.

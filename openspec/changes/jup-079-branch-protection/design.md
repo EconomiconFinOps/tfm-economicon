@@ -2,19 +2,25 @@ JUP: JUP-079
 
 ## Confirmed facts
 
-- ParisArcos/tfm-economicon is public and defaults to main.
-- Remote branches observed on 2026-08-08 are main, chore/migrate-frontend,
-  setup/open-spec and setup/sdd.
-- The connected account Iber1to has pull access but no push or admin access.
-- No remote develop branch is visible.
-- Requiring two approvals is not viable until the other members have write
-  permission, because GitHub only counts required reviews from eligible users.
+- `EconomiconFinOps/tfm-economicon` is the confirmed public repository and
+  defaults to `main`; the integrated `develop` branch exists.
+- On 2026-08-25 both branches reported `protected: false`, no GitHub Actions
+  workflows or rulesets were configured, and `Iber1to` had admin access.
+- The collaborator endpoint returned only `Iber1to`. The GitHub usernames and
+  effective write permissions of the other three teammates are not verified.
+- Requiring reviewer approvals without a PR-only admin exception would block
+  every future merge until eligible teammates receive access.
 
 ## Desired flow
 
 Feature, fix, documentation, test and maintenance branches target develop.
 Only develop may target main. GitHub rulesets block deletion, force pushes and
 merges without reviews, resolved conversations and required status checks.
+`develop` requires one approval; `main` requires two and linear history.
+
+The repository-admin bypass uses `bypass_mode: pull_request`: it can be used
+only on an already-open pull request and does not permit direct pushes. This
+preserves an auditable route while Alejandro remains the only collaborator.
 
 The JUP policy check validates metadata that rulesets cannot express:
 
@@ -22,7 +28,8 @@ The JUP policy check validates metadata that rulesets cannot express:
 2. a direct Trello card URL;
 3. a typed JUP branch targeting develop;
 4. develop as the only source for main;
-5. concrete people for all four rotating roles.
+5. the same JUP identifier in the title, branch and pull-request body;
+6. four concrete, distinct people for the rotating roles.
 
 ## CI boundary
 
@@ -39,16 +46,24 @@ before lint becomes a protected-branch requirement.
 
 ## Security
 
-The workflow grants read-only contents permission. Third-party GitHub actions
-are pinned to immutable commit SHAs. It does not consume repository secrets,
-execute deployment steps or use pull_request_target.
+The workflow grants read-only contents permission. GitHub-owned actions are
+pinned to verified immutable commit SHAs. It reruns when pull-request metadata
+changes and does not consume repository secrets, execute deployment steps or
+use `pull_request_target`. Existing corpus, cleanup, gateway and OpenSpec
+validators remain enforced.
 
 ## Activation
 
-An administrator must first confirm the repository, create develop from the
-agreed integrated head, grant the four members the agreed access, run all checks
-on a test pull request and then create the develop and main rulesets. Required check names are documented in
-docs/governance/github-branch-protection.md.
+An administrator first opens the JUP-079 pull request and waits for its six
+required checks to run successfully. The exact rulesets in
+`.github/rulesets/develop.json` and `.github/rulesets/main.json` can then be
+activated through GitHub's repository-rules API. Effective API state verifies
+matching branches, required reviews/checks, force-push/deletion restrictions
+and PR-only administrator bypass.
+
+Granting all four teammates access remains a separate prerequisite for normal
+peer approvals and cannot be completed until their GitHub identities and the
+organization's desired roles are confirmed.
 
 Rollback removes or disables the ruleset through GitHub administration. The
 versioned PR template and validators remain reviewable and do not grant access.

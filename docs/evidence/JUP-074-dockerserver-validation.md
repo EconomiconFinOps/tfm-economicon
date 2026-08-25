@@ -1,4 +1,4 @@
-# JUP-074 — Validación en dockerserver
+# JUP-074 — Histórico de validación inicial en dockerserver
 
 Fecha: 2026-08-08
 
@@ -37,5 +37,7 @@ Una consulta contractual realizada desde la estación de desarrollo contra
 Esto prueba construcción y arranque mediante Docker Compose, healthcheck dentro
 del servidor y acceso HTTP desde fuera del contenedor y del propio host.
 
-El despliegue se conserva como entorno de comparación mientras se desarrolla
-JUP-075 en otro puerto y proyecto Compose.
+Este resultado corresponde al despliegue histórico del 2026-08-08; no implica
+que ese contenedor o puerto sigan activos. La evidencia vigente de la entrega
+integrada está en `docs/evidence/JUP-074-validation.md`; JUP-075 mantiene su
+propia validación actualizada en `docs/evidence/JUP-075-validation.md`.

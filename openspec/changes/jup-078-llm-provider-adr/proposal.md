@@ -11,7 +11,8 @@ Economicon solo dispone de proveedores mock. El equipo necesita decidir y valida
 - Fijar alias logicos para GLM-5.2 y DeepSeek V4 Pro, dimensiones y limites provisionales.
 - Impedir mocks en el modo de evaluacion y fallar ante configuraciones incompletas.
 - Definir privacidad, secretos, telemetria, coste y un benchmark reproducible.
-- Mantener la decision en estado propuesto hasta la aprobacion de los cuatro miembros y el benchmark real.
+- Ejecutar un benchmark autenticado y mantener la decision en estado propuesto
+  hasta que los cuatro miembros revisen sus hallazgos y aprueben el ADR.
 
 ## Capabilities
 
@@ -27,7 +28,8 @@ Economicon solo dispone de proveedores mock. El equipo necesita decidir y valida
 
 - Implementar clientes reales de chat o embeddings en los servicios.
 - Desplegar o modificar el contenedor LiteLLM compartido de `dockerserver`.
-- Activar fallback automatico, aportar credenciales o aprobar gasto real.
+- Activar fallback automatico o guardar credenciales en Git.
+- Aprobar unilateralmente el presupuesto o la decision definitiva del equipo.
 
 ## Impact
 
