@@ -2,7 +2,8 @@
 
 - Status: Proposed | Accepted | Superseded | Deprecated
 - Date: <YYYY-MM-DD>
-- Related HU/OpenSpec: <change-name or "none">
+- Related JUP/OpenSpec: <JUP-XXX and change-name, or "none">
+- Trello: <direct Trello card URL or "none">
 - Supersedes: <ADR-NNNN or "none">
 - Superseded by: <ADR-NNNN or "none">
 
@@ -22,6 +23,6 @@
 
 - <Option>: <why it was not chosen or why it remains possible later>
 
-## Engram Notes
+## Evidence And Follow-up
 
-<Optional operational context from Engram. Do not use this section as the only source for the decision. Use "None." when not applicable.>
+<Record relevant evidence, operational considerations, and follow-up tasks. Use "None." when not applicable.>

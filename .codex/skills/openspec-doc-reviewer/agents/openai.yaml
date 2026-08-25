@@ -1,4 +1,0 @@
-interface:
-  display_name: "OpenSpec Doc Reviewer"
-  short_description: "Post-archive docs and HU notes"
-  default_prompt: "Use $openspec-doc-reviewer to review the latest archived OpenSpec change for documentation drift and update HU release notes."
