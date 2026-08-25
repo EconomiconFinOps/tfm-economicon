@@ -1,0 +1,115 @@
+name: CI
+
+"on":
+  pull_request:
+    branches:
+      - main
+      - develop
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+      - ready_for_review
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-policy:
+    name: JUP policy
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the pull request
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate JUP traceability and rotating roles
+        run: node tools/pr-policy.mjs --event "$GITHUB_EVENT_PATH"
+
+  governance:
+    name: OpenSpec
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Install workspace dependencies
+        run: |
+          corepack enable
+          corepack pnpm install --frozen-lockfile
+      - name: Validate governance tooling
+        run: |
+          corepack pnpm jup:check:test
+          corepack pnpm pr:check:test
+          corepack pnpm ci:check:test
+          corepack pnpm jup:check:all
+          corepack pnpm jup:cleanup:test
+          corepack pnpm jup:cleanup:check
+          corepack pnpm assistant-corpus:test
+          corepack pnpm assistant-corpus:validate
+          corepack pnpm llm-gateway:test
+          corepack pnpm openspec:validate
+
+  python-tests:
+    name: Python tests (${{ matrix.service.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: azure-cost-api
+            path: apps/azure-cost-api
+          - name: backend
+            path: apps/backend
+          - name: processor
+            path: apps/processor
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        working-directory: ${{ matrix.service.path }}
+        run: python -m pip install -r requirements-dev.txt
+      - name: Run tests
+        working-directory: ${{ matrix.service.path }}
+        run: python -m pytest tests -q
+
+  frontend-build:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Install workspace dependencies
+        run: |
+          corepack enable
+          corepack pnpm install --frozen-lockfile
+      - name: Build frontend
+        run: corepack pnpm --filter @finops/frontend build

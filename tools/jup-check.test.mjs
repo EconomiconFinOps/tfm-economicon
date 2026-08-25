@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { checkChange, parseChange } from "./jup-check.mjs";
+import { checkChange, findChanges, parseChange } from "./jup-check.mjs";
 
 function fixture(change = "jup-082-clean-develop") {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "economicon-jup-check-"));
@@ -95,6 +95,18 @@ test("requires the proposal, design, metadata and delta specifications", () => {
     assert.ok(errors.some((error) => error.includes(".openspec.yaml")));
     assert.ok(errors.some((error) => error.includes("tasks.md")));
     assert.ok(errors.some((error) => error.includes("delta spec")));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("finds all active JUP changes in a stable order", () => {
+  const root = fixture("jup-079-branch-protection");
+  const second = path.join(root, "openspec", "changes", "jup-078-llm-provider-adr");
+  fs.mkdirSync(second, { recursive: true });
+  fs.mkdirSync(path.join(root, "openspec", "changes", "archive"), { recursive: true });
+  try {
+    assert.deepEqual(findChanges(root), ["jup-078-llm-provider-adr", "jup-079-branch-protection"]);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

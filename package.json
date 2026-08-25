@@ -14,12 +14,16 @@
     "openspec:validate": "openspec validate --all --strict --no-interactive",
     "openspec:archive": "openspec archive",
     "jup:check": "node tools/jup-check.mjs",
+    "jup:check:all": "node tools/jup-check.mjs --all",
     "jup:check:test": "node --test tools/jup-check.test.mjs",
     "jup:cleanup:check": "node tools/jup-cleanup-check.mjs",
     "jup:cleanup:test": "node --test tools/jup-cleanup-check.test.mjs",
     "assistant-corpus:validate": "node tools/assistant-corpus.mjs validate",
     "assistant-corpus:test": "node --test tools/assistant-corpus.test.mjs",
-    "llm-gateway:test": "node --test tools/llm-gateway-config.test.mjs"
+    "llm-gateway:test": "node --test tools/llm-gateway-config.test.mjs",
+    "pr:check": "node tools/pr-policy.mjs",
+    "pr:check:test": "node --test tools/pr-policy.test.mjs",
+    "ci:check:test": "node --test tools/ci-workflow.test.mjs"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.8.0",
