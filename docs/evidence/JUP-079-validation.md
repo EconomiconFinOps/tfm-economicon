@@ -5,6 +5,7 @@
 - Local branch: chore/JUP-079-branch-protection
 - Integrated base: official `develop` after JUP-078 merge `5e33659`.
 - Canonical repository: `EconomiconFinOps/tfm-economicon`.
+- Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/11
 
 ## Remote audit
 
@@ -69,10 +70,29 @@ The administrator bypass uses repository role `5` and
 `bypass_mode: pull_request`, never `always` or `exempt`. This preserves an
 auditable pull-request route until additional collaborators gain access.
 
-## Pending remote evidence
+## GitHub Actions and effective branch protection
 
-- Run the newly published workflow on the JUP-079 pull request.
-- Activate and verify both repository rulesets through GitHub's API.
+- The first PR workflow completed successfully at
+  https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/32890189617.
+- All six required check contexts succeeded: `JUP policy`, `OpenSpec`,
+  `Python tests (azure-cost-api)`, `Python tests (backend)`,
+  `Python tests (processor)` and `Frontend build`.
+- Active `develop` ruleset: `Economicon develop protection`, ID `21475971`,
+  requiring one approval, all six checks and a pull request.
+- Active `main` ruleset: `Economicon main protection`, ID `21475972`, requiring
+  two approvals, all six checks, a pull request and linear release history.
+- GitHub's branch API reports both `develop` and `main` as `protected: true`.
+- GitHub's effective branch-rule endpoints confirm pull-request-only updates,
+  mandatory reviews, mandatory checks and deletion/force-push protection for
+  both branches. The sole administrator bypass has mode `pull_request`, so it
+  cannot authorize a direct push to either protected branch.
+- After activation, GitHub reported PR #11 as `BLOCKED` with
+  `REVIEW_REQUIRED`, proving the review gate is enforced. An administrator can
+  complete the existing PR through the explicitly configured pull-request-only
+  bypass while the remaining team accounts are unavailable.
+
+## Pending team-access evidence
+
 - Confirm GitHub identities and grant agreed access to Paris, Lucia and Victor;
   this dependency cannot be completed by guessing accounts.
 - Obtain real peer approvals once all four contributors have effective access.

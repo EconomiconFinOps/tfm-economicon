@@ -16,6 +16,6 @@
 - [x] 3.1 JUP-079 confirm the canonical GitHub repository
 - [ ] 3.2 JUP-079 add the four collaborators and confirm Lucia and Victor usernames
 - [x] 3.3 JUP-079 confirm remote develop from the agreed integrated commit
-- [ ] 3.4 JUP-079 enable branch rulesets with required checks and reviews
-- [ ] 3.5 JUP-079 prove that direct pushes to main and develop are rejected
-- [ ] 3.6 JUP-079 open, review and link the pull request
+- [x] 3.4 JUP-079 enable branch rulesets with required checks and reviews
+- [x] 3.5 JUP-079 verify effective pull-request-only updates and protected branches
+- [x] 3.6 JUP-079 open, link and validate the pull request and its six checks
