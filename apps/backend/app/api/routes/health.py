@@ -1,9 +1,12 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends
 
 from app.api.dependencies import get_database, get_queue, get_vector_store
 from app.schemas.health import HealthResponse
 
 
+UTC = timezone.utc
 router = APIRouter(tags=["health"])
 
 
@@ -28,4 +31,5 @@ def health(
             "rabbitmq": rabbitmq_status,
             "vector_store": vector_store_status,
         },
+        checked_at=datetime.now(UTC),
     )
