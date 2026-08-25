@@ -78,7 +78,7 @@ limiting benchmark responses to 256 tokens reduced its successful-response
 cost from 0.0016360818 USD to 0.0005395524 USD.
 
 The authenticated OpenRouter key endpoint reported total accumulated usage of
-0.011825411 USD after three benchmark runs, timed-out requests and the real
+0.011825531 USD after three benchmark runs, timed-out requests and the real
 embedding check. This full-account delta is intentionally larger than the
 0.0008962524 USD attributed to successful responses in the final benchmark.
 

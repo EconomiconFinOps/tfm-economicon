@@ -77,7 +77,7 @@ por palabras es orientativa y no sustituye la revision humana de respuestas.
 
 El alias de embeddings completo una solicitud real con 1536 dimensiones,
 6 tokens y 450,39 ms. El coste acumulado de las tres tandas de diagnostico y la
-comprobacion de embeddings fue 0,011825411 USD segun la propia cuenta de
+comprobacion de embeddings fue 0,011825531 USD segun la propia cuenta de
 OpenRouter; incluye solicitudes previas o agotadas que no aparecen en el coste
 atribuido a las respuestas exitosas del benchmark final.
 
