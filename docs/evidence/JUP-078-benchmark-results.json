@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "content_retained": false,
+  "models": [
+    {
+      "alias": "economicon-chat",
+      "cases": 5,
+      "successful": 5,
+      "mean_keyword_score": 0.9,
+      "p95_latency_ms": 11728.5,
+      "prompt_tokens": 216,
+      "completion_tokens": 293,
+      "cost_usd": 0.0005395524,
+      "results": [
+        {
+          "case_id": "cost-total",
+          "ok": true,
+          "latency_ms": 9280.16,
+          "keyword_score": 1.0,
+          "prompt_tokens": 43,
+          "completion_tokens": 44,
+          "resolved_model": "economicon-chat",
+          "cost_usd": 0.0000860382
+        },
+        {
+          "case_id": "largest-service",
+          "ok": true,
+          "latency_ms": 2593.0,
+          "keyword_score": 1.0,
+          "prompt_tokens": 43,
+          "completion_tokens": 41,
+          "resolved_model": "economicon-chat",
+          "cost_usd": 0.0000815634
+        },
+        {
+          "case_id": "percentage-change",
+          "ok": true,
+          "latency_ms": 5712.52,
+          "keyword_score": 1.0,
+          "prompt_tokens": 43,
+          "completion_tokens": 7,
+          "resolved_model": "economicon-chat",
+          "cost_usd": 0.000030849
+        },
+        {
+          "case_id": "missing-context",
+          "ok": true,
+          "latency_ms": 6851.01,
+          "keyword_score": 0.5,
+          "prompt_tokens": 35,
+          "completion_tokens": 24,
+          "resolved_model": "economicon-chat",
+          "cost_usd": 0.0000524094
+        },
+        {
+          "case_id": "finops-actions",
+          "ok": true,
+          "latency_ms": 11728.5,
+          "keyword_score": 1.0,
+          "prompt_tokens": 52,
+          "completion_tokens": 177,
+          "resolved_model": "economicon-chat",
+          "cost_usd": 0.0002886924
+        }
+      ]
+    },
+    {
+      "alias": "economicon-chat-deepseek",
+      "cases": 5,
+      "successful": 4,
+      "mean_keyword_score": 0.75,
+      "p95_latency_ms": 10875.63,
+      "prompt_tokens": 158,
+      "completion_tokens": 126,
+      "cost_usd": 0.0003567,
+      "results": [
+        {
+          "case_id": "cost-total",
+          "ok": true,
+          "latency_ms": 6963.5,
+          "keyword_score": 1.0,
+          "prompt_tokens": 41,
+          "completion_tokens": 40,
+          "resolved_model": "economicon-chat-deepseek",
+          "cost_usd": 0.00010527
+        },
+        {
+          "case_id": "largest-service",
+          "ok": true,
+          "latency_ms": 10875.63,
+          "keyword_score": 1.0,
+          "prompt_tokens": 41,
+          "completion_tokens": 50,
+          "resolved_model": "economicon-chat-deepseek",
+          "cost_usd": 0.00012267
+        },
+        {
+          "case_id": "percentage-change",
+          "ok": true,
+          "latency_ms": 5760.91,
+          "keyword_score": 1.0,
+          "prompt_tokens": 41,
+          "completion_tokens": 16,
+          "resolved_model": "economicon-chat-deepseek",
+          "cost_usd": 0.00006351
+        },
+        {
+          "case_id": "missing-context",
+          "ok": true,
+          "latency_ms": 7484.91,
+          "keyword_score": 0.0,
+          "prompt_tokens": 35,
+          "completion_tokens": 20,
+          "resolved_model": "economicon-chat-deepseek",
+          "cost_usd": 0.00006525
+        },
+        {
+          "case_id": "finops-actions",
+          "ok": false,
+          "latency_ms": 30054.73,
+          "error_type": "TimeoutError"
+        }
+      ]
+    }
+  ]
+}

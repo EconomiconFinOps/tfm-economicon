@@ -18,7 +18,8 @@
     "jup:cleanup:check": "node tools/jup-cleanup-check.mjs",
     "jup:cleanup:test": "node --test tools/jup-cleanup-check.test.mjs",
     "assistant-corpus:validate": "node tools/assistant-corpus.mjs validate",
-    "assistant-corpus:test": "node --test tools/assistant-corpus.test.mjs"
+    "assistant-corpus:test": "node --test tools/assistant-corpus.test.mjs",
+    "llm-gateway:test": "node --test tools/llm-gateway-config.test.mjs"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.8.0",

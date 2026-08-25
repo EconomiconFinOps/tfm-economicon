@@ -1,0 +1,45 @@
+model_list:
+  - model_name: economicon-chat
+    litellm_params:
+      model: openrouter/z-ai/glm-5.2
+      api_key: os.environ/OPENROUTER_API_KEY
+      max_tokens: 800
+      extra_body:
+        provider:
+          zdr: true
+          data_collection: deny
+          allow_fallbacks: false
+        reasoning:
+          enabled: false
+
+  - model_name: economicon-chat-deepseek
+    litellm_params:
+      model: openrouter/deepseek/deepseek-v4-pro
+      api_key: os.environ/OPENROUTER_API_KEY
+      max_tokens: 800
+      extra_body:
+        provider:
+          zdr: true
+          data_collection: deny
+          allow_fallbacks: false
+        reasoning:
+          enabled: false
+
+  - model_name: economicon-embedding
+    litellm_params:
+      model: openrouter/openai/text-embedding-3-small
+      api_key: os.environ/OPENROUTER_API_KEY
+      dimensions: 1536
+      extra_body:
+        provider:
+          zdr: true
+          data_collection: deny
+          allow_fallbacks: false
+
+litellm_settings:
+  request_timeout: 30
+  num_retries: 2
+  set_verbose: false
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
