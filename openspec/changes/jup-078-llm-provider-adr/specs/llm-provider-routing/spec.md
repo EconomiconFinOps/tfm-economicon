@@ -46,6 +46,16 @@ disponible.
 - **WHEN** OpenRouter rechaza el modelo
 - **THEN** la operacion falla de forma trazable sin cambiar de modelo ni politica de privacidad
 
+### Requirement: Razonamiento explicito en la linea base FinOps
+Los alias de chat SHALL desactivar el razonamiento opcional de alto esfuerzo
+para la evaluacion base; un modo de razonamiento distinto SHALL requerir
+configuracion y benchmark explicitos.
+
+#### Scenario: Evaluacion de chat con modelos reasoning por defecto
+- **WHEN** se invoca GLM-5.2 o DeepSeek V4 Pro mediante su alias aprobado
+- **THEN** la solicitud fija `reasoning.enabled: false` y conserva el limite
+  de salida y timeout configurados
+
 ### Requirement: Privacidad y secretos
 El gateway SHALL usar OpenRouter con ZDR y denegacion de data collection; las claves SHALL permanecer fuera de logs, respuestas, commits y artefactos.
 

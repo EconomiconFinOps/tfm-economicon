@@ -4,8 +4,9 @@ ADR: docs/adr/ADR-0002-litellm-openrouter.md
 ## Context
 
 El codigo actual usa mocks. Trello recoge la propuesta LiteLLM/OpenRouter y la
-seleccion GLM-5.2/DeepSeek, pero faltan benchmark real, presupuesto aprobado y
-conformidad verificable de los cuatro miembros. Hay un contenedor llamado
+seleccion GLM-5.2/DeepSeek. El benchmark real ya esta adjunto y muestra
+hallazgos de latencia; faltan presupuesto aprobado y conformidad verificable
+de los cuatro miembros. Hay un contenedor llamado
 `litellm` en `dockerserver`, pero no forma parte de esta rama y no se asume que
 sea reutilizable.
 
@@ -23,6 +24,9 @@ Los servicios solo conocen alias de Economicon. LiteLLM conserva el mapeo a mode
 - Segundo modelo de chat: `deepseek/deepseek-v4-pro`, expuesto como `economicon-chat-deepseek`.
 - Embeddings: `openai/text-embedding-3-small`, expuesto como `economicon-embedding`, con 1536 dimensiones.
 - Limite provisional: 800 tokens de salida, timeout de 30 segundos y 2 reintentos.
+- Razonamiento opcional desactivado explicitamente para los alias de chat: ambos
+  modelos activan esfuerzo alto por defecto y pueden consumir el limite de
+  salida o superar el timeout antes de entregar una respuesta.
 - Techo provisional de desarrollo: 10 USD/mes mediante clave virtual de LiteLLM; requiere aprobacion.
 
 ## Security and Privacy
@@ -40,11 +44,18 @@ Los servicios solo conocen alias de Economicon. LiteLLM conserva el mapeo a mode
 
 `tools/llm-benchmark.py` ejecuta el mismo JSONL contra GLM-5.2 y DeepSeek V4
 Pro, conserva solo metricas, comprueba coste/tokens y verifica terminos
-esperados. El transporte rechaza redirecciones HTTP para no reenviar la clave
+esperados. Cada caso limita su salida a 256 tokens, por debajo del maximo
+operativo de 800. El transporte rechaza redirecciones HTTP para no reenviar la clave
 interna del gateway. El benchmark no decide si DeepSeek debe usarse bajo
 seleccion explicita para tareas concretas; esa politica requiere revision
 humana sobre exactitud FinOps, citas, formato, latencia y coste. Los resultados
 mock no son admisibles.
+
+El benchmark real del 25 de agosto completo 5/5 casos con GLM-5.2 y 4/5 con
+DeepSeek V4 Pro; el segundo modelo agoto los 30 segundos en un caso. Sus p95
+respectivos de 11,73 s y 10,88 s superan el objetivo provisional de 10 s. Los
+embeddings reales devolvieron las 1536 dimensiones acordadas. La evidencia
+versionada no contiene prompts, respuestas ni credenciales.
 
 ## Migration and Rollback
 

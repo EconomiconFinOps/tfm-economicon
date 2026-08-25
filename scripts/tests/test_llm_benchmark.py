@@ -132,6 +132,11 @@ class BenchmarkTests(unittest.TestCase):
         self.assertNotIn(prompt, json.dumps(result))
         self.assertNotIn(secret, json.dumps(result))
         self.assertEqual(transport.requests[0][0].get_header("Authorization"), f"Bearer {secret}")
+        self.assertEqual(
+            json.loads(transport.requests[0][0].data.decode("utf-8"))["max_tokens"],
+            benchmark.BENCHMARK_MAX_TOKENS,
+        )
+        self.assertEqual(benchmark.BENCHMARK_MAX_TOKENS, 256)
 
     def test_http_error_exposes_only_safe_class_and_status(self):
         error = urllib.error.HTTPError(

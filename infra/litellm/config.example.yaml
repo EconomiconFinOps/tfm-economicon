@@ -9,6 +9,8 @@ model_list:
           zdr: true
           data_collection: deny
           allow_fallbacks: false
+        reasoning:
+          enabled: false
 
   - model_name: economicon-chat-deepseek
     litellm_params:
@@ -20,6 +22,8 @@ model_list:
           zdr: true
           data_collection: deny
           allow_fallbacks: false
+        reasoning:
+          enabled: false
 
   - model_name: economicon-embedding
     litellm_params:

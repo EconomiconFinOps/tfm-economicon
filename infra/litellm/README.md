@@ -22,6 +22,13 @@ The proxy master key belongs under `general_settings`, not
 `data_collection: deny` and `allow_fallbacks: false`; OpenRouter otherwise
 enables provider fallbacks by default.
 
+Both chat models enable high-effort reasoning by default at OpenRouter. The
+gateway explicitly disables optional reasoning for the baseline FinOps
+evaluation: reasoning tokens count toward the 800-token output cap and can
+otherwise exhaust the response or exceed the 30-second request timeout. Any
+future reasoning-enabled mode must be selected deliberately and benchmarked
+separately.
+
 Before using this configuration:
 
 1. pin and review a LiteLLM image version;

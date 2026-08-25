@@ -9,9 +9,10 @@
 
 Economicon necesita chat y embeddings reales para evaluar su RAG, pero el codigo actual solo implementa mocks. El equipo no dispone de un tenant de Azure AI y quiere evitar que backend y processor queden acoplados a credenciales, catalogos y politicas de un proveedor externo.
 
-Trello recoge LiteLLM + OpenRouter y la seleccion de GLM-5.2 y DeepSeek, pero
-todavia no existe un benchmark real ni una aprobacion verificable de los cuatro
-miembros. Esta propuesta permanece `Proposed` hasta contar con ambas evidencias.
+Trello recoge LiteLLM + OpenRouter y la seleccion de GLM-5.2 y DeepSeek. El
+benchmark autenticado ya esta disponible, pero muestra limites de latencia y
+un timeout de DeepSeek, y todavia no existe una aprobacion verificable de los
+cuatro miembros. Esta propuesta permanece `Proposed` hasta su revision conjunta.
 
 Alejandro establecio GLM-5.2 y DeepSeek como modelos de chat. Para hacer la
 configuracion reproducible se fija la variante vigente
@@ -29,6 +30,8 @@ Usar LiteLLM como gateway interno OpenAI-compatible y OpenRouter como unico upst
 - `economicon-embedding` se mapea a `openai/text-embedding-3-small` con 1536 dimensiones.
 - Cada alias tiene un unico despliegue; un fallo se propaga y se observa.
 - El routing upstream fija expresamente `allow_fallbacks: false`.
+- Los alias de chat fijan `reasoning.enabled: false` para la linea base FinOps;
+  el razonamiento de alto esfuerzo queda reservado a una evaluacion explicita.
 - Los mocks solo son validos en `test` y `development`; `evaluation` los rechaza.
 
 ## Catalogo y precios verificados
@@ -56,10 +59,41 @@ de tokens y deben volver a comprobarse antes de cualquier gasto real.
 
 Un candidato que invente costes, falle privacidad o no cumpla salidas estructuradas queda descartado aunque obtenga mayor puntuacion total.
 
+## Benchmark autenticado del 25 de agosto de 2026
+
+Ejecucion real desde una instancia LiteLLM 1.82.6 aislada en `dockerserver`,
+con imagen fijada por digest, cinco casos publicos por modelo, salida acotada
+a 256 tokens, razonamiento opcional desactivado y timeout de 30 segundos.
+
+| Alias | Casos completados | Puntuacion por terminos | p95 | Coste atribuido |
+|---|---:|---:|---:|---:|
+| GLM-5.2 | 5/5 | 90% | 11,73 s | 0,0005395524 USD |
+| DeepSeek V4 Pro | 4/5 | 75% | 10,88 s | 0,0003567 USD |
+
+DeepSeek agoto los 30 segundos en el caso de acciones FinOps; el runner
+devuelve error deliberadamente cuando cualquier caso no se completa. Ninguno
+de los modelos alcanza el objetivo provisional de p95 <= 10 s. La puntuacion
+por palabras es orientativa y no sustituye la revision humana de respuestas.
+
+El alias de embeddings completo una solicitud real con 1536 dimensiones,
+6 tokens y 450,39 ms. El coste acumulado de las tres tandas de diagnostico y la
+comprobacion de embeddings fue 0,011825411 USD segun la propia cuenta de
+OpenRouter; incluye solicitudes previas o agotadas que no aparecen en el coste
+atribuido a las respuestas exitosas del benchmark final.
+
+Los resultados sin prompts, respuestas ni secretos se conservan en
+`docs/evidence/JUP-078-benchmark-results.json`. GLM-5.2 queda como candidato
+principal; DeepSeek requiere estudiar latencia, timeout y calidad antes de
+aprobar su politica de uso.
+
 ## Limites provisionales pendientes de aprobacion
 
 - Presupuesto de desarrollo: 10 USD/mes mediante clave virtual de LiteLLM.
 - Salida maxima: 800 tokens por llamada de chat.
+- Benchmark FinOps: respuestas acotadas a 256 tokens por caso, siempre dentro
+  del limite operativo de 800 tokens.
+- Razonamiento opcional desactivado en la linea base para evitar que consuma el
+  presupuesto de salida o agote el timeout antes de entregar texto.
 - Timeout: 30 segundos; reintentos: 2 solo para errores transitorios.
 - Sin fallback automatico.
 - Los limites definitivos se actualizaran con el benchmark y el volumen esperado.
@@ -105,10 +139,14 @@ Cambiar el modelo de embeddings o su dimension requerira una coleccion nueva y r
 
 ## Condiciones para aceptar este ADR
 
-1. Ejecutar el benchmark de `tools/llm-benchmark.py` con credenciales temporales.
-2. Adjuntar resultados de calidad, p95, tokens y coste para GLM-5.2 y DeepSeek V4 Pro.
-3. Aprobar presupuesto, privacidad y politica de seleccion por los cuatro miembros.
-4. Auditar o aislar la instancia que vaya a desplegarse en `dockerserver`.
+1. Benchmark real y resultados adjuntos: completado; persisten hallazgos de
+   latencia y disponibilidad que requieren revision.
+2. Instancia de benchmark aislada y fijada por digest en `dockerserver`:
+   completado.
+3. Aprobar presupuesto, privacidad, hallazgos y politica de seleccion por los
+   cuatro miembros: pendiente.
+4. Crear una clave virtual revocable con el techo que apruebe el equipo:
+   pendiente; la API key upstream actual tiene un limite propio de 25 USD/mes.
 5. Revisar el PR publicado contra `develop` en
    `EconomiconFinOps/tfm-economicon` y aceptar expresamente la decision.
 

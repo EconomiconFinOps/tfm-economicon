@@ -47,6 +47,21 @@ test("explicitly enforces OpenRouter privacy and disables provider fallback", ()
   }
 });
 
+test("disables optional high-effort reasoning only for baseline chat aliases", () => {
+  const chatModels = config.model_list.filter(({ model_name }) =>
+    model_name.startsWith("economicon-chat"),
+  );
+  const embedding = config.model_list.find(
+    ({ model_name }) => model_name === "economicon-embedding",
+  );
+
+  assert.equal(chatModels.length, 2);
+  for (const { litellm_params } of chatModels) {
+    assert.deepEqual(litellm_params.extra_body.reasoning, { enabled: false });
+  }
+  assert.equal(embedding.litellm_params.extra_body.reasoning, undefined);
+});
+
 test("preserves the approved embedding dimensions and operational limits", () => {
   const embedding = config.model_list.find(
     ({ model_name }) => model_name === "economicon-embedding",

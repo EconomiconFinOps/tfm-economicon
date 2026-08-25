@@ -20,6 +20,7 @@ from pathlib import Path
 
 
 ALIAS_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
+BENCHMARK_MAX_TOKENS = 256
 
 
 class RejectRedirectHandler(urllib.request.HTTPRedirectHandler):
@@ -113,7 +114,7 @@ def run_case(url: str, key: str, model: str, case: dict, *, opener=None) -> dict
             "model": model,
             "messages": [{"role": "user", "content": case["prompt"]}],
             "temperature": 0,
-            "max_tokens": 800,
+            "max_tokens": BENCHMARK_MAX_TOKENS,
         }
     ).encode("utf-8")
     request = urllib.request.Request(
