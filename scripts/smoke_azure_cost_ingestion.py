@@ -57,6 +57,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Smoke test the Azure cost ingestion client")
     parser.add_argument("--base-url", required=True)
     parser.add_argument("--token", default="jupiter-local-token")
+    parser.add_argument("--forbidden-token", default="jupiter-forbidden-token")
     parser.add_argument("--subscription-id")
     return parser.parse_args()
 
@@ -110,6 +111,15 @@ def main() -> None:
         AzureCostHttpError,
     )
     assert error.status_code == 401
+
+    forbidden = AzureCostClient(
+        make_settings(args, azure_cost_api_token=args.forbidden_token)
+    )
+    error = expect_error(
+        lambda: forbidden.query_all(subscription_id, definition),
+        AzureCostHttpError,
+    )
+    assert error.status_code == 403
 
     rate_limit_sleeps = []
 
@@ -166,6 +176,7 @@ def main() -> None:
                 "rows": len(normal.rows),
                 "pages": normal.page_count,
                 "auth401": True,
+                "auth403": True,
                 "rateLimitRetry": rate_limited.retry_count,
                 "retryAfterSeconds": rate_limit_sleeps[0],
                 "serverErrorRetry": server_error.retry_count,

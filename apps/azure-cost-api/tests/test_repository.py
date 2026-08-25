@@ -1,6 +1,8 @@
 from decimal import Decimal
 
-from app.repository import CostRepository, parse_tags
+import pytest
+
+from app.repository import CostRepository, DatasetError, parse_tags
 
 
 def test_repository_loads_public_fixture(settings):
@@ -29,3 +31,17 @@ def test_legacy_tags_are_parsed_without_modifying_values():
     tags = parse_tags('"CostCenter": "1234","env": "prod","Project": "Foo"')
 
     assert tags == {"CostCenter": "1234", "env": "prod", "Project": "Foo"}
+
+
+def test_json_tags_are_parsed_without_modifying_values():
+    tags = parse_tags('{"CostCenter":"1234","env":"prod","Project":"Foo"}')
+
+    assert tags == {"CostCenter": "1234", "env": "prod", "Project": "Foo"}
+
+
+def test_repository_rejects_fixture_with_missing_contract_columns(settings, tmp_path):
+    invalid_fixture = tmp_path / "invalid.csv"
+    invalid_fixture.write_text("SubscriptionId\nsubscription-1\n", encoding="utf-8")
+
+    with pytest.raises(DatasetError, match="missing required columns"):
+        CostRepository(invalid_fixture, settings.azure_cost_mapping_path)

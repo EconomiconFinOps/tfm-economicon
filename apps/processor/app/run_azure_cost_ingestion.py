@@ -10,7 +10,10 @@ from app.core.logging import configure_logging
 from app.db.database import Database
 from app.normalization.azure_cost import AzureCostNormalizer, AzureCostNormalizationError
 from app.repositories.azure_cost import SqlAzureCostRepository
-from app.tasks.azure_cost_ingest import AzureCostIngestionService
+from app.tasks.azure_cost_ingest import (
+    AzureCostIngestionScopeError,
+    AzureCostIngestionService,
+)
 
 
 DEFAULT_DEFINITION = {
@@ -79,7 +82,11 @@ def main() -> int:
             )
         )
         return 0
-    except (AzureCostClientError, AzureCostNormalizationError) as exc:
+    except (
+        AzureCostClientError,
+        AzureCostNormalizationError,
+        AzureCostIngestionScopeError,
+    ) as exc:
         print(json.dumps({"error_code": type(exc).__name__, "status": "failed"}))
         return 1
     finally:

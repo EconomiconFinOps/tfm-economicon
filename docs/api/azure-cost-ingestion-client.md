@@ -1,6 +1,6 @@
 # Cliente de ingesta Azure Cost Management
 
-Estado: implementado localmente en JUP-076.
+Estado: implementado en JUP-076 sobre el contrato y simulador integrados.
 
 ## Responsabilidad
 
@@ -17,8 +17,13 @@ El cliente:
 - aplica timeout a cada request;
 - rechaza JSON, columnas, tipos y longitudes de fila inválidos;
 - detecta páginas intermedias vacías, ciclos y exceso de páginas;
-- rechaza un `nextLink` que cambie protocolo o autoridad antes de reenviar el
-  bearer;
+- rechaza un `nextLink` que cambie protocolo, autoridad, ruta de suscripción o
+  `api-version` antes de reenviar el bearer;
+- deshabilita las redirecciones HTTP para no filtrar el bearer a otro endpoint;
+- valida que `PreTaxCost` sea `Number`, `Currency` sea `String` y todos los
+  importes sean finitos;
+- rechaza URLs con credenciales, query, fragmentos o puertos inválidos, además
+  de tokens vacíos o con saltos de línea;
 - emite eventos JSON sin body, token ni query string.
 
 ## Configuración

@@ -26,7 +26,7 @@ TENANT_SEED = [
 
 USER_SEED = {
     "id": "user-finops-admin",
-    "email": "operator@finops.local",
+    "email": "operator@example.com",
     "password": "secret",
     "full_name": "FinOps Operator",
     "role": "admin",

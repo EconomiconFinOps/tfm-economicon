@@ -35,7 +35,28 @@ class Settings(BaseSettings):
             raise ValueError("azure_cost_api_base_url must be an absolute HTTP(S) URL")
         if parsed.username or parsed.password:
             raise ValueError("azure_cost_api_base_url must not contain credentials")
+        if parsed.query or parsed.fragment:
+            raise ValueError("azure_cost_api_base_url must not contain a query or fragment")
+        try:
+            parsed.port
+        except ValueError as exc:
+            raise ValueError("azure_cost_api_base_url contains an invalid port") from exc
         return value.rstrip("/")
+
+    @field_validator("azure_cost_api_token")
+    @classmethod
+    def validate_azure_cost_token(cls, value: SecretStr) -> SecretStr:
+        token = value.get_secret_value()
+        if not token.strip() or any(character in token for character in ("\r", "\n")):
+            raise ValueError("azure_cost_api_token must be a non-empty single-line bearer")
+        return value
+
+    @field_validator("azure_cost_api_version")
+    @classmethod
+    def validate_azure_cost_api_version(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("azure_cost_api_version must not be empty")
+        return value
 
     @field_validator("azure_cost_api_timeout_seconds")
     @classmethod

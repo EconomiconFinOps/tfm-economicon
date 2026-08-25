@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -61,6 +61,36 @@ class Settings(BaseSettings):
         if not 0 <= value <= 3600:
             raise ValueError("azure_cost_retry_after_seconds must be between 0 and 3600")
         return value
+
+    @field_validator("azure_cost_skiptoken_secret")
+    @classmethod
+    def validate_skiptoken_secret(cls, value: str) -> str:
+        if len(value.strip()) < 16:
+            raise ValueError("azure_cost_skiptoken_secret must contain at least 16 characters")
+        return value
+
+    @field_validator("azure_cost_default_scenario")
+    @classmethod
+    def validate_default_scenario(cls, value: str) -> str:
+        supported = {
+            "normal",
+            "rate-limit",
+            "server-error",
+            "timeout",
+            "empty-page",
+            "invalid-data",
+        }
+        if value not in supported:
+            raise ValueError(f"azure_cost_default_scenario must be one of: {', '.join(sorted(supported))}")
+        return value
+
+    @model_validator(mode="after")
+    def validate_simulated_identities(self) -> "Settings":
+        if self.azure_cost_auth_enabled and not self.valid_tokens:
+            raise ValueError("azure_cost_valid_tokens must configure an allowed identity")
+        if self.valid_tokens & self.forbidden_tokens:
+            raise ValueError("simulated identities cannot be both allowed and forbidden")
+        return self
 
     @property
     def valid_tokens(self) -> frozenset[str]:
