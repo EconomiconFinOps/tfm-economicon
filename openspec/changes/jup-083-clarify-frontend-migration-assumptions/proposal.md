@@ -1,3 +1,6 @@
+JUP: JUP-083
+Trello: https://trello.com/c/GdGEHPvL
+
 ## Why
 
 El spike [docs/spikes/frontend-migration.md](../../../docs/spikes/frontend-migration.md) contiene 6

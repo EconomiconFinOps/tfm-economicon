@@ -1,3 +1,5 @@
+JUP: JUP-083
+
 ## Context
 
 La épica de migración del frontend (Economicon → tfm-economicon) está diseñada en el spike
@@ -49,7 +51,7 @@ lectura y documenta los hallazgos, sin tocar código de producto.
 
 ## Inventario del frontend de Economicon
 
-> Esta sección se rellena durante `/opsx:apply` (una entrada por tarea). Estructura a completar:
+> Esta sección recoge el inventario confirmado durante JUP-083 (una entrada por tarea):
 
 - **Snapshot del origen:** ruta `../Economicon`, rama `main`, commit
   `1fe0030c054d81787bfd0c410f238a6f87a688f6`. El frontend vive en `Economicon/frontend/`

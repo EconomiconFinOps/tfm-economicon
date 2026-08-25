@@ -9,22 +9,17 @@
     "test": "turbo run test",
     "docker:build": "turbo run docker:build",
     "openspec": "openspec",
-    "openspec:init": "openspec init --tools codex,claude .",
     "openspec:list": "openspec list",
-    "openspec:validate": "openspec validate --all",
-    "hu:check": "node tools/hu-check.mjs check",
-    "hu:check:pre-code": "node tools/hu-check.mjs pre-code",
-    "hu:check:approval-format": "node tools/hu-check.mjs approval-format",
-    "hu:check:anti-harness": "node tools/hu-check.mjs anti-harness",
-    "hu:check:findings": "node tools/hu-check.mjs findings",
-    "hu:check:test": "node --test tools/hu-check.test.mjs",
-    "engram": ".\\tools\\engram\\engram.exe",
-    "engram:doctor": ".\\tools\\engram\\engram.exe doctor --project tfm-economicon",
-    "engram:context": ".\\tools\\engram\\engram.exe context tfm-economicon",
-    "engram:mcp": ".\\tools\\engram\\engram.exe mcp --tools=agent --project tfm-economicon"
+    "openspec:status": "openspec status",
+    "openspec:validate": "openspec validate --all --strict --no-interactive",
+    "openspec:archive": "openspec archive",
+    "jup:check": "node tools/jup-check.mjs",
+    "jup:check:test": "node --test tools/jup-check.test.mjs",
+    "jup:cleanup:check": "node tools/jup-cleanup-check.mjs",
+    "jup:cleanup:test": "node --test tools/jup-cleanup-check.test.mjs"
   },
   "devDependencies": {
-    "@fission-ai/openspec": "^1.4.1",
+    "@fission-ai/openspec": "1.8.0",
     "turbo": "^2.0.0"
   }
 }

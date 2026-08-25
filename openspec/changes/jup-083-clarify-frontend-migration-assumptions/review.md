@@ -14,10 +14,10 @@ Accepted
 
 - [x] Implementation matches acceptance criteria (cero `[ASUNCION]` en el spike; inventario en `design.md`).
 - [x] Tasks are marked accurately in `tasks.md`.
-- [x] Tests/checks were executed or exceptions are documented (ver Validation; el fallo global de `openspec:validate` es ajeno a esta HU — `RF-083-001`).
+- [x] Tests/checks were executed successfully after integrating the cleaned `develop` branch.
 - [x] `proposal.md`, `design.md`, `specs`, and `tasks.md` match the final state.
 - [x] Architecture decisions are recorded in ADRs or explicitly marked not applicable.
-- [x] No product decision exists only in Engram.
+- [x] All project decisions remain available in Git-tracked OpenSpec and project documentation.
 - [x] No old harness structure was reintroduced.
 
 ADR not applicable. Esta HU es inventario/documentación; no acepta ni cambia una decisión de
@@ -27,9 +27,10 @@ tooling de la épica.
 ## Validation
 
 ```txt
-pnpm hu:check:pre-code -- --change jup-083-clarify-frontend-migration-assumptions -> checks propios OK; openspec:validate global FAIL (RF-083-001)
-pnpm exec openspec validate jup-083-clarify-frontend-migration-assumptions -> valid
-pnpm openspec:validate (todos los changes) -> FAIL: 21 changes hu-011..hu-031 sin spec deltas ("No deltas found") -> RF-083-001, ajeno a esta HU
+pnpm openspec:validate -> PASS: 5 specifications/changes validated strictly
+pnpm jup:check -- --change jup-083-clarify-frontend-migration-assumptions -> PASS
+pnpm jup:cleanup:check -> PASS: no personal agent configuration, executables or parallel task proposals
+pnpm jup:check:test && pnpm jup:cleanup:test -> PASS: 12 tests
 test / lint / build -> N/A (doc-only, sin código de producto)
 ```
 
@@ -37,16 +38,15 @@ test / lint / build -> N/A (doc-only, sin código de producto)
 
 | ID | Tipo | Severidad | Scope | Descripcion | Accion | Backlog |
 |----|------|-----------|-------|-------------|--------|---------|
-| RF-083-001 | guardrail/harness | Medium | Out of scope | `pnpm openspec:validate` falla en global porque 21 changes de otras HUs (`hu-011`…`hu-031`) no tienen spec deltas ("No deltas found"). `jup-083` valida OK por separado. | defer (lo corrige el equipo dueño de esas HUs) | Added |
-| RF-083-002 | risk/scope | High | Out of scope | El frontend de Economicon es un dashboard estático (Figma Make) **sin backend, sin auth y sin capa de datos**. La F3 de la épica debe **añadir** esas capas desde el destino (`services/api.js` + TanStack Query + auth/tenant), no reconciliar una API inexistente. Además Vite 6 (origen) vs Vite 5 (destino) y TSX sin `tsconfig`. | create HU / replanificar épica | Added |
+| RF-083-001 | OpenSpec validation | Medium | Out of scope | La validación global fallaba por propuestas duplicadas sin especificaciones. JUP-082 las retiró y la validación estricta completa ya pasa. | Fixed by JUP-082 | Fixed |
+| RF-083-002 | risk/scope | High | Out of scope | El frontend de Economicon es un dashboard estático (Figma Make) **sin backend, sin auth y sin capa de datos**. La F3 de la épica debe **añadir** esas capas desde el destino (`services/api.js` + TanStack Query + auth/tenant), no reconciliar una API inexistente. Además Vite 6 (origen) vs Vite 5 (destino) y TSX sin `tsconfig`. | Crear tarjeta JUP / replanificar épica | Open |
 
 ## Risks / Follow-Ups
 
-- Replanificar las HUs F2/F3 de la épica: F3 pasa de "reconciliar capa de servicios" a "construir
+- Replanificar las tarjetas JUP de F2/F3: F3 pasa de "reconciliar capa de servicios" a "construir
   capa de datos + auth desde cero" sobre la UI de Economicon.
-- Decidir versión de Vite (6 vs 5) y el setup de TypeScript (tsconfig) en la HU de tooling (F2).
-- `RF-083-001` bloquea que `pnpm hu:check` (pre-archive) pase en verde hasta que el equipo arregle
-  los `hu-011`…`hu-031`; documentar como excepción si se archiva antes.
+- Decidir versión de Vite (6 vs 5) y el setup de TypeScript (tsconfig) en la tarjeta de tooling (F2).
+- `RF-083-001` quedó resuelto al integrar JUP-082; la validación OpenSpec global ya no está bloqueada.
 
 ## Human Approval
 
@@ -59,4 +59,4 @@ test / lint / build -> N/A (doc-only, sin código de producto)
 - Checks accepted: yes
 - Documentation synchronized: yes
 - Archive decision: archive
-- Notes: HU doc-only completada (7/7 supuestos confirmados, cero `[ASUNCION]` en el spike). Decisión: archivar. El único bloqueo es de ejecución, no de decisión: `pnpm hu:check` (gate pre-archive) falla por `RF-083-001` (changes `hu-011`…`hu-031` de otras HUs sin spec deltas), ajeno a esta HU y aceptado como excepción documentada. El archivado se ejecuta con esa excepción; no requiere volver a cambiar esta aprobación. `RF-083-002` (origen sin backend/auth/datos) queda en el backlog para replanificar la F3 de la épica.
+- Notes: JUP-083 doc-only completada (7/7 supuestos confirmados, cero marcadores pendientes en el spike). La integración de JUP-082 resolvió `RF-083-001` y la validación estricta global pasa. `RF-083-002` (origen sin backend/auth/datos) permanece abierto para replanificar la F3 de la épica.

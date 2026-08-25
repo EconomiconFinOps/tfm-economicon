@@ -13,7 +13,11 @@ __pycache__/
 *.pyd
 .DS_Store
 .env
+.claude/
+.codex/
 .engram/
+tools/engram/
+*.exe
 coverage/
 htmlcov/
 *.log
