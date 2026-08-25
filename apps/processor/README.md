@@ -146,8 +146,10 @@ python -m pytest tests
 - `graphs/pipeline.py` define el flujo de procesamiento.
 - `clients/azure_cost.py` consume todas las páginas de Azure Cost Management,
   valida `columns/rows`, aplica reintentos acotados y evita reenviar el bearer a
-  un `nextLink` de otro origen.
+  otro origen, ruta, versión contractual o redirección HTTP.
 - `tasks/azure_cost_ingest.py`, `normalization/azure_cost.py` y
   `repositories/azure_cost.py` implementan el recorrido API → normalización →
   persistencia. Las tablas son `azure_cost_ingestion_runs` y
   `azure_cost_records`.
+- `docs/api/azure-cost-ingestion-client.md` describe configuración, errores,
+  observabilidad y límites del cliente sin requerir un tenant Azure.

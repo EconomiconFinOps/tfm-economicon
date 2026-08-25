@@ -93,8 +93,19 @@ class SqlAzureCostRepository:
         now = datetime.now(timezone.utc)
         with self.database.engine.begin() as connection:
             connection.execute(
-                text("DELETE FROM azure_cost_records WHERE ingestion_id = :run_id"),
-                {"run_id": run_id},
+                text(
+                    """
+                    DELETE FROM azure_cost_records
+                    WHERE ingestion_id = :run_id
+                      AND tenant_id = :tenant_id
+                      AND subscription_id = :subscription_id
+                    """
+                ),
+                {
+                    "run_id": run_id,
+                    "tenant_id": tenant_id,
+                    "subscription_id": subscription_id,
+                },
             )
             for index, record in enumerate(records):
                 record_id = str(
@@ -141,10 +152,14 @@ class SqlAzureCostRepository:
                         error_code = NULL,
                         completed_at = :completed_at
                     WHERE id = :run_id
+                      AND tenant_id = :tenant_id
+                      AND subscription_id = :subscription_id
                     """
                 ),
                 {
                     "run_id": run_id,
+                    "tenant_id": tenant_id,
+                    "subscription_id": subscription_id,
                     "page_count": page_count,
                     "retry_count": retry_count,
                     "row_count": len(records),
@@ -155,10 +170,17 @@ class SqlAzureCostRepository:
     def fail_run(self, run_id: str, error_code: str) -> None:
         with self.database.engine.begin() as connection:
             connection.execute(
+                text("DELETE FROM azure_cost_records WHERE ingestion_id = :run_id"),
+                {"run_id": run_id},
+            )
+            connection.execute(
                 text(
                     """
                     UPDATE azure_cost_ingestion_runs
                     SET status = 'failed',
+                        page_count = 0,
+                        retry_count = 0,
+                        row_count = 0,
                         error_code = :error_code,
                         completed_at = :completed_at
                     WHERE id = :run_id

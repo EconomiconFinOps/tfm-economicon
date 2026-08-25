@@ -8,6 +8,7 @@ model_list:
         provider:
           zdr: true
           data_collection: deny
+          allow_fallbacks: false
 
   - model_name: economicon-chat-deepseek
     litellm_params:
@@ -18,6 +19,7 @@ model_list:
         provider:
           zdr: true
           data_collection: deny
+          allow_fallbacks: false
 
   - model_name: economicon-embedding
     litellm_params:
@@ -28,9 +30,12 @@ model_list:
         provider:
           zdr: true
           data_collection: deny
+          allow_fallbacks: false
 
 litellm_settings:
-  master_key: os.environ/LITELLM_MASTER_KEY
   request_timeout: 30
   num_retries: 2
   set_verbose: false
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

@@ -4,7 +4,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+class ContractModel(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
 
 class QueryType(str, Enum):
@@ -28,7 +32,7 @@ class GroupingType(str, Enum):
     tag = "Tag"
 
 
-class QueryTimePeriod(BaseModel):
+class QueryTimePeriod(ContractModel):
     from_: datetime = Field(alias="from")
     to: datetime
 
@@ -41,23 +45,23 @@ class QueryTimePeriod(BaseModel):
         return self
 
 
-class QueryAggregation(BaseModel):
+class QueryAggregation(ContractModel):
     name: Literal["PreTaxCost"]
     function: Literal["Sum"]
 
 
-class QueryGrouping(BaseModel):
+class QueryGrouping(ContractModel):
     type: GroupingType
     name: str = Field(min_length=1)
 
 
-class QueryComparisonExpression(BaseModel):
+class QueryComparisonExpression(ContractModel):
     name: str = Field(min_length=1)
     operator: Literal["In"]
     values: Annotated[list[str], Field(min_length=1)]
 
 
-class QueryFilter(BaseModel):
+class QueryFilter(ContractModel):
     and_: list["QueryFilter"] | None = Field(default=None, alias="and")
     or_: list["QueryFilter"] | None = Field(default=None, alias="or")
     dimensions: QueryComparisonExpression | None = None
@@ -80,14 +84,14 @@ class QueryFilter(BaseModel):
         return self
 
 
-class QueryDataset(BaseModel):
+class QueryDataset(ContractModel):
     granularity: Granularity
     aggregation: Annotated[dict[str, QueryAggregation], Field(min_length=1, max_length=2)]
     grouping: Annotated[list[QueryGrouping], Field(max_length=2)] = Field(default_factory=list)
     filter: QueryFilter | None = None
 
 
-class QueryDefinition(BaseModel):
+class QueryDefinition(ContractModel):
     type: QueryType
     timeframe: Timeframe
     timePeriod: QueryTimePeriod | None = None
@@ -102,18 +106,18 @@ class QueryDefinition(BaseModel):
         return self
 
 
-class QueryColumn(BaseModel):
+class QueryColumn(ContractModel):
     name: str
     type: Literal["Number", "String"]
 
 
-class QueryProperties(BaseModel):
+class QueryProperties(ContractModel):
     columns: list[QueryColumn]
     rows: list[list[Any]]
     next_link: str | None = Field(serialization_alias="nextLink")
 
 
-class QueryResult(BaseModel):
+class QueryResult(ContractModel):
     id: str
     name: str
     type: Literal["microsoft.costmanagement/Query"]

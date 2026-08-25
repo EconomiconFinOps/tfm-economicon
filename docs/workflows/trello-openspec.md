@@ -1,18 +1,35 @@
-# Flujo combinado Trello/JUP y OpenSpec
+# Flujo de trabajo Trello + OpenSpec
 
-Trello controla prioridad, responsables, roles, fechas, bloqueos y estado. OpenSpec contiene requisitos, diseno y tareas tecnicas versionadas. GitHub conserva codigo, revision, CI y evidencias.
+Trello es la fuente de verdad operativa de Economicon. OpenSpec conserva el diseño técnico versionado y GitHub contiene el código y la revisión de cada cambio.
 
-El identificador `JUP-XXX` se conserva en Trello, OpenSpec, rama, commits y pull request. No se crea una numeracion paralela.
+## Identificador único
 
-OpenSpec es obligatorio para cambios que afecten arquitectura, seguridad, datos, IA/RAG, observabilidad, contratos externos o varios servicios. Cada tarjeta mantiene como maximo un change activo.
+Cada tarea utiliza el identificador de su tarjeta Trello en todos los sistemas:
 
-| Trello | Condicion tecnica |
-|---|---|
-| Backlog | El change puede no existir. |
-| Preparado | Proposal, specs, diseno y tareas validados. |
-| En curso | Implementacion iniciada en una rama JUP. |
-| En revision | Pull request abierto y verificaciones registradas. |
-| Validacion | Criterios funcionales comprobados. |
-| Hecho | PR integrado, evidencias enlazadas y change archivado. |
+- Tarjeta: `JUP-082`.
+- Rama: `chore/JUP-082-clean-develop`.
+- Cambio OpenSpec: `openspec/changes/jup-082-clean-develop/`.
+- Pull request: `JUP-082 — Limpiar y reconciliar develop`.
 
-Antes de implementar deben pasar `pnpm openspec:validate` y `pnpm jup:check --change <change>`. El change solo se archiva despues del merge y de la validacion registrada en Trello.
+No se crea un backlog alternativo ni una numeración paralela en OpenSpec.
+
+## Desarrollo de una tarea
+
+1. Crear o seleccionar la tarjeta Trello y acordar alcance, responsables y criterios de aceptación.
+2. Crear una rama desde `develop` con el identificador `JUP-XXX`.
+3. Añadir el cambio OpenSpec con `proposal.md`, `design.md`, `tasks.md` y sus escenarios de aceptación.
+4. Incluir `JUP: JUP-XXX` y `Trello: <URL>` en la propuesta.
+5. Implementar únicamente el alcance aprobado y registrar decisiones duraderas en ADR cuando corresponda.
+6. Ejecutar las validaciones técnicas y abrir un pull request hacia `develop`.
+7. Mantener Trello actualizado y distribuir implementación, pairing, revisión y validación entre los cuatro integrantes.
+
+## Validaciones
+
+```sh
+corepack pnpm openspec:validate
+corepack pnpm jup:check -- --change jup-082-clean-develop
+corepack pnpm jup:cleanup:check
+corepack pnpm lint
+corepack pnpm test
+corepack pnpm build
+```

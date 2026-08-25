@@ -1,4 +1,5 @@
 from functools import lru_cache
+import re
 from urllib.parse import urlsplit
 
 from pydantic import SecretStr, field_validator, model_validator
@@ -54,7 +55,7 @@ class Settings(BaseSettings):
     @classmethod
     def validate_logical_model_alias(cls, value: str) -> str:
         normalized = value.strip()
-        if not normalized or "/" in normalized:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", normalized):
             raise ValueError("services must use a non-empty LiteLLM logical model alias")
         return normalized
 
@@ -66,7 +67,25 @@ class Settings(BaseSettings):
             raise ValueError("litellm_base_url must be an absolute HTTP(S) URL")
         if parsed.username or parsed.password:
             raise ValueError("litellm_base_url must not contain credentials")
+        if parsed.query or parsed.fragment:
+            raise ValueError("litellm_base_url must not contain a query or fragment")
+        try:
+            parsed.port
+        except ValueError as exc:
+            raise ValueError("litellm_base_url contains an invalid port") from exc
         return value.rstrip("/")
+
+    @field_validator("litellm_api_key")
+    @classmethod
+    def validate_litellm_api_key(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is None:
+            return None
+        key = value.get_secret_value()
+        if any(character in key for character in ("\r", "\n")):
+            raise ValueError("litellm_api_key must be a single-line gateway credential")
+        if key.startswith("sk-or-"):
+            raise ValueError("litellm_api_key must not contain an OpenRouter upstream key")
+        return value
 
     @field_validator("llm_timeout_seconds")
     @classmethod
@@ -110,7 +129,28 @@ class Settings(BaseSettings):
             raise ValueError("azure_cost_api_base_url must be an absolute HTTP(S) URL")
         if parsed.username or parsed.password:
             raise ValueError("azure_cost_api_base_url must not contain credentials")
+        if parsed.query or parsed.fragment:
+            raise ValueError("azure_cost_api_base_url must not contain a query or fragment")
+        try:
+            parsed.port
+        except ValueError as exc:
+            raise ValueError("azure_cost_api_base_url contains an invalid port") from exc
         return value.rstrip("/")
+
+    @field_validator("azure_cost_api_token")
+    @classmethod
+    def validate_azure_cost_token(cls, value: SecretStr) -> SecretStr:
+        token = value.get_secret_value()
+        if not token.strip() or any(character in token for character in ("\r", "\n")):
+            raise ValueError("azure_cost_api_token must be a non-empty single-line bearer")
+        return value
+
+    @field_validator("azure_cost_api_version")
+    @classmethod
+    def validate_azure_cost_api_version(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("azure_cost_api_version must not be empty")
+        return value
 
     @field_validator("azure_cost_api_timeout_seconds")
     @classmethod

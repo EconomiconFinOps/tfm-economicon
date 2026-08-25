@@ -28,17 +28,24 @@ class AzureCostNormalizer:
 
     @staticmethod
     def _normalize_row(row: dict[str, int | float | str]) -> NormalizedCostRecord:
+        raw_cost = row.get("PreTaxCost")
+        if isinstance(raw_cost, bool) or not isinstance(raw_cost, (int, float, Decimal)):
+            raise AzureCostNormalizationError("PreTaxCost must be numeric")
         try:
-            cost = Decimal(str(row["PreTaxCost"]))
-        except (KeyError, InvalidOperation) as exc:
+            cost = Decimal(str(raw_cost))
+        except (InvalidOperation, ValueError) as exc:
             raise AzureCostNormalizationError("PreTaxCost cannot be normalized") from exc
         if not cost.is_finite():
             raise AzureCostNormalizationError("PreTaxCost must be finite")
+        if cost.is_zero():
+            cost = Decimal("0")
 
         currency = row.get("Currency")
         if not isinstance(currency, str) or not currency.strip():
             raise AzureCostNormalizationError("Currency cannot be normalized")
         currency = currency.strip().upper()
+        if len(currency) != 3 or not currency.isascii() or not currency.isalpha():
+            raise AzureCostNormalizationError("Currency must be a three-letter code")
 
         usage_date = _usage_date(row.get("UsageDate"))
         dimensions = {
@@ -50,7 +57,7 @@ class AzureCostNormalizer:
             {
                 "currency": currency,
                 "dimensions": dimensions,
-                "pretaxCost": str(cost),
+                "pretaxCost": format(cost.normalize(), "f"),
                 "usageDate": usage_date.isoformat() if usage_date else None,
             },
             sort_keys=True,
@@ -68,7 +75,7 @@ class AzureCostNormalizer:
 def _usage_date(value: int | float | str | None) -> date | None:
     if value is None:
         return None
-    if isinstance(value, bool) or not isinstance(value, int):
+    if isinstance(value, bool) or not isinstance(value, int) or len(str(value)) != 8:
         raise AzureCostNormalizationError("UsageDate must be a yyyyMMdd integer")
     try:
         return datetime.strptime(str(value), "%Y%m%d").date()

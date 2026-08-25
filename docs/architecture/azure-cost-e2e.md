@@ -1,6 +1,6 @@
 # Flujo E2E de costes Azure
 
-Estado: implementado en JUP-077 y pendiente de revisión humana e integración.
+Estado: implementado y validado en JUP-077 para integración en `develop`.
 
 ## Recorrido
 
@@ -13,10 +13,12 @@ dataset público de Microsoft
 ```
 
 El cliente de JUP-076 obtiene todas las páginas y entrega filas tipadas. El
-normalizador convierte `PreTaxCost` a decimal, `Currency` a mayúsculas y
-`UsageDate` a fecha, conservando el resto de columnas como dimensiones. Los
-costes cero y negativos son válidos porque el dataset puede contener consumo
-sin coste y créditos.
+normalizador exige un `PreTaxCost` numérico y finito, convierte su valor a
+decimal, valida `Currency` como código ISO de tres letras y convierte
+`UsageDate` a una fecha estricta `yyyyMMdd`, conservando el resto de columnas
+como dimensiones. Los costes cero y negativos son válidos porque el dataset
+público puede contener consumo sin coste y créditos. El hash canónico trata
+como equivalentes representaciones numéricas como `1` y `1.0`.
 
 ## Persistencia
 
@@ -30,6 +32,12 @@ Cada fila tiene además un hash SHA-256 del contenido normalizado y un UUID v5
 derivado de la ejecución, posición y hash. No se persisten tokens Bearer ni se
 incluyen en logs o mensajes de error.
 
+El tenant y la suscripción se validan antes de crear ninguna ejecución; esta
+última se canoniza sin distinguir mayúsculas. La migración exige estados
+conocidos y vincula cada registro con su ejecución mediante una clave foránea.
+Las actualizaciones y reemplazos de registros se limitan al tenant y la
+suscripción correspondientes.
+
 La conexión SQLAlchemy usa el adaptador de CockroachDB y el esquema
 `cockroachdb+psycopg`; el dialecto PostgreSQL genérico no modela correctamente
 las diferencias del servidor.
@@ -42,7 +50,9 @@ las diferencias del servidor.
   únicamente el nombre estable de la clase de error.
 
 La inserción de registros y el cambio a `completed` son atómicos. Una ejecución
-fallida no crea filas de coste. Los errores controlados del cliente siguen
+fallida elimina en la misma transacción cualquier fila previa de esa ejecución,
+incluidas las de una repetición fallida, para no dejar estados inconsistentes.
+Los errores controlados del cliente siguen
 incluyendo `401`, `403`, agotamiento de `429`/`500`, timeout, página intermedia
 vacía y respuesta malformada.
 

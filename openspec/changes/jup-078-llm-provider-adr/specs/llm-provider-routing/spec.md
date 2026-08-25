@@ -18,6 +18,11 @@ El sistema SHALL exigir URL absoluta, clave interna, alias de chat y alias de em
 - **WHEN** cualquier proveedor se configura como `litellm` sin clave interna
 - **THEN** el servicio falla durante el arranque sin exponer secretos
 
+#### Scenario: URL o clave comprometen el limite de seguridad
+- **WHEN** la URL incluye credenciales, query, fragmento o puerto invalido, o
+  la clave del gateway reutiliza un secreto OpenRouter o contiene saltos de linea
+- **THEN** la configuracion se rechaza antes de emitir solicitudes
+
 ### Requirement: Dimension de embeddings consistente
 El sistema SHALL usar 1536 dimensiones para `economicon-embedding` y SHALL rechazar una dimension incompatible.
 
@@ -33,7 +38,9 @@ El sistema SHALL permitir mocks en pruebas y desarrollo, pero SHALL rechazarlos 
 - **THEN** la configuracion se rechaza y no produce evidencia valida
 
 ### Requirement: Sin fallback silencioso
-El gateway SHALL utilizar un unico upstream por alias y SHALL devolver un error observable cuando no este disponible.
+El gateway SHALL utilizar un unico upstream por alias, configurar
+`allow_fallbacks: false` y SHALL devolver un error observable cuando no este
+disponible.
 
 #### Scenario: Modelo no disponible
 - **WHEN** OpenRouter rechaza el modelo
@@ -52,3 +59,15 @@ El sistema SHALL medir estado, latencia, alias, modelo resuelto, tokens y coste 
 #### Scenario: Llamada completada
 - **WHEN** termina una llamada real
 - **THEN** puede atribuirse su uso y coste sin almacenar prompt ni respuesta
+
+### Requirement: Benchmark verificable y seguro
+El benchmark SHALL validar casos y alias, rechazar redirecciones HTTP y
+conservar exclusivamente metricas de estado, modelo, latencia, tokens y coste.
+
+#### Scenario: El gateway responde con una redireccion
+- **WHEN** un endpoint de benchmark intenta redirigir una solicitud autenticada
+- **THEN** la llamada falla sin reenviar la clave interna a otro destino
+
+#### Scenario: Casos de benchmark incompletos
+- **WHEN** el dataset incluye IDs duplicados, prompts vacios o criterios vacios
+- **THEN** el benchmark se detiene antes de ejecutar solicitudes externas

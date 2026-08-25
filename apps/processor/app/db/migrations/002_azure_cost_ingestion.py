@@ -10,7 +10,7 @@ def upgrade(connection) -> None:
                 tenant_id STRING NOT NULL,
                 subscription_id STRING NOT NULL,
                 request JSONB NOT NULL,
-                status STRING NOT NULL,
+                status STRING NOT NULL CHECK (status IN ('running', 'completed', 'failed')),
                 page_count INT8 NOT NULL DEFAULT 0,
                 retry_count INT8 NOT NULL DEFAULT 0,
                 row_count INT8 NOT NULL DEFAULT 0,
@@ -34,7 +34,7 @@ def upgrade(connection) -> None:
             """
             CREATE TABLE IF NOT EXISTS azure_cost_records (
                 id STRING PRIMARY KEY,
-                ingestion_id STRING NOT NULL,
+                ingestion_id STRING NOT NULL REFERENCES azure_cost_ingestion_runs (id),
                 tenant_id STRING NOT NULL,
                 subscription_id STRING NOT NULL,
                 usage_date DATE,

@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 
 from app.auth import authenticate
 from app.config import Settings, get_settings
-from app.errors import ApiError, error_payload
+from app.errors import ApiError, ConfigurationError, error_payload
 from app.models import QueryDefinition, QueryResult
 from app.pagination import Paginator, query_fingerprint
 from app.query_engine import QueryEngine
@@ -26,6 +26,23 @@ from app.scenarios import (
 
 API_VERSION = "2025-03-01"
 QUERY_NAMESPACE = uuid.UUID("0b9c5cc2-f7b1-41bd-a05c-627123f3b2bf")
+QUERY_PATH = "/subscriptions/{subscriptionId}/providers/Microsoft.CostManagement/query"
+
+
+def load_contract(path) -> dict:
+    try:
+        contract = json.loads(path.read_text(encoding="utf-8"))
+        contract_version = contract["x-economicon-subset"]["apiVersion"]
+        operation = contract["paths"][QUERY_PATH]["post"]
+    except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        raise ConfigurationError(f"Cannot load the Azure Cost API contract: {path}") from exc
+    if contract_version != API_VERSION:
+        raise ConfigurationError(
+            f"Contract api-version={contract_version!r} does not match service api-version={API_VERSION!r}"
+        )
+    if operation.get("operationId") != "querySubscriptionUsage":
+        raise ConfigurationError("The Azure Cost API contract does not define querySubscriptionUsage")
+    return contract
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -43,6 +60,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
         app.state.repository = repository
         app.state.query_engine = QueryEngine(repository)
+        app.state.contractual_openapi = load_contract(
+            resolved_settings.azure_cost_openapi_path
+        )
         yield
 
     app = FastAPI(
@@ -84,8 +104,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         }
 
     @app.get("/openapi.json", include_in_schema=False)
-    def contractual_openapi() -> dict:
-        return json.loads(resolved_settings.azure_cost_openapi_path.read_text(encoding="utf-8"))
+    def contractual_openapi(request: Request) -> dict:
+        return request.app.state.contractual_openapi
 
     @app.post(
         "/subscriptions/{subscription_id}/providers/Microsoft.CostManagement/query",

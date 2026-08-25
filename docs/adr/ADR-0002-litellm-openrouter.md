@@ -1,7 +1,7 @@
 # ADR-0002: LiteLLM como gateway y OpenRouter como upstream
 
 - Estado: Proposed
-- Fecha: 2026-08-08
+- Fecha: 2026-08-25
 - Tarjeta: [JUP-078](https://trello.com/c/M4zqDGlW)
 - Decision requerida antes de: octubre de 2026
 
@@ -9,9 +9,15 @@
 
 Economicon necesita chat y embeddings reales para evaluar su RAG, pero el codigo actual solo implementa mocks. El equipo no dispone de un tenant de Azure AI y quiere evitar que backend y processor queden acoplados a credenciales, catalogos y politicas de un proveedor externo.
 
-No se encontro una decision aprobada en el repositorio ni en la exportacion de Discord. Esta propuesta debe ser revisada por Lucia, Paris, Victor y Alejandro y validada con un benchmark real.
+Trello recoge LiteLLM + OpenRouter y la seleccion de GLM-5.2 y DeepSeek, pero
+todavia no existe un benchmark real ni una aprobacion verificable de los cuatro
+miembros. Esta propuesta permanece `Proposed` hasta contar con ambas evidencias.
 
-El 8 de agosto de 2026, Alejandro corrigio la seleccion de chat a GLM-5.2 y DeepSeek. Para hacer la configuracion reproducible se fija la variante vigente `deepseek/deepseek-v4-pro`; si el equipo pretendia otra variante de la familia DeepSeek, debera cambiarse de forma explicita antes del benchmark.
+Alejandro establecio GLM-5.2 y DeepSeek como modelos de chat. Para hacer la
+configuracion reproducible se fija la variante vigente
+`deepseek/deepseek-v4-pro`; si el equipo acuerda otra variante DeepSeek, debera
+cambiarse explicitamente antes del benchmark. El 25 de agosto de 2026 se
+verificaron los tres IDs contra la API oficial de modelos de OpenRouter.
 
 ## Decision propuesta
 
@@ -22,7 +28,20 @@ Usar LiteLLM como gateway interno OpenAI-compatible y OpenRouter como unico upst
 - `economicon-chat-deepseek` se mapea a `deepseek/deepseek-v4-pro` como segundo modelo de chat bajo seleccion explicita.
 - `economicon-embedding` se mapea a `openai/text-embedding-3-small` con 1536 dimensiones.
 - Cada alias tiene un unico despliegue; un fallo se propaga y se observa.
+- El routing upstream fija expresamente `allow_fallbacks: false`.
 - Los mocks solo son validos en `test` y `development`; `evaluation` los rechaza.
+
+## Catalogo y precios verificados
+
+Consulta publica realizada el 25 de agosto de 2026 al endpoint oficial
+`GET /api/v1/model/{author}/{slug}`; los precios se indican en USD por millon
+de tokens y deben volver a comprobarse antes de cualquier gasto real.
+
+| Modelo | ID OpenRouter | Contexto | Entrada / 1M | Salida / 1M |
+|---|---|---:|---:|---:|
+| GLM-5.2 | `z-ai/glm-5.2` | 1.048.576 | 1,19 USD | 3,74 USD |
+| DeepSeek V4 Pro | `deepseek/deepseek-v4-pro` | 1.048.576 | 0,572808 USD | 1,145616 USD |
+| Embeddings | `openai/text-embedding-3-small` | 8.192 | 0,02 USD | No aplica |
 
 ## Criterios
 
@@ -45,13 +64,22 @@ Un candidato que invente costes, falle privacidad o no cumpla salidas estructura
 - Sin fallback automatico.
 - Los limites definitivos se actualizaran con el benchmark y el volumen esperado.
 
-Como referencia de orden de magnitud, ejecutar 100 casos con 2.000 tokens de entrada y 500 de salida contra los dos modelos costaria aproximadamente 0,20 USD con los precios publicados por OpenRouter el 8 de agosto de 2026. Esta cifra no incluye variaciones de routing, reintentos ni otros cargos.
+Como referencia, ejecutar 100 casos por cada modelo con 2.000 tokens de entrada
+y 500 de salida costaria aproximadamente 0,425 USD para GLM-5.2 y 0,1718424
+USD para DeepSeek: 0,5968424 USD en total. Esta estimacion no incluye
+variaciones de routing, reintentos, impuestos ni otros cargos y no autoriza
+ningun consumo.
 
 ## Privacidad y secretos
 
 - `OPENROUTER_API_KEY` solo existe en el entorno del gateway.
+- `LITELLM_MASTER_KEY` se configura en `general_settings.master_key`, nunca en
+  `litellm_settings`, y no se entrega a backend o processor.
 - La clave que consume el producto es virtual, revocable y presupuestada.
-- El routing solicita ZDR y `data_collection: deny`; si no hay provider compatible, falla.
+- El routing fija ZDR, `data_collection: deny` y `allow_fallbacks: false`; si
+  no existe un provider compatible, falla sin relajar la politica.
+- El benchmark rechaza redirecciones HTTP y nunca reenvia la clave interna a
+  otro origen.
 - No se habilita logging de prompts o respuestas.
 - Metricas admitidas: correlation ID, alias, modelo resuelto, estado, latencia, tokens y coste.
 
@@ -81,14 +109,16 @@ Cambiar el modelo de embeddings o su dimension requerira una coleccion nueva y r
 2. Adjuntar resultados de calidad, p95, tokens y coste para GLM-5.2 y DeepSeek V4 Pro.
 3. Aprobar presupuesto, privacidad y politica de seleccion por los cuatro miembros.
 4. Auditar o aislar la instancia que vaya a desplegarse en `dockerserver`.
-5. Integrar la decision mediante PR en el repositorio confirmado.
+5. Revisar el PR publicado contra `develop` en
+   `EconomiconFinOps/tfm-economicon` y aceptar expresamente la decision.
 
 ## Referencias consultadas
 
-- [LiteLLM: gateway, claves virtuales, presupuestos y endpoints compatibles](https://docs.litellm.ai/)
+- [LiteLLM: proveedor OpenRouter y prefijos de modelo](https://docs.litellm.ai/docs/providers/openrouter)
+- [LiteLLM: configuracion del proxy y general_settings.master_key](https://docs.litellm.ai/docs/proxy/configs)
 - [OpenRouter: catalogo de modelos](https://openrouter.ai/api/v1/models)
 - [OpenRouter: GLM-5.2](https://openrouter.ai/z-ai/glm-5.2)
 - [OpenRouter: DeepSeek V4 Pro](https://openrouter.ai/deepseek/deepseek-v4-pro)
-- [OpenRouter: embeddings](https://openrouter.ai/docs/api/reference/embeddings)
+- [OpenRouter: embeddings con text-embedding-3-small](https://openrouter.ai/docs/api/api-reference/embeddings/create-embeddings)
 - [OpenRouter: Zero Data Retention](https://openrouter.ai/docs/guides/features/zdr)
 - [OpenRouter: seleccion de providers](https://openrouter.ai/docs/guides/routing/provider-selection)

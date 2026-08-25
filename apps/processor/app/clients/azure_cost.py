@@ -8,8 +8,8 @@ import time
 from dataclasses import dataclass
 from typing import Callable, Mapping, Protocol
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote, urljoin, urlsplit
-from urllib.request import Request, urlopen
+from urllib.parse import parse_qs, quote, urljoin, urlsplit
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from app.core.config import Settings
 
@@ -63,6 +63,9 @@ class HttpTransport(Protocol):
 
 
 class UrllibTransport:
+    def __init__(self):
+        self._opener = build_opener(_RejectRedirectHandler())
+
     def post(
         self,
         url: str,
@@ -73,7 +76,7 @@ class UrllibTransport:
     ) -> HttpResponse:
         request = Request(url, data=body, headers=dict(headers), method="POST")
         try:
-            with urlopen(request, timeout=timeout) as response:
+            with self._opener.open(request, timeout=timeout) as response:
                 return HttpResponse(
                     status_code=response.status,
                     headers=dict(response.headers),
@@ -91,6 +94,11 @@ class UrllibTransport:
             if isinstance(exc.reason, (TimeoutError, socket.timeout)):
                 raise AzureCostTimeoutError("Azure Cost API request timed out") from exc
             raise AzureCostClientError("Azure Cost API connection failed") from exc
+
+
+class _RejectRedirectHandler(HTTPRedirectHandler):
+    def redirect_request(self, request, response, status, message, headers, new_url):
+        return None
 
 
 @dataclass(frozen=True)
@@ -136,7 +144,9 @@ class AzureCostClient:
 
     def query_all(self, subscription_id: str, definition: Mapping) -> AzureCostQueryResult:
         body = json.dumps(definition, separators=(",", ":")).encode("utf-8")
-        next_link: str | None = self._query_url(subscription_id)
+        initial_url = self._query_url(subscription_id)
+        expected_path = urlsplit(initial_url).path
+        next_link: str | None = initial_url
         expected_columns: tuple[CostColumn, ...] | None = None
         rows: list[dict[str, int | float | str]] = []
         visited: set[str] = set()
@@ -146,7 +156,7 @@ class AzureCostClient:
         while next_link is not None:
             if page_count >= self.max_pages:
                 raise AzureCostResponseError("Azure Cost API exceeded the configured page limit")
-            request_url = self._safe_next_link(next_link)
+            request_url = self._safe_next_link(next_link, expected_path=expected_path)
             if request_url in visited:
                 raise AzureCostResponseError("Azure Cost API returned a pagination cycle")
             visited.add(request_url)
@@ -196,10 +206,18 @@ class AzureCostClient:
             f"Microsoft.CostManagement/query?api-version={quote(self.api_version, safe='')}"
         )
 
-    def _safe_next_link(self, value: str) -> str:
+    def _safe_next_link(self, value: str, *, expected_path: str) -> str:
         resolved = urljoin(f"{self.base_url}/", value)
         if _origin(resolved) != self._origin:
             raise AzureCostNextLinkError("Azure Cost API nextLink changed origin")
+        parsed = urlsplit(resolved)
+        if parsed.path != expected_path:
+            raise AzureCostNextLinkError("Azure Cost API nextLink changed the query path")
+        if parsed.fragment:
+            raise AzureCostNextLinkError("Azure Cost API nextLink contains a fragment")
+        versions = parse_qs(parsed.query, keep_blank_values=True).get("api-version", [])
+        if versions != [self.api_version]:
+            raise AzureCostNextLinkError("Azure Cost API nextLink changed api-version")
         return resolved
 
     def _post_with_retries(
@@ -245,7 +263,9 @@ class AzureCostClient:
             retry_after = _header(response.headers, "Retry-After")
             if retry_after is not None:
                 try:
-                    return min(max(float(retry_after), 0.0), self.max_retry_after)
+                    parsed_delay = float(retry_after)
+                    if math.isfinite(parsed_delay):
+                        return min(max(parsed_delay, 0.0), self.max_retry_after)
                 except ValueError:
                     pass
         return self.retry_backoff * (2**retry_index)
@@ -257,8 +277,8 @@ class AzureCostClient:
             properties = payload["properties"]
             raw_columns = properties["columns"]
             raw_rows = properties["rows"]
-            next_link = properties.get("nextLink")
-        except (KeyError, TypeError, json.JSONDecodeError) as exc:
+            next_link = properties["nextLink"]
+        except (KeyError, TypeError, UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise AzureCostResponseError("Azure Cost API returned malformed JSON") from exc
 
         if not isinstance(raw_columns, list) or not raw_columns:
@@ -277,6 +297,9 @@ class AzureCostClient:
             raise AzureCostResponseError("Azure Cost API returned duplicate columns")
         if "PreTaxCost" not in names or "Currency" not in names:
             raise AzureCostResponseError("Azure Cost API omitted required cost columns")
+        required_types = {column.name: column.type for column in columns}
+        if required_types["PreTaxCost"] != "Number" or required_types["Currency"] != "String":
+            raise AzureCostResponseError("Azure Cost API returned invalid required column types")
 
         if not isinstance(raw_rows, list):
             raise AzureCostResponseError("Azure Cost API rows must be an array")
@@ -329,7 +352,7 @@ def _error_code(body: bytes) -> str:
     try:
         code = json.loads(body).get("error", {}).get("code")
         return code if isinstance(code, str) and code else "UnknownError"
-    except (AttributeError, json.JSONDecodeError):
+    except (AttributeError, TypeError, UnicodeDecodeError, json.JSONDecodeError):
         return "UnknownError"
 
 

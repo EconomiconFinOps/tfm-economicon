@@ -1,9 +1,13 @@
 JUP: JUP-078
-ADR propuesto: `docs/adr/ADR-0002-litellm-openrouter.md`
+ADR: docs/adr/ADR-0002-litellm-openrouter.md
 
 ## Context
 
-El codigo actual usa mocks. No existe en Discord, Trello ni el repositorio una decision aprobada sobre LiteLLM, OpenRouter, modelos o presupuesto. Hay un contenedor llamado `litellm` en `dockerserver`, pero no forma parte de esta rama y no se asume que sea reutilizable.
+El codigo actual usa mocks. Trello recoge la propuesta LiteLLM/OpenRouter y la
+seleccion GLM-5.2/DeepSeek, pero faltan benchmark real, presupuesto aprobado y
+conformidad verificable de los cuatro miembros. Hay un contenedor llamado
+`litellm` en `dockerserver`, pero no forma parte de esta rama y no se asume que
+sea reutilizable.
 
 ## Proposed Boundary
 
@@ -24,14 +28,23 @@ Los servicios solo conocen alias de Economicon. LiteLLM conserva el mapeo a mode
 ## Security and Privacy
 
 - La clave de OpenRouter vive solo en el entorno de LiteLLM.
-- Los servicios reciben una clave virtual de LiteLLM, nunca la del upstream.
-- Las peticiones a OpenRouter exigen routing ZDR y deniegan proveedores que recopilan datos.
+- La clave maestra se configura en `general_settings.master_key`; los servicios
+  reciben una clave virtual de LiteLLM, nunca la del upstream.
+- Las peticiones a OpenRouter exigen `zdr: true`, `data_collection: deny` y
+  `allow_fallbacks: false`; el fallback del proveedor se habilita por defecto
+  si no se desactiva expresamente.
 - No se registran prompts, respuestas, cabeceras Authorization ni secretos.
 - La telemetria permitida contiene correlation ID, alias, upstream resuelto, estado, latencia, tokens y coste.
 
 ## Evaluation
 
-`tools/llm-benchmark.py` ejecuta el mismo JSONL contra GLM-5.2 y DeepSeek V4 Pro, conserva solo metricas y verifica terminos esperados. El benchmark no decide si DeepSeek debe usarse bajo seleccion explicita para tareas concretas; esa politica requiere revision humana sobre exactitud FinOps, citas, formato, latencia y coste. Los resultados mock no son admisibles.
+`tools/llm-benchmark.py` ejecuta el mismo JSONL contra GLM-5.2 y DeepSeek V4
+Pro, conserva solo metricas, comprueba coste/tokens y verifica terminos
+esperados. El transporte rechaza redirecciones HTTP para no reenviar la clave
+interna del gateway. El benchmark no decide si DeepSeek debe usarse bajo
+seleccion explicita para tareas concretas; esa politica requiere revision
+humana sobre exactitud FinOps, citas, formato, latencia y coste. Los resultados
+mock no son admisibles.
 
 ## Migration and Rollback
 

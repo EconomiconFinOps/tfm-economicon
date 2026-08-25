@@ -1,28 +1,17 @@
 schema: spec-driven
 
 context: |
-  Economicon es un asistente FinOps para Azure dentro del Proyecto Jupiter.
-  Trello es la fuente de verdad para estado, prioridad, fechas y responsables.
-  OpenSpec conserva requisitos y diseno tecnico de cambios JUP complejos.
-  Las ramas y pull requests usan siempre el mismo identificador JUP-XXX.
+  Economicon es un asistente FinOps para Azure desarrollado como trabajo final de máster.
+  Trello es la fuente de verdad para alcance, responsables, prioridades y estado.
+  OpenSpec documenta requisitos, diseño técnico y escenarios de aceptación.
+  GitHub conserva la implementación, los pull requests y las decisiones técnicas.
+  Todas las herramientas reutilizan el identificador JUP-XXX de la tarjeta Trello.
 
 rules:
   proposal:
-    - "Incluye al inicio `JUP: JUP-XXX` y `Trello: <URL directa>`."
-    - "No crees una numeracion de historias paralela ni dupliques el estado de Trello."
-    - "Declara explicitamente el alcance excluido del MVP."
+    - "Incluye al inicio JUP: JUP-XXX y Trello: <URL directa de la tarjeta>."
+    - "Mantén el alcance alineado con la tarjeta Trello."
   design:
-    - "Enlaza un ADR cuando la decision sea duradera o transversal."
-    - "Distingue hechos confirmados, decisiones pendientes y supuestos."
+    - "Incluye el identificador JUP-XXX y enlaza un ADR cuando la decisión sea duradera."
   tasks:
-    - "Usa tareas verificables vinculables a commits, pruebas o evidencias."
-    - "Incluye validacion, documentacion y actualizacion de Trello antes de cerrar."
-
-operations:
-  apply:
-    guidance:
-      - "No cambies el estado de Trello sin una transicion verificable."
-      - "Manten los cambios de producto en una rama vinculada al mismo JUP."
-  archive:
-    guidance:
-      - "Archiva unicamente despues del merge y de registrar la validacion en Trello."
+    - "Refleja únicamente tareas técnicas y criterios verificables del cambio activo."

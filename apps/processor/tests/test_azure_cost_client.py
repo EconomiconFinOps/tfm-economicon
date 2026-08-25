@@ -1,5 +1,7 @@
 import json
 import logging
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from threading import Thread
 
 import pytest
 from pydantic import ValidationError
@@ -12,12 +14,17 @@ from app.clients.azure_cost import (
     AzureCostResponseError,
     AzureCostTimeoutError,
     HttpResponse,
+    UrllibTransport,
 )
 from app.core.config import Settings
 
 
 BASE_URL = "http://fake-azure.local:8002"
 SUBSCRIPTION_ID = "64e355d7-997c-491d-b0c1-8414dccfcf42"
+QUERY_URL = (
+    f"{BASE_URL}/subscriptions/{SUBSCRIPTION_ID}/providers/"
+    "Microsoft.CostManagement/query?api-version=2025-03-01"
+)
 DEFINITION = {
     "type": "ActualCost",
     "timeframe": "MonthToDate",
@@ -90,6 +97,10 @@ def response(
     )
 
 
+def continuation(token: str = "opaque") -> str:
+    return f"{QUERY_URL}&$skiptoken={token}"
+
+
 def test_configurable_bearer_timeout_and_request_body_are_used():
     transport = FakeTransport([response([[12.5, "USD"]])])
     client = AzureCostClient(settings(), transport=transport)
@@ -103,8 +114,20 @@ def test_configurable_bearer_timeout_and_request_body_are_used():
     assert result.rows == ({"PreTaxCost": 12.5, "Currency": "USD"},)
 
 
+@pytest.mark.parametrize("public_cost", [-12.5, 0, 8.75])
+def test_original_negative_zero_and_positive_costs_are_preserved(public_cost):
+    transport = FakeTransport([response([[public_cost, "USD"]])])
+
+    result = AzureCostClient(settings(), transport=transport).query_all(
+        SUBSCRIPTION_ID,
+        DEFINITION,
+    )
+
+    assert result.rows[0]["PreTaxCost"] == public_cost
+
+
 def test_all_pages_are_followed_and_combined():
-    next_link = f"{BASE_URL}/next?api-version=2025-03-01&$skiptoken=opaque"
+    next_link = continuation()
     transport = FakeTransport(
         [
             response([[1, "USD"]], next_link=next_link),
@@ -173,6 +196,29 @@ def test_retry_after_is_bounded_by_configuration():
     assert sleeps == [4.0]
 
 
+@pytest.mark.parametrize("retry_after", ["not-a-number", "nan", "inf", "-inf"])
+def test_invalid_retry_after_uses_bounded_backoff(retry_after):
+    transport = FakeTransport(
+        [
+            response(
+                [],
+                status=429,
+                headers={"Retry-After": retry_after},
+                error_code="TooManyRequests",
+            ),
+            response([[1, "USD"]]),
+        ]
+    )
+    sleeps = []
+
+    AzureCostClient(settings(), transport=transport, sleeper=sleeps.append).query_all(
+        SUBSCRIPTION_ID,
+        DEFINITION,
+    )
+
+    assert sleeps == [0.25]
+
+
 def test_exhausted_retries_raise_safe_http_error():
     transport = FakeTransport(
         [
@@ -206,6 +252,36 @@ def test_401_is_not_retried():
     assert len(transport.requests) == 1
 
 
+@pytest.mark.parametrize(
+    ("status", "error_code"),
+    [(400, "BadRequest"), (403, "AuthorizationFailed"), (404, "SubscriptionNotFound")],
+)
+def test_non_retryable_contract_errors_stop_immediately(status, error_code):
+    transport = FakeTransport([response([], status=status, error_code=error_code)])
+
+    with pytest.raises(AzureCostHttpError) as exc_info:
+        AzureCostClient(settings(), transport=transport).query_all(
+            SUBSCRIPTION_ID,
+            DEFINITION,
+        )
+
+    assert exc_info.value.status_code == status
+    assert exc_info.value.error_code == error_code
+    assert len(transport.requests) == 1
+
+
+def test_unreadable_error_body_uses_safe_fallback():
+    transport = FakeTransport([HttpResponse(403, {}, b"\xff")])
+
+    with pytest.raises(AzureCostHttpError) as exc_info:
+        AzureCostClient(settings(), transport=transport).query_all(
+            SUBSCRIPTION_ID,
+            DEFINITION,
+        )
+
+    assert exc_info.value.error_code == "UnknownError"
+
+
 def test_timeout_is_reported_without_credentials():
     transport = FakeTransport([AzureCostTimeoutError("request timed out")])
     client = AzureCostClient(settings(), transport=transport)
@@ -217,7 +293,7 @@ def test_timeout_is_reported_without_credentials():
 
 
 def test_empty_intermediate_page_is_detected():
-    transport = FakeTransport([response([], next_link=f"{BASE_URL}/next")])
+    transport = FakeTransport([response([], next_link=continuation())])
     client = AzureCostClient(settings(), transport=transport)
 
     with pytest.raises(AzureCostEmptyPageError, match="empty intermediate page"):
@@ -234,10 +310,23 @@ def test_empty_final_result_is_valid():
     assert result.page_count == 1
 
 
+def test_missing_next_link_contract_field_is_rejected():
+    page = json.loads(response([[1, "USD"]]).body)
+    del page["properties"]["nextLink"]
+    transport = FakeTransport([HttpResponse(200, {}, json.dumps(page).encode("utf-8"))])
+
+    with pytest.raises(AzureCostResponseError, match="malformed JSON"):
+        AzureCostClient(settings(), transport=transport).query_all(
+            SUBSCRIPTION_ID,
+            DEFINITION,
+        )
+
+
 @pytest.mark.parametrize(
     "invalid_response, message",
     [
         (HttpResponse(200, {}, b"not-json"), "malformed JSON"),
+        (HttpResponse(200, {}, b"\xff"), "malformed JSON"),
         (response([[1]], columns=COLUMNS), "row does not match"),
         (response([["INVALID_COST", "USD"]]), "non-numeric PreTaxCost"),
         (response([[True, "USD"]]), "non-numeric PreTaxCost"),
@@ -250,6 +339,27 @@ def test_empty_final_result_is_valid():
             response([[1]], columns=[{"name": "PreTaxCost", "type": "Number"}]),
             "omitted required cost columns",
         ),
+        (
+            response(
+                [["1", "USD"]],
+                columns=[
+                    {"name": "PreTaxCost", "type": "String"},
+                    {"name": "Currency", "type": "String"},
+                ],
+            ),
+            "invalid required column types",
+        ),
+        (
+            response(
+                [[1, 2]],
+                columns=[
+                    {"name": "PreTaxCost", "type": "Number"},
+                    {"name": "Currency", "type": "Number"},
+                ],
+            ),
+            "invalid required column types",
+        ),
+        (response([[float("nan"), "USD"]]), "non-finite PreTaxCost"),
     ],
 )
 def test_invalid_columns_and_rows_are_rejected(invalid_response, message):
@@ -262,7 +372,7 @@ def test_invalid_columns_and_rows_are_rejected(invalid_response, message):
 def test_columns_must_be_stable_between_pages():
     transport = FakeTransport(
         [
-            response([[1, "USD"]], next_link=f"{BASE_URL}/next"),
+            response([[1, "USD"]], next_link=continuation()),
             response(
                 [["USD", 2]],
                 columns=[COLUMNS[1], COLUMNS[0]],
@@ -287,12 +397,87 @@ def test_cross_origin_next_link_is_rejected_before_sending_token():
     assert len(transport.requests) == 1
 
 
-def test_pagination_cycles_and_page_limit_are_detected():
-    first_url = (
-        f"{BASE_URL}/subscriptions/{SUBSCRIPTION_ID}/providers/"
-        "Microsoft.CostManagement/query?api-version=2025-03-01"
+@pytest.mark.parametrize(
+    ("next_link", "message"),
+    [
+        (f"{BASE_URL}/admin?api-version=2025-03-01", "changed the query path"),
+        (
+            QUERY_URL.replace(SUBSCRIPTION_ID, "another-subscription"),
+            "changed the query path",
+        ),
+        (QUERY_URL.replace("2025-03-01", "2020-01-01"), "changed api-version"),
+        (QUERY_URL.replace("?api-version=2025-03-01", ""), "changed api-version"),
+        (f"{QUERY_URL}&api-version=2020-01-01", "changed api-version"),
+        (f"{QUERY_URL}#fragment", "contains a fragment"),
+        (f"{BASE_URL.replace('http://', 'https://')}/next", "changed origin"),
+        ("//attacker.invalid/next", "changed origin"),
+    ],
+)
+def test_unsafe_next_links_are_rejected_before_sending_token(next_link, message):
+    transport = FakeTransport([response([[1, "USD"]], next_link=next_link)])
+
+    with pytest.raises(AzureCostNextLinkError, match=message):
+        AzureCostClient(settings(), transport=transport).query_all(
+            SUBSCRIPTION_ID,
+            DEFINITION,
+        )
+
+    assert len(transport.requests) == 1
+
+
+def test_relative_contractual_next_link_is_allowed():
+    relative = continuation().removeprefix(BASE_URL)
+    transport = FakeTransport(
+        [response([[1, "USD"]], next_link=relative), response([[2, "USD"]])]
     )
-    cycle_transport = FakeTransport([response([[1, "USD"]], next_link=first_url)])
+
+    result = AzureCostClient(settings(), transport=transport).query_all(
+        SUBSCRIPTION_ID,
+        DEFINITION,
+    )
+
+    assert result.page_count == 2
+    assert transport.requests[1]["url"] == continuation()
+
+
+def test_http_redirect_does_not_forward_bearer_token():
+    forwarded_tokens = []
+
+    class RedirectHandler(BaseHTTPRequestHandler):
+        def do_POST(self):
+            self.send_response(302)
+            self.send_header("Location", "/credential-target")
+            self.end_headers()
+
+        def do_GET(self):
+            forwarded_tokens.append(self.headers.get("Authorization"))
+            self.send_response(200)
+            self.end_headers()
+
+        def log_message(self, format, *args):
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), RedirectHandler)
+    worker = Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    try:
+        result = UrllibTransport().post(
+            f"http://127.0.0.1:{server.server_port}/query",
+            body=b"{}",
+            headers={"Authorization": "Bearer super-secret-token"},
+            timeout=2,
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        worker.join(timeout=2)
+
+    assert result.status_code == 302
+    assert forwarded_tokens == []
+
+
+def test_pagination_cycles_and_page_limit_are_detected():
+    cycle_transport = FakeTransport([response([[1, "USD"]], next_link=QUERY_URL)])
 
     with pytest.raises(AzureCostResponseError, match="pagination cycle"):
         AzureCostClient(settings(), transport=cycle_transport).query_all(
@@ -300,7 +485,7 @@ def test_pagination_cycles_and_page_limit_are_detected():
             DEFINITION,
         )
 
-    limit_transport = FakeTransport([response([[1, "USD"]], next_link=f"{BASE_URL}/next")])
+    limit_transport = FakeTransport([response([[1, "USD"]], next_link=continuation())])
     with pytest.raises(AzureCostResponseError, match="page limit"):
         AzureCostClient(
             settings(azure_cost_api_max_pages=1),
@@ -330,3 +515,34 @@ def test_settings_reject_credentials_in_url_and_invalid_timeout():
         settings(azure_cost_api_base_url="https://user:password@example.test")
     with pytest.raises(ValidationError):
         settings(azure_cost_api_timeout_seconds=0)
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"azure_cost_api_base_url": "ftp://example.test"},
+        {"azure_cost_api_base_url": "https://example.test?token=exposed"},
+        {"azure_cost_api_base_url": "https://example.test#fragment"},
+        {"azure_cost_api_base_url": "https://example.test:invalid"},
+        {"azure_cost_api_token": ""},
+        {"azure_cost_api_token": "token\nInjected: header"},
+        {"azure_cost_api_version": " "},
+        {"azure_cost_api_timeout_seconds": 301},
+        {"azure_cost_api_max_retries": -1},
+        {"azure_cost_api_max_retries": 11},
+        {"azure_cost_api_retry_backoff_seconds": -1},
+        {"azure_cost_api_max_retry_after_seconds": 301},
+        {"azure_cost_api_max_pages": 0},
+        {"azure_cost_api_max_pages": 10001},
+    ],
+)
+def test_invalid_or_unsafe_client_settings_are_rejected(overrides):
+    with pytest.raises(ValidationError):
+        settings(**overrides)
+
+
+def test_secret_is_masked_in_settings_representation():
+    configured = settings()
+
+    assert "super-secret-token" not in repr(configured)
+    assert "super-secret-token" not in configured.model_dump_json()
