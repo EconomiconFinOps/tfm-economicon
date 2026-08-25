@@ -15,4 +15,4 @@
 
 - [x] 3.1 Validate all OpenSpec specifications and the `jup-082-clean-develop` change strictly.
 - [x] 3.2 Run repository-hygiene tests, project checks and application build/test validations.
-- [ ] 3.3 Publish `chore/JUP-082-clean-develop` and open a pull request targeting `develop`.
+- [x] 3.3 Publish `chore/JUP-082-clean-develop` and open a pull request targeting `develop`.
