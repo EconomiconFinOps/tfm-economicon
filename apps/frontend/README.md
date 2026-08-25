@@ -87,7 +87,7 @@ Puerto visible:
 
 ## Acceso Local Seed
 
-- email: `operator@finops.local`
+- email: `operator@example.com`
 - password: `secret`
 
 ## Build

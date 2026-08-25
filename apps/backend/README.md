@@ -120,7 +120,7 @@ python -m pytest tests
 
 La cuenta seed local para pruebas es:
 
-- email: `operator@finops.local`
+- email: `operator@example.com`
 - password: `secret`
 
 ## Notas
