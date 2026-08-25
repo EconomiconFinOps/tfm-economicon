@@ -1,9 +1,10 @@
 # ADR-0001: API Azure Cost Management simulada
 
-- Estado: Proposed
-- Fecha: 2026-08-08
+- Estado: Accepted
+- Fecha: 2026-08-25
 - Tarjeta Trello: JUP-073 — https://trello.com/c/ll3GzmuN
-- Pull request: pendiente
+- OpenSpec relacionado: `jup-073-azure-cost-query-contract`
+- Pull request: vinculado a la tarjeta Trello JUP-073 y al historial de GitHub
 - Sustituye a: ninguno
 - Sustituido por: ninguno
 
@@ -13,7 +14,7 @@ Economicon debe demostrar ingesta FinOps Azure, pero el equipo no dispone de un
 tenant real. Leer el dataset público directamente no permite probar el conector,
 la paginación ni los errores de una API.
 
-## Decisión propuesta
+## Decisión
 
 Crear en JUP-074 un servicio independiente `apps/azure-cost-api` que implemente
 únicamente el contrato definido en `docs/api/azure-cost-query.openapi.json`.
@@ -33,7 +34,9 @@ servicio no es un emulador completo ni evidencia de conexión a Azure real.
 - Mock interno del processor: acoplaría la ingesta al dataset y ocultaría
   paginación y errores.
 
-## Aprobación
+## Aprobación y seguimiento
 
-El estado pasará a `Accepted` cuando la PR de JUP-073 reciba la revisión y
-validación previstas en Trello.
+La decisión queda aceptada como base compartida del contrato JUP-073. La
+implementación del servicio corresponde a JUP-074, la resiliencia y los modos
+de fallo a JUP-075 y el cliente de ingesta a JUP-076. La trazabilidad, revisión
+y evidencia técnica se conservan en la tarjeta Trello y en el pull request.

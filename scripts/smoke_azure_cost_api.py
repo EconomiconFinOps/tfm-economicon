@@ -20,6 +20,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--forbidden-token", default="jupiter-forbidden-token")
     parser.add_argument("--expected-page-size", type=int, default=10)
     parser.add_argument("--expected-delay", type=float, default=2.0)
+    parser.add_argument("--expected-retry-after", type=int, default=1)
     return parser.parse_args()
 
 
@@ -109,7 +110,7 @@ def main() -> None:
 
     rate_limit = send(query_url, body, token=args.token, scenario="rate-limit")
     expect_error(rate_limit, 429, "TooManyRequests")
-    assert header_value(rate_limit[2], "Retry-After") == "1"
+    assert header_value(rate_limit[2], "Retry-After") == str(args.expected_retry_after)
     expect_error(
         send(query_url, body, token=args.token, scenario="server-error"),
         500,

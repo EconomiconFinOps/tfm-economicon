@@ -1,6 +1,6 @@
 # Contrato Azure Cost Management Query de Economicon
 
-Estado: propuesto para revisión del equipo en JUP-073.
+Estado: contrato versionado y validado de JUP-073.
 
 ## Objetivo
 
@@ -157,8 +157,9 @@ ingesta, y nunca se activan aleatoriamente.
 
 ## Compatibilidad con las tareas siguientes
 
-- JUP-074 implementará este OpenAPI en `apps/azure-cost-api`.
-- JUP-075 añadirá fallos deterministas sin modificar el contrato normal.
+- JUP-074 implementa este OpenAPI en `apps/azure-cost-api`.
+- JUP-075 incorpora paginación, autenticación local y fallos deterministas
+  sin modificar la estructura de una respuesta normal.
 - JUP-076 consumirá `columns`, `rows` y `nextLink` sin conocer el CSV.
 - JUP-077 verificará el cambio entre URL simulada y URL real mediante
   configuración, sin afirmar que se ha probado contra un tenant real.

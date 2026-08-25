@@ -2,8 +2,11 @@ import time
 from copy import deepcopy
 from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
 
+import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
+from app.config import Settings
 from app.main import create_app
 from test_query_api import CASES_BY_ID, QUERY_PATH
 
@@ -22,6 +25,11 @@ def test_missing_token_returns_401_with_challenge(secure_client):
     assert response.status_code == 401
     assert response.headers["WWW-Authenticate"] == "Bearer"
     assert response.json()["error"]["code"] == "AuthenticationFailed"
+
+
+def test_operational_endpoints_do_not_require_authentication(secure_client):
+    assert secure_client.get("/health").status_code == 200
+    assert secure_client.get("/openapi.json").status_code == 200
 
 
 def test_invalid_token_never_leaks_configured_value(secure_client):
@@ -46,6 +54,15 @@ def test_valid_token_allows_query(secure_client, auth_headers):
 
     assert response.status_code == 200
     assert len(response.json()["properties"]["rows"]) == 2
+
+
+def test_bearer_scheme_is_case_insensitive(secure_client):
+    response = post(
+        secure_client,
+        headers={"Authorization": "bEaReR test-valid-token"},
+    )
+
+    assert response.status_code == 200
 
 
 def test_pagination_collects_every_row_without_duplicates(secure_client, auth_headers):
@@ -89,6 +106,16 @@ def test_tampered_skip_token_is_rejected(secure_client, auth_headers):
     assert response.json()["error"]["code"] == "InvalidSkipToken"
 
 
+@pytest.mark.parametrize("token", ["", "opaque", "invalid.signature", "a.b.c"])
+def test_malformed_skip_token_is_rejected(secure_client, auth_headers, token):
+    url = f"{QUERY_URL}&{urlencode({'$skiptoken': token})}"
+
+    response = post(secure_client, headers=auth_headers, url=url)
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "InvalidSkipToken"
+
+
 def test_skip_token_is_bound_to_request_body(secure_client, auth_headers):
     response = post(secure_client, headers=auth_headers)
     next_link = response.json()["properties"]["nextLink"]
@@ -101,6 +128,40 @@ def test_skip_token_is_bound_to_request_body(secure_client, auth_headers):
         headers=auth_headers,
         url=next_link,
     )
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "InvalidSkipToken"
+
+
+def test_skip_token_is_bound_to_subscription(secure_client, auth_headers):
+    response = post(secure_client, headers=auth_headers)
+    next_link = response.json()["properties"]["nextLink"]
+    current_subscription = QUERY_PATH.split("/")[2]
+    other_subscription = next(
+        item
+        for item in secure_client.app.state.repository.subscription_ids
+        if item.casefold() != current_subscription.casefold()
+    )
+    changed_subscription_url = next_link.replace(current_subscription, other_subscription)
+
+    response = post(secure_client, headers=auth_headers, url=changed_subscription_url)
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "InvalidSkipToken"
+
+
+def test_skip_token_is_invalidated_when_signing_secret_changes(
+    secure_client,
+    secure_settings,
+    auth_headers,
+):
+    next_link = post(secure_client, headers=auth_headers).json()["properties"]["nextLink"]
+    rotated = secure_settings.model_copy(
+        update={"azure_cost_skiptoken_secret": "rotated-unit-test-secret"}
+    )
+
+    with TestClient(create_app(rotated)) as rotated_client:
+        response = post(rotated_client, headers=auth_headers, url=next_link)
 
     assert response.status_code == 400
     assert response.json()["error"]["code"] == "InvalidSkipToken"
@@ -178,3 +239,36 @@ def test_default_scenario_is_configurable(secure_settings, auth_headers):
         response = post(client, headers=auth_headers)
 
     assert response.status_code == 500
+
+
+def test_request_scenario_overrides_configured_default(secure_settings, auth_headers):
+    configured = secure_settings.model_copy(
+        update={"azure_cost_default_scenario": "server-error"}
+    )
+    headers = {**auth_headers, "X-Fake-Azure-Scenario": "normal"}
+
+    with TestClient(create_app(configured)) as client:
+        response = post(client, headers=headers)
+
+    assert response.status_code == 200
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"azure_cost_page_size": 0},
+        {"azure_cost_page_size": 1001},
+        {"azure_cost_fake_timeout_seconds": 31},
+        {"azure_cost_retry_after_seconds": -1},
+        {"azure_cost_skiptoken_secret": "too-short"},
+        {"azure_cost_default_scenario": "unexpected"},
+        {"azure_cost_auth_enabled": True, "azure_cost_valid_tokens": "  "},
+        {
+            "azure_cost_valid_tokens": "shared-identity",
+            "azure_cost_forbidden_tokens": "shared-identity",
+        },
+    ],
+)
+def test_unsafe_or_unsupported_settings_are_rejected(secure_settings, overrides):
+    with pytest.raises(ValidationError):
+        Settings(**(secure_settings.model_dump() | overrides))

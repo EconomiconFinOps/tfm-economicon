@@ -39,7 +39,11 @@ Endpoints:
 - paginación determinista mediante `$skiptoken` firmado y ligado al request,
   suscripción y checksum del fixture;
 - escenarios `rate-limit`, `server-error`, `timeout`, `empty-page` e
-  `invalid-data` seleccionables mediante `X-Fake-Azure-Scenario`.
+  `invalid-data` seleccionables mediante `X-Fake-Azure-Scenario`;
+- validación estricta de campos extra y coherencia entre la versión del
+  servicio y el contrato OpenAPI versionado;
+- ejecución en contenedor como usuario sin privilegios y filesystem de solo
+  lectura mediante Docker Compose.
 
 ## Configuración de JUP-075
 
@@ -56,6 +60,9 @@ Endpoints:
 
 Los valores incluidos son exclusivamente locales y ficticios. Para probar una
 consulta normal hay que enviar `Authorization: Bearer jupiter-local-token`.
+El secreto HMAC debe tener al menos 16 caracteres; la configuración rechaza
+escenarios desconocidos, tokens permitidos vacíos o identidades presentes
+simultáneamente en las listas de permitidos y denegados.
 Los escenarios nunca se eligen al azar y pueden forzarse, por ejemplo, con:
 
 ```http
@@ -75,5 +82,5 @@ Desde la raíz del repositorio, para verificar un despliegue completo desde
 fuera del host:
 
 ```powershell
-python scripts/smoke_azure_cost_api.py --base-url http://dockerserver:18003
+python scripts/smoke_azure_cost_api.py --base-url http://dockerserver:8002
 ```
