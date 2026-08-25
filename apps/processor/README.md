@@ -109,6 +109,14 @@ Entry points adicionales:
 - `EMBEDDING_CHUNK_OVERLAP`
 - `LLM_PROVIDER`
 - `OPENAI_API_KEY`
+- `AZURE_COST_API_BASE_URL`
+- `AZURE_COST_API_TOKEN`
+- `AZURE_COST_API_VERSION`
+- `AZURE_COST_API_TIMEOUT_SECONDS`
+- `AZURE_COST_API_MAX_RETRIES`
+- `AZURE_COST_API_RETRY_BACKOFF_SECONDS`
+- `AZURE_COST_API_MAX_RETRY_AFTER_SECONDS`
+- `AZURE_COST_API_MAX_PAGES`
 
 ## Tests
 
@@ -123,3 +131,8 @@ python -m pytest tests
 - `embeddings/` encapsula chunking y providers de embeddings.
 - `vector_store/pgvector_store.py` persiste documentos, chunks y vectores.
 - `graphs/pipeline.py` define el flujo de procesamiento.
+- `clients/azure_cost.py` consume todas las páginas de Azure Cost Management,
+  valida `columns/rows`, aplica reintentos acotados y evita reenviar el bearer a
+  otro origen, ruta, versión contractual o redirección HTTP.
+- `docs/api/azure-cost-ingestion-client.md` describe configuración, errores,
+  observabilidad y límites del cliente sin requerir un tenant Azure.
