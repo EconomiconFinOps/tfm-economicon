@@ -1,7 +1,12 @@
 import json
 from copy import deepcopy
+from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
+from app.errors import ConfigurationError
+from app.main import load_contract
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 CASES = json.loads(
@@ -127,6 +132,27 @@ def test_invalid_body_uses_contract_error_shape(client):
     assert response.json()["error"]["code"] == "BadRequest"
 
 
+@pytest.mark.parametrize(
+    ("path", "unexpected_field"),
+    [
+        ([], "unexpectedRootField"),
+        (["dataset"], "unexpectedDatasetField"),
+    ],
+)
+def test_unknown_request_fields_are_rejected(client, path, unexpected_field):
+    body = deepcopy(CASES_BY_ID["daily-cost-by-resource-group"]["request"])
+    target = body
+    for part in path:
+        target = target[part]
+    target[unexpected_field] = "not-in-contract"
+
+    response = post_query(client, body)
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "BadRequest"
+    assert "Extra inputs are not permitted" in response.json()["error"]["message"]
+
+
 def test_query_resource_id_is_deterministic(client):
     body = CASES_BY_ID["daily-cost-by-resource-group"]["request"]
 
@@ -206,6 +232,56 @@ def test_custom_time_period_respects_time_of_day(client):
 
     assert response.status_code == 200
     assert response.json()["properties"]["rows"] == []
+
+
+def test_relative_timeframes_are_anchored_to_fixture_clock(client):
+    body = deepcopy(CASES_BY_ID["storage-only"]["request"])
+
+    month_to_date = post_query(client, body)
+    body["timeframe"] = "TheLastMonth"
+    last_month = post_query(client, body)
+
+    assert month_to_date.status_code == 200
+    assert month_to_date.json()["properties"]["rows"]
+    assert last_month.status_code == 200
+    assert last_month.json()["properties"]["rows"] == []
+
+
+def test_total_cost_matches_public_fixture_decimal_sum(client):
+    body = deepcopy(CASES_BY_ID["daily-cost-by-resource-group"]["request"])
+    body["dataset"]["granularity"] = "None"
+    body["dataset"].pop("grouping")
+
+    response = post_query(client, body)
+    repository = client.app.state.repository
+    expected = sum(
+        (
+            record.cost
+            for record in repository.records
+            if record.values[repository.scope_column].casefold()
+            == SUBSCRIPTION_ID.casefold()
+        ),
+        start=Decimal("0"),
+    )
+
+    assert response.status_code == 200
+    rows = response.json()["properties"]["rows"]
+    assert len(rows) == 1
+    assert Decimal(str(rows[0][0])) == expected
+
+
+def test_contract_loader_rejects_api_version_drift(tmp_path):
+    contract = json.loads(
+        (REPOSITORY_ROOT / "docs/api/azure-cost-query.openapi.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    contract["x-economicon-subset"]["apiVersion"] = "unsupported"
+    contract_path = tmp_path / "openapi.json"
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    with pytest.raises(ConfigurationError, match="does not match"):
+        load_contract(contract_path)
 
 
 def test_skip_token_is_rejected_until_jup_075(client):

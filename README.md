@@ -148,11 +148,12 @@ El flujo principal del sistema es este:
 
 ## Documentacion Util
 
-- [docs/architecture.md](/C:/Repositorios/tfm-economicon/docs/architecture.md)
-- [docs/turborepo_use.md](/C:/Repositorios/tfm-economicon/docs/turborepo_use.md)
+- [Arquitectura](docs/architecture.md)
+- [Manual de Turborepo](docs/manuals/turborepo_use.md)
 - [Dataset público de Azure](docs/data/azure-sample-dataset.md)
 - [Contrato Azure Cost Management Query](docs/api/azure-cost-query-contract.md)
 - [OpenAPI contractual](docs/api/azure-cost-query.openapi.json)
+- [API Azure Cost simulada](apps/azure-cost-api/README.md)
 
 ## Estado Actual
 

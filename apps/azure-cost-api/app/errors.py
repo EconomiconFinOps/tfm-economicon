@@ -8,5 +8,9 @@ class ApiError(Exception):
     message: str
 
 
+class ConfigurationError(RuntimeError):
+    """Raised when the versioned API contract cannot configure the service."""
+
+
 def error_payload(code: str, message: str) -> dict:
     return {"error": {"code": code, "message": message}}

@@ -34,7 +34,11 @@ Endpoints:
 - suma de `PreTaxCost`;
 - filtros `In` con `and`/`or`;
 - hasta dos agrupaciones de dimensiones o tags;
-- respuesta posicional `columns`/`rows` y `nextLink: null`.
+- respuesta posicional `columns`/`rows` y `nextLink: null`;
+- validación estricta de campos extra y coherencia entre la versión del
+  servicio y el contrato OpenAPI versionado;
+- ejecución en contenedor como usuario sin privilegios y filesystem de solo
+  lectura mediante Docker Compose.
 
 JUP-075 añadirá paginación, autenticación simulada, `429`, timeout, páginas
 vacías forzadas y datos inválidos. En JUP-074, enviar `$skiptoken` devuelve un
