@@ -16,10 +16,13 @@
     "jup:check": "node tools/jup-check.mjs",
     "jup:check:test": "node --test tools/jup-check.test.mjs",
     "jup:cleanup:check": "node tools/jup-cleanup-check.mjs",
-    "jup:cleanup:test": "node --test tools/jup-cleanup-check.test.mjs"
+    "jup:cleanup:test": "node --test tools/jup-cleanup-check.test.mjs",
+    "assistant-corpus:validate": "node tools/assistant-corpus.mjs validate",
+    "assistant-corpus:test": "node --test tools/assistant-corpus.test.mjs"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.8.0",
-    "turbo": "^2.0.0"
+    "turbo": "^2.0.0",
+    "yaml": "2.9.0"
   }
 }
