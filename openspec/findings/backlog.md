@@ -2,4 +2,5 @@
 
 | ID | Fecha | Origen | Tipo | Severidad | Scope | Estado | Owner | Accion | Change/Fix |
 |----|-------|--------|------|-----------|-------|--------|-------|--------|------------|
-| RF-004-001 | 2026-06-24 | hu-004-add-health-checked-at | Test drift | Medium | Out of scope | Fixed | Codex | Replaced `.local` demo auth email with `operator@example.com` in seed, tests, frontend default, and active docs | hu-009-fix-auth-test-email-fixture |
+| RF-082-001 | 2026-08-25 | jup-082-clean-develop | Repository hygiene | High | In scope | Fixed | Equipo Economicon | Remove personal agent configuration, vendor executables and duplicate task proposals while preserving functional changes | JUP-082 |
+| RF-082-002 | 2026-08-25 | jup-082-clean-develop | Existing frontend lint baseline | Medium | Out of scope | Open | Equipo Economicon | Resolve the 49 pre-existing react/prop-types violations in a dedicated Trello task; product source and ESLint configuration are unchanged by JUP-082 | Pending Trello triage |
