@@ -1,0 +1,306 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Economicon Azure Cost Management Query subset",
+    "version": "2025-03-01-jup073",
+    "description": "Contrato de pruebas compatible con el subconjunto de Query Usage utilizado por Economicon. No es un emulador completo de Azure.",
+    "license": {
+      "name": "Licencia del proyecto pendiente de decisión del equipo",
+      "identifier": "LicenseRef-Pending"
+    }
+  },
+  "servers": [
+    {"url": "http://azure-cost-api:8002", "description": "Servicio dentro de Docker Compose"}
+  ],
+  "paths": {
+    "/subscriptions/{subscriptionId}/providers/Microsoft.CostManagement/query": {
+      "post": {
+        "operationId": "querySubscriptionUsage",
+        "summary": "Consulta costes de una suscripción ficticia",
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string", "format": "uuid"}
+          },
+          {
+            "name": "api-version",
+            "in": "query",
+            "required": true,
+            "schema": {"type": "string", "const": "2025-03-01"}
+          },
+          {
+            "name": "$skiptoken",
+            "in": "query",
+            "required": false,
+            "description": "Token opaco devuelto por properties.nextLink.",
+            "schema": {"type": "string", "minLength": 1}
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "description": "Bearer ficticio. Solo es obligatorio cuando la autenticación simulada está activada.",
+            "schema": {"type": "string", "pattern": "^Bearer .+$"}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/QueryDefinition"},
+              "examples": {
+                "dailyByResourceGroup": {
+                  "value": {
+                    "type": "ActualCost",
+                    "timeframe": "Custom",
+                    "timePeriod": {"from": "2024-06-01T00:00:00Z", "to": "2024-06-20T00:00:00Z"},
+                    "dataset": {
+                      "granularity": "Daily",
+                      "aggregation": {"totalCost": {"name": "PreTaxCost", "function": "Sum"}},
+                      "grouping": [{"type": "Dimension", "name": "ResourceGroup"}]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Consulta completada, incluso cuando no hay filas.",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/QueryResult"},
+                "example": {
+                  "id": "/subscriptions/64e355d7-997c-491d-b0c1-8414dccfcf42/providers/Microsoft.CostManagement/Query/5d66e2dd-369d-53b7-8c6d-61bd1f65aa31",
+                  "name": "5d66e2dd-369d-53b7-8c6d-61bd1f65aa31",
+                  "type": "microsoft.costmanagement/Query",
+                  "properties": {
+                    "columns": [
+                      {"name": "PreTaxCost", "type": "Number"},
+                      {"name": "ResourceGroup", "type": "String"},
+                      {"name": "UsageDate", "type": "Number"},
+                      {"name": "Currency", "type": "String"}
+                    ],
+                    "rows": [[12.3456, "ftk-integration-tests", 20240612, "USD"]],
+                    "nextLink": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {"$ref": "#/components/responses/BadRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "404": {"$ref": "#/components/responses/NotFound"}
+        },
+        "security": [{"SimulatedBearer": []}, {}]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SimulatedBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token local ficticio; no valida Entra ID."
+      }
+    },
+    "schemas": {
+      "QueryDefinition": {
+        "type": "object",
+        "required": ["type", "timeframe", "dataset"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {"type": "string", "enum": ["Usage", "ActualCost"]},
+          "timeframe": {"type": "string", "enum": ["Custom", "MonthToDate", "TheLastMonth"]},
+          "timePeriod": {"$ref": "#/components/schemas/QueryTimePeriod"},
+          "dataset": {"$ref": "#/components/schemas/QueryDataset"}
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": ["timeframe"],
+              "properties": {"timeframe": {"const": "Custom"}}
+            },
+            "then": {
+              "required": ["timePeriod"],
+              "properties": {
+                "type": {},
+                "timeframe": {},
+                "timePeriod": {"$ref": "#/components/schemas/QueryTimePeriod"},
+                "dataset": {}
+              }
+            }
+          }
+        ]
+      },
+      "QueryTimePeriod": {
+        "type": "object",
+        "required": ["from", "to"],
+        "additionalProperties": false,
+        "properties": {
+          "from": {"type": "string", "format": "date-time"},
+          "to": {"type": "string", "format": "date-time"}
+        }
+      },
+      "QueryDataset": {
+        "type": "object",
+        "required": ["granularity", "aggregation"],
+        "additionalProperties": false,
+        "properties": {
+          "granularity": {"type": "string", "enum": ["Daily", "None"]},
+          "aggregation": {
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 2,
+            "additionalProperties": {"$ref": "#/components/schemas/QueryAggregation"}
+          },
+          "grouping": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {"$ref": "#/components/schemas/QueryGrouping"}
+          },
+          "filter": {"$ref": "#/components/schemas/QueryFilter"}
+        }
+      },
+      "QueryAggregation": {
+        "type": "object",
+        "required": ["name", "function"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "const": "PreTaxCost"},
+          "function": {"type": "string", "const": "Sum"}
+        }
+      },
+      "QueryGrouping": {
+        "type": "object",
+        "required": ["type", "name"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {"type": "string", "enum": ["Dimension", "Tag"]},
+          "name": {
+            "type": "string",
+            "description": "Dimension: ResourceGroup, ResourceLocation, SubscriptionId, SubscriptionName, ServiceName, MeterCategory, ChargeType, PublisherType o PricingModel. Tag: CostCenter, Project, env u org."
+          }
+        }
+      },
+      "QueryComparisonExpression": {
+        "type": "object",
+        "required": ["name", "operator", "values"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "operator": {"type": "string", "const": "In"},
+          "values": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string"}
+          }
+        }
+      },
+      "QueryFilter": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["and"],
+            "additionalProperties": false,
+            "properties": {
+              "and": {"type": "array", "minItems": 2, "items": {"$ref": "#/components/schemas/QueryFilter"}}
+            }
+          },
+          {
+            "type": "object",
+            "required": ["or"],
+            "additionalProperties": false,
+            "properties": {
+              "or": {"type": "array", "minItems": 2, "items": {"$ref": "#/components/schemas/QueryFilter"}}
+            }
+          },
+          {
+            "type": "object",
+            "required": ["dimensions"],
+            "additionalProperties": false,
+            "properties": {"dimensions": {"$ref": "#/components/schemas/QueryComparisonExpression"}}
+          },
+          {
+            "type": "object",
+            "required": ["tags"],
+            "additionalProperties": false,
+            "properties": {"tags": {"$ref": "#/components/schemas/QueryComparisonExpression"}}
+          }
+        ]
+      },
+      "QueryColumn": {
+        "type": "object",
+        "required": ["name", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string"},
+          "type": {"type": "string", "enum": ["Number", "String"]}
+        }
+      },
+      "QueryResult": {
+        "type": "object",
+        "required": ["id", "name", "type", "properties"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string"},
+          "name": {"type": "string"},
+          "type": {"type": "string", "const": "microsoft.costmanagement/Query"},
+          "properties": {
+            "type": "object",
+            "required": ["columns", "rows", "nextLink"],
+            "additionalProperties": false,
+            "properties": {
+              "columns": {"type": "array", "items": {"$ref": "#/components/schemas/QueryColumn"}},
+              "rows": {
+                "type": "array",
+                "items": {"type": "array", "items": {}}
+              },
+              "nextLink": {"type": ["string", "null"]}
+            }
+          }
+        }
+      },
+      "ErrorDetails": {
+        "type": "object",
+        "required": ["code", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "code": {"type": "string"},
+          "message": {"type": "string"}
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "additionalProperties": false,
+        "properties": {"error": {"$ref": "#/components/schemas/ErrorDetails"}}
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Request, versión o skip token no soportados.",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      },
+      "Unauthorized": {
+        "description": "Bearer ficticio ausente o incorrecto.",
+        "headers": {"WWW-Authenticate": {"schema": {"type": "string"}}},
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      },
+      "NotFound": {
+        "description": "La suscripción no está presente en el fixture.",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      }
+    }
+  },
+  "x-economicon-subset": {
+    "apiVersion": "2025-03-01",
+    "scope": "subscription",
+    "clock": "configurable and anchored to fixture dates",
+    "pagination": "opaque token bound to request and dataset checksum",
+    "sourceMapping": "azure-cost-query-mapping.json"
+  }
+}
