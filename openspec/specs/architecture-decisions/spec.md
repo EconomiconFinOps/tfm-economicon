@@ -1,32 +1,32 @@
 ## Purpose
 
-Define how this project records durable architecture decisions without turning every local implementation detail into an ADR.
+Define how Economicon records durable architecture decisions without requiring an ADR for every local implementation detail.
 
 ## Requirements
 
 ### Requirement: Architecture decisions use ADRs
 
-The project SHALL record durable, cross-cutting architecture decisions as ADR files under `docs/adr/`.
+The project SHALL record durable, cross-cutting architecture decisions as ADR files under `docs/adr/` and link each decision to its Trello task and OpenSpec change.
 
 #### Scenario: Contributor records a durable architecture decision
 
-- **WHEN** a HU introduces or changes a durable architecture decision
-- **THEN** the contributor creates or updates an ADR and links it from the HU `design.md` or `review.md`.
+- **WHEN** a Trello task introduces or changes a durable architecture decision
+- **THEN** the contributor creates or updates an ADR and links it from the corresponding OpenSpec `design.md`.
 
-### Requirement: ADRs remain tied to OpenSpec source of truth
+### Requirement: Architecture decisions remain tool-independent
 
-The project SHALL keep accepted architecture decisions in Git/OpenSpec documentation, not only in Engram memory.
+The project SHALL preserve accepted architecture decisions in Git-tracked documentation rather than depending on a personal assistant, local memory service or proprietary agent configuration.
 
-#### Scenario: Engram contains architecture context
+#### Scenario: Contributor accepts an architecture decision
 
-- **WHEN** Engram contains context that affects an architecture decision
-- **THEN** the contributor reflects the final decision in an ADR, OpenSpec artifact, or Git-tracked documentation.
+- **WHEN** the team accepts an architecture decision during review
+- **THEN** its rationale and consequences are available in an ADR, OpenSpec artifact or other Git-tracked project documentation.
 
 ### Requirement: ADRs are not required for local implementation details
 
-The project SHALL keep ADR usage lightweight by requiring ADRs only for durable or cross-cutting architecture choices.
+The project SHALL keep ADR usage lightweight by requiring records only for durable or cross-cutting architecture choices.
 
 #### Scenario: Contributor makes a local implementation decision
 
-- **WHEN** a decision is local to one HU and has no durable cross-HU architecture impact
-- **THEN** the contributor may record it only in `design.md` and mark ADR as not applicable during review.
+- **WHEN** a decision concerns one Trello task and has no durable cross-task architecture impact
+- **THEN** the contributor may record it only in `design.md` and declare `ADR: not applicable`.

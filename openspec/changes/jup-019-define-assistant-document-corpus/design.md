@@ -1,3 +1,5 @@
+JUP: JUP-019
+
 ## Context
 
 JUP-019 starts the IA/RAG block by defining what knowledge the assistant is allowed to index for the MVP. The Trello scope constrains the MVP to Azure-oriented simulated data, with no real cloud integration required for this story.

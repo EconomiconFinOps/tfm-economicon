@@ -1,67 +1,33 @@
-# Agent Instructions
+# Repository Guidelines
 
-## HU/OpenSpec Workflow
+## Project Structure
 
-- Use OpenSpec as the source of truth for HU planning, implementation tasks, reviews, approvals, and archive history.
-- Read `docs/openspec-hu-adaptation-plan.md` for the full workflow and `docs/templates/hu/` for reusable approval, review, hotfix, and checklist snippets.
-- Do not reintroduce the old SDD harness paths: `.sdd`, `packages/sdd-harness`, or `SPEC`.
-- Use `pnpm exec openspec ...` for direct OpenSpec CLI calls such as `status`, `instructions`, and other commands not exposed as package scripts.
-- Run the local HU checks when working through a change:
-  - `pnpm hu:check:pre-code -- --change <change-name>` before product code changes.
-  - `pnpm hu:check -- --change <change-name>` before archive.
-  - `pnpm hu:check:findings` when `openspec/findings/backlog.md` changes.
-- Do not edit product code or execution-relevant product files before `pnpm hu:check:pre-code -- --change <change-name>` passes.
-- Do not archive a change before `pnpm hu:check -- --change <change-name>` passes.
-- Once work has started on a HU, do not switch to another HU or perform tasks that are not directly related to the active HU without explicit user authorization. Checks, review notes, findings, docs, and follow-up edits required to complete the active HU are allowed.
+This pnpm/Turborepo monorepo contains the frontend, Python backend and processor in `apps/`, reusable configuration in `packages/`, project documentation in `docs/`, and technical specifications in `openspec/`.
 
-## Happy Path For HU Changes
+## Source Of Truth And Identifiers
 
-1. Check active work with `pnpm openspec:list`.
-2. Create or propose the HU with `/opsx:propose "<description>"` or `pnpm exec openspec new change "<change-name>"`.
-3. Complete `proposal.md`, `design.md`, `specs/*/spec.md`, and `tasks.md`.
-4. Assess whether the HU needs an ADR; create or link it before implementation when the decision is durable or cross-cutting.
-5. Record structured pre-code HiTL approval in the change.
-6. Run `pnpm openspec:validate`.
-7. Run `pnpm hu:check:pre-code -- --change <change-name>` and stop if it fails.
-8. Implement with `/opsx:apply <change-name>` or equivalent task-by-task edits.
-9. Mark each completed task in `tasks.md`.
-10. Run the required checks for the selected carril and record exact commands/results in `review.md`.
-11. Record review findings in `review.md`; update `openspec/findings/backlog.md` when required.
-12. Record `ADR created/updated` or `ADR not applicable` in review.
-13. Record structured post-review HiTL approval.
-14. Run `pnpm hu:check -- --change <change-name>` and stop if it fails.
-15. Sync specs if applicable.
-16. Archive the change.
-17. Run the post-archive documentation reviewer and update docs/release history.
+- Trello owns scope, priorities, assignees, rotating responsibilities, delivery dates and task status.
+- OpenSpec stores versioned requirements, implementation design, technical tasks and acceptance scenarios.
+- GitHub stores code, documentation, pull requests and technical review history.
+- Reuse the same Trello identifier everywhere: `JUP-082`, `openspec/changes/jup-082-clean-develop/` and `chore/JUP-082-clean-develop`.
+- Do not create a second numbering system or duplicate the operational backlog inside the repository.
 
-## Harness Issues
+## Build And Validation Commands
 
-- Any problem, failure, drift, or workaround involving the HU/OpenSpec harness or local HU checks must be documented in the HU `review.md`.
-- If the harness issue is unresolved, deferred, out of scope, or accepted as risk, also add it to `openspec/findings/backlog.md` with a stable `RF-<hu-number>-<sequence>` ID.
-- Do not leave harness problems only in chat, terminal output, or local memory.
+- `corepack pnpm install --frozen-lockfile`: install the workspace dependencies.
+- `corepack pnpm build`, `corepack pnpm lint` and `corepack pnpm test`: run workspace validations.
+- `corepack pnpm openspec:list`: inspect active OpenSpec changes.
+- `corepack pnpm openspec:validate`: validate all specifications and changes strictly.
+- `corepack pnpm jup:check -- --change jup-082-clean-develop`: verify Trello/OpenSpec traceability.
+- `corepack pnpm jup:check:test`: test the JUP traceability checker.
+- `corepack pnpm jup:cleanup:check`: reject personal agent configuration, unrelated binaries and parallel task namespaces.
+- `corepack pnpm jup:cleanup:test`: test the repository hygiene checker.
+- `docker compose up --build`: run the local development environment.
 
-## Post-Archive Documentation Review
+## Branches, Reviews And Tooling
 
-- After a HU is archived, run `openspec-doc-reviewer` for the archived change path.
-- The reviewer keeps current-state documentation aligned with accepted implementation, especially `docs/architecture.md`, affected app READMEs, manuals, and `docs/hu-release-notes.md`.
-- `docs/hu-release-notes.md` is the lightweight history of implemented HUs. Keep one row per archived HU with date, HU name, a very short release note, the archived `review.md` link, and any ADR links.
-- If the archived HU created or updated ADRs, link them from `docs/hu-release-notes.md`. If no ADR applies, write `None`.
-- If the reviewer detects a durable architecture decision without an ADR, suggest the ADR and record the follow-up clearly instead of hiding the gap.
-- The reviewer must not edit product code, migrations, tests, archived artifacts, or OpenSpec specs unless the user explicitly asks.
-
-## Engram Usage For Agents
-
-- Use Engram only as auxiliary local memory for gotchas, recurring decisions, and operational context.
-- Do not use Engram as the only source for requirements, approvals, review results, findings, acceptance criteria, or final decisions.
-- If Engram context affects a HU, reflect that information in the relevant OpenSpec artifact or Git-tracked documentation.
-
-## Architecture Decision Records
-
-- Use `docs/adr/` for durable architecture decisions and `docs/templates/adr.md` for new ADRs.
-- Name ADRs as `ADR-0001-short-slug.md` and use the statuses `Proposed`, `Accepted`, `Superseded`, or `Deprecated`.
-- Create or update an ADR when a HU changes service/app boundaries, persistence, queues, vector stores, sync, auth/security/tenancy, critical external providers, LLM/RAG/cost architecture, or shared patterns that affect multiple modules or future HUs.
-- Do not create an ADR for local implementation details, small refactors, docs-only edits without architecture impact, or choices fully captured in one HU `design.md`.
-- `design.md` records HU-local technical design; ADRs record durable cross-HU architecture rationale.
-- `docs/architecture.md` describes the current architecture; ADRs explain why important choices were made.
-- Link applicable ADRs from the HU `design.md` or `review.md`.
-- Before archive, accepted architecture decisions must be reflected in Git/OpenSpec/ADR, not only in Engram.
+- Never work directly on `main` or `develop`; create a short-lived branch containing its Trello `JUP-XXX` identifier.
+- Open pull requests against `develop` and share implementation, pairing, review and validation among all four team members.
+- Keep repository instructions independent of any specific assistant, IDE or vendor.
+- Do not commit personal agent skills, local memory tools, generated environments or platform-specific executable binaries.
+- Record durable architectural decisions in `docs/adr/` and link them to their Trello card and OpenSpec change.

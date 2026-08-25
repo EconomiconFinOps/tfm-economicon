@@ -1,3 +1,6 @@
+JUP: JUP-019
+Trello: https://trello.com/c/S1FHo2mt
+
 ## Why
 
 Economicon needs a curated, versioned assistant corpus before building the rest of the RAG pipeline. Without an explicit corpus contract, JUP-020 chunking and embeddings, JUP-022 semantic retrieval, JUP-024 prompt guardrails, and JUP-025 source citations can drift or rely on inconsistent document inputs.
@@ -47,7 +50,7 @@ JUP-019 stops at defining and validating the repo-local corpus contract. It may 
 - AI/cost: prepares the local knowledge contract for later RAG work without invoking paid model or embedding providers.
 - Multi-tenant: defines metadata for `scope`, `tenant_id`, and `dataset_id` so later retrieval work can preserve tenant isolation and support global or dataset-scoped documents.
 - Dependencies: downstream JUP-020, JUP-022, JUP-024, and JUP-025 should consume or respect this corpus contract.
-- Delivery notes: carril `standard`; pre-code approval and `pnpm hu:check:pre-code -- --change jup-019-define-assistant-document-corpus` are required before creating corpus files or validation scripts.
+- Delivery notes: carril `standard`; the Trello-linked change is validated with `pnpm jup:check -- --change jup-019-define-assistant-document-corpus` and reviewed through a pull request.
 
 ## Human Approval
 

@@ -8,6 +8,11 @@
 | 2026-08-12 | `pnpm assistant-corpus:test` | PASS | 8 tests passed. |
 | 2026-08-12 | `pnpm assistant-corpus:validate` | PASS | Current assistant corpus manifest is valid. |
 | 2026-08-12 | `pnpm openspec:validate` | PASS | 5 OpenSpec items passed. |
+| 2026-08-25 | `pnpm openspec:validate` | PASS | 5 specifications and changes pass strict validation after integrating cleaned develop. |
+| 2026-08-25 | `pnpm jup:check -- --change jup-019-define-assistant-document-corpus` | PASS | The proposal references the Trello card and matching JUP-019 identifier. |
+| 2026-08-25 | `pnpm jup:cleanup:check` | PASS | No unrelated executables, personal agent configuration or parallel task proposals remain. |
+| 2026-08-25 | `pnpm assistant-corpus:test` | PASS | All 8 corpus validation tests remain green. |
+| 2026-08-25 | `pnpm assistant-corpus:validate` | PASS | Existing corpus content and its manifest remain valid. |
 
 ## Scope Review
 

@@ -1,0 +1,17 @@
+schema: spec-driven
+
+context: |
+  Economicon es un asistente FinOps para Azure desarrollado como trabajo final de máster.
+  Trello es la fuente de verdad para alcance, responsables, prioridades y estado.
+  OpenSpec documenta requisitos, diseño técnico y escenarios de aceptación.
+  GitHub conserva la implementación, los pull requests y las decisiones técnicas.
+  Todas las herramientas reutilizan el identificador JUP-XXX de la tarjeta Trello.
+
+rules:
+  proposal:
+    - "Incluye al inicio JUP: JUP-XXX y Trello: <URL directa de la tarjeta>."
+    - "Mantén el alcance alineado con la tarjeta Trello."
+  design:
+    - "Incluye el identificador JUP-XXX y enlaza un ADR cuando la decisión sea duradera."
+  tasks:
+    - "Refleja únicamente tareas técnicas y criterios verificables del cambio activo."
