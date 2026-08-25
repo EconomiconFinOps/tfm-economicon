@@ -117,7 +117,24 @@
           "timeframe": {"type": "string", "enum": ["Custom", "MonthToDate", "TheLastMonth"]},
           "timePeriod": {"$ref": "#/components/schemas/QueryTimePeriod"},
           "dataset": {"$ref": "#/components/schemas/QueryDataset"}
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": ["timeframe"],
+              "properties": {"timeframe": {"const": "Custom"}}
+            },
+            "then": {
+              "required": ["timePeriod"],
+              "properties": {
+                "type": {},
+                "timeframe": {},
+                "timePeriod": {"$ref": "#/components/schemas/QueryTimePeriod"},
+                "dataset": {}
+              }
+            }
+          }
+        ]
       },
       "QueryTimePeriod": {
         "type": "object",

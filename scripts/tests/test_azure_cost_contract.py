@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OPENAPI_PATH = ROOT / "docs/api/azure-cost-query.openapi.json"
 MAPPING_PATH = ROOT / "docs/api/azure-cost-query-mapping.json"
 CASES_PATH = ROOT / "docs/api/azure-cost-query-contract-cases.json"
+FIXTURE_MANIFEST_PATH = ROOT / "fixtures/azure-cost/manifest.json"
 
 
 def load_json(path: Path):
@@ -45,6 +46,72 @@ class AzureCostContractTests(unittest.TestCase):
         mapped.add(self.mapping["tags"]["sourceColumn"])
 
         self.assertEqual(mapped - columns, set())
+
+    def test_mapping_uses_the_canonical_versioned_public_fixture(self) -> None:
+        manifest = load_json(FIXTURE_MANIFEST_PATH)
+        fixture_names = {item["path"] for item in manifest["files"]}
+
+        self.assertEqual(
+            self.mapping["sourceFixture"],
+            "fixtures/azure-cost/EA-Cost-Actual.sample.csv",
+        )
+        self.assertIn("EA-Cost-Actual.sample.csv", fixture_names)
+        self.assertIn("public values", manifest["transformation"])
+
+    def test_known_subscription_exists_in_the_canonical_fixture(self) -> None:
+        fixture = ROOT / self.mapping["sourceFixture"]
+        with fixture.open(encoding="utf-8-sig", newline="") as source:
+            subscriptions = {row["SubscriptionId"] for row in csv.DictReader(source)}
+
+        self.assertIn(self.cases["knownSubscriptionId"], subscriptions)
+
+    def test_api_version_matches_openapi_extension_and_contract_cases(self) -> None:
+        path = "/subscriptions/{subscriptionId}/providers/Microsoft.CostManagement/query"
+        operation = self.openapi["paths"][path]["post"]
+        parameters = {item["name"]: item for item in operation["parameters"]}
+
+        self.assertEqual(parameters["api-version"]["schema"]["const"], "2025-03-01")
+        self.assertEqual(self.openapi["x-economicon-subset"]["apiVersion"], "2025-03-01")
+        self.assertEqual(self.cases["apiVersion"], "2025-03-01")
+
+    def test_custom_timeframe_requires_period_in_openapi_schema(self) -> None:
+        definition = self.openapi["components"]["schemas"]["QueryDefinition"]
+        rules = definition["allOf"]
+
+        self.assertTrue(
+            any(
+                rule.get("if", {})
+                .get("properties", {})
+                .get("timeframe", {})
+                .get("const")
+                == "Custom"
+                and "timePeriod" in rule.get("then", {}).get("required", [])
+                for rule in rules
+            )
+        )
+
+    def test_simulated_bearer_authentication_and_challenge_are_documented(self) -> None:
+        path = "/subscriptions/{subscriptionId}/providers/Microsoft.CostManagement/query"
+        operation = self.openapi["paths"][path]["post"]
+        scheme = self.openapi["components"]["securitySchemes"]["SimulatedBearer"]
+        challenge = self.openapi["components"]["responses"]["Unauthorized"]["headers"]
+
+        self.assertEqual(scheme["type"], "http")
+        self.assertEqual(scheme["scheme"], "bearer")
+        self.assertIn({"SimulatedBearer": []}, operation["security"])
+        self.assertIn({}, operation["security"])
+        self.assertIn("WWW-Authenticate", challenge)
+
+    def test_pagination_declares_skip_token_and_nullable_next_link(self) -> None:
+        path = "/subscriptions/{subscriptionId}/providers/Microsoft.CostManagement/query"
+        operation = self.openapi["paths"][path]["post"]
+        parameters = {item["name"]: item for item in operation["parameters"]}
+        properties = self.openapi["components"]["schemas"]["QueryResult"]["properties"]
+        result = properties["properties"]["properties"]
+
+        self.assertEqual(parameters["$skiptoken"]["in"], "query")
+        self.assertFalse(parameters["$skiptoken"]["required"])
+        self.assertEqual(set(result["nextLink"]["type"]), {"string", "null"})
 
     def test_success_example_rows_match_declared_columns(self) -> None:
         path = "/subscriptions/{subscriptionId}/providers/Microsoft.CostManagement/query"

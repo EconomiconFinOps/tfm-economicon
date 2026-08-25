@@ -114,10 +114,17 @@ Desde la raíz del repositorio:
 
 ```powershell
 python scripts/audit_azure_dataset.py `
-  C:\ruta\privada\dataset-examples.zip `
+  C:\ruta\local\dataset-examples.zip `
   --output docs/data/azure-dataset-audit.json `
   --fixture-dir fixtures/azure-cost `
   --sample-size 50
+```
+
+La consistencia del informe, el manifiesto, las 11 muestras, los costes
+negativos/cero y la licencia MIT puede verificarse sin descargar de nuevo el ZIP:
+
+```powershell
+python -m unittest discover -s scripts/tests -p "test_audit_azure_dataset.py" -v
 ```
 
 El muestreo depende del checksum y del contenido de cada fila, no del orden de
