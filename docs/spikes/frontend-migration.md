@@ -21,19 +21,22 @@ Tasks            -> pasos verificables dentro de cada tarjeta
 
 | Aspecto              | Origen (Economicon)        | Destino actual (tfm-economicon)                         |
 | -------------------- | -------------------------- | ------------------------------------------------------- |
-| Framework            | React + Vite               | React 18 + Vite                                         |
+| Framework            | React 18.3.1 + Vite 6      | React 18.3.1 + Vite 5                                   |
 | Lenguaje             | **TypeScript**             | **JavaScript** (JSX)                                    |
-| Datos/estado         | `[ASUNCION]` por confirmar | TanStack Query (`@tanstack/react-query`)                |
-| Routing              | `[ASUNCION]` por confirmar | Estado manual `activeView` en `App.jsx` (sin router)    |
-| Capa API             | `[ASUNCION]` por confirmar | `src/services/api.js` centralizado                      |
-| Auth/sesion          | `[ASUNCION]` por confirmar | `localStorage` (`finops.session`, `finops.activeTenant`) |
-| Estilos              | `[ASUNCION]` por confirmar | Un unico `src/styles/main.css`, tema oscuro             |
+| Datos/estado         | Ninguna (datos estáticos/mock) | TanStack Query (`@tanstack/react-query`)                |
+| Routing              | react-router 7 (`createBrowserRouter`) | Estado manual `activeView` en `App.jsx` (sin router)    |
+| Capa API             | Ninguna (sin `fetch`/`axios`) | `src/services/api.js` centralizado                      |
+| Auth/sesion          | Ninguna (sin login/tenant) | `localStorage` (`finops.session`, `finops.activeTenant`) |
+| Estilos              | Tailwind v4 + shadcn/ui + MUI | Un unico `src/styles/main.css`, tema oscuro             |
 | Empaquetado monorepo | repo independiente         | `@finops/frontend`, pnpm workspace + turbo + Docker     |
 
-**Gap principal:** el origen llega en TypeScript y el destino esta en JavaScript. El reemplazo
-completo obliga a **adoptar TypeScript** en `apps/frontend`. Ademas, la capa de servicios del origen
-asumira los contratos del backend de Economicon, que deben **realinearse** a los contratos del
-backend de este repo.
+**Gap principal:** el origen llega en **TSX** (sin `tsconfig` ni dependencia `typescript`:
+transpilado por esbuild, sin type-check) y el destino en JavaScript; el reemplazo completo obliga a
+**adoptar TypeScript** en `apps/frontend`. Además — y es lo más relevante confirmado en JUP-083 — el
+origen es un **dashboard estático de Figma Make sin backend, sin auth y sin capa de datos**: la
+migración **no realinea** una API existente, sino que debe **añadir desde el destino** toda la capa
+de datos (`services/api.js` + TanStack Query) y el flujo de auth/sesión/tenant sobre la UI de
+Economicon.
 
 ### Hechos del destino que la migracion debe respetar (verificados)
 
@@ -90,25 +93,31 @@ monorepo. La frontera es:
    se crea backend (eso seria otra tarjeta/epica, fuera de este alcance).
 4. **Una sola capa API centralizada** (se mantiene el patron de `services/api.js`, portado a TS).
 
-### Supuestos a confirmar (marcar `[ASUNCION]` hasta inspeccionar Economicon)
+### Supuestos del origen (confirmados en JUP-083)
 
-- `[ASUNCION]` Economicon usa React 18 compatible (no React 19 con breaking changes).
-- `[ASUNCION]` Routing del origen (react-router u otro) y si introduce dependencias nuevas.
-- `[ASUNCION]` Libreria de datos del origen (TanStack Query, Redux, SWR...) y si coincide con la del destino.
-- `[ASUNCION]` Modelo de auth/sesion del origen y si encaja con `Bearer` + `X-Tenant-Id`.
-- `[ASUNCION]` Sistema de estilos del origen (CSS plano, CSS Modules, Tailwind, styled-components).
-- `[ASUNCION]` Assets estaticos (fuentes, imagenes, iconos) y licencias.
+- **Confirmado (T1):** React **18.3.1** (peerDeps), compatible con el destino. Vite **6** en el
+  origen frente a Vite **5** en el destino → salto de major a decidir al reconciliar el tooling.
+- **Confirmado (T2):** react-router **7.13.0** con `createBrowserRouter` (5 rutas bajo un `Layout`).
+  Dependencia nueva respecto al destino (hoy sin router). Se adopta el routing del origen.
+- **Confirmado (T3):** ninguna librería de datos/estado ni capa API en el origen (dashboards con
+  datos estáticos/mock). El destino usa TanStack Query → la migración añade toda la capa de datos.
+- **Confirmado (T4):** el origen no tiene auth/sesión/tenant. El destino sí (`Bearer` +
+  `X-Tenant-Id` + sesión en `localStorage`) → la migración añade el flujo de auth del destino.
+- **Confirmado (T5):** Tailwind CSS v4 + shadcn/ui (Radix) + MUI 7 + `next-themes`, con estilos en
+  `src/styles/`. El destino usa un único `main.css` plano → cambio grande de sistema de estilos.
+- **Confirmado (T6):** iconos vía `lucide-react`; sin `src/assets` materializado ni fuentes propias
+  (`fonts.css` vacío). Licencias en `ATTRIBUTIONS.md`: shadcn/ui (MIT) y fotos de Unsplash.
 
-### Checklist de inspeccion del origen (resolver los `[ASUNCION]`)
+### Checklist de inspeccion del origen (completado en JUP-083)
 
 ```md
-- [ ] Leer package.json de Economicon: versiones React/Vite, deps y devDeps.
-- [ ] Identificar entrypoint (main.tsx), index.html y configuracion Vite/TS.
-- [ ] Mapear routing y arbol de pantallas.
-- [ ] Localizar capa API y enumerar endpoints que consume.
-- [ ] Revisar auth/sesion y manejo de tenant.
-- [ ] Inventariar sistema de estilos y assets.
-- [ ] Detectar variables de entorno requeridas (VITE_*).
+- [x] package.json: React 18.3.1, Vite 6 (destino Vite 5), sin dependencia `typescript`.
+- [x] Entrypoint `src/main.tsx`, `index.html` y config Vite; **sin `tsconfig`** (TSX sin type-check).
+- [x] Routing y pantallas: react-router 7 (`createBrowserRouter`), 5 pantallas bajo `Layout`.
+- [x] Capa API y endpoints: **no hay capa API** (0 `fetch`/`axios`); datos estáticos/mock.
+- [x] Auth/sesion y tenant: **no existen** en el origen.
+- [x] Estilos y assets: Tailwind v4 + shadcn/ui + MUI; iconos lucide-react; sin `src/assets`.
+- [x] Variables `VITE_*`: **ninguna** en el origen.
 ```
 
 ## Descomposicion: Epica -> Features -> Tarjetas JUP -> Tasks
@@ -130,7 +139,7 @@ tarjeta en Trello.
 - [ ] Definir criterios de aceptacion de paridad funcional (login -> tenant -> dashboard).
 
 **JUP `jup-0xx-inventariar-frontend-economicon`** — carril `light`
-- [ ] Completar el "Checklist de inspeccion del origen" y resolver los `[ASUNCION]`.
+- [x] Completar el "Checklist de inspeccion del origen" y confirmar todos los supuestos en JUP-083.
 - [ ] Listar dependencias del origen y clasificarlas (mantener / sustituir / descartar).
 - [ ] Enumerar endpoints que el origen consume y mapearlos a los contratos del backend de este repo.
 
@@ -294,7 +303,9 @@ tarjeta JUP** de la epica.
 
 ## Proximos pasos
 
-1. Inspeccionar el repositorio Economicon y resolver todos los `[ASUNCION]` (tarjeta de inventario F1).
+1. **Hecho en JUP-083:** inspección de Economicon y supuestos confirmados (ver arriba). Replanificar
+   las tarjetas JUP de la épica según los hallazgos: el origen no tiene backend, auth ni capa de datos, así
+   que F3 debe **añadir** esas capas desde el destino, no solo reconciliarlas.
 2. Crear el ADR de adopcion de TypeScript (`docs/adr/ADR-NNNN-frontend-typescript.md`).
 3. Crear la primera tarjeta JUP de la epica y documentarla en OpenSpec siguiendo esta descomposicion.
 4. Ajustar la numeracion de Trello y el alcance de las tareas segun lo que revele el inventario.
