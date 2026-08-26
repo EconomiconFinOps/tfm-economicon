@@ -48,6 +48,10 @@ entregables. El video demo de 5-10 minutos se mantiene opcional.
 - Higiene: 6/6 pruebas y 301 archivos aceptados.
 - Servicios: Azure API 58, backend 10 y processor 126 pruebas superadas.
 - Build completo del monorepo y frontend de produccion superados.
+- Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/13
+- Primera ejecucion remota completa:
+  https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/32984910871;
+  los seis checks obligatorios terminaron correctamente.
 
 Pendiente: registrar la revision del equipo y, tras aprobar, aplicar las fechas
 a las demas tarjetas de Trello.

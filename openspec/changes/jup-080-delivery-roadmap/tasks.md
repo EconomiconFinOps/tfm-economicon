@@ -16,6 +16,6 @@
 
 - [x] 3.1 JUP-080 add machine-readable milestones and automated tests
 - [x] 3.2 JUP-080 run repository and strict OpenSpec validation
-- [ ] 3.3 JUP-080 update its Trello card with the draft and proposed due date
+- [x] 3.3 JUP-080 update its Trello card with the draft and proposed due date
 - [ ] 3.4 JUP-080 obtain team approval before applying dates to other cards
-- [ ] 3.5 JUP-080 publish and review the pull request toward develop
+- [x] 3.5 JUP-080 publish the pull request toward develop and pass remote CI
