@@ -65,6 +65,7 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "jup:check:test",
     "pr:check:test",
     "ci:check:test",
+    "repository:governance:test",
     "jup:check:all",
     "jup:cleanup:test",
     "jup:cleanup:check",
@@ -118,11 +119,13 @@ test("requires the same six stable CI checks in both branch rulesets", () => {
   }
 });
 
-test("requires linear release history only on main", () => {
+test("restricts permanent branches to squash or rebase and keeps main linear", () => {
   assert.ok(rulesets.main.rules.some(({ type }) => type === "required_linear_history"));
   assert.ok(
     !rulesets.develop.rules.some(({ type }) => type === "required_linear_history"),
   );
   const mainPullRequest = rulesets.main.rules.find(({ type }) => type === "pull_request");
+  const developPullRequest = rulesets.develop.rules.find(({ type }) => type === "pull_request");
   assert.deepEqual(mainPullRequest.parameters.allowed_merge_methods, ["squash", "rebase"]);
+  assert.deepEqual(developPullRequest.parameters.allowed_merge_methods, ["squash", "rebase"]);
 });

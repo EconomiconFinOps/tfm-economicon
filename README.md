@@ -138,6 +138,14 @@ Variables principales:
 - `pnpm test`: ejecuta los tests disponibles
 - `pnpm docker:build`: construye las imagenes Docker de las apps
 
+## Colaboracion
+
+El repositorio canonico es `EconomiconFinOps/tfm-economicon`. Todo cambio nace
+en una tarjeta Trello `JUP-XXX`, se desarrolla en una rama corta desde
+`develop` y se integra mediante pull request. Consulta [CONTRIBUTING.md](CONTRIBUTING.md)
+y [la estrategia de repositorio y ramas](docs/governance/repository-and-branch-strategy.md)
+antes de comenzar una tarea.
+
 ## Relacion Entre Submodulos
 
 El flujo principal del sistema es este:
