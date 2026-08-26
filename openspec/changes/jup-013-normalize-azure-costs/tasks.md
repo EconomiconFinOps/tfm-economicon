@@ -15,7 +15,7 @@
 ## 3. Validation and publication
 
 - [x] 3.1 JUP-013 add normalization, migration and repository tests
-- [ ] 3.2 JUP-013 run all service, governance and build validations
-- [ ] 3.3 JUP-013 validate the migration and ingestion on dockerserver
+- [x] 3.2 JUP-013 run all service, governance and build validations
+- [x] 3.3 JUP-013 validate the migration and ingestion on dockerserver
 - [ ] 3.4 JUP-013 publish a pull request toward develop and pass remote CI
 - [ ] 3.5 JUP-013 obtain pairing, review and functional validation evidence
