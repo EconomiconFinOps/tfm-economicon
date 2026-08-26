@@ -1,0 +1,87 @@
+{
+  "as_of": "2026-08-26",
+  "calendar_status": "team-baseline-pending-institutional-confirmation",
+  "internal_code_freeze": "2026-10-09",
+  "internal_document_freeze": "2026-10-16",
+  "delivery_date": "2026-10-23",
+  "defense_rehearsal": "2026-10-27",
+  "defense_date": "2026-10-29",
+  "milestones": [
+    {
+      "id": "M0",
+      "date": "2026-08-28",
+      "name": "Roadmap and scope baseline",
+      "task_ids": ["JUP-080"]
+    },
+    {
+      "id": "M1",
+      "date": "2026-09-04",
+      "name": "Backlog reconciliation and inherited foundation",
+      "task_ids": [
+        "JUP-013", "JUP-014", "JUP-019", "JUP-048", "JUP-049", "JUP-050",
+        "JUP-051", "JUP-054", "JUP-072", "JUP-073", "JUP-074", "JUP-075",
+        "JUP-076", "JUP-077", "JUP-078", "JUP-079", "JUP-082", "JUP-083"
+      ]
+    },
+    {
+      "id": "M2",
+      "date": "2026-09-11",
+      "name": "Security and reproducible runtime gate",
+      "task_ids": ["JUP-053"]
+    },
+    {
+      "id": "M3",
+      "date": "2026-09-25",
+      "name": "Real AI and RAG vertical",
+      "task_ids": [
+        "JUP-020", "JUP-021", "JUP-022", "JUP-023", "JUP-024", "JUP-025",
+        "JUP-036"
+      ]
+    },
+    {
+      "id": "M4",
+      "date": "2026-10-02",
+      "name": "Functional FinOps product vertical",
+      "task_ids": ["JUP-026", "JUP-035", "JUP-055"]
+    },
+    {
+      "id": "M5",
+      "date": "2026-10-09",
+      "name": "Release candidate, observability and deployment",
+      "task_ids": ["JUP-042", "JUP-043", "JUP-044", "JUP-047", "JUP-052"]
+    },
+    {
+      "id": "M6",
+      "date": "2026-10-16",
+      "name": "Evaluation and twenty-page memory freeze",
+      "task_ids": [
+        "JUP-060", "JUP-061", "JUP-062", "JUP-063", "JUP-064", "JUP-067",
+        "JUP-068", "JUP-069", "JUP-070", "JUP-071"
+      ]
+    },
+    {
+      "id": "M7",
+      "date": "2026-10-20",
+      "name": "Submission candidate and demo rehearsal",
+      "task_ids": ["JUP-065"]
+    },
+    {
+      "id": "M8",
+      "date": "2026-10-23",
+      "name": "Documentary delivery",
+      "task_ids": []
+    },
+    {
+      "id": "M9",
+      "date": "2026-10-27",
+      "name": "Final defense rehearsal",
+      "task_ids": ["JUP-066"]
+    },
+    {
+      "id": "M10",
+      "date": "2026-10-29",
+      "name": "Final defense",
+      "task_ids": []
+    }
+  ]
+}

@@ -138,6 +138,14 @@ Variables principales:
 - `pnpm test`: ejecuta los tests disponibles
 - `pnpm docker:build`: construye las imagenes Docker de las apps
 
+## Planificacion de entrega
+
+El roadmap versionado hasta la entrega del 23/10/2026 y la defensa del
+29/10/2026 se mantiene en
+[`docs/planning/JUP-080-delivery-roadmap.md`](docs/planning/JUP-080-delivery-roadmap.md).
+Trello conserva el estado operativo; las fechas masivas solo se aplican despues
+de que el equipo apruebe el plan.
+
 ## Relacion Entre Submodulos
 
 El flujo principal del sistema es este:
