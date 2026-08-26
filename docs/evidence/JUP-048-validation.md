@@ -32,7 +32,7 @@ No se eliminan ramas historicas en esta tarea: su limpieza remota afecta al
 trabajo local de los demas miembros y requiere coordinacion. La eliminacion
 automatica se aplica a futuros PR fusionados.
 
-## Configuracion propuesta y validacion
+## Configuracion activada y validacion
 
 - Los merge commits quedan desactivados; squash y rebase permanecen disponibles.
 - Las ramas de PR se eliminan automaticamente despues del merge.
@@ -40,9 +40,19 @@ automatica se aplica a futuros PR fusionados.
 - La politica queda versionada en `.github/repository-settings.json`.
 - El nuevo test de gobernanza cruza ajustes, rulesets, estrategia y guia de
   contribucion; se ejecuta dentro del check obligatorio `OpenSpec`.
+- La API remota confirma `delete_branch_on_merge: true`,
+  `allow_merge_commit: false`, `allow_squash_merge: true` y
+  `allow_rebase_merge: true`.
+- El ruleset activo `21475971` confirma que `develop` acepta exclusivamente
+  squash o rebase y conserva PR, revision, seis checks, conversaciones resueltas
+  y bloqueo de eliminacion/force push.
+- PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/12
+- GitHub Actions: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/32983095464
+- Los seis checks obligatorios concluyeron correctamente.
 
-Los resultados finales de CI, la activacion remota y el pull request se
-anadiran a esta evidencia antes de integrar JUP-048.
+Validacion local: 5 pruebas nuevas de gobernanza, 7 de workflow/rulesets, 11 de
+politica de PR, 7 de trazabilidad JUP, 6 de higiene, 15 items OpenSpec, 58
+pruebas Azure API, 10 backend, 126 processor y build completo del monorepo.
 
 ## Participacion y pendiente de cierre
 
@@ -52,5 +62,7 @@ anadiran a esta evidencia antes de integrar JUP-048.
 - Validacion, pruebas y documentacion asignada: Paris Arcos Martin.
 
 La asignacion de un rol no equivale a participacion realizada. La revision de
-Lucia y la validacion de Paris se registraran solo cuando existan evidencias
-reales en GitHub/Trello.
+Lucia y la validacion de Paris siguen pendientes y se registraran solo cuando
+existan evidencias reales en GitHub/Trello. El PR no se fusiona mientras esas
+responsabilidades permanezcan sin evidencia, salvo nueva decision expresa del
+equipo.
