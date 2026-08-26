@@ -63,9 +63,45 @@ def test_normalizer_preserves_zero_negative_cost_and_dimensions():
     assert normalized[0].pretax_cost == Decimal("0")
     assert normalized[0].currency == "EUR"
     assert normalized[0].usage_date.isoformat() == "2024-06-01"
-    assert normalized[0].dimensions == {"ResourceGroup": "rg-zero"}
+    assert normalized[0].resource_group == "rg-zero"
+    assert normalized[0].dimensions == {}
     assert normalized[1].pretax_cost == Decimal("-1.25")
     assert normalized[1].currency == "USD"
+
+
+def test_normalizer_promotes_finops_dimensions_consumption_and_tags():
+    record = AzureCostNormalizer().normalize(
+        result(
+            {
+                "PreTaxCost": 12.5,
+                "Currency": "eur",
+                "UsageDate": 20240601,
+                "BillingAccountId": " billing-demo ",
+                "SubscriptionName": " Ecommerce Prod ",
+                "ResourceGroup": " RG-App ",
+                "ServiceName": " Storage ",
+                "Quantity": 3.25,
+                "UnitOfMeasure": " GB/Month ",
+                "Tags": '"CostCenter": "1234","Owner Team": "Platform"',
+                "Project": "Jupiter",
+                "ResourceLocation": " westeurope ",
+            }
+        )
+    )[0]
+
+    assert record.billing_account_id == "billing-demo"
+    assert record.subscription_name == "Ecommerce Prod"
+    assert record.resource_group == "RG-App"
+    assert record.service_name == "Storage"
+    assert record.project == "Jupiter"
+    assert record.consumed_quantity == Decimal("3.25")
+    assert record.consumed_unit == "GB/Month"
+    assert record.tags == {
+        "cost_center": "1234",
+        "owner_team": "Platform",
+        "project": "Jupiter",
+    }
+    assert record.dimensions == {"ResourceLocation": "westeurope"}
 
 
 def test_normalizer_hash_is_deterministic():
@@ -94,6 +130,80 @@ def test_normalizer_hash_ignores_equivalent_cost_and_currency_representations():
     )[0]
 
     assert first.source_row_hash == second.source_row_hash
+
+
+def test_normalizer_hash_ignores_equivalent_finops_aliases():
+    first = AzureCostNormalizer().normalize(
+        result(
+            {
+                "PreTaxCost": 1,
+                "Currency": "EUR",
+                "MeterCategory": "Storage",
+                "Quantity": 2,
+                "UnitOfMeasure": "GB",
+            }
+        )
+    )[0]
+    second = AzureCostNormalizer().normalize(
+        result(
+            {
+                "PreTaxCost": 1.0,
+                "Currency": "EUR",
+                "ServiceName": "Storage",
+                "ConsumedQuantity": 2.0,
+                "ConsumedUnit": "GB",
+            }
+        )
+    )[0]
+
+    assert first == second
+    assert first.source_row_hash == second.source_row_hash
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        {
+            "PreTaxCost": 1,
+            "Currency": "EUR",
+            "ConsumedQuantity": 2,
+        },
+        {
+            "PreTaxCost": 1,
+            "Currency": "EUR",
+            "ConsumedUnit": "GB",
+        },
+    ],
+)
+def test_normalizer_requires_quantity_and_unit_together(row):
+    with pytest.raises(AzureCostNormalizationError, match="supplied together"):
+        AzureCostNormalizer().normalize(result(row))
+
+
+def test_normalizer_rejects_conflicting_aliases_and_tags():
+    with pytest.raises(AzureCostNormalizationError, match="Conflicting aliases"):
+        AzureCostNormalizer().normalize(
+            result(
+                {
+                    "PreTaxCost": 1,
+                    "Currency": "EUR",
+                    "ServiceName": "Storage",
+                    "MeterCategory": "Compute",
+                }
+            )
+        )
+
+    with pytest.raises(AzureCostNormalizationError, match="tag project"):
+        AzureCostNormalizer().normalize(
+            result(
+                {
+                    "PreTaxCost": 1,
+                    "Currency": "EUR",
+                    "Tags": '{"Project":"Jupiter"}',
+                    "Project": "Another",
+                }
+            )
+        )
 
 
 def test_normalizer_allows_missing_usage_date_and_preserves_empty_result():
