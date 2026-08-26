@@ -146,6 +146,14 @@ El roadmap versionado hasta la entrega del 23/10/2026 y la defensa del
 Trello conserva el estado operativo; las fechas masivas solo se aplican despues
 de que el equipo apruebe el plan.
 
+## Colaboracion
+
+El repositorio canonico es `EconomiconFinOps/tfm-economicon`. Todo cambio nace
+en una tarjeta Trello `JUP-XXX`, se desarrolla en una rama corta desde
+`develop` y se integra mediante pull request. Consulta [CONTRIBUTING.md](CONTRIBUTING.md)
+y [la estrategia de repositorio y ramas](docs/governance/repository-and-branch-strategy.md)
+antes de comenzar una tarea.
+
 ## Relacion Entre Submodulos
 
 El flujo principal del sistema es este:

@@ -2,7 +2,7 @@
 
 - Trello: https://trello.com/c/10RWrMCS
 - Canonical repository: `EconomiconFinOps/tfm-economicon`.
-- Audit date: 2026-08-25.
+- Initial audit date: 2026-08-25; access recheck: 2026-08-26 (JUP-048).
 - Versioned rulesets: `.github/rulesets/develop.json` and
   `.github/rulesets/main.json`.
 
@@ -12,10 +12,13 @@ The connected GitHub account is `Iber1to` (Alejandro). The repository is
 public, defaults to `main`, has an established `develop` integration branch and
 grants Alejandro repository administration permission.
 
-The collaborator API currently lists only `Iber1to`; the other three team
-members' effective GitHub access is not confirmed. Required review approvals
-only count when they come from eligible contributors, so administrator
-continuity must be possible until the missing accounts are incorporated.
+The initial generic collaborator listing returned only `Iber1to`, but this did
+not include organization-inherited permissions. JUP-048 subsequently verified
+`Iber1to`, `ParisArcos` and `Victorh1397` individually as repository
+administrators. Lucia's GitHub username and effective permission remain
+unconfirmed. Required review approvals only count when they come from eligible
+contributors, so administrator continuity remains available until that final
+identity is incorporated.
 
 ## Branch and pull-request flow
 
@@ -79,11 +82,10 @@ bypass review requirements, and only with `bypass_mode: pull_request`. GitHub
 still requires a real pull request and records the administrator action; direct
 pushes, deletion and force pushes cannot use this exception.
 
-This temporary continuity mechanism is necessary while `Iber1to` is the only
-confirmed collaborator. Confirm the GitHub usernames for Paris, Lucia and
-Victor, grant the agreed repository or organization access, and then use normal
-peer approvals. Do not invent usernames, publish an incomplete `CODEOWNERS`
-file, or claim approval that GitHub does not record.
+This continuity mechanism remains useful when an assigned reviewer is not yet
+eligible. Confirm Lucia's GitHub username and permission, then use normal peer
+approvals. Do not invent usernames, publish an incomplete `CODEOWNERS` file, or
+claim approval that GitHub does not record.
 
 ## Administrator activation checklist
 

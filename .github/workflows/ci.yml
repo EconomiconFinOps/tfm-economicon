@@ -57,6 +57,7 @@ jobs:
           corepack pnpm pr:check:test
           corepack pnpm ci:check:test
           corepack pnpm roadmap:test
+          corepack pnpm repository:governance:test
           corepack pnpm jup:check:all
           corepack pnpm jup:cleanup:test
           corepack pnpm jup:cleanup:check
