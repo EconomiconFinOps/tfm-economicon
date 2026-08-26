@@ -65,6 +65,7 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "jup:check:test",
     "pr:check:test",
     "ci:check:test",
+    "roadmap:test",
     "jup:check:all",
     "jup:cleanup:test",
     "jup:cleanup:check",

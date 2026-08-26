@@ -23,7 +23,8 @@
     "llm-gateway:test": "node --test tools/llm-gateway-config.test.mjs",
     "pr:check": "node tools/pr-policy.mjs",
     "pr:check:test": "node --test tools/pr-policy.test.mjs",
-    "ci:check:test": "node --test tools/ci-workflow.test.mjs"
+    "ci:check:test": "node --test tools/ci-workflow.test.mjs",
+    "roadmap:test": "node --test tools/delivery-roadmap.test.mjs"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.8.0",
