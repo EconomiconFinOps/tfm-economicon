@@ -3,6 +3,7 @@
 - Fecha: 2026-08-26.
 - Repositorio: `EconomiconFinOps/tfm-economicon`.
 - Rama: `feat/JUP-013-normalize-azure-costs` hacia `develop`.
+- Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/14.
 - Tarjeta: https://trello.com/c/vw0xIKRN.
 - Liderazgo: Alejandro Aguado; pairing: Lucia Mateo; revision: Paris Arcos
   Martin; validacion, pruebas y documentacion: Victor Mendez.
@@ -28,7 +29,8 @@
 - OpenSpec estricto: `17 passed, 0 failed`.
 - Build de frontend de produccion superado.
 - `git diff --check` y compilacion Python superados.
-- CI remota: pendiente.
+- CI remota inicial: seis checks superados en
+  https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/33005896036.
 
 ## Validacion real en dockerserver
 
