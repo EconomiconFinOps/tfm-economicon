@@ -10,8 +10,8 @@ services:
       - --advertise-addr=cockroachdb:26257
       - --http-addr=0.0.0.0:8080
     ports:
-      - "127.0.0.1:26257:26257"
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${COCKROACH_SQL_PORT:-26257}:26257"
+      - "127.0.0.1:${COCKROACH_HTTP_PORT:-8080}:8080"
     volumes:
       - cockroach-data:/cockroach/cockroach-data
     healthcheck:
@@ -24,8 +24,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management@sha256:e582c0bc7766f3342496d8485efb5a1df782b5ce3886ad017e2eaae442311f69
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -39,7 +39,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5433:5432"
+      - "127.0.0.1:${PGVECTOR_PORT:-5433}:5432"
     volumes:
       - pgvector-data:/var/lib/postgresql/data
     healthcheck:

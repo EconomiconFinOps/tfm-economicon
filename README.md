@@ -75,6 +75,11 @@ docker compose build frontend
 docker compose up -d --wait frontend
 ```
 
+Los puertos de CockroachDB, RabbitMQ y pgvector se enlazan exclusivamente a
+loopback. `COCKROACH_SQL_PORT`, `COCKROACH_HTTP_PORT`, `RABBITMQ_PORT`,
+`RABBITMQ_MANAGEMENT_PORT` y `PGVECTOR_PORT` permiten ejecutar proyectos
+aislados sin colisionar con otro stack del mismo host.
+
 Para detener este entorno y conservar los volumenes de datos:
 
 ```powershell

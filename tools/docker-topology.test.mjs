@@ -62,6 +62,22 @@ test("waits for healthy dependencies instead of container start only", () => {
   }
 });
 
+test("binds infrastructure ports to loopback and permits isolated overrides", () => {
+  const expectedVariables = {
+    cockroachdb: ["COCKROACH_SQL_PORT", "COCKROACH_HTTP_PORT"],
+    rabbitmq: ["RABBITMQ_PORT", "RABBITMQ_MANAGEMENT_PORT"],
+    "postgres-pgvector": ["PGVECTOR_PORT"],
+  };
+
+  for (const [serviceName, variables] of Object.entries(expectedVariables)) {
+    const ports = compose.services[serviceName].ports.map(String);
+    assert.ok(ports.every((port) => port.startsWith("127.0.0.1:")));
+    for (const variable of variables) {
+      assert.ok(ports.some((port) => port.includes(`\${${variable}:-`)));
+    }
+  }
+});
+
 test("pins pnpm 9 and builds the frontend before running its preview server", () => {
   const source = fs.readFileSync(path.join(root, "apps", "frontend", "Dockerfile"), "utf8");
   assert.match(source, /corepack prepare pnpm@9\.0\.0 --activate/);
