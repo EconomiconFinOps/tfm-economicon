@@ -17,5 +17,5 @@
 
 - [x] 3.1 JUP-081 run bridge, governance and repository validations
 - [x] 3.2 JUP-081 deploy the branch code and complete a full real sync
-- [ ] 3.3 JUP-081 publish a pull request toward develop and pass remote CI
+- [x] 3.3 JUP-081 publish a pull request toward develop and pass remote CI
 - [ ] 3.4 JUP-081 obtain pairing, review and functional validation evidence

@@ -3,6 +3,7 @@
 - Fecha: 2026-08-27.
 - Repositorio: `EconomiconFinOps/tfm-economicon`.
 - Rama: `feat/JUP-081-collaboration-bridge` hacia `develop`.
+- Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/15.
 - Tarjeta: https://trello.com/c/g91V6TXp.
 - Liderazgo: Alejandro Aguado; pairing: Lucia Mateo; revision: Paris Arcos
   Martin; validacion, pruebas y documentacion: Victor Mendez.
@@ -39,6 +40,7 @@
   correcto y `sync` completo de 10 paginas sin HTTP 429.
 - Snapshot real: 1.000 mensajes Discord, 74 tarjetas y 100 acciones Trello.
 - Imagen, snapshot y directorio temporales retirados al finalizar.
-- CI remota y pull request: pendientes.
+- CI remota inicial: seis checks superados en
+  https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/33087092287.
 
 No se ha enviado ningun mensaje a Discord ni se han mostrado credenciales.
