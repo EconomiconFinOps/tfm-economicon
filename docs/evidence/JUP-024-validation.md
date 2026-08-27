@@ -6,6 +6,7 @@
 - Rama: `feat/JUP-024-structured-response-guardrails`.
 - Base: `origin/develop` en `a746d48`.
 - Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/18
+- GitHub Actions: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/33100439504
 - Estado Trello: `40 — En revision`.
 
 ## Alcance validado
@@ -36,6 +37,8 @@
 - Compilacion Python de processor, backend y Azure Cost API: correcta.
 - Build de produccion del frontend con Vite: correcto.
 - `git diff --check`: correcto.
+- Los seis checks remotos (politica JUP, OpenSpec, tres suites Python y build
+  frontend) concluyeron correctamente.
 
 El lint global de frontend sigue mostrando 49 errores de `react/prop-types` en
 archivos que no modifica JUP-024. La rama no contiene diferencias en
