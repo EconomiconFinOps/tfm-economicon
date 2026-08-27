@@ -20,5 +20,5 @@
 - [x] 3.3 JUP-024 probar estados no accionables y cifras sin evidencia
 - [x] 3.4 JUP-024 documentar contrato, limites y fuentes oficiales
 - [x] 3.5 JUP-024 ejecutar validacion completa y registrar evidencia
-- [ ] 3.6 JUP-024 publicar rama, abrir PR hacia develop y actualizar Trello
+- [x] 3.6 JUP-024 publicar rama, abrir PR hacia develop y actualizar Trello
 - [ ] 3.7 JUP-024 obtener pairing, revision y validacion de los otros miembros
