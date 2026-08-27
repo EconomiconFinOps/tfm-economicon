@@ -15,6 +15,6 @@
 ## 3. Validate and publish
 
 - [x] 3.1 JUP-049 run repository and strict OpenSpec validation
-- [ ] 3.2 JUP-049 build all images and pass an isolated health smoke on dockerserver
+- [x] 3.2 JUP-049 build all images and pass an isolated health smoke on dockerserver
 - [ ] 3.3 JUP-049 publish a pull request toward develop and pass remote CI
 - [ ] 3.4 JUP-049 obtain pairing, review and functional validation evidence

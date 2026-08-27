@@ -51,17 +51,48 @@ los `*_HOST_PORT` de los cuatro puertos internos fijos.
 
 | Validacion | Resultado |
 |---|---:|
-| Topologia Docker | 5/5 |
+| Topologia Docker | 7/7 |
 | Contrato del workflow CI | 7/7 |
 | OpenSpec estricto | 17/17 |
 | Trazabilidad JUP-049 | OK |
 | Higiene del repositorio | 319 archivos, OK |
 | `git diff --check` | OK |
+| Azure Cost API | 58/58 |
+| Backend | 10/10 |
+| Processor | 126/126 |
+| Frontend production build | 89 modulos, OK |
 
 ## Smoke aislado en dockerserver
 
-Pendiente. Se utilizara un nombre de proyecto exclusivo y puertos alternativos;
-no se reemplazara ningun contenedor estable del servidor.
+Se construyeron desde cero las cuatro imagenes con el proyecto Compose
+`economicon-jup049-audit`. Se publicaron puertos alternativos `18049`, `18050`,
+`15173` y `18052`; las dependencias se enlazaron solo a loopback en `26259`,
+`18080`, `5674`, `15674` y `5435`.
+
+Los siete servicios alcanzaron estado `healthy`. Los endpoints observados
+fueron:
+
+| Servicio | Resultado |
+|---|---|
+| Backend `GET /health` | database, rabbitmq y vector_store en `ok` |
+| Processor `GET /health` | dependencias en `ok`; cuatro contadores de jobs a cero |
+| Azure Cost API `GET /health` | 50 filas y 4 suscripciones |
+| Frontend `GET /` | HTTP 200 |
+
+La inspeccion de las aplicaciones confirmo:
+
+| Aplicacion | UID | Root filesystem | Privilege escalation |
+|---|---:|---|---|
+| Azure Cost API | 10001 | solo lectura | deshabilitada |
+| Backend | 10001 | solo lectura | deshabilitada |
+| Processor | 10001 | solo lectura | deshabilitada |
+| Frontend | 1000 | solo lectura | deshabilitada |
+
+Todas pudieron escribir y borrar exclusivamente en `/tmp`. Tras la prueba se
+retiraron por nombre exacto los siete contenedores, la red, los dos volumenes,
+las cuatro imagenes de aplicacion y `/tmp/jup049-audit-KD85A9`. No quedaron
+recursos con la etiqueta de proyecto `economicon-jup049-audit` y no se modifico
+ningun workload estable de `dockerserver`.
 
 ## Participacion pendiente
 
