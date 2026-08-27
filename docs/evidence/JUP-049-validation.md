@@ -19,6 +19,11 @@ ni healthcheck en su imagen; esos dos servicios y frontend mantenian el
 filesystem raiz escribible. Las imagenes base y dos dependencias de
 infraestructura usaban referencias mutables.
 
+El primer smoke de la correccion construyo las cuatro imagenes, pero frontend
+termino al intentar que Corepack crease `/home/node/.cache` sobre la raiz de
+solo lectura. El runtime se corrigio para invocar directamente el binario Vite
+ya instalado; pnpm y Corepack quedan limitados a la fase de build.
+
 ## Correcciones versionadas
 
 - Las cuatro imagenes de aplicacion y las tres de infraestructura fijan digest.

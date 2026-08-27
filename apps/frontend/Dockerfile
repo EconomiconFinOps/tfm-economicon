@@ -24,5 +24,5 @@ USER node
 HEALTHCHECK --interval=15s --timeout=5s --retries=10 --start-period=10s \
   CMD node -e "fetch('http://localhost:5173').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
-CMD ["pnpm", "exec", "vite", "preview", "--host", "0.0.0.0", "--port", "5173"]
+CMD ["node", "./node_modules/vite/bin/vite.js", "preview", "--host", "0.0.0.0", "--port", "5173"]
 
