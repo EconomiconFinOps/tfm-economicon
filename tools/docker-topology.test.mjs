@@ -83,5 +83,6 @@ test("pins pnpm 9 and builds the frontend before running its preview server", ()
   assert.match(source, /corepack prepare pnpm@9\.0\.0 --activate/);
   assert.match(source, /pnpm install --frozen-lockfile/);
   assert.match(source, /pnpm --filter @finops\/frontend build/);
-  assert.match(source, /node_modules\/vite\/bin\/vite\.js", "preview"/);
+  assert.match(source, /cp vite\.config\.js \/tmp\/vite\.config\.js/);
+  assert.match(source, /node .*node_modules\/vite\/bin\/vite\.js preview/);
 });

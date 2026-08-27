@@ -24,6 +24,11 @@ termino al intentar que Corepack crease `/home/node/.cache` sobre la raiz de
 solo lectura. El runtime se corrigio para invocar directamente el binario Vite
 ya instalado; pnpm y Corepack quedan limitados a la fase de build.
 
+El segundo arranque encontro que `vite preview` genera temporalmente una copia
+compilada de su configuracion junto al archivo original. El comando final copia
+la configuracion a `/tmp` y carga esa copia, manteniendo inmutable el codigo de
+la imagen y limitando la escritura al tmpfs declarado.
+
 ## Correcciones versionadas
 
 - Las cuatro imagenes de aplicacion y las tres de infraestructura fijan digest.
