@@ -4,6 +4,7 @@
 - Rama: `chore/JUP-049-dockerize-services`
 - Base: `origin/develop` en `a746d48`
 - Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/16
+- CI remota: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/33096401448
 - Fecha: 2026-08-27
 
 ## Auditoria inicial
