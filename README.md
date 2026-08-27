@@ -54,7 +54,31 @@ tfm-economicon
 Desde la raiz del repo:
 
 ```powershell
-docker compose up --build
+Copy-Item .env.example .env
+docker compose build --pull
+docker compose up -d --wait
+docker compose ps
+```
+
+Las cuatro aplicaciones se construyen desde Dockerfiles versionados. Las
+imagenes ejecutan como usuarios sin privilegios, con filesystem raiz de solo
+lectura, `/tmp` temporal, `no-new-privileges` y healthchecks. Las dependencias
+de infraestructura y las imagenes base estan fijadas por digest; una
+actualizacion exige cambiar de forma explicita el tag y el digest en el mismo
+pull request.
+
+`VITE_API_BASE_URL` se incorpora al build del frontend. Si cambia, reconstruir
+esa imagen antes de arrancarla:
+
+```powershell
+docker compose build frontend
+docker compose up -d --wait frontend
+```
+
+Para detener este entorno y conservar los volumenes de datos:
+
+```powershell
+docker compose down
 ```
 
 Puertos visibles:
@@ -137,6 +161,8 @@ Variables principales:
 - `pnpm lint`: ejecuta las tareas de lint declaradas por cada app
 - `pnpm test`: ejecuta los tests disponibles
 - `pnpm docker:build`: construye las imagenes Docker de las apps
+- `pnpm docker:validate`: valida topologia, digests, healthchecks y privilegios
+  sin necesitar un daemon Docker
 
 ## Planificacion de entrega
 

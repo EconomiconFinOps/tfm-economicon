@@ -9,7 +9,7 @@
     "preview": "vite preview --host 0.0.0.0 --port 4173",
     "lint": "eslint src --ext js,jsx",
     "test": "echo \"No frontend tests configured yet\"",
-    "docker:build": "docker build -t finops-frontend ."
+    "docker:build": "docker build -f Dockerfile -t finops-frontend ../.."
   },
   "dependencies": {
     "@tanstack/react-query": "^5.45.1",

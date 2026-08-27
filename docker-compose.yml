@@ -1,6 +1,6 @@
 services:
   cockroachdb:
-    image: cockroachdb/cockroach:v24.1.11
+    image: cockroachdb/cockroach:v24.1.11@sha256:89bda255c52b25f463c7a9373ffedef122a4d9f1b432aa34b897970fe864a66c
     entrypoint: ["/cockroach/cockroach"]
     command:
       - start-single-node
@@ -22,7 +22,7 @@ services:
       start_period: 15s
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3-management@sha256:e582c0bc7766f3342496d8485efb5a1df782b5ce3886ad017e2eaae442311f69
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -33,7 +33,7 @@ services:
       retries: 10
 
   postgres-pgvector:
-    image: pgvector/pgvector:pg17
+    image: pgvector/pgvector:pg17@sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f
     environment:
       POSTGRES_DB: embeddings
       POSTGRES_USER: postgres
@@ -97,6 +97,12 @@ services:
         condition: service_healthy
     ports:
       - "${API_PORT:-8000}:8000"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
       interval: 15s
@@ -146,6 +152,12 @@ services:
         condition: service_healthy
     ports:
       - "${PROCESSOR_PORT:-8001}:8001"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').read()"]
       interval: 15s
@@ -155,14 +167,27 @@ services:
 
   frontend:
     build:
-      context: ./apps/frontend
-    environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
     depends_on:
       backend:
         condition: service_healthy
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5173').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
 volumes:
   cockroach-data:
