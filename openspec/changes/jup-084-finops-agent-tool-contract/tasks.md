@@ -16,6 +16,6 @@
 
 - [x] 3.1 JUP-084 enlazar Trello, OpenSpec, ADRs y documentacion tecnica
 - [x] 3.2 JUP-084 ejecutar OpenSpec estricto, trazabilidad JUP e higiene
-- [ ] 3.3 JUP-084 publicar rama y pull request hacia develop
-- [ ] 3.4 JUP-084 registrar evidencia y enlaces en Trello
+- [x] 3.3 JUP-084 publicar rama y pull request hacia develop
+- [x] 3.4 JUP-084 registrar evidencia y enlaces en Trello
 - [ ] 3.5 JUP-084 obtener pairing, revision y validacion de los otros miembros

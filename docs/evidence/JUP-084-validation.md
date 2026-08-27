@@ -4,7 +4,7 @@
 - Tarjeta: https://trello.com/c/m1i7iXBm.
 - Rama: `docs/JUP-084-finops-agent-tool-contract`.
 - Base: `origin/develop` en `a746d48`.
-- Pull request: pendiente de publicacion.
+- Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/17.
 
 ## Alcance validado
 
@@ -39,6 +39,9 @@ llamadas paralelas para mantener una base portable.
 | Higiene `jup:cleanup:check` | 317 archivos aceptados |
 | Tests de validadores JUP e higiene | 13 superados, 0 fallos |
 | `git diff --check` | Sin errores |
+
+La rama se publico y el pull request se abrio hacia `develop`. La tarjeta se
+actualizo con rama, commit, PR, OpenSpec y evidencia, y paso a `En revision`.
 
 No se ha implementado el runtime ni se han realizado llamadas LLM. No se ha
 enviado ningun mensaje a Discord.
