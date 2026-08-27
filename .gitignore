@@ -21,5 +21,6 @@ tools/engram/
 coverage/
 htmlcov/
 *.log
+tools/collaboration/data/
 /data/raw/
 *.zip
