@@ -27,7 +27,8 @@ ya instalado; pnpm y Corepack quedan limitados a la fase de build.
 El segundo arranque encontro que `vite preview` genera temporalmente una copia
 compilada de su configuracion junto al archivo original. El comando final copia
 la configuracion a `/tmp` y carga esa copia, manteniendo inmutable el codigo de
-la imagen y limitando la escritura al tmpfs declarado.
+la imagen y limitando la escritura al tmpfs declarado. `NODE_PATH` conserva la
+resolucion de los modulos instalados desde esa ubicacion temporal.
 
 ## Correcciones versionadas
 

@@ -17,6 +17,8 @@ RUN pnpm --filter @finops/frontend build
 
 WORKDIR /workspace/apps/frontend
 
+ENV NODE_PATH=/workspace/apps/frontend/node_modules
+
 EXPOSE 5173
 
 USER node
