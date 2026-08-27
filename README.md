@@ -80,6 +80,12 @@ loopback. `COCKROACH_SQL_PORT`, `COCKROACH_HTTP_PORT`, `RABBITMQ_PORT`,
 `RABBITMQ_MANAGEMENT_PORT` y `PGVECTOR_PORT` permiten ejecutar proyectos
 aislados sin colisionar con otro stack del mismo host.
 
+Los puertos publicados de las aplicaciones se configuran por separado mediante
+`API_HOST_PORT`, `PROCESSOR_HOST_PORT`, `FRONTEND_HOST_PORT` y
+`AZURE_COST_API_HOST_PORT`. Los procesos conservan siempre sus puertos internos
+8000, 8001, 5173 y 8002, por lo que cambiar un puerto del host no invalida su
+healthcheck.
+
 Para detener este entorno y conservar los volumenes de datos:
 
 ```powershell

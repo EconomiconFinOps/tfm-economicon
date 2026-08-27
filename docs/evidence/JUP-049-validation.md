@@ -30,6 +30,12 @@ la configuracion a `/tmp` y carga esa copia, manteniendo inmutable el codigo de
 la imagen y limitando la escritura al tmpfs declarado. `NODE_PATH` conserva la
 resolucion de los modulos instalados desde esa ubicacion temporal.
 
+El siguiente intento dejo frontend saludable y revelo un defecto distinto en
+processor: `PROCESSOR_PORT` se reutilizaba como puerto publicado e interno. Al
+publicar `18050`, Uvicorn escuchaba dentro del contenedor en `18050` mientras el
+healthcheck consultaba el puerto contractual `8001`. Compose separa ahora todos
+los `*_HOST_PORT` de los cuatro puertos internos fijos.
+
 ## Correcciones versionadas
 
 - Las cuatro imagenes de aplicacion y las tres de infraestructura fijan digest.

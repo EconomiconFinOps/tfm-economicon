@@ -78,6 +78,23 @@ test("binds infrastructure ports to loopback and permits isolated overrides", ()
   }
 });
 
+test("separates published application ports from fixed container ports", () => {
+  const expected = {
+    backend: ["API_HOST_PORT", "8000", "API_PORT"],
+    processor: ["PROCESSOR_HOST_PORT", "8001", "PROCESSOR_PORT"],
+    frontend: ["FRONTEND_HOST_PORT", "5173", null],
+    "azure-cost-api": ["AZURE_COST_API_HOST_PORT", "8002", null],
+  };
+
+  for (const [serviceName, [hostVariable, containerPort, internalVariable]] of Object.entries(expected)) {
+    const ports = compose.services[serviceName].ports.map(String);
+    assert.ok(ports.some((port) => port.includes(`\${${hostVariable}:-`) && port.endsWith(`:${containerPort}`)));
+    if (internalVariable) {
+      assert.equal(String(compose.services[serviceName].environment[internalVariable]), containerPort);
+    }
+  }
+});
+
 test("pins pnpm 9 and builds the frontend before running its preview server", () => {
   const source = fs.readFileSync(path.join(root, "apps", "frontend", "Dockerfile"), "utf8");
   assert.match(source, /corepack prepare pnpm@9\.0\.0 --activate/);
