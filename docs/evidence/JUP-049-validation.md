@@ -3,7 +3,7 @@
 - Tarjeta: https://trello.com/c/yZnjgiSp
 - Rama: `chore/JUP-049-dockerize-services`
 - Base: `origin/develop` en `a746d48`
-- Pull request: pendiente
+- Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/16
 - Fecha: 2026-08-27
 
 ## Auditoria inicial
@@ -64,7 +64,7 @@ los `*_HOST_PORT` de los cuatro puertos internos fijos.
 
 ## Smoke aislado en dockerserver
 
-Se construyeron desde cero las cuatro imagenes con el proyecto Compose
+Se construyeron desde cero las cuatro imagenes desde `f278a2e` con el proyecto Compose
 `economicon-jup049-audit`. Se publicaron puertos alternativos `18049`, `18050`,
 `15173` y `18052`; las dependencias se enlazaron solo a loopback en `26259`,
 `18080`, `5674`, `15674` y `5435`.
