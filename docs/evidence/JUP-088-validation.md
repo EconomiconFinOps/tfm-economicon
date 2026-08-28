@@ -4,6 +4,9 @@
 - Trello: https://trello.com/c/RJjK2Z6L
 - Rama: `docs/JUP-088-documentation-reconciliation`.
 - Base: `origin/develop` en `a746d48`.
+- Commit principal: `04a9f6c06d96e905432fbcde0391ebdd84ea9d66`.
+- Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/19
+- CI inicial: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/33184619670
 
 ## Fuentes contrastadas
 
@@ -46,6 +49,7 @@ revision/validacion o existen tareas de aprobacion/participacion abiertas.
 - Higiene: 382 archivos aceptados y 6/6 pruebas del checker.
 - Enlaces Markdown relativos: todos resuelven, incluidos los changes archivados.
 - `git diff --check`: sin errores de whitespace.
+- CI remoto: seis comprobaciones obligatorias completadas correctamente.
 
 La ejecución no modifica código funcional, no acredita las tareas de
 implementacion pendientes de JUP-085/086/087 y no marca como realizada la
