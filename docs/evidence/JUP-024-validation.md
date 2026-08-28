@@ -1,6 +1,6 @@
 # Evidencia de validacion JUP-024
 
-- Fecha: 2026-08-27.
+- Fecha inicial: 2026-08-27; actualizacion de pairing: 2026-08-28.
 - Trello: https://trello.com/c/8SDUi2t9
 - Repositorio: `EconomiconFinOps/tfm-economicon`.
 - Rama: `feat/JUP-024-structured-response-guardrails`.
@@ -27,7 +27,7 @@
 
 ## Resultados locales
 
-- Processor: `138 passed`.
+- Processor: `141 passed` tras las pruebas adicionales de pairing.
 - Backend: `10 passed`.
 - Azure Cost API: `58 passed`.
 - OpenSpec estricto: `17 passed, 0 failed`.
@@ -51,14 +51,28 @@ supply chain del entorno. No se relajo esa politica ni se versiono ningun cambio
 generado por la instalacion; las validaciones equivalentes se ejecutaron
 directamente con los binarios ya instalados.
 
+## Pairing y coautoria de Alejandro - 2026-08-28
+
+Alejandro Aguado registra participacion atribuible como pairing/coautor mediante:
+
+- los commits de implementacion `e88b0d8`, documentacion `ddef235` y cierre de
+  CI `9664379`, publicados en la PR #18;
+- revision conjunta del contrato estricto, los guardrails de evidencia y las
+  reglas de recomendaciones;
+- dos pruebas de regresion adicionales para identificadores de evidencia
+  duplicados y para exigir que ahorro estimado y divisa aparezcan juntos;
+- reejecucion de la suite del processor y de las validaciones de OpenSpec y
+  trazabilidad JUP-024.
+
+Esta evidencia completa exclusivamente el rol de pairing/coautoria de
+Alejandro. No acredita la revision de Lucia ni la validacion de Paris.
+
 ## Participacion pendiente
 
 - Liderazgo: Victor Mendez.
-- Pairing/coautoria: Alejandro Aguado.
 - Revision de PR: Lucia Mateo.
 - Validacion, pruebas y documentacion: Paris Arcos Martin.
 
-La asignacion no se considera participacion realizada. La revision de Lucia y
-la validacion de Paris deben quedar registradas en GitHub o Trello antes del
-cierre de la tarjeta. No se envia ningun mensaje a Discord sin autorizacion
-previa de Alejandro.
+La revision de Lucia y la validacion de Paris deben quedar registradas en
+GitHub o Trello antes del cierre de la tarjeta. No se envia ningun mensaje a
+Discord sin autorizacion previa de Alejandro.

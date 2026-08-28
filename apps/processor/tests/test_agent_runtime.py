@@ -169,6 +169,14 @@ def test_response_rejects_unknown_evidence_references():
         FinOpsResponse.model_validate(payload)
 
 
+def test_response_rejects_duplicate_evidence_ids():
+    payload = _valid_response()
+    payload["evidence"].append(dict(payload["evidence"][0]))
+
+    with pytest.raises(ValueError, match="evidence ids must be unique"):
+        FinOpsResponse.model_validate(payload)
+
+
 def test_non_actionable_response_rejects_metrics_and_recommendations():
     payload = _valid_response(status="insufficient_data", evidence=[])
 
@@ -228,6 +236,33 @@ def test_recommendation_rejects_false_human_approval():
     )
 
     with pytest.raises(ValueError, match="Input should be True"):
+        FinOpsResponse.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    ("estimated_savings", "currency"),
+    [("12.50", None), (None, "EUR")],
+)
+def test_recommendation_requires_savings_and_currency_together(
+    estimated_savings, currency
+):
+    payload = _valid_response(
+        recommendations=[
+            {
+                "category": "tagging",
+                "action": "Completar el tag CostCenter.",
+                "rationale": "La consulta identifica coste sin clasificar.",
+                "estimated_savings": estimated_savings,
+                "currency": currency,
+                "confidence": "high",
+                "risk": "low",
+                "evidence_ids": ["cost-query:sha256:test"],
+                "requires_human_approval": True,
+            }
+        ]
+    )
+
+    with pytest.raises(ValueError, match="must either both be set"):
         FinOpsResponse.model_validate(payload)
 
 
