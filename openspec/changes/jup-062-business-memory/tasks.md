@@ -24,4 +24,4 @@ JUP: JUP-062
 - [ ] 3.3 JUP-062 obtain Victor Mendez's review and coherence confirmation
 - [ ] 3.4 JUP-062 record Alejandro Aguado's final validation and evidence
 - [ ] 3.5 JUP-062 export the reviewed version and update its SHA-256 manifest
-- [ ] 3.6 JUP-062 publish and link the pull request toward `develop`
+- [x] 3.6 JUP-062 publish and link the pull request toward `develop`

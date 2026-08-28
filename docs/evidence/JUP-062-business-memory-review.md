@@ -1,6 +1,7 @@
 # JUP-062 - Auditoria del borrador de memoria de negocio
 
 - Trello: https://trello.com/c/5sBSKurr
+- Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/20
 - Fuente editable: `Memoria_Economicon` en Google Docs, enlazada en Trello
 - Fecha de corte: 2026-08-28
 - Rol que prepara la evidencia: validacion, pruebas y documentacion
