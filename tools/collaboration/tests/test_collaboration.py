@@ -18,13 +18,14 @@ from collaboration import (  # noqa: E402
     Settings,
     TrelloClient,
     _request_json,
+    parser,
     require_write,
     snapshot_markdown,
     write_snapshot,
 )
 
 
-def settings(*, allow_writes=False, snapshot_dir=Path("snapshots")):
+def settings(*, allow_trello_writes=False, snapshot_dir=Path("snapshots")):
     return Settings(
         discord_bot_token="discord-secret",
         discord_guild_id="guild-1",
@@ -32,7 +33,7 @@ def settings(*, allow_writes=False, snapshot_dir=Path("snapshots")):
         trello_api_key="trello-key",
         trello_api_token="trello-secret",
         trello_board_id="board-1",
-        allow_writes=allow_writes,
+        allow_trello_writes=allow_trello_writes,
         snapshot_dir=snapshot_dir,
         max_discord_pages=2,
     )
@@ -76,31 +77,50 @@ def rate_limit_error(body, retry_after_header=None):
 
 
 class CollaborationTests(unittest.TestCase):
-    def test_writes_need_server_switch_and_command_confirmation(self):
+    def test_legacy_write_switch_only_enables_trello(self):
+        environment = {
+            "DISCORD_BOT_TOKEN": "discord-secret",
+            "DISCORD_GUILD_ID": "guild-1",
+            "DISCORD_CHANNEL_ID": "channel-1",
+            "TRELLO_API_KEY": "trello-key",
+            "TRELLO_API_TOKEN": "trello-secret",
+            "TRELLO_BOARD_ID": "board-1",
+            "COLLAB_ALLOW_WRITES": "true",
+        }
+        with patch.dict(os.environ, environment, clear=True):
+            configured = Settings.from_env()
+
+        self.assertTrue(configured.allow_trello_writes)
+        self.assertFalse(hasattr(DiscordClient(configured), "post_message"))
+
+    def test_trello_writes_need_server_switch_and_command_confirmation(self):
         with self.assertRaises(CollaborationError):
-            require_write(settings(allow_writes=False), confirmed=True)
+            require_write(settings(allow_trello_writes=False), confirmed=True)
         with self.assertRaises(CollaborationError):
-            require_write(settings(allow_writes=True), confirmed=False)
-        require_write(settings(allow_writes=True), confirmed=True)
+            require_write(settings(allow_trello_writes=True), confirmed=False)
+        require_write(settings(allow_trello_writes=True), confirmed=True)
 
-    def test_discord_post_disables_mentions(self):
-        recorder = Recorder([{"id": "message-1"}])
-        client = DiscordClient(settings(allow_writes=True), recorder)
-
-        result = client.post_message("Project update")
-
-        self.assertEqual(result["id"], "message-1")
-        method, url, kwargs = recorder.calls[0]
-        self.assertEqual(method, "POST")
-        self.assertTrue(url.endswith("/channels/channel-1/messages"))
-        self.assertEqual(kwargs["json_body"]["allowed_mentions"], {"parse": []})
-        self.assertIn("EconomiconFinOps", kwargs["headers"]["User-Agent"])
+    def test_discord_is_read_only_in_client_and_cli(self):
+        self.assertFalse(hasattr(DiscordClient(settings()), "post_message"))
+        subcommands = parser()._subparsers._group_actions[0].choices
+        self.assertNotIn("discord-post", subcommands)
+        self.assertEqual(
+            {
+                "check",
+                "sync",
+                "trello-create",
+                "trello-comment",
+                "trello-move",
+                "trello-update",
+            },
+            set(subcommands),
+        )
 
     def test_trello_has_non_destructive_write_operations(self):
         recorder = Recorder(
             [{"id": "card-1"}, {"id": "comment-1"}, {"id": "card-1"}]
         )
-        client = TrelloClient(settings(allow_writes=True), recorder)
+        client = TrelloClient(settings(allow_trello_writes=True), recorder)
 
         client.create_card("list-1", "Build fake API", "Azure fixture")
         client.comment("card-1", "Ready for review")

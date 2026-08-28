@@ -17,6 +17,7 @@ or enabling implicit writes.
 - Test pagination, retries, write guards, snapshots and non-destructive writes.
 - Run the bridge tests within the existing OpenSpec CI context.
 - Document the on-demand Dockerserver workflow and troubleshooting.
+- Remove every Discord write surface so the bridge can only read that service.
 
 ## Capabilities
 
@@ -33,7 +34,7 @@ or enabling implicit writes.
 
 - Turning the bridge into an Economicon production service.
 - Storing credentials, snapshots or personal agent configuration in Git.
-- Sending Discord messages without explicit authorization.
+- Sending, editing or deleting Discord messages; Discord is read-only.
 - Deleting Trello or Discord content.
 
 ## Impact

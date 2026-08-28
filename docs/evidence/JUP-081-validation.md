@@ -44,3 +44,25 @@
   https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/33087092287.
 
 No se ha enviado ningun mensaje a Discord ni se han mostrado credenciales.
+
+## Endurecimiento de solo lectura — 2026-08-28
+
+- Eliminados `discord-post` y `DiscordClient.post_message`; la CLI y el cliente
+  Discord solo exponen consultas `GET`.
+- Las escrituras de Trello usan `TRELLO_ALLOW_WRITES`; la antigua
+  `COLLAB_ALLOW_WRITES` se admite solo como compatibilidad para Trello y no
+  puede habilitar Discord.
+- Pruebas del puente: `10 passed`, incluida una regresion que verifica que la
+  variable antigua no crea ningun metodo ni comando de publicacion Discord.
+- OpenSpec estricto: `17 passed, 0 failed`; trazabilidad JUP e higiene en verde.
+- Imagen reconstruida y desplegada en Dockerserver.
+- Validacion real: `check` conserva lectura de Discord y Trello;
+  `discord_post_method=False` y `discord_post_command=False` dentro del
+  contenedor desplegado.
+- Una invocacion de `discord-post` termina en `invalid choice` antes de cargar
+  configuracion o contactar con Discord.
+
+Como segunda barrera, la configuracion del canal debe denegar `Send Messages`
+al rol del bot. El bot no dispone de la autoridad necesaria para auditar o
+modificar roles del servidor mediante la API; ese ajuste requiere un
+administrador de Discord.

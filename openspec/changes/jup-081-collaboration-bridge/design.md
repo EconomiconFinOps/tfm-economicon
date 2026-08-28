@@ -23,10 +23,12 @@ Discord's JSON `retry_after`, falls back to `Retry-After`, clamps each wait to
 50 milliseconds through 60 seconds and permits four retries. Other HTTP errors
 fail immediately.
 
-### Preserve explicit write authority
+### Make Discord read-only and isolate Trello write authority
 
-Every write still requires the server switch and the command flag. Discord
-messages disable mentions, and no delete operation is exposed.
+The Discord client and CLI expose GET operations only. No environment switch
+can enable Discord posting. Trello writes remain separate and require both the
+`TRELLO_ALLOW_WRITES` server switch and the command flag. No delete operation is
+exposed.
 
 ### Keep credentials and collaboration data outside Git
 
@@ -38,7 +40,7 @@ exposed in the source channel and are not a secret-redaction mechanism.
 
 - Repeated rate limits may stall an operator command: retries and waits are
   bounded, then the command fails with a concise diagnostic.
-- Retrying writes could duplicate an operation: providers return 429 before
+- Retrying Trello writes could duplicate an operation: Trello returns 429 before
   accepting the rate-limited operation; writes also require explicit authority.
 - Snapshots can contain sensitive messages: keep them server-local with
   restrictive permissions and rotate any credential exposed in its source.

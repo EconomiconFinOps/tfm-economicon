@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Controlled read/write bridge for the Economicon collaboration services."""
+"""Bridge with read-only Discord and controlled Trello access."""
 
 from __future__ import annotations
 
@@ -117,7 +117,7 @@ class Settings:
     trello_api_key: str
     trello_api_token: str
     trello_board_id: str
-    allow_writes: bool
+    allow_trello_writes: bool
     snapshot_dir: Path
     max_discord_pages: int
 
@@ -130,7 +130,10 @@ class Settings:
             trello_api_key=os.getenv("TRELLO_API_KEY", "").strip(),
             trello_api_token=os.getenv("TRELLO_API_TOKEN", "").strip(),
             trello_board_id=os.getenv("TRELLO_BOARD_ID", "").strip(),
-            allow_writes=_env_bool("COLLAB_ALLOW_WRITES"),
+            allow_trello_writes=_env_bool(
+                "TRELLO_ALLOW_WRITES",
+                default=_env_bool("COLLAB_ALLOW_WRITES"),
+            ),
             snapshot_dir=Path(
                 os.getenv("COLLAB_SNAPSHOT_DIR", "./data/snapshots")
             ),
@@ -158,9 +161,9 @@ class Settings:
 
 
 def require_write(settings: Settings, confirmed: bool) -> None:
-    if not settings.allow_writes:
+    if not settings.allow_trello_writes:
         raise CollaborationError(
-            "Writes are disabled. Set COLLAB_ALLOW_WRITES=true on the server."
+            "Trello writes are disabled. Set TRELLO_ALLOW_WRITES=true on the server."
         )
     if not confirmed:
         raise CollaborationError(
@@ -216,21 +219,6 @@ class DiscordClient:
                 break
             before = page[-1]["id"]
         return sorted(messages, key=lambda message: message.get("timestamp", ""))
-
-    def post_message(self, content: str) -> dict[str, Any]:
-        if not content.strip():
-            raise CollaborationError("Discord message cannot be empty")
-        if len(content) > 2000:
-            raise CollaborationError(
-                "Discord message exceeds the 2000-character limit"
-            )
-        return self.transport(
-            "POST",
-            f"{self.api_base}/channels/{self.settings.discord_channel_id}/messages",
-            headers=self._headers,
-            json_body={"content": content, "allowed_mentions": {"parse": []}},
-        )
-
 
 class TrelloClient:
     api_base = "https://api.trello.com/1"
@@ -407,12 +395,6 @@ def parser() -> argparse.ArgumentParser:
     subparsers.add_parser("check", help="Validate read access")
     subparsers.add_parser("sync", help="Create JSON and Markdown snapshots")
 
-    discord_post = subparsers.add_parser(
-        "discord-post", help="Post a Discord message"
-    )
-    discord_post.add_argument("--text", required=True)
-    discord_post.add_argument("--confirm-write", action="store_true")
-
     trello_create = subparsers.add_parser("trello-create", help="Create a card")
     trello_create.add_argument("--list-id", required=True)
     trello_create.add_argument("--name", required=True)
@@ -453,8 +435,6 @@ def run(args: argparse.Namespace, settings: Settings) -> Any:
         return {"json": str(paths[0]), "markdown": str(paths[1])}
 
     require_write(settings, args.confirm_write)
-    if args.command == "discord-post":
-        return discord.post_message(args.text)
     if args.command == "trello-create":
         return trello.create_card(args.list_id, args.name, args.description)
     if args.command == "trello-comment":

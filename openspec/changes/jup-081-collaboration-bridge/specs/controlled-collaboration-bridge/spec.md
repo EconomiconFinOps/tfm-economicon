@@ -26,11 +26,16 @@ header with bounded attempts and delay.
 - **THEN** synchronization fails explicitly instead of waiting indefinitely
 
 ### Requirement: Explicit non-destructive writes
-The bridge SHALL require both a server write switch and per-command confirmation
-and SHALL expose no delete operation.
+The bridge SHALL expose Discord as read-only. Trello writes SHALL require both a
+Trello-specific server switch and per-command confirmation, and the bridge SHALL
+expose no delete operation.
+
+#### Scenario: An operator attempts to publish to Discord
+- **WHEN** the operator inspects the CLI or Discord client
+- **THEN** no command, method or environment switch exists that can publish a message
 
 #### Scenario: A write lacks one authorization gate
-- **WHEN** the server switch or command confirmation is absent
+- **WHEN** a Trello write lacks the server switch or command confirmation
 - **THEN** the bridge rejects the write before contacting the provider
 
 ### Requirement: Reproducible snapshots

@@ -12,6 +12,7 @@
 - [x] 2.3 JUP-081 preserve double write confirmation and no-delete policy
 - [x] 2.4 JUP-081 ignore snapshots and document secure operation
 - [x] 2.5 JUP-081 add bridge tests to the existing CI context
+- [x] 2.6 JUP-081 remove Discord write methods, commands and permissions
 
 ## 3. Validation and publication
 

@@ -8,7 +8,10 @@ temporal y lo elimina al terminar.
 ## Politica de seguridad
 
 - La lectura se habilita cuando las credenciales son validas.
-- Cada escritura exige `COLLAB_ALLOW_WRITES=true` y `--confirm-write`.
+- Discord es estrictamente de solo lectura: no existe comando ni metodo para
+  publicar mensajes.
+- Cada escritura de Trello exige `TRELLO_ALLOW_WRITES=true` y
+  `--confirm-write`.
 - No existe ninguna operacion de borrado.
 - Los mensajes de Discord deshabilitan menciones automaticas.
 - Los secretos solo se guardan en `.env` dentro de `dockerserver`, con permisos
@@ -24,11 +27,11 @@ El bot se limita al servidor y canal configurados y necesita:
 
 - View Channel;
 - Read Message History;
-- Send Messages;
 - Message Content intent habilitado.
 
-No necesita Administrator, Manage Channels, Manage Roles, Manage Messages,
-Ban Members ni Kick Members.
+No necesita Send Messages, Administrator, Manage Channels, Manage Roles,
+Manage Messages, Ban Members ni Kick Members. El permiso Send Messages debe
+estar denegado en Discord como segunda barrera independiente del codigo.
 
 ### Trello
 
@@ -62,12 +65,9 @@ Los snapshots contienen el texto original del canal. Si alguien publica una
 credencial en Discord, se debe revocar en el proveedor; el snapshot no convierte
 una credencial expuesta en segura.
 
-## Escrituras explicitas
+## Escrituras de Trello explicitas
 
 ```bash
-docker compose run --rm collaboration discord-post \
-  --text "Resumen aprobado por el equipo" --confirm-write
-
 docker compose run --rm collaboration trello-comment \
   --card-id CARD_ID --text "PR lista para revision" --confirm-write
 
@@ -75,9 +75,10 @@ docker compose run --rm collaboration trello-move \
   --card-id CARD_ID --list-id LIST_ID --confirm-write
 ```
 
-Aunque `COLLAB_ALLOW_WRITES=true` este activo en el servidor, omitir
-`--confirm-write` impide la operacion. Nunca se envia un mensaje a Discord sin
-autorizacion expresa de Alejandro.
+Aunque `TRELLO_ALLOW_WRITES=true` este activo en el servidor, omitir
+`--confirm-write` impide la operacion. Discord no admite escrituras incluso si
+la antigua variable `COLLAB_ALLOW_WRITES` permanece configurada en el servidor;
+por compatibilidad, esa variable antigua solo puede habilitar Trello.
 
 ## Diagnostico
 
