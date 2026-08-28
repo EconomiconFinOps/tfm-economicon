@@ -46,6 +46,30 @@ actualizo con rama, commit, PR, OpenSpec y evidencia, y paso a `En revision`.
 No se ha implementado el runtime ni se han realizado llamadas LLM. No se ha
 enviado ningun mensaje a Discord.
 
+## Revalidacion de liderazgo - 2026-08-28
+
+Alejandro Aguado reviso de nuevo el contrato completo contra `origin/develop`
+y las fuentes oficiales vigentes. La comprobacion confirma que:
+
+- OpenRouter conserva el patron de herramientas definidas por la aplicacion:
+  el modelo propone la llamada y Economicon ejecuta la funcion localmente;
+- OpenRouter permite desactivar llamadas paralelas, por lo que la linea base
+  secuencial del contrato sigue siendo portable;
+- LiteLLM documenta la deteccion de soporte de function calling y el ciclo de
+  enviar herramientas, validar la propuesta, ejecutar y devolver el resultado;
+- Azure Cost Management Query mantiene `Usage` como coste real, agregacion de
+  `PreTaxCost`, moneda en la respuesta y un maximo de dos agrupaciones.
+
+La validacion local repetida obtuvo 17/17 elementos OpenSpec validos,
+trazabilidad JUP-084 correcta, 318 archivos aceptados por higiene, 7/7 pruebas
+del validador JUP, 6/6 pruebas de higiene y `git diff --check` limpio. No se
+realizaron llamadas autenticadas ni se consumieron creditos LLM.
+
+Alejandro aprueba como lider el catalogo, la frontera de autorizacion, los
+calculos deterministas, la trazabilidad y las limitaciones documentadas. Esta
+aprobacion no acredita pairing de Victor, revision de Lucia ni validacion de
+Paris; la tarea 3.5 y la revision protegida del pull request siguen pendientes.
+
 ## Participacion prevista
 
 - Liderazgo: Alejandro Aguado.
