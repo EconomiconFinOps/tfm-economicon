@@ -143,7 +143,7 @@ puede fijarse como valor por defecto mediante configuración. `timeout` retrasa
 la respuesta durante el intervalo configurado; `empty-page` conserva el
 `nextLink` que corresponda pero elimina las filas de esa página; `invalid-data`
 devuelve un valor no numérico en la primera celda de coste. Estos modos existen
-para verificar reintentos, validación y observabilidad del futuro cliente de
+para verificar reintentos, validación y observabilidad del cliente de
 ingesta, y nunca se activan aleatoriamente.
 
 ## Límites deliberados

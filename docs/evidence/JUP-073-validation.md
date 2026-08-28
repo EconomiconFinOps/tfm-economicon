@@ -5,7 +5,7 @@
 - Base integrada: `develop`, commit `c674ab504bb2c4439c941f9bb53894a27a16069a`
 - Dependencia integrada: JUP-072, pull request #4
 - Tarjeta: https://trello.com/c/ll3GzmuN
-- OpenSpec: `openspec/changes/jup-073-azure-cost-query-contract/`
+- OpenSpec archivado: `openspec/changes/archive/2026-08-28-jup-073-azure-cost-query-contract/`
 - ADR: `docs/adr/ADR-0001-azure-cost-api-simulation.md`
 
 ## Controles ejecutados

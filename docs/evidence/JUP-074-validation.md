@@ -8,7 +8,7 @@ Base integrada: `develop`, commit `7c0d7a3a92bc733b91ef88aca7976499a7f4d70f`
 
 Dependencias integradas: JUP-072 (PR #4) y JUP-073 (PR #5)
 
-OpenSpec: `openspec/changes/jup-074-implement-azure-cost-api/`
+OpenSpec archivado: `openspec/changes/archive/2026-08-28-jup-074-implement-azure-cost-api/`
 
 ## Alcance implementado
 

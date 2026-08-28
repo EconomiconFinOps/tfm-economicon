@@ -13,12 +13,6 @@ const narrative = fs.readFileSync(
   "utf8",
 );
 
-const expectedP0 = [
-  13, 14, 19, 20, 21, 22, 23, 24, 25, 26, 35, 36, 42, 43, 44, 47, 48, 49,
-  50, 51, 52, 53, 54, 55, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,
-  72, 73, 74, 75, 76, 77, 78, 79, 80, 82, 83,
-].map((value) => `JUP-${String(value).padStart(3, "0")}`);
-
 test("pins delivery, freeze and defense dates in chronological order", () => {
   assert.equal(roadmap.internal_code_freeze, "2026-10-09");
   assert.equal(roadmap.internal_document_freeze, "2026-10-16");
@@ -33,6 +27,17 @@ test("pins delivery, freeze and defense dates in chronological order", () => {
 
 test("assigns every current P0 task exactly once", () => {
   const assigned = roadmap.milestones.flatMap(({ task_ids }) => task_ids);
+  const expectedP0 = roadmap.p0_snapshot.task_ids;
+
+  assert.equal(roadmap.p0_snapshot.source, "https://trello.com/b/CawMVPoy/economicon");
+  assert.equal(roadmap.p0_snapshot.captured_at, roadmap.as_of);
+  assert.equal(roadmap.p0_snapshot.count, 50);
+  assert.equal(expectedP0.length, roadmap.p0_snapshot.count);
+  assert.equal(new Set(expectedP0).size, expectedP0.length);
+  assert.deepEqual(
+    expectedP0.filter((id) => ["JUP-085", "JUP-086", "JUP-087"].includes(id)),
+    ["JUP-085", "JUP-086", "JUP-087"],
+  );
   assert.equal(new Set(assigned).size, assigned.length);
   assert.deepEqual([...assigned].sort(), [...expectedP0].sort());
 });

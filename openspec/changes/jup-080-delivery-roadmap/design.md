@@ -2,10 +2,11 @@ JUP: JUP-080
 
 ## Context
 
-As of August 26, Trello contains 47 P0 cards: 33 Backlog, one Prepared, four In
-Review and nine Done. The repository already covers parts of old backlog cards,
-so treating all 33 as greenfield work would create false load. Eight weeks
-remain before the working delivery date.
+The initial August 26 capture contained 47 P0 cards: 33 Backlog, one Prepared,
+four In Review and nine Done. The August 28 reconciliation contains 50 P0 cards
+after adding JUP-085, JUP-086 and JUP-087. The repository already covers parts
+of old backlog cards, so treating the backlog as greenfield work would create
+false load. Eight weeks remain before the working delivery date.
 
 The Jupiter brief prioritizes not just implementation but business value,
 architecture, DevOps, monitoring, evaluation, team contribution and defense.
@@ -47,7 +48,7 @@ authorization and team approval.
 
 ## Risks and mitigations
 
-- Thirty-three apparent P0 cards exceed capacity: reconcile overlap in M1 and
+- The historical 33-card P0 backlog exceeded capacity: reconcile overlap in M1 and
   enforce a two-implementation WIP limit.
 - A real RAG vertical may reveal provider or retrieval gaps: complete it by M3,
   before UI and release work.

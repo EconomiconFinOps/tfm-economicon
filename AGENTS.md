@@ -9,7 +9,7 @@ This pnpm/Turborepo monorepo contains the frontend, Python backend and processor
 - Trello owns scope, priorities, assignees, rotating responsibilities, delivery dates and task status.
 - OpenSpec stores versioned requirements, implementation design, technical tasks and acceptance scenarios.
 - GitHub stores code, documentation, pull requests and technical review history.
-- Reuse the same Trello identifier everywhere: `JUP-082`, `openspec/changes/jup-082-clean-develop/` and `chore/JUP-082-clean-develop`.
+- Reuse the same Trello identifier everywhere: `JUP-085`, `openspec/changes/jup-085-auth-session-contract/` and `feat/JUP-085-auth-session-contract`.
 - Do not create a second numbering system or duplicate the operational backlog inside the repository.
 
 ## Build And Validation Commands

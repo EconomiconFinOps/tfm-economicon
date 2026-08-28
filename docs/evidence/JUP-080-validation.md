@@ -55,3 +55,14 @@ entregables. El video demo de 5-10 minutos se mantiene opcional.
 
 Pendiente: registrar la revision del equipo y, tras aprobar, aplicar las fechas
 a las demas tarjetas de Trello.
+
+## Cierre posterior de estado — 2026-08-28
+
+El PR #13 fue fusionado en `develop` mediante el commit `d45178e`. La evidencia
+anterior conserva deliberadamente la fotografia tomada durante la ejecucion de
+JUP-080; ya no describe el estado actual de JUP-048 ni del PR.
+
+La reconciliacion M1 creo JUP-085, JUP-086 y JUP-087 como P0. JUP-088 actualiza
+la captura versionada de 47 a 50 tarjetas, las asigna a M1 y hace que el test
+derive la cobertura desde `JUP-080-milestones.json`. La aprobacion del calendario
+y la confirmacion institucional de fechas continuan pendientes.
