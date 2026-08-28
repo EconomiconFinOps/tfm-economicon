@@ -29,6 +29,10 @@
   providers mock, CI existente y CD/RAG/frontend todavia pendientes.
 - Los materiales locales registran decisiones ya tomadas y mantienen como
   pendientes solo calendario, aprobación JUP-078/JUP-080, retencion y `setup/sdd`.
+- `.gitattributes` fija LF para texto y trata PNG, PDF, ZIP, MP4 y PPTX como
+  binarios, sin renormalizar en bloque archivos históricos dentro de este PR.
+- La estrategia limita a dos los worktrees de tarea, exige que no contengan
+  trabajo único y ordena retirarlos al mezclar o cerrar el pull request.
 
 ## Archivo OpenSpec
 
