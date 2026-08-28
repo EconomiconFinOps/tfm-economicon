@@ -129,3 +129,7 @@ JUP-062 puede volver a `40 - En revision` cuando el Google Doc incorpore el
 contenido acordado, exista una nueva exportacion con hashes y el bloque conserve
 el presupuesto de paginas. No debe cerrarse hasta registrar la contribucion de
 Lucia, Paris, Victor y Alejandro conforme a los roles de la tarjeta.
+
+La PR usa la plantilla de gobernanza JUP e identifica de forma explicita la
+tarjeta, Trello y las cuatro responsabilidades rotatorias para que la politica
+remota pueda comprobar la trazabilidad sin atribuir revisiones ya realizadas.
