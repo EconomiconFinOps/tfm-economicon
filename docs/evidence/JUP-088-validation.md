@@ -7,6 +7,7 @@
 - Commit principal: `04a9f6c06d96e905432fbcde0391ebdd84ea9d66`.
 - Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/19
 - CI inicial: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/33184619670
+- CI final tras higiene: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/33185815093
 
 ## Fuentes contrastadas
 
@@ -34,6 +35,18 @@
 - La estrategia limita a dos los worktrees de tarea, exige que no contengan
   trabajo único y ordena retirarlos al mezclar o cerrar el pull request.
 
+## Consolidacion operativa
+
+- El clon principal quedo limpio en `develop` y alineado con
+  `origin/develop` (`a746d48`).
+- `git worktree list` quedo en una linea y `tmp/` sin contenido.
+- Se retiraron 15 ramas locales historicas y 13 ramas remotas previamente
+  verificadas como ancestros de `origin/develop`.
+- Se conservaron `main`, `develop`, `setup/sdd` y las seis ramas con pull
+  request abierto, sin decidir su promocion, integracion o cierre.
+- Antes de la limpieza se verifico un bundle con 69 refs y se respaldo por
+  separado el conector local; el despliegue de `dockerserver` no se modifico.
+
 ## Archivo OpenSpec
 
 Se contrastaron tareas completas y estado `70 — Hecho` en Trello antes de archivar:
@@ -50,7 +63,7 @@ revision/validacion o existen tareas de aprobacion/participacion abiertas.
 - Trazabilidad: 7/7 cambios JUP activos enlazados y completos estructuralmente.
 - Roadmap: 5/5 pruebas; 50 P0 únicas y asignadas exactamente una vez.
 - Checker JUP: 7/7 pruebas.
-- Higiene: 382 archivos aceptados y 6/6 pruebas del checker.
+- Higiene: 335 archivos aceptados y 6/6 pruebas del checker.
 - Enlaces Markdown relativos: todos resuelven, incluidos los changes archivados.
 - `git diff --check`: sin errores de whitespace.
 - CI remoto: seis comprobaciones obligatorias completadas correctamente.
