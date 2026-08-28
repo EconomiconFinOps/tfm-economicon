@@ -23,6 +23,21 @@ deja margen para completar las secciones tecnicas, de evaluacion y cierre.
 | Markdown | `3E0C6EB207CD8AE98434FFE7F2F81B3D44EA0A8A863676B15AB52CFA38D000EF` |
 | PDF | `6545B9E11F2873649C3FD55F7771ABF9D6AA49024959761FFE54A1381BA7E4C4` |
 
+## Revalidacion de Alejandro - 2026-08-28 20:11 CEST
+
+Alejandro Aguado reexporto la fuente canonica enlazada en Trello en Markdown y
+PDF y la comparo con el snapshot anterior. Ambos archivos son identicos byte a
+byte y conservan los hashes registrados arriba. El PDF mantiene 6 paginas A4,
+213052 bytes y un render legible, sin texto cortado, solapamientos ni elementos
+fuera de pagina.
+
+Esta comprobacion acredita la reexportacion y la validacion tecnica del snapshot
+actual, pero no una validacion final del contenido: el documento sigue sin
+incorporar viabilidad, impacto medible, costes y riesgos, y conserva apartados
+posteriores como pendientes de redaccion. Por tanto, las tareas 2.1-2.6 y las
+confirmaciones 3.1-3.4 permanecen abiertas, y JUP-062 debe continuar en
+`30 - En curso` hasta que exista una version revisable nueva.
+
 ## Contraste con el guion oficial
 
 El guion oficial dedica el 10% de la evaluacion de entregables a la descripcion
