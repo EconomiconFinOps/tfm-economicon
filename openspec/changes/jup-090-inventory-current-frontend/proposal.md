@@ -63,3 +63,16 @@ tarjetas posteriores de la épica.
 - **Sin código de producto, sin cambios de dependencias, sin `specs/` de producto.**
 - Consumidores posteriores: las tarjetas de F2 (tooling), F3 (porte), F4 (plataforma) y F5
   (validación E2E) usan esta línea base como referencia.
+
+## Human Approval
+
+- Change: jup-090-inventory-current-frontend
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-08-29
+- Carril: light
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Main risks: HU doc-only de solo lectura sobre `apps/frontend`, sin código de producto; los riesgos reales son que la línea base quede desactualizada si F2/F3 modifican el destino antes de consumirla (mitigado fijando el commit base del inventario) y que los criterios de paridad se redacten demasiado vagos para servir de guion E2E en F5 (mitigado exigiendo endpoint y resultado observable en cada criterio).
+- Required changes before execution: none
+- Notes: La línea base se publica en `docs/planning/JUP-090-frontend-migration-baseline.md`, no dentro del change, porque la consumen F2–F5 y debe sobrevivir al archivado. Doc-only: se omiten tester/coder/mutación del harness TDD y se documenta la excepción en `review.md`; se archivará con `--skip-specs`. ADR no aplicable en esta HU: no introduce decisiones de arquitectura duraderas, y la adopción de TypeScript conserva su propio ADR en la tarjeta de F1 correspondiente.
