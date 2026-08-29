@@ -35,6 +35,6 @@
   criterio de paridad nombra endpoint y resultado observable.
 - [x] 4.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-090-<secuencia>`) toda
   divergencia entre README, capa API y contratos del backend, sin resolverla aquí.
-- [ ] 4.4 Ejecutar `corepack pnpm openspec:validate` y
+- [x] 4.4 Ejecutar `corepack pnpm openspec:validate` y
   `corepack pnpm jup:check -- --change jup-090-inventory-current-frontend`; registrar el resultado en
   `review.md` junto con la excepción doc-only del harness TDD (sin tester/coder/mutación).

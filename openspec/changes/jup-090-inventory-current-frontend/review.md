@@ -2,7 +2,7 @@
 
 ## Result
 
-Pending — quedan por ejecutar los checks de la tarea 4.4.
+Accepted
 
 ## Scope Reviewed
 
@@ -18,8 +18,8 @@ Pending — quedan por ejecutar los checks de la tarea 4.4.
 - [x] El guion de paridad login → tenant → dashboard nombra endpoint y resultado observable en cada paso.
 - [x] La regla de rollback queda registrada en la línea base.
 - [x] Toda divergencia encontrada (README vs. código vs. spike) queda registrada como finding, no resuelta en esta HU.
-- [ ] Checks del carril ejecutados y en verde (tarea 4.4).
-- [ ] Tasks.md marcado 11/11.
+- [x] Checks del carril ejecutados y en verde (tarea 4.4).
+- [x] Tasks.md marcado 11/11.
 
 ADR no aplicable. Esta HU es inventario/documentación sobre el estado ya existente del destino; no
 introduce ninguna decisión de arquitectura nueva. La adopción de TypeScript (con su propio ADR)
@@ -27,7 +27,11 @@ corresponde a la tarjeta `jup-0xx-adr-adopcion-typescript` de F1.
 
 ## Validation
 
-Pendiente de completar en la tarea 4.4.
+```txt
+corepack pnpm openspec:validate -> PASS: 17 items validated strictly (3 specs, 14 changes)
+corepack pnpm jup:check -- --change jup-090-inventory-current-frontend -> PASS: enlazado con Trello y completo
+test / lint / build -> N/A (doc-only, sin código de producto; harness TDD omitido: sin tester/coder/mutación)
+```
 
 ## Review Findings
 
