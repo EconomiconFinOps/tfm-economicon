@@ -179,6 +179,8 @@ tarjeta en Trello.
       `/billing/summary`, `/jobs/ingest`, `/assistant/conversations...`.
 - [ ] Conservar `VITE_API_BASE_URL` y headers `Authorization: Bearer` + `X-Tenant-Id`.
 - [ ] Registrar como finding cualquier endpoint del origen sin equivalente en el backend.
+- [ ] Resolver `RF-090-003` (`openspec/findings/backlog.md`): decidir si `fetchProfile`
+  (`GET /me`) se conecta o se retira, ya que hoy está implementado pero nunca se invoca.
 
 **JUP `jup-0xx-reconciliar-auth-tenant`** — carril `standard`
 - [ ] Adaptar login/sesion al flujo del backend (token + perfil `/me`).
@@ -194,7 +196,10 @@ tarjeta en Trello.
 
 **JUP `jup-0xx-verificar-docker-compose`** — carril `light`
 - [ ] Validar `Dockerfile` con el nuevo build TS (`docker compose up --build frontend`).
-- [ ] Confirmar puerto 5173, `VITE_API_BASE_URL` y `env_file` en `docker-compose.yml`.
+- [ ] Confirmar puerto 5173 y `VITE_API_BASE_URL` en `docker-compose.yml` (el servicio no usa
+  `env_file`; ver hallazgo `RF-090-002`).
+- [ ] Resolver `RF-090-001` (`openspec/findings/backlog.md`): el `Dockerfile` construye con
+  `pnpm install --no-frozen-lockfile` sin el lockfile del workspace.
 
 **JUP `jup-0xx-verificar-turbo-workspace`** — carril `light`
 - [ ] Confirmar `pnpm dev` (turbo paralelo) levanta frontend junto a backend/processor.
