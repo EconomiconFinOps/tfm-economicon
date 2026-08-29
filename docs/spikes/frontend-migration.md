@@ -52,7 +52,8 @@ Economicon.
   `GET /assistant/conversations/{id}`, `POST /assistant/conversations/{id}/messages`.
 - Seed local de acceso: `operator@example.com` / `secret`.
 - Monorepo: `pnpm@9.0.0` + `turbo`. Servicio `frontend` en `docker-compose.yml` (puerto 5173,
-  `VITE_API_BASE_URL`, `env_file: .env`, depende de `backend` healthy).
+  `VITE_API_BASE_URL`, depende de `backend` healthy). **Corregido en JUP-090:** el servicio no tiene
+  `env_file`; `VITE_API_BASE_URL` viaja como `environment:` inline.
 - **Regla dura del repo: prohibido `npm i`.** Solo `pnpm`.
 
 ## Estrategia: reemplazo completo
@@ -133,10 +134,13 @@ tarjeta en Trello.
 
 ### F1. Preparacion e inventario
 
-**JUP `jup-0xx-inventariar-frontend-actual`** — carril `light`
-- [ ] Documentar que se preserva del destino (nombre paquete, scripts, puerto, Docker, contratos).
-- [ ] Marcar archivos a reemplazar vs. a conservar.
-- [ ] Definir criterios de aceptacion de paridad funcional (login -> tenant -> dashboard).
+**JUP `jup-090-inventory-current-frontend`** — carril `light`
+- [x] Documentar que se preserva del destino (nombre paquete, scripts, puerto, Docker, contratos). Ver
+  [docs/planning/JUP-090-frontend-migration-baseline.md](../planning/JUP-090-frontend-migration-baseline.md).
+- [x] Marcar archivos a reemplazar vs. a conservar. Ver la misma línea base, sección
+  "Clasificación archivo a archivo".
+- [x] Definir criterios de aceptacion de paridad funcional (login -> tenant -> dashboard). Ver la
+  misma línea base, sección "Criterios de paridad funcional".
 
 **JUP `jup-0xx-inventariar-frontend-economicon`** — carril `light`
 - [x] Completar el "Checklist de inspeccion del origen" y confirmar todos los supuestos en JUP-083.

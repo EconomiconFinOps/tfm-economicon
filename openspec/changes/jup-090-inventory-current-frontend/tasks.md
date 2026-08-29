@@ -28,10 +28,10 @@
 
 ## 4. Cierre y verificación
 
-- [ ] 4.1 Enlazar `docs/planning/JUP-090-frontend-migration-baseline.md` desde
+- [x] 4.1 Enlazar `docs/planning/JUP-090-frontend-migration-baseline.md` desde
   `docs/spikes/frontend-migration.md` y marcar como completada la tarjeta F1
   `inventariar-frontend-actual`.
-- [ ] 4.2 Verificar que ningún archivo no generado de `apps/frontend/**` queda sin etiqueta y que cada
+- [x] 4.2 Verificar que ningún archivo no generado de `apps/frontend/**` queda sin etiqueta y que cada
   criterio de paridad nombra endpoint y resultado observable.
 - [ ] 4.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-090-<secuencia>`) toda
   divergencia entre README, capa API y contratos del backend, sin resolverla aquí.

@@ -76,13 +76,14 @@ estructura del origen + lógica del destino, que el origen no tiene).
 | `vite.config.js` | RECONCILIAR | El plugin `react()` (línea 5) se mantiene o se sustituye por el equivalente del origen en Vite 6 (salto de major, T1); el host/puerto **no vive aquí** sino en los scripts de `package.json`, así que al adoptar el `vite.config` del origen hay que confirmar que no define un `server.port`/`server.host` propio que choque con el flag `--port 5173` del script `dev`. |
 | `eslint.config.js` | RECONCILIAR | Ya es flat config (línea 6), buena base. Regla del spike: "Migrar a flat config con parser/plugin TS; mantener reglas react/react-hooks". Preservar: `eslint-plugin-react` + `eslint-plugin-react-hooks` (líneas 22-25) y `"react/react-in-jsx-scope": "off"` (línea 34, necesaria con el nuevo JSX transform). Añadir: parser y plugin de `@typescript-eslint` y extender `files` (línea 9) a `.ts`/`.tsx`. |
 | `index.html` | RECONCILIAR | Regla del spike: "Usar el del origen; conservar `<div id="root">` y título del producto". Preservar: `<div id="root">` (línea 9) y `<title>FinOps Control Tower</title>` (línea 6). Sustituir: `<script src="/src/main.jsx">` (línea 10) por el entrypoint `.tsx` una vez migrado. |
+| `README.md` | RECONCILIAR | Preservar: sección "Como correrlo" (líneas 43-82, comandos Docker/turbo/individual), "Acceso Local Seed" (líneas 88-91) y "Contratos Esperados Del Backend" (líneas 99-110, ajustada si se retira `GET /me` por el hallazgo `RF-090-003`). Sustituir: sección "Stack" (líneas 18-24, pasa a incluir TypeScript, react-router, Tailwind/shadcn/MUI) y "Estructura" (líneas 26-41, refleja el árbol del origen). |
 
 ### Integración de plataforma (monorepo/runtime)
 
 | Elemento | Clasificación | Justificación |
 | --- | --- | --- |
-| `apps/frontend/Dockerfile` | RECONCILIAR | Preservar `EXPOSE 5173` (línea 12) y `CMD ["pnpm", "dev"]` (línea 14). Necesita un paso de build TS (`tsc`/type-check) antes de `vite build` para producción. **Hallazgo:** hoy solo copia `package.json` (línea 7) e instala con `pnpm install --no-frozen-lockfile` (línea 8) — no copia `pnpm-lock.yaml` ni `pnpm-workspace.yaml` de la raíz, así que construye fuera del lockfile del workspace. Contradice la regla del propio spike de instalación reproducible (`pnpm install --frozen-lockfile`). Se registra como finding para resolver en la tarjeta F4 `verificar-docker-compose`, no aquí. |
-| Servicio `frontend` en `docker-compose.yml` (líneas 156-165) | PRESERVAR | `build.context: ./apps/frontend` (línea 158), `VITE_API_BASE_URL` (línea 160), `depends_on backend: condition: service_healthy` (líneas 161-163) y el mapeo `${FRONTEND_PORT:-5173}:5173` (línea 165) ya están correctos y no cambian con la migración. **Corrección al spike:** [frontend-migration.md:54](../spikes/frontend-migration.md) afirma que el servicio tiene `env_file: .env`, pero esa clave **no existe** en el servicio `frontend` actual — solo en variables `environment:` inline. Se corrige el spike y se registra como finding (ver sección "Hallazgos"). |
+| `apps/frontend/Dockerfile` | RECONCILIAR | Preservar `EXPOSE 5173` (línea 12) y `CMD ["pnpm", "dev"]` (línea 14). Necesita un paso de build TS (`tsc`/type-check) antes de `vite build` para producción. **Hallazgo `RF-090-001`** (ver sección "Hallazgos"): construye fuera del lockfile del workspace. |
+| Servicio `frontend` en `docker-compose.yml` (líneas 156-165) | PRESERVAR | `build.context: ./apps/frontend` (línea 158), `VITE_API_BASE_URL` (línea 160), `depends_on backend: condition: service_healthy` (líneas 161-163) y el mapeo `${FRONTEND_PORT:-5173}:5173` (línea 165) ya están correctos y no cambian con la migración. **Hallazgo `RF-090-002`** (ver sección "Hallazgos", ya corregido): el spike afirmaba `env_file: .env`, que no existe en el servicio real. |
 | `turbo.json` | PRESERVAR | Pipeline `dev`/`build`/`lint`/`test`/`docker:build` (líneas 3-28) es genérico para todo el workspace; Vite ya compila TS de forma nativa, así que `build.outputs: ["dist/**", "build/**"]` (líneas 12-15) sigue siendo válido sin cambios. |
 | `pnpm-workspace.yaml` | PRESERVAR | El glob `apps/*` (línea 2) ya cubre `apps/frontend`; nada que cambiar aquí. |
 
@@ -104,12 +105,7 @@ Contraste entre lo documentado en [apps/frontend/README.md](../../apps/frontend/
 | `GET /assistant/conversations/{id}` | `getConversation(token, tenantId, conversationId)` (línea 72) | `ConversationsPage.jsx:25` | Coincide |
 | `POST /assistant/conversations/{id}/messages` | `sendConversationMessage(...)` (línea 79) | `ConversationsPage.jsx:52` | Coincide |
 
-**Hallazgo (`RF-090-01`):** `GET /me` está documentado en el README y tiene función dedicada en
-`api.js`, pero el frontend actual **no la invoca**: la identidad del operador viaja en la respuesta
-de `POST /auth/login` y se guarda tal cual en `localStorage.finops.session`. Al portar la capa API a
-TS, decidir si `fetchProfile` se conecta (p. ej. para refrescar el perfil sin relogin) o se retira
-por no usarse — no se resuelve en esta HU. Registrado en `review.md` y en
-`openspec/findings/backlog.md`.
+Hallazgo `RF-090-003` — ver sección "Hallazgos".
 
 ## Criterios de paridad funcional (login → tenant → dashboard)
 
@@ -146,3 +142,13 @@ en el paso 3 y su presencia desde el paso 5 en adelante es parte de la paridad e
   `apps/frontend` porque ninguna tarjeta anterior a la validación E2E borra el scaffold existente.
 - Si la validación E2E de F5 falla, el rollback es no mergear esa tarjeta: el scaffold en `develop`
   sigue siendo el frontend actual, sin dejar un frontend a medio migrar en producción.
+
+## Hallazgos
+
+Detalle en `review.md` de esta HU y en `openspec/findings/backlog.md`.
+
+| ID | Estado | Descripción | Acción |
+| --- | --- | --- | --- |
+| `RF-090-001` | Open | `apps/frontend/Dockerfile` copia solo `package.json` (línea 7) e instala con `pnpm install --no-frozen-lockfile` (línea 8): no copia `pnpm-lock.yaml` ni `pnpm-workspace.yaml` de la raíz, así que construye fuera del lockfile del workspace. Contradice la regla de instalación reproducible del propio spike. | Resolver en la tarjeta F4 `verificar-docker-compose`. |
+| `RF-090-002` | Fixed (en esta HU) | El spike afirmaba que el servicio `frontend` de `docker-compose.yml` tenía `env_file: .env` (línea 55); esa clave no existe — `VITE_API_BASE_URL` viaja como `environment:` inline. | Corregido directamente en `docs/spikes/frontend-migration.md` como parte de esta HU. |
+| `RF-090-003` | Open | `GET /me` (`fetchProfile`, `api.js:31`) está documentado en el README y contratado con el backend, pero el frontend no lo invoca: `App.jsx` toma `user` del payload de `POST /auth/login`. | Decidir en la tarjeta de reconciliación de la capa API de F3 (`jup-0xx-reconciliar-capa-api`) si se conecta o se retira. |
