@@ -75,7 +75,14 @@ def test_migration_adds_backfills_and_indexes_finops_columns():
         "tags",
     ):
         assert column in sql
+    assert "dimensions->>'BillingAccountId'" in sql
+    assert "dimensions->>'SubAccountName'" in sql
     assert "dimensions->>'ResourceGroup'" in sql
+    assert "dimensions->>'ConsumedQuantity'" in sql
+    assert "dimensions->>'UsageQuantity'" in sql
+    assert "dimensions->>'UnitOfMeasure'" in sql
+    assert "jsonb_build_object" in sql
+    assert "'cost_center'" in sql
     assert "idx_azure_cost_records_scope_date" in sql
     assert "idx_azure_cost_records_resource_group" in sql
     assert "idx_azure_cost_records_service" in sql
