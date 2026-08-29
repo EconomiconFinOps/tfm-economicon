@@ -9,7 +9,7 @@
 - [x] 2.1 Inventariar `apps/frontend/src/**` (`App.jsx`, `main.jsx`, `components`, `hooks`, `layouts`,
   `pages`, `services`, `styles`) y clasificar cada archivo como `PRESERVAR` / `REEMPLAZAR` /
   `RECONCILIAR` con su justificación.
-- [ ] 2.2 Inventariar la configuración del paquete: `package.json` (nombre `@finops/frontend`,
+- [x] 2.2 Inventariar la configuración del paquete: `package.json` (nombre `@finops/frontend`,
   `type`, scripts, host/puerto 5173), `vite.config.js`, `eslint.config.js` e `index.html`; clasificar
   cada uno y anotar qué parte concreta debe sobrevivir a la fusión.
 - [ ] 2.3 Inventariar la integración de plataforma: `apps/frontend/Dockerfile`, servicio `frontend` de

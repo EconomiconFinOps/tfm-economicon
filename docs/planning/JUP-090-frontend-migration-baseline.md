@@ -51,6 +51,15 @@ estructura del origen + lógica del destino, que el origen no tiene).
 | `src/services/api.js` | PRESERVAR | Es la única capa HTTP del monorepo (decisión #4 del `proposal.md` de la épica); el origen no tiene ninguna (T3). Se porta a TS manteniendo `VITE_API_BASE_URL` (línea 1) y los headers `Authorization`/`X-Tenant-Id` (líneas 3-10). |
 | `src/styles/main.css` | REEMPLAZAR | Regla explícita de la tabla de conflictos del spike: "Unificar en el sistema del origen; eliminar `main.css` antiguo al validar". 443 líneas de tema oscuro plano, incompatible con Tailwind v4 + shadcn/ui + MUI (T5). |
 
+### Configuración del paquete
+
+| Archivo | Clasificación | Justificación |
+| --- | --- | --- |
+| `package.json` | RECONCILIAR | Regla explícita del spike: "Fusionar: deps del origen + conservar `@finops/frontend`, scripts y puerto 5173". Preservar literalmente: `name: @finops/frontend` (línea 2), `type: module` (línea 5), `dev`/`build`/`preview`/`docker:build` (líneas 7-11) y el puerto `5173` embebido en el script `dev` (`--host 0.0.0.0 --port 5173`, línea 7). Fusionar: dependencias del origen (react-router 7, Tailwind v4, shadcn/ui, MUI 7, lucide-react — T2/T5/T6) más `typescript`/`@types/*` (F2). Sustituir: `lint` (línea 8) para incluir `.ts`/`.tsx` y `test` (línea 9, hoy un placeholder sin tooling real). |
+| `vite.config.js` | RECONCILIAR | El plugin `react()` (línea 5) se mantiene o se sustituye por el equivalente del origen en Vite 6 (salto de major, T1); el host/puerto **no vive aquí** sino en los scripts de `package.json`, así que al adoptar el `vite.config` del origen hay que confirmar que no define un `server.port`/`server.host` propio que choque con el flag `--port 5173` del script `dev`. |
+| `eslint.config.js` | RECONCILIAR | Ya es flat config (línea 6), buena base. Regla del spike: "Migrar a flat config con parser/plugin TS; mantener reglas react/react-hooks". Preservar: `eslint-plugin-react` + `eslint-plugin-react-hooks` (líneas 22-25) y `"react/react-in-jsx-scope": "off"` (línea 34, necesaria con el nuevo JSX transform). Añadir: parser y plugin de `@typescript-eslint` y extender `files` (línea 9) a `.ts`/`.tsx`. |
+| `index.html` | RECONCILIAR | Regla del spike: "Usar el del origen; conservar `<div id="root">` y título del producto". Preservar: `<div id="root">` (línea 9) y `<title>FinOps Control Tower</title>` (línea 6). Sustituir: `<script src="/src/main.jsx">` (línea 10) por el entrypoint `.tsx` una vez migrado. |
+
 ## Contratos del backend consumidos por el frontend
 
 <!-- Se completa en la tarea 2.4 -->
