@@ -24,7 +24,24 @@ JUP-083 ([docs/spikes/frontend-migration.md](../spikes/frontend-migration.md)) y
 
 ## Qué se preserva del destino
 
-<!-- Se completa en la tarea 2.2/2.3 -->
+Resumen ejecutivo; el detalle con evidencia de línea está en "Clasificación archivo a archivo".
+
+- **Identidad del paquete:** nombre `@finops/frontend`, `type: module`
+  ([package.json](../../apps/frontend/package.json)).
+- **Scripts del monorepo:** `dev` (`vite --host 0.0.0.0 --port 5173`), `build`, `preview`,
+  `docker:build`; `lint` y `test` se sustituyen por sus equivalentes TS.
+- **Puerto/host:** `5173`, fijado en el script `dev` de `package.json` y replicado en
+  `docker-compose.yml` (`${FRONTEND_PORT:-5173}:5173`).
+- **Integración Docker:** `apps/frontend/Dockerfile` (`EXPOSE 5173`, `CMD ["pnpm", "dev"]`) y el
+  servicio `frontend` de `docker-compose.yml` (contexto `./apps/frontend`, `VITE_API_BASE_URL`,
+  dependencia de `backend` healthy).
+- **Variable de entorno:** `VITE_API_BASE_URL` (por defecto `http://localhost:8000`), leída en
+  `src/services/api.js:1`.
+- **Capa API única:** `src/services/api.js`, con headers `Authorization: Bearer` y `X-Tenant-Id`
+  (líneas 3-10) — el origen no aporta ninguna (T3 de JUP-083).
+- **Flujo de sesión/tenant:** `localStorage` (`finops.session`, `finops.activeTenant`), lógica en
+  `src/App.jsx` — el origen no tiene auth/sesión/tenant (T4 de JUP-083).
+- **Pipeline turbo y workspace pnpm:** `turbo.json` y `pnpm-workspace.yaml` no requieren cambios.
 
 ## Clasificación archivo a archivo
 
@@ -59,6 +76,15 @@ estructura del origen + lógica del destino, que el origen no tiene).
 | `vite.config.js` | RECONCILIAR | El plugin `react()` (línea 5) se mantiene o se sustituye por el equivalente del origen en Vite 6 (salto de major, T1); el host/puerto **no vive aquí** sino en los scripts de `package.json`, así que al adoptar el `vite.config` del origen hay que confirmar que no define un `server.port`/`server.host` propio que choque con el flag `--port 5173` del script `dev`. |
 | `eslint.config.js` | RECONCILIAR | Ya es flat config (línea 6), buena base. Regla del spike: "Migrar a flat config con parser/plugin TS; mantener reglas react/react-hooks". Preservar: `eslint-plugin-react` + `eslint-plugin-react-hooks` (líneas 22-25) y `"react/react-in-jsx-scope": "off"` (línea 34, necesaria con el nuevo JSX transform). Añadir: parser y plugin de `@typescript-eslint` y extender `files` (línea 9) a `.ts`/`.tsx`. |
 | `index.html` | RECONCILIAR | Regla del spike: "Usar el del origen; conservar `<div id="root">` y título del producto". Preservar: `<div id="root">` (línea 9) y `<title>FinOps Control Tower</title>` (línea 6). Sustituir: `<script src="/src/main.jsx">` (línea 10) por el entrypoint `.tsx` una vez migrado. |
+
+### Integración de plataforma (monorepo/runtime)
+
+| Elemento | Clasificación | Justificación |
+| --- | --- | --- |
+| `apps/frontend/Dockerfile` | RECONCILIAR | Preservar `EXPOSE 5173` (línea 12) y `CMD ["pnpm", "dev"]` (línea 14). Necesita un paso de build TS (`tsc`/type-check) antes de `vite build` para producción. **Hallazgo:** hoy solo copia `package.json` (línea 7) e instala con `pnpm install --no-frozen-lockfile` (línea 8) — no copia `pnpm-lock.yaml` ni `pnpm-workspace.yaml` de la raíz, así que construye fuera del lockfile del workspace. Contradice la regla del propio spike de instalación reproducible (`pnpm install --frozen-lockfile`). Se registra como finding para resolver en la tarjeta F4 `verificar-docker-compose`, no aquí. |
+| Servicio `frontend` en `docker-compose.yml` (líneas 156-165) | PRESERVAR | `build.context: ./apps/frontend` (línea 158), `VITE_API_BASE_URL` (línea 160), `depends_on backend: condition: service_healthy` (líneas 161-163) y el mapeo `${FRONTEND_PORT:-5173}:5173` (línea 165) ya están correctos y no cambian con la migración. **Corrección al spike:** [frontend-migration.md:54](../spikes/frontend-migration.md) afirma que el servicio tiene `env_file: .env`, pero esa clave **no existe** en el servicio `frontend` actual — solo en variables `environment:` inline. Se corrige el spike y se registra como finding (ver sección "Hallazgos"). |
+| `turbo.json` | PRESERVAR | Pipeline `dev`/`build`/`lint`/`test`/`docker:build` (líneas 3-28) es genérico para todo el workspace; Vite ya compila TS de forma nativa, así que `build.outputs: ["dist/**", "build/**"]` (líneas 12-15) sigue siendo válido sin cambios. |
+| `pnpm-workspace.yaml` | PRESERVAR | El glob `apps/*` (línea 2) ya cubre `apps/frontend`; nada que cambiar aquí. |
 
 ## Contratos del backend consumidos por el frontend
 

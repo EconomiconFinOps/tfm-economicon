@@ -12,7 +12,7 @@
 - [x] 2.2 Inventariar la configuración del paquete: `package.json` (nombre `@finops/frontend`,
   `type`, scripts, host/puerto 5173), `vite.config.js`, `eslint.config.js` e `index.html`; clasificar
   cada uno y anotar qué parte concreta debe sobrevivir a la fusión.
-- [ ] 2.3 Inventariar la integración de plataforma: `apps/frontend/Dockerfile`, servicio `frontend` de
+- [x] 2.3 Inventariar la integración de plataforma: `apps/frontend/Dockerfile`, servicio `frontend` de
   `docker-compose.yml` (puerto, `env_file`, dependencia de `backend`), `turbo.json`,
   `pnpm-workspace.yaml` y las variables `VITE_*` en uso; clasificar cada punto.
 - [ ] 2.4 Extraer de `apps/frontend/src/services/api.js` las llamadas HTTP reales (endpoint, método,
