@@ -1,6 +1,6 @@
 ## 1. Preparación
 
-- [ ] 1.1 Crear `docs/planning/JUP-090-frontend-migration-baseline.md` con la cabecera de la línea
+- [x] 1.1 Crear `docs/planning/JUP-090-frontend-migration-baseline.md` con la cabecera de la línea
   base: JUP, enlace Trello, rama, **commit base** del inventario, y el alcance excluido
   (`node_modules`, `node_modules/.vite` y demás artefactos generados).
 
