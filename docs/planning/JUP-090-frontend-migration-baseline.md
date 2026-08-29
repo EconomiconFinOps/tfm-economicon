@@ -28,7 +28,28 @@ JUP-083 ([docs/spikes/frontend-migration.md](../spikes/frontend-migration.md)) y
 
 ## Clasificación archivo a archivo
 
-<!-- Se completa en las tareas 2.1-2.3 -->
+Leyenda: **PRESERVAR** (sin cambio funcional, aunque cambie de extensión a `.ts`/`.tsx`) ·
+**REEMPLAZAR** (sustituido por completo por el origen) · **RECONCILIAR** (fusión dirigida: chrome o
+estructura del origen + lógica del destino, que el origen no tiene).
+
+### `apps/frontend/src/**`
+
+| Archivo | Clasificación | Justificación |
+| --- | --- | --- |
+| `src/App.jsx` | RECONCILIAR | Concentra sesión (`localStorage.finops.session`), tenant activo (`finops.activeTenant`), login/logout y el fetch de tenants vía TanStack Query (líneas 35-94). Esa lógica no existe en el origen (T4/T3 de JUP-083) y debe sobrevivir; solo el enrutado manual por `activeView` (líneas 127-150) se descarta a favor de `react-router` 7. |
+| `src/main.jsx` | RECONCILIAR | Hoy solo monta `QueryClientProvider` (líneas 7-14). El origen monta `createBrowserRouter`/`RouterProvider` en su `main.tsx` (T2). El entrypoint final necesita ambos providers, portado a `.tsx`. |
+| `src/layouts/AppShell.jsx` | RECONCILIAR | El chrome visual (sidebar, nav) se reemplaza por el `Layout` del origen (Tailwind v4 + shadcn/ui, T5), pero el selector de tenant (líneas 36-50) y el panel de sesión/logout (líneas 52-61) son capacidades del destino sin equivalente en el origen y deben injertarse en el nuevo `Layout`. |
+| `src/pages/LoginPage.jsx` | RECONCILIAR | El origen no tiene pantalla de login (T4). Se preserva la lógica (formulario controlado + `useMutation(login)`, líneas 5-19) reconstruida sobre el sistema de diseño del origen. |
+| `src/pages/DashboardPage.jsx` | RECONCILIAR | El origen no tiene capa de datos (T3): esta página aporta el único fetch real de billing/health (`useDashboardData`, línea 7) y el estado tenant-vacío/cargando/error (líneas 12-41) que debe preservarse sobre la presentación del origen. |
+| `src/pages/IngestPage.jsx` | RECONCILIAR | Formulario + `useMutation(createIngestJob)` (líneas 13-26) sin equivalente en el origen (dashboards estáticos, T3). Pendiente confirmar en F3 si el origen trae una pantalla de ingesta que reciba esta lógica o si se compone de cero sobre el `Layout`. |
+| `src/pages/ConversationsPage.jsx` | RECONCILIAR | Lógica de listado/creación/envío de conversaciones vía TanStack Query (líneas 17-65) sin equivalente en el origen. Misma nota que IngestPage: confirmar en F3 la pantalla destino del origen. |
+| `src/pages/PlaceholderPage.jsx` | REEMPLAZAR | Sin lógica de negocio ni llamadas a backend; placeholder puro (12 líneas). Lo que el origen aporte para "Settings" lo sustituye directamente. |
+| `src/components/MetricCard.jsx` | REEMPLAZAR | Puramente presentacional, sin estado ni llamadas a API; candidato a sustituirse por primitivas shadcn/ui del origen (T5). |
+| `src/components/SectionCard.jsx` | REEMPLAZAR | Igual que `MetricCard.jsx`: wrapper presentacional sin lógica propia. |
+| `src/components/StatusPill.jsx` | REEMPLAZAR | Igual que `MetricCard.jsx`: normaliza un string y pinta una clase CSS; sin lógica de negocio. |
+| `src/hooks/useDashboardData.js` | PRESERVAR | Combina `fetchBillingSummary` + `fetchHealth` con `useQueries` (líneas 5-17); el origen no tiene librería de datos (T3). Se porta a `.ts` sin cambiar su contrato ni su forma de consumo. |
+| `src/services/api.js` | PRESERVAR | Es la única capa HTTP del monorepo (decisión #4 del `proposal.md` de la épica); el origen no tiene ninguna (T3). Se porta a TS manteniendo `VITE_API_BASE_URL` (línea 1) y los headers `Authorization`/`X-Tenant-Id` (líneas 3-10). |
+| `src/styles/main.css` | REEMPLAZAR | Regla explícita de la tabla de conflictos del spike: "Unificar en el sistema del origen; eliminar `main.css` antiguo al validar". 443 líneas de tema oscuro plano, incompatible con Tailwind v4 + shadcn/ui + MUI (T5). |
 
 ## Contratos del backend consumidos por el frontend
 

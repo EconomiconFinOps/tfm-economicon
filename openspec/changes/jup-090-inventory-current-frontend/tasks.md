@@ -6,7 +6,7 @@
 
 ## 2. Inventario del destino (una tarea = un bloque = un commit)
 
-- [ ] 2.1 Inventariar `apps/frontend/src/**` (`App.jsx`, `main.jsx`, `components`, `hooks`, `layouts`,
+- [x] 2.1 Inventariar `apps/frontend/src/**` (`App.jsx`, `main.jsx`, `components`, `hooks`, `layouts`,
   `pages`, `services`, `styles`) y clasificar cada archivo como `PRESERVAR` / `REEMPLAZAR` /
   `RECONCILIAR` con su justificación.
 - [ ] 2.2 Inventariar la configuración del paquete: `package.json` (nombre `@finops/frontend`,
