@@ -15,7 +15,7 @@
 - [x] 2.3 Inventariar la integración de plataforma: `apps/frontend/Dockerfile`, servicio `frontend` de
   `docker-compose.yml` (puerto, `env_file`, dependencia de `backend`), `turbo.json`,
   `pnpm-workspace.yaml` y las variables `VITE_*` en uso; clasificar cada punto.
-- [ ] 2.4 Extraer de `apps/frontend/src/services/api.js` las llamadas HTTP reales (endpoint, método,
+- [x] 2.4 Extraer de `apps/frontend/src/services/api.js` las llamadas HTTP reales (endpoint, método,
   headers `Authorization` y `X-Tenant-Id`) y contrastarlas con `apps/frontend/README.md`; volcar la
   tabla de contratos a la línea base.
 

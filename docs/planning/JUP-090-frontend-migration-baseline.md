@@ -88,7 +88,28 @@ estructura del origen + lógica del destino, que el origen no tiene).
 
 ## Contratos del backend consumidos por el frontend
 
-<!-- Se completa en la tarea 2.4 -->
+Contraste entre lo documentado en [apps/frontend/README.md](../../apps/frontend/README.md) (sección
+"Contratos Esperados Del Backend") y las llamadas reales en `src/services/api.js`.
+
+| Endpoint | Función en `api.js` | Consumido desde | Estado |
+| --- | --- | --- | --- |
+| `GET /health` | `fetchHealth()` (línea 27) | `useDashboardData.js:14` | Coincide |
+| `POST /auth/login` | `login()` (línea 43) | `LoginPage.jsx:12` | Coincide |
+| `GET /me` | `fetchProfile(token)` (línea 31) | — | **Divergencia**: definida pero nunca invocada. `App.jsx` toma `user` directamente del payload de `POST /auth/login` (`payload.user`, línea 77), no de `GET /me`. |
+| `GET /tenants` | `fetchTenants(token)` (línea 35) | `App.jsx:45` | Coincide |
+| `GET /billing/summary` | `fetchBillingSummary(token, tenantId)` (línea 39) | `useDashboardData.js:9` | Coincide |
+| `POST /jobs/ingest` | `createIngestJob(token, tenantId, payload)` (línea 50) | `IngestPage.jsx:14` | Coincide |
+| `GET /assistant/conversations` | `listConversations(token, tenantId)` (línea 59) | `ConversationsPage.jsx:19` | Coincide |
+| `POST /assistant/conversations` | `createConversation(token, tenantId, payload)` (línea 63) | `ConversationsPage.jsx:43` | Coincide |
+| `GET /assistant/conversations/{id}` | `getConversation(token, tenantId, conversationId)` (línea 72) | `ConversationsPage.jsx:25` | Coincide |
+| `POST /assistant/conversations/{id}/messages` | `sendConversationMessage(...)` (línea 79) | `ConversationsPage.jsx:52` | Coincide |
+
+**Hallazgo (`RF-090-01`):** `GET /me` está documentado en el README y tiene función dedicada en
+`api.js`, pero el frontend actual **no la invoca**: la identidad del operador viaja en la respuesta
+de `POST /auth/login` y se guarda tal cual en `localStorage.finops.session`. Al portar la capa API a
+TS, decidir si `fetchProfile` se conecta (p. ej. para refrescar el perfil sin relogin) o se retira
+por no usarse — no se resuelve en esta HU. Registrado en `review.md` y en
+`openspec/findings/backlog.md`.
 
 ## Criterios de paridad funcional (login → tenant → dashboard)
 
