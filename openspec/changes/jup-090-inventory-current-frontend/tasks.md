@@ -33,7 +33,7 @@
   `inventariar-frontend-actual`.
 - [x] 4.2 Verificar que ningún archivo no generado de `apps/frontend/**` queda sin etiqueta y que cada
   criterio de paridad nombra endpoint y resultado observable.
-- [ ] 4.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-090-<secuencia>`) toda
+- [x] 4.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-090-<secuencia>`) toda
   divergencia entre README, capa API y contratos del backend, sin resolverla aquí.
 - [ ] 4.4 Ejecutar `corepack pnpm openspec:validate` y
   `corepack pnpm jup:check -- --change jup-090-inventory-current-frontend`; registrar el resultado en
