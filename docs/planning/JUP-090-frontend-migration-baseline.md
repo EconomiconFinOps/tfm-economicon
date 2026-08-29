@@ -113,8 +113,36 @@ por no usarse — no se resuelve en esta HU. Registrado en `review.md` y en
 
 ## Criterios de paridad funcional (login → tenant → dashboard)
 
-<!-- Se completa en la tarea 3.1 -->
+Guion ejecutable para la validación E2E de F5 (`jup-0xx-validacion-e2e`). Cada paso nombra la acción,
+el endpoint implicado (con headers relevantes) y el resultado observable. Precondición: backend local
+levantado (`docker compose up` o `pnpm dev` vía turbo) y seed `operator@example.com` / `secret`
+disponible.
+
+| # | Acción | Endpoint | Resultado observable |
+| --- | --- | --- | --- |
+| 1 | Abrir la app sin sesión previa | — | Se renderiza `LoginPage` (`App.jsx:97`); no hay llamadas de red. |
+| 2 | Enviar el formulario con el seed | `POST /auth/login` (sin headers de auth) | Respuesta 2xx con `access_token` + `user`; se persiste en `localStorage.finops.session` (`App.jsx:74-81`); `LoginPage` deja de mostrarse. |
+| 3 | Bootstrap automático de tenants tras login | `GET /tenants` con `Authorization: Bearer <token>` (sin `X-Tenant-Id`: aún no hay tenant activo) | `tenantsQuery.data.items` no vacío; si no hay tenant activo válido se autoselecciona el primero (`App.jsx:61-66`) y se persiste en `localStorage.finops.activeTenant`. |
+| 4 | Cambiar de tenant desde el selector del `AppShell` | — (cambio local; dispara refetch de queries dependientes) | `activeTenantId` cambia y se persiste (`App.jsx:91-94`); las siguientes llamadas usan el nuevo `X-Tenant-Id`. |
+| 5 | Cargar el dashboard ("Overview") con un tenant activo | `GET /billing/summary` con `Authorization: Bearer <token>` + `X-Tenant-Id`; `GET /health` sin headers de auth | `MetricCard` "Monthly Spend" muestra `billing.monthly_spend`, "Savings Identified" muestra `billing.savings_identified` (`DashboardPage.jsx:65,71`); "Service Health" lista cada entrada de `health.services` con su `StatusPill` (`DashboardPage.jsx:104-111`). |
+| 6 | Logout | — | `localStorage.finops.session` y `finops.activeTenant` se limpian, `queryClient.clear()` (`App.jsx:83-89`); vuelve a mostrarse `LoginPage`. |
+
+**Fuera de este guion mínimo:** los pasos de ingesta y asistente (`POST /jobs/ingest`,
+`/assistant/conversations…`) los añade la propia tarjeta `jup-0xx-validacion-e2e` de F5, que ya los
+lista explícitamente en su alcance; aquí solo se fija el núcleo login → tenant → dashboard.
+
+**Regla de headers a verificar:** `X-Tenant-Id` solo debe viajar en llamadas posteriores a tener un
+tenant activo (`buildHeaders`, `api.js:3-10`, lo añade solo si `tenantId` es verdadero) — su ausencia
+en el paso 3 y su presencia desde el paso 5 en adelante es parte de la paridad esperada, no un defecto.
 
 ## Rollback
 
-<!-- Se completa en la tarea 3.2 -->
+- El scaffold actual de `apps/frontend` **no se elimina** hasta que la tarjeta `jup-0xx-validacion-e2e`
+  de F5 valide E2E el guion de la sección anterior contra el backend local.
+- Toda la migración avanza en la rama dedicada `docs/JUP-090-inventory-current-frontend` y las ramas
+  posteriores de la épica (una por tarjeta JUP de F2-F5); `develop` conserva el scaffold intacto hasta
+  el merge final aprobado.
+- Revertir una tarjeta de la épica equivale a descartar su rama; no requiere acción sobre
+  `apps/frontend` porque ninguna tarjeta anterior a la validación E2E borra el scaffold existente.
+- Si la validación E2E de F5 falla, el rollback es no mergear esa tarjeta: el scaffold en `develop`
+  sigue siendo el frontend actual, sin dejar un frontend a medio migrar en producción.

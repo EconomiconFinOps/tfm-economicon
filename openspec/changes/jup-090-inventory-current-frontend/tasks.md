@@ -21,9 +21,9 @@
 
 ## 3. Criterios de paridad y rollback
 
-- [ ] 3.1 Redactar el guion de paridad login → selección de tenant → dashboard: cada paso con acción,
+- [x] 3.1 Redactar el guion de paridad login → selección de tenant → dashboard: cada paso con acción,
   endpoint implicado y resultado observable, usando el seed `operator@example.com` / `secret`.
-- [ ] 3.2 Registrar en la línea base la regla de rollback: el scaffold actual no se borra hasta que la
+- [x] 3.2 Registrar en la línea base la regla de rollback: el scaffold actual no se borra hasta que la
   validación E2E de F5 pase, y qué se necesita para revertir.
 
 ## 4. Cierre y verificación
