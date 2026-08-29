@@ -49,3 +49,21 @@ test / lint / build -> N/A (doc-only, sin código de producto; harness TDD omiti
 - Las páginas `IngestPage.jsx` y `ConversationsPage.jsx` quedan marcadas RECONCILIAR sin confirmar aún
   qué pantalla del origen recibe su lógica; a confirmar en F3 (`portar-codigo-fuente`) contra el
   inventario de Economicon de JUP-083.
+
+## Human Approval
+
+- Change: jup-090-inventory-current-frontend
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-08-29
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: JUP-090 doc-only completada (11/11 tareas): línea base publicada en
+  `docs/planning/JUP-090-frontend-migration-baseline.md` con clasificación archivo a archivo,
+  contratos, guion de paridad login → tenant → dashboard y regla de rollback. Tres hallazgos
+  registrados (`RF-090-001` y `RF-090-003` abiertos para F3/F4; `RF-090-002` corregido en la propia
+  HU sobre `docs/spikes/frontend-migration.md`). Sin `docs/evidence/JUP-090-validation.md`: se sigue
+  el precedente de JUP-083 para HUs doc-only, con `review.md` como único registro de validación.
