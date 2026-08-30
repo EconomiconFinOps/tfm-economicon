@@ -9,7 +9,7 @@ Pending team review (primera HU hands-on de Lucia; sin aprobación humana regist
 - `apps/backend/app/core/logging.py`, `apps/backend/app/core/request_context.py`, `apps/backend/app/main.py`
 - `apps/processor/app/core/logging.py`, `apps/processor/app/core/request_context.py`, `apps/processor/app/main.py`
 - `apps/processor/app/clients/azure_cost.py`, `apps/processor/app/tasks/azure_cost_ingest.py`, `apps/processor/app/workers/runner.py`
-- `apps/backend/Dockerfile`, `apps/backend/package.json`, `apps/processor/app/run_all.py`, `apps/processor/app/run_api.py` (desactivación del access log nativo de uvicorn)
+- `apps/backend/app/run.py` (nuevo), `apps/backend/Dockerfile`, `apps/backend/package.json`, `apps/processor/app/run_all.py`, `apps/processor/app/run_api.py` (desactivación del access log y del log_config por defecto de uvicorn)
 - `docs/manuals/python-service-conventions.md`, `apps/backend/README.md`, `apps/processor/README.md`
 - Tests nuevos/modificados en `apps/backend/tests/` y `apps/processor/tests/`
 - `openspec/changes/jup-042-structured-logging/{proposal,design,specs,tasks}.md`
@@ -18,7 +18,7 @@ Pending team review (primera HU hands-on de Lucia; sin aprobación humana regist
 
 - [x] Implementation matches acceptance criteria (JSON estructurado + correlación por `request_id` en backend y processor, verificado con tests y con `docker compose` real).
 - [x] Tasks are marked accurately in `tasks.md` (18/18).
-- [x] Tests/checks were executed successfully (backend 15/15, processor 132/132).
+- [x] Tests/checks were executed successfully (backend 17/17, processor 134/134).
 - [x] `proposal.md`, `design.md`, `specs`, and `tasks.md` match the final state.
 - [x] Architecture decisions are recorded in ADRs or explicitly marked not applicable.
 - [x] All project decisions remain available in Git-tracked OpenSpec and project documentation.
@@ -30,14 +30,18 @@ sin coste ni vendor lock-in, no una decisión de arquitectura duradera (a difere
 ## Validation
 
 ```txt
-apps/backend: python -m pytest tests -> PASS: 15/15
-apps/processor: python -m pytest tests -> PASS: 132/132
-docker compose down -v && docker compose up -d backend processor -> ambos "healthy"
-  (volumenes locales reseteados tras sincronizar .env con .env.example)
+apps/backend: python -m pytest tests -> PASS: 17/17 (venv aislado)
+apps/processor: python -m pytest tests -> PASS: 134/134 (venv aislado)
+docker compose down -v && docker compose up -d --build backend processor -> ambos "healthy"
 Petición real GET /health en backend y processor -> logs JSON con el mismo request_id
   compartido entre todas las líneas de una misma petición, confirmado en ambos servicios.
 El access log nativo de uvicorn (texto plano) ya no aparece; sustituido por un evento
   "http_request" propio en JSON (method, path, status_code, duration_ms, request_id).
+Las líneas de ciclo de vida de uvicorn (Started server process, Waiting for application
+  shutdown, Application startup complete, etc.) también salen en JSON tras desactivar el
+  log_config por defecto de uvicorn (logger "uvicorn.error"), confirmado con reinicio real
+  de ambos contenedores.
+GitHub Actions (PR #23): 6/6 checks en verde.
 ```
 
 ## Review Findings

@@ -31,6 +31,7 @@
 - [x] 5.3 Processor: mismo log JSON `http_request` en `RequestIdMiddleware`, con test
 - [x] 5.4 Processor: desactivar el access log nativo de uvicorn (`access_log=False` en `run_all.py`/`run_api.py`)
 - [x] 5.5 Verificación manual en Docker: confirmar que ya no aparece ninguna línea de texto plano de uvicorn
+- [x] 5.6 Desactivar también el `log_config` por defecto de uvicorn (no solo el access log) para que las líneas de ciclo de vida (`uvicorn.error`: arranque, shutdown) salgan en JSON — nuevo `apps/backend/app/run.py`, `log_config=None` en `apps/processor/app/run_all.py`/`run_api.py`, con tests
 
 ## 6. Verificación y cierre
 
