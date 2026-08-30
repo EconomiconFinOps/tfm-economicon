@@ -9,6 +9,8 @@ Pending team review (primera HU hands-on de Lucia; sin aprobación humana regist
 - `apps/backend/app/core/logging.py`, `apps/backend/app/core/request_context.py`, `apps/backend/app/main.py`
 - `apps/processor/app/core/logging.py`, `apps/processor/app/core/request_context.py`, `apps/processor/app/main.py`
 - `apps/processor/app/clients/azure_cost.py`, `apps/processor/app/tasks/azure_cost_ingest.py`, `apps/processor/app/workers/runner.py`
+- `apps/backend/Dockerfile`, `apps/backend/package.json`, `apps/processor/app/run_all.py`, `apps/processor/app/run_api.py` (desactivación del access log nativo de uvicorn)
+- `docs/manuals/python-service-conventions.md`, `apps/backend/README.md`, `apps/processor/README.md`
 - Tests nuevos/modificados en `apps/backend/tests/` y `apps/processor/tests/`
 - `openspec/changes/jup-042-structured-logging/{proposal,design,specs,tasks}.md`
 
@@ -16,7 +18,7 @@ Pending team review (primera HU hands-on de Lucia; sin aprobación humana regist
 
 - [x] Implementation matches acceptance criteria (JSON estructurado + correlación por `request_id` en backend y processor, verificado con tests y con `docker compose` real).
 - [x] Tasks are marked accurately in `tasks.md` (18/18).
-- [x] Tests/checks were executed successfully (backend 14/14, processor 131/131).
+- [x] Tests/checks were executed successfully (backend 15/15, processor 132/132).
 - [x] `proposal.md`, `design.md`, `specs`, and `tasks.md` match the final state.
 - [x] Architecture decisions are recorded in ADRs or explicitly marked not applicable.
 - [x] All project decisions remain available in Git-tracked OpenSpec and project documentation.
@@ -28,11 +30,14 @@ sin coste ni vendor lock-in, no una decisión de arquitectura duradera (a difere
 ## Validation
 
 ```txt
-apps/backend: python -m pytest tests -> PASS: 14/14
-apps/processor: python -m pytest tests -> PASS: 131/131
-docker compose up -d backend processor -> ambos "healthy"
+apps/backend: python -m pytest tests -> PASS: 15/15
+apps/processor: python -m pytest tests -> PASS: 132/132
+docker compose down -v && docker compose up -d backend processor -> ambos "healthy"
+  (volumenes locales reseteados tras sincronizar .env con .env.example)
 Petición real GET /health en backend y processor -> logs JSON con el mismo request_id
   compartido entre todas las líneas de una misma petición, confirmado en ambos servicios.
+El access log nativo de uvicorn (texto plano) ya no aparece; sustituido por un evento
+  "http_request" propio en JSON (method, path, status_code, duration_ms, request_id).
 ```
 
 ## Review Findings
@@ -46,13 +51,8 @@ Petición real GET /health en backend y processor -> logs JSON con el mismo requ
 - La migración de `logging.getLogger` a `structlog.get_logger` en `processor` se completó en los tres
   módulos identificados en `design.md`. No quedan usos de `logging.getLogger` fuera de la propia
   configuración en ninguno de los dos servicios.
-- El `.env` local de Lucia tenía `DATABASE_URL` con el esquema `postgresql+psycopg://` en vez de
-  `cockroachdb+psycopg://` (desincronizado de `.env.example`, que ya tiene el valor correcto) — corregido
-  localmente durante la verificación manual; no es un defecto del repo.
-- Verificación manual (tarea 5.1) bloqueada inicialmente por: disco C: casi lleno (resuelto liberando
-  espacio y moviendo el disco virtual de Docker a D:), y una capa de imagen Docker corrupta tras la
-  migración de datos (resuelto con `docker system prune -af` + rebuild `--no-cache --pull`). Ninguno de
-  los dos es un problema del código de esta HU.
+- Verificación manual (tarea 6.1) requirió ajustes de entorno local (config y Docker) sin relación con
+  el código de esta HU; no aportan al contenido revisable del PR.
 
 ## Human Approval
 
