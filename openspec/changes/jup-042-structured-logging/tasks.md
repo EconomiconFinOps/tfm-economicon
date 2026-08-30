@@ -6,9 +6,9 @@
 
 ## 2. Backend: correlación por request
 
-- [ ] 2.1 Añadir middleware FastAPI en `apps/backend/app/main.py` que genere un `request_id` (UUID) por petición y lo vincule vía `structlog.contextvars.bind_contextvars`
-- [ ] 2.2 Test: dos peticiones concurrentes simuladas generan logs con `request_id` distinto cada una, sin mezclarse
-- [ ] 2.3 Test: varias líneas de log dentro de una misma petición comparten el mismo `request_id`
+- [x] 2.1 Añadir middleware FastAPI en `apps/backend/app/main.py` que genere un `request_id` (UUID) por petición y lo vincule vía `structlog.contextvars.bind_contextvars`
+- [x] 2.2 Test: dos peticiones concurrentes simuladas generan logs con `request_id` distinto cada una, sin mezclarse
+- [x] 2.3 Test: varias líneas de log dentro de una misma petición comparten el mismo `request_id`
 - [ ] 2.4 Migrar `logging.getLogger(__name__)` existentes en `backend` a `structlog.get_logger(__name__)`
 
 ## 3. Processor: configuración base de structlog
