@@ -19,9 +19,9 @@
 
 ## 4. Processor: correlación por request
 
-- [ ] 4.1 Añadir middleware FastAPI en `apps/processor/app/main.py` equivalente al de `backend`
-- [ ] 4.2 Test: dos peticiones concurrentes simuladas generan logs con `request_id` distinto cada una
-- [ ] 4.3 Test: varias líneas de log dentro de una misma petición comparten el mismo `request_id`
+- [x] 4.1 Añadir middleware FastAPI en `apps/processor/app/main.py` equivalente al de `backend`
+- [x] 4.2 Test: dos peticiones concurrentes simuladas generan logs con `request_id` distinto cada una
+- [x] 4.3 Test: varias líneas de log dentro de una misma petición comparten el mismo `request_id`
 - [ ] 4.4 Migrar `logging.getLogger(__name__)` existentes en `processor` (`clients/azure_cost.py`, `tasks/azure_cost_ingest.py`, `workers/runner.py`, y equivalentes) a `structlog.get_logger(__name__)`
 
 ## 5. Verificación y cierre
