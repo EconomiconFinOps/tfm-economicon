@@ -45,6 +45,7 @@ El access log nativo de uvicorn (texto plano) ya no aparece; sustituido por un e
 | ID | Tipo | Severidad | Scope | Descripcion | Accion | Backlog |
 |----|------|-----------|-------|-------------|--------|---------|
 | RF-042-001 | Harness documentation | Low | Out of scope | La skill `openspec-apply-change` referencia `pnpm hu:check:pre-code`, un script que no existe en este repo (residuo de plantilla genérica). El gate real disponible es `pnpm jup:check -- --change <name>`. | Corregir la skill local para referenciar el script real | Open (skill personal, no versionada) |
+| RF-042-002 | Missing test dependency | Low | Fixed in this HU | `apps/backend/requirements-dev.txt` no declaraba `httpx`, usado directamente en los tests nuevos de middleware. Pasaba en local por contaminación del entorno global (instalado ya vía `processor`), pero fallaba en CI (entornos aislados). Detectado por el check `Python tests (backend)` del PR #23. | Añadido `httpx>=0.27.0` a `requirements-dev.txt`; verificado en venv aislado | Fixed |
 
 ## Risks / Follow-Ups
 
