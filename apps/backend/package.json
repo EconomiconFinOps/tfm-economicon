@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --no-access-log",
+    "dev": "python -m app.run --reload",
     "build": "python -m compileall app",
     "lint": "python -m compileall app",
     "test": "python -m pytest tests",

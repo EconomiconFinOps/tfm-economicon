@@ -21,6 +21,7 @@ def main() -> None:
         port=settings.processor_port,
         reload=False,
         access_log=False,
+        log_config=None,
     )
 
 
