@@ -23,3 +23,18 @@ def test_configure_logging_emits_valid_json_with_required_fields(capsys):
     assert "timestamp" in payload
 
     logging.getLogger().handlers.clear()
+
+
+def test_configure_logging_supports_percent_style_positional_args(capsys):
+    configure_logging()
+
+    logger = structlog.get_logger("test.logger")
+    logger.info("Processing job %s", "job-123")
+
+    captured = capsys.readouterr()
+    line = captured.out.strip().splitlines()[-1]
+    payload = json.loads(line)
+
+    assert payload["event"] == "Processing job job-123"
+
+    logging.getLogger().handlers.clear()
