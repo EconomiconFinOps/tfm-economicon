@@ -13,9 +13,9 @@
 
 ## 3. Processor: configuración base de structlog
 
-- [ ] 3.1 Añadir `structlog` a `apps/processor/requirements.txt`
-- [ ] 3.2 Reescribir `apps/processor/app/core/logging.py` para configurar `structlog` con salida JSON (mismos campos mínimos que backend)
-- [ ] 3.3 Test: arrancar el logging configurado y verificar que una línea de log emitida es JSON válido
+- [x] 3.1 Añadir `structlog` a `apps/processor/requirements.txt`
+- [x] 3.2 Reescribir `apps/processor/app/core/logging.py` para configurar `structlog` con salida JSON (mismos campos mínimos que backend)
+- [x] 3.3 Test: arrancar el logging configurado y verificar que una línea de log emitida es JSON válido
 
 ## 4. Processor: correlación por request
 
