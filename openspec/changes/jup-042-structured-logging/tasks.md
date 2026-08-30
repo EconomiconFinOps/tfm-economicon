@@ -26,7 +26,7 @@
 
 ## 5. Verificación y cierre
 
-- [ ] 5.1 Verificación manual local (`docker compose up`): una petición HTTP real produce logs JSON con el mismo `request_id` en `backend` y en `processor`
-- [ ] 5.2 Ejecutar la batería de tests completa de ambos servicios y confirmar que no hay regresiones
-- [ ] 5.3 Actualizar `review.md` documentando que no aplica ADR (decisión no arquitectónica/duradera, justificado en `design.md`) y cualquier alcance no cubierto (p. ej. módulos no migrados)
-- [ ] 5.4 Crear `docs/manuals/python-service-conventions.md` con la convención de logging (usar `structlog.get_logger`, no `logging.getLogger`, en código nuevo de `backend`/`processor`) y añadir un enlace a ese archivo desde `## Notas` en `apps/backend/README.md` y `apps/processor/README.md`, sin duplicar el contenido
+- [x] 5.1 Verificación manual local (`docker compose up`): una petición HTTP real produce logs JSON con el mismo `request_id` en `backend` y en `processor`
+- [x] 5.2 Ejecutar la batería de tests completa de ambos servicios y confirmar que no hay regresiones
+- [x] 5.3 Actualizar `review.md` documentando que no aplica ADR (decisión no arquitectónica/duradera, justificado en `design.md`) y cualquier alcance no cubierto (p. ej. módulos no migrados)
+- [x] 5.4 Crear `docs/manuals/python-service-conventions.md` con la convención de logging (usar `structlog.get_logger`, no `logging.getLogger`, en código nuevo de `backend`/`processor`) y añadir un enlace a ese archivo desde `## Notas` en `apps/backend/README.md` y `apps/processor/README.md`, sin duplicar el contenido
