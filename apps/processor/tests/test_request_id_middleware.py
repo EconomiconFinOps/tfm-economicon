@@ -73,3 +73,30 @@ def test_main_app_registers_request_id_middleware():
 
     middleware_classes = [m.cls for m in main_app.user_middleware]
     assert RequestIdMiddleware in middleware_classes
+
+
+def test_middleware_logs_http_access_line(capsys):
+    configure_logging()
+    app = _build_app()
+
+    async def call() -> httpx.Response:
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            return await client.get("/ping")
+
+    asyncio.run(call())
+
+    captured_lines = [
+        json.loads(line)
+        for line in capsys.readouterr().out.strip().splitlines()
+        if line.strip()
+    ]
+    access_lines = [line for line in captured_lines if line["event"] == "http_request"]
+
+    assert len(access_lines) == 1
+    access_line = access_lines[0]
+    assert access_line["method"] == "GET"
+    assert access_line["path"] == "/ping"
+    assert access_line["status_code"] == 200
+    assert "duration_ms" in access_line
