@@ -15,7 +15,14 @@ def main() -> None:
     thread = threading.Thread(target=worker.run_forever, daemon=True, name="processor-worker")
     thread.start()
 
-    uvicorn.run("app.main:app", host="0.0.0.0", port=settings.processor_port, reload=False)
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=settings.processor_port,
+        reload=False,
+        access_log=False,
+        log_config=None,
+    )
 
 
 if __name__ == "__main__":

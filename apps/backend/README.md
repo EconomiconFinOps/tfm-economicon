@@ -125,6 +125,7 @@ La cuenta seed local para pruebas es:
 
 ## Notas
 
+- Convenciones de código Python (logging, etc.): ver `docs/manuals/python-service-conventions.md`.
 - `db/database.py` encapsula el acceso a CockroachDB y ejecuta migraciones.
 - `services/rabbitmq_queue.py` publica jobs hacia el `processor`.
 - `services/vector_store.py` consulta el contexto vectorial en pgvector.

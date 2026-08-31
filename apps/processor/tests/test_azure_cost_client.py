@@ -1,5 +1,4 @@
 import json
-import logging
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 
@@ -17,6 +16,7 @@ from app.clients.azure_cost import (
     UrllibTransport,
 )
 from app.core.config import Settings
+from app.core.logging import configure_logging
 
 
 BASE_URL = "http://fake-azure.local:8002"
@@ -493,21 +493,27 @@ def test_pagination_cycles_and_page_limit_are_detected():
         ).query_all(SUBSCRIPTION_ID, DEFINITION)
 
 
-def test_logs_are_json_and_do_not_contain_token_or_body(caplog):
+def test_logs_are_json_and_do_not_contain_token_or_body(capsys):
+    configure_logging()
     transport = FakeTransport([response([[1, "USD"]])])
     client = AzureCostClient(settings(), transport=transport)
 
-    with caplog.at_level(logging.INFO, logger="app.clients.azure_cost"):
-        client.query_all(SUBSCRIPTION_ID, DEFINITION)
+    client.query_all(SUBSCRIPTION_ID, DEFINITION)
 
-    events = [json.loads(record.message) for record in caplog.records]
+    captured = capsys.readouterr().out
+    events = [
+        json.loads(line)
+        for line in captured.strip().splitlines()
+        if line.strip()
+    ]
+    events = [event for event in events if event["logger"] == "app.clients.azure_cost"]
     assert {event["event"] for event in events} == {
         "azure_cost_request",
         "azure_cost_page_received",
         "azure_cost_ingestion_completed",
     }
-    assert "super-secret-token" not in caplog.text
-    assert "PreTaxCost" not in caplog.text
+    assert "super-secret-token" not in captured
+    assert "PreTaxCost" not in captured
 
 
 def test_settings_reject_credentials_in_url_and_invalid_timeout():
