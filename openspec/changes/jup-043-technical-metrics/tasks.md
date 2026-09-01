@@ -12,10 +12,10 @@
 
 ## 3. Processor: instrumentación HTTP
 
-- [ ] 3.1 Añadir `prometheus-client` a `apps/processor/requirements.txt`.
-- [ ] 3.2 Crear `apps/processor/app/core/metrics.py` con el `Counter` de requests HTTP (`processor_http_requests_total`) y el `Histogram` de latencia (`processor_http_request_duration_ms`), replicando el patrón del backend.
-- [ ] 3.3 Extender el middleware equivalente en `apps/processor/app/core/request_context.py`.
-- [ ] 3.4 Añadir el router de `GET /metrics` y registrarlo en `apps/processor/app/main.py`.
+- [x] 3.1 Añadir `prometheus-client` a `apps/processor/requirements.txt`.
+- [x] 3.2 Crear `apps/processor/app/core/metrics.py` con el `Counter` de requests HTTP (`processor_http_requests_total`) y el `Histogram` de latencia (`processor_http_request_duration_ms`), replicando el patrón del backend.
+- [x] 3.3 Añadir `MetricsMiddleware` dedicado en `apps/processor/app/core/metrics.py`, replicando el patrón del backend.
+- [x] 3.4 Añadir el router de `GET /metrics` y registrarlo en `apps/processor/app/main.py`.
 
 ## 4. Infraestructura: Prometheus y Grafana
 
