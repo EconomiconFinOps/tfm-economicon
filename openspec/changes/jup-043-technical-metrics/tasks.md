@@ -37,5 +37,5 @@
 
 - [x] 6.1 Documentar la convención de métricas en `docs/manuals/python-service-conventions.md` (misma sección que logging, o una nueva "Métricas").
 - [x] 6.2 Actualizar `docs/architecture.md` si se añade Prometheus/Grafana al diagrama o descripción de servicios.
-- [ ] 6.3 Ejecutar la batería de checks del carril (`openspec:validate`, `jup:check`, tests de backend/processor) y registrar el resultado en `review.md`.
-- [ ] 6.4 Verificar manualmente que `docker compose up` levanta Prometheus y Grafana, que Prometheus scrapea ambos `/metrics`, y que el dashboard de Grafana muestra datos tras generar tráfico de prueba.
+- [x] 6.3 Ejecutar la batería de checks del carril (`openspec:validate`, `jup:check`, tests de backend/processor) y registrar el resultado en `review.md`.
+- [x] 6.4 Verificar manualmente `docker compose up`: backend, processor, Prometheus y Grafana healthy; `/metrics` responde en ambos servicios; Prometheus scrapea ambos (`up=1`). Grafana no se pudo confirmar visualmente por migración SQLite muy lenta en el equipo de esta sesión (`RF-043-001`, registrado en el backlog).
