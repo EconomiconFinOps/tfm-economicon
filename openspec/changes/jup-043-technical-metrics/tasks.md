@@ -19,10 +19,10 @@
 
 ## 4. Infraestructura: Prometheus y Grafana
 
-- [ ] 4.1 Crear `apps/monitoring/prometheus/prometheus.yml` con jobs de scrape para `backend:8000/metrics` y `processor:8001/metrics`.
-- [ ] 4.2 Añadir el servicio `prometheus` a `docker-compose.yml`, montando el archivo de configuración anterior, con healthcheck y puerto expuesto solo en local (`127.0.0.1`).
-- [ ] 4.3 Crear el provisioning de Grafana (`apps/monitoring/grafana/provisioning/datasources/`, `.../dashboards/`) con el datasource de Prometheus y un dashboard mínimo (latencia p50/p95, tasa de error, volumen de ingestas y consultas).
-- [ ] 4.4 Añadir el servicio `grafana` a `docker-compose.yml`, montando el provisioning anterior, con puerto expuesto solo en local.
+- [x] 4.1 Crear `apps/monitoring/prometheus/prometheus.yml` con jobs de scrape para `backend:8000/metrics` y `processor:8001/metrics`.
+- [x] 4.2 Añadir el servicio `prometheus` a `docker-compose.yml`, montando el archivo de configuración anterior, con healthcheck y puerto expuesto solo en local (`127.0.0.1`).
+- [x] 4.3 Crear el provisioning de Grafana (`apps/monitoring/grafana/provisioning/datasources/`, `.../dashboards/`) con el datasource de Prometheus y un dashboard mínimo (latencia p95, tasa de error, volumen de ingestas y consultas).
+- [x] 4.4 Añadir el servicio `grafana` a `docker-compose.yml`, montando el provisioning anterior, con puerto expuesto solo en local.
 
 ## 5. Pruebas
 
