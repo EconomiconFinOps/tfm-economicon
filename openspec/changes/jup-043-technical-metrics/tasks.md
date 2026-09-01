@@ -7,8 +7,8 @@
 
 ## 2. Backend: métricas de dominio
 
-- [ ] 2.1 Añadir contador `backend_ingest_jobs_total` en `metrics.py` e incrementarlo en `create_ingest_job` (`apps/backend/app/api/routes/jobs.py`) tras una creación exitosa.
-- [ ] 2.2 Añadir contador `backend_assistant_queries_total` e incrementarlo en el/los handler(s) de `apps/backend/app/api/routes/assistant.py` tras una respuesta exitosa.
+- [x] 2.1 Añadir contador `backend_ingest_jobs_total` en `metrics.py` e incrementarlo en `create_ingest_job` (`apps/backend/app/api/routes/jobs.py`) tras una creación exitosa.
+- [x] 2.2 Añadir contador `backend_assistant_queries_total` e incrementarlo en `send_message` de `apps/backend/app/api/routes/assistant.py` tras una respuesta exitosa.
 
 ## 3. Processor: instrumentación HTTP
 
