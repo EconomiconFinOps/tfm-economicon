@@ -41,6 +41,6 @@
 - [x] 4.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-091-<secuencia>`) cada
   capacidad de backend ausente, sin resolverla aquí; anotar como riesgo si el resultado obliga a
   replanificar el alcance de F3.
-- [ ] 4.4 Ejecutar `corepack pnpm openspec:validate` y
+- [x] 4.4 Ejecutar `corepack pnpm openspec:validate` y
   `corepack pnpm jup:check -- --change jup-091-inventory-economicon-frontend`; registrar el resultado
   en `review.md` junto con la excepción doc-only del harness TDD (sin tester/coder/mutación).

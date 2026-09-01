@@ -2,7 +2,7 @@
 
 ## Result
 
-Pending — quedan por ejecutar los checks de la tarea 4.4.
+Accepted
 
 ## Scope Reviewed
 
@@ -22,8 +22,8 @@ Pending — quedan por ejecutar los checks de la tarea 4.4.
 - [x] El uso real se verificó leyendo el código, no solo el `package.json`.
 - [x] Los huecos se agruparon por capacidad de backend ausente, no por pantalla.
 - [x] El inventario anota el commit snapshot del origen y nada suyo se commiteó en este repo.
-- [ ] Checks del carril ejecutados y en verde (tarea 4.4).
-- [ ] Tasks.md marcado 12/12.
+- [x] Checks del carril ejecutados y en verde (tarea 4.4).
+- [x] Tasks.md marcado 12/12.
 
 ADR no aplicable. Esta HU documenta el estado de un repositorio externo; no introduce ninguna
 decisión de arquitectura duradera. La adopción de TypeScript, con su ADR, corresponde a la tarjeta
@@ -31,7 +31,20 @@ decisión de arquitectura duradera. La adopción de TypeScript, con su ADR, corr
 
 ## Validation
 
-Pendiente de completar en la tarea 4.4.
+```txt
+corepack pnpm openspec:validate -> PASS: 18 items validated strictly (3 specs, 15 changes)
+corepack pnpm jup:check -- --change jup-091-inventory-economicon-frontend -> PASS: enlazado con Trello y completo
+corepack pnpm jup:cleanup:check -> PASS: 341 archivos sin agentes personales, binarios ni tareas paralelas
+test / lint / build -> N/A (doc-only, sin código de producto; harness TDD omitido: sin tester/coder/mutación)
+```
+
+Verificaciones propias del inventario, ejecutadas durante el apply:
+
+```txt
+Cobertura de dependencias -> PASS: 61/61 declaradas presentes, 0 sin clasificar; suma 11+2+48 = 61
+Cobertura del mapeo       -> PASS: 5/5 rutas presentes, 14/14 filas con contrato, PARCIAL o SIN EQUIVALENTE
+Deteccion de uso real     -> 13 dependencias sin un solo import; 38 alcanzadas solo por ui/ (codigo muerto)
+```
 
 ## Review Findings
 
