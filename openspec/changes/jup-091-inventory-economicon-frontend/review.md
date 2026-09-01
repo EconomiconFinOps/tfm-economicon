@@ -66,3 +66,26 @@ Deteccion de uso real     -> 13 dependencias sin un solo import; 38 alcanzadas s
   (JUP-072 a JUP-077). Desbloquean `index` y `/operational` sin lógica de negocio nueva.
 - F2 arranca con una decisión pendiente (`RF-091-002`) que cambia mucho el `package.json` resultante:
   11 dependencias si se descarta shadcn/ui, ~17 si se adopta.
+
+## Human Approval
+
+- Change: jup-091-inventory-economicon-frontend
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-08-31
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: JUP-091 doc-only completada (12/12 tareas): inventario del origen publicado en
+  `docs/planning/JUP-091-economicon-source-inventory.md` con las 61 dependencias clasificadas
+  (11 `MANTENER`, 2 `SUSTITUIR`, 48 `DESCARTAR`) y las 5 pantallas mapeadas contra los contratos
+  reales del backend. Cuatro hallazgos registrados: `RF-091-001` corregido en la propia HU (el
+  supuesto T5 del spike describía un stack con MUI y shadcn/ui que no se usa); `RF-091-002`,
+  `RF-091-003` y `RF-091-004` quedan abiertos para F2, la épica y el backend respectivamente. Cierra
+  la tarjeta F1 `inventariar-frontend-economicon`. Sin `docs/evidence/JUP-091-validation.md`: se
+  sigue el precedente de JUP-083 y JUP-090 para HUs doc-only, con `review.md` como único registro de
+  validación. **El resultado obliga a replanificar F3 antes de arrancarla** (`RF-091-003`): con 4 de
+  5 pantallas sin ningún contrato, portar el código fuente no produce una aplicación funcional. Esa
+  decisión de alcance queda explícitamente fuera de esta HU.
