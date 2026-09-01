@@ -162,8 +162,12 @@ forma automática para que no dependa de un recuento a ojo:
    búsqueda restringida a las pantallas reales (`App`, `routes`, `Layout`, los 5 dashboards,
    `ExportButton`, `main`) y por separado a `src/app/components/ui/`. Confirmó que **38 paquetes**
    solo los alcanza `ui/`, que ninguna pantalla importa.
-3. **Cobertura.** Se verificó que cada uno de los 61 nombres declarados aparece en este documento
-   —los `@radix-ui/*` a través de su entrada de grupo—. Resultado: **0 dependencias sin clasificar**.
+3. **Cobertura de dependencias.** Se verificó que cada uno de los 61 nombres declarados aparece en
+   este documento —los `@radix-ui/*` a través de su entrada de grupo—. Resultado: **0 dependencias
+   sin clasificar**, y la suma por etiqueta (11 + 2 + 48) cuadra con las 61 declaradas.
+4. **Cobertura del mapeo.** Se verificó que las 5 rutas están presentes y que las **14 filas** de la
+   tabla de mapeo llevan todas contrato, `PARCIAL` o `SIN EQUIVALENTE`. Resultado: **0 filas sin
+   estado**.
 
 Reproducible sobre el commit `1fe0030` del origen indicado en el snapshot.
 

@@ -36,7 +36,7 @@
 - [x] 4.1 Enlazar `docs/planning/JUP-091-economicon-source-inventory.md` desde
   `docs/spikes/frontend-migration.md` y marcar como completados los tres ítems de la tarjeta F1
   `inventariar-frontend-economicon`.
-- [ ] 4.2 Verificar cobertura: la clasificación cubre las 61 dependencias declaradas y las 5 rutas
+- [x] 4.2 Verificar cobertura: la clasificación cubre las 61 dependencias declaradas y las 5 rutas
   están todas mapeadas con contrato o con `SIN EQUIVALENTE`.
 - [ ] 4.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-091-<secuencia>`) cada
   capacidad de backend ausente, sin resolverla aquí; anotar como riesgo si el resultado obliga a
