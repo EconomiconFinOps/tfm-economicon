@@ -148,6 +148,25 @@ conviene que F2 lo haga de forma consciente y no por arrastre.
 | `DESCARTAR` | 48 | 26 Radix + 7 apoyo shadcn + react-hook-form + next-themes + MUI/emotion (4) + 9 sin ningún import |
 | **Total** | **61** | Coincide con lo declarado |
 
+### Método de verificación
+
+El uso real no se dedujo del `package.json` sino leyendo el código, y la cobertura se comprobó de
+forma automática para que no dependa de un recuento a ojo:
+
+1. **Detección de uso.** Se concatenó el contenido de todos los `.ts`, `.tsx`, `.css` y `.mjs` bajo
+   `src/`, más `vite.config.ts`, `postcss.config.mjs` e `index.html`, y se buscó cada nombre
+   declarado como especificador de import (entre comillas, seguido de `/` o de cierre). Resultado:
+   **13 dependencias sin una sola referencia** en todo el árbol —las de G5—, incluidas las cuatro de
+   MUI/Emotion.
+2. **Alcance del uso.** Para separar "lo usa la aplicación" de "lo usa código muerto", se repitió la
+   búsqueda restringida a las pantallas reales (`App`, `routes`, `Layout`, los 5 dashboards,
+   `ExportButton`, `main`) y por separado a `src/app/components/ui/`. Confirmó que **38 paquetes**
+   solo los alcanza `ui/`, que ninguna pantalla importa.
+3. **Cobertura.** Se verificó que cada uno de los 61 nombres declarados aparece en este documento
+   —los `@radix-ui/*` a través de su entrada de grupo—. Resultado: **0 dependencias sin clasificar**.
+
+Reproducible sobre el commit `1fe0030` del origen indicado en el snapshot.
+
 ## Mapeo de pantallas a contratos del backend
 
 <!-- Se completa en las tareas 3.1-3.3 -->
