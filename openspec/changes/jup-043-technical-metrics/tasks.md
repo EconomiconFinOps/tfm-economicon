@@ -26,12 +26,12 @@
 
 ## 5. Pruebas
 
-- [ ] 5.1 Test de backend: `GET /metrics` responde 200 con contenido en formato Prometheus.
-- [ ] 5.2 Test de backend: tras una request a un endpoint existente, el contador HTTP correspondiente aumenta.
-- [ ] 5.3 Test de backend: tras `POST /jobs/ingest` exitoso, `backend_ingest_jobs_total` aumenta.
-- [ ] 5.4 Test de backend: tras una consulta exitosa al asistente, `backend_assistant_queries_total` aumenta.
-- [ ] 5.5 Test de processor: `GET /metrics` responde 200 con contenido en formato Prometheus.
-- [ ] 5.6 Test de processor: tras una request existente, el contador HTTP correspondiente aumenta.
+- [x] 5.1 Test de backend: `GET /metrics` responde 200 con contenido en formato Prometheus. (`test_metrics.py`)
+- [x] 5.2 Test de backend: tras una request a un endpoint existente, el contador HTTP correspondiente aumenta. (`test_metrics.py`)
+- [x] 5.3 Test de backend: tras `POST /jobs/ingest` exitoso, `backend_ingest_jobs_total` aumenta. (`test_domain_metrics.py`)
+- [x] 5.4 Test de backend: tras una consulta exitosa al asistente, `backend_assistant_queries_total` aumenta. (`test_domain_metrics.py`)
+- [x] 5.5 Test de processor: `GET /metrics` responde 200 con contenido en formato Prometheus. (`test_metrics.py`)
+- [x] 5.6 Test de processor: tras una request existente, el contador HTTP correspondiente aumenta. (`test_metrics.py`)
 
 ## 6. Documentación y cierre
 
