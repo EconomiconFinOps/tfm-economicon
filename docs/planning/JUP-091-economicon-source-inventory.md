@@ -261,4 +261,11 @@ la épica decida qué se conecta, qué se pospone y qué se recorta del alcance 
 
 ## Hallazgos
 
-<!-- Se completa en la tarea 4.3 -->
+Detalle en `review.md` de esta HU y en `openspec/findings/backlog.md`.
+
+| ID | Estado | Descripción | Acción |
+| --- | --- | --- | --- |
+| `RF-091-001` | Fixed (en esta HU) | El supuesto T5 de JUP-083 describía el stack del origen como "Tailwind v4 + shadcn/ui + MUI 7 + next-themes". **MUI 7 y `@emotion/*` no tienen un solo import** en todo el árbol; `next-themes` solo lo alcanza código muerto. | Matizado en `docs/spikes/frontend-migration.md` (supuesto T5 y tabla de contexto) como parte de esta HU. |
+| `RF-091-002` | Open | Los 48 componentes de `src/app/components/ui/` (shadcn/ui) son código muerto: ninguna pantalla los importa. Con ellos, 38 de las 61 dependencias declaradas quedan sin uso real. Pero el destino sí necesita primitivos de formulario (login, selector de tenant, ingesta, chat), hoy resueltos en HTML plano. | F2 (`reconciliar-package-json`) debe decidir si adopta shadcn/ui deliberadamente como sistema de diseño —lo que requeriría ~4-6 paquetes Radix, no los 26 declarados— o lo descarta por completo. |
+| `RF-091-003` | Open | Siete capacidades de backend ausentes (C1-C7) impiden conectar la UI del origen: serie temporal de costes, desglose por dimensión, multi-cloud AWS/GCP, objetivos y acciones de recorte, anomalías, recomendaciones e inventario de recursos. Solo 2 de 14 datos tienen contrato, ambos parciales; 4 de las 5 pantallas no tienen ninguno. | Decisión de épica: qué se conecta, qué se pospone y qué se recorta del alcance de F3. C1 y C2 son las más baratas (el dato ya está en BD, falta camino de lectura). |
+| `RF-091-004` | Open | `GET /billing/summary` devuelve `monthly_spend` y `savings_identified` **hardcodeados** en `apps/backend/app/db/database.py`; solo `open_ingestions` se calcula de verdad. El único contrato de costes existente no está respaldado por datos reales, pese a que el processor ya ingesta costes Azure a CockroachDB (JUP-072 a JUP-077). | Registrar en la épica: conectar `/billing/summary` a los datos ingestados es prerrequisito para que el dashboard muestre información real. |

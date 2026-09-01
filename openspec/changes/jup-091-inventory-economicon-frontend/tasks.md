@@ -38,7 +38,7 @@
   `inventariar-frontend-economicon`.
 - [x] 4.2 Verificar cobertura: la clasificación cubre las 61 dependencias declaradas y las 5 rutas
   están todas mapeadas con contrato o con `SIN EQUIVALENTE`.
-- [ ] 4.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-091-<secuencia>`) cada
+- [x] 4.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-091-<secuencia>`) cada
   capacidad de backend ausente, sin resolverla aquí; anotar como riesgo si el resultado obliga a
   replanificar el alcance de F3.
 - [ ] 4.4 Ejecutar `corepack pnpm openspec:validate` y
