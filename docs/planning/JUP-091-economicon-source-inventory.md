@@ -117,7 +117,36 @@ necesario para login, selector de tenant, ingesta y chat sería del orden de **4
 (`label`, `select`, `slot`, `separator` y quizá `dialog`/`tooltip`), no los 26 declarados. La
 decisión es de F2; aquí solo se documenta el coste de cada camino (`RF-091-002`).
 
-<!-- El resto de dependencias se clasifica en la tarea 2.3 -->
+### Clasificación · runtime, routing, build y sobrantes
+
+| Dependencia / grupo | Nº | Clasificación | Motivo |
+| --- | --- | --- | --- |
+| `react` 18.3.1 · `react-dom` 18.3.1 | 2 | `MANTENER` | Misma versión exacta que el destino (`^18.3.1`): sin salto ni riesgo de dos Reacts en el árbol. En el origen están en `peerDependencies`; al integrarse en el monorepo pasan a `dependencies` como ya lo están en `@finops/frontend`. |
+| `react-router` 7.13.0 | 1 | `MANTENER` | Dependencia **nueva** para el destino, que hoy navega con estado manual `activeView` en `App.jsx`. El spike ya decidió adoptar el routing del origen (T2 de JUP-083). |
+| `recharts` 2.15.2 | 1 | `MANTENER` | Única librería de gráficos, con uso real en los 5 dashboards. El destino no tiene gráficos: capacidad nueva, no duplicada. |
+| `vite` ^6.4.2 (override 6.3.5) · `@vitejs/plugin-react` 4.7.0 | 2 | `SUSTITUIR` | El destino usa Vite **5** (`^5.3.3`) y plugin 4.3.1. Salto de mayor 5→6 que F2 debe resolver explícitamente; no se arrastra la versión del origen sin decidirlo. Ojo al `pnpm.overrides` que fija 6.3.5 pese a declarar `^6.4.2`: es una inconsistencia del origen que no debe copiarse a ciegas. |
+| `date-fns` 3.6.0 | 1 | `DESCARTAR` | Cero imports propios; solo existe como dependencia transitiva esperada por `react-day-picker`, que a su vez se descarta. |
+| `motion` 12.23.24 | 1 | `DESCARTAR` | Librería de animación sin ningún import. El origen no anima nada. |
+| `canvas-confetti` 1.9.4 | 1 | `DESCARTAR` | Sin imports. Efecto decorativo ajeno a un producto FinOps. |
+| `react-dnd` · `react-dnd-html5-backend` | 2 | `DESCARTAR` | Drag and drop sin imports; ninguna pantalla del origen ni del destino lo requiere. |
+| `@popperjs/core` · `react-popper` | 2 | `DESCARTAR` | Posicionamiento de popovers sin imports; Radix ya trae el suyo si se adoptara shadcn. |
+| `react-responsive-masonry` · `react-slick` | 2 | `DESCARTAR` | Layout masonry y carrusel sin imports; sin equivalente ni necesidad en la épica. |
+| | **15** | | |
+
+**Nota sobre `dependencies` vs `peerDependencies`.** El origen declara React y React-DOM solo como
+`peerDependencies`, algo propio de una librería, no de una aplicación: sin `dependencies` ni
+lockfile propio coherente, el árbol se resuelve por lo que instale quien lo consuma. Al integrarse en
+el monorepo esa distinción desaparece —`@finops/frontend` ya las lleva en `dependencies`— pero
+conviene que F2 lo haga de forma consciente y no por arrastre.
+
+### Resumen de la clasificación
+
+| Clasificación | Nº | Detalle |
+| --- | --- | --- |
+| `MANTENER` | 11 | React (2), react-router, recharts, lucide-react, Tailwind (2), tw-animate-css, utilidades de clases (3) |
+| `SUSTITUIR` | 2 | Vite y `@vitejs/plugin-react` (salto de mayor 5→6 a decidir en F2) |
+| `DESCARTAR` | 48 | 26 Radix + 7 apoyo shadcn + react-hook-form + next-themes + MUI/emotion (4) + 9 sin ningún import |
+| **Total** | **61** | Coincide con lo declarado |
 
 ## Mapeo de pantallas a contratos del backend
 

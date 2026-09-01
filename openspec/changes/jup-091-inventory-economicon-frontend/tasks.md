@@ -12,7 +12,7 @@
 - [x] 2.2 Clasificar el stack de UI —Tailwind v4, shadcn/ui + Radix, MUI 7, `lucide-react`,
   `next-themes` y utilidades de estilo (`clsx`, `tailwind-merge`, `class-variance-authority`)— como
   `MANTENER` / `SUSTITUIR` / `DESCARTAR` con su motivo.
-- [ ] 2.3 Clasificar el resto: React, Vite, `react-router`, `react-hook-form` y demás dependencias
+- [x] 2.3 Clasificar el resto: React, Vite, `react-router`, `react-hook-form` y demás dependencias
   de runtime y desarrollo no cubiertas en 2.2.
 - [ ] 2.4 Verificar uso real buscando imports en `../Economicon/frontend/src/`; marcar `DESCARTAR`
   las declaradas sin uso (JUP-083 ya detectó `@mui/icons-material`) y comprobar que la suma de filas
