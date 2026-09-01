@@ -43,16 +43,14 @@ GET http://localhost:8001/metrics -> 200, contiene processor_http_requests_total
   processor_http_request_duration_ms_bucket con datos reales
 GET http://localhost:9090/api/v1/query?query=up -> up{job="backend"}=1, up{job="processor"}=1
   (Prometheus scrapea ambos servicios correctamente)
-Grafana: el contenedor arranca y aplica el provisioning montado, pero su migración de base de
-  datos SQLite fue extremadamente lenta en este equipo (varios minutos sin completar dentro de
-  la sesión) — no se pudo confirmar visualmente el datasource ni el dashboard cargados. Causa raíz
-  investigada y confirmada: el disco de datos de Docker Desktop en esta máquina
-  (CustomWslDistroDir, settings-store.json) está ubicado en D:, que es un HDD mecánico, no el SSD.
-  Cada transacción SQLite hace fsync, y en un HDD eso implica un movimiento físico del cabezal por
-  escritura (~250-400ms medidos con una prueba directa de 200 inserts). Es una particularidad de
-  esta máquina de desarrollo, no del código ni de la configuración de esta HU (compose config y
-  JSON del dashboard validados estáticamente sin errores; en cualquier equipo con Docker sobre SSD
-  esto arrancaría en segundos).
+Grafana: la primera migración SQLite fue extremadamente lenta en este equipo (causa raíz
+  investigada y confirmada: el disco de datos de Docker Desktop está en D:, un HDD mecánico —
+  CustomWslDistroDir en settings-store.json —, y cada transacción SQLite hace fsync, ~250-400ms
+  por escritura en HDD). Tras dejarla completar, Grafana respondió en GET /api/health ("database":
+  "ok"), el datasource de Prometheus quedó provisionado (GET /api/datasources) y el dashboard
+  "Economicon — Métricas técnicas" apareció en GET /api/search. Confirmado visualmente por el
+  usuario en http://localhost:3000: los 4 paneles (latencia p95, tasa de error, volumen de
+  ingestas, volumen de consultas al asistente) se ven correctamente por servicio.
 ```
 
 ## Review Findings
