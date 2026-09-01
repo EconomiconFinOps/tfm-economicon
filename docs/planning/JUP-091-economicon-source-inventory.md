@@ -93,7 +93,31 @@ Esto **corrige a JUP-083**, cuyo supuesto T5 describía el stack como "Tailwind 
 MUI 7 + next-themes": MUI nunca se usa (G5) y shadcn/ui solo existe como código muerto. Ver
 `RF-091-001` y `RF-091-002` en la sección de hallazgos.
 
-<!-- La clasificación MANTENER/SUSTITUIR/DESCARTAR se completa en las tareas 2.2-2.4 -->
+### Clasificación · stack de UI
+
+| Dependencia / grupo | Nº | Clasificación | Motivo |
+| --- | --- | --- | --- |
+| `tailwindcss` 4.1.12 + `@tailwindcss/vite` | 2 | `MANTENER` | Sistema de estilos que la migración adopta; el destino solo tiene un `main.css` plano marcado `REEMPLAZAR` en la línea base de JUP-090. Salto de mayor (v4) sin equivalente en el destino. |
+| `tw-animate-css` 1.3.8 | 1 | `MANTENER` | Referenciada desde `src/styles/tailwind.css`; acompaña a Tailwind v4 y es de coste nulo. |
+| `lucide-react` 0.487.0 | 1 | `MANTENER` | Único set de iconos del origen, con 6 usos reales en los dashboards. El destino no tiene iconos: es capacidad nueva, no duplicada. |
+| `clsx` · `tailwind-merge` · `class-variance-authority` | 3 | `MANTENER` | Utilidades genéricas de composición de clases Tailwind; útiles con o sin shadcn/ui, y el destino las necesitará al pasar a Tailwind. |
+| **G3** · primitivos `@radix-ui/*` | 26 | `DESCARTAR` | Ninguno se importa fuera de `src/app/components/ui/`, que a su vez no usa ninguna pantalla. Ver la salvedad de abajo y `RF-091-002`. |
+| `cmdk` · `embla-carousel-react` · `input-otp` · `react-day-picker` · `react-resizable-panels` · `sonner` · `vaul` | 7 | `DESCARTAR` | Paleta de comandos, carrusel, OTP, datepicker, paneles redimensionables, toasts y drawer: funciones que ni el origen renderiza ni el destino tiene. No las pide ninguna pantalla conocida de la épica. |
+| `react-hook-form` 7.55.0 | 1 | `DESCARTAR` | Solo la importa `ui/form.tsx`, componente muerto. Los formularios del destino (login, ingesta, chat) usan estado controlado de React sin librería; migrarlos a react-hook-form sería alcance nuevo, no paridad. |
+| `next-themes` 0.4.6 | 1 | `DESCARTAR` | Alterna tema claro/oscuro. El destino tiene un **único** tema oscuro fijo y la épica no plantea conmutador de tema; adoptarlo sería funcionalidad nueva. |
+| `@mui/material` · `@mui/icons-material` · `@emotion/react` · `@emotion/styled` | 4 | `DESCARTAR` | **MUI 7 no se usa en absoluto**: cero imports en todo el árbol. `@emotion/*` solo existe como peer de MUI. Contradice el supuesto T5 de JUP-083. Ver `RF-091-001`. |
+| | **46** | | |
+
+**Salvedad sobre G3 + shadcn/ui (entrada para F2, no decisión de esta HU).** La etiqueta `DESCARTAR`
+refleja el **uso actual en el origen**, donde nada renderiza esos componentes. Pero el destino sí
+necesita primitivos de formulario: sus pantallas usan hoy 8 `<button>`, 6 `<label>`, 5 `<input>`,
+2 `<textarea>` y 1 `<select>` en HTML plano. Si F2 decide adoptar shadcn/ui deliberadamente como
+sistema de diseño —opción razonable al pasar a Tailwind v4—, el subconjunto de Radix realmente
+necesario para login, selector de tenant, ingesta y chat sería del orden de **4-6 paquetes**
+(`label`, `select`, `slot`, `separator` y quizá `dialog`/`tooltip`), no los 26 declarados. La
+decisión es de F2; aquí solo se documenta el coste de cada camino (`RF-091-002`).
+
+<!-- El resto de dependencias se clasifica en la tarea 2.3 -->
 
 ## Mapeo de pantallas a contratos del backend
 

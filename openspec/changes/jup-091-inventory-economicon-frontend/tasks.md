@@ -6,10 +6,10 @@
 
 ## 2. Inventario de dependencias (una tarea = un bloque = un commit)
 
-- [ ] 2.1 Extraer las 61 dependencias declaradas de `../Economicon/frontend/package.json`
+- [x] 2.1 Extraer las 61 dependencias declaradas de `../Economicon/frontend/package.json`
   (`dependencies`, `devDependencies`, `peerDependencies`) y agrupar las familias coherentes
   (p. ej. los primitivos `@radix-ui/*`), dejando constancia del recuento de cada grupo.
-- [ ] 2.2 Clasificar el stack de UI —Tailwind v4, shadcn/ui + Radix, MUI 7, `lucide-react`,
+- [x] 2.2 Clasificar el stack de UI —Tailwind v4, shadcn/ui + Radix, MUI 7, `lucide-react`,
   `next-themes` y utilidades de estilo (`clsx`, `tailwind-merge`, `class-variance-authority`)— como
   `MANTENER` / `SUSTITUIR` / `DESCARTAR` con su motivo.
 - [ ] 2.3 Clasificar el resto: React, Vite, `react-router`, `react-hook-form` y demás dependencias
