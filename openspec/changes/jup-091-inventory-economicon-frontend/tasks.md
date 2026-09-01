@@ -20,7 +20,7 @@
 
 ## 3. Mapeo pantalla → contrato del backend
 
-- [ ] 3.1 Documentar, leyendo cada componente, qué datos muestra cada una de las 5 rutas:
+- [x] 3.1 Documentar, leyendo cada componente, qué datos muestra cada una de las 5 rutas:
   `index` → `ExecutiveCostDashboard`, `/operational` → `OperationalCostDashboard`, `/cuts` →
   `ExecutiveCutDashboard`, `/anomalies` → `AnomaliesPanel`, `/recommendations` →
   `RecommendationsPanel`.

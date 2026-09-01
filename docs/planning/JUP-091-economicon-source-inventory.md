@@ -169,7 +169,29 @@ Reproducible sobre el commit `1fe0030` del origen indicado en el snapshot.
 
 ## Mapeo de pantallas a contratos del backend
 
-<!-- Se completa en las tareas 3.1-3.3 -->
+### Qué muestra cada pantalla
+
+Las 5 rutas de `src/app/routes.tsx`, todas anidadas bajo `Layout`. Los datos son constantes estáticas
+declaradas en el propio componente (confirmado en T3 de JUP-083): no hay `fetch` en ninguna.
+
+| Ruta | Componente | Datos que renderiza (constantes del archivo) |
+| --- | --- | --- |
+| `index` | `ExecutiveCostDashboard` | `monthlyData`: serie mensual de coste total desglosado en compute/storage/network · `serviceData`: reparto porcentual por servicio · `kpiData`: 4 KPIs (coste total mensual, coste por servicio, ahorro potencial, recursos activos) con variación y tendencia |
+| `/operational` | `OperationalCostDashboard` | `detailedData`: filas por servicio con proyecto, coste, % de uso, tendencia y **proveedor** (AWS/Azure/GCP) · `hourlyData`: coste por franja horaria · `providerData`: coste por proveedor desglosado en compute/storage/network |
+| `/cuts` | `ExecutiveCutDashboard` | `savingsData`: ahorro mensual objetivo vs. alcanzado vs. pendiente · `cutActions`: acciones de recorte con impacto en €, estado, **responsable** y fecha · `kpiData` |
+| `/anomalies` | `AnomaliesPanel` | `anomalies`: incidencias con tipo, servicio/región, severidad y descripción · `trendData`: evolución de anomalías · `stats` |
+| `/recommendations` | `RecommendationsPanel` | `recommendations`: recomendaciones con título, categoría, descripción y **ahorro estimado** · `savingsByCategory` · `stats` |
+
+Tres rasgos transversales de los datos del origen que condicionan el mapeo:
+
+- **Multi-cloud.** El origen modela AWS, Azure y GCP (`proveedor` en `detailedData` y `providerData`).
+  El backend de este repo solo ingiere Azure (`apps/azure-cost-api`, JUP-072 a JUP-077).
+- **Granularidad temporal y por recurso.** Series mensuales, por hora y filas por servicio/proyecto.
+  El backend expone un único resumen agregado sin dimensión temporal.
+- **Entidades de gestión inexistentes.** Acciones de recorte con responsable y estado, anomalías y
+  recomendaciones son entidades de negocio que el backend no modela en absoluto.
+
+<!-- El mapeo a contratos se completa en la tarea 3.2 -->
 
 ## Hallazgos
 
