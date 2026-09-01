@@ -1,6 +1,6 @@
 ## 1. Preparación
 
-- [ ] 1.1 Crear `docs/planning/JUP-091-economicon-source-inventory.md` con la cabecera: JUP, enlace
+- [x] 1.1 Crear `docs/planning/JUP-091-economicon-source-inventory.md` con la cabecera: JUP, enlace
   Trello, rama, commit base de este repo, **commit snapshot de `../Economicon`** y el alcance
   excluido (`node_modules` y artefactos generados del origen).
 
