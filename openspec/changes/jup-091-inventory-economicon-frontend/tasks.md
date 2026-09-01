@@ -33,7 +33,7 @@
 
 ## 4. Cierre y verificación
 
-- [ ] 4.1 Enlazar `docs/planning/JUP-091-economicon-source-inventory.md` desde
+- [x] 4.1 Enlazar `docs/planning/JUP-091-economicon-source-inventory.md` desde
   `docs/spikes/frontend-migration.md` y marcar como completados los tres ítems de la tarjeta F1
   `inventariar-frontend-economicon`.
 - [ ] 4.2 Verificar cobertura: la clasificación cubre las 61 dependencias declaradas y las 5 rutas
