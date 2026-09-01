@@ -24,7 +24,7 @@
   `index` → `ExecutiveCostDashboard`, `/operational` → `OperationalCostDashboard`, `/cuts` →
   `ExecutiveCutDashboard`, `/anomalies` → `AnomaliesPanel`, `/recommendations` →
   `RecommendationsPanel`.
-- [ ] 3.2 Mapear cada pantalla al contrato del backend que debería alimentarla —tomándolo de
+- [x] 3.2 Mapear cada pantalla al contrato del backend que debería alimentarla —tomándolo de
   `apps/frontend/src/services/api.js` y de la tabla de contratos de
   `docs/planning/JUP-090-frontend-migration-baseline.md`, no del README— o marcarla
   `SIN EQUIVALENTE`.

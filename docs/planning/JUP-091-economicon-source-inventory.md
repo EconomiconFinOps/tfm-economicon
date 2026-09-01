@@ -191,7 +191,43 @@ Tres rasgos transversales de los datos del origen que condicionan el mapeo:
 - **Entidades de gestión inexistentes.** Acciones de recorte con responsable y estado, anomalías y
   recomendaciones son entidades de negocio que el backend no modela en absoluto.
 
-<!-- El mapeo a contratos se completa en la tarea 3.2 -->
+### Mapeo dato → contrato del backend
+
+Contratos tomados del código (`apps/frontend/src/services/api.js` y las rutas reales del backend), no
+del README, aplicando lo aprendido en `RF-090-003`. El único contrato de costes existente es
+`GET /billing/summary`, cuyo esquema real es
+`{ monthly_spend: int, savings_identified: int, open_ingestions: int, currency: str }`
+([schemas/billing.py](../../apps/backend/app/schemas/billing.py)).
+
+| Ruta | Dato del origen | Contrato del backend | Estado |
+| --- | --- | --- | --- |
+| `index` | KPI "Coste Total Mensual" | `GET /billing/summary` → `monthly_spend` | **PARCIAL** — el campo existe, pero el backend devuelve un valor fijo (ver `RF-091-004`) |
+| `index` | KPI "Ahorro Potencial" | `GET /billing/summary` → `savings_identified` | **PARCIAL** — mismo caso |
+| `index` | KPI "Recursos Activos" | — | `SIN EQUIVALENTE` |
+| `index` | `monthlyData` (serie mensual compute/storage/network) | — | `SIN EQUIVALENTE` |
+| `index` | `serviceData` (reparto % por servicio) | — | `SIN EQUIVALENTE` |
+| `/operational` | `detailedData` (servicio, proyecto, coste, uso, proveedor) | — | `SIN EQUIVALENTE` |
+| `/operational` | `hourlyData` (coste por franja horaria) | — | `SIN EQUIVALENTE` |
+| `/operational` | `providerData` (AWS / Azure / GCP) | — | `SIN EQUIVALENTE` |
+| `/cuts` | `savingsData` (objetivo vs. alcanzado vs. pendiente) | — | `SIN EQUIVALENTE` |
+| `/cuts` | `cutActions` (acción, impacto, estado, responsable, fecha) | — | `SIN EQUIVALENTE` |
+| `/anomalies` | `anomalies` (tipo, servicio, severidad, descripción) | — | `SIN EQUIVALENTE` |
+| `/anomalies` | `trendData` + `stats` | — | `SIN EQUIVALENTE` |
+| `/recommendations` | `recommendations` (título, categoría, ahorro estimado) | — | `SIN EQUIVALENTE` |
+| `/recommendations` | `savingsByCategory` + `stats` | — | `SIN EQUIVALENTE` |
+
+**Resultado: 2 de 14 datos tienen contrato, y ambos solo parcialmente.** Ninguna de las 5 pantallas
+del origen es conectable hoy de forma completa; cuatro de las cinco (`/operational`, `/cuts`,
+`/anomalies`, `/recommendations`) no tienen **ningún** contrato que las alimente.
+
+Esto confirma la hipótesis registrada en el gate pre-código de esta HU y en `RF-083-002`: el desajuste
+no es de detalle, es estructural.
+
+**Dato relevante para F3 y para la épica.** El processor ya ingesta y normaliza costes Azure reales en
+CockroachDB (JUP-072 a JUP-077), pero **ningún endpoint del backend los expone**: sus rutas son
+`/health`, `/auth`, `/tenants`, `/billing`, `/jobs` y `/assistant`, y ninguna consulta las tablas de
+coste. El dato existe, falta el camino de lectura — lo que abarata varias de las capacidades ausentes
+frente a construirlas desde cero.
 
 ## Hallazgos
 
