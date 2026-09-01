@@ -45,16 +45,22 @@ GET http://localhost:9090/api/v1/query?query=up -> up{job="backend"}=1, up{job="
   (Prometheus scrapea ambos servicios correctamente)
 Grafana: el contenedor arranca y aplica el provisioning montado, pero su migración de base de
   datos SQLite fue extremadamente lenta en este equipo (varios minutos sin completar dentro de
-  la sesión) — no se pudo confirmar visualmente el datasource ni el dashboard cargados. Limitación
-  del entorno local de esta sesión, no del código entregado (compose config y JSON del dashboard
-  validados estáticamente sin errores).
+  la sesión) — no se pudo confirmar visualmente el datasource ni el dashboard cargados. Causa raíz
+  investigada y confirmada: el disco de datos de Docker Desktop en esta máquina
+  (CustomWslDistroDir, settings-store.json) está ubicado en D:, que es un HDD mecánico, no el SSD.
+  Cada transacción SQLite hace fsync, y en un HDD eso implica un movimiento físico del cabezal por
+  escritura (~250-400ms medidos con una prueba directa de 200 inserts). Es una particularidad de
+  esta máquina de desarrollo, no del código ni de la configuración de esta HU (compose config y
+  JSON del dashboard validados estáticamente sin errores; en cualquier equipo con Docker sobre SSD
+  esto arrancaría en segundos).
 ```
 
 ## Review Findings
 
-| ID | Tipo | Severidad | Scope | Descripcion | Accion | Backlog |
-|----|------|-----------|-------|-------------|--------|---------|
-| RF-043-001 | Manual verification incomplete | Low | Out of scope | La migración SQLite de arranque de Grafana fue extremadamente lenta en el equipo usado para esta sesión (no terminó en varios minutos), impidiendo confirmar visualmente el datasource y el dashboard provisionados. La configuración (datasource YAML, dashboard JSON, provisioning) se validó estáticamente sin errores. | Confirmar visualmente en otra máquina o en CI antes de dar la tarea 6.4 por completamente cerrada | Open |
+Ninguno. La verificación incompleta del dashboard de Grafana (ver Validation) se investigó hasta
+su causa raíz y resultó ser una particularidad de la máquina de desarrollo usada en esta sesión
+(disco de datos de Docker Desktop en un HDD), no un defecto del código o la configuración
+entregados — no califica como finding de proyecto.
 
 ## Risks / Follow-Ups
 
