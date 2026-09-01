@@ -10,6 +10,7 @@ from app.api.routes.jobs import router as jobs_router
 from app.api.routes.tenants import router as tenants_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
+from app.core.metrics import MetricsMiddleware, metrics_router
 from app.core.request_context import RequestIdMiddleware
 from app.db.database import Database
 from app.services.assistant import AssistantService
@@ -48,7 +49,9 @@ app = FastAPI(
 )
 
 app.add_middleware(RequestIdMiddleware)
+app.add_middleware(MetricsMiddleware)
 
+app.include_router(metrics_router)
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(tenants_router)
