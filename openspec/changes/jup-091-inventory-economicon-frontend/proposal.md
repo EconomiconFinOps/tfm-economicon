@@ -9,8 +9,8 @@ inventarió el destino con su
 [línea base](../../../docs/planning/JUP-090-frontend-migration-baseline.md). Pero el spike deja dos
 tareas abiertas sobre el **origen** que bloquean planificar F2 y F3 con datos reales:
 
-- **F2 (tooling) no puede dimensionarse:** el origen declara **59 dependencias** (55 runtime +
-  4 dev). Sin clasificarlas, la tarjeta de reconciliación de `package.json` trabajaría a ciegas y se
+- **F2 (tooling) no puede dimensionarse:** el origen declara **61 dependencias** (55 runtime +
+  4 dev + 2 peer). Sin clasificarlas, la tarjeta de reconciliación de `package.json` trabajaría a ciegas y se
   arriesgaría a arrastrar al monorepo dependencias que aquí no aplican — justo el riesgo "arrastrar
   dependencias inútiles del origen" que el spike ya identifica.
 - **F3 (porte de código) no sabe qué datos necesita:** el origen tiene 5 pantallas de analítica de
@@ -23,7 +23,7 @@ tareas abiertas sobre el **origen** que bloquean planificar F2 y F3 con datos re
 ## What Changes
 
 - Crear `docs/planning/JUP-091-economicon-source-inventory.md` con dos inventarios:
-  - **Dependencias:** las 59 de `../Economicon/frontend/package.json` clasificadas como
+  - **Dependencias:** las 61 de `../Economicon/frontend/package.json` clasificadas como
     `MANTENER` / `SUSTITUIR` / `DESCARTAR`, con justificación por dependencia o por grupo coherente
     (p. ej. los primitivos Radix de shadcn/ui).
   - **Pantallas → contratos:** las 5 rutas del origen con el dato que muestra cada una y el contrato
@@ -72,6 +72,6 @@ JUP-083: no se migra ni se copia código, no se instalan dependencias, no se toc
 - Date: 2026-08-31
 - Carril: light
 - Scope reviewed: PRD/proposal, TD/design, specs, tasks
-- Main risks: HU doc-only de solo lectura sobre `../Economicon`, sin código de producto. El riesgo real no es de ejecución sino de alcance: la hipótesis de trabajo es que la mayoría de las 5 pantallas del origen queden `SIN EQUIVALENTE` frente al único contrato de costes del backend (`GET /billing/summary`), lo que puede obligar a replanificar el alcance de F3 tal como está escrito hoy en el spike — se cuantificará y registrará como finding, sin resolverse aquí (tarea 4.3). Riesgo secundario: clasificar 59 dependencias puede desbordar un carril `light`, mitigado clasificando en bloque las familias coherentes (`@radix-ui/*`).
+- Main risks: HU doc-only de solo lectura sobre `../Economicon`, sin código de producto. El riesgo real no es de ejecución sino de alcance: la hipótesis de trabajo es que la mayoría de las 5 pantallas del origen queden `SIN EQUIVALENTE` frente al único contrato de costes del backend (`GET /billing/summary`), lo que puede obligar a replanificar el alcance de F3 tal como está escrito hoy en el spike — se cuantificará y registrará como finding, sin resolverse aquí (tarea 4.3). Riesgo secundario: clasificar 61 dependencias puede desbordar un carril `light`, mitigado clasificando en bloque las familias coherentes (`@radix-ui/*`).
 - Required changes before execution: none
 - Notes: El inventario se publica en `docs/planning/JUP-091-economicon-source-inventory.md`, no dentro del change, porque lo consumen F2 y F3 y debe sobrevivir al archivado — mismo criterio que JUP-090. Los contratos se toman del código (`services/api.js` + línea base de JUP-090), no del README, aplicando lo aprendido en `RF-090-003`. Los findings se agrupan por capacidad de backend ausente, no por pantalla. Doc-only: se omiten tester/coder/mutación del harness TDD y se documenta la excepción en `review.md`; se archivará con `--skip-specs` y sin `docs/evidence/`, siguiendo el precedente de JUP-083 y JUP-090. ADR no aplicable en esta HU: documenta el estado de un repositorio externo, sin decisiones de arquitectura duraderas.

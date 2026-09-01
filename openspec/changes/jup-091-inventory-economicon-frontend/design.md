@@ -9,7 +9,7 @@ abiertos de la tarjeta `inventariar-frontend-economicon`.
 
 Estado verificado del origen (`../Economicon/frontend`, paquete `finops-dashboard-frontend`):
 
-- **59 dependencias declaradas**: 55 en `dependencies`, 4 en `devDependencies`, 2 en
+- **61 dependencias declaradas**: 55 en `dependencies`, 4 en `devDependencies`, 2 en
   `peerDependencies` (react/react-dom 18.3.1).
 - **5 rutas** en `src/app/routes.tsx` con `createBrowserRouter`, todas anidadas bajo `Layout`:
   `index` → `ExecutiveCostDashboard`, `/operational` → `OperationalCostDashboard`, `/cuts` →
@@ -27,7 +27,7 @@ Esta HU (`jup-091`, carril `light`, **doc-only**) produce ese inventario. No toc
 
 **Goals:**
 
-- Clasificar las **59 dependencias** del origen como `MANTENER` / `SUSTITUIR` / `DESCARTAR` con
+- Clasificar las **61 dependencias** del origen como `MANTENER` / `SUSTITUIR` / `DESCARTAR` con
   justificación, de forma que F2 pueda reconciliar `package.json` sin decidir caso a caso.
 - Mapear cada una de las **5 pantallas** del origen al contrato del backend que debería alimentarla,
   o marcarla `SIN EQUIVALENTE`.
@@ -57,7 +57,7 @@ Esta HU (`jup-091`, carril `light`, **doc-only**) produce ese inventario. No toc
   función con otra librería, o hay que cambiar de versión mayor; `DESCARTAR` = no aplica aquí (mock,
   backend ficticio, o dependencia sin uso real en el código).
 
-- **Clasificación por grupo cuando la familia es coherente, por dependencia cuando no.** 59 filas
+- **Clasificación por grupo cuando la familia es coherente, por dependencia cuando no.** 61 filas
   individuales sería ruido en un carril `light`: los ~25 primitivos `@radix-ui/*` que shadcn/ui
   arrastra comparten exactamente la misma decisión. Se clasifican en bloque, nombrando el grupo y su
   recuento, y se desglosan individualmente solo las que tengan decisión propia (React, Vite, MUI,
@@ -93,7 +93,7 @@ Esta HU (`jup-091`, carril `light`, **doc-only**) produce ese inventario. No toc
   resuelve aquí; se cuantifica y se registra como findings. Si el resultado invalida el alcance de F3
   tal como está escrito en el spike, se anota como riesgo para replanificar, igual que hizo JUP-083
   con `RF-083-002`.
-- **Clasificar 59 dependencias puede desbordar un carril `light`.** → Mitigado por la clasificación
+- **Clasificar 61 dependencias puede desbordar un carril `light`.** → Mitigado por la clasificación
   en bloque de familias coherentes; el criterio de corte es que cada fila aporte una decisión, no un
   dato.
 - **El inventario queda obsoleto si Economicon evoluciona.** → Mitigado anotando el commit hash del

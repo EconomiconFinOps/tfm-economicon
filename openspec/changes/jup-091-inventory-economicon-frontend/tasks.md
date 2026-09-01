@@ -6,7 +6,7 @@
 
 ## 2. Inventario de dependencias (una tarea = un bloque = un commit)
 
-- [ ] 2.1 Extraer las 59 dependencias declaradas de `../Economicon/frontend/package.json`
+- [ ] 2.1 Extraer las 61 dependencias declaradas de `../Economicon/frontend/package.json`
   (`dependencies`, `devDependencies`, `peerDependencies`) y agrupar las familias coherentes
   (p. ej. los primitivos `@radix-ui/*`), dejando constancia del recuento de cada grupo.
 - [ ] 2.2 Clasificar el stack de UI —Tailwind v4, shadcn/ui + Radix, MUI 7, `lucide-react`,
@@ -16,7 +16,7 @@
   de runtime y desarrollo no cubiertas en 2.2.
 - [ ] 2.4 Verificar uso real buscando imports en `../Economicon/frontend/src/`; marcar `DESCARTAR`
   las declaradas sin uso (JUP-083 ya detectó `@mui/icons-material`) y comprobar que la suma de filas
-  y grupos cubre las 59 declaradas.
+  y grupos cubre las 61 declaradas.
 
 ## 3. Mapeo pantalla → contrato del backend
 
@@ -36,7 +36,7 @@
 - [ ] 4.1 Enlazar `docs/planning/JUP-091-economicon-source-inventory.md` desde
   `docs/spikes/frontend-migration.md` y marcar como completados los tres ítems de la tarjeta F1
   `inventariar-frontend-economicon`.
-- [ ] 4.2 Verificar cobertura: la clasificación cubre las 59 dependencias declaradas y las 5 rutas
+- [ ] 4.2 Verificar cobertura: la clasificación cubre las 61 dependencias declaradas y las 5 rutas
   están todas mapeadas con contrato o con `SIN EQUIVALENTE`.
 - [ ] 4.3 Registrar en `review.md` y en `openspec/findings/backlog.md` (ID `RF-091-<secuencia>`) cada
   capacidad de backend ausente, sin resolverla aquí; anotar como riesgo si el resultado obliga a

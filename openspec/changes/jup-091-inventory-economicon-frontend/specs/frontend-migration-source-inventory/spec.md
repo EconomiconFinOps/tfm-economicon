@@ -10,7 +10,7 @@ justificación, antes de que ninguna tarjeta modifique `apps/frontend/package.js
 
 - **WHEN** se completa la clasificación de dependencias del origen
 - **THEN** existe `docs/planning/JUP-091-economicon-source-inventory.md` con una tabla que cubre las
-  59 dependencias declaradas (`dependencies`, `devDependencies` y `peerDependencies`)
+  61 dependencias declaradas (`dependencies`, `devDependencies` y `peerDependencies`)
 - **AND** cada fila lleva exactamente una de las etiquetas `MANTENER`, `SUSTITUIR` o `DESCARTAR` con
   su motivo
 - **AND** cuando una familia coherente de dependencias se clasifica en bloque, la fila nombra el
