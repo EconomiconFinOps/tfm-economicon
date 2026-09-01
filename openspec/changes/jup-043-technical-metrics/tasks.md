@@ -35,7 +35,7 @@
 
 ## 6. Documentación y cierre
 
-- [ ] 6.1 Documentar la convención de métricas en `docs/manuals/python-service-conventions.md` (misma sección que logging, o una nueva "Métricas").
-- [ ] 6.2 Actualizar `docs/architecture.md` si se añade Prometheus/Grafana al diagrama o descripción de servicios.
+- [x] 6.1 Documentar la convención de métricas en `docs/manuals/python-service-conventions.md` (misma sección que logging, o una nueva "Métricas").
+- [x] 6.2 Actualizar `docs/architecture.md` si se añade Prometheus/Grafana al diagrama o descripción de servicios.
 - [ ] 6.3 Ejecutar la batería de checks del carril (`openspec:validate`, `jup:check`, tests de backend/processor) y registrar el resultado en `review.md`.
 - [ ] 6.4 Verificar manualmente que `docker compose up` levanta Prometheus y Grafana, que Prometheus scrapea ambos `/metrics`, y que el dashboard de Grafana muestra datos tras generar tráfico de prueba.

@@ -9,3 +9,13 @@ Ambos servicios usan `structlog` configurado con salida JSON y correlación por 
 El `request_id` se inyecta automáticamente en cada log de una petición vía middleware + `contextvars`; no hace falta pasarlo a mano.
 
 Introducido en JUP-042.
+
+## Métricas
+
+Ambos servicios exponen `GET /metrics` en formato Prometheus vía `prometheus_client` (ver `app/core/metrics.py` de cada uno). El `MetricsMiddleware` registra volumen de requests HTTP (`<servicio>_http_requests_total`, etiquetado por método/ruta/status) y latencia (`<servicio>_http_request_duration_ms`), usando el patrón de ruta de FastAPI, no la URL resuelta con IDs.
+
+Las métricas de dominio (p. ej. `backend_ingest_jobs_total`, `backend_assistant_queries_total`) se incrementan en el propio handler de negocio, no en el middleware — el middleware solo conoce método/ruta/status, no intención de negocio.
+
+Prometheus scrapea ambos `/metrics` en el stack local (`docker-compose.yml`, `apps/monitoring/prometheus/prometheus.yml`), y Grafana visualiza un dashboard mínimo provisionado como código (`apps/monitoring/grafana/`).
+
+Introducido en JUP-043.
