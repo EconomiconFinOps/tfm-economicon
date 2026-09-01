@@ -229,6 +229,32 @@ CockroachDB (JUP-072 a JUP-077), pero **ningún endpoint del backend los expone*
 coste. El dato existe, falta el camino de lectura — lo que abarata varias de las capacidades ausentes
 frente a construirlas desde cero.
 
+### Huecos agrupados por capacidad de backend ausente
+
+Agrupados por **capacidad**, no por pantalla: dos pantallas que necesitan lo mismo son un solo hueco.
+La columna "Dato ya en BD" indica si la ingesta Azure existente lo cubriría con solo añadir lectura.
+
+| # | Capacidad ausente | Rutas afectadas | Dato ya en BD |
+| --- | --- | --- | --- |
+| C1 | **Serie temporal de costes** (mensual y por hora) | `index`, `/operational` | Sí — registros normalizados con fecha |
+| C2 | **Desglose por dimensión** (servicio, proyecto, recurso) | `index`, `/operational` | Parcial — dimensiones Azure normalizadas |
+| C3 | **Multi-cloud AWS / GCP** | `/operational` | No — solo se ingesta Azure |
+| C4 | **Objetivos y acciones de recorte** (impacto, estado, responsable, fecha) | `/cuts` | No — entidad de gestión inexistente |
+| C5 | **Detección de anomalías** | `/anomalies` | No — requiere lógica de detección, no solo lectura |
+| C6 | **Motor de recomendaciones** | `/recommendations` | No — requiere lógica de análisis |
+| C7 | **Inventario de recursos activos** | `index` | No |
+
+Tres niveles de esfuerzo muy distintos, y conviene no tratarlos igual:
+
+- **C1 y C2** son sobre todo **camino de lectura**: el dato ya está ingestado y normalizado por
+  JUP-072 a JUP-077; falta exponerlo. Es el grupo más barato y el que más pantallas desbloquea.
+- **C3 y C7** exigen **ingesta nueva** (otros proveedores, inventario de recursos).
+- **C4, C5 y C6** exigen **modelo de datos y lógica de negocio nuevos**, no solo exposición. Son
+  producto nuevo, no migración.
+
+Ninguna de las siete se resuelve en esta HU. Quedan registradas como findings `RF-091-003` para que
+la épica decida qué se conecta, qué se pospone y qué se recorta del alcance de la migración.
+
 ## Hallazgos
 
 <!-- Se completa en la tarea 4.3 -->

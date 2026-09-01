@@ -28,7 +28,7 @@
   `apps/frontend/src/services/api.js` y de la tabla de contratos de
   `docs/planning/JUP-090-frontend-migration-baseline.md`, no del README— o marcarla
   `SIN EQUIVALENTE`.
-- [ ] 3.3 Agrupar los huecos detectados **por capacidad de backend ausente** (no por pantalla),
+- [x] 3.3 Agrupar los huecos detectados **por capacidad de backend ausente** (no por pantalla),
   citando en cada uno todas las rutas afectadas.
 
 ## 4. Cierre y verificación
