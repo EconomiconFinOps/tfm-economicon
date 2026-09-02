@@ -41,8 +41,8 @@ Endpoints de dominio relevantes para volumen: `POST /jobs/ingest` (`apps/backend
 ## Risks / Trade-offs
 
 - **Más contenedores en el compose local** → tiempo de arranque más largo y más RAM en la máquina de desarrollo. Mitigación: healthchecks con `start_period` generoso, igual que el resto del stack, y documentar que son opcionales para quien solo trabaje en backend/processor sin observabilidad.
-- **Doble instrumentación de latencia (log + métrica) puede desincronizarse** si se edita una sin la otra. Mitigación: reutilizar el mismo cálculo de `duration_ms` para ambas, en el mismo middleware.
-- **Cardinalidad de labels.** Etiquetar por `path` con valores dinámicos (p. ej. IDs en la URL) puede disparar el número de series. Mitigación: usar el patrón de ruta de FastAPI (`request.scope["route"].path`), no la URL resuelta.
+- **Doble instrumentación de latencia (log + métrica) puede desincronizarse** si se edita una sin la otra. Mitigación: ambas usan `perf_counter`; el log conserva milisegundos para lectura humana y la métrica usa segundos para respetar los buckets y la convención de Prometheus.
+- **Cardinalidad de labels.** Etiquetar por `path` con valores dinámicos (p. ej. IDs en la URL) puede disparar el número de series. Mitigación: usar el patrón de ruta de FastAPI (`request.scope["route"].path`) y agrupar las rutas no emparejadas bajo `__unmatched__`, nunca usar la URL resuelta.
 
 ## Migration Plan
 

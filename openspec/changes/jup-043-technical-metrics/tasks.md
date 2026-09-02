@@ -1,7 +1,7 @@
 ## 1. Backend: instrumentación HTTP
 
 - [x] 1.1 Añadir `prometheus-client` a `apps/backend/requirements.txt`.
-- [x] 1.2 Crear `apps/backend/app/core/metrics.py` con el `Counter` de requests HTTP (`backend_http_requests_total`, etiquetas método/ruta/status) y el `Histogram` de latencia (`backend_http_request_duration_ms`).
+- [x] 1.2 Crear `apps/backend/app/core/metrics.py` con el `Counter` de requests HTTP (`backend_http_requests_total`, etiquetas método/ruta/status) y el `Histogram` de latencia en segundos (`backend_http_request_duration_seconds`).
 - [x] 1.3 Añadir `MetricsMiddleware` dedicado en `apps/backend/app/core/metrics.py` que incrementa el contador y observa la latencia, usando el patrón de ruta (`request.scope["route"].path`) como etiqueta, no la URL resuelta.
 - [x] 1.4 Añadir el router de `GET /metrics` (usando `prometheus_client.generate_latest`) y registrarlo en `apps/backend/app/main.py`.
 
@@ -13,7 +13,7 @@
 ## 3. Processor: instrumentación HTTP
 
 - [x] 3.1 Añadir `prometheus-client` a `apps/processor/requirements.txt`.
-- [x] 3.2 Crear `apps/processor/app/core/metrics.py` con el `Counter` de requests HTTP (`processor_http_requests_total`) y el `Histogram` de latencia (`processor_http_request_duration_ms`), replicando el patrón del backend.
+- [x] 3.2 Crear `apps/processor/app/core/metrics.py` con el `Counter` de requests HTTP (`processor_http_requests_total`) y el `Histogram` de latencia en segundos (`processor_http_request_duration_seconds`), replicando el patrón del backend.
 - [x] 3.3 Añadir `MetricsMiddleware` dedicado en `apps/processor/app/core/metrics.py`, replicando el patrón del backend.
 - [x] 3.4 Añadir el router de `GET /metrics` y registrarlo en `apps/processor/app/main.py`.
 

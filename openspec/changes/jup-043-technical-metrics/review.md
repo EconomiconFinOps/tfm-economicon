@@ -29,18 +29,18 @@ Pending team review (implementación técnica completa; falta revisión de PR se
 ## Validation
 
 ```txt
-apps/backend: python -m pytest -> PASS: 21/21
-apps/processor: python -m pytest -> PASS: 136/136
+apps/backend: python -m pytest -> PASS: 24/24
+apps/processor: python -m pytest -> PASS: 139/139
 corepack pnpm openspec:validate -> PASS: 18 items
 corepack pnpm jup:check:all -> PASS (todos los changes activos, incluido jup-043)
-corepack pnpm jup:cleanup:check -> PASS: 349 archivos
+corepack pnpm jup:cleanup:check -> PASS: 350 archivos
 docker compose config -q -> sin errores de sintaxis
 docker compose up -d backend processor prometheus grafana (+ dependencias) -> backend, processor,
   prometheus, cockroachdb, rabbitmq, postgres-pgvector, azure-cost-api healthy
 GET http://localhost:8000/metrics -> 200, contiene backend_http_requests_total y
-  backend_http_request_duration_ms_bucket con datos reales tras tráfico de prueba
+  backend_http_request_duration_seconds_bucket con datos reales tras tráfico de prueba
 GET http://localhost:8001/metrics -> 200, contiene processor_http_requests_total y
-  processor_http_request_duration_ms_bucket con datos reales
+  processor_http_request_duration_seconds_bucket con datos reales
 GET http://localhost:9090/api/v1/query?query=up -> up{job="backend"}=1, up{job="processor"}=1
   (Prometheus scrapea ambos servicios correctamente)
 Grafana: la primera migración SQLite fue extremadamente lenta en este equipo (causa raíz
@@ -55,10 +55,13 @@ Grafana: la primera migración SQLite fue extremadamente lenta en este equipo (c
 
 ## Review Findings
 
-Ninguno. La verificación incompleta del dashboard de Grafana (ver Validation) se investigó hasta
-su causa raíz y resultó ser una particularidad de la máquina de desarrollo usada en esta sesión
-(disco de datos de Docker Desktop en un HDD), no un defecto del código o la configuración
-entregados — no califica como finding de proyecto.
+- La validación técnica de Alejandro detectó que el histograma observaba milisegundos usando los
+  buckets por defecto de Prometheus, que las excepciones no controladas no se contabilizaban como
+  500 y que las rutas 404 usaban la URL cruda como label sin límite de cardinalidad.
+- Corregido en backend y processor: histograma en segundos, registro de excepciones como 500 y
+  label estable `__unmatched__` para rutas no emparejadas.
+- Añadidas pruebas de regresión para los tres casos en ambos servicios. Pendiente de la revisión
+  formal de Paris Arcos Martin.
 
 ## Risks / Follow-Ups
 
@@ -71,5 +74,5 @@ entregados — no califica como finding de proyecto.
 - Change: jup-043-technical-metrics
 - Approval type: pending
 - Decision: pending
-- Approver: pendiente (falta revisión de PR según el rol rotatorio de la tarjeta JUP-043 — Lucia Mateo)
-- Notes: Implementación y verificación técnica completas (28/28 tareas). Pendiente de que el equipo revise el PR y registre su aprobación antes de mergear.
+- Approver: pendiente (falta revisión de PR según el rol rotatorio de la tarjeta JUP-043 — Paris Arcos Martin)
+- Notes: Implementación y verificación técnica completas (28/28 tareas), incluidos los fixes de la validación de Alejandro. Pendiente de que Paris revise el PR y registre su decisión antes de mergear.

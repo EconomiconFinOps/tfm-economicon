@@ -14,11 +14,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(backend_http_request_duration_ms_bucket[5m])) by (le))",
+          "expr": "1000 * histogram_quantile(0.95, sum(rate(backend_http_request_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "backend p95"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(processor_http_request_duration_ms_bucket[5m])) by (le))",
+          "expr": "1000 * histogram_quantile(0.95, sum(rate(processor_http_request_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "processor p95"
         }
       ]

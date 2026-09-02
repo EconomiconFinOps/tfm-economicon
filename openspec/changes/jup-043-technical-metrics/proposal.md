@@ -8,7 +8,7 @@ El operador no tiene forma de conocer el estado de la plataforma más allá de l
 ## What Changes
 
 - Instrumentar `apps/backend` y `apps/processor` con `prometheus_client`, exponiendo un endpoint `GET /metrics` en formato Prometheus en cada servicio.
-- Métricas mínimas por servicio: contador de requests HTTP por método/ruta/status (volumen y tasa de error), histograma de latencia (`duration_ms` ya calculado en el middleware existente), y contadores específicos de dominio: ingestas (`POST /jobs/ingest`) y consultas al asistente (`apps/backend/app/api/routes/assistant.py`).
+- Métricas mínimas por servicio: contador de requests HTTP por método/ruta/status (volumen y tasa de error), histograma de latencia en segundos conforme a la convención de Prometheus, y contadores específicos de dominio: ingestas (`POST /jobs/ingest`) y consultas al asistente (`apps/backend/app/api/routes/assistant.py`).
 - Añadir un servicio `prometheus` a `docker-compose.yml`, configurado para scrapear `backend:8000/metrics` y `processor:8001/metrics`.
 - Añadir un servicio `grafana` a `docker-compose.yml` con un dashboard mínimo provisionado como código (provisioning por archivo, no configurado a mano), apuntando al `prometheus` del stack.
 - Documentar la convención de métricas en `docs/manuals/python-service-conventions.md`, igual que se hizo con logging en JUP-042.

@@ -12,7 +12,7 @@ Introducido en JUP-042.
 
 ## Métricas
 
-Ambos servicios exponen `GET /metrics` en formato Prometheus vía `prometheus_client` (ver `app/core/metrics.py` de cada uno). El `MetricsMiddleware` registra volumen de requests HTTP (`<servicio>_http_requests_total`, etiquetado por método/ruta/status) y latencia (`<servicio>_http_request_duration_ms`), usando el patrón de ruta de FastAPI, no la URL resuelta con IDs.
+Ambos servicios exponen `GET /metrics` en formato Prometheus vía `prometheus_client` (ver `app/core/metrics.py` de cada uno). El `MetricsMiddleware` registra volumen de requests HTTP (`<servicio>_http_requests_total`, etiquetado por método/ruta/status) y latencia en segundos (`<servicio>_http_request_duration_seconds`), usando el patrón de ruta de FastAPI. Las rutas no emparejadas se agrupan bajo `__unmatched__` para mantener acotada la cardinalidad, y las excepciones no controladas se registran con status `500` antes de propagarse.
 
 Las métricas de dominio (p. ej. `backend_ingest_jobs_total`, `backend_assistant_queries_total`) se incrementan en el propio handler de negocio, no en el middleware — el middleware solo conoce método/ruta/status, no intención de negocio.
 

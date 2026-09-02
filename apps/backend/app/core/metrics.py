@@ -1,4 +1,4 @@
-import time
+from time import perf_counter
 
 from fastapi import APIRouter, Response
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
@@ -10,9 +10,9 @@ http_requests_total = Counter(
     ["method", "path", "status_code"],
 )
 
-http_request_duration_ms = Histogram(
-    "backend_http_request_duration_ms",
-    "HTTP request duration in milliseconds",
+http_request_duration_seconds = Histogram(
+    "backend_http_request_duration_seconds",
+    "HTTP request duration in seconds",
     ["method", "path"],
 )
 
@@ -29,21 +29,32 @@ assistant_queries_total = Counter(
 
 class MetricsMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        start = time.perf_counter()
-        response = await call_next(request)
-        duration_ms = (time.perf_counter() - start) * 1000
+        start = perf_counter()
 
+        try:
+            response = await call_next(request)
+        except Exception:
+            self._record(request, status_code=500, start=start)
+            raise
+
+        self._record(request, status_code=response.status_code, start=start)
+
+        return response
+
+    @staticmethod
+    def _record(request, status_code: int, start: float) -> None:
+        duration_seconds = perf_counter() - start
         route = request.scope.get("route")
-        path = route.path if route is not None else request.url.path
+        path = route.path if route is not None else "__unmatched__"
 
         http_requests_total.labels(
             method=request.method,
             path=path,
-            status_code=str(response.status_code),
+            status_code=str(status_code),
         ).inc()
-        http_request_duration_ms.labels(method=request.method, path=path).observe(duration_ms)
-
-        return response
+        http_request_duration_seconds.labels(method=request.method, path=path).observe(
+            duration_seconds
+        )
 
 
 metrics_router = APIRouter()
