@@ -104,5 +104,5 @@ en backend, conservando el resto del comportamiento previo del equipo.
 
 - Diseño: `docs/architecture/azure-cost-e2e.md`.
 - Decisión: `docs/adr/ADR-0001-azure-cost-api-simulation.md`.
-- OpenSpec: `openspec/changes/jup-077-azure-cost-e2e/`.
+- OpenSpec archivado: `openspec/changes/archive/2026-08-28-jup-077-azure-cost-e2e/`.
 - Secuencia integrada: `docs/integration/JUP-072-077-stacked-integration.md`.

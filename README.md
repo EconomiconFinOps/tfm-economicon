@@ -38,7 +38,7 @@ tfm-economicon
 |   `-- azure-cost-api/
 |-- docs/
 |   |-- architecture.md
-|   `-- turborepo_use.md
+|   `-- manuals/turborepo_use.md
 |-- packages/
 |   `-- shared-config/
 |-- docker-compose.yml
@@ -76,17 +76,19 @@ Desde la raiz del repo:
 pnpm install
 Set-Location apps/backend; python -m pip install -r requirements-dev.txt
 Set-Location ../processor; python -m pip install -r requirements-dev.txt
+Set-Location ../azure-cost-api; python -m pip install -r requirements-dev.txt
 Set-Location ../..
 pnpm dev
 ```
 
-Esto levanta `frontend`, `backend` y `processor` en paralelo.
+Esto levanta `frontend`, `backend`, `processor` y `azure-cost-api` en paralelo.
 
 Puertos visibles:
 
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8000`
 - Processor health: `http://localhost:8001/health`
+- Azure Cost API: `http://localhost:8002/health`
 
 ### Individualmente
 
@@ -95,6 +97,7 @@ Puedes ejecutar cada submodulo por separado desde su propia carpeta:
 - `apps/frontend`
 - `apps/backend`
 - `apps/processor`
+- `apps/azure-cost-api`
 
 Los detalles concretos estan explicados en los README de cada submodulo.
 
@@ -132,7 +135,7 @@ Variables principales:
 
 ## Comandos Principales
 
-- `pnpm dev`: arranca frontend, backend y processor en paralelo
+- `pnpm dev`: arranca frontend, backend, processor y Azure Cost API en paralelo
 - `pnpm build`: ejecuta las tareas de build declaradas por cada app
 - `pnpm lint`: ejecuta las tareas de lint declaradas por cada app
 - `pnpm test`: ejecuta los tests disponibles
@@ -188,13 +191,21 @@ Esta base prioriza:
 - migraciones formales para CockroachDB y pgvector
 - persistencia operativa
 - cola local para jobs
-- almacenamiento vectorial basico
-- chat con retrieval minimo por tenant
-- documentacion suficiente para arrancar el proyecto
+- API Azure Cost simulada y cliente de ingesta paginado
+- normalizacion y persistencia idempotente de costes por tenant
+- almacenamiento vectorial basico con provider mock por defecto
+- chat con retrieval minimo por tenant y respuesta determinista, todavia sin LLM real
+- CI en GitHub Actions con validaciones de gobernanza, OpenSpec, pruebas y build
+- documentacion versionada de arquitectura, ADR, roadmap y evidencias
 
 No incluye todavia:
 
-- CI/CD
+- despliegue continuo hacia `dockerserver`
 - despliegue cloud
 - observabilidad avanzada
 - autenticacion con IdP externo
+- vertical RAG con embeddings y LLM reales validado de extremo a extremo
+
+Los contratos residuales de autenticacion demo, aislamiento completo por tenant
+y calidad minima del frontend se mantienen en JUP-085, JUP-086 y JUP-087. Que
+exista un prototipo o un provider mock no acredita el cierre de esas tarjetas.

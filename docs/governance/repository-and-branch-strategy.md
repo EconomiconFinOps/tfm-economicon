@@ -34,6 +34,20 @@ tipo/JUP-XXX-descripcion -> develop -> main
 6. GitHub elimina automaticamente la rama remota tras el merge.
 7. Solo `develop` puede abrir un pull request hacia `main`.
 
+## Politica de worktrees
+
+- El clon principal permanece en `develop` y se actualiza con
+  `git merge --ff-only origin/develop`.
+- Se mantienen como maximo dos worktrees de tarea simultaneos, siempre creados
+  desde `origin/develop` y asociados a una rama publicada `tipo/JUP-XXX-*`.
+- Un worktree no almacena trabajo unico: antes de retirarlo, su estado debe estar
+  limpio y todos sus commits deben existir en una rama local respaldada o remota.
+- Tras mezclar o cerrar el pull request se ejecutan `git worktree remove <ruta>`
+  y `git worktree prune`; la rama se elimina solo si ya esta integrada y no
+  existe un pull request abierto.
+- `tmp/` puede alojar worktrees efimeros, pero nunca artefactos que deban
+  conservarse ni una segunda copia permanente del repositorio.
+
 `main` y `develop` rechazan pushes directos, force pushes y eliminaciones. Los
 detalles de revisiones y comprobaciones obligatorias se mantienen en
 `github-branch-protection.md` y en `.github/rulesets/`.
@@ -80,3 +94,8 @@ owners de la organizacion.
 repositorio. `tools/repository-governance.test.mjs` comprueba su coherencia con
 las reglas de ramas y esta guia. Las consultas a la API de GitHub constituyen la
 evidencia del estado remoto; los archivos por si solos no prueban activacion.
+
+`.gitattributes` fija LF para los archivos de texto compartidos entre Windows,
+Docker y CI, y excluye los binarios habituales de cualquier normalizacion. Los
+colaboradores no deben cambiar finales de linea de forma manual ni ejecutar una
+renormalizacion masiva fuera de un pull request dedicado y revisable.

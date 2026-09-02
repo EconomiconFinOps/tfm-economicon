@@ -2,10 +2,11 @@ JUP: JUP-080
 
 ## Context
 
-As of August 26, Trello contains 47 P0 cards: 33 Backlog, one Prepared, four In
-Review and nine Done. The repository already covers parts of old backlog cards,
-so treating all 33 as greenfield work would create false load. Eight weeks
-remain before the working delivery date.
+The initial August 26 capture contained 47 P0 cards: 33 Backlog, one Prepared,
+four In Review and nine Done. The August 28 reconciliation contains 50 P0 cards
+after adding JUP-085, JUP-086 and JUP-087. The repository already covers parts
+of old backlog cards, so treating the backlog as greenfield work would create
+false load. Eight weeks remain before the working delivery date.
 
 The Jupiter brief prioritizes not just implementation but business value,
 architecture, DevOps, monitoring, evaluation, team contribution and defense.
@@ -23,8 +24,12 @@ not permission to close cards without verifiable evidence.
 ### Use milestone gates rather than optimistic start dates
 
 Every milestone has a latest completion date and observable exit gate. The JSON
-maps every current P0 exactly once so the plan cannot silently omit a mandatory
-card. Weekly checkpoints expose drift early.
+maps every P0 in its dated snapshot exactly once. Weekly checkpoints compare
+that snapshot with Trello to expose scope drift. The September 2 check found
+52 P0 cards: JUP-090 and JUP-091 are outside the August 28 snapshot and have no
+milestone or due date recorded on their cards. JUP-080 must reconcile their
+assignment before claiming full current-board coverage; this documentation
+update preserves the historical 50-card snapshot and does not invent dates.
 
 ### Freeze features two weeks before delivery
 
@@ -47,7 +52,7 @@ authorization and team approval.
 
 ## Risks and mitigations
 
-- Thirty-three apparent P0 cards exceed capacity: reconcile overlap in M1 and
+- The historical 33-card P0 backlog exceeded capacity: reconcile overlap in M1 and
   enforce a two-implementation WIP limit.
 - A real RAG vertical may reveal provider or retrieval gaps: complete it by M3,
   before UI and release work.
