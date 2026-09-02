@@ -228,6 +228,7 @@ class TrelloClient:
     ) -> None:
         self.settings = settings
         self.transport = transport
+        self._board_id: str | None = None
 
     def _url(self, path: str, **params: Any) -> str:
         auth = {
@@ -235,6 +236,34 @@ class TrelloClient:
             "token": self.settings.trello_api_token,
         }
         return f"{self.api_base}{path}?{urlencode({**params, **auth})}"
+
+    def _require_resource_on_board(
+        self,
+        resource_type: str,
+        resource_id: str,
+    ) -> None:
+        resource = self.transport(
+            "GET",
+            self._url(f"/{resource_type}/{resource_id}", fields="idBoard"),
+        )
+        if (
+            not isinstance(resource, dict)
+            or resource.get("idBoard") != self._configured_board_id()
+        ):
+            raise CollaborationError(
+                f"Trello {resource_type.rstrip('s')} is outside the configured board"
+            )
+
+    def _configured_board_id(self) -> str:
+        if self._board_id is None:
+            board = self.get_board()
+            board_id = board.get("id") if isinstance(board, dict) else None
+            if not isinstance(board_id, str) or not board_id:
+                raise CollaborationError(
+                    "Trello did not return the configured board identity"
+                )
+            self._board_id = board_id
+        return self._board_id
 
     def get_board(self) -> dict[str, Any]:
         return self.transport(
@@ -282,6 +311,7 @@ class TrelloClient:
     def create_card(
         self, list_id: str, name: str, description: str = ""
     ) -> dict[str, Any]:
+        self._require_resource_on_board("lists", list_id)
         return self.transport(
             "POST",
             self._url("/cards"),
@@ -289,6 +319,7 @@ class TrelloClient:
         )
 
     def comment(self, card_id: str, text: str) -> dict[str, Any]:
+        self._require_resource_on_board("cards", card_id)
         return self.transport(
             "POST",
             self._url(f"/cards/{card_id}/actions/comments"),
@@ -296,6 +327,8 @@ class TrelloClient:
         )
 
     def move_card(self, card_id: str, list_id: str) -> dict[str, Any]:
+        self._require_resource_on_board("cards", card_id)
+        self._require_resource_on_board("lists", list_id)
         return self.transport(
             "PUT",
             self._url(f"/cards/{card_id}"),
@@ -313,6 +346,7 @@ class TrelloClient:
         fields = {"name": name, "desc": description, "due": due}
         if all(value is None for value in fields.values()):
             raise CollaborationError("At least one card field must be supplied")
+        self._require_resource_on_board("cards", card_id)
         return self.transport(
             "PUT",
             self._url(f"/cards/{card_id}"),

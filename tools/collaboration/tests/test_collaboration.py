@@ -118,7 +118,16 @@ class CollaborationTests(unittest.TestCase):
 
     def test_trello_has_non_destructive_write_operations(self):
         recorder = Recorder(
-            [{"id": "card-1"}, {"id": "comment-1"}, {"id": "card-1"}]
+            [
+                {"idBoard": "board-1"},
+                {"id": "board-1"},
+                {"id": "card-1"},
+                {"idBoard": "board-1"},
+                {"id": "comment-1"},
+                {"idBoard": "board-1"},
+                {"idBoard": "board-1"},
+                {"id": "card-1"},
+            ]
         )
         client = TrelloClient(settings(allow_trello_writes=True), recorder)
 
@@ -126,8 +135,55 @@ class CollaborationTests(unittest.TestCase):
         client.comment("card-1", "Ready for review")
         client.move_card("card-1", "list-2")
 
-        self.assertEqual([call[0] for call in recorder.calls], ["POST", "POST", "PUT"])
+        self.assertEqual(
+            [call[0] for call in recorder.calls],
+            ["GET", "GET", "POST", "GET", "POST", "GET", "GET", "PUT"],
+        )
         self.assertFalse(any("DELETE" == call[0] for call in recorder.calls))
+
+    def test_trello_writes_reject_resources_from_other_boards(self):
+        operations = {
+            "create": lambda client: client.create_card("list-1", "Card"),
+            "comment": lambda client: client.comment("card-1", "Comment"),
+            "move": lambda client: client.move_card("card-1", "list-1"),
+            "update": lambda client: client.update_card("card-1", name="Card"),
+        }
+
+        for name, operation in operations.items():
+            with self.subTest(operation=name):
+                recorder = Recorder(
+                    [
+                        {"idBoard": "another-board"},
+                        {"id": "board-1"},
+                    ]
+                )
+                client = TrelloClient(
+                    settings(allow_trello_writes=True),
+                    recorder,
+                )
+
+                with self.assertRaisesRegex(CollaborationError, "configured board"):
+                    operation(client)
+
+                self.assertEqual([call[0] for call in recorder.calls], ["GET", "GET"])
+
+    def test_trello_move_rejects_destination_list_from_another_board(self):
+        recorder = Recorder(
+            [
+                {"idBoard": "board-1"},
+                {"id": "board-1"},
+                {"idBoard": "another-board"},
+            ]
+        )
+        client = TrelloClient(settings(allow_trello_writes=True), recorder)
+
+        with self.assertRaisesRegex(CollaborationError, "configured board"):
+            client.move_card("card-1", "list-1")
+
+        self.assertEqual(
+            [call[0] for call in recorder.calls],
+            ["GET", "GET", "GET"],
+        )
 
     def test_discord_pagination_uses_before_cursor_and_orders_messages(self):
         first_page = [
