@@ -27,7 +27,7 @@ Tasks            -> pasos verificables dentro de cada tarjeta
 | Routing              | react-router 7 (`createBrowserRouter`) | Estado manual `activeView` en `App.jsx` (sin router)    |
 | Capa API             | Ninguna (sin `fetch`/`axios`) | `src/services/api.js` centralizado                      |
 | Auth/sesion          | Ninguna (sin login/tenant) | `localStorage` (`finops.session`, `finops.activeTenant`) |
-| Estilos              | Tailwind v4 + shadcn/ui + MUI | Un unico `src/styles/main.css`, tema oscuro             |
+| Estilos              | Tailwind v4 (shadcn/ui y MUI declarados pero **sin uso real**, JUP-091) | Un unico `src/styles/main.css`, tema oscuro             |
 | Empaquetado monorepo | repo independiente         | `@finops/frontend`, pnpm workspace + turbo + Docker     |
 
 **Gap principal:** el origen llega en **TSX** (sin `tsconfig` ni dependencia `typescript`:
@@ -106,6 +106,11 @@ monorepo. La frontera es:
   `X-Tenant-Id` + sesión en `localStorage`) → la migración añade el flujo de auth del destino.
 - **Confirmado (T5):** Tailwind CSS v4 + shadcn/ui (Radix) + MUI 7 + `next-themes`, con estilos en
   `src/styles/`. El destino usa un único `main.css` plano → cambio grande de sistema de estilos.
+  **Matizado en JUP-091:** de ese stack solo Tailwind v4 está realmente en uso. **MUI 7 y
+  `@emotion/*` no se importan en ningún sitio**, y los 48 componentes de shadcn/ui son código muerto
+  que ninguna pantalla usa (su único import relativo es `./ExportButton`). El cambio de sistema de
+  estilos es, por tanto, **menor** de lo que sugería este supuesto. Ver `RF-091-001`/`RF-091-002` y
+  [el inventario del origen](../planning/JUP-091-economicon-source-inventory.md).
 - **Confirmado (T6):** iconos vía `lucide-react`; sin `src/assets` materializado ni fuentes propias
   (`fonts.css` vacío). Licencias en `ATTRIBUTIONS.md`: shadcn/ui (MIT) y fotos de Unsplash.
 
@@ -142,10 +147,15 @@ tarjeta en Trello.
 - [x] Definir criterios de aceptacion de paridad funcional (login -> tenant -> dashboard). Ver la
   misma línea base, sección "Criterios de paridad funcional".
 
-**JUP `jup-0xx-inventariar-frontend-economicon`** — carril `light`
+**JUP `jup-091-inventory-economicon-frontend`** — carril `light`
 - [x] Completar el "Checklist de inspeccion del origen" y confirmar todos los supuestos en JUP-083.
-- [ ] Listar dependencias del origen y clasificarlas (mantener / sustituir / descartar).
-- [ ] Enumerar endpoints que el origen consume y mapearlos a los contratos del backend de este repo.
+- [x] Listar dependencias del origen y clasificarlas (mantener / sustituir / descartar). Ver
+  [docs/planning/JUP-091-economicon-source-inventory.md](../planning/JUP-091-economicon-source-inventory.md),
+  seccion "Clasificacion de dependencias": 61 declaradas → 11 `MANTENER`, 2 `SUSTITUIR`, 48 `DESCARTAR`.
+- [x] Enumerar endpoints que el origen consume y mapearlos a los contratos del backend de este repo.
+  Ver la misma linea base, seccion "Mapeo de pantallas a contratos del backend": el origen no consume
+  ningun endpoint (datos estaticos), y de los 14 datos que muestra solo 2 tienen contrato, ambos
+  parciales. Siete capacidades ausentes agrupadas en `RF-091-003`.
 
 **JUP `jup-0xx-adr-adopcion-typescript`** — carril `standard` (decision de arquitectura)
 - [ ] Redactar ADR `docs/adr/ADR-NNNN-frontend-typescript.md` con `docs/templates/adr.md`.

@@ -118,6 +118,11 @@ python -m pytest tests
 
 `POST /jobs/ingest` requiere `text_content` como fuente principal del pipeline de embeddings.
 
+`GET /billing/summary` devuelve hoy `monthly_spend` y `savings_identified` con valores fijos de
+demostracion; solo `open_ingestions` se calcula de verdad. No lee las tablas de coste Azure que
+alimenta el `processor` (`azure_cost_ingestion_runs`, `azure_cost_records`). Verificado en JUP-091:
+ver `RF-091-004` en `openspec/findings/backlog.md`.
+
 La cuenta seed local para pruebas es:
 
 - email: `operator@example.com`
