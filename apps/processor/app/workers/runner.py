@@ -1,5 +1,6 @@
-import logging
 import time
+
+import structlog
 
 from app.agents.service import AgentRuntime
 from app.clients.rabbitmq_queue import QueueMessage, RabbitMQQueue
@@ -13,7 +14,7 @@ from app.tasks.ingest import IngestTask
 from app.vector_store.pgvector_store import PgVectorStore
 
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class ProcessorWorker:

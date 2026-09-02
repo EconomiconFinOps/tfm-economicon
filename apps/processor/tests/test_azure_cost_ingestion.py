@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
-import logging
 from dataclasses import dataclass, field
 from decimal import Decimal
 
 import pytest
 
+from app.core.logging import configure_logging
 from app.clients.azure_cost import (
     AzureCostHttpError,
     AzureCostQueryResult,
@@ -197,14 +197,14 @@ class InvalidRowClient:
         return result({"PreTaxCost": 1.0, "Currency": "NOT-A-CURRENCY"})
 
 
-def test_service_persists_completed_run_and_structured_logs(caplog):
+def test_service_persists_completed_run_and_structured_logs(capsys):
+    configure_logging()
     repository = MemoryRepository()
     service = AzureCostIngestionService(
         SuccessClient(), AzureCostNormalizer(), repository
     )
 
-    with caplog.at_level(logging.INFO):
-        summary = service.ingest("tenant-demo", "subscription-demo", DEFINITION)
+    summary = service.ingest("tenant-demo", "subscription-demo", DEFINITION)
 
     assert summary.row_count == 1
     assert summary.page_count == 3
@@ -213,7 +213,16 @@ def test_service_persists_completed_run_and_structured_logs(caplog):
     assert repository.completed[0][0] == summary.run_id
     assert repository.completed[0][4:] == (3, 2)
     assert repository.failed == []
-    events = [json.loads(record.message) for record in caplog.records]
+
+    captured = capsys.readouterr().out
+    events = [
+        json.loads(line)
+        for line in captured.strip().splitlines()
+        if line.strip()
+    ]
+    events = [
+        event for event in events if event["logger"] == "app.tasks.azure_cost_ingest"
+    ]
     assert [event["event"] for event in events] == [
         "azure_cost_persistence_started",
         "azure_cost_persistence_completed",
