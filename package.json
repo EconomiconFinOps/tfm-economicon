@@ -25,7 +25,8 @@
     "pr:check:test": "node --test tools/pr-policy.test.mjs",
     "ci:check:test": "node --test tools/ci-workflow.test.mjs",
     "roadmap:test": "node --test tools/delivery-roadmap.test.mjs",
-    "repository:governance:test": "node --test tools/repository-governance.test.mjs"
+    "repository:governance:test": "node --test tools/repository-governance.test.mjs",
+    "collaboration:test": "python -m unittest discover -s tools/collaboration/tests -v"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.8.0",
