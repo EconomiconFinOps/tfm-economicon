@@ -18,7 +18,7 @@ This pnpm/Turborepo monorepo contains the frontend, Python backend and processor
 - `corepack pnpm build`, `corepack pnpm lint` and `corepack pnpm test`: run workspace validations.
 - `corepack pnpm openspec:list`: inspect active OpenSpec changes.
 - `corepack pnpm openspec:validate`: validate all specifications and changes strictly.
-- `corepack pnpm jup:check -- --change jup-082-clean-develop`: verify Trello/OpenSpec traceability.
+- `corepack pnpm jup:check -- --change jup-085-auth-session-contract`: verify Trello/OpenSpec traceability.
 - `corepack pnpm jup:check:test`: test the JUP traceability checker.
 - `corepack pnpm jup:cleanup:check`: reject personal agent configuration, unrelated binaries and parallel task namespaces.
 - `corepack pnpm jup:cleanup:test`: test the repository hygiene checker.

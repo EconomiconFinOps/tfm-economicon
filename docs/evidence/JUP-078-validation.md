@@ -36,6 +36,35 @@ This read-only verification consumed no API credits and did not require
 credentials. It confirms model availability and published pricing only; it is
 was followed by the authenticated quality benchmark recorded below.
 
+## Alejandro approval and catalog revalidation - 2026-08-28
+
+Alejandro Aguado revalidated the public OpenRouter catalog without consuming
+credits. GLM-5.2 remained at 1.19 USD input and 3.74 USD output per million
+tokens. DeepSeek V4 Pro remained available, but its published price changed to
+0.751854 USD input and 1.503708 USD output per million tokens. The historical
+benchmark charges remain unchanged and attributable to the August 25 run.
+
+At the current published rates, the ADR example of 100 cases per model with
+2,000 input and 500 output tokens is approximately 0.6505562 USD in total. The
+10 USD/month development ceiling therefore retains substantial headroom.
+
+Alejandro approves the gateway and privacy boundary, the 10 USD/month capped
+virtual key, GLM-5.2 as primary, and DeepSeek V4 Pro only as an explicitly
+selected evaluation secondary. DeepSeek is not approved as an automatic
+fallback or production default because it missed the quality threshold, timed
+out once and exceeded the provisional p95 target. This evidence records only
+Alejandro's approval; Lucia, Paris and Victor remain outstanding and the ADR
+stays `Proposed`.
+
+Revalidation checks run on the merged `develop` baseline:
+
+- processor: 126 passed;
+- benchmark safety suite: 11 passed;
+- LiteLLM gateway configuration: 6 passed;
+- strict OpenSpec: 16 passed, 0 failed;
+- JUP-078 traceability: passed;
+- no authenticated model or embedding call was made and no credits were spent.
+
 ## Authenticated gateway and model verification
 
 - Dedicated container: `economicon-jup-078-litellm`.

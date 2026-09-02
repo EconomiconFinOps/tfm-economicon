@@ -8,6 +8,14 @@ devuelve token bearer y perfil; `/me` vuelve a resolver el usuario desde el
 `sub`. El frontend guarda `accessToken` y perfil en `finops.session`, y el tenant
 activo por separado en `finops.activeTenant`. El logout actual es local.
 
+El [inventario JUP-090](../../../docs/planning/JUP-090-frontend-migration-baseline.md)
+confirma que la UI toma `user` de login y restaura la sesion consultando
+`/tenants`; `fetchProfile` existe pero no se invoca (RF-090-003). El contrato de
+`/me` sigue vigente en backend. Conectar esa llamada al frontend se decide en
+la reconciliacion de la capa API de F3; no se da por implementada en este cambio.
+Actualmente un fallo de tenants muestra `Reset session`: la limpieza automatica
+ante `401` sigue siendo residual de JUP-085.
+
 ## Goals / Non-Goals
 
 **Goals:**
@@ -28,12 +36,16 @@ activo por separado en `finops.activeTenant`. El logout actual es local.
 ### Contrato HTTP demo estable
 
 `POST /auth/login` acepta email valido y password no vacio. En exito devuelve
-`access_token`, `token_type: bearer` y un perfil con `id`, `email`, `full_name` y
-`role`. Credenciales no validas devuelven `401` sin revelar si el email existe.
+`access_token`, `token_type: bearer` y `user`, un perfil con `id`, `email`,
+`full_name` y `role`. Credenciales no validas devuelven `401` sin revelar si el
+email existe.
 
 `GET /me` exige exactamente un bearer utilizable. Bearer ausente o mal formado,
 firma invalida, expiracion y usuario ya inexistente devuelven `401` sin datos del
 token ni del usuario.
+
+En exito `/me` devuelve directamente ese perfil, sin el envoltorio `user`
+de login. Las pruebas y fixtures deben mantener esta diferencia.
 
 ### Token de acceso acotado
 

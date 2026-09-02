@@ -25,3 +25,5 @@
 - [x] 4.1 JUP-080 recapturar el conjunto P0 de Trello el 2026-08-28
 - [x] 4.2 JUP-080 incorporar JUP-085, JUP-086 y JUP-087 exactamente una vez en M1
 - [x] 4.3 JUP-080 sustituir la lista codificada del test por la captura versionada del JSON
+- [x] 4.4 JUP-080 contrastar el tablero el 2026-09-02 y registrar las dos P0 adicionales JUP-090/091
+- [ ] 4.5 JUP-080 acordar el hito de JUP-090/091 y actualizar la captura antes de afirmar cobertura de las 52 P0 actuales

@@ -31,6 +31,12 @@ El bearer identifica al usuario. `X-Tenant-Id` selecciona uno de sus tenants,
 pero solo se acepta tras consultar `user_tenants`. Un `tenant_id` repetido en el
 payload debe coincidir exactamente; no se convierte en una segunda autoridad.
 
+El selector se exige para operar sobre datos de un tenant. `GET /tenants`
+resuelve las pertenencias del usuario antes de seleccionar tenant y requiere
+bearer, sin `X-Tenant-Id`; `/me` tambien es una consulta de identidad. Esta
+distincion conserva el bootstrap documentado en
+[JUP-090](../../../docs/planning/JUP-090-frontend-migration-baseline.md).
+
 ### El contexto autorizado se propaga de forma inmutable
 
 El backend publica en cada job el tenant autorizado y la identidad creadora. El

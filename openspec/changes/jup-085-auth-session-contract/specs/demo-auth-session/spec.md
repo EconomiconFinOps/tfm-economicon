@@ -9,8 +9,8 @@ revealing whether a submitted email exists.
 #### Scenario: Valid demo credentials create a session
 
 - **WHEN** a caller submits the configured demo email and matching password
-- **THEN** the service returns `200`, `token_type: bearer`, an access token and
-  a profile containing `id`, `email`, `full_name` and `role`.
+- **THEN** the service returns `200`, `token_type: bearer`, `access_token` and
+  `user` containing `id`, `email`, `full_name` and `role`.
 
 #### Scenario: Credentials are invalid
 
@@ -22,6 +22,12 @@ revealing whether a submitted email exists.
 The demo access token SHALL be signed with a runtime-only secret, SHALL contain
 `sub`, `iat` and `exp`, and SHALL use the configured TTL. `/me` SHALL return the
 current persisted user only while that token remains valid.
+
+#### Scenario: Valid token resolves a profile
+
+- **WHEN** `/me` receives a valid bearer for an existing user
+- **THEN** it returns `200` and the profile fields `id`, `email`, `full_name`
+  and `role` directly, without the login response's `user` wrapper.
 
 #### Scenario: Bearer is absent or malformed
 

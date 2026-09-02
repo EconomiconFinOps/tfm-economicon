@@ -25,7 +25,7 @@ test("pins delivery, freeze and defense dates in chronological order", () => {
   assert.equal(new Set(dates).size, dates.length);
 });
 
-test("assigns every current P0 task exactly once", () => {
+test("assigns every P0 task in the dated snapshot exactly once", () => {
   const assigned = roadmap.milestones.flatMap(({ task_ids }) => task_ids);
   const expectedP0 = roadmap.p0_snapshot.task_ids;
 

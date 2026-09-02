@@ -24,8 +24,12 @@ not permission to close cards without verifiable evidence.
 ### Use milestone gates rather than optimistic start dates
 
 Every milestone has a latest completion date and observable exit gate. The JSON
-maps every current P0 exactly once so the plan cannot silently omit a mandatory
-card. Weekly checkpoints expose drift early.
+maps every P0 in its dated snapshot exactly once. Weekly checkpoints compare
+that snapshot with Trello to expose scope drift. The September 2 check found
+52 P0 cards: JUP-090 and JUP-091 are outside the August 28 snapshot and have no
+milestone or due date recorded on their cards. JUP-080 must reconcile their
+assignment before claiming full current-board coverage; this documentation
+update preserves the historical 50-card snapshot and does not invent dates.
 
 ### Freeze features two weeks before delivery
 

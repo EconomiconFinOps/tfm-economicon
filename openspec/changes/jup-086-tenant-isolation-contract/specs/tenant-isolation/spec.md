@@ -7,6 +7,16 @@ require an active tenant selector and verify membership before accessing data.
 A tenant identifier supplied in a body SHALL only confirm, never replace, the
 authorized header context.
 
+Identity and membership discovery (`/me`, `/tenants`) SHALL authenticate the
+user without requiring a selected tenant; discovery SHALL expose only that
+user's memberships.
+
+#### Scenario: Authenticated user discovers available tenants
+
+- **WHEN** `GET /tenants` receives a valid bearer without `X-Tenant-Id`
+- **THEN** it returns only the authenticated user's memberships so the
+  frontend can select an authorized tenant before requesting tenant-owned data.
+
 #### Scenario: Required tenant selector is absent
 
 - **WHEN** an authenticated request reaches a tenant-aware operation without `X-Tenant-Id`

@@ -26,7 +26,7 @@ para las cuatro areas; no concentra memoria y evaluacion en la ultima semana.
 ## Diagnostico de partida
 
 La captura inicial contenia 47 tarjetas P0. Tras la reconciliacion M1 del
-27/08/2026, Trello contiene 50 tarjetas P0: JUP-085, JUP-086 y JUP-087 cubren
+27/08/2026, la captura versionada del 28/08 contiene 50 tarjetas P0: JUP-085, JUP-086 y JUP-087 cubren
 respectivamente el contrato de sesion demo, el aislamiento por tenant y la
 calidad minima del frontend. La distribucion por listas cambia durante la
 ejecucion y se consulta en Trello; el mapa JSON fija la captura de alcance, no
@@ -38,6 +38,13 @@ La primera semana no reimplementa esas capacidades. Revisa criterios de
 aceptacion y cierra la tarjeta cubierta o crea un residual concreto cuando falte
 algo. Esta recalibracion es necesaria para obtener una ruta viable en ocho
 semanas.
+
+Contraste del 02/09/2026 mediante el puente de Trello de `DockerServer`: el
+tablero tiene 52 P0, al incorporar [JUP-090](https://trello.com/c/DtlNd0u0) y
+[JUP-091](https://trello.com/c/pVfcfvhu). Ambas tarjetas pertenecen al inventario
+de migracion frontend y no indican hito ni fecha limite; su asignacion queda
+pendiente de reconciliacion en JUP-080. El JSON y sus pruebas siguen verificando
+las 50 P0 de la captura del 28/08, no la cobertura completa del tablero actual.
 
 ## Hitos y puertas de salida
 
@@ -62,7 +69,14 @@ autorizacion previa de Alejandro.
 
 ## Alcance por hito
 
-La asignacion completa y procesable esta en `JUP-080-milestones.json`.
+La asignacion completa de la captura del 28/08, en formato procesable, esta en
+`JUP-080-milestones.json`.
+
+[JUP-088](https://trello.com/c/RJjK2Z6L) coordina la reconciliacion documental de
+M1 (04/09/2026) mediante la [PR #19](https://github.com/EconomiconFinOps/tfm-economicon/pull/19).
+No es P0 y por ello no se añade a `p0_snapshot` ni a la asignacion de las 50 P0.
+La consulta del 02/09 mantiene pendientes la aprobacion del roadmap y la
+confirmacion institucional de fechas en JUP-080.
 
 - M1 cierra o divide el trabajo ya cubierto: JUP-013/014, JUP-019, JUP-048 a
   JUP-051, JUP-054, JUP-072 a JUP-079 y JUP-082/083; ademas formaliza el
