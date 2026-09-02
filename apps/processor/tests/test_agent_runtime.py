@@ -1,5 +1,6 @@
 import json
 import math
+import traceback
 
 import pytest
 
@@ -312,3 +313,13 @@ def test_invalid_provider_json_is_not_copied_into_the_error():
         parse_and_validate_response(raw_response)
 
     assert "SECRET_PROVIDER_CONTENT" not in str(exc_info.value)
+    assert exc_info.value.__cause__ is None
+    assert exc_info.value.__context__ is None
+    rendered_traceback = "".join(
+        traceback.format_exception(
+            type(exc_info.value),
+            exc_info.value,
+            exc_info.value.__traceback__,
+        )
+    )
+    assert "SECRET_PROVIDER_CONTENT" not in rendered_traceback

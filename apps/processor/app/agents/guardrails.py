@@ -136,14 +136,20 @@ def _sanitize_value(value: Any, depth: int) -> Any:
 def parse_and_validate_response(raw_response: str) -> FinOpsResponse:
     if not isinstance(raw_response, str) or not raw_response.strip():
         raise AgentResponseError("provider returned an empty response")
+    error_message: str | None = None
     try:
         response = FinOpsResponse.model_validate_json(raw_response)
-    except ValidationError as exc:
-        raise AgentResponseError(
+    except ValidationError:
+        error_message = (
             "provider response does not match the FinOps response schema"
-        ) from exc
-    except ValueError as exc:
-        raise AgentResponseError("provider response is not valid JSON") from exc
+        )
+    except ValueError:
+        error_message = "provider response is not valid JSON"
+
+    if error_message is not None:
+        # Raise outside the handler so the provider payload is not retained in
+        # an exception cause/context that standard traceback logging would emit.
+        raise AgentResponseError(error_message)
 
     if not response.evidence and NUMERIC_CLAIM.search(response.answer):
         raise AgentResponseError(
