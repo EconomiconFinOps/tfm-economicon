@@ -41,6 +41,20 @@ package-manager drift without pulling large images in every workflow run. A
 full isolated build and health smoke on `dockerserver` verifies the behavior
 that static validation cannot prove.
 
+### Reconciliation with develop on 2026-09-02
+
+The backend image retains `python -m app.run` from JUP-042 so Uvicorn uses the
+application's structured logging configuration. Its pinned base, non-root user
+and healthcheck from JUP-049 remain in place.
+
+A fresh-volume smoke exposed concurrent migrations in the processor's combined
+worker/API runtime. Both threads can create `vector_schema_migrations` before
+either transaction commits; `CREATE TABLE IF NOT EXISTS` does not prevent the
+observed PostgreSQL catalog uniqueness failure. The processor migration runner
+now serializes the entire transaction with a process-local lock. This covers
+the two threads started by `app.run_all`; coordination between separate
+processor processes or replicas remains outside this fix.
+
 ## Risks and mitigations
 
 - Registry images disappear by digest: keep the human-readable tag and record
