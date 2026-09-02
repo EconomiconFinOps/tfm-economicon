@@ -61,6 +61,14 @@ Por ejemplo, el backend:
 
 El backend es como el punto central de entrada para las peticiones normales de la aplicacion.
 
+> **Estado actual de `GET /billing/summary` (verificado en JUP-091).** Este endpoint todavia **no
+> lee** los costes de Azure que el `processor` ingesta y normaliza. Devuelve `monthly_spend` y
+> `savings_identified` con valores fijos de demostracion; solo `open_ingestions` se calcula de
+> verdad, contando filas en `jobs`. Es decir: hoy **ningun endpoint del backend expone las tablas
+> `azure_cost_ingestion_runs` ni `azure_cost_records`**. El dato existe en CockroachDB, pero falta
+> el camino de lectura hasta el frontend. Ver `RF-091-004` en
+> [openspec/findings/backlog.md](../openspec/findings/backlog.md).
+
 ### `apps/processor`
 
 Es el servicio que hace trabajo en segundo plano.
