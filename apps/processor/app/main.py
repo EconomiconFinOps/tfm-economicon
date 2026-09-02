@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app.core.config import get_settings
 from app.core.logging import configure_logging
+from app.core.request_context import RequestIdMiddleware
 from app.db.database import Database
 from app.api.routes.health import router as health_router
 from app.clients.rabbitmq_queue import RabbitMQQueue
@@ -35,5 +36,7 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.add_middleware(RequestIdMiddleware)
 
 app.include_router(health_router)
