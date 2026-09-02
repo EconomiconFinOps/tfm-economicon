@@ -19,4 +19,4 @@ USER economicon
 HEALTHCHECK --interval=15s --timeout=5s --retries=10 --start-period=20s \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"
 
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "app.run"]
