@@ -64,6 +64,7 @@ jobs:
           corepack pnpm assistant-corpus:test
           corepack pnpm assistant-corpus:validate
           corepack pnpm llm-gateway:test
+          corepack pnpm docker:validate
           corepack pnpm openspec:validate
 
   python-tests:

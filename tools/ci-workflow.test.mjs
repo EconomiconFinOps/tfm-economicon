@@ -73,6 +73,7 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "assistant-corpus:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
+    "docker:validate",
     "openspec:validate",
   ]) {
     assert.match(commands, new RegExp(`pnpm ${check.replaceAll(":", "\\:")}`));

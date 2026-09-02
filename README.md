@@ -54,7 +54,42 @@ tfm-economicon
 Desde la raiz del repo:
 
 ```powershell
-docker compose up --build
+Copy-Item .env.example .env
+docker compose build --pull
+docker compose up -d --wait
+docker compose ps
+```
+
+Las cuatro aplicaciones se construyen desde Dockerfiles versionados. Las
+imagenes ejecutan como usuarios sin privilegios, con filesystem raiz de solo
+lectura, `/tmp` temporal, `no-new-privileges` y healthchecks. Las dependencias
+de infraestructura y las imagenes base estan fijadas por digest; una
+actualizacion exige cambiar de forma explicita el tag y el digest en el mismo
+pull request.
+
+`VITE_API_BASE_URL` se incorpora al build del frontend. Si cambia, reconstruir
+esa imagen antes de arrancarla:
+
+```powershell
+docker compose build frontend
+docker compose up -d --wait frontend
+```
+
+Los puertos de CockroachDB, RabbitMQ y pgvector se enlazan exclusivamente a
+loopback. `COCKROACH_SQL_PORT`, `COCKROACH_HTTP_PORT`, `RABBITMQ_PORT`,
+`RABBITMQ_MANAGEMENT_PORT` y `PGVECTOR_PORT` permiten ejecutar proyectos
+aislados sin colisionar con otro stack del mismo host.
+
+Los puertos publicados de las aplicaciones se configuran por separado mediante
+`API_HOST_PORT`, `PROCESSOR_HOST_PORT`, `FRONTEND_HOST_PORT` y
+`AZURE_COST_API_HOST_PORT`. Los procesos conservan siempre sus puertos internos
+8000, 8001, 5173 y 8002, por lo que cambiar un puerto del host no invalida su
+healthcheck.
+
+Para detener este entorno y conservar los volumenes de datos:
+
+```powershell
+docker compose down
 ```
 
 Puertos visibles:
@@ -137,6 +172,8 @@ Variables principales:
 - `pnpm lint`: ejecuta las tareas de lint declaradas por cada app
 - `pnpm test`: ejecuta los tests disponibles
 - `pnpm docker:build`: construye las imagenes Docker de las apps
+- `pnpm docker:validate`: valida topologia, digests, healthchecks y privilegios
+  sin necesitar un daemon Docker
 
 ## Planificacion de entrega
 

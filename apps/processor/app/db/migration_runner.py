@@ -1,7 +1,13 @@
 from importlib import import_module
 from pathlib import Path
+from threading import Lock
 
 from sqlalchemy import text
+
+
+# run_all starts the worker and API in separate threads, both of which migrate.
+# Serialize the entire transaction, including creation of the version table.
+_migration_lock = Lock()
 
 
 class MigrationRunner:
@@ -18,7 +24,7 @@ class MigrationRunner:
         self.version_table = version_table
 
     def run(self) -> None:
-        with self.engine.begin() as connection:
+        with _migration_lock, self.engine.begin() as connection:
             connection.execute(
                 text(
                     f"""
