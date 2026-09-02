@@ -90,6 +90,10 @@ El frontend sigue hablando solo con el backend.
 
 Esto permite que las tareas pesadas o lentas no bloqueen al backend, y tambien permite comprobar si el processor esta vivo.
 
+### Métricas técnicas (Prometheus + Grafana)
+
+El backend y el processor exponen `GET /metrics` en formato Prometheus (verificado en JUP-043): volumen y latencia de requests HTTP, y contadores de dominio (`backend_ingest_jobs_total`, `backend_assistant_queries_total`). Un servicio `prometheus` en `docker-compose.yml` scrapea ambos endpoints, y un servicio `grafana` visualiza un dashboard mínimo (latencia p95, tasa de error, volumen de ingestas y consultas) provisionado como código en `apps/monitoring/`.
+
 ### `apps/azure-cost-api`
 
 Es un servicio FastAPI independiente que simula el subconjunto de Azure Cost
