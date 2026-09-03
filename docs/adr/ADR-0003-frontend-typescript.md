@@ -132,4 +132,30 @@ pospone hasta que haya un segundo consumidor real.
 
 ## Evidencia y seguimiento
 
-<!-- Se completa en la tarea 2.6 -->
+**Evidencia verificada en JUP-092:**
+
+- Ningún `tsconfig.json` existe en el repositorio (búsqueda completa del árbol).
+- `apps/frontend` acumula exactamente **49 violaciones de `react/prop-types`**, reproducidas con
+  `pnpm lint` el 2026-09-02.
+- `apps/frontend/package.json` declara `"test": "echo \"No frontend tests configured yet\""`: no hay
+  tests reales que romper al introducir tipos.
+- El origen no declara `typescript` entre sus 61 dependencias ni incluye `tsconfig.json`
+  (`docs/planning/JUP-091-economicon-source-inventory.md`).
+- `packages/shared-config` existe pero solo contiene `index.js` con metadatos del workspace; ningún
+  otro paquete del monorepo usa TypeScript hoy.
+
+**Seguimiento — tareas que ejecutan esta decisión:**
+
+- F2, `jup-0xx-configurar-typescript`: instalar `typescript`, `@types/react`, `@types/react-dom`;
+  crear `tsconfig.json` con `strict: true` y `allowJs: true`; migrar `eslint.config.js` al parser de
+  TypeScript y desactivar `react/prop-types` para `.ts`/`.tsx`. Debe citar este ADR en su `design.md`.
+- F2, `jup-0xx-reconciliar-package-json`: la superficie real a tipar depende de `RF-091-002`
+  (adopción o descarte de shadcn/ui); este ADR no la prejuzga.
+- F3, `jup-0xx-portar-codigo-fuente` y `jup-0xx-reconciliar-capa-api`: primer código que se escribe ya
+  bajo `strict: true`; deben citar este ADR.
+- F5, tarjeta de cierre: endurecer `allowJs` a `false` una vez no quede JavaScript en `src/`.
+- `openspec/findings/backlog.md`: `RF-082-002` se anota con la resolución prevista (obsolescencia,
+  no corrección) al aceptar este ADR; se cierra materialmente cuando F2 desactive la regla.
+
+**Revisión:** si el coste de `strict: true` desborda la tarjeta de F3 (ver "Consecuencias"), este ADR
+se supersede por uno nuevo; no se edita el aceptado ni se relaja la configuración sin ese registro.
