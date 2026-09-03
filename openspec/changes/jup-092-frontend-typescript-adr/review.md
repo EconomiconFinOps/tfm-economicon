@@ -60,3 +60,24 @@ con su resolución prevista en `openspec/findings/backlog.md`, pendiente de ejec
 - **F2 y F3 deben citar el ADR-0003 en su `design.md`** al crearse — no es tarea que JUP-092 pueda
   completar por ellas, y quedó explícitamente marcada como pendiente en el spike en vez de darse por
   hecha.
+
+## Human Approval
+
+- Change: jup-092-frontend-typescript-adr
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-09-02
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: JUP-092 completada (12/12 tareas): produce y acepta `docs/adr/ADR-0003-frontend-typescript.md`,
+  resolviendo las cuatro decisiones que bloqueaban F2 (rigor `strict`, convivencia `allowJs`, encaje
+  con CI y cierre de `RF-082-002` por obsolescencia, ubicación del `tsconfig`). Con esta tarjeta, **F1
+  (Preparación e inventario) queda completa**: JUP-090 (inventario del destino), JUP-091 (inventario
+  del origen) y JUP-092 (este ADR). Sin findings nuevos: esta HU resuelve `RF-082-002`, no genera
+  hallazgos. Queda pendiente, explícitamente fuera de esta HU y anotado en el spike, que F2 y F3
+  citen el ADR-0003 en su `design.md` al crearse. Sin `docs/evidence/JUP-092-validation.md`: se sigue
+  el precedente de JUP-083/090/091 para HUs doc-only, con `review.md` como único registro de
+  validación.
