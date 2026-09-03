@@ -10,10 +10,10 @@
   `tsconfig` ni dependencia `typescript`**, la ausencia total de `tsconfig` en el repo, y que
   TypeScript sería el primer código tipado del lado JavaScript. Citar los inventarios de JUP-090 y
   JUP-091 como evidencia.
-- [ ] 2.2 Escribir la sección **Decision** resolviendo las cuatro decisiones, cada una con su motivo:
+- [x] 2.2 Escribir la sección **Decision** resolviendo las cuatro decisiones, cada una con su motivo:
   nivel de rigor (`strict`), estrategia de convivencia (`allowJs`), encaje con CI y ubicación del
   `tsconfig`. Ninguna puede quedar condicionada a una evaluación posterior.
-- [ ] 2.3 Declarar dentro de **Decision** qué ocurre con `RF-082-002` (49 violaciones de
+- [x] 2.3 Declarar dentro de **Decision** qué ocurre con `RF-082-002` (49 violaciones de
   `react/prop-types`): si se cierra, se transforma o se mantiene, y por qué, en relación con que los
   tipos sustituyen a `prop-types`.
 - [ ] 2.4 Escribir la sección **Consequences** en ambas direcciones, incluyendo el coste de los
