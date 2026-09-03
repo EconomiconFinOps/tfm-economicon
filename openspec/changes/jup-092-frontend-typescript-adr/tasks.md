@@ -26,7 +26,7 @@
 
 ## 3. Aceptación y enlace
 
-- [ ] 3.1 Recoger la aprobación del equipo sobre las cuatro decisiones y **cambiar el estado del ADR
+- [x] 3.1 Recoger la aprobación del equipo sobre las cuatro decisiones y **cambiar el estado del ADR
   de `Proposed` a `Accepted`**, en un commit separado del de redacción.
 - [ ] 3.2 Enlazar el ADR desde `docs/spikes/frontend-migration.md`: en la decisión nº 1 y en la
   tarjeta F1 correspondiente, que queda marcada como completada.

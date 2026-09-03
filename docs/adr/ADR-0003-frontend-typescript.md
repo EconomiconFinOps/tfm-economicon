@@ -1,6 +1,6 @@
 # ADR-0003: Adopción de TypeScript en el frontend
 
-- Estado: Proposed
+- Estado: Accepted
 - Fecha: 2026-09-02
 - Tarjeta Trello: [JUP-092](https://trello.com/c/R5t2PL2F/84-jup-092-adr-de-adopción-de-typescript-en-el-frontend)
 - OpenSpec relacionado: `jup-092-frontend-typescript-adr`
@@ -159,3 +159,8 @@ pospone hasta que haya un segundo consumidor real.
 
 **Revisión:** si el coste de `strict: true` desborda la tarjeta de F3 (ver "Consecuencias"), este ADR
 se supersede por uno nuevo; no se edita el aceptado ni se relaja la configuración sin ese registro.
+
+**Aprobación:** las cuatro decisiones quedaron aprobadas en el bloque `Human Approval` del gate
+pre-código de JUP-092 (`Approval type: pre-code`, `Decision: approved`, Victor, 2026-09-02), que
+enumera cada una con su motivo. Ese registro se toma como la aprobación del equipo que exige
+`docs/adr/README.md` para pasar de `Proposed` a `Accepted`.
