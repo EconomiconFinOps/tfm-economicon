@@ -6,7 +6,7 @@
 
 ## 2. Redacción del ADR en estado `Proposed`
 
-- [ ] 2.1 Escribir la sección **Context**: el destino en JavaScript sin tipos, el origen en TSX **sin
+- [x] 2.1 Escribir la sección **Context**: el destino en JavaScript sin tipos, el origen en TSX **sin
   `tsconfig` ni dependencia `typescript`**, la ausencia total de `tsconfig` en el repo, y que
   TypeScript sería el primer código tipado del lado JavaScript. Citar los inventarios de JUP-090 y
   JUP-091 como evidencia.
