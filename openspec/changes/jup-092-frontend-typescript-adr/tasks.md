@@ -19,7 +19,7 @@
 - [x] 2.4 Escribir la sección **Consequences** en ambas direcciones, incluyendo el coste de los
   errores latentes del TSX del origen nunca verificado y la dependencia con `RF-091-002`
   (adoptar o descartar shadcn/ui cambia la superficie a tipar).
-- [ ] 2.5 Escribir **Alternatives Considered** con al menos dos opciones descartadas y su motivo
+- [x] 2.5 Escribir **Alternatives Considered** con al menos dos opciones descartadas y su motivo
   (seguir en JavaScript; JSDoc + `checkJs` como vía intermedia).
 - [ ] 2.6 Escribir **Evidence And Follow-up**: evidencia verificada en esta HU (recuento de las 49
   violaciones, ausencia de `tsconfig`) y las tareas de seguimiento que ejecutará F2.

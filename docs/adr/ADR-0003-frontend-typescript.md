@@ -111,7 +111,24 @@ pospone hasta que haya un segundo consumidor real.
 
 ## Alternativas consideradas
 
-<!-- Se completa en la tarea 2.5 -->
+- **Seguir en JavaScript, sin adoptar TypeScript.** Evitaría toda la curva de aprendizaje y el coste
+  de tipar el TSX del origen. Descartada: el spike ya fija la adopción como decisión de la épica, no
+  como algo a validar aquí; y renunciar a tipos en un frontend que va a crecer con auth, tenant,
+  ingesta y chat del asistente deja sin red de seguridad justo las áreas con más superficie de error
+  (contratos con el backend, estado de sesión).
+- **JSDoc + `checkJs`, sin migrar a `.tsx`.** Permite type-checking sobre JavaScript existente sin
+  cambiar extensión de archivo ni sintaxis, con menor fricción de adopción. Descartada como opción
+  permanente: el origen ya llega en TSX y forzar su conversión a JSDoc sería trabajo adicional sin
+  beneficio, mientras que JSDoc ofrece una experiencia de tipado más pobre (sin genéricos cómodos, sin
+  inferencia tan fuerte) que TypeScript nativo para un frontend que va a crecer. Queda como opción
+  válida únicamente para archivos `.jsx` temporales que convivan bajo `allowJs` durante la migración,
+  no como estrategia final.
+- **Adopción gradual con `strict: false` y endurecimiento progresivo.** Reduciría el volumen de
+  errores que hay que resolver de golpe. Descartada como decisión de partida: al ser un reemplazo
+  completo del frontend, no hay código productivo en producción que proteger de una migración
+  disruptiva; el coste de empezar laxo y endurecer después —con más superficie ya escrita sin
+  tipos— es mayor que exigir `strict` desde el primer archivo. El ADR reconoce en "Consecuencias"
+  que este es el riesgo que más puede obligar a revisar la decisión.
 
 ## Evidencia y seguimiento
 
