@@ -38,7 +38,7 @@
 - [x] 4.1 Verificar que el ADR responde a las cuatro decisiones sin dejar ninguna condicionada, que
   la sección de consecuencias recoge costes además de beneficios, y que hay al menos dos alternativas
   descartadas con motivo.
-- [ ] 4.2 Ejecutar `corepack pnpm openspec:validate`,
+- [x] 4.2 Ejecutar `corepack pnpm openspec:validate`,
   `corepack pnpm jup:check -- --change jup-092-frontend-typescript-adr` y
   `corepack pnpm jup:cleanup:check`; registrar el resultado en `review.md` junto con la excepción
   doc-only del harness TDD (sin tester/coder/mutación).
