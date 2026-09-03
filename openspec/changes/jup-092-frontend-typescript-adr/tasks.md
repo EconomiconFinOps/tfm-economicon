@@ -1,6 +1,6 @@
 ## 1. Preparación
 
-- [ ] 1.1 Crear `docs/adr/ADR-0003-frontend-typescript.md` a partir de `docs/templates/adr.md` con la
+- [x] 1.1 Crear `docs/adr/ADR-0003-frontend-typescript.md` a partir de `docs/templates/adr.md` con la
   cabecera completa: `Status: Proposed`, fecha, `Related JUP/OpenSpec` (JUP-092 +
   `jup-092-frontend-typescript-adr`), URL de Trello y `Supersedes`/`Superseded by` en `none`.
 
