@@ -76,7 +76,38 @@ pospone hasta que haya un segundo consumidor real.
 
 ## Consecuencias
 
-<!-- Se completa en la tarea 2.4 -->
+**Se vuelve más fácil:**
+
+- Detectar en tiempo de compilación errores que hoy solo aparecerían en runtime o en revisión manual:
+  props mal pasadas, contratos de API mal consumidos, `null`/`undefined` no manejados.
+- Refactorizar con confianza a medida que crece `apps/frontend`, con el compilador señalando cada
+  punto que rompe un cambio de tipo.
+- Documentar contratos de datos (props de componentes, forma de las respuestas del backend) de forma
+  ejecutable, no solo en comentarios o en el README.
+
+**Se vuelve más difícil:**
+
+- El primer build con `strict: true` tendrá que resolver errores de tipo en código que nunca se ha
+  verificado: tanto el JSX del destino como el TSX del origen. El volumen de ese trabajo es
+  desconocido hasta que se intente.
+- La curva de aprendizaje de TypeScript recae sobre un equipo que hoy trabaja en JavaScript puro en
+  el frontend (backend y processor son Python, sin experiencia de tipado estático compartida).
+- Mantener `allowJs: true` durante la migración exige disciplina: cualquier archivo `.jsx` nuevo debe
+  tratarse como deuda temporal explícita, no como alternativa permanente al `.tsx`.
+
+**Se vuelve más arriesgado:**
+
+- El coste real de `strict: true` depende de una decisión que no es de esta tarjeta: `RF-091-002`
+  (adoptar o descartar shadcn/ui en F2). Si se adopta, se tipa una superficie mucho mayor —del orden
+  de 26 primitivos Radix— que si se descarta y se resuelve con los ~10 paquetes que hoy sostienen lo
+  que renderiza el origen (inventario de JUP-091).
+- Cerrar `RF-082-002` por obsolescencia, en vez de corregir las 49 violaciones, deja sin resolver
+  cualquier problema real de props que esas violaciones señalaran. TypeScript debe cubrir
+  efectivamente esos casos en F2/F3; si algún caso queda sin tipar, se pierde la única señal que hoy
+  existía sobre él.
+- Este ADR fija el criterio de escape: si el coste de `strict: true` desborda la tarjeta de F3, no se
+  desactiva en silencio. Se documenta el desbordamiento y se redacta un ADR nuevo que supersede a
+  éste, dejando trazabilidad de por qué cambió la decisión.
 
 ## Alternativas consideradas
 

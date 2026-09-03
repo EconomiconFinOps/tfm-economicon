@@ -16,7 +16,7 @@
 - [x] 2.3 Declarar dentro de **Decision** qué ocurre con `RF-082-002` (49 violaciones de
   `react/prop-types`): si se cierra, se transforma o se mantiene, y por qué, en relación con que los
   tipos sustituyen a `prop-types`.
-- [ ] 2.4 Escribir la sección **Consequences** en ambas direcciones, incluyendo el coste de los
+- [x] 2.4 Escribir la sección **Consequences** en ambas direcciones, incluyendo el coste de los
   errores latentes del TSX del origen nunca verificado y la dependencia con `RF-091-002`
   (adoptar o descartar shadcn/ui cambia la superficie a tipar).
 - [ ] 2.5 Escribir **Alternatives Considered** con al menos dos opciones descartadas y su motivo
