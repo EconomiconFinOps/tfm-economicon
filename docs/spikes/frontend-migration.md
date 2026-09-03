@@ -86,7 +86,10 @@ monorepo. La frontera es:
 1. **Adopcion de TypeScript en `apps/frontend`.** Es una decision transversal y duradera (afecta
    tooling, build, lint y todas las tareas futuras del frontend) -> **requiere ADR** en `docs/adr/`
    usando `docs/templates/adr.md`, segun [AGENTS.md](../../AGENTS.md). Debe crearse/enlazarse antes
-   de implementar la feature de tooling.
+   de implementar la feature de tooling. **Resuelto en JUP-092:**
+   [docs/adr/ADR-0003-frontend-typescript.md](../adr/ADR-0003-frontend-typescript.md) (`Accepted`)
+   — `strict: true` desde el inicio, `allowJs: true` durante la migracion, type-check obligatorio en
+   CI con `RF-082-002` cerrado por obsolescencia, y `tsconfig` a nivel de `apps/frontend`.
 2. **Vite se mantiene** como bundler (origen y destino ya usan Vite) -> el modelo de build es
    compatible; no hay migracion de bundler.
 3. **El backend de este repo manda.** La capa API del origen se reescribe contra los contratos
@@ -157,10 +160,13 @@ tarjeta en Trello.
   ningun endpoint (datos estaticos), y de los 14 datos que muestra solo 2 tienen contrato, ambos
   parciales. Siete capacidades ausentes agrupadas en `RF-091-003`.
 
-**JUP `jup-0xx-adr-adopcion-typescript`** — carril `standard` (decision de arquitectura)
-- [ ] Redactar ADR `docs/adr/ADR-NNNN-frontend-typescript.md` con `docs/templates/adr.md`.
-- [ ] Estado `Proposed` -> `Accepted` tras HiTL.
-- [ ] Enlazar el ADR desde el `design.md` de las tareas de tooling y de codigo.
+**JUP `jup-092-frontend-typescript-adr`** — carril `standard` (decision de arquitectura)
+- [x] Redactar ADR `docs/adr/ADR-0003-frontend-typescript.md` con `docs/templates/adr.md`.
+- [x] Estado `Proposed` -> `Accepted` tras HiTL.
+- [x] Enlazar el ADR desde este spike (decision nº 1, arriba).
+- [ ] Enlazar el ADR desde el `design.md` de cada tarjeta de F2 y F3 **al crearse** — no es tarea de
+  JUP-092, que ya termino; queda registrado aqui y en la seccion de seguimiento del propio ADR como
+  requisito de esas tarjetas futuras.
 
 ### F2. Tooling y dependencias
 
@@ -282,7 +288,8 @@ Notas:
 2. **El backend de este repo es la fuente de verdad de contratos.** Adaptar el frontend a el; no al
    reves. Cualquier endpoint del origen sin equivalente se registra como finding.
 3. **ADR antes de tooling.** Crear/aceptar el ADR de adopcion de TypeScript antes de tocar la
-   configuracion de build/lint.
+   configuracion de build/lint. **Hecho en JUP-092:**
+   [ADR-0003](../adr/ADR-0003-frontend-typescript.md) (`Accepted`).
 4. **Seguir el flujo Trello/JUP + OpenSpec.** Validar cada cambio con
    `pnpm jup:check -- --change jup-NNN-slug` y solicitar revision humana mediante pull request.
 5. **Preservar rollback.** No borrar el scaffold actual hasta validar E2E con el seed local.
@@ -325,6 +332,9 @@ tarjeta JUP** de la epica.
 1. **Hecho en JUP-083:** inspección de Economicon y supuestos confirmados (ver arriba). Replanificar
    las tarjetas JUP de la épica según los hallazgos: el origen no tiene backend, auth ni capa de datos, así
    que F3 debe **añadir** esas capas desde el destino, no solo reconciliarlas.
-2. Crear el ADR de adopcion de TypeScript (`docs/adr/ADR-NNNN-frontend-typescript.md`).
-3. Crear la primera tarjeta JUP de la epica y documentarla en OpenSpec siguiendo esta descomposicion.
-4. Ajustar la numeracion de Trello y el alcance de las tareas segun lo que revele el inventario.
+2. **Hecho en JUP-092:** ADR de adopcion de TypeScript
+   ([ADR-0003](../adr/ADR-0003-frontend-typescript.md), `Accepted`).
+3. **Hecho en JUP-090:** primera tarjeta JUP de la epica creada y documentada en OpenSpec.
+   **F1 (Preparacion e inventario) queda completa** con JUP-090, JUP-091 y JUP-092.
+4. Numeracion de Trello resuelta: JUP-090/091/092 para F1. Siguiente: crear las tarjetas de F2
+   (Tooling y dependencias) citando el ADR-0003 en su `design.md`, segun su seccion de seguimiento.

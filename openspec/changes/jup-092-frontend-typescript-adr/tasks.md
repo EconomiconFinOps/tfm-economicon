@@ -28,7 +28,7 @@
 
 - [x] 3.1 Recoger la aprobación del equipo sobre las cuatro decisiones y **cambiar el estado del ADR
   de `Proposed` a `Accepted`**, en un commit separado del de redacción.
-- [ ] 3.2 Enlazar el ADR desde `docs/spikes/frontend-migration.md`: en la decisión nº 1 y en la
+- [x] 3.2 Enlazar el ADR desde `docs/spikes/frontend-migration.md`: en la decisión nº 1 y en la
   tarjeta F1 correspondiente, que queda marcada como completada.
 - [ ] 3.3 Anotar en `openspec/findings/backlog.md` la resolución prevista de `RF-082-002` según lo
   decidido, sin cerrarlo si el cambio material lo ejecuta F2.
