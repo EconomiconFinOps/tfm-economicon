@@ -89,7 +89,10 @@ monorepo. La frontera es:
    de implementar la feature de tooling. **Resuelto en JUP-092:**
    [docs/adr/ADR-0003-frontend-typescript.md](../adr/ADR-0003-frontend-typescript.md) (`Accepted`)
    — `strict: true` desde el inicio, `allowJs: true` durante la migracion, type-check obligatorio en
-   CI con `RF-082-002` cerrado por obsolescencia, y `tsconfig` a nivel de `apps/frontend`.
+   CI, y `tsconfig` a nivel de `apps/frontend`. **`RF-082-002` (49 violaciones `react/prop-types` en
+   9 archivos `.jsx`) permanece abierto hasta que F3 migre esos archivos a `.tsx` con cobertura real
+   de tipos** — desactivar la regla solo para `.ts`/`.tsx` en F2 no los alcanza (correccion de
+   consistencia via revision de PR).
 2. **Vite se mantiene** como bundler (origen y destino ya usan Vite) -> el modelo de build es
    compatible; no hay migracion de bundler.
 3. **El backend de este repo manda.** La capa API del origen se reescribe contra los contratos

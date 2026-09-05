@@ -57,14 +57,23 @@ El spike prohíbe explícitamente el "big bang" y exige avanzar por slices verif
 JavaScript aún sin portar. La tarjeta de cierre de F5 endurece la opción a `false` una vez no quede
 JavaScript en `src/`.
 
-**3. CI: type-check como check obligatorio; `RF-082-002` se cierra por obsolescencia, no se resuelve.**
+**3. CI: type-check como check obligatorio; `RF-082-002` se cierra cuando los archivos afectados
+migren a `.tsx`, no al terminar F2.**
 El type-check debe correr en CI — de lo contrario `strict` es solo una anotación decorativa sin
 consecuencia. Respecto a las 49 violaciones de `react/prop-types`: la vía elegida **no es arreglarlas
-una a una**, sino que la regla deja de aplicar. `prop-types` es validación de tipos en tiempo de
-ejecución; TypeScript la sustituye en tiempo de compilación con garantías más fuertes. Mantener
-ambas sería redundante. F2 desactivará `react/prop-types` para archivos `.ts`/`.tsx` en
-`eslint.config.js`, y `RF-082-002` se documentará como resuelto estructuralmente por la migración, no
-por corrección manual de las 49 violaciones.
+una a una**, sino que la regla deja de aplicar sobre los archivos ya tipados. `prop-types` es
+validación de tipos en tiempo de ejecución; TypeScript la sustituye en tiempo de compilación con
+garantías más fuertes. Mantener ambas sería redundante — pero solo una vez que TypeScript cubre
+efectivamente ese archivo.
+
+**Corrección de consistencia (revisión de PR, 2026-09-04):** las 49 violaciones reproducidas viven en
+**9 archivos `.jsx`**. F2 desactiva `react/prop-types` únicamente para `.ts`/`.tsx` en
+`eslint.config.js` — no renombra ni migra ningún archivo, así que esos 9 `.jsx` siguen sujetos a la
+regla tras F2, y `pnpm lint` seguirá reportando las mismas 49 violaciones. Desactivar la regla también
+para `.jsx` perdería la única validación de props que existe hoy, antes de que TypeScript la
+sustituya de verdad. Por tanto: **`RF-082-002` permanece abierto hasta que F3 (o la tarjeta de cierre
+de F5) migre esos 9 componentes concretos a `.tsx` y el type-check cubra efectivamente sus props.**
+No se cierra como efecto colateral de F2.
 
 **4. Ubicación del `tsconfig`: a nivel de `apps/frontend`, no compartido.**
 `packages/shared-config` (`@finops/shared-config`) existe, pero hoy solo contiene un `index.js` con
@@ -152,10 +161,14 @@ pospone hasta que haya un segundo consumidor real.
 - F2, `jup-0xx-reconciliar-package-json`: la superficie real a tipar depende de `RF-091-002`
   (adopción o descarte de shadcn/ui); este ADR no la prejuzga.
 - F3, `jup-0xx-portar-codigo-fuente` y `jup-0xx-reconciliar-capa-api`: primer código que se escribe ya
-  bajo `strict: true`; deben citar este ADR.
-- F5, tarjeta de cierre: endurecer `allowJs` a `false` una vez no quede JavaScript en `src/`.
-- `openspec/findings/backlog.md`: `RF-082-002` se anota con la resolución prevista (obsolescencia,
-  no corrección) al aceptar este ADR; se cierra materialmente cuando F2 desactive la regla.
+  bajo `strict: true`; **debe migrar a `.tsx` los 9 archivos `.jsx` hoy señalados por
+  `react/prop-types` (o los que los sustituyan)**, dado que la regla solo se desactiva para
+  `.ts`/`.tsx`. Debe citar este ADR en su `design.md`.
+- F5, tarjeta de cierre: endurecer `allowJs` a `false` una vez no quede JavaScript en `src/`;
+  confirmar en ese punto que no queda ningún `.jsx` con violaciones pendientes.
+- `openspec/findings/backlog.md`: `RF-082-002` se anota con la resolución prevista al aceptar este
+  ADR y **permanece `Open`** hasta que F3 (o el cierre de F5) migre esos archivos a `.tsx` con
+  cobertura real de tipos — no se cierra al desactivarse la regla en F2.
 
 **Revisión:** si el coste de `strict: true` desborda la tarjeta de F3 (ver "Consecuencias"), este ADR
 se supersede por uno nuevo; no se edita el aceptado ni se relaja la configuración sin ese registro.

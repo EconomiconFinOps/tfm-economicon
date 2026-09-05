@@ -81,3 +81,23 @@ con su resolución prevista en `openspec/findings/backlog.md`, pendiente de ejec
   citen el ADR-0003 en su `design.md` al crearse. Sin `docs/evidence/JUP-092-validation.md`: se sigue
   el precedente de JUP-083/090/091 para HUs doc-only, con `review.md` como único registro de
   validación.
+
+## Addendum: corrección por revisión de PR (2026-09-04)
+
+El PR #26 recibió `CHANGES_REQUESTED` de Alejandro (`Iber1to`) tras la aprobación post-review
+registrada arriba. Hallazgo `[P1]` sobre `docs/adr/ADR-0003-frontend-typescript.md:158`: la
+afirmación "`RF-082-002` se cierra por obsolescencia [al terminar F2]" no era ejecutable. Las 49
+violaciones reproducidas viven en **9 archivos `.jsx`**; F2 desactiva `react/prop-types` solo para
+`.ts`/`.tsx` y no renombra ningún archivo (eso es F3), así que `pnpm lint` seguiría reportando las
+mismas 49 violaciones al terminar F2.
+
+Se corrigió, en la misma rama y PR (sin nueva HU, por tratarse de cambio no mergeado — ver
+`.claude/harness/workflow.md` §7): `docs/adr/ADR-0003-frontend-typescript.md` (decisión 3 y
+seguimiento), `docs/spikes/frontend-migration.md` (decisión nº 1) y
+`openspec/findings/backlog.md` (`RF-082-002`), para que los tres digan lo mismo: el finding
+permanece `Open` hasta que F3 (o el cierre de F5) migre esos 9 archivos a `.tsx` con cobertura real
+de tipos, no como efecto colateral de F2.
+
+Esta sección documenta el hallazgo tal como se registró en `review.md` original; las cuatro
+decisiones del ADR (rigor, convivencia, ubicación del `tsconfig`, y CI obligatorio) no cambiaron —
+solo se corrigió la condición de cierre de `RF-082-002` dentro de la decisión 3.
