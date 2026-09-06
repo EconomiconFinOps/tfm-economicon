@@ -80,21 +80,46 @@
 
 ## 5. Type-check obligatorio en integración continua
 
-- [ ] 5.1 **Red** — actualizar `tools/ci-workflow.test.mjs` para que espere la séptima check context
+- [x] 5.1 **Red** — actualizar `tools/ci-workflow.test.mjs` para que espere la séptima check context
   `Frontend type check` (hoy asevera seis, en `keeps the six branch-protection check contexts stable`
   y en la lista de contexts de los rulesets) y demostrar que `corepack pnpm ci:check:test` falla.
-- [ ] 5.2 **Green** — añadir el job `frontend-typecheck` (nombre `Frontend type check`) a
+  **Incidencia de proceso:** el hook `.claude/hooks/lock-committed-tests.mjs` bloquea la edición de
+  cualquier test ya commiteado sin distinguir el rol que llama — el agente **tester** lo confirmó
+  intentando este mismo cambio y quedó bloqueado igual que lo estaría el coder. Es un diseño
+  deliberado del hook ("los tests commiteados son inmutables"), no un bug. Se decidió con Victor
+  (bypass puntual y verificado: mover `.claude/settings.json` fuera, aplicar el diff exacto ya
+  preparado para el tester, restaurar el archivo y **confirmar funcionalmente que el candado volvía
+  a bloquear** antes de continuar) en vez de dejar cobertura duplicada en un archivo nuevo — la
+  alternativa que el propio hook sugiere (`agrega casos nuevos` en archivo aparte) no servía aquí
+  porque el `expected` array de la tarea 5.5 exige `deepEqual` exacto: un archivo nuevo no puede
+  invalidar la aserción vieja de "6 exactos", que además corre dentro del job `OpenSpec` de CI (via
+  `ci:check:test`) y habría roto esa PR en cuanto los rulesets llegaran a 7. Evidencia Red con el
+  comando real: `corepack pnpm ci:check:test` → `TypeError: Cannot read properties of undefined
+  (reading 'name')` en `keeps the seven...` y `AssertionError` (6 recibidos vs. 7 esperados) en
+  `requires the same seven...`.
+- [x] 5.2 **Green** — añadir el job `frontend-typecheck` (nombre `Frontend type check`) a
   `.github/workflows/ci.yml`, con el mismo patrón que `frontend-build`: checkout con
   `persist-credentials: false`, Node 22, `corepack pnpm install --frozen-lockfile` y
-  `corepack pnpm --filter @finops/frontend typecheck`.
-- [ ] 5.3 Añadir la context `Frontend type check` a `.github/rulesets/develop.json` y
-  `.github/rulesets/main.json`.
-- [ ] 5.4 Actualizar la lista "Required status checks" de
+  `corepack pnpm --filter @finops/frontend typecheck`. Mismos SHA pineados de
+  `actions/checkout`/`actions/setup-node` que `frontend-build`, verificado que no rompe el test de
+  pineado/permisos (itera todos los jobs automáticamente).
+- [x] 5.3 Añadir la context `Frontend type check` a `.github/rulesets/develop.json` y
+  `.github/rulesets/main.json`. `corepack pnpm ci:check:test` → 7/7 verde.
+- [x] 5.4 Actualizar la lista "Required status checks" de
   `docs/governance/github-branch-protection.md` con la nueva context, manteniendo la nota vigente
-  sobre por qué el lint del frontend **sigue** sin ser obligatorio (las 49 violaciones no
-  desaparecen con esta tarjeta).
-- [ ] 5.5 Confirmar que `corepack pnpm ci:check:test` vuelve a verde y que los cuatro sitios
+  sobre por qué el lint del frontend **sigue** sin ser obligatorio, y añadiendo que a diferencia del
+  lint, el type-check no arrastra deuda heredada (nace limpio) y que está versionado pero pendiente
+  de que un administrador reaplique el ruleset en vivo (mismo patrón que JUP-079).
+- [x] 5.5 Confirmar que `corepack pnpm ci:check:test` vuelve a verde y que los cuatro sitios
   (workflow, dos rulesets, documento de gobernanza) enumeran el mismo conjunto de contexts.
+  **QA (`accept`):** verificado independientemente (comandos re-ejecutados, no solo el reporte del
+  coder), incluida la consistencia de orden en los 4 sitios y que el diff no toca nada fuera de
+  alcance. **Mutación:** sin runner aplicable — el artefacto bajo test es configuración YAML/JSON
+  parseada (`ci.yml`, rulesets), no código JS/TS que Stryker/mutmut puedan mutar; QA verificó a mano
+  los dos mutantes hipotéticos más plausibles (borrar el job dejando la entrada en el ruleset; typo
+  en el nombre) y confirmó que los tests actuales los detectan igualmente. Categoría correcta para
+  `review.md`: **no** "doc-only" (sí toca `ci.yml`/rulesets), sino su propia excepción justificada
+  ("sin runner de mutación aplicable a config YAML/JSON declarativa").
 
 ## 6. Cierre y verificación
 
