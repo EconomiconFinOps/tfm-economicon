@@ -57,17 +57,26 @@
 
 ## 4. Lint con soporte TypeScript
 
-- [ ] 4.1 Registrar la línea base **antes** de tocar nada: ejecutar `corepack pnpm lint` y anotar el
+- [x] 4.1 Registrar la línea base **antes** de tocar nada: ejecutar `corepack pnpm lint` y anotar el
   recuento exacto de violaciones de `react/prop-types` (esperado: 49, finding `RF-082-002`).
-- [ ] 4.2 Migrar `apps/frontend/eslint.config.js` añadiendo `typescript-eslint` en modo **no
+  **Confirmado: 49 problems (49 errors, 0 warnings)**, todas `react/prop-types`, en los 9 `.jsx` ya
+  identificados por el finding.
+- [x] 4.2 Migrar `apps/frontend/eslint.config.js` añadiendo `typescript-eslint` en modo **no
   type-aware** sobre un bloque nuevo `files: ["src/**/*.{ts,tsx}"]`, dejando **intacto** el bloque
-  `src/**/*.{js,jsx}` y sus reglas de `react`/`react-hooks`.
-- [ ] 4.3 Desactivar `react/prop-types` **únicamente** en el bloque `{ts,tsx}`; los `.jsx` la
-  conservan.
-- [ ] 4.4 Mover la selección de extensiones del script a la flat config: el script `lint` pasa de
+  `src/**/*.{js,jsx}` y sus reglas de `react`/`react-hooks`. Las reglas de `tseslint.configs.recommended`
+  se fusionan con `Object.assign` sobre todas sus entradas (la librería las reparte en varios objetos)
+  en vez de indexar el array, para no depender del orden interno de una versión concreta.
+- [x] 4.3 Desactivar `react/prop-types` **únicamente** en el bloque `{ts,tsx}`; los `.jsx` la
+  conservan. **Verificado con un archivo `.tsx` desechable** (creado, probado con
+  `eslint src/__eslint_probe.tsx` y borrado antes de commitear, sin dejar rastro en `src/`): confirma
+  que `@typescript-eslint/no-unused-vars` se activa, que `react/prop-types` NO se activa sobre una
+  prop sin tipar, y que el parser resuelve JSX en `.tsx` sin errores — el bloque nuevo nunca se había
+  ejercido de verdad porque hoy no existe ningún `.ts`/`.tsx` real en `src/`.
+- [x] 4.4 Mover la selección de extensiones del script a la flat config: el script `lint` pasa de
   `eslint src --ext js,jsx` a `eslint src`.
-- [ ] 4.5 Ejecutar `corepack pnpm lint` y confirmar que el recuento es **exactamente** el de 4.1: ni
+- [x] 4.5 Ejecutar `corepack pnpm lint` y confirmar que el recuento es **exactamente** el de 4.1: ni
   violaciones nuevas, ni violaciones desaparecidas. No silenciar reglas para cuadrar el número.
+  **Confirmado: 49 problems (49 errors, 0 warnings)**, idéntico a la línea base.
 
 ## 5. Type-check obligatorio en integración continua
 
