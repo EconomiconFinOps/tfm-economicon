@@ -1,11 +1,17 @@
 ## 1. Dependencias de TypeScript
 
-- [ ] 1.1 Instalar desde la raíz con
+- [x] 1.1 Instalar desde la raíz con
   `corepack pnpm --filter @finops/frontend add -D typescript @types/react @types/react-dom @types/node typescript-eslint`
   (pnpm-only; **nunca** `npm i`). Fijar versiones estables compatibles con `eslint ^9.5`.
-- [ ] 1.2 Verificar que todo lo añadido queda en `devDependencies` y que las `dependencies` de
+  **Ajuste tras instalar:** el resolutor tomó `typescript@^7.0.2` (dist-tag `latest`) y
+  `@types/react@^19.2.18`/`@types/react-dom@^19.2.7`, incompatibles entre sí:
+  `typescript-eslint@8.69.0` exige `typescript` `>=4.8.4 <6.1.0`, y el runtime del paquete sigue en
+  `react@^18.3.1`, no 19. Se fijó explícitamente `typescript@5.9.3` (última 5.x, dentro del rango
+  soportado) y `@types/react@18.3.31`/`@types/react-dom@18.3.7` (alineados con el runtime). Sin este
+  ajuste, el type-check habría verificado contra una API de React que el proyecto no usa.
+- [x] 1.2 Verificar que todo lo añadido queda en `devDependencies` y que las `dependencies` de
   runtime de `@finops/frontend` son idénticas a las de antes del cambio.
-- [ ] 1.3 Confirmar que `pnpm-lock.yaml` (raíz) queda actualizado y versionado, y que
+- [x] 1.3 Confirmar que `pnpm-lock.yaml` (raíz) queda actualizado y versionado, y que
   `corepack pnpm install --frozen-lockfile` pasa sin modificarlo.
 
 ## 2. Configuración del compilador
