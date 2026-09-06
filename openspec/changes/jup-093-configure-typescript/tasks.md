@@ -45,12 +45,15 @@
 
 ## 3. Configuración de Vite
 
-- [ ] 3.1 Convertir `apps/frontend/vite.config.js` en `vite.config.ts` conservando el contenido
-  (`defineConfig({ plugins: [react()] })`). Si el coste supera lo trivial, revertir a `.js` y
-  registrar el motivo en `review.md` (riesgo previsto en el `design.md`).
-- [ ] 3.2 Verificar que el script `dev` conserva literalmente `--host 0.0.0.0 --port 5173` y que
+- [x] 3.1 Convertir `apps/frontend/vite.config.js` en `vite.config.ts` conservando el contenido
+  (`defineConfig({ plugins: [react()] })`). Coste trivial: `git mv` + contenido sin cambios, TS lo
+  acepta tal cual. Se aprovecha para encadenar el segundo proyecto en el script `typecheck`
+  (`tsc --noEmit && tsc -p tsconfig.node.json --noEmit`), pendiente desde la tarea 2.2/2.3 porque
+  `tsconfig.node.json` no tenía aún su archivo objetivo.
+- [x] 3.2 Verificar que el script `dev` conserva literalmente `--host 0.0.0.0 --port 5173` y que
   `corepack pnpm --filter @finops/frontend dev` arranca sin errores de compilación ni de tipos.
-- [ ] 3.3 Verificar que `corepack pnpm --filter @finops/frontend build` sigue pasando.
+  Verificado arrancando el proceso, confirmando `HTTP 200` en `http://localhost:5173/` y deteniéndolo.
+- [x] 3.3 Verificar que `corepack pnpm --filter @finops/frontend build` sigue pasando.
 
 ## 4. Lint con soporte TypeScript
 
