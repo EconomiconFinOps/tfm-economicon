@@ -16,17 +16,32 @@
 
 ## 2. Configuración del compilador
 
-- [ ] 2.1 Crear `apps/frontend/tsconfig.json` con `strict: true`, `allowJs: true`,
+- [x] 2.1 Crear `apps/frontend/tsconfig.json` con `strict: true`, `allowJs: true`,
   **`checkJs: false`**, `noEmit: true`, `jsx: react-jsx`, `moduleResolution: Bundler` y `lib` de
   navegador, con `include` sobre `src`. Ubicado en `apps/frontend/`, **no** en
-  `packages/shared-config` (ADR-0003, decisión 4).
-- [ ] 2.2 Crear `apps/frontend/tsconfig.node.json` para `vite.config.ts` con destino Node y
-  `@types/node`. Omitirlo solo si la tarea 3.1 demuestra que la config de `src` ya lo cubre limpio
-  (Open Question del `design.md`).
-- [ ] 2.3 Añadir el script `typecheck` a `apps/frontend/package.json` (`tsc --noEmit`, cubriendo
-  ambos proyectos si existen los dos) y comprobar que
-  `corepack pnpm --filter @finops/frontend typecheck` termina en verde sobre los 14 archivos
-  `.js`/`.jsx` actuales, sin renombrar ni excluir ninguno.
+  `packages/shared-config` (ADR-0003, decisión 4). Verificado empíricamente que `vite-env.d.ts` no
+  hace falta todavía: con `checkJs: false` y sin ningún `.ts`/`.tsx` real aún, `tsc --noEmit` pasa
+  limpio pese a que `api.js` usa `import.meta.env` y `main.jsx` importa `./styles/main.css` — F3 lo
+  añadirá cuando el primer archivo tipado lo necesite de verdad.
+- [x] 2.2 Crear `apps/frontend/tsconfig.node.json` para `vite.config.ts` con destino Node y
+  `@types/node`. **Orden resuelto:** su `include` apunta a `vite.config.ts`, que no existe hasta la
+  tarea 3.1; el archivo se crea ya (inerte) pero **no** se encadena en el script `typecheck` hasta
+  que 3.1 renombre `vite.config.js`, tal como prevé el propio texto de 2.3 ("cubriendo ambos
+  proyectos si existen los dos").
+- [x] 2.3 Añadir el script `typecheck` a `apps/frontend/package.json` (`tsc --noEmit`; el segundo
+  proyecto se encadena en 3.1) y comprobar que `corepack pnpm --filter @finops/frontend typecheck`
+  termina en verde sobre los 14 archivos `.js`/`.jsx` actuales, sin renombrar ni excluir ninguno.
+  **Añadido no listado originalmente:** también se agregó `"typecheck": "turbo run typecheck"` al
+  `package.json` raíz y la entrada `typecheck` a `turbo.json`, para que `check-dod.mjs` deje de
+  omitir el gate de tipos (hoy solo lo ejecuta si existe ese script en la raíz). **Limitación de
+  entorno descubierta (preexistente, no introducida aquí):** en esta máquina, `corepack pnpm
+  typecheck`/`lint`/`test` en la raíz fallan porque turbo resuelve pnpm v11.9.0 en los subprocesos
+  por paquete, pese a que `packageManager: pnpm@9.0.0` resuelve correctamente en shell interactiva
+  (`corepack pnpm --version` y `pnpm --version` dan 9.0.0). Confirmado que ya ocurría antes de esta
+  tarjeta: `pnpm lint` y `pnpm build` (raíz) fallan igual sobre `@finops/backend`/`@finops/processor`,
+  paquetes no tocados. Decisión (con Victor): usar `corepack pnpm --filter @finops/frontend
+  typecheck/lint/build` como verificación sustituta durante todo este change; ver limitación
+  documentada en `review.md`.
 
 ## 3. Configuración de Vite
 
