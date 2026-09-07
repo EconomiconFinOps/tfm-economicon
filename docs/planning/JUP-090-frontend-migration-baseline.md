@@ -18,9 +18,16 @@ Este documento es la línea base de la épica *Migrar frontend del repositorio E
 Fuera de este inventario quedan los artefactos generados y no versionados:
 `apps/frontend/node_modules/**` y cualquier caché de build (`node_modules/.vite`).
 
-El inventario del **origen** (Economicon) no es objeto de este documento: ya está cubierto por
-JUP-083 ([docs/spikes/frontend-migration.md](../spikes/frontend-migration.md)) y por la tarjeta
-`jup-0xx-inventariar-frontend-economicon` de F1.
+El inventario del **origen** (Economicon) no es objeto de este documento: está cubierto por JUP-083
+([docs/spikes/frontend-migration.md](../spikes/frontend-migration.md)) y, en detalle, por
+[docs/planning/JUP-091-economicon-source-inventory.md](JUP-091-economicon-source-inventory.md).
+
+> **Corrección posterior (JUP-091).** Varias filas de este documento describen el stack del origen
+> como "Tailwind v4 + shadcn/ui + MUI" citando el supuesto T5 de JUP-083. JUP-091 verificó que **MUI
+> 7 y `@emotion/*` no se importan en ningún sitio** y que los 48 componentes de shadcn/ui del origen
+> son código muerto que ninguna pantalla usa. Las clasificaciones `PRESERVAR`/`REEMPLAZAR`/
+> `RECONCILIAR` de abajo siguen siendo válidas —dependen del destino, no del origen—, pero al leer
+> las justificaciones que mencionan shadcn/ui o MUI, ténganse en cuenta `RF-091-001` y `RF-091-002`.
 
 ## Qué se preserva del destino
 

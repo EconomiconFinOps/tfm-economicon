@@ -1,0 +1,8 @@
+services:
+  collaboration:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data
+    restart: "no"

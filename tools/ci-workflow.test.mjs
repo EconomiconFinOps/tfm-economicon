@@ -45,10 +45,12 @@ test("limits GitHub token permissions and pins official actions by commit", () =
   }
 });
 
-test("keeps the six branch-protection check contexts stable", () => {
+test("keeps the seven branch-protection check contexts stable", () => {
   assert.equal(workflow.jobs["pr-policy"].name, "JUP policy");
   assert.equal(workflow.jobs.governance.name, "OpenSpec");
   assert.equal(workflow.jobs["frontend-build"].name, "Frontend build");
+  // JUP-093: septimo check obligatorio, tsc --noEmit del frontend (ADR-0003, decision 3).
+  assert.equal(workflow.jobs["frontend-typecheck"].name, "Frontend type check");
   assert.equal(workflow.jobs["python-tests"].name, "Python tests (${{ matrix.service.name }})");
   assert.deepEqual(
     workflow.jobs["python-tests"].strategy.matrix.service.map(({ name }) => name),
@@ -73,6 +75,7 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "assistant-corpus:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
+    "collaboration:test",
     "openspec:validate",
   ]) {
     assert.match(commands, new RegExp(`pnpm ${check.replaceAll(":", "\\:")}`));
@@ -100,7 +103,7 @@ test("requires pull requests while keeping administrator bypass PR-only", () => 
   }
 });
 
-test("requires the same six stable CI checks in both branch rulesets", () => {
+test("requires the same seven stable CI checks in both branch rulesets", () => {
   const expected = [
     "JUP policy",
     "OpenSpec",
@@ -108,6 +111,8 @@ test("requires the same six stable CI checks in both branch rulesets", () => {
     "Python tests (backend)",
     "Python tests (processor)",
     "Frontend build",
+    // JUP-093: agrupado junto al otro check del frontend (ADR-0003, decision 3).
+    "Frontend type check",
   ];
 
   for (const ruleset of Object.values(rulesets)) {
