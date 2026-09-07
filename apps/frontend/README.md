@@ -19,7 +19,9 @@ Aqui vive la parte visual del sistema:
 
 - `React`
 - `Vite`
-- `JavaScript`
+- `TypeScript` (tooling: `strict: true`, `allowJs: true` mientras dura la migracion de `src/` —
+  ver [ADR-0003](../../docs/adr/ADR-0003-frontend-typescript.md))
+- `JavaScript` (todo `src/` hoy; se migra a `.tsx` por slices en F3)
 - `TanStack Query`
 - `ESLint`
 
@@ -37,7 +39,9 @@ apps/frontend
 |-- Dockerfile
 |-- index.html
 |-- package.json
-`-- vite.config.js
+|-- tsconfig.json
+|-- tsconfig.node.json
+`-- vite.config.ts
 ```
 
 ## Como correrlo

@@ -155,9 +155,12 @@ pospone hasta que haya un segundo consumidor real.
 
 **Seguimiento — tareas que ejecutan esta decisión:**
 
-- F2, `jup-0xx-configurar-typescript`: instalar `typescript`, `@types/react`, `@types/react-dom`;
-  crear `tsconfig.json` con `strict: true` y `allowJs: true`; migrar `eslint.config.js` al parser de
-  TypeScript y desactivar `react/prop-types` para `.ts`/`.tsx`. Debe citar este ADR en su `design.md`.
+- **Hecho en [JUP-093](../../openspec/changes/archive/2026-09-06-jup-093-configure-typescript/)**:
+  instalado `typescript`, `@types/react`, `@types/react-dom`; creado `tsconfig.json`
+  (`strict: true`, `allowJs: true`, `checkJs: false`) y `tsconfig.node.json`; migrado
+  `eslint.config.js` al parser de TypeScript, con `react/prop-types` desactivada solo para
+  `.ts`/`.tsx`; type-check anadido como septimo check obligatorio de CI. Ningun `.jsx` fue migrado
+  (es F3): `RF-082-002` sigue `Open`.
 - F2, `jup-0xx-reconciliar-package-json`: la superficie real a tipar depende de `RF-091-002`
   (adopción o descarte de shadcn/ui); este ADR no la prejuzga.
 - F3, `jup-0xx-portar-codigo-fuente` y `jup-0xx-reconciliar-capa-api`: primer código que se escribe ya
