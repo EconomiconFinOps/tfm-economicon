@@ -277,5 +277,87 @@ en ADR-0004, no es un hallazgo nuevo que requiera entrada en el backlog.
 
 ### Grupo 4 — cierre
 
-Commits del grupo: `5d27677` (Red) y el commit pendiente de Green (`utils.ts` + 5 componentes + fix de
-`setup.ts` + 3 tests de mutación + `tasks.md`/`review.md`).
+Commits del grupo: `5d27677` (Red) y `56b1b28` (Green: `utils.ts` + 5 componentes + fix de `setup.ts`
++ 3 tests de mutación).
+
+## Grupo 5 — Componentes del origen y datos de demostración
+
+**Objetivo:** portar los 8 `.tsx` vivos del origen (5 dashboards, `Layout`, `ExportButton`,
+`routes.tsx`), con los datos estáticos aislados en `src/data/demo/`, sin montar todavía el enrutado
+(eso es el grupo 6).
+
+**Prerrequisito resuelto antes del Red** (commit `f646ef0`, working-tree separado, ya commiteado):
+jsdom no implementa `ResizeObserver`; `recharts`'s `ResponsiveContainer` lo referencia sin comprobar
+existencia y revienta el render sin él. Verificado con un spike antes de comprometer al tester/coder.
+Mock mínimo (`observe`/`unobserve`/`disconnect` no-op) añadido a `setup.ts`, mismo procedimiento de
+desactivar/reactivar el hook, autorizado por Victor.
+
+**Red** (tester, commit `e128fcd`): 7 tests reales — `src/pages/{ExecutiveCostDashboard,
+OperationalCostDashboard,ExecutiveCutDashboard,AnomaliesPanel,RecommendationsPanel}.test.tsx`,
+`src/layouts/Layout.test.tsx`, `src/components/ExportButton.test.tsx`. Cada dashboard verifica su
+encabezado y un KPI/stat con valor exacto de los datos de demostración.
+`OperationalCostDashboard` calcula el string de `toLocaleString()` dinámicamente en el propio test
+para no depender del locale del entorno. `Layout` envuelto en `MemoryRouter` (usa `NavLink`/`Outlet`
+de react-router 7), verifica los 5 enlaces de navegación. `ExportButton` verifica el menú cerrado por
+defecto y su apertura real al hacer clic (`fireEvent`). Evidencia Red: `7 failed | 11 passed (18)`.
+
+**Green** (coder): 13 archivos portados del origen (`../Economicon/frontend/src/app/components/`,
+commit `1fe0030`):
+- 5 módulos en `src/data/demo/` (uno por dashboard), constantes extraídas tal cual, comentario de
+  cabecera "DATOS DE DEMOSTRACION (sustituibles)" grep-able.
+- 5 dashboards en `src/pages/`, idénticos al origen salvo el bloque de imports (datos desde
+  `@/data/demo/...`, `ExportButton` desde `@/components/ExportButton`). Verificado por QA archivo a
+  archivo, no solo una muestra.
+- `Layout.tsx` → `src/layouts/Layout.tsx`, **copia literal**, verificada byte a byte por QA.
+- `ExportButton.tsx` → `src/components/ExportButton.tsx`, con la adaptación de tipado que exige la
+  tarea 5.3: el origen usa `data: any`/`row: any`; el destino usa `type ExportRow = Record<string,
+  string | number>` en todo el archivo. Sin `any` real ni `@ts-ignore` (verificado por grep, por mí y
+  por QA).
+- `routes.tsx` → `src/routes.tsx`, las 5 rutas del origen bajo `Layout`, imports reajustados a las
+  nuevas ubicaciones, **sin montar** en `App.jsx`/`main.jsx` (confirmado por grep — el enrutado es
+  tarea del grupo 6, `tasks.md` 6.1).
+
+Evidencia Green: `Test Files 18 passed (18)` / `Tests 23 passed (23)`. `typecheck` limpio.
+`lint` 49/49 sin regresión. `build`: bundle idéntico (`203.37 kB` / `5.60 kB`) porque nada importa
+todavía los archivos portados.
+
+**Mutación** (Stryker, acotado a los 7 archivos de comportamiento — no los módulos de datos, literales
+sin lógica): resultado muy distinto al del grupo 4. Score global **12.11%** — 35 killed, **198
+survived**, 56 NoCoverage. Desglose:
+
+- Los 5 dashboards rondan el **5% de cobertura real** cada uno: la única prueba de render por
+  dashboard apenas toca el encabezado y un KPI/stat, dejando sin ejercitar el resto de tarjetas KPI,
+  todas las filas de tabla salvo ninguna, y los estilos condicionales (`row.uso > 80 ? 'bg-red-500' :
+  ...`, colores por proveedor/severidad/estado).
+- `Layout`: **56% cubierto**, 14 supervivientes — sobre todo el `path`/`end` de cada `NavLink` y las
+  clases condicionales de estado activo (el test solo verifica que los 5 textos de enlace existen, no
+  su comportamiento de navegación).
+- `ExportButton`: **87% cubierto**, 1 superviviente — el `onClick` del overlay que cierra el menú al
+  hacer clic fuera, que ninguno de los 2 tests dispara.
+
+**Decisión presentada a Victor**, explícitamente distinta a la del grupo 4 (allí 7 supervivientes
+remediables con poco esfuerzo; aquí 198, desproporcionado para "prueba de render" tal como lo pide la
+tarea 5.4). Opciones: aceptar tal cual, cobertura media (todos los KPIs/stats + una fila representativa
+por tabla), o cobertura profunda (cada fila, cada estilo condicional). **Elegido: aceptar tal cual.**
+Motivo: son 5 pantallas de origen con datos 100% estáticos que probablemente cambien de forma
+sustancial en el grupo 6 (paridad de rutas del destino) y dependen de `RF-091-003` (7 capacidades de
+backend ausentes, decisión de épica sobre qué conectar) — invertir en cobertura exhaustiva ahora sobre
+código que puede reescribirse pronto tiene bajo retorno. No se hizo remediación adicional, ni siquiera
+de los supervivientes de `Layout`/`ExportButton` (que quedan documentados igual que los de los
+dashboards, sin distinción especial pese a su mejor cobertura de partida).
+
+**DoD:** `check-dod.mjs` falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
+`--filter`: `test` 23/23, `typecheck` limpio, `lint` 49/49. Escaneo de secretos en verde.
+
+**QA:** `accept` en primera pasada. Verificó de forma independiente los 5 dashboards completos contra
+el origen (no solo una muestra), `Layout` byte a byte, el tipado de `ExportButton`, que `routes.tsx`
+no está montado, y reprodujo dos supervivientes citados (`Layout`, `ExportButton`) leyendo el código
+fuente para confirmar que el 12.11% no oculta nada.
+
+**Findings de este grupo:** ninguno nuevo — la baja cobertura de mutación de los dashboards es una
+decisión de alcance documentada aquí y en `tasks.md`, no un defecto sin registrar.
+
+### Grupo 5 — cierre
+
+Commits del grupo: `f646ef0` (prerrequisito ResizeObserver), `e128fcd` (Red) y el commit pendiente de
+Green (13 archivos portados + `tasks.md`/`review.md`).

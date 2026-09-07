@@ -93,21 +93,32 @@
 
 ## 5. Componentes del origen y datos de demostración
 
-- [ ] 5.1 Portar los **8 `.tsx` vivos** del origen (`ExecutiveCostDashboard`,
+- [x] 5.1 Portar los **8 `.tsx` vivos** del origen (`ExecutiveCostDashboard`,
   `OperationalCostDashboard`, `ExecutiveCutDashboard`, `AnomaliesPanel`, `RecommendationsPanel`,
   `Layout`, `ExportButton`, `routes.tsx`) a la estructura del destino. **No entran**
   `figma/ImageWithFallback.tsx` (sin consumidor), el plugin `figmaAssetResolver` ni el `assetsInclude`
-  del `vite.config.ts` del origen.
-- [ ] 5.2 Extraer las constantes estáticas de cada dashboard a `src/data/demo/`, señalizado como
+  del `vite.config.ts` del origen. Hecho: `Layout.tsx` copia byte a byte; los 5 dashboards idénticos
+  salvo el bloque de imports; `routes.tsx` con imports reajustados, **sin montar** en
+  `App.jsx`/`main.jsx` (verificado por grep, por mí y por QA). Prerrequisito resuelto antes del Red:
+  mock de `ResizeObserver` en `setup.ts` (commit `f646ef0`), sin el cual `recharts` revienta en jsdom.
+- [x] 5.2 Extraer las constantes estáticas de cada dashboard a `src/data/demo/`, señalizado como
   origen sustituible, sin cambiar los datos que muestran (decisión de aislamiento; escenarios de
-  `frontend-navigation-shell`).
-- [ ] 5.3 Resolver los errores de `strict: true` **tipando**: prohibido `any` nuevo y `@ts-ignore`. Si
+  `frontend-navigation-shell`). Hecho: 5 módulos, cada uno con el comentario grep-able "DATOS DE
+  DEMOSTRACION (sustituibles)", valores idénticos al origen (verificado por QA).
+- [x] 5.3 Resolver los errores de `strict: true` **tipando**: prohibido `any` nuevo y `@ts-ignore`. Si
   el volumen desborda la tarjeta, aplicar el criterio de escape de ADR-0003 (documentar y superseder),
-  nunca relajar `tsconfig.json` en silencio.
-- [ ] 5.4 **Red/Green** por pantalla portada: prueba de render que verifique que presenta sus datos de
-  demostración.
-- [ ] 5.5 Verificar `typecheck`, `test` y `build` en verde con las pantallas ya en el árbol, aún sin
-  enrutar.
+  nunca relajar `tsconfig.json` en silencio. Hecho: único `any` real del lote era en `ExportButton`
+  (heredado del origen), sustituido por `Record<string, string | number>`. `typecheck` limpio, sin
+  desbordamiento sobre esta tarjeta.
+- [x] 5.4 **Red/Green** por pantalla portada: prueba de render que verifique que presenta sus datos de
+  demostración. Hecho en un lote (Red `e128fcd`, Green pendiente de commit): 7 tests (5 dashboards +
+  `Layout` + `ExportButton`), 23/23 en verde. Mutación: 12.11% global (198 supervivientes, 56 sin
+  cobertura) — decisión explícita de Victor de aceptar tal cual dado el bajo retorno de una cobertura
+  exhaustiva sobre pantallas que el grupo 6 puede reescribir y que dependen de `RF-091-003`. Veredicto
+  QA: `accept`.
+- [x] 5.5 Verificar `typecheck`, `test` y `build` en verde con las pantallas ya en el árbol, aún sin
+  enrutar. Confirmado: `typecheck` limpio, `test` 23/23, `build` con bundle idéntico (203.37 kB /
+  5.60 kB) porque nada importa aún los archivos portados.
 
 ## 6. Enrutado y armazón
 
