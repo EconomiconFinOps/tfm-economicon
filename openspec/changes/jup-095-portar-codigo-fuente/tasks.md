@@ -71,15 +71,25 @@
 
 ## 4. Primitivos de shadcn/ui
 
-- [ ] 4.1 Copiar a `src/components/ui/` únicamente los primitivos que las pantallas reconstruidas
+- [x] 4.1 Copiar a `src/components/ui/` únicamente los primitivos que las pantallas reconstruidas
   vayan a usar, uno a uno, del subconjunto de 6 autorizado por
   [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md). Ningún otro de los 48 archivos de
-  `ui/` del origen entra.
-- [ ] 4.2 Añadir la utilidad de composición de clases que esos componentes importan (`@/lib/utils`),
-  apoyada en `clsx` y `tailwind-merge`, ya instaladas por JUP-094.
-- [ ] 4.3 **Red/Green** por primitivo copiado: prueba de render antes del componente.
-- [ ] 4.4 Dejar anotado en `review.md` qué primitivos de los 6 instalados quedan **sin consumidor** al
-  terminar la tarjeta: es el peso muerto que ADR-0004 aceptó por escrito como riesgo.
+  `ui/` del origen entra. Hecho: `label.tsx`, `separator.tsx`, `select.tsx`, `dialog.tsx`,
+  `tooltip.tsx`, copias literales del origen verificadas por `diff` (por mí y por QA). Sin archivo
+  para `@radix-ui/react-slot`: ninguno de los 5 lo importa, no hay bloque que portar.
+- [x] 4.2 Añadir la utilidad de composición de clases que esos componentes importan (`@/lib/utils`),
+  apoyada en `clsx` y `tailwind-merge`, ya instaladas por JUP-094. Hecho: `src/lib/utils.ts`, primer
+  consumidor real del alias `@/` del grupo 3.
+- [x] 4.3 **Red/Green** por primitivo copiado: prueba de render antes del componente. Hecho en un solo
+  lote (Red `5d27677`, Green pendiente de commit): 6 tests reales (uno por primitivo + `cn()`), 15/15
+  en verde con la suite completa. Mutación: 25.81% tras remediar 4 de 7 supervivientes en tests
+  nuevos; 3 no remediados con motivo técnico verificado (uno equivalente, dos solo observables
+  abriendo el tooltip). Veredicto QA: `accept`. Efecto colateral encontrado y corregido: `setup.ts`
+  no registraba `afterEach(cleanup)` (requirió desactivar/reactivar el hook, autorizado por Victor,
+  mismo patrón que en el grupo 2).
+- [x] 4.4 Dejar anotado en `review.md` qué primitivos de los 6 instalados quedan **sin consumidor** al
+  terminar la tarjeta: es el peso muerto que ADR-0004 aceptó por escrito como riesgo. Hecho: **los 6**
+  quedan sin consumidor real fuera de sus propios tests (verificado por `grep`) — ver `review.md`.
 
 ## 5. Componentes del origen y datos de demostración
 

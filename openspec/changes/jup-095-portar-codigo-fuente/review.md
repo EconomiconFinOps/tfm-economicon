@@ -199,6 +199,83 @@ origen y confirmación de que `main.jsx` sigue intacto (3.5).
 
 ### Grupo 3 — cierre
 
-Commits del grupo: `10e63b3` (setup 3.1/3.2/mitad de 3.4 + Red de 3.3) y el commit pendiente de Green
-de 3.3 (`index.html`). Deja el sistema de estilos del origen y el alias listos, pero **inactivos**
-hasta que el grupo 6/7 reconcilie el entrypoint; `main.css` sigue gobernando el render.
+Commits del grupo: `10e63b3` (setup 3.1/3.2/mitad de 3.4 + Red de 3.3) y `774a4d2` (Green de 3.3,
+`index.html`). Deja el sistema de estilos del origen y el alias listos, pero **inactivos** hasta que
+el grupo 6/7 reconcilie el entrypoint; `main.css` sigue gobernando el render.
+
+## Grupo 4 — Primitivos de shadcn/ui
+
+**Objetivo:** portar el subconjunto de 6 paquetes Radix que
+[ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) autorizó, con el primer consumidor real
+del alias `@/` del grupo 3.
+
+**Red** (tester, commit `5d27677`): 6 tests reales que fallaban porque el código de producto no
+existía — `src/lib/utils.test.ts` (deduplicación de clases Tailwind en conflicto vía
+`tailwind-merge`) y `src/components/ui/{label,separator,select,dialog,tooltip}.test.tsx`
+(comportamiento ARIA real de cada wrapper: rol del separador según `decorative`, `role="combobox"`
+del select, estado cerrado por defecto de dialog/tooltip). Evidencia Red: `6 failed | 2 passed (8)`.
+
+**Green** (coder): copia literal del origen (`../Economicon/frontend/src/app/components/ui/`, commit
+`1fe0030`) de `utils.ts` → `src/lib/utils.ts` y los 5 componentes → `src/components/ui/`, con una
+única adaptación mecánica: `import { cn } from "./utils"` → `import { cn } from "@/lib/utils"` (en el
+origen `utils.ts` vive dentro de `ui/`; en destino vive en `src/lib/`, siguiendo la convención
+estándar de shadcn/ui que motivó el alias). Verificado por `diff` —por mí y por QA— que cada archivo
+es idéntico al origen salvo esa línea. Sin archivo para `@radix-ui/react-slot`: ninguno de los 5
+componentes lo importa, no hay bloque que portar.
+
+**Hallazgo de infraestructura durante Green:** los dos `it()` de `separator.test.tsx` se contaminaban
+entre sí (el primero dejaba su DOM montado, el segundo lo heredaba). Causa raíz: `@testing-library/react`'s
+auto-cleanup depende de un `afterEach` global, y este proyecto usa `test.globals: false` desde el
+grupo 2 (imports explícitos de vitest) — sin registrar `afterEach(cleanup)` de forma explícita, nunca
+se desmontan los árboles entre tests. `apps/frontend/src/test/setup.ts` ya estaba commiteado (grupo 2,
+`771bb0b`): arreglarlo requirió el mismo procedimiento que en el grupo 2 para
+`tools/ci-workflow.test.mjs` — Victor autorizó desactivar `lock-committed-tests.mjs` temporalmente, se
+añadió `afterEach(cleanup)` (patrón oficial de Testing Library para proyectos sin `globals: true`), y
+el hook se reactivó antes de continuar. Diff de `setup.ts`: exactamente 3 líneas (import + llamada).
+
+**Mutación** (Stryker efímero, acotado a los 6 archivos de producto): primera corrida, **19.35%** — 7
+`Survived`, 43 `NoCoverage`. Decisión presentada a Victor: matar solo los supervivientes, cobertura más
+profunda, o bajar el umbral. **Elegido: matar solo los supervivientes.** El tester (en 3 archivos
+nuevos: `label.mutation.test.tsx`, `select.mutation.test.tsx`, `separator.mutation.test.tsx`, sin
+tocar los 6 tests ya commiteados) mató 4 de los 7. Score final: **25.81%**, 3 supervivientes:
+
+- `separator.tsx:10` (`orientation = "horizontal"` → `""`): **mutante equivalente**, verificado
+  leyendo `@radix-ui/react-separator/dist/index.mjs` — `isValidOrientation(orientationProp) ?
+  orientationProp : DEFAULT_ORIENTATION` normaliza cualquier valor inválido de vuelta a
+  `"horizontal"`; el DOM es idéntico con o sin el mutante. Verificado de forma independiente por mí y
+  por QA leyendo el mismo código fuente. Ningún test podría matarlo.
+- `tooltip.tsx:42` y `tooltip.tsx:49`: solo observables mostrando el tooltip (hover/focus), fuera del
+  alcance de "prueba de render" decidido para esta tarea. No remediados.
+
+Los **43 `NoCoverage`** (subcomponentes como `SelectContent`, `SelectItem`, `DialogHeader`,
+`DialogFooter`, `DialogTitle`, `DialogDescription`, el `Arrow` interno de `TooltipContent`,
+`SelectScrollUp/DownButton`) quedan como brecha aceptada y documentada: son subcomponentes que solo se
+montan al interactuar o que las pantallas reconstruidas del grupo 6 renderizarán con props reales —
+cubrirlos ahora habría exigido tests de interacción muy por encima del alcance de "prueba de render"
+de la tarea 4.3.
+
+**DoD:** `check-dod.mjs` falla en `test`/`lint`/`typecheck` por `RF-093-001` (mismo patrón, no
+relacionado). Sustituido por `--filter`: `test` 15/15, `typecheck` limpio, `lint` 49/49 sin regresión.
+Escaneo de secretos en verde.
+
+**QA:** `accept` en primera pasada. Verificó de forma independiente los 6 diffs contra el origen, que
+los 6 tests originales no fueron tocados, el fix de `setup.ts`, el mutante equivalente (leyendo el
+código fuente de Radix), y que los 3 tests de mutación citan líneas reales del producto.
+
+### 4.4 — Primitivos sin consumidor (peso muerto aceptado por ADR-0004)
+
+Verificado con `grep` sobre `apps/frontend/src/**` (excluidos los propios archivos de test): **ninguno
+de los 5 componentes copiados (`Label`, `Separator`, `Select*`, `Dialog*`, `Tooltip*`) tiene consumidor
+real** fuera de sus propios tests. `@radix-ui/react-slot` tampoco tiene archivo `ui/` ni consumidor.
+Es exactamente el riesgo que ADR-0004 aceptó por escrito ("si al terminar alguno sigue sin consumidor,
+se declara como peso muerto identificado"): los consumidores reales (login, selector de ámbito de
+cliente en el `Layout`, ingesta, chat del asistente) se construyen en el **grupo 6** de esta misma
+tarjeta, cuando se reconstruyan las pantallas del destino sobre el sistema de estilos nuevo.
+
+**Findings de este grupo:** ninguno nuevo — el peso muerto ya estaba documentado como riesgo aceptado
+en ADR-0004, no es un hallazgo nuevo que requiera entrada en el backlog.
+
+### Grupo 4 — cierre
+
+Commits del grupo: `5d27677` (Red) y el commit pendiente de Green (`utils.ts` + 5 componentes + fix de
+`setup.ts` + 3 tests de mutación + `tasks.md`/`review.md`).
