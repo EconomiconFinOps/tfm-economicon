@@ -48,7 +48,8 @@
           { "context": "Python tests (backend)" },
           { "context": "Python tests (processor)" },
           { "context": "Frontend build" },
-          { "context": "Frontend type check" }
+          { "context": "Frontend type check" },
+          { "context": "Frontend tests" }
         ]
       }
     }

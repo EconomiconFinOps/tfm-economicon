@@ -71,18 +71,23 @@ Use these stable job names from .github/workflows/ci.yml:
 - Python tests (processor)
 - Frontend build
 - Frontend type check
+- Frontend tests
 
 The frontend lint is not a required check yet because the inherited baseline
 contains 49 react/prop-types failures. Track and fix that debt in its own JUP
 card before making lint mandatory; builds and the type check remain required
 now. Unlike lint, the type check has no inherited baseline to work around: it
 was introduced together with the TypeScript tooling itself (JUP-093), so it
-starts clean.
+starts clean. The same reasoning applies to "Frontend tests" (JUP-095): there
+is no inherited baseline to respect because it is the first real test suite
+for the frontend, so it is required from the start.
 
 "Frontend type check" (JUP-093) is versioned here and in both ruleset JSON
 files, but is not yet enforced on GitHub: applying it to the live rulesets is
 an administrator action, same as the rest of this checklist (see
-"Administrator activation checklist" below).
+"Administrator activation checklist" below). The same applies to "Frontend
+tests" (JUP-095): it is versioned here and in both ruleset JSON files, but
+activating it on GitHub is still a pending administrator action.
 
 ## Administrator exception and teammate onboarding
 

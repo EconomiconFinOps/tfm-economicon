@@ -84,4 +84,65 @@ descubrimiento de `.stryker-tmp` se resolvió dentro de la propia tarea, no qued
 
 ## Grupo 2 — 2.4/2.5 (CI y ruleset)
 
-Pendiente al momento de escribir esta sección — se completa en el mismo grupo antes del commit final.
+**Objetivo:** cerrar la excepción al ciclo Red/Green que arrastraban JUP-093 y JUP-094 (el frontend
+no tenía test runner) y, además, hacer que ese runner corra en CI y bloquee merges — mismo patrón que
+JUP-093 aplicó a *Frontend type check*.
+
+**Descubrimiento relevante:** existe un test real y ya commiteado que valida exactamente `ci.yml` y
+los rulesets — `tools/ci-workflow.test.mjs` (introducido en JUP-093). No son tareas doc-only: tienen
+comportamiento testeable propio, distinto del de `apps/frontend`.
+
+**Bloqueo de proceso y su resolución.** El hook `.claude/hooks/lock-committed-tests.mjs` bloquea
+cualquier escritura sobre un archivo de test ya tracked en git, sin distinguir agente (el propio
+comentario del hook explica por qué: no hay forma fiable de verificar identidad desde un hook). Como
+`tools/ci-workflow.test.mjs` está commiteado desde JUP-093, el tester no podía extenderlo para el
+octavo check. El tester **no rodeó el hook** por su cuenta (nada de `git rm --cached`, ediciones vía
+Bash fuera de las tools, ni tocar `.claude/settings.json` sin autorización) y escaló la decisión.
+Se presentaron tres opciones al usuario (editar manualmente, desactivar el hook temporalmente, omitir
+TDD para estas tareas); **Victor eligió desactivar el hook temporalmente**. Se vació
+`.claude/settings.json` a `{"hooks": {}}`, el tester aplicó las dos aserciones nuevas, y el hook se
+reactivó **antes** de la fase Green (para que el test recién extendido quedara protegido en cuanto se
+commiteara). `.claude/settings.json` no está versionado (`.claude/` en `.gitignore`), así que esta
+manipulación fue puramente local y efímera — no dejó rastro en el repo. Verificado de forma
+independiente por QA.
+
+**Red** (tester, commit `f07367d`): dos aserciones nuevas en `tools/ci-workflow.test.mjs` —
+`workflow.jobs["frontend-tests"].name === "Frontend tests"` y `"Frontend tests"` añadido al array
+`expected` del `deepStrictEqual` exhaustivo de checks obligatorios. Evidencia Red: 5 pass / 2 fail,
+ambos por el motivo correcto (`workflow.jobs["frontend-tests"]` es `undefined`; el array de rulesets
+reales no incluye `"Frontend tests"`).
+
+**Green** (coder, sin commitear aún al escribir esta sección): job `frontend-tests` en
+`.github/workflows/ci.yml`, copiado al pie de la letra del patrón de `frontend-typecheck` (mismo
+runner, timeout, `actions/checkout`/`actions/setup-node` pineados por el mismo SHA,
+`persist-credentials: false`); solo cambia el último paso a `corepack pnpm --filter @finops/frontend
+test`. `{ "context": "Frontend tests" }` añadido como último elemento de `required_status_checks` en
+`.github/rulesets/develop.json` y `main.json`. `docs/governance/github-branch-protection.md`
+actualizado: check listado, motivo de por qué es obligatorio desde el inicio (sin baseline de deuda
+que respetar, a diferencia del lint), y nota de activación pendiente por administrador. Evidencia
+Green: `node --test tools/ci-workflow.test.mjs` → 7/7 pass.
+
+**Mutación:** N/A — no hay código JS/TS de producto que Stryker pueda mutar (los cambios son
+YAML/JSON de configuración declarativa); la cobertura de comportamiento la da el propio test
+exhaustivo (`deepStrictEqual` sobre arrays completos, regex sobre SHAs pineados,
+`persist-credentials`). Confirmado por QA como caracterización correcta, no como excepción forzada.
+
+**DoD:** `node .claude/harness/check-dod.mjs` falla en `test`/`lint`/`typecheck` por `RF-093-001`
+(mismo patrón que en la tarea 2.3, no relacionado con este cambio). Sustituido por: `node --test
+tools/ci-workflow.test.mjs` (7/7); `corepack pnpm --filter @finops/frontend {test,lint,typecheck}`
+para confirmar que el cambio de CI no rompió nada del paquete que sí toca (1 test pasa, lint 49/49 sin
+regresión, typecheck limpio).
+
+**QA:** `accept` en primera pasada. Verificó de forma independiente el hook reactivado, que ningún
+otro test quedó tocado, los cuatro diffs, y la caracterización de mutación N/A.
+
+**Findings de este grupo:** ninguno nuevo. La activación remota de *Frontend tests* en los rulesets
+de GitHub queda pendiente como acción de administrador, documentada en
+`docs/governance/github-branch-protection.md` junto al resto de checks versionados-pero-no-activados.
+
+### Grupo 2 — cierre
+
+F2 original quedó completa en JUP-093/JUP-094; este grupo 2 es interno a JUP-095 y cierra la
+excepción al harness que ambas tarjetas dejaron documentada. **Commits del grupo:** `771bb0b` (setup
+2.1-2.2), `1070a3e`/`a03aa76`/`2b1347c` (2.3, Red/Green/fix de QA), `f07367d` + el commit pendiente de
+2.4-2.5 (Red/Green).

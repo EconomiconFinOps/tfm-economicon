@@ -144,3 +144,29 @@ jobs:
           corepack pnpm install --frozen-lockfile
       - name: Type-check frontend
         run: corepack pnpm --filter @finops/frontend typecheck
+
+  # JUP-095: octavo check obligatorio, primera suite de tests unitarios del
+  # frontend. Se replica el mismo patron exacto de "frontend-typecheck"
+  # (mismo runner, timeout, checkout y setup-node ya pineados por SHA) para no
+  # introducir variaciones que el test de permisos/pineado tendria que volver
+  # a validar; solo cambia el ultimo paso, que ejecuta el script "test" en vez
+  # de "typecheck".
+  frontend-tests:
+    name: Frontend tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Install workspace dependencies
+        run: |
+          corepack enable
+          corepack pnpm install --frozen-lockfile
+      - name: Run frontend tests
+        run: corepack pnpm --filter @finops/frontend test

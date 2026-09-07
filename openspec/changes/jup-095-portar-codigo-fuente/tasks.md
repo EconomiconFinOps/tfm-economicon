@@ -36,11 +36,16 @@
   limpiar contaminaba el conteo de tests de Vitest; corregido con `test.exclude` en `vite.config.ts`
   y verificado por QA de forma independiente. Veredicto QA: `accept`. Evidencia completa en
   `review.md`.
-- [ ] 2.4 Añadir el job *Frontend tests* a `.github/workflows/ci.yml`, con el mismo patrón de los jobs
-  *Frontend build* y *Frontend type check* (`corepack pnpm --filter @finops/frontend test`).
-- [ ] 2.5 Registrar *Frontend tests* como comprobación obligatoria en `.github/rulesets/develop.json`
+- [x] 2.4 Añadir el job *Frontend tests* a `.github/workflows/ci.yml`, con el mismo patrón de los jobs
+  *Frontend build* y *Frontend type check* (`corepack pnpm --filter @finops/frontend test`). Hecho:
+  job `frontend-tests`, copiado literal del patrón de `frontend-typecheck` (Red `f07367d` sobre
+  `tools/ci-workflow.test.mjs`, Green pendiente de commit). Requirió desactivar y reactivar el hook
+  `lock-committed-tests.mjs` con autorización de Victor — ver `review.md`.
+- [x] 2.5 Registrar *Frontend tests* como comprobación obligatoria en `.github/rulesets/develop.json`
   y `.github/rulesets/main.json`, y documentarlo en `docs/governance/github-branch-protection.md`,
-  anotando que la activación remota es acción de administrador (mismo patrón que JUP-093).
+  anotando que la activación remota es acción de administrador (mismo patrón que JUP-093). Hecho:
+  `{ "context": "Frontend tests" }` añadido a ambos rulesets; guía de gobernanza actualizada. Test
+  estático (`node --test tools/ci-workflow.test.mjs`) en 7/7. Veredicto QA: `accept`.
 
 ## 3. Estilos, Tailwind y alias
 
