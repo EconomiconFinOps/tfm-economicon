@@ -1,13 +1,17 @@
 ## 1. Gate pre-código y línea base
 
-- [ ] 1.1 Llevar al **gate pre-código** las decisiones del `design.md` y registrar la resolución en el
+- [x] 1.1 Llevar al **gate pre-código** las decisiones del `design.md` y registrar la resolución en el
   bloque `## Human Approval` del `proposal.md`. Requieren aprobación explícita: la decisión 6
   (`/overview-legacy` como ruta puente hasta JUP-096) y la decisión 7 (promover *Frontend tests* a
-  comprobación obligatoria, tocando `.github/rulesets/` y la guía de gobernanza).
-- [ ] 1.2 Registrar la línea base **antes** de tocar nada: recuento de `corepack pnpm --filter
+  comprobación obligatoria, tocando `.github/rulesets/` y la guía de gobernanza). Hecho: aprobado por
+  Victor el 2026-09-07 (commit `eaafc90`), con ambas decisiones aprobadas explícitamente.
+- [x] 1.2 Registrar la línea base **antes** de tocar nada: recuento de `corepack pnpm --filter
   @finops/frontend lint` (esperado: 49 violaciones de `react/prop-types` en 9 archivos), salida de
   `build` con el tamaño del bundle, inventario de `src/**` (14 archivos) y comprobaciones obligatorias
-  de CI vigentes (esperado: 7, sin ninguna de pruebas de frontend).
+  de CI vigentes (esperado: 7, sin ninguna de pruebas de frontend). **Confirmado**: 49 problems (49
+  errors) en 9 archivos `.jsx`; bundle `203.37 kB` JS / gzip `63.38 kB`, CSS `5.60 kB`; 14 archivos en
+  `src/**`; 7 checks obligatorios en `.github/rulesets/develop.json` (`JUP policy`, `OpenSpec`, 3×
+  `Python tests`, `Frontend build`, `Frontend type check`), ninguno de pruebas de frontend.
 
 ## 2. Runner de pruebas
 
