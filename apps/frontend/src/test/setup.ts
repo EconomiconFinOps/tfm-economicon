@@ -15,3 +15,20 @@ import { cleanup } from "@testing-library/react";
 // Registrarlo aquí, explícito, es el patrón oficial documentado por
 // Testing Library para proyectos sin `globals: true`.
 afterEach(cleanup);
+
+// jsdom no implementa ResizeObserver (no hay motor de layout real que
+// dispare eventos de redimensionado). `recharts` lo usa dentro de
+// `ResponsiveContainer` para medir el contenedor y lo referencia sin
+// comprobar si existe: sin este mock, cualquier dashboard con un grafico
+// revienta el render con `ResizeObserver is not defined` (verificado en
+// JUP-095, grupo 5, antes de portar los dashboards). El mock no necesita
+// disparar callbacks: los dashboards no dependen de un tamaño real para
+// renderizar su contenido no gráfico (KPIs, tablas), solo de que el
+// componente no lance al montarse.
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+globalThis.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
