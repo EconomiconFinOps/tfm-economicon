@@ -45,12 +45,15 @@ test("limits GitHub token permissions and pins official actions by commit", () =
   }
 });
 
-test("keeps the seven branch-protection check contexts stable", () => {
+test("keeps the eight branch-protection check contexts stable", () => {
   assert.equal(workflow.jobs["pr-policy"].name, "JUP policy");
   assert.equal(workflow.jobs.governance.name, "OpenSpec");
   assert.equal(workflow.jobs["frontend-build"].name, "Frontend build");
   // JUP-093: septimo check obligatorio, tsc --noEmit del frontend (ADR-0003, decision 3).
   assert.equal(workflow.jobs["frontend-typecheck"].name, "Frontend type check");
+  // JUP-095: octavo check obligatorio, suite de tests unitarios del frontend
+  // (mismo patron que frontend-build/frontend-typecheck, tarea 2.4).
+  assert.equal(workflow.jobs["frontend-tests"].name, "Frontend tests");
   assert.equal(workflow.jobs["python-tests"].name, "Python tests (${{ matrix.service.name }})");
   assert.deepEqual(
     workflow.jobs["python-tests"].strategy.matrix.service.map(({ name }) => name),
@@ -103,7 +106,7 @@ test("requires pull requests while keeping administrator bypass PR-only", () => 
   }
 });
 
-test("requires the same seven stable CI checks in both branch rulesets", () => {
+test("requires the same eight stable CI checks in both branch rulesets", () => {
   const expected = [
     "JUP policy",
     "OpenSpec",
@@ -113,6 +116,8 @@ test("requires the same seven stable CI checks in both branch rulesets", () => {
     "Frontend build",
     // JUP-093: agrupado junto al otro check del frontend (ADR-0003, decision 3).
     "Frontend type check",
+    // JUP-095: agrupado junto al otro check del frontend (tarea 2.5).
+    "Frontend tests",
   ];
 
   for (const ruleset of Object.values(rulesets)) {
