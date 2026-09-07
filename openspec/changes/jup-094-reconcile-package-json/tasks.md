@@ -71,14 +71,15 @@
 
 ## 5. Contrato del paquete y reproducibilidad
 
-- [ ] 5.1 Verificar que el manifiesto conserva `@finops/frontend`, `"private": true`,
+- [x] 5.1 Verificar que el manifiesto conserva `@finops/frontend`, `"private": true`,
   `"type": "module"` y **los 7 scripts** (`dev`, `build`, `preview`, `lint`, `test`, `typecheck`,
-  `docker:build`), con `dev` manteniendo literalmente `--host 0.0.0.0 --port 5173`.
-- [ ] 5.2 Confirmar `pnpm-lock.yaml` actualizado y versionado, y que
-  `corepack pnpm install --frozen-lockfile` pasa sin modificarlo.
-- [ ] 5.3 Ejecutar `corepack pnpm --filter @finops/frontend typecheck`, `lint` y `build`: los tres en
+  `docker:build`), con `dev` manteniendo literalmente `--host 0.0.0.0 --port 5173`. Confirmado.
+- [x] 5.2 Confirmar `pnpm-lock.yaml` actualizado y versionado, y que
+  `corepack pnpm install --frozen-lockfile` pasa sin modificarlo. Confirmado.
+- [x] 5.3 Ejecutar `corepack pnpm --filter @finops/frontend typecheck`, `lint` y `build`: los tres en
   verde, con el lint reportando **exactamente** las 49 violaciones de la tarea 2.1 y el bundle sin
-  crecimiento significativo (Tailwind aún no se cablea, nada nuevo se importa).
+  crecimiento significativo (Tailwind aún no se cablea, nada nuevo se importa). Confirmado: 49/49,
+  bundle idéntico (203.37 kB / gzip 63.38 kB).
 
 ## 6. Cierre y verificación
 
