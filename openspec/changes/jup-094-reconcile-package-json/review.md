@@ -112,3 +112,16 @@ comportamiento testeable no hay mutante que generar.
   convención que ya exigía el spike para ADR-0003.
 - **Activación en vivo de la check context de JUP-093** sigue pendiente de un administrador
   (sin relación con esta tarjeta, heredado de JUP-093/JUP-079).
+
+## Human Approval
+
+- Change: jup-094-reconcile-package-json
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-09-07
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: JUP-094 completada (22/22 tareas, 20 originales + 2 añadidas durante la revisión: 2.5/2.6). Cierra **F2 (Tooling y dependencias)** junto a JUP-093. La decisión aprobada en el gate pre-código (descartar shadcn/ui) se revirtió el mismo día, durante el `apply` y antes de instalar cualquier paquete Radix: primer motivo propuesto ("el origen ya usa shadcn/ui") descartado por factualmente incorrecto —el inventario de JUP-091 confirma que el origen tampoco lo renderiza—; motivo real fijado, facilidad de desarrollo para las pantallas que F3 va a construir. [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) redactado y aceptado **antes** de instalar los 6 paquetes Radix, respetando el gate que el propio `design.md` había fijado condicionalmente. `design.md` y `proposal.md` conservan el razonamiento original marcado como superado, no borrado — auditable, no reescrito. Sin comportamiento unit-testeable (mismo criterio que los grupos de tooling de JUP-093): sin tester/coder/QA, verificación vía comandos reales, mutación N/A. `apps/frontend/src/**` confirmado sin tocar en ningún momento, antes o después de la revisión de la decisión. `RF-091-002` se cierra aquí (`Fixed`); `RF-082-002` permanece `Open`, como exigía el alcance. Batería completa en verde (7/7), con la misma sustitución `--filter @finops/frontend` que JUP-093 por `RF-093-001`. Incidencia repetida con el resolutor de dependencias (segunda vez tras JUP-093): `react-router` resolvió a un mayor incompatible con el runtime, corregido fijando la versión exacta del origen junto con `recharts` y `lucide-react`. Queda pendiente, fuera de esta tarjeta: las tarjetas de F3 (deben citar ADR-0003 y ADR-0004), copiar el código de cada componente shadcn a `src/components/ui/` cuando F3 lo necesite, y la activación en vivo del ruleset de JUP-093.
