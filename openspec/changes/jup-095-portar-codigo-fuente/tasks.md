@@ -49,16 +49,25 @@
 
 ## 3. Estilos, Tailwind y alias
 
-- [ ] 3.1 Cablear `@tailwindcss/vite` en `apps/frontend/vite.config.ts` sin alterar el plugin de React
-  ni introducir `server.port`/`server.host` que choquen con los flags del script `dev`.
-- [ ] 3.2 Incorporar del origen `src/styles/tailwind.css` y `src/styles/theme.css`, más un
+- [x] 3.1 Cablear `@tailwindcss/vite` en `apps/frontend/vite.config.ts` sin alterar el plugin de React
+  ni introducir `server.port`/`server.host` que choquen con los flags del script `dev`. Hecho: plugin
+  `tailwindcss()` junto a `react()`, mismo orden que el origen. `resolve.alias`/`server` sin tocar
+  aparte del alias de 3.4. Commit `10e63b3`.
+- [x] 3.2 Incorporar del origen `src/styles/tailwind.css` y `src/styles/theme.css`, más un
   `index.css` que los importe. **No** se copia `fonts.css` (vacío) ni `postcss.config.mjs` (stub).
-- [ ] 3.3 Declarar explícitamente el ámbito oscuro para que los tokens de `theme.css` no rendericen en
-  claro bajo pantallas oscuras (decisión 4 del `design.md`).
-- [ ] 3.4 Añadir el alias `@/` en **los dos** sitios: `paths` en `tsconfig.json` y `resolve.alias` en
-  `vite.config.ts` (decisión 5). Verificar que `typecheck` y `build` lo resuelven ambos.
-- [ ] 3.5 Verificar que `main.css` **sigue en su sitio** y que la aplicación arranca: hasta el grupo 8
-  no se retira nada.
+  Hecho: copia verificada byte a byte contra el origen por QA. Commit `10e63b3`.
+- [x] 3.3 Declarar explícitamente el ámbito oscuro para que los tokens de `theme.css` no rendericen en
+  claro bajo pantallas oscuras (decisión 4 del `design.md`). Hecho: `class="dark"` en `<html>` de
+  `index.html`, con test real que lee el archivo del disco (Red `10e63b3`, Green pendiente de commit).
+  Veredicto QA: `accept`.
+- [x] 3.4 Añadir el alias `@/` en **los dos** sitios: `paths` en `tsconfig.json` y `resolve.alias` en
+  `vite.config.ts` (decisión 5). Verificar que `typecheck` y `build` lo resuelven ambos. Hecho:
+  declarado en ambos; sin consumidor todavía, verificado que no rompe `typecheck`/`build`. Prueba de
+  resolución de extremo a extremo diferida al grupo 4 (primer `@/lib/utils` real) — QA de acuerdo con
+  el criterio. Commit `10e63b3`.
+- [x] 3.5 Verificar que `main.css` **sigue en su sitio** y que la aplicación arranca: hasta el grupo 8
+  no se retira nada. Confirmado: `main.jsx` sigue importando `./styles/main.css`; bundle sin cambio de
+  tamaño (nada consume aún las hojas nuevas); `dev`/`build`/`typecheck` en verde.
 
 ## 4. Primitivos de shadcn/ui
 

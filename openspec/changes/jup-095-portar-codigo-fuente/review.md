@@ -144,5 +144,61 @@ de GitHub queda pendiente como acción de administrador, documentada en
 
 F2 original quedó completa en JUP-093/JUP-094; este grupo 2 es interno a JUP-095 y cierra la
 excepción al harness que ambas tarjetas dejaron documentada. **Commits del grupo:** `771bb0b` (setup
-2.1-2.2), `1070a3e`/`a03aa76`/`2b1347c` (2.3, Red/Green/fix de QA), `f07367d` + el commit pendiente de
-2.4-2.5 (Red/Green).
+2.1-2.2), `1070a3e`/`a03aa76`/`2b1347c` (2.3, Red/Green/fix de QA), `f07367d`/`24427b5` (2.4-2.5,
+Red/Green).
+
+## Grupo 3 — Estilos, Tailwind y alias
+
+**Objetivo:** cablear el sistema de estilos del origen sin activarlo todavía (`main.css` sigue
+gobernando el render hasta que el grupo 6/7 reconcilie el entrypoint) y dejar el alias `@/` listo para
+los primitivos de shadcn/ui del grupo 4.
+
+### 3.1, 3.2, mitad de 3.4 — setup sin comportamiento propio testeable
+
+- `apps/frontend/vite.config.ts`: plugin `tailwindcss()` de `@tailwindcss/vite` añadido junto a
+  `react()` (mismo orden que el origen); `resolve.alias["@"]` apuntando a `./src`.
+- `apps/frontend/src/styles/{tailwind,theme}.css`: copia literal del origen (verificada byte a byte
+  por QA contra `../Economicon/frontend/src/styles/`, commit `1fe0030`). `fonts.css` (vacío) y
+  `postcss.config.mjs` (stub innecesario con el plugin) **no** se copian.
+- `apps/frontend/src/styles/index.css`: nuevo, importa `tailwind.css` + `theme.css`.
+- `apps/frontend/tsconfig.json`: `paths`/`baseUrl` para el mismo alias `@/`.
+- Verificado sin regresión: `build` (bundle idéntico, 203.37 kB JS / 5.60 kB CSS — nada consume aún
+  las hojas nuevas), `typecheck` limpio, `dev` arranca.
+- Commit: `10e63b3` (mezclado con el Red de 3.3, ver más abajo).
+
+**Decisión de alcance sobre el alias (3.4):** se deja declarado en ambos sitios pero **sin
+consumidor real** en este grupo. La prueba de resolución de extremo a extremo se difiere al grupo 4
+(primer `@/lib/utils` real, primer componente de shadcn/ui). QA evaluó esta interpretación y la
+confirmó razonable: coincide con la separación de slices del propio `design.md` (decisión 8) y evita
+inventar un consumidor artificial solo para probar el alias antes de tiempo.
+
+### 3.3 — Ámbito oscuro declarado (Red/Green real)
+
+**Por qué es testeable y no config inerte:** a diferencia de 3.1/3.2, esto es una aserción concreta y
+verificable sobre un archivo real (`index.html`), con un motivo técnico claro (`theme.css` solo activa
+sus tokens oscuros bajo `.dark`) — se le dio el mismo tratamiento Red/Green que a HarnessSmoke.
+
+**Red** (tester, commit `10e63b3`): `apps/frontend/src/test/index-html-dark-scope.test.ts` — lee
+`index.html` del disco, aísla el tag `<html ...>` por regex, extrae su atributo `class` y verifica que
+`dark` está entre las clases (parseado como conjunto de palabras, no `.includes` ingenuo). Evidencia
+Red: `<html lang="en">` no tiene atributo `class`; `HarnessSmoke` sigue en verde (aislamiento
+confirmado).
+
+**Green** (coder): `index.html` — `<html lang="en">` → `<html lang="en" class="dark">`. Diff mínimo,
+ningún otro atributo tocado. Evidencia Green: `Test Files 2 passed (2)`. `typecheck`, `build` (bundle
+sin cambio, solo `dist/index.html` refleja el atributo) y `lint` (49/49) sin regresión.
+
+**Mutación:** N/A para todo el grupo — 3.1/3.2 son config/CSS sin lógica JS/TS; 3.3 es un atributo
+HTML estático; el alias de 3.4 es una entrada de objeto declarativa sin ramas. Ninguno tiene AST de
+producto que Stryker pueda instrumentar. Confirmado por QA.
+
+**QA:** `accept` en primera pasada, con verificación byte a byte de las hojas de estilo contra el
+origen y confirmación de que `main.jsx` sigue intacto (3.5).
+
+**Findings de este grupo:** ninguno nuevo.
+
+### Grupo 3 — cierre
+
+Commits del grupo: `10e63b3` (setup 3.1/3.2/mitad de 3.4 + Red de 3.3) y el commit pendiente de Green
+de 3.3 (`index.html`). Deja el sistema de estilos del origen y el alias listos, pero **inactivos**
+hasta que el grupo 6/7 reconcilie el entrypoint; `main.css` sigue gobernando el render.
