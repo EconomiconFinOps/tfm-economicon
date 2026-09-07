@@ -1,7 +1,8 @@
 # Evidencia de validacion JUP-049
 
-Ultima revalidacion: **2026-09-02**, documentada en la seccion
-"Reconciliacion con develop". Los resultados del 27 de agosto se conservan
+Ultima revalidacion de CI: **2026-09-07**, documentada en la seccion
+"Reconciliacion de CI con develop". La ultima construccion y smoke Docker
+corresponden al 2 de septiembre; los resultados anteriores se conservan
 como evidencia historica.
 
 - Tarjeta: https://trello.com/c/yZnjgiSp
@@ -204,7 +205,34 @@ Los logs de construccion, pytest, ambos smokes, el fallo inicial y la limpieza
 se conservaron fuera del repositorio en el directorio local de evidencias
 `materiales/07-evidencias/jup049-reconciliation-20260902/`.
 
-## Participacion pendiente
+## Reconciliacion de CI con develop — 2026-09-07
+
+- Cabeza original de la PR: `747e83708cd52179aa6c6fa9d28aa6d822c2c4ae`.
+- Base comprobada: `develop` en `b6eaa8709856b4c120bb94dc2ce7304dcf722a26`.
+- GitHub informaba `CONFLICTING` / `DIRTY`, sin revisores solicitados.
+- Los conflictos afectaban a `.github/workflows/ci.yml` y
+  `tools/ci-workflow.test.mjs`: ambas ramas habian anadido una validacion
+  distinta en el mismo punto de la lista.
+- La resolucion conserva `docker:validate` de JUP-049 y `collaboration:test`
+  de JUP-081, junto a la preparacion de Python 3.12 incorporada en `develop`.
+
+| Validacion de la reconciliacion | Resultado |
+|---|---:|
+| Topologia Docker y contrato CI | 14/14 |
+| Puente de colaboracion, con servicios simulados | 12/12 |
+| OpenSpec estricto | 21/21 |
+| Trazabilidad de todos los cambios activos | OK |
+| Higiene del repositorio | 382 archivos, OK |
+| `git diff --check --cached` | OK |
+
+Esta reconciliacion no cambia codigo de aplicaciones, Dockerfiles ni Compose.
+No se repitieron los builds ni los smokes Docker del 2 de septiembre.
+
+## Participacion prevista inicialmente
+
+La solicitud actual de revision se dirige a Victor Mendez (`Victorh1397`),
+por indicacion del 7 de septiembre. La distribucion original se conserva
+a continuacion como referencia; la revision humana sigue pendiente.
 
 - Pairing/coautoria: Lucia Mateo.
 - Revision de PR: Paris Arcos Martin.

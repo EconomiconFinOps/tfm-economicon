@@ -27,7 +27,7 @@ Tasks            -> pasos verificables dentro de cada tarjeta
 | Routing              | react-router 7 (`createBrowserRouter`) | Estado manual `activeView` en `App.jsx` (sin router)    |
 | Capa API             | Ninguna (sin `fetch`/`axios`) | `src/services/api.js` centralizado                      |
 | Auth/sesion          | Ninguna (sin login/tenant) | `localStorage` (`finops.session`, `finops.activeTenant`) |
-| Estilos              | Tailwind v4 + shadcn/ui + MUI | Un unico `src/styles/main.css`, tema oscuro             |
+| Estilos              | Tailwind v4 (shadcn/ui y MUI declarados pero **sin uso real**, JUP-091) | Un unico `src/styles/main.css`, tema oscuro             |
 | Empaquetado monorepo | repo independiente         | `@finops/frontend`, pnpm workspace + turbo + Docker     |
 
 **Gap principal:** el origen llega en **TSX** (sin `tsconfig` ni dependencia `typescript`:
@@ -86,7 +86,13 @@ monorepo. La frontera es:
 1. **Adopcion de TypeScript en `apps/frontend`.** Es una decision transversal y duradera (afecta
    tooling, build, lint y todas las tareas futuras del frontend) -> **requiere ADR** en `docs/adr/`
    usando `docs/templates/adr.md`, segun [AGENTS.md](../../AGENTS.md). Debe crearse/enlazarse antes
-   de implementar la feature de tooling.
+   de implementar la feature de tooling. **Resuelto en JUP-092:**
+   [docs/adr/ADR-0003-frontend-typescript.md](../adr/ADR-0003-frontend-typescript.md) (`Accepted`)
+   — `strict: true` desde el inicio, `allowJs: true` durante la migracion, type-check obligatorio en
+   CI, y `tsconfig` a nivel de `apps/frontend`. **`RF-082-002` (49 violaciones `react/prop-types` en
+   9 archivos `.jsx`) permanece abierto hasta que F3 migre esos archivos a `.tsx` con cobertura real
+   de tipos** — desactivar la regla solo para `.ts`/`.tsx` en F2 no los alcanza (correccion de
+   consistencia via revision de PR).
 2. **Vite se mantiene** como bundler (origen y destino ya usan Vite) -> el modelo de build es
    compatible; no hay migracion de bundler.
 3. **El backend de este repo manda.** La capa API del origen se reescribe contra los contratos
@@ -106,6 +112,11 @@ monorepo. La frontera es:
   `X-Tenant-Id` + sesión en `localStorage`) → la migración añade el flujo de auth del destino.
 - **Confirmado (T5):** Tailwind CSS v4 + shadcn/ui (Radix) + MUI 7 + `next-themes`, con estilos en
   `src/styles/`. El destino usa un único `main.css` plano → cambio grande de sistema de estilos.
+  **Matizado en JUP-091:** de ese stack solo Tailwind v4 está realmente en uso. **MUI 7 y
+  `@emotion/*` no se importan en ningún sitio**, y los 48 componentes de shadcn/ui son código muerto
+  que ninguna pantalla usa (su único import relativo es `./ExportButton`). El cambio de sistema de
+  estilos es, por tanto, **menor** de lo que sugería este supuesto. Ver `RF-091-001`/`RF-091-002` y
+  [el inventario del origen](../planning/JUP-091-economicon-source-inventory.md).
 - **Confirmado (T6):** iconos vía `lucide-react`; sin `src/assets` materializado ni fuentes propias
   (`fonts.css` vacío). Licencias en `ATTRIBUTIONS.md`: shadcn/ui (MIT) y fotos de Unsplash.
 
@@ -142,15 +153,23 @@ tarjeta en Trello.
 - [x] Definir criterios de aceptacion de paridad funcional (login -> tenant -> dashboard). Ver la
   misma línea base, sección "Criterios de paridad funcional".
 
-**JUP `jup-0xx-inventariar-frontend-economicon`** — carril `light`
+**JUP `jup-091-inventory-economicon-frontend`** — carril `light`
 - [x] Completar el "Checklist de inspeccion del origen" y confirmar todos los supuestos en JUP-083.
-- [ ] Listar dependencias del origen y clasificarlas (mantener / sustituir / descartar).
-- [ ] Enumerar endpoints que el origen consume y mapearlos a los contratos del backend de este repo.
+- [x] Listar dependencias del origen y clasificarlas (mantener / sustituir / descartar). Ver
+  [docs/planning/JUP-091-economicon-source-inventory.md](../planning/JUP-091-economicon-source-inventory.md),
+  seccion "Clasificacion de dependencias": 61 declaradas → 11 `MANTENER`, 2 `SUSTITUIR`, 48 `DESCARTAR`.
+- [x] Enumerar endpoints que el origen consume y mapearlos a los contratos del backend de este repo.
+  Ver la misma linea base, seccion "Mapeo de pantallas a contratos del backend": el origen no consume
+  ningun endpoint (datos estaticos), y de los 14 datos que muestra solo 2 tienen contrato, ambos
+  parciales. Siete capacidades ausentes agrupadas en `RF-091-003`.
 
-**JUP `jup-0xx-adr-adopcion-typescript`** — carril `standard` (decision de arquitectura)
-- [ ] Redactar ADR `docs/adr/ADR-NNNN-frontend-typescript.md` con `docs/templates/adr.md`.
-- [ ] Estado `Proposed` -> `Accepted` tras HiTL.
-- [ ] Enlazar el ADR desde el `design.md` de las tareas de tooling y de codigo.
+**JUP `jup-092-frontend-typescript-adr`** — carril `standard` (decision de arquitectura)
+- [x] Redactar ADR `docs/adr/ADR-0003-frontend-typescript.md` con `docs/templates/adr.md`.
+- [x] Estado `Proposed` -> `Accepted` tras HiTL.
+- [x] Enlazar el ADR desde este spike (decision nº 1, arriba).
+- [ ] Enlazar el ADR desde el `design.md` de cada tarjeta de F2 y F3 **al crearse** — no es tarea de
+  JUP-092, que ya termino; queda registrado aqui y en la seccion de seguimiento del propio ADR como
+  requisito de esas tarjetas futuras.
 
 ### F2. Tooling y dependencias
 
@@ -272,7 +291,8 @@ Notas:
 2. **El backend de este repo es la fuente de verdad de contratos.** Adaptar el frontend a el; no al
    reves. Cualquier endpoint del origen sin equivalente se registra como finding.
 3. **ADR antes de tooling.** Crear/aceptar el ADR de adopcion de TypeScript antes de tocar la
-   configuracion de build/lint.
+   configuracion de build/lint. **Hecho en JUP-092:**
+   [ADR-0003](../adr/ADR-0003-frontend-typescript.md) (`Accepted`).
 4. **Seguir el flujo Trello/JUP + OpenSpec.** Validar cada cambio con
    `pnpm jup:check -- --change jup-NNN-slug` y solicitar revision humana mediante pull request.
 5. **Preservar rollback.** No borrar el scaffold actual hasta validar E2E con el seed local.
@@ -315,6 +335,9 @@ tarjeta JUP** de la epica.
 1. **Hecho en JUP-083:** inspección de Economicon y supuestos confirmados (ver arriba). Replanificar
    las tarjetas JUP de la épica según los hallazgos: el origen no tiene backend, auth ni capa de datos, así
    que F3 debe **añadir** esas capas desde el destino, no solo reconciliarlas.
-2. Crear el ADR de adopcion de TypeScript (`docs/adr/ADR-NNNN-frontend-typescript.md`).
-3. Crear la primera tarjeta JUP de la epica y documentarla en OpenSpec siguiendo esta descomposicion.
-4. Ajustar la numeracion de Trello y el alcance de las tareas segun lo que revele el inventario.
+2. **Hecho en JUP-092:** ADR de adopcion de TypeScript
+   ([ADR-0003](../adr/ADR-0003-frontend-typescript.md), `Accepted`).
+3. **Hecho en JUP-090:** primera tarjeta JUP de la epica creada y documentada en OpenSpec.
+   **F1 (Preparacion e inventario) queda completa** con JUP-090, JUP-091 y JUP-092.
+4. Numeracion de Trello resuelta: JUP-090/091/092 para F1. Siguiente: crear las tarjetas de F2
+   (Tooling y dependencias) citando el ADR-0003 en su `design.md`, segun su seccion de seguimiento.
