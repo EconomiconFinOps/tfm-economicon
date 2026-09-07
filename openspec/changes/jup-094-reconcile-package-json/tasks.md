@@ -1,26 +1,44 @@
 ## 1. Decisión sobre shadcn/ui (bloquea el resto)
 
-- [ ] 1.1 Llevar al **gate pre-código** la decisión 1 del `design.md` (descartar shadcn/ui por ahora,
-  conservando `clsx`/`tailwind-merge`/`class-variance-authority`) y registrar la resolución del
-  equipo en el bloque `## Human Approval` del `proposal.md`.
-- [ ] 1.2 **Solo si el equipo elige adoptar shadcn/ui:** redactar y aceptar el ADR correspondiente
-  (`docs/adr/ADR-NNNN-<slug>.md` con `docs/templates/adr.md`, siguiente número libre tras ADR-0003)
-  **antes** de instalar ningún paquete `@radix-ui/*`, y ajustar las tareas 2.x con el subconjunto
-  acordado. Si se descarta, esta tarea se marca N/A con el motivo (decisión 2 del `design.md`).
+- [x] 1.1 Llevar al **gate pre-código** la decisión 1 del `design.md` y registrar la resolución del
+  equipo en el bloque `## Human Approval` del `proposal.md`. Hecho: aprobado por Victor el
+  2026-09-07 (commit `d0da663`), descartando shadcn/ui. **Revisado durante el `apply`, mismo día**:
+  el equipo cambió a adoptar un subconjunto de 6 paquetes Radix, por facilidad de desarrollo y
+  consistencia visual sin reescribir primitivos accesibles a mano (no por paridad con el origen, que
+  tampoco los usa). Ver adenda en el `## Human Approval` de `proposal.md` y `design.md`, decisión 1.
+- [x] 1.2 Redactar y aceptar [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)
+  (adopción de shadcn/ui, subconjunto de 6 paquetes Radix) **antes** de instalar ningún paquete
+  `@radix-ui/*`. Aceptado por Victor el 2026-09-07, en commit separado del de redacción (mismo
+  patrón de dos commits que ADR-0003).
 
 ## 2. Dependencias de ejecución
 
-- [ ] 2.1 Registrar la línea base **antes** de instalar: contenido de `dependencies` y
+- [x] 2.1 Registrar la línea base **antes** de instalar: contenido de `dependencies` y
   `devDependencies`, recuento de violaciones de `pnpm lint` (esperado: 49) y tamaño del bundle de
-  `pnpm build` (esperado: ~203 kB de JS).
-- [ ] 2.2 Instalar con `corepack pnpm --filter @finops/frontend add react-router recharts
+  `pnpm build` (esperado: ~203 kB de JS). **Confirmado: 49 problems (49 errors), JS 203.37 kB / gzip
+  63.38 kB, CSS 5.60 kB.**
+- [x] 2.2 Instalar con `corepack pnpm --filter @finops/frontend add react-router recharts
   lucide-react clsx tailwind-merge class-variance-authority` (pnpm-only; **nunca** `npm i`).
-- [ ] 2.3 Verificar que las versiones resueltas se corresponden con las que ejercita el origen
+- [x] 2.3 Verificar que las versiones resueltas se corresponden con las que ejercita el origen
   (`react-router` 7.13.0, `recharts` 2.15.2, `lucide-react` 0.487.0) y **no** con un mayor
   incompatible que el resolutor haya traído por `latest` — precedente directo: JUP-093 recibió
   `typescript@7` y `@types/react@19` desalineados. Fijar versión explícita si hiciera falta.
-- [ ] 2.4 Confirmar que `react`/`react-dom` siguen en `dependencies` con `^18.3.1` y que no ha
-  aparecido ningún bloque `peerDependencies` heredado del origen.
+  **Ocurrió de nuevo: el resolutor trajo `react-router@8.3.1` (exige `react >=19.2.7`, incompatible
+  con el runtime `^18.3.1`; `pnpm` avisó `unmet peer`). Re-instalado fijando `react-router@7.13.0`,
+  `recharts@2.15.2` y `lucide-react@0.487.0` explícitos — las tres versiones exactas del origen.**
+  `clsx`/`tailwind-merge`/`class-variance-authority` no tienen versión de origen documentada (el
+  inventario solo las agrupa) ni generaron aviso de peer dependency: se dejan en lo que resolvió el
+  instalador (`clsx@2.1.1`, `tailwind-merge@3.6.0`, `class-variance-authority@0.7.1`).
+- [x] 2.4 Confirmar que `react`/`react-dom` siguen en `dependencies` con `^18.3.1` y que no ha
+  aparecido ningún bloque `peerDependencies` heredado del origen. Confirmado.
+- [x] 2.5 Tras aceptar ADR-0004, instalar con `corepack pnpm --filter @finops/frontend add
+  @radix-ui/react-label @radix-ui/react-select @radix-ui/react-slot @radix-ui/react-separator
+  @radix-ui/react-dialog @radix-ui/react-tooltip`.
+- [x] 2.6 Verificar que las 6 dependencias Radix quedan en `dependencies` (no `devDependencies`) y
+  que ninguna trae un peer de React incompatible con `^18.3.1`. Confirmado: las 6 en `dependencies`,
+  sin ningún aviso de peer dependency nuevo (solo persiste el de `eslint-plugin-react-hooks`,
+  preexistente y ajeno a esta tarjeta). `typecheck`, `build` (bundle idéntico, 203.37 kB) e
+  `install --frozen-lockfile` en verde.
 
 ## 3. Dependencias de build
 
@@ -41,8 +59,10 @@
   se ha añadido ningún bloque `pnpm.overrides` (el origen fija `6.3.5` declarando `^6.4.2`; no se
   copia).
 - [ ] 4.3 Verificar que ninguna de las 48 dependencias `DESCARTAR` del inventario de JUP-091 ha
-  entrado al manifiesto: 26 Radix (salvo lo que apruebe 1.2), 7 de apoyo shadcn, `react-hook-form`,
-  `next-themes`, MUI/emotion (4) y las 9 sin ningún import.
+  entrado al manifiesto **salvo el subconjunto de 6 Radix que autoriza ADR-0004**: de los 26
+  primitivos del origen, los otros 20 siguen fuera; también fuera los 7 paquetes de apoyo a shadcn
+  distintos de los propios primitivos, `react-hook-form`, `next-themes`, MUI/emotion (4) y las 9 sin
+  ningún import.
 
 ## 5. Contrato del paquete y reproducibilidad
 
@@ -69,7 +89,8 @@
   `corepack pnpm jup:check -- --change jup-094-reconcile-package-json` y
   `corepack pnpm jup:cleanup:check`.
 - [ ] 6.4 Escribir `review.md`: resultado, decisiones tomadas (shadcn/ui y Vite) con su motivo,
-  comparación antes/después del manifiesto y del bundle, aplicabilidad del ADR según la decisión 2, y
-  la excepción de harness TDD que corresponda (esta tarjeta no tiene comportamiento unit-testeable:
-  el frontend sigue sin test runner y no se toca `tools/`).
+  incluida la revisión de la decisión de shadcn/ui durante el `apply` y el ADR-0004 resultante
+  (`Proposed` → `Accepted`), comparación antes/después del manifiesto y del bundle, y la excepción de
+  harness TDD que corresponda (esta tarjeta no tiene comportamiento unit-testeable: el frontend sigue
+  sin test runner y no se toca `tools/`).
 - [ ] 6.5 Crear `docs/evidence/JUP-094-validation.md` con los comandos exactos y sus resultados.

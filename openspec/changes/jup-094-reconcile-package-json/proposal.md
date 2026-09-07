@@ -97,3 +97,37 @@ mismo que hoy, pero su `package.json` ya sostiene lo que F3 va a importar.
 - Main risks: el riesgo principal es de **decisión, no de ejecución**: descartar shadcn/ui puede obligar a una segunda instalación en F3 si aparece una necesidad real de componente. Se acepta por ser barato y reversible en la dirección que importa, y el inventario de JUP-091 ya deja identificado el subconjunto (4-6 paquetes Radix) y su coste, así que esa tarjeta futura entraría con evidencia delante. Riesgo secundario con precedente directo: **el resolutor puede traer mayores incompatibles** — en JUP-093 trajo `typescript@7` (fuera del rango que soporta `typescript-eslint`) y `@types/react@19` desalineado de un runtime React 18; mitigación: revisar el `package.json` resultante dependencia por dependencia tras instalar y fijar versión explícita cuando el rango resuelto no corresponda con lo que el origen ejercitó (tarea 2.3). Riesgo terciario: **Tailwind entra instalado pero sin cablear** hasta F3, así que queda inerte; es intencional y se declara, con el criterio de aceptación de que `build` siga pasando sin que Tailwind altere todavía la salida ni el tamaño del bundle.
 - Required changes before execution: none
 - Notes: cierra **F2 (Tooling y dependencias)** junto a JUP-093. No es doc-only —modifica `package.json` y el lockfile— pero **tampoco tiene comportamiento unit-testeable**: el frontend sigue sin test runner (su script `test` es un `echo`) y esta tarjeta no toca `tools/`, así que no hay superficie donde aplicar el ciclo Red/Green del harness, a diferencia de JUP-093, que sí la tenía en `tools/ci-workflow.test.mjs`. La verificación recae en los comandos reales (`typecheck`, `lint`, `build`, `install --frozen-lockfile`) y la excepción se documentará en `review.md`. Sí lleva `docs/evidence/JUP-094-validation.md`. Quedan explícitamente fuera: reemplazar `src/**`, reconciliar `index.html`/entrypoint y migrar `.jsx` a `.tsx` (F3); cablear Tailwind y unificar estilos (F3, `unificar-estilos-assets`); tocar la capa API (F3); y endurecer `allowJs` a `false` (cierre de F5). **`RF-082-002` permanece `Open`** —ningún `.jsx` se migra, y `pnpm lint` debe seguir reportando exactamente 49 violaciones—, mientras que **`RF-091-002` se cierra aquí**, por ser la tarjeta que el propio finding designa. La verificación local usa los sustitutos `--filter @finops/frontend` por la limitación de entorno preexistente `RF-093-001`.
+
+## Addendum: revisión de la decisión de shadcn/ui durante el `apply` (2026-09-07)
+
+Mismo día de la aprobación de arriba, durante la implementación y **antes de instalar ninguna
+dependencia Radix**, el equipo revirtió la decisión 1: en vez de descartar shadcn/ui, se adopta un
+subconjunto de 6 paquetes (`@radix-ui/react-label`, `-select`, `-slot`, `-separator`, `-dialog`,
+`-tooltip`).
+
+**Motivo, revisado dos veces antes de fijarse:**
+
+1. Primer motivo propuesto ("el origen ya tiene pantallas construidas sobre shadcn/ui") se descartó
+   por ser **factualmente incorrecto**: el inventario de JUP-091 confirma que ninguna pantalla del
+   origen renderiza esos componentes tampoco — es código muerto ahí también, no solo en el destino.
+2. **Motivo real fijado**: facilidad de desarrollo. F3 va a construir varias pantallas (login,
+   selector de tenant, ingesta, chat) que necesitan primitivos accesibles de formulario y
+   superposición; construirlos a mano en HTML plano por cada pantalla traslada el coste de
+   accesibilidad (foco, teclado, ARIA) a cada componente nuevo, uno por uno, en vez de resolverlo una
+   sola vez. No es paridad con el origen — es una decisión de desarrollo hacia adelante.
+
+**Consecuencia sobre el ADR (decisión 2 original):** al ser ahora una adopción, y no un descarte, el
+ADR pasa de "no aplica" a **obligatorio**, tal como la propia decisión 2 ya anticipaba condicionalmente.
+Redactado como [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md), en estado `Proposed`.
+**Ningún paquete `@radix-ui/*` se instala hasta que se acepte** (tarea 1.2/2.5 de `tasks.md`).
+
+**Alcance sin cambios en lo demás:** las decisiones 3, 4 y 5 (Vite en la serie 5, reparto
+ejecución/desarrollo, rangos `^` sobre la versión del origen) no se ven afectadas. El alcance sigue
+siendo **solo la dependencia**: copiar el código fuente de cada componente shadcn a
+`src/components/ui/` sigue siendo trabajo de F3, componente por componente — esta tarjeta no toca
+`src/**`.
+
+- Approval type: pre-code (revisión)
+- Decision: approved
+- Approver: Victor
+- Date: 2026-09-07

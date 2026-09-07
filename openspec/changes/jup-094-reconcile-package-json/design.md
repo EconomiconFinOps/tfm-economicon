@@ -51,49 +51,59 @@ exige que toda tarjeta de F2 y F3 lo enlace desde su `design.md`; este documento
 
 ## Decisions
 
-### 1. shadcn/ui: **descartar por ahora**, conservando las utilidades de clases
+### 1. shadcn/ui: **adoptar** un subconjunto de 6 paquetes Radix
 
-Se propone **no** incorporar ningún paquete `@radix-ui/*` en esta tarjeta. Sí entran `clsx`,
-`tailwind-merge` y `class-variance-authority`, que el inventario ya clasifica `MANTENER` y que son
-útiles con Tailwind plano, con o sin shadcn/ui.
+> **Revisado durante el `apply` (2026-09-07).** La posición original de esta decisión —descartar
+> shadcn/ui por ahora— quedó aprobada en el gate pre-código, pero el equipo la revirtió antes de
+> instalar nada de la tarea 3. Se conserva el razonamiento original íntegro más abajo, marcado como
+> superado, porque sigue siendo evidencia real (documenta por qué HTML nativo parecía suficiente) y
+> porque el ADR-0004 resultante lo cita como la alternativa descartada.
 
-*Por qué:*
+Se incorporan 6 paquetes Radix — `@radix-ui/react-label`, `@radix-ui/react-select`,
+`@radix-ui/react-slot`, `@radix-ui/react-separator`, `@radix-ui/react-dialog`,
+`@radix-ui/react-tooltip` — como dependencias de `package.json`. **Solo la dependencia**: copiar el
+código fuente de cada componente a `src/components/ui/` (convención de shadcn/ui, no se consume como
+librería opaca) es trabajo de F3, componente por componente, cuando la pantalla que lo necesita se
+construye. Coherente con el Non-Goal de arriba: esta tarjeta no toca `src/**`. `clsx`,
+`tailwind-merge` y `class-variance-authority` (ya `MANTENER` en el inventario) son las utilidades que
+shadcn/ui usa para componer variantes de clases; se mantienen tal como estaban previstas.
 
-- **Lo que el destino necesita hoy lo cubre HTML nativo.** Sus pantallas usan 8 `<button>`,
-  6 `<label>`, 5 `<input>`, 2 `<textarea>` y 1 `<select>`. Los elementos nativos ya son accesibles
-  por defecto: `<select>` y `<label>` traen semántica, foco y navegación por teclado sin librería.
-  Radix gana valor cuando hay que construir controles que el navegador **no** ofrece (combobox
-  custom, modal, tooltip), y hoy no hay ninguno.
-- **Ninguna pantalla del origen los usa.** Los 48 componentes de `ui/` son código muerto
-  (`RF-091-002`): adoptarlos sería importar un sistema de diseño que ni siquiera el origen ejercita.
-- **F3 todavía no ha definido una sola necesidad de componente.** Elegir el sistema de diseño antes
-  de conocer el primer requisito real es exactamente la abstracción prematura que ADR-0003 rechazó
-  para `packages/shared-config` ("extraer para un solo consumidor... se pospone hasta que haya un
-  segundo consumidor real"). El mismo criterio aplica aquí.
-- **La decisión es barata de revertir en la dirección que importa.** Añadir 4-6 paquetes Radix
-  cuando F3 tropiece con una necesidad concreta es una tarjeta pequeña y con evidencia; quitar un
-  sistema de diseño ya extendido por todas las pantallas, no.
+*Por qué el cambio:* el motivo no es que el origen use shadcn/ui — el inventario de JUP-091 confirma
+que **tampoco** lo usa en sus pantallas reales, así que ese argumento nunca aplicó. El motivo es de
+desarrollo hacia adelante: F3 va a construir varias pantallas (login, selector de tenant, ingesta,
+chat) que necesitan primitivos accesibles de formulario y superposición, y construirlos a mano en
+HTML plano por cada pantalla traslada el coste de accesibilidad (foco, teclado, ARIA) a cada
+componente nuevo, uno por uno, en vez de resolverlo una sola vez.
 
-*Alternativa considerada — adoptar el subconjunto de 4-6 paquetes* (`label`, `select`, `slot`,
-`separator`, quizá `dialog`/`tooltip`): defendible al pasar a Tailwind v4, y evitaría una segunda
-instalación más adelante. Se descarta ahora por falta de un requisito que la justifique, no por
-coste. **Si el equipo la prefiere en el gate pre-código, cambia también la decisión 2.**
+**Alcance acotado, no el `ui/` completo del origen.** Los 20 primitivos Radix restantes que el
+inventario clasifica `DESCARTAR` siguen sin consumidor conocido en el destino y no se incorporan.
+Detalle completo de la decisión y sus consecuencias en
+[ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md).
 
-### 2. ADR: **no aplica si se descarta; obligatorio si se adopta**
+<details>
+<summary>Razonamiento original (descartar), superado por la revisión de arriba</summary>
 
-Con la decisión 1 tal como se propone, **no se necesita un ADR nuevo**: "no añadimos todavía una
-dependencia que nadie consume" es un aplazamiento reversible y de bajo compromiso, que se registra
-en este `design.md` y en el cierre de `RF-091-002`.
+Se proponía **no** incorporar ningún paquete `@radix-ui/*` en esta tarjeta, porque lo que el destino
+necesitaba hoy lo cubría HTML nativo: sus pantallas usan 8 `<button>`, 6 `<label>`, 5 `<input>`,
+2 `<textarea>` y 1 `<select>`, y los elementos nativos ya son accesibles por defecto. Elegir el
+sistema de diseño antes de conocer el primer requisito real parecía la misma abstracción prematura
+que ADR-0003 rechazó para `packages/shared-config`. La alternativa ya identificada entonces —adoptar
+el subconjunto de 4-6 paquetes (`label`, `select`, `slot`, `separator`, quizá `dialog`/`tooltip`)— es
+esencialmente el subconjunto que esta revisión termina adoptando, con `dialog` y `tooltip`
+confirmados en vez de "quizá".
 
-Si el gate pre-código elige **adoptar** shadcn/ui, la naturaleza de la decisión cambia: pasa a ser un
-patrón compartido que ata todos los componentes de F3 y el cierre de F5 — exactamente lo que
+</details>
+
+### 2. ADR: **ADR-0004**, `Proposed` hasta la aceptación del equipo
+
+La decisión 1 es ahora una adopción de sistema de diseño: un patrón compartido que ata todos los
+componentes de F3 y el cierre de F5. Exactamente lo que
 [docs/adr/README.md](../../../docs/adr/README.md) exige registrar como ADR, con el precedente directo
-de JUP-092 (ADR-0003) antes de que JUP-093 pudiera tocar el tooling. En ese caso: **el ADR se redacta
-y acepta antes de instalar ningún paquete Radix**, sea dentro de esta tarjeta o en una tarjeta ADR
-que la preceda.
+de JUP-092 (ADR-0003) antes de que JUP-093 pudiera tocar el tooling.
 
-Dejar la aplicabilidad del ADR **condicionada a la decisión** es deliberado: evita redactar un ADR
-para justificar una no-adopción, y evita adoptar sin registrarlo.
+**Redactado como [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)**, en estado `Proposed`.
+Pasa a `Accepted` en un commit separado, tras la aprobación del equipo — mismo patrón de dos commits
+que usó ADR-0003. **Ningún paquete `@radix-ui/*` se instala antes de esa aceptación.**
 
 ### 3. Vite: **mantenerse en la serie 5**
 
@@ -118,7 +128,11 @@ que justificarla.
 ### 4. Ubicación de cada dependencia: ejecución vs. desarrollo
 
 - **Ejecución** (`dependencies`): `react-router`, `recharts`, `lucide-react`, `clsx`,
-  `tailwind-merge`, `class-variance-authority` — todas se importan desde código de aplicación.
+  `tailwind-merge`, `class-variance-authority`, y los 6 paquetes `@radix-ui/*` de ADR-0004
+  (`react-label`, `react-select`, `react-slot`, `react-separator`, `react-dialog`,
+  `react-tooltip`) — todas son de ejecución: los primitivos Radix se renderizan en el navegador tanto
+  como `react-router` o `recharts`, aunque su código de composición (los componentes copiados de
+  shadcn/ui) todavía no exista en `src/**`.
 - **Desarrollo** (`devDependencies`): `tailwindcss`, `@tailwindcss/vite`, `tw-animate-css` — actúan
   en tiempo de build; el CSS resultante se emite en el bundle.
 - `react`/`react-dom` **ya están** en `dependencies` y se quedan ahí: el patrón de
@@ -134,9 +148,12 @@ confiar en `latest`**. No se replica el `pnpm.overrides` del origen.
 
 ## Risks / Trade-offs
 
-- **Descartar shadcn/ui puede obligar a una segunda instalación en F3** si aparece una necesidad real
-  de componente → asumido y barato: sería una tarjeta pequeña, con el requisito concreto delante, y
-  el inventario ya tiene identificado el subconjunto (4-6 paquetes) y su coste.
+- **Elegir el subconjunto de 6 paquetes Radix antes de que F3 escriba una pantalla** es una apuesta
+  sobre qué primitivos hacen falta de verdad (ADR-0004, "se vuelve más arriesgado") → si falta un
+  séptimo, es una instalación pequeña de seguimiento; si `dialog`/`tooltip` no llegan a usarse, quedan
+  como peso muerto hasta que se retiren. No se instalan los otros 20 primitivos del origen: la
+  apuesta se acota a lo que las pantallas conocidas del destino (login, tenant, ingesta, chat)
+  previsiblemente necesitan.
 - **El resolutor puede traer mayores incompatibles** (precedente directo: JUP-093 recibió
   `typescript@7` y tipos de React 19 desalineados del runtime) → mitigación: verificar el
   `package.json` resultante dependencia por dependencia tras instalar, y fijar versión explícita si
@@ -153,20 +170,24 @@ confiar en `latest`**. No se replica el `pnpm.overrides` del origen.
 
 ## Migration Plan
 
-1. Instalar las de ejecución con `corepack pnpm --filter @finops/frontend add <paquetes>`.
-2. Instalar las de build con `... add -D tailwindcss @tailwindcss/vite tw-animate-css`.
-3. Revisar el `package.json` resultante: versiones coherentes con el inventario, nada colado en el
+1. **Aceptar ADR-0004** (`Proposed` → `Accepted`, commit separado del de redacción) antes de instalar
+   ningún paquete `@radix-ui/*`.
+2. Instalar las de ejecución con `corepack pnpm --filter @finops/frontend add <paquetes>`, incluidos
+   los 6 `@radix-ui/*` de ADR-0004.
+3. Instalar las de build con `... add -D tailwindcss @tailwindcss/vite tw-animate-css`.
+4. Revisar el `package.json` resultante: versiones coherentes con el inventario, nada colado en el
    bloque equivocado, `dependencies` de runtime sin `peerDependencies`.
-4. `pnpm install --frozen-lockfile`, `typecheck`, `lint` (49 exactas), `build` (tamaño comparado).
-5. Cerrar `RF-091-002` en `openspec/findings/backlog.md` con la decisión y su motivo.
-6. Marcar F2 completa en el spike.
+5. `pnpm install --frozen-lockfile`, `typecheck`, `lint` (49 exactas), `build` (tamaño comparado).
+6. Cerrar `RF-091-002` en `openspec/findings/backlog.md` con la decisión y su motivo.
+7. Marcar F2 completa en el spike.
 
 **Rollback:** revert del commit de dependencias y del lockfile. No hay migración de datos ni de
-código; `src/**` nunca se toca.
+código; `src/**` nunca se toca. Si además se revirtiera ADR-0004, seguiría el mismo patrón de
+`Superseded` que exige `docs/adr/README.md`, no un borrado.
 
 ## Open Questions
 
-- Ninguna que bloquee. La única decisión abierta de verdad —adoptar o descartar shadcn/ui— se lleva
-  resuelta como propuesta al **gate pre-código** (decisión 1), con su consecuencia sobre el ADR
-  explícita (decisión 2). Si el equipo elige adoptar, cambian las tareas 1.x y aparece una tarea de
-  ADR previa; el resto del plan no se ve afectado.
+- Ninguna que bloquee. La decisión sobre shadcn/ui se revisó durante el `apply` (ver decisiones 1 y
+  2, y [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)): el equipo pasó de descartarlo a
+  adoptar un subconjunto de 6 paquetes, con el ADR como bloqueante de la instalación hasta que se
+  acepte. El resto del plan no se ve afectado por el cambio.
