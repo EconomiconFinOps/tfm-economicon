@@ -5,11 +5,11 @@ JUP: JUP-093
 Ver [proposal.md](proposal.md) — Why. Aquí solo el estado que condiciona el enfoque, verificado sobre
 el repo:
 
-**Decisión vinculante.** [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md) (`Accepted`,
+**Decisión vinculante.** [ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md) (`Accepted`,
 JUP-092) es la fuente de autoridad de esta tarjeta y sus cuatro decisiones no se reabren aquí:
 `strict: true` desde el inicio (1), `allowJs: true` durante la migración y `false` al cerrar F5 (2),
 type-check como check obligatorio en CI (3), y `tsconfig` a nivel de `apps/frontend` y no en
-`packages/shared-config` (4). El [spike](../../../docs/spikes/frontend-migration.md) (línea 170)
+`packages/shared-config` (4). El [spike](../../../../docs/spikes/frontend-migration.md) (línea 170)
 exige que las tarjetas de F2 y F3 enlacen el ADR desde su `design.md`; este documento lo hace.
 
 **Punto de partida.**
@@ -26,7 +26,7 @@ exige que las tarjetas de F2 y F3 enlacen el ADR desde su `design.md`; este docu
   `Frontend build`), que solo ejecuta `build`. No hay lint ni type-check del frontend en CI.
 - Las seis check contexts obligatorias están **versionadas en tres sitios a la vez**:
   `.github/rulesets/develop.json`, `.github/rulesets/main.json` y
-  [docs/governance/github-branch-protection.md](../../../docs/governance/github-branch-protection.md),
+  [docs/governance/github-branch-protection.md](../../../../docs/governance/github-branch-protection.md),
   y `tools/ci-workflow.test.mjs` las asevera (`keeps the six branch-protection check contexts
   stable`). Cualquier context nueva obliga a tocar los cuatro de forma coherente.
 - El frontend **no tiene runner de tests**. La verificación ejecutable de esta tarjeta recae en

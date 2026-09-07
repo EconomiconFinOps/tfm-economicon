@@ -173,7 +173,7 @@ tarjeta en Trello.
 
 ### F2. Tooling y dependencias
 
-**JUP [`jup-093-configure-typescript`](../../openspec/changes/jup-093-configure-typescript/) — carril `standard`**
+**JUP [`jup-093-configure-typescript`](../../openspec/changes/archive/2026-09-06-jup-093-configure-typescript/) — carril `standard`**
 - [x] Anadir `typescript`, `@types/react`, `@types/react-dom` (y tipos necesarios) con **pnpm**.
 - [x] Crear `tsconfig.json` (y `tsconfig.node.json` para la config de Vite).
 - [x] Ajustar `vite.config` a `.ts`; verificado arranque `pnpm dev` (host/puerto del monorepo intactos).

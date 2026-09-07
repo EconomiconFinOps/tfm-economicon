@@ -72,3 +72,30 @@ confirmado que ya ocurria antes de esta tarjeta, ver `RF-093-001` en
 - Segunda tarjeta de F2 (`reconciliar-package-json`): fusion de dependencias del origen y decision
   sobre `RF-091-002` (shadcn/ui).
 - Activacion en vivo de la nueva check context por un administrador del repositorio.
+
+## Correcciones de revision del PR #27 — 2026-09-07
+
+[PR #27](https://github.com/EconomiconFinOps/tfm-economicon/pull/27), ajustes sobre `629afb9`:
+
+- `tsconfig.json` limita los tipos globales del navegador con `types: []`;
+  `tsconfig.node.json` conserva `types: ["node"]` para Vite.
+- Corregidos los ocho enlaces rotos por el archivado de JUP-093. Verificados los
+  20 enlaces Markdown relativos de los cuatro documentos afectados: ninguno roto.
+- Sin cambios en fuentes ni dependencias.
+
+Validacion local con Node `24.14.1` y pnpm `9.0.0`:
+
+| Comprobacion | Resultado |
+| --- | --- |
+| `corepack pnpm install --frozen-lockfile` | Superado, lockfile sin cambios |
+| `corepack pnpm --filter @finops/frontend typecheck` | Superado, ambos proyectos |
+| `corepack pnpm --filter @finops/frontend build` | Superado, 89 modulos |
+| `corepack pnpm --filter @finops/frontend lint` | Salida 1: las mismas 49 violaciones `react/prop-types`, sin nuevas |
+| `corepack pnpm ci:check:test` | 7/7 superados |
+| `corepack pnpm openspec:validate` | 21/21 elementos validos |
+| `corepack pnpm jup:cleanup:check` | 383 archivos aceptados |
+
+Sondas temporales ejecutadas con el comando real `typecheck`: un componente TSX
+con props tipadas y `const timer: number = setTimeout(() => {}, 100)` compilan;
+`Buffer.from("demo")` en `src` se rechaza con TS2591. Las sondas se eliminaron
+tras comprobar los resultados y no forman parte del cambio.

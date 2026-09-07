@@ -9,7 +9,7 @@ que ya existe, manteniendo la instalación reproducible desde el lockfile del wo
 ### Requirement: Configuración de compilador conforme a la decisión de arquitectura
 
 `apps/frontend` SHALL declarar una configuración de compilador de TypeScript propia, alineada con las
-decisiones 1, 2 y 4 de [ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md): rigor
+decisiones 1, 2 y 4 de [ADR-0003](../../../../../../docs/adr/ADR-0003-frontend-typescript.md): rigor
 máximo desde el inicio, convivencia temporal con el JavaScript aún no migrado, y ubicación local al
 paquete en lugar de compartida.
 

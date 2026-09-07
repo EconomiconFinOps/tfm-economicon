@@ -3,7 +3,7 @@ Trello: https://trello.com/c/MNgMl60p/85-jup-093-configurar-typescript-en-apps-f
 
 ## Why
 
-[ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md) (`Accepted`, JUP-092) decidió adoptar
+[ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md) (`Accepted`, JUP-092) decidió adoptar
 TypeScript en `apps/frontend` con `strict: true`, `allowJs: true` durante la migración, type-check
 obligatorio en CI y `tsconfig` a nivel de `apps/frontend`. **La decisión está tomada pero no está
 ejecutada**: hoy no existe ningún `tsconfig.json` en el repositorio, `apps/frontend` no declara
@@ -13,7 +13,7 @@ ejecutada**: hoy no existe ningún `tsconfig.json` en el repositorio, `apps/fron
 Mientras esa decisión no se materialice en tooling, **F3 no puede empezar**: el spike prohíbe el "big
 bang" y exige avanzar por slices verificables, pero el primer archivo `.tsx` que se porte del origen
 no compilaría, no se lintearía y nadie lo verificaría. Esta tarjeta es la primera de **F2 (Tooling y
-dependencias)** del [spike de migración](../../../docs/spikes/frontend-migration.md) y su función es
+dependencias)** del [spike de migración](../../../../docs/spikes/frontend-migration.md) y su función es
 exactamente esa: dejar el tooling instalado, configurado y en verde **antes** de que llegue una sola
 línea de código del origen.
 
@@ -75,7 +75,7 @@ pero sobre una cadena de herramientas capaz de compilar, tipar y lintear TypeScr
   - `RF-091-002` (adoptar o descartar shadcn/ui) **no se decide aquí**: corresponde a la otra tarjeta
     de F2, `reconciliar-package-json`.
 - **Gobernanza:** marcar el type-check como check obligatorio en la protección de rama afecta a
-  [docs/governance/github-branch-protection.md](../../../docs/governance/github-branch-protection.md)
+  [docs/governance/github-branch-protection.md](../../../../docs/governance/github-branch-protection.md)
   (territorio de JUP-079). El `design.md` decide si esa activación entra en el alcance o queda
   registrada como seguimiento.
 - **Desbloquea:** la segunda tarjeta de F2 (`reconciliar-package-json`) y toda F3, que ya podrán
