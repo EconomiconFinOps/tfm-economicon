@@ -160,3 +160,31 @@ Verificación adicional por tarea, no repetida en la batería:
   (shadcn/ui) y fusiona las dependencias del origen, ninguna de las cuales entra en esta tarjeta.
 - **Activación en vivo de la nueva check context** (limitación 2 de arriba): acción de administrador
   fuera del alcance de esta tarjeta, igual que dejó JUP-079.
+
+## Human Approval
+
+- Change: jup-093-configure-typescript
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-09-06
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: JUP-093 completada (24/24 tareas). Ejecuta ADR-0003 (JUP-092) sin reabrir ninguna de sus
+  cuatro decisiones: `strict`/`allowJs`/`checkJs` tal como se aprobaron en el gate pre-código, CI
+  obligatorio materializado como séptimo check (`Frontend type check`), `tsconfig` local a
+  `apps/frontend`. Único grupo con TDD real (grupo 5, `tools/ci-workflow.test.mjs`): Red → Green →
+  QA `accept`, con una incidencia de proceso resuelta en el momento (bypass puntual y verificado del
+  hook `lock-committed-tests.mjs`, autorizado explícitamente antes de actuar). Grupos 1-4 y 6 sin
+  tester/coder/QA por no haber comportamiento unit-testeable en el frontend (sin test runner),
+  mismo criterio que JUP-092; verificados con los comandos reales de cada tarea. `apps/frontend/src/**`
+  confirmado sin tocar: `RF-082-002` permanece `Open`, tal como exigía el alcance. Batería completa
+  en verde (7/7), con la sustitución `--filter @finops/frontend` acordada para `lint`/`build` por el
+  hallazgo de entorno `RF-093-001` (nuevo, registrado en `openspec/findings/backlog.md`, no bloquea
+  esta tarjeta). Dos limitaciones quedan declaradas explícitamente y aceptadas, no ocultas: el
+  type-check no verifica sustancia real hasta F3 (`checkJs: false`, previsto en el gate pre-código),
+  y la nueva check context está versionada pero pendiente de activación en vivo por un administrador
+  (mismo patrón que JUP-079). Queda pendiente, fuera de esta tarjeta: la segunda tarjeta de F2
+  (`reconciliar-package-json`) y la activación del ruleset en vivo.
