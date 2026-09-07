@@ -173,11 +173,14 @@ tarjeta en Trello.
 
 ### F2. Tooling y dependencias
 
-**JUP `jup-0xx-configurar-typescript`** — carril `standard`
-- [ ] Anadir `typescript`, `@types/react`, `@types/react-dom` (y tipos necesarios) con **pnpm**.
-- [ ] Crear `tsconfig.json` (y `tsconfig.node.json` para la config de Vite si aplica).
-- [ ] Ajustar `vite.config` a `.ts` si procede; verificar arranque `pnpm dev`.
-- [ ] Migrar `eslint.config.js` a soporte TS (parser/plugin TypeScript) sin romper `pnpm lint`.
+**JUP [`jup-093-configure-typescript`](../../openspec/changes/jup-093-configure-typescript/) — carril `standard`**
+- [x] Anadir `typescript`, `@types/react`, `@types/react-dom` (y tipos necesarios) con **pnpm**.
+- [x] Crear `tsconfig.json` (y `tsconfig.node.json` para la config de Vite).
+- [x] Ajustar `vite.config` a `.ts`; verificado arranque `pnpm dev` (host/puerto del monorepo intactos).
+- [x] Migrar `eslint.config.js` a soporte TS (parser/plugin TypeScript) sin romper `pnpm lint` (línea
+  base de 49 violaciones `react/prop-types`, `RF-082-002`, intacta). Añadido también, más allá de las
+  cuatro tareas de este spike, el type-check como séptimo check obligatorio de CI (ADR-0003, decisión
+  3): ver [ADR-0003](../adr/ADR-0003-frontend-typescript.md).
 
 **JUP `jup-0xx-reconciliar-package-json`** — carril `standard`
 - [ ] Fusionar dependencias del origen en `apps/frontend/package.json`.
@@ -341,3 +344,8 @@ tarjeta JUP** de la epica.
    **F1 (Preparacion e inventario) queda completa** con JUP-090, JUP-091 y JUP-092.
 4. Numeracion de Trello resuelta: JUP-090/091/092 para F1. Siguiente: crear las tarjetas de F2
    (Tooling y dependencias) citando el ADR-0003 en su `design.md`, segun su seccion de seguimiento.
+5. **Hecho en JUP-093:** tooling de TypeScript configurado en `apps/frontend` (dependencias,
+   `tsconfig`, `vite.config.ts`, ESLint con soporte TS, type-check obligatorio en CI). `RF-082-002`
+   permanece `Open`: ningun archivo `.jsx` se migro, es tarea de F3/cierre de F5. Queda pendiente la
+   segunda tarjeta de F2, `reconciliar-package-json` (fusionar dependencias del origen, decidir
+   `RF-091-002`/shadcn-ui).

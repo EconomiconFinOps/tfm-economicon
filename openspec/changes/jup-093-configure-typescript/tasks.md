@@ -123,20 +123,27 @@
 
 ## 6. Cierre y verificación
 
-- [ ] 6.1 Verificar que `apps/frontend/src/**` no tiene ni un archivo renombrado ni reescrito
+- [x] 6.1 Verificar que `apps/frontend/src/**` no tiene ni un archivo renombrado ni reescrito
   (`git diff --stat` sobre `src/`), y que `RF-082-002` sigue `Open` en
-  `openspec/findings/backlog.md`, con nota de que F2 no lo cierra.
-- [ ] 6.2 Marcar en `docs/spikes/frontend-migration.md` la tarjeta de F2 como completada,
+  `openspec/findings/backlog.md`, con nota de que F2 no lo cierra. Confirmado: diff vacío sobre
+  `src/` en todo el change; el finding ya reflejaba este resultado desde su redacción en JUP-092
+  (sin necesidad de editarlo).
+- [x] 6.2 Marcar en `docs/spikes/frontend-migration.md` la tarjeta de F2 como completada,
   sustituyendo el placeholder `jup-0xx-configurar-typescript` por `jup-093-configure-typescript` y
-  enlazando esta tarjeta.
-- [ ] 6.3 Ejecutar la batería completa: `corepack pnpm install --frozen-lockfile`,
-  `corepack pnpm lint`, `corepack pnpm build`, `corepack pnpm ci:check:test`,
-  `corepack pnpm openspec:validate`,
-  `corepack pnpm jup:check -- --change jup-093-configure-typescript` y
-  `corepack pnpm jup:cleanup:check`.
-- [ ] 6.4 Escribir `review.md` con el resultado, la evidencia Red/Green de la tarea 5.1, el recuento
+  enlazando esta tarjeta. Añadida entrada 5 en "Proximos pasos" con el resumen y la tarjeta pendiente
+  de F2 (`reconciliar-package-json`).
+- [x] 6.3 Ejecutar la batería completa. **Sustitución acordada con Victor** (limitación de entorno
+  preexistente, tarea 2.3): `corepack pnpm lint`/`build` (raíz, vía turbo) por
+  `corepack pnpm --filter @finops/frontend lint`/`build`. Resultado, los 7 controles en verde:
+  `install --frozen-lockfile` (sin tocar el lockfile), `lint` (49/49, línea base intacta), `build`,
+  `typecheck` (`--filter`, ambos proyectos), `ci:check:test` (7/7), `openspec:validate` (21/21),
+  `jup:check --change jup-093-configure-typescript` (OK), `jup:cleanup:check` (380 archivos limpios).
+- [x] 6.4 Escribir `review.md` con el resultado, la evidencia Red/Green de la tarea 5.1, el recuento
   de lint antes/después, y **dos limitaciones declaradas explícitamente**: que el type-check pasa en
   verde sin verificar nada de sustancia mientras no haya archivos `.ts`/`.tsx` (`checkJs: false`), y
   que la context nueva no es obligatoria en vivo hasta que un administrador reaplique los rulesets.
-- [ ] 6.5 Crear `docs/evidence/JUP-093-validation.md` con los comandos exactos y sus resultados: esta
+  Incluye además el registro del hallazgo `RF-093-001` (limitación de entorno, nuevo en
+  `openspec/findings/backlog.md`) y la doble justificación de la excepción de mutación (config sin
+  comportamiento testeable vs. artefacto YAML/JSON sin runner aplicable).
+- [x] 6.5 Crear `docs/evidence/JUP-093-validation.md` con los comandos exactos y sus resultados: esta
   tarjeta **no** es doc-only, así que la evidencia compartida sí aplica.
