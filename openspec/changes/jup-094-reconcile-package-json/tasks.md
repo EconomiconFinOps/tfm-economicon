@@ -42,27 +42,32 @@
 
 ## 3. Dependencias de build
 
-- [ ] 3.1 Instalar con `corepack pnpm --filter @finops/frontend add -D tailwindcss @tailwindcss/vite
+- [x] 3.1 Instalar con `corepack pnpm --filter @finops/frontend add -D tailwindcss @tailwindcss/vite
   tw-animate-css`.
-- [ ] 3.2 Verificar que quedan en `devDependencies` y que la versión de `tailwindcss` es la serie 4
-  que usa el origen (4.1.12), coherente con `@tailwindcss/vite`.
-- [ ] 3.3 Confirmar que **no** se ha tocado `vite.config.ts`: Tailwind entra como dependencia pero no
+- [x] 3.2 Verificar que quedan en `devDependencies` y que la versión de `tailwindcss` es la serie 4
+  que usa el origen (4.1.12), coherente con `@tailwindcss/vite`. Resolvió `^4.3.3` (minor dentro de
+  la misma serie 4, no un mayor incompatible): se deja tal cual, coherente con la regla de la
+  decisión 5 de `design.md` (fijar solo ante un **mayor** incompatible).
+- [x] 3.3 Confirmar que **no** se ha tocado `vite.config.ts`: Tailwind entra como dependencia pero no
   se cablea hasta F3 (`unificar-estilos-assets`). Es un Non-Goal explícito del `design.md`.
+  Confirmado: `git diff --stat` sobre el archivo, vacío.
 
 ## 4. Decisión de Vite y limpieza de arrastres
 
-- [ ] 4.1 Dejar registrada en `review.md` la comprobación que sostiene la decisión 3: los rangos
+- [x] 4.1 Dejar registrada en `review.md` la comprobación que sostiene la decisión 3: los rangos
   declarados por `@tailwindcss/vite@4.1.12` (`vite ^5.2.0 || ^6 || ^7`) y por
   `@vitejs/plugin-react@4.7.0` (`^4.2.0 || ^5 || ^6 || ^7`) — ninguna dependencia entrante fuerza el
-  salto a Vite 6.
-- [ ] 4.2 Confirmar que `vite` sigue en `^5.3.3` y `@vitejs/plugin-react` en `^4.3.1`, y que **no**
+  salto a Vite 6. Ya registrada en `design.md` (sección Context); se traslada a `review.md` en 6.4.
+- [x] 4.2 Confirmar que `vite` sigue en `^5.3.3` y `@vitejs/plugin-react` en `^4.3.1`, y que **no**
   se ha añadido ningún bloque `pnpm.overrides` (el origen fija `6.3.5` declarando `^6.4.2`; no se
-  copia).
-- [ ] 4.3 Verificar que ninguna de las 48 dependencias `DESCARTAR` del inventario de JUP-091 ha
+  copia). Confirmado: ambos sin cambio, sin `overrides` en ningún `package.json`/`pnpm-workspace.yaml`
+  del repo.
+- [x] 4.3 Verificar que ninguna de las 48 dependencias `DESCARTAR` del inventario de JUP-091 ha
   entrado al manifiesto **salvo el subconjunto de 6 Radix que autoriza ADR-0004**: de los 26
   primitivos del origen, los otros 20 siguen fuera; también fuera los 7 paquetes de apoyo a shadcn
   distintos de los propios primitivos, `react-hook-form`, `next-themes`, MUI/emotion (4) y las 9 sin
-  ningún import.
+  ningún import. Confirmado listando `dependencies`/`devDependencies` completos: exactamente los 15
+  `MANTENER`/ADR-0004 esperados, ni uno más.
 
 ## 5. Contrato del paquete y reproducibilidad
 
