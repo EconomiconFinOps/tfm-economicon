@@ -83,20 +83,20 @@
 
 ## 6. Cierre y verificación
 
-- [ ] 6.1 Cerrar `RF-091-002` en `openspec/findings/backlog.md` con la decisión tomada y su motivo.
+- [x] 6.1 Cerrar `RF-091-002` en `openspec/findings/backlog.md` con la decisión tomada y su motivo.
   Verificar que `RF-082-002` sigue `Open` y que `git diff --stat` sobre `apps/frontend/src/` está
-  vacío.
-- [ ] 6.2 Marcar en `docs/spikes/frontend-migration.md` la segunda tarjeta de F2 como completada,
+  vacío. Confirmado: `RF-091-002` → `Fixed`; `RF-082-002` sin cambios; diff de `src/` vacío.
+- [x] 6.2 Marcar en `docs/spikes/frontend-migration.md` la segunda tarjeta de F2 como completada,
   sustituyendo el placeholder `jup-0xx-reconciliar-package-json` por `jup-094-reconcile-package-json`,
   y dejar **F2 marcada como fase completa** en "Proximos pasos".
-- [ ] 6.3 Ejecutar la batería: `corepack pnpm install --frozen-lockfile`,
+- [x] 6.3 Ejecutar la batería: `corepack pnpm install --frozen-lockfile`,
   `corepack pnpm --filter @finops/frontend lint/build/typecheck` (sustitutos por `RF-093-001`),
   `corepack pnpm openspec:validate`,
   `corepack pnpm jup:check -- --change jup-094-reconcile-package-json` y
-  `corepack pnpm jup:cleanup:check`.
-- [ ] 6.4 Escribir `review.md`: resultado, decisiones tomadas (shadcn/ui y Vite) con su motivo,
+  `corepack pnpm jup:cleanup:check`. Los 7 controles en verde.
+- [x] 6.4 Escribir `review.md`: resultado, decisiones tomadas (shadcn/ui y Vite) con su motivo,
   incluida la revisión de la decisión de shadcn/ui durante el `apply` y el ADR-0004 resultante
   (`Proposed` → `Accepted`), comparación antes/después del manifiesto y del bundle, y la excepción de
   harness TDD que corresponda (esta tarjeta no tiene comportamiento unit-testeable: el frontend sigue
   sin test runner y no se toca `tools/`).
-- [ ] 6.5 Crear `docs/evidence/JUP-094-validation.md` con los comandos exactos y sus resultados.
+- [x] 6.5 Crear `docs/evidence/JUP-094-validation.md` con los comandos exactos y sus resultados.
