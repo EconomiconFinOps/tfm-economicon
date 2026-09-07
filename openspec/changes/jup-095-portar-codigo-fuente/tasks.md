@@ -15,13 +15,20 @@
 
 ## 2. Runner de pruebas
 
-- [ ] 2.1 Instalar el runner con `corepack pnpm --filter @finops/frontend add -D vitest
+- [x] 2.1 Instalar el runner con `corepack pnpm --filter @finops/frontend add -D vitest
   @testing-library/react @testing-library/jest-dom jsdom` (pnpm-only; **nunca** `npm i`) y verificar
   que las versiones resueltas no traen un mayor incompatible con React 18 ni con Vite 5 — precedente
-  de JUP-093 y JUP-094, donde el resolutor trajo `typescript@7` y `react-router@8`.
-- [ ] 2.2 Configurar Vitest sobre el `vite.config.ts` existente (entorno DOM y fichero de setup) y
+  de JUP-093 y JUP-094, donde el resolutor trajo `typescript@7` y `react-router@8`. **Ocurrió de
+  nuevo**: el resolutor trajo `vitest@5.0.0`, que exige `vite ^6/^7/^8` (incompatible con el `^5.3.3`
+  fijado en JUP-094). Reinstalado fijando `vitest@3.2.7` explícito, cuya dependencia regular declara
+  `vite: "^5.0.0 || ^6.0.0 || ^7.0.0-0"` — compatible sin forzar el salto. `@testing-library/react`,
+  `@testing-library/jest-dom` y `jsdom` resolvieron sin aviso de peer dependency nuevo.
+- [x] 2.2 Configurar Vitest sobre el `vite.config.ts` existente (entorno DOM y fichero de setup) y
   sustituir el script `test` (`echo`) por la invocación real, conservando los otros 6 scripts y el
-  puerto 5173 del script `dev`.
+  puerto 5173 del script `dev`. Hecho: `defineConfig` importado de `vitest/config` (tipa `test` sin
+  pragma triple-slash), `test.environment: "jsdom"`, `test.setupFiles: ["./src/test/setup.ts"]`
+  (carga los matchers de `@testing-library/jest-dom/vitest`), script `test` → `vitest run`.
+  `typecheck` y `build` verificados en verde tras el cambio; bundle idéntico (203.37 kB).
 - [ ] 2.3 **Red/Green**: primera prueba real que renderice un componente y falle antes de existir el
   código que la satisface, para dejar evidencia del ciclo del harness. Verificar que `test` termina
   con estado de error cuando una prueba falla.
