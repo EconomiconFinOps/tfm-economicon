@@ -131,3 +131,53 @@ descripcion de la PR #19; las ejecuciones de agosto no acreditan este head.
 La revision solicitada a `ParisArcos` sigue pendiente. La validacion automatica
 no sustituye pairing, revision humana ni evidencia funcional atribuible a los
 roles de la tarjeta y no autoriza el merge ni el cierre de JUP-085/086/087.
+
+## Revalidacion contra develop — 2026-09-07
+
+- Base integrada: `b6eaa8709856b4c120bb94dc2ce7304dcf722a26`, verificada en la
+  rama remota `develop`, sobre el head de JUP-088 `f8e7ac9`. Se incorpora mediante
+  merge a la rama de la PR #19, conservando el historial publicado.
+- Se preservan JUP-081 (puente y su CI), JUP-084 (contrato de herramientas del
+  agente), JUP-091 (inventario del origen) y JUP-092 (ADR-0003 de TypeScript).
+- El unico conflicto textual estaba en RF-082-002 de
+  `openspec/findings/backlog.md`. La resolucion conserva su seguimiento en
+  JUP-087 y la decision aceptada de ADR-0003: F2 solo desactiva `react/prop-types`
+  para `.ts`/`.tsx`; el finding sigue abierto hasta migrar los nueve `.jsx`
+  afectados o sus sustitutos con cobertura real de tipos en F3/F5.
+- RF-083-002 mantiene JUP-035/JUP-087 y distingue TypeScript ya aprobado del
+  tooling pendiente y de la decision del salto Vite 5 a 6. Los hallazgos
+  RF-090-001/002/003 y RF-091-001/002/003/004 se conservan integros.
+- El design de JUP-087 se alinea con ADR-0003, sin cambiar sus escenarios ni dar
+  por implementados lint limpio o pruebas frontend reales. La arquitectura
+  conserva tanto las aclaraciones de mocks/RAG como el nuevo contrato JUP-084
+  y la advertencia sobre los datos mock de `/billing/summary`.
+- Codigo de las aplicaciones, puente, CI, dependencias y lockfile coinciden con
+  `develop`. La resolucion agrega solo reconciliacion documental y esta evidencia.
+
+### Validaciones del resultado integrado
+
+| Comprobacion | Resultado |
+|---|---|
+| `corepack pnpm install --frozen-lockfile` | Correcto, sin cambios de dependencias |
+| Ocho suites Node de gobernanza, roadmap, higiene, corpus y gateway | 55/55 |
+| `corepack pnpm jup:check:all` | 11/11 cambios activos |
+| `corepack pnpm jup:cleanup:check` | 397 archivos aceptados |
+| `corepack pnpm assistant-corpus:validate` | Manifiesto valido |
+| `corepack pnpm openspec:validate` | 21/21 |
+| `python -m unittest discover -s tools/collaboration/tests -v` | 12/12, con clientes simulados |
+| `corepack pnpm --filter @finops/frontend build` | Correcto |
+| `corepack pnpm --filter @finops/frontend lint` | 49 errores heredados `react/prop-types` en nueve `.jsx`; RF-082-002 sigue abierto |
+| Destinos Markdown relativos en archivos cambiados respecto de `develop` | 22 comprobados, ninguno roto |
+| Revision independiente de la resolucion | Sin regresiones nuevas detectadas |
+| `git diff --check` y entradas de conflicto del indice | Sin errores ni conflictos pendientes |
+
+Los tests Node y Vite necesitaron ejecutarse fuera del aislamiento local de
+Windows, que bloqueaba sus subprocesos con `spawn EPERM`. La instalacion con
+lockfile congelado y las validaciones posteriores finalizaron correctamente,
+salvo el lint heredado indicado. Las tres suites de servicios Python se validan
+en el CI remoto del nuevo head; esta tabla no las presenta como ejecutadas en
+local. El resultado remoto se consulta en los checks de la PR #19.
+
+La solicitud de revision a `ParisArcos` se conserva. Las capturas de Trello y del
+roadmap de apartados anteriores siguen siendo historicas: esta actualizacion
+no vuelve a consultar el tablero ni cambia responsables, fechas o estados.

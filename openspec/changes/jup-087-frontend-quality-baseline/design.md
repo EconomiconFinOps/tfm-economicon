@@ -1,5 +1,5 @@
 JUP: JUP-087
-ADR: requerida solo si se adopta TypeScript o se sustituye el stack de pruebas fuera del baseline actual.
+ADR: [ADR-0003 (JUP-092), TypeScript aceptado](../../../docs/adr/ADR-0003-frontend-typescript.md); una sustitucion del stack de pruebas fuera del baseline actual requiere su decision correspondiente.
 
 ## Context
 
@@ -37,11 +37,21 @@ Se exige al menos una prueba positiva y una de error para login/sesion, carga y
 seleccion de tenant, dashboard, ingesta y conversacion. La cobertura numerica
 puede añadirse, pero no sustituye esos escenarios.
 
-### Los contratos de props se arreglan de forma explicita
+### Los contratos de props siguen la decision TypeScript aceptada
 
-En JavaScript se declaran PropTypes mantenibles; si el equipo adopta TypeScript,
-debe hacerlo mediante la decision y alcance correspondientes. Una desactivacion
-global de la regla no satisface JUP-087.
+ADR-0003 (JUP-092) fija TypeScript con `strict: true`, type-check obligatorio en
+CI y `allowJs: true` durante la migracion (`false` al cerrar F5). F2 instala el
+tooling y desactiva `react/prop-types` solo para `.ts`/`.tsx`; los nueve `.jsx`
+actuales siguen sujetos a la regla. RF-082-002 permanece abierto hasta que F3
+(o el cierre de F5) migre esos componentes o sus sustitutos a `.tsx` con cobertura
+real de sus props. No se exige corregir manualmente las 49 infracciones antes de
+esa migracion, ni se considera suficiente desactivar la regla en F2.
+
+JUP-087 conserva lint sin errores y pruebas reales de los recorridos criticos
+como puerta de calidad. Una desactivacion global de la regla sobre JavaScript
+sin cobertura equivalente de tipos no satisface este cambio. El tooling y la
+migracion siguen las tareas separadas de F2/F3/F5 del ADR; JUP-088 solo reconcilia
+este contrato documental.
 
 ### Red y almacenamiento se aislan en pruebas
 
@@ -53,5 +63,5 @@ la cache entre casos. No dependen de servicios Docker ni de credenciales reales.
 - [Tests acoplados al markup] -> consultar por roles, labels y resultados visibles.
 - [Mocks ocultan errores de contrato] -> fixtures alineadas con schemas backend y
   al menos una validacion integrada posterior.
-- [Migracion tipada crece de alcance] -> ADR/tarjeta separada antes de cambiar tooling.
+- [Migracion tipada crece de alcance] -> seguir ADR-0003 y las tareas separadas de F2/F3/F5; un cambio de decision requiere otro ADR.
 - [Lint verde por excepciones] -> test de configuracion que rechaza la anulacion global.
