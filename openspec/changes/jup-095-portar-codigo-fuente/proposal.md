@@ -87,3 +87,77 @@ prohíbe.
 - **Aún no:** conectar las pantallas migradas a datos reales, el flujo de auth contra el backend, la
   reconciliación de Docker/turbo (F4), la validación E2E (F5) ni endurecer `allowJs` a `false`
   (cierre de F5).
+
+## Human Approval
+
+- Change: jup-095-portar-codigo-fuente
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-09-07
+- Carril: standard
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Decisions approved: se aprueban las nueve decisiones del `design.md`. (1) **La frontera de la
+  tarjeta es presentación y enrutado**: `services/api.js`, `useDashboardData` y la lógica de
+  sesión/tenant se preservan verbatim, cambiando de extensión solo si el enrutado obliga y nunca de
+  comportamiento; abrirlas aquí dejaría a JUP-096 y JUP-097 sin alcance propio y devolvería la
+  migración al "big bang" que el spike prohíbe. (2) **Del origen entra solo lo que tiene consumidor
+  verificado**: los 8 `.tsx` vivos, y quedan fuera `figma/ImageWithFallback.tsx` (sin un solo import,
+  ni siquiera desde `ui/`), el plugin `figmaAssetResolver` —que resuelve contra una carpeta
+  `src/assets` inexistente y solo puede fallar en silencio—, el `assetsInclude` sin consumidor,
+  `postcss.config.mjs` (stub que su propio comentario declara innecesario) y `fonts.css` (vacío). Es
+  el mismo criterio con el que JUP-091 clasificó dependencias y JUP-094 rechazó las 48 `DESCARTAR`.
+  (3) **El acceso queda fuera del armazón**: el `Layout` muestra navegación, identidad de sesión y
+  selector de ámbito, los tres sin sentido sin sesión; mezclarlo con el control de acceso invadiría
+  JUP-097. (4) **El ámbito oscuro se declara explícitamente**, porque `theme.css` define `:root` en
+  claro y `.dark` como variante, y el origen nunca aplica esa clase —sus pantallas fijan el color a
+  mano y no consumen los tokens—, mientras que los componentes de shadcn copiados sí los consumen:
+  sin declararlo renderizarían en claro sobre pantallas oscuras. Reescribir los 181 tokens es trabajo
+  de JUP-098. (5) **El alias `@/` se declara en los dos sitios**, `paths` de `tsconfig.json` y
+  `resolve.alias` de `vite.config.ts`: declararlo en uno solo produce el fallo de "compila pero no
+  arranca", o el inverso. Entra por los componentes de shadcn copiados, no por el código portado, que
+  no lo usa. (6) **`/overview-legacy` se conserva como ruta puente** hasta que JUP-096 conecte los
+  datos reales al nuevo Overview: cuesta una entrada de ruta y evita que `develop` quede con su único
+  dashboard con datos reales degradado durante dos tarjetas, lo que contradiría la regla de rollback
+  del spike. Se declara como deuda con dueño explícito, no como ruta permanente. (7) **Vitest +
+  Testing Library, con job propio en CI y promovido a comprobación obligatoria** en ambos rulesets y
+  en la guía de gobernanza: es el precedente literal de JUP-093, que añadió así *Frontend type check*
+  aplicando la decisión 3 de ADR-0003 ("de lo contrario `strict` es solo una anotación decorativa");
+  el mismo razonamiento vale para unas pruebas que nadie ejecuta, y la alternativa —job sin
+  promoverlo— reproduce la situación del lint, fuera de los checks obligatorios desde JUP-082 por una
+  deuda que nadie ha cerrado. El runner **no requiere ADR**: no ata el diseño del código de producto
+  ni cambia el modelo de build, y sustituirlo sería reescribir invocaciones, no arquitectura — la
+  diferencia con ADR-0003 (cambió el lenguaje del frontend entero) y ADR-0004 (ata el vocabulario de
+  componentes de F3 y F5). (8) **El orden de slices** pone estilos antes que componentes, para que un
+  fallo de porte no se confunda con la ausencia de estilos, y deja la limpieza la última por ser el
+  único punto sin retorno. (9) **`strict` no se silencia**: prohibido `any` nuevo y `@ts-ignore`; si
+  el volumen desborda, se aplica el criterio de escape que ADR-0003 ya fijó —documentar y superseder
+  el ADR—, nunca relajar la configuración en silencio.
+- Main risks: el principal es **de ejecución y de volumen desconocido**: el código del origen entra
+  bajo `strict: true` sin haber pasado nunca un type-check —llega sin `tsconfig`, transpilado por
+  esbuild—, y ADR-0003 ya declaró este como el riesgo que más puede obligar a revisar su decisión.
+  Mitigación: el orden de slices lo expone pronto (grupo 5, antes del enrutado) y la superficie es
+  pequeña —unas 950 líneas entre los 8 archivos, con un grafo de imports de solo cuatro librerías—.
+  Riesgo secundario: **injertar el selector de ámbito y el panel de sesión en un `Layout` ajeno**
+  puede degradar el flujo actual; mitigación: los escenarios de `frontend-navigation-shell` fijan
+  como criterio que el ámbito sobreviva a la navegación y que el cierre de sesión devuelva al acceso,
+  y el recorrido de paridad de JUP-090 se repasa a mano antes de cerrar. Riesgo terciario, aceptado
+  al aprobar la decisión 7: **promover *Frontend tests* a obligatorio puede bloquear PRs del equipo**
+  si la suite es inestable; mitigación: nace pequeña y determinista (render y enrutado, sin red), y
+  como la activación remota es acción de administrador hay una ventana natural para revisarla antes
+  de que empiece a bloquear. Riesgo cuarto: **`/overview-legacy` puede quedarse para siempre** si
+  JUP-096 no la retira; mitigación: se declara en `review.md` con dueño y se enuncia en el alcance de
+  JUP-096.
+- Required changes before execution: none
+- Notes: primera tarjeta de F3 y **primera del frontend con superficie real para el ciclo Red/Green**
+  del harness: a diferencia de JUP-093 y JUP-094, que documentaron la excepción por falta de test
+  runner, aquí el runner entra en el grupo 2 y las tareas de los grupos 2, 4, 5 y 6 llevan Red/Green
+  y mutación. Lleva `docs/evidence/JUP-095-validation.md`: no es doc-only. La verificación local usa
+  los sustitutos `--filter @finops/frontend` por la limitación de entorno preexistente `RF-093-001`.
+  Quedan explícitamente fuera: la capa API y `RF-090-003` (JUP-096); auth/sesión/tenant contra el
+  backend y el guard de rutas (JUP-097); la unificación fina de estilos, fuentes, iconos y licencias
+  (JUP-098); Docker y turbo con `RF-090-001` (F4); la validación E2E (F5); endurecer `allowJs` a
+  `false` (cierre de F5); y conectar los 12 datos sin contrato de `RF-091-003`, que es decisión de
+  épica. **`RF-082-002` permanece `Open`** y esta tarjeta solo registra su nueva línea base de lint:
+  no se cierra mientras quede JavaScript sin tipar, empezando por `services/api.js`, que es de
+  JUP-096.
