@@ -7,6 +7,7 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
     "docker:build": "turbo run docker:build",
     "docker:validate": "node --test tools/docker-topology.test.mjs",
     "openspec": "openspec",
