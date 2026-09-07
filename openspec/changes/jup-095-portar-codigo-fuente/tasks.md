@@ -29,9 +29,13 @@
   pragma triple-slash), `test.environment: "jsdom"`, `test.setupFiles: ["./src/test/setup.ts"]`
   (carga los matchers de `@testing-library/jest-dom/vitest`), script `test` → `vitest run`.
   `typecheck` y `build` verificados en verde tras el cambio; bundle idéntico (203.37 kB).
-- [ ] 2.3 **Red/Green**: primera prueba real que renderice un componente y falle antes de existir el
+- [x] 2.3 **Red/Green**: primera prueba real que renderice un componente y falle antes de existir el
   código que la satisface, para dejar evidencia del ciclo del harness. Verificar que `test` termina
-  con estado de error cuando una prueba falla.
+  con estado de error cuando una prueba falla. Hecho: componente canario `HarnessSmoke` (Red
+  `1070a3e`, Green `a03aa76`). Mutación 100%, 0 supervivientes. QA detectó que `.stryker-tmp/` sin
+  limpiar contaminaba el conteo de tests de Vitest; corregido con `test.exclude` en `vite.config.ts`
+  y verificado por QA de forma independiente. Veredicto QA: `accept`. Evidencia completa en
+  `review.md`.
 - [ ] 2.4 Añadir el job *Frontend tests* a `.github/workflows/ci.yml`, con el mismo patrón de los jobs
   *Frontend build* y *Frontend type check* (`corepack pnpm --filter @finops/frontend test`).
 - [ ] 2.5 Registrar *Frontend tests* como comprobación obligatoria en `.github/rulesets/develop.json`
