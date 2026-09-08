@@ -23,6 +23,8 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
+    environment:
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:-jupiter-local-erlang-cookie}
     ports:
       - "5672:5672"
       - "15672:15672"
