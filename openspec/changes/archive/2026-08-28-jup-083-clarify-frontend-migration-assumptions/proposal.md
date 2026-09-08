@@ -3,7 +3,7 @@ Trello: https://trello.com/c/GdGEHPvL
 
 ## Why
 
-El spike [docs/spikes/frontend-migration.md](../../../docs/spikes/frontend-migration.md) contiene 6
+El spike [docs/spikes/frontend-migration.md](../../../../docs/spikes/frontend-migration.md) contiene 6
 supuestos marcados como `[ASUNCION]` sobre el frontend del repositorio **Economicon** (versión de
 React/Vite, routing, librería de datos, auth/sesión, estilos y assets). Esos supuestos bloquean
 arrancar la épica de migración porque las tareas técnicas dependen de datos que hoy no están

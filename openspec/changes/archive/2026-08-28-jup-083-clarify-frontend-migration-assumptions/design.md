@@ -3,7 +3,7 @@ JUP: JUP-083
 ## Context
 
 La épica de migración del frontend (Economicon → tfm-economicon) está diseñada en el spike
-[docs/spikes/frontend-migration.md](../../../docs/spikes/frontend-migration.md) con estrategia de
+[docs/spikes/frontend-migration.md](../../../../docs/spikes/frontend-migration.md) con estrategia de
 **reemplazo completo** y **adopción de TypeScript**. El spike deja 6 supuestos `[ASUNCION]` sobre el
 frontend de Economicon que no se pueden confirmar sin inspeccionar el repositorio origen. Economicon
 está disponible como **carpeta hermana fuera del repo** (`../Economicon`).
