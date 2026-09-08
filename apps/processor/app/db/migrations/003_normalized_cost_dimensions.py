@@ -1,4 +1,33 @@
+import json
+
 from sqlalchemy import text
+
+from app.normalization.azure_cost import (
+    _INDIVIDUAL_TAG_ALIASES,
+    _canonical_tag_key,
+    _parse_tag_map,
+)
+
+
+transactional = False
+
+
+def _legacy_tags(dimensions) -> dict[str, str]:
+    tags: dict[str, str] = {}
+    source = {key.casefold(): value for key, value in dimensions.items()}
+    # Legacy individual dimensions accepted numbers and precede serialized tags.
+    for canonical, aliases in _INDIVIDUAL_TAG_ALIASES.items():
+        for alias in aliases:
+            value = source.get(alias.casefold())
+            if value is not None and str(value).strip():
+                tags.setdefault(canonical, str(value).strip())
+    raw_tags = source.get("tags")
+    if isinstance(raw_tags, str):
+        for key, value in _parse_tag_map(raw_tags.strip()).items():
+            canonical = _canonical_tag_key(key)
+            if canonical:
+                tags.setdefault(canonical, value)
+    return tags
 
 
 def upgrade(connection) -> None:
@@ -108,6 +137,8 @@ def upgrade(connection) -> None:
                     CASE
                         WHEN backfill.consumed_quantity IS NOT NULL
                          AND backfill.consumed_unit IS NOT NULL
+                         AND (records.consumed_unit IS NULL
+                              OR records.consumed_unit = backfill.consumed_unit)
                         THEN backfill.consumed_quantity::DECIMAL(38, 12)
                     END
                 ),
@@ -116,14 +147,13 @@ def upgrade(connection) -> None:
                     CASE
                         WHEN backfill.consumed_quantity IS NOT NULL
                          AND backfill.consumed_unit IS NOT NULL
+                         AND (records.consumed_quantity IS NULL
+                              OR records.consumed_quantity =
+                                 backfill.consumed_quantity::DECIMAL(38, 12))
                         THEN backfill.consumed_unit
                     END
                 ),
-                tags = CASE
-                    WHEN records.tags IS NULL OR records.tags = '{}'::JSONB
-                    THEN backfill.tags
-                    ELSE records.tags
-                END
+                tags = backfill.tags || COALESCE(records.tags, '{}'::JSONB)
             FROM backfill
             WHERE records.id = backfill.id
               AND (
@@ -140,6 +170,43 @@ def upgrade(connection) -> None:
             """
         )
     )
+    last_id = None
+    while True:
+        rows = connection.execute(
+            text(
+                """
+                SELECT id, dimensions
+                FROM azure_cost_records
+                """
+                + ("WHERE id > :last_id " if last_id is not None else "")
+                + "ORDER BY id LIMIT 1000"
+            ),
+            {"last_id": last_id} if last_id is not None else {},
+        )
+        found_rows = False
+        for record_id, dimensions in rows:
+            found_rows = True
+            last_id = record_id
+            tags = _legacy_tags(dimensions)
+            if not tags:
+                continue
+            connection.execute(
+                text(
+                    """
+                    UPDATE azure_cost_records
+                    SET project = COALESCE(NULLIF(project, ''), :project),
+                        tags = CAST(:tags AS JSONB) || COALESCE(tags, '{}'::JSONB)
+                    WHERE id = :record_id
+                    """
+                ),
+                {
+                    "record_id": record_id,
+                    "project": tags.get("project"),
+                    "tags": json.dumps(tags),
+                },
+            )
+        if not found_rows:
+            break
     connection.execute(
         text(
             """

@@ -34,11 +34,15 @@ class MigrationRunner:
                 for row in connection.execute(text(f"SELECT version FROM {self.version_table}"))
             }
 
-            for migration_file in sorted(self.migrations_dir.glob("[0-9][0-9][0-9]_*.py")):
-                version = migration_file.stem.split("_", maxsplit=1)[0]
-                if version in applied:
-                    continue
-                module = import_module(f"{self.migration_package}.{migration_file.stem}")
+        for migration_file in sorted(self.migrations_dir.glob("[0-9][0-9][0-9]_*.py")):
+            version = migration_file.stem.split("_", maxsplit=1)[0]
+            if version in applied:
+                continue
+            module = import_module(f"{self.migration_package}.{migration_file.stem}")
+            transactional = getattr(module, "transactional", True) is not False
+            with (self.engine.begin() if transactional else self.engine.connect()) as connection:
+                if not transactional:
+                    connection = connection.execution_options(isolation_level="AUTOCOMMIT")
                 module.upgrade(connection)
                 connection.execute(
                     text(f"INSERT INTO {self.version_table} (version) VALUES (:version)"),

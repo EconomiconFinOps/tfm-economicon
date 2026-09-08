@@ -16,6 +16,7 @@ class RecordingConnection:
 
     def execute(self, statement, params=None):
         self.calls.append((str(statement), params))
+        return []
 
 
 class RecordingTransaction(AbstractContextManager):

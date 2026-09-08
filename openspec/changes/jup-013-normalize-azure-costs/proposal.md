@@ -42,3 +42,19 @@ into a stable FinOps record without duplicating the API client or ingestion.
 The processor normalization model, persistence migration, repository SQL,
 default ingestion definition, tests and architecture documentation change. The
 existing client and run identity remain compatible.
+
+## Pre-code approval: integration validation
+
+- Decision: approved for the integration and validation scope of PR #14.
+- Approver: requesting user in the implementation conversation.
+- Date: 2026-09-08.
+- Source: explicit request, "PLEASE IMPLEMENT THIS PLAN", containing the full
+  sequential PR #14 then PR #19 integration plan.
+- Scope: update the existing branch from `develop`, validate the existing
+  normalization and migration on fresh and legacy isolated databases, correct
+  defects preventing this integration, and prepare attributable review evidence.
+- OpenSpec validation: 23 valid elements; JUP-013 traceability passed after
+  formalizing the same acceptance scenarios from the approved plan.
+- This approval does not attest Lucia's pairing, Victor's functional validation,
+  Paris's review of subsequent commits, or final post-QA approval. Those gates
+  remain pending. No shared database migration or additional archive is approved.
