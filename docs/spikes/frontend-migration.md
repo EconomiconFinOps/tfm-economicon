@@ -182,11 +182,19 @@ tarjeta en Trello.
   cuatro tareas de este spike, el type-check como séptimo check obligatorio de CI (ADR-0003, decisión
   3): ver [ADR-0003](../adr/ADR-0003-frontend-typescript.md).
 
-**JUP `jup-0xx-reconciliar-package-json`** — carril `standard`
-- [ ] Fusionar dependencias del origen en `apps/frontend/package.json`.
-- [ ] Conservar nombre `@finops/frontend`, `type: module` y los scripts del monorepo (puerto 5173).
-- [ ] Instalar con `pnpm install` desde la raiz; **nunca** `npm i`.
-- [ ] Verificar lockfile actualizado y `pnpm install --frozen-lockfile` reproducible.
+**JUP [`jup-094-reconcile-package-json`](../../openspec/changes/jup-094-reconcile-package-json/) — carril `standard`**
+- [x] Fusionar dependencias del origen en `apps/frontend/package.json`: las 11 `MANTENER` del
+  inventario de JUP-091, ajustando `react-router`/`recharts`/`lucide-react` a las versiones exactas
+  del origen tras un salto de mayor incompatible del resolutor (mismo patrón que `typescript@7` en
+  JUP-093). Vite se mantiene en la serie 5: ninguna dependencia entrante fuerza el 6.
+- [x] Conservar nombre `@finops/frontend`, `type: module` y los scripts del monorepo (puerto 5173).
+- [x] Instalar con `pnpm install` desde la raiz; **nunca** `npm i`.
+- [x] Verificar lockfile actualizado y `pnpm install --frozen-lockfile` reproducible.
+- [x] **Añadido durante el `apply`, más allá de las cuatro tareas de este spike:** adopción de
+  shadcn/ui (subconjunto de 6 paquetes Radix) para F3, registrada en
+  [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md) y cerrando `RF-091-002`.
+
+**F2 (Tooling y dependencias) queda completa** con JUP-093 y JUP-094.
 
 ### F3. Reemplazo del codigo fuente
 
@@ -346,6 +354,13 @@ tarjeta JUP** de la epica.
    (Tooling y dependencias) citando el ADR-0003 en su `design.md`, segun su seccion de seguimiento.
 5. **Hecho en JUP-093:** tooling de TypeScript configurado en `apps/frontend` (dependencias,
    `tsconfig`, `vite.config.ts`, ESLint con soporte TS, type-check obligatorio en CI). `RF-082-002`
-   permanece `Open`: ningun archivo `.jsx` se migro, es tarea de F3/cierre de F5. Queda pendiente la
-   segunda tarjeta de F2, `reconciliar-package-json` (fusionar dependencias del origen, decidir
-   `RF-091-002`/shadcn-ui).
+   permanece `Open`: ningun archivo `.jsx` se migro, es tarea de F3/cierre de F5.
+6. **Hecho en JUP-094: F2 (Tooling y dependencias) queda completa.** Fusionadas las 11 dependencias
+   `MANTENER` del inventario de JUP-091; Vite se mantiene en la serie 5 (ninguna dependencia entrante
+   fuerza el 6). Durante el `apply` se revisó la decisión de shadcn/ui: de descartar a adoptar un
+   subconjunto de 6 paquetes Radix, registrado en
+   [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md) (`Accepted`) y cerrando `RF-091-002`. `src/**`
+   sigue intacto: copiar el código de cada componente shadcn es tarea de F3, componente por
+   componente. Siguiente: crear las tarjetas de F3 (`portar-codigo-fuente`,
+   `reconciliar-capa-api`, `reconciliar-auth-tenant`, `unificar-estilos-assets`), citando ADR-0003 y
+   ADR-0004 en su `design.md`.
