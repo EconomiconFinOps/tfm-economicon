@@ -22,3 +22,8 @@
 - [x] 3.5 JUP-024 ejecutar validacion completa y registrar evidencia
 - [x] 3.6 JUP-024 publicar rama, abrir PR hacia develop y actualizar Trello
 - [ ] 3.7 JUP-024 obtener pairing, revision y validacion de los otros miembros
+
+Pairing de Alejandro registrado en la evidencia; validacion de Paris registrada
+el 2026-09-07 en [GitHub](https://github.com/EconomiconFinOps/tfm-economicon/pull/18#issuecomment-5570688974),
+sobre el head `77f4784`. Sigue pendiente la revision asignada a Lucia; la
+sincronizacion con `develop` del 2026-09-08 no acredita esa revision humana.

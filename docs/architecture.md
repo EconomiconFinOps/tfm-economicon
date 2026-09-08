@@ -61,6 +61,14 @@ Por ejemplo, el backend:
 
 El backend es como el punto central de entrada para las peticiones normales de la aplicacion.
 
+> **Estado actual de `GET /billing/summary` (verificado en JUP-091).** Este endpoint todavia **no
+> lee** los costes de Azure que el `processor` ingesta y normaliza. Devuelve `monthly_spend` y
+> `savings_identified` con valores fijos de demostracion; solo `open_ingestions` se calcula de
+> verdad, contando filas en `jobs`. Es decir: hoy **ningun endpoint del backend expone las tablas
+> `azure_cost_ingestion_runs` ni `azure_cost_records`**. El dato existe en CockroachDB, pero falta
+> el camino de lectura hasta el frontend. Ver `RF-091-004` en
+> [openspec/findings/backlog.md](../openspec/findings/backlog.md).
+
 ### `apps/processor`
 
 Es el servicio que hace trabajo en segundo plano.
@@ -90,6 +98,10 @@ El frontend sigue hablando solo con el backend.
 
 Esto permite que las tareas pesadas o lentas no bloqueen al backend, y tambien permite comprobar si el processor esta vivo.
 
+### Métricas técnicas (Prometheus + Grafana)
+
+El backend y el processor exponen `GET /metrics` en formato Prometheus (verificado en JUP-043): volumen y latencia de requests HTTP, y contadores de dominio (`backend_ingest_jobs_total`, `backend_assistant_queries_total`). Un servicio `prometheus` en `docker-compose.yml` scrapea ambos endpoints, y un servicio `grafana` visualiza un dashboard mínimo (latencia p95, tasa de error, volumen de ingestas y consultas) provisionado como código en `apps/monitoring/`.
+
 ### `apps/azure-cost-api`
 
 Es un servicio FastAPI independiente que simula el subconjunto de Azure Cost
@@ -98,7 +110,7 @@ Management Query aprobado en JUP-073. Lee exclusivamente el fixture público
 la estructura posicional `columns`/`rows` utilizada por Azure.
 
 No se conecta a un tenant ni valida credenciales Azure reales. Su función es
-proporcionar un endpoint HTTP reproducible para el futuro cliente de ingesta.
+proporcionar un endpoint HTTP reproducible para el cliente de ingesta.
 JUP-075 incorpora autenticación Bearer exclusivamente local, paginación con
 tokens opacos firmados y escenarios deterministas de throttling, errores,
 timeout, páginas vacías y datos inválidos. El contenedor conserva ejecución
@@ -196,7 +208,12 @@ La segunda es el flujo de chat con retrieval:
 4. El `backend` genera un embedding de la pregunta
 5. El `backend` consulta `Postgres + pgvector` para recuperar chunks relevantes del mismo tenant
 6. El `backend` guarda la conversacion y mensajes en `CockroachDB`
-7. El `backend` devuelve la respuesta al `frontend`
+7. El `backend` construye actualmente una respuesta determinista a partir de los chunks
+8. El `backend` devuelve la respuesta al `frontend`
+
+El flujo existe como baseline tecnico, pero no constituye todavia el vertical
+RAG real: el backend usa `MockEmbeddingProvider` y no invoca un LLM para redactar
+la respuesta. JUP-020 a JUP-025 y JUP-036 cubren ese residual.
 
 ## 6. Flujo simplificado
 
@@ -310,7 +327,7 @@ Un caso tipico de ingesta seria este:
 4. El backend publica ese job en RabbitMQ.
 5. El processor recoge el job.
 6. El processor ejecuta el pipeline.
-7. El processor genera chunks y embeddings.
+7. El processor genera chunks y embeddings; por defecto el provider es `mock`.
 8. El processor guarda los embeddings en `Postgres + pgvector`.
 9. El processor actualiza el estado del job en la base de datos.
 10. El frontend puede consultar despues el estado actualizado a traves del backend.
@@ -320,9 +337,10 @@ Un caso tipico de chat con retrieval seria este:
 1. El frontend envia un mensaje del usuario al backend.
 2. El backend valida autenticacion y tenant.
 3. El backend guarda o carga la conversacion desde CockroachDB.
-4. El backend genera un embedding de la pregunta.
+4. El backend genera actualmente un embedding mock de la pregunta.
 5. El backend busca chunks relevantes en `Postgres + pgvector`.
-6. El backend construye la respuesta del asistente usando ese contexto.
+6. El backend construye una respuesta determinista usando ese contexto; la
+   generacion mediante LLM real sigue pendiente.
 7. El backend guarda los mensajes en CockroachDB.
 8. El frontend muestra la respuesta.
 
@@ -341,3 +359,17 @@ La arquitectura de este proyecto se basa en dividir responsabilidades:
 Si recuerdas solo una idea, que sea esta:
 
 **cada submodulo tiene una responsabilidad concreta, y se comunican entre si para formar una sola aplicacion completa.**
+
+## 12. Estado de madurez y contratos residuales
+
+La arquitectura distingue capacidad desplegable de prototipo heredado:
+
+- La API Azure simulada, su cliente, la normalizacion y la persistencia de costes
+  tienen contratos y pruebas integradas en `develop`.
+- Auth propia, selector de tenant, pgvector y chat retrieval forman un baseline
+  demostrable, pero JUP-085 y JUP-086 deben cerrar sus contratos negativos y de
+  seguridad antes de considerarlos completos.
+- Embeddings y respuesta del asistente usan mocks por defecto. El vertical RAG
+  real, sus citas y su evaluacion pertenecen a JUP-020 a JUP-025 y JUP-036.
+- El frontend compila, pero JUP-087 mantiene abiertos el lint heredado y la
+  ausencia de pruebas de recorridos criticos.

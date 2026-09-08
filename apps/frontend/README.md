@@ -19,8 +19,15 @@ Aqui vive la parte visual del sistema:
 
 - `React`
 - `Vite`
-- `JavaScript`
+- `TypeScript` (tooling: `strict: true`, `allowJs: true` mientras dura la migracion de `src/` —
+  ver [ADR-0003](../../docs/adr/ADR-0003-frontend-typescript.md))
+- `JavaScript` (todo `src/` hoy; se migra a `.tsx` por slices en F3)
 - `TanStack Query`
+- `react-router`, `recharts`, `lucide-react` — dependencias fusionadas para F3; ninguna se importa
+  todavia en `src/`
+- Tailwind CSS v4 + un subconjunto de shadcn/ui (6 primitivos Radix: label, select, slot, separator,
+  dialog, tooltip) — instaladas para F3, sin cablear en el build todavia
+  (ver [ADR-0004](../../docs/adr/ADR-0004-frontend-shadcn-ui.md))
 - `ESLint`
 
 ## Estructura
@@ -37,7 +44,9 @@ apps/frontend
 |-- Dockerfile
 |-- index.html
 |-- package.json
-`-- vite.config.js
+|-- tsconfig.json
+|-- tsconfig.node.json
+`-- vite.config.ts
 ```
 
 ## Como correrlo

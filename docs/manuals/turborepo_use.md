@@ -33,7 +33,7 @@ En otras palabras: hace que trabajar con muchas apps en el mismo repo sea mas si
 
 ## 3. Que funciones cumple en este repo
 
-En la raiz del proyecto hay un archivo llamado [turbo.json](/C:/Repositorios/tfm-economicon/turbo.json). Ese archivo le dice a Turbo que tareas existen y como debe tratarlas.
+En la raiz del proyecto hay un archivo llamado [`turbo.json`](../../turbo.json). Ese archivo le dice a Turbo que tareas existen y como debe tratarlas.
 
 En este repo Turbo coordina principalmente estas tareas:
 
@@ -43,7 +43,7 @@ En este repo Turbo coordina principalmente estas tareas:
 - `test`
 - `docker:build`
 
-Y en el [package.json](/C:/Repositorios/tfm-economicon/package.json) de la raiz esas tareas se ejecutan asi:
+Y en el [`package.json`](../../package.json) de la raiz esas tareas se ejecutan asi:
 
 ```json
 "dev": "turbo run dev --parallel",
@@ -57,7 +57,7 @@ Eso significa que cuando ejecutas un comando en la raiz, Turbo busca que apps ti
 
 ## 4. Como entiende Turbo este workspace
 
-El archivo [pnpm-workspace.yaml](/C:/Repositorios/tfm-economicon/pnpm-workspace.yaml) indica que forman parte del workspace estas rutas:
+El archivo [`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) indica que forman parte del workspace estas rutas:
 
 - `apps/*`
 - `packages/*`
@@ -81,6 +81,7 @@ Turbo lanza el script `dev` de los proyectos que lo tengan definido. Ahora mismo
 - `apps/frontend`
 - `apps/backend`
 - `apps/processor`
+- `apps/azure-cost-api`
 
 En la practica, esto evita abrir tres terminales y arrancar cada servicio manualmente.
 
@@ -139,7 +140,7 @@ Es util cuando quieres preparar varias imagenes sin ir carpeta por carpeta.
 
 ## 6. Por que `dev` va en paralelo
 
-En [turbo.json](/C:/Repositorios/tfm-economicon/turbo.json), `dev` esta definido asi:
+En [`turbo.json`](../../turbo.json), `dev` esta definido asi:
 
 ```json
 "dev": {
