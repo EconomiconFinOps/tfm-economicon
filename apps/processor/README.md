@@ -151,6 +151,8 @@ python -m pytest tests
 - `tasks/azure_cost_ingest.py`, `normalization/azure_cost.py` y
   `repositories/azure_cost.py` implementan el recorrido API → normalización →
   persistencia. Las tablas son `azure_cost_ingestion_runs` y
-  `azure_cost_records`.
+  `azure_cost_records`. JUP-013 promueve las dimensiones FinOps conocidas a
+  columnas tipadas y conserva el resto en JSON; consulta
+  [`docs/architecture/azure-cost-normalization.md`](../../docs/architecture/azure-cost-normalization.md).
 - `docs/api/azure-cost-ingestion-client.md` describe configuración, errores,
   observabilidad y límites del cliente sin requerir un tenant Azure.

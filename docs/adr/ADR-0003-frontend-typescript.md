@@ -109,7 +109,10 @@ pospone hasta que haya un segundo consumidor real.
 - El coste real de `strict: true` depende de una decisión que no es de esta tarjeta: `RF-091-002`
   (adoptar o descartar shadcn/ui en F2). Si se adopta, se tipa una superficie mucho mayor —del orden
   de 26 primitivos Radix— que si se descarta y se resuelve con los ~10 paquetes que hoy sostienen lo
-  que renderiza el origen (inventario de JUP-091).
+  que renderiza el origen (inventario de JUP-091). **Resuelto en JUP-094**
+  ([ADR-0004](ADR-0004-frontend-shadcn-ui.md)): se adopta un subconjunto deliberado de 6 primitivos
+  Radix, no los 26 completos, así que la superficie a tipar es mucho más acotada de lo que este
+  riesgo anticipaba.
 - Cerrar `RF-082-002` por obsolescencia, en vez de corregir las 49 violaciones, deja sin resolver
   cualquier problema real de props que esas violaciones señalaran. TypeScript debe cubrir
   efectivamente esos casos en F2/F3; si algún caso queda sin tipar, se pierde la única señal que hoy
@@ -161,8 +164,10 @@ pospone hasta que haya un segundo consumidor real.
   `eslint.config.js` al parser de TypeScript, con `react/prop-types` desactivada solo para
   `.ts`/`.tsx`; type-check anadido como septimo check obligatorio de CI. Ningun `.jsx` fue migrado
   (es F3): `RF-082-002` sigue `Open`.
-- F2, `jup-0xx-reconciliar-package-json`: la superficie real a tipar depende de `RF-091-002`
-  (adopción o descarte de shadcn/ui); este ADR no la prejuzga.
+- **Hecho en [JUP-094](../../openspec/changes/archive/2026-09-07-jup-094-reconcile-package-json/)**:
+  fusionadas las dependencias `MANTENER` del origen; `RF-091-002` resuelto adoptando un subconjunto
+  de 6 primitivos Radix ([ADR-0004](ADR-0004-frontend-shadcn-ui.md)). **F2 (Tooling y dependencias)
+  queda completa.**
 - F3, `jup-0xx-portar-codigo-fuente` y `jup-0xx-reconciliar-capa-api`: primer código que se escribe ya
   bajo `strict: true`; **debe migrar a `.tsx` los 9 archivos `.jsx` hoy señalados por
   `react/prop-types` (o los que los sustituyan)**, dado que la regla solo se desactiva para

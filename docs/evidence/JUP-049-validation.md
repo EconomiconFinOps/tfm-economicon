@@ -1,9 +1,8 @@
 # Evidencia de validacion JUP-049
 
-Ultima revalidacion de CI: **2026-09-07**, documentada en la seccion
-"Reconciliacion de CI con develop". La ultima construccion y smoke Docker
-corresponden al 2 de septiembre; los resultados anteriores se conservan
-como evidencia historica.
+Ultima reconciliacion: **2026-09-08**, documentada en la seccion
+"Reconciliacion de migraciones, TypeScript y observabilidad". Los resultados
+anteriores se conservan como evidencia historica.
 
 - Tarjeta: https://trello.com/c/yZnjgiSp
 - Rama: `chore/JUP-049-dockerize-services`
@@ -227,6 +226,72 @@ se conservaron fuera del repositorio en el directorio local de evidencias
 
 Esta reconciliacion no cambia codigo de aplicaciones, Dockerfiles ni Compose.
 No se repitieron los builds ni los smokes Docker del 2 de septiembre.
+
+## Reconciliacion de migraciones, TypeScript y observabilidad — 2026-09-08
+
+- Cabeza original de la PR: `3d8e704537d5989b882e65b56593fe0c428d55ca`.
+- Base comprobada: `develop` en `199f9be789f52712b59a95805d74df59a81509bc`.
+- El conflicto `add/add` en `apps/processor/tests/test_migration_runner.py`
+  se resuelve conservando las pruebas de concurrencia de JUP-049 y las de
+  rollback, reintento y autocommit de JUP-013.
+- La fusion automatica del runner liberaba el bloqueo antes de aplicar las
+  migraciones. La prueba de concurrencia reprodujo el fallo. El bloqueo ahora
+  cubre toda la ejecucion, conservando las transacciones individuales y el modo
+  autocommit de `develop`; la prueba cubre ambos modos.
+- El frontend carga `vite.config.ts` desde `/tmp`, compatible con JUP-093 y
+  la raiz de solo lectura. Se conservan las dependencias de JUP-094.
+- La topologia acepta los nueve servicios y cuatro volumenes tras JUP-043,
+  manteniendo los controles originales y comprobando tambien los montajes,
+  dependencias y puertos de Prometheus/Grafana.
+
+| Validacion local | Resultado |
+|---|---:|
+| Migraciones: concurrencia, rollback y reintentos, Python 3.11 | 8/8 |
+| Herramientas del repositorio, incluida topologia Docker y contrato CI | 63/63 |
+| Puente de colaboracion con servicios simulados | 12/12 |
+| OpenSpec estricto | 25/25 |
+| Trazabilidad, higiene y corpus | OK |
+| Frontend typecheck | OK |
+| Frontend build | 89 modulos, OK |
+| `git diff --cached --check` | OK |
+
+El bloqueo sigue limitado a los hilos del mismo proceso; no coordina replicas
+independientes. Los controles de digest y endurecimiento de JUP-049 mantienen
+su alcance original sobre las cuatro aplicaciones y las tres dependencias
+base; los servicios de monitorizacion conservan su configuracion de JUP-043.
+
+### Build y smoke aislados
+
+Fuente de codigo comprobada: git tree `1d05259b2db193bded864d7491a238d89e0f524c`.
+Entorno: DockerServer, Docker Engine 29.6.2 y Compose v5.3.1. Proyecto exclusivo:
+`economicon-jup049-reconcile-20260908`, con puertos alternativos enlazados a
+loopback y volumenes inicialmente inexistentes.
+
+- Las cuatro imagenes construyen con `docker compose build --pull`, permitiendo
+  reutilizar cache; el frontend compila 89 modulos.
+- `docker compose up --wait` completa el arranque. Las cuatro aplicaciones
+  responden HTTP 200, igual que `/metrics` de backend y processor.
+- Prometheus responde a sus endpoints de salud y disponibilidad y ambos
+  targets estan UP. Grafana responde a `/api/health` con la base de datos en OK.
+- Frontend ejecuta como `node`, UID 1000, con raiz de solo lectura y `/tmp`
+  en tmpfs. Carga `vite.config.ts` desde `/tmp`; una escritura en la raiz
+  devuelve EROFS.
+- CockroachDB registra las migraciones 001, 002 y 003 del processor tras el
+  arranque en frio, incluida la migracion autocommit de normalizacion.
+
+Las suites se ejecutaron sobre las imagenes construidas con Python 3.12,
+fuentes montadas en solo lectura y un venv temporal. Las pruebas de integracion
+usaron otro nodo CockroachDB vacio, marcado expresamente para pruebas, separado
+de las bases de datos de las aplicaciones.
+
+| Suite sobre imagen | Resultado |
+|---|---:|
+| Processor, incluidos 34 casos con CockroachDB real | 188/188, sin omisiones |
+| Backend | 24/24 |
+| Azure Cost API | 58/58 |
+
+Los logs y el harness quedan fuera del repositorio en
+`materiales/07-evidencias/jup049-reconciliation-20260908/`.
 
 ## Participacion prevista inicialmente
 

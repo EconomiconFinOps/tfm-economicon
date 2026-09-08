@@ -11,13 +11,17 @@ const compose = parse(fs.readFileSync(path.join(root, "docker-compose.yml"), "ut
 
 const applicationServices = ["azure-cost-api", "backend", "processor", "frontend"];
 const infrastructureServices = ["cockroachdb", "rabbitmq", "postgres-pgvector"];
+const monitoringServices = ["prometheus", "grafana"];
 
-test("declares every MVP application and infrastructure service", () => {
+test("declares every MVP application, infrastructure and monitoring service", () => {
   assert.deepEqual(
     Object.keys(compose.services).sort(),
-    [...applicationServices, ...infrastructureServices].sort(),
+    [...applicationServices, ...infrastructureServices, ...monitoringServices].sort(),
   );
-  assert.deepEqual(Object.keys(compose.volumes).sort(), ["cockroach-data", "pgvector-data"]);
+  assert.deepEqual(
+    Object.keys(compose.volumes).sort(),
+    ["cockroach-data", "pgvector-data", "prometheus-data", "grafana-data"].sort(),
+  );
 });
 
 test("builds every application from a versioned Dockerfile", () => {
@@ -55,18 +59,20 @@ test("pins infrastructure images by immutable digest and checks their health", (
 });
 
 test("waits for healthy dependencies instead of container start only", () => {
-  for (const serviceName of ["backend", "processor", "frontend"]) {
+  for (const serviceName of ["backend", "processor", "frontend", ...monitoringServices]) {
     for (const dependency of Object.values(compose.services[serviceName].depends_on)) {
       assert.equal(dependency.condition, "service_healthy");
     }
   }
 });
 
-test("binds infrastructure ports to loopback and permits isolated overrides", () => {
+test("binds infrastructure and monitoring ports to loopback and permits isolated overrides", () => {
   const expectedVariables = {
     cockroachdb: ["COCKROACH_SQL_PORT", "COCKROACH_HTTP_PORT"],
     rabbitmq: ["RABBITMQ_PORT", "RABBITMQ_MANAGEMENT_PORT"],
     "postgres-pgvector": ["PGVECTOR_PORT"],
+    prometheus: ["PROMETHEUS_PORT"],
+    grafana: ["GRAFANA_PORT"],
   };
 
   for (const [serviceName, variables] of Object.entries(expectedVariables)) {
@@ -76,6 +82,32 @@ test("binds infrastructure ports to loopback and permits isolated overrides", ()
       assert.ok(ports.some((port) => port.includes(`\${${variable}:-`)));
     }
   }
+});
+
+test("preserves monitoring configuration, persistence and health dependencies", () => {
+  const expectedVolumes = {
+    prometheus: [
+      "./apps/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro",
+      "prometheus-data:/prometheus",
+    ],
+    grafana: [
+      "./apps/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro",
+      "./apps/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro",
+      "grafana-data:/var/lib/grafana",
+    ],
+  };
+
+  for (const [serviceName, volumes] of Object.entries(expectedVolumes)) {
+    assert.deepEqual([...compose.services[serviceName].volumes].sort(), [...volumes].sort());
+    for (const volume of volumes.filter((volume) => volume.startsWith("./"))) {
+      assert.ok(fs.existsSync(path.join(root, volume.split(":")[0])), `${serviceName} configuration must exist`);
+    }
+  }
+
+  assert.ok(compose.services.prometheus.healthcheck);
+  assert.deepEqual(Object.keys(compose.services.prometheus.depends_on).sort(), ["backend", "processor"]);
+  assert.deepEqual(Object.keys(compose.services.grafana.depends_on), ["prometheus"]);
+  assert.equal(compose.services.grafana.environment.GF_AUTH_ANONYMOUS_ENABLED, "false");
 });
 
 test("separates published application ports from fixed container ports", () => {
@@ -100,7 +132,9 @@ test("pins pnpm 9 and builds the frontend before running its preview server", ()
   assert.match(source, /corepack prepare pnpm@9\.0\.0 --activate/);
   assert.match(source, /pnpm install --frozen-lockfile/);
   assert.match(source, /pnpm --filter @finops\/frontend build/);
-  assert.match(source, /cp vite\.config\.js \/tmp\/vite\.config\.js/);
+  assert.ok(fs.existsSync(path.join(root, "apps", "frontend", "vite.config.ts")));
+  assert.match(source, /cp vite\.config\.ts \/tmp\/vite\.config\.ts/);
+  assert.match(source, /preview --config \/tmp\/vite\.config\.ts/);
   assert.match(source, /NODE_PATH=\/workspace\/apps\/frontend\/node_modules/);
   assert.match(source, /node .*node_modules\/vite\/bin\/vite\.js preview/);
 });

@@ -6,7 +6,7 @@ from sqlalchemy import text
 
 
 # run_all starts the worker and API in separate threads, both of which migrate.
-# Serialize the entire transaction, including creation of the version table.
+# Serialize the entire run, including per-migration transactions and autocommit DDL.
 _migration_lock = Lock()
 
 
@@ -24,29 +24,34 @@ class MigrationRunner:
         self.version_table = version_table
 
     def run(self) -> None:
-        with _migration_lock, self.engine.begin() as connection:
-            connection.execute(
-                text(
-                    f"""
-                    CREATE TABLE IF NOT EXISTS {self.version_table} (
-                        version TEXT PRIMARY KEY,
-                        applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        with _migration_lock:
+            with self.engine.begin() as connection:
+                connection.execute(
+                    text(
+                        f"""
+                        CREATE TABLE IF NOT EXISTS {self.version_table} (
+                            version TEXT PRIMARY KEY,
+                            applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                        )
+                        """
                     )
-                    """
                 )
-            )
-            applied = {
-                row.version
-                for row in connection.execute(text(f"SELECT version FROM {self.version_table}"))
-            }
+                applied = {
+                    row.version
+                    for row in connection.execute(text(f"SELECT version FROM {self.version_table}"))
+                }
 
             for migration_file in sorted(self.migrations_dir.glob("[0-9][0-9][0-9]_*.py")):
                 version = migration_file.stem.split("_", maxsplit=1)[0]
                 if version in applied:
                     continue
                 module = import_module(f"{self.migration_package}.{migration_file.stem}")
-                module.upgrade(connection)
-                connection.execute(
-                    text(f"INSERT INTO {self.version_table} (version) VALUES (:version)"),
-                    {"version": version},
-                )
+                transactional = getattr(module, "transactional", True) is not False
+                with (self.engine.begin() if transactional else self.engine.connect()) as connection:
+                    if not transactional:
+                        connection = connection.execution_options(isolation_level="AUTOCOMMIT")
+                    module.upgrade(connection)
+                    connection.execute(
+                        text(f"INSERT INTO {self.version_table} (version) VALUES (:version)"),
+                        {"version": version},
+                    )
