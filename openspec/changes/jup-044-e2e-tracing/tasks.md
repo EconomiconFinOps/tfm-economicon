@@ -16,6 +16,6 @@
 
 ## 4. Documentación y cierre
 
-- [ ] 4.1 Documentar la convención de trazabilidad extremo a extremo en `docs/manuals/python-service-conventions.md`.
-- [ ] 4.2 Ejecutar la batería de checks del carril (`openspec:validate`, `jup:check`, tests de backend/processor) y registrar el resultado en `review.md`.
-- [ ] 4.3 Verificar manualmente con `docker compose up`: publicar una ingesta real y confirmar en los logs (JSON) de backend y processor que comparten el mismo `request_id`.
+- [x] 4.1 Documentar la convención de trazabilidad extremo a extremo en `docs/manuals/python-service-conventions.md`.
+- [x] 4.2 Ejecutar la batería de checks del carril (`openspec:validate`, `jup:check`, tests de backend/processor) y registrar el resultado en `review.md`.
+- [x] 4.3 Verificar manualmente con `docker compose up`: publicar una ingesta real y confirmar en los logs (JSON) de backend y processor que comparten el mismo `request_id`. Verificado también que el `request_id` se conserva a través de reintentos (`nack`/`requeue`) del mismo job.
