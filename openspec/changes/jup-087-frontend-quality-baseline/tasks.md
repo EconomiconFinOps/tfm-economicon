@@ -6,12 +6,12 @@
 
 ## 2. Implementacion
 
-- [ ] 2.1 JUP-087 resolver contratos de props sin desactivar globalmente la regla.
-- [ ] 2.2 JUP-087 configurar runner, entorno DOM, utilidades y script frontend de pruebas.
-- [ ] 2.3 JUP-087 cubrir login/sesion, tenant, dashboard, ingesta y conversacion.
+- [x] 2.1 JUP-087 resolver contratos de props sin desactivar globalmente la regla.
+- [x] 2.2 JUP-087 configurar runner, entorno DOM, utilidades y script frontend de pruebas.
+- [x] 2.3 JUP-087 cubrir login/sesion, tenant, dashboard, ingesta y conversacion.
 
 ## 3. Verificacion
 
-- [ ] 3.1 JUP-087 demostrar `pnpm lint` sin errores y `pnpm test` con pruebas frontend reales.
+- [x] 3.1 JUP-087 demostrar `pnpm lint` sin errores y `pnpm test` con pruebas frontend reales.
 - [ ] 3.2 JUP-087 ejecutar build, OpenSpec, trazabilidad y checks de CI.
 - [ ] 3.3 JUP-087 publicar PR y evidencia de regresion.

@@ -1,12 +1,22 @@
 import { useQueries } from "@tanstack/react-query";
 import { fetchBillingSummary, fetchHealth } from "../services/api";
 
-export function useDashboardData({ token, tenantId }) {
+interface DashboardDataOptions {
+  token: string;
+  tenantId?: string;
+}
+
+export function useDashboardData({ token, tenantId }: DashboardDataOptions) {
   const [billingQuery, healthQuery] = useQueries({
     queries: [
       {
         queryKey: ["billing-summary", tenantId],
-        queryFn: () => fetchBillingSummary(token, tenantId),
+        queryFn: () => {
+          if (!tenantId) {
+            throw new Error("Tenant required");
+          }
+          return fetchBillingSummary(token, tenantId);
+        },
         enabled: Boolean(token && tenantId)
       },
       {

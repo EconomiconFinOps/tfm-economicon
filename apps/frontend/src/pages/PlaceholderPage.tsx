@@ -1,5 +1,7 @@
-export function PlaceholderPage({ view }) {
-  const copy = {
+import type { ViewId } from "../layouts/AppShell";
+
+export function PlaceholderPage({ view }: { view: ViewId }) {
+  const copy: Partial<Record<ViewId, string>> = {
     settings: "Reserved for provider credentials, role management and operational feature flags."
   };
 

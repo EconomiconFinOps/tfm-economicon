@@ -1,8 +1,14 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "../services/api";
+import type { LoginResponse } from "../services/contracts";
 
-export function LoginPage({ onLogin }) {
+interface LoginPageProps {
+  onLogin: (response: LoginResponse) => void;
+}
+
+export function LoginPage({ onLogin }: LoginPageProps) {
   const [form, setForm] = useState({
     email: "operator@example.com",
     password: "secret"
@@ -13,7 +19,7 @@ export function LoginPage({ onLogin }) {
     onSuccess: onLogin
   });
 
-  function handleSubmit(event) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     mutation.mutate(form);
   }

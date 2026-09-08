@@ -371,5 +371,8 @@ La arquitectura distingue capacidad desplegable de prototipo heredado:
   seguridad antes de considerarlos completos.
 - Embeddings y respuesta del asistente usan mocks por defecto. El vertical RAG
   real, sus citas y su evaluacion pertenecen a JUP-020 a JUP-025 y JUP-036.
-- El frontend compila, pero JUP-087 mantiene abiertos el lint heredado y la
-  ausencia de pruebas de recorridos criticos.
+- JUP-087 elimina el lint heredado mediante contratos TypeScript y añade pruebas
+  reales de login/sesion, tenant, dashboard, ingesta y conversaciones. Lint y
+  pruebas forman parte del check obligatorio `Frontend build`; la
+  [evidencia de validacion](evidence/JUP-087-validation.md) documenta el alcance
+  y las capacidades funcionales que siguen pendientes.

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SectionCard } from "../components/SectionCard";
 import {
@@ -7,8 +8,18 @@ import {
   listConversations,
   sendConversationMessage
 } from "../services/api";
+import type {
+  ConversationCreateRequest,
+  MessageCreateRequest,
+  TenantRecord
+} from "../services/contracts";
 
-export function ConversationsPage({ token, activeTenant }) {
+interface ConversationsPageProps {
+  token: string;
+  activeTenant: TenantRecord | null;
+}
+
+export function ConversationsPage({ token, activeTenant }: ConversationsPageProps) {
   const queryClient = useQueryClient();
   const [selectedConversationId, setSelectedConversationId] = useState("");
   const [title, setTitle] = useState("Ops review");
@@ -16,13 +27,23 @@ export function ConversationsPage({ token, activeTenant }) {
 
   const conversationsQuery = useQuery({
     queryKey: ["conversations", activeTenant?.id],
-    queryFn: () => listConversations(token, activeTenant.id),
+    queryFn: () => {
+      if (!activeTenant) {
+        throw new Error("Tenant required");
+      }
+      return listConversations(token, activeTenant.id);
+    },
     enabled: Boolean(token && activeTenant?.id)
   });
 
   const conversationDetailQuery = useQuery({
     queryKey: ["conversation", activeTenant?.id, selectedConversationId],
-    queryFn: () => getConversation(token, activeTenant.id, selectedConversationId),
+    queryFn: () => {
+      if (!activeTenant) {
+        throw new Error("Tenant required");
+      }
+      return getConversation(token, activeTenant.id, selectedConversationId);
+    },
     enabled: Boolean(token && activeTenant?.id && selectedConversationId)
   });
 
@@ -40,36 +61,41 @@ export function ConversationsPage({ token, activeTenant }) {
   }, [conversationsQuery.data, selectedConversationId]);
 
   const createMutation = useMutation({
-    mutationFn: (payload) => createConversation(token, activeTenant.id, payload),
+    mutationFn: (payload: ConversationCreateRequest) => {
+      if (!activeTenant) {
+        throw new Error("Tenant required");
+      }
+      return createConversation(token, activeTenant.id, payload);
+    },
     onSuccess: (conversation) => {
-      queryClient.invalidateQueries({ queryKey: ["conversations", activeTenant.id] });
+      queryClient.invalidateQueries({ queryKey: ["conversations", activeTenant?.id] });
       setSelectedConversationId(conversation.id);
       setTitle("Ops review");
     }
   });
 
   const sendMutation = useMutation({
-    mutationFn: (payload) => sendConversationMessage(
-      token,
-      activeTenant.id,
-      selectedConversationId,
-      payload
-    ),
+    mutationFn: (payload: MessageCreateRequest) => {
+      if (!activeTenant) {
+        throw new Error("Tenant required");
+      }
+      return sendConversationMessage(token, activeTenant.id, selectedConversationId, payload);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations", activeTenant.id] });
+      queryClient.invalidateQueries({ queryKey: ["conversations", activeTenant?.id] });
       queryClient.invalidateQueries({
-        queryKey: ["conversation", activeTenant.id, selectedConversationId]
+        queryKey: ["conversation", activeTenant?.id, selectedConversationId]
       });
       setMessage("");
     }
   });
 
-  function handleCreate(event) {
+  function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     createMutation.mutate({ title });
   }
 
-  function handleSend(event) {
+  function handleSend(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     sendMutation.mutate({ content: message });
   }
@@ -106,6 +132,9 @@ export function ConversationsPage({ token, activeTenant }) {
         </form>
 
         {createMutation.error ? <p className="error-copy">{createMutation.error.message}</p> : null}
+        {conversationsQuery.error ? (
+          <p className="error-copy" role="alert">{conversationsQuery.error.message}</p>
+        ) : null}
 
         <div className="conversation-list">
           {(conversationsQuery.data?.items ?? []).map((conversation) => (
@@ -130,7 +159,9 @@ export function ConversationsPage({ token, activeTenant }) {
         title="Assistant chat"
         subtitle="Replies use retrieval over pgvector filtered by the active tenant."
       >
-        {conversationDetailQuery.isLoading ? (
+        {conversationDetailQuery.error ? (
+          <p className="error-copy" role="alert">{conversationDetailQuery.error.message}</p>
+        ) : conversationDetailQuery.isLoading ? (
           <p>Loading conversation...</p>
         ) : selectedConversationId ? (
           <>
@@ -161,7 +192,7 @@ export function ConversationsPage({ token, activeTenant }) {
               </button>
             </form>
           </>
-        ) : (
+        ) : conversationsQuery.error ? null : (
           <p>Create a conversation to start the assistant flow.</p>
         )}
       </SectionCard>

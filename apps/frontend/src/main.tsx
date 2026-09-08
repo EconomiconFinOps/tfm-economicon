@@ -5,8 +5,13 @@ import App from "./App";
 import "./styles/main.css";
 
 const queryClient = new QueryClient();
+const root = document.getElementById("root");
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+if (!root) {
+  throw new Error("The application root element is missing.");
+}
+
+ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
