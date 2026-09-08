@@ -13,5 +13,10 @@
 ## 3. Verificacion
 
 - [x] 3.1 JUP-087 demostrar `pnpm lint` sin errores y `pnpm test` con pruebas frontend reales.
-- [ ] 3.2 JUP-087 ejecutar build, OpenSpec, trazabilidad y checks de CI.
-- [ ] 3.3 JUP-087 publicar PR y evidencia de regresion.
+- [x] 3.2 JUP-087 ejecutar build, OpenSpec, trazabilidad y checks de CI.
+- [x] 3.3 JUP-087 publicar PR y evidencia de regresion.
+
+Evidencia: [validacion JUP-087](../../../docs/evidence/JUP-087-validation.md),
+[PR #29](https://github.com/EconomiconFinOps/tfm-economicon/pull/29).
+La implementacion y la verificacion automatizada estan completas; la revision
+humana, la validacion atribuible y el cierre operativo siguen pendientes.

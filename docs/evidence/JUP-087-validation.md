@@ -5,6 +5,9 @@
 - Rama: `chore/JUP-087-frontend-quality-baseline`.
 - Base: `origin/develop` en `ae538aadbf8012c144d540644691a9d80a5a4508`.
 - OpenSpec: [jup-087-frontend-quality-baseline](../../openspec/changes/jup-087-frontend-quality-baseline/proposal.md).
+- Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/29
+- Commit de implementacion: `fbb1e55d6d8be95899236d525075329393d9ac24`.
+- CI de implementacion: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/34260957444
 
 ## Resultado
 
@@ -49,6 +52,8 @@ Se verifico la nueva prueba de gobernanza primero contra el workflow anterior:
 fallo 1/8 por no exigir lint/pruebas. Tras conectar los pasos obligatorios,
 la suite paso 8/8. Los tests de props tambien comprueban el diagnostico real
 `react/prop-types`, no solo el texto de una configuracion.
+Las siete regresiones de cambio de tenant tambien se ejecutaron antes de la
+correccion: 7/7 fallaban. Tras aislar el montaje por tenant, 7/7 pasan.
 
 ## Validacion local
 
@@ -79,6 +84,17 @@ instalacion congelada no altera el lockfile. El intento de ejecutar todos los
 tests Python mediante `pnpm test` encontro un entorno sin `fastapi`; las tres
 suites de servicios se verifican en CI con sus `requirements-dev.txt`, sin
 presentar ese intento local como una validacion satisfactoria.
+
+## Validacion remota
+
+El CI del commit de implementacion termino con los siete checks obligatorios
+en verde: JUP policy, OpenSpec, las tres suites Python, Frontend build y
+Frontend type check. Dentro de Frontend build se confirmo la ejecucion correcta
+de lint, las 28 pruebas y el empaquetado. La descripcion de la PR enlaza ademas
+la ejecucion del ultimo head tras incorporar esta evidencia documental.
+Las suites Python registraron 58 pruebas aprobadas en azure-cost-api, 24 en
+backend y 152 en processor; processor omite 34 pruebas en ese entorno de CI.
+Esas omisiones no se presentan como pruebas ejecutadas.
 
 ## Alcance y revision
 
