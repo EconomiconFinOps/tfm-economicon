@@ -34,4 +34,4 @@ su pull request también apunta exclusivamente a `develop`.
 - Publicar la rama, fusionar su PR hacia `develop` y enlazarlo en Trello.
 
 La evidencia actualizada está en `docs/evidence/JUP-075-validation.md` y el
-diseño en `openspec/changes/jup-075-azure-api-resilience/`.
+diseño archivado en `openspec/changes/archive/2026-08-28-jup-075-azure-api-resilience/`.

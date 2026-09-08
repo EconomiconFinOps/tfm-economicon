@@ -231,6 +231,11 @@ No se repitieron los builds ni los smokes Docker del 2 de septiembre.
 
 - Cabeza original de la PR: `3d8e704537d5989b882e65b56593fe0c428d55ca`.
 - Base comprobada: `develop` en `199f9be789f52712b59a95805d74df59a81509bc`.
+- Antes de publicar se integro tambien `ae538aadbf8012c144d540644691a9d80a5a4508`
+  (JUP-088), incorporado a `develop` durante la validacion. Esta segunda
+  integracion solo afecta a documentacion, especificaciones y gobernanza;
+  aplicaciones, Dockerfiles, Compose y dependencias mantienen el codigo
+  comprobado en DockerServer.
 - El conflicto `add/add` en `apps/processor/tests/test_migration_runner.py`
   se resuelve conservando las pruebas de concurrencia de JUP-049 y las de
   rollback, reintento y autocommit de JUP-013.
@@ -249,7 +254,7 @@ No se repitieron los builds ni los smokes Docker del 2 de septiembre.
 | Migraciones: concurrencia, rollback y reintentos, Python 3.11 | 8/8 |
 | Herramientas del repositorio, incluida topologia Docker y contrato CI | 63/63 |
 | Puente de colaboracion con servicios simulados | 12/12 |
-| OpenSpec estricto | 25/25 |
+| OpenSpec estricto tras integrar JUP-088 | 26/26 |
 | Trazabilidad, higiene y corpus | OK |
 | Frontend typecheck | OK |
 | Frontend build | 89 modulos, OK |
