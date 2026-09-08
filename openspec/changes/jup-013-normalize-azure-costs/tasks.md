@@ -32,7 +32,7 @@
   and invalid-input rejection without partial cost persistence
 - [x] 4.4 JUP-013 repeat ingestion with the same tenant, subscription, query
   and input; verify stable run identity, row count, source hashes and cost totals
-- [ ] 4.5 JUP-013 verify all seven existing CI checks on the updated PR #14:
+- [x] 4.5 JUP-013 verify all seven existing CI checks on the updated PR #14:
   JUP policy, OpenSpec, Python tests (azure-cost-api), Python tests (backend),
   Python tests (processor), Frontend build and Frontend type check
 - [x] 4.6 JUP-013 fix the existing-table migration 003 DDL visibility defect

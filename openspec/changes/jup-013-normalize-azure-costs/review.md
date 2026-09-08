@@ -46,8 +46,11 @@ per-migration transactions and rollback behavior.
   simulated collaboration: 12 passed; frontend build and both typechecks pass.
 - OpenSpec: 23 strict validations pass; 18 active changes pass traceability.
 - QA: QA_PASS for the local technical artifact audit on 2026-09-08; no blocking
-  contradictions and all three relative Markdown links resolve. Remote checks
-  and human release gates remain pending, separate from this technical verdict.
+  contradictions and all three relative Markdown links resolve. Human release
+  gates remain pending, separate from this technical verdict.
+- Remote CI: seven checks passed on `3edfa60b0e49d055243284a47341f87694f70ea5`,
+  [run 34245176166](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/34245176166).
+  Any subsequent evidence-only commit must also pass CI before merge.
 - Full commands, warnings and reproduction context:
   [validation evidence](../../../docs/evidence/JUP-013-validation.md).
 
@@ -55,8 +58,9 @@ per-migration transactions and rollback behavior.
 
 Design, delta requirements and technical tasks cover the observed recovery
 semantics. Task 3.5 remains open for actual human pairing/review/validation;
-task 4.5 remains open until the final remote checks are verified. No new ADR is
-introduced: storage, normalization boundary and additive migration remain.
+task 4.5 records the verified seven-check run. A further head still requires its
+own green checks. No new ADR is introduced: storage, normalization boundary and
+additive migration remain.
 
 Frontend lint still reports 49 inherited `react/prop-types` errors in nine JSX
 files. Frontend and lockfile equal the comparison base. No lint fix is claimed.
@@ -67,7 +71,8 @@ CI on the published head and all human gates remain separate release conditions.
 ## Post-QA human approval
 
 - Decision: PENDING.
-- Approver: not yet supplied.
+- Approver: no approval supplied; the requesting user identifies as Paris Arcos,
+  the assigned final reviewer.
 - Timestamp: not yet supplied.
 - Notes: the implementation request permits preparing this update, but does not
   attest Lucia's pairing, Victor's validation or Paris's review of the new head.

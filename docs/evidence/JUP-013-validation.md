@@ -190,10 +190,29 @@ La consulta de reglas efectivas de GitHub del 08/09 exige siete checks, rama
 actualizada, una aprobacion elegible con descarte de aprobaciones obsoletas y
 conversaciones resueltas. No se usara bypass de administrador.
 
-Queda pendiente verificar en el ultimo head publicado: `JUP policy`, `OpenSpec`,
+Se verificaron los siete checks sobre el head publicado
+`3edfa60b0e49d055243284a47341f87694f70ea5` en la
+[ejecucion 34245176166](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/34245176166):
+`JUP policy`, `OpenSpec`,
 `Python tests (azure-cost-api)`, `Python tests (backend)`, `Python tests (processor)`,
-`Frontend build` y `Frontend type check`. La CI de los heads anteriores no
-acredita este commit. Consultar los [checks de PR #14](https://github.com/EconomiconFinOps/tfm-economicon/pull/14/checks).
+`Frontend build` y `Frontend type check`, todos completados con `success`.
+Un commit posterior, incluso solo documental, requiere repetir esa verificacion.
+Consultar los [checks de PR #14](https://github.com/EconomiconFinOps/tfm-economicon/pull/14/checks).
+
+La aprobacion anterior de Paris figura como `DISMISSED` tras el push; no existen
+conversaciones de revision pendientes en la consulta del 08/09. El solicitante
+confirma que es Paris Arcos; esto identifica al revisor, no aporta una nueva
+aprobacion. La solicitud automatizada de revision no se envio.
+
+La actualizacion del cuerpo de PR fallo con HTTP 403 usando la integracion
+disponible; su texto historico sigue desactualizado. Este archivo y el diff
+publicado contienen los resultados nuevos. No se afirma haber actualizado ese
+cuerpo ni haber recibido nuevas aprobaciones.
+
+Tras terminar las pruebas se verificaron y retiraron el contenedor
+`jup013-merge-20260908-tester-crdb` y su red exclusiva
+`jup013-merge-20260908-tester`; no habia volumenes persistentes ni otros
+contenedores conectados a esa red. No se tocaron recursos compartidos.
 
 La tarea 3.5 permanece abierta: Lucia debe aportar pairing; Victor, validacion
 funcional; Paris, revision del ultimo head. Sus evidencias deben incluir autor,
