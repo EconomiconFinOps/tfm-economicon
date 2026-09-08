@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import logging
 import math
 import socket
 import time
@@ -11,10 +10,12 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, quote, urljoin, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
+import structlog
+
 from app.core.config import Settings
 
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class AzureCostClientError(RuntimeError):
@@ -357,4 +358,4 @@ def _error_code(body: bytes) -> str:
 
 
 def _log(event: str, **fields: object) -> None:
-    logger.info(json.dumps({"event": event, **fields}, sort_keys=True))
+    logger.info(event, **fields)

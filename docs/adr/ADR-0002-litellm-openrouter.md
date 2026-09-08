@@ -46,6 +46,36 @@ de tokens y deben volver a comprobarse antes de cualquier gasto real.
 | DeepSeek V4 Pro | `deepseek/deepseek-v4-pro` | 1.048.576 | 0,572808 USD | 1,145616 USD |
 | Embeddings | `openai/text-embedding-3-small` | 8.192 | 0,02 USD | No aplica |
 
+### Revalidacion de catalogo y aprobacion de Alejandro - 28 de agosto de 2026
+
+Alejandro volvio a consultar el catalogo publico oficial antes de aprobar su
+parte de la decision. GLM-5.2 conserva 1,19 USD por millon de tokens de entrada
+y 3,74 USD por millon de salida. DeepSeek V4 Pro sigue disponible, pero su
+precio publicado cambio a 0,751854 USD de entrada y 1,503708 USD de salida por
+millon de tokens. Los importes de la tabla anterior se conservan como evidencia
+fechada del benchmark del 25 de agosto y no deben reinterpretarse como precios
+actuales.
+
+Con los precios del 28 de agosto, la estimacion de 100 casos por modelo con
+2.000 tokens de entrada y 500 de salida pasa a aproximadamente 0,425 USD para
+GLM-5.2 y 0,2255562 USD para DeepSeek, 0,6505562 USD en total. El cambio no
+compromete el techo de desarrollo propuesto de 10 USD/mes.
+
+Alejandro aprueba:
+
+- LiteLLM como gateway interno y OpenRouter como upstream inicial;
+- el presupuesto maximo de desarrollo de 10 USD/mes mediante una clave virtual
+  revocable y limitada;
+- GLM-5.2 como modelo principal para la siguiente fase;
+- DeepSeek V4 Pro solo como secundario de seleccion explicita y de evaluacion,
+  sin fallback automatico, hasta que supere de nuevo calidad y latencia;
+- ZDR, denegacion de recopilacion, ausencia de logging de contenido y
+  razonamiento opcional desactivado como baseline.
+
+Esta aprobacion no acredita a Lucia, Paris ni Victor. El ADR permanece
+`Proposed` hasta reunir las cuatro aprobaciones, provisionar la clave virtual y
+registrar la revision conjunta.
+
 ## Criterios
 
 | Criterio | Peso | Umbral de aceptacion |

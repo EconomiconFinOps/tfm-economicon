@@ -7,4 +7,5 @@ pydantic-settings>=2.3.4
 psycopg[binary]>=3.2.1
 sqlalchemy>=2.0.31
 sqlalchemy-cockroachdb>=2.0.4,<3.0
+structlog>=24.1.0
 uvicorn>=0.30.1

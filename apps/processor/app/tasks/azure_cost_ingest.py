@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 import json
-import logging
 import uuid
 from dataclasses import asdict, dataclass
+
+import structlog
 
 from app.clients.azure_cost import AzureCostClient
 from app.normalization.azure_cost import AzureCostNormalizer
 from app.repositories.azure_cost import AzureCostRepository
 
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 RUN_NAMESPACE = uuid.UUID("7f921f96-d309-43df-b219-0b61dfe6864a")
 
 
@@ -106,7 +107,7 @@ def ingestion_run_id(tenant_id: str, subscription_id: str, definition: dict) -> 
 
 
 def _log(event: str, **fields: object) -> None:
-    logger.info(json.dumps({"event": event, **fields}, sort_keys=True))
+    logger.info(event, **fields)
 
 
 def _validated_scope(name: str, value: str) -> str:

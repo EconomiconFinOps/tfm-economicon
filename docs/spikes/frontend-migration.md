@@ -27,7 +27,7 @@ Tasks            -> pasos verificables dentro de cada tarjeta
 | Routing              | react-router 7 (`createBrowserRouter`) | Estado manual `activeView` en `App.jsx` (sin router)    |
 | Capa API             | Ninguna (sin `fetch`/`axios`) | `src/services/api.js` centralizado                      |
 | Auth/sesion          | Ninguna (sin login/tenant) | `localStorage` (`finops.session`, `finops.activeTenant`) |
-| Estilos              | Tailwind v4 + shadcn/ui + MUI | Un unico `src/styles/main.css`, tema oscuro             |
+| Estilos              | Tailwind v4 (shadcn/ui y MUI declarados pero **sin uso real**, JUP-091) | Un unico `src/styles/main.css`, tema oscuro             |
 | Empaquetado monorepo | repo independiente         | `@finops/frontend`, pnpm workspace + turbo + Docker     |
 
 **Gap principal:** el origen llega en **TSX** (sin `tsconfig` ni dependencia `typescript`:
@@ -52,7 +52,8 @@ Economicon.
   `GET /assistant/conversations/{id}`, `POST /assistant/conversations/{id}/messages`.
 - Seed local de acceso: `operator@example.com` / `secret`.
 - Monorepo: `pnpm@9.0.0` + `turbo`. Servicio `frontend` en `docker-compose.yml` (puerto 5173,
-  `VITE_API_BASE_URL`, `env_file: .env`, depende de `backend` healthy).
+  `VITE_API_BASE_URL`, depende de `backend` healthy). **Corregido en JUP-090:** el servicio no tiene
+  `env_file`; `VITE_API_BASE_URL` viaja como `environment:` inline.
 - **Regla dura del repo: prohibido `npm i`.** Solo `pnpm`.
 
 ## Estrategia: reemplazo completo
@@ -85,7 +86,13 @@ monorepo. La frontera es:
 1. **Adopcion de TypeScript en `apps/frontend`.** Es una decision transversal y duradera (afecta
    tooling, build, lint y todas las tareas futuras del frontend) -> **requiere ADR** en `docs/adr/`
    usando `docs/templates/adr.md`, segun [AGENTS.md](../../AGENTS.md). Debe crearse/enlazarse antes
-   de implementar la feature de tooling.
+   de implementar la feature de tooling. **Resuelto en JUP-092:**
+   [docs/adr/ADR-0003-frontend-typescript.md](../adr/ADR-0003-frontend-typescript.md) (`Accepted`)
+   — `strict: true` desde el inicio, `allowJs: true` durante la migracion, type-check obligatorio en
+   CI, y `tsconfig` a nivel de `apps/frontend`. **`RF-082-002` (49 violaciones `react/prop-types` en
+   9 archivos `.jsx`) permanece abierto hasta que F3 migre esos archivos a `.tsx` con cobertura real
+   de tipos** — desactivar la regla solo para `.ts`/`.tsx` en F2 no los alcanza (correccion de
+   consistencia via revision de PR).
 2. **Vite se mantiene** como bundler (origen y destino ya usan Vite) -> el modelo de build es
    compatible; no hay migracion de bundler.
 3. **El backend de este repo manda.** La capa API del origen se reescribe contra los contratos
@@ -105,6 +112,11 @@ monorepo. La frontera es:
   `X-Tenant-Id` + sesión en `localStorage`) → la migración añade el flujo de auth del destino.
 - **Confirmado (T5):** Tailwind CSS v4 + shadcn/ui (Radix) + MUI 7 + `next-themes`, con estilos en
   `src/styles/`. El destino usa un único `main.css` plano → cambio grande de sistema de estilos.
+  **Matizado en JUP-091:** de ese stack solo Tailwind v4 está realmente en uso. **MUI 7 y
+  `@emotion/*` no se importan en ningún sitio**, y los 48 componentes de shadcn/ui son código muerto
+  que ninguna pantalla usa (su único import relativo es `./ExportButton`). El cambio de sistema de
+  estilos es, por tanto, **menor** de lo que sugería este supuesto. Ver `RF-091-001`/`RF-091-002` y
+  [el inventario del origen](../planning/JUP-091-economicon-source-inventory.md).
 - **Confirmado (T6):** iconos vía `lucide-react`; sin `src/assets` materializado ni fuentes propias
   (`fonts.css` vacío). Licencias en `ATTRIBUTIONS.md`: shadcn/ui (MIT) y fotos de Unsplash.
 
@@ -133,34 +145,56 @@ tarjeta en Trello.
 
 ### F1. Preparacion e inventario
 
-**JUP `jup-0xx-inventariar-frontend-actual`** — carril `light`
-- [ ] Documentar que se preserva del destino (nombre paquete, scripts, puerto, Docker, contratos).
-- [ ] Marcar archivos a reemplazar vs. a conservar.
-- [ ] Definir criterios de aceptacion de paridad funcional (login -> tenant -> dashboard).
+**JUP `jup-090-inventory-current-frontend`** — carril `light`
+- [x] Documentar que se preserva del destino (nombre paquete, scripts, puerto, Docker, contratos). Ver
+  [docs/planning/JUP-090-frontend-migration-baseline.md](../planning/JUP-090-frontend-migration-baseline.md).
+- [x] Marcar archivos a reemplazar vs. a conservar. Ver la misma línea base, sección
+  "Clasificación archivo a archivo".
+- [x] Definir criterios de aceptacion de paridad funcional (login -> tenant -> dashboard). Ver la
+  misma línea base, sección "Criterios de paridad funcional".
 
-**JUP `jup-0xx-inventariar-frontend-economicon`** — carril `light`
+**JUP `jup-091-inventory-economicon-frontend`** — carril `light`
 - [x] Completar el "Checklist de inspeccion del origen" y confirmar todos los supuestos en JUP-083.
-- [ ] Listar dependencias del origen y clasificarlas (mantener / sustituir / descartar).
-- [ ] Enumerar endpoints que el origen consume y mapearlos a los contratos del backend de este repo.
+- [x] Listar dependencias del origen y clasificarlas (mantener / sustituir / descartar). Ver
+  [docs/planning/JUP-091-economicon-source-inventory.md](../planning/JUP-091-economicon-source-inventory.md),
+  seccion "Clasificacion de dependencias": 61 declaradas → 11 `MANTENER`, 2 `SUSTITUIR`, 48 `DESCARTAR`.
+- [x] Enumerar endpoints que el origen consume y mapearlos a los contratos del backend de este repo.
+  Ver la misma linea base, seccion "Mapeo de pantallas a contratos del backend": el origen no consume
+  ningun endpoint (datos estaticos), y de los 14 datos que muestra solo 2 tienen contrato, ambos
+  parciales. Siete capacidades ausentes agrupadas en `RF-091-003`.
 
-**JUP `jup-0xx-adr-adopcion-typescript`** — carril `standard` (decision de arquitectura)
-- [ ] Redactar ADR `docs/adr/ADR-NNNN-frontend-typescript.md` con `docs/templates/adr.md`.
-- [ ] Estado `Proposed` -> `Accepted` tras HiTL.
-- [ ] Enlazar el ADR desde el `design.md` de las tareas de tooling y de codigo.
+**JUP `jup-092-frontend-typescript-adr`** — carril `standard` (decision de arquitectura)
+- [x] Redactar ADR `docs/adr/ADR-0003-frontend-typescript.md` con `docs/templates/adr.md`.
+- [x] Estado `Proposed` -> `Accepted` tras HiTL.
+- [x] Enlazar el ADR desde este spike (decision nº 1, arriba).
+- [ ] Enlazar el ADR desde el `design.md` de cada tarjeta de F2 y F3 **al crearse** — no es tarea de
+  JUP-092, que ya termino; queda registrado aqui y en la seccion de seguimiento del propio ADR como
+  requisito de esas tarjetas futuras.
 
 ### F2. Tooling y dependencias
 
-**JUP `jup-0xx-configurar-typescript`** — carril `standard`
-- [ ] Anadir `typescript`, `@types/react`, `@types/react-dom` (y tipos necesarios) con **pnpm**.
-- [ ] Crear `tsconfig.json` (y `tsconfig.node.json` para la config de Vite si aplica).
-- [ ] Ajustar `vite.config` a `.ts` si procede; verificar arranque `pnpm dev`.
-- [ ] Migrar `eslint.config.js` a soporte TS (parser/plugin TypeScript) sin romper `pnpm lint`.
+**JUP [`jup-093-configure-typescript`](../../openspec/changes/archive/2026-09-06-jup-093-configure-typescript/) — carril `standard`**
+- [x] Anadir `typescript`, `@types/react`, `@types/react-dom` (y tipos necesarios) con **pnpm**.
+- [x] Crear `tsconfig.json` (y `tsconfig.node.json` para la config de Vite).
+- [x] Ajustar `vite.config` a `.ts`; verificado arranque `pnpm dev` (host/puerto del monorepo intactos).
+- [x] Migrar `eslint.config.js` a soporte TS (parser/plugin TypeScript) sin romper `pnpm lint` (línea
+  base de 49 violaciones `react/prop-types`, `RF-082-002`, intacta). Añadido también, más allá de las
+  cuatro tareas de este spike, el type-check como séptimo check obligatorio de CI (ADR-0003, decisión
+  3): ver [ADR-0003](../adr/ADR-0003-frontend-typescript.md).
 
-**JUP `jup-0xx-reconciliar-package-json`** — carril `standard`
-- [ ] Fusionar dependencias del origen en `apps/frontend/package.json`.
-- [ ] Conservar nombre `@finops/frontend`, `type: module` y los scripts del monorepo (puerto 5173).
-- [ ] Instalar con `pnpm install` desde la raiz; **nunca** `npm i`.
-- [ ] Verificar lockfile actualizado y `pnpm install --frozen-lockfile` reproducible.
+**JUP [`jup-094-reconcile-package-json`](../../openspec/changes/jup-094-reconcile-package-json/) — carril `standard`**
+- [x] Fusionar dependencias del origen en `apps/frontend/package.json`: las 11 `MANTENER` del
+  inventario de JUP-091, ajustando `react-router`/`recharts`/`lucide-react` a las versiones exactas
+  del origen tras un salto de mayor incompatible del resolutor (mismo patrón que `typescript@7` en
+  JUP-093). Vite se mantiene en la serie 5: ninguna dependencia entrante fuerza el 6.
+- [x] Conservar nombre `@finops/frontend`, `type: module` y los scripts del monorepo (puerto 5173).
+- [x] Instalar con `pnpm install` desde la raiz; **nunca** `npm i`.
+- [x] Verificar lockfile actualizado y `pnpm install --frozen-lockfile` reproducible.
+- [x] **Añadido durante el `apply`, más allá de las cuatro tareas de este spike:** adopción de
+  shadcn/ui (subconjunto de 6 paquetes Radix) para F3, registrada en
+  [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md) y cerrando `RF-091-002`.
+
+**F2 (Tooling y dependencias) queda completa** con JUP-093 y JUP-094.
 
 ### F3. Reemplazo del codigo fuente
 
@@ -175,6 +209,8 @@ tarjeta en Trello.
       `/billing/summary`, `/jobs/ingest`, `/assistant/conversations...`.
 - [ ] Conservar `VITE_API_BASE_URL` y headers `Authorization: Bearer` + `X-Tenant-Id`.
 - [ ] Registrar como finding cualquier endpoint del origen sin equivalente en el backend.
+- [ ] Resolver `RF-090-003` (`openspec/findings/backlog.md`): decidir si `fetchProfile`
+  (`GET /me`) se conecta o se retira, ya que hoy está implementado pero nunca se invoca.
 
 **JUP `jup-0xx-reconciliar-auth-tenant`** — carril `standard`
 - [ ] Adaptar login/sesion al flujo del backend (token + perfil `/me`).
@@ -190,7 +226,10 @@ tarjeta en Trello.
 
 **JUP `jup-0xx-verificar-docker-compose`** — carril `light`
 - [ ] Validar `Dockerfile` con el nuevo build TS (`docker compose up --build frontend`).
-- [ ] Confirmar puerto 5173, `VITE_API_BASE_URL` y `env_file` en `docker-compose.yml`.
+- [ ] Confirmar puerto 5173 y `VITE_API_BASE_URL` en `docker-compose.yml` (el servicio no usa
+  `env_file`; ver hallazgo `RF-090-002`).
+- [ ] Resolver `RF-090-001` (`openspec/findings/backlog.md`): el `Dockerfile` construye con
+  `pnpm install --no-frozen-lockfile` sin el lockfile del workspace.
 
 **JUP `jup-0xx-verificar-turbo-workspace`** — carril `light`
 - [ ] Confirmar `pnpm dev` (turbo paralelo) levanta frontend junto a backend/processor.
@@ -263,7 +302,8 @@ Notas:
 2. **El backend de este repo es la fuente de verdad de contratos.** Adaptar el frontend a el; no al
    reves. Cualquier endpoint del origen sin equivalente se registra como finding.
 3. **ADR antes de tooling.** Crear/aceptar el ADR de adopcion de TypeScript antes de tocar la
-   configuracion de build/lint.
+   configuracion de build/lint. **Hecho en JUP-092:**
+   [ADR-0003](../adr/ADR-0003-frontend-typescript.md) (`Accepted`).
 4. **Seguir el flujo Trello/JUP + OpenSpec.** Validar cada cambio con
    `pnpm jup:check -- --change jup-NNN-slug` y solicitar revision humana mediante pull request.
 5. **Preservar rollback.** No borrar el scaffold actual hasta validar E2E con el seed local.
@@ -306,6 +346,21 @@ tarjeta JUP** de la epica.
 1. **Hecho en JUP-083:** inspección de Economicon y supuestos confirmados (ver arriba). Replanificar
    las tarjetas JUP de la épica según los hallazgos: el origen no tiene backend, auth ni capa de datos, así
    que F3 debe **añadir** esas capas desde el destino, no solo reconciliarlas.
-2. Crear el ADR de adopcion de TypeScript (`docs/adr/ADR-NNNN-frontend-typescript.md`).
-3. Crear la primera tarjeta JUP de la epica y documentarla en OpenSpec siguiendo esta descomposicion.
-4. Ajustar la numeracion de Trello y el alcance de las tareas segun lo que revele el inventario.
+2. **Hecho en JUP-092:** ADR de adopcion de TypeScript
+   ([ADR-0003](../adr/ADR-0003-frontend-typescript.md), `Accepted`).
+3. **Hecho en JUP-090:** primera tarjeta JUP de la epica creada y documentada en OpenSpec.
+   **F1 (Preparacion e inventario) queda completa** con JUP-090, JUP-091 y JUP-092.
+4. Numeracion de Trello resuelta: JUP-090/091/092 para F1. Siguiente: crear las tarjetas de F2
+   (Tooling y dependencias) citando el ADR-0003 en su `design.md`, segun su seccion de seguimiento.
+5. **Hecho en JUP-093:** tooling de TypeScript configurado en `apps/frontend` (dependencias,
+   `tsconfig`, `vite.config.ts`, ESLint con soporte TS, type-check obligatorio en CI). `RF-082-002`
+   permanece `Open`: ningun archivo `.jsx` se migro, es tarea de F3/cierre de F5.
+6. **Hecho en JUP-094: F2 (Tooling y dependencias) queda completa.** Fusionadas las 11 dependencias
+   `MANTENER` del inventario de JUP-091; Vite se mantiene en la serie 5 (ninguna dependencia entrante
+   fuerza el 6). Durante el `apply` se revisó la decisión de shadcn/ui: de descartar a adoptar un
+   subconjunto de 6 paquetes Radix, registrado en
+   [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md) (`Accepted`) y cerrando `RF-091-002`. `src/**`
+   sigue intacto: copiar el código de cada componente shadcn es tarea de F3, componente por
+   componente. Siguiente: crear las tarjetas de F3 (`portar-codigo-fuente`,
+   `reconciliar-capa-api`, `reconciliar-auth-tenant`, `unificar-estilos-assets`), citando ADR-0003 y
+   ADR-0004 en su `design.md`.

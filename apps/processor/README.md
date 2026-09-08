@@ -139,6 +139,7 @@ python -m pytest tests
 
 ## Notas
 
+- Convenciones de código Python (logging, etc.): ver `docs/manuals/python-service-conventions.md`.
 - `workers/runner.py` consume la cola de RabbitMQ.
 - `db/migration_runner.py` y `vector_store/migrations/` aplican migraciones formales.
 - `embeddings/` encapsula chunking y providers de embeddings.

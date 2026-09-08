@@ -10,6 +10,7 @@ from app.api.routes.jobs import router as jobs_router
 from app.api.routes.tenants import router as tenants_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
+from app.core.request_context import RequestIdMiddleware
 from app.db.database import Database
 from app.services.assistant import AssistantService
 from app.services.embedding_provider import MockEmbeddingProvider
@@ -45,6 +46,8 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.add_middleware(RequestIdMiddleware)
 
 app.include_router(health_router)
 app.include_router(auth_router)
