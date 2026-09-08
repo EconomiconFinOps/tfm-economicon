@@ -12,7 +12,7 @@ Pending team review (implementación técnica completa; falta revisión de PR se
 - `docker-compose.yml` (nuevos servicios `prometheus`, `grafana`)
 - `apps/monitoring/prometheus/prometheus.yml`, `apps/monitoring/grafana/provisioning/**`, `apps/monitoring/grafana/dashboards/technical-metrics.json`
 - `docs/manuals/python-service-conventions.md`, `docs/architecture.md`
-- `docs/adr/ADR-0003-prometheus-grafana-metrics.md`
+- `docs/adr/ADR-0005-prometheus-grafana-metrics.md`
 - Tests nuevos en `apps/backend/tests/test_metrics.py`, `apps/backend/tests/test_domain_metrics.py`, `apps/processor/tests/test_metrics.py`
 - `openspec/changes/jup-043-technical-metrics/{proposal,design,specs,tasks}.md`
 
@@ -22,7 +22,7 @@ Pending team review (implementación técnica completa; falta revisión de PR se
 - [x] Tasks are marked accurately in `tasks.md` (28/28).
 - [x] Tests/checks were executed successfully (backend 21/21, processor 136/136).
 - [x] `proposal.md`, `design.md`, `specs`, and `tasks.md` match the final state.
-- [x] Architecture decisions are recorded in ADRs — ADR-0003 registra la decisión de Prometheus + Grafana.
+- [x] Architecture decisions are recorded in ADRs — ADR-0005 registra la decisión de Prometheus + Grafana.
 - [x] All project decisions remain available in Git-tracked OpenSpec and project documentation.
 - [x] No old harness structure was reintroduced.
 
@@ -62,6 +62,11 @@ Grafana: la primera migración SQLite fue extremadamente lenta en este equipo (c
   label estable `__unmatched__` para rutas no emparejadas.
 - Añadidas pruebas de regresión para los tres casos en ambos servicios. Pendiente de la revisión
   formal de Paris Arcos Martin.
+- Al traer la rama al día con `develop` (merge de Paris, 2026-09-07), se detectó una colisión de
+  numeración: `develop` ya tenía `ADR-0003-frontend-typescript.md` (JUP-092) y
+  `ADR-0004-frontend-shadcn-ui.md` (JUP-094), no capturada como conflicto de Git por tratarse de
+  archivos con nombre distinto. Renumerado nuestro ADR a `ADR-0005-prometheus-grafana-metrics.md`
+  y actualizadas las referencias en `design.md` y aquí mismo.
 
 ## Risks / Follow-Ups
 

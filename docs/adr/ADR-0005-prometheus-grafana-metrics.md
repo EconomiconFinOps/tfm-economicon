@@ -1,4 +1,4 @@
-# ADR-0003: Métricas técnicas con Prometheus + Grafana
+# ADR-0005: Métricas técnicas con Prometheus + Grafana
 
 - Status: Proposed
 - Date: 2026-09-01

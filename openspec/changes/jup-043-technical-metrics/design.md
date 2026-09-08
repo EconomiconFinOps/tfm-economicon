@@ -1,6 +1,6 @@
 JUP: JUP-043
 
-Ver [ADR-0003](../../../docs/adr/ADR-0003-prometheus-grafana-metrics.md) para la decisión de arquitectura duradera (Prometheus + Grafana como stack de métricas).
+Ver [ADR-0005](../../../docs/adr/ADR-0005-prometheus-grafana-metrics.md) para la decisión de arquitectura duradera (Prometheus + Grafana como stack de métricas).
 
 ## Context
 
