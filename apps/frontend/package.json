@@ -10,7 +10,7 @@
     "lint": "eslint src",
     "test": "echo \"No frontend tests configured yet\"",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit",
-    "docker:build": "docker build -t finops-frontend ."
+    "docker:build": "docker build -f Dockerfile -t finops-frontend ../.."
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",
