@@ -1,4 +1,5 @@
 import time
+import uuid
 
 import structlog
 
@@ -50,6 +51,11 @@ class ProcessorWorker:
 
     def _process_message(self, message: QueueMessage) -> None:
         job = message.payload
+        request_id = job.get("request_id") or str(uuid.uuid4())
+
+        structlog.contextvars.clear_contextvars()
+        structlog.contextvars.bind_contextvars(request_id=request_id)
+
         logger.info("Processing job %s", job["id"])
 
         try:
