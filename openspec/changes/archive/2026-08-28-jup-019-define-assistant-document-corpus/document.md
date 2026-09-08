@@ -166,7 +166,8 @@ Una forma simplificada de pensar Azure es:
 
 `Tenant -> Management Groups -> Subscriptions -> Resource Groups -> Resources`
 
-![Jerarquía simplificada de recursos Azure](azure_hierarchy_economicon.png)
+La secuencia anterior es la representación canónica utilizada por este corpus;
+no depende de un recurso gráfico externo.
 
 ## 3.1 Tenant
 
@@ -900,7 +901,7 @@ Budget mensual total: **10.000 EUR**.
 
 Distribución inicial:
 
-![Distribución de costes del escenario simulado](finops_cost_distribution.png)
+La tabla siguiente es la fuente canónica de la distribución simulada.
 
 | Servicio | Coste mensual | Peso |
 |---|---:|---:|
@@ -979,7 +980,8 @@ Economicon consolida recomendaciones:
 
 Forecast después de optimización inmediata:
 
-![Budget y forecast simulado](finops_forecast_vs_budget.png)
+La comparación canónica se expresa con los importes de las tablas y la ecuación
+siguiente, sin depender de una imagen externa.
 
 `11.350 - 890 = 10.460 EUR`
 

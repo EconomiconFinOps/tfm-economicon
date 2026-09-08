@@ -4,7 +4,7 @@ Trello: https://trello.com/c/DtlNd0u0/82-jup-090-inventariar-frontend-actual
 ## Why
 
 La épica *Migrar frontend del repositorio Economicon* sustituye por completo `apps/frontend` siguiendo
-el spike [docs/spikes/frontend-migration.md](../../../docs/spikes/frontend-migration.md). JUP-083 ya
+el spike [docs/spikes/frontend-migration.md](../../../../docs/spikes/frontend-migration.md). JUP-083 ya
 inventarió el **origen** (Economicon) y confirmó un hecho que agrava el riesgo: el origen es un
 dashboard estático **sin backend, sin auth y sin capa de datos**, así que todo el valor funcional del
 frontend actual —capa API centralizada, sesión, tenant activo, TanStack Query— solo existe en el
