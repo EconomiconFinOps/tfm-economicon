@@ -1,0 +1,67 @@
+{
+  "title": "Economicon — Métricas técnicas",
+  "uid": "economicon-technical-metrics",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Latencia p95 por servicio (ms)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "1000 * histogram_quantile(0.95, sum(rate(backend_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "backend p95"
+        },
+        {
+          "expr": "1000 * histogram_quantile(0.95, sum(rate(processor_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "processor p95"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Tasa de error por servicio (%)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "100 * sum(rate(backend_http_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(backend_http_requests_total[5m]))",
+          "legendFormat": "backend error %"
+        },
+        {
+          "expr": "100 * sum(rate(processor_http_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(processor_http_requests_total[5m]))",
+          "legendFormat": "processor error %"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Volumen de ingestas (jobs/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "60 * rate(backend_ingest_jobs_total[5m])",
+          "legendFormat": "ingestas/min"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Volumen de consultas al asistente (consultas/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "60 * rate(backend_assistant_queries_total[5m])",
+          "legendFormat": "consultas/min"
+        }
+      ]
+    }
+  ]
+}

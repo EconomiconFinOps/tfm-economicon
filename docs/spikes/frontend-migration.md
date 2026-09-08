@@ -173,17 +173,28 @@ tarjeta en Trello.
 
 ### F2. Tooling y dependencias
 
-**JUP `jup-0xx-configurar-typescript`** — carril `standard`
-- [ ] Anadir `typescript`, `@types/react`, `@types/react-dom` (y tipos necesarios) con **pnpm**.
-- [ ] Crear `tsconfig.json` (y `tsconfig.node.json` para la config de Vite si aplica).
-- [ ] Ajustar `vite.config` a `.ts` si procede; verificar arranque `pnpm dev`.
-- [ ] Migrar `eslint.config.js` a soporte TS (parser/plugin TypeScript) sin romper `pnpm lint`.
+**JUP [`jup-093-configure-typescript`](../../openspec/changes/archive/2026-09-06-jup-093-configure-typescript/) — carril `standard`**
+- [x] Anadir `typescript`, `@types/react`, `@types/react-dom` (y tipos necesarios) con **pnpm**.
+- [x] Crear `tsconfig.json` (y `tsconfig.node.json` para la config de Vite).
+- [x] Ajustar `vite.config` a `.ts`; verificado arranque `pnpm dev` (host/puerto del monorepo intactos).
+- [x] Migrar `eslint.config.js` a soporte TS (parser/plugin TypeScript) sin romper `pnpm lint` (línea
+  base de 49 violaciones `react/prop-types`, `RF-082-002`, intacta). Añadido también, más allá de las
+  cuatro tareas de este spike, el type-check como séptimo check obligatorio de CI (ADR-0003, decisión
+  3): ver [ADR-0003](../adr/ADR-0003-frontend-typescript.md).
 
-**JUP `jup-0xx-reconciliar-package-json`** — carril `standard`
-- [ ] Fusionar dependencias del origen en `apps/frontend/package.json`.
-- [ ] Conservar nombre `@finops/frontend`, `type: module` y los scripts del monorepo (puerto 5173).
-- [ ] Instalar con `pnpm install` desde la raiz; **nunca** `npm i`.
-- [ ] Verificar lockfile actualizado y `pnpm install --frozen-lockfile` reproducible.
+**JUP [`jup-094-reconcile-package-json`](../../openspec/changes/jup-094-reconcile-package-json/) — carril `standard`**
+- [x] Fusionar dependencias del origen en `apps/frontend/package.json`: las 11 `MANTENER` del
+  inventario de JUP-091, ajustando `react-router`/`recharts`/`lucide-react` a las versiones exactas
+  del origen tras un salto de mayor incompatible del resolutor (mismo patrón que `typescript@7` en
+  JUP-093). Vite se mantiene en la serie 5: ninguna dependencia entrante fuerza el 6.
+- [x] Conservar nombre `@finops/frontend`, `type: module` y los scripts del monorepo (puerto 5173).
+- [x] Instalar con `pnpm install` desde la raiz; **nunca** `npm i`.
+- [x] Verificar lockfile actualizado y `pnpm install --frozen-lockfile` reproducible.
+- [x] **Añadido durante el `apply`, más allá de las cuatro tareas de este spike:** adopción de
+  shadcn/ui (subconjunto de 6 paquetes Radix) para F3, registrada en
+  [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md) y cerrando `RF-091-002`.
+
+**F2 (Tooling y dependencias) queda completa** con JUP-093 y JUP-094.
 
 ### F3. Reemplazo del codigo fuente
 
@@ -341,3 +352,15 @@ tarjeta JUP** de la epica.
    **F1 (Preparacion e inventario) queda completa** con JUP-090, JUP-091 y JUP-092.
 4. Numeracion de Trello resuelta: JUP-090/091/092 para F1. Siguiente: crear las tarjetas de F2
    (Tooling y dependencias) citando el ADR-0003 en su `design.md`, segun su seccion de seguimiento.
+5. **Hecho en JUP-093:** tooling de TypeScript configurado en `apps/frontend` (dependencias,
+   `tsconfig`, `vite.config.ts`, ESLint con soporte TS, type-check obligatorio en CI). `RF-082-002`
+   permanece `Open`: ningun archivo `.jsx` se migro, es tarea de F3/cierre de F5.
+6. **Hecho en JUP-094: F2 (Tooling y dependencias) queda completa.** Fusionadas las 11 dependencias
+   `MANTENER` del inventario de JUP-091; Vite se mantiene en la serie 5 (ninguna dependencia entrante
+   fuerza el 6). Durante el `apply` se revisó la decisión de shadcn/ui: de descartar a adoptar un
+   subconjunto de 6 paquetes Radix, registrado en
+   [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md) (`Accepted`) y cerrando `RF-091-002`. `src/**`
+   sigue intacto: copiar el código de cada componente shadcn es tarea de F3, componente por
+   componente. Siguiente: crear las tarjetas de F3 (`portar-codigo-fuente`,
+   `reconciliar-capa-api`, `reconciliar-auth-tenant`, `unificar-estilos-assets`), citando ADR-0003 y
+   ADR-0004 en su `design.md`.

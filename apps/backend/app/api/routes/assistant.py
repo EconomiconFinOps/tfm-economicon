@@ -8,6 +8,7 @@ from app.api.dependencies import (
     get_vector_store,
     get_database,
 )
+from app.core.metrics import assistant_queries_total
 from app.schemas.assistant import (
     AssistantReply,
     ConversationCollection,
@@ -104,6 +105,8 @@ def send_message(
         content=assistant_output["content"],
         metadata={"citations": assistant_output["citations"]},
     )
+
+    assistant_queries_total.inc()
 
     return AssistantReply(
         conversation=ConversationRecord(**conversation),
