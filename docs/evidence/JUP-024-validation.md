@@ -1,6 +1,7 @@
 # Evidencia de validacion JUP-024
 
-- Fecha inicial: 2026-08-27; pairing: 2026-08-28; revalidacion: 2026-09-08.
+- Fecha inicial: 2026-08-27; pairing: 2026-08-28; revalidacion: 2026-09-08;
+  cierre de implementacion: 2026-09-09 (hora de Paris).
 - Trello: https://trello.com/c/8SDUi2t9
 - Repositorio: `EconomiconFinOps/tfm-economicon`.
 - Rama: `feat/JUP-024-structured-response-guardrails`.
@@ -8,7 +9,32 @@
 - Base reconciliada el 2026-09-08: `ae538aadbf8012c144d540644691a9d80a5a4508`.
 - Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/18
 - GitHub Actions inicial: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/33100439504
-- Estado Trello: `40 — En revision`.
+- Estado Trello: `70 — Hecho`, desde el 2026-09-09 a las 01:11 de Paris.
+- Head final revisado: `da95edb74ddc9f731ad247169b87c8c0b17ca8ea`.
+- Merge squash: `7d76fc376e0eca1aac6401304977575a2f92ceb5`, en `develop`.
+- CI final: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/34289337302
+- Especificacion vigente: [finops-response-guardrails](../../openspec/specs/finops-response-guardrails/spec.md).
+- Cambio archivado: [JUP-024](../../openspec/changes/archive/2026-09-09-jup-024-structured-response-guardrails/).
+
+## Cierre de implementacion — 2026-09-09
+
+Lucia Mateo (`lmatsan`) registro la
+[revision aprobatoria](https://github.com/EconomiconFinOps/tfm-economicon/pull/18#pullrequestreview-5147917593)
+en GitHub y realizo el merge a `develop` a las 01:11 de Paris
+(2026-09-08T23:11:00Z). Tambien documento la revision y el cierre en Trello,
+antes de mover la tarjeta a Hecho. La PR #18 ya no requiere revision ni merge.
+
+El head final incorpora `develop` en `038507e`, con la dockerizacion JUP-049
+de la PR #16. Esa sincronizacion conserva los archivos del contrato, prompt,
+guardrails y pruebas del agente. Lucia registra 16/16 pruebas locales y
+verifica el saneamiento del traceback, con `__cause__` y `__context__` vacios.
+Los siete checks de la ejecucion final enlazada arriba terminaron correctamente.
+
+Esta actualizacion documental registra las participaciones existentes, completa
+la tarea 3.7, archiva el cambio y promueve sus requisitos sin alterarlos. No
+introduce comportamiento de runtime ni presenta los resultados historicos de
+abajo como nuevas ejecuciones. Las llamadas reales a proveedores y el residual
+de calidad frontend conservan sus tareas independientes.
 
 ## Alcance validado
 
@@ -68,20 +94,22 @@ Alejandro Aguado registra participacion atribuible como pairing/coautor mediante
 Esta evidencia completa exclusivamente el rol de pairing/coautoria de
 Alejandro. No acredita la revision de Lucia ni la validacion de Paris.
 
-## Participacion registrada y pendiente — 2026-09-08
+## Participacion registrada al cierre — 2026-09-09
 
-- Liderazgo: Victor Mendez.
+- Liderazgo asignado: Victor Mendez.
 - Pairing/coautoria: Alejandro Aguado, registrado arriba.
-- Revision de PR: Lucia Mateo (`lmatsan`), solicitada y pendiente.
+- Revision de PR: Lucia Mateo (`lmatsan`), aprobada sobre `da95edb` y enlazada
+  en el cierre de implementacion.
 - Validacion, pruebas y documentacion: Paris Arcos Martin, registrada el
   2026-09-07 en su
   [comentario de validacion](https://github.com/EconomiconFinOps/tfm-economicon/pull/18#issuecomment-5570688974).
   Paris tambien aprobo el head `77f4784` ese dia.
 
-La validacion y aprobacion de Paris corresponden al head anterior; no acreditan
-una revision humana de esta sincronizacion ni sustituyen la revision asignada
-a Lucia. JUP-024 permanece en revision hasta registrar esa participacion y
-completar la integracion de la PR.
+La validacion y aprobacion de Paris corresponden al head anterior. La revision
+del head final la acredita Lucia; las dos participaciones se mantienen
+diferenciadas. El pairing, la revision y la validacion de la tarea 3.7 ya estan
+registrados. La asignacion de liderazgo no se presenta como una aprobacion
+adicional de Victor.
 
 ## Revalidacion contra develop — 2026-09-08
 
@@ -121,6 +149,19 @@ CockroachDB de pruebas; no se ejecutaron en esta revalidacion local. El backend
 emite dos avisos sobre la clave corta de su fixture de pruebas. El lint conserva
 exactamente la deuda de RF-082-002 / JUP-087, en archivos identicos a `develop`.
 
-Los siete checks de GitHub Actions se ejecutan al publicar la actualizacion,
-con Python 3.12 y Node 22. La descripcion de la PR enlaza la ejecucion del head
-publicado; las ejecuciones historicas no acreditan esta sincronizacion.
+Los siete checks de GitHub Actions del head reconciliado `fe99cf5` pasaron
+con Python 3.12 y Node 22. La sincronizacion posterior `da95edb` tambien obtuvo
+siete checks verdes en la ejecucion final enlazada al principio; los recuentos
+locales de esta seccion corresponden exclusivamente al arbol del 2026-09-08.
+
+## Validacion del cierre documental — 2026-09-09
+
+- `openspec archive jup-024-structured-response-guardrails --yes`: tareas
+  completas; 12 requisitos promovidos y cambio archivado con validacion activa.
+- OpenSpec estricto: 27/27 elementos validos.
+- Ocho suites Node de gobernanza, corpus y gateway: 55/55 pruebas.
+- Trazabilidad de los 14 cambios activos e higiene de 468 archivos: correctas.
+- Requisitos y escenarios promovidos conservados sin cambios respecto al delta
+  integrado en la PR #18. Documentos de proposal y design conservados.
+- Este cierre no cambia archivos de aplicacion, dependencias ni CI; no requiere
+  repetir pruebas funcionales locales. La PR documental ejecuta la CI habitual.
