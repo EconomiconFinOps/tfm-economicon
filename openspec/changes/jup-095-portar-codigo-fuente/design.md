@@ -212,6 +212,73 @@ resuelven **tipando**: prohibido `any` nuevo y `@ts-ignore`. Si el volumen desbo
 aplica el criterio de escape que ADR-0003 ya fijó — se documenta el desbordamiento y se supersede el
 ADR con uno nuevo, sin relajar la configuración en silencio ni por conveniencia local.
 
+## Addendum: arquitectura del grupo 6 (enrutado y armazón)
+
+Redactado antes de implementar el grupo 6, tras confirmar con Victor el mecanismo de paso de estado
+(Outlet context de react-router, no Context API propio — ver gate del grupo 6).
+
+**Problema a resolver.** `App.jsx` hoy concentra sesión, tenant activo y el `switch` manual por
+`activeView`; sus tres pantallas destino (`DashboardPage`, `IngestPage`, `ConversationsPage`) reciben
+`token`/`user`/`tenants`/`activeTenant` como **props** desde `App.jsx`. Con `Component: X` en las rutas
+de `react-router` (patrón ya usado en `routes.tsx` desde el grupo 5), el router instancia cada
+componente de ruta sin props explícitas — no hay forma de inyectar props dinámicas calculadas en un
+padre hacia un componente de ruta estático. La única vía idiomática para compartir estado calculado en
+una ruta padre con sus rutas hijas es `<Outlet context={...} />` + `useOutletContext()`.
+
+**Componentes nuevos/modificados:**
+
+- **`src/layouts/SessionGate.tsx` (nuevo).** Ruta padre de `Layout` en el árbol. Lee la sesión de
+  `localStorage` con el mismo patrón de inicialización perezosa que `App.jsx` hoy (`useState(() =>
+  loadStoredJson(SESSION_KEY))`). Sin sesión: `<Navigate to="/login" replace />` — satisface el
+  escenario de spec "sin sesión se presenta el acceso" también para URLs directas a rutas protegidas,
+  no solo la raíz. Con sesión: reproduce **verbatim** el bootstrap de tenants (`useQuery` de
+  `App.jsx:43-47`), el `useEffect` de auto-selección (`App.jsx:49-67`), el cómputo de `activeTenant`
+  (`App.jsx:69-72`), `handleLogout` (`App.jsx:83-89`) y `handleTenantChange` (`App.jsx:91-94`). Los
+  estados de carga/error del bootstrap de tenants (`App.jsx:100-124`) se reconstruyen sobre Tailwind,
+  al ser código nuevo del armazón, no una "pantalla portada" de las que la tarjeta preserva verbatim.
+  Renderiza `<Outlet context={{ token, user, tenants, activeTenant, activeTenantId, onTenantChange,
+  onLogout }} />`.
+- **`src/layouts/Layout.tsx` (modificado, no bloqueado por el hook — no es archivo de test).** Lee
+  `useOutletContext()` de forma **defensiva** (`?? {}`, sin desestructurar directo): cuando no hay
+  contexto (como en el test ya commiteado del grupo 5, que renderiza `<Layout />` dentro de un
+  `MemoryRouter` sin árbol de rutas real), el componente se comporta exactamente igual que hoy — nav
+  presente, selector/panel ausentes por falta de datos. **El test de `Layout` del grupo 5 no se toca
+  ni necesita tocarse.** Con contexto presente, añade el selector de ámbito de cliente y el panel de
+  sesión/logout que hoy viven en `AppShell.jsx:36-61`, reconstruidos sobre Tailwind. Reenvía el mismo
+  contexto hacia abajo: `<Outlet context={ctx} />`.
+- **`src/pages/{LoginPage,IngestPage,ConversationsPage,DashboardPage}.tsx` (reconstruidos).**
+  `IngestPage`/`ConversationsPage`/`DashboardPage` pasan de recibir props a leer
+  `useOutletContext()` — único cambio mecánico sobre su lógica, que se preserva verbatim (mismas
+  llamadas a `services/api.js`, mismas mutaciones/queries, mismas condiciones de carga/error).
+  `LoginPage` vive **fuera** del árbol protegido (no hay `SessionGate` por encima): su mutación de
+  login hace **verbatim** lo que hoy hace `App.jsx.handleLogin` (construir `nextSession`,
+  `localStorage.setItem`) y navega a `/` con `useNavigate()` de react-router, sustituyendo el callback
+  `onLogin` que recibía de `App.jsx`. Las cuatro se reconstruyen visualmente sobre Tailwind/shadcn.
+- **`MetricCard`/`SectionCard`/`StatusPill` (reconstruidos).** Usados solo por `DashboardPage`;
+  clasificados `REEMPLAZAR` en la línea base de JUP-090 (clases de `main.css`). Se reconstruyen sobre
+  Tailwind con el lenguaje visual ya establecido por los 5 dashboards del origen (tarjetas con
+  degradado, borde, `rounded-lg`, `shadow-xl`), para que `/overview-legacy` no quede visualmente
+  desentonada del resto de la aplicación.
+- **`src/routes.tsx` (modificado).** Añade `/login` (fuera de `Layout`) y, bajo `Layout` junto a las 5
+  rutas del origen: `/ingest` → `IngestPage`, `/assistant` → `ConversationsPage`, `/overview-legacy` →
+  `DashboardPage`. `Layout` pasa a ser hijo de `SessionGate` en el árbol, no la raíz.
+- **`src/App.jsx` → `src/App.tsx` (simplificado).** Se reduce a `<RouterProvider router={router} />`,
+  igual que el `App.tsx` del origen. Toda la lógica que hoy contiene se reparte entre `SessionGate` y
+  `LoginPage`.
+- **`AppShell.jsx` se retira**: su contenido ya vive en `Layout` (nav + selector + panel) y
+  `SessionGate` (sesión/tenant).
+
+**Por qué Outlet context y no Context API propio:** es el mecanismo nativo de react-router v7 para
+compartir estado calculado en una ruta padre con sus rutas hijas, sin introducir un `createContext`
+adicional que duplicaría lo que el router ya resuelve. Encaja con que `SessionGate`/`Layout` son ya
+los únicos puntos del árbol donde vive la lógica de sesión/tenant — no hay necesidad de que ese estado
+sea accesible fuera del árbol de rutas.
+
+**Orden de implementación** (sub-rondas dentro del grupo 6, cada una con su propio Red/Green): (a)
+`SessionGate` + `routes.tsx` extendido + `Layout` con selector/panel; (b) `LoginPage`; (c)
+`IngestPage` + `ConversationsPage`; (d) `DashboardPage`/`overview-legacy` + `MetricCard`/`SectionCard`/
+`StatusPill` + simplificación de `App.jsx` y retirada de `AppShell.jsx`.
+
 ## Risks / Trade-offs
 
 - **El volumen de errores de tipo del código del origen es desconocido hasta intentarlo** (riesgo que
