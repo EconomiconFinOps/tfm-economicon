@@ -75,6 +75,7 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "assistant-corpus:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
+    "docker:validate",
     "collaboration:test",
     "openspec:validate",
   ]) {

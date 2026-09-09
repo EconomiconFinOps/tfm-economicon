@@ -109,3 +109,48 @@ backend y la configuracion de CI. La tarjeta permanece en revision hasta la
 aprobacion humana y la evidencia atribuible de sus roles; esta validacion no
 declara pairing ni participacion humana realizados. Los checks y su ejecucion
 remota final se enlazan desde la descripcion de la PR de esta rama.
+
+## Revalidacion contra develop — 2026-09-09
+
+- Base integrada: `7d76fc376e0eca1aac6401304977575a2f92ceb5`, con JUP-049
+  (PR #16, contenedores) y JUP-024 (PR #18, guardrails del agente).
+- Head anterior: `ddbc68930afc81d0690bb776e072adf8532d8514`. Se incorpora la
+  base mediante merge, conservando el historial publicado de la PR #29.
+- El unico conflicto textual estaba en `apps/frontend/package.json`.
+  Se conservan lint, Vitest, typecheck y dependencias de JUP-087, junto al
+  comando Docker de JUP-049 que usa la raiz del workspace como contexto.
+- CI mantiene lint y pruebas dentro de `Frontend build` e incorpora
+  `docker:validate`. Dockerfile, Compose y processor coinciden con `develop`;
+  el codigo, las 28 pruebas y el lockfile de JUP-087 permanecen intactos.
+- La mencion previa al Docker pendiente corresponde al baseline del 08/09;
+  esta integracion incorpora el trabajo de JUP-049 y su build reproducible.
+
+| Validacion del resultado integrado | Resultado |
+|---|---|
+| Instalacion con lockfile congelado | Correcta, sin cambios en dependencias |
+| Lint del workspace | Cero errores |
+| Frontend | 28/28 pruebas; build y typecheck correctos |
+| Herramientas del repositorio, incluida topologia Docker | 64/64 |
+| Puente de colaboracion con clientes simulados | 12/12 |
+| OpenSpec estricto | 27/27 |
+| Trazabilidad / higiene / corpus | 15 cambios, 475 archivos y manifiesto correctos |
+| Revision independiente de la integracion | Sin hallazgos introducidos por el merge |
+
+La imagen frontend se construyo con el Dockerfile versionado y contexto raiz
+del workspace: Docker Engine 29.6.2, Node 20.20.2, pnpm 9.0.0, Vite 5.4.21 y
+Vitest 3.2.7. El contenedor exclusivo alcanzo `healthy` con usuario `node`
+(UID 1000), raiz de solo lectura, `/tmp` en tmpfs, `no-new-privileges` e init.
+No se publicaron puertos. La pagina y sus assets JS/CSS respondieron HTTP 200.
+
+El preview arranco con la configuracion copiada a `/tmp`; se comprobo tambien
+la resolucion y carga real de `vitest/config` desde esa ruta. No hubo errores
+de ejecucion; solo el aviso heredado de deprecacion de la API CJS de Vite.
+El contenedor y la imagen exclusivos de prueba se retiraron al finalizar.
+Logs y harness locales: `materiales/07-evidencias/jup087-reconciliation-20260909/`,
+fuera del repositorio. Esta prueba valida el frontend empaquetado, sin repetir
+los recorridos contra un backend real ni las suites de integracion de servicios.
+
+Los siete checks remotos se ejecutan de nuevo al publicar el resultado. Su
+ejecucion queda enlazada en la descripcion de la PR y en Trello. Se mantiene
+la solicitud de revision a Lucia; la actualizacion no acredita aprobacion ni
+validacion humana y no fusiona la PR hacia `develop`.
