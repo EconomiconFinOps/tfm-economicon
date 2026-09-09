@@ -19,3 +19,11 @@ Las métricas de dominio (p. ej. `backend_ingest_jobs_total`, `backend_assistant
 Prometheus scrapea ambos `/metrics` en el stack local (`docker-compose.yml`, `apps/monitoring/prometheus/prometheus.yml`), y Grafana visualiza un dashboard mínimo provisionado como código (`apps/monitoring/grafana/`).
 
 Introducido en JUP-043.
+
+## Trazabilidad extremo a extremo (ingesta)
+
+El `request_id` de la petición HTTP que crea un job (`POST /jobs/ingest`) viaja dentro del mensaje publicado a RabbitMQ (`job["request_id"]`). El `ProcessorWorker` (`apps/processor/app/workers/runner.py`), al consumir cada mensaje, hace `clear_contextvars()` seguido de `bind_contextvars(request_id=...)` con ese valor (o uno generado si el mensaje no lo trae) antes de procesar el job — todos los logs de `IngestTask`, `PipelineRunner` y sus dependencias heredan el `request_id` automáticamente, igual que ocurre con las peticiones HTTP.
+
+No se persiste el `request_id` en la tabla `jobs`; vive solo en el mensaje de cola y en los logs.
+
+Introducido en JUP-044.
