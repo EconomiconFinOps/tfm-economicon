@@ -1,12 +1,15 @@
+from unittest.mock import MagicMock
+
 import structlog
 
 from app.api.routes.jobs import create_ingest_job
+from app.db.database import Database
 from app.schemas.jobs import IngestJobRequest
 
 
-class _FakeDatabase:
-    def create_job(self, payload, created_by):
-        return {"id": "job-1", "status": "queued", "payload": payload}
+class _FakeDatabase(Database):
+    def __init__(self):
+        self.engine = MagicMock()
 
 
 class _CapturingQueue:
@@ -24,13 +27,16 @@ def test_ingest_job_payload_carries_the_current_request_id():
     structlog.contextvars.clear_contextvars()
     structlog.contextvars.bind_contextvars(request_id="req-abc-123")
     queue = _CapturingQueue()
+    payload = IngestJobRequest(
+        tenant_id="tenant-core",
+        source="azure-cost",
+        artifact_uri="corpus://monthly-report",
+        text_content="report",
+        metadata={"title": "Monthly report", "tenant_id": "metadata-is-not-authorization"},
+    )
 
-    create_ingest_job(
-        payload=IngestJobRequest(
-            tenant_id="tenant-core",
-            source="aws-cur",
-            text_content="report",
-        ),
+    response = create_ingest_job(
+        payload=payload,
         current_user={"id": "user-1"},
         tenant_id="tenant-core",
         database=_FakeDatabase(),
@@ -38,6 +44,12 @@ def test_ingest_job_payload_carries_the_current_request_id():
     )
 
     assert queue.published["request_id"] == "req-abc-123"
+    assert queue.published["id"] == response.job_id
+    assert queue.published["tenant_id"] == payload.tenant_id
+    assert queue.published["source"] == payload.source
+    assert queue.published["artifact_uri"] == payload.artifact_uri
+    assert queue.published["payload"] == payload.model_dump()
+    assert "text_content" not in queue.published
     structlog.contextvars.clear_contextvars()
 
 

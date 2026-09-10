@@ -1,5 +1,12 @@
 # Findings Backlog
 
+Actualizacion RF-053-004 (2026-09-10): correccion implementada y validada en
+`fix/JUP-020-ingestion-contract`, pendiente de revision e integracion. La
+[evidencia JUP-020](../../docs/evidence/JUP-020-validation.md) reproduce el
+fallo anterior y acredita tres jobs completados por el flujo HTTP/RabbitMQ,
+con 57 chunks y 57 embeddings persistidos. El historial de JUP-053 y su
+smoke fallido se conserva; el alcance completo de JUP-020 sigue abierto.
+
 | ID | Fecha | Origen | Tipo | Severidad | Scope | Estado | Owner | Accion | Change/Fix |
 |----|-------|--------|------|-----------|-------|--------|-------|--------|------------|
 | RF-082-001 | 2026-08-25 | jup-082-clean-develop | Repository hygiene | High | In scope | Fixed | Equipo Economicon | Remove personal agent configuration, vendor executables and duplicate task proposals while preserving functional changes | JUP-082 |
