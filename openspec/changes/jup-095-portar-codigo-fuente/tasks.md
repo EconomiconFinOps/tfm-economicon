@@ -136,6 +136,16 @@ documentada (decisión de Victor). Veredicto QA: `accept`. Detalle completo en `
 Faltan de 6.1: `/login`, `/ingest`, `/assistant`, `/overview-legacy` (sub-rondas b-d). Falta de 6.3:
 retirar `AppShell` (sub-ronda d).
 
+**Sub-ronda (b) — `LoginPage` reconstruida (parcial de 6.4): hecha.** `LoginPage.tsx` reemplaza al
+`.jsx`: sin prop `onLogin`, persiste sesión y navega a `/` ella misma (`SESSION_KEY` ahora exportado
+desde `SessionGate.tsx`, no duplicado). Mutación: 43.48% → reforzada a petición de Victor (archivo
+pequeño, refuerzo barato) → **82.61%** tras `LoginPage.mutation.test.tsx` (verifica el `body` real
+enviado a `fetch`, con y sin edición de campos). 3 supervivientes + 1 NoCoverage (`navigate`
+options, `preventDefault`, texto `"Signing in..."`) no atacados deliberadamente, documentados en
+`review.md`. Veredicto QA: `accept`. `lint` baja a 48 (desaparece la violación de `LoginPage.jsx`).
+`App.jsx` sigue importando `./pages/LoginPage` (ahora inexistente): deuda esperada, resuelta en la
+sub-ronda (d).
+
 - [ ] 6.1 Montar el enrutado con el mapa de la decisión 3: bajo el `Layout`, `/`, `/operational`,
   `/cuts`, `/anomalies`, `/recommendations`, `/ingest` y `/assistant`; `/login` fuera del `Layout`;
   `/overview-legacy` como ruta puente del resumen de facturación actual.

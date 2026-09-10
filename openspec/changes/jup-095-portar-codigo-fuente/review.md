@@ -439,3 +439,44 @@ permisivo), que `Layout.test.tsx` del grupo 5 sigue sin tocarse, que la fecha de
 y reprodujo la mutación de forma independiente.
 
 **Findings de esta sub-ronda:** ninguno nuevo.
+
+### Sub-ronda (b) — `LoginPage` reconstruida
+
+**Red** (tester, commit `c7bc733`): `LoginPage.test.tsx` — monta con `createMemoryRouter`/
+`RouterProvider`/`QueryClientProvider`, `fetch` mockeado, verifica que tras un login exitoso navega a
+`/` (ruta de sonda) y persiste `{ accessToken, user }` en `localStorage["finops.session"]`. Evidencia
+Red: `1 failed | 20 passed (21)` — `LoginPage.jsx` actual depende del prop `onLogin` (`undefined` al
+montarse como componente de ruta sin props), así que `onSuccess` nunca se invoca.
+
+**Green** (coder): `LoginPage.tsx` (nuevo) reemplaza a `LoginPage.jsx` (eliminado). Ya no recibe
+`onLogin`: en el `onSuccess` de su mutación reproduce **verbatim** `App.jsx.handleLogin` (construir
+`{ accessToken, user }`, persistir en `localStorage`) y navega con `useNavigate()`. `SESSION_KEY`
+pasa a exportarse desde `SessionGate.tsx` en vez de duplicar el string en dos sitios. Lógica de
+formulario conservada tal cual; solo cambian tipado (TS estricto, sin `any`) y presentación
+(Tailwind, tema oscuro coherente con `SessionGate`/`Layout`). `App.jsx` queda con un import roto a
+`./pages/LoginPage` — **deuda esperada y documentada**, no detectada por `typecheck` (`checkJs:
+false`) ni por los tests (ninguno ejecuta `App.jsx`); se resuelve en la sub-ronda (d). Evidencia
+Green: `21/21 pass`. `typecheck` limpio. `lint`: 49 → **48** (desaparece la violación de
+`react/prop-types` de `LoginPage.jsx`, uno de los 9 archivos de la línea base original).
+
+**Mutación**: primera corrida acotada a `LoginPage.tsx`, **43.48%** (8 survived, 5 NoCoverage) — el
+único test no escribía en los campos ni inspeccionaba el cuerpo enviado a `fetch`. A diferencia de
+las sub-rondas anteriores, **Victor eligió reforzar** (archivo pequeño, refuerzo barato): tester
+añadió `LoginPage.mutation.test.tsx` (nuevo, sin tocar `LoginPage.test.tsx`) con dos casos que
+inspeccionan el `body` real de `fetch` — (A) formulario sin tocar envía los valores por defecto
+exactos; (B) campos editados (`fireEvent.change`) envían esos valores, no los por defecto. Score
+final: **82.61%** (19 killed, 3 survived, 1 NoCoverage), por encima del umbral de corte. No atacados
+deliberadamente: `navigate("/", { replace: true })` mutado a `{}`/`{replace: false}` (difícil de
+observar sin inspeccionar el historial del router en este entorno), `event.preventDefault()`
+eliminado (jsdom no navega páginas reales, efecto no observable), y el texto `"Signing in..."` del
+botón pendiente (NoCoverage, riesgo mínimo de UI).
+
+**DoD:** `check-dod.mjs` falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
+`--filter`: los cuatro comandos en verde. Escaneo de secretos en verde.
+
+**QA:** `accept` en primera pasada. Verificó de forma independiente que `handleLogin` está preservado
+verbatim, que `SESSION_KEY` no quedó duplicado, que los tests de mutación inspeccionan el cuerpo real
+de `fetch` (no tautológicos), y reprodujo la mutación desde cero con el comando documentado en
+`mutation.md`.
+
+**Findings de esta sub-ronda:** ninguno nuevo.

@@ -11,7 +11,11 @@ import { Navigate, Outlet } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTenants } from "../services/api";
 
-const SESSION_KEY = "finops.session";
+// Exportada porque `LoginPage.tsx` necesita la misma clave para persistir la
+// sesion tras el login (App.jsx.handleLogin:74-81 trasladado alli): centraliza
+// el string magico en un unico sitio para que ambos archivos no puedan
+// divergir silenciosamente si la clave cambia en el futuro.
+export const SESSION_KEY = "finops.session";
 const TENANT_KEY = "finops.activeTenant";
 
 // Forma minima de los datos que SessionGate controla directamente: la sesion
