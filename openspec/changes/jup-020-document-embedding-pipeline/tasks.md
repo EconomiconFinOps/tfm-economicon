@@ -15,4 +15,6 @@
 - [ ] 2.5 Obtain assigned PR review and functional validation before closure.
 
 Delivery: [PR #34](https://github.com/EconomiconFinOps/tfm-economicon/pull/34),
-draft against `develop`. JUP-020 remains in progress on Trello.
+against `develop`, prepared for review by Lucia Mateo (`lmatsan`). Assigned
+approval and functional validation remain pending. JUP-020 remains in progress
+on Trello for its residual corpus/provider work.

@@ -4,8 +4,9 @@
 - Rama: `fix/JUP-020-ingestion-contract`, basada en `develop` `1ff8e07`.
 - Fecha: 2026-09-10.
 - Alcance: incidencia de contrato registrada en JUP-020 y RF-053-004.
-- PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/34, borrador
-  contra `develop`; revision e integracion pendientes.
+- PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/34,
+  contra `develop`; preparada para revision de Lucia Mateo (`lmatsan`).
+  Aprobacion, validacion asignada e integracion pendientes.
 
 ## Correccion
 
