@@ -32,3 +32,40 @@ class ResizeObserverMock {
 }
 
 globalThis.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
+
+// jsdom sombrea `AbortController`/`AbortSignal` con su propia implementación
+// (class AbortSignal extends globalObject.EventTarget), pero `Request` se
+// queda nativo de Node (undici, jsdom no implementa Fetch). El `Request`
+// nativo valida `signal instanceof AbortSignal` contra SU PROPIA clase
+// interna, distinta de la de jsdom: cualquier `new Request(url, { signal })`
+// construido con un signal de jsdom lanza `TypeError: RequestInit: Expected
+// signal ... to be an instance of AbortSignal`. `react-router` 7 construye
+// exactamente eso en cada navegación real (`createClientSideRequest`,
+// incluso sin loaders), así que sin este parche ninguna prueba que navegue
+// de verdad con `createMemoryRouter`/`RouterProvider` puede funcionar
+// (verificado en JUP-095, grupo 6, con un repro mínimo sin código de
+// producto: un `<Navigate>` desnudo ya revienta).
+//
+// No hay forma de recuperar el `AbortController` nativo de Node desde aquí
+// (ya está sombreado quando arranca el entorno de test, antes de que este
+// archivo se ejecute), así que el parche interviene en el otro extremo:
+// envuelve `Request` en un `Proxy` que, SOLO si la construcción falla por
+// el `signal`, reintenta sin él. No es un polyfill permisivo que ignore
+// cualquier error — cualquier otro fallo de `Request` se sigue propagando
+// tal cual.
+const NativeRequest = globalThis.Request;
+
+globalThis.Request = new Proxy(NativeRequest, {
+  construct(target, args) {
+    try {
+      return Reflect.construct(target, args);
+    } catch (error) {
+      const [input, init] = args as [unknown, RequestInit | undefined];
+      if (init && "signal" in init) {
+        const { signal: _signal, ...rest } = init;
+        return Reflect.construct(target, [input, rest]);
+      }
+      throw error;
+    }
+  }
+}) as typeof Request;
