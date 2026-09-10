@@ -1,4 +1,5 @@
-import time
+from contextlib import ExitStack
+import threading
 import uuid
 
 import structlog
@@ -21,33 +22,47 @@ logger = structlog.get_logger(__name__)
 class ProcessorWorker:
     def __init__(self, settings: Settings):
         self.settings = settings
-        self.database = Database(settings.database_url)
-        self.queue = RabbitMQQueue(settings.rabbitmq_url, settings.processor_queue_name)
-        self.vector_store = PgVectorStore(settings.vector_database_url, settings.embedding_dimension)
-        self.repository = JobRepository(self.database)
-        self.pipeline = PipelineRunner(
-            AgentRuntime(settings),
-            TextChunker(settings.embedding_chunk_size, settings.embedding_chunk_overlap),
-            get_embedding_provider(settings.embedding_provider, settings.embedding_dimension),
-            self.vector_store,
-        )
-        self.task = IngestTask(self.repository, self.pipeline)
+        self._stopping = threading.Event()
+        with ExitStack() as resources:
+            self.database = Database(settings.database_url.get_secret_value())
+            resources.callback(self.database.dispose)
+            self.queue = RabbitMQQueue(settings.rabbitmq_url.get_secret_value(), settings.processor_queue_name)
+            resources.callback(self.queue.close)
+            self.vector_store = PgVectorStore(settings.vector_database_url.get_secret_value(), settings.embedding_dimension)
+            resources.callback(self.vector_store.close)
+            self.repository = JobRepository(self.database)
+            self.pipeline = PipelineRunner(
+                AgentRuntime(settings),
+                TextChunker(settings.embedding_chunk_size, settings.embedding_chunk_overlap),
+                get_embedding_provider(settings.embedding_provider, settings.embedding_dimension),
+                self.vector_store,
+            )
+            self.task = IngestTask(self.repository, self.pipeline)
+            # Initialize synchronously so combined startup cannot orphan a failing worker.
+            self.database.initialize()
+            self.vector_store.initialize()
+            self._resources = resources.pop_all()
+
+    def stop(self) -> None:
+        self._stopping.set()
+
+    def close(self) -> None:
+        self.stop()
+        self._resources.close()
 
     def run_forever(self) -> None:
-        self.database.initialize()
-        self.vector_store.initialize()
         logger.info("Processor worker started for queue %s", self.settings.processor_queue_name)
 
-        while True:
+        while not self._stopping.is_set():
             try:
                 message = self.queue.blocking_pop(timeout=5)
                 if message is None:
-                    time.sleep(1)
+                    self._stopping.wait(1)
                     continue
                 self._process_message(message)
             except Exception as exc:
                 logger.exception("Worker loop failed: %s", exc)
-                time.sleep(2)
+                self._stopping.wait(2)
 
     def _process_message(self, message: QueueMessage) -> None:
         job = message.payload

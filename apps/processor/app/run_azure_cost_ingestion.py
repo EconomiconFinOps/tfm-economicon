@@ -5,7 +5,8 @@ import json
 from pathlib import Path
 
 from app.clients.azure_cost import AzureCostClient, AzureCostClientError
-from app.core.config import Settings
+from app.core.config import get_settings
+from app.core.runtime_secrets import startup_boundary
 from app.core.logging import configure_logging
 from app.db.database import Database
 from app.normalization.azure_cost import AzureCostNormalizer, AzureCostNormalizationError
@@ -50,11 +51,12 @@ def load_definition(path: Path | None) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+@startup_boundary
 def main() -> int:
     args = parse_args()
+    settings = get_settings()
     configure_logging()
-    settings = Settings()
-    database = Database(settings.database_url)
+    database = Database(settings.database_url.get_secret_value())
     repository = SqlAzureCostRepository(database)
     try:
         database.initialize()

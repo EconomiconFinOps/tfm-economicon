@@ -55,6 +55,10 @@ Desde la raiz del repo:
 docker compose up --build backend
 ```
 
+Requiere preparar primero los secretos y la excepcion local del
+[README raiz](../../README.md#variables-de-entorno). Copiar el ejemplo vacio
+no basta; no sobrescribir un `.env` existente.
+
 Puerto visible:
 
 - `http://localhost:8000`
@@ -79,7 +83,8 @@ Desde `apps/backend`:
 
 ```powershell
 python -m pip install -r requirements-dev.txt
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+$env:ECONOMICON_ENV_FILE = (Resolve-Path ../../.env).Path
+python -m app.run --reload
 ```
 
 Puerto visible:
@@ -123,10 +128,24 @@ demostracion; solo `open_ingestions` se calcula de verdad. No lee las tablas de 
 alimenta el `processor` (`azure_cost_ingestion_runs`, `azure_cost_records`). Verificado en JUP-091:
 ver `RF-091-004` en `openspec/findings/backlog.md`.
 
-La cuenta seed local para pruebas es:
+La cuenta demo solo se crea con `DEMO_SEED_ENABLED=true` y una
+`DEMO_PASSWORD` externa no heredada:
 
 - email: `operator@example.com`
-- password: `secret`
+- password: introducir manualmente el valor configurado para una cuenta nueva.
+
+El seed esta apagado por defecto. Una cuenta existente conserva hash,
+identidad y roles; cambiar `DEMO_PASSWORD` no los actualiza. Si el arranque
+detecta la password demo heredada fuera de test, se detiene incluso con el
+seed apagado. Aplicar la [rotacion manual parametrizada](../../docs/manuals/python-service-conventions.md#rotacion-de-la-cuenta-demo)
+sin borrar usuarios o volumenes.
+
+`AUTH_SECRET_KEY`, `DATABASE_URL`, `RABBITMQ_URL` y
+`VECTOR_DATABASE_URL` son obligatorias, tambien en test. Python solo carga
+dotenv al seleccionar `ECONOMICON_ENV_FILE`; el entorno prevalece. Adaptar
+los hosts/puertos del fichero para clientes nativos. La configuracion valida
+antes de construir recursos; el import no conecta. Las fixtures de pytest
+aportan credenciales sinteticas explicitas y no necesitan servicios reales.
 
 ## Notas
 

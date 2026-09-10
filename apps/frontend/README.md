@@ -97,7 +97,13 @@ Puerto visible:
 ## Acceso Local Seed
 
 - email: `operator@example.com`
-- password: `secret`
+- password: campo vacio; introducir manualmente la password de la cuenta.
+
+El backend solo crea la cuenta ausente con `DEMO_SEED_ENABLED=true` y
+`DEMO_PASSWORD` externa no heredada. Si la cuenta ya existe, cambiar esa
+variable no rota su hash; seguir la [rotacion manual](../../docs/manuals/python-service-conventions.md#rotacion-de-la-cuenta-demo).
+Nunca pasar passwords, JWT, claves de gateway o DSN mediante `VITE_*` o
+argumentos de build. `VITE_API_BASE_URL` es configuracion publica del navegador.
 
 ## Build
 

@@ -1,7 +1,19 @@
 services:
   cockroachdb:
     image: cockroachdb/cockroach:v24.1.11@sha256:89bda255c52b25f463c7a9373ffedef122a4d9f1b432aa34b897970fe864a66c
-    entrypoint: ["/cockroach/cockroach"]
+    # This insecure node is only for an operator-confirmed disposable local stack.
+    environment:
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        case "$$RUNTIME_ENVIRONMENT:$$ALLOW_INSECURE_LOCAL_DATABASE" in
+          development:true|test:true) exec /cockroach/cockroach "$$@" ;;
+          *) echo "Disposable local database requires development/test and explicit opt-in." >&2; exit 1 ;;
+        esac
+      - --
     command:
       - start-single-node
       - --insecure
@@ -24,7 +36,9 @@ services:
   rabbitmq:
     image: rabbitmq:3-management@sha256:e582c0bc7766f3342496d8485efb5a1df782b5ce3886ad017e2eaae442311f69
     environment:
-      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:-jupiter-local-erlang-cookie}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?required}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?required}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:?required}
     ports:
       - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"
       - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
@@ -39,7 +53,7 @@ services:
     environment:
       POSTGRES_DB: embeddings
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
     ports:
       - "127.0.0.1:${PGVECTOR_PORT:-5433}:5432"
     volumes:
@@ -83,13 +97,17 @@ services:
       context: ./apps/backend
     environment:
       API_PORT: 8000
-      DATABASE_URL: ${DATABASE_URL:-cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
-      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:-postgresql+psycopg://postgres:postgres@postgres-pgvector:5432/embeddings}
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
+      DATABASE_URL: ${DATABASE_URL:?required}
+      RABBITMQ_URL: ${RABBITMQ_URL:?required}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:?required}
       PROCESSOR_QUEUE_NAME: ${PROCESSOR_QUEUE_NAME:-processor:jobs}
       EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-8}
-      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:-replace-me-auth-secret}
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:?required}
       AUTH_TOKEN_TTL_MINUTES: ${AUTH_TOKEN_TTL_MINUTES:-480}
+      DEMO_SEED_ENABLED: ${DEMO_SEED_ENABLED:-false}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
     depends_on:
       cockroachdb:
         condition: service_healthy
@@ -117,11 +135,13 @@ services:
       context: ./apps/processor
     environment:
       PROCESSOR_PORT: 8001
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
       PROCESSOR_CONCURRENCY: ${PROCESSOR_CONCURRENCY:-2}
       PROCESSOR_QUEUE_NAME: ${PROCESSOR_QUEUE_NAME:-processor:jobs}
-      DATABASE_URL: ${DATABASE_URL:-cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
-      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:-postgresql+psycopg://postgres:postgres@postgres-pgvector:5432/embeddings}
+      DATABASE_URL: ${DATABASE_URL:?required}
+      RABBITMQ_URL: ${RABBITMQ_URL:?required}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:?required}
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-mock}
       EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-8}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-economicon-embedding}
@@ -214,7 +234,7 @@ services:
     image: grafana/grafana:11.3.0
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?required}
       GF_AUTH_ANONYMOUS_ENABLED: "false"
     volumes:
       - ./apps/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro

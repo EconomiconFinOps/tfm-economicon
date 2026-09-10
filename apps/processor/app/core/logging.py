@@ -2,6 +2,7 @@ import logging
 import sys
 
 import structlog
+from app.core.runtime_secrets import redact_event
 
 SERVICE_NAME = "processor"
 
@@ -34,6 +35,7 @@ def configure_logging() -> None:
         processors=[
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
             _add_service_name,
+            redact_event,
             structlog.processors.JSONRenderer(),
         ],
         foreign_pre_chain=shared_processors,
