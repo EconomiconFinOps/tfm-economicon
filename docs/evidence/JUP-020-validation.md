@@ -4,6 +4,8 @@
 - Rama: `fix/JUP-020-ingestion-contract`, basada en `develop` `1ff8e07`.
 - Fecha: 2026-09-10.
 - Alcance: incidencia de contrato registrada en JUP-020 y RF-053-004.
+- PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/34, borrador
+  contra `develop`; revision e integracion pendientes.
 
 ## Correccion
 
@@ -130,3 +132,7 @@ Trello conserva liderazgo de Victor Mendez, pairing de Alejandro Aguado,
 revision asignada a Lucia Mateo y validacion asignada a Paris Arcos Martin.
 Las comprobaciones automatizadas de esta entrega no se atribuyen a esos
 revisores ni sustituyen la revision humana o su validacion asignada.
+
+El avance, la PR y las evidencias se enlazaron y releyeron en la tarjeta
+oficial mediante la integracion Economicon de DockerServer. JUP-020 permanece
+En curso; se conservan los miembros y sus roles.

@@ -10,6 +10,9 @@
 - [x] 2.2 Reproduce the baseline failure and demonstrate ordinary HTTP ingestion
   reaching completed with persisted chunks/embeddings in an isolated stack.
 - [x] 2.3 Record correlation, tenant/identity checks, settings and test limits.
-- [ ] 2.4 Link a PR and evidence from Trello, preserving assigned roles and
+- [x] 2.4 Link a PR and evidence from Trello, preserving assigned roles and
   residual corpus/provider work.
 - [ ] 2.5 Obtain assigned PR review and functional validation before closure.
+
+Delivery: [PR #34](https://github.com/EconomiconFinOps/tfm-economicon/pull/34),
+draft against `develop`. JUP-020 remains in progress on Trello.
