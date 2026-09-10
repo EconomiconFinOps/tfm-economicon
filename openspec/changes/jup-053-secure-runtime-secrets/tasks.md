@@ -25,24 +25,28 @@
 
 ## 5. Reviewer, evidencia y QA
 
-- [ ] 5.1 Revisar alcance, decisiones pendientes, compatibilidad demo, rutas de fuga y preservacion de validadores; resolver hallazgos bloqueantes y consolidar review/evidencia con resultados observados.
-- [ ] 5.2 QA contrasta los 17 escenarios, repite checks afectados, verifica scan acotado y arranque aislado; registra limitaciones y los siete checks de CI sin atribuir exito a comandos no ejecutados.
-- [ ] 5.3 Presentar aprobacion humana post-QA. PR, tracker, commit/push, merge y archivo requieren su autorizacion correspondiente y no forman parte de esta planificacion.
+- [x] 5.1 Revisar alcance, decisiones pendientes, compatibilidad demo, rutas de fuga y preservacion de validadores; resolver hallazgos bloqueantes y consolidar review/evidencia con resultados observados.
+- [x] 5.2 QA contrasta los 17 escenarios, repite checks afectados, verifica scan acotado y arranque aislado; registra limitaciones y los siete checks de CI sin atribuir exito a comandos no ejecutados.
+- [x] 5.3 Presentar aprobacion humana post-QA. PR, tracker, commit/push, merge y archivo requieren su autorizacion correspondiente y no forman parte de esta planificacion.
 
-Estado tecnico tras review 2 (2026-09-09): 552 pruebas distintas aprobadas,
+Estado historico tras review 2 (2026-09-09): 552 pruebas distintas aprobadas,
 192 nuevas; 11 mutantes dirigidos detectados. RF-053-001/002/003 Fixed.
 Actualizacion 2026-09-10: Paris Arcos acordo corregir RF-053-004 en JUP-020
 y referenciar el finding en su tarjeta privada; no se inicia esa JUP.
 Referencia añadida y verificada en JUP-020 privada; replica al TFM pendiente.
-5.1 permanece pendiente de reevaluacion tras esa decision sobre el defecto
-heredado fuera de alcance: el smoke global sigue FAIL. QA ya ejecuto la
-auditoria acotada, con controles conformes y dictamen global
-QA_FAIL / NEEDS_HUMAN; 5.2 sigue pendiente de aceptacion y readiness.
-No hay aprobacion final ni cierre operativo en Trello. Detalles en
+Posteriormente solicita cierre acotado y PR. Integracion cb040366 sobre
+develop cb27009: revision PASS, 454 casos reejecutados mas 104 reutilizados,
+558 distintos y 193 nuevos de JUP-053; cinco pruebas importadas de JUP-044.
+Dos mutantes dirigidos detectados y diez comprobaciones de RabbitMQ PASS.
+5.2/5.3 completadas: QA_PASS_WITH_APPROVED_EXCEPTIONS y autorizacion de Paris
+para cierre acotado y PR registradas. CI remoto pendiente de la publicacion;
+no se confunde este cierre tecnico con pairing/revision/validacion del equipo.
+El smoke integral historico sigue FAIL; no hay cierre operativo ni merge.
+Detalles en
 [review.md](review.md) y [evidencia](../../../docs/evidence/JUP-053-validation.md).
 
 ## 6. Reconciliacion previa a publicacion (2026-09-10)
 
-- [ ] 6.1 Tester: cubrir cookie externo ausente/vacio/presente con valores sinteticos y fixture request_id dentro del job; conservar los cinco tests de tracing upstream sin depender del contexto ambiente.
-- [ ] 6.2 Coder: reconciliar cb27009 conservando tracing, archivos y findings importados; exigir RABBITMQ_ERLANG_COOKIE externo sin fallback, con ejemplo vacio y procedimiento del operador que preserve el valor existente sin imprimirlo. No generar, resetear ni rotar cookies, tocar .env/volumenes reales o cambiar la password Grafana.
-- [ ] 6.3 Revisar y revalidar el resultado integrado antes de sintetizar cierre/QA; mantener RF-053-004 en JUP-020 y RF-044-002 en JUP-096 sin declararlos corregidos. Escalar cambios de cookie, clustering/persistencia o nuevas excepciones; no ampliar criterios de aceptacion.
+- [x] 6.1 Tester: cubrir cookie externo ausente/vacio/presente con valores sinteticos y fixture request_id dentro del job; conservar los cinco tests de tracing upstream sin depender del contexto ambiente.
+- [x] 6.2 Coder: reconciliar cb27009 conservando tracing, archivos y findings importados; exigir RABBITMQ_ERLANG_COOKIE externo sin fallback, con ejemplo vacio y procedimiento del operador que preserve el valor existente sin imprimirlo. No generar, resetear ni rotar cookies, tocar .env/volumenes reales o cambiar la password Grafana.
+- [x] 6.3 Revisar y revalidar el resultado integrado antes de sintetizar cierre/QA; mantener RF-053-004 en JUP-020 y RF-044-002 en JUP-096 sin declararlos corregidos. Escalar cambios de cookie, clustering/persistencia o nuevas excepciones; no ampliar criterios de aceptacion.

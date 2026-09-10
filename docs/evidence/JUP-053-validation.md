@@ -1,19 +1,99 @@
 # Evidencia De Validacion JUP-053
 
-## Estado Actual Tras QA
+## Estado Actual (2026-09-10)
 
-- Revision tecnica de JUP-053 **PASS en alcance**: RF-053-001/002/003
-  verificados Fixed mediante pruebas y probes independientes.
-- QA ejecutada: controles acotados conformes; dictamen global
-  **QA_FAIL / NEEDS_HUMAN**. RF-053-004 sigue Open, preexistente y fuera del
-  alcance. El 2026-09-10 Paris Arcos acordo su correccion en JUP-020;
-  pendiente reevaluar QA tras esa decision, sin cambiar el dictamen observado.
-- **Smoke completo FAIL**, no se dispensa el fallo de ingesta. No hay
-  aprobacion final ni autorizacion de publicacion.
-- El resto de este documento conserva la evidencia historica de Green2;
-  los resultados actuales de Green3/Mutation2 se recogen a continuacion.
+- Producto integrado probado: `cb0403661f7fd9d69f7122965e401a60d89314f2`,
+  con develop `cb270093035252a10c343f97d64262c8e74e0ef2` incorporado.
+- Revision tecnica de reconciliacion **REVIEW_PASS**, sin bloqueos nuevos
+  dentro de JUP-053; RF-053-001/002/003 siguen Fixed.
+- QA final de reconciliacion **QA_PASS_WITH_APPROVED_EXCEPTIONS**, registrada
+  el 2026-09-10 a las 10:13 UTC. La QA del 09/09 y el smoke completo
+  conservan su resultado historico FAIL, sin afirmar correccion de la ingesta.
+- Paris Arcos autoriza cierre acotado y PR con RF-053-004 Open/High en JUP-020.
+  QA integrada completada para publicar; no hay merge autorizado.
+- Los resultados del 09/09 se conservan expresamente como historicos abajo.
 
-### Seguimiento RF-053-004: JUP-020
+### Verificacion Integrada
+
+| Suite | Resultado nuevo | Reutilizado verificado |
+| --- | --- | --- |
+| Backend | 115 passed, 11 warnings | 0 |
+| Processor | 257 passed, 34 skipped condicionales | 0 |
+| Nueve suites Node | 82 passed | 0 |
+| CockroachDB real, las mismas 34 condicionales | No reejecutada | 34 passed |
+| Azure Cost API | No reejecutada | 58 passed |
+| Colaboracion | No reejecutada | 12 passed |
+| Total sin duplicados | 454 | 104 |
+
+**558 casos distintos aprobados; 193 nuevos de JUP-053.** Las cinco pruebas
+de tracing importadas pertenecen a JUP-044. No sumar reruns, mutantes ni
+comprobaciones de runtime a ese total. Build/typecheck frontend reutilizados
+tras contrastar sus fuentes; no se afirma una nueva construccion.
+
+Desde la raiz del worktree, con el runtime existente y fixtures sinteticas:
+
+```powershell
+& "$run/test-venv/Scripts/python.exe" "$run/verify_integrated_prepr.py" units
+& "$run/test-venv/Scripts/python.exe" "$run/verify_integrated_prepr.py" mutations
+& "$run/test-venv/Scripts/python.exe" "$run/verify_integrated_rabbit.py"
+```
+
+Los tres comandos finales exit 0. El primero ejecuta `pytest tests -q`
+en backend y processor, y las mismas nueve suites Node enumeradas en la
+auditoria historica. Pytest sin bytecode/cache, basetemps nuevos comprobados
+ausentes. Comandos completos y salidas en `$run/integrated-prepr-20260910/`:
+`commands-units.json`, `commands-mutations.json`, `mutation-results.json`,
+`reused-source-hashes.json` y `runtime-rabbit-attempt-2/{results,commands}.json`.
+
+Mutation dirigida: dos baselines de un caso pasan (exit 0), ambos mutantes
+producen un fallo significativo (exit 1), sin errores de import/setup.
+RF-053-003 es repeticion y el fallback cookie es nuevo: **12 mutantes unicos
+seleccionados entre todas las fases**, no cobertura exhaustiva.
+
+RabbitMQ fijado al digest de Compose: diez comprobaciones PASS. Cookie
+ausente/vacio rechazado (exit 1/1), valor sintetico suministrado aceptado
+(exit 0). Arranque y reinicio healthy, mismas credenciales y volumen;
+logs sin sus valores y dos controles positivos del detector. `network=none`,
+sin puertos publicados. Eliminados por identidad/propiedad un contenedor
+`7ef936fb239c0b4355e2144e402cb7bc9ff72228e6b97131379cc705ca8f4f08`
+y volumen `jup053-prepr-rabbit-2995fe8a5f43-data`; ninguna red creada.
+Primer intento fallo antes de crear recursos por faltar la referencia exacta
+de imagen en cache; pull del digest declarado exit 0 y reintento en otra
+carpeta correcto. Se conserva el intento fallido, no es un defecto de producto.
+
+Los 494 hashes de fuente quedaron identicos durante pruebas/mutaciones/runtime
+y review; manifiesto antes/despues SHA-256
+`702E9BAE7302B50752103E67C440C0645D4B3C84C5EAA7F84149779665B99521`.
+Guards tester/reviewer: cero cambios. No .env real leido o modificado; Grafana
+intacta. No se reconstruyeron imagenes de aplicaciones ni se repitio el smoke
+completo: sus evidencias del 09/09 son historicas. RF-053-004/JUP-020 y
+RF-044-002/JUP-096 permanecen abiertos. Lint heredado: 49 errores sin cambios.
+
+### QA Final De La Reconciliacion
+
+Auditoria read-only: OpenSpec 29, trazabilidad individual y 12 cambios activos,
+higiene 494 rutas, working-tree/publication diff checks, todos exit 0.
+Dieciseis destinos Markdown locales y tres anchors sin rotos. Manifiesto:
+489 entradas intactas y cinco cambios documentales esperados de 494.
+Guard qa-final-prepr-20260910 PASS, cero cambios y violaciones.
+QA inspecciona resultados y reutilizacion; no repite pruebas, builds o Docker.
+Sin bloqueos en alcance; RF-053-004/JUP-020 permanece Open/High y smoke FAIL.
+DoD qa exit 0; el primer DoD final exit 20 senala los eventos antiguos de QA
+y la aprobacion aun no registrada. Tras registrar dictamen y autorizacion
+existente, DoD final exit 0 a las 10:14 UTC, sin eventos o artefactos pendientes.
+CI remoto y participacion humana pendientes, sin atribuirles exito.
+
+### Autorizacion De Cierre Acotado Y PR
+
+Paris Arcos solicita el 2026-09-10: "vale ahora cierra la jup 053 con la
+anotacion correspondiente y haz el pr". Se acepta el alcance de secretos,
+con RF-053-004 pendiente de JUP-020; no la funcionalidad completa de ingesta.
+Preparacion/publicacion autorizadas; condicion de QA integrada satisfecha.
+No se acredita participacion humana no realizada ni se autoriza merge,
+archivado o escritura en el Trello oficial. Detalle en
+[review.md](../../openspec/changes/jup-053-secure-runtime-secrets/review.md#aprobacion-post-qa).
+
+### Seguimiento RF-053-004 Antes De La Solicitud De PR
 
 Decision de Paris Arcos registrada el 2026-09-10 a las 09:14 UTC:
 corregir la incompatibilidad payload/text_content en JUP-020 y añadir la
@@ -29,8 +109,9 @@ conservada integra, mas nota de 289: total 2007 caracteres. Coincidencia exacta
 de descripcion verificada; nombre, lista Backlog, posicion, etiquetas,
 miembros, comentarios, fechas de entrega y estados sin cambios.
 Tarjeta oficial: https://trello.com/c/Mi3kPCOD, sin modificar; replica manual
-pendiente. El finding permanece local, sin commit ni URL GitHub publicada.
-Esta accion no constituye aprobacion post-QA ni cierre de JUP-053.
+pendiente. En esa actualizacion el finding aun no tenia commit ni URL GitHub.
+Esa primera accion no constituia aprobacion post-QA ni cierre de JUP-053;
+la solicitud posterior de cierre/PR se registra en el apartado anterior.
 
 Validaciones de esta actualizacion documental desde el worktree JUP-053:
 `corepack pnpm openspec:validate` (28 items), `node tools/jup-check.mjs --all`
@@ -39,7 +120,9 @@ Validaciones de esta actualizacion documental desde el worktree JUP-053:
 EPERM al acceder a la cache de pnpm; se repitio con permiso de acceso y paso.
 No se ejecutaron nuevas pruebas funcionales ni se modificaron codigo o tests.
 
-### Auditoria QA
+## Evidencia Historica (2026-09-09)
+
+### Auditoria QA Historica
 
 QA read-only reejecuto 448 casos (113 backend, 254 processor, 81 Node)
 y contrasto 104 anteriores (34 Cockroach, 58 Azure, 12 colaboracion).
@@ -78,9 +161,8 @@ El chequeo local DoD Stage qa paso los prerequisitos registrados; no prueba
 aceptacion final. Stage final fallo (exit 20) antes del registro del dictamen,
 por los eventos QA/guard/post-QA aun no registrados. El guard se registra
 despues como PASS y QA como FAIL; la aprobacion humana continua pendiente.
-La decision del 2026-09-10 asigna la correccion de RF-053-004 a JUP-020;
-la reevaluacion de readiness sigue pendiente. No se interpreta esa asignacion
-como correccion, dispensa del smoke fallido ni aprobacion post-QA.
+La decision posterior del 2026-09-10 asigna la correccion a JUP-020 y la
+solicitud de cierre/PR acepta el alcance acotado, sin cambiar estos resultados.
 
 ### Green3 Y Regresiones De Review
 

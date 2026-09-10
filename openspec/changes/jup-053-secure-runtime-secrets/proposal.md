@@ -90,10 +90,15 @@ conservan; esta nota no acredita el cierre ni el resultado de QA integrado.
   de registrar este estado. Autorizadas pruebas e implementacion del alcance,
   no PR, tracker, commit/push, merge, archivo ni operaciones compartidas.
 
-## Post-QA Approval: PENDING
+## Post-QA Approval: Cierre Acotado Y PR Autorizados
 
 En el gate previo de las 14:24 UTC todavia no habia resultados de pruebas
 ni escaneo. Posteriormente se ejecutaron Green3, mutation y QA; consultar
 [review.md](review.md) y [evidencia](../../../docs/evidence/JUP-053-validation.md).
-QA confirma los controles acotados, pero la aceptacion completa permanece
-NEEDS_HUMAN por RF-053-004. No hay aprobacion final ni CI remoto.
+El 2026-09-10 Paris Arcos asigna RF-053-004 a JUP-020 y posteriormente pide
+cerrar JUP-053 con esa anotacion y crear la PR. Se registra la aceptacion
+acotada de secretos y la autorizacion de publicacion, no una ingesta funcional
+ni un merge. La reconciliacion posterior con develop cb27009 se prueba en
+cb040366 y pasa revision y QA_PASS_WITH_APPROVED_EXCEPTIONS, registrado
+el 2026-09-10 a las 10:13 UTC. Condicion de QA para publicacion satisfecha.
+CI remoto, pairing y validacion humana del equipo no se dan por realizados.
