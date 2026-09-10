@@ -1,3 +1,4 @@
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_active_tenant, get_current_user, get_database, get_queue
@@ -23,6 +24,11 @@ def create_ingest_job(
         )
 
     job = database.create_job(payload.model_dump(), created_by=current_user["id"])
+
+    request_id = structlog.contextvars.get_contextvars().get("request_id")
+    if request_id is not None:
+        job["request_id"] = request_id
+
     published = queue.publish(job)
 
     if not published:

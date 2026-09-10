@@ -54,7 +54,8 @@ tfm-economicon
 Desde la raiz del repo:
 
 ```powershell
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+# Complete required values and confirm disposable isolation as described below.
 docker compose build --pull
 docker compose up -d --wait
 docker compose ps
@@ -150,13 +151,53 @@ La Azure Cost API simulada exige por defecto el bearer local
 con `X-Fake-Azure-Scenario`. Consulta `apps/azure-cost-api/README.md` para la
 configuración completa; estos tokens son fixtures locales, no credenciales Azure.
 
-Copiar `.env.example` a `.env` antes de arrancar el stack:
+Preparar `.env` local ignorado antes de arrancar el stack, sin sobrescribir uno existente:
 
 ```powershell
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
 Variables principales:
+
+Los campos secretos del ejemplo estan vacios: copiarlo no permite arrancar.
+Preparar JWT (al menos 32 caracteres, generado externamente), credenciales
+independientes de RabbitMQ y pgvector, y sus DSN con passwords URL-encoded.
+`RABBITMQ_DEFAULT_USER/PASS` deben coincidir con `RABBITMQ_URL`;
+`POSTGRES_PASSWORD` con `VECTOR_DATABASE_URL` (usuario `postgres`,
+base `embeddings` en este Compose). No usar los defaults guest/guest o postgres.
+RabbitMQ tambien exige `RABBITMQ_ERLANG_COOKIE` privado externo, sin fallback.
+En una instalacion existente, el operador aporta el cookie privado ya usado;
+una instalacion nueva requiere un valor privado externo. No se genera, rota
+ni sustituye el cookie ni se modifican volumenes como parte de este cambio.
+Consultar el [procedimiento del operador](docs/manuals/python-service-conventions.md#secretos-y-arranque).
+Grafana exige `GRAFANA_ADMIN_PASSWORD`: trasladar su valor existente al
+`.env` ignorado conservandolo, sin generar otro ni resetear cuenta/volumen.
+La precedencia del entorno se conserva. Mover una password debil no la fortalece.
+
+`RUNTIME_ENVIRONMENT` vale `production` por defecto y es independiente de
+`AI_EXECUTION_MODE`. Este Compose contiene un CockroachDB sin autenticacion:
+solo arranca con `RUNTIME_ENVIRONMENT=development|test` y
+`ALLOW_INSECURE_LOCAL_DATABASE=true`, tras confirmar que el proyecto, datos
+y puertos loopback son aislados y desechables. El opt-in esta apagado por
+defecto y no autoriza uso compartido o produccion. El DSN local aprobado es
+`cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable`;
+para clientes nativos, usar el puerto publicado y un destino loopback exacto.
+TLS y provisioning productivo requieren otro alcance.
+
+Python no lee `.env` implicitamente. Para procesos nativos, seleccionar
+`ECONOMICON_ENV_FILE` con la ruta absoluta a un fichero preparado para esos
+clientes, o inyectar las variables directamente; el entorno tiene precedencia.
+Compose lee su propio `.env` para interpolacion y pasa solo las variables
+declaradas. No pasar secretos mediante `VITE_*`, ARG o ENV de imagen.
+Los contextos Docker excluyen dotenv raiz/anidados y sus variantes.
+
+El seed demo esta desactivado. Activarlo exige `DEMO_SEED_ENABLED=true`
+y `DEMO_PASSWORD` externa no heredada. El email sigue siendo
+`operator@example.com`; introducir manualmente la password en el formulario.
+En reinicios, el seed solo crea lo ausente y no sobrescribe passwords,
+identidades ni roles existentes. Cambiar env no rota datos persistentes.
+Consultar [configuracion y rotacion](docs/manuals/python-service-conventions.md)
+antes de preparar una instalacion existente.
 
 - `DATABASE_URL`: conexion hacia CockroachDB
 - `RABBITMQ_URL`: conexion hacia RabbitMQ

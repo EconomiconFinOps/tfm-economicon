@@ -11,7 +11,7 @@ interface LoginPageProps {
 export function LoginPage({ onLogin }: LoginPageProps) {
   const [form, setForm] = useState({
     email: "operator@example.com",
-    password: "secret"
+    password: ""
   });
 
   const mutation = useMutation({

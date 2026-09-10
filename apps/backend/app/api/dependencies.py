@@ -37,12 +37,12 @@ def get_current_user(
     token = authorization.split(" ", maxsplit=1)[1]
     settings = get_settings()
     try:
-        payload = decode_access_token(token, settings.auth_secret_key)
+        payload = decode_access_token(token, settings.auth_secret_key.get_secret_value())
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid access token.",
-        ) from exc
+        ) from None
 
     user = request.app.state.database.fetch_user_by_id(payload["sub"])
     if user is None:

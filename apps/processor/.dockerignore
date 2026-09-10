@@ -1,6 +1,9 @@
 .venv/
 .env
 .env.*
+**/.env
+**/.env.*
+.env.*
 .git/
 node_modules/
 __pycache__/

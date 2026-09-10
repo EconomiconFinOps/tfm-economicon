@@ -1,8 +1,12 @@
 # Evidencia de validacion JUP-049
 
-Ultima reconciliacion: **2026-09-08**, documentada en la seccion
-"Reconciliacion de migraciones, TypeScript y observabilidad". Los resultados
+Cierre tecnico: **2026-09-09** (hora de Paris), con la PR #16 aprobada y
+fusionada en `develop` y la tarjeta en **70 — Hecho**. La seccion
+"Cierre y participacion acreditada" registra la evidencia de cierre.
+La ultima validacion del runtime corresponde al **2026-09-08**; los resultados
 anteriores se conservan como evidencia historica.
+
+## Referencias de la auditoria inicial
 
 - Tarjeta: https://trello.com/c/yZnjgiSp
 - Rama: `chore/JUP-049-dockerize-services`
@@ -298,11 +302,59 @@ de las bases de datos de las aplicaciones.
 Los logs y el harness quedan fuera del repositorio en
 `materiales/07-evidencias/jup049-reconciliation-20260908/`.
 
+## Cierre y participacion acreditada — 2026-09-09
+
+- [Revision APPROVED de Lucia (`lmatsan`)](https://github.com/EconomiconFinOps/tfm-economicon/pull/16#pullrequestreview-5147815477),
+  enviada el 2026-09-08 a las 22:50:40 UTC sobre
+  `196ae68b425f4feac72b1ecd7b2761771967909f`.
+- [Merge squash en develop](https://github.com/EconomiconFinOps/tfm-economicon/commit/038507e7e3419f59af81d9876d757b80ae8b67d4),
+  realizado por `lmatsan` el 2026-09-08 a las 22:54:08 UTC. La rama de
+  implementacion fue eliminada tras el merge.
+- [Los siete checks de CI](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/34256574241)
+  finalizaron correctamente para el head revisado.
+- Lucia documento en [Trello](https://trello.com/c/yZnjgiSp) el merge y su
+  verificacion independiente y movio la tarjeta a **70 — Hecho** el
+  2026-09-08 a las 22:59:59 UTC (9 de septiembre, 00:59:59 en Paris).
+
+La revision humana confirma el diff completo, build y arranque desde cero,
+las cuatro aplicaciones y `/metrics` con HTTP 200, y ambos targets de
+Prometheus UP. Lucia observo Grafana arrancado correctamente, pero no confirmo
+su endpoint de salud por lentitud del entorno. La validacion automatizada
+anterior si registro `/api/health` con la base de datos en OK; se conservan
+ambas observaciones con su procedencia, sin atribuir la segunda a la revisora.
+
+| Persona | Participacion acreditada |
+|---|---|
+| Alejandro Aguado (`Iber1to`) | Implementacion, correcciones de integracion y evidencia de validacion en los commits de la PR #16. |
+| Paris Arcos (`ParisArcos`) | Integracion de `develop` en la rama mediante el commit `3d8e704537d5989b882e65b56593fe0c428d55ca`. |
+| Lucia Mateo (`lmatsan`) | Revision APPROVED, validacion funcional independiente, merge y cierre de la tarjeta. |
+| Victor Mendez (`Victorh1397`) | Revision solicitada el 7 de septiembre; no consta una revision enviada en la PR #16. |
+
+No se ha localizado evidencia explicita de pairing o coautoria en las fuentes
+consultadas: commits y revision de la PR #16, 300 mensajes recientes del canal
+de proyecto y las ultimas 100 acciones del tablero de Trello.
+La asignacion prevista no se utiliza como prueba de una actividad realizada.
+El punto 3.4 documenta la reconciliacion de esa participacion y las evidencias
+efectivas de revision y validacion, conservando esta limitacion del registro.
+
+El cambio se archiva en
+`openspec/changes/archive/2026-09-09-jup-049-dockerize-services/` y consolida
+`openspec/specs/containerized-runtime/spec.md`. La especificacion describe
+nueve servicios y cuatro volumenes: cuatro aplicaciones, tres dependencias
+base y Prometheus/Grafana de JUP-043. El endurecimiento y pinning de JUP-049
+conservan su alcance original; no se atribuyen garantias adicionales a la
+monitorizacion heredada.
+
+El comentario de cierre en Trello identifica RF-044-001 como resuelto por esta
+PR y mantiene RF-044-002 en JUP-096. La coordinacion de migraciones entre
+procesos o servicios independientes sigue fuera de este cierre, al igual que
+JUP-050, JUP-052, JUP-053 y el gateway real JUP-023.
+
 ## Participacion prevista inicialmente
 
-La solicitud actual de revision se dirige a Victor Mendez (`Victorh1397`),
-por indicacion del 7 de septiembre. La distribucion original se conserva
-a continuacion como referencia; la revision humana sigue pendiente.
+Esta distribucion corresponde al plan inicial y se conserva como referencia
+historica. La participacion efectiva y la revision completada figuran en la
+seccion de cierre anterior.
 
 - Pairing/coautoria: Lucia Mateo.
 - Revision de PR: Paris Arcos Martin.

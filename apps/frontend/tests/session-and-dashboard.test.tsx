@@ -24,6 +24,7 @@ describe("login and session recovery", () => {
     });
     renderApp();
 
+    expect(screen.getByLabelText("Password")).toHaveValue("");
     await user.clear(screen.getByLabelText("Email"));
     await user.type(screen.getByLabelText("Email"), "operator@example.com");
     await user.clear(screen.getByLabelText("Password"));
@@ -62,6 +63,8 @@ describe("login and session recovery", () => {
       }
     });
     renderApp();
+    expect(screen.getByLabelText("Password")).toHaveValue("");
+    await user.type(screen.getByLabelText("Password"), "test-password");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
 
     expect(await screen.findByText(new RegExp(error))).toBeVisible();

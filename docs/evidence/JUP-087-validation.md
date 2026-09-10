@@ -154,3 +154,49 @@ Los siete checks remotos se ejecutan de nuevo al publicar el resultado. Su
 ejecucion queda enlazada en la descripcion de la PR y en Trello. Se mantiene
 la solicitud de revision a Lucia; la actualizacion no acredita aprobacion ni
 validacion humana y no fusiona la PR hacia `develop`.
+
+## Comprobacion de cierre y revalidacion — 2026-09-10
+
+La PR #29 seguia sin revisiones ni comentarios de aprobacion, y Trello no
+registraba validacion nueva de Paris. La solicitud a Lucia (`lmatsan`) se
+conserva. La [Definition of Done](https://trello.com/c/6l0Jan5Q) requiere PR
+revisado, validacion funcional registrada y archivo/promocion OpenSpec, o una
+excepcion documentada. Por tanto, JUP-087 permanece en revision y este cambio
+no acredita cierre humano ni fusion de la PR.
+
+Se integra `develop` en `1ff8e071f83a58f630c496740d712e8c0e2cc443` sobre el
+head anterior `1f2d80912309ab699b06894128ab4bbf13b27222`, conservando el
+historial publicado. La base incorpora JUP-044, los cierres de JUP-024/049 y
+JUP-053. El conflicto en el backlog se resuelve preservando todos los hallazgos
+RF-053 y el estado corregido de RF-082-002. RF-053-004 sigue abierto y asignado
+a JUP-020; las pruebas frontend con HTTP simulado no acreditan una ingesta real
+completa y no cierran ese defecto heredado del backend/processor.
+
+El login TypeScript conserva la contraseña inicialmente vacia de JUP-053.
+Las pruebas verifican ese estado y escriben una contraseña sintetica antes de
+simular rechazo/reintento. El test de topologia que inspeccionaba `LoginPage.jsx`
+fallaba con ENOENT tras el rename; ahora inspecciona `LoginPage.tsx`, manteniendo
+sus aserciones. Se registro el fallo previo (26/27) y el resultado corregido
+(27/27). Los contratos HTTP y las medidas de secretos de `develop` se conservan.
+
+La primera prueba que carga los plugins ESLint tardo 10,7 segundos en este
+Windows y supero el limite de cinco segundos. Su limite individual pasa a
+30 segundos; mantiene el diagnostico exigido `react/prop-types` y no modifica
+las aserciones ni los limites del resto de la suite. La repeticion paso 28/28.
+
+| Comprobacion | Resultado |
+|---|---|
+| Instalacion con lockfile congelado | Correcta, sin cambios en dependencias |
+| Lint del workspace y frontend | Cero errores |
+| Suite frontend | 28/28 |
+| Build y typecheck frontend | Correctos |
+| Herramientas del repositorio, incluida topologia/secretos | 83/83 |
+| Puente de colaboracion con clientes simulados | 12/12 |
+| OpenSpec estricto | 29/29 |
+| Trazabilidad / higiene / corpus | 12 cambios, 507 archivos y manifiesto correctos |
+| Revision independiente del delta | Sin hallazgos pendientes |
+
+El resultado de build, typecheck y las tres suites Python se contrasta tambien
+en los siete checks del nuevo head, enlazados desde la PR y Trello. La prueba
+Docker del apartado anterior corresponde al 09/09; no se presenta como una
+ejecucion nueva del stack con secretos externos.
