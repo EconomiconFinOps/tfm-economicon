@@ -12,14 +12,18 @@ images could change without a repository change.
 
 ## What Changes
 
-- Pin application base images and infrastructure images by immutable digest.
+- Pin the four application base images and the three base infrastructure
+  images by immutable digest.
 - Install the repository-declared pnpm 9 release and the locked frontend
   dependency graph from the monorepo root.
 - Build the frontend before starting a preview server instead of exposing the
   Vite development server.
 - Run every application as a non-root user with an init process, a read-only
   root filesystem, a writable temporary directory and no privilege escalation.
-- Require healthchecks and healthy dependency gates for the complete topology.
+- Require healthchecks for the four applications and their three base
+  infrastructure dependencies, and healthy dependency gates where declared.
+- Preserve the Prometheus/Grafana integration inherited from JUP-043, including
+  configuration mounts, persistence, loopback ports and dependency gates.
 - Add a fast topology validator to the existing OpenSpec CI context and retain
   a real isolated build and smoke test as JUP-049 evidence.
 
@@ -28,7 +32,9 @@ images could change without a repository change.
 ### New Capabilities
 
 - containerized-runtime: reproducible, least-privilege application images and
-  an automatically validated seven-service MVP topology.
+  an automatically validated nine-service topology with four named volumes:
+  four MVP applications, three base infrastructure services and two monitoring
+  services inherited from JUP-043.
 
 ### Modified Capabilities
 
@@ -42,6 +48,9 @@ images could change without a repository change.
 - Rotating or provisioning real secrets; that belongs to JUP-053.
 - Adding the production LiteLLM gateway or replacing the current mock provider;
   that belongs to JUP-023.
+- Extending the JUP-049 digest, application hardening or container-healthcheck
+  baseline to monitoring. Prometheus/Grafana retain their JUP-043 configuration;
+  the nine-service inventory does not imply identical controls for all services.
 
 ## Impact
 
