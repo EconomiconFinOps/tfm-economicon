@@ -165,6 +165,11 @@ independientes de RabbitMQ y pgvector, y sus DSN con passwords URL-encoded.
 `RABBITMQ_DEFAULT_USER/PASS` deben coincidir con `RABBITMQ_URL`;
 `POSTGRES_PASSWORD` con `VECTOR_DATABASE_URL` (usuario `postgres`,
 base `embeddings` en este Compose). No usar los defaults guest/guest o postgres.
+RabbitMQ tambien exige `RABBITMQ_ERLANG_COOKIE` privado externo, sin fallback.
+En una instalacion existente, el operador aporta el cookie privado ya usado;
+una instalacion nueva requiere un valor privado externo. No se genera, rota
+ni sustituye el cookie ni se modifican volumenes como parte de este cambio.
+Consultar el [procedimiento del operador](docs/manuals/python-service-conventions.md#secretos-y-arranque).
 Grafana exige `GRAFANA_ADMIN_PASSWORD`: trasladar su valor existente al
 `.env` ignorado conservandolo, sin generar otro ni resetear cuenta/volumen.
 La precedencia del entorno se conserva. Mover una password debil no la fortalece.

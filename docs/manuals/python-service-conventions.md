@@ -51,6 +51,7 @@ readiness o conexion verificada.
 | DATABASE_URL | Operador Cockroach; usuario/password del servidor, salvo excepcion local explicita |
 | VECTOR_DATABASE_URL / POSTGRES_PASSWORD | Operador pgvector; passwords coincidentes, nunca el default postgres |
 | RABBITMQ_URL / RABBITMQ_DEFAULT_USER / RABBITMQ_DEFAULT_PASS | Operador RabbitMQ; usuario/password coincidentes, nunca guest/guest |
+| RABBITMQ_ERLANG_COOKIE | Operador RabbitMQ; cookie privado externo obligatorio, conservar el existente sin fallback publicado |
 | DEMO_PASSWORD | Operador de la cuenta; requerida solo para crear con seed opt-in |
 | GRAFANA_ADMIN_PASSWORD | Valor existente conservado en .env local ignorado; no generar ni rotar como parte del traslado |
 | LITELLM_API_KEY | Clave virtual del processor; solo obligatoria para proveedor litellm |
@@ -66,6 +67,16 @@ safe=""), no la URL completa. Mantener el mismo valor sin codificar en el
 servidor. Usar hosts Compose para contenedores y loopback/puertos publicados
 para clientes nativos. No imprimir `docker compose config` expandido con
 secretos reales; usar `docker compose config --quiet`.
+
+Compose exige `RABBITMQ_ERLANG_COOKIE` no vacio. Para una instalacion
+existente, el operador obtiene el cookie privado que ya usa RabbitMQ y lo
+aporta mediante una fuente privada excluida de Git, contextos Docker y bundles,
+sin imprimirlo ni incluirlo en evidencias. El entorno conserva precedencia.
+Una instalacion nueva requiere un valor privado externo. Esta reconciliacion
+no genera, sustituye ni rota cookies, no modifica el .env real y no altera
+clustering, persistencia o volumenes. Si el cookie existente coincide con un
+valor publicado, escalar antes de arrancar: cambiarlo o conservarlo mediante
+una excepcion requiere autorizacion; no recuperar el fallback versionado.
 
 Los DSN de CockroachDB y pgvector solo admiten `sslmode`,
 `connect_timeout` y `application_name` en la query, sin valores repetidos.
@@ -187,3 +198,11 @@ Grafana: el traslado aprobado solo conserva la password existente en .env.
 Cambiar esa variable no rota una cuenta persistida. Una rotacion futura
 requiere una accion explicita del administrador en Grafana y autorizacion
 separada; no forma parte de este traslado ni autoriza reset de volumen.
+
+## Trazabilidad extremo a extremo (ingesta)
+
+El `request_id` de la petición HTTP que crea un job (`POST /jobs/ingest`) viaja dentro del mensaje publicado a RabbitMQ (`job["request_id"]`). El `ProcessorWorker` (`apps/processor/app/workers/runner.py`), al consumir cada mensaje, hace `clear_contextvars()` seguido de `bind_contextvars(request_id=...)` con ese valor (o uno generado si el mensaje no lo trae) antes de procesar el job — todos los logs de `IngestTask`, `PipelineRunner` y sus dependencias heredan el `request_id` automáticamente, igual que ocurre con las peticiones HTTP.
+
+No se persiste el `request_id` en la tabla `jobs`; vive solo en el mensaje de cola y en los logs.
+
+Introducido en JUP-044.

@@ -21,9 +21,13 @@
 - [x] 3.4 JUP-024 documentar contrato, limites y fuentes oficiales
 - [x] 3.5 JUP-024 ejecutar validacion completa y registrar evidencia
 - [x] 3.6 JUP-024 publicar rama, abrir PR hacia develop y actualizar Trello
-- [ ] 3.7 JUP-024 obtener pairing, revision y validacion de los otros miembros
+- [x] 3.7 JUP-024 obtener pairing, revision y validacion de los otros miembros
 
 Pairing de Alejandro registrado en la evidencia; validacion de Paris registrada
 el 2026-09-07 en [GitHub](https://github.com/EconomiconFinOps/tfm-economicon/pull/18#issuecomment-5570688974),
-sobre el head `77f4784`. Sigue pendiente la revision asignada a Lucia; la
-sincronizacion con `develop` del 2026-09-08 no acredita esa revision humana.
+sobre el head `77f4784`. Lucia (`lmatsan`) completo la
+[revision aprobatoria](https://github.com/EconomiconFinOps/tfm-economicon/pull/18#pullrequestreview-5147917593)
+del head final `da95edb`, con 16 pruebas locales y siete checks de CI en verde.
+La PR #18 se integro en `develop` mediante squash `7d76fc3` el 2026-09-09 a
+las 01:11 de Paris (2026-09-08T23:11:00Z). Lucia registro el cierre en Trello
+y movio JUP-024 a `70 — Hecho`.
