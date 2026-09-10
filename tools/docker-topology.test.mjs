@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
 import { parse } from "yaml";
 
@@ -137,4 +138,73 @@ test("pins pnpm 9 and builds the frontend before running its preview server", ()
   assert.match(source, /preview --config \/tmp\/vite\.config\.ts/);
   assert.match(source, /NODE_PATH=\/workspace\/apps\/frontend\/node_modules/);
   assert.match(source, /node .*node_modules\/vite\/bin\/vite\.js preview/);
+});
+
+// JUP-053 declarative checks. Actual context/image-layer and browser-bundle
+// sentinel exclusion, scanner controls, and credential relocation require QA.
+for (const [service, field, variable] of [
+  ["backend", "AUTH_SECRET_KEY", "AUTH_SECRET_KEY"],
+  ...["backend", "processor"].flatMap((service) =>
+    ["DATABASE_URL", "RABBITMQ_URL", "VECTOR_DATABASE_URL"].map((field) => [service, field, field]),
+  ),
+  ["rabbitmq", "RABBITMQ_DEFAULT_USER", "RABBITMQ_DEFAULT_USER"],
+  ["rabbitmq", "RABBITMQ_DEFAULT_PASS", "RABBITMQ_DEFAULT_PASS"],
+  ["rabbitmq", "RABBITMQ_ERLANG_COOKIE", "RABBITMQ_ERLANG_COOKIE"],
+  ["postgres-pgvector", "POSTGRES_PASSWORD", "POSTGRES_PASSWORD"],
+  ["grafana", "GF_SECURITY_ADMIN_PASSWORD", "GRAFANA_ADMIN_PASSWORD"],
+]) {
+  test(`JUP-053 ${service}.${field} requires an external nonempty input`, () => {
+    const value = compose.services[service].environment?.[field];
+    assert.equal(typeof value, "string", "Required Compose input is absent");
+    assert.ok(value.startsWith("${" + variable + ":?") && value.endsWith("}"),
+      "Required Compose input must reject both unset and empty values");
+  });
+}
+
+test("JUP-053 mock providers do not require a gateway key or receive upstream credentials", () => {
+  const environment = compose.services.processor.environment;
+  assert.equal(environment.LITELLM_API_KEY, "${LITELLM_API_KEY:-}");
+  for (const name of ["backend", "processor", "frontend"]) {
+    for (const field of ["OPENROUTER_API_KEY", "LITELLM_MASTER_KEY"]) {
+      assert.equal(compose.services[name].environment?.[field], undefined);
+      assert.equal(compose.services[name].build.args?.[field], undefined);
+    }
+  }
+});
+
+for (const serviceName of applicationServices) {
+  test(`JUP-053 ${serviceName} context declares root and nested dotenv exclusions`, () => {
+    const build = compose.services[serviceName].build;
+    const context = typeof build === "string" ? build : build.context;
+    const ignore = fs.readFileSync(path.join(root, context, ".dockerignore"), "utf8");
+    const rules = ignore.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
+    assert.ok(rules.includes(".env") || rules.includes(".env*") || rules.includes("**/.env*"));
+    assert.ok(rules.includes(".env.*") || rules.includes(".env*") || rules.includes("**/.env*"),
+      "Root dotenv variants must be excluded");
+    assert.ok(rules.includes("**/.env") || rules.includes("**/.env*"), "Nested dotenv files must be excluded");
+    assert.ok(rules.includes("**/.env.*") || rules.includes("**/.env*"), "Nested dotenv variants must be excluded");
+    assert.ok(!rules.some((rule) => rule.startsWith("!") && rule.includes(".env") && !rule.includes("example")),
+      "A later inclusion must not restore secret dotenv variants");
+  });
+}
+
+test("JUP-053 credential examples leave real secret fields empty", () => {
+  const source = fs.readFileSync(path.join(root, ".env.example"), "utf8");
+  const fields = new Map(source.split(/\r?\n/).filter((line) => /^[A-Z][A-Z0-9_]*=/.test(line))
+    .map((line) => { const split = line.indexOf("="); return [line.slice(0, split), line.slice(split + 1).trim()]; }));
+  for (const field of ["AUTH_SECRET_KEY", "DATABASE_URL", "RABBITMQ_URL", "VECTOR_DATABASE_URL",
+    "POSTGRES_PASSWORD", "RABBITMQ_DEFAULT_PASS", "RABBITMQ_ERLANG_COOKIE", "DEMO_PASSWORD", "GRAFANA_ADMIN_PASSWORD",
+    "OPENROUTER_API_KEY", "LITELLM_MASTER_KEY"]) {
+    assert.ok(fields.has(field), `Missing inventory field: ${field}`);
+    assert.ok(["", '""', "''"].includes(fields.get(field)), `Example field must be empty: ${field}`);
+  }
+});
+
+test("JUP-053 login form initializes with the unchanged email and a blank password", () => {
+  const source = fs.readFileSync(path.join(root, "apps/frontend/src/pages/LoginPage.jsx"), "utf8");
+  const initializer = source.match(/useState\((\{[\s\S]*?\})\)/);
+  assert.ok(initializer, "Locate the existing login form state initializer");
+  const form = vm.runInNewContext("(" + initializer[1] + ")", {}, { timeout: 1000 });
+  assert.equal(form.email, "operator@example.com");
+  assert.equal(form.password, "");
 });

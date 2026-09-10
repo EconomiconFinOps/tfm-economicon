@@ -5,7 +5,7 @@ import { login } from "../services/api";
 export function LoginPage({ onLogin }) {
   const [form, setForm] = useState({
     email: "operator@example.com",
-    password: "secret"
+    password: ""
   });
 
   const mutation = useMutation({

@@ -15,6 +15,6 @@ class IngestTask:
             self.repository.mark_completed(job_id, result)
             return result
         except Exception as exc:
-            self.repository.mark_failed(job_id, str(exc))
-            raise
-
+            self.repository.mark_failed(job_id, "ingestion_failed")
+            # Preserve the cause for the worker's final redacted exception rendering.
+            raise RuntimeError("ingestion_failed") from exc
