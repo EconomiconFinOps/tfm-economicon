@@ -359,5 +359,83 @@ decisión de alcance documentada aquí y en `tasks.md`, no un defecto sin regist
 
 ### Grupo 5 — cierre
 
-Commits del grupo: `f646ef0` (prerrequisito ResizeObserver), `e128fcd` (Red) y el commit pendiente de
-Green (13 archivos portados + `tasks.md`/`review.md`).
+Commits del grupo: `f646ef0` (prerrequisito ResizeObserver), `e128fcd` (Red), `bdc75bf` (Green: 13
+archivos portados + `tasks.md`/`review.md`).
+
+## Grupo 6 — Enrutado y armazón
+
+**Arquitectura acordada con Victor antes de implementar cualquier código**: `SessionGate` (nuevo) como
+ruta padre de `Layout`, pasando `{ token, user, tenants, activeTenant, activeTenantId,
+onTenantChange, onLogout }` a las rutas hijas vía `<Outlet context={...} />` de react-router —
+mecanismo nativo, no `Context API` propio (Victor confirmó explícitamente esta opción frente a la
+alternativa). Documentado como "Addendum: arquitectura del grupo 6" en `design.md`, con el mapa
+completo de componentes nuevos/modificados y la razón de cada uno, antes de invocar al tester.
+Implementado en **4 sub-rondas**, cada una con su propio Red/Green: (a) `SessionGate` + `Layout`
+extendido + `routes.tsx`; (b) `LoginPage`; (c) `IngestPage` + `ConversationsPage`; (d)
+`DashboardPage`/`overview-legacy` + `MetricCard`/`SectionCard`/`StatusPill` + simplificación de
+`App.jsx` y retirada de `AppShell.jsx`.
+
+### Sub-ronda (a) — `SessionGate`, `Layout` extendido, `routes.tsx`
+
+**Red** (tester, commit `861355b`): `SessionGate.test.tsx` (sin sesión redirige a `/login` sin llamar
+a `fetch`; con sesión, bootstrap de tenants real con `fetch` mockeado vía `vi.stubGlobal`, expone el
+tenant auto-seleccionado vía `Outlet context`, verificado con `createMemoryRouter`/`RouterProvider`
+reales) y `Layout.selector.test.tsx` (nuevo, complementario a `Layout.test.tsx` del grupo 5 —
+**no tocado**: sin contexto no muestra selector/panel, con contexto sí, montado vía un
+`ContextProvider` de prueba). Evidencia Red: `2 failed | 18 passed (20)`.
+
+**Prerrequisito descubierto durante el Green**: jsdom sombrea `AbortController`/`AbortSignal` con su
+propia implementación (`class AbortSignal extends globalObject.EventTarget`), pero `Request` se queda
+nativo de Node (undici, jsdom no implementa Fetch) y valida `signal instanceof AbortSignal` contra su
+propia clase interna — distinta de la de jsdom. `react-router` 7 construye exactamente eso en
+`createClientSideRequest` en **cualquier navegación real**, incluso sin loaders: verificado con un
+repro mínimo sin código de producto (`<Navigate>` desnudo dentro de `createMemoryRouter` ya revienta).
+Sin arreglarlo, ninguna prueba de enrutado real —tampoco las que pide la tarea 6.5— podría funcionar.
+No hay forma de recuperar el `AbortController` nativo desde `setup.ts` (ya está sombreado cuando
+arranca el entorno). Fix: `Proxy` sobre `Request` en `setup.ts` que solo interviene si la construcción
+falla por el `signal`, reintentando sin él — verificado que el `catch` relanza (`throw error`) para
+cualquier otro fallo, no es un polyfill permisivo. Mismo procedimiento de desactivar/reactivar el hook,
+autorizado por Victor.
+
+**Green** (coder): `SessionGate.tsx` (nuevo) reproduce **verbatim** la lógica de `App.jsx` — bootstrap
+de tenants (`useQuery`), auto-selección (`useEffect`), `activeTenant` (`useMemo`), `handleLogout`,
+`handleTenantChange` — solo tipada y trasladada de sitio (verificado línea a línea por QA). Los
+estados de carga/error del bootstrap son armazón nuevo, reconstruidos sobre Tailwind. `Layout.tsx`
+lee `useOutletContext()` de forma defensiva (`?? {}`, tipado `Partial<SessionOutletContext>`),
+añade selector de tenant + panel de sesión cuando hay datos, **conserva la fecha del header del
+origen** (reubicada, no eliminada — verificado por QA), reenvía el contexto con
+`<Outlet context={ctx} />`. `routes.tsx`: `SessionGate` insertado como padre de `Layout`.
+
+**Nota de transparencia sobre el commit `d040272`**: su mensaje describe solo el fix de `Request`,
+pero el diff incluye también el Green completo de `SessionGate.tsx`/`Layout.tsx`/`routes.tsx` (el
+usuario commiteó todo el working tree de una vez). El contenido es correcto y fue verificado en su
+totalidad por mí y por QA de forma independiente — es un problema de mensaje incompleto, no de
+contenido oculto. Se deja registrado aquí para que el historial de commits tenga su explicación
+correcta pese al mensaje parcial.
+
+**Fix de lint sobre el propio parche** (commit separado): el `Proxy` de `Request` introdujo
+`'_signal' is assigned a value but never used` al desestructurar solo para descartar el campo.
+Corregido construyendo `rest` con spread + `delete rest.signal`. Lint de vuelta a 49/49.
+
+**Evidencia Green:** `Test Files 20 passed (20)` / `Tests 27 passed (27)`. `typecheck` limpio.
+`lint` 49/49. `build`: bundle idéntico (89 módulos, `203.37 kB`/`5.60 kB`) — `App.jsx`/`main.jsx`
+todavía no importan `routes.tsx`.
+
+**Mutación** (Stryker, acotado a `SessionGate.tsx` + `Layout.tsx`): **51.15%** (67 killed, 50
+survived, 14 NoCoverage — sobre todo los estados de carga/error del bootstrap, que ningún test monta
+todavía, más parte de la lógica de auto-selección de tenant, que el único test con sesión no ejercita
+a fondo por usar un solo tenant). Presentado a Victor como decisión de alcance explícita: **aceptar y
+documentar**. Motivo: es código de armazón que las sub-rondas b/c/d seguirán tocando (`Layout` ganará
+más UI; `SessionGate` no cambia más), y la prueba de enrutado real de la tarea 6.5 (al final del
+grupo 6) ejercitará el flujo completo de forma más realista que mutantes aislados en esta pieza
+intermedia.
+
+**DoD:** `check-dod.mjs` falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
+`--filter`: los cuatro comandos en verde. Escaneo de secretos en verde.
+
+**QA:** `accept` en primera pasada. Verificó de forma independiente la fidelidad verbatim de
+`SessionGate` contra `App.jsx` línea a línea, que el parche de `Request` es proporcionado (no
+permisivo), que `Layout.test.tsx` del grupo 5 sigue sin tocarse, que la fecha del header se conserva,
+y reprodujo la mutación de forma independiente.
+
+**Findings de esta sub-ronda:** ninguno nuevo.

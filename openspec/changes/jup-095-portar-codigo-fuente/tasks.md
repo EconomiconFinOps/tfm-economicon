@@ -122,6 +122,20 @@
 
 ## 6. Enrutado y armazón
 
+**Arquitectura acordada con Victor antes de implementar** (ver "Addendum: arquitectura del grupo 6" en
+`design.md`): `SessionGate` (nuevo) como ruta padre de `Layout`, pasando sesión/tenant a las rutas
+hijas vía `Outlet context` de react-router (no Context API propio). Implementado en 4 sub-rondas, cada
+una con su propio Red/Green.
+
+**Sub-ronda (a) — `SessionGate` + `Layout` extendido + `routes.tsx` (parcial de 6.1/6.3): hecha.**
+`SessionGate.tsx` (nuevo, lógica de `App.jsx` verbatim), `Layout.tsx` (selector de tenant + panel de
+sesión vía `useOutletContext` defensivo), `routes.tsx` con `SessionGate` como padre de `Layout`.
+Prerrequisito resuelto: parche de `Request` en `setup.ts` para navegación real de react-router en
+jsdom (commits `d040272` + fix de lint). Mutación: 51.15% sobre `SessionGate`+`Layout`, aceptada y
+documentada (decisión de Victor). Veredicto QA: `accept`. Detalle completo en `review.md`.
+Faltan de 6.1: `/login`, `/ingest`, `/assistant`, `/overview-legacy` (sub-rondas b-d). Falta de 6.3:
+retirar `AppShell` (sub-ronda d).
+
 - [ ] 6.1 Montar el enrutado con el mapa de la decisión 3: bajo el `Layout`, `/`, `/operational`,
   `/cuts`, `/anomalies`, `/recommendations`, `/ingest` y `/assistant`; `/login` fuera del `Layout`;
   `/overview-legacy` como ruta puente del resumen de facturación actual.

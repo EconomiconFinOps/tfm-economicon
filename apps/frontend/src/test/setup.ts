@@ -62,7 +62,8 @@ globalThis.Request = new Proxy(NativeRequest, {
     } catch (error) {
       const [input, init] = args as [unknown, RequestInit | undefined];
       if (init && "signal" in init) {
-        const { signal: _signal, ...rest } = init;
+        const rest = { ...init };
+        delete rest.signal;
         return Reflect.construct(target, [input, rest]);
       }
       throw error;
