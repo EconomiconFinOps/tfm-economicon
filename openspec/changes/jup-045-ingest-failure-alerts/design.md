@@ -47,6 +47,12 @@ existente.
 - **Sin receptor externo**: la alerta cambia de estado (`Normal` → `Pending` → `Firing`) y es visible en
   el panel de Grafana, pero no empuja notificación fuera del stack. Esto es una limitación conocida y
   aceptada explícitamente por el equipo, no un descuido.
+- **La regla evalúa `increase()` sobre una ventana móvil, no el valor absoluto del contador**: un
+  `Counter` de Prometheus es monótono creciente (solo sube; solo se resetea si el proceso se reinicia),
+  así que alertar sobre su valor absoluto dejaría la alerta en `Firing` para siempre en cuanto hubiera
+  un solo fallo histórico. La condición de la regla usa `increase(processor_ingest_jobs_failed_total[5m])`
+  (o ventana equivalente) para medir "fallos nuevos en los últimos N minutos"; cuando esa cifra vuelve a
+  estar por debajo del umbral, la alerta vuelve a `Normal` sola, aunque el contador acumulado siga alto.
 
 ## Risks / Trade-offs
 
@@ -60,6 +66,12 @@ existente.
 - [Riesgo] Umbral de la regla de alerta mal calibrado (demasiado sensible → ruido; poco sensible → alertas
   tardías) → Mitigación: se documenta el umbral elegido y el motivo en tasks.md/review.md, ajustable sin
   cambios de código al vivir en el YAML de provisioning.
+
+**Valores de partida** (sin datos reales de volumen de ingestas todavía, deliberadamente conservadores y
+ajustables sin tocar código, solo el YAML de provisioning):
+- Condición: `increase(processor_ingest_jobs_failed_total[5m]) > 2`
+- Ventana de la query: `5m` (fallos nuevos en los últimos 5 minutos)
+- `for`: `2m` (la condición debe mantenerse 2 minutos antes de pasar a `Firing`, para no disparar por un pico aislado)
 
 ## Migration Plan
 
