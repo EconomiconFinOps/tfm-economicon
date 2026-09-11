@@ -1,8 +1,8 @@
 ## 1. Contador de fallos de ingesta
 
-- [ ] 1.1 Test (RED): incrementar el contador de fallos de ingesta al marcar un job como `failed`
-- [ ] 1.2 Test (RED): no incrementar el contador cuando el job se completa con éxito
-- [ ] 1.3 Implementación (GREEN): añadir `ingest_jobs_failed_total` en `apps/processor/app/core/metrics.py` e incrementarlo en `JobsRepository.mark_failed()`
+- [x] 1.1 Test (RED): incrementar el contador de fallos de ingesta al marcar un job como `failed`
+- [x] 1.2 Test (RED): no incrementar el contador cuando el job se completa con éxito
+- [x] 1.3 Implementación (GREEN): añadir `ingest_jobs_failed_total` en `apps/processor/app/core/metrics.py` e incrementarlo en `JobsRepository.mark_failed()`
 
 ## 2. Regla de alerta de Grafana como código
 
