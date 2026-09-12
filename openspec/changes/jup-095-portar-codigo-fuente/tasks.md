@@ -146,6 +146,16 @@ options, `preventDefault`, texto `"Signing in..."`) no atacados deliberadamente,
 `App.jsx` sigue importando `./pages/LoginPage` (ahora inexistente): deuda esperada, resuelta en la
 sub-ronda (d).
 
+**Sub-ronda (c) — `IngestPage` + `ConversationsPage` + `SectionCard` (parcial de 6.4): hecha.**
+Ambas páginas migran de props a `useOutletContext<SessionOutletContext>()`, lógica preservada
+verbatim (verificado línea a línea por QA). `SectionCard.tsx` reconstruido sobre Tailwind (primer
+consumidor compartido). `lint` baja de 48 a 28 (desaparecen `IngestPage.jsx`/`ConversationsPage.jsx`
+por completo). Mutación: 18.66% global (`SectionCard` 100%, `IngestPage` 30%, `ConversationsPage`
+14.56% — la más compleja, dos queries, dos mutaciones, un efecto de auto-selección) — aceptada y
+documentada (decisión de Victor, mismo criterio que dashboards/SessionGate: flujo completo mejor
+cubierto end-to-end en la tarea 6.6). Veredicto QA: `accept`. `App.jsx` sigue con imports rotos a
+`./pages/IngestPage`/`./pages/ConversationsPage`: deuda esperada, resuelta en la sub-ronda (d).
+
 - [ ] 6.1 Montar el enrutado con el mapa de la decisión 3: bajo el `Layout`, `/`, `/operational`,
   `/cuts`, `/anomalies`, `/recommendations`, `/ingest` y `/assistant`; `/login` fuera del `Layout`;
   `/overview-legacy` como ruta puente del resumen de facturación actual.

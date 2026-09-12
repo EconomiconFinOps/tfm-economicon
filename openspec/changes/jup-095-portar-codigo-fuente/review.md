@@ -480,3 +480,44 @@ de `fetch` (no tautológicos), y reprodujo la mutación desde cero con el comand
 `mutation.md`.
 
 **Findings de esta sub-ronda:** ninguno nuevo.
+
+### Sub-ronda (c) — `IngestPage`, `ConversationsPage`, `SectionCard`
+
+**Red** (tester, commit `5a5b873`): `IngestPage.test.tsx` (sin tenant activo no muestra el campo
+"Source" — aserción negativa robusta, no atada al texto del mensaje; con tenant activo, envía el
+formulario por defecto y verifica que `fetch` llega a `/jobs/ingest` con la cabecera `X-Tenant-Id`
+del tenant del contexto) y `ConversationsPage.test.tsx` (con tenant activo, lista las conversaciones
+existentes vía `fetch` mockeado). Evidencia Red: `2 failed | 22 passed (24)`.
+
+**Green** (coder): `SectionCard.tsx` (nuevo, reemplaza al `.jsx`) reconstruido sobre Tailwind con el
+lenguaje visual de los dashboards, primer consumidor compartido entre pantallas. `IngestPage.tsx` y
+`ConversationsPage.tsx` (nuevos, reemplazan a sus `.jsx`) migran de props a
+`useOutletContext<SessionOutletContext>()`; lógica preservada verbatim (estado de formulario,
+mutación de ingesta; dos queries, `useEffect` de auto-selección, dos mutaciones de conversaciones),
+verificado línea a línea por QA. Único cambio funcional: `activeTenant.id` → `activeTenant?.id`, sin
+efecto observable (ambas rutas de código solo se alcanzan tras el guard de tenant). `App.jsx` sigue
+con imports rotos a ambos `.jsx` — deuda esperada, se resuelve en la sub-ronda (d). Evidencia Green:
+`24/24 pass`. `typecheck` limpio. `lint`: 48 → **28** (caída de 20, no solo los 2 estimados al
+encargar la tarea — verificado por QA que se debe enteramente a que ambos archivos desaparecen por
+completo, `ConversationsPage.jsx` tenía muchas más violaciones de las estimadas por su uso repetido
+de `activeTenant`/`token` en múltiples queries/mutaciones).
+
+**Mutación**: acotada a los 3 archivos, **18.66%** global (25 killed, 67 survived, 42 NoCoverage).
+Desglose: `SectionCard.tsx` **100%** (trivial, sin lógica condicional). `IngestPage.tsx` **30%** (su
+flujo principal de envío ya cubierto por el Red). `ConversationsPage.tsx` **14.56%** (la más
+compleja: dos queries, dos mutaciones, un efecto de auto-selección, y el único test solo verifica el
+listado inicial). Presentado a Victor como decisión de alcance: **aceptar y documentar**. Motivo:
+son pantallas con backend real que JUP-096 reconectará pronto, y el flujo completo (crear
+conversación, enviar mensaje) se prueba mejor de forma end-to-end en la tarea 6.6 (verificación
+manual con el seed) que con mutantes aislados aquí — mismo criterio ya aplicado en el grupo 5 y en la
+sub-ronda (a) de este grupo.
+
+**DoD:** `check-dod.mjs` falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
+`--filter`: los cuatro comandos en verde. Escaneo de secretos en verde.
+
+**QA:** `accept` en primera pasada. Verificó de forma independiente la preservación verbatim de la
+lógica (línea a línea contra los `.jsx` originales), que la caída de lint de 20 no oculta ningún
+archivo tocado por error, y reprodujo la mutación de forma independiente sin indicio de bug real
+oculto entre los supervivientes.
+
+**Findings de esta sub-ronda:** ninguno nuevo.
