@@ -186,9 +186,15 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
 - [x] 6.4 Reconstruir sobre el sistema de estilos nuevo las pantallas del destino que conservan
   comportamiento (`LoginPage`, `IngestPage`, `ConversationsPage`, y el resumen de facturación en su
   ruta puente), sin tocar sus llamadas ni sus consultas.
-- [ ] 6.5 **Red/Green**: pruebas de enrutado que cubran los escenarios de la spec — abrir una
+- [x] 6.5 **Red/Green**: pruebas de enrutado que cubran los escenarios de la spec — abrir una
   dirección directamente presenta su pantalla, el ámbito activo sobrevive a la navegación, y sin
-  sesión se presenta el acceso.
+  sesión se presenta el acceso. Hecho: `routes.integration.test.tsx`, montado sobre el `routeConfig`
+  real (no providers simulados). **Sin fase Green**: los 3 casos pasaron a la primera — el grupo 6 ya
+  estaba implementado y verificado por piezas en las 4 sub-rondas anteriores; esta tarea añade
+  cobertura de integración real, no comportamiento nuevo. Mutación N/A (ningún archivo de producto
+  cambió). QA verificó el mecanismo rompiendo temporalmente `routes.tsx` y `SessionGate.tsx`
+  (revertido): confirmó que los 3 tests fallan cuando el comportamiento real se rompe. Veredicto QA:
+  `accept`.
 - [ ] 6.6 Verificar a mano el recorrido de paridad de JUP-090 (acceso → ámbito → resumen) contra el
   backend local con el seed `operator@example.com` / `secret`.
 

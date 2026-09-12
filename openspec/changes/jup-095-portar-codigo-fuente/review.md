@@ -590,11 +590,43 @@ bloqueante de QA: `tenant.name as string` en `DashboardPage.tsx` es un cast redu
 
 **Findings de esta sub-ronda:** ninguno nuevo.
 
+### Tarea 6.5 — Pruebas de enrutado reales sobre el árbol completo
+
+Prerrequisito: `routeConfig` extraído como export separado de `routes.tsx` (commit `05efdc4`,
+refactor sin cambio de comportamiento) para que los tests pudieran montar `createMemoryRouter` sobre
+la misma definición de rutas que usa producción, en vez de un árbol duplicado que podría divergir.
+
+**Tester**: `routes.integration.test.tsx` (nuevo), tres casos sobre el árbol real (no providers de
+contexto simulados como el resto del grupo 6): (1) abrir `/operational` directamente presenta esa
+pantalla, no la ruta índice; (2) seleccionar un tenant distinto y navegar con un clic real sobre un
+`NavLink` del `Layout` conserva la selección; (3) abrir una ruta protegida distinta de la raíz
+(`/operational`) sin sesión redirige a `/login`, sin llamar a `fetch`.
+
+**Resultado atípico, verificado por el tester y por QA de forma independiente**: los 3 casos pasaron
+a la primera ejecución — **sin fase Green**. El grupo 6 ya estaba implementado y verificado pieza por
+pieza en las 4 sub-rondas anteriores (todas con veredicto QA `accept`); esta tarea añade cobertura de
+integración real sobre comportamiento que ya existía, no introduce comportamiento nuevo. Evidencia:
+`26/26 archivos, 38/38 tests`.
+
+**Mutación: N/A.** Ningún archivo de producto cambió en esta tarea (`routes.tsx` ya tenía
+`routeConfig` desde el commit anterior) — no hay código nuevo que mutar.
+
+**DoD:** `check-dod.mjs` falla por `RF-093-001` (no relacionado). Escaneo de secretos en verde.
+
+**QA:** `accept`, con verificación activa del mecanismo (no solo lectura): rompió temporalmente
+`path: "operational"` en `routes.tsx` (los 3 tests fallan, confirma que casos 1 y 3 ejercitan de
+verdad esa ruta) y convirtió `handleTenantChange` en no-op en `SessionGate.tsx` (solo el caso 2
+falla, con aislamiento limpio) — ambos cambios revertidos tras la comprobación (`git status` limpio
+al terminar). Confirmó que la navegación del caso 2 es un clic real sobre el DOM, no
+`router.navigate()` programático, y que el caso 3 prueba una ruta protegida distinta de la raíz.
+
+**Findings de esta tarea:** ninguno nuevo.
+
 ### Grupo 6 — cierre
 
 Commits: `861355b`/`d040272`/`fa46107` (sub-ronda a), `c7bc733`/`d1a1144` (sub-ronda b),
-`5a5b873`/`5d1c4bd` (sub-ronda c), `c59ff7c` + el commit pendiente de esta sub-ronda (d, incluye el
-cambio de `main.jsx`). Quedan de la tarjeta F3: `App.jsx` sigue sin renombrar a `.tsx`
-(`PlaceholderPage.jsx` sin consumidor) — ambos son alcance del grupo 8 (migración `.tsx` restante y
-limpieza). Tareas 6.5 (pruebas de enrutado dedicadas) y 6.6 (verificación manual E2E) quedan
-pendientes como cierre del propio grupo 6.
+`5a5b873`/`5d1c4bd` (sub-ronda c), `c59ff7c`/`439bf5e` (sub-ronda d), `05efdc4` (refactor
+`routeConfig`) y el commit pendiente de la tarea 6.5. Quedan de la tarjeta F3: `App.jsx` sigue sin
+renombrar a `.tsx` (`PlaceholderPage.jsx` sin consumidor) — ambos son alcance del grupo 8 (migración
+`.tsx` restante y limpieza). Queda **6.6** (verificación manual E2E contra el backend local con el
+seed) como último paso del grupo 6.
