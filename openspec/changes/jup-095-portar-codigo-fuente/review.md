@@ -734,3 +734,37 @@ assertion y la decisión de test estático), no solo describen lo obvio.
 **Veredicto QA: `accept`.** Tareas 7.1 y 7.2 cumplidas de forma observable; test real y verificado
 activamente; excepciones de mutación y DoD justificadas y acotadas; único hallazgo de lint es deuda
 preexistente ya rastreada.
+
+### Tarea 7.3 — verificación manual de arranque
+
+Verificación manual (sin cambios de código), mismo criterio que la tarea 6.6: no repite el guion
+completo de paridad de JUP-090 (ya hecho allí contra el backend real), solo confirma que la
+reconciliación del entrypoint (7.1/7.2) no rompió el arranque ni el enrutado.
+
+**Entorno.** Backend local ya levantado desde la tarea 6.6 (`docker compose`: `cockroachdb`,
+`rabbitmq`, `postgres-pgvector`, `azure-cost-api`, `backend`, todos `healthy`). Frontend con
+`corepack pnpm --filter @finops/frontend dev` (puerto 5173, sirviendo ya `/src/main.tsx`).
+Conducción con Playwright + Chromium real (no jsdom), instalado de forma efímera en un proyecto de
+scratch (`pnpm add playwright` + `playwright install chromium`, el binario de Chromium ya estaba
+cacheado de la tarea 6.6) — mismo patrón que 6.6.
+
+**Recorrido:**
+
+| # | Paso | Resultado |
+|---|------|-----------|
+| 1 | Abrir `/` sin sesión | Redirige a `/login` |
+| 2 | Login con el seed `operator@example.com`/`secret` | Navega a `/` (dashboard índice) |
+| 3 | Abrir directamente cada ruta del mapa: `/`, `/operational`, `/cuts`, `/anomalies`, `/recommendations`, `/ingest`, `/assistant`, `/overview-legacy` | Las 8 rutas cargan su pantalla correspondiente, `page.goto` con `waitUntil: "networkidle"` sin excepción |
+| 4 | Logout (botón con `aria-label="Cerrar sesion"`) | Vuelve a `/login` |
+
+**Cero errores de consola** (`page.on("console")` filtrado a `type() === "error"`) y **cero
+excepciones de página** (`page.on("pageerror")`) en todo el recorrido.
+
+**Hallazgo encontrado y sorteado, no nuevo:** el login inicial falló por CORS (`Access to fetch at
+'http://localhost:8000/auth/login' from origin 'http://localhost:5173' has been blocked by CORS
+policy`) — es exactamente `RF-095-001`, ya registrado en `openspec/findings/backlog.md` durante la
+tarea 6.6 (backend sin `CORSMiddleware`), no una regresión de este grupo. Sorteado igual que en 6.6,
+lanzando Chromium con `--disable-web-security` solo para esta verificación.
+
+**Conclusión:** la migración del entrypoint a `main.tsx` y la reconciliación de `index.html` (7.1/7.2)
+no introducen ninguna regresión de arranque ni de enrutado. **Grupo 7 completo.**

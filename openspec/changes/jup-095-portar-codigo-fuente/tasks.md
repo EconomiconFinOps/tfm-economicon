@@ -224,8 +224,12 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
   ejecutar sobre `main.tsx` porque ningún test lo importa en runtime (decisión de alcance, ver
   `review.md`). DoD verificado manualmente con `corepack pnpm --filter` por un problema de entorno de
   la máquina (pnpm global v11.9.0 pisando al de corepack), ajeno a este cambio. Veredicto QA: `accept`.
-- [ ] 7.3 Verificar arranque con `corepack pnpm --filter @finops/frontend dev` en el puerto 5173, sin
-  errores de consola, navegando por todas las rutas del mapa.
+- [x] 7.3 Verificar arranque con `corepack pnpm --filter @finops/frontend dev` en el puerto 5173, sin
+  errores de consola, navegando por todas las rutas del mapa. Hecho: verificación manual con
+  Playwright + Chromium real contra el backend local (mismo patrón que 6.6), login/logout reales y
+  las 8 rutas del mapa abiertas directamente. Cero errores de consola, cero excepciones de página.
+  Único hallazgo, ya registrado y sorteado igual que en 6.6: `RF-095-001` (CORS del backend, fuera de
+  alcance). Detalle completo en `review.md`. **Grupo 7 completo.**
 
 ## 8. Migración `.tsx` restante y limpieza
 
