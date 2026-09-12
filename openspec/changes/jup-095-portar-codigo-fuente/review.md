@@ -521,3 +521,80 @@ archivo tocado por error, y reprodujo la mutación de forma independiente sin in
 oculto entre los supervivientes.
 
 **Findings de esta sub-ronda:** ninguno nuevo.
+
+### Sub-ronda (d) — `DashboardPage`, `MetricCard`, `StatusPill`, cableado final (cierra el grupo 6)
+
+**Red** (tester, commit `c59ff7c`): `DashboardPage.test.tsx`. Nota de transparencia registrada por el
+propio tester: el caso "sin tenant activo" ya pasaba contra el código viejo (guard preexistente, no
+aportó Red por sí solo — documentado en el comentario del test en vez de disimularlo); el caso "con
+tenant activo" sí falló por el motivo correcto. `fetch` mockeado distinguiendo por URL
+(`/billing/summary` vs `/health`, primera pantalla con dos endpoints en el mismo test), monto
+calculado con `toLocaleString()` en el propio test para no depender del locale. Evidencia Red:
+`1 failed | 24 passed (25)`.
+
+**Green** (coder): `MetricCard.tsx`/`StatusPill.tsx` (nuevos, reemplazan a sus `.jsx`) reconstruidos
+sobre Tailwind con el lenguaje visual ya establecido. `DashboardPage.tsx` (nuevo) migra de props a
+`useOutletContext<SessionOutletContext>()`; lógica de `useDashboardData` y las tres ramas
+(sin-tenant/loading/error) preservadas verbatim, verificado línea a línea por QA. `routes.tsx`
+completado con las 4 rutas restantes del mapa final (9 en total: `/login` fuera de `SessionGate`; bajo
+`Layout`, las 5 del origen más `/ingest`, `/assistant`, `/overview-legacy`). `App.jsx` simplificado a
+`<RouterProvider router={router} />` — toda la lógica que concentraba ya vive en
+`SessionGate`/`Layout`/`LoginPage`, sin renombrar a `.tsx` (fuera de alcance de este grupo). `AppShell.jsx`
+retirado (su contenido ya vivía en `Layout.tsx` desde la sub-ronda a).
+
+**Hallazgo real del coder durante el Green, autocorregido antes de reportar**: Vite/Vitest resuelven
+extensiones en el orden `.js, .ts, .jsx, .tsx`; mientras `DashboardPage.jsx`/`MetricCard.jsx`/
+`StatusPill.jsx` coexistieron con sus `.tsx` nuevos, el import `"./DashboardPage"` cargaba
+silenciosamente la versión `.jsx` vieja (la que exige props), produciendo un Red engañoso que parecía
+indicar que el `Outlet context` no llegaba. Diagnosticado con un `throw` de depuración que confirmó
+que ni siquiera se disparaba. Solución: borrar el `.jsx` en el mismo commit que introduce el `.tsx`
+— mismo patrón ya aplicado a `IngestPage`/`ConversationsPage`/`LoginPage`/`SectionCard` en sub-rondas
+anteriores, ahora explícito como regla del proceso para el resto de la tarjeta.
+
+Evidencia Green: `25/25 pass`. `typecheck` **limpio por primera vez en todo el grupo 6** — ya no
+queda ningún import roto. `lint`: baja a **1 solo problema**, en `PlaceholderPage.jsx` (confirmado
+por grep que nada lo importa ya; queda para la limpieza final de la tarjeta, no se toca aquí).
+`build`: JS creció de forma significativa (`App.jsx`/`main.jsx` importan por fin el árbol completo).
+
+**Cambio adicional, decidido con Victor tras el Green del coder, antes de dar la sub-ronda por
+cerrada**: detecté que `apps/frontend/src/main.jsx` seguía importando `./styles/main.css` (el sistema
+viejo), no `./styles/index.css` (Tailwind + `theme.css`, cableado desde el grupo 3) — el CSS del
+build no había cambiado de tamaño pese a toda la reconstrucción visual de los grupos 3-6, señal de
+que quedaba inerte. Presentado como decisión explícita: cambiarlo ahora (cierre del grupo 6) vs.
+diferirlo al grupo 7 (entrypoint). **Elegido: cambiarlo ahora.** Motivo: la tarea 6.4 pide
+explícitamente "reconstruir sobre el sistema de estilos nuevo", y la verificación manual de la tarea
+6.6 (login → tenant → resumen contra el backend) tiene mucho más sentido y valor contra la app
+visualmente terminada que contra una sin estilos. Cambio de una sola línea en `main.jsx`. Verificado:
+CSS del build `5.60 kB` → `39.63 kB` (el output real de Tailwind, antes inerte), `89` → `2477` módulos
+transformados. `test`/`typecheck`/`lint` sin cambio tras el ajuste.
+
+**Mutación** (Stryker, acotado a `DashboardPage.tsx`+`MetricCard.tsx`+`StatusPill.tsx`): **35.48%**
+global (11 killed, 18 survived, 2 NoCoverage). `DashboardPage.tsx` **55.56%** (su flujo principal
+cubierto por el Red). `MetricCard.tsx` **14.29%** y `StatusPill.tsx` **0%** — subcomponentes
+triviales de presentación (`StatusPill` son 4 líneas reales: normaliza un string a minúsculas y lo
+pinta) que el único test de `DashboardPage` solo ejercita de pasada, sin variar `tone`/`status`.
+Presentado a Victor: **aceptar y documentar**. Motivo: son componentes de presentación triviales sin
+lógica de negocio real que proteger; el esfuerzo de tests dedicados no compensa frente al riesgo
+mínimo.
+
+**DoD:** `check-dod.mjs` falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
+`--filter`: los cuatro comandos en verde. Escaneo de secretos en verde.
+
+**QA:** `accept` en primera pasada — **cierra el grupo 6 entero** (las 4 sub-rondas). Verificó de
+forma independiente que `DashboardPage.tsx` preserva verbatim la lógica de `useDashboardData`, que
+`routes.tsx` tiene exactamente las 9 rutas del mapa de `design.md`, que `App.jsx` no se renombró a
+`.tsx` (fuera de alcance confirmado), que el cambio de `main.jsx` es mínimo y sin efectos
+colaterales, y que ni `AppShell.jsx` ni los `.jsx` retirados dejaron referencias huérfanas. Nota no
+bloqueante de QA: `tenant.name as string` en `DashboardPage.tsx` es un cast redundante (ya es
+`string` por la interfaz `Tenant`) — cosmético, no escalado.
+
+**Findings de esta sub-ronda:** ninguno nuevo.
+
+### Grupo 6 — cierre
+
+Commits: `861355b`/`d040272`/`fa46107` (sub-ronda a), `c7bc733`/`d1a1144` (sub-ronda b),
+`5a5b873`/`5d1c4bd` (sub-ronda c), `c59ff7c` + el commit pendiente de esta sub-ronda (d, incluye el
+cambio de `main.jsx`). Quedan de la tarjeta F3: `App.jsx` sigue sin renombrar a `.tsx`
+(`PlaceholderPage.jsx` sin consumidor) — ambos son alcance del grupo 8 (migración `.tsx` restante y
+limpieza). Tareas 6.5 (pruebas de enrutado dedicadas) y 6.6 (verificación manual E2E) quedan
+pendientes como cierre del propio grupo 6.

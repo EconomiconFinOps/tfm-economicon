@@ -156,14 +156,34 @@ documentada (decisión de Victor, mismo criterio que dashboards/SessionGate: flu
 cubierto end-to-end en la tarea 6.6). Veredicto QA: `accept`. `App.jsx` sigue con imports rotos a
 `./pages/IngestPage`/`./pages/ConversationsPage`: deuda esperada, resuelta en la sub-ronda (d).
 
-- [ ] 6.1 Montar el enrutado con el mapa de la decisión 3: bajo el `Layout`, `/`, `/operational`,
+**Sub-ronda (d) — `DashboardPage`/`MetricCard`/`StatusPill`, cableado final, cierre del grupo: hecha.**
+Última sub-ronda: completa 6.1/6.2/6.3/6.4 a la vez. `DashboardPage.tsx` migra a `useOutletContext`
+(lógica de `useDashboardData` y las tres ramas sin-tenant/loading/error verbatim, verificado por
+QA). `MetricCard.tsx`/`StatusPill.tsx` reconstruidos sobre Tailwind. `routes.tsx` completado con las
+9 rutas del mapa final (`/login`, `/ingest`, `/assistant`, `/overview-legacy`). `App.jsx` simplificado
+a `<RouterProvider>`. `AppShell.jsx` retirado. Hallazgo del coder durante el Green, autocorregido:
+Vite/Vitest resuelven `.jsx` antes que `.tsx` en la misma carpeta, así que dejar convivir ambos
+producía un Red engañoso — se borra el `.jsx` en el mismo commit que introduce su `.tsx` (mismo
+patrón ya aplicado en sub-rondas anteriores). `typecheck` **limpio por primera vez en todo el grupo
+6** (ya no quedan imports rotos). `lint` baja a 1 solo problema (`PlaceholderPage.jsx`, sin
+consumidor, deuda de la limpieza final de la tarjeta). Mutación: 35.48% (`DashboardPage` 55.56%,
+`MetricCard`/`StatusPill` triviales, 14.29%/0%) — aceptada y documentada.
+
+**Cambio adicional al cierre del grupo, decidido con Victor**: `main.jsx` seguía importando
+`styles/main.css` (el sistema viejo), no `styles/index.css` (Tailwind, cableado desde el grupo 3) —
+sin este cambio toda la reconstrucción visual de los grupos 3-6 quedaba inerte. Cambiado ahora (no
+diferido al grupo 7): la tarea 6.4 pide explícitamente estilos nuevos, y la verificación manual de
+6.6 tiene sentido real contra la app terminada. CSS del build: `5.60 kB` → `39.63 kB` (output real de
+Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
+
+- [x] 6.1 Montar el enrutado con el mapa de la decisión 3: bajo el `Layout`, `/`, `/operational`,
   `/cuts`, `/anomalies`, `/recommendations`, `/ingest` y `/assistant`; `/login` fuera del `Layout`;
   `/overview-legacy` como ruta puente del resumen de facturación actual.
-- [ ] 6.2 Retirar el enrutado manual por `activeView` de `App.jsx` (líneas 127-150) **preservando
+- [x] 6.2 Retirar el enrutado manual por `activeView` de `App.jsx` (líneas 127-150) **preservando
   verbatim** la lógica de sesión, tenant activo, login/logout y la consulta de tenants.
-- [ ] 6.3 Injertar en el `Layout` del origen el selector de ámbito de cliente y el panel de
+- [x] 6.3 Injertar en el `Layout` del origen el selector de ámbito de cliente y el panel de
   sesión/logout que hoy viven en `AppShell.jsx:36-61`, y retirar el `AppShell`.
-- [ ] 6.4 Reconstruir sobre el sistema de estilos nuevo las pantallas del destino que conservan
+- [x] 6.4 Reconstruir sobre el sistema de estilos nuevo las pantallas del destino que conservan
   comportamiento (`LoginPage`, `IngestPage`, `ConversationsPage`, y el resumen de facturación en su
   ruta puente), sin tocar sus llamadas ni sus consultas.
 - [ ] 6.5 **Red/Green**: pruebas de enrutado que cubran los escenarios de la spec — abrir una
