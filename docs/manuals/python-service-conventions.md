@@ -20,6 +20,37 @@ Prometheus scrapea ambos `/metrics` en el stack local (`docker-compose.yml`, `ap
 
 Introducido en JUP-043.
 
+## Alertado de fallos de ingesta
+
+El `processor` expone un contador dedicado `processor_ingest_jobs_failed_total`
+(`app/core/metrics.py`), incrementado en `JobRepository.mark_failed()` cada vez
+que un job de ingesta termina en estado `failed` — independiente del contador
+genérico de requests HTTP, porque el worker consume de RabbitMQ y no siempre
+pasa por una request.
+
+Sobre ese contador hay una regla de Grafana Unified Alerting provisionada como
+código en `apps/monitoring/grafana/provisioning/alerting/ingest-failures.yml`,
+sin pasos manuales de configuración. La condición usa `increase()` sobre una
+ventana móvil, no el valor absoluto del contador (que es monótono creciente y
+solo se resetea si el proceso se reinicia):
+
+```
+increase(processor_ingest_jobs_failed_total[5m]) > 2   # for: 2m
+```
+
+Valores de partida (ajustables sin tocar código, solo el YAML): ventana de 5
+minutos, umbral de 2 fallos, confirmación de 2 minutos antes de pasar a
+`Firing`. Sin datos reales de volumen de ingestas todavía, son conservadores
+y revisables.
+
+**Sin receptor externo**: el estado de la alerta (`Normal`/`Pending`/`Firing`)
+es visible en el dashboard de Grafana, pero no se envía a Discord ni a ningún
+otro canal — decisión explícita del equipo, para no reabrir la política de
+solo-lectura de Discord fijada en JUP-081. Revisable en el futuro en una
+tarjeta propia.
+
+Introducido en JUP-045.
+
 ## Secretos y arranque
 
 Backend y processor usan Pydantic Settings y SecretStr. No hay DSN ni JWT
