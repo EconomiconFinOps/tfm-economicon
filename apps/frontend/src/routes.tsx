@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, type RouteObject } from "react-router";
 import { SessionGate } from "./layouts/SessionGate";
 import { Layout } from "./layouts/Layout";
 import { ExecutiveCostDashboard } from "./pages/ExecutiveCostDashboard";
@@ -19,7 +19,13 @@ import { DashboardPage } from "./pages/DashboardPage";
 // portadas. `/overview-legacy` es la ruta puente que conserva el unico
 // dashboard con datos reales hasta que JUP-096 conecte el nuevo Overview
 // (decision 6 de design.md).
-export const router = createBrowserRouter([
+// Configuración de rutas exportada por separado del router construido: para
+// que las pruebas de enrutado (JUP-095, tarea 6.5) puedan montar la MISMA
+// definición sobre `createMemoryRouter` (con distintas `initialEntries` por
+// escenario) en vez de mantener un árbol de rutas duplicado que podría
+// divergir del real. `createBrowserRouter` en producción y `createMemoryRouter`
+// en test consumen exactamente este mismo array.
+export const routeConfig: RouteObject[] = [
   { path: "/login", Component: LoginPage },
   {
     path: "/",
@@ -39,5 +45,7 @@ export const router = createBrowserRouter([
         ],
       },
     ],
-  },
-]);
+  }
+];
+
+export const router = createBrowserRouter(routeConfig);
