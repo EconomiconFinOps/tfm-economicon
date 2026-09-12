@@ -16,6 +16,11 @@ http_request_duration_seconds = Histogram(
     ["method", "path"],
 )
 
+ingest_jobs_failed_total = Counter(
+    "processor_ingest_jobs_failed_total",
+    "Total ingest jobs marked as failed",
+)
+
 
 class MetricsMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
