@@ -676,3 +676,61 @@ Commits: `861355b`/`d040272`/`fa46107` (sub-ronda a), `c7bc733`/`d1a1144` (sub-r
 `routeConfig`), `7897055` (tarea 6.5) y el commit pendiente de esta documentación (tarea 6.6, sin
 cambios de código — verificación manual). Quedan de la tarjeta F3: `App.jsx` sigue sin renombrar a
 `.tsx` (`PlaceholderPage.jsx` sin consumidor) — ambos son alcance del grupo 8. **Grupo 6 completo.**
+
+## Grupo 7 — Entrypoint e `index.html` (tareas 7.1 y 7.2)
+
+**Tester**: `index-html-entrypoint.test.ts` (nuevo, commit `1957e83`), mismo patrón que
+`index-html-dark-scope.test.ts` (tarea 3.3): lee `index.html` del disco con `node:fs` (no renderiza
+JSX, es un archivo estático), aísla el tag `<script type="module" ...>` y su atributo `src` con
+regex, y compara con `toBe("/src/main.tsx")` — comparación exacta, no `.includes()`, para rechazar
+tanto `.jsx` como cualquier variante parcial (p. ej. `/src/main.tsx.bak`).
+
+**Coder** (commit `7e765db`): `main.jsx` → `main.tsx` verbatim (mismo `QueryClientProvider` +
+`App`/`RouterProvider`, único cambio real es el non-null assertion `!` sobre
+`document.getElementById("root")` para satisfacer `strict: true`, comentado con su justificación:
+por qué `!` y no `as HTMLElement`/`any`, y la prohibición de ADR-0003). `index.html` actualizado solo
+en el `src` del script; título y `<div id="root">` intactos.
+
+**QA — verificación independiente:**
+
+1. **Mecanismo del test**: reescribí temporalmente `index.html` para apuntar a `/src/main.jsx` y
+   corrí el test en aislamiento — falla correctamente (`expected '/src/main.jsx' to be
+   '/src/main.tsx'`). Revertido (`git status` limpio al terminar). El test es real y específico, no
+   tautológico.
+2. **Verbatim de `main.tsx`**: comparado contra `git show 04c94e2:apps/frontend/src/main.jsx` — única
+   diferencia es el `!`. Sin cambio de comportamiento en runtime.
+3. **`index.html`**: `git diff 04c94e2 7e765db -- apps/frontend/index.html` confirma una sola línea
+   tocada (el `src` del script); título `FinOps Control Tower` y `<div id="root">` sin tocar, como
+   exige la tarea 7.1.
+4. **Gates**, corridos por mí de forma independiente:
+   - `corepack pnpm --filter @finops/frontend test` → **27 archivos, 39/39 tests en verde**, incluye
+     el test nuevo.
+   - `corepack pnpm --filter @finops/frontend typecheck` → limpio.
+   - `corepack pnpm --filter @finops/frontend build` → build limpio, `762.55 kB` JS (mismo warning
+     preexistente de chunk size).
+   - `corepack pnpm --filter @finops/frontend lint` → **1 solo error**, `react/prop-types` en
+     `src/pages/PlaceholderPage.jsx`. Confirmado por `git log`/`git diff 04c94e2 7e765db` que este
+     archivo no se tocó en este grupo — es la deuda heredada del cierre del grupo 6, ya anotada en
+     `tasks.md` (tarea 8.2 la retira). Nada nuevo.
+5. **Excepciones documentadas**, evaluadas y aceptadas sin objeción:
+   - **Sin test de integración de `main.tsx` con `createRoot` real**: correcto — montar ambos
+     proveedores es comportamiento heredado del cierre del grupo 6 (sub-ronda d, ya con veredicto QA
+     `accept`), no comportamiento nuevo de esta tarea. La única superficie nueva es la extensión del
+     entrypoint, que el test de `index.html` cubre.
+   - **Mutación N/A**: razonado y verificado — Stryker con `mutate: ["src/main.tsx"]` aborta con "No
+     tests were executed" porque el runner de Vitest usa `--related` y ningún test importa
+     `main.tsx` en tiempo de ejecución (consecuencia directa del punto anterior, no un descuido).
+     Forzar un test de integración solo para desbloquear Stryker sería cobertura artificial, no
+     protección real. Aceptado.
+   - **DoD manual por problema de entorno de la máquina** (conflicto de versión de `pnpm` global vía
+     `npm` con el gestionado por `corepack`): afecta a los 4 paquetes del monorepo por igual, no es
+     específico de este cambio. Sustituido por `corepack pnpm --filter @finops/frontend <script>`,
+     que reproduje yo mismo en el punto 4 con resultados idénticos a los reportados.
+
+**Sin manipulación de tests, sin scope creep**: el diff se limita a `main.jsx→main.tsx`, `index.html`
+(una línea) y el test nuevo. Comentarios en español presentes y justifican el porqué (el non-null
+assertion y la decisión de test estático), no solo describen lo obvio.
+
+**Veredicto QA: `accept`.** Tareas 7.1 y 7.2 cumplidas de forma observable; test real y verificado
+activamente; excepciones de mutación y DoD justificadas y acotadas; único hallazgo de lint es deuda
+preexistente ya rastreada.

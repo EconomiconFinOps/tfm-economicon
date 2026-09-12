@@ -212,10 +212,18 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
 
 ## 7. Entrypoint e `index.html`
 
-- [ ] 7.1 Reconciliar `index.html`: entrypoint `.tsx`, conservando `<div id="root">` y el título
+- [x] 7.1 Reconciliar `index.html`: entrypoint `.tsx`, conservando `<div id="root">` y el título
   `FinOps Control Tower` del destino (**no** el `Plataforma FinOps automatizada (copia)` del origen).
-- [ ] 7.2 Reconciliar el entrypoint para que monte **ambos** proveedores: el de consultas de datos del
-  destino y el de enrutado del origen.
+  Hecho: `main.jsx` → `main.tsx` (Red `1957e83`, Green `7e765db`), `index.html` apunta a
+  `/src/main.tsx`; título y `div#root` sin tocar. Test real (`index-html-entrypoint.test.ts`) que lee
+  el archivo del disco, mismo patrón que 3.3. Veredicto QA: `accept`.
+- [x] 7.2 Reconciliar el entrypoint para que monte **ambos** proveedores: el de consultas de datos del
+  destino y el de enrutado del origen. Hecho: ya estaba implementado en `main.jsx` desde el cierre del
+  grupo 6 (`QueryClientProvider` envolviendo `App`/`RouterProvider`), sin cambio de comportamiento;
+  esta tarea solo migró la extensión/tipado (mismo commit `7e765db`). Mutación N/A: Stryker no puede
+  ejecutar sobre `main.tsx` porque ningún test lo importa en runtime (decisión de alcance, ver
+  `review.md`). DoD verificado manualmente con `corepack pnpm --filter` por un problema de entorno de
+  la máquina (pnpm global v11.9.0 pisando al de corepack), ajeno a este cambio. Veredicto QA: `accept`.
 - [ ] 7.3 Verificar arranque con `corepack pnpm --filter @finops/frontend dev` en el puerto 5173, sin
   errores de consola, navegando por todas las rutas del mapa.
 
