@@ -41,9 +41,12 @@ existente.
   extensión de ADR-0005 en vez de un ADR nuevo, porque la decisión de fondo (Grafana como pieza central
   de observabilidad) ya está tomada; JUP-045 solo añade su capacidad de alertado nativa.
 - **Regla de alerta provisionada en `apps/monitoring/grafana/provisioning/alerting/`** (carpeta nueva,
-  hermana de `dashboards/` y `datasources/`), como archivo YAML de alert rules + un contact point
-  "no-op" o de tipo `grafana` visible solo en la UI (sin integración externa), reflejando que no hay
-  receptor externo en esta iteración.
+  hermana de `dashboards/` y `datasources/`), como archivo YAML de alert rules. No se define ningún
+  contact point ni política de notificación propios: al no querer receptor externo, la regla usa el
+  enrutamiento por defecto de Grafana, que sin SMTP configurado no envía nada a ningún sitio. (Se probó
+  primero a definir un contact point explícito de tipo `grafana` como "no-op", pero Grafana lo rechaza
+  en el arranque — `no settings are set` — porque ese tipo no admite `settings: {}` vacío; no hace falta
+  para el objetivo de esta iteración, así que se eliminó.)
 - **Sin receptor externo**: la alerta cambia de estado (`Normal` → `Pending` → `Firing`) y es visible en
   el panel de Grafana, pero no empuja notificación fuera del stack. Esto es una limitación conocida y
   aceptada explícitamente por el equipo, no un descuido.

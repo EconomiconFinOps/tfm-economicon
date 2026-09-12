@@ -6,9 +6,9 @@
 
 ## 2. Regla de alerta de Grafana como código
 
-- [ ] 2.1 Crear `apps/monitoring/grafana/provisioning/alerting/` con la regla de alerta (umbral y ventana documentados en el propio YAML)
-- [ ] 2.2 Verificar en vivo (`docker compose up`) que Grafana carga la regla sin pasos manuales y que su estado es visible en el dashboard
-- [ ] 2.3 Verificar en vivo que forzar fallos de ingesta por encima del umbral dispara el estado `Firing`
+- [x] 2.1 Crear `apps/monitoring/grafana/provisioning/alerting/` con la regla de alerta (umbral y ventana documentados en el propio YAML)
+- [x] 2.2 Verificar en vivo (`docker compose up`) que Grafana carga la regla sin pasos manuales y que su estado es visible en el dashboard
+- [x] 2.3 Verificar en vivo que forzar fallos de ingesta por encima del umbral dispara el estado `Firing`
 
 ## 3. Documentación y cierre
 
