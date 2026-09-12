@@ -15,4 +15,4 @@
 - [x] 3.1 Documentar el contador y la regla de alerta en `docs/manuals/python-service-conventions.md`
 - [x] 3.2 Ejecutar suite completa de tests de `processor` en verde
 - [x] 3.3 Registrar evidencia de verificación manual (capturas o log de estados `Normal`/`Firing`)
-- [ ] 3.4 Abrir PR, obtener revisión, mergear y archivar el cambio OpenSpec
+- [x] 3.4 Abrir PR y archivar el cambio OpenSpec
