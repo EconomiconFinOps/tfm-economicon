@@ -622,11 +622,57 @@ al terminar). Confirmó que la navegación del caso 2 es un clic real sobre el D
 
 **Findings de esta tarea:** ninguno nuevo.
 
+### Tarea 6.6 — Verificación manual E2E contra el backend local
+
+**Entorno.** Backend real levantado con `docker compose up -d --build cockroachdb rabbitmq
+postgres-pgvector azure-cost-api backend` (sin `processor`, no lo requiere este guion). Los 5
+servicios quedaron `healthy`; `GET /health` y `POST /auth/login` (vía `curl`) confirmados
+correctos antes de tocar el navegador. Frontend con `corepack pnpm dev` (puerto 5173).
+
+**Conducción.** Ni `chromium-cli` ni Playwright estaban disponibles en el entorno: instalados de
+forma efímera (`pnpm add playwright` en un proyecto de scratch, `playwright install chromium`) para
+poder *conducir* la app con un navegador real, no solo comprobar que responde — Chromium real, no
+jsdom, con capturas de pantalla en cada paso.
+
+**Hallazgo bloqueante inicial, diagnosticado y no atribuible a esta tarjeta**: el primer intento de
+login falló en el navegador (`Failed to fetch`) mientras `curl` contra el mismo endpoint funcionaba
+sin problema. Diagnóstico: `Access to fetch at 'http://localhost:8000/auth/login' from origin
+'http://localhost:5173' has been blocked by CORS policy: ... No 'Access-Control-Allow-Origin' header
+is present`. Verificado con `grep -i cors` sobre todo `apps/backend`: **cero resultados** — el
+backend no tiene `CORSMiddleware` ni ninguna cabecera CORS configurada. Esto no es una regresión de
+JUP-095 (el frontend nunca ha configurado CORS, es responsabilidad exclusiva del backend) ni estaba
+documentado en ningún finding anterior; bloquearía a **cualquier** usuario real accediendo por
+navegador a esta misma topología (frontend y backend en puertos distintos, exactamente como los
+define `docker-compose.yml`), con o sin esta tarjeta. Registrado como **`RF-095-001`** en
+`openspec/findings/backlog.md`. Para completar la verificación del *frontend* (que es lo que compete
+a esta tarjeta), se relanzó Chromium con `--disable-web-security` — un flag del navegador de
+verificación, sin tocar ningún código del repositorio.
+
+**Recorrido completo, capturado en pantalla en cada paso** (evidencia visual revisada, no solo
+logs):
+
+| # | Paso | Resultado |
+| --- | --- | --- |
+| 1 | Abrir `/operational` sin sesión | Redirige a `/login`; pantalla de acceso reconstruida sobre Tailwind, formulario con el seed precargado |
+| 2 | Enviar el formulario con el seed | Login exitoso, navega al dashboard índice (`Dashboard Ejecutivo - Coste Global`), gráficos de `recharts` renderizando con datos reales (área + pie, tras la animación de entrada) |
+| 3 | Selector de ámbito de cliente | Presente en el header, auto-seleccionado a `Core Finance` (el bootstrap de `SessionGate` funcionando) |
+| 4 | Navegar a `/overview-legacy` | Resumen de facturación **real**: `Monthly Spend $184,250`, `Savings Identified $23,500`, `Visible Tenants 2`, lista de tenants (`Core Finance`/`enterprise`, `Growth Ops`/`growth`), `Service Health` con `database`/`rabbitmq`/`vector_store` en `ok` — confirma que `/billing/summary` y `/health` responden y se renderizan correctamente |
+| 5 | Cambiar a `Growth Ops` y navegar a `/operational` (clic real en el `NavLink` "Coste Detallado") | El selector sigue mostrando `Growth Ops` tras la navegación — el ámbito activo sobrevive, igual que confirmó la tarea 6.5 con providers de contexto |
+| 6 | Cerrar sesión | Vuelve a `/login`, formulario limpio |
+
+**Cero errores de consola** capturados en todo el recorrido (`page.on("console")`/`page.on("pageerror")`
+sin entradas).
+
+**Findings de esta tarea:** `RF-095-001` (nuevo, ver arriba). Ninguno de los findings previos
+(`RF-090-*`, `RF-091-*`, `RF-093-001`) resultó relevante para este recorrido.
+
+**Conclusión:** los criterios de paridad funcional de JUP-090 (acceso → ámbito → resumen) se cumplen
+íntegramente sobre el frontend reconstruido de esta tarjeta, contra el backend real.
+
 ### Grupo 6 — cierre
 
 Commits: `861355b`/`d040272`/`fa46107` (sub-ronda a), `c7bc733`/`d1a1144` (sub-ronda b),
 `5a5b873`/`5d1c4bd` (sub-ronda c), `c59ff7c`/`439bf5e` (sub-ronda d), `05efdc4` (refactor
-`routeConfig`) y el commit pendiente de la tarea 6.5. Quedan de la tarjeta F3: `App.jsx` sigue sin
-renombrar a `.tsx` (`PlaceholderPage.jsx` sin consumidor) — ambos son alcance del grupo 8 (migración
-`.tsx` restante y limpieza). Queda **6.6** (verificación manual E2E contra el backend local con el
-seed) como último paso del grupo 6.
+`routeConfig`), `7897055` (tarea 6.5) y el commit pendiente de esta documentación (tarea 6.6, sin
+cambios de código — verificación manual). Quedan de la tarjeta F3: `App.jsx` sigue sin renombrar a
+`.tsx` (`PlaceholderPage.jsx` sin consumidor) — ambos son alcance del grupo 8. **Grupo 6 completo.**

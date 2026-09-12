@@ -195,8 +195,20 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
   cambió). QA verificó el mecanismo rompiendo temporalmente `routes.tsx` y `SessionGate.tsx`
   (revertido): confirmó que los 3 tests fallan cuando el comportamiento real se rompe. Veredicto QA:
   `accept`.
-- [ ] 6.6 Verificar a mano el recorrido de paridad de JUP-090 (acceso → ámbito → resumen) contra el
-  backend local con el seed `operator@example.com` / `secret`.
+- [x] 6.6 Verificar a mano el recorrido de paridad de JUP-090 (acceso → ámbito → resumen) contra el
+  backend local con el seed `operator@example.com` / `secret`. Hecho: backend real levantado con
+  `docker compose` (`cockroachdb`, `rabbitmq`, `postgres-pgvector`, `azure-cost-api`, `backend`),
+  frontend con `pnpm dev`, recorrido conducido con Playwright + Chromium real (no jsdom) y capturado
+  en pantalla en cada paso. Los 6 pasos del guion de JUP-090 completados con éxito: sin sesión →
+  `/login`; login con el seed → dashboard índice; selector de tenant con auto-selección correcta
+  (`Core Finance`); `/overview-legacy` con datos reales de `/billing/summary` y `/health`
+  (`$184,250`/`$23,500`/2 tenants, 3 servicios `ok`); cambio de tenant (`Growth Ops`) sobrevive a la
+  navegación real (clic en `NavLink`) a `/operational`; logout devuelve a `/login`. Cero errores de
+  consola. **Hallazgo nuevo, no relacionado con esta tarjeta**: el backend no tiene `CORSMiddleware`
+  configurado — bloquea `POST /auth/login` en cualquier navegador real (no en `curl`), verificado
+  sorteándolo con `--disable-web-security` solo para esta verificación. Registrado como `RF-095-001`
+  en `openspec/findings/backlog.md`, fuera de alcance de JUP-095 (responsabilidad del backend).
+  Detalle completo, capturas y comandos en `review.md`.
 
 ## 7. Entrypoint e `index.html`
 
