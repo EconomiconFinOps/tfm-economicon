@@ -1,4 +1,12 @@
-export function SectionCard({ title, subtitle, children }) {
+import type { ReactNode } from "react";
+
+interface SectionCardProps {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+}
+
+export function SectionCard({ title, subtitle, children }: SectionCardProps) {
   return (
     <section className="section-card">
       <div className="section-header">

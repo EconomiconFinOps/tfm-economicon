@@ -72,17 +72,17 @@ Use these stable job names from .github/workflows/ci.yml:
 - Frontend build
 - Frontend type check
 
-The frontend lint is not a required check yet because the inherited baseline
-contains 49 react/prop-types failures. Track and fix that debt in its own JUP
-card before making lint mandatory; builds and the type check remain required
-now. Unlike lint, the type check has no inherited baseline to work around: it
-was introduced together with the TypeScript tooling itself (JUP-093), so it
-starts clean.
+JUP-087 runs frontend lint and real journey tests before bundling in the required
+`Frontend build` job. A lint error or failed test fails that required check; no
+additional ruleset context is needed. The former 49 `react/prop-types` failures
+are addressed by typing the existing components under ADR-0003, while JSX keeps
+its prop validation rule. The separate `Frontend type check` also checks the
+test project without adding Node globals to the browser source.
 
-"Frontend type check" (JUP-093) is versioned here and in both ruleset JSON
-files, but is not yet enforced on GitHub: applying it to the live rulesets is
-an administrator action, same as the rest of this checklist (see
-"Administrator activation checklist" below).
+All seven contexts, including `Frontend type check`, were confirmed active in
+the remote `develop` rules on 2026-09-08. Applying future changes to live
+rulesets remains an administrator action; versioning JSON alone does not enable
+them (see "Administrator activation checklist" below).
 
 ## Administrator exception and teammate onboarding
 

@@ -1,9 +1,16 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { SectionCard } from "../components/SectionCard";
 import { createIngestJob } from "../services/api";
+import type { IngestJobRequest, TenantRecord } from "../services/contracts";
 
-export function IngestPage({ token, activeTenant }) {
+interface IngestPageProps {
+  token: string;
+  activeTenant: TenantRecord | null;
+}
+
+export function IngestPage({ token, activeTenant }: IngestPageProps) {
   const [form, setForm] = useState({
     source: "aws-cur",
     artifact_uri: "",
@@ -11,11 +18,19 @@ export function IngestPage({ token, activeTenant }) {
   });
 
   const mutation = useMutation({
-    mutationFn: (payload) => createIngestJob(token, activeTenant.id, payload)
+    mutationFn: (payload: IngestJobRequest) => {
+      if (!activeTenant) {
+        throw new Error("Tenant required");
+      }
+      return createIngestJob(token, activeTenant.id, payload);
+    }
   });
 
-  function handleSubmit(event) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!activeTenant) {
+      return;
+    }
     mutation.mutate({
       tenant_id: activeTenant.id,
       source: form.source,

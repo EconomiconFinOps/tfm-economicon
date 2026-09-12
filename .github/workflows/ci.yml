@@ -119,6 +119,10 @@ jobs:
         run: |
           corepack enable
           corepack pnpm install --frozen-lockfile
+      - name: Lint frontend
+        run: corepack pnpm lint --filter=@finops/frontend
+      - name: Test frontend journeys
+        run: corepack pnpm test --filter=@finops/frontend
       - name: Build frontend
         run: corepack pnpm --filter @finops/frontend build
 

@@ -83,6 +83,19 @@ test("retains all existing governance, corpus and gateway validations", () => {
   }
 });
 
+test("requires real frontend tests and lint before the mandatory build", () => {
+  const steps = workflow.jobs["frontend-build"].steps;
+  const lint = steps.findIndex(({ run }) => run === "corepack pnpm lint --filter=@finops/frontend");
+  const tests = steps.findIndex(({ run }) => run === "corepack pnpm test --filter=@finops/frontend");
+  const build = steps.findIndex(({ run }) => run === "corepack pnpm --filter @finops/frontend build");
+  assert.ok(lint >= 0 && tests > lint && build > tests);
+  assert.equal(steps[lint]["continue-on-error"], undefined);
+  assert.equal(steps[tests]["continue-on-error"], undefined);
+  assert.equal(workflow.jobs["frontend-build"]["continue-on-error"], undefined);
+  const frontend = JSON.parse(fs.readFileSync(path.join(root, "apps/frontend/package.json"), "utf8"));
+  assert.equal(frontend.scripts.test, "vitest run");
+});
+
 test("requires pull requests while keeping administrator bypass PR-only", () => {
   for (const [branch, ruleset] of Object.entries(rulesets)) {
     assert.equal(ruleset.enforcement, "active");
