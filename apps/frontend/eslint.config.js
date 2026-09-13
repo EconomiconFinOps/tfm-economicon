@@ -45,12 +45,9 @@ export default [
     }
   },
   {
-    // Bloque TypeScript, con ambito exclusivo a src/**/*.{ts,tsx}. El bloque
-    // {js,jsx} de arriba queda intacto a proposito: RF-082-002 (49 violaciones
-    // de react/prop-types en 9 .jsx) sigue abierto hasta que F3 los migre a
-    // .tsx, asi que esos archivos deben seguir bajo esa regla (ADR-0003,
-    // decision 3, corregido en la revision de PR de JUP-092).
-    files: ["src/**/*.{ts,tsx}"],
+    // JUP-087 tipa los componentes existentes; cualquier JSX futuro conserva
+    // la validacion de props del bloque anterior (ADR-0003).
+    files: ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",

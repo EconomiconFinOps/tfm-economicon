@@ -1,3 +1,25 @@
+import type { ReactNode } from "react";
+import type { TenantRecord, UserProfile } from "../services/contracts";
+
+export type ViewId = "overview" | "ingest" | "assistant" | "settings";
+
+export interface NavItem {
+  id: ViewId;
+  label: string;
+}
+
+interface AppShellProps {
+  activeView: ViewId;
+  items: NavItem[];
+  onSelect: (view: ViewId) => void;
+  user: UserProfile;
+  tenants: TenantRecord[];
+  activeTenantId: string;
+  onTenantChange: (tenantId: string) => void;
+  onLogout: () => void;
+  children: ReactNode;
+}
+
 export function AppShell({
   activeView,
   items,
@@ -8,7 +30,7 @@ export function AppShell({
   onTenantChange,
   onLogout,
   children
-}) {
+}: AppShellProps) {
   return (
     <div className="app-shell">
       <aside className="sidebar">

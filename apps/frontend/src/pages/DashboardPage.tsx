@@ -2,8 +2,16 @@ import { MetricCard } from "../components/MetricCard";
 import { SectionCard } from "../components/SectionCard";
 import { StatusPill } from "../components/StatusPill";
 import { useDashboardData } from "../hooks/useDashboardData";
+import type { TenantRecord, UserProfile } from "../services/contracts";
 
-export function DashboardPage({ token, user, tenants, activeTenant }) {
+interface DashboardPageProps {
+  token: string;
+  user: UserProfile;
+  tenants: TenantRecord[];
+  activeTenant: TenantRecord | null;
+}
+
+export function DashboardPage({ token, user, tenants, activeTenant }: DashboardPageProps) {
   const { loading, error, payload } = useDashboardData({
     token,
     tenantId: activeTenant?.id
@@ -20,7 +28,7 @@ export function DashboardPage({ token, user, tenants, activeTenant }) {
     );
   }
 
-  if (loading) {
+  if (loading || (!error && !payload)) {
     return (
       <div className="stack-gap">
         <p className="eyebrow">Bootstrapping</p>
@@ -38,6 +46,10 @@ export function DashboardPage({ token, user, tenants, activeTenant }) {
         <p>{error}</p>
       </SectionCard>
     );
+  }
+
+  if (!payload) {
+    return null;
   }
 
   const { billing, health } = payload;
