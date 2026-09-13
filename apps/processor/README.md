@@ -111,6 +111,28 @@ atómicamente sus filas en vez de duplicarlas.
 
 ## Variables De Entorno
 
+### Contrato de ingesta documental (JUP-020)
+
+La API publica un envoltorio con `id`, `tenant_id`, `source`, `artifact_uri`,
+`status` y `payload`. El documento vive en `payload.text_content` y sus
+metadatos en `payload.metadata`. `IngestTask` adapta esos campos al estado
+del grafo y convierte `id` en `job_id`, conservando la identidad del
+envoltorio. El worker mantiene `request_id` en el contexto de los logs.
+
+Las peticiones normales a `POST /jobs/ingest` no necesitan aplanar el mensaje
+ni publicar directamente en RabbitMQ. Los llamadores directos de
+`PipelineRunner.run` siguen utilizando el estado plano del grafo.
+
+La correccion del contrato y sus limites se documentan en
+[JUP-020](../../openspec/changes/jup-020-document-embedding-pipeline/design.md).
+El proveedor de embeddings actual sigue siendo `mock`; esta correccion no
+acredita calidad semantica ni la politica completa de reprocesado del corpus.
+
+Prueba HTTP y resultados con RabbitMQ, CockroachDB y pgvector reales:
+[evidencia JUP-020](../../docs/evidence/JUP-020-validation.md).
+
+### Configuracion
+
 - `PROCESSOR_PORT`
 - `PROCESSOR_CONCURRENCY`
 - `PROCESSOR_QUEUE_NAME`

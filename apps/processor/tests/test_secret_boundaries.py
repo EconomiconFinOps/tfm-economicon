@@ -296,7 +296,10 @@ def test_persisted_job_failure_uses_stable_code_not_exception_text():
     pipeline.run.side_effect = RuntimeError(SENTINEL)
     task = IngestTask(repository, pipeline)
     with pytest.raises(Exception):
-        task.execute({"id": "jup053-job"})
+        task.execute({
+            "id": "jup053-job", "tenant_id": "tenant-core", "source": "azure-cost",
+            "artifact_uri": None, "payload": {"text_content": "test document", "metadata": {}},
+        })
     repository.mark_running.assert_called_once_with("jup053-job")
     repository.mark_completed.assert_not_called()
     repository.mark_failed.assert_called_once()
@@ -305,7 +308,10 @@ def test_persisted_job_failure_uses_stable_code_not_exception_text():
     assert diagnostic and SENTINEL not in diagnostic
     pipeline.run.side_effect = RuntimeError("different synthetic failure")
     with pytest.raises(Exception):
-        task.execute({"id": "jup053-job"})
+        task.execute({
+            "id": "jup053-job", "tenant_id": "tenant-core", "source": "azure-cost",
+            "artifact_uri": None, "payload": {"text_content": "test document", "metadata": {}},
+        })
     assert repository.mark_failed.call_args.args[1] == diagnostic
 
 
@@ -386,7 +392,11 @@ def test_rf053_003_task_to_worker_preserves_sanitized_root_diagnostics(monkeypat
     get_settings.cache_clear()
     settings = get_settings()
     configure_logging()
-    job = {"id": "jup053-error-job", "request_id": "jup053-worker-failure"}
+    job = {
+        "id": "jup053-error-job", "request_id": "jup053-worker-failure",
+        "tenant_id": "tenant-core", "source": "azure-cost", "artifact_uri": None,
+        "payload": {"text_content": "test document", "metadata": {}},
+    }
     structlog.contextvars.bind_contextvars(request_id=job["request_id"])
     repository = MagicMock()
     pipeline = MagicMock()

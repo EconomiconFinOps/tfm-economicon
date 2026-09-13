@@ -1,2 +1,4 @@
 -r requirements.txt
 pytest>=8.2.2
+# The ingestion contract regression also imports the backend's real producer.
+PyJWT>=2.8.0
