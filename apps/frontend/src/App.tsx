@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "./layouts/AppShell";
+import type { NavItem, ViewId } from "./layouts/AppShell";
 import { DashboardPage } from "./pages/DashboardPage";
 import { IngestPage } from "./pages/IngestPage";
 import { LoginPage } from "./pages/LoginPage";
 import { ConversationsPage } from "./pages/ConversationsPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { fetchTenants } from "./services/api";
+import type { LoginResponse, UserProfile } from "./services/contracts";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: NavItem[] = [
   { id: "overview", label: "Overview" },
   { id: "ingest", label: "Ingestions" },
   { id: "assistant", label: "Assistant" },
@@ -18,14 +20,38 @@ const NAV_ITEMS = [
 const SESSION_KEY = "finops.session";
 const TENANT_KEY = "finops.activeTenant";
 
-function loadStoredJson(key) {
+interface Session {
+  accessToken: string;
+  user: UserProfile;
+}
+
+function isSession(value: unknown): value is Session {
+  if (typeof value !== "object" || value === null
+    || !("accessToken" in value) || typeof value.accessToken !== "string"
+    || !("user" in value) || typeof value.user !== "object" || value.user === null) {
+    return false;
+  }
+
+  const user = value.user;
+  return "id" in user && typeof user.id === "string"
+    && "email" in user && typeof user.email === "string"
+    && "full_name" in user && typeof user.full_name === "string"
+    && "role" in user && typeof user.role === "string";
+}
+
+function loadStoredSession(key: string): Session | null {
   const value = window.localStorage.getItem(key);
   if (!value) {
     return null;
   }
 
   try {
-    return JSON.parse(value);
+    const parsed: unknown = JSON.parse(value);
+    if (isSession(parsed)) {
+      return parsed;
+    }
+    window.localStorage.removeItem(key);
+    return null;
   } catch {
     window.localStorage.removeItem(key);
     return null;
@@ -34,15 +60,20 @@ function loadStoredJson(key) {
 
 export default function App() {
   const queryClient = useQueryClient();
-  const [activeView, setActiveView] = useState("overview");
-  const [session, setSession] = useState(() => loadStoredJson(SESSION_KEY));
+  const [activeView, setActiveView] = useState<ViewId>("overview");
+  const [session, setSession] = useState(() => loadStoredSession(SESSION_KEY));
   const [activeTenantId, setActiveTenantId] = useState(
     () => window.localStorage.getItem(TENANT_KEY) || ""
   );
 
   const tenantsQuery = useQuery({
     queryKey: ["tenants", session?.user?.id],
-    queryFn: () => fetchTenants(session.accessToken),
+    queryFn: () => {
+      if (!session) {
+        throw new Error("Session required");
+      }
+      return fetchTenants(session.accessToken);
+    },
     enabled: Boolean(session?.accessToken)
   });
 
@@ -71,7 +102,7 @@ export default function App() {
     [tenantsQuery.data, activeTenantId]
   );
 
-  function handleLogin(payload) {
+  function handleLogin(payload: LoginResponse) {
     const nextSession = {
       accessToken: payload.access_token,
       user: payload.user
@@ -88,7 +119,7 @@ export default function App() {
     queryClient.clear();
   }
 
-  function handleTenantChange(nextTenantId) {
+  function handleTenantChange(nextTenantId: string) {
     setActiveTenantId(nextTenantId);
     window.localStorage.setItem(TENANT_KEY, nextTenantId);
   }
@@ -124,6 +155,8 @@ export default function App() {
   }
 
   const tenants = tenantsQuery.data?.items ?? [];
+  // A tenant change starts fresh forms, selections and mutation observers.
+  const tenantPageKey = activeTenant?.id ?? "no-tenant";
   const view = activeView === "overview"
     ? (
         <DashboardPage
@@ -136,6 +169,7 @@ export default function App() {
     : activeView === "ingest"
       ? (
           <IngestPage
+            key={tenantPageKey}
             token={session.accessToken}
             activeTenant={activeTenant}
           />
@@ -143,6 +177,7 @@ export default function App() {
       : activeView === "assistant"
         ? (
             <ConversationsPage
+              key={tenantPageKey}
               token={session.accessToken}
               activeTenant={activeTenant}
             />

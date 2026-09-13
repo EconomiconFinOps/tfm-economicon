@@ -42,16 +42,17 @@ puede añadirse, pero no sustituye esos escenarios.
 ADR-0003 (JUP-092) fija TypeScript con `strict: true`, type-check obligatorio en
 CI y `allowJs: true` durante la migracion (`false` al cerrar F5). F2 instala el
 tooling y desactiva `react/prop-types` solo para `.ts`/`.tsx`; los nueve `.jsx`
-actuales siguen sujetos a la regla. RF-082-002 permanece abierto hasta que F3
-(o el cierre de F5) migre esos componentes o sus sustitutos a `.tsx` con cobertura
-real de sus props. No se exige corregir manualmente las 49 infracciones antes de
-esa migracion, ni se considera suficiente desactivar la regla en F2.
+actuales siguen sujetos a la regla. La condicion de cierre de RF-082-002 es
+migrar esos componentes o sus sustitutos a `.tsx` con cobertura real de sus
+props. El plan inicial situaba ese trabajo en F3/F5; JUP-087 lo ejecuta ahora
+sobre la interfaz existente, antes del port visual de JUP-095. No se considera
+suficiente desactivar la regla en F2.
 
 JUP-087 conserva lint sin errores y pruebas reales de los recorridos criticos
 como puerta de calidad. Una desactivacion global de la regla sobre JavaScript
-sin cobertura equivalente de tipos no satisface este cambio. El tooling y la
-migracion siguen las tareas separadas de F2/F3/F5 del ADR; JUP-088 solo reconcilia
-este contrato documental.
+sin cobertura equivalente de tipos no satisface este cambio. F2 proporciona el
+tooling; F3 conserva el port visual y F5 la retirada final de `allowJs`. JUP-088
+solo reconcilio este contrato documental; esta implementacion pertenece a JUP-087.
 
 ### Red y almacenamiento se aislan en pruebas
 
@@ -65,3 +66,40 @@ la cache entre casos. No dependen de servicios Docker ni de credenciales reales.
   al menos una validacion integrada posterior.
 - [Migracion tipada crece de alcance] -> seguir ADR-0003 y las tareas separadas de F2/F3/F5; un cambio de decision requiere otro ADR.
 - [Lint verde por excepciones] -> test de configuracion que rechaza la anulacion global.
+
+## Implementacion del baseline — 2026-09-08
+
+JUP-087 ejecuta ahora el tipado de los componentes existentes previsto por
+ADR-0003, antes de portar la interfaz de Figma Make en JUP-095. Se mantienen los
+flujos, estilos y endpoints del destino; los contratos de respuestas HTTP y las
+props pasan a TypeScript con `strict: true`. `allowJs: true` permanece como
+decision de convivencia hasta el cierre de F5. No se relaja el rigor ni se
+amplia el ambito de la excepcion ESLint para JSX.
+
+Se adopta Vitest 3.2.7, compatible con Vite 5, con React Testing Library,
+user-event, jest-dom y jsdom. El runner reutiliza `vite.config.ts`; `pnpm test`
+ejecuta casos reales y termina con error si falla una prueba. Un proyecto
+TypeScript separado verifica las pruebas sin añadir globals Node al codigo de
+la aplicacion. JUP-095 puede reutilizar este runner al incorporar su interfaz.
+
+La suite monta App con un QueryClient nuevo, desactiva reintentos para que los
+fallos sean deterministas, intercepta fetch y rechaza solicitudes no previstas.
+Los datos de prueba reflejan los schemas del backend; al terminar cada caso se
+limpian DOM, almacenamiento, mocks y cache. Se cubren respuestas satisfactorias,
+errores, carga y listas vacias en los recorridos del contrato. Un test ejecuta
+ESLint sobre JSX sin contrato de props para impedir su desactivacion global.
+
+El check obligatorio `Frontend build` ejecuta primero lint y pruebas mediante
+los comandos del workspace filtrados al frontend. No requiere crear otro
+contexto de proteccion: el fallo de cualquiera de esos pasos bloquea ese check.
+Los tests de gobernanza verifican esta conexion. El build y el check obligatorio
+de tipos conservan sus nombres y requisitos.
+
+Las paginas de ingesta y conversaciones se montan de nuevo al cambiar de tenant.
+La seleccion, borradores y estados de mutacion pertenecen asi al tenant de su
+montaje, y una respuesta tardia del anterior no modifica el formulario actual.
+Las solicitudes ya enviadas pueden terminar en su tenant original; no se
+presenta este aislamiento de interfaz como cancelacion de operaciones backend.
+
+Fuentes del runner: [Vitest 3](https://v3.vitest.dev/guide/) y
+[React Testing Library](https://testing-library.com/docs/react-testing-library/setup/).

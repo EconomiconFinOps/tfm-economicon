@@ -201,7 +201,7 @@ test("JUP-053 credential examples leave real secret fields empty", () => {
 });
 
 test("JUP-053 login form initializes with the unchanged email and a blank password", () => {
-  const source = fs.readFileSync(path.join(root, "apps/frontend/src/pages/LoginPage.jsx"), "utf8");
+  const source = fs.readFileSync(path.join(root, "apps/frontend/src/pages/LoginPage.tsx"), "utf8");
   const initializer = source.match(/useState\((\{[\s\S]*?\})\)/);
   assert.ok(initializer, "Locate the existing login form state initializer");
   const form = vm.runInNewContext("(" + initializer[1] + ")", {}, { timeout: 1000 });
