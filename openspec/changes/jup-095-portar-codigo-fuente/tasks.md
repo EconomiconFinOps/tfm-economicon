@@ -233,11 +233,17 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
 
 ## 8. Migración `.tsx` restante y limpieza
 
-- [ ] 8.1 Migrar a `.tsx`/`.ts` los archivos del destino que el enrutado ha obligado a tocar, sin
+- [x] 8.1 Migrar a `.tsx`/`.ts` los archivos del destino que el enrutado ha obligado a tocar, sin
   cambio de comportamiento. `src/services/api.js` y `src/hooks/useDashboardData.js` **no se tocan**:
-  son de JUP-096 (decisión 1 del `design.md`).
-- [ ] 8.2 Eliminar `src/styles/main.css` y `src/pages/PlaceholderPage.jsx`, y verificar que no queda
-  ninguna referencia a ellos en el árbol.
+  son de JUP-096 (decisión 1 del `design.md`). Hecho: `App.jsx` → `App.tsx` (único `.jsx` que quedaba
+  con ese perfil), verbatim (solo cambia el comentario de cabecera). `git diff` vacío confirmado sobre
+  `api.js`/`useDashboardData.js`. Sin Red/Green: sin comportamiento nuevo (mismo criterio que 7.1/7.2
+  para `main.tsx`). Veredicto QA: `accept`.
+- [x] 8.2 Eliminar `src/styles/main.css` y `src/pages/PlaceholderPage.jsx`, y verificar que no queda
+  ninguna referencia a ellos en el árbol. Hecho: verificado antes y después del borrado (grep + build
+  real, QA confirmó que una referencia rota rompe `vite build`). Solo quedan menciones en comentarios
+  explicativos de `MetricCard.tsx`/`SectionCard.tsx`/`StatusPill.tsx` (no son referencias activas).
+  `find apps/frontend/src -name "*.jsx"` → sin resultados. Veredicto QA: `accept`.
 - [ ] 8.3 Registrar la **nueva línea base de lint** y confirmar que `RF-082-002` sigue `Open`, con la
   lista de archivos `.jsx` que quedan y la tarjeta que los cerrará.
 - [ ] 8.4 Confirmar que `git diff` sobre `src/services/api.js` y `src/hooks/useDashboardData.js` está

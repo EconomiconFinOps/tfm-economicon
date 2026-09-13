@@ -768,3 +768,63 @@ lanzando Chromium con `--disable-web-security` solo para esta verificación.
 
 **Conclusión:** la migración del entrypoint a `main.tsx` y la reconciliación de `index.html` (7.1/7.2)
 no introducen ninguna regresión de arranque ni de enrutado. **Grupo 7 completo.**
+
+## Grupo 8 — Migración `.tsx` restante y limpieza (tareas 8.1 y 8.2)
+
+**Sin ciclo Red/Green ni mutación**, mismo criterio ya aplicado y aceptado en las tareas 7.1/7.2 para
+`main.tsx`: ninguna de las dos tareas introduce comportamiento nuevo. 8.1 es un rename mecánico
+(`App.jsx` → `App.tsx`) de un componente sin props ni estado, solo con un comentario nuevo explicando
+por qué no requiere tipado adicional. 8.2 es borrado de código muerto ya verificado sin consumidores
+(`main.css`, `PlaceholderPage.jsx`). QA confirma que el criterio aplica igual aquí: no hay AST de
+producto nuevo que Stryker pueda instrumentar, y forzar un test o una mutación artificial sobre un
+diff que es puro renombrado/borrado no aportaría protección real.
+
+**Verificación independiente:**
+
+1. **`App.tsx` preserva el comportamiento de `App.jsx`**: `diff` contra `git show
+   HEAD:apps/frontend/src/App.jsx` muestra únicamente el comentario ampliado (explicación de la
+   migración a `.tsx`); el cuerpo ejecutable (`import { RouterProvider } from "react-router"`,
+   `import { router } from "./routes"`, `<RouterProvider router={router} />`) es idéntico carácter por
+   carácter.
+2. **Sin referencias activas a `main.css`/`PlaceholderPage.jsx`**: `grep` sobre todo
+   `apps/frontend/src` confirma que las únicas tres coincidencias restantes son comentarios
+   explicativos en `MetricCard.tsx`/`SectionCard.tsx`/`StatusPill.tsx` (ninguna es un import, `<link>`
+   ni JSX activo). `find apps/frontend/src -name "*.jsx"` da cero resultados. `main.tsx` ya importa
+   `./styles/index.css`, no `./styles/main.css`. Verificación activa, no solo lectura: inyecté
+   temporalmente `import "./pages/PlaceholderPage";` en `main.tsx` — `typecheck` no lo detecta (el
+   compilador de TS con `moduleResolution: "Bundler"` no siempre falla en resolución de módulos
+   inexistentes en este entorno, hallazgo cosmético sin impacto porque el gate real es otro), pero
+   `build` (`vite build`) sí falla correctamente: `Could not resolve "./pages/PlaceholderPage" from
+   "src/main.tsx"`. Confirma que una referencia activa real habría sido detectada por los gates
+   obligatorios. Revertido (`git status` limpio tras la prueba).
+3. **Gates corridos de forma independiente** con `corepack pnpm --filter @finops/frontend <script>`:
+   `test` → 27 archivos / 39 tests en verde; `typecheck` → limpio; `build` → limpio (CSS `39.63 kB`,
+   JS `762.55 kB`, mismo warning preexistente de tamaño de chunk, sin cambio respecto al cierre del
+   grupo 7); `lint` → **0 problemas** (confirmado, era 1 antes de esta tarea, en
+   `PlaceholderPage.jsx`, ahora eliminado).
+4. **Sin scope creep**: `git status --short` muestra exactamente 4 rutas tocadas — 3 borrados
+   (`App.jsx`, `PlaceholderPage.jsx`, `main.css`) y 1 archivo nuevo (`App.tsx`). Nada más en el árbol.
+5. **`git diff` vacío** sobre `src/services/api.js` y `src/hooks/useDashboardData.js`, confirmado de
+   forma independiente — respeta la decisión 1 de `design.md` (fuera de alcance, JUP-096).
+6. **Escaneo de secretos**: sin coincidencias en `App.tsx`.
+
+**Observación para la tarea 8.3 (no bloqueante, no escalo a tester/coder — es una nota para el
+orquestador):** `RF-082-002` dice literalmente que permanece `Open` "hasta que F3 (o el cierre de F5)
+migre esos 9 archivos a `.tsx`". `PlaceholderPage.jsx` era uno de esos 9, pero no se migró: se
+**borró**. A efectos de la violación de lint que motivó el finding, el resultado es equivalente —
+cero código, cero violación de `react/prop-types` — así que borrar es una forma válida de resolver la
+parte de ese archivo en el finding, aunque el texto del finding hable solo de "migrar". Al redactar
+8.3 conviene que la nueva línea base dejada en `backlog.md` distinga explícitamente "migrados a
+`.tsx`" de "eliminados sin migrar" para los 9 archivos originales, en vez de dar a entender que los 9
+se migraron literalmente.
+
+**Comentarios en español:** el único código nuevo (comentario ampliado de `App.tsx`) justifica el
+porqué (no requiere tipado adicional bajo `strict: true` más allá de lo que ya infieren
+`RouterProvider`/`router`), no solo describe lo obvio.
+
+**Sin manipulación de tests**: no se tocó ningún archivo de test en este grupo.
+
+**Veredicto QA: `accept`.** Tareas 8.1 y 8.2 cumplidas de forma observable; ausencia de Red/Green y de
+mutación justificada (sin comportamiento nuevo, mismo criterio que 7.1/7.2); gates en verde
+verificados de forma independiente; sin scope creep; único punto a tener en cuenta es la observación
+no bloqueante sobre cómo redactar 8.3 respecto a `RF-082-002`.

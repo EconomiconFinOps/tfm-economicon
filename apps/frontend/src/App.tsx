@@ -4,8 +4,12 @@
 // `activeView`) se reparte entre `SessionGate` (sesion/tenant) y `Layout`
 // (nav + selector de ambito + panel de sesion), ya trasladados en
 // sub-rondas anteriores del mismo grupo. Queda reducido a montar el router,
-// igual que el `App.tsx` del origen. No se renombra a `.tsx` en esta tarea:
-// eso es alcance de un grupo posterior de la tarjeta.
+// igual que el `App.tsx` del origen.
+//
+// Migracion a `.tsx` (JUP-095, grupo 8, tarea 8.1): componente sin props ni
+// estado, no requiere tipado adicional bajo `strict: true` mas alla de la
+// inferencia de tipos que ya aportan `RouterProvider` y `router` (tipado en
+// `./routes`).
 import { RouterProvider } from "react-router";
 import { router } from "./routes";
 
