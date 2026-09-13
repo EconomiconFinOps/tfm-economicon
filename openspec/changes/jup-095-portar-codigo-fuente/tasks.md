@@ -2,7 +2,8 @@
 
 - [x] 1.1 Llevar al **gate pre-código** las decisiones del `design.md` y registrar la resolución en el
   bloque `## Human Approval` del `proposal.md`. Requieren aprobación explícita: la decisión 6
-  (`/overview-legacy` como ruta puente hasta JUP-096) y la decisión 7 (promover *Frontend tests* a
+  (`/overview-legacy` como ruta puente hasta la siguiente tarjeta de F3 que reconcilie la capa de
+  datos) y la decisión 7 (promover *Frontend tests* a
   comprobación obligatoria, tocando `.github/rulesets/` y la guía de gobernanza). Hecho: aprobado por
   Victor el 2026-09-07 (commit `eaafc90`), con ambas decisiones aprobadas explícitamente.
 - [x] 1.2 Registrar la línea base **antes** de tocar nada: recuento de `corepack pnpm --filter
@@ -235,7 +236,8 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
 
 - [x] 8.1 Migrar a `.tsx`/`.ts` los archivos del destino que el enrutado ha obligado a tocar, sin
   cambio de comportamiento. `src/services/api.js` y `src/hooks/useDashboardData.js` **no se tocan**:
-  son de JUP-096 (decisión 1 del `design.md`). Hecho: `App.jsx` → `App.tsx` (único `.jsx` que quedaba
+  son de la siguiente tarjeta de F3 que reconcilie la capa de datos (decisión 1 del `design.md`).
+  Hecho: `App.jsx` → `App.tsx` (único `.jsx` que quedaba
   con ese perfil), verbatim (solo cambia el comentario de cabecera). `git diff` vacío confirmado sobre
   `api.js`/`useDashboardData.js`. Sin Red/Green: sin comportamiento nuevo (mismo criterio que 7.1/7.2
   para `main.tsx`). Veredicto QA: `accept`.
@@ -258,12 +260,17 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
 
 ## 9. Cierre y verificación
 
-- [ ] 9.1 Ejecutar la batería completa: `corepack pnpm --filter @finops/frontend typecheck`, `lint`,
+- [x] 9.1 Ejecutar la batería completa: `corepack pnpm --filter @finops/frontend typecheck`, `lint`,
   `test`, `build`; `corepack pnpm install --frozen-lockfile`; `corepack pnpm openspec:validate`;
   `corepack pnpm jup:check -- --change jup-095-portar-codigo-fuente`; `corepack pnpm jup:cleanup:check`
-  (sustitutos con `--filter` por `RF-093-001`).
+  (sustitutos con `--filter` por `RF-093-001`). Hecho: los 4 comandos de `--filter @finops/frontend`
+  en verde (typecheck limpio, lint 0 problemas, test 39/39, build limpio); `pnpm install
+  --frozen-lockfile` sin cambios; `openspec:validate` → 23/23; `jup:check --change
+  jup-095-portar-codigo-fuente` → `[OK]` enlazado con Trello y completo; `jup:cleanup:check` → `[OK]`
+  448 archivos sin agentes personales, binarios ni tareas paralelas.
 - [x] 9.2 Añadir a `openspec/findings/backlog.md` el finding nuevo por los datos de demostración en la
-  ruta de producto, con dueño (JUP-096) y su relación con `RF-091-003`. Confirmar sin cambio de estado
+  ruta de producto, con dueño (la siguiente tarjeta de F3 que reconcilie la capa de datos) y su
+  relación con `RF-091-003`. Confirmar sin cambio de estado
   `RF-090-001`, `RF-090-003`, `RF-091-003`, `RF-091-004` y `RF-093-001`. Hecho: `RF-095-002` (nuevo,
   las 5 pantallas de coste con datos de demostración de `src/data/demo/`, relacionado con `RF-091-003`
   y `RF-091-004`; dueño anotado como "la siguiente tarjeta de F3 que reconcilie la capa de datos" en

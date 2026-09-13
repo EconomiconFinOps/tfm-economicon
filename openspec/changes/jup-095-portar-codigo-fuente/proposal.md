@@ -12,7 +12,7 @@ líneas del origen— y la aplicación navega con un `switch` manual sobre estad
 (`App.jsx:127-150`), sin rutas reales ni URL compartible.
 
 Esta es la primera tarjeta de la épica que toca producto visible, y es la que desbloquea al resto de
-F3: `reconciliar-capa-api` (JUP-096) y `reconciliar-auth-tenant` (JUP-097) reconcilian **sobre**
+F3: `reconciliar-capa-api` y `reconciliar-auth-tenant` (JUP-097) reconcilian **sobre**
 pantallas que hoy no existen aquí. Mientras el código del origen no entre, cada una de esas tarjetas
 tendría que portarlo por su cuenta a mitad de su propio alcance — justo el "big bang" que el spike
 prohíbe.
@@ -40,7 +40,8 @@ prohíbe.
   ([JUP-091](../../../docs/planning/JUP-091-economicon-source-inventory.md), `RF-091-003`).
 - **Se migran a `.tsx` los archivos del destino que el enrutado obliga a tocar**, preservando su
   lógica sin cambio de comportamiento. La sesión, el tenant activo, TanStack Query y
-  `src/services/api.js` **no se tocan**: reconciliarlos es JUP-096 y JUP-097.
+  `src/services/api.js` **no se tocan**: reconciliarlos es alcance de `reconciliar-capa-api` y
+  `reconciliar-auth-tenant` (JUP-097).
 
 ## Capabilities
 
@@ -75,14 +76,15 @@ prohíbe.
 - **Findings.** `RF-082-002` sigue `Open` y esta tarjeta registra su **nueva línea base de lint** (hoy
   49 violaciones exactas de `react/prop-types` en 9 archivos `.jsx`): baja al migrar archivos a
   `.tsx`, pero no se cierra mientras quede JavaScript sin tipar, empezando por `services/api.js`, que
-  es de JUP-096. `RF-090-001`, `RF-090-003`, `RF-091-003`, `RF-091-004` y `RF-093-001` quedan fuera de
+  es alcance de `reconciliar-capa-api`. `RF-090-001`, `RF-090-003`, `RF-091-003`, `RF-091-004` y
+  `RF-093-001` quedan fuera de
   alcance sin cambio de estado. Se espera **un finding nuevo** por los datos de demostración que
   entran en la ruta de producto.
 - **Riesgo declarado:** el código del origen nunca ha pasado verificación de tipos —llega sin
   `tsconfig`, transpilado por esbuild— y aquí entra bajo `strict: true` (ADR-0003). El volumen de
   errores a resolver no es conocido hasta intentarlo; ADR-0003 ya fija que, si desborda, se documenta
   y se supersede el ADR, no se relaja la configuración en silencio.
-- **Desbloquea:** JUP-096 (`reconciliar-capa-api`), JUP-097 (`reconciliar-auth-tenant`) y JUP-098
+- **Desbloquea:** `reconciliar-capa-api`, JUP-097 (`reconciliar-auth-tenant`) y JUP-098
   (`unificar-estilos-assets`).
 - **Aún no:** conectar las pantallas migradas a datos reales, el flujo de auth contra el backend, la
   reconciliación de Docker/turbo (F4), la validación E2E (F5) ni endurecer `allowJs` a `false`
@@ -100,8 +102,9 @@ prohíbe.
 - Decisions approved: se aprueban las nueve decisiones del `design.md`. (1) **La frontera de la
   tarjeta es presentación y enrutado**: `services/api.js`, `useDashboardData` y la lógica de
   sesión/tenant se preservan verbatim, cambiando de extensión solo si el enrutado obliga y nunca de
-  comportamiento; abrirlas aquí dejaría a JUP-096 y JUP-097 sin alcance propio y devolvería la
-  migración al "big bang" que el spike prohíbe. (2) **Del origen entra solo lo que tiene consumidor
+  comportamiento; abrirlas aquí dejaría a `reconciliar-capa-api` y `reconciliar-auth-tenant` (JUP-097)
+  sin alcance propio y devolvería la migración al "big bang" que el spike prohíbe. (2) **Del origen
+  entra solo lo que tiene consumidor
   verificado**: los 8 `.tsx` vivos, y quedan fuera `figma/ImageWithFallback.tsx` (sin un solo import,
   ni siquiera desde `ui/`), el plugin `figmaAssetResolver` —que resuelve contra una carpeta
   `src/assets` inexistente y solo puede fallar en silencio—, el `assetsInclude` sin consumidor,
@@ -116,8 +119,9 @@ prohíbe.
   de JUP-098. (5) **El alias `@/` se declara en los dos sitios**, `paths` de `tsconfig.json` y
   `resolve.alias` de `vite.config.ts`: declararlo en uno solo produce el fallo de "compila pero no
   arranca", o el inverso. Entra por los componentes de shadcn copiados, no por el código portado, que
-  no lo usa. (6) **`/overview-legacy` se conserva como ruta puente** hasta que JUP-096 conecte los
-  datos reales al nuevo Overview: cuesta una entrada de ruta y evita que `develop` quede con su único
+  no lo usa. (6) **`/overview-legacy` se conserva como ruta puente** hasta que `reconciliar-capa-api`
+  conecte los datos reales al nuevo Overview: cuesta una entrada de ruta y evita que `develop` quede
+  con su único
   dashboard con datos reales degradado durante dos tarjetas, lo que contradiría la regla de rollback
   del spike. Se declara como deuda con dueño explícito, no como ruta permanente. (7) **Vitest +
   Testing Library, con job propio en CI y promovido a comprobación obligatoria** en ambos rulesets y
@@ -146,18 +150,19 @@ prohíbe.
   si la suite es inestable; mitigación: nace pequeña y determinista (render y enrutado, sin red), y
   como la activación remota es acción de administrador hay una ventana natural para revisarla antes
   de que empiece a bloquear. Riesgo cuarto: **`/overview-legacy` puede quedarse para siempre** si
-  JUP-096 no la retira; mitigación: se declara en `review.md` con dueño y se enuncia en el alcance de
-  JUP-096.
+  `reconciliar-capa-api` no la retira; mitigación: se declara en `review.md` con dueño y se enuncia en
+  su alcance.
 - Required changes before execution: none
 - Notes: primera tarjeta de F3 y **primera del frontend con superficie real para el ciclo Red/Green**
   del harness: a diferencia de JUP-093 y JUP-094, que documentaron la excepción por falta de test
   runner, aquí el runner entra en el grupo 2 y las tareas de los grupos 2, 4, 5 y 6 llevan Red/Green
   y mutación. Lleva `docs/evidence/JUP-095-validation.md`: no es doc-only. La verificación local usa
   los sustitutos `--filter @finops/frontend` por la limitación de entorno preexistente `RF-093-001`.
-  Quedan explícitamente fuera: la capa API y `RF-090-003` (JUP-096); auth/sesión/tenant contra el
-  backend y el guard de rutas (JUP-097); la unificación fina de estilos, fuentes, iconos y licencias
+  Quedan explícitamente fuera: la capa API y `RF-090-003` (`reconciliar-capa-api`); auth/sesión/tenant
+  contra el backend y el guard de rutas (JUP-097); la unificación fina de estilos, fuentes, iconos y
+  licencias
   (JUP-098); Docker y turbo con `RF-090-001` (F4); la validación E2E (F5); endurecer `allowJs` a
   `false` (cierre de F5); y conectar los 12 datos sin contrato de `RF-091-003`, que es decisión de
   épica. **`RF-082-002` permanece `Open`** y esta tarjeta solo registra su nueva línea base de lint:
-  no se cierra mientras quede JavaScript sin tipar, empezando por `services/api.js`, que es de
-  JUP-096.
+  no se cierra mientras quede JavaScript sin tipar, empezando por `services/api.js`, que es alcance
+  de `reconciliar-capa-api`.

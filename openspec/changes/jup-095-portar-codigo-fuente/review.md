@@ -507,7 +507,8 @@ Desglose: `SectionCard.tsx` **100%** (trivial, sin lógica condicional). `Ingest
 flujo principal de envío ya cubierto por el Red). `ConversationsPage.tsx` **14.56%** (la más
 compleja: dos queries, dos mutaciones, un efecto de auto-selección, y el único test solo verifica el
 listado inicial). Presentado a Victor como decisión de alcance: **aceptar y documentar**. Motivo:
-son pantallas con backend real que JUP-096 reconectará pronto, y el flujo completo (crear
+son pantallas con backend real que la siguiente tarjeta de F3 (`reconciliar-capa-api`) reconectará
+pronto, y el flujo completo (crear
 conversación, enviar mensaje) se prueba mejor de forma end-to-end en la tarea 6.6 (verificación
 manual con el seed) que con mutantes aislados aquí — mismo criterio ya aplicado en el grupo 5 y en la
 sub-ronda (a) de este grupo.
@@ -805,7 +806,8 @@ diff que es puro renombrado/borrado no aportaría protección real.
 4. **Sin scope creep**: `git status --short` muestra exactamente 4 rutas tocadas — 3 borrados
    (`App.jsx`, `PlaceholderPage.jsx`, `main.css`) y 1 archivo nuevo (`App.tsx`). Nada más en el árbol.
 5. **`git diff` vacío** sobre `src/services/api.js` y `src/hooks/useDashboardData.js`, confirmado de
-   forma independiente — respeta la decisión 1 de `design.md` (fuera de alcance, JUP-096).
+   forma independiente — respeta la decisión 1 de `design.md` (fuera de alcance, siguiente tarjeta de
+   F3 que reconcilie la capa de datos).
 6. **Escaneo de secretos**: sin coincidencias en `App.tsx`.
 
 **Observación para la tarea 8.3 (no bloqueante, no escalo a tester/coder — es una nota para el
@@ -853,6 +855,6 @@ exigía el finding (línea base de `react/prop-types` en cero) está cumplido, c
 tarjeta (`278769c`, merge de JUP-094), está **completamente vacío**: ni cambio de extensión ni cambio
 de lógica. Confirma la decisión 1 de `design.md` (frontera con la lógica del destino) intacta al
 cierre del grupo 8: la capa API y el hook de datos siguen siendo `.js`, sin tipar, tal como corresponde
-a JUP-096.
+a la siguiente tarjeta de F3 que reconcilie la capa de datos.
 
 **Grupo 8 completo.**

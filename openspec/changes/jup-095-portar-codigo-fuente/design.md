@@ -60,8 +60,8 @@ deducidos del inventario:
 **Goals:**
 
 - Dejar la aplicación navegando por rutas reales sobre las pantallas del origen **sin perder ninguna
-  capacidad del destino**, para que JUP-096 y JUP-097 reconcilien datos y auth sobre una UI que ya
-  existe.
+  capacidad del destino**, para que las siguientes tarjetas de F3 (`reconciliar-capa-api` y
+  `reconciliar-auth-tenant`) reconcilien datos y auth sobre una UI que ya existe.
 - Que cada slice deje la aplicación arrancable, de modo que un fallo se atribuya al slice que lo
   introdujo y no a un merge acumulado.
 - Cerrar la excepción al ciclo Red/Green que arrastran JUP-093 y JUP-094.
@@ -85,8 +85,9 @@ preservan **verbatim**. Solo cambian de extensión si el enrutado obliga a tocar
 cambio es de tipado, nunca de comportamiento.
 
 *Por qué:* el spike separó deliberadamente "reemplazar el código" de "reconciliar la capa API" y
-"reconciliar auth/tenant" en tres tarjetas. Si esta abre la lógica, JUP-096 y JUP-097 se quedan sin
-alcance propio y la migración vuelve a ser el *big bang* que el spike prohíbe. Además `api.js` es hoy
+"reconciliar auth/tenant" en tres tarjetas. Si esta abre la lógica, las tarjetas siguientes de F3
+(`reconciliar-capa-api` y `reconciliar-auth-tenant`) se quedan sin alcance propio y la migración
+vuelve a ser el *big bang* que el spike prohíbe. Además `api.js` es hoy
 la **única** capa HTTP del monorepo y el único punto donde viven `Authorization` y `X-Tenant-Id`:
 tocarla aquí mezclaría un fallo de enrutado con uno de contrato.
 
@@ -155,15 +156,18 @@ Descartada: rompe la convención de shadcn/ui y obliga a reeditar cada component
 
 *Por qué:* es hoy **la única pantalla que consume datos reales** (`GET /billing/summary` y
 `GET /health` vía `useDashboardData`). El `index` del origen que ocupa su lugar solo muestra datos de
-demostración, y conectarlo es JUP-096. Sin esta ruta puente, `develop` quedaría con el único dashboard
+demostración, y conectarlo es alcance de la siguiente tarjeta de F3 que reconcilie la capa de datos.
+Sin esta ruta puente, `develop` quedaría con el único dashboard
 real degradado durante dos tarjetas, lo que contradice la regla de rollback del spike: no perder nada
 verificable hasta que la validación E2E de F5 lo respalde.
 
-*Coste y retirada:* una entrada de ruta. JUP-096 la elimina al conectar el nuevo Overview; queda
-anotada como deuda con dueño y fecha de vencimiento, no como ruta permanente.
+*Coste y retirada:* una entrada de ruta. La siguiente tarjeta de F3 que reconcilie la capa de datos la
+elimina al conectar el nuevo Overview; queda anotada como deuda con dueño y fecha de vencimiento, no
+como ruta permanente.
 
 *Alternativa considerada:* conectar aquí mismo los dos únicos campos con contrato al `index` del
-origen. Descartada: es exactamente el alcance de JUP-096 y rompería la decisión 1.
+origen. Descartada: es exactamente el alcance de la siguiente tarjeta de F3 que reconcilie la capa de
+datos y rompería la decisión 1.
 
 ### 7. Runner de pruebas: Vitest + Testing Library, con job propio en CI
 
@@ -292,13 +296,15 @@ sea accesible fuera del árbol de rutas.
 - **Los tokens de `theme.css` llegan en claro** y las pantallas fijan el color a mano → mitigación:
   decisión 4, ámbito oscuro declarado explícitamente; la unificación real es JUP-098.
 - **Datos de demostración entran en la ruta de producto** → mitigación: aislados en un origen único y
-  señalizado, y registrados como finding nuevo con dueño (JUP-096 y `RF-091-003`).
+  señalizado, y registrados como finding nuevo con dueño (la siguiente tarjeta de F3 que reconcilie la
+  capa de datos, relacionado con `RF-091-003`).
 - **Promover *Frontend tests* a comprobación obligatoria puede bloquear PRs del equipo** si la suite
   es inestable → mitigación: la suite nace pequeña y determinista (render y enrutado, sin red); y como
   la activación remota es acción de administrador, hay una ventana natural para revisarla antes de que
   empiece a bloquear.
-- **`/overview-legacy` puede quedarse para siempre** si JUP-096 no la retira → mitigación: se declara
-  en `review.md` como deuda con dueño explícito y se enuncia en el alcance de JUP-096.
+- **`/overview-legacy` puede quedarse para siempre** si la siguiente tarjeta de F3 que reconcilie la
+  capa de datos no la retira → mitigación: se declara en `review.md` como deuda con dueño explícito y
+  se enuncia en su alcance.
 
 ## Migration Plan
 
