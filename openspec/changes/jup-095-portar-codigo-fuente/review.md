@@ -965,3 +965,32 @@ nuevo `RF-095-002` (datos de demostración en las 5 pantallas de coste, tarea 9.
 `RF-091-004` (capacidades de backend ausentes/mock que bloquean conectar esas pantallas). Sin fecha
 de vencimiento fija; se enuncia como alcance explícito de esa tarjeta siguiente, no como ruta
 permanente.
+
+## Human Approval
+
+- Change: jup-095-portar-codigo-fuente
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-09-12
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: JUP-095 completada (40/40 tareas). Primera tarjeta de F3 y primera del frontend con
+  superficie real para el ciclo Red/Green del harness (grupos 2, 4, 5 y 6 con mutación real). Ningún
+  veredicto QA `changes-requested` en toda la tarjeta. `RF-082-002` cerrado `Fixed` (línea base de
+  lint 49 violaciones en 9 `.jsx` → 0, 8 archivos migrados a `.tsx` + 1 eliminado sin migrar). Batería
+  completa en verde (`typecheck`/`lint`/`test`/`build` del frontend, `pnpm install
+  --frozen-lockfile`, `openspec:validate` 23/23, `jup:check`, `jup:cleanup:check`), con la misma
+  sustitución `--filter @finops/frontend` que JUP-093/094 por `RF-093-001`. Findings nuevos
+  registrados fuera de alcance: `RF-095-001` (backend sin `CORSMiddleware`, descubierto en la
+  verificación E2E de la tarea 6.6) y `RF-095-002` (datos de demostración en 5 dashboards de coste).
+  Deuda con dueño explícito: `/overview-legacy` (ruta puente) y los 5 primitivos de shadcn/ui sin
+  consumidor real (peso muerto aceptado por ADR-0004). Durante el cierre se corrigieron todas las
+  referencias a "JUP-096" como nombre de la siguiente tarjeta de F3 (número ya tomado por otro tema,
+  no confirmado) por una referencia genérica, en `design.md`, `proposal.md`, este `review.md`,
+  `tasks.md`, `backlog.md`, el spike de F3 y ADR-0003. Queda pendiente, fuera de esta tarjeta: las
+  tarjetas siguientes de F3 (`reconciliar-capa-api`, `reconciliar-auth-tenant`,
+  `unificar-estilos-assets`, deben citar ADR-0003/ADR-0004), la activación en vivo de la check
+  context `Frontend tests` por un administrador, y `RF-095-001`/`RF-095-002` (tarjetas aparte).
