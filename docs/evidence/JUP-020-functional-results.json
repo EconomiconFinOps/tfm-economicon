@@ -1,0 +1,92 @@
+{
+  "task": "JUP-020",
+  "date": "2026-09-10",
+  "status": "passed",
+  "scope": "Authenticated HTTP document ingestion through backend, RabbitMQ worker, CockroachDB and PostgreSQL/pgvector",
+  "baseline_commit": "1ff8e07",
+  "baseline_result": {
+    "http_status": 202,
+    "job_status": "failed",
+    "cause": "KeyError: 'text_content'",
+    "amqp_payload_shape": "document text and metadata nested under payload",
+    "original_message_modified": false
+  },
+  "source_proof": {
+    "changed_product_files": ["apps/processor/app/tasks/ingest.py"],
+    "baseline_ingest_sha256": "97af62bee5cf0691a7355f596ccf62f90a4fc57a85add24a036cae105cfa87dc",
+    "fixed_ingest_sha256": "45bc3c1d52c4f0a36d14b5bda7629579e945e371085eb58042875e33b296688e",
+    "smoke_script_sha256": "49c2efee818a25d55724871fcaeb3e6e6adad1ea05b0f214b9280948c8c17406",
+    "remote_fixed_ingest_matches_worktree": true,
+    "baseline_archive_sha256": "e958c4ab6c771a08ad23811260a33275b5590fa9550b7495357ab96ac87042d2"
+  },
+  "document": {
+    "path": "docs/assistant-corpus/finops/azure-finops-mvp.md",
+    "ingested_text_sha256": "de44836434bb9b7522d4fc3a1128b2cb97f08d7a2af8a916f5e894a7d9f185c0",
+    "source": "assistant-corpus",
+    "chunk_size": 500,
+    "chunk_overlap": 50,
+    "chunks_per_document": 19,
+    "embedding_dimension": 8
+  },
+  "providers": {"embedding": "mock", "llm": "mock", "ai_execution_mode": "test"},
+  "jobs": [
+    {
+      "job_id": "250876b1-342b-4b63-8c92-9c6106bfa4b5",
+      "tenant_id": "tenant-core",
+      "request_id": "5d698aeb-7d9a-4738-a692-c32f754f23ff",
+      "final_status": "completed",
+      "case": "Original HTTP message failed on baseline and was recovered unchanged after replacing processor"
+    },
+    {
+      "job_id": "45b1d424-956c-467b-a9a7-fa3f7e1c665f",
+      "tenant_id": "tenant-core",
+      "request_id": "c7f7b5c1-f62e-4edb-976c-2d94267dc977",
+      "final_status": "completed",
+      "case": "New authenticated HTTP POST on corrected processor"
+    },
+    {
+      "job_id": "487babe8-1e46-4fa2-913f-4cd09c3019e0",
+      "tenant_id": "tenant-growth",
+      "request_id": "361665ed-3ad9-4aa5-a5c2-c9409b409f42",
+      "final_status": "completed",
+      "case": "New authenticated HTTP POST for second tenant on corrected processor"
+    }
+  ],
+  "assertions": {
+    "completed_jobs": 3,
+    "stored_documents": 3,
+    "stored_chunks": 57,
+    "stored_embeddings": 57,
+    "exact_chunk_contents_match_expected_and_job_result": true,
+    "document_text_source_artifact_uri_preserved": true,
+    "job_tenant_document_chunk_embedding_ids_correct": true,
+    "metadata_preserved_in_job_payload_and_result": true,
+    "backend_http_request_ids_match_worker": true,
+    "distinct_request_ids": 3,
+    "original_amqp_request_id_preserved_on_recovery": true,
+    "corrected_worker_error_logs": 0,
+    "queue_messages_ready": 0,
+    "queue_messages_unacknowledged": 0
+  },
+  "environment": {
+    "host": "DockerServer",
+    "compose_project": "jup020-validation-20260910",
+    "isolated_services": 5,
+    "published_ports": ["127.0.0.1:28220:8000", "127.0.0.1:28221:8001"],
+    "credentials": "New private synthetic values generated for disposable validation; never included in evidence",
+    "credential_scan_passed": true,
+    "startup": "Infrastructure, then healthy backend, then processor, sequentially",
+    "cleanup": {"remaining_project_containers": 0, "remaining_project_volumes": 0, "remaining_project_networks": 0, "synthetic_secret_file_deleted": true}
+  },
+  "limitations": [
+    "Mock AI providers validate ingestion wiring and persistence; external model quality and paid-provider calls were not tested.",
+    "Metadata is preserved in job payload/result; no new document/chunk metadata schema is implemented.",
+    "Sequential startup avoids the separate clean-start migration race tracked in JUP-096; simultaneous clean startup is not accredited."
+  ],
+  "evidence_files": [
+    "baseline-smoke.jsonl", "baseline-amqp.jsonl", "baseline-processor.jsonl",
+    "fixed-smoke.jsonl", "final-assertions.jsonl", "final-backend.jsonl",
+    "fixed-processor.jsonl", "final-rabbitmq-state.txt", "source-and-environment-proof.json",
+    "cleanup-proof.json"
+  ]
+}
