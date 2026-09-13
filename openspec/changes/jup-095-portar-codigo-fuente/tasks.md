@@ -262,12 +262,22 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
   `test`, `build`; `corepack pnpm install --frozen-lockfile`; `corepack pnpm openspec:validate`;
   `corepack pnpm jup:check -- --change jup-095-portar-codigo-fuente`; `corepack pnpm jup:cleanup:check`
   (sustitutos con `--filter` por `RF-093-001`).
-- [ ] 9.2 Añadir a `openspec/findings/backlog.md` el finding nuevo por los datos de demostración en la
+- [x] 9.2 Añadir a `openspec/findings/backlog.md` el finding nuevo por los datos de demostración en la
   ruta de producto, con dueño (JUP-096) y su relación con `RF-091-003`. Confirmar sin cambio de estado
-  `RF-090-001`, `RF-090-003`, `RF-091-003`, `RF-091-004` y `RF-093-001`.
-- [ ] 9.3 Actualizar `docs/spikes/frontend-migration.md`: sustituir el placeholder
+  `RF-090-001`, `RF-090-003`, `RF-091-003`, `RF-091-004` y `RF-093-001`. Hecho: `RF-095-002` (nuevo,
+  las 5 pantallas de coste con datos de demostración de `src/data/demo/`, relacionado con `RF-091-003`
+  y `RF-091-004`; dueño anotado como "la siguiente tarjeta de F3 que reconcilie la capa de datos" en
+  vez de un número de tarjeta fijo, a petición de Victor). Confirmado sin cambio de estado en los 5
+  findings listados (todos siguen `Open`, ninguno tocado por esta tarjeta salvo `RF-082-002`, ya
+  cerrado en la tarea 8.3, y `RF-095-001`, registrado en la tarea 6.6, ambos anteriores a esta tarea).
+- [x] 9.3 Actualizar `docs/spikes/frontend-migration.md`: sustituir el placeholder
   `jup-0xx-portar-codigo-fuente` por `jup-095-portar-codigo-fuente`, marcar sus tres tareas y anotar en
-  "Proximos pasos" qué queda de F3.
+  "Proximos pasos" qué queda de F3. Hecho: placeholder sustituido, sus 3 tareas marcadas `[x]`, punto 7
+  nuevo en "Proximos pasos" con el resumen de lo hecho y la deuda dejada (`/overview-legacy`,
+  `RF-095-002`, `RF-095-001`). Las 3 tarjetas restantes de F3 (`reconciliar-capa-api`,
+  `reconciliar-auth-tenant`, `unificar-estilos-assets`) se dejan con su placeholder `jup-0xx-*` tal
+  cual, sin asignarles número de tarjeta: no está confirmado cuál será el siguiente (a petición de
+  Victor).
 - [ ] 9.4 Escribir `review.md`: resultado, decisiones con su motivo, evidencia Red/Green y de mutación,
   veredicto QA, nueva línea base de lint, primitivos sin consumidor, y la deuda `/overview-legacy` con
   su dueño.

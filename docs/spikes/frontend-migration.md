@@ -198,10 +198,10 @@ tarjeta en Trello.
 
 ### F3. Reemplazo del codigo fuente
 
-**JUP `jup-0xx-portar-codigo-fuente`** — carril `standard`
-- [ ] Reemplazar `src/**` por el codigo de Economicon (componentes, pages, hooks, layouts).
-- [ ] Reconciliar `index.html` y entrypoint (`main.tsx`).
-- [ ] Asegurar arranque sin errores de tipo ni de runtime (`pnpm dev`, `pnpm build`).
+**JUP `jup-095-portar-codigo-fuente`** — carril `standard` — **completa**
+- [x] Reemplazar `src/**` por el codigo de Economicon (componentes, pages, hooks, layouts).
+- [x] Reconciliar `index.html` y entrypoint (`main.tsx`).
+- [x] Asegurar arranque sin errores de tipo ni de runtime (`pnpm dev`, `pnpm build`).
 
 **JUP `jup-0xx-reconciliar-capa-api`** — carril `standard`
 - [ ] Portar `services/api.*` a TS como **unica** capa HTTP.
@@ -364,3 +364,20 @@ tarjeta JUP** de la epica.
    componente. Siguiente: crear las tarjetas de F3 (`portar-codigo-fuente`,
    `reconciliar-capa-api`, `reconciliar-auth-tenant`, `unificar-estilos-assets`), citando ADR-0003 y
    ADR-0004 en su `design.md`.
+7. **Hecho en JUP-095: `portar-codigo-fuente` queda completa.** Los 8 `.tsx` vivos del origen portados
+   (5 dashboards, `Layout`, `ExportButton`, `routes.tsx`) con sus datos de demostración aislados en
+   `src/data/demo/`; enrutado real montado (`SessionGate` + `Outlet context`, patrón nativo de
+   react-router, no Context API propio); `LoginPage`/`IngestPage`/`ConversationsPage`/`DashboardPage`
+   reconstruidas sobre Tailwind conservando su lógica verbatim; entrypoint reconciliado
+   (`main.tsx`, ambos proveedores); `App.jsx`→`App.tsx`, `main.css` y `PlaceholderPage.jsx`
+   retirados. Runner de pruebas (Vitest) adoptado y promovido a comprobación obligatoria de CI —
+   cierra la excepción al ciclo Red/Green que arrastraban JUP-093/094. `RF-082-002` cerrado
+   (`Fixed`): línea base de lint en 0 (era 49 violaciones en 9 archivos `.jsx`), 0 archivos `.jsx`
+   restantes en `src/**`. Deuda explícita dejada para la siguiente tarjeta de F3
+   (`reconciliar-capa-api`): la ruta puente `/overview-legacy` (único dashboard con datos reales,
+   decisión 6 de `design.md`) y el finding nuevo `RF-095-002` (datos de demostración en las 5
+   pantallas de coste, relacionado con `RF-091-003`/`RF-091-004`). Hallazgo nuevo fuera de alcance de
+   esta tarjeta: `RF-095-001` (backend sin `CORSMiddleware`, responsabilidad del backend). **Queda de
+   F3:** `reconciliar-capa-api`, `reconciliar-auth-tenant` y `unificar-estilos-assets`, en ese orden
+   de dependencia (la capa API y la sesión real son prerrequisito de conectar los dashboards de
+   demostración; la unificación de estilos es la más aislada de las tres).
