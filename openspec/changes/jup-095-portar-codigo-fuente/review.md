@@ -858,3 +858,110 @@ cierre del grupo 8: la capa API y el hook de datos siguen siendo `.js`, sin tipa
 a la siguiente tarjeta de F3 que reconcilie la capa de datos.
 
 **Grupo 8 completo.**
+
+## Cierre de la tarjeta — resumen (tarea 9.4)
+
+### Resultado
+
+La aplicación navega por rutas reales sobre las 8 pantallas `.tsx` vivas del origen (5 dashboards,
+`Layout`, `ExportButton`, `routes.tsx`), con `LoginPage`/`IngestPage`/`ConversationsPage`/
+`DashboardPage` reconstruidas sobre Tailwind conservando su lógica verbatim, sin perder ninguna
+capacidad del destino: sesión, tenant activo, ingesta y conversaciones siguen funcionando contra el
+backend real (verificado E2E en la tarea 6.6). El runner de pruebas (Vitest) quedó adoptado y
+promovido a comprobación obligatoria de CI, cerrando la excepción al ciclo Red/Green que arrastraban
+JUP-093/094 (decisión 7 de `design.md`). `RF-082-002` (línea base de lint heredada) queda `Fixed`.
+Batería completa (tarea 9.1) en verde: `typecheck`/`lint`/`test`/`build` del frontend,
+`pnpm install --frozen-lockfile`, `openspec:validate` (23/23) y `jup:check` para esta tarjeta.
+
+### Decisiones clave y su motivo
+
+Detalle completo en `design.md` (`## Decisions`, decisiones 1-9, y el Addendum del grupo 6). Resumen:
+
+1. **Frontera con la lógica del destino** (sesión/tenant/`api.js`/`useDashboardData.js` verbatim, no
+   se tocan): para no adelantar el alcance de las tarjetas siguientes de F3 y no mezclar un fallo de
+   enrutado con uno de contrato.
+2. **Qué entra del origen**: solo lo que tiene consumidor verificado (8 `.tsx` vivos, no los 48 `ui/`
+   muertos ni `figma/ImageWithFallback.tsx`): mismo criterio que JUP-091/094.
+3. **Mapa de rutas**: el acceso (`/login`) queda fuera del `Layout`, que muestra navegación/sesión/
+   ámbito sin sentido sin sesión.
+4. **Ámbito oscuro declarado explícitamente** (`class="dark"` en `<html>`): sin él, los componentes
+   shadcn copiados renderizarían en claro sobre una app pensada para tema oscuro.
+5. **Alias `@/` en `tsconfig.json` y `vite.config.ts`**: lo exige la convención de los imports de
+   shadcn/ui copiados; declararlo en un solo sitio produce "compila pero no arranca" o el inverso.
+6. **`/overview-legacy` como ruta puente**: es la única pantalla con datos reales hoy; retirarla sin
+   red de seguridad degradaría el único dashboard real durante dos tarjetas.
+7. **Vitest + Testing Library, con job obligatorio en CI**: comparte cadena de build con Vite; un
+   runner que no corre en CI se pudre (precedente literal de *Frontend type check* en JUP-093).
+8. **Orden de slices** (runner → estilos → primitivos → componentes → enrutado → entrypoint →
+   limpieza): cada uno deja la app arrancable, para atribuir un fallo al slice que lo introdujo.
+9. **`strict: true` sobre código nunca verificado, prohibido silenciar** (`any`/`@ts-ignore`):
+   criterio de escape de ADR-0003 si desborda, nunca relajar `tsconfig.json`.
+10. **Addendum grupo 6 — `Outlet context` de react-router, no Context API propio**: mecanismo nativo
+    para compartir estado calculado en una ruta padre (`SessionGate`) con sus rutas hijas.
+
+### Evidencia Red/Green (resumen por grupo; detalle y hashes exactos en cada sección de arriba)
+
+| Grupo | Ciclo | Nota |
+|-------|-------|------|
+| 2 | Red `1070a3e` / Green `a03aa76` (`HarnessSmoke`, canario del harness); Red `f07367d` (CI) | Primer ciclo Red/Green real de la tarjeta |
+| 3 | Red/Green en `10e63b3` (ámbito oscuro, tarea 3.3) | 3.1/3.2/3.4/3.5 son config sin comportamiento nuevo |
+| 4 | Red `5d27677` (6 primitivos + `cn()`) | 15/15 tests en verde |
+| 5 | Red `e128fcd` (7 pantallas portadas), prerrequisito `f646ef0` (mock `ResizeObserver`) | 23/23 tests en verde |
+| 6 | 4 sub-rondas, cada una Red/Green propio: `861355b`/`d040272`/`fa46107` (a), `c7bc733`/`d1a1144` (b), `5a5b873`/`5d1c4bd` (c), `c59ff7c`/`439bf5e` (d); refactor `05efdc4`; integración `7897055` (6.5) | Arquitectura `SessionGate`+`Outlet context` acordada antes de implementar |
+| 7 | Red `1957e83` / Green `7e765db` (`index.html` → `main.tsx`) | Único comportamiento nuevo real: extensión del entrypoint |
+| 8 | `469080b` (sin ciclo Red/Green: rename mecánico + borrado de código muerto, sin comportamiento nuevo) | Mismo criterio aceptado en 7.1/7.2 |
+
+### Evidencia de mutación (resumen; detalle completo en cada sección de arriba)
+
+| Ámbito | Score | Nota |
+|--------|-------|------|
+| `HarnessSmoke.tsx` (2.3) | 100% | 1 mutante, 0 supervivientes |
+| `index.html` dark-scope (3.3) | N/A | atributo estático, sin lógica JS/TS |
+| 6 primitivos shadcn + `cn()` (4.3) | 25.81% | 4/7 supervivientes remediados, 3 con motivo técnico documentado |
+| 7 pantallas portadas (5.4) | 12.11% | 198 supervivientes — decisión explícita de Victor de aceptar (bajo retorno, pantallas candidatas a reescritura) |
+| `SessionGate`+`Layout` (6a) | 51.15% | aceptada y documentada |
+| `LoginPage` (6b) | 43.48% → **82.61%** | reforzada a petición de Victor (archivo pequeño, refuerzo barato) |
+| `SectionCard`+`IngestPage`+`ConversationsPage` (6c) | 18.66% | `SectionCard` 100%, las páginas con flujos completos mejor cubiertos E2E en 6.6 |
+| `DashboardPage`+`MetricCard`+`StatusPill` (6d) | 35.48% | aceptada y documentada |
+| `routes.tsx` (6.5) | N/A | ningún archivo de producto cambió |
+| `main.tsx` (7.1/7.2) | N/A | Stryker no ejecuta: ningún test importa el archivo en runtime (decisión de alcance) |
+| `App.tsx` (8.1) | N/A | mismo motivo que `main.tsx`, sin comportamiento nuevo |
+
+### Veredicto QA
+
+**Sin ningún `changes-requested` en toda la tarjeta.** Todas las tareas con veredicto QA propio
+(2.3, 2.5, 3.3, 4.3, 5.4, 6a-6d, 6.5, 7.1/7.2, 8.1/8.2) cerraron en `accept`, algunas tras remediar
+mutantes o reforzar cobertura a petición de QA/Victor antes del veredicto final. Detalle de cada
+verificación independiente en su sección correspondiente de este documento.
+
+### Nueva línea base de lint
+
+`react/prop-types`: **49 violaciones en 9 archivos `.jsx` → 0 violaciones, 0 archivos `.jsx`** en
+`src/**`. De los 9 originales, 8 se migraron a `.tsx` a lo largo de los grupos 3-8; 1
+(`PlaceholderPage.jsx`) se eliminó sin migrar por ser código muerto sin consumidor (tarea 8.2).
+`RF-082-002` cerrado `Fixed` en la tarea 8.3, con esa matización explícita.
+
+### Primitivos de shadcn/ui sin consumidor
+
+Los **5 primitivos** copiados en el grupo 4 (`label`, `separator`, `select`, `dialog`, `tooltip` —
+de los 6 paquetes Radix instalados por ADR-0004, `@radix-ui/react-slot` no generó archivo propio:
+ninguno de los 5 lo importa, tarea 4.1), más la utilidad `cn()` de `@/lib/utils`, siguen **sin
+consumidor real** fuera de sus propios tests al
+cierre de la tarjeta (verificado por `grep` de `components/ui/` y de imports por alias `@/components/
+ui`, cero resultados en `src/pages`/`src/layouts`/`src/components` que no sean los propios archivos
+`ui/*`). Es el peso muerto que [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) aceptó
+por escrito como riesgo (tarea 4.4): ninguna de las 8 pantallas portadas del origen los necesitaba, y
+ninguna pantalla nueva del armazón (`SessionGate`, `Layout`, `LoginPage`, etc.) los adoptó tampoco,
+al construirse todas directamente sobre Tailwind. Quedan disponibles para consumo futuro sin trabajo
+adicional de instalación.
+
+### Deuda `/overview-legacy`
+
+Ruta puente que conserva el único dashboard con datos reales (`GET /billing/summary` y `GET /health`
+vía `useDashboardData`) mientras el `index` del origen que ocupa su lugar solo muestra datos de
+demostración (decisión 6 de `design.md`). **Dueño: la siguiente tarjeta de F3 que reconcilie la capa
+de datos**, que la retira al conectar el nuevo Overview a datos reales. Relacionada con el finding
+nuevo `RF-095-002` (datos de demostración en las 5 pantallas de coste, tarea 9.2) y con `RF-091-003`/
+`RF-091-004` (capacidades de backend ausentes/mock que bloquean conectar esas pantallas). Sin fecha
+de vencimiento fija; se enuncia como alcance explícito de esa tarjeta siguiente, no como ruta
+permanente.

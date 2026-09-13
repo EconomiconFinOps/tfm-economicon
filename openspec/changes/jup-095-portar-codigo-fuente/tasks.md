@@ -285,10 +285,14 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
   `reconciliar-auth-tenant`, `unificar-estilos-assets`) se dejan con su placeholder `jup-0xx-*` tal
   cual, sin asignarles número de tarjeta: no está confirmado cuál será el siguiente (a petición de
   Victor).
-- [ ] 9.4 Escribir `review.md`: resultado, decisiones con su motivo, evidencia Red/Green y de mutación,
+- [x] 9.4 Escribir `review.md`: resultado, decisiones con su motivo, evidencia Red/Green y de mutación,
   veredicto QA, nueva línea base de lint, primitivos sin consumidor, y la deuda `/overview-legacy` con
-  su dueño.
-- [ ] 9.5 Crear `docs/evidence/JUP-095-validation.md` con comandos exactos, conteos de pruebas,
-  resultado del DoD y enlaces de PR y CI.
+  su dueño. Hecho: sección "Cierre de la tarjeta — resumen" al final de `review.md`, consolidando lo ya
+  documentado grupo a grupo (sin duplicar el detalle, con referencia a cada sección).
+- [x] 9.5 Crear `docs/evidence/JUP-095-validation.md` con comandos exactos, conteos de pruebas,
+  resultado del DoD y enlaces de PR y CI. Hecho: creado siguiendo el formato de `JUP-093/094-validation.md`,
+  con alcance, tabla Red/Green/mutación/QA por grupo, resultados de la batería (9.1), verificación
+  manual E2E (6.6/7.3), limitaciones/deuda y enlaces de PR/CI en pendiente (se completan al abrir el
+  PR).
 - [ ] 9.6 Actualizar `apps/frontend/README.md` (stack, estructura y rutas) y la sección de seguimiento
   de [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md) con lo que esta tarjeta ejecutó.
