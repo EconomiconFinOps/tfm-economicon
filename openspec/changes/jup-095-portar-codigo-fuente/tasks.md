@@ -294,5 +294,11 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
   con alcance, tabla Red/Green/mutación/QA por grupo, resultados de la batería (9.1), verificación
   manual E2E (6.6/7.3), limitaciones/deuda y enlaces de PR/CI en pendiente (se completan al abrir el
   PR).
-- [ ] 9.6 Actualizar `apps/frontend/README.md` (stack, estructura y rutas) y la sección de seguimiento
+- [x] 9.6 Actualizar `apps/frontend/README.md` (stack, estructura y rutas) y la sección de seguimiento
   de [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md) con lo que esta tarjeta ejecutó.
+  Hecho: README con stack real (TS en casi todo `src/`, react-router real, Vitest, shadcn/ui
+  cableado), árbol de `estructura` actualizado (sin `AppShell.jsx`, con `data/demo`, `layouts`,
+  `lib`, `test`), sección nueva "Rutas" con el mapa completo y qué pantallas tienen datos reales vs.
+  de demostración. ADR-0003 con bullet nuevo "Hecho en JUP-095" (9 archivos: 8 migrados + 1
+  eliminado, `RF-082-002` cerrado `Fixed`) y el bullet de `backlog.md` actualizado de `Open` a
+  `Fixed`. **Grupo 9 completo. Tarjeta completa: 40/40 tareas.**

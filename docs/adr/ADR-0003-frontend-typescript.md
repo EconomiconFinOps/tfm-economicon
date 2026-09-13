@@ -168,15 +168,25 @@ pospone hasta que haya un segundo consumidor real.
   fusionadas las dependencias `MANTENER` del origen; `RF-091-002` resuelto adoptando un subconjunto
   de 6 primitivos Radix ([ADR-0004](ADR-0004-frontend-shadcn-ui.md)). **F2 (Tooling y dependencias)
   queda completa.**
-- F3, `jup-0xx-portar-codigo-fuente` y `jup-0xx-reconciliar-capa-api`: primer código que se escribe ya
-  bajo `strict: true`; **debe migrar a `.tsx` los 9 archivos `.jsx` hoy señalados por
-  `react/prop-types` (o los que los sustituyan)**, dado que la regla solo se desactiva para
-  `.ts`/`.tsx`. Debe citar este ADR en su `design.md`.
+- **Hecho en [JUP-095](../../openspec/changes/jup-095-portar-codigo-fuente/)**: primer código de F3
+  escrito bajo `strict: true` (8 `.tsx` vivos portados del origen, enrutado real, entrypoint
+  reconciliado). **Migrados a `.tsx` los 9 archivos `.jsx` de la línea base de `RF-082-002`**: 8
+  migrados (dashboards, `Layout`, `LoginPage`, `IngestPage`, `ConversationsPage`, `DashboardPage`,
+  `App`), 1 (`PlaceholderPage.jsx`) eliminado por ser código muerto sin consumidor en vez de migrado
+  — mismo resultado observable (línea base de `react/prop-types` en cero). `RF-082-002` cerrado
+  `Fixed`. `src/services/api.js` y `src/hooks/useDashboardData.js` quedan explícitamente sin tocar
+  (fuera de alcance, siguiente tarjeta de F3 que reconcilie la capa de datos): siguen siendo `.js`,
+  sin tipar.
+- La siguiente tarjeta de F3 que reconcilie la capa de datos (`jup-0xx-reconciliar-capa-api`): al
+  portar `services/api.*` a TypeScript, cierra la migración completa de `strict: true` sobre todo
+  `src/` salvo el hook de datos, que la reconciliación de sesión/tenant (`jup-0xx-reconciliar-auth-tenant`)
+  puede migrar a continuación. Debe citar este ADR en su `design.md`.
 - F5, tarjeta de cierre: endurecer `allowJs` a `false` una vez no quede JavaScript en `src/`;
   confirmar en ese punto que no queda ningún `.jsx` con violaciones pendientes.
-- `openspec/findings/backlog.md`: `RF-082-002` se anota con la resolución prevista al aceptar este
-  ADR y **permanece `Open`** hasta que F3 (o el cierre de F5) migre esos archivos a `.tsx` con
-  cobertura real de tipos — no se cierra al desactivarse la regla en F2.
+- `openspec/findings/backlog.md`: `RF-082-002` se anotó con la resolución prevista al aceptar este
+  ADR y permaneció `Open` desde F2 hasta el cierre material en JUP-095 (línea base de
+  `react/prop-types` en cero, 8 archivos migrados + 1 eliminado sin migrar) — **cerrado `Fixed`**, no
+  se cerró al desactivarse la regla en F2.
 
 **Revisión:** si el coste de `strict: true` desborda la tarjeta de F3 (ver "Consecuencias"), este ADR
 se supersede por uno nuevo; no se edita el aceptado ni se relaja la configuración sin ese registro.
