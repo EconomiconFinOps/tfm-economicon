@@ -828,3 +828,31 @@ porqué (no requiere tipado adicional bajo `strict: true` más allá de lo que y
 mutación justificada (sin comportamiento nuevo, mismo criterio que 7.1/7.2); gates en verde
 verificados de forma independiente; sin scope creep; único punto a tener en cuenta es la observación
 no bloqueante sobre cómo redactar 8.3 respecto a `RF-082-002`.
+
+### Tareas 8.3 y 8.4 — nueva línea base de lint, cierre de `RF-082-002`, frontera intacta
+
+Doc-only (sin código de producto nuevo): registro de estado, sin tester/coder/mutación.
+
+**8.3 — nueva línea base de lint.** `corepack pnpm --filter @finops/frontend lint` → **0 problemas**
+(línea base original de la tarjeta: 49 violaciones de `react/prop-types` en 9 archivos `.jsx`).
+`find apps/frontend/src -name "*.jsx"` → **sin resultados**, cero archivos `.jsx` en `src/**`.
+
+De los 9 archivos originales: **8 se migraron a `.tsx`** a lo largo de los grupos 3-8 (los 5
+dashboards, `Layout`, `LoginPage`, `IngestPage`, `ConversationsPage`, `DashboardPage` y `App`, según
+el grupo que tocó cada uno) y **1 se eliminó sin migrar** (`PlaceholderPage.jsx`, código muerto sin
+consumidor desde antes de esta tarjeta, retirado en la tarea 8.2). Se deja esta distinción explícita
+(recogiendo la observación de QA en la sección anterior) para no dar a entender que los 9 se migraron
+literalmente.
+
+`RF-082-002` (`openspec/findings/backlog.md`) actualizado a **`Fixed`**: el resultado observable que
+exigía el finding (línea base de `react/prop-types` en cero) está cumplido, con la matización de
+8 migrados + 1 eliminado anotada en el propio finding para no distorsionar el historial.
+
+**8.4 — frontera con `src/services/api.js` y `src/hooks/useDashboardData.js` intacta.** `git diff`
+(y `git log --follow`) sobre ambos archivos, comparando contra el commit previo al inicio de la
+tarjeta (`278769c`, merge de JUP-094), está **completamente vacío**: ni cambio de extensión ni cambio
+de lógica. Confirma la decisión 1 de `design.md` (frontera con la lógica del destino) intacta al
+cierre del grupo 8: la capa API y el hook de datos siguen siendo `.js`, sin tipar, tal como corresponde
+a JUP-096.
+
+**Grupo 8 completo.**

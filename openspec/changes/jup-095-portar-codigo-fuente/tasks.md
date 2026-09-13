@@ -244,10 +244,17 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
   real, QA confirmó que una referencia rota rompe `vite build`). Solo quedan menciones en comentarios
   explicativos de `MetricCard.tsx`/`SectionCard.tsx`/`StatusPill.tsx` (no son referencias activas).
   `find apps/frontend/src -name "*.jsx"` → sin resultados. Veredicto QA: `accept`.
-- [ ] 8.3 Registrar la **nueva línea base de lint** y confirmar que `RF-082-002` sigue `Open`, con la
-  lista de archivos `.jsx` que quedan y la tarjeta que los cerrará.
-- [ ] 8.4 Confirmar que `git diff` sobre `src/services/api.js` y `src/hooks/useDashboardData.js` está
-  vacío salvo el posible cambio de extensión sin cambio de lógica.
+- [x] 8.3 Registrar la **nueva línea base de lint** y confirmar que `RF-082-002` sigue `Open`, con la
+  lista de archivos `.jsx` que quedan y la tarjeta que los cerrará. Hecho: nueva línea base **0
+  problemas** de lint, **0 archivos `.jsx`** en `src/**` (de los 9 originales, 8 migrados a `.tsx` en
+  los grupos 3-8, 1 —`PlaceholderPage.jsx`— eliminado sin migrar en 8.2). `RF-082-002` actualizado a
+  **`Fixed`** en `openspec/findings/backlog.md`, con la matización 8 migrados + 1 eliminado explícita
+  para no distorsionar el historial. Decisión explícita de Victor de cerrarlo así en vez de dejarlo
+  `Open`. Detalle en `review.md`.
+- [x] 8.4 Confirmar que `git diff` sobre `src/services/api.js` y `src/hooks/useDashboardData.js` está
+  vacío salvo el posible cambio de extensión sin cambio de lógica. Hecho: `git diff 278769c HEAD --
+  ...` (comparando contra el merge de JUP-094, previo a esta tarjeta) vacío, ni siquiera cambio de
+  extensión. **Grupo 8 completo.**
 
 ## 9. Cierre y verificación
 
