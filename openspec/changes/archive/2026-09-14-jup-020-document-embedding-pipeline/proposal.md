@@ -19,7 +19,8 @@ incident recorded on 2026-09-09 in JUP-020 and RF-053-004.
 
 This delivery fixes the handoff incident. Full corpus loading, versioned
 metadata on each chunk, idempotent reprocessing and a production embedding
-provider remain residual work on the same Trello card. Mock model providers
+provider remain follow-up work recorded in the Trello closure, not delivered
+capabilities of this change. Mock model providers
 in the smoke test establish transport and persistence, not semantic quality.
 
 ## Capabilities
@@ -43,5 +44,6 @@ The existing migration startup race is tracked separately by JUP-096.
 
 Trello consulted through the DockerServer Economicon integration on
 2026-09-10. Roles: Victor Mendez leads, Alejandro Aguado pairs, Lucia Mateo
-reviews, Paris Arcos Martin validates. Automated checks do not stand in for
-those assigned human reviews or attest that they have happened.
+reviews, Paris Arcos Martin validates. Lucia approved and merged PR #34 on
+2026-09-13. The user confirmed Paris's validation and instructed closure on
+2026-09-14; see `review.md`. Automated checks retain their original attribution.

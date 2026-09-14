@@ -1,11 +1,11 @@
 # Findings Backlog
 
-Actualizacion RF-053-004 (2026-09-10): correccion implementada y validada en
-`fix/JUP-020-ingestion-contract`, pendiente de revision e integracion. La
-[evidencia JUP-020](../../docs/evidence/JUP-020-validation.md) reproduce el
-fallo anterior y acredita tres jobs completados por el flujo HTTP/RabbitMQ,
-con 57 chunks y 57 embeddings persistidos. El historial de JUP-053 y su
-smoke fallido se conserva; el alcance completo de JUP-020 sigue abierto.
+Actualizacion RF-053-004 (2026-09-14): **Fixed**. PR #34 fue aprobada y
+fusionada por Lucia Mateo el 2026-09-13 en `develop` (`cfc6668`). La validacion
+funcional de Paris fue confirmada por el usuario el 2026-09-14 junto con el
+cierre de JUP-020 para esta entrega. [Evidencia y alcance](../../docs/evidence/JUP-020-validation.md).
+El historial de JUP-053 conserva su smoke fallido original. El duplicado
+RF-045-001 identificado en JUP-045 queda cubierto por el mismo arreglo.
 
 | ID | Fecha | Origen | Tipo | Severidad | Scope | Estado | Owner | Accion | Change/Fix |
 |----|-------|--------|------|-----------|-------|--------|-------|--------|------------|
@@ -13,7 +13,7 @@ smoke fallido se conserva; el alcance completo de JUP-020 sigue abierto.
 | RF-053-001 | 2026-09-09 | jup-053-secure-runtime-secrets | Effective DSN validation | High | In scope | Fixed | Equipo Economicon | Green3 rechaza overrides query y opciones no escalares; admite solo sslmode/connect_timeout/application_name. Regresiones contra parametros efectivos y mutantes detectados; review 2 confirma cierre. Evidencia: docs/evidence/JUP-053-validation.md. | JUP-053 |
 | RF-053-002 | 2026-09-09 | jup-053-secure-runtime-secrets | Secret redaction | Medium | In scope | Fixed | Equipo Economicon | Green3 sanea claves de mappings raw/URL-encoded/form-encoded, conservando metadata segura y campos sensibles. Regresiones y mutantes detectados; review 2 confirma cierre. Evidencia: docs/evidence/JUP-053-validation.md. | JUP-053 |
 | RF-053-003 | 2026-09-09 | jup-053-secure-runtime-secrets | Safe diagnostics | Medium | In scope | Fixed | Equipo Economicon | Green3 conserva la causa para logging final saneado, mantiene ingestion_failed persistido y nack. Prueba task-worker, mutante y smoke corroboran el diagnostico; review 2 confirma cierre. Evidencia: docs/evidence/JUP-053-validation.md. | JUP-053 |
-| RF-053-004 | 2026-09-09 | jup-053-secure-runtime-secrets | Existing ingestion handoff defect | High | Out of scope (JUP-053) | Open | Equipo Economicon | Backend envia text_content dentro de payload y processor lo espera arriba; HTTP 202 termina failed. Reproducido en base 7d76fc3 y Green2; smoke integral historico FAIL. Paris Arcos acordo el 2026-09-10 corregirlo en JUP-020: alinear el mensaje backend/worker/pipeline y probar solicitud real hasta trabajo completado y persistencia. Autoriza cierre acotado y PR de JUP-053 con esta anotacion; el defecto no se considera corregido. [Evidencia](../../docs/evidence/JUP-053-validation.md) y [decision](../changes/jup-053-secure-runtime-secrets/review.md#decision-sobre-rf-053-004). | [JUP-020 oficial](https://trello.com/c/Mi3kPCOD); [seguimiento privado](https://trello.com/c/1Y9HVCQs). Replica al TFM pendiente. |
+| RF-053-004 | 2026-09-09 | jup-053-secure-runtime-secrets | Existing ingestion handoff defect | High | Out of scope (JUP-053) | Fixed | Equipo Economicon | Corregido en PR #34, aprobada e integrada en develop como cfc6668 el 2026-09-13. Validacion de Paris confirmada por el usuario el 2026-09-14. HTTP real completa y persiste 3 documentos, 57 chunks y 57 embeddings mock; evidencia original y limites conservados. El smoke FAIL de JUP-053 es historico. [Cierre y validacion](../../docs/evidence/JUP-020-validation.md). | [JUP-020](https://trello.com/c/Mi3kPCOD); [PR #34](https://github.com/EconomiconFinOps/tfm-economicon/pull/34). |
 | RF-082-002 | 2026-08-25 | jup-082-clean-develop | Existing frontend lint baseline | Medium | In scope | Fixed | Equipo Economicon | JUP-087 migra los nueve JSX afectados y el resto del codigo fuente existente a TypeScript estricto con contratos reales de props y API, conforme a ADR-0003. Lint termina con cero errores; pruebas reales verifican los recorridos criticos y que JSX sin contrato sigue fallando. No se cierra por el tooling de F2 ni por una supresion global. La integracion y revision humana se siguen en la PR de JUP-087. | [Evidencia JUP-087](../../docs/evidence/JUP-087-validation.md) / ADR-0003 (Accepted, JUP-092) |
 | RF-083-001 | 2026-08-19 | jup-083-clarify-frontend-migration-assumptions | OpenSpec validation | Medium | Out of scope | Fixed | Equipo Economicon | JUP-082 removed the duplicate proposals and restored strict global OpenSpec validation. | JUP-082 |
 | RF-083-002 | 2026-08-19 | jup-083-clarify-frontend-migration-assumptions | Risk/scope | High | In scope | Open | Equipo Economicon | Integrar la experiencia visual del origen Figma Make, sin auth/capa de datos, preservando el login, tenant y contratos del destino inventariados en JUP-090. JUP-035 conserva el residual funcional y JUP-087 su calidad y regresion. TypeScript esta aprobado en ADR-0003 (JUP-092); su implementacion y la decision del salto de Vite 5 a 6 siguen pendientes en la reconciliacion de tooling. | JUP-035 / JUP-087 / ADR-0003 (JUP-092) |

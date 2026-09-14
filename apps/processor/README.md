@@ -124,7 +124,7 @@ ni publicar directamente en RabbitMQ. Los llamadores directos de
 `PipelineRunner.run` siguen utilizando el estado plano del grafo.
 
 La correccion del contrato y sus limites se documentan en
-[JUP-020](../../openspec/changes/jup-020-document-embedding-pipeline/design.md).
+[JUP-020](../../openspec/changes/archive/2026-09-14-jup-020-document-embedding-pipeline/design.md).
 El proveedor de embeddings actual sigue siendo `mock`; esta correccion no
 acredita calidad semantica ni la politica completa de reprocesado del corpus.
 
