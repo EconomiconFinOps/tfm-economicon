@@ -257,6 +257,7 @@ El flujo principal del sistema es este:
 - [OpenAPI contractual](docs/api/azure-cost-query.openapi.json)
 - [API Azure Cost simulada](apps/azure-cost-api/README.md)
 - [Cliente de ingesta Azure Cost Management](docs/api/azure-cost-ingestion-client.md)
+- [Batería de preguntas FinOps (JUP-069)](docs/validation/README.md)
 
 ## Estado Actual
 

@@ -67,6 +67,8 @@ jobs:
           corepack pnpm jup:cleanup:check
           corepack pnpm assistant-corpus:test
           corepack pnpm assistant-corpus:validate
+          corepack pnpm validation-questions:validate
+          corepack pnpm validation-questions:test
           corepack pnpm llm-gateway:test
           corepack pnpm docker:validate
           corepack pnpm collaboration:test
