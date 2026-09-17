@@ -36,6 +36,8 @@ Valores de partida (ajustables sin tocar código, solo el YAML): ventana de 5 mi
 
 Introducido en JUP-045.
 
+El panel **Estado de alertas de ingesta** del dashboard **Economicon — Métricas técnicas** muestra la regla, incluidos los estados `Normal`, `Pending`, `Firing`, `No Data` y `Error`. También se puede consultar en **Alerting → Alert rules**. El contador mide marcas de fallo persistidas: un reintento del mismo job que vuelve a fallar cuenta otra vez; no representa jobs únicos.
+
 ## Secretos y arranque
 
 Backend y processor usan Pydantic Settings y SecretStr. No hay DSN ni JWT

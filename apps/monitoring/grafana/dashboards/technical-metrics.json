@@ -8,6 +8,29 @@
   "time": { "from": "now-1h", "to": "now" },
   "panels": [
     {
+      "id": 5,
+      "title": "Estado de alertas de ingesta",
+      "type": "alertlist",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 16 },
+      "options": {
+        "alertName": "Fallos de ingesta por encima del umbral",
+        "dashboardAlerts": false,
+        "datasource": "grafana",
+        "groupMode": "default",
+        "maxItems": 10,
+        "showInstances": true,
+        "sortOrder": 3,
+        "stateFilter": {
+          "firing": true,
+          "pending": true,
+          "normal": true,
+          "noData": true,
+          "error": true
+        },
+        "viewMode": "list"
+      }
+    },
+    {
       "id": 1,
       "title": "Latencia p95 por servicio (ms)",
       "type": "timeseries",

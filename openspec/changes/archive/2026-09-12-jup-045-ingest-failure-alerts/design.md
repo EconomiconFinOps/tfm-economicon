@@ -40,7 +40,7 @@ El equipo evaluó notificar por Discord (webhook a un canal nuevo o al existente
 ## Migration Plan
 
 - Nuevo contador y su incremento: cambio aditivo, sin migración de datos.
-- Nueva carpeta de provisioning de alerting: Grafana la carga al arrancar (mismo mecanismo que dashboards); levantar el stack con `docker compose up` la aplica sin pasos manuales. Rollback: eliminar la carpeta o el `docker-compose.yml` revierte a estado JUP-043 sin efectos secundarios.
+- Nueva carpeta de provisioning de alerting: Grafana la carga al arrancar (mismo mecanismo que dashboards); levantar el stack con `docker compose up` la aplica sin pasos manuales. Para revertir una instalación con volumen persistente, provisionar `deleteRules: [{orgId: 1, uid: ingest-failures-rate}]` en lugar del grupo y reiniciar Grafana; después se puede retirar ese archivo. Quitar solo el archivo de provisioning no elimina la regla ya persistida. Revertir también el panel del dashboard y el contador si se desea volver al estado JUP-043, conservando los volúmenes y las credenciales existentes.
 
 ## Open Questions
 

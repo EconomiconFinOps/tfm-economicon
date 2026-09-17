@@ -1,3 +1,5 @@
+import pytest
+
 from app.core.metrics import ingest_jobs_failed_total
 from app.repositories.jobs import JobRepository
 
@@ -28,5 +30,19 @@ def test_mark_completed_does_not_increment_ingest_failure_counter():
     repository = JobRepository(_FakeDatabase())
 
     repository.mark_completed("job-1", {"rows": 10})
+
+    assert _read_counter_value() == before
+
+
+def test_failed_status_write_does_not_count_an_unpersisted_failure():
+    class UnavailableDatabase:
+        def update_job_status(self, *args, **kwargs):
+            raise RuntimeError("database unavailable")
+
+    before = _read_counter_value()
+    repository = JobRepository(UnavailableDatabase())
+
+    with pytest.raises(RuntimeError, match="database unavailable"):
+        repository.mark_failed("job-1", "ingestion_failed")
 
     assert _read_counter_value() == before
