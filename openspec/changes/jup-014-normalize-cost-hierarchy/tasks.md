@@ -1,0 +1,70 @@
+## 1. Contract and reconciliation
+
+- [ ] 1.1 JUP-014 confirm which anomaly-signal persistence shape to use
+  (dedicated column vs. JSONB detail vs. counter/metric), informed by how
+  JUP-047's future health dashboard might consume it
+- [ ] 1.2 JUP-014 audit `docs/api/azure-cost-query-mapping.json` and
+  `apps/azure-cost-api/app/repository.py` to confirm adding `ResourceId`,
+  `ResourceName` and `BillingAccountId` needs no Python changes
+
+## 2. Simulated API and ingestion client
+
+- [ ] 2.1 JUP-014 add `ResourceId`, `ResourceName` and `BillingAccountId` as
+  queryable dimensions in `docs/api/azure-cost-query-mapping.json`
+- [ ] 2.2 JUP-014 verify existing `azure-cost-api` tests still pass and add
+  coverage for querying/filtering by the new dimensions
+- [ ] 2.3 JUP-014 extend `DEFAULT_DEFINITION.dataset.grouping` in
+  `apps/processor/app/run_azure_cost_ingestion.py` to request the resource
+  level
+
+## 3. Normalizer
+
+- [ ] 3.1 JUP-014 promote `resource_id` and `resource_name` to typed fields
+  in `AzureCostNormalizer`, following the existing `_DIMENSION_ALIASES`
+  pattern
+- [ ] 3.2 JUP-014 implement non-blocking detection of a `resource_id`
+  reported under more than one `resource_group` within one `normalize()`
+  call, case-insensitive, preserving original casing per row
+- [ ] 3.3 JUP-014 add unit tests: resource fields promoted/omitted correctly,
+  consistent resource across rows produces no signal, inconsistent resource
+  produces a signal without rejecting any row, case-only differences produce
+  no signal
+
+## 4. Persistence
+
+- [ ] 4.1 JUP-014 add a new additive migration (next number after 003):
+  `resource_id`, `resource_name` and the chosen anomaly-signal shape, all
+  nullable
+- [ ] 4.2 JUP-014 backfill existing rows' `resource_id`/`resource_name` from
+  the legacy `dimensions` JSONB, following 003's backfill approach
+- [ ] 4.3 JUP-014 add an index on `resource_id` if repository queries will
+  filter/group by it
+- [ ] 4.4 JUP-014 declare `transactional = False` for this migration from
+  the start, given the column-add + same-file-backfill shape that caused
+  JUP-013's `UndefinedColumn` defect
+
+## 5. Migration safety guardrail
+
+- [ ] 5.1 JUP-014 add a test that scans `apps/processor/app/db/migrations/`
+  for a migration that adds a column and modifies data in the same file
+  without declaring `transactional = False`, and fails when found
+  unaccompanied by that flag
+- [ ] 5.2 JUP-014 verify the new guardrail test fails against a
+  reconstructed version of JUP-013's original (pre-fix) migration 003, and
+  passes against the corrected one
+- [ ] 5.3 JUP-014 document the migration convention (when to use
+  `transactional = False` and why) in
+  `docs/manuals/python-service-conventions.md`
+
+## 6. Validation and publication
+
+- [ ] 6.1 JUP-014 run all service, governance and build validations
+- [ ] 6.2 JUP-014 validate fresh-database and upgrade-from-003 migration
+  paths on a disposable CockroachDB 24.1.11 container, following the same
+  procedure used for JUP-013's functional validation
+- [ ] 6.3 JUP-014 verify real ingestion end-to-end with the expanded
+  grouping and record the resulting row-volume increase in evidence
+- [ ] 6.4 JUP-014 register the cross-run hierarchy validation finding in
+  `openspec/findings/backlog.md` as explicitly out of scope
+- [ ] 6.5 JUP-014 publish a pull request toward `develop` and pass remote CI
+- [ ] 6.6 JUP-014 obtain pairing, review and functional validation evidence
