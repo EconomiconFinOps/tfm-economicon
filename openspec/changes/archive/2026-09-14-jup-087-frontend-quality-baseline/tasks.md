@@ -15,8 +15,12 @@
 - [x] 3.1 JUP-087 demostrar `pnpm lint` sin errores y `pnpm test` con pruebas frontend reales.
 - [x] 3.2 JUP-087 ejecutar build, OpenSpec, trazabilidad y checks de CI.
 - [x] 3.3 JUP-087 publicar PR y evidencia de regresion.
+- [x] 3.4 JUP-087 registrar la revision humana de la PR #29, ejecutar la validacion operativa delegada autorizada el 14/09 y documentar residuales, manteniendo el rol y la auditoria pendiente de Paris.
 
-Evidencia: [validacion JUP-087](../../../docs/evidence/JUP-087-validation.md),
+Evidencia: [validacion JUP-087](../../../../docs/evidence/JUP-087-validation.md),
 [PR #29](https://github.com/EconomiconFinOps/tfm-economicon/pull/29).
-La implementacion y la verificacion automatizada estan completas; la revision
-humana, la validacion atribuible y el cierre operativo siguen pendientes.
+La PR #29 fue aprobada y fusionada por Lucia el 12/09. La validacion operativa
+delegada del 14/09 permite el cierre acotado del baseline; RF-087-001 y
+RF-087-002 conservan los defectos integrados fuera de alcance. Paris mantiene
+su rol y auditoria personal pendiente. Esta tarea no acredita su ejecucion ni
+pairing; el archivo se integra mediante una PR documental con revision propia.

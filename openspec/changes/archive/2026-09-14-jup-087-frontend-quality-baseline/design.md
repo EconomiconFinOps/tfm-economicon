@@ -1,5 +1,5 @@
 JUP: JUP-087
-ADR: [ADR-0003 (JUP-092), TypeScript aceptado](../../../docs/adr/ADR-0003-frontend-typescript.md); una sustitucion del stack de pruebas fuera del baseline actual requiere su decision correspondiente.
+ADR: [ADR-0003 (JUP-092), TypeScript aceptado](../../../../docs/adr/ADR-0003-frontend-typescript.md); una sustitucion del stack de pruebas fuera del baseline actual requiere su decision correspondiente.
 
 ## Context
 
@@ -8,7 +8,7 @@ Vite construye la aplicacion React actual. ESLint encuentra 49 infracciones
 frontend ya contiene login, seleccion de tenant, dashboard, creacion de ingesta
 y conversaciones, pero carece de una red de regresion automatizada.
 
-El [inventario JUP-090](../../../docs/planning/JUP-090-frontend-migration-baseline.md)
+El [inventario JUP-090](../../../../docs/planning/JUP-090-frontend-migration-baseline.md)
 precisa la paridad de login, tenant y dashboard que debe conservarse durante la
 migracion. Ese guion positivo no sustituye los casos de error, ingesta y
 conversacion exigidos aqui. RF-090-001 (Docker) y RF-090-003 (consumo de `/me`)
