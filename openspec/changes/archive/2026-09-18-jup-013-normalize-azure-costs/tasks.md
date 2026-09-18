@@ -18,7 +18,10 @@
 - [x] 3.2 JUP-013 run all service, governance and build validations
 - [x] 3.3 JUP-013 validate the migration and ingestion on dockerserver
 - [x] 3.4 JUP-013 publish a pull request toward develop and pass remote CI
-- [ ] 3.5 JUP-013 obtain pairing, review and functional validation evidence
+- [ ] 3.5 JUP-013 obtain pairing, review and functional validation evidence.
+  Review: done (ParisArcos approved the integrated head on 08/09). Functional
+  validation: done on 18/09 (see docs/evidence/JUP-013-validation.md). Pairing:
+  still not attributed to Victor; archived with this residual open.
 
 ## 4. Validation after updating PR #14 from develop
 
