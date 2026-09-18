@@ -259,6 +259,6 @@ recursos compartidos.
 
 Resultado: la validacion funcional exigida por la tarea 3.5 queda cubierta.
 La revision del ultimo head (Paris, 08/09) ya estaba registrada arriba.
-**El pairing de Victor sigue sin evidencia registrada** — no se atribuye ni se
-da por hecho; la tarjeta se archiva con este residual abierto, a completar por
-Victor cuando la aporte.
+**El pairing de Victor nunca llego a registrarse.** Lucia decidio el 18/09
+cerrar la tarea 3.5 sin esa evidencia en vez de dejarla abierta; no se
+atribuye pairing a Victor ni se afirma que lo haya aportado.
