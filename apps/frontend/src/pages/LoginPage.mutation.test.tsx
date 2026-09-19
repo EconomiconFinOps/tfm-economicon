@@ -4,11 +4,17 @@
 // cuerpo exacto que se envia a `fetch` ni escribe en los campos del
 // formulario:
 //   - LoginPage.tsx:39-41 -- los valores por defecto del estado
-//     (`email: "operator@example.com"`, `password: "secret"`) pueden mutar a
-//     "" o a un objeto vacio sin que ningun test lo note.
+//     (`email: "operator@example.com"`, `password: ""`) pueden mutar a un
+//     objeto vacio o a un email distinto sin que ningun test lo note.
 //   - LoginPage.tsx:85 y LoginPage.tsx:100 -- los `onChange` de los campos
 //     email/password pueden mutar a funciones vacias sin que ningun test lo
 //     note, porque ningun test escribe en los campos.
+//
+// Reconciliacion con develop (JUP-087, Punto 3): la contrasena inicial paso
+// de "secret" a "" para no precargar una credencial de demostracion en el
+// propio formulario -- ver LoginPage.tsx. El primer caso de este archivo se
+// actualiza para reflejar ese valor real en vez del que tenia antes de la
+// reconciliacion.
 //
 // Este archivo agrega los dos casos que faltan; no toca `LoginPage.test.tsx`
 // (bloqueado por el hook) ni repite su cobertura de navegacion/persistencia.
@@ -71,9 +77,9 @@ function renderLoginPage() {
 
 describe("LoginPage - remediacion de mutacion", () => {
   it("envia el body con los valores por defecto del formulario sin tocar los campos", async () => {
-    // Mata los 3 mutantes de LoginPage.tsx:39-41: si el estado inicial
-    // mutara a "" o a un objeto vacio, el body enviado a fetch ya no seria
-    // { email: "operator@example.com", password: "secret" } y esta
+    // Mata los mutantes de LoginPage.tsx:39-41: si el estado inicial mutara a
+    // un objeto vacio o a un email distinto, el body enviado a fetch ya no
+    // seria { email: "operator@example.com", password: "" } y esta
     // asercion fallaria.
     const fetchSpy = stubFetch();
 
@@ -90,7 +96,7 @@ describe("LoginPage - remediacion de mutacion", () => {
     const [, requestInit] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(JSON.parse(requestInit.body as string)).toEqual({
       email: "operator@example.com",
-      password: "secret"
+      password: ""
     });
   });
 
