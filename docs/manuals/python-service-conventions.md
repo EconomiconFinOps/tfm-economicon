@@ -206,3 +206,13 @@ El `request_id` de la petición HTTP que crea un job (`POST /jobs/ingest`) viaja
 No se persiste el `request_id` en la tabla `jobs`; vive solo en el mensaje de cola y en los logs.
 
 Introducido en JUP-044.
+
+## Migraciones de base de datos
+
+`MigrationRunner` (`app/db/migration_runner.py`) ejecuta cada migración dentro de su propia transacción por defecto. Si una migración **añade columnas y las rellena (backfill) en el mismo fichero**, esa transacción puede fallar con `UndefinedColumn`: dentro de una transacción sin confirmar, la conexión no ve todavía el DDL que ella misma acaba de ejecutar.
+
+Si tu migración combina ambas cosas, declara `transactional = False` a nivel de módulo para que el `ADD COLUMN` se confirme antes de que el backfill lo necesite. Deja las migraciones que no combinan ambas cosas con su transacción por defecto — no marques `transactional = False` "por si acaso".
+
+Esto no depende de recordarlo: `apps/processor/tests/test_migration_safety.py` escanea todas las migraciones y falla si detecta la combinación "añade columna + `UPDATE` en el mismo fichero" sin `transactional = False` declarado.
+
+Defecto original y su corrección: JUP-013 (migración `003_normalized_cost_dimensions.py`). Comprobación automática añadida en JUP-014.

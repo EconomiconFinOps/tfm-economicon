@@ -57,16 +57,20 @@
 
 ## 5. Migration safety guardrail
 
-- [ ] 5.1 JUP-014 add a test that scans `apps/processor/app/db/migrations/`
+- [x] 5.1 JUP-014 add a test that scans `apps/processor/app/db/migrations/`
   for a migration that adds a column and modifies data in the same file
   without declaring `transactional = False`, and fails when found
-  unaccompanied by that flag
-- [ ] 5.2 JUP-014 verify the new guardrail test fails against a
+  unaccompanied by that flag. Implemented as a pure function
+  (`app/db/migration_safety.py`) plus a test asserting zero violations
+  across the real migrations directory.
+- [x] 5.2 JUP-014 verify the new guardrail test fails against a
   reconstructed version of JUP-013's original (pre-fix) migration 003, and
-  passes against the corrected one
-- [ ] 5.3 JUP-014 document the migration convention (when to use
+  passes against the corrected one. Both reconstructed as inline fixtures
+  in the test file (not real migration files) and asserted directly.
+- [x] 5.3 JUP-014 document the migration convention (when to use
   `transactional = False` and why) in
-  `docs/manuals/python-service-conventions.md`
+  `docs/manuals/python-service-conventions.md`. RGR: 4 new tests RED before
+  implementation, GREEN after. 273/273 processor tests green.
 
 ## 6. Validation and publication
 
