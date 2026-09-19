@@ -252,4 +252,9 @@ class SqlAzureCostRepository:
                 ),
                 {"run_id": run_id},
             ).mappings()
-            return [dict(row) for row in rows]
+            records = [dict(row) for row in rows]
+            for record in records:
+                conflicts = record["resource_group_conflicts"]
+                if conflicts is not None:
+                    record["resource_group_conflicts"] = tuple(conflicts)
+            return records

@@ -83,9 +83,12 @@
   failure on `develop`, not introduced here); 56/56 governance/CI node
   tests; frontend lint/typecheck/build green; backend 115/115;
   azure-cost-api 59/59; processor 273/273.
-- [ ] 6.2 JUP-014 validate fresh-database and upgrade-from-003 migration
+- [x] 6.2 JUP-014 validate fresh-database and upgrade-from-003 migration
   paths on a disposable CockroachDB 24.1.11 container, following the same
-  procedure used for JUP-013's functional validation
+  procedure used for JUP-013's functional validation. Found and fixed a
+  real bug: `fetch_records` returned `resource_group_conflicts` as a list
+  (JSON round-trip), not the tuple the normalizer produces — fixed by
+  converting on read. 34/34 integration tests green after the fix.
 - [ ] 6.3 JUP-014 verify real ingestion end-to-end with the expanded
   grouping and record the resulting row-volume increase in evidence
 - [x] 6.4 JUP-014 register the cross-run hierarchy validation finding in
