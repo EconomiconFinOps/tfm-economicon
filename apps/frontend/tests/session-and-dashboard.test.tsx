@@ -158,12 +158,11 @@ describe("tenant bootstrap and dashboard", () => {
     for (const service of Object.keys(health.services)) expect(screen.getByText(service)).toBeVisible();
   });
 
-  // Aparcado (reconciliacion con develop, Punto 5 pendiente): esta prueba
-  // navega mediante clics en los botones "Ingestions"/"Assistant" del menu.
-  // El Layout real todavia no tiene enlaces hacia /ingest ni /assistant (solo
-  // las 5 pantallas de demostracion) -- se reactiva al implementar el Punto 5
-  // (enlaces de navegacion), usando entonces las etiquetas reales del menu.
-  it.skip("handles an empty tenant list without issuing tenant-scoped product requests", async () => {
+  // Reactivado (Punto 5 implementado): Layout ya expone enlaces reales hacia
+  // /ingest y /assistant. Son <NavLink> (role "link"), no botones -- se
+  // ajustan los roles/etiquetas a la UI real en vez de a los del AppShell
+  // original.
+  it("handles an empty tenant list without issuing tenant-scoped product requests", async () => {
     const user = userEvent.setup();
     const { requests } = mockBackend({ "GET /tenants": () => jsonResponse({ items: [] }) });
     restoreSession();
@@ -171,10 +170,10 @@ describe("tenant bootstrap and dashboard", () => {
 
     expect(await screen.findByRole("heading", { name: "Select a tenant" })).toBeVisible();
     expect(screen.getByText("No tenant is active for this session.")).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Ingestions" }));
+    await user.click(screen.getByRole("link", { name: "Ingestions" }));
     expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
     expect(screen.queryByRole("button", { name: "Queue ingestion" })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Assistant" }));
+    await user.click(screen.getByRole("link", { name: "Assistant" }));
     expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
     expect(requests.every((request) => ["/tenants", "/health"].includes(request.path))).toBe(true);
   });
@@ -208,11 +207,8 @@ describe("tenant bootstrap and dashboard", () => {
     expect(screen.getByText(`$${billing.savings_identified.toLocaleString()}`)).toBeVisible();
   });
 
-  // Aparcado (reconciliacion con develop, Punto 5 pendiente): verifica que,
-  // tras un fallo del dashboard, se puede seguir navegando a Ingestions via
-  // el menu -- ese enlace no existe todavia en el Layout real. Se reactiva
-  // junto con la prueba anterior al implementar el Punto 5.
-  it.skip.each(["/billing/summary", "/health"])("surfaces %s failures and keeps navigation available", async (path) => {
+  // Reactivado (Punto 5 implementado): idem, el enlace real es un <NavLink>.
+  it.each(["/billing/summary", "/health"])("surfaces %s failures and keeps navigation available", async (path) => {
     const user = userEvent.setup();
     mockBackend({ [`GET ${path}`]: () => { throw new TypeError("Service connection interrupted"); } });
     restoreSession();
@@ -221,7 +217,7 @@ describe("tenant bootstrap and dashboard", () => {
     expect(await screen.findByRole("heading", { name: "Backend unavailable" })).toBeVisible();
     expect(screen.getByText("Service connection interrupted")).toBeVisible();
     expect(screen.queryByText("Monthly Spend")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Ingestions" }));
+    await user.click(screen.getByRole("link", { name: "Ingestions" }));
     await waitFor(() => expect(screen.getByRole("heading", { name: "Create ingestion job" })).toBeVisible());
   });
 });

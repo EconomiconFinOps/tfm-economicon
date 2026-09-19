@@ -1,5 +1,16 @@
 import { Outlet, NavLink, useOutletContext } from "react-router";
-import { BarChart3, TrendingDown, AlertTriangle, Lightbulb, DollarSign, Activity, LogOut } from "lucide-react";
+import {
+  BarChart3,
+  TrendingDown,
+  AlertTriangle,
+  Lightbulb,
+  DollarSign,
+  Activity,
+  LogOut,
+  Upload,
+  MessageSquare,
+  LayoutDashboard
+} from "lucide-react";
 import type { SessionOutletContext } from "./SessionGate";
 
 // TenantScopedOutlet: frontera de remontaje por tenant (reconciliacion con
@@ -37,6 +48,21 @@ export function Layout() {
     { path: "/cuts", label: "Corte Global", icon: TrendingDown },
     { path: "/anomalies", label: "Anomalías", icon: AlertTriangle },
     { path: "/recommendations", label: "Recomendaciones", icon: Lightbulb },
+  ];
+
+  // Reconciliacion con develop (Punto 5): las tres pantallas conectadas al
+  // backend (ingesta, asistente, resumen puente) existian como rutas
+  // (routes.tsx) pero sin ningun enlace real en el menu -- solo alcanzables
+  // escribiendo la URL a mano. Se listan en un grupo separado, con un
+  // separador visual respecto a las 5 de arriba, para no confundir datos de
+  // demostracion (navItems) con datos reales del backend (backendNavItems).
+  // Etiquetas en ingles porque son las mismas que ya usan estas tres
+  // pantallas (Create ingestion job, Assistant chat...), a diferencia de las
+  // 5 de demostracion (traducidas del origen Figma).
+  const backendNavItems = [
+    { path: "/ingest", label: "Ingestions", icon: Upload },
+    { path: "/assistant", label: "Assistant", icon: MessageSquare },
+    { path: "/overview-legacy", label: "Overview", icon: LayoutDashboard },
   ];
 
   return (
@@ -107,12 +133,34 @@ export function Layout() {
 
       {/* Navigation */}
       <nav className="bg-[#1a1f2e] border-b border-[#2d3748] px-6 shadow-lg">
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.path === "/"}
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
+                  isActive
+                    ? "border-[#00bcf2] text-[#00bcf2] bg-[#0078d4]/10 shadow-inner"
+                    : "border-transparent text-slate-400 hover:text-white hover:bg-[#232834]"
+                }`
+              }
+            >
+              <item.icon className="w-4 h-4" />
+              <span className="text-sm font-medium">{item.label}</span>
+            </NavLink>
+          ))}
+
+          {/* Separador entre las 5 pantallas de demostracion y las 3
+              conectadas al backend (Punto 5): misma barra de navegacion,
+              distincion visual de que unas sirven datos reales y otras no. */}
+          <div className="mx-2 h-6 w-px bg-[#2d3748]" aria-hidden="true" />
+
+          {backendNavItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
               className={({ isActive }) =>
                 `flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
                   isActive
