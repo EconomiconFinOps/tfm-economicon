@@ -26,7 +26,14 @@ interface LoginFormState {
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState<LoginFormState>({
+  // Sin genero explicito en `useState`: se infiere `LoginFormState` igual a
+  // partir del literal (mismos dos campos, mismos tipos), y
+  // `tools/docker-topology.test.mjs` (gobernanza de JUP-053) localiza este
+  // inicializador por texto con una expresion regular que no contempla un
+  // argumento de tipo entre `useState` y `(` -- con el generico explicito,
+  // ese test de gobernanza no encuentra la coincidencia y falla en CI
+  // (job "OpenSpec") aunque el comportamiento sea correcto.
+  const [form, setForm] = useState({
     email: "operator@example.com",
     // Contrasena inicialmente vacia (reconciliacion con develop/JUP-053,
     // externalizacion de secretos): no se precarga una credencial de
