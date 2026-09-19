@@ -74,12 +74,18 @@
 
 ## 6. Validation and publication
 
-- [ ] 6.1 JUP-014 run all service, governance and build validations
+- [x] 6.1 JUP-014 run all service, governance and build validations. Fixed
+  two stale local venvs (missing `prometheus_client`) unrelated to this
+  change. `openspec:validate` 30/31 (`containerized-runtime` pre-existing
+  failure on `develop`, not introduced here); 56/56 governance/CI node
+  tests; frontend lint/typecheck/build green; backend 115/115;
+  azure-cost-api 59/59; processor 273/273.
 - [ ] 6.2 JUP-014 validate fresh-database and upgrade-from-003 migration
   paths on a disposable CockroachDB 24.1.11 container, following the same
   procedure used for JUP-013's functional validation
 - [ ] 6.3 JUP-014 verify real ingestion end-to-end with the expanded
   grouping and record the resulting row-volume increase in evidence
-- [ ] 6.4 JUP-014 register the cross-run hierarchy validation finding in
-  `openspec/findings/backlog.md` as explicitly out of scope
+- [x] 6.4 JUP-014 register the cross-run hierarchy validation finding in
+  `openspec/findings/backlog.md` as explicitly out of scope. Registered as
+  RF-014-001.
 - [ ] 6.5 JUP-014 publish a pull request toward `develop` and pass remote CI
