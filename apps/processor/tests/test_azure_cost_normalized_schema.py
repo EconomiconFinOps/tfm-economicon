@@ -55,6 +55,7 @@ def normalized_record() -> NormalizedCostRecord:
         tags={"cost_center": "1234", "project": "Jupiter"},
         dimensions={"ResourceLocation": "westeurope"},
         source_row_hash="a" * 64,
+        resource_group_conflicts=("rg-legacy",),
     )
 
 
@@ -119,3 +120,23 @@ def test_repository_persists_explicit_finops_columns():
     assert params["project"] == "Jupiter"
     assert params["consumed_quantity"] == Decimal("3.25")
     assert params["tags"] == '{"cost_center": "1234", "project": "Jupiter"}'
+    assert params["resource_id"] == "res-1"
+    assert params["resource_name"] == "vm-01"
+    assert params["resource_group_conflicts"] == '["rg-legacy"]'
+
+
+def test_migration_adds_resource_hierarchy_columns():
+    connection = RecordingConnection()
+    migration = importlib.import_module(
+        "app.db.migrations.004_resource_hierarchy"
+    )
+
+    assert getattr(migration, "transactional", True) is False
+    migration.upgrade(connection)
+
+    sql = "\n".join(statement for statement, _ in connection.calls)
+    for column in ("resource_id", "resource_name", "resource_group_conflicts"):
+        assert column in sql
+    assert "dimensions->>'ResourceId'" in sql
+    assert "dimensions->>'ResourceName'" in sql
+    assert "idx_azure_cost_records_resource_id" in sql

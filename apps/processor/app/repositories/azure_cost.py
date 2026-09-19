@@ -121,15 +121,19 @@ class SqlAzureCostRepository:
                             id, ingestion_id, tenant_id, subscription_id,
                             usage_date, pretax_cost, currency,
                             billing_account_id, subscription_name,
-                            resource_group, service_name, project,
+                            resource_group, service_name, resource_id,
+                            resource_name, project,
                             consumed_quantity, consumed_unit, tags, dimensions,
+                            resource_group_conflicts,
                             source_row_hash, created_at
                         ) VALUES (
                             :id, :ingestion_id, :tenant_id, :subscription_id,
                             :usage_date, :pretax_cost, :currency,
                             :billing_account_id, :subscription_name,
-                            :resource_group, :service_name, :project,
+                            :resource_group, :service_name, :resource_id,
+                            :resource_name, :project,
                             :consumed_quantity, :consumed_unit, :tags, :dimensions,
+                            :resource_group_conflicts,
                             :source_row_hash, :created_at
                         )
                         """
@@ -146,11 +150,18 @@ class SqlAzureCostRepository:
                         "subscription_name": record.subscription_name,
                         "resource_group": record.resource_group,
                         "service_name": record.service_name,
+                        "resource_id": record.resource_id,
+                        "resource_name": record.resource_name,
                         "project": record.project,
                         "consumed_quantity": record.consumed_quantity,
                         "consumed_unit": record.consumed_unit,
                         "tags": json.dumps(record.tags, sort_keys=True),
                         "dimensions": json.dumps(record.dimensions, sort_keys=True),
+                        "resource_group_conflicts": (
+                            json.dumps(list(record.resource_group_conflicts))
+                            if record.resource_group_conflicts is not None
+                            else None
+                        ),
                         "source_row_hash": record.source_row_hash,
                         "created_at": now,
                     },
@@ -229,9 +240,11 @@ class SqlAzureCostRepository:
                     """
                     SELECT id, usage_date, pretax_cost, currency,
                            billing_account_id, subscription_name,
-                           resource_group, service_name, project,
+                           resource_group, service_name, resource_id,
+                           resource_name, project,
                            consumed_quantity, consumed_unit, tags,
-                           dimensions, source_row_hash
+                           dimensions, resource_group_conflicts,
+                           source_row_hash
                     FROM azure_cost_records
                     WHERE ingestion_id = :run_id
                     ORDER BY usage_date, id

@@ -38,16 +38,22 @@
 
 ## 4. Persistence
 
-- [ ] 4.1 JUP-014 add a new additive migration (next number after 003):
+- [x] 4.1 JUP-014 add a new additive migration (next number after 003):
   `resource_id`, `resource_name` and the chosen anomaly-signal shape, all
-  nullable
-- [ ] 4.2 JUP-014 backfill existing rows' `resource_id`/`resource_name` from
-  the legacy `dimensions` JSONB, following 003's backfill approach
-- [ ] 4.3 JUP-014 add an index on `resource_id` if repository queries will
-  filter/group by it
-- [ ] 4.4 JUP-014 declare `transactional = False` for this migration from
+  nullable. Added `004_resource_hierarchy.py` with `resource_id`,
+  `resource_name`, `resource_group_conflicts` (JSONB).
+- [x] 4.2 JUP-014 backfill existing rows' `resource_id`/`resource_name` from
+  the legacy `dimensions` JSONB, following 003's backfill approach.
+  `resource_group_conflicts` is a newly computed signal, not backfillable
+  from raw dimensions of legacy rows — left NULL for pre-existing data,
+  noted as a limitation.
+- [x] 4.3 JUP-014 add an index on `resource_id` if repository queries will
+  filter/group by it. Added `idx_azure_cost_records_resource_id`.
+- [x] 4.4 JUP-014 declare `transactional = False` for this migration from
   the start, given the column-add + same-file-backfill shape that caused
-  JUP-013's `UndefinedColumn` defect
+  JUP-013's `UndefinedColumn` defect. Repository INSERT/SELECT updated to
+  persist/fetch the three new columns. RGR: migration + repository tests
+  RED before implementation, GREEN after. 269/269 processor tests green.
 
 ## 5. Migration safety guardrail
 
