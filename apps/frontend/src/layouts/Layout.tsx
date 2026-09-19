@@ -2,6 +2,25 @@ import { Outlet, NavLink, useOutletContext } from "react-router";
 import { BarChart3, TrendingDown, AlertTriangle, Lightbulb, DollarSign, Activity, LogOut } from "lucide-react";
 import type { SessionOutletContext } from "./SessionGate";
 
+// TenantScopedOutlet: frontera de remontaje por tenant (reconciliacion con
+// develop, Punto 1 -- aislamiento de estado entre tenants). Se usa como
+// `Component` de un nivel de ruta intermedio en routes.tsx que envuelve
+// UNICAMENTE `IngestPage`/`ConversationsPage` (las dos pantallas con
+// formularios/selecciones/resultados de mutacion locales que no deben
+// sobrevivir a un cambio de tenant) -- mismo alcance que `tenantPageKey` en
+// App.jsx original (App.jsx:159), que tampoco envolvia el dashboard ni las
+// pantallas de demostracion. `key={activeTenant?.id}` fuerza a React a
+// desmontar la pantalla anterior por completo al cambiar de tenant en vez de
+// limpiar campos en un efecto: eso es lo que garantiza que una respuesta
+// tardia de una mutacion iniciada con el tenant anterior (el `onSuccess`/
+// `onError` sigue capturando su `queryClient`/queryKey en la closure) no
+// tenga ya una instancia montada de ese tenant cuyo estado local pueda
+// tocar. `"no-tenant"` cubre el caso sin tenant activo.
+export function TenantScopedOutlet() {
+  const ctx = useOutletContext<Partial<SessionOutletContext>>() ?? {};
+  return <Outlet key={ctx.activeTenant?.id ?? "no-tenant"} context={ctx} />;
+}
+
 export function Layout() {
   // Contexto defensivo: `Layout` puede montarse sin `SessionGate` por encima
   // (test del grupo 5, ya commiteado, que renderiza <Layout /> dentro de un
@@ -113,7 +132,22 @@ export function Layout() {
       <main className="flex-1 overflow-auto bg-[#0f1419]">
         {/* Reenvia el mismo contexto hacia las rutas hijas: necesario para
             las siguientes sub-rondas del grupo 6, aunque hoy ningun hijo lo
-            consuma todavia. */}
+            consuma todavia.
+
+            Reconciliacion con develop (Punto 1): la frontera de remontaje
+            por tenant NO vive aqui (no se aplica a las 5 pantallas de
+            demostracion ni a `DashboardPage`, que no tienen estado local
+            que proteger y solo necesitan que su query se re-dispare con la
+            nueva `tenantId`). Vive en `TenantScopedOutlet`, envolviendo
+            unicamente `IngestPage`/`ConversationsPage` en routes.tsx --
+            mismo alcance que `tenantPageKey` en App.jsx original
+            (App.jsx:159), que tampoco envolvia el dashboard. Aplicarla aqui,
+            a nivel de Layout, remontaria tambien la pantalla indice durante
+            el arranque de sesion (SessionGate resuelve `activeTenant` en
+            dos renders: null mientras `activeTenantId` local vale "",
+            luego el tenant auto-seleccionado tras su efecto), introduciendo
+            una carrera visible en un login en vivo aunque nunca hubiera
+            cambio real de tenant. */}
         <Outlet context={ctx} />
       </main>
     </div>

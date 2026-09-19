@@ -47,14 +47,13 @@ describe("tenant changes isolate page state", () => {
         : pendingSouthList.promise
     });
     restoreSession(tenants[0].id);
-    renderApp();
-    await user.click(await screen.findByRole("button", { name: "Assistant" }));
+    renderApp(["/assistant"]);
     expect(await screen.findByText(userMessage.content)).toBeVisible();
     await user.clear(screen.getByPlaceholderText("New conversation title"));
     await user.type(screen.getByPlaceholderText("New conversation title"), "North private title");
     await user.type(screen.getByPlaceholderText(composerPlaceholder), "North private draft");
 
-    await user.selectOptions(screen.getByRole("combobox", { name: "Active tenant" }), tenants[1].id);
+    await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
     expect(screen.queryByText(userMessage.content)).not.toBeInTheDocument();
     expect(screen.queryByDisplayValue("North private draft")).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText("New conversation title")).toHaveValue("Ops review");
@@ -87,8 +86,7 @@ describe("tenant changes isolate page state", () => {
         })
       });
       restoreSession(tenants[0].id);
-      const { client } = renderApp();
-      await user.click(await screen.findByRole("button", { name: "Assistant" }));
+      const { client } = renderApp(["/assistant"]);
       await screen.findByText(userMessage.content);
       await user.clear(screen.getByPlaceholderText("New conversation title"));
       await user.type(screen.getByPlaceholderText("New conversation title"), createdNorth.title);
@@ -98,7 +96,7 @@ describe("tenant changes isolate page state", () => {
       expect(screen.getByRole("button", { name: "New" })).toBeDisabled();
       expect(screen.getByRole("button", { name: "Sending..." })).toBeDisabled();
 
-      await user.selectOptions(screen.getByRole("combobox", { name: "Active tenant" }), tenants[1].id);
+      await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
       expect(await screen.findByText(southMessage.content)).toBeVisible();
       expect(screen.getByRole("button", { name: "New" })).toBeEnabled();
       expect(screen.getByPlaceholderText(composerPlaceholder)).toHaveValue("");
@@ -137,8 +135,8 @@ describe("tenant changes isolate page state", () => {
           : jsonResponse({ detail: "North ingestion failed" }, 503)
       });
       restoreSession(tenants[0].id);
-      renderApp();
-      await user.click(await screen.findByRole("button", { name: "Ingestions" }));
+      renderApp(["/ingest"]);
+      await screen.findByRole("heading", { name: "Create ingestion job" });
       await user.clear(screen.getByRole("textbox", { name: "Source" }));
       await user.type(screen.getByRole("textbox", { name: "Source" }), "north-private-source");
       await user.type(screen.getByRole("textbox", { name: "Artifact URI" }), "s3://north/private.txt");
@@ -146,7 +144,7 @@ describe("tenant changes isolate page state", () => {
       await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
       await screen.findByText(outcome === "success" ? ingestJob.job_id : /North ingestion failed/);
 
-      await user.selectOptions(screen.getByRole("combobox", { name: "Active tenant" }), tenants[1].id);
+      await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
       expect(screen.getByRole("textbox", { name: "Source" })).toHaveValue("aws-cur");
       expect(screen.getByRole("textbox", { name: "Artifact URI" })).toHaveValue("");
       expect(screen.getByRole("textbox", { name: "Text content" })).toHaveValue("");
@@ -169,13 +167,13 @@ describe("tenant changes isolate page state", () => {
           : pendingSouth.promise
       });
       restoreSession(tenants[0].id);
-      const { client } = renderApp();
-      await user.click(await screen.findByRole("button", { name: "Ingestions" }));
+      const { client } = renderApp(["/ingest"]);
+      await screen.findByRole("heading", { name: "Create ingestion job" });
       await user.type(screen.getByRole("textbox", { name: "Text content" }), "North document");
       await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
       expect(screen.getByRole("button", { name: "Queueing job..." })).toBeDisabled();
 
-      await user.selectOptions(screen.getByRole("combobox", { name: "Active tenant" }), tenants[1].id);
+      await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
       expect(screen.getByRole("textbox", { name: "Text content" })).toHaveValue("");
       expect(screen.getByRole("button", { name: "Queue ingestion" })).toBeEnabled();
       await user.type(screen.getByRole("textbox", { name: "Text content" }), "South document");

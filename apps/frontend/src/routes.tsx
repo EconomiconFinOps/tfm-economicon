@@ -1,6 +1,6 @@
 import { createBrowserRouter, type RouteObject } from "react-router";
 import { SessionGate } from "./layouts/SessionGate";
-import { Layout } from "./layouts/Layout";
+import { Layout, TenantScopedOutlet } from "./layouts/Layout";
 import { ExecutiveCostDashboard } from "./pages/ExecutiveCostDashboard";
 import { OperationalCostDashboard } from "./pages/OperationalCostDashboard";
 import { ExecutiveCutDashboard } from "./pages/ExecutiveCutDashboard";
@@ -39,8 +39,17 @@ export const routeConfig: RouteObject[] = [
           { path: "cuts", Component: ExecutiveCutDashboard },
           { path: "anomalies", Component: AnomaliesPanel },
           { path: "recommendations", Component: RecommendationsPanel },
-          { path: "ingest", Component: IngestPage },
-          { path: "assistant", Component: ConversationsPage },
+          {
+            // Reconciliacion con develop (Punto 1): frontera de remontaje
+            // por tenant, solo alrededor de las dos pantallas con estado
+            // local que debe reiniciarse al cambiar de tenant. Ver
+            // TenantScopedOutlet en layouts/Layout.tsx.
+            Component: TenantScopedOutlet,
+            children: [
+              { path: "ingest", Component: IngestPage },
+              { path: "assistant", Component: ConversationsPage },
+            ],
+          },
           { path: "overview-legacy", Component: DashboardPage },
         ],
       },
