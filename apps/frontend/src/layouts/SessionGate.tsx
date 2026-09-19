@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Navigate, Outlet } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTenants } from "../services/api";
+import type { TenantRecord } from "../services/contracts";
 
 // Exportada porque `LoginPage.tsx` necesita la misma clave para persistir la
 // sesion tras el login (App.jsx.handleLogin:74-81 trasladado alli): centraliza
@@ -19,10 +20,11 @@ export const SESSION_KEY = "finops.session";
 const TENANT_KEY = "finops.activeTenant";
 
 // Forma minima de los datos que SessionGate controla directamente: la sesion
-// persistida en localStorage y un tenant. `services/api.js` no esta tipado
-// (checkJs: false, JUP-096 pendiente), asi que el resultado de `fetchTenants`
-// llega con tipado laxo por la frontera JS->TS; no forzamos casts sobre esa
-// frontera, solo tipamos explicitamente lo que exponemos hacia abajo.
+// persistida en localStorage. Se mantiene deliberadamente laxa (todos los
+// campos opcionales) porque procede de una lectura sin validar de
+// localStorage -- ver `loadStoredJson` mas abajo; la validacion real de esta
+// forma (equivalente a `isSession` de develop) es trabajo pendiente de la
+// reconciliacion con JUP-087 (Punto 2), no de este fichero.
 interface SessionUser {
   full_name?: string;
   email?: string;
@@ -35,21 +37,16 @@ interface Session {
   user?: SessionUser;
 }
 
-interface Tenant {
-  id: string;
-  name: string;
-  [key: string]: unknown;
-}
-
-// Contrato de Outlet context que `Layout.tsx` y las paginas de las siguientes
-// sub-rondas del grupo 6 deben importar y usar para tipar su
-// `useOutletContext<SessionOutletContext>()`, en vez de repetir la forma a
-// mano en cada consumidor.
+// Reconciliacion con develop (JUP-087): `services/api` ya no es `api.js` sin
+// tipar, es `api.ts` contra `services/contracts.ts`. `fetchTenants()` ahora
+// devuelve `TenantCollection` (items: `TenantRecord[]`), asi que los tenants
+// que SessionGate expone hacia abajo usan ese tipo real en vez de una forma
+// local laxa que divergiria en silencio del contrato.
 export interface SessionOutletContext {
   token: string;
   user?: SessionUser;
-  tenants: Tenant[];
-  activeTenant: Tenant | null;
+  tenants: TenantRecord[];
+  activeTenant: TenantRecord | null;
   activeTenantId: string;
   onTenantChange: (nextTenantId: string) => void;
   onLogout: () => void;
@@ -85,7 +82,12 @@ export function SessionGate() {
   // SessionGate.test.tsx, escenario "sin sesion").
   const tenantsQuery = useQuery({
     queryKey: ["tenants", session?.user?.id],
-    queryFn: () => fetchTenants(session?.accessToken),
+    queryFn: () => {
+      if (!session) {
+        throw new Error("Session required");
+      }
+      return fetchTenants(session.accessToken);
+    },
     enabled: Boolean(session?.accessToken)
   });
 
@@ -98,7 +100,7 @@ export function SessionGate() {
       return;
     }
 
-    const tenants: Tenant[] = tenantsQuery.data?.items ?? [];
+    const tenants: TenantRecord[] = tenantsQuery.data?.items ?? [];
     if (tenants.length === 0) {
       return;
     }
@@ -111,10 +113,11 @@ export function SessionGate() {
     }
   }, [session, tenantsQuery.data, activeTenantId]);
 
-  const activeTenant = useMemo<Tenant | null>(
+  const activeTenant = useMemo<TenantRecord | null>(
     () =>
-      (tenantsQuery.data?.items ?? []).find((tenant: Tenant) => tenant.id === activeTenantId) ??
-      null,
+      (tenantsQuery.data?.items ?? []).find(
+        (tenant: TenantRecord) => tenant.id === activeTenantId
+      ) ?? null,
     [tenantsQuery.data, activeTenantId]
   );
 
@@ -174,7 +177,7 @@ export function SessionGate() {
     );
   }
 
-  const tenants: Tenant[] = tenantsQuery.data?.items ?? [];
+  const tenants: TenantRecord[] = tenantsQuery.data?.items ?? [];
 
   const context: SessionOutletContext = {
     token: session.accessToken,

@@ -79,10 +79,7 @@ export function DashboardPage() {
         </div>
         <div className="flex flex-col items-start gap-1 sm:items-end">
           <p className="text-sm text-slate-400">Tenant</p>
-          {/* `activeTenant.slug` sigue siendo `unknown` mientras `Tenant` en
-              SessionGate.tsx no adopte `TenantRecord` del contrato (Punto 2
-              de la reconciliacion, pendiente en commit dedicado). */}
-          <StatusPill status={activeTenant.slug as string} />
+          <StatusPill status={activeTenant.slug} />
         </div>
       </section>
 
@@ -119,9 +116,9 @@ export function DashboardPage() {
               >
                 <div>
                   <strong className="text-white">{tenant.name}</strong>
-                  <p className="text-sm text-slate-400">{tenant.slug as string}</p>
+                  <p className="text-sm text-slate-400">{tenant.slug}</p>
                 </div>
-                <StatusPill status={tenant.plan as string} />
+                <StatusPill status={tenant.plan} />
               </article>
             ))}
           </div>
