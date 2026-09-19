@@ -34,7 +34,13 @@ export function DashboardPage() {
     );
   }
 
-  if (loading) {
+  // Reconciliacion con develop (JUP-087): no basta con `loading` para saber
+  // que `payload` ya esta poblado. Con dos queries combinadas
+  // (`useDashboardData`), `enabled: false` transitorio (p.ej. token vacio un
+  // instante) puede dejar `isLoading` en `false` sin que `payload` llegue a
+  // construirse -- una asercion no-nula (`payload!`) explotaria en ese caso.
+  // Se sigue esperando mientras no haya ni error ni payload.
+  if (loading || (!error && !payload)) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-2 text-white">
         <p className="text-sm uppercase tracking-wide text-slate-400">Bootstrapping</p>
@@ -54,12 +60,11 @@ export function DashboardPage() {
     );
   }
 
-  // `payload` solo puede ser null mientras `loading` es true (misma
-  // invariante que `useDashboardData` ya garantizaba en el origen): llegado
-  // aqui, loading es false y error es null, asi que payload esta poblado.
-  // Non-null assertion en vez de un cuarto branch redundante que el origen
-  // tampoco tenia.
-  const { billing, health } = payload!;
+  if (!payload) {
+    return null;
+  }
+
+  const { billing, health } = payload;
 
   return (
     <div className="flex flex-col gap-6">
@@ -74,6 +79,9 @@ export function DashboardPage() {
         </div>
         <div className="flex flex-col items-start gap-1 sm:items-end">
           <p className="text-sm text-slate-400">Tenant</p>
+          {/* `activeTenant.slug` sigue siendo `unknown` mientras `Tenant` en
+              SessionGate.tsx no adopte `TenantRecord` del contrato (Punto 2
+              de la reconciliacion, pendiente en commit dedicado). */}
           <StatusPill status={activeTenant.slug as string} />
         </div>
       </section>
@@ -110,7 +118,7 @@ export function DashboardPage() {
                 className="flex items-center justify-between rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2"
               >
                 <div>
-                  <strong className="text-white">{tenant.name as string}</strong>
+                  <strong className="text-white">{tenant.name}</strong>
                   <p className="text-sm text-slate-400">{tenant.slug as string}</p>
                 </div>
                 <StatusPill status={tenant.plan as string} />
@@ -130,7 +138,7 @@ export function DashboardPage() {
                 className="flex items-center justify-between rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2"
               >
                 <span className="text-sm text-white">{service}</span>
-                <StatusPill status={serviceStatus as string} />
+                <StatusPill status={serviceStatus} />
               </div>
             ))}
           </div>

@@ -21,7 +21,7 @@ def login(payload: LoginRequest, database=Depends(get_database)) -> LoginRespons
     settings = get_settings()
     access_token = create_access_token(
         user_id=user["id"],
-        secret_key=settings.auth_secret_key,
+        secret_key=settings.auth_secret_key.get_secret_value(),
         expires_minutes=settings.auth_token_ttl_minutes,
     )
     return LoginResponse(

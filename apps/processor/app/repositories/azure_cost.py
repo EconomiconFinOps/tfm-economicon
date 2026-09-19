@@ -119,11 +119,17 @@ class SqlAzureCostRepository:
                         """
                         INSERT INTO azure_cost_records (
                             id, ingestion_id, tenant_id, subscription_id,
-                            usage_date, pretax_cost, currency, dimensions,
+                            usage_date, pretax_cost, currency,
+                            billing_account_id, subscription_name,
+                            resource_group, service_name, project,
+                            consumed_quantity, consumed_unit, tags, dimensions,
                             source_row_hash, created_at
                         ) VALUES (
                             :id, :ingestion_id, :tenant_id, :subscription_id,
-                            :usage_date, :pretax_cost, :currency, :dimensions,
+                            :usage_date, :pretax_cost, :currency,
+                            :billing_account_id, :subscription_name,
+                            :resource_group, :service_name, :project,
+                            :consumed_quantity, :consumed_unit, :tags, :dimensions,
                             :source_row_hash, :created_at
                         )
                         """
@@ -136,6 +142,14 @@ class SqlAzureCostRepository:
                         "usage_date": record.usage_date,
                         "pretax_cost": record.pretax_cost,
                         "currency": record.currency,
+                        "billing_account_id": record.billing_account_id,
+                        "subscription_name": record.subscription_name,
+                        "resource_group": record.resource_group,
+                        "service_name": record.service_name,
+                        "project": record.project,
+                        "consumed_quantity": record.consumed_quantity,
+                        "consumed_unit": record.consumed_unit,
+                        "tags": json.dumps(record.tags, sort_keys=True),
                         "dimensions": json.dumps(record.dimensions, sort_keys=True),
                         "source_row_hash": record.source_row_hash,
                         "created_at": now,
@@ -214,6 +228,9 @@ class SqlAzureCostRepository:
                 text(
                     """
                     SELECT id, usage_date, pretax_cost, currency,
+                           billing_account_id, subscription_name,
+                           resource_group, service_name, project,
+                           consumed_quantity, consumed_unit, tags,
                            dimensions, source_row_hash
                     FROM azure_cost_records
                     WHERE ingestion_id = :run_id

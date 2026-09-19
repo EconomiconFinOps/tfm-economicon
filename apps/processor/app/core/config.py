@@ -1,18 +1,23 @@
 from functools import lru_cache
+import os
 import re
+from typing import Literal
 from urllib.parse import urlsplit
 
 from pydantic import SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.core.runtime_secrets import StartupError, register_secrets, validate_connections
 
 class Settings(BaseSettings):
     processor_port: int = 8001
     processor_concurrency: int = 2
     processor_queue_name: str = "processor:jobs"
-    database_url: str = "cockroachdb+psycopg://root@localhost:26257/defaultdb?sslmode=disable"
-    rabbitmq_url: str = "amqp://guest:guest@localhost:5672/%2F"
-    vector_database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5433/embeddings"
+    runtime_environment: Literal["production", "development", "test"] = "production"
+    allow_insecure_local_database: bool = False
+    database_url: SecretStr
+    rabbitmq_url: SecretStr
+    vector_database_url: SecretStr
     embedding_provider: str = "mock"
     embedding_dimension: int = 8
     embedding_model: str = "economicon-embedding"
@@ -183,13 +188,25 @@ class Settings(BaseSettings):
             raise ValueError("azure_cost_api_max_pages must be between 1 and 10000")
         return value
 
+    @model_validator(mode="after")
+    def validate_runtime(self) -> "Settings":
+        validate_connections(self)
+        return self
+
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=None,
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
+        hide_input_in_errors=True,
     )
 
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    try:
+        settings = Settings(_env_file=os.environ.get("ECONOMICON_ENV_FILE") or None)
+    except Exception:
+        raise StartupError("Invalid runtime configuration; check required credentials and settings.") from None
+    register_secrets(settings)
+    return settings

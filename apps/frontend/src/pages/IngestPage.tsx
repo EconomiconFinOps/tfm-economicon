@@ -11,6 +11,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useOutletContext } from "react-router";
 import { SectionCard } from "../components/SectionCard";
 import { createIngestJob } from "../services/api";
+import type { IngestJobRequest } from "../services/contracts";
 import type { SessionOutletContext } from "../layouts/SessionGate";
 
 // Estado del formulario, verbatim de IngestPage.jsx: mismos tres campos y
@@ -19,16 +20,6 @@ interface IngestFormState {
   source: string;
   artifact_uri: string;
   text_content: string;
-}
-
-// Forma minima de la respuesta de `POST /jobs/ingest` que la pantalla
-// necesita para pintar el resultado. `services/api.js` no esta tipado
-// (checkJs: false, JUP-096 pendiente): tipamos explicitamente lo que
-// consumimos de esa frontera, sin forzar un cast sobre `createIngestJob`.
-interface IngestJobResult {
-  job_id: string;
-  status: string;
-  queue: string;
 }
 
 export function IngestPage() {
@@ -41,14 +32,21 @@ export function IngestPage() {
   });
 
   const mutation = useMutation({
-    mutationFn: (payload: Record<string, unknown>): Promise<IngestJobResult> =>
-      createIngestJob(token, activeTenant?.id, payload)
+    mutationFn: (payload: IngestJobRequest) => {
+      if (!activeTenant) {
+        throw new Error("Tenant required");
+      }
+      return createIngestJob(token, activeTenant.id, payload);
+    }
   });
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!activeTenant) {
+      return;
+    }
     mutation.mutate({
-      tenant_id: activeTenant?.id,
+      tenant_id: activeTenant.id,
       source: form.source,
       artifact_uri: form.artifact_uri || null,
       text_content: form.text_content,

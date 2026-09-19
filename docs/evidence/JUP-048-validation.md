@@ -66,3 +66,11 @@ Lucia y la validacion de Paris siguen pendientes y se registraran solo cuando
 existan evidencias reales en GitHub/Trello. El PR no se fusiona mientras esas
 responsabilidades permanezcan sin evidencia, salvo nueva decision expresa del
 equipo.
+
+## Cierre posterior de estado — 2026-08-28
+
+El PR #12 fue fusionado en `develop` mediante `a746d48`. El bloque anterior se
+conserva como evidencia del estado existente antes del merge y no como una
+afirmacion operativa actual. Trello mantiene JUP-048 en Validacion porque la
+participacion asignada solo puede cerrarse con evidencia real de las personas
+responsables.

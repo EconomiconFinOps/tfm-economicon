@@ -59,6 +59,9 @@ Desde la raiz del repo:
 docker compose up --build processor
 ```
 
+Preparar los secretos y la excepcion local del [README raiz](../../README.md#variables-de-entorno).
+El ejemplo deja las credenciales vacias y no permite arrancar por si solo.
+
 Puerto visible:
 
 - `http://localhost:8001/health`
@@ -83,6 +86,7 @@ Desde `apps/processor`:
 
 ```powershell
 python -m pip install -r requirements-dev.txt
+$env:ECONOMICON_ENV_FILE = (Resolve-Path ../../.env).Path
 python -m app.run_all
 ```
 
@@ -91,6 +95,10 @@ Puerto visible:
 - `http://localhost:8001/health`
 
 Entry points adicionales:
+
+Todos validan antes de construir recursos o arrancar workers. El import de
+`app.main` no requiere secretos ni conecta. Ajustar hosts/puertos del fichero
+seleccionado para clientes nativos; el entorno precede a dotenv.
 
 - `python -m app.run_worker`
 - `python -m app.run_api`
@@ -102,6 +110,28 @@ ejecución con la misma combinación de tenant, suscripción y consulta reemplaz
 atómicamente sus filas en vez de duplicarlas.
 
 ## Variables De Entorno
+
+### Contrato de ingesta documental (JUP-020)
+
+La API publica un envoltorio con `id`, `tenant_id`, `source`, `artifact_uri`,
+`status` y `payload`. El documento vive en `payload.text_content` y sus
+metadatos en `payload.metadata`. `IngestTask` adapta esos campos al estado
+del grafo y convierte `id` en `job_id`, conservando la identidad del
+envoltorio. El worker mantiene `request_id` en el contexto de los logs.
+
+Las peticiones normales a `POST /jobs/ingest` no necesitan aplanar el mensaje
+ni publicar directamente en RabbitMQ. Los llamadores directos de
+`PipelineRunner.run` siguen utilizando el estado plano del grafo.
+
+La correccion del contrato y sus limites se documentan en
+[JUP-020](../../openspec/changes/jup-020-document-embedding-pipeline/design.md).
+El proveedor de embeddings actual sigue siendo `mock`; esta correccion no
+acredita calidad semantica ni la politica completa de reprocesado del corpus.
+
+Prueba HTTP y resultados con RabbitMQ, CockroachDB y pgvector reales:
+[evidencia JUP-020](../../docs/evidence/JUP-020-validation.md).
+
+### Configuracion
 
 - `PROCESSOR_PORT`
 - `PROCESSOR_CONCURRENCY`
@@ -133,6 +163,22 @@ atómicamente sus filas en vez de duplicarlas.
 
 ## Tests
 
+`DATABASE_URL`, `RABBITMQ_URL` y `VECTOR_DATABASE_URL` son obligatorias,
+tambien en test. `RUNTIME_ENVIRONMENT` vale production por defecto:
+`AI_EXECUTION_MODE=test` no evita estas validaciones. Las fixtures pytest
+inyectan credenciales sinteticas y no cargan dotenv real. Los tests de
+integracion Cockroach requieren su opt-in independiente y una instancia aislada.
+
+Mocks no necesitan `LITELLM_API_KEY`. Seleccionar LiteLLM conserva los
+validadores de clave, URL, alias, dimensiones y evaluation, sin acreditar un
+cliente/proveedor real desplegado. Las claves upstream/master solo pertenecen
+al gateway; consultar [su propuesta](../../infra/litellm/README.md).
+Los tokens `AZURE_COST_*` del simulador son fixtures locales, no credenciales Azure.
+
+Errores persistidos de jobs usan `ingestion_failed`, sin texto crudo de
+excepciones. La salida JSON conserva diagnosticos saneados y correlacion;
+ver [limites y rotacion](../../docs/manuals/python-service-conventions.md).
+
 ```powershell
 python -m pytest tests
 ```
@@ -151,6 +197,8 @@ python -m pytest tests
 - `tasks/azure_cost_ingest.py`, `normalization/azure_cost.py` y
   `repositories/azure_cost.py` implementan el recorrido API → normalización →
   persistencia. Las tablas son `azure_cost_ingestion_runs` y
-  `azure_cost_records`.
+  `azure_cost_records`. JUP-013 promueve las dimensiones FinOps conocidas a
+  columnas tipadas y conserva el resto en JSON; consulta
+  [`docs/architecture/azure-cost-normalization.md`](../../docs/architecture/azure-cost-normalization.md).
 - `docs/api/azure-cost-ingestion-client.md` describe configuración, errores,
   observabilidad y límites del cliente sin requerir un tenant Azure.

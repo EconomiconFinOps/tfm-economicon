@@ -11,34 +11,28 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { login } from "../services/api";
+import type { LoginResponse } from "../services/contracts";
 import { SESSION_KEY } from "../layouts/SessionGate";
 
-// `services/api.js` no esta tipado todavia (checkJs: false): la frontera
-// JS->TS llega laxa, igual que en SessionGate.tsx (ver comentario de
-// `SessionUser`/`Session` alli). Tipamos explicitamente lo que necesitamos
-// de la respuesta de `/auth/login` en vez de propagar `any`.
+// Reconciliacion con develop (JUP-087): `services/api` ya no es `api.js` sin
+// tipar, es `api.ts` contra `services/contracts.ts`. `login()` devuelve el
+// `LoginResponse` real del contrato (con `UserProfile` de forma cerrada), asi
+// que se importa ese tipo en vez de declarar aqui una forma local laxa que
+// divergiria en silencio del contrato que de verdad exige el backend.
 interface LoginFormState {
   email: string;
   password: string;
-}
-
-interface LoginResponseUser {
-  full_name?: string;
-  email?: string;
-  id?: string;
-  [key: string]: unknown;
-}
-
-interface LoginResponse {
-  access_token: string;
-  user: LoginResponseUser;
 }
 
 export function LoginPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState<LoginFormState>({
     email: "operator@example.com",
-    password: "secret"
+    // Contrasena inicialmente vacia (reconciliacion con develop/JUP-053,
+    // externalizacion de secretos): no se precarga una credencial de
+    // demostracion en el propio codigo del formulario. Las pruebas que
+    // ejercitan el login deben introducirla explicitamente.
+    password: ""
   });
 
   const mutation = useMutation({

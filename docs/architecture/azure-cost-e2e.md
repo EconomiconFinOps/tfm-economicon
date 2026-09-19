@@ -16,7 +16,10 @@ El cliente de JUP-076 obtiene todas las páginas y entrega filas tipadas. El
 normalizador exige un `PreTaxCost` numérico y finito, convierte su valor a
 decimal, valida `Currency` como código ISO de tres letras y convierte
 `UsageDate` a una fecha estricta `yyyyMMdd`, conservando el resto de columnas
-como dimensiones. Los costes cero y negativos son válidos porque el dataset
+como dimensiones. JUP-013 extiende este contrato promoviendo resource group,
+servicio, proyecto, tags y consumo opcional a
+[`azure-cost-normalization.md`](azure-cost-normalization.md). Los costes cero y
+negativos son válidos porque el dataset
 público puede contener consumo sin coste y créditos. El hash canónico trata
 como equivalentes representaciones numéricas como `1` y `1.0`.
 

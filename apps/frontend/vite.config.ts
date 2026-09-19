@@ -24,6 +24,15 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    // Reconciliacion con develop (JUP-087): las dos suites de la migracion
+    // viven en ubicaciones distintas -- las de JUP-095 bajo `src/**` (junto
+    // al codigo que prueban) y las de JUP-087 bajo `tests/**` (regresion end
+    // to end de sesion, tenant, ingesta y conversaciones). El `include` por
+    // defecto de Vitest ya cubriria `src/**`, pero un `include` explicito
+    // que solo listase `tests/**/*.test.{ts,tsx}` (como hacia develop antes
+    // de esta fusion) dejaria de descubrir la suite de `src/**` en
+    // silencio, sin que ninguna herramienta lo señale como fallo.
+    include: ["src/**/*.test.{ts,tsx}", "tests/**/*.test.{ts,tsx}"],
     setupFiles: ["./src/test/setup.ts"],
     // `test.exclude` reemplaza el array por defecto en vez de fusionarse con
     // el; se parte de `configDefaults.exclude` para no perder sus patrones
@@ -35,4 +44,3 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, "**/.stryker-tmp/**"]
   }
 });
-

@@ -55,3 +55,23 @@ entregables. El video demo de 5-10 minutos se mantiene opcional.
 
 Pendiente: registrar la revision del equipo y, tras aprobar, aplicar las fechas
 a las demas tarjetas de Trello.
+
+## Cierre posterior de estado — 2026-08-28
+
+El PR #13 fue fusionado en `develop` mediante el commit `d45178e`. La evidencia
+anterior conserva deliberadamente la fotografia tomada durante la ejecucion de
+JUP-080; ya no describe el estado actual de JUP-048 ni del PR.
+
+La reconciliacion M1 creo JUP-085, JUP-086 y JUP-087 como P0. JUP-088 actualiza
+la captura versionada de 47 a 50 tarjetas, las asigna a M1 y hace que el test
+derive la cobertura desde `JUP-080-milestones.json`. La aprobacion del calendario
+y la confirmacion institucional de fechas continuan pendientes.
+
+## Contraste de alcance — 2026-09-02
+
+La lectura del tablero mediante la integracion de `DockerServer` encontro 52
+P0: las 50 de la captura del 28/08 mas JUP-090 y JUP-091. Ninguna de las dos
+tarjetas nuevas indica hito ni fecha limite. El roadmap registra el desfase y
+la tarea 4.5 mantiene pendiente acordar su asignacion; las pruebas del JSON
+acreditan solo la cobertura de las 50 P0 historicas. JUP-088 es coordinacion
+de M1 (04/09), no una P0 adicional. No se han modificado fechas en Trello.

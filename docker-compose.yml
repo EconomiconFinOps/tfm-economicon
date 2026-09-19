@@ -1,7 +1,19 @@
 services:
   cockroachdb:
-    image: cockroachdb/cockroach:v24.1.11
-    entrypoint: ["/cockroach/cockroach"]
+    image: cockroachdb/cockroach:v24.1.11@sha256:89bda255c52b25f463c7a9373ffedef122a4d9f1b432aa34b897970fe864a66c
+    # This insecure node is only for an operator-confirmed disposable local stack.
+    environment:
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        case "$$RUNTIME_ENVIRONMENT:$$ALLOW_INSECURE_LOCAL_DATABASE" in
+          development:true|test:true) exec /cockroach/cockroach "$$@" ;;
+          *) echo "Disposable local database requires development/test and explicit opt-in." >&2; exit 1 ;;
+        esac
+      - --
     command:
       - start-single-node
       - --insecure
@@ -10,8 +22,8 @@ services:
       - --advertise-addr=cockroachdb:26257
       - --http-addr=0.0.0.0:8080
     ports:
-      - "127.0.0.1:26257:26257"
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${COCKROACH_SQL_PORT:-26257}:26257"
+      - "127.0.0.1:${COCKROACH_HTTP_PORT:-8080}:8080"
     volumes:
       - cockroach-data:/cockroach/cockroach-data
     healthcheck:
@@ -22,10 +34,14 @@ services:
       start_period: 15s
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3-management@sha256:e582c0bc7766f3342496d8485efb5a1df782b5ce3886ad017e2eaae442311f69
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?required}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?required}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:?required}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -33,13 +49,13 @@ services:
       retries: 10
 
   postgres-pgvector:
-    image: pgvector/pgvector:pg17
+    image: pgvector/pgvector:pg17@sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f
     environment:
       POSTGRES_DB: embeddings
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
     ports:
-      - "5433:5432"
+      - "127.0.0.1:${PGVECTOR_PORT:-5433}:5432"
     volumes:
       - pgvector-data:/var/lib/postgresql/data
     healthcheck:
@@ -62,7 +78,7 @@ services:
       AZURE_COST_FAKE_TIMEOUT_SECONDS: "${AZURE_COST_FAKE_TIMEOUT_SECONDS:-2}"
       AZURE_COST_RETRY_AFTER_SECONDS: "${AZURE_COST_RETRY_AFTER_SECONDS:-1}"
     ports:
-      - "${AZURE_COST_API_PORT:-8002}:8002"
+      - "${AZURE_COST_API_HOST_PORT:-8002}:8002"
     init: true
     read_only: true
     tmpfs:
@@ -80,14 +96,18 @@ services:
     build:
       context: ./apps/backend
     environment:
-      API_PORT: ${API_PORT:-8000}
-      DATABASE_URL: ${DATABASE_URL:-cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
-      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:-postgresql+psycopg://postgres:postgres@postgres-pgvector:5432/embeddings}
+      API_PORT: 8000
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
+      DATABASE_URL: ${DATABASE_URL:?required}
+      RABBITMQ_URL: ${RABBITMQ_URL:?required}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:?required}
       PROCESSOR_QUEUE_NAME: ${PROCESSOR_QUEUE_NAME:-processor:jobs}
       EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-8}
-      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:-replace-me-auth-secret}
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:?required}
       AUTH_TOKEN_TTL_MINUTES: ${AUTH_TOKEN_TTL_MINUTES:-480}
+      DEMO_SEED_ENABLED: ${DEMO_SEED_ENABLED:-false}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
     depends_on:
       cockroachdb:
         condition: service_healthy
@@ -96,7 +116,13 @@ services:
       postgres-pgvector:
         condition: service_healthy
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "${API_HOST_PORT:-8000}:8000"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
       interval: 15s
@@ -108,12 +134,14 @@ services:
     build:
       context: ./apps/processor
     environment:
-      PROCESSOR_PORT: ${PROCESSOR_PORT:-8001}
+      PROCESSOR_PORT: 8001
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
       PROCESSOR_CONCURRENCY: ${PROCESSOR_CONCURRENCY:-2}
       PROCESSOR_QUEUE_NAME: ${PROCESSOR_QUEUE_NAME:-processor:jobs}
-      DATABASE_URL: ${DATABASE_URL:-cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
-      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:-postgresql+psycopg://postgres:postgres@postgres-pgvector:5432/embeddings}
+      DATABASE_URL: ${DATABASE_URL:?required}
+      RABBITMQ_URL: ${RABBITMQ_URL:?required}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:?required}
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-mock}
       EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-8}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-economicon-embedding}
@@ -145,7 +173,13 @@ services:
       postgres-pgvector:
         condition: service_healthy
     ports:
-      - "${PROCESSOR_PORT:-8001}:8001"
+      - "${PROCESSOR_HOST_PORT:-8001}:8001"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').read()"]
       interval: 15s
@@ -155,15 +189,65 @@ services:
 
   frontend:
     build:
-      context: ./apps/frontend
-    environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
     depends_on:
       backend:
         condition: service_healthy
     ports:
-      - "${FRONTEND_PORT:-5173}:5173"
+      - "${FRONTEND_HOST_PORT:-5173}:5173"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5173').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./apps/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      backend:
+        condition: service_healthy
+      processor:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?required}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ./apps/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./apps/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
 
 volumes:
   cockroach-data:
   pgvector-data:
+  prometheus-data:
+  grafana-data:

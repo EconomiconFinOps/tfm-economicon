@@ -41,3 +41,18 @@ Before using this configuration:
 7. run the benchmark before selecting the chat alias.
 
 The existing container named `litellm` on `dockerserver` is outside this change. It must not be modified or reused until ownership, version, ports and isolation are confirmed.
+
+JUP-053 keeps these credentials external and the example fields empty.
+Python services load dotenv only through an explicit `ECONOMICON_ENV_FILE`;
+environment variables win. A shared dotenv file may contain gateway keys, but
+they are not application settings and Compose does not pass them to the apps.
+Never deliver upstream/master keys through build ARG, image ENV or VITE variables.
+Mock providers need no gateway key; selecting LiteLLM retains all existing
+conditional validators and does not demonstrate a deployed real provider.
+
+For a future approved deployment, rotate keys in their owning gateway/provider
+first, coordinate consumer updates and restarts, verify the scoped virtual key
+with a non-sensitive request, then revoke the old key. An environment edit alone
+does not rotate a server-side key. On failure use an operator-approved valid,
+uncompromised key, never an old insecure default. No gateway is deployed or
+modified by this change.

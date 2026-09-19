@@ -2,8 +2,18 @@
 // jest-dom (toBeInTheDocument, toHaveTextContent...). Se carga una vez por
 // proceso de test vía `test.setupFiles` en vite.config.ts (JUP-095, grupo 2).
 import "@testing-library/jest-dom/vitest";
-import { afterEach } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
+
+// Reconciliacion con develop (JUP-087): setup unico para las dos suites
+// (`src/**` y `tests/**`) en vez de mantener dos archivos de setup que
+// podrian divergir en silencio. Antes de cada test se vacia localStorage,
+// para que un test no arranque leyendo sesion/tenant dejados por el
+// anterior (regresion cubierta por tests/tenant-switching.test.tsx y
+// session-and-dashboard.test.tsx).
+beforeEach(() => {
+  window.localStorage.clear();
+});
 
 // Testing Library registra su limpieza automática (desmontar cada árbol
 // renderizado tras cada test) enganchándose al `afterEach` global si existe.
@@ -13,8 +23,16 @@ import { cleanup } from "@testing-library/react";
 // se filtra al siguiente `it()` del mismo archivo (detectado en el grupo 4:
 // dos tests de Separator en el mismo describe se contaminaban entre sí).
 // Registrarlo aquí, explícito, es el patrón oficial documentado por
-// Testing Library para proyectos sin `globals: true`.
-afterEach(cleanup);
+// Testing Library para proyectos sin `globals: true`. Se completa con la
+// limpieza de localStorage y de mocks/globals stubeados (vi.stubGlobal,
+// vi.spyOn) que traia el setup de develop, para que ningun test filtre
+// estado hacia el siguiente por ninguna de las tres vias.
+afterEach(() => {
+  cleanup();
+  window.localStorage.clear();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 // jsdom no implementa ResizeObserver (no hay motor de layout real que
 // dispare eventos de redimensionado). `recharts` lo usa dentro de

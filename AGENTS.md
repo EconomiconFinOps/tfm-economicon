@@ -9,7 +9,7 @@ This pnpm/Turborepo monorepo contains the frontend, Python backend and processor
 - Trello owns scope, priorities, assignees, rotating responsibilities, delivery dates and task status.
 - OpenSpec stores versioned requirements, implementation design, technical tasks and acceptance scenarios.
 - GitHub stores code, documentation, pull requests and technical review history.
-- Reuse the same Trello identifier everywhere: `JUP-082`, `openspec/changes/jup-082-clean-develop/` and `chore/JUP-082-clean-develop`.
+- Reuse the same Trello identifier everywhere: `JUP-085`, `openspec/changes/jup-085-auth-session-contract/` and `feat/JUP-085-auth-session-contract`.
 - Do not create a second numbering system or duplicate the operational backlog inside the repository.
 
 ## Build And Validation Commands
@@ -18,7 +18,7 @@ This pnpm/Turborepo monorepo contains the frontend, Python backend and processor
 - `corepack pnpm build`, `corepack pnpm lint` and `corepack pnpm test`: run workspace validations.
 - `corepack pnpm openspec:list`: inspect active OpenSpec changes.
 - `corepack pnpm openspec:validate`: validate all specifications and changes strictly.
-- `corepack pnpm jup:check -- --change jup-082-clean-develop`: verify Trello/OpenSpec traceability.
+- `corepack pnpm jup:check -- --change jup-085-auth-session-contract`: verify Trello/OpenSpec traceability.
 - `corepack pnpm jup:check:test`: test the JUP traceability checker.
 - `corepack pnpm jup:cleanup:check`: reject personal agent configuration, unrelated binaries and parallel task namespaces.
 - `corepack pnpm jup:cleanup:test`: test the repository hygiene checker.

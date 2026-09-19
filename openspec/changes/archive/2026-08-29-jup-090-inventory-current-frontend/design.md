@@ -3,7 +3,7 @@ JUP: JUP-090
 ## Context
 
 La épica *Migrar frontend del repositorio Economicon* (spike
-[docs/spikes/frontend-migration.md](../../../docs/spikes/frontend-migration.md)) adopta estrategia de
+[docs/spikes/frontend-migration.md](../../../../docs/spikes/frontend-migration.md)) adopta estrategia de
 **reemplazo completo** de `apps/frontend`, conservando el pegamento del monorepo. El spike ya fija la
 frontera a nivel conceptual ("se reemplaza" / "se preserva") y una tabla de conflictos, pero **no a
 nivel de archivo**, y sus criterios de paridad no son ejecutables.

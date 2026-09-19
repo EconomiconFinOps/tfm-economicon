@@ -7,10 +7,11 @@
     "dev": "vite --host 0.0.0.0 --port 5173",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 4173",
-    "lint": "eslint src",
+    "lint": "eslint src tests",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit",
-    "docker:build": "docker build -t finops-frontend ."
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "docker:build": "docker build -f Dockerfile -t finops-frontend ../.."
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",
@@ -32,8 +33,10 @@
   "devDependencies": {
     "@eslint/js": "^9.5.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^26.4.1",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",

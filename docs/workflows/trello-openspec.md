@@ -6,10 +6,10 @@ Trello es la fuente de verdad operativa de Economicon. OpenSpec conserva el dise
 
 Cada tarea utiliza el identificador de su tarjeta Trello en todos los sistemas:
 
-- Tarjeta: `JUP-082`.
-- Rama: `chore/JUP-082-clean-develop`.
-- Cambio OpenSpec: `openspec/changes/jup-082-clean-develop/`.
-- Pull request: `JUP-082 — Limpiar y reconciliar develop`.
+- Tarjeta: `JUP-085`.
+- Rama: `feat/JUP-085-auth-session-contract`.
+- Cambio OpenSpec: `openspec/changes/jup-085-auth-session-contract/`.
+- Pull request: `JUP-085 — Formalizar autenticacion demo y ciclo de sesion`.
 
 No se crea un backlog alternativo ni una numeración paralela en OpenSpec.
 
@@ -27,7 +27,7 @@ No se crea un backlog alternativo ni una numeración paralela en OpenSpec.
 
 ```sh
 corepack pnpm openspec:validate
-corepack pnpm jup:check -- --change jup-082-clean-develop
+corepack pnpm jup:check -- --change jup-085-auth-session-contract
 corepack pnpm jup:cleanup:check
 corepack pnpm lint
 corepack pnpm test

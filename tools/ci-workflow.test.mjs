@@ -45,15 +45,17 @@ test("limits GitHub token permissions and pins official actions by commit", () =
   }
 });
 
-test("keeps the eight branch-protection check contexts stable", () => {
+test("keeps the seven branch-protection check contexts stable", () => {
   assert.equal(workflow.jobs["pr-policy"].name, "JUP policy");
   assert.equal(workflow.jobs.governance.name, "OpenSpec");
   assert.equal(workflow.jobs["frontend-build"].name, "Frontend build");
   // JUP-093: septimo check obligatorio, tsc --noEmit del frontend (ADR-0003, decision 3).
   assert.equal(workflow.jobs["frontend-typecheck"].name, "Frontend type check");
-  // JUP-095: octavo check obligatorio, suite de tests unitarios del frontend
-  // (mismo patron que frontend-build/frontend-typecheck, tarea 2.4).
-  assert.equal(workflow.jobs["frontend-tests"].name, "Frontend tests");
+  // Reconciliacion JUP-095/JUP-087: un octavo job ("frontend-tests") duplicaba
+  // la ejecucion de test que "frontend-build" ya hacia tras fusionar develop;
+  // se retiro para conservar los siete checks ya confirmados activos en
+  // GitHub (docs/governance/github-branch-protection.md) sin duplicar CI.
+  assert.equal(workflow.jobs["frontend-tests"], undefined);
   assert.equal(workflow.jobs["python-tests"].name, "Python tests (${{ matrix.service.name }})");
   assert.deepEqual(
     workflow.jobs["python-tests"].strategy.matrix.service.map(({ name }) => name),
@@ -78,11 +80,25 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "assistant-corpus:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
+    "docker:validate",
     "collaboration:test",
     "openspec:validate",
   ]) {
     assert.match(commands, new RegExp(`pnpm ${check.replaceAll(":", "\\:")}`));
   }
+});
+
+test("requires real frontend tests and lint before the mandatory build", () => {
+  const steps = workflow.jobs["frontend-build"].steps;
+  const lint = steps.findIndex(({ run }) => run === "corepack pnpm lint --filter=@finops/frontend");
+  const tests = steps.findIndex(({ run }) => run === "corepack pnpm test --filter=@finops/frontend");
+  const build = steps.findIndex(({ run }) => run === "corepack pnpm --filter @finops/frontend build");
+  assert.ok(lint >= 0 && tests > lint && build > tests);
+  assert.equal(steps[lint]["continue-on-error"], undefined);
+  assert.equal(steps[tests]["continue-on-error"], undefined);
+  assert.equal(workflow.jobs["frontend-build"]["continue-on-error"], undefined);
+  const frontend = JSON.parse(fs.readFileSync(path.join(root, "apps/frontend/package.json"), "utf8"));
+  assert.equal(frontend.scripts.test, "vitest run");
 });
 
 test("requires pull requests while keeping administrator bypass PR-only", () => {
@@ -106,7 +122,7 @@ test("requires pull requests while keeping administrator bypass PR-only", () => 
   }
 });
 
-test("requires the same eight stable CI checks in both branch rulesets", () => {
+test("requires the same seven stable CI checks in both branch rulesets", () => {
   const expected = [
     "JUP policy",
     "OpenSpec",
@@ -116,8 +132,6 @@ test("requires the same eight stable CI checks in both branch rulesets", () => {
     "Frontend build",
     // JUP-093: agrupado junto al otro check del frontend (ADR-0003, decision 3).
     "Frontend type check",
-    // JUP-095: agrupado junto al otro check del frontend (tarea 2.5).
-    "Frontend tests",
   ];
 
   for (const ruleset of Object.values(rulesets)) {

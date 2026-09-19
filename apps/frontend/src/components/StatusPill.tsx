@@ -7,7 +7,7 @@
 // basta: la pantalla que lo consume (DashboardPage) no distingue estados de
 // error/alerta para este componente, solo nombres de servicio/plan/tenant.
 interface StatusPillProps {
-  status: string;
+  status?: string | null;
 }
 
 export function StatusPill({ status }: StatusPillProps) {

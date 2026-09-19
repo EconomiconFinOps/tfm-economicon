@@ -5,7 +5,9 @@ from pathlib import Path
 
 from sqlalchemy import create_engine, text
 
-from app.core.security import hash_password
+from app.core.config import get_settings
+from app.core.runtime_secrets import DemoRotationRequired
+from app.core.security import hash_password, verify_password
 from app.db.migration_runner import MigrationRunner
 
 
@@ -27,7 +29,6 @@ TENANT_SEED = [
 USER_SEED = {
     "id": "user-finops-admin",
     "email": "operator@example.com",
-    "password": "secret",
     "full_name": "FinOps Operator",
     "role": "admin",
 }
@@ -47,16 +48,30 @@ class Database:
         self._seed_defaults()
 
     def _seed_defaults(self) -> None:
+        settings = get_settings()
         now = datetime.now(timezone.utc)
-        password_hash = hash_password(USER_SEED["password"])
 
         with self.engine.begin() as connection:
+            existing = connection.execute(
+                text("SELECT id, email, password_hash FROM users WHERE id = :id OR email = :email"),
+                {"id": USER_SEED["id"], "email": USER_SEED["email"]},
+            ).mappings().all()
+            if settings.runtime_environment != "test" and any(
+                verify_password("secret", user["password_hash"]) for user in existing
+            ):
+                raise DemoRotationRequired()
+            if not settings.demo_seed_enabled:
+                return
+            # Never attach demo associations to a different existing identity.
+            if any(user["id"] != USER_SEED["id"] or user["email"] != USER_SEED["email"] for user in existing):
+                return
             for tenant in TENANT_SEED:
                 connection.execute(
                     text(
                         """
-                        UPSERT INTO tenants (id, name, slug, plan)
+                        INSERT INTO tenants (id, name, slug, plan)
                         VALUES (:id, :name, :slug, :plan)
+                        ON CONFLICT DO NOTHING
                         """
                     ),
                     tenant,
@@ -65,14 +80,15 @@ class Database:
             connection.execute(
                 text(
                     """
-                    UPSERT INTO users (id, email, password_hash, full_name, role, created_at)
+                    INSERT INTO users (id, email, password_hash, full_name, role, created_at)
                     VALUES (:id, :email, :password_hash, :full_name, :role, :created_at)
+                    ON CONFLICT DO NOTHING
                     """
                 ),
                 {
                     "id": USER_SEED["id"],
                     "email": USER_SEED["email"],
-                    "password_hash": password_hash,
+                    "password_hash": hash_password(settings.demo_password.get_secret_value()) if not existing else existing[0]["password_hash"],
                     "full_name": USER_SEED["full_name"],
                     "role": USER_SEED["role"],
                     "created_at": now,
@@ -83,8 +99,9 @@ class Database:
                 connection.execute(
                     text(
                         """
-                        UPSERT INTO user_tenants (user_id, tenant_id, role, created_at)
+                        INSERT INTO user_tenants (user_id, tenant_id, role, created_at)
                         VALUES (:user_id, :tenant_id, :role, :created_at)
+                        ON CONFLICT DO NOTHING
                         """
                     ),
                     {

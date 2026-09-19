@@ -2,6 +2,7 @@ import logging
 import sys
 
 import structlog
+from app.core.runtime_secrets import redact_event
 
 SERVICE_NAME = "backend"
 
@@ -17,6 +18,7 @@ def configure_logging() -> None:
         structlog.processors.TimeStamper(fmt="iso", key="timestamp"),
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
     ]
@@ -33,6 +35,7 @@ def configure_logging() -> None:
         processors=[
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
             _add_service_name,
+            redact_event,
             structlog.processors.JSONRenderer(),
         ],
         foreign_pre_chain=shared_processors,

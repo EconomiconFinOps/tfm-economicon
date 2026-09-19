@@ -1,5 +1,21 @@
 {
-  "as_of": "2026-08-26",
+  "as_of": "2026-08-28",
+  "p0_snapshot": {
+    "source": "https://trello.com/b/CawMVPoy/economicon",
+    "captured_at": "2026-08-28",
+    "count": 50,
+    "task_ids": [
+      "JUP-013", "JUP-014", "JUP-019", "JUP-020", "JUP-021", "JUP-022",
+      "JUP-023", "JUP-024", "JUP-025", "JUP-026", "JUP-035", "JUP-036",
+      "JUP-042", "JUP-043", "JUP-044", "JUP-047", "JUP-048", "JUP-049",
+      "JUP-050", "JUP-051", "JUP-052", "JUP-053", "JUP-054", "JUP-055",
+      "JUP-060", "JUP-061", "JUP-062", "JUP-063", "JUP-064", "JUP-065",
+      "JUP-066", "JUP-067", "JUP-068", "JUP-069", "JUP-070", "JUP-071",
+      "JUP-072", "JUP-073", "JUP-074", "JUP-075", "JUP-076", "JUP-077",
+      "JUP-078", "JUP-079", "JUP-080", "JUP-082", "JUP-083", "JUP-085",
+      "JUP-086", "JUP-087"
+    ]
+  },
   "calendar_status": "team-baseline-pending-institutional-confirmation",
   "internal_code_freeze": "2026-10-09",
   "internal_document_freeze": "2026-10-16",
@@ -20,7 +36,8 @@
       "task_ids": [
         "JUP-013", "JUP-014", "JUP-019", "JUP-048", "JUP-049", "JUP-050",
         "JUP-051", "JUP-054", "JUP-072", "JUP-073", "JUP-074", "JUP-075",
-        "JUP-076", "JUP-077", "JUP-078", "JUP-079", "JUP-082", "JUP-083"
+        "JUP-076", "JUP-077", "JUP-078", "JUP-079", "JUP-082", "JUP-083",
+        "JUP-085", "JUP-086", "JUP-087"
       ]
     },
     {

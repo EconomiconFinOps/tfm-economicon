@@ -16,30 +16,8 @@ import {
   listConversations,
   sendConversationMessage
 } from "../services/api";
+import type { ConversationCreateRequest, MessageCreateRequest } from "../services/contracts";
 import type { SessionOutletContext } from "../layouts/SessionGate";
-
-// Formas minimas de los datos que esta pantalla necesita de la frontera
-// JS->TS de `services/api.js` (no tipada, checkJs: false, JUP-096
-// pendiente). Tipamos explicitamente lo que consumimos, sin forzar casts.
-interface ConversationSummary {
-  id: string;
-  title: string;
-  updated_at: string;
-}
-
-interface ConversationsListResult {
-  items: ConversationSummary[];
-}
-
-interface ConversationMessage {
-  id: string;
-  role: string;
-  content: string;
-}
-
-interface ConversationDetailResult {
-  messages: ConversationMessage[];
-}
 
 export function ConversationsPage() {
   const { token, activeTenant } = useOutletContext<SessionOutletContext>();
@@ -50,20 +28,28 @@ export function ConversationsPage() {
 
   const conversationsQuery = useQuery({
     queryKey: ["conversations", activeTenant?.id],
-    queryFn: (): Promise<ConversationsListResult> =>
-      listConversations(token, activeTenant?.id),
+    queryFn: () => {
+      if (!activeTenant) {
+        throw new Error("Tenant required");
+      }
+      return listConversations(token, activeTenant.id);
+    },
     enabled: Boolean(token && activeTenant?.id)
   });
 
   const conversationDetailQuery = useQuery({
     queryKey: ["conversation", activeTenant?.id, selectedConversationId],
-    queryFn: (): Promise<ConversationDetailResult> =>
-      getConversation(token, activeTenant?.id, selectedConversationId),
+    queryFn: () => {
+      if (!activeTenant) {
+        throw new Error("Tenant required");
+      }
+      return getConversation(token, activeTenant.id, selectedConversationId);
+    },
     enabled: Boolean(token && activeTenant?.id && selectedConversationId)
   });
 
   useEffect(() => {
-    const items: ConversationSummary[] = conversationsQuery.data?.items ?? [];
+    const items = conversationsQuery.data?.items ?? [];
     if (!items.length) {
       setSelectedConversationId("");
       return;
@@ -76,9 +62,13 @@ export function ConversationsPage() {
   }, [conversationsQuery.data, selectedConversationId]);
 
   const createMutation = useMutation({
-    mutationFn: (payload: { title: string }) =>
-      createConversation(token, activeTenant?.id, payload),
-    onSuccess: (conversation: ConversationSummary) => {
+    mutationFn: (payload: ConversationCreateRequest) => {
+      if (!activeTenant) {
+        throw new Error("Tenant required");
+      }
+      return createConversation(token, activeTenant.id, payload);
+    },
+    onSuccess: (conversation) => {
       queryClient.invalidateQueries({ queryKey: ["conversations", activeTenant?.id] });
       setSelectedConversationId(conversation.id);
       setTitle("Ops review");
@@ -86,8 +76,12 @@ export function ConversationsPage() {
   });
 
   const sendMutation = useMutation({
-    mutationFn: (payload: { content: string }) =>
-      sendConversationMessage(token, activeTenant?.id, selectedConversationId, payload),
+    mutationFn: (payload: MessageCreateRequest) => {
+      if (!activeTenant) {
+        throw new Error("Tenant required");
+      }
+      return sendConversationMessage(token, activeTenant.id, selectedConversationId, payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["conversations", activeTenant?.id] });
       queryClient.invalidateQueries({
@@ -118,7 +112,7 @@ export function ConversationsPage() {
     );
   }
 
-  const messages: ConversationMessage[] = conversationDetailQuery.data?.messages ?? [];
+  const messages = conversationDetailQuery.data?.messages ?? [];
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -144,6 +138,11 @@ export function ConversationsPage() {
 
         {createMutation.error ? (
           <p className="mt-2 text-sm text-red-400">{createMutation.error.message}</p>
+        ) : null}
+        {conversationsQuery.error ? (
+          <p className="mt-2 text-sm text-red-400" role="alert">
+            {conversationsQuery.error.message}
+          </p>
         ) : null}
 
         <div className="mt-4 flex flex-col gap-2">
@@ -171,7 +170,11 @@ export function ConversationsPage() {
         title="Assistant chat"
         subtitle="Replies use retrieval over pgvector filtered by the active tenant."
       >
-        {conversationDetailQuery.isLoading ? (
+        {conversationDetailQuery.error ? (
+          <p className="text-sm text-red-400" role="alert">
+            {conversationDetailQuery.error.message}
+          </p>
+        ) : conversationDetailQuery.isLoading ? (
           <p className="text-sm text-slate-400">Loading conversation...</p>
         ) : selectedConversationId ? (
           <>
@@ -207,7 +210,7 @@ export function ConversationsPage() {
               </button>
             </form>
           </>
-        ) : (
+        ) : conversationsQuery.error ? null : (
           <p className="text-sm text-slate-400">Create a conversation to start the assistant flow.</p>
         )}
       </SectionCard>
