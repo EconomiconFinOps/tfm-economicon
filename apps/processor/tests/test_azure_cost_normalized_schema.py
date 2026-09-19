@@ -47,6 +47,8 @@ def normalized_record() -> NormalizedCostRecord:
         subscription_name="Ecommerce Prod",
         resource_group="rg-app",
         service_name="Storage",
+        resource_id="res-1",
+        resource_name="vm-01",
         project="Jupiter",
         consumed_quantity=Decimal("3.25"),
         consumed_unit="GB/Month",

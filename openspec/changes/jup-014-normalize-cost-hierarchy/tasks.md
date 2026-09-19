@@ -23,16 +23,18 @@
 
 ## 3. Normalizer
 
-- [ ] 3.1 JUP-014 promote `resource_id` and `resource_name` to typed fields
+- [x] 3.1 JUP-014 promote `resource_id` and `resource_name` to typed fields
   in `AzureCostNormalizer`, following the existing `_DIMENSION_ALIASES`
   pattern
-- [ ] 3.2 JUP-014 implement non-blocking detection of a `resource_id`
+- [x] 3.2 JUP-014 implement non-blocking detection of a `resource_id`
   reported under more than one `resource_group` within one `normalize()`
   call, case-insensitive, preserving original casing per row
-- [ ] 3.3 JUP-014 add unit tests: resource fields promoted/omitted correctly,
+- [x] 3.3 JUP-014 add unit tests: resource fields promoted/omitted correctly,
   consistent resource across rows produces no signal, inconsistent resource
   produces a signal without rejecting any row, case-only differences produce
-  no signal
+  no signal. RGR: 4 new tests RED before implementation, GREEN after.
+  268/268 processor tests green (one existing fixture updated to include
+  the two new required fields).
 
 ## 4. Persistence
 

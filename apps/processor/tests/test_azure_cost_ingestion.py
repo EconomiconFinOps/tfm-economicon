@@ -104,6 +104,89 @@ def test_normalizer_promotes_finops_dimensions_consumption_and_tags():
     assert record.dimensions == {"ResourceLocation": "westeurope"}
 
 
+def test_normalizer_promotes_resource_identity():
+    record = AzureCostNormalizer().normalize(
+        result(
+            {
+                "PreTaxCost": 1,
+                "Currency": "EUR",
+                "ResourceId": " /subscriptions/x/resourceGroups/rg/providers/vm-01 ",
+                "ResourceName": " vm-01 ",
+                "ResourceGroup": "rg",
+            }
+        )
+    )[0]
+
+    assert record.resource_id == "/subscriptions/x/resourceGroups/rg/providers/vm-01"
+    assert record.resource_name == "vm-01"
+    assert record.resource_group_conflicts is None
+
+
+def test_normalizer_allows_missing_resource_identity():
+    record = AzureCostNormalizer().normalize(
+        result({"PreTaxCost": 1, "Currency": "EUR", "ResourceGroup": "rg"})
+    )[0]
+
+    assert record.resource_id is None
+    assert record.resource_name is None
+    assert record.resource_group_conflicts is None
+
+
+def test_normalizer_flags_resource_under_multiple_groups_without_rejecting_rows():
+    normalized = AzureCostNormalizer().normalize(
+        result(
+            {
+                "PreTaxCost": 1,
+                "Currency": "EUR",
+                "ResourceId": "res-1",
+                "ResourceGroup": "rg-old",
+            },
+            {
+                "PreTaxCost": 2,
+                "Currency": "EUR",
+                "ResourceId": "res-1",
+                "ResourceGroup": "rg-new",
+            },
+            {
+                "PreTaxCost": 3,
+                "Currency": "EUR",
+                "ResourceId": "res-2",
+                "ResourceGroup": "rg-stable",
+            },
+        )
+    )
+
+    assert normalized[0].resource_group == "rg-old"
+    assert normalized[0].resource_group_conflicts == ("rg-new",)
+    assert normalized[1].resource_group == "rg-new"
+    assert normalized[1].resource_group_conflicts == ("rg-old",)
+    assert normalized[2].resource_group_conflicts is None
+
+
+def test_normalizer_ignores_case_only_resource_group_differences():
+    normalized = AzureCostNormalizer().normalize(
+        result(
+            {
+                "PreTaxCost": 1,
+                "Currency": "EUR",
+                "ResourceId": "res-1",
+                "ResourceGroup": "RG-Shared",
+            },
+            {
+                "PreTaxCost": 2,
+                "Currency": "EUR",
+                "ResourceId": "res-1",
+                "ResourceGroup": "rg-shared",
+            },
+        )
+    )
+
+    assert normalized[0].resource_group == "RG-Shared"
+    assert normalized[1].resource_group == "rg-shared"
+    assert normalized[0].resource_group_conflicts is None
+    assert normalized[1].resource_group_conflicts is None
+
+
 def test_normalizer_hash_is_deterministic():
     source = result(
         {

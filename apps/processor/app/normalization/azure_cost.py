@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import TypeAlias
@@ -21,6 +21,8 @@ _DIMENSION_ALIASES = {
     "subscription_name": ("SubscriptionName", "SubAccountName"),
     "resource_group": ("ResourceGroup", "ResourceGroupName", "x_ResourceGroupName"),
     "service_name": ("ServiceName", "MeterCategory", "ServiceCategory"),
+    "resource_id": ("ResourceId",),
+    "resource_name": ("ResourceName",),
 }
 _QUANTITY_ALIASES = ("ConsumedQuantity", "UsageQuantity", "Quantity")
 _UNIT_ALIASES = ("ConsumedUnit", "UnitOfMeasure", "Unit")
@@ -45,17 +47,21 @@ class NormalizedCostRecord:
     subscription_name: str | None
     resource_group: str | None
     service_name: str | None
+    resource_id: str | None
+    resource_name: str | None
     project: str | None
     consumed_quantity: Decimal | None
     consumed_unit: str | None
     tags: dict[str, str]
     dimensions: dict[str, DimensionValue]
     source_row_hash: str
+    resource_group_conflicts: tuple[str, ...] | None = None
 
 
 class AzureCostNormalizer:
     def normalize(self, result: AzureCostQueryResult) -> tuple[NormalizedCostRecord, ...]:
-        return tuple(self._normalize_row(row) for row in result.rows)
+        records = tuple(self._normalize_row(row) for row in result.rows)
+        return _flag_resource_group_conflicts(records)
 
     @staticmethod
     def _normalize_row(row: dict[str, DimensionValue]) -> NormalizedCostRecord:
@@ -92,6 +98,8 @@ class AzureCostNormalizer:
             "pretaxCost": _canonical_decimal(cost),
             "project": project,
             "resourceGroup": promoted["resource_group"],
+            "resourceId": promoted["resource_id"],
+            "resourceName": promoted["resource_name"],
             "serviceName": promoted["service_name"],
             "subscriptionName": promoted["subscription_name"],
             "tags": tags,
@@ -108,6 +116,8 @@ class AzureCostNormalizer:
             subscription_name=promoted["subscription_name"],
             resource_group=promoted["resource_group"],
             service_name=promoted["service_name"],
+            resource_id=promoted["resource_id"],
+            resource_name=promoted["resource_name"],
             project=project,
             consumed_quantity=consumed_quantity,
             consumed_unit=consumed_unit,
@@ -115,6 +125,28 @@ class AzureCostNormalizer:
             dimensions=dimensions,
             source_row_hash=source_row_hash,
         )
+
+
+def _flag_resource_group_conflicts(
+    records: tuple[NormalizedCostRecord, ...],
+) -> tuple[NormalizedCostRecord, ...]:
+    groups_by_resource: dict[str, dict[str, str]] = {}
+    for record in records:
+        if record.resource_id is None or record.resource_group is None:
+            continue
+        seen = groups_by_resource.setdefault(record.resource_id, {})
+        seen.setdefault(record.resource_group.casefold(), record.resource_group)
+
+    flagged: list[NormalizedCostRecord] = []
+    for record in records:
+        seen = groups_by_resource.get(record.resource_id) if record.resource_id else None
+        if seen is None or len(seen) < 2:
+            flagged.append(record)
+            continue
+        own_key = record.resource_group.casefold()
+        others = tuple(sorted(value for key, value in seen.items() if key != own_key))
+        flagged.append(replace(record, resource_group_conflicts=others))
+    return tuple(flagged)
 
 
 def _take(row: dict[str, DimensionValue], aliases: tuple[str, ...]) -> object:
