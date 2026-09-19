@@ -8,6 +8,4 @@ def test_default_definition_requests_resource_level_grouping():
         if item["type"] == "Dimension"
     }
 
-    assert "ResourceId" in grouping_names
-    assert "ResourceGroup" in grouping_names
-    assert "ServiceName" in grouping_names
+    assert grouping_names == {"ResourceId", "ResourceGroup"}

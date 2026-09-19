@@ -142,7 +142,7 @@ def _scope_totals(database):
 def _assert_schema(database):
     assert _rows(
         database, "SELECT version FROM processor_schema_migrations ORDER BY version"
-    ) == [{"version": version} for version in ("001", "002", "003")]
+    ) == [{"version": version} for version in ("001", "002", "003", "004")]
     with database.engine.connect() as connection:
         assert connection.execute(text("SELECT count(*) FROM jobs")).scalar_one() == 0
     indexes = _rows(database, "SHOW INDEXES FROM azure_cost_records")
@@ -150,6 +150,7 @@ def _assert_schema(database):
         "idx_azure_cost_records_scope_date": ["tenant_id", "subscription_id", "usage_date"],
         "idx_azure_cost_records_resource_group": ["tenant_id", "resource_group"],
         "idx_azure_cost_records_service": ["tenant_id", "service_name"],
+        "idx_azure_cost_records_resource_id": ["tenant_id", "resource_id"],
     }.items():
         keys = sorted(
             (row for row in indexes if row["index_name"] == name and not row["implicit"]),

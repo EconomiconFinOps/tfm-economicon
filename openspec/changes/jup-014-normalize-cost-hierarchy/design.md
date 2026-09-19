@@ -136,6 +136,23 @@ followed by a same-file data-modifying statement, and fails unless
   genuine data-quality issue (e.g. a resource_group name colliding across
   subscriptions due to bad source data) would not be caught until a later
   card picks up the new finding.
+- [Risk, discovered during validation] The simulated Azure Cost API caps
+  `grouping` at 2 dimensions (`apps/azure-cost-api/app/models.py`,
+  `Field(max_length=2)`, a real Azure Cost Management limit the simulator
+  replicates). The proposal originally assumed `ResourceId` could be added
+  as a third grouping alongside the existing `ResourceGroup` +
+  `ServiceName`; a live end-to-end run against the API returned 400
+  (`List should have at most 2 items after validation, not 3`). Resolved by
+  dropping `ServiceName` from `DEFAULT_DEFINITION`, keeping `ResourceId` +
+  `ResourceGroup` — the pair this change actually needs for hierarchy
+  detection. `service_name` stops populating in the default ingestion,
+  joining `subscription_name`/`billing_account_id` in the same
+  already-existing situation (promoted by the normalizer, but not
+  requested by the default query) rather than a new regression; nothing
+  in the codebase reads it today (`GET /billing/summary` still returns
+  mock figures per RF-091-004). `ServiceName` was itself only added in
+  JUP-013, exactly filling the 2-dimension cap that already existed since
+  JUP-074 — not a deliberate priority decision that this change overrides.
 
 ## Migration Plan
 

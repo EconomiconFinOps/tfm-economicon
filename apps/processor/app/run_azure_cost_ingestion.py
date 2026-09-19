@@ -32,7 +32,6 @@ DEFAULT_DEFINITION = {
         "grouping": [
             {"type": "Dimension", "name": "ResourceId"},
             {"type": "Dimension", "name": "ResourceGroup"},
-            {"type": "Dimension", "name": "ServiceName"},
         ],
     },
 }

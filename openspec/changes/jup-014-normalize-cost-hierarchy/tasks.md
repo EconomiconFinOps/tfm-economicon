@@ -20,6 +20,9 @@
   `apps/processor/app/run_azure_cost_ingestion.py` to request the resource
   level. RGR: new test asserted `ResourceId` present, failed, then passed
   after adding it. 264/264 processor tests green, no regressions.
+  **Corrected during task 6.3**: the API caps grouping at 2 dimensions;
+  dropped `ServiceName` to keep `ResourceId` + `ResourceGroup`. See
+  design.md risks.
 
 ## 3. Normalizer
 
