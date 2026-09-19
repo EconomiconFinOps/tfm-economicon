@@ -14,6 +14,9 @@
     }
   },
   "dimensions": {
+    "ResourceId": {"sourceColumn": "ResourceId", "responseType": "String"},
+    "ResourceName": {"sourceColumn": "ResourceName", "responseType": "String"},
+    "BillingAccountId": {"sourceColumn": "BillingAccountId", "responseType": "String"},
     "ResourceGroup": {"sourceColumn": "ResourceGroup", "responseType": "String"},
     "ResourceLocation": {"sourceColumn": "ResourceLocation", "responseType": "String"},
     "SubscriptionId": {"sourceColumn": "SubscriptionId", "responseType": "String"},

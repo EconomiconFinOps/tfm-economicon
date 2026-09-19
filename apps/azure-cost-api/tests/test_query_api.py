@@ -60,6 +60,17 @@ def test_daily_cost_grouped_by_resource_group(client):
     assert properties["nextLink"] is None
 
 
+def test_daily_cost_grouped_by_resource_id(client):
+    case = CASES_BY_ID["daily-cost-by-resource-id"]
+    response = post_query(client, case["request"])
+
+    assert response.status_code == 200
+    properties = response.json()["properties"]
+    assert [column["name"] for column in properties["columns"]] == case["expectedColumns"]
+    assert properties["rows"]
+    assert all(len(row) == len(properties["columns"]) for row in properties["rows"])
+
+
 def test_dimension_filter_uses_service_mapping(client):
     case = CASES_BY_ID["storage-only"]
     response = post_query(client, case["request"])

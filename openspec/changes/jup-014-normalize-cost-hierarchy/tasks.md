@@ -11,10 +11,11 @@
 
 ## 2. Simulated API and ingestion client
 
-- [ ] 2.1 JUP-014 add `ResourceId`, `ResourceName` and `BillingAccountId` as
+- [x] 2.1 JUP-014 add `ResourceId`, `ResourceName` and `BillingAccountId` as
   queryable dimensions in `docs/api/azure-cost-query-mapping.json`
-- [ ] 2.2 JUP-014 verify existing `azure-cost-api` tests still pass and add
-  coverage for querying/filtering by the new dimensions
+- [x] 2.2 JUP-014 verify existing `azure-cost-api` tests still pass and add
+  coverage for querying/filtering by the new dimensions. 59/59 passed
+  (RGR: RED confirmed at 400 before the mapping change, GREEN after).
 - [ ] 2.3 JUP-014 extend `DEFAULT_DEFINITION.dataset.grouping` in
   `apps/processor/app/run_azure_cost_ingestion.py` to request the resource
   level

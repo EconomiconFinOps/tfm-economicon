@@ -20,6 +20,25 @@
       "expectedColumns": ["PreTaxCost", "ResourceGroup", "UsageDate", "Currency"]
     },
     {
+      "id": "daily-cost-by-resource-id",
+      "purpose": "aggregation-and-grouping",
+      "request": {
+        "type": "ActualCost",
+        "timeframe": "Custom",
+        "timePeriod": {"from": "2024-06-01T00:00:00Z", "to": "2024-06-20T00:00:00Z"},
+        "dataset": {
+          "granularity": "Daily",
+          "aggregation": {"totalCost": {"name": "PreTaxCost", "function": "Sum"}},
+          "grouping": [
+            {"type": "Dimension", "name": "ResourceId"},
+            {"type": "Dimension", "name": "ResourceGroup"}
+          ]
+        }
+      },
+      "expectedStatus": 200,
+      "expectedColumns": ["PreTaxCost", "ResourceId", "ResourceGroup", "UsageDate", "Currency"]
+    },
+    {
       "id": "storage-only",
       "purpose": "dimension-filter",
       "request": {
