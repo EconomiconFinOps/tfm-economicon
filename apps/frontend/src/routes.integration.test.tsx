@@ -43,11 +43,13 @@ function stubSession() {
   // Sesion valida persistida como la deja `LoginPage`/`App.jsx` hoy:
   // `{ accessToken, user }` bajo la clave "finops.session" (misma forma que
   // SessionGate.test.tsx/LoginPage.test.tsx).
+  // Reconciliacion con develop (Punto 2): `isSession` exige la forma
+  // completa de `UserProfile` (id/email/full_name/role).
   window.localStorage.setItem(
     "finops.session",
     JSON.stringify({
       accessToken: "tok-1",
-      user: { full_name: "Ada Lovelace", email: "ada@example.com" }
+      user: { id: "u1", full_name: "Ada Lovelace", email: "ada@example.com", role: "operator" }
     })
   );
 }

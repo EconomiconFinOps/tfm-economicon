@@ -76,11 +76,14 @@ describe("SessionGate con sesion", () => {
   it("arranca el bootstrap de tenants y expone el tenant activo via Outlet context", async () => {
     // Sesion valida persistida como la deja `LoginPage`/`App.jsx` hoy:
     // `{ accessToken, user }` bajo la clave "finops.session".
+    // Reconciliacion con develop (Punto 2): `isSession` exige la forma
+    // completa de `UserProfile` (id/email/full_name/role); un `user` parcial
+    // ya no se acepta como sesion valida.
     window.localStorage.setItem(
       "finops.session",
       JSON.stringify({
         accessToken: "tok-123",
-        user: { full_name: "Ada Lovelace", email: "ada@example.com" }
+        user: { id: "u1", full_name: "Ada Lovelace", email: "ada@example.com", role: "operator" }
       })
     );
 

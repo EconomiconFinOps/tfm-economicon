@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Navigate, Outlet } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTenants } from "../services/api";
-import type { TenantRecord } from "../services/contracts";
+import type { TenantRecord, UserProfile } from "../services/contracts";
 
 // Exportada porque `LoginPage.tsx` necesita la misma clave para persistir la
 // sesion tras el login (App.jsx.handleLogin:74-81 trasladado alli): centraliza
@@ -19,22 +19,34 @@ import type { TenantRecord } from "../services/contracts";
 export const SESSION_KEY = "finops.session";
 const TENANT_KEY = "finops.activeTenant";
 
-// Forma minima de los datos que SessionGate controla directamente: la sesion
-// persistida en localStorage. Se mantiene deliberadamente laxa (todos los
-// campos opcionales) porque procede de una lectura sin validar de
-// localStorage -- ver `loadStoredJson` mas abajo; la validacion real de esta
-// forma (equivalente a `isSession` de develop) es trabajo pendiente de la
-// reconciliacion con JUP-087 (Punto 2), no de este fichero.
-interface SessionUser {
-  full_name?: string;
-  email?: string;
-  id?: string;
-  [key: string]: unknown;
-}
-
+// Reconciliacion con develop (JUP-087, Punto 2): forma real de la sesion,
+// usando `UserProfile` del contrato compartido con el backend en vez de una
+// forma local laxa. `user` ya no es opcional: `isSession` (mas abajo)
+// garantiza que, si `session` no es null, trae un `user` completo.
 interface Session {
   accessToken: string;
-  user?: SessionUser;
+  user: UserProfile;
+}
+
+// Antes de esta reconciliacion, `JSON.parse(value) as T` no comprobaba el
+// contenido: un `{}` guardado en localStorage se aceptaba como sesion sin
+// redirigir a /login (aunque tampoco habilitaba la consulta de tenants,
+// `enabled: Boolean(session?.accessToken)`). `isSession` verifica que
+// `accessToken` sea texto y que `user` tenga la forma real de `UserProfile`
+// (id/email/full_name/role, todos texto) antes de confiar en el valor
+// parseado -- mismo criterio que develop.
+function isSession(value: unknown): value is Session {
+  if (typeof value !== "object" || value === null
+    || !("accessToken" in value) || typeof value.accessToken !== "string"
+    || !("user" in value) || typeof value.user !== "object" || value.user === null) {
+    return false;
+  }
+
+  const user = value.user;
+  return "id" in user && typeof user.id === "string"
+    && "email" in user && typeof user.email === "string"
+    && "full_name" in user && typeof user.full_name === "string"
+    && "role" in user && typeof user.role === "string";
 }
 
 // Reconciliacion con develop (JUP-087): `services/api` ya no es `api.js` sin
@@ -44,7 +56,7 @@ interface Session {
 // local laxa que divergiria en silencio del contrato.
 export interface SessionOutletContext {
   token: string;
-  user?: SessionUser;
+  user?: UserProfile;
   tenants: TenantRecord[];
   activeTenant: TenantRecord | null;
   activeTenantId: string;
@@ -52,17 +64,23 @@ export interface SessionOutletContext {
   onLogout: () => void;
 }
 
-// Copiada tal cual de App.jsx:21-33 (mismo patron de lectura perezosa de
-// localStorage con manejo de error de parseo) -- no se reinventa el
-// mecanismo, se traslada de sitio.
-function loadStoredJson<T>(key: string): T | null {
+// Reconciliacion con develop (JUP-087, Punto 2): sustituye a la lectura sin
+// validar (`JSON.parse(value) as T`) -- ademas del JSON roto (`catch`), un
+// JSON valido con estructura invalida (p.ej. `{}`) tambien se descarta y
+// limpia la clave, en vez de colarse como una sesion a medias.
+function loadStoredSession(key: string): Session | null {
   const value = window.localStorage.getItem(key);
   if (!value) {
     return null;
   }
 
   try {
-    return JSON.parse(value) as T;
+    const parsed: unknown = JSON.parse(value);
+    if (isSession(parsed)) {
+      return parsed;
+    }
+    window.localStorage.removeItem(key);
+    return null;
   } catch {
     window.localStorage.removeItem(key);
     return null;
@@ -71,7 +89,7 @@ function loadStoredJson<T>(key: string): T | null {
 
 export function SessionGate() {
   const queryClient = useQueryClient();
-  const [session, setSession] = useState<Session | null>(() => loadStoredJson<Session>(SESSION_KEY));
+  const [session, setSession] = useState<Session | null>(() => loadStoredSession(SESSION_KEY));
   const [activeTenantId, setActiveTenantId] = useState<string>(
     () => window.localStorage.getItem(TENANT_KEY) || ""
   );
