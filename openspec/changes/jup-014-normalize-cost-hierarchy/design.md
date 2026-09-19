@@ -159,7 +159,16 @@ or renames existing columns.
 
 ## Open Questions
 
-- Exact persistence shape for the non-blocking anomaly signal (dedicated
-  column vs. JSONB detail vs. a metric/counter) — to decide in `tasks.md`
-  during implementation, informed by how JUP-047's health dashboard might
-  want to consume it later.
+None. Resolved during implementation (task 1.1):
+
+**Anomaly-signal persistence shape:** a nullable JSONB column
+`resource_group_conflicts` on `azure_cost_records`. When a row's
+`resource_id` was seen under more than one `resource_group` within the same
+normalization batch, this column stores the other `resource_group` value(s)
+observed for that resource; `NULL` when there is no conflict. Rejected a
+boolean flag (loses which groups conflicted, forcing a re-scan of raw
+dimensions to investigate) and a metric/counter alone (good for alerting
+aggregate counts, not for drilling into which specific resource/row is
+affected). The JSONB column supports both: `WHERE resource_group_conflicts
+IS NOT NULL` gives a countable signal a future JUP-047 dashboard could use,
+while the row still carries full investigation detail.

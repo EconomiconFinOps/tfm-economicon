@@ -1,11 +1,13 @@
 ## 1. Contract and reconciliation
 
-- [ ] 1.1 JUP-014 confirm which anomaly-signal persistence shape to use
+- [x] 1.1 JUP-014 confirm which anomaly-signal persistence shape to use
   (dedicated column vs. JSONB detail vs. counter/metric), informed by how
-  JUP-047's future health dashboard might consume it
-- [ ] 1.2 JUP-014 audit `docs/api/azure-cost-query-mapping.json` and
+  JUP-047's future health dashboard might consume it. Decided: nullable
+  JSONB column `resource_group_conflicts`, see design.md.
+- [x] 1.2 JUP-014 audit `docs/api/azure-cost-query-mapping.json` and
   `apps/azure-cost-api/app/repository.py` to confirm adding `ResourceId`,
-  `ResourceName` and `BillingAccountId` needs no Python changes
+  `ResourceName` and `BillingAccountId` needs no Python changes. Confirmed:
+  no dimension name is hardcoded anywhere in `apps/azure-cost-api/app/*.py`.
 
 ## 2. Simulated API and ingestion client
 
