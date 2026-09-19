@@ -16,9 +16,10 @@
 - [x] 2.2 JUP-014 verify existing `azure-cost-api` tests still pass and add
   coverage for querying/filtering by the new dimensions. 59/59 passed
   (RGR: RED confirmed at 400 before the mapping change, GREEN after).
-- [ ] 2.3 JUP-014 extend `DEFAULT_DEFINITION.dataset.grouping` in
+- [x] 2.3 JUP-014 extend `DEFAULT_DEFINITION.dataset.grouping` in
   `apps/processor/app/run_azure_cost_ingestion.py` to request the resource
-  level
+  level. RGR: new test asserted `ResourceId` present, failed, then passed
+  after adding it. 264/264 processor tests green, no regressions.
 
 ## 3. Normalizer
 
