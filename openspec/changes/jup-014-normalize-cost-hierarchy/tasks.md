@@ -67,4 +67,3 @@
 - [ ] 6.4 JUP-014 register the cross-run hierarchy validation finding in
   `openspec/findings/backlog.md` as explicitly out of scope
 - [ ] 6.5 JUP-014 publish a pull request toward `develop` and pass remote CI
-- [ ] 6.6 JUP-014 obtain pairing, review and functional validation evidence
