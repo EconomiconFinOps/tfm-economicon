@@ -4,18 +4,18 @@
 
 ## 1. Auditoría de contratos
 
-- [ ] 1.1 Levantar el backend (`docker compose up -d backend`) y confirmar `GET /health` desde fuera
+- [x] 1.1 Levantar el backend (`docker compose up -d backend`) y confirmar `GET /health` desde fuera
       del navegador, dejando constancia del comando exacto.
-- [ ] 1.2 Extraer de `apps/backend/app/api/routes/` y `apps/backend/app/schemas/` la referencia real
-      de los 9 contratos: dirección, método, cuerpo esperado y `response_model`.
-- [ ] 1.3 Comparar cada una de las 9 operaciones de `services/api.ts` con esa referencia y anotar
+- [x] 1.2 Extraer de `apps/backend/app/api/routes/` y `apps/backend/app/schemas/` la referencia real
+      de los 10 contratos: dirección, método, cuerpo esperado y `response_model`.
+- [x] 1.3 Comparar cada una de las 10 operaciones de `services/api.ts` con esa referencia y anotar
       dirección, método y cuerpo. Registrar el resultado operación por operación.
-- [ ] 1.4 Obtener una respuesta real de cada contrato contra el backend en ejecución (seed
+- [x] 1.4 Obtener una respuesta real de cada contrato contra el backend en ejecución (seed
       `operator@example.com` / `secret`) y contrastar su forma con `services/contracts.ts`, campo a
       campo. Es el paso que detecta la deriva que la lectura de código no ve (decisión 1).
-- [ ] 1.5 Consolidar la auditoría en `review.md`: tabla operación → contrato → veredicto. Dejarla
+- [x] 1.5 Consolidar la auditoría en `review.md`: tabla operación → contrato → veredicto. Dejarla
       escrita aunque el resultado sea cero desviaciones.
-- [ ] 1.6 Contrastar `apps/frontend/README.md` con el resultado y anotar qué haya que corregir allí
+- [x] 1.6 Contrastar `apps/frontend/README.md` con el resultado y anotar qué haya que corregir allí
       (el backend manda sobre el README, decisión 1).
 
 ## 2. Corrección de las desviaciones encontradas

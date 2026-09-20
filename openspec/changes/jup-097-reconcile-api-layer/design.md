@@ -2,7 +2,7 @@
 
 Ver [proposal.md](./proposal.md) — Why. Lo que aquí importa del estado actual:
 
-- `services/api.ts` expone 9 operaciones sobre un único helper `fetchJson`, que ya centraliza base
+- `services/api.ts` expone 10 operaciones sobre un único helper `fetchJson`, que ya centraliza base
   (`VITE_API_BASE_URL`), `Authorization: Bearer` y `X-Tenant-Id`. La forma es correcta; lo que nunca
   se ha hecho es **verificar que cada operación corresponde al contrato que dice consumir**.
 - `POST /auth/login` devuelve `access_token` **y el `UserProfile` completo**. `GET /me` devuelve
@@ -43,7 +43,7 @@ Restricciones que condicionan el enfoque:
 
 ### 1. La auditoría se verifica contra el backend levantado, no contra la documentación
 
-Se comparan las 9 operaciones contra `apps/backend/app/api/routes/` **y** contra respuestas reales
+Se comparan las 10 operaciones contra `apps/backend/app/api/routes/` **y** contra respuestas reales
 del backend en ejecución (`docker compose up backend`), no contra `apps/frontend/README.md`. El
 README es documentación derivada y puede ser justamente lo que esté desviado; tomarlo como referencia
 haría que una desviación documentada se validara a sí misma. Si README y backend discrepan, manda el

@@ -21,9 +21,9 @@ rehacer ese trabajo.
 
 ## What Changes
 
-- **La capa HTTP queda auditada contra los contratos reales.** Cada una de las 9 funciones exportadas
-  de `services/api.ts` se verifica en ruta, método, cuerpo y forma de respuesta contra el backend
-  levantado. Las desviaciones se corrigen; la ausencia de desviaciones se registra igualmente.
+- **La capa HTTP queda auditada contra los contratos reales.** Cada una de las 10 funciones
+  exportadas de `services/api.ts` se verifica en ruta, método, cuerpo y forma de respuesta contra el
+  backend levantado. Las desviaciones se corrigen; la ausencia de desviaciones se registra igualmente.
 - **`services/api.ts` queda declarado como único punto de acceso HTTP.** Ninguna llamada de red fuera
   de ese módulo, con `VITE_API_BASE_URL` como base y `Authorization: Bearer` + `X-Tenant-Id` como
   único mecanismo de identidad y ámbito.
@@ -41,7 +41,7 @@ rehacer ese trabajo.
 - **No se toca el backend.** `RF-091-003` (7 capacidades ausentes) y `RF-091-004` (`/billing/summary`
   con `monthly_spend` y `savings_identified` codificados a mano) quedan `Open` sin cambio.
 - **No se conecta ninguna pantalla nueva a datos reales.** Consecuencia directa de lo anterior: el
-  backend expone hoy exactamente los 9 endpoints que el frontend ya consume, verificado sobre
+  backend expone hoy exactamente los 10 endpoints que el frontend ya consume, verificado sobre
   `apps/backend/app/api/routes/`. Sin contrato nuevo no hay nada que conectar. Los módulos de
   `src/data/demo/` se conservan intactos.
 - **No se retira `/overview-legacy`.** Sigue siendo el único dashboard con datos reales y no existe
@@ -147,7 +147,7 @@ datos de demostración se declaren aparte; esta tarjeta cumple esos requisitos s
 - Notes: **segunda tarjeta de F3** y primera que toca la capa de datos. Alcance recortado por dos
   decisiones tomadas antes de proponer: **no se toca backend** y **no se retira `/overview-legacy`**
   hasta que exista un Overview real que la sustituya. Efecto asumido y explícito: esta tarjeta **no
-  conecta ninguna pantalla nueva a datos reales**, porque el backend expone hoy exactamente los 9
+  conecta ninguna pantalla nueva a datos reales**, porque el backend expone hoy exactamente los 10
   endpoints que el frontend ya consume (verificado sobre `apps/backend/app/api/routes/`); su
   entregable es la capa auditada, `RF-090-003` resuelto y el mapa de carencias que alimenta la
   decisión de épica sobre `RF-091-003`. **Corrección de registro:** la primera tarea que el spike
