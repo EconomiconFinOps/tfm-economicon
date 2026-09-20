@@ -89,9 +89,17 @@
   real bug: `fetch_records` returned `resource_group_conflicts` as a list
   (JSON round-trip), not the tuple the normalizer produces — fixed by
   converting on read. 34/34 integration tests green after the fix.
-- [ ] 6.3 JUP-014 verify real ingestion end-to-end with the expanded
-  grouping and record the resulting row-volume increase in evidence
+- [x] 6.3 JUP-014 verify real ingestion end-to-end with the expanded
+  grouping and record the resulting row-volume increase in evidence.
+  Ran the real ingestion CLI against the simulated API + a disposable
+  CockroachDB: 38 rows persisted (up from 34 with the old
+  `ResourceGroup`+`ServiceName` grouping), covering 31 distinct resources
+  across 9 resource groups. 38/38 rows have `resource_id`/`resource_group`
+  populated; 0 conflicts detected (expected on this static single-period
+  sample). Along the way, found and fixed the real 2-dimension grouping
+  cap (see 2.3) and the resource_group_conflicts round-trip bug (see 6.2).
 - [x] 6.4 JUP-014 register the cross-run hierarchy validation finding in
   `openspec/findings/backlog.md` as explicitly out of scope. Registered as
   RF-014-001.
-- [ ] 6.5 JUP-014 publish a pull request toward `develop` and pass remote CI
+- [x] 6.5 JUP-014 publish a pull request toward `develop` and pass remote
+  CI. PR #41, 7/7 required checks green.
