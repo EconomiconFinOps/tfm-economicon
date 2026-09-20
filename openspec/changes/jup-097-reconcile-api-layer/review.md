@@ -216,3 +216,56 @@ Archivos de este grupo: `SessionGate.tsx` (producto), `SessionGate.profile.test.
 (`RF-090-003` → `Fixed`).
 
 Commit pendiente de este grupo tras revisión del usuario.
+
+## Grupo 4 — Capa de acceso única
+
+**Doc-only: sin código de producto ni tests nuevos**, excepción documentada aquí. Las 4 tareas se
+resuelven con verificación (grep exhaustivo + lectura de cobertura existente), sin encontrar nada
+que corregir.
+
+### 4.1 — Enumeración de puntos de red
+
+```
+grep -rn "fetch(\|axios\|XMLHttpRequest\|EventSource\|WebSocket" apps/frontend/src --include=*.ts --include=*.tsx
+```
+
+Único resultado en código de producto: `apps/frontend/src/services/api.ts:37` (el `fetch` dentro de
+`fetchJson`). Las otras 3 coincidencias son comentarios explicativos en archivos `.test.tsx`
+(`SessionGate.test.tsx`, `DashboardPage.test.tsx`, `IngestPage.test.tsx`), no llamadas reales.
+**Cero accesos de red fuera de la capa declarada.**
+
+### 4.2 — Consecuencia de 4.1
+
+No aplica: 4.1 no encontró ningún acceso fuera de `services/api.ts` que mover.
+
+### 4.3 — Direcciones de backend fijadas en pantallas
+
+```
+grep -rn "VITE_API_BASE_URL" apps/frontend/src --include=*.ts --include=*.tsx
+grep -rn "localhost\|http://\|https://" apps/frontend/src --include=*.ts --include=*.tsx | grep -v "services/api.ts"
+```
+
+`VITE_API_BASE_URL` solo se lee en `api.ts:18` (con *fallback* `http://localhost:8000`) y se declara
+su tipo en `vite-env.d.ts`. El segundo grep, excluyendo `api.ts`, no devuelve nada: **ninguna
+pantalla fija una dirección de backend**, todas dependen de la capa centralizada.
+
+### 4.4 — Cobertura de credencial + ámbito de cliente en peticiones autenticadas
+
+De las 10 operaciones (grupo 1), 6 exigen `X-Tenant-Id` además de `Authorization: Bearer`:
+`/billing/summary`, `/jobs/ingest` y las 4 de `/assistant/conversations*`. Verificado que **ya
+tenían cobertura real** (heredada, no de esta tarjeta) antes de escribir nada nuevo:
+
+- `tests/conversations.test.tsx`: `for (const request of requests.filter(p => p.path.startsWith(collectionPath))) { expectTenantRequest(request); }` — cubre las 4 operaciones de asistente en una sola pasada (`expectTenantRequest` verifica `Authorization: Bearer <token>` + `X-Tenant-Id` + `Content-Type`).
+- `tests/session-and-dashboard.test.tsx`: `expectTenantRequest(billingRequests[0/1], ...)` sobre `/billing/summary`.
+- `tests/ingestion.test.tsx`: `expectTenantRequest(submitted!, tenants[1].id)` sobre `/jobs/ingest`.
+- **Sin ámbito seleccionado no se emite petición tenant-scoped**: `tests/session-and-dashboard.test.tsx`, caso "handles an empty tenant list without issuing tenant-scoped product requests" — sin tenant activo, clic en Ingestions/Assistant muestra "Tenant required" y la aserción final confirma que ninguna petición fuera de `/tenants`, `/health`, `/me` se emitió (ampliada en el grupo 3 para incluir `/me`). A nivel de código, la guarda vive en `useDashboardData.ts` (`enabled: Boolean(token && tenantId)`) y equivalentes en `IngestPage.tsx`/`ConversationsPage.tsx`.
+
+**No se escribe test nuevo**: añadir uno duplicaría cobertura ya real y verificada, sin ganar nada —
+la spec `frontend-api-layer` (escenarios "Una petición autenticada lleva credencial y ámbito" / "Sin
+ámbito seleccionado no se consulta un contrato que lo exige") ya está satisfecha por la suite
+existente, confirmado por lectura línea a línea, no por suposición.
+
+Ningún archivo tocado en este grupo. Sin cambios que verificar con test/lint/typecheck/build más
+allá de lo ya confirmado al cerrar el grupo 3.
+
+Commit pendiente de este grupo tras revisión del usuario.

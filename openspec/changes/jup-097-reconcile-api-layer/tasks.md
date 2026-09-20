@@ -49,13 +49,13 @@
 
 ## 4. Capa de acceso única
 
-- [ ] 4.1 Enumerar todo punto del frontend que emita peticiones de red y confirmar que todos
+- [x] 4.1 Enumerar todo punto del frontend que emita peticiones de red y confirmar que todos
       pertenecen a `services/api.ts`. Registrar el comando y su salida.
-- [ ] 4.2 **Red/Green:** si 4.1 encuentra algún acceso fuera de la capa, cubrirlo con prueba y
+- [x] 4.2 **Red/Green:** si 4.1 encuentra algún acceso fuera de la capa, cubrirlo con prueba y
       moverlo dentro de `services/api.ts`.
-- [ ] 4.3 Confirmar que ninguna dirección de backend queda fijada en el código de las pantallas y que
+- [x] 4.3 Confirmar que ninguna dirección de backend queda fijada en el código de las pantallas y que
       la base sigue tomándose de `VITE_API_BASE_URL`.
-- [ ] 4.4 **Red/Green:** prueba de que una petición a un contrato autenticado transporta credencial y
+- [x] 4.4 **Red/Green:** prueba de que una petición a un contrato autenticado transporta credencial y
       ámbito de cliente, y de que sin ámbito seleccionado no se emite petición a un contrato que lo
       exija.
 
