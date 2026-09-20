@@ -142,3 +142,77 @@ verificación contra el backend real. En consecuencia:
   sin explicación.
 
 Commit pendiente de este grupo tras revisión del usuario.
+
+## Grupo 3 — `RF-090-003`: conectar `fetchProfile`
+
+Ciclo Red/Green/mutación/DoD/QA completo (primera tarea con código de producto real de esta
+tarjeta). Ver decisión 2 de `design.md` para la justificación completa.
+
+**Red** (tester): `apps/frontend/src/layouts/SessionGate.profile.test.tsx`, 2 tests —
+"expone la identidad devuelta por el servidor, no la guardada en localStorage" (tarea 3.1) y
+"limpia la sesion y redirige al acceso cuando /me rechaza el token" (tarea 3.2). Confirmado Red por
+el motivo correcto: `SessionGate` no invocaba `fetchProfile`, así que ambos tests fallaban por
+aserción/timeout, no por error de módulo. Los 4 tests ya existentes de `SessionGate.test.tsx` y
+`SessionGate.validation.test.tsx` seguían intactos.
+
+**Green** (coder): `apps/frontend/src/layouts/SessionGate.tsx` — añadido `profileQuery` (mismo
+`enabled: Boolean(session?.accessToken)` que `tenantsQuery`, para que ambas se emitan en paralelo al
+arrancar, tarea 3.4) y un `useEffect` que llama a `handleLogout()` (envuelto en `useCallback` sin
+cambio de comportamiento, ver comentario en el propio archivo sobre un bug de
+`eslint-plugin-react-hooks@4.6.2` con ESLint 9) cuando `profileQuery.isError`. El contexto expuesto
+pasa de `user: session.user` a `user: profileQuery.data`. El bloque de carga existente se amplía con
+`profileQuery.isLoading || profileQuery.isError` para no dejar pasar un frame con `user` a medio
+limpiar. Frontera de la decisión 2 respetada íntegramente: sin tocar login, `isSession`,
+`loadStoredSession`, guard de rutas ni semántica de logout — confirmado en la revisión QA con
+`git diff` línea por línea.
+
+**Incidencia real durante Green, escalada correctamente (no improvisada):** conectar `/me` rompió 26
+tests en 4 suites de integración (`tests/{session-and-dashboard,conversations,ingestion,
+tenant-switching}.test.tsx`) que usan el fixture compartido `mockBackend()`
+(`apps/frontend/tests/test-support.tsx`), cuyas rutas por defecto no incluían `GET /me`. El coder
+detectó la causa exacta pero **no la tocó** (fixture de test, fuera de su rol) y escaló el bloqueo tal
+como exige la tarea 3.7. Resuelto por el tester ampliando `mockBackend()` con
+`"GET /me": () => jsonResponse(operator)` (mismo `UserProfile` que ya usaba `session.user`, así que
+ninguna de las 26 aserciones necesitó cambiar) — más una segunda ronda: un test de
+`session-and-dashboard.test.tsx` verificaba explícitamente que sin tenant activo solo se emitían
+`/tenants` y `/health`; ampliada la lista blanca a `+"/me"` (no depende de tenant, la intención
+original del test —ninguna petición *tenant-scoped* sin tenant activo— queda intacta). Ambos archivos
+estaban commiteados: **hook-disable dance** autorizado explícitamente por Victor en cada caso
+(`.claude/settings.json`, `PreToolUse` vacío durante el cambio puntual, reactivado y verificado con
+una invocación directa del hook antes de continuar). Ningún archivo de `.claude/` quedó modificado al
+cerrar el grupo (es local, no se commitea).
+
+**No se activó la parada de control (tarea 3.7) por rediseño de sesión**: el único bloqueo real fueron
+fixtures de test, ya resuelto arriba — la implementación de producto no exigió tocar login,
+persistencia, guard ni logout más allá de lo previsto en la decisión 2.
+
+**Mutación** (tester, Stryker efímero acotado a `SessionGate.tsx`): score inicial 68.16% (51
+supervivientes) → tras 17 casos nuevos en `SessionGate.mutation.test.tsx` (MC/DC de `isSession`,
+`loadStoredSession`, límites de `handleLogout`), **score final 84.36%** (≥ threshold `break: 80`,
+gate en verde). Supervivientes restantes (23 + 5 no-cov) clasificados como mutantes equivalentes o
+código muerto defensivo preexistente (guardas de estrechamiento de tipos de TS bajo `enabled:
+Boolean(...)`, claves de caché de React Query sin colisión posible en el flujo real, redundancia
+entre el efecto de auto-selección de tenant y `handleLogout` al limpiar `TENANT_KEY`) — sin hueco de
+cobertura real, sin tocar `SessionGate.tsx`.
+
+**DoD**: `node .claude/harness/check-dod.mjs` falla — pero por `RF-093-001` (preexistente, turbo
+resuelve pnpm v11.9.0 en subprocesos pese a `packageManager: pnpm@9.0.0`), no por esta tarea: falla
+en los 4 paquetes del monorepo (`backend`, `frontend`, `processor`, `azure-cost-api`), incluidos los
+que esta tarjeta no toca. Sustituto verificado (mismo criterio que JUP-093/094/095):
+`pnpm --filter @finops/frontend {test,typecheck,lint,build}`, los cuatro en verde
+(35 archivos/88 tests, typecheck limpio, lint limpio, build correcto — el aviso de tamaño de chunk
+>500kB ya existía antes de esta tarea). Escaneo de secretos: `[PASS]`.
+
+**QA**: primera pasada `changes-requested` — (1) lint en rojo por comillas sin escapar en JSX en
+`SessionGate.mutation.test.tsx:259`, corregido por el tester (`&quot;`); (2) tarea 3.6 sin completar
+(`RF-090-003` seguía `Open`), completado actualizándolo a `Fixed` en
+`openspec/findings/backlog.md` (las dos filas duplicadas preexistentes de esa fila, ambas
+actualizadas de forma consistente) citando esta decisión. Segunda pasada: **`accept`**, confirmado con
+ejecución independiente de lint/test/typecheck y `git diff` del backlog.
+
+Archivos de este grupo: `SessionGate.tsx` (producto), `SessionGate.profile.test.tsx` +
+`SessionGate.mutation.test.tsx` (tests nuevos), `tests/test-support.tsx` +
+`tests/session-and-dashboard.test.tsx` (fixture/aserción ampliados), `openspec/findings/backlog.md`
+(`RF-090-003` → `Fixed`).
+
+Commit pendiente de este grupo tras revisión del usuario.

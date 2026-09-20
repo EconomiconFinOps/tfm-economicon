@@ -6,10 +6,10 @@
 // efecto de auto-seleccion): no es una reescritura, es un traslado de sitio
 // -- unicamente cambian los estados de carga/error del bootstrap, que son
 // armazon nuevo (no una pantalla portada), reconstruidos sobre Tailwind.
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, Outlet } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchTenants } from "../services/api";
+import { fetchProfile, fetchTenants } from "../services/api";
 import type { TenantRecord, UserProfile } from "../services/contracts";
 
 // Exportada porque `LoginPage.tsx` necesita la misma clave para persistir la
@@ -109,6 +109,24 @@ export function SessionGate() {
     enabled: Boolean(session?.accessToken)
   });
 
+  // Revalidacion de identidad contra el servidor (RF-090-003, decision 2 del
+  // design.md de jup-097): se dispara con el mismo `enabled` que
+  // `tenantsQuery` (mismo gatillo, `session?.accessToken`) para que ambas
+  // peticiones se emitan juntas al arrancar, no una tras otra (tarea 3.4,
+  // coste aceptado de una peticion mas en el arranque, no en serie). El
+  // `user` de `localStorage` deja de ser la identidad expuesta: se sustituye
+  // aqui por la que confirme el servidor via `GET /me`.
+  const profileQuery = useQuery({
+    queryKey: ["profile", session?.accessToken],
+    queryFn: () => {
+      if (!session) {
+        throw new Error("Session required");
+      }
+      return fetchProfile(session.accessToken);
+    },
+    enabled: Boolean(session?.accessToken)
+  });
+
   // Auto-seleccion de tenant activo: mismo efecto que App.jsx:49-67,
   // incluida la limpieza de la clave de localStorage cuando no hay sesion.
   useEffect(() => {
@@ -146,24 +164,57 @@ export function SessionGate() {
   // -- sin necesidad de navegacion imperativa adicional. Se usa tanto desde
   // el boton de logout del panel de sesion (Layout, via Outlet context) como
   // desde el estado de error del bootstrap ("Reset session").
-  function handleLogout() {
+  //
+  // Envuelto en `useCallback` (JUP-097, RF-090-003): la logica es identica,
+  // verbatim, a la version anterior -- el cambio es solo de identidad de la
+  // funcion, no de comportamiento. Es necesario porque el nuevo efecto de
+  // revalidacion (mas abajo) tiene que listar `handleLogout` en sus
+  // dependencias para que `eslint-plugin-react-hooks` no intente construir
+  // un aviso de "dependencia ausente" (esa ruta del linter, en la version
+  // 4.6.2 sobre ESLint 9, lanza "context.getSource is not a function": fallo
+  // de la herramienta, no del codigo). Sin `useCallback`, listarla de todos
+  // modos evita el fallo pero deja un segundo aviso ("cambia en cada
+  // render"); `useCallback` con `[queryClient]` (la unica dependencia real:
+  // `setSession`/`setActiveTenantId` son setters de estado, estables por
+  // contrato de React) resuelve ambos de raiz sin tocar la logica.
+  const handleLogout = useCallback(() => {
     setSession(null);
     setActiveTenantId("");
     window.localStorage.removeItem(SESSION_KEY);
     window.localStorage.removeItem(TENANT_KEY);
     queryClient.clear();
-  }
+  }, [queryClient]);
 
   function handleTenantChange(nextTenantId: string) {
     setActiveTenantId(nextTenantId);
     window.localStorage.setItem(TENANT_KEY, nextTenantId);
   }
 
+  // Camino de fallo de la revalidacion (RF-090-003, decision 2): un token que
+  // el servidor rechaza en `/me` reutiliza `handleLogout` -- el mismo que ya
+  // usaba el bloque de error de `tenantsQuery` -- en vez de inventar un guard
+  // nuevo. `handleLogout` pone `session` a `null`, lo que en el siguiente
+  // render cae en el `if (!session)` de mas abajo y redirige a `/login`.
+  // Se declara antes de este efecto (a diferencia de antes, ya no depende
+  // del hoisting de `function`) y se lista en las dependencias porque su
+  // identidad ya es estable via `useCallback`.
+  useEffect(() => {
+    if (profileQuery.isError) {
+      handleLogout();
+    }
+  }, [profileQuery.isError, handleLogout]);
+
   if (!session) {
     return <Navigate to="/login" replace />;
   }
 
-  if (tenantsQuery.isLoading) {
+  // El bloque de carga cubre tambien `profileQuery`: mientras esta en curso,
+  // no hay identidad confirmada que exponer. `profileQuery.isError` se anade
+  // aqui (no como pantalla nueva, sino ampliando esta misma condicion) porque
+  // hay un frame transitorio entre que el error llega y el efecto de arriba
+  // ejecuta `handleLogout()`; sin esto, ese frame renderizaria el contexto
+  // normal con un `user` que el servidor ya rechazo.
+  if (tenantsQuery.isLoading || profileQuery.isLoading || profileQuery.isError) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0f1419] text-white">
         <section className="rounded-lg border border-[#2d3748] bg-[#1a1f2e] px-8 py-6 text-center shadow-lg">
@@ -199,7 +250,10 @@ export function SessionGate() {
 
   const context: SessionOutletContext = {
     token: session.accessToken,
-    user: session.user,
+    // RF-090-003 (decision 2): la identidad expuesta hacia abajo pasa a ser
+    // la que confirma el servidor via `GET /me`, no la persistida en
+    // `localStorage` -- que puede haber quedado desactualizada u obsoleta.
+    user: profileQuery.data,
     tenants,
     activeTenant,
     activeTenantId,

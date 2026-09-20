@@ -32,19 +32,19 @@
 
 ## 3. RF-090-003: conectar `fetchProfile`
 
-- [ ] 3.1 **Red:** prueba de que, con sesión persistida y token válido, el armazón expone la
+- [x] 3.1 **Red:** prueba de que, con sesión persistida y token válido, el armazón expone la
       identidad **devuelta por el servidor** y no la guardada en `localStorage`. Demostrar Red.
-- [ ] 3.2 **Red:** prueba de que, con sesión persistida cuyo token el servidor rechaza, se limpia la
+- [x] 3.2 **Red:** prueba de que, con sesión persistida cuyo token el servidor rechaza, se limpia la
       sesión y se redirige al acceso por el camino de fallo ya existente (`handleLogout`).
-- [ ] 3.3 **Green:** invocar `fetchProfile` en `SessionGate` al arrancar con sesión recuperada y usar
+- [x] 3.3 **Green:** invocar `fetchProfile` en `SessionGate` al arrancar con sesión recuperada y usar
       su respuesta como identidad del `Outlet context`, respetando la frontera de la decisión 2: sin
       tocar login, persistencia, guard ni semántica de logout.
-- [ ] 3.4 Verificar que la petición se emite junto al bootstrap de tenants y no en serie después
+- [x] 3.4 Verificar que la petición se emite junto al bootstrap de tenants y no en serie después
       (decisión 2, coste aceptado).
-- [ ] 3.5 Ejecutar mutación sobre lo tocado y remediar los mutantes supervivientes con más pruebas.
-- [ ] 3.6 Actualizar `RF-090-003` en `openspec/findings/backlog.md` a `Fixed`, citando la decisión 2
+- [x] 3.5 Ejecutar mutación sobre lo tocado y remediar los mutantes supervivientes con más pruebas.
+- [x] 3.6 Actualizar `RF-090-003` en `openspec/findings/backlog.md` a `Fixed`, citando la decisión 2
       del `design.md` como motivo.
-- [ ] 3.7 **Parada de control:** si conectar `/me` exigiera rediseñar la sesión, detenerse y
+- [x] 3.7 **Parada de control:** si conectar `/me` exigiera rediseñar la sesión, detenerse y
       reconsiderar con Victor antes de continuar (riesgo declarado en el diseño).
 
 ## 4. Capa de acceso única

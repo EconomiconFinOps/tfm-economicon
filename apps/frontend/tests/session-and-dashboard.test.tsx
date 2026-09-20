@@ -175,7 +175,7 @@ describe("tenant bootstrap and dashboard", () => {
     expect(screen.queryByRole("button", { name: "Queue ingestion" })).not.toBeInTheDocument();
     await user.click(screen.getByRole("link", { name: "Assistant" }));
     expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
-    expect(requests.every((request) => ["/tenants", "/health"].includes(request.path))).toBe(true);
+    expect(requests.every((request) => ["/tenants", "/health", "/me"].includes(request.path))).toBe(true);
   });
 
   it("shows tenant authorization failure and resets the expired session", async () => {
