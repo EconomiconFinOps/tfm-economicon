@@ -1,17 +1,31 @@
+// IngestPage: en la nueva arquitectura de rutas (JUP-095, grupo 6, sub-ronda
+// c -- ver Addendum de design.md) deja de recibir `token`/`activeTenant` como
+// props desde `App.jsx` y pasa a leerlos via
+// `useOutletContext<SessionOutletContext>()`, igual que ya hace `LoginPage`
+// para su propia migracion. La logica del formulario (estado, mutacion,
+// handleSubmit, guarda de tenant requerido) se conserva verbatim del origen
+// (`IngestPage.jsx`); solo cambian el origen de `token`/`activeTenant` y la
+// presentacion (Tailwind + SectionCard reconstruido).
 import { useState } from "react";
-import type { FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useOutletContext } from "react-router";
 import { SectionCard } from "../components/SectionCard";
 import { createIngestJob } from "../services/api";
-import type { IngestJobRequest, TenantRecord } from "../services/contracts";
+import type { IngestJobRequest } from "../services/contracts";
+import type { SessionOutletContext } from "../layouts/SessionGate";
 
-interface IngestPageProps {
-  token: string;
-  activeTenant: TenantRecord | null;
+// Estado del formulario, verbatim de IngestPage.jsx: mismos tres campos y
+// mismos valores por defecto.
+interface IngestFormState {
+  source: string;
+  artifact_uri: string;
+  text_content: string;
 }
 
-export function IngestPage({ token, activeTenant }: IngestPageProps) {
-  const [form, setForm] = useState({
+export function IngestPage() {
+  const { token, activeTenant } = useOutletContext<SessionOutletContext>();
+
+  const [form, setForm] = useState<IngestFormState>({
     source: "aws-cur",
     artifact_uri: "",
     text_content: ""
@@ -26,7 +40,7 @@ export function IngestPage({ token, activeTenant }: IngestPageProps) {
     }
   });
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!activeTenant) {
       return;
@@ -46,48 +60,72 @@ export function IngestPage({ token, activeTenant }: IngestPageProps) {
         title="Tenant required"
         subtitle="Choose a tenant before enqueuing ingestion jobs."
       >
-        <p>No active tenant selected.</p>
+        <p className="text-sm text-slate-400">No active tenant selected.</p>
       </SectionCard>
     );
   }
 
   return (
-    <div className="page-stack">
+    <div className="flex flex-col gap-6">
       <SectionCard
         title="Create ingestion job"
         subtitle="The backend creates the job in CockroachDB and publishes it to RabbitMQ."
       >
-        <form className="form-stack" onSubmit={handleSubmit}>
-          <label className="field-label" htmlFor="ingest-source">Source</label>
-          <input
-            id="ingest-source"
-            className="text-input"
-            value={form.source}
-            onChange={(event) => setForm((current) => ({ ...current, source: event.target.value }))}
-          />
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-slate-400" htmlFor="ingest-source">
+              Source
+            </label>
+            <input
+              id="ingest-source"
+              className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+              value={form.source}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, source: event.target.value }))
+              }
+            />
+          </div>
 
-          <label className="field-label" htmlFor="ingest-artifact-uri">Artifact URI</label>
-          <input
-            id="ingest-artifact-uri"
-            className="text-input"
-            placeholder="s3://billing/report.csv"
-            value={form.artifact_uri}
-            onChange={(event) => setForm((current) => ({ ...current, artifact_uri: event.target.value }))}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-slate-400" htmlFor="ingest-artifact-uri">
+              Artifact URI
+            </label>
+            <input
+              id="ingest-artifact-uri"
+              className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+              placeholder="s3://billing/report.csv"
+              value={form.artifact_uri}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, artifact_uri: event.target.value }))
+              }
+            />
+          </div>
 
-          <label className="field-label" htmlFor="ingest-text-content">Text content</label>
-          <textarea
-            id="ingest-text-content"
-            className="text-area"
-            rows={10}
-            placeholder="Paste the document content to be chunked and embedded."
-            value={form.text_content}
-            onChange={(event) => setForm((current) => ({ ...current, text_content: event.target.value }))}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-slate-400" htmlFor="ingest-text-content">
+              Text content
+            </label>
+            <textarea
+              id="ingest-text-content"
+              className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+              rows={10}
+              placeholder="Paste the document content to be chunked and embedded."
+              value={form.text_content}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, text_content: event.target.value }))
+              }
+            />
+          </div>
 
-          {mutation.error ? <p className="error-copy">{mutation.error.message}</p> : null}
+          {mutation.error ? (
+            <p className="text-sm text-red-400">{mutation.error.message}</p>
+          ) : null}
 
-          <button className="primary-button" type="submit" disabled={mutation.isPending}>
+          <button
+            className="mt-2 rounded-md bg-[#0078d4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0078d4]/80 disabled:opacity-60"
+            type="submit"
+            disabled={mutation.isPending}
+          >
             {mutation.isPending ? "Queueing job..." : "Queue ingestion"}
           </button>
         </form>
@@ -98,18 +136,18 @@ export function IngestPage({ token, activeTenant }: IngestPageProps) {
           title="Job accepted"
           subtitle="The worker will process the document, generate embeddings and update the job status."
         >
-          <div className="result-grid">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <p className="result-label">Job ID</p>
-              <strong>{mutation.data.job_id}</strong>
+              <p className="text-xs uppercase tracking-wide text-slate-400">Job ID</p>
+              <strong className="text-white">{mutation.data.job_id}</strong>
             </div>
             <div>
-              <p className="result-label">Status</p>
-              <strong>{mutation.data.status}</strong>
+              <p className="text-xs uppercase tracking-wide text-slate-400">Status</p>
+              <strong className="text-white">{mutation.data.status}</strong>
             </div>
             <div>
-              <p className="result-label">Queue</p>
-              <strong>{mutation.data.queue}</strong>
+              <p className="text-xs uppercase tracking-wide text-slate-400">Queue</p>
+              <strong className="text-white">{mutation.data.queue}</strong>
             </div>
           </div>
         </SectionCard>

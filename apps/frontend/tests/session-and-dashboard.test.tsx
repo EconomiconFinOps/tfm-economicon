@@ -14,7 +14,7 @@ import {
 } from "./test-support";
 
 describe("login and session recovery", () => {
-  it("submits credentials, exposes pending states and opens the authenticated dashboard", async () => {
+  it("submits credentials, exposes pending states and opens the authenticated home screen", async () => {
     const user = userEvent.setup();
     const authentication = deferredResponse();
     const bootstrap = deferredResponse();
@@ -39,12 +39,22 @@ describe("login and session recovery", () => {
     expect(loginRequest?.headers.has("X-Tenant-Id")).toBe(false);
 
     await act(async () => authentication.resolve(loginResponse));
-    expect(await screen.findByRole("heading", { name: "Loading available tenants..." })).toBeVisible();
+    // SessionGate.tsx presenta este estado en espanol (armazon nuevo de
+    // JUP-095, no una pantalla portada del origen ingles).
+    expect(await screen.findByRole("heading", { name: "Cargando tenants disponibles..." })).toBeVisible();
     expect(JSON.parse(window.localStorage.getItem(SESSION_KEY)!)).toEqual(session);
     await act(async () => bootstrap.resolve({ items: tenants }));
 
-    expect(await screen.findByText("Monthly Spend")).toBeVisible();
-    expect(screen.getByLabelText("Active tenant")).toHaveValue(tenants[0].id);
+    // Reconciliacion con develop (JUP-095): `LoginPage.onSuccess` navega
+    // siempre a "/" (indice), que hoy es `ExecutiveCostDashboard` con datos
+    // de demostracion -- no `DashboardPage` (billing/health reales), que
+    // vive en "/overview-legacy" (ruta puente, ver design.md decision 6).
+    // Esta prueba valida la mecanica de login/persistencia; el contenido
+    // especifico del dashboard conectado al backend lo cubren las pruebas de
+    // "tenant bootstrap and dashboard" mas abajo, que navegan explicitamente
+    // a "/overview-legacy".
+    expect(await screen.findByText("Dashboard Ejecutivo - Coste Global")).toBeVisible();
+    expect(screen.getByLabelText("Ambito de cliente")).toHaveValue(tenants[0].id);
     expect(window.localStorage.getItem(TENANT_KEY)).toBe(tenants[0].id);
   });
 
@@ -73,26 +83,32 @@ describe("login and session recovery", () => {
     expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
 
     await user.click(screen.getByRole("button", { name: "Sign in" }));
-    expect(await screen.findByText("Monthly Spend")).toBeVisible();
+    // Mismo razonamiento que el test anterior: tras login, "/" muestra
+    // ExecutiveCostDashboard (demo), no el dashboard conectado al backend.
+    expect(await screen.findByText("Dashboard Ejecutivo - Coste Global")).toBeVisible();
   });
 
   it("restores the saved session and tenant across reloads, then clears data on logout", async () => {
     const user = userEvent.setup();
     const { requests } = mockBackend();
     restoreSession(tenants[1].id);
-    const firstVisit = renderApp();
+    // "/overview-legacy": esta prueba verifica que la cache de react-query se
+    // repuebla con datos reales entre "recargas" -- necesita el dashboard
+    // conectado al backend (billing/health), no la pantalla de demostracion
+    // de "/", que nunca invoca esos endpoints.
+    const firstVisit = renderApp(["/overview-legacy"]);
     await screen.findByText("Monthly Spend");
-    expect(screen.getByLabelText("Active tenant")).toHaveValue(tenants[1].id);
+    expect(screen.getByLabelText("Ambito de cliente")).toHaveValue(tenants[1].id);
     firstVisit.unmount();
     firstVisit.client.clear();
 
-    const reloaded = renderApp();
+    const reloaded = renderApp(["/overview-legacy"]);
     await screen.findByText("Monthly Spend");
-    expect(screen.getByLabelText("Active tenant")).toHaveValue(tenants[1].id);
+    expect(screen.getByLabelText("Ambito de cliente")).toHaveValue(tenants[1].id);
     expect(requests.some((request) => request.path === "/auth/login")).toBe(false);
     expect(reloaded.client.getQueryCache().getAll().some((query) => query.state.data !== undefined)).toBe(true);
 
-    await user.click(screen.getByRole("button", { name: "Logout" }));
+    await user.click(screen.getByRole("button", { name: "Cerrar sesion" }));
     expect(screen.getByRole("heading", { name: "Access the tenant control tower" })).toBeVisible();
     expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
     expect(window.localStorage.getItem(TENANT_KEY)).toBeNull();
@@ -122,16 +138,16 @@ describe("tenant bootstrap and dashboard", () => {
       )
     });
     restoreSession("tenant-no-longer-authorized");
-    renderApp();
+    renderApp(["/overview-legacy"]);
 
     expect(await screen.findByText(`$${billing.monthly_spend.toLocaleString()}`)).toBeVisible();
-    expect(screen.getByLabelText("Active tenant")).toHaveValue(tenants[0].id);
+    expect(screen.getByLabelText("Ambito de cliente")).toHaveValue(tenants[0].id);
     expect(window.localStorage.getItem(TENANT_KEY)).toBe(tenants[0].id);
     const bootstrap = requests.find((request) => request.path === "/tenants");
     expect(bootstrap?.headers.get("Authorization")).toBe(`Bearer ${session.accessToken}`);
     expect(bootstrap?.headers.has("X-Tenant-Id")).toBe(false);
 
-    await user.selectOptions(screen.getByLabelText("Active tenant"), tenants[1].id);
+    await user.selectOptions(screen.getByLabelText("Ambito de cliente"), tenants[1].id);
     expect(await screen.findByText(`$${southBilling.monthly_spend.toLocaleString()}`)).toBeVisible();
     expect(window.localStorage.getItem(TENANT_KEY)).toBe(tenants[1].id);
     const billingRequests = requests.filter((request) => request.path === "/billing/summary");
@@ -142,18 +158,22 @@ describe("tenant bootstrap and dashboard", () => {
     for (const service of Object.keys(health.services)) expect(screen.getByText(service)).toBeVisible();
   });
 
+  // Reactivado (Punto 5 implementado): Layout ya expone enlaces reales hacia
+  // /ingest y /assistant. Son <NavLink> (role "link"), no botones -- se
+  // ajustan los roles/etiquetas a la UI real en vez de a los del AppShell
+  // original.
   it("handles an empty tenant list without issuing tenant-scoped product requests", async () => {
     const user = userEvent.setup();
     const { requests } = mockBackend({ "GET /tenants": () => jsonResponse({ items: [] }) });
     restoreSession();
-    renderApp();
+    renderApp(["/overview-legacy"]);
 
     expect(await screen.findByRole("heading", { name: "Select a tenant" })).toBeVisible();
     expect(screen.getByText("No tenant is active for this session.")).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Ingestions" }));
+    await user.click(screen.getByRole("link", { name: "Ingestions" }));
     expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
     expect(screen.queryByRole("button", { name: "Queue ingestion" })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Assistant" }));
+    await user.click(screen.getByRole("link", { name: "Assistant" }));
     expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
     expect(requests.every((request) => ["/tenants", "/health"].includes(request.path))).toBe(true);
   });
@@ -164,7 +184,8 @@ describe("tenant bootstrap and dashboard", () => {
     restoreSession(tenants[0].id);
     const { client } = renderApp();
 
-    expect(await screen.findByRole("heading", { name: "Unable to load tenants" })).toBeVisible();
+    // Idem: SessionGate.tsx presenta este error en espanol.
+    expect(await screen.findByRole("heading", { name: "No se han podido cargar los tenants" })).toBeVisible();
     expect(screen.getByText(/Session is no longer authorized/)).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Reset session" }));
     expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
@@ -177,7 +198,7 @@ describe("tenant bootstrap and dashboard", () => {
     const pending = deferredResponse();
     mockBackend({ "GET /billing/summary": () => pending.promise });
     restoreSession();
-    renderApp();
+    renderApp(["/overview-legacy"]);
 
     expect(await screen.findByRole("heading", { name: "Connecting to the FinOps control plane..." })).toBeVisible();
     expect(screen.queryByText("Monthly Spend")).not.toBeInTheDocument();
@@ -186,16 +207,17 @@ describe("tenant bootstrap and dashboard", () => {
     expect(screen.getByText(`$${billing.savings_identified.toLocaleString()}`)).toBeVisible();
   });
 
+  // Reactivado (Punto 5 implementado): idem, el enlace real es un <NavLink>.
   it.each(["/billing/summary", "/health"])("surfaces %s failures and keeps navigation available", async (path) => {
     const user = userEvent.setup();
     mockBackend({ [`GET ${path}`]: () => { throw new TypeError("Service connection interrupted"); } });
     restoreSession();
-    renderApp();
+    renderApp(["/overview-legacy"]);
 
     expect(await screen.findByRole("heading", { name: "Backend unavailable" })).toBeVisible();
     expect(screen.getByText("Service connection interrupted")).toBeVisible();
     expect(screen.queryByText("Monthly Spend")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Ingestions" }));
+    await user.click(screen.getByRole("link", { name: "Ingestions" }));
     await waitFor(() => expect(screen.getByRole("heading", { name: "Create ingestion job" })).toBeVisible());
   });
 });

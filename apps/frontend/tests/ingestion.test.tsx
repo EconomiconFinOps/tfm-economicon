@@ -17,8 +17,8 @@ describe("ingestion creation", () => {
     const pending = deferredResponse();
     const { requests } = mockBackend({ "POST /jobs/ingest": () => pending.promise });
     restoreSession(tenants[1].id);
-    renderApp();
-    await user.click(await screen.findByRole("button", { name: "Ingestions" }));
+    renderApp(["/ingest"]);
+    await screen.findByRole("heading", { name: "Create ingestion job" });
 
     await user.clear(screen.getByLabelText("Source"));
     await user.type(screen.getByLabelText("Source"), "azure-cost-export");
@@ -58,8 +58,8 @@ describe("ingestion creation", () => {
       }
     });
     restoreSession();
-    renderApp();
-    await user.click(await screen.findByRole("button", { name: "Ingestions" }));
+    renderApp(["/ingest"]);
+    await screen.findByRole("heading", { name: "Create ingestion job" });
     await user.type(screen.getByLabelText("Text content"), "Idle compute instances cost 678 USD.");
     await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
 

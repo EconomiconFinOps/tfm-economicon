@@ -1,0 +1,60 @@
+import { createBrowserRouter, type RouteObject } from "react-router";
+import { SessionGate } from "./layouts/SessionGate";
+import { Layout, TenantScopedOutlet } from "./layouts/Layout";
+import { ExecutiveCostDashboard } from "./pages/ExecutiveCostDashboard";
+import { OperationalCostDashboard } from "./pages/OperationalCostDashboard";
+import { ExecutiveCutDashboard } from "./pages/ExecutiveCutDashboard";
+import { AnomaliesPanel } from "./pages/AnomaliesPanel";
+import { RecommendationsPanel } from "./pages/RecommendationsPanel";
+import { LoginPage } from "./pages/LoginPage";
+import { IngestPage } from "./pages/IngestPage";
+import { ConversationsPage } from "./pages/ConversationsPage";
+import { DashboardPage } from "./pages/DashboardPage";
+
+// Mapa de rutas completo (JUP-095, grupo 6, sub-ronda d -- ver Addendum de
+// design.md, decision 3). `/login` vive fuera de `SessionGate` (no requiere
+// sesion, es donde se crea). `SessionGate` resuelve sesion y bootstrap de
+// tenants (redirigiendo a /login si no hay sesion) antes de exponerlos via
+// Outlet context hacia `Layout` y, desde ahi, hacia las 8 pantallas
+// portadas. `/overview-legacy` es la ruta puente que conserva el unico
+// dashboard con datos reales hasta que JUP-096 conecte el nuevo Overview
+// (decision 6 de design.md).
+// Configuración de rutas exportada por separado del router construido: para
+// que las pruebas de enrutado (JUP-095, tarea 6.5) puedan montar la MISMA
+// definición sobre `createMemoryRouter` (con distintas `initialEntries` por
+// escenario) en vez de mantener un árbol de rutas duplicado que podría
+// divergir del real. `createBrowserRouter` en producción y `createMemoryRouter`
+// en test consumen exactamente este mismo array.
+export const routeConfig: RouteObject[] = [
+  { path: "/login", Component: LoginPage },
+  {
+    path: "/",
+    Component: SessionGate,
+    children: [
+      {
+        Component: Layout,
+        children: [
+          { index: true, Component: ExecutiveCostDashboard },
+          { path: "operational", Component: OperationalCostDashboard },
+          { path: "cuts", Component: ExecutiveCutDashboard },
+          { path: "anomalies", Component: AnomaliesPanel },
+          { path: "recommendations", Component: RecommendationsPanel },
+          {
+            // Reconciliacion con develop (Punto 1): frontera de remontaje
+            // por tenant, solo alrededor de las dos pantallas con estado
+            // local que debe reiniciarse al cambiar de tenant. Ver
+            // TenantScopedOutlet en layouts/Layout.tsx.
+            Component: TenantScopedOutlet,
+            children: [
+              { path: "ingest", Component: IngestPage },
+              { path: "assistant", Component: ConversationsPage },
+            ],
+          },
+          { path: "overview-legacy", Component: DashboardPage },
+        ],
+      },
+    ],
+  }
+];
+
+export const router = createBrowserRouter(routeConfig);

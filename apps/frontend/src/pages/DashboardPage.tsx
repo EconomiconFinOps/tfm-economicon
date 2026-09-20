@@ -1,17 +1,23 @@
+// DashboardPage: en la nueva arquitectura de rutas (JUP-095, grupo 6,
+// sub-ronda d -- ver Addendum de design.md) deja de recibir
+// `token`/`user`/`tenants`/`activeTenant` como props desde `App.jsx` y pasa
+// a leerlos via `useOutletContext<SessionOutletContext>()`, mismo patron que
+// `IngestPage`/`ConversationsPage`. Vive en la ruta puente
+// `/overview-legacy` (decision 6 de design.md): la logica de datos
+// (`useDashboardData`, las tres ramas sin-tenant/loading/error, el render
+// final sobre billing/health/tenants) se preserva verbatim del origen
+// (`DashboardPage.jsx`); solo cambian el origen del contexto de sesion y la
+// presentacion (Tailwind + MetricCard/SectionCard/StatusPill reconstruidos).
+import { useOutletContext } from "react-router";
 import { MetricCard } from "../components/MetricCard";
 import { SectionCard } from "../components/SectionCard";
 import { StatusPill } from "../components/StatusPill";
 import { useDashboardData } from "../hooks/useDashboardData";
-import type { TenantRecord, UserProfile } from "../services/contracts";
+import type { SessionOutletContext } from "../layouts/SessionGate";
 
-interface DashboardPageProps {
-  token: string;
-  user: UserProfile;
-  tenants: TenantRecord[];
-  activeTenant: TenantRecord | null;
-}
+export function DashboardPage() {
+  const { token, user, tenants, activeTenant } = useOutletContext<SessionOutletContext>();
 
-export function DashboardPage({ token, user, tenants, activeTenant }: DashboardPageProps) {
   const { loading, error, payload } = useDashboardData({
     token,
     tenantId: activeTenant?.id
@@ -23,16 +29,22 @@ export function DashboardPage({ token, user, tenants, activeTenant }: DashboardP
         title="Select a tenant"
         subtitle="The dashboard needs an active tenant to load billing and assistant context."
       >
-        <p>No tenant is active for this session.</p>
+        <p className="text-sm text-slate-400">No tenant is active for this session.</p>
       </SectionCard>
     );
   }
 
+  // Reconciliacion con develop (JUP-087): no basta con `loading` para saber
+  // que `payload` ya esta poblado. Con dos queries combinadas
+  // (`useDashboardData`), `enabled: false` transitorio (p.ej. token vacio un
+  // instante) puede dejar `isLoading` en `false` sin que `payload` llegue a
+  // construirse -- una asercion no-nula (`payload!`) explotaria en ese caso.
+  // Se sigue esperando mientras no haya ni error ni payload.
   if (loading || (!error && !payload)) {
     return (
-      <div className="stack-gap">
-        <p className="eyebrow">Bootstrapping</p>
-        <h2>Connecting to the FinOps control plane...</h2>
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-2 text-white">
+        <p className="text-sm uppercase tracking-wide text-slate-400">Bootstrapping</p>
+        <h2 className="text-xl font-bold">Connecting to the FinOps control plane...</h2>
       </div>
     );
   }
@@ -43,7 +55,7 @@ export function DashboardPage({ token, user, tenants, activeTenant }: DashboardP
         title="Backend unavailable"
         subtitle="The dashboard could not retrieve its initial context."
       >
-        <p>{error}</p>
+        <p className="text-sm text-slate-400">{error}</p>
       </SectionCard>
     );
   }
@@ -55,23 +67,23 @@ export function DashboardPage({ token, user, tenants, activeTenant }: DashboardP
   const { billing, health } = payload;
 
   return (
-    <div className="dashboard">
-      <section className="hero-panel">
+    <div className="flex flex-col gap-6">
+      <section className="flex flex-col justify-between gap-4 rounded-lg border border-[#2d3748] bg-gradient-to-br from-[#1a1f2e] to-[#232834] p-6 shadow-xl sm:flex-row sm:items-center">
         <div>
-          <p className="eyebrow">Active operator</p>
-          <h2>{user.full_name}</h2>
-          <p className="hero-copy">
+          <p className="text-sm uppercase tracking-wide text-slate-400">Active operator</p>
+          <h2 className="mt-1 text-xl font-bold text-white">{user?.full_name}</h2>
+          <p className="mt-2 max-w-2xl text-sm text-slate-400">
             Tenant-aware FinOps workspace for billing visibility, document ingestion,
             retrieval-backed chat and async processing with RabbitMQ.
           </p>
         </div>
-        <div className="hero-status">
-          <p>Tenant</p>
+        <div className="flex flex-col items-start gap-1 sm:items-end">
+          <p className="text-sm text-slate-400">Tenant</p>
           <StatusPill status={activeTenant.slug} />
         </div>
       </section>
 
-      <section className="metric-grid">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <MetricCard
           label="Monthly Spend"
           value={`$${billing.monthly_spend.toLocaleString()}`}
@@ -91,17 +103,20 @@ export function DashboardPage({ token, user, tenants, activeTenant }: DashboardP
         />
       </section>
 
-      <div className="content-grid">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <SectionCard
           title="Tenants"
           subtitle="Only tenants bound to the authenticated operator are visible here."
         >
-          <div className="tenant-list">
+          <div className="flex flex-col gap-3">
             {tenants.map((tenant) => (
-              <article key={tenant.id} className="tenant-row">
+              <article
+                key={tenant.id}
+                className="flex items-center justify-between rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2"
+              >
                 <div>
-                  <strong>{tenant.name}</strong>
-                  <p>{tenant.slug}</p>
+                  <strong className="text-white">{tenant.name}</strong>
+                  <p className="text-sm text-slate-400">{tenant.slug}</p>
                 </div>
                 <StatusPill status={tenant.plan} />
               </article>
@@ -113,10 +128,13 @@ export function DashboardPage({ token, user, tenants, activeTenant }: DashboardP
           title="Service Health"
           subtitle="Shallow runtime checks from the backend health endpoint."
         >
-          <div className="health-stack">
+          <div className="flex flex-col gap-2">
             {Object.entries(health.services).map(([service, serviceStatus]) => (
-              <div key={service} className="health-row">
-                <span>{service}</span>
+              <div
+                key={service}
+                className="flex items-center justify-between rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2"
+              >
+                <span className="text-sm text-white">{service}</span>
                 <StatusPill status={serviceStatus} />
               </div>
             ))}
