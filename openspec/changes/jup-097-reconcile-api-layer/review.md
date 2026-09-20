@@ -122,4 +122,23 @@ nueva, no una corrección de desviación).
 10 endpoints correctamente, sin el error de conteo de los documentos de planificación. **Sin cambios
 necesarios** en el README.
 
+## Grupo 2 — Corrección de las desviaciones encontradas
+
+**Doc-only: grupo cerrado sin código de producto**, excepción documentada aquí (equivalente a
+`.claude/harness/mutation.md` para el caso "no hay nada que corregir"). El grupo 1 concluyó con
+**cero desviaciones de contrato** en las 10 operaciones, tanto por lectura de código como por
+verificación contra el backend real. En consecuencia:
+
+- **2.1/2.2 (Red/Green):** no aplican. No existe ninguna operación desviada de 1.3/1.4 sobre la que
+  escribir una prueba que fije "la forma correcta" — la forma ya vigente en `api.ts`/`contracts.ts`
+  es la correcta, confirmada contra el backend en ejecución. Escribir una prueba aquí sería fijar un
+  comportamiento que nadie cambió, sin relación con ningún defecto encontrado.
+- **2.3:** no aplica. Sin desviaciones, no hay nada que registrar como finding de contrato — y en
+  particular ningún finding nuevo sobre `apps/backend/**`, coherente con el criterio de aceptación 8
+  (ningún archivo de backend en el diff de la rama).
+- **2.4:** ya resuelto en 1.6 (grupo 1): el README ya listaba los 10 endpoints correctamente y no
+  requería corrección.
+- **2.5:** esta misma nota es la constancia explícita que pide la tarea, en vez de marcar el grupo
+  sin explicación.
+
 Commit pendiente de este grupo tras revisión del usuario.

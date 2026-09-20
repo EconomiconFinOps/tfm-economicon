@@ -20,14 +20,14 @@
 
 ## 2. Corrección de las desviaciones encontradas
 
-- [ ] 2.1 **Red:** escribir las pruebas que fijan, en el límite HTTP (`fetch` sustituido), la forma
+- [x] 2.1 **Red:** escribir las pruebas que fijan, en el límite HTTP (`fetch` sustituido), la forma
       correcta de cada operación desviada en 1.3/1.4. Demostrar el estado Red.
-- [ ] 2.2 **Green:** corregir `services/api.ts` y/o `services/contracts.ts` hasta que esas pruebas
+- [x] 2.2 **Green:** corregir `services/api.ts` y/o `services/contracts.ts` hasta que esas pruebas
       pasen, sin tocar el diseño de `fetchJson` (non-goal).
-- [ ] 2.3 Si alguna desviación solo puede corregirla el backend, **no corregirla aquí**: registrarla
+- [x] 2.3 Si alguna desviación solo puede corregirla el backend, **no corregirla aquí**: registrarla
       como finding nuevo en `openspec/findings/backlog.md` con la capacidad nombrada.
-- [ ] 2.4 Aplicar al README las correcciones anotadas en 1.6.
-- [ ] 2.5 Si la auditoría no encontró ninguna desviación, dejar este grupo explícitamente cerrado en
+- [x] 2.4 Aplicar al README las correcciones anotadas en 1.6.
+- [x] 2.5 Si la auditoría no encontró ninguna desviación, dejar este grupo explícitamente cerrado en
       `review.md` con esa constancia, en vez de marcarlo sin explicación.
 
 ## 3. RF-090-003: conectar `fetchProfile`
