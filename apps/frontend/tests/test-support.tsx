@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
+import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, vi } from "vitest";
-import App from "../src/App";
+import { routeConfig } from "../src/routes";
 import { billing, health, loginResponse, session, tenants } from "./fixtures";
 
 export const SESSION_KEY = "finops.session";
@@ -79,7 +80,16 @@ export function restoreSession(tenantId?: string) {
   if (tenantId) window.localStorage.setItem(TENANT_KEY, tenantId);
 }
 
-export function renderApp() {
+// Reconciliacion con JUP-095: `App` ya no acepta `onLogin`/props de sesion --
+// es `<RouterProvider router={router} />` sobre `createBrowserRouter`, que
+// depende de la History API real del navegador. Para las mismas razones que
+// `routes.integration.test.tsx` (JUP-095, tarea 6.5), montamos aqui la MISMA
+// `routeConfig` sobre `createMemoryRouter`, con `initialEntries` por
+// escenario: sin enlaces de menu todavia hacia /ingest, /assistant y
+// /overview-legacy (Punto 5 de la reconciliacion con develop, pendiente),
+// las suites navegan a esas pantallas por su ruta inicial en vez de un click
+// sobre un enlace que hoy no existe.
+export function renderApp(initialEntries: string[] = ["/"]) {
   const client = new QueryClient({
     defaultOptions: {
       queries: { retry: false, gcTime: Infinity },
@@ -87,8 +97,9 @@ export function renderApp() {
     }
   });
   queryClients.add(client);
+  const router = createMemoryRouter(routeConfig, { initialEntries });
   return {
-    ...render(<QueryClientProvider client={client}><App /></QueryClientProvider>),
+    ...render(<QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>),
     client
   };
 }

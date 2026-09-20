@@ -1,13 +1,46 @@
-import { defineConfig } from "vitest/config";
+// `defineConfig` de "vitest/config" reexporta el de Vite con el campo `test`
+// tipado: evita el pragma de referencia triple-slash sin perder los tipos de
+// vite.config para `dev`/`build`/`preview` (JUP-095, grupo 2).
+import path from "node:path";
+import { configDefaults, defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [react()],
+  // Orden del array: react() primero, tailwindcss() despues -- mismo orden
+  // que usa el origen. Tailwind v4 solo aporta un plugin de transformacion
+  // de CSS, no compite con el de React por el pipeline de JSX (JUP-095,
+  // grupo 3, decision de design.md sobre cablear el sistema de estilos).
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      // Alias que consumen los componentes de shadcn/ui copiados en el
+      // grupo 4 (@/components/ui/..., @/lib/utils), convencion de ese
+      // patron. Se declara aqui junto a `paths` en tsconfig.json (grupo 3,
+      // decision 5 de design.md): declararlo solo en uno de los dos produce
+      // el fallo de "compila pero no arranca", o el inverso.
+      "@": path.resolve(__dirname, "./src")
+    }
+  },
   test: {
     environment: "jsdom",
-    include: ["tests/**/*.test.{ts,tsx}"],
-    setupFiles: ["./tests/setup.ts"],
-    restoreMocks: true,
-    unstubGlobals: true
+    // Reconciliacion con develop (JUP-087): las dos suites de la migracion
+    // viven en ubicaciones distintas -- las de JUP-095 bajo `src/**` (junto
+    // al codigo que prueban) y las de JUP-087 bajo `tests/**` (regresion end
+    // to end de sesion, tenant, ingesta y conversaciones). El `include` por
+    // defecto de Vitest ya cubriria `src/**`, pero un `include` explicito
+    // que solo listase `tests/**/*.test.{ts,tsx}` (como hacia develop antes
+    // de esta fusion) dejaria de descubrir la suite de `src/**` en
+    // silencio, sin que ninguna herramienta lo señale como fallo.
+    include: ["src/**/*.test.{ts,tsx}", "tests/**/*.test.{ts,tsx}"],
+    setupFiles: ["./src/test/setup.ts"],
+    // `test.exclude` reemplaza el array por defecto en vez de fusionarse con
+    // el; se parte de `configDefaults.exclude` para no perder sus patrones
+    // (node_modules, dist...) y se suma `.stryker-tmp`, la carpeta temporal
+    // que deja el mutation testing (`.claude/harness/mutation.md`). Sin esta
+    // exclusion, Vitest la recoge como archivos de test propios si queda en
+    // disco, contaminando en silencio el conteo de la suite (detectado en
+    // QA de la tarea 2.3, reproducible corriendo Stryker y relanzando test).
+    exclude: [...configDefaults.exclude, "**/.stryker-tmp/**"]
   }
 });

@@ -1,61 +1,118 @@
+// LoginPage: en la nueva arquitectura de rutas (JUP-095, grupo 6, sub-ronda
+// b -- ver Addendum de design.md) vive fuera del arbol protegido por
+// `SessionGate`, como ruta hermana de "/". Ya no recibe el callback
+// `onLogin` desde `App.jsx`: reproduce ella misma, en el `onSuccess` de su
+// mutacion, lo que hoy hace `App.jsx.handleLogin` (App.jsx:74-81) --
+// construir `{ accessToken, user }` y persistirlo en localStorage -- y
+// navega a "/" con `useNavigate()` de react-router. La logica de formulario
+// (estado, submit, mensaje de error, estado pendiente del boton) se conserva
+// tal cual del origen; solo cambian el tipado y la presentacion (Tailwind).
 import { useState } from "react";
-import type { FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
 import { login } from "../services/api";
 import type { LoginResponse } from "../services/contracts";
+import { SESSION_KEY } from "../layouts/SessionGate";
 
-interface LoginPageProps {
-  onLogin: (response: LoginResponse) => void;
+// Reconciliacion con develop (JUP-087): `services/api` ya no es `api.js` sin
+// tipar, es `api.ts` contra `services/contracts.ts`. `login()` devuelve el
+// `LoginResponse` real del contrato (con `UserProfile` de forma cerrada), asi
+// que se importa ese tipo en vez de declarar aqui una forma local laxa que
+// divergiria en silencio del contrato que de verdad exige el backend.
+interface LoginFormState {
+  email: string;
+  password: string;
 }
 
-export function LoginPage({ onLogin }: LoginPageProps) {
+export function LoginPage() {
+  const navigate = useNavigate();
+  // Sin genero explicito en `useState`: se infiere `LoginFormState` igual a
+  // partir del literal (mismos dos campos, mismos tipos), y
+  // `tools/docker-topology.test.mjs` (gobernanza de JUP-053) localiza este
+  // inicializador por texto con una expresion regular que no contempla un
+  // argumento de tipo entre `useState` y `(` -- con el generico explicito,
+  // ese test de gobernanza no encuentra la coincidencia y falla en CI
+  // (job "OpenSpec") aunque el comportamiento sea correcto.
   const [form, setForm] = useState({
     email: "operator@example.com",
+    // Contrasena inicialmente vacia (reconciliacion con develop/JUP-053,
+    // externalizacion de secretos): no se precarga una credencial de
+    // demostracion en el propio codigo del formulario. Las pruebas que
+    // ejercitan el login deben introducirla explicitamente.
     password: ""
   });
 
   const mutation = useMutation({
-    mutationFn: login,
-    onSuccess: onLogin
+    mutationFn: (payload: LoginFormState) => login(payload),
+    onSuccess: (payload: LoginResponse) => {
+      // Verbatim de App.jsx.handleLogin (App.jsx:74-81): mismo shape de
+      // sesion, misma clave de localStorage. Aqui no hay estado de sesion
+      // que actualizar (eso vive en SessionGate, que lee localStorage de
+      // forma perezosa al montar) -- basta con persistir y navegar.
+      const nextSession = {
+        accessToken: payload.access_token,
+        user: payload.user
+      };
+      window.localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
+      navigate("/", { replace: true });
+    }
   });
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     mutation.mutate(form);
   }
 
   return (
-    <div className="auth-shell">
-      <section className="auth-card">
-        <p className="eyebrow">Operator login</p>
-        <h1>Access the tenant control tower</h1>
-        <p className="auth-copy">
+    <div className="flex min-h-screen items-center justify-center bg-[#0f1419] px-4 text-white">
+      <section className="w-full max-w-md rounded-lg border border-[#2d3748] bg-[#1a1f2e] p-8 shadow-xl">
+        <p className="text-sm uppercase tracking-wide text-slate-400">Operator login</p>
+        <h1 className="mt-2 text-xl font-bold text-white">Access the tenant control tower</h1>
+        <p className="mt-2 text-sm text-slate-400">
           This demo build uses the seeded operator account so the team can validate
           auth, tenant isolation and assistant flows end-to-end.
         </p>
 
-        <form className="form-stack" onSubmit={handleSubmit}>
-          <label className="field-label" htmlFor="login-email">Email</label>
-          <input
-            id="login-email"
-            className="text-input"
-            type="email"
-            value={form.email}
-            onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-          />
+        <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-slate-400" htmlFor="login-email">
+              Email
+            </label>
+            <input
+              id="login-email"
+              className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+              type="email"
+              value={form.email}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, email: event.target.value }))
+              }
+            />
+          </div>
 
-          <label className="field-label" htmlFor="login-password">Password</label>
-          <input
-            id="login-password"
-            className="text-input"
-            type="password"
-            value={form.password}
-            onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-slate-400" htmlFor="login-password">
+              Password
+            </label>
+            <input
+              id="login-password"
+              className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+              type="password"
+              value={form.password}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, password: event.target.value }))
+              }
+            />
+          </div>
 
-          {mutation.error ? <p className="error-copy">{mutation.error.message}</p> : null}
+          {mutation.error ? (
+            <p className="text-sm text-red-400">{mutation.error.message}</p>
+          ) : null}
 
-          <button className="primary-button" type="submit" disabled={mutation.isPending}>
+          <button
+            className="mt-2 rounded-md bg-[#0078d4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0078d4]/80 disabled:opacity-60"
+            type="submit"
+            disabled={mutation.isPending}
+          >
             {mutation.isPending ? "Signing in..." : "Sign in"}
           </button>
         </form>
