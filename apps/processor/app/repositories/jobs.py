@@ -1,3 +1,4 @@
+from app.core.metrics import ingest_jobs_failed_total
 from app.db.database import Database
 
 
@@ -13,4 +14,5 @@ class JobRepository:
 
     def mark_failed(self, job_id: str, error_message: str) -> None:
         self.database.update_job_status(job_id, "failed", result={"error": error_message})
+        ingest_jobs_failed_total.inc()
 
