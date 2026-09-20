@@ -9,10 +9,23 @@ de las ejecuciones de frontend documentadas aqui.
 - Trello: https://trello.com/c/JHcidwiR
 - Rama: `chore/JUP-087-frontend-quality-baseline`.
 - Base: `origin/develop` en `ae538aadbf8012c144d540644691a9d80a5a4508`.
-- OpenSpec: [jup-087-frontend-quality-baseline](../../openspec/changes/jup-087-frontend-quality-baseline/proposal.md).
+- OpenSpec: [jup-087-frontend-quality-baseline](../../openspec/changes/archive/2026-09-14-jup-087-frontend-quality-baseline/proposal.md).
 - Pull request: https://github.com/EconomiconFinOps/tfm-economicon/pull/29
 - Commit de implementacion: `fbb1e55d6d8be95899236d525075329393d9ac24`.
 - CI de implementacion: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/34260957444
+
+## Estado de cierre — 2026-09-14
+
+La implementacion esta integrada en `develop` desde el 12/09 mediante la
+[PR #29](https://github.com/EconomiconFinOps/tfm-economicon/pull/29), aprobada
+y fusionada por Lucia. Esta actualizacion documenta la validacion operativa
+delegada, archiva el cambio y consolida su especificacion. El cierre se limita
+al baseline de calidad del frontend: el ensayo integrado detecta dos defectos
+heredados que permanecen abiertos en JUP-085 y JUP-035. No acredita un producto
+completo sin fallos ni una validacion personal de Paris.
+
+Los apartados fechados del 08 al 10/09 conservan su contexto historico. El
+estado actual, las participaciones y las limitaciones constan al final.
 
 ## Resultado
 
@@ -205,3 +218,121 @@ El resultado de build, typecheck y las tres suites Python se contrasta tambien
 en los siete checks del nuevo head, enlazados desde la PR y Trello. La prueba
 Docker del apartado anterior corresponde al 09/09; no se presenta como una
 ejecucion nueva del stack con secretos externos.
+
+## Validacion operativa delegada y cierre acotado — 2026-09-14
+
+### Autorizacion, roles y auditoria
+
+El usuario autoriza expresamente ejecutar la validacion en esta tarea para
+cerrar JUP-087, conservando el rol y la auditoria de Paris. La ejecucion que
+sigue es automatizada, realizada por el asistente bajo esa autorizacion y
+publicada mediante `Iber1to`; no es una ejecucion manual atribuible a Paris
+ni demuestra pairing o coautoria. La sustitucion afecta a esta ejecucion
+operativa, no a la asignacion del rol.
+
+| Rol previsto, conservado | Persona | Evidencia actual |
+|---|---|---|
+| Liderazgo | Victor Mendez | Se conserva la asignacion; no se infiere una actividad adicional. |
+| Pairing/coautoria | Alejandro Aguado (`Iber1to`) | Implementacion/publicacion en la PR #29; no consta pairing explicito. |
+| Revision de PR | Lucia Mateo (`lmatsan`) | [APPROVED del 12/09 a las 15:45:23 UTC](https://github.com/EconomiconFinOps/tfm-economicon/pull/29#pullrequestreview-5186996159), sobre `746fd5dce2e3ef75c760f5095beda64af25fee3a`. |
+| Validacion, pruebas y documentacion; auditoria | Paris Arcos Martin (`ParisArcos`) | Rol conservado. Su auditoria personal sigue pendiente; no se marca como realizada ni como aprobacion. |
+
+Lucia fusiono la PR #29 el 12/09 a las 15:47:38 UTC, squash
+[`1de7b1663c52050b9f27e6f46fe02d5c077d800b`](https://github.com/EconomiconFinOps/tfm-economicon/commit/1de7b1663c52050b9f27e6f46fe02d5c077d800b),
+y movio [Trello](https://trello.com/c/JHcidwiR) a **70 — Hecho** a las
+15:50:26 UTC. Su revision ya distinguia la validacion pendiente de Paris.
+Los [siete checks de la implementacion](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/34509261904)
+son satisfactorios. Esa aprobacion pertenece a la PR #29 y no se transfiere
+a la PR documental de cierre.
+
+La excepcion documentada a la [Definition of Done](https://trello.com/c/6l0Jan5Q)
+consiste en aceptar esta ejecucion operativa delegada, manteniendo abierta
+la auditoria personal de Paris. No elimina los requisitos de revision de
+GitHub ni declara satisfechos los recorridos integrados fallidos. Paris puede
+contrastar los resultados y registrar hallazgos posteriores sin perder su rol.
+
+### Base y comprobaciones
+
+Base ejecutada: `develop` en
+`cfc6668bceb60c38045f72976b9de8e8b8337555`, que incluye JUP-087 y la
+[correccion del contrato de ingesta de JUP-020, PR #34](https://github.com/EconomiconFinOps/tfm-economicon/pull/34).
+Las menciones anteriores a RF-053-004 abierto corresponden a su fecha:
+esa correccion esta integrada desde el 13/09; el alcance completo de JUP-020
+sigue siendo independiente.
+
+| Comprobacion ejecutada | Resultado |
+|---|---|
+| Instalacion con lockfile congelado | Correcta, sin modificar dependencias. |
+| Lint del workspace | Correcto; cero errores frontend. |
+| Suite frontend mediante el comando raiz filtrado | 28/28 en cinco archivos, incluidos errores, recuperacion, aislamiento por tenant y contratos reales de ESLint. |
+| Typecheck frontend | Aplicacion, configuracion y tests correctos. |
+| Build del workspace | Cuatro tareas satisfactorias; Azure Cost API reutiliza cache, el resto se ejecuta. |
+| Herramientas del repositorio | 83/83. |
+| Puente de colaboracion, clientes simulados | 12/12. |
+| OpenSpec estricto tras archivo/promocion | 30/30; cuatro requisitos promovidos sin cambiar su contrato. |
+| Trazabilidad, higiene y corpus | 12 cambios activos enlazados, 524 archivos sin elementos prohibidos y manifiesto valido. |
+| Revision automatizada independiente del cierre | Sin hallazgos materiales en atribucion, alcance, enlaces, promocion y evidencia sanitizada; no constituye aprobacion humana de GitHub. |
+
+Se conserva el wrapper externo de pnpm 9 para la resolucion local de Turbo.
+No se presenta `compileall` como una suite Python: las suites de servicios
+pertenecen al CI enlazado. No se amplian las omisiones conocidas de ese CI.
+
+### Ensayo con navegador y servicios reales
+
+Se construyen frontend, backend y processor desde sus Dockerfiles canonicos
+en un proyecto Docker exclusivo, con CockroachDB, RabbitMQ y pgvector vacios,
+secretos efimeros externos y operador sintetico con dos tenants. Se arranca
+backend antes de processor para evitar la carrera conocida de JUP-096; esto
+no corrige esa carrera. Los seis servicios base y el proxy de prueba alcanzan
+`healthy`. Azure Cost API y monitorizacion no forman parte de este ensayo.
+
+La configuracion entre puertos falla el preflight CORS: `OPTIONS /auth/login`
+devuelve 405 y no incluye `Access-Control-Allow-Origin`. Para continuar se
+construye el frontend con `VITE_API_BASE_URL=/api` y se añade un proxy de
+prueba de mismo origen. No se modifica el producto ni se declara corregida
+su configuracion canonica. Chromium usa 1440 x 1000 y servicios reales;
+solo los errores 503 especificados abajo se inyectan deliberadamente.
+
+| Recorrido observado | Resultado y procedencia |
+|---|---|
+| Login/sesion | Password inicial vacia; rechazo HTTP 401 real sin crear sesion; login real, recarga, persistencia y logout correctos. Sesion persistida malformada se elimina sin fallo JavaScript. |
+| Tenant/dashboard | Dos tenants reales, seleccion persistida y dashboard real. Fallos 503 controlados muestran el error; dashboard se recupera y bootstrap permite `Reset session`. El resumen economico conserva sus cifras mock heredadas. |
+| Ingesta | Rechazo 422 real con texto vacio; reintento HTTP 202 con documento sintetico. Job `17898355-5bed-4836-94f1-0a0ccc4fc060` termina `completed` para `tenant-growth`: un documento, un chunk y un embedding de dimension 8 persistidos. Cambio de tenant limpia borrador y confirmacion anterior. |
+| Conversaciones | Listado y creacion reales; 503 controlados al listar/enviar visibles, borrador conservado tras rechazo y estado aislado entre tenants. POST de mensaje devuelve 201 y persiste ambos mensajes. |
+| Historial real tras responder | **FALLA**: GET del detalle devuelve 500 porque `fetch_messages` intenta `json.loads()` sobre metadata JSONB que psycopg ya entrega como `dict`. Se reproduce sin proxy. La interfaz muestra el error y permanece operativa. La visualizacion/persistencia del historial completo no queda validada. |
+| Aislamiento adicional | El mismo detalle pedido con el tenant incorrecto devuelve 404; no se muestran conversaciones ni borradores del otro tenant. |
+
+El primer recorrido registra siete comprobaciones satisfactorias y una fallida
+(historial). El seguimiento registra otras seis comprobaciones satisfactorias,
+incluida la presentacion del error real; no convierte el recorrido fallido en
+un exito. No se observan errores JavaScript. Los errores HTTP de consola
+incluyen los rechazos previstos, los 503 controlados, un favicon 404 y el
+500 real: no se afirma una consola sin errores.
+
+Embeddings y respuesta del asistente usan providers mock; se validan HTTP,
+colas, persistencia y manejo de interfaz, no calidad RAG/LLM ni facturacion
+real. La respuesta del asistente existe en base de datos, pero no llega al
+historial visible por el defecto descrito.
+
+Los resultados sanitizados estan versionados en
+[JUP-087-runtime-validation.json](JUP-087-runtime-validation.json).
+Capturas, harness y logs complementarios quedan fuera del repositorio en
+`materiales/07-evidencias/jup087-validation-20260914/`. No se versionan
+credenciales, tokens, volumenes ni entornos generados.
+
+### Residuales y archivo
+
+- **RF-087-001 / JUP-085:** definir y verificar conexion browser/API entre
+  origenes o un proxy soportado; reproducir preflight y login real.
+- **RF-087-002 / JUP-035:** normalizar metadata JSONB del historial y comprobar
+  envio seguido de lectura/recarga con CockroachDB real. La linea defectuosa
+  procede del commit `4aee5d78` del 14/06, anterior a JUP-087. No se corrige aqui.
+- JUP-054 conserva el seguimiento de pruebas integradas; JUP-096 conserva la
+  carrera entre servicios. RF-083-002 y los providers mock tampoco se cierran.
+
+Los cuatro requisitos de JUP-087 quedan acreditados por lint, runner real,
+matriz positiva/de error y aislamiento de la suite. Se archiva el cambio en
+`openspec/changes/archive/2026-09-14-jup-087-frontend-quality-baseline/` y se
+promueve `openspec/specs/frontend-quality-baseline/spec.md`, sin ampliar sus
+garantias al backend completo. El archivo se prepara en la PR documental;
+su incorporacion a `develop` requiere la aprobacion propia de esa PR.

@@ -100,7 +100,9 @@ Esto permite que las tareas pesadas o lentas no bloqueen al backend, y tambien p
 
 ### Métricas técnicas (Prometheus + Grafana)
 
-El backend y el processor exponen `GET /metrics` en formato Prometheus (verificado en JUP-043): volumen y latencia de requests HTTP, y contadores de dominio (`backend_ingest_jobs_total`, `backend_assistant_queries_total`). Un servicio `prometheus` en `docker-compose.yml` scrapea ambos endpoints, y un servicio `grafana` visualiza un dashboard mínimo (latencia p95, tasa de error, volumen de ingestas y consultas) provisionado como código en `apps/monitoring/`.
+El backend y el processor exponen `GET /metrics` en formato Prometheus (verificado en JUP-043): volumen y latencia de requests HTTP, y contadores de dominio (`backend_ingest_jobs_total`, `backend_assistant_queries_total`, `processor_ingest_jobs_failed_total`). Un servicio `prometheus` en `docker-compose.yml` scrapea ambos endpoints, y un servicio `grafana` visualiza un dashboard mínimo (latencia p95, tasa de error, volumen de ingestas y consultas) provisionado como código en `apps/monitoring/`.
+
+Sobre el contador de fallos de ingesta hay una regla de Grafana Unified Alerting provisionada como código (`apps/monitoring/grafana/provisioning/alerting/ingest-failures.yml`, JUP-045), que pasa a `Firing` cuando los fallos superan un umbral en una ventana de tiempo. Sin receptor externo en esta iteración (decisión explícita para no reabrir la política de solo-lectura de Discord de JUP-081): el estado de la alerta solo es visible dentro del dashboard de Grafana.
 
 ### `apps/azure-cost-api`
 

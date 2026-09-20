@@ -71,6 +71,7 @@ Use these stable job names from .github/workflows/ci.yml:
 - Python tests (processor)
 - Frontend build
 - Frontend type check
+- Frontend tests
 
 JUP-087 runs frontend lint and real journey tests before bundling in the required
 `Frontend build` job. A lint error or failed test fails that required check; no
@@ -83,6 +84,14 @@ All seven contexts, including `Frontend type check`, were confirmed active in
 the remote `develop` rules on 2026-09-08. Applying future changes to live
 rulesets remains an administrator action; versioning JSON alone does not enable
 them (see "Administrator activation checklist" below).
+
+JUP-095 ported the frontend to `react-router` and originally added an eighth
+check ("Frontend tests") that duplicated the journey-test run already covered
+by `Frontend build`. Reconciling the port with `develop` (2026-09-19) removed
+that duplicate job and its ruleset entries, restoring the seven confirmed
+checks above as the full set; the port's own 39 test cases now run inside
+`Frontend build` alongside JUP-087's regression suite, discovered from both
+`src/**/*.test.tsx` and `tests/**/*.test.tsx`.
 
 ## Administrator exception and teammate onboarding
 
