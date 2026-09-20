@@ -51,6 +51,11 @@ test("keeps the seven branch-protection check contexts stable", () => {
   assert.equal(workflow.jobs["frontend-build"].name, "Frontend build");
   // JUP-093: septimo check obligatorio, tsc --noEmit del frontend (ADR-0003, decision 3).
   assert.equal(workflow.jobs["frontend-typecheck"].name, "Frontend type check");
+  // Reconciliacion JUP-095/JUP-087: un octavo job ("frontend-tests") duplicaba
+  // la ejecucion de test que "frontend-build" ya hacia tras fusionar develop;
+  // se retiro para conservar los siete checks ya confirmados activos en
+  // GitHub (docs/governance/github-branch-protection.md) sin duplicar CI.
+  assert.equal(workflow.jobs["frontend-tests"], undefined);
   assert.equal(workflow.jobs["python-tests"].name, "Python tests (${{ matrix.service.name }})");
   assert.deepEqual(
     workflow.jobs["python-tests"].strategy.matrix.service.map(({ name }) => name),

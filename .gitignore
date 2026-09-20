@@ -4,6 +4,7 @@ dist/
 build/
 .vite/
 .turbo/
+.stryker-tmp/
 .venv/
 __pycache__/
 .pytest_cache/
