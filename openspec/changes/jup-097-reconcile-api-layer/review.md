@@ -269,3 +269,76 @@ Ningún archivo tocado en este grupo. Sin cambios que verificar con test/lint/ty
 allá de lo ya confirmado al cerrar el grupo 3.
 
 Commit pendiente de este grupo tras revisión del usuario.
+
+## Grupo 5 — Estados observables de las pantallas servidas
+
+Sobre `/overview-legacy` (`DashboardPage.tsx` + `useDashboardData.ts`), la única ruta con datos
+reales. **Sin corrección de código de producto**: los tres comportamientos exigidos ya eran
+correctos por diseño; el trabajo del grupo fue verificar y, donde faltaba, reforzar cobertura.
+
+### 5.1 (carga / fallo) — ya cubierto, sin test nuevo
+
+- Carga visible: `tests/session-and-dashboard.test.tsx` → "keeps a visible loading state until
+  billing is available" (confirma `queryByText("Monthly Spend")` ausente mientras carga).
+- Fallo comunicado, no disfrazado de vacío: mismo archivo → "surfaces %s failures and keeps
+  navigation available" (`/billing/summary`, `/health`) — muestra "Backend unavailable" + el mensaje
+  real del error, y confirma que "Monthly Spend" no aparece (el fallo no se confunde con ausencia de
+  datos).
+
+Confirmado además por lectura de `DashboardPage.tsx`: el bloque `if (loading || (!error && !payload))`
+antecede estructuralmente a cualquier render de montos, así que un fallo o una carga en curso nunca
+puede mostrar datos parciales o del error como si fueran cero.
+
+### 5.1 (reconsulta al cambiar de ámbito) + 5.3 — matiz sin cubrir, test nuevo
+
+La reconsulta en sí (2 peticiones con `X-Tenant-Id` distinto, nuevo valor visible al final) ya la
+cubría `tests/session-and-dashboard.test.tsx` ("replaces a stale tenant selection..."). Pero ningún
+test inspeccionaba el **frame de transición**: si durante la ventana en que la petición del tenant
+nuevo sigue en vuelo, el dashboard sigue mostrando (aunque sea un instante) el monto del tenant
+anterior.
+
+Test nuevo: `apps/frontend/tests/dashboard-tenant-transition.test.tsx` — usa `deferredResponse()`
+para congelar la respuesta de `/billing/summary` del segundo tenant, y verifica **antes** de
+resolverla que el monto del primer tenant ya no está en el documento y que se muestra el estado de
+carga ("Connecting to the FinOps control plane..."); luego resuelve y confirma el valor correcto del
+segundo tenant. **Pasa sin tocar código de producto**: confirma lo que el diseño ya garantizaba
+(`queryKey: ["billing-summary", tenantId]` cambia con el tenant; `payload` es `null` hasta que la
+key nueva tiene datos, así que `DashboardPage` nunca alcanza el bloque de render de montos con datos
+del tenant anterior).
+
+### 5.4 — Mutación sobre `useDashboardData.ts` + `DashboardPage.tsx`
+
+Stryker acotado a ambos archivos. **Score inicial 75.00%** (44 killed, 12 survived, 1 timeout, 3
+no-coverage) — bajo el umbral. Añadidos `useDashboardData.mutation.test.tsx` (4 casos, hook aislado
+con `renderHook`) y `DashboardPage.mutation.test.tsx` (3 casos, complementarios a
+`DashboardPage.test.tsx` sin duplicar sus aserciones). **Score final 83.33%** (50 killed, 0 timeout,
+7 survived, 3 no-coverage), por encima de `break: 80`.
+
+Mutantes matados incluyen: `queryKey` de billing/health, las tres ramas de `enabled`/`loading`/
+`payload` de `useDashboardData` (incluida la distinción `&&` vs. `||` en `loading`, que exigió un
+caso con billing resuelto y health aún pendiente), `user?.full_name` (optional chaining),
+`tenants.map(...)` y las dos ramas de la condición de bootstrapping de `DashboardPage`.
+
+Supervivientes restantes, clasificados como código muerto/inalcanzable dado el contrato público (no
+exigen cambio de producto): el `throw` de `queryFn` sin `tenantId` (`useDashboardData.ts:15-16`) es
+inalcanzable porque `enabled: Boolean(token && tenantId)` nunca deja invocar `queryFn` sin tenant, y
+el hook no expone `refetch` manual que pudiera burlar ese `enabled`; el `if (!payload) return null`
+de `DashboardPage.tsx:63` es inalcanzable porque el guard anterior (bootstrapping) ya intercepta todo
+estado con `payload` falso y sin error.
+
+### Verificación
+
+Confirmado por el tester y, de forma independiente, por mí: `pnpm typecheck` y `pnpm lint` limpios;
+`vitest run` **38 archivos / 96 tests en verde**. Ningún archivo de producto en el diff del grupo —
+solo 3 archivos de test nuevos: `dashboard-tenant-transition.test.tsx`,
+`useDashboardData.mutation.test.tsx`, `DashboardPage.mutation.test.tsx`.
+
+**Nota sobre *flakiness* de entorno, no relacionada con esta tarea:** una corrida serial mía
+(`--no-file-parallelism`) dio un único fallo puntual en `tests/tenant-switching.test.tsx:51`
+(archivo del grupo 3, ya cerrado, sin relación con `DashboardPage`/`useDashboardData`) por timeout
+de `findByText`. Reproducido en aislamiento (mismo archivo, solo, mismo comando): falló una vez y
+pasó la siguiente, sin ningún cambio entre medias — confirma *flakiness* real de la máquina
+(coincide con lo que ya reportó el tester: contención de recursos, no defecto). Una corrida completa
+en paralelo, posterior, dio 38/38 y 96/96 limpio.
+
+Commit pendiente de este grupo tras revisión del usuario.

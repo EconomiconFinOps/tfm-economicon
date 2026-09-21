@@ -61,13 +61,13 @@
 
 ## 5. Estados observables de las pantallas servidas
 
-- [ ] 5.1 **Red:** pruebas de carga, de fallo comunicado (no disfrazado de vacío) y de reconsulta al
+- [x] 5.1 **Red:** pruebas de carga, de fallo comunicado (no disfrazado de vacío) y de reconsulta al
       cambiar de ámbito, sobre `/overview-legacy`, la única ruta con datos reales. Demostrar Red.
-- [ ] 5.2 **Green:** ajustar `useDashboardData` y/o `DashboardPage` hasta que pasen, sin cambiar de
+- [x] 5.2 **Green:** ajustar `useDashboardData` y/o `DashboardPage` hasta que pasen, sin cambiar de
       origen de datos.
-- [ ] 5.3 Confirmar que en ningún instante se presenta el dato del ámbito anterior como propio del
+- [x] 5.3 Confirmar que en ningún instante se presenta el dato del ámbito anterior como propio del
       nuevo tras un cambio de ámbito.
-- [ ] 5.4 Ejecutar mutación sobre lo tocado y remediar supervivientes.
+- [x] 5.4 Ejecutar mutación sobre lo tocado y remediar supervivientes.
 
 ## 6. Mapa de carencias por pantalla
 
