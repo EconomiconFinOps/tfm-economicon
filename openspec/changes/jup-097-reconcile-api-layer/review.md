@@ -342,3 +342,63 @@ pasó la siguiente, sin ningún cambio entre medias — confirma *flakiness* rea
 en paralelo, posterior, dio 38/38 y 96/96 limpio.
 
 Commit pendiente de este grupo tras revisión del usuario.
+
+## Grupo 6 — Mapa de carencias por pantalla
+
+**Doc-only: solo documentación y comentarios, sin comportamiento nuevo**, excepción documentada
+aquí. No se toca ningún archivo de `apps/backend/**` (confirmado abajo).
+
+### 6.1 — Capacidad ausente por pantalla
+
+Apoyado en `RF-091-003` y en
+[docs/planning/JUP-091-economicon-source-inventory.md](../../../docs/planning/JUP-091-economicon-source-inventory.md)
+(sección "Mapeo de pantallas a contratos del backend", que ya hizo este análisis sobre el código del
+origen antes de portar). Traducido dato a dato a los 5 módulos ya portados en JUP-095
+(`apps/frontend/src/data/demo/*.ts`), verificando variable a variable que los nombres coinciden con
+el código real (no con el inventario de memoria).
+
+### 6.2 — Comentarios ampliados
+
+Los 5 módulos de `src/data/demo/` (`executiveCostDashboard.ts`, `operationalCostDashboard.ts`,
+`executiveCutDashboard.ts`, `anomaliesPanel.ts`, `recommendationsPanel.ts`) tienen ahora, junto al
+comentario "DATOS DE DEMOSTRACION (sustituibles)" ya existente, la capacidad concreta de
+`RF-091-003` que le falta a cada export, con referencia al documento del mapa. Caso particular:
+`executiveCostDashboard.ts` distingue explícitamente los dos KPIs que sí tienen contrato parcial
+(`GET /billing/summary`, bloqueados por `RF-091-004`, no por ausencia de capacidad) de los dos que
+no tienen ninguno (`C7`, `C2`).
+
+### 6.3 — Documento del mapa
+
+[docs/planning/JUP-097-frontend-data-gap-map.md](../../../docs/planning/JUP-097-frontend-data-gap-map.md):
+tabla de 16 filas (pantalla → dato → capacidad ausente → finding), más el resumen por capacidad (C1-C7)
+con las pantallas ya portadas que la necesitan, y una sección explícita de qué hacer cuando una
+capacidad se construya (para que el mapa no envejezca en silencio).
+
+### 6.4 — `RF-095-002` refinado
+
+Actualizado en `openspec/findings/backlog.md`: enlaza el mapa nuevo, **permanece `Open`**
+deliberadamente (JUP-097 no conecta ninguna pantalla, decisión de alcance previa a proponer) — el
+refinamiento es el insumo accionable, no un cierre.
+
+### 6.5 — Confirmación de que backend no se tocó
+
+```
+git diff origin/develop...HEAD --stat -- apps/backend/
+```
+Sin salida: **ningún archivo de `apps/backend/**` en el diff de la rama completa** (no solo de este
+grupo). `RF-091-003` y `RF-091-004` verificados sin cambio en el mismo diff — solo aparecen como
+contexto, ninguna línea añadida/modificada les pertenece.
+
+### Verificación
+
+`vitest run`: primera corrida tras los cambios mostró 20 fallos en 8 archivos, con tiempos de
+`environment`/`setup` muy elevados (contención de recursos de la máquina, mismo patrón ya
+documentado en el grupo 5). Re-ejecutada sin ningún cambio de por medio: **38/38 archivos, 96/96
+tests en verde**. `typecheck` y `lint` limpios en ambas corridas — confirma que los comentarios
+nuevos (JS/TS válido) no afectan compilación. Los cambios de este grupo son comentarios y
+documentación exclusivamente; no hay mecanismo por el que pudieran causar un fallo de test real.
+
+Archivos de este grupo: 5 módulos de `src/data/demo/` (comentarios), `openspec/findings/backlog.md`
+(`RF-095-002` refinado), `docs/planning/JUP-097-frontend-data-gap-map.md` (nuevo).
+
+Commit pendiente de este grupo tras revisión del usuario.

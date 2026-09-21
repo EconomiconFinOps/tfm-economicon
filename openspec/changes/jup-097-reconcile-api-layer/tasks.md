@@ -71,15 +71,15 @@
 
 ## 6. Mapa de carencias por pantalla
 
-- [ ] 6.1 Determinar, para cada una de las 5 pantallas de coste, qué capacidad de backend concreta
+- [x] 6.1 Determinar, para cada una de las 5 pantallas de coste, qué capacidad de backend concreta
       necesitaría, apoyándose en `RF-091-003` y en el inventario de JUP-091.
-- [ ] 6.2 Ampliar el comentario "DATOS DE DEMOSTRACION (sustituibles)" de cada módulo de
+- [x] 6.2 Ampliar el comentario "DATOS DE DEMOSTRACION (sustituibles)" de cada módulo de
       `src/data/demo/` nombrando esa capacidad ausente (decisión 3).
-- [ ] 6.3 Crear `docs/planning/JUP-097-frontend-data-gap-map.md` con la tabla pantalla → dato →
+- [x] 6.3 Crear `docs/planning/JUP-097-frontend-data-gap-map.md` con la tabla pantalla → dato →
       capacidad ausente → finding relacionado.
-- [ ] 6.4 Actualizar `RF-095-002` en el backlog: refinado con el mapa, **permanece `Open`**,
+- [x] 6.4 Actualizar `RF-095-002` en el backlog: refinado con el mapa, **permanece `Open`**,
       apuntando a la decisión de épica sobre `RF-091-003`.
-- [ ] 6.5 Confirmar que `RF-091-003` y `RF-091-004` siguen `Open` **sin cambio**: ningún archivo de
+- [x] 6.5 Confirmar que `RF-091-003` y `RF-091-004` siguen `Open` **sin cambio**: ningún archivo de
       `apps/backend/**` puede aparecer en el diff de la rama.
 
 ## 7. Limpieza de referencias obsoletas
