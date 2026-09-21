@@ -457,3 +457,84 @@ Archivos de este grupo: `src/routes.tsx`, `src/pages/DashboardPage.test.tsx`,
 atribución en la sección del grupo 1 de este `review.md`.
 
 Commit pendiente de este grupo tras revisión del usuario.
+
+## Grupo 8 — Verificación y cierre
+
+### Batería completa (8.1/8.2)
+
+`openspec:validate` (32/32), `jup:check` (`[OK]`), `jup:cleanup:check` (`[OK]`),
+`install --frozen-lockfile` (sin error) desde la raíz. `test`/`typecheck`/`lint`/`build` vía
+`--filter @finops/frontend` (sustituto de `RF-093-001`): 38/38 archivos, 96/96 tests, ambos limpios,
+build correcto. Detalle completo con comandos exactos en
+[docs/evidence/JUP-097-validation.md](../../../docs/evidence/JUP-097-validation.md) (tarea 8.3),
+incluida la nota de *flakiness* de entorno observada y descartada como regresión.
+
+### Resumen de cierre
+
+- **Auditoría (grupo 1):** las 10 operaciones de `services/api.ts` (no 9 — error de conteo propio,
+  corregido) verificadas contra el backend real, por código y por ejecución. **Cero desviaciones de
+  contrato.** Único hallazgo real: el error de conteo, ya corregido en `proposal.md`/`design.md`/
+  `tasks.md` y en el spike.
+- **`RF-090-003` (grupo 3):** resuelto a `Fixed`. `fetchProfile` conectado en `SessionGate` como
+  revalidación de la sesión persistida (decisión 2 del `design.md`), no retirado — el servidor pasa
+  a ser la autoridad sobre la identidad, no `localStorage`. Frontera con `reconcile-auth-tenant`
+  respetada íntegramente (confirmado por QA con `git diff` línea a línea).
+- **Mapa de carencias (grupo 6):** las 16 filas dato→pantalla de las 5 pantallas de coste, cada una
+  con su capacidad de `RF-091-003` nombrada, en
+  [docs/planning/JUP-097-frontend-data-gap-map.md](../../../docs/planning/JUP-097-frontend-data-gap-map.md)
+  y en los comentarios de los 5 módulos `src/data/demo/*.ts`. `RF-095-002` refinado, permanece `Open`
+  a propósito.
+- **Findings nuevos:** ninguno de contrato (auditoría sin desviaciones). Ninguno sobre `apps/backend/**`
+  (nada que tocar ahí, confirmado en 8.6). El único hallazgo de esta tarjeta fuera de lo ya previsto
+  en el `design.md` fue el descubrimiento de que `JUP-096` es una tarjeta Trello real (`RF-044-002`),
+  no solo un placeholder — no generó finding nuevo, solo corrigió comentarios (grupo 7).
+- **`RF-090-003` cerrado, `RF-091-003`/`RF-091-004` sin cambio, `RF-095-002` refinado**: los tres
+  verificados en el diff completo de la rama (`git diff origin/develop...HEAD`), no solo grupo a
+  grupo.
+- **No se requiere ADR nuevo (decisión 6 del `design.md`):** "una sola capa API centralizada" ya es
+  decisión 4 del spike de migración, materializada desde JUP-095; conectar `/me` es una decisión
+  acotada y reversible dentro de esa arquitectura, no un cambio de ella. Se citan ADR-0003 y ADR-0004
+  como marco vigente en el `design.md`; no se propuso ADR-0005 en ningún momento del `apply`.
+
+### Confirmación final del criterio de aceptación 8 (ningún archivo de backend en el diff)
+
+```
+git diff origin/develop...HEAD --stat -- apps/backend/
+```
+Sin salida, sobre el diff completo de la rama (8 commits, 25 archivos, no solo el grupo 6/7 donde ya
+se había verificado antes). Los 8 criterios de aceptación de `proposal.md` quedan satisfechos:
+capa HTTP auditada (1-2), `RF-090-003` resuelto (3), `/overview-legacy` intacta con reconsulta al
+cambiar de tenant (4), demostración de las 5 pantallas de coste señalizada y mapeada (5-6), cobertura
+Red/Green real sin `any`/`@ts-ignore` (7), y backend fuera del diff (8).
+
+### Siguiente
+
+`docs/evidence/JUP-097-validation.md` queda con los enlaces de PR/CI pendientes hasta que se abra el
+PR (tarea 8.7). Orden real del cierre, según `.claude/harness/workflow.md` §5-7 (corrección de una
+nota anterior de este mismo documento, que invertía el orden: el gate post-review y el archivado van
+**antes** del PR, no después): gate post-review (bloque abajo) → archivar el change → abrir el PR.
+
+## Human Approval
+
+- Change: jup-097-reconcile-api-layer
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-09-21
+- Archive decision: archive
+- Scope reviewed: las 42 tareas de `tasks.md` (8 grupos), `review.md` completo, evidencia
+  `docs/evidence/JUP-097-validation.md`, batería final (`openspec:validate`, `jup:check`,
+  `jup:cleanup:check`, `test`/`typecheck`/`lint`/`build` vía `--filter @finops/frontend`,
+  `install --frozen-lockfile`).
+- Resultado verificado: cero desviaciones de contrato en las 10 operaciones (grupo 1); `RF-090-003`
+  resuelto a `Fixed` conectando `fetchProfile` con frontera respetada frente a
+  `reconcile-auth-tenant` (grupo 3, QA `accept` en dos pasadas); capa de acceso única confirmada sin
+  código nuevo (grupo 4); estados observables del dashboard reforzados sin tocar producto, QA
+  `accept` (grupo 5); mapa de 16 filas de carencias por pantalla, `RF-095-002` refinado y `Open` a
+  propósito (grupo 6); referencias obsoletas a "JUP-096" corregidas, incluido el hallazgo de que es
+  una tarjeta Trello real de otro tema (grupo 7). Ningún archivo de `apps/backend/**` en el diff
+  completo de la rama. Ningún ADR nuevo requerido (decisión 6 del `design.md`).
+- Notes: cierre alineado con las tres decisiones de alcance tomadas antes de proponer (nada de
+  backend, no se conecta ninguna pantalla nueva, `/overview-legacy` no se retira). Desbloquea
+  `reconcile-auth-tenant`. El PR lo abre Victor directamente (no este agente); texto de PR preparado
+  aparte.

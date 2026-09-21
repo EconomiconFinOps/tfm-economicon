@@ -96,15 +96,15 @@
 
 ## 8. Verificación y cierre
 
-- [ ] 8.1 Batería completa: `pnpm openspec:validate`, `pnpm lint`, `pnpm test`, `pnpm build`,
+- [x] 8.1 Batería completa: `pnpm openspec:validate`, `pnpm lint`, `pnpm test`, `pnpm build`,
       `pnpm install --frozen-lockfile`. Registrar salidas.
-- [ ] 8.2 `pnpm jup:check -- --change jup-097-reconcile-api-layer` y `pnpm jup:cleanup:check`.
-- [ ] 8.3 Crear `docs/evidence/JUP-097-validation.md` con los comandos exactos y sus resultados,
+- [x] 8.2 `pnpm jup:check -- --change jup-097-reconcile-api-layer` y `pnpm jup:cleanup:check`.
+- [x] 8.3 Crear `docs/evidence/JUP-097-validation.md` con los comandos exactos y sus resultados,
       incluida la verificación directa contra el backend del grupo 1.
-- [ ] 8.4 Dejar declarado en la evidencia que el E2E en navegador **queda pendiente** por
+- [x] 8.4 Dejar declarado en la evidencia que el E2E en navegador **queda pendiente** por
       `RF-095-001`/`RF-087-001`, sin presentarlo como verificado (decisión 5).
-- [ ] 8.5 Cerrar `review.md`: auditoría, desenlace de `RF-090-003`, mapa de carencias, findings
+- [x] 8.5 Cerrar `review.md`: auditoría, desenlace de `RF-090-003`, mapa de carencias, findings
       nuevos y constancia de que no se requiere ADR nuevo (decisión 6).
-- [ ] 8.6 Verificar que el diff de la rama no toca `apps/backend/**` ni `src/data/demo/**` más allá
+- [x] 8.6 Verificar que el diff de la rama no toca `apps/backend/**` ni `src/data/demo/**` más allá
       de los comentarios de 6.2.
 - [ ] 8.7 Abrir el pull request hacia `develop` y solicitar revisión.
