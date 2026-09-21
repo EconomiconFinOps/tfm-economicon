@@ -84,14 +84,14 @@
 
 ## 7. Limpieza de referencias obsoletas
 
-- [ ] 7.1 Corregir el comentario de `src/routes.tsx` que cita "JUP-096" como la tarjeta que conectará
+- [x] 7.1 Corregir el comentario de `src/routes.tsx` que cita "JUP-096" como la tarjeta que conectará
       el Overview.
-- [ ] 7.2 Reafirmar en ese mismo comentario que `/overview-legacy` se conserva, con dueño explícito y
+- [x] 7.2 Reafirmar en ese mismo comentario que `/overview-legacy` se conserva, con dueño explícito y
       la condición de retirada (que exista un Overview real que la sustituya).
-- [ ] 7.3 Sustituir en `docs/spikes/frontend-migration.md` el placeholder
+- [x] 7.3 Sustituir en `docs/spikes/frontend-migration.md` el placeholder
       `jup-0xx-reconciliar-capa-api` por el slug real `jup-097-reconcile-api-layer` y marcar sus
       tareas según lo realmente hecho.
-- [ ] 7.4 Anotar en el spike que la primera tarea listada para esta tarjeta ("portar `services/api.*`
+- [x] 7.4 Anotar en el spike que la primera tarea listada para esta tarjeta ("portar `services/api.*`
       a TS") la había cerrado ya JUP-095, para que el registro no quede engañoso.
 
 ## 8. Verificación y cierre

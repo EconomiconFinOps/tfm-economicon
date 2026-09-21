@@ -5,8 +5,10 @@
 // `IngestPage`/`ConversationsPage`. Pasa a vivir en la ruta puente
 // `/overview-legacy` (decision 6 de design.md): es la unica pantalla que
 // consume datos reales del backend (`GET /billing/summary` y `GET /health`
-// via `useDashboardData`, que se preserva verbatim -- es de JUP-096) hasta
-// que JUP-096 conecte el nuevo Overview.
+// via `useDashboardData`, que se preserva verbatim). Ruta puente hasta que
+// exista un Overview real que la sustituya (correccion JUP-097, grupo 7: el
+// comentario original citaba "JUP-096" para esto, pero ese numero de Trello
+// lo ocupa un tema ajeno -- ver RF-044-002 en openspec/findings/backlog.md).
 //
 // La version actual (`./DashboardPage.jsx`) sigue exigiendo props: montada
 // como ruta sin props, `token`/`activeTenant` llegan `undefined`, asi que

@@ -42,10 +42,12 @@ tarjeta ni cambia el alcance:
 
 ### 1.2 — Referencia real de contratos (lectura de código)
 
-Extraída de `apps/backend/app/api/routes/*.py` y `apps/backend/app/schemas/*.py`. **Son 10 endpoints,
-no 9** como decían el spike y, arrastrado de él, los propios `proposal.md`/`design.md`/`tasks.md` de
-esta tarjeta antes de esta auditoría (corregido en los tres tras confirmarlo aquí; el README de
-`apps/frontend` ya los listaba bien, 10, sin necesitar corrección — tarea 1.6/2.4).
+Extraída de `apps/backend/app/api/routes/*.py` y `apps/backend/app/schemas/*.py`. **Son 10
+endpoints, no 9** como decían los propios `proposal.md`/`design.md`/`tasks.md` de esta tarjeta antes
+de esta auditoría (corregido en los tres tras confirmarlo aquí). El error de conteo era propio, no
+heredado del spike: `docs/spikes/frontend-migration.md` nunca afirmó "9 endpoints" (verificado con
+grep antes de escribir esta corrección, para no repetir la misma atribución equivocada dos veces). El
+README de `apps/frontend` ya los listaba bien, 10, sin necesitar corrección — tarea 1.6/2.4.
 
 | # | Método | Ruta | Auth | Response model |
 | - | - | - | - | - |
@@ -400,5 +402,58 @@ documentación exclusivamente; no hay mecanismo por el que pudieran causar un fa
 
 Archivos de este grupo: 5 módulos de `src/data/demo/` (comentarios), `openspec/findings/backlog.md`
 (`RF-095-002` refinado), `docs/planning/JUP-097-frontend-data-gap-map.md` (nuevo).
+
+Commit pendiente de este grupo tras revisión del usuario.
+
+## Grupo 7 — Limpieza de referencias obsoletas
+
+**Doc-only: solo comentarios y documentación**, excepción documentada aquí.
+
+### 7.1/7.2 — Comentario de `src/routes.tsx`
+
+Corregido: ya no cita "JUP-096" como la tarjeta que conectará el Overview. Reafirma que
+`/overview-legacy` se conserva, con dueño explícito y condición de retirada (que exista un Overview
+real que la sustituya, todavía no existe).
+
+**Hallazgo durante la limpieza, ampliación de alcance consultada y autorizada:** dos comentarios en
+tests ya commiteados (`src/pages/DashboardPage.test.tsx:8-9`, `src/pages/LoginPage.test.tsx:51`)
+tenían la misma confusión (citaban "JUP-096" en el mismo sentido erróneo). Verificado además, al
+investigar, que **`JUP-096` es un número de tarjeta Trello real** asignado a un tema completamente
+distinto (`RF-044-002`, carrera de migraciones concurrentes entre `backend` y `processor` — ver
+`openspec/findings/backlog.md`), no solo un placeholder libre: la confusión original no era
+inofensiva, apuntaba a la tarjeta equivocada. Consultado y autorizado por Victor, corregidos los dos
+comentarios de test con el mismo criterio (hook-disable dance: `.claude/settings.json` vaciado
+temporalmente, reactivado y verificado con invocación directa del hook antes de continuar, igual que
+en el grupo 3).
+
+Confirmado con `grep -rn "JUP-096"` sobre `apps/frontend/src` y el spike (excluyendo `.stryker-tmp`,
+artefacto temporal gitignored): las únicas menciones restantes son las que **explican** la
+corrección, ninguna repite la confusión original.
+
+### 7.3/7.4 — Spike `docs/spikes/frontend-migration.md`
+
+Placeholder `jup-0xx-reconciliar-capa-api` sustituido por el slug real
+`jup-097-reconcile-api-layer`, con enlace al change y sus 5 tareas de F3 marcadas según lo realmente
+hecho (auditoría en vez de porte, `RF-090-003` resuelto, mapa de carencias añadido más allá de las
+cuatro tareas originales del spike, alcance recortado explícito). Añadido el punto 8 de "Próximos
+pasos" documentando el cierre, con la numeración de Trello resuelta (JUP-097, no JUP-096) y qué
+queda de F3.
+
+**Corrección adicional, no prevista en tasks.md:** al escribir la corrección del spike detecté que mi
+propia review.md del grupo 1 atribuía el error de conteo "9 endpoints" al spike ("no 9 como decían
+el spike"), pero el spike **nunca dijo eso** — verificado con `grep` antes de repetir la atribución
+aquí. El error de conteo era propio (de `proposal.md`/`design.md`/`tasks.md` de esta misma tarjeta al
+proponerla), no heredado del spike. Corregido en ambos sitios: el texto nuevo del spike y la sección
+del grupo 1 de este mismo documento, para no dejar una atribución incorrecta en el registro por
+escribir la corrección con prisa.
+
+### Verificación
+
+`vitest run`, `typecheck` y `lint` del frontend tras las correcciones (incluidos los dos archivos de
+test tocados): **38/38 archivos, 96/96 tests, typecheck y lint limpios.**
+
+Archivos de este grupo: `src/routes.tsx`, `src/pages/DashboardPage.test.tsx`,
+`src/pages/LoginPage.test.tsx` (comentarios), `docs/spikes/frontend-migration.md`, y la corrección de
+atribución en la sección del grupo 1 de este `review.md`.
 
 Commit pendiente de este grupo tras revisión del usuario.

@@ -47,9 +47,11 @@ describe("LoginPage", () => {
     // Sin sesion previa de otro test: localStorage limpio antes de empezar.
     window.localStorage.clear();
 
-    // Mockeamos fetch (no `login` de services/api.js, que no se toca en esta
-    // tarjeta -- JUP-096) para que la llamada real a `/auth/login` que hace
-    // `fetchJson` resuelva con un payload de sesion valido.
+    // Mockeamos fetch (no `login` de services/api.ts, que no se toca en esta
+    // suite) para que la llamada real a `/auth/login` que hace `fetchJson`
+    // resuelva con un payload de sesion valido. (Correccion JUP-097, grupo 7:
+    // el comentario original citaba "JUP-096" aqui; ese numero de Trello lo
+    // ocupa un tema ajeno -- ver RF-044-002 en openspec/findings/backlog.md.)
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({

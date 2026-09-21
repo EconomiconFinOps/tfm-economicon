@@ -17,8 +17,17 @@ import { DashboardPage } from "./pages/DashboardPage";
 // tenants (redirigiendo a /login si no hay sesion) antes de exponerlos via
 // Outlet context hacia `Layout` y, desde ahi, hacia las 8 pantallas
 // portadas. `/overview-legacy` es la ruta puente que conserva el unico
-// dashboard con datos reales hasta que JUP-096 conecte el nuevo Overview
-// (decision 6 de design.md).
+// dashboard con datos reales (decision 6 de design.md de JUP-095).
+//
+// Correccion de numeracion (JUP-097, grupo 7): la numeracion secuencial que
+// asumia el comentario original ("JUP-096 conectara el nuevo Overview") dejo
+// de valer -- un companero ocupo JUP-096 para un tema ajeno. JUP-097
+// (reconciliar-api-layer) audito la capa de datos pero, por decision de
+// alcance explicita, no construyo backend ni conecto pantallas nuevas (ver
+// RF-091-003 en openspec/findings/backlog.md): `/overview-legacy` sigue
+// siendo el unico dashboard con datos reales. Se reafirma como deuda con
+// dueno explicito: se retira cuando exista un Overview real que la
+// sustituya (todavia no existe), en una tarjeta futura de F3 -- no antes.
 // Configuración de rutas exportada por separado del router construido: para
 // que las pruebas de enrutado (JUP-095, tarea 6.5) puedan montar la MISMA
 // definición sobre `createMemoryRouter` (con distintas `initialEntries` por
