@@ -3,6 +3,12 @@
 // `ExecutiveCutDashboard` mientras no exista integracion con el backend
 // real. Localizable con grep "DATOS DE DEMOSTRACION" para su futura
 // sustitucion por datos en vivo.
+//
+// Capacidad de backend que falta (JUP-097, grupo 6; detalle completo en
+// docs/planning/JUP-097-frontend-data-gap-map.md, RF-091-003): `savingsData`,
+// `cutActions` y `kpiData` necesitan C4 (objetivos y acciones de recorte con
+// impacto, estado, responsable y fecha) — entidad de gestion que el backend
+// no modela en absoluto, no solo un endpoint de lectura ausente.
 import { Scissors, Target, TrendingDown, CheckCircle } from "lucide-react";
 
 export const savingsData = [
