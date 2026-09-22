@@ -12,9 +12,16 @@
 - [x] 2.3 Record correlation, tenant/identity checks, settings and test limits.
 - [x] 2.4 Link a PR and evidence from Trello, preserving assigned roles and
   residual corpus/provider work.
-- [ ] 2.5 Obtain assigned PR review and functional validation before closure.
+- [x] 2.5 Obtain assigned PR review and functional validation before closure.
 
 Delivery: [PR #34](https://github.com/EconomiconFinOps/tfm-economicon/pull/34),
-against `develop`, prepared for review by Lucia Mateo (`lmatsan`). Assigned
-approval and functional validation remain pending. JUP-020 remains in progress
-on Trello for its residual corpus/provider work.
+approved by Lucia Mateo (`lmatsan`) and merged into `develop` on 2026-09-13
+as `cfc6668bceb60c38045f72976b9de8e8b8337555`.
+
+Paris Arcos Martin's functional validation is confirmed by the user on
+2026-09-14, together with the instruction to close JUP-020. This is the date
+of confirmation, not an asserted execution date for Paris. See `review.md`.
+The closure covers the delivered ingestion contract correction. Real embedding
+providers, full/versioned corpus loading, per-chunk metadata and idempotent
+reprocessing remain explicitly unimplemented follow-up work in the Trello
+closure record; this checklist does not certify those capabilities.

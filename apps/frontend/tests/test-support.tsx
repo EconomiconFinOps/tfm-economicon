@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, vi } from "vitest";
 import { routeConfig } from "../src/routes";
-import { billing, health, loginResponse, session, tenants } from "./fixtures";
+import { billing, health, loginResponse, operator, session, tenants } from "./fixtures";
 
 export const SESSION_KEY = "finops.session";
 export const TENANT_KEY = "finops.activeTenant";
@@ -48,6 +48,7 @@ export function mockBackend(overrides: Routes = {}) {
   const requests: RecordedRequest[] = [];
   const routes: Routes = {
     "POST /auth/login": () => jsonResponse(loginResponse),
+    "GET /me": () => jsonResponse(operator),
     "GET /tenants": () => jsonResponse({ items: tenants }),
     "GET /health": () => jsonResponse(health),
     "GET /billing/summary": () => jsonResponse(billing),

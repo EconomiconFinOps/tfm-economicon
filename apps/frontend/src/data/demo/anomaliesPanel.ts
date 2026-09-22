@@ -3,6 +3,11 @@
 // `AnomaliesPanel` mientras no exista integracion con el backend real.
 // Localizable con grep "DATOS DE DEMOSTRACION" para su futura sustitucion
 // por datos en vivo.
+//
+// Capacidad de backend que falta (JUP-097, grupo 6; detalle completo en
+// docs/planning/JUP-097-frontend-data-gap-map.md, RF-091-003): `anomalies`,
+// `trendData` y `stats` necesitan C5 (deteccion de anomalias) — requiere
+// logica de deteccion nueva, no solo exponer un dato ya ingestado.
 import { AlertTriangle, TrendingUp, Clock, Shield } from "lucide-react";
 
 export const anomalies = [

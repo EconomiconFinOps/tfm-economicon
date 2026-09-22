@@ -3,6 +3,13 @@
 // `OperationalCostDashboard` mientras no exista integracion con el backend
 // real. Localizable con grep "DATOS DE DEMOSTRACION" para su futura
 // sustitucion por datos en vivo.
+//
+// Capacidad de backend que falta para conectar cada dato (JUP-097, grupo 6;
+// detalle completo en docs/planning/JUP-097-frontend-data-gap-map.md,
+// RF-091-003): `detailedData` necesita C2 (desglose por dimension) + C3
+// (multi-cloud AWS/GCP, el backend solo ingesta Azure); `hourlyData`
+// necesita C1 (serie temporal, granularidad horaria); `providerData`
+// necesita C3 (multi-cloud).
 export const detailedData = [
   { servicio: "EC2 Instances", proyecto: "Web App", coste: 45200, uso: 92, tendencia: "+5%", proveedor: "AWS" },
   { servicio: "RDS Database", proyecto: "API Backend", coste: 28900, uso: 78, tendencia: "+12%", proveedor: "AWS" },

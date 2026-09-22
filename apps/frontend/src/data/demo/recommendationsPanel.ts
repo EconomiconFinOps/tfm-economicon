@@ -3,6 +3,12 @@
 // `RecommendationsPanel` mientras no exista integracion con el backend
 // real. Localizable con grep "DATOS DE DEMOSTRACION" para su futura
 // sustitucion por datos en vivo.
+//
+// Capacidad de backend que falta (JUP-097, grupo 6; detalle completo en
+// docs/planning/JUP-097-frontend-data-gap-map.md, RF-091-003):
+// `recommendations`, `savingsByCategory` y `stats` necesitan C6 (motor de
+// recomendaciones) — requiere logica de analisis nueva, no solo un endpoint
+// de lectura.
 import { Database, Server, Zap, Network } from "lucide-react";
 
 export const recommendations = [

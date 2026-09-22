@@ -2,11 +2,14 @@
 
 - Tarjeta: https://trello.com/c/Mi3kPCOD
 - Rama: `fix/JUP-020-ingestion-contract`, basada en `develop` `1ff8e07`.
-- Fecha: 2026-09-10.
+- Fecha de evidencia tecnica: 2026-09-10. Cierre confirmado: 2026-09-14.
 - Alcance: incidencia de contrato registrada en JUP-020 y RF-053-004.
 - PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/34,
-  contra `develop`; preparada para revision de Lucia Mateo (`lmatsan`).
-  Aprobacion, validacion asignada e integracion pendientes.
+  aprobada y fusionada por Lucia Mateo (`lmatsan`) el 2026-09-13 como
+  `cfc6668bceb60c38045f72976b9de8e8b8337555` en `develop`.
+- Validacion funcional de Paris Arcos Martin: confirmada por el usuario
+  el 2026-09-14, junto con la instruccion de cierre. Es la fecha de
+  confirmacion recibida, no una fecha de ejecucion atribuida a Paris.
 
 ## Correccion
 
@@ -124,16 +127,19 @@ backend/worker; no se deduce solo de un HTTP 202.
 ## Limites y seguimiento
 
 Esta entrega acredita el contrato de transporte y persistencia, no calidad
-semantica de embeddings. Siguen pendientes en JUP-020 el proveedor real,
+semantica de embeddings. Quedan como trabajo posterior el proveedor real,
 la carga completa/versionada del corpus, metadatos por chunk y la politica
 de idempotencia/reprocesado. Conservar metadatos en el resultado del job no
 equivale a persistirlos en cada chunk.
 
 Trello conserva liderazgo de Victor Mendez, pairing de Alejandro Aguado,
-revision asignada a Lucia Mateo y validacion asignada a Paris Arcos Martin.
-Las comprobaciones automatizadas de esta entrega no se atribuyen a esos
-revisores ni sustituyen la revision humana o su validacion asignada.
+revision completada por Lucia Mateo y validacion de Paris Arcos Martin
+confirmada por el usuario. Las comprobaciones automatizadas conservan su
+atribucion original; no se reasignan sus logs a Paris.
 
 El avance, la PR y las evidencias se enlazaron y releyeron en la tarjeta
-oficial mediante la integracion Economicon de DockerServer. JUP-020 permanece
-En curso; se conservan los miembros y sus roles.
+oficial mediante la integracion Economicon de DockerServer. Por instruccion
+del usuario del 2026-09-14 se cierra JUP-020 para la entrega de PR #34,
+conservando los miembros, roles y trabajo posterior no implementado.
+La [nota de cierre](../../openspec/changes/archive/2026-09-14-jup-020-document-embedding-pipeline/review.md)
+enlaza aprobacion, merge y procedencia de la confirmacion de validacion.
