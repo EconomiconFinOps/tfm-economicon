@@ -50,5 +50,9 @@ and job result; per-chunk metadata storage remains part of the corpus work.
 
 Deploying the processor adapter is sufficient for already queued valid
 backend envelopes. No schema or queue migration is required. A normal PR
-against `develop` allows assigned review before integration. This delivery
-does not close all of JUP-020 or declare a production RAG pipeline validated.
+against `develop` allows assigned review before integration. PR #34 was
+approved and merged on 2026-09-13. The user confirmed Paris's validation and
+instructed closure on 2026-09-14. The closed delivery covers this contract
+correction; it does not declare a production RAG pipeline validated. The
+remaining corpus/provider capabilities stay visible in the Trello closure
+as follow-up work, without marking them implemented.

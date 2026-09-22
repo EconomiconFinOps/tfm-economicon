@@ -59,6 +59,12 @@ No se cambian contratos de sesion/tenant ni se introducen migraciones.
 
 ## Evidence And Follow-up
 
+Seguimiento 2026-09-14: RF-053-004 fue corregido e integrado por PR #34,
+con validacion de Paris confirmada por el usuario. Vease el
+[cierre JUP-020](../evidence/JUP-020-validation.md). El parrafo siguiente
+conserva el estado del gate original, previo a esa correccion; las decisiones
+de secretos de este ADR no cambian.
+
 Base de inspeccion: 7d76fc376e0eca1aac6401304977575a2f92ceb5; fuentes de alcance:
 plan aprobado de 2026-09-07 y export Trello leido el 2026-09-09, sin acceso vivo.
 Al registrar el gate previo todavia no habia resultados funcionales ni scan.

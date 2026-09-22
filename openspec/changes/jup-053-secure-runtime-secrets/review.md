@@ -1,5 +1,10 @@
 # Revision JUP-053
 
+Seguimiento 2026-09-14: RF-053-004 esta corregido en `develop` por PR #34;
+la validacion de Paris fue confirmada por el usuario y el cierre se recoge
+en [JUP-020](../../../docs/evidence/JUP-020-validation.md). Las referencias
+Open/FAIL siguientes conservan el estado historico revisado de JUP-053.
+
 ## Estado
 
 - Actualizacion: 2026-09-10.

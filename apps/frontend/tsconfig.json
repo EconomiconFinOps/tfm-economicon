@@ -6,6 +6,16 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
+
+    // Alias que consumen los componentes de shadcn/ui copiados en el grupo
+    // 4 (@/components/ui/..., @/lib/utils). Declarado tambien en
+    // `resolve.alias` de vite.config.ts (JUP-095, grupo 3, decision 5 de
+    // design.md): sin ambos, o bien el type-check falla, o bien el bundler
+    // no resuelve el import en tiempo de ejecucion.
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "esModuleInterop": true,
     "isolatedModules": true,
     "skipLibCheck": true,
