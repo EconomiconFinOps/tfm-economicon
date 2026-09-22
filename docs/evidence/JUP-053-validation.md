@@ -1,5 +1,11 @@
 # Evidencia De Validacion JUP-053
 
+Seguimiento 2026-09-14: RF-053-004 fue corregido e integrado mediante PR #34
+(JUP-020); la validacion de Paris ha sido confirmada por el usuario y se
+registra el cierre en [JUP-020-validation.md](JUP-020-validation.md).
+Los estados Open y resultados FAIL de este informe corresponden a las
+ejecuciones historicas de JUP-053; no se reescriben como pruebas superadas.
+
 ## Estado Actual (2026-09-10)
 
 - Producto integrado probado: `cb0403661f7fd9d69f7122965e401a60d89314f2`,

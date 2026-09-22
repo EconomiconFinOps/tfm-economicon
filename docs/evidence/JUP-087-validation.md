@@ -1,5 +1,10 @@
 # Evidencia JUP-087 — Calidad minima del frontend
 
+Seguimiento 2026-09-14: RF-053-004, citado como abierto en la reconciliacion
+historica, fue resuelto por PR #34. Su validacion y cierre se registran en
+[JUP-020-validation.md](JUP-020-validation.md); no cambian los resultados
+de las ejecuciones de frontend documentadas aqui.
+
 - Fecha: 2026-09-08.
 - Trello: https://trello.com/c/JHcidwiR
 - Rama: `chore/JUP-087-frontend-quality-baseline`.
