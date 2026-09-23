@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider, useOutletContext } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { TenantCollection, UserProfile } from "../services/contracts";
 
 // Contrato esperado (a implementar por el agente coder en fase Green):
 // `SessionGate` todavia no existe en `./SessionGate` -- este import es lo que
@@ -74,6 +75,9 @@ describe("SessionGate sin sesion", () => {
 
 describe("SessionGate con sesion", () => {
   it("arranca el bootstrap de tenants y expone el tenant activo via Outlet context", async () => {
+    const profile = {
+      id: "u1", full_name: "Ada Lovelace", email: "ada@example.com", role: "operator"
+    } satisfies UserProfile;
     // Sesion valida persistida como la deja `LoginPage`/`App.jsx` hoy:
     // `{ accessToken, user }` bajo la clave "finops.session".
     // Reconciliacion con develop (Punto 2): `isSession` exige la forma
@@ -83,7 +87,7 @@ describe("SessionGate con sesion", () => {
       "finops.session",
       JSON.stringify({
         accessToken: "tok-123",
-        user: { id: "u1", full_name: "Ada Lovelace", email: "ada@example.com", role: "operator" }
+        user: profile
       })
     );
 
@@ -93,12 +97,15 @@ describe("SessionGate con sesion", () => {
     // `json()` basta, sin necesidad del `Response` real del entorno.
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
+      vi.fn<typeof fetch>(async (input) => {
+        const path = new URL(input instanceof Request ? input.url : String(input)).pathname;
+        if (path === "/me") return Response.json(profile);
+        if (path === "/tenants") {
+          return Response.json({
             items: [{ id: "t1", name: "Acme", slug: "acme", plan: "pro" }]
-          })
+          } satisfies TenantCollection);
+        }
+        throw new Error(`Unexpected request: ${path}`);
       })
     );
 
