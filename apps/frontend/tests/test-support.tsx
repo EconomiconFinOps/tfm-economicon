@@ -90,7 +90,7 @@ export function restoreSession(tenantId?: string) {
 // /overview-legacy (Punto 5 de la reconciliacion con develop, pendiente),
 // las suites navegan a esas pantallas por su ruta inicial en vez de un click
 // sobre un enlace que hoy no existe.
-export function renderApp(initialEntries: string[] = ["/"]) {
+export function renderApp(initialEntries: string[] = ["/"], prepare?: (client: QueryClient) => void) {
   const client = new QueryClient({
     defaultOptions: {
       queries: { retry: false, gcTime: Infinity },
@@ -98,10 +98,12 @@ export function renderApp(initialEntries: string[] = ["/"]) {
     }
   });
   queryClients.add(client);
+  prepare?.(client);
   const router = createMemoryRouter(routeConfig, { initialEntries });
   return {
     ...render(<QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>),
-    client
+    client,
+    router
   };
 }
 

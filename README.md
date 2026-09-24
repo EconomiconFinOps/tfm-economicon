@@ -191,6 +191,29 @@ Compose lee su propio `.env` para interpolacion y pasa solo las variables
 declaradas. No pasar secretos mediante `VITE_*`, ARG o ENV de imagen.
 Los contextos Docker excluyen dotenv raiz/anidados y sus variantes.
 
+El backend recibe `CORS_ALLOWED_ORIGINS` como lista JSON de origenes exactos.
+Ausente o `[]` no concede acceso cross-origin; texto vacio, JSON mal formado,
+`null`, comodines, regex o entradas no canonicas impiden arrancar con un error
+generico sin mostrar el valor. Compose conserva un valor vacio como invalido.
+Cada origen es `scheme://host[:port]`, sin ruta ni `/` final, credenciales,
+query o fragmento; usar minusculas y omitir el puerto por defecto del esquema.
+`production` exige HTTPS aportado por el operador. Para desarrollo local con
+`RUNTIME_ENVIRONMENT=development` o `test`, el ejemplo es
+`CORS_ALLOWED_ORIGINS=["http://localhost:5173","http://127.0.0.1:5173"]`.
+Ambos hosts son distintos y el puerto debe coincidir con el navegador: si
+cambia `FRONTEND_HOST_PORT`, actualizar la lista y recrear el backend. No se
+deriva del bind de Docker ni se cambia automaticamente el entorno production.
+
+CORS permite GET/POST, Authorization, Content-Type, X-Tenant-Id y cabeceras
+safelisted del framework; OPTIONS no requiere JWT, no habilita cookies ni
+expone cabeceras adicionales y su max-age es 600 segundos. No sustituye la
+autenticacion ni la autorizacion tenant. Las respuestas 200/401/403/422 y los
+500 de ruta/DB sanitizados antes de headers son legibles desde un origen
+permitido. Los 500 del middleware exterior, fallos de arranque y streaming
+ya iniciado quedan fuera de esa garantia. El preflight termina antes de las
+metricas y logs de acceso interiores; las peticiones reales los conservan.
+Mas detalles en [el backend](apps/backend/README.md#cors-y-sesion-demo).
+
 El seed demo esta desactivado. Activarlo exige `DEMO_SEED_ENABLED=true`
 y `DEMO_PASSWORD` externa no heredada. El email sigue siendo
 `operator@example.com`; introducir manualmente la password en el formulario.
@@ -205,6 +228,7 @@ antes de preparar una instalacion existente.
 - `PROCESSOR_QUEUE_NAME`: nombre logico de la cola de jobs
 - `AUTH_SECRET_KEY`: secreto para firmar tokens propios del backend
 - `AUTH_TOKEN_TTL_MINUTES`: vida util del token
+- `CORS_ALLOWED_ORIGINS`: lista JSON de origenes del navegador permitidos
 - `EMBEDDING_PROVIDER`: provider configurado para embeddings
 - `VITE_API_BASE_URL`: URL base consumida por el frontend
 - `LLM_PROVIDER`: provider configurado para el modulo de agentes

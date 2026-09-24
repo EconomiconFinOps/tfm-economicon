@@ -2,6 +2,8 @@ from contextlib import ExitStack, asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.types import ASGIApp
 
 from app.api.routes.assistant import router as assistant_router
 from app.api.routes.auth import router as auth_router
@@ -49,6 +51,20 @@ async def lifespan(app: FastAPI):
         raise StartupError("Service initialization or shutdown failed; check dependency availability.") from None
 
 
+class RuntimeCORSMiddleware(CORSMiddleware):
+    def __init__(self, app: ASGIApp):
+        # Settings are resolved when ASGI builds the stack, never during import.
+        super().__init__(
+            app,
+            allow_origins=get_settings().cors_allowed_origins,
+            allow_methods=["GET", "POST"],
+            allow_headers=["Authorization", "Content-Type", "X-Tenant-Id"],
+            allow_credentials=False,
+            expose_headers=[],
+            max_age=600,
+        )
+
+
 app = FastAPI(
     title="FinOps Backend",
     version="0.1.0",
@@ -58,6 +74,7 @@ app = FastAPI(
 app.add_middleware(RequestIdMiddleware)
 app.add_exception_handler(RequestValidationError, validation_error_handler)
 app.add_middleware(MetricsMiddleware)
+app.add_middleware(RuntimeCORSMiddleware)
 
 app.include_router(metrics_router)
 app.include_router(health_router)

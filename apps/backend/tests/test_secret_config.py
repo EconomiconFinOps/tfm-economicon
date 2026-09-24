@@ -222,3 +222,29 @@ def test_demo_opt_in_requires_external_nonlegacy_password(production_env, monkey
 
 def test_demo_disabled_does_not_require_password(production_env):
     assert Settings(_env_file=None) is not None
+
+
+def test_auth_token_ttl_defaults_to_480_and_accepts_positive_minutes(monkeypatch):
+    assert get_settings().auth_token_ttl_minutes == 480
+    monkeypatch.setenv("AUTH_TOKEN_TTL_MINUTES", "17")
+    get_settings.cache_clear()
+
+    ttl = get_settings().auth_token_ttl_minutes
+    assert type(ttl) is int and ttl == 17
+
+
+@pytest.mark.parametrize("ttl", ["0", "-1", "1.5"], ids=["zero", "negative", "fractional"])
+def test_unusable_auth_token_ttl_has_safe_startup_failure(monkeypatch, capsys, ttl):
+    import traceback
+
+    from app.core.runtime_secrets import StartupError
+
+    monkeypatch.setenv("AUTH_TOKEN_TTL_MINUTES", ttl)
+    with pytest.raises(StartupError) as failure:
+        get_settings()
+
+    captured = capsys.readouterr()
+    diagnostic = "".join(traceback.format_exception(failure.value)) + captured.out + captured.err
+    assert "Invalid runtime configuration" in diagnostic
+    for name in REQUIRED:
+        assert SYNTHETIC_ENV[name] not in diagnostic

@@ -1,15 +1,13 @@
-// SessionGate: ruta padre de `Layout` en el arbol de react-router. Resuelve
-// sesion y bootstrap de tenants antes de exponerlos hacia las rutas hijas via
-// Outlet context (JUP-095, grupo 6, sub-ronda a -- ver Addendum de
-// design.md). La logica de sesion/tenant se reproduce verbatim desde
-// `App.jsx` (mismo patron de inicializacion perezosa, misma query, mismo
-// efecto de auto-seleccion): no es una reescritura, es un traslado de sitio
-// -- unicamente cambian los estados de carga/error del bootstrap, que son
-// armazon nuevo (no una pantalla portada), reconstruidos sobre Tailwind.
+// Revalidate profile and tenants in parallel before exposing protected routes.
+// Session generations isolate logout, identity replacement and subsequent login.
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, Outlet } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchProfile, fetchTenants } from "../services/api";
+import {
+  advanceSessionGeneration, clearSessionMutations, fetchProfile, fetchTenants, getSessionGeneration,
+  invalidateSession, subscribeSessionInvalidation
+} from "../services/api";
+import { isNonemptyString, isUserProfile } from "../services/contracts";
 import type { TenantRecord, UserProfile } from "../services/contracts";
 
 // Exportada porque `LoginPage.tsx` necesita la misma clave para persistir la
@@ -28,25 +26,11 @@ interface Session {
   user: UserProfile;
 }
 
-// Antes de esta reconciliacion, `JSON.parse(value) as T` no comprobaba el
-// contenido: un `{}` guardado en localStorage se aceptaba como sesion sin
-// redirigir a /login (aunque tampoco habilitaba la consulta de tenants,
-// `enabled: Boolean(session?.accessToken)`). `isSession` verifica que
-// `accessToken` sea texto y que `user` tenga la forma real de `UserProfile`
-// (id/email/full_name/role, todos texto) antes de confiar en el valor
-// parseado -- mismo criterio que develop.
+// Storage uses the same profile guard as HTTP, plus a nonempty token.
 function isSession(value: unknown): value is Session {
-  if (typeof value !== "object" || value === null
-    || !("accessToken" in value) || typeof value.accessToken !== "string"
-    || !("user" in value) || typeof value.user !== "object" || value.user === null) {
-    return false;
-  }
-
-  const user = value.user;
-  return "id" in user && typeof user.id === "string"
-    && "email" in user && typeof user.email === "string"
-    && "full_name" in user && typeof user.full_name === "string"
-    && "role" in user && typeof user.role === "string";
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    && "accessToken" in value && isNonemptyString(value.accessToken)
+    && "user" in value && isUserProfile(value.user);
 }
 
 // Reconciliacion con develop (JUP-087): `services/api` ya no es `api.js` sin
@@ -93,6 +77,20 @@ export function SessionGate() {
   const [activeTenantId, setActiveTenantId] = useState<string>(
     () => window.localStorage.getItem(TENANT_KEY) || ""
   );
+  const [generation, setGeneration] = useState(getSessionGeneration);
+
+  useEffect(() => {
+    const unsubscribe = subscribeSessionInvalidation(() => {
+      setSession(null);
+      setActiveTenantId("");
+      window.localStorage.removeItem(SESSION_KEY);
+      window.localStorage.removeItem(TENANT_KEY);
+      queryClient.getQueryCache().clear();
+      clearSessionMutations(queryClient);
+    });
+    if (!session) invalidateSession(generation);
+    return unsubscribe;
+  }, [queryClient, session, generation]);
 
   // Bootstrap de tenants: mismo queryKey/queryFn/enabled que App.jsx:43-47.
   // `enabled: Boolean(session?.accessToken)` es lo que garantiza que, sin
@@ -127,14 +125,37 @@ export function SessionGate() {
     enabled: Boolean(session?.accessToken)
   });
 
-  // Auto-seleccion de tenant activo: mismo efecto que App.jsx:49-67,
-  // incluida la limpieza de la clave de localStorage cuando no hay sesion.
+  useEffect(() => {
+    const profile = profileQuery.data;
+    if (!session || !profile || profileQuery.isError || generation !== getSessionGeneration()) return;
+
+    const nextSession = { ...session, user: profile };
+    if (profile.id !== session.user.id) {
+      // Discard bootstrap work for the previous identity before reusing keys.
+      setGeneration(advanceSessionGeneration());
+      setActiveTenantId("");
+      window.localStorage.removeItem(TENANT_KEY);
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] !== "profile"
+          || query.queryKey[1] !== session.accessToken
+      });
+      clearSessionMutations(queryClient);
+    }
+    if (session.user !== profile) {
+      window.localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
+      setSession(nextSession);
+    }
+  }, [session, profileQuery.data, profileQuery.isError, generation, queryClient]);
+
+  // Parallel tenant results may select a tenant only for the current identity.
   useEffect(() => {
     if (!session) {
       setActiveTenantId("");
       window.localStorage.removeItem(TENANT_KEY);
       return;
     }
+    if (generation !== getSessionGeneration() || profileQuery.isError
+      || (profileQuery.data && profileQuery.data.id !== session.user.id)) return;
 
     const tenants: TenantRecord[] = tenantsQuery.data?.items ?? [];
     if (tenants.length === 0) {
@@ -147,7 +168,7 @@ export function SessionGate() {
       setActiveTenantId(nextTenantId);
       window.localStorage.setItem(TENANT_KEY, nextTenantId);
     }
-  }, [session, tenantsQuery.data, activeTenantId]);
+  }, [session, tenantsQuery.data, activeTenantId, profileQuery.data, profileQuery.isError, generation]);
 
   const activeTenant = useMemo<TenantRecord | null>(
     () =>
@@ -157,35 +178,14 @@ export function SessionGate() {
     [tenantsQuery.data, activeTenantId]
   );
 
-  // Verbatim de App.jsx:83-89: limpia sesion (estado + localStorage), tenant
-  // activo y cache de react-query. Al poner `session` a null aqui (igual que
-  // `setSession(null)` en el origen), el propio SessionGate se re-renderiza y
-  // el `if (!session)` de mas abajo pasa a devolver `<Navigate to="/login" />`
-  // -- sin necesidad de navegacion imperativa adicional. Se usa tanto desde
-  // el boton de logout del panel de sesion (Layout, via Outlet context) como
-  // desde el estado de error del bootstrap ("Reset session").
-  //
-  // Envuelto en `useCallback` (JUP-097, RF-090-003): la logica es identica,
-  // verbatim, a la version anterior -- el cambio es solo de identidad de la
-  // funcion, no de comportamiento. Es necesario porque el nuevo efecto de
-  // revalidacion (mas abajo) tiene que listar `handleLogout` en sus
-  // dependencias para que `eslint-plugin-react-hooks` no intente construir
-  // un aviso de "dependencia ausente" (esa ruta del linter, en la version
-  // 4.6.2 sobre ESLint 9, lanza "context.getSource is not a function": fallo
-  // de la herramienta, no del codigo). Sin `useCallback`, listarla de todos
-  // modos evita el fallo pero deja un segundo aviso ("cambia en cada
-  // render"); `useCallback` con `[queryClient]` (la unica dependencia real:
-  // `setSession`/`setActiveTenantId` son setters de estado, estables por
-  // contrato de React) resuelve ambos de raiz sin tocar la logica.
+  // Manual logout and profile errors use the same cleanup as a global 401.
+  // A callback belonging to an older generation cannot invalidate this one.
   const handleLogout = useCallback(() => {
-    setSession(null);
-    setActiveTenantId("");
-    window.localStorage.removeItem(SESSION_KEY);
-    window.localStorage.removeItem(TENANT_KEY);
-    queryClient.clear();
-  }, [queryClient]);
+    invalidateSession(generation);
+  }, [generation]);
 
   function handleTenantChange(nextTenantId: string) {
+    if (generation !== getSessionGeneration()) return;
     setActiveTenantId(nextTenantId);
     window.localStorage.setItem(TENANT_KEY, nextTenantId);
   }
@@ -214,7 +214,9 @@ export function SessionGate() {
   // hay un frame transitorio entre que el error llega y el efecto de arriba
   // ejecuta `handleLogout()`; sin esto, ese frame renderizaria el contexto
   // normal con un `user` que el servidor ya rechazo.
-  if (tenantsQuery.isLoading || profileQuery.isLoading || profileQuery.isError) {
+  if (tenantsQuery.isLoading || profileQuery.isLoading || profileQuery.isError
+    || generation !== getSessionGeneration()
+    || profileQuery.data?.id !== session.user.id) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0f1419] text-white">
         <section className="rounded-lg border border-[#2d3748] bg-[#1a1f2e] px-8 py-6 text-center shadow-lg">

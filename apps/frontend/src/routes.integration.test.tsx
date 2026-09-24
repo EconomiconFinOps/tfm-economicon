@@ -16,6 +16,11 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { routeConfig } from "./routes";
+import type { TenantCollection, UserProfile } from "./services/contracts";
+
+const profile = {
+  id: "u1", full_name: "Ada Lovelace", email: "ada@example.com", role: "operator"
+} satisfies UserProfile;
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -49,7 +54,7 @@ function stubSession() {
     "finops.session",
     JSON.stringify({
       accessToken: "tok-1",
-      user: { id: "u1", full_name: "Ada Lovelace", email: "ada@example.com", role: "operator" }
+      user: profile
     })
   );
 }
@@ -66,12 +71,15 @@ describe("Arbol de rutas real: abrir una direccion directamente presenta su pant
     // hace falta mockear /tenants, que SessionGate consulta en su bootstrap.
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
+      vi.fn<typeof fetch>(async (input) => {
+        const path = new URL(input instanceof Request ? input.url : String(input)).pathname;
+        if (path === "/me") return Response.json(profile);
+        if (path === "/tenants") {
+          return Response.json({
             items: [{ id: "t1", name: "Acme", slug: "acme", plan: "pro" }]
-          })
+          } satisfies TenantCollection);
+        }
+        throw new Error(`Unexpected request: ${path}`);
       })
     );
 
@@ -98,15 +106,18 @@ describe("Arbol de rutas real: el ambito activo sobrevive a la navegacion", () =
 
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
+      vi.fn<typeof fetch>(async (input) => {
+        const path = new URL(input instanceof Request ? input.url : String(input)).pathname;
+        if (path === "/me") return Response.json(profile);
+        if (path === "/tenants") {
+          return Response.json({
             items: [
               { id: "t1", name: "Acme", slug: "acme", plan: "pro" },
               { id: "t2", name: "Globex", slug: "globex", plan: "enterprise" }
             ]
-          })
+          } satisfies TenantCollection);
+        }
+        throw new Error(`Unexpected request: ${path}`);
       })
     );
 
