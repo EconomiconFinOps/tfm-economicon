@@ -64,6 +64,10 @@ The current provisional dataset ID is `economicon-mvp-azure-simulated`. At the e
 
 JUP-020, chunking and embeddings:
 
+The 2026-09-14 closure covers PR #34's ingestion handoff correction. The
+corpus integration requirements below remain unimplemented follow-up work,
+explicitly retained in the [JUP-020 closure](../evidence/JUP-020-validation.md).
+
 - Read only documents declared in `manifest.yaml`.
 - Preserve document metadata on each chunk, including `id`, `title`, `path`, `category`, `version`, `scope`, `tenant_id`, `dataset_id`, and `updated_at`.
 - Do not infer indexable documents from directory scans.

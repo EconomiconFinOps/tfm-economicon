@@ -220,3 +220,45 @@ fecha, commit y resultado. La aprobacion anterior de Paris es historica.
 Tambien sigue pendiente la aprobacion humana post-QA. No se ha efectuado merge.
 Solo entonces procede squash a `develop` y actualizar PR #19 sobre ese resultado.
 No se modifica Trello, no se archivan cambios adicionales y no se promueve a `main`.
+
+## Cierre y archivado — 2026-09-18
+
+El PR #14 esta mergeado en `develop` desde el 08/09 (`3267183`). Trello
+reasigno los roles rotatorios el 18/09: validacion, pruebas y documentacion
+paso a Lucia Mateo (antes Victor Mendez); pairing paso a Victor Mendez (antes
+Lucia Mateo). Las menciones de roles en las secciones anteriores de este
+archivo son historicas y no reflejan el reparto vigente.
+
+### Validacion funcional — Lucia Mateo, 18/09/2026
+
+Commit validado: `3267183e35f792389c5d49c1b9a664e2e65dcdac` (head mergeado de
+PR #14), en un worktree aislado (`git worktree add`), sin tocar `develop` ni
+recursos compartidos.
+
+- CockroachDB 24.1.11 desechable, sin volumen persistente, puerto SQL publicado
+  solo en `127.0.0.1:36413`, marcado con
+  `SET CLUSTER SETTING cluster.organization = 'processor-integration-tests'`
+  antes de las pruebas. El wrapper de entrada de la imagen (`cockroach.sh`)
+  falla de forma reproducible al confundir la base `defaultdb` que Cockroach
+  crea por defecto con una pendiente de creacion; se evito invocando el
+  binario `cockroach start-single-node --insecure` directamente con
+  `--entrypoint`, sin modificar la imagen ni el producto.
+- `python -m pytest tests -k "azure_cost or normaliz"` (sin variable de
+  integracion, entorno `.venv` con `requirements-dev.txt`): 98 passed, 34
+  skipped (los skipped son los que requieren la base real, cubiertos abajo).
+- `PROCESSOR_COCKROACH_TEST_URL=cockroachdb+psycopg://root@127.0.0.1:36413/defaultdb?sslmode=disable
+  python -m pytest tests/test_azure_cost_cockroach_integration.py -v`: **34
+  passed en 943.49 s (0:15:43)**. Cobertura real: migraciones frescas 001-003,
+  upgrade legacy con backfill/indices/idempotencia, tags numericos y mixtos,
+  consumo parcial con socio incompatible, ingesta idempotente entre alias, y
+  rechazo de lotes invalidos sin persistencia parcial (coste texto/booleano/
+  NaN/infinito, cantidad sin unidad, alias y tags en conflicto).
+- Contenedor y worktree desechables, verificados y retirados al finalizar
+  (`docker rm -f`, `git worktree remove`); no se tocaron `develop` ni entornos
+  compartidos.
+
+Resultado: la validacion funcional exigida por la tarea 3.5 queda cubierta.
+La revision del ultimo head (Paris, 08/09) ya estaba registrada arriba.
+**El pairing de Victor nunca llego a registrarse.** Lucia decidio el 18/09
+cerrar la tarea 3.5 sin esa evidencia en vez de dejarla abierta; no se
+atribuye pairing a Victor ni se afirma que lo haya aportado.

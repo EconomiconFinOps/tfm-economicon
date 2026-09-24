@@ -38,8 +38,7 @@ describe("assistant conversations", () => {
       }
     });
     restoreSession();
-    renderApp();
-    await user.click(await screen.findByRole("button", { name: "Assistant" }));
+    renderApp(["/assistant"]);
     expect(await screen.findByText("Create a conversation to start the assistant flow.")).toBeVisible();
 
     const title = screen.getByPlaceholderText("New conversation title");
@@ -80,8 +79,7 @@ describe("assistant conversations", () => {
       [`GET ${collectionPath}/${secondConversation.id}`]: () => pendingDetail.promise
     });
     restoreSession();
-    renderApp();
-    await user.click(await screen.findByRole("button", { name: "Assistant" }));
+    renderApp(["/assistant"]);
     expect(await screen.findByText(userMessage.content)).toBeVisible();
     await user.click(screen.getByRole("button", { name: /Storage review/ }));
     expect(await screen.findByText("Loading conversation...")).toBeVisible();
@@ -102,9 +100,8 @@ describe("assistant conversations", () => {
       [`POST ${collectionPath}`]: () => jsonResponse({ detail: "Conversation creation unavailable." }, 503)
     });
     restoreSession();
-    renderApp();
-    await user.click(await screen.findByRole("button", { name: "Assistant" }));
-    const title = screen.getByPlaceholderText("New conversation title");
+    renderApp(["/assistant"]);
+    const title = await screen.findByPlaceholderText("New conversation title");
     await user.clear(title);
     await user.type(title, "Retain this cost investigation");
     await user.click(screen.getByRole("button", { name: "New" }));
@@ -133,8 +130,7 @@ describe("assistant conversations", () => {
       }
     });
     restoreSession();
-    renderApp();
-    await user.click(await screen.findByRole("button", { name: "Assistant" }));
+    renderApp(["/assistant"]);
     const composer = await screen.findByPlaceholderText("Ask the assistant about the ingested tenant documents.");
     await user.type(composer, userMessage.content);
     await user.click(screen.getByRole("button", { name: "Send" }));
@@ -150,31 +146,33 @@ describe("assistant conversations", () => {
   });
 
   it("reports a failed conversation list instead of presenting it as an empty result", async () => {
-    const user = userEvent.setup();
     mockBackend({
       [`GET ${collectionPath}`]: () => jsonResponse({ detail: "Conversation access denied." }, 403)
     });
     restoreSession();
-    renderApp();
-    await user.click(await screen.findByRole("button", { name: "Assistant" }));
+    renderApp(["/assistant"]);
 
     expect(await screen.findByText(/Conversation access denied/)).toBeVisible();
     expect(screen.queryByText("Create a conversation to start the assistant flow.")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Overview" })).toBeEnabled();
+    // El shell (Layout) sigue disponible aunque el listado falle: la
+    // pantalla no revienta y el enlace de vuelta al indice sigue visible.
+    // "Overview" no existe como boton en el Layout real (Spanish, NavLink);
+    // el equivalente es el enlace "Coste Global" hacia "/".
+    expect(screen.getByRole("link", { name: /Coste Global/i })).toBeVisible();
   });
 
   it("reports conversation detail failures without crashing the shell", async () => {
-    const user = userEvent.setup();
     mockBackend({
       [`GET ${collectionPath}`]: () => jsonResponse({ items: [conversation] }),
       [`GET ${detailPath}`]: () => jsonResponse({ detail: "Conversation not found." }, 404)
     });
     restoreSession();
-    renderApp();
-    await user.click(await screen.findByRole("button", { name: "Assistant" }));
+    renderApp(["/assistant"]);
 
     expect(await screen.findByText(/Conversation not found/)).toBeVisible();
     expect(screen.queryByRole("button", { name: "Send" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Logout" })).toBeEnabled();
+    // "Logout" no existe como texto visible en el Layout real: el boton usa
+    // aria-label="Cerrar sesion" (icono sin texto).
+    expect(screen.getByRole("button", { name: "Cerrar sesion" })).toBeEnabled();
   });
 });

@@ -198,19 +198,35 @@ tarjeta en Trello.
 
 ### F3. Reemplazo del codigo fuente
 
-**JUP `jup-0xx-portar-codigo-fuente`** — carril `standard`
-- [ ] Reemplazar `src/**` por el codigo de Economicon (componentes, pages, hooks, layouts).
-- [ ] Reconciliar `index.html` y entrypoint (`main.tsx`).
-- [ ] Asegurar arranque sin errores de tipo ni de runtime (`pnpm dev`, `pnpm build`).
+**JUP `jup-095-portar-codigo-fuente`** — carril `standard` — **completa**
+- [x] Reemplazar `src/**` por el codigo de Economicon (componentes, pages, hooks, layouts).
+- [x] Reconciliar `index.html` y entrypoint (`main.tsx`).
+- [x] Asegurar arranque sin errores de tipo ni de runtime (`pnpm dev`, `pnpm build`).
 
-**JUP `jup-0xx-reconciliar-capa-api`** — carril `standard`
-- [ ] Portar `services/api.*` a TS como **unica** capa HTTP.
-- [ ] Alinear cada llamada a los contratos reales: `/auth/login`, `/me`, `/tenants`,
-      `/billing/summary`, `/jobs/ingest`, `/assistant/conversations...`.
-- [ ] Conservar `VITE_API_BASE_URL` y headers `Authorization: Bearer` + `X-Tenant-Id`.
-- [ ] Registrar como finding cualquier endpoint del origen sin equivalente en el backend.
-- [ ] Resolver `RF-090-003` (`openspec/findings/backlog.md`): decidir si `fetchProfile`
-  (`GET /me`) se conecta o se retira, ya que hoy está implementado pero nunca se invoca.
+**JUP [`jup-097-reconcile-api-layer`](../../openspec/changes/jup-097-reconcile-api-layer/) — carril `standard` — completa**
+- [x] Portar `services/api.*` a TS como **unica** capa HTTP. **Ya lo había cerrado JUP-095**: al
+  proponer esta tarjeta, `api.ts`/`contracts.ts` ya existían tipados con las 10 operaciones (grupo 5
+  de JUP-095, no de esta tarjeta) — este spike quedaba desactualizado al listarlo aquí como pendiente.
+  El trabajo real de esta tarjeta fue auditar, no portar.
+- [x] Alinear cada llamada a los contratos reales: `/health`, `/auth/login`, `/me`, `/tenants`,
+      `/billing/summary`, `/jobs/ingest`, `/assistant/conversations...` — son **10** endpoints (el
+      `proposal.md`/`design.md`/`tasks.md` de la propia tarjeta decían "9" antes de auditar, error de
+      conteo propio corregido al hacerlo, no heredado de este spike). Auditadas las 10, cero
+      desviaciones.
+- [x] Conservar `VITE_API_BASE_URL` y headers `Authorization: Bearer` + `X-Tenant-Id`. Verificado:
+      único punto de red es `services/api.ts`, ninguna dirección de backend fijada en pantallas.
+- [x] Registrar como finding cualquier endpoint del origen sin equivalente en el backend. Ninguno
+      nuevo: la auditoría no encontró desviaciones que requirieran finding de contrato.
+- [x] Resolver `RF-090-003` (`openspec/findings/backlog.md`): `fetchProfile` (`GET /me`) se
+      **conecta** en `SessionGate` como revalidación de la sesión persistida (decisión 2 del
+      `design.md` de la tarjeta) — cierra a `Fixed`.
+- [x] **Añadido durante el `apply`, más allá de las cuatro tareas de este spike:** mapa de carencias
+  por pantalla, dato a dato, en
+  [docs/planning/JUP-097-frontend-data-gap-map.md](../planning/JUP-097-frontend-data-gap-map.md),
+  refinando `RF-095-002` (permanece `Open`, es insumo para la decisión de épica sobre
+  `RF-091-003`, no la resuelve). Por decisión de alcance tomada antes de proponer, **no se tocó
+  backend y no se retiró `/overview-legacy`**: sigue siendo el único dashboard con datos reales, sin
+  Overview real que la sustituya todavía.
 
 **JUP `jup-0xx-reconciliar-auth-tenant`** — carril `standard`
 - [ ] Adaptar login/sesion al flujo del backend (token + perfil `/me`).
@@ -364,3 +380,34 @@ tarjeta JUP** de la epica.
    componente. Siguiente: crear las tarjetas de F3 (`portar-codigo-fuente`,
    `reconciliar-capa-api`, `reconciliar-auth-tenant`, `unificar-estilos-assets`), citando ADR-0003 y
    ADR-0004 en su `design.md`.
+7. **Hecho en JUP-095: `portar-codigo-fuente` queda completa.** Los 8 `.tsx` vivos del origen portados
+   (5 dashboards, `Layout`, `ExportButton`, `routes.tsx`) con sus datos de demostración aislados en
+   `src/data/demo/`; enrutado real montado (`SessionGate` + `Outlet context`, patrón nativo de
+   react-router, no Context API propio); `LoginPage`/`IngestPage`/`ConversationsPage`/`DashboardPage`
+   reconstruidas sobre Tailwind conservando su lógica verbatim; entrypoint reconciliado
+   (`main.tsx`, ambos proveedores); `App.jsx`→`App.tsx`, `main.css` y `PlaceholderPage.jsx`
+   retirados. Runner de pruebas (Vitest) adoptado y promovido a comprobación obligatoria de CI —
+   cierra la excepción al ciclo Red/Green que arrastraban JUP-093/094. `RF-082-002` cerrado
+   (`Fixed`): línea base de lint en 0 (era 49 violaciones en 9 archivos `.jsx`), 0 archivos `.jsx`
+   restantes en `src/**`. Deuda explícita dejada para la siguiente tarjeta de F3
+   (`reconciliar-capa-api`): la ruta puente `/overview-legacy` (único dashboard con datos reales,
+   decisión 6 de `design.md`) y el finding nuevo `RF-095-002` (datos de demostración en las 5
+   pantallas de coste, relacionado con `RF-091-003`/`RF-091-004`). Hallazgo nuevo fuera de alcance de
+   esta tarjeta: `RF-095-001` (backend sin `CORSMiddleware`, responsabilidad del backend). **Queda de
+   F3:** `reconciliar-capa-api`, `reconciliar-auth-tenant` y `unificar-estilos-assets`, en ese orden
+   de dependencia (la capa API y la sesión real son prerrequisito de conectar los dashboards de
+   demostración; la unificación de estilos es la más aislada de las tres).
+8. **Hecho en JUP-097 (`jup-097-reconcile-api-layer`): la capa de datos queda auditada.** Numeración
+   de Trello resuelta con una excepción: un compañero ocupó JUP-096 para un tema ajeno, así que esta
+   tarjeta es JUP-097 y `reconciliar-auth-tenant`/`unificar-estilos-assets` quedan sin número
+   asignado (el spike ya no puede asumir numeración secuencial). Las 10 operaciones de
+   `services/api.ts` (no 9: corrección propia de conteo) verificadas contra el backend real, cero
+   desviaciones de contrato — el trabajo real fue auditar, no portar, porque JUP-095 ya había
+   tipado la capa. `RF-090-003` cerrado (`Fixed`): `fetchProfile` conectado en `SessionGate` como
+   revalidación de la sesión persistida. `RF-095-002` refinado, no cerrado — mapa dato a dato en
+   [docs/planning/JUP-097-frontend-data-gap-map.md](../planning/JUP-097-frontend-data-gap-map.md).
+   **Por decisión de alcance explícita, tomada antes de proponer:** ningún archivo de
+   `apps/backend/**` se tocó, y `/overview-legacy` se conserva sin retirar — sigue siendo el único
+   dashboard con datos reales, sin Overview real que la sustituya todavía. `RF-091-003` y
+   `RF-091-004` permanecen `Open` sin cambio. **Queda de F3:** `reconciliar-auth-tenant` (construye
+   sesión real sobre la capa ya auditada) y `unificar-estilos-assets`.
