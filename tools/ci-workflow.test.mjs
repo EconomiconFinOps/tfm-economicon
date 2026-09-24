@@ -78,6 +78,8 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "jup:cleanup:test",
     "jup:cleanup:check",
     "assistant-corpus:test",
+    "validation-questions:validate",
+    "validation-questions:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
     "docker:validate",
