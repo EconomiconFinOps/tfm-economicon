@@ -26,19 +26,20 @@ def get_embedding_provider(request: Request):
 
 def get_current_user(
     request: Request,
-    authorization: str | None = Header(default=None),
+    authorization: list[str] | None = Header(default=None),
 ):
-    if not authorization or not authorization.startswith("Bearer "):
+    parts = authorization[0].split() if authorization and len(authorization) == 1 else []
+    if len(parts) != 2 or parts[0].lower() != "bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid bearer token.",
         )
 
-    token = authorization.split(" ", maxsplit=1)[1]
+    token = parts[1]
     settings = get_settings()
     try:
         payload = decode_access_token(token, settings.auth_secret_key.get_secret_value())
-    except Exception as exc:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid access token.",
@@ -48,7 +49,7 @@ def get_current_user(
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found for access token.",
+            detail="Invalid access token.",
         )
     return user
 

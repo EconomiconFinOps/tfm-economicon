@@ -1,24 +1,11 @@
-// LoginPage: en la nueva arquitectura de rutas (JUP-095, grupo 6, sub-ronda
-// b -- ver Addendum de design.md) vive fuera del arbol protegido por
-// `SessionGate`, como ruta hermana de "/". Ya no recibe el callback
-// `onLogin` desde `App.jsx`: reproduce ella misma, en el `onSuccess` de su
-// mutacion, lo que hoy hace `App.jsx.handleLogin` (App.jsx:74-81) --
-// construir `{ accessToken, user }` y persistirlo en localStorage -- y
-// navega a "/" con `useNavigate()` de react-router. La logica de formulario
-// (estado, submit, mensaje de error, estado pendiente del boton) se conserva
-// tal cual del origen; solo cambian el tipado y la presentacion (Tailwind).
+// Accept only validated login responses from the current generation.
+// SessionGate revalidates the persisted session after navigation.
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
-import { login } from "../services/api";
-import type { LoginResponse } from "../services/contracts";
+import { advanceSessionGeneration, clearSessionMutations, getSessionGeneration, login } from "../services/api";
 import { SESSION_KEY } from "../layouts/SessionGate";
 
-// Reconciliacion con develop (JUP-087): `services/api` ya no es `api.js` sin
-// tipar, es `api.ts` contra `services/contracts.ts`. `login()` devuelve el
-// `LoginResponse` real del contrato (con `UserProfile` de forma cerrada), asi
-// que se importa ese tipo en vez de declarar aqui una forma local laxa que
-// divergiria en silencio del contrato que de verdad exige el backend.
 interface LoginFormState {
   email: string;
   password: string;
@@ -26,6 +13,7 @@ interface LoginFormState {
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   // Sin genero explicito en `useState`: se infiere `LoginFormState` igual a
   // partir del literal (mismos dos campos, mismos tipos), y
   // `tools/docker-topology.test.mjs` (gobernanza de JUP-053) localiza este
@@ -43,12 +31,17 @@ export function LoginPage() {
   });
 
   const mutation = useMutation({
-    mutationFn: (payload: LoginFormState) => login(payload),
-    onSuccess: (payload: LoginResponse) => {
-      // Verbatim de App.jsx.handleLogin (App.jsx:74-81): mismo shape de
-      // sesion, misma clave de localStorage. Aqui no hay estado de sesion
-      // que actualizar (eso vive en SessionGate, que lee localStorage de
-      // forma perezosa al montar) -- basta con persistir y navegar.
+    mutationFn: async (credentials: LoginFormState) => {
+      const generation = getSessionGeneration();
+      const payload = await login(credentials);
+      return { payload, generation };
+    },
+    onSuccess: ({ payload, generation }) => {
+      if (generation !== getSessionGeneration()) return;
+      advanceSessionGeneration();
+      queryClient.getQueryCache().clear();
+      clearSessionMutations(queryClient);
+      window.localStorage.removeItem("finops.activeTenant");
       const nextSession = {
         accessToken: payload.access_token,
         user: payload.user

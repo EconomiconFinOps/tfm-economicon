@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/react-query";
 import type {
   AssistantReply,
   BillingSummary,
@@ -14,13 +15,62 @@ import type {
   TenantCollection,
   UserProfile
 } from "./contracts";
+import { isLoginResponse, isUserProfile } from "./contracts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+let sessionGeneration = 0;
+const invalidationListeners = new Set<() => void>();
+
+export function getSessionGeneration() {
+  return sessionGeneration;
+}
+
+export function advanceSessionGeneration() {
+  return ++sessionGeneration;
+}
+
+export function subscribeSessionInvalidation(listener: () => void) {
+  invalidationListeners.add(listener);
+  return () => { invalidationListeners.delete(listener); };
+}
+
+export function invalidateSession(generation: number) {
+  if (generation !== sessionGeneration) return;
+  advanceSessionGeneration();
+  invalidationListeners.forEach((listener) => listener());
+}
+
+export function clearSessionMutations(queryClient: QueryClient) {
+  const cache = queryClient.getMutationCache();
+  const removed = cache.getAll();
+  cache.clear();
+  for (const mutation of removed) {
+    // Only removed mutations lose GC scheduling. Infinity survives later
+    // observer option updates; destroy also cancels any existing timer.
+    mutation.setOptions({ ...mutation.options, gcTime: Infinity });
+    mutation.destroy();
+  }
+}
+
+export class ApiError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+function discardResponse(): Promise<never> {
+  // Cleared mutations cannot be cancelled by QueryClient. Do not settle their
+  // abandoned HTTP work: settling would run callbacks or schedule retries.
+  return new Promise(() => {});
+}
 
 type FetchJsonOptions = Omit<RequestInit, "headers"> & {
   token?: string;
   tenantId?: string;
   headers?: Record<string, string>;
+  validate?: (value: unknown) => boolean;
 };
 
 function buildHeaders(token?: string, tenantId?: string, headers: Record<string, string> = {}) {
@@ -33,19 +83,37 @@ function buildHeaders(token?: string, tenantId?: string, headers: Record<string,
 }
 
 async function fetchJson<T>(path: string, options: FetchJsonOptions = {}): Promise<T> {
-  const { token, tenantId, headers, ...requestInit } = options;
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: buildHeaders(token, tenantId, headers),
-    ...requestInit
-  });
+  const generation = getSessionGeneration();
+  const { token, tenantId, headers, validate, ...requestInit } = options;
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: buildHeaders(token, tenantId, headers),
+      ...requestInit
+    });
+    if (generation !== getSessionGeneration()) return discardResponse();
 
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `Request failed for ${path}`);
+    if (token && path !== "/me" && response.status === 401) {
+      invalidateSession(generation);
+      return discardResponse();
+    }
+
+    if (!response.ok) {
+      const body = await response.text();
+      if (generation !== getSessionGeneration()) return discardResponse();
+      const message = token ? body.split(token).join("[redacted]") : body;
+      throw new ApiError(response.status, message.slice(0, 512) || `Request failed for ${path}`);
+    }
+
+    const data: unknown = await response.json();
+    if (generation !== getSessionGeneration()) return discardResponse();
+    if (validate && !validate(data)) {
+      throw new ApiError(response.status, `Invalid response for ${path}`);
+    }
+    return data as T;
+  } catch (error) {
+    if (generation !== getSessionGeneration()) return discardResponse();
+    throw error;
   }
-
-  // This is the HTTP boundary. Callers supply the backend's response contract.
-  return response.json() as Promise<T>;
 }
 
 export function fetchHealth() {
@@ -53,7 +121,7 @@ export function fetchHealth() {
 }
 
 export function fetchProfile(token: string) {
-  return fetchJson<UserProfile>("/me", { token });
+  return fetchJson<UserProfile>("/me", { token, validate: isUserProfile });
 }
 
 export function fetchTenants(token: string) {
@@ -67,6 +135,7 @@ export function fetchBillingSummary(token: string, tenantId: string) {
 export function login(payload: LoginRequest) {
   return fetchJson<LoginResponse>("/auth/login", {
     method: "POST",
+    validate: isLoginResponse,
     body: JSON.stringify(payload)
   });
 }
