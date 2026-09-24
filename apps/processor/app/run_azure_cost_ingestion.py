@@ -30,8 +30,8 @@ DEFAULT_DEFINITION = {
             "totalCost": {"name": "PreTaxCost", "function": "Sum"}
         },
         "grouping": [
+            {"type": "Dimension", "name": "ResourceId"},
             {"type": "Dimension", "name": "ResourceGroup"},
-            {"type": "Dimension", "name": "ServiceName"},
         ],
     },
 }
