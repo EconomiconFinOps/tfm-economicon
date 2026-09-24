@@ -17,18 +17,18 @@ HEAD `3a08d60`; aprobacion literal en proposal.md a las 13:05:53 UTC y ADR-0007
 Accepted. Residual/CORS implementados. Resultados recibidos del orquestador,
 no reejecutados por este pase documental:
 
-| Validacion | Resultado comunicado |
-|---|---|
-| Red residual | 59 fallos CORS y 70 frontend iniciales; 2 regresiones RF-085-001 Red a Green |
-| Green | Backend 245 PASS; frontend 235 PASS |
-| Casos nuevos | 76 CORS + 139 frontend = 215 residuales; 54 backend historicos retenidos |
-| Mutacion residual | 37 variantes, 35 detectadas, 2 equivalentes, 0 pendientes |
-| Navegador runtime | Pasadas funcionales PASS, incluida QA posterior; no resuelven QA_BLOCKED_ENV. Detalle e historial en review/evidencia enlazados |
-| Compatibilidad Settings | pydantic-settings 2.3.4: 76 CORS PASS; 2.15: 245 backend PASS; sin cambio de dependencias |
-| Regresiones de la sesion principal | Processor 266 PASS / 34 skips; Azure 58 PASS; Node 83 PASS; colaboracion 12 PASS |
-| Calidad | Lint, typecheck y build PASS |
-| Total distinto de pruebas | 899 PASS / 34 SKIP; sin sumar reruns, mutantes, OpenSpec ni navegador |
-| Revision | REVIEW_PASS; 135 hashes y guard PASS; RF-085-001 Fixed local, sin integrar |
+| Validacion                         | Resultado comunicado                                                                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Red residual                       | 59 fallos CORS y 70 frontend iniciales; 2 regresiones RF-085-001 Red a Green                                                    |
+| Green                              | Backend 245 PASS; frontend 235 PASS                                                                                             |
+| Casos nuevos                       | 76 CORS + 139 frontend = 215 residuales; 54 backend historicos retenidos                                                        |
+| Mutacion residual                  | 37 variantes, 35 detectadas, 2 equivalentes, 0 pendientes                                                                       |
+| Navegador runtime                  | Pasadas funcionales PASS, incluida QA posterior; no resuelven QA_BLOCKED_ENV. Detalle e historial en review/evidencia enlazados |
+| Compatibilidad Settings            | pydantic-settings 2.3.4: 76 CORS PASS; 2.15: 245 backend PASS; sin cambio de dependencias                                       |
+| Regresiones de la sesion principal | Processor 266 PASS / 34 skips; Azure 58 PASS; Node 83 PASS; colaboracion 12 PASS                                                |
+| Calidad                            | Lint, typecheck y build PASS                                                                                                    |
+| Total distinto de pruebas          | 899 PASS / 34 SKIP; sin sumar reruns, mutantes, OpenSpec ni navegador                                                           |
+| Revision                           | REVIEW_PASS; 135 hashes y guard PASS; RF-085-001 Fixed local, sin integrar                                                      |
 
 Cuatro fixtures legacy corregidas sin ampliar alcance: una en
 `apps/frontend/src/layouts/SessionGate.test.tsx`, dos en
@@ -93,7 +93,7 @@ Este turno solo actualiza la documentacion del incremento y la valida.
 - [x] 5.1 JUP-085 completar mutacion residual de contratos/limpieza/status/generacion, paralelismo y logout por errores transitorios de `/me`, distinguiendo el `403` de otros endpoints: 37 variantes, 35 detectadas, 2 equivalentes, 0 pendientes. Ronda backend del 10/09 conservada como historia; revision de codigo REVIEW_PASS.
 - [x] 5.2 JUP-085 verificar backend/frontend, lint, build, typecheck, OpenSpec estricto, trazabilidad e higiene sobre `3a08d60`: pruebas/calidad comunicadas PASS arriba; OpenSpec estricto 33/33, trazabilidad e higiene (615 archivos) PASS en la sincronizacion anterior del 23/09, sin reejecutar producto. Los wrappers `corepack pnpm` fallaron por EPERM antes del check; se ejecutaron los mismos entrypoints instalados con `node`, exit 0, con permiso de lectura fuera del sandbox para OpenSpec.
 - [x] 5.3 JUP-085 entregar evidencia funcional y revision tecnica de login, restauracion, expiracion y logout, con navegador real en stack canonico de puertos separados, tras gate 2.5, seguridad normal y sin proxy. Preservar `/me`/`tenants` paralelos y logout ante cualquier error de query `/me`, incluso transitorio, con retries intactos; reutilizar tests frontend nativos. Evidencia y review runtime entregados por el orquestador, incluido el REVIEW_PASS ambiental previo y el dictamen QA_BLOCKED_ENV posterior. Esta entrega completa 5.3, no acredita QA final PASS ni estabilidad del reloj. RF-087-001/RF-095-001 siguen Open hasta completar QA; no inferir cierre de RF-087-002 historico, JUP-020 ni ampliar JUP-086.
-- [ ] 5.4 JUP-085 obtener validacion y gate humano final con participacion acreditada, sin inferir pairing/revision/QA de los roles propuestos. Publicacion, operaciones Git, tracker y archivo requieren autorizacion separada.
+- [x] 5.4 JUP-085 obtener validacion y gate humano final con participacion acreditada, sin inferir pairing/revision/QA de los roles propuestos. Publicacion, operaciones Git, tracker y archivo requieren autorizacion separada.
 
 Antecedente historico backend del 10/09: 54 casos nuevos; Red 22 failed / 124 passed en la
 seleccion con regresiones; Green completo 169 passed. Mutacion: 13 variantes, 12 detectados,
