@@ -14,6 +14,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { LoginResponse } from "../services/contracts";
 
 // Contrato esperado (a implementar por el agente coder en fase Green):
 // `LoginPage` reconstruida sobre el nuevo sistema de estilos, sin el prop
@@ -59,8 +60,9 @@ describe("LoginPage", () => {
         json: () =>
           Promise.resolve({
             access_token: "tok-abc",
-            user: { full_name: "Ada Lovelace", email: "ada@example.com" }
-          })
+            token_type: "bearer",
+            user: { id: "u1", full_name: "Ada Lovelace", email: "ada@example.com", role: "operator" }
+          } satisfies LoginResponse)
       })
     );
 
@@ -77,9 +79,9 @@ describe("LoginPage", () => {
 
     renderRouter(router);
 
-    // El formulario ya trae valores por defecto (seed local del README):
-    // basta con disparar el envio. Se localiza el boton por rol y texto, sin
-    // depender de una clase CSS que puede cambiar en la reconstruccion.
+    // La password empieza vacia; el caso aporta una credencial sintetica.
+    expect(screen.getByLabelText("Password")).toHaveValue("");
+    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "synthetic-login-password" } });
     fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     // Tras el exito de la mutacion, LoginPage navega a "/": la sonda
@@ -96,7 +98,7 @@ describe("LoginPage", () => {
     );
     expect(storedSession).toEqual({
       accessToken: "tok-abc",
-      user: { full_name: "Ada Lovelace", email: "ada@example.com" }
+      user: { id: "u1", full_name: "Ada Lovelace", email: "ada@example.com", role: "operator" }
     });
   });
 });

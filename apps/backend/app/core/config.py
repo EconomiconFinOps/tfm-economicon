@@ -1,8 +1,10 @@
 from functools import lru_cache
+import json
 import os
+import re
 from typing import Literal
 
-from pydantic import SecretStr, model_validator
+from pydantic import AnyHttpUrl, Field, Json, SecretStr, StrictStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.runtime_secrets import PLACEHOLDERS, StartupError, register_secrets, validate_connections
@@ -17,13 +19,32 @@ class Settings(BaseSettings):
     processor_queue_name: str = "processor:jobs"
     embedding_dimension: int = 8
     auth_secret_key: SecretStr
-    auth_token_ttl_minutes: int = 480
+    auth_token_ttl_minutes: int = Field(default=480, gt=0)
+    cors_allowed_origins: Json[list[StrictStr]] = Field(default_factory=list)
     demo_seed_enabled: bool = False
     demo_password: SecretStr | None = None
+
+    @field_validator("cors_allowed_origins", mode="before")
+    @classmethod
+    def validate_origin_list(cls, value):
+        # Json defers source decoding so explicit null cannot become a missing value.
+        # List defaults and direct inputs use the same strict JSON validation.
+        return json.dumps(value) if isinstance(value, list) else value
 
     @model_validator(mode="after")
     def validate_runtime(self) -> "Settings":
         validate_connections(self)
+        for origin in self.cors_allowed_origins:
+            url = AnyHttpUrl(origin)
+            if (
+                str(url) != origin + "/"
+                or url.username is not None or url.password is not None
+                or url.query is not None or url.fragment is not None
+                or not url.host
+                or not re.fullmatch(r"[a-z0-9.\-]+|\[[0-9a-f:]+\]", url.host)
+                or (self.runtime_environment == "production" and url.scheme != "https")
+            ):
+                raise ValueError("CORS origins must be exact serialized origins for this environment")
         key = self.auth_secret_key.get_secret_value()
         if not key.strip() or any(c in key for c in ("\r", "\n")):
             raise ValueError("JWT signing key must be nonempty and single-line")

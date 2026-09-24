@@ -18,6 +18,25 @@ export interface LoginResponse {
   user: UserProfile;
 }
 
+export function isNonemptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
+}
+
+export function isUserProfile(value: unknown): value is UserProfile {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    && "id" in value && isNonemptyString(value.id)
+    && "email" in value && isNonemptyString(value.email)
+    && "role" in value && isNonemptyString(value.role)
+    && "full_name" in value && typeof value.full_name === "string";
+}
+
+export function isLoginResponse(value: unknown): value is LoginResponse {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    && "access_token" in value && isNonemptyString(value.access_token)
+    && "token_type" in value && value.token_type === "bearer"
+    && "user" in value && isUserProfile(value.user);
+}
+
 export interface TenantRecord {
   id: string;
   name: string;
