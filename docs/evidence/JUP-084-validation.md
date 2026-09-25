@@ -1,5 +1,15 @@
 # Evidencia de validacion JUP-084
 
+## Revision de cierre — 2026-09-25
+
+PR original aprobada e integrada y tarjeta en `70 — Hecho`, contrastadas
+con GitHub y el puente de DockerServer. El archivo y promocion de specs se
+proponen en una rama de revision; no estan integrados en develop por esta nota.
+Detalle, fuentes y limites: [auditoria de cierres](OpenSpec-closures-2026-09-25.md).
+
+Las secciones siguientes son evidencia historica: sus estados pendientes y
+resultados de pruebas no se convierten retroactivamente en aprobaciones.
+
 - Fecha: 2026-08-27.
 - Tarjeta: https://trello.com/c/m1i7iXBm.
 - Rama: `docs/JUP-084-finops-agent-tool-contract`.

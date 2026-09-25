@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-09-09
-- Related JUP/OpenSpec: JUP-053, [jup-053-secure-runtime-secrets](../../openspec/changes/jup-053-secure-runtime-secrets/proposal.md)
+- Related JUP/OpenSpec: JUP-053, [jup-053-secure-runtime-secrets](../../openspec/changes/archive/2026-09-25-jup-053-secure-runtime-secrets/proposal.md)
 - Trello: https://trello.com/c/2UCJTDhi/41-jup-053-gestionar-secretos-y-credenciales-de-forma-segura
 - Supersedes: none
 - Superseded by: none
