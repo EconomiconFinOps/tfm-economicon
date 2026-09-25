@@ -19,3 +19,12 @@
 - [x] 3.3 JUP-084 publicar rama y pull request hacia develop
 - [x] 3.4 JUP-084 registrar evidencia y enlaces en Trello
 - [ ] 3.5 JUP-084 obtener pairing, revision y validacion de los otros miembros
+
+## Propuesta de archivo — 2026-09-25
+
+PR original integrada y tarjeta en Hecho verificadas. Consultar la
+[auditoria de cierres](../../../../docs/evidence/OpenSpec-closures-2026-09-25.md).
+La tarea de participacion permanece sin marcar: falta evidencia atribuible.
+El PR borrador propone el archivo tecnico con ese residual explicito;
+antes del merge el equipo debe aportar la evidencia o aceptar la excepcion.
+El archivo propuesto no acredita roles ni exime silenciosamente esa tarea.

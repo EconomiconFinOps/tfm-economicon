@@ -46,7 +46,7 @@ autorizacion tenant de JUP-086, despliegue de proveedores/JUP-023, secret manage
 TLS/provisioning, migraciones, rediseno de CI ni renovacion del frontend.
 Las fixtures Azure simuladas no son credenciales de Azure; no se cambia su API.
 
-Se acepta [ADR-0006](../../../docs/adr/ADR-0006-runtime-secret-boundaries.md)
+Se acepta [ADR-0006](../../../../docs/adr/ADR-0006-runtime-secret-boundaries.md)
 para los limites duraderos de secretos y la excepcion local, en estado Accepted,
 con aprobacion completa registrada abajo. Introducir secret manager o TLS requiere nueva aprobacion
 de alcance y decision arquitectonica. ADR-0002/JUP-078 permanece intacto.
@@ -94,7 +94,7 @@ conservan; esta nota no acredita el cierre ni el resultado de QA integrado.
 
 En el gate previo de las 14:24 UTC todavia no habia resultados de pruebas
 ni escaneo. Posteriormente se ejecutaron Green3, mutation y QA; consultar
-[review.md](review.md) y [evidencia](../../../docs/evidence/JUP-053-validation.md).
+[review.md](review.md) y [evidencia](../../../../docs/evidence/JUP-053-validation.md).
 El 2026-09-10 Paris Arcos asigna RF-053-004 a JUP-020 y posteriormente pide
 cerrar JUP-053 con esa anotacion y crear la PR. Se registra la aceptacion
 acotada de secretos y la autorizacion de publicacion, no una ingesta funcional

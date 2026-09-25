@@ -20,3 +20,12 @@
 - [x] 3.2 JUP-081 deploy the branch code and complete a full real sync
 - [x] 3.3 JUP-081 publish a pull request toward develop and pass remote CI
 - [ ] 3.4 JUP-081 obtain pairing, review and functional validation evidence
+
+## Propuesta de archivo — 2026-09-25
+
+PR original integrada y tarjeta en Hecho verificadas. Consultar la
+[auditoria de cierres](../../../../docs/evidence/OpenSpec-closures-2026-09-25.md).
+La tarea de participacion permanece sin marcar: falta evidencia atribuible.
+El PR borrador propone el archivo tecnico con ese residual explicito;
+antes del merge el equipo debe aportar la evidencia o aceptar la excepcion.
+El archivo propuesto no acredita roles ni exime silenciosamente esa tarea.

@@ -1,5 +1,5 @@
 JUP: JUP-053
-ADR: [ADR-0006, Accepted](../../../docs/adr/ADR-0006-runtime-secret-boundaries.md); aprobacion completa registrada en proposal.md.
+ADR: [ADR-0006, Accepted](../../../../docs/adr/ADR-0006-runtime-secret-boundaries.md); aprobacion completa registrada en proposal.md.
 
 ## Context
 
