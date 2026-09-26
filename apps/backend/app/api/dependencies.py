@@ -57,12 +57,18 @@ def get_current_user(
 def get_active_tenant(
     request: Request,
     current_user: dict = Depends(get_current_user),
-    x_tenant_id: str | None = Header(default=None, alias="X-Tenant-Id"),
 ):
-    if not x_tenant_id:
+    selectors = request.headers.getlist("X-Tenant-Id")
+    x_tenant_id = selectors[0] if len(selectors) == 1 else ""
+    if (
+        not x_tenant_id
+        or any(character.isspace() or ord(character) < 32 or ord(character) == 127
+               for character in x_tenant_id)
+        or "," in x_tenant_id
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="X-Tenant-Id header is required.",
+            detail="A single valid X-Tenant-Id header is required.",
         )
 
     if not request.app.state.database.user_has_tenant(current_user["id"], x_tenant_id):

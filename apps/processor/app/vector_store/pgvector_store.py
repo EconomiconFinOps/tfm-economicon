@@ -49,11 +49,8 @@ class PgVectorStore:
         document_id = job_id
 
         with self.engine.begin() as connection:
-            connection.execute(
-                text("DELETE FROM knowledge_documents WHERE id = :document_id"),
-                {"document_id": document_id},
-            )
-            connection.execute(
+            # The conditional upsert locks ownership, including concurrent retries.
+            saved = connection.execute(
                 text(
                     """
                     INSERT INTO knowledge_documents (
@@ -61,6 +58,14 @@ class PgVectorStore:
                     ) VALUES (
                         :id, :job_id, :tenant_id, :source, :artifact_uri, :text_content, :chunk_count, :created_at, :updated_at
                     )
+                    ON CONFLICT (id) DO UPDATE SET
+                        source = excluded.source,
+                        artifact_uri = excluded.artifact_uri,
+                        text_content = excluded.text_content,
+                        chunk_count = excluded.chunk_count,
+                        updated_at = excluded.updated_at
+                    WHERE knowledge_documents.tenant_id = excluded.tenant_id
+                      AND knowledge_documents.job_id = excluded.job_id
                     """
                 ),
                 {
@@ -74,6 +79,18 @@ class PgVectorStore:
                     "created_at": now,
                     "updated_at": now,
                 },
+            )
+            if saved.rowcount != 1:
+                raise PermissionError("Document write rejected.")
+            connection.execute(
+                text("""
+                    DELETE FROM document_chunks WHERE document_id = :document_id
+                    AND EXISTS (
+                        SELECT 1 FROM knowledge_documents
+                        WHERE id = :document_id AND tenant_id = :tenant_id AND job_id = :job_id
+                    )
+                """),
+                {"document_id": document_id, "tenant_id": tenant_id, "job_id": job_id},
             )
 
             for index, chunk in enumerate(chunks):

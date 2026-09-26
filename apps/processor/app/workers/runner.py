@@ -1,4 +1,5 @@
 from contextlib import ExitStack
+import re
 import threading
 import uuid
 
@@ -12,7 +13,7 @@ from app.embeddings.chunker import TextChunker
 from app.embeddings.providers import get_embedding_provider
 from app.graphs.pipeline import PipelineRunner
 from app.repositories.jobs import JobRepository
-from app.tasks.ingest import IngestTask
+from app.tasks.ingest import IngestTask, InvalidJobMessage
 from app.vector_store.pgvector_store import PgVectorStore
 
 
@@ -51,7 +52,7 @@ class ProcessorWorker:
         self._resources.close()
 
     def run_forever(self) -> None:
-        logger.info("Processor worker started for queue %s", self.settings.processor_queue_name)
+        logger.info("processor_worker_started")
 
         while not self._stopping.is_set():
             try:
@@ -61,21 +62,26 @@ class ProcessorWorker:
                     continue
                 self._process_message(message)
             except Exception as exc:
-                logger.exception("Worker loop failed: %s", exc)
+                logger.error("worker_loop_failed", exception_type=type(exc).__name__)
                 self._stopping.wait(2)
 
     def _process_message(self, message: QueueMessage) -> None:
         job = message.payload
-        request_id = job.get("request_id") or str(uuid.uuid4())
+        request_id = job.get("request_id") if isinstance(job, dict) else None
+        if not isinstance(request_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", request_id):
+            request_id = str(uuid.uuid4())
 
         structlog.contextvars.clear_contextvars()
         structlog.contextvars.bind_contextvars(request_id=request_id)
 
-        logger.info("Processing job %s", job["id"])
+        logger.info("job_processing")
 
         try:
             self.task.execute(job)
             self.queue.ack(message.delivery_tag)
+        except InvalidJobMessage:
+            logger.warning("job_message_rejected")
+            self.queue.nack(message.delivery_tag, requeue=False)
         except Exception:
             self.queue.nack(message.delivery_tag, requeue=True)
             raise

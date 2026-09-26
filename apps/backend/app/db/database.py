@@ -200,8 +200,8 @@ class Database:
             "source": payload["source"],
             "artifact_uri": payload.get("artifact_uri"),
             "payload": json.dumps(payload),
-            "status": "queued",
-            "result": None,
+            "status": "publish_pending",
+            "result": json.dumps({"publication": {"outcome": "pending", "code": "awaiting_publisher"}}),
             "created_at": now,
             "updated_at": now,
         }
@@ -221,11 +221,66 @@ class Database:
         return {
             "id": job["id"],
             "tenant_id": job["tenant_id"],
+            "created_by": job["created_by"],
             "source": job["source"],
             "artifact_uri": job["artifact_uri"],
-            "status": job["status"],
+            "status": "queued",
             "payload": payload,
         }
+
+    def finalize_job_publication(
+        self, job_id: str, *, tenant_id: str, created_by: str, outcome: str, code: str
+    ) -> None:
+        targets = {
+            "confirmed": "queued", "not_sent": "publish_failed",
+            "rejected": "publish_failed", "unknown": "publish_unknown",
+        }
+        codes = {
+            "confirmed": {"confirmed"},
+            "not_sent": {"capacity", "stopping", "owner_unavailable", "deadline_before_send",
+                         "connect_failed", "serialization_failed"},
+            "rejected": {"broker_nack", "unroutable"},
+            "unknown": {"confirm_timeout", "connection_lost", "shutdown_in_flight", "cancelled_in_flight"},
+        }
+        try:
+            if outcome not in codes or code not in codes[outcome]:
+                raise ValueError()
+            scope = {"id": job_id, "tenant_id": tenant_id, "created_by": created_by}
+            with self.engine.begin() as connection:
+                updated = connection.execute(
+                    text("""
+                        UPDATE jobs SET status = :status, result = :result, updated_at = :updated_at
+                        WHERE id = :id AND tenant_id = :tenant_id AND created_by = :created_by
+                          AND status = 'publish_pending'
+                    """),
+                    {**scope, "status": targets[outcome],
+                     "result": json.dumps({"publication": {"outcome": outcome, "code": code}}),
+                     "updated_at": datetime.now(timezone.utc)},
+                )
+                if updated.rowcount == 1:
+                    return
+                if updated.rowcount != 0:
+                    raise RuntimeError()
+                row = connection.execute(
+                    text("""
+                        SELECT status, result FROM jobs
+                        WHERE id = :id AND tenant_id = :tenant_id AND created_by = :created_by
+                    """), scope,
+                ).mappings().first()
+                if row is None:
+                    raise LookupError()
+                if row["status"] in {"running", "completed", "failed"}:
+                    return
+                result = json.loads(row["result"]) if isinstance(row["result"], str) else row["result"]
+                publication = result.get("publication") if isinstance(result, dict) else None
+                if isinstance(publication, dict):
+                    previous = publication.get("outcome")
+                    if (previous in codes and publication.get("code") in codes[previous]
+                            and row["status"] == targets[previous]):
+                        return
+                raise RuntimeError()
+        except Exception:
+            raise RuntimeError("Job publication state unavailable.") from None
 
     def create_conversation(self, tenant_id: str, user_id: str, title: str) -> dict:
         now = datetime.now(timezone.utc)
@@ -288,10 +343,13 @@ class Database:
         conversation_id: str,
         tenant_id: str,
         user_id: str | None,
+        requester_id: str,
         role: str,
         content: str,
         metadata: dict | None = None,
     ) -> dict:
+        if not requester_id or (user_id is not None and user_id != requester_id):
+            raise PermissionError("Conversation not found.")
         now = datetime.now(timezone.utc)
         message = {
             "id": str(uuid.uuid4()),
@@ -304,25 +362,34 @@ class Database:
             "created_at": now,
         }
         with self.engine.begin() as connection:
-            connection.execute(
+            inserted = connection.execute(
                 text(
                     """
                     INSERT INTO messages (id, conversation_id, tenant_id, user_id, role, content, metadata, created_at)
-                    VALUES (:id, :conversation_id, :tenant_id, :user_id, :role, :content, :metadata, :created_at)
+                    SELECT :id, :conversation_id, :tenant_id, :user_id, :role, :content, :metadata, :created_at
+                    FROM conversations
+                    WHERE id = :conversation_id AND tenant_id = :tenant_id
+                      AND user_id = :requester_id
                     """
                 ),
-                message,
+                {**message, "requester_id": requester_id},
             )
-            connection.execute(
+            if inserted.rowcount != 1:
+                raise PermissionError("Conversation not found.")
+            updated = connection.execute(
                 text(
                     """
                     UPDATE conversations
                     SET updated_at = :updated_at
-                    WHERE id = :conversation_id
+                    WHERE id = :conversation_id AND tenant_id = :tenant_id
+                      AND user_id = :requester_id
                     """
                 ),
-                {"updated_at": now, "conversation_id": conversation_id},
+                {"updated_at": now, "conversation_id": conversation_id,
+                 "tenant_id": tenant_id, "requester_id": requester_id},
             )
+            if updated.rowcount != 1:
+                raise PermissionError("Conversation not found.")
         return {
             "id": message["id"],
             "role": role,
@@ -331,25 +398,28 @@ class Database:
             "created_at": now,
         }
 
-    def fetch_messages(self, conversation_id: str) -> list[dict]:
+    def fetch_messages(self, conversation_id: str, tenant_id: str, user_id: str) -> list[dict]:
         with self.engine.connect() as connection:
             rows = connection.execute(
                 text(
                     """
-                    SELECT id, role, content, metadata, created_at
-                    FROM messages
-                    WHERE conversation_id = :conversation_id
-                    ORDER BY created_at ASC
+                    SELECT m.id, m.role, m.content, m.metadata, m.created_at
+                    FROM messages m
+                    JOIN conversations c ON c.id = m.conversation_id AND c.tenant_id = m.tenant_id
+                    WHERE c.id = :conversation_id AND c.tenant_id = :tenant_id
+                      AND c.user_id = :user_id AND m.tenant_id = :tenant_id
+                    ORDER BY m.created_at ASC
                     """
                 ),
-                {"conversation_id": conversation_id},
+                {"conversation_id": conversation_id, "tenant_id": tenant_id, "user_id": user_id},
             )
             return [
                 {
                     "id": row.id,
                     "role": row.role,
                     "content": row.content,
-                    "metadata": json.loads(row.metadata) if row.metadata else {},
+                    "metadata": (json.loads(row.metadata) if isinstance(row.metadata, str)
+                                 else row.metadata) or {},
                     "created_at": row.created_at,
                 }
                 for row in rows

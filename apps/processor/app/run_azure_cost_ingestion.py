@@ -70,8 +70,9 @@ def main() -> int:
             args.subscription_id,
             load_definition(args.definition_file),
         )
-        persisted_run = repository.fetch_run(summary.run_id)
-        persisted_records = repository.fetch_records(summary.run_id)
+        scope = {"tenant_id": summary.tenant_id, "subscription_id": summary.subscription_id}
+        persisted_run = repository.fetch_run(summary.run_id, **scope)
+        persisted_records = repository.fetch_records(summary.run_id, **scope)
         if not persisted_run or persisted_run["status"] != "completed":
             raise RuntimeError("Persisted ingestion run is not completed")
         if len(persisted_records) != summary.row_count:

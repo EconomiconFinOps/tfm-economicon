@@ -176,14 +176,14 @@ def test_fresh_migrations_and_repository_round_trip(fresh_database):
     repository.complete_run(
         run_id, "round-trip", "subscription-demo", records, page_count=2, retry_count=1
     )
-    fetched = repository.fetch_records(run_id)
+    fetched = repository.fetch_records(run_id, tenant_id="round-trip", subscription_id="subscription-demo")
     assert len(fetched) == 3
     by_hash = {row["source_row_hash"]: row for row in fetched}
     for record in records:
         actual = dict(by_hash[record.source_row_hash])
         assert actual.pop("id")
         assert actual == asdict(record)
-    assert repository.fetch_run(run_id) == {
+    assert repository.fetch_run(run_id, tenant_id="round-trip", subscription_id="subscription-demo") == {
         "id": run_id, "tenant_id": "round-trip", "subscription_id": "subscription-demo",
         "status": "completed", "page_count": 2, "retry_count": 1,
         "row_count": 3, "error_code": None,
@@ -534,8 +534,8 @@ def _assert_idempotent_ingestion(database):
     client = SourceClient(ea_row, zero, credit)
     service = AzureCostIngestionService(client, AzureCostNormalizer(), repository)
     first = service.ingest("idempotency", "subscription-demo", DEFINITION)
-    records = repository.fetch_records(first.run_id)
-    state = repository.fetch_run(first.run_id)
+    records = repository.fetch_records(first.run_id, tenant_id="idempotency", subscription_id="subscription-demo")
+    state = repository.fetch_run(first.run_id, tenant_id="idempotency", subscription_id="subscription-demo")
     totals = _scope_totals(database)
     assert first.row_count == len(records) == 3
     assert state["status"] == "completed"
@@ -563,8 +563,8 @@ def _assert_idempotent_ingestion(database):
         client.rows = (source, zero, credit)
         repeated = service.ingest("idempotency", "subscription-demo", DEFINITION)
         assert repeated == first
-        assert repository.fetch_run(first.run_id) == state
-        assert repository.fetch_records(first.run_id) == records
+        assert repository.fetch_run(first.run_id, tenant_id="idempotency", subscription_id="subscription-demo") == state
+        assert repository.fetch_records(first.run_id, tenant_id="idempotency", subscription_id="subscription-demo") == records
         assert _scope_totals(database) == totals
     assert [row for row in _cost_snapshot(database) if row["ingestion_id"] != first.run_id] == baseline
 
@@ -613,11 +613,11 @@ def test_invalid_batch_leaves_no_partial_rows(fresh_database, invalid_fields, me
         service.ingest(tenant, "subscription-demo", DEFINITION)
 
     run_id = ingestion_run_id(tenant, "subscription-demo", DEFINITION)
-    assert repository.fetch_run(run_id) == {
+    assert repository.fetch_run(run_id, tenant_id=tenant, subscription_id="subscription-demo") == {
         "id": run_id, "tenant_id": tenant, "subscription_id": "subscription-demo",
         "status": "failed", "page_count": 0, "retry_count": 0, "row_count": 0,
         "error_code": "AzureCostNormalizationError",
     }
-    assert repository.fetch_records(run_id) == []
+    assert repository.fetch_records(run_id, tenant_id=tenant, subscription_id="subscription-demo") == []
     assert _cost_snapshot(database) == before
     assert _scope_totals(database) == totals_before

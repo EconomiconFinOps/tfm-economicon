@@ -39,6 +39,7 @@ async def lifespan(app: FastAPI):
             vector_store = PgVectorQueryStore(settings.vector_database_url.get_secret_value())
             resources.callback(vector_store.close)
             database.initialize()
+            queue.start()
             app.state.database = database
             app.state.queue = queue
             app.state.vector_store = vector_store
