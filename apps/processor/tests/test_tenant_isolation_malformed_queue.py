@@ -79,7 +79,3 @@ def test_json_depth_error_is_discarded_once_then_next_delivery_is_returned():
     queue.ack(message.delivery_tag)
     queue.channel.basic_ack.assert_called_once_with(delivery_tag=19)
     assert queue.channel.basic_get.call_count == 2
-
-
-
-

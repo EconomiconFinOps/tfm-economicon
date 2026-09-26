@@ -160,11 +160,3 @@ def test_insert_failure_rolls_back_prior_deletion(costs):
     with pytest.raises(IntegrityError):
         costs.repository.complete_run("run-a", "tenant-a", "shared-subscription", (invalid,), page_count=1, retry_count=0)
     assert state(costs) == before
-
-
-
-
-
-
-
-

@@ -1237,5 +1237,3 @@ def test_confirm_deadline_retires_generation_and_late_ack_cannot_complete_next(q
         new.ack(1)
         outcome(future.result(timeout=2), "confirmed")
     assert [json.loads(item["body"])["id"] for _, item in driver.sent] == ["own-job", "second"]
-
-

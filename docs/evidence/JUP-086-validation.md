@@ -17,6 +17,30 @@ Trello. [Registro](../../openspec/changes/jup-086-tenant-isolation-contract/revi
 Preparacion de publicacion: origin/develop sigue en3a1001d tras fetch;
 146 hashes de fuente coinciden con QA, sin cambios de producto o tests.
 
+## Preparacion de publicacion
+
+Tras incluir los53 archivos aprobados en el indice, `git diff --cached --check`
+detecto lineas vacias finales en seis tests nuevos. Los diff-check anteriores
+sin staging no incluian esos archivos untracked. Se creo el commit local
+8fc99a1 antes de atender ese resultado por un error de secuencia; no se
+publico. Su resultado se conserva, no se reescribe el historial.
+Tester retira solo23 LF sobrantes en test_managed_resolver.py,
+test_rabbitmq_publisher.py y los tests processor tenant_isolation_costs,
+integration,jobs,malformed_queue. Cada archivo conserva un LF final; todos
+los demas bytes intactos. Auditoria146 fuentes:140 identicas al manifiesto
+QA y seis iguales salvo ese final. Ningun caso, fixture o asercion cambia.
+`git diff origin/develop --check`: exit0 despues; REVIEW_PASS acotado y
+guards tester/reviewer PASS. No nueva ejecucion funcional, Red o mutacion:
+la evidencia684/111 y las ejecuciones anteriores mantienen aplicabilidad.
+QA_PASS limitado al formato y este registro, sin excepciones; guard readonly
+exit0. La aprobacion humana del alcance permanece vigente. OpenSpec34/34
+tras este registro; no nuevas pruebas ni validacion funcional atribuida.
+
+Ruleset activo develop21475971 consultado: siete checks obligatorios,
+una aprobacion, aprobacion del ultimo push y conversaciones resueltas.
+No se cambia ni elude su configuracion. La API legacy de proteccion devolvio
+403 por permisos de integracion; el ruleset si fue legible.
+
 ## Validacion acotada final
 
 Alcance ratificado: [tabla vigente](../../openspec/changes/jup-086-tenant-isolation-contract/resource-matrix.md#aceptacion-acotada-vigente).

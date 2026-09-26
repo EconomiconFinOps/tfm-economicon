@@ -566,8 +566,3 @@ def test_adversarial_wrong_pid_retains_admission_in_isolated_process(tmp_path):
                             capture_output=True, text=True, timeout=12, **options)
     assert result.returncode == 0, result.stdout + result.stderr
     assert "OWNERSHIP_RETAINED_CHILD_REAPED" in result.stdout
-
-
-
-
-

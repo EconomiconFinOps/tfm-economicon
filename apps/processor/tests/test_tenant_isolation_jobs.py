@@ -291,5 +291,3 @@ def test_worker_loop_sanitizes_dependency_exception_and_cause(delivery, capsys, 
         assert marker not in rendered
     assert "req-jup086-safe" in rendered
     delivery.worker.queue.nack.assert_called_once_with(19, requeue=True)
-
-

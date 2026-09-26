@@ -223,5 +223,3 @@ def test_real_vector_connection_loss_rolls_back_then_broker_redelivery_succeeds(
         assert len(current) == len(previous) + 1
     frame, _, _ = real_queue.channel.basic_get(queue=real_queue.queue_name, auto_ack=False)
     assert frame is None
-
-

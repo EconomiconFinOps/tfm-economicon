@@ -29,6 +29,13 @@ previos y108 referencias documentales; guard readonly y DoD code/stage qa
 exit0. No repite suites ni mutantes. Post-QA humano APPROVED y publicacion
 autorizada en el gate inferior; no reemplaza revision humana de PR ni merge.
 
+Preflight de publicacion: **REVIEW_PASS** del ajuste exclusivamente EOF en
+seis tests,23 LF retirados. Contenido restante identico, sin nuevos casos o
+reruns necesarios; se conserva QA funcional. Diff completo contra develop
+exit0. [Registro](../../../docs/evidence/JUP-086-validation.md#preparacion-de-publicacion).
+QA_PASS de este registro/formato, guard readonly exit0, sin excepciones;
+aprobacion humana vigente, sin nuevos casos o cambios de comportamiento.
+
 ## Reconciliacion documental anterior
 
 **REVIEW_PASS documental, 26/09/2026**, para la reconciliacion con la tarjeta.
