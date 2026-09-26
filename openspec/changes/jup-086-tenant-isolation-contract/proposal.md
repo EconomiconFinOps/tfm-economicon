@@ -1,7 +1,25 @@
 JUP: JUP-086
 Trello: https://trello.com/c/bKxQK9HI
 
-## Aprobacion final y publicacion
+## Correccion de arranque de tests en CI, 26/09/2026
+
+Paris autoriza "corrigelo" tras presentar el fallo de importacion de tres
+casos en CI y la reparacion limitada a dos archivos de tests. Registro del
+orquestador el 26/09/2026; no se atribuye hora al mensaje humano.
+Modificar solo el bootstrap de los procesos hijos en
+`apps/backend/tests/test_managed_resolver.py` y
+`apps/backend/tests/test_rabbitmq_publisher.py`, sin cambiar el directorio
+temporal de las pruebas, aserciones, inventario, producto, dependencias o CI.
+Spec-planner confirma reroute de defecto de tests dentro del contrato ya
+aprobado: OpenSpec 34/34 y trazabilidad del cambio correctos; sin nuevo ADR
+ni ampliacion de alcance. La aprobacion pre-code existente sigue aplicable.
+Validacion afectada, revision y QA completadas. Paris responde "si, verifica
+si pasa el ci" al gate final: aprobacion post-QA y publicacion del ajuste
+en PR #47 **APPROVED**, registradas el 27/09/2026 (Atlantic/Canary).
+Autoriza commit/push de esta correccion y comprobar CI; no merge, cambios
+de tracker o archivado. La publicacion anterior no acredita el nuevo CI.
+
+## Aprobacion final y publicacion anterior
 
 Post-QA **APPROVED** por Paris Arcos Martin mediante "apruebo" al gate
 final presentado. Autoriza publicar la rama y abrir PR contra develop, sin

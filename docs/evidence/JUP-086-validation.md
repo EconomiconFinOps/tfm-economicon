@@ -5,6 +5,100 @@ Trello: https://trello.com/c/bKxQK9HI
 
 ## Estado
 
+Correccion local de arranque de tests en CI, 26/09/2026: **REVIEW_PASS**.
+Mismos tres casos reparados; backend Linux 318 PASS/10 SKIP. No cambia el
+producto ni el inventario. QA incremental **PASS**, registrada el 27/09/2026
+(Atlantic/Canary); aprobacion post-QA y publicacion **APPROVED** por Paris
+mediante "si, verifica si pasa el ci". Autoriza publicar este ajuste y
+comprobar CI en PR #47; no merge, tracker ni archivo. Al preparar este commit,
+remoto y HEAD siguen en547071f con CI anterior6/7, develop3a1001d contenido
+y fetch sin novedades. Las pruebas locales no acreditan el nuevo CI remoto.
+
+## Correccion de arranque de tests en CI
+
+Base de esta correccion: `547071f613335d87ac834e48a4ae3b339aa8b56c`,
+[PR #47](https://github.com/EconomiconFinOps/tfm-economicon/pull/47).
+El [job backend fallido](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/36268955666/job/108479098530)
+registro 315 PASS/3 FAIL/10 SKIP. Los tres fallos eran `ModuleNotFoundError:
+No module named 'app'` antes de las aserciones de los escenarios; no prueban
+un defecto funcional del producto. La fixture `isolated_runtime` cambia a
+un directorio temporal y los hijos `python -c` no heredaban la ruta del
+backend del proceso pytest. Las validaciones anteriores con PYTHONPATH
+no reprodujeron esa condicion de CI; se conserva esa limitacion.
+
+Paris autoriza "corrigelo" tras la propuesta acotada. Solo cambia la cadena
+de arranque de dos tests: `test_managed_resolver.py` y
+`test_rabbitmq_publisher.py`. Se antepone a `sys.path` la ruta backend
+obtenida de `Path(sys.argv[1]).resolve().parents[1]` antes de `runpy`.
+No se interpolan rutas en codigo, cambia cwd, debilitan aserciones, amplian
+timeouts ni modifican los escenarios. No nuevos casos, servicios,
+dependencias, CI, migraciones ni cambios de producto.
+
+Validacion nueva con Ubuntu WSL, CPython 3.12.3, venv existente y PYTHONPATH
+ausente. Los tres casos focales estan incluidos en los 36 y en los 318:
+no sumar ejecuciones solapadas como casos distintos.
+
+| Comprobacion | Exit | Resultado |
+| --- | --- | --- |
+| Tres casos antes del ajuste | 1 | 3 fallos de importacion, 1.36 s; no VALID_RED de producto |
+| Los mismos tres despues | 0 | 3 PASS, 9.30 s |
+| Dos modulos afectados completos | 0 | 36 PASS, 59.24 s |
+| Backend completo, condiciones CI | 0 | 318 PASS/10 SKIP, 69.81 s |
+| Processor, solo coleccion | 0 | 356 casos; no nueva ejecucion processor |
+| OpenSpec estricto / trazabilidad / higiene | 0 | 34/34, 11 cambios, 658 archivos |
+| Diff check | 0 | Sin errores de formato |
+
+Los 10 SKIP existentes corresponden a CockroachDB, RabbitMQ y pgvector
+opt-in no provisionados, igual que en CI; no se han anadido marcadores de
+omision. Warnings: claves sinteticas/deprecaciones y formato JUnit de
+`record_property` (12 en los modulos, 405 en backend), no corregidos aqui.
+
+Comandos ejecutados desde PowerShell, sin instalar dependencias:
+
+```powershell
+wsl.exe -d Ubuntu --exec /usr/bin/env -u PYTHONPATH --chdir=/mnt/c/Repositorios/tfm-economicon-1/node_modules/.cache/economicon-jup086-tenant/apps/backend /tmp/jup086-linux-validation-20260926-1519/bin/python -B -m pytest tests/test_managed_resolver.py::test_adversarial_wrong_pid_retains_admission_in_isolated_process tests/test_rabbitmq_publisher.py::test_dead_owner_without_cleanup_proof_cannot_release_registry -q -p no:cacheprovider --junitxml=/tmp/jup086-ci-import-after.xml
+wsl.exe -d Ubuntu --exec /usr/bin/env -u PYTHONPATH --chdir=/mnt/c/Repositorios/tfm-economicon-1/node_modules/.cache/economicon-jup086-tenant/apps/backend /tmp/jup086-linux-validation-20260926-1519/bin/python -B -m pytest tests/test_managed_resolver.py tests/test_rabbitmq_publisher.py -q -p no:cacheprovider --junitxml=/tmp/jup086-ci-import-modules.xml
+wsl.exe -d Ubuntu --exec /usr/bin/env -u PYTHONPATH -u JUP086_COCKROACH_TEST_URL -u JUP086_VECTOR_TEST_URL -u JUP086_RABBITMQ_TEST_URL --chdir=/mnt/c/Repositorios/tfm-economicon-1/node_modules/.cache/economicon-jup086-tenant/apps/backend /tmp/jup086-linux-validation-20260926-1519/bin/python -B -m pytest tests -q -ra -p no:cacheprovider --junitxml=/tmp/jup086-ci-import-backend.xml
+wsl.exe -d Ubuntu --exec /usr/bin/env -u PYTHONPATH --chdir=/mnt/c/Repositorios/tfm-economicon-1/node_modules/.cache/economicon-jup086-tenant/apps/processor /tmp/jup086-linux-validation-20260926-1519/bin/python -B -m pytest tests --collect-only -q -p no:cacheprovider
+$env:OPENSPEC_TELEMETRY='0'
+& 'C:/Repositorios/tfm-economicon-1/node_modules/.bin/openspec.cmd' validate --all --strict --no-interactive
+node tools/jup-check.mjs --all
+node tools/jup-cleanup-check.mjs
+git diff --check
+```
+
+La reproduccion previa ejecuto el comando focal identico antes del cambio,
+con JUnit `jup086-ci-import-before.xml`. Logs en TEMP Windows
+`jup086-ci-import-{before,after,modules,backend,processor-collection}.log`;
+JUnit en `/tmp/jup086-ci-import-{before,after,modules,backend}.xml` de WSL.
+Son auxiliares locales, no artefactos publicados ni nuevas pruebas en CI.
+Acceso WSL inicialmente denegado por sandbox y Corepack EPERM antes de
+validar: resueltos con permisos normales y CLI local ya instalada, sin
+descargas. No se cuentan como fallos del producto.
+
+Auditoria: inventario 328 backend/356 processor, 111 nuevos de la JUP
+conservados (cero nuevos por este ajuste); 94 archivos de producto iguales
+por SHA-256 y 145/147 fuentes protegidas intactas. AST de ambos modulos
+igual al HEAD salvo las dos asignaciones de comando; 96+137 aserciones,
+helpers, argumentos y timeouts preservados. Coder GREEN/NOOP.
+Tester post-coder: MUTATION_PASS por reutilizacion historica; nueva mutacion
+de producto N/A porque no cambia. El 3 FAIL -> 3 PASS verifica el bootstrap,
+no es nuevo Red de producto ni mutantes adicionales. No nuevo score,
+supervivientes o excepcion inventados. REVIEW_PASS sin hallazgos.
+
+Guards spec-planner/tester/coder/reviewer correctos. Primera invocacion del
+guard coder NOOP sin AllowedPath invalida y PASS prematuro rectificados en
+el registro local: repeticion con patron que no autoriza ningun archivo
+real, exit0/cero cambios. Error de invocacion, no violacion de limites.
+QA incremental **PASS**: sin hallazgos bloqueantes, cinco archivos dentro
+del alcance y conteos/logs coherentes; guard readonly exit0/cero cambios.
+OpenSpec 34/34, trazabilidad11, higiene658 y diff-check exit0 revalidados;
+DoD code/stage qa exit0. No se han repetido suites ni servicios en QA.
+La aprobacion post-QA/publicacion queda registrada arriba; el CI remoto
+solo se acreditara tras publicar y observar una ejecucion del nuevo commit.
+
+## Estado anterior a la correccion de CI
+
 26/09/2026: ratificacion detallada APPROVED, dos grupos pendientes acreditados
 y **REVIEW_PASS tecnico**, sin cambios de producto ni hallazgos bloqueantes.
 Inventario684 (328 backend+356 processor),111 nuevos de JUP-086 (60+51).

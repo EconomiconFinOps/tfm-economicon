@@ -560,7 +560,11 @@ def wrong_pid_scenario(directory):
 
 
 def test_adversarial_wrong_pid_retains_admission_in_isolated_process(tmp_path):
-    command = "import runpy,sys; runpy.run_path(sys.argv[1])['wrong_pid_scenario'](sys.argv[2])"
+    command = (
+        "import runpy,sys; from pathlib import Path; "
+        "sys.path.insert(0, str(Path(sys.argv[1]).resolve().parents[1])); "
+        "runpy.run_path(sys.argv[1])['wrong_pid_scenario'](sys.argv[2])"
+    )
     options = {"creationflags": subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS} if os.name == "nt" else {}
     result = subprocess.run([sys.executable, "-B", "-c", command, str(Path(__file__).resolve()), str(tmp_path)],
                             capture_output=True, text=True, timeout=12, **options)

@@ -5,6 +5,37 @@ Trello: https://trello.com/c/bKxQK9HI
 
 ## Estado
 
+**REVIEW_PASS de la correccion de arranque de tests en CI, 26/09/2026.**
+Comparacion contra 547071f: solo dos cadenas de bootstrap y registro de
+aprobacion de Paris. Ruta backend absoluta derivada del argumento de archivo
+antes de runpy, sin shell, interpolacion, supresion de errores o cambios de
+cwd, argumentos, timeouts, escenarios y aserciones. Cero cambios de producto.
+No hallazgos bloqueantes ni ampliacion de alcance.
+
+Antes: tres fallos de importacion; despues mismos3 PASS, modulos36 PASS y
+backend318 PASS/10 SKIP existentes, PYTHONPATH ausente, Linux Python3.12.3.
+Inventario328/356 intacto. Coder GREEN/NOOP; tester audita AST salvo dos
+asignaciones,233 aserciones y94 archivos de producto sin cambios.
+Mutacion historica reutilizada/nueva mutacion de producto N/A, sin score
+nuevo ni waiver. No se presenta la reproduccion de imports como VALID_RED.
+Reviewer readonly; guard exit0/cero cambios. [Evidencia y comandos](../../../docs/evidence/JUP-086-validation.md#correccion-de-arranque-de-tests-en-ci).
+
+QA incremental **PASS**, registrada el 27/09/2026 (Atlantic/Canary), sin
+bloqueantes ni excepciones. Diff acotado/evidencia coherentes, OpenSpec34/34,
+trazabilidad11, higiene658, diff-check y guard readonly exit0; DoD stage qa
+correcto. No se repiten suites ni mutacion; se verifican logs existentes.
+Aprobacion post-QA de esta correccion **APPROVED**, Paris Arcos Martin:
+"si, verifica si pasa el ci", tras presentar QA PASS y solicitar permiso
+para publicar el ajuste en PR #47. Registro 27/09/2026 (Atlantic/Canary),
+sin atribuir hora al mensaje. Autoriza commit/push y comprobar siete checks;
+no merge, tracker, archivado ni cierre. Preflight: remoto y HEAD en547071f,
+develop3a1001d ya contenido y sin cambios remotos tras fetch. CI6/7 es el
+resultado anterior; el CI del nuevo commit debe verificarse tras publicar.
+Los gates humanos y resultados inferiores se conservan como historia del
+alcance anterior; no equivalen a CI verde de un nuevo commit.
+
+## Revision anterior a la correccion de CI
+
 **REVIEW_PASS tecnico del conjunto acotado, 26/09/2026.** Base3a1001d mas
 diff local; revisiones previas reutilizadas para producto sin cambios.
 Ratificacion detallada APPROVED. Sin nuevos hallazgos bloqueantes, defecto

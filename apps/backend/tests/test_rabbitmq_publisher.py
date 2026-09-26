@@ -355,7 +355,11 @@ def unverified_owner_scenario(mode):
 
 @pytest.mark.parametrize("mode", ["loop-close", "connection-close"])
 def test_dead_owner_without_cleanup_proof_cannot_release_registry(mode):
-    command = "import runpy,sys; runpy.run_path(sys.argv[1])['unverified_owner_scenario'](sys.argv[2])"
+    command = (
+        "import runpy,sys; from pathlib import Path; "
+        "sys.path.insert(0, str(Path(sys.argv[1]).resolve().parents[1])); "
+        "runpy.run_path(sys.argv[1])['unverified_owner_scenario'](sys.argv[2])"
+    )
     options = {"creationflags": subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS} if sys.platform == "win32" else {}
     result = subprocess.run([sys.executable, "-B", "-c", command, str(Path(__file__).resolve()), mode],
                             capture_output=True, text=True, timeout=22, **options)
