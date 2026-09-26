@@ -5,6 +5,67 @@ Trello: https://trello.com/c/bKxQK9HI
 
 ## Estado
 
+Correccion local del peer de cierre, 27/09/2026: **REVIEW_PASS y QA_PASS**;
+aprobacion post-QA y publicacion **APPROVED** por Paris mediante "apruebo"
+tras presentar QA. Registro 27/09/2026 (Atlantic/Canary). Tres lineas en una
+fixture, sin cambios de producto ni casos nuevos. Backend318 PASS/10 SKIP
+existentes. Fetch sin novedades, HEAD/remoto215453f y develop3a1001d contenido
+al preparar este commit; CI anterior6/7. Se autoriza commit/push y comprobar
+el nuevo CI en PR #47; no merge, tracker ni archivo. Sin resultado remoto
+nuevo acreditado antes de publicar.
+
+## Correccion del peer de cierre en CI
+
+Base `215453f9890d383a4f3e8cb393c314e7779f7687`, PR #47. El
+[job backend](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/36278338957/job/108505282083)
+ya no presenta los tres errores de imports: registra 317 PASS/1 FAIL/10 SKIP
+y un error de teardown del mismo caso `return-rejected-unroutable`.
+La fixture recibio BrokenPipeError al escribir tras el cierre remoto, antes
+de observar EOF leyendo. El fallo natural se reproduce localmente al primer
+intento, sin inyeccion; no identifica cual de los sendall concretos fallo.
+No es un nuevo Red de producto. Paris autoriza "hazlo"; alcance registrado
+en proposal.md y confirmado por spec-planner contra el contrato existente.
+
+La reparacion anade un handler explicito de BrokenPipeError que registra
+`broken-pipe` y senala `peer.eof`. No suprime OSError generico ni cambia
+aserciones, tiempos, imports, casos, producto, dependencias o infraestructura.
+
+| Comprobacion nueva en Linux Python 3.12.3 | Exit | Resultado |
+| --- | --- | --- |
+| Caso existente antes de corregir, intento 1 | 1 | 1 FAIL + error de teardown, 1.86 s |
+| Seis variantes existentes tras corregir | 0 | 6 PASS, 7.48 s |
+| Modulo publisher completo | 0 | 22 PASS, 48.89 s |
+| Backend completo, sin PYTHONPATH ni opt-ins DB | 0 | 318 PASS/10 SKIP, 70.02 s |
+| Seis repeticiones del mismo caso | 0 | 6 ejecuciones PASS, todas EOF |
+| Clasificacion sintetica del handler exacto | 0 | EPIPE notifica cierre; EINVAL se conserva como error |
+
+Los grupos se solapan: no sumar ejecuciones como pruebas distintas. Los
+328 IDs backend coinciden antes/despues; processor no cambia ni se reejecuta.
+Los 10 SKIP y warnings (405 en backend) son existentes. No nueva campana ni
+score de mutacion: se reutiliza evidencia historica de producto intacto.
+Limitacion: la rama nueva se comprueba sinteticamente, no se observa EPIPE
+natural tras corregir. Un intento de diagnostico mas amplio fallo antes de
+ejecutar por Git 128 en WSL; no aporta evidencia conductual y no se repitio.
+
+Comandos exactos desde PowerShell; venv existente, sin instalaciones:
+
+```powershell
+wsl.exe -d Ubuntu --exec /usr/bin/env -u PYTHONPATH -u JUP086_COCKROACH_TEST_URL -u JUP086_VECTOR_TEST_URL -u JUP086_RABBITMQ_TEST_URL --chdir=/mnt/c/Repositorios/tfm-economicon-1/node_modules/.cache/economicon-jup086-tenant/apps/backend /tmp/jup086-linux-validation-20260926-1519/bin/python -B -m pytest tests/test_rabbitmq_publisher.py::test_product_real_pika_delivery_and_abort_without_closeok -q -p no:cacheprovider --junitxml=/mnt/c/Users/Trabajo/AppData/Local/Temp/jup086-ci-eof-six-after.xml
+wsl.exe -d Ubuntu --exec /usr/bin/env -u PYTHONPATH -u JUP086_COCKROACH_TEST_URL -u JUP086_VECTOR_TEST_URL -u JUP086_RABBITMQ_TEST_URL --chdir=/mnt/c/Repositorios/tfm-economicon-1/node_modules/.cache/economicon-jup086-tenant/apps/backend /tmp/jup086-linux-validation-20260926-1519/bin/python -B -m pytest tests/test_rabbitmq_publisher.py -q -p no:cacheprovider --junitxml=/mnt/c/Users/Trabajo/AppData/Local/Temp/jup086-ci-eof-publisher-after.xml
+wsl.exe -d Ubuntu --exec /usr/bin/env -u PYTHONPATH -u JUP086_COCKROACH_TEST_URL -u JUP086_VECTOR_TEST_URL -u JUP086_RABBITMQ_TEST_URL --chdir=/mnt/c/Repositorios/tfm-economicon-1/node_modules/.cache/economicon-jup086-tenant/apps/backend /tmp/jup086-linux-validation-20260926-1519/bin/python -B -m pytest tests -q -ra -p no:cacheprovider --junitxml=/mnt/c/Users/Trabajo/AppData/Local/Temp/jup086-ci-eof-backend-after.xml
+```
+
+Logs/XML locales `jup086-ci-eof-*` y handoff detallado en TEMP Windows,
+incluidos comandos de baseline, coleccion y clasificacion; no son nuevos
+artefactos publicados de CI. Guards spec-planner/tester/coder/reviewer PASS,
+coder GREEN/NOOP. REVIEW_PASS sin bloqueantes; no commit/push ni merge.
+QA incremental PASS sin excepciones: contrasta los logs/XML e inventario,
+revalida OpenSpec 34/34, trazabilidad 11, higiene 658, enlaces modificados y
+diff-check (exit 0). Guard QA readonly y DoD code/stage qa PASS. No repite
+suites, servicios o mutaciones; aprobacion final humana registrada arriba.
+
+## Estado de la correccion de imports anterior
+
 Correccion local de arranque de tests en CI, 26/09/2026: **REVIEW_PASS**.
 Mismos tres casos reparados; backend Linux 318 PASS/10 SKIP. No cambia el
 producto ni el inventario. QA incremental **PASS**, registrada el 27/09/2026

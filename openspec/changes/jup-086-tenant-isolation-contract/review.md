@@ -5,6 +5,36 @@ Trello: https://trello.com/c/bKxQK9HI
 
 ## Estado
 
+**REVIEW_PASS de la correccion del peer de cierre, 27/09/2026.** Base
+`215453f9890d383a4f3e8cb393c314e7779f7687`, PR #47. Solo tres lineas en la
+fixture `runtime_handshake_holder`: BrokenPipeError registra `broken-pipe`
+y notifica el cierre. El error inesperado generico sigue siendo fatal.
+Entrega, resultado, no replay, tiempos y limpieza de loop/session/threads
+mantienen sus aserciones. Sin cambios de producto ni nuevos casos.
+
+Fallo natural reproducido al primer intento, antes de corregir: 1 FAIL y
+error de teardown del mismo caso. Despues: seis variantes PASS, modulo
+22 PASS y backend 318 PASS/10 SKIP existentes; inventario 328 intacto.
+Seis repeticiones adicionales PASS observaron EOF, no EPIPE. Clasificacion
+sintetica del handler PASS: EPIPE se reconoce, EINVAL conserva su error.
+No se afirma EPIPE natural posterior ni nueva mutacion de producto;
+evidencia historica reutilizada porque producto y aserciones no cambian.
+Reviewer readonly, guard PASS; sin hallazgos bloqueantes. [Evidencia](../../../docs/evidence/JUP-086-validation.md#correccion-del-peer-de-cierre-en-ci).
+
+QA incremental **PASS**, 27/09/2026, sin bloqueantes ni excepciones.
+OpenSpec 34/34, trazabilidad 11, higiene 658, enlaces modificados y diff
+correctos; guard QA sin escrituras y DoD code/stage qa PASS.
+Aprobacion post-QA humana **APPROVED**, Paris Arcos Martin: "apruebo" a
+publicar la correccion en PR #47 y volver a comprobar CI. Registro del
+orquestador 27/09/2026 (Atlantic/Canary), no hora del mensaje. Autoriza
+commit/push de este diff aprobado; no merge, tracker ni archivado.
+Preflight: fetch sin novedades, HEAD/remoto en 215453f y develop3a1001d
+contenido. El CI de 215453f sigue 6/7 al preparar este commit; el resultado
+del nuevo commit solo se acreditara tras publicar y observar su ejecucion.
+Las aprobaciones inferiores corresponden a correcciones anteriores.
+
+## Revision de la correccion de imports anterior
+
 **REVIEW_PASS de la correccion de arranque de tests en CI, 26/09/2026.**
 Comparacion contra 547071f: solo dos cadenas de bootstrap y registro de
 aprobacion de Paris. Ruta backend absoluta derivada del argumento de archivo

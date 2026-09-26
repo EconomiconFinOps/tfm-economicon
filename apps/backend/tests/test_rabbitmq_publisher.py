@@ -769,6 +769,9 @@ def runtime_handshake_holder():
         except ConnectionResetError:
             peer.terminal_reason = "reset"
             peer.eof.set()
+        except BrokenPipeError:
+            peer.terminal_reason = "broken-pipe"
+            peer.eof.set()
         except ConnectionAbortedError as error:
             if sys.platform == "win32" and getattr(error, "winerror", None) == 10053:
                 peer.terminal_reason = "windows-aborted-10053"

@@ -1,6 +1,26 @@
 JUP: JUP-086
 Trello: https://trello.com/c/bKxQK9HI
 
+## Correccion del peer de cierre en CI, 27/09/2026
+
+Paris responde "hazlo" a reproducir y corregir el caso existente de RabbitMQ
+que falla al observar el cierre, sin nuevas pruebas ni ampliacion de alcance.
+Registro del orquestador el 27/09/2026 (Atlantic/Canary), no hora del mensaje.
+Spec-planner confirma que el contrato aprobado y ADR-0009 ya exigen abortar
+el transporte sin CloseOk: reparar su observacion en la fixture no cambia
+garantias. OpenSpec 34/34 y trazabilidad 11 PASS antes de esta anotacion.
+Pre-code **APPROVED** para corregir exclusivamente el tratamiento explicito
+de BrokenPipeError en `runtime_handshake_holder`, dentro de
+`apps/backend/tests/test_rabbitmq_publisher.py`, tras acreditar la causa.
+Preservar aserciones, tiempos, casos, fallos inesperados y la correccion de
+imports; no modificar producto, dependencias, CI, infraestructura ni ADRs.
+Validacion afectada completada: backend 318 PASS/10 SKIP existentes,
+REVIEW_PASS y QA_PASS sin bloqueantes. Aprobacion post-QA **APPROVED** por
+Paris Arcos Martin: "apruebo" tras presentar el resultado y solicitar
+publicar en PR #47 y comprobar CI. Registro del orquestador 27/09/2026
+(Atlantic/Canary), no hora atribuida al mensaje. Autoriza commit/push del
+ajuste aprobado y comprobar CI; no merge, tracker ni archivado.
+
 ## Correccion de arranque de tests en CI, 26/09/2026
 
 Paris autoriza "corrigelo" tras presentar el fallo de importacion de tres
