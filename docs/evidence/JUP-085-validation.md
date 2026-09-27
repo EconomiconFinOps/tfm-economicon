@@ -3,6 +3,51 @@
 JUP: JUP-085
 Trello: https://trello.com/c/Z8M443Hu
 
+## Correccion Documental De CI: PR #45, 27/09/2026
+
+Incremento sobre `fe79cd9`, rama `docs/JUP-085-archive-change`, autorizado
+por Paris en la [propuesta](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/proposal.md).
+El [job fallido](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/36035662661/job/107755002355)
+rechaza `docs/hu-release-notes.md` como artefacto obsoleto. Los otros seis
+checks remotos pasaron; esta correccion local no supone un nuevo CI verde.
+Se retira solo ese archivo y se conserva su unica nota a continuacion,
+con fecha, texto y destinos originales; solo se ajustan rutas relativas.
+
+| Fecha | JUP | Nota de release | Review | ADRs |
+| --- | --- | --- | --- | --- |
+| 2026-09-24 | JUP-085 | Contrato de sesion demo cerrado: login, `/me` con JWT (leeway 5s), ciclo de vida de sesion en frontend y CORS con origenes explicitos. | [review.md](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/review.md) | [ADR-0007](../adr/ADR-0007-backend-cors-policy.md) |
+
+La nota describe el archivado original; no constituye una nueva aprobacion
+humana ni cambia pendientes funcionales, tareas o participacion del equipo.
+
+Validacion en Windows/PowerShell, desde la raiz del worktree de PR #45:
+
+| Comando | Resultado | Exit |
+| --- | --- | --- |
+| `node tools/jup-cleanup-check.mjs` antes del ajuste | Un error: archivo obsoleto indicado arriba | 1 |
+| `node tools/jup-cleanup-check.mjs` tras retirar el archivo del indice | 636 archivos; PASS | 0 |
+| `node --test tools/jup-cleanup-check.test.mjs` | 6 PASS, 0 FAIL, antes y despues; no se suman ejecuciones | 0 |
+| `node tools/jup-check.mjs --all` | 10 cambios activos; PASS | 0 |
+| `openspec validate --all --strict --no-interactive` | 34/34 PASS, incluido `demo-auth-session` | 0 |
+| `git diff HEAD --check` | PASS | 0 |
+
+OpenSpec usa el CLI ya instalado en el checkout principal, sin instalar
+dependencias. La comprobacion por nombre activo no aplica al cambio archivado;
+`--all` verifica trazabilidad activa, no acredita por si sola el archivo JUP-085.
+Revision incremental **REVIEW_PASS** y guards de roles PASS. QA documental
+**PASS_WITH_APPROVED_EXCEPTIONS**: reconfirma higiene, trazabilidad, OpenSpec
+y diff; nota conservada, 4/4 enlaces locales nuevos (un ancla), 6/6 artefactos
+del archivo y cuatro rutas autorizadas. DoD documental para gate post-QA PASS;
+la primera comprobacion detecto un registro local ausente de guard-reviewer,
+subsanado con el resultado ya observado, sin cambios de producto.
+Pruebas nuevas: **0**; producto y mutacion N/A por alcance
+exclusivamente documental aprobado. No se modifican checker, CI, tests, ADR,
+contratos ni aplicacion. Paris aprueba el gate post-QA y autoriza publicar
+la correccion en PR #45, actualizar su descripcion y comprobar CI. Registro
+del orquestador: 27/09/2026 a 09:48 +01:00 (Atlantic/Canary), no hora del
+mensaje humano. CI del nuevo commit pendiente al registrar la aprobacion;
+sin autorizacion de merge, actualizacion de Trello ni nuevo archivado.
+
 ## Publicacion Para Revision: 23/09/2026
 
 Paris autoriza commit, push y PR hacia `develop`; registro a 17:15:32 UTC

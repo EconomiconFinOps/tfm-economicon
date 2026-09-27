@@ -1,5 +1,35 @@
 # Revision JUP-085
 
+## Correccion Documental De CI: PR #45, 27/09/2026
+
+**REVIEW_PASS incremental** contra `fe79cd9`, sin hallazgos bloqueantes
+en el alcance autorizado: retirar el archivo obsoleto que bloqueaba higiene
+y conservar su nota en la [evidencia existente](../../../../docs/evidence/JUP-085-validation.md#correccion-documental-de-ci-pr-45-27092026).
+Se mantienen texto, fecha, JUP y destinos; no se modifican producto, tests,
+politica CI, ADR, specs ni tasks.md. Guards de spec-planner, tester, coder
+y reviewer PASS; reviewer sin escrituras. Higiene pasa de un error a
+636 archivos PASS; 6 pruebas existentes PASS, OpenSpec 34/34 PASS y
+trazabilidad de 10 cambios activos PASS. Pruebas nuevas y mutacion N/A
+por excepcion documental aprobada; no se presenta como validacion funcional.
+
+QA documental **PASS_WITH_APPROVED_EXCEPTIONS**, registrado el 27/09/2026:
+nota conservada, 4/4 enlaces locales nuevos (un ancla), 6/6 artefactos del
+archivo y diff final de cuatro rutas verificados. Higiene 636, trazabilidad
+10 y OpenSpec 34/34 PASS; diff y guard QA PASS, sin escrituras del agente.
+DoD documental para gate post-QA PASS; producto y mutacion N/A por alcance.
+Al validar localmente, el CI remoto conocido es el anterior (6/7);
+el CI del commit que se publique queda pendiente de comprobacion.
+Registros historicos y sus limitaciones se conservan, incluidos los enlaces
+anteriores al archivado fuera de este ajuste. No se acredita trabajo humano
+de pairing o validacion no realizado, ni se levanta ningun finding funcional.
+
+Gate post-QA humano **APPROVED**: Paris Arcos Martin responde "aprobado"
+a publicar la correccion en PR #45, actualizar su descripcion y comprobar
+CI. Registro del orquestador 27/09/2026 a 09:48 +01:00 (Atlantic/Canary),
+no hora del mensaje humano. Autoriza commit y push de este ajuste documental;
+no merge, tracker ni nuevo archivado. No amplia el alcance ni acredita
+revisiones humanas distintas de esta aprobacion.
+
 ## Autorizacion De Publicacion Para Revision
 
 Registro del 23/09/2026 a 17:15:32 UTC. Paris Arcos Martin solicita:
