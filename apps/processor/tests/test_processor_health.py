@@ -106,3 +106,26 @@ def test_health_logs_the_missing_backend_schema(tmp_path, capsys):
 
     assert "backend_schema_missing" in capsys.readouterr().out
     database.dispose()
+
+
+def test_health_counts_jobs_without_an_extra_existence_query(tmp_path, monkeypatch):
+    database = _database(tmp_path, backend_schema=True)
+    calls = []
+    monkeypatch.setattr(database, "has_jobs_table", lambda: calls.append(1) or True)
+
+    response = _get_health(_app(database))
+
+    assert response.json()["jobs"]["completed"] == 2
+    assert calls == []
+    database.dispose()
+
+
+def test_health_trusts_the_count_query_over_the_existence_check(tmp_path, monkeypatch):
+    database = _database(tmp_path, backend_schema=True)
+    monkeypatch.setattr(database, "has_jobs_table", lambda: False)
+
+    response = _get_health(_app(database))
+
+    assert response.json()["status"] == "ok"
+    assert response.json()["jobs"]["queued"] == 1
+    database.dispose()

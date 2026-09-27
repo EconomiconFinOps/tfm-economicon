@@ -1,5 +1,6 @@
 import structlog
 from fastapi import APIRouter, Depends
+from sqlalchemy.exc import DBAPIError
 
 from app.api.dependencies import get_database, get_queue, get_vector_store
 
@@ -13,10 +14,12 @@ def health(database=Depends(get_database), queue=Depends(get_queue), vector_stor
     database_status = "ok" if database.ping() else "failed"
     rabbitmq_status = "ok" if queue.ping() else "failed"
     vector_store_status = "ok" if vector_store.ping() else "failed"
-    if database.has_jobs_table():
+    try:
         jobs = database.fetch_job_counts()
-    else:
+    except DBAPIError:
         # jobs is backend-owned and is absent until the backend has migrated.
+        if database.has_jobs_table():
+            raise
         logger.warning("backend_schema_missing", table="jobs")
         jobs = None
 
