@@ -170,6 +170,67 @@ regresión de esta tarjeta. Con concurrencia reducida
 Sin acción de remediación en este change (es un límite del entorno local, no del producto); se anota
 aquí para que el DoD del grupo 5 use `--poolOptions.threads.maxThreads=2` si vuelve a aparecer.
 
+**Actualización (grupo 4):** con 45 archivos de test (2 más que en el grupo 3), `maxThreads=2`
+también empezó a producir fallos intermitentes y no reproducibles en distintos archivos entre
+corridas (memoria libre ~2 GB de 16 GB en esta máquina en ese momento). `maxThreads=1` (secuencial)
+sí fue reproducible en verde: **260/260** dos veces seguidas. Se actualiza la recomendación: usar
+`--poolOptions.threads.maxThreads=1` para el DoD de esta tarjeta en esta máquina si `maxThreads=2`
+resulta intermitente.
+
 **DoD del grupo 3.** Sustituto `pnpm --filter @finops/frontend` (mismo motivo RF-093-001 que en el
 grupo 2): `lint` → sin errores; `typecheck` → sin errores (3 configs); `test` → 250/250 PASS con
 concurrencia reducida (ver nota de entorno arriba).
+
+## Grupo 4. Aviso en la pantalla de acceso
+
+**4.1-4.5 — Red/caracterización.** `apps/frontend/tests/login-session-expired-notice.test.tsx` (9
+tests): expiración en vuelo sobre `/overview-legacy` y sobre la mutación de ingesta → aviso
+`role="status"` visible con el texto exacto de la decisión 5; el aviso desaparece al reintentar
+(`mutation.isIdle` pasa a `false`) y un intento fallido muestra solo su propio error; no persistencia
+(`location.state` a `null`, sin marca nueva en storage, montaje directo en `/login` sin aviso);
+`403`/`503`/red nunca muestran el aviso. Commit `32db55c`. Hallazgo relevante del tester: la tarea
+4.4a resultó ser Red genuino (no caracterización, como se anticipaba) — el grupo 3 ya deja la marca
+en la navegación también para el `401` fuera de `/me`, así que "sustituir la entrada sin estado" es
+justo el trabajo de esta fase Green. 4/9 fallan genuinamente (4.1, 4.2, 4.3, 4.4a), 5/9 ya pasaban.
+
+**4.6 — Green.** `apps/frontend/src/pages/LoginPage.tsx`: lectura perezosa de
+`location.state?.sessionExpired` en el inicializador de `useState` (evita parpadeo), efecto que
+sustituye la entrada de historial sin estado (`navigate(location.pathname, { replace: true, state:
+null })`) guardado por `hasSessionExpiredFlag`, región `role="status"` con el texto exacto oculta vía
+`mutation.isIdle`, color `text-amber-400` (ya usado en `MetricCard.tsx`, coherente con el sistema).
+Nota de tooling: `eslint-plugin-react-hooks@4.6.2` sobre ESLint 9 crashea al generar el aviso de
+dependencia faltante (antes de poder silenciarlo con `eslint-disable`), así que el efecto lista
+`[location, navigate]` de forma exhaustiva en vez de `[]` con supresión — el guard interno hace que
+el resultado observable sea el mismo. Commit `27f5cd7`. 259/259 PASS, `tsc` y `lint` sin errores.
+
+**4.7 — Mutación.** Config: `mutate: ["src/pages/LoginPage.tsx"]`. Resultado: **77.08%** (46
+mutantes cubiertos, 35 KILLED, 11 SURVIVED, 2 TIMEOUT, 0 NO COVERAGE) — por debajo del umbral 80 en
+bruto. De los 11 supervivientes, **3 caen en el código tocado** (el efecto nuevo de la línea 55-58);
+los otros 8 son preexistentes en el callback `onSuccess` de la mutación de login y en `handleSubmit`
+(líneas 82-97), no modificados por la tarea 4.6 — mismo criterio de alcance que en los grupos 2 y 3
+(`RF-098-001`), sin volver a confirmar con el usuario por ser la tercera vez que se aplica el mismo
+criterio ya acordado.
+
+De los 3 supervivientes en código tocado:
+- **Línea 58** (`[location, navigate]` → `[]`, `ArrayDeclaration`): **mutante equivalente**, no se
+  remedia. `navigate` es una referencia estable de react-router y, dada la estructura de rutas,
+  `LoginPage` nunca puede recibir una segunda marca de expiración mientras sigue montado (no hay
+  ningún camino de código donde eso ocurra), así que ningún test puede observar una diferencia entre
+  ambos arrays de dependencias.
+- **Líneas 57×2** (`ObjectLiteral`/`BooleanLiteral`: elimina `replace: true, state: null`, o invierte
+  `replace` a `false`): **gap real, remediado.** Sin `replace: true`, la corrección de `LoginPage`
+  hace un `push` en vez de un `replace`, dejando una segunda entrada de historial con la marca de
+  expiración todavía puesta; el botón "atrás" del navegador la resucitaría. Test nuevo:
+  `apps/frontend/tests/login-session-expired-notice.history-replace.test.tsx` (1 test). Nota
+  metodológica: un primer diseño que solo comprobaba el estado final tras "atrás" no mataba el
+  mutante — el propio efecto de `LoginPage` sigue montado y se autocorrige de inmediato,
+  enmascarando la transición intermedia; el test final se suscribe al router **antes** de navegar
+  hacia atrás para grabar todas las transiciones, incluidas las transitorias. Verificado
+  empíricamente contra ambos mutantes (editando la línea a mano, confirmando el fallo, revirtiendo) y
+  contra el código real (pasa, 5/5 ejecuciones consecutivas sin flakiness).
+
+Cierre del grupo: mutation score de lo realmente tocado = 100% de mutantes no preexistentes muertos
+(2 reales remediados, 1 equivalente justificado).
+
+**DoD del grupo 4.** Sustituto `pnpm --filter @finops/frontend`: `lint` → sin errores; `typecheck` →
+sin errores; `test` → 260/260 PASS (ver nota de entorno actualizada: `maxThreads=1` en esta máquina).

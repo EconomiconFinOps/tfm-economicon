@@ -58,7 +58,7 @@
 - [x] 4.6 **Green:** `LoginPage` lee la marca una vez, la copia a su estado, sustituye la entrada del
       historial sin estado y muestra el aviso con el texto y la presentación de la decisión 5, oculto
       en cuanto la mutación de login deja de estar `idle`.
-- [ ] 4.7 Mutación sobre lo tocado en `LoginPage.tsx`; remediar supervivientes. Cobertura de mutación
+- [x] 4.7 Mutación sobre lo tocado en `LoginPage.tsx`; remediar supervivientes. Cobertura de mutación
       del conjunto tocado (grupos 2-4) por encima del umbral 80.
 
 ## 5. Documentación y cierre
