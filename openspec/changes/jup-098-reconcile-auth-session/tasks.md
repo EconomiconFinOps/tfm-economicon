@@ -6,10 +6,10 @@
 
 ## 1. Línea base
 
-- [ ] 1.1 Ejecutar la suite del frontend sobre la rama recién creada y registrar en `review.md` el
+- [x] 1.1 Ejecutar la suite del frontend sobre la rama recién creada y registrar en `review.md` el
       conteo de pruebas en verde como línea base (sustituto `pnpm --filter @finops/frontend test`
       mientras RF-093-001 siga abierto; dejar constancia de cuál se usó).
-- [ ] 1.2 Confirmar en `review.md`, con referencia a archivo y línea, qué criterios de la tarjeta
+- [x] 1.2 Confirmar en `review.md`, con referencia a archivo y línea, qué criterios de la tarjeta
       Trello ya cumple `develop` gracias a JUP-085 (1, 3, 4, 5 y 6) y cuáles quedan para esta tarjeta
       (2), para que la verificación final no dé por hecho nada sin evidencia.
 
