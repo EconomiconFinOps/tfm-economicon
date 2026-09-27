@@ -55,7 +55,7 @@
       `/login` directamente no muestra el aviso.
 - [x] 4.5 **Red:** prueba de que un `403`, `503` o fallo de red en `/billing/summary` no muestra el
       aviso en ningún momento (la sesión se conserva, como ya fija JUP-085).
-- [ ] 4.6 **Green:** `LoginPage` lee la marca una vez, la copia a su estado, sustituye la entrada del
+- [x] 4.6 **Green:** `LoginPage` lee la marca una vez, la copia a su estado, sustituye la entrada del
       historial sin estado y muestra el aviso con el texto y la presentación de la decisión 5, oculto
       en cuanto la mutación de login deja de estar `idle`.
 - [ ] 4.7 Mutación sobre lo tocado en `LoginPage.tsx`; remediar supervivientes. Cobertura de mutación
