@@ -53,10 +53,13 @@ def _table(raw: str) -> str:
     return raw.replace('"', "").split(".")[-1].lower()
 
 
+def _continued(sql: str) -> str:
+    sql = _strip_sql_comments(sql).rstrip()
+    return sql + ("" if sql.endswith(",") else " ") + UNKNOWN_NAME
+
+
 def _targets(sql: str) -> set[str]:
-    sql = _strip_sql_comments(sql)
-    sql = sql.rstrip()
-    sql += ("" if sql.endswith(",") else " ") + UNKNOWN_NAME
+    sql = _continued(sql)
     targets = set()
     for pattern in DDL_TARGETS:
         for match in pattern.finditer(sql):
@@ -107,7 +110,7 @@ def _forbidden(source: str) -> bool:
             name = node.func.attr if isinstance(node.func, ast.Attribute) else getattr(node.func, "id", "")
             if name in SCHEMA_CALLS:
                 return True
-    return any(UNNAMED_INDEX_CHANGE.search(_strip_sql_comments(text)) for text in _strings(source))
+    return any(UNNAMED_INDEX_CHANGE.search(_continued(text)) for text in _strings(source))
 
 
 def _migrations(service: str):
@@ -216,6 +219,11 @@ def test_ddl_scanner_ignores_comments_and_index_renames(source):
         "metadata.create_all(connection)",
         'Table("jobs", metadata).create(connection)',
         "connection.exec_driver_sql(JOBS_DDL)",
+        r'text(" ".join(["DROP INDEX IF EXISTS", name]))',
+        r'text("%s %s" % ("ALTER INDEX IF EXISTS", name))',
+        r'text("DROP INDEX IF EXISTS" + " " + name)',
+        r'text(" ".join(["DROP INDEX", name]))',
+        r'text("DROP INDEX" + " " + name)',
     ],
 )
 def test_ddl_forms_without_a_resolvable_table_are_forbidden(source):
