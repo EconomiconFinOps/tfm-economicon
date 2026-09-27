@@ -10,7 +10,6 @@ OWNED_TABLES = {
     "processor": {"azure_cost_ingestion_runs", "azure_cost_records"},
 }
 NO_DDL_MIGRATIONS = {("processor", "001")}
-DYNAMIC = "<name built outside the literal>"
 IF_EXISTS = r"(?:IF\s+(?:NOT\s+)?EXISTS\s+)?"
 NAME = r"""([^\s(),;@]+)"""
 NAMES = NAME + r"((?:\s*,\s*[^\s(),;@]+)*)"
@@ -40,8 +39,8 @@ UNNAMED_INDEX_CHANGE = re.compile(
     r"\b(?:ALTER|DROP)\s+INDEX\s+(?:CONCURRENTLY\s+)?" + IF_EXISTS + r"(?![^\s(),;]*@)", re.I
 )
 SCHEMA_CALLS = {"create_all", "create", "exec_driver_sql"}
-DDL_VERB = re.compile(r"\b(?:CREATE|ALTER|DROP|TRUNCATE)\b", re.I)
-DANGLING_NAME = re.compile(r"\b(?:TABLE|VIEW|SEQUENCE|ON|ONLY|EXISTS)\s*$", re.I)
+# A literal ending in a separator is continued by code, so it is scanned as if an unknown name followed.
+UNKNOWN_NAME = "{}"
 # SQL literals are kept so that a "--" inside quotes cannot hide the statement after it.
 SQL_COMMENT_OR_LITERAL = re.compile(r"'(?:[^']|'')*'|--[^\n]*")
 
@@ -56,6 +55,8 @@ def _table(raw: str) -> str:
 
 def _targets(sql: str) -> set[str]:
     sql = _strip_sql_comments(sql)
+    if sql != sql.rstrip(" \t\r\n,"):
+        sql += UNKNOWN_NAME
     targets = set()
     for pattern in DDL_TARGETS:
         for match in pattern.finditer(sql):
@@ -63,19 +64,34 @@ def _targets(sql: str) -> set[str]:
             targets.update(_table(name.strip()) for name in raw)
     for match in COLUMN_COMMENT.finditer(sql):
         targets.add(match.group(1).replace('"', "").split(".")[-2].lower())
-    if DDL_VERB.search(sql) and DANGLING_NAME.search(sql):
-        targets.add(DYNAMIC)
     return targets
 
 
+def _docstrings_and_fstring_parts(tree: ast.AST) -> set[int]:
+    skipped = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.JoinedStr):
+            skipped.update(id(part) for part in node.values)
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+            first = node.body[0]
+            if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant):
+                skipped.add(id(first.value))
+    return skipped
+
+
 def _strings(source: str) -> list[str]:
+    tree = ast.parse(source)
+    skipped = _docstrings_and_fstring_parts(tree)
     strings = []
-    for node in ast.walk(ast.parse(source)):
-        if isinstance(node, ast.Constant) and isinstance(node.value, str):
-            strings.append(node.value)
+    for node in ast.walk(tree):
+        if id(node) in skipped:
+            continue
+        if isinstance(node, ast.Constant) and isinstance(node.value, (str, bytes)):
+            value = node.value
+            strings.append(value.decode("utf-8", errors="replace") if isinstance(value, bytes) else value)
         elif isinstance(node, ast.JoinedStr):
             strings.append("".join(
-                part.value if isinstance(part, ast.Constant) else "{}" for part in node.values
+                part.value if isinstance(part, ast.Constant) else UNKNOWN_NAME for part in node.values
             ))
     return strings
 
@@ -146,6 +162,7 @@ def test_ddl_scanner_detects_hostile_forms(statement, table):
         r'text("SELECT 1;\nALTER TABLE jobs ADD COLUMN x INT")',
         r"text('CREATE TABLE IF NOT EXISTS jobs (id STRING)')",
         r'text("CREATE TABLE " "jobs (id INT)")',
+        r'cursor.execute(b"CREATE TABLE IF NOT EXISTS jobs (id INT)")',
     ],
 )
 def test_ddl_inside_python_strings_is_seen(source):
@@ -159,6 +176,13 @@ def test_ddl_inside_python_strings_is_seen(source):
         r'text("CREATE TABLE {}".format(TABLE))',
         r'text("CREATE TABLE %s" % TABLE)',
         r'text(f"CREATE TABLE {TABLE} (id INT)")',
+        r'text("TRUNCATE " + TABLE)',
+        r'text("DROP TABLE IF EXISTS azure_cost_records, " + TABLE)',
+        r'text("ALTER TABLE azure_cost_records RENAME TO " + NEW)',
+        r'text("CREATE STATISTICS s ON status FROM " + TABLE)',
+        r'text("GRANT ALL ON " + TABLE + " TO x")',
+        r'text("SELECT 1; TRUNCATE " + TABLE)',
+        'sql = "TRUNCATE "\nsql += TABLE',
     ],
 )
 def test_ddl_scanner_reports_names_it_cannot_resolve(source):
@@ -208,3 +232,14 @@ def test_every_migration_declares_its_tables_or_is_known_to_have_no_ddl():
 
 def test_owned_table_sets_are_disjoint():
     assert OWNED_TABLES["backend"] & OWNED_TABLES["processor"] == set()
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        '"""Create the Azure cost records table"""\nx = 1',
+        r'text(f"ALTER TABLE {schema}.azure_cost_records ADD COLUMN x INT")',
+    ],
+)
+def test_ddl_scanner_does_not_flag_docstrings_or_resolved_fstring_names(source):
+    assert _source_targets(source) <= OWNED_TABLES["processor"]
