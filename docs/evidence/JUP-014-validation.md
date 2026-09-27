@@ -131,8 +131,9 @@ Revisor independiente (sin acceso al razonamiento de la implementacion) sobre sp
 | --- | --- | --- |
 | 1 | accept | ADV-2 (regla de fila sin grupo ausente en la spec): anadida a la spec. ADV-3 (`null` explicito lanzaba `AttributeError`): corregido. ADV-4 y ADV-5 (grafia guardada y orden dependientes del orden de filas): corregidos. ADV-6 (guardas distintas en las dos pasadas): corregido. ADV-1 (`casefold` frente a la comparacion de Azure): registrado como `RF-014-002`, convencion de todo el repo. |
 | 2 | changes-requested | ADV-7/ADV-8/ADV-9: la spec prometia tolerar `null` en cualquier dimension, pero el cliente de Azure rechaza el `null` antes de normalizar y el normalizador lo rechaza en dimensiones no promovidas, `Tags` y alias. Resuelto acotando la spec a `resource_id` y `resource_group` y registrando `RF-014-003`. ADV-10 y ADV-11: riesgos aceptados (abajo). |
+| 3 | accept | ADV-12 (valor vacio o en blanco junto a un alias con valor se rechaza, comportamiento previo a este fix): la spec aclara que la reconciliacion de alias se aplica antes y `RF-014-003` lo recoge. ADV-13 (frase inexacta del barrido): corregida abajo. |
 
-Barrido de patron: todas las llamadas a `casefold()` sobre dimensiones del processor estan en la funcion corregida y protegidas frente a valores vacios.
+Barrido de patron: las llamadas a `casefold()` de la funcion corregida quedan protegidas frente a valores vacios o nulos. El resto de llamadas del processor (`_take`, `_comparable`, etiquetas, migracion 003, servicio de ingesta) reciben siempre texto ya validado.
 
 ### Riesgos aceptados por Lucia (2026-09-27)
 
