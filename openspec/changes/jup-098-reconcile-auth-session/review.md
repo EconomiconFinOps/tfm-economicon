@@ -1,5 +1,66 @@
 # Review — JUP-098 reconcile-auth-session
 
+## Grupo 2. Motivo de la invalidación en la capa de acceso
+
+**2.1-2.2 — Red.** `apps/frontend/src/services/api.test.ts` (nuevo, 5 tests): motivo `"expired"` /
+`"manual"` entregado a los suscriptores, propagación a múltiples listeners, desuscripción efectiva,
+y no notificación cuando la generación ya quedó abandonada. Commit `440ec5f`. Red confirmado: 3/5
+fallos en runtime (`vitest`) y 4 errores de `tsc` contra la firma antigua de `invalidateSession`.
+
+**2.3 — Green.** `services/api.ts` (líneas 22-52): tipo `SessionInvalidationReason = "expired" |
+"manual"`, `invalidateSession(generation, reason = "manual")`, listener tipado con el motivo. Guard
+de generación intacto, `discardResponse` sin tocar, llamada de `fetchJson` sin modificar (sigue
+usando el valor por defecto `"manual"`). Commit `75728a4`. 240/240 PASS, `tsc` sin errores.
+
+**2.4 — Mutación.** Config: `.claude/harness/stryker.conf.mjs` → `mutate: ["src/services/api.ts"]`
+(harness local, no se commitea). Comando:
+```
+corepack pnpm --package=@stryker-mutator/core --package=@stryker-mutator/vitest-runner \
+  --package=typescript@5.9.3 dlx stryker run ../../.claude/harness/stryker.conf.mjs
+```
+Resultado: **88.99%** (109 mutantes cubiertos, 97 KILLED, 11 SURVIVED, 1 NO COVERAGE) — por encima
+del umbral 80.
+
+De los 11 supervivientes, **2 caen en el código que tocó esta tarea** (líneas 22-52):
+
+- **Línea 37** (`++sessionGeneration` → `--sessionGeneration`, `UpdateOperator`): **mutante
+  equivalente**, no se remedia. En todo `api.ts`, `SessionGate.tsx` y `LoginPage.tsx` la generación
+  solo se compara con `!==`; ningún código depende de su sentido de incremento, así que ningún test
+  puede observar la diferencia sin inventar una aserción artificial sobre el signo interno.
+- **Línea 50** (elimina la llamada a `advanceSessionGeneration()` dentro de `invalidateSession`,
+  `CallExpression`): **gap real**, remediado. Sin ese avance, una segunda invalidación con la misma
+  generación original volvería a notificar en vez de ser un no-op. Test nuevo:
+  `apps/frontend/src/services/api.session-generation-advance.test.ts` (1 test) — verificado
+  empíricamente contra el mutante (comentando la línea manualmente, confirmando el fallo, revirtiendo
+  con `git checkout --`, sin dejar el cambio en el árbol) y contra el código real (pasa). Suite
+  completa tras el test nuevo: **241/241 PASS**.
+
+Los otros **9 supervivientes + 1 NO COVERAGE caen fuera del código que tocó esta tarea**: en
+`fetchJson` (redacción de mensajes de error, validación de respuesta, guard de generación dentro de
+la rama de error), `ApiError` (`this.name`) y `clearSessionMutations` (`mutation.destroy()`). Todo
+preexistente de JUP-085/097, no modificado por la tarea 2.3.
+
+**Decisión de alcance (confirmada con el usuario 2026-09-27):** esos 9+1 quedan **fuera de esta
+tarjeta**, sin remediar. Motivo: el `proposal.md` de JUP-098 declara explícitamente como fuera de
+alcance "reimplementar nada de JUP-085 [...] sus pruebas no se tocan"; escribir tests nuevos para
+código que esta tarea no modifica sería expandir ese alcance por un efecto colateral de que Stryker
+mutila el archivo entero, no la función tocada. Se registra como hallazgo para quien quiera subir la
+cobertura de mutación de `api.ts` en conjunto — ver `openspec/findings/backlog.md` (RF-098-001).
+
+Cierre del grupo: mutation score de lo realmente tocado por esta tarea = 100% de mutantes no
+equivalentes muertos (1 real remediado, 1 equivalente justificado). Score global del archivo
+(88.99%) queda por encima del umbral 80 igualmente.
+
+**DoD del grupo 2.** `node .claude/harness/check-dod.mjs` desde la raíz falla por RF-093-001 (turbo
+resuelve pnpm 11.9.0 global en subprocesos por paquete, en vez de 9.0.0 vía corepack — bloqueo
+conocido, pendiente de JUP-102, ajeno a este cambio). Sustituto `pnpm --filter @finops/frontend`:
+
+- `lint` → sin salida, sin errores.
+- `typecheck` → sin salida, sin errores (`tsc --noEmit` × 3 configs).
+- `test` → 241/241 PASS (240 previos + 1 de remediación de mutación).
+- `build` → éxito, `dist/` generado (aviso preexistente de tamaño de chunk, no relacionado).
+- Escaneo de secretos del propio `check-dod.mjs` → PASS (esa comprobación sí corre bien desde la raíz).
+
 ## Grupo 1. Línea base
 
 **1.1 — Línea base ejecutada.** Sustituto usado (RF-093-001 sigue abierto, turbo resuelve un pnpm

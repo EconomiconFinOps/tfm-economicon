@@ -15,15 +15,15 @@
 
 ## 2. Motivo de la invalidación en la capa de acceso
 
-- [ ] 2.1 **Red:** pruebas unitarias de `services/api.ts` que fijan que los suscriptores de
+- [x] 2.1 **Red:** pruebas unitarias de `services/api.ts` que fijan que los suscriptores de
       invalidación reciben el motivo de expiración cuando una operación autenticada distinta de `/me`
       recibe `401`, y el motivo neutro cuando la invalidación se pide sin motivo. Demostrar Red.
-- [ ] 2.2 **Red:** prueba de que una invalidación de una generación abandonada no notifica ningún
+- [x] 2.2 **Red:** prueba de que una invalidación de una generación abandonada no notifica ningún
       motivo a los suscriptores. Demostrar Red o, si ya pasa por el guard existente, registrarlo como
       prueba de caracterización en `review.md`.
-- [ ] 2.3 **Green:** añadir el motivo tipado a `invalidateSession` y a la suscripción (decisión 1),
+- [x] 2.3 **Green:** añadir el motivo tipado a `invalidateSession` y a la suscripción (decisión 1),
       con valor neutro por defecto, sin mover el guard de generación ni cambiar `discardResponse`.
-- [ ] 2.4 Mutación sobre lo tocado en `services/api.ts`; remediar supervivientes con más pruebas.
+- [x] 2.4 Mutación sobre lo tocado en `services/api.ts`; remediar supervivientes con más pruebas.
 
 ## 3. Propagación del motivo desde `SessionGate`
 
