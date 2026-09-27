@@ -39,6 +39,9 @@ Fuera de alcance: locks distribuidos, un servicio de migracion aparte, reintento
 - `apps/processor/app/db/migrations/001_initial.py`: deja de crear `jobs`.
 - `docker-compose.yml`: dependencia `processor` -> `backend` sana.
 - Tests del processor que usan `jobs` tras `Database.initialize()` (por ejemplo `tests/test_azure_cost_cockroach_integration.py`).
-- `openspec/findings/backlog.md`: RF-044-002 y nuevo RF-096-001.
+- `apps/processor/app/api/routes/health.py` y `apps/processor/app/db/database.py` (`has_jobs_table`): `/health` degradado mientras falta `jobs`.
+- `apps/processor/app/db/migration_runner.py`: la tabla de versiones pasa a ser un parametro obligatorio.
+- Tests nuevos: `tests/test_schema_migration_ownership.py` (opt-in, CockroachDB real), `tests/test_schema_ownership_static.py`, `tests/test_processor_health.py` y un caso en `tools/docker-topology.test.mjs`.
+- `openspec/findings/backlog.md`: RF-044-002 y nuevos RF-096-001 a RF-096-004.
 - Coordinacion con el PR #47 (JUP-086, abierto), que tambien toca tests del processor y hace que el processor lea tablas del backend.
-- Sin cambios de API, de esquema en bases existentes ni de dependencias.
+- Sin cambios de esquema en bases existentes ni de dependencias. Unico cambio de API: el bloque `jobs` de `/health` del processor puede ser `null` mientras el backend no ha migrado.

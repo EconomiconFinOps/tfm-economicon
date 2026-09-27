@@ -15,6 +15,9 @@
 - [x] 3.2 Añadir en `docker-compose.yml` la dependencia del processor sobre `backend` con `condition: service_healthy`.
 - [x] 3.3 Adaptar los tests del processor que asumian que su migracion crea `jobs` (al menos `_assert_schema` en `tests/test_azure_cost_cockroach_integration.py`), creando el esquema del backend cuando lo necesiten.
 - [x] 3.4 Ejecutar las pruebas del grupo 2 y confirmar que pasan.
+- [x] 3.5 Hacer que `/health` del processor responda 200 `degraded` con `jobs` nulo solo cuando falta `jobs`, sin ocultar otros errores (revision adversarial ADV-1, ADV-6, ADV-12, ADV-13).
+- [x] 3.6 Añadir una guarda estatica que se ejecute en CI sin base de datos y compruebe que cada servicio solo toca sus tablas en sus migraciones (ADV-2, ADV-7, ADV-11, ADV-16, ADV-17); es heuristica, la prueba completa es la opt-in con CockroachDB real.
+- [x] 3.7 Exigir la tabla de versiones explicita en el `MigrationRunner` del processor (ADV-10).
 
 ## 4. Verificacion con Docker real
 
@@ -26,6 +29,7 @@
 
 - [x] 5.1 Actualizar RF-044-002 en `openspec/findings/backlog.md` a `Fixed` con referencia a JUP-096 y la evidencia.
 - [x] 5.2 Registrar RF-096-001 (RabbitMQ `eacces` al leer `.erlang.cookie` en un arranque en frio, una vez de seis, arranca al reintentar) como `Open`, fuera de alcance, candidato para JUP-050.
+- [x] 5.3 Registrar RF-096-002 (lectura de pgvector por el backend, riesgo aceptado por Lucia), RF-096-003 (migracion concurrente dentro del processor) y RF-096-004 (CI no ejecuta los tests con base de datos real).
 
 ## 6. Cierre y verificacion
 
