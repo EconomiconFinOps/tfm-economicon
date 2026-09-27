@@ -73,3 +73,36 @@ def test_health_combines_missing_backend_schema_with_failed_broker(tmp_path):
     assert body["services"]["rabbitmq"] == "failed"
     assert body["jobs"] is None
     database.dispose()
+
+
+def test_health_does_not_hide_other_job_count_errors(tmp_path, monkeypatch):
+    database = _database(tmp_path, backend_schema=True)
+
+    def broken_counts():
+        raise KeyError("status")
+
+    monkeypatch.setattr(database, "fetch_job_counts", broken_counts)
+
+    assert _get_health(_app(database)).status_code == 500
+    database.dispose()
+
+
+def test_health_keeps_failing_visibly_when_the_database_is_unreachable():
+    database = Database("postgresql+psycopg://user@127.0.0.1:1/db?connect_timeout=1")
+
+    response = _get_health(_app(database))
+
+    assert response.status_code == 500
+    database.dispose()
+
+
+def test_health_logs_the_missing_backend_schema(tmp_path, capsys):
+    from app.core.logging import configure_logging
+
+    configure_logging()
+    database = _database(tmp_path, backend_schema=False)
+
+    _get_health(_app(database))
+
+    assert "backend_schema_missing" in capsys.readouterr().out
+    database.dispose()

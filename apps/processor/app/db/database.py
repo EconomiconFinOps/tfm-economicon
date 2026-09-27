@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 
 from app.db.migration_runner import MigrationRunner
 
@@ -47,6 +47,9 @@ class Database:
                     "updated_at": datetime.now(timezone.utc),
                 },
             )
+
+    def has_jobs_table(self) -> bool:
+        return inspect(self.engine).has_table("jobs")
 
     def fetch_job_counts(self) -> dict[str, int]:
         with self.engine.connect() as connection:

@@ -41,7 +41,7 @@ Databases migrated before this change SHALL keep their tables, rows and version 
 - **THEN** the backend completes its migrations without error, records its versions once, and the existing `jobs` rows are preserved
 
 ### Requirement: Processor health before the backend schema exists
-The processor `GET /health` SHALL answer 200 with status `degraded` and a null `jobs` block, never an unhandled error, while the backend-owned `jobs` table does not exist yet, and SHALL report job counts again once it exists.
+The processor `GET /health` SHALL answer 200 with status `degraded` and a null `jobs` block, and SHALL log a warning, while the backend-owned `jobs` table does not exist yet, and SHALL report job counts again once it exists. Only the absence of `jobs` SHALL be degraded this way: an unreachable database or any other error while counting jobs SHALL keep failing visibly as before this change.
 
 #### Scenario: Processor migrated before the backend
 - **WHEN** the processor serves `/health` on a database where `jobs` does not exist
@@ -50,3 +50,7 @@ The processor `GET /health` SHALL answer 200 with status `degraded` and a null `
 #### Scenario: Missing backend schema combined with a failed dependency
 - **WHEN** `jobs` does not exist and RabbitMQ is also unavailable
 - **THEN** the response is 200 with status `degraded`, RabbitMQ reported as failed and `jobs` null
+
+#### Scenario: Other errors are not hidden
+- **WHEN** the database is unreachable, or counting jobs fails for a reason other than a missing `jobs` table
+- **THEN** `/health` does not answer 200 with a null `jobs` block; the error remains visible as before this change
