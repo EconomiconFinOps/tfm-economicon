@@ -17,6 +17,8 @@ Ademas, el processor necesita tablas que crea el backend (`jobs` hoy, y `users`/
 
 - La tabla `jobs` pasa a tener un unico dueño: el backend. La migracion `001` del processor deja de crearla. En bases de datos ya migradas no cambia nada, porque `001` ya consta como aplicada.
 - En Docker Compose, el processor espera a que el backend este sano (`depends_on` con `condition: service_healthy`), de modo que el esquema del backend existe antes de que el processor lo use.
+- El `/health` del processor responde 200 `degraded` con `jobs` nulo mientras la tabla del backend no existe, en lugar de fallar; cualquier otro error sigue siendo visible.
+- Un test estatico, que se ejecuta en CI sin base de datos, comprueba que cada servicio solo toca en sus migraciones las tablas de las que es dueño.
 - Los tests del processor que daban por hecho que su propia migracion crea `jobs` se adaptan para crear el esquema del backend cuando lo necesiten.
 - Se registra RF-096-001: RabbitMQ fallo una vez en un arranque en frio al leer `/var/lib/rabbitmq/.erlang.cookie` (`eacces`) y arranco al reintentar. Queda fuera de alcance, como candidato para JUP-050.
 

@@ -50,13 +50,17 @@ Se añade `backend: condition: service_healthy` al `depends_on` del processor. E
 
 Tras la decision 1 ningun objeto de esquema se crea desde dos servicios, y el control de la exploracion dio 0/6 fallos sin `jobs`. Un reintento solo ocultaria una colision futura en lugar de impedirla; la spec `schema-migration-ownership` hace explicita la regla para que un revisor la detecte.
 
-### 4. Sin ADR nuevo
+### 4. `/health` del processor tolera la ausencia de `jobs`
+
+La revision adversarial (pasadas 1 a 3) mostro que, sin `jobs`, `/health` respondia 500 donde `develop` respondia 200. El endpoint cuenta los jobs primero y solo si la consulta falla con un error de base de datos comprueba si `jobs` existe: si no existe, responde 200 `degraded` con `jobs` nulo y registra un aviso; en cualquier otro caso el error se propaga como antes (base caida o fallo de programacion siguen siendo visibles). Asi el caso normal sigue siendo una sola consulta y la existencia se decide con la misma resolucion de nombres que la consulta real solo cuando hace falta.
+
+### 5. Sin ADR nuevo
 
 La regla duradera (un unico dueño por tabla) queda como requisito en la capacidad `schema-migration-ownership`, verificable con escenarios. El orden de arranque es un ajuste del requisito existente de `containerized-runtime`. Ademas, PR #47 ocupa ADR-0008 y ADR-0009, y un ADR aqui competiria por la numeracion sin aportar mas que la spec.
 
 ## Risks / Trade-offs
 
 - [Un test o una herramienta dependia de que el processor creara `jobs`] -> Mitigacion: barrido de usos de `jobs` en `apps/processor` antes de implementar; `tests/test_azure_cost_cockroach_integration.py` (`_assert_schema`) ya se sabe afectado y pasara a comprobar que el processor no la crea.
-- [El processor se ejecuta fuera de Compose antes que el backend, por ejemplo en local] -> Sus migraciones terminan bien, pero cualquier uso de `jobs` falla hasta que el backend migre. En `develop`, `/health` del processor lee `jobs` (`fetch_job_counts`), por lo que el processor quedaria no sano hasta entonces. Se documenta; el orden correcto es el de Compose. PR #47 retira esa lectura de `/health`.
+- [El processor se ejecuta fuera de Compose antes que el backend, por ejemplo en local o con `pnpm dev`] -> Sus migraciones terminan bien y el worker no recibe jobs hasta que el backend los crea. `/health` lee `jobs`: se cambia para responder 200 `degraded` con `jobs` nulo y un aviso `backend_schema_missing` mientras la tabla no existe (decision 4). PR #47 retira esa lectura de `/health`; si se integra antes, la decision 4 deja de aplicar.
 - [Conflicto con PR #47] -> #47 toca tests del processor y hace que el processor lea `users` y `user_tenants`. Si se integra antes, se actualiza esta rama y se repite la bateria; ambos cambios son coherentes (el processor ya no crea ninguna tabla del backend).
 - [Arranque mas lento del stack completo] -> El processor espera al backend (unos 10-25 s medidos). Aceptado.
