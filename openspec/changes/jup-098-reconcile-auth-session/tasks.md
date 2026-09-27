@@ -27,13 +27,16 @@
 
 ## 3. Propagación del motivo desde `SessionGate`
 
-- [ ] 3.1 **Red:** prueba de integración (`renderApp`) de que un `401` de `/me` al arrancar con sesión
+- [x] 3.1 **Red:** prueba de integración (`renderApp`) de que un `401` de `/me` al arrancar con sesión
       persistida termina en `/login` con la marca de expiración en el estado de navegación.
-- [ ] 3.2 **Red:** pruebas de que un error de `/me` que no es `401` (`403`, `503`, red, contrato
+- [x] 3.2 **Red:** pruebas de que un error de `/me` que no es `401` (`403`, `503`, red, contrato
       inválido), el cierre manual y "Reset session" terminan en `/login` **sin** marca de expiración.
 - [ ] 3.3 **Green:** el suscriptor de `SessionGate` guarda el motivo y la redirección existente lo
       pasa como estado de navegación solo cuando es expiración; el efecto de error de `/me` deriva el
-      motivo del `ApiError` con `status === 401` (decisiones 2 y 3).
+      motivo del `ApiError` con `status === 401` (decisiones 2 y 3). Incluye cablear el otro extremo
+      de la decisión 3: la llamada a `invalidateSession(generation)` de `fetchJson` (línea ~106,
+      `401` fuera de `/me`) pasa a `invalidateSession(generation, "expired")` — es la misma decisión
+      de diseño que el párrafo anterior, ambos extremos del mismo camino de motivo.
 - [ ] 3.4 Prueba de que la llamada a `invalidateSession` del efecto "sin sesión" no sobrescribe un
       motivo de expiración ya entregado (riesgo del design).
 - [ ] 3.5 Mutación sobre lo tocado en `SessionGate.tsx`; remediar supervivientes.
