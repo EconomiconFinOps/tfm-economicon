@@ -161,10 +161,7 @@ promotion pattern as the existing typed dimensions.
   not infer a value
 
 ### Requirement: Non-blocking detection of resource hierarchy inconsistency
-Within a single normalization batch, the processor SHALL detect a
-`resource_id` reported under more than one `resource_group`, comparing
-values case-insensitively while preserving each row's original casing.
-Detection SHALL NOT reject the row or the batch.
+Within a single normalization batch, the processor SHALL detect a `resource_id` reported under more than one `resource_group`, comparing both `resource_id` and `resource_group` values case-insensitively (Azure identifiers are case-insensitive) while preserving each row's original casing. Detection SHALL NOT reject the row or the batch, including when a row's `resource_id` or `resource_group` is absent, empty, blank or explicitly null. Provider alias reconciliation still applies first: an empty, blank or null value next to an alias with a value is rejected as contradictory, as before this requirement. Handling of explicit nulls in other dimensions, and of empty values next to populated aliases, is outside this requirement (see finding RF-014-003).
 
 #### Scenario: A resource stays under one resource group
 - **WHEN** all rows for a given `resource_id` in the batch share the same
@@ -183,3 +180,20 @@ Detection SHALL NOT reject the row or the batch.
   differ only in letter casing
 - **THEN** no inconsistency is recorded, and each row keeps its original
   source casing
+
+#### Scenario: Resource IDs that differ only in casing identify the same resource
+- **WHEN** rows report `resource_id` values that differ only in letter casing (e.g. `RES-1` and `res-1`) under different `resource_group` values
+- **THEN** they are treated as the same resource and the inconsistency is recorded on each of those rows
+- **AND** each row keeps its original `resource_id` casing
+
+#### Scenario: A row without resource group belongs to a resource with an inconsistency
+- **WHEN** a resource is reported under two or more distinct `resource_group` values in the batch, and another row for the same resource has no `resource_group` (absent, empty, blank or null)
+- **THEN** that row is normalized without error and records every `resource_group` observed for the resource as its inconsistency signal
+
+#### Scenario: A row without resource group is not an inconsistency on its own
+- **WHEN** a resource is reported under a single `resource_group` (ignoring casing) and another row for the same resource has no `resource_group`
+- **THEN** no inconsistency is recorded for any of those rows
+
+#### Scenario: The recorded inconsistency does not depend on row order
+- **WHEN** the same batch is normalized with its rows in a different order
+- **THEN** each row records the same inconsistency values, listed in case-insensitive order, using one stable spelling per `resource_group`
