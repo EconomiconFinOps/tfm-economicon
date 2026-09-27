@@ -37,9 +37,10 @@
       de la decisión 3: la llamada a `invalidateSession(generation)` de `fetchJson` (línea ~106,
       `401` fuera de `/me`) pasa a `invalidateSession(generation, "expired")` — es la misma decisión
       de diseño que el párrafo anterior, ambos extremos del mismo camino de motivo.
-- [ ] 3.4 Prueba de que la llamada a `invalidateSession` del efecto "sin sesión" no sobrescribe un
-      motivo de expiración ya entregado (riesgo del design).
-- [ ] 3.5 Mutación sobre lo tocado en `SessionGate.tsx`; remediar supervivientes.
+- [x] 3.4 Prueba de que la llamada a `invalidateSession` del efecto "sin sesión" no sobrescribe un
+      motivo de expiración ya entregado (riesgo del design). Cerrada con evidencia existente (grupo 2
+      + tarea 3.1), sin test nuevo — ver `review.md`, confirmado con el usuario.
+- [x] 3.5 Mutación sobre lo tocado en `SessionGate.tsx`; remediar supervivientes.
 
 ## 4. Aviso en la pantalla de acceso
 

@@ -1,5 +1,38 @@
 # Review — JUP-098 reconcile-auth-session
 
+## Grupo 1. Línea base
+
+**1.1 — Línea base ejecutada.** Sustituto usado (RF-093-001 sigue abierto, turbo resuelve un pnpm
+global en subprocesos por paquete): `pnpm test` ejecutado dentro de `apps/frontend/` (equivalente a
+`pnpm --filter @finops/frontend test`, sin pasar por turbo).
+
+```
+Test Files  39 passed (39)
+     Tests  235 passed (235)
+```
+
+Línea base: **235 PASS / 0 FAIL**, 39 archivos. Ninguna de las suites existentes se toca en esta
+tarjeta; deben seguir en 235 PASS al cerrar cada grupo posterior.
+
+**1.2 — Qué cumple ya `develop` (JUP-085, `d9271fd`) y qué queda para esta tarjeta.**
+
+| Criterio Trello | Estado en `develop` | Evidencia |
+| --- | --- | --- |
+| 1. Un 401 limpia la sesión persistida y devuelve al operador al acceso, sin token muerto en `localStorage` | **Cumplido** | `fetchJson` detecta `401` numérico fuera de `/me` e invalida ([api.ts:95-98](../../../apps/frontend/src/services/api.ts#L95-L98)); el suscriptor de `SessionGate` limpia `SESSION_KEY`/`TENANT_KEY` y ambas cachés ([SessionGate.tsx:82-93](../../../apps/frontend/src/layouts/SessionGate.tsx#L82-L93)) |
+| 2. El operador ve un mensaje que identifica la expiración de sesión como tal | **Abierto — trabajo de esta tarjeta** | Hoy la redirección a `/login` es silenciosa: `<Navigate to="/login" replace />` sin ningún estado ([SessionGate.tsx:207-209](../../../apps/frontend/src/layouts/SessionGate.tsx#L207-L209)) |
+| 3. Un fallo que no sea 401 (500, red, 503) conserva el comportamiento actual | **Cumplido** | Cubierto por `tests/auth-session.test.tsx` ("non-profile query and mutation error retain authentication", "tenant bootstrap error retains the session") |
+| 4. La distinción vive en la capa de acceso centralizada, no repetida en cada pantalla | **Cumplido** | Único punto de detección: `fetchJson` en `services/api.ts`; ninguna pantalla implementa su propia lógica de 401 |
+| 5. Pruebas de expiración en vuelo sobre `/overview-legacy` y sobre una pantalla con mutación pendiente, ambas Red antes de Green | **Cumplido** (histórico de JUP-085; no aplica "Red antes de Green" retroactivamente) | `tests/auth-session.test.tsx`: `"current query %s invalidates..."` (incluye `/billing/summary` → `/overview-legacy`) y `"current %s mutation 401 clears session..."` (ingesta y conversación) |
+| 6. Se decide y se registra si el 403 de tenant recibe el mismo trato que el 401 | **Registrado en JUP-085, reafirmado aquí** | Ver `design.md` decisión 4 de esta tarjeta; `SessionGate` muestra el bloque de error de bootstrap con "Reset session" ante `403` de `/tenants`, sin cerrar sesión automáticamente |
+| 7. Cobertura de mutación sobre lo tocado > 80 | Pendiente — se mide sobre lo que toque esta tarjeta (grupos 2-4) | — |
+| 8. Ningún archivo de `apps/backend` en el diff | Por construcción (alcance) | Se verifica en la tarea 5.4 |
+
+**Conclusión del grupo:** el único trabajo de producto que queda es el criterio 2. Los grupos 2-4
+de `tasks.md` lo implementan; el resto de esta tarjeta es verificación y documentación.
+
+**Checkpoint:** grupo doc-only (sin código de producto, sin tests nuevos) → sin ciclo Red/Green ni
+mutación, según excepción de `.claude/harness/workflow.md`. Listo para commit.
+
 ## Grupo 2. Motivo de la invalidación en la capa de acceso
 
 **2.1-2.2 — Red.** `apps/frontend/src/services/api.test.ts` (nuevo, 5 tests): motivo `"expired"` /
@@ -61,35 +94,82 @@ conocido, pendiente de JUP-102, ajeno a este cambio). Sustituto `pnpm --filter @
 - `build` → éxito, `dist/` generado (aviso preexistente de tamaño de chunk, no relacionado).
 - Escaneo de secretos del propio `check-dod.mjs` → PASS (esa comprobación sí corre bien desde la raíz).
 
-## Grupo 1. Línea base
+## Grupo 3. Propagación del motivo desde `SessionGate`
 
-**1.1 — Línea base ejecutada.** Sustituto usado (RF-093-001 sigue abierto, turbo resuelve un pnpm
-global en subprocesos por paquete): `pnpm test` ejecutado dentro de `apps/frontend/` (equivalente a
-`pnpm --filter @finops/frontend test`, sin pasar por turbo).
+**3.1-3.2 — Red/caracterización.** `apps/frontend/tests/session-expiry-notice.test.tsx` (8 tests):
+`401` de `/me` al arrancar → `/login` con `{ sessionExpired: true }`; `403`/`503`/red/contrato
+inválido de `/me`, logout manual y "Reset session" tras `403` de tenants → `/login` con
+`location.state === null` (react-router normaliza el estado ausente a `null`, no `undefined`; ver
+comentario del propio archivo de test). Commit `cd2e5cc`.
 
-```
-Test Files  39 passed (39)
-     Tests  235 passed (235)
-```
+**3.3 — Green.** `services/api.ts`: el `401` fuera de `/me` en `fetchJson` pasa a invalidar con
+`"expired"`. `SessionGate.tsx`: nuevo estado `sessionExpired`, el suscriptor de invalidación lo fija
+según el motivo recibido, `handleLogout` acepta un motivo opcional, el efecto de error de `/me`
+deriva `"expired"` solo de un `ApiError` con `status === 401`, y el `<Navigate>` final pasa
+`state={{ sessionExpired: true }}` solo entonces. Durante la revisión se detectó que el botón "Reset
+session" quedó protegido de recibir el `MouseEvent` nativo como motivo, pero `onLogout: handleLogout`
+(usado por el botón "Cerrar sesion" de `Layout.tsx`) tenía el mismo riesgo sin corregir — se envió de
+vuelta al coder y quedó resuelto con el mismo patrón (`onLogout: () => handleLogout()`). Commit
+`ca9dd95`. 249/249 PASS, `tsc` y `lint` sin errores.
 
-Línea base: **235 PASS / 0 FAIL**, 39 archivos. Ninguna de las suites existentes se toca en esta
-tarjeta; deben seguir en 235 PASS al cerrar cada grupo posterior.
+**3.4 — Invariante "el efecto sin sesión no sobrescribe un motivo ya entregado" (sin test nuevo,
+evidencia existente suficiente, confirmado con el usuario 2026-09-27).** Verificado por lectura de
+código: `generation` es estado local de `SessionGate` que **no se actualiza** en el camino de error
+de `/me` (el efecto de reconciliación de identidad que sí llama a `setGeneration` retorna temprano
+cuando `profileQuery.isError`, así que nunca se ejecuta ahí). Por tanto, tras la primera
+`invalidateSession(generation, "expired")`, la llamada posterior del efecto "sin sesión"
+(`if (!session) invalidateSession(generation);`) reutiliza ese mismo `generation` ya obsoleto, y el
+guard de `invalidateSession` (`generation !== sessionGeneration`) la bloquea antes de notificar a
+ningún suscriptor — no hay ninguna ruta de código por la que un motivo ya entregado pueda
+sobrescribirse. Dos evidencias ya existentes prueban el mecanismo, sin necesidad de un test nuevo:
+- **Grupo 2** (`api.session-generation-advance.test.ts`): prueba, a nivel unitario y agnóstico al
+  motivo, que una segunda `invalidateSession` con la generación original ya invalidada no vuelve a
+  notificar a ningún listener — es exactamente el mecanismo que protege este riesgo.
+- **Tarea 3.1** (`session-expiry-notice.test.tsx`): el `expect(state).toEqual({ sessionExpired: true
+  })` se afirma tras `waitFor` hasta que el router se **estabiliza** en `/login`; si el efecto "sin
+  sesión" sobrescribiera el motivo en un render posterior, ese test fallaría de forma determinista.
+  Que pase en verde es evidencia end-to-end del mismo invariante, no solo unitaria.
 
-**1.2 — Qué cumple ya `develop` (JUP-085, `d9271fd`) y qué queda para esta tarjeta.**
+**3.5 — Mutación.** Config: `mutate: ["src/layouts/SessionGate.tsx"]`. Resultado: **77.93%** (215
+mutantes cubiertos, 170 KILLED, 44 SURVIVED, 3 TIMEOUT, 5 NO COVERAGE) — por debajo del umbral 80 en
+bruto, pero de los 44 supervivientes, **solo 1 cae en el código que tocó esta tarea** (líneas 82-100,
+188-227, 258-268, 279-294); los otros 43 son preexistentes: `isSession`/`loadStoredSession` (líneas
+32, 58-70), el bootstrap de tenants y su `queryFn` (107-128), el efecto de reconciliación de
+identidad (135-155, explícitamente fuera de alcance por `design.md`), el efecto de selección de
+tenant (157-178), `activeTenant` (182), `handleTenantChange` (198), el bloque de carga/error de
+tenants (236-251) y `tenants` derivado (277) — ninguno modificado por la tarea 3.3. Mismo criterio de
+alcance que en el grupo 2 (confirmado entonces con el usuario, aplicado aquí sin volver a preguntar):
+esos 43 no se remedian, se registran como parte del mismo hallazgo `RF-098-001`.
 
-| Criterio Trello | Estado en `develop` | Evidencia |
-| --- | --- | --- |
-| 1. Un 401 limpia la sesión persistida y devuelve al operador al acceso, sin token muerto en `localStorage` | **Cumplido** | `fetchJson` detecta `401` numérico fuera de `/me` e invalida ([api.ts:95-98](../../../apps/frontend/src/services/api.ts#L95-L98)); el suscriptor de `SessionGate` limpia `SESSION_KEY`/`TENANT_KEY` y ambas cachés ([SessionGate.tsx:82-93](../../../apps/frontend/src/layouts/SessionGate.tsx#L82-L93)) |
-| 2. El operador ve un mensaje que identifica la expiración de sesión como tal | **Abierto — trabajo de esta tarjeta** | Hoy la redirección a `/login` es silenciosa: `<Navigate to="/login" replace />` sin ningún estado ([SessionGate.tsx:207-209](../../../apps/frontend/src/layouts/SessionGate.tsx#L207-L209)) |
-| 3. Un fallo que no sea 401 (500, red, 503) conserva el comportamiento actual | **Cumplido** | Cubierto por `tests/auth-session.test.tsx` ("non-profile query and mutation error retain authentication", "tenant bootstrap error retains the session") |
-| 4. La distinción vive en la capa de acceso centralizada, no repetida en cada pantalla | **Cumplido** | Único punto de detección: `fetchJson` en `services/api.ts`; ninguna pantalla implementa su propia lógica de 401 |
-| 5. Pruebas de expiración en vuelo sobre `/overview-legacy` y sobre una pantalla con mutación pendiente, ambas Red antes de Green | **Cumplido** (histórico de JUP-085; no aplica "Red antes de Green" retroactivamente) | `tests/auth-session.test.tsx`: `"current query %s invalidates..."` (incluye `/billing/summary` → `/overview-legacy`) y `"current %s mutation 401 clears session..."` (ingesta y conversación) |
-| 6. Se decide y se registra si el 403 de tenant recibe el mismo trato que el 401 | **Registrado en JUP-085, reafirmado aquí** | Ver `design.md` decisión 4 de esta tarjeta; `SessionGate` muestra el bloque de error de bootstrap con "Reset session" ante `403` de `/tenants`, sin cerrar sesión automáticamente |
-| 7. Cobertura de mutación sobre lo tocado > 80 | Pendiente — se mide sobre lo que toque esta tarjeta (grupos 2-4) | — |
-| 8. Ningún archivo de `apps/backend` en el diff | Por construcción (alcance) | Se verifica en la tarea 5.4 |
+El único superviviente en código tocado: **línea 86**, `useState(false)` → `useState(true)` (valor
+inicial de `sessionExpired`, `BooleanLiteral`). **Gap real, remediado.** Si el valor inicial fuera
+`true`, un arranque con sesión ausente desde el principio (localStorage vacío, no "inválida") pasaría
+la marca de expiración a `<Navigate>` en su primer render; el efecto corrector de `SessionGate`
+correría después (los efectos de hijos —`<Navigate>`— se ejecutan antes que los del padre), así que
+la corrección llegaría tarde para esa primera navegación. Test nuevo:
+`apps/frontend/tests/session-expiry-notice.fresh-mount.test.tsx` (1 test). Nota metodológica: un
+primer diseño que solo comprobaba el estado final tras `waitFor` **no mataba el mutante** (el efecto
+corrector lo "autocura" en el mismo `act()` síncrono de montaje); el test final se suscribe al router
+con `router.subscribe` **antes** del primer render para capturar la transición transitoria incorrecta.
+Verificado empíricamente contra el mutante (editando `useState(true)` a mano, confirmando el fallo,
+revirtiendo con `git checkout --`) y contra el código real (pasa). Cubre además el escenario "The
+session ends without server rejection" de `specs/demo-auth-session/spec.md` para el caso de sesión
+genuinamente ausente, no solo inválida (que ya cubría `auth-session.test.tsx` de JUP-085).
 
-**Conclusión del grupo:** el único trabajo de producto que queda es el criterio 2. Los grupos 2-4
-de `tasks.md` lo implementan; el resto de esta tarjeta es verificación y documentación.
+Cierre del grupo: mutation score de lo realmente tocado = 100% de mutantes no preexistentes muertos.
 
-**Checkpoint:** grupo doc-only (sin código de producto, sin tests nuevos) → sin ciclo Red/Green ni
-mutación, según excepción de `.claude/harness/workflow.md`. Listo para commit.
+**Nota de entorno — timeouts intermitentes en la suite completa.** Ejecutar
+`corepack pnpm vitest run` con el paralelismo por defecto produjo timeouts de 5000 ms en
+`tenant-switching.test.tsx`/`ingestion.test.tsx`/`conversations.test.tsx` en dos corridas seguidas
+(8-9 fallos de 250). Aislados (`vitest run tests/tenant-switching.test.tsx tests/ingestion.test.tsx
+tests/conversations.test.tsx`), los 15 tests de esos 3 archivos pasan limpio en 16.8s — no es una
+regresión de esta tarjeta. Con concurrencia reducida
+(`vitest run --pool=threads --poolOptions.threads.maxThreads=2`), la suite completa pasa
+**250/250** de forma reproducible. Causa: saturación de esta máquina bajo los 43 archivos en paralelo
+(memoria libre ~2.5 GB de 16 GB al momento de la prueba), no un defecto del código ni de los tests.
+Sin acción de remediación en este change (es un límite del entorno local, no del producto); se anota
+aquí para que el DoD del grupo 5 use `--poolOptions.threads.maxThreads=2` si vuelve a aparecer.
+
+**DoD del grupo 3.** Sustituto `pnpm --filter @finops/frontend` (mismo motivo RF-093-001 que en el
+grupo 2): `lint` → sin errores; `typecheck` → sin errores (3 configs); `test` → 250/250 PASS con
+concurrencia reducida (ver nota de entorno arriba).
