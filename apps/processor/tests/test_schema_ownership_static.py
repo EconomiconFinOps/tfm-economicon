@@ -36,7 +36,7 @@ DDL_TARGETS = [
 ]
 COLUMN_COMMENT = re.compile(r"\bCOMMENT\s+ON\s+COLUMN\s+" + NAME, re.I)
 UNNAMED_INDEX_CHANGE = re.compile(
-    r"\b(?:ALTER|DROP)\s+INDEX\s+(?:CONCURRENTLY\s+)?" + IF_EXISTS + r"(?!IF\b)(?![^\s(),;]*@)", re.I
+    r"\b(?:ALTER|DROP)\s+INDEX\s+(?:CONCURRENTLY\s+)?" + IF_EXISTS + r"(?!(?:IF|CONCURRENTLY)\b)(?![^\s(),;]*@)", re.I
 )
 SCHEMA_CALLS = {"create_all", "create", "exec_driver_sql"}
 # Code may continue any literal (join, format, +), so every literal is scanned as if an unknown name followed.
@@ -224,6 +224,8 @@ def test_ddl_scanner_ignores_comments_and_index_renames(source):
         r'text("DROP INDEX IF EXISTS" + " " + name)',
         r'text(" ".join(["DROP INDEX", name]))',
         r'text("DROP INDEX" + " " + name)',
+        r'text("DROP INDEX CONCURRENTLY " + name)',
+        r'text(" ".join(["DROP INDEX CONCURRENTLY IF EXISTS", name]))',
     ],
 )
 def test_ddl_forms_without_a_resolvable_table_are_forbidden(source):
@@ -265,6 +267,8 @@ def test_ddl_scanner_does_not_flag_docstrings_or_resolved_fstring_names(source):
     [
         r'text("DROP INDEX IF EXISTS azure_cost_records@idx")',
         r'text("ALTER INDEX IF EXISTS azure_cost_records@idx CONFIGURE ZONE USING gc.ttlseconds = 1")',
+        r'text("DROP INDEX CONCURRENTLY azure_cost_records@idx")',
+        r'text("DROP INDEX CONCURRENTLY IF EXISTS azure_cost_records@idx")',
     ],
 )
 def test_index_changes_that_name_their_table_are_allowed(source):
