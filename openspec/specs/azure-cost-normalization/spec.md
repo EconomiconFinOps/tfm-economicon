@@ -161,7 +161,7 @@ promotion pattern as the existing typed dimensions.
   not infer a value
 
 ### Requirement: Non-blocking detection of resource hierarchy inconsistency
-Within a single normalization batch, the processor SHALL detect a `resource_id` reported under more than one `resource_group`, comparing both `resource_id` and `resource_group` values case-insensitively (Azure identifiers are case-insensitive) while preserving each row's original casing. Detection SHALL NOT reject the row or the batch, including when a row's `resource_group` or any other optional dimension is absent, empty, blank or explicitly null.
+Within a single normalization batch, the processor SHALL detect a `resource_id` reported under more than one `resource_group`, comparing both `resource_id` and `resource_group` values case-insensitively (Azure identifiers are case-insensitive) while preserving each row's original casing. Detection SHALL NOT reject the row or the batch, including when a row's `resource_id` or `resource_group` is absent, empty, blank or explicitly null. Handling of explicit nulls in other dimensions is outside this requirement (see finding RF-014-003).
 
 #### Scenario: A resource stays under one resource group
 - **WHEN** all rows for a given `resource_id` in the batch share the same
