@@ -63,17 +63,17 @@
 
 ## 5. Documentación y cierre
 
-- [ ] 5.1 Actualizar `docs/spikes/frontend-migration.md`: sustituir el placeholder
+- [x] 5.1 Actualizar `docs/spikes/frontend-migration.md`: sustituir el placeholder
       `jup-0xx-reconciliar-auth-tenant` por `JUP-098` / `jup-098-reconcile-auth-session`, marcar sus
       casillas y dejar escrito que login, `/me`, tenant y logout ya estaban hechos antes de empezar y
       que la detección del `401` la aportó JUP-085.
-- [ ] 5.2 Revisar `apps/frontend/README.md` y, si describe el ciclo de sesión, añadir el aviso de
+- [x] 5.2 Revisar `apps/frontend/README.md` y, si describe el ciclo de sesión, añadir el aviso de
       expiración; si no lo describe, dejar constancia en `review.md`.
-- [ ] 5.3 Registrar en `openspec/findings/backlog.md` cualquier hallazgo fuera de alcance que haya
+- [x] 5.3 Registrar en `openspec/findings/backlog.md` cualquier hallazgo fuera de alcance que haya
       aparecido (`RF-098-<seq>`), o constancia en `review.md` de que no apareció ninguno.
-- [ ] 5.4 Verificar que `git diff develop...HEAD --stat` no contiene ningún archivo de `apps/backend/`.
-- [ ] 5.5 Ejecutar la batería: `openspec:validate`, `jup:check -- --change
+- [x] 5.4 Verificar que `git diff develop...HEAD --stat` no contiene ningún archivo de `apps/backend/`.
+- [x] 5.5 Ejecutar la batería: `openspec:validate`, `jup:check -- --change
       jup-098-reconcile-auth-session`, `jup:cleanup:check`, lint, typecheck, test, build e
       `install --frozen-lockfile`, registrando resultados en `review.md`.
-- [ ] 5.6 Crear `docs/evidence/JUP-098-validation.md` con comandos, conteos Red/Green, mutation score
+- [x] 5.6 Crear `docs/evidence/JUP-098-validation.md` con comandos, conteos Red/Green, mutation score
       y la verificación de los 8 criterios de la tarjeta, uno a uno.

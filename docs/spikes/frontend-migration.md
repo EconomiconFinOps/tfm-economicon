@@ -228,10 +228,26 @@ tarjeta en Trello.
   backend y no se retiró `/overview-legacy`**: sigue siendo el único dashboard con datos reales, sin
   Overview real que la sustituya todavía.
 
-**JUP `jup-0xx-reconciliar-auth-tenant`** — carril `standard`
-- [ ] Adaptar login/sesion al flujo del backend (token + perfil `/me`).
-- [ ] Mantener seleccion de tenant activo y propagacion de `X-Tenant-Id`.
-- [ ] Verificar persistencia de sesion y logout.
+**JUP [`jup-098-reconcile-auth-session`](../../openspec/changes/jup-098-reconcile-auth-session/) — carril `standard` — completa**
+- [x] Adaptar login/sesion al flujo del backend (token + perfil `/me`). **Ya lo había cerrado
+      JUP-085** (fusionado el 2026-09-24, entre que este spike listaba la tarjeta como pendiente y que
+      se propuso): `LoginPage` persiste `{accessToken, user}`, `SessionGate` revalida contra `GET /me`
+      al arrancar, y JUP-085 añadió además la detección centralizada del `401` (limpia sesión y
+      redirige al acceso). El trabajo real de esta tarjeta no fue adaptar el login, sino comunicar al
+      operador *por qué* volvió al acceso.
+- [x] Mantener seleccion de tenant activo y propagacion de `X-Tenant-Id`. **Ya hecho** (verificado
+      antes de proponer, sin tocar en esta tarjeta): el tenant activo se auto-selecciona, sobrevive a
+      la navegación, se persiste y propaga `X-Tenant-Id` en las 6 operaciones que lo exigen.
+- [x] Verificar persistencia de sesion y logout. **Ya hecho** (JUP-085): logout limpia sesión, tenant
+      y caché de react-query, y redirige al acceso; un `401` en cualquier operación autenticada sigue
+      el mismo camino.
+- [x] **El trabajo real de esta tarjeta, no descrito en el placeholder original:** el frontend
+      distinguía un `401` (JUP-085) pero expulsaba al operador al acceso **en silencio**, sin decirle
+      que su sesión había expirado. JUP-098 añade un aviso `role="status"` ("Your session has expired.
+      Sign in again to continue.") que aparece solo cuando la invalidación la provoca un rechazo del
+      servidor, distinguible del error de credenciales y de los fallos de backend que ya se mostraban;
+      no sobrevive a una recarga de `/login` ni al botón "atrás" del navegador. El `403` de tenant
+      conserva la sesión, tal como ya especificaba JUP-085 — se reafirma la decisión, sin cambiarla.
 
 **JUP `jup-0xx-unificar-estilos-assets`** — carril `light`
 - [ ] Unificar el sistema de estilos (resolver duplicados con el tema oscuro actual).
@@ -411,3 +427,15 @@ tarjeta JUP** de la epica.
    dashboard con datos reales, sin Overview real que la sustituya todavía. `RF-091-003` y
    `RF-091-004` permanecen `Open` sin cambio. **Queda de F3:** `reconciliar-auth-tenant` (construye
    sesión real sobre la capa ya auditada) y `unificar-estilos-assets`.
+9. **Hecho en JUP-098 (`jup-098-reconcile-auth-session`): `reconciliar-auth-tenant` queda completa,
+   con alcance muy reducido respecto a lo que este spike listaba como pendiente.** Entre que JUP-097
+   cerró (21/09) y que JUP-098 se propuso (27/09), **JUP-085** (`jup-085-auth-session-contract`,
+   fusionada el 24/09, no registrada hasta ahora en esta lista) ya había resuelto la adaptación real
+   de login/sesión al backend, la persistencia y el logout, y añadido la detección centralizada de un
+   `401` (limpia sesión y redirige al acceso). El único trabajo que quedaba —y el único que hizo esta
+   tarjeta— fue que esa expulsión dejó de ser silenciosa: un aviso `role="status"` identifica la
+   expiración de sesión, distinguible del error de credenciales y de los fallos de backend, sin
+   sobrevivir a una recarga ni al botón "atrás". El `403` de tenant conserva la sesión, política ya
+   fijada por JUP-085 y reafirmada aquí sin cambios. `RF-098-001` (hallazgo nuevo, bajo): cobertura de
+   mutación incompleta en `api.ts`/`SessionGate.tsx`/`LoginPage.tsx` fuera de las líneas que esta
+   tarjeta tocó, deuda preexistente de JUP-085/097. **Queda de F3:** solo `unificar-estilos-assets`.

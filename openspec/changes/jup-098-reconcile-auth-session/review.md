@@ -234,3 +234,38 @@ Cierre del grupo: mutation score de lo realmente tocado = 100% de mutantes no pr
 
 **DoD del grupo 4.** Sustituto `pnpm --filter @finops/frontend`: `lint` → sin errores; `typecheck` →
 sin errores; `test` → 260/260 PASS (ver nota de entorno actualizada: `maxThreads=1` en esta máquina).
+
+## Grupo 5. Documentación y cierre
+
+**5.1 — Spike actualizado.** `docs/spikes/frontend-migration.md`: el placeholder
+`jup-0xx-reconciliar-auth-tenant` (línea ~231) pasa a `jup-098-reconcile-auth-session`, marcado
+completo, con la historia real (login/sesión/tenant/logout ya resueltos por JUP-085 antes de que esta
+tarjeta empezara; el único trabajo real fue el aviso de expiración). Añadido punto 9 en "Próximos
+pasos" documentando lo mismo y registrando, de paso, que JUP-085 nunca se había anotado ahí. F3 queda
+con una sola tarjeta pendiente: `unificar-estilos-assets`.
+
+**5.2 — README revisado.** `apps/frontend/README.md` ya mencionaba `SessionGate`/`Layout` a nivel de
+arquitectura pero no el mecanismo del `401`; se añadió una nota bajo "Notas" describiendo el aviso de
+expiración y cuándo aparece/no aparece.
+
+**5.3 — Hallazgos.** Sin hallazgos nuevos más allá de `RF-098-001` (cobertura de mutación
+preexistente, ya registrado y cerrado en su alcance durante los grupos 2-4).
+
+**5.4 — Backend fuera del diff.** `git diff develop...HEAD --stat -- apps/backend/` → vacío. El
+diff completo son 16 archivos, todos en `apps/frontend/`, `docs/` u `openspec/`.
+
+**5.5 — Batería completa desde la raíz.**
+
+| Comando | Resultado |
+| --- | --- |
+| `corepack pnpm openspec:validate` | PASS — 35/35 |
+| `corepack pnpm jup:check -- --change jup-098-reconcile-auth-session` | PASS |
+| `corepack pnpm jup:cleanup:check` | PASS — 648 archivos sin agentes personales, binarios ni tareas paralelas |
+| `pnpm --filter @finops/frontend lint` (sustituto RF-093-001) | PASS — sin salida |
+| `pnpm --filter @finops/frontend typecheck` (sustituto RF-093-001) | PASS — sin salida, 3 configs |
+| `pnpm --filter @finops/frontend build` (sustituto RF-093-001) | PASS — `dist/` generado, aviso preexistente de tamaño de chunk |
+| `vitest run --pool=threads --poolOptions.threads.maxThreads=1` (sustituto RF-093-001) | **260/260 PASS** en la corrida final; una corrida intermedia con el mismo flag dio 1 fallo aislado no reproducible (flakiness de esta máquina, ver nota de entorno de los grupos 3-4), corregido al repetir sin tocar código |
+| `corepack pnpm install --frozen-lockfile` | PASS |
+
+RF-093-001 (turbo resuelve pnpm 11.9.0 global en vez de 9.0.0 vía corepack) sigue abierto, pendiente
+de JUP-102; ajeno a este cambio, documentado desde el grupo 2.
