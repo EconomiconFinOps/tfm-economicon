@@ -36,10 +36,10 @@ DDL_TARGETS = [
 ]
 COLUMN_COMMENT = re.compile(r"\bCOMMENT\s+ON\s+COLUMN\s+" + NAME, re.I)
 UNNAMED_INDEX_CHANGE = re.compile(
-    r"\b(?:ALTER|DROP)\s+INDEX\s+(?:CONCURRENTLY\s+)?" + IF_EXISTS + r"(?![^\s(),;]*@)", re.I
+    r"\b(?:ALTER|DROP)\s+INDEX\s+(?:CONCURRENTLY\s+)?" + IF_EXISTS + r"(?!IF\b)(?![^\s(),;]*@)", re.I
 )
 SCHEMA_CALLS = {"create_all", "create", "exec_driver_sql"}
-# A literal ending in a separator is continued by code, so it is scanned as if an unknown name followed.
+# Code may continue any literal (join, format, +), so every literal is scanned as if an unknown name followed.
 UNKNOWN_NAME = "{}"
 # SQL literals are kept so that a "--" inside quotes cannot hide the statement after it.
 SQL_COMMENT_OR_LITERAL = re.compile(r"'(?:[^']|'')*'|--[^\n]*")
@@ -55,15 +55,16 @@ def _table(raw: str) -> str:
 
 def _targets(sql: str) -> set[str]:
     sql = _strip_sql_comments(sql)
-    if sql != sql.rstrip(" \t\r\n,"):
-        sql += UNKNOWN_NAME
+    sql = sql.rstrip()
+    sql += ("" if sql.endswith(",") else " ") + UNKNOWN_NAME
     targets = set()
     for pattern in DDL_TARGETS:
         for match in pattern.finditer(sql):
             raw = [match.group(1)] + [part for part in (match.groups()[1:] or [""])[0].split(",") if part.strip()]
             targets.update(_table(name.strip()) for name in raw)
     for match in COLUMN_COMMENT.finditer(sql):
-        targets.add(match.group(1).replace('"', "").split(".")[-2].lower())
+        parts = match.group(1).replace('"', "").split(".")
+        targets.add(parts[-2].lower() if len(parts) > 1 else UNKNOWN_NAME)
     return targets
 
 
@@ -183,6 +184,12 @@ def test_ddl_inside_python_strings_is_seen(source):
         r'text("GRANT ALL ON " + TABLE + " TO x")',
         r'text("SELECT 1; TRUNCATE " + TABLE)',
         'sql = "TRUNCATE "\nsql += TABLE',
+        r'text(" ".join(["DROP TABLE", TABLE]))',
+        r'text("{} {}".format("CREATE INDEX idx ON", TABLE))',
+        r'text("%s %s" % ("ALTER TABLE", TABLE))',
+        r'text("CREATE INDEX idx ON" + " " + TABLE)',
+        r"text('DROP TABLE azure_cost_records,\xa0' + TABLE)",
+        r'text("COMMENT ON COLUMN " + column)',
     ],
 )
 def test_ddl_scanner_reports_names_it_cannot_resolve(source):
@@ -243,3 +250,14 @@ def test_owned_table_sets_are_disjoint():
 )
 def test_ddl_scanner_does_not_flag_docstrings_or_resolved_fstring_names(source):
     assert _source_targets(source) <= OWNED_TABLES["processor"]
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        r'text("DROP INDEX IF EXISTS azure_cost_records@idx")',
+        r'text("ALTER INDEX IF EXISTS azure_cost_records@idx CONFIGURE ZONE USING gc.ttlseconds = 1")',
+    ],
+)
+def test_index_changes_that_name_their_table_are_allowed(source):
+    assert not _forbidden(source)
