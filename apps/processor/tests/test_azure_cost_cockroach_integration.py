@@ -143,8 +143,11 @@ def _assert_schema(database):
     assert _rows(
         database, "SELECT version FROM processor_schema_migrations ORDER BY version"
     ) == [{"version": version} for version in ("001", "002", "003", "004")]
-    with database.engine.connect() as connection:
-        assert connection.execute(text("SELECT count(*) FROM jobs")).scalar_one() == 0
+    assert _rows(
+        database,
+        "SELECT table_name FROM information_schema.tables "
+        "WHERE table_schema = 'public' AND table_name = 'jobs'",
+    ) == []
     indexes = _rows(database, "SHOW INDEXES FROM azure_cost_records")
     for name, columns in {
         "idx_azure_cost_records_scope_date": ["tenant_id", "subscription_id", "usage_date"],

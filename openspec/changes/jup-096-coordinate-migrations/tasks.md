@@ -1,20 +1,20 @@
 ## 1. Codigo vecino y barrido previo
 
-- [ ] 1.1 Barrer los usos de `jobs` y de `Database.initialize()` en `apps/processor` (codigo, tests, scripts) y en `docker-compose.yml`; listar lo que asume que el processor crea `jobs`.
-- [ ] 1.2 Revisar las migraciones del backend y del processor y confirmar que `jobs` es el unico objeto de esquema creado por ambos servicios, y que las tablas del processor no las toca el backend.
+- [x] 1.1 Barrer los usos de `jobs` y de `Database.initialize()` en `apps/processor` (codigo, tests, scripts) y en `docker-compose.yml`; listar lo que asume que el processor crea `jobs`.
+- [x] 1.2 Revisar las migraciones del backend y del processor y confirmar que `jobs` es el unico objeto de esquema creado por ambos servicios, y que las tablas del processor no las toca el backend.
 
 ## 2. Fase RED
 
-- [ ] 2.1 Añadir una prueba de integracion opt-in (CockroachDB real desechable) que aplique a la vez, sobre una base vacia, las migraciones reales del backend y del processor en procesos separados, al menos 5 veces y con desfase 0 s y 0,5 s; verificar que falla en `develop` con `SerializationFailure` en al menos una ejecucion.
-- [ ] 2.2 Añadir pruebas de propiedad del esquema: tras migrar solo el processor sobre una base vacia no existe ninguna tabla del backend (incluida `jobs`), y tras migrar solo el backend no existe ninguna tabla del processor; verificar que la del processor falla en `develop`.
-- [ ] 2.3 Añadir pruebas de compatibilidad con bases existentes: base migrada por ambos servicios con filas en `jobs` (sin cambios ni versiones nuevas) y base migrada solo por el processor antiguo con filas en `jobs` seguida del backend (sin error, filas conservadas).
+- [x] 2.1 Añadir una prueba de integracion opt-in (CockroachDB real desechable) que aplique a la vez, sobre una base vacia, las migraciones reales del backend y del processor en procesos separados, al menos 5 veces y con desfase 0 s y 0,5 s; verificar que falla en `develop` con `SerializationFailure` en al menos una ejecucion.
+- [x] 2.2 Añadir pruebas de propiedad del esquema: tras migrar solo el processor sobre una base vacia no existe ninguna tabla del backend (incluida `jobs`), y tras migrar solo el backend no existe ninguna tabla del processor; verificar que la del processor falla en `develop`.
+- [x] 2.3 Añadir pruebas de compatibilidad con bases existentes: base migrada por ambos servicios con filas en `jobs` (sin cambios ni versiones nuevas) y base migrada solo por el processor antiguo con filas en `jobs` seguida del backend (sin error, filas conservadas).
 
 ## 3. Implementacion
 
-- [ ] 3.1 Dejar la migracion `001` del processor sin operaciones de esquema, conservando fichero y version, con un comentario que remita a la propiedad del backend.
-- [ ] 3.2 Añadir en `docker-compose.yml` la dependencia del processor sobre `backend` con `condition: service_healthy`.
-- [ ] 3.3 Adaptar los tests del processor que asumian que su migracion crea `jobs` (al menos `_assert_schema` en `tests/test_azure_cost_cockroach_integration.py`), creando el esquema del backend cuando lo necesiten.
-- [ ] 3.4 Ejecutar las pruebas del grupo 2 y confirmar que pasan.
+- [x] 3.1 Dejar la migracion `001` del processor sin operaciones de esquema, conservando fichero y version, con un comentario que remita a la propiedad del backend.
+- [x] 3.2 Añadir en `docker-compose.yml` la dependencia del processor sobre `backend` con `condition: service_healthy`.
+- [x] 3.3 Adaptar los tests del processor que asumian que su migracion crea `jobs` (al menos `_assert_schema` en `tests/test_azure_cost_cockroach_integration.py`), creando el esquema del backend cuando lo necesiten.
+- [x] 3.4 Ejecutar las pruebas del grupo 2 y confirmar que pasan.
 
 ## 4. Verificacion con Docker real
 
