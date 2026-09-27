@@ -21,6 +21,10 @@ pytestmark = pytest.mark.skipif(
 )
 
 APPS = Path(__file__).resolve().parents[2]
+JOBS_COLUMNS = {
+    "id", "tenant_id", "created_by", "source", "artifact_uri",
+    "payload", "status", "result", "created_at", "updated_at",
+}
 BACKEND_TABLES = {"tenants", "users", "user_tenants", "jobs", "conversations", "messages"}
 PROCESSOR_TABLES = {"azure_cost_ingestion_runs", "azure_cost_records"}
 VERSION_TABLES = {"backend": "schema_migrations", "processor": "processor_schema_migrations"}
@@ -48,6 +52,7 @@ url, version_table, start_at = sys.argv[1], sys.argv[2], float(sys.argv[3])
 engine = create_engine(url)
 options = {} if version_table == "schema_migrations" else {"version_table": version_table}
 runner = MigrationRunner(engine, "app.db.migrations", Path(migrations.__file__).parent, **options)
+print(f"ARRIVED {time.time()}", flush=True)
 while time.time() < start_at:
     time.sleep(0.001)
 try:
@@ -83,6 +88,14 @@ def _tables(database):
         return set(connection.execute(text(
             "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
         )).scalars())
+
+
+def _columns(database, table):
+    with database.engine.connect() as connection:
+        return set(connection.execute(text(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema = 'public' AND table_name = :table"
+        ), {"table": table}).scalars())
 
 
 def _versions(database, service):
@@ -138,6 +151,9 @@ def test_concurrent_cold_start_migrations_both_succeed(database_factory, offset)
                 "processor": _start("processor", database, start_at + offset),
             }
             outputs = {name: process.communicate(timeout=300)[0] for name, process in processes.items()}
+            for name, output in outputs.items():
+                arrived = float(output.split("ARRIVED ", 1)[1].split()[0])
+                assert arrived < start_at, f"{name} reached the barrier late; the run was not simultaneous"
             failed = {name for name, process in processes.items() if process.returncode != 0}
             if failed:
                 failures.append((attempt, {name: outputs[name][-600:] for name in failed}))
@@ -145,6 +161,7 @@ def test_concurrent_cold_start_migrations_both_succeed(database_factory, offset)
             assert _versions(database, "backend") == _expected_versions("backend")
             assert _versions(database, "processor") == _expected_versions("processor")
             assert BACKEND_TABLES | PROCESSOR_TABLES <= _tables(database)
+            assert _columns(database, "jobs") == JOBS_COLUMNS
 
     assert not failures, "\n\n".join(
         f"attempt {attempt}, {name}:\n{output}"
