@@ -44,16 +44,16 @@
 
 ## 4. Aviso en la pantalla de acceso
 
-- [ ] 4.1 **Red:** prueba de expiración en vuelo sobre `/overview-legacy` (`GET /billing/summary` →
+- [x] 4.1 **Red:** prueba de expiración en vuelo sobre `/overview-legacy` (`GET /billing/summary` →
       `401`) que termina mostrando el aviso de sesión expirada (`role="status"`) en el acceso.
-- [ ] 4.2 **Red:** prueba de expiración con mutación en curso (ingesta: `POST /jobs/ingest` → `401`)
+- [x] 4.2 **Red:** prueba de expiración con mutación en curso (ingesta: `POST /jobs/ingest` → `401`)
       que termina mostrando el mismo aviso.
-- [ ] 4.3 **Red:** pruebas de que el aviso desaparece al iniciar un nuevo intento de acceso y de que
+- [x] 4.3 **Red:** pruebas de que el aviso desaparece al iniciar un nuevo intento de acceso y de que
       un intento fallido muestra solo su error de credenciales.
-- [ ] 4.4 **Red:** pruebas de no persistencia: tras mostrarse el aviso, el estado de navegación queda
+- [x] 4.4 **Red:** pruebas de no persistencia: tras mostrarse el aviso, el estado de navegación queda
       vacío (`router.state.location.state`), no hay marca en `localStorage`/`sessionStorage`, y abrir
       `/login` directamente no muestra el aviso.
-- [ ] 4.5 **Red:** prueba de que un `403`, `503` o fallo de red en `/billing/summary` no muestra el
+- [x] 4.5 **Red:** prueba de que un `403`, `503` o fallo de red en `/billing/summary` no muestra el
       aviso en ningún momento (la sesión se conserva, como ya fija JUP-085).
 - [ ] 4.6 **Green:** `LoginPage` lee la marca una vez, la copia a su estado, sustituye la entrada del
       historial sin estado y muestra el aviso con el texto y la presentación de la decisión 5, oculto
