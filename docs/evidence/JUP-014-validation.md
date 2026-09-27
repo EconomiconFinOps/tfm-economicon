@@ -144,3 +144,9 @@ Barrido de patron: las llamadas a `casefold()` de la funcion corregida quedan pr
 
 - 16 casos nuevos en `apps/processor/tests/test_azure_cost_ingestion.py`: `ResourceId` en otra capitalizacion, grupo ausente, vacio, en blanco o `null`, combinaciones de ambos, un solo grupo conocido, `null` explicito en cinco dimensiones promovidas, estabilidad frente al orden de filas y orden de la lista.
 - Processor: 292 passed, 34 skipped (los omitidos requieren CockroachDB real).
+
+### Validacion con base de datos real (2026-09-27)
+
+- Tests de integracion opt-in `tests/test_azure_cost_cockroach_integration.py` contra un nodo CockroachDB v24.1.11 desechable (sin volumen, solo en `127.0.0.1`, marcado con `cluster.organization`): 34 passed en 16 min; el fixture borro todas sus bases de prueba. Nota de entorno: el script de entrada de la imagen termina el contenedor al intentar crear `defaultdb`; se arranco con `--entrypoint /cockroach/cockroach`.
+- Ingesta real con el stack de `docker compose` y la consulta por defecto: 38 filas en 4 paginas, 31 recursos, ninguno con varias grafias de `ResourceId` y 0 conflictos. En este dataset el resultado es el mismo antes y despues del fix, asi que no sirve como evidencia por si solo.
+- Control positivo: las filas de los dos casos de la validacion del 2026-09-25 pasaron por el servicio de ingesta, el normalizador y el repositorio reales contra CockroachDB. Guardado leido por SQL: `RES-1`/`rg-old` con `["rg-new"]`, `res-1`/`rg-new` con `["rg-old"]`, `res-2` sin grupo con `["rg-new", "rg-old"]` y las dos filas de `res-2` con grupo con el otro grupo.
