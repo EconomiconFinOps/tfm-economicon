@@ -103,7 +103,10 @@ async function fetchJson<T>(path: string, options: FetchJsonOptions = {}): Promi
     if (generation !== getSessionGeneration()) return discardResponse();
 
     if (token && path !== "/me" && response.status === 401) {
-      invalidateSession(generation);
+      // Un 401 fuera de /me solo puede significar que el token dejo de ser
+      // valido para el backend (expiro o fue revocado), no un logout manual:
+      // por eso el motivo aqui es siempre "expired" (tarea 3.3).
+      invalidateSession(generation, "expired");
       return discardResponse();
     }
 

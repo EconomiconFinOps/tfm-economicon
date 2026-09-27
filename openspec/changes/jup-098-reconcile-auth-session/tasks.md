@@ -31,7 +31,7 @@
       persistida termina en `/login` con la marca de expiración en el estado de navegación.
 - [x] 3.2 **Red:** pruebas de que un error de `/me` que no es `401` (`403`, `503`, red, contrato
       inválido), el cierre manual y "Reset session" terminan en `/login` **sin** marca de expiración.
-- [ ] 3.3 **Green:** el suscriptor de `SessionGate` guarda el motivo y la redirección existente lo
+- [x] 3.3 **Green:** el suscriptor de `SessionGate` guarda el motivo y la redirección existente lo
       pasa como estado de navegación solo cuando es expiración; el efecto de error de `/me` deriva el
       motivo del `ApiError` con `status === 401` (decisiones 2 y 3). Incluye cablear el otro extremo
       de la decisión 3: la llamada a `invalidateSession(generation)` de `fetchJson` (línea ~106,
