@@ -21,6 +21,7 @@ Ademas, el processor necesita tablas que crea el backend (`jobs` hoy, y `users`/
 - Un test estatico, que se ejecuta en CI sin base de datos, comprueba que cada servicio solo toca en sus migraciones las tablas de las que es dueño.
 - Los tests del processor que daban por hecho que su propia migracion crea `jobs` se adaptan para crear el esquema del backend cuando lo necesiten.
 - Se registra RF-096-001: RabbitMQ fallo una vez en un arranque en frio al leer `/var/lib/rabbitmq/.erlang.cookie` (`eacces`) y arranco al reintentar. Queda fuera de alcance, como candidato para JUP-050.
+- La revision adversarial registra ademas RF-096-002 (el backend lee tablas pgvector que crea el processor), RF-096-003 (migracion concurrente dentro del processor) y RF-096-004 (CI no ejecuta los tests con base de datos real).
 
 Fuera de alcance: locks distribuidos, un servicio de migracion aparte, reintentos automaticos y cambios en el registro de versiones de cada servicio. Tras el cambio ningun objeto de esquema se crea desde los dos servicios, asi que no hacen falta para cerrar RF-044-002.
 
