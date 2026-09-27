@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from decimal import Decimal
 
 import pytest
@@ -16,6 +16,7 @@ from app.normalization.azure_cost import (
     AzureCostNormalizationError,
     AzureCostNormalizer,
     NormalizedCostRecord,
+    _flag_resource_group_conflicts,
 )
 from app.tasks.azure_cost_ingest import (
     AzureCostIngestionScopeError,
@@ -217,8 +218,8 @@ def test_normalizer_ignores_case_only_differences_in_resource_id_and_group_toget
 
 @pytest.mark.parametrize(
     "missing_group",
-    [{}, {"ResourceGroup": ""}, {"ResourceGroup": "   "}],
-    ids=["absent", "empty", "blank"],
+    [{}, {"ResourceGroup": ""}, {"ResourceGroup": "   "}, {"ResourceGroup": None}],
+    ids=["absent", "empty", "blank", "null"],
 )
 def test_normalizer_flags_row_without_group_under_conflicting_resource(missing_group):
     normalized = AzureCostNormalizer().normalize(
@@ -258,6 +259,63 @@ def test_normalizer_combines_resource_id_case_and_missing_group():
     assert normalized[0].resource_group_conflicts == ("rg-new",)
     assert normalized[1].resource_group_conflicts == ("rg-old",)
     assert normalized[2].resource_group_conflicts == ("rg-new", "rg-old")
+
+
+@pytest.mark.parametrize(
+    "dimension",
+    ["ResourceId", "ResourceGroup", "ServiceName", "SubscriptionName", "BillingAccountId"],
+)
+def test_normalizer_treats_explicit_null_dimension_as_absent(dimension):
+    record = AzureCostNormalizer().normalize(
+        result({"PreTaxCost": 1, "Currency": "EUR", dimension: None})
+    )[0]
+
+    assert record.resource_group_conflicts is None
+    assert dimension not in record.dimensions
+
+
+def test_conflict_output_does_not_depend_on_row_order():
+    rows = [
+        cost_row("res-1", ResourceGroup="RG-Old"),
+        cost_row("res-1", ResourceGroup="rg-old"),
+        cost_row("res-1", ResourceGroup="rg-new"),
+    ]
+
+    forward = AzureCostNormalizer().normalize(result(*rows))
+    backward = AzureCostNormalizer().normalize(result(*reversed(rows)))
+
+    assert forward[2].resource_group_conflicts == backward[0].resource_group_conflicts
+
+
+def test_conflicts_are_sorted_case_insensitively():
+    normalized = AzureCostNormalizer().normalize(
+        result(
+            cost_row("res-1", ResourceGroup="rg-a"),
+            cost_row("res-1", ResourceGroup="rg-b"),
+            cost_row("res-1", ResourceGroup="RG-C"),
+            cost_row("res-1"),
+        )
+    )
+
+    assert normalized[3].resource_group_conflicts == ("rg-a", "rg-b", "RG-C")
+
+
+def test_conflict_detection_treats_empty_group_like_missing_group():
+    normalized = AzureCostNormalizer().normalize(
+        result(
+            cost_row("res-1", ResourceGroup="rg-a"),
+            cost_row("res-1", ResourceGroup="rg-b"),
+            cost_row("res-1", ResourceGroup="rg-a"),
+        )
+    )
+    # _optional_text already maps "" to None; this guards direct callers of the detector.
+    records = (normalized[0], normalized[1], replace(normalized[2], resource_group=""))
+
+    flagged = _flag_resource_group_conflicts(records)
+
+    assert flagged[0].resource_group_conflicts == ("rg-b",)
+    assert flagged[1].resource_group_conflicts == ("rg-a",)
+    assert flagged[2].resource_group_conflicts == ("rg-a", "rg-b")
 
 
 def test_normalizer_hash_is_deterministic():
