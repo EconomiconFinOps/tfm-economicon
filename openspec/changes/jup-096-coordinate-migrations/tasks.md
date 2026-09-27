@@ -18,14 +18,14 @@
 
 ## 4. Verificacion con Docker real
 
-- [ ] 4.1 Arranque en frio del stack completo en un proyecto Compose aislado con volumenes nuevos, al menos 3 veces: backend y processor sanos, el processor creado despues de que el backend este sano, sin `SerializationFailure` en los logs.
-- [ ] 4.2 Camino de error: con el backend sin llegar a estar sano, Compose no arranca el processor e informa de la dependencia no cumplida.
-- [ ] 4.3 Control positivo: con la migracion `001` original del processor, la prueba de 2.1 vuelve a fallar.
+- [x] 4.1 Arranque en frio del stack completo en un proyecto Compose aislado con volumenes nuevos, al menos 3 veces: backend y processor sanos, el processor creado despues de que el backend este sano, sin `SerializationFailure` en los logs.
+- [x] 4.2 Camino de error: con el backend sin llegar a estar sano, Compose no arranca el processor e informa de la dependencia no cumplida.
+- [x] 4.3 Control positivo: con la migracion `001` original del processor, la prueba de 2.1 vuelve a fallar.
 
 ## 5. Findings
 
-- [ ] 5.1 Actualizar RF-044-002 en `openspec/findings/backlog.md` a `Fixed` con referencia a JUP-096 y la evidencia.
-- [ ] 5.2 Registrar RF-096-001 (RabbitMQ `eacces` al leer `.erlang.cookie` en un arranque en frio, una vez de seis, arranca al reintentar) como `Open`, fuera de alcance, candidato para JUP-050.
+- [x] 5.1 Actualizar RF-044-002 en `openspec/findings/backlog.md` a `Fixed` con referencia a JUP-096 y la evidencia.
+- [x] 5.2 Registrar RF-096-001 (RabbitMQ `eacces` al leer `.erlang.cookie` en un arranque en frio, una vez de seis, arranca al reintentar) como `Open`, fuera de alcance, candidato para JUP-050.
 
 ## 6. Cierre y verificacion
 
