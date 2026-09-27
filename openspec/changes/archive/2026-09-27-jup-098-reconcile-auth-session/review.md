@@ -269,3 +269,31 @@ diff completo son 16 archivos, todos en `apps/frontend/`, `docs/` u `openspec/`.
 
 RF-093-001 (turbo resuelve pnpm 11.9.0 global en vez de 9.0.0 vía corepack) sigue abierto, pendiente
 de JUP-102; ajeno a este cambio, documentado desde el grupo 2.
+
+## Human Approval
+
+- Change: jup-098-reconcile-auth-session
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-09-27
+- Archive decision: archive
+- Scope reviewed: las 24 tareas de `tasks.md` (5 grupos), `review.md` completo, evidencia
+  `docs/evidence/JUP-098-validation.md`, batería final (`openspec:validate`, `jup:check`,
+  `jup:cleanup:check`, `test`/`typecheck`/`lint`/`build` vía `--filter @finops/frontend`,
+  `install --frozen-lockfile`).
+- Resultado verificado: los 8 criterios de aceptación de la tarjeta verificados uno a uno en la
+  evidencia; el único trabajo de producto real fue el criterio 2 (aviso de sesión expirada), los
+  criterios 1/3/4/5/6 ya los cumplía `develop` gracias a JUP-085 y se reafirmaron con tests de
+  caracterización sin tocar las pruebas existentes de esa tarjeta. Motivo tipado en la capa de acceso
+  (grupo 2), propagado por `SessionGate` (grupo 3) y presentado en `LoginPage` (grupo 4), con mutación
+  del 100% sobre el código realmente tocado en los tres archivos (2 mutantes equivalentes
+  justificados, 4 gaps reales remediados con tests nuevos). Deuda de mutación preexistente fuera de
+  alcance registrada en `RF-098-001`. Ningún archivo de `apps/backend/**` en el diff completo de la
+  rama. Ningún ADR nuevo requerido (es un ajuste local de presentación sobre un mecanismo ya decidido
+  en JUP-085 y su ADR-0007).
+- Notes: cierre alineado con la reducción de alcance aprobada en el gate pre-código (JUP-085 ya
+  resolvía la mayoría de los criterios de la tarjeta Trello antes de proponerla). Flakiness de la
+  suite bajo paralelismo por defecto documentada como ambiental (contención de recursos de esta
+  máquina), no de producto — reproducida y descartada como regresión en cada caso. El PR lo abre
+  Victor directamente (no este agente).
