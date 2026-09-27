@@ -134,16 +134,17 @@ def _flag_resource_group_conflicts(
     for record in records:
         if record.resource_id is None or record.resource_group is None:
             continue
-        seen = groups_by_resource.setdefault(record.resource_id, {})
+        # Azure resource IDs are case-insensitive; only the comparison key is folded.
+        seen = groups_by_resource.setdefault(record.resource_id.casefold(), {})
         seen.setdefault(record.resource_group.casefold(), record.resource_group)
 
     flagged: list[NormalizedCostRecord] = []
     for record in records:
-        seen = groups_by_resource.get(record.resource_id) if record.resource_id else None
+        seen = groups_by_resource.get(record.resource_id.casefold()) if record.resource_id else None
         if seen is None or len(seen) < 2:
             flagged.append(record)
             continue
-        own_key = record.resource_group.casefold()
+        own_key = record.resource_group.casefold() if record.resource_group else None
         others = tuple(sorted(value for key, value in seen.items() if key != own_key))
         flagged.append(replace(record, resource_group_conflicts=others))
     return tuple(flagged)

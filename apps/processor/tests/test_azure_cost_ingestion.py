@@ -187,6 +187,79 @@ def test_normalizer_ignores_case_only_resource_group_differences():
     assert normalized[1].resource_group_conflicts is None
 
 
+def cost_row(resource_id: str, **dimensions) -> dict:
+    return {"PreTaxCost": 1, "Currency": "EUR", "ResourceId": resource_id, **dimensions}
+
+
+def test_normalizer_flags_conflict_when_resource_id_differs_only_in_case():
+    normalized = AzureCostNormalizer().normalize(
+        result(
+            cost_row("RES-1", ResourceGroup="rg-old"),
+            cost_row("res-1", ResourceGroup="rg-new"),
+        )
+    )
+
+    assert [record.resource_id for record in normalized] == ["RES-1", "res-1"]
+    assert normalized[0].resource_group_conflicts == ("rg-new",)
+    assert normalized[1].resource_group_conflicts == ("rg-old",)
+
+
+def test_normalizer_ignores_case_only_differences_in_resource_id_and_group_together():
+    normalized = AzureCostNormalizer().normalize(
+        result(
+            cost_row("RES-1", ResourceGroup="RG-Shared"),
+            cost_row("res-1", ResourceGroup="rg-shared"),
+        )
+    )
+
+    assert [record.resource_group_conflicts for record in normalized] == [None, None]
+
+
+@pytest.mark.parametrize(
+    "missing_group",
+    [{}, {"ResourceGroup": ""}, {"ResourceGroup": "   "}],
+    ids=["absent", "empty", "blank"],
+)
+def test_normalizer_flags_row_without_group_under_conflicting_resource(missing_group):
+    normalized = AzureCostNormalizer().normalize(
+        result(
+            cost_row("res-1", ResourceGroup="rg-old"),
+            cost_row("res-1", ResourceGroup="rg-new"),
+            cost_row("res-1", **missing_group),
+        )
+    )
+
+    assert normalized[0].resource_group_conflicts == ("rg-new",)
+    assert normalized[1].resource_group_conflicts == ("rg-old",)
+    assert normalized[2].resource_group is None
+    assert normalized[2].resource_group_conflicts == ("rg-new", "rg-old")
+
+
+def test_normalizer_row_without_group_is_not_a_conflict_for_a_single_known_group():
+    normalized = AzureCostNormalizer().normalize(
+        result(
+            cost_row("res-1", ResourceGroup="rg-only"),
+            cost_row("res-1"),
+        )
+    )
+
+    assert [record.resource_group_conflicts for record in normalized] == [None, None]
+
+
+def test_normalizer_combines_resource_id_case_and_missing_group():
+    normalized = AzureCostNormalizer().normalize(
+        result(
+            cost_row("RES-1", ResourceGroup="rg-old"),
+            cost_row("res-1", ResourceGroup="rg-new"),
+            cost_row("Res-1"),
+        )
+    )
+
+    assert normalized[0].resource_group_conflicts == ("rg-new",)
+    assert normalized[1].resource_group_conflicts == ("rg-old",)
+    assert normalized[2].resource_group_conflicts == ("rg-new", "rg-old")
+
+
 def test_normalizer_hash_is_deterministic():
     source = result(
         {
