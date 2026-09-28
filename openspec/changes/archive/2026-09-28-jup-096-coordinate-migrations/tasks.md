@@ -38,4 +38,4 @@
 - [x] 6.3 Redactar `review.md` (resumen, decisiones, validacion, `## Adversarial Review`, barrido del patron, riesgos, findings y aplicabilidad de ADR) y `docs/evidence/JUP-096-validation.md`.
 - [x] 6.4 Añadir `## Human Approval` al final de `review.md` tras la aprobacion explicita de Lucia.
 - [x] 6.5 Archivar el change en la misma rama tras 6.4.
-- [ ] 6.6 Abrir el PR hacia `develop`.
+- [x] 6.6 Abrir el PR hacia `develop`: PR #51.
