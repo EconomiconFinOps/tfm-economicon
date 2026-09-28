@@ -72,7 +72,7 @@ class AzureCostIngestionService:
             )
         except Exception as exc:
             error_code = type(exc).__name__
-            self.repository.fail_run(run_id, error_code)
+            self.repository.fail_run(run_id, error_code, tenant_id=tenant_id, subscription_id=subscription_id)
             _log(
                 "azure_cost_persistence_failed",
                 error_code=error_code,

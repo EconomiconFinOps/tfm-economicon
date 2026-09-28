@@ -5,11 +5,13 @@ import structlog
 from app.api.routes.jobs import create_ingest_job
 from app.db.database import Database
 from app.schemas.jobs import IngestJobRequest
+from app.services.rabbitmq_queue import PublishResult
 
 
 class _FakeDatabase(Database):
     def __init__(self):
         self.engine = MagicMock()
+        self.engine.begin.return_value.__enter__.return_value.execute.return_value.rowcount = 1
 
 
 class _CapturingQueue:
@@ -17,10 +19,18 @@ class _CapturingQueue:
 
     def __init__(self):
         self.published = None
+        self.reservation = object()
 
-    def publish(self, job):
+    def reserve(self):
+        return self.reservation
+
+    def publish(self, job, *, reservation):
+        assert reservation is self.reservation
         self.published = job
-        return True
+        return PublishResult("confirmed", "confirmed")
+
+    def cancel(self, reservation):
+        assert reservation is self.reservation
 
 
 def test_ingest_job_payload_carries_the_current_request_id():

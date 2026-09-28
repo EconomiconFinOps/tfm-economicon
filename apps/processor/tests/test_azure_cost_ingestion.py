@@ -491,8 +491,8 @@ class MemoryRepository:
             )
         )
 
-    def fail_run(self, run_id, error_code):
-        self.failed.append((run_id, error_code))
+    def fail_run(self, run_id, error_code, *, tenant_id, subscription_id):
+        self.failed.append((run_id, error_code, tenant_id, subscription_id))
 
 
 class SuccessClient:
@@ -565,7 +565,7 @@ def test_service_marks_failed_run_and_rethrows():
 
     assert repository.completed == []
     assert repository.failed == [
-        (repository.started[0][0], "AzureCostHttpError")
+        (repository.started[0][0], "AzureCostHttpError", "tenant-demo", "subscription-demo")
     ]
 
 
@@ -580,7 +580,7 @@ def test_service_marks_normalization_failure_without_partial_records():
 
     assert repository.completed == []
     assert repository.failed == [
-        (repository.started[0][0], "AzureCostNormalizationError")
+        (repository.started[0][0], "AzureCostNormalizationError", "tenant-demo", "subscription-demo")
     ]
 
 
