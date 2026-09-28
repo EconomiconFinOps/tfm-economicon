@@ -155,6 +155,13 @@ Aqui se guarda la informacion operativa importante, por ejemplo:
 
 Piensa en CockroachDB como la memoria permanente del sistema para la parte transaccional.
 
+Cada tabla tiene un unico servicio dueño que la crea y la modifica en sus migraciones (JUP-096):
+
+- el `backend` es dueño de `users`, `tenants`, `user_tenants`, `jobs`, `conversations` y `messages`
+- el `processor` es dueño de `azure_cost_ingestion_runs` y `azure_cost_records`
+
+Cada servicio lleva su propio registro de versiones (`schema_migrations` y `processor_schema_migrations`). Como el processor usa `jobs`, en Docker Compose arranca solo cuando el backend esta sano, es decir, cuando ya ha migrado. La regla esta en la spec [`schema-migration-ownership`](../openspec/specs/schema-migration-ownership/spec.md) y la vigila un test estatico en CI.
+
 ### RabbitMQ
 
 Es el sistema de colas.

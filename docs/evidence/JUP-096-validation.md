@@ -4,7 +4,7 @@
 - Repositorio: `EconomiconFinOps/tfm-economicon`.
 - Rama: `feat/JUP-096-coordinate-migrations` hacia `develop` (base `3a1001d`).
 - Tarjeta: https://trello.com/c/yKAMRvbK.
-- Change: [`jup-096-coordinate-migrations`](../../openspec/changes/jup-096-coordinate-migrations/proposal.md).
+- Change: [`jup-096-coordinate-migrations`](../../openspec/changes/archive/2026-09-28-jup-096-coordinate-migrations/proposal.md).
 - Liderazgo: Lucia Mateo; pairing: Alejandro Aguado; revision de PR: Victor Mendez; validacion, pruebas y documentacion: Paris Arcos Martin.
 - Entorno: Windows 10, Python 3.12.11 (misma version menor que CI y Docker), CockroachDB v24.1.11 desechable en loopback, Docker Desktop 29.7.2.
 
@@ -73,3 +73,9 @@ Proyecto aislado `jup096` con volumenes nuevos, imagenes construidas desde la ra
 - Los tests opt-in con CockroachDB real no se ejecutan en CI (RF-096-004).
 - La guarda estatica es heuristica: no cubre DDL importado de otros modulos o ficheros `.sql` (riesgo aceptado, ver `review.md`).
 - No se ha probado con PR #47 integrado.
+
+## Nota de release
+
+| Fecha | JUP | Nota de release | Review | ADRs |
+| --- | --- | --- | --- | --- |
+| 2026-09-28 | JUP-096 | `jobs` pasa a ser solo del backend y el processor arranca tras el backend sano: migrar a la vez una base vacia ya no tumba ningun servicio. `/health` del processor tolera la ausencia de `jobs`. | [review.md](../../openspec/changes/archive/2026-09-28-jup-096-coordinate-migrations/review.md) | No aplica |

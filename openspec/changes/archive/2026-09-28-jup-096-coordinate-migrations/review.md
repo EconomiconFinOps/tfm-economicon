@@ -12,7 +12,7 @@ Ver [design.md](design.md): dueño unico de `jobs` en el backend editando la `00
 
 ## Validacion
 
-Detalle y comandos en [docs/evidence/JUP-096-validation.md](../../../docs/evidence/JUP-096-validation.md).
+Detalle y comandos en [docs/evidence/JUP-096-validation.md](../../../../docs/evidence/JUP-096-validation.md).
 
 - Exploracion en `develop`: carrera 7/7, control sin `jobs` 0/6, Compose real 0/5 (proteccion accidental por ~90 s de desfase).
 - RED: 3 fallos en los tests opt-in con CockroachDB real; el test de topologia falla con el compose de `develop`.
