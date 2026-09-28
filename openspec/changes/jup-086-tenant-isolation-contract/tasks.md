@@ -1,6 +1,21 @@
 JUP: JUP-086
 
-## Aceptacion vigente
+## Correccion source de PR #47, vigente 28/09/2026
+
+- [x] JUP-086 confirmar reparacion dentro del contrato existente, validar OpenSpec y registrar autorizacion explicita de Paris antes de pruebas/codigo.
+- [x] JUP-086 acreditar Red: source vacio y whitespace recibian 202; conservar control valido, solo tres casos nuevos.
+- [x] JUP-086 rechazar source vacio con 422 antes de efectos, preservar source no vacio; Green 3 PASS y backend 321 PASS/10 SKIP.
+- [x] JUP-086 detectar tres mutantes focales y obtener REVIEW_PASS incremental; registrar RF-086-004/005 como heredados Open, no corregidos ni dispensados.
+- [x] JUP-086 completar QA incremental PASS, 28/09/2026: evidencia, enlaces, OpenSpec, trazabilidad, higiene y DoD stage qa correctos.
+- [x] JUP-086 nueva aprobacion post-QA y publicacion autorizadas por Paris mediante "apruebo", registro 28/09/2026 10:22:28 UTC; no reutilizar aprobaciones historicas.
+- [ ] JUP-086 publicar la correccion autorizada en PR #47, comprobar CI y completar nueva revision humana; merge, tracker y archivo separados.
+
+Los resultados actuales y limites de CI estan en [review.md](review.md) y
+la [evidencia](../../../docs/evidence/JUP-086-validation.md#correccion-source-vacio-28-09-2026).
+Los apartados siguientes conservan el estado historico, no son el gate de
+publicacion de esta correccion.
+
+## Aceptacion previa, 26/09/2026
 
 Solo la [tabla acotada](resource-matrix.md#aceptacion-acotada-vigente) define
 verificacion pendiente; checks/estados anteriores conservan historia, no

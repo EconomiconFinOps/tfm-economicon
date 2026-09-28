@@ -1,4 +1,5 @@
 """Real bearer/session/membership and repositories; doubles only at external sinks."""
+import json
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -68,6 +69,41 @@ def test_ingest_error_precedence_without_effects(api, auth, tenant, body, expect
     response = call(api, "POST", "/jobs/ingest", headers=headers(tenant=tenant) if auth else [], json=body)
     assert response.status_code == expected
     no_effects(api)
+
+
+@pytest.mark.parametrize(
+    "tenant_database,source",
+    [("sqlite", ""), ("sqlite", " \t\n ")],
+    indirect=["tenant_database"],
+    ids=["empty", "whitespace"],
+)
+def test_ingest_blank_source_is_rejected_without_effects(api, source):
+    before = rows(api.db, "jobs")
+    response = call(api, "POST", "/jobs/ingest", headers=headers(), json={
+        "tenant_id": "tenant-a", "source": source, "text_content": "ok",
+    })
+    assert response.status_code == 422
+    assert response.json() == {"detail": [{"type": "validation_error", "msg": "Invalid request value"}]}
+    no_effects(api)
+    assert rows(api.db, "jobs") == before
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=["tenant_database"])
+def test_ingest_padded_source_is_preserved(api):
+    source = " azure "
+    response = call(api, "POST", "/jobs/ingest", headers=headers(), json={
+        "tenant_id": "tenant-a", "source": source, "text_content": "ok",
+    })
+    assert response.status_code == 202
+    [job] = rows(api.db, "jobs")
+    assert job["id"] == response.json()["job_id"]
+    assert job["source"] == source
+    assert json.loads(job["payload"])["source"] == source
+    api.queue.publish.assert_called_once()
+    published = api.queue.publish.call_args.args[0]
+    assert published["id"] == job["id"]
+    assert published["source"] == source
+    assert published["payload"]["source"] == source
 
 
 

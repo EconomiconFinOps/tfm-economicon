@@ -5,6 +5,75 @@ Trello: https://trello.com/c/bKxQK9HI
 
 ## Estado
 
+**REVIEW_PASS incremental: source vacio, 28/09/2026.** Base
+`1c866cc3c66e967199871cd1cefd0cc8364f1f8a`, misma rama de [PR #47](https://github.com/EconomiconFinOps/tfm-economicon/pull/47).
+Solo cambia `IngestJobRequest.source`: rechaza valores vacios tras `.strip()`
+y devuelve literalmente los aceptados. No cambia metadata, worker, CI ni
+JUP-026. Tres casos nuevos verifican 422 saneado sin crear/reservar/publicar
+y 202 con source no vacio conservado en SQL y en el mensaje publicado.
+
+Red: 2 fallos semanticos 202 frente a 422 y 1 control PASS. Green: 3 PASS;
+modulos afectados 33 PASS/4 SKIP. Backend completo: 321 PASS/10 SKIP en una
+ejecucion. Tres mutantes detectados (sin guard, solo vacio, normalizacion
+indebida); baseline y copia restaurada 3 PASS. Reviewer audita JUnit,
+comandos y hashes: 66 archivos Python del backend sin cambios durante la
+mutacion. Guards spec-planner, tester, coder y reviewer PASS. Sin bloqueantes
+del alcance corregido; QA del nuevo diff **PASS**, 28/09/2026. QA vuelve a
+validar OpenSpec 34/34, trazabilidad, higiene 658, diff y diez enlaces locales
+(cinco anchors); audita evidencia y hashes sin repetir las suites. Guard
+QA sin escrituras y DoD code/stage qa PASS; sin excepciones. Paris aprueba
+el resultado final y la publicacion del nuevo diff, segun el registro humano
+de esta correccion. La nueva revision del equipo sigue pendiente.
+[Evidencia actual](../../../docs/evidence/JUP-086-validation.md#correccion-source-vacio-28-09-2026).
+
+La review humana de lmatsan, 2026-09-27T12:50:35Z, permanece
+CHANGES_REQUESTED: esta revision local no la sustituye ni resuelve GitHub.
+Sus 327 backend PASS/1 SKIP, 352 processor PASS y seis mutaciones detectadas
+son evidencia aportada por esa review, no ejecuciones de esta correccion.
+Los 59 tests con servicios reales omitidos en CI son el recuento informado
+por lmatsan; el verde de CI no acredita esos tests. CI no se modifica y su
+ejecucion remota para este nuevo diff esta pendiente al preparar el commit.
+Los 10 SKIP locales tampoco son PASS.
+
+### RF-086-004
+
+**High, heredado, Out of scope, Open.** `normalize_source` rechaza fuentes
+no compatibles con SAFE_SOURCE (p. ej. `Azure Cost Management`) y el manejo
+generico de `ProcessorWorker._process_message` reencola con `requeue=True`
+sin limite. Inspeccion estatica compatible con lo informado por lmatsan:
+riesgo para capacidad compartida de todos los tenants; no reproducido de
+nuevo aqui. El mismo comentario menciona limites de metadata; atribucion
+conservada, pero falta un caso concreto porque el codigo tambien trunca y
+sanea metadata. Equipo Economicon: acordar tarjeta/alcance separado para
+reconciliar validacion y tratamiento de fallos permanentes. No bloquea
+esta reparacion acotada, no se corrige ni se dispensa el riesgo.
+
+### RF-086-005
+
+**Medium, heredado, Out of scope, Open.** NaN/`1e999` en metadata y surrogates
+en source/metadata generan 500 generico en lugar de 422, segun la reproduccion
+informada por lmatsan; no repetida ni confirmada independientemente aqui.
+No fuga de datos segun esa review. Equipo Economicon: reproducir y acordar
+validacion en trabajo separado antes de persistir. Sin cierre ni cambio de
+metadata dentro de esta correccion. Ambos findings constan en el
+[backlog](../../findings/backlog.md).
+
+### Gate humano de esta correccion
+
+- Decision post-QA y publicacion: **APPROVED**.
+- Aprobador: Paris Arcos Martin; respuesta "apruebo" al resultado de QA y
+  a la pregunta explicita de publicacion en PR #47.
+- Fecha: registro del orquestador 2026-09-28 10:22:28 UTC; no hora inferida
+  del mensaje humano. Autoriza commit/push y comprobar el nuevo CI, no
+  merge, tracker, cambios de roles ni archivado.
+- Preflight: fetch sin novedades; HEAD y rama remota coinciden en
+  `1c866cc`. Se conserva el diff aprobado, sin nueva integracion de develop
+  ni cambios en JUP-026. Revision humana de GitHub y merge siguen separados.
+- Se preservan los registros historicos siguientes, sin reutilizar sus
+  aprobaciones. La aprobacion pre-code consta en [proposal.md](proposal.md).
+
+## Historial: peer de cierre, 27/09/2026
+
 **REVIEW_PASS de la correccion del peer de cierre, 27/09/2026.** Base
 `215453f9890d383a4f3e8cb393c314e7779f7687`, PR #47. Solo tres lineas en la
 fixture `runtime_handshake_holder`: BrokenPipeError registra `broken-pipe`
