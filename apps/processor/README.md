@@ -90,7 +90,7 @@ $env:ECONOMICON_ENV_FILE = (Resolve-Path ../../.env).Path
 python -m app.run_all
 ```
 
-La tabla `jobs` la crea el backend. Si el processor arranca antes de que el backend haya migrado, `GET /health` responde `degraded` con `jobs: null` y registra `backend_schema_missing`, hasta que el backend cree la tabla.
+La tabla `jobs` la crea el backend. `GET /health` del processor solo comprueba sus propias dependencias, asi que no depende de que el backend haya migrado.
 
 Puerto visible:
 

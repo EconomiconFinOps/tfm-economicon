@@ -12,7 +12,7 @@
 
 - La tabla `jobs` pasa a tener un unico dueño, el backend: la migracion `001` del processor queda sin DDL, conservando fichero y version.
 - Docker Compose arranca el processor solo cuando el backend esta sano.
-- `/health` del processor responde 200 `degraded` con `jobs` nulo mientras `jobs` no existe; cualquier otro error sigue siendo visible.
+- `/health` del processor no depende de la tabla `jobs` del backend (ver Integracion con JUP-086).
 - `MigrationRunner` del processor exige su tabla de versiones de forma explicita.
 - Guarda estatica en CI y pruebas opt-in con CockroachDB real para la propiedad del esquema.
 
@@ -68,14 +68,17 @@ Proyecto aislado `jup096` con volumenes nuevos, imagenes construidas desde la ra
 - Arranque en frio repetido tras los cambios de la revision adversarial (`/health`, `has_jobs_table`, runner): backend `StartedAt` 23:17:44, processor 23:18:25, ambos sanos, 0 `SerializationFailure`, y `GET /health` del processor en el contenedor: `{"status":"ok",...,"jobs":{"queued":0,"running":0,"failed":0,"completed":0}}`.
 - Stack habitual del proyecto (`tfm-economicon`, datos existentes) levantado desde la rama: los 9 servicios sanos y el processor arrancado despues del backend.
 
+## Integracion con JUP-086 (PR #47)
+
+El 28/09 se integro en `develop` el PR #47, que quita los conteos globales de `jobs` de `/health` del processor por aislamiento entre tenants. Al resolver el conflicto se adopta esa version: `/health` ya no consulta `jobs`, por lo que la tolerancia a su ausencia (respuesta `degraded` con `jobs` nulo y `has_jobs_table`) deja de ser necesaria y se elimina. Las filas de `/health` de este documento anteriores a esta seccion son historicas. `test_processor_health.py` comprueba ahora que `/health` responde `ok` sin la tabla `jobs`, `degraded` si ademas falla RabbitMQ y la base inalcanzable como `failed`.
+
 ## Limites
 
 - Los tests opt-in con CockroachDB real no se ejecutan en CI (RF-096-004).
 - La guarda estatica es heuristica: no cubre DDL importado de otros modulos o ficheros `.sql` (riesgo aceptado, ver `review.md`).
-- No se ha probado con PR #47 integrado.
 
 ## Nota de release
 
 | Fecha | JUP | Nota de release | Review | ADRs |
 | --- | --- | --- | --- | --- |
-| 2026-09-28 | JUP-096 | `jobs` pasa a ser solo del backend y el processor arranca tras el backend sano: migrar a la vez una base vacia ya no tumba ningun servicio. `/health` del processor tolera la ausencia de `jobs`. | [review.md](../../openspec/changes/archive/2026-09-28-jup-096-coordinate-migrations/review.md) | No aplica |
+| 2026-09-28 | JUP-096 | `jobs` pasa a ser solo del backend y el processor arranca tras el backend sano: migrar a la vez una base vacia ya no tumba ningun servicio. | [review.md](../../openspec/changes/archive/2026-09-28-jup-096-coordinate-migrations/review.md) | No aplica |

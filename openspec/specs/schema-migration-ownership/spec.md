@@ -40,17 +40,16 @@ Databases migrated before this change SHALL keep their tables, rows and version 
 - **THEN** the backend completes its migrations without error, records its versions once, and the existing `jobs` rows are preserved
 
 ### Requirement: Processor health before the backend schema exists
-The processor `GET /health` SHALL answer 200 with status `degraded` and a null `jobs` block, and SHALL log a warning, while the backend-owned `jobs` table does not exist yet, and SHALL report job counts again once it exists. Only the absence of `jobs` SHALL be degraded this way: an unreachable database or any other error while counting jobs SHALL keep failing visibly as before this change.
+The processor `GET /health` SHALL NOT depend on backend-owned tables: it SHALL report only its own dependency checks, and its result SHALL be the same whether or not the backend-owned `jobs` table exists yet. An unreachable database SHALL still be reported as failed.
 
 #### Scenario: Processor migrated before the backend
-- **WHEN** the processor serves `/health` on a database where `jobs` does not exist
-- **THEN** the response is 200 with status `degraded`, its own dependency checks unchanged, and `jobs` null
+- **WHEN** the processor serves `/health` on a database where `jobs` does not exist and all its dependencies are healthy
+- **THEN** the response is 200 with status `ok`, its own dependency checks, and no `jobs` block
 
 #### Scenario: Missing backend schema combined with a failed dependency
 - **WHEN** `jobs` does not exist and RabbitMQ is also unavailable
-- **THEN** the response is 200 with status `degraded`, RabbitMQ reported as failed and `jobs` null
+- **THEN** the response is 200 with status `degraded` and RabbitMQ reported as failed
 
-#### Scenario: Other errors are not hidden
-- **WHEN** the database is unreachable, or counting jobs fails for a reason other than a missing `jobs` table
-- **THEN** `/health` does not answer 200 with a null `jobs` block; the error remains visible as before this change
-
+#### Scenario: Unreachable database stays visible
+- **WHEN** the database is unreachable
+- **THEN** the response reports the database as failed and the status as `degraded`

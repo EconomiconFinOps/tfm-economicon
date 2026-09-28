@@ -292,26 +292,29 @@ def test_persisted_job_failure_uses_stable_code_not_exception_text():
     from app.tasks.ingest import IngestTask
 
     repository = MagicMock()
+    job = {
+        "id": "jup053-job", "tenant_id": "tenant-core", "created_by": "operator",
+        "source": "azure-cost", "artifact_uri": None, "status": "queued",
+        "payload": {"tenant_id": "tenant-core", "source": "azure-cost", "text_content": "test document", "metadata": {}},
+    }
+    scope = {"tenant_id": "tenant-core", "created_by": "operator"}
+    repository.fetch_authorized_job.return_value = job
     pipeline = MagicMock()
     pipeline.run.side_effect = RuntimeError(SENTINEL)
     task = IngestTask(repository, pipeline)
-    with pytest.raises(Exception):
-        task.execute({
-            "id": "jup053-job", "tenant_id": "tenant-core", "source": "azure-cost",
-            "artifact_uri": None, "payload": {"text_content": "test document", "metadata": {}},
-        })
-    repository.mark_running.assert_called_once_with("jup053-job")
+    with pytest.raises(RuntimeError, match="^ingestion_failed$"):
+        task.execute(job)
+    repository.fetch_authorized_job.assert_called_once_with("jup053-job", **scope)
+    repository.mark_running.assert_called_once_with("jup053-job", **scope)
     repository.mark_completed.assert_not_called()
     repository.mark_failed.assert_called_once()
     job_id, diagnostic = repository.mark_failed.call_args.args
     assert job_id == "jup053-job"
     assert diagnostic and SENTINEL not in diagnostic
+    assert repository.mark_failed.call_args.kwargs == scope
     pipeline.run.side_effect = RuntimeError("different synthetic failure")
-    with pytest.raises(Exception):
-        task.execute({
-            "id": "jup053-job", "tenant_id": "tenant-core", "source": "azure-cost",
-            "artifact_uri": None, "payload": {"text_content": "test document", "metadata": {}},
-        })
+    with pytest.raises(RuntimeError, match="^ingestion_failed$"):
+        task.execute(job)
     assert repository.mark_failed.call_args.args[1] == diagnostic
 
 
@@ -394,11 +397,13 @@ def test_rf053_003_task_to_worker_preserves_sanitized_root_diagnostics(monkeypat
     configure_logging()
     job = {
         "id": "jup053-error-job", "request_id": "jup053-worker-failure",
-        "tenant_id": "tenant-core", "source": "azure-cost", "artifact_uri": None,
-        "payload": {"text_content": "test document", "metadata": {}},
+        "tenant_id": "tenant-core", "created_by": "operator", "status": "queued",
+        "source": "azure-cost", "artifact_uri": None,
+        "payload": {"tenant_id": "tenant-core", "source": "azure-cost", "text_content": "test document", "metadata": {}},
     }
     structlog.contextvars.bind_contextvars(request_id=job["request_id"])
     repository = MagicMock()
+    repository.fetch_authorized_job.return_value = job
     pipeline = MagicMock()
     harmless_message = "synthetic input parse failure"
     dsn = SYNTHETIC_ENV["VECTOR_DATABASE_URL"]
@@ -414,8 +419,10 @@ def test_rf053_003_task_to_worker_preserves_sanitized_root_diagnostics(monkeypat
 
     worker.run_forever()
 
-    repository.mark_running.assert_called_once_with("jup053-error-job")
-    repository.mark_failed.assert_called_once_with("jup053-error-job", "ingestion_failed")
+    scope = {"tenant_id": "tenant-core", "created_by": "operator"}
+    repository.fetch_authorized_job.assert_called_once_with("jup053-error-job", **scope)
+    repository.mark_running.assert_called_once_with("jup053-error-job", **scope)
+    repository.mark_failed.assert_called_once_with("jup053-error-job", "ingestion_failed", **scope)
     repository.mark_completed.assert_not_called()
     worker.queue.ack.assert_not_called()
     worker.queue.nack.assert_called_once_with(42, requeue=True)
@@ -429,5 +436,6 @@ def test_rf053_003_task_to_worker_preserves_sanitized_root_diagnostics(monkeypat
     assert ENCODED not in captured.out + captured.err
     assert dsn not in captured.out + captured.err
     assert "vector-fixture-pass" not in captured.out + captured.err
-    assert "ValueError" in diagnostics, "Original exception type was lost before rendered logging"
-    assert harmless_message in diagnostics, "Useful sanitized root message was lost"
+    assert "RuntimeError" in diagnostics
+    assert "worker_loop_failed" in diagnostics
+    assert harmless_message not in diagnostics, "Provider exception text is not a safe diagnostic"

@@ -132,19 +132,28 @@ def _flag_resource_group_conflicts(
 ) -> tuple[NormalizedCostRecord, ...]:
     groups_by_resource: dict[str, dict[str, str]] = {}
     for record in records:
-        if record.resource_id is None or record.resource_group is None:
+        if not record.resource_id or not record.resource_group:
             continue
-        seen = groups_by_resource.setdefault(record.resource_id, {})
-        seen.setdefault(record.resource_group.casefold(), record.resource_group)
+        # Azure resource IDs are case-insensitive; only the comparison key is folded.
+        seen = groups_by_resource.setdefault(record.resource_id.casefold(), {})
+        key = record.resource_group.casefold()
+        # Keep the smallest spelling so the output does not depend on row order.
+        if key not in seen or record.resource_group < seen[key]:
+            seen[key] = record.resource_group
 
     flagged: list[NormalizedCostRecord] = []
     for record in records:
-        seen = groups_by_resource.get(record.resource_id) if record.resource_id else None
+        seen = groups_by_resource.get(record.resource_id.casefold()) if record.resource_id else None
         if seen is None or len(seen) < 2:
             flagged.append(record)
             continue
-        own_key = record.resource_group.casefold()
-        others = tuple(sorted(value for key, value in seen.items() if key != own_key))
+        own_key = record.resource_group.casefold() if record.resource_group else None
+        others = tuple(
+            sorted(
+                (value for key, value in seen.items() if key != own_key),
+                key=lambda value: (value.casefold(), value),
+            )
+        )
         flagged.append(replace(record, resource_group_conflicts=others))
     return tuple(flagged)
 
@@ -165,6 +174,8 @@ def _take(row: dict[str, DimensionValue], aliases: tuple[str, ...]) -> object:
 
 
 def _comparable(value: DimensionValue) -> tuple[str, str]:
+    if value is None:
+        return "text", ""
     if isinstance(value, bool):
         return "bool", str(value)
     if isinstance(value, (int, float, Decimal)):

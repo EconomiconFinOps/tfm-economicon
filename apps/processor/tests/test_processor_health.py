@@ -38,27 +38,27 @@ def _database(tmp_path, *, backend_schema: bool) -> Database:
     return database
 
 
-def test_health_degrades_instead_of_failing_before_backend_schema_exists(tmp_path):
+def test_health_is_ok_before_backend_schema_exists(tmp_path):
     database = _database(tmp_path, backend_schema=False)
 
     response = _get_health(_app(database))
 
     assert response.status_code == 200
     body = response.json()
-    assert body["status"] == "degraded"
+    assert body["status"] == "ok"
     assert body["services"] == {"database": "ok", "rabbitmq": "ok", "vector_store": "ok"}
-    assert body["jobs"] is None
+    assert "jobs" not in body
     database.dispose()
 
 
-def test_health_reports_job_counts_once_backend_schema_exists(tmp_path):
+def test_health_is_unchanged_once_backend_schema_exists(tmp_path):
     database = _database(tmp_path, backend_schema=True)
 
     response = _get_health(_app(database))
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
-    assert response.json()["jobs"] == {"queued": 1, "running": 0, "failed": 0, "completed": 2}
+    assert "jobs" not in response.json()
     database.dispose()
 
 
@@ -70,62 +70,16 @@ def test_health_combines_missing_backend_schema_with_failed_broker(tmp_path):
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "degraded"
-    assert body["services"]["rabbitmq"] == "failed"
-    assert body["jobs"] is None
+    assert body["services"] == {"database": "ok", "rabbitmq": "failed", "vector_store": "ok"}
     database.dispose()
 
 
-def test_health_does_not_hide_other_job_count_errors(tmp_path, monkeypatch):
-    database = _database(tmp_path, backend_schema=True)
-
-    def broken_counts():
-        raise KeyError("status")
-
-    monkeypatch.setattr(database, "fetch_job_counts", broken_counts)
-
-    assert _get_health(_app(database)).status_code == 500
-    database.dispose()
-
-
-def test_health_keeps_failing_visibly_when_the_database_is_unreachable():
+def test_health_reports_an_unreachable_database_as_failed():
     database = Database("postgresql+psycopg://user@127.0.0.1:1/db?connect_timeout=1")
 
     response = _get_health(_app(database))
 
-    assert response.status_code == 500
-    database.dispose()
-
-
-def test_health_logs_the_missing_backend_schema(tmp_path, capsys):
-    from app.core.logging import configure_logging
-
-    configure_logging()
-    database = _database(tmp_path, backend_schema=False)
-
-    _get_health(_app(database))
-
-    assert "backend_schema_missing" in capsys.readouterr().out
-    database.dispose()
-
-
-def test_health_counts_jobs_without_an_extra_existence_query(tmp_path, monkeypatch):
-    database = _database(tmp_path, backend_schema=True)
-    calls = []
-    monkeypatch.setattr(database, "has_jobs_table", lambda: calls.append(1) or True)
-
-    response = _get_health(_app(database))
-
-    assert response.json()["jobs"]["completed"] == 2
-    assert calls == []
-    database.dispose()
-
-
-def test_health_trusts_the_count_query_over_the_existence_check(tmp_path, monkeypatch):
-    database = _database(tmp_path, backend_schema=True)
-    monkeypatch.setattr(database, "has_jobs_table", lambda: False)
-
-    response = _get_health(_app(database))
-
-    assert response.json()["status"] == "ok"
-    assert response.json()["jobs"]["queued"] == 1
+    assert response.status_code == 200
+    assert response.json()["status"] == "degraded"
+    assert response.json()["services"]["database"] == "failed"
     database.dispose()
