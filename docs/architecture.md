@@ -369,8 +369,11 @@ La arquitectura distingue capacidad desplegable de prototipo heredado:
 - La API Azure simulada, su cliente, la normalizacion y la persistencia de costes
   tienen contratos y pruebas integradas en `develop`.
 - Auth propia, selector de tenant, pgvector y chat retrieval forman un baseline
-  demostrable, pero JUP-085 y JUP-086 deben cerrar sus contratos negativos y de
-  seguridad antes de considerarlos completos.
+  demostrable. JUP-085 cierra el contrato de sesion demo (login, `/me`, TTL/JWT
+  con leeway de 5s, ciclo de vida de sesion en frontend y CORS con origenes
+  explicitos via [ADR-0007](adr/ADR-0007-backend-cors-policy.md)); JUP-086
+  (aislamiento y autorizacion por tenant) sigue pendiente de cerrar su contrato
+  de seguridad.
 - Embeddings y respuesta del asistente usan mocks por defecto. El vertical RAG
   real, sus citas y su evaluacion pertenecen a JUP-020 a JUP-025 y JUP-036.
 - JUP-087 elimina el lint heredado mediante contratos TypeScript y añade pruebas
