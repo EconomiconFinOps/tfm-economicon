@@ -99,7 +99,7 @@ Comparacion de 2.202 fuentes contra cuatro versiones.
 |---|---|---|---|
 | ADV-30 | MEDIUM | La correccion de ADV-28 dejaba pasar `DROP/ALTER INDEX IF EXISTS` con nombre construido por codigo | Corregido |
 | ADV-31 | MEDIUM | `_forbidden` no aplicaba la continuacion de literales | Corregido con una normalizacion compartida |
-| ADV-32 | LOW | Falsos positivos ruidosos con texto en ingles acabado en palabras DDL (`"cannot alter table"`) | Sin cambios: falla de forma visible; pendiente de aceptacion de Lucia |
+| ADV-32 | LOW | Falsos positivos ruidosos con texto en ingles acabado en palabras DDL (`"cannot alter table"`) | Sin cambios: falla de forma visible; aceptado por Lucia |
 | ADV-33 | LOW | Cadenas `e'...'` | Documentado en RF-096-004 junto a ADV-29 |
 
 ### Pass 9 - accept
@@ -116,7 +116,7 @@ Acotada al commit de ADV-34; comparacion de 42.000 fuentes de `DROP/ALTER INDEX`
 
 | ID | Sev. | Hallazgo | Tratamiento |
 |---|---|---|---|
-| ADV-35 | LOW | Un indice sin comillas llamado literalmente `concurrently` (o `if`, ya antes) escapa a la prohibicion de indices sin tabla | Documentado como limite en RF-096-004; pendiente de aceptacion de Lucia |
+| ADV-35 | LOW | Un indice sin comillas llamado literalmente `concurrently` (o `if`, ya antes) escapa a la prohibicion de indices sin tabla | Documentado como limite en RF-096-004; aceptado por Lucia |
 
 Veredicto final: **accept** (pasada 10). Sin findings BLOCKING, HIGH ni MEDIUM abiertos.
 
@@ -132,7 +132,7 @@ Veredicto final: **accept** (pasada 10). Sin findings BLOCKING, HIGH ni MEDIUM a
 - ADV-3 / RF-096-002 (27/09/2026): "si"; reconfirmado tras corregir la estimacion de la ventana: "confirmo".
 - ADV-5 / RF-096-003 (27/09/2026): "registramos".
 - ADV-15, resto de ADV-16 y ADV-18 (28/09/2026): "si".
-- ADV-32 (falsos positivos ruidosos de la guarda estatica, incluidos espacios dobles antes del nombre del indice) y ADV-35: pendientes.
+- ADV-32 (falsos positivos ruidosos de la guarda estatica, incluidos espacios dobles antes del nombre del indice) y ADV-35 (28/09/2026): "apruebo".
 
 ## Findings
 
@@ -142,3 +142,14 @@ Veredicto final: **accept** (pasada 10). Sin findings BLOCKING, HIGH ni MEDIUM a
 ## ADR
 
 No aplica ADR nuevo: la regla duradera queda como requisito verificable en la capacidad `schema-migration-ownership` (design, decision 5).
+
+## Human Approval
+
+- Change: jup-096-coordinate-migrations
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-09-28
+- Adversarial review: accept (pass 10) | accepted findings: ADV-3 (RF-096-002), ADV-5 (RF-096-003), ADV-15, resto de ADV-16 (RF-096-004), ADV-18, ADV-32, ADV-35
+- Archive decision: archive
+- Notes: revisados codigo, specs, diseño, evidencia y revision adversarial. Pendiente en Trello: revision del PR (Victor Mendez) y validacion funcional (Paris Arcos Martin).

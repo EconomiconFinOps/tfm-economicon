@@ -36,6 +36,6 @@
 - [x] 6.1 Bateria completa: tests de backend y processor, `corepack pnpm openspec:validate`, `corepack pnpm jup:check -- --change jup-096-coordinate-migrations` y `corepack pnpm jup:cleanup:check`; registrar comandos y resultados.
 - [x] 6.2 Revision adversarial con el agente `adversarial-reviewer` hasta `accept`; corregir o probar cada finding.
 - [x] 6.3 Redactar `review.md` (resumen, decisiones, validacion, `## Adversarial Review`, barrido del patron, riesgos, findings y aplicabilidad de ADR) y `docs/evidence/JUP-096-validation.md`.
-- [ ] 6.4 Añadir `## Human Approval` al final de `review.md` tras la aprobacion explicita de Lucia.
+- [x] 6.4 Añadir `## Human Approval` al final de `review.md` tras la aprobacion explicita de Lucia.
 - [ ] 6.5 Archivar el change en la misma rama tras 6.4.
 - [ ] 6.6 Abrir el PR hacia `develop`.
