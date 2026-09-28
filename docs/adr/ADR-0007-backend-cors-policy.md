@@ -90,3 +90,5 @@ Numeracion secuencial segun README/template nativos: ambas raices y refs locales
 origin JUP-014/JUP-069 contienen ADR-0001 a ADR-0006, sin 0007 en la lectura del
 23/09. Reconfirmar numero y enlaces al sincronizar/fusionar en el futuro, pues
 otras ramas pueden incorporar otro ADR; no sincronizar ni renumerar hoy.
+
+Actualizacion 27/09/2026: con la implementacion integrada en develop mediante PR #43, RF-087-001 y RF-095-001 pasan a Fixed en el [backlog de findings](../../openspec/findings/backlog.md). El QA_BLOCKED_ENV que sigue abierto corresponde al reloj del entorno (RF-085-002), no a esta politica CORS.
