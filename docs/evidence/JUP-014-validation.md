@@ -114,3 +114,49 @@ tupla en la lectura; 34/34 tests de integracion en verde tras el fix.
   situacion en la que ya estaban `subscription_name`/`billing_account_id`.
 - La validacion de jerarquia entre ejecuciones historicas de ingesta queda
   fuera de alcance, registrada como `RF-014-001`.
+
+## Correccion tras la validacion del 2026-09-25
+
+Alejandro Aguado reprodujo dos defectos en `_flag_resource_group_conflicts` tras integrar la PR #41 y devolvio la tarjeta a En curso. Se corrigen en la rama `fix/JUP-014-resource-conflict-detection`, sin reabrir el cambio archivado.
+
+- Defecto 1: `RES-1` y `res-1` se trataban como recursos distintos. Ahora `resource_id` se compara sin distinguir mayusculas (con `casefold`, la convencion del repo) y cada fila conserva su valor original.
+- Defecto 2: una fila sin `ResourceGroup` dentro de un recurso con conflicto lanzaba `AttributeError`. Ahora se normaliza sin error.
+- Decision de Lucia (responsable) para el caso no cubierto por la spec: con dos o mas grupos observados, la fila sin grupo guarda todos esos grupos como senal de inconsistencia; con un solo grupo conocido, no hay conflicto. Recogida en la spec como escenarios nuevos.
+
+### Revision adversarial
+
+Revisor independiente (sin acceso al razonamiento de la implementacion) sobre spec y diff.
+
+| Pasada | Veredicto | Findings y resolucion |
+| --- | --- | --- |
+| 1 | accept | ADV-2 (regla de fila sin grupo ausente en la spec): anadida a la spec. ADV-3 (`null` explicito lanzaba `AttributeError`): corregido. ADV-4 y ADV-5 (grafia guardada y orden dependientes del orden de filas): corregidos. ADV-6 (guardas distintas en las dos pasadas): corregido. ADV-1 (`casefold` frente a la comparacion de Azure): registrado como `RF-014-002`, convencion de todo el repo. |
+| 2 | changes-requested | ADV-7/ADV-8/ADV-9: la spec prometia tolerar `null` en cualquier dimension, pero el cliente de Azure rechaza el `null` antes de normalizar y el normalizador lo rechaza en dimensiones no promovidas, `Tags` y alias. Resuelto acotando la spec a `resource_id` y `resource_group` y registrando `RF-014-003`. ADV-10 y ADV-11: riesgos aceptados (abajo). |
+| 3 | accept | ADV-12 (valor vacio o en blanco junto a un alias con valor se rechaza, comportamiento previo a este fix): la spec aclara que la reconciliacion de alias se aplica antes y `RF-014-003` lo recoge. ADV-13 (frase inexacta del barrido): corregida abajo. |
+
+Barrido de patron: las llamadas a `casefold()` de la funcion corregida quedan protegidas frente a valores vacios o nulos. El resto de llamadas del processor (`_take`, `_comparable`, etiquetas, migracion 003, servicio de ingesta) reciben siempre texto ya validado.
+
+### Riesgos aceptados por Lucia (2026-09-27)
+
+- ADV-10: el alias de tipo `DimensionValue` no incluye `None`, aunque `_comparable` ya lo acepta. Solo afecta a la anotacion de tipos.
+- ADV-11: cada fila de un recurso con conflicto guarda la lista de los otros grupos, asi que el tamano crece con filas por grupos. Es aceptable porque en Azure un recurso pertenece a un unico resource group en cada momento y solo aparece bajo varios si se mueve dentro del periodo consultado, que es de una sola suscripcion: en la practica son 2 o 3 grupos. Se revisara si se implementa `RF-014-001` (validacion entre ejecuciones historicas), porque ampliaria el periodo comparado.
+
+### Pruebas
+
+- 16 casos nuevos en `apps/processor/tests/test_azure_cost_ingestion.py`: `ResourceId` en otra capitalizacion, grupo ausente, vacio, en blanco o `null`, combinaciones de ambos, un solo grupo conocido, `null` explicito en cinco dimensiones promovidas, estabilidad frente al orden de filas y orden de la lista.
+- Processor: 292 passed, 34 skipped (los omitidos requieren CockroachDB real).
+
+### Validacion con base de datos real (2026-09-27)
+
+- Tests de integracion opt-in `tests/test_azure_cost_cockroach_integration.py` contra un nodo CockroachDB v24.1.11 desechable (sin volumen, solo en `127.0.0.1`, marcado con `cluster.organization`): 34 passed en 16 min; el fixture borro todas sus bases de prueba. Nota de entorno: el script de entrada de la imagen termina el contenedor al intentar crear `defaultdb`; se arranco con `--entrypoint /cockroach/cockroach`.
+- Ingesta real con el stack de `docker compose` y la consulta por defecto: 38 filas en 4 paginas, 31 recursos, ninguno con varias grafias de `ResourceId` y 0 conflictos. En este dataset el resultado es el mismo antes y despues del fix, asi que no sirve como evidencia por si solo.
+- Control positivo: las filas de los dos casos de la validacion del 2026-09-25 pasaron por el servicio de ingesta, el normalizador y el repositorio reales contra CockroachDB. Guardado leido por SQL: `RES-1`/`rg-old` con `["rg-new"]`, `res-1`/`rg-new` con `["rg-old"]`, `res-2` sin grupo con `["rg-new", "rg-old"]` y las dos filas de `res-2` con grupo con el otro grupo.
+
+### Human Approval
+
+- Change: correccion de JUP-014 tras la validacion del 2026-09-25 (rama `fix/JUP-014-resource-conflict-detection`)
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-09-27
+- Adversarial review: accept (pasada 3); findings aceptados: ADV-10 y ADV-11; registrados: `RF-014-002` y `RF-014-003`
+- Notes: revisados codigo, tests, spec, findings y validacion con CockroachDB real y control positivo. Pendiente en Trello: nueva validacion funcional de Alejandro (rol de validacion).
