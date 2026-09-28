@@ -1,6 +1,31 @@
 JUP: JUP-086
 Trello: https://trello.com/c/bKxQK9HI
 
+## Correccion solicitada en PR #47, 28/09/2026
+
+Paris Arcos Martin autoriza "haz la correccion en la rama que corresponde"
+tras presentar el alcance acotado de la review del 27/09. Registro del
+orquestador el 28/09/2026 (Atlantic/Canary), no hora del mensaje humano.
+Spec-planner confirma reparacion de coherencia con el contrato aprobado:
+el worker ya rechaza `source` vacio; la API debe devolver 422 antes de
+crear el job, reservar capacidad o publicar. No cambia requisitos ni ADRs.
+OpenSpec 34/34 y trazabilidad del cambio PASS antes de este registro.
+
+Pre-code **APPROVED** para validar unicamente `source` vacio o compuesto
+solo por whitespace en `apps/backend/app/schemas/jobs.py`, preservando
+literalmente los valores no vacios, y anadir cobertura focalizada en
+`apps/backend/tests/test_tenant_isolation_api.py`: dos rechazos sin efectos
+y un control valido. Reutilizar fixtures y regresiones existentes.
+RF-086-004/005 se registraran como heredados, abiertos y fuera de esta
+correccion; no se implementan SAFE_SOURCE, reintentos/DLQ ni nuevas reglas
+de metadata. Sin cambios de CI, dependencias, roles ni JUP-026.
+Revision tecnica y QA incremental del nuevo diff PASS, registradas el
+28/09/2026. Post-QA **APPROVED** por Paris Arcos Martin mediante "apruebo"
+al resultado presentado y a publicar esta correccion en PR #47. Registro
+del orquestador: 2026-09-28 10:22:28 UTC, no hora atribuida al mensaje.
+Autoriza commit/push y comprobar CI del nuevo commit; no merge, tracker,
+cambios de roles ni archivado. No se reutilizan aprobaciones historicas.
+
 ## Correccion del peer de cierre en CI, 27/09/2026
 
 Paris responde "hazlo" a reproducir y corregir el caso existente de RabbitMQ

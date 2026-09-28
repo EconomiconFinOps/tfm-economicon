@@ -5,6 +5,95 @@ Trello: https://trello.com/c/bKxQK9HI
 
 ## Estado
 
+Correccion source vacio, 28/09/2026: **REVIEW_PASS y QA_PASS incrementales**.
+Base `1c866cc3c66e967199871cd1cefd0cc8364f1f8a`; rama
+`feat/JUP-086-tenant-isolation-contract`, PR #47. Un archivo de producto y
+un archivo de tests, tres casos nuevos. Sin cambios de dependencias, CI,
+processor, frontend ni JUP-026. Post-QA humano y publicacion **APPROVED** por
+Paris mediante "apruebo", registro 2026-09-28 10:22:28 UTC del orquestador,
+no hora del mensaje. Commit/push y nuevo CI autorizados; no merge ni tracker.
+
+## Correccion source vacio 28-09-2026
+
+La review de lmatsan del 27/09 solicita 422 para source vacio antes de crear
+el job. Autorizacion de Paris y limites en [proposal.md](../../openspec/changes/jup-086-tenant-isolation-contract/proposal.md).
+El validator rechaza `not value.strip()` y retorna el valor original si es
+valido. Los tres casos comprueban vacio, whitespace mixto y source con
+espacios exteriores; respuesta saneada, cero efectos en rechazo y literal
+conservado en fila, payload y mensaje publicado en aceptacion.
+
+| Validacion | Resultado | Exit |
+|---|---|---:|
+| Red focal, antes de corregir | 2 FAIL (202 vs 422), 1 PASS | 1 |
+| Green focal | 3 PASS, 0 SKIP | 0 |
+| Tres modulos afectados | 33 PASS, 4 SKIP CockroachDB | 0 |
+| Backend completo, una pasada | 321 PASS, 10 SKIP externos; 331 casos | 0 |
+| Mutacion: bypass guard | 2 FAIL semanticos, 1 PASS; detectado | 1 |
+| Mutacion: solo `if not value` | 1 FAIL whitespace, 2 PASS; detectado | 1 |
+| Mutacion: `return value.strip()` | 1 FAIL valor persistido, 2 PASS; detectado | 1 |
+| Baseline/copia restaurada | 3 PASS cada una; 66 hashes originales intactos | 0 |
+| OpenSpec estricto / trazabilidad | 34/34 PASS / cambio correcto | 0 |
+| Higiene / diff whitespace | 658 archivos correctos / PASS | 0 |
+
+Entorno: Windows, Python 3.12 existente, SQLite real para HTTP/repositorio
+y dobles en salidas externas. No Docker ni servicios compartidos iniciados.
+Los diez SKIP son seis CockroachDB, tres RabbitMQ y uno pgvector; no se
+presentan como pruebas ejecutadas. Warnings heredados (462 en backend,
+incluidos datetime SQLite y claves sinteticas de tests); no corregidos aqui.
+Los primeros intentos sandbox de lanzar Python/pnpm fallaron por permisos,
+antes de pruebas; no son Red ni fallos de producto. Reejecucion autorizada
+con runtime existente, sin instalaciones.
+
+Comandos ejecutados desde `apps/backend`, con
+`$env:PYTHONDONTWRITEBYTECODE='1'`. Artefactos solo en TEMP, no en Git:
+
+```powershell
+$py = 'C:/Users/Trabajo/AppData/Local/Temp/jup086-20260924-0031895a-py312/Scripts/python.exe'
+$out = 'C:/Users/Trabajo/AppData/Local/Temp/jup086-source-review-20260928'
+$m = "$out/mutation-a9521a2ae9094d8884300b05bf52ad3e"
+$cases = @('tests/test_tenant_isolation_api.py::test_ingest_blank_source_is_rejected_without_effects', 'tests/test_tenant_isolation_api.py::test_ingest_padded_source_is_preserved')
+$red = "$out/red-6038d1d3e408498bbae8dac88e18a2db"
+& $py -B -m pytest -q -ra -p no:cacheprovider --basetemp "$red-tmp" --junitxml "$red.xml" @cases
+& $py -B -m pytest -q -ra -p no:cacheprovider --basetemp "$env:TEMP/jup086-source-green-new3-29d68d613b314280ad77340d0b37ef3c" --junitxml "$out/green-new3.xml" @cases
+& $py -B -m pytest -q -ra -p no:cacheprovider --basetemp "$env:TEMP/jup086-source-green-affected-30ae5338019849ee85e98260644dbdeb" --junitxml "$out/green-affected.xml" tests/test_tenant_isolation_api.py tests/test_job_publication.py tests/test_secret_boundaries.py
+& $py -B -m pytest -q -ra -p no:cacheprovider --basetemp "$m/backend-regression-tmp" --junitxml "$m/backend-regression.xml" tests
+```
+
+Red, Green y regresion tienen `.log`/`.xml` con los nombres anteriores.
+Los cinco procesos baseline/bypass-guard/empty-only/normalize-accepted/restored
+usan el mismo comando focal desde `$m/backend`, copia temporal aislada,
+con `--basetemp "$m/<nombre>-tmp" --junitxml "$m/<nombre>.xml"`.
+`$m/commands-results.json` guarda argumentos, cwd, exits y fallos exactos;
+`hashes-before.json`, `hashes-after.json` y `hash-verification.json` acreditan
+66 archivos Python del worktree intactos. Hash schema final/restaurado:
+`cd3bdf83a2dc2a391da4ac767f5834791fbf9227b362fd80f9fef9cb88f4cf81`.
+`green-new3-command.txt` y `green-affected-command.txt` conservan invocaciones
+exactas. Mutantes: guard `if False`, guard `if not value`, retorno `.strip()`;
+ninguno superviviente ni equivalente. No se aumentan los tests por mutacion.
+
+Desde la raiz: `corepack pnpm openspec:validate`,
+`corepack pnpm jup:check -- --change jup-086-tenant-isolation-contract`,
+`corepack pnpm jup:cleanup:check` y `git diff --check`, todos exit 0.
+Reviewer audita los resultados y los guards de roles, sin ediciones.
+QA incremental PASS el 28/09/2026: revalida los cuatro comandos anteriores,
+comprueba diez enlaces locales (cinco anchors) y audita JUnit/hashes sin
+repetir suites. Guard QA sin cambios, DoD code/stage qa PASS, sin excepciones.
+La aprobacion humana post-QA y publicacion del nuevo diff estan registradas
+en [review.md](../../openspec/changes/jup-086-tenant-isolation-contract/review.md#gate-humano-de-esta-correccion).
+Preflight: fetch sin novedades y HEAD/remoto `1c866cc` coincidentes; no hay
+cambios de producto ni tests tras QA. La comprobacion final precede al push.
+
+RF-086-004/005 quedan [Open en backlog](../../openspec/findings/backlog.md),
+con [procedencia y limites](../../openspec/changes/jup-086-tenant-isolation-contract/review.md#rf-086-004).
+No se han reproducido de nuevo sus casos heredados. La review humana del
+27/09 informa 59 tests con servicios reales omitidos en CI: el CI verde no
+los cubre. Ese recuento es de la review, no un nuevo inventario local.
+No se altera la configuracion de CI; su resultado remoto para este nuevo
+diff no esta acreditado al preparar el commit. La nueva revision humana
+de PR #47 sigue pendiente.
+
+## Historial: peer de cierre, 27/09/2026
+
 Correccion local del peer de cierre, 27/09/2026: **REVIEW_PASS y QA_PASS**;
 aprobacion post-QA y publicacion **APPROVED** por Paris mediante "apruebo"
 tras presentar QA. Registro 27/09/2026 (Atlantic/Canary). Tres lineas en una
