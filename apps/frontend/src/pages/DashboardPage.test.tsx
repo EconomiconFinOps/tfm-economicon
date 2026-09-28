@@ -30,6 +30,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // sigue exigiendolos -- este import por si solo no rompe la suite (el modulo
 // existe), pero el comportamiento que se verifica abajo si difiere del actual.
 import { DashboardPage } from "./DashboardPage";
+import { billing } from "../../tests/fixtures";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -103,12 +104,7 @@ describe("DashboardPage con tenant activo", () => {
         return Promise.resolve({
           ok: true,
           json: () =>
-            Promise.resolve({
-              monthly_spend: 1200,
-              savings_identified: 300,
-              open_ingestions: 2,
-              currency: "USD"
-            })
+            Promise.resolve(billing)
         });
       }
       if (String(url).includes("/health")) {
@@ -142,7 +138,7 @@ describe("DashboardPage con tenant activo", () => {
     // `OperationalCostDashboard.test.tsx` (grupo 5): calculamos el valor
     // esperado con la misma llamada que hace el componente
     // (`(1200).toLocaleString()`).
-    const monthlySpendEsperado = (1200).toLocaleString();
+    const monthlySpendEsperado = billing.monthly_spend;
 
     await waitFor(() => {
       expect(screen.getByText(new RegExp(monthlySpendEsperado))).toBeInTheDocument();
@@ -152,5 +148,7 @@ describe("DashboardPage con tenant activo", () => {
     // devuelta por `/health`) confirma que el segundo endpoint tambien se
     // consumio y se renderizo, no solo el de facturacion.
     expect(screen.getByText("api")).toBeInTheDocument();
+    expect(screen.getByText(/unavailable|no disponible/i)).toBeVisible();
+    expect(document.body).toHaveTextContent("USD");
   });
 });

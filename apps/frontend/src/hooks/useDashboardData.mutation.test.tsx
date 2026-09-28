@@ -15,6 +15,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { useDashboardData } from "./useDashboardData";
+import { billing } from "../../tests/fixtures";
 
 function wrapper(client: QueryClient) {
   return function Wrapper({ children }: { children: ReactNode }) {
@@ -26,7 +27,7 @@ function jsonResponse(body: unknown) {
   return Promise.resolve({ ok: true, json: () => Promise.resolve(body) } as Response);
 }
 
-const billingBody = { monthly_spend: 10, savings_identified: 1, open_ingestions: 0, currency: "USD" };
+const billingBody = billing;
 const healthBody = { services: {} };
 
 afterEach(() => {

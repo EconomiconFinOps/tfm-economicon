@@ -1,7 +1,7 @@
 import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { billing, tenants } from "./fixtures";
+import { billing, billingWithCost, tenants } from "./fixtures";
 import { deferredResponse, jsonResponse, mockBackend, renderApp, restoreSession } from "./test-support";
 
 // Archivo nuevo (en vez de ampliar session-and-dashboard.test.tsx, ya
@@ -21,7 +21,7 @@ import { deferredResponse, jsonResponse, mockBackend, renderApp, restoreSession 
 describe("dashboard tenant transition", () => {
   it("never shows the previous tenant's billing figure while the new tenant's request is in flight", async () => {
     const user = userEvent.setup();
-    const southBilling = { ...billing, monthly_spend: 54321 };
+    const southBilling = billingWithCost("54321.00");
     const southPending = deferredResponse();
     mockBackend({
       "GET /billing/summary": (request) =>
@@ -35,7 +35,7 @@ describe("dashboard tenant transition", () => {
 
     // Punto de partida: el dashboard muestra el gasto mensual del primer
     // tenant con normalidad.
-    expect(await screen.findByText(`$${billing.monthly_spend.toLocaleString()}`)).toBeVisible();
+    expect(await screen.findByText(new RegExp(billing.monthly_spend))).toBeVisible();
 
     // Se cambia al segundo tenant, cuya respuesta de /billing/summary queda
     // deliberadamente sin resolver (southPending.promise nunca se entrega
@@ -48,13 +48,13 @@ describe("dashboard tenant transition", () => {
     // mostrar el estado de carga, tal como hace useDashboardData/DashboardPage
     // cuando payload es null (queryKey ["billing-summary", tenantId] cambio
     // de valor, isLoading vuelve a true).
-    expect(screen.queryByText(`$${billing.monthly_spend.toLocaleString()}`)).not.toBeInTheDocument();
+    expect(screen.queryByText(new RegExp(billing.monthly_spend))).not.toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Connecting to the FinOps control plane..." })).toBeVisible();
 
     // Al resolver la respuesta pendiente, el dashboard adopta el dato
     // correcto del tenant nuevo (y solo ese).
     await act(async () => southPending.resolve(southBilling));
-    expect(await screen.findByText(`$${southBilling.monthly_spend.toLocaleString()}`)).toBeVisible();
-    expect(screen.queryByText(`$${billing.monthly_spend.toLocaleString()}`)).not.toBeInTheDocument();
+    expect(await screen.findByText(new RegExp(southBilling.monthly_spend))).toBeVisible();
+    expect(screen.queryByText(new RegExp(billing.monthly_spend))).not.toBeInTheDocument();
   });
 });
