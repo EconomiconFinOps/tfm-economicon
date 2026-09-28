@@ -11,8 +11,8 @@ canonicas. No modifica codigo de producto ni supone un merge de este archivo.
 | JUP | Integracion comprobada | Evidencia y limite |
 | --- | --- | --- |
 | [JUP-053](https://trello.com/c/2UCJTDhi) | [PR #33](https://github.com/EconomiconFinOps/tfm-economicon/pull/33), 10/09, `1ff8e071f83a58f630c496740d712e8c0e2cc443` | Victorh1397 aprobo el head integrado. CI final: siete checks correctos. [Evidencia](JUP-053-validation.md). |
-| [JUP-081](https://trello.com/c/g91V6TXp) | [PR #15](https://github.com/EconomiconFinOps/tfm-economicon/pull/15), 02/09, `979acb19a9103d0865b5cb3f97b47782b9208f72` | Victorh1397 aprobo el head integrado. Seis checks correctos. [Evidencia](JUP-081-validation.md); tarea 3.4 pendiente de participacion atribuible. |
-| [JUP-084](https://trello.com/c/m1i7iXBm) | [PR #17](https://github.com/EconomiconFinOps/tfm-economicon/pull/17), 02/09, `2f16be351f5a338b6d7e6c84f2bc61e9448d0ac7` | Victorh1397 aprobo el head integrado. Seis checks correctos. [Evidencia](JUP-084-validation.md); tarea 3.5 pendiente de participacion atribuible. |
+| [JUP-081](https://trello.com/c/g91V6TXp) | [PR #15](https://github.com/EconomiconFinOps/tfm-economicon/pull/15), 02/09, `979acb19a9103d0865b5cb3f97b47782b9208f72` | Victorh1397 aprobo el head integrado. Seis checks correctos. [Evidencia](JUP-081-validation.md); tarea 3.4 resuelta con validacion actual y excepcion historica aceptada el 28/09. |
+| [JUP-084](https://trello.com/c/m1i7iXBm) | [PR #17](https://github.com/EconomiconFinOps/tfm-economicon/pull/17), 02/09, `2f16be351f5a338b6d7e6c84f2bc61e9448d0ac7` | Victorh1397 aprobo el head integrado. Seis checks correctos. [Evidencia](JUP-084-validation.md); tarea 3.5 resuelta con validacion actual y excepcion historica aceptada el 28/09. |
 
 Los tres commits son ancestros de la base inspeccionada. CI historica final:
 [JUP-053](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/34501445459),
@@ -20,19 +20,37 @@ Los tres commits son ancestros de la base inspeccionada. CI historica final:
 [JUP-084](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/33696643437).
 Los intentos fallidos/cancelados anteriores de JUP-053 siguen siendo historicos.
 
-## Residuales que debe resolver la revision
+## Residuales detectados el 25/09 y decision del 28/09
 
 Las descripciones de Trello del 08/09 ya documentaban la excepcion de
 participacion y archivo para JUP-081 y JUP-084. No se encontro nueva evidencia
-atribuible que permita marcar sus tareas 3.4 y 3.5. Se conservan sin marcar,
-incluidas en el archivo propuesto. La aprobacion de Victor se registra como
+atribuible que permitiera acreditar sus tareas 3.4 y 3.5 tal como estaban
+redactadas. En el borrador inicial se conservaron sin marcar. La aprobacion de Victor se registra como
 suya; no acredita automaticamente pairing ni validacion de otras personas.
 El mensaje de Lucia confirma el estado operativo, pero no certifica esos roles.
 
-El PR se presenta como borrador: antes de integrar el archivo de JUP-081 y
-JUP-084, el equipo debe aportar la evidencia pendiente o aceptar explicitamente
-el archivo tecnico con ese residual. Esta auditoria no declara esa excepcion
-aceptada ni inventa participacion.
+El 28/09/2026, el usuario que solicita este cierre confirmo expresamente
+con "Si" la propuesta de documentar su validacion actual y aceptar la
+excepcion de pairing historico para ambas JUP. La confirmacion se recibio
+en la conversacion de trabajo, despues de exponer las pruebas disponibles y
+la imposibilidad de acreditar retroactivamente la participacion de terceros.
+
+Se registra la validacion del usuario sobre la evidencia presentada:
+
+- JUP-081: sync real en DockerServer, 12 pruebas del puente y CI correcta.
+- JUP-084: revision documental del contrato, limites y coherencia, con
+  validacion OpenSpec y CI correcta; no acredita implementacion de herramientas.
+
+Las tareas 3.4 y 3.5 quedan resueltas con este criterio de cierre explicito:
+revision original atribuida a Victor, validacion actual del usuario y excepcion
+aceptada por este para el pairing historico no acreditado. Se conserva la
+redaccion original en sus notas de cierre. No se afirma que otros miembros
+hayan realizado los roles previstos, que el usuario ejecutara personalmente
+los comandos, ni que exista aprobacion unanime del equipo. No se asigna una
+identidad nominal al usuario que esta confirmacion no proporciona.
+
+El residual documental deja de bloquear la salida de borrador. La revision
+formal y el merge del PR #46 siguen sujetos al flujo habitual de GitHub.
 
 JUP-053 conserva el alcance acotado y las excepciones de su QA historica.
 RF-053-004 fue corregido por JUP-020 mediante PR #34; el cierre y la evidencia
@@ -52,7 +70,8 @@ Se conservan las condiciones de JUP-078 y los limites del dataset.
 
 Se utilizo `openspec archive <change> --yes`, manteniendo validacion y
 promocion de specs. La herramienta advirtio una tarea incompleta en JUP-081 y
-otra en JUP-084; se conservan expresamente para revision. Tambien aviso, sin
+otra en JUP-084; el aviso se conserva como historico. El 28/09 se resuelven
+con la validacion actual y la excepcion expresamente aceptada descritas arriba. Tambien aviso, sin
 bloquear, del numero de deltas de JUP-084. Se corrigen enlaces relativos de
 JUP-053 y el Purpose generado automaticamente, sin alterar sus requisitos.
 
@@ -81,3 +100,14 @@ con la evidencia enlazada al aprobar el cierre documental.
 
 No se repitieron las suites funcionales completas ni pruebas de proveedores:
 esta propuesta cambia exclusivamente documentacion y especificaciones.
+
+## Actualizacion de la propuesta — 2026-09-28
+
+Se incorpora `origin/develop` en `65fcd6b`, incluido el archivo de JUP-085
+mediante PR #45. La confirmacion del usuario resuelve el residual de cierre;
+no cambia requisitos funcionales, codigo de producto ni resultados historicos.
+
+Validacion local repetida el 28/09: OpenSpec estricto 34/34, trazabilidad de
+siete cambios activos correcta, higiene 640 archivos y diff sin errores.
+Las pruebas del puente y el sync citados son los del 25/09; no se atribuye
+una nueva ejecucion de esas pruebas a la confirmacion del usuario.

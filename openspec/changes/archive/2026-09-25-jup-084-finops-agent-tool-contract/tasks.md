@@ -18,13 +18,21 @@
 - [x] 3.2 JUP-084 ejecutar OpenSpec estricto, trazabilidad JUP e higiene
 - [x] 3.3 JUP-084 publicar rama y pull request hacia develop
 - [x] 3.4 JUP-084 registrar evidencia y enlaces en Trello
-- [ ] 3.5 JUP-084 obtener pairing, revision y validacion de los otros miembros
+- [x] 3.5 JUP-084 registrar revision original, validacion actual y excepcion aceptada de pairing historico (2026-09-28; ver nota).
 
 ## Propuesta de archivo — 2026-09-25
 
 PR original integrada y tarjeta en Hecho verificadas. Consultar la
 [auditoria de cierres](../../../../docs/evidence/OpenSpec-closures-2026-09-25.md).
-La tarea de participacion permanece sin marcar: falta evidencia atribuible.
-El PR borrador propone el archivo tecnico con ese residual explicito;
-antes del merge el equipo debe aportar la evidencia o aceptar la excepcion.
-El archivo propuesto no acredita roles ni exime silenciosamente esa tarea.
+En el borrador del 25/09, la tarea 3.5 permanecia pendiente por falta de
+evidencia atribuible. Redaccion original: "obtener pairing, revision y validacion de los otros miembros".
+
+## Resolucion de cierre — 2026-09-28
+
+El usuario confirmo su validacion actual sobre la evidencia presentada y
+acepto expresamente la excepcion de pairing historico para ambas JUP.
+La tarea 3.5 se resuelve con ese criterio: revision original de Victor,
+validacion actual del usuario y excepcion aceptada. No acredita retroactivamente
+participacion de otros miembros ni ejecucion personal de las pruebas por el
+usuario. Fuente y limites en la auditoria enlazada. Revision formal y merge
+del PR de archivo siguen pendientes.

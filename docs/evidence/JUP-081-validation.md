@@ -1,5 +1,13 @@
 # Evidencia de validacion JUP-081
 
+## Validacion actual y excepcion aceptada — 2026-09-28
+
+El usuario confirma su validacion sobre la evidencia presentada y acepta
+la excepcion de pairing historico no acreditado. Se resuelve el residual de
+cierre documental, sin atribuir participacion a otros miembros ni convertir
+las asignaciones originales en trabajo realizado. Detalle y limites en la
+[auditoria de cierres](OpenSpec-closures-2026-09-25.md).
+
 ## Revision de cierre — 2026-09-25
 
 PR original aprobada e integrada y tarjeta en `70 — Hecho`, contrastadas

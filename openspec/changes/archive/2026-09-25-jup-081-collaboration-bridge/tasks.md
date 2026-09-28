@@ -19,13 +19,21 @@
 - [x] 3.1 JUP-081 run bridge, governance and repository validations
 - [x] 3.2 JUP-081 deploy the branch code and complete a full real sync
 - [x] 3.3 JUP-081 publish a pull request toward develop and pass remote CI
-- [ ] 3.4 JUP-081 obtain pairing, review and functional validation evidence
+- [x] 3.4 JUP-081 registrar revision original, validacion actual y excepcion aceptada de pairing historico (2026-09-28; ver nota).
 
 ## Propuesta de archivo — 2026-09-25
 
 PR original integrada y tarjeta en Hecho verificadas. Consultar la
 [auditoria de cierres](../../../../docs/evidence/OpenSpec-closures-2026-09-25.md).
-La tarea de participacion permanece sin marcar: falta evidencia atribuible.
-El PR borrador propone el archivo tecnico con ese residual explicito;
-antes del merge el equipo debe aportar la evidencia o aceptar la excepcion.
-El archivo propuesto no acredita roles ni exime silenciosamente esa tarea.
+En el borrador del 25/09, la tarea 3.4 permanecia pendiente por falta de
+evidencia atribuible. Redaccion original: "obtain pairing, review and functional validation evidence".
+
+## Resolucion de cierre — 2026-09-28
+
+El usuario confirmo su validacion actual sobre la evidencia presentada y
+acepto expresamente la excepcion de pairing historico para ambas JUP.
+La tarea 3.4 se resuelve con ese criterio: revision original de Victor,
+validacion actual del usuario y excepcion aceptada. No acredita retroactivamente
+participacion de otros miembros ni ejecucion personal de las pruebas por el
+usuario. Fuente y limites en la auditoria enlazada. Revision formal y merge
+del PR de archivo siguen pendientes.
