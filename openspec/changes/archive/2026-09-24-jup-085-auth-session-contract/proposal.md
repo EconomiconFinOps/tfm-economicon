@@ -1,6 +1,20 @@
 JUP: JUP-085
 Trello: https://trello.com/c/Z8M443Hu
 
+## Correccion documental de CI de PR #45, 27/09/2026
+
+Pre-code **APPROVED**: Paris responde "autorizado" a conservar la nota de
+`docs/hu-release-notes.md` en la evidencia existente de JUP-085 y retirar
+ese archivo, rechazado expresamente por el control de higiene. Registro
+del orquestador 27/09/2026 (Atlantic/Canary), no hora del mensaje humano.
+Spec-planner confirma alcance exclusivamente documental sobre `fe79cd9`;
+sin cambios de requisitos, ADR, producto, pruebas, checker ni politica CI.
+OpenSpec 34/34 PASS y trazabilidad de 10 cambios activos PASS; el comando
+por nombre activo no aplica a este cambio ya archivado. Se conservan los
+registros historicos, responsables y tasks.md. No se vuelve a archivar.
+Validacion funcional y mutacion nuevas N/A para este ajuste documental;
+revision, QA y aprobacion final separadas. No merge ni cambios en Trello.
+
 ## Why
 
 El contrato preparado en JUP-088/PR #19 ya esta integrado. JUP-085 completa
