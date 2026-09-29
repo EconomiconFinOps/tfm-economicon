@@ -19,5 +19,4 @@ def health(database=Depends(get_database), queue=Depends(get_queue), vector_stor
             "rabbitmq": rabbitmq_status,
             "vector_store": vector_store_status,
         },
-        "jobs": database.fetch_job_counts(),
     }

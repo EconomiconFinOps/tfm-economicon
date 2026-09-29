@@ -34,12 +34,44 @@ class AzureCostRepository(Protocol):
         retry_count: int,
     ) -> None: ...
 
-    def fail_run(self, run_id: str, error_code: str) -> None: ...
+    def fail_run(self, run_id: str, error_code: str, *, tenant_id: str, subscription_id: str) -> None: ...
 
 
 class SqlAzureCostRepository:
     def __init__(self, database: Database):
         self.database = database
+
+    @staticmethod
+    def _lock_run(connection, scope: dict) -> None:
+        # Lock and authorize the parent before replacing any of its children.
+        updated = connection.execute(
+            text("""
+                UPDATE azure_cost_ingestion_runs SET id = id
+                WHERE id = :run_id AND tenant_id = :tenant_id AND subscription_id = :subscription_id
+            """),
+            scope,
+        )
+        if updated.rowcount != 1:
+            raise PermissionError("Cost run not found.")
+
+    @staticmethod
+    def _delete_records(connection, scope: dict) -> None:
+        count = connection.execute(
+            text("""
+                SELECT count(*) FROM azure_cost_records
+                WHERE ingestion_id = :run_id AND tenant_id = :tenant_id AND subscription_id = :subscription_id
+            """),
+            scope,
+        ).scalar_one()
+        deleted = connection.execute(
+            text("""
+                DELETE FROM azure_cost_records
+                WHERE ingestion_id = :run_id AND tenant_id = :tenant_id AND subscription_id = :subscription_id
+            """),
+            scope,
+        )
+        if deleted.rowcount != count:
+            raise RuntimeError("Cost records update rejected.")
 
     def start_run(
         self,
@@ -50,7 +82,7 @@ class SqlAzureCostRepository:
     ) -> None:
         now = datetime.now(timezone.utc)
         with self.database.engine.begin() as connection:
-            connection.execute(
+            started = connection.execute(
                 text(
                     """
                     INSERT INTO azure_cost_ingestion_runs (
@@ -69,6 +101,8 @@ class SqlAzureCostRepository:
                         error_code = NULL,
                         started_at = excluded.started_at,
                         completed_at = NULL
+                    WHERE azure_cost_ingestion_runs.tenant_id = excluded.tenant_id
+                      AND azure_cost_ingestion_runs.subscription_id = excluded.subscription_id
                     """
                 ),
                 {
@@ -79,6 +113,8 @@ class SqlAzureCostRepository:
                     "started_at": now,
                 },
             )
+            if started.rowcount != 1:
+                raise PermissionError("Cost run not found.")
 
     def complete_run(
         self,
@@ -91,22 +127,10 @@ class SqlAzureCostRepository:
         retry_count: int,
     ) -> None:
         now = datetime.now(timezone.utc)
+        scope = {"run_id": run_id, "tenant_id": tenant_id, "subscription_id": subscription_id}
         with self.database.engine.begin() as connection:
-            connection.execute(
-                text(
-                    """
-                    DELETE FROM azure_cost_records
-                    WHERE ingestion_id = :run_id
-                      AND tenant_id = :tenant_id
-                      AND subscription_id = :subscription_id
-                    """
-                ),
-                {
-                    "run_id": run_id,
-                    "tenant_id": tenant_id,
-                    "subscription_id": subscription_id,
-                },
-            )
+            self._lock_run(connection, scope)
+            self._delete_records(connection, scope)
             for index, record in enumerate(records):
                 record_id = str(
                     uuid.uuid5(
@@ -114,7 +138,7 @@ class SqlAzureCostRepository:
                         f"{run_id}:{index}:{record.source_row_hash}",
                     )
                 )
-                connection.execute(
+                inserted = connection.execute(
                     text(
                         """
                         INSERT INTO azure_cost_records (
@@ -166,7 +190,9 @@ class SqlAzureCostRepository:
                         "created_at": now,
                     },
                 )
-            connection.execute(
+                if inserted.rowcount != 1:
+                    raise RuntimeError("Cost record insert rejected.")
+            updated = connection.execute(
                 text(
                     """
                     UPDATE azure_cost_ingestion_runs
@@ -191,14 +217,15 @@ class SqlAzureCostRepository:
                     "completed_at": now,
                 },
             )
+            if updated.rowcount != 1:
+                raise PermissionError("Cost run not found.")
 
-    def fail_run(self, run_id: str, error_code: str) -> None:
+    def fail_run(self, run_id: str, error_code: str, *, tenant_id: str, subscription_id: str) -> None:
+        scope = {"run_id": run_id, "tenant_id": tenant_id, "subscription_id": subscription_id}
         with self.database.engine.begin() as connection:
-            connection.execute(
-                text("DELETE FROM azure_cost_records WHERE ingestion_id = :run_id"),
-                {"run_id": run_id},
-            )
-            connection.execute(
+            self._lock_run(connection, scope)
+            self._delete_records(connection, scope)
+            updated = connection.execute(
                 text(
                     """
                     UPDATE azure_cost_ingestion_runs
@@ -208,17 +235,19 @@ class SqlAzureCostRepository:
                         row_count = 0,
                         error_code = :error_code,
                         completed_at = :completed_at
-                    WHERE id = :run_id
+                    WHERE id = :run_id AND tenant_id = :tenant_id AND subscription_id = :subscription_id
                     """
                 ),
                 {
-                    "run_id": run_id,
+                    **scope,
                     "error_code": error_code,
                     "completed_at": datetime.now(timezone.utc),
                 },
             )
+            if updated.rowcount != 1:
+                raise PermissionError("Cost run not found.")
 
-    def fetch_run(self, run_id: str) -> dict | None:
+    def fetch_run(self, run_id: str, *, tenant_id: str, subscription_id: str) -> dict | None:
         with self.database.engine.connect() as connection:
             row = connection.execute(
                 text(
@@ -226,14 +255,14 @@ class SqlAzureCostRepository:
                     SELECT id, tenant_id, subscription_id, status,
                            page_count, retry_count, row_count, error_code
                     FROM azure_cost_ingestion_runs
-                    WHERE id = :run_id
+                    WHERE id = :run_id AND tenant_id = :tenant_id AND subscription_id = :subscription_id
                     """
                 ),
-                {"run_id": run_id},
+                {"run_id": run_id, "tenant_id": tenant_id, "subscription_id": subscription_id},
             ).mappings().first()
         return dict(row) if row else None
 
-    def fetch_records(self, run_id: str) -> list[dict]:
+    def fetch_records(self, run_id: str, *, tenant_id: str, subscription_id: str) -> list[dict]:
         with self.database.engine.connect() as connection:
             rows = connection.execute(
                 text(
@@ -247,14 +276,21 @@ class SqlAzureCostRepository:
                            source_row_hash
                     FROM azure_cost_records
                     WHERE ingestion_id = :run_id
+                      AND tenant_id = :tenant_id AND subscription_id = :subscription_id
+                      AND EXISTS (
+                          SELECT 1 FROM azure_cost_ingestion_runs r
+                          WHERE r.id = :run_id AND r.tenant_id = :tenant_id AND r.subscription_id = :subscription_id
+                      )
                     ORDER BY usage_date, id
                     """
                 ),
-                {"run_id": run_id},
+                {"run_id": run_id, "tenant_id": tenant_id, "subscription_id": subscription_id},
             ).mappings()
             records = [dict(row) for row in rows]
             for record in records:
                 conflicts = record["resource_group_conflicts"]
                 if conflicts is not None:
+                    if isinstance(conflicts, str):
+                        conflicts = json.loads(conflicts)
                     record["resource_group_conflicts"] = tuple(conflicts)
             return records

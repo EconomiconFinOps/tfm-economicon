@@ -1,17 +1,21 @@
 from datetime import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, StringConstraints
+from pydantic import BaseModel, ConfigDict, StringConstraints
 
 
 NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
 class ConversationCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     title: NonEmptyText
 
 
 class MessageCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     content: NonEmptyText
 
 
