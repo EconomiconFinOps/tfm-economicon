@@ -193,3 +193,65 @@ edicion", la ruta de la configuración de Stryker) por "protegido contra edició
 **Cierre del grupo 2:** arrastre de JUP-098 resuelto: A (`RF-098-004`), B (9 referencias), y de C los
 enlaces rotos, la fila duplicada y los comentarios de test; `RF-098-003` fuera de alcance y el resto
 de la deuda registrada como `RF-099-001`. Todo doc-only o solo comentarios: sin Red/Green ni mutación.
+
+## Grupo 3. Tests guardianes en Red
+
+**3.1 — Red: `apps/frontend/src/test/color-tokens.guard.test.ts` (nuevo, 61 casos).** Escrito por el
+agente `tester`; verificado por el orquestador ejecutándolo. Escanea los `*.tsx` de `src/` y los
+`*.ts` de `src/data/`, sin tests ni `src/test/`, en busca de hexadecimales y de utilidades de la
+paleta de Tailwind, con lista de excepciones `{ file, value, reason }`: `ExportButton.tsx`
+(`#1e40af`, `#ddd`: el `<style>` del documento HTML autónomo que no carga `theme.css`) y
+`ui/dialog.tsx` (`bg-black/50`, primitivo copiado tal cual). Casos: 1 por archivo escaneado, 1 por
+excepción (falla si queda obsoleta), 29 del detector en memoria y 1 de descubrimiento de archivos
+(evita el falso verde de un recorrido roto).
+
+- **Red:** `16 failed | 45 passed`. Fallan exactamente los archivos con colores literales: `Layout`,
+  `SessionGate`, `ExportButton`, `MetricCard`, `SectionCard`, `StatusPill`, `AnomaliesPanel`,
+  `ConversationsPage`, `DashboardPage`, `ExecutiveCostDashboard`, `ExecutiveCutDashboard`,
+  `IngestPage`, `LoginPage`, `OperationalCostDashboard`, `RecommendationsPanel` y
+  `data/demo/executiveCostDashboard.ts`. `dialog.tsx` pasa por su excepción. `ExportButton` falla por
+  sus clases, no por las dos excepciones. El mensaje de fallo da archivo, línea y valor.
+- **Detalle de diseño del test:** el detector exige tono de escala salvo para `white`/`black`
+  (`text-neutral` es un token semántico de la decisión 1 y no debe marcarse; `text-neutral-500` sí).
+  Límite conocido: no detecta `rgb(`/`hsl(` ni palabras de color (`color: white`) dentro del `<style>`
+  de `ExportButton`; no hay `rgb`/`hsl`/`oklch` literales en los `.ts/.tsx` no test.
+
+**3.2 — Red: `apps/frontend/src/test/theme-palette.test.ts` (nuevo, 94 casos).** Contrato del tema:
+(a) sin bloque `.dark` y `@custom-variant dark` exactamente `(&)`; (b) cada token declarado una sola
+vez; (c) cada `var(--x)` de `@theme inline` apunta a un token declarado; (d) un caso por token
+`--color-*` que exige al menos un consumidor en `src/`; (e) `<html>` sin la clase `dark`. Un
+consumidor es una utilidad con el nombre del token (variantes y `/opacidad` opcionales) o
+`var(--nombre)`/`var(--color-nombre)`, con frontera a ambos lados (`bg-primary-foreground` no
+cuenta para `primary`; `border`/`border-b` no cuentan para `border`; `var(--chart-10)` no cuenta
+para `chart-1`). De `theme.css` solo cuenta lo que queda fuera de `:root` y `@theme inline`.
+
+- **Red:** `25 failed | 69 passed`: (a) 3 de 3 (bloque `.dark`, `@custom-variant` con `.dark`, y no
+  es `&`), (b) 1 (34 nombres repetidos entre `:root` y `.dark`), (e) 1 (`<html class="dark">`), y
+  (d) 20 tokens sin consumidor hoy: `card`, `card-foreground`, `muted`, `secondary`,
+  `secondary-foreground`, `destructive-foreground`, `switch-background`, `chart-1..5` y los 8
+  `sidebar-*`. Pasa (c) (41 alias correctos) y los casos autocontenidos.
+- **Qué cabe esperar del Green:** `card`, `muted` y `chart-*` pasarán al migrar las pantallas
+  (grupos 5-7), no al retirar el token; `secondary`, `secondary-foreground`,
+  `destructive-foreground` y los `sidebar-*` no tendrán consumidor y se retirarán en 8.3;
+  `switch-background` también.
+- **Test retirado con autorización expresa de Victor (2026-09-29):**
+  `apps/frontend/src/test/index-html-dark-scope.test.ts` (JUP-095, 1 caso) exigía `class="dark"` en
+  `<html>` y contradice al caso (e). Se borra en este mismo commit Red para que el Green del grupo 4
+  no toque ningún test. Su cobertura la sustituye (e), que además comprueba el atributo como
+  conjunto de palabras. No hubo que desactivar ningún mecanismo de protección.
+
+**Corrección de diseño descubierta por el `tester` (mi error, decisión 3 de `design.md`):** la
+primera redacción retiraba `input-background`, pero `src/components/ui/select.tsx` lo consume
+(`bg-input-background`) y la decisión 2 prohíbe editar los primitivos. Se **conserva** con su valor
+actual `#f3f3f5`, sin efecto visible (`dark:bg-input/30`, siempre activo con `@custom-variant dark
+(&)`, prevalece; ninguna pantalla usa `Select`). `design.md` corregido con nota. Lo detectó el propio
+caso (d), que sin esa comprobación habría dejado un `bg-input-background` sin efecto.
+
+**Conteos del Red (verificados por el orquestador):** suite completa `Test Files 2 failed | 45
+passed (47)`, `Tests 41 failed | 374 passed (415)`. Los 374 = 260 previos (261 menos el caso del test
+retirado) + 45 + 69; **los 41 fallos son todos casos Red de los dos archivos nuevos**. `typecheck`
+(3 configs) y `lint` sin errores. Sin `.skip`, `.only` ni `xit`.
+
+**Checkpoint:** commit **Red** (2 archivos nuevos + 1 test borrado + `design.md`, `review.md` y
+`tasks.md`). Sin mutación en este grupo (solo tests; la de los grupos de migración está exenta por
+la decisión 5 de `design.md`). El siguiente grupo es el Green.

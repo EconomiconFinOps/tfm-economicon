@@ -47,13 +47,13 @@
 
 ## 3. Tests guardianes en Red
 
-- [ ] 3.1 **Red:** `src/test/color-tokens.guard.test.ts` (decisión 5): un caso por archivo de
+- [x] 3.1 **Red:** `src/test/color-tokens.guard.test.ts` (decisión 5): un caso por archivo de
       `src/**/*.tsx` y `src/data/**/*.ts` sin tests; falla con archivo y valor ante un hexadecimal de
       color o una utilidad de la paleta de Tailwind fuera de la lista de excepciones (el `<style>`
       del documento de exportación de `ExportButton` y el velo `bg-black/50` de
       `src/components/ui/dialog.tsx`, decisión 5). Demostrar Red en cada archivo con colores
       literales y verde en los que no tienen ninguno.
-- [ ] 3.2 **Red:** `src/test/theme-palette.test.ts` sustituye a `src/test/index-html-dark-scope.test.ts`
+- [x] 3.2 **Red:** `src/test/theme-palette.test.ts` sustituye a `src/test/index-html-dark-scope.test.ts`
       (con autorización de Victor): sin bloque `.dark`, cada token de color definido una vez, cada
       `var(--x)` de `@theme inline` apunta a un token definido, cada `--color-*` tiene consumidor en
       `src/` (caso separado, pasará a verde en el grupo 8) y `<html>` sin clase de tema. Demostrar

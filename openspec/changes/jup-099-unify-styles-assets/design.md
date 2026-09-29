@@ -117,11 +117,17 @@ el proyecto (ADR-0004: se copian, no se reescriben) y un primitivo futuro copiad
 ### 3. Tokens sin consumidor se retiran
 
 Tras migrar, se retiran los tokens sin ninguna utilidad que los consuma en `src/`: los 8
-`sidebar-*` (no hay barra lateral de shadcn), `input-background` y `switch-background` (no hay
-`switch`), `secondary`/`secondary-foreground` y `accent-foreground` si ningún primitivo ni pantalla
-los usa, y los `chart-*` que resulten sin serie. Los tokens no cromáticos (`--radius`, `--font-size`,
-pesos de fuente) no entran en este criterio y se conservan. El test de la decisión 5 lo comprueba de
-forma automática.
+`sidebar-*` (no hay barra lateral de shadcn), `switch-background` (no hay `switch`),
+`secondary`/`secondary-foreground`, `destructive-foreground` y `accent-foreground` si ningún
+primitivo ni pantalla los usa, y los `chart-*` que resulten sin serie. Los tokens no cromáticos
+(`--radius`, `--font-size`, pesos de fuente) no entran en este criterio y se conservan. El test de la
+decisión 5 lo comprueba de forma automática.
+
+**Corrección durante el Red (grupo 3):** la primera redacción de esta decisión retiraba también
+`input-background`. Es un error: `src/components/ui/select.tsx` lo consume (`bg-input-background`),
+y la decisión 2 prohíbe editar los primitivos copiados. Se **conserva** con su valor actual
+(`#f3f3f5`). No tiene efecto visible: con `@custom-variant dark (&)` la variante `dark:bg-input/30`
+del mismo primitivo siempre aplica y prevalece, y el `Select` no lo usa ninguna pantalla todavía.
 
 ### 4. Cómo se escribe cada forma de uso
 
