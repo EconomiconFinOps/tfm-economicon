@@ -18,8 +18,8 @@ tarjeta; deben seguir en 235 PASS al cerrar cada grupo posterior.
 
 | Criterio Trello | Estado en `develop` | Evidencia |
 | --- | --- | --- |
-| 1. Un 401 limpia la sesión persistida y devuelve al operador al acceso, sin token muerto en `localStorage` | **Cumplido** | `fetchJson` detecta `401` numérico fuera de `/me` e invalida ([api.ts:95-98](../../../apps/frontend/src/services/api.ts#L95-L98)); el suscriptor de `SessionGate` limpia `SESSION_KEY`/`TENANT_KEY` y ambas cachés ([SessionGate.tsx:82-93](../../../apps/frontend/src/layouts/SessionGate.tsx#L82-L93)) |
-| 2. El operador ve un mensaje que identifica la expiración de sesión como tal | **Abierto — trabajo de esta tarjeta** | Hoy la redirección a `/login` es silenciosa: `<Navigate to="/login" replace />` sin ningún estado ([SessionGate.tsx:207-209](../../../apps/frontend/src/layouts/SessionGate.tsx#L207-L209)) |
+| 1. Un 401 limpia la sesión persistida y devuelve al operador al acceso, sin token muerto en `localStorage` | **Cumplido** | `fetchJson` detecta `401` numérico fuera de `/me` e invalida ([api.ts:95-98](../../../../apps/frontend/src/services/api.ts#L95-L98)); el suscriptor de `SessionGate` limpia `SESSION_KEY`/`TENANT_KEY` y ambas cachés ([SessionGate.tsx:82-93](../../../../apps/frontend/src/layouts/SessionGate.tsx#L82-L93)) |
+| 2. El operador ve un mensaje que identifica la expiración de sesión como tal | **Abierto — trabajo de esta tarjeta** | Hoy la redirección a `/login` es silenciosa: `<Navigate to="/login" replace />` sin ningún estado ([SessionGate.tsx:207-209](../../../../apps/frontend/src/layouts/SessionGate.tsx#L207-L209)) |
 | 3. Un fallo que no sea 401 (500, red, 503) conserva el comportamiento actual | **Cumplido** | Cubierto por `tests/auth-session.test.tsx` ("non-profile query and mutation error retain authentication", "tenant bootstrap error retains the session") |
 | 4. La distinción vive en la capa de acceso centralizada, no repetida en cada pantalla | **Cumplido** | Único punto de detección: `fetchJson` en `services/api.ts`; ninguna pantalla implementa su propia lógica de 401 |
 | 5. Pruebas de expiración en vuelo sobre `/overview-legacy` y sobre una pantalla con mutación pendiente, ambas Red antes de Green | **Cumplido** (histórico de JUP-085; no aplica "Red antes de Green" retroactivamente) | `tests/auth-session.test.tsx`: `"current query %s invalidates..."` (incluye `/billing/summary` → `/overview-legacy`) y `"current %s mutation 401 clears session..."` (ingesta y conversación) |
@@ -297,3 +297,51 @@ de JUP-102; ajeno a este cambio, documentado desde el grupo 2.
   suite bajo paralelismo por defecto documentada como ambiental (contención de recursos de esta
   máquina), no de producto — reproducida y descartada como regresión en cada caso. El PR lo abre
   Victor directamente (no este agente).
+
+## Correcciones tras la revisión del PR #50 (2026-09-28)
+
+La revisión de `@lmatsan` (`CHANGES_REQUESTED`) encontró tres defectos. Los tres se verificaron
+de forma independiente antes de corregirlos. Son cambios posteriores a la aprobación post-review
+de arriba; el change no se vuelve a archivar.
+
+**1. Afirmación incorrecta: "100% de mutantes no equivalentes muertos en el código tocado".** Era
+cierto solo para los operadores que genera Stryker (sustituir por `true`/`false`/negación). La
+revisora cambió a mano `mutation.isIdle` por `!mutation.isError` en `LoginPage.tsx`: el aviso quedaba
+visible durante "Signing in..." y los 19 tests de JUP-098 seguían en verde (reproducido). La spec
+exige que el aviso desaparezca en cuanto empieza el intento; el test 4.3 solo lo comprobaba antes del
+intento y después del fallo. Corregido con
+`apps/frontend/tests/login-session-expired-notice.pending-attempt.test.tsx`: retiene la respuesta de
+`POST /auth/login` con una promesa pendiente y comprueba que el aviso no está mientras el botón dice
+"Signing in...". Pasa 5/5 seguidas y falla con el mutante de la revisora. El mutante alternativo
+`!mutation.isPending` lo mata el test 4.3: entre ambos, `isIdle` es la única condición que pasa.
+
+**2. Diagnóstico incorrecto: fallos intermitentes atribuidos solo a saturación de la máquina.** El
+test 3.1 (`tests/session-expiry-notice.test.tsx`), escrito en el grupo 3, leía
+`router.state.location.state` en `/login`; desde el grupo 4 `LoginPage` borra esa marca a propósito
+al montarse, así que el resultado dependía de quién llegara antes. La carga de la máquina solo
+destapaba la carrera. Reescrito para comprobar el aviso visible (`getByRole("status")`), que se fija
+en el primer render y no desaparece solo: 5/5 seguidas, y sigue fallando si el `401` de `/me` deja de
+etiquetarse como `"expired"`. Para editar el archivo commiteado se desactivó el hook
+`lock-committed-tests` con autorización del usuario, y se restauró idéntico (verificado que vuelve a
+bloquear). Los otros fallos intermitentes observados (`tenant-switching`, `ingestion`,
+`conversations`, y esperas `findByRole` de 1 s por defecto en tests de JUP-098) son tiempos de espera
+bajo carga, no carreras de lógica; se mantiene esa nota de entorno.
+
+**3. Enlaces rotos por el archivado.** El archivado bajó el change un nivel de carpeta y rompió 9
+enlaces relativos: los 4 que señaló la revisora (spike, evidencia ×2, backlog) y 5 dentro de esta
+misma carpeta (`design.md`, `proposal.md`, `review.md` ×3). Corregidos y verificados con un escaneo
+de enlaces. Quedan 3 enlaces rotos preexistentes de otras tarjetas (JUP-094 y JUP-097 en el spike,
+JUP-085 en el backlog), fuera del alcance de esta tarjeta.
+
+**Hallazgos nuevos registrados** (observaciones de la revisora, preexistentes a JUP-098):
+`RF-098-002` (el aviso tarda ~7 s cuando el único `401` es el de `/me`, por los 3 reintentos por
+defecto de TanStack Query) y `RF-098-003` (el error de credenciales muestra el JSON crudo del
+backend).
+
+**Sugerencias de la revisora no aplicadas en esta ronda:** anuncio del `role="status"` por lectores de
+pantalla (requiere prueba con lector real), orden de llegada entre un `503` de `/me` y un `401` de otra
+petición (la spec no fija qué motivo gana) y pérdida de query string/hash al limpiar el historial (hoy
+inalcanzable). Quedan como posibles mejoras.
+
+**Validación tras las correcciones:** suite completa secuencial (`maxThreads=1`) **261/261**, lint y
+typecheck sin errores.

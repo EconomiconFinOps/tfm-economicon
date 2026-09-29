@@ -1,6 +1,6 @@
 # Design — JUP-098 reconcile-auth-session
 
-JUP: JUP-098 · ADR aplicable: [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md) (TypeScript strict). No se propone ADR
+JUP: JUP-098 · ADR aplicable: [ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md) (TypeScript strict). No se propone ADR
 nuevo: el mecanismo de sesión ya está decidido y especificado por JUP-085; aquí solo se añade el
 motivo de la invalidación y su presentación.
 

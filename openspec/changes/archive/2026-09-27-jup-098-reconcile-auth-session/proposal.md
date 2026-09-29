@@ -7,7 +7,7 @@ La tarjeta nació para que el frontend distinguiera un `401` del resto de errore
 2026-09-21, cuando `fetchJson` lanzaba un `Error` genérico sin mirar `response.status` y un token
 caducado dejaba al operador atrapado en pantallas que fallaban como si el backend estuviera caído.
 
-**Ese problema ya no existe en `develop`.** [JUP-085](../archive/2026-09-24-jup-085-auth-session-contract/)
+**Ese problema ya no existe en `develop`.** [JUP-085](../2026-09-24-jup-085-auth-session-contract/)
 (PR #43, fusionado el 2026-09-24, después de redactarse la tarjeta) lo resolvió en la capa de acceso:
 
 - `fetchJson` detecta el `401` numérico de cualquier operación autenticada distinta de `/me`, antes

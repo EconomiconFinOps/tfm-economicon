@@ -228,7 +228,7 @@ tarjeta en Trello.
   backend y no se retiró `/overview-legacy`**: sigue siendo el único dashboard con datos reales, sin
   Overview real que la sustituya todavía.
 
-**JUP [`jup-098-reconcile-auth-session`](../../openspec/changes/jup-098-reconcile-auth-session/) — carril `standard` — completa**
+**JUP [`jup-098-reconcile-auth-session`](../../openspec/changes/archive/2026-09-27-jup-098-reconcile-auth-session/) — carril `standard` — completa**
 - [x] Adaptar login/sesion al flujo del backend (token + perfil `/me`). **Ya lo había cerrado
       JUP-085** (fusionado el 2026-09-24, entre que este spike listaba la tarjeta como pendiente y que
       se propuso): `LoginPage` persiste `{accessToken, user}`, `SessionGate` revalida contra `GET /me`
