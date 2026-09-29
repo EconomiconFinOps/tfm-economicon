@@ -23,14 +23,15 @@
 
 ## 2. Arrastre de JUP-098 (documentación, un commit por tarea citando JUP-098)
 
-- [ ] 2.1 Victor pregunta a Lucía, con el enlace al log del job "Frontend build", a qué se refería con
-      "los tests del frontend no corren en CI". Registrar la respuesta en `review.md`.
-- [ ] 2.2 Registrar `RF-098-004` en `openspec/findings/backlog.md`: fallos por el límite de 1 s de
+- [x] 2.1 ~~Preguntar a Lucía qué quiso decir con "los tests del frontend no corren en CI".~~
+      Descartada por Victor el 2026-09-29 (la afirmación se considera un malentendido): no se
+      pregunta y no se escribe nada sobre CI. Decisión registrada en `review.md`.
+- [x] 2.2 Registrar `RF-098-004` en `openspec/findings/backlog.md`: fallos por el límite de 1 s de
       `findBy`/`waitFor` con suites en paralelo o máquina cargada (tenant-switching, ingestion,
       conversations, test 4.1 de JUP-098), que pasan en aislamiento y con
       `--poolOptions.threads.maxThreads=1`; arreglo posible `configure({ asyncUtilTimeout: 3000 })` en
-      `src/test/setup.ts` como decisión de equipo. Sin afirmar nada sobre CI salvo lo que confirme
-      la tarea 2.1. No se corrige aquí.
+      `src/test/setup.ts` como decisión de equipo. Sin ninguna afirmación sobre CI (tarea 2.1).
+      No se corrige aquí.
 - [ ] 2.3 Sustituir las 9 referencias a configuración local del agente en
       `docs/evidence/JUP-098-validation.md` (líneas 93, 120, 126) y en
       `openspec/changes/archive/2026-09-27-jup-098-reconcile-auth-session/review.md` (líneas 34,

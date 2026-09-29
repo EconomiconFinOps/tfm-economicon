@@ -83,3 +83,26 @@ una diferencia real que se declarará y aceptará en la tarea 8.1.
 **Checkpoint:** grupo sin código de producto ni tests nuevos (solo medición y capturas fuera del
 repositorio) → sin ciclo Red/Green ni mutación (excepción doc-only). Único cambio en el repositorio:
 este `review.md` y las casillas de `tasks.md`.
+
+## Grupo 2. Arrastre de JUP-098 (documentación)
+
+**2.1 — Descartada por decisión de Victor (2026-09-29).** El plan de la tarjeta pedía preguntar a
+Lucía qué quiso decir con "los tests del frontend no corren en CI" antes de escribir nada sobre CI.
+Victor considera que es un malentendido y decide no preguntar. Consecuencia: ni `RF-098-004` ni
+ningún otro documento de esta tarjeta hacen afirmación alguna sobre CI (ni a favor ni en contra). El
+bloque `## Human Approval` de `proposal.md` conserva su redacción original ("hasta la respuesta de
+Lucía"), que queda superada por esta decisión; `proposal.md` (What Changes), `design.md` (decisión 9)
+y `tasks.md` (2.1, 2.2) se han ajustado en consecuencia.
+
+**2.2 — `RF-098-004` registrado** en `openspec/findings/backlog.md` (tras `RF-098-003`). Contenido:
+fallos por el límite de 1 s de `findBy*`/`waitFor` con suites en paralelo o máquina cargada; arreglo
+posible `configure({ asyncUtilTimeout: 3000 })` en `apps/frontend/src/test/setup.ts` como decisión de
+equipo; **no se corrige aquí**. Dos precisiones de honestidad incluidas en la fila: (a) el fallo se
+recoge tal como se observó en la revisión del PR #50 y **no se reprodujo en JUP-099** (la suite
+completa ejecutada sola pasa 261/261); (b) el pool por defecto de Vitest 3 es `forks`, donde la
+opción `poolOptions.threads.maxThreads` de la observación original podría no tener efecto, punto a
+confirmar cuando alguien aborde el finding. Severidad `Medium` porque afecta a la verificación de
+todas las tarjetas de frontend; el dueño real lo decide el equipo.
+
+**Checkpoint:** tareas doc-only, sin Red/Green ni mutación (excepción doc-only). Ningún archivo de
+producto ni de test tocado.

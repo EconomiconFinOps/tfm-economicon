@@ -58,8 +58,8 @@ prefijo `JUP-099` citando JUP-098):
 
 - **A.** Registrar `RF-098-004` en el backlog: tests que fallan por el límite de 1 s de
   `findBy`/`waitFor` con varias suites en paralelo o máquina cargada. Solo se registra; no se
-  corrige. Nada sobre CI hasta aclarar con Lucía qué quiso decir con "los tests del frontend no
-  corren en CI".
+  corrige. Sin ninguna afirmación sobre CI: la nota de revisión de que "los tests del frontend no
+  corren en CI" se descartó como malentendido (2026-09-29).
 - **B.** Sustituir las 9 referencias a configuración local del agente en
   `docs/evidence/JUP-098-validation.md` y en el `review.md` archivado de JUP-098 por comandos
   reproducibles desde el repositorio (Stryker sin archivo de configuración, lista real de comandos

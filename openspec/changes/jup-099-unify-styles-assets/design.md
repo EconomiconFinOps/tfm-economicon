@@ -223,7 +223,8 @@ Ver `proposal.md`. Tres criterios de redacción:
 - **C (comentarios de tests):** se reescriben los 10 comentarios con redacción neutral ("el test
   estaba protegido contra edición en el entorno local"), sin tocar aserciones ni código de test.
   Requiere desbloquear archivos commiteados con autorización de Victor.
-- **A:** `RF-098-004` se registra sin afirmar nada sobre CI hasta tener la respuesta de Lucía.
+- **A:** `RF-098-004` se registra sin ninguna afirmación sobre CI (la nota de que "los tests del
+  frontend no corren en CI" se descartó como malentendido).
 
 ## Risks / Trade-offs
 
