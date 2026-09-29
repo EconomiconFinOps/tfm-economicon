@@ -84,9 +84,9 @@
 
 ## 6. Migración de las pantallas conectadas al backend
 
-- [ ] 6.1 **Green:** `LoginPage.tsx` (incluido el aviso de sesión expirada: `text-warning`),
+- [x] 6.1 **Green:** `LoginPage.tsx` (incluido el aviso de sesión expirada: `text-warning`),
       `IngestPage.tsx`, `ConversationsPage.tsx` y `DashboardPage.tsx` a tokens.
-- [ ] 6.2 Guardián en verde para estos 4 archivos; las pruebas de sesión, ingesta, conversaciones y
+- [x] 6.2 Guardián en verde para estos 4 archivos; las pruebas de sesión, ingesta, conversaciones y
       `/overview-legacy` siguen en verde sin editarse.
 
 ## 7. Migración de los dashboards de demostración

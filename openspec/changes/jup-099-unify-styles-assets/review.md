@@ -382,3 +382,43 @@ contra su origen en `theme.css` (mismo texto que el literal sustituido) y que un
 altera áreas enteras, no una decena de píxeles.
 
 **Checkpoint:** commit **Green**. Sin mutación (exención de la decisión 5).
+
+## Grupo 6. Pantallas conectadas al backend
+
+**Antes de migrar: el guion pasa de 20 a 25 escenarios.** Se añaden 5 estados de estas pantallas que
+no se veían: `assistant-empty` (lista vacía), `assistant-create-error` (error al crear conversación
+en rojo) y las tres ramas "sin tenant" (`no-tenant-ingest`, `no-tenant-assistant`,
+`no-tenant-overview`, con `GET /tenants` vacío). Determinismo de los 5 sobre el baseline: dos
+pasadas, 0 px. Contra el baseline, el tema solo cambia la franja `#0a0a0a → #0f1419` (100 % de los
+píxeles distintos en los 5). Comparados con la referencia del grupo 5: 0 reales. Referencias
+consolidadas a 25 escenarios (`ref-before`, `ref-g4`, `ref-g5`).
+
+**6.1 — Green: 4 archivos migrados** por el agente `coder` (revisado por el orquestador):
+`LoginPage.tsx` (22 utilidades, incluido el aviso ámbar de sesión expirada, `text-amber-400` →
+`text-warning`, sin tocar `role="status"` ni su lógica), `IngestPage.tsx` (19), `ConversationsPage.tsx`
+(27) y `DashboardPage.tsx` (15): 83 utilidades en 59 líneas. Todos los colores estaban en la tabla; el
+filtro de líneas que no son clases de color devuelve 0. (El `coder` señaló que su recuento por archivo
+difería en una unidad de mi inventario previo en dos archivos; los totales por color sí cuadran.)
+
+**6.2 — Verificación (ejecutada por el orquestador, cada comando en solitario):**
+
+| Comprobación | Resultado |
+| --- | --- |
+| Guardián de colores | **55 pasan / 6 fallan** (antes 51 / 10). Los 6 restantes son justo los del grupo 7: `AnomaliesPanel`, `ExecutiveCostDashboard`, `ExecutiveCutDashboard`, `OperationalCostDashboard`, `RecommendationsPanel` y `data/demo/executiveCostDashboard.ts` |
+| `theme-palette.test.ts` | **92 pasan / 18 fallan**, sin cambios: todos (d). Este grupo no cierra ningún (d) porque los tokens que usa (`muted-foreground`, `danger`, `warning`, `primary`…) ya tenían consumidor desde el grupo 5; los 18 restantes son `subtle-foreground`, `neutral`, `danger-tint`, `danger-foreground`, `info`, `info-foreground`, `warning-tint`, `warning-foreground`, `attention-*`, `chart-*` (8), que consumen los dashboards |
+| Suite completa | `Tests 24 failed \| 407 passed (431)`, `Test Files 2 failed \| 45 passed`. 407 = 260 previos + 55 + 92: ningún test previo se rompe (incluidos `login-session-expired-notice*`, sesión, ingesta, conversaciones, dashboard y tenant). 0 mensajes de timeout. Los 24 fallos son 6 del guardián + 18 (d) |
+| `typecheck` / `lint` | exit 0 / exit 0 |
+| Diff | 4 archivos, 59 inserciones y 59 eliminaciones; sin cambios de lógica, texto ni JSX |
+
+**Nota de proceso:** para comprobar que el grupo no cerraba ningún (d), el `coder` usó `git stash`
+sobre el árbol de trabajo. Verificado después por el orquestador: `git stash list` vacío y
+`git status` con exactamente los 4 archivos esperados; no quedó nada escondido.
+
+**Verificación visual (25 escenarios, contra la referencia del grupo 5):** **0 píxeles reales**
+(delta ≥ 2). Solo reaparece el ruido de rasterizado ya caracterizado, idéntico en cantidad:
+`assistant` 4 px e `ingest-success` 11 px, ambos de 1 nivel y por debajo del umbral de 50. Es decir,
+la migración de `LoginPage` (incluido el aviso ámbar y el error en rojo), `IngestPage`,
+`ConversationsPage` (vacía, con error y con conversación) y `DashboardPage` (cargando, en error,
+sin tenant y con datos) no cambia ningún píxel de forma real.
+
+**Checkpoint:** commit **Green**. Sin mutación (exención de la decisión 5).
