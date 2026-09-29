@@ -19,8 +19,15 @@ import { isLoginResponse, isUserProfile } from "./contracts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
+// Union cerrada de motivos de invalidacion (tarea 2.1). Solo dos valores:
+// "expired" (401 recibido fuera de /me) y "manual" (logout explicito u otro
+// origen sin motivo especifico). Se modela como tipo, no como enum, porque
+// los consumidores actuales (SessionGate, LoginPage) solo necesitan el
+// literal en tiempo de ejecucion, no un objeto enum en el bundle.
+export type SessionInvalidationReason = "expired" | "manual";
+
 let sessionGeneration = 0;
-const invalidationListeners = new Set<() => void>();
+const invalidationListeners = new Set<(reason: SessionInvalidationReason) => void>();
 
 export function getSessionGeneration() {
   return sessionGeneration;
@@ -30,15 +37,18 @@ export function advanceSessionGeneration() {
   return ++sessionGeneration;
 }
 
-export function subscribeSessionInvalidation(listener: () => void) {
+export function subscribeSessionInvalidation(listener: (reason: SessionInvalidationReason) => void) {
   invalidationListeners.add(listener);
   return () => { invalidationListeners.delete(listener); };
 }
 
-export function invalidateSession(generation: number) {
+export function invalidateSession(generation: number, reason: SessionInvalidationReason = "manual") {
+  // El guard se queda intacto: una generacion abandonada no debe notificar
+  // ningun motivo (tarea 2.2), y ese comportamiento ya lo garantiza este
+  // return temprano evaluado antes de tocar los listeners.
   if (generation !== sessionGeneration) return;
   advanceSessionGeneration();
-  invalidationListeners.forEach((listener) => listener());
+  invalidationListeners.forEach((listener) => listener(reason));
 }
 
 export function clearSessionMutations(queryClient: QueryClient) {
@@ -93,7 +103,10 @@ async function fetchJson<T>(path: string, options: FetchJsonOptions = {}): Promi
     if (generation !== getSessionGeneration()) return discardResponse();
 
     if (token && path !== "/me" && response.status === 401) {
-      invalidateSession(generation);
+      // Un 401 fuera de /me solo puede significar que el token dejo de ser
+      // valido para el backend (expiro o fue revocado), no un logout manual:
+      // por eso el motivo aqui es siempre "expired" (tarea 3.3).
+      invalidateSession(generation, "expired");
       return discardResponse();
     }
 
