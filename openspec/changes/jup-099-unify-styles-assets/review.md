@@ -133,8 +133,9 @@ ningún otro contenido de esos documentos (cifras, veredictos, enlaces).
 La búsqueda sobre todos los archivos versionados encuentra referencias equivalentes en los
 documentos archivados de JUP-092 a JUP-097 (`review.md`, `tasks.md`) y en las evidencias de JUP-093,
 JUP-095 y JUP-097, además de un comentario en `apps/frontend/vite.config.ts` (línea 40, cita
-`.claude/harness/mutation.md`) y en comentarios de test. El arrastre acordado solo cubre JUP-098; se
-deja a decisión de Victor si se amplía (ver informe de la tarea).
+`.claude/harness/mutation.md`) y en comentarios de test. El arrastre acordado solo cubre JUP-098: por decisión
+de Victor (2026-09-29) **no se amplía** y se registra como `RF-099-001` en el backlog, con el recuento
+medido (42 menciones en 11 archivos) y las sustituciones ya probadas en esta tarea.
 
 **Observaciones sobre lo que ya decía la evidencia de JUP-098 (no modificadas):** (a) la frase "en
 los tres archivos el score global queda por debajo del umbral" contradice la fila de `api.ts`
@@ -143,3 +144,52 @@ renumeración del 2026-09-29 el turbo es JUP-101.
 
 **Checkpoint:** doc-only, sin Red/Green ni mutación. `openspec:validate`, `jup:check` y
 `jup:cleanup:check` en verde.
+
+**Finding `RF-099-001` registrado** en `openspec/findings/backlog.md` (decisión de Victor, 2026-09-29):
+la deuda de referencias a configuración local del agente fuera de JUP-098 se registra y no se corrige
+aquí. Recuento medido con `git grep -F` de `.claude/`, `check-dod`, `stryker.conf`, `lock-committed`,
+`harness/workflow` y `mutation.md`, excluyendo tests, `.gitignore`, `.dockerignore`,
+`tools/jup-cleanup-check.mjs` y los documentos de JUP-098/099: **42 menciones en 11 archivos** (36 en
+7 archivos archivados de JUP-092 a JUP-097, 5 en 3 evidencias, 1 comentario en
+`apps/frontend/vite.config.ts`). Corrección sobre un primer borrador de la fila, que citaba
+recuentos escritos sin medir (21 archivos / 45 menciones) y un patrón con `|` que rompía la tabla;
+se retiró y se rehízo con cifras medidas y 12 campos.
+
+**2.4 — Enlaces rotos y fila duplicada.** Comprobación previa con un script que resuelve cada enlace
+relativo de los dos archivos: exactamente los 3 del plan (`docs/spikes/frontend-migration.md`
+líneas 185 y 206, `openspec/findings/backlog.md` línea 23). Corregidos a
+`openspec/changes/archive/2026-09-07-jup-094-reconcile-package-json/`,
+`.../2026-09-21-jup-097-reconcile-api-layer/` y `.../2026-09-24-jup-085-auth-session-contract/`
+(existen). Fila `RF-090-003` duplicada: las dos filas eran idénticas byte a byte (mismo `md5sum`), se
+elimina la segunda y queda 1. Resultado: **0 enlaces rotos** en ambos archivos tras los cambios.
+
+**Checkpoint:** doc-only, sin Red/Green ni mutación.
+
+**2.5 — Comentarios de test neutralizados (con autorización expresa de Victor, 2026-09-29).**
+Reescritos los comentarios de 10 archivos de test que citaban el hook o el harness local, cambiando
+"bloqueado por el hook del harness" (y variantes: `lock-committed-tests.mjs`, "harness TDD bloquea su
+edicion", la ruta de la configuración de Stryker) por "protegido contra edición en el entorno local":
+`label.mutation`, `select.mutation`, `separator.mutation` (en `components/ui/`), `Layout.selector`,
+`SessionGate.mutation`, `SessionGate.profile`, `SessionGate.validation`, `DashboardPage.mutation`,
+`api.session-generation-advance` y `tests/dashboard-tenant-transition`.
+
+- **Solo comentarios:** `git diff -U0 -- apps/frontend` filtrando las líneas que no empiezan por `//`
+  devuelve **0** líneas; 10 archivos, 16 inserciones y 17 eliminaciones. Ninguna aserción ni código de
+  test tocado.
+- **Sin menciones restantes:** `git grep` de `hook`, `harness`, `lock-committed`, `.claude` y
+  `stryker.conf` sobre esos 10 archivos y sobre todos los tests del frontend (salvo `HarnessSmoke`,
+  que nombra el arnés de pruebas de Vitest, no el entorno local) devuelve 0.
+- **Suite intacta:** `typecheck` (3 configs) y `lint` sin salida; `test` → **46 archivos, 261/261
+  PASS**, idéntico a la línea base de 1.1.
+- **Sobre la protección de tests:** las 10 ediciones se aplicaron sin necesidad de desactivar ningún
+  mecanismo, así que no hubo nada que restaurar. Un primer intento sobre `SessionGate.validation`
+  falló por un desajuste de texto mío (la primera línea del bloque tiene texto delante) y se repitió
+  sobre la segunda línea; no fue un bloqueo.
+- Los avisos del IDE sobre `toBeVisible`/`toBeInTheDocument` en
+  `tests/dashboard-tenant-transition.test.tsx` no proceden de la edición (cambio solo de comentario)
+  ni del `typecheck` de la tarjeta, que pasa con exit 0: el IDE no resuelve los tipos de jest-dom de
+  ese directorio.
+
+**Cierre del grupo 2:** arrastre de JUP-098 resuelto: A (`RF-098-004`), B (9 referencias), y de C los
+enlaces rotos, la fila duplicada y los comentarios de test; `RF-098-003` fuera de alcance y el resto
+de la deuda registrada como `RF-099-001`. Todo doc-only o solo comentarios: sin Red/Green ni mutación.

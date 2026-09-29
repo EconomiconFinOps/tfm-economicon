@@ -5,7 +5,7 @@ import { billing, tenants } from "./fixtures";
 import { deferredResponse, jsonResponse, mockBackend, renderApp, restoreSession } from "./test-support";
 
 // Archivo nuevo (en vez de ampliar session-and-dashboard.test.tsx, ya
-// commiteado y protegido por el hook lock-committed-tests.mjs) para no tener
+// commiteado y protegido contra edicion en el entorno local) para no tener
 // que pedir autorizacion de edicion: el escenario es autocontenido y encaja
 // igual de bien como suite propia dentro del mismo directorio de tests.
 //

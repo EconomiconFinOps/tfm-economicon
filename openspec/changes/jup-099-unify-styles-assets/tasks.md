@@ -37,11 +37,11 @@
       `openspec/changes/archive/2026-09-27-jup-098-reconcile-auth-session/review.md` (líneas 34,
       48-52, 87, 95, 325) según la decisión 9 (Stryker sin archivo de configuración, lista real de
       comandos, redacción neutral). Verificar con búsqueda que no queda ninguna.
-- [ ] 2.4 Corregir los 3 enlaces rotos por archivados (`docs/spikes/frontend-migration.md` líneas 185
+- [x] 2.4 Corregir los 3 enlaces rotos por archivados (`docs/spikes/frontend-migration.md` líneas 185
       y 206; enlace a la review de JUP-085 en `openspec/findings/backlog.md`) para que apunten a
       `openspec/changes/archive/<fecha>-<change>/`, y eliminar la fila duplicada de `RF-090-003`.
       Verificar que todos los enlaces relativos del backlog y del spike resuelven.
-- [ ] 2.5 Con autorización de Victor para editar tests protegidos, reescribir con redacción neutral
+- [x] 2.5 Con autorización de Victor para editar tests protegidos, reescribir con redacción neutral
       los 10 comentarios de test que citan el hook o la configuración local del harness, sin tocar
       aserciones ni código. Restaurar la protección y confirmar que la suite sigue igual que en 1.1.
 
