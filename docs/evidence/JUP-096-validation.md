@@ -72,6 +72,8 @@ Proyecto aislado `jup096` con volumenes nuevos, imagenes construidas desde la ra
 
 El 28/09 se integro en `develop` el PR #47, que quita los conteos globales de `jobs` de `/health` del processor por aislamiento entre tenants. Al resolver el conflicto se adopta esa version: `/health` ya no consulta `jobs`, por lo que la tolerancia a su ausencia (respuesta `degraded` con `jobs` nulo y `has_jobs_table`) deja de ser necesaria y se elimina. Las filas de `/health` de este documento anteriores a esta seccion son historicas. `test_processor_health.py` comprueba ahora que `/health` responde `ok` sin la tabla `jobs`, `degraded` si ademas falla RabbitMQ y la base inalcanzable como `failed`.
 
+Arranque en frio repetido el 29/09 sobre la rama integrada (`86b604a`), proyecto aislado con volumenes nuevos: backend `StartedAt` 10:27:39 y processor 10:28:21, tras el backend sano; 0 `SerializationFailure` en ambos; cada servicio registra sus versiones una sola vez; `GET /health` del processor en el contenedor: `{"status":"ok","services":{"database":"ok","rabbitmq":"ok","vector_store":"ok"}}`, sin bloque `jobs`. RabbitMQ fallo con `eacces` en el primer intento (RF-096-001) y se repitio el `up`; la base de datos seguia vacia porque backend y processor aun no habian arrancado.
+
 ## Limites
 
 - Los tests opt-in con CockroachDB real no se ejecutan en CI (RF-096-004).
