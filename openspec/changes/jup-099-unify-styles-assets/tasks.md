@@ -7,16 +7,16 @@
 
 ## 1. Línea base (antes de tocar producto)
 
-- [ ] 1.1 Ejecutar la suite del frontend en la rama recién creada y registrar en `review.md` el conteo
+- [x] 1.1 Ejecutar la suite del frontend en la rama recién creada y registrar en `review.md` el conteo
       en verde como línea base (sustituto `corepack pnpm --filter @finops/frontend test` mientras
       RF-093-001 siga abierto; dejar constancia de cuál se usó).
-- [ ] 1.2 Registrar en `review.md` el inventario de partida con los comandos de conteo exactos: 241
+- [x] 1.2 Registrar en `review.md` el inventario de partida con los comandos de conteo exactos: 241
       hexadecimales en 14 `.tsx`, 4 en `src/data/demo/`, 229 utilidades de paleta en 16 `.tsx`, las 3
       menciones a `main.css` y los tokens de `theme.css`.
-- [ ] 1.3 Preparar el proyecto temporal de captura fuera del repositorio (Playwright + Chromium +
+- [x] 1.3 Preparar el proyecto temporal de captura fuera del repositorio (Playwright + Chromium +
       `pixelmatch`) y el guion de la decisión 6: build de producción, `vite preview`, viewport
       1440×900, API simulada con `page.route` desde `tests/fixtures.ts`, espera fija para Recharts.
-- [ ] 1.4 Capturar la referencia "antes" de las 9 pantallas (`/`, `/operational`, `/cuts`,
+- [x] 1.4 Capturar la referencia "antes" de las 9 pantallas (`/`, `/operational`, `/cuts`,
       `/anomalies`, `/recommendations`, `/ingest`, `/assistant`, `/overview-legacy`, `/login`) y del
       aviso de sesión expirada, sobre `688fe2d`. Capturar dos veces seguidas y comprobar 0 píxeles de
       diferencia entre ambas pasadas (el guion es determinista) antes de dar la referencia por buena.
