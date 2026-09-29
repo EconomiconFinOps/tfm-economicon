@@ -105,11 +105,11 @@
 - [ ] 8.1 Capturar las 9 pantallas y el aviso con el mismo guion de 1.4 y comparar con `pixelmatch`
       (umbral 0). Registrar en `review.md` los píxeles distintos por pantalla y explicar cada
       diferencia no nula; corregir las que no sean aceptables.
-- [ ] 8.2 Demostración de propagación (criterio 2): cambiar temporalmente `--primary`, reconstruir,
+- [x] 8.2 Demostración de propagación (criterio 2): cambiar temporalmente `--primary`, reconstruir,
       recapturar, registrar qué pantallas cambian y que ningún archivo de pantalla cambió; revertir.
-- [ ] 8.3 Retirar los tokens sin consumidor (decisión 3) y dejar en verde el caso de consumidores de
+- [x] 8.3 Retirar los tokens sin consumidor (decisión 3) y dejar en verde el caso de consumidores de
       `theme-palette.test.ts`. Registrar en `review.md` qué se retiró y qué se conserva y por qué.
-- [ ] 8.4 Registrar en `review.md` los pares de tonos casi iguales que no se consolidaron (`slate-400`
+- [x] 8.4 Registrar en `review.md` los pares de tonos casi iguales que no se consolidaron (`slate-400`
       v3/v4, `green-400`/`emerald-400`…) como candidato a tarjeta propia, y en el backlog si el equipo
       lo quiere como finding.
 

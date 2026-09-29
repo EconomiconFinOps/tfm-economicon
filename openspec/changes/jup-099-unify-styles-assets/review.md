@@ -511,3 +511,109 @@ cada build dos veces:
 `#0a0a0a → #0f1419`, iconos `#fafafa → #ffffff` y un borde `#262626 → #2d3748`. Más la de arriba.
 
 **Checkpoint:** commit **Green**. Sin mutación (exención de la decisión 5).
+
+## Grupo 8. Verificación visual final, propagación y tokens sin consumidor
+
+**8.1 — Comparación final (34 escenarios): PENDIENTE de la aceptación de Victor.** Build del estado
+final (`81a5e69`, CSS 41,83 kB) capturado con el mismo guion y comparado con las tres referencias:
+
+| Comparación | Resultado |
+| --- | --- |
+| Grupo 4 → final (solo migración de pantallas) | **0 píxeles reales** (delta ≥ 2). Los 2 820 px de 1 nivel son exactamente 2 × 1 410: el degradado de `recommendations` y su tooltip. **Invariante del grupo 4 cumplido** |
+| Grupo 6 → final | 0 píxeles reales (2 824 px de 1 nivel: los mismos 2 820 más 4 de ruido) |
+| Baseline original → final | 26 escenarios con diferencias, **8 con 0 exacto**. Todos los píxeles distintos (7 356 701) caen en **una de cuatro causas**, medido con `classify.mjs`: franja 7 346 880 + degradado 2 820 + otros 7 001 (iconos y borde) |
+
+Los 8 escenarios sin ninguna diferencia: `login`, `login-invalid-credentials`, `login-session-expired`,
+`operational-cost`, `tooltip-operational-cost-0`, `tooltip-operational-cost-1`,
+`session-tenants-error` y `session-tenants-loading`.
+
+Tabla por escenario (píxeles distintos baseline → final; F = franja, D = degradado, O = otros):
+
+| Escenario | Total | F | D | O |
+| --- | ---: | ---: | ---: | ---: |
+| `anomalies`, `tooltip-anomalies-0` | 71 | – | – | 71 |
+| `executive-cost`, `…-export-menu`, `…-tenant-select-focus`, `tooltip-executive-cost-0/1/2` | 615 | – | – | 615 |
+| `executive-cuts`, `tooltip-executive-cuts-0/1` | 549 | – | – | 549 |
+| `recommendations`, `tooltip-recommendations-0` | 2 171 | – | 1 410 | 761 |
+| `assistant` | 455 040 | 455 040 | – | – |
+| `assistant-empty` | 852 480 | 852 480 | – | – |
+| `assistant-create-error` | 812 160 | 812 160 | – | – |
+| `assistant-send-error` | 403 200 | 403 200 | – | – |
+| `ingest` | 270 720 | 270 720 | – | – |
+| `ingest-error` | 218 880 | 218 880 | – | – |
+| `ingest-success` | 8 640 | 8 640 | – | – |
+| `overview-legacy` | 267 840 | 267 840 | – | – |
+| `overview-legacy-loading` | 452 160 | 452 160 | – | – |
+| `overview-legacy-error`, `no-tenant-ingest`, `no-tenant-assistant`, `no-tenant-overview` | 901 440 | 901 440 | – | – |
+
+**Las cuatro causas** (imágenes de revisión `1…4-*.png` entregadas a Victor: arriba antes, medio
+después, abajo diferencia amplificada):
+
+1. **Franja bajo el contenido, `#0a0a0a → #0f1419`** (7 346 880 px, 100 % de los píxeles distintos en
+   14 escenarios de páginas más cortas que el viewport). El fondo del `body` era el `oklch(0.145)` de
+   shadcn y ahora es el `background` de la aplicación, el mismo color del resto de la pantalla. Efecto
+   directo y deseado del tema; es la que más píxeles cambia y la más visible.
+2. **Iconos sin color propio, `#fafafa → #ffffff`** (5 niveles; 549–761 px por pantalla en
+   `executive-cost`, `executive-cuts`, `anomalies` y `recommendations`). Los iconos de Lucide usan
+   `currentColor` y heredan `foreground`, que era `oklch(0.985)` y ahora es blanco. Conseguir que
+   sigan en `#fafafa` exigiría separar "texto heredado" de "blanco explícito" con un token nuevo y
+   revertir unas 65 sustituciones `text-white → text-foreground` (grupos 5-7).
+3. **Un borde por defecto, `#262626 → #2d3748`** (88 px + antialias, en `executive-cuts`): la caja del
+   icono de la tarjeta "Alcanzado" lleva `border` sin color (su tono `purple` no genera clase, ver
+   `RF-099-002`) y usaba el borde por defecto de shadcn; ahora usa el token `border` de la aplicación.
+4. **Degradado del panel de agentes de Recomendaciones, 1 nivel de canal** (1 410 px, sistemático y
+   reproducible). Tailwind resuelve `from-[#0078d4]/20` en tiempo de build a un literal
+   `oklab(56.7687% -.0533597 -.157766/.2)` redondeado, y con un token emite
+   `color-mix(in oklab, var(--primary) 20%, transparent)` que el navegador evalúa con precisión
+   completa: mismo color con otro redondeo. Imperceptible (la imagen 4 solo lo muestra con la
+   diferencia ×80).
+
+Ninguna de las cuatro es un color de pantalla migrado con un token equivocado; son efectos del cambio
+de tema y del mecanismo de tokens sobre lo que no llevaba color propio o lo llevaba con opacidad.
+
+**Decisión de Victor sobre 8.1:** no acepta todavía (2026-09-29) y quiere revisar las capturas. Se le
+han entregado las cuatro imágenes. **8.1 queda sin marcar hasta que las acepte o pida cambios.**
+
+**8.2 — Demostración de propagación (criterio 2 y requisito "Un cambio de token se propaga…").**
+Se cambian **dos tokens en `theme.css`**, y solo ese archivo: `--primary: #0078d4 → #ff00ff` y
+`--card: #1a1f2e → #3a003a` (este último para cubrir también los tooltips, cuyo `contentStyle` es un
+`style` en línea con `var(--card)`). Build fuera del repositorio, `theme.css` restaurado y verificado
+con `md5` idéntico y `git diff` vacío; durante la prueba `git status` mostró un único archivo
+modificado (`theme.css`); ningún archivo de pantalla ni de componente cambió.
+
+- **Cambian 34 de 34 escenarios**, y el `#3a003a` exacto aparece en los 34 (superficies sólidas de
+  tarjeta, login, tooltips…): un solo token llega a toda la interfaz.
+- **Propagación por utilidades y por `var()` de Recharts:** `#ff00ff` exacto aparece justo en los
+  escenarios con un `bg-primary` sólido o un `var(--primary)` de gráfica: `login` (13 434 px),
+  `login-session-expired`, `ingest`/`ingest-error` (49 380), `assistant*` (2 057–28 347),
+  `session-tenants-error` (3 603), `executive-cost` (59 099, barras y área de Recharts) y
+  `operational-cost` (16 835). **No** aparece en los que no usan `primary` sólido: `executive-cuts`,
+  `anomalies`, `overview-legacy*`, `no-tenant-*` (coherente con el código: `DashboardPage`,
+  `ExecutiveCutDashboard` y `AnomaliesPanel` no lo usan). Los ceros de `ingest-success`,
+  `assistant-create-error` y `login-invalid-credentials` son porque el ratón queda sobre el botón tras
+  el clic (`hover:bg-primary/80`, translúcido).
+- **Propagación a estilos en línea (tooltips):** en cada pantalla con gráficas, el escenario con
+  tooltip tiene más píxeles `#3a003a` exactos que el mismo sin tooltip (`anomalies` +20 262,
+  `executive-cost` +9 044 / +5 312 / +20 217, `operational-cost` +9 801 / +19 105,
+  `executive-cuts` +20 178 / +21 913, `recommendations` +11 731): el `contentStyle` con `var(--card)`
+  sigue al tema.
+
+**8.3 — Tokens sin consumidor.** Inventario final de `theme.css`: `:root` con **46** variables (4 no
+cromáticas, 42 de color) y `@theme inline` con 42 `--color-*` y 4 `--radius-*`; contando las
+declaraciones como al inicio, **110 → 92**. **Retirados 13 tokens** sin consumidor (cada uno también
+como `--color-*`): los 8 `sidebar-*`, `card-foreground`, `destructive-foreground`, `secondary`,
+`secondary-foreground` y `switch-background`. Añadidos 21 con nombre de función. `theme-palette.test.ts`
+(caso d) **110/110**, y el análisis ignorando comentarios (`consumers.mjs`) confirma **42 tokens, 0 sin
+consumo real**. Se conservan con **un solo consumidor** 11 tokens, justificados: los de los primitivos
+de shadcn `select`/`tooltip` (`popover`, `popover-foreground`, `accent-foreground`, `input`,
+`input-background`, `primary-foreground`, `destructive`), y `positive`, `warning-foreground`, `chart-1`
+y `chart-3` (usados una vez, en `MetricCard`, `AnomaliesPanel` y datos demo).
+
+**8.4 — Tonos casi iguales no consolidados**, registrados como **`RF-099-003`** en el backlog por
+decisión de Victor: grises `#94a3b8`/`slate-400` v4 y `#64748b`/`slate-500` v4; cuatro verdes
+(`chart-2`, `success`, `success-tint`, `positive`); rojos, azules (con las marcas `primary` y
+`highlight`), ámbares y naranjas. Consolidar sería rediseño y cambia píxeles.
+
+**Comprobación de mi propio trabajo en este grupo:** el guion tiene ahora 34 escenarios y
+determinismo verificado en los añadidos; los conteos de las tablas salen de `classify.mjs` y
+`propagation.mjs` (suma de causas = 7 356 701 = total de `compare.mjs`).
