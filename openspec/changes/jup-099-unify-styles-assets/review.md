@@ -106,3 +106,40 @@ todas las tarjetas de frontend; el dueño real lo decide el equipo.
 
 **Checkpoint:** tareas doc-only, sin Red/Green ni mutación (excepción doc-only). Ningún archivo de
 producto ni de test tocado.
+
+**2.3 — Referencias a configuración local del agente retiradas de la documentación de JUP-098.**
+Sustituidas las 9 menciones (más el aviso "harness local, no se commitea") en
+`docs/evidence/JUP-098-validation.md` (3) y en el `review.md` archivado de JUP-098 (6):
+
+- **Stryker:** la invocación con archivo de configuración local pasa a la invocación sin archivo
+  (`--mutate`, `--testRunner vitest`, `--plugins`, `--reporters`, `--coverageAnalysis perTest`,
+  `--concurrency 2`). **Verificada de nuevo en esta tarjeta** (2026-09-29, `--dryRunOnly` desde
+  `apps/frontend`): "No config file specified. Running with command line arguments.", 109 mutantes
+  en `api.ts` y pasada inicial de 233 tests en verde. El umbral 80 se documenta como criterio de
+  lectura del resultado (no tiene opción de línea de comandos); se indica borrar `.stryker-tmp`
+  al terminar (borrado tras la verificación; el repositorio queda limpio).
+- **Comprobador local de DoD:** sustituido por los comandos reales del repositorio
+  (`corepack pnpm test/lint/typecheck` desde la raíz, que fallan por RF-093-001, y el sustituto
+  `--filter @finops/frontend`). La línea del "escaneo de secretos" se elimina: no tiene equivalente en
+  el repositorio, y `jup:cleanup:check` ya consta en la evidencia.
+- **Excepción y protección de tests:** redacción neutral ("excepción doc-only"; "el test estaba
+  protegido contra edición en el entorno local y se editó con autorización del usuario").
+
+Verificación: `git grep` de `.claude/`, `check-dod`, `stryker.conf`, `lock-committed`,
+`harness/workflow` y `mutation.md` sobre ambos archivos devuelve **0** resultados. No se ha tocado
+ningún otro contenido de esos documentos (cifras, veredictos, enlaces).
+
+**Hallazgo al verificar (no se corrige en esta tarea):** la misma deuda existe **fuera de JUP-098**.
+La búsqueda sobre todos los archivos versionados encuentra referencias equivalentes en los
+documentos archivados de JUP-092 a JUP-097 (`review.md`, `tasks.md`) y en las evidencias de JUP-093,
+JUP-095 y JUP-097, además de un comentario en `apps/frontend/vite.config.ts` (línea 40, cita
+`.claude/harness/mutation.md`) y en comentarios de test. El arrastre acordado solo cubre JUP-098; se
+deja a decisión de Victor si se amplía (ver informe de la tarea).
+
+**Observaciones sobre lo que ya decía la evidencia de JUP-098 (no modificadas):** (a) la frase "en
+los tres archivos el score global queda por debajo del umbral" contradice la fila de `api.ts`
+(88.99%, por encima del 80); (b) cita `RF-093-001` como "pendiente de JUP-102", pero tras la
+renumeración del 2026-09-29 el turbo es JUP-101.
+
+**Checkpoint:** doc-only, sin Red/Green ni mutación. `openspec:validate`, `jup:check` y
+`jup:cleanup:check` en verde.

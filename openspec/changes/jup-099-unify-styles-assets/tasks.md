@@ -32,7 +32,7 @@
       `--poolOptions.threads.maxThreads=1`; arreglo posible `configure({ asyncUtilTimeout: 3000 })` en
       `src/test/setup.ts` como decisión de equipo. Sin ninguna afirmación sobre CI (tarea 2.1).
       No se corrige aquí.
-- [ ] 2.3 Sustituir las 9 referencias a configuración local del agente en
+- [x] 2.3 Sustituir las 9 referencias a configuración local del agente en
       `docs/evidence/JUP-098-validation.md` (líneas 93, 120, 126) y en
       `openspec/changes/archive/2026-09-27-jup-098-reconcile-auth-session/review.md` (líneas 34,
       48-52, 87, 95, 325) según la decisión 9 (Stryker sin archivo de configuración, lista real de

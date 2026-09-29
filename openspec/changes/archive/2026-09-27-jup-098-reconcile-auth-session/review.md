@@ -31,7 +31,7 @@ tarjeta; deben seguir en 235 PASS al cerrar cada grupo posterior.
 de `tasks.md` lo implementan; el resto de esta tarjeta es verificación y documentación.
 
 **Checkpoint:** grupo doc-only (sin código de producto, sin tests nuevos) → sin ciclo Red/Green ni
-mutación, según excepción de `.claude/harness/workflow.md`. Listo para commit.
+mutación (excepción doc-only). Listo para commit.
 
 ## Grupo 2. Motivo de la invalidación en la capa de acceso
 
@@ -45,12 +45,19 @@ fallos en runtime (`vitest`) y 4 errores de `tsc` contra la firma antigua de `in
 de generación intacto, `discardResponse` sin tocar, llamada de `fetchJson` sin modificar (sigue
 usando el valor por defecto `"manual"`). Commit `75728a4`. 240/240 PASS, `tsc` sin errores.
 
-**2.4 — Mutación.** Config: `.claude/harness/stryker.conf.mjs` → `mutate: ["src/services/api.ts"]`
-(harness local, no se commitea). Comando:
+**2.4 — Mutación.** Sobre `src/services/api.ts`, ejecutado desde `apps/frontend` sin archivo de
+configuración (invocación equivalente, verificada el 2026-09-29 con `--dryRunOnly`: 109 mutantes en
+`api.ts` y pasada inicial de 233 tests en verde). Comando (para otro archivo, cambiar `--mutate`, p.
+ej. `src/layouts/SessionGate.tsx` o `src/pages/LoginPage.tsx`):
 ```
 corepack pnpm --package=@stryker-mutator/core --package=@stryker-mutator/vitest-runner \
-  --package=typescript@5.9.3 dlx stryker run ../../.claude/harness/stryker.conf.mjs
+  --package=typescript@5.9.3 dlx stryker run --mutate src/services/api.ts \
+  --testRunner vitest --plugins @stryker-mutator/vitest-runner \
+  --reporters clear-text,progress --coverageAnalysis perTest --concurrency 2
 ```
+El umbral 80 no tiene opción de línea de comandos: se aplica como criterio de lectura del resultado,
+no como corte automático. Stryker deja `.stryker-tmp` en `apps/frontend`; borrarlo al terminar
+(`vite.config.ts` ya lo excluye de la suite).
 Resultado: **88.99%** (109 mutantes cubiertos, 97 KILLED, 11 SURVIVED, 1 NO COVERAGE) — por encima
 del umbral 80.
 
@@ -84,15 +91,15 @@ Cierre del grupo: mutation score de lo realmente tocado por esta tarea = 100% de
 equivalentes muertos (1 real remediado, 1 equivalente justificado). Score global del archivo
 (88.99%) queda por encima del umbral 80 igualmente.
 
-**DoD del grupo 2.** `node .claude/harness/check-dod.mjs` desde la raíz falla por RF-093-001 (turbo
-resuelve pnpm 11.9.0 global en subprocesos por paquete, en vez de 9.0.0 vía corepack — bloqueo
-conocido, pendiente de JUP-102, ajeno a este cambio). Sustituto `pnpm --filter @finops/frontend`:
+**Validación del grupo 2.** Los scripts de la raíz (`corepack pnpm test/lint/typecheck`) fallan por
+RF-093-001 (turbo resuelve pnpm 11.9.0 global en subprocesos por paquete, en vez de 9.0.0 vía
+corepack — bloqueo conocido, pendiente de JUP-102, ajeno a este cambio). Sustituto
+`pnpm --filter @finops/frontend`:
 
 - `lint` → sin salida, sin errores.
 - `typecheck` → sin salida, sin errores (`tsc --noEmit` × 3 configs).
 - `test` → 241/241 PASS (240 previos + 1 de remediación de mutación).
 - `build` → éxito, `dist/` generado (aviso preexistente de tamaño de chunk, no relacionado).
-- Escaneo de secretos del propio `check-dod.mjs` → PASS (esa comprobación sí corre bien desde la raíz).
 
 ## Grupo 3. Propagación del motivo desde `SessionGate`
 
@@ -321,8 +328,8 @@ test 3.1 (`tests/session-expiry-notice.test.tsx`), escrito en el grupo 3, leía
 al montarse, así que el resultado dependía de quién llegara antes. La carga de la máquina solo
 destapaba la carrera. Reescrito para comprobar el aviso visible (`getByRole("status")`), que se fija
 en el primer render y no desaparece solo: 5/5 seguidas, y sigue fallando si el `401` de `/me` deja de
-etiquetarse como `"expired"`. Para editar el archivo commiteado se desactivó el hook
-`lock-committed-tests` con autorización del usuario, y se restauró idéntico (verificado que vuelve a
+etiquetarse como `"expired"`. El test estaba protegido contra edición en el entorno local y se
+editó con autorización del usuario; la protección se restauró idéntica (verificado que vuelve a
 bloquear). Los otros fallos intermitentes observados (`tenant-switching`, `ingestion`,
 `conversations`, y esperas `findByRole` de 1 s por defecto en tests de JUP-098) son tiempos de espera
 bajo carga, no carreras de lógica; se mantiene esa nota de entorno.
