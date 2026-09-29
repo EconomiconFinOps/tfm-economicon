@@ -182,7 +182,7 @@ tarjeta en Trello.
   cuatro tareas de este spike, el type-check como séptimo check obligatorio de CI (ADR-0003, decisión
   3): ver [ADR-0003](../adr/ADR-0003-frontend-typescript.md).
 
-**JUP [`jup-094-reconcile-package-json`](../../openspec/changes/jup-094-reconcile-package-json/) — carril `standard`**
+**JUP [`jup-094-reconcile-package-json`](../../openspec/changes/archive/2026-09-07-jup-094-reconcile-package-json/) — carril `standard`**
 - [x] Fusionar dependencias del origen en `apps/frontend/package.json`: las 11 `MANTENER` del
   inventario de JUP-091, ajustando `react-router`/`recharts`/`lucide-react` a las versiones exactas
   del origen tras un salto de mayor incompatible del resolutor (mismo patrón que `typescript@7` en
@@ -203,7 +203,7 @@ tarjeta en Trello.
 - [x] Reconciliar `index.html` y entrypoint (`main.tsx`).
 - [x] Asegurar arranque sin errores de tipo ni de runtime (`pnpm dev`, `pnpm build`).
 
-**JUP [`jup-097-reconcile-api-layer`](../../openspec/changes/jup-097-reconcile-api-layer/) — carril `standard` — completa**
+**JUP [`jup-097-reconcile-api-layer`](../../openspec/changes/archive/2026-09-21-jup-097-reconcile-api-layer/) — carril `standard` — completa**
 - [x] Portar `services/api.*` a TS como **unica** capa HTTP. **Ya lo había cerrado JUP-095**: al
   proponer esta tarjeta, `api.ts`/`contracts.ts` ya existían tipados con las 10 operaciones (grupo 5
   de JUP-095, no de esta tarjeta) — este spike quedaba desactualizado al listarlo aquí como pendiente.
