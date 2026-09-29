@@ -24,10 +24,10 @@ export const monthlyData = [
 ];
 
 export const serviceData = [
-  { name: "Compute", value: 42, color: "#3b82f6" },
-  { name: "Storage", value: 25, color: "#10b981" },
-  { name: "Network", value: 18, color: "#f59e0b" },
-  { name: "Database", value: 15, color: "#8b5cf6" },
+  { name: "Compute", value: 42, color: "var(--chart-1)" },
+  { name: "Storage", value: 25, color: "var(--chart-2)" },
+  { name: "Network", value: 18, color: "var(--chart-3)" },
+  { name: "Database", value: 15, color: "var(--chart-4)" },
 ];
 
 export const kpiData = [

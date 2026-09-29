@@ -91,13 +91,13 @@
 
 ## 7. Migración de los dashboards de demostración
 
-- [ ] 7.1 **Green:** `ExecutiveCostDashboard.tsx`, `OperationalCostDashboard.tsx`,
+- [x] 7.1 **Green:** `ExecutiveCostDashboard.tsx`, `OperationalCostDashboard.tsx`,
       `ExecutiveCutDashboard.tsx`, `AnomaliesPanel.tsx` y `RecommendationsPanel.tsx`: clases a tokens,
       `fill`/`stroke` a `var(--chart-*)`. Crear aquí la constante compartida del `contentStyle` de los
       tooltips de Recharts con `var(--…)` (decisión 4; antes tarea 5.3) y usarla en las 9 gráficas.
-- [ ] 7.2 **Green:** `src/data/demo/executiveCostDashboard.ts` a `var(--chart-N)`.
-- [ ] 7.3 Resolver `#8884d8` según la decisión 1 (eliminar si no se pinta; si se pinta, `chart-*`).
-- [ ] 7.4 Guardián en verde en todos los archivos; ninguna excepción más allá de las declaradas en
+- [x] 7.2 **Green:** `src/data/demo/executiveCostDashboard.ts` a `var(--chart-N)`.
+- [x] 7.3 Resolver `#8884d8` según la decisión 1 (eliminar si no se pinta; si se pinta, `chart-*`).
+- [x] 7.4 Guardián en verde en todos los archivos; ninguna excepción más allá de las declaradas en
       `review.md` una a una.
 
 ## 8. Verificación visual, propagación y tokens sin consumidor

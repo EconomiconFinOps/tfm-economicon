@@ -99,7 +99,8 @@ de `#262626` a `#2d3748`.
 
 `#8884d8` (`fill` por defecto del `Pie` de `ExecutiveCostDashboard`) queda oculto por los `Cell`
 con color propio. Se elimina si la comparación visual confirma que no se pinta; si se pinta, se
-asigna a un `chart-*`.
+asigna a un `chart-*`. **Resuelto en el grupo 7:** se eliminó el atributo y la comparación de las
+34 capturas (incluidas las del `Pie`) da 0 píxeles reales de diferencia: no se pintaba.
 
 - **Alternativa descartada: espacio de nombres propio junto al de shadcn** (`--app-*`). Dejaría dos
   vocabularios de color en `theme.css` y los primitivos seguirían en otra paleta: es el problema que
@@ -154,6 +155,15 @@ del mismo primitivo siempre aplica y prevalece, y el `Select` no lo usa ninguna 
 - Datos demo (`src/data/demo/executiveCostDashboard.ts`) → `var(--chart-N)`.
 - Mapas cerrados de clases (`VALUE_TONE_CLASSES` de `MetricCard`) se conservan como mapas cerrados:
   Tailwind no detecta clases construidas por interpolación.
+- **Descubierto en el grupo 7: cuatro pantallas de demostración interpolaban clases**
+  (`text-${color}-400`, `bg-${color}-500/20 border-${color}-500/30`). Tailwind no las detecta y solo
+  se generaban por coincidencia, porque el literal completo (`text-blue-400`, `bg-red-500/20`…)
+  aparecía en otra línea de `src/`. Al migrar esos literales a tokens, las clases interpoladas habrían
+  dejado de generarse y las pantallas habrían cambiado de aspecto sin que ningún test lo viera. Se
+  sustituyen por **mapas cerrados de cadenas completas** (`Record<string, string>`) en cada página.
+  Los tonos que antes no generaban clase (`purple` en todos los casos y `orange` en el texto de
+  iconos y valores) siguen sin ella, para que el resultado sea idéntico; ver `RF-099-002`. La
+  constante compartida del tooltip vive en `src/components/chartTheme.ts` y se usa en las 9 gráficas.
 
 ### 5. Dos tests estáticos protegen el resultado
 
@@ -197,9 +207,18 @@ archivo de producto**, y otra vez al terminar, con el mismo guion:
   niveles** (`reales`) de los de 1 nivel. Criterio de "sin regresión": **0 reales** y no más de 50
   píxeles de 1 nivel por escenario. Un cambio de color de verdad (un token equivocado, un tono
   desplazado) afecta a áreas enteras y a más de 1 nivel, no a una decena de píxeles.
-- Los escenarios pasan de 14 a 20 al añadir estados que el primer guion no veía y que tienen color
-  propio: carga y error del bootstrap de tenants (`SessionGate`), carga y error del resumen,
-  éxito de ingesta y error de envío del asistente.
+  **Matiz añadido en el grupo 7:** ese umbral solo describe el ruido **aleatorio**, el que cambia
+  entre pasadas del mismo build (`ingest-success`: 7, 24 y 31 px). Una diferencia de 1 nivel que se
+  **repite igual** en cada pasada (misma pareja de builds, mismas coordenadas) no es ruido, aunque
+  supere o no los 50 px: es sistemática y se explica y acepta una a una. Se distingue capturando cada
+  build dos veces (mismo build = 0, o pocos px cambiantes; builds distintos = siempre el mismo
+  número). Caso real en el grupo 7: `RecommendationsPanel` da 1 410 px de 1 nivel de forma
+  reproducible; ver `review.md`.
+- Los escenarios pasan de 14 a **34**: 6 añadidos en el grupo 5 (carga y error del bootstrap de
+  tenants, carga y error del resumen, éxito de ingesta, error de envío del asistente), 5 en el grupo 6
+  (lista de conversaciones vacía, error al crear y las tres ramas "sin tenant") y 9 en el grupo 7
+  (**tooltips de Recharts**, abiertos pasando el ratón por el centro de cada gráfica; el
+  `contentStyle` solo se pinta al hacer hover).
 - Playwright y `pixelmatch` se instalan en un proyecto temporal fuera del repositorio, como hizo
   JUP-095; no entran en `package.json`. El guion completo se copia en
   `docs/evidence/JUP-099-validation.md` para que cualquiera lo reproduzca. Las capturas no se

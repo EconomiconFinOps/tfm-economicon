@@ -422,3 +422,92 @@ la migración de `LoginPage` (incluido el aviso ámbar y el error en rojo), `Ing
 sin tenant y con datos) no cambia ningún píxel de forma real.
 
 **Checkpoint:** commit **Green**. Sin mutación (exención de la decisión 5).
+
+## Grupo 7. Dashboards de demostración
+
+**Antes de migrar: el guion pasa de 25 a 34 escenarios.** Los 9 nuevos son los **tooltips de
+Recharts**: su `contentStyle` (9 usos) solo se pinta al pasar el ratón, así que sin captura de hover un
+"0 px" no habría dicho nada de él. Se abre con el ratón en el centro de cada `.recharts-wrapper`, tras
+esperar a que termine la animación, con un gancho `after` en el guion. Comprobado a ojo que el
+tooltip aparece (con el color de cada serie y el cursor de barras). Determinismo del baseline en los 9:
+dos pasadas, 0 px. Contra el baseline, el tema cambia en ellos solo lo ya conocido: los iconos
+`#fafafa → #ffffff` y el borde `#262626 → #2d3748`, con las mismas cantidades que en las pantallas
+sin tooltip (el tooltip en sí no cambia con el tema).
+
+**7.1, 7.2, 7.3 — Green: 5 dashboards, datos demo y `chartTheme.ts`** por el agente `coder`
+(revisado por el orquestador):
+
+| Archivo | Clases | Atributos Recharts | Tooltips |
+| --- | --- | --- | --- |
+| `ExecutiveCostDashboard.tsx` | 37 | 16 | 3 |
+| `OperationalCostDashboard.tsx` | 63 | 15 | 2 |
+| `ExecutiveCutDashboard.tsx` | 53 | 19 | 2 |
+| `AnomaliesPanel.tsx` | 49 | 8 | 1 |
+| `RecommendationsPanel.tsx` | 60 | 3 | 1 |
+| `data/demo/executiveCostDashboard.ts` | – | – | 4 colores → `var(--chart-1..4)` |
+
+(Recuentos de clases aproximados, del `coder`; el diff exacto es `git diff`.) `fill`/`stroke` de
+Recharts pasan a `var(--token)` (`--border` para la rejilla, `--chart-axis`, `--highlight`, `--primary`,
+`--chart-baseline`, `--chart-2`, `--chart-negative`, `--chart-5`). Nuevo
+`apps/frontend/src/components/chartTheme.ts` con `chartTooltipStyle` (4 propiedades, mismo orden que el
+literal original, comentario en español), usado en las 9 gráficas (**tarea 5.3, trasladada**).
+**Confirmado por la comparación visual:** Recharts resuelve `var(--…)` en atributos SVG y en
+`contentStyle`; series, ejes, rejilla, leyendas, sectores y tooltips son idénticos.
+
+**`#8884d8` (7.3):** el `coder` eliminó el atributo `fill` del `<Pie>` con un comentario en español.
+34 capturas sin diferencia real: no se pintaba. Resuelto.
+
+**Hallazgo del `coder`, decisión de diseño (ver `design.md`, decisión 4): clases interpoladas.** Cuatro
+pantallas construían clases con `text-${color}-400`, `bg-${color}-500/20 border-${color}-500/30` y
+`font-bold text-${color}-400`. Tailwind no las detecta; existían **por casualidad**, porque el literal
+completo aparecía en otra línea. Migrar esos literales a tokens las habría dejado de generar, y las
+pantallas habrían cambiado sin que ninguna prueba lo detectara. Se sustituyen por mapas cerrados
+(`toneIconClass`, `toneBoxClass`, `toneTextClass`, `Record<string, string>`, con `?? ''`) en
+`ExecutiveCostDashboard`, `ExecutiveCutDashboard`, `AnomaliesPanel` y `RecommendationsPanel`. Los
+tonos que antes no generaban clase (`purple` siempre; `orange` en texto de icono y valor) siguen sin
+ella. Es un cambio de estructura más allá de "cambiar el color", justificado y verificado por las
+capturas (0 reales); revisado por el orquestador: solo quedan las interpolaciones citadas en
+comentarios. Se registra `RF-099-002` (aspecto sin color de esos tonos, preexistente).
+
+**7.4 — Verificación (ejecutada por el orquestador, cada comando en solitario):**
+
+| Comprobación | Resultado |
+| --- | --- |
+| Guardián de colores | **61/61 pasan.** Solo quedan las excepciones declaradas (`#1e40af`, `#ddd` de `ExportButton`; `bg-black/50` de `dialog`) |
+| `theme-palette.test.ts` | **110/110 pasan**: todos los casos (d) en verde |
+| Suite completa | **`Test Files 47 passed`, `Tests 431 passed (431)`**, 0 timeouts. 431 = 260 previos + 61 + 110. Es la primera vez que la suite queda entera en verde tras el Red del grupo 3 |
+| `typecheck` / `lint` | exit 0 / exit 0 |
+| Búsqueda de hex en `src` (sin tests) | solo las 3 líneas de la excepción de `ExportButton` (45, 47, 48) |
+
+**Comprobación adicional: ¿el (d) verde es genuino?** El `tester` avisó de que un token citado solo
+en un comentario contaría como consumidor. Se repitió el análisis **ignorando comentarios**
+(`consumers.mjs`): 42 tokens `--color-*`, **0 sin consumo real**. (Un primer intento dio 7 tokens sin
+consumo, `chart-*`; era un fallo de mi script, no del código: el shell colapsó las barras `\` de una
+expresión regular escrita en un heredoc y `var\(--chart-axis\)` nunca casaba. Un `grep` directo ya
+mostraba 30+ usos. El script se reescribió con la herramienta de archivos y el resultado es el
+anterior.) Mínimo de consumidores: 1 archivo en 11 de los tokens (los de los primitivos de shadcn
+`select`/`tooltip`, `positive`, `warning-foreground`, `chart-1`, `chart-3`).
+
+**Verificación visual (34 escenarios, contra la referencia del grupo 6): 0 píxeles reales.**
+Diferencias de 1 nivel de canal en dos escenarios, **de naturaleza distinta**, comprobado capturando
+cada build dos veces:
+
+- **`ingest-success`: ruido aleatorio.** 31 px en esta pasada; entre pasadas del mismo build da 7
+  (g6 vs g6) y 24 (g7 vs g7); entre builds distintos dio 0 en la repetición. Cambia de una pasada a
+  otra. Dentro del criterio (≤ 50).
+- **`recommendations` (y `tooltip-recommendations-0`, la misma zona): diferencia sistemática de
+  1 nivel, 1 410 px.** g6 vs g6 = 0, g7 vs g7 = 0, g6 vs g7 = 1 410 **las dos veces**. Caja x 29-1404,
+  y 1737-1879: el panel de agentes, un degradado (`from-primary/20 to-chart-4/20`; antes
+  `from-[#0078d4]/20 to-[#8b5cf6]/20`). No es ruido: es reproducible, así que **no la doy por
+  buena por el umbral**, la explico. Causa, leída en el CSS generado: para un hex arbitrario con
+  opacidad Tailwind calcula el color **en tiempo de build** y escribe un literal redondeado
+  (`oklab(56.7687% -.0533597 -.157766/.2)`); con un token emite `color-mix(in oklab, var(--primary)
+  20%, transparent)`, que el navegador evalúa con precisión completa. Es el mismo color con otro
+  redondeo: **1 nivel de canal**, imperceptible, solo visible en un degradado. Es inherente al
+  mecanismo que pide la tarjeta (usar el token en lugar del literal), no un error de migración.
+  Consta para su **aceptación explícita en la tarea 8.1**.
+
+**Diferencias del tema ya acumuladas para 8.1 (grupo 4), sin cambios en este grupo:** franja
+`#0a0a0a → #0f1419`, iconos `#fafafa → #ffffff` y un borde `#262626 → #2d3748`. Más la de arriba.
+
+**Checkpoint:** commit **Green**. Sin mutación (exención de la decisión 5).
