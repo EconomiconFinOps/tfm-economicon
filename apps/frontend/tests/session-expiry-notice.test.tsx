@@ -4,8 +4,9 @@
 // motivo (errores no-401 de `/me`, contrato invalido, logout manual o "Reset
 // session" tras un fallo de tenants) debe terminar en `/login` SIN marca.
 //
-// Tarea 3.1 fija el Red genuino: hoy `SessionGate` no propaga ningun motivo
-// a `<Navigate>`, asi que la marca nunca llega.
+// Tarea 3.1 fijo el Red genuino (la marca no llegaba a `/login`). Tras la
+// revision del PR #50 comprueba el aviso visible en vez de la marca: desde el
+// grupo 4 `LoginPage` la borra del historial al montarse.
 // Tarea 3.2 son pruebas de caracterizacion/regresion: el comportamiento sin
 // marca ya es el actual (no cambia con este grupo), pero se fijan aqui para
 // que la fase Green (3.3) no las rompa por accidente.
@@ -40,14 +41,15 @@ async function waitForLoginState(router: { state: { location: { pathname: string
 }
 
 describe("JUP-098 marca de expiracion de sesion en /login", () => {
-  it("un 401 de /me al arrancar con sesion persistida termina en /login con la marca de expiracion", async () => {
-    // Red genuino (tarea 3.1): hoy SessionGate desloguea via handleLogout()
-    // pero <Navigate> nunca pasa `state`, asi que este expect falla.
+  it("un 401 de /me al arrancar con sesion persistida termina en el acceso mostrando el aviso de sesion expirada", async () => {
+    // Se comprueba el aviso visible y no `router.state.location.state`: desde el
+    // grupo 4 LoginPage borra la marca del historial al montarse, asi que leerla
+    // era una carrera; el aviso se fija en el primer render y no desaparece solo.
     mockBackend({ "GET /me": () => failure(401) });
     restoreSession();
-    const { router } = renderApp(["/"]);
-    const state = await waitForLoginState(router);
-    expect(state).toEqual({ sessionExpired: true });
+    renderApp(["/"]);
+    await screen.findByRole("button", { name: "Sign in" });
+    expect(screen.getByRole("status")).toHaveTextContent("Your session has expired. Sign in again to continue.");
   });
 
   it.each([403, 503, "network"] as const)(
