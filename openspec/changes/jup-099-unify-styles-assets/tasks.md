@@ -102,7 +102,7 @@
 
 ## 8. Verificación visual, propagación y tokens sin consumidor
 
-- [ ] 8.1 Capturar las 9 pantallas y el aviso con el mismo guion de 1.4 y comparar con `pixelmatch`
+- [x] 8.1 Capturar las 9 pantallas y el aviso con el mismo guion de 1.4 y comparar con `pixelmatch`
       (umbral 0). Registrar en `review.md` los píxeles distintos por pantalla y explicar cada
       diferencia no nula; corregir las que no sean aceptables.
 - [x] 8.2 Demostración de propagación (criterio 2): cambiar temporalmente `--primary`, reconstruir,
@@ -115,14 +115,14 @@
 
 ## 9. Licencias, ADR y documentación
 
-- [ ] 9.1 Crear `apps/frontend/ATTRIBUTIONS.md` (decisión 7): aviso MIT de shadcn/ui verificado contra
+- [x] 9.1 Crear `apps/frontend/ATTRIBUTIONS.md` (decisión 7): aviso MIT de shadcn/ui verificado contra
       la licencia publicada, y por qué no aplican Unsplash, fuentes ni dependencias npm.
-- [ ] 9.2 Redactar `docs/adr/ADR-0010-frontend-color-tokens.md` desde `docs/templates/adr.md` en estado
+- [x] 9.2 Redactar `docs/adr/ADR-0010-frontend-color-tokens.md` desde `docs/templates/adr.md` en estado
       `Proposed`, añadirlo al índice de `docs/adr/README.md` y enlazarlo desde el seguimiento de
       ADR-0004.
-- [ ] 9.3 Actualizar `apps/frontend/README.md`: estilos y tokens (dónde viven, regla de no usar
+- [x] 9.3 Actualizar `apps/frontend/README.md`: estilos y tokens (dónde viven, regla de no usar
       colores literales, test guardián) y `ATTRIBUTIONS.md` en la estructura.
-- [ ] 9.4 Actualizar `docs/spikes/frontend-migration.md`: la tarjeta `jup-0xx-unificar-estilos-assets`
+- [x] 9.4 Actualizar `docs/spikes/frontend-migration.md`: la tarjeta `jup-0xx-unificar-estilos-assets`
       pasa a `JUP-099` / `jup-099-unify-styles-assets`, carril `standard`, casillas marcadas con el
       alcance real.
 

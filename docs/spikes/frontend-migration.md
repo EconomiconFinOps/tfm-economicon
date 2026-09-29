@@ -249,10 +249,32 @@ tarjeta en Trello.
       no sobrevive a una recarga de `/login` ni al botón "atrás" del navegador. El `403` de tenant
       conserva la sesión, tal como ya especificaba JUP-085 — se reafirma la decisión, sin cambiarla.
 
-**JUP `jup-0xx-unificar-estilos-assets`** — carril `light`
-- [ ] Unificar el sistema de estilos (resolver duplicados con el tema oscuro actual).
-- [ ] Migrar fuentes/iconos/imagenes y verificar licencias.
-- [ ] Confirmar que no quedan referencias a estilos del scaffold antiguo.
+**JUP [`jup-099-unify-styles-assets`](../../openspec/changes/jup-099-unify-styles-assets/) — carril `standard` (el spike la proponía `light`) — implementada; PR pendiente de aprobación**
+- [x] Unificar el sistema de estilos. **El problema real era mayor que "duplicados con el tema
+      oscuro"**: convivían tres fuentes de color (241 hexadecimales y 229 utilidades de la paleta de
+      Tailwind escritos a mano en las pantallas, más los tokens de `theme.css`, que eran el tema por
+      defecto de shadcn y solo consumían los primitivos que ninguna pantalla usaba). Ahora hay **una
+      única paleta en `:root`** con tokens de nombre funcional y el valor exacto que sustituyen; se
+      retiró el bloque `.dark` y el apaño `class="dark"` de JUP-095; dos tests estáticos impiden que
+      vuelva un color literal (`color-tokens.guard.test.ts`, `theme-palette.test.ts`). Decisión
+      duradera en [ADR-0010](../adr/ADR-0010-frontend-color-tokens.md).
+- [x] Migrar fuentes/iconos/imagenes y verificar licencias. **No había nada que migrar**: no se portó
+      ninguna imagen (las fotos de Unsplash del origen no llegaron), no hay fuentes y los iconos son de
+      `lucide-react`. Lo que sí exigía atribución era el código de shadcn/ui copiado al repositorio
+      (MIT): [`apps/frontend/ATTRIBUTIONS.md`](../../apps/frontend/ATTRIBUTIONS.md).
+- [x] Confirmar que no quedan referencias a estilos del scaffold antiguo. Quedaban tres menciones a
+      `main.css` en comentarios de `MetricCard`, `SectionCard` y `StatusPill`; retiradas. Búsqueda en
+      `apps/frontend`: 0 resultados.
+- [x] **Añadido durante el `apply`, más allá de las tareas de este spike:** verificación visual con
+      Chromium real, 34 escenarios antes y después (incluidos estados de error, carga, "sin tenant" y
+      los tooltips de las gráficas): sin regresión de color de pantalla; las cuatro diferencias que
+      quedan (fondo del `body`, color heredado por los iconos, un borde por defecto y el redondeo de
+      un degradado) están medidas y aceptadas. Demostrado que cambiar un token solo en `theme.css`
+      cambia toda la interfaz. Hallazgos nuevos: `RF-099-002` (clases interpoladas que Tailwind no
+      detectaba y tonos sin estilo en las pantallas de demostración), `RF-099-003` (tonos casi
+      iguales no consolidados), `RF-099-001` (referencias a herramientas locales en documentación
+      archivada) y `RF-099-004` (71 enlaces relativos rotos por el archivado de changes). Además, esta rama resolvió el arrastre de JUP-098 (`RF-098-004`, referencias locales
+      en su evidencia, enlaces rotos y comentarios de test).
 
 ### F4. Integracion de plataforma (monorepo/runtime)
 
@@ -439,3 +461,14 @@ tarjeta JUP** de la epica.
    fijada por JUP-085 y reafirmada aquí sin cambios. `RF-098-001` (hallazgo nuevo, bajo): cobertura de
    mutación incompleta en `api.ts`/`SessionGate.tsx`/`LoginPage.tsx` fuera de las líneas que esta
    tarjeta tocó, deuda preexistente de JUP-085/097. **Queda de F3:** solo `unificar-estilos-assets`.
+10. **Hecho en JUP-099 (`jup-099-unify-styles-assets`): `unificar-estilos-assets` queda implementada y
+    con ella F3 completa.** El spike la describía como "resolver duplicados con el tema oscuro actual",
+    con carril `light`; al verificar el código el 2026-09-29 el problema era de otra escala (241
+    hexadecimales y 229 utilidades de paleta a mano frente a unos tokens que las pantallas no
+    consumían), por lo que se elevó a `standard`. Resultado: una paleta única en `theme.css`, sin
+    ámbito `.dark`, protegida por tests, con `ATTRIBUTIONS.md` para el código de shadcn/ui copiado y
+    verificada píxel a píxel contra el estado anterior. La verificación descubrió un defecto latente
+    que el spike no podía conocer: cuatro pantallas construían clases por interpolación que Tailwind
+    no detecta y que solo existían por coincidencia (`RF-099-002`). **Queda de la épica** lo que
+    ninguna tarjeta de migración resuelve (decisiones `RF-091-003`, `RF-091-004`, `RF-098-002`) y las
+    tarjetas de F4/F5.

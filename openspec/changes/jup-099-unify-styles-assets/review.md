@@ -514,7 +514,7 @@ cada build dos veces:
 
 ## Grupo 8. Verificación visual final, propagación y tokens sin consumidor
 
-**8.1 — Comparación final (34 escenarios): PENDIENTE de la aceptación de Victor.** Build del estado
+**8.1 — Comparación final (34 escenarios): las cuatro diferencias, ACEPTADAS por Victor.** Build del estado
 final (`81a5e69`, CSS 41,83 kB) capturado con el mismo guion y comparado con las tres referencias:
 
 | Comparación | Resultado |
@@ -571,8 +571,14 @@ después, abajo diferencia amplificada):
 Ninguna de las cuatro es un color de pantalla migrado con un token equivocado; son efectos del cambio
 de tema y del mecanismo de tokens sobre lo que no llevaba color propio o lo llevaba con opacidad.
 
-**Decisión de Victor sobre 8.1:** no acepta todavía (2026-09-29) y quiere revisar las capturas. Se le
-han entregado las cuatro imágenes. **8.1 queda sin marcar hasta que las acepte o pida cambios.**
+**Decisión de Victor sobre 8.1 (2026-09-29): acepta las cuatro diferencias.** Primero pidió revisarlas;
+se le entregaron las cuatro imágenes (antes / después / diferencia amplificada) y una explicación de
+qué se compara: la misma pantalla, con los mismos datos y el mismo navegador, antes y después de la
+migración. Tras verlas acepta explícitamente (1) la franja, (2) los iconos, (3) el borde y (4) el
+degradado. Entiende que solo la primera es visible a simple vista y que es una mejora deliberada; las
+otras tres son de 1 a 5 niveles de canal o de un elemento diminuto. **Criterio 4 de la tarjeta
+cumplido** ("sin regresión visual, verificado pantalla por pantalla y registrado en `review.md`"),
+con estas cuatro diferencias aceptadas una a una.
 
 **8.2 — Demostración de propagación (criterio 2 y requisito "Un cambio de token se propaga…").**
 Se cambian **dos tokens en `theme.css`**, y solo ese archivo: `--primary: #0078d4 → #ff00ff` y
@@ -617,3 +623,76 @@ decisión de Victor: grises `#94a3b8`/`slate-400` v4 y `#64748b`/`slate-500` v4;
 **Comprobación de mi propio trabajo en este grupo:** el guion tiene ahora 34 escenarios y
 determinismo verificado en los añadidos; los conteos de las tablas salen de `classify.mjs` y
 `propagation.mjs` (suma de causas = 7 356 701 = total de `compare.mjs`).
+
+## Grupo 9. Licencias, ADR y documentación
+
+Grupo doc-only (sin código de producto ni tests): sin Red/Green ni mutación (excepción doc-only).
+
+**9.1 — `apps/frontend/ATTRIBUTIONS.md` creado** (decisión 7). Qué aplica y qué no, verificado:
+
+- **Código copiado de shadcn/ui (MIT): sí aplica.** 5 primitivos (`src/components/ui/dialog`, `label`,
+  `select`, `separator`, `tooltip`) y el helper `cn` de `src/lib/utils.ts`. Se incluye el texto de la
+  licencia **copiado literalmente** de `LICENSE.md` del repositorio de shadcn/ui, descargado con `curl` el
+  2026-09-29 (`Copyright (c) 2023 shadcn`); un `diff` del bloque del archivo contra el descargado da
+  **vacío**. (`WebFetch` devolvió un resumen y no el texto literal, así que no se usó para copiar.)
+- **Fotos de Unsplash: no aplica.** `apps/frontend` no contiene imágenes (`.png`, `.jpg`, `.svg`,
+  `.ico`…), ni `src/assets`, ni `public/`; ningún archivo de `src/` ni `index.html` las referencia.
+- **Fuentes: no aplica.** 0 `@font-face` en el código y **en el CSS final**; la fuente sale de la pila del
+  sistema que aplica Tailwind (`-apple-system`, `Segoe UI`, `Roboto`, `Arial`…). El único `font-family`
+  del código es el `Arial` del documento de impresión de `ExportButton`.
+- **Dependencias npm: no se copian, cada una lleva su licencia.** Licencias leídas del `package.json` de
+  las versiones instaladas, no supuestas: `lucide-react` 0.487.0 ISC; `recharts` 2.15.2, `@radix-ui/*` (5
+  paquetes), `tailwindcss` 4.3.3, `tw-animate-css` 1.4.0, `clsx` 2.1.1 y `tailwind-merge` 3.6.0 MIT.
+  `class-variance-authority` (Apache-2.0) está declarado pero ningún archivo de `src/` lo importa, así
+  que no se lista. El archivo avisa de que el bundle incorpora ese código y de que no sustituye a un
+  inventario de licencias si la aplicación se distribuyera fuera del equipo.
+- Corregí sobre la marcha una frase mía ("usa la pila de fuentes por defecto del navegador"): comprobé
+  en el CSS generado que la pila viene de Tailwind y la reescribí con datos.
+
+**9.2 — `docs/adr/ADR-0010-frontend-color-tokens.md`** redactado con el formato de ADR-0003/0004, en
+estado **`Proposed`** durante la revisión (pasa a `Accepted` con la aprobación del PR). Recoge contexto
+medido (241 + 229 + tokens sin consumo), ocho decisiones (sin colores literales, nombres por función y
+valor exacto, paleta única en `:root` con `@custom-variant dark (&)`, valores v4 literales, formas de uso,
+sin clases interpoladas, excepciones declaradas, cumplimiento por tests), consecuencias (incluidos los
+puntos ciegos del guardián y el redondeo de opacidades), alternativas y evidencia. **Índice:**
+`docs/adr/README.md` no lista los ADR (solo describe convenciones), así que no hay entrada que añadir.
+Enlazado desde el seguimiento de `ADR-0004` junto con `ATTRIBUTIONS.md`.
+
+**Corrección menor en `ADR-0004`:** el enlace de la línea 20 apuntaba a
+`openspec/changes/jup-094-reconcile-package-json/design.md` (sin `archive/`), roto por el archivado de
+JUP-094. Corregido a `.../archive/2026-09-07-jup-094-reconcile-package-json/design.md` (existe). Solo
+un enlace, sin tocar la decisión del ADR.
+
+**9.3 — `apps/frontend/README.md`:** stack (enlace a ADR-0010 y a la sección nueva), estructura
+(`chartTheme.ts`, `theme.css` como única paleta, los dos tests de reglas de color y `ATTRIBUTIONS.md`) y
+una sección nueva **"Estilos y colores"** con la regla (ningún color literal), una tabla "necesitas →
+escribe", cómo cambiar y añadir un token, la prohibición de clases interpoladas, las excepciones y los
+tests que lo hacen cumplir. Comprobado que todos los tokens de la tabla existen en `theme.css` y que los
+enlaces del README resuelven.
+
+**9.4 — `docs/spikes/frontend-migration.md`:** la tarjeta `jup-0xx-unificar-estilos-assets` pasa a
+`JUP-099` / `jup-099-unify-styles-assets`, carril `standard`, con las casillas marcadas con el alcance
+real (más de lo que el spike describía: tres fuentes de color, 241 + 229 ocurrencias; nada que migrar
+en assets pero sí atribución de shadcn/ui; verificación visual de 34 escenarios; hallazgos nuevos), y
+una entrada 10 en la lista numerada que cuenta cómo el spike se quedó corto y que con esta tarjeta F3
+queda completa. El enlace al change apunta a la carpeta **activa**
+(`openspec/changes/jup-099-unify-styles-assets/`): **hay que corregirlo a `archive/<fecha>-…` en el
+mismo paso del archivado**, lección de JUP-098.
+
+**Observación: más deuda de enlaces rotos por archivados. Registrada como `RF-099-004` por decisión de
+Victor (2026-09-29); no se corrige aquí.** Un primer chequeo de los `.md` de `docs/` y de los README
+encontró **18 enlaces rotos** (tras la corrección de `ADR-0004`): `docs/evidence/JUP-085-validation.md`
+(8), `docs/adr/ADR-0007-backend-cors-policy.md` (5), `docs/evidence/JUP-097-validation.md` (2),
+`docs/planning/JUP-097-frontend-data-gap-map.md` (1), `docs/evidence/JUP-013-validation.md` (1) y
+`docs/adr/ADR-0003-frontend-typescript.md` (1). (Mi primer desglose de esta nota decía 4 para
+`JUP-085-validation.md` y omitía los dos ADR; lo corregí tras el recuento por archivo.)
+
+Para el finding amplié la medición a **todos los `.md` versionados** y **clasifiqué la causa** en vez de
+suponerla (`brokenlinks.mjs`): hay **71 enlaces rotos = 18 + 53, 0 sin explicar**. **(A) 18**: el destino es
+la carpeta de un change que ahora vive en `openspec/changes/archive/<fecha>-<change>/` (los 18 de
+arriba). **(B) 53**: enlaces dentro de documentos ya archivados a los que les falta un `../` porque la
+carpeta bajó un nivel; por change archivado: JUP-094 (14), JUP-085 (11), JUP-095 portar (11), JUP-092 (7),
+JUP-097 (5), JUP-091 (2), JUP-095 reconciliar (1), JUP-013 (1) y JUP-043 (1). En ambos casos el script
+comprobó que el destino corregido **existe**, así que el arreglo es mecánico. JUP-099 corrige solo 4 (los
+3 del arrastre de JUP-098 y el de `ADR-0004`). Mi hipótesis inicial ("por archivado") resultó correcta
+pero incompleta: dos tercios de los casos (B) no eran del tipo que yo había mirado al principio.

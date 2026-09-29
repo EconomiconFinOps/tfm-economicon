@@ -27,7 +27,9 @@ Aqui vive la parte visual del sistema:
   `lucide-react`.
 - Tailwind CSS v4 (`@tailwindcss/vite`) + un subconjunto de shadcn/ui (primitivos Radix copiados a
   `src/components/ui/`: label, select, separator, dialog, tooltip — ver
-  [ADR-0004](../../docs/adr/ADR-0004-frontend-shadcn-ui.md)).
+  [ADR-0004](../../docs/adr/ADR-0004-frontend-shadcn-ui.md)). Todos los colores salen de tokens del
+  tema: ver [Estilos y colores](#estilos-y-colores) y
+  [ADR-0010](../../docs/adr/ADR-0010-frontend-color-tokens.md).
 - `Vitest` + `@testing-library/react` (runner de pruebas, comprobación obligatoria de CI). Dos
   ubicaciones de test conviven y se descubren juntas: `src/**/*.test.tsx` (junto al código que
   prueban) y `tests/**/*.test.tsx` (regresión end-to-end de sesión, tenant, ingesta y
@@ -40,6 +42,7 @@ Aqui vive la parte visual del sistema:
 apps/frontend
 |-- src/
 |   |-- components/
+|   |   |-- chartTheme.ts # estilo compartido del tooltip de Recharts (variables del tema)
 |   |   `-- ui/          # primitivos shadcn/ui copiados (label, select, separator, dialog, tooltip)
 |   |-- data/
 |   |   `-- demo/        # datos de demostracion de las 5 pantallas de coste (sustituibles, RF-095-002)
@@ -54,12 +57,14 @@ apps/frontend
 |   |-- services/
 |   |   |-- api.ts       # unica capa HTTP, tipada contra services/contracts.ts
 |   |   `-- contracts.ts # tipos de request/response compartidos con el backend
-|   |-- styles/          # tailwind.css, theme.css, index.css
+|   |-- styles/          # tailwind.css, theme.css (tokens de color: unica paleta), index.css
 |   |-- test/            # setup.ts (jsdom, limpieza de storage/mocks, mocks de ResizeObserver/Request)
+|   |                    # color-tokens.guard.test.ts y theme-palette.test.ts (reglas de color)
 |   |-- App.tsx           # monta <RouterProvider>
 |   |-- main.tsx          # entrypoint: QueryClientProvider + App
 |   `-- routes.tsx        # mapa de rutas (routeConfig + router)
 |-- tests/                # regresion end-to-end (sesion, tenant, ingesta, conversaciones)
+|-- ATTRIBUTIONS.md       # atribuciones de terceros (codigo copiado de shadcn/ui, MIT)
 |-- Dockerfile
 |-- index.html
 |-- package.json
@@ -85,6 +90,41 @@ Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el
 | `/ingest` | `IngestPage` | Datos reales vía `services/api.ts` |
 | `/assistant` | `ConversationsPage` | Datos reales vía `services/api.ts` |
 | `/overview-legacy` | `DashboardPage` | Ruta puente temporal — **único dashboard con datos reales** (`GET /billing/summary`, `GET /health`); la retira la siguiente tarjeta de F3 que reconcilie la capa de datos |
+
+## Estilos y colores
+
+La aplicacion tiene **una unica paleta**, definida una sola vez en `src/styles/theme.css` (bloque
+`:root`, solo tema oscuro; no hay `.dark` ni `class="dark"` en `index.html`). Decision y motivos en
+[ADR-0010](../../docs/adr/ADR-0010-frontend-color-tokens.md).
+
+**Regla: ninguna pantalla, layout, componente ni dato demo escribe un color literal.** Ni
+hexadecimales (`#1a1f2e`) ni utilidades de la paleta de Tailwind (`text-slate-400`, `bg-red-500/20`):
+se usa la utilidad del token.
+
+| Necesitas | Escribe |
+| --- | --- |
+| Fondo de pagina, tarjeta, degradado de tarjeta | `bg-background`, `bg-card`, `from-card to-accent` |
+| Texto principal, secundario, intermedio, tenue | `text-foreground`, `text-muted-foreground`, `text-subtle-foreground`, `text-neutral` |
+| Bordes y separadores | `border-border`, `divide-border` |
+| Marca, foco, acento de navegacion | `bg-primary`, `border-primary`, `text-highlight` |
+| Estados (exito, error, info, aviso, atencion) | `text-success`, `bg-danger-tint/20 text-danger-foreground`, `text-info`, `text-warning`, `bg-attention-tint/20` |
+| Atributos de Recharts (`stroke`, `fill`) y estilos en linea | `var(--chart-axis)`, `var(--chart-2)`, `var(--primary)`, o `chartTooltipStyle` para el tooltip |
+
+- **Cambiar un color** = editar su valor en `theme.css`; llega a todas las pantallas sin tocarlas.
+- **Anadir un color** = crear un token con nombre de **funcion** (no de color), con consumidor real, en
+  `:root` y en `@theme inline` (`--color-<nombre>`). Un token sin uso hace fallar los tests.
+- **No construyas clases por interpolacion** (`` `text-${color}-400` ``): Tailwind no las detecta. Usa un
+  mapa cerrado de cadenas completas (`Record<string, string>`), como `MetricCard`.
+- **Excepciones**: solo si el tema no puede alcanzar el color (p. ej. el HTML autonomo que `ExportButton`
+  abre para imprimir, que no carga `theme.css`). Se declaran una a una, con archivo, valor y motivo, en
+  la lista de `src/test/color-tokens.guard.test.ts`.
+- Los primitivos de `src/components/ui/` se conservan tal como los publica shadcn/ui; sus variantes
+  `dark:` funcionan siempre porque `theme.css` declara `@custom-variant dark (&)`.
+
+Dos tests estaticos lo hacen cumplir: `color-tokens.guard.test.ts` (ningun color literal fuera de las
+excepciones) y `theme-palette.test.ts` (paleta unica, tokens sin duplicar ni huerfanos, `<html>` sin
+clase de tema). Las atribuciones del codigo de terceros copiado estan en
+[`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
 
 ## Como correrlo
 
