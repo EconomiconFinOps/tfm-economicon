@@ -78,7 +78,7 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#0078d4] to-[#00bcf2] text-white rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all"
+        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-highlight text-foreground rounded-lg hover:shadow-lg hover:shadow-info-tint/30 transition-all"
       >
         <Download className="w-4 h-4" />
         Exportar Resultados
@@ -90,19 +90,19 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-48 bg-[#1a1f2e] rounded-lg shadow-xl border border-[#2d3748] z-20">
+          <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-xl border border-border z-20">
             <button
               onClick={exportToCSV}
-              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#232834] transition-colors text-left text-white"
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left text-foreground"
             >
-              <FileSpreadsheet className="w-4 h-4 text-green-400" />
+              <FileSpreadsheet className="w-4 h-4 text-success" />
               <span>Exportar CSV</span>
             </button>
             <button
               onClick={exportToPDF}
-              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#232834] transition-colors text-left border-t border-[#2d3748] text-white"
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left border-t border-border text-foreground"
             >
-              <FileText className="w-4 h-4 text-red-400" />
+              <FileText className="w-4 h-4 text-danger" />
               <span>Exportar PDF</span>
             </button>
           </div>

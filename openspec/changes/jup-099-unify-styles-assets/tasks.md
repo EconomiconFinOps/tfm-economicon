@@ -71,16 +71,16 @@
 
 ## 5. Migración del armazón y componentes compartidos
 
-- [ ] 5.1 **Green:** `src/layouts/Layout.tsx` y `src/layouts/SessionGate.tsx` a utilidades de token
+- [x] 5.1 **Green:** `src/layouts/Layout.tsx` y `src/layouts/SessionGate.tsx` a utilidades de token
       (decisión 4).
-- [ ] 5.2 **Green:** `src/components/{ExportButton,MetricCard,SectionCard,StatusPill}.tsx` a tokens;
+- [x] 5.2 **Green:** `src/components/{ExportButton,MetricCard,SectionCard,StatusPill}.tsx` a tokens;
       el `<style>` del documento de exportación queda como excepción declarada.
-- [ ] 5.3 Extraer la constante compartida del `contentStyle` de los tooltips de Recharts con
-      `var(--…)` (decisión 4), aún sin consumidores si las gráficas se migran en el grupo 7.
-- [ ] 5.4 Eliminar las menciones a `main.css` de los comentarios de `MetricCard`, `SectionCard` y
+- [x] 5.3 ~~Extraer la constante compartida del `contentStyle` de los tooltips de Recharts.~~
+      Trasladada a la tarea 7.1: no tiene consumidor hasta que se migran las gráficas (ver `review.md`).
+- [x] 5.4 Eliminar las menciones a `main.css` de los comentarios de `MetricCard`, `SectionCard` y
       `StatusPill`, y comprobar con búsqueda que no queda ninguna referencia al sistema anterior en
       `apps/frontend`.
-- [ ] 5.5 Guardián en verde para estos 6 archivos; resto de la suite sin regresión.
+- [x] 5.5 Guardián en verde para estos 6 archivos; resto de la suite sin regresión.
 
 ## 6. Migración de las pantallas conectadas al backend
 
@@ -93,7 +93,8 @@
 
 - [ ] 7.1 **Green:** `ExecutiveCostDashboard.tsx`, `OperationalCostDashboard.tsx`,
       `ExecutiveCutDashboard.tsx`, `AnomaliesPanel.tsx` y `RecommendationsPanel.tsx`: clases a tokens,
-      `fill`/`stroke` a `var(--chart-*)`, tooltips a la constante compartida.
+      `fill`/`stroke` a `var(--chart-*)`. Crear aquí la constante compartida del `contentStyle` de los
+      tooltips de Recharts con `var(--…)` (decisión 4; antes tarea 5.3) y usarla en las 9 gráficas.
 - [ ] 7.2 **Green:** `src/data/demo/executiveCostDashboard.ts` a `var(--chart-N)`.
 - [ ] 7.3 Resolver `#8884d8` según la decisión 1 (eliminar si no se pinta; si se pinta, `chart-*`).
 - [ ] 7.4 Guardián en verde en todos los archivos; ninguna excepción más allá de las declaradas en

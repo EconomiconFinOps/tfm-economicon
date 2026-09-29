@@ -190,7 +190,16 @@ archivo de producto**, y otra vez al terminar, con el mismo guion:
   1440×900, API simulada con `page.route` a partir de los datos de `tests/fixtures.ts`, espera fija
   tras la carga para que terminen las animaciones de Recharts.
 - Comparación con `pixelmatch`, umbral 0; se registra el número de píxeles distintos por pantalla y
-  se explica cada diferencia no nula.
+  se explica cada diferencia no nula. **Precisión hecha en el grupo 5:** dos pasadas del MISMO build
+  difieren en unos pocos píxeles (medido: ≤ 15 por escenario, en `assistant` e `ingest-success`),
+  siempre de **1 nivel de canal** sobre píxeles de degradado, es decir, ruido del rasterizador y no
+  un cambio. Por eso `compare.mjs` separa los píxeles con algún canal distinto en **2 o más
+  niveles** (`reales`) de los de 1 nivel. Criterio de "sin regresión": **0 reales** y no más de 50
+  píxeles de 1 nivel por escenario. Un cambio de color de verdad (un token equivocado, un tono
+  desplazado) afecta a áreas enteras y a más de 1 nivel, no a una decena de píxeles.
+- Los escenarios pasan de 14 a 20 al añadir estados que el primer guion no veía y que tienen color
+  propio: carga y error del bootstrap de tenants (`SessionGate`), carga y error del resumen,
+  éxito de ingesta y error de envío del asistente.
 - Playwright y `pixelmatch` se instalan en un proyecto temporal fuera del repositorio, como hizo
   JUP-095; no entran en `package.json`. El guion completo se copia en
   `docs/evidence/JUP-099-validation.md` para que cualquiera lo reproduzca. Las capturas no se

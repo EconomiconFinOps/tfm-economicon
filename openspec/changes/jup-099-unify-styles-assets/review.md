@@ -316,3 +316,69 @@ final (0).
 **Checkpoint:** commit **Green**. Sin mutación (exención de la decisión 5 de `design.md`: código de
 producto = valores CSS, que ninguna prueba unitaria de comportamiento ejerce; protegen los dos tests
 estáticos y la comparación visual).
+
+## Grupo 5. Armazón y componentes compartidos
+
+**Antes de migrar: el guion pasa de 14 a 20 escenarios.** `SessionGate` tiene dos estados con color
+propio que las capturas no veían (carga y error del bootstrap de tenants) y otras pantallas tienen
+estados de error/éxito igual de ciegos. Se añaden 6: `session-tenants-loading`,
+`session-tenants-error`, `overview-legacy-loading`, `overview-legacy-error`, `ingest-success` y
+`assistant-send-error`. Se recapturó el baseline (`dist-before`) y el estado del grupo 4 (`dist-g4`)
+con los 20. Determinismo del baseline verificado con dos pasadas: 0 px en los 20. Las diferencias
+del tema en los 4 escenarios nuevos que cambian son solo la franja `#0a0a0a → #0f1419`
+(`assistant-send-error` 403 200 px, `ingest-success` 8 640, `overview-legacy-error` 901 440,
+`overview-legacy-loading` 452 160; 100 % del mismo par de colores); `session-tenants-*` dan 0.
+
+**5.1, 5.2 — Green: 6 archivos migrados** por el agente `coder` (revisado por el orquestador):
+`layouts/Layout.tsx` (41 utilidades), `layouts/SessionGate.tsx` (14), `components/ExportButton.tsx`
+(13), `components/MetricCard.tsx` (8), `components/SectionCard.tsx` (5), `components/StatusPill.tsx`
+(3). Solo cambian utilidades de color con la tabla de sustitución, sin tocar orden de clases,
+modificadores de opacidad, variantes, lógica, props ni estructura JSX; el filtro de líneas
+cambiadas que no son clase ni comentario devuelve 0. Ningún color quedó sin token. La excepción de
+`ExportButton` (`#1e40af`, `#ddd` del `<style>` del documento de impresión) se conserva.
+
+**5.3 — Trasladada al grupo 7.** La constante compartida del `contentStyle` de los tooltips de
+Recharts no tiene consumidor hasta que se migren las gráficas (grupo 7); crearla ahora habría dejado
+código sin uso. Se hará en la tarea 7.1, donde se consume.
+
+**5.4 — Sin referencias al sistema anterior.** Reescritas las cabeceras de `MetricCard`, `SectionCard`
+y `StatusPill`: ya no citan `main.css`, `metric-card`, `tone-*`, `status-pill` ni "la versión .jsx" como
+origen de clases; conservan el porqué del mapa cerrado de clases de `MetricCard` (Tailwind no detecta
+clases construidas por interpolación). `grep -rniE 'main\.css|status-pill|metric-card|tone-'` sobre
+`apps/frontend` (sin tests) devuelve **0**. Criterio 3 de la tarjeta cumplido.
+
+**5.5 — Verificación (ejecutada por el orquestador):**
+
+| Comprobación | Resultado |
+| --- | --- |
+| Guardián de colores | **51 pasan / 10 fallan** (antes 45 / 16). Pasan los 6 archivos migrados y las excepciones de `ExportButton` y `dialog`; siguen en Red solo `pages/*` (9) y `data/demo/executiveCostDashboard.ts` |
+| `theme-palette.test.ts` | **92 pasan / 18 fallan** (antes 82 / 28). Todos los fallos son casos (d). Pasan a verde `card`, `muted`, `success`, `success-tint`, `success-foreground`, `info-tint`, `warning`, `positive`, `highlight`… Siguen sin consumidor: `subtle-foreground`, `neutral`, `danger-tint`, `danger-foreground`, `info`, `info-foreground`, `warning-tint`, `warning-foreground`, `attention-tint`, `attention-foreground`, `chart-1..5`, `chart-negative`, `chart-baseline`, `chart-axis` |
+| Suite completa | `Tests 28 failed \| 403 passed (431)`, `Test Files 2 failed \| 45 passed`. 403 = 260 previos + 51 + 92: ningún test previo se rompe. Los 28 fallos son 10 del guardián + 18 (d), todos aserciones Red, sin timeouts |
+| `typecheck` / `lint` | exit 0 / exit 0 |
+| Diff | 6 archivos, 66 inserciones y 69 eliminaciones |
+
+**Primera ejecución anómala, no reproducida.** Mi primera ejecución de la suite tras el Green dio
+`14 failed files | 55 failed tests` (no los 28 esperados), lanzada mientras otro comando corría en
+paralelo y con la CPU de la máquina entre el 38 % y el 74 % por procesos ajenos (los `chrome` en
+marcha son del navegador del usuario, ninguno de Playwright). No guardé qué tests fallaron en esa
+pasada, así que **no puedo demostrar la causa**. Lo único comprobado: repetida en solitario, con el
+mismo código, da exactamente 28/403 con los fallos esperados; es coherente con `RF-098-004`
+(tiempos de espera de `findBy*` bajo carga) pero no lo confirma. Se anota sin más conclusión.
+
+**Verificación visual del grupo 5 (contra la referencia del grupo 4, 20 escenarios):** 19 de 20 dan
+**0 px**; `ingest-success` daba 11 px. Analizado por color: `#272f3f → #262f3e`, `#2a3444 → #2a3344`…,
+todos de 1 nivel de canal en píxeles de degradado. Control: **el mismo build `dist-g4` capturado dos
+veces** difiere en `assistant` (4 px) e `ingest-success` (11 px), también de 1 nivel. Es ruido del
+rasterizador, no regresión. Consecuencia: el criterio "umbral 0" a secas no era honesto, así que
+`compare.mjs` ahora separa píxeles **reales** (algún canal distinto en ≥ 2 niveles) de los de 1
+nivel, y el criterio pasa a ser **0 reales y ≤ 50 px de 1 nivel por escenario** (`design.md`,
+decisión 6). Con él, comparando entre las tres pasadas disponibles: `g4b → g4c` 0 reales (15 px de
+ruido), `g4c → g5` 0 reales (4 px), `g4b → g5` **0 reales** (11 px). **La migración del armazón y
+los componentes no cambia ningún píxel de forma real.** El invariante del grupo 4 se cumple.
+
+Límite conocido de esta prueba: un cambio de 1 nivel sobre un color plano de área pequeña quedaría
+clasificado como ruido si no supera los 50 px. Lo mitiga que los valores de los tokens se comprueban
+contra su origen en `theme.css` (mismo texto que el literal sustituido) y que un token equivocado
+altera áreas enteras, no una decena de píxeles.
+
+**Checkpoint:** commit **Green**. Sin mutación (exención de la decisión 5).
