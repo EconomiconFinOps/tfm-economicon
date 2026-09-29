@@ -64,7 +64,7 @@ def get_conversation(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found.")
     return ConversationDetail(
         conversation=ConversationRecord(**conversation),
-        messages=database.fetch_messages(conversation_id),
+        messages=database.fetch_messages(conversation_id, tenant_id, current_user["id"]),
     )
 
 
@@ -91,6 +91,7 @@ def send_message(
         conversation_id=conversation_id,
         tenant_id=tenant_id,
         user_id=current_user["id"],
+        requester_id=current_user["id"],
         role="user",
         content=payload.content,
     )
@@ -101,6 +102,7 @@ def send_message(
         conversation_id=conversation_id,
         tenant_id=tenant_id,
         user_id=None,
+        requester_id=current_user["id"],
         role="assistant",
         content=assistant_output["content"],
         metadata={"citations": assistant_output["citations"]},

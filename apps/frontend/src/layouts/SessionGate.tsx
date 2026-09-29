@@ -4,9 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, Outlet } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  advanceSessionGeneration, clearSessionMutations, fetchProfile, fetchTenants, getSessionGeneration,
+  ApiError, advanceSessionGeneration, clearSessionMutations, fetchProfile, fetchTenants, getSessionGeneration,
   invalidateSession, subscribeSessionInvalidation
 } from "../services/api";
+import type { SessionInvalidationReason } from "../services/api";
 import { isNonemptyString, isUserProfile } from "../services/contracts";
 import type { TenantRecord, UserProfile } from "../services/contracts";
 
@@ -78,11 +79,17 @@ export function SessionGate() {
     () => window.localStorage.getItem(TENANT_KEY) || ""
   );
   const [generation, setGeneration] = useState(getSessionGeneration);
+  // Recuerda si el motivo de la ultima invalidacion de sesion fue "expired"
+  // (tarea 3.3): es lo unico que decide si /login debe llevar la marca de
+  // expiracion en su estado de navegacion. Vive aparte de `session` porque
+  // debe seguir siendo legible en el render donde `session` ya es `null`.
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = subscribeSessionInvalidation(() => {
+    const unsubscribe = subscribeSessionInvalidation((reason) => {
       setSession(null);
       setActiveTenantId("");
+      setSessionExpired(reason === "expired");
       window.localStorage.removeItem(SESSION_KEY);
       window.localStorage.removeItem(TENANT_KEY);
       queryClient.getQueryCache().clear();
@@ -180,8 +187,11 @@ export function SessionGate() {
 
   // Manual logout and profile errors use the same cleanup as a global 401.
   // A callback belonging to an older generation cannot invalidate this one.
-  const handleLogout = useCallback(() => {
-    invalidateSession(generation);
+  // El motivo es opcional y se reenvia tal cual a `invalidateSession`: no se
+  // duplica aqui el literal "manual" porque ya es el default de esa funcion
+  // (tarea 3.3); pasar `undefined` explicito sigue activando ese default.
+  const handleLogout = useCallback((reason?: SessionInvalidationReason) => {
+    invalidateSession(generation, reason);
   }, [generation]);
 
   function handleTenantChange(nextTenantId: string) {
@@ -200,12 +210,21 @@ export function SessionGate() {
   // identidad ya es estable via `useCallback`.
   useEffect(() => {
     if (profileQuery.isError) {
-      handleLogout();
+      // Solo un 401 real de /me (sesion rechazada por el servidor) cuenta
+      // como expiracion (tarea 3.3); cualquier otro fallo (403/503/red o
+      // contrato invalido, que no llega a ser ApiError con status 401) usa
+      // el motivo neutro por defecto de handleLogout().
+      const reason = profileQuery.error instanceof ApiError && profileQuery.error.status === 401
+        ? "expired"
+        : undefined;
+      handleLogout(reason);
     }
-  }, [profileQuery.isError, handleLogout]);
+  }, [profileQuery.isError, profileQuery.error, handleLogout]);
 
   if (!session) {
-    return <Navigate to="/login" replace />;
+    return (
+      <Navigate to="/login" replace state={sessionExpired ? { sessionExpired: true } : undefined} />
+    );
   }
 
   // El bloque de carga cubre tambien `profileQuery`: mientras esta en curso,
@@ -239,7 +258,14 @@ export function SessionGate() {
           <button
             className="mt-4 rounded-md bg-[#0078d4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0078d4]/80"
             type="button"
-            onClick={handleLogout}
+            // Se envuelve en una lambda sin argumentos (en vez de pasar
+            // `handleLogout` directo) porque, tras aceptar un motivo
+            // opcional, un manejador de clic nativo le pasaria el
+            // `MouseEvent` como si fuera ese motivo -- tanto un error de
+            // tipos (MouseEvent no es SessionInvalidationReason) como, de
+            // ignorarlo, un valor inesperado en tiempo de ejecucion. La
+            // lambda garantiza el motivo neutro por defecto (tarea 3.3).
+            onClick={() => handleLogout()}
           >
             Reset session
           </button>
@@ -260,7 +286,11 @@ export function SessionGate() {
     activeTenant,
     activeTenantId,
     onTenantChange: handleTenantChange,
-    onLogout: handleLogout
+    // Envuelto igual que el boton "Reset session" (mas arriba): `onLogout`
+    // se expone como `() => void` y `Layout.tsx` lo usa como `onClick`
+    // nativo, que le pasaria el `MouseEvent` como `reason` si se reenviara
+    // `handleLogout` directo. La lambda fuerza el motivo neutro por defecto.
+    onLogout: () => handleLogout()
   };
 
   return <Outlet context={context} />;

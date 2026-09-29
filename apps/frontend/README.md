@@ -168,6 +168,9 @@ pnpm build
 - `layouts/SessionGate.tsx` + `layouts/Layout.tsx` definen la estructura general de la aplicación
   (sesión, tenant activo, navegación); `AppShell.jsx` fue retirado en JUP-095, su contenido se
   repartió entre ambos.
+- Un `401` en cualquier operación autenticada (o al revalidar `GET /me` al arrancar) cierra la sesión
+  y devuelve a `LoginPage`, que muestra un aviso de sesión expirada; un cierre de sesión manual o un
+  fallo que no sea `401` no lo muestran (JUP-098).
 - Las 5 pantallas de coste (`/`, `/operational`, `/cuts`, `/anomalies`, `/recommendations`) muestran
   datos de demostración estáticos (`src/data/demo/`), no datos reales — ver `RF-095-002` en
   `openspec/findings/backlog.md`.

@@ -10,13 +10,22 @@ from app.normalization.azure_cost import NormalizedCostRecord
 from app.repositories.azure_cost import SqlAzureCostRepository
 
 
+class RecordingResult(list):
+    def __init__(self, rowcount):
+        super().__init__()
+        self.rowcount = rowcount
+
+    def scalar_one(self):
+        return 0
+
+
 class RecordingConnection:
     def __init__(self):
         self.calls: list[tuple[str, dict | None]] = []
 
     def execute(self, statement, params=None):
         self.calls.append((str(statement), params))
-        return []
+        return RecordingResult(0 if str(statement).lstrip().startswith("DELETE") else 1)
 
 
 class RecordingTransaction(AbstractContextManager):
