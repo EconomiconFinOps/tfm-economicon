@@ -106,3 +106,42 @@ _Ninguna._
 - **ADR:** aplican ADR-0003 (TypeScript strict) y ADR-0004 (shadcn/ui); se propone ADR-0010.
 - **Carril:** `standard` (el spike proponía `light`; con ~470 ocurrencias en 16 archivos y riesgo de
   regresión visual en 9 pantallas se eleva, como sugería la tarjeta).
+
+## Human Approval
+
+- Change: jup-099-unify-styles-assets
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-09-29
+- Carril: standard
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Scope adjustment approved: el alcance se amplía respecto al criterio 1 de la tarjeta Trello, que
+  solo exige retirar los hexadecimales. Se migran también las 229 utilidades de la paleta de
+  Tailwind escritas a mano, porque sin ellas seguirían conviviendo dos sistemas de color (alcance 1
+  de la tarjeta). El conteo de partida es 241 hexadecimales en 14 `.tsx` y 4 en `src/data/demo/`,
+  no los 231 del 21/09. Del arrastre de JUP-098 entran A y B y, de los opcionales C, los 3 enlaces
+  rotos, la fila duplicada de `RF-090-003` y los 10 comentarios de tests que citan el harness local;
+  `RF-098-003` queda fuera por cambiar comportamiento de la capa de acceso.
+- Decisions approved: se aprueban las nueve decisiones del `design.md`. (1) **Los tokens semánticos
+  de shadcn toman los valores reales de la aplicación** y solo se añaden los que faltan, con nombre de
+  función y valor exacto al que sustituyen (los `v4` copiados de `tailwindcss/theme.css` 4.3.3); no se
+  consolidan tonos parecidos. (2) **Una única paleta en `:root`**: se retiran el bloque `.dark`, los
+  valores claros de shadcn y `class="dark"` de `index.html`; `@custom-variant dark (&);` mantiene los
+  primitivos tal como los publica shadcn/ui. (3) **Se retiran los tokens de color sin consumidor.**
+  (4) Clases arbitrarias y de paleta pasan a utilidades de token; Recharts, `contentStyle` y datos
+  demo usan `var(--…)`, con el estilo de tooltip en una constante compartida. (5) **Dos tests
+  estáticos** (guardián de colores con excepciones declaradas y contrato del tema, que sustituye a
+  `index-html-dark-scope.test.ts`); **sin mutación de Stryker** sobre la migración de clases, como
+  excepción justificada y sin afirmar cobertura. (6) **Comparación visual antes/después** con
+  Playwright y `pixelmatch` efímeros fuera del repositorio, umbral 0, referencia capturada antes de
+  tocar producto y demostración de propagación con `--primary`. (7) `apps/frontend/ATTRIBUTIONS.md`
+  con el aviso MIT de shadcn/ui; Unsplash, fuentes y dependencias npm no aplican. (8) **ADR-0010**
+  para la convención de tokens de color, en `Proposed` durante la revisión. (9) El arrastre de
+  JUP-098 va en commits de documentación propios, sin afirmar nada sobre CI hasta la respuesta de
+  Lucía.
+- Constraints: ningún archivo de `apps/backend/**` ni `apps/processor/**` en el diff; sin `any`
+  nuevo ni `@ts-ignore` (ADR-0003); subconjunto de 6 primitivos sin cambios (ADR-0004); ciclo
+  Red/Green por grupo con parada para commit; los tests protegidos (`index-html-dark-scope.test.ts`
+  y los 10 con comentarios del harness) solo se editan con autorización explícita en cada tarea;
+  ninguna ruta de configuración local del agente en documentación versionada.
