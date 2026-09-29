@@ -61,12 +61,12 @@
 
 ## 4. Paleta única en el tema
 
-- [ ] 4.1 **Green:** reescribir `src/styles/theme.css` con la tabla de la decisión 1: todos los tokens
+- [x] 4.1 **Green:** reescribir `src/styles/theme.css` con la tabla de la decisión 1: todos los tokens
       en `:root` con valores exactos (los `v4` copiados de `tailwindcss/theme.css` 4.3.3), alias con
       `var(--…)`, exposición en `@theme inline`, sin bloque `.dark`; `@custom-variant dark (&);`
       (decisión 2). Tokens no cromáticos y `@layer base` sin cambios.
-- [ ] 4.2 **Green:** quitar `class="dark"` de `index.html`.
-- [ ] 4.3 Verificar que los casos estructurales de `theme-palette.test.ts` pasan (el de consumidores
+- [x] 4.2 **Green:** quitar `class="dark"` de `index.html`.
+- [x] 4.3 Verificar que los casos estructurales de `theme-palette.test.ts` pasan (el de consumidores
       sigue en Red) y que lint, typecheck, test (salvo guardianes) y build están en verde.
 
 ## 5. Migración del armazón y componentes compartidos

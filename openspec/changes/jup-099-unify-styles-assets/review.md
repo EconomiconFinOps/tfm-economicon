@@ -255,3 +255,64 @@ retirado) + 45 + 69; **los 41 fallos son todos casos Red de los dos archivos nue
 **Checkpoint:** commit **Red** (2 archivos nuevos + 1 test borrado + `design.md`, `review.md` y
 `tasks.md`). Sin mutación en este grupo (solo tests; la de los grupos de migración está exenta por
 la decisión 5 de `design.md`). El siguiente grupo es el Green.
+
+## Grupo 4. Paleta única en el tema (Green)
+
+**4.1 — Green: `apps/frontend/src/styles/theme.css` reescrito** por el agente `coder` (revisado por el
+orquestador). Un solo bloque `:root` con 4 tokens no cromáticos (`--font-size`, dos pesos de fuente,
+`--radius`) y 41 de color con los valores de la decisión 1; `@theme inline` con un `--color-*` por
+token y los 4 `--radius-*`; `@layer base` idéntico; sin bloque `.dark`; cabecera en español con el
+porqué; `@custom-variant dark (&);`. **4.2:** `class="dark"` retirado de `<html>` en `index.html`
+(único cambio del archivo). No se ha tocado ningún test ni ningún archivo más.
+
+Desviaciones respecto al encargo, todas sin cambio de valores y recogidas en `design.md`:
+`card-foreground`, `secondary*`, `destructive-foreground`, `sidebar-*` y `switch-background` no se
+definen (sin consumidor); `border` es la definición literal y `muted`/`input` son alias de
+`var(--border)`.
+
+**¿Acepta Tailwind `@custom-variant dark (&);`? Sí, verificado compilando.** Build fuera del repo
+(2478 módulos, CSS 41,77 kB) sin errores; las variantes de los primitivos salen bien formadas, sin
+`.dark` como ancestro ni `prefers-color-scheme`:
+`.dark\:bg-input\/30{background-color:var(--input)}` (con su rama `color-mix(in oklab, var(--input)
+30%, transparent)`), `.dark\:hover\:bg-input\/50:hover{…}`,
+`.dark\:aria-invalid\:ring-destructive\/40[aria-invalid=true]{--tw-ring-color:var(--destructive)}` y
+`.dark\:bg-black\/50{background-color:#00000080}`. (La parte `.dark\:` es el nombre de la clase de
+utilidad, no un selector de ancestro.)
+
+**4.3 — Verificación (ejecutada por el orquestador):**
+
+| Comprobación | Resultado |
+| --- | --- |
+| `theme-palette.test.ts` | **82 pasan / 28 fallan** (110). Pasan (a) sin `.dark` y `@custom-variant` exacto, (b) tokens únicos, (c) alias resueltos, (e) `<html>` sin `dark`, y los (d) de los 14 tokens con consumidor hoy: `background`, `foreground`, `border`, `ring`, `primary`, `primary-foreground`, `popover`, `popover-foreground`, `accent`, `accent-foreground`, `destructive`, `input`, `input-background`, `muted-foreground` |
+| Casos (d) aún en Red (28) | `card`, `muted`, `subtle-foreground`, `neutral`, `highlight`, `positive`, los 14 de estados (`success*`, `danger*`, `info*`, `warning*`, `attention-*`) y los 8 `chart-*`: sin consumidor hasta migrar pantallas (grupos 5-7), como estaba previsto |
+| `color-tokens.guard.test.ts` | 16 fallan / 45 pasan, sin cambios (no depende del tema) |
+| Suite completa | `Tests 44 failed \| 387 passed (431)`, `Test Files 2 failed \| 45 passed`. 387 = 260 previos + 45 + 82: **ningún test previo se rompe**; los 44 fallos son los 16 del guardián y los 28 (d) |
+| `typecheck` / `lint` | exit 0 / exit 0 |
+
+**Captura visual intermedia (no exigida por `tasks.md`; decisión del orquestador).** El Green cambia
+el tema pero aún no migra ninguna pantalla, así que cualquier diferencia visual ahora es atribuible
+solo al tema. `node compare.mjs shots-before-1 shots-g4` (umbral 0) → `login`, `login-*` y
+`operational-cost`: **0 px**. El resto tiene diferencias, analizadas por caja envolvente y pares de
+color (`analyze.mjs`); solo hay **tres causas**:
+
+| Causa | Píxeles y color | Dónde | Origen |
+| --- | --- | --- | --- |
+| Fondo del `body` | `#0a0a0a → #0f1419` en el **100 %** de los píxeles distintos: 455 040 (`assistant`, 316 filas), 270 720 (`ingest`, 188), 218 880 (`ingest-error`), 267 840 (`overview-legacy`, 186) | franja bajo el contenido en pantallas más cortas que el viewport | `background` pasa de `oklch(0.145)` a `#0f1419`. Es lo que ya se anticipó en el grupo 1 |
+| Color heredado por los iconos | `#fafafa → #ffffff` (más sus antialias, p. ej. `#c3c4c7 → #c7c8cb`) | 549-761 px en `executive-cost` (×3 capturas), `executive-cuts`, `recommendations` y 71 en `anomalies`; siempre en una caja de ≈30-40 filas, los iconos de las tarjetas KPI | los iconos de Lucide usan `currentColor` y heredan `foreground`, que era `oklch(0.985)` = `#fafafa` y ahora es `#ffffff` |
+| Borde por defecto | `#262626 → #2d3748` (88 px, más antialias) | `executive-cuts`, caja de un icono de tarjeta | un elemento con `border` sin color usaba el borde por defecto de la capa base (`oklch(0.269)` de shadcn); ahora usa el token `border` de la aplicación |
+
+Ninguna de las tres es un color de pantalla migrado: son efectos del cambio de tema sobre lo que
+**no** lleva color propio. Se consideran deliberadas y coherentes con la paleta de la aplicación (el
+fondo y el borde adoptan el color que el resto de la interfaz ya usaba; los iconos pasan a ser del
+blanco del texto). Son **cinco niveles de luminancia** en los iconos: imperceptibles a simple vista,
+pero reales, así que constan para su aceptación explícita en la tarea 8.1.
+
+**Invariante para los grupos 5-7:** `shots-g4` pasa a ser la referencia intermedia. Migrar clases y
+atributos de color a tokens con el mismo valor debe dar **exactamente 0 px** de diferencia contra
+`shots-g4`; cualquier otro resultado es una regresión de la migración y no del tema. En 8.1 se
+compararán ambas: `shots-before-1` → final (las tres causas de arriba, aceptadas) y `shots-g4` →
+final (0).
+
+**Checkpoint:** commit **Green**. Sin mutación (exención de la decisión 5 de `design.md`: código de
+producto = valores CSS, que ninguna prueba unitaria de comportamiento ejerce; protegen los dos tests
+estáticos y la comparación visual).

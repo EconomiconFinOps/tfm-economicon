@@ -86,6 +86,17 @@ dos funciones comparten valor (`card`/`popover`, `border`/`input`/`muted`), cada
 una vez y el alias se escribe como `var(--otro)`. Los nombres son vinculantes salvo colisión técnica
 descubierta al implementar, que se registra en `review.md`.
 
+**Ajustes hechos en el Green (grupo 4), sin cambio de valores:** (a) `card-foreground` **no se
+define**: ningún primitivo ni pantalla lo consume y el test de consumidores exige uno por token;
+`secondary*`, `destructive-foreground`, `sidebar-*` y `switch-background` tampoco. (b) `border` es la
+definición literal y `muted` e `input` son alias de `var(--border)`, porque `border` lo consume la
+capa base y así retirar `muted` (si acaba sin consumidor) no arrastra a los otros dos. (c) Los
+alias de `*-foreground` apuntan a `var(--foreground)`. (d) Cambiar el tema tiene tres efectos
+visuales inevitables sobre lo que no lleva color propio, medidos en la captura del grupo 4 (ver
+`review.md`): el fondo del `body` pasa de `#0a0a0a` a `#0f1419`; los iconos que heredan el color del
+texto pasan de `#fafafa` (`oklch(0.985)`) a `#ffffff`; y el borde por defecto de la capa base pasa
+de `#262626` a `#2d3748`.
+
 `#8884d8` (`fill` por defecto del `Pie` de `ExecutiveCostDashboard`) queda oculto por los `Cell`
 con color propio. Se elimina si la comparación visual confirma que no se pinta; si se pinta, se
 asigna a un `chart-*`.
