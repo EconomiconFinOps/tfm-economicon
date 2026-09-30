@@ -4,7 +4,7 @@
 - Repositorio: `EconomiconFinOps/tfm-economicon`.
 - Rama: `docs/JUP-100-review-validation-flow` hacia `develop` (base `2efef1a`).
 - Tarjeta: https://trello.com/c/XlWNnm7r.
-- Change: [`jup-100-review-validation-flow`](../../openspec/changes/jup-100-review-validation-flow/proposal.md).
+- Change: [`jup-100-review-validation-flow`](../../openspec/changes/archive/2026-09-30-jup-100-review-validation-flow/proposal.md).
 - Liderazgo: Lucia Mateo; pairing: Paris Arcos Martin; revision de PR: Victor Mendez; validacion, pruebas y documentacion: Alejandro Aguado.
 - Entorno: Windows 10, Node.js 24 (la CI usa el Node del runner de GitHub).
 
@@ -70,4 +70,4 @@ Evaluacion de `checkReviews` sobre los datos que devuelve la API, sin escribir n
 
 | Fecha | JUP | Nota de release | Review | ADRs |
 | --- | --- | --- | --- | --- |
-| 2026-09-30 | JUP-100 | Roles y flujo de revision y validacion documentados en CONTRIBUTING; nuevo check `JUP reviews` que exige las dos reviews tituladas antes del merge. | [review.md](../../openspec/changes/jup-100-review-validation-flow/review.md) | No aplica |
+| 2026-09-30 | JUP-100 | Roles y flujo de revision y validacion documentados en CONTRIBUTING; nuevo check `JUP reviews` que exige las dos reviews tituladas antes del merge. | [review.md](../../openspec/changes/archive/2026-09-30-jup-100-review-validation-flow/review.md) | No aplica |
