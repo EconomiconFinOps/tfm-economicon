@@ -3,6 +3,7 @@
 - Tarjeta: https://trello.com/c/qzRy4RQc
 - Base contrastada: `origin/develop`, `2efef1a`, 30/09/2026.
 - Rama: `feat/JUP-025-source-citations`.
+- PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/55
 - Contrato y escenarios: [OpenSpec](../../openspec/changes/jup-025-answer-citations/).
 
 ## Resultado

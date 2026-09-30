@@ -8,5 +8,5 @@
 - [x] 2.1 Test missing, duplicate and foreign references and authorized reopening.
 - [x] 2.2 Verify real pgvector retrieval and browser interaction.
 - [x] 2.3 Run regression suites, typecheck, build and OpenSpec checks.
-- [ ] 2.4 Record evidence, publish a PR against develop and link Trello.
+- [x] 2.4 Record evidence, publish a PR against develop and link Trello (PR #55).
 - [ ] 2.5 Obtain assigned team review and functional validation before closure.
