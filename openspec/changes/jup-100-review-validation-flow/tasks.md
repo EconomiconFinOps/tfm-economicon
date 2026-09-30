@@ -23,9 +23,9 @@
 
 - [x] 4.1 JUP-100 batería completa: `corepack pnpm pr:check:test`, `ci:check:test`, `repository:governance:test`, `jup:check:test`, `jup:cleanup:check`, `openspec:validate` y `jup:check -- --change jup-100-review-validation-flow`; registrar comandos y resultados.
 - [x] 4.2 JUP-100 comprobar el check contra datos reales en modo lectura: evaluar los PR #52 (dos reviews tituladas, misma persona) y otro PR sin reviews tituladas, y registrar el resultado esperado de cada uno.
-- [ ] 4.3 JUP-100 revisión adversarial independiente (`adversarial-reviewer`) hasta `accept` o hasta que Lucia acepte explícitamente lo que quede; registrar las pasadas en `review.md`.
-- [ ] 4.4 JUP-100 `review.md` con resumen, decisiones, validación, revisión adversarial, barrido del patrón, riesgos, findings y ADR no aplicable (D6).
-- [ ] 4.5 JUP-100 `docs/evidence/JUP-100-validation.md` con la evidencia de los tests, los controles positivos y la comprobación con PR reales.
+- [x] 4.3 JUP-100 revisión adversarial independiente (`adversarial-reviewer`) hasta `accept` o hasta que Lucia acepte explícitamente lo que quede; registrar las pasadas en `review.md`. Nota: tres pasadas; la 3 dio accept (head 88f2ece), sus findings se corrigieron con test y la cuarta pasada se detuvo por decision de Lucia (ver review.md, "Cierre del ciclo adversarial").
+- [x] 4.4 JUP-100 `review.md` con resumen, decisiones, validación, revisión adversarial, barrido del patrón, riesgos, findings y ADR no aplicable (D6).
+- [x] 4.5 JUP-100 `docs/evidence/JUP-100-validation.md` con la evidencia de los tests, los controles positivos y la comprobación con PR reales.
 - [ ] 4.6 JUP-100 bloque `## Human Approval` en `review.md` tras la aprobación explícita de Lucia.
 - [ ] 4.7 JUP-100 archivar el change en la misma rama con `openspec-archive-change`.
 - [ ] 4.8 JUP-100 abrir el PR hacia `develop` con el cuerpo que exige "JUP policy" y avisar en Discord de la activación pendiente del check y de la nueva `Process version`.
