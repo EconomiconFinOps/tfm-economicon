@@ -1,13 +1,13 @@
 ## 1. Tests primero (RED)
 
-- [ ] 1.1 JUP-100 añadir a `tools/pr-policy.test.mjs` casos de la evaluación de reviews, sin red: faltan revisión o validación; títulos con acento, en minúsculas y de otro JUP; review del autor; review en borrador; review descartada o de un commit anterior que sigue contando; Request changes pendiente y luego aprobado; Comment posterior que no limpia un Request changes; misma persona con y sin declaración; PR hacia `main`; y que cada mensaje de error nombra lo que falta y enlaza a CONTRIBUTING. Ejecutarlos y confirmar que fallan.
-- [ ] 1.2 JUP-100 añadir a `tools/ci-workflow.test.mjs` los contratos del workflow `pr-reviews.yml` (disparadores `pull_request` y `pull_request_review` hacia `main`/`develop`, sin `pull_request_target`, permisos mínimos de solo lectura, acciones fijadas por commit, sin `persist-credentials`, job `JUP reviews`) y los ocho checks idénticos en ambos rulesets. Confirmar que fallan.
-- [ ] 1.3 JUP-100 añadir a `tools/repository-governance.test.mjs` aserciones de que CONTRIBUTING define los cuatro roles y el flujo, de que `AGENTS.md` y `CONTRIBUTING.md` tienen la misma línea `Process version`, y de que la plantilla de PR incluye el checklist y la aclaración de su sección Validacion, conservando las aserciones existentes. Confirmar que fallan.
+- [x] 1.1 JUP-100 añadir a `tools/pr-policy.test.mjs` casos de la evaluación de reviews, sin red: faltan revisión o validación; títulos con acento, en minúsculas y de otro JUP; review del autor; review en borrador; review descartada o de un commit anterior que sigue contando; Request changes pendiente y luego aprobado; Comment posterior que no limpia un Request changes; misma persona con y sin declaración; PR hacia `main`; y que cada mensaje de error nombra lo que falta y enlaza a CONTRIBUTING. Ejecutarlos y confirmar que fallan.
+- [x] 1.2 JUP-100 añadir a `tools/ci-workflow.test.mjs` los contratos del workflow `pr-reviews.yml` (disparadores `pull_request` y `pull_request_review` hacia `main`/`develop`, sin `pull_request_target`, permisos mínimos de solo lectura, acciones fijadas por commit, sin `persist-credentials`, job `JUP reviews`) y los ocho checks idénticos en ambos rulesets. Confirmar que fallan.
+- [x] 1.3 JUP-100 añadir a `tools/repository-governance.test.mjs` aserciones de que CONTRIBUTING define los cuatro roles y el flujo, de que `AGENTS.md` y `CONTRIBUTING.md` tienen la misma línea `Process version`, y de que la plantilla de PR incluye el checklist y la aclaración de su sección Validacion, conservando las aserciones existentes. Confirmar que fallan.
 
 ## 2. Check `JUP reviews` (GREEN)
 
-- [ ] 2.1 JUP-100 implementar en `tools/pr-policy.mjs` la evaluación pura de reviews (metadatos del PR + reviews → errores) hasta que pasen los tests de 1.1, sin cambiar el comportamiento de "JUP policy".
-- [ ] 2.2 JUP-100 añadir el modo que lee el PR y sus reviews por la API con `GITHUB_TOKEN` y falla si la lectura falla, con test de ese camino de error.
+- [x] 2.1 JUP-100 implementar en `tools/pr-policy.mjs` la evaluación pura de reviews (metadatos del PR + reviews → errores) hasta que pasen los tests de 1.1, sin cambiar el comportamiento de "JUP policy".
+- [x] 2.2 JUP-100 añadir el modo que lee el PR y sus reviews por la API con `GITHUB_TOKEN` y falla si la lectura falla, con test de ese camino de error.
 - [ ] 2.3 JUP-100 crear `.github/workflows/pr-reviews.yml` con el job `JUP reviews` y añadir el check a `.github/rulesets/develop.json` y `main.json` hasta que pasen los tests de 1.2.
 - [ ] 2.4 JUP-100 controles positivos: romper a propósito la evaluación (por ejemplo, contar reviews del autor o ignorar Request changes) y comprobar que los tests lo detectan; restaurar.
 

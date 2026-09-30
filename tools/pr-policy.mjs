@@ -72,6 +72,105 @@ export function checkPullRequest({ title = "", body = "", head = "", base = "" }
   return errors;
 }
 
+export const REVIEW_FLOW_LINK = "CONTRIBUTING.md#review-and-validation-flow";
+export const SAME_PERSON_EXCEPTION = "- Excepcion: revision y validacion por la misma persona, acordado en Trello";
+const REVIEW_KINDS = [
+  { key: "revision", label: "Revision", pattern: /^revisi[oó]n\s+jup-(\d{3})\b/iu },
+  { key: "validacion", label: "Validacion", pattern: /^validaci[oó]n\s+jup-(\d{3})\b/iu },
+];
+const DECISIVE_STATES = new Set(["APPROVED", "CHANGES_REQUESTED"]);
+
+// Accents and case are ignored so that "Validación" and "validacion" match the same title.
+const plain = (text) => text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("es");
+
+function declaresSamePersonException(body) {
+  const expected = plain(SAME_PERSON_EXCEPTION);
+  return body.split(/\r?\n/).some((line) => plain(line.trim()).startsWith(expected));
+}
+
+export function checkReviews({ title = "", body = "", author = "", reviews = [] }) {
+  const titleMatch = TITLE_PATTERN.exec(title);
+  if (!titleMatch) return ["El titulo debe contener un identificador JUP-XXX."];
+  const id = titleMatch[1];
+  const authorLogin = author.toLocaleLowerCase("en");
+  const published = reviews
+    .filter(({ state, user }) => state !== "PENDING" && user.toLocaleLowerCase("en") !== authorLogin)
+    .sort((a, b) => Date.parse(a.submitted_at) - Date.parse(b.submitted_at));
+
+  const errors = [];
+  const authors = {};
+  for (const kind of REVIEW_KINDS) {
+    authors[kind.key] = new Set(
+      published
+        .filter(({ body: text = "" }) => kind.pattern.exec(text.normalize("NFC").trimStart())?.[1] === id)
+        .map(({ user }) => user.toLocaleLowerCase("en")),
+    );
+    if (authors[kind.key].size === 0) {
+      errors.push(`Falta la review "${kind.label} JUP-${id}" de alguien distinto del autor. Ver ${REVIEW_FLOW_LINK}`);
+    }
+  }
+
+  const { revision, validacion } = authors;
+  const onlySamePerson =
+    revision.size > 0 &&
+    validacion.size > 0 &&
+    [...revision].every((user) => validacion.size === 1 && validacion.has(user));
+  if (onlySamePerson && !declaresSamePersonException(body)) {
+    errors.push(
+      `Revision y validacion las ha publicado la misma persona sin declarar la excepcion en la descripcion del PR ("${SAME_PERSON_EXCEPTION}"). Ver ${REVIEW_FLOW_LINK}`,
+    );
+  }
+
+  const latestDecision = new Map();
+  for (const { user, state } of published) {
+    if (DECISIVE_STATES.has(state)) latestDecision.set(user, state);
+  }
+  for (const [user, state] of latestDecision) {
+    if (state === "CHANGES_REQUESTED") {
+      errors.push(`Hay cambios pedidos pendientes de ${user}. Ver ${REVIEW_FLOW_LINK}`);
+    }
+  }
+  return errors;
+}
+
+async function getJson(fetchImpl, url, token) {
+  const response = await fetchImpl(url, {
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`,
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+  if (!response.ok) throw new Error(`GitHub API ${response.status} en ${url}`);
+  return response.json();
+}
+
+export async function fetchReviewInput({
+  repository,
+  number,
+  token,
+  apiUrl = "https://api.github.com",
+  fetchImpl = fetch,
+}) {
+  const base = `${apiUrl}/repos/${repository}/pulls/${number}`;
+  const pull = await getJson(fetchImpl, base, token);
+  const reviews = [];
+  for (let page = 1; ; page += 1) {
+    const batch = await getJson(fetchImpl, `${base}/reviews?per_page=100&page=${page}`, token);
+    reviews.push(
+      ...batch.map(({ user, state, body, submitted_at }) => ({ user: user?.login ?? "", state, body: body ?? "", submitted_at })),
+    );
+    if (batch.length < 100) break;
+  }
+  return {
+    title: pull.title ?? "",
+    body: pull.body ?? "",
+    author: pull.user?.login ?? "",
+    base: pull.base?.ref ?? "",
+    reviews,
+  };
+}
+
 export function parseEvent(event) {
   const pullRequest = event.pull_request;
   if (!pullRequest) throw new Error("El evento no contiene pull_request.");
@@ -88,8 +187,49 @@ function parseArgs(argv) {
   return index >= 0 ? argv[index + 1] : undefined;
 }
 
+async function mainReviews(eventPath) {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) {
+    console.error("[ERROR] Falta GITHUB_TOKEN para leer las reviews del pull request.");
+    process.exitCode = 1;
+    return;
+  }
+  const event = JSON.parse(fs.readFileSync(path.resolve(eventPath), "utf8"));
+  const number = event.pull_request?.number;
+  let input;
+  try {
+    // Reviews are read live: rerunning a job replays the original event payload.
+    input = await fetchReviewInput({
+      repository: process.env.GITHUB_REPOSITORY,
+      number,
+      token,
+      apiUrl: process.env.GITHUB_API_URL ?? "https://api.github.com",
+    });
+  } catch (error) {
+    console.error(`[ERROR] No se pudieron leer las reviews del pull request #${number}: ${error.message}`);
+    process.exitCode = 1;
+    return;
+  }
+  const errors = checkReviews(input);
+  if (errors.length) {
+    for (const error of errors) console.error(`[ERROR] ${error}`);
+    process.exitCode = 1;
+    return;
+  }
+  console.log("[OK] Revision y validacion publicadas, sin cambios pendientes.");
+}
+
 function main() {
-  const eventPath = parseArgs(process.argv.slice(2)) ?? process.env.GITHUB_EVENT_PATH;
+  const argv = process.argv.slice(2);
+  const eventPath = parseArgs(argv) ?? process.env.GITHUB_EVENT_PATH;
+  if (argv.includes("--reviews")) {
+    if (!eventPath) {
+      console.error("Uso: node tools/pr-policy.mjs --reviews --event <github-event.json>");
+      process.exitCode = 2;
+      return;
+    }
+    return mainReviews(eventPath);
+  }
   if (!eventPath) {
     console.error("Uso: pnpm pr:check --event <github-event.json>");
     process.exitCode = 2;
