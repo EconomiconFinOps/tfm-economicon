@@ -1,18 +1,20 @@
 # Evidencia JUP-099 — Unificar el sistema de estilos y los assets del frontend
 
-- Fecha: 2026-09-29.
+- Fecha: 2026-09-29 (validación original) y 2026-09-30 (reverificación tras fusionar `develop`).
 - Trello: https://trello.com/c/WBnzwDHR/91-jup-099
 - Rama: `feat/JUP-099-unify-styles-assets`.
-- Base: `origin/develop` en `688fe2d93bb521c125e12231c29090f1f1829742`. `develop` ha avanzado un commit
-  (`2efef1a`, solo documentación de OpenSpec) sin solape de archivos con esta rama: la simulación de
-  fusión (`git merge-tree`) sale limpia.
-- Estado verificado: `6060993` (14 commits propios, 46 archivos, +3 038 / −511).
+- Base: `origin/develop` en `688fe2d93bb521c125e12231c29090f1f1829742`. Con el PR abierto, `develop`
+  incorporó JUP-026 (`1e897dc`, #52), que **solapa** con esta rama en 3 archivos: la fusión y su
+  verificación están en la sección "Reverificación tras fusionar `develop`".
+- Estado verificado: las secciones de "Validación ejecutada" y de los 8 criterios corresponden a `6060993`
+  (14 commits propios, 46 archivos, +3 038 / −511), **antes** de la fusión; la sección de reverificación
+  corresponde al estado **fusionado** con `develop` (`1e897dc`).
 - OpenSpec: [jup-099-unify-styles-assets](../../openspec/changes/jup-099-unify-styles-assets/) (activo; al
   archivarlo, corregir este enlace a `openspec/changes/archive/<fecha>-jup-099-unify-styles-assets/`).
-- ADR: [ADR-0010](../adr/ADR-0010-frontend-color-tokens.md) (`Proposed`); aplican
+- ADR: [ADR-0011](../adr/ADR-0011-frontend-color-tokens.md) (`Proposed`); aplican
   [ADR-0003](../adr/ADR-0003-frontend-typescript.md) y [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md).
-- Pull request: pendiente de abrir.
-- CI de implementación: pendiente (pestaña Checks del PR).
+- Pull request: [#54](https://github.com/EconomiconFinOps/tfm-economicon/pull/54).
+- CI de implementación: pestaña Checks del PR #54 (pendiente de revisar tras la fusión).
 
 ## Fuentes verificadas
 
@@ -57,12 +59,12 @@ Comandos ejecutados el 2026-09-29 sobre `6060993`, desde `apps/frontend`.
 | 4 | Las 8 pantallas renderizan sin regresión visual, verificado pantalla por pantalla y registrado en `review.md` | **Cumplido**, con 4 diferencias aceptadas por Victor | 34 escenarios (las 8 pantallas y `/login`, con sus estados de error, carga, "sin tenant" y tooltips). Frente al estado con el tema nuevo: 0 píxeles reales. Frente al original: cuatro causas medidas (§ Verificación visual) |
 | 5 | Los tokens sin consumidor quedan retirados o justificados | **Cumplido** | 13 retirados (8 `sidebar-*`, `card-foreground`, `destructive-foreground`, `secondary`, `secondary-foreground`, `switch-background`); 110 → 92 declaraciones; el caso (d) de `theme-palette.test.ts` (110/110) y un análisis que ignora comentarios confirman 42 tokens, 0 sin consumo real; 11 con un solo consumidor, justificados |
 | 6 | Existe `ATTRIBUTIONS.md` con las atribuciones que apliquen, o queda registrado por qué ninguna aplica | **Cumplido** | [`apps/frontend/ATTRIBUTIONS.md`](../../apps/frontend/ATTRIBUTIONS.md): aplica shadcn/ui (MIT, 5 primitivos + `cn`); registrado por qué no aplican Unsplash, fuentes ni las dependencias npm |
-| 7 | La decisión sobre el ámbito oscuro explícito queda registrada en `design.md` | **Cumplido** | Decisión 2 del `design.md`: una única paleta en `:root`, sin `.dark` ni `class="dark"`; `@custom-variant dark (&);` (verificado compilando con Tailwind 4.3.3). `index.html` es `<html lang="en">`; en `theme.css` `.dark` solo aparece en el comentario de cabecera. Recogido también en ADR-0010 |
+| 7 | La decisión sobre el ámbito oscuro explícito queda registrada en `design.md` | **Cumplido** | Decisión 2 del `design.md`: una única paleta en `:root`, sin `.dark` ni `class="dark"`; `@custom-variant dark (&);` (verificado compilando con Tailwind 4.3.3). `index.html` es `<html lang="en">`; en `theme.css` `.dark` solo aparece en el comentario de cabecera. Recogido también en ADR-0011 |
 | 8 | lint, typecheck y build en verde; suite de pruebas sin regresión | **Cumplido** | § Validación ejecutada: lint 0, typecheck 0 (3 configs), build correcto, suite **431/431** (los 260 previos siguen en verde) |
 
 ## Decisiones
 
-Resumen; el razonamiento completo y las alternativas están en el `design.md` del change y en ADR-0010.
+Resumen; el razonamiento completo y las alternativas están en el `design.md` del change y en ADR-0011.
 
 - **Tokens semánticos de shadcn con los valores reales de la aplicación** y solo los tokens nuevos
   imprescindibles, con nombre de función y el valor exacto que sustituyen; no se consolidan tonos
@@ -80,7 +82,7 @@ Resumen; el razonamiento completo y las alternativas están en el `design.md` de
 - **Sin mutación de Stryker** sobre la migración (exención justificada; ver abajo).
 - **Verificación visual con Chromium real** antes/después, fuera del repositorio.
 - **`ATTRIBUTIONS.md`** con el aviso MIT de shadcn/ui verificado contra la licencia publicada.
-- **ADR-0010** (`Proposed`) para la convención de tokens.
+- **ADR-0011** (`Proposed`) para la convención de tokens.
 - **Arrastre de JUP-098** en commits de documentación propios, sin ninguna afirmación sobre CI (la nota
   de revisión "los tests del frontend no corren en CI" se descartó como malentendido).
 
@@ -271,6 +273,61 @@ de una expresión regular escrita en un *heredoc*), no del código; un `grep` di
 - El `coder` usó `git stash` una vez para comparar; se verificó después que `git stash list` estaba vacío y
   que el árbol tenía exactamente los archivos esperados.
 
+## Reverificación tras fusionar `develop` (JUP-026, 2026-09-30)
+
+Con el PR [#54](https://github.com/EconomiconFinOps/tfm-economicon/pull/54) abierto, `develop` incorporó
+JUP-026 (`1e897dc`, #52): KPIs de costes de Azure y pantalla ejecutiva conectada a datos reales. GitHub
+marcó 3 conflictos. La resolución y su razonamiento están en el `review.md` del change (sección "Fusión con
+`develop`"); aquí se recogen las comprobaciones sobre el **resultado de la fusión**.
+
+**Qué cambió respecto a lo validado antes.**
+
+- **3 archivos en conflicto (6 bloques):** `openspec/findings/backlog.md` (se conservan ambos lados),
+  `DashboardPage.tsx` (su lógica con nuestro token) y `ExecutiveCostDashboard.tsx` (su estructura y su
+  lógica, con la migración de color vuelta a aplicar). Frente a `develop`, esos dos archivos de pantalla
+  quedan con **solo** el cambio de color, el `import` del tooltip compartido y los atributos de las
+  gráficas a `var(--…)`.
+- **Colisión de ADR que Git no marca:** JUP-026 añadió un `ADR-0010` (`Accepted`). El nuestro pasa a
+  **`ADR-0011`**.
+- **Un token nuevo, `warning-text`** (`amber-300` v4, `oklch(87.9% 0.169 91.605)`): la sección de costes
+  reales de JUP-026 usa `text-amber-300` en 3 mensajes y ese tono no existía en la paleta. Se añade con
+  nombre de función en vez de reutilizar `warning` (amber-400) y cambiar píxeles; consolidarlo es un
+  cambio de una línea y consta en `RF-099-003`.
+- **Código huérfano retirado:** el mapa `toneIconClass`, que dejó de tener consumidor al quitar JUP-026
+  las tarjetas KPI demo.
+- **Los demás colores literales nuevos de su código** (`text-slate-300` ×8, `text-white` ×6,
+  `text-slate-400` ×4, `border-[#2d3748]` ×4, `bg-[#0f1419]`) se migran con la tabla de siempre.
+
+**Comprobaciones sobre el árbol fusionado** (cada comando en solitario):
+
+| Comprobación | Resultado |
+| --- | --- |
+| Guardián de colores + contrato del tema | 173/173 (ningún color literal nuevo de JUP-026 se escapa) |
+| `typecheck` (3 configs) / `lint` | exit 0 / exit 0 |
+| `test` | **47 archivos, 437/437**, 0 timeouts |
+| `build` | correcto, 2 480 módulos; CSS 43,37 kB (gzip 8,25), JS 746,77 kB (gzip 214,05) |
+| `install --frozen-lockfile` | `Done in 1.3s`, exit 0 |
+| `openspec:validate` | 36 passed, 0 failed (incluye el change y las specs de JUP-026) |
+| `jup:check` de `jup-099-unify-styles-assets` y de `jup-026-azure-cost-kpis` | `[OK]` ambos |
+| `jup:cleanup:check` | `[OK]` 707 archivos |
+| `git diff origin/develop --name-only` sobre `apps/backend` y `apps/processor` | **0 archivos** |
+
+**Verificación visual: `develop` frente al estado fusionado** (el "antes" correcto ahora es `develop` tal
+cual, construido con `git archive origin/develop` en una carpeta temporal fuera del repositorio). El guion
+se adaptó al contrato v2 de `/billing/summary` y añade 4 escenarios de la pantalla ejecutiva (datos
+parciales, sin datos, solapamiento de fuentes, y solapamiento en `/overview-legacy`); los tooltips de esa
+pantalla pasan de 3 a 2 porque JUP-026 retiró el gráfico circular. **37 escenarios** por lado.
+
+- **La pantalla ejecutiva completa, con la sección de costes reales de JUP-026 migrada a tokens, da 0
+  píxeles de diferencia frente a `develop` en sus 8 escenarios** (base, menú de exportación, foco del
+  selector, datos parciales, sin datos, solapamiento y 2 tooltips), incluidos los tres mensajes con el
+  token `warning-text`.
+- El resto de diferencias son **las mismas cuatro causas ya aceptadas y nada más**, medido con
+  `classify.mjs`: franja del `body` 8 184 960 px, degradado de Recomendaciones 2 820 px (los mismos
+  2 × 1 410) y 3 322 px en "otros" = **3 311 de iconos y borde** (las mismas cifras por pantalla: 71, 549
+  y 761, contando los tooltips) más **11 px de ruido de rasterizado** (4 en `assistant`, 7 en
+  `ingest-success`). **La integración de JUP-026 no añade ninguna diferencia visual nueva.**
+
 ## Reproducir la verificación visual
 
 1. Crear un proyecto temporal **fuera** del repositorio e instalar `playwright`, `pixelmatch` y `pngjs`
@@ -278,8 +335,8 @@ de una expresión regular escrita en un *heredoc*), no del código; un `grep` di
 2. Construir cada estado a comparar a una carpeta propia:
    `corepack pnpm --filter @finops/frontend exec vite build --outDir <carpeta> --emptyOutDir`
    (el estado original con `git switch --detach 688fe2d`; el actual en la rama).
-3. Capturar: `node capture.mjs <carpeta-dist> <carpeta-capturas>` (34 escenarios; `ONLY=a,b` para un
-   subconjunto). Repetir dos veces el mismo build para medir el ruido.
+3. Capturar: `node capture.mjs <carpeta-dist> <carpeta-capturas>` (34 escenarios en la verificación original;
+   37 con el guion vigente, adaptado al contrato v2 de `/billing/summary`; `ONLY=a,b` para un subconjunto). Repetir dos veces el mismo build para medir el ruido.
 4. Comparar: `node compare.mjs <antes> <despues>` y clasificar con `node classify.mjs <antes> <despues>`.
 5. Propagación: cambiar los dos tokens en `theme.css`, construir a otra carpeta, **restaurar el archivo**,
    capturar y `node propagation.mjs <final> <propagacion>`.
@@ -298,8 +355,8 @@ Las capturas no se versionan.
   evidencia (cabecera) y en `docs/spikes/frontend-migration.md` deben apuntar a
   `openspec/changes/archive/<fecha>-jup-099-unify-styles-assets/`, y los enlaces relativos del propio
   `review.md`, `design.md` y `proposal.md` archivados necesitan un `../` más (`RF-099-004`).
-- Rellenar aquí el enlace del PR y el resultado de CI cuando se abra.
-- ADR-0010 pasa de `Proposed` a `Accepted` con la aprobación del PR.
+- Revisar el resultado de CI del PR #54 tras la fusión con `develop` y anotarlo aquí.
+- ADR-0011 pasa de `Proposed` a `Accepted` con la aprobación del PR.
 - `RF-099-001` a `RF-099-004` quedan `Open` sin dueño asignado, disponibles para tarjetas propias.
 - El E2E completo en navegador contra el backend real corresponde a JUP-102; esta tarjeta verifica el
   aspecto con datos simulados.
@@ -308,7 +365,7 @@ Las capturas no se versionan.
 
 Copiados literalmente de los archivos ejecutados.
 
-### `capture.mjs` — Captura de los 34 escenarios
+### `capture.mjs` — Captura de los escenarios (34 en la verificación original; 37 tras fusionar con `develop`, versión vigente)
 
 Uso: `node capture.mjs <dist> <salida>`; con `ONLY=a,b` solo los indicados.
 
@@ -344,7 +401,25 @@ const messages = [
   { id: "m1", role: "user", content: "Where can we reduce compute costs?", metadata: {}, created_at: "2026-09-08T10:05:00Z" },
   { id: "m2", role: "assistant", content: "The billing document identifies idle compute instances.", metadata: {}, created_at: "2026-09-08T10:05:01Z" }
 ];
-const billing = { monthly_spend: 12345, savings_identified: 678, open_ingestions: 2, currency: "USD" };
+// Contrato v2 de GET /billing/summary (JUP-026): totales y desglose reales. Identico a tests/fixtures.ts.
+const billing = {
+  contract_version: 2,
+  period: { start_date: "2026-09-01", end_date: "2026-10-01", timezone: "UTC" },
+  group_by: "service",
+  tag_key: null,
+  data_status: "available",
+  totals: [{ currency: "USD", cost: "12345.67", record_count: 2 }],
+  groups: [
+    { currency: "USD", subscription_id: "sub-001", value: "Compute", cost: "8000.10", record_count: 1 },
+    { currency: "USD", subscription_id: "sub-001", value: "Storage", cost: "4345.57", record_count: 1 }
+  ],
+  missing_dimension_count: 0,
+  excluded_undated_count: 0,
+  monthly_spend: "12345.67",
+  savings_identified: null,
+  open_ingestions: 2,
+  currency: "USD"
+};
 const health = { status: "ok", services: { database: "ok", rabbitmq: "ok", vector_store: "ok" }, checked_at: "2026-09-08T10:00:00Z" };
 const session = { accessToken: "test-access-token", user: operator };
 
@@ -566,13 +641,31 @@ for (const [name, route, marker] of [
 // Se pasa el raton por el centro de cada grafica (.recharts-wrapper) y se captura con el tooltip abierto.
 const hoverChart = (i) => async (page) => { await page.locator(".recharts-wrapper").nth(i).hover(); };
 for (const [name, route, count] of [
-  ["executive-cost", "/", 3], ["operational-cost", "/operational", 2], ["executive-cuts", "/cuts", 2],
+  ["executive-cost", "/", 2] /* 3 hasta JUP-026, que retiro el grafico circular de la pantalla ejecutiva */, ["operational-cost", "/operational", 2], ["executive-cuts", "/cuts", 2],
   ["anomalies", "/anomalies", 1], ["recommendations", "/recommendations", 1]
 ]) {
   for (let i = 0; i < count; i++) {
     await scenario(`tooltip-${name}-${i}`, { run: go(route), after: hoverChart(i) });
   }
 }
+
+// --- Anadidos al fusionar con JUP-026: estados de la pantalla ejecutiva con datos reales.
+await scenario("executive-cost-partial", {
+  overrides: { "GET /billing/summary": (r) => json(r, { ...billing, data_status: "partial", missing_dimension_count: 3, excluded_undated_count: 1 }) },
+  run: async (page) => { await go("/")(page); await page.waitForSelector("text=Datos parciales", { timeout: 20000 }); }
+});
+await scenario("executive-cost-empty", {
+  overrides: { "GET /billing/summary": (r) => json(r, { ...billing, data_status: "empty", totals: [], groups: [], monthly_spend: null, currency: null }) },
+  run: async (page) => { await go("/")(page); await page.waitForSelector("text=Sin datos de costes", { timeout: 20000 }); }
+});
+await scenario("executive-cost-overlap", {
+  overrides: { "GET /billing/summary": (r) => json(r, { detail: "ambiguous_cost_source" }, 409) },
+  run: async (page) => { await go("/")(page); await page.waitForSelector("text=Posible solapamiento", { timeout: 40000 }); }
+});
+await scenario("overview-legacy-overlap", {
+  overrides: { "GET /billing/summary": (r) => json(r, { detail: "ambiguous_cost_source" }, 409) },
+  run: async (page) => { await go("/overview-legacy")(page); await page.waitForSelector("text=Possible overlapping ingestion sources", { timeout: 40000 }); }
+});
 
 await browser.close();
 server.close();

@@ -1,17 +1,10 @@
-// DATOS DE DEMOSTRACION (sustituibles): valores estaticos portados tal cual
-// del origen (Economicon, JUP-095 grupo 5) para alimentar el
-// `ExecutiveCostDashboard` mientras no exista integracion con el backend
-// real. Localizable con grep "DATOS DE DEMOSTRACION" para su futura
-// sustitucion por datos en vivo.
-//
-// Capacidad de backend que falta para conectar cada dato (JUP-097, grupo 6;
-// detalle completo en docs/planning/JUP-097-frontend-data-gap-map.md,
-// RF-091-003): `monthlyData` necesita C1 (serie temporal de costes);
-// `serviceData` y `kpiData[1]` ("Coste por Servicio") necesitan C2 (desglose
-// por dimension); `kpiData[3]` ("Recursos Activos") necesita C7 (inventario
-// de recursos). `kpiData[0]`/`kpiData[2]` ("Coste Total Mensual"/"Ahorro
-// Potencial") sí tienen contrato (`GET /billing/summary`), pero el backend
-// devuelve un valor codificado a mano (RF-091-004), no ausencia de capacidad.
+// DATOS DE DEMOSTRACION: constantes del origen (Economicon, JUP-095 grupo 5).
+// JUP-026 local, pendiente de integracion: `ExecutiveCostDashboard` usa
+// `GET /billing/summary` para totales reales por moneda y una tabla seleccionable
+// entre cinco dimensiones; el ahorro se muestra como no disponible.
+// `monthlyData` y `kpiData[3]` (inventario) siguen siendo demo.
+// `serviceData` y `kpiData[0]`/`kpiData[1]`/`kpiData[2]` son constantes
+// historicas sin uso en la vista, nunca fallback de la UI.
 import { TrendingDown, DollarSign, Cloud, Server } from "lucide-react";
 
 export const monthlyData = [

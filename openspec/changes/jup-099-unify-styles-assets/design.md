@@ -1,6 +1,6 @@
 JUP: JUP-099 — ADR aplicables: [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md)
 (TypeScript strict), [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) (shadcn/ui). ADR
-nuevo propuesto: `docs/adr/ADR-0010-frontend-color-tokens.md` (decisión 8).
+nuevo propuesto: `docs/adr/ADR-0011-frontend-color-tokens.md` (decisión 8).
 
 ## Context
 
@@ -73,6 +73,7 @@ shadcn no nombra se añade con nombres de función, no de color:
 | `danger` / `danger-tint` / `danger-foreground` | `red-400` / `red-500` / `red-300` v4 | `red-*` | ídem; `destructive` = `danger-tint` |
 | `info` / `info-tint` / `info-foreground` | `blue-400` / `blue-500` / `blue-300` v4 | `blue-*` | ídem; también el brillo `shadow-blue-500/*` |
 | `warning` / `warning-tint` / `warning-foreground` | `amber-400` / `yellow-500` / `yellow-300` v4 | `amber-400`, `yellow-*` | aviso de sesión, tono cálido, severidad media |
+| `warning-text` | `amber-300` v4 | `amber-300` | texto de aviso suelto (sin fondo translúcido). **Añadido al fusionar con JUP-026** (2026-09-30): su sección de costes reales usa `text-amber-300` en 3 mensajes y ese tono no existía en la paleta |
 | `attention-tint` / `attention-foreground` | `orange-500` / `orange-300` v4 | `orange-*` | estado "Investigando", proveedor AWS |
 | `positive` | `emerald-400` v4 | `emerald-400` | tono de éxito de `MetricCard` |
 | `chart-1` … `chart-5` | `#3b82f6`, `#10b981`, `#f59e0b`, `#8b5cf6`, `#ff8c00` | hex de series | series de gráficas y datos demo |
@@ -246,12 +247,12 @@ El origen incluía atribuciones de shadcn/ui (MIT) y de fotos de Unsplash. En es
   llevan su propia licencia; no se copia su código. Se menciona en el archivo para dejar escrito
   por qué no llevan atribución propia.
 
-### 8. ADR-0010 para la convención de tokens de color
+### 8. ADR-0011 para la convención de tokens de color
 
 La regla "ningún color literal en pantallas; cada color es un token con nombre de función; paleta
 única en `:root`" obliga a todas las tarjetas futuras que toquen el frontend y cambia cómo se copian
 primitivos de shadcn (decisión 2). Es un patrón compartido que afecta a trabajo futuro, uno de los
-supuestos de `docs/adr/README.md`. Se redacta `ADR-0010-frontend-color-tokens.md` en estado
+supuestos de `docs/adr/README.md`. Se redacta `ADR-0011-frontend-color-tokens.md` en estado
 `Proposed` durante la revisión, enlazado desde aquí y desde ADR-0004.
 
 ### 9. El arrastre de JUP-098 va en commits de documentación separados
@@ -285,7 +286,7 @@ Ver `proposal.md`. Tres criterios de redacción:
 - [Animaciones de Recharts introducen ruido en las capturas] → espera fija y mismo guion antes y
   después; si persiste, se captura con animación desactivada en ambas pasadas.
 - [Los tokens `v4` duplican a mano valores de Tailwind] → si una actualización de Tailwind cambia su
-  paleta, la aplicación no cambia (es lo deseado); queda escrito en ADR-0010.
+  paleta, la aplicación no cambia (es lo deseado); queda escrito en ADR-0011.
 - [30 tokens son más de los que "necesita" una paleta limpia] → es el precio de no rediseñar; la
   consolidación queda propuesta como tarjeta propia en `review.md`.
 - [Editar tests protegidos (JUP-095 y comentarios)] → solo con autorización explícita, restaurando

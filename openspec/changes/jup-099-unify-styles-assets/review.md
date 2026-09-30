@@ -796,3 +796,90 @@ reproduce exactamente lo ejecutado.
   `RF-099-004`). (2) La ejecución de la suite que dio 14 archivos fallando durante el grupo 5 no se
   reprodujo y su causa no está demostrada; es coherente con `RF-098-004` pero no lo confirma. (3) El PR
   lo abre Victor directamente (no este agente).
+
+## Fusión con `develop` tras abrir el PR #54 (2026-09-30)
+
+Posterior al gate post-review de arriba; no lo sustituye. `develop` incorporó
+JUP-026 (`openspec/changes/jup-026-azure-cost-kpis/`) (#52, Paris Arcos: KPIs de costes de Azure y
+pantalla ejecutiva conectada a datos reales), que solapa con esta rama. GitHub marcó **3 conflictos**.
+
+**Estado de partida.** La rama remota ya tenía una fusión previa de `develop` hecha por Victor
+(`2684610`, que traía `2efef1a`); la copia local iba 2 commits por detrás. Se igualó con un
+*fast-forward* puro (`git merge --ff-only`, sin commit nuevo) y después se fusionó `develop`
+(`1e897dc`) con `git merge --no-commit --no-ff`, sin crear el commit, para resolver y verificar antes de
+confirmar. Convención ya usada en JUP-098 (fusionar `develop` en la rama).
+
+**Conflictos de texto (3 archivos, 6 bloques) y resolución:**
+
+| Archivo | Bloques | Resolución |
+| --- | --- | --- |
+| `openspec/findings/backlog.md` | 1 | Se conservan **ambos lados**: nuestras 5 filas de tabla (`RF-098-004`, `RF-099-001…004`) primero, para que la tabla siga contigua, y después las secciones de prosa de JUP-026 (`RF-026-001`, `RF-026-002` y la actualización técnica). Comprobado: las 8 filas `RF-098`/`RF-099` de la tabla (las 3 previas y las 5 nuestras) tienen 12 campos, y las 2 secciones `RF-026` siguen íntegras |
+| `apps/frontend/src/pages/DashboardPage.tsx` | 1 | Su lógica nueva (`role="alert"` y el aviso de solapamiento de fuentes) con nuestro token de color. Frente a `develop` el archivo queda con **solo el cambio de color** |
+| `apps/frontend/src/pages/ExecutiveCostDashboard.tsx` | 4 | JUP-026 reescribió la pantalla (quitó el gráfico circular y las tarjetas KPI demo, añadió la sección de costes reales y una sección de demostración). Se toma **su estructura y lógica** en los 4 bloques y se **vuelve a aplicar la migración de color** sobre su código. Frente a `develop` el archivo queda con solo: los colores a tokens, el `import` del tooltip compartido y los atributos de las gráficas a `var(--…)` |
+
+**Problemas que Git no marca como conflicto y que se resolvieron:**
+
+1. **Colisión de ADR.** JUP-026 añadió `docs/adr/ADR-0010-azure-cost-source-overlap.md`, ya `Accepted`
+   (aprobación final de Paris, 2026-09-28). Nuestro `ADR-0010-frontend-color-tokens.md` es un archivo
+   distinto, así que Git los fusiona sin aviso y quedarían **dos ADR-0010**. Se **renumera el nuestro a
+   `ADR-0011`** (archivo, título y todas las referencias vivas: `design.md`, `tasks.md`, parte del
+   `proposal.md`, README del frontend, `ADR-0004`, spike y evidencia). El ADR de JUP-026 queda intacto
+   (0 líneas de diferencia frente a `develop`). **Se dejan sin cambiar** los bloques de aprobación ya
+   firmados (`proposal.md` y este `review.md`) y las frases históricas de los grupos 9 y 10 (p. ej. "ADR-0010
+   está libre", cierta cuando se escribió): todas se refieren a este mismo ADR con su número original. En el
+   gate del grupo 10 ya se había advertido de que no se podía excluir esa colisión.
+2. **Código huérfano nuestro.** El mapa `toneIconClass` de `ExecutiveCostDashboard` (clases que sustituían
+   una interpolación) dejó de tener uso porque JUP-026 eliminó las tarjetas KPI que lo consumían: se
+   retira, y se añade el `import` de `chartTooltipStyle`, que sus gráficas siguen usando.
+3. **Colores literales nuevos en su código**, sin conflicto textual: la sección de costes reales
+   introduce `text-slate-300` (8), `text-white` (6), `text-slate-400` (4), `border-[#2d3748]` (4),
+   `bg-[#0f1419]` (1) y **`text-amber-300` (3), un tono que no existía en nuestra paleta**. Se migran con
+   la tabla de siempre. Para `amber-300` (`oklch(87.9% 0.169 91.605)`, verificado en Tailwind 4.3.3) se
+   añade **un token nuevo con nombre de función, `warning-text`** (texto de aviso suelto, distinto de
+   `warning-foreground`, que es texto sobre fondo translúcido), en vez de reutilizar `warning`
+   (amber-400) y cambiar píxeles. **Es una decisión de diseño visible: consolidarlo con `warning` es un
+   cambio de una línea** y queda anotado en `RF-099-003` (par `warning-text`/`warning`) y en la tabla
+   del `design.md`.
+
+**Verificación sobre el árbol fusionado** (cada comando en solitario):
+
+| Comprobación | Resultado |
+| --- | --- |
+| `color-tokens.guard.test.ts` + `theme-palette.test.ts` | 173/173; ningún color literal nuevo de JUP-026 se escapa; el caso de consumo de `warning-text` pasa |
+| `typecheck` (3 configs) / `lint` | exit 0 / exit 0 |
+| `test` | **47 archivos, 437/437**, 0 timeouts (la rama tenía 431; el resto viene de JUP-026 y de los casos de nuestros tests por archivo y por token) |
+| `build` | correcto, 2 480 módulos; CSS 43,37 kB (gzip 8,25), JS 746,77 kB (gzip 214,05) |
+| `install --frozen-lockfile` | `Done in 1.3s`, exit 0 |
+| `openspec:validate` | 36 passed, 0 failed (entran el change y las specs de JUP-026) |
+| `jup:check` de `jup-099-unify-styles-assets` y de `jup-026-azure-cost-kpis` | `[OK]` ambos |
+| `jup:cleanup:check` | `[OK]` 707 archivos |
+| Archivos de `apps/backend` o `apps/processor` en `git diff origin/develop` | **0** (el PR sigue sin tocar backend: lo de JUP-026 ya está en `develop`) |
+
+**Verificación visual sobre el resultado de la fusión: `develop` frente al estado fusionado.** El "antes"
+correcto ya no es el original de la rama sino `develop` tal cual (construido desde `git archive
+origin/develop` en una carpeta temporal fuera del repositorio). El guion se adaptó al **contrato v2 de
+`/billing/summary`** (totales y desglose reales) y gana 4 escenarios de la pantalla ejecutiva (datos
+parciales, sin datos, solapamiento de fuentes y solapamiento en `/overview-legacy`); los tooltips de la
+pantalla ejecutiva pasan de 3 a 2 porque JUP-026 retiró el gráfico circular. **37 escenarios** por lado.
+
+- **La pantalla ejecutiva completa, con la sección de costes reales de JUP-026 ya migrada a tokens, da 0
+  píxeles de diferencia frente a `develop` en sus 8 escenarios** (base, menú de exportación, foco del
+  selector, datos parciales, sin datos, solapamiento y 2 tooltips), incluidos los tres mensajes con el
+  token `warning-text`.
+- El resto de diferencias son **las mismas cuatro causas ya aceptadas** y nada más, medido con
+  `classify.mjs`: franja del `body` 8 184 960 px, degradado de Recomendaciones 2 820 px (los mismos
+  2 × 1 410) y 3 322 px en "otros", que son **3 311 de iconos y borde** (las mismas cifras por pantalla:
+  71, 549 y 761, contando los escenarios con tooltip) **más 11 px de ruido de rasterizado** (4 en
+  `assistant` y 7 en `ingest-success`, los dos escenarios habituales). **La integración de JUP-026 no
+  añade ninguna diferencia visual nueva.**
+
+**Tropiezos del proceso durante la fusión** (resueltos): PowerShell corrompe la salida binaria de
+`git archive` al pasarla por tubería (se repitió desde Bash); al limpiar la carpeta temporal de `develop`
+se retiró **primero el enlace simbólico a `node_modules`** con `rmdir` (borrar con `-Recurse` un directorio
+que contiene un *junction* puede vaciar su destino; se comprobó que `node_modules` seguía con las mismas
+26 entradas); y el guion de capturas se cortó en el escenario 27 porque pedía una tercera gráfica que ya
+no existe (se ajustó con un comentario, no se ocultó).
+
+**Pendiente de Victor:** confirmar la fusión (`git add` de los archivos resueltos y `git commit`, que crea
+el commit de fusión), `git push`, y actualizar la descripción del PR (ADR-0011, 437 tests y la nota de la
+fusión). Decidir si `warning-text` se queda como token propio o se consolida con `warning`.

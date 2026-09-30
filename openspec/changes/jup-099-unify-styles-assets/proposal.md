@@ -97,13 +97,13 @@ _Ninguna._
   `src/test/index-html-dark-scope.test.ts` (commiteado y protegido: se edita con autorización);
   comentarios en 10 archivos de test (sin cambiar aserciones). Ninguna prueba actual comprueba
   clases de color, así que la suite existente no debería cambiar.
-- **Documentación:** `docs/adr/ADR-0010-…` y su índice, `apps/frontend/ATTRIBUTIONS.md`,
+- **Documentación:** `docs/adr/ADR-0011-…` y su índice, `apps/frontend/ATTRIBUTIONS.md`,
   `apps/frontend/README.md` si describe estilos, `docs/spikes/frontend-migration.md`,
   `openspec/findings/backlog.md`, `docs/evidence/JUP-098-validation.md`, el `review.md` archivado de
   JUP-098 y `docs/evidence/JUP-099-validation.md`.
 - **Backend, APIs, dependencias:** sin cambios. La verificación visual usa Playwright vía `dlx`, sin
   añadirlo a `package.json`.
-- **ADR:** aplican ADR-0003 (TypeScript strict) y ADR-0004 (shadcn/ui); se propone ADR-0010.
+- **ADR:** aplican ADR-0003 (TypeScript strict) y ADR-0004 (shadcn/ui); se propone ADR-0011.
 - **Carril:** `standard` (el spike proponía `light`; con ~470 ocurrencias en 16 archivos y riesgo de
   regresión visual en 9 pantallas se eleva, como sugería la tarjeta).
 

@@ -48,11 +48,63 @@ export interface TenantCollection {
   items: TenantRecord[];
 }
 
-export interface BillingSummary {
-  monthly_spend: number;
-  savings_identified: number;
-  open_ingestions: number;
+export type BillingGrouping = "subscription" | "resource_group" | "service" | "project" | "tag";
+
+export interface BillingSelection {
+  start_date?: string;
+  end_date?: string;
+  group_by?: BillingGrouping;
+  tag_key?: string;
+}
+
+export interface BillingTotal {
   currency: string;
+  cost: string;
+  record_count: number;
+}
+
+export interface BillingGroup extends BillingTotal {
+  subscription_id: string | null;
+  value: string | null;
+}
+
+export interface BillingSummary {
+  contract_version: 2;
+  period: { start_date: string; end_date: string; timezone: "UTC" };
+  group_by: BillingGrouping;
+  tag_key: string | null;
+  data_status: "available" | "partial" | "empty";
+  totals: BillingTotal[];
+  groups: BillingGroup[];
+  missing_dimension_count: number;
+  excluded_undated_count: number;
+  monthly_spend: string | null;
+  savings_identified: null;
+  open_ingestions: number;
+  currency: string | null;
+}
+
+export function isBillingSummary(value: unknown): value is BillingSummary {
+  const object = (item: unknown): item is Record<string, unknown> =>
+    typeof item === "object" && item !== null && !Array.isArray(item);
+  const nullableString = (item: unknown) => item === null || typeof item === "string";
+  const count = (item: unknown) => typeof item === "number" && Number.isSafeInteger(item) && item >= 0;
+  const money = (item: unknown) => typeof item === "string" && /^-?(0|[1-9][0-9]*)\.[0-9]{2}$/.test(item) && item !== "-0.00";
+  const total = (item: unknown) => object(item) && isNonemptyString(item.currency) && money(item.cost) && count(item.record_count);
+  const isoDate = (item: unknown) => typeof item === "string" && /^\d{4}-\d{2}-\d{2}$/.test(item)
+    && !Number.isNaN(Date.parse(item)) && new Date(item).toISOString().slice(0, 10) === item;
+  return object(value) && value.contract_version === 2
+    && object(value.period) && isoDate(value.period.start_date) && isoDate(value.period.end_date)
+    && String(value.period.start_date) < String(value.period.end_date) && value.period.timezone === "UTC"
+    && ["subscription", "resource_group", "service", "project", "tag"].includes(String(value.group_by))
+    && (value.group_by === "tag" ? typeof value.tag_key === "string" && value.tag_key.trim().length > 0 : value.tag_key === null)
+    && ["available", "partial", "empty"].includes(String(value.data_status))
+    && Array.isArray(value.totals) && value.totals.every(total)
+    && Array.isArray(value.groups) && value.groups.every((item) => total(item) && object(item)
+      && nullableString(item.subscription_id) && nullableString(item.value))
+    && count(value.missing_dimension_count) && count(value.excluded_undated_count)
+    && (value.monthly_spend === null || money(value.monthly_spend))
+    && nullableString(value.currency) && value.savings_identified === null && count(value.open_ingestions);
 }
 
 export interface IngestJobRequest {

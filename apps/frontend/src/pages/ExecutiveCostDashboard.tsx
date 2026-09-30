@@ -1,24 +1,35 @@
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useState } from "react";
+import { useOutletContext } from "react-router";
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ExportButton } from "@/components/ExportButton";
 import { chartTooltipStyle } from "@/components/chartTheme";
-// Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
-// tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
-import { monthlyData, serviceData, kpiData } from "@/data/demo/executiveCostDashboard";
-
-// Traduce el tono de los datos demo (`kpi.color`) a la clase de texto del tema.
-// Antes se interpolaba `text-${color}-400`, que Tailwind no puede detectar: solo
-// generaba la clase si el literal completo aparecia en otro sitio del codigo.
-// Con los literales migrados a tokens esas clases dejarian de generarse, asi que
-// se declara el mapa explicito. `purple` y `orange` no tenian clase generada
-// (el icono heredaba el color del texto); se conservan sin clase para que el
-// resultado visual sea identico, no para fijar ese comportamiento.
-const toneIconClass: Record<string, string> = {
-  blue: 'text-info',
-  green: 'text-success',
-};
+import { monthlyData, kpiData } from "@/data/demo/executiveCostDashboard";
+import { useCostKpis } from "@/hooks/useCostKpis";
+import type { SessionOutletContext } from "@/layouts/SessionGate";
+import { ApiError } from "@/services/api";
+import type { BillingGrouping } from "@/services/contracts";
 
 export function ExecutiveCostDashboard() {
+  const { token, activeTenant } = useOutletContext<SessionOutletContext>();
+  const [period, setPeriod] = useState(() => {
+    const now = new Date();
+    return {
+      start_date: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10),
+      end_date: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString().slice(0, 10)
+    };
+  });
+  const [groupBy, setGroupBy] = useState<BillingGrouping>("service");
+  const [tagKey, setTagKey] = useState("");
+  const validSelection = Boolean(period.start_date && period.end_date && period.start_date < period.end_date
+    && (groupBy !== "tag" || tagKey.trim()));
+  const query = useCostKpis({
+    token, tenantId: activeTenant?.id, enabled: validSelection,
+    selection: { ...period, group_by: groupBy, ...(groupBy === "tag" ? { tag_key: tagKey } : {}) }
+  });
+  const billing = activeTenant && validSelection && !query.isError ? query.data : undefined;
+  const overlap = query.error instanceof ApiError && query.error.status === 409
+    && query.error.message.includes("ambiguous_cost_source");
+  const inputClass = "mt-1 block w-full min-w-0 rounded-md border border-border bg-background p-2 text-foreground";
   const exportData = monthlyData.map(d => ({
     Mes: d.mes,
     'Total (€)': d.total,
@@ -33,29 +44,83 @@ export function ExecutiveCostDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-bold text-foreground">Dashboard Ejecutivo - Coste Global</h2>
-          <p className="text-sm text-muted-foreground">Vista general de costes cloud multi-proveedor</p>
+          <p className="text-sm text-muted-foreground">Costes de Azure</p>
         </div>
-        <ExportButton data={exportData} filename="coste-global-ejecutivo" />
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpiData.map((kpi, idx) => (
-          <div key={idx} className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-5 shadow-xl hover:shadow-info-tint/10 transition-shadow">
-            <div className="flex items-center justify-between mb-3">
-              <kpi.icon className={`w-8 h-8 ${toneIconClass[kpi.color] ?? ''}`} />
-              {kpi.trend === 'up' && <TrendingUp className="w-5 h-5 text-success" />}
-              {kpi.trend === 'down' && <TrendingDown className="w-5 h-5 text-danger" />}
+      <section aria-label="Costes reales de Azure" className="space-y-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="min-w-0 text-sm text-subtle-foreground">Inicio (UTC)
+            <input type="date" value={period.start_date} className={inputClass}
+              onChange={(event) => setPeriod({ ...period, start_date: event.target.value })} />
+          </label>
+          <label className="min-w-0 text-sm text-subtle-foreground">Fin exclusivo (UTC)
+            <input type="date" value={period.end_date} className={inputClass}
+              onChange={(event) => setPeriod({ ...period, end_date: event.target.value })} />
+          </label>
+          <label className="min-w-0 text-sm text-subtle-foreground">Agrupar por
+            <select value={groupBy} className={inputClass}
+              onChange={(event) => setGroupBy(event.target.value as BillingGrouping)}>
+              <option value="subscription">Suscripción</option>
+              <option value="resource_group">Grupo de recursos</option>
+              <option value="service">Servicio</option>
+              <option value="project">Proyecto</option>
+              <option value="tag">Etiqueta</option>
+            </select>
+          </label>
+          {groupBy === "tag" && <label className="min-w-0 text-sm text-subtle-foreground">Clave de etiqueta
+            <input value={tagKey} className={inputClass} onChange={(event) => setTagKey(event.target.value)} />
+          </label>}
+        </div>
+        {!activeTenant ? <p role="status" className="text-subtle-foreground">Selecciona un cliente.</p>
+          : !validSelection ? <p role="status" className="text-warning-text">Periodo incompleto o no válido; la etiqueta requiere una clave.</p>
+          : query.isError ? <p role="alert" className="text-warning-text">{overlap
+            ? "Posible solapamiento de fuentes de ingesta. Costes no disponibles para este periodo."
+            : "Error al cargar costes. Datos no disponibles."}</p>
+          : !billing ? <p role="status" className="text-subtle-foreground">Cargando costes...</p> : null}
+        {billing && <>
+          <p className="text-sm text-muted-foreground">{billing.period.start_date} a {billing.period.end_date} (fin exclusivo), {billing.period.timezone}</p>
+          {billing.data_status === "partial" && <p role="status" className="text-warning-text">
+            Datos parciales: {billing.missing_dimension_count} registros sin dimensión; {billing.excluded_undated_count} registros sin fecha excluidos.
+          </p>}
+          {billing.totals.length === 0 ? <p role="status" className="text-subtle-foreground">Sin datos de costes para este periodo.</p> : <>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-foreground">Coste total del periodo</h3>
+              {billing.totals.map((total) => <p key={total.currency} className="break-all font-bold text-foreground">{total.cost} {total.currency}</p>)}
             </div>
-            <p className="text-sm text-muted-foreground mb-1">{kpi.title}</p>
-            <p className="font-bold text-foreground">{kpi.value}</p>
-            <p className="text-xs text-neutral mt-1">{kpi.change}</p>
-          </div>
-        ))}
-      </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-subtle-foreground">
+                <caption className="pb-3 text-left font-semibold text-foreground">Desglose de costes de Azure</caption>
+                <thead className="border-b border-border"><tr>
+                  <th scope="col" className="p-2">Dimensión</th>
+                  <th scope="col" className="p-2">Suscripción</th>
+                  <th scope="col" className="p-2">Moneda</th>
+                  <th scope="col" className="p-2 text-right">Coste</th>
+                  <th scope="col" className="p-2 text-right">Registros</th>
+                </tr></thead>
+                <tbody>{billing.groups.map((group) => <tr key={JSON.stringify([group.currency, group.subscription_id, group.value])} className="border-b border-border">
+                  <th scope="row" className="max-w-64 break-words p-2 font-normal">{group.value ?? "Sin dimensión"}</th>
+                  <td className="max-w-64 break-all p-2">{group.subscription_id ?? "No aplica"}</td>
+                  <td className="p-2">{group.currency}</td>
+                  <td className="p-2 text-right tabular-nums">{group.cost}</td>
+                  <td className="p-2 text-right">{group.record_count}</td>
+                </tr>)}</tbody>
+              </table>
+            </div>
+          </>}
+        </>}
+        <p className="text-sm text-muted-foreground">Ahorro potencial: no disponible.</p>
+      </section>
+
+      <section aria-label="Datos de demostración" className="space-y-6 border-t border-border pt-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h3 className="font-semibold text-foreground">Demostración: evolución, inventario y exportación</h3>
+          <ExportButton data={exportData} filename="demo-coste-global-ejecutivo" />
+        </div>
+        <p className="text-sm text-muted-foreground">Inventario demo: {kpiData[3].title}, {kpiData[3].value}</p>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div>
         {/* Trend Chart */}
         <div className="lg:col-span-2 bg-gradient-to-br from-card to-accent rounded-lg border border-border p-6 shadow-xl">
           <h3 className="font-semibold text-foreground mb-4">Evolución de Costes Mensuales</h3>
@@ -74,33 +139,7 @@ export function ExecutiveCostDashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Service Distribution */}
-        <div className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-6 shadow-xl">
-          <h3 className="font-semibold text-foreground mb-4">Distribución por Servicio</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={serviceData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, value }) => `${name} ${value}%`}
-                outerRadius={80}
-                dataKey="value"
-              >
-                {/* Sin `fill` en el <Pie>: cada sector toma su color de su <Cell>, asi que el relleno del padre quedaba siempre tapado. */}
-                {serviceData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={chartTooltipStyle}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
       </div>
-
       {/* Service Breakdown */}
       <div className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-6 shadow-xl">
         <h3 className="font-semibold text-foreground mb-4">Desglose por Categoría</h3>
@@ -120,6 +159,7 @@ export function ExecutiveCostDashboard() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+      </section>
     </div>
   );
 }

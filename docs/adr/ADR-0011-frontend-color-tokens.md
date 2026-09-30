@@ -1,4 +1,4 @@
-# ADR-0010: Convención de tokens de color del frontend
+# ADR-0011: Convención de tokens de color del frontend
 
 - Estado: Proposed
 - Fecha: 2026-09-29

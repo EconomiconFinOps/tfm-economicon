@@ -69,6 +69,7 @@
   --warning: oklch(82.8% 0.189 84.429);
   --warning-tint: oklch(79.5% 0.184 86.047);
   --warning-foreground: oklch(90.5% 0.182 98.111);
+  --warning-text: oklch(87.9% 0.169 91.605);
   --attention-tint: oklch(70.5% 0.213 47.604);
   --attention-foreground: oklch(83.7% 0.128 66.29);
   --positive: oklch(76.5% 0.177 163.223);
@@ -116,6 +117,7 @@
   --color-warning: var(--warning);
   --color-warning-tint: var(--warning-tint);
   --color-warning-foreground: var(--warning-foreground);
+  --color-warning-text: var(--warning-text);
   --color-attention-tint: var(--attention-tint);
   --color-attention-foreground: var(--attention-foreground);
   --color-positive: var(--positive);
