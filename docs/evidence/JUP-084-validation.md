@@ -1,5 +1,23 @@
 # Evidencia de validacion JUP-084
 
+## Validacion actual y excepcion aceptada — 2026-09-28
+
+El usuario confirma su validacion sobre la evidencia presentada y acepta
+la excepcion de pairing historico no acreditado. Se resuelve el residual de
+cierre documental, sin atribuir participacion a otros miembros ni convertir
+las asignaciones originales en trabajo realizado. Detalle y limites en la
+[auditoria de cierres](OpenSpec-closures-2026-09-25.md).
+
+## Revision de cierre — 2026-09-25
+
+PR original aprobada e integrada y tarjeta en `70 — Hecho`, contrastadas
+con GitHub y el puente de DockerServer. El archivo y promocion de specs se
+proponen en una rama de revision; no estan integrados en develop por esta nota.
+Detalle, fuentes y limites: [auditoria de cierres](OpenSpec-closures-2026-09-25.md).
+
+Las secciones siguientes son evidencia historica: sus estados pendientes y
+resultados de pruebas no se convierten retroactivamente en aprobaciones.
+
 - Fecha: 2026-08-27.
 - Tarjeta: https://trello.com/c/m1i7iXBm.
 - Rama: `docs/JUP-084-finops-agent-tool-contract`.

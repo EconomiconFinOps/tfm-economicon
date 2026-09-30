@@ -1,5 +1,15 @@
 # Evidencia De Validacion JUP-053
 
+## Revision de cierre — 2026-09-25
+
+PR original aprobada e integrada y tarjeta en `70 — Hecho`, contrastadas
+con GitHub y el puente de DockerServer. El archivo y promocion de specs se
+proponen en una rama de revision; no estan integrados en develop por esta nota.
+Detalle, fuentes y limites: [auditoria de cierres](OpenSpec-closures-2026-09-25.md).
+
+Las secciones siguientes son evidencia historica: sus estados pendientes y
+resultados de pruebas no se convierten retroactivamente en aprobaciones.
+
 Seguimiento 2026-09-14: RF-053-004 fue corregido e integrado mediante PR #34
 (JUP-020); la validacion de Paris ha sido confirmada por el usuario y se
 registra el cierre en [JUP-020-validation.md](JUP-020-validation.md).
@@ -97,7 +107,7 @@ con RF-053-004 pendiente de JUP-020; no la funcionalidad completa de ingesta.
 Preparacion/publicacion autorizadas; condicion de QA integrada satisfecha.
 No se acredita participacion humana no realizada ni se autoriza merge,
 archivado o escritura en el Trello oficial. Detalle en
-[review.md](../../openspec/changes/jup-053-secure-runtime-secrets/review.md#aprobacion-post-qa).
+[review.md](../../openspec/changes/archive/2026-09-25-jup-053-secure-runtime-secrets/review.md#aprobacion-post-qa).
 
 ### Seguimiento RF-053-004 Antes De La Solicitud De PR
 
@@ -108,7 +118,7 @@ su identificador conserva el origen en JUP-053, no la JUP de correccion.
 Estado Open/High. No se ha implementado ni probado la correccion funcional.
 
 Registro: [finding](../../openspec/findings/backlog.md) y
-[decision completa](../../openspec/changes/jup-053-secure-runtime-secrets/review.md#decision-sobre-rf-053-004).
+[decision completa](../../openspec/changes/archive/2026-09-25-jup-053-secure-runtime-secrets/review.md#decision-sobre-rf-053-004).
 Seguimiento privado actualizado y releido el 2026-09-10 a las 09:16 UTC:
 https://trello.com/c/1Y9HVCQs. Descripcion anterior de 1718 caracteres
 conservada integra, mas nota de 289: total 2007 caracteres. Coincidencia exacta
@@ -261,8 +271,8 @@ solo documental, no invalida las imagenes de producto comprobadas.
 - Fecha: 2026-09-09. Las secciones siguientes conservan el registro historico
   tras revision tecnica 1; no sustituyen el estado actual anterior.
 - Trello oficial: https://trello.com/c/2UCJTDhi
-- [Cambio OpenSpec](../../openspec/changes/jup-053-secure-runtime-secrets/proposal.md)
-  y [revision](../../openspec/changes/jup-053-secure-runtime-secrets/review.md).
+- [Cambio OpenSpec](../../openspec/changes/archive/2026-09-25-jup-053-secure-runtime-secrets/proposal.md)
+  y [revision](../../openspec/changes/archive/2026-09-25-jup-053-secure-runtime-secrets/review.md).
 - Rama `feat/JUP-053-secure-runtime-secrets`, base
   `7d76fc376e0eca1aac6401304977575a2f92ceb5`; cambios sin commit.
 - Python 3.12.13, Node 24.17, pnpm 9.0.0, Docker Engine 28.0.4.
