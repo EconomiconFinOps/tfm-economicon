@@ -43,10 +43,15 @@ para cierre acotado y PR registradas. CI remoto pendiente de la publicacion;
 no se confunde este cierre tecnico con pairing/revision/validacion del equipo.
 El smoke integral historico sigue FAIL; no hay cierre operativo ni merge.
 Detalles en
-[review.md](review.md) y [evidencia](../../../docs/evidence/JUP-053-validation.md).
+[review.md](review.md) y [evidencia](../../../../docs/evidence/JUP-053-validation.md).
 
 ## 6. Reconciliacion previa a publicacion (2026-09-10)
 
 - [x] 6.1 Tester: cubrir cookie externo ausente/vacio/presente con valores sinteticos y fixture request_id dentro del job; conservar los cinco tests de tracing upstream sin depender del contexto ambiente.
 - [x] 6.2 Coder: reconciliar cb27009 conservando tracing, archivos y findings importados; exigir RABBITMQ_ERLANG_COOKIE externo sin fallback, con ejemplo vacio y procedimiento del operador que preserve el valor existente sin imprimirlo. No generar, resetear ni rotar cookies, tocar .env/volumenes reales o cambiar la password Grafana.
 - [x] 6.3 Revisar y revalidar el resultado integrado antes de sintetizar cierre/QA; mantener RF-053-004 en JUP-020 y RF-044-002 en JUP-096 sin declararlos corregidos. Escalar cambios de cookie, clustering/persistencia o nuevas excepciones; no ampliar criterios de aceptacion.
+
+## Propuesta de archivo — 2026-09-25
+
+PR original integrada y tarjeta en Hecho verificadas. Consultar la
+[auditoria de cierres](../../../../docs/evidence/OpenSpec-closures-2026-09-25.md).
