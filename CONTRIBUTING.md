@@ -80,7 +80,7 @@ If someone other than the assigned person takes over a role (for example, whoeve
 
 1. Review and validation are two separate GitHub reviews on the pull request. The first line of each one is its title: `Revision JUP-XXX` or `Validacion JUP-XXX`, with the identifier of the pull request (case and accents do not matter).
 2. They can happen in parallel. Towards `develop`, the first one published is a **Comment** when it finds no problem and says that the other one is still missing; the second one is an **Approve** only when both are satisfied and nothing blocking remains. Towards `main`, which requires two approvals, both are **Approve** when satisfied.
-3. Any problem is a **Request changes**, whichever review goes first. A Request changes also copies what is still pending from the other review, so that reading only the latest review is enough.
+3. Any problem is a **Request changes**, whichever review goes first. A Request changes also copies what is still pending from the other review, so that reading only the latest review is enough. Once the changes are addressed, whoever requested changes approves to lift the request: a Comment does not lift a Request changes. Approving early does not open the merge, because `JUP reviews` still waits for the other titled review. Alternatively, the request is dismissed with a reason.
 4. Review and validation are done by the different people assigned in Trello. If exceptionally the same person does both, it is agreed in Trello, that person still publishes two separate reviews, and the pull request description declares it with this line:
 
    ```

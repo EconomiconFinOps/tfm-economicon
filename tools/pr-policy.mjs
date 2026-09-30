@@ -72,25 +72,28 @@ export function checkPullRequest({ title = "", body = "", head = "", base = "" }
   return errors;
 }
 
-export const REVIEW_FLOW_LINK = "CONTRIBUTING.md#review-and-validation-flow";
+export const REVIEW_FLOW_LINK =
+  "https://github.com/EconomiconFinOps/tfm-economicon/blob/develop/CONTRIBUTING.md#review-and-validation-flow";
 export const SAME_PERSON_EXCEPTION = "- Excepcion: revision y validacion por la misma persona, acordado en Trello";
 const REVIEW_KINDS = [
   { key: "revision", label: "Revision", pattern: /^revisi[oó]n\s+jup-(\d{3})\b/iu },
   { key: "validacion", label: "Validacion", pattern: /^validaci[oó]n\s+jup-(\d{3})\b/iu },
 ];
-const DECISIVE_STATES = new Set(["APPROVED", "CHANGES_REQUESTED"]);
+// A dismissed review leaves the reviewer without a current decision, so an older request must not come back.
+const DECISIVE_STATES = new Set(["APPROVED", "CHANGES_REQUESTED", "DISMISSED"]);
 
 // Accents and case are ignored so that "Validación" and "validacion" match the same title.
 const plain = (text) => text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("es");
 
 function declaresSamePersonException(body) {
   const expected = plain(SAME_PERSON_EXCEPTION);
-  return body.split(/\r?\n/).some((line) => plain(line.trim()).startsWith(expected));
+  const visible = body.replace(/<!--[\s\S]*?-->/g, "");
+  return visible.split(/\r?\n/).some((line) => plain(line.trim()).startsWith(expected));
 }
 
 export function checkReviews({ title = "", body = "", author = "", reviews = [] }) {
   const titleMatch = TITLE_PATTERN.exec(title);
-  if (!titleMatch) return ["El titulo debe contener un identificador JUP-XXX."];
+  if (!titleMatch) return [`El titulo debe contener un identificador JUP-XXX. Ver ${REVIEW_FLOW_LINK}`];
   const id = titleMatch[1];
   const authorLogin = author.toLocaleLowerCase("en");
   const published = reviews
@@ -106,7 +109,9 @@ export function checkReviews({ title = "", body = "", author = "", reviews = [] 
         .map(({ user }) => user.toLocaleLowerCase("en")),
     );
     if (authors[kind.key].size === 0) {
-      errors.push(`Falta la review "${kind.label} JUP-${id}" de alguien distinto del autor. Ver ${REVIEW_FLOW_LINK}`);
+      errors.push(
+        `Falta la review "${kind.label} JUP-${id}" de alguien distinto del autor; la primera linea de la review debe ser ese titulo en texto plano. Ver ${REVIEW_FLOW_LINK}`,
+      );
     }
   }
 
@@ -123,9 +128,9 @@ export function checkReviews({ title = "", body = "", author = "", reviews = [] 
 
   const latestDecision = new Map();
   for (const { user, state } of published) {
-    if (DECISIVE_STATES.has(state)) latestDecision.set(user, state);
+    if (DECISIVE_STATES.has(state)) latestDecision.set(user.toLocaleLowerCase("en"), { user, state });
   }
-  for (const [user, state] of latestDecision) {
+  for (const { user, state } of latestDecision.values()) {
     if (state === "CHANGES_REQUESTED") {
       errors.push(`Hay cambios pedidos pendientes de ${user}. Ver ${REVIEW_FLOW_LINK}`);
     }

@@ -76,15 +76,18 @@ test("defines what each rotating role does, when, what it delivers and what it d
 
 test("documents the review and validation flow the JUP reviews check links to", async () => {
   const { REVIEW_FLOW_LINK, SAME_PERSON_EXCEPTION } = await import("./pr-policy.mjs");
-  const anchor = REVIEW_FLOW_LINK.split("#")[1];
-  assert.equal(REVIEW_FLOW_LINK, `CONTRIBUTING.md#${anchor}`);
-  assert.equal(anchor, "review-and-validation-flow");
+  assert.equal(
+    REVIEW_FLOW_LINK,
+    `https://github.com/${settings.repository}/blob/develop/CONTRIBUTING.md#review-and-validation-flow`,
+  );
   const flow = section(contributing, "## Review and validation flow");
   for (const text of ["Revision JUP-XXX", "Validacion JUP-XXX", "JUP reviews", "Update branch", SAME_PERSON_EXCEPTION]) {
     assert.ok(flow.includes(text), text);
   }
   assert.match(flow, /inline/i);
   assert.match(flow, /not validated/i);
+  assert.match(flow, /a Comment does not lift/i);
+  assert.match(flow, /whoever requested (the )?changes approves/i);
   assert.ok(template().includes(SAME_PERSON_EXCEPTION));
 });
 

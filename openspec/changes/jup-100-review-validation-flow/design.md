@@ -29,8 +29,9 @@ The job fetches the PR and its reviews with `GITHUB_TOKEN` (`pull-requests: read
 
 ### D3. Semantics of the check
 - Titled review: body starts with `Revision`/`Revisión` or `Validacion`/`Validación` followed by the PR's `JUP-XXX`, case-insensitive; the author's reviews and draft (PENDING) reviews are ignored; dismissed reviews and reviews on earlier commits still count (freshness of approvals is already enforced by GitHub's stale-approval dismissal).
-- Pending changes: for each reviewer, the latest review with state APPROVED or CHANGES_REQUESTED decides; if any is CHANGES_REQUESTED, the check fails. Later Comment reviews do not clear a request, matching GitHub's own review decision.
-- Same person: if the two titled reviews come from the same login, the PR description must contain a declaration line (exact wording fixed in `CONTRIBUTING.md` and the PR template, for example `- Excepcion: revision y validacion por la misma persona, acordado en Trello`).
+- Pending changes: for each reviewer (login compared without case), the latest review with state APPROVED, CHANGES_REQUESTED or DISMISSED decides; if any is CHANGES_REQUESTED, the check fails. A dismissal leaves the reviewer without a current decision, so an approval dismissed by a push does not revive an older request (adversarial review ADV-1). Later Comment reviews do not clear a request; CONTRIBUTING tells the requester to approve, or the request to be dismissed, once addressed (ADV-2).
+- Same person: if the two titled reviews come from the same login, the PR description must contain the declaration line fixed in `CONTRIBUTING.md` (`- Excepcion: revision y validacion por la misma persona, acordado en Trello`). HTML comments are removed before searching, so the template's hint and hidden lines never count (ADV-4).
+- Every failure message links to the flow with an absolute URL, clickable from the Actions log (ADV-5), and a missing titled review explains that the first line must be the plain title (ADV-3).
 - Applies to `develop` and `main`. The Comment-then-Approve convention is documented, not enforced: on `main` both must approve, and the approval count is already enforced by the rulesets.
 
 ### D4. Required on both rulesets

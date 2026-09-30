@@ -31,7 +31,7 @@ Review and validation SHALL be published as two separate GitHub reviews on the p
 - **THEN** it does not count as the validation of that PR
 
 ### Requirement: Review states follow the target branch
-Towards `develop`, the first of the two reviews to be published SHALL be a Comment when it finds no problem, and the second SHALL be an Approve only when both are satisfied and nothing blocking remains. Towards `main`, which requires two approvals, both reviews SHALL be Approve when satisfied. Any problem SHALL be published as Request changes, and a Request changes review SHALL include what is still pending from the other review, so that reading only the latest review is enough.
+Towards `develop`, the first of the two reviews to be published SHALL be a Comment when it finds no problem, and the second SHALL be an Approve only when both are satisfied and nothing blocking remains. Towards `main`, which requires two approvals, both reviews SHALL be Approve when satisfied. Any problem SHALL be published as Request changes, and a Request changes review SHALL include what is still pending from the other review, so that reading only the latest review is enough. A Comment SHALL NOT lift a Request changes: once the changes are addressed, whoever requested them approves, or the request is dismissed with a reason.
 
 #### Scenario: First review towards develop
 - **WHEN** the validation is published first on a PR towards `develop` and finds no problem
@@ -95,7 +95,7 @@ Any team member MAY merge a pull request, but only when it has both titled revie
 ### Requirement: The flow is enforced by a required check
 A required CI check named `JUP reviews` SHALL run on pull requests towards `develop` and `main` whenever the PR is opened, updated or edited and whenever a review is submitted, edited or dismissed. It SHALL read the current reviews from GitHub rather than from the triggering event. It SHALL pass only when:
 - a review titled `Revision JUP-XXX` and a review titled `Validacion JUP-XXX` exist for the PR's identifier, neither from the PR author (reviews on earlier commits and dismissed reviews still count as published);
-- no reviewer's latest decisive review (Approve or Request changes) is a Request changes;
+- no reviewer's latest decisive review (Approve, Request changes or a dismissal of their review) is a Request changes; a dismissed review leaves that reviewer without a current decision, so an older request does not come back;
 - if the same person published both, the PR description declares the exception.
 When it fails, its message SHALL say what is missing and link to the flow in `CONTRIBUTING.md`. If the reviews cannot be read, the check SHALL fail rather than pass.
 
@@ -110,6 +110,14 @@ When it fails, its message SHALL say what is missing and link to the flow in `CO
 #### Scenario: Request changes later approved
 - **WHEN** a reviewer who requested changes later approves
 - **THEN** that request no longer blocks the check
+
+#### Scenario: Approval dismissed by a push after a request for changes
+- **WHEN** a reviewer requested changes, later approved, and that approval was dismissed by a push
+- **THEN** the older request for changes does not block the check
+
+#### Scenario: Exception line hidden in an HTML comment
+- **WHEN** the exception line only appears inside an HTML comment of the PR description
+- **THEN** it does not count as a declaration
 
 #### Scenario: Reviews from an earlier commit
 - **WHEN** both titled reviews were published before the latest push

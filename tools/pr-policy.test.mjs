@@ -235,6 +235,44 @@ test("a dismissed request for changes no longer blocks", () => {
   assert.deepEqual(checkReviews({ ...PR, reviews }), []);
 });
 
+test("an approval dismissed by a push does not revive an older request for changes", () => {
+  const reviews = [
+    revision("Victorh1397", "CHANGES_REQUESTED"),
+    review("Victorh1397", "DISMISSED", "ok, resuelto"),
+    validacion(),
+  ];
+  assert.deepEqual(checkReviews({ ...PR, reviews }), []);
+});
+
+test("compares reviewer logins without case when finding the latest decision", () => {
+  const reviews = [revision("Victorh1397", "CHANGES_REQUESTED"), validacion(), review("victorh1397", "APPROVED", "ok")];
+  assert.deepEqual(checkReviews({ ...PR, reviews }), []);
+});
+
+test("an exception line hidden inside an HTML comment does not count", () => {
+  const reviews = [revision("Victorh1397"), validacion("Victorh1397")];
+  const hidden = `${BODY}\n<!--\n${EXCEPTION.trim()}\n-->\n`;
+  assert.ok(checkReviews({ ...PR, body: hidden, reviews }).some((e) => /misma persona/i.test(e)));
+});
+
+test("every error links to the flow with a clickable URL", () => {
+  const cases = [
+    { ...PR, title: "sin identificador", reviews: [] },
+    { ...PR, reviews: [] },
+    { ...PR, reviews: [revision("Victorh1397", "CHANGES_REQUESTED"), validacion("Victorh1397")] },
+  ];
+  for (const input of cases) {
+    for (const error of checkReviews(input)) {
+      assert.match(error, /https:\/\/github\.com\/EconomiconFinOps\/tfm-economicon\/blob\/develop\/CONTRIBUTING\.md#review-and-validation-flow/, error);
+    }
+  }
+});
+
+test("explains that the title must be the plain first line", () => {
+  const reviews = [review("Victorh1397", "COMMENTED", "## Revision JUP-100"), validacion()];
+  assert.ok(checkReviews({ ...PR, reviews }).some((e) => /primera linea/i.test(e)));
+});
+
 test("a request for changes from someone outside the two roles also blocks", () => {
   const reviews = [revision(), validacion(), review("ParisArcos", "CHANGES_REQUESTED", "Falta X")];
   assert.ok(checkReviews({ ...PR, reviews }).some((e) => e.includes("ParisArcos")));
