@@ -87,8 +87,9 @@ const plain = (text) => text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLow
 
 function declaresSamePersonException(body) {
   const expected = plain(SAME_PERSON_EXCEPTION);
-  const visible = body.replace(/<!--[\s\S]*?-->/g, "");
-  return visible.split(/\r?\n/).some((line) => plain(line.trim()).startsWith(expected));
+  // Hidden or quoted text is not a declaration: drop HTML comments and fenced code blocks.
+  const visible = body.replace(/<!--[\s\S]*?-->/g, "").replace(/^```[\s\S]*?^```/gm, "");
+  return visible.split(/\r?\n/).some((line) => plain(line.trim()).replace(/\.$/, "") === expected);
 }
 
 export function checkReviews({ title = "", body = "", author = "", reviews = [] }) {
@@ -195,7 +196,7 @@ function parseArgs(argv) {
 async function mainReviews(eventPath) {
   const token = process.env.GITHUB_TOKEN;
   if (!token) {
-    console.error("[ERROR] Falta GITHUB_TOKEN para leer las reviews del pull request.");
+    console.error(`[ERROR] Falta GITHUB_TOKEN para leer las reviews del pull request. Ver ${REVIEW_FLOW_LINK}`);
     process.exitCode = 1;
     return;
   }
@@ -211,7 +212,7 @@ async function mainReviews(eventPath) {
       apiUrl: process.env.GITHUB_API_URL ?? "https://api.github.com",
     });
   } catch (error) {
-    console.error(`[ERROR] No se pudieron leer las reviews del pull request #${number}: ${error.message}`);
+    console.error(`[ERROR] No se pudieron leer las reviews del pull request #${number}: ${error.message}. Ver ${REVIEW_FLOW_LINK}`);
     process.exitCode = 1;
     return;
   }

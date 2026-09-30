@@ -31,4 +31,7 @@ Evidencia del lider: incluye comandos ejecutados, resultados y enlaces a evidenc
 - [ ] Los cuatro roles tienen una persona identificada.
 - [ ] Si un rol se ha reasignado, la seccion Participacion y la tarjeta Trello lo reflejan.
 - [ ] Revision y validacion se publicaran como dos reviews separadas, `Revision JUP-XXX` y `Validacion JUP-XXX`, segun el flujo de CONTRIBUTING.md#review-and-validation-flow.
+- [ ] Quien revisa y quien valida no suben commits a esta rama; los findings fuera de alcance se piden al lider.
+- [ ] Antes de atender cambios o mergear se leen todas las reviews, los comentarios de la conversacion y los comentarios en linea del diff.
+- [ ] Si "Update branch" trae cambios que tocan lo mismo que este PR, se pide una revalidacion antes de mergear.
 - [ ] El PR apunta a `develop`; solo `develop` puede proponer cambios a `main`.

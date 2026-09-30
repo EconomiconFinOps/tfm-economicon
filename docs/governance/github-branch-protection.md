@@ -62,16 +62,16 @@ Configure a branch ruleset matching refs/heads/main:
 
 ## Required status checks
 
-Use these stable job names from .github/workflows/ci.yml:
+Use these stable job names, the first seven from `.github/workflows/ci.yml` and the last one from `.github/workflows/pr-reviews.yml`. `tools/repository-governance.test.mjs` checks that this list matches the versioned rulesets:
 
-- JUP policy
-- OpenSpec
-- Python tests (azure-cost-api)
-- Python tests (backend)
-- Python tests (processor)
-- Frontend build
-- Frontend type check
-- Frontend tests
+- `JUP policy`
+- `OpenSpec`
+- `Python tests (azure-cost-api)`
+- `Python tests (backend)`
+- `Python tests (processor)`
+- `Frontend build`
+- `Frontend type check`
+- `JUP reviews`
 
 JUP-087 runs frontend lint and real journey tests before bundling in the required
 `Frontend build` job. A lint error or failed test fails that required check; no
@@ -111,7 +111,7 @@ claim approval that GitHub does not record.
 
 1. Confirm `EconomiconFinOps/tfm-economicon`, `develop` and administrator
    permissions through the GitHub API.
-2. Open the JUP-079 pull request and wait for all six checks to complete.
+2. Open the JUP-079 pull request and wait for all required checks to complete.
 3. Create the `develop` ruleset from `.github/rulesets/develop.json`.
 4. Create the stricter `main` ruleset from `.github/rulesets/main.json`.
 5. Query both rulesets and both branches; verify active enforcement, the exact
@@ -141,6 +141,7 @@ gh api repos/EconomiconFinOps/tfm-economicon/rulesets/<develop-id> \
 gh api repos/EconomiconFinOps/tfm-economicon/rulesets/<main-id> \
   --method PUT --input .github/rulesets/main.json
 gh api repos/EconomiconFinOps/tfm-economicon/rules/branches/develop
+gh api repos/EconomiconFinOps/tfm-economicon/rules/branches/main
 ```
 
 CODEOWNERS remains deferred until all four GitHub identities and effective

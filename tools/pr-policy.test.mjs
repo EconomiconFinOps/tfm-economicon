@@ -255,6 +255,20 @@ test("an exception line hidden inside an HTML comment does not count", () => {
   assert.ok(checkReviews({ ...PR, body: hidden, reviews }).some((e) => /misma persona/i.test(e)));
 });
 
+test("the exception line must be complete, not just a prefix", () => {
+  const reviews = [revision("Victorh1397"), validacion("Victorh1397")];
+  const negated = `${BODY}\n- Excepcion: revision y validacion por la misma persona, acordado en Trello: NO\n`;
+  assert.ok(checkReviews({ ...PR, body: negated, reviews }).some((e) => /misma persona/i.test(e)));
+  const withPeriod = `${BODY}\n- Excepcion: revision y validacion por la misma persona, acordado en Trello.\n`;
+  assert.deepEqual(checkReviews({ ...PR, body: withPeriod, reviews }), []);
+});
+
+test("an exception line inside a code block does not count", () => {
+  const reviews = [revision("Victorh1397"), validacion("Victorh1397")];
+  const fenced = `${BODY}\n\`\`\`\n${EXCEPTION.trim()}\n\`\`\`\n`;
+  assert.ok(checkReviews({ ...PR, body: fenced, reviews }).some((e) => /misma persona/i.test(e)));
+});
+
 test("every error links to the flow with a clickable URL", () => {
   const cases = [
     { ...PR, title: "sin identificador", reviews: [] },
@@ -360,6 +374,7 @@ test("the --reviews command fails with a clear message when GitHub cannot be rea
   fs.rmSync(dir, { recursive: true, force: true });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /No se pudieron leer las reviews/);
+  assert.match(result.stderr, /CONTRIBUTING\.md#review-and-validation-flow/);
   assert.doesNotMatch(result.stdout, /\[OK\]/);
 });
 
@@ -373,6 +388,7 @@ test("the --reviews command refuses to run without a token", () => {
   fs.rmSync(dir, { recursive: true, force: true });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /GITHUB_TOKEN/);
+  assert.match(result.stderr, /CONTRIBUTING\.md#review-and-validation-flow/);
 });
 
 test("fails instead of passing when the API cannot be read", async () => {

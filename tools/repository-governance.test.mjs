@@ -88,6 +88,9 @@ test("documents the review and validation flow the JUP reviews check links to", 
   assert.match(flow, /not validated/i);
   assert.match(flow, /a Comment does not lift/i);
   assert.match(flow, /whoever requested (the )?changes approves/i);
+  assert.match(flow, /author never dismisses/i);
+  assert.match(flow, /tools\/pr-policy\.mjs/);
+  assert.match(flow, /\.github\/workflows\//);
   assert.ok(template().includes(SAME_PERSON_EXCEPTION));
 });
 
@@ -112,10 +115,23 @@ test("carries the flow checklist into every pull request", () => {
   for (const item of ["Revision JUP-XXX", "Validacion JUP-XXX", "CONTRIBUTING.md#review-and-validation-flow"]) {
     assert.ok(text.includes(item), item);
   }
+  const checklist = section(text, "## Checklist");
+  for (const rule of [/no suben commits/i, /todas las reviews/i, /en linea/i, /Update branch/, /revalid/i]) {
+    assert.match(checklist, rule);
+  }
   assert.match(section(text, "## Validacion"), /lider|leader/i);
 });
 
 test("links the approved flow and the activation of the new check", () => {
   assert.match(section(strategy, "## Flujo aprobado"), /CONTRIBUTING\.md#review-and-validation-flow/);
   assert.match(read("docs", "governance", "github-branch-protection.md"), /JUP reviews/);
+});
+
+test("lists in the branch-protection guide exactly the required checks of the rulesets", () => {
+  const guide = section(read("docs", "governance", "github-branch-protection.md"), "## Required status checks");
+  const listed = [...guide.matchAll(/^- `([^`]+)`/gm)].map((match) => match[1]);
+  const required = rulesets.develop.rules
+    .find(({ type }) => type === "required_status_checks")
+    .parameters.required_status_checks.map(({ context }) => context);
+  assert.deepEqual(listed, required);
 });
