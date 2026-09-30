@@ -104,7 +104,7 @@ test("keeps one process version in AGENTS.md and CONTRIBUTING.md", () => {
 
 test("gives local tooling the rules the check cannot verify, without naming any assistant", () => {
   const rules = section(agents(), "## Pull Request Review And Validation");
-  for (const pattern of [/CONTRIBUTING\.md/, /not validated/i, /push/i, /Comment/, /inline/i, /Update branch/, /both/i, /local tool/i]) {
+  for (const pattern of [/CONTRIBUTING\.md/, /not validated/i, /push/i, /Comment/, /inline/i, /Update branch/, /both/i, /local tool/i, /exception line/i]) {
     assert.match(rules, pattern);
   }
   assert.doesNotMatch(agents(), /\b(claude|codex|copilot|cursor|gemini|chatgpt|openai|anthropic)\b/i);

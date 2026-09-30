@@ -36,7 +36,7 @@ This pnpm/Turborepo monorepo contains the frontend, Python backend and processor
 
 Process version: 2026-09-30 (JUP-100)
 
-The full rules and the definition of the four roles are in `CONTRIBUTING.md#review-and-validation-flow`. The required check `JUP reviews` only verifies that both titled reviews exist, that neither comes from the author and that no request for changes is pending; the rest of these rules depend on you:
+The full rules and the definition of the four roles are in `CONTRIBUTING.md#review-and-validation-flow`. The required check `JUP reviews` only verifies that both titled reviews exist, that neither comes from the author, that no request for changes is pending and, when the same person published both, that the pull request description contains the visible exception line; the rest of these rules depend on you:
 
 - Publish review and validation as two separate reviews titled `Revision JUP-XXX` and `Validacion JUP-XXX`. Towards `develop`, the first one published is a Comment and only the second one approves, when both are satisfied; towards `main`, both approve.
 - A validation records evidence for each acceptance criterion of the Trello card and lists what was not validated and why. Never report as validated something that was not tested.

@@ -60,14 +60,20 @@ export function checkPullRequest({ title = "", body = "", head = "", base = "" }
     if (!value || PLACEHOLDER_PATTERN.test(value)) {
       errors.push(`Falta una persona concreta para el rol ${label}.`);
     } else {
-      participants.set(label, value.toLocaleLowerCase("es").normalize("NFKC"));
+      participants.set(label, plain(value.normalize("NFKC")).replace(/^@/, ""));
     }
   }
   if (participants.size === ROLE_LABELS.length) {
     const reviewer = participants.get("Revision de PR");
     const validator = participants.get("Validacion, pruebas y documentacion");
     // Declared exception: one person may review and validate; leadership and pairing stay separate.
-    const sameReviewer = reviewer === validator && declaresSamePersonException(body);
+    const declared = declaresSamePersonException(body);
+    if (declared && reviewer !== validator) {
+      errors.push(
+        "La excepcion de misma persona esta declarada, pero Revision de PR y Validacion nombran a personas distintas.",
+      );
+    }
+    const sameReviewer = reviewer === validator && declared;
     const expected = sameReviewer ? ROLE_LABELS.length - 1 : ROLE_LABELS.length;
     if (new Set(participants.values()).size !== expected) {
       errors.push(
@@ -95,9 +101,13 @@ const plain = (text) => text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLow
 
 function declaresSamePersonException(body) {
   const expected = plain(SAME_PERSON_EXCEPTION);
-  // Hidden or quoted text is not a declaration: drop HTML comments and fenced code blocks.
-  const visible = body.replace(/<!--[\s\S]*?-->/g, "").replace(/^```[\s\S]*?^```/gm, "");
-  return visible.split(/\r?\n/).some((line) => plain(line.trim()).replace(/\.$/, "") === expected);
+  // Only text GitHub renders as plain Markdown counts: no comments, code blocks or indented code, closed or not.
+  const visible = body
+    .replace(/<!--[\s\S]*?(?:-->|$)/g, "")
+    .replace(/^ {0,3}(```|~~~)[\s\S]*?(?:^ {0,3}\1|$(?![\s\S]))/gm, "");
+  return visible
+    .split(/\r?\n/)
+    .some((line) => !/^( {4,}|\t)/.test(line) && plain(line.trim()).replace(/\.$/, "") === expected);
 }
 
 export function checkReviews({ title = "", body = "", author = "", reviews = [] }) {
@@ -125,11 +135,8 @@ export function checkReviews({ title = "", body = "", author = "", reviews = [] 
   }
 
   const { revision, validacion } = authors;
-  const onlySamePerson =
-    revision.size > 0 &&
-    validacion.size > 0 &&
-    [...revision].every((user) => validacion.size === 1 && validacion.has(user));
-  if (onlySamePerson && !declaresSamePersonException(body)) {
+  const samePerson = [...revision].some((user) => validacion.has(user));
+  if (samePerson && !declaresSamePersonException(body)) {
     errors.push(
       `Revision y validacion las ha publicado la misma persona sin declarar la excepcion en la descripcion del PR ("${SAME_PERSON_EXCEPTION}"). Ver ${REVIEW_FLOW_LINK}`,
     );

@@ -142,6 +142,21 @@ test("the exception never lets the leader or the pairing review or validate", ()
   assert.ok(policy(pairingReviews).some((error) => error.includes("distintas")));
 });
 
+test("rejects the exception line when review and validation name different people", () => {
+  assert.ok(policy(`${BODY}\n- Excepcion: revision y validacion por la misma persona, acordado en Trello\n`)
+    .some((error) => /excepcion/i.test(error)));
+});
+
+test("compares role names without accents or a leading @", () => {
+  const accents = BODY.replace("- Revision de PR: Alejandro", "- Revision de PR: Ana María").replace(
+    "- Validacion, pruebas y documentacion: Lucia",
+    "- Validacion, pruebas y documentacion: Ana Maria",
+  );
+  assert.ok(policy(accents).some((error) => error.includes("cuatro personas distintas")));
+  const handle = BODY.replace("- Validacion, pruebas y documentacion: Lucia", "- Validacion, pruebas y documentacion: @alejandro");
+  assert.ok(policy(handle).some((error) => error.includes("cuatro personas distintas")));
+});
+
 test("the exception does not relax leadership and pairing", () => {
   const samePairing = DECLARED.replace("- Pairing/coautoria: Victor", "- Pairing/coautoria: Paris");
   assert.ok(policy(samePairing).some((error) => error.includes("distintas")));
@@ -314,6 +329,25 @@ test("an exception line inside a code block does not count", () => {
   const reviews = [revision("Victorh1397"), validacion("Victorh1397")];
   const fenced = `${BODY}\n\`\`\`\n${EXCEPTION.trim()}\n\`\`\`\n`;
   assert.ok(checkReviews({ ...PR, body: fenced, reviews }).some((e) => /misma persona/i.test(e)));
+});
+
+test("an exception line that GitHub would not show as plain text does not count", () => {
+  const reviews = [revision("Victorh1397"), validacion("Victorh1397")];
+  const line = EXCEPTION.trim();
+  const hidden = {
+    "unclosed comment": `${BODY}\n<!-- nota\n${line}\n`,
+    "tilde fence": `${BODY}\n~~~\n${line}\n~~~\n`,
+    "indented fence": `${BODY}\n  \`\`\`\n  ${line}\n  \`\`\`\n`,
+    "indented code": `${BODY}\ntexto\n\n    ${line}\n`,
+  };
+  for (const [name, body] of Object.entries(hidden)) {
+    assert.ok(checkReviews({ ...PR, body, reviews }).some((e) => /misma persona/i.test(e)), name);
+  }
+});
+
+test("asks for the exception whenever someone published both titled reviews", () => {
+  const reviews = [revision("Victorh1397"), validacion("Victorh1397"), review("ParisArcos", "COMMENTED", "Revision JUP-100\nok")];
+  assert.ok(checkReviews({ ...PR, reviews }).some((e) => /misma persona/i.test(e)));
 });
 
 test("every error links to the flow with a clickable URL", () => {

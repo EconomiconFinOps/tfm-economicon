@@ -60,6 +60,14 @@ Review and validation SHALL be done by the people assigned in Trello, who are di
 - **WHEN** the PR description names the same person for PR review and validation, declares the exception, and names two other different people for leadership and pairing
 - **THEN** the role traceability check (`JUP policy`) accepts it, and without the declaration it still requires four different people
 
+#### Scenario: Exception declared with different names
+- **WHEN** the exception line is present but the PR description names different people for PR review and validation
+- **THEN** the role traceability check rejects the pull request as incoherent
+
+#### Scenario: Exception line not shown as plain text
+- **WHEN** the exception line only appears inside an HTML comment (closed or not), a fenced or indented code block
+- **THEN** it does not count as a declaration
+
 #### Scenario: The exception never covers leadership or pairing
 - **WHEN** the person who reviews and validates is also the leader or the pairing, even with the exception declared
 - **THEN** the role traceability check rejects the pull request
