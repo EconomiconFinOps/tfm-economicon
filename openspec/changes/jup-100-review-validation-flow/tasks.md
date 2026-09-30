@@ -13,11 +13,11 @@
 
 ## 3. Documentación del flujo y los roles
 
-- [ ] 3.1 JUP-100 escribir en `CONTRIBUTING.md` (inglés) los cuatro roles (qué hace, cuándo, qué entrega, qué no le corresponde, reasignaciones), el flujo completo de revisión, validación y merge, la línea de declaración de excepción y la `Process version`.
-- [ ] 3.2 JUP-100 añadir a `AGENTS.md` la sección breve sin nombrar asistentes con las reglas no comprobables, la petición de alinear herramientas locales y la misma `Process version`.
-- [ ] 3.3 JUP-100 actualizar `.github/pull_request_template.md` con el checklist del flujo, la línea opcional de excepción y la aclaración de su sección Validacion.
-- [ ] 3.4 JUP-100 enlazar el flujo desde "Flujo aprobado" en `docs/governance/repository-and-branch-strategy.md` y documentar la activación del check en `docs/governance/github-branch-protection.md`.
-- [ ] 3.5 JUP-100 comprobar que pasan los tests de 1.3 y que ningún enlace nuevo está roto.
+- [x] 3.1 JUP-100 escribir en `CONTRIBUTING.md` (inglés) los cuatro roles (qué hace, cuándo, qué entrega, qué no le corresponde, reasignaciones), el flujo completo de revisión, validación y merge, la línea de declaración de excepción y la `Process version`.
+- [x] 3.2 JUP-100 añadir a `AGENTS.md` la sección breve sin nombrar asistentes con las reglas no comprobables, la petición de alinear herramientas locales y la misma `Process version`.
+- [x] 3.3 JUP-100 actualizar `.github/pull_request_template.md` con el checklist del flujo, la línea opcional de excepción y la aclaración de su sección Validacion.
+- [x] 3.4 JUP-100 enlazar el flujo desde "Flujo aprobado" en `docs/governance/repository-and-branch-strategy.md` y documentar la activación del check en `docs/governance/github-branch-protection.md`.
+- [x] 3.5 JUP-100 comprobar que pasan los tests de 1.3 y que ningún enlace nuevo está roto.
 
 ## 4. Cierre y verificación
 

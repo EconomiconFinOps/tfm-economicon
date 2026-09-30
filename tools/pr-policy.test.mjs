@@ -259,6 +259,12 @@ test("the same person needs an explicit exception in the description", () => {
   assert.deepEqual(checkReviews({ ...PR, body: BODY + accented, reviews }), []);
 });
 
+test("the pull request template does not declare the exception by itself", () => {
+  const template = fs.readFileSync(new URL("../.github/pull_request_template.md", import.meta.url), "utf8");
+  const reviews = [revision("Victorh1397"), validacion("Victorh1397")];
+  assert.ok(checkReviews({ ...PR, body: BODY + template, reviews }).some((e) => /misma persona/i.test(e)));
+});
+
 test("reports the missing exception and pending changes together", () => {
   const reviews = [revision("Victorh1397", "CHANGES_REQUESTED"), validacion("Victorh1397", "COMMENTED")];
   const errors = checkReviews({ ...PR, reviews });
