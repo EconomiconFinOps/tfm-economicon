@@ -101,3 +101,14 @@ Se lanzo una cuarta pasada sobre `6cce6a9` para cubrir las correcciones posterio
 ## ADR
 
 No aplica (design D6).
+
+## Human Approval
+
+- Change: jup-100-review-validation-flow
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-09-30
+- Adversarial review: accept (pass 3) | accepted findings: pass 1 ADV-6 (el check ejecuta el codigo del propio PR), pass 2 ADV-2 (no se verifica quien descarta una review)
+- Archive decision: archive
+- Notes: roles, flujo, check JUP reviews y propagacion a AGENTS/plantilla revisados; cuarta pasada detenida por decision de Lucia. Pendiente en Trello: revision de PR (Victor) y validacion (Alejandro); comprobar el check en GitHub en el propio PR antes de que un administrador active los rulesets.
