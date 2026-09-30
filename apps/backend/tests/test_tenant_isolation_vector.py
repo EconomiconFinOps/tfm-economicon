@@ -10,6 +10,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 
 from app.services.assistant import AssistantService
+from app.services.citations import resolve_citations
 from app.services.vector_store import PgVectorQueryStore
 
 
@@ -59,12 +60,21 @@ def retrieval(monkeypatch):
     'tenant,expected',
     [
         pytest.param('tenant-a', ['own'], id='tenant-a-expected0'),
+        pytest.param('tenant-b', ['foreign'], id='tenant-b-own-citation'),
+        pytest.param('tenant-empty', [], id='empty-tenant-no-citation'),
     ],
 )
 def test_filter_precedes_nearest_limit_and_excludes_foreign_context(retrieval, tenant, expected):
     result = retrieval.search_chunks(tenant, [1.0] + [0.0] * 7, top_k=1)
     assert [row["chunk_id"] for row in result] == expected
     answer = AssistantService().answer("query", result)
+    citations = resolve_citations(answer["citations"], result, tenant)
+    assert [item["evidence_id"] for item in citations] == expected
+    for citation in citations:
+        assert citation["document_id"] == expected[0]
+        assert citation["reference"] == f"document:{expected[0]}/chunk:0"
+        assert citation["excerpt"] == result[0]["content"]
+        assert citation["page"] is None
     if tenant != "tenant-b":
         assert "foreign" not in str(result) + str(answer)
     if tenant == "tenant-a":

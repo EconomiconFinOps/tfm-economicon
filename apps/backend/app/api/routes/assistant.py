@@ -9,6 +9,7 @@ from app.api.dependencies import (
     get_database,
 )
 from app.core.metrics import assistant_queries_total
+from app.services.citations import InvalidCitation, resolve_citations, validate_context
 from app.schemas.assistant import (
     AssistantReply,
     ConversationCollection,
@@ -97,7 +98,12 @@ def send_message(
     )
     query_embedding = embedding_provider.embed(payload.content)
     retrieved_chunks = vector_store.search_chunks(tenant_id, query_embedding)
-    assistant_output = assistant_service.answer(payload.content, retrieved_chunks)
+    try:
+        validate_context(retrieved_chunks, tenant_id)
+        assistant_output = assistant_service.answer(payload.content, retrieved_chunks)
+        source_citations = resolve_citations(assistant_output["citations"], retrieved_chunks, tenant_id)
+    except InvalidCitation:
+        raise HTTPException(status_code=502, detail="Invalid response evidence.") from None
     assistant_message = database.append_message(
         conversation_id=conversation_id,
         tenant_id=tenant_id,
@@ -105,7 +111,7 @@ def send_message(
         requester_id=current_user["id"],
         role="assistant",
         content=assistant_output["content"],
-        metadata={"citations": assistant_output["citations"]},
+        metadata={"citations": assistant_output["citations"], "source_citations": source_citations},
     )
 
     assistant_queries_total.inc()

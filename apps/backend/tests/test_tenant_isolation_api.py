@@ -38,6 +38,47 @@ def headers(user="alice", tenant="tenant-a"):
     return [("Authorization", "Bearer " + token)] + ([] if tenant is None else [("X-Tenant-Id", tenant)])
 
 
+def citation_record():
+    return {"chunk_id": "chunk-1", "document_id": "doc-1", "tenant_id": "tenant-a",
+            "title": "Guía Azure", "source": "FinOps", "content": "# Costes\nEvidencia",
+            "section": "Costes", "chunk_index": 0, "distance": 0.1}
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_citations_persist_and_reopen_with_authorized_conversation(api):
+    api.vector.search_chunks.return_value = [citation_record()]
+    response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
+    assert response.status_code == 201
+    message = response.json()["assistant_message"]
+    [citation] = message["metadata"]["source_citations"]
+    assert citation["evidence_id"] == "chunk-1"
+    assert citation["excerpt"] == "# Costes\nEvidencia"
+    assert citation["section"] == "Costes"
+    assert "tenant_id" not in response.json()["retrieved_context"][0]
+    reopened = call(api, "GET", "/assistant/conversations/own", headers=headers())
+    assert reopened.status_code == 200
+    assert reopened.json()["messages"][-1]["metadata"] == message["metadata"]
+    assert call(api, "GET", "/assistant/conversations/own", headers=headers("bob", "tenant-b")).status_code == 404
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+@pytest.mark.parametrize("case", ["missing", "duplicate", "foreign"])
+def test_invalid_citations_never_persist_an_assistant_answer(api, case, monkeypatch):
+    record = citation_record()
+    if case == "foreign":
+        record.update(tenant_id="tenant-b", content="foreign-secret-marker")
+    api.vector.search_chunks.return_value = [record]
+    service = MagicMock()
+    service.answer.return_value = {"content": "untrusted-answer", "citations": ["missing"] if case == "missing" else ["chunk-1", "chunk-1"]}
+    monkeypatch.setattr(api.app.state, "assistant_service", service)
+    response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
+    assert response.status_code == 502
+    assert response.json() == {"detail": "Invalid response evidence."}
+    assert all(item.kwargs["role"] == "user" for item in api.spies["append_message"].call_args_list)
+    if case == "foreign":
+        service.answer.assert_not_called()
+
+
 def call(api, method, path, **kwargs):
     configure_logging()
     return request(api.app, method, path, **kwargs)

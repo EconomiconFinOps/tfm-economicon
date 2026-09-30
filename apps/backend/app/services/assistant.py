@@ -7,7 +7,8 @@ class AssistantService:
             )
         else:
             snippets = "\n".join(
-                f"- {chunk['source']}: {chunk['content'][:140]}" for chunk in retrieved_chunks[:3]
+                f"- [{index}] {chunk['source']}: {chunk['content'][:140]}"
+                for index, chunk in enumerate(retrieved_chunks[:3], start=1)
             )
             content = (
                 "He encontrado contexto relacionado para tu consulta.\n"
@@ -18,5 +19,5 @@ class AssistantService:
 
         return {
             "content": content,
-            "citations": [chunk["chunk_id"] for chunk in retrieved_chunks],
+            "citations": [chunk["chunk_id"] for chunk in retrieved_chunks[:3]],
         }

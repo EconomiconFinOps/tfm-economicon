@@ -1,5 +1,7 @@
 from sqlalchemy import create_engine, text
 
+from app.services.citations import heading, section_for_chunk
+
 
 class PgVectorQueryStore:
     def __init__(self, database_url: str):
@@ -13,6 +15,10 @@ class PgVectorQueryStore:
                     """
                     SELECT
                         dc.id AS chunk_id,
+                        kd.id AS document_id,
+                        kd.tenant_id AS tenant_id,
+                        kd.text_content AS document_text,
+                        dc.chunk_index AS chunk_index,
                         kd.source AS source,
                         dc.content AS content,
                         (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
@@ -33,6 +39,11 @@ class PgVectorQueryStore:
             return [
                 {
                     "chunk_id": row.chunk_id,
+                    "document_id": row.document_id,
+                    "tenant_id": row.tenant_id,
+                    "title": heading(row.document_text) or row.source,
+                    "chunk_index": row.chunk_index,
+                    "section": section_for_chunk(row.document_text, row.content),
                     "source": row.source,
                     "content": row.content,
                     "distance": float(row.distance),
