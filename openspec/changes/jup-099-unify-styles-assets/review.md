@@ -758,3 +758,41 @@ reproduce exactamente lo ejecutado.
 
 **Checkpoint:** todas las tareas de `tasks.md` marcadas (36/36). Siguiente: gate post-review, archivado
 (corrigiendo los enlaces que bajan un nivel en el mismo paso), `jup:cleanup:check`, `pr:check` y PR.
+
+## Human Approval
+
+- Change: jup-099-unify-styles-assets
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-09-29
+- Archive decision: archive
+- Scope reviewed: las 36 tareas de `tasks.md` (10 grupos), cada una con su resumen y su commit; este
+  `review.md`; las cuatro imágenes antes/después de las diferencias visuales; la evidencia
+  `docs/evidence/JUP-099-validation.md` y la batería final (`openspec:validate`, `jup:check`,
+  `jup:cleanup:check`, `test`/`typecheck`/`lint`/`build` vía `--filter @finops/frontend` e
+  `install --frozen-lockfile`).
+- Resultado verificado: los 8 criterios de aceptación de la tarjeta verificados uno a uno en la
+  evidencia. Una única paleta en `theme.css` con 42 tokens de color, sin colores literales en pantallas
+  (solo las 3 líneas del documento de impresión de `ExportButton` y el `bg-black/50` del primitivo
+  `Dialog`, excepciones declaradas), protegida por dos tests estáticos; suite **431/431** (los 260 previos
+  intactos); 34 escenarios visuales sin píxeles reales de diferencia frente al estado con el tema nuevo;
+  propagación de tokens demostrada cambiando solo `theme.css`; ningún archivo de `apps/backend` ni de
+  `apps/processor` en el diff; `develop` avanzado un commit de documentación sin conflicto.
+- Aceptaciones explícitas dadas durante la revisión: las **cuatro diferencias visuales** frente al
+  original (franja del `body`, iconos `#fafafa → #ffffff`, un borde por defecto y el redondeo de un
+  degradado), tras revisar las imágenes; descartar la consulta sobre "los tests del frontend no corren
+  en CI"; dejar `RF-098-003` fuera de esta tarjeta; y registrar como findings, sin corregir aquí, la
+  deuda de referencias locales (`RF-099-001`), las clases interpoladas (`RF-099-002`), los tonos casi
+  iguales (`RF-099-003`) y los enlaces rotos por archivados (`RF-099-004`).
+- Decisiones y límites que se aprueban con el cierre: **sin mutación de Stryker** sobre la migración
+  (exención justificada: literales de clase y valores CSS que ninguna prueba de comportamiento
+  ejercita), **sin afirmar cobertura de mutación**; verificación visual con datos simulados, no con el
+  backend real (el E2E es JUP-102); `ADR-0010` en `Proposed`, que pasa a `Accepted` con la aprobación del
+  PR; `RF-098-004` y `RF-099-001` a `RF-099-004` quedan `Open` sin dueño asignado.
+- Notes: (1) al archivar hay que corregir **en el mismo paso** los enlaces que bajan un nivel: el del
+  change en `docs/spikes/frontend-migration.md` y en `docs/evidence/JUP-099-validation.md`, y los
+  relativos del propio `review.md`, `design.md` y `proposal.md` archivados (lección de JUP-098,
+  `RF-099-004`). (2) La ejecución de la suite que dio 14 archivos fallando durante el grupo 5 no se
+  reprodujo y su causa no está demostrada; es coherente con `RF-098-004` pero no lo confirma. (3) El PR
+  lo abre Victor directamente (no este agente).
