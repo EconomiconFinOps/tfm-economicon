@@ -3,18 +3,34 @@ from app.api.routes.jobs import create_ingest_job
 from app.core import metrics
 from app.schemas.assistant import MessageCreateRequest
 from app.schemas.jobs import IngestJobRequest
+from app.services.rabbitmq_queue import PublishResult
 
 
 class _FakeQueue:
     queue_name = "processor:jobs"
 
-    def publish(self, job):
-        return True
+    def __init__(self):
+        self.reservation = object()
+
+    def reserve(self):
+        return self.reservation
+
+    def publish(self, job, *, reservation):
+        assert reservation is self.reservation
+        return PublishResult("confirmed", "confirmed")
+
+    def cancel(self, reservation):
+        assert reservation is self.reservation
 
 
 class _FakeDatabase:
     def create_job(self, payload, created_by):
-        return {"id": "job-1", "status": "queued", **payload}
+        self.job = {"id": "job-1", "status": "queued", "created_by": created_by, **payload}
+        return self.job
+
+    def finalize_job_publication(self, job_id, *, tenant_id, created_by, outcome, code):
+        assert (job_id, tenant_id, created_by) == (self.job["id"], self.job["tenant_id"], self.job["created_by"])
+        assert (outcome, code) == ("confirmed", "confirmed")
 
     def fetch_conversation(self, conversation_id, tenant_id, user_id):
         return {

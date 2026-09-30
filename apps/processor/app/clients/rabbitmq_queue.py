@@ -50,8 +50,13 @@ class RabbitMQQueue:
         while time.monotonic() < deadline:
             method_frame, _, body = self.channel.basic_get(queue=self.queue_name, auto_ack=False)
             if method_frame is not None:
+                try:
+                    payload = json.loads(body)
+                except (ValueError, UnicodeError, RecursionError):
+                    self.nack(method_frame.delivery_tag, requeue=False)
+                    continue
                 return QueueMessage(
-                    payload=json.loads(body),
+                    payload=payload,
                     delivery_tag=method_frame.delivery_tag,
                 )
             time.sleep(0.5)
