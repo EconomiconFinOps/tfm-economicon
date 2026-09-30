@@ -2,7 +2,6 @@
 // jobs,assistant}.py. IDs, timestamps and credentials are synthetic test data.
 import type {
   AssistantReply,
-  BillingSummary,
   ConversationRecord,
   HealthResponse,
   IngestJobResponse,
@@ -42,11 +41,25 @@ export const health = {
 } satisfies HealthResponse;
 
 export const billing = {
-  monthly_spend: 12345,
-  savings_identified: 678,
+  contract_version: 2,
+  period: { start_date: "2024-06-01", end_date: "2024-07-01", timezone: "UTC" },
+  group_by: "service",
+  tag_key: null,
+  data_status: "available",
+  totals: [{ currency: "USD", cost: "12345.67", record_count: 2 }],
+  groups: [{ currency: "USD", subscription_id: null, value: "Compute", cost: "12345.67", record_count: 2 }],
+  missing_dimension_count: 0,
+  excluded_undated_count: 0,
+  monthly_spend: "12345.67",
+  savings_identified: null,
   open_ingestions: 2,
   currency: "USD"
-} satisfies BillingSummary;
+};
+
+export function billingWithCost(cost: string) {
+  return { ...billing, monthly_spend: cost,
+    totals: [{ ...billing.totals[0], cost }], groups: [{ ...billing.groups[0], cost }] };
+}
 
 export const ingestJob = {
   job_id: "job-billing-document",
