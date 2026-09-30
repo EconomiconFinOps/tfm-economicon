@@ -18,8 +18,9 @@ reported by Lucia, not measured again during this preparation.
 Action: consider non-retryable client-error handling when reviewing findings
 before P1, coordinated with the existing RF-098-002 session-query contract.
 No retry setting is changed here, no new JUP is assigned, and this entry does
-not claim a fix or approval of a future policy. Preserve the original RF-098-002
-row and this billing observation when reconciling develop.
+not claim a fix or approval of a future policy. Local merge `9bab405` preserves
+the original RF-098-002 row and this billing observation without duplicating
+the canonical finding row.
 
 ## Register
 

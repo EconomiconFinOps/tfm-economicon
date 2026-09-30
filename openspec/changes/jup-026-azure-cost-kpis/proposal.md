@@ -22,7 +22,7 @@ No new ADR, dependency, migration, endpoint or dashboard expansion is proposed.
 
 Inherited QueryClient retries on 409/422 are registration-only here, linked to
 [RF-098-002](../../findings/backlog.md#rf-098-002-observation-in-jup-026)
-on verified develop `2efef1a`, not yet integrated into JUP-026; no retry fix or
+on verified develop `2efef1a`, now incorporated locally by merge `9bab405`; no retry fix or
 duplicate finding is proposed. Linking PR52 on the official Trello card remains
 pending access. Roles and historical base claims are unchanged.
 
@@ -33,6 +33,14 @@ Corepack cache writes; the initial sandbox dependency-read failure is not a
 specification failure. `node tools/jup-check.mjs --change jup-026-azure-cost-kpis`
 and `git diff --check`: exit 0. These documentary checks do not approve the
 amendment or establish product correctness; no product tests ran here.
+
+Implementation checkpoint: the three approved corrections are implemented
+locally and the existing 15 billing cases pass, including seven real SQL cases.
+Independent technical review passes; QA passes with the previously approved
+mobile exception. Paris Arcos approved the final local result on 2026-09-30
+("apruebo el resultado") and separately authorized publication and CI checking
+with "subelo", without merge. See
+[current evidence](../../../docs/evidence/JUP-026-validation.md#pr52-corrections-2026-09-30).
 
 ## Why
 

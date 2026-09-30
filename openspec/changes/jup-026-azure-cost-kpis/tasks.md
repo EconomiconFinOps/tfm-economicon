@@ -3,20 +3,26 @@ JUP: JUP-026
 ## PR52 Proposed Amendment Tasks
 
 **PRE-CODE APPROVED, Paris Arcos, 2026-09-30.** Amendment tests/code are authorized.
-Checked tasks, approvals and results below concern historical code only.
+Tasks A.1-A.5 track the amendment; the older numbered tasks remain historical.
 The Lucia/`lmatsan` review is a correction request; Paris approved its bounded correction;
 see [proposal](proposal.md#pr52-review-amendment-2026-09-30). No roles are reassigned.
 
-- [ ] A.1 After explicit approval, adapt the existing resource-group billing case for SQL lower-key grouping and binary-minimum labels within subscription/currency; implement the bounded database correction in design.md.
-- [ ] A.2 After explicit approval, reuse the existing billing tag cases for exact processor key canonicalization/aliases and canonical response, retaining distinct `Prod`/`prod` values and unknown-key null buckets; implement the route correction.
-- [ ] A.3 After explicit approval, extend the existing invalid-selection case minimally for `%00`, the control criterion and empty canonical keys, asserting 422 before the billing read; implement validation before normalization without a blanket space/comma ban.
-- [ ] A.4 Demonstrate targeted Red before code and Green afterward, reusing the existing 15 billing cases and fixtures in `apps/backend/tests/test_billing_summary.py` and `billing_support.py`; adapt the literal unknown-key response expectation. Add only minimum regressions, no full matrix. Run aggregation and focused mutation checks on real isolated CockroachDB for the changed grouping, label, canonicalization and rejection logic; distinguish SQL execution from mocked validation and record actual cases/skips/results.
-- [ ] A.5 Repeat affected technical review and acceptance/QA after code, including the existing frontend consumer with canonical response keys; present actual evidence for separate final human approval. No amendment Red/Green, mutation or acceptance result is claimed now.
+- [x] A.1 Adapt the existing resource-group case and implement SQL lower-key grouping with binary-minimum labels within subscription/currency.
+- [x] A.2 Reuse tag cases and implement exact processor key canonicalization/aliases and canonical response, retaining case-sensitive values and unknown-key null buckets.
+- [x] A.3 Extend the existing invalid-selection case for controls and empty canonical keys; implement 422 before the billing read and normalization, without a blanket space/comma ban.
+- [x] A.4 Demonstrate Red (4 FAIL/11 PASS), Green (15 PASS/0 SKIP), real SQL aggregation and directed mutation (7/7 detected, pre/post 15 PASS). No new collected cases. See [evidence](../../../docs/evidence/JUP-026-validation.md#pr52-corrections-2026-09-30).
+- [x] A.5 Complete affected technical review and acceptance/QA, including the bounded frontend consumer checks. REVIEW_PASS and QA_PASS_WITH_APPROVED_EXCEPTIONS recorded; evidence ready for final human approval. Human PR re-review/revalidation is not replaced by these internal checks.
+
+Final human approval: APPROVED, Paris Arcos, 2026-09-30 ("apruebo el resultado").
+Publication authorized separately by Paris on 2026-09-30 ("subelo"), including
+checking CI, without merge. Human PR re-review, remote CI, integration and
+archive remain separate gates.
 
 Retry-policy work stays with [RF-098-002](../../findings/backlog.md#rf-098-002-observation-in-jup-026),
 registration-only for JUP-026; the official-card PR52 link is pending access.
-Paris also authorized incorporating current develop locally. Publication,
-merge into develop, tracker updates, dependencies and archive remain excluded.
+Paris also authorized incorporating current develop locally and subsequently
+publishing the approved correction. Merge into develop, tracker updates,
+dependencies and archive remain excluded.
 
 Pre-code approval is APPROVED by Paris Arcos on 2026-09-27. PR48 is integrated
 locally in the validated combined base 847fa3c. Checked tasks are supported by
@@ -24,7 +30,7 @@ locally in the validated combined base 847fa3c. Checked tasks are supported by
 human approval are not implied. RF-026-002 deferral is explicitly approved;
 QA is PASS_WITH_APPROVED_EXCEPTIONS. Paris Arcos gave the separate final human
 approval on 2026-09-28, including ADR-0010; see the post-QA gate in review.md.
-The latest authorized integration is local HEAD 4eb9427, merging develop
+The historical integration on 2026-09-28 was local HEAD 4eb9427, merging develop
 d244278 (merged PR47/JUP-086) into d86eb4e. Both JUP-014 and JUP-086 dependencies
 are now incorporated. The merge changes ancestry only and preserves all 32
 local files byte-identically before metadata updates; no new functional run

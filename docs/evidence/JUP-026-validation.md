@@ -6,6 +6,89 @@ Date: 2026-09-27. [Official card](https://trello.com/c/anUswta8).
 [review](../../openspec/changes/jup-026-azure-cost-kpis/review.md),
 [ADR-0010](../adr/ADR-0010-azure-cost-source-overlap.md).
 
+## PR52 Corrections 2026-09-30
+
+Current local result: functional checks and independent technical review PASS;
+QA PASS_WITH_APPROVED_EXCEPTIONS; final human approval APPROVED by Paris Arcos
+on 2026-09-30 ("apruebo el resultado"). Paris separately authorized publication
+and checking CI with "subelo"; no merge is authorized. This section supersedes historical current
+status below, not the dated evidence. Paris approved the three corrections and
+local develop incorporation with "hazlo por favor" on 2026-09-30.
+
+Tested identity: `feat/JUP-026-azure-cost-kpis`, merge HEAD
+`9bab4059adb1e04bc4cfe9096f4b979cb16c9cca` plus the four-file product/test diff.
+Parents are proposal commit `38f3e45` and develop `2efef1a`. Only backlog.md
+needed manual merge resolution; all previous finding rows and all three
+RF-098 rows survive unchanged, the latter exactly once. The frontend api.ts
+merge combines the two nonoverlapping changes. Independent review verified both.
+
+| Acceptance | Observed result |
+|---|---|
+| Case-insensitive resource group, deterministic label | Real SQL combines Shared/shared in sub-a EUR as Shared, 12.01, two records; swapping their stored spelling leaves the result unchanged. Other subscriptions/currencies and missing dimensions remain separate. |
+| Ingestion-equivalent tag keys | CostCenter/costcenter/cost_center resolve to cost_center; Environment/spaces/env and cost_centre/org aliases match ingestion. Stored Prod/prod and other value-case pairs remain separate. Unknown canonical keys retain null groups. |
+| Invalid controls and empty canonical key | URL-decoded NUL, tab, LF, unit separator and DEL return 422 with zero billing reads, before normalization; empty canonical keys also return 422. Validation uses a read spy, not SQL execution. |
+| Existing frontend accepts the canonical response | Bounded check through the existing consumer: CostCenter -> cost_center and Environment with a leading space -> environment accepted; empty response key rejected. Three checks PASS, network stubbed, not a browser acceptance run. |
+
+Commands used Python 3.12.13 and installed workspace tools, without installing
+dependencies. From apps/backend, with PYTHONDONTWRITEBYTECODE=1:
+
+```text
+python -B -m pytest tests/test_billing_summary.py -q -ra -p no:cacheprovider --basetemp <unique-temporary-directory> --junitxml <receipt.xml>
+python -B -m pytest tests -q -ra -p no:cacheprovider --basetemp <temporary-regression-directory> --junitxml <receipt.xml>
+```
+
+Focused runs set JUP086_COCKROACH_TEST_URL to the owned loopback-only port 55841
+on CockroachDB 24.1.11, container jup026-review-20260930-crdb. It uses an in-memory
+store, no volumes, and organization marker processor-integration-tests. Fixtures
+verify isolation and create/drop their own database. No shared data, clock or
+runtime credentials changed; the fixture timeout remains 60 seconds.
+
+- Before test edits: 15 PASS. Adapted tests before the fix: 4 FAIL/11 PASS,
+  zero errors/skips, covering all three defects and canonical unknown-key echo.
+- After the two-module fix: 15 PASS/0 SKIP, including seven real SQL cases.
+  Reused cases add seven invalid-input selections, nine tag-key selections and
+  the label swap assertion: no new collected cases, not zero new assertions.
+  The JUP-026 permanent delta stays 19 cases (15 backend, four frontend).
+- Focused runtime mutation: seven semantic faults detected, zero survivors;
+  both surrounding baselines 15 PASS/0 SKIP. Faults cover split groups, wrong
+  label, casefold/alias loss, controls checked too late, DEL and empty-key
+  acceptance. SQL faults use Cockroach; validation faults use read-spy assertions.
+  All 689 repository file hashes were unchanged by this campaign.
+- General backend regression: 329 PASS/17 SKIP, exit 0. This separate run omitted
+  external-service configuration; seven skipped billing SQL cases are covered
+  by the focused run above. The other ten skips are not claimed as passes.
+- Frontend after develop integration: 265 PASS in 46 files, exit 0, using
+  `node node_modules/vitest/vitest.mjs run --reporter=default --reporter=json`.
+  All three `node node_modules/typescript/bin/tsc --noEmit` configurations
+  (default, `-p tsconfig.node.json`, `-p tsconfig.test.json`),
+  `node node_modules/eslint/bin/eslint.js src tests`, and
+  `node node_modules/vite/bin/vite.js build` exit 0. Existing >500 kB bundle
+  warning retained; no new frontend product or test edits in this correction.
+
+Local raw receipts under TEMP (not repository artifacts):
+`jup026-pr52-red-20260930-8159d81286654acd8fe7e14425aa5e81`,
+`jup026-pr52-green-20260930-3c637a5d231249f593ab1da3c6fcc2ae`,
+`jup026-pr52-mutation-20260930-fcebf17d917d4dca95ef9623dd02a5ed`,
+`jup026-pr52-backend-20260930.xml`, `jup026-pr52-frontend-20260930.json`.
+Mutation results.json records each exact invocation and JUnit failure; matching
+hashes establish the reviewed tree. Initial sandbox Python/dependency read
+failures were rerun successfully with approved access, not counted as Red.
+
+Independent technical review: REVIEW_PASS, no introduced blocker, no file edits.
+Read-only QA verified the receipts and four tested file hashes, returned
+PASS_WITH_APPROVED_EXCEPTIONS with only the existing RF-026-002 mobile deferral,
+and passed its no-change guard. Fresh strict OpenSpec 35/35, all eight JUP
+traceability checks, hygiene 689 files, 16 current local links, diff check and
+entry-to-QA DoD passed. No product checks were relabelled as fresh QA runs.
+The owned in-memory Cockroach container was removed after verifying its ID,
+ownership label and absence of mounts. Test receipts remain locally available.
+No fresh browser, RabbitMQ/pgvector, processor/Azure suite, remote CI or human
+reapproval claimed. Lucia's 29/09 review/validation remains attributable only to
+c1e7f7f. RF-098-002 retries remain Open; RF-026-002's approved mobile deferral
+and RF-014-002's broader Unicode limitation are unchanged. The official card
+link, PR participation confirmation and human re-review are pending. The approved
+result is authorized for publication; this record does not claim remote CI success.
+
 ## Scope And Identity
 
 Branch: `feat/JUP-026-azure-cost-kpis`. Historical validation base:
@@ -16,7 +99,7 @@ snapshots retain the file fingerprints, preserved when packaging the changes
 for the authorized publication below. No remote CI success, merge, deployment,
 tracker update or operational closure is claimed by these local results.
 
-Current integration HEAD is `4eb942720e3baf6ed05c4fb5dfa0dff87d83b77a`, after
+Historical integration HEAD on 2026-09-28 was `4eb942720e3baf6ed05c4fb5dfa0dff87d83b77a`, after
 the authorized merge of develop `d244278` (merged PR47/JUP-086) into `d86eb4e`;
 see [merged dependency reconciliation](#merged-jup-086-develop-reconciliation).
 Both JUP-014 and JUP-086 dependencies are incorporated. The prior source fix

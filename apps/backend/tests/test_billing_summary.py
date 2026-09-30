@@ -1,4 +1,6 @@
 """JUP-026 API Red plus opt-in real Cockroach aggregation acceptance."""
+from urllib.parse import quote
+
 import pytest
 from sqlalchemy import text
 
@@ -29,22 +31,35 @@ def test_v2_response_keeps_exact_money_nulls_and_period(api):
     "group_by=tag", "group_by=tag&tag_key=%20", "group_by=service&tag_key=environment",
 ])
 def test_invalid_selection_is_422_before_billing_read(api, query):
-    response = call(api, "GET", "/billing/summary?" + query, headers=headers())
-    assert response.status_code == 422, response.text
-    api.spies["fetch_billing_summary"].assert_not_called()
+    queries = [query]
+    if query == "group_by=tag&tag_key=%20":
+        queries += ["group_by=tag&tag_key=" + key for key in (
+            "%00environment", "%09environment", "environment%0A",
+            "environ%1Fment", "environment%7F", "__---__", "%C3%A9",
+        )]
+    read = api.spies["fetch_billing_summary"]
+    # Keep a validation regression observable without executing cost SQL on SQLite.
+    read.return_value = summary()
+    observed = []
+    for selection in queries:
+        read.reset_mock()
+        response = call(api, "GET", "/billing/summary?" + selection, headers=headers())
+        observed.append((selection, response.status_code, read.call_count))
+    assert observed == [(selection, 422, 0) for selection in queries]
+    read.assert_not_called()
 
 
 # Explicit expected buckets, independent of production SQL and normalizers.
 BUCKETS = {
-    "subscription": [("sub-a", "sub-a", "10.01", 2), ("sub-b", "sub-b", "-1.00", 3)],
-    "resource_group": [("sub-a", "Shared", "10.01", 2), ("sub-b", "Shared", "-1.01", 1),
+    "subscription": [("sub-a", "sub-a", "12.01", 2), ("sub-b", "sub-b", "-1.00", 3)],
+    "resource_group": [("sub-a", "Shared", "12.01", 2), ("sub-b", "Shared", "-1.01", 1),
                        ("sub-b", "Unknown", "0.01", 1), ("sub-b", None, "0.00", 1)],
     "service": [(None, "Compute", "10.00", 1), (None, "Storage", "-1.01", 1),
-                (None, "Unknown", "0.01", 1), (None, "compute", "0.00", 1), (None, None, "0.00", 1)],
-    "project": [(None, "Fallback", "0.00", 1), (None, "Typed", "10.00", 1),
+                (None, "Unknown", "0.01", 1), (None, "compute", "2.00", 1), (None, None, "0.00", 1)],
+    "project": [(None, "Fallback", "2.00", 1), (None, "Typed", "10.00", 1),
                 (None, "Unknown", "0.01", 1), (None, None, "-1.01", 2)],
     "tag": [(None, "Prod", "10.00", 1), (None, "Unknown", "0.01", 1),
-            (None, "prod", "0.00", 1), (None, None, "-1.01", 2)],
+            (None, "prod", "2.00", 1), (None, None, "-1.01", 2)],
 }
 
 
@@ -62,10 +77,37 @@ def test_scoped_sql_reference_for_each_dimension(cost_reference, api, group_by):
     for currency, cost in [("GBP", "0.00"), ("USD", "9007199254740993.01")]:
         groups.append({"currency": currency, "subscription_id": "sub-a" if group_by in {"subscription", "resource_group"} else None,
                        "value": value, "cost": cost, "record_count": 1})
-    assert response.json() == summary(
+    expected = summary(
         group_by=group_by, tag_key="environment" if group_by == "tag" else None, groups=groups,
         missing_dimension_count={"subscription": 0, "resource_group": 1, "service": 1, "project": 2, "tag": 2}[group_by],
     )
+    assert response.json() == expected
+    if group_by == "resource_group":
+        with api.db.engine.begin() as connection:
+            connection.execute(text(
+                "UPDATE azure_cost_records SET resource_group = "
+                "CASE id WHEN 'a' THEN 'shared' WHEN 'b' THEN 'Shared' END "
+                "WHERE id IN ('a', 'b')"
+            ))
+        reordered = call(api, "GET", "/billing/summary?" + query, headers=headers())
+        assert reordered.status_code == 200, reordered.text
+        assert reordered.json() == expected
+    elif group_by == "tag":
+        selections, expected_selections = [], []
+        for raw_key, canonical in (
+            ("Environment", "environment"), (" Environment ", "environment"), ("env", "environment"),
+            ("CostCenter", "cost_center"), ("costcenter", "cost_center"), ("cost_center", "cost_center"),
+            (" __Cost,,,Centre__ ", "cost_center"), ("Co\u017ftCenter", "cost_center"), ("org", "organization"),
+        ):
+            labels = {"cost_center": {"Prod": "Finance", "prod": "finance"},
+                      "organization": {"Prod": "Team", "prod": "team"}}.get(canonical, {})
+            selected_groups = [{**item, "value": labels.get(item["value"], item["value"])} for item in groups]
+            selected = call(api, "GET", "/billing/summary?" + query.replace(
+                "tag_key=environment", "tag_key=" + quote(raw_key, safe="")), headers=headers())
+            assert selected.status_code == 200, (raw_key, selected.text)
+            selections.append((raw_key, api.spies["fetch_billing_summary"].call_args.kwargs["tag_key"], selected.json()))
+            expected_selections.append((raw_key, canonical, {**expected, "tag_key": canonical, "groups": selected_groups}))
+        assert selections == expected_selections
 
 
 @pytest.mark.parametrize("tenant_database", ["cockroach"], indirect=True)
@@ -89,7 +131,7 @@ def test_empty_partial_zero_and_literal_unknown_tag(cost_reference, api):
         excluded_undated_count=0, monthly_spend="0.00", currency="EUR")
     unknown = call(api, "GET", path.replace("group_by=service", "group_by=tag&tag_key=x%27%20OR%201%3D1--"), headers=headers())
     assert unknown.status_code == 200, unknown.text
-    assert unknown.json() == {**zero, "group_by": "tag", "tag_key": "x' OR 1=1--"}
+    assert unknown.json() == {**zero, "group_by": "tag", "tag_key": "x_or_1_1"}
     available = call(api, "GET", path.replace("group_by=service", "group_by=subscription"), headers=headers()).json()
     assert available["data_status"] == "available"
     assert available["missing_dimension_count"] == 0

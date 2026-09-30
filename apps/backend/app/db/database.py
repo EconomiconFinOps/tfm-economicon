@@ -200,6 +200,8 @@ class Database:
         dimension = dimensions[group_by]
         subscription = (present("r.subscription_id") if group_by in {"subscription", "resource_group"}
                         else "CAST(NULL AS STRING)")
+        group_value = "lower(value)" if group_by == "resource_group" else "value"
+        display_value = "min(value)" if group_by == "resource_group" else "value"
         # Only enum-selected expressions enter SQL; all request values are bound.
         query = text(f"""
             WITH completed AS (
@@ -230,9 +232,9 @@ class Database:
                 FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
                 GROUP BY currency
                 UNION ALL
-                SELECT 'group', currency, group_subscription, value, sum(pretax_cost), count(*)
+                SELECT 'group', currency, group_subscription, {display_value}, sum(pretax_cost), count(*)
                 FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
-                GROUP BY currency, group_subscription, value
+                GROUP BY currency, group_subscription, {group_value}
             )
             SELECT a.*, m.undated, m.missing, m.ambiguous
             FROM metadata m LEFT JOIN aggregates a ON TRUE

@@ -13,7 +13,7 @@ from sqlalchemy import text
 
 PERIOD = {"start_date": "2024-06-01", "end_date": "2024-07-01", "timezone": "UTC"}
 TOTALS = [
-    {"currency": "EUR", "cost": "9.01", "record_count": 5},
+    {"currency": "EUR", "cost": "11.01", "record_count": 5},
     {"currency": "GBP", "cost": "0.00", "record_count": 1},
     {"currency": "USD", "cost": "9007199254740993.01", "record_count": 1},
 ]
@@ -83,16 +83,19 @@ def cost_reference(billing_schema):
         insert_run(connection, "failed", status="failed")
         insert_run(connection, "outside")
         common = {"resource_group": "Shared", "project": "Typed",
-                  "tags": {"project": "Ignored", "environment": "Prod", "extra": "once"}}
+                  "tags": {"project": "Ignored", "environment": "Prod", "cost_center": "Finance",
+                           "organization": "Team", "extra": "once"}}
         insert_cost(connection, "a", day="2024-06-01", cost="10.004", service="Compute", **common)
-        insert_cost(connection, "b", day="2024-06-30", cost="0.004", service="compute",
-                    resource_group="Shared", project=" ", tags={"project": "Fallback", "environment": "prod"})
+        insert_cost(connection, "b", day="2024-06-30", cost="2.004", service="compute",
+                    resource_group="shared", project=" ",
+                    tags={"project": "Fallback", "environment": "prod", "cost_center": "finance", "organization": "team"})
         insert_cost(connection, "c", run="run-b", subscription="sub-b", cost="-1.005",
                     resource_group="Shared", service="Storage")
         insert_cost(connection, "d", run="run-b", subscription="sub-b", cost="0",
                     resource_group=" ", service=" ", project=" ", tags={"environment": " "})
         insert_cost(connection, "e", run="run-b", subscription="sub-b", cost="0.005",
-                    resource_group="Unknown", service="Unknown", project="Unknown", tags={"environment": "Unknown"})
+                    resource_group="Unknown", service="Unknown", project="Unknown",
+                    tags={"environment": "Unknown", "cost_center": "Unknown", "organization": "Unknown"})
         insert_cost(connection, "f", cost="9007199254740993.005", currency="USD", service="Compute", **common)
         insert_cost(connection, "g", cost="-0.004", currency="GBP", service="Compute", **common)
         insert_cost(connection, "undated", day=None)

@@ -1,12 +1,43 @@
 # JUP-026 Technical Review
 
+Current local correction, 2026-09-30: **REVIEW_PASS** and
+**QA_PASS_WITH_APPROVED_EXCEPTIONS**; final human approval **APPROVED**, Paris
+Arcos, 2026-09-30 ("apruebo el resultado").
+Reviewed `9bab405` plus the four-file billing product/test
+diff, under Paris's approved PR52 amendment. No introduced defect or blocker
+found; the merge preserves both parents' findings and combines the frontend
+API changes correctly. Seven targeted mutants detected; no files changed by
+review. This is an internal technical review, not Lucia's human reapproval.
+See [current evidence](../../../docs/evidence/JUP-026-validation.md#pr52-corrections-2026-09-30).
+At the QA checkpoint no push, tracker update, merge into develop or archive
+had occurred. The publication authorization below was given afterward.
+
+Read-only QA checked acceptance against actual receipts and the four unchanged
+tested hashes, documentary gates and current local links; no blocking discrepancy.
+Its only approved exception remains RF-026-002. The QA guard found no changes.
+The owned disposable database was removed after validation; no shared data or
+clocks changed. Final post-QA decision for this correction: **APPROVED**, Paris
+Arcos, 2026-09-30. Approval covers the reviewed local result on `9bab405` plus
+the four-file correction diff, including the disclosed skips and unchanged
+RF-026-002 exception. All four tested file hashes still match the QA receipts.
+Publication authorization: **AUTHORIZED**, Paris Arcos, 2026-09-30 ("subelo"),
+after the explicit question about uploading the PR52 update and checking CI.
+It covers committing the approved correction, pushing the existing branch and
+checking its CI, without merge. Four tested file hashes were checked unchanged
+before publication; origin's branch still matched c1e7f7f and develop 2efef1a
+was already incorporated. No merge into develop, tracker write, role reassignment,
+archive or approval on Lucia's behalf is inferred. Remote CI results are not
+claimed by this pre-publication record.
+
+## Historical Review 2026-09-27
+
 Date: 2026-09-27. Technical result: **REVIEW_PASS**.
 QA result: **PASS_WITH_APPROVED_EXCEPTIONS**, reevaluated on 2026-09-27 after
 Paris explicitly approved deferral of RF-026-002. Prior QA_FAIL is superseded.
 Technical acceptance and post-QA human approval are recorded. Paris authorized
 publication on 2026-09-28 as recorded below; integration remains separate.
 Historical validation base: `847fa3cf5857f33e680089b25dbffd149e5a15ac`.
-Current integration HEAD: `4eb942720e3baf6ed05c4fb5dfa0dff87d83b77a`, incorporating
+Historical integration HEAD: `4eb942720e3baf6ed05c4fb5dfa0dff87d83b77a`, incorporating
 develop `d244278` with merged PR47/JUP-086. Both dependency PRs are integrated;
 this latest merge changes ancestry only, with identical committed trees and
 all local files preserved. See the latest bounded synchronization record below.
@@ -185,7 +216,8 @@ Their actual authorship does not reassign the roles in the Trello card.
 - Blocking corrections: resource groups split by case; requested tag keys not
   canonicalized like ingestion; NUL in tag_key reaches SQL and returns 500.
   The bounded [contract amendment](proposal.md#pr52-review-amendment-2026-09-30)
-  is proposed, not approved or implemented. Prior QA/approval is historical;
+  was proposed at preparation and is now approved and implemented locally.
+  Prior QA/approval is historical;
   repeat affected tests, review and acceptance on the corrected revision.
 - Inherited 409/422 retry latency is recorded against the existing
   [RF-098-002](../../findings/backlog.md#rf-098-002-observation-in-jup-026),
@@ -199,4 +231,7 @@ Refreshed origin/develop is `2efef1a7e1a10d5f31fdc2ec1a748f939b109144`
 (PR50/JUP-098 and PR46 since this branch's base). A non-checkout merge preview
 found only a content conflict in `openspec/findings/backlog.md`; api.ts combined
 automatically. This is not a merge or an integration test. Branch HEAD remains
-`c1e7f7f`; no new code, tests, push, external update, merge or archive performed.
+`c1e7f7f` at that preparation checkpoint. Paris subsequently approved the local
+merge and corrections: current merge HEAD is `9bab405`, with the tested
+four-file correction diff described in the current evidence. No publication,
+external update, merge into develop or archive has occurred in this correction.

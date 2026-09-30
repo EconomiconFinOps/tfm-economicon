@@ -1,4 +1,5 @@
 from datetime import date, datetime, timezone
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -7,6 +8,17 @@ from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSum
 
 
 router = APIRouter(prefix="/billing", tags=["billing"])
+
+
+def _canonical_tag_key(value: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "_", value.strip().casefold()).strip("_")
+    aliases = {
+        "costcenter": "cost_center",
+        "cost_centre": "cost_center",
+        "env": "environment",
+        "org": "organization",
+    }
+    return aliases.get(normalized, normalized)
 
 
 @router.get("/summary", response_model=BillingSummary)
@@ -30,7 +42,10 @@ def get_billing_summary(
         if start >= end:
             raise ValueError()
         if group_by == "tag":
-            if tag_key is None or not tag_key.strip():
+            if tag_key is None or any(ord(char) < 32 or ord(char) == 127 for char in tag_key):
+                raise ValueError()
+            tag_key = _canonical_tag_key(tag_key)
+            if not tag_key:
                 raise ValueError()
         elif tag_key is not None:
             raise ValueError()
