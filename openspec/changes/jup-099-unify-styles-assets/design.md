@@ -1,6 +1,6 @@
 JUP: JUP-099 — ADR aplicables: [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md)
 (TypeScript strict), [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) (shadcn/ui). ADR
-nuevo propuesto: `docs/adr/ADR-0011-frontend-color-tokens.md` (decisión 8).
+nuevo propuesto: `docs/adr/ADR-0012-frontend-color-tokens.md` (decisión 8).
 
 ## Context
 
@@ -247,12 +247,12 @@ El origen incluía atribuciones de shadcn/ui (MIT) y de fotos de Unsplash. En es
   llevan su propia licencia; no se copia su código. Se menciona en el archivo para dejar escrito
   por qué no llevan atribución propia.
 
-### 8. ADR-0011 para la convención de tokens de color
+### 8. ADR-0012 para la convención de tokens de color
 
 La regla "ningún color literal en pantallas; cada color es un token con nombre de función; paleta
 única en `:root`" obliga a todas las tarjetas futuras que toquen el frontend y cambia cómo se copian
 primitivos de shadcn (decisión 2). Es un patrón compartido que afecta a trabajo futuro, uno de los
-supuestos de `docs/adr/README.md`. Se redacta `ADR-0011-frontend-color-tokens.md` en estado
+supuestos de `docs/adr/README.md`. Se redacta `ADR-0012-frontend-color-tokens.md` en estado
 `Proposed` durante la revisión, enlazado desde aquí y desde ADR-0004.
 
 ### 9. El arrastre de JUP-098 va en commits de documentación separados
@@ -286,7 +286,7 @@ Ver `proposal.md`. Tres criterios de redacción:
 - [Animaciones de Recharts introducen ruido en las capturas] → espera fija y mismo guion antes y
   después; si persiste, se captura con animación desactivada en ambas pasadas.
 - [Los tokens `v4` duplican a mano valores de Tailwind] → si una actualización de Tailwind cambia su
-  paleta, la aplicación no cambia (es lo deseado); queda escrito en ADR-0011.
+  paleta, la aplicación no cambia (es lo deseado); queda escrito en ADR-0012.
 - [30 tokens son más de los que "necesita" una paleta limpia] → es el precio de no rediseñar; la
   consolidación queda propuesta como tarjeta propia en `review.md`.
 - [Editar tests protegidos (JUP-095 y comentarios)] → solo con autorización explícita, restaurando

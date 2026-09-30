@@ -29,7 +29,7 @@ Aqui vive la parte visual del sistema:
   `src/components/ui/`: label, select, separator, dialog, tooltip — ver
   [ADR-0004](../../docs/adr/ADR-0004-frontend-shadcn-ui.md)). Todos los colores salen de tokens del
   tema: ver [Estilos y colores](#estilos-y-colores) y
-  [ADR-0011](../../docs/adr/ADR-0011-frontend-color-tokens.md).
+  [ADR-0012](../../docs/adr/ADR-0012-frontend-color-tokens.md).
 - `Vitest` + `@testing-library/react` (runner de pruebas, comprobación obligatoria de CI). Dos
   ubicaciones de test conviven y se descubren juntas: `src/**/*.test.tsx` (junto al código que
   prueban) y `tests/**/*.test.tsx` (regresión end-to-end de sesión, tenant, ingesta y
@@ -95,7 +95,7 @@ Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el
 
 La aplicacion tiene **una unica paleta**, definida una sola vez en `src/styles/theme.css` (bloque
 `:root`, solo tema oscuro; no hay `.dark` ni `class="dark"` en `index.html`). Decision y motivos en
-[ADR-0011](../../docs/adr/ADR-0011-frontend-color-tokens.md).
+[ADR-0012](../../docs/adr/ADR-0012-frontend-color-tokens.md).
 
 **Regla: ninguna pantalla, layout, componente ni dato demo escribe un color literal.** Ni
 hexadecimales (`#1a1f2e`) ni utilidades de la paleta de Tailwind (`text-slate-400`, `bg-red-500/20`):

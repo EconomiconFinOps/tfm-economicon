@@ -117,7 +117,7 @@
 
 - [x] 9.1 Crear `apps/frontend/ATTRIBUTIONS.md` (decisión 7): aviso MIT de shadcn/ui verificado contra
       la licencia publicada, y por qué no aplican Unsplash, fuentes ni dependencias npm.
-- [x] 9.2 Redactar `docs/adr/ADR-0011-frontend-color-tokens.md` desde `docs/templates/adr.md` en estado
+- [x] 9.2 Redactar `docs/adr/ADR-0012-frontend-color-tokens.md` desde `docs/templates/adr.md` en estado
       `Proposed`, añadirlo al índice de `docs/adr/README.md` y enlazarlo desde el seguimiento de
       ADR-0004.
 - [x] 9.3 Actualizar `apps/frontend/README.md`: estilos y tokens (dónde viven, regla de no usar

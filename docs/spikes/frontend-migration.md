@@ -257,7 +257,7 @@ tarjeta en Trello.
       única paleta en `:root`** con tokens de nombre funcional y el valor exacto que sustituyen; se
       retiró el bloque `.dark` y el apaño `class="dark"` de JUP-095; dos tests estáticos impiden que
       vuelva un color literal (`color-tokens.guard.test.ts`, `theme-palette.test.ts`). Decisión
-      duradera en [ADR-0011](../adr/ADR-0011-frontend-color-tokens.md).
+      duradera en [ADR-0012](../adr/ADR-0012-frontend-color-tokens.md).
 - [x] Migrar fuentes/iconos/imagenes y verificar licencias. **No había nada que migrar**: no se portó
       ninguna imagen (las fotos de Unsplash del origen no llegaron), no hay fuentes y los iconos son de
       `lucide-react`. Lo que sí exigía atribución era el código de shadcn/ui copiado al repositorio

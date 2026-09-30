@@ -11,7 +11,7 @@
   corresponde al estado **fusionado** con `develop` (`1e897dc`).
 - OpenSpec: [jup-099-unify-styles-assets](../../openspec/changes/jup-099-unify-styles-assets/) (activo; al
   archivarlo, corregir este enlace a `openspec/changes/archive/<fecha>-jup-099-unify-styles-assets/`).
-- ADR: [ADR-0011](../adr/ADR-0011-frontend-color-tokens.md) (`Proposed`); aplican
+- ADR: [ADR-0012](../adr/ADR-0012-frontend-color-tokens.md) (`Proposed`); aplican
   [ADR-0003](../adr/ADR-0003-frontend-typescript.md) y [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md).
 - Pull request: [#54](https://github.com/EconomiconFinOps/tfm-economicon/pull/54).
 - CI de implementación: pestaña Checks del PR #54 (pendiente de revisar tras la fusión).
@@ -59,12 +59,12 @@ Comandos ejecutados el 2026-09-29 sobre `6060993`, desde `apps/frontend`.
 | 4 | Las 8 pantallas renderizan sin regresión visual, verificado pantalla por pantalla y registrado en `review.md` | **Cumplido**, con 4 diferencias aceptadas por Victor | 34 escenarios (las 8 pantallas y `/login`, con sus estados de error, carga, "sin tenant" y tooltips). Frente al estado con el tema nuevo: 0 píxeles reales. Frente al original: cuatro causas medidas (§ Verificación visual) |
 | 5 | Los tokens sin consumidor quedan retirados o justificados | **Cumplido** | 13 retirados (8 `sidebar-*`, `card-foreground`, `destructive-foreground`, `secondary`, `secondary-foreground`, `switch-background`); 110 → 92 declaraciones; el caso (d) de `theme-palette.test.ts` (110/110) y un análisis que ignora comentarios confirman 42 tokens, 0 sin consumo real; 11 con un solo consumidor, justificados |
 | 6 | Existe `ATTRIBUTIONS.md` con las atribuciones que apliquen, o queda registrado por qué ninguna aplica | **Cumplido** | [`apps/frontend/ATTRIBUTIONS.md`](../../apps/frontend/ATTRIBUTIONS.md): aplica shadcn/ui (MIT, 5 primitivos + `cn`); registrado por qué no aplican Unsplash, fuentes ni las dependencias npm |
-| 7 | La decisión sobre el ámbito oscuro explícito queda registrada en `design.md` | **Cumplido** | Decisión 2 del `design.md`: una única paleta en `:root`, sin `.dark` ni `class="dark"`; `@custom-variant dark (&);` (verificado compilando con Tailwind 4.3.3). `index.html` es `<html lang="en">`; en `theme.css` `.dark` solo aparece en el comentario de cabecera. Recogido también en ADR-0011 |
+| 7 | La decisión sobre el ámbito oscuro explícito queda registrada en `design.md` | **Cumplido** | Decisión 2 del `design.md`: una única paleta en `:root`, sin `.dark` ni `class="dark"`; `@custom-variant dark (&);` (verificado compilando con Tailwind 4.3.3). `index.html` es `<html lang="en">`; en `theme.css` `.dark` solo aparece en el comentario de cabecera. Recogido también en ADR-0012 |
 | 8 | lint, typecheck y build en verde; suite de pruebas sin regresión | **Cumplido** | § Validación ejecutada: lint 0, typecheck 0 (3 configs), build correcto, suite **431/431** (los 260 previos siguen en verde) |
 
 ## Decisiones
 
-Resumen; el razonamiento completo y las alternativas están en el `design.md` del change y en ADR-0011.
+Resumen; el razonamiento completo y las alternativas están en el `design.md` del change y en ADR-0012.
 
 - **Tokens semánticos de shadcn con los valores reales de la aplicación** y solo los tokens nuevos
   imprescindibles, con nombre de función y el valor exacto que sustituyen; no se consolidan tonos
@@ -82,7 +82,7 @@ Resumen; el razonamiento completo y las alternativas están en el `design.md` de
 - **Sin mutación de Stryker** sobre la migración (exención justificada; ver abajo).
 - **Verificación visual con Chromium real** antes/después, fuera del repositorio.
 - **`ATTRIBUTIONS.md`** con el aviso MIT de shadcn/ui verificado contra la licencia publicada.
-- **ADR-0011** (`Proposed`) para la convención de tokens.
+- **ADR-0012** (`Proposed`) para la convención de tokens.
 - **Arrastre de JUP-098** en commits de documentación propios, sin ninguna afirmación sobre CI (la nota
   de revisión "los tests del frontend no corren en CI" se descartó como malentendido).
 
@@ -287,8 +287,12 @@ marcó 3 conflictos. La resolución y su razonamiento están en el `review.md` d
   lógica, con la migración de color vuelta a aplicar). Frente a `develop`, esos dos archivos de pantalla
   quedan con **solo** el cambio de color, el `import` del tooltip compartido y los atributos de las
   gráficas a `var(--…)`.
-- **Colisión de ADR que Git no marca:** JUP-026 añadió un `ADR-0010` (`Accepted`). El nuestro pasa a
-  **`ADR-0011`**.
+- **Colisiones de ADR que Git no marca (dos):** JUP-026 añadió un `ADR-0010` (`Accepted`), así que el
+  nuestro pasó de `ADR-0010` a `ADR-0011`; después, la revisión del PR avisó de que el PR #51 (JUP-096)
+  reclama `ADR-0011-single-owner-per-table` (`Accepted`, con referencias en su `architecture.md`, su
+  evidencia y su change ya archivado). Como el nuestro está `Proposed` y con pocas referencias, pasa a
+  **`ADR-0012`** (comprobado: entre las cabezas de los PR #49 a #56 solo #51 y este PR usan números ≥ 0011,
+  así que `0012` está libre). Conviene confirmar con el responsable del PR #51 que mantiene `0011`.
 - **Un token nuevo, `warning-text`** (`amber-300` v4, `oklch(87.9% 0.169 91.605)`): la sección de costes
   reales de JUP-026 usa `text-amber-300` en 3 mensajes y ese tono no existía en la paleta. Se añade con
   nombre de función en vez de reutilizar `warning` (amber-400) y cambiar píxeles; consolidarlo es un
@@ -313,7 +317,7 @@ marcó 3 conflictos. La resolución y su razonamiento están en el `review.md` d
 | `git diff origin/develop --name-only` sobre `apps/backend` y `apps/processor` | **0 archivos** |
 
 **Verificación visual: `develop` frente al estado fusionado** (el "antes" correcto ahora es `develop` tal
-cual, construido con `git archive origin/develop` en una carpeta temporal fuera del repositorio). El guion
+cual, construido con `git archive 1e897dc` (`origin/develop` con JUP-026) en una carpeta temporal fuera del repositorio). El guion
 se adaptó al contrato v2 de `/billing/summary` y añade 4 escenarios de la pantalla ejecutiva (datos
 parciales, sin datos, solapamiento de fuentes, y solapamiento en `/overview-legacy`); los tooltips de esa
 pantalla pasan de 3 a 2 porque JUP-026 retiró el gráfico circular. **37 escenarios** por lado.
@@ -330,17 +334,41 @@ pantalla pasan de 3 a 2 porque JUP-026 retiró el gráfico circular. **37 escena
 
 ## Reproducir la verificación visual
 
-1. Crear un proyecto temporal **fuera** del repositorio e instalar `playwright`, `pixelmatch` y `pngjs`
-   (`npm install`; Chromium con `npx playwright install chromium` si no está).
-2. Construir cada estado a comparar a una carpeta propia:
-   `corepack pnpm --filter @finops/frontend exec vite build --outDir <carpeta> --emptyOutDir`
-   (el estado original con `git switch --detach 688fe2d`; el actual en la rama).
-3. Capturar: `node capture.mjs <carpeta-dist> <carpeta-capturas>` (34 escenarios en la verificación original;
-   37 con el guion vigente, adaptado al contrato v2 de `/billing/summary`; `ONLY=a,b` para un subconjunto). Repetir dos veces el mismo build para medir el ruido.
-4. Comparar: `node compare.mjs <antes> <despues>` y clasificar con `node classify.mjs <antes> <despues>`.
-5. Propagación: cambiar los dos tokens en `theme.css`, construir a otra carpeta, **restaurar el archivo**,
-   capturar y `node propagation.mjs <final> <propagacion>`.
-6. Tokens sin consumo real: `node consumers.mjs apps/frontend/src`.
+Hay **dos recetas**, porque el guion cambió al fusionar con `develop` (JUP-026 cambió el contrato de
+`GET /billing/summary` y la pantalla ejecutiva). **No se puede ejecutar el guion vigente contra la base
+original `688fe2d`:** su mock usa el contrato v2 y sus escenarios `executive-cost-partial`,
+`executive-cost-empty`, `executive-cost-overlap` y `overview-legacy-overlap` solo existen desde JUP-026.
+
+Preparación común: crear un proyecto temporal **fuera** del repositorio e instalar `playwright`,
+`pixelmatch` y `pngjs` (`npm install`; Chromium con `npx playwright install chromium` si no está), y
+construir cada estado a una carpeta propia con
+`corepack pnpm --filter @finops/frontend exec vite build --outDir <carpeta> --emptyOutDir`
+(o, para no mover la rama, `git archive <commit> apps/frontend` a una carpeta temporal y construir allí).
+
+**Receta A — verificación original, previa a la fusión (34 escenarios; secciones "Verificación visual" y
+"Los 8 criterios").**
+
+- Estados: *original* = `688fe2d` (base de la rama) y *final* = `81a5e69`, último commit con código de
+  frontend antes de la fusión (los commits posteriores hasta `6060993` solo tocan documentación). La
+  referencia intermedia "grupo 4" es `63f0042`.
+- Guion: **`capture.v1.mjs`** (apéndice), el que se ejecutó entonces: mock del contrato antiguo de
+  `/billing/summary` y 3 tooltips en la pantalla ejecutiva.
+- `node capture.v1.mjs <carpeta-dist> <carpeta-capturas>`; repetir dos veces el mismo build para medir el
+  ruido. Comparar con `compare.mjs` y clasificar con `classify.mjs`.
+
+**Receta B — posterior a la fusión con `develop` (37 escenarios; sección "Reverificación tras fusionar").**
+
+- Estados: *antes* = `1e897dc` (`develop` con JUP-026, sin nuestros cambios) y *después* = el estado
+  fusionado de la rama (commit de fusión `c449196` o posterior en frontend).
+- Guion: **`capture.mjs`** vigente (apéndice), con el contrato v2 y los 4 escenarios de la pantalla
+  ejecutiva; los tooltips de esa pantalla son 2 porque JUP-026 retiró el gráfico circular.
+- `node capture.mjs <carpeta-dist> <carpeta-capturas>`, y de nuevo `compare.mjs` y `classify.mjs`.
+
+**En ambas recetas** (`ONLY=a,b` limita las capturas a un subconjunto):
+
+- Propagación: cambiar `--primary` y `--card` en `theme.css`, construir a otra carpeta, **restaurar el
+  archivo**, capturar y `node propagation.mjs <final> <propagacion>`.
+- Tokens sin consumo real: `node consumers.mjs apps/frontend/src`.
 
 Las capturas no se versionan.
 
@@ -356,7 +384,7 @@ Las capturas no se versionan.
   `openspec/changes/archive/<fecha>-jup-099-unify-styles-assets/`, y los enlaces relativos del propio
   `review.md`, `design.md` y `proposal.md` archivados necesitan un `../` más (`RF-099-004`).
 - Revisar el resultado de CI del PR #54 tras la fusión con `develop` y anotarlo aquí.
-- ADR-0011 pasa de `Proposed` a `Accepted` con la aprobación del PR.
+- ADR-0012 pasa de `Proposed` a `Accepted` con la aprobación del PR.
 - `RF-099-001` a `RF-099-004` quedan `Open` sin dueño asignado, disponibles para tarjetas propias.
 - El E2E completo en navegador contra el backend real corresponde a JUP-102; esta tarjeta verifica el
   aspecto con datos simulados.
@@ -666,6 +694,276 @@ await scenario("overview-legacy-overlap", {
   overrides: { "GET /billing/summary": (r) => json(r, { detail: "ambiguous_cost_source" }, 409) },
   run: async (page) => { await go("/overview-legacy")(page); await page.waitForSelector("text=Possible overlapping ingestion sources", { timeout: 40000 }); }
 });
+
+await browser.close();
+server.close();
+````
+
+### `capture.v1.mjs` — Captura de los 34 escenarios de la verificación original (previa a la fusión)
+
+Uso: `node capture.v1.mjs <dist> <salida>`; mock del contrato antiguo de `/billing/summary`. Es el guion de la receta A; no funciona contra el contrato v2 de JUP-026.
+
+````js
+// Captura de referencia/verificacion visual de JUP-099 (decision 6 de design.md).
+// Uso: node capture.mjs <carpeta-dist> <carpeta-salida>
+// Sirve un build de produccion con un servidor estatico con fallback SPA y recorre
+// los estados de las 9 pantallas contra una API simulada con page.route.
+// Determinismo: viewport 1440x900, reloj/zona/idioma fijos, movimiento reducido,
+// espera fija tras la carga para que terminen las animaciones de Recharts.
+import { chromium } from "playwright";
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+
+const [distDir, outDir] = process.argv.slice(2).map((p) => path.resolve(p));
+fs.mkdirSync(outDir, { recursive: true });
+
+const API = "http://localhost:8000";
+const SETTLE_MS = 3000;
+
+// Datos sinteticos identicos a apps/frontend/tests/fixtures.ts.
+const operator = { id: "user-operator", email: "operator@example.com", full_name: "Test Operator", role: "operator" };
+const tenants = [
+  { id: "tenant-north", name: "North Operations", slug: "north", plan: "enterprise" },
+  { id: "tenant-south", name: "South Operations", slug: "south", plan: "starter" }
+];
+const conversation = {
+  id: "conversation-cost-review", tenant_id: "tenant-north", user_id: operator.id,
+  title: "September costs", created_at: "2026-09-08T10:00:00Z", updated_at: "2026-09-08T10:05:00Z"
+};
+const messages = [
+  { id: "m1", role: "user", content: "Where can we reduce compute costs?", metadata: {}, created_at: "2026-09-08T10:05:00Z" },
+  { id: "m2", role: "assistant", content: "The billing document identifies idle compute instances.", metadata: {}, created_at: "2026-09-08T10:05:01Z" }
+];
+const billing = { monthly_spend: 12345, savings_identified: 678, open_ingestions: 2, currency: "USD" };
+const health = { status: "ok", services: { database: "ok", rabbitmq: "ok", vector_store: "ok" }, checked_at: "2026-09-08T10:00:00Z" };
+const session = { accessToken: "test-access-token", user: operator };
+
+const json = (route, data, status = 200) =>
+  route.fulfill({ status, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify(data) });
+
+// `overrides` permite cambiar la respuesta de un endpoint concreto por escenario.
+async function mockApi(page, overrides = {}) {
+  await page.route(`${API}/**`, async (route) => {
+    const req = route.request();
+    if (req.method() === "OPTIONS") {
+      return route.fulfill({ status: 204, headers: {
+        "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "*" } });
+    }
+    const key = `${req.method()} ${new URL(req.url()).pathname}`;
+    if (overrides[key]) return overrides[key](route);
+    switch (key) {
+      case "GET /me": return json(route, operator);
+      case "GET /tenants": return json(route, { items: tenants });
+      case "GET /health": return json(route, health);
+      case "GET /billing/summary": return json(route, billing);
+      case "GET /assistant/conversations": return json(route, { items: [conversation] });
+      case `GET /assistant/conversations/${conversation.id}`: return json(route, { conversation, messages });
+      default: return json(route, { detail: `sin simular: ${key}` }, 404);
+    }
+  });
+}
+
+// Servidor estatico con fallback a index.html (rutas del cliente).
+function serve(dir) {
+  const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml" };
+  const server = http.createServer((req, res) => {
+    let file = path.join(dir, decodeURIComponent(new URL(req.url, "http://x").pathname));
+    if (!file.startsWith(dir) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(dir, "index.html");
+    res.writeHead(200, { "content-type": types[path.extname(file)] ?? "application/octet-stream" });
+    fs.createReadStream(file).pipe(res);
+  });
+  return new Promise((resolve) => server.listen(0, "127.0.0.1", () => resolve(server)));
+}
+
+const server = await serve(distDir);
+const base = `http://127.0.0.1:${server.address().port}`;
+const browser = await chromium.launch();
+
+async function scenario(name, { authed = true, overrides = {}, run, after }) {
+  if (process.env.ONLY && !process.env.ONLY.split(",").includes(name)) return;
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1,
+    locale: "es-ES", timezoneId: "Europe/Madrid", reducedMotion: "reduce", colorScheme: "dark"
+  });
+  const page = await context.newPage();
+  // Solo `new Date()` sin argumentos (la fecha del Layout) se fija; `Date.now` sigue real porque
+  // Recharts anima con el reloj y `page.clock.setFixedTime` lo congelaba (series sin pintar).
+  await context.addInitScript(() => {
+    const RealDate = Date;
+    const FIXED = new RealDate("2026-09-29T10:00:00Z").getTime();
+    globalThis.Date = class extends RealDate {
+      constructor(...args) { args.length ? super(...args) : super(FIXED); }
+    };
+  });
+  if (authed) {
+    await context.addInitScript((s) => {
+      localStorage.setItem("finops.session", JSON.stringify(s));
+      localStorage.setItem("finops.activeTenant", "tenant-north");
+    }, session);
+  }
+  await mockApi(page, overrides);
+  await run(page);
+  // `fullPage` redimensiona el viewport en la propia captura y ResponsiveContainer reinicia la
+  // animacion de Recharts (series sin pintar). Se amplia el viewport a la altura del documento,
+  // se espera a que termine la animacion y se captura el viewport tal cual.
+  const height = await page.evaluate(() => Math.max(900, document.documentElement.scrollHeight));
+  await page.setViewportSize({ width: 1440, height });
+  await page.waitForTimeout(SETTLE_MS);
+  // `after`: acciones posteriores al asentamiento (p. ej. hover sobre una grafica para el tooltip).
+  if (after) { await after(page); await page.waitForTimeout(500); }
+  await page.screenshot({ path: path.join(outDir, `${name}.png`) });
+  await context.close();
+  console.log("captura", name);
+}
+
+const go = (route, ready) => async (page) => {
+  await page.goto(`${base}${route}`);
+  await page.waitForSelector(ready ?? "header", { timeout: 15000 });
+};
+
+await scenario("login", { authed: false, run: go("/login", "form") });
+
+await scenario("login-invalid-credentials", {
+  authed: false,
+  overrides: { "POST /auth/login": (r) => json(r, { detail: "Invalid email or password." }, 401) },
+  run: async (page) => {
+    await go("/login", "form")(page);
+    await page.fill("#login-email", "operator@example.com");
+    await page.fill("#login-password", "wrong-password");
+    await page.click("button[type=submit]");
+    await page.waitForSelector("text=Invalid email or password");
+  }
+});
+
+await scenario("login-session-expired", {
+  overrides: { "GET /billing/summary": (r) => json(r, { detail: "expired" }, 401) },
+  run: async (page) => {
+    await page.goto(`${base}/overview-legacy`);
+    await page.waitForSelector("[role=status]:has-text('Your session has expired')", { timeout: 15000 });
+  }
+});
+
+await scenario("executive-cost", { run: go("/") });
+await scenario("executive-cost-export-menu", {
+  run: async (page) => {
+    await go("/")(page);
+    await page.click("text=Exportar Resultados");
+    await page.waitForSelector("text=Exportar");
+  }
+});
+await scenario("executive-cost-tenant-select-focus", {
+  run: async (page) => {
+    await go("/")(page);
+    await page.focus("select[aria-label='Ambito de cliente']");
+  }
+});
+await scenario("operational-cost", { run: go("/operational") });
+await scenario("executive-cuts", { run: go("/cuts") });
+await scenario("anomalies", { run: go("/anomalies") });
+await scenario("recommendations", { run: go("/recommendations") });
+await scenario("overview-legacy", { run: go("/overview-legacy") });
+await scenario("ingest", { run: go("/ingest") });
+await scenario("ingest-error", {
+  overrides: { "POST /jobs/ingest": (r) => json(r, { detail: "Ingestion unavailable" }, 500) },
+  run: async (page) => {
+    await go("/ingest")(page);
+    await page.fill("#ingest-source", "billing");
+    await page.fill("#ingest-artifact-uri", "s3://billing/report.csv");
+    await page.fill("#ingest-text-content", "Idle compute instances cost 678 USD this month.");
+    await page.click("button[type=submit]");
+    await page.waitForSelector("text=Ingestion unavailable");
+  }
+});
+await scenario("assistant", {
+  run: async (page) => {
+    await go("/assistant")(page);
+    await page.click(`text=${conversation.title}`);
+    await page.waitForSelector("text=idle compute instances");
+    await page.fill("textarea", "Que recomiendas?");
+  }
+});
+
+// --- Estados sin cobertura en el primer guion (anadidos antes del grupo 5): carga y error del
+// bootstrap de tenants (SessionGate), carga y error del resumen, exito de ingesta y error de envio.
+const never = () => new Promise(() => {});
+await scenario("session-tenants-loading", {
+  overrides: { "GET /tenants": never },
+  run: async (page) => { await page.goto(base + "/"); await page.waitForSelector("text=Cargando tenants disponibles"); }
+});
+await scenario("session-tenants-error", {
+  overrides: { "GET /tenants": (r) => json(r, { detail: "Tenants unavailable" }, 500) },
+  run: async (page) => { await page.goto(base + "/"); await page.waitForSelector("text=No se han podido cargar los tenants", { timeout: 40000 }); }
+});
+await scenario("overview-legacy-loading", {
+  overrides: { "GET /billing/summary": never },
+  run: async (page) => { await go("/overview-legacy")(page); await page.waitForSelector("text=Connecting to the FinOps control plane"); }
+});
+await scenario("overview-legacy-error", {
+  overrides: { "GET /billing/summary": (r) => json(r, { detail: "Billing unavailable" }, 500) },
+  run: async (page) => { await go("/overview-legacy")(page); await page.waitForSelector("text=Backend unavailable", { timeout: 40000 }); }
+});
+await scenario("ingest-success", {
+  overrides: { "POST /jobs/ingest": (r) => json(r, { job_id: "job-billing-document", status: "queued", queue: "ingest.jobs" }, 202) },
+  run: async (page) => {
+    await go("/ingest")(page);
+    await page.fill("#ingest-source", "billing");
+    await page.fill("#ingest-artifact-uri", "s3://billing/report.csv");
+    await page.fill("#ingest-text-content", "Idle compute instances cost 678 USD this month.");
+    await page.click("button[type=submit]");
+    await page.waitForSelector("text=Job accepted");
+  }
+});
+await scenario("assistant-send-error", {
+  overrides: { [`POST /assistant/conversations/${conversation.id}/messages`]: (r) => json(r, { detail: "Assistant unavailable" }, 500) },
+  run: async (page) => {
+    await go("/assistant")(page);
+    await page.click(`text=${conversation.title}`);
+    await page.waitForSelector("text=idle compute instances");
+    await page.fill("textarea", "Que recomiendas?");
+    await page.click("button:has-text('Send')");
+    await page.waitForSelector("text=Assistant unavailable");
+  }
+});
+
+// --- Anadidos antes del grupo 6: ramas de las pantallas conectadas que aun no se veian.
+await scenario("assistant-empty", {
+  overrides: { "GET /assistant/conversations": (r) => json(r, { items: [] }) },
+  run: async (page) => { await go("/assistant")(page); await page.waitForSelector("text=Create a conversation to start"); }
+});
+await scenario("assistant-create-error", {
+  overrides: {
+    "GET /assistant/conversations": (r) => json(r, { items: [] }),
+    "POST /assistant/conversations": (r) => json(r, { detail: "Cannot create" }, 500)
+  },
+  run: async (page) => {
+    await go("/assistant")(page);
+    await page.click("button:has-text(\"New\")");
+    await page.waitForSelector("text=Cannot create");
+  }
+});
+for (const [name, route, marker] of [
+  ["no-tenant-ingest", "/ingest", "text=Tenant required"],
+  ["no-tenant-assistant", "/assistant", "text=Tenant required"],
+  ["no-tenant-overview", "/overview-legacy", "text=Select a tenant"]
+]) {
+  await scenario(name, {
+    overrides: { "GET /tenants": (r) => json(r, { items: [] }) },
+    run: async (page) => { await go(route)(page); await page.waitForSelector(marker, { timeout: 15000 }); }
+  });
+}
+
+// --- Anadidos antes del grupo 7: tooltips de Recharts (contentStyle solo se pinta al hacer hover).
+// Se pasa el raton por el centro de cada grafica (.recharts-wrapper) y se captura con el tooltip abierto.
+const hoverChart = (i) => async (page) => { await page.locator(".recharts-wrapper").nth(i).hover(); };
+for (const [name, route, count] of [
+  ["executive-cost", "/", 3], ["operational-cost", "/operational", 2], ["executive-cuts", "/cuts", 2],
+  ["anomalies", "/anomalies", 1], ["recommendations", "/recommendations", 1]
+]) {
+  for (let i = 0; i < count; i++) {
+    await scenario(`tooltip-${name}-${i}`, { run: go(route), after: hoverChart(i) });
+  }
+}
 
 await browser.close();
 server.close();

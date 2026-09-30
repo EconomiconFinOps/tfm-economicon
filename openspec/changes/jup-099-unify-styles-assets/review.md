@@ -883,3 +883,47 @@ no existe (se ajustó con un comentario, no se ocultó).
 **Pendiente de Victor:** confirmar la fusión (`git add` de los archivos resueltos y `git commit`, que crea
 el commit de fusión), `git push`, y actualizar la descripción del PR (ADR-0011, 437 tests y la nota de la
 fusión). Decidir si `warning-text` se queda como token propio o se consolida con `warning`.
+
+## Observaciones de la revisión del PR #54 (Paris, 2026-09-30)
+
+Posteriores a la fusión con `develop`; tres observaciones, las tres atendidas.
+
+**1. (P3) Receta de reproducción de la evidencia.** `docs/evidence/JUP-099-validation.md` conservaba
+`688fe2d` como estado original en un único procedimiento, pero el guion vigente incluía escenarios
+exclusivos de JUP-026 y un mock del contrato v2 de `/billing/summary` que no funciona contra esa base.
+**Confirmado por inspección** (el revisor no ejecutó la receta): el paso 2 decía `688fe2d` y el guion
+vigente añade 4 escenarios y cambia el mock. Corrección:
+
+- La sección "Reproducir la verificación visual" se divide en **dos recetas**. **A (original, 34
+  escenarios):** `688fe2d` → `81a5e69` (último commit con código de frontend antes de la fusión; se
+  comprobó que entre `81a5e69` y `6060993` no cambia ningún archivo de `src`, `tests` ni `index.html`),
+  con el guion original. **B (posterior a la fusión, 37 escenarios):** `1e897dc` (`develop` con
+  JUP-026) → estado fusionado (`c449196`), con el guion vigente.
+- El apéndice incluye ahora también **`capture.v1.mjs`**, el guion original, leído de su archivo (idéntico
+  byte a byte al ejecutado); `capture.mjs` queda como el vigente. Se comprobó que el original es el
+  guion de 34 escenarios con el contrato antiguo.
+- La reverificación fija `git archive 1e897dc` como base de la comparación posterior a la fusión (antes
+  decía `origin/develop`, que se mueve).
+- Nota: el comprobador de enlaces marca ahora 2 falsos positivos en la evidencia (una llamada de
+  JavaScript en cada uno de los dos scripts); no se altera el texto porque el apéndice reproduce lo
+  ejecutado.
+
+**2. Coordinación documental: dos `ADR-0011`.** El PR #51 (lmatsan, JUP-096, `64fdfab`, aún sin integrar)
+añade `ADR-0011-single-owner-per-table.md`, `Accepted` y fechado el 2026-09-30, referenciado desde su
+`architecture.md`, su evidencia y su change ya archivado. No había duplicado dentro de esta rama, pero sí
+entre ramas. Se comprobaron las cabezas de los PR #49 a #56: **solo #51 y este PR usan números ≥ 0011**,
+así que `ADR-0012` está libre. Decisión: **renumerar el nuestro a `ADR-0012`** (está `Proposed` y tiene
+pocas referencias; el de #51 está `Accepted` y ya referenciado en documentos archivados, más caro de
+mover). Renombrado el archivo y su título y actualizadas todas las referencias vivas (`design.md`,
+`tasks.md`, parte del `proposal.md`, README del frontend, `ADR-0004`, spike y evidencia). **Se dejan sin
+cambiar** los bloques de aprobación firmados y las frases históricas de este `review.md` (que citan
+`ADR-0010` y `ADR-0011`: son los números que tuvo antes). La historia del número es 0010 → 0011 → 0012.
+**Pendiente de coordinar con el responsable del PR #51** que mantiene `0011`; si finalmente su ADR se
+renumerase, ya no habría ningún conflicto con este. La consecuencia de la elección es un hueco
+temporal en la numeración (`0011`) si este PR se integra antes que #51.
+
+**3. Descripción del PR desactualizada.** Citaba `ADR-0010` y 431 pruebas y decía que `develop` solo
+había avanzado un commit documental. Se prepara un cuerpo actualizado: **`ADR-0012`**, **437 pruebas**,
+CSS 43,37 kB y JS 746,77 kB, la integración de JUP-026 (conflictos, el token `warning-text` y la
+verificación visual `develop` frente al resultado) y la nota de la numeración del ADR. Lo aplica Victor en
+GitHub (aquí no hay `gh` para editar el PR); debe conservar los nombres de los roles ya asignados.
