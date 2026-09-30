@@ -243,9 +243,12 @@ test("a request for changes from someone outside the two roles also blocks", () 
 test("uses submission time, not list order, to find the latest decisive review", () => {
   const requested = review("Victorh1397", "CHANGES_REQUESTED", "Revision JUP-100\nfalta");
   const approved = review("Victorh1397", "APPROVED", "ok");
-  const later = review("Victorh1397", "CHANGES_REQUESTED", "otra vez");
-  const reviews = [later, validacion(), approved, requested];
-  assert.ok(checkReviews({ ...PR, reviews }).some((e) => e.includes("Victorh1397")));
+  assert.deepEqual(checkReviews({ ...PR, reviews: [approved, validacion(), requested] }), []);
+
+  const approvedFirst = review("ParisArcos", "APPROVED", "ok");
+  const requestedLater = review("ParisArcos", "CHANGES_REQUESTED", "falta");
+  const reviews = [requestedLater, revision(), validacion(), approvedFirst];
+  assert.ok(checkReviews({ ...PR, reviews }).some((e) => e.includes("ParisArcos")));
 });
 
 test("the same person needs an explicit exception in the description", () => {

@@ -9,7 +9,7 @@
 - [x] 2.1 JUP-100 implementar en `tools/pr-policy.mjs` la evaluación pura de reviews (metadatos del PR + reviews → errores) hasta que pasen los tests de 1.1, sin cambiar el comportamiento de "JUP policy".
 - [x] 2.2 JUP-100 añadir el modo que lee el PR y sus reviews por la API con `GITHUB_TOKEN` y falla si la lectura falla, con test de ese camino de error.
 - [x] 2.3 JUP-100 crear `.github/workflows/pr-reviews.yml` con el job `JUP reviews` y añadir el check a `.github/rulesets/develop.json` y `main.json` hasta que pasen los tests de 1.2.
-- [ ] 2.4 JUP-100 controles positivos: romper a propósito la evaluación (por ejemplo, contar reviews del autor o ignorar Request changes) y comprobar que los tests lo detectan; restaurar.
+- [x] 2.4 JUP-100 controles positivos: romper a propósito la evaluación (por ejemplo, contar reviews del autor o ignorar Request changes) y comprobar que los tests lo detectan; restaurar.
 
 ## 3. Documentación del flujo y los roles
 
