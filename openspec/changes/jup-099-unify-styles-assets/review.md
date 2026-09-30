@@ -696,3 +696,65 @@ JUP-097 (5), JUP-091 (2), JUP-095 reconciliar (1), JUP-013 (1) y JUP-043 (1). En
 comprobó que el destino corregido **existe**, así que el arreglo es mecánico. JUP-099 corrige solo 4 (los
 3 del arrastre de JUP-098 y el de `ADR-0004`). Mi hipótesis inicial ("por archivado") resultó correcta
 pero incompleta: dos tercios de los casos (B) no eran del tipo que yo había mirado al principio.
+
+## Grupo 10. Cierre
+
+Grupo doc-only y de verificación (sin código de producto ni tests nuevos): sin Red/Green ni mutación.
+
+**10.1 — Ningún archivo de `apps/backend` ni de `apps/processor` en el diff.**
+`git diff origin/develop...HEAD --name-only | grep -E '^apps/(backend|processor)/'` → **0** coincidencias,
+sobre 46 archivos (+3 038 / −511; 14 commits propios): 30 en `apps/frontend/src`, 1 en `apps/frontend/tests`,
+`index.html`, `README.md` y `ATTRIBUTIONS.md` del frontend, 7 en `openspec/changes`, 2 en `docs/adr`, y uno
+en cada uno de `openspec/findings`, `docs/spikes` y `docs/evidence`.
+
+**Estado de `develop` antes del PR.** `develop` ha avanzado un commit desde nuestra base (`688fe2d` →
+`2efef1a`, `docs(JUP-053)`: propuestas OpenSpec, sin código): no hay ningún archivo tocado en ambos
+lados y `git merge-tree --write-tree` simula la fusión **sin conflictos**. **Sin colisión de numeración
+de ADR:** `develop` llega hasta `ADR-0009`, así que `ADR-0010` está libre (no se puede excluir que otro PR
+abierto lo reclame).
+
+**10.2 — Batería completa** (cada comando en solitario, sobre `6060993`):
+
+| Comando | Resultado |
+| --- | --- |
+| `corepack pnpm install --frozen-lockfile` | `Done in 1.4s`, exit 0; el árbol queda limpio (lockfile sin cambios) |
+| `corepack pnpm openspec:validate` | 35 passed, 0 failed |
+| `corepack pnpm jup:check -- --change jup-099-unify-styles-assets` | `[OK]` enlazado con Trello y completo |
+| `corepack pnpm jup:cleanup:check` | `[OK]` 683 archivos (684 tras añadir la evidencia) sin agentes personales, binarios ni tareas paralelas |
+| `corepack pnpm jup:check:test`, `jup:cleanup:test` | exit 0 ambos |
+| `… --filter @finops/frontend lint` | exit 0 |
+| `… --filter @finops/frontend typecheck` (3 configs) | exit 0 |
+| `… --filter @finops/frontend test` | **47 archivos / 431 tests pasan**, 0 timeouts (50,8 s) |
+| `… --filter @finops/frontend build` | correcto, 2 479 módulos; CSS 41,83 kB (gzip 7,99), JS 768,89 kB (gzip 217,26) |
+
+`corepack pnpm lint/test/typecheck` desde la **raíz** siguen sin funcionar en esta máquina por
+`RF-093-001` (turbo resuelve un pnpm global); se usa el sustituto `--filter`, igual que en las tarjetas
+anteriores. No se ha vuelto a reproducir aquí; consta como limitación conocida.
+
+**10.3 — `docs/evidence/JUP-099-validation.md` creado** (738 líneas): cabecera con Trello, rama, base y
+estado verificado; fuentes verificadas; trazabilidad con los 4 requisitos nuevos; **los 8 criterios uno a
+uno** con el comando y su resultado (los criterios 1 y 3 ejecutados de nuevo el mismo día: el 1 devuelve
+solo las 3 líneas del documento de impresión de `ExportButton` y el `bg-black/50` de `dialog`, ambos
+excepciones declaradas; el 3 devuelve 0); decisiones; ciclo Red/Green con los conteos de cada grupo
+(41/374 → 44/387 → 28/403 → 24/407 → 0/431); suite, type-check, lint, build e instalación; exención de
+mutación justificada; verificación visual completa (método, 34 escenarios, criterio de ruido frente a
+diferencia sistemática, tabla de píxeles por escenario, las cuatro causas aceptadas y la demostración de
+propagación); tokens; arrastre de JUP-098; hallazgos `RF-098-004` y `RF-099-001…004`; incidencias del
+proceso; cómo reproducir; pendientes con los enlaces que hay que corregir al archivar; y el **apéndice con
+los 5 scripts**. Comprobado que los 5 scripts del apéndice son **idénticos byte a byte** a los ejecutados
+(se leen de sus archivos al ensamblar, no se reescriben).
+
+Limitaciones honestas de la evidencia: la comparación visual usa datos simulados de `tests/fixtures.ts`
+y datos de demostración estáticos, no el backend real (E2E = JUP-102); un cambio de 1 nivel sobre un color
+plano de área pequeña quedaría clasificado como ruido (mitigado porque los valores de los tokens son el
+texto exacto que sustituyen y un token equivocado cambia áreas enteras); y el `RF-098-004` observado durante
+el grupo 5 no se pudo diagnosticar.
+
+**Falso positivo de mi comprobador de enlaces:** marca `route` en la línea 359 de la evidencia; es texto
+de código dentro del bloque de `capture.mjs` (la llamada al manejador que se busca en el objeto de
+sustituciones por escenario, donde un corchete de cierre va seguido de un paréntesis), no un enlace. Un
+comprobador que no ignore los bloques de código lo marcará; no se altera el script porque el apéndice
+reproduce exactamente lo ejecutado.
+
+**Checkpoint:** todas las tareas de `tasks.md` marcadas (36/36). Siguiente: gate post-review, archivado
+(corrigiendo los enlaces que bajan un nivel en el mismo paso), `jup:cleanup:check`, `pr:check` y PR.

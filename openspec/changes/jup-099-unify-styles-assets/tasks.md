@@ -128,11 +128,11 @@
 
 ## 10. Cierre
 
-- [ ] 10.1 Verificar que `git diff develop...HEAD --stat` no contiene ningún archivo de
+- [x] 10.1 Verificar que `git diff develop...HEAD --stat` no contiene ningún archivo de
       `apps/backend/` ni de `apps/processor/`.
-- [ ] 10.2 Ejecutar la batería: `openspec:validate`, `jup:check -- --change
+- [x] 10.2 Ejecutar la batería: `openspec:validate`, `jup:check -- --change
       jup-099-unify-styles-assets`, `jup:cleanup:check`, lint, typecheck, test, build e
       `install --frozen-lockfile`, registrando resultados en `review.md`.
-- [ ] 10.3 Crear `docs/evidence/JUP-099-validation.md` con el guion de captura completo, la tabla de
+- [x] 10.3 Crear `docs/evidence/JUP-099-validation.md` con el guion de captura completo, la tabla de
       píxeles por pantalla, la demostración de propagación, conteos Red/Green, la excepción de
       mutación y la verificación de los 8 criterios de la tarjeta uno a uno.
