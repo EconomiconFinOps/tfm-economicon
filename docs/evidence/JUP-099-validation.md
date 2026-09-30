@@ -289,7 +289,11 @@ Las capturas no se versionan.
 
 ## Pendiente
 
-- Gate post-review (aprobación humana), archivado del change y PR a `develop`.
+- Gate post-review: **registrado** (2026-09-29) en el `review.md` del change, con `Archive decision:
+  archive`.
+- **Orden acordado con Victor para esta tarjeta:** el PR a `develop` se abre y se revisa con el change de
+  OpenSpec **todavía activo**; el archivado (con la promoción del delta de `frontend-navigation-shell`),
+  su push y el merge se hacen después de que el PR esté revisado y validado, cuando Victor lo indique.
 - **Al archivar, corregir en el mismo paso los enlaces que bajan un nivel:** el enlace al change en esta
   evidencia (cabecera) y en `docs/spikes/frontend-migration.md` deben apuntar a
   `openspec/changes/archive/<fecha>-jup-099-unify-styles-assets/`, y los enlaces relativos del propio
