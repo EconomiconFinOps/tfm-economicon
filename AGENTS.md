@@ -41,7 +41,7 @@ The full rules and the definition of the four roles are in `CONTRIBUTING.md#revi
 - Publish review and validation as two separate reviews titled `Revision JUP-XXX` and `Validacion JUP-XXX`. Towards `develop`, the first one published is a Comment and only the second one approves, when both are satisfied; towards `main`, both approve.
 - A validation records evidence for each acceptance criterion of the Trello card and lists what was not validated and why. Never report as validated something that was not tested.
 - A Comment does not lift a Request changes: once the changes are addressed, whoever requested them approves (or the request is dismissed with a reason).
-- Reviewers and validators never push commits to the pull request branch; out-of-scope findings are requested from the leader.
+- Reviewers and validators never push commits to the pull request branch ("Commit suggestion" counts as a push; "Update branch" does not); out-of-scope findings are requested from the leader.
 - Before addressing changes or merging, read every review, the conversation comments and the inline comments on the diff, not only the latest review.
-- Merge only when both reviews exist and nothing is pending; if "Update branch" brings changes to the same files or areas, request a revalidation first.
+- Merge only when both reviews exist and nothing is pending; if "Update branch" brings changes to files or behaviour the pull request depends on (not just rows added to shared registries), request a revalidation first.
 - Anyone using local tools, prompts or scripts to review, validate or merge pull requests aligns them with `CONTRIBUTING.md` whenever the process version changes.

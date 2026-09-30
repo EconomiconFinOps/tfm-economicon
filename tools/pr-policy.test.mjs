@@ -479,3 +479,22 @@ test("fails instead of passing when the API cannot be read", async () => {
     /network down/,
   );
 });
+
+test("the --reviews command shows its errors as annotations in GitHub Actions", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "jup-reviews-"));
+  const eventPath = path.join(dir, "event.json");
+  fs.writeFileSync(eventPath, JSON.stringify({ pull_request: { number: 100 } }));
+  const run = (actions) => {
+    const env = { ...process.env, GITHUB_REPOSITORY: REPO };
+    delete env.GITHUB_TOKEN;
+    if (actions) env.GITHUB_ACTIONS = "true";
+    else delete env.GITHUB_ACTIONS;
+    return spawnSync(process.execPath, [fileURLToPath(new URL("./pr-policy.mjs", import.meta.url)), "--reviews", "--event", eventPath], { encoding: "utf8", env });
+  };
+  const inActions = run(true);
+  const local = run(false);
+  fs.rmSync(dir, { recursive: true, force: true });
+  assert.equal(inActions.status, 1);
+  assert.match(inActions.stdout, /^::error title=JUP reviews::Falta GITHUB_TOKEN.*CONTRIBUTING\.md#review-and-validation-flow$/m);
+  assert.doesNotMatch(local.stdout, /::error/);
+});

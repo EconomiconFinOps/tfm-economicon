@@ -208,10 +208,19 @@ function parseArgs(argv) {
   return index >= 0 ? argv[index + 1] : undefined;
 }
 
+function reportReviewError(message) {
+  console.error(`[ERROR] ${message}`);
+  // Annotations show the reason in the checks panel without opening the job log.
+  if (process.env.GITHUB_ACTIONS === "true") {
+    const data = message.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A");
+    console.log(`::error title=JUP reviews::${data}`);
+  }
+}
+
 async function mainReviews(eventPath) {
   const token = process.env.GITHUB_TOKEN;
   if (!token) {
-    console.error(`[ERROR] Falta GITHUB_TOKEN para leer las reviews del pull request. Ver ${REVIEW_FLOW_LINK}`);
+    reportReviewError(`Falta GITHUB_TOKEN para leer las reviews del pull request. Ver ${REVIEW_FLOW_LINK}`);
     process.exitCode = 1;
     return;
   }
@@ -227,13 +236,13 @@ async function mainReviews(eventPath) {
       apiUrl: process.env.GITHUB_API_URL ?? "https://api.github.com",
     });
   } catch (error) {
-    console.error(`[ERROR] No se pudieron leer las reviews del pull request #${number}: ${error.message}. Ver ${REVIEW_FLOW_LINK}`);
+    reportReviewError(`No se pudieron leer las reviews del pull request #${number}: ${error.message}. Ver ${REVIEW_FLOW_LINK}`);
     process.exitCode = 1;
     return;
   }
   const errors = checkReviews(input);
   if (errors.length) {
-    for (const error of errors) console.error(`[ERROR] ${error}`);
+    for (const error of errors) reportReviewError(error);
     process.exitCode = 1;
     return;
   }

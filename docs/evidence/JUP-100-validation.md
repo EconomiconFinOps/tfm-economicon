@@ -25,7 +25,7 @@
 
 | Comando | Resultado |
 |---|---|
-| `corepack pnpm pr:check:test` | 56 passed (39 antes de las correcciones de la revision adversarial) |
+| `corepack pnpm pr:check:test` | 57 passed (39 antes de las correcciones de la revision adversarial; 56 antes de la Revision JUP-100) |
 | `corepack pnpm ci:check:test` | 10 passed |
 | `corepack pnpm repository:governance:test` | 12 passed |
 | Resto del job "OpenSpec" de la CI (`jup:check:test`, `roadmap:test`, `jup:check:all`, `jup:cleanup:test`, `jup:cleanup:check`, `openspec:validate`, `docker:validate`, `collaboration:test`, `assistant-corpus:test`, `assistant-corpus:validate`, `validation-questions:test`, `validation-questions:validate`, `llm-gateway:test`) | todos correctos; `openspec:validate` 35/35 |
@@ -62,9 +62,11 @@ Evaluacion de `checkReviews` sobre los datos que devuelve la API, sin escribir n
 
 ## Limites
 
-- El workflow no se ha ejecutado en GitHub: solo existe en la rama; su primera ejecucion real sera en el propio PR de JUP-100.
+- Observado en el propio PR #56: la ejecucion lanzada por la review `Revision JUP-100` (evento `pull_request_review`) quedo asociada al head del PR (`7f30e74`), igual que la del evento `pull_request`, y fallo por lo esperado (falta `Validacion JUP-100`; cambios pedidos por `Victorh1397`). Falta observar que pase a verde cuando se publique la validacion y se levante la peticion de cambios.
+- Desde la Revision JUP-100 cada error se muestra tambien como anotacion en el panel de checks, sin abrir el log (test en rojo antes del cambio).
 - La activacion como check obligatorio requiere que un administrador actualice los rulesets (`docs/governance/github-branch-protection.md`); hasta entonces el check informa pero no bloquea.
-- Al activarlo, los PR abiertos sin las dos reviews tituladas no podran mergearse; el #52 necesitara ademas la linea de excepcion.
+- Al activarlo, los PR abiertos sin las dos reviews tituladas no podran mergearse, y mostraran el check como "Expected" hasta su siguiente evento (push, edicion o review).
+- El check no exige que la aprobacion venga de quien publico una review titulada: dos reviews tituladas como Comment mas un Approve sin titulo de otra persona lo pasan (RF-100-002).
 
 ## Nota de release
 

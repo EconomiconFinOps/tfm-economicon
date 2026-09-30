@@ -83,11 +83,15 @@ The validation SHALL check each acceptance criterion of the Trello card against 
 - **THEN** the validation lists it as not validated with the reason, instead of marking it as met
 
 ### Requirement: Reviewers do not push to the branch
-Neither the review nor the validation SHALL push commits to the PR branch, because a push dismisses existing approvals. Findings outside the PR scope SHALL be requested from the leader in the review text.
+Neither the review nor the validation SHALL push commits to the PR branch, because a push dismisses existing approvals. "Commit suggestion" counts as a push; "Update branch" does not, because it keeps approvals, and anyone MAY use it. Findings outside the PR scope SHALL be requested from the leader in the review text.
 
 #### Scenario: Out-of-scope finding during review
 - **WHEN** the reviewer finds a pre-existing defect outside the PR scope
 - **THEN** the review asks the leader to register it, and the reviewer does not commit it
+
+#### Scenario: Reviewer updates the branch
+- **WHEN** a reviewer uses "Update branch" on an out-of-date PR
+- **THEN** it is not a push by the reviewer, and the revalidation rule of the merge requirement applies
 
 ### Requirement: Every source of feedback is read
 Whoever addresses requested changes or decides to merge SHALL read all reviews, the PR conversation comments and the inline comments on the diff, not only the latest review.
@@ -97,7 +101,7 @@ Whoever addresses requested changes or decides to merge SHALL read all reviews, 
 - **THEN** it is treated as pending until resolved
 
 ### Requirement: Merge only when reviewed and validated
-Any team member MAY merge a pull request, but only when it has both titled reviews and nothing pending. When "Update branch" brings changes from the base branch that touch the same files or areas as the PR, a revalidation of what is affected SHALL be requested before merging.
+Any team member MAY merge a pull request, but only when it has both titled reviews and nothing pending. When "Update branch" brings changes from the base branch to files or behaviour the PR depends on, a revalidation of what is affected SHALL be requested before merging. Rows added to shared append-only registries, such as `openspec/findings/backlog.md`, do not require it.
 
 #### Scenario: Merge with only one review
 - **WHEN** a PR has the review but not the validation
@@ -107,12 +111,16 @@ Any team member MAY merge a pull request, but only when it has both titled revie
 - **WHEN** "Update branch" brings changes to files the PR also modifies
 - **THEN** a revalidation of the affected criteria is requested before merging
 
+#### Scenario: Base changes only add registry rows
+- **WHEN** "Update branch" only brings new rows in `openspec/findings/backlog.md`
+- **THEN** no revalidation is needed
+
 ### Requirement: The flow is enforced by a required check
 A required CI check named `JUP reviews` SHALL run on pull requests towards `develop` and `main` whenever the PR is opened, updated or edited and whenever a review is submitted, edited or dismissed. It SHALL read the current reviews from GitHub rather than from the triggering event. It SHALL pass only when:
 - a review titled `Revision JUP-XXX` and a review titled `Validacion JUP-XXX` exist for the PR's identifier, neither from the PR author (reviews on earlier commits and dismissed reviews still count as published);
 - no reviewer's latest decisive review (Approve, Request changes or a dismissal of their review) is a Request changes; a dismissed review leaves that reviewer without a current decision, so an older request does not come back;
 - if the same person published both, the PR description declares the exception.
-When it fails, its message SHALL say what is missing and link to the flow in `CONTRIBUTING.md`. If the reviews cannot be read, the check SHALL fail rather than pass.
+When it fails, its message SHALL say what is missing and link to the flow in `CONTRIBUTING.md`, and in GitHub Actions it SHALL also show each error as an annotation in the checks panel. If the reviews cannot be read, the check SHALL fail rather than pass.
 
 #### Scenario: Validation missing
 - **WHEN** a PR has only the titled review

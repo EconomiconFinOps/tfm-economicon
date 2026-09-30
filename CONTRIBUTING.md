@@ -88,9 +88,9 @@ If someone other than the assigned person takes over a role (for example, whoeve
    - Excepcion: revision y validacion por la misma persona, acordado en Trello
    ```
 
-5. Neither the reviewer nor the validator pushes commits to the branch: a push dismisses the existing approvals. Findings outside the scope of the pull request are requested from the leader in the review text.
+5. Neither the reviewer nor the validator pushes commits to the branch: a push dismisses the existing approvals. "Commit suggestion" counts as a push. "Update branch" does not: anyone may use it, it keeps the approvals, and point 7 applies. Findings outside the scope of the pull request are requested from the leader in the review text.
 6. Whoever addresses requested changes or decides to merge reads every source of feedback: all the reviews, the conversation comments and the inline comments on the diff, not only the latest review.
-7. Anyone may merge once the pull request has both titled reviews and nothing pending. If "Update branch" brings changes that touch the same files or areas as the pull request, a revalidation of what is affected is requested before merging.
+7. Anyone may merge once the pull request has both titled reviews and nothing pending. If "Update branch" brings changes to files or behaviour the pull request depends on, a revalidation of what is affected is requested before merging. Rows added to shared registries such as `openspec/findings/backlog.md` do not count.
 8. The required check `JUP reviews` blocks the merge until both titled reviews exist, neither from the author, without pending requests for changes, and with the exception line when the same person published both. It supports the process; it is not a security control, and it does not judge the content of the reviews. It runs the code of the pull request itself, so reviewers pay special attention to changes in `tools/pr-policy.mjs` and `.github/workflows/`, which can alter the checks.
 
 A validation lists what was not validated instead of marking it as met. The Validacion section of the pull request template is the leader's own evidence; it does not replace the validation review.

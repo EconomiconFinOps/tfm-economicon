@@ -85,6 +85,8 @@ test("documents the review and validation flow the JUP reviews check links to", 
     assert.ok(flow.includes(text), text);
   }
   assert.match(flow, /inline/i);
+  assert.match(flow, /"Commit suggestion" counts as a push/);
+  assert.match(flow, /files or behaviour the pull request depends on/);
   assert.match(flow, /not validated/i);
   assert.match(flow, /a Comment does not lift/i);
   assert.match(flow, /whoever requested (the )?changes approves/i);
