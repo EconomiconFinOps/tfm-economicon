@@ -83,4 +83,4 @@ Arranque en frio repetido el 29/09 sobre la rama integrada (`86b604a`), proyecto
 
 | Fecha | JUP | Nota de release | Review | ADRs |
 | --- | --- | --- | --- | --- |
-| 2026-09-28 | JUP-096 | `jobs` pasa a ser solo del backend y el processor arranca tras el backend sano: migrar a la vez una base vacia ya no tumba ningun servicio. | [review.md](../../openspec/changes/archive/2026-09-28-jup-096-coordinate-migrations/review.md) | No aplica |
+| 2026-09-28 | JUP-096 | `jobs` pasa a ser solo del backend y el processor arranca tras el backend sano: migrar a la vez una base vacia ya no tumba ningun servicio. | [review.md](../../openspec/changes/archive/2026-09-28-jup-096-coordinate-migrations/review.md) | [ADR-0011](../adr/ADR-0011-single-owner-per-table.md) |

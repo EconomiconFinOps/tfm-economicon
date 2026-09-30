@@ -118,4 +118,3 @@ unique Compose project on `dockerserver` without modifying unrelated workloads.
   and Grafana `/api/health` check
 - **THEN** the project is removed by its exact name and the evidence records the
   branch, commit, commands and observed results
-

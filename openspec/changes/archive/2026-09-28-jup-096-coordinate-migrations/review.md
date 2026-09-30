@@ -143,6 +143,8 @@ Veredicto final: **accept** (pasada 10). Sin findings BLOCKING, HIGH ni MEDIUM a
 
 No aplica ADR nuevo: la regla duradera queda como requisito verificable en la capacidad `schema-migration-ownership` (design, decision 5).
 
+Actualizacion 2026-09-30: a peticion de la revision del PR #51, la decision se registra en [ADR-0011](../../../../docs/adr/ADR-0011-single-owner-per-table.md) (ADR-0010 lo reserva el PR #52).
+
 ## Integracion con develop tras la aprobacion (2026-09-28)
 
 Al integrar `develop` con el PR #47 (JUP-086), que quita los conteos de `jobs` de `/health` del processor, se adopta su version del endpoint y se eliminan la tolerancia a la ausencia de `jobs` y `has_jobs_table`. La spec `schema-migration-ownership` se ajusta: `/health` no depende de tablas del backend. El resto del cambio (propiedad de `jobs`, orden de arranque, guarda estatica) no varia. Detalle en la [evidencia](../../../../docs/evidence/JUP-096-validation.md#integracion-con-jup-086-pr-47).

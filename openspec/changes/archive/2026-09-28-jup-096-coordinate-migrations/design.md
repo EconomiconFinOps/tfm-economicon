@@ -56,6 +56,9 @@ La revision adversarial (pasadas 1 a 3) mostro que, sin `jobs`, `/health` respon
 
 ### 5. Sin ADR nuevo
 
+Actualizacion 2026-09-30: la revision del PR #51 (Paris) señalo que la propiedad unica de tablas es una decision duradera y transversal, para la que la capacidad `architecture-decisions` exige ADR. Se registra en [ADR-0011](../../../../docs/adr/ADR-0011-single-owner-per-table.md); el razonamiento original se conserva abajo.
+
+
 La regla duradera (un unico dueño por tabla) queda como requisito en la capacidad `schema-migration-ownership`, verificable con escenarios. El orden de arranque es un ajuste del requisito existente de `containerized-runtime`. Ademas, PR #47 ocupa ADR-0008 y ADR-0009, y un ADR aqui competiria por la numeracion sin aportar mas que la spec.
 
 ## Risks / Trade-offs
