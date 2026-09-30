@@ -11,6 +11,7 @@ export const TENANT_KEY = "finops.activeTenant";
 type RecordedRequest = {
   method: string;
   path: string;
+  search: URLSearchParams;
   headers: Headers;
   body: unknown;
 };
@@ -60,6 +61,7 @@ export function mockBackend(overrides: Routes = {}) {
     const request = {
       method: init?.method ?? "GET",
       path: new URL(url).pathname,
+      search: new URL(url).searchParams,
       headers: new Headers(init?.headers),
       body: typeof init?.body === "string" ? JSON.parse(init.body) as unknown : undefined
     };

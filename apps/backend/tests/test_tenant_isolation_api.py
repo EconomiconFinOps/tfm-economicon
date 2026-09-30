@@ -1,6 +1,7 @@
 """Real bearer/session/membership and repositories; doubles only at external sinks."""
 import json
 from types import SimpleNamespace
+from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
 import pytest
@@ -12,6 +13,7 @@ from app.services.rabbitmq_queue import PublishResult
 from conftest import SYNTHETIC_ENV
 from tenant_isolation_support import populated_database, rows, tenant_database, tenant_cockroach_database
 from test_secret_boundaries import main_module, request, resource_mocks, restore_logging
+from billing_support import billing_schema, summary
 
 
 @pytest.fixture
@@ -167,12 +169,23 @@ def test_conversation_list_is_private_even_for_multitenant_user(api, user, tenan
     ],
     indirect=['tenant_database'],
 )
-def test_billing_counts_only_selected_tenant_and_preserves_placeholder_contract(api):
+def test_billing_counts_only_selected_tenant_and_returns_current_utc_month(billing_schema, api):
     for tenant, creator in (("tenant-a", "alice"), ("tenant-b", "bob"), ("tenant-b", "bob")):
         api.db.create_job({"tenant_id": tenant, "source": "test", "text_content": "test"}, creator)
+    with api.db.engine.begin() as connection:
+        from sqlalchemy import text
+        connection.execute(text("UPDATE jobs SET status = 'completed', created_at = '2020-01-01' WHERE tenant_id = 'tenant-a'"))
+    now = datetime.now(timezone.utc)
+    start = now.date().replace(day=1)
+    end = start.replace(year=start.year + 1, month=1) if start.month == 12 else start.replace(month=start.month + 1)
     response = call(api, "GET", "/billing/summary", headers=headers())
     assert response.status_code == 200
     assert response.json()["open_ingestions"] == 1
+    assert response.json() == summary(
+        period={"start_date": start.isoformat(), "end_date": end.isoformat(), "timezone": "UTC"},
+        group_by="subscription", data_status="empty", totals=[], missing_dimension_count=0,
+        excluded_undated_count=0, open_ingestions=1,
+    )
 
 
 

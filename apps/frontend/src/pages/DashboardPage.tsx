@@ -1,13 +1,5 @@
-// DashboardPage: en la nueva arquitectura de rutas (JUP-095, grupo 6,
-// sub-ronda d -- ver Addendum de design.md) deja de recibir
-// `token`/`user`/`tenants`/`activeTenant` como props desde `App.jsx` y pasa
-// a leerlos via `useOutletContext<SessionOutletContext>()`, mismo patron que
-// `IngestPage`/`ConversationsPage`. Vive en la ruta puente
-// `/overview-legacy` (decision 6 de design.md): la logica de datos
-// (`useDashboardData`, las tres ramas sin-tenant/loading/error, el render
-// final sobre billing/health/tenants) se preserva verbatim del origen
-// (`DashboardPage.jsx`); solo cambian el origen del contexto de sesion y la
-// presentacion (Tailwind + MetricCard/SectionCard/StatusPill reconstruidos).
+// /overview-legacy retains its combined billing/health hook and session context.
+// Billing v2 amounts remain exact strings, including multiple currencies.
 import { useOutletContext } from "react-router";
 import { MetricCard } from "../components/MetricCard";
 import { SectionCard } from "../components/SectionCard";
@@ -50,12 +42,15 @@ export function DashboardPage() {
   }
 
   if (error) {
+    const overlap = error.includes("ambiguous_cost_source");
     return (
       <SectionCard
-        title="Backend unavailable"
+        title={overlap ? "Possible overlapping ingestion sources" : "Backend unavailable"}
         subtitle="The dashboard could not retrieve its initial context."
       >
-        <p className="text-sm text-slate-400">{error}</p>
+        <p role="alert" className="text-sm text-slate-400">{overlap
+          ? "Costs are unavailable because ingestion sources may overlap for this period."
+          : error}</p>
       </SectionCard>
     );
   }
@@ -83,17 +78,24 @@ export function DashboardPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <section className="space-y-2 text-sm text-slate-400" aria-label="Billing period">
+        <p>{billing.period.start_date} to {billing.period.end_date} (exclusive), UTC</p>
+        {billing.data_status === "empty" && <p>No cost data for this period.</p>}
+        {billing.data_status === "partial" && <p role="status">Partial data: {billing.missing_dimension_count} missing dimensions; {billing.excluded_undated_count} undated records excluded.</p>}
+      </section>
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3 [&_article]:min-w-0 [&_article]:[overflow-wrap:anywhere]">
         <MetricCard
           label="Monthly Spend"
-          value={`$${billing.monthly_spend.toLocaleString()}`}
+          value={billing.totals.length
+            ? billing.totals.map((total) => `${total.cost} ${total.currency}`).join("; ")
+            : "No cost data"}
           detail="Current summary for the active tenant"
           tone="warm"
         />
         <MetricCard
           label="Savings Identified"
-          value={`$${billing.savings_identified.toLocaleString()}`}
-          detail="Opportunities surfaced by the assistant flow"
+          value="Unavailable"
+          detail="Savings have not been calculated"
           tone="success"
         />
         <MetricCard

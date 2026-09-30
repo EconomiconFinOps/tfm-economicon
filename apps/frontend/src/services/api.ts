@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type {
   AssistantReply,
+  BillingSelection,
   BillingSummary,
   ConversationCollection,
   ConversationCreateRequest,
@@ -15,7 +16,7 @@ import type {
   TenantCollection,
   UserProfile
 } from "./contracts";
-import { isLoginResponse, isUserProfile } from "./contracts";
+import { isBillingSummary, isLoginResponse, isUserProfile } from "./contracts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
@@ -141,8 +142,15 @@ export function fetchTenants(token: string) {
   return fetchJson<TenantCollection>("/tenants", { token });
 }
 
-export function fetchBillingSummary(token: string, tenantId: string) {
-  return fetchJson<BillingSummary>("/billing/summary", { token, tenantId });
+export function fetchBillingSummary(token: string, tenantId: string, selection: BillingSelection = {}, signal?: AbortSignal) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(selection)) {
+    if (value !== undefined) params.set(key, value);
+  }
+  const query = params.toString();
+  return fetchJson<BillingSummary>(`/billing/summary${query ? `?${query}` : ""}`, {
+    token, tenantId, signal, validate: isBillingSummary
+  });
 }
 
 export function login(payload: LoginRequest) {
