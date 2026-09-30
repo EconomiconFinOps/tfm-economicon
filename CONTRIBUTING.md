@@ -24,7 +24,8 @@ Use the repository template and provide:
 - a direct link to the Trello card;
 - a concise scope and validation evidence;
 - four distinct people for leadership, pairing/co-authorship, PR review, and
-  validation/tests/documentation.
+  validation/tests/documentation (or three, when the same person reviews and
+  validates under the declared exception of the review and validation flow).
 
 Run the applicable local checks before requesting review:
 
@@ -44,7 +45,7 @@ from Trello.
 
 Process version: 2026-09-30 (JUP-100)
 
-Every Trello card assigns four different people to four roles. The same names go in the Participacion section of the pull request.
+Every Trello card assigns four different people to four roles. The same names go in the Participacion section of the pull request, and they must reflect who actually does each role. The only accepted overlap is the same person in PR review and validation under the declared exception (see the flow below); the `JUP policy` check then requires three different people instead of four.
 
 If someone other than the assigned person takes over a role (for example, whoever opens the pull request assumes leadership), they reassign it explicitly: update the Participacion section of the pull request and the Trello card. A reviewer who notices an outdated Participacion section asks for it to be updated.
 

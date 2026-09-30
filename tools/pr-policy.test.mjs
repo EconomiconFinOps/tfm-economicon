@@ -111,6 +111,53 @@ test("requires four different people across the rotating roles", () => {
   assert.ok(errors.some((error) => error.includes("cuatro personas distintas")));
 });
 
+const SAME_REVIEWER = BODY.replace("- Validacion, pruebas y documentacion: Lucia", "- Validacion, pruebas y documentacion: Alejandro");
+const DECLARED = `${SAME_REVIEWER}\n- Excepcion: revision y validacion por la misma persona, acordado en Trello\n`;
+const policy = (body) =>
+  checkPullRequest({ title: "chore(JUP-079): protect repository branches", body, head: "chore/JUP-079-branch-protection", base: "develop" });
+
+test("accepts the same person in review and validation when the exception is declared", () => {
+  assert.deepEqual(policy(DECLARED), []);
+});
+
+test("still requires four people when the exception is not declared", () => {
+  assert.ok(policy(SAME_REVIEWER).some((error) => error.includes("cuatro personas distintas")));
+});
+
+test("does not accept a hidden exception line", () => {
+  assert.ok(policy(`${SAME_REVIEWER}\n<!-- - Excepcion: revision y validacion por la misma persona, acordado en Trello -->\n`)
+    .some((error) => error.includes("cuatro personas distintas")));
+});
+
+test("the exception never lets the leader or the pairing review or validate", () => {
+  const leaderReviews = DECLARED.replace("- Revision de PR: Alejandro", "- Revision de PR: Paris").replace(
+    "- Validacion, pruebas y documentacion: Alejandro",
+    "- Validacion, pruebas y documentacion: Paris",
+  );
+  assert.ok(policy(leaderReviews).some((error) => error.includes("distintas")));
+  const pairingReviews = DECLARED.replace("- Revision de PR: Alejandro", "- Revision de PR: Victor").replace(
+    "- Validacion, pruebas y documentacion: Alejandro",
+    "- Validacion, pruebas y documentacion: Victor",
+  );
+  assert.ok(policy(pairingReviews).some((error) => error.includes("distintas")));
+});
+
+test("the exception does not relax leadership and pairing", () => {
+  const samePairing = DECLARED.replace("- Pairing/coautoria: Victor", "- Pairing/coautoria: Paris");
+  assert.ok(policy(samePairing).some((error) => error.includes("distintas")));
+});
+
+test("an honest same-person pull request passes both checks", () => {
+  const body = DECLARED.replace("- ID: JUP-079", "- ID: JUP-100");
+  const title = "docs(JUP-100): flujo";
+  const reviews = [
+    { user: "Iber1to", state: "COMMENTED", body: "Revision JUP-100", submitted_at: "2026-09-30T10:00:00Z" },
+    { user: "Iber1to", state: "APPROVED", body: "Validacion JUP-100", submitted_at: "2026-09-30T11:00:00Z" },
+  ];
+  assert.deepEqual(checkPullRequest({ title, body, head: "docs/JUP-100-flujo", base: "develop" }), []);
+  assert.deepEqual(checkReviews({ title, body, author: "lmatsan", reviews }), []);
+});
+
 test("parses GitHub pull request events", () => {
   assert.deepEqual(
     parseEvent({ pull_request: { title: "JUP-079", body: BODY, head: { ref: "branch" }, base: { ref: "develop" } } }),

@@ -44,6 +44,9 @@ The job fetches the PR and its reviews with `GITHUB_TOKEN` (`pull-requests: read
 4. `CONTRIBUTING.md` (English) holds the full text; the spec keeps the verifiable scenarios.
 5. A `Process version: YYYY-MM (JUP-100)` line identical in `AGENTS.md` and `CONTRIBUTING.md`, asserted by `tools/repository-governance.test.mjs`.
 
+### D5b. `JUP policy` accepts the declared exception
+The same person in PR review and validation is allowed only with the exception line, and must then be reflected honestly in the Participacion section. `checkPullRequest` therefore accepts three different people instead of four when review and validation share a name and the exception line is present (same parser as `JUP reviews`: full line, outside HTML comments and code blocks); leadership and pairing must still be different from each other and from that person. Alternative rejected: keeping the official Trello names in Participacion and declaring the exception only in a separate line, which would make the pull request record contradict who did the work. Lucia chose this option on 2026-09-30.
+
 ### D6. No ADR
 This is a team process decision, versioned in `CONTRIBUTING.md`, `docs/governance/` and this spec, following the precedent of `jup-079-branch-protection`, which documented branch protection in `docs/governance/` without an ADR.
 

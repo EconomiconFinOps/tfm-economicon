@@ -38,6 +38,8 @@ Además, cada persona trabaja con herramientas locales (asistentes, prompts, scr
 
 ## Impact
 
+- Regla modificada: el check existente "JUP policy" (`jup-079-branch-protection`, capability `repository-governance`, todavía en un change activo) exigía siempre cuatro personas distintas; con la excepción declarada acepta la misma persona en revisión y validación, manteniendo liderazgo y pairing como personas distintas. Sin esto, la Participación no podría reflejar con honestidad la excepción acordada (revisión adversarial, pasada 2, ADV-1).
+
 - Documentación: `CONTRIBUTING.md`, `AGENTS.md`, `.github/pull_request_template.md`, `docs/governance/repository-and-branch-strategy.md`, `docs/governance/github-branch-protection.md`. `README.md` no cambia: su sección "Colaboracion" ya remite a CONTRIBUTING.
 - CI y gobernanza: `.github/workflows/pr-reviews.yml` (nuevo), `tools/pr-policy.mjs`, `tools/pr-policy.test.mjs`, `tools/ci-workflow.test.mjs`, `tools/repository-governance.test.mjs`, `.github/rulesets/develop.json`, `.github/rulesets/main.json`.
 - Activar el nuevo check en GitHub requiere que un administrador aplique los rulesets, según `docs/governance/github-branch-protection.md`.

@@ -56,6 +56,14 @@ Review and validation SHALL be done by the people assigned in Trello, who are di
 - **WHEN** the same person publishes both reviews and the PR description declares the exception
 - **THEN** the flow is satisfied
 
+#### Scenario: Participation reflects the same person in both roles
+- **WHEN** the PR description names the same person for PR review and validation, declares the exception, and names two other different people for leadership and pairing
+- **THEN** the role traceability check (`JUP policy`) accepts it, and without the declaration it still requires four different people
+
+#### Scenario: The exception never covers leadership or pairing
+- **WHEN** the person who reviews and validates is also the leader or the pairing, even with the exception declared
+- **THEN** the role traceability check rejects the pull request
+
 #### Scenario: Review by the author
 - **WHEN** the PR author publishes a review titled `Revision JUP-XXX`
 - **THEN** it does not count as the review

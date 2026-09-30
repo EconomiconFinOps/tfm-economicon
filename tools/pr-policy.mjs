@@ -54,20 +54,28 @@ export function checkPullRequest({ title = "", body = "", head = "", base = "" }
     }
   }
 
-  const participants = [];
+  const participants = new Map();
   for (const label of ROLE_LABELS) {
     const value = readRole(body, label);
     if (!value || PLACEHOLDER_PATTERN.test(value)) {
       errors.push(`Falta una persona concreta para el rol ${label}.`);
     } else {
-      participants.push(value.toLocaleLowerCase("es").normalize("NFKC"));
+      participants.set(label, value.toLocaleLowerCase("es").normalize("NFKC"));
     }
   }
-  if (
-    participants.length === ROLE_LABELS.length &&
-    new Set(participants).size !== ROLE_LABELS.length
-  ) {
-    errors.push("Los cuatro roles deben asignarse a cuatro personas distintas.");
+  if (participants.size === ROLE_LABELS.length) {
+    const reviewer = participants.get("Revision de PR");
+    const validator = participants.get("Validacion, pruebas y documentacion");
+    // Declared exception: one person may review and validate; leadership and pairing stay separate.
+    const sameReviewer = reviewer === validator && declaresSamePersonException(body);
+    const expected = sameReviewer ? ROLE_LABELS.length - 1 : ROLE_LABELS.length;
+    if (new Set(participants.values()).size !== expected) {
+      errors.push(
+        sameReviewer
+          ? "Con la excepcion declarada, liderazgo, pairing y la persona que revisa y valida deben ser tres personas distintas."
+          : "Los cuatro roles deben asignarse a cuatro personas distintas.",
+      );
+    }
   }
   return errors;
 }
