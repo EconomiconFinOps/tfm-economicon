@@ -1,5 +1,28 @@
 # Findings Backlog
 
+## RF-098-002 Observation In JUP-026
+
+Additional evidence recorded 2026-09-30 for the existing RF-098-002, not a new
+finding ID. Canonical record: [develop at 2efef1a](https://github.com/EconomiconFinOps/tfm-economicon/blob/2efef1a7e1a10d5f31fdc2ec1a748f939b109144/openspec/findings/backlog.md).
+Severity: Low; status: Open; owner: Equipo Economicon; scope: inherited shared
+frontend retry policy, outside the three JUP-026 corrections.
+
+Lucia (`lmatsan`) reports in "Revision JUP-026" and "Validacion JUP-026" on
+[PR52](https://github.com/EconomiconFinOps/tfm-economicon/pull/52), 2026-09-29,
+HEAD `c1e7f7f`, that billing 409/422 responses retry three times and leave the
+loading state visible for about seven seconds before the warning/error.
+Static inspection confirms `new QueryClient()` without retry configuration in
+`apps/frontend/src/main.tsx` and no override in `useCostKpis.ts`; timing was
+reported by Lucia, not measured again during this preparation.
+
+Action: consider non-retryable client-error handling when reviewing findings
+before P1, coordinated with the existing RF-098-002 session-query contract.
+No retry setting is changed here, no new JUP is assigned, and this entry does
+not claim a fix or approval of a future policy. Preserve the original RF-098-002
+row and this billing observation when reconciling develop.
+
+## Register
+
 Actualizacion RF-053-004 (2026-09-14): correccion integrada en `develop` por
 la [PR #34](https://github.com/EconomiconFinOps/tfm-economicon/pull/34) el 13/09. La
 [evidencia JUP-020](../../docs/evidence/JUP-020-validation.md) reproduce el

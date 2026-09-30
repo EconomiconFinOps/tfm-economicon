@@ -1,6 +1,39 @@
 JUP: JUP-026
 Trello: https://trello.com/c/anUswta8
 
+## PR52 Review Amendment 2026-09-30
+
+**PRE-CODE APPROVAL: APPROVED, Paris Arcos, 2026-09-30.** Source: human reviews by
+Lucia (`lmatsan`), 2026-09-29, on [PR52](https://github.com/EconomiconFinOps/tfm-economicon/pull/52).
+Supplied review baseline: `feat/JUP-026-azure-cost-kpis`, HEAD `c1e7f7f`.
+Paris answered "hazlo por favor" after the explicit request to approve this
+contract amendment and incorporate current develop before the corrections.
+This authorizes those local changes and their tests, not merge into develop,
+publication, tracker writes, role reassignment or archive. Existing approvals
+and results below remain historical; new affected review/QA and final human
+approval are required on the corrected revision.
+
+Approved scope is only three corrections: subscription-scoped case-insensitive resource
+group aggregation with a deterministic label; processor-equivalent tag-key
+canonicalization with case-sensitive tag values; and control-character rejection
+with 422 before billing SQL. The bounded SQL/Unicode choice and acceptance are
+in [design](design.md#pr52-proposed-corrections) and [spec](specs/azure-cost-kpis/spec.md).
+No new ADR, dependency, migration, endpoint or dashboard expansion is proposed.
+
+Inherited QueryClient retries on 409/422 are registration-only here, linked to
+[RF-098-002](../../findings/backlog.md#rf-098-002-observation-in-jup-026)
+on verified develop `2efef1a`, not yet integrated into JUP-026; no retry fix or
+duplicate finding is proposed. Linking PR52 on the official Trello card remains
+pending access. Roles and historical base claims are unchanged.
+
+Amendment checks on 2026-09-30: installed OpenSpec 1.8.0 invoked directly as
+`node node_modules/@fission-ai/openspec/bin/openspec.js validate --all --strict --no-interactive`
+with telemetry disabled: 35 PASS, 0 FAIL, exit 0. Direct execution avoids
+Corepack cache writes; the initial sandbox dependency-read failure is not a
+specification failure. `node tools/jup-check.mjs --change jup-026-azure-cost-kpis`
+and `git diff --check`: exit 0. These documentary checks do not approve the
+amendment or establish product correctness; no product tests ran here.
+
 ## Why
 
 JUP-026 requires total Azure cost and cost by subscription, resource group,

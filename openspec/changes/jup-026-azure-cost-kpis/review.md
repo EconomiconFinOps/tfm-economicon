@@ -169,3 +169,34 @@ opening a non-draft PR against develop and checking its CI. Final local DoD
 passed with zero missing/invalid events or artifact errors. It does not
 authorize merge, archive, Trello updates or approval on behalf of the team's
 reviewer/validator. Remote CI is pending publication, not yet a PASS here.
+
+## Human PR52 Review And Validation 2026-09-29
+
+Current correction status, recorded 2026-09-30: **CHANGES_REQUESTED**.
+Lucia (`lmatsan`) published both "Revision JUP-026" and "Validacion JUP-026"
+on [PR52](https://github.com/EconomiconFinOps/tfm-economicon/pull/52), testing
+`c1e7f7f0b2c8c9d95631953ffdd7ea2730ebb694`. These are distinct human review
+and acceptance-validation records, not new executions by this preparation.
+Their actual authorship does not reassign the roles in the Trello card.
+
+- Confirmed by Lucia: reference SQL totals and subscription/service breakdowns,
+  tenant isolation, invalid-selection 422, empty/partial states and conservative
+  overlap 409 without amounts, including the browser checks in her validation.
+- Blocking corrections: resource groups split by case; requested tag keys not
+  canonicalized like ingestion; NUL in tag_key reaches SQL and returns 500.
+  The bounded [contract amendment](proposal.md#pr52-review-amendment-2026-09-30)
+  is proposed, not approved or implemented. Prior QA/approval is historical;
+  repeat affected tests, review and acceptance on the corrected revision.
+- Inherited 409/422 retry latency is recorded against the existing
+  [RF-098-002](../../findings/backlog.md#rf-098-002-observation-in-jup-026),
+  with no retry-policy change in this amendment.
+- Link PR52 and its validation on the official card: pending. Read access to
+  that card failed on 2026-09-30; no Trello write was attempted. The request to
+  correct leadership in the PR description needs confirmation of actual
+  participation; no responsibility was changed here.
+
+Refreshed origin/develop is `2efef1a7e1a10d5f31fdc2ec1a748f939b109144`
+(PR50/JUP-098 and PR46 since this branch's base). A non-checkout merge preview
+found only a content conflict in `openspec/findings/backlog.md`; api.ts combined
+automatically. This is not a merge or an integration test. Branch HEAD remains
+`c1e7f7f`; no new code, tests, push, external update, merge or archive performed.

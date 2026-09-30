@@ -1,5 +1,44 @@
 JUP: JUP-026
 
+## PR52 Proposed Corrections
+
+**APPROVED, Paris Arcos, 2026-09-30.** The historical contract below
+explicitly preserves case and requires a literal canonical tag key. Only the
+following exceptions supersede those historical rules under the new approval.
+Review actor, HEAD, approval and exclusions are in the [amendment](proposal.md#pr52-review-amendment-2026-09-30).
+
+- Resource groups: within the existing tenant/period SQL, group by currency,
+  subscription and `lower(present(resource_group))`; display
+  `min(present(resource_group))` under existing binary string ordering.
+  `Shared`/`shared` display as `Shared`; `DevTestLab`/`devtestlab` as `DevTestLab`.
+  Null/blank buckets, tenant/currency separation, totals and overlap checks
+  retain their rules. Return aggregates only, without loading raw records.
+  SQL `lower` guarantees the requested ASCII case matching; it is not Python
+  `casefold` or a claim of Azure ordinal Unicode equivalence. Non-ASCII names
+  follow database `lower` semantics only;
+  the whole-repository Unicode decision remains [RF-014-002](../../findings/backlog.md).
+- Tag keys: mirror processor `apps/processor/app/normalization/azure_cost.py`
+  `_canonical_tag_key` exactly in a small billing-route helper: `strip()`,
+  `casefold()`, replace each `[^a-z0-9]+` run with `_`, strip edge `_`, then
+  aliases `costcenter`/`cost_centre` -> `cost_center`, `env` -> `environment`,
+  `org` -> `organization`. Thus `CostCenter`/`costcenter` select `cost_center`
+  and `Environment`/` Environment` select `environment`. Bind and echo the
+  canonical key; reject an empty canonical result with 422. Unknown nonempty
+  canonical keys retain the null bucket. Stored tag VALUES remain case-sensitive.
+- Validate the URL-decoded tag key before normalization: any character with
+  `ord < 32` or `ord == 127`, including `%00`, returns 422 before
+  `fetch_billing_summary`/billing SQL. This reuses only the control-character
+  criterion in `apps/backend/app/api/dependencies.py` for `X-Tenant-Id`, not
+  its whitespace/comma bans or 400 status. Ordinary spaces reach normalization;
+  existing group/key combination rules and auth/membership checks remain intact.
+
+After approval, product scope is only `apps/backend/app/api/routes/billing.py`
+and the billing method in `apps/backend/app/db/database.py`. Mirror the existing
+algorithm without importing the processor service or creating a shared package.
+No frontend product change is expected: `isBillingSummary` requires a nonblank
+response key, not equality with the raw request key. Retry policy remains outside
+JUP-026. No new ADR or processor change is proposed.
+
 ## Proposed Contract
 
 Reuse GET /billing/summary and Database.fetch_billing_summary over existing

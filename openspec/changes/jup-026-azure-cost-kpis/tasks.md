@@ -1,5 +1,23 @@
 JUP: JUP-026
 
+## PR52 Proposed Amendment Tasks
+
+**PRE-CODE APPROVED, Paris Arcos, 2026-09-30.** Amendment tests/code are authorized.
+Checked tasks, approvals and results below concern historical code only.
+The Lucia/`lmatsan` review is a correction request; Paris approved its bounded correction;
+see [proposal](proposal.md#pr52-review-amendment-2026-09-30). No roles are reassigned.
+
+- [ ] A.1 After explicit approval, adapt the existing resource-group billing case for SQL lower-key grouping and binary-minimum labels within subscription/currency; implement the bounded database correction in design.md.
+- [ ] A.2 After explicit approval, reuse the existing billing tag cases for exact processor key canonicalization/aliases and canonical response, retaining distinct `Prod`/`prod` values and unknown-key null buckets; implement the route correction.
+- [ ] A.3 After explicit approval, extend the existing invalid-selection case minimally for `%00`, the control criterion and empty canonical keys, asserting 422 before the billing read; implement validation before normalization without a blanket space/comma ban.
+- [ ] A.4 Demonstrate targeted Red before code and Green afterward, reusing the existing 15 billing cases and fixtures in `apps/backend/tests/test_billing_summary.py` and `billing_support.py`; adapt the literal unknown-key response expectation. Add only minimum regressions, no full matrix. Run aggregation and focused mutation checks on real isolated CockroachDB for the changed grouping, label, canonicalization and rejection logic; distinguish SQL execution from mocked validation and record actual cases/skips/results.
+- [ ] A.5 Repeat affected technical review and acceptance/QA after code, including the existing frontend consumer with canonical response keys; present actual evidence for separate final human approval. No amendment Red/Green, mutation or acceptance result is claimed now.
+
+Retry-policy work stays with [RF-098-002](../../findings/backlog.md#rf-098-002-observation-in-jup-026),
+registration-only for JUP-026; the official-card PR52 link is pending access.
+Paris also authorized incorporating current develop locally. Publication,
+merge into develop, tracker updates, dependencies and archive remain excluded.
+
 Pre-code approval is APPROVED by Paris Arcos on 2026-09-27. PR48 is integrated
 locally in the validated combined base 847fa3c. Checked tasks are supported by
 [evidence](../../../docs/evidence/JUP-026-validation.md); integration and final

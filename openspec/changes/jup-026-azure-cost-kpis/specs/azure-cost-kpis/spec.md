@@ -1,5 +1,10 @@
 ## ADDED Requirements
 
+PR52 amendment status: **APPROVED, Paris Arcos, 2026-09-30**. The three
+scenarios under the correction requirement below supersede historical
+case/literal-key rules under this new approval; see
+[proposal](../../proposal.md#pr52-review-amendment-2026-09-30).
+
 Scoped MVP warning/no-replacement handling was accepted by Paris Arcos on
 2026-09-27; see [proposal](../../proposal.md#scoped-mvp-decisions). These
 requirements retain the technical contract subsequently approved by Paris
@@ -55,3 +60,23 @@ merely because rows are available. Storage errors SHALL remain errors.
 - **WHEN** no dated rows exist in the period, or completed tenant rows lack dates or the chosen dimension
 - **THEN** undated rows are excluded and counted without assigning a period; missing dimensions use null buckets
 - **AND** partial takes precedence for omissions; otherwise empty has empty arrays/null aliases and is distinguishable from an observed zero
+
+### Requirement: PR52 group and tag corrections
+Under the 2026-09-30 pre-code approval, billing SHALL apply the three bounded
+corrections in design.md, retaining aggregate-only reads, tenant/currency
+separation and all other historical money, period and overlap rules.
+
+#### Scenario: Resource-group spelling variants
+- **WHEN** `Shared`/`shared` or `DevTestLab`/`devtestlab` occur in the same subscription and currency
+- **THEN** SQL lower-key aggregation returns one bucket per pair with summed cost/count and binary-minimum stored labels `Shared` and `DevTestLab`, independent of row order
+- **AND** other subscriptions/currencies stay separate, null buckets retain their rules, and SQL lower does not imply Python casefold/full Unicode identity equivalence
+
+#### Scenario: Processor-equivalent requested tag key
+- **WHEN** a tag selection uses `CostCenter`, `costcenter`, `Environment` or ` Environment`
+- **THEN** lookup and response use `cost_center` or `environment` through the exact processor algorithm and aliases in design.md
+- **AND** stored values `Prod` and `prod` remain separate; an unknown nonempty canonical key gives a null bucket and an empty canonical result returns 422 before billing SQL
+
+#### Scenario: Control characters rejected before billing SQL
+- **WHEN** the decoded tag key contains a character with `ord < 32` or `ord == 127`, including a NUL encoded as `%00`
+- **THEN** the endpoint returns 422 without calling `fetch_billing_summary`, before normalization can hide the control
+- **AND** ordinary spaces and commas are not rejected by the tenant-header rules; valid keys proceed through processor-equivalent canonicalization
