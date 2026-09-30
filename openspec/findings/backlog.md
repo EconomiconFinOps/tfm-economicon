@@ -1,5 +1,29 @@
 # Findings Backlog
 
+## RF-098-002 Observation In JUP-026
+
+Additional evidence recorded 2026-09-30 for the existing RF-098-002, not a new
+finding ID. Canonical record: [develop at 2efef1a](https://github.com/EconomiconFinOps/tfm-economicon/blob/2efef1a7e1a10d5f31fdc2ec1a748f939b109144/openspec/findings/backlog.md).
+Severity: Low; status: Open; owner: Equipo Economicon; scope: inherited shared
+frontend retry policy, outside the three JUP-026 corrections.
+
+Lucia (`lmatsan`) reports in "Revision JUP-026" and "Validacion JUP-026" on
+[PR52](https://github.com/EconomiconFinOps/tfm-economicon/pull/52), 2026-09-29,
+HEAD `c1e7f7f`, that billing 409/422 responses retry three times and leave the
+loading state visible for about seven seconds before the warning/error.
+Static inspection confirms `new QueryClient()` without retry configuration in
+`apps/frontend/src/main.tsx` and no override in `useCostKpis.ts`; timing was
+reported by Lucia, not measured again during this preparation.
+
+Action: consider non-retryable client-error handling when reviewing findings
+before P1, coordinated with the existing RF-098-002 session-query contract.
+No retry setting is changed here, no new JUP is assigned, and this entry does
+not claim a fix or approval of a future policy. Local merge `9bab405` preserves
+the original RF-098-002 row and this billing observation without duplicating
+the canonical finding row.
+
+## Register
+
 Actualizacion RF-053-004 (2026-09-14): correccion integrada en `develop` por
 la [PR #34](https://github.com/EconomiconFinOps/tfm-economicon/pull/34) el 13/09. La
 [evidencia JUP-020](../../docs/evidence/JUP-020-validation.md) reproduce el
@@ -18,6 +42,8 @@ RF-045-001 identificado en JUP-045 queda cubierto por el mismo arreglo.
 | RF-100-001 | 2026-09-30 | jup-100-review-validation-flow (barrido del patron de ADV-4) | Hidden PR description content | Low | Out of scope (check "JUP policy", anterior a JUP-100) | Open | Equipo Economicon | `checkPullRequest` en `tools/pr-policy.mjs` acepta las lineas `- ID:` y de roles aunque esten dentro de un comentario HTML, invisibles en el PR renderizado: un cuerpo con esas lineas solo dentro de `<!-- -->` pasa "JUP policy". JUP-100 ya ignora los comentarios HTML al buscar la linea de excepcion del check "JUP reviews"; aplicar el mismo tratamiento a "JUP policy" en un cambio aparte, con test. | [JUP-100](https://trello.com/c/XlWNnm7r); [revision](../changes/archive/2026-09-30-jup-100-review-validation-flow/review.md) |
 | RF-086-004 | 2026-09-28 | jup-086-tenant-isolation-contract; review PR #47 del 27/09 | Permanent ingestion failure requeued indefinitely | High | Out of scope (heredado; no corregir en esta PR) | Open | Equipo Economicon | La review de lmatsan informa que source no compatible con SAFE_SOURCE, p. ej. Azure Cost Management, falla en el guardrail y se reencola sin limite, consumiendo capacidad compartida entre tenants. Inspeccion estatica confirma normalize_source y nack(requeue=True); sin nueva reproduccion real. La mencion de limites de metadata procede de esa review y requiere reproduccion concreta: el codigo inspeccionado tambien trunca/sanitiza metadata. Acordar en trabajo separado el contrato API/processor y tratamiento de fallos permanentes/reintentos; no se implementa ni se dispensa aqui. | [PR #47](https://github.com/EconomiconFinOps/tfm-economicon/pull/47); [detalle](../changes/jup-086-tenant-isolation-contract/review.md#rf-086-004). Tarjeta de correccion por acordar en Trello. |
 | RF-086-005 | 2026-09-28 | jup-086-tenant-isolation-contract; review PR #47 del 27/09 | Malformed input produces internal error | Medium | Out of scope (heredado) | Open | Equipo Economicon | lmatsan informa respuestas genericas 500, en lugar de 422, para metadata con NaN/1e999 o source/metadata con surrogates; sin fuga de datos segun su review. No reproducido de nuevo en esta correccion. Reproducir y definir validacion de valores no finitos/Unicode antes de persistencia en un alcance separado; no modificar las reglas de metadata ni cerrar el finding aqui. | [PR #47](https://github.com/EconomiconFinOps/tfm-economicon/pull/47); [detalle](../changes/jup-086-tenant-isolation-contract/review.md#rf-086-005). Tarjeta de correccion por acordar en Trello. |
+| RF-026-001 | 2026-09-27 | jup-026-azure-cost-kpis | Enhancement: confirmed Azure source replacement | Low | Out of scope (JUP-026) | Open (diferido explicitamente por Paris Arcos) | Equipo Economicon | Acordar por separado el alcance de sustitucion confirmada de fuentes Azure posiblemente solapadas; MVP solo avisa, sin importes ambiguos ni reemplazos. Ver [detalle](#rf-026-001). | [JUP-026 origen](../changes/jup-026-azure-cost-kpis/proposal.md#scoped-mvp-decisions); futuro JUP/change por acordar, ninguno asignado. |
+| RF-026-002 | 2026-09-27 | jup-026-azure-cost-kpis | Inherited mobile shell overflow | Medium | Out of scope (shared Layout, unchanged by JUP-026) | Open (aplazamiento aprobado por Paris Arcos, 2026-09-27) | Equipo Economicon | Cabecera/menu llegan a 1026 px en pantalla de 390 px; parte de controles queda fuera. El contenido nuevo cabe. Aplazado fuera de JUP-026; revisar antes de pasar de P0 a P1. Ver [detalle](#rf-026-002). | Futuro JUP/change por acordar, ninguno asignado; [evidencia](../../docs/evidence/JUP-026-validation.md#real-browser-acceptance). |
 | RF-086-001 | 2026-09-24 | jup-086-tenant-isolation-contract | Permanent invalid queue identity | Medium | In scope | Fixed (local, sin integrar) | Equipo Economicon | UTF-8 estricto rechaza surrogates en id/tenant/creador antes de SQL; mantiene Unicode valido. Regresiones Red/Green, mutantes y re-review PASS; jobs intactos, sin lookup ni pipeline en rechazo. | [JUP-086](https://trello.com/c/bKxQK9HI); [revision](../changes/jup-086-tenant-isolation-contract/review.md#rf-086-001); [evidencia](../../docs/evidence/JUP-086-validation.md). |
 | RF-086-002 | 2026-09-24 | jup-086-tenant-isolation-contract | Unsettled malformed JSON delivery | Medium | In scope | Fixed (local, sin integrar) | Equipo Economicon | RecursionError del decoder se descarta definitivamente y continua el siguiente mensaje. Pruebas unitarias/RabbitMQ real, mutantes y re-review PASS; conserva transporte transitorio reintentable. | [JUP-086](https://trello.com/c/bKxQK9HI); [revision](../changes/jup-086-tenant-isolation-contract/review.md#rf-086-002); [evidencia](../../docs/evidence/JUP-086-validation.md). |
 | RF-086-003 | 2026-09-24 | jup-086-tenant-isolation-contract | Idle AMQP publisher reliability | Medium | In scope (ampliacion aprobada 25/09, no requisito original de la tarjeta) | Fixed (local, sin integrar) | Equipo Economicon | Ratificacion APPROVED26/09, reinicio real con mismo backend y Blocked/Unblocked/expiracion/cierre acreditados, REVIEW_PASS y QA_PASS sin excepciones. Solo tres casos nuevos;11 afectados PASS, inventario684/111 nuevos y todos681 anteriores conservados. Producto intacto; coder NOOP.38 detecciones previas mas un fallo dirigido detectado contado aparte. TLS Windows auditado reutilizado, sin atribuir Linux/Rabbit TLS. Post-QA APPROVED y publicacion de PR autorizada; sin cierre operativo, dispensa, tracker o merge. Riesgos opcionales e intentos historicos preservados en evidencia. | [JUP-086](https://trello.com/c/bKxQK9HI); [aceptacion vigente](../changes/jup-086-tenant-isolation-contract/resource-matrix.md#aceptacion-acotada-vigente); [revision](../changes/jup-086-tenant-isolation-contract/review.md); [evidencia](../../docs/evidence/JUP-086-validation.md); [ADR-0009](../../docs/adr/ADR-0009-rabbitmq-publisher-lifecycle.md). |
@@ -38,7 +64,7 @@ RF-045-001 identificado en JUP-045 queda cubierto por el mismo arreglo.
 | RF-091-001 | 2026-08-31 | jup-091-inventory-economicon-frontend | Documentation accuracy | Low | Out of scope | Fixed | Equipo Economicon | El supuesto T5 de JUP-083 describía el stack del origen como Tailwind + shadcn/ui + MUI 7; MUI y `@emotion/*` no se importan en ningún sitio. | Matizado en el spike dentro de JUP-091 |
 | RF-091-002 | 2026-08-31 | jup-091-inventory-economicon-frontend | Dependency scope | Medium | Out of scope | Fixed | Equipo Economicon | Los 48 componentes shadcn/ui del origen son código muerto (ninguna pantalla los importa) y con ellos 38 de 61 dependencias; pero el destino sí necesita primitivos de formulario. **Resuelto en JUP-094:** se adopta un subconjunto de 6 paquetes Radix (`react-label`, `react-select`, `react-slot`, `react-separator`, `react-dialog`, `react-tooltip`), no los 26 del origen ni los otros 7 de apoyo shadcn. Motivo registrado en [ADR-0004](../../docs/adr/ADR-0004-frontend-shadcn-ui.md): facilidad de desarrollo para F3 (login, tenant, ingesta, chat necesitan primitivos accesibles), no paridad con el origen — el inventario confirma que el origen tampoco los renderiza. Copiar el código de cada componente a `src/components/ui/` sigue pendiente, componente por componente, en F3. | ADR-0004 (Accepted); JUP-094 |
 | RF-091-003 | 2026-08-31 | jup-091-inventory-economicon-frontend | Backend capability gap | High | Out of scope | Open | Equipo Economicon | Siete capacidades de backend ausentes (serie temporal, desglose por dimensión, multi-cloud AWS/GCP, acciones de recorte, anomalías, recomendaciones, inventario de recursos): solo 2 de 14 datos del origen tienen contrato y ambos parciales; 4 de 5 pantallas no tienen ninguno. | Decisión de épica sobre el alcance de F3; C1 y C2 son las más baratas (dato ya en BD) |
-| RF-091-004 | 2026-08-31 | jup-091-inventory-economicon-frontend | Mock data in production path | Medium | Out of scope | Open | Equipo Economicon | `GET /billing/summary` devuelve `monthly_spend` y `savings_identified` hardcodeados; solo `open_ingestions` es real, pese a que el processor ya ingesta costes Azure a CockroachDB. | Conectar el endpoint a los datos ingestados como prerrequisito del dashboard real |
+| RF-091-004 | 2026-08-31 | jup-091-inventory-economicon-frontend | Mock data in production path | Medium | Out of scope | Open | Equipo Economicon | Estado original: `GET /billing/summary` devolvia `monthly_spend` y `savings_identified` hardcodeados. JUP-026 los sustituye localmente por costes reales y ahorro no disponible (`null`); no implementa un motor de ahorro. Pendiente de integracion y cierre acreditado; ver [actualizacion tecnica](#actualizacion-tecnica-local-jup-026-2026-09-27). | Verificar integracion y evidencia de JUP-026 antes de cerrar; no confundir retirar el ahorro ficticio con calcular ahorro |
 | RF-093-001 | 2026-09-06 | jup-093-configure-typescript | Local dev tooling | Low | Out of scope | Open | Equipo Economicon | En al menos una máquina Windows del equipo, `corepack pnpm <script>` en la raíz falla para cualquier script orquestado por turbo (`lint`, `build`, `test`, y ahora `typecheck`): turbo resuelve pnpm `v11.9.0` en los subprocesos por paquete, pese a que `packageManager: pnpm@9.0.0` resuelve correctamente en shell interactiva (`corepack pnpm --version` y `pnpm --version` dan `9.0.0`). Confirmado preexistente a JUP-093: `pnpm lint`/`pnpm build` ya fallaban igual sobre `@finops/backend`/`@finops/processor`, paquetes no tocados por esta tarjeta. No confirmado si ocurre en CI (que hace `corepack enable` limpio en cada job) ni en otras máquinas del equipo. Verificación de JUP-093 sustituida por `corepack pnpm --filter @finops/frontend <script>`, que no pasa por turbo. | Investigar en tarjeta aparte si el equipo lo reproduce; posible pista: resolución de `packageManager` por turbo en subprocesos vs. shell interactiva |
 | RF-044-001 | 2026-09-08 | jup-044-e2e-tracing | Concurrency bug / reliability | High | Out of scope | Fixed | Equipo Economicon | `apps/processor/app/run_all.py` arranca el hilo del worker (`ProcessorWorker.run_forever`) y el servidor uvicorn en paralelo; ambos llaman a `Database.initialize()` (que ejecuta las migraciones) de forma concurrente, sin ninguna coordinación. El que pierde la carrera revienta con `UniqueViolation: duplicate key ... processor_schema_migrations_pkey` al intentar reinsertar una migración que el otro ya registró. Como ocurre en un hilo demonio, la excepción no mata el contenedor: el proceso sigue "healthy" (uvicorn vivo) pero el worker queda muerto en silencio — el processor deja de consumir jobs sin ningún síntoma visible salvo el traceback en el log. Reproducido de forma determinista en `docker compose up`/`restart processor` repetidos durante la verificación manual de JUP-044 (varios arranques consecutivos, resultado distinto cada vez — es una carrera real, no un evento raro). **Resuelto en PR #16 (JUP-049):** `MigrationRunner.run()` ahora serializa toda la ejecución con un `threading.Lock` de proceso, cubriendo el hilo del worker y el arranque de uvicorn del mismo contenedor; verificado con test de concurrencia dedicado y confirmado en vivo (build y arranque desde cero). | JUP-049 (PR #16)
 | RF-044-002 | 2026-09-08 | jup-044-e2e-tracing | Concurrency bug / reliability | High | Out of scope | Open | Equipo Economicon | Mismo patrón de causa raíz que `RF-044-001` pero entre servicios: `backend` y `processor` ejecutan sus propias migraciones (`MigrationRunner`) de forma independiente al arrancar, sin ningún lock, contra la misma CockroachDB compartida. En un arranque en frío de todo el stack (volumen recién creado), ambos compiten por crear/alterar tablas al mismo tiempo, y CockroachDB responde con `SerializationFailure`/`WriteTooOldError: TransactionRetryWithProtoRefreshError` en el perdedor, tumbando el contenedor entero (a diferencia de `RF-044-001`, aquí sí es fatal porque ocurre en el hilo principal de arranque de uvicorn). Reproducido de forma determinista durante la verificación manual de JUP-044 al recrear los volúmenes de Docker. | Pendiente de tarjeta de migraciones (Trello asigna actualmente JUP-096 a esta épica; no confundir con la referencia histórica de JUP-095 a "JUP-096" para la reconciliación de la capa de API)
@@ -53,3 +79,95 @@ RF-045-001 identificado en JUP-045 queda cubierto por el mismo arreglo.
 | RF-098-001 | 2026-09-27 | jup-098-reconcile-auth-session | Mutation coverage gap (pre-existing) | Low | Out of scope (JUP-098) | Open | Equipo Economicon | Mutación con Stryker acotada por archivo (no por función) sobre `apps/frontend/src/services/api.ts` (tarea 2.4), `apps/frontend/src/layouts/SessionGate.tsx` (tarea 3.5) y `apps/frontend/src/pages/LoginPage.tsx` (tarea 4.7) deja mutantes supervivientes fuera del código que JUP-098 modificó en cada archivo. En `api.ts`: 9 supervivientes + 1 sin cobertura en `fetchJson` (redacción de mensajes de error con el token, `message.slice(0, 512)`, validación de la forma de respuesta, guard de generación dentro de la rama de error), en el constructor de `ApiError` (`this.name`) y en `clearSessionMutations` (`mutation.destroy()`). En `SessionGate.tsx`: 43 supervivientes + 3 timeout + 5 sin cobertura en `isSession`/`loadStoredSession`, el bootstrap de tenants y su `queryFn`, el efecto de reconciliación de identidad (explícitamente fuera de alcance por `design.md` de JUP-098), el efecto de selección de tenant, `activeTenant`, `handleTenantChange` y el bloque de carga/error de tenants. En `LoginPage.tsx`: 8 supervivientes + 2 timeout en el callback `onSuccess` de la mutación de login y en `handleSubmit`. Todo preexistente de JUP-085/JUP-097, no tocado por esta tarjeta, cuyo `proposal.md` declara explícitamente fuera de alcance reimplementar o volver a probar ese código. Los supervivientes que sí caían en código tocado por JUP-098 se remediaron en los tres archivos: en `api.ts`, uno con test nuevo y uno documentado como mutante equivalente; en `SessionGate.tsx`, uno con test nuevo (`useState` inicial de `sessionExpired`); en `LoginPage.tsx`, dos con un test nuevo (`replace: true` en la corrección de historial) y uno documentado como mutante equivalente (array de dependencias del efecto). | Candidata para quien quiera subir la cobertura de mutación de `api.ts`/`SessionGate.tsx`/`LoginPage.tsx` en conjunto; ver [review de JUP-098](../changes/archive/2026-09-27-jup-098-reconcile-auth-session/review.md#grupo-2-motivo-de-la-invalidación-en-la-capa-de-acceso) |
 | RF-098-002 | 2026-09-28 | jup-098-reconcile-auth-session (revision PR #50) | Session expiry notice latency | Low | Out of scope (JUP-098) | Open | Equipo Economicon | Preexistente a JUP-098, observado en la revision del PR #50 con navegador real. `apps/frontend/src/main.tsx` crea `new QueryClient()` con los valores por defecto de TanStack Query (3 reintentos con espera creciente). El `401` de `GET /me` no pasa por la invalidacion inmediata de `fetchJson` (`/me` esta excluido a proposito para conservar la politica estricta de JUP-097/JUP-085), asi que la consulta de perfil reintenta 3 veces antes de entrar en error: cuando el unico `401` es el de `/me` (por ejemplo, reabrir la aplicacion con un token caducado), el operador tarda unos 7 s en llegar al acceso y ver el aviso de sesion expirada. Cambiarlo toca un requisito vigente: la spec `demo-auth-session` fija que el tiempo de reintentos de consultas no cambia. | Decision de equipo: no reintentar un `401` de `/me` (o reducir reintentos del perfil) exigiria modificar ese requisito; tarjeta propia |
 | RF-098-003 | 2026-09-28 | jup-098-reconcile-auth-session (revision PR #50) | Raw backend error body in login form | Low | Out of scope (JUP-098) | Open | Equipo Economicon | Preexistente a JUP-098, observado en la revision del PR #50. Con credenciales incorrectas, `POST /auth/login` responde `401` con `{"detail":"Invalid email or password."}`; `fetchJson` (`apps/frontend/src/services/api.ts`) usa el cuerpo completo de la respuesta como `message` del `ApiError`, y `LoginPage` lo pinta tal cual, asi que el operador ve el JSON crudo en vez del texto. No filtra credenciales (el token se redacta y el login no lleva token). Corregirlo implica decidir como extraer `detail` de forma general en la capa de acceso, que afecta a todas las pantallas que muestran `error.message`. | Tarjeta propia, o JUP-099 si el equipo decide agrupar la presentacion de errores con la unificacion visual |
+
+## RF-026-001
+
+Paris Arcos difiere explicitamente esta mejora el 2026-09-27, separada de JUP-026:
+
+> Esto amplía el flujo de ingesta; no es simplemente cambiar el error de JUP-026 por un botón. Lo separaría del cálculo de KPIs y acordaríamos su alcance antes de implementarlo.
+
+Evidencia por lectura estatica del codigo, sin reproduccion dinamica:
+[`ingestion_run_id`](../../apps/processor/app/tasks/azure_cost_ingest.py#L96)
+deriva el ID de tenant, subscription y la definicion completa de la query;
+cambiar periodo, agrupacion o filtros puede conservar otra fuente para las
+mismas fechas. [`SqlAzureCostRepository.complete_run`](../../apps/processor/app/repositories/azure_cost.py#L119)
+reemplaza solo registros del mismo run, tenant y subscription. Coincidir en fecha
+no demuestra cargos identicos: filtros disjuntos pueden contener datos validos
+distintos, que una sustitucion indiscriminada podria perder.
+
+Idea futura, pendiente de acordar alcance: vista previa y confirmacion explicita
+de un administrador autorizado sobre un ambito preciso y equivalente de tenant,
+subscription, periodo y filtros; preservar datos no afectados y los anteriores
+si falla, con sustitucion atomica, nueva comprobacion de conflictos y trazabilidad
+de la confirmacion y sustitucion. Es una ampliacion de ingesta separada del
+calculo de KPIs, no una accion que se anade al error de JUP-026.
+
+El MVP solo advierte del posible solapamiento, conserva el 409
+`ambiguous_cost_source` sin importes ambiguos y no ofrece confirmar, reemplazar
+ni sobrescribir; GET sigue siendo de solo lectura. Este finding no bloquea
+JUP-026 si se cumple esa aceptacion. Futuro JUP/change por acordar, ninguno
+asignado; no se crea plan obligatorio, pruebas, prioridad, responsable operativo,
+fecha de entrega ni tarjeta. Paris aprueba el contrato MVP de JUP-026 el
+2026-09-27; esa aprobacion no incluye implementar esta mejora diferida.
+
+## Actualizacion tecnica local JUP-026 2026-09-27
+
+Esta nota actualiza el progreso tecnico de RF-091-003, RF-091-004 y RF-095-002,
+sin cerrar ninguno ni modificar el estado operativo de las tarjetas. Las
+descripciones originales de JUP-091/JUP-095/JUP-097 son antecedentes historicos.
+
+- RF-091-003: C2 esta implementado localmente para la tabla ejecutiva Azure de
+  cinco agrupaciones. Operational C2+C3 y C1/C3/C4/C5/C6/C7 siguen pendientes.
+- RF-091-004: los costes de `/billing/summary` proceden de registros normalizados,
+  separados por moneda y periodo UTC; el ahorro es `null`, no un importe ficticio.
+  La ejecutiva y el resumen legacy consumen ese contrato. No hay motor de ahorro.
+- RF-095-002: `/` ya consume totales y desglose reales localmente, pero conserva
+  graficos, exportacion e inventario demo claramente separados. Las otras cuatro
+  pantallas siguen siendo demo, por lo que el finding permanece abierto.
+
+La aceptacion SQL focalizada pasa 24/24 sobre CockroachDB real desechable;
+revision tecnica PASS y 15 comprobaciones temporales de navegador PASS, con la
+limitacion movil heredada RF-026-002 aplazada con aprobacion explicita de Paris.
+QA ha contrastado la evidencia; su resultado vigente consta en la
+[revision](../changes/jup-026-azure-cost-kpis/review.md). La integracion sigue
+pendiente. Vease el
+[contrato y checkpoint](../changes/jup-026-azure-cost-kpis/proposal.md#sql-and-mutation-checkpoint-2026-09-27)
+y el [mapa de carencias](../../docs/planning/JUP-097-frontend-data-gap-map.md).
+La politica conservadora de solapamientos queda documentada en
+[ADR-0010](../../docs/adr/ADR-0010-azure-cost-source-overlap.md); RF-026-001
+continua como mejora diferida, sin implementacion autorizada.
+
+## RF-026-002
+
+Detectado el 2026-09-27 durante la aceptacion en navegador real de JUP-026.
+Severidad Medium, heredado y fuera del alcance de costes: la cabecera y menu de
+[`Layout.tsx`](../../apps/frontend/src/layouts/Layout.tsx#L72), incluida la
+[navegacion](../../apps/frontend/src/layouts/Layout.tsx#L136), no caben en una
+pantalla de 390 x 844. Cabecera: scrollWidth 631 px; menu/documento: 1026 px;
+main: 390 px. Algunos controles de navegacion/sesion quedan fuera de pantalla.
+
+El archivo no cambia frente a 847fa3cf5857f33e680089b25dbffd149e5a15ac.
+Retirar solo el contenido main en el DOM desechable conserva los mismos 1026 px:
+atribucion por fuente sin cambios y diagnostico de shell, no replay completo de
+una version historica. Los seis estados nuevos inspeccionados caben en main;
+la tabla usa scroll interno (479 px dentro de 342 px), sin ensanchar la pagina.
+
+La [evidencia](../../docs/evidence/JUP-026-validation.md#real-browser-acceptance)
+y [revision](../changes/jup-026-azure-cost-kpis/review.md) distinguen aceptacion
+funcional del alcance y limitacion visual global. No se declara PASS visual
+incondicional en movil. No se modifica Layout ni se amplian pruebas o alcance.
+
+Estado: **Open, aplazamiento aprobado** por Paris Arcos el 2026-09-27.
+Respuesta explicita: "si, aplazalo en un finding", a la pregunta de aplazarlo
+fuera de JUP-026 y revisarlo antes de pasar de P0 a P1. Esta es una excepcion
+acotada para cerrar QA del alcance de costes, no una correccion del fallo ni un
+PASS visual global en movil. La limitacion y su severidad Medium se conservan.
+
+Accion: revisar el finding antes de iniciar P1 y acordar por separado su eventual
+correccion. No se implementa ahora ni se amplian las pruebas de JUP-026. Owner:
+Equipo Economicon, sin reasignacion operativa. Futuro JUP/change sin asignar,
+sin nueva fecha ni tarjeta. La aprobacion no autoriza publicar, modificar Trello,
+mergear o archivar, ni sustituye la aprobacion final posterior a QA.
+El QA_FAIL anterior respondia a la falta de esta decision, no a un nuevo defecto
+de producto; vease la [revision](../changes/jup-026-azure-cost-kpis/review.md)
+para la reevaluacion del gate tras registrar el aplazamiento.

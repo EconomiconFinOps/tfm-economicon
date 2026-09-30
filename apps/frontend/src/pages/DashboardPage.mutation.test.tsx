@@ -19,6 +19,7 @@ import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { DashboardPage } from "./DashboardPage";
+import { billing } from "../../tests/fixtures";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -54,7 +55,7 @@ function stubDashboardFetch() {
         return Promise.resolve({
           ok: true,
           json: () =>
-            Promise.resolve({ monthly_spend: 1200, savings_identified: 300, open_ingestions: 2, currency: "USD" })
+            Promise.resolve(billing)
         });
       }
       if (String(url).includes("/health")) {
