@@ -2,7 +2,7 @@
 
 Seguimiento 2026-09-14: RF-053-004 esta corregido en `develop` por PR #34;
 la validacion de Paris fue confirmada por el usuario y el cierre se recoge
-en [JUP-020](../../../docs/evidence/JUP-020-validation.md). Las referencias
+en [JUP-020](../../../../docs/evidence/JUP-020-validation.md). Las referencias
 Open/FAIL siguientes conservan el estado historico revisado de JUP-053.
 
 ## Estado
@@ -20,7 +20,7 @@ Open/FAIL siguientes conservan el estado historico revisado de JUP-053.
   QA de la version reconciliada completada; CI y revision humana pendientes.
 - Aprobacion previa de Paris Arcos registrada en [proposal.md](proposal.md);
   no equivale a revision humana final, pairing ni validacion del equipo.
-- Evidencia: [JUP-053-validation.md](../../../docs/evidence/JUP-053-validation.md).
+- Evidencia: [JUP-053-validation.md](../../../../docs/evidence/JUP-053-validation.md).
 
 ## Alcance Revisado
 
@@ -42,7 +42,7 @@ sesion/tenant o integracion funcional de la API.
 Referencias de la primera revision: ambos `app/core/runtime_secrets.py`
 (validacion de DSN y redaccion de mappings), processor
 `app/tasks/ingest.py`, backend `Database.create_job` y processor
-`PipelineRunner._chunk`. Seguimiento en [findings](../../findings/backlog.md).
+`PipelineRunner._chunk`. Seguimiento en [findings](../../../findings/backlog.md).
 Los tres hallazgos de JUP-053 ya no bloquean QA; se repitieron Red/Green,
 mutation, imagenes/smoke y revision. La correccion del defecto heredado se
 ha asignado a JUP-020. La revision de la reconciliacion tambien pasa;
