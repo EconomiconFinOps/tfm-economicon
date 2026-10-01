@@ -38,6 +38,6 @@
 - [x] 6.2 Revision adversarial con el agente `adversarial-reviewer` hasta veredicto `accept`, o findings restantes aceptados explicitamente por Lucia.
 - [x] 6.3 `review.md` con resumen, decisiones, validacion, pasadas adversariales, barrido de patrones, riesgos, findings y aplicabilidad de ADR.
 - [x] 6.4 `docs/evidence/JUP-050-validation.md` con los arranques, el smoke, la parada y reinicio y los controles.
-- [ ] 6.5 Bloque `## Human Approval` en `review.md` tras la aprobacion explicita de Lucia.
+- [x] 6.5 Bloque `## Human Approval` en `review.md` tras la aprobacion explicita de Lucia.
 - [ ] 6.6 Archivar el change en la misma rama.
 - [ ] 6.7 Abrir el PR hacia `develop`.

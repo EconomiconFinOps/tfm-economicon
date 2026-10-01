@@ -105,3 +105,14 @@ Lucia acepto el 2026-10-01 los hallazgos pendientes de las pasadas 2 y 3: P2-4 y
 - RF-090-001: cerrado con control positivo.
 - RF-050-001: registrado y cerrado (ventana de salud del processor).
 - RF-096-001: corregido y evidenciado aqui; su fila llega con el PR #51 y se cerrara al traer `develop`.
+
+## Human Approval
+
+- Change: jup-050-reproducible-local-runtime
+- Approval type: pre-PR
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-01
+- Review accepted: yes
+- Checks accepted: yes
+- Notes: Aprobacion de Lucia como liderazgo de la tarjeta, tras tres pasadas adversariales y con los hallazgos pendientes aceptados como limites documentados. No sustituye la revision de PR ni la validacion funcional del equipo, que siguen pendientes en el PR.
