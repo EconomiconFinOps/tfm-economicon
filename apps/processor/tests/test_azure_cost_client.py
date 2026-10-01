@@ -445,6 +445,8 @@ def test_http_redirect_does_not_forward_bearer_token():
 
     class RedirectHandler(BaseHTTPRequestHandler):
         def do_POST(self):
+            # Closing with the request body unread makes the OS send RST, racing the 302.
+            self.rfile.read(int(self.headers.get("Content-Length", 0)))
             self.send_response(302)
             self.send_header("Location", "/credential-target")
             self.end_headers()
