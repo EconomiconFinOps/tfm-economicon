@@ -27,7 +27,7 @@ Ninguna.
 ## Impact
 
 Documentación, fixtures pequeñas con licencia, scripts Python sin dependencias
-nuevas y dos comandos en el job de gobernanza existente. No cambia runtime,
+nuevas y comprobaciones en el job de gobernanza existente. No cambia runtime,
 proveedores, bases de datos ni corpus indexable de la aplicación. El historial
 completo se obtiene únicamente en ese job para leer el commit de referencia.
 La autorización del usuario cubre publicar y solicitar revisión/validación de

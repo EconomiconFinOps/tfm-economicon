@@ -1,6 +1,7 @@
 # JUP-065 — Validación de la preparación de demo
 
 Fecha: 2026-10-01. [Trello](https://trello.com/c/SZUFo4ol).
+PR [#63](https://github.com/EconomiconFinOps/tfm-economicon/pull/63).
 Rama: `docs/JUP-065-functional-demo`, sobre develop
 `de0d62e7c0028f35a81c5087f531d19031a90e81`.
 [Paquete](../demo/JUP-065/README.md) y

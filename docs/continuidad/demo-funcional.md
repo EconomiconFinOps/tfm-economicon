@@ -33,3 +33,11 @@ Paris revisa; Victor valida la preparación; Lucia participa en pairing y
 Alejandro lidera según Trello. No acreditar participaciones hasta su confirmación.
 Tras integrar el MVP, fijar commit/proveedor/índice, ejecutar preflight y recorrido,
 guardar evidencias y obtener reproducción independiente antes del cierre.
+
+## Publicación
+
+PR [#63](https://github.com/EconomiconFinOps/tfm-economicon/pull/63) hacia develop,
+rama `docs/JUP-065-functional-demo`. Implementación inicial `d9b7c6a`;
+la solicitud de revisión/validación y el CI del último head se consultan en la PR.
+Solicitar a `ParisArcos` revisión técnica y a `Victorh1397` validación offline de
+preparación. Los resultados locales son nuevos; no hay aceptación humana registrada.

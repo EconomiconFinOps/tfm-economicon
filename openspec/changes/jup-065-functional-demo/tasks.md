@@ -7,8 +7,8 @@
 ## 2. Verificación y entrega
 
 - [x] 2.1 Reproducir los archivos, validar fuentes y comprobar rechazo de alteraciones.
-- [ ] 2.2 Ejecutar trazabilidad, higiene, OpenSpec y checks de CI aplicables.
-- [ ] 2.3 Publicar PR hacia develop y solicitar revisión y validación de preparación.
+- [x] 2.2 Ejecutar trazabilidad, higiene y OpenSpec; incorporar checks de preparación a CI.
+- [x] 2.3 Publicar PR hacia develop y preparar solicitud de revisión y validación de preparación.
 - [ ] 2.4 Registrar revisión de Paris, validación de Victor y pairing de Lucia.
 
 ## 3. Ensayo posterior a integración
