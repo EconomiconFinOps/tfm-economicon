@@ -40,4 +40,4 @@
 - [x] 6.4 `docs/evidence/JUP-050-validation.md` con los arranques, el smoke, la parada y reinicio y los controles.
 - [x] 6.5 Bloque `## Human Approval` en `review.md` tras la aprobacion explicita de Lucia.
 - [x] 6.6 Archivar el change en la misma rama.
-- [ ] 6.7 Abrir el PR hacia `develop`.
+- [x] 6.7 Abrir el PR hacia `develop`.
