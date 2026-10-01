@@ -196,7 +196,8 @@ what each way of stopping keeps and removes.
 
 The README SHALL describe, in order, the path from a clean clone to a verified
 stack: copy `.env.example` to `.env` without overwriting an existing one, fill in
-the external secrets and the local opt-ins, run `local:doctor` until it passes,
+the external secrets and the local opt-ins, install the workspace dependencies
+with `corepack pnpm install --frozen-lockfile`, run `local:doctor` until it passes,
 run `docker compose up --build --wait`, and run `local:smoke`. It SHALL state the
 expected duration of the first start.
 

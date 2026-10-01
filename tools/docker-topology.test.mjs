@@ -97,6 +97,11 @@ test("waits for healthy dependencies instead of container start only", () => {
   }
 });
 
+test("starts the processor only after the backend owns the shared schema", () => {
+  assert.equal(compose.services.processor.depends_on.backend?.condition, "service_healthy");
+  assert.equal(compose.services.backend.depends_on.processor, undefined);
+});
+
 test("binds infrastructure and monitoring ports to loopback and permits isolated overrides", () => {
   const expectedVariables = {
     cockroachdb: ["COCKROACH_SQL_PORT", "COCKROACH_HTTP_PORT"],

@@ -56,6 +56,7 @@ Desde la raiz de un clon limpio, con Docker y Node instalados (en Linux o macOS,
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 # Completa en .env los secretos y opt-ins descritos en "Variables De Entorno".
+corepack pnpm install --frozen-lockfile
 corepack pnpm local:doctor
 docker compose up -d --build --wait
 corepack pnpm local:smoke
@@ -63,7 +64,9 @@ corepack pnpm local:smoke
 
 1. `.env.example` deja vacios los secretos a proposito: copiarlo no basta.
    Rellena los valores de [Variables De Entorno](#variables-de-entorno).
-2. `local:doctor` revisa `.env` antes de arrancar y lista todo lo que falta:
+2. `corepack pnpm install --frozen-lockfile` instala las dependencias del workspace
+   (`local:doctor` y `local:smoke` las necesitan; unos 36 s en un host de prueba).
+   Despues, `local:doctor` revisa `.env` antes de arrancar y lista todo lo que falta:
    variables obligatorias de `docker-compose.yml` vacias, credenciales de
    `RABBITMQ_URL` y `VECTOR_DATABASE_URL` que no coinciden con las del servicio,
    valores que el backend rechazaria al arrancar (esquemas de las DSN,

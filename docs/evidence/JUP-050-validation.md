@@ -38,7 +38,7 @@ Proyecto aislado con solo RabbitMQ y volumen nuevo; el ping se lanza en el acto,
 
 Con un volumen existente y otro valor en `RABBITMQ_ERLANG_COOKIE`, RabbitMQ arranca sano y registra "Overriding Erlang cookie using the value set in the environment": el valor del entorno prevalece sobre el guardado en `rabbitmq-data`.
 
-La fila de RF-096-001 en el backlog llega con el PR #51 (JUP-096), aun sin integrar; se cerrara con esta evidencia al traer `develop` a la rama.
+La fila de RF-096-001 del backlog (llegada con el PR #51) queda cerrada con esta evidencia.
 
 ## Stack completo en un proyecto aislado
 
