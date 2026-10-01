@@ -41,8 +41,8 @@ de roles del informe tambien se ha actualizado a Lucia revisora y Paris pairing.
 
 Correccion publicada como `b1fe43d710867801fa6896d4b84997537bf14534` en PR #55.
 Solicitud formal renovada y verificada: `reviewRequests` incluye `lmatsan`.
-Pendiente verificar el CI del ultimo commit y atender la nueva respuesta de Lucia;
-despues completar la validacion
+CI verificado 7/7 sobre `803d241160765ed3a013378770484a342d0c7d9a`: [ejecucion](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/36854918932).
+Pendiente atender la nueva respuesta de Lucia y completar la validacion
 funcional del equipo antes del cierre. No se ha hecho merge ni enviado Discord.
 
 Consulta: `gh pr view 55 --json reviews,reviewRequests,reviewDecision,headRefOid`.
