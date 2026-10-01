@@ -13,6 +13,7 @@ from sqlalchemy import text
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "apps/processor"))
+from app.core.runtime_secrets import StartupError
 from app.vector_store.pgvector_store import PgVectorStore
 from app.embeddings.providers import MockEmbeddingProvider
 
@@ -64,22 +65,30 @@ def main():
             pass
         else:
             raise AssertionError("Wrong dimension accepted")
-        mismatch = PgVectorStore(url, 9)
-        try:
+        for wrong_dimension in (7, 9):
+            mismatch = PgVectorStore(url, wrong_dimension)
             try:
-                mismatch.initialize()
-            except ValueError:
-                pass
-            else:
-                raise AssertionError("Startup accepted incompatible schema")
-        finally:
-            mismatch.close()
+                try:
+                    mismatch.initialize()
+                except StartupError:
+                    pass
+                else:
+                    raise AssertionError("Startup accepted incompatible schema")
+            finally:
+                mismatch.close()
         assert query.search_chunks("jup021-a", embed("rightsizing compute")) == own
         with store.engine.connect() as connection:
             versions = list(connection.execute(text("SELECT version FROM vector_schema_migrations ORDER BY version")).scalars())
             assert versions == ["001", "002"]
             indexes = list(connection.execute(text("SELECT indexname FROM pg_indexes WHERE schemaname='public'")).scalars())
             assert "knowledge_documents_tenant_id_idx" in indexes
+            index_definition = connection.execute(text("""
+                SELECT indexdef FROM pg_indexes
+                WHERE schemaname = 'public'
+                  AND tablename = 'knowledge_documents'
+                  AND indexname = 'knowledge_documents_tenant_id_idx'
+            """)).scalar_one()
+            assert "(tenant_id)" in index_definition
             assert "document_chunks_document_id_chunk_index_key" in indexes
             assert "chunk_embeddings_chunk_id_key" in indexes
             counts = {table: connection.execute(text(f"SELECT count(*) FROM {table}")).scalar_one() for table in ("knowledge_documents", "document_chunks", "chunk_embeddings")}

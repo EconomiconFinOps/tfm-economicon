@@ -3,6 +3,7 @@ from pathlib import Path
 
 from sqlalchemy import create_engine, text
 
+from app.core.runtime_secrets import StartupError
 from app.db.migration_runner import MigrationRunner
 
 
@@ -30,7 +31,7 @@ class PgVectorStore:
                   AND attname = 'embedding' AND NOT attisdropped
             """)).scalar_one()
         if dimension != self.embedding_dimension:
-            raise ValueError(
+            raise StartupError(
                 "Configured embedding dimension differs from the stored vector schema; "
                 "restore the matching configuration or reindex into a new database."
             )

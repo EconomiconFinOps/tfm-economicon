@@ -17,6 +17,14 @@ implementar escritor y lector compatibles, crear una base nueva, reingerir el
 corpus y validar antes de cambiar las conexiones. No modificar la dimension
 sobre un volumen existente: el processor ahora rechaza ese desajuste al iniciar.
 
+Limitacion heredada RF-021-001: la migracion 001 obtiene la dimension del entorno
+del proceso, mientras Settings tambien puede leer `ECONOMICON_ENV_FILE`. Para
+crear una base con dimension distinta de ocho, exportar `EMBEDDING_DIMENSION`
+con el mismo valor antes de arrancar; definirlo solo en ese fichero no basta.
+Compose ya lo proporciona por entorno. No cambiar la dimension de un volumen
+para resolver este problema: conservar la configuracion compatible o reingerir
+en una base nueva. Ver [registro del hallazgo](../../openspec/findings/backlog.md#rf-021-001--dimension-desde-fichero-de-entorno).
+
 ## Arranque y smoke en una base dedicada vacia
 
 Desde la raiz de un checkout de esta rama, en Linux con Docker Compose:
