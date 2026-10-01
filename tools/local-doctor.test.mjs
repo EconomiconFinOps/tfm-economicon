@@ -401,3 +401,72 @@ test("a port held on the IPv6 wildcard is busy for a port published on all inter
     server.close();
   }
 });
+
+const BACKEND_REJECTS = [
+  ["placeholder RabbitMQ password", "RABBITMQ_URL", { RABBITMQ_DEFAULT_PASS: "changeme", RABBITMQ_URL: `amqp://${enc(SECRETS.RABBITMQ_DEFAULT_USER)}:changeme@rabbitmq:5672/` }],
+  ["placeholder pgvector password in another case", "VECTOR_DATABASE_URL", { POSTGRES_PASSWORD: "ChangeMe", VECTOR_DATABASE_URL: "postgresql+psycopg://postgres:ChangeMe@postgres-pgvector:5432/embeddings" }],
+  ["DATABASE_URL with a repeated option", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable&sslmode=require" }],
+  ["default broker credentials", "RABBITMQ_URL", { RABBITMQ_DEFAULT_USER: "guest", RABBITMQ_DEFAULT_PASS: "guest", RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/" }],
+  ["default pgvector password", "VECTOR_DATABASE_URL", { POSTGRES_PASSWORD: "postgres", VECTOR_DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres-pgvector:5432/embeddings" }],
+  ["blank AUTH_SECRET_KEY", "AUTH_SECRET_KEY", { AUTH_SECRET_KEY: "'" + " ".repeat(40) + "'" }],
+  ["AUTH_SECRET_KEY short in code points", "AUTH_SECRET_KEY", { AUTH_SECRET_KEY: "\u{1F600}".repeat(16) }],
+  ["placeholder AUTH_SECRET_KEY", "AUTH_SECRET_KEY", { AUTH_SECRET_KEY: "Replace-Me-Auth-Secret" }],
+  ["multi-line AUTH_SECRET_KEY", "AUTH_SECRET_KEY", { AUTH_SECRET_KEY: '"' + "a".repeat(20) + "\\n" + "b".repeat(20) + '"' }],
+  ["DATABASE_URL with a PostgreSQL scheme", "DATABASE_URL", { DATABASE_URL: "postgresql://root@cockroachdb:26257/defaultdb?sslmode=disable" }],
+  ["insecure DATABASE_URL on a remote host", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root@db.example.com:26257/defaultdb?sslmode=disable" }],
+  ["DATABASE_URL without database", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:26257?sslmode=disable" }],
+  ["DATABASE_URL with a driver override", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable&host=evil" }],
+  ["VECTOR_DATABASE_URL with another engine", "VECTOR_DATABASE_URL", { VECTOR_DATABASE_URL: `mysql://postgres:${enc(SECRETS.POSTGRES_PASSWORD)}@postgres-pgvector:5432/embeddings` }],
+  ["RABBITMQ_URL with an HTTP scheme", "RABBITMQ_URL", { RABBITMQ_URL: `http://${enc(SECRETS.RABBITMQ_DEFAULT_USER)}:${enc(SECRETS.RABBITMQ_DEFAULT_PASS)}@rabbitmq:5672/` }],
+  ["RABBITMQ_URL with port 0", "RABBITMQ_URL", { RABBITMQ_URL: `amqp://${enc(SECRETS.RABBITMQ_DEFAULT_USER)}:${enc(SECRETS.RABBITMQ_DEFAULT_PASS)}@rabbitmq:0/` }],
+  ["whitespace inside a DSN", "VECTOR_DATABASE_URL", { VECTOR_DATABASE_URL: `"postgresql+psycopg://postgres:${enc(SECRETS.POSTGRES_PASSWORD)}@postgres-pgvector:5432/embed dings"` }],
+  ["placeholder demo password with the seed enabled", "DEMO_PASSWORD", { DEMO_SEED_ENABLED: "yes", DEMO_PASSWORD: "password" }],
+  ["blank demo password with the seed enabled", "DEMO_PASSWORD", { DEMO_SEED_ENABLED: "true", DEMO_PASSWORD: "'   '" }],
+];
+
+for (const [label, variable, overrides] of BACKEND_REJECTS) {
+  test(`names ${variable} when the backend would reject it: ${label}`, async () => {
+    const result = await doctor(dotenv({ ...VALID, ...overrides }));
+    assert.equal(result.code, 1, result.text);
+    assert.match(result.text, new RegExp(`\\b${variable}\\b`));
+    assertNoSecrets(result.text);
+  });
+}
+
+test("a multi-line AUTH_SECRET_KEY is reported as multi-line, not as short", async () => {
+  const key = '"' + "a".repeat(20) + "\\n" + "b".repeat(20) + '"';
+  assert.equal(parseDotenv(`AUTH_SECRET_KEY=${key}`).get("AUTH_SECRET_KEY"), `${"a".repeat(20)}\n${"b".repeat(20)}`);
+  const result = await doctor(dotenv({ ...VALID, AUTH_SECRET_KEY: key }));
+  assert.equal(result.code, 1);
+  assert.match(result.text, /AUTH_SECRET_KEY no puede estar en blanco ni ocupar varias lineas/);
+});
+
+test("relaxes the placeholder and length rules in the test environment, like the backend", async () => {
+  const result = await doctor(dotenv({
+    ...VALID,
+    RUNTIME_ENVIRONMENT: "test",
+    AUTH_SECRET_KEY: "short",
+    RABBITMQ_DEFAULT_USER: "guest",
+    RABBITMQ_DEFAULT_PASS: "guest",
+    RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/",
+  }));
+  assert.equal(result.code, 0, result.text);
+});
+
+test("keeps the backend rule lists and the diagnostic in step", async () => {
+  const { BACKEND_RULES } = await import("./local-doctor.mjs");
+  const pythonSet = (source, name) => {
+    const match = new RegExp(`^${name} = \{([^}]*)\}`, "m").exec(source);
+    assert.ok(match, name);
+    return [...match[1].matchAll(/"([^"]+)"/g)].map((item) => item[1]).sort();
+  };
+  for (const service of ["backend", "processor"]) {
+    const source = fs.readFileSync(path.join(root, "apps", service, "app", "core", "runtime_secrets.py"), "utf8");
+    assert.deepEqual(pythonSet(source, "PLACEHOLDERS"), [...BACKEND_RULES.placeholders].sort(), service);
+    assert.deepEqual(pythonSet(source, "DATABASE_QUERY_OPTIONS"), [...BACKEND_RULES.databaseQueryOptions].sort(), service);
+    for (const scheme of [...BACKEND_RULES.databaseSchemes, ...BACKEND_RULES.vectorSchemes, ...BACKEND_RULES.brokerSchemes]) {
+      assert.ok(source.includes(`"${scheme}"`), `${service}: ${scheme}`);
+    }
+    for (const host of BACKEND_RULES.insecureDatabaseHosts) assert.ok(source.includes(`"${host}"`), `${service}: ${host}`);
+  }
+});

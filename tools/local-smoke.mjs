@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { parseDotenv, resolveVariables } from "./local-doctor.mjs";
+import { TRUE_VALUES, parseDotenv, resolveVariables } from "./local-doctor.mjs";
 
 const DEMO_EMAIL = "operator@example.com";
 const TENANT = "tenant-core";
@@ -12,8 +12,6 @@ const SUBSCRIPTION = "64e355d7-997c-491d-b0c1-8414dccfcf42";
 const PERIOD = { start_date: "2024-06-01", end_date: "2024-06-21" };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const REQUEST_TIMEOUT_MS = 10_000;
-// Values the backend settings parse as true for DEMO_SEED_ENABLED.
-const TRUE_VALUES = new Set(["1", "on", "t", "true", "y", "yes"]);
 
 class StepError extends Error {}
 

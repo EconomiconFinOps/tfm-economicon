@@ -84,16 +84,53 @@ export function resolveVariables(fileVars, env) {
   return vars;
 }
 
-function urlCredentials(value) {
+// Mirrors apps/{backend,processor}/app/core/runtime_secrets.py and the backend settings validators.
+export const BACKEND_RULES = {
+  placeholders: new Set(["secret", "password", "changeme", "change-me", "replace-me", "replace-me-auth-secret"]),
+  databaseQueryOptions: new Set(["sslmode", "connect_timeout", "application_name"]),
+  databaseSchemes: new Set(["cockroachdb", "cockroachdb+psycopg", "cockroachdb+psycopg2"]),
+  vectorSchemes: new Set(["postgresql", "postgresql+psycopg", "postgresql+psycopg2"]),
+  brokerSchemes: new Set(["amqp", "amqps"]),
+  insecureDatabaseHosts: new Set(["localhost", "127.0.0.1", "::1", "cockroachdb"]),
+};
+// Values the backend settings parse as true for boolean flags such as DEMO_SEED_ENABLED.
+export const TRUE_VALUES = new Set(["1", "on", "t", "true", "y", "yes"]);
+
+const DSN_RULES = {
+  DATABASE_URL: { schemes: BACKEND_RULES.databaseSchemes, database: true },
+  RABBITMQ_URL: { schemes: BACKEND_RULES.brokerSchemes, database: false },
+  VECTOR_DATABASE_URL: { schemes: BACKEND_RULES.vectorSchemes, database: true },
+};
+
+function parseDsn(name, value) {
+  if (/\s/.test(value)) return { error: `${name} no puede contener espacios ni saltos de linea.` };
   // Parsers disagree on which raw @ ends the credentials, so only an encoded @ is safe.
   const authority = value.split("://")[1]?.split(/[/?#]/)[0] ?? "";
-  if (authority.split("@").length > 2) return undefined;
-  try {
-    const url = new URL(value);
-    return { user: decodeURIComponent(url.username), password: decodeURIComponent(url.password) };
-  } catch {
-    return undefined;
+  if (authority.split("@").length > 2) {
+    return { error: `${name} tiene una @ sin codificar en el usuario o la password (escribela como %40).` };
   }
+  let url;
+  let user;
+  let password;
+  try {
+    url = new URL(value);
+    user = decodeURIComponent(url.username);
+    password = decodeURIComponent(url.password);
+  } catch {
+    return { error: `${name} no es una URL valida (los caracteres especiales de la password van codificados).` };
+  }
+  const rules = DSN_RULES[name];
+  const scheme = url.protocol.slice(0, -1).toLowerCase();
+  if (!rules.schemes.has(scheme)) return { error: `${name} debe usar uno de estos esquemas: ${[...rules.schemes].join(", ")}.` };
+  if (!url.hostname || url.port === "0") return { error: `${name} necesita un host y un puerto distinto de 0.` };
+  if (rules.database) {
+    if (!url.pathname.slice(1)) return { error: `${name} debe indicar la base de datos en la ruta.` };
+    const keys = [...url.searchParams.keys()];
+    if (keys.some((key) => !BACKEND_RULES.databaseQueryOptions.has(key)) || new Set(keys).size !== keys.length) {
+      return { error: `${name} solo admite estas opciones, una vez cada una: ${[...BACKEND_RULES.databaseQueryOptions].join(", ")}.` };
+    }
+  }
+  return { user, password, host: url.hostname.replace(/^\[|\]$/g, ""), sslmode: url.searchParams.get("sslmode") };
 }
 
 function checkConfiguration(vars, contract) {
@@ -102,37 +139,71 @@ function checkConfiguration(vars, contract) {
   for (const name of contract.required) {
     if (!present(name)) errors.push(`Falta ${name}: docker-compose.yml la exige y no puede estar vacia.`);
   }
+  const runtime = vars.get("RUNTIME_ENVIRONMENT") || "production";
+  const relaxed = runtime === "test";
+  const placeholder = (value) => BACKEND_RULES.placeholders.has(value.toLowerCase());
+  const insecureOptIn = ["development", "test"].includes(runtime) && (vars.get("ALLOW_INSECURE_LOCAL_DATABASE") || "false") === "true";
+  if (!insecureOptIn) {
+    errors.push(
+      "La CockroachDB local sin autenticacion exige RUNTIME_ENVIRONMENT=development o test y ALLOW_INSECURE_LOCAL_DATABASE=true, " +
+        "solo tras confirmar que el proyecto, sus datos y sus puertos son locales y desechables.",
+    );
+  }
+
+  const dsns = new Map();
+  for (const name of Object.keys(DSN_RULES)) {
+    if (!present(name)) continue;
+    const parsed = parseDsn(name, vars.get(name));
+    if (parsed.error) {
+      errors.push(parsed.error);
+      continue;
+    }
+    dsns.set(name, parsed);
+    if (name === "DATABASE_URL") {
+      const insecure = !parsed.password.trim() || parsed.sslmode === "disable";
+      if (insecure && insecureOptIn && !BACKEND_RULES.insecureDatabaseHosts.has(parsed.host)) {
+        errors.push(`DATABASE_URL sin password o con sslmode=disable solo se admite contra ${[...BACKEND_RULES.insecureDatabaseHosts].join(", ")}.`);
+      }
+    } else if (!parsed.user.trim() || !parsed.password.trim()) {
+      errors.push(`${name} necesita usuario y password.`);
+    }
+    if (!relaxed && name !== "DATABASE_URL" && placeholder(parsed.password)) {
+      errors.push(`${name} usa una password de ejemplo; el backend la rechaza.`);
+    }
+  }
+  if (!relaxed && dsns.get("RABBITMQ_URL")?.user === "guest" && dsns.get("RABBITMQ_URL")?.password === "guest") {
+    errors.push("RABBITMQ_URL usa las credenciales por defecto guest/guest; el backend las rechaza.");
+  }
+  if (!relaxed && dsns.get("VECTOR_DATABASE_URL")?.password === "postgres") {
+    errors.push("VECTOR_DATABASE_URL usa la password por defecto postgres; el backend la rechaza.");
+  }
 
   const pairs = [
     ["RABBITMQ_URL", "RABBITMQ_DEFAULT_USER", "user"],
     ["RABBITMQ_URL", "RABBITMQ_DEFAULT_PASS", "password"],
     ["VECTOR_DATABASE_URL", "POSTGRES_PASSWORD", "password"],
   ];
-  const parsed = new Map();
-  for (const name of new Set(pairs.map(([url]) => url))) {
-    if (!present(name)) continue;
-    const credentials = urlCredentials(vars.get(name));
-    if (credentials) parsed.set(name, credentials);
-    else errors.push(`${name} no es una URL valida (las passwords con caracteres especiales van codificadas, p. ej. @ como %40).`);
-  }
   for (const [urlName, name, part] of pairs) {
-    const credentials = parsed.get(urlName);
+    const credentials = dsns.get(urlName);
     if (credentials && present(name) && credentials[part] !== vars.get(name)) {
       errors.push(`${urlName} y ${name} no coinciden (compara tras decodificar la URL; los caracteres especiales van codificados).`);
     }
   }
 
-  if (present("AUTH_SECRET_KEY") && vars.get("AUTH_SECRET_KEY").length < MIN_AUTH_SECRET_LENGTH) {
-    errors.push(`AUTH_SECRET_KEY debe tener al menos ${MIN_AUTH_SECRET_LENGTH} caracteres.`);
+  const singleLine = (value) => value.trim() !== "" && !/[\r\n]/.test(value);
+  if (present("AUTH_SECRET_KEY")) {
+    const key = vars.get("AUTH_SECRET_KEY");
+    if (!singleLine(key)) {
+      errors.push("AUTH_SECRET_KEY no puede estar en blanco ni ocupar varias lineas.");
+    } else if (!relaxed && ([...key].length < MIN_AUTH_SECRET_LENGTH || placeholder(key))) {
+      errors.push(`AUTH_SECRET_KEY debe tener al menos ${MIN_AUTH_SECRET_LENGTH} caracteres y no ser un valor de ejemplo.`);
+    }
   }
-
-  const runtime = vars.get("RUNTIME_ENVIRONMENT") || "production";
-  const insecure = vars.get("ALLOW_INSECURE_LOCAL_DATABASE") || "false";
-  if (!["development", "test"].includes(runtime) || insecure !== "true") {
-    errors.push(
-      "La CockroachDB local sin autenticacion exige RUNTIME_ENVIRONMENT=development o test y ALLOW_INSECURE_LOCAL_DATABASE=true, " +
-        "solo tras confirmar que el proyecto, sus datos y sus puertos son locales y desechables.",
-    );
+  if (TRUE_VALUES.has((vars.get("DEMO_SEED_ENABLED") ?? "").trim().toLowerCase())) {
+    const demo = vars.get("DEMO_PASSWORD") ?? "";
+    if (!singleLine(demo) || (!relaxed && placeholder(demo))) {
+      errors.push("DEMO_PASSWORD es obligatoria con DEMO_SEED_ENABLED activo: en una linea, no en blanco y no un valor de ejemplo.");
+    }
   }
   return errors;
 }

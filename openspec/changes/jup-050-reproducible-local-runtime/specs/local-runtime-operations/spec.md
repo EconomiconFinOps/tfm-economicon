@@ -18,6 +18,15 @@ the first one. It SHALL check:
   decoding; `AUTH_SECRET_KEY` has at least 32 characters; the local insecure
   CockroachDB requires `RUNTIME_ENVIRONMENT` set to `development` or `test` and
   `ALLOW_INSECURE_LOCAL_DATABASE=true`;
+- that the values satisfy the startup rules that backend and processor enforce
+  in `app/core/runtime_secrets.py` and the backend settings: service schemes,
+  host, port and database of each DSN, allowed query options, the insecure
+  `DATABASE_URL` only towards a local host, non-empty credentials, no known
+  placeholder or default credential (`guest`/`guest`, `postgres`) outside
+  `RUNTIME_ENVIRONMENT=test`, single-line `AUTH_SECRET_KEY` of at least 32
+  characters counted as code points, and a valid `DEMO_PASSWORD` whenever the
+  demo seed is enabled; a test SHALL fail if the rule lists of backend or
+  processor change without the diagnostic;
 - that each host port the Compose file publishes, read from the Compose file
   with its default when the variable is unset (today `API_HOST_PORT`,
   `PROCESSOR_HOST_PORT`, `FRONTEND_HOST_PORT`, `AZURE_COST_API_HOST_PORT`,
@@ -52,6 +61,21 @@ modify or generate `.env` or any secret.
   `POSTGRES_PASSWORD`
 - **THEN** the diagnostic names the two variables that disagree, without
   printing either value
+
+#### Scenario: Values the backend would reject
+
+- **WHEN** `.env` uses `guest`/`guest` for RabbitMQ, a placeholder such as
+  `changeme` in any case, a `DATABASE_URL` with a PostgreSQL scheme, or an
+  `AUTH_SECRET_KEY` of 16 emoji
+- **THEN** the diagnostic names the variable and exits non-zero, instead of
+  reporting `[OK]` and leaving the backend to fail at startup
+
+#### Scenario: Values that Compose interpolates
+
+- **WHEN** `.env` builds `RABBITMQ_URL` from `${RABBITMQ_DEFAULT_USER}` and
+  `${RABBITMQ_DEFAULT_PASS}`, or contains `$` in an unquoted value
+- **THEN** the diagnostic checks the value Compose will pass after
+  interpolation, as `docker compose config` resolves it
 
 #### Scenario: URL-encoded password that agrees
 
