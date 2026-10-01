@@ -109,8 +109,9 @@ Lucia acepto el 2026-10-01 los hallazgos pendientes de las pasadas 2 y 3: P2-4 y
 ## Human Approval
 
 - Change: jup-050-reproducible-local-runtime
-- Approval type: pre-PR
+- Approval type: post-review
 - Decision: approved
+- Archive decision: archive
 - Approver: Lucia
 - Date: 2026-10-01
 - Review accepted: yes

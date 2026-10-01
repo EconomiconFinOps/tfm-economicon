@@ -4,7 +4,7 @@
 - Repositorio: `EconomiconFinOps/tfm-economicon`.
 - Rama: `feat/JUP-050-reproducible-local-runtime` hacia `develop` (base `1e897dc`).
 - Tarjeta: https://trello.com/c/4VYnTkuD.
-- Change: [`jup-050-reproducible-local-runtime`](../../openspec/changes/jup-050-reproducible-local-runtime/proposal.md).
+- Change: [`jup-050-reproducible-local-runtime`](../../openspec/changes/archive/2026-10-01-jup-050-reproducible-local-runtime/proposal.md).
 - Liderazgo: Lucia Mateo; pairing: Paris Arcos Martin; revision de PR: Victor Mendez; validacion, pruebas y documentacion: Alejandro Aguado.
 - Entorno: Windows 10 con Git Bash, Docker Desktop (Engine 29.7.2), Node.js 24.
 
@@ -71,3 +71,9 @@ Contexto temporal con `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` y 
 - El tiempo hasta sano del processor no se aislo del arranque total; `start_period` de 300 s cubre los ~160 s medidos en la exploracion del 2026-09-29.
 - El smoke escribe datos de prueba en `tenant-core` del stack contra el que se ejecuta.
 - No se ha probado en Linux ni macOS: los tests de puertos usan servidores reales y se ejecutan en la CI (Ubuntu).
+
+## Nota de release
+
+| Fecha | JUP | Nota de release | Review | ADRs |
+| --- | --- | --- | --- | --- |
+| 2026-10-01 | JUP-050 | Entorno local reproducible: RabbitMQ arranca a la primera con estado en `rabbitmq-data`, `local:doctor` diagnostica `.env`, puertos y volumenes antes de arrancar, y `local:smoke` recorre el camino minimo. Limites conocidos del diagnostico en el README. | [review.md](../../openspec/changes/archive/2026-10-01-jup-050-reproducible-local-runtime/review.md) | No aplica; se apoya en ADR-0011, que llega con el PR #51 |
