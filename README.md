@@ -66,9 +66,12 @@ corepack pnpm local:smoke
 2. `local:doctor` revisa `.env` antes de arrancar y lista todo lo que falta:
    variables obligatorias de `docker-compose.yml` vacias, credenciales de
    `RABBITMQ_URL` y `VECTOR_DATABASE_URL` que no coinciden con las del servicio,
-   `AUTH_SECRET_KEY` corta, el opt-in de la CockroachDB local, puertos del host
-   ocupados y si la instalacion es nueva o existente. Nombra variables, nunca
-   valores, y no crea ni modifica `.env`. Repitelo hasta que termine en `[OK]`.
+   valores que el backend rechazaria al arrancar (esquemas de las DSN,
+   passwords de ejemplo o por defecto, `AUTH_SECRET_KEY` corta), el opt-in de
+   la CockroachDB local, puertos del host ocupados y si la instalacion es nueva
+   o existente. Resuelve `.env` como Compose (`${VAR}`, comillas, entorno
+   primero). Nombra variables, nunca valores, y no crea ni modifica `.env`.
+   Repitelo hasta que termine en `[OK]`.
 3. El primer arranque, con build y volumenes nuevos, tarda varios minutos
    (unos 8 en la validacion de JUP-050, de ellos unos 2 en las migraciones del
    processor); los siguientes, menos de 2. `--wait` termina cuando todos los
