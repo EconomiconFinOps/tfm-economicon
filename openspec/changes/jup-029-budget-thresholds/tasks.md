@@ -6,5 +6,5 @@ JUP: JUP-029
 - [x] Implement stateless tenant-scoped budget evaluation.
 - [x] Test calculations, input validation and API boundaries.
 - [x] Record reproducible evidence and limitations.
-- [ ] Open linked PR against develop and update Trello with first-increment scope.
+- [x] Open linked PR against develop and update Trello with first-increment scope.
 - [ ] Obtain assigned pairing, human review and independent validation.

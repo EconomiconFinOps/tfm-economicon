@@ -30,6 +30,11 @@ Cockroach real 64 passed/0 skipped; OpenSpec 36/36, trazabilidad, higiene y
 compilacion correctas. El primer intento de Cockroach fallo por ausencia de
 tunel al Docker remoto; corregido y repetido con exito, sin cambios de producto.
 
-Completar PR; pairing/revision/validacion independientes de los roles
+[PR #61](https://github.com/EconomiconFinOps/tfm-economicon/pull/61) abierta contra
+develop. Trello actualizado y releido: rama, PR, evidencia y alcance del primer
+incremento enlazados; estado **30 — En curso**, criterios generales sin marcar.
+CI iniciada; JUP policy correcto en la primera consulta, resto en curso.
+
+Pendientes pairing/revision/validacion independientes de los roles
 asignados. La tarjeta padre permanece abierta: persistencia, UI, integracion con
 agente y alertas no forman parte de este primer incremento. No se envio Discord.
