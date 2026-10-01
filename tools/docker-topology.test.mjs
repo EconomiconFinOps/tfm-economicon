@@ -21,7 +21,7 @@ test("declares every MVP application, infrastructure and monitoring service", ()
   );
   assert.deepEqual(
     Object.keys(compose.volumes).sort(),
-    ["cockroach-data", "pgvector-data", "prometheus-data", "grafana-data"].sort(),
+    ["cockroach-data", "pgvector-data", "rabbitmq-data", "prometheus-data", "grafana-data"].sort(),
   );
 });
 
@@ -57,6 +57,36 @@ test("pins infrastructure images by immutable digest and checks their health", (
     assert.match(service.image, /^[^\s]+:[^\s]+@sha256:[a-f0-9]{64}$/);
     assert.ok(service.healthcheck, `${serviceName} must define a healthcheck`);
   }
+});
+
+function seconds(duration) {
+  const match = /^(?:(\d+)m)?(?:(\d+)s)?$/.exec(String(duration));
+  assert.ok(match && (match[1] || match[2]), `unsupported duration ${duration}`);
+  return Number(match[1] ?? 0) * 60 + Number(match[2] ?? 0);
+}
+
+test("keeps the state of every stateful infrastructure service on its named volume", () => {
+  const expected = {
+    cockroachdb: "cockroach-data:/cockroach/cockroach-data",
+    "postgres-pgvector": "pgvector-data:/var/lib/postgresql/data",
+    rabbitmq: "rabbitmq-data:/var/lib/rabbitmq",
+  };
+  for (const [serviceName, volume] of Object.entries(expected)) {
+    assert.deepEqual(compose.services[serviceName].volumes, [volume], serviceName);
+  }
+  // RabbitMQ stores its data per node name, which defaults to the container hostname.
+  assert.equal(compose.services.rabbitmq.hostname, "rabbitmq");
+});
+
+test("runs the RabbitMQ healthcheck as the rabbitmq user", () => {
+  const command = compose.services.rabbitmq.healthcheck.test;
+  assert.deepEqual(command.slice(0, 3), ["CMD", "gosu", "rabbitmq"]);
+  assert.ok(command.includes("rabbitmq-diagnostics"));
+});
+
+test("gives the processor a health window that covers its first migrations", () => {
+  const { start_period: startPeriod } = compose.services.processor.healthcheck;
+  assert.ok(seconds(startPeriod) >= 300, `processor start_period is ${startPeriod}`);
 });
 
 test("waits for healthy dependencies instead of container start only", () => {

@@ -1,9 +1,9 @@
 ## 1. Topologia de Compose
 
-- [ ] 1.1 RED: en `tools/docker-topology.test.mjs`, exigir el healthcheck de RabbitMQ con `gosu rabbitmq`, el volumen `rabbitmq-data` montado en `/var/lib/rabbitmq` con `hostname` fijo, cinco volumenes con nombre y `start_period` del processor de al menos 300 s; comprobar que fallan.
-- [ ] 1.2 GREEN: aplicar los cambios en `docker-compose.yml` y pasar `node --test tools/docker-topology.test.mjs`.
-- [ ] 1.3 Reproducir RF-096-001 antes y despues: arrancar solo RabbitMQ en un proyecto aislado y lanzar el healthcheck en el acto; con el cambio, el servidor arranca y `.erlang.cookie` pertenece a `rabbitmq`.
-- [ ] 1.4 Comprobar que pasa si `RABBITMQ_ERLANG_COOKIE` no coincide con el cookie guardado en `rabbitmq-data`, y documentarlo.
+- [x] 1.1 RED: en `tools/docker-topology.test.mjs`, exigir el healthcheck de RabbitMQ con `gosu rabbitmq`, el volumen `rabbitmq-data` montado en `/var/lib/rabbitmq` con `hostname` fijo, cinco volumenes con nombre y `start_period` del processor de al menos 300 s; comprobar que fallan.
+- [x] 1.2 GREEN: aplicar los cambios en `docker-compose.yml` y pasar `node --test tools/docker-topology.test.mjs`.
+- [x] 1.3 Reproducir RF-096-001 antes y despues: arrancar solo RabbitMQ en un proyecto aislado y lanzar el healthcheck en el acto; con el cambio, el servidor arranca y `.erlang.cookie` pertenece a `rabbitmq`.
+- [x] 1.4 Comprobar que pasa si `RABBITMQ_ERLANG_COOKIE` no coincide con el cookie guardado en `rabbitmq-data`, y documentarlo.
 
 ## 2. Diagnostico previo (`local:doctor`)
 
