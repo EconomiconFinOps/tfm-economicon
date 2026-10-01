@@ -7,8 +7,10 @@ JUP: JUP-025
    vocabulary. Do not widen or copy FinOpsResponse 1.0. Metrics and recommendations
    in that separate processor response retain their existing evidence_ids and
    validators; this chat does not generate either.
-2. Retrieve document identity, ownership, index and original text in the existing
-   tenant-filtered query. Check ownership before calling the assistant. Resolve
+2. Retrieve document identity, ownership and index in the tenant-filtered query.
+   Fetch original text once per distinct document in a second tenant-filtered
+   query, inside the same REPEATABLE READ transaction to avoid mixing versions
+   during concurrent reingestion. Build one request-local index per document. Check ownership before calling the assistant. Resolve
    only IDs from that retrieval set, without a second unscoped lookup. Unknown,
    duplicate or foreign references produce the same sanitized 502 and no assistant
    message. The submitted user message remains, consistent with other send failures.
@@ -19,7 +21,9 @@ JUP: JUP-025
 4. Use the original document's first Markdown heading as title, or its source if
    no heading exists. Whitespace-normalized chunks are matched to original text;
    the nearest preceding Markdown heading supplies section only for unique matches.
-   Missing or ambiguous locations remain null. Pages are supported in the contract
+   Missing or ambiguous locations remain null. Parse headings in one linear pass,
+   ignoring fenced/indented code and initial YAML front matter. Empty headings
+   are ignored; closing hashes require whitespace so C# remains intact. Pages are supported in the contract
    but are not inferred from plain text. No claim of PDF pagination support.
 5. The stable reference is `document:<id>/chunk:<index>`. It identifies the stored
    record but is not a public download URL. Render the historical excerpt locally;
@@ -37,3 +41,9 @@ JUP-024 regression tests unchanged. Validate the real pgvector query independent
 of PR #53, UI interaction, typecheck, build and OpenSpec. Backend can deploy before
 frontend because old IDs remain. Frontend tolerates the older backend. Rollback
 does not require a schema migration or metadata deletion.
+
+Review corrections (2026-10-01): trim source for both generated passages and
+citations, preserving exact links for padded input. Human approval/validation
+are tracked in Trello, not as an unfinished implementation checkbox. The known
+pre-validation user-message persistence remains recorded as RF-025-001; changing
+request idempotency/transactional persistence is a separate follow-up.

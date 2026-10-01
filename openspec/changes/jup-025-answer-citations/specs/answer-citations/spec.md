@@ -49,3 +49,23 @@ The change SHALL preserve FinOpsResponse 1.0 and its evidence validation rules.
 - **WHEN** a processor returns structured FinOps metrics or recommendations
 - **THEN** existing evidence_ids and JUP-024 validation continue unchanged
 - **AND** document citation rendering does not assert that chat runs this pipeline
+
+
+### Requirement: Parse document locations efficiently and faithfully
+Citation resolution SHALL ignore non-document headings, preserve title text and
+reuse a single location index per retrieved document within a consistent snapshot.
+
+#### Scenario: Empty or non-document headings
+- **WHEN** a document contains empty headings, CRLF, code comments or YAML front matter
+- **THEN** only nonempty document ATX headings supply titles and sections
+- **AND** the API falls back to source when no title exists without returning 500
+- **AND** a trailing hash in a title such as C# remains intact
+
+#### Scenario: Repeated document retrieval
+- **WHEN** four retrieved chunks belong to one document with a thousand headings
+- **THEN** its full text is fetched once and a single linear-time location index is built
+- **AND** both retrieval queries use the same tenant and consistent database snapshot
+
+#### Scenario: Padded source label
+- **WHEN** the source contains leading or trailing whitespace
+- **THEN** its display in both the cited passage and citation uses the same trimmed value

@@ -9,4 +9,12 @@
 - [x] 2.2 Verify real pgvector retrieval and browser interaction.
 - [x] 2.3 Run regression suites, typecheck, build and OpenSpec checks.
 - [x] 2.4 Record evidence, publish a PR against develop and link Trello (PR #55).
-- [ ] 2.5 Obtain assigned team review and functional validation before closure.
+- [x] 2.5 Record the assigned review and hand off remaining human approval and functional validation to Trello; do not count them as completed technical implementation.
+
+## 3. Review corrections (2026-10-01)
+- [x] 3.1 Handle empty/CRLF headings and preserve C# titles; API regression.
+- [x] 3.2 Index each document once; fetch text once per document with a consistent tenant-scoped snapshot; performance and real database tests.
+- [x] 3.3 Ignore fenced/indented code and initial YAML front matter as heading sources.
+- [x] 3.4 Normalize display source consistently and register retry finding RF-025-001.
+
+Pending human approval and functional validation remain in [JUP-025](https://trello.com/c/qzRy4RQc). This checklist does not authorize merge, claim approval, or close the card.

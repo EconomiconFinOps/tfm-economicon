@@ -45,6 +45,22 @@ def citation_record():
 
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+@pytest.mark.parametrize("document", ["# \r\nLos costes observados.\r\n", "#  \nLos costes observados."])
+def test_empty_markdown_headings_return_valid_citations_not_500(api, document):
+    from app.services.citations import DocumentCitations
+    locations = DocumentCitations(document)
+    record = citation_record()
+    record.update(content="Los costes observados.", title=locations.title or record["source"],
+                  section=locations.section("Los costes observados."))
+    api.vector.search_chunks.return_value = [record]
+    response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
+    assert response.status_code == 201
+    [citation] = response.json()["assistant_message"]["metadata"]["source_citations"]
+    assert citation["title"] == "FinOps"
+    assert citation["section"] is None
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
 def test_citations_persist_and_reopen_with_authorized_conversation(api):
     api.vector.search_chunks.return_value = [citation_record()]
     response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})

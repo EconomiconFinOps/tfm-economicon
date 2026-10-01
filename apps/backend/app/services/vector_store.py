@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine, text
+from sqlalchemy import bindparam, create_engine, text
 
-from app.services.citations import heading, section_for_chunk
+from app.services.citations import DocumentCitations
 
 
 class PgVectorQueryStore:
@@ -9,7 +9,7 @@ class PgVectorQueryStore:
 
     def search_chunks(self, tenant_id: str, query_embedding: list[float], top_k: int = 4) -> list[dict]:
         vector = "[" + ",".join(f"{value:.6f}" for value in query_embedding) + "]"
-        with self.engine.connect() as connection:
+        with self.engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
             rows = connection.execute(
                 text(
                     """
@@ -17,7 +17,6 @@ class PgVectorQueryStore:
                         dc.id AS chunk_id,
                         kd.id AS document_id,
                         kd.tenant_id AS tenant_id,
-                        kd.text_content AS document_text,
                         dc.chunk_index AS chunk_index,
                         kd.source AS source,
                         dc.content AS content,
@@ -35,15 +34,27 @@ class PgVectorQueryStore:
                     "query_embedding": vector,
                     "top_k": top_k,
                 },
+            ).all()
+            if not rows:
+                return []
+            # Fetch each source document once, scoped to the same tenant and
+            # transaction snapshot as retrieval (including concurrent reingestion).
+            documents = connection.execute(
+                text("""
+                    SELECT id, text_content FROM knowledge_documents
+                    WHERE tenant_id = :tenant_id AND id IN :document_ids
+                """).bindparams(bindparam("document_ids", expanding=True)),
+                {"tenant_id": tenant_id, "document_ids": list({row.document_id for row in rows})},
             )
+            locations = {row.id: DocumentCitations(row.text_content) for row in documents}
             return [
                 {
                     "chunk_id": row.chunk_id,
                     "document_id": row.document_id,
                     "tenant_id": row.tenant_id,
-                    "title": heading(row.document_text) or row.source,
+                    "title": locations[row.document_id].title or row.source.strip(),
                     "chunk_index": row.chunk_index,
-                    "section": section_for_chunk(row.document_text, row.content),
+                    "section": locations[row.document_id].section(row.content),
                     "source": row.source,
                     "content": row.content,
                     "distance": float(row.distance),

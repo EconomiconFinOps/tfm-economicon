@@ -1,7 +1,8 @@
 import pytest
+from time import perf_counter
 
 from app.services.assistant import AssistantService
-from app.services.citations import InvalidCitation, heading, resolve_citations, section_for_chunk
+from app.services.citations import DocumentCitations, InvalidCitation, heading, resolve_citations, section_for_chunk
 
 
 def chunk(identifier="chunk-1", **overrides):
@@ -57,3 +58,53 @@ def test_section_recovery_uses_original_document_not_flattened_chunk():
     assert section_for_chunk("Introducción\n## Costes\nTexto", "Introducción") is None
     assert section_for_chunk("## A\nRepetido\n## B\nRepetido", "Repetido") is None
     assert section_for_chunk(document, "No existe") is None
+
+
+@pytest.mark.parametrize("document", ["# \r\nTexto\r\n", "#  \nTexto", "#\nTexto", "# ###\nTexto"])
+def test_empty_headings_have_no_title_or_location(document):
+    assert heading(document) is None
+    assert section_for_chunk(document, "Texto") is None
+
+
+@pytest.mark.parametrize("prefix", [
+    "```bash\n# instalar dependencias\n```\n",
+    "~~~yaml\n# comentario\n~~~\n",
+    "````bash\n```\n# sigue dentro\n````\n",
+    "---\n# comentario YAML\ntitle: metadatos\n---\n",
+    "---\n# comentario YAML\n...\n",
+    "    # codigo indentado\n",
+    "\t# codigo indentado\n",
+])
+def test_non_heading_contexts_do_not_invent_titles_or_sections(prefix):
+    document = prefix + "Introduccion\n## Guia de C# ##\nCoste observado"
+    assert heading(document) == "Guia de C#"
+    assert section_for_chunk(document, "Introduccion") is None
+    assert section_for_chunk(document, "Coste observado") == "Guia de C#"
+
+
+def test_unclosed_fences_and_front_matter_are_conservatively_ignored():
+    for document in ["```\n# Texto", "---\n# Texto"]:
+        assert heading(document) is None
+
+
+def test_code_heading_does_not_replace_real_section():
+    document = "## Costes\n```bash\n# falso\n```\nEvidencia final"
+    assert section_for_chunk(document, "Evidencia final") == "Costes"
+
+
+def test_large_document_locations_complete_within_interactive_budget():
+    document = "".join(f"## Seccion {i}\n" + "coste " * 63 + f"fin-{i}\n" for i in range(1000))
+    start = perf_counter()
+    locations = DocumentCitations(document)
+    assert [locations.section(f"fin-{i}") for i in range(996, 1000)] == [f"Seccion {i}" for i in range(996, 1000)]
+    # Generous for CI: old implementation took >7 s for these four passages.
+    assert perf_counter() - start < 1.5
+
+
+def test_padded_source_matches_the_cited_passage():
+    record = chunk()
+    record["source"] = "  guia.md \t"
+    record["content"] = "Costes observados"
+    answer = AssistantService().answer("Consulta", [record])
+    [citation] = resolve_citations(answer["citations"], [record], "tenant-a")
+    assert f"- [1] {citation['source']}: {citation['excerpt']}" in answer["content"]

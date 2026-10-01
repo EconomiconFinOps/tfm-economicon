@@ -65,6 +65,47 @@ ya desbordan ese ancho y no forman parte de este cambio.
 - FinOpsResponse 1.0 pertenece al processor; este chat sigue usando extractos
   deterministas. No se acredita conexion a LLM, calculo de metricas ni ejecucion
   de recomendaciones. Sus guardrails y evidence_ids permanecen intactos.
-- Liderazgo: Alejandro Aguado. Pairing: Lucia Mateo. Revision: Paris Arcos Martin.
+- Liderazgo: Alejandro Aguado. Pairing: Paris Arcos Martin. Revision: Lucia Mateo.
   Validacion: Victor Mendez. Son asignaciones de Trello, no aprobaciones humanas.
 - La revision asignada y validacion del equipo siguen pendientes antes del cierre.
+
+
+## Correcciones de la revision — 01/10/2026
+
+[Revision de Lucia](https://github.com/EconomiconFinOps/tfm-economicon/pull/55#pullrequestreview-5369995407)
+sobre `1f28d42`: los tres problemas se reprodujeron antes de corregirlos.
+
+- Encabezados vacios con espacios o CRLF ya no generan texto en blanco: se usa
+  source como titulo y seccion null. Dos regresiones API confirman 201 y cita valida.
+- Un indice de ubicaciones por documento normaliza texto en una pasada e ignora
+  bloques cercados con backticks/tildes, codigo indentado y front matter YAML inicial.
+  Las cercas sin cerrar se tratan conservadoramente como codigo. C# se conserva;
+  solo se retiran hashes de cierre precedidos de espacio.
+- La consulta de vecinos no trae texto completo. Una segunda consulta autorizada
+  obtiene cada documento una sola vez; ambas usan la misma transaccion REPEATABLE
+  READ. Las pruebas reales verifican cuatro chunks/un indice y una reingesta entre
+  las dos consultas sin mezclar versiones.
+- El source se recorta igual en el pasaje y en la cita, restaurando su enlace.
+- La tarea tecnica 2.5 registra el traspaso del pendiente humano a Trello. No se
+  acredita aprobacion, validacion funcional del equipo ni cierre de tarjeta.
+- Se registra [RF-025-001](../../openspec/findings/backlog.md): un fallo 502 deja
+  persistido el mensaje de usuario y un reintento lo duplica. Sigue abierto, como
+  solicito la review; no se ha cambiado el contrato de reintentos ni persistencia.
+
+Medicion local reproducible: documento de 400.780 caracteres, 1.000 encabezados y
+cuatro fragmentos finales. Antes: 7,34 s. Despues: 0,0113 s para indexacion y cuatro
+busquedas. Es una medicion del procesamiento local, no una promesa de latencia
+HTTP. La prueba automatizada exige menos de 1,5 s con margen para CI.
+
+Validacion de esta correccion:
+
+- Backend completo: 353 PASS, 14 SKIP de servicios opt-in.
+- Pgvector real efimero separado: 5 PASS, incluidas lectura unica y reingesta.
+- Frontend focalizado de citas/conversaciones: 14 PASS. Sin cambios de frontend.
+- OpenSpec estricto 35/35, trazabilidad y diff check correctos.
+
+Comandos: `python -m pytest apps/backend/tests -q`; `python -m pytest
+apps/backend/tests/test_tenant_isolation_vector.py -q` con la variable de conexion
+sintetica `JUP086_VECTOR_TEST_URL`; `corepack pnpm --filter @finops/frontend test --
+src/components/AnswerEvidence.test.tsx src/pages/ConversationsPage.test.tsx
+tests/conversations.test.tsx --maxWorkers=1`. Python usa `PYTHONPATH=apps/backend`.

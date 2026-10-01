@@ -7,7 +7,7 @@ class AssistantService:
             )
         else:
             snippets = "\n".join(
-                f"- [{index}] {chunk['source']}: {chunk['content'][:140]}"
+                f"- [{index}] {chunk['source'].strip()}: {chunk['content'][:140]}"
                 for index, chunk in enumerate(retrieved_chunks[:3], start=1)
             )
             content = (
