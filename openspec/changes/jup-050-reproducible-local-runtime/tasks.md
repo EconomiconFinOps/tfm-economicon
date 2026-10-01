@@ -34,7 +34,7 @@
 
 ## 6. Cierre y verificacion
 
-- [ ] 6.1 Bateria completa: `corepack pnpm test` de las herramientas tocadas, `docker:validate`, `ci:check:test`, `openspec:validate`, `jup:check -- --change jup-050-reproducible-local-runtime` y `jup:cleanup:check`; registrar comandos y resultados.
+- [x] 6.1 Bateria completa: `corepack pnpm test` de las herramientas tocadas, `docker:validate`, `ci:check:test`, `openspec:validate`, `jup:check -- --change jup-050-reproducible-local-runtime` y `jup:cleanup:check`; registrar comandos y resultados.
 - [ ] 6.2 Revision adversarial con el agente `adversarial-reviewer` hasta veredicto `accept`, o findings restantes aceptados explicitamente por Lucia.
 - [ ] 6.3 `review.md` con resumen, decisiones, validacion, pasadas adversariales, barrido de patrones, riesgos, findings y aplicabilidad de ADR.
 - [x] 6.4 `docs/evidence/JUP-050-validation.md` con los arranques, el smoke, la parada y reinicio y los controles.

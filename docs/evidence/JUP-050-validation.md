@@ -23,6 +23,7 @@
 | `corepack pnpm docker:validate` | 30 passed |
 | `corepack pnpm ci:check:test` | 8 passed (incluye `local:test` en el job "OpenSpec") |
 | Resto del job "OpenSpec" (`pr:check:test`, `repository:governance:test`, `jup:check:test`, `jup:cleanup:test`, `roadmap:test`, `llm-gateway:test`, `assistant-corpus:test`, `validation-questions:test`, validaciones y `openspec:validate`) | todos correctos; `openspec:validate` 36/36 |
+| Bateria final de cierre (2026-10-01): `jup:check -- --change jup-050-reproducible-local-runtime`, `jup:cleanup:check`, `jup:check:test` (7), `jup:cleanup:test` (6), `openspec:validate` (36/36) y los tres grupos anteriores | todos con salida 0 |
 
 Cada grupo se escribio primero en rojo (doctor: 17 fallos sobre un esqueleto vacio; smoke: 12; topologia: 4) y despues se implemento. Mutantes, todos detectados por algun test: sin decodificar las URL, precedencia del entorno invertida, un valor en un mensaje, sin la sonda de loopback o de IPv6, sin excluir los puertos del propio proyecto, sin comentario en linea, opt-in o entorno sin distinguir mayusculas, sin guarda de `@`, `$$` sin escapar, `${VAR-x}` como `${VAR:-x}`, longitud en UTF-16, placeholders sensibles a mayusculas, sin relajar en `test`, opciones repetidas en la DSN, sin guarda UUID, sin bearer, resumen vacio aceptado, job `failed` sin cortar, sin chequeo del seed, motivo de error crudo, y `start_period` de 299 s.
 
