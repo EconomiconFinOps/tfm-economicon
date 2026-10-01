@@ -1,6 +1,6 @@
 // Casos adicionales (remediacion de mutation testing, JUP-097 grupo 5, tarea
 // 5.4) complementarios a DashboardPage.test.tsx, que ya esta commiteado y
-// bloqueado por el hook del harness (lock-committed-tests.mjs). No se
+// estaba protegido contra edicion en el entorno local. No se
 // duplican sus aserciones (bloqueo sin tenant / resumen con tenant activo);
 // este archivo cubre dos mutantes distintos que sobrevivieron:
 // - OptionalChaining en `user?.full_name` (linea 74): sin este caso, ningun
