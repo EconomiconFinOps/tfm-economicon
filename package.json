@@ -10,6 +10,8 @@
     "typecheck": "turbo run typecheck",
     "docker:build": "turbo run docker:build",
     "docker:validate": "node --test tools/docker-topology.test.mjs",
+    "local:doctor": "node tools/local-doctor.mjs",
+    "local:test": "node --test tools/local-doctor.test.mjs",
     "openspec": "openspec",
     "openspec:list": "openspec list",
     "openspec:status": "openspec status",

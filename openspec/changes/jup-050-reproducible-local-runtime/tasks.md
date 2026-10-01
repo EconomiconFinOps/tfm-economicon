@@ -7,9 +7,9 @@
 
 ## 2. Diagnostico previo (`local:doctor`)
 
-- [ ] 2.1 RED: tests de `tools/local-doctor.test.mjs` para cada escenario de la spec: `.env` ausente (no se crea), copia de `.env.example`, credenciales que no coinciden, password con `@`, `:` y `%` codificada que si coincide, entorno del proceso que gana a `.env`, puerto ocupado por un servidor real, puerto del propio proyecto, instalacion existente, y ningun valor secreto en stdout ni stderr con secretos centinela.
-- [ ] 2.2 GREEN: implementar `tools/local-doctor.mjs` y el script `local:doctor` en `package.json`.
-- [ ] 2.3 Mutantes: quitar la decodificacion de URL, invertir la precedencia del entorno e imprimir un valor en un mensaje; cada uno debe hacer fallar algun test.
+- [x] 2.1 RED: tests de `tools/local-doctor.test.mjs` para cada escenario de la spec: `.env` ausente (no se crea), copia de `.env.example`, credenciales que no coinciden, password con `@`, `:` y `%` codificada que si coincide, entorno del proceso que gana a `.env`, puerto ocupado por un servidor real, puerto del propio proyecto, instalacion existente, y ningun valor secreto en stdout ni stderr con secretos centinela.
+- [x] 2.2 GREEN: implementar `tools/local-doctor.mjs` y el script `local:doctor` en `package.json`.
+- [x] 2.3 Mutantes: quitar la decodificacion de URL, invertir la precedencia del entorno e imprimir un valor en un mensaje; cada uno debe hacer fallar algun test.
 
 ## 3. Smoke del recorrido minimo (`local:smoke`)
 

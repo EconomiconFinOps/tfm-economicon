@@ -7,7 +7,8 @@ that runs before the stack starts and reports every problem it finds, not only
 the first one. It SHALL check:
 
 - that `.env` exists, and if not, point to the README instead of creating it;
-- that every variable Compose requires without default is present and not empty:
+- that every variable the Compose file requires without default (`${VAR:?...}`)
+  is present and not empty, reading the list from the Compose file itself; today
   `AUTH_SECRET_KEY`, `RABBITMQ_DEFAULT_USER`, `RABBITMQ_DEFAULT_PASS`,
   `RABBITMQ_ERLANG_COOKIE`, `RABBITMQ_URL`, `POSTGRES_PASSWORD`,
   `VECTOR_DATABASE_URL`, `DATABASE_URL` and `GRAFANA_ADMIN_PASSWORD`;
@@ -17,11 +18,13 @@ the first one. It SHALL check:
   decoding; `AUTH_SECRET_KEY` has at least 32 characters; the local insecure
   CockroachDB requires `RUNTIME_ENVIRONMENT` set to `development` or `test` and
   `ALLOW_INSECURE_LOCAL_DATABASE=true`;
-- that each published host port (`API_HOST_PORT`, `PROCESSOR_HOST_PORT`,
-  `FRONTEND_HOST_PORT`, `AZURE_COST_API_HOST_PORT`, `COCKROACH_SQL_PORT`,
-  `COCKROACH_HTTP_PORT`, `RABBITMQ_PORT`, `RABBITMQ_MANAGEMENT_PORT`,
-  `PGVECTOR_PORT`, with the Compose defaults when unset) is free, or held by
-  this Compose project;
+- that each host port the Compose file publishes, read from the Compose file
+  with its default when the variable is unset (today `API_HOST_PORT`,
+  `PROCESSOR_HOST_PORT`, `FRONTEND_HOST_PORT`, `AZURE_COST_API_HOST_PORT`,
+  `COCKROACH_SQL_PORT`, `COCKROACH_HTTP_PORT`, `RABBITMQ_PORT`,
+  `RABBITMQ_MANAGEMENT_PORT`, `PGVECTOR_PORT`, `PROMETHEUS_PORT` and
+  `GRAFANA_PORT`), is a valid port number and is free on the address Compose
+  binds it to, or held by this Compose project;
 - which named volumes of the project already exist, stating whether this is a
   new or an existing installation.
 
@@ -66,6 +69,17 @@ modify or generate `.env` or any secret.
 
 - **WHEN** another process listens on the host port configured for a service
 - **THEN** the diagnostic names the variable and port, and exits non-zero
+
+#### Scenario: Two services on the same host port
+
+- **WHEN** two port variables resolve to the same number
+- **THEN** the diagnostic names both variables and exits non-zero
+
+#### Scenario: Docker is not available
+
+- **WHEN** the Docker daemon does not answer
+- **THEN** the diagnostic still reports the `.env` problems, says that Docker
+  does not answer, and exits non-zero
 
 #### Scenario: Port held by this project
 
