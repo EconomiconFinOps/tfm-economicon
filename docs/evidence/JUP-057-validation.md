@@ -2,6 +2,8 @@
 
 Fecha: 2026-10-01. [Tarjeta](https://trello.com/c/29e5Pisa).
 Base `de0d62e`; rama `feat/JUP-057-anomalies-panel`.
+[PR #62](https://github.com/EconomiconFinOps/tfm-economicon/pull/62), implementación
+`c6015a3`. Tarjeta enlazada y lectura posterior verificada en **40 — En revisión**.
 
 ## Resultado y alcance
 

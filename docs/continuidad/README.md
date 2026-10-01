@@ -4,4 +4,4 @@
 
 | Tema | Contenido y estado | Actualizado |
 | --- | --- | --- |
-| [Panel de anomalías](panel-anomalias.md) | JUP-057: interfaz con fixtures implementada; 269 tests y navegador PASS, pendiente revisión humana. | 2026-10-01 |
+| [Panel de anomalías](panel-anomalias.md) | JUP-057 / PR #62: interfaz con fixtures; 269 tests y navegador PASS, Trello En revisión. | 2026-10-01 |

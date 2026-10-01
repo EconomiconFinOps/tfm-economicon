@@ -14,5 +14,5 @@
 - [x] 3.1 Ejecutar pruebas de comportamiento y comprobaciones frontend.
 - [x] 3.2 Inspeccionar desktop/móvil y resolver defectos del panel; RF-026-002 heredado continúa abierto.
 - [x] 3.3 Validar OpenSpec, trazabilidad e higiene; registrar evidencia y continuidad.
-- [ ] 3.4 Abrir PR hacia develop y enlazarla en Trello para revisión humana.
+- [x] 3.4 Abrir PR #62 hacia develop y enlazarla en Trello para revisión humana.
 - [ ] 3.5 Revisión de Paris y validación de Victor según roles de Trello.

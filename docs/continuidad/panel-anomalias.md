@@ -40,6 +40,12 @@ Evidencias locales: `materiales/07-evidencias/JUP-057-panel-2026-10-01/` en el
 workspace padre (capturas, resultados, script y log completo). La ejecución usa
 `corepack pnpm --filter @finops/frontend dev` y `/anomalies` con sesión demo.
 
-Pendientes: enlazar PR/Trello; revisión Paris, pairing Lucia y validación Victor
-según roles vigentes. No se atribuyen aprobaciones humanas ni se hace merge.
+Entrega: [PR #62](https://github.com/EconomiconFinOps/tfm-economicon/pull/62) abierta
+hacia develop, implementación `c6015a3`. Enlace y evidencia añadidos conservando
+la descripción anterior de Trello; movida a **40 — En revisión** y lectura
+posterior verificada el 01/10/2026 21:29 Europe/Paris, mediante el puente autorizado.
+Resultado local `trello-after.json`; no se envían comentarios ni Discord.
+
+Pendientes: revisión Paris, pairing Lucia y validación Victor según roles
+vigentes. No se atribuyen aprobaciones humanas ni se hace merge.
 Integración real futura depende de JUP-030. No se envían mensajes a Discord.
