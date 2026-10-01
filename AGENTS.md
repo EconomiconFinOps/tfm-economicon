@@ -6,6 +6,9 @@ This pnpm/Turborepo monorepo contains the frontend, Python backend and processor
 
 ## Source Of Truth And Identifiers
 
+For project continuity, read [docs/continuidad/README.md](docs/continuidad/README.md)
+and the relevant topic before work; update them after meaningful milestones.
+
 - Trello owns scope, priorities, assignees, rotating responsibilities, delivery dates and task status.
 - OpenSpec stores versioned requirements, implementation design, technical tasks and acceptance scenarios.
 - GitHub stores code, documentation, pull requests and technical review history.
