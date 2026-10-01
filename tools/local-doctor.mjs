@@ -56,7 +56,7 @@ export function readComposeContract(composeText) {
   return { required, ports };
 }
 
-function resolveVariables(fileVars, env) {
+export function resolveVariables(fileVars, env) {
   const vars = new Map(fileVars);
   for (const [key, value] of Object.entries(env)) {
     if (value !== undefined) vars.set(key, value);

@@ -13,8 +13,8 @@
 
 ## 3. Smoke del recorrido minimo (`local:smoke`)
 
-- [ ] 3.1 RED: tests de `tools/local-smoke.test.mjs` con un backend HTTP simulado y un `docker compose` simulado: orden de los pasos, paso fallido nombrado, espera acotada, seed demo desactivado, sin password ni token en la salida.
-- [ ] 3.2 GREEN: implementar `tools/local-smoke.mjs` y el script `local:smoke`.
+- [x] 3.1 RED: tests de `tools/local-smoke.test.mjs` con un backend HTTP simulado y un `docker compose` simulado: orden de los pasos, paso fallido nombrado, espera acotada, seed demo desactivado, sin password ni token en la salida.
+- [x] 3.2 GREEN: implementar `tools/local-smoke.mjs` y el script `local:smoke`.
 - [ ] 3.3 Ejecutar el smoke dos veces seguidas contra un stack real recien levantado.
 - [ ] 3.4 Control negativo: con el processor parado, el smoke falla en el paso del processor dentro de su espera.
 
