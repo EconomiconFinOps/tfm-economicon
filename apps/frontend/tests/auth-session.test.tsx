@@ -2,7 +2,7 @@ import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { environmentManager, timeoutManager, type QueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
-import { billing, conversation, ingestJob, loginResponse, operator, session, tenants } from "./fixtures";
+import { billing, billingWithCost, conversation, ingestJob, loginResponse, operator, session, tenants } from "./fixtures";
 import { deferredResponse, jsonResponse, mockBackend, renderApp, restoreSession, SESSION_KEY, TENANT_KEY } from "./test-support";
 
 function seedPrivateCache(client: QueryClient) {
@@ -453,7 +453,7 @@ describe("session generations exclude abandoned HTTP work", () => {
     const bLogin = { ...loginResponse, access_token: next === "different" ? "session-b-token" : session.accessToken, user: bUser };
     const oldData = flow === "profile" ? { ...operator, full_name: "Obsolete A" }
       : flow === "tenants" ? { items: [{ ...tenants[0], name: "Obsolete A tenant" }] }
-      : flow === "billing" ? { ...billing, monthly_spend: 999999 }
+      : flow === "billing" ? billingWithCost("999999.00")
       : { ...conversation, id: "obsolete-a-conversation" };
     const heldResponse = jsonResponse(null);
     const parse = vi.spyOn(heldResponse, "json").mockImplementation(async () => (await body.promise).json());

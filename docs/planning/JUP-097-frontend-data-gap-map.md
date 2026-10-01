@@ -8,19 +8,30 @@ traduce a las pantallas ya portadas el trabajo de análisis que ya hizo
 backend"), sirviendo de insumo directo para la decisión de épica sobre `RF-091-003`.
 
 Esta tarjeta **no construye ninguna de estas capacidades** (decisión de alcance tomada antes de
-proponer, ver `proposal.md`): el backend expone hoy exactamente los mismos 10 endpoints que
+proponer, ver `proposal.md`): en la instantánea inicial de JUP-097, el backend exponía los mismos 10 endpoints que
 [JUP-091](JUP-091-economicon-source-inventory.md) ya había catalogado sin cambio.
+
+Actualización técnica local — **27/09/2026**: [JUP-026](../../openspec/changes/jup-026-azure-cost-kpis/proposal.md)
+implementa agregados reales en `GET /billing/summary`, consumidos por `/` y `/overview-legacy`,
+con [15 comprobaciones TEMP en navegador contra la API real PASS](../evidence/JUP-026-validation.md)
+y [revisión técnica REVIEW_PASS](../../openspec/changes/jup-026-azure-cost-kpis/review.md), con la limitación móvil heredada
+[RF-026-002](../../openspec/findings/backlog.md#rf-026-002). Paris aprobó el 27/09/2026 aplazar RF-026-002 fuera de JUP-026,
+con revisión antes del paso de P0 a P1. El estado efectivo de QA consta en [review.md](../../openspec/changes/jup-026-azure-cost-kpis/review.md);
+la aprobación final posterior a QA y la integración siguen pendientes. Las filas ejecutivas de total, ahorro y C2
+indican este estado; sus referencias a constantes identifican la instantánea histórica de JUP-097.
+Los gráficos mensuales, la exportación y el inventario siguen siendo demostración.
+`RF-091-003` y `RF-095-002` permanecen abiertos; esto no modifica el estado operativo de las tarjetas.
 
 ## Tabla: pantalla → dato → capacidad ausente → finding
 
 | Pantalla (componente) | Ruta | Módulo de demostración | Dato | Capacidad ausente | Finding |
 | --- | --- | --- | --- | --- | --- |
-| `ExecutiveCostDashboard` | `/` (index) | `executiveCostDashboard.ts` | `kpiData[0]` "Coste Total Mensual" | Ninguna — **PARCIAL**: `GET /billing/summary` → `monthly_spend` existe, pero devuelve un valor codificado a mano | `RF-091-004` |
-| `ExecutiveCostDashboard` | `/` | `executiveCostDashboard.ts` | `kpiData[2]` "Ahorro Potencial" | Ninguna — **PARCIAL**: `GET /billing/summary` → `savings_identified`, mismo caso | `RF-091-004` |
+| `ExecutiveCostDashboard` | `/` (index) | `executiveCostDashboard.ts` (origen histórico) | Antes: `kpiData[0]` "Coste Total Mensual"; ahora: total del periodo | **Implementado localmente en JUP-026, pendiente de integración**: `GET /billing/summary` → `totals`, agregados reales como cadenas decimales exactas por moneda y periodo UTC seleccionable; antes codificado a mano | `RF-091-004` |
+| `ExecutiveCostDashboard` | `/` | `executiveCostDashboard.ts` (origen histórico) | Antes: `kpiData[2]` "Ahorro Potencial"; ahora: no disponible | **Ahorro NO implementado**: JUP-026 retira el valor ficticio; `savings_identified: null` y ahorro no disponible en ejecutiva y legacy. Cambio local pendiente de integración; falta el motor de ahorro | `RF-091-004` |
 | `ExecutiveCostDashboard` | `/` | `executiveCostDashboard.ts` | `kpiData[3]` "Recursos Activos" | **C7** — inventario de recursos activos | `RF-091-003` |
 | `ExecutiveCostDashboard` | `/` | `executiveCostDashboard.ts` | `monthlyData` (serie mensual compute/storage/network) | **C1** — serie temporal de costes | `RF-091-003` |
-| `ExecutiveCostDashboard` | `/` | `executiveCostDashboard.ts` | `serviceData` (reparto % por servicio) | **C2** — desglose por dimensión | `RF-091-003` |
-| `ExecutiveCostDashboard` | `/` | `executiveCostDashboard.ts` | `kpiData[1]` "Coste por Servicio" | **C2** — desglose por dimensión | `RF-091-003` |
+| `ExecutiveCostDashboard` | `/` | `executiveCostDashboard.ts` (origen histórico) | Antes: `serviceData` (reparto % por servicio); ahora: tabla de importes | **C2 — implementado localmente en JUP-026, pendiente de integración**: tabla real seleccionable por suscripción, grupo de recursos, servicio, proyecto o etiqueta; importes exactos por moneda, sin gráfico porcentual | `RF-091-003` |
+| `ExecutiveCostDashboard` | `/` | `executiveCostDashboard.ts` (origen histórico) | Antes: `kpiData[1]` "Coste por Servicio"; ahora: tabla de importes | **C2 — implementado localmente en JUP-026, pendiente de integración**: mismo desglose real del periodo UTC; dimensiones ausentes y cobertura parcial explícitas | `RF-091-003` |
 | `OperationalCostDashboard` | `/operational` | `operationalCostDashboard.ts` | `detailedData` (servicio, proyecto, coste, uso, proveedor) | **C2 + C3** — desglose por dimensión y multi-cloud AWS/GCP | `RF-091-003` |
 | `OperationalCostDashboard` | `/operational` | `operationalCostDashboard.ts` | `hourlyData` (coste por franja horaria) | **C1** — serie temporal (granularidad horaria) | `RF-091-003` |
 | `OperationalCostDashboard` | `/operational` | `operationalCostDashboard.ts` | `providerData` (AWS / Azure / GCP) | **C3** — multi-cloud AWS/GCP | `RF-091-003` |
@@ -39,7 +50,7 @@ Mismas 7 capacidades que catalogó JUP-091, con las pantallas ya portadas que la
 | # | Capacidad ausente | Pantallas afectadas (ya portadas) | Dato ya en BD |
 | --- | --- | --- | --- |
 | C1 | Serie temporal de costes (mensual y por hora) | `ExecutiveCostDashboard`, `OperationalCostDashboard` | Sí — registros normalizados con fecha (JUP-072 a JUP-077) |
-| C2 | Desglose por dimensión (servicio, proyecto, recurso) | `ExecutiveCostDashboard`, `OperationalCostDashboard` | Parcial — dimensiones Azure normalizadas |
+| C2 | Desglose por dimensión: JUP-026 implementado localmente, pendiente de integración (27/09/2026); C2 + C3 operativo sigue sin resolver | `ExecutiveCostDashboard`: tabla real por suscripción, grupo de recursos, servicio, proyecto o etiqueta; `OperationalCostDashboard`: pendiente | Dimensiones Azure normalizadas agregadas por periodo UTC y moneda; cobertura parcial explícita cuando faltan dimensiones |
 | C3 | Multi-cloud AWS / GCP | `OperationalCostDashboard` | No — solo se ingesta Azure |
 | C4 | Objetivos y acciones de recorte (impacto, estado, responsable, fecha) | `ExecutiveCutDashboard` | No — entidad de gestión inexistente |
 | C5 | Detección de anomalías | `AnomaliesPanel` | No — requiere lógica de detección |

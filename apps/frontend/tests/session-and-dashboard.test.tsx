@@ -1,7 +1,7 @@
 import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { billing, health, loginResponse, session, tenants } from "./fixtures";
+import { billing, billingWithCost, health, loginResponse, session, tenants } from "./fixtures";
 import {
   deferredResponse,
   expectTenantRequest,
@@ -131,7 +131,7 @@ describe("login and session recovery", () => {
 describe("tenant bootstrap and dashboard", () => {
   it("replaces a stale tenant selection and scopes billing requests to each selected tenant", async () => {
     const user = userEvent.setup();
-    const southBilling = { ...billing, monthly_spend: 9876 };
+    const southBilling = billingWithCost("9876.00");
     const { requests } = mockBackend({
       "GET /billing/summary": (request) => jsonResponse(
         request.headers.get("X-Tenant-Id") === tenants[1].id ? southBilling : billing
@@ -140,7 +140,7 @@ describe("tenant bootstrap and dashboard", () => {
     restoreSession("tenant-no-longer-authorized");
     renderApp(["/overview-legacy"]);
 
-    expect(await screen.findByText(`$${billing.monthly_spend.toLocaleString()}`)).toBeVisible();
+    expect(await screen.findByText(new RegExp(billing.monthly_spend))).toBeVisible();
     expect(screen.getByLabelText("Ambito de cliente")).toHaveValue(tenants[0].id);
     expect(window.localStorage.getItem(TENANT_KEY)).toBe(tenants[0].id);
     const bootstrap = requests.find((request) => request.path === "/tenants");
@@ -148,7 +148,7 @@ describe("tenant bootstrap and dashboard", () => {
     expect(bootstrap?.headers.has("X-Tenant-Id")).toBe(false);
 
     await user.selectOptions(screen.getByLabelText("Ambito de cliente"), tenants[1].id);
-    expect(await screen.findByText(`$${southBilling.monthly_spend.toLocaleString()}`)).toBeVisible();
+    expect(await screen.findByText(new RegExp(southBilling.monthly_spend))).toBeVisible();
     expect(window.localStorage.getItem(TENANT_KEY)).toBe(tenants[1].id);
     const billingRequests = requests.filter((request) => request.path === "/billing/summary");
     expect(billingRequests).toHaveLength(2);
@@ -204,7 +204,7 @@ describe("tenant bootstrap and dashboard", () => {
     expect(screen.queryByText("Monthly Spend")).not.toBeInTheDocument();
     await act(async () => pending.resolve(billing));
     expect(await screen.findByText("Monthly Spend")).toBeVisible();
-    expect(screen.getByText(`$${billing.savings_identified.toLocaleString()}`)).toBeVisible();
+    expect(screen.getByText(/unavailable|no disponible/i)).toBeVisible();
   });
 
   // Reactivado (Punto 5 implementado): idem, el enlace real es un <NavLink>.
