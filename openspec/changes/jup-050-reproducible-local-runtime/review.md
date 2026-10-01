@@ -76,6 +76,21 @@ Barrido del revisor: el patron de P2-1 solo aparece en `checkConfiguration`; el 
 - P2-3: las passwords se decodifican como `unquote` de Python (los `%XX` validos se decodifican y el resto queda literal). Test en rojo antes del cambio, con control de que una password distinta sigue dando desacuerdo.
 - P2-4 queda como limite documentado: no se ha confirmado fuera de Windows y no se puede comprobar sin un host Linux con Docker. Pendiente de que Lucia lo acepte.
 
+## Adversarial Review (pass 3)
+
+Base `1e897dc`, head `742d0f5`. Revisor sin acceso al razonamiento de la implementacion ni a las pasadas anteriores; 227 casos contra `Settings()` real del backend y 75 mutantes. Veredicto: `accept` (sin BLOCKING ni HIGH).
+
+| ID | Sev. | Estado | Descripcion | Resolucion |
+|---|---|---|---|---|
+| P3-1 | MEDIUM | CONFIRMED | Un DSN de base de datos con `host:` sin puerto se acepta; el backend lo rechaza (`int('')`). | Corregido: `parseDsn` lo rechaza en `DATABASE_URL` y `VECTOR_DATABASE_URL`; en `RABBITMQ_URL` coincide con el backend. Test en rojo antes del cambio. |
+| P3-2 | MEDIUM | CONFIRMED | Los espacios en blanco de Python (`` a ``) no coinciden con los de JS en secretos, password demo y DSN. | Sin corregir; pendiente de Lucia. |
+| P3-3 | MEDIUM | CONFIRMED | El doctor no valida `DEMO_SEED_ENABLED` invalido, `CORS_ALLOWED_ORIGINS` ni `AUTH_TOKEN_TTL_MINUTES`, que el backend si valida al arrancar. | Sin corregir; pendiente de Lucia (ampliar el contrato o documentar el limite). |
+| P3-4 | MEDIUM | CONFIRMED | El test de paridad exigido por la spec solo comparaba en un sentido esquemas y hosts: un esquema nuevo en el backend no lo hacia fallar. | Corregido: compara conjuntos en ambos sentidos para esquemas y hosts, y comprueba las reglas guest/guest y password por defecto de pgvector. Mutante (esquema anadido al backend) detectado. |
+| P3-5 | MEDIUM | CONFIRMED | De 75 mutantes sobreviven 21: los tests comprueban el nombre de la variable y no el resultado en varios puntos (por ejemplo `[OK]` con errores presentes, aviso de Docker degradado a info, limite de puerto 65535). | Sin corregir; pendiente de Lucia. |
+| P3-6 a P3-9 | LOW | CONFIRMED / PLAUSIBLE | Parser sin valores multilinea ni `${V:+x}`/`${V:?msg}`; el doctor es mas estricto que el backend en tres puntos (booleano de `ALLOW_INSECURE_LOCAL_DATABASE`, `@` sin codificar, puertos fuera de rango); puertos propios comparados solo por numero; smoke con password demo solo de espacios. | Sin corregir; limites conocidos, sin Docker para confirmar los plausibles. |
+
+Ataques que resistieron (resumen del revisor): diferencial de 227 casos entre el doctor y `Settings()` (esquemas en mayusculas, placeholders en las tres DSN, guest/guest, `RUNTIME_ENVIRONMENT`, longitud en puntos de codigo, seed y password demo), 24 variantes de passwords frente a `unquote`/`make_url`, parser `.env` (BOM, CRLF, comillas, `$$`, precedencia del entorno), ausencia de secretos en la salida y reglas identicas entre backend y processor.
+
 ## Riesgos
 
 - El diagnostico duplica reglas del backend: un test compara sus listas con `runtime_secrets.py` de backend y processor, pero una regla nueva con otra forma requiere actualizar el diagnostico a mano.

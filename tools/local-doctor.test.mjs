@@ -409,6 +409,8 @@ const BACKEND_REJECTS = [
   ["placeholder DATABASE_URL password in another case", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root:Password@cockroachdb:26257/defaultdb?sslmode=disable" }],
   ["DATABASE_URL with an uppercase scheme", "DATABASE_URL", { DATABASE_URL: "COCKROACHDB://root@cockroachdb:26257/defaultdb?sslmode=disable" }],
   ["VECTOR_DATABASE_URL with an uppercase scheme", "VECTOR_DATABASE_URL", { VECTOR_DATABASE_URL: `POSTGRESQL+PSYCOPG://postgres:${enc(SECRETS.POSTGRES_PASSWORD)}@postgres-pgvector:5432/embeddings` }],
+  ["DATABASE_URL with an empty port", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:/defaultdb?sslmode=disable" }],
+  ["VECTOR_DATABASE_URL with an empty port", "VECTOR_DATABASE_URL", { VECTOR_DATABASE_URL: `postgresql+psycopg://postgres:${enc(SECRETS.POSTGRES_PASSWORD)}@postgres-pgvector:/embeddings` }],
   ["DATABASE_URL with a repeated option", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable&sslmode=require" }],
   ["default broker credentials", "RABBITMQ_URL", { RABBITMQ_DEFAULT_USER: "guest", RABBITMQ_DEFAULT_PASS: "guest", RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/" }],
   ["default pgvector password", "VECTOR_DATABASE_URL", { POSTGRES_PASSWORD: "postgres", VECTOR_DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres-pgvector:5432/embeddings" }],
@@ -495,9 +497,17 @@ test("keeps the backend rule lists and the diagnostic in step", async () => {
     const source = fs.readFileSync(path.join(root, "apps", service, "app", "core", "runtime_secrets.py"), "utf8");
     assert.deepEqual(pythonSet(source, "PLACEHOLDERS"), [...BACKEND_RULES.placeholders].sort(), service);
     assert.deepEqual(pythonSet(source, "DATABASE_QUERY_OPTIONS"), [...BACKEND_RULES.databaseQueryOptions].sort(), service);
-    for (const scheme of [...BACKEND_RULES.databaseSchemes, ...BACKEND_RULES.vectorSchemes, ...BACKEND_RULES.brokerSchemes]) {
-      assert.ok(source.includes(`"${scheme}"`), `${service}: ${scheme}`);
-    }
-    for (const host of BACKEND_RULES.insecureDatabaseHosts) assert.ok(source.includes(`"${host}"`), `${service}: ${host}`);
+    // Compare both directions: a scheme or host added to the backend must fail here too.
+    const literalSet = (first) => {
+      const match = new RegExp(`\{("${first}"[^}]*)\}`).exec(source);
+      assert.ok(match, `${service}: ${first}`);
+      return [...match[1].matchAll(/"([^"]+)"/g)].map((item) => item[1]).sort();
+    };
+    assert.deepEqual(literalSet("cockroachdb"), [...BACKEND_RULES.databaseSchemes].sort(), `${service} database schemes`);
+    assert.deepEqual(literalSet("postgresql"), [...BACKEND_RULES.vectorSchemes].sort(), `${service} vector schemes`);
+    assert.deepEqual(literalSet("amqp"), [...BACKEND_RULES.brokerSchemes].sort(), `${service} broker schemes`);
+    assert.deepEqual(literalSet("localhost"), [...BACKEND_RULES.insecureDatabaseHosts].sort(), `${service} insecure hosts`);
+    assert.ok(source.includes('username == password == "guest"'), `${service}: guest/guest rule`);
+    assert.ok(source.includes('password == "postgres"'), `${service}: default pgvector password rule`);
   }
 });

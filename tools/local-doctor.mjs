@@ -135,6 +135,8 @@ function parseDsn(name, value) {
   const written = value.slice(0, value.indexOf(":"));
   const scheme = rules.database ? written : written.toLowerCase();
   if (!rules.schemes.has(scheme)) return { error: `${name} debe usar uno de estos esquemas: ${[...rules.schemes].join(", ")}.` };
+  // SQLAlchemy rejects "host:" with no port, while WHATWG URL and urlsplit accept it.
+  if (rules.database && authority.endsWith(":")) return { error: `${name} tiene un ":" sin numero de puerto.` };
   if (!url.hostname || url.port === "0") return { error: `${name} necesita un host y un puerto distinto de 0.` };
   if (rules.database) {
     if (!url.pathname.slice(1)) return { error: `${name} debe indicar la base de datos en la ruta.` };
