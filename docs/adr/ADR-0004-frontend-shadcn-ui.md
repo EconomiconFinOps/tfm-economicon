@@ -17,7 +17,7 @@ clasificación refleja uso real en el origen, no un veredicto sobre lo que el de
 
 Las pantallas del destino renderizan hoy sus primitivos como HTML plano estilizado con Tailwind:
 8 `<button>`, 6 `<label>`, 5 `<input>`, 2 `<textarea>` y 1 `<select>`, sin ninguna capa de composición
-compartida. [JUP-094](../../openspec/changes/jup-094-reconcile-package-json/design.md) evaluó primero
+compartida. [JUP-094](../../openspec/changes/archive/2026-09-07-jup-094-reconcile-package-json/design.md) evaluó primero
 mantener ese patrón (design.md, decisión 1 original), pero el equipo revirtió esa posición durante el
 `apply`: F3 va a construir o reconciliar varias pantallas (login, selector de tenant, ingesta, chat del
 asistente) que necesitan primitivos consistentes y accesibles — selects, labels, separadores, y al
@@ -85,3 +85,8 @@ subconjunto deliberado, elegido para el destino, no heredado del `ui/` muerto de
   "adoptar el subconjunto de 6 paquetes Radix listado arriba, no los 26 del origen".
 - Seguimiento: las tarjetas de F3 que construyan pantallas con estos primitivos deben citar este ADR
   en su `design.md`, misma convención que estableció ADR-0003.
+- Color de los primitivos y de las pantallas: [ADR-0012](ADR-0012-frontend-color-tokens.md) (JUP-099)
+  fija que los tokens semánticos de shadcn/ui toman los valores de la aplicación en una única paleta
+  en `:root` y que los primitivos copiados se conservan sin editar (`@custom-variant dark (&)`). Las
+  atribuciones del código copiado constan en
+  [`apps/frontend/ATTRIBUTIONS.md`](../../apps/frontend/ATTRIBUTIONS.md).

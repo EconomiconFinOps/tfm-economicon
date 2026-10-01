@@ -237,9 +237,9 @@ export function SessionGate() {
     || generation !== getSessionGeneration()
     || profileQuery.data?.id !== session.user.id) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0f1419] text-white">
-        <section className="rounded-lg border border-[#2d3748] bg-[#1a1f2e] px-8 py-6 text-center shadow-lg">
-          <p className="text-sm uppercase tracking-wide text-slate-400">Tenant bootstrap</p>
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <section className="rounded-lg border border-border bg-card px-8 py-6 text-center shadow-lg">
+          <p className="text-sm uppercase tracking-wide text-muted-foreground">Tenant bootstrap</p>
           <h1 className="mt-2 font-bold">Cargando tenants disponibles...</h1>
         </section>
       </div>
@@ -250,13 +250,13 @@ export function SessionGate() {
     const message =
       tenantsQuery.error instanceof Error ? tenantsQuery.error.message : "Error desconocido";
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0f1419] text-white">
-        <section className="rounded-lg border border-[#2d3748] bg-[#1a1f2e] px-8 py-6 text-center shadow-lg">
-          <p className="text-sm uppercase tracking-wide text-slate-400">Tenant bootstrap failed</p>
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <section className="rounded-lg border border-border bg-card px-8 py-6 text-center shadow-lg">
+          <p className="text-sm uppercase tracking-wide text-muted-foreground">Tenant bootstrap failed</p>
           <h1 className="mt-2 font-bold">No se han podido cargar los tenants</h1>
-          <p className="mt-2 text-sm text-slate-400">{message}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{message}</p>
           <button
-            className="mt-4 rounded-md bg-[#0078d4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0078d4]/80"
+            className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80"
             type="button"
             // Se envuelve en una lambda sin argumentos (en vez de pasar
             // `handleLogout` directo) porque, tras aceptar un motivo

@@ -90,6 +90,8 @@ $env:ECONOMICON_ENV_FILE = (Resolve-Path ../../.env).Path
 python -m app.run_all
 ```
 
+La tabla `jobs` la crea el backend. `GET /health` del processor solo comprueba sus propias dependencias, asi que no depende de que el backend haya migrado.
+
 Puerto visible:
 
 - `http://localhost:8001/health`
@@ -187,7 +189,7 @@ python -m pytest tests
 
 - Convenciones de código Python (logging, etc.): ver `docs/manuals/python-service-conventions.md`.
 - `workers/runner.py` consume la cola de RabbitMQ.
-- `db/migration_runner.py` y `vector_store/migrations/` aplican migraciones formales.
+- `db/migration_runner.py` y `vector_store/migrations/` aplican migraciones formales. El runner exige indicar su tabla de versiones, y las migraciones del processor solo pueden tocar sus propias tablas (`tests/test_schema_ownership_static.py`).
 - `embeddings/` encapsula chunking y providers de embeddings.
 - `vector_store/pgvector_store.py` persiste documentos, chunks y vectores.
 - `graphs/pipeline.py` define el flujo de procesamiento.

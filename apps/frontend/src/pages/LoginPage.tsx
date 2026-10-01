@@ -99,23 +99,23 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0f1419] px-4 text-white">
-      <section className="w-full max-w-md rounded-lg border border-[#2d3748] bg-[#1a1f2e] p-8 shadow-xl">
-        <p className="text-sm uppercase tracking-wide text-slate-400">Operator login</p>
-        <h1 className="mt-2 text-xl font-bold text-white">Access the tenant control tower</h1>
-        <p className="mt-2 text-sm text-slate-400">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
+      <section className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-xl">
+        <p className="text-sm uppercase tracking-wide text-muted-foreground">Operator login</p>
+        <h1 className="mt-2 text-xl font-bold text-foreground">Access the tenant control tower</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
           This demo build uses the seeded operator account so the team can validate
           auth, tenant isolation and assistant flows end-to-end.
         </p>
 
         <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-slate-400" htmlFor="login-email">
+            <label className="text-sm text-muted-foreground" htmlFor="login-email">
               Email
             </label>
             <input
               id="login-email"
-              className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
               type="email"
               value={form.email}
               onChange={(event) =>
@@ -125,12 +125,12 @@ export function LoginPage() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-slate-400" htmlFor="login-password">
+            <label className="text-sm text-muted-foreground" htmlFor="login-password">
               Password
             </label>
             <input
               id="login-password"
-              className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
               type="password"
               value={form.password}
               onChange={(event) =>
@@ -144,17 +144,17 @@ export function LoginPage() {
             // (`isIdle`) en vez de un estado adicional que la duplicaria --
             // en cuanto el operador reintenta el acceso, la mutacion deja de
             // estar idle y este aviso desaparece sin ningun efecto extra.
-            <p className="text-sm text-amber-400" role="status">
+            <p className="text-sm text-warning" role="status">
               Your session has expired. Sign in again to continue.
             </p>
           ) : null}
 
           {mutation.error ? (
-            <p className="text-sm text-red-400">{mutation.error.message}</p>
+            <p className="text-sm text-danger">{mutation.error.message}</p>
           ) : null}
 
           <button
-            className="mt-2 rounded-md bg-[#0078d4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0078d4]/80 disabled:opacity-60"
+            className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
             type="submit"
             disabled={mutation.isPending}
           >
