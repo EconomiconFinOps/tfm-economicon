@@ -31,3 +31,14 @@ borrador contra develop. Trello actualizado mediante el puente autorizado y
 releído: descripción/enlaces verificados, roles preservados, **30 — En curso**.
 El trabajo documental está entregado; revisión, validación y ratificaciones humanas
 siguen pendientes. No se ha enviado ningún mensaje a Discord ni realizado merge.
+
+## Solicitudes formales — 01/10/2026
+
+El usuario autorizó pasar la PR a lista para revisión y solicitar ambas revisiones.
+PR #60 ya no es draft; review requests enviadas a ParisArcos y Victorh1397.
+[Solicitud publicada](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#issuecomment-5939532783):
+Paris revisa coherencia/ratificación de ADR; Victor valida criterios y evidencias.
+Se señalan ADR-0013/14/15, estado de ADR-0005 y aceptación conjunta separada de ADR-0002.
+Trello actualizado por DockerServer y releído en **40 — En revisión**, roles intactos.
+Este estado sustituye el borrador/30 anterior. Pendientes las respuestas humanas;
+no se acredita aprobación, pairing, merge ni cierre. No se envió mensaje a Discord.
