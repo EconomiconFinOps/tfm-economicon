@@ -73,7 +73,8 @@ Barrido del revisor: el patron de P2-1 solo aparece en `checkConfiguration`; el 
 - P2-1: la regla de password de ejemplo se aplica a las tres DSN, como el backend, y se relaja en `test`. Tests: `changeme` y `Password` en `DATABASE_URL`, en rojo antes del cambio.
 - P2-2: el esquema de `DATABASE_URL` y `VECTOR_DATABASE_URL` se compara tal como esta escrito; el de `RABBITMQ_URL` sigue en minusculas. Tests en rojo antes del cambio, mas un control de que `AMQP://` se acepta.
 - P2-5: el README indica `cp -n .env.example .env` para Linux y macOS.
-- P2-3 y P2-4 quedan sin corregir: P2-3 es un falso rechazo que empuja a codificar la password (lo que la guia ya pide) y P2-4 no se ha confirmado fuera de Windows. Pendientes de que Lucia los acepte o pida corregirlos.
+- P2-3: las passwords se decodifican como `unquote` de Python (los `%XX` validos se decodifican y el resto queda literal). Test en rojo antes del cambio, con control de que una password distinta sigue dando desacuerdo.
+- P2-4 queda como limite documentado: no se ha confirmado fuera de Windows y no se puede comprobar sin un host Linux con Docker. Pendiente de que Lucia lo acepte.
 
 ## Riesgos
 

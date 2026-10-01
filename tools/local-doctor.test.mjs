@@ -448,6 +448,22 @@ test("accepts an uppercase AMQP scheme and a placeholder DATABASE_URL password i
   assert.equal(relaxed.code, 0, relaxed.text);
 });
 
+test("keeps an invalid percent escape literal in a password, like the backend", async () => {
+  const result = await doctor(dotenv({
+    ...VALID,
+    RABBITMQ_DEFAULT_PASS: "SENTINEL-p%zz",
+    RABBITMQ_URL: `amqp://${enc(SECRETS.RABBITMQ_DEFAULT_USER)}:SENTINEL-p%zz@rabbitmq:5672/`,
+  }));
+  assert.equal(result.code, 0, result.text);
+  const mismatch = await doctor(dotenv({
+    ...VALID,
+    RABBITMQ_DEFAULT_PASS: "SENTINEL-other",
+    RABBITMQ_URL: `amqp://${enc(SECRETS.RABBITMQ_DEFAULT_USER)}:SENTINEL-p%zz@rabbitmq:5672/`,
+  }));
+  assert.equal(mismatch.code, 1, mismatch.text);
+  assert.match(mismatch.text, /RABBITMQ_URL y RABBITMQ_DEFAULT_PASS/);
+});
+
 test("a multi-line AUTH_SECRET_KEY is reported as multi-line, not as short", async () => {
   const key = '"' + "a".repeat(20) + "\\n" + "b".repeat(20) + '"';
   assert.equal(parseDotenv(`AUTH_SECRET_KEY=${key}`).get("AUTH_SECRET_KEY"), `${"a".repeat(20)}\n${"b".repeat(20)}`);

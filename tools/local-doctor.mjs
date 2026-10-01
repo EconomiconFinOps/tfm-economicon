@@ -102,6 +102,17 @@ const DSN_RULES = {
   VECTOR_DATABASE_URL: { schemes: BACKEND_RULES.vectorSchemes, database: true },
 };
 
+// Python's unquote decodes valid %XX escapes and leaves the rest literal; decodeURIComponent throws instead.
+function unquote(text) {
+  return text.replace(/(?:%[0-9A-Fa-f]{2})+/g, (run) => {
+    try {
+      return decodeURIComponent(run);
+    } catch {
+      return run;
+    }
+  });
+}
+
 function parseDsn(name, value) {
   if (/\s/.test(value)) return { error: `${name} no puede contener espacios ni saltos de linea.` };
   // Parsers disagree on which raw @ ends the credentials, so only an encoded @ is safe.
@@ -114,8 +125,8 @@ function parseDsn(name, value) {
   let password;
   try {
     url = new URL(value);
-    user = decodeURIComponent(url.username);
-    password = decodeURIComponent(url.password);
+    user = unquote(url.username);
+    password = unquote(url.password);
   } catch {
     return { error: `${name} no es una URL valida (los caracteres especiales de la password van codificados).` };
   }
