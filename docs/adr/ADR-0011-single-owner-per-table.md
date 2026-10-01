@@ -18,7 +18,7 @@ La decision de quien crea cada tabla afecta a cualquier migracion futura de cual
 - Cada tabla de la base compartida tiene un unico servicio dueño, que es el unico que la crea y la altera en sus migraciones. El backend es dueño de `users`, `tenants`, `user_tenants`, `jobs`, `conversations` y `messages`; el processor, de `azure_cost_ingestion_runs` y `azure_cost_records`.
 - Un servicio puede leer o escribir filas de tablas de otro, pero nunca ejecuta DDL sobre ellas.
 - Cada servicio lleva su propio registro de versiones (`schema_migrations` del backend y `processor_schema_migrations` del processor).
-- Quien lee tablas de otro servicio arranca despues de que su dueño este sano (en Docker Compose, `depends_on` con `condition: service_healthy`).
+- El processor arranca despues de que el backend este sano (en Docker Compose, `depends_on` con `condition: service_healthy`), porque lee y actualiza `jobs`, tabla del backend. Las lecturas bajo demanda del backend sobre las tablas de costes del processor no imponen orden de arranque: el backend no depende del processor.
 - Una migracion que deja de ser necesaria en el servicio que no es dueño se conserva sin DDL, con su fichero y su version, para no alterar bases existentes.
 
 ## Consequences
@@ -40,4 +40,4 @@ La decision de quien crea cada tabla afecta a cualquier migracion futura de cual
 - Evidencia: [JUP-096-validation.md](../evidence/JUP-096-validation.md).
 - Spec verificable: [`schema-migration-ownership`](../../openspec/specs/schema-migration-ownership/spec.md).
 - Seguimiento: RF-096-001 a RF-096-004 en [findings](../../openspec/findings/backlog.md).
-- Numeracion: ADR-0010 lo reserva el PR #52 (JUP-026).
+- Numeracion: ADR-0010 es de JUP-026 (PR #52) y ADR-0012 lo usa JUP-099 (PR #54).
