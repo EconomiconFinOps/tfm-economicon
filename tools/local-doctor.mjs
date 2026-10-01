@@ -120,7 +120,9 @@ function parseDsn(name, value) {
     return { error: `${name} no es una URL valida (los caracteres especiales de la password van codificados).` };
   }
   const rules = DSN_RULES[name];
-  const scheme = url.protocol.slice(0, -1).toLowerCase();
+  // SQLAlchemy keeps the driver name as written, while urlsplit lowercases the broker scheme.
+  const written = value.slice(0, value.indexOf(":"));
+  const scheme = rules.database ? written : written.toLowerCase();
   if (!rules.schemes.has(scheme)) return { error: `${name} debe usar uno de estos esquemas: ${[...rules.schemes].join(", ")}.` };
   if (!url.hostname || url.port === "0") return { error: `${name} necesita un host y un puerto distinto de 0.` };
   if (rules.database) {
@@ -167,7 +169,7 @@ function checkConfiguration(vars, contract) {
     } else if (!parsed.user.trim() || !parsed.password.trim()) {
       errors.push(`${name} necesita usuario y password.`);
     }
-    if (!relaxed && name !== "DATABASE_URL" && placeholder(parsed.password)) {
+    if (!relaxed && placeholder(parsed.password)) {
       errors.push(`${name} usa una password de ejemplo; el backend la rechaza.`);
     }
   }

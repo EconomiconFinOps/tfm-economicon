@@ -51,7 +51,7 @@ tfm-economicon
 
 ### Con Docker Compose
 
-Desde la raiz de un clon limpio, con Docker y Node instalados:
+Desde la raiz de un clon limpio, con Docker y Node instalados (en Linux o macOS, el primer comando es `cp -n .env.example .env`):
 
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
@@ -182,7 +182,7 @@ La Azure Cost API simulada exige por defecto el bearer local
 con `X-Fake-Azure-Scenario`. Consulta `apps/azure-cost-api/README.md` para la
 configuración completa; estos tokens son fixtures locales, no credenciales Azure.
 
-Preparar `.env` local ignorado antes de arrancar el stack, sin sobrescribir uno existente:
+Preparar `.env` local ignorado antes de arrancar el stack, sin sobrescribir uno existente (en Linux o macOS: `cp -n .env.example .env`):
 
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }

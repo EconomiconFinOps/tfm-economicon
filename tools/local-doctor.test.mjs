@@ -405,6 +405,10 @@ test("a port held on the IPv6 wildcard is busy for a port published on all inter
 const BACKEND_REJECTS = [
   ["placeholder RabbitMQ password", "RABBITMQ_URL", { RABBITMQ_DEFAULT_PASS: "changeme", RABBITMQ_URL: `amqp://${enc(SECRETS.RABBITMQ_DEFAULT_USER)}:changeme@rabbitmq:5672/` }],
   ["placeholder pgvector password in another case", "VECTOR_DATABASE_URL", { POSTGRES_PASSWORD: "ChangeMe", VECTOR_DATABASE_URL: "postgresql+psycopg://postgres:ChangeMe@postgres-pgvector:5432/embeddings" }],
+  ["placeholder DATABASE_URL password", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root:changeme@cockroachdb:26257/defaultdb?sslmode=disable" }],
+  ["placeholder DATABASE_URL password in another case", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root:Password@cockroachdb:26257/defaultdb?sslmode=disable" }],
+  ["DATABASE_URL with an uppercase scheme", "DATABASE_URL", { DATABASE_URL: "COCKROACHDB://root@cockroachdb:26257/defaultdb?sslmode=disable" }],
+  ["VECTOR_DATABASE_URL with an uppercase scheme", "VECTOR_DATABASE_URL", { VECTOR_DATABASE_URL: `POSTGRESQL+PSYCOPG://postgres:${enc(SECRETS.POSTGRES_PASSWORD)}@postgres-pgvector:5432/embeddings` }],
   ["DATABASE_URL with a repeated option", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable&sslmode=require" }],
   ["default broker credentials", "RABBITMQ_URL", { RABBITMQ_DEFAULT_USER: "guest", RABBITMQ_DEFAULT_PASS: "guest", RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/" }],
   ["default pgvector password", "VECTOR_DATABASE_URL", { POSTGRES_PASSWORD: "postgres", VECTOR_DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres-pgvector:5432/embeddings" }],
@@ -432,6 +436,17 @@ for (const [label, variable, overrides] of BACKEND_REJECTS) {
     assertNoSecrets(result.text);
   });
 }
+
+test("accepts an uppercase AMQP scheme and a placeholder DATABASE_URL password in the test environment, like the backend", async () => {
+  const upper = await doctor(dotenv({ ...VALID, RABBITMQ_URL: VALID.RABBITMQ_URL.replace("amqp://", "AMQP://") }));
+  assert.equal(upper.code, 0, upper.text);
+  const relaxed = await doctor(dotenv({
+    ...VALID,
+    RUNTIME_ENVIRONMENT: "test",
+    DATABASE_URL: "cockroachdb+psycopg://root:changeme@cockroachdb:26257/defaultdb?sslmode=disable",
+  }));
+  assert.equal(relaxed.code, 0, relaxed.text);
+});
 
 test("a multi-line AUTH_SECRET_KEY is reported as multi-line, not as short", async () => {
   const key = '"' + "a".repeat(20) + "\\n" + "b".repeat(20) + '"';

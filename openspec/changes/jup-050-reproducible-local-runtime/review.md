@@ -52,6 +52,29 @@ Cada una con test en rojo antes del cambio y mutantes detectados:
 - ADV-6: el smoke consulta `jobs` en la base de `DATABASE_URL` y falla en el acto si no puede leerla.
 - ADV-7: evidencia creada.
 
+## Adversarial Review (pass 2)
+
+Base `1e897dc`, head `0848975`. Revisor sin acceso al razonamiento de la implementacion ni a la pasada 1. Veredicto: `changes-requested`.
+
+| ID | Sev. | Estado | Descripcion | Reproduccion | Incumple |
+|---|---|---|---|---|---|
+| P2-1 | HIGH | CONFIRMED | El doctor no rechaza passwords de ejemplo en `DATABASE_URL`; el backend aplica esa regla a las tres DSN fuera de `test`. | `DATABASE_URL=cockroachdb://root:changeme@cockroachdb:26257/defaultdb?sslmode=disable` en `development`: doctor `[OK]`; `Settings(...)` lanza `database_url contains a known credential placeholder`. | Escenario "Values the backend would reject". |
+| P2-2 | MEDIUM | CONFIRMED | El doctor pasa a minusculas el esquema y acepta `COCKROACHDB://`; SQLAlchemy `make_url` conserva las mayusculas y el backend lo rechaza. En `RABBITMQ_URL` `urlsplit` si lo pasa a minusculas. | `DATABASE_URL=COCKROACHDB://root@...`: doctor 0, backend `must be a valid service DSN`. Contrastado tambien con `POSTGRESQL+PSYCOPG` en `VECTOR_DATABASE_URL`. | Mismo escenario. |
+| P2-3 | LOW | CONFIRMED | Un `%` sin codificar en la password (`p%zz`) hace que el doctor diga que no es una URL valida; el backend lo tolera. Falso rechazo, coherente con el consejo de codificar. | `RABBITMQ_URL=amqp://u:p%zz@r:5672/`: doctor 1. | Ninguno estricto. |
+| P2-4 | LOW | PLAUSIBLE | Un proceso solo en `::1` en el puerto elegido no se detecta en Windows; en Linux el comportamiento depende de la plataforma. | Servidor en `::1:18081`: `isPortFree` da `true` para `0.0.0.0`, `127.0.0.1` y `::`. Sin confirmar en Linux ni con Docker. | Escenario "Busy host port". |
+| P2-5 | LOW | CONFIRMED | El README solo da el paso de copiar `.env.example` en PowerShell. | `grep` en README. | Escenario "Documented path". |
+
+Ataques que resistieron (resumen del revisor): BOM, CRLF, `export`, comentarios en linea, comillas y valores multilinea; interpolacion `${VAR}`, `$$` y `$` suelto; precedencia del entorno, incluida la variable vacia; puertos duplicados y valores `0x1F40`, `1e3`, `-1`, `08000`; password codificada, host IPv6 y vhost `%2F`; 16 emoji como `AUTH_SECRET_KEY`; `DEMO_SEED_ENABLED=True` sin password; `DATABASE_URL` sin password a un host remoto; ningun secreto en la salida; endpoints, modulo y argumentos del smoke frente al backend y el processor; UUID antes del SQL; esperas acotadas; coherencia de `hostname`, `rabbitmq-data` y `start_period` con la spec.
+
+Barrido del revisor: el patron de P2-1 solo aparece en `checkConfiguration`; el de P2-2 y P2-3 solo en `parseDsn`; ningun otro `tools/*.mjs` parsea `.env` (el smoke reutiliza `parseDotenv`).
+
+### Correcciones de la pasada 2
+
+- P2-1: la regla de password de ejemplo se aplica a las tres DSN, como el backend, y se relaja en `test`. Tests: `changeme` y `Password` en `DATABASE_URL`, en rojo antes del cambio.
+- P2-2: el esquema de `DATABASE_URL` y `VECTOR_DATABASE_URL` se compara tal como esta escrito; el de `RABBITMQ_URL` sigue en minusculas. Tests en rojo antes del cambio, mas un control de que `AMQP://` se acepta.
+- P2-5: el README indica `cp -n .env.example .env` para Linux y macOS.
+- P2-3 y P2-4 quedan sin corregir: P2-3 es un falso rechazo que empuja a codificar la password (lo que la guia ya pide) y P2-4 no se ha confirmado fuera de Windows. Pendientes de que Lucia los acepte o pida corregirlos.
+
 ## Riesgos
 
 - El diagnostico duplica reglas del backend: un test compara sus listas con `runtime_secrets.py` de backend y processor, pero una regla nueva con otra forma requiere actualizar el diagnostico a mano.
