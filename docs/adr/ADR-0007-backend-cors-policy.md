@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-09-23
-- Related JUP/OpenSpec: JUP-085 / [jup-085-auth-session-contract](../../openspec/changes/jup-085-auth-session-contract/proposal.md)
+- Related JUP/OpenSpec: JUP-085 / [jup-085-auth-session-contract](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/proposal.md)
 - Trello: https://trello.com/c/Z8M443Hu
 - Supersedes: none
 - Superseded by: none
@@ -46,7 +46,7 @@ normales del framework; OPTIONS nativo sin JWT. `allow_credentials=false`,
 `expose_headers=[]`, fetch actual sin cookies/include. CORS no sustituye JWT ni
 tenant auth: una peticion simple denegada puede ejecutarse sin Allow-Origin.
 
-El [diseno concreto](../../openspec/changes/jup-085-auth-session-contract/design.md#cors-direction-chosen-concrete-policy-pending)
+El [diseno concreto](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/design.md#cors-direction-chosen-concrete-policy-pending)
 preserva FastAPI app/state/overrides/lifespan/import y metricas/tracing de
 peticiones reales. Propone CORS exterior a los middleware de usuario, con
 Settings diferido; cubre 200/401/403/422 y 500 sanitizado por RequestIdMiddleware,
@@ -77,10 +77,10 @@ nativos de import/lifespan/errores de upstream. Resultados actuales comunicados
 por el orquestador: 245 backend y 235 frontend PASS; 76 CORS PASS
 tambien con pydantic-settings 2.3.4, sin cambiar dependencias. Este pase documental
 no reejecuta producto. Los 169 tests del 10/09 siguen como resultado historico.
-Ver [tareas](../../openspec/changes/jup-085-auth-session-contract/tasks.md) y
-[escenarios](../../openspec/changes/jup-085-auth-session-contract/specs/demo-auth-session/spec.md).
+Ver [tareas](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/tasks.md) y
+[escenarios](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/specs/demo-auth-session/spec.md).
 Codigo REVIEW_PASS; RF-085-002 Open, mitigacion temporal insuficiente.
-El [review actual](../../openspec/changes/jup-085-auth-session-contract/review.md)
+El [review actual](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/review.md)
 y la [evidencia ambiental](../evidence/JUP-085-validation.md#revalidacion-qa-tras-mitigacion-2309)
 registran QA_BLOCKED_ENV; ajuste persistente no autorizado ni aplicado. JWT y esta
 decision siguen intactos. RF-087-001/RF-095-001 Open hasta completar QA;

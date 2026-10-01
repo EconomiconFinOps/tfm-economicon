@@ -17,7 +17,7 @@ clasificación refleja uso real en el origen, no un veredicto sobre lo que el de
 
 Las pantallas del destino renderizan hoy sus primitivos como HTML plano estilizado con Tailwind:
 8 `<button>`, 6 `<label>`, 5 `<input>`, 2 `<textarea>` y 1 `<select>`, sin ninguna capa de composición
-compartida. [JUP-094](../../openspec/changes/jup-094-reconcile-package-json/design.md) evaluó primero
+compartida. [JUP-094](../../openspec/changes/archive/2026-09-07-jup-094-reconcile-package-json/design.md) evaluó primero
 mantener ese patrón (design.md, decisión 1 original), pero el equipo revirtió esa posición durante el
 `apply`: F3 va a construir o reconciliar varias pantallas (login, selector de tenant, ingesta, chat del
 asistente) que necesitan primitivos consistentes y accesibles — selects, labels, separadores, y al
@@ -85,3 +85,11 @@ subconjunto deliberado, elegido para el destino, no heredado del `ui/` muerto de
   "adoptar el subconjunto de 6 paquetes Radix listado arriba, no los 26 del origen".
 - Seguimiento: las tarjetas de F3 que construyan pantallas con estos primitivos deben citar este ADR
   en su `design.md`, misma convención que estableció ADR-0003.
+
+## Trazabilidad de aprobación — 01/10/2026
+
+El [addendum aprobado de JUP-094](../../openspec/changes/archive/2026-09-07-jup-094-reconcile-package-json/proposal.md)
+registra la revisión de Victor del 07/09 y el cambio de descartar a adoptar seis
+primitivos. [PR #28](https://github.com/EconomiconFinOps/tfm-economicon/pull/28) y
+[evidencia JUP-094](../evidence/JUP-094-validation.md) documentan su integración.
+Instalar dependencias no demuestra accesibilidad de todas las pantallas.

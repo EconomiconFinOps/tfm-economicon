@@ -1,5 +1,13 @@
 # Arquitectura del proyecto
 
+> Nota documental JUP-061, 01/10/2026: el [registro de decisiones](adr/README.md)
+> distingue estado, integración y evidencia vigente. Las descripciones anteriores
+> a JUP-026 sobre billing fijo y a JUP-086 sobre aislamiento pendiente, conservadas
+> debajo, son históricas: PR #52 y #47 ya están integradas. Para esos contratos,
+> consultar [costes](evidence/JUP-026-validation.md) y
+> [aislamiento](evidence/JUP-086-validation.md). La consolidación integral de los
+> diagramas y el despliegue final corresponde a JUP-060.
+
 ## 1. Para que sirve este documento
 
 Este documento explica la arquitectura del proyecto de una forma simple, pensando en personas junior o en gente que no ha trabajado antes con sistemas separados en varios servicios.
