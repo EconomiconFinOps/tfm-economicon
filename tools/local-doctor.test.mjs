@@ -266,14 +266,16 @@ test("rejects invalid and duplicated host ports", async () => {
   assert.match(duplicated.text, /GRAFANA_PORT/);
 });
 
-test("an existing installation asks to keep the existing cookie and Grafana password", async () => {
+test("an existing installation asks to keep the credentials its volumes stored", async () => {
   const result = await doctor(dotenv(VALID), {
     docker: { containerPorts: async () => [], volumes: async () => ["tfm_cockroach-data", "tfm_rabbitmq-data"] },
   });
   assert.equal(result.code, 0, result.text);
   assert.match(result.text, /instalacion existente/i);
-  assert.match(result.text, /RABBITMQ_ERLANG_COOKIE/);
-  assert.match(result.text, /GRAFANA_ADMIN_PASSWORD/);
+  for (const name of ["RABBITMQ_DEFAULT_USER", "RABBITMQ_DEFAULT_PASS", "POSTGRES_PASSWORD", "GRAFANA_ADMIN_PASSWORD", "RABBITMQ_ERLANG_COOKIE"]) {
+    assert.ok(result.text.includes(name), name);
+  }
+  assertNoSecrets(result.text);
 });
 
 test("still reports .env problems when Docker does not answer", async () => {
@@ -317,6 +319,26 @@ test("the command line reads the project directory and never prints secrets", ()
     assert.match(result.stdout + result.stderr, /RABBITMQ_DEFAULT_PASS/);
     assertNoSecrets(result.stdout + result.stderr);
   } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("the command line prints its diagnosis when invoked through a link to the tools directory", () => {
+  const dir = project(dotenv({ ...VALID, RABBITMQ_DEFAULT_PASS: "SENTINEL-other" }));
+  const link = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "jup-link-")), "tools");
+  try {
+    fs.symlinkSync(path.join(root, "tools"), link, "junction");
+    const env = { ...process.env };
+    for (const name of Object.keys(VALID)) delete env[name];
+    const result = spawnSync(process.execPath, [path.join(link, "local-doctor.mjs"), "--project-directory", dir], {
+      encoding: "utf8",
+      env,
+      timeout: 60_000,
+    });
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stdout + result.stderr, /RABBITMQ_DEFAULT_PASS/);
+  } finally {
+    fs.rmSync(path.dirname(link), { recursive: true, force: true });
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });

@@ -117,7 +117,10 @@ modify or generate `.env` or any secret.
 
 - **WHEN** the project's named volumes already exist
 - **THEN** the diagnostic reports an existing installation and reminds that the
-  existing `RABBITMQ_ERLANG_COOKIE` and `GRAFANA_ADMIN_PASSWORD` must be kept
+  credentials the volumes stored at first start (`RABBITMQ_DEFAULT_USER`,
+  `RABBITMQ_DEFAULT_PASS`, `POSTGRES_PASSWORD`, `GRAFANA_ADMIN_PASSWORD`) must be
+  kept, because changing them in `.env` does not change the service's; the
+  environment value of `RABBITMQ_ERLANG_COOKIE` does take precedence
 
 #### Scenario: Secrets never appear in the output
 

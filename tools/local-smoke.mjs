@@ -176,6 +176,6 @@ async function main(argv) {
   process.exitCode = code;
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   await main(process.argv.slice(2));
 }

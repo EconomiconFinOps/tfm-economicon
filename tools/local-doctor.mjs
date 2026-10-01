@@ -318,7 +318,9 @@ export async function runDoctor({ root, env = process.env, docker: dockerClient 
     if (volumes.length) {
       info(
         `Instalacion existente del proyecto "${project}" (${volumes.length} volumenes). ` +
-          "Conserva los valores ya usados de RABBITMQ_ERLANG_COOKIE y GRAFANA_ADMIN_PASSWORD; `docker compose down -v` borra los datos.",
+          "Los volumenes guardan las credenciales del primer arranque: conserva los valores ya usados de RABBITMQ_DEFAULT_USER, " +
+          "RABBITMQ_DEFAULT_PASS, POSTGRES_PASSWORD y GRAFANA_ADMIN_PASSWORD, porque cambiarlos en .env no cambia los del servicio " +
+          "(RABBITMQ_ERLANG_COOKIE si prevalece). `docker compose down -v` borra los datos.",
       );
     } else {
       info(`Instalacion nueva del proyecto "${project}": no hay volumenes previos.`);
@@ -338,6 +340,6 @@ async function main(argv) {
   process.exitCode = code;
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   await main(process.argv.slice(2));
 }

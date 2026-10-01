@@ -20,7 +20,7 @@ Trello: https://trello.com/c/4VYnTkuD
 
 ## Validacion
 
-Comandos y resultados en la [evidencia](../../../docs/evidence/JUP-050-validation.md): tests en rojo y en verde de cada grupo, mutantes, reproduccion de RF-096-001 antes (3/3 `eacces`) y despues (0/3), arranque en frio de 489 s en un solo `up --wait`, smoke repetido, control negativo con el processor parado, job en cola que sobrevive a `down`/`up`, `down -v` y control positivo del lockfile.
+Comandos y resultados en la [evidencia](../../../../docs/evidence/JUP-050-validation.md): tests en rojo y en verde de cada grupo, mutantes, reproduccion de RF-096-001 antes (3/3 `eacces`) y despues (0/3), arranque en frio de 489 s en un solo `up --wait`, smoke repetido, control negativo con el processor parado, job en cola que sobrevive a `down`/`up`, `down -v` y control positivo del lockfile.
 
 ## Adversarial Review (pass 1)
 
