@@ -51,15 +51,33 @@ tfm-economicon
 
 ### Con Docker Compose
 
-Desde la raiz del repo:
+Desde la raiz de un clon limpio, con Docker y Node instalados:
 
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-# Complete required values and confirm disposable isolation as described below.
-docker compose build --pull
-docker compose up -d --wait
-docker compose ps
+# Completa en .env los secretos y opt-ins descritos en "Variables De Entorno".
+corepack pnpm local:doctor
+docker compose up -d --build --wait
+corepack pnpm local:smoke
 ```
+
+1. `.env.example` deja vacios los secretos a proposito: copiarlo no basta.
+   Rellena los valores de [Variables De Entorno](#variables-de-entorno).
+2. `local:doctor` revisa `.env` antes de arrancar y lista todo lo que falta:
+   variables obligatorias de `docker-compose.yml` vacias, credenciales de
+   `RABBITMQ_URL` y `VECTOR_DATABASE_URL` que no coinciden con las del servicio,
+   `AUTH_SECRET_KEY` corta, el opt-in de la CockroachDB local, puertos del host
+   ocupados y si la instalacion es nueva o existente. Nombra variables, nunca
+   valores, y no crea ni modifica `.env`. Repitelo hasta que termine en `[OK]`.
+3. El primer arranque, con build y volumenes nuevos, tarda varios minutos
+   (unos 8 en la validacion de JUP-050, de ellos unos 2 en las migraciones del
+   processor); los siguientes, menos de 2. `--wait` termina cuando todos los
+   servicios estan sanos.
+4. `local:smoke` recorre el camino minimo: salud de las cuatro aplicaciones,
+   login del usuario demo, una ingesta de costes del simulador, el resumen de
+   costes con datos y un job de documento que pasa por RabbitMQ hasta el
+   processor. Necesita `DEMO_SEED_ENABLED=true` y `DEMO_PASSWORD`, escribe datos
+   de prueba en el tenant `tenant-core` y se puede repetir.
 
 Las cuatro aplicaciones se construyen desde Dockerfiles versionados. Las
 imagenes ejecutan como usuarios sin privilegios, con filesystem raiz de solo
@@ -92,6 +110,16 @@ Para detener este entorno y conservar los volumenes de datos:
 ```powershell
 docker compose down
 ```
+
+| Comando | Que conserva | Que borra |
+| --- | --- | --- |
+| `docker compose stop` / `down` | Los volumenes con nombre: CockroachDB, pgvector, RabbitMQ (incluidos los mensajes que sigan en cola), Prometheus y Grafana | Los contenedores (`down`) |
+| `docker compose down -v` | Nada del proyecto | Todos los volumenes: la siguiente vez es una instalacion nueva |
+
+RabbitMQ guarda su estado en el volumen `rabbitmq-data` desde JUP-050. En una
+instalacion anterior, el primer arranque crea ese volumen vacio: lo que hubiera
+en el volumen anonimo previo no se migra. El cookie de Erlang sigue saliendo de
+`RABBITMQ_ERLANG_COOKIE`, que prevalece sobre el guardado en el volumen.
 
 Puertos visibles:
 
@@ -242,6 +270,10 @@ antes de preparar una instalacion existente.
 - `pnpm docker:build`: construye las imagenes Docker de las apps
 - `pnpm docker:validate`: valida topologia, digests, healthchecks y privilegios
   sin necesitar un daemon Docker
+- `pnpm local:doctor`: diagnostica `.env`, puertos y volumenes antes de arrancar
+  Compose, sin mostrar valores secretos
+- `pnpm local:smoke`: verifica el recorrido minimo contra el stack ya arrancado
+- `pnpm local:test`: tests de las dos herramientas anteriores
 
 ## Planificacion de entrega
 

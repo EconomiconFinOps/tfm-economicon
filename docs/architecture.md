@@ -170,6 +170,8 @@ Piensa en RabbitMQ como una bandeja de tareas pendientes:
 RabbitMQ no guarda datos de negocio ni sustituye a la base de datos.
 Solo transporta jobs de procesamiento entre servicios.
 
+En el entorno local, la cola es durable y su estado vive en el volumen `rabbitmq-data` (JUP-050): un job que sigue en cola sobrevive a `docker compose down` y `up`, y el processor lo consume al volver.
+
 Esto desacopla servicios y hace la arquitectura mas robusta.
 
 ### Postgres + pgvector

@@ -15,22 +15,22 @@
 
 - [x] 3.1 RED: tests de `tools/local-smoke.test.mjs` con un backend HTTP simulado y un `docker compose` simulado: orden de los pasos, paso fallido nombrado, espera acotada, seed demo desactivado, sin password ni token en la salida.
 - [x] 3.2 GREEN: implementar `tools/local-smoke.mjs` y el script `local:smoke`.
-- [ ] 3.3 Ejecutar el smoke dos veces seguidas contra un stack real recien levantado.
-- [ ] 3.4 Control negativo: con el processor parado, el smoke falla en el paso del processor dentro de su espera.
+- [x] 3.3 Ejecutar el smoke dos veces seguidas contra un stack real recien levantado.
+- [x] 3.4 Control negativo: con el processor parado, el smoke falla en el paso del processor dentro de su espera.
 
 ## 4. Parada, reinicio y build bloqueado
 
-- [ ] 4.1 Arranque en frio con volumenes nuevos: `docker compose up --build --wait` correcto a la primera; registrar la duracion.
-- [ ] 4.2 `down` y `up --wait`: los datos siguen y el smoke vuelve a pasar.
-- [ ] 4.3 Publicar un job con el processor parado, hacer `down` y `up`, y comprobar que el processor lo completa.
-- [ ] 4.4 `down -v`: el diagnostico informa de instalacion nueva.
-- [ ] 4.5 Control positivo de RF-090-001: un `pnpm-lock.yaml` desincronizado hace fallar el build del frontend.
+- [x] 4.1 Arranque en frio con volumenes nuevos: `docker compose up --build --wait` correcto a la primera; registrar la duracion.
+- [x] 4.2 `down` y `up --wait`: los datos siguen y el smoke vuelve a pasar.
+- [x] 4.3 Publicar un job con el processor parado, hacer `down` y `up`, y comprobar que el processor lo completa.
+- [x] 4.4 `down -v`: el diagnostico informa de instalacion nueva.
+- [x] 4.5 Control positivo de RF-090-001: un `pnpm-lock.yaml` desincronizado hace fallar el build del frontend.
 
 ## 5. Documentacion y findings
 
-- [ ] 5.1 README: recorrido desde clon limpio (copiar `.env.example`, rellenar secretos y opt-ins, `local:doctor`, `up --build --wait`, `local:smoke`), duracion esperada del primer arranque y que conserva o borra cada forma de parar.
-- [ ] 5.2 `docs/architecture.md` si describe volumenes o healthchecks afectados.
-- [ ] 5.3 `openspec/findings/backlog.md`: cerrar RF-096-001 y RF-090-001 con su evidencia; registrar y cerrar el finding de la ventana de salud del processor.
+- [x] 5.1 README: recorrido desde clon limpio (copiar `.env.example`, rellenar secretos y opt-ins, `local:doctor`, `up --build --wait`, `local:smoke`), duracion esperada del primer arranque y que conserva o borra cada forma de parar.
+- [x] 5.2 `docs/architecture.md` si describe volumenes o healthchecks afectados.
+- [x] 5.3 `openspec/findings/backlog.md`: cerrar RF-096-001 y RF-090-001 con su evidencia; registrar y cerrar el finding de la ventana de salud del processor. Hecho para RF-090-001 y RF-050-001; la fila de RF-096-001 llega con el PR #51 (aun sin integrar): se cerrara al traer `develop` a esta rama, con la evidencia ya registrada.
 
 ## 6. Cierre y verificacion
 
