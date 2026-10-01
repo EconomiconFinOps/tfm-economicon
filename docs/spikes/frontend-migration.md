@@ -249,7 +249,7 @@ tarjeta en Trello.
       no sobrevive a una recarga de `/login` ni al botón "atrás" del navegador. El `403` de tenant
       conserva la sesión, tal como ya especificaba JUP-085 — se reafirma la decisión, sin cambiarla.
 
-**JUP [`jup-099-unify-styles-assets`](../../openspec/changes/jup-099-unify-styles-assets/) — carril `standard` (el spike la proponía `light`) — implementada; PR pendiente de aprobación**
+**JUP [`jup-099-unify-styles-assets`](../../openspec/changes/archive/2026-10-01-jup-099-unify-styles-assets/) — carril `standard` (el spike la proponía `light`) — implementada, validada y archivada el 2026-10-01; integración de PR #54 pendiente**
 - [x] Unificar el sistema de estilos. **El problema real era mayor que "duplicados con el tema
       oscuro"**: convivían tres fuentes de color (241 hexadecimales y 229 utilidades de la paleta de
       Tailwind escritos a mano en las pantallas, más los tokens de `theme.css`, que eran el tema por

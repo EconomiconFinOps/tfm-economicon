@@ -1,6 +1,7 @@
 # Evidencia JUP-099 — Unificar el sistema de estilos y los assets del frontend
 
-- Fecha: 2026-09-29 (validación original) y 2026-09-30 (reverificación tras fusionar `develop`).
+- Fecha: 2026-09-29 (validación original), 2026-09-30 (reverificación tras fusionar `develop`)
+  y 2026-10-01 (validación independiente y archivado).
 - Trello: https://trello.com/c/WBnzwDHR/91-jup-099
 - Rama: `feat/JUP-099-unify-styles-assets`.
 - Base: `origin/develop` en `688fe2d93bb521c125e12231c29090f1f1829742`. Con el PR abierto, `develop`
@@ -9,12 +10,13 @@
 - Estado verificado: las secciones de "Validación ejecutada" y de los 8 criterios corresponden a `6060993`
   (14 commits propios, 46 archivos, +3 038 / −511), **antes** de la fusión; la sección de reverificación
   corresponde al estado **fusionado** con `develop` (`1e897dc`).
-- OpenSpec: [jup-099-unify-styles-assets](../../openspec/changes/jup-099-unify-styles-assets/) (activo; al
-  archivarlo, corregir este enlace a `openspec/changes/archive/<fecha>-jup-099-unify-styles-assets/`).
-- ADR: [ADR-0012](../adr/ADR-0012-frontend-color-tokens.md) (`Proposed`); aplican
+- OpenSpec: [jup-099-unify-styles-assets](../../openspec/changes/archive/2026-10-01-jup-099-unify-styles-assets/)
+  (archivado el 2026-10-01, delta promovido a la especificación vigente).
+- ADR: [ADR-0012](../adr/ADR-0012-frontend-color-tokens.md) (`Accepted` desde el 2026-10-01); aplican
   [ADR-0003](../adr/ADR-0003-frontend-typescript.md) y [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md).
 - Pull request: [#54](https://github.com/EconomiconFinOps/tfm-economicon/pull/54).
-- CI de implementación: pestaña Checks del PR #54 (pendiente de revisar tras la fusión).
+- CI sobre `ad128da`: [7/7 checks correctos](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/36906989342).
+  La CI del commit de archivado se verifica por separado en la PR.
 
 ## Fuentes verificadas
 
@@ -37,7 +39,7 @@
 
 ## Trazabilidad con requisitos
 
-Delta de la spec `frontend-navigation-shell` (se promueve al archivar):
+Delta de la spec `frontend-navigation-shell` (promovido el 2026-10-01 al archivar):
 
 | Requisito | Cómo se verifica |
 | --- | --- |
@@ -372,22 +374,59 @@ construir cada estado a una carpeta propia con
 
 Las capturas no se versionan.
 
-## Pendiente
+## Validación independiente y archivado (2026-10-01)
 
-- Gate post-review: **registrado** (2026-09-29) en el `review.md` del change, con `Archive decision:
-  archive`.
-- **Orden acordado con Victor para esta tarjeta:** el PR a `develop` se abre y se revisa con el change de
-  OpenSpec **todavía activo**; el archivado (con la promoción del delta de `frontend-navigation-shell`),
-  su push y el merge se hacen después de que el PR esté revisado y validado, cuando Victor lo indique.
-- **Al archivar, corregir en el mismo paso los enlaces que bajan un nivel:** el enlace al change en esta
-  evidencia (cabecera) y en `docs/spikes/frontend-migration.md` deben apuntar a
-  `openspec/changes/archive/<fecha>-jup-099-unify-styles-assets/`, y los enlaces relativos del propio
-  `review.md`, `design.md` y `proposal.md` archivados necesitan un `../` más (`RF-099-004`).
-- Revisar el resultado de CI del PR #54 tras la fusión con `develop` y anotarlo aquí.
-- ADR-0012 pasa de `Proposed` a `Accepted` con la aprobación del PR.
-- `RF-099-001` a `RF-099-004` quedan `Open` sin dueño asignado, disponibles para tarjetas propias.
-- El E2E completo en navegador contra el backend real corresponde a JUP-102; esta tarjeta verifica el
-  aspecto con datos simulados.
+[Validación publicada como APPROVED](https://github.com/EconomiconFinOps/tfm-economicon/pull/54#pullrequestreview-5384048039) por Alejandro Aguado (`Iber1to`)
+sobre `ad128da0a233a434d3f9e5b2996f3e8c7ad97152`, base `de0d62e7c0028f35a81c5087f531d19031a90e81`.
+Las ejecuciones locales se hicieron sobre `f914d68fd2ab957db7ddfd46e142ebb5bf5a89a7`, comparado con
+`1e897dc278c5ac99b0fc3d5e9008702038bec121`. El merge posterior `ad128da` solo añade dos líneas de un
+test de processor de PR #49; su árbol frontend es idéntico (`21e522760011968b553da9a6b9ffc20a39de1369`).
+Se reutiliza esa evidencia, sin presentar las ejecuciones anteriores como repetidas sobre el merge.
+
+- Instalación frozen, lint, TypeScript (tres configuraciones) y build correctos. Persiste el aviso
+  de bundle JavaScript de 746,77 kB, superior a 500 kB.
+- Suite serial: `corepack pnpm --filter @finops/frontend test -- --maxWorkers=1`, **437/437 tests en
+  47 archivos** (173 guardianes de color/paleta). Primera ejecución con carga y paralelismo: 430 PASS
+  y 7 FAIL en cinco suites; repetición serial sin editar tests ni timeouts. Compatible con
+  RF-098-004, sin demostrar una causa única.
+- OpenSpec estricto antes del archivado: 36/36; trazabilidad JUP-099, higiene y `git diff --check`
+  correctos. Las comprobaciones documentales posteriores se registran en el `review.md` archivado.
+- Receta B: **37/37 escenarios**, ocho pantallas y login, ocho tooltips, dimensiones coincidentes,
+  sin errores de página ni diferencias sin clasificar. Windows, Node 24.14.1, Playwright 1.61.0 y
+  Chromium 149.0.7827.55 (revisión 1228); runtime distinto del usado por el autor.
+- Se reproducen las diferencias documentadas de fondo, foreground, borde y degradado. Además hay
+  redondeos estables de un nivel de canal en navegación activa y conversación seleccionada por el
+  paso de colores con alfa calculados en build a `color-mix` evaluado en navegador. En los ocho
+  escenarios ejecutivos el contenido coincide; cada captura completa difiere en **5.610 píxeles**,
+  exclusivamente de navegación. No se reproduce «0 px» de pantalla completa ni se atribuye a Victor
+  aceptación de esas ubicaciones adicionales; se consideran no bloqueantes para este refactor.
+- Propagación: **37/37 escenarios** cambian al modificar solo `--primary` y `--card` en una copia
+  temporal. De 99 archivos comparados con Git solo difieren esas dos declaraciones. Los ocho
+  tooltips adoptan el color; **43 tokens de color, cero huérfanos**.
+- Incidencias de captura conservadas en la evidencia de validación: cursor reposicionado para
+  eliminar hover accidental; un primer intento de propagación terminó al cerrarse Chromium tras
+  15 capturas (causa no determinada), seguido de una repetición completa 37/37 correcta.
+- Alcance: API simulada, datos sintéticos y navegador de escritorio. No verifica backend real,
+  móvil ni otros navegadores; no se ejecutaron mutaciones nuevas ni se amplió el guardián.
+
+Los roles están reconciliados en PR y Trello: liderazgo Victor Méndez, pairing Lucía Mateo,
+revisión Paris Arcos y validación Alejandro Aguado. El último `JUP policy` sobre `ad128da` pasa.
+
+Tras la revisión favorable de Paris y esta validación, el usuario autorizó expresamente completar,
+aprobar y archivar. Se ejecutó `corepack pnpm openspec:archive jup-099-unify-styles-assets --yes`:
+el change quedó en `openspec/changes/archive/2026-10-01-jup-099-unify-styles-assets/`, se promovieron cuatro requisitos
+(siete escenarios) a `frontend-navigation-shell` y ADR-0012 pasó a `Accepted`. Se corrigieron los
+enlaces entrantes y los relativos de `design.md`. La autorización y el archivado no afirman que la
+PR esté integrada ni que la tarjeta de Trello esté cerrada.
+
+## Pendiente tras el archivado
+
+- La protección de `develop` invalida aprobaciones anteriores cuando cambia el diff y exige que
+  alguien distinto del último pusher apruebe el nuevo estado. El push documental del archivado
+  requiere esa revisión y la CI vigente antes del merge; la aprobación anterior acredita la
+  validación realizada, pero no satisface por sí sola la aprobación del último push.
+- `RF-099-001` a `RF-099-004` siguen `Open`, disponibles para tarjetas propias.
+- El E2E completo contra el backend real corresponde a JUP-102.
 
 ## Apéndice: scripts
 

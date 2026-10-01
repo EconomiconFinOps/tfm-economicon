@@ -927,3 +927,41 @@ había avanzado un commit documental. Se prepara un cuerpo actualizado: **`ADR-0
 CSS 43,37 kB y JS 746,77 kB, la integración de JUP-026 (conflictos, el token `warning-text` y la
 verificación visual `develop` frente al resultado) y la nota de la numeración del ADR. Lo aplica Victor en
 GitHub (aquí no hay `gh` para editar el PR); debe conservar los nombres de los roles ya asignados.
+
+## Validación independiente y archivado — 2026-10-01
+
+- Revisión técnica favorable de Paris: [revisión incremental](https://github.com/EconomiconFinOps/tfm-economicon/pull/54#pullrequestreview-5372668227).
+- Validación de Alejandro publicada como **APPROVED** sobre `ad128da`:
+  [review de GitHub](https://github.com/EconomiconFinOps/tfm-economicon/pull/54#pullrequestreview-5384048039). Ejecución local sobre `f914d68`; el frontend es idéntico
+  al de `ad128da` (árbol `21e522760011968b553da9a6b9ffc20a39de1369`). No se afirma una nueva ejecución.
+- Evidencia: [validación independiente](../../../../docs/evidence/JUP-099-validation.md#validación-independiente-y-archivado-2026-10-01).
+  437/437 tests en serial, 37/37 escenarios visuales y propagación 37/37. Incluye los siete fallos
+  de la primera ejecución paralela, la captura interrumpida y la repetición completa; en Chromium
+  149 se observan redondeos adicionales de un nivel de canal en navegación y conversación.
+  En la pantalla ejecutiva el contenido coincide, pero no la captura completa (5.610 píxeles de
+  navegación por escenario). No se atribuye a Victor aceptación nueva de esas ubicaciones.
+- Autorización posterior del usuario en la sesión de validación: «Vale completa, aprueba y archiva».
+  Se conserva arriba el gate post-review original de Victor de 2026-09-29 sin reescribir su firma.
+- Archivado mediante `corepack pnpm openspec:archive jup-099-unify-styles-assets --yes` a
+  `openspec/changes/archive/2026-10-01-jup-099-unify-styles-assets/`. Cuatro requisitos y siete escenarios promovidos;
+  ADR-0012 aceptado y enlaces corregidos en el mismo cambio. Sin modificaciones funcionales.
+- La integración sigue pendiente: `develop` tiene `dismiss_stale_reviews_on_push=true` y
+  `require_last_push_approval=true`. El commit de archivado necesita aprobación posterior de otra
+  persona y CI vigente. No se marca Trello como terminado ni se afirma un merge.
+
+### Comprobaciones posteriores al archivado
+
+Ejecutadas el 2026-10-01 sobre el cambio documental, antes de publicarlo:
+
+| Comprobación | Resultado |
+| --- | --- |
+| `corepack pnpm openspec:validate` | 35/35, estricto, sin fallos |
+| `corepack pnpm jup:check:all` | Ocho cambios activos completos; JUP-099 ya archivado |
+| `corepack pnpm jup:cleanup:check` | 700 archivos, correcto |
+| `git diff --cached --check` | Correcto |
+| Revisión independiente del diff | Favorable; 80 enlaces relativos de los documentos afectados resuelven |
+| Conservación de la spec | Ocho requisitos y 16 escenarios anteriores intactos, más el delta exacto de cuatro y siete: total 12/23 |
+| Alcance de archivos | Solo documentación y especificaciones; fuentes, tests, configuración, dependencias y CI sin cambios |
+
+La suite funcional y las capturas no se repiten para este diff documental. La CI del commit publicado
+se consulta en la PR y no se anticipa como resultado de estas comprobaciones locales.

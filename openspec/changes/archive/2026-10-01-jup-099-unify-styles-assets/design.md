@@ -1,6 +1,6 @@
-JUP: JUP-099 — ADR aplicables: [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md)
-(TypeScript strict), [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) (shadcn/ui). ADR
-nuevo propuesto: `docs/adr/ADR-0012-frontend-color-tokens.md` (decisión 8).
+JUP: JUP-099 — ADR aplicables: [ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md)
+(TypeScript strict), [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) (shadcn/ui). ADR
+nuevo: [ADR-0012](../../../../docs/adr/ADR-0012-frontend-color-tokens.md), aceptado el 2026-10-01 (decisión 8).
 
 ## Context
 

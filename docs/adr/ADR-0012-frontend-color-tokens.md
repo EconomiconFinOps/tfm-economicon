@@ -1,9 +1,10 @@
 # ADR-0012: Convención de tokens de color del frontend
 
-- Estado: Proposed
+- Estado: Accepted
 - Fecha: 2026-09-29
+- Aceptación: 2026-10-01, [validación aprobada de PR #54](https://github.com/EconomiconFinOps/tfm-economicon/pull/54#pullrequestreview-5384048039).
 - Tarjeta Trello: [JUP-099](https://trello.com/c/WBnzwDHR/91-jup-099)
-- OpenSpec relacionado: `jup-099-unify-styles-assets`
+- OpenSpec relacionado: [jup-099-unify-styles-assets](../../openspec/changes/archive/2026-10-01-jup-099-unify-styles-assets/) (archivado).
 - Sustituye a: ninguno
 - Sustituido por: ninguno
 
@@ -119,4 +120,11 @@ frontend y determina cómo se copian los primitivos de shadcn/ui.
 - Hallazgos registrados en `openspec/findings/backlog.md`: `RF-099-002` (clases interpoladas y tonos
   sin estilo en las pantallas de demostración) y `RF-099-003` (tonos casi iguales no consolidados).
 - Seguimiento: las tarjetas de frontend que añadan o modifiquen color deben citar este ADR en su
-  `design.md`, igual que ADR-0003 y ADR-0004. Pasa a `Accepted` cuando el PR de JUP-099 se apruebe.
+  `design.md`, igual que ADR-0003 y ADR-0004. Aceptado con la validación de PR #54 del 2026-10-01;
+  el archivado documental no sustituye la aprobación final exigida para integrar el último push.
+
+La validación independiente del 2026-10-01 amplía la evidencia a **37 escenarios** sobre el frontend
+tras integrar JUP-026. Con Windows y Chromium 149 aparecen también redondeos de un nivel de canal
+en la navegación activa y conversación seleccionada. En los ocho escenarios ejecutivos el contenido
+coincide, pero la captura completa difiere en 5.610 píxeles de navegación: no se afirma «0 px» de
+pantalla completa en ese runtime. Véase [la evidencia actualizada](../evidence/JUP-099-validation.md#validación-independiente-y-archivado-2026-10-01).

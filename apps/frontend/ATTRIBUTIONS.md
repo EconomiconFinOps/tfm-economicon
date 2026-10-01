@@ -1,7 +1,7 @@
 # Atribuciones y licencias de terceros del frontend
 
 Este archivo recoge qué material de terceros **contiene el código de `apps/frontend`** y qué avisos de
-licencia exige. Se creó en [JUP-099](../../openspec/changes/jup-099-unify-styles-assets/) al cerrar la
+licencia exige. Se creó en [JUP-099](../../openspec/changes/archive/2026-10-01-jup-099-unify-styles-assets/) al cerrar la
 unificación de estilos y assets; la decisión y su verificación están en el `design.md` (decisión 7) y en
 el `review.md` de ese change.
 
