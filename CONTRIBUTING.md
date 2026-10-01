@@ -88,10 +88,16 @@ If someone other than the assigned person takes over a role (for example, whoeve
    - Excepcion: revision y validacion por la misma persona, acordado en Trello
    ```
 
-5. Neither the reviewer nor the validator pushes commits to the branch: a push dismisses the existing approvals. "Commit suggestion" counts as a push. "Update branch" does not: anyone may use it, it keeps the approvals, and point 7 applies. Findings outside the scope of the pull request are requested from the leader in the review text.
+5. Neither the reviewer nor the validator pushes commits to the branch: a push dismisses the existing approvals. "Commit suggestion" counts as a push. "Update branch" does not: anyone may use it, it keeps the approvals, and point 7 applies. This has only been observed with the default merge variant; "Update with rebase" rewrites the branch's commits and has not been checked, so use the merge variant. Findings outside the scope of the pull request are requested from the leader in the review text.
 6. Whoever addresses requested changes or decides to merge reads every source of feedback: all the reviews, the conversation comments and the inline comments on the diff, not only the latest review.
 7. Anyone may merge once the pull request has both titled reviews and nothing pending. If "Update branch" brings changes to files or behaviour the pull request depends on, a revalidation of what is affected is requested before merging. Rows added to shared registries such as `openspec/findings/backlog.md` do not count.
 8. The required check `JUP reviews` blocks the merge until both titled reviews exist, neither from the author, without pending requests for changes, and with the exception line when the same person published both. It supports the process; it is not a security control, and it does not judge the content of the reviews. It runs the code of the pull request itself, so reviewers pay special attention to changes in `tools/pr-policy.mjs` and `.github/workflows/`, which can alter the checks.
+9. The Trello columns follow the earliest stage still pending, and only the leader moves the card (the same person who merges and updates Trello). The card does not move on its own and nobody else moves it:
+   - **40 — En revisión:** from opening the pull request (not a draft, CI green, review and validation requested) until `Revision JUP-XXX` is satisfied, that is, published as a Comment or an Approve with no requested changes pending.
+   - **50 — Validación:** the review is satisfied and `Validacion JUP-XXX` is still pending, or both are satisfied and the pull request is not merged yet.
+   - **Parallel work:** the two reviews can be published in any order. If the validation is satisfied first, the card stays in 40 until the review is too. The leader links each published review in a Trello comment.
+   - **Requested changes:** the card does not move. It stays in its column, and does not go back to `30 — En curso`, while the leader addresses them and asks again; the stage only advances when the review that requested them is satisfied.
+   - **Merged:** the leader moves the card to `70 — Hecho`.
 
 A validation lists what was not validated instead of marking it as met. The Validacion section of the pull request template is the leader's own evidence; it does not replace the validation review.
 

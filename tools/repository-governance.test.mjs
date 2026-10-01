@@ -96,6 +96,17 @@ test("documents the review and validation flow the JUP reviews check links to", 
   assert.ok(template().includes(SAME_PERSON_EXCEPTION));
 });
 
+test("defines how the Trello columns follow the review and validation, and who moves the card", () => {
+  const flow = section(contributing, "## Review and validation flow");
+  for (const text of ["40 — En revisión", "50 — Validación", "70 — Hecho", "30 — En curso"]) {
+    assert.ok(flow.includes(text), text);
+  }
+  assert.match(flow, /earliest stage still pending/i);
+  assert.match(flow, /only the leader moves the card/i);
+  assert.match(flow, /requested changes[^.]*the card does not move/i);
+  assert.match(flow, /any order/i);
+});
+
 test("keeps one process version in AGENTS.md and CONTRIBUTING.md", () => {
   const version = /^Process version: (.+)$/m;
   const inContributing = contributing.match(version);

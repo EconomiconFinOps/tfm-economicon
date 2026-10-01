@@ -27,9 +27,9 @@
 |---|---|
 | `corepack pnpm pr:check:test` | 57 passed (39 antes de las correcciones de la revision adversarial; 56 antes de la Revision JUP-100) |
 | `corepack pnpm ci:check:test` | 10 passed |
-| `corepack pnpm repository:governance:test` | 12 passed |
+| `corepack pnpm repository:governance:test` | 13 passed (12 antes de la regla de las columnas de Trello) |
 | Resto del job "OpenSpec" de la CI (`jup:check:test`, `roadmap:test`, `jup:check:all`, `jup:cleanup:test`, `jup:cleanup:check`, `openspec:validate`, `docker:validate`, `collaboration:test`, `assistant-corpus:test`, `assistant-corpus:validate`, `validation-questions:test`, `validation-questions:validate`, `llm-gateway:test`) | todos correctos; `openspec:validate` 35/35 |
-| `corepack pnpm jup:check -- --change jup-100-review-validation-flow` | correcto |
+| `corepack pnpm jup:check -- --change jup-100-review-validation-flow` | correcto antes de archivar el change; despues del archivado ya no existe en `openspec/changes/`, y se comprueba con `jup:check:all` y con el archivo en `openspec/changes/archive/` |
 
 ## Controles positivos
 

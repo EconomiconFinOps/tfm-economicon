@@ -108,7 +108,7 @@ Any team member MAY merge a pull request, but only when it has both titled revie
 - **THEN** it is not merged
 
 #### Scenario: Base changes overlap the PR
-- **WHEN** "Update branch" brings changes to files the PR also modifies
+- **WHEN** "Update branch" brings changes to files or behaviour the PR depends on
 - **THEN** a revalidation of the affected criteria is requested before merging
 
 #### Scenario: Base changes only add registry rows
