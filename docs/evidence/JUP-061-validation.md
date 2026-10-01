@@ -54,3 +54,11 @@ nuevas de producto en esta modificación documental.
   sigue sin evidencia localizada; se declara, no se inventa una motivación histórica.
 - Revisión de Paris, validación de Victor y pairing de Lucia de JUP-061 pendientes
   de evidencia atribuible. Esta entrega no cierra la tarjeta ni fusiona el PR.
+
+## Publicación y seguimiento
+
+[PR #60](https://github.com/EconomiconFinOps/tfm-economicon/pull/60) publicada como
+borrador contra develop. Trello actualizado mediante el puente autorizado y
+releído: descripción/enlaces verificados, roles preservados, **30 — En curso**.
+El trabajo documental está entregado; revisión, validación y ratificaciones humanas
+siguen pendientes. No se ha enviado ningún mensaje a Discord ni realizado merge.

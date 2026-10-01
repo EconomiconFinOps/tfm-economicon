@@ -23,3 +23,11 @@ chat `01a0f8dc-a64b-7e93-8f96-a146b08bf612`.
   memoria canónica. No se acredita participación humana por asignar esos roles.
 - Reproducción: `node tools/jup-check.mjs --change jup-061-architecture-decision-register`,
   `corepack pnpm openspec:validate`, `node tools/jup-cleanup-check.mjs`.
+
+## Publicación y seguimiento
+
+[PR #60](https://github.com/EconomiconFinOps/tfm-economicon/pull/60) publicada como
+borrador contra develop. Trello actualizado mediante el puente autorizado y
+releído: descripción/enlaces verificados, roles preservados, **30 — En curso**.
+El trabajo documental está entregado; revisión, validación y ratificaciones humanas
+siguen pendientes. No se ha enviado ningún mensaje a Discord ni realizado merge.
