@@ -1,8 +1,7 @@
 // Remediacion de mutation testing (JUP-097, RF-090-003, tarea 3.5) para
-// `SessionGate.tsx` (mutate acotado al archivo completo, ver
-// .claude/harness/stryker.conf.mjs). `SessionGate.test.tsx` y
-// `SessionGate.validation.test.tsx` (ya commiteados, bloqueados por el hook
-// del harness) solo prueban un caso "todo valido" y un caso "estructura
+// `SessionGate.tsx` (mutate acotado al archivo completo). `SessionGate.test.tsx` y
+// `SessionGate.validation.test.tsx` (ya commiteados, protegidos contra
+// edicion en el entorno local) solo prueban un caso "todo valido" y un caso "estructura
 // invalida con dos campos rotos a la vez" -- eso deja sin matar una gran
 // cantidad de mutantes de logica booleana en `isSession` (cada termino de
 // la cadena de `||`/`&&` necesita su propio caso donde SOLO ese termino
