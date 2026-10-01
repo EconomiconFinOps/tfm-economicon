@@ -89,8 +89,9 @@ Reescrito para comprobar el aviso visible; 5/5 seguidas. Detalle en `review.md`,
 | `layouts/SessionGate.tsx` (grupo 3) | 77.93% (44 supervivientes + 3 timeout + 5 sin cobertura) | 1 (línea 86) | 1 gap real remediado (`session-expiry-notice.fresh-mount.test.tsx`, valor inicial de `sessionExpired`) |
 | `pages/LoginPage.tsx` (grupo 4) | 77.08% (11 supervivientes + 2 timeout) | 3 (líneas 57-58) | 1 mutante equivalente (array de dependencias, `navigate` estable); 2 gaps reales remediados (`login-session-expired-notice.history-replace.test.tsx`, `replace: true` en la corrección de historial) |
 
-En los tres archivos, el score global queda por debajo del umbral `break: 80` de
-`.claude/harness/stryker.conf.mjs` **solo por deuda preexistente de JUP-085/097 fuera del código que
+En los tres archivos, el score global queda por debajo del umbral 80 (criterio de lectura del
+resultado: la invocación de Stryker sin archivo de configuración, ver el `review.md` archivado, no
+tiene opción de corte automático) **solo por deuda preexistente de JUP-085/097 fuera del código que
 esta tarjeta modificó** (código no tocado por las tareas 2.3/3.3/4.6: `fetchJson`, `isSession`,
 `loadStoredSession`, el bootstrap de tenants, la reconciliación de identidad, el callback `onSuccess`
 del login, etc.), explícitamente fuera de alcance por `proposal.md` ("no se reimplementa nada de
@@ -117,13 +118,14 @@ confirmados de nuevo al cierre (grupo 5).
 gzip `217.20 kB`, CSS `39.72 kB` / gzip `7.88 kB`. El aviso de chunk >500kB es preexistente a esta
 tarjeta (no se investiga, fuera de alcance).
 
-### DoD (`node .claude/harness/check-dod.mjs`)
+### Batería de validación del frontend
 
-Falla por `RF-093-001` (preexistente, pendiente de JUP-102, ajeno a este cambio): `corepack pnpm
-test/lint/typecheck` desde la raíz pasan por turbo, que resuelve pnpm v11.9.0 en subprocesos pese a
+Desde la raíz, `corepack pnpm test/lint/typecheck` fallan por `RF-093-001` (preexistente, pendiente
+de JUP-102, ajeno a este cambio): pasan por turbo, que resuelve pnpm v11.9.0 en subprocesos pese a
 `packageManager: pnpm@9.0.0`. Sustituto verificado en su lugar (mismo criterio que JUP-093/094/095/097):
 `corepack pnpm --filter @finops/frontend {test,typecheck,lint,build}`, los cuatro en verde — ver
-arriba. Escaneo de secretos del propio `check-dod.mjs`: `[PASS]`.
+arriba. La higiene del repositorio (`corepack pnpm jup:cleanup:check`) consta en la sección
+siguiente.
 
 ### Checks de trazabilidad OpenSpec/Trello
 

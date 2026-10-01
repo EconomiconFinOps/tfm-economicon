@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { getSessionGeneration, invalidateSession, subscribeSessionInvalidation } from "./api";
 
-// Archivo nuevo (no `api.test.ts`) porque ese archivo ya esta commiteado y el
-// harness TDD bloquea su edicion. Este test remedia un mutante superviviente
+// Archivo nuevo (no `api.test.ts`) porque ese archivo ya esta commiteado y
+// estaba protegido contra edicion en el entorno local. Este test remedia un mutante superviviente
 // de Stryker sobre `services/api.ts` (tarea 2.4): no toca `api.test.ts` ni
 // ningun archivo de producto.
 

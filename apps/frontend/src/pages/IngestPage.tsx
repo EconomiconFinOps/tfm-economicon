@@ -60,7 +60,7 @@ export function IngestPage() {
         title="Tenant required"
         subtitle="Choose a tenant before enqueuing ingestion jobs."
       >
-        <p className="text-sm text-slate-400">No active tenant selected.</p>
+        <p className="text-sm text-muted-foreground">No active tenant selected.</p>
       </SectionCard>
     );
   }
@@ -73,12 +73,12 @@ export function IngestPage() {
       >
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-slate-400" htmlFor="ingest-source">
+            <label className="text-sm text-muted-foreground" htmlFor="ingest-source">
               Source
             </label>
             <input
               id="ingest-source"
-              className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
               value={form.source}
               onChange={(event) =>
                 setForm((current) => ({ ...current, source: event.target.value }))
@@ -87,12 +87,12 @@ export function IngestPage() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-slate-400" htmlFor="ingest-artifact-uri">
+            <label className="text-sm text-muted-foreground" htmlFor="ingest-artifact-uri">
               Artifact URI
             </label>
             <input
               id="ingest-artifact-uri"
-              className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
               placeholder="s3://billing/report.csv"
               value={form.artifact_uri}
               onChange={(event) =>
@@ -102,12 +102,12 @@ export function IngestPage() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-slate-400" htmlFor="ingest-text-content">
+            <label className="text-sm text-muted-foreground" htmlFor="ingest-text-content">
               Text content
             </label>
             <textarea
               id="ingest-text-content"
-              className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
               rows={10}
               placeholder="Paste the document content to be chunked and embedded."
               value={form.text_content}
@@ -118,11 +118,11 @@ export function IngestPage() {
           </div>
 
           {mutation.error ? (
-            <p className="text-sm text-red-400">{mutation.error.message}</p>
+            <p className="text-sm text-danger">{mutation.error.message}</p>
           ) : null}
 
           <button
-            className="mt-2 rounded-md bg-[#0078d4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0078d4]/80 disabled:opacity-60"
+            className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
             type="submit"
             disabled={mutation.isPending}
           >
@@ -138,16 +138,16 @@ export function IngestPage() {
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-400">Job ID</p>
-              <strong className="text-white">{mutation.data.job_id}</strong>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Job ID</p>
+              <strong className="text-foreground">{mutation.data.job_id}</strong>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-400">Status</p>
-              <strong className="text-white">{mutation.data.status}</strong>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Status</p>
+              <strong className="text-foreground">{mutation.data.status}</strong>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-400">Queue</p>
-              <strong className="text-white">{mutation.data.queue}</strong>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Queue</p>
+              <strong className="text-foreground">{mutation.data.queue}</strong>
             </div>
           </div>
         </SectionCard>

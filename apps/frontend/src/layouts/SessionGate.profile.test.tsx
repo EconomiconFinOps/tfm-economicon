@@ -1,7 +1,7 @@
 // Cobertura complementaria de `SessionGate` para `RF-090-003` (JUP-097, grupo
 // 3 -- ver decision 2 de design.md). `SessionGate.test.tsx` y
-// `SessionGate.validation.test.tsx` (ya commiteados, bloqueados por el hook
-// del harness) cubren "sin sesion" y "sesion estructuralmente invalida", pero
+// `SessionGate.validation.test.tsx` (ya commiteados, protegidos contra
+// edicion en el entorno local) cubren "sin sesion" y "sesion estructuralmente invalida", pero
 // ninguno cubre la revalidacion contra el servidor: hoy `SessionGate` confia
 // en el `user` de `localStorage` tal cual, sin invocar `fetchProfile`
 // (`GET /me`). Este archivo anade, sin duplicar la cobertura existente, los

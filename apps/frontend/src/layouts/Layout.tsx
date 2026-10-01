@@ -66,17 +66,17 @@ export function Layout() {
   ];
 
   return (
-    <div className="size-full flex flex-col bg-[#0f1419]">
+    <div className="size-full flex flex-col bg-background">
       {/* Header */}
-      <header className="bg-gradient-to-r from-[#1a1f2e] to-[#232834] border-b border-[#2d3748] px-6 py-4 shadow-lg">
+      <header className="bg-gradient-to-r from-card to-accent border-b border-border px-6 py-4 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-[#0078d4] to-[#00bcf2] shadow-lg shadow-blue-500/30">
-              <Activity className="w-6 h-6 text-white" />
+            <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-highlight shadow-lg shadow-info-tint/30">
+              <Activity className="w-6 h-6 text-foreground" />
             </div>
             <div>
-              <h1 className="font-bold text-white">FinOps AI Platform</h1>
-              <p className="text-sm text-slate-400">Automatización Inteligente del Ciclo Operativo</p>
+              <h1 className="font-bold text-foreground">FinOps AI Platform</h1>
+              <p className="text-sm text-muted-foreground">Automatización Inteligente del Ciclo Operativo</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -88,7 +88,7 @@ export function Layout() {
             {tenants && activeTenantId !== undefined && onTenantChange ? (
               <select
                 aria-label="Ambito de cliente"
-                className="text-sm text-white bg-[#1a1f2e] px-3 py-2 rounded-lg border border-[#2d3748] focus:outline-none focus:border-[#00bcf2]"
+                className="text-sm text-foreground bg-card px-3 py-2 rounded-lg border border-border focus:outline-none focus:border-highlight"
                 value={activeTenantId}
                 onChange={(event) => onTenantChange(event.target.value)}
               >
@@ -103,15 +103,15 @@ export function Layout() {
             {/* Panel de sesion: mismo patron que AppShell.jsx:52-61
                 (identidad + boton de logout), adaptado a Tailwind. */}
             {user && onLogout ? (
-              <div className="flex items-center gap-2 text-sm text-slate-400 bg-[#1a1f2e] px-4 py-2 rounded-lg border border-[#2d3748]">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-card px-4 py-2 rounded-lg border border-border">
                 <div className="text-right leading-tight">
-                  <p className="text-white font-medium">{user.full_name}</p>
-                  <p className="text-xs text-slate-400">{user.email}</p>
+                  <p className="text-foreground font-medium">{user.full_name}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="ml-2 p-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#232834] transition-all"
+                  className="ml-2 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
                   aria-label="Cerrar sesion"
                 >
                   <LogOut className="w-4 h-4" />
@@ -119,7 +119,7 @@ export function Layout() {
               </div>
             ) : null}
 
-            <div className="text-sm text-slate-400 bg-[#1a1f2e] px-4 py-2 rounded-lg border border-[#2d3748]">
+            <div className="text-sm text-muted-foreground bg-card px-4 py-2 rounded-lg border border-border">
               {new Date().toLocaleDateString('es-ES', {
                 weekday: 'long',
                 year: 'numeric',
@@ -132,7 +132,7 @@ export function Layout() {
       </header>
 
       {/* Navigation */}
-      <nav className="bg-[#1a1f2e] border-b border-[#2d3748] px-6 shadow-lg">
+      <nav className="bg-card border-b border-border px-6 shadow-lg">
         <div className="flex items-center gap-1">
           {navItems.map((item) => (
             <NavLink
@@ -142,8 +142,8 @@ export function Layout() {
               className={({ isActive }) =>
                 `flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
                   isActive
-                    ? "border-[#00bcf2] text-[#00bcf2] bg-[#0078d4]/10 shadow-inner"
-                    : "border-transparent text-slate-400 hover:text-white hover:bg-[#232834]"
+                    ? "border-highlight text-highlight bg-primary/10 shadow-inner"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`
               }
             >
@@ -155,7 +155,7 @@ export function Layout() {
           {/* Separador entre las 5 pantallas de demostracion y las 3
               conectadas al backend (Punto 5): misma barra de navegacion,
               distincion visual de que unas sirven datos reales y otras no. */}
-          <div className="mx-2 h-6 w-px bg-[#2d3748]" aria-hidden="true" />
+          <div className="mx-2 h-6 w-px bg-muted" aria-hidden="true" />
 
           {backendNavItems.map((item) => (
             <NavLink
@@ -164,8 +164,8 @@ export function Layout() {
               className={({ isActive }) =>
                 `flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
                   isActive
-                    ? "border-[#00bcf2] text-[#00bcf2] bg-[#0078d4]/10 shadow-inner"
-                    : "border-transparent text-slate-400 hover:text-white hover:bg-[#232834]"
+                    ? "border-highlight text-highlight bg-primary/10 shadow-inner"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`
               }
             >
@@ -177,7 +177,7 @@ export function Layout() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-[#0f1419]">
+      <main className="flex-1 overflow-auto bg-background">
         {/* Reenvia el mismo contexto hacia las rutas hijas: necesario para
             las siguientes sub-rondas del grupo 6, aunque hoy ningun hijo lo
             consuma todavia.
