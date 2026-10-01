@@ -91,9 +91,13 @@ Base `1e897dc`, head `742d0f5`. Revisor sin acceso al razonamiento de la impleme
 
 Ataques que resistieron (resumen del revisor): diferencial de 227 casos entre el doctor y `Settings()` (esquemas en mayusculas, placeholders en las tres DSN, guest/guest, `RUNTIME_ENVIRONMENT`, longitud en puntos de codigo, seed y password demo), 24 variantes de passwords frente a `unquote`/`make_url`, parser `.env` (BOM, CRLF, comillas, `$$`, precedencia del entorno), ausencia de secretos en la salida y reglas identicas entre backend y processor.
 
+## Hallazgos aceptados como limites documentados
+
+Lucia acepto el 2026-10-01 los hallazgos pendientes de las pasadas 2 y 3: P2-4 y P3-2, P3-3, P3-5 y P3-6 a P3-9. Ninguno es HIGH ni impide el arranque; se documentan en el README (limites conocidos de `local:doctor`) y aqui. P3-5 (mutantes que sobreviven) queda como deuda de tests, sin cambio de codigo.
+
 ## Riesgos
 
-- El diagnostico duplica reglas del backend: un test compara sus listas con `runtime_secrets.py` de backend y processor, pero una regla nueva con otra forma requiere actualizar el diagnostico a mano.
+- El diagnostico es una aproximacion: no cubre todos los ajustes del backend ni del processor (ver los limites aceptados) y duplica reglas del backend: un test compara sus listas con `runtime_secrets.py` de backend y processor, pero una regla nueva con otra forma requiere actualizar el diagnostico a mano.
 - Medidas de tiempo de un solo host (Windows, Docker Desktop).
 
 ## Findings

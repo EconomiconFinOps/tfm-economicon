@@ -72,6 +72,7 @@ corepack pnpm local:smoke
    o existente. Resuelve `.env` como Compose (`${VAR}`, comillas, entorno
    primero). Nombra variables, nunca valores, y no crea ni modifica `.env`.
    Repitelo hasta que termine en `[OK]`.
+   Limites conocidos: `[OK]` no garantiza que el backend arranque, porque no valida `DEMO_SEED_ENABLED`, `CORS_ALLOWED_ORIGINS`, `AUTH_TOKEN_TTL_MINUTES` ni los ajustes propios del processor; no entiende valores multilinea entre comillas ni los operadores `${VAR:+x}` y `${VAR:?msg}` de Compose; ante un listener solo en `::1` puede no ver el puerto ocupado; y los espacios en blanco poco comunes (`` a ``) se interpretan distinto que en el backend.
 3. El primer arranque, con build y volumenes nuevos, tarda varios minutos
    (unos 8 en la validacion de JUP-050, de ellos unos 2 en las migraciones del
    processor); los siguientes, menos de 2. `--wait` termina cuando todos los
