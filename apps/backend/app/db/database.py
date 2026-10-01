@@ -178,17 +178,111 @@ class Database:
             ).first()
         return row is not None
 
-    def fetch_billing_summary(self, tenant_id: str) -> dict:
-        with self.engine.connect() as connection:
-            job_count = connection.execute(
-                text("SELECT count(*) FROM jobs WHERE tenant_id = :tenant_id"),
-                {"tenant_id": tenant_id},
-            ).scalar_one()
+    def fetch_billing_summary(
+        self, tenant_id: str, *, start_date, end_date,
+        group_by: str = "subscription", tag_key: str | None = None,
+    ) -> dict:
+        from decimal import Decimal, ROUND_HALF_UP, localcontext
+
+        from app.schemas.billing import AmbiguousCostSource
+
+        def present(expression: str) -> str:
+            return f"CASE WHEN {expression} ~ '^\\s*$' THEN NULL ELSE {expression} END"
+
+        project_tag = present("r.tags ->> 'project'")
+        dimensions = {
+            "subscription": present("r.subscription_id"),
+            "resource_group": present("r.resource_group"),
+            "service": present("r.service_name"),
+            "project": f"COALESCE({present('r.project')}, {project_tag})",
+            "tag": present("r.tags ->> :tag_key"),
+        }
+        dimension = dimensions[group_by]
+        subscription = (present("r.subscription_id") if group_by in {"subscription", "resource_group"}
+                        else "CAST(NULL AS STRING)")
+        group_value = "lower(value)" if group_by == "resource_group" else "value"
+        display_value = "min(value)" if group_by == "resource_group" else "value"
+        # Only enum-selected expressions enter SQL; all request values are bound.
+        query = text(f"""
+            WITH completed AS (
+                SELECT r.ingestion_id, r.subscription_id, r.usage_date,
+                       r.currency, r.pretax_cost, {dimension} AS value,
+                       {subscription} AS group_subscription
+                FROM azure_cost_records r
+                JOIN azure_cost_ingestion_runs i
+                  ON i.id = r.ingestion_id AND i.tenant_id = r.tenant_id
+                 AND i.subscription_id = r.subscription_id
+                WHERE r.tenant_id = :tenant_id AND i.tenant_id = :tenant_id
+                  AND i.status = 'completed'
+            ), period_records AS (
+                SELECT * FROM completed
+                WHERE usage_date >= :start_date AND usage_date < :end_date
+            ), conflicts AS (
+                SELECT subscription_id, usage_date FROM period_records
+                GROUP BY subscription_id, usage_date
+                HAVING count(DISTINCT ingestion_id) > 1
+            ), metadata AS (
+                SELECT (SELECT count(*) FROM completed WHERE usage_date IS NULL) AS undated,
+                       (SELECT count(*) FROM period_records WHERE value IS NULL) AS missing,
+                       (SELECT count(*) FROM conflicts) AS ambiguous
+            ), aggregates AS (
+                SELECT 'total' AS kind, currency, CAST(NULL AS STRING) AS subscription_id,
+                       CAST(NULL AS STRING) AS value, sum(pretax_cost) AS cost,
+                       count(*) AS record_count
+                FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
+                GROUP BY currency
+                UNION ALL
+                SELECT 'group', currency, group_subscription, {display_value}, sum(pretax_cost), count(*)
+                FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
+                GROUP BY currency, group_subscription, {group_value}
+            )
+            SELECT a.*, m.undated, m.missing, m.ambiguous
+            FROM metadata m LEFT JOIN aggregates a ON TRUE
+            ORDER BY a.currency ASC NULLS LAST, a.subscription_id ASC NULLS LAST,
+                     a.value ASC NULLS LAST, a.kind
+        """)
+        with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+            with connection.begin():
+                rows = connection.execute(query, {
+                    "tenant_id": tenant_id, "start_date": start_date, "end_date": end_date,
+                    "tag_key": tag_key,
+                }).mappings().all()
+                job_count = connection.execute(
+                    text("SELECT count(*) FROM jobs WHERE tenant_id = :tenant_id"),
+                    {"tenant_id": tenant_id},
+                ).scalar_one()
+
+        metadata = rows[0]
+        if metadata["ambiguous"]:
+            raise AmbiguousCostSource()
+
+        def money(value: Decimal) -> str:
+            with localcontext() as context:
+                context.prec = max(50, len(value.as_tuple().digits) + abs(value.as_tuple().exponent) + 2)
+                rounded = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                return "0.00" if rounded == 0 else format(rounded, ".2f")
+
+        totals, groups = [], []
+        for row in rows:
+            if row["kind"] is None:
+                continue
+            item = {"currency": row["currency"], "cost": money(row["cost"]),
+                    "record_count": int(row["record_count"])}
+            if row["kind"] == "total":
+                totals.append(item)
+            else:
+                groups.append({**item, "subscription_id": row["subscription_id"], "value": row["value"]})
+        missing, undated = int(metadata["missing"]), int(metadata["undated"])
         return {
-            "monthly_spend": 184250,
-            "savings_identified": 23500,
-            "open_ingestions": int(job_count),
-            "currency": "USD",
+            "contract_version": 2,
+            "period": {"start_date": start_date.isoformat(), "end_date": end_date.isoformat(), "timezone": "UTC"},
+            "group_by": group_by, "tag_key": tag_key,
+            "data_status": "partial" if missing or undated else ("available" if totals else "empty"),
+            "totals": totals, "groups": groups,
+            "missing_dimension_count": missing, "excluded_undated_count": undated,
+            "monthly_spend": totals[0]["cost"] if len(totals) == 1 else None,
+            "currency": totals[0]["currency"] if len(totals) == 1 else None,
+            "savings_identified": None, "open_ingestions": int(job_count),
         }
 
     def create_job(self, payload: dict, created_by: str) -> dict:
