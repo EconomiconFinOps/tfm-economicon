@@ -9,8 +9,28 @@ import { parse } from "yaml";
 const README_LINK = "README.md#con-docker-compose";
 const MIN_AUTH_SECRET_LENGTH = 32;
 
-export function parseDotenv(text) {
+const ESCAPED_DOLLAR = "\u0000";
+
+function interpolate(value, lookup) {
+  const expanded = value.replace(
+    /\$\$|\$\{([A-Za-z_][A-Za-z0-9_]*)(?:(:?)([-?])([^}]*))?\}|\$([A-Za-z_][A-Za-z0-9_]*)/g,
+    (match, braced, colon, operator, argument, bare) => {
+      if (match === "$$") return "$";
+      const current = lookup(braced ?? bare);
+      if (operator === "-") {
+        const missing = colon ? !current : current === undefined;
+        return missing ? argument : current;
+      }
+      return current ?? "";
+    },
+  );
+  return expanded.replaceAll(ESCAPED_DOLLAR, "$");
+}
+
+// Compose interpolates unquoted and double-quoted values, looking up the process environment first.
+export function parseDotenv(text, env = {}) {
   const vars = new Map();
+  const lookup = (name) => (env[name] !== undefined ? env[name] : vars.get(name));
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.trim().replace(/^export\s+/, "");
     if (!line || line.startsWith("#")) continue;
@@ -27,17 +47,17 @@ export function parseDotenv(text) {
         const char = value[index];
         if (char === "\\" && index + 1 < value.length) {
           const next = value[++index];
-          result += next === "n" ? "\n" : next;
+          result += next === "n" ? "\n" : next === "$" ? ESCAPED_DOLLAR : next;
         } else if (char === '"') {
           break;
         } else {
           result += char;
         }
       }
-      value = result;
+      value = interpolate(result, lookup);
     } else {
       // Compose only treats # as a comment when whitespace precedes it.
-      value = value.replace(/\s+#.*$/, "").trim();
+      value = interpolate(value.replace(/\s+#.*$/, "").trim(), lookup);
     }
     vars.set(key, value);
   }
@@ -65,6 +85,9 @@ export function resolveVariables(fileVars, env) {
 }
 
 function urlCredentials(value) {
+  // Parsers disagree on which raw @ ends the credentials, so only an encoded @ is safe.
+  const authority = value.split("://")[1]?.split(/[/?#]/)[0] ?? "";
+  if (authority.split("@").length > 2) return undefined;
   try {
     const url = new URL(value);
     return { user: decodeURIComponent(url.username), password: decodeURIComponent(url.password) };
@@ -133,8 +156,8 @@ async function checkPorts(vars, contract, ownPorts, isPortFree) {
     }
     if (ownPorts.has(port)) continue;
     const [{ variable, host }] = users;
-    // A wildcard bind also collides with a loopback listener on some systems.
-    const hosts = host === "0.0.0.0" ? ["0.0.0.0", "127.0.0.1"] : [host];
+    // A wildcard bind also collides with loopback and dual-stack IPv6 listeners on some systems.
+    const hosts = host === "0.0.0.0" ? ["0.0.0.0", "127.0.0.1", "::"] : [host];
     for (const candidate of hosts) {
       if (!(await isPortFree(port, candidate))) {
         errors.push(`${variable}: el puerto ${port} esta ocupado o reservado en ${candidate}; liberalo o cambia ${variable} en .env.`);
@@ -148,8 +171,9 @@ async function checkPorts(vars, contract, ownPorts, isPortFree) {
 export function isPortFree(port, host) {
   return new Promise((resolve) => {
     const server = net.createServer();
-    server.once("error", () => resolve(false));
-    server.listen({ port, host, exclusive: true }, () => server.close(() => resolve(true)));
+    // Without IPv6 on the host, the IPv6 probe cannot be held by anyone.
+    server.once("error", (error) => resolve(error.code === "EAFNOSUPPORT" || error.code === "EADDRNOTAVAIL"));
+    server.listen({ port, host, exclusive: true, ipv6Only: false }, () => server.close(() => resolve(true)));
   });
 }
 
@@ -190,7 +214,7 @@ export async function runDoctor({ root, env = process.env, docker: dockerClient 
   if (!hasEnvFile) {
     error(`No existe .env junto a docker-compose.yml. Copia .env.example a .env y completa los secretos (ver ${README_LINK}).`);
   }
-  const vars = resolveVariables(hasEnvFile ? parseDotenv(fs.readFileSync(envPath, "utf8")) : new Map(), env);
+  const vars = resolveVariables(hasEnvFile ? parseDotenv(fs.readFileSync(envPath, "utf8"), env) : new Map(), env);
   if (hasEnvFile) checkConfiguration(vars, contract).forEach(error);
 
   const project = composeProjectName(root, vars);

@@ -320,3 +320,84 @@ test("the command line reads the project directory and never prints secrets", ()
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("interpolates .env values exactly as Compose resolves them", () => {
+  const text = [
+    "USER1=econ",
+    "A=amqp://${USER1}:x@h/",
+    "B=pre$USER1-post",
+    "C='lit$USER1'",
+    'D="dq$USER1"',
+    "E=ab$cd",
+    "F=${UNSETVAR}",
+    "G=${UNSETVAR:-dflt}",
+    "H=${USER1:-other}",
+    "I=a$$b",
+    'J="a\\$b"',
+    "K=${FROMENV}",
+    "L=$UNSETVAR",
+    "M=${EMPTY-dash}",
+    "N=${EMPTY:-colon}",
+    "EMPTY=",
+    "O=${EMPTY-dash}|${EMPTY:-colon}",
+  ].join("\n");
+  const vars = parseDotenv(text, { FROMENV: "envvalue" });
+  const expected = {
+    A: "amqp://econ:x@h/", B: "preecon-post", C: "lit$USER1", D: "dqecon", E: "ab", F: "", G: "dflt",
+    H: "econ", I: "a$b", J: "a$b", K: "envvalue", L: "", M: "dash", N: "colon", O: "|colon",
+  };
+  for (const [key, value] of Object.entries(expected)) assert.equal(vars.get(key), value, key);
+  assert.equal(parseDotenv("U=x\nA=${U}", { U: "shell" }).get("A"), "shell");
+});
+
+test("checks the values Compose will pass, after interpolation", async () => {
+  const valid = await doctor(dotenv({
+    ...VALID,
+    RABBITMQ_DEFAULT_USER: "econ",
+    RABBITMQ_DEFAULT_PASS: "RabbitPass1",
+    RABBITMQ_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672/",
+  }));
+  assert.equal(valid.code, 0, valid.text);
+
+  const literalDollar = await doctor(dotenv({
+    ...VALID,
+    POSTGRES_PASSWORD: "'ab$cd'",
+    VECTOR_DATABASE_URL: "postgresql+psycopg://postgres:ab$cd@postgres-pgvector:5432/embeddings",
+  }));
+  assert.equal(literalDollar.code, 1);
+  assert.match(literalDollar.text, /VECTOR_DATABASE_URL.*POSTGRES_PASSWORD|POSTGRES_PASSWORD.*VECTOR_DATABASE_URL/);
+
+  const unset = await doctor(dotenv({ ...VALID, RABBITMQ_DEFAULT_PASS: "$UNSETVAR" }));
+  assert.equal(unset.code, 1);
+  assert.match(unset.text, /Falta RABBITMQ_DEFAULT_PASS/);
+});
+
+test("an unencoded @ in a URL password is rejected for every URL", async () => {
+  for (const [name, vars] of [
+    ["VECTOR_DATABASE_URL", { POSTGRES_PASSWORD: "p@ss", VECTOR_DATABASE_URL: "postgresql+psycopg://postgres:p@ss@postgres-pgvector:5432/embeddings" }],
+    ["RABBITMQ_URL", { RABBITMQ_DEFAULT_PASS: "p@ss", RABBITMQ_URL: `amqp://${SECRETS.RABBITMQ_DEFAULT_USER}:p@ss@rabbitmq:5672/` }],
+  ]) {
+    const result = await doctor(dotenv({ ...VALID, ...vars }));
+    assert.equal(result.code, 1, name);
+    assert.match(result.text, new RegExp(name));
+    assert.ok(!result.text.includes("p@ss"));
+  }
+});
+
+test("a port held on the IPv6 wildcard is busy for a port published on all interfaces", async (t) => {
+  let server;
+  try {
+    server = await listen("::");
+  } catch {
+    t.skip("IPv6 is not available on this host");
+    return;
+  }
+  const port = server.address().port;
+  try {
+    const result = await doctor(dotenv({ ...VALID, FRONTEND_HOST_PORT: String(port) }), { isPortFree: undefined });
+    assert.equal(result.code, 1, result.text);
+    assert.match(result.text, new RegExp(`FRONTEND_HOST_PORT.*${port}`));
+  } finally {
+    server.close();
+  }
+});

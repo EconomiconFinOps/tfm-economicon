@@ -243,3 +243,24 @@ test("a job that RabbitMQ could not accept fails the job step", async () => {
   assert.match(result.text, /\[FALLO\].*503/);
   assert.equal(stack.state.jobPolls, 0);
 });
+
+test("accepts every value the backend reads as an enabled demo seed", async () => {
+  for (const value of ["true", "True", "1", "yes", "on"]) {
+    const stack = fakeStack();
+    const result = await smoke(stack, { env: { DEMO_SEED_ENABLED: value, DEMO_PASSWORD: PASSWORD } });
+    assert.equal(result.code, 0, `${value}: ${result.text}`);
+  }
+});
+
+test("queries the jobs table in the database of DATABASE_URL and fails fast if it cannot", async () => {
+  const stack = fakeStack();
+  await smoke(stack, { env: { ...ENV, DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:26257/economicon?sslmode=disable" } });
+  const query = stack.calls.find((call) => call.kind === "compose" && call.args.includes("cockroachdb"));
+  assert.ok(query.args.includes("--database=economicon"), query.args.join(" "));
+
+  const broken = fakeStack({ jobStatus: () => ({ code: 1, stdout: "" }) });
+  const result = await smoke(broken, { options: { sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)), pollMs: 5 } });
+  assert.equal(result.code, 1);
+  assert.match(result.text, /no se pudo leer/i);
+  assert.equal(broken.state.jobPolls, 1);
+});

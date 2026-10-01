@@ -12,6 +12,8 @@ const SUBSCRIPTION = "64e355d7-997c-491d-b0c1-8414dccfcf42";
 const PERIOD = { start_date: "2024-06-01", end_date: "2024-06-21" };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const REQUEST_TIMEOUT_MS = 10_000;
+// Values the backend settings parse as true for DEMO_SEED_ENABLED.
+const TRUE_VALUES = new Set(["1", "on", "t", "true", "y", "yes"]);
 
 class StepError extends Error {}
 
@@ -44,9 +46,9 @@ export async function runSmoke({
 }) {
   const lines = [];
   const envPath = path.join(root, ".env");
-  const vars = resolveVariables(fs.existsSync(envPath) ? parseDotenv(fs.readFileSync(envPath, "utf8")) : new Map(), env);
+  const vars = resolveVariables(fs.existsSync(envPath) ? parseDotenv(fs.readFileSync(envPath, "utf8"), env) : new Map(), env);
 
-  if (vars.get("DEMO_SEED_ENABLED") !== "true") {
+  if (!TRUE_VALUES.has((vars.get("DEMO_SEED_ENABLED") ?? "").trim().toLowerCase())) {
     lines.push("[FALLO] El smoke necesita el usuario demo: pon DEMO_SEED_ENABLED=true en .env y recrea el backend.");
     return { code: 1, lines };
   }
@@ -55,6 +57,7 @@ export async function runSmoke({
     return { code: 1, lines };
   }
 
+  const database = databaseName(vars.get("DATABASE_URL"));
   const api = `http://127.0.0.1:${port(vars, "API_HOST_PORT", "8000")}`;
   const services = [
     ["backend", `${api}/health`],
@@ -127,10 +130,11 @@ export async function runSmoke({
       if (!UUID.test(String(jobId))) throw new StepError("job de ingesta sin un identificador UUID valido");
       const status = await until(jobTimeoutMs, async () => {
         const result = await compose([
-          "exec", "-T", "cockroachdb", "/cockroach/cockroach", "sql", "--insecure", "--format=csv",
+          "exec", "-T", "cockroachdb", "/cockroach/cockroach", "sql", "--insecure", "--format=csv", `--database=${database}`,
           "-e", `SELECT status FROM jobs WHERE id = '${jobId}'`,
         ]);
-        const value = result.code === 0 ? result.stdout.trim().split(/\r?\n/).at(-1) : undefined;
+        if (result.code !== 0) throw new StepError(`no se pudo leer el estado del job en la base ${database} de CockroachDB`);
+        const value = result.stdout.trim().split(/\r?\n/).at(-1);
         return value === "completed" || value === "failed" ? value : undefined;
       });
       if (status !== "completed") {
@@ -151,6 +155,15 @@ export async function runSmoke({
   }
   lines.push("[OK] Recorrido minimo verificado.");
   return { code: 0, lines };
+}
+
+function databaseName(dsn) {
+  try {
+    const name = new URL(dsn).pathname.slice(1);
+    return /^[A-Za-z0-9_]+$/.test(name) ? name : "defaultdb";
+  } catch {
+    return "defaultdb";
+  }
 }
 
 function authHeaders(token) {
