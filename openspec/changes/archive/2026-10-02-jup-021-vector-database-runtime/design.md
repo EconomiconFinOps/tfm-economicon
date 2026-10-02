@@ -11,7 +11,7 @@ La migracion 002 agrega un B-tree de knowledge_documents.tenant_id. Los indices
 UNIQUE existentes cubren document_chunks(document_id, chunk_index) y
 chunk_embeddings(chunk_id). Se mantiene el ranking coseno exacto: un indice ANN
 global puede reducir los resultados tras filtrar tenant. No se acredita escalado
-ANN ni un SLA de latencia. Ver [runbook](../../../docs/runbooks/vector-database.md).
+ANN ni un SLA de latencia. Ver [runbook](../../../../docs/runbooks/vector-database.md).
 
 El inicializador consulta atttypmod de la columna vector tras migrar y rechaza
 desajustes con la dimension configurada. Los lotes de escritura se validan antes

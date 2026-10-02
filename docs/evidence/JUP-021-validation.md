@@ -81,5 +81,30 @@ Correcciones y nuevas comprobaciones sobre `34aaa31` mas este cambio:
 - OpenSpec estricto **36/36**, trazabilidad de **9 cambios** e higiene correctas;
   `git diff --check` sin errores.
 
-La aceptacion de las correcciones por Victor sigue pendiente. Los resultados
-automatizados no levantan su CHANGES_REQUESTED ni autorizan merge o cierre.
+## Aceptacion y comprobacion del 2 de octubre
+
+[Victor aprobo las correcciones](https://github.com/EconomiconFinOps/tfm-economicon/pull/53#pullrequestreview-5384205603)
+el 1 de octubre, levantando su peticion de cambios. Su validacion identifica
+`db2a047` y repite seed, recreacion, restauracion y actualizacion de base 001 a 002;
+la review de GitHub esta asociada a `0591fd6`. Son ensayos del validador, no de
+esta sesion. RF-021-001 permanece abierto y explicitamente no bloqueante.
+
+[Lucia publico una revision incremental complementaria](https://github.com/EconomiconFinOps/tfm-economicon/pull/53#pullrequestreview-5385932832),
+sin cambios solicitados; no sustituye la revision asignada a Paris.
+
+El 2 de octubre se incorpora develop por Update branch, conservando la aprobacion:
+head `2b90cec`, con el procedimiento JUP-100 y sin cambios adicionales en el runtime.
+[CI tecnico](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37051419193)
+y [JUP reviews](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37051419362)
+pasan los ocho controles requeridos sobre ese head. Un run anterior de JUP reviews
+fue cancelado y no se contabiliza como resultado satisfactorio.
+
+El despliegue persistente remoto sigue healthy. Se repite `verify` del runbook
+con `--confirm-dedicated-database`: PASS, pgvector 0.8.6, migraciones 001/002,
+conteos 2/2/2 y las ocho comprobaciones del smoke. No se repiten seed,
+recreacion ni restauracion en esta sesion; sus evidencias conservan su fecha.
+
+Se marcan las tareas 2.6 y 3.5 conforme a las reviews publicadas y se archiva
+OpenSpec en la misma rama, como requiere CONTRIBUTING. Este cierre documental
+no cambia el codigo desplegado. El merge y el cierre en Trello quedan sujetos
+a la aprobacion vigente y los controles del head final.
