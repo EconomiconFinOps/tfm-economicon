@@ -10,6 +10,7 @@ from app.agents.guardrails import (
     parse_and_validate_response,
 )
 from app.agents.schemas import FinOpsResponse, finops_response_format
+from app.agents.providers import get_provider, MockLLMProvider
 from app.agents.service import AgentRuntime
 from app.core.config import Settings
 
@@ -323,3 +324,133 @@ def test_invalid_provider_json_is_not_copied_into_the_error():
         )
     )
     assert "SECRET_PROVIDER_CONTENT" not in rendered_traceback
+
+
+def test_jup023_mock_factory_remains_backwards_compatible():
+    assert isinstance(get_provider("mock"), MockLLMProvider)
+    assert parse_and_validate_response(
+        get_provider("mock").invoke("synthetic", response_format=finops_response_format())
+    ).status == "insufficient_data"
+
+
+@pytest.mark.parametrize("base,alias", [
+    ("http://gateway.invalid:4000", "economicon-chat"),
+    ("http://gateway.invalid:4000/v1/", "economicon-chat-deepseek"),
+])
+def test_jup023_chat_factory_sends_strict_request_and_extracts_content(
+    litellm_settings, gateway_transport, base, alias,
+):
+    settings = litellm_settings.model_copy(update={"litellm_base_url": base, "llm_model": alias})
+    content = json.dumps(_valid_response())
+    gateway_transport.responses.append((200, {"choices": [{"message": {"content": content}}]}, {}))
+    provider = get_provider("litellm", settings=settings)
+    response_format = finops_response_format()
+
+    assert provider.invoke("synthetic prompt", response_format=response_format) == content
+
+    request, = gateway_transport.calls
+    assert request.full_url == "http://gateway.invalid:4000/v1/chat/completions"
+    assert request.get_method() == "POST"
+    assert request.get_header("Authorization") == "Bearer jup023-synthetic-virtual-key"
+    assert request.get_header("Content-type") == "application/json"
+    assert request.timeout == 30
+    payload = json.loads(request.data)
+    assert payload["model"] == alias
+    assert payload["messages"] == [{"role": "user", "content": "synthetic prompt"}]
+    assert payload["response_format"] == response_format
+    assert payload["max_tokens"] == 800
+
+
+@pytest.mark.parametrize("outcome,attempts", [
+    (429, 3), (503, 3), (TimeoutError("private-upstream-detail"), 3),
+    (401, 1), (400, 1), (302, 1),
+])
+def test_jup023_failures_have_bounded_attempts_no_fallback_and_safe_diagnostics(
+    litellm_settings, gateway_transport, outcome, attempts, capsys, caplog,
+):
+    from structlog.testing import capture_logs
+
+    failure = outcome if isinstance(outcome, Exception) else (
+        outcome, b"private-upstream-detail", {"Location": "http://other.invalid/private-upstream-detail"},
+    )
+    gateway_transport.responses.extend([failure] * 4)
+    provider = get_provider("litellm", settings=litellm_settings)
+    from app.clients.litellm import ProviderError
+
+    prompt = "private-prompt-detail"
+    with capture_logs() as logs, pytest.raises(ProviderError) as caught:
+        provider.invoke(prompt, response_format=finops_response_format())
+
+    assert len(gateway_transport.calls) == attempts
+    assert all(req.full_url == "http://gateway.invalid:4000/v1/chat/completions"
+               and json.loads(req.data)["model"] == "economicon-chat"
+               for req in gateway_transport.calls)
+    assert len(gateway_transport.delays) <= attempts - 1
+    assert all(0 <= delay <= 30 for delay in gateway_transport.delays)
+    assert caught.value.category
+    captured = capsys.readouterr()
+    diagnostic = "".join(traceback.format_exception(caught.value)) + repr(vars(caught.value))
+    diagnostic += repr(logs) + caplog.text + captured.out + captured.err
+    for private in ("private-upstream-detail", "private-prompt-detail", "jup023-synthetic-virtual-key"):
+        assert private not in diagnostic
+
+
+@pytest.mark.parametrize("retries", [0, 2])
+def test_jup023_retry_recovers_only_when_enabled(litellm_settings, gateway_transport, retries):
+    content = json.dumps(_valid_response())
+    gateway_transport.responses.extend([
+        (429, b"rate limit", {}),
+        (200, {"choices": [{"message": {"content": content}}]}, {}),
+    ])
+    settings = litellm_settings.model_copy(update={"llm_max_retries": retries})
+    provider = get_provider("litellm", settings=settings)
+    from app.clients.litellm import ProviderError
+
+    if retries:
+        assert provider.invoke("synthetic", response_format=finops_response_format()) == content
+        assert len(gateway_transport.calls) == 2
+    else:
+        with pytest.raises(ProviderError):
+            provider.invoke("synthetic", response_format=finops_response_format())
+        assert len(gateway_transport.calls) == 1
+
+
+@pytest.mark.parametrize("content", ["   ", {"unexpected": "private-response-detail"}])
+def test_jup023_chat_rejects_empty_or_nontext_content_without_retry(
+    litellm_settings, gateway_transport, content,
+):
+    gateway_transport.responses.append((200, {"choices": [{"message": {"content": content}}]}, {}))
+    provider = get_provider("litellm", settings=litellm_settings)
+    from app.clients.litellm import ProviderError
+
+    with pytest.raises(ProviderError):
+        provider.invoke("synthetic", response_format=finops_response_format())
+    assert len(gateway_transport.calls) == 1
+
+
+@pytest.mark.parametrize("route", ["mock", "litellm"])
+def test_jup023_runtime_output_guardrail_is_terminal_only_for_litellm(route, litellm_settings):
+    from unittest.mock import Mock
+
+    provider = Mock(wraps=RecordingProvider(_valid_response(unexpected="private-response-detail")))
+    runtime = AgentRuntime(litellm_settings.model_copy(update={"llm_provider": route}), provider=provider)
+    with pytest.raises(Exception) as caught:
+        runtime.invoke({"tenant_id": "tenant-core", "source": "azure", "metadata": {}}, "running")
+    assert type(caught.value).__name__ == ("ProviderError" if route == "litellm" else "AgentResponseError")
+    provider.invoke.assert_called_once()
+    assert "private-response-detail" not in "".join(traceback.format_exception(caught.value))
+
+
+def test_jup023_runtime_preserves_preflight_and_unrelated_errors(litellm_settings):
+    from unittest.mock import Mock
+
+    provider = Mock()
+    runtime = AgentRuntime(litellm_settings, provider=provider)
+    with pytest.raises(AgentGuardrailError):
+        runtime.invoke({"tenant_id": "", "source": "azure", "metadata": {}}, "running")
+    provider.invoke.assert_not_called()
+    error = RuntimeError("synthetic internal defect")
+    provider.invoke.side_effect = error
+    with pytest.raises(RuntimeError) as caught:
+        runtime.invoke({"tenant_id": "tenant-core", "source": "azure", "metadata": {}}, "running")
+    assert caught.value is error

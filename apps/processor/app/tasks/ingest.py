@@ -1,5 +1,6 @@
 import json
 
+from app.clients.litellm import ProviderError
 from app.graphs.pipeline import PipelineRunner
 from app.repositories.jobs import JobRepository
 
@@ -86,6 +87,9 @@ class IngestTask:
             result = self.pipeline.run(pipeline_input)
             self.repository.mark_completed(job_id, result, **scope)
             return result
+        except ProviderError:
+            self.repository.mark_failed(job_id, "ingestion_failed", **scope)
+            raise
         except Exception:
             self.repository.mark_failed(job_id, "ingestion_failed", **scope)
             raise RuntimeError("ingestion_failed") from None
