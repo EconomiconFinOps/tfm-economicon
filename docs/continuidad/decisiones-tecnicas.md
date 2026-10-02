@@ -1,6 +1,6 @@
 # Decisiones técnicas
 
-Actualizado/verificado: 2026-10-01. Origen: JUP-061 — Documentar decisiones técnicas,
+Actualizado/verificado: 2026-10-02. Origen: JUP-061 — Documentar decisiones técnicas,
 chat `01a0f8dc-a64b-7e93-8f96-a146b08bf612`.
 
 - Problema: decisiones dispersas, enlaces rotos por archivo OpenSpec y estado
@@ -42,3 +42,27 @@ Se señalan ADR-0013/14/15, estado de ADR-0005 y aceptación conjunta separada d
 Trello actualizado por DockerServer y releído en **40 — En revisión**, roles intactos.
 Este estado sustituye el borrador/30 anterior. Pendientes las respuestas humanas;
 no se acredita aprobación, pairing, merge ni cierre. No se envió mensaje a Discord.
+
+## Consulta de estado — 02/10/2026
+
+Consulta viva de GitHub y Trello mediante el puente DockerServer. PR #60 abierta,
+lista para revisión, head `1a06e3e148c2031cc6e22685b7966b30548e2939`; sin reviews
+publicadas, solicitudes a ParisArcos y Victorh1397 todavía pendientes. Trello
+permanece en **40 — En revisión**, sin nuevos cambios de aceptación.
+
+CI del head: seis checks SUCCESS y Frontend build FAILURE en
+[run 36918953528](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/36918953528).
+El fallo es el test `tests/login-session-expired-notice.history-replace.test.tsx`
+de JUP-098: esperaba null y recibió `{ sessionExpired: true }`; 264 tests pasan y
+uno falla. La rama JUP-061 no modifica `apps/frontend`; no se ha demostrado aquí
+si la causa es intermitencia o defecto reproducible.
+
+GitHub indica CONFLICTING. `git fetch origin` y `git merge-tree --write-tree HEAD
+origin/develop` identifican un conflicto en `docs/adr/ADR-0004-frontend-shadcn-ui.md`:
+ambas ramas añaden seguimiento al final (JUP-061 aprobación; develop tokens de
+color/atribuciones de JUP-099). Comprobación sin fusionar ni alterar el checkout.
+
+Siguiente paso técnico: reconciliar develop preservando ambas notas y validar el
+resultado; diagnosticar/revalidar el test fallido. Después siguen pendientes las
+reviews humanas y ratificaciones. Esta consulta no envió recordatorios ni cambió
+el estado de Trello. Registro de seguimiento guardado localmente.
