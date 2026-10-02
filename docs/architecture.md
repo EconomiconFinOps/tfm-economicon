@@ -223,8 +223,17 @@ La segunda es el flujo de chat con retrieval:
 8. El `backend` devuelve la respuesta al `frontend`
 
 El flujo existe como baseline tecnico, pero no constituye todavia el vertical
-RAG real: el backend usa `MockEmbeddingProvider` y no invoca un LLM para redactar
-la respuesta. JUP-020 a JUP-025 y JUP-036 cubren ese residual.
+RAG real: el backend usa `MockEmbeddingProvider` por defecto y no invoca un LLM
+para redactar la respuesta. JUP-020 a JUP-025 y JUP-036 cubren ese residual.
+
+Recuperacion (JUP-022, [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.md)):
+con `EMBEDDING_PROVIDER=litellm` el backend embebera la pregunta con el mismo
+alias y dimension (1536) que la ingesta, usando su propia clave virtual
+(`BACKEND_LITELLM_API_KEY`). `RETRIEVAL_TOP_K` (1 a 20, por defecto 4) y
+`RETRIEVAL_MAX_DISTANCE` (opcional, mayor que 0 y como maximo 2) acotan los
+fragmentos; el orden es distancia coseno y despues identificador, y si ninguno
+cumple el asistente responde con el estado sin contexto. `mock` solo se admite
+con `RUNTIME_ENVIRONMENT=development|test`.
 
 ## 6. Flujo simplificado
 

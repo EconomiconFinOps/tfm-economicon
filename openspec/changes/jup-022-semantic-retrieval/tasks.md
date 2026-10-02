@@ -42,8 +42,8 @@
 
 ## 8. Documentacion y decisiones
 
-- [ ] 8.1 Registrar el ADR del embedding de la consulta con clave propia en el backend (enlaza ADR-0002 y ADR-0006), con su numero asignado al crearlo, y enlazarlo desde `design.md`.
-- [ ] 8.2 Actualizar `docs/architecture.md`, el README del backend y el runbook con la guia de reindexado a `vector(1536)`; registrar en el backlog el finding de cambio de modelo con la misma dimension.
+- [x] 8.1 Registrar el ADR del embedding de la consulta con clave propia en el backend (enlaza ADR-0002 y ADR-0006), con su numero asignado al crearlo, y enlazarlo desde `design.md`.
+- [x] 8.2 Actualizar `docs/architecture.md`, el README del backend y el runbook con la guia de reindexado a `vector(1536)`; registrar en el backlog el finding de cambio de modelo con la misma dimension.
 
 ## 9. Cierre y verificacion
 

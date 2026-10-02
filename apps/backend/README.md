@@ -110,6 +110,14 @@ Puerto visible:
 - `RUNTIME_ENVIRONMENT`
 - `CORS_ALLOWED_ORIGINS`
 
+## Recuperacion Semantica Y Reindexado
+
+El chat embebe la pregunta con `EMBEDDING_PROVIDER` y recupera los fragmentos del tenant activo con `RETRIEVAL_TOP_K` y, si esta definida, `RETRIEVAL_MAX_DISTANCE` (distancia coseno, inclusiva). Si ningun fragmento cumple, la lista es vacia y el asistente responde sin contexto. Decision y alternativas: [ADR-0017](../../docs/adr/ADR-0017-backend-query-embedding-own-key.md).
+
+Con `litellm` el backend usa su propia clave virtual (`BACKEND_LITELLM_API_KEY` en Compose) y exige `EMBEDDING_DIMENSION=1536`; el arranque la rechaza si falta, y `mock` solo se admite con `RUNTIME_ENVIRONMENT=development|test`.
+
+Una base pgvector creada con `vector(8)` (proveedor `mock`) no sirve con el modelo real: los vectores de la ingesta y de la pregunta deben tener la misma dimension y el mismo modelo. Para pasar a `vector(1536)` hay que reindexar el corpus en una coleccion nueva, nunca en caliente: en un entorno desechable, parar el stack, borrar el volumen `pgvector-data`, poner `EMBEDDING_PROVIDER=litellm` y `EMBEDDING_DIMENSION=1536` en processor y backend con sus claves y volver a ingerir los documentos. El procedimiento completo se valida con la calibracion real del change (tarea 7.4). Un cambio de modelo con la misma dimension no se detecta: finding RF-022-001.
+
 ## CORS Y Sesion Demo
 
 `CORS_ALLOWED_ORIGINS` es una lista JSON, vacia por defecto (`[]`). Ausente
