@@ -17,3 +17,10 @@
 - [x] 3.2 Publicar PR a develop y enlazar evidencia en Trello.
 - [ ] 3.3 Registrar revisión de Paris y validación de Victor; acreditar pairing si ocurre.
 - [ ] 3.4 Ratificar ADR propuestos con sus responsables antes del freeze; no inferir aceptación de un merge.
+
+## 4. Reconciliación autorizada 02/10/2026
+
+- [x] 4.1 Reconciliar develop conservando las dos notas de ADR-0004.
+- [x] 4.2 Corregir sincronización del test heredado y preservar detección de ambos mutantes.
+- [x] 4.3 Validar frontend 437/437, lint/tipos/build, OpenSpec y enlaces; documentar límites locales.
+- [ ] 4.4 Verificar CI del head publicado y ausencia de conflicto remoto.

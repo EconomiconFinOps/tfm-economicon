@@ -62,3 +62,39 @@ borrador contra develop. Trello actualizado mediante el puente autorizado y
 releído: descripción/enlaces verificados, roles preservados, **30 — En curso**.
 El trabajo documental está entregado; revisión, validación y ratificaciones humanas
 siguen pendientes. No se ha enviado ningún mensaje a Discord ni realizado merge.
+
+## Reconciliación y corrección del test — 02/10/2026
+
+El usuario autorizó reconciliar develop y resolver el fallo de CI. Base consumida
+`5a54ce2ed9001dfb9d4b9d8e06eae84cffe91124`; merge local `2650e69`.
+El único conflicto, ADR-0004, se resolvió conservando aprobación de JUP-094 y
+seguimiento de tokens/atribuciones de JUP-099. ADR-0011/12 ya están integrados en
+la base; el índice enlaza sus archivos locales y conserva el corte anterior.
+
+CI anterior fallaba con `{ sessionExpired: true }` en la aserción inmediata tras
+encontrar Sign in. Encontrar el botón acredita render, pero no finalización del
+efecto de limpieza/navegación. Se espera con waitFor el estado null del router
+antes de observar el historial. No cambia LoginPage ni se añaden sleeps/retries
+al test. Se preserva la captura completa de transiciones al navegar hacia atrás.
+
+Comprobaciones del incremento:
+
+- Antes de editar, las dos suites dirigidas pasaron 10/10: el fallo de CI no se
+  reprodujo en esa ejecución local. Se corrige la precondición asíncrona observable.
+- Test corregido: tres ejecuciones dirigidas PASS.
+- Mutantes manuales `replace:false` y opciones `{}`: ambos detectados por la
+  aserción original not.toContainEqual de las transiciones de historial. El
+  producto fue restaurado íntegramente tras cada prueba; diff de LoginPage vacío.
+- Primera suite completa con concurrencia automática y lint/tipos simultáneos:
+  430 PASS y 7 FAIL, con timeouts y elementos ausentes. No se cuenta como PASS.
+- Reejecución aislada `corepack pnpm --filter @finops/frontend test -- --maxWorkers=2`:
+  **437/437 PASS, 47/47 archivos**, 86,40 s. Los fallos anteriores son compatibles
+  con carga local, sin acreditar una causa exhaustiva para cada uno.
+- Frontend lint, typecheck y build PASS; build conserva aviso de bundle >500 kB.
+- OpenSpec estricto **37/37 PASS**; trazabilidad e higiene PASS (724 archivos).
+- 115 rutas Markdown locales verificadas en el delta; diff check PASS.
+
+Logs dirigidos, controles negativos y suite acotada conservados fuera de Git en
+`materiales/07-evidencias/JUP-061-reconciliacion-2026-10-02/` dentro del workspace.
+La corrección del test amplía el alcance inicial documental por autorización
+expresa del 02/10; no modifica contrato ni comportamiento del login.

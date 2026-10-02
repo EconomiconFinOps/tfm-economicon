@@ -98,4 +98,3 @@ registra la revisión de Victor del 07/09 y el cambio de descartar a adoptar sei
 primitivos. [PR #28](https://github.com/EconomiconFinOps/tfm-economicon/pull/28) y
 [evidencia JUP-094](../evidence/JUP-094-validation.md) documentan su integración.
 Instalar dependencias no demuestra accesibilidad de todas las pantallas.
-

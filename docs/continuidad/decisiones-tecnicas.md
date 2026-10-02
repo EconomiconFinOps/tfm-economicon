@@ -66,3 +66,16 @@ Siguiente paso técnico: reconciliar develop preservando ambas notas y validar e
 resultado; diagnosticar/revalidar el test fallido. Después siguen pendientes las
 reviews humanas y ratificaciones. Esta consulta no envió recordatorios ni cambió
 el estado de Trello. Registro de seguimiento guardado localmente.
+
+## Reconciliación autorizada — 02/10/2026
+
+El usuario autorizó el siguiente paso técnico. Se consumió develop `5a54ce2` en
+merge `2650e69`, conservando ambas notas ADR-0004; #51/#54 ya integradas y
+ADR-0011/12 enlazados localmente. El conflicto identificado antes queda resuelto.
+Test heredado JUP-098 sincronizado con waitFor sobre limpieza del router, sin
+cambiar LoginPage. Tres pases dirigidos y ambos mutantes de PUSH detectados.
+Suite frontend aislada con dos workers: 437/437; lint/tipos/build PASS; OpenSpec
+37/37, trazabilidad, higiene y 115 enlaces locales PASS. Primera pasada automática
+bajo carga local tuvo siete fallos por timeout/elementos ausentes; se conserva
+su limitación en [evidencia](../evidence/JUP-061-validation.md).
+Pendiente CI del nuevo head y las reviews/ratificaciones humanas ya solicitadas.

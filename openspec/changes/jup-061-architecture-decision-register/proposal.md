@@ -36,3 +36,12 @@ No se redacta otra copia de la memoria ni se concede aprobación en nombre del e
 Liderazgo Alejandro Aguado; pairing Lucia Mateo; revisión Paris Arcos Martin;
 validación, pruebas y documentación Victor Mendez, según Trello consultado el 01/10.
 La asignación no acredita actividad realizada. Aceptación documental pendiente.
+
+## Reconciliación autorizada — 02/10/2026
+
+El usuario autorizó resolver el conflicto con develop y diagnosticar/revalidar el
+fallo de CI. Se conserva el alcance de registro documental y se añade una
+corrección de sincronización al test heredado JUP-098 de historial de sesión:
+esperar a que el router haya consumido la marca antes de observar el recorrido
+hacia atrás. No cambian el componente de login ni su contrato. La validación de
+este incremento incluye frontend y dos controles de mutación del test existente.

@@ -37,3 +37,14 @@ comparativa original de CockroachDB no quedan acreditados por documentar el base
 OpenSpec estricto, jup:check, higiene, diff y comprobación de enlaces locales de
 los documentos afectados. No se reejecutan suites de producto para un cambio
 exclusivamente documental. Evidencias de ejecución citadas siguen siendo históricas.
+
+## Sincronización del test de historial — 02/10/2026
+
+El job Frontend build del head anterior falló en la aserción inmediata del estado
+tras encontrar Sign in. Ese render no garantiza que el useEffect/navigate de
+limpieza haya sido aplicado por RouterProvider. Se usa waitFor sobre la condición
+observable de router.state.location.state === null antes de suscribirse y navegar
+hacia atrás. Se conservan la captura completa de transiciones y la aserción que
+rechaza cualquier reaparición de sessionExpired. Cambiar REPLACE por PUSH o usar
+opciones vacías debe seguir fallando: la espera no sustituye esa comprobación.
+Esta es una reparación del test, sin cambios en LoginPage ni nueva decisión ADR.
