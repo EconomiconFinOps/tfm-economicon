@@ -1,9 +1,9 @@
 # JUP-057 — Evidencia de preparación del panel
 
-Fecha: 2026-10-01. [Tarjeta](https://trello.com/c/29e5Pisa).
+Fecha inicial: 2026-10-01. [Tarjeta](https://trello.com/c/29e5Pisa).
 Base `de0d62e`; rama `feat/JUP-057-anomalies-panel`.
 [PR #62](https://github.com/EconomiconFinOps/tfm-economicon/pull/62), implementación
-`c6015a3`. Tarjeta enlazada y lectura posterior verificada en **40 — En revisión**.
+`c6015a3` (histórica, anterior a las correcciones del 02/10).
 
 ## Resultado y alcance
 
@@ -13,7 +13,7 @@ estimado abierto de 30.700 EUR y dos resueltos. Los indicadores se derivan de la
 filas y se etiquetan como resumen de toda la muestra, independiente del filtro.
 
 La vista inicial contiene EC2, CloudFront y EBS, ordenados por criticidad e impacto.
-Permite combinar criticidad y estado, cambiar orden, recuperar la vista inicial
+Permite combinar criticidad y estado, recuperar la vista inicial
 y exportar únicamente las filas visibles. La exportación lleva origen y periodo
 demo; queda deshabilitada cuando no hay resultados. Se retiran el gráfico
 supuestamente en tiempo real y las métricas ficticias 23/87%.
@@ -22,7 +22,7 @@ Los datos son explícitamente independientes del cliente activo y del backend.
 No existe detección nueva, alerta saliente, resolución persistente ni ahorro real.
 JUP-030, RF-091-003 y RF-095-002 conservan su alcance pendiente.
 
-## Comprobaciones
+## Comprobaciones iniciales (01/10, antes de las correcciones)
 
 - Instalación: `corepack pnpm install --frozen-lockfile`, sin cambios de lockfile.
 - Pruebas focalizadas: cinco escenarios en `AnomaliesPanel.test.tsx`, PASS.
@@ -41,7 +41,7 @@ incluían el texto de las opciones en una consulta de accesibilidad Playwright;
 ahora label/select son hermanos. El test usó inicialmente `exact` en ByRoleOptions,
 propiedad no soportada por Testing Library; retirada y typecheck repetido en verde.
 
-## Navegador real
+## Navegador real inicial (01/10)
 
 Chromium mediante Playwright, viewport desktop 1440×1100 y móvil 390×844,
 sesión ficticia y respuestas `/me`/`/tenants` interceptadas. No valida autenticación
@@ -78,3 +78,41 @@ desplazar la tabla en pantallas estrechas. Segunda ronda PASS con capturas nueva
 a 1440/768/375 px y comprobación de filtros/CSV, sin errores de página.
 Se conserva la limitación RF-026-002.
 No sustituye revisión de Paris ni validación de Victor.
+
+## Correcciones solicitadas por Victor — 02/10/2026
+
+- Se retira el selector «Ordenar por». La prioridad fija cumple el spec:
+  criticidad descendente, después impacto descendente. Se conservan las cifras
+  de la muestra y se explica la prioridad en pantalla.
+- Dos tests nuevos con fixture adversarial prueban desempate por impacto,
+  exclusión de una alta resuelta del contador de altas abiertas, todos los
+  indicadores independientes de los filtros y procedencia independiente del
+  cliente. Los cinco tests existentes se adaptan a la prioridad fija.
+- Se retiran del diff `AGENTS.md` y `docs/continuidad/`; se conserva la documentación
+  de alcance y evidencia en OpenSpec/docs/evidence. La continuidad privada permanece
+  fuera de Git. No se publica una nueva norma del equipo.
+- Conflicto resuelto incorporando develop `5a54ce2`, incluidos estilos JUP-099:
+  panel adaptado a tokens semánticos sin añadir excepciones de color.
+- Se actualiza la fila de anomalías del mapa de carencias y se restauran las
+  referencias RF-091-003/RF-095-002 y el marcador de fixtures sustituibles.
+
+Verificación del 02/10 tras incorporar develop:
+
+- Siete tests del panel y 173 tests de tokens PASS (180 focalizados).
+- Sensibilidad: siete mutantes temporales detectados por fallos de aserción:
+  quitar desempate por impacto, contar altas resueltas, hacer depender del filtro
+  el contador de abiertas/altas abiertas/resueltas, atribuir ejemplos al cliente
+  y eliminar el aviso de alcance del resumen. Se restaura la fuente original y
+  se repiten los siete tests como control. No se usa un error de compilación como
+  evidencia de detección. El selector retirado ya no tiene un mutante aplicable.
+- Suite frontend serial: 48 archivos, 443 tests PASS, cero fallos.
+- Typecheck (tres configuraciones), lint y build PASS; permanece aviso >500 kB.
+- OpenSpec estricto 37/37, trazabilidad JUP-057, higiene y diff check PASS.
+- Chromium sobre build/preview 4173, escritorio y móvil: prioridad fija y ausencia
+  del selector, métricas, filtros, CSV realmente descargado, vacío/reset y
+  contención local PASS; cero pageerror. Panel 390/390, región de tabla 341/860;
+  shell 1026 px heredado. Sesión y endpoints simulados.
+- [Receta de navegador completa](JUP-057-browser-recipe.md) versionada, ejecutable
+  en un entorno externo con Playwright, sin rutas personales ni credenciales.
+
+Los resultados históricos anteriores se conservan identificados como tales.

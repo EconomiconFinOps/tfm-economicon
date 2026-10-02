@@ -39,7 +39,7 @@ Los gráficos mensuales, la exportación y el inventario siguen siendo demostrac
 | `ExecutiveCutDashboard` | `/cuts` | `executiveCutDashboard.ts` | `cutActions` (acción, impacto, estado, responsable, fecha) | **C4** — objetivos y acciones de recorte | `RF-091-003` |
 | `ExecutiveCutDashboard` | `/cuts` | `executiveCutDashboard.ts` | `kpiData` (ahorro total, objetivo mensual, alcanzado, acciones activas) | **C4** — objetivos y acciones de recorte | `RF-091-003` |
 | `AnomaliesPanel` | `/anomalies` | `anomaliesPanel.ts` | `anomalies` (tipo, servicio, severidad, descripción, agente) | **C5** — detección de anomalías | `RF-091-003` |
-| `AnomaliesPanel` | `/anomalies` | `anomaliesPanel.ts` | `trendData` + `stats` | **C5** — detección de anomalías | `RF-091-003` |
+| `AnomaliesPanel` | `/anomalies` | `anomaliesPanel.ts` | Indicadores derivados de `anomalies` (abiertas, altas abiertas, impacto abierto y resueltas); JUP-057 retira `trendData` y `stats` ficticios | **C5** — detección de anomalías; los indicadores siguen basados en fixtures | `RF-091-003` |
 | `RecommendationsPanel` | `/recommendations` | `recommendationsPanel.ts` | `recommendations` (título, categoría, ahorro estimado, agente) | **C6** — motor de recomendaciones | `RF-091-003` |
 | `RecommendationsPanel` | `/recommendations` | `recommendationsPanel.ts` | `savingsByCategory` + `stats` | **C6** — motor de recomendaciones | `RF-091-003` |
 

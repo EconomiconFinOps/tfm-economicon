@@ -1,4 +1,6 @@
-// DATOS DE DEMOSTRACION: fixture local; la detección real depende de JUP-030.
+// DATOS DE DEMOSTRACION (sustituibles): fixture local; detección real pendiente
+// de JUP-030/C5. Referencias: RF-091-003 y RF-095-002 en
+// openspec/findings/backlog.md y docs/planning/JUP-097-frontend-data-gap-map.md.
 // El impacto es una estimación ilustrativa para este periodo, no pérdida ni ahorro.
 export type AnomalySeverity = "Alta" | "Media" | "Baja";
 export type AnomalyStatus = "Pendiente" | "Investigando" | "Resuelto";

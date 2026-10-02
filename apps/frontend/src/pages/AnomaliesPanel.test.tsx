@@ -60,17 +60,15 @@ describe("AnomaliesPanel", () => {
     expect(services()).toHaveLength(3);
     expect(screen.getByRole("button", { name: "Exportar Resultados" })).toBeEnabled();
     change("Estado", "Todos");
-    change("Ordenar por", "impact");
     fireEvent.click(screen.getByRole("button", { name: "Restablecer filtros" }));
-    expect(screen.getByLabelText("Ordenar por")).toHaveValue("severity");
+    expect(screen.queryByRole("combobox", { name: "Ordenar por" })).not.toBeInTheDocument();
     expect(services()).toHaveLength(3);
   });
 
-  it("sorts all rows by severity then impact and supports impact ordering", () => {
+  it("sorts all rows by severity then impact", () => {
     render(<AnomaliesPanel />);
     change("Estado", "Todos");
     expect(services()).toEqual(["EC2 - us-east-1", "CloudFront", "RDS Database", "Azure Storage", "EBS Volumes"]);
-    change("Ordenar por", "impact");
     expect(exported().data.map(row => row["Impacto estimado (EUR)"])).toEqual([15800, 12500, 8200, 5600, 2400]);
   });
 

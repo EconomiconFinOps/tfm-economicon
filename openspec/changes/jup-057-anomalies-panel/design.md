@@ -3,14 +3,16 @@
 ## Contexto
 
 Ruta existente `/anomalies`, protegida por el mismo ciclo de sesión que el resto
-de la aplicación. Base `origin/develop` de0d62e. JUP-099 permanece en una PR aparte;
-se reutilizan las convenciones disponibles sin introducir una migración global.
+de la aplicación. Base inicial de0d62e; reconciliación del 02/10 con develop
+5a54ce2, que incorpora JUP-099. El panel usa sus tokens semánticos.
 
 ## Decisiones
 
 - Fixtures tipados y locales; no se presenta un contrato definitivo de JUP-030.
 - Abiertas = Pendiente o Investigando. Resuelto queda fuera de la vista inicial.
 - Criticidad Alta, Media, Baja, con orden descendente y desempate por impacto.
+  El selector opcional se retira tras la validación de Victor: los ejemplos
+  producían el mismo orden y el contrato solo requiere esta prioridad fija.
 - Indicadores calculados sobre el conjunto de ejemplos y claramente etiquetados;
   filtros afectan listado y exportación. No inventar tiempos medios ni tasas.
 - Impacto expresado en EUR como estimación del periodo de muestra, sin equipararlo
@@ -31,6 +33,9 @@ con JUP-030; no cerrar hallazgos de falta de backend.
 ## Validación
 
 Pruebas de filas abiertas, métricas, filtros combinados, orden, vacío y exportación.
+Fixture adversarial en una suite separada: orden de entrada e impacto distintos
+de criticidad, dos altas abiertas y una alta resuelta. Verifica desempate y los
+cuatro indicadores globales después de filtrar, también en estado vacío.
 Typecheck, lint y build del frontend; suite frontend serial para reducir la
 contención ya observada en el proyecto. OpenSpec estricto y trazabilidad/higiene.
 Inspección visual desktop/móvil con sesión/API simuladas, identificada como tal.
