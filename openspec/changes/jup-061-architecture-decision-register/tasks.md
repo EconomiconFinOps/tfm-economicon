@@ -9,7 +9,7 @@
 - [x] 2.1 Reparar enlaces ADR a OpenSpec archivado y notas de evidencia superadas.
 - [x] 2.2 Documentar razones faltantes para pgvector, auth demo y Compose sin atribuir aceptación.
 - [x] 2.3 Vincular architecture-decisions a JUP-061 y definir el delta del registro.
-- [x] 2.4 Enlazar la fuente canónica para memoria/tutor y mantener continuidad.
+- [x] 2.4 Enlazar la fuente canónica para memoria/tutor.
 
 ## 3. Validación y aceptación
 
@@ -23,4 +23,4 @@
 - [x] 4.1 Reconciliar develop conservando las dos notas de ADR-0004.
 - [x] 4.2 Corregir sincronización del test heredado y preservar detección de ambos mutantes.
 - [x] 4.3 Validar frontend 437/437, lint/tipos/build, OpenSpec y enlaces; documentar límites locales.
-- [ ] 4.4 Verificar CI del head publicado y ausencia de conflicto remoto.
+- [x] 4.4 Verificar CI del head publicado y ausencia de conflicto remoto.
