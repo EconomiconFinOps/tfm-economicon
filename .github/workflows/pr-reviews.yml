@@ -1,0 +1,44 @@
+name: PR reviews
+
+# Separate from ci.yml: review events must not rerun, cancel or skip the required CI jobs.
+"on":
+  pull_request:
+    branches:
+      - main
+      - develop
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+      - ready_for_review
+  pull_request_review:
+    types:
+      - submitted
+      - edited
+      - dismissed
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-reviews-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  jup-reviews:
+    name: JUP reviews
+    # pull_request_review has no branch filter.
+    if: contains(fromJSON('["main", "develop"]'), github.event.pull_request.base.ref)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the pull request
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Require titled review and validation without pending changes
+        run: node tools/pr-policy.mjs --reviews --event "$GITHUB_EVENT_PATH"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
