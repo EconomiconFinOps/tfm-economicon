@@ -21,7 +21,7 @@ export function DashboardPage() {
         title="Select a tenant"
         subtitle="The dashboard needs an active tenant to load billing and assistant context."
       >
-        <p className="text-sm text-slate-400">No tenant is active for this session.</p>
+        <p className="text-sm text-muted-foreground">No tenant is active for this session.</p>
       </SectionCard>
     );
   }
@@ -34,8 +34,8 @@ export function DashboardPage() {
   // Se sigue esperando mientras no haya ni error ni payload.
   if (loading || (!error && !payload)) {
     return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-2 text-white">
-        <p className="text-sm uppercase tracking-wide text-slate-400">Bootstrapping</p>
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-2 text-foreground">
+        <p className="text-sm uppercase tracking-wide text-muted-foreground">Bootstrapping</p>
         <h2 className="text-xl font-bold">Connecting to the FinOps control plane...</h2>
       </div>
     );
@@ -48,7 +48,7 @@ export function DashboardPage() {
         title={overlap ? "Possible overlapping ingestion sources" : "Backend unavailable"}
         subtitle="The dashboard could not retrieve its initial context."
       >
-        <p role="alert" className="text-sm text-slate-400">{overlap
+        <p role="alert" className="text-sm text-muted-foreground">{overlap
           ? "Costs are unavailable because ingestion sources may overlap for this period."
           : error}</p>
       </SectionCard>
@@ -63,22 +63,22 @@ export function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col justify-between gap-4 rounded-lg border border-[#2d3748] bg-gradient-to-br from-[#1a1f2e] to-[#232834] p-6 shadow-xl sm:flex-row sm:items-center">
+      <section className="flex flex-col justify-between gap-4 rounded-lg border border-border bg-gradient-to-br from-card to-accent p-6 shadow-xl sm:flex-row sm:items-center">
         <div>
-          <p className="text-sm uppercase tracking-wide text-slate-400">Active operator</p>
-          <h2 className="mt-1 text-xl font-bold text-white">{user?.full_name}</h2>
-          <p className="mt-2 max-w-2xl text-sm text-slate-400">
+          <p className="text-sm uppercase tracking-wide text-muted-foreground">Active operator</p>
+          <h2 className="mt-1 text-xl font-bold text-foreground">{user?.full_name}</h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Tenant-aware FinOps workspace for billing visibility, document ingestion,
             retrieval-backed chat and async processing with RabbitMQ.
           </p>
         </div>
         <div className="flex flex-col items-start gap-1 sm:items-end">
-          <p className="text-sm text-slate-400">Tenant</p>
+          <p className="text-sm text-muted-foreground">Tenant</p>
           <StatusPill status={activeTenant.slug} />
         </div>
       </section>
 
-      <section className="space-y-2 text-sm text-slate-400" aria-label="Billing period">
+      <section className="space-y-2 text-sm text-muted-foreground" aria-label="Billing period">
         <p>{billing.period.start_date} to {billing.period.end_date} (exclusive), UTC</p>
         {billing.data_status === "empty" && <p>No cost data for this period.</p>}
         {billing.data_status === "partial" && <p role="status">Partial data: {billing.missing_dimension_count} missing dimensions; {billing.excluded_undated_count} undated records excluded.</p>}
@@ -114,11 +114,11 @@ export function DashboardPage() {
             {tenants.map((tenant) => (
               <article
                 key={tenant.id}
-                className="flex items-center justify-between rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2"
+                className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2"
               >
                 <div>
-                  <strong className="text-white">{tenant.name}</strong>
-                  <p className="text-sm text-slate-400">{tenant.slug}</p>
+                  <strong className="text-foreground">{tenant.name}</strong>
+                  <p className="text-sm text-muted-foreground">{tenant.slug}</p>
                 </div>
                 <StatusPill status={tenant.plan} />
               </article>
@@ -134,9 +134,9 @@ export function DashboardPage() {
             {Object.entries(health.services).map(([service, serviceStatus]) => (
               <div
                 key={service}
-                className="flex items-center justify-between rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2"
+                className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2"
               >
-                <span className="text-sm text-white">{service}</span>
+                <span className="text-sm text-foreground">{service}</span>
                 <StatusPill status={serviceStatus} />
               </div>
             ))}

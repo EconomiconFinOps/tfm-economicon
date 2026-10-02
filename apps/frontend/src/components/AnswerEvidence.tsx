@@ -36,14 +36,14 @@ export function AnswerEvidence({ content, metadata }: {
     && raw.every((item, index) => references[index] === item.evidence_id) ? raw : [];
 
   return <>
-    <div className="mt-1 whitespace-pre-wrap text-sm text-white">
+    <div className="mt-1 whitespace-pre-wrap text-sm text-foreground">
       {content.split("\n").map((line, index) => {
         const match = /^- \[(\d+)\] /.exec(line);
         const number = match ? Number(match[1]) : 0;
         const citation = citations[number - 1];
         const supported = citation && line === `- [${number}] ${citation.source}: ${citation.excerpt}`;
         return <p key={index}>{supported ? <>
-          <a className="text-sky-300 underline" href={`#${prefix}-source-${number}`} aria-label={`Ver fuente ${number}`}
+          <a className="text-info-foreground underline" href={`#${prefix}-source-${number}`} aria-label={`Ver fuente ${number}`}
             onClick={(event) => {
               const target = event.currentTarget.ownerDocument.getElementById(`${prefix}-source-${number}`);
               if (target instanceof HTMLDetailsElement) {
@@ -57,17 +57,17 @@ export function AnswerEvidence({ content, metadata }: {
         </> : line}</p>;
       })}
     </div>
-    {citations.length > 0 ? <section className="mt-3 space-y-2 text-sm text-slate-300" aria-label="Fuentes utilizadas">
-      <h3 className="font-semibold text-white">Fuentes utilizadas</h3>
-      {citations.map((citation, index) => <details key={citation.evidence_id} id={`${prefix}-source-${index + 1}`} className="rounded border border-slate-600 p-2">
+    {citations.length > 0 ? <section className="mt-3 space-y-2 text-sm text-subtle-foreground" aria-label="Fuentes utilizadas">
+      <h3 className="font-semibold text-foreground">Fuentes utilizadas</h3>
+      {citations.map((citation, index) => <details key={citation.evidence_id} id={`${prefix}-source-${index + 1}`} className="rounded border border-border p-2">
         <summary className="cursor-pointer">[{index + 1}] {citation.title} — {citation.source}</summary>
         <p>Documento: {citation.document_id}</p>
         {citation.section && <p>Sección: {citation.section}</p>}
         {citation.page !== null && <p>Página: {citation.page}</p>}
         <p className="break-all">Referencia: {citation.reference}</p>
-        <blockquote className="mt-2 whitespace-pre-wrap border-l-2 border-sky-400 pl-3">{citation.excerpt}</blockquote>
+        <blockquote className="mt-2 whitespace-pre-wrap border-l-2 border-info pl-3">{citation.excerpt}</blockquote>
       </details>)}
-    </section> : <p className="mt-2 text-xs text-slate-400">
+    </section> : <p className="mt-2 text-xs text-muted-foreground">
       {Array.isArray(references) && references.length > 0
         ? "La evidencia de esta respuesta no está disponible."
         : "Sin fuentes documentales utilizadas."}

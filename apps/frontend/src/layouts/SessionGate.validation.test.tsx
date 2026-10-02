@@ -1,6 +1,6 @@
 // Cobertura complementaria de `SessionGate` (reconciliacion con develop,
 // Punto 2 -- validacion de sesion). `SessionGate.test.tsx` (ya commiteado,
-// bloqueado por el hook del harness) solo cubre "sin sesion" y "con sesion
+// protegido contra edicion en el entorno local) solo cubre "sin sesion" y "con sesion
 // valida"; no cubre el caso intermedio que motiva esta reconciliacion: un
 // JSON que parsea correctamente pero no tiene la forma de una sesion real.
 // Antes de `isSession`, ese valor se aceptaba tal cual (un `{}` no lanzaba

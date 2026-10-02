@@ -145,3 +145,11 @@ convención, conservando todos los temas; no se dan por resueltos aquí.
 Comprobación por mutación: el test nuevo falla si el extracto se amplía a 200 o
 el pasaje se reduce a 120. El test de interfaz falla al retirar preventDefault.
 Restaurado el código, controles backend 27/27 e interfaz de evidencia 7/7 verdes.
+
+
+Actualización de base del 02/10: se integra develop `5a54ce2`, que incorpora
+JUP-099 y JUP-096. Se resuelve el conflicto de ConversationsPage conservando
+AnswerEvidence y los tokens del tema, y el del backlog conservando ambos grupos
+de incidencias. AnswerEvidence adopta los tokens existentes del tema.
+Validación tras integración: 188 pruebas de citas/conversaciones y guardas de
+paleta aprobadas; typecheck correcto; OpenSpec 37/37. No cambia el contrato backend.

@@ -1,7 +1,7 @@
 // Cobertura complementaria de `Layout`: selector de ambito de cliente y panel
 // de sesion que anade al leer el Outlet context inyectado por `SessionGate`
 // (JUP-095, grupo 6, sub-ronda a - ver Addendum de design.md). El archivo
-// `Layout.test.tsx` (ya commiteado, bloqueado por el hook del harness) solo
+// `Layout.test.tsx` (ya commiteado, protegido contra edicion en el entorno local) solo
 // verifica los 5 enlaces de navegacion sin contexto: no se duplica esa
 // asercion aqui, solo se anade la cobertura nueva.
 import { describe, expect, it } from "vitest";
