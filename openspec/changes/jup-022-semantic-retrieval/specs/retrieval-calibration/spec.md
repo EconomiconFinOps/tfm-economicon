@@ -68,6 +68,36 @@ Section-level expectations SHALL be stored in a separate versioned file under `d
 - **WHEN** the labels file is added or changed
 - **THEN** the JUP-069 question bank file is byte-for-byte unchanged
 
+### Requirement: Complete, coverage-aware and platform-independent labels
+
+Every case of the question bank SHALL have exactly one label entry. Each entry SHALL declare a coverage of `direct`, `partial` or `none`: `direct` when a section of a declared source contains the answer, `partial` when the section only supplies the method or the definition while the figures come from the case context, and `none` when no section of the corpus covers the question. Entries with coverage `direct` or `partial` SHALL list at least one expected section. Entries with coverage `none` SHALL list none and SHALL explain the gap in a note. A heading SHALL identify exactly one section of its document, and a heading that occurs more than once in the document SHALL be rejected as ambiguous. Document hashes SHALL be computed with the same line-ending normalization as the question bank validator, so that the result does not depend on the operating system.
+
+#### Scenario: Unlabelled case
+
+- **WHEN** a case of the bank has no label entry
+- **THEN** validation fails and names the case
+
+#### Scenario: Coverage none without expected sections
+
+- **WHEN** a label has coverage `none`, no expected sections and a note
+- **THEN** it is valid
+- **AND** the calibration report lists the case as a corpus gap and leaves it out of the section-level hit rate
+
+#### Scenario: Coverage direct or partial without sections
+
+- **WHEN** a label has coverage `direct` or `partial` and no expected section, or coverage `none` with expected sections or without a note
+- **THEN** validation fails and names the case
+
+#### Scenario: Ambiguous heading
+
+- **WHEN** a label names a heading that occurs twice in its document
+- **THEN** validation fails and asks for an unambiguous heading
+
+#### Scenario: Line endings
+
+- **WHEN** the same document is checked with CRLF or with LF line endings
+- **THEN** the hash and the validation result are identical
+
 ### Requirement: Reproducible calibration report
 
 Each calibration run SHALL write a JSON result file and a human-readable report recording the model alias, the dimension, the corpus and bank versions with their hashes, the date, the `top_k` values and the maximum distances swept, the metrics per sweep point, the per-case results and the known limits of the measurement. Neither file SHALL contain a credential or the text of fragments beyond the headings already published in the corpus. The default `top_k` and maximum distance SHALL be set only to a sweep point that appears in a committed report, and the report SHALL state the selection rule used.

@@ -1,0 +1,364 @@
+{
+  "schema_version": 1,
+  "jup": "JUP-022",
+  "trello": "https://trello.com/c/DPZpQ09b",
+  "bank": {
+    "path": "docs/validation/JUP-069-questions.json",
+    "suite_version": "1.0.0"
+  },
+  "sources": {
+    "rules": {
+      "path": "docs/assistant-corpus/business-rules/economicon-mvp-rules.md",
+      "sha256": "36e05ef2eb6996d6f763512ba5d945a6b0f5c5c1aebeb705e176a185dbcb6ac1"
+    },
+    "finops": {
+      "path": "docs/assistant-corpus/finops/azure-finops-mvp.md",
+      "sha256": "5b5f9447b4ceaf71e38c4f6e32e11de256b3ffa81cf3db85f6d1d259fa6238d2"
+    },
+    "product": {
+      "path": "docs/assistant-corpus/product-architecture/economicon-product-context.md",
+      "sha256": "be2f0c9016b497ead4a201f3f3f2b48e60c7d709117d24fa82b9db4464ff913b"
+    }
+  },
+  "labels": [
+    {
+      "case": "JUP-069-001",
+      "coverage": "partial",
+      "expect": [
+        {
+          "source": "finops",
+          "heading": "Cost Management Y Cost Analysis"
+        }
+      ],
+      "note": "Aporta el metodo (agrupar por servicio); las cifras salen del contexto del caso."
+    },
+    {
+      "case": "JUP-069-002",
+      "coverage": "partial",
+      "expect": [
+        {
+          "source": "finops",
+          "heading": "Cost Management Y Cost Analysis"
+        }
+      ],
+      "note": "Aporta el metodo (comparar el periodo actual contra el baseline); las cifras salen del contexto."
+    },
+    {
+      "case": "JUP-069-003",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "finops",
+          "heading": "Cost Management Y Cost Analysis"
+        },
+        {
+          "source": "finops",
+          "heading": "Anomalias De Coste"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-004",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "finops",
+          "heading": "Conceptos FinOps Basicos"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-005",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Coste No Asignado"
+        },
+        {
+          "source": "rules",
+          "heading": "Estados De Allocation"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-006",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Coste No Asignado"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-007",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Coste No Asignado"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-008",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Coste No Asignado"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-009",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Estados De Allocation"
+        },
+        {
+          "source": "finops",
+          "heading": "Coste No Asignado Y Coste Compartido"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-010",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Reglas De Tagging"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-011",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Reglas De Tagging"
+        },
+        {
+          "source": "rules",
+          "heading": "KPIs Minimos"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-012",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Estados De Allocation"
+        },
+        {
+          "source": "finops",
+          "heading": "Errores Comunes"
+        },
+        {
+          "source": "finops",
+          "heading": "Coste No Asignado Y Coste Compartido"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-013",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "KPIs Minimos"
+        },
+        {
+          "source": "rules",
+          "heading": "Budgets Y Forecast"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-014",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Budgets Y Forecast"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-015",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Budgets Y Forecast"
+        },
+        {
+          "source": "finops",
+          "heading": "Conceptos FinOps Basicos"
+        },
+        {
+          "source": "finops",
+          "heading": "Errores Comunes"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-016",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Anomalias"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-017",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Anomalias"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-018",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Anomalias"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-019",
+      "coverage": "partial",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "Anomalias"
+        }
+      ],
+      "note": "Aporta la regla de doble condicion; que el recurso sea nuevo y no tenga baseline sale del contexto."
+    },
+    {
+      "case": "JUP-069-020",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "finops",
+          "heading": "Azure Advisor, Rightsizing Y Commitments"
+        },
+        {
+          "source": "finops",
+          "heading": "Errores Comunes"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-021",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "rules",
+          "heading": "KPIs Minimos"
+        },
+        {
+          "source": "rules",
+          "heading": "Recomendaciones"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-022",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "finops",
+          "heading": "Azure Advisor, Rightsizing Y Commitments"
+        },
+        {
+          "source": "finops",
+          "heading": "Errores Comunes"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-023",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "product",
+          "heading": "Scope, Dataset Y Tenant"
+        },
+        {
+          "source": "product",
+          "heading": "Vision Del Producto"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-024",
+      "coverage": "none",
+      "expect": [],
+      "note": "Hueco del corpus: no trata monedas ni la conversion de importes; la respuesta depende solo del contexto del caso."
+    },
+    {
+      "case": "JUP-069-025",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "finops",
+          "heading": "Alcance Del MVP"
+        },
+        {
+          "source": "finops",
+          "heading": "Recomendaciones De Optimizacion"
+        },
+        {
+          "source": "product",
+          "heading": "Vision Del Producto"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-026",
+      "coverage": "none",
+      "expect": [],
+      "note": "Hueco del corpus: no distingue la ausencia de datos de un coste cero ni trata ingestas incompletas."
+    },
+    {
+      "case": "JUP-069-027",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "finops",
+          "heading": "Idea Fundamental De FinOps"
+        },
+        {
+          "source": "rules",
+          "heading": "KPIs Minimos"
+        }
+      ]
+    },
+    {
+      "case": "JUP-069-028",
+      "coverage": "direct",
+      "expect": [
+        {
+          "source": "finops",
+          "heading": "Showback Y Chargeback"
+        }
+      ]
+    }
+  ]
+}

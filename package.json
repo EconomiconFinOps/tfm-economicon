@@ -33,7 +33,9 @@
     "repository:governance:test": "node --test tools/repository-governance.test.mjs",
     "collaboration:test": "python -m unittest discover -s tools/collaboration/tests -v",
     "validation-questions:validate": "node tools/validation-questions.mjs validate",
-    "validation-questions:test": "node --test tools/validation-questions.test.mjs"
+    "validation-questions:test": "node --test tools/validation-questions.test.mjs",
+    "retrieval-labels:validate": "node tools/retrieval-labels.mjs validate",
+    "retrieval-labels:test": "node --test tools/retrieval-labels.test.mjs"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.8.0",
