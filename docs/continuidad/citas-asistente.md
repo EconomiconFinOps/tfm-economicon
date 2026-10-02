@@ -77,3 +77,20 @@ independiente [JUP-101](https://trello.com/c/ReMOdXEK), atendiendo la observaci�
 sobre conflictos con #60/#61/#62. La convención sigue pendiente de acuerdo; su
 integración no es una dependencia funcional de las citas. El registro de revisiones
 y aceptación vigente permanece en PR #55 y Trello.
+
+
+## Entrega de las correcciones de Víctor — 02/10/2026
+
+Corrección publicada en `5ce57224419278901e8c99b0b7d2eebbbcad394e` y base actualizada
+con develop `5a54ce2` mediante `ec7debe`. Se conservan las incidencias de ambas ramas
+y se adapta AnswerEvidence a los tokens del tema. Tras integrar: 188 pruebas de
+interfaz/paleta y tipos correctos, OpenSpec 37/37. Las correcciones de citas backend
+habían pasado 27 pruebas y detectado los dos mutantes de recorte.
+
+Se verificó la solicitud formal a `Victorh1397` en `reviewRequests` de PR #55.
+No se ha hecho merge ni enviado Discord. CI del HEAD `ec7debe4ae9ef37e72314b007420ac74a89f71df`: [7/7 correctos](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/36992134412), verificados el 02/10. PR sin conflictos y solicitud a Víctor confirmada tras el último push.
+La convención y resúmenes se conservan en [PR #64](https://github.com/EconomiconFinOps/tfm-economicon/pull/64),
+borrador ligado a [JUP-101](https://trello.com/c/ReMOdXEK); quedan fuera del diff
+funcional de #55. El puntero y los resúmenes locales siguen disponibles en este
+checkout, sin publicarlos de nuevo en #55. La aceptación de la propuesta común y
+adaptación de #60/#61/#62 permanecen pendientes del equipo.
