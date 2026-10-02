@@ -1,7 +1,7 @@
 ## 1. Preparacion y dependencias
 
 - [ ] 1.1 Comprobar en `develop` el estado de JUP-023 (cliente del processor), JUP-021 (vigilancia de dimension) y JUP-025 (reescritura de `search_chunks` y de la ruta del asistente); aplicar el codigo despues de JUP-025 o coordinar la rama, y anotar en `design.md` lo que se encuentre.
-- [ ] 1.2 Fijar con tests el comportamiento actual de `search_chunks` (4 resultados, sin umbral, orden por distancia) para detectar cambios no previstos al refactorizar.
+- [x] 1.2 Fijar con tests el comportamiento actual de `search_chunks` (4 resultados, sin umbral, orden por distancia) para detectar cambios no previstos al refactorizar.
 
 ## 2. Configuracion y secretos del backend
 
@@ -19,10 +19,10 @@
 
 ## 4. Contrato de recuperacion
 
-- [ ] 4.1 RED: tests de `top_k`, distancia maxima, orden por distancia y despues por identificador con empates en el mismo y en distinto documento, resultado vacio (tenant sin documentos y todo fuera del umbral), `top_k` mayor que los disponibles combinado con umbral, y aislamiento por tenant con un fragmento mas cercano de otro tenant.
-- [ ] 4.2 GREEN: implementar el filtro, el orden y el resultado vacio en `search_chunks`, y el estado sin contexto en el asistente.
-- [ ] 4.3 Ejecutar con pgvector real y opt-in (`*_TEST_URL`) los tests de orden y de umbral, y registrar el resultado en la evidencia.
-- [ ] 4.4 Mutantes sobre el codigo tocado (quitar el desempate, invertir la comparacion del umbral, quitar el filtro de tenant): cada uno debe hacer fallar algun test.
+- [x] 4.1 RED: tests de `top_k`, distancia maxima, orden por distancia y despues por identificador con empates en el mismo y en distinto documento, resultado vacio (tenant sin documentos y todo fuera del umbral), `top_k` mayor que los disponibles combinado con umbral, y aislamiento por tenant con un fragmento mas cercano de otro tenant.
+- [x] 4.2 GREEN: implementar el filtro, el orden y el resultado vacio en `search_chunks`, y el estado sin contexto en el asistente.
+- [x] 4.3 Ejecutar con pgvector real y opt-in (`*_TEST_URL`) los tests de orden y de umbral, y registrar el resultado en la evidencia.
+- [x] 4.4 Mutantes sobre el codigo tocado (quitar el desempate, invertir la comparacion del umbral, quitar el filtro de tenant): cada uno debe hacer fallar algun test.
 
 ## 5. Compatibilidad y fallos
 

@@ -1,34 +1,52 @@
+import math
+
 from sqlalchemy import create_engine, text
+
+MAX_TOP_K = 20
+MAX_COSINE_DISTANCE = 2.0
 
 
 class PgVectorQueryStore:
     def __init__(self, database_url: str):
         self.engine = create_engine(database_url, future=True, pool_pre_ping=True)
 
-    def search_chunks(self, tenant_id: str, query_embedding: list[float], top_k: int = 4) -> list[dict]:
+    def search_chunks(
+        self, tenant_id: str, query_embedding: list[float], top_k: int = 4, max_distance: float | None = None
+    ) -> list[dict]:
+        if isinstance(top_k, bool) or not isinstance(top_k, int) or not 1 <= top_k <= MAX_TOP_K:
+            raise ValueError(f"top_k must be an integer between 1 and {MAX_TOP_K}")
+        if max_distance is not None and (
+            isinstance(max_distance, bool) or not isinstance(max_distance, (int, float))
+            or not math.isfinite(max_distance) or not 0 < max_distance <= MAX_COSINE_DISTANCE
+        ):
+            raise ValueError("max_distance must be greater than 0 and at most 2")
         vector = "[" + ",".join(f"{value:.6f}" for value in query_embedding) + "]"
+        threshold = "WHERE distance <= :max_distance" if max_distance is not None else ""
+        parameters = {"tenant_id": tenant_id, "query_embedding": vector, "top_k": top_k}
+        if max_distance is not None:
+            parameters["max_distance"] = float(max_distance)
         with self.engine.connect() as connection:
             rows = connection.execute(
                 text(
-                    """
-                    SELECT
-                        dc.id AS chunk_id,
-                        kd.source AS source,
-                        dc.content AS content,
-                        (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
-                    FROM knowledge_documents kd
-                    JOIN document_chunks dc ON dc.document_id = kd.id
-                    JOIN chunk_embeddings ce ON ce.chunk_id = dc.id
-                    WHERE kd.tenant_id = :tenant_id
-                    ORDER BY ce.embedding <=> CAST(:query_embedding AS vector)
+                    f"""
+                    SELECT chunk_id, source, content, distance
+                    FROM (
+                        SELECT
+                            dc.id AS chunk_id,
+                            kd.source AS source,
+                            dc.content AS content,
+                            (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
+                        FROM knowledge_documents kd
+                        JOIN document_chunks dc ON dc.document_id = kd.id
+                        JOIN chunk_embeddings ce ON ce.chunk_id = dc.id
+                        WHERE kd.tenant_id = :tenant_id
+                    ) ranked
+                    {threshold}
+                    ORDER BY distance, chunk_id
                     LIMIT :top_k
                     """
                 ),
-                {
-                    "tenant_id": tenant_id,
-                    "query_embedding": vector,
-                    "top_k": top_k,
-                },
+                parameters,
             )
             return [
                 {

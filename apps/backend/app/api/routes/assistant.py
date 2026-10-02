@@ -8,6 +8,7 @@ from app.api.dependencies import (
     get_vector_store,
     get_database,
 )
+from app.core.config import get_settings
 from app.core.metrics import assistant_queries_total
 from app.schemas.assistant import (
     AssistantReply,
@@ -96,7 +97,10 @@ def send_message(
         content=payload.content,
     )
     query_embedding = embedding_provider.embed(payload.content)
-    retrieved_chunks = vector_store.search_chunks(tenant_id, query_embedding)
+    settings = get_settings()
+    retrieved_chunks = vector_store.search_chunks(
+        tenant_id, query_embedding, top_k=settings.retrieval_top_k, max_distance=settings.retrieval_max_distance
+    )
     assistant_output = assistant_service.answer(payload.content, retrieved_chunks)
     assistant_message = database.append_message(
         conversation_id=conversation_id,

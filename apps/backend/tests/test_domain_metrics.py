@@ -52,7 +52,7 @@ class _FakeDatabase:
 
 
 class _FakeVectorStore:
-    def search_chunks(self, tenant_id, query_embedding):
+    def search_chunks(self, tenant_id, query_embedding, top_k, max_distance):
         return []
 
 
