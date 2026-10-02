@@ -343,6 +343,19 @@ test("the command line prints its diagnosis when invoked through a link to the t
   }
 });
 
+test("the tools can be imported from standard input, where argv[1] is not a file", () => {
+  for (const tool of ["local-doctor.mjs", "local-smoke.mjs"]) {
+    const result = spawnSync(process.execPath, ["--input-type=module", "-"], {
+      input: `import "./tools/${tool}"; console.log("importado ok");`,
+      cwd: root,
+      encoding: "utf8",
+      timeout: 60_000,
+    });
+    assert.equal(result.status, 0, `${tool}: ${result.stderr}`);
+    assert.match(result.stdout, /importado ok/, tool);
+  }
+});
+
 test("interpolates .env values exactly as Compose resolves them", () => {
   const text = [
     "USER1=econ",

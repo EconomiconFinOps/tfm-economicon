@@ -38,7 +38,7 @@ Proyecto aislado con solo RabbitMQ y volumen nuevo; el ping se lanza en el acto,
 
 Con un volumen existente y otro valor en `RABBITMQ_ERLANG_COOKIE`, RabbitMQ arranca sano y registra "Overriding Erlang cookie using the value set in the environment": el valor del entorno prevalece sobre el guardado en `rabbitmq-data`.
 
-La fila de RF-096-001 del backlog (llegada con el PR #51) queda cerrada con esta evidencia.
+La fila de RF-096-001 del backlog (llegada con el PR #51, ya integrado) queda cerrada con esta evidencia.
 
 ## Stack completo en un proyecto aislado
 
@@ -76,4 +76,4 @@ Contexto temporal con `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` y 
 
 | Fecha | JUP | Nota de release | Review | ADRs |
 | --- | --- | --- | --- | --- |
-| 2026-10-01 | JUP-050 | Entorno local reproducible: RabbitMQ arranca a la primera con estado en `rabbitmq-data`, `local:doctor` diagnostica `.env`, puertos y volumenes antes de arrancar, y `local:smoke` recorre el camino minimo. Limites conocidos del diagnostico en el README. | [review.md](../../openspec/changes/archive/2026-10-01-jup-050-reproducible-local-runtime/review.md) | No aplica; se apoya en ADR-0011, que llega con el PR #51 |
+| 2026-10-01 | JUP-050 | Entorno local reproducible: RabbitMQ arranca a la primera con estado en `rabbitmq-data`, `local:doctor` diagnostica `.env`, puertos y volumenes antes de arrancar, y `local:smoke` recorre el camino minimo. Limites conocidos del diagnostico en el README. | [review.md](../../openspec/changes/archive/2026-10-01-jup-050-reproducible-local-runtime/review.md) | No aplica; se apoya en [ADR-0011](../adr/ADR-0011-single-owner-per-table.md), llegado con el PR #51 |

@@ -104,7 +104,7 @@ Lucia acepto el 2026-10-01 los hallazgos pendientes de las pasadas 2 y 3: P2-4 y
 
 - RF-090-001: cerrado con control positivo.
 - RF-050-001: registrado y cerrado (ventana de salud del processor).
-- RF-096-001: corregido y evidenciado aqui; su fila llega con el PR #51 y se cerrara al traer `develop`.
+- RF-096-001: corregido y evidenciado aqui; su fila llego con el PR #51 (ya integrado) y quedo cerrada al traer `develop`.
 
 ## Human Approval
 

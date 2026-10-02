@@ -340,6 +340,16 @@ async function main(argv) {
   process.exitCode = code;
 }
 
-if (process.argv[1] && fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
+// argv[1] is not always a file (for example "-" when the module is read from standard input).
+function isMainModule() {
+  if (!process.argv[1]) return false;
+  try {
+    return fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+  } catch {
+    return false;
+  }
+}
+
+if (isMainModule()) {
   await main(process.argv.slice(2));
 }

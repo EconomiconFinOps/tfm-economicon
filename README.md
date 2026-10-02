@@ -128,7 +128,7 @@ instalacion anterior, el primer arranque crea ese volumen vacio: lo que hubiera
 en el volumen anonimo previo no se migra. El cookie de Erlang sigue saliendo de
 `RABBITMQ_ERLANG_COOKIE`, que prevalece sobre el guardado en el volumen.
 
-El usuario y la password de RabbitMQ (`RABBITMQ_DEFAULT_USER` y `RABBITMQ_DEFAULT_PASS`) se fijan en el primer arranque del volumen: cambiarlos despues en `.env` no cambia los del broker, el stack sigue "sano" pero el backend y el processor no se autentican y los jobs responden 503. Lo mismo ocurre con `POSTGRES_PASSWORD` y `GRAFANA_ADMIN_PASSWORD`. En un entorno desechable, para cambiarlos: `docker compose down`, `docker volume rm <proyecto>_rabbitmq-data` (se pierden los mensajes en cola) y `docker compose up -d --wait`.
+El usuario y la password de RabbitMQ (`RABBITMQ_DEFAULT_USER` y `RABBITMQ_DEFAULT_PASS`) se fijan en el primer arranque del volumen: cambiarlos despues en `.env` no cambia los del broker, el stack sigue "sano" pero el backend y el processor no se autentican y los jobs responden 503. Lo mismo ocurre con `POSTGRES_PASSWORD` y `GRAFANA_ADMIN_PASSWORD`: conserva sus valores, o usa `docker compose down -v` en un entorno desechable, que borra todos los datos. Para cambiar solo las credenciales de RabbitMQ en un entorno desechable: `docker compose down`, `docker volume rm <proyecto>_rabbitmq-data` (se pierden los mensajes en cola) y `docker compose up -d --wait`; esa receta no cambia las de los otros servicios.
 
 Puertos visibles:
 

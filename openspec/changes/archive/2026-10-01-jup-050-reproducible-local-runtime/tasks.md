@@ -30,7 +30,7 @@
 
 - [x] 5.1 README: recorrido desde clon limpio (copiar `.env.example`, rellenar secretos y opt-ins, `local:doctor`, `up --build --wait`, `local:smoke`), duracion esperada del primer arranque y que conserva o borra cada forma de parar.
 - [x] 5.2 `docs/architecture.md` si describe volumenes o healthchecks afectados.
-- [x] 5.3 `openspec/findings/backlog.md`: cerrar RF-096-001 y RF-090-001 con su evidencia; registrar y cerrar el finding de la ventana de salud del processor. Hecho para RF-090-001 y RF-050-001; la fila de RF-096-001 llega con el PR #51 (aun sin integrar): se cerrara al traer `develop` a esta rama, con la evidencia ya registrada.
+- [x] 5.3 `openspec/findings/backlog.md`: cerrar RF-096-001 y RF-090-001 con su evidencia; registrar y cerrar el finding de la ventana de salud del processor. Hecho para RF-090-001 y RF-050-001; la fila de RF-096-001 llego con el PR #51, ya integrado, y se cerro al traer `develop` a esta rama con la evidencia registrada.
 
 ## 6. Cierre y verificacion
 

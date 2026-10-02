@@ -165,4 +165,3 @@ migrations before serving `/health`, `start_period` SHALL be at least 300 second
 
 - **WHEN** the processor `start_period` is below 300 seconds
 - **THEN** the topology validation fails
-

@@ -210,4 +210,3 @@ expected duration of the first start.
   Docker and Node
 - **THEN** each step produces the outcome the README describes, ending with the
   smoke passing
-
