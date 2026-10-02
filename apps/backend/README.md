@@ -98,7 +98,13 @@ Puerto visible:
 - `RABBITMQ_URL`
 - `VECTOR_DATABASE_URL`
 - `PROCESSOR_QUEUE_NAME`
-- `EMBEDDING_DIMENSION`
+- `EMBEDDING_PROVIDER` (`mock` solo con `RUNTIME_ENVIRONMENT=development|test`, o `litellm`)
+- `EMBEDDING_DIMENSION` (1536 con `litellm`)
+- `EMBEDDING_MODEL`
+- `LITELLM_BASE_URL`
+- `LITELLM_API_KEY` (clave virtual propia del backend; en Compose se lee de `BACKEND_LITELLM_API_KEY`)
+- `EMBEDDING_TIMEOUT_SECONDS` y `EMBEDDING_MAX_RETRIES`
+- `RETRIEVAL_TOP_K` (1 a 20, por defecto 4) y `RETRIEVAL_MAX_DISTANCE` (opcional, mayor que 0 y como maximo 2)
 - `AUTH_SECRET_KEY`
 - `AUTH_TOKEN_TTL_MINUTES`
 - `RUNTIME_ENVIRONMENT`

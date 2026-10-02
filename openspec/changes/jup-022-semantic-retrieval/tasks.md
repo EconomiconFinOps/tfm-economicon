@@ -5,10 +5,10 @@
 
 ## 2. Configuracion y secretos del backend
 
-- [ ] 2.1 RED: tests de configuracion para proveedor, alias, URL del gateway, clave virtual (`SecretStr`, sin valor por defecto), tiempo maximo, reintentos, `top_k` y distancia maxima: rangos validos e invalidos, `mock` fuera de `development` y `test`, `litellm` sin clave; comprobar que fallan.
-- [ ] 2.2 GREEN: implementar la configuracion; variables nuevas en `docker-compose.yml`, `.env.example` (clave vacia), README y tests de topologia.
-- [ ] 2.3 Test con un valor centinela: la clave no aparece en logs, `repr`, mensajes de error ni respuestas.
-- [ ] 2.4 RED y GREEN: una linea de log al arrancar con proveedor, alias y dimension activos (sin la clave), con test para los dos proveedores.
+- [x] 2.1 RED: tests de configuracion para proveedor, alias, URL del gateway, clave virtual (`SecretStr`, sin valor por defecto), tiempo maximo, reintentos, `top_k` y distancia maxima: rangos validos e invalidos, `mock` fuera de `development` y `test`, `litellm` sin clave; comprobar que fallan.
+- [x] 2.2 GREEN: implementar la configuracion; variables nuevas en `docker-compose.yml`, `.env.example` (clave vacia), README y tests de topologia.
+- [x] 2.3 Test con un valor centinela: la clave no aparece en logs, `repr`, mensajes de error ni respuestas.
+- [x] 2.4 RED y GREEN: una linea de log al arrancar con proveedor, alias y dimension activos (sin la clave), con test para los dos proveedores.
 
 ## 3. Proveedor de embeddings de la consulta
 
