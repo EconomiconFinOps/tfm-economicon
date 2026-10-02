@@ -110,6 +110,29 @@ test("sends the demo credentials, the bearer token and the demo tenant", async (
   assert.ok(ingest.args.includes("tenant-core"));
 });
 
+test("login receives the complete demo password with escaped apostrophes from dotenv", async () => {
+  const password = "SENTINEL-Let'sGo42";
+  const stack = fakeStack({ http: {
+    "POST 8000 /auth/login": ({ init }) => JSON.parse(init.body).password === password
+      ? json(200, { access_token: TOKEN }) : json(401, {}),
+  } });
+  const envText = String.raw`DEMO_SEED_ENABLED=true
+DEMO_PASSWORD='SENTINEL-Let\'sGo42'
+`;
+  const result = await smoke(stack, { env: {}, envText });
+  assert.equal(result.code, 0, result.text);
+  const login = stack.calls.find((call) => call.key === "POST 8000 /auth/login");
+  assert.equal(JSON.parse(login.init.body).password, password);
+  assertNoSecrets(result.text);
+  assert.doesNotMatch(result.text, /SENTINEL/);
+
+  const overridden = fakeStack();
+  const fromEnv = await smoke(overridden, { env: ENV, envText });
+  assert.equal(fromEnv.code, 0, fromEnv.text);
+  const overrideLogin = overridden.calls.find((call) => call.key === "POST 8000 /auth/login");
+  assert.equal(JSON.parse(overrideLogin.init.body).password, PASSWORD);
+});
+
 test("stops before calling the backend when the demo seed is not enabled", async () => {
   for (const [env, variable] of [
     [{ DEMO_PASSWORD: PASSWORD }, "DEMO_SEED_ENABLED"],

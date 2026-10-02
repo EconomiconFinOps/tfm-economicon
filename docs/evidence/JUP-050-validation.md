@@ -19,7 +19,7 @@
 
 | Comando | Resultado |
 |---|---|
-| `corepack pnpm local:test` | 70 passed (doctor y smoke; 61 antes de las pasadas adversariales 2 y 3 y de la revision de PR) |
+| `corepack pnpm local:test` | 74 passed (doctor y smoke; 61 antes de las pasadas adversariales 2 y 3 y de la revision de PR) |
 | `corepack pnpm docker:validate` | 30 passed |
 | `corepack pnpm ci:check:test` | 8 passed (incluye `local:test` en el job "OpenSpec") |
 | Resto del job "OpenSpec" (`pr:check:test`, `repository:governance:test`, `jup:check:test`, `jup:cleanup:test`, `roadmap:test`, `llm-gateway:test`, `assistant-corpus:test`, `validation-questions:test`, validaciones y `openspec:validate`) | todos correctos; `openspec:validate` 36/36 |

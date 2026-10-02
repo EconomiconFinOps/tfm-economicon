@@ -111,6 +111,43 @@ test("reads required variables and published ports from the Compose file", () =>
   assert.deepEqual(ports.API_HOST_PORT, { variable: "API_HOST_PORT", default: "8000", host: "0.0.0.0" });
 });
 
+test("keeps escaped apostrophes and literal backslashes in single-quoted dotenv values", () => {
+  const cases = [
+    [String.raw`'SENTINEL-Let\'sGo42'`, "SENTINEL-Let'sGo42"],
+    [String.raw`'\'SENTINEL\'' # trailing comment`, "'SENTINEL'"],
+    [String.raw`'SENTINEL-one\'two\'three'`, "SENTINEL-one'two'three"],
+    [String.raw`'SENTINEL-\n\t\$HOME\\path'`, String.raw`SENTINEL-\n\t\$HOME\\path`],
+    [String.raw`'SENTINEL-end\\' # closed after two backslashes`, String.raw`SENTINEL-end\\`],
+    [String.raw`'SENTINEL-\\\'tail'`, String.raw`SENTINEL-\\'tail`],
+    ["'SENTINEL-#${HOME}'", 'SENTINEL-#${HOME}'],
+    ["'' # empty", ""],
+  ];
+  for (const [value, expected] of cases) {
+    assert.equal(parseDotenv(`PASSWORD=${value}`, { HOME: "expanded" }).get("PASSWORD"), expected, value);
+  }
+});
+
+test("escaped apostrophes match encoded broker and pgvector passwords without hiding real mismatches", async () => {
+  const password = "SENTINEL-Let'sGo42";
+  const vars = {
+    ...VALID,
+    POSTGRES_PASSWORD: String.raw`'SENTINEL-Let\'sGo42'`,
+    RABBITMQ_DEFAULT_PASS: String.raw`'SENTINEL-Let\'sGo42'`,
+    VECTOR_DATABASE_URL: "postgresql+psycopg://postgres:SENTINEL-Let%27sGo42@postgres-pgvector:5432/embeddings",
+    RABBITMQ_URL: `amqp://${enc(SECRETS.RABBITMQ_DEFAULT_USER)}:SENTINEL-Let%27sGo42@rabbitmq:5672/`,
+  };
+  const valid = await doctor(dotenv(vars));
+  assert.equal(valid.code, 0, valid.text);
+  assertNoSecrets(valid.text);
+  for (const name of ["POSTGRES_PASSWORD", "RABBITMQ_DEFAULT_PASS"]) {
+    const invalid = await doctor(dotenv({ ...vars, [name]: "SENTINEL-other" }));
+    assert.equal(invalid.code, 1, invalid.text);
+    assert.match(invalid.text, new RegExp(name));
+    assert.ok(!invalid.text.includes(password));
+    assertNoSecrets(invalid.text);
+  }
+});
+
 test("a valid local configuration passes", async () => {
   const result = await doctor(dotenv(VALID));
   assert.equal(result.code, 0, result.text);

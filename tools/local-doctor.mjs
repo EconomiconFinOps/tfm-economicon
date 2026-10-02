@@ -39,8 +39,20 @@ export function parseDotenv(text, env = {}) {
     const key = line.slice(0, equals).trim();
     let value = line.slice(equals + 1).trim();
     if (value.startsWith("'")) {
-      const end = value.indexOf("'", 1);
-      value = end > 0 ? value.slice(1, end) : value.slice(1);
+      let result = "";
+      for (let index = 1; index < value.length; index += 1) {
+        const char = value[index];
+        if (char === "\\" && index + 1 < value.length) {
+          const next = value[++index];
+          // Only the quote is unescaped; other pairs stay literal, including \\\\.
+          result += next === "'" ? next : char + next;
+        } else if (char === "'") {
+          break;
+        } else {
+          result += char;
+        }
+      }
+      value = result;
     } else if (value.startsWith('"')) {
       let result = "";
       for (let index = 1; index < value.length; index += 1) {
