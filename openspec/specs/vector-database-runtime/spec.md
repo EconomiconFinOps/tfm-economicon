@@ -34,4 +34,3 @@ separate volume using the same runtime image.
 #### Scenario: Restore into an empty instance
 - **WHEN** a completed backup is restored into another empty database
 - **THEN** document counts, migrations and tenant-scoped retrieval pass verification.
-
