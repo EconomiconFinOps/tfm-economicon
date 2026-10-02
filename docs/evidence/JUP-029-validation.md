@@ -70,6 +70,22 @@ fila sin fecha. Las pruebas JUP-026 verifican tambien solapamiento real.
 
 ## Limites y siguiente paso
 
+### Revalidacion tras actualizar develop — 2026-10-02
+
+Merge sin conflictos de `origin/develop` `11d63ea` en `5ee5862`;
+incorpora JUP-099, JUP-096 y JUP-100. Sin cambios adicionales al producto JUP-029.
+Repetidos sobre el merge los comandos anteriores: backend **377 passed,
+18 skipped** (99.29 s); presupuesto y billing con Cockroach real **64 passed,
+0 skipped** (69.92 s). Entorno aislado `jup029-revalidation-20261002`, mismo
+puerto, imagen y tunel; retirado al terminar.
+
+OpenSpec estricto **38/38**, `node --test tools/pr-policy.test.mjs` **57/57**;
+trazabilidad JUP, higiene, compileall y diff check correctos. Avisos de
+deprecacion de dependencias, sin fallos. La nueva CI se consulta en la PR.
+El nuevo check `JUP reviews` exige las reviews tituladas `Revision JUP-029`
+y `Validacion JUP-029`, todavia pendientes. Hacia develop la primera favorable
+es Comment; la segunda aprueba cuando ambas estan satisfechas (JUP-100).
+
 Esto no cierra la tarjeta padre: falta definir/implementar persistencia y el
 flujo de usuario, y completar pairing, revision Paris y validacion Victor.
 Estas pruebas automatizadas no sustituyen sus participaciones. No hay cambios
