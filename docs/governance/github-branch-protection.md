@@ -62,16 +62,16 @@ Configure a branch ruleset matching refs/heads/main:
 
 ## Required status checks
 
-Use these stable job names from .github/workflows/ci.yml:
+Use these stable job names, the first seven from `.github/workflows/ci.yml` and the last one from `.github/workflows/pr-reviews.yml`. `tools/repository-governance.test.mjs` checks that this list matches the versioned rulesets:
 
-- JUP policy
-- OpenSpec
-- Python tests (azure-cost-api)
-- Python tests (backend)
-- Python tests (processor)
-- Frontend build
-- Frontend type check
-- Frontend tests
+- `JUP policy`
+- `OpenSpec`
+- `Python tests (azure-cost-api)`
+- `Python tests (backend)`
+- `Python tests (processor)`
+- `Frontend build`
+- `Frontend type check`
+- `JUP reviews`
 
 JUP-087 runs frontend lint and real journey tests before bundling in the required
 `Frontend build` job. A lint error or failed test fails that required check; no
@@ -93,6 +93,8 @@ checks above as the full set; the port's own 39 test cases now run inside
 `Frontend build` alongside JUP-087's regression suite, discovered from both
 `src/**/*.test.tsx` and `tests/**/*.test.tsx`.
 
+JUP-100 adds an eighth required context, `JUP reviews`, to both rulesets. It comes from its own workflow, `.github/workflows/pr-reviews.yml`, not from `ci.yml`: it also runs when a review is submitted, edited or dismissed, and review events inside `ci.yml` would rerun or cancel the other jobs and report skipped jobs as passing. The check reads the pull request and its reviews through the GitHub API with a read-only token and fails while the titled `Revision JUP-XXX` or `Validacion JUP-XXX` review is missing, a review comes only from the author, a request for changes is pending, or the same person published both without the exception line; the rules are in [CONTRIBUTING.md](../../CONTRIBUTING.md#review-and-validation-flow). Until an administrator applies the updated rulesets, the check runs but is not required. Once it is required, open pull requests without both titled reviews cannot be merged.
+
 ## Administrator exception and teammate onboarding
 
 Each ruleset permits only the built-in repository-admin role (`actor_id: 5`) to
@@ -109,7 +111,7 @@ claim approval that GitHub does not record.
 
 1. Confirm `EconomiconFinOps/tfm-economicon`, `develop` and administrator
    permissions through the GitHub API.
-2. Open the JUP-079 pull request and wait for all six checks to complete.
+2. Open the JUP-079 pull request and wait for all required checks to complete.
 3. Create the `develop` ruleset from `.github/rulesets/develop.json`.
 4. Create the stricter `main` ruleset from `.github/rulesets/main.json`.
 5. Query both rulesets and both branches; verify active enforcement, the exact
@@ -126,6 +128,18 @@ gh api repos/EconomiconFinOps/tfm-economicon/rulesets \
   --method POST --input .github/rulesets/develop.json
 gh api repos/EconomiconFinOps/tfm-economicon/rulesets \
   --method POST --input .github/rulesets/main.json
+gh api repos/EconomiconFinOps/tfm-economicon/rules/branches/develop
+gh api repos/EconomiconFinOps/tfm-economicon/rules/branches/main
+```
+
+Rulesets that already exist are updated, not created again: `POST` would add a second ruleset. To activate a later change such as the `JUP reviews` check of JUP-100, merge its pull request first so that the workflow exists in `develop`, then update each ruleset by its identifier and verify the branch rules:
+
+```sh
+gh api repos/EconomiconFinOps/tfm-economicon/rulesets --jq '.[] | "\(.id) \(.name)"'
+gh api repos/EconomiconFinOps/tfm-economicon/rulesets/<develop-id> \
+  --method PUT --input .github/rulesets/develop.json
+gh api repos/EconomiconFinOps/tfm-economicon/rulesets/<main-id> \
+  --method PUT --input .github/rulesets/main.json
 gh api repos/EconomiconFinOps/tfm-economicon/rules/branches/develop
 gh api repos/EconomiconFinOps/tfm-economicon/rules/branches/main
 ```

@@ -28,7 +28,7 @@ tipo/JUP-XXX-descripcion -> develop -> main
 2. La rama de tarea parte del `develop` remoto actualizado.
 3. La rama usa uno de estos prefijos: `feat`, `fix`, `docs`, `test`, `chore`,
    `refactor`, `ci` o `build`.
-4. El pull request de tarea apunta a `develop` y supera revision y CI.
+4. El pull request de tarea apunta a `develop` y supera CI y las dos reviews, `Revision JUP-XXX` y `Validacion JUP-XXX`, segun el flujo y los roles de [CONTRIBUTING.md](../../CONTRIBUTING.md#review-and-validation-flow) (JUP-100).
 5. Se usa squash por defecto. Rebase se reserva para una serie pequena de
    commits que aporte valor de revision. Los merge commits estan desactivados.
 6. GitHub elimina automaticamente la rama remota tras el merge.
