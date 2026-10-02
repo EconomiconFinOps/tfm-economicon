@@ -96,3 +96,9 @@ Local implementation details, small refactors and documentation-only changes wit
 2. Start from `docs/templates/adr.md` and link the relevant `JUP-XXX` card.
 3. Link the ADR from the OpenSpec `design.md` and keep its status `Proposed` during review.
 4. Once accepted, preserve the decision in Git-tracked documentation and update `docs/architecture.md` if the current architecture changes.
+
+## Frontend Color Decision
+
+| Record | Status | Accepted |
+| --- | --- | --- |
+| [ADR-0012: Frontend color tokens](ADR-0012-frontend-color-tokens.md) | Accepted | 2026-10-01, PR #54 validation |

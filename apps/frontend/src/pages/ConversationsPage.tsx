@@ -107,7 +107,7 @@ export function ConversationsPage() {
         title="Tenant required"
         subtitle="Choose a tenant before opening assistant conversations."
       >
-        <p className="text-sm text-slate-400">No active tenant selected.</p>
+        <p className="text-sm text-muted-foreground">No active tenant selected.</p>
       </SectionCard>
     );
   }
@@ -122,13 +122,13 @@ export function ConversationsPage() {
       >
         <form className="flex gap-2" onSubmit={handleCreate}>
           <input
-            className="flex-1 rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+            className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="New conversation title"
           />
           <button
-            className="rounded-md bg-[#0078d4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0078d4]/80 disabled:opacity-60"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
             type="submit"
             disabled={createMutation.isPending}
           >
@@ -137,10 +137,10 @@ export function ConversationsPage() {
         </form>
 
         {createMutation.error ? (
-          <p className="mt-2 text-sm text-red-400">{createMutation.error.message}</p>
+          <p className="mt-2 text-sm text-danger">{createMutation.error.message}</p>
         ) : null}
         {conversationsQuery.error ? (
-          <p className="mt-2 text-sm text-red-400" role="alert">
+          <p className="mt-2 text-sm text-danger" role="alert">
             {conversationsQuery.error.message}
           </p>
         ) : null}
@@ -152,13 +152,13 @@ export function ConversationsPage() {
               type="button"
               className={
                 conversation.id === selectedConversationId
-                  ? "rounded-md border border-[#0078d4] bg-[#0078d4]/10 px-3 py-2 text-left"
-                  : "rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-left hover:border-[#0078d4]"
+                  ? "rounded-md border border-primary bg-primary/10 px-3 py-2 text-left"
+                  : "rounded-md border border-border bg-background px-3 py-2 text-left hover:border-primary"
               }
               onClick={() => setSelectedConversationId(conversation.id)}
             >
-              <strong className="block text-sm text-white">{conversation.title}</strong>
-              <span className="text-xs text-slate-400">
+              <strong className="block text-sm text-foreground">{conversation.title}</strong>
+              <span className="text-xs text-muted-foreground">
                 {new Date(conversation.updated_at).toLocaleString()}
               </span>
             </button>
@@ -171,38 +171,38 @@ export function ConversationsPage() {
         subtitle="Replies use retrieval over pgvector filtered by the active tenant."
       >
         {conversationDetailQuery.error ? (
-          <p className="text-sm text-red-400" role="alert">
+          <p className="text-sm text-danger" role="alert">
             {conversationDetailQuery.error.message}
           </p>
         ) : conversationDetailQuery.isLoading ? (
-          <p className="text-sm text-slate-400">Loading conversation...</p>
+          <p className="text-sm text-muted-foreground">Loading conversation...</p>
         ) : selectedConversationId ? (
           <>
             <div className="flex flex-col gap-3">
               {messages.map((entry) => (
                 <article
                   key={entry.id}
-                  className="rounded-md border border-[#2d3748] bg-[#0f1419] p-3"
+                  className="rounded-md border border-border bg-background p-3"
                 >
-                  <p className="text-xs uppercase tracking-wide text-slate-400">{entry.role}</p>
-                  <p className="mt-1 text-sm text-white">{entry.content}</p>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{entry.role}</p>
+                  <p className="mt-1 text-sm text-foreground">{entry.content}</p>
                 </article>
               ))}
             </div>
 
             <form className="mt-4 flex flex-col gap-4" onSubmit={handleSend}>
               <textarea
-                className="rounded-md border border-[#2d3748] bg-[#0f1419] px-3 py-2 text-sm text-white outline-none focus:border-[#0078d4]"
+                className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
                 rows={5}
                 placeholder="Ask the assistant about the ingested tenant documents."
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
               />
               {sendMutation.error ? (
-                <p className="text-sm text-red-400">{sendMutation.error.message}</p>
+                <p className="text-sm text-danger">{sendMutation.error.message}</p>
               ) : null}
               <button
-                className="rounded-md bg-[#0078d4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0078d4]/80 disabled:opacity-60"
+                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
                 type="submit"
                 disabled={sendMutation.isPending || !message.trim()}
               >
@@ -211,7 +211,7 @@ export function ConversationsPage() {
             </form>
           </>
         ) : conversationsQuery.error ? null : (
-          <p className="text-sm text-slate-400">Create a conversation to start the assistant flow.</p>
+          <p className="text-sm text-muted-foreground">Create a conversation to start the assistant flow.</p>
         )}
       </SectionCard>
     </div>

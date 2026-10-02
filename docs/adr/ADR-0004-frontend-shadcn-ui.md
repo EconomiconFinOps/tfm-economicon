@@ -85,6 +85,11 @@ subconjunto deliberado, elegido para el destino, no heredado del `ui/` muerto de
   "adoptar el subconjunto de 6 paquetes Radix listado arriba, no los 26 del origen".
 - Seguimiento: las tarjetas de F3 que construyan pantallas con estos primitivos deben citar este ADR
   en su `design.md`, misma convención que estableció ADR-0003.
+- Color de los primitivos y de las pantallas: [ADR-0012](ADR-0012-frontend-color-tokens.md) (JUP-099)
+  fija que los tokens semánticos de shadcn/ui toman los valores de la aplicación en una única paleta
+  en `:root` y que los primitivos copiados se conservan sin editar (`@custom-variant dark (&)`). Las
+  atribuciones del código copiado constan en
+  [`apps/frontend/ATTRIBUTIONS.md`](../../apps/frontend/ATTRIBUTIONS.md).
 
 ## Trazabilidad de aprobación — 01/10/2026
 
@@ -93,3 +98,4 @@ registra la revisión de Victor del 07/09 y el cambio de descartar a adoptar sei
 primitivos. [PR #28](https://github.com/EconomiconFinOps/tfm-economicon/pull/28) y
 [evidencia JUP-094](../evidence/JUP-094-validation.md) documentan su integración.
 Instalar dependencias no demuestra accesibilidad de todas las pantallas.
+
