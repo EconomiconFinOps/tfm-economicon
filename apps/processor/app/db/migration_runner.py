@@ -16,7 +16,7 @@ class MigrationRunner:
         engine,
         migration_package: str,
         migrations_dir: Path,
-        version_table: str = "schema_migrations",
+        version_table: str,
     ):
         self.engine = engine
         self.migration_package = migration_package
