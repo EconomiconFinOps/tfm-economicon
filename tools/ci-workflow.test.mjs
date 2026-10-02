@@ -125,7 +125,42 @@ test("requires pull requests while keeping administrator bypass PR-only", () => 
   }
 });
 
-test("requires the same seven stable CI checks in both branch rulesets", () => {
+const loadReviewsWorkflow = () =>
+  parse(fs.readFileSync(path.join(root, ".github", "workflows", "pr-reviews.yml"), "utf8"));
+
+test("keeps review events out of the main CI workflow", () => {
+  // A review event there would rerun every job, cancel running CI and report skipped jobs as passing.
+  assert.equal(workflow.on.pull_request_review, undefined);
+});
+
+test("runs JUP reviews on pull request and review activity with read-only access", () => {
+  const reviews = loadReviewsWorkflow();
+  assert.deepEqual(reviews.on.pull_request.branches, ["main", "develop"]);
+  for (const type of ["opened", "synchronize", "reopened", "edited", "ready_for_review"]) {
+    assert.ok(reviews.on.pull_request.types.includes(type), type);
+  }
+  assert.deepEqual(reviews.on.pull_request_review.types, ["submitted", "edited", "dismissed"]);
+  assert.equal(reviews.on.pull_request_target, undefined);
+  assert.deepEqual(reviews.permissions, { contents: "read", "pull-requests": "read" });
+
+  const jobs = Object.values(reviews.jobs);
+  assert.equal(jobs.length, 1);
+  const [job] = jobs;
+  assert.equal(job.name, "JUP reviews");
+  assert.equal(job["continue-on-error"], undefined);
+  for (const step of job.steps) {
+    if (step.uses) {
+      assert.match(step.uses, /^actions\/checkout@[a-f0-9]{40}$/);
+      assert.equal(step.with["persist-credentials"], false);
+    }
+    assert.equal(step["continue-on-error"], undefined);
+  }
+  const run = job.steps.find(({ run }) => run?.includes("tools/pr-policy.mjs"));
+  assert.match(run.run, /--reviews/);
+  assert.equal(run.env.GITHUB_TOKEN, "${{ secrets.GITHUB_TOKEN }}");
+});
+
+test("requires the same eight stable CI checks in both branch rulesets", () => {
   const expected = [
     "JUP policy",
     "OpenSpec",
@@ -135,6 +170,7 @@ test("requires the same seven stable CI checks in both branch rulesets", () => {
     "Frontend build",
     // JUP-093: agrupado junto al otro check del frontend (ADR-0003, decision 3).
     "Frontend type check",
+    "JUP reviews",
   ];
 
   for (const ruleset of Object.values(rulesets)) {
