@@ -1,6 +1,6 @@
 // Caso adicional (remediacion de mutation testing, JUP-095 grupo 4, tarea
-// 4.3) complementario a label.test.tsx, que ya esta commiteado y bloqueado
-// por el hook del harness. No se duplican sus aserciones (asociacion
+// 4.3) complementario a label.test.tsx, que ya esta commiteado y estaba
+// protegido contra edicion en el entorno local. No se duplican sus aserciones (asociacion
 // label->campo via htmlFor); este archivo cubre un mutante distinto.
 //
 // Importamos `describe`/`it`/`expect` explicitamente porque el proyecto NO

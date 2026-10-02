@@ -173,6 +173,8 @@ services:
         condition: service_healthy
       postgres-pgvector:
         condition: service_healthy
+      backend:
+        condition: service_healthy
     ports:
       - "${PROCESSOR_HOST_PORT:-8001}:8001"
     init: true
