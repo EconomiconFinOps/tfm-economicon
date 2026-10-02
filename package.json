@@ -35,7 +35,8 @@
     "validation-questions:validate": "node tools/validation-questions.mjs validate",
     "validation-questions:test": "node --test tools/validation-questions.test.mjs",
     "retrieval-labels:validate": "node tools/retrieval-labels.mjs validate",
-    "retrieval-labels:test": "node --test tools/retrieval-labels.test.mjs"
+    "retrieval-labels:test": "node --test tools/retrieval-labels.test.mjs",
+    "retrieval-calibration:test": "python -m unittest discover -s scripts/tests -p test_retrieval_calibration.py"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.8.0",

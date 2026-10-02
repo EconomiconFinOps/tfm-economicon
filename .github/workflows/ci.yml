@@ -71,6 +71,7 @@ jobs:
           corepack pnpm validation-questions:test
           corepack pnpm retrieval-labels:validate
           corepack pnpm retrieval-labels:test
+          corepack pnpm retrieval-calibration:test
           corepack pnpm llm-gateway:test
           corepack pnpm docker:validate
           corepack pnpm local:test

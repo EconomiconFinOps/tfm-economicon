@@ -82,6 +82,7 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "validation-questions:test",
     "retrieval-labels:validate",
     "retrieval-labels:test",
+    "retrieval-calibration:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
     "docker:validate",
