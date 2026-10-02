@@ -4,7 +4,7 @@
 - Base contrastada: `origin/develop`, `2efef1a`, 30/09/2026.
 - Rama: `feat/JUP-025-source-citations`.
 - PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/55
-- Contrato y escenarios: [OpenSpec](../../openspec/changes/jup-025-answer-citations/).
+- Contrato y escenarios: [OpenSpec](https://github.com/EconomiconFinOps/tfm-economicon/tree/17c8514d8ef4d4da583f878b6fc19b968ef2ca82/openspec/changes/jup-025-answer-citations/).
 
 ## Resultado
 
@@ -67,7 +67,7 @@ ya desbordan ese ancho y no forman parte de este cambio.
   de recomendaciones. Sus guardrails y evidence_ids permanecen intactos.
 - Liderazgo: Alejandro Aguado. Pairing: Paris Arcos Martin. Revision: Lucia Mateo.
   Validacion: Victor Mendez. Son asignaciones de Trello, no aprobaciones humanas.
-- La revision asignada y validacion del equipo siguen pendientes antes del cierre.
+- Estado histórico de esta medición: revisión y validación pendientes; véase la actualización del 02/10/2026 al final.
 
 
 ## Correcciones de la revision — 01/10/2026
@@ -109,3 +109,39 @@ apps/backend/tests/test_tenant_isolation_vector.py -q` con la variable de conexi
 sintetica `JUP086_VECTOR_TEST_URL`; `corepack pnpm --filter @finops/frontend test --
 src/components/AnswerEvidence.test.tsx src/pages/ConversationsPage.test.tsx
 tests/conversations.test.tsx --maxWorkers=1`. Python usa `PYTHONPATH=apps/backend`.
+
+
+## Correcciones de la validación — 02/10/2026
+
+[Víctor](https://github.com/EconomiconFinOps/tfm-economicon/pull/55#pullrequestreview-5385253656)
+validó funcionalmente el HEAD `17c8514` tras la
+[aprobación de Lucía](https://github.com/EconomiconFinOps/tfm-economicon/pull/55#pullrequestreview-5381249566).
+Esta corrección conserva ese trabajo y atiende sus observaciones:
+
+- Al activar una cita se cancela la navegación al fragmento antes de abrir el panel
+  y enfocar su resumen; se evita que la navegación quite el foco o añada historial.
+  La prueba exige cancelación del evento, panel abierto y foco en su resumen.
+- Un chunk superior a 140 caracteres comprueba el recorte exacto de la evidencia y
+  su igualdad con el pasaje generado, condición necesaria para crear el enlace.
+- Las referencias al contrato usan el commit verificado `17c8514`, una URL estable
+  que seguirá disponible al mover el change a `archive/`. No se archiva antes de
+  completar la revisión.
+
+Validación focalizada: backend `test_citations.py` 27 PASS; interfaz de citas y
+conversaciones 14 PASS; lint y typecheck correctos; OpenSpec estricto 36/36 y
+trazabilidad JUP-025 correctos. Se usan los comandos documentados arriba con
+`PYTHONPATH=apps/backend`. No se repite la prueba de pgvector: esta corrección no
+modifica recuperación ni persistencia. La validación funcional de Víctor queda
+acreditada en su revisión, y la aceptación de estas correcciones queda pendiente.
+
+
+La observación documental se separa en [JUP-101](https://trello.com/c/ReMOdXEK) y
+[PR #64](https://github.com/EconomiconFinOps/tfm-economicon/pull/64), borrador para
+acordar una convención común. PR #55 retira del diff el índice, el resumen y la
+referencia añadida a AGENTS.md; se conservan en la propuesta documental y en el
+workspace. Los conflictos futuros de #60/#61/#62 se resuelven al integrar esa
+convención, conservando todos los temas; no se dan por resueltos aquí.
+
+Comprobación por mutación: el test nuevo falla si el extracto se amplía a 200 o
+el pasaje se reduce a 120. El test de interfaz falla al retirar preventDefault.
+Restaurado el código, controles backend 27/27 e interfaz de evidencia 7/7 verdes.

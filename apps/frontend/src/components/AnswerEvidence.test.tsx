@@ -13,8 +13,10 @@ describe("AnswerEvidence", () => {
     const { container } = render(<AnswerEvidence content={`Contexto:\n- [1] FinOps: ${citation.excerpt}`} metadata={{ citations: ["chunk-1"], source_citations: [citation] }} />);
     const link = screen.getByRole("link", { name: "Ver fuente 1" });
     expect(document.getElementById(link.getAttribute("href")!.slice(1))).toBeInTheDocument();
-    fireEvent.click(link);
-    expect(document.getElementById(link.getAttribute("href")!.slice(1))).toHaveAttribute("open");
+    expect(fireEvent.click(link)).toBe(false);
+    const evidence = document.getElementById(link.getAttribute("href")!.slice(1));
+    expect(evidence).toHaveAttribute("open");
+    expect(evidence?.querySelector("summary")).toHaveFocus();
     expect(screen.getByText(/Guía Azure/)).toBeInTheDocument();
     expect(screen.getByText("Página: 4")).toBeInTheDocument();
     expect(screen.getByText("Sección: Costes")).toBeInTheDocument();

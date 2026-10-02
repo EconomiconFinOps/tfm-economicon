@@ -18,3 +18,13 @@
 - [x] 3.4 Normalize display source consistently and register retry finding RF-025-001.
 
 Pending human approval and functional validation remain in [JUP-025](https://trello.com/c/qzRy4RQc). This checklist does not authorize merge, claim approval, or close the card.
+
+
+## 4. Validation corrections (2026-10-02)
+- [x] 4.1 Cancel default fragment navigation and verify focus remains on the source summary.
+- [x] 4.2 Cover excerpts longer than 140 characters and require exact agreement with the quoted passage.
+- [x] 4.3 Use immutable contract links in evidence, architecture and continuity documentation so archiving does not break them.
+- [x] 4.4 Separate the continuity convention into JUP-101 / draft PR #64 and preserve its summaries outside this functional PR.
+
+Lucía approved the implementation and Víctor completed functional validation;
+acceptance of these corrections remains tracked in Trello and PR #55.

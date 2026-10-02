@@ -41,6 +41,16 @@ def test_only_used_chunks_are_cited_in_passage_order():
     assert [item["evidence_id"] for item in resolve_citations(answer["citations"], records, "tenant-a")] == answer["citations"]
 
 
+def test_excerpt_of_a_real_sized_chunk_is_the_quoted_passage():
+    record = chunk()
+    record["content"] = " ".join(f"palabra-{i}" for i in range(60))
+    assert len(record["content"]) > 140
+    answer = AssistantService().answer("Consulta", [record])
+    [citation] = resolve_citations(answer["citations"], [record], "tenant-a")
+    assert citation["excerpt"] == record["content"][:140]
+    assert f"- [1] {citation['source']}: {citation['excerpt']}" in answer["content"].split("\n")
+
+
 def test_missing_location_is_not_invented():
     record = chunk()
     record.pop("section")

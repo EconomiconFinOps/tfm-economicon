@@ -47,6 +47,7 @@ export function AnswerEvidence({ content, metadata }: {
             onClick={(event) => {
               const target = event.currentTarget.ownerDocument.getElementById(`${prefix}-source-${number}`);
               if (target instanceof HTMLDetailsElement) {
+                event.preventDefault();
                 target.open = true;
                 target.querySelector("summary")?.focus();
               }

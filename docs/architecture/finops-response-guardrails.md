@@ -86,7 +86,7 @@ Metricas y recomendaciones contienen evidence IDs. JUP-024 impide referencias
 inexistentes o duplicadas. JUP-025 agrega citas documentales al chat existente
 mediante metadata de presentacion, sin cambiar FinOpsResponse 1.0. El chat y el
 pipeline estructurado del processor siguen separados; consultar el
-[contrato de citas](../../openspec/changes/jup-025-answer-citations/design.md).
+[contrato de citas](https://github.com/EconomiconFinOps/tfm-economicon/tree/17c8514d8ef4d4da583f878b6fc19b968ef2ca82/openspec/changes/jup-025-answer-citations/design.md).
 
 ## Recomendaciones
 
