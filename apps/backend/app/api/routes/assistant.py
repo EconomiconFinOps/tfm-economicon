@@ -1,3 +1,6 @@
+import math
+
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import (
@@ -10,6 +13,7 @@ from app.api.dependencies import (
 )
 from app.core.config import get_settings
 from app.core.metrics import assistant_queries_total
+from app.services.embedding_provider import ProviderError
 from app.schemas.assistant import (
     AssistantReply,
     ConversationCollection,
@@ -21,6 +25,9 @@ from app.schemas.assistant import (
 
 
 router = APIRouter(prefix="/assistant", tags=["assistant"])
+logger = structlog.get_logger("assistant")
+
+RETRIEVAL_UNAVAILABLE = "The assistant cannot retrieve context right now. Try again later."
 
 
 @router.get("/conversations", response_model=ConversationCollection)
@@ -96,11 +103,25 @@ def send_message(
         role="user",
         content=payload.content,
     )
-    query_embedding = embedding_provider.embed(payload.content)
     settings = get_settings()
-    retrieved_chunks = vector_store.search_chunks(
-        tenant_id, query_embedding, top_k=settings.retrieval_top_k, max_distance=settings.retrieval_max_distance
-    )
+    try:
+        query_embedding = embedding_provider.embed(payload.content)
+        if (
+            len(query_embedding) != embedding_provider.dimension
+            or not all(math.isfinite(value) for value in query_embedding)
+        ):
+            raise ProviderError("invalid_response")
+    except ProviderError as exc:
+        _retrieval_failed(exc.category)
+    except Exception:
+        _retrieval_failed("transport")
+    try:
+        retrieved_chunks = vector_store.search_chunks(
+            tenant_id, query_embedding, top_k=settings.retrieval_top_k,
+            max_distance=settings.retrieval_max_distance, provider=embedding_provider.name,
+        )
+    except Exception:
+        _retrieval_failed("vector_store")
     assistant_output = assistant_service.answer(payload.content, retrieved_chunks)
     assistant_message = database.append_message(
         conversation_id=conversation_id,
@@ -120,3 +141,8 @@ def send_message(
         assistant_message=assistant_message,
         retrieved_context=retrieved_chunks,
     )
+
+
+def _retrieval_failed(category: str) -> None:
+    logger.warning("retrieval_failed", category=category)
+    raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=RETRIEVAL_UNAVAILABLE) from None

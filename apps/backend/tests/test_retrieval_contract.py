@@ -140,7 +140,7 @@ class Store:
     def __init__(self, result):
         self.result, self.calls = result, []
 
-    def search_chunks(self, tenant_id, query_embedding, top_k, max_distance):
+    def search_chunks(self, tenant_id, query_embedding, top_k, max_distance, provider=None):
         self.calls.append((tenant_id, top_k, max_distance))
         return self.result
 
@@ -155,6 +155,9 @@ class Database:
 
 
 class Embedding:
+    name = "mock"
+    dimension = 1
+
     def embed(self, text):
         return [0.0]
 

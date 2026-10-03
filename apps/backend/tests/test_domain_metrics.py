@@ -52,11 +52,14 @@ class _FakeDatabase:
 
 
 class _FakeVectorStore:
-    def search_chunks(self, tenant_id, query_embedding, top_k, max_distance):
+    def search_chunks(self, tenant_id, query_embedding, top_k, max_distance, provider=None):
         return []
 
 
 class _FakeEmbeddingProvider:
+    name = "mock"
+    dimension = 1
+
     def embed(self, content):
         return [0.0]
 

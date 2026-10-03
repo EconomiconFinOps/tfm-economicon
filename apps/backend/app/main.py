@@ -19,7 +19,7 @@ from app.core.runtime_secrets import StartupError
 from app.db.database import Database
 from app.services.assistant import AssistantService
 from app.core.embedding_startup import log_embedding_configuration
-from app.services.embedding_provider import MockEmbeddingProvider
+from app.services.embedding_provider import LiteLLMEmbeddingProvider, MockEmbeddingProvider
 from app.services.rabbitmq_queue import RabbitMQQueue
 from app.services.vector_store import PgVectorQueryStore
 
@@ -45,10 +45,13 @@ async def lifespan(app: FastAPI):
             app.state.queue = queue
             app.state.vector_store = vector_store
             app.state.assistant_service = AssistantService()
-            if settings.embedding_provider != "mock":
-                raise StartupError("The litellm embedding provider is not available yet.")
+            embedding_provider = (
+                LiteLLMEmbeddingProvider(settings) if settings.embedding_provider == "litellm"
+                else MockEmbeddingProvider(settings.embedding_dimension)
+            )
+            vector_store.verify_dimension(embedding_provider.dimension)
             log_embedding_configuration(settings)
-            app.state.embedding_provider = MockEmbeddingProvider(settings.embedding_dimension)
+            app.state.embedding_provider = embedding_provider
             yield
     except StartupError:
         raise

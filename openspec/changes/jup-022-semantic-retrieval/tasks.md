@@ -12,10 +12,10 @@
 
 ## 3. Proveedor de embeddings de la consulta
 
-- [ ] 3.1 RED: tests del proveedor `litellm` del backend contra un upstream simulado local: exito, forma incorrecta, valor no finito, longitud distinta, mas de un vector, redireccion, reintentos acotados solo en fallos transitorios y categorias de error.
-- [ ] 3.2 GREEN: implementar el proveedor con biblioteca estandar, sin seguir redirecciones y con las mismas categorias que el processor.
-- [ ] 3.3 Proveedor determinista de pruebas (vector por palabra normalizada, suma y normalizacion) con tests de similitud por palabras compartidas y de determinismo.
-- [ ] 3.4 Prueba de paridad backend y processor sobre alias, dimension y categorias de error; comprobar que falla si uno cambia solo.
+- [x] 3.1 RED: tests del proveedor `litellm` del backend contra un upstream simulado local: exito, forma incorrecta, valor no finito, longitud distinta, mas de un vector, redireccion, reintentos acotados solo en fallos transitorios y categorias de error.
+- [x] 3.2 GREEN: implementar el proveedor con biblioteca estandar, sin seguir redirecciones y con las mismas categorias que el processor.
+- [x] 3.3 Proveedor determinista de pruebas (vector por palabra normalizada, suma y normalizacion) con tests de similitud por palabras compartidas y de determinismo.
+- [x] 3.4 Prueba de paridad backend y processor sobre alias, dimension y categorias de error; comprobar que falla si uno cambia solo.
 
 ## 4. Contrato de recuperacion
 
@@ -26,8 +26,8 @@
 
 ## 5. Compatibilidad y fallos
 
-- [ ] 5.1 RED y GREEN: comparar al arrancar la dimension de la columna con la del proveedor (mensaje fijo que indica reindexar), verificar la longitud del vector de la pregunta antes de buscar y filtrar por `provider`; test de indice mixto.
-- [ ] 5.2 RED y GREEN: traducir los fallos del proveedor y del almacen en un 503 con cuerpo fijo; cubrir autenticacion, limite de tasa, tiempo agotado, base no disponible y la combinacion fallo mas tenant vacio.
+- [x] 5.1 RED y GREEN: comparar al arrancar la dimension de la columna con la del proveedor (mensaje fijo que indica reindexar), verificar la longitud del vector de la pregunta antes de buscar y filtrar por `provider`; test de indice mixto.
+- [x] 5.2 RED y GREEN: traducir los fallos del proveedor y del almacen en un 503 con cuerpo fijo; cubrir autenticacion, limite de tasa, tiempo agotado, base no disponible y la combinacion fallo mas tenant vacio.
 
 ## 6. Trazabilidad
 

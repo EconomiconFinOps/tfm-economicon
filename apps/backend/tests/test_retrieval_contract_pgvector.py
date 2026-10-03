@@ -96,3 +96,20 @@ def test_a_closer_fragment_of_another_tenant_never_affects_order_or_count(retrie
         result = retrieval.search_chunks("tenant-m", QUERY, top_k=5, **kwargs)
         assert "other-exact" not in ids(result)
     assert ids(retrieval.search_chunks("tenant-m", QUERY, top_k=5)) == ["mine-far"]
+
+
+def test_only_vectors_of_the_configured_provider_take_part_in_the_ranking(retrieval):
+    add(retrieval, "p-mock", "tenant-p", [1, 0, 0, 0, 0, 0, 0, 0], provider="mock")
+    add(retrieval, "p-real", "tenant-p", [1, 0.2, 0, 0, 0, 0, 0, 0], provider="litellm")
+    assert ids(retrieval.search_chunks("tenant-p", QUERY, top_k=5, provider="litellm")) == ["p-real"]
+    assert ids(retrieval.search_chunks("tenant-p", QUERY, top_k=5, provider="mock")) == ["p-mock"]
+    assert ids(retrieval.search_chunks("tenant-p", QUERY, top_k=5)) == ["p-mock", "p-real"]
+
+
+def test_the_stored_column_dimension_is_read_and_compared_with_the_provider(retrieval):
+    from app.services.vector_store import EmbeddingDimensionMismatch
+
+    assert retrieval.embedding_column_dimension() == 8
+    retrieval.verify_dimension(8)
+    with pytest.raises(EmbeddingDimensionMismatch):
+        retrieval.verify_dimension(1536)
