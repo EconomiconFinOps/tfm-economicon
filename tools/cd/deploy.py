@@ -14,7 +14,6 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
-import uuid
 
 REPOSITORY = "EconomiconFinOps/tfm-economicon"
 REMOTE = f"https://github.com/{REPOSITORY}.git"
@@ -76,8 +75,8 @@ def init(root, port_base):
         "RABBITMQ_ERLANG_COOKIE", "GRAFANA_ADMIN_PASSWORD", "DEMO_PASSWORD")}
     values.update(RUNTIME_ENVIRONMENT="development", ALLOW_INSECURE_LOCAL_DATABASE="true",
                   DEMO_SEED_ENABLED="true", RABBITMQ_DEFAULT_USER="economicon",
-                  DATABASE_URL="postgresql://root@cockroachdb:26257/defaultdb?sslmode=disable",
-                  VECTOR_DATABASE_URL=f"postgresql://postgres:{values['POSTGRES_PASSWORD']}@postgres-pgvector:5432/embeddings",
+                  DATABASE_URL="cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable",
+                  VECTOR_DATABASE_URL=f"postgresql+psycopg://postgres:{values['POSTGRES_PASSWORD']}@postgres-pgvector:5432/embeddings",
                   RABBITMQ_URL=f"amqp://economicon:{values['RABBITMQ_DEFAULT_PASS']}@rabbitmq:5672/",
                   EMBEDDING_PROVIDER="mock", LLM_PROVIDER="mock", AI_EXECUTION_MODE="development")
     atomic_json(root / "secrets.json", values)
@@ -175,8 +174,12 @@ def rollback(root):
     if not previous:
         raise ValueError("No previous verified release")
     release = root / "releases" / previous
-    compose(release, "up", "-d", "--no-build", "--wait", "--wait-timeout", "600")
-    smoke(release)
+    try:
+        compose(release, "up", "-d", "--no-build", "--wait", "--wait-timeout", "600")
+        smoke(release)
+    except Exception:
+        compose(release, "down", "--remove-orphans")
+        raise
     metadata = json.loads((release / "release.json").read_text())
     atomic_json(root / "state.json", {**metadata, "current": previous,
                                     "previous": state["current"], "time": time.time(), "manual_rollback": True})
@@ -185,6 +188,11 @@ def rollback(root):
 
 
 def poll(root):
+    state_path = root / "state.json"
+    state = json.loads(state_path.read_text()) if state_path.exists() else {}
+    if state.get("current"):
+        # Recover after host reboot even when GitHub is offline; no build or new SHA.
+        compose(root / "releases" / state["current"], "up", "-d", "--no-build", "--wait", "--wait-timeout", "600")
     head = api("git/ref/heads/develop")["object"]["sha"]
     try:
         runs = api("actions/workflows/cd.yml/runs?branch=develop&per_page=1")["workflow_runs"]
@@ -197,8 +205,6 @@ def poll(root):
     if not eligible:
         print("No eligible develop revision")
         return
-    state_path = root / "state.json"
-    state = json.loads(state_path.read_text()) if state_path.exists() else {}
     if state.get("current") == head or state.get("manual_rollback"):
         print("Unchanged or manual rollback paused; no deployment")
         return

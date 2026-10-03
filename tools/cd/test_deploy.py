@@ -1,4 +1,3 @@
-import copy
 import json
 from pathlib import Path
 import sys
@@ -79,6 +78,8 @@ class RuntimeTests(unittest.TestCase):
         secrets = json.loads(content)
         self.assertGreaterEqual(len(secrets["AUTH_SECRET_KEY"]), 32)
         self.assertNotEqual(secrets["POSTGRES_PASSWORD"], secrets["DEMO_PASSWORD"])
+        self.assertTrue(secrets["DATABASE_URL"].startswith("cockroachdb+psycopg://"))
+        self.assertTrue(secrets["VECTOR_DATABASE_URL"].startswith("postgresql+psycopg://"))
 
     def test_invalid_port_base_rejected_before_creating_files(self):
         for port in (0, 1023, 65425, 65535):
@@ -178,7 +179,17 @@ class RuntimeTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             deploy.rollback(self.root)
         self.assertEqual(json.loads((self.root / "state.json").read_text())["current"], self.new)
-        self.assertEqual(compose.call_count, 1)
+        self.assertEqual(compose.call_count, 2)
+        self.assertTrue(all(call.args[0] == self.root / "releases" / self.old for call in compose.call_args_list))
+
+    @patch.object(deploy, "api", side_effect=OSError("offline"))
+    @patch.object(deploy, "compose")
+    def test_restarts_verified_current_before_offline_github_check(self, compose, api):
+        self.state(self.old)
+        with self.assertRaises(OSError):
+            deploy.poll(self.root)
+        self.assertEqual(compose.call_args.args[0], self.root / "releases" / self.old)
+        self.assertIn("--no-build", compose.call_args.args)
 
 
 if __name__ == "__main__":
