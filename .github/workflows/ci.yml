@@ -69,6 +69,8 @@ jobs:
           corepack pnpm assistant-corpus:validate
           corepack pnpm validation-questions:validate
           corepack pnpm validation-questions:test
+          corepack pnpm business-metrics:validate
+          corepack pnpm business-metrics:test
           corepack pnpm llm-gateway:test
           corepack pnpm docker:validate
           corepack pnpm local:test

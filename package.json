@@ -33,7 +33,10 @@
     "repository:governance:test": "node --test tools/repository-governance.test.mjs",
     "collaboration:test": "python -m unittest discover -s tools/collaboration/tests -v",
     "validation-questions:validate": "node tools/validation-questions.mjs validate",
-    "validation-questions:test": "node --test tools/validation-questions.test.mjs"
+    "validation-questions:test": "node --test tools/validation-questions.test.mjs",
+    "business-metrics:validate": "node tools/business-metrics.mjs validate docs/validation/JUP-068-example.json",
+    "business-metrics:report": "node tools/business-metrics.mjs report",
+    "business-metrics:test": "node --test tools/business-metrics.test.mjs"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.8.0",

@@ -80,6 +80,8 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "assistant-corpus:test",
     "validation-questions:validate",
     "validation-questions:test",
+    "business-metrics:validate",
+    "business-metrics:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
     "docker:validate",
