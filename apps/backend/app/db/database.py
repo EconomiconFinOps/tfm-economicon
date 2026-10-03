@@ -285,6 +285,100 @@ class Database:
             "savings_identified": None, "open_ingestions": int(job_count),
         }
 
+    def fetch_tag_coverage(self, tenant_id: str, *, start_date, end_date) -> dict:
+        from decimal import Decimal, ROUND_HALF_UP, localcontext
+
+        from app.core.tag_policy import POLICY_VERSION, REQUIRED_TAGS, tag_rule_sql
+        from app.schemas.billing import AmbiguousCostSource
+
+        rules = {key: tag_rule_sql(key) for key in REQUIRED_TAGS}
+        compliant = " AND ".join(f"({rule})" for rule in rules.values())
+        defects = ", ".join(
+            f"sum(CASE WHEN NOT ({rule}) THEN 1 ELSE 0 END) AS invalid_{key}"
+            for key, rule in rules.items()
+        )
+        query = text(f"""
+            WITH completed AS (
+                SELECT r.ingestion_id, r.subscription_id, r.usage_date,
+                       r.currency, r.pretax_cost, r.tags
+                FROM azure_cost_records r
+                JOIN azure_cost_ingestion_runs i
+                  ON i.id = r.ingestion_id AND i.tenant_id = r.tenant_id
+                 AND i.subscription_id = r.subscription_id
+                WHERE r.tenant_id = :tenant_id AND i.tenant_id = :tenant_id
+                  AND i.status = 'completed'
+            ), period_records AS (
+                SELECT *, ({compliant}) AS compliant FROM completed
+                WHERE usage_date >= :start_date AND usage_date < :end_date
+            ), conflicts AS (
+                SELECT subscription_id, usage_date FROM period_records
+                GROUP BY subscription_id, usage_date
+                HAVING count(DISTINCT ingestion_id) > 1
+            ), metadata AS (
+                SELECT (SELECT count(*) FROM completed WHERE usage_date IS NULL) AS undated,
+                       (SELECT count(*) FROM conflicts) AS ambiguous
+            ), aggregates AS (
+                SELECT currency, count(*) AS record_count,
+                       sum(CASE WHEN compliant THEN 1 ELSE 0 END) AS compliant_count,
+                       sum(CASE WHEN pretax_cost > 0 THEN pretax_cost ELSE 0 END) AS positive,
+                       sum(CASE WHEN pretax_cost > 0 AND compliant THEN pretax_cost ELSE 0 END) AS compliant_positive,
+                       sum(CASE WHEN pretax_cost < 0 THEN pretax_cost ELSE 0 END) AS negative,
+                       sum(CASE WHEN pretax_cost < 0 AND compliant THEN pretax_cost ELSE 0 END) AS compliant_negative,
+                       {defects}
+                FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
+                GROUP BY currency
+            )
+            SELECT a.*, m.undated, m.ambiguous
+            FROM metadata m LEFT JOIN aggregates a ON TRUE
+            ORDER BY a.currency ASC NULLS LAST
+        """)
+        with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+            with connection.begin():
+                rows = connection.execute(query, {
+                    "tenant_id": tenant_id, "start_date": start_date, "end_date": end_date,
+                }).mappings().all()
+        if rows[0]["ambiguous"]:
+            raise AmbiguousCostSource()
+        currencies = []
+        for row in rows:
+            if row["currency"] is None:
+                continue
+            # Retain SQL aggregate precision, including tiny costs and amounts > 2**53.
+            with localcontext() as context:
+                context.prec = max(80, *(len(row[key].as_tuple().digits) + 20
+                                        for key in ("positive", "compliant_positive", "negative", "compliant_negative")))
+                def display(value):
+                    rounded = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                    return "0.00" if rounded == 0 else format(rounded, ".2f")
+                p, t = row["positive"], row["compliant_positive"]
+                c, ct = row["negative"], row["compliant_negative"]
+                u, cu = p - t, c - ct
+                percent = ((100 * t / p).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                           if p > 0 else None)
+                currencies.append({
+                    "currency": row["currency"], "record_count": int(row["record_count"]),
+                    "compliant_record_count": int(row["compliant_count"]),
+                    "noncompliant_record_count": int(row["record_count"] - row["compliant_count"]),
+                    "positive_cost": display(p), "compliant_cost": display(t),
+                    "noncompliant_cost": display(u), "negative_adjustments": display(c),
+                    "compliant_negative_adjustments": display(ct),
+                    "noncompliant_negative_adjustments": display(cu),
+                    "net_cost": display(p + c), "compliant_net_cost": display(t + ct),
+                    "noncompliant_net_cost": display(u + cu),
+                    "compliant_percent": display(percent) if percent is not None else None,
+                    "noncompliant_percent": display(Decimal(100) - percent) if percent is not None else None,
+                    "no_positive_cost_reason": (None if p > 0 else
+                        ("negative_adjustments_only" if c < 0 else "zero_cost_only")),
+                    "missing_or_invalid_tag_counts": {key: int(row[f"invalid_{key}"]) for key in REQUIRED_TAGS},
+                })
+        undated = int(rows[0]["undated"])
+        return {
+            "contract_version": 1, "policy_version": POLICY_VERSION, "required_tags": list(REQUIRED_TAGS),
+            "period": {"start_date": start_date.isoformat(), "end_date": end_date.isoformat(), "timezone": "UTC"},
+            "data_status": "partial" if undated else ("available" if currencies else "empty"),
+            "excluded_undated_count": undated, "currencies": currencies,
+        }
+
     def create_job(self, payload: dict, created_by: str) -> dict:
         now = datetime.now(timezone.utc)
         job = {

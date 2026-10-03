@@ -1,5 +1,13 @@
 # Arquitectura del proyecto
 
+La cobertura de etiquetas FinOps se calcula en el backend sobre registros de
+ingesta completada, por cliente, periodo y moneda. El dashboard ejecutivo consulta
+`GET /billing/tag-coverage` al desplegar el panel de cobertura. El coste positivo
+pondera el cumplimiento de cinco etiquetas; los ajustes negativos se presentan
+aparte y sin cargos positivos se muestra N/D. La política inicial valida
+identificadores y entornos, sin acreditar catálogos corporativos.
+Decisión y límites: [ADR-0013](adr/ADR-0013-tagged-cost-coverage.md).
+
 ## 1. Para que sirve este documento
 
 Este documento explica la arquitectura del proyecto de una forma simple, pensando en personas junior o en gente que no ha trabajado antes con sistemas separados en varios servicios.

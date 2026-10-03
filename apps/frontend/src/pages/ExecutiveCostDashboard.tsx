@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useOutletContext } from "react-router";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ExportButton } from "@/components/ExportButton";
+import { TagCoveragePanel } from "@/components/TagCoveragePanel";
 import { chartTooltipStyle } from "@/components/chartTheme";
 import { monthlyData, kpiData } from "@/data/demo/executiveCostDashboard";
 import { useCostKpis } from "@/hooks/useCostKpis";
@@ -111,6 +112,8 @@ export function ExecutiveCostDashboard() {
         </>}
         <p className="text-sm text-muted-foreground">Ahorro potencial: no disponible.</p>
       </section>
+
+      <TagCoveragePanel token={token} tenantId={activeTenant?.id} period={period} />
 
       <section aria-label="Datos de demostración" className="space-y-6 border-t border-border pt-6">
         <div className="flex flex-wrap items-center justify-between gap-4">

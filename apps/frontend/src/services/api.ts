@@ -3,6 +3,7 @@ import type {
   AssistantReply,
   BillingSelection,
   BillingSummary,
+  TagCoverage,
   ConversationCollection,
   ConversationCreateRequest,
   ConversationDetail,
@@ -16,7 +17,7 @@ import type {
   TenantCollection,
   UserProfile
 } from "./contracts";
-import { isBillingSummary, isLoginResponse, isUserProfile } from "./contracts";
+import { isBillingSummary, isTagCoverage, isLoginResponse, isUserProfile } from "./contracts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
@@ -150,6 +151,17 @@ export function fetchBillingSummary(token: string, tenantId: string, selection: 
   const query = params.toString();
   return fetchJson<BillingSummary>(`/billing/summary${query ? `?${query}` : ""}`, {
     token, tenantId, signal, validate: isBillingSummary
+  });
+}
+
+export function fetchTagCoverage(token: string, tenantId: string,
+  period: Pick<BillingSelection, "start_date" | "end_date">, signal?: AbortSignal) {
+  const params = new URLSearchParams();
+  if (period.start_date) params.set("start_date", period.start_date);
+  if (period.end_date) params.set("end_date", period.end_date);
+  const query = params.toString();
+  return fetchJson<TagCoverage>(`/billing/tag-coverage${query ? `?${query}` : ""}`, {
+    token, tenantId, signal, validate: isTagCoverage
   });
 }
 
