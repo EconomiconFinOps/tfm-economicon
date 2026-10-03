@@ -64,6 +64,16 @@ Pendientes de su decision en la aprobacion: ADV-1, ADV-2, ADV-3, ADV-4, ADV-5 (R
 
 [ADR-0017](../../../../docs/adr/ADR-0017-backend-query-embedding-own-key.md), Proposed. El numero 0017 sigue a los ADR-0013 a 0016 de los PR #60 y #65 y se renumera si cambian antes de integrarse. No sustituye ni cierra ADR-0002.
 
+## Correccion tras la validacion del PR #67 (2026-10-03)
+
+La validacion de Alejandro sobre `5f8bd90` encontro un defecto real que ni las pruebas ni la revision adversarial habian detectado: el plazo `EMBEDDING_TIMEOUT_SECONDS` limitaba la lectura del cuerpo pero no la de las cabeceras. Con un upstream que envia una cabecera byte a byte cada 30 ms, un timeout de 0,05 s tardaba 2,7 s (reproducido), con 0,5 s tambien, y con 0,1 s y dos reintentos casi 7 s. Es el mismo patron que se corrigio en el cliente del processor (PR #65) y que aqui solo se habia replicado para el cuerpo.
+
+- Correccion: el proveedor del backend usa ahora un plazo monotonico por intento que cubre conexion, envio, cabeceras y cuerpo, y cierra el transporte al vencer, con el mismo diseno que el cliente del processor (se acepta la duplicacion, ya declarada en ADR-0017). Se conservan la redaccion, las categorias, los reintentos acotados, el rechazo de redirecciones y la exclusion de proxies del entorno.
+- Pruebas nuevas (6 de ellas fallaban antes del cambio, ademas de la reproduccion de Alejandro): cabeceras a goteo con los tres casos de su informe, linea de estado a goteo, servidor que acepta y no responde, cuerpo que se detiene, parada tras cabeceras tardias (usa el tiempo restante y no uno nuevo), apertura de la conexion con el tiempo restante y respuesta en fragmentos (chunked).
+- Mutantes sobre el codigo del plazo: 9 aplicados; 4 detectados de inicio, 2 mas tras anadir las pruebas anteriores y 3 sobreviven por ser equivalentes en la practica (la comprobacion del plazo tras la lectura del cuerpo y tras cada lectura, y el tiempo restante antes de enviar un cuerpo de pocos cientos de bytes).
+- Lo que fallo en el proceso: la revision adversarial y el barrido de patron buscaron el plazo del cuerpo pero no el de las cabeceras; se corrige en esta tanda y queda como leccion para el barrido de futuros clientes HTTP.
+- Backend completo despues del cambio: 563 passed y 16 skipped con pgvector real.
+
 ## Human Approval
 
 - Change: jup-022-semantic-retrieval

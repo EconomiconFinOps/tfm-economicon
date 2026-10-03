@@ -1,4 +1,6 @@
 """JUP-022: LiteLLM query embedding provider of the backend, against a local fake gateway (no network)."""
+import json
+import time
 import math
 import socket
 import threading
@@ -9,7 +11,7 @@ from pydantic import SecretStr
 
 from app.services import embedding_provider as module
 from app.services.embedding_provider import LiteLLMEmbeddingProvider, MockEmbeddingProvider, ProviderError
-from embedding_support import FakeGateway, WordEmbeddingProvider, vector_payload
+from embedding_support import FakeGateway, RawServer, WordEmbeddingProvider, headers_trickling, trickle, vector_payload
 
 KEY = "sk-backend-sentinel-0123456789"
 VECTOR = [0.5] * 1536
@@ -232,3 +234,102 @@ def test_proxy_settings_of_the_environment_are_ignored_so_the_key_never_goes_thr
         with FakeGateway((200, vector_payload(VECTOR))) as gateway:
             assert provider_for(gateway).embed("x") == VECTOR
     assert proxy.requests == [] and len(gateway.requests) == 1
+
+
+def timed_embed(url, timeout, retries):
+    provider = LiteLLMEmbeddingProvider(settings(url, retries=retries, timeout=timeout))
+    outcome = []
+    started = time.monotonic()
+
+    def call():
+        try:
+            provider.embed("x")
+            outcome.append("ok")
+        except ProviderError as exc:
+            outcome.append(exc.category)
+
+    caller = threading.Thread(target=call, daemon=True)
+    caller.start()
+    caller.join(timeout=15)
+    assert not caller.is_alive(), "the call outlived any reasonable deadline"
+    return outcome[0], time.monotonic() - started
+
+
+@pytest.mark.parametrize("timeout,retries,limit", [(0.05, 0, 0.45), (0.5, 0, 1.0), (0.1, 2, 1.6)])
+def test_slow_headers_are_cut_by_the_overall_deadline_of_each_attempt(timeout, retries, limit):
+    with RawServer(headers_trickling) as server:
+        category, elapsed = timed_embed(server.url, timeout, retries)
+        hits = server.hits
+    assert category == "timeout"
+    assert elapsed < limit, f"{elapsed:.3f}s"
+    assert hits == retries + 1
+
+
+def test_a_status_line_that_trickles_is_also_bounded():
+    full = b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n{}"
+    with RawServer(trickle(full, 0.03)) as server:
+        category, elapsed = timed_embed(server.url, 0.2, 0)
+    assert category == "timeout" and elapsed < 0.6
+
+
+def test_a_server_that_accepts_and_never_answers_ends_in_a_timeout():
+    with RawServer(lambda connection: time.sleep(3)) as server:
+        category, elapsed = timed_embed(server.url, 0.3, 0)
+    assert category == "timeout" and elapsed < 0.8
+
+
+def test_a_body_that_stops_midway_ends_in_a_timeout():
+    def stalls(connection):
+        connection.sendall(b"HTTP/1.1 200 OK\r\nContent-Length: 500\r\n\r\n12345")
+        time.sleep(3)
+
+    with RawServer(stalls) as server:
+        category, elapsed = timed_embed(server.url, 0.3, 0)
+    assert category == "timeout" and elapsed < 0.8
+
+
+def test_a_slow_body_is_a_timeout_and_not_another_category_whatever_the_timeout_value():
+    payload = b'{"data":[{"embedding":[' + b"0.1," * 40 + b"0.1]}]}"
+    head = b"HTTP/1.1 200 OK\r\nContent-Length: " + str(len(payload)).encode() + b"\r\n\r\n"
+
+    def slow(connection):
+        connection.sendall(head)
+        trickle(payload, 0.03)(connection)
+
+    with RawServer(slow) as server:
+        category, elapsed = timed_embed(server.url, 0.5, 0)
+    assert category == "timeout" and elapsed < 1.0
+
+
+def test_the_normal_response_still_works_with_chunked_transfer_encoding():
+    body = json.dumps(vector_payload(VECTOR)).encode()
+    raw = b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nTransfer-Encoding: chunked\r\n\r\n" + hex(len(body))[2:].encode() + b"\r\n" + body + b"\r\n0\r\n\r\n"
+    with RawServer(lambda connection: connection.sendall(raw)) as server:
+        assert LiteLLMEmbeddingProvider(settings(server.url)).embed("x") == VECTOR
+
+
+def test_a_stall_after_late_headers_still_ends_at_the_attempt_deadline():
+    # Headers arrive late and then nothing: the wait for the rest must use the time left, not a fresh timeout.
+    def late_then_silent(connection):
+        time.sleep(0.35)
+        connection.sendall(b"HTTP/1.1 200 OK\r\nContent-Length: 500\r\n\r\n12345")
+        time.sleep(3)
+
+    with RawServer(late_then_silent) as server:
+        category, elapsed = timed_embed(server.url, 0.6, 0)
+    assert category == "timeout" and elapsed < 0.8, f"{elapsed:.3f}s"
+
+
+def test_the_connection_is_opened_with_the_time_left_of_the_attempt(monkeypatch):
+    seen = []
+
+    class Recording(socket.socket):
+        def connect(self, address):
+            seen.append(self.gettimeout())
+            return super().connect(address)
+
+    with FakeGateway((200, vector_payload(VECTOR))) as gateway:
+        provider = provider_for(gateway, timeout=2.0)
+        monkeypatch.setattr(socket, "socket", Recording)
+        assert provider.embed("x") == VECTOR
+    assert len(seen) == 1 and seen[0] is not None and 0 < seen[0] <= 2.0

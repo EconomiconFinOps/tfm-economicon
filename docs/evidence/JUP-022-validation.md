@@ -62,3 +62,7 @@ Agente independiente `adversarial-reviewer`, recibiendo solo las specs, el disen
 | Fecha | JUP | Nota de release | Review | ADRs |
 | --- | --- | --- | --- | --- |
 | 2026-10-03 | JUP-022 | El chat recupera fragmentos con el proveedor de embeddings configurado, con `top_k` y distancia maxima explicitos (0.6 por defecto con `litellm`) y trazabilidad acotada; el backend usa su propia clave virtual. | [review.md](../../openspec/changes/archive/2026-10-03-jup-022-semantic-retrieval/review.md) | [ADR-0017](../adr/ADR-0017-backend-query-embedding-own-key.md) |
+
+## Correccion tras la validacion del PR #67 (2026-10-03)
+
+La validacion de Alejandro sobre `5f8bd90` pidio cambios (P1): el plazo del proveedor del backend no limitaba las cabeceras lentas. Reproduccion propia antes de corregir: servidor loopback que envia una cabecera a un byte cada 30 ms; timeout 0,05 s sin reintentos tardo 2,7 s, 0,5 s tardo 2,2 s y 0,1 s con dos reintentos tardo 6,9 s (tres intentos). Despues de la correccion, el mismo escenario acaba en `timeout` dentro del plazo (limites en las pruebas: 0,45 s, 1,0 s y 1,6 s respectivamente, con 1, 1 y 3 intentos). Detalle y mutantes en [review.md](../../openspec/changes/archive/2026-10-03-jup-022-semantic-retrieval/review.md). Backend: 563 passed y 16 skipped con pgvector real tras el cambio.
