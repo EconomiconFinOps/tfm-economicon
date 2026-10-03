@@ -38,7 +38,7 @@ Cada mutante se aplico a una copia del codigo, se ejecutaron las pruebas del cam
 
 ## Calibracion real
 
-Gateway LiteLLM `v1.103.2` fijado por huella (ADR-0016 del PR #65), local y solo en loopback, con una clave virtual restringida al alias `economicon-embedding` y tope de 0,50. 80 llamadas por ejecucion, todas con respuesta 200. Informe: [JUP-022-retrieval-calibration.md](JUP-022-retrieval-calibration.md); anexo de troceado: [JUP-022-retrieval-calibration-chunking.md](JUP-022-retrieval-calibration-chunking.md).
+Gateway LiteLLM `v1.103.2` fijado por huella (ADR-0016 del PR #65), local y solo en loopback, con una clave virtual restringida al alias `economicon-embedding` y tope de 0,50. 80 llamadas por ejecucion, todas con respuesta 200. Informe: [JUP-022-retrieval-calibration.md](../spikes/JUP-022-retrieval-calibration.md); anexo de troceado: [JUP-022-retrieval-calibration-chunking.md](../spikes/JUP-022-retrieval-calibration-chunking.md).
 
 - `top_k` 4 (3 a 6 dan el mismo acierto) y distancia maxima 0.6 con `litellm`, por la regla escrita: la menor distancia del barrido que conserva al menos el 90 % del acierto por seccion sin umbral.
 - Con 0.6 el acierto por seccion de los casos `answer` pasa de 75 % a 70 % y el 5 % queda vacio; los casos `clarify` y `abstain` siguen recuperando fragmentos, por lo que negarse o aclarar corresponde a las guardas de respuesta.
