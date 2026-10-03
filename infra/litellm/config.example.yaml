@@ -9,6 +9,8 @@ model_list:
           zdr: true
           data_collection: deny
           allow_fallbacks: false
+          only: [deepinfra/fp4]
+          require_parameters: true
         reasoning:
           enabled: false
 
@@ -26,6 +28,9 @@ model_list:
           enabled: false
 
   - model_name: economicon-embedding
+    model_info:
+      input_cost_per_token: 0.00000002
+      output_cost_per_token: 0.0
     litellm_params:
       model: openrouter/openai/text-embedding-3-small
       api_key: os.environ/OPENROUTER_API_KEY
@@ -35,11 +40,21 @@ model_list:
           zdr: true
           data_collection: deny
           allow_fallbacks: false
+          max_price:
+            prompt: 0.02
 
 litellm_settings:
   request_timeout: 30
-  num_retries: 2
+  num_retries: 0
   set_verbose: false
+  turn_off_message_logging: true
+  callbacks:
+    - safe_logging.safe_error_logger
+
+router_settings:
+  num_retries: 0
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+  store_prompts_in_spend_logs: false

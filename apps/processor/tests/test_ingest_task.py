@@ -232,3 +232,32 @@ def test_worker_retries_backend_envelope_and_preserves_request_id_until_completi
         assert snapshot(isolation_database, "jobs")[0][0]["status"] == "completed"
     finally:
         structlog.contextvars.clear_contextvars()
+
+
+def test_jup023_provider_error_marks_failed_preserves_type_and_does_not_requeue(isolation_database):
+    from app.clients.litellm import ProviderError
+
+    job = _backend_message()
+    repository = _repository_for_job(isolation_database, job)
+    pipeline = MagicMock()
+    error = ProviderError("timeout")
+    pipeline.run.side_effect = error
+    task = IngestTask(repository, pipeline)
+
+    with pytest.raises(ProviderError) as caught:
+        task.execute(job)
+    assert caught.value is error
+    persisted = snapshot(isolation_database, "jobs")[0][0]
+    assert persisted["status"] == "failed"
+    result = persisted["result"]
+    assert (json.loads(result) if isinstance(result, str) else result) == {"error": "ingestion_failed"}
+
+    worker = ProcessorWorker.__new__(ProcessorWorker)
+    worker.queue = MagicMock()
+    worker.task = task
+    try:
+        worker._process_message(QueueMessage(job, delivery_tag=43))
+        worker.queue.ack.assert_not_called()
+        worker.queue.nack.assert_called_once_with(43, requeue=False)
+    finally:
+        structlog.contextvars.clear_contextvars()

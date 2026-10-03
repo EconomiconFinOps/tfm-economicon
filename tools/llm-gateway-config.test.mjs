@@ -37,13 +37,20 @@ test("keeps upstream credentials isolated from the gateway master key", () => {
   assert.doesNotMatch(configText, /sk-or-v1-[A-Za-z0-9_-]+/);
 });
 
-test("explicitly enforces OpenRouter privacy and disables provider fallback", () => {
-  for (const { litellm_params } of config.model_list) {
+test("restricts only primary chat to DeepInfra through OpenRouter without relaxing privacy", () => {
+  for (const { model_name, litellm_params } of config.model_list) {
     assert.deepEqual(litellm_params.extra_body.provider, {
       zdr: true,
       data_collection: "deny",
       allow_fallbacks: false,
+      ...(model_name === "economicon-chat"
+        ? { only: ["deepinfra/fp4"], require_parameters: true }
+        : {}),
+      ...(model_name === "economicon-embedding"
+        ? { max_price: { prompt: 0.02 } }
+        : {}),
     });
+    assert.equal(litellm_params.api_base, undefined);
   }
 });
 
@@ -68,12 +75,21 @@ test("preserves the approved embedding dimensions and operational limits", () =>
   );
 
   assert.equal(embedding.litellm_params.dimensions, 1536);
+  assert.deepEqual(embedding.model_info, {
+    input_cost_per_token: 2e-8,
+    output_cost_per_token: 0,
+  });
   assert.equal(config.litellm_settings.request_timeout, 30);
-  assert.equal(config.litellm_settings.num_retries, 2);
   assert.equal(config.litellm_settings.set_verbose, false);
   for (const item of config.model_list.slice(0, 2)) {
     assert.equal(item.litellm_params.max_tokens, 800);
+    assert.equal(item.model_info, undefined);
   }
+});
+
+test("JUP-023 disables both gateway and router retries to bound processor attempts", () => {
+  assert.equal(config.litellm_settings.num_retries, 0);
+  assert.equal(config.router_settings?.num_retries, 0);
 });
 
 test("contains only public synthetic benchmark cases with unique identifiers", () => {

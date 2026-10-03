@@ -35,3 +35,51 @@ def isolated_runtime(monkeypatch, tmp_path):
 def production_env(monkeypatch):
     monkeypatch.setenv("RUNTIME_ENVIRONMENT", "production")
     return dict(SYNTHETIC_ENV, RUNTIME_ENVIRONMENT="production")
+
+
+@pytest.fixture
+def litellm_settings():
+    return Settings(
+        _env_file=None, llm_provider="litellm", embedding_provider="litellm",
+        embedding_dimension=1536, litellm_api_key="jup023-synthetic-virtual-key",
+        litellm_base_url="http://gateway.invalid:4000/v1",
+    )
+
+
+@pytest.fixture
+def gateway_transport(monkeypatch):
+    import io
+    import json
+    import socket
+    import time
+    from email.message import Message
+    from types import SimpleNamespace
+    from urllib import request, response
+
+    transport = SimpleNamespace(responses=[], calls=[], delays=[])
+
+    def open_http(handler, req):
+        transport.calls.append(req)
+        assert transport.responses, "Unexpected gateway attempt or fallback"
+        outcome = transport.responses.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        status, body, headers = outcome
+        message = Message()
+        for name, value in headers.items():
+            message[name] = value
+        raw = body if isinstance(body, bytes) else json.dumps(body).encode()
+        result = response.addinfourl(io.BytesIO(raw), message, req.full_url, status)
+        result.msg = "synthetic gateway response"
+        return result
+
+    def forbid_network(*args, **kwargs):
+        pytest.fail("Offline test attempted a socket connection")
+
+    # Keep urllib's real redirect/error processing; replace only socket transport.
+    monkeypatch.setattr(request.HTTPHandler, "http_open", open_http)
+    monkeypatch.setattr(request.HTTPSHandler, "https_open", open_http)
+    monkeypatch.setattr(socket, "create_connection", forbid_network)
+    monkeypatch.setattr(time, "sleep", transport.delays.append)
+    monkeypatch.setenv("NO_PROXY", "*")
+    return transport

@@ -114,3 +114,34 @@ def test_explicit_deepseek_alias_is_supported_without_automatic_fallback():
     )
 
     assert settings.llm_model == "economicon-chat-deepseek"
+
+
+@pytest.mark.parametrize(
+    "provider,field,value",
+    [
+        ("llm_provider", "llm_timeout_seconds", 30.01),
+        ("embedding_provider", "llm_max_retries", 3),
+        ("llm_provider", "llm_max_output_tokens", 801),
+    ],
+)
+def test_jup023_real_provider_rejects_limits_above_cap(provider, field, value):
+    with pytest.raises(ValidationError, match=field):
+        Settings(
+            **{provider: "litellm", field: value}, embedding_dimension=1536,
+            litellm_api_key="synthetic-gateway-key", _env_file=None,
+        )
+
+
+@pytest.mark.parametrize("limits", [(30, 2, 800), (1, 0, 1)])
+def test_jup023_real_limits_are_not_clamped_and_azure_is_unchanged(limits):
+    timeout, retries, tokens = limits
+    settings = Settings(
+        llm_provider="litellm", litellm_api_key="synthetic-gateway-key",
+        llm_timeout_seconds=timeout, llm_max_retries=retries,
+        llm_max_output_tokens=tokens, azure_cost_api_timeout_seconds=40,
+        azure_cost_api_max_retries=4, _env_file=None,
+    )
+    assert (settings.llm_timeout_seconds, settings.llm_max_retries,
+            settings.llm_max_output_tokens) == limits
+    assert settings.azure_cost_api_timeout_seconds == 40
+    assert settings.azure_cost_api_max_retries == 4
