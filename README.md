@@ -353,3 +353,8 @@ No incluye todavia:
 Los contratos residuales de autenticacion demo, aislamiento completo por tenant
 y calidad minima del frontend se mantienen en JUP-085, JUP-086 y JUP-087. Que
 exista un prototipo o un provider mock no acredita el cierre de esas tarjetas.
+
+## Despliegue privado
+
+JUP-052: [CD hacia DockerServer](docs/deployment/dockerserver-cd.md), con selección del SHA validado, smoke y rollback.
+

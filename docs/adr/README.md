@@ -1,5 +1,8 @@
 # Architecture Decision Records
 
+JUP-052: [ADR-0017 — Private DockerServer CD](ADR-0017-private-dockerserver-cd.md)
+(Proposed).
+
 This directory contains the project decision log for durable architecture choices. OpenSpec `design.md` captures the technical design of an individual Trello task; ADRs explain decisions that remain relevant across tasks, modules or project phases.
 
 ## Naming And Status
