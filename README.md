@@ -51,15 +51,40 @@ tfm-economicon
 
 ### Con Docker Compose
 
-Desde la raiz del repo:
+Desde la raiz de un clon limpio, con Docker y Node instalados (en Linux o macOS, el primer comando es `cp -n .env.example .env`):
 
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-# Complete required values and confirm disposable isolation as described below.
-docker compose build --pull
-docker compose up -d --wait
-docker compose ps
+# Completa en .env los secretos y opt-ins descritos en "Variables De Entorno".
+corepack pnpm install --frozen-lockfile
+corepack pnpm local:doctor
+docker compose up -d --build --wait
+corepack pnpm local:smoke
 ```
+
+1. `.env.example` deja vacios los secretos a proposito: copiarlo no basta.
+   Rellena los valores de [Variables De Entorno](#variables-de-entorno).
+2. `corepack pnpm install --frozen-lockfile` instala las dependencias del workspace
+   (`local:doctor` y `local:smoke` las necesitan; unos 36 s en un host de prueba).
+   Despues, `local:doctor` revisa `.env` antes de arrancar y lista todo lo que falta:
+   variables obligatorias de `docker-compose.yml` vacias, credenciales de
+   `RABBITMQ_URL` y `VECTOR_DATABASE_URL` que no coinciden con las del servicio,
+   valores que el backend rechazaria al arrancar (esquemas de las DSN,
+   passwords de ejemplo o por defecto, `AUTH_SECRET_KEY` corta), el opt-in de
+   la CockroachDB local, puertos del host ocupados y si la instalacion es nueva
+   o existente. Resuelve `.env` como Compose (`${VAR}`, comillas, entorno
+   primero). Nombra variables, nunca valores, y no crea ni modifica `.env`.
+   Repitelo hasta que termine en `[OK]`.
+   Limites conocidos: `[OK]` no garantiza que el backend arranque, porque no valida `DEMO_SEED_ENABLED`, `CORS_ALLOWED_ORIGINS`, `AUTH_TOKEN_TTL_MINUTES` ni los ajustes propios del processor; no entiende valores multilinea entre comillas ni los operadores `${VAR:+x}` y `${VAR:?msg}` de Compose; ante un listener solo en `::1` puede no ver el puerto ocupado; y los espacios en blanco poco comunes (`` a ``) se interpretan distinto que en el backend.
+3. El primer arranque, con build y volumenes nuevos, tarda varios minutos
+   (unos 8 en la validacion de JUP-050, de ellos unos 2 en las migraciones del
+   processor); los siguientes, menos de 2. `--wait` termina cuando todos los
+   servicios estan sanos.
+4. `local:smoke` recorre el camino minimo: salud de las cuatro aplicaciones,
+   login del usuario demo, una ingesta de costes del simulador, el resumen de
+   costes con datos y un job de documento que pasa por RabbitMQ hasta el
+   processor. Necesita `DEMO_SEED_ENABLED=true` y `DEMO_PASSWORD`, escribe datos
+   de prueba en el tenant `tenant-core` y se puede repetir.
 
 Las cuatro aplicaciones se construyen desde Dockerfiles versionados. Las
 imagenes ejecutan como usuarios sin privilegios, con filesystem raiz de solo
@@ -92,6 +117,18 @@ Para detener este entorno y conservar los volumenes de datos:
 ```powershell
 docker compose down
 ```
+
+| Comando | Que conserva | Que borra |
+| --- | --- | --- |
+| `docker compose stop` / `down` | Los volumenes con nombre: CockroachDB, pgvector, RabbitMQ (incluidos los mensajes que sigan en cola), Prometheus y Grafana | Los contenedores (`down`) |
+| `docker compose down -v` | Nada del proyecto | Todos los volumenes: la siguiente vez es una instalacion nueva |
+
+RabbitMQ guarda su estado en el volumen `rabbitmq-data` desde JUP-050. En una
+instalacion anterior, el primer arranque crea ese volumen vacio: lo que hubiera
+en el volumen anonimo previo no se migra. El cookie de Erlang sigue saliendo de
+`RABBITMQ_ERLANG_COOKIE`, que prevalece sobre el guardado en el volumen.
+
+El usuario y la password de RabbitMQ (`RABBITMQ_DEFAULT_USER` y `RABBITMQ_DEFAULT_PASS`) se fijan en el primer arranque del volumen: cambiarlos despues en `.env` no cambia los del broker, el stack sigue "sano" pero el backend y el processor no se autentican y los jobs responden 503. Lo mismo ocurre con `POSTGRES_PASSWORD` y `GRAFANA_ADMIN_PASSWORD`: conserva sus valores, o usa `docker compose down -v` en un entorno desechable, que borra todos los datos. Para cambiar solo las credenciales de RabbitMQ en un entorno desechable: `docker compose down`, `docker volume rm <proyecto>_rabbitmq-data` (se pierden los mensajes en cola) y `docker compose up -d --wait`; esa receta no cambia las de los otros servicios.
 
 Puertos visibles:
 
@@ -151,7 +188,7 @@ La Azure Cost API simulada exige por defecto el bearer local
 con `X-Fake-Azure-Scenario`. Consulta `apps/azure-cost-api/README.md` para la
 configuración completa; estos tokens son fixtures locales, no credenciales Azure.
 
-Preparar `.env` local ignorado antes de arrancar el stack, sin sobrescribir uno existente:
+Preparar `.env` local ignorado antes de arrancar el stack, sin sobrescribir uno existente (en Linux o macOS: `cp -n .env.example .env`):
 
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
@@ -242,6 +279,10 @@ antes de preparar una instalacion existente.
 - `pnpm docker:build`: construye las imagenes Docker de las apps
 - `pnpm docker:validate`: valida topologia, digests, healthchecks y privilegios
   sin necesitar un daemon Docker
+- `pnpm local:doctor`: diagnostica `.env`, puertos y volumenes antes de arrancar
+  Compose, sin mostrar valores secretos
+- `pnpm local:smoke`: verifica el recorrido minimo contra el stack ya arrancado
+- `pnpm local:test`: tests de las dos herramientas anteriores
 
 ## Integracion Continua
 

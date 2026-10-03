@@ -74,6 +74,7 @@ jobs:
           corepack pnpm validation-questions:test
           corepack pnpm llm-gateway:test
           corepack pnpm docker:validate
+          corepack pnpm local:test
           corepack pnpm collaboration:test
           corepack pnpm openspec:validate
 
