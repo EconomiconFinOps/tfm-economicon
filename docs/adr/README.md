@@ -34,3 +34,9 @@ Local implementation details, small refactors and documentation-only changes wit
 | Record | Status | Accepted |
 | --- | --- | --- |
 | [ADR-0012: Frontend color tokens](ADR-0012-frontend-color-tokens.md) | Accepted | 2026-10-01, PR #54 validation |
+
+## LiteLLM Version Pin
+
+| Record | Status | Related Change |
+| --- | --- | --- |
+| [ADR-0016: Pin de LiteLLM 1.103.2](ADR-0016-litellm-version-pin.md) | Proposed | [JUP-023](../../openspec/changes/jup-023-litellm-openrouter/design.md) |
