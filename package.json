@@ -33,7 +33,8 @@
     "repository:governance:test": "node --test tools/repository-governance.test.mjs",
     "collaboration:test": "python -m unittest discover -s tools/collaboration/tests -v",
     "validation-questions:validate": "node tools/validation-questions.mjs validate",
-    "validation-questions:test": "node --test tools/validation-questions.test.mjs"
+    "validation-questions:test": "node --test tools/validation-questions.test.mjs",
+    "cd:test": "node --test tools/cd-workflow.test.mjs && python -m unittest discover -s tools/cd -p test_*.py -v"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.8.0",
