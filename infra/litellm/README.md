@@ -273,5 +273,5 @@ not an individual invoice. Price re-verification and stop rules above remain
 mandatory; the USD 0.40 upstream cap without reset and EUR 0.50 aggregate ceiling
 are unchanged. No new chat or persistence run, CockroachDB/RabbitMQ end-to-end
 test, or real budget-denial request was performed for this correction.
-Internal technical review and local QA passed; see the [current status](../../openspec/changes/jup-023-litellm-openrouter/review.md#final-local-qa-and-post-qa-gate).
-Human reviews, validation, final approval and publication remain pending; no PR or delivery completion is authorized.
+Internal technical review and local QA passed; see the [review history](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/review.md#final-local-qa-and-post-qa-gate).
+PR [#65](https://github.com/EconomiconFinOps/tfm-economicon/pull/65) was reviewed, validated and merged into develop. This does not approve ADR-0002/0016 or remove the limits above.

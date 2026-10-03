@@ -39,4 +39,4 @@ Local implementation details, small refactors and documentation-only changes wit
 
 | Record | Status | Related Change |
 | --- | --- | --- |
-| [ADR-0016: Pin de LiteLLM 1.103.2](ADR-0016-litellm-version-pin.md) | Proposed | [JUP-023](../../openspec/changes/jup-023-litellm-openrouter/design.md) |
+| [ADR-0016: Pin de LiteLLM 1.103.2](ADR-0016-litellm-version-pin.md) | Proposed | [JUP-023](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/design.md) |
