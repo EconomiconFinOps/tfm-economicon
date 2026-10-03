@@ -1,0 +1,81 @@
+# Assistant corpus manifest for JUP-019.
+# Downstream indexing work must use this file as the corpus source of truth.
+version: 1
+corpus: assistant-document-corpus
+documents:
+  - id: finops.azure-cost-management-mvp
+    title: FinOps Para Azure Cost Management Simulado
+    path: docs/assistant-corpus/finops/azure-finops-mvp.md
+    category: finops
+    tags:
+      - azure
+      - cost-management
+      - finops
+      - cost-analysis
+      - budgets
+      - forecast
+      - anomalies
+      - recommendations
+    language: es
+    version: "1.0.0"
+    scope: global
+    tenant_id: null
+    dataset_id: null
+    source_type: curated_reference
+    updated_at: "2026-08-12"
+  - id: business-rules.economicon-mvp
+    title: Reglas De Negocio MVP De Economicon
+    path: docs/assistant-corpus/business-rules/economicon-mvp-rules.md
+    category: business-rules
+    tags:
+      - economicon
+      - mvp
+      - business-rules
+      - allocation
+      - tagging
+      - kpis
+      - anomalies
+      - recommendations
+    language: es
+    version: "1.0.0"
+    scope: dataset
+    tenant_id: null
+    dataset_id: economicon-mvp-azure-simulated
+    source_type: internal_business_rules
+    updated_at: "2026-08-12"
+  - id: glossary.economicon-mvp
+    title: Glosario Del Asistente Economicon
+    path: docs/assistant-corpus/glossary/glossary.md
+    category: glossary
+    tags:
+      - glossary
+      - terminology
+      - finops
+      - azure
+      - economicon
+      - rag
+    language: es
+    version: "1.0.0"
+    scope: global
+    tenant_id: null
+    dataset_id: null
+    source_type: curated_reference
+    updated_at: "2026-08-12"
+  - id: product-architecture.economicon-functional
+    title: Arquitectura Funcional Del Producto Economicon
+    path: docs/assistant-corpus/product-architecture/economicon-product-context.md
+    category: product-architecture
+    tags:
+      - economicon
+      - product-architecture
+      - functional-context
+      - mvp
+      - dataset
+      - tenant-scope
+    language: es
+    version: "1.0.0"
+    scope: global
+    tenant_id: null
+    dataset_id: null
+    source_type: product_context
+    updated_at: "2026-08-12"
