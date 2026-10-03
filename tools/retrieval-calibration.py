@@ -327,6 +327,7 @@ def run(
         "limits": [
             "Hay pocos documentos y pocas preguntas: es una calibracion inicial y el umbral puede sobreajustarse a este corpus.",
             "Las distancias son de un solo modelo y alias; un cambio de modelo exige repetir la medicion.",
+            "Cada fragmento se asigna a la seccion que cubre mas de su texto: una seccion mas corta que un fragmento puede no ser la principal de ninguno y quedar sin acierto por seccion aunque su contenido se recupere (el acierto por documento no tiene este efecto).",
             "Los casos sin cobertura son huecos del corpus: se listan aparte y no cuentan en el acierto por seccion.",
             "Los casos clarify y abstain se miden aparte y no intervienen en la seleccion del umbral.",
             "La medicion es en memoria; el orden y el filtro SQL reales se cubren con los tests contra pgvector.",
