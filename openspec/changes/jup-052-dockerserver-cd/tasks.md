@@ -7,7 +7,8 @@
 
 ## 2. Evidencia y entrega JUP-052
 - [x] 2.1 Añadir pruebas de gate, aislamiento, fallo, rollback e idempotencia.
-- [ ] 2.2 Ejecutar ensayo real en DockerServer y escenarios negativos.
+- [x] 2.2 Ejecutar ensayo real en DockerServer y escenarios negativos.
 - [x] 2.3 Documentar instalación, acceso, operación y limitaciones.
-- [ ] 2.4 Publicar evidencia y PR; coordinar roles humanos sin inventar pairing.
-- [ ] 2.5 Verificar primera promoción automática tras integración y CD exitoso.
+- [x] 2.4 Publicar rama y evidencia técnica; preparar cuerpo de PR conservando roles.
+- [ ] 2.5 Liderazgo abre PR y coordina pairing/revisión/validación humanos.
+- [ ] 2.6 Verificar primera promoción automática tras integración y CD exitoso.
