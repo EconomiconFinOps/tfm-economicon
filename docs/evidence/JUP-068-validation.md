@@ -13,7 +13,7 @@ Origen: chat «JUP-068 — Métricas funcionales de negocio»; identificador no 
 | Resultado funcional verificable | CLI genera informe determinista de tiempo, allocation y potencial; ejemplo sintético reproducible |
 | Pruebas necesarias verdes | 31 pruebas del instrumento; 257 pruebas Node de herramientas en total, todas correctas |
 | Documentación y decisiones actualizadas | Protocolo, fórmula/unidades, objetivos propuestos, límites y OpenSpec versionados |
-| PR revisado y vinculado | Publicación preparada; revisión Lucía pendiente |
+| PR revisado y vinculado | [PR #68 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/68) vinculado; revisión Lucía pendiente |
 | Validación funcional y evidencia enlazadas | Aritmética/CLI probadas; validación Paris y piloto con observaciones pendientes |
 
 ## Comprobaciones

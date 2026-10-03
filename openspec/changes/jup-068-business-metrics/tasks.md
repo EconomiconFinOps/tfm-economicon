@@ -7,7 +7,7 @@
 ## 2. Verificación técnica
 
 - [x] 2.1 Ejecutar pruebas y checks de gobernanza/OpenSpec; registrar resultados.
-- [ ] 2.2 Publicar rama y PR vinculados para revisión del equipo.
+- [x] 2.2 Publicar rama y PR vinculados para revisión del equipo (PR #68 draft).
 
 ## 3. Aceptación humana
 
