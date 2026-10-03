@@ -34,3 +34,9 @@ Local implementation details, small refactors and documentation-only changes wit
 | Record | Status | Accepted |
 | --- | --- | --- |
 | [ADR-0012: Frontend color tokens](ADR-0012-frontend-color-tokens.md) | Accepted | 2026-10-01, PR #54 validation |
+
+## Cost Coverage Decision
+
+| Record | Status | Date |
+| --- | --- | --- |
+| [ADR-0013: Tagged cost coverage](ADR-0013-tagged-cost-coverage.md) | Proposed; functional proposal approved by user, independent review pending | 2026-10-03 |
