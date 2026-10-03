@@ -15,4 +15,4 @@
 - [x] 3.2 Inspeccionar desktop/móvil y resolver defectos del panel; RF-026-002 heredado continúa abierto.
 - [x] 3.3 Validar OpenSpec, trazabilidad e higiene; registrar evidencia y continuidad.
 - [x] 3.4 Abrir PR #62 hacia develop y enlazarla en Trello para revisión humana.
-- [ ] 3.5 Revisión de Paris y validación de Victor según roles de Trello.
+- [x] 3.5 Revisión de Paris y validación de Victor según roles de Trello (reviews favorables del 03/10/2026 sobre `2c6c9f3`).
