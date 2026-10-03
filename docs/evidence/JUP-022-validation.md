@@ -54,3 +54,9 @@ Agente independiente `adversarial-reviewer`, recibiendo solo las specs, el disen
 - Reindexado del corpus en una base `vector(1536)` de extremo a extremo.
 - Trazabilidad en un entorno con dos instancias o con carga: los contadores son del proceso.
 - Claves expiradas o revocadas y presupuesto agotado contra el gateway real.
+
+## Nota de release
+
+| Fecha | JUP | Nota de release | Review | ADRs |
+| --- | --- | --- | --- | --- |
+| 2026-10-03 | JUP-022 | El chat recupera fragmentos con el proveedor de embeddings configurado, con `top_k` y distancia maxima explicitos (0.6 por defecto con `litellm`) y trazabilidad acotada; el backend usa su propia clave virtual. | [review.md](../../openspec/changes/archive/2026-10-03-jup-022-semantic-retrieval/review.md) | [ADR-0017](../adr/ADR-0017-backend-query-embedding-own-key.md) |

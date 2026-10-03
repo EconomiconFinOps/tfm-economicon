@@ -266,7 +266,10 @@ antes de preparar una instalacion existente.
 - `AUTH_SECRET_KEY`: secreto para firmar tokens propios del backend
 - `AUTH_TOKEN_TTL_MINUTES`: vida util del token
 - `CORS_ALLOWED_ORIGINS`: lista JSON de origenes del navegador permitidos
-- `EMBEDDING_PROVIDER`: provider configurado para embeddings
+- `EMBEDDING_PROVIDER`: provider de embeddings (`mock` solo con `RUNTIME_ENVIRONMENT=development` o `test`; `litellm` en el resto)
+- `BACKEND_LITELLM_API_KEY`: clave virtual propia del backend, obligatoria solo con `EMBEDDING_PROVIDER=litellm`
+- `EMBEDDING_TIMEOUT_SECONDS` y `EMBEDDING_MAX_RETRIES`: plazo y reintentos de la llamada de embedding del backend
+- `RETRIEVAL_TOP_K` y `RETRIEVAL_MAX_DISTANCE`: fragmentos recuperados por pregunta (por defecto 4) y distancia coseno maxima (0.6 por defecto con `litellm`, sin umbral con `mock`)
 - `VITE_API_BASE_URL`: URL base consumida por el frontend
 - `LLM_PROVIDER`: provider configurado para el modulo de agentes
 
@@ -337,7 +340,7 @@ Esta base prioriza:
 - cola local para jobs
 - API Azure Cost simulada y cliente de ingesta paginado
 - normalizacion y persistencia idempotente de costes por tenant
-- almacenamiento vectorial basico con provider mock por defecto
+- almacenamiento vectorial basico con provider mock por defecto en development y test, y recuperacion semantica del backend con `litellm` (ver [apps/backend/README.md](apps/backend/README.md))
 - chat con retrieval minimo por tenant y respuesta determinista, todavia sin LLM real
 - CI en GitHub Actions con validaciones de gobernanza, OpenSpec, pruebas y build
 - documentacion versionada de arquitectura, ADR, roadmap y evidencias
