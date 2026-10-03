@@ -1021,3 +1021,41 @@ vector validation. Together with the earlier successful chat, real transport
 revalidation is now complete within this narrow scope. Persistence, full E2E,
 DNS cancellation and remote CI were not repeated. Both human Requests changes,
 publication authorization and final human approval remain pending.
+
+## Develop Reconciliation 2026-10-03
+
+Paris authorized reconciling the task branch with current develop. Tested tree:
+automatic merge of `d6fc408b60e944b726605b242f3e7a64129282c7` into
+`59fcea24a08d8ff5f35e8ad306edf58bdf9420e5`, without conflicts. The 37 incoming
+paths are unchanged from develop and incorporate JUP-050/PR #59 and JUP-021/PR #53.
+JUP-023 product/test files and the isolated LiteLLM configuration remain byte-for-byte
+unchanged, including the timeout correction. No new tests or dependencies were added.
+
+Existing checks on this merged tree:
+
+- Processor, CPython 3.12.13, from `apps/processor`:
+  `python -m pytest -q -rs -p no:cacheprovider --basetemp=<unique-temp>/pytest`:
+  **448 passed, 57 skipped, 330 deprecation warnings**, exit 0, 35.04 s.
+  OS-only inherited environment, plugin autoload disabled, no dotenv,
+  credentials or service opt-ins; existing temporary interpreter reused.
+- `node --test tools/ci-workflow.test.mjs tools/llm-gateway-config.test.mjs tools/docker-topology.test.mjs tools/local-doctor.test.mjs tools/local-smoke.test.mjs tools/repository-governance.test.mjs`:
+  **135 passed**, no failures or skips.
+- `corepack pnpm openspec:validate`: **40 passed**; `node tools/jup-check.mjs --all`:
+  **9 changes**; `node tools/jup-cleanup-check.mjs`: **763 files**; whitespace clean.
+
+Initial sandbox attempts could not read the existing Corepack cache or launch
+the temporary Python environment; the affected checks passed with local permission
+escalation, without installing or repairing dependencies. Sanitized commands,
+environment names and outputs: `<TEMP>/jup023-reconcile-tests-20261003-1145/`.
+
+Read-only incremental review found no in-scope regression: configured/provider
+dimension 1536 remains compatible with the new store checks; migration 002 only
+adds the tenant index and never converts an existing eight-dimensional schema.
+The inherited configuration caveat remains [RF-021-001](../../openspec/findings/backlog.md#rf-021-001--dimension-desde-fichero-de-entorno).
+
+Limits: the 57 service-dependent/opt-in skips are not passes. No new Docker,
+pgvector persistence, OpenRouter or paid calls, mutation runs or remote CI were
+performed for this reconciliation. Prior live evidence remains historical, not
+a claim of live testing on the merged tree. Alejandro's review and Lucia's
+validation Requests changes remain for their authors to reassess. This local
+reconciliation does not publish, merge PR #65, archive OpenSpec or update Trello.
