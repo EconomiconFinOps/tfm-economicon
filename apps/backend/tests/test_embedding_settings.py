@@ -216,3 +216,37 @@ def test_startup_logs_one_line_with_provider_alias_and_dimension(monkeypatch, ca
     assert lines[0]["embedding_dimension"] == dimension
     assert SENTINEL not in output and SENTINEL[:8] not in output
     logging.getLogger().handlers.clear()
+
+
+# Hardening after the adversarial review.
+
+@pytest.mark.parametrize("key", ["changeme", "CHANGEME", "replace-me", "password", " secret "])
+def test_known_placeholder_keys_are_rejected_outside_the_test_environment(monkeypatch, key):
+    with pytest.raises(ValidationError) as error:
+        make(monkeypatch, runtime_environment="production", **litellm(litellm_api_key=key))
+    assert "litellm_api_key" in str(error.value)
+    assert key.strip() not in str(error.value)
+
+
+@pytest.mark.parametrize("value", ["true", "True", "4.0", "1e1", "+3", "-1", "٤", "4 5", "0x4"])
+def test_top_k_rejects_booleans_decimals_and_unicode_digits(monkeypatch, value):
+    with pytest.raises(ValidationError) as error:
+        make(monkeypatch, retrieval_top_k=value)
+    assert "retrieval_top_k" in str(error.value)
+
+
+@pytest.mark.parametrize("value,expected", [("4", 4), (" 5 ", 5), ("20", 20)])
+def test_top_k_accepts_plain_ascii_integers(monkeypatch, value, expected):
+    assert make(monkeypatch, retrieval_top_k=value).retrieval_top_k == expected
+
+
+@pytest.mark.parametrize("value", ["٠.٥", "1e-3", "5e-1", "0x1", "1_0", "+0.5", "0.5.5", "--1"])
+def test_max_distance_rejects_unicode_digits_exponents_and_odd_notations(monkeypatch, value):
+    with pytest.raises(ValidationError) as error:
+        make(monkeypatch, retrieval_max_distance=value)
+    assert "retrieval_max_distance" in str(error.value)
+
+
+@pytest.mark.parametrize("value,expected", [(".5", 0.5), ("0.5", 0.5), ("2", 2.0), ("1.25", 1.25)])
+def test_max_distance_accepts_plain_ascii_decimals(monkeypatch, value, expected):
+    assert make(monkeypatch, retrieval_max_distance=value).retrieval_max_distance == expected

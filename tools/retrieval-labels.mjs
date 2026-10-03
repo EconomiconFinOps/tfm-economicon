@@ -79,6 +79,7 @@ export function validateLabels(labels, { repoRoot = root, suite } = {}) {
     seen.add(id);
     const coverage = entry.coverage;
     check(COVERAGE.includes(coverage), `${id}: cobertura invalida.`);
+    if (entry.expect !== undefined && !Array.isArray(entry.expect)) errors.push(`${id}: expect debe ser una lista.`);
     const expect = Array.isArray(entry.expect) ? entry.expect : [];
     if (coverage === "none") {
       check(expect.length === 0, `${id}: cobertura none no admite secciones.`);

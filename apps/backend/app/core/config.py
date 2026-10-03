@@ -103,6 +103,17 @@ class Settings(BaseSettings):
             raise ValueError("embedding_max_retries must be between 0 and 10")
         return value
 
+    @field_validator("retrieval_top_k", mode="before")
+    @classmethod
+    def require_plain_integer_top_k(cls, value):
+        if isinstance(value, bool):
+            raise ValueError("retrieval_top_k must be an integer")
+        if isinstance(value, str):
+            if not re.fullmatch(r"[0-9]+", value.strip(), re.ASCII):
+                raise ValueError("retrieval_top_k must be an integer")
+            return int(value.strip())
+        return value
+
     @field_validator("retrieval_top_k")
     @classmethod
     def validate_retrieval_top_k(cls, value: int) -> int:
@@ -129,10 +140,9 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             if not value.strip():
                 return None
-            try:
-                value = float(value)
-            except ValueError:
-                raise ValueError("retrieval_max_distance must be a number") from None
+            if not re.fullmatch(r"[0-9]+(\.[0-9]+)?|\.[0-9]+", value.strip(), re.ASCII):
+                raise ValueError("retrieval_max_distance must be a plain decimal number")
+            value = float(value.strip())
         if value is None:
             return None
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 < value <= 2:
@@ -146,6 +156,11 @@ class Settings(BaseSettings):
         if self.embedding_provider == "litellm":
             if not self.litellm_api_key or not self.litellm_api_key.get_secret_value().strip():
                 raise ValueError("litellm_api_key is required when embedding_provider is litellm")
+            if (
+                self.runtime_environment != "test"
+                and self.litellm_api_key.get_secret_value().strip().lower() in PLACEHOLDERS
+            ):
+                raise ValueError("litellm_api_key must not be a known placeholder")
             if self.embedding_dimension != 1536:
                 raise ValueError("embedding_dimension must be 1536 for the economicon-embedding alias")
             if "retrieval_max_distance" not in self.model_fields_set:

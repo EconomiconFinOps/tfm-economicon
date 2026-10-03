@@ -116,6 +116,8 @@ El chat embebe la pregunta con `EMBEDDING_PROVIDER` y recupera los fragmentos de
 
 Con `litellm` el backend usa su propia clave virtual (`BACKEND_LITELLM_API_KEY` en Compose) y exige `EMBEDDING_DIMENSION=1536`; el arranque la rechaza si falta, y `mock` solo se admite con `RUNTIME_ENVIRONMENT=development|test`.
 
+`EMBEDDING_PROVIDER` es una unica variable de Compose compartida con el processor a proposito: la ingesta y la consulta deben usar el mismo proveedor. Activar `litellm` exige que el processor tambien lo soporte (JUP-023, PR #65); sin eso la ingesta falla y la recuperacion, que solo considera los vectores del proveedor configurado, devolveria vacio.
+
 Una base pgvector creada con `vector(8)` (proveedor `mock`) no sirve con el modelo real: los vectores de la ingesta y de la pregunta deben tener la misma dimension y el mismo modelo. Para pasar a `vector(1536)` hay que reindexar el corpus en una coleccion nueva, nunca en caliente: en un entorno desechable, parar el stack, borrar el volumen `pgvector-data`, poner `EMBEDDING_PROVIDER=litellm` y `EMBEDDING_DIMENSION=1536` en processor y backend con sus claves y volver a ingerir los documentos. El procedimiento completo se valida con la calibracion real del change (tarea 7.4). Un cambio de modelo con la misma dimension no se detecta: finding RF-022-001.
 
 ## CORS Y Sesion Demo

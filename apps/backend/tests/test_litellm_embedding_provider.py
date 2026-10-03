@@ -221,3 +221,14 @@ def test_word_provider_is_deterministic_and_shared_words_are_closer():
 
     assert distance("coste no asignado semaforo", "semaforo del coste no asignado") < distance("coste no asignado semaforo", "reserva de maquinas virtuales")
     assert all(math.isfinite(value) for value in provider.embed("hola mundo"))
+
+
+def test_proxy_settings_of_the_environment_are_ignored_so_the_key_never_goes_through_a_proxy(monkeypatch):
+    with FakeGateway((200, vector_payload(VECTOR))) as proxy:
+        monkeypatch.setenv("HTTP_PROXY", proxy.url.replace("/v1", ""))
+        monkeypatch.setenv("http_proxy", proxy.url.replace("/v1", ""))
+        monkeypatch.delenv("NO_PROXY", raising=False)
+        monkeypatch.delenv("no_proxy", raising=False)
+        with FakeGateway((200, vector_payload(VECTOR))) as gateway:
+            assert provider_for(gateway).embed("x") == VECTOR
+    assert proxy.requests == [] and len(gateway.requests) == 1

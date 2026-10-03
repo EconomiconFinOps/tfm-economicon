@@ -159,7 +159,7 @@ class Embedding:
     dimension = 1
 
     def embed(self, text):
-        return [0.0]
+        return [1.0]
 
 
 def ask(store, monkeypatch, **env):

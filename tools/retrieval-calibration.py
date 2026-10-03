@@ -193,7 +193,10 @@ def load_litellm_provider(env: dict[str, str] | None = None, repo_root: Path = R
         if not (env.get(name) or "").strip():
             raise CalibrationError(f"Falta {name}: la calibracion real necesita el gateway y una clave virtual propia.")
     alias = env.get("EMBEDDING_MODEL") or "economicon-embedding"
-    dimension = int(env.get("EMBEDDING_DIMENSION") or 1536)
+    try:
+        dimension = int(env.get("EMBEDDING_DIMENSION") or 1536)
+    except ValueError:
+        raise CalibrationError("EMBEDDING_DIMENSION debe ser un numero entero.") from None
     sys.path.insert(0, str(repo_root / "apps" / "processor"))
     try:
         from app.embeddings.providers import LiteLLMEmbeddingProvider  # type: ignore  # noqa: PLC0415
@@ -246,12 +249,12 @@ def run(
     if planned > max_calls:
         raise CalibrationError(f"Las llamadas previstas ({planned}) superan el maximo permitido ({max_calls}); no se hace ninguna llamada.")
 
-    vectors = [provider.embed(chunk) for _, _, chunk, _, _ in chunks]
+    vectors = [_embed(provider, chunk) for _, _, chunk, _, _ in chunks]
     labelled = {item: None for item in ()}
     order = {source_id: position for position, source_id in enumerate(documents)}
     cases, ranked_by_case = [], {}
     for case in suite["cases"]:
-        question_vector = provider.embed(case["question"])
+        question_vector = _embed(provider, case["question"])
         items = []
         for (source_id, index, _, start, end), vector in zip(chunks, vectors):
             section = primary_section(documents[source_id]["sections"], start, end)
@@ -326,6 +329,7 @@ def run(
         "selection": {"rule": rule, "min_hit_ratio": min_hit_ratio, "candidates": candidates},
         "limits": [
             "Hay pocos documentos y pocas preguntas: es una calibracion inicial y el umbral puede sobreajustarse a este corpus.",
+            "El tope de llamadas cuenta las llamadas previstas; si el proveedor reintenta ante fallos transitorios, el gasto real puede ser hasta (reintentos + 1) veces mayor.",
             "Las distancias son de un solo modelo y alias; un cambio de modelo exige repetir la medicion.",
             "Cada fragmento se asigna a la seccion que cubre mas de su texto: una seccion mas corta que un fragmento puede no ser la principal de ninguno y quedar sin acierto por seccion aunque su contenido se recupere (el acierto por documento no tiene este efecto).",
             "Los casos sin cobertura son huecos del corpus: se listan aparte y no cuentan en el acierto por seccion.",
@@ -333,6 +337,15 @@ def run(
             "La medicion es en memoria; el orden y el filtro SQL reales se cubren con los tests contra pgvector.",
         ],
     }
+
+
+def _embed(provider, text: str):
+    try:
+        return provider.embed(text)
+    except Exception as exc:
+        category = getattr(exc, "category", None)
+        detail = f" (categoria {category})" if isinstance(category, str) else ""
+        raise CalibrationError(f"El proveedor fallo durante la calibracion{detail}; se detiene sin mostrar su respuesta.") from None
 
 
 def _rate(hits: int, total: int) -> float | None:

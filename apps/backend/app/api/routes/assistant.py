@@ -115,6 +115,7 @@ def send_message(
         if (
             len(query_embedding) != embedding_provider.dimension
             or not all(math.isfinite(value) for value in query_embedding)
+            or not any(abs(value) >= 5e-7 for value in query_embedding)
         ):
             raise ProviderError("invalid_response")
     except ProviderError as exc:

@@ -183,3 +183,16 @@ def test_a_column_with_another_dimension_stops_startup_with_a_fixed_message(colu
 def test_a_matching_column_or_a_missing_table_passes_the_startup_check():
     store_with_column(1536).verify_dimension(1536)
     store_with_column(None).verify_dimension(1536)
+
+
+@pytest.mark.parametrize("vector", [(0.0, 0.0, 0.0), (1e-9, -1e-9, 0.0), (0.0, 4e-7, 0.0)])
+def test_a_question_vector_without_direction_is_not_searched(vector):
+    store = Store()
+    assert_fixed(failure_of(GoodEmbedding(vector=vector), store))
+    assert store.calls == []
+
+
+def test_a_vector_with_a_single_usable_component_is_searched():
+    store = Store(result=[])
+    ask(GoodEmbedding(vector=(0.0, 0.00001, 0.0)), store)
+    assert len(store.calls) == 1

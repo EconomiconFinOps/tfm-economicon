@@ -245,6 +245,41 @@ class RunTests(unittest.TestCase):
             self.assertTrue(0.0 <= point["answer"]["document_hit_rate"] <= 1.0)
 
 
+class ProviderFailureTests(unittest.TestCase):
+    def test_a_provider_failure_in_the_middle_of_the_run_is_reported_without_its_text(self):
+        class Failing(KeywordProvider):
+            def __init__(self):
+                super().__init__()
+                self.calls = 0
+
+            def embed(self, text):
+                self.calls += 1
+                if self.calls > 2:
+                    raise RuntimeError("upstream said sk-secret-123 and the question text")
+                return super().embed(text)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root, _ = make_repo()
+            with self.assertRaises(calibration.CalibrationError) as caught:
+                run(root, provider=Failing())
+        message = str(caught.exception)
+        self.assertNotIn("sk-secret-123", message)
+        self.assertNotIn("question text", message)
+        self.assertIn("proveedor", message)
+
+    def test_a_non_numeric_dimension_in_the_environment_is_a_controlled_error(self):
+        with self.assertRaises(calibration.CalibrationError) as caught:
+            calibration.load_litellm_provider({"LITELLM_API_KEY": "k", "LITELLM_BASE_URL": "http://x/v1", "EMBEDDING_DIMENSION": "abc"})
+        self.assertIn("EMBEDDING_DIMENSION", str(caught.exception))
+        self.assertNotIn("abc", str(caught.exception))
+
+    def test_the_report_warns_that_retries_can_multiply_the_real_calls(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, _ = make_repo()
+            result = run(root)
+        self.assertTrue(any("reintent" in limit for limit in result["limits"]))
+
+
 class CommandLineTests(unittest.TestCase):
     def invoke(self, *args, env=None):
         environment = {key: value for key, value in os.environ.items() if not key.startswith("LITELLM")}

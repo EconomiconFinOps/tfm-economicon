@@ -156,3 +156,13 @@ test("the command line validates the committed file and rejects an unknown argum
   const bad = spawnSync(process.execPath, [path.join(root, "tools/retrieval-labels.mjs"), "otra"], { encoding: "utf8" });
   assert.equal(bad.status, 2);
 });
+
+test("rejects an expect field that is not a list, whatever the coverage", () => {
+  for (const bad of ["Tags", { source: "a", heading: "Tags" }, 7]) {
+    for (const coverage of ["none", "direct"]) {
+      const f = fixture();
+      f.labels.labels[2] = { case: "JUP-069-003", coverage, expect: bad, note: "El corpus no trata este tema." };
+      assert.match(run(f), /JUP-069-003.*expect debe ser una lista/);
+    }
+  }
+});

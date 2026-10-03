@@ -1,6 +1,6 @@
 ## 1. Preparacion y dependencias
 
-- [ ] 1.1 Comprobar en `develop` el estado de JUP-023 (cliente del processor), JUP-021 (vigilancia de dimension) y JUP-025 (reescritura de `search_chunks` y de la ruta del asistente); aplicar el codigo despues de JUP-025 o coordinar la rama, y anotar en `design.md` lo que se encuentre.
+- [x] 1.1 Comprobar en `develop` el estado de JUP-023 (cliente del processor), JUP-021 (vigilancia de dimension) y JUP-025 (reescritura de `search_chunks` y de la ruta del asistente); aplicar el codigo despues de JUP-025 o coordinar la rama, y anotar en `design.md` lo que se encuentre.
 - [x] 1.2 Fijar con tests el comportamiento actual de `search_chunks` (4 resultados, sin umbral, orden por distancia) para detectar cambios no previstos al refactorizar.
 
 ## 2. Configuracion y secretos del backend
@@ -47,10 +47,10 @@
 
 ## 9. Cierre y verificacion
 
-- [ ] 9.1 Bateria completa: tests del backend y del processor, tests de `tools/` y de la CI, `openspec:validate`, `jup:check`, `jup:cleanup:check`; registrar comandos y resultados.
-- [ ] 9.2 Revision adversarial con el agente `adversarial-reviewer` hasta veredicto `accept`, o findings restantes aceptados explicitamente por Lucia.
-- [ ] 9.3 `review.md` con resumen, decisiones, validacion, pasadas adversariales, barrido de patrones, riesgos, findings y aplicabilidad de ADR.
-- [ ] 9.4 `docs/evidence/JUP-022-validation.md` con los comandos y resultados, incluida la calibracion real.
+- [x] 9.1 Bateria completa: tests del backend y del processor, tests de `tools/` y de la CI, `openspec:validate`, `jup:check`, `jup:cleanup:check`; registrar comandos y resultados.
+- [x] 9.2 Revision adversarial con el agente `adversarial-reviewer` hasta veredicto `accept`, o findings restantes aceptados explicitamente por Lucia.
+- [x] 9.3 `review.md` con resumen, decisiones, validacion, pasadas adversariales, barrido de patrones, riesgos, findings y aplicabilidad de ADR.
+- [x] 9.4 `docs/evidence/JUP-022-validation.md` con los comandos y resultados, incluida la calibracion real.
 - [ ] 9.5 Bloque `## Human Approval` en `review.md` tras la aprobacion explicita de Lucia.
 - [ ] 9.6 Archivar el change en la misma rama.
 - [ ] 9.7 Abrir el PR hacia `develop`.

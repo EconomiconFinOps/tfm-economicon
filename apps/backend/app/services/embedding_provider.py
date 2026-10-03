@@ -89,7 +89,8 @@ class LiteLLMEmbeddingProvider:
         self._key = settings.litellm_api_key
         self._timeout = settings.embedding_timeout_seconds
         self._retries = settings.embedding_max_retries
-        self._transport = request.build_opener(_RejectRedirectHandler())
+        # The gateway is an internal service: never route the key through proxies taken from the environment.
+        self._transport = request.build_opener(request.ProxyHandler({}), _RejectRedirectHandler())
 
     def __repr__(self) -> str:
         return f"LiteLLMEmbeddingProvider(alias={self.alias!r}, dimension={self.dimension})"

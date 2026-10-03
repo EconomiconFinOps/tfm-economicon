@@ -61,7 +61,7 @@ class _FakeEmbeddingProvider:
     dimension = 1
 
     def embed(self, content):
-        return [0.0]
+        return [1.0]
 
 
 class _FakeAssistantService:
