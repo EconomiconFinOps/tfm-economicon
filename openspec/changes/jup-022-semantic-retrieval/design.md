@@ -43,7 +43,7 @@ Nuevas variables: proveedor (`mock` por defecto, `litellm`), alias del modelo, U
 ### 3. Contrato de recuperacion
 
 - `top_k`: entero con rango acotado; por defecto el actual (4) hasta que exista el informe de calibracion.
-- Distancia maxima: opcional; cuando esta definida, solo se devuelven fragmentos con distancia coseno menor o igual. Sin valor, no se filtra. El valor por defecto lo fija la tarea de calibracion con el informe como evidencia.
+- Distancia maxima: opcional; cuando esta definida, solo se devuelven fragmentos con distancia coseno menor o igual. Sin valor, no se filtra. El valor por defecto lo fija la calibracion con el informe como evidencia: 0.6 con `litellm` (regla: la menor distancia del barrido que conserva al menos el 90 % del acierto por seccion sin umbral; ver `docs/spikes/JUP-022-retrieval-calibration.md`) y sin umbral con `mock`, porque los vectores simulados no tienen distancia semantica y un umbral dejaria el chat siempre sin contexto. Ausente o en blanco usa el valor del proveedor; `none` u `off` lo desactiva; un numero lo sustituye.
 - Orden: distancia ascendente y, a igualdad, identificador del fragmento ascendente, para que dos ejecuciones iguales den el mismo orden.
 - Resultado vacio: si ningun fragmento cumple, se devuelve una lista vacia y el asistente responde con el estado sin contexto que ya existe. No se rellena con fragmentos poco relevantes.
 - El filtro de tenant y la transaccion de lectura no se alteran.

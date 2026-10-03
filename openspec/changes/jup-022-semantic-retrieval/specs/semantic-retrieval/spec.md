@@ -53,7 +53,7 @@ The backend SHALL read the gateway URL, the model alias and the virtual key from
 
 ### Requirement: Explicit retrieval parameters
 
-The retrieval SHALL take `top_k` and an optional maximum cosine distance from backend settings. `top_k` SHALL be an integer within a documented inclusive range and values outside it SHALL be rejected at startup. The maximum distance, when defined, SHALL be a number greater than 0 and not greater than 2, and a value outside that range SHALL be rejected at startup. When the maximum distance is not defined no fragment SHALL be excluded by distance.
+The retrieval SHALL take `top_k` and an optional maximum cosine distance from backend settings. `top_k` SHALL be an integer within a documented inclusive range and values outside it SHALL be rejected at startup. The maximum distance, when defined, SHALL be a number greater than 0 and not greater than 2, and a value outside that range SHALL be rejected at startup. When the maximum distance is not defined no fragment SHALL be excluded by distance. When the setting is absent or blank, the backend SHALL use the default calibrated for its embedding provider (0.6 for `litellm`, none for `mock`, whose vectors carry no semantic distance); the words `none` and `off` SHALL disable the threshold explicitly for any provider, and a numeric value SHALL always override the default.
 
 #### Scenario: top_k limits the results
 
@@ -69,6 +69,17 @@ The retrieval SHALL take `top_k` and an optional maximum cosine distance from ba
 
 - **WHEN** `top_k` is zero, negative, above the range or not an integer, or the maximum distance is zero, negative, above 2 or not finite
 - **THEN** startup is rejected with a message that names the setting
+
+#### Scenario: Default threshold by provider
+
+- **WHEN** the maximum distance is absent or blank and the provider is `litellm`
+- **THEN** the effective maximum distance is 0.6
+- **AND** with the `mock` provider no distance filter applies
+
+#### Scenario: Threshold disabled or overridden explicitly
+
+- **WHEN** the maximum distance is `none` or `off`, or a number
+- **THEN** `none` and `off` remove the filter for any provider and the number replaces the default
 
 #### Scenario: top_k larger than the available fragments combined with a threshold
 

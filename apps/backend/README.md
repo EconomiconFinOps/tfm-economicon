@@ -104,7 +104,7 @@ Puerto visible:
 - `LITELLM_BASE_URL`
 - `LITELLM_API_KEY` (clave virtual propia del backend; en Compose se lee de `BACKEND_LITELLM_API_KEY`)
 - `EMBEDDING_TIMEOUT_SECONDS` y `EMBEDDING_MAX_RETRIES`
-- `RETRIEVAL_TOP_K` (1 a 20, por defecto 4) y `RETRIEVAL_MAX_DISTANCE` (opcional, mayor que 0 y como maximo 2)
+- `RETRIEVAL_TOP_K` (1 a 20, por defecto 4) y `RETRIEVAL_MAX_DISTANCE` (mayor que 0 y como maximo 2; en blanco usa 0.6 con `litellm` y ningun umbral con `mock`; `none` u `off` lo desactiva)
 - `AUTH_SECRET_KEY`
 - `AUTH_TOKEN_TTL_MINUTES`
 - `RUNTIME_ENVIRONMENT`
@@ -112,7 +112,7 @@ Puerto visible:
 
 ## Recuperacion Semantica Y Reindexado
 
-El chat embebe la pregunta con `EMBEDDING_PROVIDER` y recupera los fragmentos del tenant activo con `RETRIEVAL_TOP_K` y, si esta definida, `RETRIEVAL_MAX_DISTANCE` (distancia coseno, inclusiva). Si ningun fragmento cumple, la lista es vacia y el asistente responde sin contexto. Decision y alternativas: [ADR-0017](../../docs/adr/ADR-0017-backend-query-embedding-own-key.md).
+El chat embebe la pregunta con `EMBEDDING_PROVIDER` y recupera los fragmentos del tenant activo con `RETRIEVAL_TOP_K` y `RETRIEVAL_MAX_DISTANCE` (distancia coseno, inclusiva; 0.6 por defecto con `litellm`, calibrado en `docs/spikes/JUP-022-retrieval-calibration.md`). Si ningun fragmento cumple, la lista es vacia y el asistente responde sin contexto. Decision y alternativas: [ADR-0017](../../docs/adr/ADR-0017-backend-query-embedding-own-key.md).
 
 Con `litellm` el backend usa su propia clave virtual (`BACKEND_LITELLM_API_KEY` en Compose) y exige `EMBEDDING_DIMENSION=1536`; el arranque la rechaza si falta, y `mock` solo se admite con `RUNTIME_ENVIRONMENT=development|test`.
 

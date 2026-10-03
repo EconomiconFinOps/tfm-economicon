@@ -18,7 +18,7 @@ Hay que decidir quien embebe la pregunta, con que credencial y que contrato tien
 - El backend llama al gateway con una **clave virtual propia**, distinta de la del processor y restringida al alias `economicon-embedding`. En Compose se lee de `BACKEND_LITELLM_API_KEY`; dentro del backend es `LITELLM_API_KEY`, un `SecretStr` sin valor por defecto, obligatorio solo con el proveedor `litellm`.
 - El proveedor `mock` solo es valido con `RUNTIME_ENVIRONMENT=development|test`; con `litellm` la dimension debe ser 1536, la del modelo de la ingesta.
 - La recuperacion tiene parametros explicitos: `top_k` (1 a 20, por defecto 4) y distancia coseno maxima opcional (mayor que 0 y como maximo 2; sin valor no se filtra). El orden es distancia ascendente y, a igualdad, identificador del fragmento. Si ningun fragmento cumple, el resultado es una lista vacia y el asistente responde con el estado sin contexto existente. El filtro de tenant se aplica en la misma consulta que el ranking.
-- Los valores por defecto de `top_k` y de la distancia maxima los fija una calibracion reproducible con el banco de preguntas JUP-069 y etiquetas por seccion, no una estimacion.
+- Los valores por defecto de `top_k` y de la distancia maxima los fija una calibracion reproducible con el banco de preguntas JUP-069 y etiquetas por seccion, no una estimacion. Con el modelo real: `top_k` 4 (3 a 6 dan el mismo acierto) y distancia maxima 0.6 con `litellm`; con `mock` no hay umbral. `none` u `off` lo desactivan.
 - La duplicacion del cliente HTTP en backend y processor se acepta, protegida por una prueba de paridad de alias, dimension y categorias de error.
 
 ## Consequences
@@ -39,6 +39,6 @@ Hay que decidir quien embebe la pregunta, con que credencial y que contrato tien
 
 ## Evidence And Follow-up
 
-- Calibracion: script `tools/retrieval-calibration.py`, etiquetas en `docs/validation/JUP-022-retrieval-labels.json`; el informe con el modelo real se versiona en `docs/spikes/` al ejecutarla (tarea 7.4 del change).
+- Calibracion: script `tools/retrieval-calibration.py`, etiquetas en `docs/validation/JUP-022-retrieval-labels.json` e informe con el modelo real en [`docs/spikes/JUP-022-retrieval-calibration.md`](../spikes/JUP-022-retrieval-calibration.md) (80 llamadas al alias `economicon-embedding`, 28 preguntas, 52 fragmentos). Con 0.6 el acierto por seccion de los casos `answer` pasa de 75 % a 70 % y solo el 5 % queda vacio; los casos `clarify` y `abstain` siguen recuperando fragmentos, asi que negarse o aclarar corresponde a las guardas de respuesta. Barrido de troceado en el [anexo](../spikes/JUP-022-retrieval-calibration-chunking.md) y finding RF-022-002.
 - Pruebas del contrato de recuperacion sobre pgvector real (opt-in con `JUP086_VECTOR_TEST_URL`) y mutantes registrados en la revision del change.
 - Pendiente: decidir si la clave del backend tiene un tope de gasto propio y quien la emite en cada entorno; pasar el estado a Accepted cuando el cambio se integre.

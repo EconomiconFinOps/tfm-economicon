@@ -38,7 +38,7 @@
 - [x] 7.1 RED y GREEN: validador del fichero de etiquetas que reutiliza `digest` del validador del banco (caso desconocido o sin etiquetar, fuente no declarada, encabezado inexistente o ambiguo, huella cambiada, etiqueta duplicada, cobertura incoherente, finales de linea, banco intacto), con script en `package.json`, paso en la CI y su registro en `tools/ci-workflow.test.mjs`.
 - [x] 7.2 Redactar las etiquetas por seccion de las 28 preguntas en `docs/validation/` como borrador y dejarlas revisadas por Lucia.
 - [x] 7.3 Script de calibracion en dos fases, en memoria (misma funcion y parametros de troceado que la ingesta, distancia coseno propia, sin conexion a base de datos), con tope de llamadas, ejecucion explicita, sin secretos en las salidas y probado con un proveedor simulado; test de que la distancia coincide con la de pgvector dentro de una tolerancia.
-- [ ] 7.4 Ejecutar la calibracion con el modelo real, versionar el JSON y el informe en `docs/spikes/` y fijar `top_k` y la distancia maxima por defecto en un punto del barrido, con la regla de seleccion escrita.
+- [x] 7.4 Ejecutar la calibracion con el modelo real, versionar el JSON y el informe en `docs/spikes/` y fijar `top_k` y la distancia maxima por defecto en un punto del barrido, con la regla de seleccion escrita.
 
 ## 8. Documentacion y decisiones
 

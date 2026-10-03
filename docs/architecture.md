@@ -230,7 +230,7 @@ Recuperacion (JUP-022, [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.m
 con `EMBEDDING_PROVIDER=litellm` el backend embebera la pregunta con el mismo
 alias y dimension (1536) que la ingesta, usando su propia clave virtual
 (`BACKEND_LITELLM_API_KEY`). `RETRIEVAL_TOP_K` (1 a 20, por defecto 4) y
-`RETRIEVAL_MAX_DISTANCE` (opcional, mayor que 0 y como maximo 2) acotan los
+`RETRIEVAL_MAX_DISTANCE` (0.6 por defecto con `litellm`, ninguno con `mock`) acotan los
 fragmentos; el orden es distancia coseno y despues identificador, y si ninguno
 cumple el asistente responde con el estado sin contexto. `mock` solo se admite
 con `RUNTIME_ENVIRONMENT=development|test`.

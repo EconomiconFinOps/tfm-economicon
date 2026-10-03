@@ -11,6 +11,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.runtime_secrets import PLACEHOLDERS, StartupError, register_secrets, validate_connections
 
+# Calibrated with the JUP-069 question bank (docs/spikes/JUP-022-retrieval-calibration.md).
+LITELLM_DEFAULT_MAX_DISTANCE = 0.6
+
+
 class Settings(BaseSettings):
     api_port: int = 8000
     runtime_environment: Literal["production", "development", "test"] = "production"
@@ -106,6 +110,19 @@ class Settings(BaseSettings):
             raise ValueError("retrieval_top_k must be between 1 and 20")
         return value
 
+    @model_validator(mode="before")
+    @classmethod
+    def resolve_retrieval_threshold_word(cls, data):
+        # Blank means "use the default of the provider"; none/off disables the threshold explicitly.
+        if isinstance(data, dict) and isinstance(data.get("retrieval_max_distance"), str):
+            word = data["retrieval_max_distance"].strip().lower()
+            data = dict(data)
+            if not word:
+                del data["retrieval_max_distance"]
+            elif word in {"none", "off"}:
+                data["retrieval_max_distance"] = None
+        return data
+
     @field_validator("retrieval_max_distance", mode="before")
     @classmethod
     def validate_retrieval_max_distance(cls, value):
@@ -131,6 +148,8 @@ class Settings(BaseSettings):
                 raise ValueError("litellm_api_key is required when embedding_provider is litellm")
             if self.embedding_dimension != 1536:
                 raise ValueError("embedding_dimension must be 1536 for the economicon-embedding alias")
+            if "retrieval_max_distance" not in self.model_fields_set:
+                self.retrieval_max_distance = LITELLM_DEFAULT_MAX_DISTANCE
         return self
 
     @model_validator(mode="after")

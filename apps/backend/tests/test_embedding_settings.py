@@ -148,8 +148,23 @@ def test_max_distance_outside_the_range_is_rejected(monkeypatch, value):
     assert "retrieval_max_distance" in str(error.value)
 
 
-def test_empty_max_distance_means_no_threshold(monkeypatch):
+def test_unset_or_empty_max_distance_uses_the_calibrated_default_of_the_provider(monkeypatch):
+    assert make(monkeypatch).retrieval_max_distance is None
     assert make(monkeypatch, retrieval_max_distance="").retrieval_max_distance is None
+    assert make(monkeypatch, **litellm()).retrieval_max_distance == 0.6
+    monkeypatch.setenv("RETRIEVAL_MAX_DISTANCE", " ")
+    assert Settings(_env_file=None).retrieval_max_distance == 0.6
+
+
+@pytest.mark.parametrize("word", ["none", "NONE", " off "])
+def test_explicit_none_disables_the_threshold_for_every_provider(monkeypatch, word):
+    assert make(monkeypatch, retrieval_max_distance=word).retrieval_max_distance is None
+    assert make(monkeypatch, **litellm(retrieval_max_distance=word)).retrieval_max_distance is None
+
+
+def test_explicit_value_overrides_the_provider_default(monkeypatch):
+    assert make(monkeypatch, **litellm(retrieval_max_distance="0.45")).retrieval_max_distance == 0.45
+    assert make(monkeypatch, retrieval_max_distance="0.9").retrieval_max_distance == 0.9
 
 
 def test_invalid_configuration_surfaces_only_a_fixed_message_without_the_key(monkeypatch):
