@@ -46,7 +46,7 @@ modelo requiere nueva base/reingesta según JUP-021; no conversión silenciosa.
 - [Evidencia de persistencia y restauración](../evidence/JUP-021-validation.md).
 - [PR #53](https://github.com/EconomiconFinOps/tfm-economicon/pull/53): integrada el 02/10/2026 UTC;
   revisión de Paris y validación APPROVED vigente de Victor el 02/10 a las
-+  19:56 UTC. La aprobación del 01/10 quedó descartada por un push posterior. El corte inicial
+  19:56 UTC. La aprobación del 01/10 quedó descartada por un push posterior. El corte inicial
   del 01/10 la registraba abierta; la integración no ratifica este ADR.
 
 La evidencia de JUP-021 valida ese incremento; no es aceptación de este registro

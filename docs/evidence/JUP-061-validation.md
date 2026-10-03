@@ -180,3 +180,10 @@ La validación de Lucia y la resolución de Victor sobre 0659816 conservan su
 head y fecha. La combinación nueva requiere revisión de Paris y validación
 incremental de Lucia conforme a CONTRIBUTING punto 7. No se acredita aceptación
 por integrar develop ni se presentan smokes históricos como nuevas ejecuciones.
+
+Controles del incremento con la base 6410950: `node --test tools/*.test.mjs`
+**226/226 PASS**; OpenSpec estricto **41/41 PASS**; trazabilidad diez cambios;
+higiene772 archivos; inventario **16 ADR/16 filas**, estados consistentes;
+**120 rutas locales y 15 anchors** del delta, sin fallos; UTF-8 y diff check PASS.
+Los archivos processor/gateway/tooling aportados por #65 coinciden con develop;
+no se realizan nuevas llamadas a modelos, gasto ni smoke Docker en JUP-061.
