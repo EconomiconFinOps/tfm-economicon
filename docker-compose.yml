@@ -35,6 +35,8 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management@sha256:e582c0bc7766f3342496d8485efb5a1df782b5ce3886ad017e2eaae442311f69
+    # RabbitMQ stores its data per node name, which defaults to the changing container id.
+    hostname: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?required}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?required}
@@ -42,8 +44,11 @@ services:
     ports:
       - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"
       - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      # As root, an early ping creates a root-owned Erlang cookie and the server dies with eacces.
+      test: ["CMD", "gosu", "rabbitmq", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -173,6 +178,8 @@ services:
         condition: service_healthy
       postgres-pgvector:
         condition: service_healthy
+      backend:
+        condition: service_healthy
     ports:
       - "${PROCESSOR_HOST_PORT:-8001}:8001"
     init: true
@@ -186,7 +193,8 @@ services:
       interval: 15s
       timeout: 5s
       retries: 10
-      start_period: 20s
+      # The first start applies CockroachDB migrations before serving /health (~160 s measured).
+      start_period: 300s
 
   frontend:
     build:
@@ -250,5 +258,6 @@ services:
 volumes:
   cockroach-data:
   pgvector-data:
+  rabbitmq-data:
   prometheus-data:
   grafana-data:

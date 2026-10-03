@@ -1,6 +1,6 @@
 // Casos adicionales (remediacion de mutation testing, JUP-095 grupo 4, tarea
-// 4.3) complementarios a select.test.tsx, que ya esta commiteado y bloqueado
-// por el hook del harness. Ese archivo verifica el placeholder visible en el
+// 4.3) complementarios a select.test.tsx, que ya esta commiteado y estaba
+// protegido contra edicion en el entorno local. Ese archivo verifica el placeholder visible en el
 // combobox; aqui se cubren dos mutantes distintos en `SelectTrigger`, ambos
 // invisibles para esa asercion.
 //

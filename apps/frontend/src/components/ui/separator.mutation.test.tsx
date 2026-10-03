@@ -1,6 +1,6 @@
 // Casos adicionales (remediacion de mutation testing, JUP-095 grupo 4, tarea
 // 4.3) complementarios a separator.test.tsx, que ya esta commiteado y
-// bloqueado por el hook del harness. Ese archivo verifica el rol ARIA segun
+// estaba protegido contra edicion en el entorno local. Ese archivo verifica el rol ARIA segun
 // `decorative`; aqui se cubren dos mutantes distintos sobre `orientation` y
 // el string de clases, que no son observables via `getByRole` porque con
 // `decorative` por defecto (true) Radix oculta el elemento del arbol de

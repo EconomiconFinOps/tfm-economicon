@@ -87,7 +87,7 @@ def runner_factory(monkeypatch):
             lambda name: names[name.rsplit(".", 1)[1]],
         )
         directory = SimpleNamespace(glob=lambda pattern: [Path(name + ".py") for name in reversed(names)])
-        return MigrationRunner(engine, "test_migrations", directory)
+        return MigrationRunner(engine, "test_migrations", directory, "schema_migrations")
 
     yield engine, make_runner
     engine.dispose()
@@ -191,3 +191,8 @@ def test_autocommit_completion_retry_and_subsequent_transaction_isolation(
         connection.execute(text("INSERT INTO effects (version) VALUES ('probe')"))
         connection.rollback()
     assert _versions(engine, "effects") == ["001", "003"]
+
+
+def test_version_table_must_be_explicit_so_it_never_shares_the_backend_registry(tmp_path):
+    with pytest.raises(TypeError):
+        MigrationRunner(object(), "migrations", tmp_path)
