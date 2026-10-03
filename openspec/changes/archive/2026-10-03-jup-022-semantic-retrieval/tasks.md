@@ -51,6 +51,6 @@
 - [x] 9.2 Revision adversarial con el agente `adversarial-reviewer` hasta veredicto `accept`, o findings restantes aceptados explicitamente por Lucia.
 - [x] 9.3 `review.md` con resumen, decisiones, validacion, pasadas adversariales, barrido de patrones, riesgos, findings y aplicabilidad de ADR.
 - [x] 9.4 `docs/evidence/JUP-022-validation.md` con los comandos y resultados, incluida la calibracion real.
-- [ ] 9.5 Bloque `## Human Approval` en `review.md` tras la aprobacion explicita de Lucia.
-- [ ] 9.6 Archivar el change en la misma rama.
-- [ ] 9.7 Abrir el PR hacia `develop`.
+- [x] 9.5 Bloque `## Human Approval` en `review.md` tras la aprobacion explicita de Lucia.
+- [x] 9.6 Archivar el change en la misma rama.
+- [ ] 9.7 Abrir el PR hacia `develop`. Pendiente al archivar: el PR se abre tras el archivo, en la misma rama; su revision y validacion se siguen en Trello.

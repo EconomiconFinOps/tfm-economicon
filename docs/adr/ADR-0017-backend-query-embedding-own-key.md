@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-10-02
-- Related JUP/OpenSpec: JUP-022, [jup-022-semantic-retrieval](../../openspec/changes/jup-022-semantic-retrieval/design.md)
+- Related JUP/OpenSpec: JUP-022, [jup-022-semantic-retrieval](../../openspec/changes/archive/2026-10-03-jup-022-semantic-retrieval/design.md)
 - Trello: https://trello.com/c/DPZpQ09b
 - Supersedes: none
 - Superseded by: none

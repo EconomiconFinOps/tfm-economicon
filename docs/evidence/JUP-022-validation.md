@@ -1,6 +1,6 @@
 # JUP-022 — Evidencia de validacion
 
-Cambio: [jup-022-semantic-retrieval](../../openspec/changes/jup-022-semantic-retrieval/design.md). Tarjeta: https://trello.com/c/DPZpQ09b. Rama local `feat/JUP-022-semantic-retrieval` sobre `develop` `d6fc408` (JUP-021 integrada). Fecha: 2026-10-03.
+Cambio: [jup-022-semantic-retrieval](../../openspec/changes/archive/2026-10-03-jup-022-semantic-retrieval/design.md). Tarjeta: https://trello.com/c/DPZpQ09b. Rama local `feat/JUP-022-semantic-retrieval` sobre `develop` `d6fc408` (JUP-021 integrada). Fecha: 2026-10-03.
 
 ## Estado de las dependencias (tarea 1.1)
 
@@ -46,7 +46,7 @@ Gateway LiteLLM `v1.103.2` fijado por huella (ADR-0016 del PR #65), local y solo
 
 ## Revision adversarial
 
-Agente independiente `adversarial-reviewer`, recibiendo solo las specs, el diseno y el diff. Veredicto: **accept**, sin BLOCKING ni HIGH. Detalle y disposicion de cada hallazgo en [review.md](../../openspec/changes/jup-022-semantic-retrieval/review.md).
+Agente independiente `adversarial-reviewer`, recibiendo solo las specs, el diseno y el diff. Veredicto: **accept**, sin BLOCKING ni HIGH. Detalle y disposicion de cada hallazgo en [review.md](../../openspec/changes/archive/2026-10-03-jup-022-semantic-retrieval/review.md).
 
 ## No validado
 

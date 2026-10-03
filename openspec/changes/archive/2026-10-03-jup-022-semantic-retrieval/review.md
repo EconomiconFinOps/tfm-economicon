@@ -6,7 +6,7 @@ El backend embebe la pregunta del chat con el mismo modelo que la ingesta (alias
 
 ## Decisiones
 
-- Clave virtual propia del backend (`BACKEND_LITELLM_API_KEY` en Compose) y cliente propio en la biblioteca estandar, con una prueba de paridad con el processor. Registrado como [ADR-0017](../../../docs/adr/ADR-0017-backend-query-embedding-own-key.md) (Proposed).
+- Clave virtual propia del backend (`BACKEND_LITELLM_API_KEY` en Compose) y cliente propio en la biblioteca estandar, con una prueba de paridad con el processor. Registrado como [ADR-0017](../../../../docs/adr/ADR-0017-backend-query-embedding-own-key.md) (Proposed).
 - `mock` solo en `development` y `test`; `litellm` exige clave y dimension 1536.
 - Umbral por defecto segun proveedor: 0.6 con `litellm` (regla escrita en el informe) y ninguno con `mock`; `none` u `off` lo desactivan.
 - Los casos `clarify` y `abstain` se miden aparte y no fijan el umbral.
@@ -15,7 +15,7 @@ El backend embebe la pregunta del chat con el mismo modelo que la ingesta (alias
 
 ## Validacion
 
-Comandos y resultados completos en [docs/evidence/JUP-022-validation.md](../../../docs/evidence/JUP-022-validation.md): backend 552 passed con pgvector real y 540 como la CI, processor 414, utilidades Python 59, herramientas 242 de 243 (el fallo es del doctor de JUP-050 por puertos ocupados en la maquina de validacion), OpenSpec 40/40, 32 mutantes aplicados y 32 detectados tras reforzar las pruebas de los que sobrevivieron al principio, y calibracion real con 80 llamadas.
+Comandos y resultados completos en [docs/evidence/JUP-022-validation.md](../../../../docs/evidence/JUP-022-validation.md): backend 552 passed con pgvector real y 540 como la CI, processor 414, utilidades Python 59, herramientas 242 de 243 (el fallo es del doctor de JUP-050 por puertos ocupados en la maquina de validacion), OpenSpec 40/40, 32 mutantes aplicados y 32 detectados tras reforzar las pruebas de los que sobrevivieron al principio, y calibracion real con 80 llamadas.
 
 ## Adversarial Review
 
@@ -62,4 +62,15 @@ Pendientes de su decision en la aprobacion: ADV-1, ADV-2, ADV-3, ADV-4, ADV-5 (R
 
 ## ADR
 
-[ADR-0017](../../../docs/adr/ADR-0017-backend-query-embedding-own-key.md), Proposed. El numero 0017 sigue a los ADR-0013 a 0016 de los PR #60 y #65 y se renumera si cambian antes de integrarse. No sustituye ni cierra ADR-0002.
+[ADR-0017](../../../../docs/adr/ADR-0017-backend-query-embedding-own-key.md), Proposed. El numero 0017 sigue a los ADR-0013 a 0016 de los PR #60 y #65 y se renumera si cambian antes de integrarse. No sustituye ni cierra ADR-0002.
+
+## Human Approval
+
+- Change: jup-022-semantic-retrieval
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-03
+- Adversarial review: accept (pass 1) | accepted findings: ADV-1, ADV-2, ADV-3, ADV-4, ADV-5 (RF-022-003), ADV-11, limite del troceado (RF-022-002)
+- Archive decision: archive
+- Notes: revisados el codigo, las specs, el diseno, la evidencia y la revision adversarial. Pendiente: abrir el PR hacia develop y la revision y validacion de las personas asignadas en Trello; la paridad de categorias con el processor se activa al integrarse #65.

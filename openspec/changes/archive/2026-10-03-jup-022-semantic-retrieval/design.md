@@ -77,7 +77,7 @@ Salidas: resultados en JSON y un informe en `docs/spikes/`. Se ejecuta a mano y 
 
 ### 9. ADR
 
-La decision de que el backend embeba la consulta con su propia clave afecta a fronteras de servicio y a un proveedor critico, por lo que se registra un ADR nuevo que enlaza ADR-0002 (propuesto) y ADR-0006; su numero se asigna al crearlo, comprobando los ADR de otros PR abiertos. No sustituye ni cierra ADR-0002. Registrado como [ADR-0017](../../../docs/adr/ADR-0017-backend-query-embedding-own-key.md) (Proposed); el numero 0017 sigue a los ADR-0013 a 0015 del PR #60 y al ADR-0016 del PR #65, y se renumera si cambian antes de integrarse.
+La decision de que el backend embeba la consulta con su propia clave afecta a fronteras de servicio y a un proveedor critico, por lo que se registra un ADR nuevo que enlaza ADR-0002 (propuesto) y ADR-0006; su numero se asigna al crearlo, comprobando los ADR de otros PR abiertos. No sustituye ni cierra ADR-0002. Registrado como [ADR-0017](../../../../docs/adr/ADR-0017-backend-query-embedding-own-key.md) (Proposed); el numero 0017 sigue a los ADR-0013 a 0015 del PR #60 y al ADR-0016 del PR #65, y se renumera si cambian antes de integrarse.
 
 ### 10. Preguntas que piden aclarar o abstenerse
 
