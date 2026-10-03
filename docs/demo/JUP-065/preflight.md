@@ -1,5 +1,9 @@
 # Preparación y comprobaciones previas
 
+Antes de preparar cualquier entorno, ejecutar las comprobaciones del README
+sobre los artefactos publicados. La regeneración opcional se hace en un destino
+temporal distinto; no reemplazar `generado/` antes de validar su integridad.
+
 ## 1. Fijar la ejecución
 
 Responsable de preparación: liderazgo/pairing de JUP-065. Validador: Victor según Trello; pendiente ejecución humana. Usar una instancia desechable dedicada, nunca los volúmenes de otro trabajo. Registrar SHA de aplicación, SHA del paquete, imágenes, URLs y nombre Compose en `registro-ensayo.md`. El commit de preparación no implica que el MVP completo esté integrado.

@@ -4,4 +4,4 @@ Trello conserva el estado operativo; estos resúmenes enlazan evidencias para re
 
 | Tema | Estado | Actualizado |
 | --- | --- | --- |
-| [Demo funcional](demo-funcional.md) | JUP-065: preparación reproducible para revisión; ensayo integrado pendiente. | 2026-10-01 |
+| [Demo funcional](demo-funcional.md) | JUP-065 / PR #63: dos P2 corregidos e incorporación de develop; nueva revisión y validación pendientes, ensayo integrado pendiente. | 2026-10-03 |

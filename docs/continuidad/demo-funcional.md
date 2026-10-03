@@ -1,17 +1,32 @@
 # Demo funcional — JUP-065
 
-Actualizado: 2026-10-01. Origen: «JUP-065 — Preparar la demo funcional».
+Actualizado: 2026-10-03. Origen: «JUP-065 — Preparar la demo funcional».
 [Tarjeta](https://trello.com/c/SZUFo4ol).
 
 ## Alcance
 
 El usuario autorizó preparar la demo antes del MVP integrado, publicar la PR y
 solicitar formalmente revisión/validación. El paquete canónico compartido está en
-[docs/demo/JUP-065](../demo/JUP-065/README.md); [OpenSpec](../../openspec/changes/jup-065-functional-demo/proposal.md)
+[docs/demo/JUP-065](../demo/JUP-065/README.md); [OpenSpec](../../openspec/changes/archive/2026-10-03-jup-065-functional-demo/proposal.md)
 conserva escenarios y tareas. La [evidencia](../evidence/JUP-065-validation.md)
 distingue comprobaciones automáticas y pendientes humanos.
 
 ## Decisiones
+
+Paris publicó `Revision JUP-065` como Request changes el 02/10 sobre `e52853b`.
+Los dos P2 se corrigen el 03/10: README verifica originales antes de regenerar
+y la regeneración opcional va a un temporal; AGENTS recupera exactamente el
+contenido de develop sin imponer una obligación general de continuidad. Estos
+documentos técnicos se conservan. La convención común #64 se trata por separado,
+sin dependencia de esta demo.
+
+OpenSpec de esta preparación archivado en `2026-10-03-jup-065-functional-demo`
+según CONTRIBUTING; las reviews, pairing y ensayo permanecen pendientes.
+
+El material original se verificó y se ejecutaron sus controles negativos antes
+de cualquier cambio. Sus quince hashes quedaron conservados. Se incorporó
+develop `d6fc408` mediante merge sin conflictos, manteniendo `JUP reviews` y
+`local:test`. La referencia de datos sigue fijada al commit original.
 
 Base de fuentes `de0d62e7c0028f35a81c5087f531d19031a90e81`; lectura con `git show`,
 hashes y licencia. Referencia: 40 filas, 38 registros, ocho grupos, 0,06 USD;

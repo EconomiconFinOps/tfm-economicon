@@ -15,11 +15,20 @@
 
 Desde la raíz del repositorio, Python 3.10+, Node.js 22+ y Git:
 
+Comprobar primero el material publicado, sin ejecutar `preparar.py` sobre
+`generado/`: sobrescribir los originales podría ocultar una alteración.
+
 ```powershell
-python docs/demo/JUP-065/preparar.py --repo .
 python docs/demo/JUP-065/verificar.py --repo .
 python -m unittest discover -s docs/demo/JUP-065 -p 'test_*.py' -v
 node docs/demo/JUP-065/generado/sources/tools/validation-questions.mjs validate
+```
+
+Si se necesita una copia regenerada, crearla aparte después de esas comprobaciones:
+
+```powershell
+$demoOutput = Join-Path ([IO.Path]::GetTempPath()) ('jup065-' + [guid]::NewGuid().ToString('N'))
+python docs/demo/JUP-065/preparar.py --repo . --output $demoOutput
 ```
 
 El preparador lee objetos Git del commit fijo, no los archivos modificados del checkout. El objeto debe estar disponible: en un clon superficial, ejecutar primero `git fetch origin de0d62e7c0028f35a81c5087f531d19031a90e81`. CI obtiene el historial completo para el job de gobernanza. No instala dependencias, no accede a servicios y solo escribe en `generado/` o en el destino `--output`. El verificador regenera en un temporal y compara todos los bytes. No guardar resultados de ensayos dentro de `generado/`, porque se reconstruye.
@@ -36,7 +45,7 @@ El preparador lee objetos Git del commit fijo, no los archivos modificados del c
 
 ## Dependencias comprobadas y pendientes
 
-Consulta del tablero mediante el puente autorizado DockerServer: snapshot `snapshot-20261001T190808Z.json`. JUP-065 seguía en Backlog; no se cierra. JUP-022 (retrieval real) y JUP-023 (gateway/modelos) siguen en Backlog; JUP-025 (citas) en revisión. La continuidad de JUP-021 registra PR #53 pendiente de revalidación; no se incorpora su rama al paquete. Estos estados no prueban ausencia total de código, pero impiden afirmar aceptación del recorrido integrado.
+Corte histórico de preparación del 01/10: snapshot `snapshot-20261001T190808Z.json` del puente autorizado DockerServer. JUP-065 estaba en Backlog, JUP-022/023 en Backlog, JUP-025 en revisión y JUP-021 pendiente de revalidación. No es un estado operativo actual. La actualización del 03/10 incorpora develop `d6fc408`, incluidas JUP-021 y JUP-050; conserva el commit original de datos sin alterar sus quince artefactos. La integración de esas tareas no acredita el ensayo completo de JUP-065.
 
 Antes del ensayo: integrar y validar base vectorial, embeddings/retrieval, modelo real y citas visibles; comprobar que la ruta `/assistant` usa realmente ese proveedor y el índice correspondiente. Activar variables en el processor por sí solo no acredita el chat. Registrar versiones/dimensiones y reconstruir el índice si cambian. JUP-026/097/098 aportan la base de costes/datos/sesión, pero deben comprobarse otra vez en el despliegue elegido.
 
