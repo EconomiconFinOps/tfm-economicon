@@ -19,6 +19,9 @@ UPSTREAM_TEXT = "texto-interno-del-upstream"
 
 
 class Failing:
+    name = "mock"
+    dimension = 3
+
     def __init__(self, error):
         self.error = error
 

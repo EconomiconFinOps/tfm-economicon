@@ -41,8 +41,8 @@ def store_with(rows=()):
     return store
 
 
-def row(chunk_id, distance, source="doc", content="text"):
-    return SimpleNamespace(chunk_id=chunk_id, source=source, content=content, distance=distance)
+def row(chunk_id, distance, source="doc", content="text", document_id="doc-1"):
+    return SimpleNamespace(chunk_id=chunk_id, document_id=document_id, source=source, content=content, distance=distance)
 
 
 def last(store):
@@ -78,8 +78,8 @@ def test_rows_are_mapped_in_the_order_returned_by_the_database():
     store = store_with([row("b", 0.2, "s1", "x"), row("a", 0.2, "s2", "y")])
     result = store.search_chunks("tenant-a", [1.0])
     assert result == [
-        {"chunk_id": "b", "source": "s1", "content": "x", "distance": 0.2},
-        {"chunk_id": "a", "source": "s2", "content": "y", "distance": 0.2},
+        {"chunk_id": "b", "document_id": "doc-1", "source": "s1", "content": "x", "distance": 0.2},
+        {"chunk_id": "a", "document_id": "doc-1", "source": "s2", "content": "y", "distance": 0.2},
     ]
 
 

@@ -31,7 +31,7 @@
 
 ## 6. Trazabilidad
 
-- [ ] 6.1 Evento estructurado por recuperacion y contadores con etiquetas acotadas; tests de que no contiene la pregunta ni el contenido y de que las etiquetas salen de un conjunto fijo.
+- [x] 6.1 Evento estructurado por recuperacion y contadores con etiquetas acotadas; tests de que no contiene la pregunta ni el contenido y de que las etiquetas salen de un conjunto fijo.
 
 ## 7. Calibracion
 

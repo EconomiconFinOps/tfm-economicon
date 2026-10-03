@@ -45,10 +45,11 @@ class PgVectorQueryStore:
             rows = connection.execute(
                 text(
                     f"""
-                    SELECT chunk_id, source, content, distance
+                    SELECT chunk_id, document_id, source, content, distance
                     FROM (
                         SELECT
                             dc.id AS chunk_id,
+                            kd.id AS document_id,
                             kd.source AS source,
                             dc.content AS content,
                             (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
@@ -68,6 +69,7 @@ class PgVectorQueryStore:
             return [
                 {
                     "chunk_id": row.chunk_id,
+                    "document_id": row.document_id,
                     "source": row.source,
                     "content": row.content,
                     "distance": float(row.distance),

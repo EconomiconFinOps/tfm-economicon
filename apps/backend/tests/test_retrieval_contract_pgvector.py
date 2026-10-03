@@ -113,3 +113,10 @@ def test_the_stored_column_dimension_is_read_and_compared_with_the_provider(retr
     retrieval.verify_dimension(8)
     with pytest.raises(EmbeddingDimensionMismatch):
         retrieval.verify_dimension(1536)
+
+
+def test_each_fragment_carries_the_identifier_of_its_document(retrieval):
+    add(retrieval, "dd-1", "tenant-d", [1, 0, 0, 0, 0, 0, 0, 0], document="doc-a")
+    add(retrieval, "dd-2", "tenant-d", [1, 0.1, 0, 0, 0, 0, 0, 0], document="doc-b")
+    result = retrieval.search_chunks("tenant-d", QUERY, top_k=5)
+    assert [(item["chunk_id"], item["document_id"]) for item in result] == [("dd-1", "doc-a"), ("dd-2", "doc-b")]
