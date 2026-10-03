@@ -2,7 +2,7 @@
 
 Verificación documental: 2026-10-01. Base `origin/develop` `de0d62e`.
 [Tarjeta](https://trello.com/c/qXoHFxyy) · [inventario canónico](../adr/README.md) ·
-[contrato de trabajo](../../openspec/changes/jup-061-architecture-decision-register/proposal.md).
+[contrato de registro](../../openspec/specs/architecture-decisions/spec.md).
 
 ## Método y resultado
 
@@ -159,3 +159,24 @@ benchmarks. Las ejecuciones anteriores mantienen fecha y head. La CI del nuevo
 head se enlazará en la solicitud formal; JUP reviews continúa pendiente de
 resolver las solicitudes de cambios de Paris, Lucia y Victor. ADR-0013/14/15
 siguen Proposed; ADR-0005 y las condiciones de ADR-0002 no cambian.
+
+## Integración de ADR-0016 y nueva base — 03/10/2026
+
+Tras leer todas las reviews, conversación e inline, se incorpora develop
+`6410950315b0e3c22057d09015e11e38c5e455ab` (#65/JUP-023). El único conflicto
+era docs/adr/README.md: se preservan el inventario y la decisión de color 0012,
+y se incorpora la fila ADR-0016 Proposed con su fuente y evidencia JUP-023,
+sin secciones duplicadas ni ratificación de ADR. Archivos de producto aportados
+por develop conservados íntegros, sin modificaciones propias adicionales.
+
+API GitHub de #53: aprobación vigente de Victor **02/10 19:56:31 UTC**;
+la del 01/10 fue DISMISSED. Se corrige en la fila 0013 y su ADR conservando
+la precisión histórica. Las cuatro referencias al change activo en las cabeceras
+ADR-0013/14/15 y esta evidencia se reemplazan por el contrato principal estable,
+para que sigan resolviendo cuando el change se archive. Esta corrección no
+archiva ni da por completas las tareas de aprobación/ratificación pendientes.
+
+La validación de Lucia y la resolución de Victor sobre 0659816 conservan su
+head y fecha. La combinación nueva requiere revisión de Paris y validación
+incremental de Lucia conforme a CONTRIBUTING punto 7. No se acredita aceptación
+por integrar develop ni se presentan smokes históricos como nuevas ejecuciones.

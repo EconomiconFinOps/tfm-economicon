@@ -124,6 +124,13 @@ class Settings(BaseSettings):
             raise ValueError("litellm_api_key is required when a LiteLLM provider is selected")
         if self.embedding_provider == "litellm" and self.embedding_dimension != 1536:
             raise ValueError("economicon-embedding requires embedding_dimension=1536")
+        if "litellm" in providers:
+            if self.llm_timeout_seconds > 30:
+                raise ValueError("llm_timeout_seconds must not exceed 30 for LiteLLM")
+            if self.llm_max_retries > 2:
+                raise ValueError("llm_max_retries must not exceed 2 for LiteLLM")
+            if self.llm_max_output_tokens > 800:
+                raise ValueError("llm_max_output_tokens must not exceed 800 for LiteLLM")
         return self
 
     @field_validator("azure_cost_api_base_url")

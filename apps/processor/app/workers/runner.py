@@ -6,6 +6,7 @@ import uuid
 import structlog
 
 from app.agents.service import AgentRuntime
+from app.clients.litellm import ProviderError
 from app.clients.rabbitmq_queue import QueueMessage, RabbitMQQueue
 from app.core.config import Settings
 from app.db.database import Database
@@ -35,7 +36,7 @@ class ProcessorWorker:
             self.pipeline = PipelineRunner(
                 AgentRuntime(settings),
                 TextChunker(settings.embedding_chunk_size, settings.embedding_chunk_overlap),
-                get_embedding_provider(settings.embedding_provider, settings.embedding_dimension),
+                get_embedding_provider(settings.embedding_provider, settings.embedding_dimension, settings=settings),
                 self.vector_store,
             )
             self.task = IngestTask(self.repository, self.pipeline)
@@ -81,6 +82,9 @@ class ProcessorWorker:
             self.queue.ack(message.delivery_tag)
         except InvalidJobMessage:
             logger.warning("job_message_rejected")
+            self.queue.nack(message.delivery_tag, requeue=False)
+        except ProviderError as exc:
+            logger.warning("job_provider_failed", category=exc.category)
             self.queue.nack(message.delivery_tag, requeue=False)
         except Exception:
             self.queue.nack(message.delivery_tag, requeue=True)
