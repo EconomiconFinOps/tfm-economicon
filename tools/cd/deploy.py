@@ -124,8 +124,8 @@ def prepare(root, source, sha, slot):
             for volume in service.get("volumes", []):
                 if volume["type"] == "bind":
                     volume["source"] = volume["source"].replace(str(temporary), str(release))
-        # A rendered model is read by Compose again: preserve shell dollars.
-        (temporary / "compose.json").write_text(json.dumps(escape_dollars(config)))
+        # Compose's JSON renderer already preserves escaped shell dollars ($$).
+        (temporary / "compose.json").write_text(json.dumps(config))
         os.chmod(temporary / "compose.json", 0o600)
         atomic_json(temporary / "release.json", {"sha": sha, "slot": slot, "api_port": base + 5,
                                                   "frontend_port": base + 8})
@@ -135,16 +135,6 @@ def prepare(root, source, sha, slot):
         shutil.rmtree(temporary)
         raise
     return release
-
-
-def escape_dollars(value):
-    if isinstance(value, str):
-        return value.replace("$", "$$")
-    if isinstance(value, list):
-        return [escape_dollars(item) for item in value]
-    if isinstance(value, dict):
-        return {key: escape_dollars(item) for key, item in value.items()}
-    return value
 
 
 def smoke(release):

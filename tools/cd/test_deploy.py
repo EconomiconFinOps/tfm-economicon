@@ -92,7 +92,7 @@ class RuntimeTests(unittest.TestCase):
             staging = self.root / "releases" / (self.new + ".preparing")
             return json.dumps({"services": {"backend": {"ports": [{"published": "19257", "target": 8000}],
                   "build": {"context": str(staging / "apps/backend")},
-                  "entrypoint": ["sh", "-ec", 'echo "$RUNTIME_ENVIRONMENT"; exec "$@"'],
+                  "entrypoint": ["sh", "-ec", 'echo "$$RUNTIME_ENVIRONMENT"; exec "$$@"'],
                   "volumes": [{"type": "bind", "source": str(staging / "file")}]}}, "name": "test"})
         run.side_effect = render
         release = deploy.prepare(self.root, self.source, self.new, 1)
@@ -102,6 +102,7 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(backend["build"]["context"], str(release / "apps/backend"))
         self.assertEqual(backend["volumes"][0]["source"], str(release / "file"))
         self.assertIn("$$RUNTIME_ENVIRONMENT", backend["entrypoint"][2])
+        self.assertNotIn("$$$$", backend["entrypoint"][2])
         self.assertNotIn("do-not-copy", (release / ".env").read_text())
         self.assertIn("API_HOST_PORT='19357'", (release / ".env").read_text())
         with self.assertRaises(ValueError):

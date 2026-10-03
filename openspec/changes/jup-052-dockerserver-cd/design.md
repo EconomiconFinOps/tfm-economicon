@@ -14,7 +14,7 @@ SHA igual al head actual; verifica otra vez el head tras el fetch/preparación.
 El agente instalado permanece fijado a una revisión revisada.
 
 Se renderiza Compose sin imprimir secretos, se fuerzan todos los puertos a
-loopback, se reescapan dólares para una segunda lectura de Compose y se fijan
+loopback, se preservan los dólares escapados por el renderer Compose y se fijan
 rutas absolutas a la release. Slot alternante y proyecto por SHA separan datos
 de validación. El candidato pasa build, up --wait y cinco escenarios del smoke
 antes de cambiar state.json. Fallo detiene candidato y conserva la versión
