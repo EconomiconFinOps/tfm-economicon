@@ -256,3 +256,59 @@ revision y Lucia validacion; no se atribuye participacion humana a agentes.
 No cambia alcance ni criterios de aceptacion. Esta autorizacion solo cubre
 la reconciliacion local, no publicacion, archivo, merge de entrega ni Trello.
 Evidencia y controles afectados en [validacion](../../../docs/evidence/JUP-023-validation.md#develop-reconciliation).
+
+## PR 65 Attempt Deadline Correction
+
+Enmienda acotada del 2026-10-02 al contrato existente de 30 s maximos por
+intento. Segun el feedback leido por el orquestador, Alejandro (`Iber1to`,
+review `5396101137`) y Lucia (`lmatsan`, validacion `5396552390`) solicitan
+cambios: con timeout 0,05 s y cero retries, HTTP loopback entrega 14/140 bytes
+cada 0,03 s y tarda aproximadamente 0,42/4,4 s sin timeout efectivo. Es una
+reproduccion comunicada, no ejecutada en esta fase documental.
+
+Corregir el cliente compartido con deadline monotono por intento de transporte
+HTTP que cubra conexion de socket, cabeceras y cuerpo, interrumpa lecturas bloqueadas y cierre el
+transporte al vencer. Mantener ProviderError('timeout'), como maximo
+retries configurados + 1 intentos, stdlib, rechazo de redirects, saneamiento
+y rechazo terminal sin requeue. Pruebas locales focalizadas, sin gasto.
+Alcance delimitado por la instruccion del usuario: "limitate a lo que se ha pedido en las revisiones de la pr por favor".
+La resolucion DNS del sistema no es cancelable por este arreglo; no se garantiza
+un plazo total que la incluya ni se atribuye aceptacion humana de esa limitacion.
+Sin subprocesos DNS, resolver nuevo, refactor ni cambios en pika.
+No ampliar arquitectura, dependencias ni ADR; dejar fuera los hallazgos no
+bloqueantes de arranque Docker 45 s y dimension 1536. Esta fase solo modifica
+proposal/design/tasks/spec; conserva aprobaciones y evidencias historicas.
+Paris aprueba esta correccion local y sus pruebas con su respuesta explicita
+"si" del 2026-10-02, tras presentar el defecto y la solucion acotada. Enmienda
+validada antes de iniciar pruebas/codigo: OpenSpec estricto 38/38 y trazabilidad
+PASS. No es aprobacion final ni autorizacion de publicacion o consumo real.
+Sin llamadas OpenRouter, DockerServer, commits, publicacion, push, merge,
+archivo ni cambios en trackers; tampoco fusionar la base durante esta fase.
+
+### Human Approval: Real Revalidation After Timeout Correction
+
+El 2026-10-03 Paris responde "si" a repetir una llamada de chat y otra de
+embeddings por el gateway real antes de publicar la correccion. Autoriza como
+maximo esas dos llamadas secuenciales, sin retries ni fallback, usando el
+cliente local corregido y los modelos, ruta y privacidad ya aprobados.
+Verificar primero precios, consumo acumulado, cap upstream de 0,40 USD sin
+reinicio y limite de la clave virtual; conservar el techo agregado de 0,50 EUR.
+Detenerse si no puede comprobarse coste o margen, sin repetir intentos fallidos
+ni aumentar limites. Registrar respuestas validadas, tiempos, tokens y coste
+sin secretos ni contenido, y retirar los recursos y credenciales temporales.
+Esta autorizacion no cambia alcance ni sustituye las reviews humanas; no
+autoriza commits, push, merge, archivado, Trello ni DockerServer compartido.
+
+### Human Approval: Single Embedding Recheck
+
+El 2026-10-03 Paris responde "sisi" a corregir el comprobador temporal y repetir
+solo una llamada de embedding, tras comunicar el resultado parcial anterior.
+Autoriza reparar y probar offline el ensayo temporal, sin modificar producto
+ni pruebas permanentes, y una unica llamada real adicional sin retries ni chat.
+Validar el vector antes de la conciliacion asincrona y conservar resultados
+saneados aunque la contabilidad no se complete; no ocultar errores ni declarar
+coste desconocido como cero. Mantener modelo, privacidad, dimension 1536, limites
+y preflight previos, con techo agregado de 0,50 EUR y cap upstream de 0,40 USD
+sin reinicio. El ultimo uso oficial observado es 0,003342170 USD, no un nuevo
+presupuesto; releer el uso efectivo antes de consumir. No autoriza publicacion,
+commits, merge, archivo, cambios de tracker ni recursos compartidos.

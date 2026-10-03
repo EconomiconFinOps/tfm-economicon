@@ -825,3 +825,199 @@ These local results are not a remote CI run or a Node 22 CI-parity claim.
 QA-stage local DoD passed; guard `develop-reconciliation-qa` passed with zero
 changed paths and violations. This result record only updates evidence/review
 text after QA. No delivery closure, final human approval or publication is claimed.
+
+## PR 65 HTTP Timeout Correction
+
+2026-10-02, automated local execution for Paris (leadership). Branch
+`feat/JUP-023-litellm-openrouter`, HEAD `9fe836eb8ec1c3805cda9c340a7c6e9bbf247376`
+plus the uncommitted correction and five test cases. Reviewed Git blobs:
+client `4175f2edfaad90e327c3c69c6b117fac565b19fc`, tests
+`84a1e7bf3f25ea22fa00276c44475b420d82274a`.
+Process: CONTRIBUTING/AGENTS `2026-09-30 (JUP-100)`. Victor pairs; Alejandro
+reviews and Lucia validates. Internal execution is not their participation.
+
+All PR reviews, inline comments and conversation comments were read before
+addressing feedback. Both human requests remain pending:
+[Revision](https://github.com/EconomiconFinOps/tfm-economicon/pull/65#pullrequestreview-5396101137)
+and [Validacion](https://github.com/EconomiconFinOps/tfm-economicon/pull/65#pullrequestreview-5396552390).
+Their blocking issue is the attempt timeout not covering a trickling response.
+Paris explicitly approved the local correction and tests; no paid calls or push.
+
+From `apps/processor`, with cached Python 3.12.13 and `UV_OFFLINE=1`:
+
+```powershell
+$timeoutTestTemp = Join-Path $env:TEMP ('jup023-timeout-red-' + [guid]::NewGuid().ToString('N'))
+uv run --no-project --python 3.12 --with-requirements requirements-dev.txt python -B -m pytest tests/test_agent_runtime.py -k attempt_deadline -q -rs -p no:cacheprovider --basetemp $timeoutTestTemp --durations=5 --tb=short
+```
+
+Exit 1: **4 failed, 1 passed, 32 deselected in 3.82 s**. HTTP loopback sends a
+byte every 0.03 s with timeout 0.05 s. Body/header cases return success after
+0.453-0.454 s, rather than timeout; even with two retries only one successful
+request occurs. The normal complete-response control passes. Tests require
+elapsed below attempt budgets plus existing backoff and 0.15 s scheduling
+slack, timeout category, exact attempt count and peer-observed transport closure.
+The coder independently reproduced the same Red (0.453-0.469 s).
+
+Paris subsequently instructed: "limitate a lo que se ha pedido en las revisiones
+de la pr por favor". Implementation stays in the shared HTTP client: one
+monotonic deadline, remaining budget for socket connection/TLS and every raw
+read, closure on error and unchanged bounded retries. No background readers,
+DNS subprocesses, new dependencies or ADR. System DNS remains synchronous and
+non-cancelable; no full DNS-inclusive guarantee or reviewer acceptance of this
+limitation is claimed. This scope instruction supersedes the earlier pause.
+
+| Check after correction | Observed result |
+| --- | --- |
+| Focused regression | Exit 0: 5 passed, 32 deselected; repeated before/after mutations in 2.88/3.05 s |
+| Full processor suite | Exit 0: 438 passed, 57 skipped, 330 deprecation warnings |
+| Targeted in-memory mutations | 3/3 killed: remove raw-read deadline (4 failures), wrong timeout category (4), omit retries (2) |
+| Synthetic local HTTPS success | HTTP200 in 0.016 s, certificate and hostname verified |
+| Independent reviewer probes | Trickle CONNECT headers / stalled TLS: timeout and peer closure in 0.094/0.093 s for 0.08 s budget |
+
+Green used the same pytest command above without `--durations`/`--tb`, and
+`uv run --no-project --python 3.12 --with-requirements requirements-dev.txt python -B -m pytest tests -q -rs -p no:cacheprovider --basetemp <fresh-temp>`
+for the full suite. The 57 skips require opt-in CockroachDB/pgvector/Docker
+integrations; they are not passes. No new permanent tests beyond the five cases.
+Mutation variants `reader`, `category`, `retries`, then `baseline` ran through
+temporary `jup023-timeout-mutation-20261002.py` in the same offline uv environment,
+compiling source replacements only inside the Python process. Product files
+were never mutated on disk. The reader mutant retained the post-read clock
+check, proving it alone is insufficient. Score is targeted, not exhaustive.
+HTTPS probes used synthetic temporary certificates without changing a trust store.
+
+Other observed local checks (exit 0): strict OpenSpec 38/38; traceability 9 active
+changes; hygiene 736 files; gateway configuration tests 7/7; policy/CI/governance
+tests 80/80; `git diff --check`. Commands: `node --test tools/llm-gateway-config.test.mjs`,
+`node --test tools/pr-policy.test.mjs tools/ci-workflow.test.mjs tools/repository-governance.test.mjs`,
+`node node_modules/@fission-ai/openspec/bin/openspec.js validate --all --strict --no-interactive`
+with telemetry disabled, `node tools/jup-check.mjs --all`, and
+`node tools/jup-cleanup-check.mjs`. Node 24.17.0; cache/read EPERM required
+authorized execution outside the sandbox, without environment repair.
+Internal incremental review: REVIEW_PASS, no actionable in-scope findings.
+All completed role guards passed; reviewer and mutation tester changed no files.
+Incremental QA returned QA_PASS: strict OpenSpec 38/38, traceability 9, hygiene
+736, whitespace and relevant links passed. Read-only guard and local QA-stage
+DoD passed; reviewed product/test blobs are unchanged. This note records the
+observed verdict, not a new implementation. Final human approval remains pending.
+No Docker, OpenRouter, billing or Linux/macOS
+run was repeated. These results do not replace remote CI, the human reviews or
+functional revalidation on the published fix; prior real-provider evidence
+retains its original scope and the two Requests changes remain pending.
+
+Remote refs refreshed: origin/develop `d6fc408b60e944b726605b242f3e7a64129282c7`
+contains newer JUP-050/JUP-021 work; not incorporated by this narrow authorization.
+No commit, push, review publication, merge, archive, tracker update or model use.
+
+## Real Revalidation After Timeout Correction
+
+Paris explicitly authorized one primary chat and one embedding on 2026-10-03,
+with zero retries and unchanged budget/privacy. Automated execution for leadership,
+not Alejandro's review or Lucia's validation. Same branch/HEAD and client/test
+blobs as the timeout correction above; no product or test changes in this phase.
+The full live PR discussion was reread: both human Requests changes remain.
+
+Execution window: 2026-10-02 23:44:32-23:46:59 UTC (2026-10-03 local date).
+Python 3.12.13, Docker Desktop `desktop-linux`, owned project
+`jup023-real-0cacba48da`, approved pinned gateway/PostgreSQL images. Command:
+`<TEMP>/jup023-python312-validation/venv/Scripts/python.exe -B <TEMP>/jup023-embedding-budget-smoke.py`.
+The existing temporary runner was adapted for exactly two transport operations,
+without persistence. It imported the current working-tree client, checked its
+blob before both requests, and used a scoped virtual key rather than the master
+or upstream key. No permanent test was added. Receipt and handoff:
+`<TEMP>/jup023-timeout-live-6begpbcc/{receipt,handoff}.json` (sanitized).
+
+Preflight verified current model prices and ZDR listings, upstream cap 0.40 USD
+without reset, and official usage 0.002603143 USD (includes other users of the
+key; historical own usage was 0.002591548 USD). ECB 2026-10-02 rate 1.1225 USD/EUR
+places the entire cap at approximately 0.35635 EUR, below 0.50 EUR. Temporary
+virtual key: budget 0.20 USD, ten-minute expiry, only primary chat/embedding,
+RPM 6, TPM 32768, concurrency 1. No limits were raised. The runner reserved
+0.10 USD conservatively; reservation is not actual spend. Gateway/router and
+client retries were zero, output cap 800, timeout 30 seconds, no fallback.
+
+| Operation | Observed result | Tokens (input/output) | Accounting |
+| --- | --- | --- | --- |
+| Primary chat | HTTP 200, 4.672 s; strict FinOpsResponse 1.0 guardrails passed, `insufficient_data` | 539 / 242 | Response cost 0.0007387875 USD; official aggregate delta 0.000738787 USD after 66.281 s, within 1e-9 tolerance |
+| Embedding | HTTP 200, approximately 1 s; runner stopped before adapter vector validation | 12 / 0 | Gateway-derived cost 0.000000240 USD; official delta not reconciled at cleanup |
+
+Exactly two paid requests started, no retries: **793 reported tokens** (551 input,
+242 output). At cleanup, official usage was 0.003341930 USD, new aggregate delta
+0.000738787 USD; embedding charge remained unresolved, not free. Aggregate key
+usage is not an individual invoice. Chat generation-metadata lookup returned
+404; no individual invoice was invented. The temporary accounting helper raised
+`ValueError: cost_mismatch` before returning the embedding payload to the adapter.
+Consequently this run does not establish 1536 finite dimensions or a complete
+two-operation PASS. No extra model call was made to repair the evidence.
+
+Processor child exit 1; tester result **BLOCKED / partial evidence**. This is not
+proof of a timeout regression or a successful embedding validation. Prior real
+embedding/persistence evidence remains historical, not a repeat of this fix.
+SpendLogs and final virtual spend were not exported before the owned database
+was removed. Safe log scan passed without emitting raw logs; virtual key revoked,
+temporary secret env removed, owned containers/networks/volumes absent. Tester
+guard `live-smoke-20261003` passed with zero repository changes.
+
+Affected documentation checks: strict OpenSpec 38/38, traceability 9 active
+changes and whitespace passed. OpenSpec required execution outside the sandbox
+after local dependency-read EPERM; no dependency installation or repair.
+Previous code review and local regression/mutation results are unchanged, but
+the new real-provider check is partial. No publication, commit, merge, archive,
+tracker update, shared DockerServer use or delivery closure.
+
+### Accounting Follow-Up Without Further Model Calls
+
+At 23:52:38 UTC, one read-only `GET https://openrouter.ai/api/v1/key` (0.266 s)
+reported usage 0.003342170 USD, unchanged cap/reset and 0.396657830 USD remaining.
+The additional 0.000000240 USD matches the embedding's twelve tokens and configured
+tariff. Total new aggregate spend is therefore **0.000739027 USD**. This resolves
+the aggregate accounting mismatch, not the missing vector validation or an
+individual invoice. Shared-key attribution limitations still apply. Sanitized
+record: `<TEMP>/jup023-timeout-live-6begpbcc/accounting-addendum.json`.
+
+Offline inspection of the temporary helper excludes float rounding as the cause
+(difference 3e-23 USD, tolerance 1e-9). `settle_usage` raised on a negative or
+positive-mismatched intermediate aggregate delta; the failing observation was
+not retained, so its exact branch and cause cannot be established. The absent
+`accounting_wait` event is emitted only after success and does not prove no wait
+occurred. The child had parsed the HTTP response but waited for accounting approval
+before returning it to the product adapter. Cleanup sent STOP, so dimension and
+finiteness validation never ran; the vector was not retained for offline recovery.
+The helper failure is not evidence of an invalid returned vector or a defect in
+the timeout correction. Do not silently convert the original partial result to
+PASS. No further model calls, containers, helper edits or product changes occurred.
+
+### Authorized Single Embedding Recheck
+
+2026-10-03: Paris approved correcting only the temporary checker and repeating
+one embedding. No product or permanent test changes; same HEAD and client/test
+blobs as above. The temporary helper now retains sanitized intermediate usage
+observations, waits within a fixed bound for accounting to settle, and records
+adapter vector validation independently before accounting. Unknown cost still
+fails the accounting gate. Offline check command:
+`<TEMP>/jup023-python312-validation/venv/Scripts/python.exe -B <TEMP>/jup023-embedding-recheck-offline.py`
+returned exit 0, 10/10 checks, zero model calls. This is not a new product suite,
+Red or mutation result; prior code review/regression/mutation evidence is reused.
+
+Live command: the same Python executable with `-B <TEMP>/jup023-embedding-budget-smoke.py`.
+Window 00:41:59-00:45:23 UTC, owned project `jup023-real-7ecfc7c927` on local
+Docker Desktop, same approved image pins and privacy. Current price, ZDR, caps,
+remaining usage and currency margin were rechecked. Virtual key allowed only
+`economicon-embedding`, ten-minute expiry, max 0.20 USD; upstream 0.40 USD without
+reset and aggregate 0.50 EUR caps unchanged.
+
+**PASS, exit 0:** exactly one embedding, zero chat/retries/fallback. HTTP 200 in
+0.516 s; the actual product adapter returned **1536 finite values**. Usage:
+12 input tokens, zero output tokens. SpendLogs, virtual counter and official
+aggregate delta matched **0.000000240 USD** after 173.641 s of metadata-only
+settling. Shared-key usage moved from 0.003342170 to 0.003342410 USD; remaining
+0.396657590 USD. This corroborates the calculated charge, not an individual invoice.
+
+Sanitized receipt/handoff: `<TEMP>/jup023-timeout-live-n8ko8c75/{receipt,handoff}.json`;
+offline record: `<TEMP>/jup023-embedding-recheck-offline-results.json`. Key revoked,
+private env removed, owned containers/networks/volumes absent, log/spend privacy
+checks and tester guard `embedding-repeat-20261003` passed. No shared resources.
+The earlier partial run remains historical; this new run supplies its missing
+vector validation. Together with the earlier successful chat, real transport
+revalidation is now complete within this narrow scope. Persistence, full E2E,
+DNS cancellation and remote CI were not repeated. Both human Requests changes,
+publication authorization and final human approval remain pending.

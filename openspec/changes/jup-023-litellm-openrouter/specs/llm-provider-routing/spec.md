@@ -25,6 +25,17 @@ sin clamp silencioso. Solo errores transitorios de transporte/timeout, HTTP 429
 y 5xx SHALL ser elegibles para retry acotado. Gateway/router SHALL tener retries
 efectivos cero. SHALL rechazarse redirecciones y cualquier fallback.
 
+Cada intento de transporte HTTP SHALL tener un unico deadline monotono que
+abarque conexion de socket, recepcion de cabeceras y lectura completa del cuerpo.
+La resolucion DNS del sistema no es cancelable por este arreglo: este requisito
+no garantiza un plazo total incluyendo DNS ni acredita aceptacion humana de esa limitacion.
+La llegada de bytes o el cambio de fase SHALL NOT reiniciar el plazo. Al vencer, el cliente SHALL
+interrumpir la operacion bloqueada y cerrar su transporte, sin dejar lecturas
+activas tras terminar el intento. El vencimiento SHALL clasificarse como
+timeout; agotados los retries permitidos SHALL lanzar ProviderError('timeout')
+saneado. Cada retry SHALL recibir su propio deadline; el total SHALL NOT
+superar `llm_max_retries + 1` intentos con el backoff acotado existente.
+
 #### Scenario: Configuracion supera el techo
 - **WHEN** se selecciona LiteLLM con timeout, retries o tokens por encima del limite
 - **THEN** falla explicitamente antes de emitir una solicitud, sin modificar ajustes Azure
@@ -36,6 +47,31 @@ efectivos cero. SHALL rechazarse redirecciones y cualquier fallback.
 #### Scenario: Fallo no reintentable
 - **WHEN** hay error de autenticacion, request 4xx distinto de 429, redirect o respuesta invalida
 - **THEN** falla sin retry, cambio de alias, mock ni reenvio de la clave a otro origen
+
+#### Scenario: Cuerpo HTTP con goteo continuo
+- **WHEN** un servidor HTTP loopback entrega bytes cada 0,03 s durante mas
+  de 0,05 s y el timeout configurado es 0,05 s con cero retries
+- **THEN** el cliente interrumpe la lectura y cierra el transporte al deadline,
+  termina con ProviderError('timeout') y una sola solicitud, con elapsed
+  monotono dentro del plazo mas tolerancia pequena explicita de planificacion,
+  sin esperar los 0,42/4,4 s de los cuerpos de 14/140 bytes
+
+#### Scenario: Cabeceras HTTP con goteo continuo
+- **WHEN** el mismo goteo retrasa completar las cabeceras mas alla del plazo
+- **THEN** vence el mismo deadline desde el inicio de conexion, interrumpe
+  la lectura y cierra el transporte aunque aun no haya response disponible,
+  con categoria timeout y el mismo limite de elapsed e intentos
+
+#### Scenario: Deadline renovado solo para un retry permitido
+- **WHEN** se configuran dos retries y cada intento excede su deadline
+- **THEN** termina con ProviderError('timeout') tras tres intentos como maximo,
+  cada transporte cerrado antes del siguiente, y elapsed total acotado por
+  los tres plazos mas backoff y tolerancia explicita, sin requeue del job
+
+#### Scenario: Respuesta HTTP completa dentro de plazo
+- **WHEN** el servidor loopback entrega una respuesta JSON valida antes del deadline
+- **THEN** la operacion termina correctamente en un intento, libera el transporte
+  y conserva el contrato de respuesta sin timeout espurio
 
 ### Requirement: Fallos reales terminales sin alterar otros errores
 

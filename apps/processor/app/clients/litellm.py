@@ -1,7 +1,9 @@
 """Bounded gateway transport with content-free diagnostics."""
 
 import errno
-from http.client import HTTPException, RemoteDisconnected
+from functools import partial
+from http.client import HTTPConnection, HTTPSConnection, HTTPException, HTTPResponse, RemoteDisconnected
+import io
 import json
 import math
 import socket
@@ -30,6 +32,124 @@ class ProviderError(RuntimeError):
 class _RejectRedirectHandler(request.HTTPRedirectHandler):
     def redirect_request(self, req, response, code, msg, headers, newurl):
         return None
+
+
+class _AttemptDeadline:
+    def __init__(self, timeout: float):
+        self.expires = time.monotonic() + timeout
+
+    def remaining(self) -> float:
+        remaining = self.expires - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("Gateway attempt deadline exceeded")
+        return remaining
+
+
+class _DeadlineReader(io.RawIOBase):
+    def __init__(self, sock, deadline):
+        self.sock = sock
+        self.deadline = deadline
+        self.raw = sock.makefile("rb", buffering=0)
+
+    def readable(self):
+        return True
+
+    def readinto(self, buffer):
+        self.sock.settimeout(self.deadline.remaining())
+        count = self.raw.readinto(buffer)
+        self.deadline.remaining()
+        return count
+
+    def close(self):
+        try:
+            self.raw.close()
+        finally:
+            super().close()
+
+
+class _ResponseSocket:
+    def __init__(self, sock, deadline):
+        self.sock = sock
+        self.deadline = deadline
+
+    def makefile(self, mode):
+        # Buffer above the deadline-aware raw reader, never below it: each recv
+        # in read/readline must use the remaining attempt budget.
+        return io.BufferedReader(_DeadlineReader(self.sock, self.deadline))
+
+
+class _DeadlineResponse(HTTPResponse):
+    def __init__(self, sock, *args, deadline, **kwargs):
+        super().__init__(_ResponseSocket(sock, deadline), *args, **kwargs)
+
+
+class _DeadlineHTTPConnection(HTTPConnection):
+    def __init__(self, *args, deadline, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.deadline = deadline
+        self.response_class = partial(_DeadlineResponse, deadline=deadline)
+        # HTTPConnection's per-instance factory also preserves its tunnel setup.
+        self._create_connection = self._connect_socket
+
+    def _connect_socket(self, address, timeout, source_address):
+        host, port = address
+        # Synchronous system DNS is outside the cancelable transport budget.
+        addresses = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)
+        last_error = OSError("No gateway addresses")
+        for family, socktype, proto, _, sockaddr in addresses:
+            self.deadline.remaining()
+            sock = socket.socket(family, socktype, proto)
+            try:
+                sock.settimeout(self.deadline.remaining())
+                if source_address:
+                    sock.bind(source_address)
+                sock.connect(sockaddr)
+                self.deadline.remaining()
+                return sock
+            except OSError as exc:
+                last_error = exc
+                sock.close()
+            except BaseException:
+                sock.close()
+                raise
+        self.deadline.remaining()
+        raise last_error
+
+    def send(self, data):
+        if self.sock is None:
+            self.connect()
+        self.sock.settimeout(self.deadline.remaining())
+        super().send(data)
+        self.deadline.remaining()
+
+
+class _DeadlineHTTPSConnection(_DeadlineHTTPConnection, HTTPSConnection):
+    def connect(self):
+        HTTPConnection.connect(self)
+        self.sock.settimeout(self.deadline.remaining())
+        self.sock = self._context.wrap_socket(
+            self.sock, server_hostname=self._tunnel_host or self.host,
+        )
+        self.deadline.remaining()
+
+
+class _DeadlineHandler:
+    def do_open(self, http_class, req, **kwargs):
+        connection = (
+            _DeadlineHTTPSConnection if http_class is HTTPSConnection
+            else _DeadlineHTTPConnection
+        )
+        return super().do_open(
+            partial(connection, deadline=req._attempt_deadline), req, **kwargs,
+        )
+
+
+class _DeadlineHTTPHandler(_DeadlineHandler, request.HTTPHandler):
+    pass
+
+
+class _DeadlineHTTPSHandler(_DeadlineHandler, request.HTTPSHandler):
+    pass
 
 
 def _transport_failure(exc: BaseException) -> tuple[str, bool]:
@@ -79,7 +199,9 @@ class LiteLLMClient:
         self.settings = settings
         base = settings.litellm_base_url.rstrip("/")
         self.base_url = base if base.endswith("/v1") else f"{base}/v1"
-        self.transport = request.build_opener(_RejectRedirectHandler())
+        self.transport = request.build_opener(
+            _RejectRedirectHandler(), _DeadlineHTTPHandler(), _DeadlineHTTPSHandler(),
+        )
 
     def post(self, endpoint: str, payload: dict) -> dict:
         req = request.Request(
@@ -95,10 +217,13 @@ class LiteLLMClient:
         for attempt in range(self.settings.llm_max_retries + 1):
             retryable = False
             status_code = None
+            req._attempt_deadline = _AttemptDeadline(self.settings.llm_timeout_seconds)
             try:
                 with self.transport.open(req, timeout=self.settings.llm_timeout_seconds) as response:
                     status_code = response.status
-                    body = json.loads(response.read().decode("utf-8"))
+                    raw_body = response.read()
+                    req._attempt_deadline.remaining()
+                    body = json.loads(raw_body.decode("utf-8"))
                     cost_header = response.headers.get("x-litellm-response-cost")
                 if not isinstance(body, dict):
                     raise ValueError("Invalid gateway response")

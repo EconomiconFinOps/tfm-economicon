@@ -344,3 +344,49 @@ roles. QA tecnica y aprobacion humana final son gates distintos. Merge, archivo
 y actualizacion Trello requieren autorizaciones separadas; aclarar el orden de
 archivo antes de actuar. La aprobacion pre-code y su condicion de publicacion
 se registran en `proposal.md`; no se infieren otras aprobaciones.
+
+## PR 65 Attempt Deadline Correction
+
+Correccion del contrato Limits And Errors, sobre HEAD `9fe836eb8ec1c3805cda9c340a7c6e9bbf247376`.
+El timeout de socket actual en `apps/processor/app/clients/litellm.py` no
+demuestra un plazo por intento: bytes periodicos pueden mantener bloqueados
+`open()` al leer cabeceras o `response.read()` mas alla del limite.
+
+Fijar un unico deadline con reloj monotono al iniciar cada intento de transporte
+HTTP. Conexion de socket, cabeceras y cuerpo consumen el mismo presupuesto, maximo 30 s;
+recibir bytes o cambiar de fase no reinicia el plazo. Al vencer, interrumpir
+la operacion bloqueada y cerrar/liberar su transporte, incluso sin response
+disponible aun. Una comprobacion solo despues de read, o devolver dejando
+la lectura activa en segundo plano, no satisface el contrato. Clasificar
+el vencimiento como timeout aunque el cierre provoque otro error de transporte;
+al agotar retries lanzar ProviderError('timeout') saneado, sin datos upstream.
+Cada retry permitido tiene un nuevo deadline; conservar backoff acotado y
+maximo `llm_max_retries + 1` intentos, sin solapar transportes vencidos.
+El plazo sigue siendo por intento, no por job. Mantener redirects rechazados,
+sin fallback, contratos chat/embedding y `nack(requeue=False)` existentes.
+
+La resolucion DNS del sistema no es cancelable por este arreglo: no se garantiza
+el plazo total incluyendo DNS ni se registra aceptacion humana de esa limitacion.
+Sin subprocesos DNS, resolver nuevo, refactor ni cambios en pika.
+Implementacion prevista solo en el cliente compartido, con stdlib y sin SDK
+ni dependencias nuevas. Conservar los cinco casos actuales de
+`apps/processor/tests/test_agent_runtime.py`. La regresion usa HTTP
+real sobre loopback con datos sinteticos, sin el transporte mock que impide
+sockets: goteo de cuerpo y cabeceras, timeout 0,05 s e intervalos 0,03 s.
+Medir con reloj monotono hasta retorno/error, excluyendo teardown del servidor;
+comprobar categoria timeout, cierre efectivo y solicitudes recibidas con cero
+y dos retries. Declarar tolerancia pequena de planificacion, que rechace los
+0,42/4,4 s reportados; el limite total incluye deadlines, backoff y esa tolerancia.
+Un control positivo entrega JSON valido dentro del plazo y termina sin retry.
+Reutilizar casos existentes de redirects, saneamiento, embeddings y no-requeue;
+sin nuevos casos, suite ni repeticion del smoke real.
+
+No requiere nuevo ADR: se hace efectivo el limite ya especificado. Si cumplirlo
+exige cambiar arquitectura, dependencias, seguridad o alcance, detenerse y
+escalar con la limitacion y decision necesaria; no inventar una alternativa.
+CONTRIBUTING vigente: Process version `2026-09-30 (JUP-100)`. Roles recibidos:
+Paris liderazgo, Victor pairing, Alejandro revision y Lucia validacion.
+Tras pruebas y QA locales, siguen pendientes la revision y validacion humanas
+afectadas: cada solicitante debe levantar su Request changes con Approve;
+un Comment o un veredicto interno no lo resuelve. Conservar aprobacion final
+y autorizaciones externas como gates separados. Sin gasto ni publicacion.

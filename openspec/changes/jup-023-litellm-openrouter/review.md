@@ -285,3 +285,76 @@ paid calls. The real-smoke requirement before publication has been met within
 the documented scope. Remote CI, actual human participation, Alejandro's
 `Revision JUP-023` and Lucia's `Validacion JUP-023` remain pending. Publication
 authorization is not recorded as final human acceptance or either human review.
+
+## PR 65 HTTP Timeout Correction
+
+2026-10-02, HEAD `9fe836e` plus local correction. All live PR feedback
+was read. Alejandro's Revision and Lucia's Validacion both request changes on
+the attempt timeout; neither request is resolved by this internal review. See
+[correction evidence](../../../docs/evidence/JUP-023-validation.md#pr-65-http-timeout-correction).
+
+Paris approved the local correction/tests and explicitly limited the work to
+the PR requests, excluding an added DNS cancellation mechanism. Internal
+incremental reviewer: REVIEW_PASS, no actionable in-scope findings. Reviewed
+client blob `4175f2edfaad90e327c3c69c6b117fac565b19fc` and test blob
+`84a1e7bf3f25ea22fa00276c44475b420d82274a`. Review covers socket/TLS/header/body
+deadline, cleanup including proxy tunnels, error classification and retries.
+Independent slow CONNECT/TLS probes pass; read-only guard passes with no edits.
+Red: 4 fail/1 pass. Green: 5 focused tests pass, full processor 438 pass/57 skip;
+3/3 targeted mutants killed. OpenSpec 38, traceability 9, hygiene 736 and Node
+7+80 checks pass. Evidence maps commands, results and skipped checks.
+System DNS remains non-cancelable, without a full DNS-inclusive time guarantee
+or inferred human acceptance. No real-provider/Docker validation repeated.
+Incremental QA: QA_PASS; strict OpenSpec, traceability, hygiene, whitespace,
+relevant links, unchanged product/test blobs, read-only guard and QA-stage DoD
+passed. No blocking local findings. Post-QA human gate: PENDING; approver and
+approval timestamp not yet recorded. Publication authorization remains separate.
+
+Process remains CONTRIBUTING 2026-09-30 (JUP-100): Paris leadership, Victor
+pairing, Alejandro review, Lucia validation. Their affected human reviews and
+post-QA approval remain pending, as does separate authorization to publish the
+fix. No commit, push, merge, archive, tracker update or paid call in this phase.
+
+## Authorized Real Revalidation Of Timeout Correction
+
+2026-10-03: Paris authorized exactly one real primary chat and one embedding,
+zero retries, unchanged budgets/privacy and current corrected client. See
+[real revalidation](../../../docs/evidence/JUP-023-validation.md#real-revalidation-after-timeout-correction).
+Chat HTTP 200 passed strict FinOpsResponse guardrails in 4.672 s. Embedding
+HTTP 200 took approximately 1 s, but the temporary accounting helper stopped
+before vector validation with `cost_mismatch`. Two requests, 793 reported tokens;
+new official aggregate delta 0.000738787 USD at cleanup, with embedding billing
+unresolved. Do not call this a complete real-validation PASS or a proven product
+regression. No additional paid attempt; no product/test changes. Cleanup and
+tester read-only guard passed. Prior internal code review remains applicable;
+human Requests changes and post-QA approval remain pending.
+
+Read-only accounting follow-up at 23:52:38 UTC reconciled the embedding delta
+0.000000240 USD and total new aggregate spend 0.000739027 USD, with no additional
+model call. The temporary helper stopped on an intermediate aggregate mismatch;
+its exact observation was not retained. Vector validation still did not run and
+cannot be recovered from the receipt, so the two-operation result remains partial.
+
+2026-10-03 authorized follow-up: the temporary checker was corrected and passed
+10 offline checks; one additional embedding, no chat/retries, passed actual
+adapter validation (1536 finite values, 0.516 s, 12 tokens). SpendLogs, virtual
+counter and official aggregate delta matched 0.000000240 USD after 173.641 s.
+Cleanup/privacy and tester guard passed with no repository edits. See
+[single embedding recheck](../../../docs/evidence/JUP-023-validation.md#authorized-single-embedding-recheck).
+This completes the missing real-provider check alongside the earlier successful
+chat without rewriting the partial run. Existing product review remains valid;
+human review/validation, publication and post-QA approval remain separate gates.
+
+### Correction Publication Authorization
+
+2026-10-03: incremental evidence QA returned QA_PASS, no findings; reviewed
+product/test hashes, links, whitespace, read-only guard and local QA-stage DoD
+passed. Paris then requests "publica los cambios", authorizing a commit and
+push of these eight prepared files to the existing PR #65. No additional code,
+paid call, human review, merge, archive or tracker action is authorized.
+The existing human Requests changes still require their authors' revalidation
+and approval; publication is not their acceptance or delivery closure.
+Remote refs were refreshed before publication: the task branch remains at
+`9fe836e`, while develop has JUP-050/JUP-021 at `d6fc408`. Base reconciliation
+and its affected checks remain pending before integration; this publication
+preserves exactly the reviewed and live-tested product/test blobs.
