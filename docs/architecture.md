@@ -392,7 +392,7 @@ La arquitectura distingue capacidad desplegable de prototipo heredado:
   explicitos via [ADR-0007](adr/ADR-0007-backend-cors-policy.md)); JUP-086
   (aislamiento y autorizacion por tenant) sigue pendiente de cerrar su contrato
   de seguridad.
-- La recuperacion semantica del backend (JUP-022, [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.md), en estado Proposed) embebe la pregunta con `litellm` y su propia clave virtual, con `top_k` y distancia maxima configurables (0.6 por defecto con `litellm`); `mock` solo arranca en development o test y la respuesta del asistente sigue siendo determinista. Activar `litellm` exige el cliente del processor (JUP-023) y reindexar el corpus en `vector(1536)`. Las citas y la evaluacion pertenecen a JUP-025 y JUP-036; ver la [evidencia](evidence/JUP-022-validation.md).
+- La recuperacion semantica del backend (JUP-022, [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.md), en estado Proposed) embebe la pregunta con `litellm` y su propia clave virtual, con `top_k` y distancia maxima configurables (0.6 por defecto con `litellm`); `mock` solo arranca en development o test y la respuesta del asistente sigue siendo determinista. Activar `litellm` exige reindexar el corpus en `vector(1536)` con el cliente del processor (JUP-023, integrado). Las citas y la evaluacion pertenecen a JUP-025 y JUP-036; ver la [evidencia](evidence/JUP-022-validation.md).
 - JUP-087 elimina el lint heredado mediante contratos TypeScript y añade pruebas
   reales de login/sesion, tenant, dashboard, ingesta y conversaciones. Lint y
   pruebas forman parte del check obligatorio `Frontend build`; la

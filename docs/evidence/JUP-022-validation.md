@@ -7,7 +7,7 @@ Cambio: [jup-022-semantic-retrieval](../../openspec/changes/archive/2026-10-03-j
 | Dependencia | Estado el 2026-10-03 | Efecto en este cambio |
 | --- | --- | --- |
 | JUP-021 (#53, vigilancia de dimension y persistencia de pgvector) | integrada en `develop` el 02/10 | La rama se rebaso sobre ella sin conflictos; el arranque del backend compara la dimension de la columna con la del proveedor. |
-| JUP-023 (#65, cliente LiteLLM del processor) | con Revision y Validacion aprobadas, pendiente de merge | La prueba de paridad de categorias se salta hasta que este en `develop` (ver ADV-2); activar `EMBEDDING_PROVIDER=litellm` exige este PR. |
+| JUP-023 (#65, cliente LiteLLM del processor) | integrada en `develop` el 03/10 | La rama se rebaso sobre ella sin conflictos y la prueba de paridad de categorias dejo de saltarse: 6 de 6 pasan contra el cliente real (ADV-2 resuelto). |
 | JUP-025 (#55, citas y evidencia) | con cambios pedidos | Reescribe la misma ruta del asistente: habra que resolver conflictos al integrarse el segundo en llegar. |
 
 ## Comandos y resultados
@@ -21,6 +21,8 @@ Cambio: [jup-022-semantic-retrieval](../../openspec/changes/archive/2026-10-03-j
 | Herramientas | `node --test tools/*.test.mjs` | 242 de 243; el fallo es `local-doctor.test.mjs` ("puertos publicados no ocupados"), de JUP-050, porque la maquina de validacion tenia su propio stack en los puertos 3000 y 9090 |
 | Etiquetas | `corepack pnpm retrieval-labels:validate` | 28 etiquetas (23 directas, 3 parciales, 2 sin cobertura) |
 | OpenSpec y trazabilidad | `openspec:validate`, `jup:check:all`, `jup:cleanup:check`, `git diff --check` | 40/40; OK; 773 archivos; sin avisos |
+
+Tras rebasar sobre `develop` `6410950` (con #65): backend 552 passed y 16 skipped con pgvector real y un fallo temporal de `test_rabbitmq_publisher.py::test_actual_pika_blocked_unblocked_resumes_once_and_close_is_terminal` ("Publisher did not reach the expected state within its observation budget") en una maquina con el stack de Docker levantado; es un test de JUP-086 que no toca este cambio y pasa 3 de 3 veces ejecutado solo (22 passed). Processor 448 passed y 57 skipped, herramientas 243 de 244 (mismo fallo del doctor por puertos ocupados), utilidades Python OK, OpenSpec 42/42.
 
 El pgvector real fue `pgvector/pgvector:pg17` (la imagen del Compose) en un contenedor desechable en `127.0.0.1:55432`, eliminado al terminar.
 
@@ -50,7 +52,7 @@ Agente independiente `adversarial-reviewer`, recibiendo solo las specs, el disen
 
 ## No validado
 
-- Arranque completo del backend (`lifespan`) contra los servicios reales de Compose con `litellm`: depende de que #65 este integrado y de reindexar el corpus en `vector(1536)`.
+- Arranque completo del backend (`lifespan`) contra los servicios reales de Compose con `litellm`: queda por reindexar el corpus en `vector(1536)` con el processor ya integrado.
 - Reindexado del corpus en una base `vector(1536)` de extremo a extremo.
 - Trazabilidad en un entorno con dos instancias o con carga: los contadores son del proceso.
 - Claves expiradas o revocadas y presupuesto agotado contra el gateway real.
