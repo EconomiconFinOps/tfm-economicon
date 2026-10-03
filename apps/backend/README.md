@@ -98,11 +98,27 @@ Puerto visible:
 - `RABBITMQ_URL`
 - `VECTOR_DATABASE_URL`
 - `PROCESSOR_QUEUE_NAME`
-- `EMBEDDING_DIMENSION`
+- `EMBEDDING_PROVIDER` (`mock` solo con `RUNTIME_ENVIRONMENT=development|test`, o `litellm`)
+- `EMBEDDING_DIMENSION` (1536 con `litellm`)
+- `EMBEDDING_MODEL`
+- `LITELLM_BASE_URL`
+- `LITELLM_API_KEY` (clave virtual propia del backend; en Compose se lee de `BACKEND_LITELLM_API_KEY`)
+- `EMBEDDING_TIMEOUT_SECONDS` y `EMBEDDING_MAX_RETRIES`
+- `RETRIEVAL_TOP_K` (1 a 20, por defecto 4) y `RETRIEVAL_MAX_DISTANCE` (mayor que 0 y como maximo 2; en blanco usa 0.6 con `litellm` y ningun umbral con `mock`; `none` u `off` lo desactiva)
 - `AUTH_SECRET_KEY`
 - `AUTH_TOKEN_TTL_MINUTES`
 - `RUNTIME_ENVIRONMENT`
 - `CORS_ALLOWED_ORIGINS`
+
+## Recuperacion Semantica Y Reindexado
+
+El chat embebe la pregunta con `EMBEDDING_PROVIDER` y recupera los fragmentos del tenant activo con `RETRIEVAL_TOP_K` y `RETRIEVAL_MAX_DISTANCE` (distancia coseno, inclusiva; 0.6 por defecto con `litellm`, calibrado en `docs/spikes/JUP-022-retrieval-calibration.md`). Si ningun fragmento cumple, la lista es vacia y el asistente responde sin contexto. Decision y alternativas: [ADR-0017](../../docs/adr/ADR-0017-backend-query-embedding-own-key.md).
+
+Con `litellm` el backend usa su propia clave virtual (`BACKEND_LITELLM_API_KEY` en Compose) y exige `EMBEDDING_DIMENSION=1536`; el arranque la rechaza si falta, y `mock` solo se admite con `RUNTIME_ENVIRONMENT=development|test`.
+
+`EMBEDDING_PROVIDER` es una unica variable de Compose compartida con el processor a proposito: la ingesta y la consulta deben usar el mismo proveedor. El processor ya soporta `litellm` (JUP-023, PR #65); la recuperacion solo considera los vectores del proveedor configurado, asi que tras activarlo hay que reindexar el corpus con ese proveedor o devolvera vacio.
+
+Una base pgvector creada con `vector(8)` (proveedor `mock`) no sirve con el modelo real: los vectores de la ingesta y de la pregunta deben tener la misma dimension y el mismo modelo. Para pasar a `vector(1536)` hay que reindexar el corpus en una coleccion nueva, nunca en caliente: en un entorno desechable, parar el stack, borrar el volumen `pgvector-data`, poner `EMBEDDING_PROVIDER=litellm` y `EMBEDDING_DIMENSION=1536` en processor y backend con sus claves y volver a ingerir los documentos. El procedimiento completo se valida con la calibracion real del change (tarea 7.4). Un cambio de modelo con la misma dimension no se detecta: finding RF-022-001.
 
 ## CORS Y Sesion Demo
 

@@ -175,6 +175,9 @@ Mocks no necesitan `LITELLM_API_KEY`. Seleccionar LiteLLM conserva los
 validadores de clave, URL, alias, dimensiones y evaluation, sin acreditar un
 cliente/proveedor real desplegado. Las claves upstream/master solo pertenecen
 al gateway; consultar [su propuesta](../../infra/litellm/README.md).
+
+El processor y el backend usan claves virtuales distintas: la del backend (`BACKEND_LITELLM_API_KEY`) no se configura aqui. `EMBEDDING_PROVIDER` es una unica variable de Compose compartida: ingesta y consulta deben usar el mismo proveedor (ver [ADR-0017](../../docs/adr/ADR-0017-backend-query-embedding-own-key.md)). Mocks no necesitan `LITELLM_API_KEY`. Seleccionar LiteLLM conserva los
+
 Los tokens `AZURE_COST_*` del simulador son fixtures locales, no credenciales Azure.
 
 Errores persistidos de jobs usan `ingestion_failed`, sin texto crudo de
