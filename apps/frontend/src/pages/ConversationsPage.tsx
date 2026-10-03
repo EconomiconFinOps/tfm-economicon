@@ -1,11 +1,3 @@
-// ConversationsPage: en la nueva arquitectura de rutas (JUP-095, grupo 6,
-// sub-ronda c -- ver Addendum de design.md) deja de recibir `token`/
-// `activeTenant` como props desde `App.jsx` y pasa a leerlos via
-// `useOutletContext<SessionOutletContext>()`, mismo patron que `IngestPage`.
-// Las dos queries, el efecto de auto-seleccion de conversacion y las dos
-// mutaciones se conservan verbatim del origen (`ConversationsPage.jsx`);
-// solo cambian el origen de `token`/`activeTenant` y la presentacion
-// (Tailwind + SectionCard reconstruido).
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useOutletContext } from "react-router";
@@ -16,7 +8,7 @@ import {
   listConversations,
   sendConversationMessage
 } from "../services/api";
-import type { ConversationCreateRequest, MessageCreateRequest } from "../services/contracts";
+import type { AzureCostSelection, ConversationCreateRequest, MessageCreateRequest } from "../services/contracts";
 import type { SessionOutletContext } from "../layouts/SessionGate";
 
 export function ConversationsPage() {
@@ -25,6 +17,20 @@ export function ConversationsPage() {
   const [selectedConversationId, setSelectedConversationId] = useState<string>("");
   const [title, setTitle] = useState<string>("Ops review");
   const [message, setMessage] = useState<string>("");
+  const [costMode, setCostMode] = useState(false);
+  const [costGrouping, setCostGrouping] = useState<AzureCostSelection["group_by"]>("subscription");
+  const [costValue, setCostValue] = useState("");
+  const [costSubscription, setCostSubscription] = useState("");
+  const [costStart, setCostStart] = useState("");
+  const [costEnd, setCostEnd] = useState("");
+  const invalidCostPeriod = Boolean(costStart) !== Boolean(costEnd)
+    || Boolean(costStart && costEnd && costStart >= costEnd);
+
+  useEffect(() => {
+    setCostValue("");
+    setCostSubscription("");
+    setMessage("");
+  }, [activeTenant?.id]);
 
   const conversationsQuery = useQuery({
     queryKey: ["conversations", activeTenant?.id],
@@ -98,7 +104,13 @@ export function ConversationsPage() {
 
   function handleSend(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    sendMutation.mutate({ content: message });
+    if (costMode && invalidCostPeriod) return;
+    sendMutation.mutate({ content: message, ...(costMode ? { cost_query: {
+      group_by: costGrouping,
+      ...(costValue.trim() ? { value: costValue.trim() } : {}),
+      ...(costSubscription.trim() ? { subscription_id: costSubscription.trim() } : {}),
+      ...(costStart ? { start_date: costStart, end_date: costEnd } : {})
+    } } : {}) });
   }
 
   if (!activeTenant) {
@@ -168,7 +180,7 @@ export function ConversationsPage() {
 
       <SectionCard
         title="Assistant chat"
-        subtitle="Replies use retrieval over pgvector filtered by the active tenant."
+        subtitle="Consulta documentos o el gasto Azure ingerido del tenant activo."
       >
         {conversationDetailQuery.error ? (
           <p className="text-sm text-danger" role="alert">
@@ -185,16 +197,52 @@ export function ConversationsPage() {
                   className="rounded-md border border-border bg-background p-3"
                 >
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">{entry.role}</p>
-                  <p className="mt-1 text-sm text-foreground">{entry.content}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{entry.content}</p>
                 </article>
               ))}
             </div>
 
             <form className="mt-4 flex flex-col gap-4" onSubmit={handleSend}>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={costMode} onChange={(event) => setCostMode(event.target.checked)} />
+                Consultar gasto Azure
+              </label>
+              {costMode ? (
+                <fieldset className="grid grid-cols-1 gap-3 rounded-md border border-border p-3 sm:grid-cols-2">
+                  <legend className="px-1 text-sm">Ámbito y periodo del gasto</legend>
+                  <label className="flex flex-col gap-1 text-sm">Agrupar por
+                    <select className="rounded-md border border-border bg-background p-2" value={costGrouping}
+                      onChange={(event) => { setCostGrouping(event.target.value as AzureCostSelection["group_by"]); setCostValue(""); }}>
+                      <option value="subscription">Suscripción</option>
+                      <option value="account">Cuenta de facturación</option>
+                      <option value="service">Servicio</option>
+                    </select>
+                  </label>
+                  <label className="flex flex-col gap-1 text-sm">Valor exacto (opcional)
+                    <input className="rounded-md border border-border bg-background p-2" value={costValue}
+                      onChange={(event) => setCostValue(event.target.value)} placeholder="Vacío: todos los valores" maxLength={256} />
+                  </label>
+                  <label className="flex flex-col gap-1 text-sm">Limitar a suscripción (opcional)
+                    <input className="rounded-md border border-border bg-background p-2" value={costSubscription}
+                      onChange={(event) => setCostSubscription(event.target.value)} maxLength={256} />
+                  </label>
+                  <p className="text-xs text-muted-foreground">Sin fechas: mes UTC actual. Los valores deben coincidir exactamente con los datos ingeridos.</p>
+                  <label className="flex flex-col gap-1 text-sm">Desde (UTC)
+                    <input className="rounded-md border border-border bg-background p-2" type="date" value={costStart}
+                      onChange={(event) => setCostStart(event.target.value)} />
+                  </label>
+                  <label className="flex flex-col gap-1 text-sm">Hasta (UTC, excluido)
+                    <input className="rounded-md border border-border bg-background p-2" type="date" value={costEnd}
+                      onChange={(event) => setCostEnd(event.target.value)} />
+                  </label>
+                  {invalidCostPeriod ? <p role="alert" className="text-sm text-danger">Indica ambas fechas y un fin posterior al inicio.</p> : null}
+                </fieldset>
+              ) : null}
               <textarea
                 className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
                 rows={5}
-                placeholder="Ask the assistant about the ingested tenant documents."
+                aria-label="Pregunta al asistente"
+                placeholder={costMode ? "¿Cuánto hemos gastado en el ámbito seleccionado?" : "Ask the assistant about the ingested tenant documents."}
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
               />
@@ -204,7 +252,7 @@ export function ConversationsPage() {
               <button
                 className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
                 type="submit"
-                disabled={sendMutation.isPending || !message.trim()}
+                disabled={sendMutation.isPending || !message.trim() || (costMode && invalidCostPeriod)}
               >
                 {sendMutation.isPending ? "Sending..." : "Send"}
               </button>
