@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
 
-BillingGrouping = Literal["subscription", "resource_group", "service", "project", "tag"]
+BillingGrouping = Literal["subscription", "account", "resource_group", "service", "project", "tag"]
 DecimalString = Annotated[str, Field(pattern=r"^-?(0|[1-9][0-9]*)\.[0-9]{2}$")]
 
 

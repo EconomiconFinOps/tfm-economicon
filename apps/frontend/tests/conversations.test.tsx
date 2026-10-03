@@ -16,6 +16,51 @@ const detailPath = `${collectionPath}/${conversation.id}`;
 const messagePath = `${detailPath}/messages`;
 
 describe("assistant conversations", () => {
+  it("sends an explicit Azure selection and displays persisted exact costs", async () => {
+    const user = userEvent.setup();
+    let sent = false;
+    const costReply = { ...assistantMessage, content: "Gasto registrado: 9007199254740993.01 USD. Evidencia: cost:abc." };
+    const { requests } = mockBackend({
+      [`GET ${collectionPath}`]: () => jsonResponse({ items: [conversation] }),
+      [`GET ${detailPath}`]: () => jsonResponse({ conversation, messages: sent ? [costReply] : [] }),
+      [`POST ${messagePath}`]: () => { sent = true; return jsonResponse({ ...assistantReply, assistant_message: costReply }, 201); }
+    });
+    restoreSession();
+    renderApp(["/assistant"]);
+    const composer = await screen.findByLabelText("Pregunta al asistente");
+    await user.click(screen.getByLabelText("Consultar gasto Azure"));
+    await user.selectOptions(screen.getByLabelText("Agrupar por"), "account");
+    await user.type(screen.getByLabelText("Valor exacto (opcional)"), "acct-a");
+    await user.type(screen.getByLabelText("Limitar a suscripción (opcional)"), "sub-a");
+    await user.type(screen.getByLabelText("Desde (UTC)"), "2024-06-01");
+    await user.type(screen.getByLabelText("Hasta (UTC, excluido)"), "2024-07-01");
+    await user.type(composer, "Cuanto gastamos");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    expect(await screen.findByText(costReply.content)).toBeVisible();
+    const request = requests.find((item) => item.path === messagePath);
+    expect(request?.body).toEqual({ content: "Cuanto gastamos", cost_query: {
+      group_by: "account", value: "acct-a", subscription_id: "sub-a", start_date: "2024-06-01", end_date: "2024-07-01"
+    } });
+    expectTenantRequest(request!);
+  });
+
+  it("blocks incomplete and reversed cost periods before sending", async () => {
+    const user = userEvent.setup();
+    const { requests } = mockBackend({
+      [`GET ${collectionPath}`]: () => jsonResponse({ items: [conversation] }),
+      [`GET ${detailPath}`]: () => jsonResponse({ conversation, messages: [] })
+    });
+    restoreSession();
+    renderApp(["/assistant"]);
+    await user.type(await screen.findByLabelText("Pregunta al asistente"), "Coste");
+    await user.click(screen.getByLabelText("Consultar gasto Azure"));
+    await user.type(screen.getByLabelText("Desde (UTC)"), "2024-07-01");
+    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    await user.type(screen.getByLabelText("Hasta (UTC, excluido)"), "2024-06-01");
+    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    expect(screen.getByRole("alert")).toHaveTextContent("Indica ambas fechas");
+    expect(requests.some((item) => item.path === messagePath)).toBe(false);
+  });
   it("creates a conversation from an empty list and sends a message with a visible reply", async () => {
     const user = userEvent.setup();
     const pendingReply = deferredResponse();
