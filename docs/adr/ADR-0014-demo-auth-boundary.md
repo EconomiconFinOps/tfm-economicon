@@ -4,7 +4,8 @@
 - Date: 2026-10-01
 - Related JUP/OpenSpec: JUP-061, [registro de decisiones](../../openspec/changes/jup-061-architecture-decision-register/design.md)
 - Trello: https://trello.com/c/qXoHFxyy
-- Responsable de consolidación: Alejandro Aguado; revisión: Paris Arcos Martin; validación: Victor Mendez; pairing previsto: Lucia Mateo.
+- Responsable de consolidación: Alejandro Aguado; revisión: Paris Arcos Martin; validación: Lucia Mateo; pairing previsto: Victor Mendez.
+- Roles actualizados: 2026-10-03; intercambio Lucia/Victor documentado en [validación de Lucia](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#pullrequestreview-5396865126). No acredita pairing realizado.
 - Supersedes: none
 - Superseded by: none
 

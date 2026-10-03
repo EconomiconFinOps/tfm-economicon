@@ -4,7 +4,8 @@
 - Date: 2026-10-01
 - Related JUP/OpenSpec: JUP-061, [registro de decisiones](../../openspec/changes/jup-061-architecture-decision-register/design.md)
 - Trello: https://trello.com/c/qXoHFxyy
-- Responsable de consolidación: Alejandro Aguado; revisión: Paris Arcos Martin; validación: Victor Mendez; pairing previsto: Lucia Mateo.
+- Responsable de consolidación: Alejandro Aguado; revisión: Paris Arcos Martin; validación: Lucia Mateo; pairing previsto: Victor Mendez.
+- Roles actualizados: 2026-10-03; intercambio Lucia/Victor documentado en [validación de Lucia](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#pullrequestreview-5396865126). No acredita pairing realizado.
 - Supersedes: none
 - Superseded by: none
 
@@ -27,8 +28,9 @@ Los contenedores facilitan repetir pruebas; no hacen equivalentes todos los host
   separado versiones, dependencias y arranque; pierde el contrato único de Compose.
 - Kubernetes o servicios gestionados: opciones futuras, sin comparación de coste,
   carga ni operación acreditada. No se declaran descartadas para producción.
-- Migrador dedicado: opción tratada por JUP-096/JUP-050; no se incorpora aquí ni se
-  presenta como comportamiento de develop mientras sus PR sigan abiertas.
+- Migrador dedicado: alternativa tratada por JUP-096/JUP-050. El baseline
+  integrado conserva el backend como dueño de jobs y bloquea el processor hasta
+  que esté sano (ADR-0011); no introduce un migrador separado.
 
 Se asumen recursos para nueve servicios y gestión explícita de persistencia y
 secretos. Los digests de JUP-049 cubren cuatro bases de aplicación y tres imágenes
@@ -46,7 +48,10 @@ coste mensual ni garantía de recuperación productiva con este registro.
   [cierre #32](https://github.com/EconomiconFinOps/tfm-economicon/pull/32), integradas.
 - [PR #59, JUP-050](https://github.com/EconomiconFinOps/tfm-economicon/pull/59) y
   [PR #51, JUP-096](https://github.com/EconomiconFinOps/tfm-economicon/pull/51):
-  abiertas al corte; evidencia propia, no capacidad integrada atribuible a esta rama.
+  integradas el 02/10 y 01/10/2026 UTC, respectivamente. El corte inicial del
+  01/10 las registraba abiertas. [Evidencia JUP-050](../evidence/JUP-050-validation.md)
+  y [ADR-0011](ADR-0011-single-owner-per-table.md) documentan el baseline integrado;
+  sus merges no ratifican esta justificación retrospectiva.
 
 Pendiente ratificar esta justificación retrospectiva y definir el despliegue final
 en su tarea de origen; JUP-061 no elige un proveedor de producción.

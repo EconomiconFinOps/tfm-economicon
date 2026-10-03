@@ -4,18 +4,18 @@ This directory contains the project decision log for durable architecture choice
 
 ## Registro para memoria y tutor — JUP-061
 
-Corte documental: **01/10/2026**, `origin/develop` `de0d62e` y PR consultadas ese día.
-Actualización de integración **02/10/2026**: consumido develop `5a54ce2`.
-ADR-0011 y ADR-0012 ya están en esta rama tras los merges #51 y #54 del 01/10;
-las filas inferiores conservan el corte inicial y sus commits de evidencia.
-Fuentes vigentes: [ADR-0011](ADR-0011-single-owner-per-table.md) y
-[ADR-0012](ADR-0012-frontend-color-tokens.md). Esta actualización no ratifica
-los ADR Proposed de JUP-061.
+Corte inicial: **01/10/2026**, develop `de0d62e`; conservado como historia en
+la [auditoría](../evidence/JUP-061-validation.md). Registro vigente verificado
+**03/10/2026**, con develop `d6fc408` incorporado: #51 y #54 integradas el
+01/10 UTC; #59 y #53 el 02/10 UTC. Las filas reflejan esta integración y usan
+fuentes locales. Los merges no ratifican los ADR Proposed de JUP-061.
 
-[Tarjeta JUP-061](https://trello.com/c/qXoHFxyy). Liderazgo de consolidación: Alejandro
-Aguado; pairing previsto: Lucia Mateo; revisión: Paris Arcos Martin; validación:
-Victor Mendez. Son asignaciones de Trello, no prueba de participación completada.
-Los responsables operativos de cada decisión siguen en su tarjeta de origen.
+[Tarjeta JUP-061](https://trello.com/c/qXoHFxyy). Liderazgo: Alejandro Aguado;
+pairing previsto: Victor Mendez; revisión: Paris Arcos Martin; validación: Lucia
+Mateo. El intercambio sustituye las asignaciones del 01/10 y consta en la
+[validación de Lucia](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#pullrequestreview-5396865126).
+No acredita pairing completado. Los responsables de cada decisión siguen en su
+tarjeta de origen.
 
 **Lectura:** el estado es el declarado por el ADR; merge y aprobación son evidencia
 separada. Cada documento enlazado contiene contexto, alternativas y consecuencias.
@@ -34,11 +34,11 @@ benchmarks de ADR-0002 conservan su fecha; no son precios actuales.
 | [0008 · Fronteras tenant](ADR-0008-tenant-isolation-boundaries.md) | 24/09 · Accepted | Autoridad persistida y membership; envelope/selector solos no autorizan. | JUP-086; aceptación de Paris 24/09 en ADR, [evidencia](../evidence/JUP-086-validation.md), [PR #47](https://github.com/EconomiconFinOps/tfm-economicon/pull/47) integrada. |
 | [0009 · Ciclo del publisher RabbitMQ](ADR-0009-rabbitmq-publisher-lifecycle.md) | 25/09 · Accepted | Owner único, confirms y esperas acotadas; un timeout de Future no detiene un publish. | JUP-086; gates de Paris y addendum DNS en ADR; misma [PR #47](https://github.com/EconomiconFinOps/tfm-economicon/pull/47). Riesgo de interfaces internas Pika y ausencia de outbox explícitos. |
 | [0010 · Solapamiento de costes](ADR-0010-azure-cost-source-overlap.md) | 27/09; aceptado 28/09 · Accepted | Rechazar sumas ambiguas; latest-wins/deduplicación no prueban identidad del cargo. | JUP-026; gate de Paris y [evidencia](../evidence/JUP-026-validation.md); [PR #52](https://github.com/EconomiconFinOps/tfm-economicon/pull/52) integrada el 30/09. |
-| [0011 · Dueño único por tabla](https://github.com/EconomiconFinOps/tfm-economicon/blob/133794329d1791fd02fcb29e5ba43eb600f8c5b1/docs/adr/ADR-0011-single-owner-per-table.md) | 30/09 · Accepted en rama | Evitar DDL competidor; retry no elimina doble propiedad. | JUP-096; [PR #51](https://github.com/EconomiconFinOps/tfm-economicon/pull/51) abierta; APPROVED Victor 01/10, revisión de Paris. No integrado en este corte. |
-| [0012 · Tokens de color](https://github.com/EconomiconFinOps/tfm-economicon/blob/c2ca9f7c4fd309895e08b1834a5ede2d41ae9b90/docs/adr/ADR-0012-frontend-color-tokens.md) | 29/09; aceptado 01/10 · Accepted en rama | Fuente única por función; paleta reducida cambiaría el diseño. | JUP-099; [PR #54](https://github.com/EconomiconFinOps/tfm-economicon/pull/54) abierta; validación APPROVED Alejandro 01/10. No integrado en este corte. |
-| [0013 · pgvector y ranking exacto](ADR-0013-pgvector-retrieval-baseline.md) | 01/10 · Proposed | Conservar writer/reader y filtro tenant; ANN/motor externo requieren evaluación propia. | JUP-061 consolida; JUP-021 aporta [PR #53](https://github.com/EconomiconFinOps/tfm-economicon/pull/53) abierta, validación APPROVED Victor 01/10. Ratificación del ADR pendiente. |
+| [0011 · Dueño único por tabla](ADR-0011-single-owner-per-table.md) | 30/09 · Accepted | Evitar DDL competidor; retry no elimina doble propiedad. | JUP-096; [PR #51](https://github.com/EconomiconFinOps/tfm-economicon/pull/51) integrada el 01/10 UTC; APPROVED Victor 01/10, revisión de Paris. |
+| [0012 · Tokens de color](ADR-0012-frontend-color-tokens.md) | 29/09; aceptado 01/10 · Accepted | Fuente única por función; paleta reducida cambiaría el diseño. | JUP-099; [PR #54](https://github.com/EconomiconFinOps/tfm-economicon/pull/54) integrada el 01/10 UTC; validación APPROVED Alejandro 01/10. |
+| [0013 · pgvector y ranking exacto](ADR-0013-pgvector-retrieval-baseline.md) | 01/10 · Proposed | Conservar writer/reader y filtro tenant; ANN/motor externo requieren evaluación propia. | JUP-061 consolida; JUP-021 aporta [PR #53](https://github.com/EconomiconFinOps/tfm-economicon/pull/53) integrada el 02/10 UTC, [evidencia](../evidence/JUP-021-validation.md) y validación APPROVED Victor 01/10. Ratificación del ADR pendiente. |
 | [0014 · Auth propia para demo](ADR-0014-demo-auth-boundary.md) | 01/10 · Proposed | Formalizar sesión existente sin añadir IdP; no acreditar producción. | JUP-061 consolida; contrato JUP-085 integrado. Justificación retrospectiva pendiente de ratificar. |
-| [0015 · Compose local](ADR-0015-local-compose-deployment-boundary.md) | 01/10 · Proposed | Repetir topología y builds; orquestador/hosting productivo no seleccionados. | JUP-061 consolida; JUP-049 integrado. JUP-050 [PR #59](https://github.com/EconomiconFinOps/tfm-economicon/pull/59) abierta. Ratificación y despliegue final pendientes. |
+| [0015 · Compose local](ADR-0015-local-compose-deployment-boundary.md) | 01/10 · Proposed | Repetir topología y builds; orquestador/hosting productivo no seleccionados. | JUP-061 consolida; JUP-049 integrado. JUP-050 [PR #59](https://github.com/EconomiconFinOps/tfm-economicon/pull/59) integrada el 02/10 UTC, [evidencia](../evidence/JUP-050-validation.md). Ratificación y despliegue final pendientes. |
 
 ### Decisiones ya explicadas fuera de un ADR
 
@@ -74,8 +74,9 @@ material de referencia y no certifica que el contenido ya esté incorporado all�
 - ADR-0005 y ADR-0013/14/15: confirmar o rechazar ratificación con evidencia atribuible.
 - Confirmar justificación original de CockroachDB si se quiere defender una ventaja
   comparativa, y registrar decisión de despliegue final cuando exista en su tarea.
-- Actualizar enlaces de ADR-0011/12 y estado de PR #51/#53/#54/#59 al integrarse;
-  no copiar sus cambios de producto para completar este índice.
+
+Integración #51/#53/#54/#59 y enlaces locales reconciliados el 03/10; ese
+pendiente queda resuelto sin copiar documentación ni ratificar propuestas.
 
 ## Naming And Status
 

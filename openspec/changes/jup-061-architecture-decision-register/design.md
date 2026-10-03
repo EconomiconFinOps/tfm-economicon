@@ -4,7 +4,7 @@ JUP: JUP-061
 
 El [índice ADR](../../../docs/adr/README.md) es el único inventario. Las justificaciones
 permanecen en cada ADR o fuente existente; la evidencia de esta auditoría registra
-método y comprobaciones, y continuidad solo enlaza esos documentos.
+método y comprobaciones.
 
 ADR aplicables: [pgvector](../../../docs/adr/ADR-0013-pgvector-retrieval-baseline.md),
 [auth demo](../../../docs/adr/ADR-0014-demo-auth-boundary.md) y
@@ -18,7 +18,8 @@ aceptaciones humanas ni justificaciones históricas atribuidas retroactivamente.
 - Enlaces archivados se corrigen en la fuente que los contiene; no se copia el archivo.
 - Evidencia histórica conserva fecha y límites. Precios/modelos de ADR-0002 no se
   revalidan ni se recomiendan con esta auditoría documental.
-- Números 0011 y 0012 están usados en PR abiertas; se enlazan por commit.
+- ADR-0011/12 y fuentes JUP-021/050 ya integrados se enlazan por rutas locales.
+  El corte inicial del 01/10 conserva sus referencias históricas en la evidencia.
 - El inventario enlaza también las decisiones ya explicadas en corpus, guardrails,
   normalización y arquitectura. No se crean ADR duplicados para repetirlas.
 - Alternativas reconstruidas se presentan como análisis actual pendiente de
@@ -26,8 +27,10 @@ aceptaciones humanas ni justificaciones históricas atribuidas retroactivamente.
 
 ## Aceptación y límites
 
-Paris revisa la coherencia y ratificación documental; Victor valida enlaces,
-estados y uso en memoria. Lucia conserva pairing previsto sin atribuirlo como hecho.
+Paris revisa la coherencia documental; Lucia valida enlaces, estados y uso en
+memoria. Victor tiene pairing previsto, sin atribuirlo como hecho. Intercambio
+actualizado el 03/10 según la validación de Lucia en PR #60; reemplaza los roles
+del corte inicial. La ratificación corresponde a los responsables, no al autor.
 ADR-0002 mantiene sus condiciones de aceptación conjunta. ADR-0005 requiere aclarar
 su estado pese al merge de implementación. El despliegue productivo y la selección
 comparativa original de CockroachDB no quedan acreditados por documentar el baseline.

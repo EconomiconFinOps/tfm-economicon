@@ -15,7 +15,7 @@
 
 - [x] 3.1 Validar OpenSpec estricto, trazabilidad, higiene y enlaces; registrar resultados.
 - [x] 3.2 Publicar PR a develop y enlazar evidencia en Trello.
-- [ ] 3.3 Registrar revisión de Paris y validación de Victor; acreditar pairing si ocurre.
+- [ ] 3.3 Registrar revisión de Paris y validación de Lucia (rol vigente; Victor pairing previsto); acreditar pairing si ocurre.
 - [ ] 3.4 Ratificar ADR propuestos con sus responsables antes del freeze; no inferir aceptación de un merge.
 
 ## 4. Reconciliación autorizada 02/10/2026

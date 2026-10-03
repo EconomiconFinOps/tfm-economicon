@@ -4,7 +4,8 @@
 - Date: 2026-10-01
 - Related JUP/OpenSpec: JUP-061, [registro de decisiones](../../openspec/changes/jup-061-architecture-decision-register/design.md)
 - Trello: https://trello.com/c/qXoHFxyy
-- Responsable de consolidación: Alejandro Aguado; revisión: Paris Arcos Martin; validación: Victor Mendez; pairing previsto: Lucia Mateo.
+- Responsable de consolidación: Alejandro Aguado; revisión: Paris Arcos Martin; validación: Lucia Mateo; pairing previsto: Victor Mendez.
+- Roles actualizados: 2026-10-03; intercambio Lucia/Victor documentado en [validación de Lucia](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#pullrequestreview-5396865126). No acredita pairing realizado.
 - Supersedes: none
 - Superseded by: none
 
@@ -41,10 +42,11 @@ modelo requiere nueva base/reingesta según JUP-021; no conversión silenciosa.
 ## Evidencias y aceptación pendiente
 
 - [Arquitectura existente](../architecture.md#4-que-papel-tienen-rabbitmq-cockroachdb-y-pgvector).
-- [Diseño JUP-021 en el commit revisado](https://github.com/EconomiconFinOps/tfm-economicon/blob/db2a0475214a031834fb6153de22317b20709347/openspec/changes/jup-021-vector-database-runtime/design.md).
-- [Evidencia de persistencia y restauración](https://github.com/EconomiconFinOps/tfm-economicon/blob/db2a0475214a031834fb6153de22317b20709347/docs/evidence/JUP-021-validation.md).
-- [PR #53](https://github.com/EconomiconFinOps/tfm-economicon/pull/53): abierta al corte;
-  revisión de Paris y validación APPROVED de Victor el 01/10. No está integrada.
+- [Diseño JUP-021 integrado](../../openspec/changes/archive/2026-10-02-jup-021-vector-database-runtime/design.md).
+- [Evidencia de persistencia y restauración](../evidence/JUP-021-validation.md).
+- [PR #53](https://github.com/EconomiconFinOps/tfm-economicon/pull/53): integrada el 02/10/2026 UTC;
+  revisión de Paris y validación APPROVED de Victor el 01/10. El corte inicial
+  del 01/10 la registraba abierta; la integración no ratifica este ADR.
 
 La evidencia de JUP-021 valida ese incremento; no es aceptación de este registro
 retrospectivo ni evaluación de calidad semántica con proveedor externo.

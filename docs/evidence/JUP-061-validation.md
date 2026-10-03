@@ -1,34 +1,34 @@
-# JUP-061 â€” AuditorÃ­a del registro de decisiones
+# JUP-061 — Auditoría del registro de decisiones
 
-VerificaciÃ³n documental: 2026-10-01. Base `origin/develop` `de0d62e`.
-[Tarjeta](https://trello.com/c/qXoHFxyy) Â· [inventario canÃ³nico](../adr/README.md) Â·
+Verificación documental: 2026-10-01. Base `origin/develop` `de0d62e`.
+[Tarjeta](https://trello.com/c/qXoHFxyy) · [inventario canónico](../adr/README.md) ·
 [contrato de trabajo](../../openspec/changes/jup-061-architecture-decision-register/proposal.md).
 
-## MÃ©todo y resultado
+## Método y resultado
 
 1. Lectura viva de JUP-061 mediante `Settings`/`TrelloClient.get_cards()` del puente
-   desplegado en `/home/danteadmin/economicon-collaboration` (DockerServer), usando
+   desplegado en DockerServer, usando
    `docker compose run --rm -T --entrypoint python collaboration -`. Sin API Trello
-   alternativa ni escritura Discord. Se conservaron roles y aceptaciÃ³n pendiente.
-2. `git fetch origin`, inventario de `docs/adr/` en develop y lectura de ADR/diseÃ±os,
+   alternativa ni escritura Discord. Se conservaron roles y aceptación pendiente.
+2. `git fetch origin`, inventario de `docs/adr/` en develop y lectura de ADR/diseños,
    contratos y evidencia enlazada. Diez ADR integrados; ADR-0011 y ADR-0012 en las
-   ramas abiertas JUP-096 y JUP-099. Se reservaron ambos nÃºmeros.
+   ramas abiertas JUP-096 y JUP-099. Se reservaron ambos números.
 3. `gh pr list --repo EconomiconFinOps/tfm-economicon --state all --limit 80
    --json number,title,state,mergedAt,url,headRefName` y consultas `gh pr view`
-   de #25/#51/#53/#54/#59. El Ã­ndice distingue los merges observados y las reviews
-   APPROVED de las notas antiguas en los documentos. No se solicitÃ³ nueva review
-   ni se atribuyÃ³ actividad por los roles de Trello.
+   de #25/#51/#53/#54/#59. El índice distingue los merges observados y las reviews
+   APPROVED de las notas antiguas en los documentos. No se solicitó nueva review
+   ni se atribuyó actividad por los roles de Trello.
 4. Tres justificaciones retrospectivas Proposed: pgvector, auth demo y Compose.
-   Se conservan las fuentes de implementaciÃ³n y sus lÃ­mites. No hay comparativa
-   de motores, hosting productivo o presupuesto nuevo aprobados por esta auditorÃ­a.
-5. Se reparan seis enlaces de ADR a OpenSpec archivado y se aÃ±aden referencias
-   concretas de aceptaciÃ³n/evidencia a los registros que solo tenÃ­an referencias
-   genÃ©ricas o notas anteriores a la integraciÃ³n.
+   Se conservan las fuentes de implementación y sus límites. No hay comparativa
+   de motores, hosting productivo o presupuesto nuevo aprobados por esta auditoría.
+5. Se reparan seis enlaces de ADR a OpenSpec archivado y se añaden referencias
+   concretas de aceptación/evidencia a los registros que solo tenían referencias
+   genéricas o notas anteriores a la integración.
 
 ## Comprobaciones ejecutadas
 
 - OpenSpec `validate --all --strict --no-interactive`: **36/36 PASS**.
-  Se usÃ³ el binario 1.8.0 ya instalado en el checkout principal, ejecutado desde
+  Se usó el binario 1.8.0 ya instalado en el checkout principal, ejecutado desde
   esta rama; equivalente a `corepack pnpm openspec:validate` sin reinstalar paquetes.
 - `node tools/jup-check.mjs --change jup-061-architecture-decision-register`: PASS.
 - `node tools/jup-cleanup-check.mjs`: PASS.
@@ -38,65 +38,67 @@ VerificaciÃ³n documental: 2026-10-01. Base `origin/develop` `de0d62e`.
   precios/proveedores. Las PR se verificaron con GitHub CLI autenticado.
 
 Los tests de backend/frontend/processor y los smokes enlazados son evidencia
-histÃ³rica de sus tareas. No se ejecutan de nuevo ni se presentan como pruebas
-nuevas de producto en esta modificaciÃ³n documental.
+histórica de sus tareas. No se ejecutan de nuevo ni se presentan como pruebas
+nuevas de producto en esta modificación documental.
 
-## LÃ­mites y siguiente puerta
+## Límites y siguiente puerta
 
-- No se cambia ningÃºn estado Accepted/Proposed preexistente. ADR-0005 permanece
-  Proposed pese al merge; requiere ratificaciÃ³n documental. ADR-0002 conserva
-  sus condiciones explÃ­citas de aceptaciÃ³n conjunta.
+- No se cambia ningún estado Accepted/Proposed preexistente. ADR-0005 permanece
+  Proposed pese al merge; requiere ratificación documental. ADR-0002 conserva
+  sus condiciones explícitas de aceptación conjunta.
 - PR #51, #53, #54 y #59 estaban abiertas al corte. No se atribuye su producto a
   develop. Las fuentes externas de los registros 0011/0012 y pgvector se fijan
-  por commit para que la auditorÃ­a pueda reproducirse.
-- La memoria canÃ³nica y su exportaciÃ³n no se han editado: este registro proporciona
-  referencias reutilizables. La selecciÃ³n comparativa original de CockroachDB
-  sigue sin evidencia localizada; se declara, no se inventa una motivaciÃ³n histÃ³rica.
-- RevisiÃ³n de Paris, validaciÃ³n de Victor y pairing de Lucia de JUP-061 pendientes
+  por commit para que la auditoría pueda reproducirse.
+- La memoria canónica y su exportación no se han editado: este registro proporciona
+  referencias reutilizables. La selección comparativa original de CockroachDB
+  sigue sin evidencia localizada; se declara, no se inventa una motivación histórica.
+- Revisión de Paris, validación de Victor y pairing de Lucia de JUP-061 pendientes
   de evidencia atribuible. Esta entrega no cierra la tarjeta ni fusiona el PR.
 
-## PublicaciÃ³n y seguimiento
+## Publicación y seguimiento
 
 [PR #60](https://github.com/EconomiconFinOps/tfm-economicon/pull/60) publicada como
 borrador contra develop. Trello actualizado mediante el puente autorizado y
-releÃ­do: descripciÃ³n/enlaces verificados, roles preservados, **30 â€” En curso**.
-El trabajo documental estÃ¡ entregado; revisiÃ³n, validaciÃ³n y ratificaciones humanas
-siguen pendientes. No se ha enviado ningÃºn mensaje a Discord ni realizado merge.
+releído: descripción/enlaces verificados, roles preservados, **30 — En curso**.
+El trabajo documental está entregado; revisión, validación y ratificaciones humanas
+siguen pendientes. No se ha enviado ningún mensaje a Discord ni realizado merge.
 
-## ReconciliaciÃ³n y correcciÃ³n del test â€” 02/10/2026
+## Reconciliación y corrección del test — 02/10/2026
 
-El usuario autorizÃ³ reconciliar develop y resolver el fallo de CI. Base consumida
+El usuario autorizó reconciliar develop y resolver el fallo de CI. Base consumida
 `5a54ce2ed9001dfb9d4b9d8e06eae84cffe91124`; merge local `2650e69`.
-El Ãºnico conflicto, ADR-0004, se resolviÃ³ conservando aprobaciÃ³n de JUP-094 y
-seguimiento de tokens/atribuciones de JUP-099. ADR-0011/12 ya estÃ¡n integrados en
-la base; el Ã­ndice enlaza sus archivos locales y conserva el corte anterior.
+El único conflicto, ADR-0004, se resolvió conservando aprobación de JUP-094 y
+seguimiento de tokens/atribuciones de JUP-099. ADR-0011/12 ya están integrados en
+la base; el índice enlaza sus archivos locales y conserva el corte anterior.
 
-CI anterior fallaba con `{ sessionExpired: true }` en la aserciÃ³n inmediata tras
-encontrar Sign in. Encontrar el botÃ³n acredita render, pero no finalizaciÃ³n del
-efecto de limpieza/navegaciÃ³n. Se espera con waitFor el estado null del router
-antes de observar el historial. No cambia LoginPage ni se aÃ±aden sleeps/retries
-al test. Se preserva la captura completa de transiciones al navegar hacia atrÃ¡s.
+CI anterior fallaba con `{ sessionExpired: true }` en la aserción inmediata tras
+encontrar Sign in. Encontrar el botón acredita render, pero no finalización del
+efecto de limpieza/navegación. Se espera con waitFor el estado null del router
+antes de observar el historial. No cambia LoginPage ni se añaden sleeps/retries
+al test. Se preserva la captura completa de transiciones al navegar hacia atrás.
 
 Comprobaciones del incremento:
 
 - Antes de editar, las dos suites dirigidas pasaron 10/10: el fallo de CI no se
-  reprodujo en esa ejecuciÃ³n local. Se corrige la precondiciÃ³n asÃ­ncrona observable.
+  reprodujo en esa ejecución local. Se corrige la precondición asíncrona observable.
 - Test corregido: tres ejecuciones dirigidas PASS.
 - Mutantes manuales `replace:false` y opciones `{}`: ambos detectados por la
-  aserciÃ³n original not.toContainEqual de las transiciones de historial. El
-  producto fue restaurado Ã­ntegramente tras cada prueba; diff de LoginPage vacÃ­o.
-- Primera suite completa con concurrencia automÃ¡tica y lint/tipos simultÃ¡neos:
+  aserción original not.toContainEqual de las transiciones de historial. El
+  producto fue restaurado íntegramente tras cada prueba; diff de LoginPage vacío.
+- Primera suite completa con concurrencia automática y lint/tipos simultáneos:
   430 PASS y 7 FAIL, con timeouts y elementos ausentes. No se cuenta como PASS.
-- ReejecuciÃ³n aislada `corepack pnpm --filter @finops/frontend test -- --maxWorkers=2`:
+- Reejecución aislada `corepack pnpm --filter @finops/frontend test -- --maxWorkers=2`:
   **437/437 PASS, 47/47 archivos**, 86,40 s. Los fallos anteriores son compatibles
   con carga local, sin acreditar una causa exhaustiva para cada uno.
 - Frontend lint, typecheck y build PASS; build conserva aviso de bundle >500 kB.
 - OpenSpec estricto **37/37 PASS**; trazabilidad e higiene PASS (724 archivos).
 - 115 rutas Markdown locales verificadas en el delta; diff check PASS.
 
-Logs dirigidos, controles negativos y suite acotada conservados fuera de Git en
-`materiales/07-evidencias/JUP-061-reconciliacion-2026-10-02/` dentro del workspace.
-La correcciÃ³n del test amplÃ­a el alcance inicial documental por autorizaciÃ³n
+Los logs originales dirigidos, de controles negativos y de la suite acotada
+no están disponibles en Git ni son evidencia compartida reproducible. Los
+resultados anteriores son el reporte histórico del autor; las revisiones
+independientes y la CI enlazada permiten contrastar sus límites.
+La corrección del test amplía el alcance inicial documental por autorización
 expresa del 02/10; no modifica contrato ni comportamiento del login.
 
 ## Atención del P2 y nueva base — 02/10/2026
@@ -105,7 +107,8 @@ expresa del 02/10; no modifica contrato ni comportamiento del login.
 sobre el head `a051339`: retirar de esta entrega la convención de continuidad
 compartida. Se leyó la revisión completa y los comentarios antes de corregir.
 Se retiran la regla añadida a AGENTS.md y los dos documentos de continuidad del
-delta compartido, y se ajustan las referencias del diseño y las tareas. El
+delta compartido. El resto de continuidad en el diseño no quedó corregido en
+ese head: se subsana en la revisión del 03/10 descrita abajo. El
 inventario ADR y esta evidencia permanecen; no se condiciona la entrega a PR #64.
 
 Se integra develop `11d63ea03e6f8a2d19a8cace45d11c34bb9676a9`, incluido JUP-100.
@@ -121,3 +124,38 @@ CI técnica del head anterior `a051339`: siete controles SUCCESS en
 La nueva publicación requiere comprobar su propia CI. JUP reviews exige revisión
 y validación tituladas según JUP-100; atender el P2 no levanta automáticamente
 CHANGES_REQUESTED ni acredita validación de Victor. Trello permanece en revisión.
+
+## Correcciones de las reviews y reconciliación — 03/10/2026
+
+Se leyeron las cuatro reviews completas, los tres comentarios de conversación y
+el listado inline vacío antes de corregir. Fuentes: [revisión de Paris](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#pullrequestreview-5400647319),
+[validación de Lucia](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#pullrequestreview-5396865126)
+y [validación de Victor](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#pullrequestreview-5396889294).
+
+- Evidencia histórica restaurada desde `724031c` con lectura/escritura UTF-8
+  explícita; sección del P2 preservada y afirmación sobre el diseño corregida.
+  Se elimina la ruta del host y se declara la indisponibilidad de logs originales
+  en Git. Descripción y comentario afectados se corrigen sin alterar reviews ajenas.
+- Develop `d6fc408b60e944b726605b242f3e7a64129282c7` incorporado sin conflicto.
+  API GitHub: #51 integrada 01/10 21:36 UTC, #54 01/10 20:23 UTC,
+  #59 02/10 19:14 UTC y #53 02/10 20:09 UTC. Índice y ADR-0013/15
+  actualizados con fuentes locales y pendientes de integración resueltos.
+- Responsabilidades vigentes: Alejandro liderazgo, Victor pairing previsto,
+  Paris revisión y Lucia validación. El acuerdo consta en la review de Lucia;
+  la lectura del puente encontró roles anteriores y ningún comentario del acuerdo
+  entre las acciones devueltas. Se reconcilia Trello con esa fuente explícita.
+  No se acredita pairing ni ratificación de ADR por esta corrección.
+- `node --test tools/*.test.mjs`: **225/225 PASS**.
+- `corepack pnpm openspec:validate`: **40/40 PASS**; `jup:check:all`: nueve
+  cambios PASS; `jup:cleanup:check`: 758 archivos PASS; `git diff --check`: PASS.
+- Comprobación del delta: UTF-8 sin secuencias dañadas, 15 ADR enlazados con
+  estado consistente, **118 rutas locales y 15 anchors**, ninguno roto.
+  El primer verificador solo reconocía Status, no Estado; se corrigió para
+  comprobar ambas cabeceras y se repitió, sin modificar los estados ADR.
+
+Estos son controles documentales y de tooling del autor sobre la nueva base.
+No son validación humana ni nuevas pruebas locales Python, Docker, frontend o
+benchmarks. Las ejecuciones anteriores mantienen fecha y head. La CI del nuevo
+head se enlazará en la solicitud formal; JUP reviews continúa pendiente de
+resolver las solicitudes de cambios de Paris, Lucia y Victor. ADR-0013/14/15
+siguen Proposed; ADR-0005 y las condiciones de ADR-0002 no cambian.
