@@ -3,11 +3,14 @@ from pathlib import Path
 
 from sqlalchemy import create_engine, text
 
+from app.core.runtime_secrets import StartupError
 from app.db.migration_runner import MigrationRunner
 
 
 class PgVectorStore:
     def __init__(self, database_url: str, embedding_dimension: int):
+        if embedding_dimension <= 0:
+            raise ValueError("embedding_dimension must be greater than zero")
         self.database_url = database_url
         self.embedding_dimension = embedding_dimension
         self.engine = create_engine(database_url, future=True, pool_pre_ping=True)
@@ -21,6 +24,17 @@ class PgVectorStore:
             version_table="vector_schema_migrations",
         )
         runner.run()
+        with self.engine.connect() as connection:
+            dimension = connection.execute(text("""
+                SELECT atttypmod FROM pg_attribute
+                WHERE attrelid = 'chunk_embeddings'::regclass
+                  AND attname = 'embedding' AND NOT attisdropped
+            """)).scalar_one()
+        if dimension != self.embedding_dimension:
+            raise StartupError(
+                "Configured embedding dimension differs from the stored vector schema; "
+                "restore the matching configuration or reindex into a new database."
+            )
 
     def ping(self) -> bool:
         try:
@@ -44,6 +58,8 @@ class PgVectorStore:
     ) -> dict:
         if len(chunks) != len(embeddings):
             raise ValueError("chunks and embeddings must have the same length")
+        if any(len(embedding) != self.embedding_dimension for embedding in embeddings):
+            raise ValueError("Every embedding must match the configured dimension")
 
         now = datetime.now(timezone.utc)
         document_id = job_id
