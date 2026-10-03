@@ -102,7 +102,7 @@ node tools/business-metrics.mjs report registro.json > informe.json
 ```
 
 También existen `pnpm business-metrics:validate`, `pnpm business-metrics:test` y
-`pnpm business-metrics:report -- registro.json`. La CLI devuelve 2 por uso
+`pnpm business-metrics:report registro.json`. La CLI devuelve 2 por uso
 incorrecto y 1 por registro inválido. No necesita red, API keys ni un LLM.
 
 ## Ejemplo sintético
