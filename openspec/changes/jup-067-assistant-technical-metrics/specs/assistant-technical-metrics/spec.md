@@ -2,7 +2,7 @@
 
 ### Requirement: Metric catalogue with stable definitions
 
-The project SHALL publish a catalogue of technical metrics for the assistant. Each metric SHALL have a stable identifier, a name, a formula expressed as a numerator and a denominator, the population it is computed over, the source of each datum, the unit and the family it belongs to. The families SHALL be accuracy, context relevance, grounding, latency, structured-output robustness and availability. A metric SHALL NOT change its meaning without a new version of the catalogue.
+The project SHALL publish a catalogue of technical metrics for the assistant. Each metric SHALL have a stable identifier, a name, a formula expressed as a numerator and a denominator, the population it is computed over, the source of each datum, the unit and the family it belongs to. The families SHALL be accuracy, context relevance, grounding, latency, structured-output robustness and availability. A metric SHALL NOT change its meaning without a new version of the catalogue, and the catalogue SHALL carry a hash of its definitions so that an edit of a formula, a population or a target without a deliberate version change is detected.
 
 #### Scenario: Every metric is fully defined
 
@@ -14,10 +14,11 @@ The project SHALL publish a catalogue of technical metrics for the assistant. Ea
 
 - **WHEN** the formula or population of a metric is edited
 - **THEN** the catalogue version changes and a report that states an older version is not accepted as current
+- **AND** a catalogue whose definitions do not match its recorded hash is rejected
 
 ### Requirement: Case outcomes and populations
 
-Each evaluated case SHALL have exactly one outcome among `pass`, `fail`, `blocked` and `not_run`. A rate SHALL be computed over the cases that are `pass` or `fail` of the declared population only; `blocked` and `not_run` cases SHALL be excluded from every denominator and SHALL be reported as counts. Cases whose expected behavior is `clarify` or `abstain` SHALL be reported separately from `answer` cases and SHALL NOT enter the answer-case rates. Every published rate SHALL show its numerator, its denominator and a 95 % Wilson interval.
+Each evaluated case SHALL have exactly one outcome among `pass`, `fail`, `blocked` and `not_run`. A rate SHALL be computed over the cases that are `pass` or `fail` of the declared population only; `blocked` and `not_run` cases SHALL be excluded from every denominator and SHALL be reported as counts. Cases whose expected behavior is `clarify` or `abstain` SHALL be reported separately from `answer` cases and SHALL NOT enter the answer-case rates. Every published rate SHALL show its numerator, its denominator and a 95 % Wilson interval. This applies to the case-level rates (accuracy, relevance, grounding); call-level metrics (the failure rate of each stage and the failures by category) SHALL count every attempted call, including those of `blocked` cases, because an infrastructure failure is the failed call they report. A case recorded as `pass` SHALL NOT carry a failure category.
 
 #### Scenario: Blocked cases do not lower a rate
 
@@ -90,7 +91,7 @@ Retrieval confidence SHALL be reported as the median and the quartiles of the si
 
 ### Requirement: Grounding of citations and figures
 
-Grounding SHALL be measured by three metrics: the share of citations that point to a fragment in the retrieved set of that question and tenant, the number of numeric claims in a response that cannot be traced to the retrieved context, the evidence of the response or the question itself, and the integrity of evidence references in structured responses (every metric and recommendation references an existing evidence identifier). A response with any untraceable figure in a case marked critical SHALL make that case `fail` for grounding.
+Grounding SHALL be measured by three metrics: the share of citations that point to a fragment in the retrieved set of that question and tenant, the number of numeric claims in a response that cannot be traced to the retrieved context, the evidence of the response or the question itself, and the integrity of evidence references in structured responses (every metric and recommendation references an existing evidence identifier). A response with any untraceable figure in a case marked critical SHALL make that case `fail` for grounding, and a results file that records such a case as `pass` SHALL be rejected. The retrieved set of each case is the one retrieved for that question and tenant, so a citation is valid when it points to a fragment in that set.
 
 #### Scenario: Invented citation
 
@@ -113,8 +114,8 @@ Latency SHALL be reported per stage (embedding of the question, retrieval query,
 
 #### Scenario: Nearest-rank percentile
 
-- **WHEN** ten observations are recorded
-- **THEN** the 95th percentile is the tenth value of the sorted list
+- **WHEN** twenty observations are recorded
+- **THEN** the 95th percentile is the nineteenth value of the sorted list
 
 #### Scenario: Failures are visible
 
@@ -123,8 +124,13 @@ Latency SHALL be reported per stage (embedding of the question, retrieval query,
 
 #### Scenario: Too few observations
 
-- **WHEN** fewer observations than the documented minimum exist for a stage
+- **WHEN** fewer observations than the documented minimum exist for a stage (20 for the 95th percentile, 5 for the median and the maximum)
 - **THEN** the percentile is reported as not available
+
+#### Scenario: A failed call has no latency
+
+- **WHEN** a case records a failed call in a stage and also a latency for that stage or for the total
+- **THEN** the results file is rejected
 
 ### Requirement: Structured-output robustness
 
@@ -156,12 +162,12 @@ Availability SHALL be reported as the share of chat requests of the run that did
 
 ### Requirement: Versioned results format without sensitive content
 
-Per-case results SHALL use a versioned format that records, for each case, its identifier, outcome, the individual checks, the stage latencies, the retrieved identifiers, the citations and the failure category, and, for the run, the commit, the question bank version and hash, the corpus hashes and size in documents and fragments, the provider and alias, the generation settings, the count of chat requests and of server errors, and the date. The format SHALL NOT contain the text of questions, responses or fragments, nor credentials, and a file that does would be rejected.
+Per-case results SHALL use a versioned format that records, for each case, its identifier, outcome, the individual checks, the stage latencies, the retrieved identifiers, the citations and the failure category, and, for the run, the commit, the question bank version and hash, the corpus hashes and size in documents and fragments, the provider and alias, the generation settings, the count of chat requests and of server errors, and the date. The format SHALL NOT contain the text of questions, responses or fragments, nor credentials: only the listed fields are accepted at every level, free text is bounded in length, and a file with any other field or an over-long text is rejected without printing its value.
 
 #### Scenario: Question text in a result file
 
-- **WHEN** a results file contains a field named `question`, `prompt` or `response`
-- **THEN** it is rejected
+- **WHEN** a results file contains a field named `question`, `prompt` or `response`, or any field that is not in the format
+- **THEN** it is rejected naming the field and not its value
 
 #### Scenario: Corpus size is reported with latency
 
@@ -175,7 +181,7 @@ Per-case results SHALL use a versioned format that records, for each case, its i
 
 ### Requirement: Reproducible reference calculator
 
-A reference calculator SHALL validate a results file and compute every catalogue metric offline, with the standard library, deterministically (same input, same output) and without network or database access. It SHALL reject malformed input with a message that names the offending field and no value, and it SHALL write the report as JSON and as Markdown.
+A reference calculator SHALL validate a results file and compute every catalogue metric offline, with the standard library, deterministically (same input, same output) and without network or database access. It SHALL reject malformed input, however hostile (oversized numbers, deeply nested files, unwritable output paths), with an error message and a non-zero exit status that name the offending field and no value, never with a stack trace, and it SHALL write the report as JSON and as Markdown.
 
 #### Scenario: Same input twice
 

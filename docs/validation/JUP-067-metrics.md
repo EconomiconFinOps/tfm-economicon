@@ -2,7 +2,7 @@
 
 [Tarjeta](https://trello.com/c/bwvfLpUG) · [Catalogo](JUP-067-metrics-catalogue.json) · [Calculador](../../tools/assistant-metrics.py) · [Bateria de preguntas](JUP-069-questions.json) · [Etiquetas de recuperacion](JUP-022-retrieval-labels.json)
 
-Este documento define como se mide el asistente. El catalogo JSON es la fuente unica de cada definicion (identificador, formula, poblacion, fuente y unidad); aqui se explica el por que de cada familia y como se usa. Si una definicion cambia, cambia la version del catalogo y un fichero de resultados que declare una version anterior se rechaza.
+Este documento define como se mide el asistente. El catalogo JSON es la fuente unica de cada definicion (identificador, formula, poblacion, fuente y unidad); aqui se explica el por que de cada familia y como se usa. Si una definicion cambia, cambia la version del catalogo y un fichero de resultados que declare una version anterior se rechaza; el catalogo lleva un hash de sus definiciones y el calculador lo rechaza si alguien las edita sin actualizarlo a proposito.
 
 ## Familias y por que existen
 
@@ -32,7 +32,7 @@ Los informes comparan algunos valores con los objetivos de ADR-0002: comprobacio
 
 ## Formato de resultados (version 1)
 
-Un fichero JSON con la cabecera de la ejecucion (`commit`, `date`, version y hash de la bateria, hash y tamano del corpus, `provider`, `alias`, parametros de recuperacion y de generacion y las peticiones y errores del servidor del chat) y una entrada por cada caso de la bateria, con su resultado, las comprobaciones, los fragmentos recuperados (identificador, fuente, encabezado y distancia), las citas, el origen de cada cifra, las latencias por etapa, el fallo (categoria y etapa), si cumplio el esquema y las referencias de evidencia. No puede contener el texto de preguntas, respuestas ni fragmentos, ni credenciales: el calculador rechaza por nombre cualquier campo `question`, `prompt`, `response`, `content`, `answer`, `text`, `excerpt` o con aspecto de clave, y no imprime su valor. Las categorias de fallo son las nueve del proveedor de embeddings mas `schema_validation`.
+Un fichero JSON con la cabecera de la ejecucion (`commit`, `date`, version y hash de la bateria, hash y tamano del corpus, `provider`, `alias`, parametros de recuperacion y de generacion y las peticiones y errores del servidor del chat) y una entrada por cada caso de la bateria, con su resultado, las comprobaciones, los fragmentos recuperados (identificador, fuente, encabezado y distancia), las citas, el origen de cada cifra, las latencias por etapa, el fallo (categoria y etapa), si cumplio el esquema y las referencias de evidencia. No puede contener el texto de preguntas, respuestas ni fragmentos, ni credenciales: el calculador solo acepta los campos del formato, con los textos libres acotados en longitud, y rechaza cualquier otro (por ejemplo `question`, `prompt`, `response` o un campo con aspecto de clave) nombrando el campo y sin imprimir su valor. Un caso `pass` no puede traer fallo, una llamada fallida no trae latencia de su etapa ni total, y un caso critico con una cifra sin rastro no puede ser `pass`. Las categorias de fallo son las nueve del proveedor de embeddings mas `schema_validation`.
 
 ## Calcular un informe
 

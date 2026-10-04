@@ -377,7 +377,7 @@
   },
   {
    "case": "JUP-069-006",
-   "outcome": "pass",
+   "outcome": "fail",
    "checks": [
     {
      "id": "forbidden",
@@ -390,7 +390,7 @@
     {
      "id": "numbers",
      "class": "objective",
-     "result": "pass",
+     "result": "fail",
      "decided_by": [
       "rule"
      ]
@@ -398,7 +398,7 @@
     {
      "id": "required",
      "class": "judged",
-     "result": "pass",
+     "result": "fail",
      "decided_by": [
       "persona-a",
       "persona-b"
@@ -434,6 +434,9 @@
     },
     {
      "origin": "question"
+    },
+    {
+     "origin": "untraceable"
     }
    ],
    "latency_ms": {
@@ -1260,9 +1263,6 @@
     },
     {
      "origin": "question"
-    },
-    {
-     "origin": "untraceable"
     }
    ],
    "latency_ms": {

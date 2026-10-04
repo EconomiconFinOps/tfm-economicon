@@ -13,7 +13,6 @@ import argparse
 import hashlib
 import json
 import math
-import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,10 +35,23 @@ FAILURE_CATEGORIES = PROVIDER_FAILURES + ("schema_validation",)
 FIGURE_ORIGINS = ("context", "evidence", "question", "untraceable")
 CHECK_CLASSES = ("objective", "judged")
 COVERAGE_WITH_SECTIONS = ("direct", "partial")
-FORBIDDEN_NAMES = frozenset({"question", "prompt", "response", "content", "answer", "text", "excerpt"})
-SECRET_NAME = re.compile(r"(key|secret|token|password|authorization|credential)", re.IGNORECASE)
 COMPARATORS = {">=": lambda value, target: value >= target, "<=": lambda value, target: value <= target, "==": lambda value, target: value == target}
 Z = 1.959963984540054
+MAX_COUNT = 10 ** 9
+ALLOWED = {
+    "results": {"results_version", "catalogue_version", "synthetic", "run", "cases"},
+    "run": {"commit", "date", "bank", "corpus", "provider", "alias", "retrieval", "generation", "availability"},
+    "bank": {"suite_version", "suite_sha256"},
+    "corpus": {"sha256", "documents", "chunks"},
+    "retrieval": {"top_k", "max_distance", "chunk_size", "chunk_overlap"},
+    "generation": {"model_alias", "temperature", "top_p", "max_tokens", "seed", "system_prompt_sha256"},
+    "availability": {"requests", "server_errors"},
+    "case": {"case", "outcome", "checks", "retrieved", "citations", "figures", "latency_ms", "failure_category", "failure_stage", "structured_ok", "evidence_refs"},
+    "check": {"id", "class", "result", "decided_by"},
+    "fragment": {"chunk_id", "source", "heading", "distance"},
+    "figure": {"origin"},
+    "refs": {"total", "dangling"},
+}
 MINIMUM = {"median": 5, "p95": 20, "max": 5, "quartile": 5}
 COMPUTED_IDS = (
     "ACC-1", "ACC-2", "ACC-3", "REL-1", "REL-2", "REL-3", "REL-4", "GRD-1", "GRD-2", "GRD-3",
@@ -58,6 +70,11 @@ class ResultsError(ValueError):
 
 def suite_digest(bank: dict) -> str:
     text = json.dumps(bank, separators=(",", ":"), ensure_ascii=False).replace("\r\n", "\n")
+    return hashlib.sha256(text.encode("utf8")).hexdigest()
+
+
+def definitions_digest(catalogue: dict) -> str:
+    text = json.dumps(catalogue["metrics"], sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(text.encode("utf8")).hexdigest()
 
 
@@ -98,6 +115,8 @@ def validate_catalogue(catalogue: dict) -> None:
         raise CatalogueError(f"catalogue lacks the computed metric {missing}")
     for extra in sorted(seen - set(COMPUTED_IDS)):
         raise CatalogueError(f"catalogue defines {extra}, which the calculator does not compute")
+    if catalogue.get("definitions_sha256") != definitions_digest(catalogue):
+        raise CatalogueError("definitions_sha256: the metric definitions changed; bump catalogue_version and update the hash")
 
 
 def wilson(successes: int, total: int) -> tuple[float, float] | None:
@@ -131,24 +150,24 @@ def fail(path: str, message: str) -> None:
     raise ResultsError(f"{path}: {message}")
 
 
-def scan_names(node, path: str) -> None:
-    if isinstance(node, dict):
-        for name, value in node.items():
-            here = f"{path}.{name}" if path else str(name)
-            if str(name).lower() in FORBIDDEN_NAMES or SECRET_NAME.search(str(name)):
-                fail(here, "field not allowed in a results file")
-            scan_names(value, here)
-    elif isinstance(node, list):
-        for index, value in enumerate(node):
-            scan_names(value, f"{path}[{index}]")
-
-
 def is_number(value) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
 def is_count(value) -> bool:
-    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+    return isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= MAX_COUNT
+
+
+def short(limit: int):
+    return lambda value: isinstance(value, str) and 0 < len(value.strip()) <= limit
+
+
+def allow(node, group: str, path: str) -> None:
+    if not isinstance(node, dict):
+        fail(path or "results", "must be an object")
+    for name in node:
+        if name not in ALLOWED[group]:
+            fail(f"{path}.{name}" if path else str(name), "field not allowed in a results file")
 
 
 def require(node: dict, field: str, path: str, kind) -> object:
@@ -165,44 +184,55 @@ def text(value) -> bool:
 
 
 def validate_run(run: dict, bank: dict) -> None:
-    require(run, "commit", "run", text)
-    require(run, "date", "run", text)
-    require(run, "provider", "run", text)
-    require(run, "alias", "run", text)
+    allow(run, "run", "run")
+    require(run, "commit", "run", short(64))
+    require(run, "date", "run", short(40))
+    require(run, "provider", "run", short(40))
+    require(run, "alias", "run", short(100))
     bank_header = require(run, "bank", "run", lambda value: isinstance(value, dict))
-    require(bank_header, "suite_version", "run.bank", text)
-    digest = require(bank_header, "suite_sha256", "run.bank", text)
+    allow(bank_header, "bank", "run.bank")
+    require(bank_header, "suite_version", "run.bank", short(40))
+    digest = require(bank_header, "suite_sha256", "run.bank", short(64))
     if bank_header["suite_version"] != bank.get("suite_version") or digest != suite_digest(bank):
         fail("run.bank.suite_sha256", "does not match the question bank in the repository")
     corpus = require(run, "corpus", "run", lambda value: isinstance(value, dict))
-    require(corpus, "sha256", "run.corpus", text)
+    allow(corpus, "corpus", "run.corpus")
+    require(corpus, "sha256", "run.corpus", short(64))
     require(corpus, "documents", "run.corpus", is_count)
     require(corpus, "chunks", "run.corpus", is_count)
     retrieval = require(run, "retrieval", "run", lambda value: isinstance(value, dict))
-    require(retrieval, "top_k", "run.retrieval", is_count)
-    require(retrieval, "chunk_size", "run.retrieval", is_count)
+    allow(retrieval, "retrieval", "run.retrieval")
+    require(retrieval, "top_k", "run.retrieval", lambda value: is_count(value) and value >= 1)
+    require(retrieval, "chunk_size", "run.retrieval", lambda value: is_count(value) and value >= 1)
     require(retrieval, "chunk_overlap", "run.retrieval", is_count)
-    if "max_distance" not in retrieval or not (retrieval["max_distance"] is None or is_number(retrieval["max_distance"])):
-        fail("run.retrieval.max_distance", "required number or null")
-    require(run, "generation", "run", lambda value: isinstance(value, dict))
+    if "max_distance" not in retrieval or not (retrieval["max_distance"] is None or (is_number(retrieval["max_distance"]) and retrieval["max_distance"] >= 0)):
+        fail("run.retrieval.max_distance", "required number of at least 0, or null")
+    generation = require(run, "generation", "run", lambda value: isinstance(value, dict))
+    allow(generation, "generation", "run.generation")
+    for name, value in generation.items():
+        if not (is_number(value) or isinstance(value, bool) or short(80)(value)):
+            fail(f"run.generation.{name}", "must be a number, a boolean or a short text")
     availability = require(run, "availability", "run", lambda value: isinstance(value, dict))
+    allow(availability, "availability", "run.availability")
     requests = require(availability, "requests", "run.availability", is_count)
     errors = require(availability, "server_errors", "run.availability", is_count)
     if errors > requests:
         fail("run.availability.server_errors", "cannot exceed the requests")
 
 
-def validate_case(item: dict, index: int) -> None:
+def validate_case(item: dict, index: int, critical: bool) -> None:
     path = f"cases[{index}]"
+    allow(item, "case", path)
     outcome = require(item, "outcome", path, lambda value: value in OUTCOMES)
     checks = require(item, "checks", path, lambda value: isinstance(value, list))
     failed_check = False
     for position, check in enumerate(checks):
         where = f"{path}.checks[{position}]"
-        require(check, "id", where, text)
+        allow(check, "check", where)
+        require(check, "id", where, short(100))
         kind = require(check, "class", where, lambda value: value in CHECK_CLASSES)
         result = require(check, "result", where, lambda value: value in EVALUATED)
-        deciders = require(check, "decided_by", where, lambda value: isinstance(value, list) and value and all(text(name) for name in value))
+        deciders = require(check, "decided_by", where, lambda value: isinstance(value, list) and value and all(short(80)(name) for name in value))
         if kind == "objective" and deciders != ["rule"]:
             fail(f"{where}.decided_by", "an objective check is decided by rule")
         if kind == "judged" and ("rule" in deciders or len(deciders) > 2):
@@ -213,14 +243,18 @@ def validate_case(item: dict, index: int) -> None:
     retrieved = require(item, "retrieved", path, lambda value: isinstance(value, list))
     for position, fragment in enumerate(retrieved):
         where = f"{path}.retrieved[{position}]"
-        require(fragment, "chunk_id", where, text)
-        require(fragment, "source", where, text)
-        require(fragment, "heading", where, lambda value: isinstance(value, str))
+        allow(fragment, "fragment", where)
+        require(fragment, "chunk_id", where, short(200))
+        require(fragment, "source", where, short(100))
+        require(fragment, "heading", where, lambda value: isinstance(value, str) and len(value) <= 200)
         require(fragment, "distance", where, lambda value: is_number(value) and 0 <= value <= 2)
-    require(item, "citations", path, lambda value: isinstance(value, list) and all(text(entry) for entry in value))
+    require(item, "citations", path, lambda value: isinstance(value, list) and all(short(200)(entry) for entry in value))
     figures = require(item, "figures", path, lambda value: isinstance(value, list))
     for position, figure in enumerate(figures):
+        allow(figure, "figure", f"{path}.figures[{position}]")
         require(figure, "origin", f"{path}.figures[{position}]", lambda value: value in FIGURE_ORIGINS)
+        if figure["origin"] == "untraceable" and critical and outcome == "pass":
+            fail(f"{path}.outcome", "a critical case with an untraceable figure cannot pass")
     latency = require(item, "latency_ms", path, lambda value: isinstance(value, dict))
     for stage, value in latency.items():
         if stage not in STAGES or not is_number(value) or value < 0:
@@ -233,9 +267,16 @@ def validate_case(item: dict, index: int) -> None:
         fail(f"{path}.failure_stage", "not one of the call stages")
     if (category is None) != (stage is None):
         fail(f"{path}.failure_stage" if category else f"{path}.failure_category", "required together with the other failure field")
+    if category is not None and outcome == "pass":
+        fail(f"{path}.failure_category", "a passing case has no failure")
+    if stage is not None:
+        for name in (stage, "total"):
+            if name in latency:
+                fail(f"{path}.latency_ms.{name}", "a failed call has no latency for its stage or the total")
     if "structured_ok" not in item or not (item["structured_ok"] is None or isinstance(item["structured_ok"], bool)):
         fail(f"{path}.structured_ok", "required boolean or null")
     refs = require(item, "evidence_refs", path, lambda value: isinstance(value, dict))
+    allow(refs, "refs", f"{path}.evidence_refs")
     total = require(refs, "total", f"{path}.evidence_refs", is_count)
     dangling = require(refs, "dangling", f"{path}.evidence_refs", is_count)
     if dangling > total:
@@ -243,7 +284,8 @@ def validate_case(item: dict, index: int) -> None:
 
 
 def validate_results(results: dict, bank: dict, labels: dict, catalogue: dict) -> None:
-    scan_names(results, "")
+    if isinstance(results, dict):
+        allow(results, "results", "")
     if not isinstance(results, dict) or results.get("results_version") != RESULTS_VERSION:
         fail("results_version", f"must be {RESULTS_VERSION}")
     if results.get("catalogue_version") != catalogue["catalogue_version"]:
@@ -254,6 +296,7 @@ def validate_results(results: dict, bank: dict, labels: dict, catalogue: dict) -
     validate_run(run, bank)
     cases = require(results, "cases", "", lambda value: isinstance(value, list))
     expected = {case["id"] for case in bank["cases"]}
+    critical_ids = {case["id"] for case in bank["cases"] if case["expected"].get("numbers")}
     seen: set[str] = set()
     for index, item in enumerate(cases):
         identifier = require(item, "case", f"cases[{index}]", text)
@@ -262,7 +305,7 @@ def validate_results(results: dict, bank: dict, labels: dict, catalogue: dict) -
         if identifier in seen:
             fail("cases", f"duplicated case {identifier}")
         seen.add(identifier)
-        validate_case(item, index)
+        validate_case(item, index, identifier in critical_ids)
     for identifier in sorted(expected - seen):
         fail("cases", f"missing case {identifier}")
     labelled = {label["case"] for label in labels["labels"]}
@@ -394,7 +437,7 @@ def compute(results: dict, bank: dict, labels: dict, catalogue: dict) -> dict:
         )
     })
     notes = []
-    if run["provider"] == "mock":
+    if run["provider"].strip().casefold() == "mock":
         notes.append("El proveedor de embeddings es mock: la similitud y los aciertos de recuperacion no tienen significado semantico.")
     if results.get("synthetic"):
         notes.append("Datos sinteticos de ejemplo: no son una medicion del asistente.")
@@ -507,21 +550,33 @@ def main(argv: list[str] | None = None) -> int:
         bank, labels = load_json(BANK_PATH), load_json(LABELS_PATH)
         try:
             results = load_json(args.results)
-        except (OSError, ValueError):
+        except (OSError, ValueError, RecursionError):
             fail("results", "the file cannot be read as JSON")
-        report = compute(results, bank, labels, catalogue)
+        try:
+            report = compute(results, bank, labels, catalogue)
+        except RecursionError:
+            fail("results", "nesting is too deep")
     except (CatalogueError, ResultsError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 2
     report["generated_at"] = args.generated_at or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     document = json.dumps(report, indent=2, ensure_ascii=False) + "\n"
     markdown = render_markdown(report, catalogue)
-    if args.output:
-        args.output.write_text(document, encoding="utf8", newline="\n")
-    if args.report:
-        args.report.write_text(markdown, encoding="utf8", newline="\n")
+    for flag, target, content in (("--output", args.output, document), ("--report", args.report, markdown)):
+        if target is None:
+            continue
+        try:
+            target.write_text(content, encoding="utf8", newline="\n")
+        except OSError:
+            print(f"Error: {flag}: the file cannot be written", file=sys.stderr)
+            return 2
     if not args.output and not args.report:
-        sys.stdout.write(markdown)
+        stream = getattr(sys.stdout, "buffer", None)
+        if stream is not None:
+            stream.write(markdown.encode("utf8"))
+            stream.flush()
+        else:
+            sys.stdout.write(markdown)
     return 0
 
 

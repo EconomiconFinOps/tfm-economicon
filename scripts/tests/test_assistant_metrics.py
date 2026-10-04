@@ -23,6 +23,7 @@ SPEC.loader.exec_module(metrics)
 BANK = json.loads((ROOT / "docs/validation/JUP-069-questions.json").read_text(encoding="utf8"))
 LABELS = json.loads((ROOT / "docs/validation/JUP-022-retrieval-labels.json").read_text(encoding="utf8"))
 CATALOGUE = metrics.load_catalogue()
+PINNED_DEFINITIONS = ("1.0.0", "aef90eed2c903966a518b0d5937f7b6c3c7fdafe5d36e5b2bf3c2739e7c7e002")
 CASES = {case["id"]: case for case in BANK["cases"]}
 LABEL_BY_CASE = {label["case"]: label for label in LABELS["labels"]}
 SOURCE_CASE = {"answer": [], "clarify": [], "abstain": []}
@@ -353,7 +354,7 @@ class GroundingTests(unittest.TestCase):
     def test_untraceable_figures_are_counted_and_critical_cases_are_listed(self):
         results = base_results()
         critical, other = CRITICAL[0], next(i for i in SOURCE_CASE["answer"] if i not in CRITICAL)
-        passing(results, critical, figures=[{"origin": "context"}, {"origin": "untraceable"}, {"origin": "untraceable"}])
+        failing(results, critical, figures=[{"origin": "context"}, {"origin": "untraceable"}, {"origin": "untraceable"}])
         passing(results, other, figures=[{"origin": "question"}, {"origin": "untraceable"}])
         grd2 = compute(results)["metrics"]["GRD-2"]
         self.assertEqual(grd2["total"], 3)
@@ -569,7 +570,7 @@ class TargetsTests(unittest.TestCase):
         self.assertIs(report["metrics"]["ACC-2"]["target"]["met"], True)
         self.assertIs(report["metrics"]["STR-1"]["target"]["met"], False)
         results = base_results()
-        passing(results, CRITICAL[0], figures=[{"origin": "untraceable"}])
+        failing(results, CRITICAL[0], figures=[{"origin": "untraceable"}])
         self.assertIs(compute(results)["metrics"]["GRD-2"]["target"]["met"], False)
 
     def test_a_value_exactly_on_the_target_meets_it(self):
@@ -659,6 +660,134 @@ class CliTests(unittest.TestCase):
             self.assertIn(item["id"], markdown)
         self.assertIn("k de n", markdown)
         self.assertIn("120", markdown)
+
+
+class AdversarialRegressionTests(unittest.TestCase):
+    def test_a_critical_case_with_an_untraceable_figure_cannot_pass(self):
+        results = base_results()
+        passing(results, CRITICAL[0], figures=[{"origin": "untraceable"}])
+        reject(self, results, "cases[%d].outcome" % [c["case"] for c in results["cases"]].index(CRITICAL[0]))
+        results = base_results()
+        failing(results, CRITICAL[0], figures=[{"origin": "untraceable"}])
+        report = compute(results)["metrics"]
+        self.assertEqual((report["ACC-1"]["k"], report["ACC-1"]["n"]), (0, 1))
+        self.assertEqual(report["GRD-2"]["critical_failures"], [CRITICAL[0]])
+        other = next(i for i in SOURCE_CASE["answer"] if i not in CRITICAL)
+        results = base_results()
+        passing(results, other, figures=[{"origin": "untraceable"}])
+        self.assertEqual(compute(results)["metrics"]["GRD-2"]["by_case"], {other: 1})
+
+    def test_a_failed_call_carries_no_latency_for_its_stage_or_the_total(self):
+        results = base_results()
+        failing(results, SOURCE_CASE["answer"][0], latency_ms={"generation": 500.0},
+                failure_category="timeout", failure_stage="generation")
+        reject(self, results, "latency_ms.generation")
+        results = base_results()
+        failing(results, SOURCE_CASE["answer"][0], latency_ms={"embedding": 10.0, "total": 600.0},
+                failure_category="timeout", failure_stage="generation")
+        reject(self, results, "latency_ms.total")
+        results = base_results()
+        failing(results, SOURCE_CASE["answer"][0], latency_ms={"embedding": 10.0, "retrieval": 20.0},
+                failure_category="timeout", failure_stage="generation")
+        lat4 = compute(results)["metrics"]["LAT-4"]["stages"]["generation"]
+        self.assertEqual((lat4["k"], lat4["n"]), (1, 1))
+
+    def test_a_passing_case_has_no_failure_and_blocked_cases_count_as_failed_calls_only(self):
+        results = base_results()
+        passing(results, SOURCE_CASE["answer"][0], failure_category="timeout", failure_stage="generation")
+        reject(self, results, "cases[0].failure_category")
+        results = base_results()
+        blocked = case_of(results, SOURCE_CASE["answer"][0])
+        blocked.update(outcome="blocked", failure_category="connection", failure_stage="embedding")
+        report = compute(results)["metrics"]
+        self.assertEqual(report["STR-2"]["by_category"]["connection"], 1)
+        self.assertEqual((report["LAT-4"]["stages"]["embedding"]["k"], report["LAT-4"]["stages"]["embedding"]["n"]), (1, 1))
+        self.assertEqual(report["ACC-1"]["n"], 0)
+
+    def test_the_cli_reports_hostile_input_with_exit_2_and_no_traceback(self):
+        def run(path_args, text=None, results=None):
+            with tempfile.TemporaryDirectory() as raw:
+                source = Path(raw) / "results.json"
+                source.write_text(text if text is not None else json.dumps(results), encoding="utf8")
+                buffer = tempfile.TemporaryFile(mode="w+", encoding="utf8")
+                with mock.patch.object(sys, "stderr", buffer):
+                    code = metrics.main(["--results", str(source)] + [a.replace("{dir}", raw) for a in path_args])
+                buffer.seek(0)
+                return code, buffer.read()
+        huge = base_results()
+        huge["run"]["availability"] = {"requests": 10 ** 400, "server_errors": 0}
+        code, message = run([], results=huge)
+        self.assertEqual(code, 2)
+        self.assertIn("run.availability.requests", message)
+        code, message = run([], text="[" * 100000)
+        self.assertEqual(code, 2)
+        self.assertIn("results", message)
+        code, message = run(["--output", "{dir}/missing/out.json"], results=base_results())
+        self.assertEqual(code, 2)
+        self.assertIn("--output", message)
+
+    def test_a_report_with_non_ascii_text_reaches_a_cp1252_pipe_as_utf8(self):
+        import io
+        alias = "alias-\u03c9-\u65e5\u672c"
+        results = base_results()
+        results["run"]["alias"] = alias
+        with tempfile.TemporaryDirectory() as raw:
+            source = Path(raw) / "results.json"
+            source.write_text(json.dumps(results), encoding="utf8")
+            pipe = io.TextIOWrapper(io.BytesIO(), encoding="cp1252", errors="strict")
+            with mock.patch.object(sys, "stdout", pipe):
+                code = metrics.main(["--results", str(source), "--generated-at", "2026-10-05T10:00:00Z"])
+            pipe.flush()
+            self.assertEqual(code, 0)
+            self.assertIn(alias, pipe.buffer.getvalue().decode("utf8"))
+
+    def test_only_listed_fields_are_accepted_and_free_text_is_bounded(self):
+        for name in ("question_text", "prompt_text", "response_body", "questions", "Question ", "answer_text", "body",
+                     "message", "completion", "output", "pwd", "bearer", "sas", "connection_string"):
+            results = base_results()
+            case_of(results, SOURCE_CASE["answer"][0])[name] = "VALOR-SECRETO-123"
+            reject(self, results, name.strip(), secret="VALOR-SECRETO-123")
+            results = base_results()
+            results["run"]["generation"][name] = "VALOR-SECRETO-123"
+            reject(self, results, "run.generation", secret="VALOR-SECRETO-123")
+        results = base_results()
+        passing(results, ANSWERS_DIRECT[0], retrieved=[{"chunk_id": "c", "source": "finops", "heading": "x" * 1500, "distance": 0.1}])
+        reject(self, results, "heading")
+        results = base_results()
+        results["run"]["generation"]["model_alias"] = "sk-abcdef" * 1000
+        reject(self, results, "run.generation.model_alias")
+
+    def test_no_allowed_field_name_can_hold_text_or_secrets(self):
+        risky = {"question", "prompt", "response", "content", "answer", "text", "excerpt", "body", "message"}
+        secret = ("key", "secret", "token", "password", "authorization", "credential")
+        for group, names in metrics.ALLOWED.items():
+            for name in names:
+                self.assertNotIn(name, risky, group)
+                if name != "max_tokens":
+                    self.assertFalse(any(word in name.lower() for word in secret), f"{group}.{name}")
+
+    def test_the_catalogue_definitions_are_pinned_to_a_hash(self):
+        catalogue = copy.deepcopy(CATALOGUE)
+        catalogue["metrics"][0]["numerator"] = "otra formula"
+        with self.assertRaisesRegex(metrics.CatalogueError, "definitions_sha256"):
+            metrics.validate_catalogue(catalogue)
+        self.assertEqual(
+            (CATALOGUE["catalogue_version"], CATALOGUE["definitions_sha256"]),
+            PINNED_DEFINITIONS,
+            "changing a definition needs a new catalogue_version: update the pin on purpose",
+        )
+
+    def test_the_mock_provider_is_recognised_whatever_its_case(self):
+        for provider in ("Mock", " MOCK "):
+            results = base_results()
+            results["run"]["provider"] = provider
+            self.assertTrue(any("mock" in note for note in compute(results)["notes"]))
+
+    def test_retrieval_parameters_have_a_valid_range(self):
+        for field, value in (("top_k", 0), ("max_distance", -5), ("chunk_size", 0)):
+            results = base_results()
+            results["run"]["retrieval"][field] = value
+            reject(self, results, "run.retrieval." + field)
 
 
 if __name__ == "__main__":
