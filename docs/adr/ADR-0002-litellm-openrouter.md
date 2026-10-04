@@ -1,6 +1,6 @@
 # ADR-0002: LiteLLM como gateway y OpenRouter como upstream
 
-- Estado: Proposed
+- Estado: Accepted (2026-10-04; ver Aceptacion)
 - Fecha: 2026-08-25
 - Tarjeta: [JUP-078](https://trello.com/c/M4zqDGlW)
 - Decision requerida antes de: octubre de 2026
@@ -75,6 +75,8 @@ Alejandro aprueba:
 Esta aprobacion no acredita a Lucia, Paris ni Victor. El ADR permanece
 `Proposed` hasta reunir las cuatro aprobaciones, provisionar la clave virtual y
 registrar la revision conjunta.
+
+Actualizacion 2026-10-04: aprobaciones completas y ADR aceptado; ver la seccion Aceptacion.
 
 ## Criterios
 
@@ -174,11 +176,45 @@ Cambiar el modelo de embeddings o su dimension requerira una coleccion nueva y r
 2. Instancia de benchmark aislada y fijada por digest en `dockerserver`:
    completado.
 3. Aprobar presupuesto, privacidad, hallazgos y politica de seleccion por los
-   cuatro miembros: pendiente.
+   cuatro miembros: completado el 2026-10-04 con la aprobacion de Lucia (ver Aceptacion).
 4. Crear una clave virtual revocable con el techo que apruebe el equipo:
-   pendiente; la API key upstream actual tiene un limite propio de 25 USD/mes.
+   pendiente; la API key upstream actual tiene un limite propio de 25 USD/mes. Seguimiento operativo de quien administra el gateway; ver Aceptacion.
 5. Revisar el PR publicado contra `develop` en
-   `EconomiconFinOps/tfm-economicon` y aceptar expresamente la decision.
+   `EconomiconFinOps/tfm-economicon` y aceptar expresamente la decision: completado con la revision y aprobacion del PR que registra la Aceptacion.
+
+## Aceptacion (2026-10-04)
+
+El ADR pasa a `Accepted` al integrarse el PR que registra esta seccion. Aprobaciones individuales de la decision, los hallazgos y el presupuesto:
+
+- Alejandro Aguado: 2026-08-28, en la seccion "Revalidacion de catalogo y aprobacion de Alejandro" de este ADR.
+- Paris Arcos Martin y Victor Mendez: registradas en la tarjeta JUP-078 (seccion "Aprobaciones atribuibles", reconciliacion del 2026-09-08; la de Victor se manifesto el 2026-08-30). Cada una se confirma con su aprobacion de este PR.
+- Lucia Mateo: 2026-10-04, tras revisar la decision punto por punto y con las notas siguientes.
+
+Notas de la aceptacion:
+
+1. La latencia no esta demostrada. El objetivo de p95 menor o igual a 10 s no se alcanzo en el benchmark de agosto (11,73 s con GLM-5.2 y 10,88 s con DeepSeek, sobre cinco casos y LiteLLM 1.82.6). Se medira con las tarjetas JUP-067 y JUP-070 y no se considera cumplido hasta entonces.
+2. El techo de 10 USD/mes de desarrollo (esta decision) y el techo agregado de 0,50 EUR para las validaciones puntuales de uso real (ADR-0016) son limites distintos; si alguna operacion los pusiera en contradiccion, prevalece el mas restrictivo.
+3. Modelos y precios se vuelven a comprobar antes de cualquier gasto real. Las tablas de este ADR son historicas; la comprobacion del 2026-10-04 esta en la seccion siguiente.
+
+La condicion 4 (clave virtual con el techo aprobado) queda como seguimiento operativo de quien administra el gateway: hasta que se emita, no se autoriza gasto real mas alla de lo previsto en ADR-0016.
+
+## Actualizaciones posteriores al benchmark (2026-10-04)
+
+Las secciones anteriores conservan su fecha. Lo que ha cambiado:
+
+- **Version del gateway.** El benchmark uso LiteLLM 1.82.6, que ya no se utiliza: ADR-0016 fija 1.103.2 por digest.
+- **Precios.** Consulta publica a la API de OpenRouter del 2026-10-04, en USD por millon de tokens. Cada modelo tiene varios proveedores con ZDR y el precio depende de cual atienda la peticion, porque el routing fija `allow_fallbacks: false` y ZDR.
+
+| Modelo | ADR (25 y 28/08) | Cabecera del catalogo hoy | Rango entre endpoints con ZDR hoy |
+|---|---|---|---|
+| GLM-5.2 | 1,19 entrada / 3,74 salida | 0,064 / 8,00 | entrada 0,06 a 2,25; salida 2,48 a 8,00 |
+| DeepSeek V4 Pro | 0,75 / 1,50 | 0,21 / 0,42 | entrada 0,19 a 1,74; salida 1,63 a 5,00 |
+| text-embedding-3-small | 0,02 / n.a. | 0,02 / n.a. | sin cambios |
+
+  Con los mismos 100 casos de 2.000 tokens de entrada y 500 de salida, el coste de GLM-5.2 estaria entre 0,10 y 0,55 USD, muy por debajo del techo de 10 USD/mes. Los tres modelos siguen disponibles con sus identificadores.
+- **Limites por servicio.** Timeout de 30 s, 2 reintentos y 800 tokens de salida se mantienen en el processor. El backend interactivo usa 10 s y un reintento, con un maximo de 60 s de intentos por pregunta, segun la revision de JUP-022 (ADR-0017, propuesto en el PR 67).
+- **Claves.** Ademas de la separacion entre gateway y servicios, cada servicio usa su propia clave virtual: el backend tiene una distinta de la del processor.
+- **Embeddings.** El alias `economicon-embedding` con 1536 dimensiones se ha validado de extremo a extremo (JUP-023 y JUP-022). Un cambio de modelo con la misma dimension no se detecta (finding RF-022-001).
 
 ## Referencias consultadas
 

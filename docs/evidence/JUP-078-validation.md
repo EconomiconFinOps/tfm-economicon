@@ -153,3 +153,7 @@ container, dedicated loopback port and image pinned to an explicit digest.
   approved product budget before connecting application services.
 - Record approval from Lucia, Paris, Victor and Alejandro.
 - Obtain review on the PR targeting the now-confirmed official `develop` branch.
+
+## Acceptance (2026-10-04)
+
+ADR-0002 is accepted with the individual approvals recorded in its Acceptance section, three explicit notes (latency still to be measured, the two budget ceilings, and prices re-checked before any spend) and an operational follow-up: the scoped virtual key remains to be issued by whoever administers the gateway. The 2026-10-04 public catalogue check (models still available, prices changed) is recorded in the ADR. The listed pending items above are closed except the virtual key.
