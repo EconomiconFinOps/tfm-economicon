@@ -45,7 +45,7 @@ Cinco pasadas del agente `adversarial-reviewer`, cada una sobre el head vigente 
 
 ### Cierre
 
-La revision adversarial se da por cerrada tras la quinta pasada con los hallazgos LOW siguientes aceptados explicitamente por Lucia (2026-10-05) y registrados en `openspec/findings/backlog.md` (RF-067-001 a RF-067-004):
+La revision adversarial se da por cerrada tras la quinta pasada con los hallazgos LOW siguientes aceptados explicitamente por Lucia (2026-10-04) y registrados en `openspec/findings/backlog.md` (RF-067-001 a RF-067-004):
 
 | Hallazgo | Disposicion |
 | --- | --- |
@@ -76,3 +76,14 @@ RF-067-001 a RF-067-004 en `openspec/findings/backlog.md`, aceptados por Lucia a
 ## ADR
 
 No aplica: son definiciones de metricas y una herramienta de calculo, no una decision de arquitectura duradera. Se enlaza ADR-0002 como origen de los objetivos provisionales sin sustituirlo ni ratificarlo.
+
+## Human Approval
+
+- Change: jup-067-assistant-technical-metrics
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-04
+- Adversarial review: accepted findings: RF-067-001, RF-067-002, RF-067-003 y RF-067-004 (LOW, pasada 5), aceptados por Lucia y registrados en `openspec/findings/backlog.md`
+- Archive decision: archive
+- Notes: aprobadas las definiciones de las metricas, el formato de resultados y el calculador, con los objetivos de ADR-0002 como referencia provisional y sin puerta de aceptacion. La revision de PR y la validacion funcional de otros miembros quedan en Trello y en el PR; no se ha ejecutado el asistente real (lo hara JUP-070).
