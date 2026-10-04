@@ -1,3 +1,7 @@
+import math
+from time import perf_counter
+
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import (
@@ -8,7 +12,9 @@ from app.api.dependencies import (
     get_vector_store,
     get_database,
 )
-from app.core.metrics import assistant_queries_total
+from app.core.config import get_settings
+from app.core.metrics import assistant_queries_total, retrieval_empty_total, retrieval_failures_total
+from app.services.embedding_provider import PROVIDER_ERROR_CATEGORIES, ProviderError
 from app.schemas.assistant import (
     AssistantReply,
     ConversationCollection,
@@ -20,6 +26,10 @@ from app.schemas.assistant import (
 
 
 router = APIRouter(prefix="/assistant", tags=["assistant"])
+logger = structlog.get_logger("assistant")
+
+RETRIEVAL_UNAVAILABLE = "The assistant cannot retrieve context right now. Try again later."
+FAILURE_CATEGORIES = frozenset(PROVIDER_ERROR_CATEGORIES) | {"vector_store"}
 
 
 @router.get("/conversations", response_model=ConversationCollection)
@@ -95,8 +105,40 @@ def send_message(
         role="user",
         content=payload.content,
     )
-    query_embedding = embedding_provider.embed(payload.content)
-    retrieved_chunks = vector_store.search_chunks(tenant_id, query_embedding)
+    settings = get_settings()
+    provider_name = embedding_provider.name
+    alias = getattr(embedding_provider, "alias", provider_name)
+    trace = {"tenant_id": tenant_id, "user_message_id": user_message["id"], "provider": provider_name, "alias": alias}
+    started = perf_counter()
+    try:
+        query_embedding = embedding_provider.embed(payload.content)
+        if (
+            len(query_embedding) != embedding_provider.dimension
+            or not all(math.isfinite(value) for value in query_embedding)
+            or not any(abs(value) >= 5e-7 for value in query_embedding)
+        ):
+            raise ProviderError("invalid_response")
+    except ProviderError as exc:
+        _retrieval_failed(exc.category, trace, started)
+    except Exception:
+        _retrieval_failed("transport", trace, started)
+    try:
+        retrieved_chunks = vector_store.search_chunks(
+            tenant_id, query_embedding, top_k=settings.retrieval_top_k,
+            max_distance=settings.retrieval_max_distance, provider=embedding_provider.name,
+        )
+    except Exception:
+        _retrieval_failed("vector_store", trace, started)
+    logger.info(
+        "retrieval", **trace,
+        chunk_ids=[item["chunk_id"] for item in retrieved_chunks],
+        document_ids=[item.get("document_id") for item in retrieved_chunks],
+        distances=[round(item["distance"], 4) for item in retrieved_chunks],
+        top_k=settings.retrieval_top_k, max_distance=settings.retrieval_max_distance,
+        results=len(retrieved_chunks), duration_ms=round((perf_counter() - started) * 1000, 2),
+    )
+    if not retrieved_chunks:
+        retrieval_empty_total.inc()
     assistant_output = assistant_service.answer(payload.content, retrieved_chunks)
     assistant_message = database.append_message(
         conversation_id=conversation_id,
@@ -116,3 +158,13 @@ def send_message(
         assistant_message=assistant_message,
         retrieved_context=retrieved_chunks,
     )
+
+
+def _retrieval_failed(category: str, trace: dict, started: float) -> None:
+    category = category if category in FAILURE_CATEGORIES else "transport"
+    retrieval_failures_total.labels(category=category).inc()
+    logger.warning(
+        "retrieval_failed", **trace, category=category,
+        duration_ms=round((perf_counter() - started) * 1000, 2),
+    )
+    raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=RETRIEVAL_UNAVAILABLE) from None

@@ -1,3 +1,6 @@
+JUP: JUP-061
+Trello: https://trello.com/c/qXoHFxyy
+
 ## Purpose
 
 Define how Economicon records durable architecture decisions without requiring an ADR for every local implementation detail.
