@@ -96,7 +96,9 @@
   y aplicaciones que no leen `.env`); `RF-103-002`, el script `dev` usa `--parallel`, obsoleto en
   turbo `2.9.18`; `RF-103-003`, `localhost` en las URLs bloquea el arranque del backend en esta
   máquina (causa sin verificar); `RF-103-004`, `local:test` falla si la infraestructura de Compose
-  está levantada (usa puertos reales que deben estar libres). Además, añadir a `RF-098-004` la observación de 1.4 y 2.3: pasa con
+  está levantada (usa puertos reales que deben estar libres); `RF-103-005`, descubierto en 7.1,
+  `test` con los cuatro paquetes a la vez falla de forma distinta en cada ejecución por tests con
+  plazos de tiempo (JUP-023 y JUP-086). Además, añadir a `RF-098-004` la observación de 1.4 y 2.3: pasa con
   `--maxWorkers=1` y falla entre 14 y 21 tests con los workers por defecto, también ejecutando solo
   el frontend.
 - [x] 6.3 `docs/spikes/frontend-migration.md`, fase F4: marcar `jup-0xx-verificar-docker-compose`
@@ -106,7 +108,7 @@
 
 ## 7. Revisión y cierre
 
-- [ ] 7.1 Ejecutar la batería completa desde la raíz, sin sustitutos:
+- [x] 7.1 Ejecutar la batería completa desde la raíz, sin sustitutos:
   `corepack pnpm install --frozen-lockfile`, `corepack pnpm lint --force`,
   `corepack pnpm build --force`, `corepack pnpm typecheck --force`, y `corepack pnpm run test` con
   `TURBO_FORCE=true` en las dos mitades descritas en 2.3, con el entorno virtual de Python activo,
@@ -114,11 +116,11 @@
   `corepack pnpm jup:check -- --change jup-103-verify-turbo-workspace`,
   `corepack pnpm jup:cleanup:check` y `corepack pnpm local:test`. Este último con la infraestructura
   de Compose parada: usa puertos reales y falla si están ocupados (visto en el grupo 4).
-- [ ] 7.2 Completar `docs/evidence/JUP-103-validation.md`: trazabilidad de los siete criterios de
+- [x] 7.2 Completar `docs/evidence/JUP-103-validation.md`: trazabilidad de los siete criterios de
   aceptación de la tarjeta con su evidencia, tabla de antes y después, lo que no se validó y por qué.
-- [ ] 7.3 Escribir `review.md`: resultado, decisiones, hallazgos, la excepción del ciclo Red/Green
+- [x] 7.3 Escribir `review.md`: resultado, decisiones, hallazgos, la excepción del ciclo Red/Green
   (sin código de producto) y que no aplica ADR.
-- [ ] 7.4 Comprobar que ningún documento versionado de la tarjeta cita configuración local de
+- [x] 7.4 Comprobar que ningún documento versionado de la tarjeta cita configuración local de
   herramientas de asistencia y que los comandos escritos se pueden reproducir tal cual.
 - [ ] 7.5 Tras la aprobación post-revisión, archivar el change y corregir en el mismo paso los
   enlaces relativos, que bajan un nivel al pasar a `openspec/changes/archive/`. Hay uno ya escrito

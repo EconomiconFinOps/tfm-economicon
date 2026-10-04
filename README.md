@@ -347,9 +347,11 @@ que usan CI y la guia de contribucion.
 - `pnpm build`: ejecuta las tareas de build declaradas por cada app
 - `pnpm lint`: ejecuta las tareas de lint declaradas por cada app
 - `pnpm typecheck`: ejecuta la verificacion de tipos; solo la declara el frontend
-- `pnpm test`: ejecuta los tests disponibles. Con los workers por defecto, algunos tests del frontend
-  pueden agotar su tiempo de espera segun la maquina (`RF-098-004`); `corepack pnpm run test
-  --filter=@finops/frontend -- --maxWorkers=1` los ejecuta en serie
+- `pnpm test`: ejecuta los tests disponibles. Con los cuatro paquetes a la vez, algunos tests con
+  plazos de tiempo (frontend, backend y processor) pueden fallar segun la maquina, y no siempre los
+  mismos (`RF-098-004`, `RF-103-005`); aislados y por mitades pasan. Si te ocurre, ejecutalos asi:
+  `corepack pnpm run test "--filter=!@finops/frontend"` y
+  `corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1`
 - `pnpm docker:build`: construye las imagenes Docker de las apps
 - `pnpm docker:validate`: valida topologia, digests, healthchecks y privilegios
   sin necesitar un daemon Docker

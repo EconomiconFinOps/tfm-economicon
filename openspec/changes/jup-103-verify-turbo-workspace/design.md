@@ -130,9 +130,12 @@ cumplido y `README.md` es el documento de arranque.
 
 ### 4. Diagnóstico con un comando documentado, sin herramienta nueva
 
-`corepack pnpm exec pnpm --version` desde la raíz imprime `9.0.0` en una máquina preparada y el error
-de versión en una afectada. Sirve para tres cosas: comprobar la corrección, preguntar al equipo y
-resolver dudas futuras.
+`corepack pnpm exec pnpm --version` desde la raíz imprime `9.0.0` en una máquina preparada. En una
+afectada imprime el error de versión o **otra versión**, según la del pnpm que se resuelva: con
+`11.9.0` y `11.1.3` dio el error; con `11.19.0` (entorno de ejecución de un asistente, en la máquina
+de Alejandro) imprimió `11.19.0` sin error. Por eso el criterio es «imprime exactamente `9.0.0`», no
+«no da error». Sirve para tres cosas: comprobar la corrección, preguntar al equipo y resolver dudas
+futuras.
 
 Alternativa considerada: añadir la comprobación a `local:doctor` o a una herramienta nueva con sus
 tests. Se descarta en esta tarjeta porque `local:doctor` pertenece a la spec

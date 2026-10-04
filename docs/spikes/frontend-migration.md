@@ -501,6 +501,7 @@ tarjeta JUP** de la epica.
     confirmar el entorno de Codex de Alejandro y la máquina de Paris. De paso se descubrió que la
     caché de turbo no depende del gestor de paquetes (una comprobación con `cache hit` no demuestra
     nada: hay que usar `--force`), que `pnpm dev` por sí solo no deja sirviendo backend ni processor
-    (`RF-103-001`, `RF-103-002` y `RF-103-003`) y que `local:test` falla con la infraestructura de
-    Compose levantada (`RF-103-004`). **Queda de la épica:** F5 (`validacion-e2e` y
+    (`RF-103-001`, `RF-103-002` y `RF-103-003`), que `local:test` falla con la infraestructura de
+    Compose levantada (`RF-103-004`) y que `test` con los cuatro paquetes a la vez falla de forma
+    distinta en cada ejecución por tests con plazos de tiempo (`RF-103-005`), aunque por mitades pasa. **Queda de la épica:** F5 (`validacion-e2e` y
     `checks-y-archive`) y lo ya señalado arriba.

@@ -41,9 +41,11 @@ un comando de diagnóstico que distinga una máquina preparada de una que no lo 
 #### Scenario: Máquina con otro gestor de paquetes por delante en la ruta de búsqueda
 
 - **WHEN** una persona ejecuta el comando de diagnóstico en una máquina donde un gestor de paquetes
-  global de otra versión se resuelve antes que el fijado
-- **THEN** el comando termina con error
-- **AND** la documentación indica qué hacer para corregirlo
+  de otra versión se resuelve antes que el fijado
+- **THEN** el comando no imprime la versión que fija el repositorio: termina con un error de versión
+  o imprime otra versión, según la del gestor de paquetes que se resuelva
+- **AND** la documentación indica que cualquier salida distinta de la versión fijada significa que
+  falta preparar la máquina y qué hacer para corregirlo
 
 #### Scenario: Acción requerida al equipo
 
@@ -57,7 +59,8 @@ aplicación del workspace que lo declara: frontend, backend, processor y Azure C
 
 #### Scenario: Arranque conjunto
 
-- **WHEN** una persona con las dependencias de cada aplicación instaladas ejecuta `dev` desde la raíz
+- **WHEN** una persona con las dependencias de cada aplicación instaladas, y con la configuración de
+  cada aplicación disponible para su proceso, ejecuta `dev` desde la raíz
 - **THEN** se inician los procesos de desarrollo de frontend, backend, processor y Azure Cost API sin
   esperar unos a otros
 - **AND** el frontend atiende en el puerto 5173

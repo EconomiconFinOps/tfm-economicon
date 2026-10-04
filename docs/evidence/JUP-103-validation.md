@@ -1,16 +1,19 @@
 # Evidencia JUP-103 — Verificar el pipeline de turbo y el workspace de pnpm
 
-- Fecha: 2026-10-03 (línea base).
+- Fecha: 2026-10-03 (línea base, corrección, grafo y `dev`) y 2026-10-04 (consulta al equipo y
+  batería final).
 - Trello: https://trello.com/c/P33co27E/95-jup-103
 - Rama: `chore/JUP-103-verify-turbo-workspace`.
-- Base: `develop` en `dad5662`; la rama estaba en `fe087c3` al capturar la línea base.
+- Base: `develop` en `dad5662`. La batería final se ejecutó con la rama en `12bc179`. Entretanto
+  `origin/develop` avanzó a `c3aa9d6` (JUP-022, #67) y **la rama todavía no lo incorpora**: se trae
+  y se revisa antes de abrir el pull request (tarea 7.6).
 - OpenSpec: [jup-103-verify-turbo-workspace](../../openspec/changes/jup-103-verify-turbo-workspace/).
 - Hallazgo que cierra: `RF-093-001` (`openspec/findings/backlog.md`).
 - Pull request: _pendiente de abrir_.
 - CI: _pendiente de abrir el pull request_.
 
-> Estado de este documento: **solo la línea base (grupo 1 de `tasks.md`)**. Las secciones marcadas
-> _pendiente_ se completan con el resto de las tareas.
+> Estado de este documento: completo salvo lo marcado _pendiente_ (respuesta de Paris, consola
+> externa de Alejandro, CI y pull request).
 
 ## Máquina donde se reproduce
 
@@ -452,13 +455,101 @@ en dos máquinas.
   real y sus casillas, con la salvedad de `dev`; F4 declarada completa y una entrada nueva en
   «Próximos pasos».
 
-_Pendiente: respuesta de Paris, consola externa de Alejandro y tareas 5.2, 5.3 y 7.x de `tasks.md`
-(batería final, trazabilidad de criterios, `review.md`, archivado y pull request)._
+## Batería final desde la raíz (tarea 7.1)
+
+Entorno: Windows 11, `C:\Program Files\nodejs\pnpm` el primero del `PATH` (corepack),
+`corepack pnpm exec pnpm --version` = `9.0.0`, entorno virtual de Python `3.13.7` activo,
+infraestructura de Compose **parada** y los puertos 5173, 8000, 8001, 8002, 5672, 15672, 26257, 8080
+y 5433 libres. Sin sustitutos `--filter @finops/frontend` como atajo para esquivar turbo: los
+filtros de `test` que figuran abajo van igualmente a través de turbo y de los scripts de la raíz.
+
+| Comando | Código | Resultado |
+| --- | --- | --- |
+| `corepack pnpm install --frozen-lockfile` | `0` | `git status` limpio |
+| `corepack pnpm lint --force` | `0` | 4 de 4 |
+| `corepack pnpm build --force` | `0` | 4 de 4 |
+| `corepack pnpm typecheck --force` | `0` | 1 de 1 |
+| `TURBO_FORCE=true corepack pnpm run test "--filter=!@finops/frontend"` | `0` | 3 de 3, 1 min 34 s: `azure-cost-api` 59; `processor` 448 y 57 omitidos; `backend` 329 y 17 omitidos |
+| `TURBO_FORCE=true corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1` | `0` | 1 de 1, 3 min 9 s: 48 archivos, 443 tests |
+| `corepack pnpm openspec:validate` | `0` | 42 de 42 |
+| `corepack pnpm jup:check -- --change jup-103-verify-turbo-workspace` | `0` | enlazado con Trello y completo |
+| `corepack pnpm jup:check:all` | `0` | todos los changes enlazados |
+| `corepack pnpm jup:check:test` | `0` | 7 de 7 |
+| `corepack pnpm jup:cleanup:check` | `0` | 778 archivos sin agentes personales, binarios ni tareas paralelas |
+| `corepack pnpm jup:cleanup:test` | `0` | 6 de 6 |
+| `corepack pnpm pr:check:test` | `0` | 57 de 57 |
+| `corepack pnpm ci:check:test` | `0` | 10 de 10 |
+| `corepack pnpm repository:governance:test` | `0` | 13 de 13 |
+| `corepack pnpm roadmap:test` | `0` | 5 de 5 |
+| `corepack pnpm docker:validate` | `0` | 31 de 31 |
+| `corepack pnpm local:test` | `0` | 74 de 74 (con la infraestructura parada) |
+| `corepack pnpm assistant-corpus:test` | `0` | 8 de 8 |
+| `corepack pnpm llm-gateway:test` | `0` | 7 de 7 |
+| `corepack pnpm validation-questions:test` | `0` | 8 de 8 |
+
+En las 5 ejecuciones de turbo (`lint`, `build`, `typecheck` y las dos mitades de `test`) **todas las
+tareas figuran como `cache bypass, force executing`, ninguna como `cache hit`, y el error de versión
+de pnpm aparece 0 veces.**
+
+### `test` con los cuatro paquetes a la vez: falla, y no por pnpm
+
+El comando literal de la tarjeta, sin dividir, **no es fiable en esta máquina**:
+
+| Ejecución | Código | Qué falla |
+| --- | --- | --- |
+| `TURBO_FORCE=true corepack pnpm test` | `1` | `processor`: 1 fallo, `test_jup023_attempt_deadline_accepts_complete_response` (`assert 0.358 < 0.2`, umbral de reloj de pared contra un gateway simulado). Turbo cancela el resto (`Tasks: 1 successful, 4 total`) |
+| `TURBO_FORCE=true corepack pnpm run test --continue` | `1` | `backend`: 2 fallos en `test_managed_resolver.py` (`...cancel_wins_before_delivery...[result-ready]` y `...real_blocked_child_has_expected_os_pid...`), ambos `Bounded observation deadline expired`. `azure-cost-api` 59, `processor` 448 y 57 omitidos, **`frontend` 443 de 443** con los workers por defecto |
+| Medición del grupo 1 (`pnpm exec turbo run test --continue`, y la del `venv`) | `2` | `frontend`: 14 a 21 fallos por timeout (`RF-098-004`) |
+
+Cada ejecución falla en un sitio distinto, y los tests que fallan **pasan aislados**: el de
+`processor` 10 de 10 (y su módulo 3 de 3), el módulo de `backend` 3 de 3 (14 correctos cada vez). En
+las 3 mediciones con todos los paquetes a la vez no hay dos fallos iguales. Es consistente con
+contención de CPU al competir las cuatro suites (8 procesadores lógicos), pero **no se midió la
+carga y no se descartó una carrera**, así que no se afirma causa. Procede de tests con plazos de
+tiempo de otras tarjetas (JUP-023 y JUP-086) y se registra como `RF-103-005`.
+
+En ninguna de estas ejecuciones aparece el error de versión de pnpm.
+
+### Qué no se ejecutó en la batería
+
+- `corepack pnpm pr:check` (necesita un pull request abierto): tarea 7.6.
+- `docker compose up --build` y `corepack pnpm local:smoke`: requieren el stack completo y no
+  guardan relación con el cambio (solo documentación).
+- `corepack pnpm docker:build`: construye imágenes y no pasa por la corrección de esta tarjeta.
 
 ## Trazabilidad con los criterios de la tarjeta
 
-_Pendiente: tarea 7.2._
+| # | Criterio | Estado | Evidencia y salvedades |
+| --- | --- | --- | --- |
+| 1 | `lint`, `build`, `test` y `typecheck` se ejecutan desde la raíz vía turbo sin el error de versión de pnpm, en la máquina donde se reproducía | **Cumplido en lo que pide el criterio; con una salvedad sobre `test`** | `lint` 4/4, `build` 4/4 y `typecheck` 1/1 con código `0` y `--force`, y 0 apariciones del error de versión en todas las ejecuciones. `test` tampoco muestra el error y pasa en dos mitades, pero **el comando literal `corepack pnpm test` termina con código `1` en esta máquina** por tests con plazos de tiempo (`RF-103-005`, `RF-098-004`), no por pnpm |
+| 2 | `pnpm dev` levanta frontend, backend y processor en paralelo | **Cumplido con salvedades** | Turbo lanza las cuatro tareas en paralelo con el pnpm correcto. Tal como está documentado, `dev` no deja sirviendo a backend ni a processor y turbo termina todo cuando falla uno; con `--env-mode=loose` y un archivo de entorno con `127.0.0.1` las cuatro responden `200` (grupo 3, `RF-103-001` a `RF-103-003`). Documentado en el `README.md` |
+| 3 | CI sigue en verde | **Pendiente** (7.6) | Esta rama solo cambia `README.md`, `docs/` y `openspec/` (verificado con `git diff --name-only origin/develop...HEAD`): ni `package.json`, `turbo.json`, lockfile, `pnpm-workspace.yaml`, `.github/`, `apps/`, `tools/` ni `packages/`. Los jobs de CI ya ejecutan `corepack enable` antes de pnpm. Se acredita con los checks del pull request |
+| 4 | `RF-093-001` cerrado con la causa documentada, o reformulado si es de entorno | **Cumplido, con pendientes escritos en el propio hallazgo** | `Fixed` con la causa (de entorno), la corrección, las dos afirmaciones del texto original que eran inexactas, 3 reproducciones y 2 máquinas corregidas. Pendientes: el entorno de Codex de Alejandro y la máquina de Paris; se reabre si alguno lo contradice |
+| 5 | Queda escrito si el equipo debe hacer algo en sus máquinas, y qué | **Cumplido de forma provisional** | `README.md`, «Requisito previo: pnpm con corepack»: `corepack enable` una vez si `corepack pnpm exec pnpm --version` no imprime `9.0.0`. Comprobado en 2 de 4 máquinas; el caso de un `pnpm` aportado por el entorno de un asistente queda sin resolver |
+| 6 | Las tarjetas futuras de frontend pueden usar los scripts de la raíz sin sustituto, o queda documentado por qué no | **Parcial, y documentado** | `lint`, `build` y `typecheck` sí, con `corepack enable` hecho y `--force` para comprobar. `test` con los cuatro paquetes a la vez no es fiable en todas las máquinas: se documenta ejecutarlo por mitades. `dev` necesita los pasos del `README.md`. `RF-098-004` y `RF-103-005` |
+| 7 | El spike refleja F4 completa, con la tarjeta de Docker marcada como resuelta por JUP-049 y JUP-050 | **Cumplido** | `docs/spikes/frontend-migration.md`, F4 y entrada 11 de «Próximos pasos». Los puntos de Docker se verificaron contra `apps/frontend/Dockerfile`, `docker-compose.yml`, `README.md`, `RF-090-001`/`RF-090-002` y `tools/docker-topology.test.mjs` |
 
 ## No validado
 
-_Pendiente: tarea 7.2._
+- **CI** (criterio 3): se acredita al abrir el pull request, no antes.
+- **La corrección en la máquina de Paris** (sin respuesta) y **el diagnóstico en la consola externa de
+  Alejandro**; si `corepack enable` bastaría en el entorno de Codex.
+- **La salida literal** de Lucía: confirmó con un resumen, sin pegar los comandos exactos, y hizo a
+  la vez `corepack enable` y la desinstalación del pnpm global, de modo que no se sabe cuál de las dos
+  fue la determinante en su máquina.
+- **macOS y Linux**: todo se verificó en Windows (10 y 11); `sudo` para `corepack enable` es una
+  suposición.
+- **La causa del bloqueo con `localhost`** (`RF-103-003`): la resolución a IPv6 es solo una hipótesis.
+- **La causa de los fallos intermitentes de `test`** (`RF-103-005`, `RF-098-004`): se observó que
+  cambian de una ejecución a otra y que aislados pasan; no se midió la carga ni se descartó una carrera.
+- **El orden de `build` entre paquetes con dependencias internas**: ningún paquete depende de otro,
+  así que la regla `^build` de `turbo.json` no se ha ejercitado.
+- **Python `3.12`** (el de CI y las imágenes) en la máquina de verificación: se usó `3.13.7`. Lucía
+  informa de que con `3.12` pasa y con `3.14` falla un test del processor; no se reprodujo aquí.
+- **Los 57 tests omitidos de `processor` y los 17 de `backend`**: no se examinaron; se sospecha que
+  son los que necesitan base de datos real (`RF-096-004`).
+- **El resto de la batería de CONTRIBUTING con un PR**: `corepack pnpm pr:check`.
+- **La rama integrada con `develop` actual** (`c3aa9d6`): ver tarea 7.6.
+
+_Pendiente: respuesta de Paris, consola externa de Alejandro, CI y pull request (tareas 5.2, 5.3,
+7.3 a 7.6)._
