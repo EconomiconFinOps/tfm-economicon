@@ -41,6 +41,10 @@ completa como verde. Corresponde al líder contrastarlos en el entorno Python
 3.12 de CI antes de declarar la PR lista. Los diez tests específicos de JUP-064
 y los checks de gobernanza sí pasan en este entorno.
 
+Ese contraste se completó posteriormente en la ejecución de CI enlazada abajo:
+las suites completas pasan en Linux/Python 3.12. Los fallos locales se conservan
+como evidencia de ese entorno, sin atribuirles una causa todavía no demostrada.
+
 Para los comandos de Turbo se usó un wrapper local de `pnpm` que invoca Corepack
 9.0.0, porque el shim del entorno cargaba una versión distinta y abortaba la
 instalación sin TTY. El wrapper no forma parte del repositorio.
@@ -71,3 +75,22 @@ DockerServer, usando archivos temporales y sin alterar la integración. Nueva
 regeneración offline idéntica por SHA-256; OpenSpec sigue 45/45 y la trazabilidad
 e higiene pasan. Esta actualización sustituye las cifras del primer corte;
 la historia original permanece en Git.
+
+## CI técnica contrastada
+
+[Run 37220689712](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37220689712),
+ejecutada por `workflow_dispatch` sobre
+`3eb68c5f995b1d66a9ddeee26a126cf785e6728c`: resultado final **success**,
+seis jobs técnicos correctos. Logs inspeccionados, no solo estado agregado.
+
+- OpenSpec y gobernanza: nuevos tests 10/10 y OpenSpec 45/45.
+- Azure API: 59 tests correctos.
+- Backend: 578 correctos y 28 omitidos.
+- Processor: 448 correctos y 57 omitidos; el test que falló localmente pasa en CI.
+- Frontend: 443 tests correctos en 48 archivos; lint y build correctos.
+- Comprobación de tipos frontend correcta.
+
+`JUP policy` se omite porque no hay evento de PR; `JUP reviews` no se ejecuta
+sin PR. Esta CI no sustituye revisión y validación humanas ni permite integrar
+la rama. Los cambios posteriores de esta evidencia son solo documentación;
+la implementación y tests contrastados son los de `3eb68c5`.

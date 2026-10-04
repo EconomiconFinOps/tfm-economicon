@@ -8,6 +8,8 @@ liderazgo. No existe PR de esta rama en la entrega inicial.
    OpenSpec `jup-064-team-contributions`; contrastar alcance y pairing real.
 2. Ejecutar el comando de recogida o reproducir el snapshot sin conexión;
    ejecutar `contributions:test`, los checks de gobernanza y OpenSpec.
+   La [CI técnica de 3eb68c5](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37220689712)
+   ya pasó seis jobs; al abrir la PR se ejecutan también sus controles de política.
 3. Registrar la contribución propia y el pairing que efectivamente haya ocurrido.
    La implementación de Alejandro no acredita actividad de Víctor automáticamente.
 4. Abrir la PR desde la cuenta de Víctor a `develop` con la plantilla existente.
@@ -41,8 +43,9 @@ o validación personal a partir de asignaciones, archivos de pruebas o CI.
 ## Validacion
 
 Ver docs/evidence/JUP-064-validation.md. Pruebas del registro 10/10, gobernanza
-80/80, OpenSpec 45/45 y build correctos. Detallar el contraste propio y los
-límites de la suite general que constan en esa evidencia.
+80/80, OpenSpec 45/45 y seis jobs técnicos de CI correctos en 3eb68c5:
+frontend 443, backend 578, processor 448 y Azure API 59 tests correctos.
+Detallar el contraste propio y los límites locales que constan en esa evidencia.
 
 ## Checklist
 
