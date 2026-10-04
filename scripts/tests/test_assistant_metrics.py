@@ -23,7 +23,7 @@ SPEC.loader.exec_module(metrics)
 BANK = json.loads((ROOT / "docs/validation/JUP-069-questions.json").read_text(encoding="utf8"))
 LABELS = json.loads((ROOT / "docs/validation/JUP-022-retrieval-labels.json").read_text(encoding="utf8"))
 CATALOGUE = metrics.load_catalogue()
-PINNED_DEFINITIONS = ("1.0.0", "2d9d836507a180a97c87fdc97e8d711c0819e31ce6c8ebebb43dfdb630143aa6")
+PINNED_DEFINITIONS = ("1.0.0", "5c5fc0b5e962327e46edbf7c5487ba6ec283bf800e7a7c4a96679161e53fdedd")
 CASES = {case["id"]: case for case in BANK["cases"]}
 LABEL_BY_CASE = {label["case"]: label for label in LABELS["labels"]}
 SOURCE_CASE = {"answer": [], "clarify": [], "abstain": []}
@@ -85,14 +85,15 @@ def full_checks(case_id: str, fail_ids: tuple = (), judged: tuple = ("Ana", "Lui
 
 def passing(results: dict, case_id: str, **fields) -> dict:
     item = case_of(results, case_id)
-    item.update(outcome="pass", checks=full_checks(case_id))
+    item.update(outcome="pass", checks=full_checks(case_id), latency_ms={"total": 1000.0}, structured_ok=True)
     item.update(fields)
     return item
 
 
 def failing(results: dict, case_id: str, **fields) -> dict:
     item = case_of(results, case_id)
-    item.update(outcome="fail", checks=full_checks(case_id, fail_ids=(next(iter(metrics.expected_checks(CASES[case_id]))),)))
+    item.update(outcome="fail", checks=full_checks(case_id, fail_ids=(next(iter(metrics.expected_checks(CASES[case_id]))),)),
+                latency_ms={"total": 1000.0}, structured_ok=True)
     item.update(fields)
     return item
 
@@ -403,8 +404,7 @@ class LatencyTests(unittest.TestCase):
         for case_id, value in zip(usable, values):
             passing(results, case_id, latency_ms={"embedding": value / 10, "total": value})
         for case_id in usable[len(values):]:
-            item = failing(results, case_id)
-            item.update(failure_category="timeout", failure_stage="embedding")
+            blocked(results, case_id, category="timeout", stage="embedding")
         return results
 
     def test_percentiles_use_nearest_rank_over_successful_calls_only(self):
@@ -454,7 +454,7 @@ class RobustnessAndAvailabilityTests(unittest.TestCase):
             passing(results, ANSWERS_DIRECT[index], structured_ok=True)
         failing(results, ANSWERS_DIRECT[3], failure_category="schema_validation", structured_ok=False)
         for index in (4, 5):
-            failing(results, ANSWERS_DIRECT[index], failure_category="timeout", failure_stage="generation")
+            blocked(results, ANSWERS_DIRECT[index], category="timeout", stage="generation")
         report = compute(results)["metrics"]
         self.assertEqual((report["STR-1"]["k"], report["STR-1"]["n"]), (3, 4))
         by_category = report["STR-2"]["by_category"]
@@ -692,22 +692,19 @@ class AdversarialRegressionTests(unittest.TestCase):
 
     def test_a_failed_call_carries_no_latency_for_its_stage_or_the_total(self):
         results = base_results()
-        failing(results, SOURCE_CASE["answer"][0], latency_ms={"generation": 500.0},
-                failure_category="timeout", failure_stage="generation")
+        blocked(results, SOURCE_CASE["answer"][0], category="timeout", stage="generation", latency_ms={"generation": 500.0})
         reject(self, results, "latency_ms.generation")
         results = base_results()
-        failing(results, SOURCE_CASE["answer"][0], latency_ms={"embedding": 10.0, "total": 600.0},
-                failure_category="timeout", failure_stage="generation")
+        blocked(results, SOURCE_CASE["answer"][0], category="timeout", stage="generation", latency_ms={"embedding": 10.0, "total": 600.0})
         reject(self, results, "latency_ms.total")
         results = base_results()
-        failing(results, SOURCE_CASE["answer"][0], latency_ms={"embedding": 10.0, "retrieval": 20.0},
-                failure_category="timeout", failure_stage="generation")
+        blocked(results, SOURCE_CASE["answer"][0], category="timeout", stage="generation", latency_ms={"embedding": 10.0, "retrieval": 20.0})
         lat4 = compute(results)["metrics"]["LAT-4"]["stages"]["generation"]
         self.assertEqual((lat4["k"], lat4["n"]), (1, 1))
 
     def test_a_passing_case_has_no_failure_and_blocked_cases_count_as_failed_calls_only(self):
         results = base_results()
-        passing(results, SOURCE_CASE["answer"][0], failure_category="timeout", failure_stage="generation")
+        passing(results, SOURCE_CASE["answer"][0], failure_category="timeout", failure_stage="generation", structured_ok=None, latency_ms={})
         reject(self, results, "cases[0].failure_category")
         results = base_results()
         blocked = case_of(results, SOURCE_CASE["answer"][0])
@@ -741,18 +738,15 @@ class AdversarialRegressionTests(unittest.TestCase):
 
     def test_a_report_with_non_ascii_text_reaches_a_cp1252_pipe_as_utf8(self):
         import io
-        alias = "alias-\u03c9-\u65e5\u672c"
-        results = base_results()
-        results["run"]["alias"] = alias
         with tempfile.TemporaryDirectory() as raw:
             source = Path(raw) / "results.json"
-            source.write_text(json.dumps(results), encoding="utf8")
+            source.write_text(json.dumps(base_results()), encoding="utf8")
             pipe = io.TextIOWrapper(io.BytesIO(), encoding="cp1252", errors="strict")
-            with mock.patch.object(sys, "stdout", pipe):
+            with mock.patch.object(sys, "stdout", pipe), mock.patch.object(metrics, "render_markdown", return_value="alias-\u03c9-\u65e5\u672c\n"):
                 code = metrics.main(["--results", str(source), "--generated-at", "2026-10-05T10:00:00Z"])
             pipe.flush()
             self.assertEqual(code, 0)
-            self.assertIn(alias, pipe.buffer.getvalue().decode("utf8"))
+            self.assertIn("alias-\u03c9-\u65e5\u672c", pipe.buffer.getvalue().decode("utf8"))
 
     def test_only_listed_fields_are_accepted_and_free_text_is_bounded(self):
         for name in ("question_text", "prompt_text", "response_body", "questions", "Question ", "answer_text", "body",
@@ -791,7 +785,7 @@ class AdversarialRegressionTests(unittest.TestCase):
         )
 
     def test_the_mock_provider_is_recognised_whatever_its_case(self):
-        for provider in ("Mock", " MOCK "):
+        for provider in ("Mock", "MOCK"):
             results = base_results()
             results["run"]["provider"] = provider
             self.assertTrue(any("mock" in note for note in compute(results)["notes"]))
@@ -868,7 +862,7 @@ class SecondPassRegressionTests(unittest.TestCase):
         item = blocked(results, self.ANSWER, category="schema_validation")
         item["failure_stage"] = None
         item["structured_ok"] = False
-        reject(self, results, "failure_category")
+        reject(self, results, "outcome")
 
     def test_the_retrieval_parameters_agree_with_each_other_and_with_the_fragments(self):
         cases = [
@@ -889,9 +883,9 @@ class SecondPassRegressionTests(unittest.TestCase):
     def test_structured_output_and_failures_must_agree(self):
         combinations = (
             dict(failure_category="schema_validation", structured_ok=True),
-            dict(failure_category="timeout", failure_stage="generation", structured_ok=False),
+            dict(failure_category="timeout", failure_stage="generation", structured_ok=False, latency_ms={}),
             dict(structured_ok=False),
-            dict(failure_category="timeout", failure_stage="generation", structured_ok=True),
+            dict(failure_category="timeout", failure_stage="generation", structured_ok=True, latency_ms={}),
         )
         for fields in combinations:
             results = base_results()
@@ -952,14 +946,16 @@ class SecondPassRegressionTests(unittest.TestCase):
         self.assertEqual(files, ["results.json"])
 
     def test_free_text_cannot_inject_markdown_structure_or_control_characters(self):
-        results = base_results()
-        results["run"]["alias"] = "a|b"
-        markdown = metrics.render_markdown(compute(results), CATALOGUE)
-        self.assertIn("a\\|b", markdown)
-        for value in ("line\nbreak", "ctl\x07"):
+        self.assertEqual(metrics.md("a|b"), "a\\|b")
+        for field, value in (("alias", "a|b"), ("alias", "![i](http://e/p.png)"), ("alias", "line\nbreak"), ("provider", "x y"),
+                             ("commit", "[ver](http://evil.example/x) <img src=x>"), ("commit", "zzz not a hash"),
+                             ("date", "ayer"), ("date", "2026-10-05\n# injected")):
             results = base_results()
-            results["run"]["alias"] = value
-            reject(self, results, "run.alias")
+            results["run"][field] = value
+            reject(self, results, "run." + field)
+        results = base_results()
+        results["run"]["corpus"]["sha256"] = "x"
+        reject(self, results, "run.corpus.sha256")
 
     def test_the_catalogue_hash_covers_the_families_and_targets_must_be_finite(self):
         catalogue = copy.deepcopy(CATALOGUE)
@@ -981,6 +977,91 @@ class SecondPassRegressionTests(unittest.TestCase):
         results = base_results()
         passing(results, self.ANSWER, retrieved=[hit(self.ANSWER, 0.1, "r1")], citations=["r1", "r1"])
         reject(self, results, "citations")
+
+
+class ThirdPassRegressionTests(unittest.TestCase):
+    ANSWER = SOURCE_CASE["answer"][0]
+
+    def test_a_failed_call_carries_no_response_data(self):
+        for field, value, expected in (
+            ("citations", ["x"], "citations"),
+            ("figures", [{"origin": "context"}], "citations"),
+            ("evidence_refs", {"total": 3, "dangling": 0}, "evidence_refs"),
+            ("retrieved", [hit(self.ANSWER, 0.1)], "retrieved"),
+        ):
+            results = base_results()
+            blocked(results, self.ANSWER, category="connection", stage="embedding", **{field: value})
+            reject(self, results, expected)
+        results = base_results()
+        failing(results, self.ANSWER, failure_category="timeout", failure_stage="generation", structured_ok=None, latency_ms={})
+        reject(self, results, "outcome")
+        results = base_results()
+        blocked(results, self.ANSWER, category="timeout", stage="generation", retrieved=[hit(self.ANSWER, 0.1)])
+        self.assertEqual(compute(results)["metrics"]["STR-2"]["by_category"]["timeout"], 1)
+
+    def test_a_schema_failure_is_a_fail_and_a_completed_call_reports_conformance_and_latency(self):
+        results = base_results()
+        blocked(results, self.ANSWER, category="schema_validation", stage=None, structured_ok=False)
+        reject(self, results, "cases[")
+        results = base_results()
+        passing(results, self.ANSWER, structured_ok=None)
+        reject(self, results, "structured_ok")
+        results = base_results()
+        passing(results, self.ANSWER, latency_ms={})
+        reject(self, results, "latency_ms.total")
+
+    def test_the_cli_never_overwrites_an_input_of_the_calculator(self):
+        with tempfile.TemporaryDirectory() as raw:
+            directory = Path(raw)
+            copies = {}
+            for name, source in (("BANK_PATH", metrics.BANK_PATH), ("LABELS_PATH", metrics.LABELS_PATH), ("CATALOGUE_PATH", metrics.CATALOGUE_PATH)):
+                copies[name] = directory / source.name
+                shutil.copy(source, copies[name])
+            original = {name: path.read_bytes() for name, path in copies.items()}
+            results = directory / "results.json"
+            results.write_text(json.dumps(base_results()), encoding="utf8")
+            with mock.patch.multiple(metrics, **copies):
+                for name, path in copies.items():
+                    buffer = tempfile.TemporaryFile(mode="w+", encoding="utf8")
+                    with mock.patch.object(sys, "stderr", buffer):
+                        code = metrics.main(["--results", str(results), "--output", str(path)])
+                    self.assertEqual(code, 2, name)
+                    self.assertEqual(path.read_bytes(), original[name], name)
+
+    def test_grounding_and_confidence_are_answer_case_rates(self):
+        results = base_results()
+        results["run"]["retrieval"]["max_distance"] = None
+        clarify = SOURCE_CASE["clarify"][0]
+        passing(results, clarify, retrieved=[hit(clarify, 0.2, "r1")], citations=["bogus"], evidence_refs={"total": 5, "dangling": 5})
+        report = compute(results)["metrics"]
+        self.assertEqual(report["GRD-1"]["n"], 0)
+        self.assertEqual(report["GRD-3"]["n"], 0)
+        self.assertEqual(report["REL-4"]["n"], 0)
+
+    def test_a_blocked_case_must_name_its_failure_and_free_identifiers_must_be_printable(self):
+        results = base_results()
+        case_of(results, self.ANSWER).update(outcome="blocked")
+        reject(self, results, "failure_category")
+        results = base_results()
+        passing(results, self.ANSWER, retrieved=[{"chunk_id": "c\x07", "source": "finops", "heading": "h", "distance": 0.1}])
+        reject(self, results, "chunk_id")
+        results = base_results()
+        item = passing(results, self.ANSWER)
+        item["checks"][-1]["decided_by"] = ["Ana\n# injected"]
+        reject(self, results, "decided_by")
+
+    def test_the_worked_example_figure_in_the_document_is_current(self):
+        example = ROOT / "tools" / "fixtures" / "assistant-metrics" / "synthetic-results.json"
+        report = metrics.compute(json.loads(example.read_text(encoding="utf8")), BANK, LABELS, CATALOGUE)
+        acc1 = report["metrics"]["ACC-1"]
+        document = (ROOT / "docs" / "validation" / "JUP-067-metrics.md").read_text(encoding="utf8")
+        self.assertIn(f"`{acc1['k']} de {acc1['n']}`", document)
+
+    def test_report_numbers_are_never_negative_zero_and_missing_values_have_no_unit(self):
+        self.assertEqual(metrics.number(-0.0004), "0")
+        self.assertEqual(metrics.number(0.0), "0")
+        markdown = metrics.render_markdown(compute(base_results()), CATALOGUE)
+        self.assertNotIn("no disponible ms", markdown)
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ Este documento define como se mide el asistente. El catalogo JSON es la fuente u
 | --- | --- | --- |
 | Exactitud | ACC-1 a ACC-3 | ¿La respuesta es correcta segun la rubrica de la bateria? |
 | Relevancia y confianza de la recuperacion | REL-1 a REL-4 | ¿Lo recuperado es del documento y la seccion que toca, y cuanto se parece a la pregunta? |
-| Fundamento | GRD-1 a GRD-3 | ¿Las citas y las cifras de la respuesta se apoyan en lo recuperado? |
+| Fundamento | GRD-1 a GRD-3 | ¿Las citas y las cifras de la respuesta se apoyan en lo recuperado? Las tasas de citas y de referencias (GRD-1 y GRD-3) y la confianza (REL-4) se calculan sobre los casos `answer`. |
 | Latencia | LAT-1 a LAT-4 | ¿Cuanto tarda cada etapa y cuantas llamadas fallan? |
 | Robustez de la salida | STR-1 y STR-2 | ¿La respuesta estructurada cumple el esquema y por que fallan las que no? |
 | Disponibilidad | AVL-1 | ¿Que parte de las peticiones al chat no acaba en error del servidor? |
@@ -34,6 +34,8 @@ Los informes comparan algunos valores con los objetivos de ADR-0002: comprobacio
 
 Un fichero JSON con la cabecera de la ejecucion (`commit`, `date`, version y hash de la bateria, hash y tamano del corpus, `provider`, `alias`, parametros de recuperacion y de generacion y las peticiones y errores del servidor del chat) y una entrada por cada caso de la bateria, con su resultado, las comprobaciones, los fragmentos recuperados (identificador, fuente, encabezado y distancia), las citas, el origen de cada cifra, las latencias por etapa, el fallo (categoria y etapa), si cumplio el esquema y las referencias de evidencia. No puede contener el texto de preguntas, respuestas ni fragmentos, ni credenciales: el calculador solo acepta los campos del formato, con los textos libres acotados en longitud, y rechaza cualquier otro (por ejemplo `question`, `prompt`, `response` o un campo con aspecto de clave) nombrando el campo y sin imprimir su valor. Los casos `pass` y `fail` traen una comprobacion por cada punto de su rubrica (`required-N`, `forbidden-N` y `numbers-N`, en el orden de la bateria), los `blocked` y `not_run` ninguna; un caso `pass` no puede traer fallo, una llamada fallida no trae latencia de su etapa, de las siguientes ni total, un fallo de esquema (`schema_validation`) es una respuesta recibida que no cumple el esquema y conserva sus latencias, y un caso critico con una cifra sin rastro no puede ser `pass`. Los parametros de la ejecucion tienen que ser coherentes entre si y con los fragmentos (solape menor que el tamano, distancias dentro del maximo, no mas fragmentos que `top_k`). Las categorias de fallo son las nueve del proveedor de embeddings mas `schema_validation`.
 
+En `run`, `provider` y `alias` son los del embedding (la similitud de REL-4 y la nota del proveedor `mock` dependen de ellos), y los de la generacion van en `generation.model_alias`. El `heading` de un fragmento sin encabezado se guarda como texto vacio (la calibracion de JUP-022 lo llama `section: null`). La mediana y los cuartiles usan el rango mas cercano, como los percentiles, asi que con un numero par de datos la mediana es el valor inferior de los dos centrales.
+
 ## Calcular un informe
 
 ```sh
@@ -44,7 +46,7 @@ El calculador usa solo la biblioteca estandar, no abre red ni base de datos y, c
 
 ## Ejemplo trabajado
 
-`tools/fixtures/assistant-metrics/synthetic-results.json` es un fichero **sintetico**, marcado como tal (`"synthetic": true`), pensado para ver el formato y el informe; no es una medicion del asistente. Con el, `python tools/assistant-metrics.py --results tools/fixtures/assistant-metrics/synthetic-results.json --report informe.md` produce, por ejemplo, ACC-1 como `14 de 18` con su intervalo, REL-3 por grupo de comportamiento y un caso critico con una cifra sin rastro. Los resultados reales con el modelo los produce JUP-070 y quedan como foto fechada en la evidencia de esa tarjeta, no como una pagina viva aqui.
+`tools/fixtures/assistant-metrics/synthetic-results.json` es un fichero **sintetico**, marcado como tal (`"synthetic": true`), pensado para ver el formato y el informe; no es una medicion del asistente. Con el, `python tools/assistant-metrics.py --results tools/fixtures/assistant-metrics/synthetic-results.json --report informe.md` produce, por ejemplo, ACC-1 como `12 de 17` con su intervalo, REL-3 por grupo de comportamiento y un caso critico con una cifra sin rastro. Los resultados reales con el modelo los produce JUP-070 y quedan como foto fechada en la evidencia de esa tarjeta, no como una pagina viva aqui.
 
 ## De donde salen los datos hoy
 

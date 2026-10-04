@@ -32,10 +32,10 @@ El catalogo vive en `docs/validation/JUP-067-metrics-catalogue.json` (version, y
 | REL-1 | Relevancia | casos con acierto de documento entre los evaluados | casos `answer` |
 | REL-2 | Relevancia | casos con acierto de seccion entre los etiquetados con cobertura directa o parcial | casos `answer` |
 | REL-3 | Relevancia | casos con resultado vacio entre los evaluados | por grupo de comportamiento |
-| REL-4 | Relevancia | mediana y cuartiles de la similitud del mejor resultado (1 menos la distancia coseno de pgvector) | casos con al menos un resultado recuperado |
-| GRD-1 | Fundamento | citas que apuntan a un fragmento recuperado para esa pregunta y tenant entre las citas emitidas | casos con citas |
+| REL-4 | Relevancia | mediana y cuartiles (rango mas cercano) de la similitud del mejor resultado (1 menos la distancia coseno de pgvector) | casos answer con al menos un resultado recuperado |
+| GRD-1 | Fundamento | citas que apuntan a un fragmento recuperado para esa pregunta y tenant entre las citas emitidas | casos answer con citas |
 | GRD-2 | Fundamento | cifras de la respuesta que no se pueden rastrear al contexto, a la evidencia o a la pregunta | recuento por caso y total |
-| GRD-3 | Fundamento | metricas y recomendaciones cuyas referencias de evidencia existen entre las emitidas | respuestas estructuradas |
+| GRD-3 | Fundamento | metricas y recomendaciones cuyas referencias de evidencia existen entre las emitidas | casos answer con respuesta estructurada |
 | LAT-1 a LAT-3 | Latencia | mediana, percentil 95 y maximo por etapa (embedding, consulta, generacion, total) | llamadas correctas |
 | LAT-4 | Latencia | llamadas fallidas o agotadas entre las totales | todas las llamadas de la etapa |
 | STR-1 | Robustez | respuestas que cumplen el esquema entre las recibidas | respuestas estructuradas |

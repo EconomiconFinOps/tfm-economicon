@@ -1,6 +1,6 @@
 {
   "catalogue_version": "1.0.0",
-  "definitions_sha256": "2d9d836507a180a97c87fdc97e8d711c0819e31ce6c8ebebb43dfdb630143aa6",
+  "definitions_sha256": "5c5fc0b5e962327e46edbf7c5487ba6ec283bf800e7a7c4a96679161e53fdedd",
   "jup": "JUP-067",
   "trello": "https://trello.com/c/bwvfLpUG",
   "families": ["accuracy", "relevance", "grounding", "latency", "robustness", "availability"],
@@ -75,9 +75,9 @@
       "id": "REL-4",
       "family": "relevance",
       "name": "Confianza de la recuperacion",
-      "numerator": "mediana y cuartiles de 1 menos la distancia coseno del mejor fragmento",
+      "numerator": "mediana y cuartiles (rango mas cercano) de 1 menos la distancia coseno del mejor fragmento",
       "denominator": "no aplica",
-      "population": "casos pass o fail con al menos un fragmento recuperado",
+      "population": "casos answer pass o fail con al menos un fragmento recuperado",
       "source": "distancias de retrieved",
       "unit": "similitud",
       "target": null
@@ -88,7 +88,7 @@
       "name": "Citas validas",
       "numerator": "citas que apuntan a un fragmento recuperado para esa pregunta",
       "denominator": "citas emitidas",
-      "population": "casos con citas",
+      "population": "casos answer pass o fail con citas",
       "source": "citations y retrieved",
       "unit": "tasa",
       "target": null
@@ -110,7 +110,7 @@
       "name": "Integridad de referencias de evidencia",
       "numerator": "referencias de evidencia que existen",
       "denominator": "referencias de evidencia emitidas",
-      "population": "respuestas estructuradas",
+      "population": "casos answer pass o fail con referencias de evidencia",
       "source": "evidence_refs",
       "unit": "tasa",
       "target": null

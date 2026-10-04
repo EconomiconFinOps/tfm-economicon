@@ -167,6 +167,17 @@ def is_count(value) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= MAX_COUNT
 
 
+def shaped(pattern: str):
+    expression = re.compile(pattern)
+    return lambda value: isinstance(value, str) and expression.fullmatch(value) is not None
+
+
+COMMIT = r"[0-9a-f]{7,64}"
+DIGEST = r"[0-9a-f]{64}"
+DATE = r"[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?)?"
+VERSION = r"[0-9]{1,4}(\.[0-9]{1,4}){0,3}"
+
+
 def short(limit: int):
     return lambda value: isinstance(value, str) and 0 < len(value.strip()) <= limit and value.isprintable()
 
@@ -194,19 +205,19 @@ def text(value) -> bool:
 
 def validate_run(run: dict, bank: dict) -> None:
     allow(run, "run", "run")
-    require(run, "commit", "run", short(64))
-    require(run, "date", "run", short(40))
-    require(run, "provider", "run", short(40))
-    require(run, "alias", "run", short(100))
+    require(run, "commit", "run", shaped(COMMIT))
+    require(run, "date", "run", shaped(DATE))
+    require(run, "provider", "run", shaped(r"[A-Za-z0-9._:/-]{1,40}"))
+    require(run, "alias", "run", shaped(r"[A-Za-z0-9._:/-]{1,100}"))
     bank_header = require(run, "bank", "run", lambda value: isinstance(value, dict))
     allow(bank_header, "bank", "run.bank")
-    require(bank_header, "suite_version", "run.bank", short(40))
-    digest = require(bank_header, "suite_sha256", "run.bank", short(64))
+    require(bank_header, "suite_version", "run.bank", shaped(VERSION))
+    digest = require(bank_header, "suite_sha256", "run.bank", shaped(DIGEST))
     if bank_header["suite_version"] != bank.get("suite_version") or digest != suite_digest(bank):
         fail("run.bank.suite_sha256", "does not match the question bank in the repository")
     corpus = require(run, "corpus", "run", lambda value: isinstance(value, dict))
     allow(corpus, "corpus", "run.corpus")
-    require(corpus, "sha256", "run.corpus", short(64))
+    require(corpus, "sha256", "run.corpus", shaped(DIGEST))
     require(corpus, "documents", "run.corpus", is_count)
     require(corpus, "chunks", "run.corpus", is_count)
     retrieval = require(run, "retrieval", "run", lambda value: isinstance(value, dict))
@@ -336,6 +347,15 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
         fail(f"{path}.structured_ok", "false needs the schema_validation failure")
     if outcome == "pass" and category is not None:
         fail(f"{path}.failure_category", "a passing case has no failure")
+    if category == "schema_validation" and outcome != "fail":
+        fail(f"{path}.outcome", "a schema_validation failure is a fail")
+    if category in PROVIDER_FAILURES:
+        if outcome != "blocked":
+            fail(f"{path}.outcome", "a provider failure blocks the case")
+        if citations or figures:
+            fail(f"{path}.citations", "a failed call has no response data")
+        if stage in ("embedding", "retrieval") and retrieved:
+            fail(f"{path}.retrieved", "a failed call before the answer retrieved nothing")
     if outcome == "fail" and not failed_check and category is None:
         fail(f"{path}.outcome", "a fail needs a failing check or a failure")
     if outcome == "blocked" and category not in PROVIDER_FAILURES:
@@ -346,6 +366,13 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
     dangling = require(refs, "dangling", f"{path}.evidence_refs", is_count)
     if dangling > total:
         fail(f"{path}.evidence_refs.dangling", "cannot exceed the emitted references")
+    if category in PROVIDER_FAILURES and total:
+        fail(f"{path}.evidence_refs.total", "a failed call has no response data")
+    if evaluated and category is None:
+        if ok is None:
+            fail(f"{path}.structured_ok", "a completed call reports whether the response conforms")
+        if "total" not in latency:
+            fail(f"{path}.latency_ms.total", "a completed call has a total latency")
     if outcome == "not_run" and (retrieved or citations or figures or latency or category or ok is not None or total):
         fail(f"{path}.outcome", "a not_run case carries no data")
 
@@ -439,7 +466,7 @@ def compute(results: dict, bank: dict, labels: dict, catalogue: dict) -> dict:
         )
         for behavior in BEHAVIORS
     }}
-    similarities = [1 - min(fragment["distance"] for fragment in item["retrieved"]) for item in evaluated if item["retrieved"]]
+    similarities = [1 - min(fragment["distance"] for fragment in item["retrieved"]) for item in answers if item["retrieved"]]
     quartile = MINIMUM["quartile"]
     metrics["REL-4"] = {
         "n": len(similarities),
@@ -449,7 +476,7 @@ def compute(results: dict, bank: dict, labels: dict, catalogue: dict) -> dict:
         "available": len(similarities) >= quartile,
     }
 
-    citations = [(item, entry) for item in evaluated for entry in item["citations"]]
+    citations = [(item, entry) for item in answers for entry in item["citations"]]
     valid = sum(1 for item, entry in citations if entry in {fragment["chunk_id"] for fragment in item["retrieved"]})
     metrics["GRD-1"] = rate(valid, len(citations))
     untraceable = {
@@ -462,8 +489,8 @@ def compute(results: dict, bank: dict, labels: dict, catalogue: dict) -> dict:
         "total": sum(by_case.values()), "by_case": by_case, "critical_failures": critical_failures,
         "available": bool(critical_evaluated),
     }
-    emitted = sum(item["evidence_refs"]["total"] for item in evaluated)
-    dangling = sum(item["evidence_refs"]["dangling"] for item in evaluated)
+    emitted = sum(item["evidence_refs"]["total"] for item in answers)
+    dangling = sum(item["evidence_refs"]["dangling"] for item in answers)
     metrics["GRD-3"] = rate(emitted - dangling, emitted)
 
     corpus = {"documents": run["corpus"]["documents"], "chunks": run["corpus"]["chunks"]}
@@ -544,7 +571,10 @@ def describe_target(target: dict | None) -> str:
 
 
 def number(value) -> str:
-    return "no disponible" if value is None else f"{value:.3f}".rstrip("0").rstrip(".")
+    if value is None:
+        return "no disponible"
+    shown = f"{value:.3f}".rstrip("0").rstrip(".")
+    return "0" if shown in ("-0", "") else shown
 
 
 def render_markdown(report: dict, catalogue: dict) -> str:
@@ -590,7 +620,7 @@ def render_markdown(report: dict, catalogue: dict) -> str:
     row("GRD-2", definitions["GRD-2"]["name"], f"{grd2['total']} en total; casos criticos afectados: {', '.join(grd2['critical_failures']) or 'ninguno'}", grd2["target"])
     for metric_id in ("LAT-1", "LAT-2", "LAT-3"):
         for stage, entry in metrics[metric_id]["stages"].items():
-            row(metric_id, f"{definitions[metric_id]['name']} ({stage}, n {entry['n']}, solo llamadas correctas)", f"{number(entry['value'])} ms", entry["target"])
+            row(metric_id, f"{definitions[metric_id]['name']} ({stage}, n {entry['n']}, solo llamadas correctas)", "no disponible" if entry["value"] is None else f"{number(entry['value'])} ms", entry["target"])
     for stage, entry in metrics["LAT-4"]["stages"].items():
         row("LAT-4", f"{definitions['LAT-4']['name']} ({stage})", describe_rate(entry), None)
     str2 = metrics["STR-2"]
@@ -618,11 +648,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.generated_at is not None and not re.fullmatch(r"[0-9TZ:+.\- ]{1,40}", args.generated_at):
         print("Error: --generated-at: only digits, T, Z, colons, dots, plus, minus and spaces are accepted", file=sys.stderr)
         return 2
-    sources = {args.results.resolve()}
+    sources = {args.results.resolve(), BANK_PATH.resolve(), LABELS_PATH.resolve(), CATALOGUE_PATH.resolve()}
     targets = [(flag, path) for flag, path in (("--output", args.output), ("--report", args.report)) if path is not None]
     resolved = [path.resolve() for _, path in targets]
     if len(set(resolved)) != len(resolved) or sources & set(resolved):
-        print("Error: --output and --report must be different files and never the results file", file=sys.stderr)
+        print("Error: --output and --report must be different files and never an input file", file=sys.stderr)
         return 2
     for flag, path in targets:
         if not path.resolve().parent.is_dir():

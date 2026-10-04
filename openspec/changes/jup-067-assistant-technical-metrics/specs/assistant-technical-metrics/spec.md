@@ -77,7 +77,7 @@ Context relevance SHALL be computed from the retrieval of each case with the lab
 
 ### Requirement: Retrieval confidence from similarity
 
-Retrieval confidence SHALL be reported as the median and the quartiles of the similarity of the best retrieved fragment of each case, defined as one minus the cosine distance returned by the vector store, over the cases with at least one retrieved fragment. Cases with an empty result SHALL be excluded from it and counted in the empty-result rate. The value SHALL be published as computed, without clamping, and a report measured with the mock embedding provider SHALL state that the similarity has no semantic meaning.
+Retrieval confidence SHALL be reported as the median and the quartiles of the similarity of the best retrieved fragment of each case, defined as one minus the cosine distance returned by the vector store, over the `answer` cases with at least one retrieved fragment. Cases with an empty result SHALL be excluded from it and counted in the empty-result rate. The value SHALL be published as computed, without clamping, and a report measured with the mock embedding provider SHALL state that the similarity has no semantic meaning.
 
 #### Scenario: Similarity from distance
 
@@ -96,7 +96,7 @@ Retrieval confidence SHALL be reported as the median and the quartiles of the si
 
 ### Requirement: Grounding of citations and figures
 
-Grounding SHALL be measured by three metrics: the share of citations that point to a fragment in the retrieved set of that question and tenant, the number of numeric claims in a response that cannot be traced to the retrieved context, the evidence of the response or the question itself, and the integrity of evidence references in structured responses (every metric and recommendation references an existing evidence identifier). A response with any untraceable figure in a case marked critical SHALL make that case `fail` for grounding, and a results file that records such a case as `pass` SHALL be rejected. The retrieved set of each case is the one retrieved for that question and tenant, so a citation is valid when it points to a fragment in that set.
+The citation and evidence-reference rates SHALL be computed over `answer` cases only, like the other answer-case rates. Grounding SHALL be measured by three metrics: the share of citations that point to a fragment in the retrieved set of that question and tenant, the number of numeric claims in a response that cannot be traced to the retrieved context, the evidence of the response or the question itself, and the integrity of evidence references in structured responses (every metric and recommendation references an existing evidence identifier). A response with any untraceable figure in a case marked critical SHALL make that case `fail` for grounding, and a results file that records such a case as `pass` SHALL be rejected. The retrieved set of each case is the one retrieved for that question and tenant, so a citation is valid when it points to a fragment in that set.
 
 #### Scenario: Invented citation
 

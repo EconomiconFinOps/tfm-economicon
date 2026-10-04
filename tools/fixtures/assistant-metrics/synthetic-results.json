@@ -459,34 +459,8 @@
   },
   {
    "case": "JUP-069-006",
-   "outcome": "fail",
-   "checks": [
-    {
-     "id": "numbers-1",
-     "class": "objective",
-     "result": "fail",
-     "decided_by": [
-      "rule"
-     ]
-    },
-    {
-     "id": "forbidden-1",
-     "class": "objective",
-     "result": "pass",
-     "decided_by": [
-      "rule"
-     ]
-    },
-    {
-     "id": "required-1",
-     "class": "judged",
-     "result": "pass",
-     "decided_by": [
-      "persona-a",
-      "persona-b"
-     ]
-    }
-   ],
+   "outcome": "blocked",
+   "checks": [],
    "retrieved": [
     {
      "chunk_id": "JUP-069-006-c0",
@@ -507,20 +481,8 @@
      "distance": 0.44
     }
    ],
-   "citations": [
-    "JUP-069-006-c0"
-   ],
-   "figures": [
-    {
-     "origin": "context"
-    },
-    {
-     "origin": "question"
-    },
-    {
-     "origin": "untraceable"
-    }
-   ],
+   "citations": [],
+   "figures": [],
    "latency_ms": {
     "embedding": 144,
     "retrieval": 41
@@ -529,7 +491,7 @@
    "failure_stage": "generation",
    "structured_ok": null,
    "evidence_refs": {
-    "total": 4,
+    "total": 0,
     "dangling": 0
    }
   },
@@ -1459,6 +1421,9 @@
     },
     {
      "origin": "question"
+    },
+    {
+     "origin": "untraceable"
     }
    ],
    "latency_ms": {
