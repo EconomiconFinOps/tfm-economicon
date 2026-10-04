@@ -194,7 +194,12 @@ verificación son los comandos reales con su salida, y la excepción se deja esc
   tareas figuran como `cache bypass, force executing`.
 - [`build` o `test` fallan desde la raíz por motivos ajenos a pnpm: dependencias de Python sin
   instalar, tests que necesitan base de datos, timeouts del frontend. Ocurrió en la línea base: 14 y
-  18 errores de recolección en backend y processor, y entre 14 y 18 tests del frontend con timeout] → Se registra tarea por tarea. Si es un problema del
+  18 errores de recolección en backend y processor, y entre 14 y 21 tests del frontend con timeout]
+  → Python se prepara en un entorno virtual fuera del repositorio (`C:\Users\victo\Pontia\.venv-tfm`)
+  y se activa en la consola que lanza pnpm; con él pasan los tres paquetes de Python. El frontend
+  pasa 443 de 443 con `--maxWorkers=1` (`RF-098-004`), así que la batería de `test` se ejecuta en dos
+  mitades, siempre desde la raíz y vía turbo; no se puede pasar el indicador a `pytest` ni declarar
+  variables de entorno para Vitest sin tocar `turbo.json`, que esta tarjeta no modifica. → Se registra tarea por tarea. Si es un problema del
   repositorio, hallazgo nuevo; si es de la máquina, se anota como tal. No se da por verificado lo que
   no pasó.
 - [`pnpm dev` choca con el stack de Docker Compose por los puertos 5173, 8000, 8001 y 8002] → Parar

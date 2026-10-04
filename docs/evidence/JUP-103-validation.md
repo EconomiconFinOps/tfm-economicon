@@ -106,13 +106,60 @@ cada paquete. **No se atribuye ninguno a pnpm.**
 | `@finops/processor` | 18 errores de recolección, 0 tests ejecutados | Faltan módulos de Python en esta máquina: `structlog`, `langchain_core`, `pika` |
 | `@finops/frontend` | `turbo` en paralelo: 18 fallos de 443 (8 archivos). Aislado (`pnpm --filter @finops/frontend test`): 14 fallos de 443 (8 archivos), 183 s | `Test timed out in 5000ms` / `30000ms` y `Unable to find ...` en `ingestion`, `conversations`, `session-and-dashboard`, `tenant-switching`, `login-session-expired-notice*`, `dashboard-tenant-transition`, `quality-gates` |
 
-- **Python:** no se han instalado los `requirements-dev.txt` de las aplicaciones en esta máquina; el
-  `README.md` lo pide en el bloque "Con Turborepo". Es estado de la máquina, no del repositorio.
+- **Python:** no se habían instalado los `requirements-dev.txt` de las aplicaciones en esta máquina;
+  el `README.md` lo pide en el bloque "Con Turborepo". Es estado de la máquina, no del repositorio.
+  Se corrige en la sección siguiente.
 - **Frontend:** coincide en archivos y en tipo de fallo con `RF-098-004` (timeouts de `findBy*` y
-  `waitFor`), pero **no con su descripción**: ese hallazgo afirma que pasan aislados, y aquí fallan
-  también aislados (14). No se atribuye a la carga de la máquina ni se da por conocido: la causa no
-  está descartada y el número de fallos varía entre ejecuciones (18 en paralelo, 14 aislado).
-  Se registra como observación nueva sobre `RF-098-004` (tarea 6.2) y no se corrige en esta tarjeta.
+  `waitFor`). El número de fallos varía entre ejecuciones: 18 y 21 con `turbo` en paralelo con los
+  demás paquetes, 14 con `pnpm --filter @finops/frontend test` (Vitest con sus workers por defecto,
+  que también es paralelo entre archivos). Ver la sección siguiente para la ejecución con un solo
+  worker. Se registra como observación sobre `RF-098-004` (tarea 6.2) y no se corrige en esta
+  tarjeta.
+
+### Preparación de Python y el frontend con un solo worker (aún sin corregir pnpm)
+
+Para poder distinguir los fallos de entorno de los de pnpm, se preparó Python **sin tocar el
+repositorio** (`git status` limpio) y se repitió `test`. La máquina de pnpm sigue como en la línea
+base: pnpm global `11.9.0`, sin `corepack enable`.
+
+- Entorno virtual en `C:\Users\victo\Pontia\.venv-tfm`, **fuera del repositorio**, con Python
+  `3.13.7`. Difiere de CI y de los Dockerfiles, que usan `3.12`; no hay un `3.12` instalado en la
+  máquina. Instalado con `python -m pip install -r apps/<app>/requirements-dev.txt` para
+  `backend`, `processor` y `azure-cost-api`, sin errores.
+- `turbo` usa el `python` que encuentra en el `PATH`, así que el entorno hay que activarlo en la
+  consola que lanza `pnpm`. En Git Bash: `export PATH="/c/Users/victo/Pontia/.venv-tfm/Scripts:$PATH"`
+  (una ruta con unidades `C:/...` no funciona ahí y deja el Python global; ocurrió en el primer
+  intento). En PowerShell: `$env:Path = "C:\Users\victo\Pontia\.venv-tfm\Scripts;$env:Path"`.
+
+Resultado de `pnpm exec turbo run test --continue --force` con ese entorno, para los tres paquetes de
+Python (3 de 3 tareas, código `0`, 1 min 54 s):
+
+| Paquete | Resultado |
+| --- | --- |
+| `@finops/azure-cost-api` | 59 correctos |
+| `@finops/processor` | 448 correctos, 57 omitidos |
+| `@finops/backend` | 329 correctos, 17 omitidos |
+
+Los omitidos no se han examinado; se sospecha que son tests que necesitan base de datos real
+(`RF-096-004`), pero no está comprobado.
+
+Frontend: `pnpm --filter @finops/frontend exec vitest run --maxWorkers=1` pasa **48 de 48 archivos y
+443 de 443 tests** (144 s, código `0`). Con los workers por defecto fallan entre 14 y 21 con
+timeouts. Esto concuerda con lo que dejó escrito `RF-098-004` (pasan limitando el paralelismo), pero
+**no distingue entre contención de CPU y estado compartido entre archivos**: pasar en serie no
+descarta una carrera. No se afirma una causa.
+
+Consecuencia para esta tarjeta: `corepack pnpm test` desde la raíz, con todos los paquetes a la vez,
+termina con código distinto de cero **en esta máquina** por los timeouts del frontend, aunque pnpm
+funcione. No se puede pasar `--maxWorkers=1` a todos los paquetes (`pytest` no lo entiende) ni
+declarar variables de entorno para Vitest sin tocar `turbo.json`, que esta tarjeta no modifica.
+Para la batería final se ejecutan por separado, siempre desde la raíz y a través de turbo:
+`corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1` y
+`corepack pnpm run test "--filter=!@finops/frontend"`. Se usa `pnpm run test` y no `pnpm test`
+porque este último es un comando propio de pnpm que rechaza opciones desconocidas (`Unknown option:
+'dry'`, `'force'`); `pnpm run` las reenvía a turbo. Comprobado con `--dry=json`: el primero deja
+`cliArguments: ["--maxWorkers=1"]` solo en `@finops/frontend#test`, y el segundo planifica
+`azure-cost-api`, `backend`, `processor` y `shared-config`, sin el frontend.
 
 ## Causa
 

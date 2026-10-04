@@ -30,8 +30,12 @@
   `pnpm --version` da `9.0.0` dentro del repositorio y `corepack pnpm exec pnpm --version` da `9.0.0`
   con código de salida 0. Guardar las salidas.
 - [ ] 2.3 Ejecutar desde la raíz `corepack pnpm lint --force`, `corepack pnpm build --force`,
-  `corepack pnpm typecheck --force` y `corepack pnpm test` con `TURBO_FORCE=true` (`pnpm test` no
-  admite `--force`) y guardar la salida real de cada uno. La clave de la caché de turbo no depende
+  `corepack pnpm typecheck --force` y `corepack pnpm run test` con `TURBO_FORCE=true` (`pnpm test`
+  es un comando propio de pnpm y no admite `--force`; `pnpm run test` sí reenvía las opciones). Para
+  `test`, con el entorno virtual de Python activo y por separado, porque el frontend con los workers
+  por defecto da timeouts en esta máquina (`RF-098-004`):
+  `corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1` y
+  `corepack pnpm run test "--filter=!@finops/frontend"`. Guardar la salida real de cada uno. La clave de la caché de turbo no depende
   del gestor de paquetes: un `cache hit` daría un falso positivo, como pasó en 1.2. Comprobar que
   cada tarea figura como `cache bypass, force executing`. Criterio: ninguna tarea termina con
   el error de versión de pnpm. Cualquier otro fallo se anota por tarea, con su causa, y se compara
@@ -47,7 +51,8 @@
 - [ ] 3.2 Comprobar en `turbo.json` que `build` declara `dependsOn: ["^build"]` y registrar por qué
   hoy ninguna tarea tiene dependencias (ningún paquete del workspace depende de otro).
 - [ ] 3.3 Con los servicios de aplicación de Docker Compose parados y la infraestructura que
-  necesiten backend y processor levantada, ejecutar `corepack pnpm dev` y registrar: que turbo inicia
+  necesiten backend y processor levantada, y con el entorno virtual de Python activo (turbo usa el
+  `python` del `PATH`), ejecutar `corepack pnpm dev` y registrar: que turbo inicia
   los cuatro procesos (frontend, backend, processor, Azure Cost API) y la respuesta de cada uno en su
   puerto (5173, 8000, 8001, 8002). Si alguno no queda sirviendo, anotar cuál y por qué, sin darlo por
   verificado.
@@ -91,8 +96,8 @@
 
 - [ ] 7.1 Ejecutar la batería completa desde la raíz, sin sustitutos:
   `corepack pnpm install --frozen-lockfile`, `corepack pnpm lint --force`,
-  `corepack pnpm build --force`, `corepack pnpm typecheck --force`, `corepack pnpm test` con
-  `TURBO_FORCE=true`, `corepack pnpm openspec:validate`,
+  `corepack pnpm build --force`, `corepack pnpm typecheck --force`, y `corepack pnpm run test` con
+  `TURBO_FORCE=true` en las dos mitades descritas en 2.3, con el entorno virtual de Python activo, `corepack pnpm openspec:validate`,
   `corepack pnpm jup:check -- --change jup-103-verify-turbo-workspace` y
   `corepack pnpm jup:cleanup:check`.
 - [ ] 7.2 Completar `docs/evidence/JUP-103-validation.md`: trazabilidad de los siete criterios de
