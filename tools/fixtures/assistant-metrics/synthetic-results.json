@@ -1,0 +1,1777 @@
+{
+ "results_version": 1,
+ "catalogue_version": "1.0.0",
+ "synthetic": true,
+ "run": {
+  "commit": "0000000000000000000000000000000000000000",
+  "date": "2026-10-05",
+  "bank": {
+   "suite_version": "1.0.0",
+   "suite_sha256": "e15349564edfa5ce6cef94ff90ee2bfd15ef17656a2c4b201ac37bcd6d44571c"
+  },
+  "corpus": {
+   "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+   "documents": 3,
+   "chunks": 120
+  },
+  "provider": "synthetic",
+  "alias": "economicon-embedding",
+  "retrieval": {
+   "top_k": 4,
+   "max_distance": 0.6,
+   "chunk_size": 500,
+   "chunk_overlap": 50
+  },
+  "generation": {
+   "model_alias": "economicon-chat",
+   "temperature": 0
+  },
+  "availability": {
+   "requests": 400,
+   "server_errors": 4
+  }
+ },
+ "cases": [
+  {
+   "case": "JUP-069-001",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-001-c0",
+     "source": "finops",
+     "heading": "Cost Management Y Cost Analysis",
+     "distance": 0.29
+    },
+    {
+     "chunk_id": "JUP-069-001-c1",
+     "source": "finops",
+     "heading": "Cost Management Y Cost Analysis",
+     "distance": 0.36
+    },
+    {
+     "chunk_id": "JUP-069-001-c2",
+     "source": "finops",
+     "heading": "Cost Management Y Cost Analysis",
+     "distance": 0.43
+    }
+   ],
+   "citations": [
+    "JUP-069-001-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 124,
+    "retrieval": 36,
+    "generation": 2710,
+    "total": 2920
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-002",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-002-c0",
+     "source": "finops",
+     "heading": "Cost Management Y Cost Analysis",
+     "distance": 0.3
+    },
+    {
+     "chunk_id": "JUP-069-002-c1",
+     "source": "finops",
+     "heading": "Cost Management Y Cost Analysis",
+     "distance": 0.37
+    },
+    {
+     "chunk_id": "JUP-069-002-c2",
+     "source": "finops",
+     "heading": "Cost Management Y Cost Analysis",
+     "distance": 0.44
+    }
+   ],
+   "citations": [
+    "JUP-069-002-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 128,
+    "retrieval": 37,
+    "generation": 2920,
+    "total": 3140
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-003",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-003-c0",
+     "source": "finops",
+     "heading": "Cost Management Y Cost Analysis",
+     "distance": 0.31
+    },
+    {
+     "chunk_id": "JUP-069-003-c1",
+     "source": "finops",
+     "heading": "Cost Management Y Cost Analysis",
+     "distance": 0.38
+    },
+    {
+     "chunk_id": "JUP-069-003-c2",
+     "source": "finops",
+     "heading": "Cost Management Y Cost Analysis",
+     "distance": 0.45
+    }
+   ],
+   "citations": [],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 132,
+    "retrieval": 38,
+    "generation": 3130,
+    "total": 3360
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 0,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-004",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-004-c0",
+     "source": "finops",
+     "heading": "Conceptos FinOps Basicos",
+     "distance": 0.28
+    },
+    {
+     "chunk_id": "JUP-069-004-c1",
+     "source": "finops",
+     "heading": "Conceptos FinOps Basicos",
+     "distance": 0.35
+    },
+    {
+     "chunk_id": "JUP-069-004-c2",
+     "source": "finops",
+     "heading": "Conceptos FinOps Basicos",
+     "distance": 0.42
+    }
+   ],
+   "citations": [
+    "JUP-069-004-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 136,
+    "retrieval": 39,
+    "generation": 3340,
+    "total": 3580
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-005",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-005-c0",
+     "source": "rules",
+     "heading": "otra-seccion",
+     "distance": 0.52
+    }
+   ],
+   "citations": [
+    "JUP-069-005-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 140,
+    "retrieval": 40,
+    "generation": 3550,
+    "total": 3800
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-006",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-006-c0",
+     "source": "rules",
+     "heading": "Coste No Asignado",
+     "distance": 0.3
+    },
+    {
+     "chunk_id": "JUP-069-006-c1",
+     "source": "rules",
+     "heading": "Coste No Asignado",
+     "distance": 0.37
+    },
+    {
+     "chunk_id": "JUP-069-006-c2",
+     "source": "rules",
+     "heading": "Coste No Asignado",
+     "distance": 0.44
+    }
+   ],
+   "citations": [
+    "JUP-069-006-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 144,
+    "retrieval": 41
+   },
+   "failure_category": "timeout",
+   "failure_stage": "generation",
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-007",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-007-c0",
+     "source": "rules",
+     "heading": "Coste No Asignado",
+     "distance": 0.31
+    },
+    {
+     "chunk_id": "JUP-069-007-c1",
+     "source": "rules",
+     "heading": "Coste No Asignado",
+     "distance": 0.38
+    },
+    {
+     "chunk_id": "JUP-069-007-c2",
+     "source": "rules",
+     "heading": "Coste No Asignado",
+     "distance": 0.45
+    }
+   ],
+   "citations": [
+    "JUP-069-007-c0",
+    "cita-inventada"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 148,
+    "retrieval": 42,
+    "generation": 3970,
+    "total": 4240
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-008",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-008-c0",
+     "source": "rules",
+     "heading": "Coste No Asignado",
+     "distance": 0.28
+    },
+    {
+     "chunk_id": "JUP-069-008-c1",
+     "source": "rules",
+     "heading": "Coste No Asignado",
+     "distance": 0.35
+    },
+    {
+     "chunk_id": "JUP-069-008-c2",
+     "source": "rules",
+     "heading": "Coste No Asignado",
+     "distance": 0.42
+    }
+   ],
+   "citations": [],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 152,
+    "retrieval": 43,
+    "generation": 4180,
+    "total": 4460
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 0,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-009",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-009-c0",
+     "source": "rules",
+     "heading": "Estados De Allocation",
+     "distance": 0.29
+    },
+    {
+     "chunk_id": "JUP-069-009-c1",
+     "source": "rules",
+     "heading": "Estados De Allocation",
+     "distance": 0.36
+    },
+    {
+     "chunk_id": "JUP-069-009-c2",
+     "source": "rules",
+     "heading": "Estados De Allocation",
+     "distance": 0.43
+    }
+   ],
+   "citations": [],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 156,
+    "retrieval": 44,
+    "generation": 4390,
+    "total": 4680
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 0,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-010",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-010-c0",
+     "source": "rules",
+     "heading": "otra-seccion",
+     "distance": 0.52
+    }
+   ],
+   "citations": [
+    "JUP-069-010-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 160,
+    "retrieval": 45,
+    "generation": 4600,
+    "total": 4900
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-011",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-011-c0",
+     "source": "rules",
+     "heading": "Reglas De Tagging",
+     "distance": 0.31
+    },
+    {
+     "chunk_id": "JUP-069-011-c1",
+     "source": "rules",
+     "heading": "Reglas De Tagging",
+     "distance": 0.38
+    },
+    {
+     "chunk_id": "JUP-069-011-c2",
+     "source": "rules",
+     "heading": "Reglas De Tagging",
+     "distance": 0.45
+    }
+   ],
+   "citations": [
+    "JUP-069-011-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 164,
+    "retrieval": 46,
+    "generation": 4810,
+    "total": 5120
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-012",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-012-c0",
+     "source": "rules",
+     "heading": "Estados De Allocation",
+     "distance": 0.28
+    },
+    {
+     "chunk_id": "JUP-069-012-c1",
+     "source": "rules",
+     "heading": "Estados De Allocation",
+     "distance": 0.35
+    },
+    {
+     "chunk_id": "JUP-069-012-c2",
+     "source": "rules",
+     "heading": "Estados De Allocation",
+     "distance": 0.42
+    }
+   ],
+   "citations": [
+    "JUP-069-012-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 168,
+    "retrieval": 47,
+    "generation": 5020,
+    "total": 5340
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": false,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-013",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-013-c0",
+     "source": "rules",
+     "heading": "KPIs Minimos",
+     "distance": 0.29
+    },
+    {
+     "chunk_id": "JUP-069-013-c1",
+     "source": "rules",
+     "heading": "KPIs Minimos",
+     "distance": 0.36
+    },
+    {
+     "chunk_id": "JUP-069-013-c2",
+     "source": "rules",
+     "heading": "KPIs Minimos",
+     "distance": 0.43
+    }
+   ],
+   "citations": [
+    "JUP-069-013-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 172,
+    "retrieval": 48,
+    "generation": 5230,
+    "total": 5560
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-014",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-014-c0",
+     "source": "rules",
+     "heading": "Budgets Y Forecast",
+     "distance": 0.3
+    },
+    {
+     "chunk_id": "JUP-069-014-c1",
+     "source": "rules",
+     "heading": "Budgets Y Forecast",
+     "distance": 0.37
+    },
+    {
+     "chunk_id": "JUP-069-014-c2",
+     "source": "rules",
+     "heading": "Budgets Y Forecast",
+     "distance": 0.44
+    }
+   ],
+   "citations": [
+    "JUP-069-014-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 176,
+    "retrieval": 49,
+    "generation": 5440,
+    "total": 5780
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-015",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-015-c0",
+     "source": "rules",
+     "heading": "otra-seccion",
+     "distance": 0.52
+    }
+   ],
+   "citations": [
+    "JUP-069-015-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 180,
+    "retrieval": 50,
+    "generation": 5650,
+    "total": 6000
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-016",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-016-c0",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.28
+    },
+    {
+     "chunk_id": "JUP-069-016-c1",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.35
+    },
+    {
+     "chunk_id": "JUP-069-016-c2",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.42
+    }
+   ],
+   "citations": [
+    "JUP-069-016-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 184,
+    "retrieval": 51,
+    "generation": 5860,
+    "total": 6220
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-017",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-017-c0",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.29
+    },
+    {
+     "chunk_id": "JUP-069-017-c1",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.36
+    },
+    {
+     "chunk_id": "JUP-069-017-c2",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.43
+    }
+   ],
+   "citations": [
+    "JUP-069-017-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 188,
+    "retrieval": 52,
+    "generation": 6070,
+    "total": 6440
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-018",
+   "outcome": "fail",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "fail",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "fail",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-018-c0",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.3
+    },
+    {
+     "chunk_id": "JUP-069-018-c1",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.37
+    },
+    {
+     "chunk_id": "JUP-069-018-c2",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.44
+    }
+   ],
+   "citations": [
+    "JUP-069-018-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    },
+    {
+     "origin": "untraceable"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 192,
+    "retrieval": 53,
+    "generation": 6280,
+    "total": 6660
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-019",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-019-c0",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.31
+    },
+    {
+     "chunk_id": "JUP-069-019-c1",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.38
+    },
+    {
+     "chunk_id": "JUP-069-019-c2",
+     "source": "rules",
+     "heading": "Anomalias",
+     "distance": 0.45
+    }
+   ],
+   "citations": [],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 196,
+    "retrieval": 54,
+    "generation": 6490,
+    "total": 6880
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 0,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-020",
+   "outcome": "fail",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "fail",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "fail",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-020-c0",
+     "source": "finops",
+     "heading": "otra-seccion",
+     "distance": 0.52
+    }
+   ],
+   "citations": [
+    "JUP-069-020-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 200,
+    "retrieval": 55,
+    "generation": 6700,
+    "total": 7100
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-021",
+   "outcome": "fail",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers",
+     "class": "objective",
+     "result": "fail",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "fail",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-021-c0",
+     "source": "rules",
+     "heading": "KPIs Minimos",
+     "distance": 0.29
+    },
+    {
+     "chunk_id": "JUP-069-021-c1",
+     "source": "rules",
+     "heading": "KPIs Minimos",
+     "distance": 0.36
+    },
+    {
+     "chunk_id": "JUP-069-021-c2",
+     "source": "rules",
+     "heading": "KPIs Minimos",
+     "distance": 0.43
+    }
+   ],
+   "citations": [
+    "JUP-069-021-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 204,
+    "retrieval": 56,
+    "generation": 6910,
+    "total": 7320
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-022",
+   "outcome": "fail",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "fail",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "fail",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-022-c0",
+     "source": "finops",
+     "heading": "Azure Advisor, Rightsizing Y Commitments",
+     "distance": 0.3
+    },
+    {
+     "chunk_id": "JUP-069-022-c1",
+     "source": "finops",
+     "heading": "Azure Advisor, Rightsizing Y Commitments",
+     "distance": 0.37
+    },
+    {
+     "chunk_id": "JUP-069-022-c2",
+     "source": "finops",
+     "heading": "Azure Advisor, Rightsizing Y Commitments",
+     "distance": 0.44
+    }
+   ],
+   "citations": [
+    "JUP-069-022-c0"
+   ],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 208,
+    "retrieval": 57,
+    "generation": 7120,
+    "total": 7540
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 4,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-023",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [],
+   "citations": [],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 212,
+    "retrieval": 58,
+    "generation": 7330,
+    "total": 7760
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 0,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-024",
+   "outcome": "fail",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "fail",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "fail",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-024-c0",
+     "source": "finops",
+     "heading": "otra-seccion",
+     "distance": 0.58
+    }
+   ],
+   "citations": [],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 216,
+    "retrieval": 59,
+    "generation": 7540,
+    "total": 7980
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 0,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-025",
+   "outcome": "fail",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "fail",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "fail",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [],
+   "citations": [],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 220,
+    "retrieval": 60,
+    "generation": 7750,
+    "total": 8200
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 0,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-026",
+   "outcome": "pass",
+   "checks": [
+    {
+     "id": "forbidden",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    }
+   ],
+   "retrieved": [
+    {
+     "chunk_id": "JUP-069-026-c0",
+     "source": "product",
+     "heading": "otra-seccion",
+     "distance": 0.58
+    }
+   ],
+   "citations": [],
+   "figures": [
+    {
+     "origin": "context"
+    },
+    {
+     "origin": "question"
+    }
+   ],
+   "latency_ms": {
+    "embedding": 224,
+    "retrieval": 61,
+    "generation": 7960,
+    "total": 8420
+   },
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": true,
+   "evidence_refs": {
+    "total": 0,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-027",
+   "outcome": "blocked",
+   "checks": [],
+   "retrieved": [],
+   "citations": [],
+   "figures": [],
+   "latency_ms": {},
+   "failure_category": "connection",
+   "failure_stage": "embedding",
+   "structured_ok": null,
+   "evidence_refs": {
+    "total": 0,
+    "dangling": 0
+   }
+  },
+  {
+   "case": "JUP-069-028",
+   "outcome": "not_run",
+   "checks": [],
+   "retrieved": [],
+   "citations": [],
+   "figures": [],
+   "latency_ms": {},
+   "failure_category": null,
+   "failure_stage": null,
+   "structured_ok": null,
+   "evidence_refs": {
+    "total": 0,
+    "dangling": 0
+   }
+  }
+ ]
+}
