@@ -7,7 +7,7 @@ El asistente ya recupera contexto, tiene un contrato de respuesta con evidencia 
 
 ## What Changes
 
-- Un catalogo de metricas tecnicas con identificador estable, formula, numerador, denominador, poblacion, fuente del dato y unidad, para cuatro familias: exactitud, relevancia del contexto recuperado, fundamento (citas y cifras) y latencia, mas robustez de la salida estructurada.
+- Un catalogo de metricas tecnicas con identificador estable, formula, numerador, denominador, poblacion, fuente del dato y unidad, para seis familias: exactitud, relevancia y confianza del contexto recuperado (similitud coseno del mejor resultado), fundamento (citas y cifras), latencia, robustez de la salida estructurada y disponibilidad del chat. Los resultados incluyen el tamano del corpus para poder comparar latencias entre tamanos.
 - Reglas de poblacion: estados `pass`, `fail`, `blocked` y `not_run` de la bateria, que los casos `clarify` y `abstain` se midan aparte y que cada tasa se publique con sus conteos y un intervalo de confianza, porque la muestra es pequena.
 - Un formato de resultados por caso, versionado y sin texto de preguntas, respuestas ni secretos, y un informe agregado derivado de el.
 - Un calculador de referencia, determinista, sin red y con la biblioteca estandar, que valida el fichero de resultados y calcula las metricas, con pruebas que incluyen controles negativos.

@@ -2,7 +2,7 @@
 
 ### Requirement: Metric catalogue with stable definitions
 
-The project SHALL publish a catalogue of technical metrics for the assistant. Each metric SHALL have a stable identifier, a name, a formula expressed as a numerator and a denominator, the population it is computed over, the source of each datum, the unit and the family it belongs to. The families SHALL be accuracy, context relevance, grounding, latency and structured-output robustness. A metric SHALL NOT change its meaning without a new version of the catalogue.
+The project SHALL publish a catalogue of technical metrics for the assistant. Each metric SHALL have a stable identifier, a name, a formula expressed as a numerator and a denominator, the population it is computed over, the source of each datum, the unit and the family it belongs to. The families SHALL be accuracy, context relevance, grounding, latency, structured-output robustness and availability. A metric SHALL NOT change its meaning without a new version of the catalogue.
 
 #### Scenario: Every metric is fully defined
 
@@ -69,6 +69,25 @@ Context relevance SHALL be computed from the retrieval of each case with the lab
 - **WHEN** a relevance report is produced
 - **THEN** it states `top_k`, maximum distance, chunk size, overlap and embedding alias
 
+### Requirement: Retrieval confidence from similarity
+
+Retrieval confidence SHALL be reported as the median and the quartiles of the similarity of the best retrieved fragment of each case, defined as one minus the cosine distance returned by the vector store, over the cases with at least one retrieved fragment. Cases with an empty result SHALL be excluded from it and counted in the empty-result rate. The value SHALL be published as computed, without clamping, and a report measured with the mock embedding provider SHALL state that the similarity has no semantic meaning.
+
+#### Scenario: Similarity from distance
+
+- **WHEN** the best fragment of a case has distance 0.35
+- **THEN** its similarity is 0.65
+
+#### Scenario: Empty results do not count as zero
+
+- **WHEN** a case retrieves nothing because of the maximum distance
+- **THEN** it is excluded from the confidence statistics and counted as an empty result
+
+#### Scenario: Mock provider
+
+- **WHEN** the run used the mock embedding provider
+- **THEN** the report marks the confidence as not semantically meaningful
+
 ### Requirement: Grounding of citations and figures
 
 Grounding SHALL be measured by three metrics: the share of citations that point to a fragment in the retrieved set of that question and tenant, the number of numeric claims in a response that cannot be traced to the retrieved context, the evidence of the response or the question itself, and the integrity of evidence references in structured responses (every metric and recommendation references an existing evidence identifier). A response with any untraceable figure in a case marked critical SHALL make that case `fail` for grounding.
@@ -116,14 +135,38 @@ The share of responses that parse against the response schema and the count of f
 - **WHEN** a result record carries a failure category outside the fixed set
 - **THEN** the results file is rejected
 
+### Requirement: Availability of the chat
+
+Availability SHALL be reported as the share of chat requests of the run that did not end in a server error (status 500 to 599), over all chat requests, with its counts and Wilson interval. A run with no chat requests SHALL report availability as not available, not as 100 %.
+
+#### Scenario: Server errors lower availability
+
+- **WHEN** 200 chat requests are recorded and 3 end in a server error
+- **THEN** availability is 197 of 200 with its interval
+
+#### Scenario: Client errors do not count
+
+- **WHEN** a request ends with status 404 or 422
+- **THEN** it is not a server error
+
+#### Scenario: No requests
+
+- **WHEN** the run recorded no chat requests
+- **THEN** availability is reported as not available
+
 ### Requirement: Versioned results format without sensitive content
 
-Per-case results SHALL use a versioned format that records, for each case, its identifier, outcome, the individual checks, the stage latencies, the retrieved identifiers, the citations and the failure category, and, for the run, the commit, the question bank version and hash, the corpus hashes, the provider and alias, the generation settings and the date. The format SHALL NOT contain the text of questions, responses or fragments, nor credentials, and a file that does would be rejected.
+Per-case results SHALL use a versioned format that records, for each case, its identifier, outcome, the individual checks, the stage latencies, the retrieved identifiers, the citations and the failure category, and, for the run, the commit, the question bank version and hash, the corpus hashes and size in documents and fragments, the provider and alias, the generation settings, the count of chat requests and of server errors, and the date. The format SHALL NOT contain the text of questions, responses or fragments, nor credentials, and a file that does would be rejected.
 
 #### Scenario: Question text in a result file
 
 - **WHEN** a results file contains a field named `question`, `prompt` or `response`
 - **THEN** it is rejected
+
+#### Scenario: Corpus size is reported with latency
+
+- **WHEN** a report includes latency percentiles
+- **THEN** it states the corpus size of the run beside them
 
 #### Scenario: Results for another suite
 

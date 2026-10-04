@@ -32,6 +32,7 @@ El catalogo vive en `docs/validation/JUP-067-metrics-catalogue.json` (version, y
 | REL-1 | Relevancia | casos con acierto de documento entre los evaluados | casos `answer` |
 | REL-2 | Relevancia | casos con acierto de seccion entre los etiquetados con cobertura directa o parcial | casos `answer` |
 | REL-3 | Relevancia | casos con resultado vacio entre los evaluados | por grupo de comportamiento |
+| REL-4 | Relevancia | mediana y cuartiles de la similitud del mejor resultado (1 menos la distancia coseno de pgvector) | casos con al menos un resultado recuperado |
 | GRD-1 | Fundamento | citas que apuntan a un fragmento recuperado para esa pregunta y tenant entre las citas emitidas | casos con citas |
 | GRD-2 | Fundamento | cifras de la respuesta que no se pueden rastrear al contexto, a la evidencia o a la pregunta | recuento por caso y total |
 | GRD-3 | Fundamento | metricas y recomendaciones cuyas referencias de evidencia existen entre las emitidas | respuestas estructuradas |
@@ -39,8 +40,11 @@ El catalogo vive en `docs/validation/JUP-067-metrics-catalogue.json` (version, y
 | LAT-4 | Latencia | llamadas fallidas o agotadas entre las totales | todas las llamadas de la etapa |
 | STR-1 | Robustez | respuestas que cumplen el esquema entre las recibidas | respuestas estructuradas |
 | STR-2 | Robustez | fallos por categoria (las nueve del proveedor y el fallo de esquema) | todos los fallos |
+| AVL-1 | Disponibilidad | peticiones al chat que no acaban en error del servidor (5xx) entre las peticiones totales | peticiones al chat de la ejecucion |
 
 Un caso es critico si su rubrica tiene al menos un `numbers`: es un caso donde el sistema debe acertar una cifra. No se anade ningun campo a la bateria.
+
+REL-4 mide cuanto se parece lo recuperado a la pregunta, no si es el documento correcto: una similitud alta con un acierto de seccion bajo indica etiquetas o corpus por revisar, y una similitud baja explica los resultados vacios con umbral. La distancia coseno de pgvector puede superar 1 en teoria (la similitud seria negativa); se publica el valor tal cual, sin recortarlo. Con el proveedor `mock` la cifra no tiene significado semantico y el informe lo marca. AVL-1 usa el contador de peticiones HTTP de JUP-043 filtrado a las rutas del chat; es la unica metrica que no sale de un caso de la bateria y por eso va en la cabecera de la ejecucion (`availability` con `requests` y `server_errors`).
 
 ### 3. Estados y poblaciones
 
@@ -60,11 +64,11 @@ Percentil por rango mas cercano (`ceil(p * n)`-esimo valor ordenado), igual que 
 
 ### 7. Formato de resultados
 
-Un JSON versionado (`results_version: 1`) con la cabecera de la ejecucion (commit, version y hash de la bateria, hashes del corpus, proveedor, alias, parametros de generacion y de recuperacion, fecha) y una lista de casos con: `case`, `outcome`, `checks` (id, clase `objective` o `judged`, resultado, `decided_by`), `retrieved` (identificadores de fragmento, documento y seccion, y distancias), `citations`, `figures` (cifras de la respuesta con su origen o `untraceable`), `latency_ms` por etapa, `failure_category`, `structured_ok` y `evidence_refs`. No admite campos `question`, `prompt`, `response`, `content` ni nada con aspecto de clave; los rechaza por nombre y no se imprime su valor.
+Un JSON versionado (`results_version: 1`) con la cabecera de la ejecucion (commit, version y hash de la bateria, hashes del corpus y su tamano en documentos y fragmentos, proveedor, alias, parametros de generacion y de recuperacion, peticiones y errores del servidor del chat, fecha) y una lista de casos con: `case`, `outcome`, `checks` (id, clase `objective` o `judged`, resultado, `decided_by`), `retrieved` (identificadores de fragmento, documento y seccion, y distancias), `citations`, `figures` (cifras de la respuesta con su origen o `untraceable`), `latency_ms` por etapa, `failure_category`, `structured_ok` y `evidence_refs`. No admite campos `question`, `prompt`, `response`, `content` ni nada con aspecto de clave; los rechaza por nombre y no se imprime su valor.
 
 ### 8. Calculador de referencia
 
-`tools/assistant-metrics.py`, biblioteca estandar, sin red ni base de datos, con `--results`, `--output`, `--report` y `--generated-at`. Comprueba antes de calcular: formato, catalogo, que los casos existan en la bateria y que el hash de la bateria coincida. El informe lista los valores con `k de n`, intervalo, el objetivo provisional y si se cumple. La marca de tiempo es un argumento, por lo que dos ejecuciones iguales dan el mismo fichero.
+`tools/assistant-metrics.py`, biblioteca estandar, sin red ni base de datos, con `--results`, `--output`, `--report` y `--generated-at`. Comprueba antes de calcular: formato, catalogo, que los casos existan en la bateria y que el hash de la bateria coincida. El informe lista los valores con `k de n`, intervalo, el objetivo provisional y si se cumple, e imprime el tamano del corpus junto a la latencia: dos ejecuciones con tamanos distintos no se comparan como si fueran iguales, porque una prueba pequena no anticipa la carga de un corpus realista. La marca de tiempo es un argumento, por lo que dos ejecuciones iguales dan el mismo fichero.
 
 ### 9. Objetivos provisionales
 
@@ -79,6 +83,17 @@ Se citan los de ADR-0002 (Proposed): exactitud objetiva 90 %, sin cifras inventa
 | Respuesta estructurada y evidencias | si, en el processor | `FinOpsResponse` y sus guardas |
 | Citas del chat | con PR #55 | JUP-025 |
 | Respuesta del chat generada por un modelo | no | pendiente; el adaptador de JUP-070 producira el fichero de resultados |
+
+### 11. Que no se mide en esta tarjeta y por que
+
+Las notas de tutoria del TFM comentan un ejemplo de metricas; no son requisitos y no se aplican en bloque. Se recogen las que encajan con un asistente FinOps que hoy recupera y cita (confianza de recuperacion, disponibilidad, escala del corpus) y se dejan fuera, a proposito:
+
+| No se mide | Motivo | Donde se decide |
+| --- | --- | --- |
+| Juez LLM, ROUGE, BLEU y similitud de embeddings de la respuesta | La bateria no tiene respuestas de referencia completas, solo rubrica, y el chat aun no genera con un modelo | JUP-070 |
+| Trayectoria del agente | El chat no es agentico: pega fragmentos y no hay plan ni acciones que comparar | Se retoma si el asistente pasa a ser agentico |
+| Incidentes | STR-2 y LAT-4 ya cuentan los fallos por categoria; una definicion de incidente seria inventada | Operacion, si hace falta |
+| Metricas de negocio (ahorro, cobertura de gasto) | Son de otra tarjeta | JUP-068 |
 
 ## Risks / Trade-offs
 
