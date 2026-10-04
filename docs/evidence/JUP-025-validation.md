@@ -244,3 +244,25 @@ y [contrato canónico](../../openspec/specs/answer-citations/spec.md).
 Los enlaces anteriores fijados a 17c8514 conservan el contrato histórico revisado.
 La revisión de Lucía y la aceptación del HEAD que publique el archivo siguen
 pendientes; el COMMENTED favorable de Víctor acredita d09f16a, no este candidato.
+
+
+### Revisión incremental de Lucía y finding fuera de alcance
+
+[Lucía aprobó d09f16a](https://github.com/EconomiconFinOps/tfm-economicon/pull/55#pullrequestreview-5407419137)
+el 04/10/2026 a las 17:54:50 UTC (19:54:50 Europe/Paris), después de la
+validación favorable COMMENTED de Víctor sobre ese mismo SHA. Su dictamen
+incluye recuperación/snapshot/tenant, mutantes, backend con pgvector real,
+interfaz y smoke real. Son ejecuciones de la revisora, no propias del líder.
+No hay cambios bloqueantes pedidos ni solicitudes de review pendientes en d09f16a.
+
+Registrado **RF-025-002**, fuera de alcance, por petición explícita de Lucía:
+el 502 de validate_context no emite diagnóstico propio ni contador de fallo
+retrieval; acordar categoría limitada y log saneado en una tarjeta futura.
+No se cambia el runtime ni se debilita la protección de tenant; la falta de
+telemetría se distingue del rechazo de evidencia, que sí funciona.
+
+Los dos dictámenes favorables acreditan la reconciliación publicada d09f16a.
+No se atribuyen al candidato de archivo: su publicación requiere CI y dictámenes
+incrementales del delta. Pairing de Paris sigue pendiente de acreditación real;
+no se afirma realizado ni se modifica autoría histórica. El archivo técnico
+preparado no autoriza merge ni cierre de Trello.
