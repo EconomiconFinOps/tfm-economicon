@@ -34,7 +34,7 @@
 // posterior podria borrar) y comprueba que ninguna de ellas trae la marca de
 // expiracion. Con el codigo real (pila de una sola entrada), "atras" no
 // tiene a donde ir (el indice se clampa) y no se emite ninguna transicion.
-import { act, screen } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { mockBackend, renderApp, restoreSession } from "./test-support";
 
@@ -61,7 +61,10 @@ describe("JUP-098 remediacion de mutacion: replace de historial en LoginPage", (
     // (tarea 4.6 / 4.4a): la marca se lee una vez y la entrada de historial
     // se sustituye sin estado.
     await screen.findByRole("button", { name: "Sign in" });
-    expect(router.state.location.state).toBeNull();
+    // La presencia del boton acredita el render, pero el efecto de limpieza
+    // del historial puede no haber terminado todavia. Esperar al estado del
+    // router antes de observar las transiciones de la navegacion hacia atras.
+    await waitFor(() => expect(router.state.location.state).toBeNull());
 
     // Se suscribe ANTES de navegar hacia atras para grabar cada ubicacion
     // por la que pasa el router durante esa navegacion, incluidas las

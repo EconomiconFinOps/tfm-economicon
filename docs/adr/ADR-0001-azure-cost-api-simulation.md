@@ -40,3 +40,10 @@ La decisión queda aceptada como base compartida del contrato JUP-073. La
 implementación del servicio corresponde a JUP-074, la resiliencia y los modos
 de fallo a JUP-075 y el cliente de ingesta a JUP-076. La trazabilidad, revisión
 y evidencia técnica se conservan en la tarjeta Trello y en el pull request.
+
+## Enlaces de evidencia reconciliados — 01/10/2026
+
+El contrato y su decisión se integraron en [PR #5](https://github.com/EconomiconFinOps/tfm-economicon/pull/5).
+La [evidencia JUP-073](../evidence/JUP-073-validation.md) y el
+[recorrido JUP-077](../evidence/JUP-077-validation.md) permiten comprobar contrato
+frente a operación. Se conserva Accepted; esta revisión no vuelve a ejecutar Azure.
