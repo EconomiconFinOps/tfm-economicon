@@ -12,8 +12,8 @@
 - Pull request: _pendiente de abrir_.
 - CI: _pendiente de abrir el pull request_.
 
-> Estado de este documento: completo salvo lo marcado _pendiente_ (respuesta de Paris, consola
-> externa de Alejandro, CI y pull request).
+> Estado de este documento: completo salvo lo marcado _pendiente_ (CI y pull request). Paris y la
+> consola externa de Alejandro figuran como no confirmados.
 
 ## Máquina donde se reproduce
 
@@ -384,7 +384,7 @@ versión de Node, la ruta de `pnpm` en el `PATH`, `npm ls -g --depth=0`,
 | Victor (referencia) | Windows 11, Node `v24.15.0` | `%APPDATA%\npm\pnpm.cmd` (pnpm global `11.9.0` con `npm -g`) | error de versión (`v11.9.0`), código `1` | 0 de 4 | ejecutado: pasa a `9.0.0` y 4 de 4 (grupo 2) |
 | Lucía | Windows 10 Home `10.0.19045`, Node `v24.15.0`, `develop` en `dad5662` | `%APPDATA%\npm\pnpm.cmd` (pnpm global `11.1.3` con `npm -g`) | error de versión (`v11.1.3`) | 0 de 4; la línea `Failed:` nombra solo `azure-cost-api#lint` y `backend#lint` | **ejecutado** (y desinstalado además el pnpm global): ver «Segunda respuesta de Lucía» |
 | Alejandro | Windows 11 Pro, Node `v24.14.1`, worktree aislado de `develop` en `dad5662`, **entorno de ejecución de Codex, no una consola externa** | `...\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd`; sin pnpm global de npm (solo `@openai/codex@0.129.0` y `agent-slack@0.7.1`) | **`11.19.0`, sin error** (`corepack pnpm --version` da `9.0.0`) | 0 de 4; `@finops/backend#lint` falla con `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` | no ejecutado (no cambió configuración) |
-| Paris | — | — | — | — | **no confirmado** (sin respuesta a la fecha) |
+| Paris | — | — | — | — | **no confirmado** (consulta cerrada sin respuesta el 2026-10-04) |
 
 Lectura, separando lo medido de lo inferido:
 
@@ -430,10 +430,18 @@ Dos límites de esta confirmación: **no se sabe cuál de las dos acciones fue l
 hizo las dos a la vez (en la máquina de Victor basta `corepack enable` con el global instalado), y
 no se tiene la salida literal del diagnóstico `corepack pnpm exec pnpm --version`.
 
-Respuesta provisional a «¿tiene el equipo que hacer algo en sus máquinas?» (criterio 5; **no
-definitiva** hasta tener a Paris y a Alejandro en consola externa): **sí**, ejecutar una vez
-`corepack enable` si `corepack pnpm exec pnpm --version` no imprime `9.0.0`; comprobado que funciona
-en dos máquinas.
+### Cierre de la consulta (tareas 5.2 y 5.3, 2026-10-04)
+
+Por decisión de Victor, la consulta se **cierra con dos puntos como «no confirmado»**, sin darlos por
+validados, y puede reabrirse:
+
+- **Paris**: no respondió. No se sabe si reproduce el fallo ni si la corrección le funciona.
+- **Alejandro en una consola externa**: solo se tiene su resultado desde el entorno de ejecución de
+  Codex. No se sabe si le ocurre en su consola habitual ni si `corepack enable` bastaría allí.
+
+Respuesta a «¿tiene el equipo que hacer algo en sus máquinas?» (criterio 5): **sí**, ejecutar una vez
+`corepack enable` si `corepack pnpm exec pnpm --version` no imprime exactamente `9.0.0`. Comprobado
+que funciona en dos máquinas (Victor y Lucía); en las otras dos, no confirmado.
 
 ## Hallazgos y spike (grupo 6)
 
@@ -551,5 +559,5 @@ En ninguna de estas ejecuciones aparece el error de versión de pnpm.
 - **El resto de la batería de CONTRIBUTING con un PR**: `corepack pnpm pr:check`.
 - **La rama integrada con `develop` actual** (`c3aa9d6`): ver tarea 7.6.
 
-_Pendiente: respuesta de Paris, consola externa de Alejandro, CI y pull request (tareas 5.2, 5.3,
-7.3 a 7.6)._
+_Pendiente: CI y pull request (tareas 7.5 y 7.6, y el gate post-review). Paris y la consola externa
+de Alejandro quedan como no confirmados._

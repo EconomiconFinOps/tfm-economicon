@@ -54,7 +54,8 @@ Criterios de la tarjeta (detalle en la evidencia, «Trazabilidad con los criteri
   con `127.0.0.1`.
 - [ ] 3. CI en verde: **pendiente** del pull request.
 - [x] 4. `RF-093-001` cerrado con la causa. **Salvedad:** pendientes escritos en el propio hallazgo.
-- [x] 5. Qué debe hacer el equipo: escrito, **de forma provisional**.
+- [x] 5. Qué debe hacer el equipo: escrito, **de forma provisional**. La consulta se cerró con Paris y
+  la consola externa de Alejandro como no confirmados (comprobado en 2 de 4 máquinas).
 - [x] 6. Scripts de la raíz para tarjetas futuras: `lint`, `build` y `typecheck` sí; `test` y `dev`
   con las salvedades documentadas.
 - [x] 7. Spike con F4 completa.
@@ -139,8 +140,8 @@ Incidencias del proceso, para que no se repitan:
 
 ## Risks / Follow-Ups
 
-- **Pendientes de confirmar:** la máquina de Paris (sin respuesta) y la consola externa de Alejandro.
-  Si alguno contradice la corrección, `RF-093-001` se reabre.
+- **No confirmados** (consulta cerrada el 2026-10-04): la máquina de Paris (sin respuesta) y la
+  consola externa de Alejandro. Si alguno contradice la corrección, `RF-093-001` se reabre.
 - **`develop` avanzó** a `c3aa9d6` (JUP-022, #67) mientras se implementaba: hay que traerlo y revisar,
   además de los conflictos de texto, `README.md` y `backlog.md` (archivos compartidos), el número de
   ADR más alto y que el check de colores no se vea afectado. Se hace antes de abrir el pull request.

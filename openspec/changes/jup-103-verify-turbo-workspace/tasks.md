@@ -79,9 +79,9 @@
 - [x] 5.1 Pedir a Paris, Lucía y Alejandro que ejecuten `corepack pnpm exec pnpm --version` y
   `corepack pnpm lint` desde la raíz de `develop` y que indiquen sistema operativo y si tienen un
   pnpm global.
-- [ ] 5.2 Registrar en la evidencia el resultado por persona, con fecha. Quien no haya contestado
+- [x] 5.2 Registrar en la evidencia el resultado por persona, con fecha. Quien no haya contestado
   figura como "no confirmado"; no se da por validado.
-- [ ] 5.3 Dejar escrito en la evidencia, en una frase, si el equipo tiene que hacer algo en sus
+- [x] 5.3 Dejar escrito en la evidencia, en una frase, si el equipo tiene que hacer algo en sus
   máquinas y qué.
 
 ## 6. Cerrar el hallazgo y la fase F4 del spike
