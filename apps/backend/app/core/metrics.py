@@ -27,6 +27,19 @@ assistant_queries_total = Counter(
 )
 
 
+retrieval_empty_total = Counter(
+    "backend_retrieval_empty_total",
+    "Retrievals that returned no fragment",
+)
+
+# Label values come from a fixed set (provider failure categories plus vector_store), never from upstream text.
+retrieval_failures_total = Counter(
+    "backend_retrieval_failures_total",
+    "Retrievals that failed, by fixed failure category",
+    ["category"],
+)
+
+
 class MetricsMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         start = perf_counter()
