@@ -232,8 +232,102 @@ y el paralelismo del frontend (`RF-098-004`).
 `corepack pnpm install --frozen-lockfile` termina con código `0` en 1,3 s y `git status` queda
 limpio: no modifica `pnpm-lock.yaml` ni ningún otro archivo versionado.
 
-_Pendiente: tareas 3.x a 7.x de `tasks.md` (`dev`, grafo, documentación, consulta al equipo,
-hallazgos, spike y batería final)._
+## Grafo de turbo y `pnpm dev` (grupo 3)
+
+### Grafo (tareas 3.1 y 3.2)
+
+`corepack pnpm exec turbo run build lint test typecheck dev --dry=json`: modo de entorno `strict`,
+25 tareas (5 paquetes × 5 scripts), **todas con `dependencies: []`**.
+
+| Paquete | `build` | `lint` | `test` | `typecheck` | `dev` |
+| --- | --- | --- | --- | --- | --- |
+| `@finops/frontend` | `vite build` | `eslint src tests` | `vitest run` | `tsc` (3 proyectos) | `vite --host 0.0.0.0 --port 5173` |
+| `@finops/backend` | `python -m compileall app` | ídem | `python -m pytest tests` | no declarado | `python -m app.run --reload` |
+| `@finops/processor` | `python -m compileall app` | ídem | `python -m pytest tests` | no declarado | `python -m app.run_all` |
+| `@finops/azure-cost-api` | `python -m compileall app` | ídem | `python -m pytest tests` | no declarado | `python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8002` |
+| `@finops/shared-config` | no declarado | no declarado | no declarado | no declarado | no declarado |
+
+- El frontend tiene las cinco tareas.
+- `turbo.json` declara `build` con `dependsOn: ["^build"]` y `outputs: ["dist/**", "build/**"]`.
+  Ninguna tarea tiene dependencias porque ningún paquete del workspace declara a otro como
+  dependencia (comprobado en los cinco `package.json`). La regla `^build` es la que ordenaría el
+  `build` cuando eso cambie; no se ha creado una dependencia artificial para demostrarlo, así que
+  **el orden de `build` entre paquetes con dependencias internas no se ha ejercitado**.
+- `typecheck` solo existe en el frontend; el resto de paquetes no lo declara (los tres de Python
+  usan `compileall` como `lint` y `build`).
+
+### `pnpm dev` (tarea 3.3)
+
+Preparación: Docker Desktop arrancado (daemon `29.8.1`), `corepack pnpm local:doctor` en verde
+(instalación existente con 4 volúmenes) y **solo la infraestructura** levantada con
+`docker compose up -d --wait cockroachdb rabbitmq postgres-pgvector` (las tres `healthy`); los
+servicios de aplicación de Compose, parados. Puertos 5173, 8000, 8001 y 8002 libres antes de cada
+ejecución. Entorno virtual de Python activo.
+
+**Lo que hace turbo** (idéntico en las cuatro ejecuciones): `Running dev in 5 packages`, lanza en
+paralelo `vite`, `python -m app.run --reload`, `python -m app.run_all` y `uvicorn` (azure-cost-api),
+con `C:\Program Files\nodejs\pnpm.CMD` (el lanzador de corepack) y sin error de versión de pnpm.
+Aviso nuevo de turbo `2.9.18`: `--parallel is deprecated and will be removed in a future major
+version`; el script `dev` de `package.json` lo usa.
+
+**Lo que queda sirviendo depende de la configuración, no de pnpm:**
+
+| # | Ejecución | Resultado |
+| --- | --- | --- |
+| 1 | `corepack pnpm dev`, tal como lo documenta el `README.md` | El backend muere al arrancar con `StartupError: Invalid runtime configuration`; turbo aborta (`run failed`) y **termina el resto**: nada escucha en 5173, 8000, 8001 ni 8002 |
+| 2 | Igual, con `ECONOMICON_ENV_FILE` apuntando a un archivo de entorno válido | El mismo fallo |
+| 3 | `corepack pnpm dev --env-mode=loose`, archivo con `localhost` | Frontend (5173) y azure-cost-api (8002) responden `200`; el backend se queda **más de dos minutos** en "Waiting for application startup" y el processor no escribe nada; 8000 y 8001 no responden |
+| 4 | `corepack pnpm dev --env-mode=loose`, archivo con `127.0.0.1` | Las cuatro responden `200` y se mantienen (sondeadas a 20, 50, 80 y 110 s, sin errores en el log) |
+
+Respuestas de la ejecución 4, con la salida real:
+
+```
+5173 -> <!doctype html> ... (Vite)
+8000 -> {"status":"ok","services":{"database":"ok","rabbitmq":"ok","vector_store":"ok"},...}
+8001 -> {"status":"ok","services":{"database":"ok","rabbitmq":"ok","vector_store":"ok"}}
+8002 -> {"status":"ok","dataset":"EA-Cost-Actual.sample.csv","rows":50,"subscriptions":4}
+```
+
+Qué distingue cada caso, con lo que se comprobó:
+
+- **Ejecuciones 1 y 2:** `Settings` del backend y del processor se leen solo del entorno del proceso
+  (`env_file=None`; el archivo solo entra por `ECONOMICON_ENV_FILE`). `turbo` está en modo `strict`
+  y para `@finops/backend#dev` declara `env: []` y `passThroughEnv: null`, de modo que **ninguna
+  variable del shell llega a la tarea**. Prueba directa de que no es la configuración: el mismo
+  archivo con `ECONOMICON_ENV_FILE=... python -c "from app.core.config import get_settings; ..."`
+  desde `apps/backend` da `configuracion valida`, y la ejecución 3 (`--env-mode=loose`) deja pasar
+  la variable y el backend arranca.
+- **El `.env` de Compose usa los nombres internos de Compose** (`cockroachdb:26257`, `rabbitmq:5672`,
+  `postgres-pgvector:5432`), que un proceso del host no resuelve; con el host publicado hay que usar
+  `26257`, `5672` y `5433`. El archivo de las ejecuciones 3 y 4 es una copia del `.env` con solo esas
+  tres URLs cambiadas, **fuera del repositorio**.
+- **`localhost` frente a `127.0.0.1`** (ejecuciones 3 y 4, y backend en solitario sin turbo): con
+  `localhost` el backend no completa el arranque en más de dos minutos; con `127.0.0.1` arranca
+  en 1,2 s y `/health` responde `200` mientras está vivo. Los puertos de Compose se publican solo en
+  `127.0.0.1`. **La causa no está verificada**; la hipótesis es la resolución de `localhost` a IPv6
+  en esta máquina Windows.
+
+Conclusión sobre el criterio 2 de la tarjeta (`pnpm dev` levanta frontend, backend y processor en
+paralelo): **se cumple en lo que corresponde a pnpm y turbo** (arranca las cuatro tareas en paralelo
+con el pnpm correcto) y **se cumple de extremo a extremo solo con dos requisitos que el repositorio
+no documenta**: pasar `--env-mode=loose` y un archivo de entorno con hosts alcanzables desde el host
+(`127.0.0.1` con los puertos publicados). Tal como está documentado, `pnpm dev` deja solo el frontend
+y azure-cost-api como mucho y termina todo en cuanto falla el backend.
+
+Hallazgos candidatos del repositorio (tarea 6.2), sin corregir aquí:
+
+1. `pnpm dev` desde la raíz no puede arrancar backend ni processor: modo `strict` sin variables
+   declaradas y aplicaciones que no leen `.env`. Corregirlo exige tocar `turbo.json` (`passThroughEnv`)
+   o las aplicaciones.
+2. El bloque "Con Turborepo" del `README.md` no menciona ninguno de los dos requisitos.
+3. El script `dev` usa `--parallel`, obsoleto en turbo `2.9.18`.
+4. `localhost` en las URLs bloquea el arranque del backend en esta máquina (causa sin verificar).
+
+Estado al terminar: procesos de `dev` parados y puertos libres; la infraestructura de Compose
+**sigue levantada** (`docker compose ps`: las tres `healthy`).
+
+_Pendiente: tareas 4.x a 7.x de `tasks.md` (documentación, consulta al equipo, hallazgos, spike y
+batería final)._
 
 ## Trazabilidad con los criterios de la tarjeta
 

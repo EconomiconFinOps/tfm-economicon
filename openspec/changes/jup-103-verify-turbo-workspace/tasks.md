@@ -45,12 +45,12 @@
 
 ## 3. Verificar `dev` y el grafo de turbo
 
-- [ ] 3.1 Ejecutar `corepack pnpm exec turbo run build lint test typecheck dev --dry=json` y
+- [x] 3.1 Ejecutar `corepack pnpm exec turbo run build lint test typecheck dev --dry=json` y
   registrar por paquete las tareas y sus dependencias. Criterio: `@finops/frontend` tiene las cinco
   tareas.
-- [ ] 3.2 Comprobar en `turbo.json` que `build` declara `dependsOn: ["^build"]` y registrar por qué
+- [x] 3.2 Comprobar en `turbo.json` que `build` declara `dependsOn: ["^build"]` y registrar por qué
   hoy ninguna tarea tiene dependencias (ningún paquete del workspace depende de otro).
-- [ ] 3.3 Con los servicios de aplicación de Docker Compose parados y la infraestructura que
+- [x] 3.3 Con los servicios de aplicación de Docker Compose parados y la infraestructura que
   necesiten backend y processor levantada, y con el entorno virtual de Python activo (turbo usa el
   `python` del `PATH`), ejecutar `corepack pnpm dev` y registrar: que turbo inicia
   los cuatro procesos (frontend, backend, processor, Azure Cost API) y la respuesta de cada uno en su
@@ -65,7 +65,11 @@
   otra versión (incluida la salida de emergencia de invocar sin `corepack`).
 - [ ] 4.2 `README.md`, bloque "Con Turborepo": sustituir `pnpm install` y `pnpm dev` por
   `corepack pnpm install --frozen-lockfile` y `corepack pnpm dev`. En "Comandos Principales", añadir
-  una nota que remita al requisito previo e incluir `typecheck`, que falta en la lista.
+  una nota que remita al requisito previo e incluir `typecheck`, que falta en la lista. Dejar escrito
+  también, sin prometer más de lo verificado en 3.3, que `dev` solo mantiene backend y processor si
+  se pasa `--env-mode=loose` y un archivo de entorno (`ECONOMICON_ENV_FILE`) con las URLs de base de
+  datos, RabbitMQ y pgvector apuntando a `127.0.0.1` y a los puertos publicados por Compose; y que
+  el `.env` de Compose no sirve tal cual para ese caso.
 - [ ] 4.3 Comprobar que el cambio de `README.md` no rompe los tests de gobierno del repositorio:
   `corepack pnpm repository:governance:test`, `corepack pnpm ci:check:test` y
   `corepack pnpm jup:cleanup:check`.
@@ -86,7 +90,13 @@
   las dos afirmaciones corregidas y el enlace a la evidencia. Si la corrección no funcionó en 2.3,
   dejarlo `Open` con la causa precisa y lo que se probó.
 - [ ] 6.2 Registrar como hallazgos nuevos (`RF-103-NNN`) los fallos ajenos al gestor de paquetes que
-  hayan aparecido en 1.4, 2.3 o 3.3 y sean del repositorio.
+  hayan aparecido en 1.4, 2.3 o 3.3 y sean del repositorio. Candidatos ya identificados en 3.3 (ver
+  la evidencia): `pnpm dev` no puede arrancar backend ni processor (modo `strict` de turbo sin
+  variables declaradas y aplicaciones que no leen `.env`); el script `dev` usa `--parallel`, obsoleto
+  en turbo `2.9.18`; `localhost` en las URLs bloquea el arranque del backend en esta máquina (causa
+  sin verificar). Además, añadir a `RF-098-004` la observación de 1.4 y 2.3: pasa con
+  `--maxWorkers=1` y falla entre 14 y 21 tests con los workers por defecto, también ejecutando solo
+  el frontend.
 - [ ] 6.3 `docs/spikes/frontend-migration.md`, fase F4: marcar `jup-0xx-verificar-docker-compose`
   como resuelta por JUP-049 y JUP-050 sin tarjeta propia, sustituir
   `jup-0xx-verificar-turbo-workspace` por `jup-103-verify-turbo-workspace` con sus casillas marcadas
