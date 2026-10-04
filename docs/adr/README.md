@@ -79,6 +79,8 @@ material de referencia y no certifica que el contenido ya esté incorporado all�
 - ADR-0002: completar condiciones de aceptación en su tarjeta de origen; no
   convertir el merge del documento en aprobación de los cuatro miembros.
 - ADR-0005 y ADR-0013/14/15: confirmar o rechazar ratificación con evidencia atribuible.
+- [ADR-0016](ADR-0016-litellm-version-pin.md), fuente JUP-023: ratificación pendiente; la decisión operativa y el merge #65 no cambian su estado Proposed.
+- [ADR-0017](ADR-0017-backend-query-embedding-own-key.md), fuente JUP-022: ratificación pendiente en su fuente original; la implementación integrada en #67 no cambia su estado Proposed.
 - Confirmar justificación original de CockroachDB si se quiere defender una ventaja
   comparativa, y registrar decisión de despliegue final cuando exista en su tarea.
 

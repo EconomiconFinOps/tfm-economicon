@@ -28,8 +28,12 @@ no pairing. No se declara realizada esa contribución.
 La redacción anterior de 3.4 («Ratificar ADR propuestos ... antes del freeze»)
 no se ha ejecutado. Se delimita como seguimiento documental: las ratificaciones
 son decisiones humanas posteriores, fuera de la promoción de estos requisitos.
-ADR-0013/14/15/16 y ADR-0005 conservan sus estados; sus responsables deben
-ratificarlos o aclararlos en las fuentes originales. ADR-0002 se sigue en
+ADR-0013/14/15/16/17 y ADR-0005 conservan sus estados; sus responsables deben
+ratificarlos o aclararlos en las fuentes originales. ADR-0016 (fuente JUP-023)
+y ADR-0017 (fuente JUP-022) permanecen Proposed pese a integrar sus implementaciones.
+Su ratificación se sigue en el índice ADR, apartado
+[«Pendientes documentales antes del freeze»](../../../../docs/adr/README.md#pendientes-documentales-antes-del-freeze),
+sin concederla por este archivo. ADR-0002 se sigue en
 [PR #71 / JUP-078](https://github.com/EconomiconFinOps/tfm-economicon/pull/71),
 sin asumir aprobación por su apertura. El archivo no acredita ratificación,
 pairing ni condiciones operativas pendientes de otros cambios.

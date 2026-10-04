@@ -233,3 +233,19 @@ Siete Markdown afectados, **47 rutas locales** existentes y **17 ADR/17 filas**
 con estado consistente; UTF-8 PASS. No se repiten suites de producto ni consultas
 de precios para este cambio exclusivamente documental. La CI de la PR de cierre
 se enlazará en GitHub/Trello; las aprobaciones de #60 no aprueban este nuevo delta.
+
+## Ajuste de seguimiento solicitado por Paris — 05/10/2026
+
+[Revision de Paris](https://github.com/EconomiconFinOps/tfm-economicon/pull/72#pullrequestreview-5408841090)
+sobre21c4381 solicita incluir ADR0017/fuenteJUP022 en pendientes antes del freeze
+y delimitación3.4; incluir también ADR0016 en el resumen de seguimiento.
+Ambos figuran ahora explícitamente: ADR0016/JUP023 y ADR0017/JUP022, ratificación
+pendiente y estado Proposed sin modificar sus archivos. La tarea3.4 enlaza el
+apartado canónico del índice, sin duplicar decisiones ni acreditar pairing.
+
+Comprobaciones del delta: OpenSpec43/43, nueve changes activos trazables,
+17ADR/17filas con estados coherentes, siete Markdown del cierre con50rutas locales
+y3anclas existentes, UTF-8 y diff PASS. No se reejecutan suites de producto para
+este ajuste documental. La validaciónLucía sobre21c4381 es antecedente: se solicita
+revalidación del nuevo delta junto con nueva respuesta deParis, sin inferir
+levantamiento de su Request changes. Seguimiento de aceptación #71 independiente.
