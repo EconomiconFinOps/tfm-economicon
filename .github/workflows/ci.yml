@@ -76,6 +76,7 @@ jobs:
           corepack pnpm docker:validate
           corepack pnpm local:test
           corepack pnpm collaboration:test
+          corepack pnpm contributions:test
           corepack pnpm openspec:validate
 
   python-tests:

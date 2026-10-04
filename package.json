@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "scripts": {
+    "contributions:test": "python -m unittest discover -s tools/tests -p test_team_contributions.py -v",
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
     "lint": "turbo run lint",

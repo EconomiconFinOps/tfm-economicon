@@ -1,0 +1,259 @@
+#!/usr/bin/env python3
+"""JUP-064: dated contribution evidence, read-only GitHub and Economicon bridge."""
+import argparse
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
+import json
+from pathlib import Path
+import re
+import subprocess
+import unicodedata
+from urllib.parse import quote
+
+REPO = 'EconomiconFinOps/tfm-economicon'
+TEAM = {'Iber1to': 'Alejandro Aguado', 'Victorh1397': 'Victor Mendez',
+        'lmatsan': 'Lucia Mateo', 'ParisArcos': 'Paris Arcos Martin'}
+ROLE_LABELS = {'leadership': 'Liderazgo', 'pairing': 'Pairing/coautoria',
+               'review': 'Revision de PR', 'validation': 'Validacion, pruebas y documentacion'}
+ROLE_ALIASES = {'leadership': ['liderazgo', 'liderazgo asignado'],
+                'pairing': ['pairing/coautoria', 'pairing y coautoria', 'pairing/coautoria y reconciliacion', 'pairing'],
+                'review': ['revision de pr', 'revision pr', 'revision'],
+                'validation': ['validacion, pruebas y documentacion', 'validacion/documentacion',
+                               'validacion, pruebas y documentacion; auditoria', 'validacion funcional',
+                               'validacion/evidencia']}
+NAME_ALIASES = {**{normalize_name: login for login, normalize_name in
+                   [('Iber1to', 'alejandro aguado'), ('Victorh1397', 'victor mendez'),
+                    ('lmatsan', 'lucia mateo'), ('ParisArcos', 'paris arcos martin')]},
+                'paris arcos': 'ParisArcos'}
+BRIDGE_READ = '''import json
+from collaboration import Settings, TrelloClient
+c = TrelloClient(Settings.from_env())
+print(json.dumps({'cards': c.get_cards()}, ensure_ascii=False))
+'''
+
+
+def normalize(value):
+    return ''.join(c for c in unicodedata.normalize('NFD', value.lower())
+                   if unicodedata.category(c) != 'Mn').strip()
+
+
+def run_json(args, input_text=None):
+    result = subprocess.run(args, input=input_text.encode('utf-8') if input_text else None,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+    return json.loads(result.stdout.decode('utf-8-sig'))
+
+
+def github(endpoint, paginate=False):
+    args = ['gh', 'api', f'repos/{REPO}/{endpoint}']
+    if paginate:
+        pages = run_json(args + ['--paginate', '--slurp'])
+        return [item for page in pages for item in page]
+    return run_json(args)
+
+
+def assigned_roles(text):
+    roles = {}
+    for key, aliases in ROLE_ALIASES.items():
+        matches = re.findall(r'^\s*-\s*(?:' + '|'.join(re.escape(a) for a in aliases) + r')\s*:\s*(.+)$',
+                             normalize(text), re.M)
+        # Unknown or ambiguous identities remain visible and uncredited.
+        people = set()
+        for match in matches:
+            name = match.strip('* `')
+            people.add(next((login for alias, login in NAME_ALIASES.items()
+                            if re.match(re.escape(alias) + r'(?=\s*(?:$|[.,;(]))', name)), None))
+        roles[key] = next(iter(people)) if len(people) == 1 else None
+    return roles
+
+
+def role_lines(text):
+    labels = '|'.join(re.escape(label) for aliases in ROLE_ALIASES.values() for label in aliases)
+    return [line.strip() for line in text.splitlines()
+            if re.match(r'^\s*-\s*(?:' + labels + r')\s*:', normalize(line))]
+
+
+def review_kind(body, jup):
+    first = normalize(body).splitlines()[0] if body.strip() else ''
+    for kind, title in [('review', 'revision'), ('validation', 'validacion')]:
+        if re.fullmatch(title + r'\s+' + jup.lower(), first.strip()):
+            return kind
+    return 'other'
+
+
+def collect_pr(pr):
+    number = pr['number']
+    detail = github(f'pulls/{number}')
+    ids = sorted(set(re.findall(r'JUP-\d{3}', detail['title'] + ' ' + detail['head']['ref'])))
+    commits = github(f'pulls/{number}/commits?per_page=100', True)
+    reviews = github(f'pulls/{number}/reviews?per_page=100', True)
+    files = github(f'pulls/{number}/files?per_page=100', True)
+    # Checks evidence is shared CI; it is never attributed to an individual validator.
+    pages = run_json(['gh', 'api', f'repos/{REPO}/commits/{detail["head"]["sha"]}/check-runs?per_page=100',
+                      '--paginate', '--slurp'])
+    checks = [c for p in pages for c in p['check_runs']]
+    return {'number': number, 'jups': ids, 'url': detail['html_url'],
+            'author': detail['user']['login'], 'state': detail['state'],
+            'draft': detail['draft'], 'merged_at': detail['merged_at'], 'head': detail['head']['sha'],
+            'declared_roles': assigned_roles(detail.get('body') or ''),
+            'role_source_lines': role_lines(detail.get('body') or ''),
+            'commits': [{'url': c['html_url'], 'sha': c['sha'],
+                         'author': (c.get('author') or {}).get('login'),
+                         'declared_coauthors': sorted({login for login, full in TEAM.items()
+                           if re.search(r'^co-authored-by:\s*' + re.escape(normalize(full)) + r'\s*<',
+                                        normalize(c['commit']['message']), re.M)})}
+                        for c in commits],
+            'reviews': [{'url': r['html_url'], 'author': r['user']['login'],
+                         'state': r['state'], 'head': r['commit_id'], 'date': r['submitted_at'],
+                         'kinds': {jup: review_kind(r.get('body') or '', jup) for jup in ids}}
+                        for r in reviews],
+            'artifacts': [{'path': f['filename'], 'url': f'https://github.com/{REPO}/blob/{detail["head"]["sha"]}/{quote(f["filename"], safe="/")}',
+                           'kind': 'documentation' if f['filename'].startswith(('docs/', 'openspec/')) else 'tests'}
+                          for f in files if f['status'] != 'removed' and
+                          (f['filename'].startswith(('docs/', 'openspec/')) or
+                           re.search(r'(^|/)(tests?/|test_)|[.-]test[.-]', f['filename']))],
+            'checks': [{'name': c['name'], 'status': c['status'], 'conclusion': c['conclusion'],
+                        'url': c['html_url'], 'head': c['head_sha']} for c in checks]}
+
+
+def build_snapshot(cards, prs, captured_at):
+    stories = []
+    for card in cards:
+        match = re.match(r'^(JUP-\d{3})\b', card['name'])
+        if not match:
+            continue
+        jup = match[1]
+        stories.append({'jup': jup, 'trello': card['shortUrl'],
+                        'assigned_roles': assigned_roles(card.get('desc', '')),
+                        'role_source_lines': role_lines(card.get('desc', '')),
+                        'prs': [p for p in prs if jup in p['jups']]})
+    return {'schema_version': 1, 'captured_at': captured_at, 'repository': REPO,
+            'team': TEAM, 'stories': sorted(stories, key=lambda s: s['jup'])}
+
+
+def member_evidence(story, login):
+    evidence = []
+    for pr in story['prs']:
+        if pr['author'] == login:
+            evidence.append(('PR publicada', pr['url']))
+        for commit in pr['commits']:
+            if commit['author'] == login:
+                evidence.append(('commit', commit['url']))
+            if login in commit['declared_coauthors']:
+                evidence.append(('coautoria declarada', commit['url']))
+        for review in pr['reviews']:
+            if review['author'] == login:
+                kind = review['kinds'].get(story['jup'], 'other')
+                suffix = ' / SHA anterior' if review['head'] != pr['head'] else ''
+                evidence.append((f'{kind}: {review["state"]}{suffix}', review['url']))
+    return list(dict.fromkeys(evidence))
+
+
+def role_gaps(story):
+    gaps = []
+    for role, login in story['assigned_roles'].items():
+        if login is None:
+            gaps.append(f'{role}: identidad sin resolver')
+            continue
+        prs = story['prs']
+        if role == 'leadership':
+            present = any(p['author'] == login for p in prs)
+        elif role == 'pairing':
+            present = any(c['author'] == login or login in c['declared_coauthors']
+                          for p in prs for c in p['commits'])
+        else:
+            present = any(r['author'] == login and r['author'] != p['author'] and
+                          r['kinds'].get(story['jup']) == role and
+                          r['state'] in ('APPROVED', 'COMMENTED') and r['head'] == p['head']
+                          for p in prs for r in p['reviews'])
+        if not present:
+            gaps.append(f'{role}: sin evidencia estructurada actual de {TEAM[login]}')
+    for pr in story['prs']:
+        if pr['declared_roles'] != story['assigned_roles']:
+            gaps.append(f'PR #{pr["number"]}: roles declarados difieren de Trello actual')
+        # Keep any unresolved request visible; this is not a merge decision engine.
+        latest = {}
+        for review in sorted(pr['reviews'], key=lambda r: r.get('date') or ''):
+            if review['state'] in ('CHANGES_REQUESTED', 'APPROVED'):
+                latest[review['author']] = review['state']
+        if 'CHANGES_REQUESTED' in latest.values():
+            gaps.append(f'PR #{pr["number"]}: cambios solicitados pendientes')
+    return gaps
+
+
+def render(snapshot):
+    lines = ['# Registro de contribuciones — JUP-064', '',
+             f'Corte UTC: {snapshot["captured_at"]}. Fuente: integración Economicon y GitHub, solo lectura.', '',
+             'Este registro acredita la existencia de acciones enlazadas, no su suficiencia ni el cumplimiento de una historia. '
+             'Trello mantiene las asignaciones actuales; las PR conservan las declaraciones históricas. '
+             'Una coautoría es declarada; un commit no demuestra por sí solo pairing. '
+             'Una review titulada no demuestra por sí sola que sus criterios fueron probados. '
+             'Los checks son CI compartida y los archivos son artefactos, nunca pruebas atribuidas a una persona. '
+             'SHA anterior, cambios solicitados y diferencias de roles requieren contraste humano. '
+             'Las notas de pairing en Trello y contribuciones fuera de PR no se importan: su ausencia aquí no prueba ausencia de trabajo.', '',
+             '## Participación por miembro', '',
+             'Las columnas de roles cuentan asignaciones actuales, no acciones realizadas.', '',
+             '| Persona | Historias con acciones | Liderazgo | Pairing | Revisión | Validación |',
+             '| --- | --- | --- | --- | --- | --- |']
+    for login, name in TEAM.items():
+        count = sum(bool(member_evidence(s, login)) for s in snapshot['stories'])
+        assignments = [sum(s['assigned_roles'][role] == login for s in snapshot['stories'])
+                       for role in ROLE_LABELS]
+        lines.append(f'| {name} (`{login}`) | {count} | ' + ' | '.join(map(str, assignments)) + ' |')
+    for story in snapshot['stories']:
+        lines += ['', f'## {story["jup"]}', '', f'[Tarjeta]({story["trello"]})', '',
+                  '| Persona | Rol actual en Trello | Acciones observadas |', '| --- | --- | --- |']
+        for login, name in TEAM.items():
+            roles = ', '.join(ROLE_LABELS[r] for r, person in story['assigned_roles'].items() if person == login) or 'Sin asignación'
+            evidence = member_evidence(story, login)
+            links = '<br>'.join(f'[{label}]({url})' for label, url in evidence[:12]) or 'Pendiente de enlazar / no importado'
+            if len(evidence) > 12:
+                links += f'<br>[{len(evidence) - 12} acciones adicionales en snapshot](JUP-064-snapshot.json)'
+            lines.append(f'| {name} | {roles} | {links} |')
+        for pr in story['prs']:
+            state = 'integrada' if pr['merged_at'] else ('borrador' if pr['draft'] else pr['state'])
+            lines += ['', f'### [PR #{pr["number"]}]({pr["url"]}) — {state}', '',
+                      f'HEAD: `{pr["head"]}`. Autor: `{pr["author"]}`.', '',
+                      'Roles declarados en la PR: ' + '; '.join(f'{r}: {TEAM.get(p, "sin resolver")}' for r, p in pr['declared_roles'].items()) + '.', '',
+                      'Artefactos (existencia, sin atribución de ejecución):']
+            selected = []
+            for kind in ('documentation', 'tests'):
+                artifacts = [a for a in pr['artifacts'] if a['kind'] == kind]
+                artifacts.sort(key=lambda a: (not a['path'].startswith('docs/evidence/'), a['path']))
+                selected += artifacts[:3]
+            lines += [f'- [{a["kind"]}: {a["path"]}]({a["url"]})' for a in selected] or ['- Sin artefactos importados.']
+            if len(pr['artifacts']) > len(selected):
+                lines.append(f'- [{len(pr["artifacts"]) - len(selected)} artefactos adicionales con enlaces originales en snapshot](JUP-064-snapshot.json).')
+            lines += ['', 'Checks del HEAD (CI compartida):']
+            lines += [f'- [{c["name"]}]({c["url"]}): {c["status"]} / {c["conclusion"] or "pendiente"}' for c in pr['checks']] or ['- Sin checks publicados en el HEAD.']
+        lines += ['', 'Pendientes de contraste:']
+        gaps = role_gaps(story)
+        lines += [f'- {g}' for g in gaps] or ['- Sin huecos estructurados detectados; falta valorar contenido y pairing con el equipo.']
+    return '\n'.join(lines) + '\n'
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--collect', action='store_true', help='Read live sources; never writes to Trello/GitHub')
+    parser.add_argument('--snapshot', type=Path, required=True)
+    parser.add_argument('--output', type=Path, required=True)
+    args = parser.parse_args()
+    if args.collect:
+        cards = run_json(['ssh', 'DockerServer', 'cd /home/danteadmin/economicon-collaboration && '
+                          'docker compose run --rm -T --entrypoint python collaboration -'], BRIDGE_READ)['cards']
+        prs = github('pulls?state=all&per_page=100', True)
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            prs = list(pool.map(collect_pr, prs))
+        snapshot = build_snapshot(cards, prs, datetime.now(timezone.utc).isoformat())
+        args.snapshot.parent.mkdir(parents=True, exist_ok=True)
+        args.snapshot.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    else:
+        snapshot = json.loads(args.snapshot.read_text(encoding='utf-8'))
+        if snapshot['schema_version'] != 1 or snapshot['team'] != TEAM:
+            raise ValueError('Unsupported snapshot schema or identity mapping')
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(render(snapshot), encoding='utf-8')
+    print(f'{len(snapshot["stories"])} historias; {sum(len(s["prs"]) for s in snapshot["stories"])} PR vinculadas; {args.output}')
+
+
+if __name__ == '__main__':
+    main()
