@@ -12,7 +12,7 @@ Economicon necesita chat y embeddings reales para evaluar su RAG, pero el codigo
 Trello recoge LiteLLM + OpenRouter y la seleccion de GLM-5.2 y DeepSeek. El
 benchmark autenticado ya esta disponible, pero muestra limites de latencia y
 un timeout de DeepSeek, y todavia no existe una aprobacion verificable de los
-cuatro miembros. Esta propuesta permanece `Proposed` hasta su revision conjunta.
+cuatro miembros. Esta propuesta permanecio `Proposed` hasta su revision conjunta; el 2026-10-04 pasa a `Accepted` (ver la seccion Aceptacion). Los apartados de agosto conservan su redaccion y su fecha.
 
 Alejandro establecio GLM-5.2 y DeepSeek como modelos de chat. Para hacer la
 configuracion reproducible se fija la variante vigente
@@ -203,18 +203,18 @@ La condicion 4 (clave virtual con el techo aprobado) queda como seguimiento oper
 Las secciones anteriores conservan su fecha. Lo que ha cambiado:
 
 - **Version del gateway.** El benchmark uso LiteLLM 1.82.6, que ya no se utiliza: ADR-0016 fija 1.103.2 por digest.
-- **Precios.** Consulta publica a la API de OpenRouter del 2026-10-04, en USD por millon de tokens. Cada modelo tiene varios proveedores con ZDR y el precio depende de cual atienda la peticion, porque el routing fija `allow_fallbacks: false` y ZDR.
+- **Precios.** Consulta publica a la API de OpenRouter del 2026-10-04 (sin clave: `GET /api/v1/models`, `/api/v1/models/{id}/endpoints` y `/api/v1/endpoints/zdr`; detalle en la evidencia), en USD por millon de tokens. Cada modelo tiene varios proveedores con ZDR; el rango es el de todos ellos, y el precio real depende del endpoint que atienda la peticion. En `economicon-chat` el gateway fija `only: [deepinfra/fp4]` (JUP-023, PR #65): ese endpoint cuesta 0,5625 de entrada y 1,80 de salida. El precio de cabecera del catalogo es el de un endpoint que puede no estar en la lista ZDR, asi que no es alcanzable con el routing de este ADR.
 
 | Modelo | ADR (25 y 28/08) | Cabecera del catalogo hoy | Rango entre endpoints con ZDR hoy |
 |---|---|---|---|
-| GLM-5.2 | 1,19 entrada / 3,74 salida | 0,064 / 8,00 | entrada 0,06 a 2,25; salida 2,48 a 8,00 |
-| DeepSeek V4 Pro | 0,75 / 1,50 | 0,21 / 0,42 | entrada 0,19 a 1,74; salida 1,63 a 5,00 |
+| GLM-5.2 | 1,19 entrada / 3,74 salida | 0,064 / 8,00 | entrada 0,05 a 2,25; salida 1,80 a 8,00 (24 endpoints) |
+| DeepSeek V4 Pro (`deepseek/deepseek-v4-pro`) | 0,75 / 1,50 | 0,21 / 0,42 | entrada 0,21 a 1,91; salida 1,63 a 4,20 (10 endpoints) |
 | text-embedding-3-small | 0,02 / n.a. | 0,02 / n.a. | sin cambios |
 
-  Con los mismos 100 casos de 2.000 tokens de entrada y 500 de salida, el coste de GLM-5.2 estaria entre 0,10 y 0,55 USD, muy por debajo del techo de 10 USD/mes. Los tres modelos siguen disponibles con sus identificadores.
-- **Limites por servicio.** Timeout de 30 s, 2 reintentos y 800 tokens de salida se mantienen en el processor. El backend interactivo usa 10 s y un reintento, con un maximo de 60 s de intentos por pregunta, segun la revision de JUP-022 (ADR-0017, propuesto en el PR 67).
-- **Claves.** Ademas de la separacion entre gateway y servicios, cada servicio usa su propia clave virtual: el backend tiene una distinta de la del processor.
-- **Embeddings.** El alias `economicon-embedding` con 1536 dimensiones se ha validado de extremo a extremo (JUP-023 y JUP-022). Un cambio de modelo con la misma dimension no se detecta (finding RF-022-001).
+  Con 100 casos de 2.000 tokens de entrada y 500 de salida, el coste estaria entre 0,20 y 0,85 USD con GLM-5.2 (0,2025 USD con el endpoint configurado) y entre 0,24 y 0,57 USD con DeepSeek V4 Pro, muy por debajo del techo de 10 USD/mes. La variante `deepseek/deepseek-v4-pro-0813` es otro modelo y no se usa. Los tres identificadores siguen disponibles. Los precios se mueven durante el dia: son los de la consulta indicada.
+- **Limites por servicio.** Timeout de 30 s, 2 reintentos y 800 tokens de salida se mantienen en el processor. El backend interactivo usa 10 s y un reintento, con un maximo de 60 s de intentos por pregunta, segun JUP-022 (PR #67, integrado el 2026-10-04; ADR-0017, que sigue `Proposed`).
+- **Claves.** Ademas de la separacion entre gateway y servicios, cada servicio usa su propia clave virtual: el backend tiene una distinta de la del processor (ADR-0017, `Proposed`).
+- **Embeddings.** El alias `economicon-embedding` con 1536 dimensiones se ha validado de extremo a extremo (JUP-023 y JUP-022, integrados). Un cambio de modelo con la misma dimension no se detecta (finding RF-022-001, abierto en `openspec/findings/backlog.md`).
 
 ## Referencias consultadas
 
