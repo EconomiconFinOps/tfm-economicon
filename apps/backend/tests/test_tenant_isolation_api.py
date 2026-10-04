@@ -30,6 +30,8 @@ def api(main_module, populated_database, monkeypatch):
     vector.search_chunks.return_value = []
     embedding = MagicMock()
     embedding.embed.return_value = [1.0] + [0.0] * 7
+    embedding.dimension = 8
+    embedding.name = "mock"
     for name, value in {"database": db, "queue": queue, "vector_store": vector, "embedding_provider": embedding, "assistant_service": AssistantService()}.items():
         monkeypatch.setattr(main_module.app.state, name, value, raising=False)
     return SimpleNamespace(app=main_module.app, db=db, spies=spies, queue=queue, vector=vector, embedding=embedding)

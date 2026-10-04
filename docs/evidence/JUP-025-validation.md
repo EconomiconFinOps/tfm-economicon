@@ -153,3 +153,56 @@ AnswerEvidence y los tokens del tema, y el del backlog conservando ambos grupos
 de incidencias. AnswerEvidence adopta los tokens existentes del tema.
 Validación tras integración: 188 pruebas de citas/conversaciones y guardas de
 paleta aprobadas; typecheck correcto; OpenSpec 37/37. No cambia el contrato backend.
+
+
+## Reconciliación con JUP-022 integrada — 04/10/2026
+
+PR #67 se integra en develop como `c3aa9d68690ae718aecf1bee2f08cd25eb5f704f`
+a las 15:12:45 UTC. Se prepara localmente el merge desde HEAD remoto de #55
+`e24e194747809553d0624d037989ce7170db41b9`. Se resuelven los conflictos de
+`assistant.py`, `vector_store.py` y `openspec/findings/backlog.md`.
+
+- La ruta conserva la selección del proveedor, la verificación del vector,
+  top_k/umbral/proveedor configurados, los 503 saneados y los eventos/métricas
+  de JUP-022. Valida el tenant antes de emitir identificadores en el evento,
+  resuelve solo las referencias utilizadas y guarda `source_citations`.
+- La consulta conserva filtro tenant/proveedor, umbral inclusivo antes de LIMIT
+  y orden distancia/ID. Obtiene tenant e índice del chunk, carga cada documento
+  una vez y calcula título/sección sobre el mismo snapshot REPEATABLE READ.
+- El backlog conserva todas las filas originales de las dos ramas. Los dobles
+  de JUP-022 incorporan la metadata documental y la segunda consulta de JUP-025;
+  las aserciones de filtros, orden, logs y errores siguen vigentes.
+- La regresión nueva en `test_retrieval_contract_pgvector.py` une consulta real y
+  ruta: excluye un vector de proveedor obsoleto y otro tenant, limita a un chunk
+  y comprueba su cita, título, sección, referencia, extracto y contexto público.
+
+Comprobaciones propias sobre el candidato, sin sustituir review/validación humana:
+
+| Comprobación | Resultado |
+| --- | --- |
+| Backend completo, Python 3.12.13 y pgvector desechable | 628 PASS / 16 SKIP, 96,74 s |
+| Backend focalizado local, Python 3.14 | 119 PASS / 2 SKIP |
+| AnswerEvidence y conversaciones, maxWorkers=1 | 13 PASS |
+| Frontend tsc --noEmit | Correcto |
+| OpenSpec estricto | 45/45 |
+| Trazabilidad global e higiene | Correctas, 826 archivos |
+| Tests de política PR / CI / gobernanza | 57 / 10 / 13 PASS |
+| git diff --check y conservación de filas backlog | Correctos |
+
+El backend se ejecuta copiando `apps/backend` y `apps/processor` al contenedor de
+pruebas Python 3.12, con requirements-dev del candidato, en la red de un pgvector
+propio sin puertos publicados, sin volumen persistente y solo loopback interno
+55432. Comando desde apps/backend: `python -m pytest tests -q --tb=short`, con
+`JUP086_VECTOR_TEST_URL` del recurso desechable. No se guardan claves en la evidencia.
+
+No se repiten navegador, Compose completo, CockroachDB/RabbitMQ reales, modelos
+externos ni calibración de relevancia. Los 16 SKIP no cuentan como validación.
+La primera ejecución focalizada detectó dobles JUP-022 incompatibles con la metadata
+adicional y el snapshot; se adaptaron los fixtures sin retirar sus verificaciones.
+El primer intento del contenedor carecía de httpx; se instalaron requirements-dev
+antes de la ejecución completa correcta. No se atribuye pairing a Paris.
+
+Candidato local pendiente de publicación coordinada: Víctor está revisando el
+HEAD remoto anterior. Las aprobaciones y CI de e24e194 no acreditan esta unión;
+al publicar se requieren CI y nueva revisión de Lucía/revalidación de Víctor.
+Archivo OpenSpec y colaboración de Paris siguen separados y pendientes.
