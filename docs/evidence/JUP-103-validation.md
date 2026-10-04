@@ -379,7 +379,7 @@ versión de Node, la ruta de `pnpm` en el `PATH`, `npm ls -g --depth=0`,
 | Persona | Entorno | `pnpm` que resuelve el `PATH` | `corepack pnpm exec pnpm --version` | `corepack pnpm lint --force` | `corepack enable` |
 | --- | --- | --- | --- | --- | --- |
 | Victor (referencia) | Windows 11, Node `v24.15.0` | `%APPDATA%\npm\pnpm.cmd` (pnpm global `11.9.0` con `npm -g`) | error de versión (`v11.9.0`), código `1` | 0 de 4 | ejecutado: pasa a `9.0.0` y 4 de 4 (grupo 2) |
-| Lucía | Windows 10 Home `10.0.19045`, Node `v24.15.0`, `develop` en `dad5662` | `%APPDATA%\npm\pnpm.cmd` (pnpm global `11.1.3` con `npm -g`) | error de versión (`v11.1.3`) | 0 de 4; la línea `Failed:` nombra solo `azure-cost-api#lint` y `backend#lint` | no ejecutado todavía |
+| Lucía | Windows 10 Home `10.0.19045`, Node `v24.15.0`, `develop` en `dad5662` | `%APPDATA%\npm\pnpm.cmd` (pnpm global `11.1.3` con `npm -g`) | error de versión (`v11.1.3`) | 0 de 4; la línea `Failed:` nombra solo `azure-cost-api#lint` y `backend#lint` | **ejecutado** (y desinstalado además el pnpm global): ver «Segunda respuesta de Lucía» |
 | Alejandro | Windows 11 Pro, Node `v24.14.1`, worktree aislado de `develop` en `dad5662`, **entorno de ejecución de Codex, no una consola externa** | `...\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd`; sin pnpm global de npm (solo `@openai/codex@0.129.0` y `agent-slack@0.7.1`) | **`11.19.0`, sin error** (`corepack pnpm --version` da `9.0.0`) | 0 de 4; `@finops/backend#lint` falla con `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` | no ejecutado (no cambió configuración) |
 | Paris | — | — | — | — | **no confirmado** (sin respuesta a la fecha) |
 
@@ -400,9 +400,9 @@ Lectura, separando lo medido de lo inferido:
   pnpm`; vale cualquier `pnpm` anterior a corepack en el `PATH`. Su propia lectura es separar este
   caso del de una consola habitual, y se acepta: **no se ha probado el diagnóstico en su consola
   externa**, que es la pregunta pendiente.
-- **La corrección solo está comprobada en la máquina de Victor.** Lucía todavía no ha ejecutado
-  `corepack enable`. En el caso de Alejandro no se sabe si bastaría: depende de si el directorio de
-  Node va antes que la carpeta `fallback` en el `PATH` del entorno de Codex, que no se ha mirado.
+- **La corrección está comprobada en dos máquinas** (Victor y Lucía, ver la sección siguiente). En el
+  caso de Alejandro no se sabe si bastaría: depende de si el directorio de Node va antes que la
+  carpeta `fallback` en el `PATH` del entorno de Codex, que no se ha mirado.
 - La línea `Failed:` de turbo no lista todas las tareas que fallan (Lucía: 0 de 4 con dos nombradas),
   por eso se mira `Tasks:` y no `Failed:`.
 
@@ -410,13 +410,50 @@ Consecuencia para el `README.md` (ya aplicada): el diagnóstico debe leerse como
 `9.0.0`»; cualquier otra salida, sea el error o una versión distinta, indica que hay otro `pnpm` por
 delante en el `PATH`. Antes solo mencionaba el error.
 
-Respuesta provisional a «¿tiene el equipo que hacer algo en sus máquinas?» (criterio 5; **no
-definitiva** hasta tener a Paris y la comprobación de Lucía): **sí**, ejecutar una vez
-`corepack enable` si `corepack pnpm exec pnpm --version` no imprime `9.0.0`; comprobado que funciona
-en una máquina.
+### Segunda respuesta de Lucía
 
-_Pendiente: respuesta de Paris, `corepack enable` de Lucía, consola externa de Alejandro y tareas
-6.x y 7.x de `tasks.md` (hallazgos, spike y batería final)._
+Lucía ejecutó `corepack enable` **y además desinstaló el pnpm global**. Resumió el resultado en un
+mensaje, sin pegar las salidas, y no con los comandos exactos que se le pidieron (usó `pnpm` y no
+`corepack pnpm`, equivalentes una vez activado corepack y sin otro pnpm por delante):
+
+- `pnpm` resuelve a `9.0.0`.
+- `pnpm lint --force` y `pnpm build --force` ejecutan las 4 tareas.
+- Los tests pasan en los 4 servicios con **Python 3.12** (el de CI y las imágenes). Con el Python
+  **3.14** de su sistema falla un test del processor; ella lo atribuye al intérprete. **No se ha
+  reproducido ni examinado aquí** (en esta máquina todo se ejecutó con 3.13.7), así que se registra
+  como observación suya, sin causa confirmada y sin hallazgo propio.
+
+Dos límites de esta confirmación: **no se sabe cuál de las dos acciones fue la que importó**, porque
+hizo las dos a la vez (en la máquina de Victor basta `corepack enable` con el global instalado), y
+no se tiene la salida literal del diagnóstico `corepack pnpm exec pnpm --version`.
+
+Respuesta provisional a «¿tiene el equipo que hacer algo en sus máquinas?» (criterio 5; **no
+definitiva** hasta tener a Paris y a Alejandro en consola externa): **sí**, ejecutar una vez
+`corepack enable` si `corepack pnpm exec pnpm --version` no imprime `9.0.0`; comprobado que funciona
+en dos máquinas.
+
+## Hallazgos y spike (grupo 6)
+
+- **`RF-093-001` pasa a `Fixed`** en `openspec/findings/backlog.md`, con la causa, la corrección, las
+  dos afirmaciones corregidas, las 3 máquinas donde se reprodujo y las 2 donde se confirmó la
+  corrección. Lleva escrito en el propio hallazgo **lo pendiente** (el entorno de Codex de Alejandro y
+  la máquina de Paris) y que se reabre si alguno lo contradice.
+- **Hallazgos nuevos**, todos `Open`, sin corregir aquí: `RF-103-001` (`pnpm dev` no puede arrancar
+  backend ni processor), `RF-103-002` (`--parallel` obsoleto en turbo `2.9.18`), `RF-103-003`
+  (`localhost` bloquea el arranque del backend; causa sin verificar) y `RF-103-004` (`local:test`
+  falla con la infraestructura de Compose levantada).
+- **`RF-098-004`**: añadida la observación de esta tarjeta (14 a 21 fallos con los workers por
+  defecto, también ejecutando solo el frontend; 443 de 443 con `--maxWorkers=1`), que corrige lo que
+  decía de que «pasan aislados».
+- **Spike, F4**: la tarjeta de Docker marcada como resuelta por JUP-049 y JUP-050 sin tarjeta propia,
+  con cada punto **verificado contra el código** (`apps/frontend/Dockerfile` líneas 7 y 9,
+  `docker-compose.yml`, `README.md`, `RF-090-001` y `RF-090-002` en `Fixed`,
+  `tools/docker-topology.test.mjs`, `docs/evidence/JUP-050-validation.md`); la de turbo con su slug
+  real y sus casillas, con la salvedad de `dev`; F4 declarada completa y una entrada nueva en
+  «Próximos pasos».
+
+_Pendiente: respuesta de Paris, consola externa de Alejandro y tareas 5.2, 5.3 y 7.x de `tasks.md`
+(batería final, trazabilidad de criterios, `review.md`, archivado y pull request)._
 
 ## Trazabilidad con los criterios de la tarjeta
 

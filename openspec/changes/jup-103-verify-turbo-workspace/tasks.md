@@ -86,10 +86,10 @@
 
 ## 6. Cerrar el hallazgo y la fase F4 del spike
 
-- [ ] 6.1 `openspec/findings/backlog.md`: pasar `RF-093-001` a `Fixed` con la causa, la corrección,
+- [x] 6.1 `openspec/findings/backlog.md`: pasar `RF-093-001` a `Fixed` con la causa, la corrección,
   las dos afirmaciones corregidas y el enlace a la evidencia. Si la corrección no funcionó en 2.3,
   dejarlo `Open` con la causa precisa y lo que se probó.
-- [ ] 6.2 Registrar como hallazgos nuevos (`RF-103-NNN`) los fallos ajenos al gestor de paquetes que
+- [x] 6.2 Registrar como hallazgos nuevos (`RF-103-NNN`) los fallos ajenos al gestor de paquetes que
   hayan aparecido en 1.4, 2.3 o 3.3 y sean del repositorio. Candidatos ya identificados en 3.3 (ver
   la evidencia), con esta numeración porque el `README.md` ya enlaza `RF-103-001`: `RF-103-001`,
   `pnpm dev` no puede arrancar backend ni processor (modo `strict` de turbo sin variables declaradas
@@ -99,7 +99,7 @@
   está levantada (usa puertos reales que deben estar libres). Además, añadir a `RF-098-004` la observación de 1.4 y 2.3: pasa con
   `--maxWorkers=1` y falla entre 14 y 21 tests con los workers por defecto, también ejecutando solo
   el frontend.
-- [ ] 6.3 `docs/spikes/frontend-migration.md`, fase F4: marcar `jup-0xx-verificar-docker-compose`
+- [x] 6.3 `docs/spikes/frontend-migration.md`, fase F4: marcar `jup-0xx-verificar-docker-compose`
   como resuelta por JUP-049 y JUP-050 sin tarjeta propia, sustituir
   `jup-0xx-verificar-turbo-workspace` por `jup-103-verify-turbo-workspace` con sus casillas marcadas
   según lo verificado, y dejar F4 como fase completa.
@@ -121,6 +121,8 @@
 - [ ] 7.4 Comprobar que ningún documento versionado de la tarjeta cita configuración local de
   herramientas de asistencia y que los comandos escritos se pueden reproducir tal cual.
 - [ ] 7.5 Tras la aprobación post-revisión, archivar el change y corregir en el mismo paso los
-  enlaces relativos, que bajan un nivel al pasar a `openspec/changes/archive/`.
+  enlaces relativos, que bajan un nivel al pasar a `openspec/changes/archive/`. Hay uno ya escrito
+  que se rompe: el del spike (`docs/spikes/frontend-migration.md`, F4) apunta a
+  `openspec/changes/jup-103-verify-turbo-workspace/` y pasará a `openspec/changes/archive/<fecha>-jup-103-verify-turbo-workspace/`.
 - [ ] 7.6 Abrir el pull request hacia `develop` y registrar en la evidencia el enlace al PR y a la
   ejecución de CI en verde (criterio 3 de la tarjeta).
