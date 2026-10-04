@@ -19,6 +19,13 @@ RUNTIME_KEYS = {name.upper() for name in Settings.model_fields} | set(SYNTHETIC_
 }
 
 
+def use_gateway_embeddings(monkeypatch):
+    """Production rejects the mock embedding provider, so production fixtures select the gateway."""
+    monkeypatch.setenv("EMBEDDING_PROVIDER", "litellm")
+    monkeypatch.setenv("EMBEDDING_DIMENSION", "1536")
+    monkeypatch.setenv("LITELLM_API_KEY", "jup022-synthetic-gateway-key")
+
+
 @pytest.fixture(autouse=True)
 def isolated_runtime(monkeypatch, tmp_path):
     for name in RUNTIME_KEYS:
@@ -34,4 +41,5 @@ def isolated_runtime(monkeypatch, tmp_path):
 @pytest.fixture
 def production_env(monkeypatch):
     monkeypatch.setenv("RUNTIME_ENVIRONMENT", "production")
+    use_gateway_embeddings(monkeypatch)
     return dict(SYNTHETIC_ENV, RUNTIME_ENVIRONMENT="production")
