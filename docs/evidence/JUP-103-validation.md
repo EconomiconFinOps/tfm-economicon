@@ -326,8 +326,49 @@ Hallazgos candidatos del repositorio (tarea 6.2), sin corregir aquí:
 Estado al terminar: procesos de `dev` parados y puertos libres; la infraestructura de Compose
 **sigue levantada** (`docker compose ps`: las tres `healthy`).
 
-_Pendiente: tareas 4.x a 7.x de `tasks.md` (documentación, consulta al equipo, hallazgos, spike y
-batería final)._
+## Documentación del requisito previo (grupo 4)
+
+Cambios en `README.md`, el único archivo versionado que modifica este grupo:
+
+- **Sección nueva «Requisito previo: pnpm con corepack»** al inicio de «Como correrlo»: por qué
+  turbo necesita los lanzadores de corepack, `corepack enable` una vez por máquina (consola de
+  administrador en Windows, verificado solo en Windows), que no hace falta desinstalar un pnpm global
+  si el directorio de Node va antes en el `PATH`, el efecto de que `pnpm --version` fuera del
+  repositorio pase a mostrar la versión por defecto de corepack, el comando de diagnóstico
+  `corepack pnpm exec pnpm --version` (debe imprimir `9.0.0`), la salida de emergencia de `pnpm
+  <script>` sin `corepack` (verificada con `11.9.0`, declarada como no documentada) y la advertencia
+  sobre la caché de turbo y `--force`.
+- **«Con Turborepo»:** `pnpm install` y `pnpm dev` pasan a `corepack pnpm install --frozen-lockfile` y
+  `corepack pnpm dev`; se enlaza el requisito previo y se sugiere un entorno virtual de Python. Se
+  documenta, tal como se midió en 3.3, que `dev` por sí solo no deja sirviendo a backend ni processor
+  y los tres pasos que sí lo consiguen (infraestructura de Compose sin servicios de aplicación,
+  archivo de entorno fuera del repositorio con `127.0.0.1` y puertos publicados, y
+  `corepack pnpm dev --env-mode=loose` con `ECONOMICON_ENV_FILE`). Se declara como limitación
+  conocida del repositorio y se enlaza `RF-103-001`.
+- **«Comandos Principales»:** nota de equivalencia entre `pnpm <script>` y `corepack pnpm <script>`,
+  descripción de `dev` con su salvedad, `typecheck` (faltaba en la lista) y la nota de `test` con
+  `RF-098-004` y `--maxWorkers=1`.
+
+Comprobación de que el cambio no rompe nada (tarea 4.3), con las salidas reales:
+
+| Comando | Resultado |
+| --- | --- |
+| `corepack pnpm repository:governance:test` | código `0` |
+| `corepack pnpm ci:check:test` | código `0` |
+| `corepack pnpm pr:check:test` | código `0` |
+| `corepack pnpm docker:validate` | código `0` |
+| `corepack pnpm jup:cleanup:check` | `[OK] 778 archivos sin agentes personales, binarios ni tareas paralelas.` |
+| `corepack pnpm local:test` con la infraestructura de Compose levantada | **código `1`**, 1 fallo: `ports already published by this Compose project are not busy` |
+| `corepack pnpm local:test` tras `docker compose stop cockroachdb rabbitmq postgres-pgvector` | código `0`, 74 de 74 |
+
+El fallo de `local:test` no lo causa el `README.md`: el test usa un proyecto de Compose nuevo y
+comprueba que los puertos `26257`, `8080`, `5672` y `15672` están libres, y los tenía ocupados la
+infraestructura que se levantó para la tarea 3.3. Con los puertos libres pasa. **Consecuencia
+práctica: `local:test` no se puede ejecutar con la infraestructura de Compose levantada.**
+Se anota para la batería final (7.1). Los volúmenes se conservaron; el primer arranque creó el
+volumen `rabbitmq-data`, como describe el propio `README.md` para instalaciones anteriores a JUP-050.
+
+_Pendiente: tareas 5.x a 7.x de `tasks.md` (consulta al equipo, hallazgos, spike y batería final)._
 
 ## Trazabilidad con los criterios de la tarjeta
 

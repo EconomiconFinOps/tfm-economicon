@@ -59,18 +59,18 @@
 
 ## 4. Documentar el requisito previo en el repositorio
 
-- [ ] 4.1 `README.md`: añadir `corepack enable` como paso por única vez en los requisitos de
+- [x] 4.1 `README.md`: añadir `corepack enable` como paso por única vez en los requisitos de
   arranque, con la nota de la consola elevada en Windows, el comando de diagnóstico
   `corepack pnpm exec pnpm --version` y su resultado esperado, y qué hacer si hay un pnpm global de
   otra versión (incluida la salida de emergencia de invocar sin `corepack`).
-- [ ] 4.2 `README.md`, bloque "Con Turborepo": sustituir `pnpm install` y `pnpm dev` por
+- [x] 4.2 `README.md`, bloque "Con Turborepo": sustituir `pnpm install` y `pnpm dev` por
   `corepack pnpm install --frozen-lockfile` y `corepack pnpm dev`. En "Comandos Principales", añadir
   una nota que remita al requisito previo e incluir `typecheck`, que falta en la lista. Dejar escrito
   también, sin prometer más de lo verificado en 3.3, que `dev` solo mantiene backend y processor si
   se pasa `--env-mode=loose` y un archivo de entorno (`ECONOMICON_ENV_FILE`) con las URLs de base de
   datos, RabbitMQ y pgvector apuntando a `127.0.0.1` y a los puertos publicados por Compose; y que
   el `.env` de Compose no sirve tal cual para ese caso.
-- [ ] 4.3 Comprobar que el cambio de `README.md` no rompe los tests de gobierno del repositorio:
+- [x] 4.3 Comprobar que el cambio de `README.md` no rompe los tests de gobierno del repositorio:
   `corepack pnpm repository:governance:test`, `corepack pnpm ci:check:test` y
   `corepack pnpm jup:cleanup:check`.
 
@@ -91,10 +91,12 @@
   dejarlo `Open` con la causa precisa y lo que se probó.
 - [ ] 6.2 Registrar como hallazgos nuevos (`RF-103-NNN`) los fallos ajenos al gestor de paquetes que
   hayan aparecido en 1.4, 2.3 o 3.3 y sean del repositorio. Candidatos ya identificados en 3.3 (ver
-  la evidencia): `pnpm dev` no puede arrancar backend ni processor (modo `strict` de turbo sin
-  variables declaradas y aplicaciones que no leen `.env`); el script `dev` usa `--parallel`, obsoleto
-  en turbo `2.9.18`; `localhost` en las URLs bloquea el arranque del backend en esta máquina (causa
-  sin verificar). Además, añadir a `RF-098-004` la observación de 1.4 y 2.3: pasa con
+  la evidencia), con esta numeración porque el `README.md` ya enlaza `RF-103-001`: `RF-103-001`,
+  `pnpm dev` no puede arrancar backend ni processor (modo `strict` de turbo sin variables declaradas
+  y aplicaciones que no leen `.env`); `RF-103-002`, el script `dev` usa `--parallel`, obsoleto en
+  turbo `2.9.18`; `RF-103-003`, `localhost` en las URLs bloquea el arranque del backend en esta
+  máquina (causa sin verificar); `RF-103-004`, `local:test` falla si la infraestructura de Compose
+  está levantada (usa puertos reales que deben estar libres). Además, añadir a `RF-098-004` la observación de 1.4 y 2.3: pasa con
   `--maxWorkers=1` y falla entre 14 y 21 tests con los workers por defecto, también ejecutando solo
   el frontend.
 - [ ] 6.3 `docs/spikes/frontend-migration.md`, fase F4: marcar `jup-0xx-verificar-docker-compose`
@@ -107,9 +109,11 @@
 - [ ] 7.1 Ejecutar la batería completa desde la raíz, sin sustitutos:
   `corepack pnpm install --frozen-lockfile`, `corepack pnpm lint --force`,
   `corepack pnpm build --force`, `corepack pnpm typecheck --force`, y `corepack pnpm run test` con
-  `TURBO_FORCE=true` en las dos mitades descritas en 2.3, con el entorno virtual de Python activo, `corepack pnpm openspec:validate`,
-  `corepack pnpm jup:check -- --change jup-103-verify-turbo-workspace` y
-  `corepack pnpm jup:cleanup:check`.
+  `TURBO_FORCE=true` en las dos mitades descritas en 2.3, con el entorno virtual de Python activo,
+  `corepack pnpm openspec:validate`,
+  `corepack pnpm jup:check -- --change jup-103-verify-turbo-workspace`,
+  `corepack pnpm jup:cleanup:check` y `corepack pnpm local:test`. Este último con la infraestructura
+  de Compose parada: usa puertos reales y falla si están ocupados (visto en el grupo 4).
 - [ ] 7.2 Completar `docs/evidence/JUP-103-validation.md`: trazabilidad de los siete criterios de
   aceptación de la tarjeta con su evidencia, tabla de antes y después, lo que no se validó y por qué.
 - [ ] 7.3 Escribir `review.md`: resultado, decisiones, hallazgos, la excepción del ciclo Red/Green
