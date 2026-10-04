@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import re
 import hashlib
+import os
 import json
 import math
 import sys
@@ -80,7 +81,7 @@ def definitions_digest(catalogue: dict) -> str:
 
 
 def load_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf8"))
+    return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def load_catalogue(path: Path = CATALOGUE_PATH) -> dict:
@@ -222,11 +223,11 @@ def validate_run(run: dict, bank: dict) -> None:
     require(corpus, "chunks", "run.corpus", is_count)
     retrieval = require(run, "retrieval", "run", lambda value: isinstance(value, dict))
     allow(retrieval, "retrieval", "run.retrieval")
-    require(retrieval, "top_k", "run.retrieval", lambda value: is_count(value) and 1 <= value <= 1000)
+    require(retrieval, "top_k", "run.retrieval", lambda value: is_count(value) and 1 <= value <= 20)
     require(retrieval, "chunk_size", "run.retrieval", lambda value: is_count(value) and value >= 1)
     require(retrieval, "chunk_overlap", "run.retrieval", is_count)
-    if "max_distance" not in retrieval or not (retrieval["max_distance"] is None or (is_number(retrieval["max_distance"]) and retrieval["max_distance"] >= 0)):
-        fail("run.retrieval.max_distance", "required number of at least 0, or null")
+    if "max_distance" not in retrieval or not (retrieval["max_distance"] is None or (is_number(retrieval["max_distance"]) and retrieval["max_distance"] > 0)):
+        fail("run.retrieval.max_distance", "required number above 0, or null")
     if retrieval["max_distance"] is not None and retrieval["max_distance"] > 2:
         fail("run.retrieval.max_distance", "a cosine distance never exceeds 2")
     if retrieval["chunk_overlap"] >= retrieval["chunk_size"]:
@@ -236,8 +237,8 @@ def validate_run(run: dict, bank: dict) -> None:
     generation = require(run, "generation", "run", lambda value: isinstance(value, dict))
     allow(generation, "generation", "run.generation")
     for name, value in generation.items():
-        if not (is_number(value) or isinstance(value, bool) or short(80)(value)):
-            fail(f"run.generation.{name}", "must be a number, a boolean or a short text")
+        if not (value is None or is_number(value) or isinstance(value, bool) or short(80)(value)):
+            fail(f"run.generation.{name}", "must be null, a number, a boolean or a short text")
     availability = require(run, "availability", "run", lambda value: isinstance(value, dict))
     allow(availability, "availability", "run.availability")
     requests = require(availability, "requests", "run.availability", is_count)
@@ -305,8 +306,6 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
     if retrieved and run["corpus"]["chunks"] == 0:
         fail(f"{path}.retrieved", "a corpus without fragments retrieves nothing")
     citations = require(item, "citations", path, lambda value: isinstance(value, list) and len(value) <= 100 and all(short(200)(entry) for entry in value))
-    if len(set(citations)) != len(citations):
-        fail(f"{path}.citations", "a citation appears once")
     figures = require(item, "figures", path, lambda value: isinstance(value, list) and len(value) <= 200)
     for position, figure in enumerate(figures):
         allow(figure, "figure", f"{path}.figures[{position}]")
@@ -317,9 +316,8 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
     for stage, value in latency.items():
         if stage not in STAGES or not is_number(value) or value < 0:
             fail(f"{path}.latency_ms.{safe(stage)}", "a known stage with a non-negative number is required")
-    for stage in STAGES[:3]:
-        if stage in latency and "total" in latency and latency[stage] > latency["total"]:
-            fail(f"{path}.latency_ms.{stage}", "cannot exceed the total")
+    if "total" in latency and sum(latency[name] for name in STAGES[:3] if name in latency) > latency["total"] + 1e-9:
+        fail(f"{path}.latency_ms.total", "cannot be less than the sum of the stages")
     category = item.get("failure_category")
     stage = item.get("failure_stage")
     if category is not None and category not in FAILURE_CATEGORIES:
@@ -356,8 +354,9 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
             fail(f"{path}.citations", "a failed call has no response data")
         if stage in ("embedding", "retrieval") and retrieved:
             fail(f"{path}.retrieved", "a failed call before the answer retrieved nothing")
-    if outcome == "fail" and not failed_check and category is None:
-        fail(f"{path}.outcome", "a fail needs a failing check or a failure")
+    ungrounded = critical and any(figure["origin"] == "untraceable" for figure in figures)
+    if outcome == "fail" and not failed_check and category is None and not ungrounded:
+        fail(f"{path}.outcome", "a fail needs a failing check, a failure or an untraceable figure in a critical case")
     if outcome == "blocked" and category not in PROVIDER_FAILURES:
         fail(f"{path}.failure_category", "a blocked case names its provider failure")
     refs = require(item, "evidence_refs", path, lambda value: isinstance(value, dict))
@@ -371,8 +370,9 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
     if evaluated and category is None:
         if ok is None:
             fail(f"{path}.structured_ok", "a completed call reports whether the response conforms")
-        if "total" not in latency:
-            fail(f"{path}.latency_ms.total", "a completed call has a total latency")
+        for name in STAGES:
+            if name not in latency:
+                fail(f"{path}.latency_ms.{name}", "a completed call has the latency of every stage and the total")
     if outcome == "not_run" and (retrieved or citations or figures or latency or category or ok is not None or total):
         fail(f"{path}.outcome", "a not_run case carries no data")
 
@@ -655,6 +655,9 @@ def main(argv: list[str] | None = None) -> int:
         print("Error: --output and --report must be different files and never an input file", file=sys.stderr)
         return 2
     for flag, path in targets:
+        if path.exists() and any(os.path.samefile(path, source) for source in sources if source.exists()):
+            print(f"Error: {flag}: the file is an input of the calculator", file=sys.stderr)
+            return 2
         if not path.resolve().parent.is_dir():
             print(f"Error: {flag}: the folder does not exist", file=sys.stderr)
             return 2

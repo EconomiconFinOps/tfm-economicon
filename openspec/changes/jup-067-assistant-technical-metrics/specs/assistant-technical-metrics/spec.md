@@ -18,7 +18,7 @@ The project SHALL publish a catalogue of technical metrics for the assistant. Ea
 
 ### Requirement: Case outcomes and populations
 
-Each evaluated case SHALL have exactly one outcome among `pass`, `fail`, `blocked` and `not_run`. A rate SHALL be computed over the cases that are `pass` or `fail` of the declared population only; `blocked` and `not_run` cases SHALL be excluded from every denominator and SHALL be reported as counts. Cases whose expected behavior is `clarify` or `abstain` SHALL be reported separately from `answer` cases and SHALL NOT enter the answer-case rates. Every published rate SHALL show its numerator, its denominator and a 95 % Wilson interval. This applies to the case-level rates (accuracy, relevance, grounding); call-level metrics (the failure rate of each stage and the failures by category) SHALL count every attempted call, including those of `blocked` cases, because an infrastructure failure is the failed call they report. A case recorded as `pass` SHALL NOT carry a failure category, a `blocked` case SHALL name the provider failure category and stage that blocked it, and a `not_run` case SHALL carry no data.
+Each evaluated case SHALL have exactly one outcome among `pass`, `fail`, `blocked` and `not_run`. A rate SHALL be computed over the cases that are `pass` or `fail` of the declared population only; `blocked` and `not_run` cases SHALL be excluded from every denominator and SHALL be reported as counts. Cases whose expected behavior is `clarify` or `abstain` SHALL be reported separately from `answer` cases and SHALL NOT enter the answer-case rates. Every published rate SHALL show its numerator, its denominator and a 95 % Wilson interval. This applies to the case-level rates (accuracy, relevance, grounding); call-level metrics (the failure rate of each stage and the failures by category) SHALL count every attempted call, including those of `blocked` cases, because an infrastructure failure is the failed call they report. A repeated citation is counted each time it is emitted. A case recorded as `pass` SHALL NOT carry a failure category, a `blocked` case SHALL name the provider failure category and stage that blocked it, and a `not_run` case SHALL carry no data.
 
 #### Scenario: Blocked cases do not lower a rate
 
@@ -39,7 +39,7 @@ Each evaluated case SHALL have exactly one outcome among `pass`, `fail`, `blocke
 
 ### Requirement: Accuracy from the question bank rubric
 
-Accuracy SHALL be computed from the rubric of the JUP-069 question bank. A case recorded as `pass` or `fail` SHALL carry exactly one check for every point of its rubric (`required`, `forbidden` and `numbers`, identified by kind and position), a case that was `blocked` or `not_run` SHALL carry none, and a `fail` SHALL have a failing check or a failure. A case SHALL be `pass` only if every point of `required` is satisfied, no `forbidden` conduct appears and every value of `numbers` is within its absolute tolerance, with the unit and the label checked and not only the presence of the number. The report SHALL distinguish objective checks (`numbers` and `forbidden`, decidable by rule) from judged checks (`required`, decided by a reviewer), SHALL record who decided each judged check, and SHALL compute an objective-check rate over the objective checks alone.
+Accuracy SHALL be computed from the rubric of the JUP-069 question bank. A case recorded as `pass` or `fail` SHALL carry exactly one check for every point of its rubric (`required`, `forbidden` and `numbers`, identified by kind and position), a case that was `blocked` or `not_run` SHALL carry none, and a `fail` SHALL have a failing check, a failure, or an untraceable figure in a critical case (a grounding failure). A case SHALL be `pass` only if every point of `required` is satisfied, no `forbidden` conduct appears and every value of `numbers` is within its absolute tolerance, with the unit and the label checked and not only the presence of the number. The report SHALL distinguish objective checks (`numbers` and `forbidden`, decidable by rule) from judged checks (`required`, decided by a reviewer), SHALL record who decided each judged check, and SHALL compute an objective-check rate over the objective checks alone.
 
 #### Scenario: Pass without checks
 
@@ -132,6 +132,11 @@ Latency SHALL be reported per stage (embedding of the question, retrieval query,
 - **WHEN** fewer observations than the documented minimum exist for a stage (20 for the 95th percentile, 5 for the median and the maximum)
 - **THEN** the percentile is reported as not available
 
+#### Scenario: A completed call is complete
+
+- **WHEN** a case that completed its call lacks the latency of one stage or the total, or the total is smaller than the sum of the stages
+- **THEN** the results file is rejected
+
 #### Scenario: A failed call has no latency
 
 - **WHEN** a case records a failed call in a stage and also a latency for that stage or for the total
@@ -181,7 +186,7 @@ Per-case results SHALL use a versioned format that records, for each case, its i
 
 #### Scenario: Inconsistent run parameters
 
-- **WHEN** the chunk overlap is not smaller than the chunk size, a distance exceeds the maximum distance of the run, a case retrieves more fragments than `top_k`, or the corpus has more documents than fragments
+- **WHEN** `top_k` is outside 1 to 20 (as in the backend), the maximum distance is not above 0 and at most 2, the chunk overlap is not smaller than the chunk size, a distance exceeds the maximum distance of the run, a case retrieves more fragments than `top_k`, or the corpus has more documents than fragments
 - **THEN** the results file is rejected
 
 #### Scenario: Corpus size is reported with latency

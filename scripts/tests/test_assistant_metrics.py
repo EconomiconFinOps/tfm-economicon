@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+import os
+import re
 import importlib.util
 import json
 import shutil
@@ -73,6 +75,10 @@ def hit(case_id: str, distance: float, chunk_id: str = "c1", heading_hit: bool =
     return {"chunk_id": chunk_id, "source": source, "heading": heading, "distance": distance}
 
 
+def completed_latency(total: float) -> dict:
+    return {"embedding": total / 10, "retrieval": total / 10, "generation": total / 2, "total": total}
+
+
 def full_checks(case_id: str, fail_ids: tuple = (), judged: tuple = ("Ana", "Luis")) -> list:
     checks = []
     for identifier, kind in metrics.expected_checks(CASES[case_id]).items():
@@ -85,7 +91,7 @@ def full_checks(case_id: str, fail_ids: tuple = (), judged: tuple = ("Ana", "Lui
 
 def passing(results: dict, case_id: str, **fields) -> dict:
     item = case_of(results, case_id)
-    item.update(outcome="pass", checks=full_checks(case_id), latency_ms={"total": 1000.0}, structured_ok=True)
+    item.update(outcome="pass", checks=full_checks(case_id), latency_ms=completed_latency(1000.0), structured_ok=True)
     item.update(fields)
     return item
 
@@ -93,7 +99,7 @@ def passing(results: dict, case_id: str, **fields) -> dict:
 def failing(results: dict, case_id: str, **fields) -> dict:
     item = case_of(results, case_id)
     item.update(outcome="fail", checks=full_checks(case_id, fail_ids=(next(iter(metrics.expected_checks(CASES[case_id]))),)),
-                latency_ms={"total": 1000.0}, structured_ok=True)
+                latency_ms=completed_latency(1000.0), structured_ok=True)
     item.update(fields)
     return item
 
@@ -402,7 +408,7 @@ class LatencyTests(unittest.TestCase):
         results = base_results()
         usable = [i for i in CASES][: len(values) + failures]
         for case_id, value in zip(usable, values):
-            passing(results, case_id, latency_ms={"embedding": value / 10, "total": value})
+            passing(results, case_id, latency_ms=completed_latency(value))
         for case_id in usable[len(values):]:
             blocked(results, case_id, category="timeout", stage="embedding")
         return results
@@ -564,7 +570,7 @@ class TargetsTests(unittest.TestCase):
         results = base_results()
         for index in range(20):
             case_id = list(CASES)[index]
-            passing(results, case_id, latency_ms={"total": 12000.0})
+            passing(results, case_id, latency_ms=completed_latency(12000.0))
         report = compute(results)
         lat2 = report["metrics"]["LAT-2"]["stages"]["total"]
         self.assertEqual(lat2["target"]["value"], 10000)
@@ -598,7 +604,7 @@ class TargetsTests(unittest.TestCase):
             self.assertIs(metrics.target_result(definitions[metric_id], beyond)["met"], False, metric_id)
         results = base_results()
         for index in range(20):
-            passing(results, list(CASES)[index], latency_ms={"total": 10000.0})
+            passing(results, list(CASES)[index], latency_ms=completed_latency(10000.0))
         report = compute(results)["metrics"]
         self.assertEqual(report["LAT-2"]["stages"]["total"]["value"], 10000.0)
         self.assertIs(report["LAT-2"]["stages"]["total"]["target"]["met"], True)
@@ -620,7 +626,7 @@ class CliTests(unittest.TestCase):
 
     def test_the_same_input_gives_byte_identical_reports(self):
         results = base_results()
-        passing(results, SOURCE_CASE["answer"][0], latency_ms={"total": 100.0})
+        passing(results, SOURCE_CASE["answer"][0], latency_ms=completed_latency(100.0))
         with tempfile.TemporaryDirectory() as raw:
             directory = Path(raw)
             code_a, out_a, md_a = self.run_cli(directory, results, name="a")
@@ -630,14 +636,17 @@ class CliTests(unittest.TestCase):
             self.assertEqual(md_a.read_bytes(), md_b.read_bytes())
             self.assertIn("2026-10-05T10:00:00Z", out_a.read_text(encoding="utf8"))
 
-    def test_it_runs_with_every_network_call_blocked(self):
-        def blocked(*args, **kwargs):
-            raise AssertionError("network access attempted")
-        with tempfile.TemporaryDirectory() as raw, mock.patch.object(socket, "socket", blocked), \
-                mock.patch.object(socket, "create_connection", blocked):
-            code, output, _ = self.run_cli(Path(raw), base_results())
-            self.assertEqual(code, 0)
-            self.assertTrue(output.exists())
+    def test_the_calculator_has_no_network_or_database_access(self):
+        source = SCRIPT_PATH.read_text(encoding="utf8")
+        imported = set(re.findall(r"^(?:import|from) ([a-z_.]+)", source, re.MULTILINE))
+        self.assertFalse({name.split(".")[0] for name in imported} & {"socket", "http", "urllib", "requests", "ssl", "sqlite3", "ftplib", "smtplib", "asyncio"})
+        with tempfile.TemporaryDirectory() as raw:
+            source_file = Path(raw) / "results.json"
+            source_file.write_text(json.dumps(base_results()), encoding="utf8")
+            def blocked_call(*args, **kwargs):
+                raise AssertionError("network access attempted")
+            with mock.patch.object(socket, "socket", blocked_call), mock.patch.object(socket, "create_connection", blocked_call):
+                self.assertEqual(metrics.main(["--results", str(source_file), "--output", str(Path(raw) / "o.json")]), 0)
 
     def test_an_invalid_file_exits_with_an_error_that_names_the_field_and_not_the_value(self):
         results = base_results()
@@ -791,7 +800,7 @@ class AdversarialRegressionTests(unittest.TestCase):
             self.assertTrue(any("mock" in note for note in compute(results)["notes"]))
 
     def test_retrieval_parameters_have_a_valid_range(self):
-        for field, value in (("top_k", 0), ("max_distance", -5), ("chunk_size", 0)):
+        for field, value in (("top_k", 0), ("top_k", 21), ("max_distance", -5), ("max_distance", 0), ("chunk_size", 0)):
             results = base_results()
             results["run"]["retrieval"][field] = value
             reject(self, results, "run.retrieval." + field)
@@ -813,7 +822,7 @@ class SecondPassRegressionTests(unittest.TestCase):
 
     def test_huge_integers_in_any_numeric_field_are_rejected_without_a_traceback(self):
         mutations = (
-            lambda r: passing(r, self.ANSWER).update(latency_ms={"total": 10 ** 400}),
+            lambda r: passing(r, self.ANSWER).update(latency_ms={"embedding": 1.0, "retrieval": 1.0, "generation": 1.0, "total": 10 ** 400}),
             lambda r: passing(r, self.ANSWER, retrieved=[{"chunk_id": "c", "source": "finops", "heading": "h", "distance": 10 ** 400}]),
             lambda r: r["run"]["retrieval"].update(max_distance=10 ** 400),
             lambda r: r["run"]["generation"].update(seed=10 ** 400),
@@ -911,8 +920,8 @@ class SecondPassRegressionTests(unittest.TestCase):
         blocked(results, self.ANSWER, latency_ms={"retrieval": 5.0})
         reject(self, results, "latency_ms.retrieval")
         results = base_results()
-        passing(results, self.ANSWER, latency_ms={"embedding": 90.0, "total": 50.0})
-        reject(self, results, "latency_ms.embedding")
+        passing(results, self.ANSWER, latency_ms={"embedding": 90.0, "retrieval": 10.0, "generation": 10.0, "total": 50.0})
+        reject(self, results, "latency_ms.total")
 
     def test_error_messages_never_echo_unbounded_or_control_text(self):
         results = base_results()
@@ -976,7 +985,8 @@ class SecondPassRegressionTests(unittest.TestCase):
         reject(self, results, "citations")
         results = base_results()
         passing(results, self.ANSWER, retrieved=[hit(self.ANSWER, 0.1, "r1")], citations=["r1", "r1"])
-        reject(self, results, "citations")
+        grd1 = compute(results)["metrics"]["GRD-1"]
+        self.assertEqual((grd1["k"], grd1["n"]), (2, 2))
 
 
 class ThirdPassRegressionTests(unittest.TestCase):
@@ -1002,13 +1012,13 @@ class ThirdPassRegressionTests(unittest.TestCase):
     def test_a_schema_failure_is_a_fail_and_a_completed_call_reports_conformance_and_latency(self):
         results = base_results()
         blocked(results, self.ANSWER, category="schema_validation", stage=None, structured_ok=False)
-        reject(self, results, "cases[")
+        reject(self, results, "outcome")
         results = base_results()
         passing(results, self.ANSWER, structured_ok=None)
         reject(self, results, "structured_ok")
         results = base_results()
         passing(results, self.ANSWER, latency_ms={})
-        reject(self, results, "latency_ms.total")
+        reject(self, results, "latency_ms")
 
     def test_the_cli_never_overwrites_an_input_of_the_calculator(self):
         with tempfile.TemporaryDirectory() as raw:
@@ -1062,6 +1072,112 @@ class ThirdPassRegressionTests(unittest.TestCase):
         self.assertEqual(metrics.number(0.0), "0")
         markdown = metrics.render_markdown(compute(base_results()), CATALOGUE)
         self.assertNotIn("no disponible ms", markdown)
+
+
+class FourthPassRegressionTests(unittest.TestCase):
+    ANSWER = SOURCE_CASE["answer"][0]
+
+    def test_a_critical_case_with_an_ungrounded_figure_is_a_fail_for_grounding_whatever_its_checks(self):
+        results = base_results()
+        item = case_of(results, CRITICAL[0])
+        item.update(outcome="fail", checks=full_checks(CRITICAL[0]), figures=[{"origin": "untraceable"}],
+                    latency_ms=completed_latency(1000.0), structured_ok=True)
+        report = compute(results)["metrics"]
+        self.assertEqual(report["GRD-2"]["critical_failures"], [CRITICAL[0]])
+        item["outcome"] = "pass"
+        reject(self, results, "outcome")
+        other = next(i for i in SOURCE_CASE["answer"] if i not in CRITICAL)
+        results = base_results()
+        case_of(results, other).update(outcome="fail", checks=full_checks(other), figures=[{"origin": "untraceable"}],
+                                       latency_ms=completed_latency(1000.0), structured_ok=True)
+        reject(self, results, "outcome")
+
+    def test_optional_generation_settings_may_be_null(self):
+        results = base_results()
+        results["run"]["generation"].update(seed=None, max_tokens=None, top_p=None)
+        metrics.validate_results(results, BANK, LABELS, CATALOGUE)
+
+    def test_a_completed_call_has_every_stage_and_the_total_covers_their_sum(self):
+        for missing in ("embedding", "retrieval", "generation", "total"):
+            results = base_results()
+            latency = completed_latency(1000.0)
+            del latency[missing]
+            passing(results, self.ANSWER, latency_ms=latency)
+            reject(self, results, "latency_ms." + missing)
+        results = base_results()
+        passing(results, self.ANSWER, latency_ms={"embedding": 600.0, "retrieval": 600.0, "generation": 600.0, "total": 1000.0})
+        reject(self, results, "latency_ms.total")
+
+    def test_lat4_counts_every_completed_call_in_every_stage(self):
+        results = base_results()
+        for index in range(5):
+            passing(results, SOURCE_CASE["answer"][index])
+        blocked(results, SOURCE_CASE["answer"][5], category="timeout", stage="generation", latency_ms={"embedding": 10.0, "retrieval": 5.0})
+        lat4 = compute(results)["metrics"]["LAT-4"]["stages"]
+        self.assertEqual((lat4["generation"]["k"], lat4["generation"]["n"]), (1, 6))
+        self.assertEqual((lat4["embedding"]["k"], lat4["embedding"]["n"]), (0, 6))
+
+    def test_accuracy_citations_and_references_are_answer_case_rates(self):
+        answer, clarify = SOURCE_CASE["answer"][0], SOURCE_CASE["clarify"][0]
+        results = base_results()
+        passing(results, answer)
+        failing(results, clarify)
+        acc2 = compute(results)["metrics"]["ACC-2"]
+        objective = sum(1 for kind in metrics.expected_checks(CASES[answer]).values() if kind == "objective")
+        self.assertEqual(acc2["n"], objective)
+        results = base_results()
+        other = SOURCE_CASE["answer"][1]
+        passing(results, answer, retrieved=[hit(answer, 0.2, "r1")], citations=["r1"])
+        passing(results, other, retrieved=[hit(other, 0.2, "r2")], citations=["r1"])
+        grd1 = compute(results)["metrics"]["GRD-1"]
+        self.assertEqual((grd1["k"], grd1["n"]), (1, 2))
+        results = base_results()
+        passing(results, answer, evidence_refs={"total": 4, "dangling": 0})
+        passing(results, clarify, evidence_refs={"total": 5, "dangling": 5})
+        grd3 = compute(results)["metrics"]["GRD-3"]
+        self.assertEqual((grd3["k"], grd3["n"]), (4, 4))
+
+    def test_judged_checks_name_at_most_two_people_and_only_critical_cases_are_listed(self):
+        results = base_results()
+        item = passing(results, self.ANSWER)
+        judged = next(check for check in item["checks"] if check["class"] == "judged")
+        judged["decided_by"] = ["Ana", "Luis", "Eva"]
+        reject(self, results, "decided_by")
+        non_critical = next(i for i in SOURCE_CASE["answer"] if i not in CRITICAL)
+        results = base_results()
+        item = passing(results, non_critical)
+        item["checks"] = full_checks(non_critical, judged=("Ana",))
+        self.assertEqual(compute(results)["critical"]["single_decider_cases"], [])
+        results = base_results()
+        item = passing(results, CRITICAL[0])
+        item["checks"] = full_checks(CRITICAL[0], judged=("Ana", "ana"))
+        self.assertEqual(compute(results)["critical"]["single_decider_cases"], [CRITICAL[0]])
+
+    def test_grd2_is_not_judged_without_evaluated_critical_cases_and_a_distance_on_the_maximum_is_valid(self):
+        non_critical = next(i for i in SOURCE_CASE["answer"] if i not in CRITICAL)
+        results = base_results()
+        passing(results, non_critical)
+        self.assertIsNone(compute(results)["metrics"]["GRD-2"]["target"]["met"])
+        results = base_results()
+        passing(results, ANSWERS_DIRECT[0], retrieved=[hit(ANSWERS_DIRECT[0], 0.6)])
+        metrics.validate_results(results, BANK, LABELS, CATALOGUE)
+
+    def test_a_hard_link_or_a_bom_do_not_break_the_input_protection(self):
+        with tempfile.TemporaryDirectory() as raw:
+            directory = Path(raw)
+            source = directory / "results.json"
+            source.write_bytes(b"\xef\xbb\xbf" + json.dumps(base_results()).encode("utf8"))
+            link = directory / "link.json"
+            try:
+                os.link(source, link)
+            except OSError:
+                self.skipTest("hard links are not available")
+            buffer = tempfile.TemporaryFile(mode="w+", encoding="utf8")
+            with mock.patch.object(sys, "stderr", buffer):
+                code = metrics.main(["--results", str(source), "--output", str(link)])
+            self.assertEqual(code, 2)
+            self.assertTrue(source.read_bytes().startswith(b"\xef\xbb\xbf"))
+            self.assertEqual(metrics.main(["--results", str(source), "--output", str(directory / "ok.json")]), 0)
 
 
 if __name__ == "__main__":
