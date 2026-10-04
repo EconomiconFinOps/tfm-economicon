@@ -37,7 +37,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -45,7 +45,7 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "numbers-2",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -53,7 +53,32 @@
      ]
     },
     {
-     "id": "required",
+     "id": "numbers-3",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "forbidden-1",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -97,7 +122,7 @@
     "embedding": 124,
     "retrieval": 36,
     "generation": 2710,
-    "total": 2920
+    "total": 2910
    },
    "failure_category": null,
    "failure_stage": null,
@@ -112,7 +137,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -120,7 +145,7 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "numbers-2",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -128,7 +153,15 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-1",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -172,7 +205,7 @@
     "embedding": 128,
     "retrieval": 37,
     "generation": 2920,
-    "total": 3140
+    "total": 3125
    },
    "failure_category": null,
    "failure_stage": null,
@@ -187,7 +220,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -195,7 +228,15 @@
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -236,7 +277,7 @@
     "embedding": 132,
     "retrieval": 38,
     "generation": 3130,
-    "total": 3360
+    "total": 3340
    },
    "failure_category": null,
    "failure_stage": null,
@@ -251,7 +292,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -259,7 +300,15 @@
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -302,7 +351,7 @@
     "embedding": 136,
     "retrieval": 39,
     "generation": 3340,
-    "total": 3580
+    "total": 3555
    },
    "failure_category": null,
    "failure_stage": null,
@@ -317,7 +366,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -325,7 +374,7 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "numbers-2",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -333,7 +382,40 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-1",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "forbidden-2",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "forbidden-3",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -365,7 +447,7 @@
     "embedding": 140,
     "retrieval": 40,
     "generation": 3550,
-    "total": 3800
+    "total": 3770
    },
    "failure_category": null,
    "failure_stage": null,
@@ -380,7 +462,15 @@
    "outcome": "fail",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
+     "class": "objective",
+     "result": "fail",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -388,17 +478,9 @@
      ]
     },
     {
-     "id": "numbers",
-     "class": "objective",
-     "result": "fail",
-     "decided_by": [
-      "rule"
-     ]
-    },
-    {
-     "id": "required",
+     "id": "required-1",
      "class": "judged",
-     "result": "fail",
+     "result": "pass",
      "decided_by": [
       "persona-a",
       "persona-b"
@@ -445,7 +527,7 @@
    },
    "failure_category": "timeout",
    "failure_stage": "generation",
-   "structured_ok": true,
+   "structured_ok": null,
    "evidence_refs": {
     "total": 4,
     "dangling": 0
@@ -456,7 +538,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -464,7 +546,7 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -472,7 +554,7 @@
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -517,7 +599,7 @@
     "embedding": 148,
     "retrieval": 42,
     "generation": 3970,
-    "total": 4240
+    "total": 4200
    },
    "failure_category": null,
    "failure_stage": null,
@@ -532,7 +614,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -540,7 +622,23 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-2",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -581,7 +679,7 @@
     "embedding": 152,
     "retrieval": 43,
     "generation": 4180,
-    "total": 4460
+    "total": 4415
    },
    "failure_category": null,
    "failure_stage": null,
@@ -596,7 +694,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -604,7 +702,15 @@
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -645,7 +751,7 @@
     "embedding": 156,
     "retrieval": 44,
     "generation": 4390,
-    "total": 4680
+    "total": 4630
    },
    "failure_category": null,
    "failure_stage": null,
@@ -660,7 +766,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -668,7 +774,15 @@
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -699,7 +813,7 @@
     "embedding": 160,
     "retrieval": 45,
     "generation": 4600,
-    "total": 4900
+    "total": 4845
    },
    "failure_category": null,
    "failure_stage": null,
@@ -714,7 +828,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -722,7 +836,7 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -730,7 +844,7 @@
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -774,7 +888,7 @@
     "embedding": 164,
     "retrieval": 46,
     "generation": 4810,
-    "total": 5120
+    "total": 5060
    },
    "failure_category": null,
    "failure_stage": null,
@@ -786,18 +900,26 @@
   },
   {
    "case": "JUP-069-012",
-   "outcome": "pass",
+   "outcome": "fail",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
-     "result": "pass",
+     "result": "fail",
      "decided_by": [
       "rule"
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -840,9 +962,9 @@
     "embedding": 168,
     "retrieval": 47,
     "generation": 5020,
-    "total": 5340
+    "total": 5275
    },
-   "failure_category": null,
+   "failure_category": "schema_validation",
    "failure_stage": null,
    "structured_ok": false,
    "evidence_refs": {
@@ -855,7 +977,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -863,7 +985,7 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "numbers-2",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -871,7 +993,15 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-1",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -915,7 +1045,7 @@
     "embedding": 172,
     "retrieval": 48,
     "generation": 5230,
-    "total": 5560
+    "total": 5490
    },
    "failure_category": null,
    "failure_stage": null,
@@ -930,7 +1060,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -938,7 +1068,7 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "numbers-2",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -946,7 +1076,32 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-1",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "forbidden-2",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -990,7 +1145,7 @@
     "embedding": 176,
     "retrieval": 49,
     "generation": 5440,
-    "total": 5780
+    "total": 5705
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1005,7 +1160,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1013,7 +1168,7 @@
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -1044,7 +1199,7 @@
     "embedding": 180,
     "retrieval": 50,
     "generation": 5650,
-    "total": 6000
+    "total": 5920
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1059,7 +1214,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1067,7 +1222,7 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "numbers-2",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1075,7 +1230,24 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-1",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -1119,7 +1291,7 @@
     "embedding": 184,
     "retrieval": 51,
     "generation": 5860,
-    "total": 6220
+    "total": 6135
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1134,7 +1306,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1142,7 +1314,7 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "numbers-2",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1150,7 +1322,23 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-1",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "forbidden-2",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -1194,7 +1382,7 @@
     "embedding": 188,
     "retrieval": 52,
     "generation": 6070,
-    "total": 6440
+    "total": 6350
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1209,7 +1397,15 @@
    "outcome": "fail",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
+     "class": "objective",
+     "result": "fail",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers-2",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1217,17 +1413,17 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "forbidden-1",
      "class": "objective",
-     "result": "fail",
+     "result": "pass",
      "decided_by": [
       "rule"
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
      "class": "judged",
-     "result": "fail",
+     "result": "pass",
      "decided_by": [
       "persona-a",
       "persona-b"
@@ -1269,7 +1465,7 @@
     "embedding": 192,
     "retrieval": 53,
     "generation": 6280,
-    "total": 6660
+    "total": 6565
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1284,7 +1480,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1292,7 +1488,7 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1300,7 +1496,16 @@
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a",
+      "persona-b"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -1342,7 +1547,7 @@
     "embedding": 196,
     "retrieval": 54,
     "generation": 6490,
-    "total": 6880
+    "total": 6780
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1357,7 +1562,7 @@
    "outcome": "fail",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "fail",
      "decided_by": [
@@ -1365,9 +1570,25 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-2",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
      "class": "judged",
-     "result": "fail",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
+     "class": "judged",
+     "result": "pass",
      "decided_by": [
       "persona-a"
      ]
@@ -1396,7 +1617,7 @@
     "embedding": 200,
     "retrieval": 55,
     "generation": 6700,
-    "total": 7100
+    "total": 6995
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1411,7 +1632,15 @@
    "outcome": "fail",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "numbers-1",
+     "class": "objective",
+     "result": "fail",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "numbers-2",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1419,17 +1648,17 @@
      ]
     },
     {
-     "id": "numbers",
+     "id": "forbidden-1",
      "class": "objective",
-     "result": "fail",
+     "result": "pass",
      "decided_by": [
       "rule"
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
      "class": "judged",
-     "result": "fail",
+     "result": "pass",
      "decided_by": [
       "persona-a",
       "persona-b"
@@ -1471,7 +1700,7 @@
     "embedding": 204,
     "retrieval": 56,
     "generation": 6910,
-    "total": 7320
+    "total": 7210
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1486,7 +1715,7 @@
    "outcome": "fail",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "fail",
      "decided_by": [
@@ -1494,9 +1723,25 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-2",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
      "class": "judged",
-     "result": "fail",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
+     "class": "judged",
+     "result": "pass",
      "decided_by": [
       "persona-a"
      ]
@@ -1537,7 +1782,7 @@
     "embedding": 208,
     "retrieval": 57,
     "generation": 7120,
-    "total": 7540
+    "total": 7425
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1552,7 +1797,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1560,7 +1805,23 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-2",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -1582,7 +1843,7 @@
     "embedding": 212,
     "retrieval": 58,
     "generation": 7330,
-    "total": 7760
+    "total": 7640
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1597,7 +1858,7 @@
    "outcome": "fail",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "fail",
      "decided_by": [
@@ -1605,9 +1866,25 @@
      ]
     },
     {
-     "id": "required",
+     "id": "forbidden-2",
+     "class": "objective",
+     "result": "pass",
+     "decided_by": [
+      "rule"
+     ]
+    },
+    {
+     "id": "required-1",
      "class": "judged",
-     "result": "fail",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
+     "class": "judged",
+     "result": "pass",
      "decided_by": [
       "persona-a"
      ]
@@ -1634,7 +1911,7 @@
     "embedding": 216,
     "retrieval": 59,
     "generation": 7540,
-    "total": 7980
+    "total": 7855
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1649,7 +1926,7 @@
    "outcome": "fail",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "fail",
      "decided_by": [
@@ -1657,9 +1934,17 @@
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
      "class": "judged",
-     "result": "fail",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
+     "class": "judged",
+     "result": "pass",
      "decided_by": [
       "persona-a"
      ]
@@ -1679,7 +1964,7 @@
     "embedding": 220,
     "retrieval": 60,
     "generation": 7750,
-    "total": 8200
+    "total": 8070
    },
    "failure_category": null,
    "failure_stage": null,
@@ -1694,7 +1979,7 @@
    "outcome": "pass",
    "checks": [
     {
-     "id": "forbidden",
+     "id": "forbidden-1",
      "class": "objective",
      "result": "pass",
      "decided_by": [
@@ -1702,7 +1987,15 @@
      ]
     },
     {
-     "id": "required",
+     "id": "required-1",
+     "class": "judged",
+     "result": "pass",
+     "decided_by": [
+      "persona-a"
+     ]
+    },
+    {
+     "id": "required-2",
      "class": "judged",
      "result": "pass",
      "decided_by": [
@@ -1731,7 +2024,7 @@
     "embedding": 224,
     "retrieval": 61,
     "generation": 7960,
-    "total": 8420
+    "total": 8285
    },
    "failure_category": null,
    "failure_stage": null,

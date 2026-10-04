@@ -10,6 +10,7 @@ questions, responses or fragments, nor credentials.
 from __future__ import annotations
 
 import argparse
+import re
 import hashlib
 import json
 import math
@@ -74,7 +75,7 @@ def suite_digest(bank: dict) -> str:
 
 
 def definitions_digest(catalogue: dict) -> str:
-    text = json.dumps(catalogue["metrics"], sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    text = json.dumps({"families": catalogue["families"], "metrics": catalogue["metrics"]}, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(text.encode("utf8")).hexdigest()
 
 
@@ -107,7 +108,7 @@ def validate_catalogue(catalogue: dict) -> None:
         target = metric.get("target")
         if target is not None and not (
             isinstance(target, dict) and target.get("comparator") in COMPARATORS
-            and isinstance(target.get("value"), (int, float)) and not isinstance(target["value"], bool)
+            and isinstance(target.get("value"), (int, float)) and not isinstance(target["value"], bool) and math.isfinite(target["value"])
             and isinstance(target.get("origin"), str) and target.get("provisional") is True
         ):
             raise CatalogueError(f"metrics[{index}].target: needs comparator, value, origin and provisional true")
@@ -146,12 +147,20 @@ def rate(successes: int, total: int) -> dict:
     }
 
 
+def safe(value) -> str:
+    return ascii(str(value)[:80])
+
+
 def fail(path: str, message: str) -> None:
     raise ResultsError(f"{path}: {message}")
 
 
 def is_number(value) -> bool:
-    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+    if isinstance(value, bool):
+        return False
+    if isinstance(value, int):
+        return abs(value) <= MAX_COUNT
+    return isinstance(value, float) and math.isfinite(value)
 
 
 def is_count(value) -> bool:
@@ -159,7 +168,7 @@ def is_count(value) -> bool:
 
 
 def short(limit: int):
-    return lambda value: isinstance(value, str) and 0 < len(value.strip()) <= limit
+    return lambda value: isinstance(value, str) and 0 < len(value.strip()) <= limit and value.isprintable()
 
 
 def allow(node, group: str, path: str) -> None:
@@ -167,7 +176,7 @@ def allow(node, group: str, path: str) -> None:
         fail(path or "results", "must be an object")
     for name in node:
         if name not in ALLOWED[group]:
-            fail(f"{path}.{name}" if path else str(name), "field not allowed in a results file")
+            fail(f"{path}.{safe(name)}" if path else safe(name), "field not allowed in a results file")
 
 
 def require(node: dict, field: str, path: str, kind) -> object:
@@ -202,11 +211,17 @@ def validate_run(run: dict, bank: dict) -> None:
     require(corpus, "chunks", "run.corpus", is_count)
     retrieval = require(run, "retrieval", "run", lambda value: isinstance(value, dict))
     allow(retrieval, "retrieval", "run.retrieval")
-    require(retrieval, "top_k", "run.retrieval", lambda value: is_count(value) and value >= 1)
+    require(retrieval, "top_k", "run.retrieval", lambda value: is_count(value) and 1 <= value <= 1000)
     require(retrieval, "chunk_size", "run.retrieval", lambda value: is_count(value) and value >= 1)
     require(retrieval, "chunk_overlap", "run.retrieval", is_count)
     if "max_distance" not in retrieval or not (retrieval["max_distance"] is None or (is_number(retrieval["max_distance"]) and retrieval["max_distance"] >= 0)):
         fail("run.retrieval.max_distance", "required number of at least 0, or null")
+    if retrieval["max_distance"] is not None and retrieval["max_distance"] > 2:
+        fail("run.retrieval.max_distance", "a cosine distance never exceeds 2")
+    if retrieval["chunk_overlap"] >= retrieval["chunk_size"]:
+        fail("run.retrieval.chunk_overlap", "must be smaller than chunk_size")
+    if corpus["documents"] > corpus["chunks"]:
+        fail("run.corpus.documents", "cannot exceed the chunks")
     generation = require(run, "generation", "run", lambda value: isinstance(value, dict))
     allow(generation, "generation", "run.generation")
     for name, value in generation.items():
@@ -220,17 +235,37 @@ def validate_run(run: dict, bank: dict) -> None:
         fail("run.availability.server_errors", "cannot exceed the requests")
 
 
-def validate_case(item: dict, index: int, critical: bool) -> None:
+def expected_checks(bank_case: dict) -> dict[str, str]:
+    expected = bank_case["expected"]
+    ids = {f"numbers-{n}": "objective" for n in range(1, len(expected.get("numbers", [])) + 1)}
+    ids.update({f"forbidden-{n}": "objective" for n in range(1, len(expected.get("forbidden", [])) + 1)})
+    ids.update({f"required-{n}": "judged" for n in range(1, len(expected.get("required", [])) + 1)})
+    return ids
+
+
+def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
     path = f"cases[{index}]"
     allow(item, "case", path)
     outcome = require(item, "outcome", path, lambda value: value in OUTCOMES)
+    critical = bool(bank_case["expected"].get("numbers"))
+    evaluated = outcome in EVALUATED
+    retrieval = run["retrieval"]
     checks = require(item, "checks", path, lambda value: isinstance(value, list))
+    if checks and not evaluated:
+        fail(f"{path}.checks", "only pass and fail cases carry checks")
+    expected = expected_checks(bank_case)
+    seen_checks: set[str] = set()
     failed_check = False
     for position, check in enumerate(checks):
         where = f"{path}.checks[{position}]"
         allow(check, "check", where)
-        require(check, "id", where, short(100))
+        identifier = require(check, "id", where, short(100))
+        if identifier not in expected or identifier in seen_checks:
+            fail(f"{where}.id", "must be a distinct rubric point of this case")
+        seen_checks.add(identifier)
         kind = require(check, "class", where, lambda value: value in CHECK_CLASSES)
+        if kind != expected[identifier]:
+            fail(f"{where}.class", "does not match the rubric point")
         result = require(check, "result", where, lambda value: value in EVALUATED)
         deciders = require(check, "decided_by", where, lambda value: isinstance(value, list) and value and all(short(80)(name) for name in value))
         if kind == "objective" and deciders != ["rule"]:
@@ -238,18 +273,30 @@ def validate_case(item: dict, index: int, critical: bool) -> None:
         if kind == "judged" and ("rule" in deciders or len(deciders) > 2):
             fail(f"{where}.decided_by", "a judged check names one or two people and never the rule")
         failed_check = failed_check or result == "fail"
+    if evaluated and seen_checks != set(expected):
+        fail(f"{path}.checks", "one check per rubric point of the case is required")
     if outcome == "pass" and failed_check:
         fail(f"{path}.outcome", "pass requires every check to pass")
-    retrieved = require(item, "retrieved", path, lambda value: isinstance(value, list))
+    retrieved = require(item, "retrieved", path, lambda value: isinstance(value, list) and len(value) <= retrieval["top_k"])
+    chunk_ids: set[str] = set()
     for position, fragment in enumerate(retrieved):
         where = f"{path}.retrieved[{position}]"
         allow(fragment, "fragment", where)
-        require(fragment, "chunk_id", where, short(200))
+        identifier = require(fragment, "chunk_id", where, short(200))
+        if identifier in chunk_ids:
+            fail(f"{where}.chunk_id", "duplicated in this case")
+        chunk_ids.add(identifier)
         require(fragment, "source", where, short(100))
-        require(fragment, "heading", where, lambda value: isinstance(value, str) and len(value) <= 200)
-        require(fragment, "distance", where, lambda value: is_number(value) and 0 <= value <= 2)
-    require(item, "citations", path, lambda value: isinstance(value, list) and all(short(200)(entry) for entry in value))
-    figures = require(item, "figures", path, lambda value: isinstance(value, list))
+        require(fragment, "heading", where, lambda value: isinstance(value, str) and len(value) <= 200 and value.isprintable())
+        distance = require(fragment, "distance", where, lambda value: is_number(value) and 0 <= value <= 2)
+        if retrieval["max_distance"] is not None and distance > retrieval["max_distance"]:
+            fail(f"{where}.distance", "exceeds the maximum distance of the run")
+    if retrieved and run["corpus"]["chunks"] == 0:
+        fail(f"{path}.retrieved", "a corpus without fragments retrieves nothing")
+    citations = require(item, "citations", path, lambda value: isinstance(value, list) and len(value) <= 100 and all(short(200)(entry) for entry in value))
+    if len(set(citations)) != len(citations):
+        fail(f"{path}.citations", "a citation appears once")
+    figures = require(item, "figures", path, lambda value: isinstance(value, list) and len(value) <= 200)
     for position, figure in enumerate(figures):
         allow(figure, "figure", f"{path}.figures[{position}]")
         require(figure, "origin", f"{path}.figures[{position}]", lambda value: value in FIGURE_ORIGINS)
@@ -258,29 +305,49 @@ def validate_case(item: dict, index: int, critical: bool) -> None:
     latency = require(item, "latency_ms", path, lambda value: isinstance(value, dict))
     for stage, value in latency.items():
         if stage not in STAGES or not is_number(value) or value < 0:
-            fail(f"{path}.latency_ms.{stage}", "a known stage with a non-negative number is required")
+            fail(f"{path}.latency_ms.{safe(stage)}", "a known stage with a non-negative number is required")
+    for stage in STAGES[:3]:
+        if stage in latency and "total" in latency and latency[stage] > latency["total"]:
+            fail(f"{path}.latency_ms.{stage}", "cannot exceed the total")
     category = item.get("failure_category")
     stage = item.get("failure_stage")
     if category is not None and category not in FAILURE_CATEGORIES:
         fail(f"{path}.failure_category", "not one of the fixed failure categories")
     if stage is not None and stage not in STAGES[:3]:
         fail(f"{path}.failure_stage", "not one of the call stages")
-    if (category is None) != (stage is None):
+    if category == "schema_validation":
+        if stage is not None:
+            fail(f"{path}.failure_stage", "a schema failure is not a failed call")
+    elif (category is None) != (stage is None):
         fail(f"{path}.failure_stage" if category else f"{path}.failure_category", "required together with the other failure field")
-    if category is not None and outcome == "pass":
-        fail(f"{path}.failure_category", "a passing case has no failure")
     if stage is not None:
-        for name in (stage, "total"):
+        order = STAGES[:3]
+        for name in ("total",) + order[order.index(stage):]:
             if name in latency:
-                fail(f"{path}.latency_ms.{name}", "a failed call has no latency for its stage or the total")
+                fail(f"{path}.latency_ms.{name}", "a failed call and the stages after it have no latency")
     if "structured_ok" not in item or not (item["structured_ok"] is None or isinstance(item["structured_ok"], bool)):
         fail(f"{path}.structured_ok", "required boolean or null")
+    ok = item["structured_ok"]
+    if category == "schema_validation" and ok is not False:
+        fail(f"{path}.structured_ok", "must be false with a schema_validation failure")
+    if category in PROVIDER_FAILURES and ok is not None:
+        fail(f"{path}.structured_ok", "a failed call has no parsed response")
+    if ok is False and category != "schema_validation":
+        fail(f"{path}.structured_ok", "false needs the schema_validation failure")
+    if outcome == "pass" and category is not None:
+        fail(f"{path}.failure_category", "a passing case has no failure")
+    if outcome == "fail" and not failed_check and category is None:
+        fail(f"{path}.outcome", "a fail needs a failing check or a failure")
+    if outcome == "blocked" and category not in PROVIDER_FAILURES:
+        fail(f"{path}.failure_category", "a blocked case names its provider failure")
     refs = require(item, "evidence_refs", path, lambda value: isinstance(value, dict))
     allow(refs, "refs", f"{path}.evidence_refs")
     total = require(refs, "total", f"{path}.evidence_refs", is_count)
     dangling = require(refs, "dangling", f"{path}.evidence_refs", is_count)
     if dangling > total:
         fail(f"{path}.evidence_refs.dangling", "cannot exceed the emitted references")
+    if outcome == "not_run" and (retrieved or citations or figures or latency or category or ok is not None or total):
+        fail(f"{path}.outcome", "a not_run case carries no data")
 
 
 def validate_results(results: dict, bank: dict, labels: dict, catalogue: dict) -> None:
@@ -295,22 +362,22 @@ def validate_results(results: dict, bank: dict, labels: dict, catalogue: dict) -
     run = require(results, "run", "", lambda value: isinstance(value, dict))
     validate_run(run, bank)
     cases = require(results, "cases", "", lambda value: isinstance(value, list))
-    expected = {case["id"] for case in bank["cases"]}
-    critical_ids = {case["id"] for case in bank["cases"] if case["expected"].get("numbers")}
+    bank_cases = {case["id"]: case for case in bank["cases"]}
+    expected = set(bank_cases)
     seen: set[str] = set()
     for index, item in enumerate(cases):
         identifier = require(item, "case", f"cases[{index}]", text)
         if identifier not in expected:
-            fail("cases", f"unknown case {identifier}")
+            fail("cases", f"unknown case {safe(identifier)}")
         if identifier in seen:
-            fail("cases", f"duplicated case {identifier}")
+            fail("cases", f"duplicated case {safe(identifier)}")
         seen.add(identifier)
-        validate_case(item, index, identifier in critical_ids)
+        validate_case(item, index, bank_cases[identifier], run)
     for identifier in sorted(expected - seen):
-        fail("cases", f"missing case {identifier}")
+        fail("cases", f"missing case {safe(identifier)}")
     labelled = {label["case"] for label in labels["labels"]}
     for identifier in sorted(expected - labelled):
-        fail("labels", f"no retrieval label for case {identifier}")
+        fail("labels", f"no retrieval label for case {safe(identifier)}")
 
 
 def target_result(metric: dict, value) -> dict | None:
@@ -433,7 +500,7 @@ def compute(results: dict, bank: dict, labels: dict, catalogue: dict) -> dict:
 
     single_decider = sorted({
         item["case"] for item in evaluated if item["case"] in critical_ids and any(
-            check["class"] == "judged" and len(set(check["decided_by"])) < 2 for check in item["checks"]
+            check["class"] == "judged" and len({name.strip().casefold() for name in check["decided_by"]}) < 2 for check in item["checks"]
         )
     })
     notes = []
@@ -455,6 +522,10 @@ def compute(results: dict, bank: dict, labels: dict, catalogue: dict) -> dict:
         "critical": {"cases": sorted(critical_ids), "single_decider_cases": single_decider},
         "notes": notes,
     }
+
+
+def md(value) -> str:
+    return str(value).replace("\\", "\\\\").replace("|", "\\|")
 
 
 def describe_rate(entry: dict) -> str:
@@ -482,8 +553,8 @@ def render_markdown(report: dict, catalogue: dict) -> str:
     run = report["run"]
     lines = ["# Informe de metricas tecnicas del asistente", ""]
     lines += [
-        f"Catalogo {report['catalogue_version']} · generado {report.get('generated_at', 'sin fecha')}",
-        f"Commit {run['commit']} · fecha de la ejecucion {run['date']} · proveedor {run['provider']} · alias {run['alias']}",
+        f"Catalogo {report['catalogue_version']} · generado {md(report.get('generated_at', 'sin fecha'))}",
+        f"Commit {md(run['commit'])} · fecha de la ejecucion {md(run['date'])} · proveedor {md(run['provider'])} · alias {md(run['alias'])}",
         f"Corpus: {run['corpus']['documents']} documentos y {run['corpus']['chunks']} fragmentos · top_k {run['retrieval']['top_k']}"
         f" · distancia maxima {run['retrieval']['max_distance']} · fragmentos de {run['retrieval']['chunk_size']} con solape {run['retrieval']['chunk_overlap']}",
         "",
@@ -544,6 +615,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--report", type=Path)
     parser.add_argument("--generated-at", help="marca de tiempo del informe; fija el resultado para repetirlo")
     args = parser.parse_args(argv)
+    if args.generated_at is not None and not re.fullmatch(r"[0-9TZ:+.\- ]{1,40}", args.generated_at):
+        print("Error: --generated-at: only digits, T, Z, colons, dots, plus, minus and spaces are accepted", file=sys.stderr)
+        return 2
+    sources = {args.results.resolve()}
+    targets = [(flag, path) for flag, path in (("--output", args.output), ("--report", args.report)) if path is not None]
+    resolved = [path.resolve() for _, path in targets]
+    if len(set(resolved)) != len(resolved) or sources & set(resolved):
+        print("Error: --output and --report must be different files and never the results file", file=sys.stderr)
+        return 2
+    for flag, path in targets:
+        if not path.resolve().parent.is_dir():
+            print(f"Error: {flag}: the folder does not exist", file=sys.stderr)
+            return 2
     try:
         catalogue = load_catalogue()
         validate_catalogue(catalogue)
@@ -556,6 +640,10 @@ def main(argv: list[str] | None = None) -> int:
             report = compute(results, bank, labels, catalogue)
         except RecursionError:
             fail("results", "nesting is too deep")
+        except (ResultsError, CatalogueError):
+            raise
+        except Exception:
+            fail("results", "unexpected structure")
     except (CatalogueError, ResultsError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 2

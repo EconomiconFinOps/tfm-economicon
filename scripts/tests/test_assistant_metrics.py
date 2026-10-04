@@ -23,7 +23,7 @@ SPEC.loader.exec_module(metrics)
 BANK = json.loads((ROOT / "docs/validation/JUP-069-questions.json").read_text(encoding="utf8"))
 LABELS = json.loads((ROOT / "docs/validation/JUP-022-retrieval-labels.json").read_text(encoding="utf8"))
 CATALOGUE = metrics.load_catalogue()
-PINNED_DEFINITIONS = ("1.0.0", "aef90eed2c903966a518b0d5937f7b6c3c7fdafe5d36e5b2bf3c2739e7c7e002")
+PINNED_DEFINITIONS = ("1.0.0", "2d9d836507a180a97c87fdc97e8d711c0819e31ce6c8ebebb43dfdb630143aa6")
 CASES = {case["id"]: case for case in BANK["cases"]}
 LABEL_BY_CASE = {label["case"]: label for label in LABELS["labels"]}
 SOURCE_CASE = {"answer": [], "clarify": [], "abstain": []}
@@ -73,22 +73,33 @@ def hit(case_id: str, distance: float, chunk_id: str = "c1", heading_hit: bool =
     return {"chunk_id": chunk_id, "source": source, "heading": heading, "distance": distance}
 
 
+def full_checks(case_id: str, fail_ids: tuple = (), judged: tuple = ("Ana", "Luis")) -> list:
+    checks = []
+    for identifier, kind in metrics.expected_checks(CASES[case_id]).items():
+        checks.append({
+            "id": identifier, "class": kind, "result": "fail" if identifier in fail_ids else "pass",
+            "decided_by": ["rule"] if kind == "objective" else list(judged),
+        })
+    return checks
+
+
 def passing(results: dict, case_id: str, **fields) -> dict:
     item = case_of(results, case_id)
-    item.update(outcome="pass", checks=[
-        {"id": "numbers", "class": "objective", "result": "pass", "decided_by": ["rule"]},
-        {"id": "required-1", "class": "judged", "result": "pass", "decided_by": ["Ana", "Luis"]},
-    ])
+    item.update(outcome="pass", checks=full_checks(case_id))
     item.update(fields)
     return item
 
 
 def failing(results: dict, case_id: str, **fields) -> dict:
     item = case_of(results, case_id)
-    item.update(outcome="fail", checks=[
-        {"id": "numbers", "class": "objective", "result": "fail", "decided_by": ["rule"]},
-        {"id": "required-1", "class": "judged", "result": "pass", "decided_by": ["Ana", "Luis"]},
-    ])
+    item.update(outcome="fail", checks=full_checks(case_id, fail_ids=(next(iter(metrics.expected_checks(CASES[case_id]))),)))
+    item.update(fields)
+    return item
+
+
+def blocked(results: dict, case_id: str, category: str = "connection", stage: str = "embedding", **fields) -> dict:
+    item = case_of(results, case_id)
+    item.update(outcome="blocked", failure_category=category, failure_stage=stage)
     item.update(fields)
     return item
 
@@ -184,7 +195,7 @@ class PopulationTests(unittest.TestCase):
         for case_id in answers[7:10]:
             failing(results, case_id)
         for case_id in answers[10:13]:
-            case_of(results, case_id)["outcome"] = "blocked"
+            blocked(results, case_id)
         report = compute(results)
         acc = report["metrics"]["ACC-1"]
         self.assertEqual((acc["k"], acc["n"]), (7, 10))
@@ -229,17 +240,17 @@ class AccuracyTests(unittest.TestCase):
     def test_objective_checks_are_a_separate_rate_from_judged_checks(self):
         results = base_results()
         case_a, case_b = SOURCE_CASE["answer"][:2]
+        expected_b = metrics.expected_checks(CASES[case_b])
+        objective_b = [i for i, kind in expected_b.items() if kind == "objective"]
+        judged_b = [i for i, kind in expected_b.items() if kind == "judged"]
         passing(results, case_a)
         item = failing(results, case_b)
-        item["checks"] = [
-            {"id": "numbers", "class": "objective", "result": "pass", "decided_by": ["rule"]},
-            {"id": "forbidden", "class": "objective", "result": "fail", "decided_by": ["rule"]},
-            {"id": "required-1", "class": "judged", "result": "fail", "decided_by": ["Ana"]},
-        ]
+        item["checks"] = full_checks(case_b, fail_ids=(objective_b[-1], judged_b[0]))
+        objective_a = sum(1 for kind in metrics.expected_checks(CASES[case_a]).values() if kind == "objective")
+        judged_a = sum(1 for kind in metrics.expected_checks(CASES[case_a]).values() if kind == "judged")
         acc2 = compute(results)["metrics"]["ACC-2"]
-        self.assertEqual((acc2["k"], acc2["n"]), (2, 3))
-        self.assertEqual(acc2["judged"]["n"], 2)
-        self.assertEqual(acc2["judged"]["k"], 1)
+        self.assertEqual((acc2["k"], acc2["n"]), (objective_a + len(objective_b) - 1, objective_a + len(objective_b)))
+        self.assertEqual((acc2["judged"]["k"], acc2["judged"]["n"]), (judged_a + len(judged_b) - 1, judged_a + len(judged_b)))
 
     def test_a_pass_with_a_failing_check_is_rejected(self):
         results = base_results()
@@ -248,28 +259,31 @@ class AccuracyTests(unittest.TestCase):
         reject(self, results, "cases[0].outcome")
 
     def test_judged_checks_must_name_who_decided_and_objective_ones_must_name_the_rule(self):
+        def first(item, kind):
+            return next(check for check in item["checks"] if check["class"] == kind)
         results = base_results()
         item = passing(results, SOURCE_CASE["answer"][0])
-        del item["checks"][1]["decided_by"]
+        del first(item, "judged")["decided_by"]
         reject(self, results, "decided_by")
         results = base_results()
         item = passing(results, SOURCE_CASE["answer"][0])
-        item["checks"][0]["decided_by"] = ["Ana"]
+        first(item, "objective")["decided_by"] = ["Ana"]
         reject(self, results, "decided_by")
         results = base_results()
         item = passing(results, SOURCE_CASE["answer"][0])
-        item["checks"][1]["decided_by"] = ["rule"]
+        first(item, "judged")["decided_by"] = ["rule"]
         reject(self, results, "decided_by")
 
     def test_critical_cases_with_one_judge_are_listed(self):
         results = base_results()
         item = passing(results, CRITICAL[0])
-        item["checks"][1]["decided_by"] = ["Ana"]
-        report = compute(results)
-        self.assertEqual(report["critical"]["single_decider_cases"], [CRITICAL[0]])
-        item["checks"][1]["decided_by"] = ["Ana", "Ana"]
+        item["checks"] = full_checks(CRITICAL[0], judged=("Ana",))
         self.assertEqual(compute(results)["critical"]["single_decider_cases"], [CRITICAL[0]])
-        item["checks"][1]["decided_by"] = ["Ana", "Luis"]
+        item["checks"] = full_checks(CRITICAL[0], judged=("Ana", "Ana"))
+        self.assertEqual(compute(results)["critical"]["single_decider_cases"], [CRITICAL[0]])
+        item["checks"] = full_checks(CRITICAL[0], judged=("Ana", " ana "))
+        self.assertEqual(compute(results)["critical"]["single_decider_cases"], [CRITICAL[0]])
+        item["checks"] = full_checks(CRITICAL[0], judged=("Ana", "Luis"))
         self.assertEqual(compute(results)["critical"]["single_decider_cases"], [])
 
 
@@ -314,6 +328,7 @@ class RelevanceTests(unittest.TestCase):
 
     def test_confidence_is_one_minus_the_best_distance_and_skips_empty_results(self):
         results = base_results()
+        results["run"]["retrieval"]["max_distance"] = None
         for index, distance in enumerate((0.1, 0.2, 0.35, 0.5, 0.65)):
             case_id = ANSWERS_DIRECT[index]
             passing(results, case_id, retrieved=[hit(case_id, distance + 0.1, "far"), hit(case_id, distance, "near")])
@@ -336,6 +351,7 @@ class RelevanceTests(unittest.TestCase):
 
     def test_confidence_keeps_a_negative_similarity_as_computed(self):
         results = base_results()
+        results["run"]["retrieval"]["max_distance"] = None
         for index in range(5):
             case_id = ANSWERS_DIRECT[index]
             passing(results, case_id, retrieved=[hit(case_id, 1.2)])
@@ -434,12 +450,11 @@ class LatencyTests(unittest.TestCase):
 class RobustnessAndAvailabilityTests(unittest.TestCase):
     def test_structured_rate_and_failures_by_category(self):
         results = base_results()
-        for index, ok in enumerate((True, True, True, False)):
-            passing(results, ANSWERS_DIRECT[index], structured_ok=ok)
-        for category in ("timeout", "timeout", "schema_validation"):
-            case_id = ANSWERS_DIRECT[4 + len([x for x in results["cases"] if x["failure_category"]])]
-            item = failing(results, case_id)
-            item.update(failure_category=category, failure_stage="generation")
+        for index in range(3):
+            passing(results, ANSWERS_DIRECT[index], structured_ok=True)
+        failing(results, ANSWERS_DIRECT[3], failure_category="schema_validation", structured_ok=False)
+        for index in (4, 5):
+            failing(results, ANSWERS_DIRECT[index], failure_category="timeout", failure_stage="generation")
         report = compute(results)["metrics"]
         self.assertEqual((report["STR-1"]["k"], report["STR-1"]["n"]), (3, 4))
         by_category = report["STR-2"]["by_category"]
@@ -565,28 +580,26 @@ class TargetsTests(unittest.TestCase):
     def test_each_target_is_compared_in_the_right_direction(self):
         results = base_results()
         for index in range(10):
-            passing(results, SOURCE_CASE["answer"][index], structured_ok=index < 9)
-        report = compute(results)
-        self.assertIs(report["metrics"]["ACC-2"]["target"]["met"], True)
-        self.assertIs(report["metrics"]["STR-1"]["target"]["met"], False)
+            passing(results, SOURCE_CASE["answer"][index], structured_ok=True)
+        self.assertIs(compute(results)["metrics"]["ACC-2"]["target"]["met"], True)
+        results = base_results()
+        for index in range(9):
+            passing(results, SOURCE_CASE["answer"][index], structured_ok=True)
+        failing(results, SOURCE_CASE["answer"][9], failure_category="schema_validation", structured_ok=False)
+        self.assertIs(compute(results)["metrics"]["STR-1"]["target"]["met"], False)
         results = base_results()
         failing(results, CRITICAL[0], figures=[{"origin": "untraceable"}])
         self.assertIs(compute(results)["metrics"]["GRD-2"]["target"]["met"], False)
 
     def test_a_value_exactly_on_the_target_meets_it(self):
-        results = base_results()
-        for index in range(9):
-            passing(results, SOURCE_CASE["answer"][index])
-        failing(results, SOURCE_CASE["answer"][9])
-        acc2 = compute(results)["metrics"]["ACC-2"]
-        self.assertEqual((acc2["k"], acc2["n"]), (9, 10))
-        self.assertIs(acc2["target"]["met"], True)
+        definitions = {metric["id"]: metric for metric in CATALOGUE["metrics"]}
+        for metric_id, edge, beyond in (("ACC-2", 0.9, 0.8999), ("STR-1", 0.95, 0.9499), ("LAT-2", 10000, 10000.1), ("GRD-2", 0, 1)):
+            self.assertIs(metrics.target_result(definitions[metric_id], edge)["met"], True, metric_id)
+            self.assertIs(metrics.target_result(definitions[metric_id], beyond)["met"], False, metric_id)
         results = base_results()
         for index in range(20):
-            passing(results, list(CASES)[index], structured_ok=index != 0, latency_ms={"total": 10000.0})
+            passing(results, list(CASES)[index], latency_ms={"total": 10000.0})
         report = compute(results)["metrics"]
-        self.assertEqual((report["STR-1"]["k"], report["STR-1"]["n"]), (19, 20))
-        self.assertIs(report["STR-1"]["target"]["met"], True)
         self.assertEqual(report["LAT-2"]["stages"]["total"]["value"], 10000.0)
         self.assertIs(report["LAT-2"]["stages"]["total"]["target"]["met"], True)
 
@@ -788,6 +801,186 @@ class AdversarialRegressionTests(unittest.TestCase):
             results = base_results()
             results["run"]["retrieval"][field] = value
             reject(self, results, "run.retrieval." + field)
+
+
+class SecondPassRegressionTests(unittest.TestCase):
+    ANSWER = SOURCE_CASE["answer"][0]
+
+    def cli(self, results=None, text=None, extra=None):
+        with tempfile.TemporaryDirectory() as raw:
+            source = Path(raw) / "results.json"
+            source.write_text(text if text is not None else json.dumps(results), encoding="utf8")
+            buffer = tempfile.TemporaryFile(mode="w+", encoding="utf8")
+            args = ["--results", str(source)] + [a.replace("{dir}", raw).replace("{results}", str(source)) for a in (extra or [])]
+            with mock.patch.object(sys, "stderr", buffer):
+                code = metrics.main(args)
+            buffer.seek(0)
+            return code, buffer.read(), sorted(path.name for path in Path(raw).iterdir())
+
+    def test_huge_integers_in_any_numeric_field_are_rejected_without_a_traceback(self):
+        mutations = (
+            lambda r: passing(r, self.ANSWER).update(latency_ms={"total": 10 ** 400}),
+            lambda r: passing(r, self.ANSWER, retrieved=[{"chunk_id": "c", "source": "finops", "heading": "h", "distance": 10 ** 400}]),
+            lambda r: r["run"]["retrieval"].update(max_distance=10 ** 400),
+            lambda r: r["run"]["generation"].update(seed=10 ** 400),
+        )
+        for mutate in mutations:
+            results = base_results()
+            mutate(results)
+            with self.assertRaises(metrics.ResultsError):
+                metrics.validate_results(results, BANK, LABELS, CATALOGUE)
+            code, message, _ = self.cli(results)
+            self.assertEqual(code, 2)
+            self.assertNotIn("Traceback", message)
+
+    def test_a_pass_needs_one_check_per_rubric_point_of_the_case(self):
+        index = [c["case"] for c in base_results()["cases"]].index(self.ANSWER)
+        for outcome in ("pass", "fail"):
+            results = base_results()
+            case_of(results, self.ANSWER).update(outcome=outcome, checks=[], failure_category="schema_validation", structured_ok=False)
+            reject(self, results, "cases[%d].checks" % index)
+        results = base_results()
+        item = passing(results, self.ANSWER)
+        item["checks"].pop()
+        reject(self, results, "cases[%d].checks" % index)
+        results = base_results()
+        item = passing(results, self.ANSWER)
+        item["checks"].append({"id": "invented-1", "class": "objective", "result": "pass", "decided_by": ["rule"]})
+        reject(self, results, "checks[%d].id" % len(item["checks"]) - 1 if False else "id")
+        results = base_results()
+        item = passing(results, self.ANSWER)
+        item["checks"][1] = copy.deepcopy(item["checks"][0])
+        reject(self, results, "checks[1].id")
+        results = base_results()
+        item = passing(results, self.ANSWER)
+        item["checks"][0]["class"] = "judged" if item["checks"][0]["class"] == "objective" else "objective"
+        reject(self, results, "checks[0].class")
+
+    def test_cases_that_did_not_evaluate_carry_no_checks_and_a_fail_needs_a_reason(self):
+        results = base_results()
+        blocked(results, self.ANSWER)["checks"] = full_checks(self.ANSWER)
+        reject(self, results, "checks")
+        results = base_results()
+        item = failing(results, self.ANSWER)
+        item["checks"] = full_checks(self.ANSWER)
+        reject(self, results, "outcome")
+        results = base_results()
+        item = blocked(results, self.ANSWER, category="schema_validation")
+        item["failure_stage"] = None
+        item["structured_ok"] = False
+        reject(self, results, "failure_category")
+
+    def test_the_retrieval_parameters_agree_with_each_other_and_with_the_fragments(self):
+        cases = [
+            (lambda r: r["run"]["retrieval"].update(chunk_overlap=900), "chunk_overlap"),
+            (lambda r: r["run"]["retrieval"].update(max_distance=5), "max_distance"),
+            (lambda r: r["run"]["retrieval"].update(top_k=10 ** 9), "top_k"),
+            (lambda r: r["run"]["corpus"].update(documents=500), "documents"),
+            (lambda r: passing(r, ANSWERS_DIRECT[0], retrieved=[hit(ANSWERS_DIRECT[0], 0.1, f"c{n}") for n in range(5)]), "retrieved"),
+            (lambda r: passing(r, ANSWERS_DIRECT[0], retrieved=[hit(ANSWERS_DIRECT[0], 1.9)]), "distance"),
+            (lambda r: (r["run"]["corpus"].update(documents=0, chunks=0), passing(r, ANSWERS_DIRECT[0], retrieved=[hit(ANSWERS_DIRECT[0], 0.1)])), "retrieved"),
+            (lambda r: passing(r, ANSWERS_DIRECT[0], retrieved=[hit(ANSWERS_DIRECT[0], 0.1, "same"), hit(ANSWERS_DIRECT[0], 0.2, "same")]), "chunk_id"),
+        ]
+        for mutate, field in cases:
+            results = base_results()
+            mutate(results)
+            reject(self, results, field)
+
+    def test_structured_output_and_failures_must_agree(self):
+        combinations = (
+            dict(failure_category="schema_validation", structured_ok=True),
+            dict(failure_category="timeout", failure_stage="generation", structured_ok=False),
+            dict(structured_ok=False),
+            dict(failure_category="timeout", failure_stage="generation", structured_ok=True),
+        )
+        for fields in combinations:
+            results = base_results()
+            failing(results, self.ANSWER, **fields)
+            reject(self, results, "structured_ok")
+        results = base_results()
+        passing(results, self.ANSWER, structured_ok=False)
+        reject(self, results, "structured_ok")
+        results = base_results()
+        failing(results, self.ANSWER, failure_category="schema_validation", structured_ok=False,
+                latency_ms={"embedding": 10.0, "retrieval": 20.0, "generation": 300.0, "total": 400.0})
+        report = compute(results)["metrics"]
+        self.assertEqual(report["STR-2"]["by_category"]["schema_validation"], 1)
+        self.assertEqual(report["LAT-4"]["stages"]["generation"]["k"], 0)
+
+    def test_not_run_cases_and_impossible_latencies_are_rejected(self):
+        for field, value in (("retrieved", [{"chunk_id": "c", "source": "finops", "heading": "h", "distance": 0.1}]),
+                             ("citations", ["x"]), ("structured_ok", True), ("latency_ms", {"total": 1.0})):
+            results = base_results()
+            case_of(results, self.ANSWER)[field] = value
+            reject(self, results, "outcome" if field != "latency_ms" else "outcome")
+        results = base_results()
+        blocked(results, self.ANSWER, latency_ms={"retrieval": 5.0})
+        reject(self, results, "latency_ms.retrieval")
+        results = base_results()
+        passing(results, self.ANSWER, latency_ms={"embedding": 90.0, "total": 50.0})
+        reject(self, results, "latency_ms.embedding")
+
+    def test_error_messages_never_echo_unbounded_or_control_text(self):
+        results = base_results()
+        results["cases"].append(blank_case("\x1b[31m" + "A" * 300000))
+        with self.assertRaises(metrics.ResultsError) as caught:
+            metrics.validate_results(results, BANK, LABELS, CATALOGUE)
+        message = str(caught.exception)
+        self.assertLess(len(message), 300)
+        self.assertNotIn("\x1b", message)
+        results = base_results()
+        case_of(results, self.ANSWER)["\x1b[31m" + "B" * 5000] = 1
+        with self.assertRaises(metrics.ResultsError) as caught:
+            metrics.validate_results(results, BANK, LABELS, CATALOGUE)
+        self.assertLess(len(str(caught.exception)), 300)
+        self.assertNotIn("\x1b", str(caught.exception))
+
+    def test_the_cli_refuses_unsafe_arguments_and_writes_nothing_when_one_is_wrong(self):
+        code, message, _ = self.cli(base_results(), extra=["--generated-at", "x |\n# injected"])
+        self.assertEqual(code, 2)
+        self.assertIn("--generated-at", message)
+        code, message, _ = self.cli(base_results(), extra=["--output", "{results}"])
+        self.assertEqual(code, 2)
+        code, message, _ = self.cli(base_results(), extra=["--output", "{dir}/same.json", "--report", "{dir}/same.json"])
+        self.assertEqual(code, 2)
+        code, message, _ = self.cli(base_results(), extra=["--output", "{dir}"])
+        self.assertEqual(code, 2)
+        self.assertIn("--output", message)
+        code, message, files = self.cli(base_results(), extra=["--output", "{dir}/ok.json", "--report", "{dir}/missing/out.md"])
+        self.assertEqual(code, 2)
+        self.assertIn("--report", message)
+        self.assertEqual(files, ["results.json"])
+
+    def test_free_text_cannot_inject_markdown_structure_or_control_characters(self):
+        results = base_results()
+        results["run"]["alias"] = "a|b"
+        markdown = metrics.render_markdown(compute(results), CATALOGUE)
+        self.assertIn("a\\|b", markdown)
+        for value in ("line\nbreak", "ctl\x07"):
+            results = base_results()
+            results["run"]["alias"] = value
+            reject(self, results, "run.alias")
+
+    def test_the_catalogue_hash_covers_the_families_and_targets_must_be_finite(self):
+        catalogue = copy.deepcopy(CATALOGUE)
+        catalogue["families"].append("extra")
+        with self.assertRaisesRegex(metrics.CatalogueError, "definitions_sha256"):
+            metrics.validate_catalogue(catalogue)
+        catalogue = copy.deepcopy(CATALOGUE)
+        next(m for m in catalogue["metrics"] if m["target"])["target"]["value"] = float("nan")
+        with self.assertRaisesRegex(metrics.CatalogueError, "target"):
+            metrics.validate_catalogue(catalogue)
+
+    def test_lists_are_bounded_and_citations_are_not_repeated(self):
+        results = base_results()
+        passing(results, self.ANSWER, figures=[{"origin": "context"}] * 201)
+        reject(self, results, "figures")
+        results = base_results()
+        passing(results, self.ANSWER, citations=["a"] * 101)
+        reject(self, results, "citations")
+        results = base_results()
+        passing(results, self.ANSWER, retrieved=[hit(self.ANSWER, 0.1, "r1")], citations=["r1", "r1"])
+        reject(self, results, "citations")
 
 
 if __name__ == "__main__":

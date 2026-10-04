@@ -1,6 +1,6 @@
 {
   "catalogue_version": "1.0.0",
-  "definitions_sha256": "aef90eed2c903966a518b0d5937f7b6c3c7fdafe5d36e5b2bf3c2739e7c7e002",
+  "definitions_sha256": "2d9d836507a180a97c87fdc97e8d711c0819e31ce6c8ebebb43dfdb630143aa6",
   "jup": "JUP-067",
   "trello": "https://trello.com/c/bwvfLpUG",
   "families": ["accuracy", "relevance", "grounding", "latency", "robustness", "availability"],
