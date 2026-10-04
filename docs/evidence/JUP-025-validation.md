@@ -202,7 +202,45 @@ adicional y el snapshot; se adaptaron los fixtures sin retirar sus verificacione
 El primer intento del contenedor carecía de httpx; se instalaron requirements-dev
 antes de la ejecución completa correcta. No se atribuye pairing a Paris.
 
-Candidato local pendiente de publicación coordinada: Víctor está revisando el
-HEAD remoto anterior. Las aprobaciones y CI de e24e194 no acreditan esta unión;
-al publicar se requieren CI y nueva revisión de Lucía/revalidación de Víctor.
-Archivo OpenSpec y colaboración de Paris siguen separados y pendientes.
+Reconciliación publicada en `d09f16a0f373dc5ca9df016453d1cd6be00ad49f`.
+CI 37214915405 correcta: siete checks técnicos.
+[Víctor validó favorablemente este SHA](https://github.com/EconomiconFinOps/tfm-economicon/pull/55#pullrequestreview-5407281630)
+el 04/10/2026, como COMMENTED porque falta la revisión incremental de Lucía.
+Su Compose/navegador/mutantes son evidencia del validador, no ejecuciones propias
+del líder. Archivo OpenSpec y colaboración de Paris siguen pendientes de entrega;
+las aprobaciones antiguas no se atribuyen al próximo HEAD de archivo.
+
+
+## Mejoras para el archivo — 04/10/2026
+
+Atendidas las notas no bloqueantes de la validación de Víctor sobre d09f16a:
+se comprueba la referencia completa de chunks con índice distinto de cero en
+la prueba de recuperación documental; RF-025-001 registra también el mensaje
+sin respuesta y la duplicación al reintentar un 503 de recuperación; la evidencia
+identifica la reconciliación publicada y distingue resultados propios y del validador.
+La representación cruda del error 503 es un límite heredado de RF-098-003 y no se
+cambia aquí. La implementación de citas/recuperación permanece igual a d09f16a.
+
+El archivo se prepara localmente en la rama `chore/JUP-025-final-archive`, con
+especificación canónica `openspec/specs/answer-citations/spec.md`; publicación
+coordinada y dictámenes sobre el último HEAD pendientes. No se atribuye pairing
+ni coautoría a Paris sin trabajo realizado. #69 (JUP-036) sigue abierta y comparte
+ruta, esquema de mensajes e interfaz: quien integre segundo debe reconciliar y
+revalidar los contratos, sin incorporar preventivamente su borrador en esta rama.
+
+
+Verificación propia del candidato de archivo: citas y las dos suites de pgvector
+real **44 PASS** con Python 3.12.13 y base desechable; el mutante que fija
+`chunk_index` a cero falla en la nueva aserción `document:own/chunk:1`. Restaurado
+el fichero, el control pasa. Script de mutación conservado solo en continuidad
+local, sin modificar el producto ni incluir utilidades personales en la PR.
+OpenSpec estricto **45/45**, trazabilidad global e higiene correctas. No se repite
+la suite completa, ya acreditada en d09f16a; este candidato solo cambia test y
+documentación/especificación, sin cambios en `apps/backend/app`.
+
+Archivo preparado en
+[2026-10-04-jup-025-answer-citations](../../openspec/changes/archive/2026-10-04-jup-025-answer-citations/proposal.md)
+y [contrato canónico](../../openspec/specs/answer-citations/spec.md).
+Los enlaces anteriores fijados a 17c8514 conservan el contrato histórico revisado.
+La revisión de Lucía y la aceptación del HEAD que publique el archivo siguen
+pendientes; el COMMENTED favorable de Víctor acredita d09f16a, no este candidato.

@@ -112,6 +112,7 @@ def test_document_text_is_fetched_and_indexed_once_for_multiple_chunks(retrieval
     assert all(row["title"] == row["section"] == "Guia de C#" for row in result)
     answer = AssistantService().answer("Consulta", result)
     for index, citation in enumerate(resolve_citations(answer["citations"], result, "tenant-a"), 1):
+        assert citation["reference"] == f"document:own/chunk:{index - 1}"
         assert f"- [{index}] {citation['source']}: {citation['excerpt']}" in answer["content"]
 
 
