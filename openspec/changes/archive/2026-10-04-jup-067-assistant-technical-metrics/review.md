@@ -15,7 +15,7 @@ El change define como se miden las metricas tecnicas del asistente y entrega un 
 
 ## Validacion
 
-Comandos y resultados completos en [docs/evidence/JUP-067-validation.md](../../../docs/evidence/JUP-067-validation.md): 98 pruebas del calculador, 105 mutantes manuales detectados sin supervivientes, `openspec:validate` 45/45, trazabilidad, higiene, pruebas de gobernanza y CI correctas. El unico fallo de las pruebas de herramientas (`ports already published by this Compose project are not busy`, de JUP-050) es de la maquina de la autora, que tiene su propio stack en los puertos, y no de este change.
+Comandos y resultados completos en [docs/evidence/JUP-067-validation.md](../../../../docs/evidence/JUP-067-validation.md): 98 pruebas del calculador, 105 mutantes manuales detectados sin supervivientes, `openspec:validate` 45/45, trazabilidad, higiene, pruebas de gobernanza y CI correctas. El unico fallo de las pruebas de herramientas (`ports already published by this Compose project are not busy`, de JUP-050) es de la maquina de la autora, que tiene su propio stack en los puertos, y no de este change.
 
 ## Adversarial Review
 

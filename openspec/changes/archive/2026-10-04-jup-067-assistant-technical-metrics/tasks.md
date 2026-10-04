@@ -38,5 +38,5 @@
 - [x] 6.3 `review.md` con resumen, decisiones, validacion, pasadas adversariales, barrido de patrones, riesgos, findings y aplicabilidad de ADR (no aplica, con motivo).
 - [x] 6.4 `docs/evidence/JUP-067-validation.md` con los comandos y resultados.
 - [x] 6.5 Bloque `## Human Approval` en `review.md` tras la aprobacion explicita de Lucia.
-- [ ] 6.6 Archivar el change en la misma rama.
+- [x] 6.6 Archivar el change en la misma rama (archivado como `2026-10-04-jup-067-assistant-technical-metrics`).
 - [ ] 6.7 Abrir el PR hacia `develop`.

@@ -1,6 +1,6 @@
 # Evidencia JUP-067 — metricas tecnicas del asistente
 
-Change: [jup-067-assistant-technical-metrics](../../openspec/changes/jup-067-assistant-technical-metrics/) · [Tarjeta](https://trello.com/c/bwvfLpUG) · [Definiciones](../validation/JUP-067-metrics.md) · [Catalogo](../validation/JUP-067-metrics-catalogue.json) · [Calculador](../../tools/assistant-metrics.py)
+Change: [jup-067-assistant-technical-metrics](../../openspec/changes/archive/2026-10-04-jup-067-assistant-technical-metrics/) · [Tarjeta](https://trello.com/c/bwvfLpUG) · [Definiciones](../validation/JUP-067-metrics.md) · [Catalogo](../validation/JUP-067-metrics-catalogue.json) · [Calculador](../../tools/assistant-metrics.py)
 
 Base: `develop` c3aa9d6 (con JUP-022 integrado). Rama `feat/JUP-067-assistant-technical-metrics`, ejecutado en Windows con el Python 3.12 del venv del backend.
 
@@ -32,7 +32,13 @@ Se aplicaron a mano 105 mutantes sobre el calculador, uno por vez en una copia r
 
 ## Revision adversarial
 
-Cinco pasadas independientes con el agente `adversarial-reviewer`; el detalle y la disposicion de cada hallazgo estan en [review.md](../../openspec/changes/jup-067-assistant-technical-metrics/review.md). Los hallazgos BLOCKING y HIGH se reprodujeron antes de corregirlos: un caso critico con cifra sin rastro que contaba como acierto, una llamada fallida contada en los percentiles y en la tasa de fallos, un entero enorme que lanzaba una traza, un `pass` sin comprobaciones, datos de respuesta en una llamada fallida, un caso real no representable (critico con la rubrica cumplida y una cifra inventada) y un fallo de esquema sin latencias. Los cuatro hallazgos LOW restantes los acepto Lucia y estan en `openspec/findings/backlog.md` (RF-067-001 a RF-067-004).
+Cinco pasadas independientes con el agente `adversarial-reviewer`; el detalle y la disposicion de cada hallazgo estan en [review.md](../../openspec/changes/archive/2026-10-04-jup-067-assistant-technical-metrics/review.md). Los hallazgos BLOCKING y HIGH se reprodujeron antes de corregirlos: un caso critico con cifra sin rastro que contaba como acierto, una llamada fallida contada en los percentiles y en la tasa de fallos, un entero enorme que lanzaba una traza, un `pass` sin comprobaciones, datos de respuesta en una llamada fallida, un caso real no representable (critico con la rubrica cumplida y una cifra inventada) y un fallo de esquema sin latencias. Los cuatro hallazgos LOW restantes los acepto Lucia y estan en `openspec/findings/backlog.md` (RF-067-001 a RF-067-004).
+
+## Nota de release
+
+| Fecha | JUP | Nota de release | Review | ADRs |
+| --- | --- | --- | --- | --- |
+| 2026-10-04 | JUP-067 | Hay un catalogo versionado de 17 metricas tecnicas del asistente, un formato de resultados por caso sin texto ni credenciales y un calculador offline determinista (`tools/assistant-metrics.py`, `pnpm assistant-metrics:test`). Los objetivos de ADR-0002 se muestran como referencia provisional, no como puerta de aceptacion. | [review.md](../../openspec/changes/archive/2026-10-04-jup-067-assistant-technical-metrics/review.md) | No aplica (ADR-0002 es la fuente de los objetivos, sin cambiarlo) |
 
 ## No validado
 
