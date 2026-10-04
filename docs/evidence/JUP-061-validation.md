@@ -221,7 +221,7 @@ La antigua tarea3.4 de ratificar no se declara realizada: el archivo delimita
 su alcance como seguimiento documental. ADR0013/14/15/16 y0005 quedan a cargo de
 sus responsables originales para ratificación/aclaración antes del freeze.
 ADR0002 continúa Proposed en esta base; [PR #71/JUP078](https://github.com/EconomiconFinOps/tfm-economicon/pull/71)
-propone aceptación, pero permanece abierta. Paris publicó CHANGES_REQUESTED
+propone aceptación, pero permanece abierta. Victor publicó CHANGES_REQUESTED
 el04/10 sobrec9c8971; corresponde a Lucía atenderlos y a Paris/Victor registrar
 las respuestas/aprobaciones. No se emiten claves virtuales ni se realiza gasto.
 
