@@ -2,13 +2,13 @@ JUP: JUP-061
 
 ## Diseño
 
-El [índice ADR](../../../docs/adr/README.md) es el único inventario. Las justificaciones
+El [índice ADR](../../../../docs/adr/README.md) es el único inventario. Las justificaciones
 permanecen en cada ADR o fuente existente; la evidencia de esta auditoría registra
 método y comprobaciones.
 
-ADR aplicables: [pgvector](../../../docs/adr/ADR-0013-pgvector-retrieval-baseline.md),
-[auth demo](../../../docs/adr/ADR-0014-demo-auth-boundary.md) y
-[Compose](../../../docs/adr/ADR-0015-local-compose-deployment-boundary.md), Proposed.
+ADR aplicables: [pgvector](../../../../docs/adr/ADR-0013-pgvector-retrieval-baseline.md),
+[auth demo](../../../../docs/adr/ADR-0014-demo-auth-boundary.md) y
+[Compose](../../../../docs/adr/ADR-0015-local-compose-deployment-boundary.md), Proposed.
 Son reconstrucciones explícitas de razones del baseline; no nuevas tecnologías,
 aceptaciones humanas ni justificaciones históricas atribuidas retroactivamente.
 
@@ -51,3 +51,11 @@ hacia atrás. Se conservan la captura completa de transiciones y la aserción qu
 rechaza cualquier reaparición de sessionExpired. Cambiar REPLACE por PUSH o usar
 opciones vacías debe seguir fallando: la espera no sustituye esa comprobación.
 Esta es una reparación del test, sin cambios en LoginPage ni nueva decisión ADR.
+
+## Cierre documental — 04/10/2026
+
+PR #60 integrada en develop (d61e631). Reviews de Paris y Lucía aprobadas,
+enlazadas en la evidencia; la review de Victor no acredita coautoría.
+El archivo promueve los dos requisitos del registro a la especificación
+principal. Las ratificaciones de ADR y el pairing no acreditado mantienen
+el seguimiento delimitado en tasks.md; no se conceden por archivar el cambio.

@@ -187,3 +187,49 @@ higiene772 archivos; inventario **16 ADR/16 filas**, estados consistentes;
 **120 rutas locales y 15 anchors** del delta, sin fallos; UTF-8 y diff check PASS.
 Los archivos processor/gateway/tooling aportados por #65 coinciden con develop;
 no se realizan nuevas llamadas a modelos, gasto ni smoke Docker en JUP-061.
+
+## Cierre y archivo del registro — 04/10/2026
+
+PR #60 integrada el 04/10 a14:32:08UTC mediante squash
+`d61e63111f837e776c3614f5a64c8b7ac562d981`:
+[merge](https://github.com/EconomiconFinOps/tfm-economicon/pull/60).
+Revisión de [Paris](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#pullrequestreview-5402118211)
+y validación de [Lucía](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#pullrequestreview-5406553699)
+APPROVED sobre5e64459, sin solicitudes pendientes al integrar. Lucía registra
+225/226tools por puertos ocupados en su máquina; no se presenta como226/226.
+[Victor](https://github.com/EconomiconFinOps/tfm-economicon/pull/60#pullrequestreview-5402395672)
+aprobó índice/conflicto en alcance limitado; esa review no acredita pairing.
+La incorporación por Update branch de #62/JUP057 conservó aprobaciones;
+[CI de89d859d](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37209461894)
+con siete controles técnicos y JUP reviews PASS antes del merge.
+
+Alejandro registra que no dispone de evidencia atribuible de pairing de Victor.
+No se afirma que no participara: su contribución de coautoría queda sin acreditar,
+distinta de la revisión efectivamente publicada. El liderazgo completa el archivo
+documental sin asignarle una actividad no documentada.
+
+Archivo preparado sobre develop `c3aa9d6` (#67 integrado):
+[change archivado](../../openspec/changes/archive/2026-10-04-jup-061-architecture-decision-register/proposal.md).
+`corepack pnpm openspec:archive jup-061-architecture-decision-register --yes`
+promueve dos requisitos añadidos a
+[architecture-decisions](../../openspec/specs/architecture-decisions/spec.md).
+Se corrigen rutas relativas del diseño por el nivel adicional de `archive/`.
+No cambia contenido ni estado de ADR; esta preparación requiere su propia
+revisión y validación antes del merge.
+
+La antigua tarea3.4 de ratificar no se declara realizada: el archivo delimita
+su alcance como seguimiento documental. ADR0013/14/15/16 y0005 quedan a cargo de
+sus responsables originales para ratificación/aclaración antes del freeze.
+ADR0002 continúa Proposed en esta base; [PR #71/JUP078](https://github.com/EconomiconFinOps/tfm-economicon/pull/71)
+propone aceptación, pero permanece abierta. Paris publicó CHANGES_REQUESTED
+el04/10 sobrec9c8971; corresponde a Lucía atenderlos y a Paris/Victor registrar
+las respuestas/aprobaciones. No se emiten claves virtuales ni se realiza gasto.
+
+La nueva base aporta ADR0017 sin fila en el índice; se añade con estado Proposed,
+motivos y fuente JUP022, sin modificar el ADR ni interpretar su merge como aceptación.
+Comprobaciones del cierre: OpenSpec estricto **43/43 PASS**, trazabilidad de nueve
+cambios activos PASS, higiene **815 archivos PASS**, `git diff --check` limpio.
+Siete Markdown afectados, **47 rutas locales** existentes y **17 ADR/17 filas**
+con estado consistente; UTF-8 PASS. No se repiten suites de producto ni consultas
+de precios para este cambio exclusivamente documental. La CI de la PR de cierre
+se enlazará en GitHub/Trello; las aprobaciones de #60 no aprueban este nuevo delta.
