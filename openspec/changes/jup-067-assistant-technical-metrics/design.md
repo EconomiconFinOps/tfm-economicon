@@ -35,7 +35,7 @@ El catalogo vive en `docs/validation/JUP-067-metrics-catalogue.json` (version, y
 | REL-4 | Relevancia | mediana y cuartiles (rango mas cercano) de la similitud del mejor resultado (1 menos la distancia coseno de pgvector) | casos answer con al menos un resultado recuperado |
 | GRD-1 | Fundamento | citas que apuntan a un fragmento recuperado para esa pregunta y tenant entre las citas emitidas | casos answer con citas |
 | GRD-2 | Fundamento | cifras de la respuesta que no se pueden rastrear al contexto, a la evidencia o a la pregunta | recuento por caso y total |
-| GRD-3 | Fundamento | metricas y recomendaciones cuyas referencias de evidencia existen entre las emitidas | casos answer con respuesta estructurada |
+| GRD-3 | Fundamento | metricas y recomendaciones cuyas referencias de evidencia existen entre las emitidas | casos answer con referencias de evidencia |
 | LAT-1 a LAT-3 | Latencia | mediana, percentil 95 y maximo por etapa (embedding, consulta, generacion, total) | llamadas correctas |
 | LAT-4 | Latencia | llamadas fallidas o agotadas entre las totales | todas las llamadas de la etapa |
 | STR-1 | Robustez | respuestas que cumplen el esquema entre las recibidas | respuestas estructuradas |
@@ -56,7 +56,7 @@ Con 28 casos, un caso son 3,6 puntos y un `answer` son 5. Toda tasa se publica c
 
 ### 5. Comprobaciones objetivas y juzgadas
 
-`numbers` y `forbidden` se deciden por regla (valor dentro de la tolerancia absoluta, con unidad y etiqueta; ausencia de la conducta prohibida). `required` lo decide una persona, y cada comprobacion juzgada guarda `decided_by` con `person` o `rule`. No se admite un modelo como juez en esta tarjeta.
+`numbers` y `forbidden` se deciden por regla (valor dentro de la tolerancia absoluta, con unidad y etiqueta; ausencia de la conducta prohibida). `required` lo decide una persona, y cada comprobacion juzgada guarda `decided_by` con la regla (comprobaciones objetivas) o una o dos personas (juzgadas). No se admite un modelo como juez en esta tarjeta.
 
 ### 6. Percentiles
 
@@ -78,7 +78,7 @@ Se citan los de ADR-0002 (Proposed): exactitud objetiva 90 %, sin cifras inventa
 
 | Dato | Existe hoy | De donde sale |
 | --- | --- | --- |
-| Recuperacion, distancias, duracion de consulta | con PR #67 | evento `retrieval` y script de calibracion |
+| Recuperacion, distancias, duracion de consulta | si (PR #67, integrado) | evento `retrieval` y script de calibracion |
 | Duracion de la llamada de embedding o de chat | si | evento `litellm_response` del cliente del processor (JUP-023) |
 | Respuesta estructurada y evidencias | si, en el processor | `FinOpsResponse` y sus guardas |
 | Citas del chat | con PR #55 | JUP-025 |

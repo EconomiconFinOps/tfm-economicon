@@ -1180,5 +1180,43 @@ class FourthPassRegressionTests(unittest.TestCase):
             self.assertEqual(metrics.main(["--results", str(source), "--output", str(directory / "ok.json")]), 0)
 
 
+class FifthPassRegressionTests(unittest.TestCase):
+    ANSWER = SOURCE_CASE["answer"][0]
+
+    def test_a_schema_failure_is_a_completed_call_and_keeps_every_latency(self):
+        for missing in (None, "embedding", "retrieval", "generation", "total"):
+            results = base_results()
+            latency = completed_latency(1000.0)
+            if missing:
+                del latency[missing]
+            else:
+                latency = {}
+            failing(results, self.ANSWER, failure_category="schema_validation", structured_ok=False, latency_ms=latency)
+            reject(self, results, "latency_ms")
+        results = base_results()
+        failing(results, self.ANSWER, failure_category="schema_validation", structured_ok=False)
+        metrics.validate_results(results, BANK, LABELS, CATALOGUE)
+
+    def test_a_judged_check_is_never_decided_by_the_rule_whatever_its_spelling(self):
+        for spelling in ("Rule", " rule", "RULE", "rule "):
+            results = base_results()
+            item = passing(results, self.ANSWER)
+            next(check for check in item["checks"] if check["class"] == "judged")["decided_by"] = [spelling, "Ana"]
+            reject(self, results, "decided_by")
+
+    def test_the_date_must_exist_in_the_calendar(self):
+        for value in ("2026-99-99", "2026-02-30"):
+            results = base_results()
+            results["run"]["date"] = value
+            reject(self, results, "run.date")
+
+    def test_the_report_says_when_there_is_no_distance_threshold(self):
+        results = base_results()
+        results["run"]["retrieval"]["max_distance"] = None
+        markdown = metrics.render_markdown(compute(results), CATALOGUE)
+        self.assertIn("sin umbral", markdown)
+        self.assertNotIn("distancia maxima None", markdown)
+
+
 if __name__ == "__main__":
     unittest.main()

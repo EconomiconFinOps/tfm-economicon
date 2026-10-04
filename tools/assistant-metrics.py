@@ -176,6 +176,16 @@ def shaped(pattern: str):
 COMMIT = r"[0-9a-f]{7,64}"
 DIGEST = r"[0-9a-f]{64}"
 DATE = r"[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?)?"
+
+
+def real_date(value) -> bool:
+    if not shaped(DATE)(value):
+        return False
+    try:
+        datetime.strptime(value[:10], "%Y-%m-%d")
+    except ValueError:
+        return False
+    return True
 VERSION = r"[0-9]{1,4}(\.[0-9]{1,4}){0,3}"
 
 
@@ -207,7 +217,7 @@ def text(value) -> bool:
 def validate_run(run: dict, bank: dict) -> None:
     allow(run, "run", "run")
     require(run, "commit", "run", shaped(COMMIT))
-    require(run, "date", "run", shaped(DATE))
+    require(run, "date", "run", real_date)
     require(run, "provider", "run", shaped(r"[A-Za-z0-9._:/-]{1,40}"))
     require(run, "alias", "run", shaped(r"[A-Za-z0-9._:/-]{1,100}"))
     bank_header = require(run, "bank", "run", lambda value: isinstance(value, dict))
@@ -282,7 +292,7 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
         deciders = require(check, "decided_by", where, lambda value: isinstance(value, list) and value and all(short(80)(name) for name in value))
         if kind == "objective" and deciders != ["rule"]:
             fail(f"{where}.decided_by", "an objective check is decided by rule")
-        if kind == "judged" and ("rule" in deciders or len(deciders) > 2):
+        if kind == "judged" and ("rule" in {name.strip().casefold() for name in deciders} or len(deciders) > 2):
             fail(f"{where}.decided_by", "a judged check names one or two people and never the rule")
         failed_check = failed_check or result == "fail"
     if evaluated and seen_checks != set(expected):
@@ -367,9 +377,9 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
         fail(f"{path}.evidence_refs.dangling", "cannot exceed the emitted references")
     if category in PROVIDER_FAILURES and total:
         fail(f"{path}.evidence_refs.total", "a failed call has no response data")
-    if evaluated and category is None:
-        if ok is None:
-            fail(f"{path}.structured_ok", "a completed call reports whether the response conforms")
+    if evaluated and category is None and ok is None:
+        fail(f"{path}.structured_ok", "a completed call reports whether the response conforms")
+    if evaluated and category in (None, "schema_validation"):
         for name in STAGES:
             if name not in latency:
                 fail(f"{path}.latency_ms.{name}", "a completed call has the latency of every stage and the total")
@@ -586,7 +596,7 @@ def render_markdown(report: dict, catalogue: dict) -> str:
         f"Catalogo {report['catalogue_version']} · generado {md(report.get('generated_at', 'sin fecha'))}",
         f"Commit {md(run['commit'])} · fecha de la ejecucion {md(run['date'])} · proveedor {md(run['provider'])} · alias {md(run['alias'])}",
         f"Corpus: {run['corpus']['documents']} documentos y {run['corpus']['chunks']} fragmentos · top_k {run['retrieval']['top_k']}"
-        f" · distancia maxima {run['retrieval']['max_distance']} · fragmentos de {run['retrieval']['chunk_size']} con solape {run['retrieval']['chunk_overlap']}",
+        f" · distancia maxima {'sin umbral' if run['retrieval']['max_distance'] is None else run['retrieval']['max_distance']} · fragmentos de {run['retrieval']['chunk_size']} con solape {run['retrieval']['chunk_overlap']}",
         "",
     ]
     for note in report["notes"]:
