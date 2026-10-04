@@ -92,3 +92,56 @@ cambia de gestor de paquetes ni de orquestador, y no se sube la versión de pnpm
 - **Tarjetas siguientes:** JUP-104 y JUP-105 pueden ejecutar la batería desde la raíz sin sustituto.
 - **ADR:** no aplica; no se toma ninguna decisión de arquitectura nueva (ver `design.md`,
   decisión 7).
+
+## Human Approval
+
+- Change: jup-103-verify-turbo-workspace
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-03
+- Carril: light
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Scope adjustment approved: el alcance 1 de la tarjeta Trello ("reproducir y determinar la causa")
+  llega al gate con la causa ya localizada al verificar el alcance contra el código, sobre `develop`
+  en `dad5662`. No se da por hecho: el grupo 1 de `tasks.md` la repite y guarda las salidas antes de
+  corregir nada. El alcance 2 se resuelve como corrección de entorno más documentación, sin cambios
+  en `package.json`, `turbo.json`, `pnpm-lock.yaml` ni `.github/workflows/ci.yml`, que es el caso que
+  la tarjeta prevé en el alcance 6 y en el criterio 4 ("si la causa resulta ser ajena al
+  repositorio"). El alcance 7 se mantiene tal cual.
+- Decisions approved: se aprueban las ocho decisiones del `design.md`. (1) **La causa es de
+  entorno**: falta el lanzador de corepack y un pnpm `11.9.0` instalado globalmente con npm ocupa su
+  lugar en el `PATH`; ese pnpm hereda `COREPACK_ROOT` y no cambia a la versión fijada. Se corrigen
+  dos afirmaciones del hallazgo original. (2) **La corrección es `corepack enable` en la máquina
+  afectada**; desinstalar el pnpm global es opcional y lo decide quien usa la máquina. Se descartan
+  invocar sin `corepack` como norma, añadir `devEngines.packageManager`, relajar la comprobación de
+  versión, subir `packageManager` a `11.9.0` y envolver turbo en un script propio. (3) **Se mantiene
+  `corepack pnpm <script>`** como invocación del repositorio; `README.md` se alinea y gana el
+  requisito previo; `AGENTS.md` y `CONTRIBUTING.md` no se tocan. (4) **Diagnóstico con el comando
+  `corepack pnpm exec pnpm --version`**, sin herramienta nueva; ampliarlo a `local:doctor` queda para
+  una tarjeta propia si el equipo lo reproduce en más máquinas. (5) **`dev` y el grafo se verifican
+  separando turbo de las aplicaciones**: plan con `--dry=json`, y en `dev` se anota por separado que
+  turbo inicia los cuatro procesos y que cada uno responde en su puerto. (6) **`RF-093-001` pasa a
+  `Fixed`** con la causa reformulada, o se queda `Open` con la causa precisa si la corrección no
+  funciona. (7) **No aplica ADR**; sí haría falta, con nueva aprobación, si la solución acabara
+  siendo subir pnpm o cambiar la invocación. (8) **Sin ciclo Red/Green**: no se añade ni cambia
+  código; la excepción se deja escrita en `review.md`.
+- Constraints: ningún archivo de `apps/**`, `tools/**`, `packages/**` ni `.github/**` en el diff; sin
+  cambios en `package.json`, `turbo.json`, `pnpm-workspace.yaml` ni `pnpm-lock.yaml`. Las salidas de
+  "antes" se guardan en `docs/evidence/JUP-103-validation.md` antes de ejecutar `corepack enable`. No
+  se cita configuración local de herramientas de asistencia en documentos versionados. No se da por
+  validado nada que no se haya ejecutado.
+- Main risks: (a) la corrección exige una consola con permisos de administrador; si no la hay, se
+  aplica la alternativa del `design.md` y se documenta esa variante. (b) `build`, `test` o `dev`
+  pueden fallar desde la raíz por motivos ajenos al gestor de paquetes (dependencias de Python,
+  infraestructura sin levantar): al proponer solo se ejecutó `lint`. Se anota tarea por tarea y, si es
+  del repositorio, se registra como hallazgo `RF-103-NNN` sin corregirlo aquí. (c) El equipo puede no
+  contestar a tiempo: quien no conteste figura como "no confirmado". (d) Es una corrección de
+  entorno: un clon nuevo en una máquina con pnpm global seguirá fallando hasta ejecutar
+  `corepack enable`; se acepta porque es un paso documentado y con diagnóstico.
+- Required changes before execution: none
+- Notes: cierra F4 de la épica de migración del frontend. Lleva `review.md` y
+  `docs/evidence/JUP-103-validation.md` con salidas de antes y después, como pide la definición de
+  hecho de la tarjeta. Hay dos tareas que no puede ejecutar la herramienta de implementación: 2.1
+  (`corepack enable` en consola elevada) y 5.1 (consulta al equipo). JUP-051 (PR #58) modifica
+  `ci.yml` y `tools/ci-workflow.test.mjs`; esta tarjeta no toca ninguno de los dos.
