@@ -79,8 +79,11 @@ Para comprobar que funciona, desde la raiz y en una consola nueva:
 corepack pnpm exec pnpm --version
 ```
 
-Debe imprimir `9.0.0`. Si imprime el error de version de arriba, falta `corepack enable` o hay otro
-`pnpm` por delante en el `PATH`. Como salida de emergencia, `pnpm <script>` sin `corepack` funciona si
+Debe imprimir exactamente `9.0.0`. Cualquier otra salida (el error de version de arriba, o una version
+distinta como `11.x`) significa que falta `corepack enable` o que hay otro `pnpm` por delante en el
+`PATH`, por ejemplo uno global de npm o uno que aporta el entorno de ejecucion de un asistente de
+codigo; en ese ultimo caso `corepack enable` puede no bastar si su carpeta va antes que la de Node
+(no verificado). Como salida de emergencia, `pnpm <script>` sin `corepack` funciona si
 el pnpm global es lo bastante reciente para cambiar de version por si mismo (verificado con `11.9.0`),
 pero no es la forma documentada y depende de lo que haya instalado en cada maquina.
 

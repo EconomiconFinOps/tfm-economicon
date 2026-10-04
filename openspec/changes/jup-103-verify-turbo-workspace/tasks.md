@@ -76,7 +76,7 @@
 
 ## 5. Confirmar con el resto del equipo
 
-- [ ] 5.1 Pedir a Paris, Lucía y Alejandro que ejecuten `corepack pnpm exec pnpm --version` y
+- [x] 5.1 Pedir a Paris, Lucía y Alejandro que ejecuten `corepack pnpm exec pnpm --version` y
   `corepack pnpm lint` desde la raíz de `develop` y que indiquen sistema operativo y si tienen un
   pnpm global.
 - [ ] 5.2 Registrar en la evidencia el resultado por persona, con fecha. Quien no haya contestado

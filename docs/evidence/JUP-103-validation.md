@@ -368,7 +368,55 @@ práctica: `local:test` no se puede ejecutar con la infraestructura de Compose l
 Se anota para la batería final (7.1). Los volúmenes se conservaron; el primer arranque creó el
 volumen `rabbitmq-data`, como describe el propio `README.md` para instalaciones anteriores a JUP-050.
 
-_Pendiente: tareas 5.x a 7.x de `tasks.md` (consulta al equipo, hallazgos, spike y batería final)._
+## Consulta al equipo (grupo 5)
+
+Se pidió a Paris, Lucía y Alejandro que ejecutaran, desde `develop` actualizada y con
+`corepack pnpm install --frozen-lockfile`, sin cambiar nada en su máquina: sistema operativo y
+versión de Node, la ruta de `pnpm` en el `PATH`, `npm ls -g --depth=0`,
+`corepack pnpm exec pnpm --version` y `corepack pnpm lint --force`. Resultados recibidos el
+2026-10-04, tal como los entregaron:
+
+| Persona | Entorno | `pnpm` que resuelve el `PATH` | `corepack pnpm exec pnpm --version` | `corepack pnpm lint --force` | `corepack enable` |
+| --- | --- | --- | --- | --- | --- |
+| Victor (referencia) | Windows 11, Node `v24.15.0` | `%APPDATA%\npm\pnpm.cmd` (pnpm global `11.9.0` con `npm -g`) | error de versión (`v11.9.0`), código `1` | 0 de 4 | ejecutado: pasa a `9.0.0` y 4 de 4 (grupo 2) |
+| Lucía | Windows 10 Home `10.0.19045`, Node `v24.15.0`, `develop` en `dad5662` | `%APPDATA%\npm\pnpm.cmd` (pnpm global `11.1.3` con `npm -g`) | error de versión (`v11.1.3`) | 0 de 4; la línea `Failed:` nombra solo `azure-cost-api#lint` y `backend#lint` | no ejecutado todavía |
+| Alejandro | Windows 11 Pro, Node `v24.14.1`, worktree aislado de `develop` en `dad5662`, **entorno de ejecución de Codex, no una consola externa** | `...\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd`; sin pnpm global de npm (solo `@openai/codex@0.129.0` y `agent-slack@0.7.1`) | **`11.19.0`, sin error** (`corepack pnpm --version` da `9.0.0`) | 0 de 4; `@finops/backend#lint` falla con `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` | no ejecutado (no cambió configuración) |
+| Paris | — | — | — | — | **no confirmado** (sin respuesta a la fecha) |
+
+Lectura, separando lo medido de lo inferido:
+
+- **Se reproduce en las tres máquinas que han contestado** (Windows 11 dos veces y Windows 10 una), con
+  Node `24.14.1` y `24.15.0`. En las tres, el `pnpm` que resuelve el `PATH` dentro de
+  `corepack pnpm exec` **no es el de corepack y es una `11.x`**: `11.9.0`, `11.1.3` y `11.19.0`. Con
+  una `9.0.0` no se ha probado ninguna.
+- **El síntoma no es el mismo en todas.** Con `11.9.0` y `11.1.3` aparece el error de versión que
+  describe `RF-093-001`. Con `11.19.0` (Alejandro) el diagnóstico no imprime error sino la versión
+  equivocada, y las tareas de turbo abortan por otro motivo: el pnpm `11.19.0` intenta una
+  instalación desde el subproceso y se detiene por falta de terminal. Es **consistente con** el
+  mismo mecanismo (un pnpm que no es el de corepack por delante en el `PATH`), pero el mensaje depende
+  de la versión de ese pnpm. Se infiere, no se ha comprobado con una `11.19.0` propia.
+- **Alejandro no tiene un pnpm global de npm**: el que se cuela lo aporta el entorno de ejecución de su
+  asistente (carpeta `fallback` de `codex-runtimes`). Esto amplía la causa: no es solo un `npm -g
+  pnpm`; vale cualquier `pnpm` anterior a corepack en el `PATH`. Su propia lectura es separar este
+  caso del de una consola habitual, y se acepta: **no se ha probado el diagnóstico en su consola
+  externa**, que es la pregunta pendiente.
+- **La corrección solo está comprobada en la máquina de Victor.** Lucía todavía no ha ejecutado
+  `corepack enable`. En el caso de Alejandro no se sabe si bastaría: depende de si el directorio de
+  Node va antes que la carpeta `fallback` en el `PATH` del entorno de Codex, que no se ha mirado.
+- La línea `Failed:` de turbo no lista todas las tareas que fallan (Lucía: 0 de 4 con dos nombradas),
+  por eso se mira `Tasks:` y no `Failed:`.
+
+Consecuencia para el `README.md` (ya aplicada): el diagnóstico debe leerse como «imprime exactamente
+`9.0.0`»; cualquier otra salida, sea el error o una versión distinta, indica que hay otro `pnpm` por
+delante en el `PATH`. Antes solo mencionaba el error.
+
+Respuesta provisional a «¿tiene el equipo que hacer algo en sus máquinas?» (criterio 5; **no
+definitiva** hasta tener a Paris y la comprobación de Lucía): **sí**, ejecutar una vez
+`corepack enable` si `corepack pnpm exec pnpm --version` no imprime `9.0.0`; comprobado que funciona
+en una máquina.
+
+_Pendiente: respuesta de Paris, `corepack enable` de Lucía, consola externa de Alejandro y tareas
+6.x y 7.x de `tasks.md` (hallazgos, spike y batería final)._
 
 ## Trazabilidad con los criterios de la tarjeta
 
