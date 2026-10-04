@@ -40,7 +40,7 @@ o validación personal a partir de asignaciones, archivos de pruebas o CI.
 
 ## Validacion
 
-Ver docs/evidence/JUP-064-validation.md. Pruebas del registro 9/9, gobernanza
+Ver docs/evidence/JUP-064-validation.md. Pruebas del registro 10/10, gobernanza
 80/80, OpenSpec 45/45 y build correctos. Detallar el contraste propio y los
 límites de la suite general que constan en esa evidencia.
 

@@ -4,7 +4,8 @@ JUP-064 · [Trello](https://trello.com/c/wluz6AGW). El proceso de los cuatro rol
 se mantiene en [CONTRIBUTING](../../CONTRIBUTING.md#rotating-roles).
 
 El [registro fechado](JUP-064-register.md) enlaza las acciones observadas de los
-cuatro miembros por historia, los commits, PR, reviews, pruebas y documentación.
+cuatro miembros por historia, los commits, PR, reviews, comentarios de PR,
+pruebas y documentación.
 El [snapshot reducido](JUP-064-snapshot.json) permite reproducir el registro sin
 conexión. No contiene credenciales, emails, conversaciones ni cuerpos de reviews.
 Conserva autores públicos, enlaces, SHA, fechas, estados y líneas de roles.
@@ -24,7 +25,7 @@ python -m unittest discover -s tools/tests -p 'test_team_contributions.py' -v
 La herramienta solo lee. Toda lectura Trello pasa por la integración Economicon
 desplegada en `DockerServer:/home/danteadmin/economicon-collaboration`, mediante
 su cliente dentro del contenedor. No usa APIs Trello locales ni otro conector.
-Las consultas GitHub paginan PR, commits, reviews, archivos y checks. Si falla
+Las consultas GitHub paginan PR, commits, reviews, comentarios, archivos y checks. Si falla
 una consulta, el comando falla sin sustituir el snapshot por un corte incompleto.
 La fecha UTC indica el final de la recogida, no una lectura atómica de ambas fuentes.
 
@@ -46,6 +47,9 @@ python tools/team-contributions.py --snapshot docs/contributions/JUP-064-snapsho
 - `Revision JUP-XXX` y `Validacion JUP-XXX` deben ocupar la primera línea completa.
   Se conserva el estado y SHA; una review antigua o descartada no satisface el
   indicador de evidencia actual. Las reviews sin título también quedan enlazadas.
+- Los comentarios de PR se atribuyen a su autor con enlace y fecha, para
+  conservar intervenciones históricas fuera de reviews formales. Su existencia
+  no acredita por sí sola revisión, pairing o validación; no se guarda el cuerpo.
 - Los checks del HEAD y archivos de pruebas/documentación son evidencia común.
   La validación personal exige leer la review y comprobar criterios, comandos,
   resultados y límites; el recolector no certifica ese contenido ni permite mergear.

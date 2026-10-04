@@ -11,7 +11,9 @@ Assignments alone SHALL NOT be presented as completed contributions.
 
 ### Requirement: Evidence preserves provenance and limits
 The inventory SHALL link commits, declared coauthors, PR, reviews, test and
-documentation artifacts and CI checks with review state and HEAD context.
+documentation artifacts and CI checks with review state and HEAD context. It
+SHALL also retain original discussion-comment URLs, public authors and dates
+without inferring formal review or validation from comment existence.
 Shared checks and file existence SHALL NOT be attributed as individual validation.
 Old reviews, role differences and outstanding requests SHALL remain visible.
 
@@ -22,6 +24,10 @@ Old reviews, role differences and outstanding requests SHALL remain visible.
 #### Scenario: A comment follows requested changes
 - **WHEN** a reviewer requests changes and later publishes a comment
 - **THEN** the inventory still marks requested changes as pending until approval or dismissal
+
+#### Scenario: Historical participation is recorded in a PR comment
+- **WHEN** a team member published a contribution note in the PR discussion
+- **THEN** the inventory links the note under its original author and date but does not treat it as a titled validation review
 
 ### Requirement: Collection is reproducible and constrained
 Trello reads SHALL use only the deployed Economicon integration on DockerServer.

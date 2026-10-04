@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-10-04T17:13:06.041867+00:00",
+  "captured_at": "2026-10-04T17:27:22.764527+00:00",
   "repository": "EconomiconFinOps/tfm-economicon",
   "team": {
     "Iber1to": "Alejandro Aguado",
@@ -90,6 +90,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-013-validation.md",
@@ -299,6 +300,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/processor/tests/test_azure_cost_cockroach_integration.py",
@@ -521,6 +523,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/processor/tests/test_azure_cost_ingestion.py",
@@ -744,6 +747,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/azure-cost-api/tests/test_query_api.py",
@@ -967,6 +971,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/backend/tests/fixtures/tag_coverage.json",
@@ -1237,8 +1242,7 @@
         "- Liderazgo: Paris Arcos Martin",
         "- Pairing/coautoría: Victor Mendez",
         "- Revisión de PR: Alejandro Aguado",
-        "- Validación, pruebas y documentación: Lucia Mateo",
-        "- Validación conjunta: Corpus validado; 8/8 tests específicos; OpenSpec integrado 6/6; backend 10/10; processor 3/3; build completo OK."
+        "- Validación, pruebas y documentación: Lucia Mateo"
       ],
       "prs": [
         {
@@ -1298,6 +1302,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/assistant-corpus/README.md",
@@ -1380,12 +1385,13 @@
       "assigned_roles": {
         "leadership": "Victorh1397",
         "pairing": "Iber1to",
-        "review": null,
+        "review": "lmatsan",
         "validation": "ParisArcos"
       },
       "role_source_lines": [
         "- Liderazgo: Victor Mendez.",
         "- Pairing/coautoria: Alejandro Aguado.",
+        "- Revision de implementacion: Lucia Mateo, completada.",
         "- Validacion funcional: Paris Arcos Martin, confirmada por el usuario el 14/09/2026."
       ],
       "prs": [
@@ -1458,6 +1464,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0006-runtime-secret-boundaries.md",
@@ -1641,6 +1648,14 @@
               "kinds": {
                 "JUP-020": "other"
               }
+            }
+          ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/34#issuecomment-5654725777",
+              "author": "lmatsan",
+              "date": "2026-09-13T17:03:41Z",
+              "updated_at": "2026-09-13T17:03:41Z"
             }
           ],
           "artifacts": [
@@ -1840,8 +1855,7 @@
             "- Liderazgo: Alejandro Aguado",
             "- Pairing/coautoria: Lucia Mateo",
             "- Revision de PR: Paris Arcos Martin",
-            "- Validacion, pruebas y documentacion: Victor Mendez",
-            "- Validacion aceptada, ahora con aprobacion invalidada por el push: https://github.com/EconomiconFinOps/tfm-economicon/pull/53#pullrequestreview-5384205603"
+            "- Validacion, pruebas y documentacion: Victor Mendez"
           ],
           "commits": [
             {
@@ -1943,6 +1957,14 @@
               "kinds": {
                 "JUP-021": "other"
               }
+            }
+          ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/53#issuecomment-5959528796",
+              "author": "Iber1to",
+              "date": "2026-10-02T19:07:16Z",
+              "updated_at": "2026-10-02T19:07:16Z"
             }
           ],
           "artifacts": [
@@ -2334,6 +2356,20 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/67#issuecomment-5972430983",
+              "author": "lmatsan",
+              "date": "2026-10-03T18:56:48Z",
+              "updated_at": "2026-10-03T18:56:48Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/67#issuecomment-5978214768",
+              "author": "lmatsan",
+              "date": "2026-10-04T08:43:52Z",
+              "updated_at": "2026-10-04T08:43:52Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "apps/backend/tests/conftest.py",
@@ -2592,8 +2628,7 @@
         "- Liderazgo: Paris Arcos Martin",
         "- Pairing/coautoría: Victor Mendez",
         "- Revisión de PR: Alejandro Aguado",
-        "- Validación, pruebas y documentación: Lucia Mateo",
-        "- Validación de Lucía: [https://github.com/EconomiconFinOps/tfm-economicon/pull/65#pullrequestreview-5400056258](https://github.com/EconomiconFinOps/tfm-economicon/pull/65#pullrequestreview-5400056258 \"smartCard-inline\")"
+        "- Validación, pruebas y documentación: Lucia Mateo"
       ],
       "prs": [
         {
@@ -2649,6 +2684,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0016-litellm-version-pin.md",
@@ -2859,6 +2895,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/processor/tests/conftest.py",
@@ -3095,6 +3132,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-024-validation.md",
@@ -3358,6 +3396,14 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/18#issuecomment-5570688974",
+              "author": "ParisArcos",
+              "date": "2026-09-07T12:32:56Z",
+              "updated_at": "2026-09-07T12:32:56Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "apps/processor/tests/test_agent_runtime.py",
@@ -3586,7 +3632,6 @@
             "validation": "Victorh1397"
           },
           "role_source_lines": [
-            "- Validación funcional de Víctor aprobada el 03/10 sobre 50754ac: backend 362 PASS / 21 SKIP, pgvector real 5/5, navegador Chrome y Edge 25/25 cada uno, OpenSpec 39/39. Son ejecuciones de Víctor: [dictamen y límites](https://github.com/EconomiconFinOps/tfm-economicon/pull/55#pullrequestreview-5401700155).",
             "- Liderazgo: Alejandro Aguado",
             "- Pairing/coautoria: Paris Arcos Martin",
             "- Revision de PR: Lucia Mateo",
@@ -3728,6 +3773,14 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/55#issuecomment-5981832780",
+              "author": "Iber1to",
+              "date": "2026-10-04T15:56:47Z",
+              "updated_at": "2026-10-04T15:56:47Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "apps/backend/tests/test_citations.py",
@@ -3806,6 +3859,13 @@
             }
           ],
           "checks": [
+            {
+              "name": "JUP reviews",
+              "status": "completed",
+              "conclusion": "success",
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37219675803/job/111487298136",
+              "head": "d09f16a0f373dc5ca9df016453d1cd6be00ad49f"
+            },
             {
               "name": "JUP reviews",
               "status": "completed",
@@ -4152,6 +4212,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/backend/tests/billing_support.py",
@@ -4488,6 +4549,38 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/61#issuecomment-5939442962",
+              "author": "Iber1to",
+              "date": "2026-10-01T19:58:19Z",
+              "updated_at": "2026-10-01T19:58:19Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/61#issuecomment-5960392480",
+              "author": "Iber1to",
+              "date": "2026-10-02T19:58:09Z",
+              "updated_at": "2026-10-02T19:58:09Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/61#issuecomment-5970317473",
+              "author": "Iber1to",
+              "date": "2026-10-03T14:55:56Z",
+              "updated_at": "2026-10-03T14:55:56Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/61#issuecomment-5970563722",
+              "author": "Iber1to",
+              "date": "2026-10-03T15:26:30Z",
+              "updated_at": "2026-10-03T15:26:30Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/61#issuecomment-5981835852",
+              "author": "Iber1to",
+              "date": "2026-10-04T15:57:11Z",
+              "updated_at": "2026-10-04T15:57:11Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "apps/backend/tests/test_budget_evaluation.py",
@@ -4751,6 +4844,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/backend/tests/test_azure_cost_questions.py",
@@ -5199,6 +5293,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/backend/tests/test_logging_config.py",
@@ -5360,8 +5455,7 @@
             "- Liderazgo: Lucia Mateo",
             "- Pairing/coautoria: Victor Mendez",
             "- Revision de PR: Paris Arcos Martin",
-            "- Validacion, pruebas y documentacion: Alejandro Aguado",
-            "- Validacion adicional de Alejandro (`c43c90e`): histograma normalizado a segundos, errores 500 contabilizados y rutas no emparejadas agrupadas bajo `__unmatched__`; pruebas de regresion anadidas en backend y processor."
+            "- Validacion, pruebas y documentacion: Alejandro Aguado"
           ],
           "commits": [
             {
@@ -5489,6 +5583,20 @@
               "kinds": {
                 "JUP-043": "other"
               }
+            }
+          ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/25#issuecomment-5510891882",
+              "author": "Iber1to",
+              "date": "2026-09-02T14:10:44Z",
+              "updated_at": "2026-09-02T14:10:44Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/25#issuecomment-5511453675",
+              "author": "Iber1to",
+              "date": "2026-09-02T14:48:21Z",
+              "updated_at": "2026-09-02T14:48:21Z"
             }
           ],
           "artifacts": [
@@ -5753,6 +5861,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/backend/tests/test_ingest_tracing.py",
@@ -6191,6 +6300,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/processor/tests/test_ingest_failure_metrics.py",
@@ -6516,6 +6626,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-048-validation.md",
@@ -6675,7 +6786,6 @@
         "validation": "Victorh1397"
       },
       "role_source_lines": [
-        "- Validacion del 08/09: processor 188/188 (34 casos con CockroachDB real), backend 24/24, Azure 58/58; herramientas 63/63, puente 12/12 y OpenSpec 26/26. Cuatro imagenes construidas y nueve servicios comprobados en DockerServer.",
         "- Liderazgo: Alejandro Aguado",
         "- Pairing/coautoría: Lucia Mateo",
         "- Revisión de PR: Paris Arcos Martin",
@@ -6731,6 +6841,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-049-validation.md",
@@ -6958,6 +7069,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/processor/tests/test_migration_runner.py",
@@ -7411,6 +7523,32 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/59#issuecomment-5941451806",
+              "author": "lmatsan",
+              "date": "2026-10-01T21:55:46Z",
+              "updated_at": "2026-10-01T21:55:46Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/59#issuecomment-5941799821",
+              "author": "ParisArcos",
+              "date": "2026-10-01T22:19:25Z",
+              "updated_at": "2026-10-01T22:19:25Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/59#issuecomment-5955921345",
+              "author": "Iber1to",
+              "date": "2026-10-02T15:42:48Z",
+              "updated_at": "2026-10-02T15:42:48Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/59#issuecomment-5955995522",
+              "author": "lmatsan",
+              "date": "2026-10-02T15:47:06Z",
+              "updated_at": "2026-10-02T15:47:06Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "docs/architecture.md",
@@ -7731,6 +7869,20 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/58#issuecomment-5953668781",
+              "author": "Iber1to",
+              "date": "2026-10-02T13:39:31Z",
+              "updated_at": "2026-10-02T13:40:03Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/58#issuecomment-5967319738",
+              "author": "ParisArcos",
+              "date": "2026-10-03T08:47:42Z",
+              "updated_at": "2026-10-03T08:47:42Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-051-validation.md",
@@ -7920,6 +8072,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-051-validation.md",
@@ -8247,6 +8400,14 @@
             }
           ],
           "reviews": [],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/73#issuecomment-5982431118",
+              "author": "Iber1to",
+              "date": "2026-10-04T17:10:51Z",
+              "updated_at": "2026-10-04T17:10:51Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0017-private-dockerserver-cd.md",
@@ -8317,8 +8478,8 @@
           "checks": [
             {
               "name": "Python tests (backend)",
-              "status": "in_progress",
-              "conclusion": null,
+              "status": "completed",
+              "conclusion": "success",
               "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37219502261/job/111486786456",
               "head": "096be34dfe9113815c5cbc4ee42194e5dc721d94"
             },
@@ -8456,6 +8617,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0006-runtime-secret-boundaries.md",
@@ -8695,6 +8857,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/backend/tests/conftest.py",
@@ -9185,6 +9348,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/frontend/src/pages/AnomaliesPanel.ordering.test.tsx",
@@ -9489,6 +9653,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/README.md",
@@ -9854,6 +10019,38 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/60#issuecomment-5939532783",
+              "author": "Iber1to",
+              "date": "2026-10-01T20:03:51Z",
+              "updated_at": "2026-10-01T20:03:51Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/60#issuecomment-5953352214",
+              "author": "Iber1to",
+              "date": "2026-10-02T13:24:37Z",
+              "updated_at": "2026-10-02T13:24:37Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/60#issuecomment-5959566469",
+              "author": "Iber1to",
+              "date": "2026-10-02T19:09:13Z",
+              "updated_at": "2026-10-03T14:59:47Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/60#issuecomment-5970369381",
+              "author": "Iber1to",
+              "date": "2026-10-03T15:02:13Z",
+              "updated_at": "2026-10-03T15:02:13Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/60#issuecomment-5971548987",
+              "author": "Iber1to",
+              "date": "2026-10-03T17:15:21Z",
+              "updated_at": "2026-10-03T17:17:16Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "apps/frontend/tests/login-session-expired-notice.history-replace.test.tsx",
@@ -10156,6 +10353,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-062-business-memory-review.md",
@@ -10398,6 +10596,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/continuidad/README.md",
@@ -10778,6 +10977,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-068-validation.md",
@@ -10973,6 +11173,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-069-validation.md",
@@ -11168,6 +11369,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/data/azure-dataset-audit.json",
@@ -11269,6 +11471,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0001-azure-cost-api-simulation.md",
@@ -11390,6 +11593,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/azure-cost-api/tests/conftest.py",
@@ -11501,6 +11705,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/azure-cost-api/tests/conftest.py",
@@ -11676,6 +11881,14 @@
               "kinds": {
                 "JUP-076": "other"
               }
+            }
+          ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/49#issuecomment-5917221284",
+              "author": "lmatsan",
+              "date": "2026-09-30T18:25:44Z",
+              "updated_at": "2026-09-30T18:25:44Z"
             }
           ],
           "artifacts": [
@@ -11874,6 +12087,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/processor/tests/test_azure_cost_client.py",
@@ -12022,6 +12236,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/processor/tests/test_azure_cost_ingestion.py",
@@ -12167,6 +12382,14 @@
               "kinds": {
                 "JUP-078": "validation"
               }
+            }
+          ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/71#issuecomment-5981696097",
+              "author": "lmatsan",
+              "date": "2026-10-04T15:40:01Z",
+              "updated_at": "2026-10-04T15:40:01Z"
             }
           ],
           "artifacts": [
@@ -12369,6 +12592,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0002-litellm-openrouter.md",
@@ -12477,6 +12701,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/processor/tests/test_ai_settings.py",
@@ -12598,6 +12823,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-079-validation.md",
@@ -12751,6 +12977,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-080-validation.md",
@@ -12973,6 +13200,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0006-runtime-secret-boundaries.md",
@@ -13250,6 +13478,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-081-validation.md",
@@ -13388,6 +13617,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/README.md",
@@ -13478,9 +13708,7 @@
         "review": null,
         "validation": null
       },
-      "role_source_lines": [
-        "- Validación conjunta: 7/7 supuestos confirmados y cero marcadores pendientes; OpenSpec integrado 6/6; RF-083-001 resuelto y RF-083-002 conservado para replanificación; backend 10/10; processor 3/3; build completo OK."
-      ],
+      "role_source_lines": [],
       "prs": [
         {
           "number": 3,
@@ -13575,6 +13803,7 @@
             }
           ],
           "reviews": [],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/spikes/frontend-migration.md",
@@ -13634,9 +13863,7 @@
         "- Liderazgo: Alejandro Aguado",
         "- Pairing/coautoría: Víctor Méndez",
         "- Revisión de PR: Lucía Mateo",
-        "- Validación, pruebas y documentación: Paris Arcos Martin",
-        "- Pairing/coautoria historica de Victor: no acreditada; excepcion de cierre aceptada el 28/09, sin atribucion retroactiva.",
-        "- Validacion original asignada a Paris: no se acredita retroactivamente. Cierre resuelto mediante validacion actual del usuario y excepcion documentada el 28/09."
+        "- Validación, pruebas y documentación: Paris Arcos Martin"
       ],
       "prs": [
         {
@@ -13704,6 +13931,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0006-runtime-secret-boundaries.md",
@@ -13949,6 +14177,14 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/17#issuecomment-5456449651",
+              "author": "Iber1to",
+              "date": "2026-08-28T18:48:48Z",
+              "updated_at": "2026-08-28T18:48:48Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "docs/architecture/finops-agent-tools.md",
@@ -14110,6 +14346,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/architecture.md",
@@ -14258,6 +14495,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0007-backend-cors-policy.md",
@@ -14414,6 +14652,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/backend/tests/test_auth_api.py",
@@ -14757,6 +14996,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/backend/tests/fixtures/dns_child_fixture.py",
@@ -15046,6 +15286,14 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/38#issuecomment-5734823408",
+              "author": "lmatsan",
+              "date": "2026-09-18T19:01:27Z",
+              "updated_at": "2026-09-18T19:01:27Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-087-runtime-validation.json",
@@ -15260,6 +15508,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/frontend/tests/conversations.test.tsx",
@@ -15560,6 +15809,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/api/azure-cost-query-contract.md",
@@ -16121,12 +16371,13 @@
       "assigned_roles": {
         "leadership": "ParisArcos",
         "pairing": "Victorh1397",
-        "review": null,
+        "review": "Iber1to",
         "validation": "lmatsan"
       },
       "role_source_lines": [
         "- Liderazgo: Paris Arcos Martin",
         "- Pairing: Victor Mendez",
+        "- Revisión: Alejandro Aguado",
         "- Validación/documentación: Lucia Mateo"
       ],
       "prs": []
@@ -16268,6 +16519,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/planning/JUP-090-frontend-migration-baseline.md",
@@ -16511,6 +16763,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/architecture.md",
@@ -16774,6 +17027,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0003-frontend-typescript.md",
@@ -17036,6 +17290,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0003-frontend-typescript.md",
@@ -17271,6 +17526,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "docs/adr/ADR-0003-frontend-typescript.md",
@@ -17739,6 +17995,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/frontend/src/components/ExportButton.test.tsx",
@@ -18413,6 +18670,20 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/51#issuecomment-5916930052",
+              "author": "lmatsan",
+              "date": "2026-09-30T18:06:51Z",
+              "updated_at": "2026-09-30T18:06:51Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/51#issuecomment-5925912738",
+              "author": "lmatsan",
+              "date": "2026-10-01T06:21:35Z",
+              "updated_at": "2026-10-01T06:21:35Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "apps/processor/tests/test_azure_cost_cockroach_integration.py",
@@ -18680,6 +18951,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/frontend/src/hooks/useDashboardData.mutation.test.tsx",
@@ -18996,6 +19268,14 @@
               "kinds": {
                 "JUP-098": "other"
               }
+            }
+          ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/50#issuecomment-5881819776",
+              "author": "Victorh1397",
+              "date": "2026-09-29T01:21:36Z",
+              "updated_at": "2026-09-29T01:21:36Z"
             }
           ],
           "artifacts": [
@@ -19423,6 +19703,7 @@
               }
             }
           ],
+          "comments": [],
           "artifacts": [
             {
               "path": "apps/frontend/src/components/ui/label.mutation.test.tsx",
@@ -19842,6 +20123,32 @@
               }
             }
           ],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/56#issuecomment-5932264521",
+              "author": "Iber1to",
+              "date": "2026-10-01T13:17:14Z",
+              "updated_at": "2026-10-01T13:17:14Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/56#issuecomment-5946673157",
+              "author": "lmatsan",
+              "date": "2026-10-02T06:22:49Z",
+              "updated_at": "2026-10-02T06:22:49Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/56#issuecomment-5947394820",
+              "author": "ParisArcos",
+              "date": "2026-10-02T07:29:58Z",
+              "updated_at": "2026-10-02T07:29:58Z"
+            },
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/56#issuecomment-5949481661",
+              "author": "Iber1to",
+              "date": "2026-10-02T09:43:51Z",
+              "updated_at": "2026-10-02T09:43:51Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "docs/evidence/JUP-100-validation.md",
@@ -20044,6 +20351,14 @@
             }
           ],
           "reviews": [],
+          "comments": [
+            {
+              "url": "https://github.com/EconomiconFinOps/tfm-economicon/pull/64#issuecomment-5974860953",
+              "author": "ParisArcos",
+              "date": "2026-10-04T00:08:22Z",
+              "updated_at": "2026-10-04T00:08:22Z"
+            }
+          ],
           "artifacts": [
             {
               "path": "docs/continuidad/README.md",
@@ -20128,9 +20443,7 @@
         "- Liderazgo: Lucia Mateo",
         "- Pairing/coautoría: Paris Arcos Martin",
         "- Revisión de PR: Victor Mendez",
-        "- Validación, pruebas y documentación: Alejandro Aguado",
-        "- Validación de origen: https://github.com/EconomiconFinOps/tfm-economicon/pull/53#pullrequestreview-5383443171",
-        "- Validación final y aceptación no bloqueante: https://github.com/EconomiconFinOps/tfm-economicon/pull/53#pullrequestreview-5396196793"
+        "- Validación, pruebas y documentación: Alejandro Aguado"
       ],
       "prs": []
     },

@@ -17,7 +17,7 @@ ROLE_LABELS = {'leadership': 'Liderazgo', 'pairing': 'Pairing/coautoria',
                'review': 'Revision de PR', 'validation': 'Validacion, pruebas y documentacion'}
 ROLE_ALIASES = {'leadership': ['liderazgo', 'liderazgo asignado'],
                 'pairing': ['pairing/coautoria', 'pairing y coautoria', 'pairing/coautoria y reconciliacion', 'pairing'],
-                'review': ['revision de pr', 'revision pr', 'revision'],
+                'review': ['revision de pr', 'revision pr', 'revision', 'revision de implementacion'],
                 'validation': ['validacion, pruebas y documentacion', 'validacion/documentacion',
                                'validacion, pruebas y documentacion; auditoria', 'validacion funcional',
                                'validacion/evidencia']}
@@ -86,6 +86,7 @@ def collect_pr(pr):
     ids = sorted(set(re.findall(r'JUP-\d{3}', detail['title'] + ' ' + detail['head']['ref'])))
     commits = github(f'pulls/{number}/commits?per_page=100', True)
     reviews = github(f'pulls/{number}/reviews?per_page=100', True)
+    comments = github(f'issues/{number}/comments?per_page=100', True)
     files = github(f'pulls/{number}/files?per_page=100', True)
     # Checks evidence is shared CI; it is never attributed to an individual validator.
     pages = run_json(['gh', 'api', f'repos/{REPO}/commits/{detail["head"]["sha"]}/check-runs?per_page=100',
@@ -106,6 +107,9 @@ def collect_pr(pr):
                          'state': r['state'], 'head': r['commit_id'], 'date': r['submitted_at'],
                          'kinds': {jup: review_kind(r.get('body') or '', jup) for jup in ids}}
                         for r in reviews],
+            'comments': [{'url': c['html_url'], 'author': c['user']['login'],
+                          'date': c['created_at'], 'updated_at': c['updated_at']}
+                         for c in comments],
             'artifacts': [{'path': f['filename'], 'url': f'https://github.com/{REPO}/blob/{detail["head"]["sha"]}/{quote(f["filename"], safe="/")}',
                            'kind': 'documentation' if f['filename'].startswith(('docs/', 'openspec/')) else 'tests'}
                           for f in files if f['status'] != 'removed' and
@@ -145,6 +149,9 @@ def member_evidence(story, login):
                 kind = review['kinds'].get(story['jup'], 'other')
                 suffix = ' / SHA anterior' if review['head'] != pr['head'] else ''
                 evidence.append((f'{kind}: {review["state"]}{suffix}', review['url']))
+        for comment in pr.get('comments', []):
+            if comment['author'] == login:
+                evidence.append(('comentario de PR / ' + comment['date'][:10], comment['url']))
     return list(dict.fromkeys(evidence))
 
 
@@ -188,6 +195,7 @@ def render(snapshot):
              'Una coautoría es declarada; un commit no demuestra por sí solo pairing. '
              'Una review titulada no demuestra por sí sola que sus criterios fueron probados. '
              'Los checks son CI compartida y los archivos son artefactos, nunca pruebas atribuidas a una persona. '
+             'Los comentarios acreditan una intervención atribuible, no una review formal ni una validación vigente. '
              'SHA anterior, cambios solicitados y diferencias de roles requieren contraste humano. '
              'Las notas de pairing en Trello y contribuciones fuera de PR no se importan: su ausencia aquí no prueba ausencia de trabajo.', '',
              '## Participación por miembro', '',

@@ -74,6 +74,14 @@ class ContributionTests(unittest.TestCase):
         self.assertFalse(any(g.startswith('validation:') for g in gaps))
         self.assertTrue(any('difieren' in g for g in gaps))
 
+    def test_discussion_comment_is_attributed_but_not_a_validation_review(self):
+        story = self.story(); pr = self.pr(); story['prs'] = [pr]
+        pr['comments'] = [{'url': 'comment-url', 'author': 'ParisArcos', 'date': '2026-09-07T12:00:00Z'}]
+        self.assertEqual(m.member_evidence(story, 'ParisArcos'),
+                         [('comentario de PR / 2026-09-07', 'comment-url')])
+        self.assertTrue(any(g.startswith('validation:') for g in m.role_gaps(story)))
+        self.assertEqual(m.member_evidence(story, 'lmatsan'), [])
+
     def test_unlinked_cards_remain_in_inventory(self):
         cards = [{'name': 'JUP-064 — Contribuciones', 'shortUrl': 'url', 'desc': ''},
                  {'name': 'Project information', 'shortUrl': 'other'}]

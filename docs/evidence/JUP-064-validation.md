@@ -10,14 +10,14 @@ incluye los pasos y un texto de PR preparado.
 ## Resultado
 
 La [guía](../contributions/README.md) y el [registro](../contributions/JUP-064-register.md)
-enlazan 91 historias y 75 asociaciones de PR con sus commits, reviews, pruebas,
+enlazan 91 historias y 75 asociaciones de PR con sus commits, reviews, comentarios, pruebas,
 documentación y checks. El snapshot conserva todos los enlaces; el informe
 limita las filas extensas y enlaza el resto. La tabla agregada muestra también
 las asignaciones de los cuatro roles por persona, sin contarlas como acciones.
 
 Se observan acciones de los cuatro miembros: Alejandro en 46 historias, Víctor
-en 32, Lucía en 35 y Paris en 26. Son acciones registradas, no acreditación
-completa de cada historia. Las 32 casillas de roles sin resolver y los huecos
+en 32, Lucía en 35 y Paris en 29. Son acciones registradas, no acreditación
+completa de cada historia. Las 30 casillas de roles sin resolver y los huecos
 de pairing/reviews deben contrastarse con las fuentes originales y el equipo.
 
 ## Verificación ejecutada
@@ -26,7 +26,7 @@ de pairing/reviews deben contrastarse con las fuentes originales y el equipo.
 | --- | --- | --- |
 | Recogida viva con `--collect` | 91 historias / 75 asociaciones PR | Solo cliente Trello desplegado y GitHub paginado |
 | Render offline de snapshot | Idéntico al render original | Comparación SHA-256 antes/después |
-| `contributions:test` | 9/9 verdes | Asignación sin acción, identidad, alias, ambigüedad, títulos, SHA antiguo, self-review, solicitud de cambios, coautoría declarada y discrepancias |
+| `contributions:test` | 10/10 verdes en Python 3.14.4 y 3.12.13 | Asignación sin acción, identidad, alias, ambigüedad, títulos, SHA antiguo, self-review, solicitud de cambios, coautoría declarada y discrepancias |
 | `node --test tools/ci-workflow.test.mjs tools/repository-governance.test.mjs tools/pr-policy.test.mjs` | 80/80 verdes | Política, proceso y modificación del workflow |
 | `openspec:validate` | 45/45 verdes | Todas las specs y cambios, incluido JUP-064 |
 | `jup:check:all`, `jup:cleanup:check`, `git diff --check` | Verdes | Trazabilidad, higiene y formato |
@@ -38,7 +38,7 @@ de pairing/reviews deben contrastarse con las fuentes originales y el equipo.
 No se ha modificado ningún archivo de `apps/` respecto de la base `c3aa9d6`.
 La causa de los fallos generales no está confirmada; no se presenta la suite
 completa como verde. Corresponde al líder contrastarlos en el entorno Python
-3.12 de CI antes de declarar la PR lista. Los nueve tests específicos de JUP-064
+3.12 de CI antes de declarar la PR lista. Los diez tests específicos de JUP-064
 y los checks de gobernanza sí pasan en este entorno.
 
 Para los comandos de Turbo se usó un wrapper local de `pnpm` que invoca Corepack
@@ -55,3 +55,19 @@ instalación sin TTY. El wrapper no forma parte del repositorio.
   el equipo aporte y contraste los enlaces; no se inferirán de CI o de nombres.
 - OpenSpec sigue activo para que el líder pueda ajustar alcance y archivarlo
   antes de la integración. JUP-064 permanece en curso, no cerrada.
+
+## Incremento: intervenciones históricas de PR
+
+Corte actualizado `2026-10-04T17:27:22.764527+00:00`: incorpora 37 comentarios
+con autor, fecha y enlace original; no conserva cuerpos ni acredita review
+formal por su existencia. Paris figura ahora con acciones en 29 historias.
+Se ha contrastado específicamente su [nota de JUP-024](https://github.com/EconomiconFinOps/tfm-economicon/pull/18#issuecomment-5570688974):
+autor `ParisArcos`, fecha `2026-09-07T12:32:56Z`. La nota no se convierte en
+validación vigente del HEAD final. Dos roles antes sin resolver se reconocen
+ahora por sus etiquetas explícitas en Trello; quedan 30 casillas pendientes.
+
+Las 10 pruebas pasaron en Python 3.12.13 dentro del contenedor desplegado en
+DockerServer, usando archivos temporales y sin alterar la integración. Nueva
+regeneración offline idéntica por SHA-256; OpenSpec sigue 45/45 y la trazabilidad
+e higiene pasan. Esta actualización sustituye las cifras del primer corte;
+la historia original permanece en Git.
