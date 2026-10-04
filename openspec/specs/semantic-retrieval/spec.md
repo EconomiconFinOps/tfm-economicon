@@ -55,6 +55,12 @@ The backend SHALL read the gateway URL, the model alias and the virtual key from
 - **THEN** the 429 and 503 cases are retried at most the configured number of times and then fail
 - **AND** the 401 case is not retried
 
+#### Scenario: Worst case of one question
+
+- **WHEN** the per-attempt timeout and the number of retries are configured
+- **THEN** the product of the timeout and the number of attempts does not exceed 60 seconds, and a larger combination is rejected at startup naming both settings
+- **AND** with the default values one question waits at most 20 seconds for the embedding, plus the short waits between retries
+
 ### Requirement: Explicit retrieval parameters
 
 The retrieval SHALL take `top_k` and an optional maximum cosine distance from backend settings. `top_k` SHALL be an integer within a documented inclusive range and values outside it SHALL be rejected at startup. The maximum distance, when defined, SHALL be a number greater than 0 and not greater than 2, and a value outside that range SHALL be rejected at startup. When the maximum distance is not defined no fragment SHALL be excluded by distance. When the setting is absent or blank, the backend SHALL use the default calibrated for its embedding provider (0.6 for `litellm`, none for `mock`, whose vectors carry no semantic distance); the words `none` and `off` SHALL disable the threshold explicitly for any provider, and a numeric value SHALL always override the default.

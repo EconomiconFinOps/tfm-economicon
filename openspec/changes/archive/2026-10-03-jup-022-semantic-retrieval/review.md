@@ -74,6 +74,18 @@ La validacion de Alejandro sobre `5f8bd90` encontro un defecto real que ni las p
 - Lo que fallo en el proceso: la revision adversarial y el barrido de patron buscaron el plazo del cuerpo pero no el de las cabeceras; se corrige en esta tanda y queda como leccion para el barrido de futuros clientes HTTP.
 - Backend completo despues del cambio: 563 passed y 16 skipped con pgvector real.
 
+## Revision del PR #67 (2026-10-04)
+
+La `Revision JUP-022` de Victor sobre `7f69269` pidio tres cambios y propuso cuatro menores. Se atienden en el mismo PR, con prueba que falla sin cada arreglo y mutantes sobre el codigo nuevo.
+
+- Peor caso de una pregunta (MEDIUM): el plazo era por intento y una pregunta podia tardar 91 s con los valores por defecto. Los valores por defecto pasan a 10 s y un reintento (20 s en el peor caso) y el par se limita a 60 s de intentos; el README, ADR-0017 y la spec lo recogen. Lo que queda, el pool de hilos compartido con `/health`, se registra como RF-022-005.
+- Mensaje de arranque (MEDIUM): `get_settings()` nombra ahora los ajustes de embeddings y recuperacion rechazados (solo nombres, nunca valores), tanto si el error es de nuestras reglas como si es un error de tipo de pydantic; el resto de errores de configuracion mantiene el mensaje generico.
+- `lifespan` sin test (MEDIUM): se anade el test que propuso Victor (proveedor elegido, `verify_dimension` llamado y linea de configuracion emitida, y parada ante un desajuste de dimension). Los tres mutantes que sobrevivian ahora se detectan.
+- Menores: el README ya no dice que la calibracion valida el reindexado; `verify_dimension` registra cuando se omite (tabla ausente o consulta fallida, sin texto de la consulta); frase duplicada del README del processor y variable sin uso de la calibracion corregidas.
+- Pregunta sobre el banco de calibracion: se registra como RF-022-006 (preguntas ajenas al corpus) para la proxima calibracion.
+
+Mutantes de esta tanda: 12 aplicados, 12 detectados (uno sobrevivia hasta anadir casos con error de tipo nativo).
+
 ## Human Approval
 
 - Change: jup-022-semantic-retrieval

@@ -103,7 +103,7 @@ Puerto visible:
 - `EMBEDDING_MODEL`
 - `LITELLM_BASE_URL`
 - `LITELLM_API_KEY` (clave virtual propia del backend; en Compose se lee de `BACKEND_LITELLM_API_KEY`)
-- `EMBEDDING_TIMEOUT_SECONDS` y `EMBEDDING_MAX_RETRIES`
+- `EMBEDDING_TIMEOUT_SECONDS` (por intento, 10 s por defecto) y `EMBEDDING_MAX_RETRIES` (1 por defecto): una pregunta espera como mucho (reintentos + 1) x plazo, 20 s en el peor caso con los valores por defecto, mas las esperas entre reintentos (0,25 s la primera, hasta 1 s las siguientes); el par no puede superar 60 s de intentos
 - `RETRIEVAL_TOP_K` (1 a 20, por defecto 4) y `RETRIEVAL_MAX_DISTANCE` (mayor que 0 y como maximo 2; en blanco usa 0.6 con `litellm` y ningun umbral con `mock`; `none` u `off` lo desactiva)
 - `AUTH_SECRET_KEY`
 - `AUTH_TOKEN_TTL_MINUTES`
@@ -118,7 +118,9 @@ Con `litellm` el backend usa su propia clave virtual (`BACKEND_LITELLM_API_KEY` 
 
 `EMBEDDING_PROVIDER` es una unica variable de Compose compartida con el processor a proposito: la ingesta y la consulta deben usar el mismo proveedor. El processor ya soporta `litellm` (JUP-023, PR #65); la recuperacion solo considera los vectores del proveedor configurado, asi que tras activarlo hay que reindexar el corpus con ese proveedor o devolvera vacio.
 
-Una base pgvector creada con `vector(8)` (proveedor `mock`) no sirve con el modelo real: los vectores de la ingesta y de la pregunta deben tener la misma dimension y el mismo modelo. Para pasar a `vector(1536)` hay que reindexar el corpus en una coleccion nueva, nunca en caliente: en un entorno desechable, parar el stack, borrar el volumen `pgvector-data`, poner `EMBEDDING_PROVIDER=litellm` y `EMBEDDING_DIMENSION=1536` en processor y backend con sus claves y volver a ingerir los documentos. El procedimiento completo se valida con la calibracion real del change (tarea 7.4). Un cambio de modelo con la misma dimension no se detecta: finding RF-022-001.
+Una base pgvector creada con `vector(8)` (proveedor `mock`) no sirve con el modelo real: los vectores de la ingesta y de la pregunta deben tener la misma dimension y el mismo modelo. Para pasar a `vector(1536)` hay que reindexar el corpus en una coleccion nueva, nunca en caliente: en un entorno desechable, parar el stack, borrar el volumen `pgvector-data`, poner `EMBEDDING_PROVIDER=litellm` y `EMBEDDING_DIMENSION=1536` en processor y backend con sus claves y volver a ingerir los documentos. El procedimiento se ejecuto en la revision del PR #67 contra un gateway simulado (al borrar el volumen, el processor crea `vector(1536)` y guarda `provider=litellm`) y no se ha repetido de extremo a extremo con el modelo real. Un cambio de modelo con la misma dimension no se detecta: finding RF-022-001.
+
+Las rutas sincronas del backend comparten el pool de hilos (40 por defecto): con un gateway que acepta la conexion y no responde, muchas preguntas en espera pueden retrasar `/health` mientras dure el plazo de cada una; el tope por pregunta acota ese efecto y queda registrado como finding RF-022-005.
 
 ## CORS Y Sesion Demo
 

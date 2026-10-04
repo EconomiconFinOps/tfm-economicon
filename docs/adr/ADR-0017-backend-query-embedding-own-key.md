@@ -24,7 +24,7 @@ Hay que decidir quien embebe la pregunta, con que credencial y que contrato tien
 ## Consequences
 
 - Se puede atribuir y revocar el gasto de embeddings por servicio, y una fuga de la clave del backend no da acceso a otros alias.
-- El backend pasa a depender de un servicio externo en cada pregunta: se anade latencia y un modo de fallo (el chat devuelve un 503 con mensaje fijo y el tiempo maximo esta acotado).
+- El backend pasa a depender de un servicio externo en cada pregunta: se anade latencia y un modo de fallo (el chat devuelve un 503 con mensaje fijo y cada pregunta espera como mucho (reintentos + 1) x plazo: 20 s en el peor caso con los valores por defecto de 10 s y un reintento, con un tope de 60 s de intentos para el par).
 - Hay un secreto mas que emitir y rotar por entorno.
 - Una base creada con `vector(8)` no sirve con el modelo real: hay que reindexar en una coleccion nueva, nunca en caliente.
 - Un cambio de modelo con la misma dimension no se detecta, porque el esquema guarda `provider` y `dimension` pero no el alias; registrarlo exige un cambio de esquema del processor ([ADR-0011](ADR-0011-single-owner-per-table.md)). Queda como finding RF-022-001.

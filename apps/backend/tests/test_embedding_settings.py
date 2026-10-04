@@ -250,3 +250,72 @@ def test_max_distance_rejects_unicode_digits_exponents_and_odd_notations(monkeyp
 @pytest.mark.parametrize("value,expected", [(".5", 0.5), ("0.5", 0.5), ("2", 2.0), ("1.25", 1.25)])
 def test_max_distance_accepts_plain_ascii_decimals(monkeypatch, value, expected):
     assert make(monkeypatch, retrieval_max_distance=value).retrieval_max_distance == expected
+
+
+# Review of PR 67: interactive worst case and startup messages that name the rejected settings.
+
+def test_defaults_fit_an_interactive_route():
+    settings = make_default()
+    assert settings.embedding_timeout_seconds == 10.0 and settings.embedding_max_retries == 1
+    assert (settings.embedding_max_retries + 1) * settings.embedding_timeout_seconds <= 20
+
+
+def make_default():
+    return Settings(_env_file=None)
+
+
+@pytest.mark.parametrize("timeout,retries", [(30, 1), (60, 0), (20, 2), (10, 5), (6, 9)])
+def test_the_worst_case_of_one_question_may_not_exceed_a_minute(monkeypatch, timeout, retries):
+    monkeypatch.setenv("EMBEDDING_TIMEOUT_SECONDS", str(timeout))
+    monkeypatch.setenv("EMBEDDING_MAX_RETRIES", str(retries))
+    assert Settings(_env_file=None).embedding_timeout_seconds == timeout
+
+
+@pytest.mark.parametrize("timeout,retries", [(30, 2), (60.5, 0), (21, 2), (10, 6), (300, 0)])
+def test_a_combination_above_a_minute_is_rejected_naming_both_settings(monkeypatch, timeout, retries):
+    monkeypatch.setenv("EMBEDDING_TIMEOUT_SECONDS", str(timeout))
+    monkeypatch.setenv("EMBEDDING_MAX_RETRIES", str(retries))
+    with pytest.raises(ValidationError) as error:
+        Settings(_env_file=None)
+    assert "embedding_timeout_seconds" in str(error.value) and "embedding_max_retries" in str(error.value)
+
+
+STARTUP_CASES = [
+    ({"RUNTIME_ENVIRONMENT": "production"}, "embedding_provider"),
+    ({"EMBEDDING_PROVIDER": "litellm", "EMBEDDING_DIMENSION": "1536"}, "litellm_api_key"),
+    ({"EMBEDDING_PROVIDER": "litellm", "EMBEDDING_DIMENSION": "8", "LITELLM_API_KEY": SENTINEL}, "embedding_dimension"),
+    ({"RETRIEVAL_TOP_K": "0"}, "retrieval_top_k"),
+    ({"RETRIEVAL_MAX_DISTANCE": "3"}, "retrieval_max_distance"),
+    ({"EMBEDDING_TIMEOUT_SECONDS": "300", "EMBEDDING_MAX_RETRIES": "0"}, "embedding_timeout_seconds"),
+    ({"EMBEDDING_TIMEOUT_SECONDS": "abc"}, "embedding_timeout_seconds"),  # native type error: only the location names it
+    ({"EMBEDDING_MAX_RETRIES": "x"}, "embedding_max_retries"),
+]
+
+
+@pytest.mark.parametrize("env,name", STARTUP_CASES)
+def test_the_real_startup_names_the_rejected_setting_and_never_a_value(monkeypatch, env, name):
+    for key, value in env.items():
+        monkeypatch.setenv(key, value)
+    with pytest.raises(StartupError) as error:
+        get_settings()
+    message = str(error.value)
+    assert name in message
+    assert SENTINEL not in message and SENTINEL not in repr(error.value)
+    assert "Invalid runtime configuration" in message
+
+
+def test_a_rejected_secret_setting_is_named_without_its_value(monkeypatch):
+    monkeypatch.setenv("EMBEDDING_PROVIDER", "litellm")
+    monkeypatch.setenv("EMBEDDING_DIMENSION", "1536")
+    monkeypatch.setenv("LITELLM_API_KEY", "sk-or-v1-" + SENTINEL)
+    with pytest.raises(StartupError) as error:
+        get_settings()
+    assert "litellm_api_key" in str(error.value)
+    assert SENTINEL not in str(error.value) and "sk-or" not in str(error.value)
+
+
+def test_errors_outside_the_embedding_settings_keep_the_generic_message(monkeypatch):
+    monkeypatch.setenv("CORS_ALLOWED_ORIGINS", "not-json")
+    with pytest.raises(StartupError) as error:
+        get_settings()
+    assert str(error.value) == "Invalid runtime configuration; check required credentials and settings."

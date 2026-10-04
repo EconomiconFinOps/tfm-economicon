@@ -250,7 +250,6 @@ def run(
         raise CalibrationError(f"Las llamadas previstas ({planned}) superan el maximo permitido ({max_calls}); no se hace ninguna llamada.")
 
     vectors = [_embed(provider, chunk) for _, _, chunk, _, _ in chunks]
-    labelled = {item: None for item in ()}
     order = {source_id: position for position, source_id in enumerate(documents)}
     cases, ranked_by_case = [], {}
     for case in suite["cases"]:
@@ -260,7 +259,6 @@ def run(
             section = primary_section(documents[source_id]["sections"], start, end)
             items.append(((order[source_id], index), cosine_distance(question_vector, vector), (source_id, section)))
         ranked_by_case[case["id"]] = sorted(items, key=lambda item: (item[1], item[0]))
-    del labelled
 
     def hits(case, retrieved):
         label = labels[case["id"]]

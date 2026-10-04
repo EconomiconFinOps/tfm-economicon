@@ -6,13 +6,20 @@ import re
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pydantic import AnyHttpUrl, Field, Json, SecretStr, StrictStr, field_validator, model_validator
+from pydantic import AnyHttpUrl, Field, Json, SecretStr, StrictStr, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.runtime_secrets import PLACEHOLDERS, StartupError, register_secrets, validate_connections
 
 # Calibrated with the JUP-069 question bank (docs/spikes/JUP-022-retrieval-calibration.md).
 LITELLM_DEFAULT_MAX_DISTANCE = 0.6
+# One chat question may wait at most this long for the embedding attempts (the waits between retries come on top).
+MAX_QUESTION_ATTEMPT_SECONDS = 60
+# Settings whose names may appear in the startup error; their values never do.
+REPORTABLE_SETTINGS = frozenset({
+    "embedding_provider", "embedding_dimension", "embedding_model", "embedding_timeout_seconds",
+    "embedding_max_retries", "litellm_base_url", "litellm_api_key", "retrieval_top_k", "retrieval_max_distance",
+})
 
 
 class Settings(BaseSettings):
@@ -28,8 +35,8 @@ class Settings(BaseSettings):
     embedding_model: str = "economicon-embedding"
     litellm_base_url: str = "http://litellm:4000/v1"
     litellm_api_key: SecretStr | None = None
-    embedding_timeout_seconds: float = 30.0
-    embedding_max_retries: int = 2
+    embedding_timeout_seconds: float = 10.0
+    embedding_max_retries: int = 1
     retrieval_top_k: int = 4
     retrieval_max_distance: float | None = None
     auth_secret_key: SecretStr
@@ -151,6 +158,11 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_embedding_configuration(self) -> "Settings":
+        if (self.embedding_max_retries + 1) * self.embedding_timeout_seconds > MAX_QUESTION_ATTEMPT_SECONDS:
+            raise ValueError(
+                "embedding_timeout_seconds and embedding_max_retries together may not exceed "
+                f"{MAX_QUESTION_ATTEMPT_SECONDS} seconds of attempts per question"
+            )
         if self.embedding_provider == "mock" and self.runtime_environment not in {"development", "test"}:
             raise ValueError("embedding_provider mock is only allowed in development and test")
         if self.embedding_provider == "litellm":
@@ -203,10 +215,25 @@ class Settings(BaseSettings):
     )
 
 
+def _rejected_reportable_settings(exc: ValidationError) -> list[str]:
+    """Names of the rejected settings that are safe to report; only names are ever read, never values or messages."""
+    names: set[str] = set()
+    for item in exc.errors(include_url=False, include_context=False, include_input=False):
+        names.update(part for part in item.get("loc", ()) if isinstance(part, str) and part in REPORTABLE_SETTINGS)
+        message = str(item.get("msg", "")).lower()
+        names.update(name for name in REPORTABLE_SETTINGS if name in message)
+    return sorted(names)
+
+
 @lru_cache
 def get_settings() -> Settings:
     try:
         settings = Settings(_env_file=os.environ.get("ECONOMICON_ENV_FILE") or None)
+    except ValidationError as exc:
+        names = _rejected_reportable_settings(exc)
+        if names:
+            raise StartupError(f"Invalid runtime configuration; check these settings: {', '.join(names)}.") from None
+        raise StartupError("Invalid runtime configuration; check required credentials and settings.") from None
     except Exception:
         raise StartupError("Invalid runtime configuration; check required credentials and settings.") from None
     register_secrets(settings)

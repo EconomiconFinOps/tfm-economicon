@@ -2,9 +2,12 @@ import math
 
 from sqlalchemy import create_engine, text
 
+import structlog
+
 from app.core.runtime_secrets import StartupError
 
 MAX_TOP_K = 20
+logger = structlog.get_logger("vector_store")
 MAX_COSINE_DISTANCE = 2.0
 
 
@@ -90,8 +93,12 @@ class PgVectorQueryStore:
         try:
             column = self.embedding_column_dimension()
         except Exception:
+            logger.warning("embedding_dimension_check_skipped", reason="query_failed")
             return
-        if column is not None and column != expected:
+        if column is None:
+            logger.info("embedding_dimension_check_skipped", reason="table_missing")
+            return
+        if column != expected:
             raise EmbeddingDimensionMismatch()
 
     def ping(self) -> bool:

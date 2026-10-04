@@ -196,3 +196,46 @@ def test_a_vector_with_a_single_usable_component_is_searched():
     store = Store(result=[])
     ask(GoodEmbedding(vector=(0.0, 0.00001, 0.0)), store)
     assert len(store.calls) == 1
+
+
+# The startup dimension check must say when it could not run.
+
+def test_a_missing_table_is_logged_as_a_skipped_check(capsys):
+    from app.core.logging import configure_logging
+
+    configure_logging()
+    capsys.readouterr()
+    store_with_column(None).verify_dimension(1536)
+    lines = [json.loads(line) for line in capsys.readouterr().out.splitlines() if line.startswith("{")]
+    skipped = [line for line in lines if line.get("event") == "embedding_dimension_check_skipped"]
+    assert len(skipped) == 1 and skipped[0]["reason"] == "table_missing"
+    logging.getLogger().handlers.clear()
+
+
+def test_a_failing_query_is_logged_as_a_skipped_check_without_its_text(capsys):
+    from app.core.logging import configure_logging
+
+    class Broken(PgVectorQueryStore):
+        def embedding_column_dimension(self):
+            raise RuntimeError("password=hunter2 host=internal")
+
+    configure_logging()
+    capsys.readouterr()
+    store = Broken.__new__(Broken)
+    store.verify_dimension(1536)
+    output = capsys.readouterr().out
+    lines = [json.loads(line) for line in output.splitlines() if line.startswith("{")]
+    skipped = [line for line in lines if line.get("event") == "embedding_dimension_check_skipped"]
+    assert len(skipped) == 1 and skipped[0]["reason"] == "query_failed"
+    assert "hunter2" not in output and "internal" not in output
+    logging.getLogger().handlers.clear()
+
+
+def test_a_matching_column_logs_no_skip(capsys):
+    from app.core.logging import configure_logging
+
+    configure_logging()
+    capsys.readouterr()
+    store_with_column(1536).verify_dimension(1536)
+    assert "embedding_dimension_check_skipped" not in capsys.readouterr().out
+    logging.getLogger().handlers.clear()
