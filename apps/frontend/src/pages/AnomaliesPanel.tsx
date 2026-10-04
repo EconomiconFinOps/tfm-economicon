@@ -1,138 +1,137 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useState } from "react";
+import { AlertTriangle, FlaskConical, SlidersHorizontal } from "lucide-react";
 import { ExportButton } from "@/components/ExportButton";
-import { chartTooltipStyle } from "@/components/chartTheme";
-// Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
-// tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
-import { anomalies, trendData, stats } from "@/data/demo/anomaliesPanel";
+import { anomalies, demoPeriod, type AnomalySeverity, type AnomalyStatus } from "@/data/demo/anomaliesPanel";
 
-// Traduce el tono de los datos demo a clases del tema. Antes se interpolaba
-// `bg-${color}-500/20`, `text-${color}-400`..., que Tailwind no puede detectar:
-// solo generaba la clase si el literal completo aparecia en otro sitio del
-// codigo. Con los literales migrados a tokens esas clases dejarian de
-// generarse, asi que se declara un mapa explicito con cadenas completas.
-// Los tonos ausentes (`purple`, y `orange` en el texto) no tenian clase
-// generada; se conservan sin ella para que el resultado visual sea identico,
-// no para fijar ese comportamiento.
-const toneBoxClass: Record<string, string> = {
-  red: 'bg-danger-tint/20 border-danger-tint/30',
-  orange: 'bg-attention-tint/20 border-attention-tint/30',
-  blue: 'bg-info-tint/20 border-info-tint/30',
-  green: 'bg-success-tint/20 border-success-tint/30',
+type StatusFilter = "Abiertas" | "Todos" | AnomalyStatus;
+type SeverityFilter = "Todas" | AnomalySeverity;
+const severityRank: Record<AnomalySeverity, number> = { Alta: 3, Media: 2, Baja: 1 };
+const severityStyles: Record<AnomalySeverity, string> = {
+  Alta: "border-danger/30 bg-danger-tint/10 text-danger-foreground",
+  Media: "border-warning/30 bg-warning-tint/10 text-warning-foreground",
+  Baja: "border-highlight/30 bg-highlight/10 text-info-foreground",
 };
-const toneIconClass: Record<string, string> = {
-  red: 'text-danger',
-  blue: 'text-info',
-  green: 'text-success',
+const statusStyles: Record<AnomalyStatus, string> = {
+  Pendiente: "border-neutral/40 bg-neutral/10 text-subtle-foreground",
+  Investigando: "border-warning/30 bg-warning-tint/10 text-warning-foreground",
+  Resuelto: "border-success/30 bg-success-tint/10 text-success-foreground",
 };
+const currency = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+const selectStyle = "mt-2 w-full rounded-md border border-neutral bg-background px-3 py-2.5 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-highlight";
 
 export function AnomaliesPanel() {
-  const exportData = anomalies.map(a => ({
-    Tipo: a.tipo,
-    Servicio: a.servicio,
-    Severidad: a.severidad,
-    Descripción: a.descripcion,
-    'Coste (€)': a.coste,
-    Detectado: a.detectado,
-    Estado: a.estado,
-    Agente: a.agente,
+  const [severity, setSeverity] = useState<SeverityFilter>("Todas");
+  const [status, setStatus] = useState<StatusFilter>("Abiertas");
+  const open = anomalies.filter(anomaly => anomaly.estado !== "Resuelto");
+  const openImpact = open.reduce((total, anomaly) => total + anomaly.coste, 0);
+  const visible = anomalies.filter(anomaly =>
+    (severity === "Todas" || anomaly.severidad === severity) &&
+    (status === "Todos" || (status === "Abiertas" ? anomaly.estado !== "Resuelto" : anomaly.estado === status))
+  ).sort((a, b) => severityRank[b.severidad] - severityRank[a.severidad] || b.coste - a.coste);
+  const reset = () => { setSeverity("Todas"); setStatus("Abiertas"); };
+  const exportData = visible.map(anomaly => ({
+    Origen: "Datos de demostración",
+    Periodo: demoPeriod,
+    Severidad: anomaly.severidad,
+    Servicio: anomaly.servicio,
+    Tipo: anomaly.tipo,
+    Descripción: anomaly.descripcion,
+    "Impacto estimado (EUR)": anomaly.coste,
+    Detectado: anomaly.detectado,
+    Estado: anomaly.estado,
   }));
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="min-w-0 space-y-6 p-4 text-subtle-foreground sm:p-6 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 [&_button:focus-visible]:outline-highlight">
+      <header className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
-          <h2 className="font-bold text-foreground">Panel de Anomalías y Alertas</h2>
-          <p className="text-sm text-muted-foreground">Detección automática mediante agentes especializados</p>
+          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-info-foreground">Supervisión de costes</p>
+          <h2 className="text-2xl font-bold text-foreground">Panel de Anomalías y Alertas</h2>
+          <p className="mt-1 text-sm text-subtle-foreground">Prioriza las alertas por criticidad e impacto estimado.</p>
         </div>
-        <ExportButton data={exportData} filename="anomalias-alertas" />
-      </div>
+        <div className="self-start">
+          {visible.length > 0 ? <ExportButton data={exportData} filename="anomalias-alertas-demo-2026-04-18_19" /> :
+            <button disabled className="rounded-md border border-neutral px-4 py-2 text-muted-foreground">Exportar Resultados</button>}
+          <p className="mt-2 text-xs text-muted-foreground">Exporta la vista actual · archivo demo</p>
+        </div>
+      </header>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, idx) => (
-          <div key={idx} className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-5 shadow-xl hover:shadow-info-tint/10 transition-shadow">
-            <div className="flex items-center gap-3 mb-2">
-              <div className={`p-2 rounded-lg ${toneBoxClass[stat.color] ?? ''} border`}>
-                <stat.icon className={`w-5 h-5 ${toneIconClass[stat.color] ?? ''}`} />
-              </div>
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-            </div>
-            <p className="font-bold text-foreground">{stat.value}</p>
+      <aside aria-label="Datos de demostración" className="flex items-start gap-3 rounded-lg border border-highlight/30 bg-highlight/5 px-4 py-3">
+        <FlaskConical aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-info-foreground" />
+        <div className="text-sm">
+          <p className="font-semibold text-info-foreground">Datos de demostración · {demoPeriod}</p>
+          <p className="mt-1 text-subtle-foreground">Ejemplos estáticos independientes del cliente seleccionado, sin conexión a detección real. El impacto estimado corresponde al periodo de muestra; no representa pérdidas ni ahorros reales.</p>
+        </div>
+      </aside>
+
+      <section aria-label="Resumen del conjunto de muestra" className="overflow-hidden rounded-lg border border-border bg-card">
+        <div className="border-b border-border px-5 py-3 text-xs text-subtle-foreground">Conjunto de muestra · {anomalies.length} anomalías · El resumen no cambia con los filtros</div>
+        <dl className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div className="border-b border-border bg-highlight/5 p-5 md:border-r xl:border-b-0">
+            <dt className="text-sm text-info-foreground">Impacto de anomalías abiertas</dt>
+            <dd className="mt-2 text-3xl font-bold tabular-nums text-foreground">{currency.format(openImpact)}</dd>
+            <p className="mt-2 text-xs text-subtle-foreground">Estimado · EUR · periodo de muestra</p>
           </div>
-        ))}
-      </div>
+          <div className="border-b border-border p-5 xl:border-b-0 xl:border-r">
+            <dt className="text-sm text-subtle-foreground">Anomalías abiertas</dt>
+            <dd className="mt-2 text-3xl font-semibold tabular-nums text-foreground">{open.length}</dd>
+            <p className="mt-2 text-xs text-muted-foreground">Pendientes o en investigación</p>
+          </div>
+          <div className="border-b border-border p-5 md:border-b-0 md:border-r">
+            <dt className="flex items-center gap-2 text-sm text-danger-foreground"><AlertTriangle aria-hidden="true" className="h-4 w-4" />Criticidad alta · abiertas</dt>
+            <dd className="mt-2 text-3xl font-semibold tabular-nums text-danger-foreground">{open.filter(anomaly => anomaly.severidad === "Alta").length}</dd>
+            <p className="mt-2 text-xs text-muted-foreground">Prioridad de revisión</p>
+          </div>
+          <div className="p-5">
+            <dt className="text-sm text-subtle-foreground">Anomalías resueltas</dt>
+            <dd className="mt-2 text-3xl font-semibold tabular-nums text-foreground">{anomalies.length - open.length}</dd>
+            <p className="mt-2 text-xs text-muted-foreground">En el conjunto de muestra</p>
+          </div>
+        </dl>
+      </section>
 
-      {/* Anomaly Detection Chart */}
-      <div className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-6 shadow-xl">
-        <h3 className="font-semibold text-foreground mb-4">Detección de Anomalías en Tiempo Real</h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="hora" stroke="var(--chart-axis)" />
-            <YAxis stroke="var(--chart-axis)" />
-            <Tooltip
-              formatter={(value) => `${value}€/hora`}
-              contentStyle={chartTooltipStyle}
-            />
-            <Line type="monotone" dataKey="normal" stroke="var(--chart-baseline)" strokeWidth={2} name="Patrón Normal" strokeDasharray="5 5" />
-            <Line type="monotone" dataKey="actual" stroke="var(--chart-negative)" strokeWidth={2} name="Coste Actual" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Anomalies Table */}
-      <div className="bg-gradient-to-br from-card to-accent rounded-lg border border-border shadow-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">Anomalías Detectadas (Últimas 24h)</h3>
+      <section aria-labelledby="alerts-title" className="min-w-0 rounded-lg border border-border bg-card">
+        <div className="space-y-5 border-b border-border p-5">
+          <div className="flex items-center gap-2"><SlidersHorizontal aria-hidden="true" className="h-4 w-4 text-info-foreground" /><h3 id="alerts-title" className="font-semibold text-foreground">Bandeja de alertas</h3></div>
+          <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-[1fr_1fr_auto]">
+            <div><label className="text-sm text-subtle-foreground" htmlFor="anomaly-severity">Criticidad</label>
+              <select id="anomaly-severity" className={selectStyle} value={severity} onChange={event => setSeverity(event.target.value as SeverityFilter)}>
+                <option value="Todas">Todas las criticidades</option><option>Alta</option><option>Media</option><option>Baja</option>
+              </select>
+            </div>
+            <div><label className="text-sm text-subtle-foreground" htmlFor="anomaly-status">Estado</label>
+              <select id="anomaly-status" className={selectStyle} value={status} onChange={event => setStatus(event.target.value as StatusFilter)}>
+                <option value="Abiertas">Abiertas</option><option value="Todos">Todos los estados</option><option>Pendiente</option><option>Investigando</option><option>Resuelto</option>
+              </select>
+            </div>
+            <button onClick={reset} className="rounded-md border border-neutral px-4 py-2.5 text-sm text-subtle-foreground hover:border-highlight hover:text-info-foreground">Restablecer filtros</button>
+          </div>
+          <p role="status" className="text-sm text-subtle-foreground">Mostrando {visible.length} de {anomalies.length} anomalías de muestra · {status === "Abiertas" ? "Solo abiertas" : status === "Todos" ? "Todos los estados" : status}</p>
+          <p className="text-xs text-muted-foreground">Prioridad: criticidad de mayor a menor; dentro de cada criticidad, mayor impacto primero.</p>
+          {visible.length > 0 && <p className="text-xs text-info-foreground lg:hidden">Desliza la tabla para ver impacto, fecha y estado.</p>}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-background border-b border-border">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Severidad</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Tipo</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Servicio</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Descripción</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Impacto</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Agente IA</th>
-              </tr>
+        {visible.length === 0 ? <div className="px-5 py-12 text-center">
+          <h4 className="font-semibold text-foreground">No hay alertas con estos filtros</h4>
+          <p className="mt-2 text-sm text-subtle-foreground">Prueba otra criticidad o restablece los filtros para ver las anomalías abiertas.</p>
+          <button onClick={reset} className="mt-5 rounded-md border border-highlight/50 px-4 py-2 text-sm text-info-foreground hover:bg-highlight/10">Ver anomalías abiertas</button>
+        </div> : <div role="region" aria-label="Lista de anomalías; desplazamiento horizontal disponible" tabIndex={0} className="overflow-x-auto rounded-b-lg focus-visible:outline-2 focus-visible:outline-highlight">
+          <table className="w-full min-w-[860px] text-sm">
+            <caption className="sr-only">Alertas filtradas. Impacto estimado en euros para {demoPeriod}; datos de demostración.</caption>
+            <thead className="border-b border-border bg-background text-xs uppercase tracking-wider text-subtle-foreground">
+              <tr><th scope="col" className="px-5 py-3 text-left">Criticidad</th><th scope="col" className="px-5 py-3 text-left">Servicio / anomalía</th><th scope="col" className="px-5 py-3 text-right">Impacto estimado</th><th scope="col" className="px-5 py-3 text-left">Detección</th><th scope="col" className="px-5 py-3 text-left">Estado</th></tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {anomalies.map((anomaly) => (
-                <tr key={anomaly.id} className="hover:bg-accent transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      anomaly.severidad === 'Alta' ? 'bg-danger-tint/20 text-danger-foreground border border-danger-tint/30' :
-                      anomaly.severidad === 'Media' ? 'bg-warning-tint/20 text-warning-foreground border border-warning-tint/30' :
-                      'bg-info-tint/20 text-info-foreground border border-info-tint/30'
-                    }`}>
-                      {anomaly.severidad}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{anomaly.tipo}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{anomaly.servicio}</td>
-                  <td className="px-6 py-4 text-sm text-subtle-foreground max-w-xs">{anomaly.descripcion}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-danger">
-                    +{anomaly.coste.toLocaleString()}€
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
-                      anomaly.estado === 'Resuelto' ? 'bg-success-tint/20 text-success-foreground border border-success-tint/30' :
-                      anomaly.estado === 'Investigando' ? 'bg-attention-tint/20 text-attention-foreground border border-attention-tint/30' :
-                      'bg-neutral/20 text-subtle-foreground border border-neutral/30'
-                    }`}>
-                      {anomaly.estado}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-info font-medium">{anomaly.agente}</td>
-                </tr>
-              ))}
+              {visible.map(anomaly => <tr key={anomaly.id} className="align-top transition-colors hover:bg-accent">
+                <td className="px-5 py-5"><span className={`inline-flex rounded-md border px-2 py-1 text-xs font-semibold ${severityStyles[anomaly.severidad]}`}>{anomaly.severidad}</span></td>
+                <th scope="row" className="max-w-sm px-5 py-5 text-left font-normal"><p className="font-semibold text-foreground">{anomaly.servicio}</p><p className="mt-1 text-xs text-info-foreground">{anomaly.tipo}</p><p className="mt-2 text-sm text-subtle-foreground">{anomaly.descripcion}</p></th>
+                <td className="whitespace-nowrap px-5 py-5 text-right font-semibold tabular-nums text-foreground">{currency.format(anomaly.coste)}</td>
+                <td className="whitespace-nowrap px-5 py-5 text-subtle-foreground"><time dateTime={anomaly.detectado.replace(" ", "T")}>{anomaly.detectado}</time></td>
+                <td className="px-5 py-5"><span className={`inline-flex rounded-md border px-2 py-1 text-xs ${statusStyles[anomaly.estado]}`}>{anomaly.estado}</span></td>
+              </tr>)}
             </tbody>
           </table>
-        </div>
-      </div>
+        </div>}
+      </section>
     </div>
   );
 }
