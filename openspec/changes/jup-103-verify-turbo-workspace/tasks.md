@@ -1,19 +1,24 @@
 ## 1. Línea base: reproducir y registrar la causa (antes de corregir nada)
 
-- [ ] 1.1 Crear `docs/evidence/JUP-103-validation.md` con la cabecera (fecha, enlace a Trello, rama,
+- [x] 1.1 Crear `docs/evidence/JUP-103-validation.md` con la cabecera (fecha, enlace a Trello, rama,
   commit base de `develop`) y registrar el entorno de la máquina afectada: sistema operativo,
   versiones de Node, corepack y turbo, `where pnpm`, `npm ls -g --depth=0`, `pnpm --version` dentro y
   fuera del repositorio, `corepack pnpm --version`, contenido de `C:\Program Files\nodejs` relativo a
-  pnpm y posición de ese directorio y de `%APPDATA%\npm` en el `PATH`.
-- [ ] 1.2 Ejecutar desde la raíz `corepack pnpm lint`, `corepack pnpm build`, `corepack pnpm test` y
+  pnpm y orden de ese directorio y de `%APPDATA%\npm` en el `PATH`. Hecho: sección «Máquina donde se
+  reproduce» de la evidencia.
+- [x] 1.2 Ejecutar desde la raíz `corepack pnpm lint`, `corepack pnpm build`, `corepack pnpm test` y
   `corepack pnpm typecheck` y guardar la salida real de cada uno: tareas lanzadas, error de versión
-  y código de salida.
-- [ ] 1.3 Ejecutar `corepack pnpm exec pnpm --version` y guardar la salida: es la reproducción sin
+  y código de salida. Hecho: 0 de 4 en `lint`, `build` y `test` y 0 de 1 en `typecheck`. La
+  repetición de `lint` pasó por `cache hit` de turbo (falso positivo) y se repitió con `--force`:
+  por eso 2.3 y 7.1 usan `--force`.
+- [x] 1.3 Ejecutar `corepack pnpm exec pnpm --version` y guardar la salida: es la reproducción sin
   turbo y el comando de diagnóstico que se va a documentar.
-- [ ] 1.4 Ejecutar los mismos cuatro scripts sin `corepack` (`pnpm lint`, `pnpm build`, `pnpm test`,
+- [x] 1.4 Ejecutar los mismos cuatro scripts sin `corepack` (`pnpm lint`, `pnpm build`, `pnpm test`,
   `pnpm typecheck`) y guardar la salida. Confirma la decisión 1 del `design.md` y separa los fallos
-  ajenos al gestor de paquetes: anotar cada tarea que falle por otro motivo, con su causa.
-- [ ] 1.5 Redactar en la evidencia la causa (decisión 1 del `design.md`) apoyada en las salidas de
+  ajenos al gestor de paquetes: anotar cada tarea que falle por otro motivo, con su causa. Hecho: con
+  `--force`, `lint`, `build` y `typecheck` pasan; `test` falla por módulos de Python sin instalar
+  (backend, processor) y por timeouts en el frontend, ninguno por pnpm.
+- [x] 1.5 Redactar en la evidencia la causa (decisión 1 del `design.md`) apoyada en las salidas de
   1.1 a 1.4, incluidas las dos afirmaciones del hallazgo original que resultan inexactas.
 
 ## 2. Corrección en la máquina afectada
@@ -24,8 +29,11 @@
 - [ ] 2.2 Comprobar en una consola nueva: `where pnpm` muestra primero el lanzador de corepack,
   `pnpm --version` da `9.0.0` dentro del repositorio y `corepack pnpm exec pnpm --version` da `9.0.0`
   con código de salida 0. Guardar las salidas.
-- [ ] 2.3 Ejecutar desde la raíz `corepack pnpm lint`, `corepack pnpm build`, `corepack pnpm test` y
-  `corepack pnpm typecheck` y guardar la salida real de cada uno. Criterio: ninguna tarea termina con
+- [ ] 2.3 Ejecutar desde la raíz `corepack pnpm lint --force`, `corepack pnpm build --force`,
+  `corepack pnpm typecheck --force` y `corepack pnpm test` con `TURBO_FORCE=true` (`pnpm test` no
+  admite `--force`) y guardar la salida real de cada uno. La clave de la caché de turbo no depende
+  del gestor de paquetes: un `cache hit` daría un falso positivo, como pasó en 1.2. Comprobar que
+  cada tarea figura como `cache bypass, force executing`. Criterio: ninguna tarea termina con
   el error de versión de pnpm. Cualquier otro fallo se anota por tarea, con su causa, y se compara
   con lo anotado en 1.4.
 - [ ] 2.4 Ejecutar `corepack pnpm install --frozen-lockfile` y comprobar con `git status` que no
@@ -82,8 +90,9 @@
 ## 7. Revisión y cierre
 
 - [ ] 7.1 Ejecutar la batería completa desde la raíz, sin sustitutos:
-  `corepack pnpm install --frozen-lockfile`, `corepack pnpm lint`, `corepack pnpm build`,
-  `corepack pnpm test`, `corepack pnpm typecheck`, `corepack pnpm openspec:validate`,
+  `corepack pnpm install --frozen-lockfile`, `corepack pnpm lint --force`,
+  `corepack pnpm build --force`, `corepack pnpm typecheck --force`, `corepack pnpm test` con
+  `TURBO_FORCE=true`, `corepack pnpm openspec:validate`,
   `corepack pnpm jup:check -- --change jup-103-verify-turbo-workspace` y
   `corepack pnpm jup:cleanup:check`.
 - [ ] 7.2 Completar `docs/evidence/JUP-103-validation.md`: trazabilidad de los siete criterios de

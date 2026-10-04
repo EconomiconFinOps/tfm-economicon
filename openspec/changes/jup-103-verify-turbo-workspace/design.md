@@ -27,7 +27,7 @@ el pnpm que lo invocó.
 | `corepack pnpm lint` | 0 de 4 tareas; error de versión en las 4 |
 | `pnpm lint` (sin `corepack`) | 4 de 4 tareas |
 | `corepack pnpm exec pnpm --version` | Mismo error de versión, código de salida 1 |
-| Posición en el `PATH` | `C:\Program Files\nodejs\` en la 20; `%APPDATA%\npm` en la 30 |
+| Orden en el `PATH` | `C:\Program Files\nodejs\` antes que `%APPDATA%\npm` (las posiciones cambian según la consola) |
 | Escritura en `C:\Program Files\nodejs` sin elevar | No permitida |
 
 El mensaje de error completo:
@@ -187,8 +187,14 @@ verificación son los comandos reales con su salida, y la excepción se deja esc
   en el `PATH`. Si se usa, se documenta esa variante.
 - [La evidencia de "antes" se pierde al corregir la máquina] → Las tareas del grupo 1 guardan las
   cuatro salidas en `docs/evidence/JUP-103-validation.md` antes de ejecutar `corepack enable`.
+- [La caché de turbo da un falso positivo: su clave no depende del gestor de paquetes, así que una
+  ejecución previa sin `corepack` deja las tareas cacheadas y `corepack pnpm <script>` pasa sin
+  lanzar subprocesos. Ocurrió al capturar la línea base] → Toda comprobación de "después" usa
+  `--force` (o `TURBO_FORCE=true` en `pnpm test`, que no admite el indicador) y verifica que las
+  tareas figuran como `cache bypass, force executing`.
 - [`build` o `test` fallan desde la raíz por motivos ajenos a pnpm: dependencias de Python sin
-  instalar, tests que necesitan base de datos] → Se registra tarea por tarea. Si es un problema del
+  instalar, tests que necesitan base de datos, timeouts del frontend. Ocurrió en la línea base: 14 y
+  18 errores de recolección en backend y processor, y entre 14 y 18 tests del frontend con timeout] → Se registra tarea por tarea. Si es un problema del
   repositorio, hallazgo nuevo; si es de la máquina, se anota como tal. No se da por verificado lo que
   no pasó.
 - [`pnpm dev` choca con el stack de Docker Compose por los puertos 5173, 8000, 8001 y 8002] → Parar
