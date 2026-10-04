@@ -107,11 +107,11 @@ Las notas de tutoria del TFM comentan un ejemplo de metricas; no son requisitos 
 
 Aditivo: no cambia ningun servicio. Se integra el catalogo, el calculador y las pruebas; JUP-070 consume el formato. Si un consumidor necesita otra cosa se sube `results_version` y el catalogo.
 
-## Open Questions
+## Decisions on the open questions (Lucia, 2026-10-04)
 
-- Si el equipo adopta los objetivos de ADR-0002 como provisionales para estas metricas aunque el ADR siga Proposed.
-- Quien decide los puntos `required` en JUP-070 (una persona o dos) y si hace falta un segundo revisor en los casos criticos.
-- Si el informe debe publicarse tambien como pagina de `docs/` o basta el JSON y el Markdown generados por ejecucion.
+- **Objetivos provisionales.** Se adoptan los objetivos de ADR-0002 como referencia provisional de estas metricas. El informe los muestra junto a cada valor, con su origen, y nunca como puerta de aceptacion ni como veredicto. La relevancia no tiene objetivo: se muestra el valor de la calibracion de JUP-022 como referencia.
+- **Quien decide los puntos `required` (JUP-070).** Una persona decide los puntos `required` de los casos no criticos y dos personas, de forma independiente, los de los casos criticos (los que tienen al menos un `numbers`: 14 de 28 en la bateria actual). Si discrepan, deciden entre las dos y el desacuerdo queda anotado. Cada comprobacion juzgada registra a quien la decidio (`decided_by`), asi que la segunda persona no necesita campos nuevos en el formato.
+- **Donde se publican los resultados.** Los informes se generan por ejecucion (JSON y Markdown) y no hay una pagina viva en `docs/`. Cada ejecucion real queda como foto fechada en la evidencia de su tarjeta (por ejemplo `docs/evidence/JUP-070-validation.md`), con el commit, la fecha, el modelo y el tamano del corpus; una ejecucion nueva anade otra foto sin borrar la anterior. En el repositorio solo viven el catalogo, el calculador y los ficheros sinteticos de ejemplo.
 
 ## ADR
 
