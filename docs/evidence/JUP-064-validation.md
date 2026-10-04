@@ -3,6 +3,9 @@
 [Tarjeta](https://trello.com/c/wluz6AGW). Preparación por Alejandro Aguado como
 coautor; Víctor conserva liderazgo, Lucía revisión y Paris validación.
 Fecha: 2026-10-04. Esta evidencia técnica no sustituye `Validacion JUP-064`.
+Implementación publicada en [a75bcd4](https://github.com/EconomiconFinOps/tfm-economicon/commit/a75bcd4)
+de la rama `docs/JUP-064-team-contributions`; la [entrega al líder](../contributions/JUP-064-handoff.md)
+incluye los pasos y un texto de PR preparado.
 
 ## Resultado
 

@@ -67,7 +67,8 @@ original y quién la contrastó. No marcarla confirmada hasta contrastarla.
 
 | Historia | Persona / rol | Fecha | Acción | Enlace original | Contraste |
 | --- | --- | --- | --- | --- | --- |
+| JUP-064 | Alejandro / preparación como coautor | 2026-10-04 | Recolector, matriz, specs, tests y documentación | [Commit a75bcd4](https://github.com/EconomiconFinOps/tfm-economicon/commit/a75bcd4) | Implementación publicada; no acredita sesión de pairing con Víctor |
 
-No hay evidencias manuales contrastadas en el corte inicial. La preparación de
-JUP-064 por Alejandro no acredita participación de Víctor, Lucía o Paris en esta
+La fila de implementación se añadió después del corte inicial de las fuentes.
+La preparación de JUP-064 por Alejandro no acredita participación de Víctor, Lucía o Paris en esta
 historia; liderazgo, revisión y validación permanecen pendientes.
