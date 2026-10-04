@@ -85,3 +85,16 @@ publicada y cuerpo de PR preparado; no se abrió una PR atribuyendo liderazgo
 a otra persona ni se hizo merge/cierre Trello. Siguiente paso: liderazgo abre
 la PR, registra participación real, obtiene revisión/validación e integra;
 después, contrastar run CD exitoso con state.json y cerrar la tarjeta.
+
+## Entrega para revisión — 2026-10-04
+
+El usuario autoriza abrir la PR desde la cuenta de Alejandro y solicitar las
+reviews. Alejandro asume liderazgo, Victor pairing, Lucia revisión y Paris
+validación; se actualizan Trello y Participacion. La nota del 03/10 sobre no
+abrir PR queda superada por esta autorización. Pairing humano sigue pendiente
+de acreditación. Rama actualizada con develop c3aa9d6: se conservan los nuevos
+checks de recuperación y el contrato de embedding del backend. El ensayo
+Docker previo cubre e4a66a6/0471e92, no acredita por sí mismo el nuevo árbol;
+la validación formal deberá comprobar el head actualizado. Cambio técnico
+archivado en `openspec/changes/archive/2026-10-04-jup-052-dockerserver-cd/`;
+primera promoción automática y actuaciones humanas siguen pendientes.

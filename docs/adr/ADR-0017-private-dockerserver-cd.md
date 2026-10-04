@@ -4,7 +4,7 @@ Status: Proposed
 Date: 2026-10-03
 JUP: JUP-052
 Trello: https://trello.com/c/q3TahHoj
-OpenSpec: [jup-052-dockerserver-cd](../../openspec/changes/jup-052-dockerserver-cd/design.md)
+OpenSpec: [jup-052-dockerserver-cd](../../openspec/changes/archive/2026-10-04-jup-052-dockerserver-cd/design.md)
 
 DockerServer es compartido y su SSH está en red privada; no hay runner GitHub
 registrado. El entorno solicitado es de desarrollo/validación desechable.

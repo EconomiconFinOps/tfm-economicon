@@ -10,5 +10,8 @@
 - [x] 2.2 Ejecutar ensayo real en DockerServer y escenarios negativos.
 - [x] 2.3 Documentar instalación, acceso, operación y limitaciones.
 - [x] 2.4 Publicar rama y evidencia técnica; preparar cuerpo de PR conservando roles.
-- [ ] 2.5 Liderazgo abre PR y coordina pairing/revisión/validación humanos.
-- [ ] 2.6 Verificar primera promoción automática tras integración y CD exitoso.
+## Seguimiento externo pendiente tras entrega técnica
+
+- Liderazgo abre PR y coordina pairing/revisión/validación humanos.
+- Verificar primera promoción automática tras integración y CD exitoso.
+- El archivo del cambio técnico no acredita esas actuaciones externas.
