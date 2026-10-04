@@ -23,13 +23,13 @@
 
 ## 2. Corrección en la máquina afectada
 
-- [ ] 2.1 Ejecutar `corepack enable` desde una consola con permisos de administrador. Si no es
+- [x] 2.1 Ejecutar `corepack enable` desde una consola con permisos de administrador. Si no es
   posible, aplicar la alternativa del `design.md` (riesgos) y dejar escrito cuál se usó. Lo hace
   quien usa la máquina; la decisión de desinstalar además el pnpm global es suya.
-- [ ] 2.2 Comprobar en una consola nueva: `where pnpm` muestra primero el lanzador de corepack,
+- [x] 2.2 Comprobar en una consola nueva: `where pnpm` muestra primero el lanzador de corepack,
   `pnpm --version` da `9.0.0` dentro del repositorio y `corepack pnpm exec pnpm --version` da `9.0.0`
   con código de salida 0. Guardar las salidas.
-- [ ] 2.3 Ejecutar desde la raíz `corepack pnpm lint --force`, `corepack pnpm build --force`,
+- [x] 2.3 Ejecutar desde la raíz `corepack pnpm lint --force`, `corepack pnpm build --force`,
   `corepack pnpm typecheck --force` y `corepack pnpm run test` con `TURBO_FORCE=true` (`pnpm test`
   es un comando propio de pnpm y no admite `--force`; `pnpm run test` sí reenvía las opciones). Para
   `test`, con el entorno virtual de Python activo y por separado, porque el frontend con los workers
@@ -40,7 +40,7 @@
   cada tarea figura como `cache bypass, force executing`. Criterio: ninguna tarea termina con
   el error de versión de pnpm. Cualquier otro fallo se anota por tarea, con su causa, y se compara
   con lo anotado en 1.4.
-- [ ] 2.4 Ejecutar `corepack pnpm install --frozen-lockfile` y comprobar con `git status` que no
+- [x] 2.4 Ejecutar `corepack pnpm install --frozen-lockfile` y comprobar con `git status` que no
   modifica `pnpm-lock.yaml` ni ningún otro archivo versionado.
 
 ## 3. Verificar `dev` y el grafo de turbo

@@ -182,8 +182,58 @@ Dos afirmaciones del texto original de `RF-093-001` resultan inexactas:
 
 ## Después de la corrección
 
-_Pendiente: tareas 2.x a 7.x de `tasks.md` (corrección en la máquina, `dev`, grafo, consulta al
-equipo, hallazgos, spike y batería final)._
+### Corrección aplicada (tarea 2.1)
+
+Victor ejecutó `corepack enable` en una consola de PowerShell **como administrador**, sin
+desinstalar el pnpm global `11.9.0` (que sigue instalado). No imprimió nada y devolvió el control.
+Es la única acción sobre la máquina; no se cambió ningún archivo del repositorio.
+
+### Comprobación del entorno (tarea 2.2)
+
+| Comprobación | Antes | Después |
+| --- | --- | --- |
+| Lanzadores de pnpm en `C:\Program Files\nodejs` | ninguno | `pnpm`, `pnpm.CMD`, `pnpm.ps1` |
+| `where.exe pnpm` | solo `%APPDATA%\npm\pnpm.cmd` | `C:\Program Files\nodejs\pnpm.CMD` primero y después el de `%APPDATA%\npm` |
+| `pnpm --version` (dentro del repositorio) | `9.0.0` (lo daba el pnpm global al cambiar de versión) | `9.0.0` (lo da corepack) |
+| `pnpm --version` (fuera del repositorio) | `11.9.0` | `12.4.1` |
+| `corepack pnpm --version` | `9.0.0` | `9.0.0` |
+| `corepack pnpm exec pnpm --version` | error de versión, código `1` | `9.0.0`, código `0` |
+
+Fuera del repositorio, `pnpm --version` pasa de `11.9.0` a `12.4.1`: ahora lo resuelve corepack, y sin
+un `packageManager` que mande usa su versión por defecto, no el pnpm global. No afecta a este
+repositorio y es la consecuencia esperada de activar corepack; se menciona en la documentación.
+`npm ls -g --depth=0` sigue mostrando `pnpm@11.9.0`: el global no se tocó.
+
+### Batería desde la raíz con `corepack pnpm` (tarea 2.3)
+
+Con el entorno virtual de Python activo y `--force` (o `TURBO_FORCE=true` en `test`). En cada
+ejecución, **todas las tareas figuran como `cache bypass, force executing`, ninguna como
+`cache hit`, y hay 0 apariciones del error de versión de pnpm**.
+
+| Comando | Tareas | Código | Tiempo |
+| --- | --- | --- | --- |
+| `corepack pnpm lint --force` | 4 de 4 | `0` | 4,5 s |
+| `corepack pnpm build --force` | 4 de 4 | `0` | 7,0 s |
+| `corepack pnpm typecheck --force` | 1 de 1 | `0` | 8,0 s |
+| `corepack pnpm run test "--filter=!@finops/frontend"` | 3 de 3 | `0` | 1 min 24 s |
+| `corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1` | 1 de 1 | `0` | 2 min 20 s |
+
+Detalle de `test`: `azure-cost-api` 59 correctos; `processor` 448 correctos y 57 omitidos;
+`backend` 329 correctos y 17 omitidos; `frontend` 48 archivos y 443 tests correctos.
+`@finops/shared-config` no declara `test`, por eso la mitad de Python cuenta 3 tareas.
+
+Con esto, el fallo de la línea base (0 de 4 en `lint`, `build` y `test`, 0 de 1 en `typecheck`)
+desaparece **en la misma máquina, con la misma invocación documentada y sin cambiar el
+repositorio**. Se mantienen los dos puntos de la línea base que no son de pnpm: el entorno de Python
+y el paralelismo del frontend (`RF-098-004`).
+
+### Instalación reproducible (tarea 2.4)
+
+`corepack pnpm install --frozen-lockfile` termina con código `0` en 1,3 s y `git status` queda
+limpio: no modifica `pnpm-lock.yaml` ni ningún otro archivo versionado.
+
+_Pendiente: tareas 3.x a 7.x de `tasks.md` (`dev`, grafo, documentación, consulta al equipo,
+hallazgos, spike y batería final)._
 
 ## Trazabilidad con los criterios de la tarjeta
 
