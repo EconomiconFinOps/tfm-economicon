@@ -1,5 +1,25 @@
 # Findings Backlog
 
+## RF-021-001 — Dimension desde fichero de entorno
+
+Fecha: 2026-10-01. Origen: JUP-021, [validacion de Victor en PR #53](https://github.com/EconomiconFinOps/tfm-economicon/pull/53#pullrequestreview-5383443171).
+Tipo: divergencia de configuracion de migracion. Severidad: Medium. Estado: Open.
+Owner: Equipo Economicon. Scope: preexistente, no bloqueante segun el validador.
+
+`apps/processor/app/vector_store/migrations/001_initial.py` consulta
+`os.getenv("EMBEDDING_DIMENSION", "8")`, mientras PgVectorStore recibe la dimension
+de Settings, que tambien puede venir de `ECONOMICON_ENV_FILE`. Victor reprodujo
+con dimension 16 definida solo en ese fichero: la base nueva queda vector(8),
+ledger 001/002 y arranque rechazado. Inspeccion de codigo confirma ambos origenes;
+no se repite aqui la reproduccion con fichero. Compose proporciona la variable
+por entorno y no presenta esta divergencia.
+
+Accion: acordar una fuente unica para la dimension durante migraciones, con
+prueba de base nueva desde Settings/fichero, sin convertir volumenes existentes
+automaticamente. Mientras tanto, exportar la variable antes de migrar segun
+el [runbook](../../docs/runbooks/vector-database.md). Tarjeta de correccion por
+acordar; JUP-021 mejora el diagnostico pero no cierra este hallazgo.
+
 ## RF-098-002 Observation In JUP-026
 
 Additional evidence recorded 2026-09-30 for the existing RF-098-002, not a new
