@@ -7,7 +7,45 @@ Rama: `docs/JUP-065-functional-demo`, sobre develop
 [Paquete](../demo/JUP-065/README.md) y
 [alcance OpenSpec](../../openspec/changes/archive/2026-10-03-jup-065-functional-demo/proposal.md).
 
-## Correcciones de revisión — 03/10/2026
+## Nueva base con retrieval — 04/10/2026
+
+Incorporado develop `c3aa9d68690ae718aecf1bee2f08cd25eb5f704f`, incluidas
+#62/JUP-057, #60/JUP-061 y #67/JUP-022. GitHub `Update branch` devolvió 422
+por conflicto en `.github/workflows/ci.yml`; resolución local conserva las
+tres comprobaciones de demo y las tres de retrieval, historial completo del
+job de gobernanza, `local:test` y el workflow separado `JUP reviews`.
+
+El paquete `docs/demo/JUP-065/` y los quince originales no cambian frente a
+`bf50073`; la referencia sigue fijada a `de0d62e`. Comprobaciones nuevas:
+
+- Verificador normal y optimizado: 15/15 PASS antes de regenerar originales.
+- Dos tests/cuatro controles negativos PASS; 28 consultas/siete categorías PASS.
+- Gateway, topología, doctor/smoke, workflow y etiquetas retrieval: 140/140 PASS.
+- Etiquetas retrieval: 28 coherentes (23 directas, tres parciales, dos sin cobertura).
+- Calibración: 27 tests, 26 pasan y uno omitido por ausencia de
+  `JUP086_VECTOR_TEST_URL`; no se ejecutó pgvector real.
+- OpenSpec estricto 45/45, diez changes activos trazables, higiene 842 archivos
+  y `git diff origin/develop --check` PASS. No se modifica whitespace heredado
+  de la spec de anomalías de develop; el contraste se hace contra esa base.
+
+Paris confirmó técnicamente `bf50073` y Víctor validó ese head
+([review](https://github.com/EconomiconFinOps/tfm-economicon/pull/63#pullrequestreview-5403669755)),
+incluido un recorrido local parcial de costes con mock. Son evidencias
+históricas del head anterior. Esta combinación incorpora configuración,
+embeddings y retrieval del backend, por lo que se solicita comprobación
+incremental de Paris y Víctor antes de integrar. Una asociación automática de
+reviews a un nuevo SHA no demuestra esa comprobación. El CI y el estado de
+las aprobaciones del nuevo head se consultan en la PR.
+
+No se arrancó un runtime ni un modelo en esta actualización. Con la nueva base,
+el backend usa su propia clave de embeddings, modelo/dimensión compatibles e
+índice reconstruido para el proveedor real; verificarlo en el ensayo conforme
+a [ADR-0017](../adr/ADR-0017-backend-query-embedding-own-key.md) y al README del
+backend. Integrar #67 no acredita chat con modelo real ni citas recuperables.
+Se conserva el pending de pairing de Lucía o reasignación acordada y registrada.
+Ensayo integrado `not_run`; sin merge ni cierre de JUP-065.
+
+## Correcciones de revisión históricas — 03/10/2026
 
 Paris solicitó dos P2 en `Revision JUP-065` sobre `e52853b` el 02/10.
 Se leyeron esa review, la conversación y los comentarios inline antes de actuar

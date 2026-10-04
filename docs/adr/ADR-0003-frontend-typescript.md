@@ -168,7 +168,7 @@ pospone hasta que haya un segundo consumidor real.
   fusionadas las dependencias `MANTENER` del origen; `RF-091-002` resuelto adoptando un subconjunto
   de 6 primitivos Radix ([ADR-0004](ADR-0004-frontend-shadcn-ui.md)). **F2 (Tooling y dependencias)
   queda completa.**
-- **Hecho en [JUP-095](../../openspec/changes/jup-095-portar-codigo-fuente/)**: primer código de F3
+- **Hecho en [JUP-095](../../openspec/changes/archive/2026-09-12-jup-095-portar-codigo-fuente/)**: primer código de F3
   escrito bajo `strict: true` (8 `.tsx` vivos portados del origen, enrutado real, entrypoint
   reconciliado). **Migrados a `.tsx` los 9 archivos `.jsx` de la línea base de `RF-082-002`**: 8
   migrados (dashboards, `Layout`, `LoginPage`, `IngestPage`, `ConversationsPage`, `DashboardPage`,
@@ -195,3 +195,10 @@ se supersede por uno nuevo; no se edita el aceptado ni se relaja la configuraci�
 pre-código de JUP-092 (`Approval type: pre-code`, `Decision: approved`, Victor, 2026-09-02), que
 enumera cada una con su motivo. Ese registro se toma como la aprobación del equipo que exige
 `docs/adr/README.md` para pasar de `Proposed` a `Accepted`.
+
+## Trazabilidad de aprobación — 01/10/2026
+
+El [gate JUP-092](../../openspec/changes/archive/2026-09-02-jup-092-frontend-typescript-adr/proposal.md)
+conserva la aceptación de Victor del 02/09; [PR #26](https://github.com/EconomiconFinOps/tfm-economicon/pull/26)
+registra la integración. Los recuentos de JSX y ausencia de tests anteriores son
+el contexto histórico de la decisión, no el estado actual del frontend.

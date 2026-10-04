@@ -1,6 +1,6 @@
 # Demo funcional — JUP-065
 
-Actualizado: 2026-10-03. Origen: «JUP-065 — Preparar la demo funcional».
+Actualizado: 2026-10-04. Origen: «JUP-065 — Preparar la demo funcional».
 [Tarjeta](https://trello.com/c/SZUFo4ol).
 
 ## Alcance
@@ -12,6 +12,21 @@ conserva escenarios y tareas. La [evidencia](../evidence/JUP-065-validation.md)
 distingue comprobaciones automáticas y pendientes humanos.
 
 ## Decisiones
+
+Actualización del 04/10: develop `c3aa9d6` aporta #62, #60 y #67. El conflicto
+de CI se resuelve conservando comandos demo y retrieval, sin tocar el paquete
+ni sus fuentes fijas. Nuevas comprobaciones: 15/15, dos tests/cuatro controles,
+28 consultas, 140 pruebas de tooling, calibración 26 pass/una omitida, OpenSpec
+45/45, diez changes trazables y diff check contra la base correctos.
+La omisión de pgvector y la ausencia de runtime/modelo en esta actualización
+se conservan como límites; #67 no acredita por sí sola el ensayo.
+
+Paris confirmó la revisión incremental y Víctor validó `bf50073`; falta
+confirmación incremental sobre la nueva combinación con retrieval antes de
+integrar. El pairing de Lucía sigue sin acreditar o reasignar de forma acordada
+en Trello y Participación. CI del head publicado y reviews se consultan en #63.
+Sin merge ni cierre; ensayo integrado permanece pendiente. Las decisiones del
+03/10 siguientes conservan el corte histórico previo a esas aprobaciones.
 
 Paris publicó `Revision JUP-065` como Request changes el 02/10 sobre `e52853b`.
 Los dos P2 se corrigen el 03/10: README verifica originales antes de regenerar
