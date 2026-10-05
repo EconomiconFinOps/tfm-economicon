@@ -8,7 +8,8 @@
   `origin/develop` avanzó a `c3aa9d6` (JUP-022, #67 y JUP-061, #60), que se fusionó en la rama y se
   reverificó: ver «Reverificación tras fusionar `develop`».
 - OpenSpec: [jup-103-verify-turbo-workspace](../../openspec/changes/jup-103-verify-turbo-workspace/).
-- Hallazgo que cierra: `RF-093-001` (`openspec/findings/backlog.md`).
+- Hallazgo que reformula: `RF-093-001` (`openspec/findings/backlog.md`), que **se mantiene `Open`**
+  hasta confirmar la corrección en dos máquinas más (decisión del gate post-review).
 - Pull request: _pendiente de abrir_.
 - CI: _pendiente de abrir el pull request_.
 
@@ -445,10 +446,12 @@ que funciona en dos máquinas (Victor y Lucía); en las otras dos, no confirmado
 
 ## Hallazgos y spike (grupo 6)
 
-- **`RF-093-001` pasa a `Fixed`** en `openspec/findings/backlog.md`, con la causa, la corrección, las
-  dos afirmaciones corregidas, las 3 máquinas donde se reprodujo y las 2 donde se confirmó la
-  corrección. Lleva escrito en el propio hallazgo **lo pendiente** (el entorno de Codex de Alejandro y
-  la máquina de Paris) y que se reabre si alguno lo contradice.
+- **`RF-093-001` se reformula y se mantiene `Open`** en `openspec/findings/backlog.md`, con la causa, la
+  corrección, las dos afirmaciones corregidas, las 3 máquinas donde se reprodujo y las 2 donde se
+  confirmó la corrección. Se redactó primero como `Fixed` con lo pendiente escrito dentro; en el gate
+  post-review se decidió dejarlo `Open` hasta tener la respuesta de Paris y la de Alejandro en consola
+  externa. Pasa a `Fixed` cuando ambos confirmen sin contradecirla; si alguno la contradice, se revisa
+  la causa.
 - **Hallazgos nuevos**, todos `Open`, sin corregir aquí: `RF-103-001` (`pnpm dev` no puede arrancar
   backend ni processor), `RF-103-002` (`--parallel` obsoleto en turbo `2.9.18`), `RF-103-003`
   (`localhost` bloquea el arranque del backend; causa sin verificar) y `RF-103-004` (`local:test`
@@ -567,7 +570,7 @@ primero no depende de `develop` y lo segundo ya se sabe no fiable en esta máqui
 | 1 | `lint`, `build`, `test` y `typecheck` se ejecutan desde la raíz vía turbo sin el error de versión de pnpm, en la máquina donde se reproducía | **Cumplido en lo que pide el criterio; con una salvedad sobre `test`** | `lint` 4/4, `build` 4/4 y `typecheck` 1/1 con código `0` y `--force`, y 0 apariciones del error de versión en todas las ejecuciones. `test` tampoco muestra el error y pasa en dos mitades, pero **el comando literal `corepack pnpm test` termina con código `1` en esta máquina** por tests con plazos de tiempo (`RF-103-005`, `RF-098-004`), no por pnpm |
 | 2 | `pnpm dev` levanta frontend, backend y processor en paralelo | **Cumplido con salvedades** | Turbo lanza las cuatro tareas en paralelo con el pnpm correcto. Tal como está documentado, `dev` no deja sirviendo a backend ni a processor y turbo termina todo cuando falla uno; con `--env-mode=loose` y un archivo de entorno con `127.0.0.1` las cuatro responden `200` (grupo 3, `RF-103-001` a `RF-103-003`). Documentado en el `README.md` |
 | 3 | CI sigue en verde | **Pendiente** (7.6) | Esta rama solo cambia `README.md`, `docs/` y `openspec/` (verificado con `git diff --name-only origin/develop...HEAD`): ni `package.json`, `turbo.json`, lockfile, `pnpm-workspace.yaml`, `.github/`, `apps/`, `tools/` ni `packages/`. Los jobs de CI ya ejecutan `corepack enable` antes de pnpm. Se acredita con los checks del pull request |
-| 4 | `RF-093-001` cerrado con la causa documentada, o reformulado si es de entorno | **Cumplido, con pendientes escritos en el propio hallazgo** | `Fixed` con la causa (de entorno), la corrección, las dos afirmaciones del texto original que eran inexactas, 3 reproducciones y 2 máquinas corregidas. Pendientes: el entorno de Codex de Alejandro y la máquina de Paris; se reabre si alguno lo contradice |
+| 4 | `RF-093-001` cerrado con la causa documentada, o reformulado si es de entorno | **Cumplido por la vía de la reformulación; el hallazgo no se cierra** | Se mantiene `Open` con la causa (de entorno) documentada con precisión, la corrección, las dos afirmaciones del texto original que eran inexactas, 3 reproducciones y 2 máquinas corregidas. Pasa a `Fixed` cuando confirmen el entorno de Codex de Alejandro (en consola externa) y la máquina de Paris |
 | 5 | Queda escrito si el equipo debe hacer algo en sus máquinas, y qué | **Cumplido de forma provisional** | `README.md`, «Requisito previo: pnpm con corepack»: `corepack enable` una vez si `corepack pnpm exec pnpm --version` no imprime `9.0.0`. Comprobado en 2 de 4 máquinas; el caso de un `pnpm` aportado por el entorno de un asistente queda sin resolver |
 | 6 | Las tarjetas futuras de frontend pueden usar los scripts de la raíz sin sustituto, o queda documentado por qué no | **Parcial, y documentado** | `lint`, `build` y `typecheck` sí, con `corepack enable` hecho y `--force` para comprobar. `test` con los cuatro paquetes a la vez no es fiable en todas las máquinas: se documenta ejecutarlo por mitades. `dev` necesita los pasos del `README.md`. `RF-098-004` y `RF-103-005` |
 | 7 | El spike refleja F4 completa, con la tarjeta de Docker marcada como resuelta por JUP-049 y JUP-050 | **Cumplido** | `docs/spikes/frontend-migration.md`, F4 y entrada 11 de «Próximos pasos». Los puntos de Docker se verificaron contra `apps/frontend/Dockerfile`, `docker-compose.yml`, `README.md`, `RF-090-001`/`RF-090-002` y `tools/docker-topology.test.mjs` |

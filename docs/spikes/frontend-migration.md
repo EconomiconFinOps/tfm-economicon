@@ -301,8 +301,9 @@ carril `light` — **implementada**
   cuatro responden `200`. Documentado en el `README.md`; `RF-103-001` a `RF-103-003`.
 - [x] Confirmar `pnpm build` y `pnpm lint` pasan via turbo, y también `test` y `typecheck`: pasan en
   las máquinas con `corepack enable` hecho. `RF-093-001` resultó ser de entorno (un pnpm global por
-  delante de corepack en el `PATH`) y queda `Fixed`; la corrección es `corepack enable` una vez por
-  máquina, documentada en el `README.md`.
+  delante de corepack en el `PATH`) y queda `Open`, reformulado con precisión, hasta confirmar la
+  corrección en dos máquinas más; la corrección es `corepack enable` una vez por máquina, documentada
+  en el `README.md`.
 
 **F4 (Integración de plataforma) queda completa** con JUP-049 y JUP-050 (Docker) y JUP-103 (turbo).
 
@@ -496,9 +497,10 @@ tarjeta JUP** de la epica.
     La de turbo encontró que `RF-093-001`, que seis tarjetas de frontend arrastraron como bloqueo,
     **no era un fallo del repositorio**: en las máquinas afectadas faltaba `corepack enable` y un pnpm
     11.x global se resolvía antes que el de corepack, con lo que turbo lanzaba una versión que se
-    negaba a cambiar a la fijada. Quedó `Fixed` con una corrección de entorno (`corepack enable` una
-    vez por máquina, documentada en el `README.md`) y comprobada en dos máquinas; sigue pendiente
-    confirmar el entorno de Codex de Alejandro y la máquina de Paris. De paso se descubrió que la
+    negaba a cambiar a la fijada. Se reformuló con precisión y **se mantiene `Open`**: la corrección de
+    entorno (`corepack enable` una vez por máquina, documentada en el `README.md`) está comprobada en
+    dos máquinas, y pasará a `Fixed` cuando se confirme el entorno de Codex de Alejandro (en consola
+    externa) y la máquina de Paris. De paso se descubrió que la
     caché de turbo no depende del gestor de paquetes (una comprobación con `cache hit` no demuestra
     nada: hay que usar `--force`), que `pnpm dev` por sí solo no deja sirviendo backend ni processor
     (`RF-103-001`, `RF-103-002` y `RF-103-003`), que `local:test` falla con la infraestructura de

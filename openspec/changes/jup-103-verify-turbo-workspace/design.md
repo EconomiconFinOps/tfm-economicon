@@ -168,6 +168,10 @@ repositorio (el requisito previo sin documentar) queda cerrado y la máquina afe
 Si la corrección no funcionara en la máquina, el hallazgo se queda `Open` con la causa precisa y la
 evidencia de lo que se probó.
 
+**Revisión en el gate post-review (2026-10-04):** la corrección funcionó en dos máquinas, pero Paris no
+respondió y de Alejandro solo se tiene su entorno de Codex. Se decidió mantener `RF-093-001` en `Open`,
+reformulado con la causa y la corrección, hasta confirmar esas dos. El resto de esta decisión no cambia.
+
 ### 7. ADR: no aplica
 
 No se introduce ninguna decisión de arquitectura duradera: el gestor de paquetes, su versión, el

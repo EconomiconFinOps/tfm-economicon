@@ -18,7 +18,7 @@ está pendiente del pull request (ver «Checklist»).
 
 - `README.md`: sección nueva «Requisito previo: pnpm con corepack», bloque «Con Turborepo» y
   «Comandos Principales».
-- `openspec/findings/backlog.md`: `RF-093-001` a `Fixed`; observación nueva en `RF-098-004`;
+- `openspec/findings/backlog.md`: `RF-093-001` reformulado y en `Open`; observación nueva en `RF-098-004`;
   `RF-103-001` a `RF-103-005` nuevos.
 - `docs/spikes/frontend-migration.md`: F4 completa (Docker resuelta por JUP-049 y JUP-050, sin
   tarjeta propia; turbo con su slug real) y entrada 11 de «Próximos pasos».
@@ -53,7 +53,9 @@ Criterios de la tarjeta (detalle en la evidencia, «Trazabilidad con los criteri
 - [x] 2. `pnpm dev` en paralelo. **Salvedad:** necesita `--env-mode=loose` y un archivo de entorno
   con `127.0.0.1`.
 - [ ] 3. CI en verde: **pendiente** del pull request.
-- [x] 4. `RF-093-001` cerrado con la causa. **Salvedad:** pendientes escritos en el propio hallazgo.
+- [x] 4. `RF-093-001` reformulado con la causa y **mantenido en `Open`** (el criterio admite «o
+  reformulado con precisión si resulta ser de entorno»), hasta confirmar a Paris y a Alejandro en
+  consola externa.
 - [x] 5. Qué debe hacer el equipo: escrito, **de forma provisional**. La consulta se cerró con Paris y
   la consola externa de Alejandro como no confirmados (comprobado en 2 de 4 máquinas).
 - [x] 6. Scripts de la raíz para tarjetas futuras: `lint`, `build` y `typecheck` sí; `test` y `dev`
@@ -86,9 +88,10 @@ previstas o que corrigieron el plan:
    error»), y `dev` solo mantiene las aplicaciones con su configuración disponible (se añadió esa
    condición). `design.md`, decisión 4, y el `README.md` se alinearon con ello.
 6. **El diagnóstico dice «imprime exactamente `9.0.0`»**, no «no da error», por el caso anterior.
-7. **`RF-093-001` pasa a `Fixed` con pendientes escritos dentro** (el entorno de Codex de Alejandro y
-   la máquina de Paris) y la condición explícita de que se reabre si alguno lo contradice. Es una
-   lectura razonable, no la única: la alternativa era dejarlo `Open` hasta tener esas dos respuestas.
+7. **`RF-093-001` se mantiene `Open`, reformulado.** Se redactó primero como `Fixed` con los pendientes
+   escritos dentro (el entorno de Codex de Alejandro y la máquina de Paris); en el gate post-review
+   se decidió dejarlo `Open` hasta tener esas dos respuestas, y pasa a `Fixed` cuando ambas confirmen
+   sin contradecir la corrección.
 8. **ADR: no aplica.** No se introduce ninguna decisión de arquitectura duradera: el gestor de
    paquetes, su versión, el orquestador y la forma de invocarlo no cambian; se documenta un requisito
    previo que CI ya cumplía.
@@ -116,8 +119,8 @@ sustituyen a la regresión de código; la excepción está prevista en la decisi
 
 ## Review Findings
 
-- **`RF-093-001` → `Fixed`**, con la causa de entorno y las dos afirmaciones del texto original que
-  resultaron inexactas.
+- **`RF-093-001` reformulado y en `Open`**, con la causa de entorno y las dos afirmaciones del texto
+  original que resultaron inexactas.
 - **`RF-103-001`** `pnpm dev` no puede arrancar backend ni processor (Medium).
 - **`RF-103-002`** `--parallel` obsoleto en turbo `2.9.18` (Low).
 - **`RF-103-003`** `localhost` bloquea el arranque del backend; causa sin verificar (Low).
@@ -141,7 +144,8 @@ Incidencias del proceso, para que no se repitan:
 ## Risks / Follow-Ups
 
 - **No confirmados** (consulta cerrada el 2026-10-04): la máquina de Paris (sin respuesta) y la
-  consola externa de Alejandro. Si alguno contradice la corrección, `RF-093-001` se reabre.
+  consola externa de Alejandro. `RF-093-001` sigue `Open` hasta que ambos confirmen; si alguno
+  contradice la corrección, se revisa la causa.
 - **`develop` avanzó** a `c3aa9d6` (JUP-061 #60 y JUP-022 #67) mientras se implementaba. Se fusionó
   en la rama y se reverificó (evidencia, «Reverificación tras fusionar `develop`»): un conflicto
   mecánico en `backlog.md`, resuelto conservando las filas de ambas ramas; `README.md` sin conflicto;
@@ -157,3 +161,37 @@ Incidencias del proceso, para que no se repitan:
   `corepack enable`; `test` por mitades; `dev` con los pasos del `README.md`.
 - **JUP-051 (PR #58)**, abierto, modifica `ci.yml` y `tools/ci-workflow.test.mjs`: esta tarjeta no
   toca ninguno de los dos, así que no hay solapamiento.
+
+## Human Approval
+
+- Change: jup-103-verify-turbo-workspace
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-04
+- Archive decision: archive
+- Scope reviewed: las 27 tareas de `tasks.md`; este `review.md`; la evidencia
+  `docs/evidence/JUP-103-validation.md` (línea base, corrección, grafo y `dev`, documentación,
+  consulta al equipo, batería final y reverificación tras fusionar `develop`); y los cambios en
+  `README.md`, `openspec/findings/backlog.md` y `docs/spikes/frontend-migration.md`.
+- Condition approved: **`RF-093-001` se mantiene `Open`**, reformulado con la causa de entorno y la
+  corrección documentadas, hasta obtener la respuesta de Paris y la de Alejandro en una consola
+  externa. Pasa a `Fixed` cuando ambos confirmen sin contradecirla; si alguno la contradice, se
+  revisa la causa. Cambia así lo redactado primero (`Fixed` con pendientes escritos dentro) y el
+  criterio 4 de la tarjeta se cumple por la vía de la reformulación, no del cierre.
+- Resultado verificado: `lint`, `build` y `typecheck` desde la raíz sin el error de versión de pnpm
+  en la máquina donde se reproducía (4 de 4, 4 de 4 y 1 de 1, con `--force`); `test` en dos mitades
+  (Python y frontend con `--maxWorkers=1`) y el árbol fusionado con `develop` (`c3aa9d6`) en verde;
+  `openspec:validate` 45 de 45, `jup:check`, `jup:check:all` y `jup:cleanup:check` en verde. La
+  corrección (`corepack enable` una vez por máquina) está comprobada en 2 de 4 máquinas.
+- Salvedades aceptadas: el comando literal `corepack pnpm test` falla de forma distinta en cada
+  ejecución con los cuatro paquetes a la vez (`RF-103-005`, `RF-098-004`); `pnpm dev` por sí solo no
+  deja sirviendo a backend ni a processor (`RF-103-001` a `RF-103-003`); `local:test` falla con la
+  infraestructura de Compose levantada (`RF-103-004`). Todos registrados como hallazgos `Open`, sin
+  corregir en esta tarjeta.
+- Constraints: ningún archivo de `apps/**`, `tools/**`, `packages/**` ni `.github/**`, ni
+  `package.json`, `turbo.json`, `pnpm-workspace.yaml` ni `pnpm-lock.yaml`, en el diff de la rama. La
+  aprobación **no** sustituye la revisión y la validación del pull request («Revision JUP-103» y
+  «Validacion JUP-103»), no acredita el CI (criterio 3, pendiente del PR) ni autoriza fusionar.
+- Required changes before archive: ninguno más; al archivar se corrige el enlace del spike a
+  `openspec/changes/archive/<fecha>-jup-103-verify-turbo-workspace/` (tarea 7.5).

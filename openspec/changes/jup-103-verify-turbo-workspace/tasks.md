@@ -88,7 +88,9 @@
 
 - [x] 6.1 `openspec/findings/backlog.md`: pasar `RF-093-001` a `Fixed` con la causa, la corrección,
   las dos afirmaciones corregidas y el enlace a la evidencia. Si la corrección no funcionó en 2.3,
-  dejarlo `Open` con la causa precisa y lo que se probó.
+  dejarlo `Open` con la causa precisa y lo que se probó. Hecho con una revisión en el gate
+  post-review: se redactó como `Fixed`, y se dejó en `Open` (reformulado) hasta confirmar a Paris y a
+  Alejandro en consola externa.
 - [x] 6.2 Registrar como hallazgos nuevos (`RF-103-NNN`) los fallos ajenos al gestor de paquetes que
   hayan aparecido en 1.4, 2.3 o 3.3 y sean del repositorio. Candidatos ya identificados en 3.3 (ver
   la evidencia), con esta numeración porque el `README.md` ya enlaza `RF-103-001`: `RF-103-001`,
