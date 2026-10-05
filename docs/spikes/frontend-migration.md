@@ -292,7 +292,7 @@ tarjeta propia** (verificado sobre `develop` en `dad5662` el 2026-10-03; no lleg
   (línea 9); JUP-050 lo demuestra con un control positivo (con un `package.json` desincronizado el
   build falla con `ERR_PNPM_OUTDATED_LOCKFILE`).
 
-**JUP [`jup-103-verify-turbo-workspace`](../../openspec/changes/jup-103-verify-turbo-workspace/)** —
+**JUP [`jup-103-verify-turbo-workspace`](../../openspec/changes/archive/2026-10-04-jup-103-verify-turbo-workspace/)** —
 carril `light` — **implementada**
 - [x] Confirmar `pnpm dev` (turbo paralelo) levanta frontend junto a backend/processor: turbo lanza en
   paralelo las cuatro tareas con el pnpm correcto, **pero por sí solo no deja sirviendo a backend ni

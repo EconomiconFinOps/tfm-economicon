@@ -3,7 +3,7 @@ Trello: https://trello.com/c/P33co27E/95-jup-103
 
 ## Why
 
-Desde [JUP-093](../archive/2026-09-06-jup-093-configure-typescript/) el hallazgo `RF-093-001` impide
+Desde [JUP-093](../2026-09-06-jup-093-configure-typescript/) el hallazgo `RF-093-001` impide
 usar los scripts de la raíz (`lint`, `build`, `test`, `typecheck`) en al menos una máquina Windows
 del equipo: turbo lanza cada tarea con un pnpm `v11.9.0` en lugar del `9.0.0` que fija
 `packageManager`. Seis tarjetas de frontend (JUP-093, 094, 095, 097, 098 y 099) han tenido que
@@ -60,8 +60,8 @@ cambia de gestor de paquetes ni de orquestador, y no se sube la versión de pnpm
   con la versión del gestor de paquetes que fija el repositorio; el requisito previo para que eso
   ocurra está documentado y se puede diagnosticar con un comando; `dev` arranca las aplicaciones en
   paralelo, y el frontend participa en el grafo de tareas. Ninguna spec vigente cubre hoy este
-  comportamiento: [`frontend-typescript-tooling`](../../specs/frontend-typescript-tooling/spec.md) y
-  [`frontend-quality-baseline`](../../specs/frontend-quality-baseline/spec.md) describen las tareas
+  comportamiento: [`frontend-typescript-tooling`](../../../specs/frontend-typescript-tooling/spec.md) y
+  [`frontend-quality-baseline`](../../../specs/frontend-quality-baseline/spec.md) describen las tareas
   del paquete del frontend, no su orquestación desde la raíz.
 
 ### Modified Capabilities

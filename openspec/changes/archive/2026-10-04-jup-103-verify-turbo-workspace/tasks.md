@@ -124,10 +124,15 @@
   (sin código de producto) y que no aplica ADR.
 - [x] 7.4 Comprobar que ningún documento versionado de la tarjeta cita configuración local de
   herramientas de asistencia y que los comandos escritos se pueden reproducir tal cual.
-- [ ] 7.5 Tras la aprobación post-revisión, archivar el change y corregir en el mismo paso los
+- [x] 7.5 Tras la aprobación post-revisión, archivar el change y corregir en el mismo paso los
   enlaces relativos, que bajan un nivel al pasar a `openspec/changes/archive/`. Hay uno ya escrito
   que se rompe: el del spike (`docs/spikes/frontend-migration.md`, F4) apunta a
   `openspec/changes/jup-103-verify-turbo-workspace/` y pasará a `openspec/changes/archive/<fecha>-jup-103-verify-turbo-workspace/`.
+  Hecho: archivado como `2026-10-04-jup-103-verify-turbo-workspace` con la spec
+  `workspace-task-pipeline` sincronizada. Eran 6 los enlaces que se rompían (3 en `proposal.md` y 1
+  en `review.md` por bajar un nivel, y los de la evidencia y del spike por el cambio de ruta);
+  corregidos y comprobados con un recorrido de los enlaces relativos de los archivos de la tarjeta
+  (103 enlaces, 0 rotos).
 - [ ] 7.6 Traer `develop` y reverificar, abrir el pull request hacia `develop` y registrar en la
   evidencia el enlace al PR y a la ejecución de CI en verde (criterio 3 de la tarjeta). Hecho
   hasta ahora: `develop` (`c3aa9d6`) fusionado en la rama y reverificado (evidencia,

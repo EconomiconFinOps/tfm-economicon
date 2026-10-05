@@ -7,7 +7,7 @@
 - Base: `develop` en `dad5662`. La batería final se ejecutó con la rama en `12bc179`. Entretanto
   `origin/develop` avanzó a `c3aa9d6` (JUP-022, #67 y JUP-061, #60), que se fusionó en la rama y se
   reverificó: ver «Reverificación tras fusionar `develop`».
-- OpenSpec: [jup-103-verify-turbo-workspace](../../openspec/changes/jup-103-verify-turbo-workspace/).
+- OpenSpec: [jup-103-verify-turbo-workspace](../../openspec/changes/archive/2026-10-04-jup-103-verify-turbo-workspace/).
 - Hallazgo que reformula: `RF-093-001` (`openspec/findings/backlog.md`), que **se mantiene `Open`**
   hasta confirmar la corrección en dos máquinas más (decisión del gate post-review).
 - Pull request: _pendiente de abrir_.

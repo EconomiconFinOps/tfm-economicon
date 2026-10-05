@@ -5,7 +5,7 @@
 Listo para el gate post-review de Victor. **No es un veredicto independiente**: lo redacta quien
 implementó. La revisión y la validación de terceros llegan con el pull request («Revision JUP-103» y
 «Validacion JUP-103»). Evidencia completa, con las salidas reales, en
-[`docs/evidence/JUP-103-validation.md`](../../../docs/evidence/JUP-103-validation.md).
+[`docs/evidence/JUP-103-validation.md`](../../../../docs/evidence/JUP-103-validation.md).
 
 Resumen: `RF-093-001` **no era un fallo del repositorio**. En las máquinas afectadas faltaba
 `corepack enable` y un pnpm `11.x` global se resolvía antes que el de corepack, de modo que turbo
