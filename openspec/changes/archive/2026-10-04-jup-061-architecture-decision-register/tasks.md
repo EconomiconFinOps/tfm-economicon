@@ -33,9 +33,11 @@ ratificarlos o aclararlos en las fuentes originales. ADR-0016 (fuente JUP-023)
 y ADR-0017 (fuente JUP-022) permanecen Proposed pese a integrar sus implementaciones.
 Su ratificación se sigue en el índice ADR, apartado
 [«Pendientes documentales antes del freeze»](../../../../docs/adr/README.md#pendientes-documentales-antes-del-freeze),
-sin concederla por este archivo. ADR-0002 se sigue en
+sin concederla por este archivo. Actualización05/10: ADR-0002 es Accepted por
 [PR #71 / JUP-078](https://github.com/EconomiconFinOps/tfm-economicon/pull/71),
-sin asumir aprobación por su apertura. El archivo no acredita ratificación,
+integrada05/10 a15:36:17UTC (54bbbcd); el ADR registra aceptación04/10.
+La clave virtual queda pendiente como seguimiento operativo JUP078; no se
+acredita provisión ni aceptación por el archivo JUP061. El archivo no acredita ratificación,
 pairing ni condiciones operativas pendientes de otros cambios.
 
 ## 4. Reconciliación autorizada 02/10/2026

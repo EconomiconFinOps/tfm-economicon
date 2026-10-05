@@ -31,7 +31,9 @@ Paris revisa la coherencia documental; Lucia valida enlaces, estados y uso en
 memoria. Victor tiene pairing previsto, sin atribuirlo como hecho. Intercambio
 actualizado el 03/10 según la validación de Lucia en PR #60; reemplaza los roles
 del corte inicial. La ratificación corresponde a los responsables, no al autor.
-ADR-0002 mantiene sus condiciones de aceptación conjunta. ADR-0005 requiere aclarar
+Actualización05/10: ADR-0002 Accepted por #71, integrada en54bbbcd; sus condiciones
+de aprobación documental están satisfechas y la clave virtual sigue pendiente
+como seguimiento operativo, sin provisión acreditada. ADR-0005 requiere aclarar
 su estado pese al merge de implementación. El despliegue productivo y la selección
 comparativa original de CockroachDB no quedan acreditados por documentar el baseline.
 

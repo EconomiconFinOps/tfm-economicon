@@ -220,10 +220,11 @@ revisión y validación antes del merge.
 La antigua tarea3.4 de ratificar no se declara realizada: el archivo delimita
 su alcance como seguimiento documental. ADR0013/14/15/16 y0005 quedan a cargo de
 sus responsables originales para ratificación/aclaración antes del freeze.
-ADR0002 continúa Proposed en esta base; [PR #71/JUP078](https://github.com/EconomiconFinOps/tfm-economicon/pull/71)
-propone aceptación, pero permanece abierta. Victor publicó CHANGES_REQUESTED
-el04/10 sobrec9c8971; corresponde a Lucía atenderlos y a Paris/Victor registrar
-las respuestas/aprobaciones. No se emiten claves virtuales ni se realiza gasto.
+En el corte histórico del04/10, basec3aa9d6, ADR0002 era Proposed y
+[PR #71/JUP078](https://github.com/EconomiconFinOps/tfm-economicon/pull/71) estaba
+abierta. Victor había publicado CHANGES_REQUESTED sobrec9c8971. Ese pendiente
+quedó superado por las confirmaciones y aprobación posteriores y el merge del05/10,
+detallado en la reconciliación siguiente. No se emiten claves ni se realiza gasto.
 
 La nueva base aporta ADR0017 sin fila en el índice; se añade con estado Proposed,
 motivos y fuente JUP022, sin modificar el ADR ni interpretar su merge como aceptación.
@@ -249,3 +250,22 @@ y3anclas existentes, UTF-8 y diff PASS. No se reejecutan suites de producto para
 este ajuste documental. La validaciónLucía sobre21c4381 es antecedente: se solicita
 revalidación del nuevo delta junto con nueva respuesta deParis, sin inferir
 levantamiento de su Request changes. Seguimiento de aceptación #71 independiente.
+
+## Reconciliación tras integrar #71 — 05/10/2026
+
+Se incorpora develop `54bbbcd53feac4d6dd0bf5de9a3718051fb2af4b`: #71 integrada
+el05/10 a15:36:17UTC/17:36:17Europe/Paris. ADR-0002 y su fila son ahora **Accepted**,
+con fecha de aceptación registrada04/10 en el ADR; esa fecha se distingue del
+merge05/10. El corte histórico anterior no representa el estado vigente.
+La aceptación proviene de #71 y sus aprobaciones, no del archivo JUP061:
+[confirmación Paris](https://github.com/EconomiconFinOps/tfm-economicon/pull/71#issuecomment-5993281880),
+[revisión Victor](https://github.com/EconomiconFinOps/tfm-economicon/pull/71#pullrequestreview-5407022712)
+y [validación Alejandro](https://github.com/EconomiconFinOps/tfm-economicon/pull/71#pullrequestreview-5413786390).
+
+La tarea3.4, el diseño archivado y pendientes del índice reflejan ese cierre
+documental; la clave virtual de desarrollo sigue como seguimiento operativo,
+sin provisión acreditada. No cambian Proposed de ADR0005/0013/14/15/16/17.
+No nuevo pairing, benchmark, consulta de precios ni gasto. #70 sigue abierta;
+quien se integre segundo debe preservar fila0016 y adaptar su fuente al archivo
+JUP023 cuando #70 se haya integrado. Nueva revisiónParis/revalidaciónLucía
+necesarias: las reviews sobre0c219eb conservan su fecha/head y son antecedentes.

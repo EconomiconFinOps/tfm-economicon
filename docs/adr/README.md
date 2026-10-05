@@ -76,8 +76,9 @@ material de referencia y no certifica que el contenido ya esté incorporado all�
 
 ### Pendientes documentales antes del freeze
 
-- ADR-0002: aceptado el 04/10 (JUP-078); queda emitir la clave virtual de desarrollo,
-  a cargo de quien administra el gateway.
+- ADR-0002: Accepted por #71, integrada05/10 (54bbbcd), con aceptación04/10 registrada
+  en el ADR. Seguimiento operativo JUP-078: provisionar la clave virtual limitada;
+  aceptación documental no acredita provisión ni habilita gasto fuera de sus condiciones.
 - ADR-0005 y ADR-0013/14/15: confirmar o rechazar ratificación con evidencia atribuible.
 - [ADR-0016](ADR-0016-litellm-version-pin.md), fuente JUP-023: ratificación pendiente; la decisión operativa y el merge #65 no cambian su estado Proposed.
 - [ADR-0017](ADR-0017-backend-query-embedding-own-key.md), fuente JUP-022: ratificación pendiente en su fuente original; la implementación integrada en #67 no cambia su estado Proposed.
