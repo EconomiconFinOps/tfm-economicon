@@ -5,7 +5,9 @@
 liderazgo. No existe PR de esta rama en la entrega inicial.
 
 1. Revisar [guía y matriz](README.md), los pendientes por historia y el cambio
-   OpenSpec `jup-064-team-contributions`; contrastar alcance y pairing real.
+   OpenSpec `jup-064-team-contributions` (archivado en
+   `openspec/changes/archive/2026-10-05-jup-064-team-contributions/`);
+   contrastar alcance y pairing real.
 2. Ejecutar el comando de recogida o reproducir el snapshot sin conexión;
    ejecutar `contributions:test`, los checks de gobernanza y OpenSpec.
    La [CI técnica de 3eb68c5](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37220689712)
