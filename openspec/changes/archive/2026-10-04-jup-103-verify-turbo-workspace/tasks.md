@@ -133,7 +133,8 @@
   en `review.md` por bajar un nivel, y los de la evidencia y del spike por el cambio de ruta);
   corregidos y comprobados con un recorrido de los enlaces relativos de los archivos de la tarjeta
   (103 enlaces, 0 rotos).
-- [ ] 7.6 Traer `develop` y reverificar, abrir el pull request hacia `develop` y registrar en la
-  evidencia el enlace al PR y a la ejecución de CI en verde (criterio 3 de la tarjeta). Hecho
-  hasta ahora: `develop` (`c3aa9d6`) fusionado en la rama y reverificado (evidencia,
-  «Reverificación tras fusionar `develop`»). Falta abrir el pull request y el CI.
+- [x] 7.6 Traer `develop` y reverificar, abrir el pull request hacia `develop` y registrar en la
+  evidencia el enlace al PR y a la ejecución de CI en verde (criterio 3 de la tarjeta). Hecho:
+  `develop` (`c3aa9d6`) fusionado en la rama y reverificado (evidencia, «Reverificación tras
+  fusionar `develop`»); PR #75 abierto contra `develop`; CI del workflow `CI` en verde (7 de 7 jobs
+  sobre `f6e01c5`) y enlaces registrados en la cabecera de la evidencia.

@@ -52,7 +52,8 @@ Criterios de la tarjeta (detalle en la evidencia, «Trazabilidad con los criteri
   `RF-098-004`); en dos mitades pasa.
 - [x] 2. `pnpm dev` en paralelo. **Salvedad:** necesita `--env-mode=loose` y un archivo de entorno
   con `127.0.0.1`.
-- [ ] 3. CI en verde: **pendiente** del pull request.
+- [x] 3. CI en verde: el workflow `CI` pasa sus 7 jobs sobre `f6e01c5` (PR #75); `JUP reviews` espera
+  las reviews. Se registró después de la aprobación post-review, que lo daba por pendiente.
 - [x] 4. `RF-093-001` reformulado con la causa y **mantenido en `Open`** (el criterio admite «o
   reformulado con precisión si resulta ser de entorno»), hasta confirmar a Paris y a Alejandro en
   consola externa.

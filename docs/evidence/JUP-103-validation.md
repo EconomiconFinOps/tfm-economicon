@@ -10,11 +10,15 @@
 - OpenSpec: [jup-103-verify-turbo-workspace](../../openspec/changes/archive/2026-10-04-jup-103-verify-turbo-workspace/).
 - Hallazgo que reformula: `RF-093-001` (`openspec/findings/backlog.md`), que **se mantiene `Open`**
   hasta confirmar la corrección en dos máquinas más (decisión del gate post-review).
-- Pull request: _pendiente de abrir_.
-- CI: _pendiente de abrir el pull request_.
+- Pull request: [#75](https://github.com/EconomiconFinOps/tfm-economicon/pull/75), contra `develop`.
+- CI sobre `f6e01c5`: [7 de 7 jobs correctos](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37249343055)
+  (`JUP policy`, `OpenSpec`, `Frontend build`, `Frontend type check` y los tres de Python). El check
+  `JUP reviews` ([ejecución](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37249342986))
+  figura en rojo hasta que haya reviews, que es lo que la política espera. La CI del commit que añade
+  estos enlaces se consulta en la pestaña de checks del propio PR.
 
-> Estado de este documento: completo salvo lo marcado _pendiente_ (CI y pull request). Paris y la
-> consola externa de Alejandro figuran como no confirmados.
+> Estado de este documento: completo. Paris y la consola externa de Alejandro figuran como no
+> confirmados, y `JUP reviews` queda a la espera de las reviews del PR.
 
 ## Máquina donde se reproduce
 
@@ -569,7 +573,7 @@ primero no depende de `develop` y lo segundo ya se sabe no fiable en esta máqui
 | --- | --- | --- | --- |
 | 1 | `lint`, `build`, `test` y `typecheck` se ejecutan desde la raíz vía turbo sin el error de versión de pnpm, en la máquina donde se reproducía | **Cumplido en lo que pide el criterio; con una salvedad sobre `test`** | `lint` 4/4, `build` 4/4 y `typecheck` 1/1 con código `0` y `--force`, y 0 apariciones del error de versión en todas las ejecuciones. `test` tampoco muestra el error y pasa en dos mitades, pero **el comando literal `corepack pnpm test` termina con código `1` en esta máquina** por tests con plazos de tiempo (`RF-103-005`, `RF-098-004`), no por pnpm |
 | 2 | `pnpm dev` levanta frontend, backend y processor en paralelo | **Cumplido con salvedades** | Turbo lanza las cuatro tareas en paralelo con el pnpm correcto. Tal como está documentado, `dev` no deja sirviendo a backend ni a processor y turbo termina todo cuando falla uno; con `--env-mode=loose` y un archivo de entorno con `127.0.0.1` las cuatro responden `200` (grupo 3, `RF-103-001` a `RF-103-003`). Documentado en el `README.md` |
-| 3 | CI sigue en verde | **Pendiente** (7.6) | Esta rama solo cambia `README.md`, `docs/` y `openspec/` (verificado con `git diff --name-only origin/develop...HEAD`): ni `package.json`, `turbo.json`, lockfile, `pnpm-workspace.yaml`, `.github/`, `apps/`, `tools/` ni `packages/`. Los jobs de CI ya ejecutan `corepack enable` antes de pnpm. Se acredita con los checks del pull request |
+| 3 | CI sigue en verde | **Cumplido sobre `f6e01c5`** (PR #75): el workflow `CI` pasa sus 7 jobs. `JUP reviews` es otro workflow y espera las reviews | Esta rama solo cambia `README.md`, `docs/` y `openspec/` (verificado con `git diff --name-only origin/develop...HEAD`): ni `package.json`, `turbo.json`, lockfile, `pnpm-workspace.yaml`, `.github/`, `apps/`, `tools/` ni `packages/`. Los jobs de CI ya ejecutan `corepack enable` antes de pnpm. Acreditado con los checks del pull request (ver la cabecera) |
 | 4 | `RF-093-001` cerrado con la causa documentada, o reformulado si es de entorno | **Cumplido por la vía de la reformulación; el hallazgo no se cierra** | Se mantiene `Open` con la causa (de entorno) documentada con precisión, la corrección, las dos afirmaciones del texto original que eran inexactas, 3 reproducciones y 2 máquinas corregidas. Pasa a `Fixed` cuando confirmen el entorno de Codex de Alejandro (en consola externa) y la máquina de Paris |
 | 5 | Queda escrito si el equipo debe hacer algo en sus máquinas, y qué | **Cumplido de forma provisional** | `README.md`, «Requisito previo: pnpm con corepack»: `corepack enable` una vez si `corepack pnpm exec pnpm --version` no imprime `9.0.0`. Comprobado en 2 de 4 máquinas; el caso de un `pnpm` aportado por el entorno de un asistente queda sin resolver |
 | 6 | Las tarjetas futuras de frontend pueden usar los scripts de la raíz sin sustituto, o queda documentado por qué no | **Parcial, y documentado** | `lint`, `build` y `typecheck` sí, con `corepack enable` hecho y `--force` para comprobar. `test` con los cuatro paquetes a la vez no es fiable en todas las máquinas: se documenta ejecutarlo por mitades. `dev` necesita los pasos del `README.md`. `RF-098-004` y `RF-103-005` |
@@ -577,7 +581,8 @@ primero no depende de `develop` y lo segundo ya se sabe no fiable en esta máqui
 
 ## No validado
 
-- **CI** (criterio 3): se acredita al abrir el pull request, no antes.
+- **La CI del commit que añade los enlaces del PR y de la CI a esta evidencia**: solo cambia
+  documentación, pero no se ha consultado al escribir esto.
 - **La corrección en la máquina de Paris** (sin respuesta) y **el diagnóstico en la consola externa de
   Alejandro**; si `corepack enable` bastaría en el entorno de Codex.
 - **La salida literal** de Lucía: confirmó con un resumen, sin pegar los comandos exactos, y hizo a
@@ -595,7 +600,8 @@ primero no depende de `develop` y lo segundo ya se sabe no fiable en esta máqui
 - **Los 57 tests omitidos de `processor` y los 17 de `backend`**: no se examinaron; se sospecha que
   son los que necesitan base de datos real (`RF-096-004`).
 - **El resto de la batería de CONTRIBUTING con un PR**: `corepack pnpm pr:check`.
-- **La rama integrada con `develop` actual** (`c3aa9d6`): resuelto, ver la sección siguiente.
+- **La rama integrada con `develop` actual** (`c3aa9d6`): resuelto, ver «Reverificación tras fusionar
+  `develop`».
 
-_Pendiente: CI y pull request (tareas 7.5 y 7.6, y el gate post-review). Paris y la consola externa
+_Pendiente: las reviews del PR (`Revision JUP-103` y `Validacion JUP-103`). Paris y la consola externa
 de Alejandro quedan como no confirmados._
