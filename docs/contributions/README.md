@@ -72,7 +72,9 @@ original y quién la contrastó. No marcarla confirmada hasta contrastarla.
 | Historia | Persona / rol | Fecha | Acción | Enlace original | Contraste |
 | --- | --- | --- | --- | --- | --- |
 | JUP-064 | Alejandro / preparación como coautor | 2026-10-04 | Recolector, matriz, specs, tests y documentación | [Commit a75bcd4](https://github.com/EconomiconFinOps/tfm-economicon/commit/a75bcd4) | Implementación publicada; no acredita sesión de pairing con Víctor |
+| JUP-064 | Víctor / liderazgo | 2026-10-05 | Contraste de alcance y evidencia de la entrega; corrección de las líneas de rol de seis tarjetas en Trello | [Contraste del líder](../evidence/JUP-064-validation.md#contraste-del-líder) | Sin sesión de pairing: la coordinación con Alejandro fue el traspaso por chat. Pendiente de contraste por Lucía y Paris en la PR |
 
-La fila de implementación se añadió después del corte inicial de las fuentes.
-La preparación de JUP-064 por Alejandro no acredita participación de Víctor, Lucía o Paris en esta
-historia; liderazgo, revisión y validación permanecen pendientes.
+Las filas de JUP-064 se añadieron después del corte de las fuentes.
+La preparación de JUP-064 por Alejandro y el contraste de Víctor no acreditan
+participación de Lucía o Paris en esta historia; revisión y validación
+permanecen pendientes.

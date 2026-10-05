@@ -94,3 +94,53 @@ seis jobs técnicos correctos. Logs inspeccionados, no solo estado agregado.
 sin PR. Esta CI no sustituye revisión y validación humanas ni permite integrar
 la rama. Los cambios posteriores de esta evidencia son solo documentación;
 la implementación y tests contrastados son los de `3eb68c5`.
+
+## Contraste del líder
+
+Víctor Méndez, 2026-10-05. Comprobaciones ejecutadas en su equipo (Windows 11,
+Python 3.13.7, Node 24.15.0) sobre una copia temporal del HEAD `8366662`
+fusionado con `develop` `0488372`, que ya incluye #58, #70 y #71. Este
+contraste no sustituye `Revision JUP-064` ni `Validacion JUP-064`.
+
+| Comprobación | Resultado |
+| --- | --- |
+| Fusión simulada con `develop` | Sin conflictos; `ci.yml` se combina con #58 y conserva `contributions:test` |
+| Render offline del snapshot | Mismo contenido que el registro versionado: 91 historias y 75 asociaciones de PR. En Windows solo cambian los finales de línea |
+| `contributions:test` | 10/10 |
+| `ci:check:test`, `repository:governance:test` y `pr:check:test` | 82/82 |
+| `openspec:validate` | 46/46 |
+| Los 21 pasos del job de gobernanza de CI | Correctos |
+| `git diff --check` contra `develop` | Limpio |
+| `pr:check` con el texto de PR de la entrega | Correcto con un título que contiene JUP-064 |
+
+Las cifras 82 y 46 difieren de las 80 y 45 anteriores por los tests y specs
+que `develop` incorporó en #58 y #70; esta rama no cambia.
+
+No verificado en este contraste:
+
+- Las suites de frontend, backend, processor y Azure API. La rama no modifica
+  `apps/` y constan en la CI de `3eb68c5`.
+- La recogida viva. Requiere `gh` y acceso SSH a DockerServer, de los que el
+  líder no dispone; este corte lo ejecutó Alejandro.
+- El contenido fila a fila de las 91 historias. Se contrastó el alcance, la
+  lectura de roles y el origen de los huecos, no cada enlace.
+
+Hallazgos:
+
+- El corte del 2026-10-04 es anterior a la integración de #58, #70 y #71 y a
+  la apertura de #74 y #75, que no figuran. El registro se integra como corte
+  fechado, sin regenerar.
+- Las 30 casillas sin resolver vienen de ocho tarjetas. En JUP-083, JUP-093,
+  JUP-094, JUP-095, JUP-101 y JUP-103 el recolector no leyó ninguna línea de
+  rol. En JUP-097 y JUP-098 solo leyó una línea de liderazgo que no coincide
+  con sus PR #42 y #50.
+- Víctor corrigió el 2026-10-05 en Trello las descripciones de JUP-093,
+  JUP-094, JUP-095, JUP-097, JUP-098 y JUP-103. El corte no lo refleja: hasta
+  la próxima recogida el registro mantiene esos huecos y atribuye el liderazgo
+  de JUP-097 y JUP-098 a Alejandro. Quedan por completar JUP-083 y JUP-101.
+- No hubo sesión de pairing en JUP-064. Alejandro implementó en solitario y la
+  coordinación fue el traspaso por chat; así consta en la
+  [tabla manual](../contributions/README.md#evidencia-manual-fuera-del-recolector).
+
+Pendiente de acordar en la PR: bajo qué tarjeta se regenerará el registro
+antes de la memoria y quién, además de Alejandro, puede ejecutar la recogida.

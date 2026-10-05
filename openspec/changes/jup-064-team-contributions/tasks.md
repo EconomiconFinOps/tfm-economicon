@@ -8,7 +8,7 @@
 
 ## 2. Team delivery
 
-- [ ] 2.1 Victor contrasts scope, pairing and initial evidence with Alejandro.
+- [x] 2.1 Victor contrasts scope, pairing and initial evidence with Alejandro.
 - [ ] 2.2 Victor opens PR against develop and requests Lucia review and Paris validation.
 - [ ] 2.3 Link titled reviews, address findings, archive OpenSpec and integrate.
 - [ ] 2.4 Resolve or document contribution gaps before the final memory delivery.
