@@ -64,3 +64,13 @@ funcional y resolved_at tras reintento exitoso. Retención de releases/events
 manual; directorios retirados solo después de detener/verificar proyecto propio
 y bajo lock, fuera del scanner. Se mantiene resume explícito con riesgo
 documentado tras rollback y config de slot inmutable (sin migración automática).
+
+## Tercera vuelta — 2026-10-05
+
+Evidencia best effort nunca impide cleanup ni cambia causa propagada; state
+es obligatorio. Promoción resuelve failure antes de cleanup; estado pendiente
+se registra con detalle saneado y aviso de current ya cambiado. Poll reintenta
+resolved_at incluso sin GitHub; Already deployed conserva cleanup pendiente.
+Rollback repetido con pausa verifica current sin intercambiar punteros otra vez.
+Si falla reverificación, no detiene current. API persistente conserva timer5min
+sin backoff automático, con pausa operativa y retención manual explícitas.

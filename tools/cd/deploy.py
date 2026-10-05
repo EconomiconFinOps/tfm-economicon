@@ -180,12 +180,20 @@ def event(root, value):
     atomic_json(directory / f"{time.time_ns()}-{secrets.token_hex(4)}.json", value)
 
 
+def evidence(action, *args, **kwargs):
+    """Observability is best effort; never replace a runtime/cleanup cause."""
+    try:
+        action(*args, **kwargs)
+    except Exception as error:
+        print(f"Evidence unavailable: {type(error).__name__}; inspect runtime state", file=sys.stderr)
+
+
 def recovery_status(root, errors):
     path = root / "recovery.json"
     if errors:
-        atomic_json(path, {**errors[-1], "errors": errors, "time": time.time()})
+        evidence(atomic_json, path, {**errors[-1], "errors": errors, "time": time.time()})
     else:
-        path.unlink(missing_ok=True)
+        evidence(path.unlink, missing_ok=True)
 
 
 def record_failure(root, release, previous, run_id, error, permanent=True, reason="candidate-failed"):
@@ -193,18 +201,41 @@ def record_failure(root, release, previous, run_id, error, permanent=True, reaso
     failure = {"sha": release.name, "run_id": run_id, "previous": previous,
                "time": time.time(), "error_type": type(error).__name__, "reason": reason}
     if permanent:
-        atomic_json(root / "failure.json", failure)
+        evidence(atomic_json, root / "failure.json", failure)
     # Every attempt is historical; temporary eligibility failures/cancelled
     # promotions never overwrite the permanent candidate quarantine marker.
-    event(root, failure)
+    evidence(event, root, failure)
     try:
         compose(release, "down", "--remove-orphans")
     except Exception as cleanup_error:
         failure["cleanup_error_type"] = type(cleanup_error).__name__
         if permanent:
-            atomic_json(root / "failure.json", failure)
-        event(root, failure)
+            evidence(atomic_json, root / "failure.json", failure)
+        evidence(event, root, failure)
         print("Candidate cleanup failed; reconciliation will retry", file=sys.stderr)
+
+
+def resolve_failure(root, current):
+    def update():
+        path = root / "failure.json"
+        if path.exists():
+            failure = json.loads(path.read_text())
+            if failure.get("sha") == current and not failure.get("resolved_at"):
+                atomic_json(path, {**failure, "resolved_at": time.time()})
+    evidence(update)
+
+
+def transition_cleanup(root, current):
+    # State already committed: record cleanup separately, never undo promotion.
+    try:
+        reconcile(root, current)
+    except CleanupError as error:
+        detail = {"phase": "cleanup", "error_type": type(error).__name__, "releases": error.failures}
+        recovery_status(root, [detail])
+        evidence(event, root, {**detail, "sha": current, "reason": "cleanup-pending", "time": time.time()})
+        print("State already changed: current", current, "; cleanup pending; next poll retries", file=sys.stderr)
+        raise
+    recovery_status(root, [])
 
 
 def deploy(root, release, run_id=None, expected_head=None):
@@ -212,6 +243,7 @@ def deploy(root, release, run_id=None, expected_head=None):
     state = json.loads(state_path.read_text()) if state_path.exists() else {}
     metadata = json.loads((release / "release.json").read_text())
     if state.get("current") == metadata["sha"]:
+        resolve_failure(root, metadata["sha"])
         print("Already deployed", metadata["sha"])
         return
     previous = state.get("current")
@@ -239,19 +271,15 @@ def deploy(root, release, run_id=None, expected_head=None):
     # The pointer changes only after the functional checks pass.
     atomic_json(state_path, {**metadata, "current": metadata["sha"], "previous": previous,
                              "run_id": run_id, "time": time.time()})
-    reconcile(root, metadata["sha"])
-    recovery_status(root, [])
-    failure_path = root / "failure.json"
-    if failure_path.exists():
-        failure = json.loads(failure_path.read_text())
-        if failure.get("sha") == metadata["sha"]:
-            atomic_json(failure_path, {**failure, "resolved_at": time.time()})
+    resolve_failure(root, metadata["sha"])
+    transition_cleanup(root, metadata["sha"])
     print("Runtime verified", metadata["sha"], "frontend loopback port", metadata["frontend_port"])
 
 
 def rollback(root):
     state = json.loads((root / "state.json").read_text())
-    previous = state.get("previous")
+    repeated = state.get("manual_rollback", False)
+    previous = state["current"] if repeated else state.get("previous")
     if not previous:
         raise ValueError("No previous verified release")
     release = root / "releases" / previous
@@ -259,13 +287,19 @@ def rollback(root):
         compose(release, "up", "-d", "--no-build", "--wait", "--wait-timeout", "600")
         smoke(release)
     except Exception as error:
-        record_failure(root, release, state["current"], None, error)
+        if repeated:
+            recovery_status(root, [{"phase": "current", "error_type": type(error).__name__}])
+        else:
+            record_failure(root, release, state["current"], None, error)
         raise
     metadata = json.loads((release / "release.json").read_text())
-    atomic_json(root / "state.json", {**metadata, "current": previous,
-                                    "previous": state["current"], "time": time.time(), "manual_rollback": True})
-    reconcile(root, previous)
-    recovery_status(root, [])
+    if not repeated:
+        atomic_json(root / "state.json", {**metadata, "current": previous,
+                                        "previous": state["current"], "time": time.time(), "manual_rollback": True})
+    else:
+        print("Rollback already applied; verifying current and retrying cleanup", previous)
+    resolve_failure(root, previous)
+    transition_cleanup(root, previous)
     print("Rollback verified", previous)
 
 
@@ -285,6 +319,7 @@ def poll(root):
         # Recover after host reboot even when GitHub is offline; no build or new SHA.
         try:
             compose(root / "releases" / state["current"], "up", "-d", "--no-build", "--wait", "--wait-timeout", "600")
+            resolve_failure(root, state["current"])
         except Exception as error:
             recovery_errors.append({"phase": "current", "error_type": type(error).__name__})
             print("Current recovery failed; eligibility will still be checked", file=sys.stderr)

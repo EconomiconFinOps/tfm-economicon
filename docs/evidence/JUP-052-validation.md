@@ -191,3 +191,42 @@ con Docker/Compose reales en Ubuntu y límites de API/Git/fallos simulados.
 Ese ensayo no acredita este delta: se solicita revalidación incremental a Paris
 y relectura a Lucia. Agente instalado, timer y stack compartido no modificados;
 sin primera promoción automática, reboot, merge ni pairing Victor acreditados.
+
+## Tercera vuelta de Revision Lucia (base 028323e) — 2026-10-05
+
+[Revisión completa](https://github.com/EconomiconFinOps/tfm-economicon/pull/73#pullrequestreview-5417957537)
+confirma los cuatro puntos de la segunda vuelta y solicita tres correcciones.
+
+- Escrituras de failure/events y estado diagnóstico son best effort, con
+  aviso de tipo saneado: no impiden down ni sustituyen la causa original.
+  Regresión events como fichero, fallo de escritura failure y down fallido,
+  en combinaciones; API falla tras smoke y falla event; recovery/event fallan
+  tras promoción con cleanup pendiente. state.json mantiene escritura obligatoria.
+- resolved_at se intenta inmediatamente después del commit de promoción,
+  antes de cleanup. CleanupError actualiza recovery pendiente con todos sus
+  SHA/tipos y un evento histórico; CLI advierte que current ya cambió. Poll
+  reintenta resolved_at al recuperar current incluso con API offline; Already
+  deployed también lo reintenta sin borrar cleanup no comprobado.
+- Rollback bajo pausa manual es idempotente: verifica current y limpia otras
+  releases sin volver a la retirada. Repetición tras CleanupError probada con
+  state idéntico, sin up de la retirada, recovery borrada tras éxito. Si la
+  reverificación falla, conserva current y no la detiene.
+
+Pruebas propias: **53/53 Python Linux3.12.3**, Windows52pass/1skipLinux y
+3 Node CD. Docker/GitHub simulados; Linux permisos/flock reales, no despliegue
+del agente instalado. **21/21 sondas seleccionadas detectadas**, lista cerrada:
+las trece anteriores, agregación completa de errores, borrado de recovery en
+cleanup de transición, filtro de fase cleanup, respeto retry_allowed en poll,
+resolved_at, reconcile de validate-source, protección de evidencia e idempotencia
+rollback. No cobertura universal ni score general de mutación.
+
+Recomendaciones: se añaden regresiones de los seis mutantes señalados. La guía
+acota qué cleanup se guarda en events frente a recovery/CLI. Se mantiene timer
+5min sin backoff adaptativo/reutilizar smoke; documentado coste máximo288/día,
+pausa operativa ante API persistentemente indisponible y retención privada manual.
+No se diagnostica ni silencia flake Windows por falta de reproducción.
+
+Evidencias en `materiales/07-evidencias/JUP-052-review3-fixes-20261005/` del
+espacio: logs, sondas y reviews. Paris c3f64ed sigue histórica; se requiere
+revalidación del delta final y relectura Lucia. Sin stack compartido, reboot,
+primera promoción ni pairing acreditado.

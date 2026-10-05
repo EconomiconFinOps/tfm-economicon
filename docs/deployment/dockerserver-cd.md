@@ -129,6 +129,42 @@ de `candidate-failed`. `events/*.json` conserva ambos tipos de intento y los
 fallos de limpieza; no sobrescriben `failure.json`, que identifica el último
 fallo funcional permanente. Tras reintento exitoso se añade `resolved_at`.
 
+El registro de evidencia es best effort: un disco lleno o falta de permisos
+emite `Evidence unavailable: TIPO`, sin mensajes privados. No impide intentar
+down ni sustituye la causa original. Si no se pudo guardar failure.json,
+la cuarentena no queda garantizada: detener el timer y reparar almacenamiento
+antes de continuar; comprobar state.json/containers y el journal, no asumir
+que ausencia de fichero significa éxito. Las escrituras de state.json siguen
+siendo obligatorias, no registros opcionales.
+
+Una promoción que ya escribió state.json sigue efectiva aunque la limpieza
+posterior falle: resolved_at se intenta **antes** de reconcile; recovery.json
+recoge fase cleanup y todos los SHA/tipos de CleanupError. El CLI avisa
+`State already changed: current SHA; cleanup pending`; el siguiente poll
+recupera current, reintenta resolved_at y limpieza incluso sin head nuevo/API.
+Already deployed también reintenta resolved_at, conservando recovery pendiente
+hasta que un poll compruebe la limpieza. resolved_at indica promoción verificada,
+no que todos los contenedores antiguos estén detenidos.
+
+Mientras manual_rollback está activo, repetir rollback verifica **current**
+y reintenta limpiar las inactivas; no intercambia otra vez current/previous.
+Si falla esa reverificación, registra current pendiente sin detenerla ni
+cambiar el puntero. Para habilitar otra selección debe usarse resume después
+de revisar su riesgo. Tras cleanup fallido, comprobar state antes de operar.
+
+events registra intentos de candidato y cleanup posterior a promoción/rollback.
+Los fallos de reconcile de poll van a recovery.json (último intento, no historial);
+validate-source bloqueado antes de prepare informa CleanupError en el CLI,
+sin asegurar histórico de ese fallo. El detalle saneado está en
+CleanupError.failures; no se imprimen excepciones/entornos completos.
+
+No hay backoff adaptativo ni reutilización de smoke: cada poll elegible tras
+error de API final repite build/up/smoke, hasta 288 intentos/día con timer5min.
+Se acepta por exigir comprobación funcional fresca; ante 403 persistente o
+caída prolongada, el operador detiene el timer, comprueba API/causa y lo reactiva
+al recuperarse. Vigilar espacio y archivar events privados según política local;
+no hay retención automática. Es un límite operativo, no un backoff implementado.
+
 Un SHA que falla no se reconstruye cada cinco minutos: `failure.json` pausa ese
 SHA hasta un nuevo SHA o `resume`. `resume` habilita el reintento sin borrar la
 evidencia de fallo y elimina la pausa manual,

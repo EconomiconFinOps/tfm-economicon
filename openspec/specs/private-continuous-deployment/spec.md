@@ -53,6 +53,8 @@ health, demo login, simulator ingestion, billing totals and document-job checks 
 - **AND** an inactive slot SHALL NOT be reused until cleanup succeeds
 - **AND** sources and named volumes SHALL be preserved
 - **AND** cleanup SHALL attempt all managed releases and copies before reporting errors
+- **AND** evidence write failures SHALL NOT prevent cleanup or replace the original cause
+- **AND** committed promotions SHALL resolve prior candidate failure independently of cleanup status
 
 #### Scenario: Eligibility unavailable after successful smoke
 - **WHEN** the final eligibility check fails due to an API or network error
@@ -64,6 +66,11 @@ health, demo login, simulator ingestion, billing totals and document-job checks 
 - **WHEN** restoring the current release fails
 - **THEN** the failure SHALL be recorded without preventing eligibility evaluation
 - **AND** pending recovery status SHALL clear only when recovery and cleanup succeed
+
+#### Scenario: Rollback cleanup interrupted
+- **WHEN** rollback commits the previous verified release but inactive cleanup fails
+- **THEN** the committed state and pending cleanup SHALL be reported separately
+- **AND** repeating rollback while manually paused SHALL verify the committed current release without swapping it back
 
 #### Scenario: Failed SHA retry
 - **WHEN** a previously failed SHA is still the eligible candidate

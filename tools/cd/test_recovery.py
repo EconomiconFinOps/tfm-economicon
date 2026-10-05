@@ -67,15 +67,183 @@ class RecoveryTests(unittest.TestCase):
         old = self.fixture(self.old, 0)
         new = self.fixture(self.new, 1)
         self.state(self.old, 0)
+        deploy.atomic_json(self.root / "failure.json", {"sha": self.new, "retry_allowed": True})
+        deploy.atomic_json(self.root / "recovery.json", {"phase": "current", "error_type": "OldError"})
         compose.side_effect = lambda release, *args: (_ for _ in ()).throw(OSError()) if release == old else None
         with self.assertRaises(deploy.CleanupError):
             deploy.deploy(self.root, new)
         self.assertEqual(self.read("state.json")["current"], self.new)
+        self.assertIn("resolved_at", self.read("failure.json"))
+        self.assertEqual(self.read("recovery.json")["errors"], [{"phase": "cleanup",
+            "error_type": "CleanupError", "releases": [{"release": self.old, "error_type": "OSError"}]}])
+        resolved = self.read("failure.json")["resolved_at"]
         compose.reset_mock(side_effect=True)
         with patch.object(deploy, "api", side_effect=self.github), patch.object(deploy, "run") as run:
             deploy.poll(self.root)
         compose.assert_any_call(old, "down", "--remove-orphans")
         run.assert_not_called()  # Current == head, no fetch/rebuild.
+        self.assertFalse((self.root / "recovery.json").exists())
+        self.assertEqual(self.read("failure.json")["resolved_at"], resolved)
+
+    @patch.object(deploy, "compose")
+    def test_registration_errors_never_replace_build_cause_or_prevent_down(self, compose):
+        release = self.fixture(self.new, 1)
+        original = RuntimeError("private build cause")
+        for failure_write in (False, True):
+            for cleanup_fails in (False, True):
+                with self.subTest(failure_write=failure_write, cleanup_fails=cleanup_fails):
+                    # Real FileExistsError creating events/, not only mocked telemetry.
+                    if not (self.root / "events").exists():
+                        (self.root / "events").write_text("blocked")
+                    compose.reset_mock()
+                    compose.side_effect = [original, OSError("private down cause") if cleanup_fails else None]
+                    actual_write = deploy.atomic_json
+                    def write(path, value):
+                        if path.name == "failure.json" and failure_write:
+                            raise OSError("private disk error")
+                        actual_write(path, value)
+                    with patch.object(deploy, "atomic_json", side_effect=write), \
+                         contextlib.redirect_stderr(io.StringIO()) as stderr:
+                        with self.assertRaises(RuntimeError) as caught:
+                            deploy.deploy(self.root, release)
+                    self.assertIs(caught.exception, original)
+                    self.assertEqual([c.args[1] for c in compose.call_args_list], ["build", "down"])
+                    self.assertIn("Evidence unavailable", stderr.getvalue())
+                    self.assertNotIn("private", stderr.getvalue())
+
+    @patch.object(deploy, "compose")
+    @patch.object(deploy, "smoke")
+    def test_registration_error_preserves_api_cause_and_still_stops_candidate(self, smoke, compose):
+        release = self.fixture(self.new, 1)
+        original = urllib.error.URLError("private network")
+        with patch.object(deploy, "api", side_effect=original), \
+             patch.object(deploy, "event", side_effect=PermissionError("private disk")):
+            with self.assertRaises(urllib.error.URLError) as caught:
+                deploy.deploy(self.root, release, expected_head=self.new)
+        self.assertIs(caught.exception, original)
+        compose.assert_any_call(release, "down", "--remove-orphans")
+        self.assertFalse((self.root / "failure.json").exists())
+
+    @patch.object(deploy, "compose")
+    @patch.object(deploy, "smoke")
+    def test_promoted_failure_resolution_write_is_retried_without_rebuilding(self, smoke, compose):
+        self.fixture(self.old, 0)
+        release = self.fixture(self.new, 1)
+        self.state(self.old, 0)
+        deploy.atomic_json(self.root / "failure.json", {"sha": self.new})
+        actual_write = deploy.atomic_json
+        def write(path, value):
+            if path.name == "failure.json":
+                raise OSError()
+            actual_write(path, value)
+        with patch.object(deploy, "atomic_json", side_effect=write):
+            deploy.deploy(self.root, release)
+        self.assertEqual(self.read("state.json")["current"], self.new)
+        self.assertNotIn("resolved_at", self.read("failure.json"))
+        compose.reset_mock()
+        with patch.object(deploy, "api", side_effect=urllib.error.URLError("offline")):
+            with self.assertRaises(urllib.error.URLError):
+                deploy.poll(self.root)
+        self.assertIn("resolved_at", self.read("failure.json"))
+        self.assertFalse(any(c.args[1] == "build" for c in compose.call_args_list))
+
+    @patch.object(deploy, "compose")
+    def test_already_deployed_repairs_resolution_without_erasing_pending_cleanup(self, compose):
+        release = self.fixture(self.new, 1)
+        self.state(self.new, 1)
+        deploy.atomic_json(self.root / "failure.json", {"sha": self.new})
+        pending = {"phase": "cleanup", "error_type": "CleanupError"}
+        deploy.atomic_json(self.root / "recovery.json", pending)
+        deploy.deploy(self.root, release)
+        self.assertIn("resolved_at", self.read("failure.json"))
+        self.assertEqual(self.read("recovery.json"), pending)
+        compose.assert_not_called()
+
+    @patch.object(deploy, "smoke")
+    @patch.object(deploy, "compose")
+    def test_repeated_rollback_retries_cleanup_without_returning_to_retired_release(self, compose, smoke):
+        old = self.fixture(self.old, 0)
+        new = self.fixture(self.new, 1)
+        self.state(self.new, 1, self.old)
+        compose.side_effect = lambda release, *args: (_ for _ in ()).throw(OSError()) if release == new else None
+        with contextlib.redirect_stderr(io.StringIO()) as stderr:
+            with self.assertRaises(deploy.CleanupError):
+                deploy.rollback(self.root)
+        self.assertIn("State already changed", stderr.getvalue())
+        committed = self.read("state.json")
+        self.assertEqual(self.read("recovery.json")["releases"], [{"release": self.new, "error_type": "OSError"}])
+        compose.reset_mock(side_effect=True)
+        deploy.rollback(self.root)
+        self.assertEqual(self.read("state.json"), committed)
+        self.assertEqual(committed["current"], self.old)
+        self.assertTrue(committed["manual_rollback"])
+        compose.assert_any_call(new, "down", "--remove-orphans")
+        self.assertFalse(any(c.args[0] == new and c.args[1] == "up" for c in compose.call_args_list))
+        self.assertEqual(smoke.call_args.args, (old,))
+        self.assertFalse((self.root / "recovery.json").exists())
+
+    @patch.object(deploy, "compose")
+    @patch.object(deploy, "smoke", side_effect=ValueError("current not healthy"))
+    def test_repeated_rollback_failure_keeps_current_and_does_not_stop_it(self, smoke, compose):
+        old = self.fixture(self.old, 0)
+        self.fixture(self.new, 1)
+        self.state(self.old, 0, self.new, manual_rollback=True)
+        with self.assertRaises(ValueError):
+            deploy.rollback(self.root)
+        self.assertEqual(self.read("state.json")["current"], self.old)
+        self.assertFalse(any(c.args[1] == "down" for c in compose.call_args_list))
+        self.assertEqual(self.read("recovery.json")["phase"], "current")
+
+    @patch.object(deploy, "compose", side_effect=OSError())
+    def test_reconcile_reports_every_failure(self, compose):
+        a = self.fixture(self.old, 0)
+        b = self.fixture(self.new, 1)
+        with self.assertRaises(deploy.CleanupError) as caught:
+            deploy.reconcile(self.root, None)
+        self.assertEqual(caught.exception.failures, [
+            {"release": a.name, "error_type": "OSError"}, {"release": b.name, "error_type": "OSError"}])
+
+    @patch.object(deploy, "smoke")
+    @patch.object(deploy, "compose")
+    def test_cleanup_cause_survives_recovery_and_event_write_errors(self, compose, smoke):
+        old = self.fixture(self.old, 0)
+        new = self.fixture(self.new, 1)
+        self.state(self.old, 0)
+        original = OSError("private cleanup")
+        compose.side_effect = lambda release, *args: (_ for _ in ()).throw(original) if release == old else None
+        actual_write = deploy.atomic_json
+        def write(path, value):
+            if path.name == "recovery.json":
+                raise PermissionError()
+            actual_write(path, value)
+        with patch.object(deploy, "atomic_json", side_effect=write), \
+             patch.object(deploy, "event", side_effect=PermissionError()):
+            with self.assertRaises(deploy.CleanupError) as caught:
+                deploy.deploy(self.root, new)
+        self.assertEqual(caught.exception.failures, [{"release": self.old, "error_type": "OSError"}])
+        self.assertEqual(self.read("state.json")["current"], self.new)
+
+    def test_second_cleanup_success_removes_old_cleanup_without_hiding_current_error(self):
+        self.fixture(self.old, 0)
+        self.state(self.old, 0)
+        with patch.object(deploy, "reconcile", side_effect=[deploy.CleanupError([]), None]), \
+             patch.object(deploy, "compose", side_effect=OSError()), \
+             patch.object(deploy, "api", side_effect=self.github), \
+             patch.object(deploy, "prepare"), patch.object(deploy, "deploy"), \
+             patch.object(deploy, "run", side_effect=self.git):
+            deploy.poll(self.root)
+        self.assertEqual(self.read("recovery.json")["errors"], [{"phase": "current", "error_type": "OSError"}])
+
+    def test_validate_source_cannot_prepare_or_promote_with_pending_cleanup(self):
+        with patch.object(deploy, "lock", side_effect=lambda root: contextlib.nullcontext()), \
+             patch.object(sys, "argv", ["deploy", "--root", str(self.root), "validate-source",
+                         "--source", str(self.source), "--sha", self.new]), \
+             patch.object(deploy, "reconcile", side_effect=deploy.CleanupError([])), \
+             patch.object(deploy, "prepare") as prepare, patch.object(deploy, "deploy") as start:
+            with self.assertRaises(deploy.CleanupError):
+                deploy.main()
+        prepare.assert_not_called()
+        start.assert_not_called()
 
     @patch.object(deploy, "smoke")
     @patch.object(deploy, "compose")
@@ -358,6 +526,13 @@ class RecoveryTests(unittest.TestCase):
             deploy.main()
         self.assertTrue(self.read("failure.json")["retry_allowed"])
         self.assertEqual(self.read("failure.json")["sha"], self.new)
+        def command(args, **kwargs):
+            return '{"services": {}}' if args[0] == "docker" else self.git(args, **kwargs)
+        with patch.object(deploy, "api", side_effect=self.github), \
+             patch.object(deploy, "run", side_effect=command), patch.object(deploy, "smoke"):
+            deploy.poll(self.root)
+        self.assertEqual(self.read("state.json")["current"], self.new)
+        self.assertIn("resolved_at", self.read("failure.json"))
 
     @patch.object(deploy, "compose")
     @patch.object(deploy, "smoke")
