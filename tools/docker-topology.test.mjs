@@ -196,6 +196,16 @@ for (const [service, field, variable] of [
   });
 }
 
+test("JUP-022 backend reads its own virtual key, never the processor key or upstream credentials", () => {
+  const environment = compose.services.backend.environment;
+  assert.equal(environment.LITELLM_API_KEY, "${BACKEND_LITELLM_API_KEY:-}");
+  assert.notEqual(environment.LITELLM_API_KEY, compose.services.processor.environment.LITELLM_API_KEY);
+  assert.equal(environment.EMBEDDING_PROVIDER, "${EMBEDDING_PROVIDER:-mock}");
+  assert.equal(environment.RETRIEVAL_TOP_K, "${RETRIEVAL_TOP_K:-4}");
+  const example = fs.readFileSync(path.join(root, ".env.example"), "utf8");
+  assert.match(example, /^BACKEND_LITELLM_API_KEY=\s*$/m);
+});
+
 test("JUP-053 mock providers do not require a gateway key or receive upstream credentials", () => {
   const environment = compose.services.processor.environment;
   assert.equal(environment.LITELLM_API_KEY, "${LITELLM_API_KEY:-}");

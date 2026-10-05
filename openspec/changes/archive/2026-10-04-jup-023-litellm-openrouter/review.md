@@ -377,7 +377,7 @@ PR merge, archive and tracker updates are not part of this local reconciliation.
 
 ## Post-Merge OpenSpec Closure
 
-2026-10-04: PR [#65](https://github.com/EconomiconFinOps/tfm-economicon/pull/65)
+2026-10-03: PR [#65](https://github.com/EconomiconFinOps/tfm-economicon/pull/65)
 was squash-merged into develop as `6410950315b0e3c22057d09015e11e38c5e455ab`.
 The final PR head was `7fb4c708746af995b61de135adf69a49947ea167`.
 Alejandro's [Revision JUP-023](https://github.com/EconomiconFinOps/tfm-economicon/pull/65#pullrequestreview-5401345607)

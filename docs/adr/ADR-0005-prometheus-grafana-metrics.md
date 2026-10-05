@@ -31,3 +31,18 @@ Instrumentar `apps/backend` y `apps/processor` con la librería `prometheus_clie
 ## Evidence And Follow-up
 
 Ninguna evidencia operativa todavía (ADR propuesto junto con la implementación). Seguimiento: JUP-045 (alertar fallos de ingesta) y JUP-046 (alertar degradación del modelo/API LLM) deberían reutilizar las métricas expuestas aquí en lugar de instrumentar de nuevo.
+
+## Reconciliación de evidencia — 01/10/2026
+
+La frase «Ninguna evidencia operativa todavía» describe la propuesta inicial y
+queda superada por el [review archivado JUP-043](../../openspec/changes/archive/2026-09-01-jup-043-technical-metrics/review.md):
+metrics 200, scrape up=1, provisioning y cuatro paneles verificados entonces.
+[PR #25](https://github.com/EconomiconFinOps/tfm-economicon/pull/25) está integrada
+(08/09), con APPROVED de Victor el 08/09; las reviews anteriores figuran DISMISSED.
+El registro histórico de aprobación pendiente en review.md no describe esa PR hoy.
+
+Se conserva **Proposed**: la revisión de implementación y el merge se enlazan como
+evidencia, sin inventar una ratificación explícita del estado de este ADR. Paris,
+como revisor de JUP-061, debe confirmar la aceptación documental o registrar el
+motivo para mantener la propuesta antes del freeze. Las alertas posteriores se
+acreditan aparte en [JUP-045](../evidence/JUP-045-validation.md).
