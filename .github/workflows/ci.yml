@@ -1,6 +1,9 @@
 name: CI
 
 "on":
+  push:
+    branches:
+      - '**'
   pull_request:
     branches:
       - main
@@ -104,6 +107,9 @@ jobs:
       - name: Install test dependencies
         working-directory: ${{ matrix.service.path }}
         run: python -m pip install -r requirements-dev.txt
+      - name: Check Python syntax (lint/build)
+        working-directory: ${{ matrix.service.path }}
+        run: python -m compileall -q app
       - name: Run tests
         working-directory: ${{ matrix.service.path }}
         run: python -m pytest tests -q

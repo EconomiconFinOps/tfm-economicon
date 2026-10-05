@@ -19,7 +19,7 @@ not applicable, LiteLLM version verified with networking disabled, and Prisma
 it does not establish compatibility with the real OpenRouter service.
 Never run the vulnerable historical 1.82.6 image or `latest`. The version decision
 is documented in [ADR-0016](../../docs/adr/ADR-0016-litellm-version-pin.md), whose
-status remains Proposed; ADR-0002 and real-use approvals are separate.
+status remains Proposed; ADR-0002 was accepted on 2026-10-04 and real-use approvals are separate.
 
 The fake-upstream runtime check requires a
 synthetic upstream, a config mount override pointing every alias only to that
