@@ -9,6 +9,7 @@ import tarfile
 import tempfile
 import types
 import unittest
+import urllib.error
 from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -67,7 +68,7 @@ class RecoveryTests(unittest.TestCase):
         new = self.fixture(self.new, 1)
         self.state(self.old, 0)
         compose.side_effect = lambda release, *args: (_ for _ in ()).throw(OSError()) if release == old else None
-        with self.assertRaises(OSError):
+        with self.assertRaises(deploy.CleanupError):
             deploy.deploy(self.root, new)
         self.assertEqual(self.read("state.json")["current"], self.new)
         compose.reset_mock(side_effect=True)
@@ -96,7 +97,7 @@ class RecoveryTests(unittest.TestCase):
                 self.assertFalse(any(key != release.name and value == slot for key, value in active.items()))
                 active[release.name] = slot
         compose.side_effect = docker
-        with self.assertRaises(OSError):
+        with self.assertRaises(deploy.CleanupError):
             deploy.deploy(self.root, new)
         self.assertEqual(len(active), 2)
         self.new = "c" * 40
@@ -114,7 +115,7 @@ class RecoveryTests(unittest.TestCase):
         new = self.fixture(self.new, 1)
         self.state(self.new, 1, self.old)
         compose.side_effect = lambda release, *args: (_ for _ in ()).throw(OSError()) if release == new else None
-        with self.assertRaises(OSError):
+        with self.assertRaises(deploy.CleanupError):
             deploy.rollback(self.root)
         self.assertTrue(self.read("state.json")["manual_rollback"])
         compose.reset_mock(side_effect=True)
@@ -181,7 +182,7 @@ class RecoveryTests(unittest.TestCase):
             deploy.poll(self.root)
         state = self.read("state.json")
         self.assertEqual((state["current"], state["slot"], state["run_id"]), (self.new, 1, 42))
-        self.assertEqual(self.read("recovery.json")["phase"], "current")
+        self.assertFalse((self.root / "recovery.json").exists())  # Healthy replacement resolved it.
         self.assertEqual(api.call_count, 4)  # Eligibility, after fetch and before promotion.
         self.assertTrue(any("fetch" in c.args[0] for c in run.call_args_list))
         smoke.assert_called_once()
@@ -213,10 +214,121 @@ class RecoveryTests(unittest.TestCase):
     def test_head_change_after_smoke_preserves_current(self, smoke, compose):
         release = self.fixture(self.new, 1)
         self.state(self.old, 0)
-        with patch.object(deploy, "api", return_value={"object": {"sha": "c" * 40}}), self.assertRaises(RuntimeError):
+        prior = {"sha": "d" * 40, "error_type": "ValueError"}
+        deploy.atomic_json(self.root / "failure.json", prior)
+        with patch.object(deploy, "api", return_value={"object": {"sha": "c" * 40}}):
             deploy.deploy(self.root, release, expected_head=self.new)
         self.assertEqual(self.read("state.json")["current"], self.old)
         self.assertTrue(all(c.args[0] == release for c in compose.call_args_list))
+        self.assertEqual(self.read("failure.json"), prior)
+        self.assertEqual(json.loads(next((self.root / "events").glob("*.json")).read_text())["reason"], "superseded")
+
+    @patch.object(deploy, "compose")
+    def test_reconcile_attempts_all_and_preserves_unknown_preparing(self, compose):
+        a = self.fixture("a" * 40, 0)
+        b = self.fixture("b" * 40, 1)
+        self.fixture("c" * 40, 0)
+        valid = self.root / "releases" / ("d" * 40 + ".preparing")
+        invalid = self.root / "releases" / "not-a-sha.preparing"
+        valid.mkdir()
+        invalid.mkdir()
+        compose.side_effect = lambda release, *args: (_ for _ in ()).throw(OSError()) if release == a else None
+        with self.assertRaises(deploy.CleanupError) as caught:
+            deploy.reconcile(self.root, "c" * 40)
+        self.assertEqual([c.args[0] for c in compose.call_args_list], [a, b])
+        self.assertEqual(caught.exception.failures, [{"release": a.name, "error_type": "OSError"}])
+        self.assertFalse(valid.exists())
+        self.assertTrue(invalid.exists())
+
+    def test_second_reconcile_failure_blocks_fetch_and_deploy(self):
+        with patch.object(deploy, "reconcile", side_effect=deploy.CleanupError([])) as clean, \
+             patch.object(deploy, "api", side_effect=self.github) as api, \
+             patch.object(deploy, "run") as run, patch.object(deploy, "deploy") as start:
+            with self.assertRaises(deploy.CleanupError):
+                deploy.poll(self.root)
+        self.assertEqual(clean.call_count, 2)
+        self.assertEqual(api.call_count, 2)  # Still evaluates eligibility.
+        run.assert_not_called()
+        start.assert_not_called()
+        self.assertEqual(self.read("recovery.json")["phase"], "cleanup")
+
+    @patch.object(deploy, "compose")
+    @patch.object(deploy, "smoke")
+    def test_failure_of_other_sha_does_not_pause_new_candidate(self, smoke, compose):
+        deploy.atomic_json(self.root / "failure.json", {"sha": self.old, "error_type": "ValueError"})
+        def command(args, **kwargs):
+            return '{"services": {}}' if args[0] == "docker" else self.git(args, **kwargs)
+        with patch.object(deploy, "api", side_effect=self.github), patch.object(deploy, "run", side_effect=command):
+            deploy.poll(self.root)
+        self.assertEqual(self.read("state.json")["current"], self.new)
+        self.assertEqual(self.read("failure.json")["sha"], self.old)
+
+    @patch.object(deploy, "compose")
+    @patch.object(deploy, "smoke")
+    def test_transient_check_error_survives_failed_cleanup_without_quarantine(self, smoke, compose):
+        release = self.fixture(self.new, 1)
+        self.state(self.old, 0)
+        error = urllib.error.URLError("offline")
+        compose.side_effect = [None, None, OSError("cleanup")]
+        with patch.object(deploy, "api", side_effect=error):
+            with self.assertRaises(urllib.error.URLError) as caught:
+                deploy.deploy(self.root, release, expected_head=self.new)
+        self.assertIs(caught.exception, error)
+        self.assertFalse((self.root / "failure.json").exists())
+        events = [json.loads(p.read_text()) for p in (self.root / "events").glob("*.json")]
+        self.assertTrue(any(e.get("cleanup_error_type") == "OSError" for e in events))
+
+    @patch.object(deploy, "compose")
+    @patch.object(deploy, "smoke")
+    def test_network_error_after_smoke_keeps_prior_failure_and_allows_retry(self, smoke, compose):
+        release = self.fixture(self.new, 1)
+        self.fixture(self.old, 0)
+        self.state(self.old, 0)
+        prior = {"sha": "c" * 40, "error_type": "ValueError"}
+        deploy.atomic_json(self.root / "failure.json", prior)
+        for error in (urllib.error.URLError("offline"), urllib.error.HTTPError("url", 403, "rate", {}, None),
+                      urllib.error.HTTPError("url", 503, "busy", {}, None)):
+            if hasattr(error, "close"):
+                self.addCleanup(error.close)
+            with self.subTest(error=type(error).__name__), patch.object(deploy, "api", side_effect=error):
+                with self.assertRaises(type(error)):
+                    deploy.deploy(self.root, release, 42, expected_head=self.new)
+            self.assertEqual(self.read("state.json")["current"], self.old)
+            self.assertEqual(self.read("failure.json"), prior)
+        events = [json.loads(p.read_text()) for p in (self.root / "events").glob("*.json")]
+        self.assertTrue(all(e["reason"] == "eligibility-unavailable" for e in events))
+        # The next poll can fetch and promote this same SHA without resume.
+        def command(args, **kwargs):
+            return '{"services": {}}' if args[0] == "docker" else self.git(args, **kwargs)
+        with patch.object(deploy, "api", side_effect=self.github), patch.object(deploy, "run", side_effect=command):
+            deploy.poll(self.root)
+        self.assertEqual(self.read("state.json")["current"], self.new)
+
+    @patch.object(deploy, "compose")
+    def test_recovery_status_clears_only_when_cleanup_and_current_recover(self, compose):
+        self.fixture(self.old, 0)
+        self.state(self.old, 0)
+        with patch.object(deploy, "api", side_effect=lambda path: {"object": {"sha": self.old}}
+                          if path == "git/ref/heads/develop" else {"workflow_runs": []}), \
+             patch.object(deploy, "eligible_run", return_value=None):
+            compose.side_effect = OSError()
+            deploy.poll(self.root)
+            self.assertEqual(self.read("recovery.json")["phase"], "current")
+            compose.side_effect = None
+            deploy.poll(self.root)
+        self.assertFalse((self.root / "recovery.json").exists())
+
+    @patch.object(deploy, "compose")
+    def test_cleanup_recovery_does_not_clear_still_broken_current(self, compose):
+        self.fixture(self.old, 0)
+        self.state(self.old, 0)
+        def command(args, **kwargs):
+            return '{"services": {}}' if args[0] == "docker" else self.git(args, **kwargs)
+        compose.side_effect = lambda release, *args: (_ for _ in ()).throw(OSError()) if args[0] == "up" else None
+        with patch.object(deploy, "api", side_effect=self.github), \
+             patch.object(deploy, "run", side_effect=command), patch.object(deploy, "deploy"):
+            deploy.poll(self.root)
+        self.assertEqual(self.read("recovery.json")["phase"], "current")
 
     @patch.object(deploy, "run", return_value='{"services": {}}')
     def test_project_names_isolate_same_sha_across_roots(self, run):

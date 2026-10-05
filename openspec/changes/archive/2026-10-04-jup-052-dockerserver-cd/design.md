@@ -51,3 +51,16 @@ y pausa manual, y se documenta su promoción explícita del root de ensayo.
 ADR renumerado a 0018 tras comprobar develop y diffs de PR abiertas.
 El código instalado del timer no se actualiza con estas correcciones antes de
 la revisión/validación: pruebas Linux en copia temporal sin Docker real.
+
+## Segunda vuelta — 2026-10-05
+
+Cleanup recorre todas las releases/copies, agrega errores saneados y bloquea
+reutilización de slot si alguno persiste. Recovery describe el último intento
+y se elimina tras resolver tanto limpieza como current, o reemplazo sano.
+Tras smoke, errores de API y head superado conservan current y evidence previa,
+intentan detener candidato y no lo ponen en cuarentena permanente. Events guarda
+histórico privado por intento con reason; failure.json conserva último fallo
+funcional y resolved_at tras reintento exitoso. Retención de releases/events
+manual; directorios retirados solo después de detener/verificar proyecto propio
+y bajo lock, fuera del scanner. Se mantiene resume explícito con riesgo
+documentado tras rollback y config de slot inmutable (sin migración automática).

@@ -52,10 +52,18 @@ health, demo login, simulator ingestion, billing totals and document-job checks 
 - **THEN** the next locked poll SHALL reconcile inactive releases and incomplete copies
 - **AND** an inactive slot SHALL NOT be reused until cleanup succeeds
 - **AND** sources and named volumes SHALL be preserved
+- **AND** cleanup SHALL attempt all managed releases and copies before reporting errors
+
+#### Scenario: Eligibility unavailable after successful smoke
+- **WHEN** the final eligibility check fails due to an API or network error
+- **THEN** the candidate SHALL NOT be promoted and cleanup SHALL be attempted
+- **AND** the healthy SHA SHALL NOT be permanently quarantined
+- **AND** a superseded head SHALL be recorded distinctly from a functional failure
 
 #### Scenario: Current recovery fails
 - **WHEN** restoring the current release fails
 - **THEN** the failure SHALL be recorded without preventing eligibility evaluation
+- **AND** pending recovery status SHALL clear only when recovery and cleanup succeed
 
 #### Scenario: Failed SHA retry
 - **WHEN** a previously failed SHA is still the eligible candidate

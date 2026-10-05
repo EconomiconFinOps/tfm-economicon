@@ -148,6 +148,12 @@ def smoke(release):
     verify(release, compose)
 
 
+class CleanupError(RuntimeError):
+    def __init__(self, failures):
+        self.failures = failures
+        super().__init__(f"Cleanup failed for {len(failures)} releases/copies")
+
+
 def reconcile(root, current):
     """Stop only this root's inactive releases; keep sources and named volumes.
 
@@ -155,23 +161,49 @@ def reconcile(root, current):
     available for rollback. Scanning is durable even after death immediately
     after state promotion; a failed down is retried on the next locked poll.
     """
+    failures = []
     for release in sorted((root / "releases").glob("*")):
-        if SHA.fullmatch(release.name) and release.name != current:
-            compose(release, "down", "--remove-orphans")
-        elif release.name.endswith(".preparing") and SHA.fullmatch(release.name[:-10]):
-            shutil.rmtree(release)
+        try:
+            if SHA.fullmatch(release.name) and release.name != current:
+                compose(release, "down", "--remove-orphans")
+            elif release.name.endswith(".preparing") and SHA.fullmatch(release.name[:-10]):
+                shutil.rmtree(release)
+        except Exception as error:
+            failures.append({"release": release.name, "error_type": type(error).__name__})
+    if failures:
+        raise CleanupError(failures)
 
 
-def record_failure(root, release, previous, run_id, error):
+def event(root, value):
+    directory = root / "events"
+    directory.mkdir(mode=0o700, exist_ok=True)
+    atomic_json(directory / f"{time.time_ns()}-{secrets.token_hex(4)}.json", value)
+
+
+def recovery_status(root, errors):
+    path = root / "recovery.json"
+    if errors:
+        atomic_json(path, {**errors[-1], "errors": errors, "time": time.time()})
+    else:
+        path.unlink(missing_ok=True)
+
+
+def record_failure(root, release, previous, run_id, error, permanent=True, reason="candidate-failed"):
     # Store types, never exception messages, environment or subprocess output.
     failure = {"sha": release.name, "run_id": run_id, "previous": previous,
-               "time": time.time(), "error_type": type(error).__name__}
-    atomic_json(root / "failure.json", failure)
+               "time": time.time(), "error_type": type(error).__name__, "reason": reason}
+    if permanent:
+        atomic_json(root / "failure.json", failure)
+    # Every attempt is historical; temporary eligibility failures/cancelled
+    # promotions never overwrite the permanent candidate quarantine marker.
+    event(root, failure)
     try:
         compose(release, "down", "--remove-orphans")
     except Exception as cleanup_error:
         failure["cleanup_error_type"] = type(cleanup_error).__name__
-        atomic_json(root / "failure.json", failure)
+        if permanent:
+            atomic_json(root / "failure.json", failure)
+        event(root, failure)
         print("Candidate cleanup failed; reconciliation will retry", file=sys.stderr)
 
 
@@ -187,17 +219,33 @@ def deploy(root, release, run_id=None, expected_head=None):
         compose(release, "build")
         compose(release, "up", "-d", "--no-build", "--wait", "--wait-timeout", "600")
         smoke(release)
-        if expected_head and api("git/ref/heads/develop")["object"]["sha"] != expected_head:
-            raise RuntimeError("Develop advanced before promotion")
     except Exception as error:
         # Preserve the original cause even when down fails. Volumes remain;
         # container logs do not survive a successful down (use journal).
         record_failure(root, release, previous, run_id, error)
         raise
+    if expected_head:
+        try:
+            head = api("git/ref/heads/develop")["object"]["sha"]
+        except Exception as error:
+            record_failure(root, release, previous, run_id, error, permanent=False,
+                           reason="eligibility-unavailable")
+            raise
+        if head != expected_head:
+            record_failure(root, release, previous, run_id, RuntimeError(), permanent=False,
+                           reason="superseded")
+            print("Develop advanced before promotion; retry next eligible SHA")
+            return
     # The pointer changes only after the functional checks pass.
     atomic_json(state_path, {**metadata, "current": metadata["sha"], "previous": previous,
                              "run_id": run_id, "time": time.time()})
     reconcile(root, metadata["sha"])
+    recovery_status(root, [])
+    failure_path = root / "failure.json"
+    if failure_path.exists():
+        failure = json.loads(failure_path.read_text())
+        if failure.get("sha") == metadata["sha"]:
+            atomic_json(failure_path, {**failure, "resolved_at": time.time()})
     print("Runtime verified", metadata["sha"], "frontend loopback port", metadata["frontend_port"])
 
 
@@ -217,26 +265,30 @@ def rollback(root):
     atomic_json(root / "state.json", {**metadata, "current": previous,
                                     "previous": state["current"], "time": time.time(), "manual_rollback": True})
     reconcile(root, previous)
+    recovery_status(root, [])
     print("Rollback verified", previous)
 
 
 def poll(root):
     state_path = root / "state.json"
     state = json.loads(state_path.read_text()) if state_path.exists() else {}
+    recovery_errors = []
     # Continue querying eligibility if recovery/cleanup fails; require cleanup
     # to succeed before reusing the inactive slot for an eligible candidate.
     try:
         reconcile(root, state.get("current"))
     except Exception as error:
-        atomic_json(root / "recovery.json", {"phase": "cleanup", "error_type": type(error).__name__, "time": time.time()})
+        recovery_errors.append({"phase": "cleanup", "error_type": type(error).__name__,
+                                "releases": getattr(error, "failures", [])})
         print("Inactive cleanup failed; eligibility will still be checked", file=sys.stderr)
     if state.get("current"):
         # Recover after host reboot even when GitHub is offline; no build or new SHA.
         try:
             compose(root / "releases" / state["current"], "up", "-d", "--no-build", "--wait", "--wait-timeout", "600")
         except Exception as error:
-            atomic_json(root / "recovery.json", {"phase": "current", "error_type": type(error).__name__, "time": time.time()})
+            recovery_errors.append({"phase": "current", "error_type": type(error).__name__})
             print("Current recovery failed; eligibility will still be checked", file=sys.stderr)
+    recovery_status(root, recovery_errors)
     head = api("git/ref/heads/develop")["object"]["sha"]
     try:
         runs = api("actions/workflows/cd.yml/runs?branch=develop&per_page=1")["workflow_runs"]
@@ -257,7 +309,16 @@ def poll(root):
     if failure.get("sha") == head and not failure.get("retry_allowed"):
         print("Failed revision paused; use resume to retry")
         return
-    reconcile(root, state.get("current"))
+    try:
+        reconcile(root, state.get("current"))
+    except Exception as error:
+        recovery_errors = [e for e in recovery_errors if e["phase"] != "cleanup"]
+        recovery_errors.append({"phase": "cleanup", "error_type": type(error).__name__,
+                                "releases": getattr(error, "failures", [])})
+        recovery_status(root, recovery_errors)
+        raise
+    recovery_errors = [e for e in recovery_errors if e["phase"] != "cleanup"]
+    recovery_status(root, recovery_errors)
     cache = root / "repository.git"
     if not cache.exists():
         run(["git", "init", "--bare", str(cache)], capture=True)

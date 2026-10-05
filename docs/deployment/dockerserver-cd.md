@@ -107,22 +107,79 @@ de error; no valores ni mensajes potencialmente sensibles. Si también falla
 `compose down` elimina contenedores y sus logs; el journal conserva la salida
 del agente, y los volúmenes/fuentes se retienen, no los logs de contenedor.
 
-Cada poll bajo lock detiene las releases inactivas de este root (incluida
+Cada poll bajo lock intenta detener todas las releases inactivas de este root (incluida
 `previous`, conservando sus volúmenes para rollback) y elimina copias
 `<sha>.preparing` incompletas. Reintenta así una limpieza interrumpida después
 de promover o hacer rollback, incluso sin nuevo SHA o con pausa manual.
 Antes de reutilizar un slot exige que esa limpieza termine correctamente.
+Si una release falla, continúa con las restantes y las copias incompletas;
+al terminar informa de todos los SHA/tipos fallidos. El segundo reconcile
+antes de fetch bloquea al candidato si persiste cualquier fallo de limpieza.
 Un fallo al recuperar `current` se registra en `recovery.json`; continúa la
 consulta de elegibilidad, de modo que un SHA corregido pueda reemplazarla.
+Ese archivo representa fallos aún pendientes del último intento: fases,
+SHA/tipos saneados y timestamp. Se elimina cuando limpieza y recuperación
+terminan bien, o después de una promoción/rollback sanos y limpieza correcta.
+Limpiar solo las releases no borra el fallo de una current todavía rota.
+
+Un error de red/API en la verificación final de head detiene el candidato
+sin promover ni poner en cuarentena un SHA funcionalmente sano: el siguiente
+poll lo reintenta. Un head avanzado se registra como `superseded`, distinto
+de `candidate-failed`. `events/*.json` conserva ambos tipos de intento y los
+fallos de limpieza; no sobrescriben `failure.json`, que identifica el último
+fallo funcional permanente. Tras reintento exitoso se añade `resolved_at`.
 
 Un SHA que falla no se reconstruye cada cinco minutos: `failure.json` pausa ese
 SHA hasta un nuevo SHA o `resume`. `resume` habilita el reintento sin borrar la
 evidencia de fallo y elimina la pausa manual,
 también cuando el primer despliegue falló y aún no hay `state.json`.
+Después de rollback, `resume` levanta simultáneamente la pausa manual y la
+cuarentena del fallo anterior: puede volver a intentar la release que motivó
+el rollback. Antes de usarlo, verificar el SHA elegible y su causa corregida;
+si no, conservar la pausa y esperar otro SHA. No es una elección automática
+de la versión más segura.
 
 Los volúmenes y fuentes se conservan para investigar/rollback. Revisar espacio
-periódicamente y retirar releases antiguas de forma explícita tras confirmar
-que no son `current` ni `previous`; no hay borrado automático de datos.
+periódicamente. El coste de down crece con el histórico: se acepta el barrido
+completo por seguridad ante interrupciones y arranques externos. Como política
+operativa, retener bajo `releases/` current, previous y el último fallo útil;
+archivar el resto con el procedimiento siguiente. No hay borrado automático
+de volúmenes, fuentes ni eventos; el coste real no se ha medido en esta revisión.
+
+### Retirar una release sin bloquear CD
+
+No borrar archivos sueltos de `releases/<sha>`: cada directorio administrado
+debe conservar su `.env` y `compose.json` para poder detener su proyecto.
+
+1. Desactivar el timer y esperar a que `economicon-cd.service` esté inactivo.
+   Abrir una consola del operador bajo `flock -n ROOT/deploy.lock bash` y
+   mantenerla hasta terminar; salir libera el lock. No operar si no se obtiene.
+2. Leer state.json y comprobar que el SHA no es current ni previous. Identificar
+   el nombre exacto de su proyecto en su compose.json congelado y confirmar
+   que pertenece al root propio; no deducirlo de nombres ajenos ni usar prune.
+3. Con la configuración completa, ejecutar el mismo comando compose del agente
+   (`--project-directory RELEASE --env-file RELEASE/.env -f RELEASE/compose.json
+   down --remove-orphans`, sin `-v`). Comprobar con `docker ps -a --filter
+   label=com.docker.compose.project=PROYECTO` que no queda ningún contenedor.
+4. Solo tras la comprobación, mover el directorio **completo** a `ROOT/retired/`
+   (fuera de `releases/`, con permisos privados). Conservar volúmenes y evidencia;
+   activar el timer al terminar. El scanner deja de intentar esa release.
+
+Si ya faltan archivos, restaurar primero `.env`/compose.json del backup privado.
+Sin backup, identificar y retirar manualmente **solo** los contenedores cuyas
+etiquetas de proyecto verifiquen su pertenencia a esa release/root; conservar
+volúmenes, confirmar ausencia y mover luego el directorio completo a retired.
+Si no se puede acreditar el proyecto, no moverlo para eludir el guard: mantener
+el bloqueo e investigar. Nunca borrar una carpeta mientras su pila siga viva.
+
+Una release congelada que usa el slot ahora ocupado por current no se migra
+automáticamente al otro slot. Si prepare lo rechaza tras una secuencia de
+rollback/reintentos, conservar la pausa y usar un nuevo SHA o un root de ensayo
+con otros puertos; no repetir resume ni editar la configuración inmutable.
+
+La suite Windows tuvo un aviso externo de flake en limpieza temporal WinError145;
+no se ha establecido su causa. Las regresiones Linux son el control principal
+del agente; un fallo Windows no debe omitirse ni atribuirse a Docker sin evidencia.
 
 ## Ensayo aislado sin integración
 

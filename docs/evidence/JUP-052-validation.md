@@ -99,7 +99,7 @@ la validación formal deberá comprobar el head actualizado. Cambio técnico
 archivado en `openspec/changes/archive/2026-10-04-jup-052-dockerserver-cd/`;
 primera promoción automática y actuaciones humanas siguen pendientes.
 
-## Correcciones tras Revision Lucia — 2026-10-05
+## Primera vuelta de Revision Lucia (096be34 → c3f64ed) — 2026-10-05
 
 Origen: [Revision JUP-052](https://github.com/EconomiconFinOps/tfm-economicon/pull/73#pullrequestreview-5410106030)
 sobre `096be34dfe9113815c5cbc4ee42194e5dc721d94`. La petición de cambios no
@@ -122,8 +122,9 @@ Verificación propia sobre fuente corregida:
   omitida en Windows (lock Linux). Suite Python en copia temporal DockerServer
   Python **3.12.3**: **36/36**, sin skips; incluye permisos reales y contención
   de dos handles flock. Compose/GitHub simulados, no despliegue Docker real.
-- Diez mutantes individuales de la revisión y guardas adicionales: **10/10
-  detectados, cero supervivientes**: fetch, current=head, slot, LOCK_NB, chmod
+- Diez mutantes seleccionados para esta vuelta (lista cerrada, no cobertura
+  general de todas las guardas): **10/10 detectados, cero supervivientes**:
+  fetch, current=head, slot, LOCK_NB, chmod
   dotenv, SHA corto, filtro branch, filtro tar, ignore dotenv y guard post-prepare.
   Sondas en copias desechables fuera del checkout; no mutación de rama.
 - OpenSpec 45/45; tests CI/política/gobierno 80/80; diff check correcto.
@@ -147,3 +148,46 @@ No validado en esta corrección: Docker/Compose real sobre este nuevo código,
 caídas reales del motor, reboot, primera promoción automática, pruebas
 funcionales independientes Paris y pairing Victor. Timer instalado y stack
 compartido no modificados; no secretos impresos ni promoción al root automático.
+
+## Segunda vuelta de Revision Lucia (base c3f64ed) — 2026-10-05
+
+[Review completa](https://github.com/EconomiconFinOps/tfm-economicon/pull/73#pullrequestreview-5416682895)
+confirma los siete puntos anteriores y pide cuatro cambios nuevos. Esta sección
+acredita las pruebas del autor para el delta posterior a c3f64ed; no atribuye
+la validación Docker anterior de Paris a este nuevo código.
+
+| Pendiente | Resultado y regresión |
+| --- | --- |
+| Reconcile aborta en primera release | Intenta todas las releases y .preparing válidas, recoge SHA/tipos y lanza CleanupError al final. Regresión A falla, B se detiene, current C intacta, D.preparing eliminada y copia sin SHA preservada. La guía explica detener/verificar proyecto y mover directorio completo a retired bajo lock; no borrar archivos sueltos ni eludir pila viva. |
+| Guardas sin prueba | Segundo reconcile aún fallido bloquea fetch y deploy tras consultar elegibilidad; failure.json de otro SHA permite candidato. Pruebas de .preparing válida/noSHA y de esas dos guardas. |
+| Error de API después de smoke | No pone en cuarentena permanente el SHA sano; conserva el fallo real anterior, registra eligibility-unavailable en events, intenta down y propaga el error original. URLError, HTTP403 y HTTP503 probados, también down fallido; siguiente poll promueve sin resume. Head avanzado registra superseded separado, conserva state y evidencia anterior. |
+| Recovery obsoleta | Archivo refleja las fases aún pendientes del último intento y timestamp. Se elimina tras limpieza/recuperación correctas o reemplazo sano con cleanup correcto. Regresiones recuperación falla→funciona, cleanup bien con current aún rota y reemplazo sano. |
+
+Pruebas propias del delta, sin Docker/Compose real:
+
+- `cd:test`: 3 Node correctas; Python43, Windows42pass/1skipLinux. Tres
+  ejecuciones Windows de la suite Python correctas para contrastar el aviso
+  externo WinError145; este muestreo **no descarta ni diagnostica el flake**.
+- Copia temporal DockerServer, Python3.12.3, **43/43 Python** sin skips,
+  permisos/flock Linux reales; Docker/GitHub de las regresiones simulados.
+- **13/13 sondas de mutantes seleccionadas**, cero supervivientes: las diez
+  anteriores más rama .preparing de reconcile, segundo reconcile y cuarentena
+  por SHA ajeno. No es cobertura exhaustiva ni un score general de mutación.
+- OpenSpec45/45 y herramientas CI/política/gobierno80/80. Logs y script de
+  sondas en `materiales/07-evidencias/JUP-052-review2-fixes-20261005/` del espacio.
+
+Disposición de recomendaciones de segunda vuelta:
+
+| Recomendación | Decisión |
+| --- | --- |
+| Coste histórico de reconcile | Mantener barrido completo ante interrupciones/arranques externos; guía fija política operativa de current, previous y último fallo útil, archivando otros fuera de releases después de verificar down/ausencia. Sin borrado automático ni coste medido. |
+| Evidencia de fallos/carreras | Histórico privado events por intento, reason distinto para carrera/red/fallo funcional. Carrera/red no sobrescriben failure.json; reintento exitoso añade resolved_at. Retención manual documentada. |
+| Resume después de rollback | Mantener semántica explícita, documentar riesgo de volver a intentar la release rota. Operador comprueba head/corrección antes de reanudar; no se promete elegir versión más segura. |
+| SHA congelado en slot distinto | No migrar config inmutable/datos automáticamente. Guía pide conservar pausa y usar nuevo SHA/root aislado si prepare rechaza slot; no repetir resume ni editar puertos in-place. Riesgo no ensayado con Docker real. |
+| Flake Windows | Tres muestras correctas, causa no establecida. Linux es control principal del agente; no se cambia tempfile ni se silencian fallos sin reproducción. |
+
+Paris publicó [Validacion JUP-052 favorable sobre c3f64ed](https://github.com/EconomiconFinOps/tfm-economicon/pull/73#pullrequestreview-5412457330)
+con Docker/Compose reales en Ubuntu y límites de API/Git/fallos simulados.
+Ese ensayo no acredita este delta: se solicita revalidación incremental a Paris
+y relectura a Lucia. Agente instalado, timer y stack compartido no modificados;
+sin primera promoción automática, reboot, merge ni pairing Victor acreditados.
