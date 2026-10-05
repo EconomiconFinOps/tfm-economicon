@@ -186,7 +186,7 @@ Puertos habituales:
 La Azure Cost API simulada exige por defecto el bearer local
 `jupiter-local-token`, pagina resultados y permite activar fallos deterministas
 con `X-Fake-Azure-Scenario`. Consulta `apps/azure-cost-api/README.md` para la
-configuración completa; estos tokens son fixtures locales, no credenciales Azure.
+configuraciÃ³n completa; estos tokens son fixtures locales, no credenciales Azure.
 
 Preparar `.env` local ignorado antes de arrancar el stack, sin sobrescribir uno existente (en Linux o macOS: `cp -n .env.example .env`):
 
@@ -320,12 +320,12 @@ El flujo principal del sistema es este:
 
 - [Arquitectura](docs/architecture.md)
 - [Manual de Turborepo](docs/manuals/turborepo_use.md)
-- [Dataset público de Azure](docs/data/azure-sample-dataset.md)
+- [Dataset pÃºblico de Azure](docs/data/azure-sample-dataset.md)
 - [Contrato Azure Cost Management Query](docs/api/azure-cost-query-contract.md)
 - [OpenAPI contractual](docs/api/azure-cost-query.openapi.json)
 - [API Azure Cost simulada](apps/azure-cost-api/README.md)
 - [Cliente de ingesta Azure Cost Management](docs/api/azure-cost-ingestion-client.md)
-- [Batería de preguntas FinOps (JUP-069)](docs/validation/README.md)
+- [BaterÃ­a de preguntas FinOps (JUP-069)](docs/validation/README.md)
 
 ## Estado Actual
 
@@ -359,5 +359,4 @@ exista un prototipo o un provider mock no acredita el cierre de esas tarjetas.
 
 ## Despliegue privado
 
-JUP-052: [CD hacia DockerServer](docs/deployment/dockerserver-cd.md), con selección del SHA validado, smoke y rollback.
-
+JUP-052: [CD hacia DockerServer](docs/deployment/dockerserver-cd.md), con selecciÃ³n del SHA validado, smoke y rollback.
