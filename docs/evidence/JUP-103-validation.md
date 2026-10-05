@@ -181,6 +181,13 @@ con turbo (`corepack pnpm lint --force`):
    mismo (es lo que ocurre con `pnpm <script>` a secas, que pasa); con `COREPACK_ROOT` entiende que
    corepack ya eligió y aborta.
 
+**Alcance de esta cadena.** Describe la máquina de Victor, con pnpm `11.9.0`. Hasta la revisión del
+PR #75 el paso 3 era una inferencia (el pnpm `11.9.0` pasa sin `corepack` y falla con él, y
+`COREPACK_ROOT` está en el entorno de los hijos, pero no se había aislado la variable). Se aisló el
+2026-10-05, ver «Revisión de Alejandro (PR #75)»: **solo con la `11.9.0`**. Con la `11.1.3` de Lucía
+se vio el mismo mensaje sin aislarlo, y con la `11.19.0` de Alejandro el síntoma es otro, de modo que
+no se afirma que el mecanismo de rechazo por `COREPACK_ROOT` sea el mismo en las tres máquinas.
+
 Dos afirmaciones del texto original de `RF-093-001` resultan inexactas:
 
 - «`packageManager: pnpm@9.0.0` resuelve correctamente en shell interactiva»: el `9.0.0` que
@@ -393,10 +400,12 @@ versión de Node, la ruta de `pnpm` en el `PATH`, `npm ls -g --depth=0`,
 
 Lectura, separando lo medido de lo inferido:
 
-- **Se reproduce en las tres máquinas que han contestado** (Windows 11 dos veces y Windows 10 una), con
-  Node `24.14.1` y `24.15.0`. En las tres, el `pnpm` que resuelve el `PATH` dentro de
-  `corepack pnpm exec` **no es el de corepack y es una `11.x`**: `11.9.0`, `11.1.3` y `11.19.0`. Con
-  una `9.0.0` no se ha probado ninguna.
+- **Dos reproducciones del error de versión y una divergencia distinta.** El error de versión que
+  describe `RF-093-001` se reproduce en dos máquinas (Victor y Lucía, Windows 11 y Windows 10, pnpm
+  global de npm `11.9.0` y `11.1.3`). La tercera (Alejandro, Windows 11) no lo reproduce: tiene un
+  fallo distinto, descrito abajo. Lo que las tres comparten es que el `pnpm` que resuelve el `PATH`
+  dentro de `corepack pnpm exec` **no es el de corepack y es una `11.x`** (`11.9.0`, `11.1.3` y
+  `11.19.0`, con Node `24.15.0`, `24.15.0` y `24.14.1`). Con una `9.0.0` no se ha probado ninguna.
 - **El síntoma no es el mismo en todas.** Con `11.9.0` y `11.1.3` aparece el error de versión que
   describe `RF-093-001`. Con `11.19.0` (Alejandro) el diagnóstico no imprime error sino la versión
   equivocada, y las tareas de turbo abortan por otro motivo: el pnpm `11.19.0` intenta una
@@ -451,8 +460,8 @@ que funciona en dos máquinas (Victor y Lucía); en las otras dos, no confirmado
 ## Hallazgos y spike (grupo 6)
 
 - **`RF-093-001` se reformula y se mantiene `Open`** en `openspec/findings/backlog.md`, con la causa, la
-  corrección, las dos afirmaciones corregidas, las 3 máquinas donde se reprodujo y las 2 donde se
-  confirmó la corrección. Se redactó primero como `Fixed` con lo pendiente escrito dentro; en el gate
+  corrección, las dos afirmaciones corregidas, las 2 máquinas donde se reprodujo el error de versión,
+  la divergencia distinta de Alejandro y las 2 donde se confirmó la corrección. Se redactó primero como `Fixed` con lo pendiente escrito dentro; en el gate
   post-review se decidió dejarlo `Open` hasta tener la respuesta de Paris y la de Alejandro en consola
   externa. Pasa a `Fixed` cuando ambos confirmen sin contradecirla; si alguno la contradice, se revisa
   la causa.
@@ -567,6 +576,62 @@ líneas). Se comprobó antes de fusionar con `git merge-tree` (sin tocar el árb
 No se repitió la batería completa de herramientas ni `test` con los cuatro paquetes a la vez: lo
 primero no depende de `develop` y lo segundo ya se sabe no fiable en esta máquina (`RF-103-005`).
 
+## Revisión de Alejandro (PR #75, 2026-10-05)
+
+Alejandro (usuario de GitHub `Iber1to`) publicó `Revision JUP-103` como **Request changes** sobre
+`ddbf28c`. No encuentra defectos de producto P0 ni P1 y pide dos cambios P2. No hay comentarios en
+línea ni de la conversación.
+
+**Cambio 1: separar la reproducción de `RF-093-001` de la divergencia de Codex.** Tenía razón: los
+resúmenes decían que las máquinas afectadas tenían un pnpm global que se negaba a cambiar de versión y
+que el fallo se reprodujo en 3 de 3, mientras que la tabla de esta evidencia ya distinguía el caso de
+Alejandro. Se trasladó esa distinción a los resúmenes: dos reproducciones del error de versión y una
+divergencia de `PATH` del runtime, con la corrección en ese runtime y en su consola externa pendiente.
+Corregido en: `openspec/findings/backlog.md` (`RF-093-001`), `review.md` y `design.md` del change
+archivado, `docs/spikes/frontend-migration.md` (F4 y paso 11) y esta evidencia (causa, lectura de las
+máquinas, recuentos y trazabilidad); y en la descripción del PR, que se edita en GitHub. Además, la
+frase del spike sobre F4 decía que `test` y `typecheck` «pasan»: ahora dice que `test` pasa por
+mitades y que el comando literal falla de forma distinta en cada ejecución (`RF-103-005`,
+`RF-098-004`). Se conserva `RF-093-001` en `Open` y los límites de la confirmación de Lucía, que
+aplicó dos acciones a la vez.
+
+**Cambio 2: regularizar en Trello los roles declarados en el PR.** La tarjeta, consultada por
+Alejandro, aún asignaba liderazgo a Lucía, pairing a Alejandro, revisión a Paris y validación a
+Victor, frente a lo declarado en el PR (liderazgo Victor, pairing Lucía, revisión Alejandro y
+validación Paris). Victor informa de que ya cambió los roles a mano en la tarjeta de Trello; **no se ha
+podido verificar desde aquí** (no hay acceso a Trello). Falta enlazar esta revisión en la tarjeta.
+
+**Lo que aporta su comprobación**, tal como la comunica (copia aislada del commit `ddbf28c`, sin
+`corepack enable`, sin tocar el pnpm global y sin subir commits):
+
+| Comprobación | Resultado |
+| --- | --- |
+| Instalación con `--frozen-lockfile` | correcta |
+| pnpm exterior / diagnóstico interior, con el `PATH` original | `9.0.0` / `11.19.0` |
+| `lint --force` con el `PATH` original | código `1`, 0 de 4, `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` |
+| Igual, con un lanzador temporal de corepack **solo en el `PATH` del proceso** | diagnóstico `9.0.0`; `lint`, `build` y `typecheck` con `--force`, código `0`, 4/4, 4/4 y 1/1, sin caché |
+| Grafo con `--dry` | cinco tareas del frontend, sin dependencias internas; los planes de `test` por mitades reenvían `maxWorkers` solo al frontend |
+| `openspec:validate` y tests de CI, política y gobierno | 45/45 y 80/80 |
+| CI remoto del commit | siete jobs técnicos correctos; `JUP reviews` espera las dos reviews |
+
+Esto **reproduce de nuevo su caso** y aporta un dato que no teníamos: con un lanzador de corepack por
+delante en el `PATH` del proceso, el fallo desaparece también en el runtime de Codex. Eso apoya que el
+patrón común es un pnpm que no es el de corepack por delante en el `PATH`, y que la corrección
+(un lanzador de corepack que se resuelva antes) funciona allí. **No prueba** que `corepack enable`
+baste en su máquina, que su consola externa tenga el problema, ni la máquina de Paris. Sigue sin
+repetir las suites completas de producto, `dev` ni Compose.
+
+**Comprobación propia del mecanismo de `COREPACK_ROOT` (2026-10-05, máquina de Victor, pnpm global
+`11.9.0`)**, a raíz de la petición de no presentar el mecanismo como probado en las tres:
+
+| Prueba, ejecutando el pnpm global bajo `corepack pnpm exec` | Resultado |
+| --- | --- |
+| Con `COREPACK_ROOT` presente (lo normal bajo corepack) | error de versión: «This project is configured to use 9.0.0 of pnpm. Your current pnpm is v11.9.0 … does not switch versions when running under corepack» |
+| Quitando **solo** `COREPACK_ROOT` | `9.0.0`, código `0` |
+
+El mecanismo queda aislado, **para la `11.9.0`**. No se probó con la `11.1.3` ni la `11.19.0` (no están
+instaladas aquí), por eso el alcance de la cadena de «Causa» queda acotado a esa versión.
+
 ## Trazabilidad con los criterios de la tarjeta
 
 | # | Criterio | Estado | Evidencia y salvedades |
@@ -574,7 +639,7 @@ primero no depende de `develop` y lo segundo ya se sabe no fiable en esta máqui
 | 1 | `lint`, `build`, `test` y `typecheck` se ejecutan desde la raíz vía turbo sin el error de versión de pnpm, en la máquina donde se reproducía | **Cumplido en lo que pide el criterio; con una salvedad sobre `test`** | `lint` 4/4, `build` 4/4 y `typecheck` 1/1 con código `0` y `--force`, y 0 apariciones del error de versión en todas las ejecuciones. `test` tampoco muestra el error y pasa en dos mitades, pero **el comando literal `corepack pnpm test` termina con código `1` en esta máquina** por tests con plazos de tiempo (`RF-103-005`, `RF-098-004`), no por pnpm |
 | 2 | `pnpm dev` levanta frontend, backend y processor en paralelo | **Cumplido con salvedades** | Turbo lanza las cuatro tareas en paralelo con el pnpm correcto. Tal como está documentado, `dev` no deja sirviendo a backend ni a processor y turbo termina todo cuando falla uno; con `--env-mode=loose` y un archivo de entorno con `127.0.0.1` las cuatro responden `200` (grupo 3, `RF-103-001` a `RF-103-003`). Documentado en el `README.md` |
 | 3 | CI sigue en verde | **Cumplido sobre `f6e01c5`** (PR #75): el workflow `CI` pasa sus 7 jobs. `JUP reviews` es otro workflow y espera las reviews | Esta rama solo cambia `README.md`, `docs/` y `openspec/` (verificado con `git diff --name-only origin/develop...HEAD`): ni `package.json`, `turbo.json`, lockfile, `pnpm-workspace.yaml`, `.github/`, `apps/`, `tools/` ni `packages/`. Los jobs de CI ya ejecutan `corepack enable` antes de pnpm. Acreditado con los checks del pull request (ver la cabecera) |
-| 4 | `RF-093-001` cerrado con la causa documentada, o reformulado si es de entorno | **Cumplido por la vía de la reformulación; el hallazgo no se cierra** | Se mantiene `Open` con la causa (de entorno) documentada con precisión, la corrección, las dos afirmaciones del texto original que eran inexactas, 3 reproducciones y 2 máquinas corregidas. Pasa a `Fixed` cuando confirmen el entorno de Codex de Alejandro (en consola externa) y la máquina de Paris |
+| 4 | `RF-093-001` cerrado con la causa documentada, o reformulado si es de entorno | **Cumplido por la vía de la reformulación; el hallazgo no se cierra** | Se mantiene `Open` con la causa (de entorno) documentada con precisión, la corrección, las dos afirmaciones del texto original que eran inexactas, 2 reproducciones del error de versión, 1 divergencia distinta (Alejandro, runtime de Codex) y 2 máquinas corregidas. Pasa a `Fixed` cuando confirmen el runtime y la consola externa de Alejandro y la máquina de Paris |
 | 5 | Queda escrito si el equipo debe hacer algo en sus máquinas, y qué | **Cumplido de forma provisional** | `README.md`, «Requisito previo: pnpm con corepack»: `corepack enable` una vez si `corepack pnpm exec pnpm --version` no imprime `9.0.0`. Comprobado en 2 de 4 máquinas; el caso de un `pnpm` aportado por el entorno de un asistente queda sin resolver |
 | 6 | Las tarjetas futuras de frontend pueden usar los scripts de la raíz sin sustituto, o queda documentado por qué no | **Parcial, y documentado** | `lint`, `build` y `typecheck` sí, con `corepack enable` hecho y `--force` para comprobar. `test` con los cuatro paquetes a la vez no es fiable en todas las máquinas: se documenta ejecutarlo por mitades. `dev` necesita los pasos del `README.md`. `RF-098-004` y `RF-103-005` |
 | 7 | El spike refleja F4 completa, con la tarjeta de Docker marcada como resuelta por JUP-049 y JUP-050 | **Cumplido** | `docs/spikes/frontend-migration.md`, F4 y entrada 11 de «Próximos pasos». Los puntos de Docker se verificaron contra `apps/frontend/Dockerfile`, `docker-compose.yml`, `README.md`, `RF-090-001`/`RF-090-002` y `tools/docker-topology.test.mjs` |

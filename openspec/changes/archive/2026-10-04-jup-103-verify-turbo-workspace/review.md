@@ -7,12 +7,22 @@ implementó. La revisión y la validación de terceros llegan con el pull reques
 «Validacion JUP-103»). Evidencia completa, con las salidas reales, en
 [`docs/evidence/JUP-103-validation.md`](../../../../docs/evidence/JUP-103-validation.md).
 
-Resumen: `RF-093-001` **no era un fallo del repositorio**. En las máquinas afectadas faltaba
-`corepack enable` y un pnpm `11.x` global se resolvía antes que el de corepack, de modo que turbo
-lanzaba una versión que se negaba a cambiar a la fijada. La corrección es de entorno, se comprobó en
-dos máquinas y queda documentada en el `README.md`. De los 7 criterios de la tarjeta, **solo el 7
-(spike) se cumple sin reservas**; el 1, 2, 4, 5 y 6 se cumplen con salvedades escritas y el 3 (CI)
-está pendiente del pull request (ver «Checklist»).
+Resumen: `RF-093-001` **no era un fallo del repositorio**, sino de entorno: un pnpm que no es el de
+corepack se resuelve por `PATH` antes que el lanzador de corepack. Hay que distinguir dos casos:
+
+- **Dos reproducciones del error de versión** (Victor, pnpm global `11.9.0`; Lucía, `11.1.3`), ambas
+  con un pnpm `11.x` instalado con `npm -g` y sin `corepack enable`: bajo `corepack pnpm`, ese pnpm se
+  niega a cambiar a la versión fijada. El mecanismo está aislado solo con la `11.9.0` (quitando
+  únicamente `COREPACK_ROOT` cambia a `9.0.0`). La corrección, `corepack enable` una vez por máquina,
+  se comprobó en esas dos y queda documentada en el `README.md`.
+- **Una divergencia distinta** (Alejandro): el pnpm `11.19.0` lo aporta el entorno de ejecución de
+  Codex, sin pnpm global de npm; no hay error de versión sino `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`.
+  Con un lanzador temporal de corepack solo en el `PATH` del proceso pasan `lint`, `build` y
+  `typecheck`. La corrección en ese runtime y en su consola externa **está pendiente**; no se presenta
+  como probado que el mecanismo de rechazo sea el mismo en las tres máquinas.
+
+De los 7 criterios de la tarjeta, **el 3 (CI) y el 7 (spike) se cumplen sin reservas**; el 1, 2, 4, 5
+y 6 se cumplen con salvedades escritas (ver «Checklist»).
 
 ## Scope Reviewed
 

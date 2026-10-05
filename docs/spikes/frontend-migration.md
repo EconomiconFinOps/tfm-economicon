@@ -299,11 +299,16 @@ carril `light` — **implementada**
   a processor** (turbo en modo `strict` no les pasa su configuración y el `.env` de Compose usa
   nombres internos de Compose). Con `--env-mode=loose` y un archivo de entorno con `127.0.0.1` las
   cuatro responden `200`. Documentado en el `README.md`; `RF-103-001` a `RF-103-003`.
-- [x] Confirmar `pnpm build` y `pnpm lint` pasan via turbo, y también `test` y `typecheck`: pasan en
-  las máquinas con `corepack enable` hecho. `RF-093-001` resultó ser de entorno (un pnpm global por
-  delante de corepack en el `PATH`) y queda `Open`, reformulado con precisión, hasta confirmar la
-  corrección en dos máquinas más; la corrección es `corepack enable` una vez por máquina, documentada
-  en el `README.md`.
+- [x] Confirmar `pnpm build` y `pnpm lint` pasan via turbo, y también `typecheck`: pasan desde la
+  raíz en las máquinas con `corepack enable` hecho. `test` **pasa por mitades** (Python, y el frontend
+  con `--maxWorkers=1`), pero **el comando literal `corepack pnpm test` falla de forma distinta en
+  cada ejecución** con los cuatro paquetes a la vez (`RF-103-005`, `RF-098-004`). `RF-093-001`
+  resultó ser de entorno (un pnpm que no es el de corepack por delante en el `PATH`): dos
+  reproducciones del error de versión (pnpm global de npm en las máquinas de Victor y de Lucía) y
+  **una divergencia distinta** (el pnpm lo aporta el entorno de Codex en la de Alejandro, sin error de
+  versión). Queda `Open`, reformulado con precisión, hasta confirmar la corrección en ese runtime y su
+  consola externa y en la máquina de Paris; la corrección es `corepack enable` una vez por máquina,
+  documentada en el `README.md`.
 
 **F4 (Integración de plataforma) queda completa** con JUP-049 y JUP-050 (Docker) y JUP-103 (turbo).
 
@@ -495,15 +500,18 @@ tarjeta JUP** de la epica.
     (verificado contra el código el 2026-10-03), la tercera vez en la épica que el spike describía como
     pendiente algo ya hecho por otra tarjeta, tras `reconciliar-capa-api` y `reconciliar-auth-tenant`.
     La de turbo encontró que `RF-093-001`, que seis tarjetas de frontend arrastraron como bloqueo,
-    **no era un fallo del repositorio**: en las máquinas afectadas faltaba `corepack enable` y un pnpm
-    11.x global se resolvía antes que el de corepack, con lo que turbo lanzaba una versión que se
-    negaba a cambiar a la fijada. Se reformuló con precisión y **se mantiene `Open`**: la corrección de
-    entorno (`corepack enable` una vez por máquina, documentada en el `README.md`) está comprobada en
-    dos máquinas, y pasará a `Fixed` cuando se confirme el entorno de Codex de Alejandro (en consola
-    externa) y la máquina de Paris. De paso se descubrió que la
-    caché de turbo no depende del gestor de paquetes (una comprobación con `cache hit` no demuestra
-    nada: hay que usar `--force`), que `pnpm dev` por sí solo no deja sirviendo backend ni processor
-    (`RF-103-001`, `RF-103-002` y `RF-103-003`), que `local:test` falla con la infraestructura de
-    Compose levantada (`RF-103-004`) y que `test` con los cuatro paquetes a la vez falla de forma
-    distinta en cada ejecución por tests con plazos de tiempo (`RF-103-005`), aunque por mitades pasa. **Queda de la épica:** F5 (`validacion-e2e` y
-    `checks-y-archive`) y lo ya señalado arriba.
+    **no era un fallo del repositorio**, sino de entorno: un pnpm que no es el de corepack se resuelve
+    por `PATH` antes que el lanzador de corepack. Hay **dos reproducciones del error de versión**
+    (pnpm 11.x global de npm, sin `corepack enable`, en las máquinas de Victor y de Lucía, donde ese
+    pnpm se niega a cambiar a la fijada bajo `corepack pnpm`) y **una divergencia distinta** (en la de
+    Alejandro el pnpm 11.19.0 lo aporta el entorno de Codex y no hay error de versión). Se reformuló
+    con precisión y **se mantiene `Open`**: la corrección de entorno (`corepack enable` una vez por
+    máquina, documentada en el `README.md`) está comprobada en las dos primeras, y pasará a `Fixed`
+    cuando se confirme en el runtime y la consola externa de Alejandro y en la máquina de Paris. De
+    paso se descubrió que la caché de turbo no depende del gestor de paquetes (una comprobación con
+    `cache hit` no demuestra nada: hay que usar `--force`), que `pnpm dev` por sí solo no deja
+    sirviendo backend ni processor (`RF-103-001`, `RF-103-002` y `RF-103-003`), que `local:test` falla
+    con la infraestructura de Compose levantada (`RF-103-004`) y que `test` con los cuatro paquetes a
+    la vez falla de forma distinta en cada ejecución por tests con plazos de tiempo (`RF-103-005`),
+    aunque por mitades pasa. **Queda de la épica:** F5 (`validacion-e2e` y `checks-y-archive`) y lo ya
+    señalado arriba.

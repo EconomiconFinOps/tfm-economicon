@@ -54,9 +54,12 @@ tfm-economicon
 El repositorio fija `pnpm@9.0.0` en `packageManager`. Los scripts de la raiz (`lint`, `build`, `test`,
 `typecheck`, `dev`) pasan por turbo, que lanza `pnpm run <script>` en cada paquete buscando `pnpm` en el
 `PATH`. Si en la maquina no estan activados los lanzadores de corepack, turbo encuentra otro pnpm (por
-ejemplo uno global instalado con `npm install -g pnpm`) y falla con
-`This project is configured to use 9.0.0 of pnpm. Your current pnpm is v...`. CI no lo sufre porque
-ejecuta `corepack enable` antes de usar pnpm.
+ejemplo uno global instalado con `npm install -g pnpm`, o uno que aporta el entorno de ejecucion de un
+asistente de codigo) y falla. Con un pnpm global `11.9.0` o `11.1.3` el mensaje es
+`This project is configured to use 9.0.0 of pnpm. Your current pnpm is v...`; con otras versiones el
+sintoma puede ser distinto (con una `11.19.0` las tareas abortan con
+`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`). CI no lo sufre porque ejecuta `corepack enable` antes de
+usar pnpm.
 
 Una vez por maquina:
 

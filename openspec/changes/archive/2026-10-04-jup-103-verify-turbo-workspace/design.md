@@ -86,6 +86,14 @@ Dos datos lo confirman: el comando `corepack pnpm exec pnpm --version` reproduce
 de por medio, y `pnpm lint` sin `corepack` pasa, porque sin `COREPACK_ROOT` el pnpm global sí cambia
 de versión, tanto en el proceso exterior como en los que lanza turbo.
 
+**Precisión posterior (revisión del PR #75, 2026-10-05):** la cadena de arriba está aislada solo con el
+pnpm `11.9.0` de la máquina de Victor: ejecutando ese pnpm bajo `corepack pnpm exec` con
+`COREPACK_ROOT` presente da el error de versión, y quitando únicamente esa variable cambia a `9.0.0` y
+funciona. Con la `11.1.3` de Lucía se vio el mismo mensaje sin aislar la variable, y con la `11.19.0`
+de Alejandro el síntoma es otro (sin error de versión; aborta con
+`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`). Lo que sí comparten las tres máquinas es un pnpm que no
+es el de corepack por delante en el `PATH`.
+
 Esto corrige dos afirmaciones del hallazgo original:
 
 - "`packageManager: pnpm@9.0.0` resuelve correctamente en shell interactiva": el `9.0.0` que devuelve
