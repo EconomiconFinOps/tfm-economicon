@@ -1,6 +1,6 @@
 # Demo funcional — JUP-065
 
-Actualizado: 2026-10-04. Origen: «JUP-065 — Preparar la demo funcional».
+Actualizado: 2026-10-05. Origen: «JUP-065 — Preparar la demo funcional».
 [Tarjeta](https://trello.com/c/SZUFo4ol).
 
 ## Alcance
@@ -11,7 +11,28 @@ solicitar formalmente revisión/validación. El paquete canónico compartido est
 conserva escenarios y tareas. La [evidencia](../evidence/JUP-065-validation.md)
 distingue comprobaciones automáticas y pendientes humanos.
 
-## Decisiones
+## Corrección P2 de cobertura CI — 05/10/2026
+
+Paris solicitó proteger los tres comandos de demo y el historial completo del
+checkout de gobernanza en su [review sobre b77d596](https://github.com/EconomiconFinOps/tfm-economicon/pull/63#pullrequestreview-5408829450).
+Se añaden cuatro pruebas en `tools/ci-workflow.test.mjs`: líneas ejecutables
+completas para cada comando y `fetch-depth: 0`; se impide ignorar fallos de demo.
+Workflow, runtime, paquete y fuentes fijas conservados.
+
+Resultado: workflow 14/14; seis mutaciones rechazadas, con restauración byte a
+byte; gobernanza afectada 97/97; verificador normal/optimizado 15/15, dos tests,
+28 consultas/siete categorías; OpenSpec 45/45, diez changes, higiene 842 y diff
+contra develop PASS. [Evidencia](../evidence/JUP-065-validation.md) actualizada.
+Logs locales: `materiales/07-evidencias/JUP-065-proteccion-ci-2026-10-05/` en
+el espacio Economicon, fuera del repositorio.
+
+Solicitar revisión de Paris sobre el nuevo head (Approve levanta Request changes)
+y revalidación afectada a Víctor. Su Comment favorable de `b77d596` es histórico
+para este cambio. Pairing Lucía y ensayo integrado siguen pendientes; no se
+implementa generación LLM. Sin merge ni cierre; Trello conserva etapa 50 durante
+la corrección. Este corte sustituye los pendientes técnicos del 04/10 siguientes.
+
+## Decisiones históricas
 
 Actualización del 04/10: develop `c3aa9d6` aporta #62, #60 y #67. El conflicto
 de CI se resuelve conservando comandos demo y retrieval, sin tocar el paquete

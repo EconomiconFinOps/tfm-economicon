@@ -7,6 +7,41 @@ Rama: `docs/JUP-065-functional-demo`, sobre develop
 [Paquete](../demo/JUP-065/README.md) y
 [alcance OpenSpec](../../openspec/changes/archive/2026-10-03-jup-065-functional-demo/proposal.md).
 
+## Protección de la demo en CI — 05/10/2026
+
+Paris solicita un P2 sobre `b77d596` en
+[Revision JUP-065](https://github.com/EconomiconFinOps/tfm-economicon/pull/63#pullrequestreview-5408829450):
+los comandos de demo y el historial Git estaban presentes, pero los tests no
+detectaban su pérdida. Se leyeron las siete reviews y ambas fuentes de
+comentarios (conversación e inline vacías) antes de corregir.
+
+`tools/ci-workflow.test.mjs` incorpora cuatro pruebas: una por cada comando
+completo de demo en gobernanza y otra que exige `fetch-depth: 0` en su checkout.
+Las líneas comentadas no satisfacen la comparación y los pasos de demo no
+pueden tener `continue-on-error`. No se cambia el workflow ni el paquete.
+
+Comprobado en Windows con Node 24.14.1 y Python 3.14.4:
+
+- `corepack pnpm ci:check:test`: **14/14 PASS**.
+- Seis mutaciones detectadas con salida 1: quitar cada comando por separado,
+  quitar los tres juntos, quitar `fetch-depth` y cambiarlo a 1. El workflow se
+  restaura byte a byte en `finally`; el control posterior vuelve a 14/14 PASS.
+- Workflow, política PR, trazabilidad, higiene y gobernanza: **97/97 PASS**.
+- Verificador normal y optimizado: **15/15 PASS**, sin regenerar originales;
+  dos tests/cuatro controles negativos PASS; fuentes 28 consultas/siete categorías.
+- OpenSpec **45/45**, diez changes trazables, higiene 842 archivos y
+  `git diff origin/develop --check` PASS.
+
+Logs y recibo de mutaciones en el espacio autorizado:
+`materiales/07-evidencias/JUP-065-proteccion-ci-2026-10-05/` (fuera del repositorio).
+Esta corrección requiere nueva revisión de Paris, con Approve para levantar su
+Request changes, y revalidación de lo afectado por Víctor en el nuevo head.
+La validación favorable de Víctor sobre `b77d596` permanece como evidencia de
+esa combinación, no como aceptación automática del cambio posterior.
+Pairing de Lucía sin acreditar; ensayo integrado `not_run`. No se ejecutó
+runtime ni generación con modelo real en esta corrección; sin merge ni cierre.
+Los cortes anteriores conservan sus resultados históricos.
+
 ## Nueva base con retrieval — 04/10/2026
 
 Incorporado develop `c3aa9d68690ae718aecf1bee2f08cd25eb5f704f`, incluidas
