@@ -111,3 +111,62 @@ Playwright al repositorio.
   reproducción nueva. Los fallos que aparezcan se registran como `RF-104-NNN`.
 - **ADR:** no aplica; no se añade ninguna dependencia ni se cambia la arquitectura (ver `design.md`,
   decisión 11).
+
+## Human Approval
+
+- Change: jup-104-e2e-validation
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-05
+- Carril: standard
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Scope adjustment approved: el criterio 4 de la tarjeta Trello (el contexto con el que responde
+  el asistente) se acota a lo que existe en `develop` en `0488372`, verificado contra el código
+  antes de proponer. El chat no genera texto con un modelo:
+  compone la respuesta con una plantilla y los fragmentos recuperados; y las citas visibles dependen
+  de JUP-025 (PR #55), que no está fusionado. Se acredita que la respuesta contiene fragmentos del
+  documento ingestado para el ámbito activo y que otro ámbito no los recibe, con el proveedor de
+  embeddings `mock`, y se declara por escrito lo que ese modo no acredita. La tarjeta permite
+  corregir fallos triviales del frontend; se renuncia a ello por defecto (decisión 8). El resto del alcance se mantiene tal cual.
+- Decisions approved: se aprueban las doce decisiones del `design.md`. (1) **Proveedor de embeddings
+  `mock`**: acredita el camino de los datos, no la pertinencia semántica; el modo `litellm` queda
+  como pendiente declarado y no se escribe "modelo real" ni "respuesta generada". (2) **Stack de
+  Compose en un proyecto propio** (`COMPOSE_PROJECT_NAME=jup104-e2e`) con volúmenes nuevos e imágenes
+  reconstruidas desde la rama; el proyecto por defecto de la máquina no se toca y al terminar se
+  para sin borrar volúmenes. (3) **Datos**: costes del smoke, ejecutado una sola vez, en Core
+  Finance con el periodo `2024-06-01` a `2024-06-21`; documento
+  `docs/assistant-corpus/finops/azure-finops-mvp.md` y pregunta `JUP-069-004` en Growth Ops, y la
+  misma pregunta en Core Finance como contraste. (4) **Navegador**: Chromium sin opciones que
+  relajen la seguridad, sin interceptar peticiones y entrando por el formulario, conducido por un
+  guion de Playwright fuera del repositorio y versionado como receta; más una pasada manual de quien
+  valida. (5) **Ingesta y contexto probados fuera de la interfaz** con consultas de solo lectura a
+  CockroachDB y pgvector y con el evento `retrieval` del backend. (6) **`RF-087-002` se comprueba**:
+  `Fixed` si el historial carga, `Open` con reproducción nueva si no. (7) **Automatización**: receta
+  versionada ahora; Playwright en CI queda fuera, en una tarjeta propia. (8) **Sin código de
+  producto ni ciclo Red/Green**; un fallo trivial que impida seguir obliga a parar y pedir ampliar
+  el alcance. (9) **Un fallo detiene el paso, no el recorrido**, y se registra como `RF-104-NNN`.
+  (10) **Spike y backlog al final**, con JUP-103 (PR #75) ya en `develop`. (11) **No aplica ADR**.
+  (12) **Capturas fuera del repositorio.**
+- Constraints: ningún archivo de `apps/**`, `tools/**`, `packages/**` ni `.github/**` en el diff; sin
+  cambios en `docker-compose.yml`, `package.json`, `pnpm-lock.yaml`, `README.md` ni
+  `apps/frontend/README.md`. `local:smoke` se ejecuta una sola vez. No se registra ninguna
+  contraseña, token, clave ni cadena de conexión, y las variables secretas del `.env` se anotan solo
+  por nombre. No se borra ningún volumen. No se cita configuración local de herramientas de
+  asistencia en documentos versionados. No se da por validado nada que no se haya ejecutado.
+- Main risks: (a) con `mock` la prueba del asistente es débil; se compensa con el contraste entre
+  ámbitos y el evento `retrieval`, y el límite queda escrito. (b) El `.env` local es anterior a
+  JUP-022 y JUP-023 y `local:doctor` no garantiza que el backend arranque (`RF-050-002`): el
+  criterio de entorno listo es `up --wait` más el smoke. (c) El PR #75 puede no estar fusionado al
+  llegar al grupo 10: en ese caso se para y se decide si se espera. (d) Si se fusiona JUP-025,
+  JUP-036 o JUP-017 durante la tarjeta, hay que reconstruir y repetir el paso afectado. (e) La
+  batería de pruebas completa no es determinista con los cuatro paquetes a la vez y se ejecuta por
+  mitades. (f) El guion puede fallar por tiempos y no por el producto: un fallo se repite antes de
+  registrarlo.
+- Required changes before execution: none
+- Notes: primera tarjeta de F5 de la épica de migración del frontend. Nada del estado descrito en
+  `design.md` se ha ejecutado todavía: se leyó en el código con el stack parado, y el grupo 2 de
+  `tasks.md` lo comprueba antes de recorrer nada. Son 43 tareas en 11 grupos. La tarea 7.1 (pasada
+  manual en el navegador habitual) no la puede ejecutar la herramienta de implementación, y la 10.1
+  depende de que se fusione el PR #75. Queda una pregunta abierta que no cambia las tareas: si este
+  registro cuenta para el ensayo de JUP-065.
