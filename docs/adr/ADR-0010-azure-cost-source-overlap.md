@@ -65,3 +65,9 @@ and [frontend warning](../../openspec/changes/jup-026-azure-cost-kpis/specs/fron
 The [RF-026-001 detail](../../openspec/findings/backlog.md#rf-026-001) describes
 future replacement with explicit confirmation, not current behavior or a new
 JUP-026 delivery requirement.
+
+## Integración verificada — 01/10/2026
+
+[PR #52](https://github.com/EconomiconFinOps/tfm-economicon/pull/52) se integró en
+develop el 30/09. La frase anterior sobre no establecer integración describe
+el gate del 28/09. Se conservan aceptación, alcance conservador y RF-026-001.
