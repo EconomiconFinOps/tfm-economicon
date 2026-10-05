@@ -24,8 +24,9 @@ is evidence for the project memory, not a replacement backlog or merge gate.
 Archived cards, commits outside PR, external docs and Trello pairing comments
 are not imported. The manual table holds original links for human contrast.
 GitHub author matching excludes unknown identities. Declared coauthors are
-recognized by exact normalized team names, and remain declarations. OpenSpec
-stays active until the leader handles review, validation and archive before merge.
+recognized by exact normalized team names, and remain declarations. The leader
+archives the change in the branch before opening the pull request, as
+CONTRIBUTING requires; review, validation and integration follow in Trello.
 
 ## Validation
 

@@ -9,6 +9,7 @@
 ## 2. Team delivery
 
 - [x] 2.1 Victor contrasts scope, pairing and initial evidence with Alejandro.
-- [ ] 2.2 Victor opens PR against develop and requests Lucia review and Paris validation.
-- [ ] 2.3 Link titled reviews, address findings, archive OpenSpec and integrate.
-- [ ] 2.4 Resolve or document contribution gaps before the final memory delivery.
+
+Delivery steps that follow the archive (pull request, titled reviews,
+integration and contribution gaps before the final memory) are tracked in Trello
+and listed in `docs/evidence/JUP-064-validation.md`.

@@ -144,3 +144,16 @@ Hallazgos:
 
 Pendiente de acordar en la PR: bajo qué tarjeta se regenerará el registro
 antes de la memoria y quién, además de Alejandro, puede ejecutar la recogida.
+
+## Pendientes tras el archivado
+
+El cambio OpenSpec se archiva en la rama antes de abrir la PR, como pide
+CONTRIBUTING, y no después del feedback como proponía la entrega: así el
+archivado no llega como push posterior a las aprobaciones. Los pasos de
+entrega que dependen de la PR salen de `tasks.md` (antes 2.2 a 2.4) y su
+estado se sigue en Trello:
+
+- Abrir la PR contra `develop` y pedir la revisión a Lucía y la validación a Paris.
+- Enlazar las reviews tituladas, atender los hallazgos e integrar.
+- Resolver o documentar los huecos de contribución antes de la entrega de la
+  memoria.
