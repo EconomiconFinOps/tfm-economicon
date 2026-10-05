@@ -1,6 +1,35 @@
 JUP: JUP-051
 Trello: https://trello.com/c/MklqbF5b
 
+## Estado actualizado — 2026-10-05
+
+La entrega está en [PR #58](https://github.com/EconomiconFinOps/tfm-economicon/pull/58),
+rama `ci/JUP-051-ci-pipeline`, head `1a83c1d862de12c85f0ed36f6a465065d70bef82`,
+con `develop c3aa9d68690ae718aecf1bee2f08cd25eb5f704f` incorporado.
+Se aplica `CONTRIBUTING.md`, proceso 2026-09-30 (JUP-100).
+La tarjeta oficial consultada el 05/10 asigna liderazgo a Paris Arcos Martin,
+pairing a Victor Mendez y revisión y validación a Lucia Mateo, con excepción
+acordada en Trello el 02/10 y declarada en la PR. Las asignaciones no acreditan
+por sí mismas participación realizada.
+
+Esta regularización conserva el alcance y el comportamiento implementados.
+Expediente archivado el 05/10/2026 en la entrega de la misma PR; tres requisitos y ocho escenarios promovidos a la especificación consolidada.
+La autorización de Paris para corregir el archivado consta el 05/10.
+Paris aprobó el cierre documental y ordenó el archivado el 05/10. DoD local final PASS antes del archivo. No se ha integrado la PR.
+
+Las reviews históricas de Lucia y las ejecuciones remotas están enlazadas en
+[la evidencia](../../../../docs/evidence/JUP-051-validation.md#actualizacion-del-2026-10-05).
+La actualización desde develop añadió tres controles de retrieval al workflow
+y sus aserciones. Su revalidación humana incremental sigue pendiente antes de
+integrar, aunque la CI actual sea correcta.
+
+## Registro histórico — 2026-10-01
+
+El contenido siguiente describe la preparación original, incluidos roles, hashes,
+resultados y pendientes de esa fecha. No representa el estado actual de la PR.
+Se conserva íntegra la aprobación pre-code y no se atribuyen nuevas ejecuciones
+a los agentes ni a las personas que participaron entonces.
+
 ## Why
 
 The card requires automatic lint, tests and build on every commit. At develop
