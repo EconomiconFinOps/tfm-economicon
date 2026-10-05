@@ -76,7 +76,7 @@ La selección y recuperación del agente se probaron con unittest; la parte
 Compose/smoke/rollback se ejecutó realmente. **No se ha acreditado todavía
 una promoción automática desde un run CD real integrado en develop.** Tampoco
 se simuló un reboot del host compartido. Guía:
-[dockerserver-cd](../deployment/dockerserver-cd.md), ADR-0017 Proposed.
+[dockerserver-cd](../deployment/dockerserver-cd.md), ADR-0018 Proposed.
 
 Roles originales conservados: Victor liderazgo, Alejandro pairing, Lucia
 revisión, Paris validación. Implementación técnica preparada por solicitud del
@@ -98,3 +98,52 @@ Docker previo cubre e4a66a6/0471e92, no acredita por sí mismo el nuevo árbol;
 la validación formal deberá comprobar el head actualizado. Cambio técnico
 archivado en `openspec/changes/archive/2026-10-04-jup-052-dockerserver-cd/`;
 primera promoción automática y actuaciones humanas siguen pendientes.
+
+## Correcciones tras Revision Lucia — 2026-10-05
+
+Origen: [Revision JUP-052](https://github.com/EconomiconFinOps/tfm-economicon/pull/73#pullrequestreview-5410106030)
+sobre `096be34dfe9113815c5cbc4ee42194e5dc721d94`. La petición de cambios no
+queda levantada por la implementación del autor; Lucia debe revisar el nuevo
+head y Paris publicar Validacion JUP-052.
+
+| Petición | Corrección y regresión propia |
+| --- | --- |
+| 1. Pilas huérfanas tras promoción/rollback | Reconciliación de releases inactivas en cada poll y antes de ocupar slot. Down fallido tras promover/rollback se reintenta incluso sin nuevo SHA o con pausa. Test con puertos simulados completa el siguiente SHA reutilizando el slot sin colisión. Fuentes y volúmenes conservados. |
+| 2. Current rota bloquea candidatos | Error saneado en recovery.json; continúa consulta y candidato elegible puede promover. Poll completo probado con recuperación actual fallida. |
+| 3. Down oculta fallo | Failure.json antes de down; conserva error original y registra tipo de fallo de limpieza. Regresión build+down fallidos comprueba identidad de excepción y evidencia. |
+| 4. .preparing residual | Copia incompleta se elimina/reintenta bajo lock. Regresión conserva fuente válida y elimina marcador residual. |
+| 5. ADR duplicado | ADR-0018, libre en develop y diffs de PR abiertas consultados el 05/10; fila en tabla canónica, referencias y enlace archivado corregidos. ADR-0017 JUP-022 conservado. |
+| 6. AGENTS ajeno/enlace roto en Git | Se retira de la PR el cambio de AGENTS. El archivo de trabajo y continuidad locales conservan la instrucción humana de leer/mantener docs/continuidad; no se elimina documentación ni se publica el enlace ausente del árbol Git. |
+| 7. Pruebas insuficientes | Poll feliz fetch/archive/prepare/deploy, carrera FETCH_HEAD, carrera tras preparación, head tras smoke, slot, lock no bloqueante simulado y real Linux, permisos 600, SHA completo, filtro develop, extracción data contra symlink externo, variantes dotenv anidadas, resume y validate-source. |
+
+Verificación propia sobre fuente corregida:
+
+- `corepack pnpm cd:test`: 3 Node correctas; 36 Python, 35 correctas y 1
+  omitida en Windows (lock Linux). Suite Python en copia temporal DockerServer
+  Python **3.12.3**: **36/36**, sin skips; incluye permisos reales y contención
+  de dos handles flock. Compose/GitHub simulados, no despliegue Docker real.
+- Diez mutantes individuales de la revisión y guardas adicionales: **10/10
+  detectados, cero supervivientes**: fetch, current=head, slot, LOCK_NB, chmod
+  dotenv, SHA corto, filtro branch, filtro tar, ignore dotenv y guard post-prepare.
+  Sondas en copias desechables fuera del checkout; no mutación de rama.
+- OpenSpec 45/45; tests CI/política/gobierno 80/80; diff check correcto.
+  Los logs y script de mutantes se conservan en el espacio de trabajo, en
+  `materiales/07-evidencias/JUP-052-review-fixes-20261005/`.
+
+Disposición de las recomendaciones no bloqueantes de Lucia:
+
+| Recomendación | Decisión |
+| --- | --- |
+| No reconstruir SHA fallido sin límite | Implementado: pausa por SHA; resume habilita retry conservando failure. |
+| Validate-source/proyecto por root | Implementado rechazo de SHA existente y pausa manual, hash root en proyectos nuevos. Documentada promoción del state y responsabilidad del operador de relacionar etiqueta/source; no acredita elegibilidad GitHub. |
+| Loopback no aísla usuarios locales | Documentada confianza en usuarios del host y SQL insegura local. Se conservan puertos para operaciones de desarrollo aprobadas; sin datos reales. |
+| head_repository null | Falla cerrado sin AttributeError; regresión de gate incluida. |
+| Dispatch desde otra rama | Guía precisa jobs omitidos y filtro branch del agente. |
+| Logs no sobreviven down | Comentario y guía corregidos: volúmenes/fuentes sí, logs contenedor no. |
+| Head avanza durante build/smoke | Recheck añadido antes de promover; regresión conserva current. Carrera inmediatamente posterior a API documentada, sin promesa transaccional con GitHub. |
+| Rutas systemd y CI duplicada con JUP-051 | Se mantiene instalación específica del host; guía indica adaptar unidad. Doble CI aceptada/documentada por ahora. |
+
+No validado en esta corrección: Docker/Compose real sobre este nuevo código,
+caídas reales del motor, reboot, primera promoción automática, pruebas
+funcionales independientes Paris y pairing Victor. Timer instalado y stack
+compartido no modificados; no secretos impresos ni promoción al root automático.

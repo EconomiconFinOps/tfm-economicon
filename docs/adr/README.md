@@ -1,8 +1,5 @@
 # Architecture Decision Records
 
-JUP-052: [ADR-0017 — Private DockerServer CD](ADR-0017-private-dockerserver-cd.md)
-(Proposed).
-
 This directory contains the project decision log for durable architecture choices. OpenSpec `design.md` captures the technical design of an individual Trello task; ADRs explain decisions that remain relevant across tasks, modules or project phases.
 
 ## Registro para memoria y tutor — JUP-061
@@ -44,6 +41,8 @@ benchmarks de ADR-0002 conservan su fecha; no son precios actuales.
 | [0014 · Auth propia para demo](ADR-0014-demo-auth-boundary.md) | 01/10 · Proposed | Formalizar sesión existente sin añadir IdP; no acreditar producción. | JUP-061 consolida; contrato JUP-085 integrado. Justificación retrospectiva pendiente de ratificar. |
 | [0015 · Compose local](ADR-0015-local-compose-deployment-boundary.md) | 01/10 · Proposed | Repetir topología y builds; orquestador/hosting productivo no seleccionados. | JUP-061 consolida; JUP-049 integrado. JUP-050 [PR #59](https://github.com/EconomiconFinOps/tfm-economicon/pull/59) integrada el 02/10 UTC, [evidencia](../evidence/JUP-050-validation.md). Ratificación y despliegue final pendientes. |
 | [0016 · Pin de LiteLLM 1.103.2](ADR-0016-litellm-version-pin.md) | 02/10 · Proposed | Fijar imagen/digest para validación aislada; baseline anterior afectada por avisos, latest no reproducible. | JUP-023; [PR #65](https://github.com/EconomiconFinOps/tfm-economicon/pull/65) integrada el 03/10 UTC y [evidencia](../evidence/JUP-023-validation.md). Decisión operativa de Paris del 02/10 documentada en ADR; no acepta ADR-0002 ni autoriza uso real. |
+
+| [0018 · CD privado DockerServer](ADR-0018-private-dockerserver-cd.md) | 03/10 · Proposed | Agente pull con CI y smoke antes de promover; runner público privilegiado descartado en servidor compartido. | JUP-052; [PR #73](https://github.com/EconomiconFinOps/tfm-economicon/pull/73) en revisión y [evidencia](../evidence/JUP-052-validation.md). No acredita producción ni aceptación independiente. |
 
 ### Decisiones ya explicadas fuera de un ADR
 

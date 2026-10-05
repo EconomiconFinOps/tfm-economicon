@@ -7,7 +7,7 @@ Paris validación. No se presume participación humana ni aprobación técnica.
 
 ## Decisions
 
-ADR: [ADR-0017](../../../docs/adr/ADR-0017-private-dockerserver-cd.md), Proposed.
+ADR: [ADR-0018](../../../../docs/adr/ADR-0018-private-dockerserver-cd.md), Proposed.
 CD llama al workflow CI del mismo SHA mediante workflow_call. El agente acepta
 solo el último run exitoso de cd.yml en develop, del repositorio canónico y con
 SHA igual al head actual; verifica otra vez el head tras el fetch/preparación.
@@ -33,3 +33,21 @@ Ensayo aislado desde esta rama; publicar PR para los roles asignados. Integrar
 tras revisión y validación. Instalar agente/unidades y verificar lingering.
 Primera ejecución CD real solo después de integración en develop. Conservar
 evidencia del run id y del state.json; no declarar Hecho antes de ese contraste.
+
+## Correcciones de revisión — 2026-10-05
+
+Revisión Lucia en PR #73 sobre 096be34: reconciliar todas las releases
+inactivas de este root bajo lock, incluida previous (se conservan volúmenes),
+antes de reutilizar slot y en polls sin nuevo SHA. Copias .preparing se descartan
+bajo ese mismo lock. Fallos de recuperación se registran sin bloquear consulta
+de elegibilidad; un fallo de limpieza sí impide reutilizar el slot.
+
+Failure se registra antes de down con tipos de error saneados; se conserva
+la excepción original aunque también falle down. Un SHA fallido queda pausado
+hasta resume/nuevo SHA. Resume conserva evidencia y marca retry_allowed.
+Se comprueba develop tras build/smoke antes de promover. Proyectos nuevos
+incluyen hash del root, no solo SHA. Validate-source rechaza releases existentes
+y pausa manual, y se documenta su promoción explícita del root de ensayo.
+ADR renumerado a 0018 tras comprobar develop y diffs de PR abiertas.
+El código instalado del timer no se actualiza con estas correcciones antes de
+la revisión/validación: pruebas Linux en copia temporal sin Docker real.

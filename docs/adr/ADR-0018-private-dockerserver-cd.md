@@ -1,4 +1,4 @@
-# ADR-0017 — CD privado mediante agente de lectura en DockerServer
+# ADR-0018 — CD privado mediante agente de lectura en DockerServer
 
 Status: Proposed
 Date: 2026-10-03

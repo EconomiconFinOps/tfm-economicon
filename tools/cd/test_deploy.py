@@ -27,6 +27,7 @@ class GateTests(unittest.TestCase):
         for key, value in [("head_sha", "b" * 40), ("head_branch", "main"),
                            ("event", "pull_request"), ("status", "in_progress"),
                            ("conclusion", "failure"), ("conclusion", "cancelled"),
+                           ("head_repository", None),
                            ("head_repository", {"full_name": "fork/repo"})]:
             with self.subTest(key=key, value=value):
                 changed = {**self.run, key: value}
@@ -117,6 +118,7 @@ class RuntimeTests(unittest.TestCase):
     @patch.object(deploy, "compose")
     def test_success_switches_only_after_smoke_and_preserves_volumes(self, compose, smoke):
         release = self.fixture(self.new, 1)
+        self.fixture(self.old, 0)
         self.state(self.old)
         def check(release):
             self.assertEqual(json.loads((self.root / "state.json").read_text())["current"], self.old)

@@ -1,7 +1,8 @@
 # private-continuous-deployment Specification
 
 ## Purpose
-TBD - created by archiving change jup-052-dockerserver-cd. Update Purpose after archive.
+Private disposable development deployment to DockerServer through a locked
+pull agent, with CI eligibility, functional promotion and recoverable cleanup.
 ## Requirements
 ### Requirement: Trusted integrated revision eligibility
 JUP-052 SHALL deploy only the current canonical develop SHA after the latest
@@ -10,6 +11,7 @@ CD workflow run for develop completes successfully with all applicable CI jobs.
 #### Scenario: Eligible integrated commit
 - **WHEN** the latest canonical CD run succeeds for the current develop SHA
 - **THEN** the agent SHALL fetch that exact SHA and verify it remains current
+- **AND** it SHALL recheck develop after preparation and functional checks before promotion
 
 #### Scenario: Ineligible or unavailable result
 - **WHEN** the latest run fails, is cancelled or pending, targets another SHA,
@@ -41,12 +43,27 @@ health, demo login, simulator ingestion, billing totals and document-job checks 
 
 #### Scenario: Candidate fails
 - **WHEN** build, readiness or functional verification fails
-- **THEN** the candidate SHALL be stopped and current SHALL remain unchanged
+- **THEN** current SHALL remain unchanged and candidate cleanup SHALL be attempted
 - **AND** the prior release SHALL remain running
+- **AND** failure evidence SHALL persist independently of cleanup success
+
+#### Scenario: Interrupted cleanup or preparation
+- **WHEN** cleanup fails or a process stops after promotion or during preparation
+- **THEN** the next locked poll SHALL reconcile inactive releases and incomplete copies
+- **AND** an inactive slot SHALL NOT be reused until cleanup succeeds
+- **AND** sources and named volumes SHALL be preserved
+
+#### Scenario: Current recovery fails
+- **WHEN** restoring the current release fails
+- **THEN** the failure SHALL be recorded without preventing eligibility evaluation
+
+#### Scenario: Failed SHA retry
+- **WHEN** a previously failed SHA is still the eligible candidate
+- **THEN** it SHALL NOT rebuild until the operator resumes retries
+- **AND** resume SHALL preserve the failure evidence
 
 #### Scenario: Manual recovery
 - **WHEN** the operator requests rollback to a previous verified release
 - **THEN** its existing images SHALL start and pass functional checks before promotion
 - **AND** automatic promotion SHALL pause until explicitly resumed
 - **AND** rollback SHALL NOT claim to reverse or restore another release's data
-
