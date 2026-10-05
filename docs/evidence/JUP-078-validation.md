@@ -153,3 +153,19 @@ container, dedicated loopback port and image pinned to an explicit digest.
   approved product budget before connecting application services.
 - Record approval from Lucia, Paris, Victor and Alejandro.
 - Obtain review on the PR targeting the now-confirmed official `develop` branch.
+
+## Acceptance (2026-10-04)
+
+ADR-0002 is accepted with the individual approvals recorded in its Acceptance section, three explicit notes (latency still to be measured, the two budget ceilings, and prices re-checked before any spend) and an operational follow-up: the scoped virtual key remains to be issued by whoever administers the gateway. The 2026-10-04 public catalogue check (models still available, prices changed) is recorded in the ADR. The listed pending items above are closed except the virtual key.
+
+### Price check (2026-10-04)
+
+Read-only, no key, public OpenRouter API, repeated by the reviewer at 14:59 UTC and by the lead afterwards: `GET /api/v1/endpoints/zdr` filtered by `model_id`, and `GET /api/v1/models/z-ai/glm-5.2/endpoints` for the configured endpoint. Values in USD per million tokens; cost of 100 cases of 2,000 input and 500 output tokens.
+
+| Model | ZDR endpoints | Input | Output | Cost of 100 cases |
+|---|---|---|---|---|
+| `z-ai/glm-5.2` | 24 | 0.05 to 2.25 | 1.80 to 8.00 | 0.20 to 0.85 USD |
+| `z-ai/glm-5.2` at `deepinfra/fp4` (gateway `only`) | 1 | 0.5625 | 1.80 | 0.2025 USD |
+| `deepseek/deepseek-v4-pro` | 10 | 0.21 to 1.91 | 1.63 to 4.20 | 0.24 to 0.57 USD |
+
+Catalogue headline prices (GLM-5.2 0.064 / 8.00, DeepSeek 0.21 / 0.42) belong to endpoints that are not all in the ZDR list. `deepseek/deepseek-v4-pro-0813` is a different model and is excluded. Prices move during the day.
