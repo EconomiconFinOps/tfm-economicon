@@ -460,7 +460,7 @@ class RobustnessAndAvailabilityTests(unittest.TestCase):
             passing(results, ANSWERS_DIRECT[index], structured_ok=True)
         failing(results, ANSWERS_DIRECT[3], failure_category="schema_validation", structured_ok=False)
         for index in (4, 5):
-            blocked(results, ANSWERS_DIRECT[index], category="timeout", stage="generation")
+            blocked(results, ANSWERS_DIRECT[index], category="timeout", stage="generation", latency_ms={"embedding": 10.0, "retrieval": 5.0})
         report = compute(results)["metrics"]
         self.assertEqual((report["STR-1"]["k"], report["STR-1"]["n"]), (3, 4))
         by_category = report["STR-2"]["by_category"]
@@ -701,10 +701,12 @@ class AdversarialRegressionTests(unittest.TestCase):
 
     def test_a_failed_call_carries_no_latency_for_its_stage_or_the_total(self):
         results = base_results()
-        blocked(results, SOURCE_CASE["answer"][0], category="timeout", stage="generation", latency_ms={"generation": 500.0})
+        blocked(results, SOURCE_CASE["answer"][0], category="timeout", stage="generation",
+                latency_ms={"embedding": 10.0, "retrieval": 5.0, "generation": 500.0})
         reject(self, results, "latency_ms.generation")
         results = base_results()
-        blocked(results, SOURCE_CASE["answer"][0], category="timeout", stage="generation", latency_ms={"embedding": 10.0, "total": 600.0})
+        blocked(results, SOURCE_CASE["answer"][0], category="timeout", stage="generation",
+                latency_ms={"embedding": 10.0, "retrieval": 5.0, "total": 600.0})
         reject(self, results, "latency_ms.total")
         results = base_results()
         blocked(results, SOURCE_CASE["answer"][0], category="timeout", stage="generation", latency_ms={"embedding": 10.0, "retrieval": 20.0})
@@ -713,7 +715,7 @@ class AdversarialRegressionTests(unittest.TestCase):
 
     def test_a_passing_case_has_no_failure_and_blocked_cases_count_as_failed_calls_only(self):
         results = base_results()
-        passing(results, SOURCE_CASE["answer"][0], failure_category="timeout", failure_stage="generation", structured_ok=None, latency_ms={})
+        passing(results, SOURCE_CASE["answer"][0], failure_category="timeout", failure_stage="generation", structured_ok=None, latency_ms={"embedding": 10.0, "retrieval": 5.0})
         reject(self, results, "cases[0].failure_category")
         results = base_results()
         blocked = case_of(results, SOURCE_CASE["answer"][0])
@@ -892,9 +894,9 @@ class SecondPassRegressionTests(unittest.TestCase):
     def test_structured_output_and_failures_must_agree(self):
         combinations = (
             dict(failure_category="schema_validation", structured_ok=True),
-            dict(failure_category="timeout", failure_stage="generation", structured_ok=False, latency_ms={}),
+            dict(failure_category="timeout", failure_stage="generation", structured_ok=False, latency_ms={"embedding": 10.0, "retrieval": 5.0}),
             dict(structured_ok=False),
-            dict(failure_category="timeout", failure_stage="generation", structured_ok=True, latency_ms={}),
+            dict(failure_category="timeout", failure_stage="generation", structured_ok=True, latency_ms={"embedding": 10.0, "retrieval": 5.0}),
         )
         for fields in combinations:
             results = base_results()
@@ -1003,10 +1005,11 @@ class ThirdPassRegressionTests(unittest.TestCase):
             blocked(results, self.ANSWER, category="connection", stage="embedding", **{field: value})
             reject(self, results, expected)
         results = base_results()
-        failing(results, self.ANSWER, failure_category="timeout", failure_stage="generation", structured_ok=None, latency_ms={})
+        failing(results, self.ANSWER, failure_category="timeout", failure_stage="generation", structured_ok=None, latency_ms={"embedding": 10.0, "retrieval": 5.0})
         reject(self, results, "outcome")
         results = base_results()
-        blocked(results, self.ANSWER, category="timeout", stage="generation", retrieved=[hit(self.ANSWER, 0.1)])
+        blocked(results, self.ANSWER, category="timeout", stage="generation", retrieved=[hit(self.ANSWER, 0.1)],
+                latency_ms={"embedding": 10.0, "retrieval": 5.0})
         self.assertEqual(compute(results)["metrics"]["STR-2"]["by_category"]["timeout"], 1)
 
     def test_a_schema_failure_is_a_fail_and_a_completed_call_reports_conformance_and_latency(self):
@@ -1216,6 +1219,88 @@ class FifthPassRegressionTests(unittest.TestCase):
         markdown = metrics.render_markdown(compute(results), CATALOGUE)
         self.assertIn("sin umbral", markdown)
         self.assertNotIn("distancia maxima None", markdown)
+
+
+class PullRequestReviewRegressionTests(unittest.TestCase):
+    ANSWER = SOURCE_CASE["answer"][0]
+
+    def test_a_failed_call_is_preceded_by_the_latency_of_the_stages_that_ran(self):
+        for stage, latency, missing in (
+            ("generation", {}, "embedding"),
+            ("generation", {"embedding": 10.0}, "retrieval"),
+            ("generation", {"retrieval": 5.0}, "embedding"),
+            ("retrieval", {}, "embedding"),
+        ):
+            results = base_results()
+            blocked(results, self.ANSWER, category="timeout", stage=stage, latency_ms=latency)
+            reject(self, results, "latency_ms." + missing)
+        results = base_results()
+        blocked(results, self.ANSWER, category="connection", stage="embedding", latency_ms={})
+        metrics.validate_results(results, BANK, LABELS, CATALOGUE)
+        results = base_results()
+        blocked(results, self.ANSWER, category="timeout", stage="retrieval", latency_ms={"embedding": 10.0})
+        metrics.validate_results(results, BANK, LABELS, CATALOGUE)
+
+    def test_lat4_counts_the_embedding_call_that_succeeded_before_a_later_failure(self):
+        results = base_results()
+        first, second = SOURCE_CASE["answer"][:2]
+        blocked(results, first, category="timeout", stage="embedding")
+        blocked(results, second, category="timeout", stage="generation", latency_ms={"embedding": 10.0, "retrieval": 20.0})
+        embedding = compute(results)["metrics"]["LAT-4"]["stages"]["embedding"]
+        self.assertEqual((embedding["k"], embedding["n"]), (1, 2))
+        results = base_results()
+        blocked(results, first, category="timeout", stage="embedding")
+        blocked(results, second, category="timeout", stage="generation", latency_ms={})
+        with self.assertRaises(metrics.ResultsError):
+            metrics.validate_results(results, BANK, LABELS, CATALOGUE)
+
+    def test_the_report_identifies_the_generation_and_the_corpus_and_bank_fingerprints(self):
+        reference = base_results()
+        passing(reference, self.ANSWER)
+        baseline = compute(reference)
+        baseline_markdown = metrics.render_markdown(baseline, CATALOGUE)
+        variants = (
+            ("generation", lambda r: r["run"]["generation"].update(model_alias="other-model")),
+            ("generation", lambda r: r["run"]["generation"].update(temperature=0.7)),
+            ("corpus", lambda r: r["run"]["corpus"].update(sha256="b" * 64)),
+        )
+        for name, mutate in variants:
+            results = copy.deepcopy(reference)
+            mutate(results)
+            changed = compute(results)
+            self.assertNotEqual(json.dumps(changed, sort_keys=True), json.dumps(baseline, sort_keys=True), name)
+            self.assertNotEqual(metrics.render_markdown(changed, CATALOGUE), baseline_markdown, name)
+        self.assertEqual(baseline["run"]["generation"], reference["run"]["generation"])
+        self.assertEqual(baseline["run"]["corpus"]["sha256"], reference["run"]["corpus"]["sha256"])
+        self.assertEqual(baseline["run"]["suite_sha256"], reference["run"]["bank"]["suite_sha256"])
+        self.assertIn(reference["run"]["bank"]["suite_sha256"], baseline_markdown)
+
+    def test_the_time_of_the_run_date_must_exist(self):
+        for value in ("2026-10-04T99:99:99Z", "2026-10-04T24:00", "2026-10-04T12:60", "2026-10-04T12:30:61Z", "2026-10-04T7:30"):
+            results = base_results()
+            results["run"]["date"] = value
+            reject(self, results, "run.date")
+        for value in ("2026-10-04", "2026-10-04T10:00", "2026-10-04T23:59:59Z"):
+            results = base_results()
+            results["run"]["date"] = value
+            metrics.validate_results(results, BANK, LABELS, CATALOGUE)
+
+    def test_two_outputs_that_are_the_same_file_are_refused(self):
+        with tempfile.TemporaryDirectory() as raw:
+            directory = Path(raw)
+            source = directory / "results.json"
+            source.write_text(json.dumps(base_results()), encoding="utf8")
+            first, second = directory / "report.json", directory / "report.md"
+            first.write_text("original", encoding="utf8")
+            try:
+                os.link(first, second)
+            except OSError:
+                self.skipTest("hard links are not available")
+            buffer = tempfile.TemporaryFile(mode="w+", encoding="utf8")
+            with mock.patch.object(sys, "stderr", buffer):
+                code = metrics.main(["--results", str(source), "--output", str(first), "--report", str(second)])
+            self.assertEqual(code, 2)
+            self.assertEqual(first.read_text(encoding="utf8"), "original")
 
 
 if __name__ == "__main__":

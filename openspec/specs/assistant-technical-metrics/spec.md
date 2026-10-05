@@ -142,8 +142,13 @@ Latency SHALL be reported per stage (embedding of the question, retrieval query,
 
 #### Scenario: A failed call has no latency
 
-- **WHEN** a case records a failed call in a stage and also a latency for that stage or for the total
+- **WHEN** a case records a failed call in a stage and also a latency for that stage, for a later stage or for the total
 - **THEN** the results file is rejected
+
+#### Scenario: The stages before a failed call ran
+
+- **WHEN** a case records a failed call in the generation stage without the latency of the embedding or the retrieval stage, or in the retrieval stage without the latency of the embedding stage
+- **THEN** the results file is rejected, because the failure rate of an earlier stage would omit a call that succeeded
 
 ### Requirement: Structured-output robustness
 
@@ -192,6 +197,16 @@ Per-case results SHALL use a versioned format that records, for each case, its i
 - **WHEN** `top_k` is outside 1 to 20 (as in the backend), the maximum distance is not above 0 and at most 2, the chunk overlap is not smaller than the chunk size, a distance exceeds the maximum distance of the run, a case retrieves more fragments than `top_k`, or the corpus has more documents than fragments
 - **THEN** the results file is rejected
 
+#### Scenario: The report identifies the run
+
+- **WHEN** a report is produced
+- **THEN** it states the generation settings of the run, the fingerprint of the corpus and the version and fingerprint of the question bank, so that two runs that differ in any of them produce different reports
+
+#### Scenario: The date of the run is a real instant
+
+- **WHEN** the date of the run has an hour, minute or second that does not exist
+- **THEN** the results file is rejected
+
 #### Scenario: Corpus size is reported with latency
 
 - **WHEN** a report includes latency percentiles
@@ -216,6 +231,11 @@ A reference calculator SHALL validate a results file and compute every catalogue
 - **WHEN** the results file contains a case identifier absent from the question bank
 - **THEN** the calculator stops naming the identifier
 
+#### Scenario: Two outputs are the same file
+
+- **WHEN** the JSON output and the Markdown report are the same file, for example through a hard link
+- **THEN** the calculator exits with an error and writes nothing
+
 #### Scenario: No network
 
 - **WHEN** the calculator runs with all network access blocked
@@ -230,4 +250,3 @@ The report SHALL show, beside each measured value, the provisional target it is 
 - **WHEN** the 95th percentile of total latency is 12 s and the provisional target is 10 s
 - **THEN** the report shows both values, the source of the target and that the target is not met
 - **AND** the report does not declare the assistant rejected
-

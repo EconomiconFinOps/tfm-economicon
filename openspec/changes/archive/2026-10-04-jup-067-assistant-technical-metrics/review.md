@@ -77,6 +77,17 @@ RF-067-001 a RF-067-004 en `openspec/findings/backlog.md`, aceptados por Lucia a
 
 No aplica: son definiciones de metricas y una herramienta de calculo, no una decision de arquitectura duradera. Se enlaza ADR-0002 como origen de los objetivos provisionales sin sustituirlo ni ratificarlo.
 
+## Revision del PR #74
+
+Alejandro publico `Revision JUP-067` (Request changes) sobre 05e57c9 con cuatro puntos, todos reproducidos aqui antes de corregirlos con una prueba escrita antes del codigo:
+
+- P1: un fallo en `generation` o `retrieval` sin las latencias de las etapas anteriores omitia llamadas correctas y dejaba LAT-4 en 1/1 donde era 1/2. Ahora una llamada fallida exige la latencia de las etapas anteriores.
+- P2: el informe no identificaba el modelo ni las huellas; ahora incluye los ajustes de generacion, la huella del corpus y la version y huella de la bateria.
+- P2: `run.date` aceptaba horas inexistentes; ahora se valida la fecha y la hora completas.
+- P2: dos salidas que son el mismo fichero (enlace duro) se sobrescribian; ahora se rechazan antes de escribir.
+
+Los 105 mutantes anteriores siguen detectados y se anaden siete para estos cambios (111 en total, sin supervivientes); 103 pruebas. Tambien se quita una linea vacia al final de la spec promovida. La spec principal `openspec/specs/assistant-technical-metrics/spec.md` recoge las reglas nuevas; la spec archivada del change queda como se aprobo.
+
 ## Human Approval
 
 - Change: jup-067-assistant-technical-metrics

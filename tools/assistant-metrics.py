@@ -181,11 +181,14 @@ DATE = r"[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?)?"
 def real_date(value) -> bool:
     if not shaped(DATE)(value):
         return False
-    try:
-        datetime.strptime(value[:10], "%Y-%m-%d")
-    except ValueError:
-        return False
-    return True
+    text = value[:-1] if value.endswith("Z") else value
+    for pattern in ("%Y-%m-%d", "%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"):
+        try:
+            datetime.strptime(text, pattern)
+        except ValueError:
+            continue
+        return True
+    return False
 VERSION = r"[0-9]{1,4}(\.[0-9]{1,4}){0,3}"
 
 
@@ -344,6 +347,9 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
         for name in ("total",) + order[order.index(stage):]:
             if name in latency:
                 fail(f"{path}.latency_ms.{name}", "a failed call and the stages after it have no latency")
+        for name in order[:order.index(stage)]:
+            if name not in latency:
+                fail(f"{path}.latency_ms.{name}", "the stages before a failed call ran and have their latency")
     if "structured_ok" not in item or not (item["structured_ok"] is None or isinstance(item["structured_ok"], bool)):
         fail(f"{path}.structured_ok", "required boolean or null")
     ok = item["structured_ok"]
@@ -550,7 +556,8 @@ def compute(results: dict, bank: dict, labels: dict, catalogue: dict) -> dict:
         "catalogue_version": catalogue["catalogue_version"],
         "run": {
             "commit": run["commit"], "date": run["date"], "provider": run["provider"], "alias": run["alias"],
-            "suite_version": run["bank"]["suite_version"], "corpus": corpus, "retrieval": run["retrieval"],
+            "suite_version": run["bank"]["suite_version"], "suite_sha256": run["bank"]["suite_sha256"],
+            "corpus": {**corpus, "sha256": run["corpus"]["sha256"]}, "generation": run["generation"], "retrieval": run["retrieval"],
             "synthetic": bool(results.get("synthetic")),
         },
         "counts": counts,
@@ -595,6 +602,8 @@ def render_markdown(report: dict, catalogue: dict) -> str:
     lines += [
         f"Catalogo {report['catalogue_version']} · generado {md(report.get('generated_at', 'sin fecha'))}",
         f"Commit {md(run['commit'])} · fecha de la ejecucion {md(run['date'])} · proveedor {md(run['provider'])} · alias {md(run['alias'])}",
+        f"Generacion: {md(json.dumps(run['generation'], sort_keys=True))}",
+        f"Huellas: corpus {run['corpus']['sha256']} · bateria {md(run['suite_version'])} {run['suite_sha256']}",
         f"Corpus: {run['corpus']['documents']} documentos y {run['corpus']['chunks']} fragmentos · top_k {run['retrieval']['top_k']}"
         f" · distancia maxima {'sin umbral' if run['retrieval']['max_distance'] is None else run['retrieval']['max_distance']} · fragmentos de {run['retrieval']['chunk_size']} con solape {run['retrieval']['chunk_overlap']}",
         "",
@@ -663,6 +672,10 @@ def main(argv: list[str] | None = None) -> int:
     resolved = [path.resolve() for _, path in targets]
     if len(set(resolved)) != len(resolved) or sources & set(resolved):
         print("Error: --output and --report must be different files and never an input file", file=sys.stderr)
+        return 2
+    existing = [path for _, path in targets if path.exists()]
+    if len(existing) == 2 and os.path.samefile(existing[0], existing[1]):
+        print("Error: --output and --report are the same file", file=sys.stderr)
         return 2
     for flag, path in targets:
         if path.exists() and any(os.path.samefile(path, source) for source in sources if source.exists()):
