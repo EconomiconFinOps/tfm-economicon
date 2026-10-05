@@ -26,9 +26,49 @@ const rulesets = Object.fromEntries(
 
 test("runs pull request policy again when its metadata changes", () => {
   assert.deepEqual(workflow.on.pull_request.branches, ["main", "develop"]);
-  assert.ok(workflow.on.pull_request.types.includes("edited"));
-  assert.ok(workflow.on.pull_request.types.includes("synchronize"));
+  assert.deepEqual(workflow.on.pull_request.types, [
+    "opened", "synchronize", "reopened", "edited", "ready_for_review",
+  ]);
   assert.equal(workflow.on.pull_request_target, undefined);
+});
+
+test("runs every branch push without tag or path filters and retains event policy", () => {
+  assert.equal(workflow.on.workflow_dispatch, null);
+  assert.equal(workflow.jobs["pr-policy"].if, "github.event_name == 'pull_request'");
+  assert.deepEqual(workflow.concurrency, {
+    group: "ci-${{ github.workflow }}-${{ github.ref }}",
+    "cancel-in-progress": true,
+  });
+  assert.deepEqual(workflow.on.push, { branches: ["**"] });
+});
+
+test("requires Python lint/build once per service after dependencies and before pytest", () => {
+  const job = workflow.jobs["python-tests"];
+  for (const service of job.strategy.matrix.service) {
+    assert.equal(service.path, `apps/${service.name}`);
+    const manifest = JSON.parse(fs.readFileSync(path.join(root, service.path, "package.json"), "utf8"));
+    assert.equal(manifest.scripts.lint, "python -m compileall app");
+    assert.equal(manifest.scripts.build, manifest.scripts.lint);
+  }
+
+  const steps = job.steps;
+  const compilation = steps.filter(({ run }) => /\bcompileall\b/.test(run ?? ""));
+  assert.equal(compilation.length, 1, "expected exactly one Python compileall step");
+  const [compile] = compilation;
+  assert.equal(compile.run, "python -m compileall -q app");
+  assert.equal(compile["working-directory"], "${{ matrix.service.path }}");
+  const dependencies = steps.findIndex(({ run }) => run === "python -m pip install -r requirements-dev.txt");
+  const tests = steps.findIndex(({ run }) => run === "python -m pytest tests -q");
+  const syntax = steps.indexOf(compile);
+  assert.ok(dependencies >= 0 && syntax > dependencies && tests > syntax);
+  assert.equal(steps[tests]["working-directory"], "${{ matrix.service.path }}");
+  for (const mandatory of [job, compile, steps[tests]]) {
+    assert.equal(mandatory.if, undefined);
+    assert.equal(mandatory["continue-on-error"], undefined);
+  }
+  assert.equal(compile.shell, undefined);
+  assert.equal(job.defaults?.run?.shell, undefined);
+  assert.equal(workflow.defaults?.run?.shell, undefined);
 });
 
 test("limits GitHub token permissions and pins official actions by commit", () => {
