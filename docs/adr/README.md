@@ -26,7 +26,7 @@ benchmarks de ADR-0002 conservan su fecha; no son precios actuales.
 | Decisión canónica | Fecha / estado registrado | Motivo y alternativa principal | Fuente responsable y evidencia de aceptación / integración |
 | --- | --- | --- | --- |
 | [0001 · API Azure simulada](ADR-0001-azure-cost-api-simulation.md) | 25/08 · Accepted | Probar HTTP/paginación sin tenant real; CSV directo no ejercita ese contrato. | JUP-073; [PR #5](https://github.com/EconomiconFinOps/tfm-economicon/pull/5) integrada y [evidencia](../evidence/JUP-073-validation.md). No acredita Azure real. |
-| [0002 · LiteLLM/OpenRouter y modelos](ADR-0002-litellm-openrouter.md) | 25/08 · Proposed | Centralizar credenciales/políticas; acceso directo distribuye esa responsabilidad. Sin fallback para preservar evaluación. | JUP-078; [benchmark](../evidence/JUP-078-validation.md), [PR #10](https://github.com/EconomiconFinOps/tfm-economicon/pull/10) y [#21](https://github.com/EconomiconFinOps/tfm-economicon/pull/21) integradas. Aprobación de Alejandro fechada 28/08; las condiciones de aceptación conjunta y clave virtual siguen pendientes en el ADR. |
+| [0002 · LiteLLM/OpenRouter y modelos](ADR-0002-litellm-openrouter.md) | 25/08; aceptado 04/10 · Accepted | Centralizar credenciales/políticas; acceso directo distribuye esa responsabilidad. Sin fallback para preservar evaluación. | JUP-078; [benchmark](../evidence/JUP-078-validation.md), [PR #10](https://github.com/EconomiconFinOps/tfm-economicon/pull/10) y [#21](https://github.com/EconomiconFinOps/tfm-economicon/pull/21) integradas. Cuatro aprobaciones registradas (Alejandro 28/08; Paris y Víctor según la tarjeta y este PR; Lucía 04/10), PR #71 como evidencia de la aceptación. Único seguimiento abierto: la clave virtual de desarrollo. |
 | [0003 · TypeScript strict](ADR-0003-frontend-typescript.md) | 02/09 · Accepted | Detectar errores de contratos desde el port; strict:false aplaza el coste. | JUP-092; gate de Victor enlazado en ADR, [PR #26](https://github.com/EconomiconFinOps/tfm-economicon/pull/26) integrada. |
 | [0004 · Subconjunto shadcn/Radix](ADR-0004-frontend-shadcn-ui.md) | 07/09 · Accepted | Reutilizar primitivos accesibles; no copiar 26 paquetes sin consumidor. | JUP-094; addendum de Victor 07/09 enlazado en ADR; [PR #28](https://github.com/EconomiconFinOps/tfm-economicon/pull/28) integrada. |
 | [0005 · Prometheus/Grafana](ADR-0005-prometheus-grafana-metrics.md) | 01/09 · Proposed | Métricas agregables y demo visual; logs solos no ofrecen esa vista. | JUP-043; [review operativo](../../openspec/changes/archive/2026-09-01-jup-043-technical-metrics/review.md), [PR #25](https://github.com/EconomiconFinOps/tfm-economicon/pull/25) integrada, APPROVED Victor 08/09. Ratificación explícita del estado ADR pendiente. |
@@ -62,7 +62,7 @@ contratos una implementación que no documentan.
 
 Para cada afirmación, citar la fila y su documento: problema → elección → alternativa
 no elegida → consecuencia → evidencia fechada → límite. Para «¿por qué ese modelo?»
-usar ADR-0002 y su benchmark, declarando la aceptación pendiente; para «¿por qué
+usar ADR-0002 y su benchmark, citando su aceptación del 04/10 y que sus precios son históricos; para «¿por qué
 pgvector?», ADR-0013, sin afirmar comparación de rendimiento; para «¿dónde se
 despliega?», ADR-0015, distinguiendo demo local de producción.
 
@@ -73,8 +73,8 @@ material de referencia y no certifica que el contenido ya esté incorporado all�
 
 ### Pendientes documentales antes del freeze
 
-- ADR-0002: completar condiciones de aceptación en su tarjeta de origen; no
-  convertir el merge del documento en aprobación de los cuatro miembros.
+- ADR-0002: aceptado el 04/10 (JUP-078); queda emitir la clave virtual de desarrollo,
+  a cargo de quien administra el gateway.
 - ADR-0005 y ADR-0013/14/15: confirmar o rechazar ratificación con evidencia atribuible.
 - Confirmar justificación original de CockroachDB si se quiere defender una ventaja
   comparativa, y registrar decisión de despliegue final cuando exista en su tarea.
