@@ -142,9 +142,12 @@ Incidencias del proceso, para que no se repitan:
 
 - **No confirmados** (consulta cerrada el 2026-10-04): la máquina de Paris (sin respuesta) y la
   consola externa de Alejandro. Si alguno contradice la corrección, `RF-093-001` se reabre.
-- **`develop` avanzó** a `c3aa9d6` (JUP-022, #67) mientras se implementaba: hay que traerlo y revisar,
-  además de los conflictos de texto, `README.md` y `backlog.md` (archivos compartidos), el número de
-  ADR más alto y que el check de colores no se vea afectado. Se hace antes de abrir el pull request.
+- **`develop` avanzó** a `c3aa9d6` (JUP-061 #60 y JUP-022 #67) mientras se implementaba. Se fusionó
+  en la rama y se reverificó (evidencia, «Reverificación tras fusionar `develop`»): un conflicto
+  mecánico en `backlog.md`, resuelto conservando las filas de ambas ramas; `README.md` sin conflicto;
+  `lint`, `build`, `typecheck`, `test` por mitades y los checks, en verde. Lo que cambia `develop` en
+  `package.json` y `ci.yml` no afecta a esta tarjeta (los jobs con pnpm siguen haciendo
+  `corepack enable`); último ADR `ADR-0017`, esta tarjeta no añade ninguno.
 - **Enlace que se rompe al archivar**: el del spike apunta a `openspec/changes/jup-103-verify-turbo-workspace/`
   y pasa a `openspec/changes/archive/<fecha>-jup-103-verify-turbo-workspace/` (tarea 7.5).
 - **Efectos en la máquina de verificación**, ajenos al repositorio: se arrancó Docker Desktop, se

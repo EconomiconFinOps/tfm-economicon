@@ -5,8 +5,8 @@
 - Trello: https://trello.com/c/P33co27E/95-jup-103
 - Rama: `chore/JUP-103-verify-turbo-workspace`.
 - Base: `develop` en `dad5662`. La batería final se ejecutó con la rama en `12bc179`. Entretanto
-  `origin/develop` avanzó a `c3aa9d6` (JUP-022, #67) y **la rama todavía no lo incorpora**: se trae
-  y se revisa antes de abrir el pull request (tarea 7.6).
+  `origin/develop` avanzó a `c3aa9d6` (JUP-022, #67 y JUP-061, #60), que se fusionó en la rama y se
+  reverificó: ver «Reverificación tras fusionar `develop`».
 - OpenSpec: [jup-103-verify-turbo-workspace](../../openspec/changes/jup-103-verify-turbo-workspace/).
 - Hallazgo que cierra: `RF-093-001` (`openspec/findings/backlog.md`).
 - Pull request: _pendiente de abrir_.
@@ -525,6 +525,41 @@ En ninguna de estas ejecuciones aparece el error de versión de pnpm.
   guardan relación con el cambio (solo documentación).
 - `corepack pnpm docker:build`: construye imágenes y no pasa por la corrección de esta tarjeta.
 
+## Reverificación tras fusionar `develop` (tarea 7.6, 2026-10-04)
+
+`origin/develop` avanzó de `dad5662` a `c3aa9d6` con dos pull requests de otras tarjetas: JUP-061 (#60,
+registro de decisiones técnicas) y JUP-022 (#67, recuperación semántica, con 70 archivos y +7 908
+líneas). Se comprobó antes de fusionar con `git merge-tree` (sin tocar el árbol) y se fusionó con
+`git merge --no-commit --no-ff origin/develop`.
+
+- **Conflictos:** uno, mecánico, en `openspec/findings/backlog.md`: las dos ramas añadieron filas al
+  principio de la tabla. Se conservaron las dos series (`RF-103-001` a `005` y `RF-022-001` a `006`) y
+  se comprobó que ninguna fila nueva rompe la estructura de la tabla (las únicas con otro número de
+  celdas siguen siendo `RF-044-001` y `RF-045-001`, anteriores a esta tarjeta). `README.md` se
+  fusionó sin conflicto: conserva mis tres secciones y las variables que añade JUP-022.
+- **Lo que `develop` cambia y podía afectar a esta tarjeta**, revisado: `package.json` solo añade tres
+  scripts (`retrieval-labels:validate`, `retrieval-labels:test`, `retrieval-calibration:test`) y
+  `ci.yml` solo los invoca; **los tres jobs que usan pnpm siguen ejecutando `corepack enable`**.
+  Ningún `requirements*`, `package.json` de aplicación ni lockfile cambia, de modo que el entorno
+  virtual de Python sirve tal cual. En el frontend solo cambia un test, sin colores literales nuevos.
+  El último ADR de `develop` es `ADR-0017`; esta tarjeta no añade ninguno.
+- **Verificación del árbol fusionado**, desde la raíz y con `--force`:
+
+| Comando | Código | Resultado |
+| --- | --- | --- |
+| `corepack pnpm install --frozen-lockfile` | `0` | sin cambios |
+| `corepack pnpm lint --force` / `build --force` / `typecheck --force` | `0` | 4 de 4 / 4 de 4 / 1 de 1; todas `cache bypass`; 0 errores de versión |
+| `TURBO_FORCE=true corepack pnpm run test "--filter=!@finops/frontend"` | `0` | 3 de 3: `azure-cost-api` 59; `processor` 448 y 57 omitidos; `backend` **578** y 28 omitidos (JUP-022 añade tests) |
+| `TURBO_FORCE=true corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1` | `0` | 48 archivos, 443 tests |
+| `corepack pnpm openspec:validate` | `0` | 45 de 45 (42 más los de `develop`) |
+| `corepack pnpm jup:check -- --change jup-103-verify-turbo-workspace` y `jup:check:all` | `0` | enlazados |
+| `corepack pnpm jup:cleanup:check` | `0` | 817 archivos sin agentes personales, binarios ni tareas paralelas |
+| `corepack pnpm repository:governance:test`, `ci:check:test`, `pr:check:test` | `0` | 13, 10 y 57 de 57 |
+| `corepack pnpm retrieval-labels:validate` y `retrieval-labels:test` | `0` | 28 etiquetas coherentes; 17 de 17 |
+
+No se repitió la batería completa de herramientas ni `test` con los cuatro paquetes a la vez: lo
+primero no depende de `develop` y lo segundo ya se sabe no fiable en esta máquina (`RF-103-005`).
+
 ## Trazabilidad con los criterios de la tarjeta
 
 | # | Criterio | Estado | Evidencia y salvedades |
@@ -557,7 +592,7 @@ En ninguna de estas ejecuciones aparece el error de versión de pnpm.
 - **Los 57 tests omitidos de `processor` y los 17 de `backend`**: no se examinaron; se sospecha que
   son los que necesitan base de datos real (`RF-096-004`).
 - **El resto de la batería de CONTRIBUTING con un PR**: `corepack pnpm pr:check`.
-- **La rama integrada con `develop` actual** (`c3aa9d6`): ver tarea 7.6.
+- **La rama integrada con `develop` actual** (`c3aa9d6`): resuelto, ver la sección siguiente.
 
 _Pendiente: CI y pull request (tareas 7.5 y 7.6, y el gate post-review). Paris y la consola externa
 de Alejandro quedan como no confirmados._

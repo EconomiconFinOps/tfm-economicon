@@ -126,5 +126,7 @@
   enlaces relativos, que bajan un nivel al pasar a `openspec/changes/archive/`. Hay uno ya escrito
   que se rompe: el del spike (`docs/spikes/frontend-migration.md`, F4) apunta a
   `openspec/changes/jup-103-verify-turbo-workspace/` y pasará a `openspec/changes/archive/<fecha>-jup-103-verify-turbo-workspace/`.
-- [ ] 7.6 Abrir el pull request hacia `develop` y registrar en la evidencia el enlace al PR y a la
-  ejecución de CI en verde (criterio 3 de la tarjeta).
+- [ ] 7.6 Traer `develop` y reverificar, abrir el pull request hacia `develop` y registrar en la
+  evidencia el enlace al PR y a la ejecución de CI en verde (criterio 3 de la tarjeta). Hecho
+  hasta ahora: `develop` (`c3aa9d6`) fusionado en la rama y reverificado (evidencia,
+  «Reverificación tras fusionar `develop`»). Falta abrir el pull request y el CI.
