@@ -1,16 +1,17 @@
 ## 1. Línea base antes de levantar nada
 
-- [ ] 1.1 Crear `docs/evidence/JUP-104-validation.md` con la cabecera (fecha, enlace a Trello, rama,
+- [x] 1.1 Crear `docs/evidence/JUP-104-validation.md` con la cabecera (fecha, enlace a Trello, rama,
   commit base de `develop`) y el entorno de la máquina de validación: sistema operativo, versiones
   de Node, Docker y Docker Compose, y `corepack pnpm exec pnpm --version`.
-- [ ] 1.2 Comparar `.env` con `.env.example` **solo por nombres de variable** y anotar cuáles faltan
+- [x] 1.2 Comparar `.env` con `.env.example` **solo por nombres de variable** y anotar cuáles faltan
   y qué valor por defecto les da Compose. Anotar el valor de las variables no secretas que fijan el
   modo (`RUNTIME_ENVIRONMENT`, `EMBEDDING_PROVIDER`, `EMBEDDING_DIMENSION`, `LLM_PROVIDER`,
   `DEMO_SEED_ENABLED`) y, de las secretas, únicamente si están definidas.
-- [ ] 1.3 Ejecutar `corepack pnpm local:test` con la infraestructura de Compose parada y guardar el
+- [x] 1.3 Ejecutar `corepack pnpm local:test` con la infraestructura de Compose parada y guardar el
   recuento. Se hace ahora porque falla con CockroachDB, RabbitMQ o pgvector levantados.
-- [ ] 1.4 Comprobar con `docker ps` que el proyecto Compose por defecto no está levantado. Si lo
-  está, pararlo sin borrar volúmenes y anotarlo.
+- [x] 1.4 Comprobar con `docker ps` que el proyecto Compose por defecto no está levantado. Si lo
+  está, pararlo sin borrar volúmenes y anotarlo. Hecho con Docker Desktop arrancado: el proyecto
+  existe pero está parado y los puertos están libres; no hizo falta pararlo.
 
 ## 2. Stack local aislado
 
