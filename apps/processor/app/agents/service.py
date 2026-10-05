@@ -1,6 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.agents.guardrails import (
+    AgentResponseError,
     parse_and_validate_response,
     prepare_agent_input,
     source_is_supported,
@@ -8,13 +9,14 @@ from app.agents.guardrails import (
 from app.agents.prompts import HUMAN_PROMPT, SYSTEM_PROMPT
 from app.agents.providers import get_provider
 from app.agents.schemas import FinOpsResponse, finops_response_format
+from app.clients.litellm import ProviderError
 from app.core.config import Settings
 
 
 class AgentRuntime:
     def __init__(self, settings: Settings, provider=None):
         self.settings = settings
-        self.provider = provider or get_provider(settings.llm_provider)
+        self.provider = provider or get_provider(settings.llm_provider, settings=settings)
         self.response_format = finops_response_format()
         self.prompt = ChatPromptTemplate.from_messages(
             [
@@ -39,8 +41,14 @@ class AgentRuntime:
             rendered_prompt,
             response_format=self.response_format,
         )
-        response = parse_and_validate_response(raw_response)
-        return self._result(response)
+        try:
+            response = parse_and_validate_response(raw_response)
+        except AgentResponseError:
+            if self.settings.llm_provider != "litellm":
+                raise
+        else:
+            return self._result(response)
+        raise ProviderError("invalid_response")
 
     def _result(self, response: FinOpsResponse) -> dict:
         return {
@@ -72,4 +80,3 @@ class AgentRuntime:
                 ],
             }
         )
-
