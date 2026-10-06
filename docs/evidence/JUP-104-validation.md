@@ -10,9 +10,8 @@
 - Pull request: pendiente de abrir.
 - CI: pendiente.
 
-> Estado de este documento: **en curso.** Están registrados los grupos 1 a 9 de `tasks.md`. Falta el
-> grupo 10 (archivos compartidos: spike y backlog), que espera a que el PR #75 de JUP-103 esté en
-> `develop`, y la revisión (grupo 11).
+> Estado de este documento: **en curso.** Están registrados los grupos 1 a 10 de `tasks.md`. Falta la
+> revisión (grupo 11).
 
 ## Entorno de la máquina de validación (tarea 1.1)
 
@@ -838,7 +837,57 @@ Más datos de la batería:
 
 ## Archivos compartidos (grupo 10)
 
-No modificados.
+**10.1 `develop` traído a la rama.** Al llegar a este grupo, el PR #75 de JUP-103 **no estaba fusionado**
+y, además, había dejado de ser fusionable: JUP-067 (PR #74) entró en `develop` y añadió filas al
+principio de la tabla del backlog, el mismo punto donde JUP-103 añade las suyas (`mergeable_state:
+dirty`, conflicto solo en `openspec/findings/backlog.md`). La decisión 10 del `design.md` obligaba a
+parar y decidir; **la decisión fue editar el spike y el backlog ya y resolver los conflictos al
+integrar**, en lugar de esperar al #75.
+
+- `develop` en `f0cacdd` se fusionó en la rama (`4c97c41`) sin conflictos. Lo nuevo es JUP-067: 19
+  archivos, **ninguno bajo `apps/`**, así que no cambia el chat, la pantalla principal ni la ingesta y
+  no hubo que repetir ningún paso del recorrido.
+- Con el árbol fusionado: `openspec:validate` 47 de 47 (una spec más, la de JUP-067), `jup:check`,
+  `jup:cleanup:check`, `ci:check:test` 12 de 12 (`develop` tocó `ci.yml`) y
+  `repository:governance:test` 13 de 13.
+- La prueba de fusión en seco antes de editar dio: JUP-103 contra `develop`, conflicto en
+  `backlog.md`; esta rama contra `develop`, limpia.
+
+**10.2 `openspec/findings/backlog.md`.**
+
+- Añadidas las filas `RF-104-001` a `RF-104-004` al principio de la tabla, donde marca la convención
+  (las más recientes primero), con los mismos 11 separadores que el resto de filas.
+- `RF-087-002`: `Open` pasa a `Fixed`, con la actualización del 2026-10-06 (no se reproduce, con la
+  evidencia) y la referencia a JUP-086 (PR #47). La decisión definitiva es del gate post-review.
+
+**10.3 `docs/spikes/frontend-migration.md`.**
+
+- «Hechos del destino»: el acceso local `operator@example.com` / `secret` pasa a
+  `operator@example.com` con la contraseña de `DEMO_PASSWORD`, con la causa: desde JUP-085 el backend
+  solo crea la cuenta con `DEMO_SEED_ENABLED=true` y una contraseña externa, y fuera del entorno `test`
+  se niega a arrancar (`DemoRotationRequired`) si la cuenta guardada aún tiene `secret`. Comprobado en
+  `apps/backend/app/db/database.py`.
+- F5: la tarjeta `jup-0xx-validacion-e2e` pasa a `jup-104-e2e-validation`, con sus tres puntos marcados
+  y el resultado. La segunda mención de `secret` desaparece del punto del E2E.
+- «Próximos pasos»: punto 12 con el resultado de la tarjeta. Es el 12 y no el 11 porque el 11 es el de
+  JUP-103, que está en su PR #75.
+- Enlaces: los dos a la evidencia y la receta resuelven; el de la carpeta del change apunta ya a
+  `archive/2026-10-06-jup-104-e2e-validation/` y se verificará al archivar.
+
+**Conflictos esperados al integrar con el PR #75** (aditivos; se resuelven conservando ambas partes):
+
+| Archivo | Zona | Resolución |
+| --- | --- | --- |
+| `openspec/findings/backlog.md` | Principio de la tabla: filas `RF-103-001` a `005` frente a `RF-104-001` a `004` | Conservar las dos series |
+| `docs/spikes/frontend-migration.md` | Final de «Próximos pasos»: punto 11 (JUP-103) frente al 12 (JUP-104) | Conservar los dos, en ese orden |
+
+**10.4 Comprobaciones tras los cambios.** `openspec:validate` 47 de 47, `jup:check`, `jup:cleanup:check`
+(839 archivos), `repository:governance:test` 13 de 13 y `ci:check:test` 12 de 12. Ningún valor secreto
+en los archivos tocados. Enlaces relativos de backlog, spike, evidencia, receta, `proposal.md` y
+`design.md`: todos resuelven salvo el de la carpeta archivada, esperado hasta el archivado.
+
+**Pendiente de corregir al archivar:** los enlaces relativos de `proposal.md`, `design.md` y de la
+receta bajan un nivel cuando el change pasa a `openspec/changes/archive/`.
 
 ## No validado
 

@@ -122,16 +122,16 @@
 
 ## 10. Archivos compartidos con JUP-103
 
-- [ ] 10.1 Traer `develop` y comprobar que contiene JUP-103 (PR #75). Si no está fusionado, parar y
+- [x] 10.1 Traer `develop` y comprobar que contiene JUP-103 (PR #75). Si no está fusionado, parar y
   decidir según la decisión 10 del `design.md`. Si `develop` trae cambios en el chat, la pantalla
   principal o la ingesta, reconstruir y repetir el paso afectado antes de seguir.
-- [ ] 10.2 `openspec/findings/backlog.md`: actualizar la fila `RF-087-002` y añadir las filas
+- [x] 10.2 `openspec/findings/backlog.md`: actualizar la fila `RF-087-002` y añadir las filas
   `RF-104-NNN` redactadas en 8.1.
-- [ ] 10.3 `docs/spikes/frontend-migration.md`: sustituir `jup-0xx-validacion-e2e` por el enlace a
+- [x] 10.3 `docs/spikes/frontend-migration.md`: sustituir `jup-0xx-validacion-e2e` por el enlace a
   `jup-104-e2e-validation`, marcar sus tres puntos con lo realmente hecho, corregir las dos
   menciones de `operator@example.com` / `secret` (en "Hechos del destino" y en F5) y añadir el punto
   de "Próximos pasos" con el resultado.
-- [ ] 10.4 Repetir 9.4 tras estos cambios y comprobar que los enlaces relativos nuevos resuelven.
+- [x] 10.4 Repetir 9.4 tras estos cambios y comprobar que los enlaces relativos nuevos resuelven.
 
 ## 11. Revisión
 
