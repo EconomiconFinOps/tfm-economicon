@@ -86,24 +86,25 @@
 
 ## 7. Pasada manual
 
-- [ ] 7.1 Quien valida repite en su navegador habitual, sin extensiones que alteren la red, los
+- [x] 7.1 Quien valida repite en su navegador habitual, sin extensiones que alteren la red, los
   pasos 4.1 a 4.3, 5.1 y 6.1 a 6.5 siguiendo la lista de la evidencia, y anota navegador, versión y
   resultado de cada paso. No lo puede ejecutar la herramienta de implementación.
-- [ ] 7.2 Registrar cualquier diferencia entre la pasada manual y el guion.
+- [x] 7.2 Registrar cualquier diferencia entre la pasada manual y el guion.
 
 ## 8. Hallazgos y límites
 
-- [ ] 8.1 Redactar en la evidencia cada fallo como hallazgo `RF-104-NNN` con reproducción, resultado
+- [x] 8.1 Redactar en la evidencia cada fallo como hallazgo `RF-104-NNN` con reproducción, resultado
   esperado y observado, severidad y acción propuesta. Si no hay ninguno, decirlo.
-- [ ] 8.2 Redactar en la evidencia el resultado de `RF-087-002` según la decisión 6 del `design.md`.
-- [ ] 8.3 Redactar la sección "Qué no acredita esta validación": pertinencia semántica con `mock`,
+- [x] 8.2 Redactar en la evidencia el resultado de `RF-087-002` según la decisión 6 del `design.md`.
+- [x] 8.3 Redactar la sección "Qué no acredita esta validación": pertinencia semántica con `mock`,
   modo `litellm`, citas visibles (JUP-025), preguntas de gasto en el chat (JUP-036) y lo que haya
   quedado como no ejecutado.
-- [ ] 8.4 Completar la trazabilidad: cada criterio de aceptación de la tarjeta y cada escenario de
+- [x] 8.4 Completar la trazabilidad: cada criterio de aceptación de la tarjeta y cada escenario de
   la spec, con la tarea y la sección de la evidencia que lo respaldan.
-- [ ] 8.5 Revisar la evidencia, la receta y las salidas guardadas: ninguna contraseña, token, clave
+- [x] 8.5 Revisar la evidencia, la receta y las salidas guardadas: ninguna contraseña, token, clave
   ni cadena de conexión.
 - [ ] 8.6 Parar el proyecto con `docker compose stop`, sin borrar volúmenes, y anotarlo.
+  Pendiente: el stack debe seguir levantado hasta terminar la pasada manual (7.1).
 
 ## 9. Batería del carril
 

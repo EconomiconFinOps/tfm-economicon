@@ -1,6 +1,6 @@
 # Evidencia JUP-104 — Validación E2E del recorrido completo
 
-- Fecha: 2026-10-05 (línea base, grupo 1).
+- Fecha: 2026-10-05 (línea base y stack) y 2026-10-06 (recorrido y pasada manual), en UTC.
 - Trello: https://trello.com/c/lVvZa7P5/96-jup-104
 - Rama: `feat/JUP-104-e2e-validation`.
 - Base: `develop` en `0488372`; la rama en `b687e2a` al registrar la línea base (dos commits propios:
@@ -10,8 +10,9 @@
 - Pull request: pendiente de abrir.
 - CI: pendiente.
 
-> Estado de este documento: **en curso.** Están registrados los grupos 1 a 6 de `tasks.md`. Las demás
-> secciones figuran con su estado real, que es «no ejecutado».
+> Estado de este documento: **en curso.** Están registrados los grupos 1 a 8 de `tasks.md`, salvo la
+> tarea 8.6 (parar el stack), que se hará al cerrar la validación. La batería del carril (grupo 9) y los
+> archivos compartidos (grupo 10) figuran con su estado real, que es «no ejecutado».
 
 ## Entorno de la máquina de validación (tarea 1.1)
 
@@ -498,9 +499,10 @@ conversacion» figura debajo, sin seleccionar y vacía. Lo mismo ocurre en Core 
 - **Reproducción manual:** acceder, elegir un ámbito que ya tenga una conversación, abrir
   `/assistant`, pulsar «New», escribir un mensaje y pulsar «Send».
 - **Esperado:** la conversación nueva queda seleccionada y vacía, y el mensaje va a ella.
-- **Observado:** la conversación seleccionada es la primera de la lista (la de actualización más
-  reciente) y el mensaje va a ella; la nueva queda vacía. Efecto acumulado tras las pasadas: 10 de
-  las 12 conversaciones están vacías, y solo `fc77bad7` y `461a1c7d` tienen mensajes.
+- **Observado:** la conversación seleccionada es la que era la primera de la lista antes de crear la
+  nueva (la de actualización más reciente) y el mensaje va a ella; la nueva queda vacía. Efecto
+  acumulado tras las cinco pasadas: 10 de las 12 conversaciones están vacías, y solo `fc77bad7` y
+  `461a1c7d` tienen mensajes. La pasada manual (grupo 7) lo reproduce a mano en un navegador normal.
 - **Sin efecto con el ámbito vacío:** la primera conversación de un ámbito sí se selecciona bien (por
   eso la pasada 1 no lo mostró y `6.1` solo lo revela con conversaciones previas).
 - **Causa probable, por lectura del código; no depurada en ejecución.** En
@@ -559,6 +561,228 @@ guarda `metadata.citations` con identificadores de fragmento, pero la interfaz n
 PR #55); las preguntas de gasto en el chat (JUP-036, PR #69); y la pasada manual en un navegador
 habitual (tarea 7.1).
 
+## Pasada manual (grupo 7)
+
+**Ejecutada por Victor** sobre el mismo stack (`jup104-e2e`) y en la misma máquina que el guion, el
+2026-10-05 por la noche, hora local (aproximadamente de las 01:15 a las 01:40 UTC del 2026-10-06). Siguió la lista de
+pasos M1 a M9, que se reproduce abajo, mientras la herramienta de implementación comprobaba en la base
+de datos lo que la interfaz no muestra.
+
+| Dato | Valor |
+| --- | --- |
+| Navegador | Google Chrome `154.0.8037.98` (Official Build, 64 bits) |
+| Sistema operativo | Windows 11 |
+| Modo | Ventana de Incógnito, con las herramientas de desarrollo abiertas (Consola y Red) |
+| Extensiones | **No comprobadas**: Incógnito las desactiva salvo permiso expreso y no se verificó si había alguna permitida |
+| Frente al guion | Chrome `154` real, con perfil de persona, frente al Chromium `153` en modo headless con opciones de automatización |
+
+| Paso | Qué se hizo | Resultado |
+| --- | --- | --- |
+| M1 (`4.1`) | Acceso con la contraseña de `DEMO_PASSWORD` (no consta) | **Bien.** Entra; identidad `operator@example.com`; ámbitos `Core Finance` y `Growth Ops`. Consola con **un único mensaje en rojo**: `Failed to load resource: 404` de `favicon.ico`. No es CORS ni una petición al backend: ver «Observaciones sin hallazgo». La pestaña de avisos mostraba 4, no revisados |
+| M2 (`4.2`) | Core Finance, periodo del 01/06/2024 al 24/06/2024 | **Bien.** Por Servicio: `0.06 USD`, 1 fila «Sin dimensión» (38 registros) y aviso «Datos parciales: 38 registros sin dimensión; 0 registros sin fecha excluidos». Por Grupo de recursos: `0.06 USD` y 8 filas que suman 38 registros (CLASSICLAB `0.00`/1, ClancyTest `0.00`/2, DevTestLab `0.03`/8, JJExportTest `0.00`/1, fo-0824-x4 `0.00`/1, ftk-integration-tests `0.00`/21, pulkit-test-rg `0.00`/1, zfinops `0.04`/3). «Ahorro potencial: no disponible.» |
+| M3 (`4.3`) | Growth Ops y vuelta a Core Finance | **Bien.** Growth Ops sin datos; Core Finance recupera `0.06 USD` |
+| M4 (`5.1`) | Ingesta del documento en Growth Ops | **Bien.** «Job accepted», estado `queued`. Job ID `f6de05d1-f49f-4285-8d0d-503566878543` |
+| M4b (`5.2`) | Estado del trabajo | **Bien**, comprobado por la herramienta de implementación: `completed`, `tenant-growth`, mismo origen y URI, 0,45 s de `created_at` a `updated_at`; 19 fragmentos y 19 vectores (`mock`, dimensión 8); el hash del texto guardado normalizado (`b9d76bdc8cb1777c973024fff4efbdf6`, 8419 caracteres) coincide con el del documento local; 0 errores del processor |
+| M5 (`6.1`) | «New» y pregunta `JUP-069-004` en Growth Ops | Tras pulsar «New», **antes de escribir**: la conversación nueva (`9:19:10 PM`) aparece la primera de la lista y **sin resaltar**; resaltada, la antigua (`8:25:23 PM`), con su historial. Respuesta con la plantilla («He encontrado contexto relacionado…») y fragmentos de `assistant-corpus`. En la base: el mensaje fue a `fc77bad7` (la antigua, de 16 a 18 mensajes) y la nueva (`30fc4e51`) quedó vacía; el evento `retrieval` trae 4 resultados a distancia `0.5694`, de cuatro de los seis documentos duplicados, **ninguno el ingerido a mano** |
+| M6 (`6.3`) | F5 y reabrir el historial | **Bien.** `GET /assistant/conversations/{id}` → **200**; se ven la pregunta y la respuesta. La conversación resaltada tras recargar es la misma `fc77bad7`, que sube al primer puesto porque la lista se ordena por hora de actualización (`9:23:19 PM`); no es otra conversación |
+| M7 (`6.3b`) | Título «Segunda conversacion», «New», mirar, «Comprobacion» y «Send» | **Reproduce `RF-104-001`.** Tras «New» queda resaltada la antigua (`9:23:19 PM`) con su historial y «Segunda conversacion» (`9:31:59 PM`) aparece la primera, sin resaltar. Dos minutos después se envió «Comprobacion»: fue a `fc77bad7`; `46e19e5d`, la nueva, quedó con 0 mensajes. Antes, pulsar la conversación `9:19:10 PM` (la creada en M5) mostró un panel vacío |
+| M8 (`6.4`) | Core Finance, «New» y la misma pregunta | **Bien.** Una sola línea, `- local-smoke: Smoke del entorno local.`, y ningún fragmento de `assistant-corpus`. En la base: `retrieval` de `tenant-core`, 1 resultado, distancia `1.4164`, documento `a67fcd64` (el del smoke); el mensaje fue a `461a1c7d` (la antigua, a 10 mensajes) y la nueva (`7291a6e1`) quedó vacía |
+| M9 (`6.5`) | «Cerrar sesion» y abrir `/assistant` a mano | **Bien.** Ambas veces se presenta la pantalla de acceso |
+
+Ningún registro de nivel `error`, `critical` o `warning` (salvo el ruido de `pika`) en el backend y el
+processor durante la pasada manual, y las peticiones que mostraron las capturas de la pestaña Red
+respondieron 200 o 201.
+
+**Diferencias respecto al guion (tarea 7.2).**
+
+- **Ninguna en el resultado de los pasos.** Los nueve pasos dieron lo mismo que el guion, incluido el
+  fallo de `RF-104-001`, que por tanto **no es un artefacto del Chromium de pruebas ni de sus
+  opciones de automatización**.
+- **Lo que solo se ve en el navegador real:** el `GET /favicon.ico` con 404 (el Chromium headless del
+  guion no lo pide) y el aviso de tipo de fecha del navegador.
+- **Datos de entrada distintos, sin efecto:** el navegador mostraba las fechas como `mm/dd/aaaa` y el
+  fin del periodo fue el 24 en lugar del 21; los registros de la muestra van del 2024-06-02 al
+  2024-06-19, así que el resultado es idéntico.
+- **El residuo condiciona el contexto recuperado:** al haber seis copias idénticas del documento en
+  Growth Ops, el desempate por identificador devolvió fragmentos de cuatro copias anteriores y no de la
+  que se ingirió a mano; el texto es el mismo.
+- **Más datos que el guion no aportó:** el reproducido a ritmo humano (dos minutos entre «New» y
+  «Send») y la secuencia de peticiones de la pestaña Red, ver `RF-104-001`.
+
+**Efecto en el stack tras la pasada manual:** 6 trabajos en `tenant-growth` y 1 en `tenant-core`;
+`tenant-growth` con 6 documentos `assistant-corpus` y 114 fragmentos; 15 conversaciones (10 en Growth
+Ops y 5 en Core Finance), **13 de ellas vacías**; solo `fc77bad7` (20 mensajes) y `461a1c7d` (10) tienen
+mensajes.
+
+## Hallazgos y límites (grupo 8)
+
+### Hallazgos nuevos (tarea 8.1)
+
+Cuatro hallazgos, redactados con los campos de `openspec/findings/backlog.md` para pasarlos allí en la
+tarea 10.2. Origen común: `jup-104-e2e-validation`, fecha `2026-10-06`, owner Equipo Economicon, estado
+`Open`. Ninguno se corrige en esta tarjeta.
+
+**RF-104-001 — La conversación recién creada no recibe el mensaje.** Severidad: **Media**. Tipo:
+selección de conversación en `ConversationsPage`. Scope: fuera de alcance (frontend; la tarjeta no
+corrige).
+
+- *Reproducción:* con un ámbito que ya tiene una conversación, abrir `/assistant`, pulsar «New»,
+  escribir un mensaje y pulsar «Send».
+- *Esperado:* la conversación nueva queda seleccionada y vacía, y el mensaje va a ella.
+- *Observado:* queda seleccionada la conversación que **era la primera de la lista antes de crear la
+  nueva** (la de actualización más reciente) y el mensaje va a ella; la nueva queda vacía, y al
+  refrescarse la lista aparece primera pero sin resaltar. Reproducido por el guion (paso `6.3b`) en las
+  pasadas 3, 4 y 5 y por el paso `6.1`, **y a mano por una persona en Chrome 154** (pasos M5, M7 y M8,
+  en Growth Ops y en Core Finance). Con el ámbito sin conversaciones previas no ocurre. Tras la pasada
+  manual, 13 de las 15 conversaciones del stack están vacías y solo dos tienen mensajes.
+- *No depende del ritmo:* en M7 pasaron dos minutos entre pulsar «New» y enviar el mensaje, y la
+  seleccionada seguía siendo la antigua. No es una carrera que solo un guion rápido provoque.
+- *Causa probable (por lectura del código, sin depurar en ejecución):* el efecto de
+  `ConversationsPage.tsx` líneas 51 a 61 sustituye la selección por `items[0]` porque la lista cacheada
+  aún no contiene la conversación recién creada (selección en las líneas 71 a 73).
+- *Indicio observado en la pasada manual:* la pestaña Red muestra, tras el `POST` de creación (201) y
+  la lectura de la lista, una petición del historial de la conversación **nueva** y **a continuación**
+  otra de la **antigua**, es decir, la aplicación seleccionó la nueva y otro código la cambió por la
+  antigua. Se deduce del orden de las filas (por inicio de petición); sigue sin depurarse en ejecución.
+- *Acción propuesta:* no sustituir la selección mientras la conversación recién creada no esté en la
+  lista, o insertarla en la caché antes de seleccionarla; añadir un test que cree una segunda
+  conversación con otra existente. Coordinar con JUP-025 (PR #55) y JUP-036 (PR #69), que conservan el
+  mismo efecto en el mismo archivo.
+- *Evidencia:* esta evidencia, sección «Asistente, historial y cierre de sesión», paso `6.3b`.
+
+**RF-104-002 — Cada llamada a `/health` abre una conexión nueva a RabbitMQ y deja 12 eventos de `pika`,
+uno de nivel `error`.** Severidad: **Baja**. Tipo: ruido de registro. Scope: fuera de alcance (backend).
+
+- *Observado:* una llamada a `GET /health` suma 12 eventos `rabbitmq_dependency_event` (una llamada,
+  +12; dos llamadas, +24), uno de ellos de nivel `error` (`pika.adapters.base_connection`). Con el
+  stack en reposo salen **48 eventos por minuto de forma constante**, que equivale a 4 llamadas por
+  minuto: coincide con el intervalo de 15 s del healthcheck de Compose del backend (no se ha
+  comprobado que sea la única fuente).
+- *Por qué importa:* `rabbitmq_dependency_event` sustituye el mensaje original
+  (`apps/backend/app/services/rabbitmq_queue.py`, línea 50), así que las líneas de nivel `error` no
+  dicen qué ocurrió y no se puede distinguir un fallo real de un cierre de conexión normal. Durante todo
+  el recorrido no hubo ningún síntoma: `/health` respondió 200 y los trabajos se publicaron y se
+  completaron.
+- *Acción propuesta:* decidir si el sondeo debe reutilizar la conexión y a qué nivel deben registrarse
+  los eventos de `pika`; comprobar que ninguna alerta dependa del nivel `error`.
+
+**RF-104-003 — La interfaz no puede saber si un trabajo de ingesta terminó o falló.** Severidad:
+**Media**. Tipo: contrato ausente. Scope: fuera de alcance (backend y frontend).
+
+- *Observado:* `apps/backend/app/api/routes/jobs.py` solo expone `POST /ingest`; el backend no tiene
+  ninguna lectura del estado de un trabajo. `IngestPage.tsx` solo muestra el estado `queued` de la
+  respuesta de creación y no vuelve a consultar. Un documento cuyo procesado falle es invisible para el
+  operador: la única comprobación posible es la base de datos (como hizo esta validación).
+- *Acción propuesta:* decidir si se añade una lectura del estado del trabajo, con aislamiento por
+  ámbito, y si la pantalla de ingesta la consulta hasta un estado final. Relacionarlo con las
+  capacidades ausentes de `RF-091-003`.
+
+**RF-104-004 — Tres pantallas de demostración no lo indican en la interfaz.** Severidad: **Baja**. Tipo:
+presentación de datos de demostración. Scope: fuera de alcance (frontend; relacionado con `RF-095-002`).
+
+- *Observado:* `/operational`, `/cuts` y `/recommendations` no hacen ninguna petición al backend y no
+  muestran ningún rótulo de demostración; `/anomalies` sí lo muestra (JUP-057) y `/` rotula su sección de
+  demostración. Un operador no distingue esos datos de los reales.
+- *Acción propuesta:* rotularlas como `/anomalies`, o decidir y documentar que no hace falta; tenerlo en
+  cuenta en la decisión sobre `RF-091-003`.
+
+### `RF-087-002` (tarea 8.2)
+
+**No se reproduce.** Resultado y propuesta (`Fixed`, citando JUP-086, PR #47, y esta evidencia) en el
+paso `6.3` de la sección anterior. Queda sin test automatizado contra una base de datos real.
+
+### Observaciones sin hallazgo
+
+- El agrupado por Servicio deja los 38 registros de la muestra simulada «sin dimensión» y la pantalla
+  avisa de datos parciales: es una propiedad del conjunto de datos simulado.
+- Una petición `GET /billing/summary` aparece como `net::ERR_ABORTED`: la capa API cancela la consulta
+  en curso al cambiar la selección.
+- El backend arrancó antes de que existiera la tabla de vectores (`embedding_dimension_check_skipped`):
+  es la ventana ya registrada como `RF-096-002`.
+- Con `mock` la recuperación no mide pertinencia (paso `6.1`): es el límite de la decisión 1 del
+  `design.md`, no un fallo nuevo.
+- La primera construcción desde cero del stack tardó 5 min 33 s.
+- **`GET /favicon.ico` → 404** en la Consola del navegador real: `index.html` no declara ningún icono y
+  el frontend no tiene carpeta `public/`. Cosmético; el Chromium headless del guion no lo pide, por eso
+  solo salió en la pasada manual. No es CORS ni una petición al backend.
+- **La suma de los grupos mostrados puede diferir un céntimo del total** (en el recorrido, `0.03` +
+  `0.04` = `0.07` frente a `0.06`): son sumas redondeadas por separado. Valores exactos en la base:
+  `0.0251` (DevTestLab), `0.0350` (zfinops) y total `0.0601`. Lo advierte el preflight de JUP-065
+  (PR #63, sin fusionar).
+- **El navegador muestra las fechas con su formato regional** (`mm/dd/aaaa` en la pasada manual); no
+  afecta al valor enviado a la API.
+
+### Qué no acredita esta validación (tarea 8.3)
+
+- **La pertinencia semántica de la recuperación.** Con `mock` el fragmento que responde a la pregunta
+  no se recuperó y las distancias no miden pertinencia.
+- **Ninguna respuesta generada por un modelo**: el chat compone una plantilla con fragmentos. La rúbrica
+  de `JUP-069-004` no se ha evaluado.
+- **El modo `litellm`**: sin claves ni gateway en esta máquina; dimensión 1536 y umbral 0.6 sin ejecutar.
+- **Las citas visibles** (JUP-025, PR #55): el backend guarda `metadata.citations` pero la interfaz no
+  las muestra.
+- **Las preguntas de gasto en el chat** (JUP-036, PR #69) y el panel de etiquetado (JUP-017, PR #66):
+  no están en `develop`.
+- **El fallo de la ingesta en el navegador** (trabajo que no se completa): no se provocó; lo cubre el
+  smoke de JUP-050 a nivel de API.
+- **Autorización cruzada entre ámbitos**: se comprueba separación de datos, no intentos de acceso a un
+  ámbito ajeno (JUP-086).
+- **Un recorrido sin residuo:** las cinco pasadas dejaron copias del mismo documento en Growth Ops.
+- **Un navegador sin ninguna extensión:** la pasada manual se hizo en Chrome 154 en Incógnito y no se
+  verificó si había extensiones permitidas. Tampoco se probó en Firefox ni Safari.
+- **La expiración de sesión y las credenciales incorrectas**: ya acreditadas en JUP-085 y JUP-098, no
+  repetidas.
+- **Rendimiento, accesibilidad y despliegue fuera de local**: fuera de alcance.
+- **Que otra persona repita la receta:** consta como repetible, pero no la ha ejecutado nadie más.
+
+### Trazabilidad con los criterios de la tarjeta (tarea 8.4)
+
+| Criterio de la tarjeta | Estado | Dónde |
+| --- | --- | --- |
+| 1. Recorrido en navegador real sin desactivar protecciones | Acreditado en el Chromium del guion y en Chrome 154 (pasada manual) | `0.1`, `4.1`; grupo 7 |
+| 2. Cada paso registrado con lo hecho y lo observado | Acreditado | Grupos 4 a 6 |
+| 3. Ingesta acreditada extremo a extremo | Acreditado | `5.1` a `5.4` |
+| 4. Asistente con contexto recuperado, o parte dependiente de JUP-022/JUP-025 registrada | Acotado: camino de los datos y aislamiento acreditados; pertinencia y citas no | `6.1`, `6.2`, `6.4`; «Qué no acredita» |
+| 5. Pantallas con datos de demostración identificadas | Acreditado | `4.4`, `RF-104-004` |
+| 6. Todo fallo como hallazgo con reproducción | Redactados `RF-104-001` a `004`; pasan al backlog en 10.2 | Grupo 8 |
+| 7. Decisión sobre automatizar en `design.md` | Hecha: receta versionada, sin CI | `design.md`, decisión 7 |
+
+### Trazabilidad con los escenarios de la spec `operator-journey-validation`
+
+| Requisito y escenario | Estado | Dónde |
+| --- | --- | --- |
+| Navegador real: acceso por la interfaz con las protecciones intactas | Acreditado | `0.1`, `4.1` |
+| Navegador real: el entorno validado queda identificado | Acreditado | Entorno, «Stack local aislado», «Ejecuciones del guion» |
+| Camino completo: resumen de costes del ámbito con datos | Acreditado | `4.2` |
+| Camino completo: el cambio de ámbito cambia los datos | Acreditado | `4.3` |
+| Camino completo: el historial sobrevive a la recarga | Acreditado | `6.3` |
+| Camino completo: el cierre de sesión devuelve al acceso | Acreditado | `6.5` |
+| Ingesta: documento enviado desde la interfaz | Acreditado | `5.1` a `5.3` |
+| Ingesta: el trabajo no llega a completarse | **No ejercitado** | «Qué no acredita» |
+| Contexto: pregunta en el ámbito del documento | Acreditado, con residuo | `6.1`, `6.2` |
+| Contexto: la misma pregunta en otro ámbito | Acreditado | `6.4` |
+| Contexto: límites del modo utilizado | Acreditado | `6.1`, «Qué no acredita» |
+| Demostración: pantalla con datos reales y de demostración | Acreditado | `4.4` (`/`) |
+| Demostración: pantalla solo de demostración | Acreditado | `4.4` |
+| Fallos: fallo nuevo durante el recorrido | Acreditado | `RF-104-001` a `004` |
+| Fallos: hallazgo conocido que el recorrido alcanza | Acreditado | `RF-087-002`, `6.3` |
+| Fallos: paso no ejecutado | Acreditado | «Qué no acredita» |
+| Repetible: otra persona repite la validación | **Pendiente**: receta versionada, aún no repetida por otra persona | [Receta](JUP-104-browser-recipe.md) |
+| Repetible: credenciales en el registro | Acreditado | Revisión de secretos (8.5) |
+
+### Revisión de secretos (tarea 8.5)
+
+Se comprobó que **ningún valor** de las variables secretas de `.env` (contraseñas, claves, cookie,
+cadenas de conexión) aparece en esta evidencia ni en la receta, y tampoco en las salidas del guion
+guardadas fuera del repositorio (`results.json`, registro del processor y registros de ejecución: 23
+archivos revisados, sin coincidencias). La contraseña de demostración figura solo por el nombre de la
+variable. Las capturas, también fuera del repositorio, no se han revisado una a una y no se adjuntan.
+
+### Parada del stack (tarea 8.6)
+
+**Pendiente.** El proyecto `jup104-e2e` sigue levantado porque la pasada manual lo necesita. Al
+terminarla se parará con `docker compose stop`, sin borrar volúmenes.
+
 ## Batería del carril (grupo 9)
 
 No ejecutada.
@@ -569,4 +793,5 @@ No modificados.
 
 ## No validado
 
-Todo lo que no consta arriba como ejecutado. La lista final se redacta en la tarea 8.3.
+Ver «Qué no acredita esta validación» en el grupo 8. Lo que no consta como ejecutado en este
+documento no está validado.
