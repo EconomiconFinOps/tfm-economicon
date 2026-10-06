@@ -10,7 +10,7 @@
 - Pull request: pendiente de abrir.
 - CI: pendiente.
 
-> Estado de este documento: **en curso.** Están registrados los grupos 1 y 2 de `tasks.md`. Las demás
+> Estado de este documento: **en curso.** Están registrados los grupos 1 a 3 de `tasks.md`. Las demás
 > secciones figuran con su estado real, que es «no ejecutado».
 
 ## Entorno de la máquina de validación (tarea 1.1)
@@ -190,7 +190,61 @@ Criterio de la tarea cumplido: `mock` y 8, como fija la decisión 1 del `design.
 acreditado que la validación se ejecuta con el modo que **no** mide pertinencia semántica; el modo
 `litellm` no se puede ejecutar en esta máquina (sin claves de gateway).
 
-## Recorrido (grupos 3 a 8)
+## Guion de navegador (grupo 3)
+
+### Proyecto externo (tarea 3.1)
+
+Proyecto propio **fuera del repositorio**, con sus resultados y capturas también fuera.
+
+| Dato | Valor |
+| --- | --- |
+| Playwright | `1.63.0` (instalado con `npm` en esa carpeta; la regla de pnpm del repositorio no le afecta) |
+| Chromium | `153.0.8010.12` (revisión `1243`), ya presente en la caché de Playwright de la máquina: no se descargó nada |
+| Node | `v24.15.0` |
+| `git status` del repositorio tras instalarlo | Sin cambios: no deja nada dentro |
+
+### Guion (tareas 3.2 y 3.3)
+
+El guion cumple la decisión 4 del `design.md`: Chromium en modo headless con perfil vacío, sin
+`page.route` (no intercepta ni responde peticiones), sin escribir la sesión en el almacenamiento
+(entra por el formulario), contraseña leída de `E2E_PASSWORD`, esperas por condición, y falla ante
+un error de página, un error de CORS en la consola o un paso incumplido; los pasos que dependen de
+uno fallido quedan como `not_run`. Las consultas a CockroachDB y pgvector y la lectura de los
+registros del backend y del processor son de solo lectura y van dentro del propio guion, de modo que
+el recorrido se repite con un solo comando.
+
+Versionado, con su texto íntegro y cómo ejecutarlo, en
+[JUP-104-browser-recipe.md](JUP-104-browser-recipe.md). El texto de la receta es byte a byte el del
+guion que se ejecuta.
+
+### Ensayo de solo lectura (no es la evidencia del recorrido)
+
+Antes de la ejecución completa se ensayaron, con `E2E_PHASE=read`, solo los pasos que no modifican
+datos (`0.1` y el grupo 4) para depurar selectores sin ensuciar el stack. Sobre el commit `729d4ba`:
+5 de 5 pasos correctos, 0 errores de página, 0 errores de consola y 0 de CORS. Las observaciones de
+ese ensayo **no** se usan como resultado del recorrido: el registro de los grupos 4 a 6 sale de la
+ejecución completa.
+
+Tres hechos del ensayo que sí afectan a la receta:
+
+- **`chrome://version` no se puede abrir con Playwright** (`net::ERR_INVALID_URL`). Para acreditar
+  que no se relajan protecciones, el paso `0.1` lee la **línea de comandos real del proceso** del
+  navegador (PowerShell en Windows). Tiene 44 opciones y ninguna de `--disable-web-security`,
+  `--allow-running-insecure-content`, `--disable-site-isolation-trials` ni
+  `--ignore-certificate-errors`.
+- **Playwright añade sus opciones estándar de automatización**, entre ellas `--no-sandbox`,
+  `--disable-popup-blocking`, `--disable-extensions` y `--headless`. Ninguna afecta a CORS ni a la
+  política de mismo origen, pero **no es el navegador de una persona**. Por eso existe la pasada
+  manual de la tarea 7.1, y esta limitación consta también en la receta.
+- **Una petición `GET /billing/summary` termina en `net::ERR_ABORTED`.** Es la capa API cancelando la
+  consulta en curso cuando cambia la selección al rellenar las fechas, no un fallo. Se anota en el
+  recorrido para que no se confunda con uno.
+
+Dos cambios al guion durante el ensayo: el paso `0.1` pasó de abrir `chrome://version` a leer la
+línea de comandos del proceso, y el paso `4.2` añadió el desglose por grupo de recursos porque el
+agrupado por defecto (Servicio) deja los 38 registros sin dimensión.
+
+## Recorrido (grupos 4 a 8)
 
 No ejecutado.
 

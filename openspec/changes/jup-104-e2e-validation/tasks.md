@@ -27,13 +27,13 @@
 
 ## 3. Guion de navegador
 
-- [ ] 3.1 Preparar, fuera del repositorio, un proyecto con Playwright y Chromium, y anotar sus
+- [x] 3.1 Preparar, fuera del repositorio, un proyecto con Playwright y Chromium, y anotar sus
   versiones. Comprobar con `git status` que no deja nada dentro del repositorio.
-- [ ] 3.2 Escribir el guion según la decisión 4 del `design.md`: Chromium sin opciones que relajen la
+- [x] 3.2 Escribir el guion según la decisión 4 del `design.md`: Chromium sin opciones que relajen la
   seguridad, perfil vacío, sin interceptar ni responder peticiones, entrada por el formulario de
   acceso, contraseña leída de una variable de entorno y esperas por condición. Debe fallar si
   aparece un error de página no previsto.
-- [ ] 3.3 Versionar el guion como receta en `docs/evidence/JUP-104-browser-recipe.md`, con cómo
+- [x] 3.3 Versionar el guion como receta en `docs/evidence/JUP-104-browser-recipe.md`, con cómo
   ejecutarlo y qué variables necesita, sin ningún valor secreto.
 
 ## 4. Recorrido: acceso, ámbito y costes
