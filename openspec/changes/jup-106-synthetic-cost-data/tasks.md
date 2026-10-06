@@ -1,13 +1,13 @@
 ## 1. Pruebas en rojo
 
-- [ ] 1.1 Escribir `scripts/tests/test_synthetic_costs.py` con las pruebas sin base de datos: conjunto determinista, prefijo reservado y marcado de las ingestas, presencia de cada caso (cero registrado, hueco, crédito, dos monedas, importe fuera del rango seguro, dimensiones ausentes, mayúsculas del grupo de recursos y fila sin fecha), totales por mes y moneda con `Decimal` frente a la tabla escrita a mano, guardas del tenant, idempotencia y retirada con una conexión simulada.
-- [ ] 1.2 Comprobar que fallan por la razón esperada (la herramienta aún no existe) y registrar el resultado.
+- [x] 1.1 Escribir `scripts/tests/test_synthetic_costs.py` con las pruebas sin base de datos: conjunto determinista, prefijo reservado y marcado de las ingestas, presencia de cada caso (cero registrado, hueco, crédito, dos monedas, importe fuera del rango seguro, dimensiones ausentes, mayúsculas del grupo de recursos y fila sin fecha), totales por mes y moneda con `Decimal` frente a la tabla escrita a mano, guardas del tenant, idempotencia y retirada con una conexión simulada.
+- [x] 1.2 Comprobar que fallan por la razón esperada (la herramienta aún no existe) y registrar el resultado.
 
 ## 2. Herramienta
 
-- [ ] 2.1 Implementar `scripts/synthetic_costs.py` con el conjunto de datos, los subcomandos `apply`, `status` y `remove`, la lectura de `DATABASE_URL` y del tenant, la guarda de datos no sintéticos y la detección de estado parcial o ajeno.
-- [ ] 2.2 Poner las pruebas en verde y revisar mutantes sobre las condiciones clave (prefijo, guarda, retirada solo sintética, idempotencia, totales).
-- [ ] 2.3 Añadir la prueba contra CockroachDB real y desechable (`JUP086_COCKROACH_TEST_URL`) que carga, compara con una suma independiente y retira, y ejecutarla.
+- [x] 2.1 Implementar `scripts/synthetic_costs.py` con el conjunto de datos, los subcomandos `apply`, `status` y `remove`, la lectura de `DATABASE_URL` y del tenant, la guarda de datos no sintéticos y la detección de estado parcial o ajeno.
+- [x] 2.2 Poner las pruebas en verde y revisar mutantes sobre las condiciones clave (prefijo, guarda, retirada solo sintética, idempotencia, totales).
+- [x] 2.3 Añadir la prueba contra CockroachDB real y desechable (`JUP086_COCKROACH_TEST_URL`) que carga, compara con una suma independiente y retira, y ejecutarla.
 
 ## 3. Documentación y CI
 
