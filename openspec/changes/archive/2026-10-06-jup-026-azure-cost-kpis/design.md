@@ -16,7 +16,7 @@ Review actor, HEAD, approval and exclusions are in the [amendment](proposal.md#p
   SQL `lower` guarantees the requested ASCII case matching; it is not Python
   `casefold` or a claim of Azure ordinal Unicode equivalence. Non-ASCII names
   follow database `lower` semantics only;
-  the whole-repository Unicode decision remains [RF-014-002](../../findings/backlog.md).
+  the whole-repository Unicode decision remains [RF-014-002](../../../findings/backlog.md).
 - Tag keys: mirror processor `apps/processor/app/normalization/azure_cost.py`
   `_canonical_tag_key` exactly in a small billing-route helper: `strip()`,
   `casefold()`, replace each `[^a-z0-9]+` run with `_`, strip edge `_`, then
@@ -44,7 +44,7 @@ JUP-026. No new ADR or processor change is proposed.
 Reuse GET /billing/summary and Database.fetch_billing_summary over existing
 002/003/004 normalized schema/indexes. Keep bearer, X-Tenant-Id and integrated
 JUP-086 tenant checks. No new endpoint, schema, dependency or security setting.
-ADR: [ADR-0010](../../../docs/adr/ADR-0010-azure-cost-source-overlap.md)
+ADR: [ADR-0010](../../../../docs/adr/ADR-0010-azure-cost-source-overlap.md)
 (Accepted, Paris Arcos, 2026-09-28) records the conservative overlap policy below.
 Final human approval, technical review and QA status are recorded in [review.md](review.md).
 The approved functional contract is unchanged.
@@ -54,7 +54,7 @@ warning-only MVP scope on 2026-09-27; see [scoped decisions](proposal.md#scoped-
 The full technical contract below, including response-v2 strings/null, was
 subsequently approved at the proposal's pre-code gate on 2026-09-27.
 Source replacement is deferred in
-[RF-026-001](../../findings/backlog.md#rf-026-001). It tracks future ingestion
+[RF-026-001](../../../findings/backlog.md#rf-026-001). It tracks future ingestion
 replacement with explicit confirmation, outside the current contract and
 implementation authorization.
 
@@ -118,7 +118,7 @@ frontend warning of possible overlap with no ambiguous monetary result, never
 a warning alongside a sum of ambiguous sources. GET /billing/summary is
 read-only: no replacement, confirmation, automatic latest-run selection,
 deduplication engine or ingestion change is authorized. Future confirmed
-replacement is deferred to [RF-026-001](../../findings/backlog.md#rf-026-001)
+replacement is deferred to [RF-026-001](../../../findings/backlog.md#rf-026-001)
 and is not a JUP-026 blocker when the
 warning/no ambiguous sums acceptance is met.
 
