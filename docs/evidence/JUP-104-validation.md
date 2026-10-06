@@ -10,9 +10,9 @@
 - Pull request: pendiente de abrir.
 - CI: pendiente.
 
-> Estado de este documento: **en curso.** Están registrados los grupos 1 a 8 de `tasks.md`, salvo la
-> tarea 8.6 (parar el stack), que se hará al cerrar la validación. La batería del carril (grupo 9) y los
-> archivos compartidos (grupo 10) figuran con su estado real, que es «no ejecutado».
+> Estado de este documento: **en curso.** Están registrados los grupos 1 a 9 de `tasks.md`. Falta el
+> grupo 10 (archivos compartidos: spike y backlog), que espera a que el PR #75 de JUP-103 esté en
+> `develop`, y la revisión (grupo 11).
 
 ## Entorno de la máquina de validación (tarea 1.1)
 
@@ -780,12 +780,61 @@ variable. Las capturas, también fuera del repositorio, no se han revisado una a
 
 ### Parada del stack (tarea 8.6)
 
-**Pendiente.** El proyecto `jup104-e2e` sigue levantado porque la pasada manual lo necesita. Al
-terminarla se parará con `docker compose stop`, sin borrar volúmenes.
+Hecha tras la pasada manual y **antes** de la batería, porque la batería compite por CPU con el stack
+y las pruebas con plazos de tiempo son sensibles a la carga (`RF-098-004`). `docker compose stop`
+con `COMPOSE_PROJECT_NAME=jup104-e2e`, **sin borrar volúmenes**:
+
+- Los 9 contenedores del proyecto quedan `exited`.
+- Se conservan los 5 volúmenes `jup104-e2e_*` (`cockroach-data`, `pgvector-data`, `rabbitmq-data`,
+  `prometheus-data` y `grafana-data`), con los datos descritos en «Residuo en el stack», y las imágenes
+  `jup104-e2e-*`.
+- Ningún proceso escucha en los puertos del stack.
+- El proyecto por defecto `tfm-economicon` no se tocó en ningún momento. Borrar el proyecto
+  `jup104-e2e` (`docker compose down -v`) queda a decisión de quien usa la máquina.
 
 ## Batería del carril (grupo 9)
 
-No ejecutada.
+Ejecutada el 2026-10-06 desde la raíz, con la rama en `0b68434`, el árbol de trabajo limpio y el stack
+de Compose **parado**. `corepack pnpm exec pnpm --version` da `9.0.0`.
+
+**Entorno de Python.** El entorno virtual de JUP-103 (`C:\Users\victo\Pontia\.venv-tfm`) ya no existía:
+se recreó **fuera del repositorio** con Python `3.13.7` (en esta máquina no hay un 3.12, que es el de
+CI y de las imágenes) y se instaló `requirements-dev.txt` de `backend`, `processor` y `azure-cost-api`
+sin errores. Versiones relevantes: `fastapi 0.142.2`, `pytest 9.1.1`, `pika 1.4.4`, `psycopg 3.3.6`,
+`langgraph 1.2.12`, `SQLAlchemy 2.0.54`, `structlog 26.1.0`. Se antepone su carpeta `Scripts` al `PATH`
+de la consola que lanza `pnpm`, porque turbo usa el `python` que encuentra en el `PATH`.
+
+| Tarea | Comando | Resultado |
+| --- | --- | --- |
+| 9.1 | `corepack pnpm install --frozen-lockfile` | Salida 0 en 18,7 s; `git status` sin cambios: no modifica el lockfile ni ningún archivo versionado |
+| 9.2 | `corepack pnpm lint --force` | 4 de 4 tareas, 0 desde caché, 44,1 s |
+| 9.2 | `corepack pnpm typecheck --force` | 1 de 1 (solo el frontend declara `typecheck`), 0 desde caché, 63,9 s |
+| 9.2 | `corepack pnpm build --force` | 4 de 4 tareas, 0 desde caché, 46,2 s |
+| 9.3 | Mitad Python: `corepack pnpm run test "--filter=!@finops/frontend"` con `TURBO_FORCE=true` | 3 de 3 tareas, 1 min 59,9 s: `azure-cost-api` 59 correctas; `processor` 448 correctas y 57 omitidas; `backend` 578 correctas y 28 omitidas. Total **1085 correctas, 85 omitidas, 0 fallidas** |
+| 9.3 | Mitad frontend: `corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1` con `TURBO_FORCE=true` | 1 de 1 tarea, 147,6 s: **48 archivos y 443 pruebas correctas**, 0 fallidas |
+| 9.4 | `corepack pnpm openspec:validate` | 46 de 46 |
+| 9.4 | `corepack pnpm jup:check -- --change jup-104-e2e-validation` | Correcto: enlazado con Trello y completo |
+| 9.4 | `corepack pnpm jup:cleanup:check` | Correcto: 826 archivos sin agentes personales, binarios ni tareas paralelas |
+| 9.4 | `corepack pnpm repository:governance:test` | 13 de 13 |
+| 9.4 | `corepack pnpm ci:check:test` (adicional) | 12 de 12 |
+
+Más datos de la batería:
+
+- `local:test` se ejecutó en el grupo 1, antes de levantar el stack, con **74 de 74** correctas.
+- `--force` en cada tarea de turbo: su caché no depende del gestor de paquetes y una ejecución con
+  `cache hit` no demuestra nada. Todas figuran con `0 cached`.
+- Las tareas `build` de las tres aplicaciones de Python son `python -m compileall app` y no producen
+  archivos: turbo avisa `no output files found` para ellas. Es el comportamiento esperado, no un fallo.
+- `vite build` avisa de que el bundle principal supera los 500 kB (`751123` bytes). Es un aviso, no un
+  error.
+- **Se ejecutó por mitades y no con el comando único** `corepack pnpm test`: con los cuatro paquetes a la
+  vez, las pruebas con plazos de tiempo son sensibles a la carga (`RF-098-004`; `RF-103-005`, registrado
+  en el PR #75). El comando único no se ha ejecutado aquí, así que no se afirma nada sobre su resultado.
+- **No se ha inspeccionado el motivo de las 85 pruebas omitidas.** Los tests opt-in con servicios reales
+  se omiten en CI y no se activaron aquí (`RF-096-004`).
+- La batería ejecuta Python `3.13.7`, no el `3.12` de CI.
+- Esta batería no incluye los cambios del grupo 10: se repite la parte de OpenSpec y gobierno en la tarea
+  10.4.
 
 ## Archivos compartidos (grupo 10)
 

@@ -103,20 +103,20 @@
   la spec, con la tarea y la sección de la evidencia que lo respaldan.
 - [x] 8.5 Revisar la evidencia, la receta y las salidas guardadas: ninguna contraseña, token, clave
   ni cadena de conexión.
-- [ ] 8.6 Parar el proyecto con `docker compose stop`, sin borrar volúmenes, y anotarlo.
-  Pendiente: el stack debe seguir levantado hasta terminar la pasada manual (7.1).
+- [x] 8.6 Parar el proyecto con `docker compose stop`, sin borrar volúmenes, y anotarlo.
+  Hecho tras la pasada manual y antes de la batería.
 
 ## 9. Batería del carril
 
-- [ ] 9.1 `corepack pnpm install --frozen-lockfile` y comprobar con `git status` que no modifica
+- [x] 9.1 `corepack pnpm install --frozen-lockfile` y comprobar con `git status` que no modifica
   ningún archivo versionado.
-- [ ] 9.2 Desde la raíz, con `--force`: `corepack pnpm lint`, `corepack pnpm typecheck` y
+- [x] 9.2 Desde la raíz, con `--force`: `corepack pnpm lint`, `corepack pnpm typecheck` y
   `corepack pnpm build`. Guardar el recuento de tareas.
-- [ ] 9.3 Pruebas por mitades, con el entorno virtual de Python activo:
+- [x] 9.3 Pruebas por mitades, con el entorno virtual de Python activo:
   `corepack pnpm run test "--filter=!@finops/frontend"` y
   `corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1`. Guardar los recuentos y
   decir en la evidencia por qué no se usa el comando único.
-- [ ] 9.4 `corepack pnpm openspec:validate`,
+- [x] 9.4 `corepack pnpm openspec:validate`,
   `corepack pnpm jup:check -- --change jup-104-e2e-validation`, `corepack pnpm jup:cleanup:check` y
   `corepack pnpm repository:governance:test`.
 
