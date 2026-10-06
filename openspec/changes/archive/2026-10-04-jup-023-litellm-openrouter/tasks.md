@@ -13,7 +13,7 @@ revocacion y caducidad comprobados; no equivalen a gasto real contabilizado.
 Paris confirma el acuerdo del equipo. Clave upstream verificada: 0,40 USD sin
 reinicio. Smoke real y llamada adicional de diagnostico: HTTP 400 en chat,
 sin retries ni embeddings; ultimo diagnostico identifica limite de gramatica. Evidencia y
-limites en [JUP-023-validation.md](../../../docs/evidence/JUP-023-validation.md).
+limites en [JUP-023-validation.md](../../../../docs/evidence/JUP-023-validation.md).
 Ocho peticiones de chat y tres de embedding al gateway; sin PR ni cierre.
 Captura temporal autorizada: ExportLimitError, mas de 262144 estados intermedios
 al compilar la gramatica del schema en GLM; campo causante no identificado.
@@ -29,7 +29,7 @@ La correccion posterior acredita gasto positivo y contador virtual en real;
 rechazo por presupuesto comprobado en simulado. Revision tecnica/QA local PASS.
 
 - [x] 1.1 JUP-023 validar OpenSpec/trazabilidad y obtener gate humano pre-code sobre el plan y archivos previstos, incluido `core/config.py`; Paris aprueba el 2026-10-02 la fase offline con la condicion registrada en proposal.md.
-- [x] 1.2 JUP-023 completar compatibilidad Docker (config, API, auth, claves virtuales, privacidad y retries) con upstream simulado: Paris autoriza el 2026-10-02 el pin 1.103.2 y Docker local aislado sin gasto segun [ADR-0016](../../../docs/adr/ADR-0016-litellm-version-pin.md), aun Proposed. Compatibilidad simulada comprobada con los limites de la evidencia; revision de 17 advisories, digest e imports no acredita firmas verificadas. No ejecutar 1.82.6.
+- [x] 1.2 JUP-023 completar compatibilidad Docker (config, API, auth, claves virtuales, privacidad y retries) con upstream simulado: Paris autoriza el 2026-10-02 el pin 1.103.2 y Docker local aislado sin gasto segun [ADR-0016](../../../../docs/adr/ADR-0016-litellm-version-pin.md), aun Proposed. Compatibilidad simulada comprobada con los limites de la evidencia; revision de 17 advisories, digest e imports no acredita firmas verificadas. No ejecutar 1.82.6.
 - [x] 1.3 JUP-023 antes de uso real, resolver pendientes ADR-0002/privacidad, verificar acceso de modelos y claves limitadas; comprobar precios, conversion conservadora y techo total 0,50 EUR con margen y stop ante coste desconocido. Acuerdo confirmado por Paris, limites/precios/ZDR comprobados; smoke y conciliacion agregada pasan con limites documentados. No sustituye aprobaciones individuales ni el estado formal de los ADR.
 
 ## 2. Offline Implementation After Pre-Code Approval
@@ -56,8 +56,9 @@ rechazo por presupuesto comprobado en simulado. Revision tecnica/QA local PASS.
 ## 4. Verification And Delivery Gates
 
 - [x] 4.1 JUP-023 strict OpenSpec 37/37, trace 9, hygiene 727 archivos y diff check pasan; regresiones aplicables reutilizadas y pruebas afectadas repetidas segun evidencia. QA mapea criterios, errores y omisiones; no se afirma CI remoto ni suites ajenas ejecutadas.
-- [ ] 4.2 JUP-023 antes de cualquier PR, incluido borrador, superar las pruebas reales 3.3 y registrar evidencia/coste 3.4; confirmar roles y obtener autorizacion explicita de publicacion. Obtener Revision y Validacion separadas segun proceso local JUP-100 y repetir las afectadas por cambios.
-- [ ] 4.3 JUP-023 completar QA y aprobacion humana final; merge, archivo y actualizacion Trello solo con sus autorizaciones, coordinando capability con JUP-078 y orden de archivo pendiente. No atribuir veredictos de agentes a humanos.
+- [x] 4.2 JUP-023 pruebas reales y coste registrados antes de PR #65; publicacion autorizada. Alejandro y Lucia publicaron reviews separadas, solicitaron corregir el timeout y aprobaron el head 7fb4c70 tras repetir las comprobaciones afectadas.
+- [x] 4.3 JUP-023 QA local y aprobaciones humanas documentadas; PR #65 integrada en develop como 6410950. Paris conserva la actualizacion de Trello a su cargo. JUP-078 permanece activa; no se atribuyen veredictos de agentes a personas.
+- [x] 4.4 JUP-023 change archivado y spec promovida tras autorizacion explicita de Paris el 2026-10-04; enlaces y controles del repositorio comprobados. Trello permanece a cargo de Paris.
 
 ## 5. Approved Embedding Budget Correction
 
@@ -73,5 +74,5 @@ rechazo por presupuesto comprobado en simulado. Revision tecnica/QA local PASS.
 - [x] 6.2 JUP-023 RED real loopback: cuatro casos de goteo cuerpo/cabeceras con retries 0/2 fallan y el control positivo pasa. 0,453-0,454 s frente a timeout 0,05 s; aserciones de elapsed, categoria, intentos y cierre. Solo cinco casos nuevos en test_agent_runtime.py. Evidencia registra comandos y limitacion DNS encontrada antes de Green.
 - [x] 6.3 JUP-023 deadline HTTP implementado en app/clients/litellm.py: socket/TLS/cabeceras/cuerpo usan presupuesto restante; cierre por timeout, backoff e intentos acotados conservados. Sin resolver/subprocesos DNS, dependencias ni cambios ajenos. La limitacion DNS consta en la evidencia.
 - [x] 6.4 JUP-023 GREEN: cinco regresiones pasan; processor 438 passed/57 skipped, tres mutantes detectados. Revision tecnica y QA local PASS, guards y DoD de etapa QA PASS. Evidencia registra tiempos, cierre, intentos, comandos y limitaciones; sin nuevas pruebas adicionales, OpenRouter ni DockerServer.
-- [ ] 6.5 JUP-023 entregar resultados para nueva Revision de Alejandro y Validacion de Lucia bajo CONTRIBUTING 2026-09-30 (JUP-100); ambas solicitudes de cambios siguen pendientes hasta sus Approve. Mantener gate humano final, sin publicar reviews, commits, push, merge, archivo ni actualizar trackers en esta fase.
+- [x] 6.5 JUP-023 resultados entregados para nueva Revision de Alejandro y Validacion de Lucia bajo CONTRIBUTING 2026-09-30 (JUP-100); ambos aprobaron 7fb4c70 y levantaron sus solicitudes de cambios antes del merge. Las restricciones descritas en esta tarea correspondian a la fase previa y no autorizaban entonces publicaciones ni trackers.
 - [x] 6.6 JUP-023 revalidacion real autorizada tras correccion: chat FinOpsResponse valido y embedding1536 finito comprobados con cliente actual; ensayo parcial conservado y una repeticion de embedding autorizada por separado. Sin retries; consumo adicional de esa repeticion 0,000000240 USD conciliado, limpieza completa. No sustituye reviews humanas ni repite persistencia; ver evidencia.
