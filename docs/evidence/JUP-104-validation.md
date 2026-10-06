@@ -10,7 +10,7 @@
 - Pull request: pendiente de abrir.
 - CI: pendiente.
 
-> Estado de este documento: **en curso.** Solo el grupo 1 de `tasks.md` está registrado. Las demás
+> Estado de este documento: **en curso.** Están registrados los grupos 1 y 2 de `tasks.md`. Las demás
 > secciones figuran con su estado real, que es «no ejecutado».
 
 ## Entorno de la máquina de validación (tarea 1.1)
@@ -104,7 +104,93 @@ falta pararlo. Sus volúmenes y datos no se han tocado. La validación usará un
 (`COMPOSE_PROJECT_NAME=jup104-e2e`, decisión 2 del `design.md`), con volúmenes nuevos, de modo que
 esos datos quedan intactos y no influyen en el resultado.
 
-## Recorrido (grupos 2 a 8)
+## Stack local aislado (grupo 2)
+
+Todos los comandos, desde la raíz del repositorio y con `COMPOSE_PROJECT_NAME=jup104-e2e` definido en
+la consola (no en `.env`). Commit del que se construyeron las imágenes: `6dd5d5b` (rama
+`feat/JUP-104-e2e-validation`, sobre `develop` en `0488372`; la rama no cambia código de producto).
+
+### Diagnóstico (tarea 2.1)
+
+`corepack pnpm local:doctor`, código de salida 0:
+
+```
+[INFO] Instalacion nueva del proyecto "jup104-e2e": no hay volumenes previos.
+[OK] El entorno local esta listo para `docker compose up --build --wait`.
+```
+
+### Arranque (tarea 2.2)
+
+`docker compose up --build --wait`, código de salida 0. Duración: 5 min 33 s
+(`2026-10-05T23:43:41Z` a `23:49:14Z`), incluidas la construcción de las imágenes y la primera
+migración de las bases de datos.
+
+| Servicio | Estado | Imagen |
+| --- | --- | --- |
+| `cockroachdb` | `running`, `healthy` | `cockroachdb/cockroach:v24.1.11` (por huella) |
+| `rabbitmq` | `running`, `healthy` | `rabbitmq:3-management` (por huella) |
+| `postgres-pgvector` | `running`, `healthy` | `pgvector/pgvector:pg17` (por huella) |
+| `azure-cost-api` | `running`, `healthy` | `jup104-e2e-azure-cost-api` |
+| `backend` | `running`, `healthy` | `jup104-e2e-backend` |
+| `processor` | `running`, `healthy` | `jup104-e2e-processor` |
+| `frontend` | `running`, `healthy` | `jup104-e2e-frontend` |
+| `prometheus` | `running`, `healthy` | `prom/prometheus:v2.55.1` |
+| `grafana` | `running` (sin healthcheck) | `grafana/grafana:11.3.0` |
+
+- Imágenes de aplicación: construidas con `--build` y con el nombre del proyecto
+  (`jup104-e2e-*`), distintas de las `tfm-economicon-*` de hace 6 días del proyecto por defecto, que
+  no se usan ni se modifican. `backend`, `processor` y `frontend` figuran creadas durante este
+  arranque; la de `azure-cost-api` figura «de hace 6 días» (BuildKit reutilizó sus capas de la caché,
+  lo que indica que su código no ha cambiado desde entonces; es una inferencia, no una comprobación).
+- Volúmenes nuevos: `jup104-e2e_cockroach-data`, `_pgvector-data`, `_rabbitmq-data`,
+  `_prometheus-data` y `_grafana-data`. Red: `jup104-e2e_default`.
+- El backend arrancó antes de que existiera la tabla de vectores y lo registró
+  (`embedding_dimension_check_skipped`, `reason: table_missing`): es la ventana descrita por
+  `RF-096-002`, sin consecuencias aquí porque no se usa el asistente hasta que el processor está sano.
+
+### Smoke (tarea 2.3)
+
+`corepack pnpm local:smoke`, **una sola vez** (33 s, `23:49:41Z` a `23:50:14Z`), código de salida 0:
+
+```
+[OK] 1/5 Salud de backend, processor, Azure Cost API y frontend
+[OK] 2/5 Login del usuario demo
+[OK] 3/5 Ingesta de costes desde la Azure Cost API simulada
+[OK] 4/5 Resumen de costes con datos
+[OK] 5/5 Job de documento publicado en RabbitMQ y completado por el processor
+[OK] Recorrido minimo verificado.
+```
+
+No se vuelve a ejecutar: cada ejecución añade un fragmento al corpus de `tenant-core`.
+
+Estado de los datos después del smoke, que es la línea base de los grupos 5 y 6 (consultas de solo
+lectura):
+
+| Almacén | Contenido |
+| --- | --- |
+| CockroachDB, `jobs` | 1 trabajo, `completed` |
+| CockroachDB, `azure_cost_records` | 38 registros, todos de `tenant-core` |
+| CockroachDB, `conversations` y `messages` | 0 y 0 |
+| pgvector, `knowledge_documents` | 1 documento: `tenant-core`, origen `local-smoke`, 1 fragmento («Smoke del entorno local.») |
+| pgvector, `chunk_embeddings` | 1 vector, proveedor `mock`, dimensión 8 |
+
+`tenant-growth` no tiene costes ni documentos: todo fragmento que el asistente devuelva allí
+después de la ingesta del grupo 5 procede del documento del recorrido.
+
+### Proveedor de embeddings (tarea 2.4)
+
+| Comprobación | Resultado |
+| --- | --- |
+| Evento de arranque del backend `embedding_configuration` | `embedding_provider: mock`, `embedding_model: economicon-embedding`, `embedding_dimension: 8` |
+| Entorno efectivo del backend | `RUNTIME_ENVIRONMENT=development`, `EMBEDDING_PROVIDER=mock`, `EMBEDDING_DIMENSION=8`, `RETRIEVAL_TOP_K=4`, `RETRIEVAL_MAX_DISTANCE` vacío (sin umbral de distancia) |
+| Entorno efectivo del processor | `LLM_PROVIDER=mock`, `AI_EXECUTION_MODE=development`, `EMBEDDING_PROVIDER=mock`, `EMBEDDING_DIMENSION=8` |
+| Columna `chunk_embeddings.embedding` | `vector(8)` |
+
+Criterio de la tarea cumplido: `mock` y 8, como fija la decisión 1 del `design.md`. Queda
+acreditado que la validación se ejecuta con el modo que **no** mide pertinencia semántica; el modo
+`litellm` no se puede ejecutar en esta máquina (sin claves de gateway).
+
+## Recorrido (grupos 3 a 8)
 
 No ejecutado.
 

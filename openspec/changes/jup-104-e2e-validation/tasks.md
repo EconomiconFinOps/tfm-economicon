@@ -15,14 +15,14 @@
 
 ## 2. Stack local aislado
 
-- [ ] 2.1 Con `COMPOSE_PROJECT_NAME=jup104-e2e` definido en la consola, ejecutar
+- [x] 2.1 Con `COMPOSE_PROJECT_NAME=jup104-e2e` definido en la consola, ejecutar
   `corepack pnpm local:doctor` y guardar la salida. Debe informar de una instalación nueva, sin
   volúmenes previos.
-- [ ] 2.2 En la misma consola, `docker compose up --build --wait` y registrar el estado de cada
+- [x] 2.2 En la misma consola, `docker compose up --build --wait` y registrar el estado de cada
   servicio con `docker compose ps` y el commit desde el que se construyeron las imágenes.
-- [ ] 2.3 Ejecutar `corepack pnpm local:smoke` **una sola vez** y guardar sus cinco pasos. A partir
+- [x] 2.3 Ejecutar `corepack pnpm local:smoke` **una sola vez** y guardar sus cinco pasos. A partir
   de aquí no se vuelve a ejecutar: cada ejecución añade un fragmento al corpus de `tenant-core`.
-- [ ] 2.4 Registrar el proveedor de embeddings que el backend declara al arrancar y la dimensión de
+- [x] 2.4 Registrar el proveedor de embeddings que el backend declara al arrancar y la dimensión de
   la columna de vectores en pgvector. Criterio: `mock` y 8, como fija la decisión 1 del `design.md`.
 
 ## 3. Guion de navegador
