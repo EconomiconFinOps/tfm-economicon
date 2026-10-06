@@ -66,19 +66,22 @@
 
 ## 6. Recorrido: asistente, historial y cierre
 
-- [ ] 6.1 Con Growth Ops, crear una conversación nueva en `/assistant` y enviar la pregunta del caso
+- [x] 6.1 Con Growth Ops, crear una conversación nueva en `/assistant` y enviar la pregunta del caso
   `JUP-069-004`. Registrar el texto de la respuesta y comprobar que cada fragmento que muestra
   procede del documento ingerido en 5.1.
-- [ ] 6.2 Guardar el evento `retrieval` del backend para esa pregunta y comprobar que sus
+- [x] 6.2 Guardar el evento `retrieval` del backend para esa pregunta y comprobar que sus
   identificadores de documento son el del trabajo de 5.1.
-- [ ] 6.3 Recargar la página, volver a abrir la conversación y registrar si se muestran la pregunta y
+- [x] 6.3 Recargar la página, volver a abrir la conversación y registrar si se muestran la pregunta y
   la respuesta. Es la comprobación de `RF-087-002`: si falla, guardar el código de respuesta y el
   registro del backend.
-- [ ] 6.4 Cambiar a Core Finance, crear una conversación nueva y enviar la misma pregunta. Registrar
+- [x] 6.3b (añadida durante el apply) Crear una segunda conversación en el mismo ámbito, enviar un
+  mensaje y comprobar que va a la conversación recién creada. Reproduce de forma determinista lo que
+  revelaron las pasadas 2 y 3. Resultado: **falla**, hallazgo `RF-104-001` redactado en la evidencia.
+- [x] 6.4 Cambiar a Core Finance, crear una conversación nueva y enviar la misma pregunta. Registrar
   la respuesta y comprobar que no contiene fragmentos del documento de 5.1.
-- [ ] 6.5 Cerrar la sesión, intentar abrir `/assistant` directamente y registrar que se presenta la
+- [x] 6.5 Cerrar la sesión, intentar abrir `/assistant` directamente y registrar que se presenta la
   pantalla de acceso.
-- [ ] 6.6 Guardar el resultado completo del guion (pasos, errores de página y versión del navegador)
+- [x] 6.6 Guardar el resultado completo del guion (pasos, errores de página y versión del navegador)
   y añadir a la evidencia la tabla de pasos con su estado: acreditado, fallido o no ejecutado.
 
 ## 7. Pasada manual

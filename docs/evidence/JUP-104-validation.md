@@ -10,7 +10,7 @@
 - Pull request: pendiente de abrir.
 - CI: pendiente.
 
-> Estado de este documento: **en curso.** Están registrados los grupos 1 a 5 de `tasks.md`. Las demás
+> Estado de este documento: **en curso.** Están registrados los grupos 1 a 6 de `tasks.md`. Las demás
 > secciones figuran con su estado real, que es «no ejecutado».
 
 ## Entorno de la máquina de validación (tarea 1.1)
@@ -424,9 +424,140 @@ contiene contenido del documento.
 con el processor parado). Lo cubre a nivel de API el smoke de JUP-050 («Processor stopped»); aquí no se
 ha provocado.
 
-### Asistente (grupo 6)
+### Asistente, historial y cierre de sesión (grupo 6), pasada 5
 
-Ejecutado por la misma pasada; su registro se añade en el commit de ese grupo.
+Todo el grupo se ejecutó con el proveedor de embeddings **`mock`** (dimensión 8, sin umbral de
+distancia), como fija la decisión 1 del `design.md`. Pregunta: el caso `JUP-069-004` de
+`docs/validation/JUP-069-questions.json`, «¿Uso coste actual o amortizado para repartir el coste de
+una reserva?».
+
+**6.1 Pregunta en Growth Ops: acreditado el camino de los datos, no la pertinencia.**
+
+- `POST /assistant/conversations/{id}/messages` → 201. La respuesta es la plantilla del backend (639
+  caracteres): «He encontrado contexto relacionado para tu consulta.», la pregunta y tres líneas
+  `- assistant-corpus: <primeros 140 caracteres del fragmento>`. No hay texto generado.
+- Cada uno de los 3 fragmentos mostrados **coincide exactamente** con los primeros 140 caracteres de un
+  fragmento guardado en pgvector de un documento ingerido desde la interfaz, y es subcadena del
+  documento original con los espacios normalizados.
+- `retrieved_context` trae 4 fragmentos, los 4 a distancia `0.5694`. La interfaz no muestra
+  `retrieved_context` aparte: pinta solo el rol y el texto de cada mensaje.
+- **Los tres fragmentos mostrados son el mismo texto**, copia del fragmento 15 en tres de los cinco
+  documentos duplicados (residuo): efecto de las copias idénticas, ver «Residuo en el stack».
+
+**Lo que `mock` no acredita, medido aquí.** El documento tiene un único fragmento que contiene
+«amortized» o «actual cost» (el 6 de 19, que es el que responde a la pregunta). **No se recuperó.** Se
+recuperaron cuatro copias del fragmento 15, que empieza «er. 4. Confirmar si el cambio era esperado. 5.
+Investigar causa tecnica o de negocio. 6. Estimar impacto…» y no trata de la pregunta. Otras
+distancias del mismo recorrido: `0.1808` para una pregunta de comprobación sobre otro tema
+(recuperó un fragmento de etiquetado) y `1.4164` para el único fragmento de Core Finance, que se
+devolvió igualmente porque no hay umbral. Con `mock` las distancias no miden pertinencia.
+
+Tampoco se evalúa la rúbrica de `JUP-069-004` (distinguir facturación de distribución del
+compromiso, explicar el uso del amortizado para showback): el chat no genera una explicación, así que
+esa rúbrica pertenece a un ensayo con modelo (JUP-065, JUP-070), no a esta validación.
+
+**6.2 Evento `retrieval` del backend: acreditado.** Para el mensaje de la pregunta, buscado por su
+identificador: `provider: mock`, `alias: mock`, `top_k: 4`, `max_distance: null`, 4 resultados,
+distancias `[0.5694, 0.5694, 0.5694, 0.5694]`, `tenant-growth`. Los `document_ids` son cuatro de los
+cinco documentos de `tenant-growth` con este origen, **entre ellos el de esta pasada**
+(`82b49a42-548a-45d8-abce-ebf9a268af3d`). El evento no contiene texto de la pregunta ni de los
+fragmentos.
+
+**6.3 Recarga del historial (`RF-087-002`): no se reproduce el fallo.**
+
+- Tras el `POST` de mensaje (201), el guion recarga la página, selecciona Growth Ops y abre `/assistant`:
+  `GET /assistant/conversations/{id}` → **200** (la conversación abierta tenía 14 mensajes), y se
+  muestran la pregunta y la respuesta. Las 12 lecturas de historial de la pasada (6 de la conversación abierta) dieron 200 y no
+  hubo ninguna respuesta 5xx.
+- Es el escenario que describe el hallazgo (enviar un mensaje y recargar el historial) contra
+  **CockroachDB real**. En la base, los 12 mensajes del asistente llevan `metadata` no nula (ejemplo:
+  `{"citations": ["…:chunk:0", …]}`), un objeto JSON, que es el tipo de valor que antes rompía la
+  lectura al decodificarlo dos veces.
+- La lectura actual de `Database.fetch_messages` solo decodifica `metadata` si llega como texto; ese
+  cambio lo introdujo JUP-086 (PR #47, commit `d244278`). Ningún test del repositorio la cubre contra
+  una base real; esta ejecución sí.
+- **Propuesta para el backlog (tarea 10.2):** `RF-087-002` pasa a `Fixed`, citando JUP-086 y esta
+  evidencia, con la nota de que sigue sin haber un test automatizado contra la base real.
+
+**6.3b Segunda conversación en el mismo ámbito: FALLO del producto (hallazgo `RF-104-001`).** Paso
+añadido durante el apply (no estaba en `tasks.md`) para reproducir de forma determinista lo que
+descubrieron las pasadas 2 y 3. Con 5 conversaciones previas «Ops review» en Growth Ops, el guion
+escribe el título «Segunda conversacion», pulsa «New» y envía un mensaje:
+
+| Dato | Valor |
+| --- | --- |
+| Conversación creada por «New» (`POST /assistant/conversations` → 201) | `dde97015-aad1-4485-b07b-40d071244246` |
+| Conversación a la que se envió el mensaje (`POST …/{id}/messages` → 201) | `fc77bad7-bcc1-4eee-ad5b-ec6369313d7a`, la **antigua** |
+| Estado de la nueva en la base de datos | 0 mensajes |
+
+La captura del paso (fuera del repositorio) lo confirma: el chat abierto es el de la conversación
+antigua, resaltada en primer lugar de la lista con todo su historial acumulado, y «Segunda
+conversacion» figura debajo, sin seleccionar y vacía. Lo mismo ocurre en Core Finance con
+`461a1c7d`, que acumula 8 mensajes mientras sus conversaciones nuevas están vacías.
+
+- **Reproducción manual:** acceder, elegir un ámbito que ya tenga una conversación, abrir
+  `/assistant`, pulsar «New», escribir un mensaje y pulsar «Send».
+- **Esperado:** la conversación nueva queda seleccionada y vacía, y el mensaje va a ella.
+- **Observado:** la conversación seleccionada es la primera de la lista (la de actualización más
+  reciente) y el mensaje va a ella; la nueva queda vacía. Efecto acumulado tras las pasadas: 10 de
+  las 12 conversaciones están vacías, y solo `fc77bad7` y `461a1c7d` tienen mensajes.
+- **Sin efecto con el ámbito vacío:** la primera conversación de un ámbito sí se selecciona bien (por
+  eso la pasada 1 no lo mostró y `6.1` solo lo revela con conversaciones previas).
+- **Causa probable, por lectura del código; no depurada en ejecución.** En
+  `apps/frontend/src/pages/ConversationsPage.tsx`, `onSuccess` de la creación (líneas 71 a 73)
+  invalida la lista y selecciona la conversación nueva; pero el efecto de las líneas 51 a 61 comprueba
+  que la seleccionada esté en la lista **que todavía es la antigua**, no la encuentra y selecciona
+  `items[0]`. Cuando llega la lista refrescada, la seleccionada (la antigua) ya es válida y no vuelve a
+  cambiar. Los PR #55 (JUP-025) y #69 (JUP-036), abiertos, conservan ese mismo efecto en sus ramas.
+- **Gravedad propuesta:** media. Los mensajes terminan en una conversación distinta de la que el
+  operador cree haber abierto, mezclando contextos; solo afecta a ámbitos con alguna conversación.
+- **No se corrige aquí** (alcance fuera de la tarjeta, decisión 8 del `design.md`).
+
+**6.4 La misma pregunta en Core Finance: acreditado el aislamiento.**
+
+- Respuesta (196 caracteres): la plantilla con **una sola** línea, `- local-smoke: Smoke del entorno
+  local.`, que es el único fragmento de `tenant-core`.
+- Ningún fragmento mostrado es del documento ingerido en Growth Ops, y el `chunk_id` recuperado
+  (`a67fcd64…`, el del smoke) no pertenece a ninguno de los cinco documentos de Growth Ops.
+- Evento `retrieval`: `tenant-core`, 1 resultado, distancia `1.4164`. Que se devuelva un fragmento a
+  esa distancia sin relación con la pregunta es otra muestra de que, con `mock` y sin umbral, la
+  recuperación no filtra por pertinencia.
+- Acredita el filtro por ámbito en la recuperación; no sustituye a las pruebas de aislamiento de
+  JUP-086.
+
+**6.5 Cierre de sesión y ruta protegida: acreditado.** Al pulsar «Cerrar sesion» se presenta la
+pantalla de acceso (`/login`); abrir `/assistant` directamente termina en `/login`, y no queda
+`finops.session` en el almacenamiento.
+
+**6.6 Resultado completo del guion y tabla de pasos (pasada 5).** `results.json` (pasos,
+observaciones, errores de página y versión del navegador) y las 17 capturas se guardaron fuera del
+repositorio. Chromium `153.0.8010.12`, Playwright `1.63.0`, 0 errores de página.
+
+| Paso | Qué comprueba | Estado |
+| --- | --- | --- |
+| `0.1` | Navegador sin opciones que relajen la seguridad | acreditado |
+| `4.1` | Acceso por el formulario | acreditado |
+| `4.2` | Costes de Core Finance | acreditado |
+| `4.3` | Cambio de ámbito | acreditado |
+| `4.4` | Origen de los datos por pantalla | acreditado |
+| `5.1` | Envío desde `/ingest` | acreditado |
+| `5.2` | Trabajo completado en CockroachDB | acreditado |
+| `5.3` | Documento, fragmentos y vectores en pgvector | acreditado |
+| `5.4` | Registro del processor | acreditado, con límite |
+| `6.1` | Pregunta en Growth Ops | acreditado el camino, no la pertinencia |
+| `6.2` | Evento `retrieval` | acreditado |
+| `6.3` | Recarga del historial | acreditado; `RF-087-002` no se reproduce |
+| `6.3b` | Segunda conversación | **fallido** (`RF-104-001`) |
+| `6.4` | Aislamiento por ámbito | acreditado |
+| `6.5` | Cierre de sesión y ruta protegida | acreditado |
+
+14 acreditados y 1 fallido; ninguno sin ejecutar.
+
+**Qué no acredita este grupo.** La pertinencia semántica de la recuperación y cualquier respuesta
+generada por un modelo (el chat no genera texto); el modo `litellm`; las citas visibles: el backend
+guarda `metadata.citations` con identificadores de fragmento, pero la interfaz no las muestra (JUP-025,
+PR #55); las preguntas de gasto en el chat (JUP-036, PR #69); y la pasada manual en un navegador
+habitual (tarea 7.1).
 
 ## Batería del carril (grupo 9)
 
