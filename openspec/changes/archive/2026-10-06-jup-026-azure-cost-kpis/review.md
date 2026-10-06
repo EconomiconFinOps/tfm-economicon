@@ -236,6 +236,27 @@ merge and corrections: current merge HEAD is `9bab405`, with the tested
 four-file correction diff described in the current evidence. No publication,
 external update, merge into develop or archive has occurred in this correction.
 
+## Adversarial Review
+
+Pasada unica el 2026-10-06 sobre el codigo de produccion de JUP-026 ya integrado en develop (PR #52, `1e897dc`), por un revisor independiente que solo recibio las specs, el diseno y el codigo, con un CockroachDB 24.1.11 real y desechable. Las suites `test_billing_summary.py` y `test_tenant_isolation_api.py` pasaron (27) y el frontend completo en una copia fuera del repositorio (48 ficheros, 443 pruebas). No se modifico ningun fichero del repositorio.
+
+Resistieron: redondeo y suma de dinero (0.005 a 0.01, -0.004 a 0.00 sin cero negativo, importes por encima de MAX_SAFE_INTEGER exactos), periodo semiabierto, ingestas `running` y `failed`, aislamiento por tenant, 409 `ambiguous_cost_source` sin importes, estados parcial y sin fecha, canonicalizacion de `tag_key` identica a la del procesador, inyeccion SQL en `tag_key` y dimension, validacion 422 sin consulta, errores de base de datos sin fuga y consultas del frontend con tenant, fechas, agrupacion y etiqueta en la clave.
+
+Hallazgos:
+
+| ID | Severidad | Estado | Resumen | Registro |
+| --- | --- | --- | --- | --- |
+| ADV-1 | MEDIUM | Confirmado, ya conocido | Con el `QueryClient` por defecto un 409 o 422 se reintenta tres veces: 4 llamadas y unos 7,1 s hasta ver el aviso | Evidencia adicional en [RF-098-002](../../../findings/backlog.md#rf-098-002-observation-in-jup-026) |
+| ADV-2 | MEDIUM | Plausible | Lectura SERIALIZABLE sin reintento de 40001, posible 500 con escrituras concurrentes | [RF-026-003](../../../findings/backlog.md) |
+| ADV-3 | LOW | Confirmado | `subscription_id` sin comparacion insensible a mayusculas | [RF-026-004](../../../findings/backlog.md) |
+| ADV-4 | LOW | Confirmado | NaN almacenado da 500 (no alcanzable por ingestion) | [RF-026-005](../../../findings/backlog.md) |
+| ADV-5 | LOW | Confirmado | `tag_key` sin longitud maxima y sin tope de grupos | [RF-026-005](../../../findings/backlog.md) |
+| ADV-6 | LOW | Confirmado | Validacion del frontend solo de forma, anio de seis digitos llega al backend | [RF-026-006](../../../findings/backlog.md) |
+
+No hay BLOCKING ni HIGH. ADV-2 no se reprodujo (falta una prueba de concurrencia lectura/escritura sobre CockroachDB). No se inspecciono la interfaz en navegador, ni el desbordamiento movil (RF-026-002), ni el reemplazo de fuente (RF-026-001), ya aceptados, ni se midieron tiempos con volumen.
+
+Veredicto: **accept**. Los hallazgos ADV-2 a ADV-6 se registran como nuevos hallazgos de seguimiento (RF-026-003 a RF-026-006), aceptados por Lucia el 2026-10-06 sin cambios de codigo en este archivo; ADV-1 amplia el RF-098-002 existente.
+
 ## Human Approval
 
 - Change: jup-026-azure-cost-kpis
@@ -243,6 +264,6 @@ external update, merge into develop or archive has occurred in this correction.
 - Decision: approved
 - Approver: Lucia
 - Date: 2026-10-06
-- Adversarial review: no consta una seccion `Adversarial Review` en este review.md porque el change se preparo antes de que existiera esa puerta; la revision tecnica independiente (REVIEW_PASS) y el QA (QA_PASS_WITH_APPROVED_EXCEPTIONS) estan registrados arriba, y el PR #52 recibio `Revision JUP-026` y `Validacion JUP-026` de Lucia (Request changes el 29/09 y Approve el 30/09). Lucia confirma archivar con esa constancia
+- Adversarial review: pasada del 2026-10-06 con veredicto accept (ver la seccion Adversarial Review); hallazgos ADV-2 a ADV-6 aceptados por Lucia y registrados como RF-026-003 a RF-026-006, y ADV-1 como evidencia adicional de RF-098-002
 - Archive decision: archive
 - Notes: el PR #52 se integro en develop el 30/09/2026 (`1e897dc`) tras la aprobacion post-QA de Paris del 28/09. Se archiva en esta rama y se promueven las specs `azure-cost-kpis` y `frontend-api-layer`. Quedan abiertos RF-026-001 (diferido) y RF-026-002 (aplazamiento aprobado por Paris). La validacion funcional atribuible de Alejandro y la revision de Victor siguen en Trello; esta aprobacion no las sustituye.
