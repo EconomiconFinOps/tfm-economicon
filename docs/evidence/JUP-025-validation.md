@@ -205,10 +205,10 @@ antes de la ejecución completa correcta. No se atribuye pairing a Paris.
 Reconciliación publicada en `d09f16a0f373dc5ca9df016453d1cd6be00ad49f`.
 CI 37214915405 correcta: siete checks técnicos.
 [Víctor validó favorablemente este SHA](https://github.com/EconomiconFinOps/tfm-economicon/pull/55#pullrequestreview-5407281630)
-el 04/10/2026, como COMMENTED porque falta la revisión incremental de Lucía.
+el 04/10/2026, como COMMENTED porque en ese momento faltaba la revisión incremental de Lucía.
 Su Compose/navegador/mutantes son evidencia del validador, no ejecuciones propias
-del líder. Archivo OpenSpec y colaboración de Paris siguen pendientes de entrega;
-las aprobaciones antiguas no se atribuyen al próximo HEAD de archivo.
+del líder. El cierre de archivo y la nota posterior de Paris se describen en el
+apartado vigente del 06/10; las aprobaciones antiguas no se atribuyen al HEAD final.
 
 
 ## Mejoras para el archivo — 04/10/2026
@@ -221,10 +221,9 @@ identifica la reconciliación publicada y distingue resultados propios y del val
 La representación cruda del error 503 es un límite heredado de RF-098-003 y no se
 cambia aquí. La implementación de citas/recuperación permanece igual a d09f16a.
 
-El archivo se prepara localmente en la rama `chore/JUP-025-final-archive`, con
-especificación canónica `openspec/specs/answer-citations/spec.md`; publicación
-coordinada y dictámenes sobre el último HEAD pendientes. No se atribuye pairing
-ni coautoría a Paris sin trabajo realizado. #69 (JUP-036) sigue abierta y comparte
+El archivo se preparó localmente el 04/10, con especificación canónica
+`openspec/specs/answer-citations/spec.md`. Su cierre y la aportación documental
+posterior de Paris se describen en el apartado vigente del 06/10. #69 (JUP-036) sigue abierta y comparte
 ruta, esquema de mensajes e interfaz: quien integre segundo debe reconciliar y
 revalidar los contratos, sin incorporar preventivamente su borrador en esta rama.
 
@@ -263,6 +262,47 @@ telemetría se distingue del rechazo de evidencia, que sí funciona.
 
 Los dos dictámenes favorables acreditan la reconciliación publicada d09f16a.
 No se atribuyen al candidato de archivo: su publicación requiere CI y dictámenes
-incrementales del delta. Pairing de Paris sigue pendiente de acreditación real;
-no se afirma realizado ni se modifica autoría histórica. El archivo técnico
-preparado no autoriza merge ni cierre de Trello.
+incrementales del delta. La nota de Paris del 06/10 acredita la aportación
+documental indicada abajo; no se modifica autoría histórica. Este archivo no
+autoriza merge ni cierre de Trello.
+
+
+## Cierre para revisión final — 06/10/2026
+
+La rama reúne el archivo preparado, las mejoras de test/findings y el HEAD de
+PR #55 `2271b7042949a5b3b0cd6ebde416585ea8d0c05a`, más develop
+`0488372` (#70, archivo documental JUP-023). Las incorporaciones de #58/#71
+son de CI y documentación. Se conservan íntegramente los cambios de develop y
+no hay delta en código de producción backend/processor/frontend respecto a
+la reconciliación `d09f16a`; no se incorporan cambios del borrador #69.
+
+El change de citas queda archivado en `2026-10-04-jup-025-answer-citations`,
+fecha de su preparación, con los cinco requisitos promovidos a
+`openspec/specs/answer-citations/spec.md`. Los enlaces nuevos son relativos al
+archivo/contrato canónico; los enlaces históricos a 17c8514 siguen siendo inmutables.
+
+### Participación acreditada
+
+- Liderazgo: Alejandro Aguado, implementación, resolución y cierre de evidencia.
+- Pairing/coautoría: Paris Arcos Martin, aportación documental descrita en su nota.
+- Revisión: Lucía Mateo, dictamen técnico sobre d09f16a y delta final pendiente.
+- Validación: Víctor Mendez, dictamen funcional sobre d09f16a y delta final pendiente.
+
+La nota **«Aportación de pairing»** de Paris en
+[JUP-025](https://trello.com/c/qzRy4RQc), comentario `6ac4d3d31570eab97990d1a2`,
+fue publicada el 06/10 a las 10:56:19 UTC (12:56:19 Europe/Paris). Leyó título,
+fuente, sección, extracto y referencia de las citas, el enlace al detalle de evidencia
+y la localización del pasaje en el corpus, y dio conformidad sin ajustes. Esta
+aportación se acredita mediante la nota aceptada por el acuerdo operativo del
+usuario. No se le atribuyen commits, pruebas ni una sesión conjunta. La regresión
+processor->pgvector->backend propuesta anteriormente no se declara ejecutada
+ni se exige como requisito adicional para esta acreditación.
+
+Los resultados propios **44 PASS y mutante detectado** corresponden al candidato
+probado el 04/10; sus tres ficheros de tests y el runtime permanecen iguales tras
+las actualizaciones documentales. No se repiten baterías sin un cambio funcional.
+Los controles nuevos del 06/10 se registran a continuación; la CI del último SHA
+se verifica en GitHub. Las revisiones humanas de d09f16a no se presentan como
+aceptación de este delta: se solicita revisión incremental de archivo, índice
+no nulo, findings, enlaces y evidencia, y validación de lo afectado sobre el SHA final.
+No se autoriza merge ni movimiento a Hecho desde esta evidencia.
