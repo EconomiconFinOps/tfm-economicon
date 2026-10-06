@@ -190,3 +190,46 @@ instrucción de formato de fecha (`dd/mm`) que no correspondía al navegador de 
   JUP-065. Se pregunta a quien lo lidera; no cambia ninguna tarea.
 - **Automatizar el recorrido en CI** queda para una tarjeta propia: exige que CI levante CockroachDB,
   RabbitMQ y pgvector (`RF-096-004`), cambia el lockfile y `ci.yml`, y pediría ADR.
+
+## Human Approval
+
+- Change: jup-104-e2e-validation
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-06
+- Archive decision: archive
+- Scope reviewed: las 44 tareas de `tasks.md`; este `review.md`; la evidencia
+  `docs/evidence/JUP-104-validation.md` (línea base, stack aislado, guion, recorrido de los grupos 4 a 6,
+  pasada manual, hallazgos y límites, batería, archivos compartidos y pendientes); la receta
+  `docs/evidence/JUP-104-browser-recipe.md`; y los cambios en `openspec/findings/backlog.md` y
+  `docs/spikes/frontend-migration.md`.
+- Condition approved: ninguna adicional a lo redactado en este `review.md`.
+- Decisions approved: (1) **`RF-087-002` pasa a `Fixed`**, tal como lo propone la tarjeta, citando
+  JUP-086 (PR #47) y esta evidencia, y con la nota de que sigue sin haber un test automatizado contra una
+  base real. (2) **Se archiva con `RF-104-001` a `RF-104-004` abiertos y sin corregir**, incluido el paso
+  `6.3b` fallido: es un fallo del producto, no del recorrido, y cada hallazgo es su propia tarjeta. (3)
+  Los criterios 1 y 4 de la tarjeta se dan por cumplidos **con las salvedades escritas** en «Checklist»
+  (opciones de automatización del Chromium del guion, extensiones de Incógnito sin comprobar, y
+  pertinencia y citas fuera de lo acreditable con `mock` y sin JUP-025). (4) Los conflictos aditivos con
+  el PR #75 de JUP-103 se resuelven al integrar, conservando ambas partes.
+- Resultado verificado: guion de navegador, pasada 5, con 14 pasos acreditados y 1 fallido por el
+  producto, 0 errores de página, de consola y de CORS y 0 respuestas 4xx y 5xx; pasada manual en Chrome
+  154 con los mismos resultados; ingesta extremo a extremo con 19 fragmentos idénticos a los del
+  algoritmo del processor; `lint`, `typecheck` y `build` desde la raíz (4 de 4, 1 de 1 y 4 de 4, con
+  `--force`); pruebas por mitades (1085 de Python y 443 de frontend correctas); y `openspec:validate`
+  47 de 47, `jup:check`, `jup:cleanup:check`, `repository:governance:test` 13 de 13 y `ci:check:test`
+  12 de 12 sobre el árbol fusionado con `develop` (`f0cacdd`).
+- Salvedades aceptadas: el chat no genera texto y, con `mock`, la recuperación no mide pertinencia; el
+  modo `litellm`, las citas visibles y las preguntas de gasto no están acreditados; el escenario del
+  trabajo de ingesta que no se completa no se ejercitó en el navegador; que otra persona repita la receta
+  queda pendiente; el residuo de las pasadas sigue en el stack `jup104-e2e`, parado y sin borrar; Python
+  `3.13.7` en lugar del `3.12` de CI; 85 pruebas omitidas sin inspeccionar; el comando único
+  `corepack pnpm test` no se ejecutó.
+- Constraints: ningún archivo de `apps/**`, `tools/**`, `packages/**` ni `.github/**`, ni `package.json`,
+  `pnpm-lock.yaml`, `docker-compose.yml` ni `README.md`, en el diff de la rama. La aprobación **no**
+  sustituye la revisión y la validación del pull request («Revision JUP-104» y «Validacion JUP-104»),
+  **no** acredita el CI (pendiente del PR) ni autoriza fusionar.
+- Required changes before archive: ninguno más; al archivar se corrigen los enlaces relativos de
+  `proposal.md`, `design.md`, este `review.md` y la receta (bajan un nivel) y se verifica el enlace del
+  spike a `openspec/changes/archive/<fecha>-jup-104-e2e-validation/`.
