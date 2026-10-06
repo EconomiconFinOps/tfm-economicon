@@ -269,3 +269,25 @@ No nuevo pairing, benchmark, consulta de precios ni gasto. #70 sigue abierta;
 quien se integre segundo debe preservar fila0016 y adaptar su fuente al archivo
 JUP023 cuando #70 se haya integrado. Nueva revisiónParis/revalidaciónLucía
 necesarias: las reviews sobre0c219eb conservan su fecha/head y son antecedentes.
+
+## Reconciliación tras integrar #70 — 06/10/2026
+
+[Paris aprobó c0ae39b](https://github.com/EconomiconFinOps/tfm-economicon/pull/72#pullrequestreview-5420356976)
+y levantó su solicitud anterior. Se incorpora develop
+`048837278bb063d6ee3abafcdb0b71c51b560f94`, merge #70 del05/10 a20:12:06UTC,
+con #58/JUP051 ya integrado. El único conflicto en `docs/adr/README.md` se
+resuelve usando la fila0016 de la nueva base con
+[diseño archivado JUP023](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/design.md),
+conservando la fila0017 y los pendientes16/17 de JUP061. ADR0002 Accepted,
+ADR0016/17 Proposed; archivosADR y evidencia023 idénticos a la nueva base.
+No nueva ratificación, pairing acreditado ni clave virtual provisionada.
+
+Controles del incremento: OpenSpec44/44, ocho changes activos trazables,
+higiene819,17ADR/17filas coherentes,52rutas locales/3anclas existentes en los
+siete Markdown del cierre, UTF8 PASS. Pruebas del workflow CI incorporado:
+12/12 PASS. Diff de esta PR contra develop limpio; el diff de toda la fusión
+respecto al head anterior incluye una línea en blanco al final de
+repository-governance/spec.md heredada de #58, sin modificación propia.
+No suites de producto reejecutadas localmente. Las reviews de Paris/Lucía sobre
+c0ae39b conservan fecha/head; se solicita revalidación de resolución y nueva base
+antes de integrar #72. CI del head publicado se comprobará en GitHub.

@@ -5,7 +5,7 @@
 - Base/HEAD: `5a54ce2ed9001dfb9d4b9d8e06eae84cffe91124`; tests cover the
   uncommitted working-tree implementation, not an immutable delivery commit.
 - [Trello](https://trello.com/c/O8elKkm9),
-  [OpenSpec](../../openspec/changes/jup-023-litellm-openrouter/tasks.md),
+  [OpenSpec](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/tasks.md),
   [version decision](../adr/ADR-0016-litellm-version-pin.md).
 - Executor: automated local checks. These are not human review or validation.
 - Overall result: **LOCAL TECHNICAL QA PASS**. Real smoke, budget correction and
@@ -221,7 +221,7 @@ missing gateway failure spend does not prove zero upstream charges.
 
 The focused technical review found no blocking implementation defects; its
 documentation clarification and pending delivery gates are recorded in
-[review.md](../../openspec/changes/jup-023-litellm-openrouter/review.md).
+[review.md](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/review.md).
 Focused QA passed with the expressly approved documentation-recovery exception.
 It checked evidence coherence and 16 local links, without changing product or
 tests. Its nonblocking environment-attribution observation is corrected above.
