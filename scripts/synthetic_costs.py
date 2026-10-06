@@ -47,7 +47,7 @@ USD_ROWS = (
 
 def validate_tenant(tenant: str) -> str:
     if not isinstance(tenant, str) or not TENANT_PATTERN.match(tenant):
-        raise ValueError("El tenant debe ser un identificador en minúsculas, dígitos y guiones.")
+        raise ValueError("El tenant debe ser un identificador en minusculas, digitos y guiones.")
     return tenant
 
 
@@ -181,7 +181,7 @@ class SqlStore:
 
 
 def parse_args(argv: Sequence[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Datos de coste sintéticos para validar la funcionalidad de costes (JUP-106).")
+    parser = argparse.ArgumentParser(description="Datos de coste sinteticos para validar la funcionalidad de costes (JUP-106).")
     parser.add_argument("command", choices=("apply", "status", "remove"))
     parser.add_argument("--tenant", default=DEFAULT_TENANT)
     return parser.parse_args(list(argv))
@@ -204,17 +204,17 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
             return 2 if result["outcome"] == "refused" else 0
         if args.command == "remove":
             result = remove(store)
-            print(f"Retiradas {result['runs']} ingestas y {result['records']} registros sintéticos.")
+            print(f"Retiradas {result['runs']} ingestas y {result['records']} registros sinteticos.")
             return 0
         report = status(store, args.tenant)
-        print(f"{report['tenant']}: estado {report['state']}, {report['runs']} ingestas y {report['records']} registros sintéticos; "
+        print(f"{report['tenant']}: estado {report['state']}, {report['runs']} ingestas y {report['records']} registros sinteticos; "
               f"datos reales: {report['real_runs']} ingestas y {report['real_records']} registros.")
         return 0
     except ValueError as error:
         print(str(error))
         return 2
     except Exception as error:  # the message may carry the connection string
-        print(f"No se pudo completar la operación ({type(error).__name__}).")
+        print(f"No se pudo completar la operacion ({type(error).__name__}).")
         return 2
 
 

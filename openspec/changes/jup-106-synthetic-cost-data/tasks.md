@@ -11,14 +11,14 @@
 
 ## 3. Documentación y CI
 
-- [ ] 3.1 Escribir `docs/validation/JUP-106-synthetic-costs.md` con la tabla de valores esperados por mes y agrupación, los comandos de carga, estado y retirada, lo que cada caso ejercita, el aviso de que son datos sintéticos y los límites.
-- [ ] 3.2 Añadir `synthetic-costs:test` a `package.json`, el paso a `.github/workflows/ci.yml` y la comprobación en `tools/ci-workflow.test.mjs`.
+- [x] 3.1 Escribir `docs/validation/JUP-106-synthetic-costs.md` con la tabla de valores esperados por mes y agrupación, los comandos de carga, estado y retirada, lo que cada caso ejercita, el aviso de que son datos sintéticos y los límites.
+- [x] 3.2 Añadir `synthetic-costs:test` a `package.json`, el paso a `.github/workflows/ci.yml` y la comprobación en `tools/ci-workflow.test.mjs`.
 
 ## 4. Comprobación de extremo a extremo
 
-- [ ] 4.1 Levantar el stack aislado, cargar el conjunto y comparar `/billing/summary` por periodos y agrupaciones con los valores esperados, incluidos el mes con cero, el hueco, el crédito, la moneda doble y el importe grande.
-- [ ] 4.2 Recorrer el dashboard actual con los datos cargados (una sola vez, con evidencia) y registrar lo observado como evidencia y hallazgos, sin corregir aquí.
-- [ ] 4.3 Retirar los datos, comprobar que `tenant-growth` vuelve a estar vacío y que `tenant-core` no cambió, y repetir la carga para comprobar la idempotencia.
+- [x] 4.1 Levantar el stack aislado, cargar el conjunto y comparar `/billing/summary` por periodos y agrupaciones con los valores esperados, incluidos el mes con cero, el hueco, el crédito, la moneda doble y el importe grande.
+- [x] 4.2 Recorrer el dashboard actual con los datos cargados (una sola vez, con evidencia) y registrar lo observado como evidencia y hallazgos, sin corregir aquí. Nota: la pantalla de develop no tiene comparación entre meses ni gráfico de serie propios (es de JUP-055), así que se recorrieron totales, desgloses, hueco, cero y dos monedas; la comparación queda para validar JUP-055 con estos datos.
+- [x] 4.3 Retirar los datos, comprobar que `tenant-growth` vuelve a estar vacío y que `tenant-core` no cambió, y repetir la carga para comprobar la idempotencia.
 
 ## 5. Cierre y verificación
 
