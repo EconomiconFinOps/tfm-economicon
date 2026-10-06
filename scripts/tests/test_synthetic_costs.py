@@ -52,10 +52,12 @@ BY_SUBSCRIPTION = {
 class FakeStore:
     """In-memory stand-in with the same contract as SqlStore."""
 
-    def __init__(self, real_runs=(), real_records=()):
+    def __init__(self, real_runs=(), real_records=(), hanging=0):
         self.runs = {}
         self.records = {}
         self.writes = 0
+        self.hanging = hanging
+        self.before_insert = None
         for tenant in real_runs:
             self.runs[f"real-run-{tenant}-{len(self.runs)}"] = {"tenant": tenant, "synthetic": False}
         for tenant in real_records:
@@ -74,11 +76,19 @@ class FakeStore:
         }
 
     def insert(self, runs, records):
+        if self.before_insert:
+            self.before_insert(self)
+        for tenant in {run["tenant_id"] for run in runs}:
+            if sum(self.count_real(tenant).values()):
+                raise costs.RealDataError("real data appeared")
         self.writes += 1
         for run in runs:
             self.runs[run["id"]] = {"tenant": run["tenant_id"], "synthetic": True}
         for record in records:
             self.records[record["id"]] = {"tenant": record["tenant_id"], "synthetic": True}
+
+    def count_attached(self):
+        return self.hanging
 
     def delete_synthetic(self):
         self.writes += 1
@@ -116,6 +126,18 @@ class DatasetTests(unittest.TestCase):
             self.assertEqual(run["status"], "completed")
             self.assertEqual(run["row_count"], sum(1 for r in self.records if r["ingestion_id"] == run["id"]))
         self.assertEqual({r["ingestion_id"] for r in self.records}, {run["id"] for run in self.runs})
+
+    def test_every_run_field_is_pinned(self):
+        by_id = {run["id"]: run for run in self.runs}
+        self.assertEqual(set(by_id), {"synthetic-jup106-run-a", "synthetic-jup106-run-b"})
+        for run in self.runs:
+            self.assertEqual((run["page_count"], run["retry_count"]), (1, 0))
+            self.assertEqual(run["request"], {"synthetic": True, "change": "jup-106-synthetic-cost-data"})
+            self.assertEqual(run["completed_at"], datetime(2026, 7, 31, tzinfo=timezone.utc))
+            self.assertEqual(run["tenant_id"], TENANT)
+        run_a, run_b = by_id["synthetic-jup106-run-a"], by_id["synthetic-jup106-run-b"]
+        self.assertEqual((run_a["subscription_id"], run_a["row_count"]), ("synthetic-jup106-sub-a", 7))
+        self.assertEqual((run_b["subscription_id"], run_b["row_count"]), ("synthetic-jup106-sub-b", 3))
 
     def test_required_cases_are_present_in_the_documented_months(self):
         dated = [r for r in self.records if r["usage_date"]]
@@ -232,6 +254,19 @@ class ApplyTests(unittest.TestCase):
         store.records[costs.PREFIX + "extra"] = {"tenant": TENANT, "synthetic": True}
         self.assertEqual(costs.status(store, TENANT)["state"], "partial")
 
+    def test_real_data_that_appears_between_the_check_and_the_write_stops_the_load(self):
+        store = FakeStore()
+
+        def late_ingestion(target):
+            target.records["real-late"] = {"tenant": TENANT, "synthetic": False}
+
+        store.before_insert = late_ingestion
+        result = costs.apply(store, TENANT)
+        self.assertEqual(result["outcome"], "refused")
+        self.assertIn("real", result["reason"])
+        self.assertEqual(store.list_synthetic(), {"runs": {}, "records": {}})
+        self.assertEqual(set(store.records), {"real-late"})
+
     def test_runs_without_records_or_records_without_runs_are_partial(self):
         store = FakeStore()
         costs.apply(store, TENANT)
@@ -260,7 +295,8 @@ class ApplyTests(unittest.TestCase):
         self.assertEqual(store.writes, writes)
 
     def test_invalid_tenant_names_are_rejected_before_touching_the_store(self):
-        for tenant in ("", " ", "Tenant", "a b", "x'; DROP TABLE azure_cost_records;--", "t" * 80):
+        for tenant in ("", " ", "Tenant", "a b", "x'; DROP TABLE azure_cost_records;--", "t" * 80, "tenant-growth\n", "tenant-growth\r\n",
+                       "\ttenant", "tenant\x00", "tenant-gr\u00f3wth", "tenant\u2011growth", "\uff54enant"):
             store = FakeStore()
             with self.assertRaises(ValueError, msg=repr(tenant)):
                 costs.apply(store, tenant)
@@ -304,6 +340,16 @@ class StatusAndRemoveTests(unittest.TestCase):
         self.assertEqual((result["runs"], result["records"]), (0, 0))
         self.assertEqual(len(store.records), 1)
 
+    def test_remove_refuses_when_real_records_hang_from_a_synthetic_run(self):
+        store = FakeStore(hanging=1)
+        costs.apply(store, TENANT)
+        before = (dict(store.runs), dict(store.records))
+        result = costs.remove(store)
+        self.assertEqual((result["runs"], result["records"]), (0, 0))
+        self.assertTrue(result["refused"])
+        self.assertIn("real", result["reason"])
+        self.assertEqual((store.runs, store.records), before)
+
     def test_remove_works_even_when_the_tenant_has_real_data(self):
         store = FakeStore()
         costs.apply(store, TENANT)
@@ -339,6 +385,14 @@ class CommandLineTests(unittest.TestCase):
         code, text = self.run_cli(["apply"], {})
         self.assertEqual(code, 2)
         self.assertIn("DATABASE_URL", text)
+
+    def test_remove_refusal_is_reported_with_a_non_zero_code(self):
+        store = FakeStore(hanging=2)
+        costs.apply(store, TENANT)
+        code, text = self.run_cli(["remove"], {"DATABASE_URL": "x://y"}, store)
+        self.assertEqual(code, 2)
+        self.assertIn("real", text)
+        self.assertTrue(store.records)
 
     def test_the_connection_string_is_never_printed(self):
         secret = "cockroachdb://user:S3cr3tPassw0rd@host/db"
@@ -530,6 +584,49 @@ class CockroachTests(unittest.TestCase):
             marked = connection.execute(self.text(
                 "SELECT count(*) FROM azure_cost_records WHERE dimensions->>'synthetic' = 'true'")).scalar()
         self.assertEqual(marked, len(costs.build_dataset(TENANT)[1]))
+
+    def test_a_string_flag_does_not_make_a_run_synthetic(self):
+        with self.engine.begin() as connection:
+            connection.execute(self.text(
+                "INSERT INTO azure_cost_ingestion_runs (id, tenant_id, subscription_id, request, status, started_at) "
+                "VALUES (:id, :tenant, 'real-sub', '{\"synthetic\": \"true\"}'::JSONB, 'completed', now())"),
+                {"id": costs.PREFIX + "string-flag", "tenant": TENANT})
+        self.assertEqual(costs.status(self.store, TENANT)["real_runs"], 1)
+        costs.remove(self.store)
+        with self.engine.connect() as connection:
+            left = connection.execute(self.text("SELECT count(*) FROM azure_cost_ingestion_runs")).scalar()
+        self.assertEqual(left, 1)
+
+    def test_real_ingestion_that_lands_before_the_write_aborts_the_load(self):
+        original = self.store.insert
+
+        def racing_insert(runs, records):
+            with self.engine.begin() as connection:
+                connection.execute(self.text(
+                    "INSERT INTO azure_cost_ingestion_runs (id, tenant_id, subscription_id, request, status, started_at) "
+                    "VALUES ('late-real', :tenant, 'real-sub', '{}'::JSONB, 'completed', now())"), {"tenant": TENANT})
+            return original(runs, records)
+
+        self.store.insert = racing_insert
+        result = costs.apply(self.store, TENANT)
+        self.assertEqual(result["outcome"], "refused")
+        with self.engine.connect() as connection:
+            rows = connection.execute(self.text("SELECT count(*) FROM azure_cost_records")).scalar()
+        self.assertEqual(rows, 0)
+
+    def test_remove_refuses_instead_of_failing_when_a_real_record_hangs_from_a_synthetic_run(self):
+        costs.apply(self.store, TENANT)
+        with self.engine.begin() as connection:
+            connection.execute(self.text(
+                "INSERT INTO azure_cost_records (id, ingestion_id, tenant_id, subscription_id, usage_date, pretax_cost, currency, "
+                "dimensions, source_row_hash, created_at) VALUES ('real-1', :run, :tenant, 'real-sub', '2026-03-01', 5, 'EUR', "
+                "'{}'::JSONB, 'real-1', now())"), {"run": costs.PREFIX + "run-a", "tenant": TENANT})
+        result = costs.remove(self.store)
+        self.assertTrue(result["refused"])
+        with self.engine.connect() as connection:
+            counts = connection.execute(self.text(
+                "SELECT (SELECT count(*) FROM azure_cost_ingestion_runs), (SELECT count(*) FROM azure_cost_records)")).one()
+        self.assertEqual(tuple(counts), (2, 11))
 
     def test_partial_state_is_detected_in_the_database(self):
         costs.apply(self.store, TENANT)

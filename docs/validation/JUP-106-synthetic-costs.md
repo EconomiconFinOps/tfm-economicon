@@ -18,9 +18,9 @@ docker compose exec -T processor python - remove < scripts/synthetic_costs.py
 
 En PowerShell no existe `<`: `Get-Content -Raw scripts/synthetic_costs.py | docker compose exec -T processor python - apply`. El fichero es solo ASCII para que la codificación de la tubería no lo altere. Con un proyecto Compose aislado, añade `-p <proyecto>` tras `docker compose`.
 
-- `apply` es idempotente: la segunda vez informa `already-present` y no escribe nada. Se niega (salida 2) si el tenant ya tiene datos de coste que no son sintéticos o si hay un estado parcial o en otro tenant; en esos casos hay que ejecutar `remove` primero.
+- `apply` es idempotente: la segunda vez informa `already-present` y no escribe nada. Se niega (salida 2) si el tenant ya tiene datos de coste que no son sintéticos o si hay un estado parcial o en otro tenant; en esos casos hay que ejecutar `remove` primero. La comprobación de datos reales se repite dentro de la transacción de escritura, de modo que una ingesta real que llegue justo antes de escribir también aborta la carga sin dejar nada.
 - `status` informa del estado (`absent`, `present`, `partial` o `other-tenant`) y de las filas reales del tenant.
-- `remove` borra solo las filas sintéticas, también cuando el tenant tiene datos reales, y es seguro repetirlo.
+- `remove` borra solo las filas sintéticas, también cuando el tenant tiene datos reales, y es seguro repetirlo. Se niega (salida 2) y no borra nada si hay registros reales colgando de una ingesta sintética, porque la clave foránea impediría borrar la ingesta; hay que resolverlo a mano.
 
 Mientras los datos estén cargados, `tenant-growth` deja de estar vacío (algunos recorridos, como JUP-104, lo suponen vacío de costes): retíralos al terminar. Para probar el recorrido de un tenant sin datos usa `remove`.
 
@@ -70,6 +70,7 @@ Se comparan con una suma exacta con `Decimal` sobre los registros del conjunto, 
 ## Límites
 
 - Los datos se insertan en las tablas de costes: una migración que cambie sus columnas puede romper la herramienta. Lo detecta la prueba contra CockroachDB real (`JUP086_COCKROACH_TEST_URL`), que no corre en CI.
+- Dos `apply` simultáneos no duplican nada, pero el que pierde la carrera ve un error genérico en lugar de `already-present`; se repite el comando y se informa del estado.
 - No hay valores sintéticos para la fecha de ingesta ni se simulan errores del origen; para eso están los escenarios del simulador.
 - Las comparaciones del cuadro dependen de cómo cada pantalla elija los extremos; el cuadro es la referencia de la tarjeta JUP-106, no una especificación de JUP-055.
 - Una tercera moneda u otros casos pueden añadirse al conjunto sin cambiar el contrato de la herramienta.

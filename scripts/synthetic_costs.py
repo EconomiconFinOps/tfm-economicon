@@ -23,10 +23,12 @@ SUBSCRIPTION_A = PREFIX + "sub-a"
 SUBSCRIPTION_B = PREFIX + "sub-b"
 RUN_A = PREFIX + "run-a"
 RUN_B = PREFIX + "run-b"
-TENANT_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
+TENANT_PATTERN = re.compile(r"[a-z0-9][a-z0-9-]{0,62}")
 LIKE_PATTERN = PREFIX + "%"
+# Only a JSON boolean true marks a run; a string or a missing key is not enough.
+RUN_FLAG = "COALESCE(request->'synthetic' = 'true'::JSONB, false)"
 # A record is synthetic only when its own ingestion run is.
-SYNTHETIC_RUNS = "(SELECT id FROM azure_cost_ingestion_runs WHERE id LIKE :pattern AND COALESCE(request->>'synthetic', 'false') = 'true')"
+SYNTHETIC_RUNS = "(SELECT id FROM azure_cost_ingestion_runs WHERE id LIKE :pattern AND " + RUN_FLAG + ")"
 
 # (day, cost, resource group, service, project, tags); None day is the undated row.
 EUR_ROWS = (
@@ -45,8 +47,12 @@ USD_ROWS = (
 )
 
 
+class RealDataError(Exception):
+    """Real cost rows exist in the tenant at the moment of writing."""
+
+
 def validate_tenant(tenant: str) -> str:
-    if not isinstance(tenant, str) or not TENANT_PATTERN.match(tenant):
+    if not isinstance(tenant, str) or not TENANT_PATTERN.fullmatch(tenant):
         raise ValueError("El tenant debe ser un identificador en minusculas, digitos y guiones.")
     return tenant
 
@@ -109,12 +115,20 @@ def apply(store, tenant: str) -> dict:
         return {"outcome": "refused", "state": state, "runs": 0, "records": 0,
                 "reason": f"Estado {state}: ejecuta remove antes de volver a cargar el conjunto."}
     runs, records = build_dataset(tenant)
-    store.insert(runs, records)
+    try:
+        store.insert(runs, records)
+    except RealDataError:
+        return {"outcome": "refused", "state": state, "runs": 0, "records": 0,
+                "reason": "El tenant recibio datos de coste reales mientras se cargaba; no se carga nada."}
     return {"outcome": "loaded", "state": "present", "runs": len(runs), "records": len(records), "reason": ""}
 
 
 def remove(store) -> dict:
-    return store.delete_synthetic()
+    attached = store.count_attached()
+    if attached:
+        return {"runs": 0, "records": 0, "refused": True,
+                "reason": f"Hay {attached} registros reales colgando de ingestas sinteticas; no se retira nada hasta resolverlo a mano."}
+    return {**store.delete_synthetic(), "refused": False, "reason": ""}
 
 
 class SqlStore:
@@ -133,22 +147,31 @@ class SqlStore:
         with self.engine.connect() as connection:
             runs = connection.execute(self._text(
                 "SELECT id, tenant_id FROM azure_cost_ingestion_runs "
-                "WHERE id LIKE :pattern AND COALESCE(request->>'synthetic', 'false') = 'true'"), {"pattern": LIKE_PATTERN}).mappings().all()
+                "WHERE id LIKE :pattern AND " + RUN_FLAG), {"pattern": LIKE_PATTERN}).mappings().all()
             records = connection.execute(self._text(
                 "SELECT id, tenant_id FROM azure_cost_records WHERE id LIKE :pattern AND ingestion_id IN " + SYNTHETIC_RUNS),
                 {"pattern": LIKE_PATTERN}).mappings().all()
         return {"runs": {row["id"]: row["tenant_id"] for row in runs}, "records": {row["id"]: row["tenant_id"] for row in records}}
 
-    def count_real(self, tenant: str) -> dict:
-        with self.engine.connect() as connection:
-            row = connection.execute(self._text(
+    def _count_real(self, connection, tenant: str) -> dict:
+        row = connection.execute(self._text(
                 "SELECT "
                 "(SELECT count(*) FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant "
-                "AND NOT (id LIKE :pattern AND COALESCE(request->>'synthetic', 'false') = 'true')) AS runs, "
+                "AND NOT (id LIKE :pattern AND " + RUN_FLAG + ")) AS runs, "
                 "(SELECT count(*) FROM azure_cost_records WHERE tenant_id = :tenant "
                 "AND NOT (id LIKE :pattern AND ingestion_id IN " + SYNTHETIC_RUNS + ")) AS records"),
                 {"tenant": tenant, "pattern": LIKE_PATTERN}).mappings().one()
         return {"runs": int(row["runs"]), "records": int(row["records"])}
+
+    def count_real(self, tenant: str) -> dict:
+        with self.engine.connect() as connection:
+            return self._count_real(connection, tenant)
+
+    def count_attached(self) -> int:
+        with self.engine.connect() as connection:
+            return int(connection.execute(self._text(
+                "SELECT count(*) FROM azure_cost_records WHERE NOT id LIKE :pattern AND ingestion_id IN " + SYNTHETIC_RUNS),
+                {"pattern": LIKE_PATTERN}).scalar())
 
     def insert(self, runs: Sequence[Mapping], records: Sequence[Mapping]) -> None:
         import json
@@ -163,6 +186,9 @@ class SqlStore:
             "CAST(:dimensions AS JSONB), :source_row_hash, :created_at, :resource_group, :service_name, :project, "
             "CAST(:tags AS JSONB))")
         with self.engine.begin() as connection:
+            for tenant in {run["tenant_id"] for run in runs}:
+                if sum(self._count_real(connection, tenant).values()):
+                    raise RealDataError(tenant)
             for run in runs:
                 connection.execute(run_sql, {**run, "request": json.dumps(run["request"])})
             for record in records:
@@ -175,7 +201,7 @@ class SqlStore:
                 "DELETE FROM azure_cost_records WHERE id LIKE :pattern AND ingestion_id IN " + SYNTHETIC_RUNS),
                 {"pattern": LIKE_PATTERN}).rowcount
             runs = connection.execute(self._text(
-                "DELETE FROM azure_cost_ingestion_runs WHERE id LIKE :pattern AND COALESCE(request->>'synthetic', 'false') = 'true'"),
+                "DELETE FROM azure_cost_ingestion_runs WHERE id LIKE :pattern AND " + RUN_FLAG),
                 {"pattern": LIKE_PATTERN}).rowcount
         return {"runs": int(runs or 0), "records": int(records or 0)}
 
@@ -204,6 +230,9 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
             return 2 if result["outcome"] == "refused" else 0
         if args.command == "remove":
             result = remove(store)
+            if result["refused"]:
+                print(result["reason"])
+                return 2
             print(f"Retiradas {result['runs']} ingestas y {result['records']} registros sinteticos.")
             return 0
         report = status(store, args.tenant)
