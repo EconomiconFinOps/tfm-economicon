@@ -135,8 +135,8 @@
 
 ## 11. Revisión
 
-- [ ] 11.1 Escribir `review.md`: resultado, criterios de la tarjeta uno a uno, validación ejecutada,
+- [x] 11.1 Escribir `review.md`: resultado, criterios de la tarjeta uno a uno, validación ejecutada,
   hallazgos, la excepción al ciclo Red/Green (decisión 8), que no aplica ADR (decisión 11) y lo que
   no se validó y por qué.
-- [ ] 11.2 Completar en la evidencia la sección de pendientes y dejar los huecos del PR y de CI para
+- [x] 11.2 Completar en la evidencia la sección de pendientes y dejar los huecos del PR y de CI para
   rellenarlos al abrirlo.

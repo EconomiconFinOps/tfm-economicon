@@ -3,8 +3,9 @@
 - Fecha: 2026-10-05 (línea base y stack) y 2026-10-06 (recorrido y pasada manual), en UTC.
 - Trello: https://trello.com/c/lVvZa7P5/96-jup-104
 - Rama: `feat/JUP-104-e2e-validation`.
-- Base: `develop` en `0488372`; la rama en `b687e2a` al registrar la línea base (dos commits propios:
-  la propuesta y la aprobación pre-código).
+- Base: `develop` en `0488372` al empezar; se fusionó `develop` en `f0cacdd` (JUP-067) durante el grupo 10.
+  El recorrido y la batería se ejecutaron con la rama en `139650c` (guion) y `0b68434` (batería); ver cada
+  sección.
 - OpenSpec: [jup-104-e2e-validation](../../openspec/changes/jup-104-e2e-validation/).
 - Spec que valida: `operator-journey-validation` (nueva; se promueve al archivar).
 - Pull request: pendiente de abrir.
@@ -893,3 +894,33 @@ receta bajan un nivel cuando el change pasa a `openspec/changes/archive/`.
 
 Ver «Qué no acredita esta validación» en el grupo 8. Lo que no consta como ejecutado en este
 documento no está validado.
+
+## Pendiente (tarea 11.2)
+
+**Se rellena al abrir el pull request** (los huecos de arriba, en la cabecera):
+
+| Dato | Estado |
+| --- | --- |
+| Pull request | _(pendiente de abrir contra `develop`)_ |
+| CI de los jobs obligatorios | _(pendiente: `JUP policy`, `OpenSpec`, `Frontend build`, `Frontend type check` y los tres de Python)_ |
+| «Revision JUP-104» | _(pendiente)_ |
+| «Validacion JUP-104» | _(pendiente)_ |
+| Check `JUP reviews` | _(pendiente de las dos reviews)_ |
+
+**Pasos del flujo que quedan:**
+
+1. Gate post-review (aprobación humana en `review.md`).
+2. Archivado del change y corrección de los enlaces relativos que bajan un nivel (`proposal.md`,
+   `design.md`, `review.md`, la receta y el enlace del spike a la carpeta archivada).
+3. `jup:cleanup:check` y `pr:check`, y apertura del pull request contra `develop`.
+4. Integración con el PR #75 (JUP-103), si se fusiona antes: conflictos aditivos en el backlog y en el
+   final de «Próximos pasos» del spike, que se resuelven conservando ambas partes.
+
+**Pendiente de personas, fuera del alcance de esta herramienta:**
+
+- Que alguien distinto de quien ejecutó el guion **repita la receta** sobre un stack con volúmenes
+  nuevos (único escenario de la spec sin acreditar).
+- Preguntar a quien lidera JUP-065 si este registro cuenta como parte de su ensayo.
+- Decidir qué hacer con el proyecto `jup104-e2e` (parado, con 5 volúmenes y las imágenes
+  `jup104-e2e-*`): se conserva o se borra con `docker compose down -v` en ese proyecto.
+- Abrir una tarjeta por cada hallazgo (`RF-104-001` a `RF-104-004`), empezando por `RF-104-001`.
