@@ -318,3 +318,31 @@ locales nuevos válidos. Se conservan todas las filas del backlog de develop.
 `git diff --check` del delta propio correcto. La línea vacía final de la spec
 canónica de citas generada por el archivador se retira; repository-governance,
 procedente de #58/base, permanece sin cambios propios.
+
+
+## Reconciliación del backlog tras #74 — 06/10/2026
+
+[Lucía publicó revisión incremental favorable de f0a5d38](https://github.com/EconomiconFinOps/tfm-economicon/pull/55#pullrequestreview-5431451872),
+como COMMENTED y sin cambios bloqueantes; falta la validación final de Víctor.
+Sus ejecuciones propias de 44 tests pgvector, 628/16 backend y 451 frontend
+pertenecen a ese dictamen, no a una nueva ejecución del líder.
+
+Se incorpora develop `f0cacdd` (#74, métricas técnicas) y se resuelve su único
+conflicto en `openspec/findings/backlog.md`, conservando literalmente todas las
+filas de ambas ramas: RF-025-001/002 y RF-067-001..004 aparecen una vez cada una.
+Los ficheros de #74 quedan íntegros; no se modifica runtime ni los tests de producto.
+El cierre de archivo y la nota real de Paris en Trello permanecen como estaban.
+
+La relectura de Lucía se solicita solo sobre la unión del backlog y la validación
+de Víctor sobre el HEAD resultante, con aceptación incremental del cierre de
+archivo/evidencia ya entregado. Se ejecutan controles documentales/política/CI
+incluyendo las herramientas de métricas nuevas; no se repiten suites de producto
+ni se transfieren los dictámenes anteriores al SHA que publica esta reconciliación.
+
+
+Controles proporcionales de esta reconciliación: OpenSpec **47/47**, trazabilidad
+e higiene correctas; comandos de tests de política PR, CI y gobernanza correctos;
+calculador documental de métricas de #74 **103 tests correctos** en Python3.14.
+No se ejecutan nuevas suites de producto. Se comprueba conservación literal de
+filas de los dos padres y unicidad de las seis incidencias RF-025/RF-067.
+Las solicitudes finales se refieren al SHA de esta unión documental, no al anterior.
