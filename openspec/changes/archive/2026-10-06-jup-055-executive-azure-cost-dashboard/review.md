@@ -79,3 +79,26 @@ El CLI actualizó la especificación canónica con siete requisitos, sin omitir
 validación. Conservó abiertas las tareas posteriores de PR/participación/merge;
 el control local final fue PASS antes del traslado. Enlaces relativos ajustados
 por el nuevo nivel de directorio.
+
+## Revisión incremental: mes observado aislado — 06/10/2026
+
+Corrección de la solicitud de cambios de Lucía en PR #77: marcador visible
+para cada observación mensual, incluido el cero registrado, conservando huecos,
+monedas, importes y tablas. Sin ampliación del alcance ni nuevo archivo OpenSpec.
+
+Revisión técnica local independiente favorable. Validación independiente:
+88/88 pruebas focales y comprobación en navegador del mes aislado positivo,
+cero observado, huecos, selección de moneda y controles de periodo.
+Suite frontend 526/526; suite global 1611 correctas y 85 omisiones existentes;
+cuatro mutaciones manuales detectadas en una copia desechable.
+Los controles de integridad al retorno no detectaron escrituras de los roles
+independientes. RF-026-002 conserva su disposición aprobada y no se declara resuelto.
+
+Paris concedió aprobación final local mediante «aprobado» el 06/10/2026.
+La evidencia incremental y sus límites están en
+[la validación de JUP-055](../../../../docs/evidence/JUP-055-validation.md#corrección-incremental-de-pr-77--06102026).
+
+En este punto la corrección local todavía no está subida. Antes de publicar
+el seguimiento deben completarse la actualización autorizada de la rama y la
+CI del nuevo head. Lucía debe comprobar la corrección para levantar su solicitud
+de cambios; esta revisión local no constituye una review humana en GitHub.

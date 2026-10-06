@@ -204,6 +204,7 @@ export function ExecutiveCostDashboard() {
                     return point.cost === null ? "Sin datos" : point.cost + " " + currency;
                   }} />
                   <Area type="monotone" dataKey="value" name={currency} connectNulls={false} isAnimationActive={false}
+                    dot={{ r: 3, fill: "var(--highlight)", fillOpacity: 1 }}
                     stroke="var(--highlight)" fill="var(--primary)" fillOpacity={0.3} />
                 </AreaChart>
               </ResponsiveContainer>

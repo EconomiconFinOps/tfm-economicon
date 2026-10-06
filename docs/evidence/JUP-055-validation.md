@@ -162,3 +162,63 @@ revisión del cambio.
 [Revisión archivada](../../openspec/changes/archive/2026-10-06-jup-055-executive-azure-cost-dashboard/review.md).
 [Especificación canónica](../../openspec/specs/executive-cost-dashboard/spec.md).
 Las reviews humanas y CI remota siguen pendientes de su fase posterior.
+
+## Corrección incremental de PR #77 — 06/10/2026
+
+Este apartado actualiza el estado histórico anterior: la PR #77 ya existe.
+Responde a la solicitud de cambios de Lucía sobre el mes observado aislado:
+https://github.com/EconomiconFinOps/tfm-economicon/pull/77#pullrequestreview-5433439585.
+Proceso aplicado: CONTRIBUTING.md, versión 2026-09-30 (JUP-100).
+
+### Alcance y reproducción
+
+Se añade un marcador visible a cada observación mensual del gráfico existente,
+con el mismo color y radio del estilo actual. Se mantiene `connectNulls={false}`:
+los meses sin observación no generan puntos ni uniones. Un cero registrado sí
+es una observación. No cambian importes, monedas, consultas ni tablas.
+
+Se reprodujo el fallo del mes aislado dentro de un intervalo con huecos. El
+control de un único mes seleccionado ya mostraba un punto antes de la corrección;
+no se presenta ese control como un fallo reproducido.
+
+### Resultados comprobados sobre la corrección local
+
+| Comprobación | Resultado |
+|---|---|
+| Regresión con Recharts real, antes de implementar | 8 fallos relevantes y 2 controles nuevos correctos; 78 pruebas anteriores correctas. |
+| Regresión tras implementar | 88/88: 10 pruebas nuevas y 78 anteriores. |
+| Suite completa del frontend | 526/526, sin omisiones. |
+| Suite del workspace | 1611 correctas y 85 omitidas por el perfil existente; las 88 focales están incluidas, no se suman. |
+| Compilación, lint y comprobación de tipos | Correctos. |
+| Cuatro mutaciones manuales en copia desechable | Las cuatro fueron detectadas por las pruebas. |
+| Revisión técnica local independiente | Favorable para este alcance. |
+| Validación independiente | 88/88 y comprobaciones de navegador descritas a continuación. |
+
+En navegador integrado se seleccionó mayo–agosto de 2024, con una única
+observación en junio: USD 0,06 y EUR 0,00 en sus selecciones respectivas.
+Ambas mostraron un punto visible, sin unir los meses vacíos y conservando
+los valores de las tablas. Se comprobó también junio–junio, el cambio de
+moneda y la navegación de teclado entre los selectores de meses.
+Los datos fueron sintéticos, servidos localmente; no se consultó facturación real.
+
+Los casos 503 e importe no representable se comprobaron con las pruebas
+focales; no se afirma haber repetido esos errores en navegador. La comparación
+sigue sin calcularse cuando no hay dos meses con coste distinto de cero.
+El marcador fue visible a 1440 y 390 píxeles; esto no corrige ni acredita el
+responsive global: RF-026-002 permanece con la disposición ya aprobada.
+Las imágenes SVG reconstruidas durante la validación no se incorporan como
+capturas originales. No se generaron nuevos PNG de esa validación.
+
+La revisión y validación locales no modificaron el repositorio ni Git, según
+los controles independientes de integridad al retorno. Estas comprobaciones
+locales no sustituyen la revalidación humana de Lucía sobre el siguiente head.
+
+### Aprobación y estado de entrega
+
+Paris concedió la aprobación final local con «aprobado» el 06/10/2026, tras
+presentarse los resultados de la revisión y validación incrementales.
+OpenSpec continúa archivado en el mismo cambio; esta corrección restaura un
+comportamiento ya especificado y no amplía el alcance.
+En este registro la corrección aún no tiene commit ni está subida: la CI del
+nuevo head y la revalidación de Lucía se comprobarán después de la actualización
+autorizada de la PR. La aprobación local no autoriza por sí sola la publicación.
