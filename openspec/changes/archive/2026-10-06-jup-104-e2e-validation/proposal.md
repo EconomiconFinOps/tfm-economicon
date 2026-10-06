@@ -6,17 +6,17 @@ Trello: https://trello.com/c/lVvZa7P5/96-jup-104
 La épica de migración del frontend llega a F5 sin que nadie haya recorrido la aplicación migrada de
 principio a fin en un navegador, contra el backend local y sin atajos. Lo que existe son piezas:
 
-- [JUP-095](../archive/2026-09-12-jup-095-portar-codigo-fuente/) lo intentó con Chromium y tuvo que
+- [JUP-095](../2026-09-12-jup-095-portar-codigo-fuente/) lo intentó con Chromium y tuvo que
   desactivar la seguridad web para pasar del acceso, porque el backend no enviaba cabeceras CORS.
-- [JUP-097](../archive/2026-09-21-jup-097-reconcile-api-layer/) verificó los contratos con peticiones
+- [JUP-097](../2026-09-21-jup-097-reconcile-api-layer/) verificó los contratos con peticiones
   directas y dejó el recorrido en navegador como pendiente.
-- [JUP-085](../archive/2026-09-24-jup-085-auth-session-contract/) resolvió el CORS y comprobó en
+- [JUP-085](../2026-09-24-jup-085-auth-session-contract/) resolvió el CORS y comprobó en
   navegador real el acceso y el ciclo de sesión (8 de 8 en
-  [su evidencia](../../../docs/evidence/JUP-085-validation.md)); la revisión del PR #50 observó
+  [su evidencia](../../../../docs/evidence/JUP-085-validation.md)); la revisión del PR #50 observó
   también en navegador la expiración de sesión (`RF-098-002`).
-- [JUP-050](../archive/2026-10-01-jup-050-reproducible-local-runtime/) aportó `local:smoke`, que
+- [JUP-050](../2026-10-01-jup-050-reproducible-local-runtime/) aportó `local:smoke`, que
   recorre **por API** salud, acceso, costes y un trabajo de documento hasta el processor.
-- La batería del frontend ([`frontend-quality-baseline`](../../specs/frontend-quality-baseline/spec.md))
+- La batería del frontend ([`frontend-quality-baseline`](../../../specs/frontend-quality-baseline/spec.md))
   usa respuestas HTTP simuladas y declara que no sustituye a una prueba integrada.
 
 Falta la parte que ninguna de ellas cubre: enviar un documento **desde la interfaz**, comprobar que
@@ -29,7 +29,7 @@ hechos que cambian lo que esta tarjeta puede acreditar, y que conviene fijar ant
 - **El chat no llama a un modelo generativo.** La respuesta del backend es una plantilla fija que
   lista hasta tres fragmentos recuperados. La configuración del modelo de lenguaje solo interviene
   en un paso del processor durante la ingesta.
-- **Lo que es real desde [JUP-022](../archive/2026-10-03-jup-022-semantic-retrieval/) es la
+- **Lo que es real desde [JUP-022](../2026-10-03-jup-022-semantic-retrieval/) es la
   recuperación, y tiene dos modos.** Con el proveedor de embeddings `mock`, el de por defecto, se
   devuelven los cuatro fragmentos más cercanos del ámbito sin umbral de distancia: acredita el
   camino de los datos, no la pertinencia. El modo `litellm` necesita un gateway que vive en un
@@ -73,9 +73,9 @@ Playwright al repositorio.
   operador (navegador real sin protecciones desactivadas, pasos cubiertos, ingesta y contexto del
   asistente comprobados más allá de lo que muestra la interfaz, límites declarados, hallazgos con
   reproducción) y cómo queda registrada para que otra persona pueda repetirla. Ninguna spec vigente
-  lo cubre: [`frontend-quality-baseline`](../../specs/frontend-quality-baseline/spec.md) describe la
-  batería con respuestas simuladas, [`local-runtime-operations`](../../specs/local-runtime-operations/spec.md)
-  el smoke por API, y [`frontend-navigation-shell`](../../specs/frontend-navigation-shell/spec.md)
+  lo cubre: [`frontend-quality-baseline`](../../../specs/frontend-quality-baseline/spec.md) describe la
+  batería con respuestas simuladas, [`local-runtime-operations`](../../../specs/local-runtime-operations/spec.md)
+  el smoke por API, y [`frontend-navigation-shell`](../../../specs/frontend-navigation-shell/spec.md)
   el armazón y las direcciones de las pantallas.
 
 ### Modified Capabilities

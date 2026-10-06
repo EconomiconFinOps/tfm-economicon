@@ -42,7 +42,7 @@ sin contenido.
 | Dimensión | 8 | 1536 |
 | Umbral de distancia por defecto | Ninguno | 0.6 |
 | Qué necesita | Solo `RUNTIME_ENVIRONMENT=development` o `test` | Gateway de `infra/litellm` (proyecto Compose aparte), clave de OpenRouter, dos claves virtuales, volumen de pgvector nuevo y reindexado |
-| Estado | Camino habitual en local | La [evidencia de JUP-022](../../../docs/evidence/JUP-022-validation.md) declara sin validar el arranque completo contra Compose; ADR-0016 y ADR-0017 siguen `Proposed` |
+| Estado | Camino habitual en local | La [evidencia de JUP-022](../../../../docs/evidence/JUP-022-validation.md) declara sin validar el arranque completo contra Compose; ADR-0016 y ADR-0017 siguen `Proposed` |
 
 El `.env` de la máquina de validación no define el proveedor ni las claves del gateway.
 
@@ -60,7 +60,7 @@ expirada puede tardar unos 7 s).
 **Otros cambios en curso.** JUP-103 (PR #75, aprobado y sin fusionar) modifica el spike y el
 backlog. JUP-025 (#55), JUP-036 (#69) y JUP-017 (#66) cambian el chat o la pantalla principal y no
 están en `develop`. Playwright no es dependencia del repositorio; los precedentes de navegador
-(JUP-099 y la [receta de JUP-057](../../../docs/evidence/JUP-057-browser-recipe.md)) lo ejecutan desde
+(JUP-099 y la [receta de JUP-057](../../../../docs/evidence/JUP-057-browser-recipe.md)) lo ejecutan desde
 fuera.
 
 ## Goals / Non-Goals

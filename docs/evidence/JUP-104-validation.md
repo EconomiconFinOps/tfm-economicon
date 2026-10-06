@@ -6,13 +6,14 @@
 - Base: `develop` en `0488372` al empezar; se fusionó `develop` en `f0cacdd` (JUP-067) durante el grupo 10.
   El recorrido y la batería se ejecutaron con la rama en `139650c` (guion) y `0b68434` (batería); ver cada
   sección.
-- OpenSpec: [jup-104-e2e-validation](../../openspec/changes/jup-104-e2e-validation/).
+- OpenSpec: [jup-104-e2e-validation](../../openspec/changes/archive/2026-10-06-jup-104-e2e-validation/).
 - Spec que valida: `operator-journey-validation` (nueva; se promueve al archivar).
 - Pull request: pendiente de abrir.
 - CI: pendiente.
 
-> Estado de este documento: **en curso.** Están registrados los grupos 1 a 10 de `tasks.md`. Falta la
-> revisión (grupo 11).
+> Estado de este documento: **completo salvo lo que depende del pull request.** Están registrados los
+> 11 grupos de `tasks.md` y el change está **archivado** (2026-10-06). Quedan abrir el PR, la CI y las
+> dos reviews (ver «Pendiente»).
 
 ## Entorno de la máquina de validación (tarea 1.1)
 
@@ -872,8 +873,8 @@ integrar**, en lugar de esperar al #75.
   y el resultado. La segunda mención de `secret` desaparece del punto del E2E.
 - «Próximos pasos»: punto 12 con el resultado de la tarjeta. Es el 12 y no el 11 porque el 11 es el de
   JUP-103, que está en su PR #75.
-- Enlaces: los dos a la evidencia y la receta resuelven; el de la carpeta del change apunta ya a
-  `archive/2026-10-06-jup-104-e2e-validation/` y se verificará al archivar.
+- Enlaces: los dos a la evidencia y la receta resuelven; el de la carpeta del change apunta a
+  `archive/2026-10-06-jup-104-e2e-validation/` y **resuelve** desde que el change está archivado.
 
 **Conflictos esperados al integrar con el PR #75** (aditivos; se resuelven conservando ambas partes):
 
@@ -887,8 +888,10 @@ integrar**, en lugar de esperar al #75.
 en los archivos tocados. Enlaces relativos de backlog, spike, evidencia, receta, `proposal.md` y
 `design.md`: todos resuelven salvo el de la carpeta archivada, esperado hasta el archivado.
 
-**Pendiente de corregir al archivar:** los enlaces relativos de `proposal.md`, `design.md` y de la
-receta bajan un nivel cuando el change pasa a `openspec/changes/archive/`.
+**Corregido al archivar (2026-10-06):** los enlaces relativos de `proposal.md`, `design.md`, `review.md`
+y de la receta, que bajan un nivel, y los de la evidencia a la carpeta del change. Un script que resuelve
+cada enlace relativo de los `.md` tocados (el change archivado, la spec promovida, la evidencia, la receta,
+el spike y el backlog) da **0 enlaces rotos**.
 
 ## No validado
 
@@ -909,9 +912,10 @@ documento no está validado.
 
 **Pasos del flujo que quedan:**
 
-1. Gate post-review (aprobación humana en `review.md`).
-2. Archivado del change y corrección de los enlaces relativos que bajan un nivel (`proposal.md`,
-   `design.md`, `review.md`, la receta y el enlace del spike a la carpeta archivada).
+1. ~~Gate post-review~~ **Hecho** el 2026-10-06 (bloque `Human Approval` en `review.md`).
+2. ~~Archivado del change y corrección de los enlaces relativos~~ **Hecho** el 2026-10-06 (carpeta
+   `openspec/changes/archive/2026-10-06-jup-104-e2e-validation/`; la spec `operator-journey-validation` se
+   promovió a `openspec/specs/` con sus 7 requisitos).
 3. `jup:cleanup:check` y `pr:check`, y apertura del pull request contra `develop`.
 4. Integración con el PR #75 (JUP-103), si se fusiona antes: conflictos aditivos en el backlog y en el
    final de «Próximos pasos» del spike, que se resuelven conservando ambas partes.

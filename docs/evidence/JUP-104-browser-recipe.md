@@ -2,7 +2,7 @@
 
 Guion que conduce el recorrido de [JUP-104](https://trello.com/c/lVvZa7P5/96-jup-104) en un
 navegador real, siguiendo las decisiones 4 y 5 del
-[`design.md`](../../openspec/changes/jup-104-e2e-validation/design.md). Se ejecuta **fuera del
+[`design.md`](../../openspec/changes/archive/2026-10-06-jup-104-e2e-validation/design.md). Se ejecuta **fuera del
 repositorio**: Playwright no es dependencia del proyecto. Resultados y capturas se guardan también
 fuera. Los resultados de su ejecución están en [JUP-104-validation.md](JUP-104-validation.md).
 

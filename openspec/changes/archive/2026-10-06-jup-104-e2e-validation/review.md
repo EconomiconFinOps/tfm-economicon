@@ -5,8 +5,8 @@
 Listo para el gate post-review de Victor. **No es un veredicto independiente**: lo redacta quien
 implementó. La revisión y la validación de terceros llegan con el pull request («Revision JUP-104» y
 «Validacion JUP-104»). Evidencia completa, con las salidas reales, en
-[`docs/evidence/JUP-104-validation.md`](../../../docs/evidence/JUP-104-validation.md) y guion
-repetible en [`docs/evidence/JUP-104-browser-recipe.md`](../../../docs/evidence/JUP-104-browser-recipe.md).
+[`docs/evidence/JUP-104-validation.md`](../../../../docs/evidence/JUP-104-validation.md) y guion
+repetible en [`docs/evidence/JUP-104-browser-recipe.md`](../../../../docs/evidence/JUP-104-browser-recipe.md).
 
 Resumen: el recorrido completo del operador funciona en un navegador real, contra el stack de Docker
 Compose y sin desactivar ninguna protección, **con un fallo del producto y con límites que conviene
