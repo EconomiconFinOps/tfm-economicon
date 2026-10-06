@@ -51,17 +51,17 @@
 
 ## 5. Recorrido: ingesta extremo a extremo
 
-- [ ] 5.1 Con Growth Ops, enviar desde `/ingest` el contenido íntegro de
+- [x] 5.1 Con Growth Ops, enviar desde `/ingest` el contenido íntegro de
   `docs/assistant-corpus/finops/azure-finops-mvp.md`, con origen `assistant-corpus` y la ruta del
   archivo como URI del artefacto. Registrar el identificador, el estado y la cola que muestra la
   interfaz, y el tamaño y el hash SHA-256 del archivo enviado.
-- [ ] 5.2 Consultar el estado de ese trabajo en la tabla `jobs` de CockroachDB hasta `completed`, con
+- [x] 5.2 Consultar el estado de ese trabajo en la tabla `jobs` de CockroachDB hasta `completed`, con
   un plazo de 120 s, y guardar la consulta y su salida. Si no llega, registrar el estado y los
   registros del processor y marcar la ingesta como no acreditada.
-- [ ] 5.3 Consultar en pgvector la fila de `knowledge_documents` de ese trabajo y ámbito y el número
+- [x] 5.3 Consultar en pgvector la fila de `knowledge_documents` de ese trabajo y ámbito y el número
   de filas de `document_chunks` y `chunk_embeddings` asociadas, y guardar las consultas y su salida.
   Comprobar que `tenant-core` no tiene ningún fragmento de ese documento.
-- [ ] 5.4 Guardar las líneas del registro del processor que corresponden a ese trabajo, sin
+- [x] 5.4 Guardar las líneas del registro del processor que corresponden a ese trabajo, sin
   contenido del documento.
 
 ## 6. Recorrido: asistente, historial y cierre

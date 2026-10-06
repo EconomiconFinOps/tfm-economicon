@@ -10,7 +10,7 @@
 - Pull request: pendiente de abrir.
 - CI: pendiente.
 
-> Estado de este documento: **en curso.** Están registrados los grupos 1 a 4 de `tasks.md`. Las demás
+> Estado de este documento: **en curso.** Están registrados los grupos 1 a 5 de `tasks.md`. Las demás
 > secciones figuran con su estado real, que es «no ejecutado».
 
 ## Entorno de la máquina de validación (tarea 1.1)
@@ -357,9 +357,76 @@ operador no lo distingue a simple vista; se relaciona con `RF-095-002`.
 Capturas de la pasada 5 (fuera del repositorio): acceso, costes de Core Finance (por Servicio y por
 Grupo de recursos), costes de Growth Ops y las seis pantallas.
 
-### Ingesta (grupo 5) y asistente (grupo 6)
+### Ingesta extremo a extremo (grupo 5), pasada 5
 
-Ejecutados por la misma pasada; su registro se añade en los commits de esos grupos.
+**5.1 Envío desde la interfaz: acreditado.** Con Growth Ops seleccionado, en `/ingest`:
+
+| Campo | Valor |
+| --- | --- |
+| Source | `assistant-corpus` |
+| Artifact URI | `docs/assistant-corpus/finops/azure-finops-mvp.md` |
+| Text content | El documento íntegro: 8696 bytes, SHA-256 `94ca7a74ab02d18c6edc31a32ad7bc91362875fdd0445075b1d6323573a49c90` |
+
+- `POST /jobs/ingest` → **202**, con `X-Tenant-Id: tenant-growth`.
+- La interfaz muestra «Job accepted» con **Job ID** `82b49a42-548a-45d8-abce-ebf9a268af3d`,
+  **Status** `queued` y **Queue** `processor:jobs`. El identificador mostrado coincide con el de la
+  respuesta.
+- Esa confirmación **no cuenta como prueba de procesado**: por lectura de `IngestPage.tsx`, la
+  pantalla no vuelve a consultar el estado y no puede llegar a mostrar `completed`. La prueba está
+  fuera de la interfaz (5.2 y 5.3).
+
+**5.2 Trabajo completado en CockroachDB: acreditado.** El guion consulta
+`SELECT status FROM jobs WHERE id = '<job_id>'` con un plazo de 120 s y obtiene `completed`.
+Comprobación independiente de la fila completa:
+
+| Campo de `jobs` | Valor |
+| --- | --- |
+| `status` | `completed` |
+| `tenant_id` | `tenant-growth` |
+| `source` | `assistant-corpus` |
+| `artifact_uri` | `docs/assistant-corpus/finops/azure-finops-mvp.md` |
+| `created_at` → `updated_at` | `2026-10-06 00:25:10.58` → `00:25:11.11` (0,53 s) |
+
+La cola `processor:jobs` de RabbitMQ quedó con 0 mensajes listos y 0 sin confirmar: el mensaje se
+consumió.
+
+**5.3 Documento, fragmentos y vectores en pgvector: acreditado.**
+
+| Comprobación | Resultado |
+| --- | --- |
+| `knowledge_documents` con `job_id` del trabajo | 1 fila: `id` igual al `job_id`, `tenant_id = tenant-growth`, mismo `source` y `artifact_uri`, `chunk_count = 19` |
+| `document_chunks` de ese documento | 19 |
+| `chunk_embeddings` de esos fragmentos | 19, dimensión mínima 8 y máxima 8, proveedor `mock` |
+| Tipo de la columna de vectores | `vector(8)` |
+| Fragmentos de este trabajo en `tenant-core` | 0 |
+| Documentos de este trabajo fuera de `tenant-growth` | 0 |
+
+Dos comprobaciones independientes del guion, hechas aparte con consultas de solo lectura:
+
+- **Contenido guardado.** El hash MD5 del `text_content` guardado con los espacios normalizados
+  (`b9d76bdc8cb1777c973024fff4efbdf6`, 8419 caracteres) coincide con el del documento local
+  normalizado.
+- **Fragmentos completos.** Recalculando los fragmentos con el algoritmo del processor (espacios
+  normalizados, ventanas de 500 caracteres con solape de 50, `strip` de cada ventana) sobre el
+  documento enviado salen 19, **idénticos uno a uno** a los 19 guardados. El documento llegó entero,
+  sin truncar.
+
+Residuo: en `tenant-growth` hay 5 documentos con este mismo origen y URI (uno por pasada); el de esta
+pasada es el último. Ver «Residuo en el stack».
+
+**5.4 Registro del processor: acreditado, con límite.** Desde el inicio de la ingesta
+(`00:25:10.49Z`) el processor emitió 1 evento, `job_processing` (nivel `info`, `00:25:11.07Z`), y
+ninguno de nivel `error`. El processor **no emite un evento de finalización**, así que el registro
+solo acredita que recogió el trabajo; que terminó lo acreditan 5.2 y 5.3. El registro guardado no
+contiene contenido del documento.
+
+**No ejercitado en el navegador:** el escenario en que el trabajo no llega a completarse (por ejemplo,
+con el processor parado). Lo cubre a nivel de API el smoke de JUP-050 («Processor stopped»); aquí no se
+ha provocado.
+
+### Asistente (grupo 6)
+
+Ejecutado por la misma pasada; su registro se añade en el commit de ese grupo.
 
 ## Batería del carril (grupo 9)
 
