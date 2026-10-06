@@ -38,14 +38,14 @@
 
 ## 4. Recorrido: acceso, ámbito y costes
 
-- [ ] 4.1 Acceso con la cuenta de demostración desde `/login`. Registrar que la sesión se crea, que
+- [x] 4.1 Acceso con la cuenta de demostración desde `/login`. Registrar que la sesión se crea, que
   aparece el armazón con el selector de ámbito y que no hay errores de CORS en la consola.
-- [ ] 4.2 Con Core Finance, fijar en `/` el periodo `2024-06-01` a `2024-06-21` y registrar el total,
+- [x] 4.2 Con Core Finance, fijar en `/` el periodo `2024-06-01` a `2024-06-21` y registrar el total,
   la moneda y el número de grupos que muestra la sección de costes reales. Contrastar el total con
   la respuesta de `GET /billing/summary` para ese ámbito y periodo.
-- [ ] 4.3 Cambiar a Growth Ops con el mismo periodo y registrar que la sección muestra ausencia de
+- [x] 4.3 Cambiar a Growth Ops con el mismo periodo y registrar que la sección muestra ausencia de
   datos; volver a Core Finance y registrar que recupera los mismos valores.
-- [ ] 4.4 Abrir `/operational`, `/cuts`, `/anomalies`, `/recommendations` y `/overview-legacy` y
+- [x] 4.4 Abrir `/operational`, `/cuts`, `/anomalies`, `/recommendations` y `/overview-legacy` y
   completar la tabla de la evidencia: por pantalla y bloque, si los datos son del backend o de
   demostración y si la interfaz lo advierte.
 

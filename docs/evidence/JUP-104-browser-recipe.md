@@ -194,6 +194,11 @@ async function costView(page) {
   const rows = await page.locator("section[aria-label='Costes reales de Azure'] tbody tr").count();
   return { empty: false, totals, rows, t0 };
 }
+// Espera a que no llegue ninguna respuesta del backend durante ms: un refetch en segundo plano de la pantalla anterior
+// (TanStack Query muestra datos en cache y refresca al montar) no debe atribuirse a la pantalla siguiente.
+async function quiet(ms = 2000) {
+  for (;;) { const last = seen.length ? seen[seen.length - 1].t : 0; if (Date.now() - last >= ms) return; await sleep(200); }
+}
 async function nav(page, label) { await page.getByRole("link", { name: label, exact: true }).click(); }
 async function demoMarks(page) {
   return page.evaluate(() => ({
@@ -205,7 +210,9 @@ async function demoMarks(page) {
 async function askAssistant(page, question) {
   await nav(page, "Assistant");
   await page.getByPlaceholder("New conversation title").waitFor();
+  const tNew = Date.now();
   await page.getByRole("button", { name: "New", exact: true }).click();
+  const created = await waitApi((e) => e.t >= tNew && e.method === "POST" && e.path === "/assistant/conversations" && e.body, 15000);
   const box = page.getByPlaceholder("Ask the assistant about the ingested tenant documents.");
   await box.waitFor();
   const t0 = Date.now();
@@ -215,8 +222,11 @@ async function askAssistant(page, question) {
   must(reply.status === 201, `POST mensaje respondio ${reply.status}`);
   const text = reply.body.assistant_message.content;
   await page.locator("article", { hasText: "assistant" }).last().waitFor();
-  return { reply, text, convId: reply.path.split("/")[3] };
+  return { reply, text, convId: reply.path.split("/")[3], createdId: created.body.id };
 }
+// El chunker del processor normaliza los espacios ("a b<salto>c" -> "a b c"): se compara con esa misma normalizacion.
+const norm = (t) => t.replace(/\s+/g, " ").trim();
+const NORM_DOC = norm(DOC);
 function fragments(text) {
   // La plantilla del backend: "- <origen>: <primeros 140 caracteres del fragmento>"
   return text.split("\n").filter((l) => l.startsWith("- ")).map((l) => l.replace(/^- [^:]+: /, ""));
@@ -306,9 +316,10 @@ function fragments(text) {
   });
 
   await step("4.4", "Pantallas: origen de los datos", ["4.1"], async (obs) => {
-    const screens = [["Coste Global", "/"], ["Coste Detallado", "/operational"], ["Corte Global", "/cuts"], ["Anomalías", "/anomalies"], ["Recomendaciones", "/recommendations"], ["Overview", "/overview-legacy"]];
+    const screens = [["Coste Detallado", "/operational"], ["Corte Global", "/cuts"], ["Anomalías", "/anomalies"], ["Recomendaciones", "/recommendations"], ["Overview", "/overview-legacy"], ["Coste Global", "/"]];
     results.notes.screens = [];
     for (const [label, route] of screens) {
+      await quiet();
       const t0 = Date.now();
       await nav(page, label);
       await page.waitForURL(`**${route}`);
@@ -316,7 +327,7 @@ function fragments(text) {
       const calls = [...new Set(apiSince(t0).map((e) => `${e.method} ${e.path} ${e.status}`))];
       const marks = await demoMarks(page);
       results.notes.screens.push({ label, route, apiCalls: calls, ...marks });
-      obs(`${route} "${marks.h2.join(" / ")}": peticiones al backend [${calls.join(", ") || "ninguna"}]; regiones aria-label con 'demostracion': ${marks.demoRegions}; apariciones del rotulo de demostracion/datos de prueba: ${marks.demoText}`);
+      obs(`${route} "${marks.h2.join(" / ")}": peticiones al backend en esta visita [${calls.join(", ") || "ninguna"}]; regiones aria-label con 'demostracion': ${marks.demoRegions}; apariciones del rotulo de demostracion/datos de prueba: ${marks.demoText}`);
       await snap(`pantalla-${route.replace(/\W+/g, "") || "raiz"}`);
     }
   });
@@ -328,6 +339,7 @@ function fragments(text) {
     await page.locator("#ingest-artifact-uri").fill(DOC_PATH);
     await page.locator("#ingest-text-content").fill(DOC);
     obs(`documento ${DOC_PATH}: ${Buffer.byteLength(DOC)} bytes, SHA-256 ${DOC_SHA}`);
+    state.ingestStart = new Date().toISOString();
     const t0 = Date.now();
     await page.getByRole("button", { name: "Queue ingestion" }).click();
     await page.getByText("Job accepted").waitFor({ timeout: 20000 });
@@ -362,28 +374,39 @@ function fragments(text) {
     obs(`fragmentos de este trabajo en tenant-core: ${core}; documentos de este trabajo fuera de tenant-growth: ${other}`);
     must(Number(chunks) > 0 && Number(chunks) === Number(emb.split("|")[0]), "fragmentos y vectores no cuadran");
     must(core === "0" && other === "0", "el documento consta en otro ambito");
+    const same = pg(`SELECT id FROM knowledge_documents WHERE tenant_id = 'tenant-growth' AND source = 'assistant-corpus' AND artifact_uri = '${DOC_PATH}' ORDER BY created_at`).split(/\r?\n/).filter(Boolean);
+    state.docIds = same;
+    obs(`documentos de tenant-growth con este mismo origen y URI: ${same.length} (${same.map((i) => (i === docId ? `${i} <- este recorrido` : i)).join(", ")})`);
     const dim = pg("SELECT format_type(atttypid, atttypmod) FROM pg_attribute WHERE attrelid = 'chunk_embeddings'::regclass AND attname = 'embedding'");
     obs(`tipo de la columna de vectores: ${dim}`);
   });
 
   await step("5.4", "Registro del processor para el trabajo", ["5.2"], async (obs) => {
     const log = compose("logs", "--no-log-prefix", "processor");
-    const lines = log.split(/\r?\n/).filter((l) => l.includes(state.jobId) || /job_processing|job_completed|ingest/i.test(l)).slice(-12);
-    fs.writeFileSync(path.join(OUT, "processor-log.txt"), lines.join("\n"));
-    obs(`${lines.length} lineas relevantes guardadas fuera del repositorio; ultimas: ${lines.slice(-3).map((l) => l.slice(0, 160)).join(" || ")}`);
+    const lines = log.split(/\r?\n/).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter((d) => d && d.timestamp >= state.ingestStart);
+    fs.writeFileSync(path.join(OUT, "processor-log.txt"), lines.map((d) => JSON.stringify({ timestamp: d.timestamp, level: d.level, event: d.event, logger: d.logger })).join("\n"));
+    const errors = lines.filter((d) => ["error", "critical"].includes(d.level));
+    obs(`${lines.length} eventos del processor desde ${state.ingestStart}: ${[...new Set(lines.map((d) => `${d.event}(${d.level})`))].join(", ")}; de nivel error: ${errors.length}`);
   });
 
   await step("6.1", "Pregunta JUP-069-004 en Growth Ops", ["5.3"], async (obs) => {
     obs(`pregunta: ${QUESTION}`);
     const r = await askAssistant(page, QUESTION);
     state.growth = r;
+    obs(`conversacion creada con New: ${r.createdId}; conversacion que recibio el mensaje: ${r.convId}${r.createdId === r.convId ? "" : " (NO coinciden)"}`);
     obs(`respuesta (${r.text.length} caracteres): ${r.text.replace(/\n/g, " / ").slice(0, 600)}`);
     const frags = fragments(r.text);
     obs(`fragmentos mostrados: ${frags.length}`);
     must(frags.length > 0, "la respuesta no contiene fragmentos");
-    const notInDoc = frags.filter((f) => !DOC.includes(f.split("\n")[0].trim()));
-    must(notInDoc.length === 0, `fragmentos que no son del documento: ${notInDoc.length}`);
-    obs("cada fragmento mostrado es una subcadena literal del documento ingestado");
+    // Exacta: cada fragmento mostrado es el prefijo de 140 caracteres de un fragmento guardado de un documento de esta ingesta.
+    const ids = state.docIds.map((i) => `'${i}'`).join(",");
+    const stored = new Set(pg(`SELECT left(content, 140) FROM document_chunks WHERE document_id IN (${ids})`).split(/\r?\n/).map((l) => l.trimEnd()));
+    const notStored = frags.filter((f) => !stored.has(f.trimEnd()));
+    must(notStored.length === 0, `fragmentos mostrados que no son el prefijo de ningun fragmento guardado: ${notStored.length}`);
+    obs("cada fragmento mostrado coincide exactamente con los primeros 140 caracteres de un fragmento guardado en pgvector del documento ingerido");
+    const notInDoc = frags.filter((f) => !NORM_DOC.includes(norm(f)));
+    must(notInDoc.length === 0, `fragmentos que no son subcadena del documento normalizado: ${notInDoc.length}`);
+    obs("y cada uno es subcadena del documento original con los espacios normalizados");
     obs(`retrieved_context de la respuesta: ${r.reply.body.retrieved_context.length} fragmentos, distancias ${r.reply.body.retrieved_context.map((c) => c.distance.toFixed(4)).join(", ")}`);
     await snap("asistente-growth");
   });
@@ -396,7 +419,8 @@ function fragments(text) {
     obs(`evento: provider ${ev.provider}, alias ${ev.alias}, top_k ${ev.top_k}, max_distance ${ev.max_distance}, resultados ${ev.results}, document_ids ${JSON.stringify([...new Set(ev.document_ids)])}, distancias ${JSON.stringify(ev.distances)}`);
     state.provider = ev.provider;
     results.notes.embeddingProvider = ev.provider;
-    must(ev.document_ids.length > 0 && ev.document_ids.every((d) => d === state.docId), "los document_ids no son los del documento ingestado");
+    must(ev.document_ids.length > 0 && ev.document_ids.every((d) => state.docIds.includes(d)), "los document_ids no son los de los documentos ingeridos");
+    obs(`document_ids dentro de los ${state.docIds.length} documentos de tenant-growth con este origen: ${ev.document_ids.every((d) => state.docIds.includes(d))}; incluye el de este recorrido: ${ev.document_ids.includes(state.docId)}`);
   });
 
   await step("6.3", "Recarga del historial (RF-087-002)", ["6.1"], async (obs) => {
@@ -405,7 +429,17 @@ function fragments(text) {
     await page.getByLabel("Ambito de cliente").waitFor({ timeout: 20000 });
     await page.getByLabel("Ambito de cliente").selectOption({ label: "Growth Ops" });
     await nav(page, "Assistant");
-    const detail = await waitApi((e) => e.t >= t0 && e.method === "GET" && e.path === `/assistant/conversations/${state.growth.convId}`, 20000);
+    const isMine = (e) => e.t >= t0 && e.method === "GET" && e.path === `/assistant/conversations/${state.growth.convId}`;
+    await page.getByText("Assistant chat").waitFor();
+    await sleep(3000);
+    if (!seen.some(isMine)) {
+      // La aplicacion selecciona la primera conversacion de la lista; si no es la de este recorrido, se abre pulsandola.
+      const titles = page.locator("button", { hasText: "Ops review" });
+      const n = await titles.count();
+      obs(`la conversacion de este recorrido no es la primera de la lista (${n} con el mismo titulo): se abre pulsando cada una hasta dar con ella`);
+      for (let i = 0; i < n && !seen.some(isMine); i++) { await titles.nth(i).click(); await sleep(1500); }
+    }
+    const detail = await waitApi(isMine, 20000);
     obs(`GET ${detail.path} -> ${detail.status}`);
     must(detail.status === 200, `el historial respondio ${detail.status}`);
     await page.getByText(QUESTION).first().waitFor({ timeout: 10000 });
@@ -414,18 +448,37 @@ function fragments(text) {
     await snap("historial-recargado");
   });
 
+  await step("6.3b", "Segunda conversacion en el mismo ambito: el mensaje va a la conversacion nueva", ["6.1"], async (obs) => {
+    await selectTenant(page, "Growth Ops");
+    await nav(page, "Assistant");
+    const list = await page.locator("button", { hasText: "Ops review" }).count();
+    await page.getByPlaceholder("New conversation title").fill("Segunda conversacion");
+    const t0 = Date.now();
+    await page.getByRole("button", { name: "New", exact: true }).click();
+    const created = await waitApi((e) => e.t >= t0 && e.method === "POST" && e.path === "/assistant/conversations" && e.body, 15000);
+    const box = page.getByPlaceholder("Ask the assistant about the ingested tenant documents.");
+    await box.waitFor();
+    await box.fill("Comprobacion: a que conversacion va este mensaje?");
+    await page.getByRole("button", { name: "Send", exact: true }).click();
+    const sent = await waitApi((e) => e.t >= t0 && e.method === "POST" && e.path.endsWith("/messages"), 30000);
+    const usedId = sent.path.split("/")[3];
+    obs(`conversaciones previas en Growth Ops con titulo 'Ops review': ${list}; conversacion creada: ${created.body.id}; el mensaje se envio a: ${usedId}`);
+    await snap("segunda-conversacion");
+    must(usedId === created.body.id, `el mensaje se envio a la conversacion ${usedId} y no a la recien creada ${created.body.id}`);
+  });
+
   await step("6.4", "La misma pregunta en Core Finance", ["6.1"], async (obs) => {
     await selectTenant(page, "Core Finance");
     const r = await askAssistant(page, QUESTION);
     obs(`respuesta (${r.text.length} caracteres): ${r.text.replace(/\n/g, " / ").slice(0, 400)}`);
     const frags = fragments(r.text);
     obs(`fragmentos mostrados: ${frags.length}; retrieved_context: ${r.reply.body.retrieved_context.length}`);
-    const fromDoc = frags.filter((f) => DOC.includes(f.split("\n")[0].trim()));
+    const fromDoc = frags.filter((f) => NORM_DOC.includes(norm(f)));
     must(fromDoc.length === 0, `${fromDoc.length} fragmentos del documento de Growth Ops aparecen en Core Finance`);
     obs("ningun fragmento mostrado en Core Finance es del documento ingestado en Growth Ops");
     const ids = r.reply.body.retrieved_context.map((c) => c.chunk_id);
     if (ids.length) {
-      const inGrowth = pg(`SELECT count(*) FROM document_chunks WHERE document_id = '${state.docId}' AND id IN (${ids.map((i) => `'${i}'`).join(",")})`);
+      const inGrowth = pg(`SELECT count(*) FROM document_chunks WHERE document_id IN (${state.docIds.map((i) => `'${i}'`).join(",")}) AND id IN (${ids.map((i) => `'${i}'`).join(",")})`);
       obs(`de esos ${ids.length} chunk_id, pertenecen al documento de Growth Ops: ${inGrowth}`);
       must(inGrowth === "0", "chunk_id del documento de Growth Ops devueltos a Core Finance");
     }
@@ -447,6 +500,11 @@ function fragments(text) {
   results.finished = new Date().toISOString();
   const bad = results.consoleErrors.filter((m) => /CORS|Access-Control/i.test(m));
   results.summary = { pass: results.steps.filter((s) => s.status === "pass").length, fail: results.steps.filter((s) => s.status === "fail").length, notRun: results.steps.filter((s) => s.status === "not_run").length, pageErrors: results.pageErrors.length, corsConsoleErrors: bad.length, consoleErrors: results.consoleErrors.length, failedRequests: results.failedRequests.length };
+  const byCode = {};
+  for (const e of seen) { const k = `${e.method} ${e.path} ${e.status}`; byCode[k] = (byCode[k] || 0) + 1; }
+  results.notes.apiResponses = byCode;
+  results.notes.apiServerErrors = seen.filter((e) => e.status >= 500).length;
+  results.notes.apiClientErrors = seen.filter((e) => e.status >= 400 && e.status < 500).length;
   fs.writeFileSync(path.join(OUT, "results.json"), JSON.stringify(results, null, 2));
   console.log("\nRESUMEN", JSON.stringify(results.summary));
   await browser.close();

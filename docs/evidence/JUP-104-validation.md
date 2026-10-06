@@ -10,7 +10,7 @@
 - Pull request: pendiente de abrir.
 - CI: pendiente.
 
-> Estado de este documento: **en curso.** Están registrados los grupos 1 a 3 de `tasks.md`. Las demás
+> Estado de este documento: **en curso.** Están registrados los grupos 1 a 4 de `tasks.md`. Las demás
 > secciones figuran con su estado real, que es «no ejecutado».
 
 ## Entorno de la máquina de validación (tarea 1.1)
@@ -244,9 +244,122 @@ Dos cambios al guion durante el ensayo: el paso `0.1` pasó de abrir `chrome://v
 línea de comandos del proceso, y el paso `4.2` añadió el desglose por grupo de recursos porque el
 agrupado por defecto (Servicio) deja los 38 registros sin dimensión.
 
-## Recorrido (grupos 4 a 8)
+## Recorrido en navegador (grupos 4 a 6)
 
-No ejecutado.
+### Ejecuciones del guion
+
+Todas sobre el mismo stack (`jup104-e2e`), el mismo 2026-10-06, con el repositorio en `139650c` (el
+guion es el de la receta de la versión que incluye este registro). Cada pasada es **una sola sesión de
+navegador**, del acceso al cierre de sesión. Se registran las cinco porque las cuatro primeras
+descubrieron defectos del guion o del producto, y porque dejan datos en el stack (ver «Residuo»).
+
+| Pasada | Hora UTC | Resultado | Qué pasó |
+| --- | --- | --- | --- |
+| 1 | 00:17:56 a 00:18:24 | 10 correctos, 1 fallido (`6.1`), 3 no ejecutados | **Defecto de mi comprobación, no del producto**: comparaba cada fragmento con el documento tal cual, y el chunker normaliza los espacios (`" ".join(text.split())`), así que los fragmentos guardados no tienen saltos de línea. La ingesta y el aislamiento por ámbito sí quedaron acreditados |
+| 2 | 00:20:24 a 00:20:58 | 14 de 14 | Comprobación corregida: comparación exacta con los primeros 140 caracteres de los fragmentos guardados en pgvector. Reveló que el mensaje se había enviado a otra conversación (la reabierta tenía 4 mensajes, no 2) |
+| 3 | 00:22:16 a 00:22:52 | 14 correctos, 1 fallido (`6.3b`) | Añadido el paso `6.3b`, que reproduce a propósito lo anterior. Fallo del producto, ver «Asistente» |
+| 4 | 00:23:37 a 00:24:12 | 14 correctos, 1 fallido (`6.3b`) | El paso `4.4` atribuía a una pantalla una petición en vuelo de la anterior (TanStack Query muestra datos en caché y refresca en segundo plano) |
+| **5** | **00:24:48 a 00:25:26** | **14 correctos, 1 fallido (`6.3b`)** | **Versión final del guion** (espera de red en calma entre pantallas). Es la que se usa como evidencia |
+
+Pasada 5: 0 errores de página, 0 errores de consola, 0 de CORS, **0 respuestas 4xx y 0 respuestas
+5xx** del backend (todas las respuestas observadas fueron 2xx). Una petición abortada
+(`GET /billing/summary`, `net::ERR_ABORTED`): es la aplicación cancelando la consulta en curso al
+cambiar la selección. Ningún registro de nivel `error`, `critical` ni `warning` en el backend y el
+processor durante las pasadas, salvo el ruido de `pika` que se describirá entre las observaciones
+fuera del recorrido (grupo 8).
+
+El paso que falla por el producto (`6.3b`) hace terminar el guion con código de salida 1, como indica
+la receta. Capturas y `results.json` de cada pasada, **fuera del repositorio**.
+
+**Residuo en el stack tras las cinco pasadas** (consultas de solo lectura). El recorrido final no
+parte de un Growth Ops vacío:
+
+| Almacén | Contenido |
+| --- | --- |
+| CockroachDB, `jobs` | 6 trabajos `completed`: el del smoke (`tenant-core`) y uno por pasada, todos de `tenant-growth` (`5c8541af`, `0b471344`, `8b87a62f`, `d1e6af46`, `82b49a42`) |
+| pgvector, `tenant-growth` | **5 documentos** `assistant-corpus` con el mismo contenido, 95 fragmentos en total; la pasada 5 ingirió `82b49a42` |
+| pgvector, `tenant-core` | Solo el documento `local-smoke` del smoke, con 1 fragmento |
+| CockroachDB, conversaciones | 12: 8 en `tenant-growth` (7 vacías) y 4 en `tenant-core` (3 vacías); **10 vacías en total**. Solo dos tienen mensajes: `fc77bad7` (Growth Ops, 16 mensajes) y `461a1c7d` (Core Finance, 8) |
+
+Consecuencia para leer los resultados: en Growth Ops hay copias idénticas del mismo documento, así que
+la respuesta del asistente puede traer fragmentos duplicados con la misma distancia. Lo que se acredita
+es que el fragmento procede **de un documento ingerido desde la interfaz en estas pasadas**, y se
+comprueba contra todos ellos; no se afirma que sea el de la pasada 5 salvo donde se diga. Un recorrido
+sin residuo exigiría un stack con volúmenes nuevos.
+
+### Navegador (paso 0.1 del guion)
+
+Chromium `153.0.8010.12` (Playwright `1.63.0`), modo headless, perfil vacío. El paso lee la línea de
+comandos real del proceso: **44 opciones, ninguna** de `--disable-web-security`,
+`--allow-running-insecure-content`, `--disable-site-isolation-trials` ni
+`--ignore-certificate-errors`. Incluye las opciones estándar de automatización de Playwright, entre
+ellas `--no-sandbox` y `--disable-popup-blocking`, que no afectan a CORS ni a la política de mismo
+origen. El frontend se sirve desde `http://localhost:5173` y el backend desde `http://localhost:8000`:
+**orígenes distintos**, de modo que el navegador aplica CORS en cada petición. Sin `page.route`:
+ninguna respuesta del backend se sustituye ni se intercepta.
+
+### Acceso, ámbito y costes (grupo 4), pasada 5
+
+**4.1 Acceso por el formulario: acreditado.**
+
+- La pantalla de acceso trae `operator@example.com` precargado; la contraseña la aporta el guion desde
+  `E2E_PASSWORD` (el valor de `DEMO_PASSWORD`, solo por nombre aquí).
+- `POST /auth/login` → 200 desde el navegador. La sesión la crea la aplicación (existe
+  `finops.session`; solo se comprueba que existe, no su valor).
+- `GET /me` → 200 y `GET /tenants` → 200. Ámbitos del selector: `Core Finance` y `Growth Ops`.
+  Identidad mostrada en la cabecera: `operator@example.com`.
+- Sin errores de CORS en la consola con orígenes distintos: el acceso funciona sin desactivar ninguna
+  protección.
+
+**4.2 Costes de Core Finance, `2024-06-01` a `2024-06-21` (fin exclusivo): acreditado.** El guion
+fija el periodo a mano; no se comprobó qué muestra el periodo inicial (el mes en curso).
+
+| Dato | Pantalla | Respuesta de `GET /billing/summary` (`X-Tenant-Id: tenant-core`) |
+| --- | --- | --- |
+| Agrupado por Servicio (por defecto) | `0.06 USD`, 1 fila, aviso «Datos parciales» | `totals` `0.06 USD`, `data_status: partial`, 1 grupo, 38 registros sin dimensión, 0 sin fecha |
+| Agrupado por Grupo de recursos | 8 filas | `totals` `0.06 USD`, `data_status: available`, 8 grupos, 0 sin dimensión |
+
+- El total mostrado coincide con el de la respuesta que recibió la propia interfaz.
+- Con el agrupado por defecto, los 38 registros de la muestra simulada no traen la dimensión Servicio:
+  la pantalla muestra una sola fila «Sin dimensión» y el aviso de datos parciales. Es una propiedad del
+  conjunto de datos simulado, no un fallo observado. El reparto con sentido sale agrupando por Grupo de
+  recursos (8 grupos), que coincide con lo que anota el preflight de JUP-065 en su PR #63, aún sin
+  fusionar.
+- «Ahorro potencial: no disponible.», como corresponde (no hay motor de ahorro, `RF-091-004`).
+
+**4.3 Cambio de ámbito: acreditado.**
+
+- Con Growth Ops y el mismo periodo, la sección de costes reales muestra «Sin datos de costes para
+  este periodo.» y el periodo se conserva.
+- Al volver a Core Finance se recupera `0.06 USD`. La separación visual por ámbito funciona; esto no
+  sustituye a una prueba de autorización contra ámbitos ajenos (JUP-086).
+
+**4.4 Origen de los datos por pantalla: acreditado.** Peticiones al backend observadas en cada
+visita, con la red en calma antes de entrar, y si la interfaz lo rotula:
+
+| Pantalla | Título | Peticiones al backend en la visita | ¿Rotulada como demostración? |
+| --- | --- | --- | --- |
+| `/operational` | Dashboard Operativo - Coste Detallado | ninguna | **No** |
+| `/cuts` | Dashboard Ejecutivo - Corte Global | ninguna | **No** |
+| `/anomalies` | Panel de Anomalías y Alertas | ninguna | Sí: región «Datos de demostración» y rótulo repetido (2 apariciones) |
+| `/recommendations` | Panel de Recomendaciones | ninguna | **No** |
+| `/overview-legacy` | FinOps Operator / Tenants | `GET /billing/summary` 200, `GET /health` 200 | No aplica: datos del backend |
+| `/` | Dashboard Ejecutivo - Coste Global | `GET /billing/summary` 200 | **Mixta**: costes reales arriba y una sección «Datos de demostración» rotulada (evolución, inventario, exportación) |
+
+Recuento para JUP-105 (pantallas con ruta, sin `/login`) a partir de este recorrido: **4 consumen el
+backend** (`/`, en su sección de costes; `/overview-legacy`; y `/ingest` y `/assistant`, estas dos en
+los grupos 5 y 6) y **4 son solo demostración y no hacen ninguna petición** (`/operational`, `/cuts`,
+`/anomalies` y `/recommendations`). De esas cuatro, **tres no avisan en la interfaz** de que sus datos
+son de demostración (`/operational`, `/cuts` y `/recommendations`); solo `/anomalies` lo rotula. Esto
+no contradice la spec vigente (el origen de demostración está declarado en `src/data/demo/`), pero un
+operador no lo distingue a simple vista; se relaciona con `RF-095-002`.
+
+Capturas de la pasada 5 (fuera del repositorio): acceso, costes de Core Finance (por Servicio y por
+Grupo de recursos), costes de Growth Ops y las seis pantallas.
+
+### Ingesta (grupo 5) y asistente (grupo 6)
+
+Ejecutados por la misma pasada; su registro se añade en los commits de esos grupos.
 
 ## Batería del carril (grupo 9)
 
