@@ -73,4 +73,3 @@ reuse a single location index per retrieved document within a consistent snapsho
 #### Scenario: Padded source label
 - **WHEN** the source contains leading or trailing whitespace
 - **THEN** its display in both the cited passage and citation uses the same trimmed value
-

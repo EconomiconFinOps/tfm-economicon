@@ -306,3 +306,15 @@ se verifica en GitHub. Las revisiones humanas de d09f16a no se presentan como
 aceptación de este delta: se solicita revisión incremental de archivo, índice
 no nulo, findings, enlaces y evidencia, y validación de lo afectado sobre el SHA final.
 No se autoriza merge ni movimiento a Hecho desde esta evidencia.
+
+
+Controles de cierre ejecutados el 06/10: OpenSpec estricto **46/46**,
+trazabilidad global e higiene (**830 archivos**) correctas; tests de política PR
+**57/57**, CI **12/12** y gobernanza **13/13**. Comparación exacta: runtime
+backend/processor/frontend sin delta desde d09f16a, tres ficheros focalizados de
+citas/pgvector sin delta desde el candidato probado; cinco requisitos archivados
+promovidos sin pérdida (normalizando líneas vacías del archivador) y tres enlaces
+locales nuevos válidos. Se conservan todas las filas del backlog de develop.
+`git diff --check` del delta propio correcto. La línea vacía final de la spec
+canónica de citas generada por el archivador se retira; repository-governance,
+procedente de #58/base, permanece sin cambios propios.
