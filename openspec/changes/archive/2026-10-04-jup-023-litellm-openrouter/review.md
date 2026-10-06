@@ -11,7 +11,7 @@
 
 ## Evidence and finding
 
-See [validation evidence](../../../docs/evidence/JUP-023-validation.md) for
+See [validation evidence](../../../../docs/evidence/JUP-023-validation.md) for
 commands, Red/Green, mutations, preserved records, actual counts and limits.
 The processor regression remains 433 passed / 57 skipped; gateway/governance
 checks passed 31 tests. Those are overlapping suite results, not new tests.
@@ -141,7 +141,7 @@ the next bounded real smoke passed (exit 0). Original FinOpsResponse validation,
 finite 1536-dimensional embedding, actual pgvector persistence and completed
 SQLite job were observed. Tester guard `embedding-accounting-smoke` passed,
 no repository changes. This supersedes the missing real-smoke gate, not previous
-review history or unresolved limitations. See the [updated evidence](../../../docs/evidence/JUP-023-validation.md#successful-real-smoke-and-accounting).
+review history or unresolved limitations. See the [updated evidence](../../../../docs/evidence/JUP-023-validation.md#successful-real-smoke-and-accounting).
 
 Official aggregate cost is USD 0.002591308 under the unchanged USD 0.40 upstream
 cap. The embedding's positive usage delta matches tokens/pricing; attribution is
@@ -164,7 +164,7 @@ skipped, simulated integration, Node 7, governance 24 and mutation results.
    for 12 tokens despite positive official usage USD 0.000000240. No post-call
    virtual-counter evidence demonstrates accounting/enforcement; seeded exhausted
    budget tests do not establish accrual. This conflicts with the inherited
-   [virtual-budget requirement](../jup-078-llm-provider-adr/specs/llm-provider-routing/spec.md).
+   [virtual-budget requirement](../../jup-078-llm-provider-adr/specs/llm-provider-routing/spec.md).
    Owner: Paris/implementation. The upstream cap and official reconciliation
    bounded the smoke; no overspend is alleged. Fix or explicit exception required.
 2. **F2, low, in scope:** current-status wording in README/design still described
@@ -203,7 +203,7 @@ The test's message-based classifier was corrected to require the preserved
 Exactly one authorized real embedding (no chat/retries) then passed original
 finite1536 validation; SpendLogs, actual key counter and official usage increment
 all equal USD 0.000000240. Accumulated official usage USD 0.002591548; no cap change.
-See [full correction evidence](../../../docs/evidence/JUP-023-validation.md#embedding-budget-correction).
+See [full correction evidence](../../../../docs/evidence/JUP-023-validation.md#embedding-budget-correction).
 Tester/coder guards passed, cleanup complete. Accounting is asynchronous;
 denial after accrual is not a guarantee against last/in-flight-request overshoot.
 Earlier unsuccessful tests and TEMP preparation failure are retained in evidence.
@@ -265,7 +265,7 @@ Paris leads, Victor pairs, Alejandro reviews and Lucia validates; actual human
 participation and separate reviews remain pending, as does final human approval.
 The known archive-order clarification remains for a future authorized archive,
 not this local reconciliation. No publication, delivery merge, tracker update
-or archive is authorized. See [reconciliation evidence](../../../docs/evidence/JUP-023-validation.md#develop-reconciliation).
+or archive is authorized. See [reconciliation evidence](../../../../docs/evidence/JUP-023-validation.md#develop-reconciliation).
 
 Incremental QA completed on 2026-10-02: QA_PASS, policy 57 / CI 10 / governance
 13 tests passed; strict OpenSpec 38, traceability 9 changes, hygiene 736 files,
@@ -291,7 +291,7 @@ authorization is not recorded as final human acceptance or either human review.
 2026-10-02, HEAD `9fe836e` plus local correction. All live PR feedback
 was read. Alejandro's Revision and Lucia's Validacion both request changes on
 the attempt timeout; neither request is resolved by this internal review. See
-[correction evidence](../../../docs/evidence/JUP-023-validation.md#pr-65-http-timeout-correction).
+[correction evidence](../../../../docs/evidence/JUP-023-validation.md#pr-65-http-timeout-correction).
 
 Paris approved the local correction/tests and explicitly limited the work to
 the PR requests, excluding an added DNS cancellation mechanism. Internal
@@ -319,7 +319,7 @@ fix. No commit, push, merge, archive, tracker update or paid call in this phase.
 
 2026-10-03: Paris authorized exactly one real primary chat and one embedding,
 zero retries, unchanged budgets/privacy and current corrected client. See
-[real revalidation](../../../docs/evidence/JUP-023-validation.md#real-revalidation-after-timeout-correction).
+[real revalidation](../../../../docs/evidence/JUP-023-validation.md#real-revalidation-after-timeout-correction).
 Chat HTTP 200 passed strict FinOpsResponse guardrails in 4.672 s. Embedding
 HTTP 200 took approximately 1 s, but the temporary accounting helper stopped
 before vector validation with `cost_mismatch`. Two requests, 793 reported tokens;
@@ -340,7 +340,7 @@ cannot be recovered from the receipt, so the two-operation result remains partia
 adapter validation (1536 finite values, 0.516 s, 12 tokens). SpendLogs, virtual
 counter and official aggregate delta matched 0.000000240 USD after 173.641 s.
 Cleanup/privacy and tester guard passed with no repository edits. See
-[single embedding recheck](../../../docs/evidence/JUP-023-validation.md#authorized-single-embedding-recheck).
+[single embedding recheck](../../../../docs/evidence/JUP-023-validation.md#authorized-single-embedding-recheck).
 This completes the missing real-provider check alongside the earlier successful
 chat without rewriting the partial run. Existing product review remains valid;
 human review/validation, publication and post-QA approval remain separate gates.
@@ -370,7 +370,30 @@ passed. No new product code, tests, Docker execution or paid calls.
 
 Internal incremental REVIEW_PASS: no blocking compatibility findings; tester
 and reviewer read-only guards passed. See the commands and limitations in
-[reconciliation evidence](../../../docs/evidence/JUP-023-validation.md#develop-reconciliation-2026-10-03).
+[reconciliation evidence](../../../../docs/evidence/JUP-023-validation.md#develop-reconciliation-2026-10-03).
 Process and human assignments remain unchanged. Both human Requests changes
 on PR #65 still require reassessment by Alejandro and Lucia. Publication,
 PR merge, archive and tracker updates are not part of this local reconciliation.
+
+## Post-Merge OpenSpec Closure
+
+2026-10-03: PR [#65](https://github.com/EconomiconFinOps/tfm-economicon/pull/65)
+was squash-merged into develop as `6410950315b0e3c22057d09015e11e38c5e455ab`.
+The final PR head was `7fb4c708746af995b61de135adf69a49947ea167`.
+Alejandro's [Revision JUP-023](https://github.com/EconomiconFinOps/tfm-economicon/pull/65#pullrequestreview-5401345607)
+and Lucia's [Validacion JUP-023](https://github.com/EconomiconFinOps/tfm-economicon/pull/65#pullrequestreview-5400056258)
+both approved that head and lifted their prior requests for changes. The
+technical and real-provider evidence remains in
+[JUP-023-validation.md](../../../../docs/evidence/JUP-023-validation.md), with
+the documented DNS and integration limits unchanged. These human reviews are
+distinct from the earlier internal REVIEW_PASS and QA_PASS.
+
+Paris requests OpenSpec closure on 2026-10-04 and handles Trello separately.
+Paris explicitly authorizes moving this change into the archive and promoting
+its provider contract on 2026-10-04. This closure does not close JUP-078 or
+approve ADR-0002/0016, add product behavior, repeat paid calls, or claim a
+full CockroachDB/RabbitMQ E2E.
+
+The archive is `openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/`;
+`openspec/specs/llm-provider-routing/spec.md` now contains the seven promoted
+requirements. Trello remains outside this commit.

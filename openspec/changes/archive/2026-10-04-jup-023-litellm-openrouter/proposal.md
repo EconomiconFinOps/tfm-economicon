@@ -51,7 +51,7 @@ Los archivos previstos, riesgos y fases se delimitan en `design.md`. ADR-0002
 permanece `Proposed`, con sus aprobaciones existentes intactas. La preparacion
 del plan no sustituye la aprobacion humana pre-code posterior a validacion.
 La decision operativa de Paris del 2026-10-02 autoriza LiteLLM 1.103.2 con el
-digest de [ADR-0016](../../../docs/adr/ADR-0016-litellm-version-pin.md) y Docker
+digest de [ADR-0016](../../../../docs/adr/ADR-0016-litellm-version-pin.md) y Docker
 local aislado con upstream simulado sin gasto. El ADR sigue `Proposed` durante
 review; no acepta ni sustituye ADR-0002. Compatibilidad Docker y los gates de
 privacidad/claves/coste para uso real siguen pendientes; 1.82.6 no se ejecutara.
@@ -203,7 +203,7 @@ explicita registrada al final de esta seccion. Inicialmente solo se autorizo pre
 enmienda documental; no implementar, modificar pruebas ni consumir. F1 bloquea
 QA: el smoke completo paso, pero SpendLogs registra cero para 12 tokens de
 embedding con delta oficial positivo de 0,000000240 USD, sin prueba posterior
-del contador virtual. Ver [smoke y limites](../../../docs/evidence/JUP-023-validation.md#successful-real-smoke-and-accounting).
+del contador virtual. Ver [smoke y limites](../../../../docs/evidence/JUP-023-validation.md#successful-real-smoke-and-accounting).
 
 Propuesta concreta: solo en `economicon-embedding`, configurar `model_info`
 con `input_cost_per_token: 0.00000002` USD y `output_cost_per_token: 0.0`, mas
@@ -255,7 +255,7 @@ de sus rulesets. Se mantienen Paris liderazgo, Victor pairing, Alejandro
 revision y Lucia validacion; no se atribuye participacion humana a agentes.
 No cambia alcance ni criterios de aceptacion. Esta autorizacion solo cubre
 la reconciliacion local, no publicacion, archivo, merge de entrega ni Trello.
-Evidencia y controles afectados en [validacion](../../../docs/evidence/JUP-023-validation.md#develop-reconciliation).
+Evidencia y controles afectados en [validacion](../../../../docs/evidence/JUP-023-validation.md#develop-reconciliation).
 
 ## PR 65 Attempt Deadline Correction
 
