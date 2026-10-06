@@ -1,11 +1,11 @@
 JUP: JUP-023
-ADR: [ADR-0002](../../../docs/adr/ADR-0002-litellm-openrouter.md)
-ADR de version: [ADR-0016](../../../docs/adr/ADR-0016-litellm-version-pin.md) (Proposed)
+ADR: [ADR-0002](../../../../docs/adr/ADR-0002-litellm-openrouter.md)
+ADR de version: [ADR-0016](../../../../docs/adr/ADR-0016-litellm-version-pin.md) (Proposed)
 
 Estado actualizado 2026-10-02: se conserva el diseno y sus gates historicos.
 La aprobacion de la correccion de presupuesto esta registrada en proposal.md;
 implementacion, simulacion de contador/rechazo y unico embedding real pasan.
-Ver [evidencia actual](../../../docs/evidence/JUP-023-validation.md#embedding-budget-correction).
+Ver [evidencia actual](../../../../docs/evidence/JUP-023-validation.md#embedding-budget-correction).
 Las referencias a aprobaciones/ensayos pendientes mas abajo documentan el
 momento de cada propuesta, no sustituyen el resultado posterior. Revision tecnica
 y QA local posteriores pasan; aprobacion final y reviews humanas siguen
@@ -45,7 +45,7 @@ la trazabilidad del almacen existente.
 
 ### Approved Compatible Endpoint Trial
 
-Plan historico de la seleccion DeepInfra. El [smoke posterior](../../../docs/evidence/JUP-023-validation.md#successful-real-smoke-and-accounting)
+Plan historico de la seleccion DeepInfra. El [smoke posterior](../../../../docs/evidence/JUP-023-validation.md#successful-real-smoke-and-accounting)
 paso con schema original, vector finito de 1536, pgvector y job completed en
 SQLite; total oficial 0,002591308 USD. Las referencias siguientes a pendientes
 describen ese plan previo. "Secundario y embeddings no cambian" se limita a
@@ -102,7 +102,7 @@ upstream sin sanear. Ausencia de coste nunca equivale a coste cero.
 
 ### SpendLogs Privacy Correction
 
-La [validacion simulada](../../../docs/evidence/JUP-023-validation.md) detecto
+La [validacion simulada](../../../../docs/evidence/JUP-023-validation.md) detecto
 texto upstream en `LiteLLM_SpendLogs.metadata.error_information.error_message`.
 La enmienda aprobada por Paris en proposal.md conserva imagen/digest 1.103.2 y
 planea `infra/litellm/safe_logging.py`, montado solo lectura y registrado como
@@ -134,7 +134,7 @@ tokens/coste conocidos cuando la ruta los entregue; comprobar filas de fallo,
 metadatos y contabilidad conservados, ausencia de sentinels en DB y consola, y
 orden del hook. Repetir las regresiones afectadas de claves/retries y exito.
 Estado historico al redactar el plan: controles pendientes. Estado actual:
-1.2/3.2 completadas con los limites de la evidencia y [smoke real satisfactorio](../../../docs/evidence/JUP-023-validation.md#successful-real-smoke-and-accounting).
+1.2/3.2 completadas con los limites de la evidencia y [smoke real satisfactorio](../../../../docs/evidence/JUP-023-validation.md#successful-real-smoke-and-accounting).
 Esto corrige F2; en aquel momento F1 sobre coste y contador virtual bloqueaba
 QA, sin atribuir al smoke cobertura contable que no demostro.
 
