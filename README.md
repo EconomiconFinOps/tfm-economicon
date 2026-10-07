@@ -366,6 +366,45 @@ que usan CI y la guia de contribucion.
 - `pnpm local:smoke`: verifica el recorrido minimo contra el stack ya arrancado
 - `pnpm local:test`: tests de las dos herramientas anteriores
 
+## Integracion Continua
+
+El workflow [CI](.github/workflows/ci.yml) se ejecuta con cada push a cualquier
+rama (`branches: ['**']`, sin filtros de rutas), con pull requests hacia `main`
+o `develop` en eventos `opened`, `synchronize`, `reopened`, `edited` y
+`ready_for_review`, y manualmente mediante `workflow_dispatch`. Un push solo
+de tags no lo activa. No requiere configurar `.gitconfig` ni hooks locales.
+
+Cada push valida el ultimo head enviado: los commits locales sin push y los
+commits intermedios de un push multiple no tienen ejecuciones individuales.
+Una ejecucion posterior del mismo grupo de concurrencia puede cancelar la
+anterior. Con un PR abierto pueden ejecutarse tanto el evento push como el
+evento PR; sus refs normalmente pertenecen a grupos distintos.
+
+Los jobs instalan las dependencias del workspace con
+`corepack pnpm install --frozen-lockfile` y ejecutan:
+
+- Frontend: `corepack pnpm lint --filter=@finops/frontend`,
+  `corepack pnpm test --filter=@finops/frontend`,
+  `corepack pnpm --filter @finops/frontend build` y, en otro job,
+  `corepack pnpm --filter @finops/frontend typecheck`.
+- Python 3.12: en cada directorio `apps/azure-cost-api`, `apps/backend` y
+  `apps/processor`, `python -m pip install -r requirements-dev.txt`, despues
+  `python -m compileall -q app` y finalmente `python -m pytest tests -q`.
+  Compileall cubre una sola vez los scripts identicos de lint/build; un error
+  de sintaxis falla el job. Comprueba sintaxis y genera bytecode, pero no
+  comprueba estilo, imports en runtime ni construye paquetes.
+- Gobernanza: los comandos del job `OpenSpec` en el workflow enlazado,
+  incluidos `corepack pnpm ci:check:test`, `corepack pnpm jup:check:all`,
+  `corepack pnpm docker:validate` y `corepack pnpm openspec:validate`.
+- Solo en PR: `node tools/pr-policy.mjs --event "$GITHUB_EVENT_PATH"`.
+  Este job se omite en push y ejecuciones manuales.
+
+Los tests que requieren CockroachDB, RabbitMQ o pgvector aislados pueden
+quedar omitidos si esos servicios no estan disponibles. Esos skips no validan
+integraciones reales. `docker:validate` es una comprobacion estatica; CI verde
+no acredita arranque de contenedores, despliegue ni aceptacion humana. Los
+tests locales del workflow tampoco acreditan ejecuciones alojadas en GitHub.
+
 ## Planificacion de entrega
 
 El roadmap versionado hasta la entrega del 23/10/2026 y la defensa del

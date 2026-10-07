@@ -6,7 +6,8 @@
 - Rama: `chore/JUP-103-verify-turbo-workspace`.
 - Base: `develop` en `dad5662`. La batería final se ejecutó con la rama en `12bc179`. Entretanto
   `origin/develop` avanzó a `c3aa9d6` (JUP-022, #67 y JUP-061, #60), que se fusionó en la rama y se
-  reverificó: ver «Reverificación tras fusionar `develop`».
+  reverificó: ver «Reverificación tras fusionar `develop`». Después avanzó a `f0cacdd` (JUP-078,
+  JUP-051, JUP-023 y JUP-067) y se volvió a fusionar: ver «Segunda fusión de `develop`».
 - OpenSpec: [jup-103-verify-turbo-workspace](../../openspec/changes/archive/2026-10-04-jup-103-verify-turbo-workspace/).
 - Hallazgo que reformula: `RF-093-001` (`openspec/findings/backlog.md`), que **se mantiene `Open`**
   hasta confirmar la corrección en dos máquinas más (decisión del gate post-review).
@@ -631,6 +632,43 @@ repetir las suites completas de producto, `dev` ni Compose.
 
 El mecanismo queda aislado, **para la `11.9.0`**. No se probó con la `11.1.3` ni la `11.19.0` (no están
 instaladas aquí), por eso el alcance de la cadena de «Causa» queda acotado a esa versión.
+
+## Segunda fusión de `develop` (2026-10-06)
+
+El PR #75 pasó a **conflicto** (`mergeable: false`, `dirty`) porque `develop` avanzó de `c3aa9d6` a
+`f0cacdd` con cuatro commits de otras tarjetas: JUP-078 (ADR-0002), JUP-051 (CI en cada push y
+comprobación de sintaxis Python, #58), el archivado de JUP-023 y JUP-067 (métricas técnicas del
+asistente, #74). Se simuló con `git merge-tree` y se fusionó con `git merge --no-commit --no-ff
+origin/develop`.
+
+- **Conflictos:** uno, mecánico, en `openspec/findings/backlog.md`: otra vez, las dos ramas añadieron
+  filas al principio de la tabla (`RF-103-001` a `005` y `RF-067-001` a `004`). Se conservaron las dos
+  series, sin identificadores duplicados, y la tabla mantiene su estructura (las únicas filas con otro
+  número de celdas siguen siendo `RF-044-001` y `RF-045-001`, anteriores a esta tarjeta).
+  `README.md` se fusionó sin conflicto: conserva mis secciones y añade la de «Integracion Continua»
+  de JUP-051.
+- **Lo que `develop` cambia y podía afectar a esta tarjeta**, revisado: `package.json` añade un script
+  (`assistant-metrics:test`); `ci.yml` (JUP-051) se ejecuta ahora en cada push y en los pull requests,
+  y **los tres jobs que usan pnpm siguen ejecutando `corepack enable`**; `tools/ci-workflow.test.mjs`
+  se actualiza (12 tests). No cambian `apps/`, el lockfile ni ninguna dependencia, de modo que los
+  resultados de `test` de las secciones anteriores siguen siendo los vigentes y no se repitieron. Una
+  consecuencia para este PR: con la CI en cada push, un mismo commit puede tener una ejecución por
+  `push` y otra por `pull_request`.
+- **Verificación del árbol fusionado**, desde la raíz y con `--force`:
+
+| Comando | Código | Resultado |
+| --- | --- | --- |
+| `corepack pnpm exec pnpm --version` | `0` | `9.0.0` |
+| `corepack pnpm install --frozen-lockfile` | `0` | sin cambios |
+| `corepack pnpm lint --force` / `build --force` / `typecheck --force` | `0` | 4 de 4 / 4 de 4 / 1 de 1; todas `cache bypass`; 0 errores de versión |
+| `corepack pnpm openspec:validate` | `0` | 47 de 47 |
+| `corepack pnpm jup:check:all` | `0` | todos los changes enlazados |
+| `corepack pnpm jup:cleanup:check` | `0` | 840 archivos sin agentes personales, binarios ni tareas paralelas |
+| `jup:check:test`, `jup:cleanup:test`, `repository:governance:test`, `ci:check:test`, `pr:check:test` | `0` | 7, 6, 13, 12 y 57 de 57 |
+| `assistant-metrics:test`, `retrieval-labels:test`, `retrieval-calibration:test`, `roadmap:test` | `0` | 103, 17, 27 (1 omitido) y 5 |
+| `docker:validate` y `local:test` (infraestructura de Compose parada) | `0` | superados |
+
+Los enlaces relativos de los archivos de esta tarjeta se revisaron de nuevo: 104, 0 rotos.
 
 ## Trazabilidad con los criterios de la tarjeta
 

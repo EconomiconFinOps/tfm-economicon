@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-10-02
-- Related JUP/OpenSpec: [JUP-023 / jup-023-litellm-openrouter](../../openspec/changes/jup-023-litellm-openrouter/design.md)
+- Related JUP/OpenSpec: [JUP-023 / jup-023-litellm-openrouter](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/design.md)
 - Trello: https://trello.com/c/O8elKkm9
 - Supersedes: none
 - Superseded by: none
@@ -81,7 +81,7 @@ No habia cosign disponible y no se verificaron firmas; digest coincidente
 no equivale a firma verificada.
 
 Completar compatibilidad Docker y despues los gates del smoke real indicados
-en [tasks.md](../../openspec/changes/jup-023-litellm-openrouter/tasks.md).
+en [tasks.md](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/tasks.md).
 Prueba aislada del 2026-10-02: arranque, chat, embeddings, claves y retries
 funcionan contra upstream simulado, pero persiste texto de errores upstream
 en SpendLogs aun suprimiendo la salida de consola con `LITELLM_LOG=CRITICAL`.
@@ -89,7 +89,7 @@ Ese primer resultado bloqueo la compatibilidad de privacidad y motivo la
 correccion siguiente; no acredita uso real.
 Ver [evidencia JUP-023](../evidence/JUP-023-validation.md).
 Seguimiento autorizado por Paris el 2026-10-02, "perfecto adelante", con el
-alcance registrado en [proposal.md](../../openspec/changes/jup-023-litellm-openrouter/proposal.md):
+alcance registrado en [proposal.md](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/proposal.md):
 misma imagen 1.103.2, callback publico en `infra/litellm/safe_logging.py` montado
 solo lectura y registrado en config/Compose, primero Docker simulado sin gasto.
 Sanear antes de SpendLogs conservando fallos y estado/modelo/request ID/tiempo/
