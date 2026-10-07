@@ -8,7 +8,7 @@ diff, under Paris's approved PR52 amendment. No introduced defect or blocker
 found; the merge preserves both parents' findings and combines the frontend
 API changes correctly. Seven targeted mutants detected; no files changed by
 review. This is an internal technical review, not Lucia's human reapproval.
-See [current evidence](../../../docs/evidence/JUP-026-validation.md#pr52-corrections-2026-09-30).
+See [current evidence](../../../../docs/evidence/JUP-026-validation.md#pr52-corrections-2026-09-30).
 At the QA checkpoint no push, tracker update, merge into develop or archive
 had occurred. The publication authorization below was given afterward.
 
@@ -50,7 +50,7 @@ remain separate from the technical evidence.
 
 Independent reviewer checked the [approved proposal](proposal.md),
 [design](design.md), both delta specifications, [tasks](tasks.md), product/test
-diff and [validation evidence](../../../docs/evidence/JUP-026-validation.md).
+diff and [validation evidence](../../../../docs/evidence/JUP-026-validation.md).
 The contract covers exact per-currency Azure costs, five groupings, period and
 tenant predicates, explicit missing/empty states, unavailable savings, read-only
 overlap warnings and minimal executive/legacy consumers. No ingestion expansion,
@@ -77,7 +77,7 @@ replace the team's human PR review or final approval.
 
 ## Findings And Residual Risks
 
-1. **Medium, inherited: [RF-026-002](../../findings/backlog.md#rf-026-002).**
+1. **Medium, inherited: [RF-026-002](../../../findings/backlog.md#rf-026-002).**
    Shared `Layout.tsx` header/nav overflow on 390 px mobile screens (document
    1026 px); some navigation/session controls are off-screen. The file is
    unchanged against the base, and shell-only diagnostic reproduces the same
@@ -88,10 +88,10 @@ replace the team's human PR review or final approval.
    to review it before P0 moves to P1. Finding remains Open, Medium and unfixed;
    this approved exception does not establish whole-page mobile acceptance or
    final delivery approval.
-2. **Low, deferred: [RF-026-001](../../findings/backlog.md#rf-026-001).**
+2. **Low, deferred: [RF-026-001](../../../findings/backlog.md#rf-026-001).**
    Paris explicitly deferred confirmed source replacement. Conservative 409
    can also block valid disjoint inputs; this tradeoff was approved pre-code
-   and documented in [ADR-0010](../../../docs/adr/ADR-0010-azure-cost-source-overlap.md).
+   and documented in [ADR-0010](../../../../docs/adr/ADR-0010-azure-cost-source-overlap.md).
 3. Existing RF-091-003/RF-091-004/RF-095-002 stay open pending remaining
    capabilities/integration. Unrelated service skips and the bundle warning
    are disclosed; no claim of whole-stack or remote CI validation.
@@ -144,7 +144,7 @@ changed only by the exact incoming two CORS closures. No executable, test,
 dependency, tooling or CI changes and no unresolved conflicts. The source
 identity supports retaining earlier acceptance evidence, not claiming fresh
 functional executions against the merge SHA. See the
-[synchronization evidence](../../../docs/evidence/JUP-026-validation.md#develop-synchronization).
+[synchronization evidence](../../../../docs/evidence/JUP-026-validation.md#develop-synchronization).
 The same approved RF-026-002 exception remains. Paris subsequently gave the
 post-QA approval recorded above on 2026-09-28.
 
@@ -153,7 +153,7 @@ with parents `4eace5f` and `65fcd6b`. It is an ancestry-only merge: old/new Git
 trees are identical and all 32 restored local files match their prior hashes.
 Existing review/QA/approval carry forward without a new functional execution
 or a new technical-review claim. See the
-[JUP-014 synchronization evidence](../../../docs/evidence/JUP-026-validation.md#jup-014-synchronization).
+[JUP-014 synchronization evidence](../../../../docs/evidence/JUP-026-validation.md#jup-014-synchronization).
 Only JUP-086 remains as an unmerged team dependency; publication is not authorized.
 
 ## JUP-086 Source Fix Synchronization
@@ -169,7 +169,7 @@ Backend integration regression: 329 PASS/17 external-service SKIP, exit 0.
 No new JUP-026 tests, functionality, dependencies, migration or frontend edits.
 No fresh real-service, browser, full QA or mutation result is claimed; the
 prior scoped evidence, human approval and RF-026-002 exception are preserved
-as history, not relabelled as new executions. See [evidence](../../../docs/evidence/JUP-026-validation.md#jup-086-source-fix-synchronization).
+as history, not relabelled as new executions. See [evidence](../../../../docs/evidence/JUP-026-validation.md#jup-086-source-fix-synchronization).
 No push, JUP-026 PR, merge into develop, tracker change or archive is authorized.
 
 ## Merged JUP-086 Develop Reconciliation
@@ -183,7 +183,7 @@ The review guard confirmed zero changed paths. Only the four current metadata
 documents are updated afterward; no executable, test or contract changes.
 Earlier functional evidence and the approved RF-026-002 exception keep their
 original limits; no fresh functional run or human team validation is claimed.
-See [evidence](../../../docs/evidence/JUP-026-validation.md#merged-jup-086-develop-reconciliation).
+See [evidence](../../../../docs/evidence/JUP-026-validation.md#merged-jup-086-develop-reconciliation).
 The earlier dependency-pending notes above are historical. Publication, team
 review/validation, JUP-026 merge and archive remain separate operations.
 
@@ -220,7 +220,7 @@ Their actual authorship does not reassign the roles in the Trello card.
   Prior QA/approval is historical;
   repeat affected tests, review and acceptance on the corrected revision.
 - Inherited 409/422 retry latency is recorded against the existing
-  [RF-098-002](../../findings/backlog.md#rf-098-002-observation-in-jup-026),
+  [RF-098-002](../../../findings/backlog.md#rf-098-002-observation-in-jup-026),
   with no retry-policy change in this amendment.
 - Link PR52 and its validation on the official card: pending. Read access to
   that card failed on 2026-09-30; no Trello write was attempted. The request to
@@ -235,3 +235,35 @@ automatically. This is not a merge or an integration test. Branch HEAD remains
 merge and corrections: current merge HEAD is `9bab405`, with the tested
 four-file correction diff described in the current evidence. No publication,
 external update, merge into develop or archive has occurred in this correction.
+
+## Adversarial Review
+
+Pasada unica el 2026-10-06 sobre el codigo de produccion de JUP-026 ya integrado en develop (PR #52, `1e897dc`), por un revisor independiente que solo recibio las specs, el diseno y el codigo, con un CockroachDB 24.1.11 real y desechable. Las suites `test_billing_summary.py` y `test_tenant_isolation_api.py` pasaron (27) y el frontend completo en una copia fuera del repositorio (48 ficheros, 443 pruebas). No se modifico ningun fichero del repositorio.
+
+Resistieron: redondeo y suma de dinero (0.005 a 0.01, -0.004 a 0.00 sin cero negativo, importes por encima de MAX_SAFE_INTEGER exactos), periodo semiabierto, ingestas `running` y `failed`, aislamiento por tenant, 409 `ambiguous_cost_source` sin importes, estados parcial y sin fecha, canonicalizacion de `tag_key` identica a la del procesador, inyeccion SQL en `tag_key` y dimension, validacion 422 sin consulta, errores de base de datos sin fuga y consultas del frontend con tenant, fechas, agrupacion y etiqueta en la clave.
+
+Hallazgos:
+
+| ID | Severidad | Estado | Resumen | Registro |
+| --- | --- | --- | --- | --- |
+| ADV-1 | MEDIUM | Confirmado, ya conocido | Con el `QueryClient` por defecto un 409 o 422 se reintenta tres veces: 4 llamadas y unos 7,1 s hasta ver el aviso | Evidencia adicional en [RF-098-002](../../../findings/backlog.md#rf-098-002-observation-in-jup-026) |
+| ADV-2 | MEDIUM | Plausible | Lectura SERIALIZABLE sin reintento de 40001, posible 500 con escrituras concurrentes | [RF-026-003](../../../findings/backlog.md) |
+| ADV-3 | LOW | Confirmado | `subscription_id` sin comparacion insensible a mayusculas | [RF-026-004](../../../findings/backlog.md) |
+| ADV-4 | LOW | Confirmado | NaN almacenado da 500 (no alcanzable por ingestion) | [RF-026-005](../../../findings/backlog.md) |
+| ADV-5 | LOW | Confirmado | `tag_key` sin longitud maxima y sin tope de grupos | [RF-026-005](../../../findings/backlog.md) |
+| ADV-6 | LOW | Confirmado | Validacion del frontend solo de forma, anio de seis digitos llega al backend | [RF-026-006](../../../findings/backlog.md) |
+
+No hay BLOCKING ni HIGH. ADV-2 no se reprodujo (falta una prueba de concurrencia lectura/escritura sobre CockroachDB). No se inspecciono la interfaz en navegador, ni el desbordamiento movil (RF-026-002), ni el reemplazo de fuente (RF-026-001), ya aceptados, ni se midieron tiempos con volumen.
+
+Veredicto: **accept**. Los hallazgos ADV-2 a ADV-6 se registran como nuevos hallazgos de seguimiento (RF-026-003 a RF-026-006), aceptados por Lucia el 2026-10-06 sin cambios de codigo en este archivo; ADV-1 amplia el RF-098-002 existente.
+
+## Human Approval
+
+- Change: jup-026-azure-cost-kpis
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-06
+- Adversarial review: pasada del 2026-10-06 con veredicto accept (ver la seccion Adversarial Review); hallazgos ADV-2 a ADV-6 aceptados por Lucia y registrados como RF-026-003 a RF-026-006, y ADV-1 como evidencia adicional de RF-098-002
+- Archive decision: archive
+- Notes: el PR #52 se integro en develop el 30/09/2026 (`1e897dc`) tras la aprobacion post-QA de Paris del 28/09. Se archiva en esta rama y se promueven las specs `azure-cost-kpis` y `frontend-api-layer`. Quedan abiertos RF-026-001 (diferido) y RF-026-002 (aplazamiento aprobado por Paris). La validacion funcional atribuible de Alejandro y la revision de Victor siguen en Trello; esta aprobacion no las sustituye.
