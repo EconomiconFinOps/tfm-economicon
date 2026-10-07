@@ -227,3 +227,17 @@ mergear o archivar, ni sustituye la aprobacion final posterior a QA.
 El QA_FAIL anterior respondia a la falta de esta decision, no a un nuevo defecto
 de producto; vease la [revision](../changes/archive/2026-10-06-jup-026-azure-cost-kpis/review.md)
 para la reevaluacion del gate tras registrar el aplazamiento.
+
+
+## Seguimiento JUP-055 — 06/10/2026 de RF-026-002
+
+Nueva observación del finding existente RF-026-002; no se crea un identificador duplicado. Durante la validación local de JUP-055, a 390 x 844, documento y body presentan clientWidth 375 y scrollWidth 1026. El mismo desbordamiento se observó en /operational y /overview-legacy. En escritorio 1440 x 900, clientWidth y scrollWidth fueron 1425. Las capturas se observaron en la sesión de validación; no hay archivos de captura exportados ni se afirma una ejecución nueva en este registro.
+
+Paris indicó el 06/10/2026 registrar la vista móvil como finding y aprobó por separado un proxy local de pruebas. Se conserva RF-026-002 Open, severidad Medium, owner Equipo Economicon, corrección del Layout compartido fuera del alcance de JUP-055 y por acordar. Este registro no acredita una corrección ni un PASS visual global en móvil; la validación de JUP-055 debe declarar el límite y distinguirlo de los resultados financieros. No se modifican roles ni se asigna una nueva JUP.
+
+### Disposición aprobada de RF-026-002 para JUP-055 — 06/10/2026
+
+Paris respondió «aprobado» al cierre local con el límite móvil y al archivado
+OpenSpec; registro 15:33:40 Atlantic/Canary. Se acepta su aplazamiento fuera de
+JUP-055, manteniendo Open/Medium y owner Equipo Economicon. No hay reparación
+de Layout ni PASS visual global, nueva asignación o autorización de publicación.
