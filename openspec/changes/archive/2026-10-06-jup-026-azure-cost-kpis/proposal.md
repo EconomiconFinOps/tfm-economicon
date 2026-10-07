@@ -21,7 +21,7 @@ in [design](design.md#pr52-proposed-corrections) and [spec](specs/azure-cost-kpi
 No new ADR, dependency, migration, endpoint or dashboard expansion is proposed.
 
 Inherited QueryClient retries on 409/422 are registration-only here, linked to
-[RF-098-002](../../findings/backlog.md#rf-098-002-observation-in-jup-026)
+[RF-098-002](../../../findings/backlog.md#rf-098-002-observation-in-jup-026)
 on verified develop `2efef1a`, now incorporated locally by merge `9bab405`; no retry fix or
 duplicate finding is proposed. Linking PR52 on the official Trello card remains
 pending access. Roles and historical base claims are unchanged.
@@ -40,7 +40,7 @@ Independent technical review passes; QA passes with the previously approved
 mobile exception. Paris Arcos approved the final local result on 2026-09-30
 ("apruebo el resultado") and separately authorized publication and CI checking
 with "subelo", without merge. See
-[current evidence](../../../docs/evidence/JUP-026-validation.md#pr52-corrections-2026-09-30).
+[current evidence](../../../../docs/evidence/JUP-026-validation.md#pr52-corrections-2026-09-30).
 
 ## Why
 
@@ -83,13 +83,13 @@ full pre-code approval is recorded below.
 ## Impact
 
 The change includes the approved product paths, focused tests, the existing
-OpenSpec documents and [RF-026-001](../../findings/backlog.md#rf-026-001).
+OpenSpec documents and [RF-026-001](../../../findings/backlog.md#rf-026-001).
 After verified implementation, update only
 evidenced total/executive-C2 rows in the JUP-097 gap map; savings-unavailable
 does not deliver a savings engine. Retain remaining gaps and existing findings;
 never close RF-091-003/RF-095-002 globally. Tasks are [here](tasks.md).
 
-ADR: [ADR-0010](../../../docs/adr/ADR-0010-azure-cost-source-overlap.md)
+ADR: [ADR-0010](../../../../docs/adr/ADR-0010-azure-cost-source-overlap.md)
 (Accepted, Paris Arcos, 2026-09-28) records the durable conservative cost-source
 overlap policy. Final human approval is recorded in
 [the post-QA gate](review.md#post-qa-human-approval). Technical review passes;
@@ -109,7 +109,7 @@ No existing decision or approval is changed.
   Both JUP-014 and JUP-086 dependencies are incorporated. This ancestry-only
   merge changes no committed content; all 32 local files were restored
   byte-identically before these metadata updates. No scope expansion or
-  publication of JUP-026. See [synchronization evidence](../../../docs/evidence/JUP-026-validation.md#merged-jup-086-develop-reconciliation).
+  publication of JUP-026. See [synchronization evidence](../../../../docs/evidence/JUP-026-validation.md#merged-jup-086-develop-reconciliation).
 - Official scope: historical 26/09 export, CawMVPoy - economicon (26-09).json,
   card anUswta8. Official live get failed; no live official verification claimed.
   The orchestrator directly read private mirror https://trello.com/c/R85OnDmu
@@ -139,7 +139,7 @@ On 2026-09-27 Paris Arcos explicitly accepted "ok para el MVP avisar" and
   ambiguous monetary result; a warning does not authorize summing overlaps.
   GET /billing/summary remains read-only.
 - Defer confirmed replacement of ingestion sources to
-  [RF-026-001](../../findings/backlog.md#rf-026-001). It expands ingestion and
+  [RF-026-001](../../../findings/backlog.md#rf-026-001). It expands ingestion and
   requires a separately agreed scope before implementation; it is not a
   JUP-026 blocker provided the warning/no ambiguous sums acceptance is met.
 
@@ -258,7 +258,7 @@ loopback-only SQL port. No shared data, clocks or production configuration chang
   Product/test hashes were unchanged during mutation; no behavior fix was needed
   for real SQL acceptance. The demo module received only a comment correction.
 
-The [JUP-097 gap map](../../../docs/planning/JUP-097-frontend-data-gap-map.md)
+The [JUP-097 gap map](../../../../docs/planning/JUP-097-frontend-data-gap-map.md)
 now distinguishes local real totals/dimension breakdowns from remaining demo
 charts, inventory and unavailable savings. Related findings remain open with
 the local progress distinguished from integration or team acceptance.
@@ -266,10 +266,10 @@ the local progress distinguished from integration or team acceptance.
 Real-API browser acceptance reports 15 temporary smoke checks PASS and zero
 page errors on desktop/mobile. Independent technical review is REVIEW_PASS,
 with no introduced in-scope blocker and no request for more permanent tests.
-The inherited mobile shell overflow is [RF-026-002](../../findings/backlog.md#rf-026-002),
+The inherited mobile shell overflow is [RF-026-002](../../../findings/backlog.md#rf-026-002),
 explicitly deferred by Paris on 2026-09-27 for review before P1; whole-page
 mobile visual acceptance is not claimed.
-See [review](review.md) and [evidence](../../../docs/evidence/JUP-026-validation.md).
+See [review](review.md) and [evidence](../../../../docs/evidence/JUP-026-validation.md).
 QA verified the evidence and native gates; its initial QA_FAIL concerned only
 the then-missing disposition of inherited Medium RF-026-002. Paris now approves
 deferral outside this JUP ("si, aplazalo en un finding"); reevaluation is recorded

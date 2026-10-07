@@ -104,3 +104,7 @@ JUP-069 entrega el instrumento de prueba y su preparación determinista. La
 evaluación de respuestas frente a referencia corresponde a JUP-070; la ejecución
 de robustez, a JUP-071. No se implementan scoring con LLM, llamadas al chat,
 benchmarks de latencia, nuevas reglas de negocio ni integración con Azure real.
+
+## Métricas de las ejecuciones (JUP-067)
+
+Cómo se calculan la exactitud, la relevancia, el fundamento, la latencia, la robustez y la disponibilidad de una ejecución sobre esta batería está definido en [JUP-067-metrics.md](JUP-067-metrics.md), con el catálogo [JUP-067-metrics-catalogue.json](JUP-067-metrics-catalogue.json) y el calculador `tools/assistant-metrics.py`. Los resultados de JUP-070 y JUP-071 deben usar ese formato para que las cifras sean comparables.
