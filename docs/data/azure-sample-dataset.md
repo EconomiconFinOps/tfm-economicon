@@ -140,3 +140,7 @@ actualización en la revisión de código.
 - Implementar agrupación mínima por suscripción, resource group, servicio y fecha.
 - Mantener `actual` y `amortized` como datasets seleccionables, nunca acumulados.
 - Añadir paginación determinista y tests que incluyan costes negativos y cero.
+
+## Datos sintéticos para validar costes (JUP-106)
+
+El dataset público cubre un periodo corto y una sola moneda. Para validar en la interfaz casos que no cubre (varios meses, huecos, ceros, créditos, dos monedas, importes grandes) hay un conjunto sintético, separado y marcado, que se carga y se retira con una herramienta local: [JUP-106-synthetic-costs.md](../validation/JUP-106-synthetic-costs.md). No sustituye ni modifica este dataset.

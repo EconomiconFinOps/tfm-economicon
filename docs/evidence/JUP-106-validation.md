@@ -1,6 +1,6 @@
 # JUP-106 — evidencia de validación local
 
-Fecha: 06/10/2026. Rama `feat/JUP-106-synthetic-cost-data` sobre develop `f0cacdd`. [Tarjeta](https://trello.com/c/JwumJnIf). Datos sintéticos de coste para validar la funcionalidad de costes; la guía de uso y los valores esperados están en [docs/validation/JUP-106-synthetic-costs.md](../validation/JUP-106-synthetic-costs.md) y el change en [openspec/changes/jup-106-synthetic-cost-data](../../openspec/changes/jup-106-synthetic-cost-data/review.md). Estos resultados son del autor del cambio y no sustituyen las reviews `Revision JUP-106` y `Validacion JUP-106` de los responsables.
+Fecha: 06/10/2026. Rama `feat/JUP-106-synthetic-cost-data` sobre develop `f0cacdd`. [Tarjeta](https://trello.com/c/JwumJnIf). Datos sintéticos de coste para validar la funcionalidad de costes; la guía de uso y los valores esperados están en [docs/validation/JUP-106-synthetic-costs.md](../validation/JUP-106-synthetic-costs.md) y el change en [openspec/changes/jup-106-synthetic-cost-data](../../openspec/changes/archive/2026-10-07-jup-106-synthetic-cost-data/review.md). Estos resultados son del autor del cambio y no sustituyen las reviews `Revision JUP-106` y `Validacion JUP-106` de los responsables.
 
 ## Alcance comprobado
 
