@@ -54,4 +54,3 @@ The collector SHALL NOT certify acceptance criteria or authorize merging.
 #### Scenario: Pairing is recorded outside GitHub
 - **WHEN** pairing only exists in a Trello note
 - **THEN** the guide allows an original manual link with action, date, person and contrast status without inventing a commit
-
