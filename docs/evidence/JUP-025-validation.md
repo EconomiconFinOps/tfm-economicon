@@ -372,3 +372,24 @@ Controles del 07/10: OpenSpec48/48, trazabilidad global correcta, higiene851arch
 políticaPR57/57, CI12/12 y gobernanza13/13, todos con exit0. Delta propio
 contra develop limpio. La línea vacía final de workspace-task-pipeline/spec.md
 es heredada de #75 y no se modifica en JUP-025. Sin nuevas suites de producto.
+
+
+## Reconciliación con la base recuperada — 07/10/2026
+
+[Lucía revisó favorablemente baed857](https://github.com/EconomiconFinOps/tfm-economicon/pull/55#pullrequestreview-5441812036),
+COMMENTED, sin cambios pedidos; ese dictamen describe el corte anterior.
+DockerServer vuelve a estar accesible y se puede completar el registro pendiente
+de Trello. La base avanzó a `3fe1bd9` (#78/#79/#77): archivo de KPIs, evidencia
+de recorrido y dashboard ejecutivo. Su único conflicto con esta PR es backlog.md.
+Se conservan todos los IDs y las versiones actualizadas de develop, sin perder
+RF-025 ni duplicar incidencias. Los cambios del dashboard se incorporan íntegros;
+backend, processor, componente AnswerEvidence y ConversationsPage no cambian por la unión.
+No se repiten suites de producto localmente por cambios ajenos; la CI valida la
+combinación publicada y los dictámenes finales se solicitan sobre el nuevo SHA.
+
+Filas finales: 76. Actualizaciones de develop preservadas: RF-026-001, RF-087-002.
+
+Controles de este corte: OpenSpec50/50, trazabilidad correcta, higiene877archivos,
+políticaPR57/57, CI12/12 y gobernanza13/13; todos con exit0. Delta propio
+contra develop limpio. No nuevas suites de producto locales ni cambios propios
+en el dashboard incorporado.
