@@ -73,4 +73,3 @@ Once loaded, the existing billing summary for the target tenant SHALL expose the
 - **WHEN** the dataset has been removed
 - **THEN** the summary for the same period reports no data for the tenant
 - **AND** other tenants' summaries are unchanged by loading and removal
-
