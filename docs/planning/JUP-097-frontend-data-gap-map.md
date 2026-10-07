@@ -1,6 +1,6 @@
 # JUP-097 — Mapa de carencias de datos por pantalla
 
-Entregable de la tarea 6.3 de [`jup-097-reconcile-api-layer`](../../openspec/changes/jup-097-reconcile-api-layer/).
+Entregable de la tarea 6.3 de [`jup-097-reconcile-api-layer`](../../openspec/changes/archive/2026-09-21-jup-097-reconcile-api-layer/).
 Enumera, para cada una de las 5 pantallas de coste portadas en JUP-095, qué dato concreto pinta y qué
 capacidad de backend le falta para dejar de ser demostración. No decide nada nuevo: consolida y
 traduce a las pantallas ya portadas el trabajo de análisis que ya hizo
@@ -11,12 +11,12 @@ Esta tarjeta **no construye ninguna de estas capacidades** (decisión de alcance
 proponer, ver `proposal.md`): en la instantánea inicial de JUP-097, el backend exponía los mismos 10 endpoints que
 [JUP-091](JUP-091-economicon-source-inventory.md) ya había catalogado sin cambio.
 
-Actualización técnica local — **27/09/2026**: [JUP-026](../../openspec/changes/jup-026-azure-cost-kpis/proposal.md)
+Actualización técnica local — **27/09/2026**: [JUP-026](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/proposal.md)
 implementa agregados reales en `GET /billing/summary`, consumidos por `/` y `/overview-legacy`,
 con [15 comprobaciones TEMP en navegador contra la API real PASS](../evidence/JUP-026-validation.md)
-y [revisión técnica REVIEW_PASS](../../openspec/changes/jup-026-azure-cost-kpis/review.md), con la limitación móvil heredada
+y [revisión técnica REVIEW_PASS](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/review.md), con la limitación móvil heredada
 [RF-026-002](../../openspec/findings/backlog.md#rf-026-002). Paris aprobó el 27/09/2026 aplazar RF-026-002 fuera de JUP-026,
-con revisión antes del paso de P0 a P1. El estado efectivo de QA consta en [review.md](../../openspec/changes/jup-026-azure-cost-kpis/review.md);
+con revisión antes del paso de P0 a P1. El estado efectivo de QA consta en [review.md](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/review.md);
 la aprobación final posterior a QA y la integración siguen pendientes. Las filas ejecutivas de total, ahorro y C2
 indican este estado; sus referencias a constantes identifican la instantánea histórica de JUP-097.
 Los gráficos mensuales, la exportación y el inventario siguen siendo demostración.

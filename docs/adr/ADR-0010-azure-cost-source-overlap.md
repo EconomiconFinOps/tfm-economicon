@@ -3,7 +3,7 @@
 - Status: Accepted
 - Date: 2026-09-27
 - Accepted: 2026-09-28, Paris Arcos, final JUP-026 approval
-- Related JUP/OpenSpec: JUP-026, [jup-026-azure-cost-kpis](../../openspec/changes/jup-026-azure-cost-kpis/proposal.md), [design](../../openspec/changes/jup-026-azure-cost-kpis/design.md#sql-and-missing-data)
+- Related JUP/OpenSpec: JUP-026, [jup-026-azure-cost-kpis](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/proposal.md), [design](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/design.md#sql-and-missing-data)
 - Trello: https://trello.com/c/anUswta8
 - Supersedes: none
 - Superseded by: none
@@ -50,18 +50,18 @@ changes. Existing replacement within the same ingestion ID is unaffected.
 ## Evidence And Follow-up
 
 The functional contract was approved by Paris Arcos on 2026-09-27 in the existing
-[pre-code approval](../../openspec/changes/jup-026-azure-cost-kpis/proposal.md#local-pr48-integration-and-pre-code-approval).
+[pre-code approval](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/proposal.md#local-pr48-integration-and-pre-code-approval).
 Paris Arcos accepted this ADR with the final JUP-026 approval on 2026-09-28,
-recorded in the [post-QA gate](../../openspec/changes/jup-026-azure-cost-kpis/review.md#post-qa-human-approval).
+recorded in the [post-QA gate](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/review.md#post-qa-human-approval).
 The decision and functional scope are unchanged; this does not authorize
 ingestion replacement or establish integration into develop.
-The [technical review](../../openspec/changes/jup-026-azure-cost-kpis/review.md)
+The [technical review](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/review.md)
 and [validation evidence](../evidence/JUP-026-validation.md) record the SQL,
 mutation, browser and delivery-gate results without changing the approved scope.
 
 Existing acceptance covers the
-[API conflict](../../openspec/changes/jup-026-azure-cost-kpis/specs/azure-cost-kpis/spec.md#scenario-alternative-ingestions-overlap)
-and [frontend warning](../../openspec/changes/jup-026-azure-cost-kpis/specs/frontend-api-layer/spec.md#scenario-distinct-states-and-retained-gaps).
+[API conflict](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/specs/azure-cost-kpis/spec.md#scenario-alternative-ingestions-overlap)
+and [frontend warning](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/specs/frontend-api-layer/spec.md#scenario-distinct-states-and-retained-gaps).
 The [RF-026-001 detail](../../openspec/findings/backlog.md#rf-026-001) describes
 future replacement with explicit confirmation, not current behavior or a new
 JUP-026 delivery requirement.
