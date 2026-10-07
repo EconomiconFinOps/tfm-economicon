@@ -278,16 +278,39 @@ tarjeta en Trello.
 
 ### F4. Integracion de plataforma (monorepo/runtime)
 
-**JUP `jup-0xx-verificar-docker-compose`** — carril `light`
-- [ ] Validar `Dockerfile` con el nuevo build TS (`docker compose up --build frontend`).
-- [ ] Confirmar puerto 5173 y `VITE_API_BASE_URL` en `docker-compose.yml` (el servicio no usa
-  `env_file`; ver hallazgo `RF-090-002`).
-- [ ] Resolver `RF-090-001` (`openspec/findings/backlog.md`): el `Dockerfile` construye con
-  `pnpm install --no-frozen-lockfile` sin el lockfile del workspace.
+**JUP `jup-0xx-verificar-docker-compose`** — carril `light` — **resuelta por JUP-049 y JUP-050, sin
+tarjeta propia** (verificado sobre `develop` en `dad5662` el 2026-10-03; no llegó a abrirse)
+- [x] Validar `Dockerfile` con el nuevo build TS (`docker compose up --build frontend`): JUP-050
+  levanta el stack desde un clon limpio con el frontend incluido, y `tools/docker-topology.test.mjs`
+  comprueba que el frontend se construye antes de arrancar `vite preview`.
+- [x] Confirmar puerto 5173 y `VITE_API_BASE_URL` en `docker-compose.yml`: el servicio publica
+  `${FRONTEND_HOST_PORT:-5173}:5173`, pasa `VITE_API_BASE_URL` en `build.args` y no usa `env_file`
+  (`RF-090-002`, `Fixed`); el `README.md` documenta que cambiarlo exige reconstruir y
+  `pnpm local:smoke` comprueba la respuesta del frontend.
+- [x] Resolver `RF-090-001` (`Fixed`, JUP-050): `apps/frontend/Dockerfile` copia `pnpm-lock.yaml` y
+  `pnpm-workspace.yaml` (línea 7) e instala con `--frozen-lockfile --filter @finops/frontend...`
+  (línea 9); JUP-050 lo demuestra con un control positivo (con un `package.json` desincronizado el
+  build falla con `ERR_PNPM_OUTDATED_LOCKFILE`).
 
-**JUP `jup-0xx-verificar-turbo-workspace`** — carril `light`
-- [ ] Confirmar `pnpm dev` (turbo paralelo) levanta frontend junto a backend/processor.
-- [ ] Confirmar `pnpm build` y `pnpm lint` pasan via turbo.
+**JUP [`jup-103-verify-turbo-workspace`](../../openspec/changes/archive/2026-10-04-jup-103-verify-turbo-workspace/)** —
+carril `light` — **implementada**
+- [x] Confirmar `pnpm dev` (turbo paralelo) levanta frontend junto a backend/processor: turbo lanza en
+  paralelo las cuatro tareas con el pnpm correcto, **pero por sí solo no deja sirviendo a backend ni
+  a processor** (turbo en modo `strict` no les pasa su configuración y el `.env` de Compose usa
+  nombres internos de Compose). Con `--env-mode=loose` y un archivo de entorno con `127.0.0.1` las
+  cuatro responden `200`. Documentado en el `README.md`; `RF-103-001` a `RF-103-003`.
+- [x] Confirmar `pnpm build` y `pnpm lint` pasan via turbo, y también `typecheck`: pasan desde la
+  raíz en las máquinas con `corepack enable` hecho. `test` **pasa por mitades** (Python, y el frontend
+  con `--maxWorkers=1`), pero **el comando literal `corepack pnpm test` falla de forma distinta en
+  cada ejecución** con los cuatro paquetes a la vez (`RF-103-005`, `RF-098-004`). `RF-093-001`
+  resultó ser de entorno (un pnpm que no es el de corepack por delante en el `PATH`): dos
+  reproducciones del error de versión (pnpm global de npm en las máquinas de Victor y de Lucía) y
+  **una divergencia distinta** (el pnpm lo aporta el entorno de Codex en la de Alejandro, sin error de
+  versión). Queda `Open`, reformulado con precisión, hasta confirmar la corrección en ese runtime y su
+  consola externa y en la máquina de Paris; la corrección es `corepack enable` una vez por máquina,
+  documentada en el `README.md`.
+
+**F4 (Integración de plataforma) queda completa** con JUP-049 y JUP-050 (Docker) y JUP-103 (turbo).
 
 ### F5. Verificacion y cierre
 
@@ -472,3 +495,23 @@ tarjeta JUP** de la epica.
     no detecta y que solo existían por coincidencia (`RF-099-002`). **Queda de la épica** lo que
     ninguna tarjeta de migración resuelve (decisiones `RF-091-003`, `RF-091-004`, `RF-098-002`) y las
     tarjetas de F4/F5.
+11. **Hecho en JUP-103 (`jup-103-verify-turbo-workspace`): F4 (Integración de plataforma) queda
+    completa.** La tarjeta de Docker no llegó a abrirse: JUP-049 y JUP-050 ya cumplían sus tres puntos
+    (verificado contra el código el 2026-10-03), la tercera vez en la épica que el spike describía como
+    pendiente algo ya hecho por otra tarjeta, tras `reconciliar-capa-api` y `reconciliar-auth-tenant`.
+    La de turbo encontró que `RF-093-001`, que seis tarjetas de frontend arrastraron como bloqueo,
+    **no era un fallo del repositorio**, sino de entorno: un pnpm que no es el de corepack se resuelve
+    por `PATH` antes que el lanzador de corepack. Hay **dos reproducciones del error de versión**
+    (pnpm 11.x global de npm, sin `corepack enable`, en las máquinas de Victor y de Lucía, donde ese
+    pnpm se niega a cambiar a la fijada bajo `corepack pnpm`) y **una divergencia distinta** (en la de
+    Alejandro el pnpm 11.19.0 lo aporta el entorno de Codex y no hay error de versión). Se reformuló
+    con precisión y **se mantiene `Open`**: la corrección de entorno (`corepack enable` una vez por
+    máquina, documentada en el `README.md`) está comprobada en las dos primeras, y pasará a `Fixed`
+    cuando se confirme en el runtime y la consola externa de Alejandro y en la máquina de Paris. De
+    paso se descubrió que la caché de turbo no depende del gestor de paquetes (una comprobación con
+    `cache hit` no demuestra nada: hay que usar `--force`), que `pnpm dev` por sí solo no deja
+    sirviendo backend ni processor (`RF-103-001`, `RF-103-002` y `RF-103-003`), que `local:test` falla
+    con la infraestructura de Compose levantada (`RF-103-004`) y que `test` con los cuatro paquetes a
+    la vez falla de forma distinta en cada ejecución por tests con plazos de tiempo (`RF-103-005`),
+    aunque por mitades pasa. **Queda de la épica:** F5 (`validacion-e2e` y `checks-y-archive`) y lo ya
+    señalado arriba.
