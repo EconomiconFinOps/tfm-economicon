@@ -70,6 +70,8 @@ Se comparan con una suma exacta con `Decimal` sobre los registros del conjunto, 
 ## Límites
 
 - Los datos se insertan en las tablas de costes: una migración que cambie sus columnas puede romper la herramienta. Lo detecta la prueba contra CockroachDB real (`JUP086_COCKROACH_TEST_URL`), que no corre en CI.
+- `status` y `apply` deciden `present` solo por los identificadores de las ingestas y los registros: si se cambia a mano un importe u otro campo, siguen diciendo `present` y `already-present`. Para comprobar el contenido, usa `/billing/summary` frente a los valores de arriba o retira y vuelve a cargar.
+- `remove` acepta `--tenant` pero lo ignora: retira el conjunto sintético de todos los tenants. Usa `status` para ver en cuál estaba.
 - Dos `apply` simultáneos no duplican nada, pero el que pierde la carrera ve un error genérico en lugar de `already-present`; se repite el comando y se informa del estado.
 - No hay valores sintéticos para la fecha de ingesta ni se simulan errores del origen; para eso están los escenarios del simulador.
 - Las comparaciones del cuadro dependen de cómo cada pantalla elija los extremos; el cuadro es la referencia de la tarjeta JUP-106, no una especificación de JUP-055.
@@ -81,4 +83,6 @@ Se comparan con una suma exacta con `Decimal` sobre los registros del conjunto, 
 corepack pnpm synthetic-costs:test
 ```
 
-Corre en CI sin base de datos. Con `JUP086_COCKROACH_TEST_URL` apuntando a una CockroachDB desechable (puerto distinto de 26257 y `SET CLUSTER SETTING cluster.organization = 'processor-integration-tests'`) se ejecutan además las pruebas de carga, comparación, protección de datos reales y retirada contra SQL real.
+Son 46 pruebas. Con `sqlalchemy` instalado pasan 38 y se omiten 8 (las de CockroachDB); en el job de CI, que usa Python 3.12 sin instalar paquetes, pasan 37 y se omiten 9 porque `SqlStoreTests` tampoco corre. **La CI no ejecuta ninguna sentencia de `SqlStore`**: solo comprueba el conjunto de datos, los totales, las guardas y la línea de comandos con un almacén simulado.
+
+Para probar el SQL hace falta una CockroachDB desechable con `JUP086_COCKROACH_TEST_URL=cockroachdb+psycopg://root@127.0.0.1:<puerto>/defaultdb?sslmode=disable` (puerto distinto de 26257 y 5432) y la marca `SET CLUSTER SETTING cluster.organization = 'processor-integration-tests'`. La prueba rechaza cualquier otra URL o un nodo sin la marca, crea su propia base de datos, migra en ella el esquema del processor y la borra al terminar, de modo que no toca `defaultdb` ni deja tablas para las suites del backend y del processor. Con ella pasan las 46.

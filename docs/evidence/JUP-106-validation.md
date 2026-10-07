@@ -10,14 +10,16 @@ Una herramienta (`scripts/synthetic_costs.py`) que carga, consulta y retira un c
 
 | Comprobación | Resultado |
 | --- | --- |
-| `corepack pnpm synthetic-costs:test`, Python 3.12, sin base de datos | 45 correctas, 8 omitidas (las de CockroachDB) |
-| Mismas pruebas con CockroachDB v24.1.11 real y desechable (`JUP086_COCKROACH_TEST_URL`) | 45 de 45, unos 115 s por las migraciones |
+| `corepack pnpm synthetic-costs:test`, Python 3.12 con `sqlalchemy`, sin base de datos | 46 pruebas: 38 pasan y 8 se omiten (las de CockroachDB) |
+| Lo mismo en `python:3.12-slim` sin paquetes, como el job de CI | 46 pruebas: 37 pasan y 9 se omiten (tampoco corre `SqlStoreTests`). **La CI no ejecuta ninguna sentencia de `SqlStore`** |
+| Mismas pruebas con CockroachDB v24.1.11 real y desechable (`JUP086_COCKROACH_TEST_URL`) | 46 de 46, unos 45 s; la prueba valida la URL y la marca del nodo, crea y borra su propia base y deja el nodo sin tablas en `defaultdb` (un nodo sin la marca se rechaza) |
 | Rojo inicial | falló por la ausencia de la herramienta; las pruebas de los hallazgos de la adversarial fallaron antes de corregirlos (tenant con salto de línea, carrera, retirada con registros reales colgando) |
 | Mutantes de lógica (25 en la primera ronda) | 22 detectados y 3 supervivientes (estado con `or`, `created_at` del reloj, tenant ajeno solo en registros), cerrados con pruebas nuevas; 25 de 25 tras ello |
 | Mutantes de SQL con CockroachDB real | 5 primero y 2 supervivientes cerrados con pruebas nuevas; 7 de 7 tras ello; control positivo con un mutante identidad |
 | Mutantes sobre el código añadido tras la adversarial (14) | 12 detectados; 2 viven en `SqlStore` y solo los detecta la prueba con SQL real, que detectó sus equivalentes |
 | Revisión adversarial independiente | accept, sin BLOCKING ni HIGH; 3 MEDIUM y 1 LOW corregidos con prueba, 1 LOW de pruebas corregido, 2 LOW sin cambios (ver review.md) |
 | Barrido del patrón `^...$` con `re.match` | sin otros casos; los validadores vecinos usan `fullmatch` |
+| Revisión de Víctor sobre `558a149` (Request changes) | La prueba contra CockroachDB real no protegía el nodo y borraba filas sin condición; ocho mutantes relevantes sobrevivían (campos de un registro, `INSERT` con campos cambiados u omitidos, `subscription_id` constante, `count_real` sin filtrar por tenant) y los recuentos eran ambiguos. Corregido con su propuesta de pruebas: URL y marca validadas, base propia, referencias a mano de las cinco agrupaciones y comparación campo a campo con SQL real. Los ocho se detectan (tres también en CI) y el equivalente esperado sobrevive |
 
 Dos defectos de la herramienta los destapó la propia prueba contra SQL real, antes de la adversarial: un registro con el prefijo reservado se consideraba sintético aunque su ingesta no lo fuera, y la comparación `request->>'synthetic' = 'true'` daba NULL con `request = '{}'` y dejaba la fila sin contar. Ambos están corregidos.
 

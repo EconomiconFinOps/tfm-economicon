@@ -47,6 +47,18 @@ BY_SUBSCRIPTION = {
     ("EUR", "synthetic-jup106-sub-a"): D("90.00"),
     ("USD", "synthetic-jup106-sub-b"): D("9007199254741028.76"),
 }
+BY_RESOURCE_GROUP = {
+    ("EUR", "web"): D("100.00"), ("EUR", "data"): D("-20.00"), ("EUR", None): D("10.00"),
+    ("USD", "analytics"): D("9007199254741028.76"),
+}
+BY_PROJECT = {
+    ("EUR", "Alpha"): D("100.00"), ("EUR", "Beta"): D("-20.00"), ("EUR", None): D("10.00"),
+    ("USD", "Alpha"): D("10.50"), ("USD", "Beta"): D("9007199254741018.26"),
+}
+BY_COST_CENTER = {
+    ("EUR", "finance"): D("100.00"), ("EUR", "ops"): D("-20.00"), ("EUR", None): D("10.00"),
+    ("USD", "finance"): D("10.50"), ("USD", "ops"): D("9007199254741018.26"),
+}
 
 
 class FakeStore:
@@ -186,6 +198,14 @@ class DatasetTests(unittest.TestCase):
                 by_subscription[(record["currency"], record["subscription_id"])] += record["pretax_cost"]
         self.assertEqual(dict(by_service), BY_SERVICE)
         self.assertEqual(dict(by_subscription), BY_SUBSCRIPTION)
+        for expected, pick in ((BY_RESOURCE_GROUP, lambda r: r["resource_group"].lower() if r["resource_group"] else None),
+                               (BY_PROJECT, lambda r: r["project"]),
+                               (BY_COST_CENTER, lambda r: r["tags"].get("cost_center"))):
+            totals = defaultdict(lambda: D(0))
+            for record in self.records:
+                if record["usage_date"]:
+                    totals[(record["currency"], pick(record))] += record["pretax_cost"]
+            self.assertEqual(dict(totals), expected)
 
     def test_reference_comparisons_are_the_documented_ones(self):
         def eligible(currency, first, last):
@@ -418,6 +438,14 @@ class CommandLineTests(unittest.TestCase):
         self.run_cli(["apply"], env, store)
         self.assertEqual({v["tenant"] for v in store.runs.values()}, {TENANT})
 
+    def test_invalid_tenant_exits_with_code_two_and_writes_nothing(self):
+        for tenant in ("Bad Tenant", "tenant-growth\n", ""):
+            store = FakeStore()
+            code, text = self.run_cli(["apply", "--tenant", tenant], {"DATABASE_URL": "x://y"}, store)
+            self.assertEqual(code, 2, repr(tenant))
+            self.assertEqual(store.writes, 0)
+            self.assertTrue(text.strip())
+
     def test_unknown_command_is_rejected(self):
         with self.assertRaises(SystemExit):
             with contextlib.redirect_stderr(io.StringIO()):
@@ -489,8 +517,28 @@ class CockroachTests(unittest.TestCase):
     def setUpClass(cls):
         from sqlalchemy import create_engine, text
 
+        from sqlalchemy.engine import make_url
+
         cls.text = staticmethod(text)
-        cls.url = os.environ["JUP086_COCKROACH_TEST_URL"]
+        url = make_url(os.environ["JUP086_COCKROACH_TEST_URL"])
+        if (url.drivername != "cockroachdb+psycopg" or url.host not in {"127.0.0.1", "localhost"}
+                or url.port in {None, 5432, 26257} or url.database != "defaultdb" or url.username != "root"
+                or url.password is not None or dict(url.query) != {"sslmode": "disable"}):
+            raise RuntimeError("Unsafe integration URL: use a disposable loopback node")
+        admin = create_engine(url, isolation_level="AUTOCOMMIT", connect_args={"connect_timeout": 5})
+        cls.addClassCleanup(admin.dispose)
+        name = "jup106_test_" + uuid.uuid4().hex
+        with admin.connect() as connection:
+            if connection.execute(text("SHOW CLUSTER SETTING cluster.organization")).scalar_one() != "processor-integration-tests":
+                raise RuntimeError("Refusing an unmarked server")
+            connection.execute(text(f'CREATE DATABASE "{name}"'))
+
+        def drop():
+            with admin.connect() as connection:
+                connection.execute(text(f'DROP DATABASE "{name}" CASCADE'))
+
+        cls.addClassCleanup(drop)
+        cls.url = url.set(database=name).render_as_string(hide_password=False)
         env = {key: value for key, value in os.environ.items() if key != "PYTHONPATH"}
         subprocess.run(
             [sys.executable, "-B", "-c",
@@ -498,10 +546,7 @@ class CockroachTests(unittest.TestCase):
             cwd=ROOT / "apps" / "processor", env=env, check=True, capture_output=True, text=True, timeout=120,
         )
         cls.engine = create_engine(cls.url, future=True)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.engine.dispose()
+        cls.addClassCleanup(cls.engine.dispose)
 
     def setUp(self):
         with self.engine.begin() as connection:
@@ -531,6 +576,13 @@ class CockroachTests(unittest.TestCase):
             flagged = connection.execute(self.text(
                 "SELECT count(*) FROM azure_cost_ingestion_runs WHERE request->>'synthetic' = 'true'")).scalar()
         self.assertEqual((undated["n"], D(undated["total"])), (1, UNDATED_EUR))
+        with self.engine.connect() as connection:
+            stored = connection.execute(self.text(
+                "SELECT id, subscription_id, resource_group, service_name, project, tags FROM azure_cost_records "
+                "WHERE tenant_id = :tenant"), {"tenant": TENANT}).mappings().all()
+        fields = ("subscription_id", "resource_group", "service_name", "project", "tags")
+        self.assertEqual({row["id"]: tuple(row[f] for f in fields) for row in stored},
+                         {r["id"]: tuple(r[f] for f in fields) for r in records})
         self.assertEqual([row[0] for row in statuses], ["completed"])
         self.assertEqual(flagged, len(runs))
         self.assertEqual(costs.apply(self.store, TENANT)["outcome"], "already-present")
@@ -551,7 +603,7 @@ class CockroachTests(unittest.TestCase):
                 "'{}'::JSONB, :id, now())"), {"id": "rec-" + real, "run": "run-" + real, "tenant": TENANT})
         self.assertEqual(costs.apply(self.store, TENANT)["outcome"], "refused")
         self.assertEqual(costs.status(self.store, TENANT)["state"], "absent")
-        costs.apply(self.store, "tenant-core")
+        self.assertEqual(costs.apply(self.store, "tenant-core")["outcome"], "loaded")
         costs.remove(self.store)
         with self.engine.connect() as connection:
             left = connection.execute(self.text("SELECT count(*) FROM azure_cost_records")).scalar()

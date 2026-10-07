@@ -19,7 +19,7 @@ Se añade `scripts/synthetic_costs.py`, una herramienta con los subcomandos `app
 
 Comandos y resultados (detalle en `docs/evidence/JUP-106-validation.md`):
 
-- `corepack pnpm synthetic-costs:test`: 45 pruebas correctas, 8 omitidas sin base de datos (todas las de CockroachDB). Con CockroachDB v24.1.11 real y desechable (`JUP086_COCKROACH_TEST_URL`): 45 de 45.
+- `corepack pnpm synthetic-costs:test`: 46 pruebas; con `sqlalchemy` pasan 38 y se omiten 8 (las de CockroachDB), y en el job de CI (Python 3.12 sin paquetes) pasan 37 y se omiten 9: la CI no ejecuta ninguna sentencia de `SqlStore`. Con CockroachDB v24.1.11 real y desechable (`JUP086_COCKROACH_TEST_URL`): 46 de 46, con la prueba validando la URL y la marca del nodo y usando una base propia que borra al terminar.
 - Rojo previo: las pruebas fallaron por la ausencia de la herramienta; las de los hallazgos de la pasada adversarial fallaron antes de corregirlos (nombre de tenant con salto de línea, carrera entre comprobar y escribir, retirada con registros reales colgando).
 - Mutantes: 25 de 25 de lógica y 7 de 7 de SQL real detectados en la primera ronda tras cerrar tres supervivientes con pruebas nuevas; 14 más sobre el código añadido tras la pasada, con 12 detectados y 2 que solo pueden detectarse con la prueba de base de datos real (viven en `SqlStore`) y que sus equivalentes con SQL real sí detectaron.
 - Extremo a extremo con el stack aislado: carga, idempotencia, `/billing/summary` frente a los valores esperados (12 de 12 comprobaciones), recorrido del dashboard de develop con los mismos importes que la API, retirada que deja `tenant-growth` vacío y `tenant-core` intacto, y carga rechazada con datos reales.
@@ -42,6 +42,14 @@ Un revisor independiente recibió solo el change, la base, el head y los context
 Ataques que resistieron (informe del revisor): valores esperados del documento frente a `fetch_billing_summary` sobre una base real (totales, desgloses por las cinco agrupaciones, marzo vacío, febrero con cero y 10,50 USD, julio con el importe grande, estado `empty` tras la retirada); atomicidad de la inserción ante un conflicto de clave primaria; determinismo (dos cargas dan filas idénticas); protección de filas reales con el prefijo en mayúsculas, precedido de otro texto o con la petición no objeto; lógica de tres valores de SQL con NULL; secretos (ni la URL ni la traza salen en ninguna salida); invocación real por la entrada estándar con Python 3.12; CI (una línea nueva, sin cambiar disparadores ni permisos) y la ausencia de inyección SQL, porque todo valor va enlazado.
 
 No ejecutó: una ingesta real del processor en paralelo (la carrera se simuló con una inserción equivalente), Python 3.10 y 3.11, ni la interfaz; el recorrido de la interfaz lo hizo el autor del change (ver evidencia).
+
+## Revisión de PR (Víctor, Request changes sobre `558a149`)
+
+1. La prueba contra CockroachDB real no protegía el nodo: usaba la URL tal cual, migraba y borraba filas sin condición en `defaultdb`, y dejaba el nodo inservible para las suites del backend y del processor. Corregido con base propia, validación de URL y marca, y limpieza al terminar.
+2. Ocho mutantes relevantes sobrevivían a las pruebas (campos de un registro, `INSERT` con campos cambiados u omitidos, `subscription_id` constante, `count_real` sin filtrar por tenant). Corregido con referencias escritas a mano para las cinco agrupaciones y la comparación campo a campo con SQL real; los ocho se detectan (tres también en CI).
+3. Los recuentos eran ambiguos: son 46 pruebas, y la CI ejecuta 37 y omite 9; no ejecuta ninguna sentencia de `SqlStore`. Corregido en la descripción del PR, la evidencia, este review y la guía.
+
+Observaciones atendidas: `status` y `apply` deciden `present` solo por identificadores y `remove` acepta `--tenant` sin usarlo, ambas escritas en «Límites» de la guía y en RF-106-002, y una prueba fija la salida 2 con un tenant inválido. `scripts/synthetic_costs.py` no cambia.
 
 ## Barrido del patrón
 
