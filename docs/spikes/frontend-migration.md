@@ -50,7 +50,10 @@ Economicon.
   `GET /health`, `POST /auth/login`, `GET /me`, `GET /tenants`, `GET /billing/summary`,
   `POST /jobs/ingest`, `GET|POST /assistant/conversations`,
   `GET /assistant/conversations/{id}`, `POST /assistant/conversations/{id}/messages`.
-- Seed local de acceso: `operator@example.com` / `secret`.
+- Acceso local de demostración: `operator@example.com` con la contraseña de `DEMO_PASSWORD`. **Corregido en
+  JUP-104:** esto decía `secret`, pero desde JUP-085 el backend solo crea la cuenta con
+  `DEMO_SEED_ENABLED=true` y una contraseña externa, y fuera del entorno `test` **se niega a arrancar**
+  (`DemoRotationRequired`) si la cuenta guardada aún tiene `secret`.
 - Monorepo: `pnpm@9.0.0` + `turbo`. Servicio `frontend` en `docker-compose.yml` (puerto 5173,
   `VITE_API_BASE_URL`, depende de `backend` healthy). **Corregido en JUP-090:** el servicio no tiene
   `env_file`; `VITE_API_BASE_URL` viaja como `environment:` inline.
@@ -314,10 +317,17 @@ carril `light` — **implementada**
 
 ### F5. Verificacion y cierre
 
-**JUP `jup-0xx-validacion-e2e`** — carril `standard`
-- [ ] E2E con seed `operator@example.com` / `secret` contra backend local.
-- [ ] Recorrer login -> seleccion de tenant -> overview -> ingesta -> asistente.
-- [ ] Registrar comandos exactos y resultados en la revision de la tarjeta JUP.
+**JUP [`jup-104-e2e-validation`](../../openspec/changes/archive/2026-10-06-jup-104-e2e-validation/) — carril `standard` — implementada**
+- [x] E2E con la cuenta de demostración contra backend local, que **no** usa `operator@example.com` /
+  `secret` (ver «Hechos del destino»): acceso por el formulario desde otro origen que el backend, sin
+  desactivar ninguna protección del navegador.
+- [x] Recorrer login -> selección de ámbito -> resumen de costes -> ingesta -> asistente, más la recarga
+  del historial y el cierre de sesión. Ejecutado con un guion de Chromium (cinco pasadas, la última
+  como evidencia) y a mano en Chrome 154. El «overview» de este recorrido es la sección de costes
+  reales de `/`; la pantalla `/overview-legacy` sigue siendo la otra con datos del backend.
+- [x] Registrar comandos exactos y resultados: [evidencia](../evidence/JUP-104-validation.md) y
+  [receta del guion](../evidence/JUP-104-browser-recipe.md), fuera del repositorio solo el proyecto de
+  Playwright y las capturas.
 
 **JUP `jup-0xx-checks-y-archive`** — carril `light`
 - [ ] `pnpm openspec:validate`, `pnpm lint`, `pnpm build`, `pnpm install --frozen-lockfile`.
@@ -515,3 +525,21 @@ tarjeta JUP** de la epica.
     la vez falla de forma distinta en cada ejecución por tests con plazos de tiempo (`RF-103-005`),
     aunque por mitades pasa. **Queda de la épica:** F5 (`validacion-e2e` y `checks-y-archive`) y lo ya
     señalado arriba.
+12. **Hecho en JUP-104 (`jup-104-e2e-validation`): primera tarjeta de F5, el recorrido completo del
+    operador en navegador real.** Acredita, contra el stack de Compose y sin desactivar
+    protecciones, el acceso, el cambio de ámbito, los costes de Core Finance (0.06 USD, 38
+    registros), la ingesta de un documento desde la interfaz hasta pgvector (19 fragmentos idénticos
+    a los que produce el algoritmo del processor sobre ese texto) y el aislamiento por ámbito del
+    asistente. **Corrige lo que este spike daba por cierto sobre el acceso** (`operator@example.com`
+    / `secret`, ver «Hechos del destino») **y deja escrito qué es hoy el asistente:** el chat **no
+    genera texto**, compone una plantilla con hasta tres fragmentos recuperados, y con el proveedor
+    de embeddings `mock` (el único ejecutable sin claves) la recuperación no mide pertinencia: el
+    fragmento que responde a la pregunta no se recuperó. El modo `litellm`, las citas visibles
+    (JUP-025) y las preguntas de gasto (JUP-036) quedan sin acreditar. Hallazgos nuevos:
+    `RF-104-001` (la conversación recién creada con «New» no recibe el mensaje, reproducido también
+    a mano), `RF-104-002` (ruido de `pika` en cada `/health`), `RF-104-003` (la interfaz no puede
+    saber si un trabajo de ingesta terminó) y `RF-104-004` (tres pantallas de demostración no lo
+    indican). `RF-087-002` pasa a `Fixed`: el historial se recarga con 200 contra CockroachDB real.
+    **Queda de la épica:** `checks-y-archive` (JUP-105), la deuda documental (`RF-099-001` y
+    `RF-099-004`) y las decisiones que ninguna tarjeta de migración resuelve (`RF-091-003`,
+    `RF-091-004`, `RF-098-002`, `RF-098-003` y `RF-098-004`).
