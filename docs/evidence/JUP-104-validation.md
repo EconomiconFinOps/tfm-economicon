@@ -8,12 +8,14 @@
   sección.
 - OpenSpec: [jup-104-e2e-validation](../../openspec/changes/archive/2026-10-06-jup-104-e2e-validation/).
 - Spec que valida: `operator-journey-validation` (nueva; se promueve al archivar).
-- Pull request: pendiente de abrir.
-- CI: pendiente.
+- Pull request: [#79](https://github.com/EconomiconFinOps/tfm-economicon/pull/79), contra `develop`.
+- CI sobre `339a157`: [7 de 7 jobs correctos](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37548790297). La del estado fusionado con `develop` (`b3716f7`) se
+  consulta en la pestaña de checks del PR.
 
-> Estado de este documento: **completo salvo lo que depende del pull request.** Están registrados los
-> 11 grupos de `tasks.md` y el change está **archivado** (2026-10-06). Quedan abrir el PR, la CI y las
-> dos reviews (ver «Pendiente»).
+> Estado de este documento: **completo.** Están registrados los 11 grupos de `tasks.md`, el change está
+> **archivado** (2026-10-06) y el PR #79 tiene sus dos reviews. El 2026-10-07 se fusionó `develop` (con
+> JUP-103) para resolver el conflicto: ver «Pull request, reviews e integración con `develop`». Quedan la
+> CI de ese estado y la relectura de las reviews.
 
 ## Entorno de la máquina de validación (tarea 1.1)
 
@@ -508,7 +510,7 @@ conversacion» figura debajo, sin seleccionar y vacía. Lo mismo ocurre en Core 
   eso la pasada 1 no lo mostró y `6.1` solo lo revela con conversaciones previas).
 - **Causa probable, por lectura del código; no depurada en ejecución.** En
   `apps/frontend/src/pages/ConversationsPage.tsx`, `onSuccess` de la creación (líneas 71 a 73)
-  invalida la lista y selecciona la conversación nueva; pero el efecto de las líneas 51 a 61 comprueba
+  invalida la lista y selecciona la conversación nueva; pero el efecto de las líneas 51 a 62 comprueba
   que la seleccionada esté en la lista **que todavía es la antigua**, no la encuentra y selecciona
   `items[0]`. Cuando llega la lista refrescada, la seleccionada (la antigua) ya es válida y no vuelve a
   cambiar. Los PR #55 (JUP-025) y #69 (JUP-036), abiertos, conservan ese mismo efecto en sus ramas.
@@ -639,7 +641,7 @@ corrige).
 - *No depende del ritmo:* en M7 pasaron dos minutos entre pulsar «New» y enviar el mensaje, y la
   seleccionada seguía siendo la antigua. No es una carrera que solo un guion rápido provoque.
 - *Causa probable (por lectura del código, sin depurar en ejecución):* el efecto de
-  `ConversationsPage.tsx` líneas 51 a 61 sustituye la selección por `items[0]` porque la lista cacheada
+  `ConversationsPage.tsx` líneas 51 a 62 sustituye la selección por `items[0]` porque la lista cacheada
   aún no contiene la conversación recién creada (selección en las líneas 71 a 73).
 - *Indicio observado en la pasada manual:* la pestaña Red muestra, tras el `POST` de creación (201) y
   la lectura de la lista, una petición del historial de la conversación **nueva** y **a continuación**
@@ -734,7 +736,8 @@ paso `6.3` de la sección anterior. Queda sin test automatizado contra una base 
 - **La expiración de sesión y las credenciales incorrectas**: ya acreditadas en JUP-085 y JUP-098, no
   repetidas.
 - **Rendimiento, accesibilidad y despliegue fuera de local**: fuera de alcance.
-- **Que otra persona repita la receta:** consta como repetible, pero no la ha ejecutado nadie más.
+- **Que otra persona repita la receta:** al escribir esta sección no la había ejecutado nadie más. Lo hizo
+  después Alejandro en su «Validacion JUP-104»: ver «Pull request, reviews e integración con `develop`».
 
 ### Trazabilidad con los criterios de la tarjeta (tarea 8.4)
 
@@ -768,7 +771,7 @@ paso `6.3` de la sección anterior. Queda sin test automatizado contra una base 
 | Fallos: fallo nuevo durante el recorrido | Acreditado | `RF-104-001` a `004` |
 | Fallos: hallazgo conocido que el recorrido alcanza | Acreditado | `RF-087-002`, `6.3` |
 | Fallos: paso no ejecutado | Acreditado | «Qué no acredita» |
-| Repetible: otra persona repite la validación | **Pendiente**: receta versionada, aún no repetida por otra persona | [Receta](JUP-104-browser-recipe.md) |
+| Repetible: otra persona repite la validación | Acreditado **por la «Validacion JUP-104» de Alejandro** (stack y versiones propios), no por quien escribe | [Receta](JUP-104-browser-recipe.md); sección del PR |
 | Repetible: credenciales en el registro | Acreditado | Revisión de secretos (8.5) |
 
 ### Revisión de secretos (tarea 8.5)
@@ -898,33 +901,78 @@ el spike y el backlog) da **0 enlaces rotos**.
 Ver «Qué no acredita esta validación» en el grupo 8. Lo que no consta como ejecutado en este
 documento no está validado.
 
-## Pendiente (tarea 11.2)
+## Pull request, reviews e integración con `develop`
 
-**Se rellena al abrir el pull request** (los huecos de arriba, en la cabecera):
+Sección añadida el 2026-10-07, al atender las reviews del [PR #79](https://github.com/EconomiconFinOps/tfm-economicon/pull/79). Todo lo anterior de este
+documento es lo que se revisó y validó sobre `339a157`; aquí consta lo ocurrido después.
 
 | Dato | Estado |
 | --- | --- |
-| Pull request | _(pendiente de abrir contra `develop`)_ |
-| CI de los jobs obligatorios | _(pendiente: `JUP policy`, `OpenSpec`, `Frontend build`, `Frontend type check` y los tres de Python)_ |
-| «Revision JUP-104» | _(pendiente)_ |
-| «Validacion JUP-104» | _(pendiente)_ |
-| Check `JUP reviews` | _(pendiente de las dos reviews)_ |
+| Pull request | [#79](https://github.com/EconomiconFinOps/tfm-economicon/pull/79), contra `develop`, abierto el 2026-10-06 |
+| CI técnica sobre `339a157` | [7 de 7 jobs correctos](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/37548790297): `JUP policy`, `OpenSpec`, `Frontend build`, `Frontend type check` y los tres de Python |
+| «Validacion JUP-104» | [Alejandro, 2026-10-07, Comment](https://github.com/EconomiconFinOps/tfm-economicon/pull/79#pullrequestreview-5436024207): favorable dentro del alcance aprobado, con el fallo del producto y los límites expresos; Comment porque era la primera de las dos |
+| «Revision JUP-104» | [Lucía, 2026-10-07, Approve](https://github.com/EconomiconFinOps/tfm-economicon/pull/79#pullrequestreview-5437848910): sin cambios bloqueantes, con dos puntos para el líder |
+| Comentarios de conversación y en línea | Ninguno |
+| Check `JUP reviews` | En rojo en sus dos ejecuciones sobre `339a157`, ambas anteriores a la review de Lucía; no se ha vuelto a consultar después |
 
-**Pasos del flujo que quedan:**
+**Repetición independiente de la receta (Alejandro).** Según su review, que es la fuente de todo este
+párrafo y que quien escribe esta evidencia **no ha verificado por su cuenta**: ejecutó la receta sobre
+`339a157` en un stack propio con volúmenes nuevos y credenciales propias, con Playwright `1.61.0` y
+Chromium `149.0.7827.55` (versiones distintas de las de este documento), y obtuvo **14 pasos
+acreditados y 1 fallido por `RF-104-001`**, smoke 5 de 5, 19 fragmentos y 19 vectores `mock` que
+coinciden uno a uno con el algoritmo del processor, y `RF-087-002` sin reproducir. El único cambio que
+declara en el guion es transportar los comandos de Docker por SSH. No hizo pasada manual ni repitió
+la batería. Con ello queda cubierto el escenario «Otra persona repite la validación», el único de la
+spec que figuraba como pendiente; el del trabajo de ingesta que no se completa sigue sin ejercitar.
 
-1. ~~Gate post-review~~ **Hecho** el 2026-10-06 (bloque `Human Approval` en `review.md`).
-2. ~~Archivado del change y corrección de los enlaces relativos~~ **Hecho** el 2026-10-06 (carpeta
-   `openspec/changes/archive/2026-10-06-jup-104-e2e-validation/`; la spec `operator-journey-validation` se
-   promovió a `openspec/specs/` con sus 7 requisitos).
-3. `jup:cleanup:check` y `pr:check`, y apertura del pull request contra `develop`.
-4. Integración con el PR #75 (JUP-103), si se fusiona antes: conflictos aditivos en el backlog y en el
-   final de «Próximos pasos» del spike, que se resuelven conservando ambas partes.
+**Respuesta a la pregunta abierta de `design.md`** (Alejandro, como líder de JUP-065): este registro
+cuenta como **evidencia parcial** del preflight y del recorrido técnico de JUP-065 (acceso y ámbito,
+muestra de costes, ingesta, procesado y base vectorial, separación de ámbitos, historial y cierre de
+sesión). **No sustituye ni cierra el ensayo de la demo**: no acredita modelo, generación ni
+pertinencia reales, citas integradas, los cinco casos con sus rúbricas, la duración ni los controles
+previos. Dos diferencias que él señala: esta receta usa otro ámbito y documento, y fija el fin del
+periodo en `2024-06-21` mientras el guion de JUP-065 fija `2024-06-20`. `RF-104-001` afecta a las
+conversaciones nuevas de ese ensayo.
 
-**Pendiente de personas, fuera del alcance de esta herramienta:**
+**Lo atendido de las reviews en esta integración:**
 
-- Que alguien distinto de quien ejecutó el guion **repita la receta** sobre un stack con volúmenes
-  nuevos (único escenario de la spec sin acreditar).
-- Preguntar a quien lidera JUP-065 si este registro cuenta como parte de su ensayo.
+| Qué | Quién lo pidió | Qué se hizo |
+| --- | --- | --- |
+| Conflicto con `develop` tras fusionarse JUP-103 (PR #75, `b3716f7`) | Lucía y Alejandro | `develop` fusionado en la rama. Backlog: se conservan `RF-104-001` a `004` y `RF-103-001` a `005`. Spike: puntos 11 (JUP-103) y 12 (JUP-104), en ese orden |
+| Comprobar que no se pierde ninguna fila `RF-` | Lucía | Comparadas las filas del resultado con las de `develop` y las de `339a157`: 70 filas, ninguna perdida ni duplicada; las únicas que no están en `develop` son las cuatro `RF-104`, y la única cuyo texto difiere del de `develop` es `RF-087-002` |
+| Línea en blanco al final de `openspec/specs/operator-journey-validation/spec.md` (`git diff --check`) | Lucía y Alejandro | Retirada |
+| La cita «líneas 51 a 61» del efecto de `ConversationsPage.tsx` estaba desplazada | Lucía | Corregida a 51 a 62 en el backlog y en esta evidencia: el `useEffect` empieza en la línea 51 y se cierra en la 62 |
+
+Sin atender, porque no es de esta herramienta: la **nota de pairing** de Paris y Victor, que las dos
+reviews recuerdan que sigue sin atribuir en Trello.
+
+**Comprobaciones sobre el árbol fusionado** (2026-10-07, antes del commit de fusión). `develop` solo
+aporta lo de JUP-103, que es documentación (`README.md`, su evidencia, su change archivado y la spec
+`workspace-task-pipeline`): **nada bajo `apps/`**, así que no cambia nada de lo que el recorrido ejercitó
+y no se repite ningún paso.
+
+| Comprobación | Resultado |
+| --- | --- |
+| `corepack pnpm openspec:validate` | 48 de 48 (una spec más, la de JUP-103) |
+| `corepack pnpm jup:check:all` | 9 changes activos correctos |
+| `corepack pnpm jup:cleanup:check` | Correcto, 853 archivos |
+| `repository:governance:test`, `ci:check:test`, `pr:check:test`, `jup:check:test` | 13 de 13, 12 de 12, 57 de 57 y 7 de 7 |
+| `git diff --check origin/develop` | Sin avisos (antes avisaba de la línea en blanco final de la spec) |
+| Enlaces relativos de los `.md` de la tarjeta, el spike y el backlog | 0 rotos |
+| Marcadores de conflicto en el backlog y el spike | Ninguno |
+
+No se ha repetido la batería de `lint`, `build`, `typecheck` y pruebas: esta integración no toca código.
+
+**La CI de este nuevo estado y la
+relectura de las reviews quedan pendientes**: el push de la fusión las deja sin efecto, y Lucía
+anticipó que la relectura se limita al backlog y al spike.
+
+## Pendiente
+
+- CI del estado fusionado y relectura de «Revision JUP-104» y «Validacion JUP-104» tras el push.
+- Nota real de pairing de Paris y Victor en Trello.
 - Decidir qué hacer con el proyecto `jup104-e2e` (parado, con 5 volúmenes y las imágenes
   `jup104-e2e-*`): se conserva o se borra con `docker compose down -v` en ese proyecto.
 - Abrir una tarjeta por cada hallazgo (`RF-104-001` a `RF-104-004`), empezando por `RF-104-001`.
+- Los PR #55 (JUP-025) y #63 (JUP-065) también tocan el backlog y el spike: quien integre después
+  tendrá el mismo conflicto aditivo, según la revisión de Lucía.

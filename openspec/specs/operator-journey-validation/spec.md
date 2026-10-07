@@ -150,4 +150,3 @@ claves ni cadenas de conexión.
 - **WHEN** se revisa el registro, el guion de navegador y las salidas guardadas
 - **THEN** las credenciales aparecen solo por el nombre de la variable que las aporta
 - **AND** no aparece ningún valor de contraseña, token, clave ni cadena de conexión
-
