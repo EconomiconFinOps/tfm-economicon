@@ -26,7 +26,12 @@ La herramienta solo lee. Toda lectura Trello pasa por la integración Economicon
 desplegada en `DockerServer:/home/danteadmin/economicon-collaboration`, mediante
 su cliente dentro del contenedor. No usa APIs Trello locales ni otro conector.
 Las consultas GitHub paginan PR, commits, reviews, comentarios, archivos y checks. Si falla
-una consulta, el comando falla sin sustituir el snapshot por un corte incompleto.
+una consulta, el comando falla sin sustituir el snapshot por un corte incompleto
+y muestra el error que devolvió la fuente. El snapshot y el registro solo se
+escriben cuando ambos están completos, cada uno mediante un fichero temporal
+`.tmp` que sustituye al anterior; si queda un `.tmp`, la escritura se interrumpió
+y puede borrarse. La conexión SSH espera 15 segundos como máximo; una clave con
+contraseña la sigue pidiendo en la terminal.
 La fecha UTC indica el final de la recogida, no una lectura atómica de ambas fuentes.
 
 Para regenerar sin acceso a las fuentes:
@@ -34,6 +39,9 @@ Para regenerar sin acceso a las fuentes:
 ```sh
 python tools/team-contributions.py --snapshot docs/contributions/JUP-064-snapshot.json --output docs/contributions/JUP-064-register.md
 ```
+
+El registro se escribe con los mismos bytes en cualquier sistema, con finales de
+línea LF también en Windows.
 
 ## Interpretación y mantenimiento
 
@@ -54,6 +62,11 @@ python tools/team-contributions.py --snapshot docs/contributions/JUP-064-snapsho
 - Las respuestas del autor en los hilos de su propia PR, que GitHub guarda como
   review, figuran como `intervencion del autor en su PR` y nunca como revisión o
   validación. Las reviews en borrador (`PENDING`) ni se guardan ni se muestran.
+- Una PR cerrada sin integrar sigue en el registro como `cerrada sin integrar`,
+  con sus acciones enlazadas, pero no cuenta como evidencia actual de ningún rol.
+  El autor de una cuenta eliminada figura como `cuenta eliminada` y sus acciones
+  no se atribuyen a nadie. Los logins del equipo se reconocen sin distinguir
+  mayúsculas.
 - El informe muestra en español los roles, el tipo de review (`revision`,
   `validacion`, `review sin titulo`), el tipo de artefacto y el estado de la
   PR. El estado de cada review y de cada check conserva el valor original de

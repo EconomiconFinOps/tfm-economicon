@@ -42,7 +42,11 @@ def normalize(value):
 
 def run_json(args, input_text=None):
     result = subprocess.run(args, input=input_text.encode('utf-8') if input_text else None,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result.returncode:
+        # CalledProcessError would hide what the source said; its own message is the useful part.
+        raise RuntimeError(f'{" ".join(args[:3])} exited {result.returncode}: '
+                           + result.stderr.decode('utf-8', 'replace').strip()[-2000:])
     return json.loads(result.stdout.decode('utf-8-sig'))
 
 
@@ -52,6 +56,12 @@ def github(endpoint, paginate=False):
         pages = run_json(args + ['--paginate', '--slurp'])
         return [item for page in pages for item in page]
     return run_json(args)
+
+
+def login_of(item, key='user'):
+    # A deleted account arrives as null; team logins keep the spelling of TEAM whatever case the source uses.
+    login = ((item or {}).get(key) or {}).get('login')
+    return next((member for member in TEAM if login and member.casefold() == login.casefold()), login)
 
 
 def assigned_roles(text):
@@ -110,19 +120,19 @@ def collect_pr(pr):
                       '--paginate', '--slurp'])
     checks = [c for p in pages for c in p['check_runs']]
     return {'number': number, 'jups': ids, 'url': detail['html_url'],
-            'author': detail['user']['login'], 'state': detail['state'],
+            'author': login_of(detail), 'state': detail['state'],
             'draft': detail['draft'], 'merged_at': detail['merged_at'], 'head': detail['head']['sha'],
             'declared_roles': assigned_roles(detail.get('body') or ''),
             'role_source_lines': role_lines(detail.get('body') or ''),
             'commits': [{'url': c['html_url'], 'sha': c['sha'],
-                         'author': (c.get('author') or {}).get('login'),
-                         'declared_coauthors': declared_coauthors(c['commit']['message'])}
+                         'author': login_of(c, 'author'),
+                         'declared_coauthors': declared_coauthors((c.get('commit') or {}).get('message') or '')}
                         for c in commits],
-            'reviews': [{'url': r['html_url'], 'author': r['user']['login'],
+            'reviews': [{'url': r['html_url'], 'author': login_of(r),
                          'state': r['state'], 'head': r['commit_id'], 'date': r['submitted_at'],
                          'kinds': {jup: review_kind(r.get('body') or '', jup) for jup in ids}}
                         for r in reviews if r['state'] != 'PENDING'],
-            'comments': [{'url': c['html_url'], 'author': c['user']['login'],
+            'comments': [{'url': c['html_url'], 'author': login_of(c),
                           'date': c['created_at'], 'updated_at': c['updated_at']}
                          for c in comments],
             'artifacts': [{'path': f['filename'], 'url': f'https://github.com/{REPO}/blob/{detail["head"]["sha"]}/{quote(f["filename"], safe="/")}',
@@ -174,11 +184,13 @@ def member_evidence(story, login):
 
 def role_gaps(story):
     gaps = []
-    for role, login in story['assigned_roles'].items():
+    # A pull request closed without merging stays listed, but it is not current evidence of any role.
+    prs = [p for p in story['prs'] if p.get('state') != 'closed' or p.get('merged_at')]
+    for role in ROLE_LABELS:
+        login = story['assigned_roles'].get(role)
         if login is None:
             gaps.append(f'{ROLE_LABELS[role]}: identidad sin resolver')
             continue
-        prs = story['prs']
         if role == 'leadership':
             present = any(p['author'] == login for p in prs)
         elif role == 'pairing':
@@ -221,7 +233,7 @@ def render(snapshot):
              '| --- | --- | --- | --- | --- | --- |']
     for login, name in TEAM.items():
         count = sum(bool(member_evidence(s, login)) for s in snapshot['stories'])
-        assignments = [sum(s['assigned_roles'][role] == login for s in snapshot['stories'])
+        assignments = [sum(s['assigned_roles'].get(role) == login for s in snapshot['stories'])
                        for role in ROLE_LABELS]
         lines.append(f'| {name} (`{login}`) | {count} | ' + ' | '.join(map(str, assignments)) + ' |')
     for story in snapshot['stories']:
@@ -235,9 +247,10 @@ def render(snapshot):
                 links += f'<br>[{len(evidence) - 12} acciones adicionales en snapshot](JUP-064-snapshot.json)'
             lines.append(f'| {name} | {roles} | {links} |')
         for pr in story['prs']:
-            state = 'integrada' if pr['merged_at'] else ('borrador' if pr['draft'] else PR_STATE_LABELS.get(pr['state'], pr['state']))
+            state = ('integrada' if pr['merged_at'] else 'borrador' if pr['draft'] and pr['state'] != 'closed'
+                     else PR_STATE_LABELS.get(pr['state'], pr['state']))
             lines += ['', f'### [PR #{pr["number"]}]({pr["url"]}) — {state}', '',
-                      f'HEAD: `{pr["head"]}`. Autor: `{pr["author"]}`.', '',
+                      f'HEAD: `{pr["head"]}`. Autor: `{pr["author"] or "cuenta eliminada"}`.', '',
                       'Roles declarados en la PR: ' + '; '.join(f'{ROLE_LABELS[r]}: {TEAM.get(p, "sin resolver")}' for r, p in pr['declared_roles'].items()) + '.', '',
                       'Artefactos (existencia, sin atribución de ejecución):']
             selected = []
@@ -256,6 +269,14 @@ def render(snapshot):
     return '\n'.join(lines) + '\n'
 
 
+def write_atomic(path, text):
+    # Readers see either the previous file or the complete new one, with the same bytes on every system.
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + '.tmp')
+    temporary.write_text(text, encoding='utf-8', newline='\n')
+    temporary.replace(path)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--collect', action='store_true', help='Read live sources; never writes to Trello/GitHub')
@@ -263,20 +284,21 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     if args.collect:
-        cards = run_json(['ssh', 'DockerServer', 'cd /home/danteadmin/economicon-collaboration && '
+        cards = run_json(['ssh', '-o', 'ConnectTimeout=15', 'DockerServer', 'cd /home/danteadmin/economicon-collaboration && '
                           'docker compose run --rm -T --entrypoint python collaboration -'], BRIDGE_READ)['cards']
         prs = github('pulls?state=all&per_page=100', True)
         with ThreadPoolExecutor(max_workers=4) as pool:
             prs = list(pool.map(collect_pr, prs))
         snapshot = build_snapshot(cards, prs, datetime.now(timezone.utc).isoformat())
-        args.snapshot.parent.mkdir(parents=True, exist_ok=True)
-        args.snapshot.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     else:
         snapshot = json.loads(args.snapshot.read_text(encoding='utf-8'))
         if snapshot['schema_version'] != 1 or snapshot['team'] != TEAM:
             raise ValueError('Unsupported snapshot schema or identity mapping')
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(render(snapshot), encoding='utf-8')
+    # Render first: a snapshot that cannot be rendered must not replace the versioned one.
+    report = render(snapshot)
+    if args.collect:
+        write_atomic(args.snapshot, json.dumps(snapshot, ensure_ascii=False, indent=2) + '\n')
+    write_atomic(args.output, report)
     print(f'{len(snapshot["stories"])} historias; {sum(len(s["prs"]) for s in snapshot["stories"])} PR vinculadas; {args.output}')
 
 
