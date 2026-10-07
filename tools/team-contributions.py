@@ -15,6 +15,9 @@ TEAM = {'Iber1to': 'Alejandro Aguado', 'Victorh1397': 'Victor Mendez',
         'lmatsan': 'Lucia Mateo', 'ParisArcos': 'Paris Arcos Martin'}
 ROLE_LABELS = {'leadership': 'Liderazgo', 'pairing': 'Pairing/coautoria',
                'review': 'Revision de PR', 'validation': 'Validacion, pruebas y documentacion'}
+KIND_LABELS = {'review': 'revision', 'validation': 'validacion', 'other': 'review sin titulo'}
+ARTIFACT_LABELS = {'documentation': 'documentacion', 'tests': 'pruebas'}
+PR_STATE_LABELS = {'open': 'abierta', 'closed': 'cerrada sin integrar'}
 ROLE_ALIASES = {'leadership': ['liderazgo', 'liderazgo asignado'],
                 'pairing': ['pairing/coautoria', 'pairing y coautoria', 'pairing/coautoria y reconciliacion', 'pairing'],
                 'review': ['revision de pr', 'revision pr', 'revision', 'revision de implementacion'],
@@ -81,6 +84,19 @@ def review_kind(body, jup):
     return 'other'
 
 
+def declared_coauthors(message):
+    # A trailer may give the full name, the login or a GitHub noreply address; any other email is never read.
+    found = set()
+    for name, email in re.findall(r'^[ \t]*co-authored-by:[ \t]*([^<\n]*)<([^<>\s]*)>', message, re.I | re.M):
+        noreply = re.fullmatch(r'(?:\d+\+)?([^@+]+)@users\.noreply\.github\.com', email, re.I)
+        keys = {name.strip().casefold(), noreply[1].casefold() if noreply else ''}
+        people = {login for login in TEAM if login.casefold() in keys} | {NAME_ALIASES.get(normalize(name))} - {None}
+        # Two different people in one trailer stay uncredited, like any ambiguous identity.
+        if len(people) == 1:
+            found |= people
+    return sorted(found)
+
+
 def collect_pr(pr):
     number = pr['number']
     detail = github(f'pulls/{number}')
@@ -100,14 +116,12 @@ def collect_pr(pr):
             'role_source_lines': role_lines(detail.get('body') or ''),
             'commits': [{'url': c['html_url'], 'sha': c['sha'],
                          'author': (c.get('author') or {}).get('login'),
-                         'declared_coauthors': sorted({login for login, full in TEAM.items()
-                           if re.search(r'^co-authored-by:\s*' + re.escape(normalize(full)) + r'\s*<',
-                                        normalize(c['commit']['message']), re.M)})}
+                         'declared_coauthors': declared_coauthors(c['commit']['message'])}
                         for c in commits],
             'reviews': [{'url': r['html_url'], 'author': r['user']['login'],
                          'state': r['state'], 'head': r['commit_id'], 'date': r['submitted_at'],
                          'kinds': {jup: review_kind(r.get('body') or '', jup) for jup in ids}}
-                        for r in reviews],
+                        for r in reviews if r['state'] != 'PENDING'],
             'comments': [{'url': c['html_url'], 'author': c['user']['login'],
                           'date': c['created_at'], 'updated_at': c['updated_at']}
                          for c in comments],
@@ -146,10 +160,12 @@ def member_evidence(story, login):
             if login in commit['declared_coauthors']:
                 evidence.append(('coautoria declarada', commit['url']))
         for review in pr['reviews']:
-            if review['author'] == login:
-                kind = review['kinds'].get(story['jup'], 'other')
+            if review['author'] == login and review['state'] != 'PENDING':
+                # GitHub stores an author's replies in review threads as a review; it never reviews their own PR.
+                label = ('intervencion del autor en su PR' if login == pr['author']
+                         else KIND_LABELS[review['kinds'].get(story['jup'], 'other')])
                 suffix = ' / SHA anterior' if review['head'] != pr['head'] else ''
-                evidence.append((f'{kind}: {review["state"]}{suffix}', review['url']))
+                evidence.append((f'{label}: {review["state"]}{suffix}', review['url']))
         for comment in pr.get('comments', []):
             if comment['author'] == login:
                 evidence.append(('comentario de PR / ' + comment['date'][:10], comment['url']))
@@ -160,7 +176,7 @@ def role_gaps(story):
     gaps = []
     for role, login in story['assigned_roles'].items():
         if login is None:
-            gaps.append(f'{role}: identidad sin resolver')
+            gaps.append(f'{ROLE_LABELS[role]}: identidad sin resolver')
             continue
         prs = story['prs']
         if role == 'leadership':
@@ -174,7 +190,7 @@ def role_gaps(story):
                           r['state'] in ('APPROVED', 'COMMENTED') and r['head'] == p['head']
                           for p in prs for r in p['reviews'])
         if not present:
-            gaps.append(f'{role}: sin evidencia estructurada actual de {TEAM[login]}')
+            gaps.append(f'{ROLE_LABELS[role]}: sin evidencia estructurada actual de {TEAM[login]}')
     for pr in story['prs']:
         if pr['declared_roles'] != story['assigned_roles']:
             gaps.append(f'PR #{pr["number"]}: roles declarados difieren de Trello actual')
@@ -219,17 +235,17 @@ def render(snapshot):
                 links += f'<br>[{len(evidence) - 12} acciones adicionales en snapshot](JUP-064-snapshot.json)'
             lines.append(f'| {name} | {roles} | {links} |')
         for pr in story['prs']:
-            state = 'integrada' if pr['merged_at'] else ('borrador' if pr['draft'] else pr['state'])
+            state = 'integrada' if pr['merged_at'] else ('borrador' if pr['draft'] else PR_STATE_LABELS.get(pr['state'], pr['state']))
             lines += ['', f'### [PR #{pr["number"]}]({pr["url"]}) — {state}', '',
                       f'HEAD: `{pr["head"]}`. Autor: `{pr["author"]}`.', '',
-                      'Roles declarados en la PR: ' + '; '.join(f'{r}: {TEAM.get(p, "sin resolver")}' for r, p in pr['declared_roles'].items()) + '.', '',
+                      'Roles declarados en la PR: ' + '; '.join(f'{ROLE_LABELS[r]}: {TEAM.get(p, "sin resolver")}' for r, p in pr['declared_roles'].items()) + '.', '',
                       'Artefactos (existencia, sin atribución de ejecución):']
             selected = []
             for kind in ('documentation', 'tests'):
                 artifacts = [a for a in pr['artifacts'] if a['kind'] == kind]
                 artifacts.sort(key=lambda a: (not a['path'].startswith('docs/evidence/'), a['path']))
                 selected += artifacts[:3]
-            lines += [f'- [{a["kind"]}: {a["path"]}]({a["url"]})' for a in selected] or ['- Sin artefactos importados.']
+            lines += [f'- [{ARTIFACT_LABELS[a["kind"]]}: {a["path"]}]({a["url"]})' for a in selected] or ['- Sin artefactos importados.']
             if len(pr['artifacts']) > len(selected):
                 lines.append(f'- [{len(pr["artifacts"]) - len(selected)} artefactos adicionales con enlaces originales en snapshot](JUP-064-snapshot.json).')
             lines += ['', 'Checks del HEAD (CI compartida):']

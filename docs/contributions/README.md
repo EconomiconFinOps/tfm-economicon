@@ -44,6 +44,20 @@ python tools/team-contributions.py --snapshot docs/contributions/JUP-064-snapsho
   Las identidades desconocidas quedan pendientes; no se deducen de emails.
 - La columna de acciones acredita existencia, no suficiencia. Coautoría
   declarada y commits requieren contraste para acreditar pairing efectivo.
+- Una coautoría declarada es una línea `Co-authored-by` en un commit de la rama
+  de la PR que nombra a un miembro por su nombre completo, por `Paris Arcos`,
+  por su login o por su dirección `noreply` de GitHub, que contiene el login.
+  Ningún otro email se lee. Un nombre parcial, o una línea cuyo nombre y
+  dirección apuntan a dos personas, no se acredita. Las líneas que GitHub añade
+  al commit de squash en `develop` no se importan: repiten a los autores de los
+  commits de la rama, que ya figuran como `commit`.
+- Las respuestas del autor en los hilos de su propia PR, que GitHub guarda como
+  review, figuran como `intervencion del autor en su PR` y nunca como revisión o
+  validación. Las reviews en borrador (`PENDING`) ni se guardan ni se muestran.
+- El informe muestra en español los roles, el tipo de review (`revision`,
+  `validacion`, `review sin titulo`), el tipo de artefacto y el estado de la
+  PR. El estado de cada review y de cada check conserva el valor original de
+  GitHub (`APPROVED`, `completed / success`); el snapshot conserva las claves internas.
 - Una review cuenta como titulada cuando empieza por `Revision JUP-XXX` o
   `Validacion JUP-XXX` con el identificador de la historia, sin distinguir
   mayúsculas ni tildes. Puede llevar un sufijo (`Revision JUP-XXX: favorable`,
