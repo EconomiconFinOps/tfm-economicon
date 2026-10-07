@@ -24,5 +24,5 @@
 
 - [x] 5.1 Batería completa: `synthetic-costs:test`, `assistant-metrics:test` y las suites de gobernanza, `openspec:validate`, `jup:check:all`, `jup:cleanup:check` y `git diff --check`.
 - [x] 5.2 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con la sección `## Adversarial Review`.
-- [ ] 5.3 Evidencia en `docs/evidence/JUP-106-validation.md` y bloque `## Human Approval` post-review de Lucia.
-- [ ] 5.4 Archivar el change en la misma rama, revisar la documentación posterior al archivo y abrir el PR a develop.
+- [x] 5.3 Evidencia en `docs/evidence/JUP-106-validation.md` y bloque `## Human Approval` post-review de Lucia.
+- [x] 5.4 Archivar el change en la misma rama, revisar la documentación posterior al archivo y abrir el PR a develop (el archivo y la revisión documental se hacen en el commit de archivo; el PR se abre después y su número queda en Trello).

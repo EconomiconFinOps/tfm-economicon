@@ -53,8 +53,19 @@ No ejecutó: una ingesta real del processor en paralelo (la carrera se simuló c
 
 - Dependencia del esquema: la herramienta inserta en columnas de las migraciones 002 a 004, y un cambio de esquema la rompería. La prueba contra CockroachDB real lo detecta al ejecutarla, no en CI. Es un riesgo propio del cambio, y se mitiga con esa prueba y con la documentación del límite; no se acepta como sin cubrir.
 - `tenant-growth` deja de estar vacío mientras los datos estén cargados. Está avisado en el documento y la retirada lo restaura; es una decisión de diseño (D2).
-- ADV-5 y ADV-6, LOW, quedan sin corregir, pendientes de que Lucia los acepte y se registren en `openspec/findings/backlog.md`.
+- ADV-5 y ADV-6, LOW, quedan sin corregir; Lucia los acepta el 2026-10-07 y se registran como RF-106-001 y RF-106-002 en `openspec/findings/backlog.md`.
 
 ## Hallazgos fuera de alcance
 
 Ninguno nuevo en el producto. Observación para JUP-055 y JUP-104: el dashboard de develop no tiene comparación entre meses ni gráfico de serie propios, así que este conjunto se usa para validar la comparación en la #77, y JUP-104 supone `tenant-growth` vacío de costes (el documento avisa).
+
+## Human Approval
+
+- Change: jup-106-synthetic-cost-data
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-07
+- Adversarial review: accept (pass 1); accepted findings: ADV-5 y ADV-6 (LOW), registrados como RF-106-001 y RF-106-002 en `openspec/findings/backlog.md`
+- Archive decision: archive
+- Notes: aprobada la herramienta, el conjunto de datos sinteticos y su documento de valores esperados, con los hallazgos ADV-1 a ADV-4 y ADV-7 corregidos con prueba. El recorrido del dashboard de develop solo cubrio totales, desgloses, hueco, cero y dos monedas; la comparacion entre meses se valida con estos datos en JUP-055 (#77). La revision de PR y la validacion funcional de otros miembros quedan en Trello y en el PR; no se ha ejecutado Python 3.10 ni 3.11, ni una ingesta real en paralelo.
