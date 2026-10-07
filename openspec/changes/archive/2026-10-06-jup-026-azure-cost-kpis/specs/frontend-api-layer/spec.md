@@ -15,7 +15,7 @@ This scope SHALL remain limited to totals, period and the selectable table,
 retaining /overview-legacy; full dashboards, time series and exports are excluded.
 Both views SHALL warn of possible overlap on 409 ambiguous_cost_source without
 ambiguous monetary values or any replace/confirm action or overwrite. Future
-ingestion replacement is deferred in [RF-026-001](../../../../findings/backlog.md#rf-026-001).
+ingestion replacement is deferred in [RF-026-001](../../../../../findings/backlog.md#rf-026-001).
 
 #### Scenario: Live cost and unavailable savings
 - **WHEN** billing returns costs for the selected tenant and period
