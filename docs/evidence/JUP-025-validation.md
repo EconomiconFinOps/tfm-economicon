@@ -346,3 +346,29 @@ calculador documental de métricas de #74 **103 tests correctos** en Python3.14.
 No se ejecutan nuevas suites de producto. Se comprueba conservación literal de
 filas de los dos padres y unicidad de las seis incidencias RF-025/RF-067.
 Las solicitudes finales se refieren al SHA de esta unión documental, no al anterior.
+
+
+## Reconciliación documental tras #75 — 07/10/2026
+
+Se incorpora develop `b3716f7` (JUP-103/#75) para que Víctor pueda validar #55.
+Único conflicto: `openspec/findings/backlog.md`. La unión conserva todos los IDs,
+sin duplicados, con RF-025-001/002, RF-067-001..004 y las cinco RF-103 nuevas.
+Se respetan además las actualizaciones intencionales de filas existentes hechas
+por develop; no se restauran versiones antiguas ni se duplica un ID para conservar
+su historia. Los demás documentos y specs de #75 se incorporan sin cambios propios.
+No hay delta de apps/, workflow, herramientas ni package.json desde 102768a.
+La revisión favorable de Lucía sobre ese SHA permanece como evidencia previa;
+se pide relectura solo de la reconciliación documental y validación de Víctor
+sobre el último HEAD, sin nuevas suites de producto.
+
+El mensaje Discord «PR #63 (JUP-025): Validada» mezcla identificadores: #63 es
+JUP-065 (Preparar demo funcional reproducible). No se usa como validación de #55;
+en GitHub no hay un dictamen final nuevo de Víctor para #55 en este corte.
+Archivo de citas y aportación documental real de Paris siguen entregados.
+
+Filas finales: 68. Actualizaciones de develop preservadas: RF-093-001, RF-098-004.
+
+Controles del 07/10: OpenSpec48/48, trazabilidad global correcta, higiene851archivos;
+políticaPR57/57, CI12/12 y gobernanza13/13, todos con exit0. Delta propio
+contra develop limpio. La línea vacía final de workspace-task-pipeline/spec.md
+es heredada de #75 y no se modifica en JUP-025. Sin nuevas suites de producto.
