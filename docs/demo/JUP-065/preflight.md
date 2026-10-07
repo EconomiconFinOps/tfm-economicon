@@ -46,7 +46,9 @@ X-Tenant-Id: tenant-core
 
 Esperado: contrato 2, `available`, moneda USD, total `0.06`, conteo 38, ocho grupos según `costes-esperados.json`, sin dimensiones/fechas faltantes, ahorro `null`. Comparar grupos por valor/moneda y suscripción, sin exigir el mismo orden del JSON de referencia. DevTestLab/devtestlab se unifican en DevTestLab, ocho registros. El total se calcula antes de redondear: la suma de grupos mostrados puede diferir un céntimo. No inferir un ahorro de valores cero o de ausencia de datos.
 
-En `/` introducir exactamente las fechas del guion (el valor inicial es el mes actual, que no tiene esta muestra). Verificar Growth vacío. No basar la comprobación de jobs pendientes en `open_ingestions`: en la base examinada cuenta todos los jobs, aunque su nombre sugiera otra cosa; comprobar el estado individual de los jobs.
+En `/`, con el dashboard de JUP-055 integrado, seleccionar **Mes inicial `2024-06` y Mes final `2024-06`**. Ambos meses son inclusivos y la UI consulta `[2024-06-01, 2024-07-01)`; el valor inicial son los seis últimos meses completos UTC y no contiene esta muestra. La carga y el GET de referencia anteriores mantienen `[2024-06-01, 2024-06-20)`. En el CSV fijado, las 40 filas de esta suscripción terminan el 19/06 y producen 38 registros: ampliar la lectura hasta julio no añade filas. Confirmar esa igualdad en el despliegue elegido; no cambiar el periodo de carga ni presentar la muestra como factura del mes completo.
+
+Verificar Growth vacío en el entorno dedicado, sin el conjunto sintético de JUP-106: esa fixture se carga precisamente en Growth y debe retirarse de una réplica que la haya usado antes de este recorrido. Preferir volúmenes nuevos; no ejecutar una retirada sobre datos ajenos ni asumir que `remove --tenant` limita su alcance. No basar la comprobación de jobs pendientes en `open_ingestions`: en la base examinada cuenta todos los jobs, aunque su nombre sugiera otra cosa; comprobar el estado individual de los jobs.
 
 ## 3. Cargar el corpus y comprobar el chat
 
