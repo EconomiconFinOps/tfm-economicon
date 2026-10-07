@@ -49,6 +49,52 @@ tfm-economicon
 
 ## Como correrlo
 
+### Requisito previo: pnpm con corepack
+
+El repositorio fija `pnpm@9.0.0` en `packageManager`. Los scripts de la raiz (`lint`, `build`, `test`,
+`typecheck`, `dev`) pasan por turbo, que lanza `pnpm run <script>` en cada paquete buscando `pnpm` en el
+`PATH`. Si en la maquina no estan activados los lanzadores de corepack, turbo encuentra otro pnpm (por
+ejemplo uno global instalado con `npm install -g pnpm`, o uno que aporta el entorno de ejecucion de un
+asistente de codigo) y falla. Con un pnpm global `11.9.0` o `11.1.3` el mensaje es
+`This project is configured to use 9.0.0 of pnpm. Your current pnpm is v...`; con otras versiones el
+sintoma puede ser distinto (con una `11.19.0` las tareas abortan con
+`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`). CI no lo sufre porque ejecuta `corepack enable` antes de
+usar pnpm.
+
+Una vez por maquina:
+
+```powershell
+corepack enable
+```
+
+- En Windows, ejecutalo en una consola de PowerShell **como administrador**: escribe en
+  `C:\Program Files\nodejs`. No importa desde que carpeta lo lances. No imprime nada si funciona.
+  Esta verificado en Windows; en macOS y Linux puede necesitar `sudo` segun donde este instalado Node.
+- No hace falta desinstalar un pnpm global: el lanzador de corepack tiene prioridad si el directorio de
+  Node va antes que el de npm global en el `PATH`. Comprueba el orden con `where.exe pnpm` (Windows) o
+  `which -a pnpm` (macOS y Linux).
+- Fuera del repositorio, `pnpm --version` pasara a mostrar la version por defecto de corepack y no la
+  de tu pnpm global. No afecta al repositorio.
+
+Para comprobar que funciona, desde la raiz y en una consola nueva:
+
+```powershell
+corepack pnpm exec pnpm --version
+```
+
+Debe imprimir exactamente `9.0.0`. Cualquier otra salida (el error de version de arriba, o una version
+distinta como `11.x`) significa que falta `corepack enable` o que hay otro `pnpm` por delante en el
+`PATH`, por ejemplo uno global de npm o uno que aporta el entorno de ejecucion de un asistente de
+codigo; en ese ultimo caso `corepack enable` puede no bastar si su carpeta va antes que la de Node
+(no verificado). Como salida de emergencia, `pnpm <script>` sin `corepack` funciona si
+el pnpm global es lo bastante reciente para cambiar de version por si mismo (verificado con `11.9.0`),
+pero no es la forma documentada y depende de lo que haya instalado en cada maquina.
+
+turbo cachea los resultados sin tener en cuenta la version de pnpm. Si cambias la configuracion de la
+maquina y quieres comprobar que los scripts funcionan de verdad, anade `--force` (por ejemplo
+`corepack pnpm lint --force`): una ejecucion con `cache hit` no lanza ningun subproceso y no demuestra
+nada. Origen: [RF-093-001](openspec/findings/backlog.md) y [JUP-103](docs/evidence/JUP-103-validation.md).
+
 ### Con Docker Compose
 
 Desde la raiz de un clon limpio, con Docker y Node instalados (en Linux o macOS, el primer comando es `cp -n .env.example .env`):
@@ -143,18 +189,41 @@ Puertos visibles:
 
 ### Con Turborepo
 
-Desde la raiz del repo:
+Necesita el [requisito previo de corepack](#requisito-previo-pnpm-con-corepack). Desde la raiz del repo,
+preferiblemente dentro de un entorno virtual de Python (`turbo` usa el `python` que encuentra en el
+`PATH`, asi que activalo en la misma consola que lanza pnpm):
 
 ```powershell
-pnpm install
+corepack pnpm install --frozen-lockfile
 Set-Location apps/backend; python -m pip install -r requirements-dev.txt
 Set-Location ../processor; python -m pip install -r requirements-dev.txt
 Set-Location ../azure-cost-api; python -m pip install -r requirements-dev.txt
 Set-Location ../..
-pnpm dev
 ```
 
-Esto levanta `frontend`, `backend`, `processor` y `azure-cost-api` en paralelo.
+`corepack pnpm dev` lanza en paralelo `frontend`, `backend`, `processor` y `azure-cost-api`. **Por si
+solo no deja sirviendo al backend ni al processor**, y en cuanto uno falla turbo termina todos:
+`backend` y `processor` leen su configuracion solo del entorno del proceso, y turbo (modo `strict`)
+no le pasa a las tareas las variables del shell. Ademas, el `.env` de Compose usa los nombres
+internos de los servicios (`cockroachdb`, `rabbitmq`, `postgres-pgvector`), que tu maquina no resuelve.
+Para que queden las cuatro aplicaciones sirviendo (verificado en Windows):
+
+1. Levanta solo la infraestructura de Compose, sin los servicios de aplicacion:
+   `docker compose up -d --wait cockroachdb rabbitmq postgres-pgvector`.
+2. Crea un archivo de entorno **fuera del repositorio**: copia de tu `.env` con `DATABASE_URL`,
+   `RABBITMQ_URL` y `VECTOR_DATABASE_URL` apuntando a `127.0.0.1` y a los puertos publicados
+   (`26257`, `5672` y `5433` por defecto, o los de `COCKROACH_SQL_PORT`, `RABBITMQ_PORT` y
+   `PGVECTOR_PORT`). Usa `127.0.0.1` y no `localhost`: con `localhost` el backend se quedo bloqueado
+   en el arranque en la maquina verificada (causa sin determinar).
+3. Lanza `dev` indicando ese archivo y el modo de entorno `loose`:
+
+```powershell
+$env:ECONOMICON_ENV_FILE = "C:\ruta\fuera\del\repo\local-dev.env"
+corepack pnpm dev --env-mode=loose
+```
+
+Es una limitacion conocida del repositorio, no de tu maquina; el seguimiento esta en
+[RF-103-001](openspec/findings/backlog.md). Para el stack completo en contenedores, usa Docker Compose.
 
 Puertos visibles:
 
@@ -275,10 +344,20 @@ antes de preparar una instalacion existente.
 
 ## Comandos Principales
 
-- `pnpm dev`: arranca frontend, backend, processor y Azure Cost API en paralelo
+Con el [requisito previo de corepack](#requisito-previo-pnpm-con-corepack) cumplido, `pnpm <script>` y
+`corepack pnpm <script>` ejecutan lo mismo; el resto del documento usa `corepack pnpm` porque es la forma
+que usan CI y la guia de contribucion.
+
+- `pnpm dev`: lanza en paralelo el proceso de desarrollo de frontend, backend, processor y Azure Cost API
+  (backend y processor necesitan configuracion adicional, ver "Con Turborepo")
 - `pnpm build`: ejecuta las tareas de build declaradas por cada app
 - `pnpm lint`: ejecuta las tareas de lint declaradas por cada app
-- `pnpm test`: ejecuta los tests disponibles
+- `pnpm typecheck`: ejecuta la verificacion de tipos; solo la declara el frontend
+- `pnpm test`: ejecuta los tests disponibles. Con los cuatro paquetes a la vez, algunos tests con
+  plazos de tiempo (frontend, backend y processor) pueden fallar segun la maquina, y no siempre los
+  mismos (`RF-098-004`, `RF-103-005`); aislados y por mitades pasan. Si te ocurre, ejecutalos asi:
+  `corepack pnpm run test "--filter=!@finops/frontend"` y
+  `corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1`
 - `pnpm docker:build`: construye las imagenes Docker de las apps
 - `pnpm docker:validate`: valida topologia, digests, healthchecks y privilegios
   sin necesitar un daemon Docker
