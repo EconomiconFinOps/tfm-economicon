@@ -14,6 +14,7 @@ from app.api.dependencies import (
 )
 from app.core.config import get_settings
 from app.core.metrics import assistant_queries_total, retrieval_empty_total, retrieval_failures_total
+from app.services.citations import InvalidCitation, resolve_citations, validate_context
 from app.services.embedding_provider import PROVIDER_ERROR_CATEGORIES, ProviderError
 from app.schemas.assistant import (
     AssistantReply,
@@ -129,6 +130,10 @@ def send_message(
         )
     except Exception:
         _retrieval_failed("vector_store", trace, started)
+    try:
+        validate_context(retrieved_chunks, tenant_id)
+    except InvalidCitation:
+        raise HTTPException(status_code=502, detail="Invalid response evidence.") from None
     logger.info(
         "retrieval", **trace,
         chunk_ids=[item["chunk_id"] for item in retrieved_chunks],
@@ -139,7 +144,12 @@ def send_message(
     )
     if not retrieved_chunks:
         retrieval_empty_total.inc()
-    assistant_output = assistant_service.answer(payload.content, retrieved_chunks)
+    try:
+        assistant_output = assistant_service.answer(payload.content, retrieved_chunks)
+        source_citations = resolve_citations(assistant_output["citations"], retrieved_chunks, tenant_id)
+    except InvalidCitation:
+        raise HTTPException(status_code=502, detail="Invalid response evidence.") from None
+
     assistant_message = database.append_message(
         conversation_id=conversation_id,
         tenant_id=tenant_id,
@@ -147,7 +157,7 @@ def send_message(
         requester_id=current_user["id"],
         role="assistant",
         content=assistant_output["content"],
-        metadata={"citations": assistant_output["citations"]},
+        metadata={"citations": assistant_output["citations"], "source_citations": source_citations},
     )
 
     assistant_queries_total.inc()
