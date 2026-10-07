@@ -1,5 +1,6 @@
 import importlib.util
 from pathlib import Path
+import unicodedata
 import unittest
 
 spec = importlib.util.spec_from_file_location('contributions', Path(__file__).parents[1] / 'team-contributions.py')
@@ -32,10 +33,20 @@ class ContributionTests(unittest.TestCase):
         self.assertEqual(roles['review'], 'lmatsan')
         self.assertIsNone(roles['pairing'])
 
-    def test_title_must_match_story_and_entire_first_line(self):
+    def test_title_must_match_story_and_open_the_review(self):
         self.assertEqual(m.review_kind('Validación JUP-064\nEvidence', 'JUP-064'), 'validation')
-        for text in ['Validacion JUP-065', 'I did Validacion JUP-064', 'Validacion JUP-0640', '# Validacion JUP-064']:
-            self.assertEqual(m.review_kind(text, 'JUP-064'), 'other')
+        for text in ['Validacion JUP-065', 'I did Validacion JUP-064', 'Validacion JUP-0640', '# Validacion JUP-064',
+                     'Validacion JUP-064_bis', 'Validacion JUP-06', 'Validacion: JUP-064', 'ValidacionJUP-064', '']:
+            self.assertEqual(m.review_kind(text, 'JUP-064'), 'other', text)
+
+    def test_title_accepts_the_suffixes_the_jup_reviews_check_accepts(self):
+        for text in ['Validacion JUP-064 (revalidacion incremental sobre a1bbe89)', 'Validación JUP-064: favorable',
+                     'VALIDACION  JUP-064.', '\n  validacion jup-064\nEvidence']:
+            self.assertEqual(m.review_kind(text, 'JUP-064'), 'validation', text)
+        for text in ['Revision JUP-064: ok', 'Revisión JUP-064 - incremental', 'Revision JUP-064']:
+            self.assertEqual(m.review_kind(text, 'JUP-064'), 'review', text)
+        self.assertEqual(m.review_kind(unicodedata.normalize('NFD', 'Revisión JUP-064: ok'), 'JUP-064'), 'review')
+        self.assertEqual(m.review_kind('Revision JUP-064: ok', 'JUP-065'), 'other')
 
     def test_aliases_explanations_and_ambiguous_assignments(self):
         roles = m.assigned_roles('- Revisión PR: Víctor Méndez.\n'

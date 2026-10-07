@@ -44,7 +44,12 @@ python tools/team-contributions.py --snapshot docs/contributions/JUP-064-snapsho
   Las identidades desconocidas quedan pendientes; no se deducen de emails.
 - La columna de acciones acredita existencia, no suficiencia. Coautoría
   declarada y commits requieren contraste para acreditar pairing efectivo.
-- `Revision JUP-XXX` y `Validacion JUP-XXX` deben ocupar la primera línea completa.
+- Una review cuenta como titulada cuando empieza por `Revision JUP-XXX` o
+  `Validacion JUP-XXX` con el identificador de la historia, sin distinguir
+  mayúsculas ni tildes. Puede llevar un sufijo (`Revision JUP-XXX: favorable`,
+  `Validacion JUP-XXX (incremental sobre abc1234)`): es la misma regla que aplica
+  el check `JUP reviews`. Un encabezado (`# Revision JUP-XXX`) o un texto previo
+  no cuentan.
   Se conserva el estado y SHA; una review antigua o descartada no satisface el
   indicador de evidencia actual. Las reviews sin título también quedan enlazadas.
 - Los comentarios de PR se atribuyen a su autor con enlace y fecha, para

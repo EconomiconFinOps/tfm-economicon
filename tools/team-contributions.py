@@ -73,9 +73,10 @@ def role_lines(text):
 
 
 def review_kind(body, jup):
-    first = normalize(body).splitlines()[0] if body.strip() else ''
-    for kind, title in [('review', 'revision'), ('validation', 'validacion')]:
-        if re.fullmatch(title + r'\s+' + jup.lower(), first.strip()):
+    # Same title rule as the JUP reviews check (tools/pr-policy.mjs): a prefix of the body, any suffix allowed.
+    text = unicodedata.normalize('NFC', body).casefold()
+    for kind, title in [('review', 'revisi[oó]n'), ('validation', 'validaci[oó]n')]:
+        if re.match(r'[\s\ufeff]*' + title + r'[\s\ufeff]+' + re.escape(jup.casefold()) + r'(?![0-9a-z_])', text):
             return kind
     return 'other'
 
