@@ -5,6 +5,7 @@ objectively (figures and prohibited behaviours), leaves the rest to people, and
 writes the results file that the reference calculator (JUP-067) already accepts.
 The raw run, the review sheet and the judgements carry text and live outside Git;
 the results file carries none. Standard library only, deterministic.
+Usage and method: docs/validation/JUP-070-evaluation.md
 """
 
 from __future__ import annotations
