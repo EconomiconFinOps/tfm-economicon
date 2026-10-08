@@ -133,4 +133,3 @@ The repository SHALL contain the measurement of the chat as it is at the time of
 - **WHEN** the baseline evidence is read
 - **THEN** it identifies the commit, the date, the provider and the fact that no model generated the answers
 - **AND** it makes no claim about the quality of a model-generated chat
-

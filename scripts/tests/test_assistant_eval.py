@@ -935,6 +935,23 @@ class CommandLineTests(unittest.TestCase):
             code, _, err = self.run_cli(["review-sheet", "--raw", str(folder / "raw.json"), "--output", str(ROOT / "docs" / "hoja-prohibida.md")])
             self.assertEqual(code, 2)
 
+    def test_the_review_sheet_carries_the_full_text_and_section_of_every_retrieved_fragment(self):
+        long_text = "A" * 200 + " dato clave tras el caracter 140 " + "Z" * 50
+        fragments = [dict(fragment(f"doc:chunk:{n}", content=f"texto del fragmento {n}"), heading=f"Seccion {n}", distance=0.1 * n) for n in range(1, 4)]
+        fragments.append(dict(fragment("doc:chunk:4", content=long_text + "\n```\nlinea con valla\n```"), heading="Seccion 4", distance=0.4))
+        raw = {"raw_version": 1, "cases": [raw_case(BANK["cases"][0]["id"], "respuesta", fragments)]}
+        sheet = evaluation.review_sheet(BANK, raw)
+        for n in range(1, 4):
+            self.assertIn(f"texto del fragmento {n}", sheet)
+            self.assertIn(f"Seccion {n}", sheet)
+        self.assertIn("dato clave tras el caracter 140", sheet)
+        self.assertIn("Z" * 50, sheet)
+        self.assertIn("linea con valla", sheet)
+        self.assertIn("doc:chunk:4", sheet)
+        self.assertEqual(sheet.count("```text"), len(BANK["cases"]))
+        blank = evaluation.review_sheet(BANK, {"raw_version": 1, "cases": [raw_case(BANK["cases"][0]["id"], "r", [fragment("d:chunk:1", content="uno\n\ndos")])]})
+        self.assertIn("  > uno\n  >\n  > dos", blank)
+
     def test_a_malformed_run_header_names_the_field_and_not_only_the_exception_type(self):
         with tempfile.TemporaryDirectory() as folder:
             folder = Path(folder)

@@ -627,7 +627,10 @@ def review_sheet(bank: dict, raw: dict) -> str:
         lines += ["", "**Respuesta original**", "", "```text", item.get("answer", "(sin respuesta)"), "```", ""]
         lines += [f"**Citas:** {', '.join(item.get('citations', [])) or 'ninguna'}", ""]
         for fragment in item.get("retrieved", []):
-            lines += [f"- Fragmento `{fragment['chunk_id']}` ({fragment['source']}, distancia {fragment['distance']})"]
+            heading = f", sección «{fragment['heading']}»" if fragment.get("heading") else ""
+            lines += ["", f"- Fragmento `{fragment['chunk_id']}` ({fragment['source']}{heading}, distancia {fragment['distance']})", ""]
+            # A quote instead of a fence: a fragment may contain fences of its own.
+            lines += [f"  > {line}" if line else "  >" for line in str(fragment.get("content", "")).splitlines() or [""]]
         lines += [""]
     return "\n".join(lines)
 

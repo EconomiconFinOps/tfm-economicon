@@ -100,3 +100,7 @@ No aplica: no se introduce ninguna decisión arquitectónica duradera; la herram
 - Adversarial review: accepted findings: ADV-1, ADV-2, ADV-5, ADV-6 y ADV-7 de la pasada 3 (RF-070-007 a RF-070-010), RF-070-001 a RF-070-006 y cierre tras la pasada 4 sin una quinta
 - Archive decision: archive
 - Notes: Alcance revisado: herramienta, reglas, metodología, dos mediciones de referencia y evidencia. Pendiente en Trello: revisión y validación por las personas con ese rol, repetir tres veces la medición con un chat que genere con modelo (JUP-035) y juicio de dos revisores en los casos críticos.
+
+## Validación de Alejandro (2026-10-09)
+
+Alejandro pidió cambios porque la hoja de revisión listaba los fragmentos recuperados solo con su identificador, fuente y distancia, sin el texto, y la spec exige la hoja con los fragmentos recuperados. Se reprodujo, se corrigió con una prueba (un fragmento cuyo dato necesario está después del carácter 140, el cuarto fragmento, la sección y un fragmento con vallas de código) y la hoja incluye ahora el texto completo y la sección de cada fragmento. Barrido del patrón: `review_sheet` es el único consumidor del texto recogido para el juicio humano; `score` no lo necesita porque usa el contenido solo para rastrear cifras. Además se quitó la línea vacía final de la spec promovida.

@@ -37,7 +37,7 @@ Todos los ficheros con texto (respuestas, hoja de revisión, juicios) van **fuer
 
    Cada caso usa una conversación nueva y el prompt exacto. No hay reintentos: un fallo de infraestructura deja el caso `blocked` con su categoría y no cuenta como respuesta incorrecta.
 
-3. Generar la hoja de revisión y repartirla:
+3. Generar la hoja de revisión y repartirla. Lleva, por caso, la pregunta, los puntos requeridos y prohibidos, la respuesta original, las citas y el texto completo de cada fragmento recuperado con su fuente, su sección y su distancia:
 
    ```sh
    python tools/assistant-eval.py review-sheet --raw ../evaluacion/crudo.json --output ../evaluacion/hoja.md
