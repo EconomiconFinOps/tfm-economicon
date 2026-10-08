@@ -284,6 +284,6 @@ Only the configured LiteLLM GET /health/liveliness probe SHALL accept the pinned
 - **AND** a LiteLLM string is not accepted by the generic parser and a generic status object is not accepted by the LiteLLM parser; public health/auth/tenant contracts remain unchanged
 
 
-### Nota de evidencia de implementación — E12
+## Nota de evidencia de implementación — E12
 
 La implementación local de los requisitos de petición fija y LiteLLM específica está acreditada por E12: Red143/38, Green214PASS,15kills dirigidos, controles37/37 y guard conjunto cero cambios/852fuentes/4tests fijos. No se modifica ningún Requirement ni Scenario en esta consolidación. El cap0.03, conversión monetaria y próxima cohorte son operación separada; la cabecera sustituye importes/cupos humanos históricos sin cambiar la admisión genérica. Revisión/validación afectadas y respuesta funcional real pendientes.

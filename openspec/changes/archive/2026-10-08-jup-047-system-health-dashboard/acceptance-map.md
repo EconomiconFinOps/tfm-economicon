@@ -155,3 +155,40 @@ E10/E11 y sus SHA están en tasks.md/design.md; originales externos conservados.
 | Proceso/evidencia | Fases separadas; incidencias noPASS preservadas; strict47/47/trace/sintaxis/whitespace | Revisor/Validador afectados, PM original, real funcional, M5/CI/final/archivo/reviews humanas pendientes |
 
 La tabla planificada anterior conserva el estado de diseño. Esta tabla y la cabecera identifican lo ejecutado y la autorización presupuestaria vigente. E12 no transforma los cuatro intentos anteriores en PASS, no confirma identidad/cargo upstream ni acepta criterios por cuenta del Desarrollador.
+
+
+## E15 — resultado local posterior a la base
+
+08/10/2026, consolidación exclusivamente documental sobre `feat/JUP-047-system-health-dashboard`, HEAD `8770897bab29c79df54659e362f89d97c28b132a`, padres `e1f58d01ed984be95021953bebb97ab9b5479ad0` y `2f9a5f530c9fe3b60007ba5060c189133e353bf6`. E14 y los bloques anteriores conservan literalmente su fecha, historia, aprobación, escenarios y casillas; esta sección acredita los hechos posteriores, sin aceptación propia del Desarrollador.
+
+| Criterio oficial | Esperado y observado en la validación afectada | Resultado y límite |
+|---|---|---|
+| AC1. Resultado funcional verificable | Ruta/sesión/tenant/billing/asistente conservados; Validador 85 frontend+10 backend propios PASS, incluido 422 antes de lectura, user parcial sin fetch y respuestas tardías aisladas | PASS_LOCAL_AFFECTED; proveedores/M5 reales y observación visual nueva no acreditados |
+| AC2. Pruebas necesarias añadidas y en verde | Validador 95 propios sin FAIL/ERROR/SKIP; Dev 2013 PASS/91 SKIP/35 comandos y 53 OpenSpec, build/lint/tipos; matriz 40/siete mínimos con equivalencias nativas exhaustivas | PASS_LOCAL_AFFECTED; 91 integraciones opt-in NOT_VALIDATED, pnpm/Turbo literal y frozen-install no ejecutados, Node 24 local no prueba CI 22 |
+| AC3. Documentación y decisiones actualizadas | Revisor REVIEW_PASS,29 rutas propias intactas y dos README preservados; contrato sin TTL/ciclo 600000/tolerancia 1000/Azure SIMULADO; revalidación documental anterior resuelve la discrepancia TTL | PASS_LOCAL_AFFECTED; E14 PENDIENTE/VALIDATION_FAIL originales siguen históricos, sin reescritura |
+| AC4. PR revisado y vinculado | No PR/vínculo ni reviews humanas acreditadas | NOT_VALIDATED global; revisión interna no sustituye Alejandro/Lucía |
+| AC5. Validación funcional y evidencia enlazadas | Evidencia local consolidada y 95 casos propios; publicación/vínculos/M5 remoto no acreditados | NOT_VALIDATED global; coordinación y publicación de PM pendientes |
+
+Los 2013 del Desarrollador contienen los 341 históricos (123+218); no se suman ni a esos 341 ni a los 95 del Validador. Se conservan 27 disposiciones históricas de mutación (25 reutilizadas y dos reensayos en su fase), sin nueva campaña postmerge. Integridad 920 fuentes y originales PM/retornos comunicados por TL; no equivalen a sandbox de lectura ni a gates humanos.
+
+Resultado de revisión, fuentes y límites: [review.md](review.md). Pasos y criterios: [evidencia JUP-047](../../../../docs/evidence/JUP-047-validation.md). [tasks.md, E15](tasks.md) registra la continuación sin cerrar casillas globales.
+
+La aprobación humana final post-base está PENDIENTE. Después corresponde DoD final del change activo y despacho del archivo específico ya autorizado 13:11:51. No se archiva aquí. M5/Alejandro, participación de Víctor/reviews humanas externos; CI remota/publicación/vínculos bajo PM. Presentación aceptada por Paris 13:05:44; no es una observación del Validador ni reabre UI/teclado/finding móvil.0,20 EUR es techo autorizado acumulado, no gasto acreditado. Cero llamadas o gasto nuevos.
+
+
+## Aprobación humana final posterior a la base — 08/10/2026 14:36
+
+Paris Arcos aprobó la entrega local final con respuesta literal «si» el 08/10/2026 a las 14:36, Atlantic/Canary; el segundo exacto del mensaje humano no está disponible. PM confirmó la decisión a las 14:36:07 y TL verificó la pregunta y respuesta originales. Fuente: mensaje humano `01a11bba-6640-7c71-8d13-3b541b40f4b4`, turno `01a11bba-65e9-7b81-a303-fe0c1ca509e8`; pregunta en turno `01a11bb9-af92-7fb3-934e-fe48c355393a`, chat PM `01a1063b-fed3-7480-a0d6-cc6f374ecacf`. La pregunta, alcance y fuente verificada se registran en [la aprobación de review.md](review.md#post-validation-human-approval--approved).
+
+Esta nota supersede únicamente el estado PENDING de la aprobación humana final post-base consignado históricamente en E15; conserva literalmente el contenido anterior, sus casillas y los resultados AC1–AC3 locales y AC4/AC5 globales NOT_VALIDATED. El código revisado sigue siendo `8770897bab29c79df54659e362f89d97c28b132a`, base `2f9a5f530c9fe3b60007ba5060c189133e353bf6`. Por identidad de producto, tests, base y alcance se reutilizan los dictámenes y campañas anteriores con sus fechas y límites; no son dictámenes nuevos ni nuevas ejecuciones.
+
+El pre-validation DoD del change activo fue PASS por TL. El registro de aprobación y DoD final activo corresponden al TL; el archivo específicamente autorizado a las 13:11:51 requiere después un encargo separado. No se archiva aquí ni se concede permiso de commit, push, PR o publicación. Los controles humanos, M5 y vínculos oficiales conservan sus límites y responsables.
+
+
+## Archivo específico y DoD final local — 08/10/2026
+
+El change JUP-047 quedó archivado el 08/10/2026 en `openspec/changes/archive/2026-10-08-jup-047-system-health-dashboard`, en la misma rama `feat/JUP-047-system-health-dashboard`, código `8770897bab29c79df54659e362f89d97c28b132a` y base `2f9a5f530c9fe3b60007ba5060c189133e353bf6`. Se incorporaron los deltas a las especificaciones [health-status](../../../specs/health-status/spec.md) y [system-health-dashboard](../../../specs/system-health-dashboard/spec.md); los dos requisitos anteriores de health-status permanecen.
+
+Paris aprobó la entrega local final el 08/10/2026 a las 14:36, Atlantic/Canary, con respuesta literal «si»; los segundos humanos no están disponibles y PM confirmó a las 14:36:07. Paris autorizó la corrección mecánica de los dos encabezados E12 a las 15:07, con respuesta literal «SI», confirmada por PM a las 15:07:04; el intento de archivo anterior quedó abortado sin cambios. Tras esa corrección, TL renovó el DoD final code/final con el change todavía ACTIVO: PASS, exit 0, sin errores; registro UTC `2026-10-08T14:16:00.6434523Z`. Se conserva [el resultado original exacto de ese DoD final renovado](local-dod-final.json), SHA256 `4b1b13ff29ea848e7d71e37b99c2e660a81d2bbc8a8a9ca2bc388a74095fda82`. No se vuelve a ejecutar el helper tras retirar el directorio activo.
+
+El archivo aplica la autorización específica de las 13:11:51 y el encargo separado posterior al DoD final. Esta nota supersede únicamente los pendientes históricos de aprobación local, DoD final y archivo; no borra historia ni cambia casillas, requisitos, escenarios o dictámenes técnicos. No acredita M5, participación ni reviews humanas, AC4/AC5 globales, CI remota o vínculos oficiales. Commit, subida, PR y publicación siguen pendientes con sus permisos propios. No hay pruebas de producto, builds, mutaciones, llamadas o gasto nuevos por este archivo.
