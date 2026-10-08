@@ -1,10 +1,10 @@
 import math
 
-from sqlalchemy import create_engine, text
-
 import structlog
+from sqlalchemy import bindparam, create_engine, text
 
 from app.core.runtime_secrets import StartupError
+from app.services.citations import DocumentCitations
 
 MAX_TOP_K = 20
 logger = structlog.get_logger("vector_store")
@@ -44,15 +44,17 @@ class PgVectorQueryStore:
             parameters["provider"] = provider
         if max_distance is not None:
             parameters["max_distance"] = float(max_distance)
-        with self.engine.connect() as connection:
+        with self.engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
             rows = connection.execute(
                 text(
                     f"""
-                    SELECT chunk_id, document_id, source, content, distance
+                    SELECT chunk_id, document_id, tenant_id, chunk_index, source, content, distance
                     FROM (
                         SELECT
                             dc.id AS chunk_id,
                             kd.id AS document_id,
+                            kd.tenant_id AS tenant_id,
+                            dc.chunk_index AS chunk_index,
                             kd.source AS source,
                             dc.content AS content,
                             (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
@@ -68,11 +70,27 @@ class PgVectorQueryStore:
                     """
                 ),
                 parameters,
+            ).all()
+            if not rows:
+                return []
+            # Fetch each source document once, scoped to the same tenant and
+            # transaction snapshot as retrieval (including concurrent reingestion).
+            documents = connection.execute(
+                text("""
+                    SELECT id, text_content FROM knowledge_documents
+                    WHERE tenant_id = :tenant_id AND id IN :document_ids
+                """).bindparams(bindparam("document_ids", expanding=True)),
+                {"tenant_id": tenant_id, "document_ids": list({row.document_id for row in rows})},
             )
+            locations = {row.id: DocumentCitations(row.text_content) for row in documents}
             return [
                 {
                     "chunk_id": row.chunk_id,
                     "document_id": row.document_id,
+                    "tenant_id": row.tenant_id,
+                    "title": locations[row.document_id].title or row.source.strip(),
+                    "chunk_index": row.chunk_index,
+                    "section": locations[row.document_id].section(row.content),
                     "source": row.source,
                     "content": row.content,
                     "distance": float(row.distance),

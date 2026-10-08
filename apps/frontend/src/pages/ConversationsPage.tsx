@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useOutletContext } from "react-router";
 import { SectionCard } from "../components/SectionCard";
+import { AnswerEvidence } from "../components/AnswerEvidence";
 import {
   createConversation,
   getConversation,
@@ -185,7 +186,9 @@ export function ConversationsPage() {
                   className="rounded-md border border-border bg-background p-3"
                 >
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">{entry.role}</p>
-                  <p className="mt-1 text-sm text-foreground">{entry.content}</p>
+                  {entry.role === "assistant"
+                    ? <AnswerEvidence content={entry.content} metadata={entry.metadata} />
+                    : <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{entry.content}</p>}
                 </article>
               ))}
             </div>

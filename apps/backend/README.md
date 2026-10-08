@@ -183,10 +183,13 @@ python -m pytest tests
 
 `POST /jobs/ingest` requiere `text_content` como fuente principal del pipeline de embeddings.
 
-`GET /billing/summary` devuelve hoy `monthly_spend` y `savings_identified` con valores fijos de
-demostracion; solo `open_ingestions` se calcula de verdad. No lee las tablas de coste Azure que
-alimenta el `processor` (`azure_cost_ingestion_runs`, `azure_cost_records`). Verificado en JUP-091:
-ver `RF-091-004` en `openspec/findings/backlog.md`.
+`GET /billing/summary` devuelve el contrato v2 de JUP-026 sobre los costes Azure
+ingeridos, separados por moneda y periodo. Los importes son strings decimales;
+`savings_identified` permanece null. Las fuentes ambiguas devuelven 409.
+
+`POST /billing/budget/evaluate` evalua un presupuesto del tenant activo sin
+guardarlo. Requiere el mismo bearer y `X-Tenant-Id`. Ver
+[contrato y ejemplos JUP-029](../../docs/manuals/budget-evaluation.md).
 
 La cuenta demo solo se crea con `DEMO_SEED_ENABLED=true` y una
 `DEMO_PASSWORD` externa no heredada:

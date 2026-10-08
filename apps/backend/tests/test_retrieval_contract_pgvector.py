@@ -120,3 +120,45 @@ def test_each_fragment_carries_the_identifier_of_its_document(retrieval):
     add(retrieval, "dd-2", "tenant-d", [1, 0.1, 0, 0, 0, 0, 0, 0], document="doc-b")
     result = retrieval.search_chunks("tenant-d", QUERY, top_k=5)
     assert [(item["chunk_id"], item["document_id"]) for item in result] == [("dd-1", "doc-a"), ("dd-2", "doc-b")]
+
+
+def test_filtered_ranked_context_resolves_only_its_document_citation_in_the_route(retrieval, monkeypatch):
+    """JUP-022 + JUP-025: provider/tenant filtering and top_k retain usable citation metadata."""
+    from app.api.routes.assistant import send_message
+    from app.schemas.assistant import MessageCreateRequest
+    from app.services.assistant import AssistantService
+    from test_retrieval_contract import Database
+
+    add(retrieval, "a-stale", "tenant-a", QUERY, provider="litellm")
+    add(retrieval, "a-foreign", "tenant-b", QUERY)
+    add(retrieval, "b-accepted", "tenant-a", QUERY, document="guide", source="guide.md")
+    add(retrieval, "c-next", "tenant-a", [1, 0.1, 0, 0, 0, 0, 0, 0])
+    with retrieval.engine.begin() as connection:
+        connection.execute(text("UPDATE knowledge_documents SET text_content=:body WHERE id='guide'"),
+                           {"body": "# FinOps guide\n## Costs\nObserved costs are documented."})
+        connection.execute(text("UPDATE document_chunks SET content=:body WHERE id='b-accepted'"),
+                           {"body": "Observed costs are documented."})
+
+    class Embedding:
+        name = "mock"
+        dimension = 8
+
+        def embed(self, text):
+            return QUERY
+
+    monkeypatch.setenv("RETRIEVAL_TOP_K", "1")
+    monkeypatch.setenv("RETRIEVAL_MAX_DISTANCE", "0.01")
+    reply = send_message(
+        conversation_id="c1", payload=MessageCreateRequest(content="Costs?"),
+        current_user={"id": "u"}, tenant_id="tenant-a", database=Database(),
+        vector_store=retrieval, embedding_provider=Embedding(), assistant_service=AssistantService(),
+    )
+    assert [chunk.chunk_id for chunk in reply.retrieved_context] == ["b-accepted"]
+    assert reply.assistant_message.metadata["citations"] == ["b-accepted"]
+    [citation] = reply.assistant_message.metadata["source_citations"]
+    assert citation["evidence_id"] == "b-accepted" and citation["document_id"] == "guide"
+    assert citation["title"] == "FinOps guide" and citation["section"] == "Costs"
+    assert citation["reference"] == "document:guide/chunk:0" and citation["page"] is None
+    assert citation["excerpt"] == "Observed costs are documented."
+    assert f"- [1] {citation['source']}: {citation['excerpt']}" in reply.assistant_message.content
+    assert "tenant_id" not in reply.retrieved_context[0].model_dump()
