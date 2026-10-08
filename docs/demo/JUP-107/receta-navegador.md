@@ -71,11 +71,13 @@ const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 
 const label = (ym) => `${MONTHS[Number(ym.slice(5, 7)) - 1]} de ${ym.slice(0, 4)}`;
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const signed = (v) => (v.startsWith('-') ? v : `+${v}`);
+// Un importe cuenta solo si no es parte de otro mayor (190.00 no vale por 90.00).
+const standalone = (s) => new RegExp(`(?<![\\d.])${escape(s)}(?![\\d])`);
 
 function checkFigure(text, f) {
   const out = [];
   if (f.kind === 'period_total') {
-    if (!text.includes(`${f.expected} ${f.currency}`)) out.push('falta el total ' + f.expected + ' ' + f.currency);
+    if (!standalone(`${f.expected} ${f.currency}`).test(text)) out.push('falta el total ' + f.expected + ' ' + f.currency);
     if (!text.includes(`${label(f.from)} – ${label(f.to)} · ${f.records} registros`)) out.push('falta el recuento ' + f.records);
   } else if (f.kind === 'group_total') {
     const name = f.key === null ? 'Sin dimensión' : f.key;
@@ -88,10 +90,10 @@ function checkFigure(text, f) {
     if (!row.test(text)) out.push(`falta la fila mensual ${f.month} ${f.currency} ${f.expected === null ? 'sin datos' : f.expected}`);
   } else if (f.kind === 'comparison') {
     if (!text.includes(`Comparación: ${label(f.last_month)} frente a ${label(f.first_month)} · ${f.currency}`)) out.push('falta el título de la comparación');
-    if (!text.includes(`${signed(f.difference)} ${f.currency}`)) out.push('falta la variación absoluta ' + signed(f.difference));
-    if (!text.includes(`${signed(f.percent)} %`)) out.push('falta la variación porcentual ' + signed(f.percent));
+    if (!standalone(`${signed(f.difference)} ${f.currency}`).test(text)) out.push('falta la variación absoluta ' + signed(f.difference));
+    if (!standalone(`${signed(f.percent)} %`).test(text)) out.push('falta la variación porcentual ' + signed(f.percent));
   } else if (f.kind === 'undated') {
-    if (!text.includes(`${f.records} registros sin fecha excluidos`)) out.push('falta el aviso de registros sin fecha');
+    if (!new RegExp(`(?<![\\d])${f.records} registros sin fecha excluidos`).test(text)) out.push('falta el aviso de registros sin fecha');
   }
   return out.map((m) => `${f.id}: ${m}`);
 }
@@ -104,68 +106,86 @@ async function main() {
   });
   const page = await context.newPage();
   const problems = [];
+  let watching = false;
+  const tenant = () => page.getByLabel('Ambito de cliente');
   page.on('pageerror', (e) => problems.push('error de página: ' + e.message));
   page.on('console', (m) => {
     if (m.type() === 'error' && /CORS|Access-Control/i.test(m.text())) problems.push('error de origen cruzado: ' + m.text().slice(0, 120));
   });
+  // La interfaz cancela la consulta anterior al cambiar de periodo o de cliente: eso no es un fallo.
+  page.on('requestfailed', (r) => {
+    const reason = r.failure()?.errorText;
+    if (watching && reason !== 'net::ERR_ABORTED') problems.push(`petición fallida: ${new URL(r.url()).pathname} (${reason})`);
+  });
+  page.on('response', (r) => { if (watching && r.status() >= 400) problems.push(`respuesta ${r.status()}: ${new URL(r.url()).pathname}`); });
 
-  const settle = () => page.waitForTimeout(2200);
+  const settle = async () => { await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(1500); };
   const main = () => page.innerText('main');
   const setPeriod = async (from, to) => { await page.getByLabel('Mes inicial').fill(from); await page.getByLabel('Mes final').fill(to); };
   const actions = {
     D1: async () => {},
-    D2: async () => { await page.locator('select').first().selectOption('tenant-growth'); await settle(); await setPeriod('2026-01', '2026-06'); },
+    D2: async () => { await tenant().selectOption('tenant-growth'); await settle(); await setPeriod('2026-01', '2026-06'); },
     D3: async () => { await page.getByLabel('Agrupar por').selectOption('service'); },
     D4: async () => { await page.getByLabel('Moneda').selectOption('EUR'); },
     D5: async () => {},
     D6: async () => { await page.getByLabel('Moneda').selectOption('USD'); },
     D7: async () => { await page.getByLabel('Agrupar por').selectOption('tag'); await page.getByLabel('Clave de etiqueta').fill('cost_center'); },
     D8: async () => {},
-    D9: async () => { await page.locator('select').first().selectOption('tenant-core'); },
+    D9: async () => { await tenant().selectOption('tenant-core'); },
     D10: async () => {},
-    D11: async () => { await page.locator('select').first().selectOption('tenant-growth'); await settle(); await setPeriod('2026-07', '2026-07'); await settle(); await page.getByLabel('Moneda').selectOption('USD'); },
+    D11: async () => { await tenant().selectOption('tenant-growth'); await settle(); await setPeriod('2026-07', '2026-07'); await settle(); await page.getByLabel('Moneda').selectOption('USD'); },
   };
 
   await page.goto(BASE_URL);
   await page.fill('#login-password', PASSWORD);
   await page.click('button[type=submit]');
-  await page.waitForTimeout(3500);
+  try {
+    await tenant().waitFor({ timeout: 20000 });
+  } catch (e) {
+    console.error('No se pudo iniciar sesión: no aparece el selector de cliente.');
+    await context.close(); await browser.close();
+    process.exit(2);
+  }
+  await settle();
+  watching = true;
 
   const results = [];
   let blocked = false;
   for (const step of pack.steps) {
     if (step.optional && !WITH_OPTIONAL) continue;
-    if (blocked) { results.push({ id: step.id, result: 'not_run', seconds: 0, notes: ['un paso anterior falló'] }); continue; }
+    if (blocked) { results.push({ id: step.id, result: 'not_run', seconds: 0, notes: ['un paso anterior falló'], info: [] }); continue; }
     const started = Date.now();
     const notes = [];
+    const info = [];
     try {
       await actions[step.id]();
       await settle();
       const text = await main();
       for (const needle of step.ui_contains || []) if (!text.includes(needle)) notes.push(`no aparece «${needle}»`);
       for (const f of pack.figures.filter((x) => x.step === step.id)) notes.push(...checkFigure(text, f));
+      if (step.screen === 'none') info.push('paso hablado: sin comprobación de interfaz');
       if (step.id === 'D9') {
-        await page.locator('select').first().selectOption('tenant-growth');
-        await settle();
-        await setPeriod('2026-01', '2026-06');
+        await tenant().selectOption('tenant-growth');
         await settle();
         const back = await main();
-        if (!back.includes('90.00 EUR')) notes.push('al volver a Growth Ops no reaparece el total 90.00 EUR');
+        if (!standalone('90.00 EUR').test(back)) notes.push('al volver a Growth Ops no reaparece el total 90.00 EUR');
       }
       await page.screenshot({ path: path.join(OUT, `${step.id}.png`), fullPage: true });
     } catch (e) {
       notes.push('excepción: ' + e.message.split('\n')[0]);
     }
-    if (problems.length) { notes.push(...problems.splice(0)); }
+    notes.push(...problems.splice(0));
     const result = notes.length ? 'fail' : 'pass';
     if (result === 'fail') blocked = true;
-    results.push({ id: step.id, result, seconds: Math.round((Date.now() - started) / 1000), notes });
+    results.push({ id: step.id, result, seconds: Math.round((Date.now() - started) / 1000), notes, info });
   }
+  await settle();
+  if (problems.length) results.push({ id: 'fin', result: 'fail', seconds: 0, notes: problems.splice(0), info: [] });
   await context.close();
   await browser.close();
   const report = { mode: 'automatizada', date: new Date().toISOString(), commit: process.env.COMMIT || null, steps: results };
   fs.writeFileSync(path.join(OUT, 'resultado.json'), JSON.stringify(report, null, 2));
-  for (const r of results) console.log(`${r.id.padEnd(4)} ${r.result.padEnd(8)} ${String(r.seconds).padStart(3)} s ${r.notes.join(' | ')}`);
+  for (const r of results) console.log(`${r.id.padEnd(4)} ${r.result.padEnd(8)} ${String(r.seconds).padStart(3)} s ${r.notes.concat(r.info).join(' | ')}`);
   process.exit(results.some((r) => r.result === 'fail') ? 1 : 0);
 }
 

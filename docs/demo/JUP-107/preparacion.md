@@ -5,6 +5,8 @@ Pasos para dejar lista la demo de [guion.md](guion.md) y para deshacerla. Los da
 ## Antes de empezar
 
 - Usar un **stack aislado con volúmenes nuevos**, no el de otra tarea. Los ejemplos usan el proyecto `jup107`.
+- `-p` aísla contenedores y volúmenes, **no los puertos del equipo**: Compose publica puertos fijos (frontend 5173, API 8000, processor 8001, Azure simulada 8002). Parar antes cualquier otro stack que los use, o `up` fallará o chocará.
+- No cambiar el puerto del frontend sin cambiar también el CORS: el backend solo acepta los orígenes de `CORS_ALLOWED_ORIGINS` (el ejemplo del README del proyecto usa `http://localhost:5173` y `http://127.0.0.1:5173`) y con otro puerto la interfaz no podrá hablar con la API.
 - La demo de JUP-065 y el recorrido de JUP-104 **suponen `tenant-growth` sin costes**. Esta demo lo carga a propósito, así que no se prepara sobre un stack donde esas demos vayan a usarse después sin retirar los datos antes.
 - El archivo `.env` se completa como indica el README del proyecto; no se muestra ni se copia en ningún documento. La contraseña de demostración la conoce quien prepara la demo.
 
@@ -33,7 +35,39 @@ En PowerShell no existe `<`: usar `Get-Content -Raw scripts/synthetic_costs.py |
 
 ## 3. Comprobar los valores antes de la demo
 
-Entrar en `http://localhost:5173` con la cuenta de demostración, elegir Growth Ops, poner Mes inicial 2026-01 y Mes final 2026-06 y agrupar por Servicio. Deben salir los valores del paso D3 de [guion.md](guion.md): 90.00 EUR (6 registros) y 35.75 USD (2 registros). La [receta de navegador](receta-navegador.md) hace esta comprobación y la del resto de pasos automáticamente sobre los valores de [esperados.json](esperados.json).
+Primero por la API, sin la interfaz. Guardar este fragmento como `resumen.py` **fuera del repositorio** y ejecutarlo dentro del contenedor del backend, que ya tiene la contraseña de demostración en su entorno (el fragmento no la imprime):
+
+```python
+import json
+import os
+import urllib.request
+
+BASE = "http://localhost:8000"
+TENANT = "tenant-growth"
+
+
+def call(path, data=None, headers=None):
+    body = json.dumps(data).encode() if data is not None else None
+    request = urllib.request.Request(BASE + path, data=body, headers={"Content-Type": "application/json", **(headers or {})})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return json.load(response)
+
+
+access = call("/auth/login", {"email": "operator@example.com", "password": os.environ["DEMO_PASSWORD"]})["access_token"]
+summary = call("/billing/summary?start_date=2026-01-01&end_date=2026-07-01&group_by=service",
+               headers={"Authorization": "Bearer " + access, "X-Tenant-Id": TENANT})
+print("data_status:", summary["data_status"])
+for total in summary["totals"]:
+    print(total["currency"], total["cost"], total["record_count"])
+```
+
+```sh
+docker compose -p jup107 exec -T backend python - < resumen.py
+```
+
+Con los datos cargados debe imprimir exactamente `data_status: partial` (por el registro sin fecha y el que no tiene dimensión), `EUR 90.00 6` y `USD 35.75 2`. El periodo es semiabierto: termina el 1 de julio, así que julio no entra.
+
+Después, por la interfaz: entrar en `http://localhost:5173` con la cuenta de demostración, elegir Growth Ops, poner Mes inicial 2026-01 y Mes final 2026-06 y agrupar por Servicio. Deben salir los valores del paso D3 de [guion.md](guion.md): 90.00 EUR (6 registros) y 35.75 USD (2 registros). La [receta de navegador](receta-navegador.md) hace esta comprobación y la del resto de pasos automáticamente sobre los valores de [esperados.json](esperados.json).
 
 ## 4. Hacer la demo
 
@@ -45,9 +79,10 @@ Seguir [guion.md](guion.md). Si hay que repetirla, recargar la página y volver 
 docker compose -p jup107 exec -T processor python - remove < scripts/synthetic_costs.py
 docker compose -p jup107 exec -T processor python - remove < scripts/synthetic_costs.py
 docker compose -p jup107 exec -T processor python - status < scripts/synthetic_costs.py
+docker compose -p jup107 exec -T backend python - < resumen.py
 ```
 
-Esperado: el primer `remove` dice `Retiradas 2 ingestas y 10 registros sinteticos.`; el segundo, `Retiradas 0 ingestas y 0 registros sinteticos.`; el `status` final, `absent` y 0 registros. Con la página de la demo recargada, el dashboard de Growth Ops para 2026-01 a 2026-06 muestra «Sin datos de costes para este periodo.».
+Esperado: el primer `remove` dice `Retiradas 2 ingestas y 10 registros sinteticos.`; el segundo, `Retiradas 0 ingestas y 0 registros sinteticos.`; el `status` final, `absent` y 0 registros; y `resumen.py` imprime solo `data_status: empty`. Con la página de la demo recargada, el dashboard de Growth Ops para 2026-01 a 2026-06 muestra «Sin datos de costes para este periodo.».
 
 Para terminar, parar el stack y borrar sus volúmenes:
 

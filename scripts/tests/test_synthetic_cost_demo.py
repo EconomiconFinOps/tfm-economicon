@@ -101,6 +101,26 @@ def mismatches(records, figures):
     return found
 
 
+QUANTITY = re.compile(r"(\d+(?:[.,]\d+)?)\s*(?:euros|dólares|por ciento|EUR|USD|%)")
+NAV_NAMES = ("anomalías", "recomendaciones", "corte global", "coste detallado")
+SECRET = re.compile(r"(?i)(DEMO_PASSWORD|TOKEN|SECRET|API[_-]?KEY)\s*[=:]\s*['\"]?[A-Za-z0-9][A-Za-z0-9._\-]{5,}")
+TOPIC_STEPS = {"moneda": {"D3", "D6"}, "hueco": {"D4"}, "cero": {"D4"}, "crédito": {"D5"}, "grande": {"D11"},
+               "cliente": {"D9"}, "etiqueta": {"D7"}}
+
+
+def quantities(text):
+    return {abs(Decimal(m.group(1).replace(",", "."))) for m in QUANTITY.finditer(text)}
+
+
+def figure_values(figures):
+    values = set()
+    for figure in figures:
+        for key in ("expected", "difference", "percent"):
+            if figure.get(key) is not None:
+                values.add(abs(Decimal(figure[key])))
+    return values
+
+
 def load_package():
     return json.loads((PACKAGE / "esperados.json").read_text(encoding="utf-8"))
 
@@ -286,6 +306,99 @@ class PackageTests(unittest.TestCase):
         code = "\n".join(blocks)
         self.assertTrue(code.strip())
         self.assertNotRegex(code, r"\.route\(|\.fulfill\(|setRequestInterception")
+
+
+    def sections(self):
+        parts = re.split(r"(?m)^### ", self.read("guion.md"))[1:]
+        return {part.split()[0]: part for part in parts}
+
+    def allowed_values(self, step_ids):
+        wanted = set(step_ids)
+        for step in self.steps:
+            if step["id"] in step_ids:
+                wanted |= set(step.get("reuses", []))
+        return figure_values([f for f in self.package["figures"] if f["step"] in wanted])
+
+    def test_each_guide_section_carries_the_exact_text_and_duration_of_its_step(self):
+        sections = self.sections()
+        self.assertEqual(list(sections), [s["id"] for s in self.steps])
+        for step in self.steps:
+            lines = sections[step["id"]].splitlines()
+            for line in (f"- **Acción:** {step['action']}", f"- **Qué decir:** «{step['say']}»",
+                         f"- **Resultado esperado:** {step['expect']}"):
+                self.assertIn(line, lines, (step["id"], line[:40]))
+            self.assertTrue(any(l.startswith(f"- **Duración:** {step['seconds']} s") for l in lines), step["id"])
+        declaring = [s for s in self.steps if s.get("declares_synthetic")]
+        self.assertIn("sintétic", declaring[0]["say"].lower())
+
+    def test_quantities_spoken_or_expected_belong_to_the_figures_of_their_step(self):
+        for step in self.steps:
+            spoken = quantities(step["say"] + " " + step["expect"])
+            self.assertLessEqual(spoken, self.allowed_values([step["id"]]), step["id"])
+
+    def test_question_rows_cite_a_step_cover_each_topic_and_quote_only_figures_of_that_step(self):
+        rows = [l for l in self.read("preguntas.md").splitlines()
+                if l.startswith("|") and "---" not in l and not l.startswith("| Pregunta")]
+        ids = {s["id"] for s in self.steps}
+        screens = {s["id"]: s["screen"] for s in self.steps}
+        parsed = []
+        for row in rows:
+            cells = [c.strip() for c in row.strip("|").split("|")]
+            cited = set(re.findall(r"\bD\d+\b", cells[1]))
+            self.assertTrue(cited, "pregunta sin paso: " + cells[0])
+            self.assertLessEqual(cited, ids, row)
+            for step_id in cited:
+                self.assertIn(screens[step_id], ALLOWED_SCREENS, row)
+            self.assertLessEqual(quantities(cells[2]), self.allowed_values(cited), row)
+            parsed.append((cells[0].lower(), cited))
+        for topic, expected in TOPIC_STEPS.items():
+            matching = [cited for question, cited in parsed if topic in question]
+            self.assertTrue(matching, topic)
+            for cited in matching:
+                self.assertTrue(cited & expected, (topic, cited))
+
+    def test_menu_names_of_fixed_data_screens_appear_only_in_the_limits_step(self):
+        limits = next(s["id"] for s in self.steps if s.get("limits"))
+        for step in self.steps:
+            if step["id"] == limits:
+                continue
+            text = " ".join(str(step.get(k, "")) for k in ("title", "action", "say", "expect")).lower()
+            for name in NAV_NAMES:
+                self.assertNotIn(name, text, (step["id"], name))
+        for step_id, section in self.sections().items():
+            if step_id != limits:
+                for name in NAV_NAMES:
+                    self.assertNotIn(name, section.lower(), (step_id, name))
+
+    def test_the_readme_does_not_claim_a_single_screen_reads_the_costs(self):
+        readme = self.read("README.md")
+        self.assertIn("/overview-legacy", readme)
+        self.assertNotIn("Solo el dashboard ejecutivo", readme)
+
+    def test_preparation_warns_about_ports_and_checks_the_api_before_and_after(self):
+        text = self.read("preparacion.md")
+        for needle in ("puertos", "5173", "CORS", "start_date=2026-01-01&end_date=2026-07-01", "X-Tenant-Id",
+                       "data_status: partial", "EUR 90.00 6", "USD 35.75 2", "data_status: empty"):
+            self.assertIn(needle, text, needle)
+        snippet = text.split("```python")[1].split("```")[0]
+        self.assertNotRegex(snippet, r"print\([^)]*(PASSWORD|password)")
+        self.assertIn('os.environ["DEMO_PASSWORD"]', snippet)
+
+    def test_the_recipe_watches_failed_requests_and_error_responses_and_scopes_the_tenant_by_label(self):
+        code = "\n".join(re.findall(r"(?s)```js\n(.*?)```", self.read("receta-navegador.md")))
+        for needle in ("requestfailed", "page.on('response'", "status() >= 400", "getByLabel('Ambito de cliente')"):
+            self.assertIn(needle, code, needle)
+        self.assertNotIn("locator('select')", code)
+        self.assertNotRegex(code, r"addInitScript|routeFromHAR|unroute|console\.\w+\([^)]*\bPASSWORD\b")
+
+    def test_no_file_of_the_package_holds_a_secret_like_assignment(self):
+        for path in PACKAGE.iterdir():
+            self.assertIsNone(SECRET.search(path.read_text(encoding="utf-8")), path.name)
+
+    def test_the_undated_amount_is_not_spoken_because_the_screen_only_shows_the_count(self):
+        step = next(s for s in self.steps if s["id"] == "D8")
+        self.assertNotIn("7,77", step["say"])
+        self.assertIn("no se muestra en pantalla", step["expect"])
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ Está pensada para dos usos con los mismos pasos: respuesta con hechos en la ron
 
 Qué usa y qué no:
 
-- Solo el dashboard ejecutivo (`/`) lee los costes cargados. Las pantallas de Coste detallado, Corte global, Anomalías y Recomendaciones usan datos fijos de la maqueta y **no se usan** como evidencia.
+- Los costes cargados los leen el dashboard ejecutivo (`/`) y la vista heredada `/overview-legacy`; la demo usa solo el dashboard ejecutivo. Las pantallas de Coste detallado, Corte global, Anomalías y Recomendaciones usan datos fijos de la maqueta y **no se usan** como evidencia.
 - La demo de JUP-065 y el recorrido de JUP-104 suponen `tenant-growth` sin costes: se prepara en un stack propio y termina con `remove`.
 
 Comprobación automática de las cifras (sin base de datos, también en CI):
