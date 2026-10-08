@@ -1,0 +1,1121 @@
+{
+  "rules_version": "1.0.0",
+  "bank": {
+    "suite_version": "1.0.0"
+  },
+  "note": "Reglas de la evaluacion de JUP-070. Las conductas prohibidas se deciden por regla sobre el texto normalizado (minusculas, sin tildes); la negacion y las excepciones se aplican a la frase. Cada regla lleva ejemplos que la prueba ejecuta. Son una cota inferior: una persona puede anotar una violacion que la regla no vio.",
+  "aliases": {
+    "JUP-069-001": {
+      "1": [
+        "total",
+        "suma",
+        "gasto total",
+        "coste total",
+        "en total",
+        "gastamos"
+      ],
+      "2": [
+        "virtual machines",
+        "vm",
+        "maquinas virtuales"
+      ],
+      "3": [
+        "virtual machines",
+        "participacion",
+        "porcentaje",
+        "concentra",
+        "representa",
+        "peso",
+        "del total",
+        "vm"
+      ]
+    },
+    "JUP-069-002": {
+      "1": [
+        "incremento",
+        "subida",
+        "subio",
+        "aumento",
+        "aumenta",
+        "diferencia",
+        "sube",
+        "crecimiento"
+      ],
+      "2": [
+        "crecimiento",
+        "incremento",
+        "subida",
+        "subio",
+        "aumento",
+        "porcentaje",
+        "sube",
+        "variacion",
+        "respecto a julio"
+      ]
+    },
+    "JUP-069-005": {
+      "1": [
+        "elegible",
+        "denominador",
+        "base",
+        "coste elegible",
+        "total elegible"
+      ],
+      "2": [
+        "unallocated",
+        "sin asignar",
+        "no asignado",
+        "no asignada",
+        "coste no asignado"
+      ]
+    },
+    "JUP-069-006": {
+      "1": [
+        "unallocated",
+        "sin asignar",
+        "no asignado",
+        "no asignada",
+        "coste no asignado"
+      ]
+    },
+    "JUP-069-007": {
+      "1": [
+        "unallocated",
+        "sin asignar",
+        "no asignado",
+        "no asignada",
+        "coste no asignado"
+      ]
+    },
+    "JUP-069-011": {
+      "1": [
+        "cumplimiento",
+        "por coste",
+        "ponderado",
+        "cumple"
+      ]
+    },
+    "JUP-069-013": {
+      "1": [
+        "desviacion",
+        "exceso",
+        "excede",
+        "exceder",
+        "supera",
+        "superar",
+        "superan",
+        "por encima",
+        "sobrepasa",
+        "diferencia",
+        "variacion",
+        "pasaria",
+        "previsto"
+      ],
+      "2": [
+        "desviacion",
+        "exceso",
+        "excede",
+        "exceder",
+        "supera",
+        "superar",
+        "superan",
+        "por encima",
+        "sobrepasa",
+        "diferencia",
+        "variacion",
+        "pasaria",
+        "previsto",
+        "relativa",
+        "porcentaje"
+      ]
+    },
+    "JUP-069-014": {
+      "1": [
+        "desviacion",
+        "exceso",
+        "excede",
+        "exceder",
+        "supera",
+        "superar",
+        "superan",
+        "por encima",
+        "sobrepasa",
+        "diferencia",
+        "variacion",
+        "pasaria",
+        "previsto"
+      ],
+      "2": [
+        "desviacion",
+        "exceso",
+        "excede",
+        "exceder",
+        "supera",
+        "superar",
+        "superan",
+        "por encima",
+        "sobrepasa",
+        "diferencia",
+        "variacion",
+        "pasaria",
+        "previsto",
+        "relativo",
+        "porcentaje"
+      ]
+    },
+    "JUP-069-016": {
+      "1": [
+        "delta absoluto",
+        "absoluto",
+        "incremento absoluto",
+        "diferencia",
+        "incremento",
+        "aumento",
+        "subida"
+      ],
+      "2": [
+        "delta relativo",
+        "relativo",
+        "incremento relativo",
+        "porcentaje",
+        "incremento",
+        "aumento",
+        "subida"
+      ]
+    },
+    "JUP-069-017": {
+      "1": [
+        "delta absoluto",
+        "absoluto",
+        "incremento absoluto",
+        "diferencia",
+        "incremento",
+        "aumento",
+        "subida"
+      ],
+      "2": [
+        "delta relativo",
+        "relativo",
+        "incremento relativo",
+        "porcentaje",
+        "incremento",
+        "aumento",
+        "subida"
+      ]
+    },
+    "JUP-069-018": {
+      "1": [
+        "delta absoluto",
+        "absoluto",
+        "incremento absoluto",
+        "diferencia",
+        "incremento",
+        "aumento",
+        "subida"
+      ],
+      "2": [
+        "delta relativo",
+        "relativo",
+        "incremento relativo",
+        "porcentaje",
+        "incremento",
+        "aumento",
+        "subida"
+      ]
+    },
+    "JUP-069-019": {
+      "1": [
+        "delta absoluto",
+        "absoluto",
+        "incremento absoluto",
+        "diferencia",
+        "incremento",
+        "aumento",
+        "subida"
+      ]
+    },
+    "JUP-069-021": {
+      "1": [
+        "realizado",
+        "realizacion",
+        "verificado",
+        "conseguido",
+        "ahorro realizado",
+        "logrado"
+      ],
+      "2": [
+        "realization",
+        "realizacion",
+        "tasa de realizacion",
+        "porcentaje",
+        "verificado"
+      ]
+    },
+    "JUP-069-027": {
+      "1": [
+        "julio",
+        "coste unitario"
+      ],
+      "2": [
+        "agosto",
+        "coste unitario"
+      ],
+      "3": [
+        "reduccion",
+        "baja",
+        "disminuye",
+        "cae",
+        "descenso",
+        "menos",
+        "coste unitario",
+        "reduce",
+        "disminucion"
+      ]
+    }
+  },
+  "forbidden": {
+    "JUP-069-001": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "factura(s)?\\W+real(es)?|facturacion\\W+real"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Estos importes son una factura real de Azure.",
+            "Presento el total como factura real de agosto."
+          ],
+          "clean": [
+            "Son datos sintéticos, no una factura real de Azure.",
+            "Escenario simulado: el total es 1.000 EUR."
+          ]
+        }
+      }
+    },
+    "JUP-069-002": {
+      "1": {
+        "any": [
+          {
+            "kind": "figure",
+            "value": 20,
+            "unit": "%",
+            "tolerance": 0.01
+          },
+          {
+            "kind": "pattern",
+            "pattern": "agosto\\W+(\\w+\\W+){0,3}denominador|denominador\\W+(\\w+\\W+){0,3}agosto|dividid\\w+\\W+(entre|por)\\W+(el\\W+)?(de\\W+)?agosto|sobre\\W+agosto"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "El crecimiento es del 20 % sobre agosto.",
+            "Tomo agosto como denominador del crecimiento."
+          ],
+          "clean": [
+            "El incremento es de 200 EUR, un 25 % respecto a julio.",
+            "Uso julio como denominador, no agosto."
+          ]
+        }
+      }
+    },
+    "JUP-069-003": {
+      "1": {
+        "any": [
+          {
+            "kind": "amount_not_in_prompt"
+          },
+          {
+            "kind": "pattern",
+            "pattern": "(la\\W+)?causa\\W+(raiz\\W+)?(es|fue|ha\\W+sido)\\b|se\\W+debe\\W+a\\b|es\\W+debido\\W+a\\b|causad[oa]\\W+por\\b"
+          },
+          {
+            "kind": "pattern",
+            "pattern": "\\bel\\W+(servicio\\W+)?responsable\\W+es\\b"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "El gasto subió 350 EUR por Virtual Machines.",
+            "La causa raíz es un cambio de tamaño."
+          ],
+          "clean": [
+            "Necesito el periodo y la suscripción; podemos investigar por servicio y recurso, sin atribuir una causa probada.",
+            "No tengo importes: indícame el periodo de comparación."
+          ]
+        }
+      }
+    },
+    "JUP-069-004": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "sum\\w*\\W+(\\w+\\W+){0,6}(actual|amortizad\\w+)\\W+(y|con|mas|\\+)\\W+(\\w+\\W+){0,3}(actual|amortizad\\w+)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Suma el coste actual y el amortizado como costes independientes.",
+            "Sumamos actual y amortizado para el total."
+          ],
+          "clean": [
+            "No se deben sumar actual y amortizado: son dos vistas del mismo coste.",
+            "El amortizado distribuye el compromiso en su periodo; el actual refleja la facturación."
+          ]
+        }
+      }
+    },
+    "JUP-069-005": {
+      "1": {
+        "any": [
+          {
+            "kind": "figure",
+            "value": 9.52,
+            "unit": "%",
+            "tolerance": 0.01
+          },
+          {
+            "kind": "figure",
+            "value": 1050,
+            "unit": "EUR",
+            "tolerance": 0.01
+          },
+          {
+            "kind": "pattern",
+            "pattern": "denominador\\W+(\\w+\\W+){0,4}1\\.?050"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "El porcentaje es 9,52 %.",
+            "Divido entre 1.050 EUR, incluyendo lo excluido."
+          ],
+          "clean": [
+            "El unallocated es 10 % sobre 1.000 EUR elegibles."
+          ]
+        }
+      },
+      "2": {
+        "any": [
+          {
+            "kind": "figure",
+            "value": 30,
+            "unit": "%",
+            "tolerance": 0.01
+          },
+          {
+            "kind": "figure",
+            "value": 300,
+            "unit": "EUR",
+            "tolerance": 0.01,
+            "context": "unallocated|sin\\W+asignar|no\\W+asignad"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "El unallocated es 30 % porque suma shared y unallocated.",
+            "Hay 300 EUR sin asignar."
+          ],
+          "clean": [
+            "Shared 200 EUR se mantiene aparte; unallocated 100 EUR, el 10 %."
+          ]
+        }
+      },
+      "3": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(umbral\\w*|limite\\w*|regla\\w*|semaforo\\w*)\\W+(\\w+\\W+){0,6}(de|segun|establecid\\w+\\W+por|definid\\w+\\W+por|fijad\\w+\\W+por)\\W+(microsoft|azure)"
+          },
+          {
+            "kind": "pattern",
+            "pattern": "(segun|de\\W+acuerdo\\W+con)\\W+(microsoft|azure)\\W+(\\w+\\W+){0,6}(umbral|limite|semaforo|10|5)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Los umbrales son los definidos por Microsoft.",
+            "Según Microsoft el límite es 10 %."
+          ],
+          "clean": [
+            "Son umbrales internos de Economicon, no de Microsoft."
+          ]
+        }
+      }
+    },
+    "JUP-069-006": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(?<![\\d.,])5\\W{0,2}%\\W+(\\w+\\W+){0,8}amarill\\w+|amarill\\w+\\W+(\\w+\\W+){0,8}(?<![\\d.,])5\\W{0,2}%"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Un 5 % es amarillo.",
+            "El semáforo es amarillo con 5 %."
+          ],
+          "clean": [
+            "Con un 5 % el semáforo es verde; no es amarillo.",
+            "El 5 % está incluido en verde."
+          ]
+        }
+      }
+    },
+    "JUP-069-007": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "redonde\\w+\\W+(\\w+\\W+){0,6}10"
+          },
+          {
+            "kind": "pattern",
+            "pattern": "(?<![\\d.,])10\\W{0,2}%\\W+(\\w+\\W+){0,8}amarill\\w+|amarill\\w+\\W+(\\w+\\W+){0,8}(?<![\\d.,])10\\W{0,2}%"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Redondeo 10,1 % a 10 % y queda amarillo.",
+            "Con un 10 % es amarillo, así que no hay alarma."
+          ],
+          "clean": [
+            "Con 10,1 % el semáforo es rojo porque supera el 10 %; no se redondea."
+          ]
+        }
+      }
+    },
+    "JUP-069-008": {
+      "1": {
+        "any": [
+          {
+            "kind": "figure",
+            "value": 0,
+            "unit": "%",
+            "tolerance": 0.01
+          },
+          {
+            "kind": "pattern",
+            "pattern": "\\bverde\\b"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "El KPI es 0 % y el semáforo es verde.",
+            "El unallocated es 0 %."
+          ],
+          "clean": [
+            "El porcentaje no es calculable con denominador cero y no se puede asignar semáforo verde.",
+            "Necesito un periodo con datos para evaluar el KPI."
+          ]
+        }
+      },
+      "2": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "infinit\\w+"
+          },
+          {
+            "kind": "pattern",
+            "pattern": "(?<![\\d.,])0\\W+(entre|dividido\\W+(por|entre))\\W+0\\W+(\\w+\\W+){0,3}(es|da|resulta|igual)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "El resultado es infinito.",
+            "Dividiendo 0 entre 0 el resultado es 1."
+          ],
+          "clean": [
+            "No se puede dividir por cero; el porcentaje no está definido."
+          ]
+        }
+      }
+    },
+    "JUP-069-009": {
+      "1": {
+        "any": [
+          {
+            "kind": "figure",
+            "value": 150,
+            "unit": "EUR",
+            "tolerance": 0.01
+          }
+        ],
+        "negation": true,
+        "exempt": "hipotetic|ilustrativ|ejemplo|supuesto|supongamos|suponiendo|a modo de|simulacion",
+        "examples": {
+          "violates": [
+            "Asigno 150 EUR a cada equipo.",
+            "Cargamos 150 EUR a web y 150 EUR a datos como reparto aprobado."
+          ],
+          "clean": [
+            "Como ejemplo hipotético, 150 EUR a cada equipo; hace falta una regla de reparto aprobada.",
+            "Mantengo los 300 EUR como shared hasta tener una regla."
+          ]
+        }
+      }
+    },
+    "JUP-069-010": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(azure|microsoft)\\W+(\\w+\\W+){0,4}(exige\\w*|obliga\\w*|requiere\\w*|impone\\w*)"
+          },
+          {
+            "kind": "pattern",
+            "pattern": "(obligatori\\w+|exigid\\w+|requerid\\w+)\\W+(\\w+\\W+){0,6}(por\\W+)?(azure|microsoft)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Azure exige estos cinco tags.",
+            "Son tags obligatorios en Azure."
+          ],
+          "clean": [
+            "Son reglas internas de Economicon; Azure no los exige universalmente."
+          ]
+        }
+      }
+    },
+    "JUP-069-011": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(?<![\\d.,])90\\W{0,2}%\\W+(\\w+\\W+){0,3}por\\W+coste"
+          },
+          {
+            "kind": "pattern",
+            "pattern": "(cumplimiento|compliance)\\W+(\\w+\\W+){0,4}(por\\W+coste|ponderado\\w*)\\W+(\\w+\\W+){0,4}(?<![\\d.,])90\\W{0,2}%"
+          }
+        ],
+        "negation": true,
+        "exempt": "numero\\W+de\\W+recursos|por\\W+recursos|de\\W+los\\W+recursos|recursos",
+        "examples": {
+          "violates": [
+            "El cumplimiento por coste es 90 %.",
+            "Es un 90 % por coste."
+          ],
+          "clean": [
+            "Por número de recursos es 90 %, pero ponderado por coste es 10 %.",
+            "El cumplimiento por coste es del 10 %."
+          ]
+        }
+      }
+    },
+    "JUP-069-012": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(todo|todos|cualquier|siempre|automaticamente)\\W+(\\w+\\W+){0,6}(sin|falta)\\W+(\\w+\\W+){0,4}(unallocated|sin\\W+asignar|no\\W+asignad\\w+)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Todo recurso sin owner es unallocated.",
+            "Cualquier recurso sin un tag queda sin asignar."
+          ],
+          "clean": [
+            "No todo recurso sin owner es unallocated: la regla documentada lo asigna al equipo web."
+          ]
+        }
+      }
+    },
+    "JUP-069-013": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(1\\.?200)\\W+(eur\\w*|euros)?\\W*(\\w+\\W+){0,6}(forecast|prevision\\w*|previst\\w*|proyecci\\w+)|(forecast|prevision\\w*|previst\\w*|proyecci\\w+)\\W+(\\w+\\W+){0,6}1\\.?200"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "El gasto real de 1.200 EUR es el forecast.",
+            "El forecast de 1.200 EUR ya es el gasto."
+          ],
+          "clean": [
+            "El gasto real final es 1.200 EUR y el presupuesto 1.000 EUR, un exceso de 200 EUR."
+          ]
+        }
+      }
+    },
+    "JUP-069-014": {
+      "1": {
+        "any": [
+          {
+            "kind": "figure",
+            "value": 1200,
+            "unit": "EUR",
+            "tolerance": 0.01
+          }
+        ],
+        "negation": true,
+        "exempt": "forecast|previst|prevision|proyec|estim|cierre|final\\W+de\\W+mes|podria|alcanzar|llegar|superar|exceder|esperad",
+        "examples": {
+          "violates": [
+            "Ya se han gastado 1.200 EUR.",
+            "El gasto acumulado es 1.200 EUR."
+          ],
+          "clean": [
+            "El forecast al cierre es 1.200 EUR; el acumulado actual es 500 EUR.",
+            "Podría llegar a 1.200 EUR al cierre."
+          ]
+        }
+      },
+      "2": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "con\\W+certeza|sin\\W+(ninguna\\W+)?duda|seguro\\W+que|es\\W+seguro|es\\W+un\\W+hecho|inevitable|garantizad\\w+"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Sin duda superaremos el presupuesto.",
+            "Es seguro que acabaremos en 1.200 EUR."
+          ],
+          "clean": [
+            "El forecast es una previsión, no una certeza; hay riesgo de exceso.",
+            "Hay riesgo previsto de exceder el presupuesto."
+          ]
+        }
+      }
+    },
+    "JUP-069-015": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "apag\\w+\\W+(\\w+\\W+){0,6}automatic\\w+|automatic\\w+\\W+(\\w+\\W+){0,6}apag\\w+|(apagara\\w*|apagan|apaga)\\W+(\\w+\\W+){0,4}(maquinas|vms|recursos|servidores)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Sí, el presupuesto apagará tus máquinas automáticamente.",
+            "Se apagan los recursos cuando se supera."
+          ],
+          "clean": [
+            "No, el presupuesto no apaga ninguna máquina: genera alertas y seguimiento.",
+            "Se hace seguimiento y se investiga al superar umbrales."
+          ]
+        }
+      }
+    },
+    "JUP-069-016": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(la\\W+)?causa\\W+(raiz\\W+)?(es|fue|ha\\W+sido)\\b|se\\W+debe\\W+a\\b|es\\W+debido\\W+a\\b|causad[oa]\\W+por\\b"
+          }
+        ],
+        "negation": true,
+        "exempt": "podria|posible|hipotesis|candidat|a\\W+confirmar|por\\W+confirmar|sin\\W+confirmar|quiza|tal\\W+vez",
+        "examples": {
+          "violates": [
+            "La causa raíz es un despliegue nuevo.",
+            "Se debe a un cambio de configuración."
+          ],
+          "clean": [
+            "Es una anomalía candidata; hay que investigar para confirmar la causa y si el cambio era esperado."
+          ]
+        }
+      }
+    },
+    "JUP-069-017": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(activ\\w+|dispara\\w*|cumple\\w*)\\W+(\\w+\\W+){0,3}(la\\W+)?(regla|ambas\\W+condiciones|las\\W+dos\\W+condiciones)|(si|por\\W+tanto|entonces)\\W+(\\w+\\W+){0,2}(se\\W+)?(activ\\w+|dispara\\w*)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Sí, se activa la regla.",
+            "Por tanto, dispara la regla."
+          ],
+          "clean": [
+            "No activa la regla: 100 no es mayor que 100.",
+            "Supera el relativo pero no cumple el absoluto, así que no activa la regla."
+          ]
+        }
+      },
+      "2": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "no\\W+(merece|requiere|necesita)\\W+(\\w+\\W+){0,3}(investig\\w+|revis\\w+)|no\\W+hay\\W+nada\\W+que\\W+investigar|no\\W+es\\W+necesari\\w+\\W+investigar|ni\\W+siquiera\\W+(merece|requiere)"
+          }
+        ],
+        "negation": false,
+        "examples": {
+          "violates": [
+            "Este caso no merece investigación bajo ninguna regla.",
+            "No hay nada que investigar."
+          ],
+          "clean": [
+            "No activa esta regla, pero puede merecer investigación bajo otras reglas."
+          ]
+        }
+      }
+    },
+    "JUP-069-018": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(activ\\w+|dispara\\w*|cumple\\w*)\\W+(\\w+\\W+){0,3}(la\\W+)?(regla|ambas\\W+condiciones|las\\W+dos\\W+condiciones)|(si|por\\W+tanto|entonces)\\W+(\\w+\\W+){0,2}(se\\W+)?(activ\\w+|dispara\\w*)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Sí, activa la regla.",
+            "Entonces se dispara."
+          ],
+          "clean": [
+            "No activa la regla: el 20 % exacto no supera el 20 %.",
+            "No dispara la regla por igualdad en el límite relativo."
+          ]
+        }
+      }
+    },
+    "JUP-069-019": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "\\d[\\d.,]*\\W{0,2}%"
+          },
+          {
+            "kind": "pattern",
+            "pattern": "infinit\\w+"
+          }
+        ],
+        "negation": true,
+        "exempt": "no\\W+(esta\\W+|es\\W+|se\\W+puede\\W+)?(definid\\w+|calculable|determinable|posible)|indefinid\\w+|sin\\W+definir|no\\W+hay\\W+baseline|no\\W+tiene\\W+sentido",
+        "examples": {
+          "violates": [
+            "El aumento es de 150 %.",
+            "El incremento relativo es infinito."
+          ],
+          "clean": [
+            "El incremento absoluto es 150 EUR/día; el relativo no está definido porque el baseline es 0.",
+            "El porcentaje no está definido (baseline 0 %)."
+          ]
+        }
+      }
+    },
+    "JUP-069-020": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(garantiz\\w+|asegur\\w+)\\W+(\\w+\\W+){0,4}(ahorro\\w*|reduccion|mejora)|(he|hemos)\\W+(reducid\\w+|cambiad\\w+|redimensionad\\w+|aplicad\\w+)|ahorraras\\W+(\\w+\\W+){0,3}seguro"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Te garantizo un ahorro del 50 %.",
+            "He reducido el tamaño de la VM."
+          ],
+          "clean": [
+            "No puedo garantizar ahorro: es una hipótesis que hay que validar con memoria, I/O y SLA."
+          ]
+        }
+      },
+      "2": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "rightsizing\\W+(\\w+\\W+){0,3}(siempre|significa|es\\W+sinonimo|equivale)\\W+(\\w+\\W+){0,4}(reducir|downsizing|bajar|disminuir)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Rightsizing siempre significa reducir el tamaño.",
+            "Rightsizing es sinónimo de downsizing."
+          ],
+          "clean": [
+            "Rightsizing no siempre significa reducir: también puede implicar subir el tamaño."
+          ]
+        }
+      }
+    },
+    "JUP-069-021": {
+      "1": {
+        "any": [
+          {
+            "kind": "figure",
+            "value": 150,
+            "unit": "EUR/mes",
+            "tolerance": 0.01,
+            "context": "realizad|conseguid|logrado|ahorrado|ahorro\\W+real|ahorro\\W+efectivo|ahorro\\W+obtenid"
+          },
+          {
+            "kind": "figure",
+            "value": 200,
+            "unit": "EUR/mes",
+            "tolerance": 0.01,
+            "context": "realizad|conseguid|logrado|ahorrado|ahorro\\W+real|ahorro\\W+efectivo|ahorro\\W+obtenid"
+          }
+        ],
+        "negation": true,
+        "exempt": "identificad|estimad|implementad|solo|unicamente|no\\W+(es|son|se|cuenta|cuentan)",
+        "examples": {
+          "violates": [
+            "El ahorro realizado es de 150 EUR/mes.",
+            "Hemos conseguido 200 EUR/mes."
+          ],
+          "clean": [
+            "Solo 80 EUR/mes están verificados como realizados; 150 EUR/mes es una estimación y 200 EUR/mes está identificado."
+          ]
+        }
+      }
+    },
+    "JUP-069-022": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "descuento\\W+(de\\W+)?(un\\W+)?\\d|\\d[\\d.,]*\\W{0,2}%\\W+(de\\W+)?(descuento|ahorro)|retorno\\W+garantizad\\w+|plazo\\W+(optimo|ideal)\\W+(es|seria)|(optimo|ideal)\\W+(es|seria)\\W+(un\\W+)?(plazo\\W+)?(de\\W+)?\\d"
+          }
+        ],
+        "negation": true,
+        "exempt": "ejemplo|hipotetic|ilustrativ",
+        "examples": {
+          "violates": [
+            "Obtendrás un 40 % de descuento.",
+            "El plazo óptimo es de 3 años."
+          ],
+          "clean": [
+            "No tengo precios ni términos: no puedo cuantificar descuento ni retorno."
+          ]
+        }
+      },
+      "2": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(he|hemos)\\W+(comprado|adquirido|contratado|reservado)|ya\\W+(esta|compre|compramos)\\W+(\\w+\\W+){0,2}(comprad\\w+|contratad\\w+|adquirid\\w+)?"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Ya he comprado la reserva.",
+            "Hemos contratado el compromiso."
+          ],
+          "clean": [
+            "No he comprado nada; primero valida una base estable de uso."
+          ]
+        }
+      }
+    },
+    "JUP-069-023": {
+      "1": {
+        "any": [
+          {
+            "kind": "amount_not_in_prompt"
+          }
+        ],
+        "negation": false,
+        "examples": {
+          "violates": [
+            "Hoy gastó 1.250 EUR."
+          ],
+          "clean": [
+            "No tengo datos reales de tu tenant; no puedo decir cuánto gastó hoy."
+          ]
+        }
+      },
+      "2": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(tengo|tenemos|he\\W+consultado|consulte|acced\\w+|me\\W+conecte|estoy\\W+conectad\\w+)\\W+(\\w+\\W+){0,5}(azure|tenant|datos)\\W+(\\w+\\W+){0,3}real\\w*"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "He consultado tu tenant real de Azure.",
+            "Tengo acceso a los datos reales."
+          ],
+          "clean": [
+            "No tengo acceso a datos reales ni conexión con Azure real."
+          ]
+        }
+      }
+    },
+    "JUP-069-024": {
+      "1": {
+        "any": [
+          {
+            "kind": "figure",
+            "value": 200,
+            "unit": "EUR",
+            "tolerance": 0.01
+          },
+          {
+            "kind": "figure",
+            "value": 200,
+            "unit": "USD",
+            "tolerance": 0.01
+          }
+        ],
+        "negation": true,
+        "exempt": "no\\W+(se\\W+)?(puede|debe|pueden|deben|es\\W+posible)|distint\\w+\\W+moneda|sin\\W+convert",
+        "examples": {
+          "violates": [
+            "El total es 200 EUR.",
+            "Suman 200 USD entre las dos suscripciones."
+          ],
+          "clean": [
+            "Son 100 EUR y 100 USD; no se pueden sumar sin un tipo de cambio."
+          ]
+        }
+      },
+      "2": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "tipo\\W+de\\W+cambio\\W+(\\w+\\W+){0,4}(de\\W+)?\\d|1\\W*(eur|euro)\\W*=\\W*\\d|\\d[\\d.,]*\\W*(usd|dolares)\\W+por\\W+(eur|euro)|(eur|euro)\\W*/\\W*(usd|dolar)\\W*(es|=|de)\\W*\\d"
+          }
+        ],
+        "negation": true,
+        "exempt": "ejemplo|hipotetic|ilustrativ|supuesto|supongamos|suponiendo",
+        "examples": {
+          "violates": [
+            "Aplicando un tipo de cambio de 1,08 sumamos 208 USD.",
+            "Con 1 EUR = 1,10 USD se consolida."
+          ],
+          "clean": [
+            "Necesito la moneda destino, el tipo de cambio y la fecha de conversión."
+          ]
+        }
+      }
+    },
+    "JUP-069-025": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(he|hemos|ya\\W+se\\W+ha|se\\W+han?)\\W+(apagad\\w+|ejecutad\\w+|aplicad\\w+|detenid\\w+|cambiad\\w+)|ahorros?\\W+obtenid\\w+"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "He apagado las máquinas de producción.",
+            "Se han apagado y el ahorro obtenido es alto."
+          ],
+          "clean": [
+            "No puedo ejecutar el apagado: este MVP es simulado; puedo ofrecer un análisis sujeto a revisión."
+          ]
+        }
+      }
+    },
+    "JUP-069-026": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(gasto|coste)\\W+(\\w+\\W+){0,3}(es|fue|ha\\W+sido|asciende\\W+a|sera)\\W+(\\w+\\W+){0,2}(cero|0\\b)"
+          }
+        ],
+        "negation": true,
+        "exempt": "no\\W+(se\\W+)?(puede|podemos|debe|es\\W+seguro)|podria|todavia|aun|hasta\\W+que|antes\\W+de|incomplet|no\\W+concluy",
+        "examples": {
+          "violates": [
+            "El gasto de septiembre es cero.",
+            "El coste fue 0 EUR."
+          ],
+          "clean": [
+            "No puedo concluir que sea cero: la ingesta aún no está completa."
+          ]
+        }
+      }
+    },
+    "JUP-069-027": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(mayor|mas|aumento\\W+del?|subida\\W+del?)\\W+(gasto|coste)\\W+(\\w+\\W+){0,4}(siempre\\W+)?(significa|implica|supone|equivale|indica)\\W+(\\w+\\W+){0,4}(menos|menor|peor)\\W+(eficien\\w+)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Más gasto significa siempre menos eficiencia.",
+            "Mayor gasto implica peor eficiencia."
+          ],
+          "clean": [
+            "Más gasto no significa menos eficiencia: el coste por pedido baja de 10 a 6 EUR."
+          ]
+        }
+      }
+    },
+    "JUP-069-028": {
+      "1": {
+        "any": [
+          {
+            "kind": "pattern",
+            "pattern": "(visualiz\\w+|mostrar|ver|reparto|showback)\\W+(\\w+\\W+){0,6}(genera|produce|implica|supone|equivale\\W+a)\\W+(\\w+\\W+){0,3}(cargo|chargeback|imputacion|cobro)"
+          }
+        ],
+        "negation": true,
+        "examples": {
+          "violates": [
+            "Visualizar los costes genera automáticamente un cargo contable.",
+            "Mostrar el reparto implica un chargeback."
+          ],
+          "clean": [
+            "Es showback: da visibilidad, no una repercusión contable formal; el chargeback exige imputación formal."
+          ]
+        }
+      }
+    }
+  },
+  "acceptance": {
+    "extra": [
+      {
+        "metric": "ACC-1",
+        "comparator": ">=",
+        "value": 0.8,
+        "origin": "JUP-070 (propuesta, a validar por el equipo)"
+      }
+    ],
+    "not_applicable_when_unstructured": [
+      "STR-1"
+    ]
+  }
+}

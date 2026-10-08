@@ -92,7 +92,7 @@ A case SHALL pass only if every objective check passed and every required point 
 
 ### Requirement: Results in the format of the metrics
 
-The evaluation SHALL write a results file in the version of the format accepted by the reference calculator of JUP-067, without modifying it, containing the run header (commit, date, bank version and hash, corpus, provider, generation settings and availability) and one entry per case. The file SHALL NOT contain the text of any question, answer or fragment, nor credentials. The calculator SHALL accept the file and produce its report.
+The evaluation SHALL write a results file in the version of the format accepted by the reference calculator of JUP-067, without modifying it, containing the run header (commit, date, bank version and hash, corpus, provider, generation settings and availability) and one entry per case. The file SHALL NOT contain the text of any question, answer or fragment, nor credentials. The calculator SHALL accept the file and produce its report. Because the client measures only the total duration of the request, the stages it cannot observe SHALL be reported as the format requires without presenting them as measurements, and the evidence and methodology SHALL say that only the total is measured.
 
 #### Scenario: Calculator accepts the file
 - **WHEN** the results file is given to the reference calculator
