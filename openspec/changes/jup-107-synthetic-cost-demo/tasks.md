@@ -22,7 +22,7 @@
 
 ## 5. Cierre y verificación
 
-- [ ] 5.1 Batería completa: `synthetic-demo:test`, `synthetic-costs:test`, las suites de gobernanza, `openspec:validate`, `jup:check:all`, `jup:cleanup:check` y `git diff --check`. Registrar comandos y resultados.
-- [ ] 5.2 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con la sección `## Adversarial Review`, el barrido de patrones, los riesgos y los hallazgos registrados en `openspec/findings/backlog.md`.
+- [x] 5.1 Batería completa: `synthetic-demo:test`, `synthetic-costs:test`, las suites de gobernanza, `openspec:validate`, `jup:check:all`, `jup:cleanup:check` y `git diff --check`. Registrar comandos y resultados. Resultado: ver `review.md` (40 pruebas de demo, 46 de JUP-106, 25 de gobernanza, OpenSpec 53 de 53, trazabilidad, higiene y `git diff --check` correctos).
+- [x] 5.2 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con la sección `## Adversarial Review`, el barrido de patrones, los riesgos y los hallazgos registrados en `openspec/findings/backlog.md`. Tres pasadas: `changes-requested` (pass 1 y 2, atendidas) y `accept` en la pass 3, cuyos hallazgos salvo ADV-3 se atendieron; ADV-3 queda como RF-107-001 pendiente de aceptación de Lucia.
 - [ ] 5.3 Evidencia en `docs/evidence/JUP-107-validation.md` y bloque `## Human Approval` post-review de Lucia.
 - [ ] 5.4 Archivar el change en la misma rama, revisar la documentación posterior al archivo y abrir el PR a develop.
