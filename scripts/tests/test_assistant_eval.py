@@ -438,6 +438,56 @@ class RunHeaderAndResultsTests(unittest.TestCase):
         self.assertEqual(sorted(analysis["not_run"]), sorted(CRITICAL))
 
 
+class FragmentLabelTests(unittest.TestCase):
+    """Fragments are labelled with the bank source key and the section of the document they come from."""
+
+    FINOPS = "docs/assistant-corpus/finops/azure-finops-mvp.md"
+    GLOSSARY = "docs/assistant-corpus/glossary/glossary.md"
+    MAP = {"doc-finops": FINOPS, "doc-glossary": GLOSSARY}
+
+    def finops_chunk_with_heading(self, heading):
+        calibration = evaluation.load_calibration()
+        text = (ROOT / self.FINOPS).read_text(encoding="utf-8")
+        spans = calibration.chunk_spans(text, 500, 50)
+        sections = calibration.section_spans(text)
+        return next(i for i, (_, s, e) in enumerate(spans) if calibration.primary_section(sections, s, e) == heading)
+
+    def fragment_at(self, document, index):
+        return {"chunk_id": f"{document}:chunk:{index}", "source": "assistant-corpus", "heading": "", "distance": 0.3, "content": "x"}
+
+    def test_a_chunk_gets_the_bank_source_key_and_its_section(self):
+        index = self.finops_chunk_with_heading("Cost Management Y Cost Analysis")
+        labelled = evaluation.label_fragments([self.fragment_at("doc-finops", index)], self.MAP, 500, 50)
+        self.assertEqual((labelled[0]["source"], labelled[0]["heading"]), ("finops", "Cost Management Y Cost Analysis"))
+
+    def test_other_documents_get_their_own_name_and_unknown_ones_are_left_alone(self):
+        labelled = evaluation.label_fragments([self.fragment_at("doc-glossary", 0), self.fragment_at("desconocido", 3)], self.MAP, 500, 50)
+        self.assertEqual(labelled[0]["source"], "glossary")
+        self.assertEqual((labelled[1]["source"], labelled[1]["heading"]), ("assistant-corpus", ""))
+
+    def test_a_path_outside_the_repository_corpus_is_rejected(self):
+        for path in ("../../etc/hosts", "/etc/hosts", "docs/../README.md", "apps/backend/app/main.py"):
+            with self.assertRaises(evaluation.EvaluationError):
+                evaluation.label_fragments([self.fragment_at("x", 0)], {"x": path}, 500, 50)
+
+    def test_the_labelling_does_not_change_the_raw_fragments(self):
+        original = [self.fragment_at("doc-finops", 0)]
+        snapshot = json.dumps(original)
+        evaluation.label_fragments(original, self.MAP, 500, 50)
+        self.assertEqual(json.dumps(original), snapshot)
+
+    def test_labels_reach_the_results_and_make_the_retrieval_metrics_computable(self):
+        index = self.finops_chunk_with_heading("Cost Management Y Cost Analysis")
+        raw, judgments = RunHeaderAndResultsTests().full_run()
+        raw["cases"][0]["retrieved"] = [self.fragment_at("doc-finops", index)]
+        results, _ = evaluation.build_results(BANK, RULES, raw, judgments, RunHeaderAndResultsTests.RUN_INFO, provisional=False, document_map=self.MAP)
+        first = results["cases"][0]["retrieved"][0]
+        self.assertEqual((first["source"], first["heading"]), ("finops", "Cost Management Y Cost Analysis"))
+        report = metrics.compute(results, BANK, LABELS, CATALOGUE)
+        self.assertGreaterEqual(report["metrics"]["REL-1"]["k"], 1)
+        self.assertGreaterEqual(report["metrics"]["REL-2"]["k"], 1)
+
+
 class VerdictTests(unittest.TestCase):
     def report(self, **targets):
         metrics_block = {

@@ -58,6 +58,52 @@ def load_metrics():
     return module
 
 
+CALIBRATION_PATH = ROOT / "tools" / "retrieval-calibration.py"
+CORPUS_DIR = ROOT / "docs" / "assistant-corpus"
+
+
+def load_calibration():
+    spec = importlib.util.spec_from_file_location("economicon_retrieval_calibration_for_eval", CALIBRATION_PATH)
+    if spec is None or spec.loader is None:
+        raise EvaluationError("no se puede cargar tools/retrieval-calibration.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def corpus_file(path: str) -> Path:
+    target = (ROOT / path).resolve()
+    if CORPUS_DIR.resolve() not in target.parents or target.suffix != ".md":
+        raise EvaluationError(f"{path}: solo se admiten documentos Markdown del corpus del asistente")
+    return target
+
+
+def label_fragments(fragments: list[dict], document_map: dict, chunk_size: int, chunk_overlap: int) -> list[dict]:
+    """Source key of the bank and section of each retrieved chunk, from the document it was cut from."""
+    calibration = load_calibration()
+    bank = read_json(BANK_PATH)
+    keys = {item["path"]: name for name, item in bank["sources"].items()}
+    cache: dict[str, tuple] = {}
+    labelled = []
+    for fragment in fragments:
+        item = dict(fragment)
+        document, _, index = item["chunk_id"].partition(":chunk:")
+        path = document_map.get(document)
+        if path is not None and index.isdigit():
+            file = corpus_file(path)
+            if path not in cache:
+                text = file.read_text(encoding="utf-8")
+                cache[path] = (calibration.chunk_spans(text, chunk_size, chunk_overlap), calibration.section_spans(text))
+            spans, sections = cache[path]
+            if int(index) < len(spans):
+                _, start, end = spans[int(index)]
+                item["source"] = keys.get(path, file.stem)
+                item["heading"] = calibration.primary_section(sections, start, end) or ""
+        labelled.append(item)
+    return labelled
+
+
 def normalize(text: str) -> str:
     folded = unicodedata.normalize("NFD", text)
     folded = "".join(char for char in folded if not unicodedata.combining(char))
@@ -337,10 +383,14 @@ def score_case(case: dict, raw: dict | None, judgments: dict, rules: dict, *, pr
     return entry, analysis
 
 
-def build_results(bank: dict, rules: dict, raw: dict, judgments: dict, run_info: dict, *, provisional: bool):
+def build_results(bank: dict, rules: dict, raw: dict, judgments: dict, run_info: dict, *, provisional: bool, document_map: dict | None = None):
     metrics = load_metrics()
     validate_rules(rules, bank)
     raw_cases = {item["case"]: item for item in raw["cases"]}
+    if document_map:
+        retrieval = run_info["retrieval"]
+        raw_cases = {case_id: {**item, "retrieved": label_fragments(item["retrieved"], document_map, retrieval["chunk_size"], retrieval["chunk_overlap"])}
+                     for case_id, item in raw_cases.items()}
     entries, analysis = [], {"provisional": provisional, "single_decider_cases": [], "not_run": [], "blocked": [], "disagreements": {}, "reasons": {}}
     for case in bank["cases"]:
         entry, detail = score_case(case, raw_cases.get(case["id"]), judgments.get(case["id"], {}), rules, provisional=provisional)
@@ -567,7 +617,8 @@ def run_score(args) -> int:
     bank, rules = read_json(BANK_PATH), load_rules(args.rules)
     validate_rules(rules, bank)
     judgments = read_json(args.judgments).get("cases", {})
-    results, analysis = build_results(bank, rules, read_json(args.raw), judgments, read_json(args.run_info), provisional=args.provisional)
+    document_map = read_json(args.document_map) if args.document_map else None
+    results, analysis = build_results(bank, rules, read_json(args.raw), judgments, read_json(args.run_info), provisional=args.provisional, document_map=document_map)
     labels = read_json(ROOT / "docs" / "validation" / "JUP-022-retrieval-labels.json")
     catalogue = metrics.load_catalogue()
     report = metrics.compute(results, bank, labels, catalogue)
@@ -614,6 +665,7 @@ def parser() -> argparse.ArgumentParser:
     score.add_argument("--report-json", type=Path, help="informe del calculador en JSON, para compare")
     score.add_argument("--rules", type=Path, default=RULES_PATH)
     score.add_argument("--provisional", action="store_true")
+    score.add_argument("--document-map", type=Path, help="JSON {id del documento: ruta del corpus} para etiquetar fuente y seccion de los fragmentos")
     score.add_argument("--generated-at")
     score.set_defaults(run=run_score)
     compare = commands.add_parser("compare")

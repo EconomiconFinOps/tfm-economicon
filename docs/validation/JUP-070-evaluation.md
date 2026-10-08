@@ -51,17 +51,19 @@ Todos los ficheros con texto (respuestas, hoja de revisión, juicios) van **fuer
      {"reviewer": "paris", "result": "pass", "note": ""}]}}}
    ```
 
-5. Escribir la ficha de la ejecución (commit, fecha, corpus, proveedor y alias de embeddings, parámetros de recuperación y de generación) con el formato de `run` de [JUP-067](JUP-067-metrics.md); el cliente del chat no puede conocerlos.
+5. Si se quieren las métricas de recuperación (REL-1 y REL-2), el cliente del chat no ve la fuente ni la sección de cada fragmento. Se guarda un mapa fuera de Git con el identificador de cada documento y su ruta en el corpus y se pasa a `score` con `--document-map`; la herramienta etiqueta cada fragmento con la fuente de la batería y la sección del documento con el mismo troceado y las mismas secciones que la calibración de JUP-022. Con la base vectorial en marcha, el mapa sale de la tabla `knowledge_documents` (`id` y `artifact_uri`).
 
-6. Puntuar:
+6. Escribir la ficha de la ejecución (commit, fecha, corpus, proveedor y alias de embeddings, parámetros de recuperación y de generación) con el formato de `run` de [JUP-067](JUP-067-metrics.md); el cliente del chat no puede conocerlos.
+
+7. Puntuar:
 
    ```sh
-   python tools/assistant-eval.py score --raw ../evaluacion/crudo.json --judgments ../evaluacion/juicios.json --run-info ../evaluacion/ficha.json --output resultados.json --report informe.md --report-json informe.json
+   python tools/assistant-eval.py score --raw ../evaluacion/crudo.json --judgments ../evaluacion/juicios.json --run-info ../evaluacion/ficha.json --document-map ../evaluacion/mapa.json --output resultados.json --report informe.md --report-json informe.json
    ```
 
    Sale el veredicto («Aceptado» o «No aceptado») y los motivos. Con `--provisional` se admite un solo revisor en los casos críticos; la medición queda marcada como provisional y esos casos se listan. Sin ese indicador, un caso crítico con un solo revisor, o con el mismo dos veces, queda `not_run`.
 
-7. Para una medición final se hacen **tres ejecuciones** con las mismas entradas y la misma configuración, cada una recogida y puntuada por separado, y se ve la variación:
+8. Para una medición final se hacen **tres ejecuciones** con las mismas entradas y la misma configuración, cada una recogida y puntuada por separado, y se ve la variación:
 
    ```sh
    python tools/assistant-eval.py compare informe-1.json informe-2.json informe-3.json
