@@ -343,7 +343,7 @@ def classify_figures(answer: str, case: dict, retrieved: list[dict]) -> list[dic
     for item in retrieved:
         evidence |= numbers_in(item.get("content", ""))
     derived = [(Decimal(str(n["value"])), Decimal(str(n["tolerance"]))) for n in case["expected"].get("numbers", [])]
-    derived += [(value, Decimal("0.01")) for value in arithmetic_of(question | context | {value for value, _ in derived})]
+    derived += [(value, Decimal("0.05")) for value in arithmetic_of(question | context | {value for value, _ in derived})]
     found = []
     for sentence in split_sentences(answer):
         for figure in [*parse_figures(sentence, SIGNED_NUMBER), *bare_amounts(sentence)]:
@@ -588,6 +588,7 @@ def collect_cases(base_url: str, email: str, password: str, tenant: str, inputs:
                 if not (isinstance(r["chunk_id"], str) and isinstance(r["source"], str) and isinstance(r.get("content", ""), str)
                         and isinstance(r["distance"], (int, float)) and not isinstance(r["distance"], bool) and math.isfinite(r["distance"])):
                     raise ValueError("invalid fragment")
+            message["content"].encode("utf-8")
             sections = {c.get("evidence_id"): c.get("section") for c in message.get("metadata", {}).get("source_citations", [])}
             entry["answer"] = message["content"]
             entry["citations"] = [str(c) for c in message.get("metadata", {}).get("citations", [])]

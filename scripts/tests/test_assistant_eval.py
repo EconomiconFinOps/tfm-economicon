@@ -327,6 +327,10 @@ class ScoreCaseTests(unittest.TestCase):
         entry, _ = self.score("JUP-069-001", GOLD["JUP-069-001"] + " La diferencia entre Virtual Machines y Storage es de 350 EUR.")
         self.assertNotIn("untraceable", [f["origin"] for f in entry["figures"]])
 
+    def test_a_share_rounded_to_one_decimal_is_still_derived_from_the_context(self):
+        entry, _ = self.score("JUP-069-021", "Sobre lo implementado (150 EUR/mes) el 80 EUR/mes es el 53,3 %.")
+        self.assertNotIn("untraceable", [f["origin"] for f in entry["figures"]])
+
     def test_identifiers_without_a_hyphen_are_not_amounts_but_a_loose_big_number_still_is(self):
         for extra in (" Fuente: fragmento 120 del corpus.", " Según ISO 8601.", " Ver doc:chunk:105."):
             entry, _ = self.score("JUP-069-001", GOLD["JUP-069-001"] + extra)
@@ -832,6 +836,11 @@ class MalformedReplyTests(unittest.TestCase):
             raw = self.collect({"assistant_message": {"content": "ok", "metadata": {}}, "retrieved_context": [fragment_]})
             self.assertEqual(raw["cases"][1]["failure_category"], "invalid_response", fragment_)
             self.assertIsNone(raw["cases"][2]["failure_category"])
+
+    def test_text_that_cannot_be_written_in_utf8_blocks_only_its_case(self):
+        lone = {"assistant_message": {"content": "hola " + chr(0xd800), "metadata": {}}, "retrieved_context": []}
+        raw = self.collect(lone)
+        self.assertEqual([c["failure_category"] for c in raw["cases"]], [None, "invalid_response", None])
 
     def test_a_reply_nested_beyond_the_parser_limit_blocks_only_its_case(self):
         opener = ScriptedOpener([GOOD_REPLY, RecursionError(), GOOD_REPLY])
