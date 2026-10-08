@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from decimal import Decimal
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -617,6 +618,14 @@ class VerdictTests(unittest.TestCase):
         self.assertFalse(result["accepted"])
         self.assertEqual({i["metric"]: i["status"] for i in result["thresholds"]}["GRD-2"], "not_available")
 
+    def test_a_run_with_cases_that_were_not_evaluated_is_never_accepted(self):
+        for counts in ({"cases": 28, "pass": 20, "fail": 0, "blocked": 8, "not_run": 0}, {"cases": 28, "pass": 27, "fail": 0, "blocked": 0, "not_run": 1}):
+            result = evaluation.verdict({**self.report(), "counts": counts}, RULES)
+            self.assertFalse(result["accepted"], counts)
+            self.assertIn("sin evaluar", " ".join(result["reasons"]))
+        complete = {"cases": 28, "pass": 28, "fail": 0, "blocked": 0, "not_run": 0}
+        self.assertTrue(evaluation.verdict({**self.report(), "counts": complete}, RULES)["accepted"])
+
     def test_structured_threshold_applies_when_the_chat_returns_structured_output(self):
         report = self.report(STR_1={"available": True, "rate": 0.5, "target": {"comparator": ">=", "value": 0.95, "met": False}})
         structured = copy.deepcopy(RULES)
@@ -753,6 +762,30 @@ class CollectTests(unittest.TestCase):
         sock.close()
         with self.assertRaises(evaluation.EvaluationError):
             evaluation.collect_cases(f"http://127.0.0.1:{port}", "a@b.c", "x", "t", self.inputs, timeout=2)
+
+    def run_collect(self, variable, folder):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = evaluation.main(["collect", "--base-url", self.base, "--tenant", "tenant-core", "--password-env", variable,
+                                    "--inputs", str(folder / "inputs.json"), "--output", str(folder / "crudo.json")])
+        return code, out.getvalue() + err.getvalue()
+
+    def test_the_command_reads_the_password_from_the_environment_and_never_shows_or_stores_it(self):
+        variable = "JUP070_CLAVE_DE_PRUEBA"
+        with tempfile.TemporaryDirectory() as folder:
+            folder = Path(folder)
+            (folder / "inputs.json").write_text(json.dumps(self.inputs), encoding="utf-8")
+            os.environ.pop(variable, None)
+            code, shown = self.run_collect(variable, folder)
+            self.assertEqual(code, 2)
+            self.assertIn(variable, shown)
+            self.assertEqual(self.requests, [])
+            os.environ[variable] = "clave-solo-en-el-entorno"
+            self.addCleanup(os.environ.pop, variable, None)
+            code, shown = self.run_collect(variable, folder)
+            self.assertEqual(code, 0, shown)
+            self.assertEqual([body["password"] for path, _, body in self.requests if path == "/auth/login"], ["clave-solo-en-el-entorno"])
+            self.assertNotIn("clave-solo-en-el-entorno", shown + (folder / "crudo.json").read_text(encoding="utf-8"))
 
     def test_the_raw_file_cannot_be_written_inside_the_repository(self):
         inside = ROOT / "docs" / "evidence" / "crudo-prohibido.json"
@@ -1004,6 +1037,83 @@ class CommandLineTests(unittest.TestCase):
             done = subprocess.run([sys.executable, str(ROOT / "tools" / "assistant-eval.py"), "compare", *paths], env=env, capture_output=True)
             self.assertEqual(done.returncode, 0, done.stderr)
             self.assertIn("variación".encode("utf-8"), done.stdout)
+
+
+class ReportTextTests(unittest.TestCase):
+    """What a person reads under the verdict, not only the analysis the tool keeps in memory."""
+
+    def raw(self):
+        return {"raw_version": 1, "cases": [raw_case(c["id"], "No dispongo de datos.", [fragment()]) for c in BANK["cases"]]}
+
+    def text(self, judgments, raw=None, provisional=False):
+        results, analysis = evaluation.build_results(BANK, RULES, raw or self.raw(), judgments, RunHeaderAndResultsTests.RUN_INFO, provisional=provisional)
+        report = metrics.compute(results, BANK, LABELS, CATALOGUE)
+        return evaluation.render_report(metrics.render_markdown(report, CATALOGUE), evaluation.verdict(report, RULES), analysis)
+
+    def one_reviewer(self):
+        return {c["id"]: judgment(c["id"], "fail", reviewers=("lucia",)) for c in BANK["cases"]}
+
+    def two_reviewers(self):
+        return {c["id"]: judgment(c["id"], "fail") for c in BANK["cases"]}
+
+    def test_a_provisional_run_is_marked_and_lists_the_single_decider_cases(self):
+        text = self.text(self.one_reviewer(), provisional=True)
+        self.assertIn("Medición **provisional**", text)
+        self.assertIn("un solo decisor: " + ", ".join(CRITICAL), text)
+        self.assertNotIn("Medición **provisional**", self.text(self.two_reviewers()))
+
+    def test_a_case_that_was_not_run_is_listed_with_its_reason(self):
+        text = self.text(self.one_reviewer())
+        self.assertIn("(`not_run`): " + ", ".join(CRITICAL), text)
+        self.assertIn(f"- {CRITICAL[0]}: faltan juicios de required-1: 1 revisor(es) distinto(s) y hacen falta 2", text)
+
+    def test_a_disagreement_and_a_blocked_case_are_listed(self):
+        judgments = self.two_reviewers()
+        judgments["JUP-069-006"]["required-1"][0]["result"] = "pass"
+        raw = self.raw()
+        raw["cases"][0] = raw_case("JUP-069-001", "", status=None, failure="timeout", total_ms=None)
+        text = self.text(judgments, raw)
+        self.assertIn("Discrepancias entre revisores: JUP-069-006 (required-1)", text)
+        self.assertIn("bloqueados por infraestructura: JUP-069-001", text)
+        self.assertIn("- JUP-069-001: fallo de infraestructura: timeout", text)
+
+    def test_the_extra_threshold_that_cannot_be_computed_is_not_available_and_rejects(self):
+        report = VerdictTests().report(ACC_1={"available": False, "rate": None, "k": 0, "n": 0})
+        result = evaluation.verdict(report, RULES)
+        self.assertEqual({item["metric"]: item["status"] for item in result["thresholds"]}["ACC-1"], "not_available")
+        self.assertFalse(result["accepted"])
+
+    def test_the_review_sheet_shows_the_citations_and_the_retrieved_fragments(self):
+        sheet = evaluation.review_sheet(BANK, {"raw_version": 1, "cases": [raw_case("JUP-069-001", "respuesta", [fragment("doc#7")])]})
+        self.assertIn("**Citas:** doc#7", sheet)
+        self.assertRegex(sheet, r"Fragmento `doc#7`.*finops.*0\.31")
+
+
+class SlowChatTests(unittest.TestCase):
+    def test_a_chat_that_does_not_answer_in_time_blocks_the_case_as_a_timeout(self):
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                return
+
+            def do_POST(self):
+                self.rfile.read(int(self.headers.get("Content-Length", 0)))
+                if self.path.endswith("/messages"):
+                    time.sleep(1.5)
+                body = json.dumps({"access_token": "tok", "id": "conv"}).encode()
+                with contextlib.suppress(OSError):
+                    self.send_response(200)
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        inputs = {"cases": [{"id": "JUP-069-001", "prompt": "p"}]}
+        raw = evaluation.collect_cases(f"http://127.0.0.1:{server.server_address[1]}", "a@b.c", "x", "t", inputs, timeout=0.3)
+        entry = raw["cases"][0]
+        self.assertEqual((entry["failure_category"], entry["status"], entry["total_ms"], entry["requests"]), ("timeout", None, None, 2))
 
 
 if __name__ == "__main__":

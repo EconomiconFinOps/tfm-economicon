@@ -517,6 +517,11 @@ def verdict(report: dict, rules: dict) -> dict:
         else:
             met = compare(extra["comparator"], block["rate"], extra["value"])
             add(extra["metric"], extra["metric"], "met" if met else "unmet", f"{description}: medido {block['rate']}")
+    # A case that was not evaluated leaves every denominator, so it must not leave the verdict too.
+    counts = report.get("counts", {})
+    missing = counts.get("not_run", 0) + counts.get("blocked", 0)
+    if missing:
+        add("cobertura", "Casos evaluados", "unmet", f"{missing} de {counts['cases']} casos sin evaluar (not_run o blocked)")
     return {"accepted": all(item["status"] in ("met", "not_applicable") for item in items) and bool(items), "thresholds": items, "reasons": reasons}
 
 
@@ -665,6 +670,9 @@ def render_report(base_report: str, result: dict, analysis: dict) -> str:
               f"- Casos bloqueados por infraestructura: {', '.join(analysis['blocked']) or 'ninguno'}",
               f"- Casos críticos con un solo decisor: {', '.join(analysis['single_decider_cases']) or 'ninguno'}",
               f"- Discrepancias entre revisores: {', '.join(f'{c} ({', '.join(p)})' for c, p in analysis['disagreements'].items()) or 'ninguna'}"]
+    if analysis["reasons"]:
+        lines += ["", "Motivo de cada caso no evaluado:", ""]
+        lines += [f"- {case_id}: {reason}" for case_id, reason in analysis["reasons"].items()]
     return "\n".join(lines) + "\n"
 
 
