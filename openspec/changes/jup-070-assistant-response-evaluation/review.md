@@ -61,10 +61,21 @@ Revisor independiente, sobre el último commit. Veredicto: changes-requested (3 
 | --- | --- | --- |
 | ADV-1 | HIGH | La asociación de etiqueta solo mira lo que hay justo antes de la cifra; con etiquetas pospuestas hay falsos aciertos y falsos fallos. **No corregido; aceptado por Lucía el 2026-10-09 como RF-070-007.** Los puntos `required` los siguen juzgando personas. |
 | ADV-2 | HIGH | Reglas de 006 y 007 que marcan la explicación correcta del tramo amarillo. **Aceptado por Lucía el 2026-10-09 como RF-070-008.** |
-| ADV-3 | HIGH | Las cifras derivadas redondeadas a un decimal (53,3 %) se marcaban sin rastro. Corregido: tolerancia de medio decimal y prueba. |
-| ADV-4 | MEDIUM | Un texto con un sustituto Unicode suelto rompía la escritura de toda la recogida. Corregido: bloquea solo su caso como `invalid_response`, con prueba. |
+| ADV-3 | HIGH | Las cifras derivadas redondeadas a un decimal (53,3 %) se marcaban sin rastro. Corregido: se acepta el valor calculado redondeado a entero, a uno o a dos decimales (no una banda), con pruebas. |
+| ADV-4 | MEDIUM | Un texto con un sustituto Unicode suelto rompía la escritura de toda la recogida. Corregido: cualquier texto de la respuesta que no se pueda escribir en UTF-8 (contenido, fuente, identificador o citas) bloquea solo su caso como `invalid_response`, con una prueba por campo. |
 | ADV-5 | MEDIUM | Años de 1900 a 2100 y palabras identificadoras ocultan un importe. **Aceptado por Lucía el 2026-10-09 como RF-070-009.** |
 | ADV-6 | LOW | Coste cuadrático con miles de cifras. **Aceptado por Lucía el 2026-10-09 como RF-070-010.** |
 | ADV-7 | LOW | Unidad `/pedido` obligatoria. **Aceptado por Lucía el 2026-10-09 como RF-070-010.** |
 
 Lucía aceptó el 2026-10-09 («si») dejar abiertos los hallazgos ADV-1, 2, 5, 6 y 7, tal y como se le propuso: no cambian el veredicto de la medición de referencia (la respuesta es la plantilla) y las reglas son una cota inferior con juicio humano.
+
+## Adversarial Review (pass 4)
+
+Pasada corta sobre el último cambio y el cierre. Veredicto: changes-requested (1 HIGH, 2 MEDIUM, 1 LOW).
+
+| ID | Sev. | Resolución |
+| --- | --- | --- |
+| ADV-1 | HIGH | La comprobación de codificación solo cubría el contenido del mensaje. Corregido: se comprueba la entrada completa del caso, con una prueba por campo, y un caso bloqueado no conserva datos de la respuesta. |
+| ADV-2 | MEDIUM | La banda de ±0,05 admitía cifras inventadas cercanas (53,38 %; 230,04 EUR/mes). Corregido: solo vale el valor calculado redondeado a entero, a uno o a dos decimales. |
+| ADV-3 | MEDIUM | El redondeo a entero («el 53 %») daba un falso fallo. Corregido por el mismo cambio. |
+| ADV-4 | LOW | La regla de las cifras derivadas no estaba en la metodología. Añadida a `docs/validation/JUP-070-evaluation.md`. |

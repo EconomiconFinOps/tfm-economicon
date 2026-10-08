@@ -331,6 +331,14 @@ class ScoreCaseTests(unittest.TestCase):
         entry, _ = self.score("JUP-069-021", "Sobre lo implementado (150 EUR/mes) el 80 EUR/mes es el 53,3 %.")
         self.assertNotIn("untraceable", [f["origin"] for f in entry["figures"]])
 
+    def test_a_derived_figure_must_be_the_computed_value_rounded_and_not_a_nearby_number(self):
+        for text, origin in (("el 53,3 %", "context"), ("el 53,33 %", "context"), ("el 53 %", "context"), ("el 54 %", "untraceable"),
+                             ("el 53,36 %", "untraceable"), ("el 53,05 %", "untraceable"), ("el 188 %", "context"), ("el 187,5 %", "context")):
+            entry, _ = self.score("JUP-069-021", "Sobre lo implementado (150 EUR/mes) el 80 EUR/mes es " + text + ".")
+            self.assertEqual(entry["figures"][-1]["origin"], origin, text)
+        entry, _ = self.score("JUP-069-021", "La suma es de 230,04 EUR/mes.")
+        self.assertEqual(entry["figures"][-1]["origin"], "untraceable")
+
     def test_identifiers_without_a_hyphen_are_not_amounts_but_a_loose_big_number_still_is(self):
         for extra in (" Fuente: fragmento 120 del corpus.", " Según ISO 8601.", " Ver doc:chunk:105."):
             entry, _ = self.score("JUP-069-001", GOLD["JUP-069-001"] + extra)
@@ -841,6 +849,20 @@ class MalformedReplyTests(unittest.TestCase):
         lone = {"assistant_message": {"content": "hola " + chr(0xd800), "metadata": {}}, "retrieved_context": []}
         raw = self.collect(lone)
         self.assertEqual([c["failure_category"] for c in raw["cases"]], [None, "invalid_response", None])
+
+    def test_a_lone_surrogate_in_any_text_of_the_reply_blocks_only_its_case(self):
+        lone = chr(0xd800)
+        fragment_ = {"chunk_id": "a", "source": "s", "distance": 0.1, "content": "c"}
+        variants = {
+            "source": {"assistant_message": {"content": "ok", "metadata": {}}, "retrieved_context": [dict(fragment_, source=lone)]},
+            "chunk_id": {"assistant_message": {"content": "ok", "metadata": {}}, "retrieved_context": [dict(fragment_, chunk_id=lone)]},
+            "content": {"assistant_message": {"content": "ok", "metadata": {}}, "retrieved_context": [dict(fragment_, content=lone)]},
+            "citations": {"assistant_message": {"content": "ok", "metadata": {"citations": [lone]}}, "retrieved_context": []},
+        }
+        for name, reply in variants.items():
+            raw = self.collect(reply)
+            self.assertEqual([c["failure_category"] for c in raw["cases"]], [None, "invalid_response", None], name)
+            evaluation.dumps(raw).encode("utf-8")
 
     def test_a_reply_nested_beyond_the_parser_limit_blocks_only_its_case(self):
         opener = ScriptedOpener([GOOD_REPLY, RecursionError(), GOOD_REPLY])

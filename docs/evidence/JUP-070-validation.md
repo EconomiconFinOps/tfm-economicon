@@ -46,4 +46,19 @@ El veredicto es «No aceptado» por ACC-1 (umbral propuesto, 0,8) y ACC-2 (umbra
 
 ## Comprobaciones locales
 
-Se rellenan al cerrar el change (ver `tasks.md`, grupo 4).
+Entorno: Windows, Python 3.14 y Node.js 24. La CI usa Python 3.12 y Node.js 22.
+
+| Comando | Resultado |
+| --- | --- |
+| `corepack pnpm assistant-eval:test` | 100 pruebas correctas |
+| `corepack pnpm assistant-metrics:test` | 103 pruebas correctas, sin cambios en el calculador |
+| `node --test tools/*.test.mjs` | 246 pruebas correctas, 0 fallidas |
+| `node tools/validation-questions.mjs validate` | 28 consultas, 7 categorías |
+| `corepack pnpm openspec:validate` | 53 elementos correctos, 0 fallidos |
+| `corepack pnpm jup:check -- --change jup-070-assistant-response-evaluation` | Enlazado con Trello y completo |
+| `corepack pnpm jup:check:all` | Todos los cambios correctos |
+| `node tools/jup-cleanup-check.mjs` | Correcto |
+| `git diff --check` | Sin errores de espacios |
+| `git diff 2f9a5f5 HEAD -- apps tools/assistant-metrics.py docs/validation/JUP-069-questions.json` | Vacío: ni el producto, ni el calculador, ni la batería han cambiado |
+
+Se hicieron cuatro pasadas del revisor adversarial independiente (ver `review.md`). Los resultados guardados se puntuaron con la herramienta tras la pasada 2. Los cambios posteriores de la herramienta (cifras derivadas redondeadas, texto no codificable) solo pueden reclasificar una cifra de «sin rastro» a «contexto», y los dos resultados no tienen ninguna cifra sin rastro, así que una nueva puntuación daría los mismos ficheros. Los textos de las respuestas no se conservan (estaban fuera del repositorio y la carpeta ya no existe), así que repetir la puntuación exige volver a recoger las respuestas con `collect`.

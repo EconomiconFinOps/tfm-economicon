@@ -24,7 +24,7 @@ import unicodedata
 import urllib.error
 import urllib.request
 from collections import namedtuple
-from decimal import Decimal, InvalidOperation
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -337,13 +337,18 @@ def arithmetic_of(values: set) -> set:
     return found
 
 
+def rounds_from(value: Decimal, computed: set) -> bool:
+    """A figure is derived when it is a computed value rounded to a whole number, one decimal or two."""
+    return any(value == number.quantize(Decimal(1).scaleb(-places), rounding=ROUND_HALF_UP) for number in computed for places in (0, 1, 2))
+
+
 def classify_figures(answer: str, case: dict, retrieved: list[dict]) -> list[dict]:
     question, context = numbers_in(case["question"]), numbers_in(case["context"])
     evidence: set[Decimal] = set()
     for item in retrieved:
         evidence |= numbers_in(item.get("content", ""))
     derived = [(Decimal(str(n["value"])), Decimal(str(n["tolerance"]))) for n in case["expected"].get("numbers", [])]
-    derived += [(value, Decimal("0.05")) for value in arithmetic_of(question | context | {value for value, _ in derived})]
+    computed = arithmetic_of(question | context | {value for value, _ in derived})
     found = []
     for sentence in split_sentences(answer):
         for figure in [*parse_figures(sentence, SIGNED_NUMBER), *bare_amounts(sentence)]:
@@ -353,7 +358,7 @@ def classify_figures(answer: str, case: dict, retrieved: list[dict]) -> list[dic
                 origin = "context"
             elif figure.value in evidence:
                 origin = "evidence"
-            elif any(abs(figure.value - value) <= tolerance for value, tolerance in derived):
+            elif any(abs(figure.value - value) <= tolerance for value, tolerance in derived) or rounds_from(figure.value, computed):
                 origin = "context"
             else:
                 origin = "untraceable"
@@ -594,7 +599,9 @@ def collect_cases(base_url: str, email: str, password: str, tenant: str, inputs:
             entry["citations"] = [str(c) for c in message.get("metadata", {}).get("citations", [])]
             entry["retrieved"] = [{"chunk_id": r["chunk_id"], "source": r["source"], "heading": sections.get(r["chunk_id"]) or "",
                                    "distance": r["distance"], "content": r.get("content", "")} for r in reply.get("retrieved_context", [])]
+            json.dumps(entry, ensure_ascii=False).encode("utf-8")
         except (*TRANSPORT, *MALFORMED) as error:
+            entry["answer"], entry["citations"], entry["retrieved"] = "", [], []
             status, category = failure_of(error)
             if isinstance(error, urllib.error.HTTPError):
                 error.close()
