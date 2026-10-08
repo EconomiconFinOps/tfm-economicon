@@ -62,3 +62,9 @@ Entorno: Windows, Python 3.14 y Node.js 24. La CI usa Python 3.12 y Node.js 22.
 | `git diff 2f9a5f5 HEAD -- apps tools/assistant-metrics.py docs/validation/JUP-069-questions.json` | Vacío: ni el producto, ni el calculador, ni la batería han cambiado |
 
 Se hicieron cuatro pasadas del revisor adversarial independiente (ver `review.md`). Los resultados guardados se puntuaron con la herramienta tras la pasada 2. Los cambios posteriores de la herramienta (cifras derivadas redondeadas, texto no codificable) solo pueden reclasificar una cifra de «sin rastro» a «contexto», y los dos resultados no tienen ninguna cifra sin rastro, así que una nueva puntuación daría los mismos ficheros. Los textos de las respuestas no se conservan (estaban fuera del repositorio y la carpeta ya no existe), así que repetir la puntuación exige volver a recoger las respuestas con `collect`.
+
+## Nota de release
+
+| Fecha | JUP | Nota de release | Review | ADRs |
+| --- | --- | --- | --- | --- |
+| 2026-10-09 | JUP-070 | Herramienta de evaluación de las respuestas del chat con reglas, revisión humana y veredicto, y medición de referencia de la plantilla actual. | [review](../../openspec/changes/archive/2026-10-09-jup-070-assistant-response-evaluation/review.md) | No aplica |
