@@ -5,9 +5,27 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.dependencies import get_active_tenant, get_database
 from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSummary
+from app.schemas.budget import BudgetDefinition, BudgetEvaluation
+from app.services.budget import evaluate_budget
 
 
 router = APIRouter(prefix="/billing", tags=["billing"])
+
+
+@router.post("/budget/evaluate", response_model=BudgetEvaluation)
+def evaluate_billing_budget(
+    budget: BudgetDefinition,
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> BudgetEvaluation:
+    try:
+        result = database.fetch_billing_summary(
+            tenant_id, start_date=budget.start_date, end_date=budget.end_date,
+            group_by="subscription", tag_key=None,
+        )
+    except AmbiguousCostSource:
+        raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
+    return evaluate_budget(budget, BillingSummary(**result))
 
 
 def _canonical_tag_key(value: str) -> str:
