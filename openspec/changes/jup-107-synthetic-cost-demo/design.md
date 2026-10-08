@@ -45,7 +45,7 @@ La redacción exacta de las etiquetas de la interfaz se fija al ejecutar el reco
 
 ### 3. Valores esperados en JSON, comprobados contra una suma exacta
 
-`esperados.json` contiene, por paso, el periodo, la agrupación, los totales por moneda y mes, los recuentos y las comparaciones. Una prueba en `scripts/tests/test_synthetic_cost_demo.py` importa `build_dataset()` de `scripts/synthetic_costs.py`, suma con `Decimal` y compara cada cifra; también comprueba identificadores únicos de pasos, que la suma de duraciones coincide con el total declarado y no pasa de 240 segundos, que ningún paso principal incluye julio y que cada pregunta de `preguntas.md` apunta a un paso existente. Se ejecuta en CI sin base de datos, con un script `synthetic-demo:test` en el mismo sitio que `synthetic-costs:test`.
+`esperados.json` contiene, por paso, el periodo, la agrupación, los totales por moneda y mes, los recuentos y las comparaciones. Una prueba en `scripts/tests/test_synthetic_cost_demo.py` importa `build_dataset()` de `scripts/synthetic_costs.py`, suma con `Decimal` y compara cada cifra; también comprueba identificadores únicos de pasos, que la suma de los pasos principales coincide con el total declarado y que, con el paso opcional, no pasa de 240 segundos, que ningún paso principal incluye julio y que cada pregunta de `preguntas.md` apunta a un paso existente. Se ejecuta en CI sin base de datos, con un script `synthetic-demo:test` en el mismo sitio que `synthetic-costs:test`.
 
 Alternativa descartada: extraer las cifras del Markdown. Es frágil y deja pasar un cambio de formato que rompe la comprobación sin avisar.
 

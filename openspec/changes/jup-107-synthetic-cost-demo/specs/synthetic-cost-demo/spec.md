@@ -28,9 +28,9 @@ The guide SHALL define a route of identified steps with the action, the text to 
 - **AND** identifiers are unique
 
 #### Scenario: Declared total matches the steps
-- **WHEN** the durations of all steps are added
+- **WHEN** the durations of the main steps are added
 - **THEN** the sum equals the total stated in the guide
-- **AND** the sum does not exceed 240 seconds
+- **AND** the sum plus the duration of the optional step does not exceed 240 seconds
 
 ### Requirement: Period that keeps the figures readable
 

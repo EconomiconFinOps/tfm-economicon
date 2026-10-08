@@ -125,6 +125,7 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "retrieval-calibration:test",
     "assistant-metrics:test",
     "synthetic-costs:test",
+    "synthetic-demo:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
     "docker:validate",
