@@ -1,0 +1,425 @@
+{
+  "report_version": 1,
+  "catalogue_version": "1.0.0",
+  "run": {
+    "commit": "b12b3c80d0954a1f1a7bd12fae31456f269cff52",
+    "date": "2026-10-08T20:13:54Z",
+    "provider": "mock",
+    "alias": "mock",
+    "suite_version": "1.0.0",
+    "suite_sha256": "e15349564edfa5ce6cef94ff90ee2bfd15ef17656a2c4b201ac37bcd6d44571c",
+    "corpus": {
+      "documents": 4,
+      "chunks": 52,
+      "sha256": "cf2633b96ca30a63f70952c6cb23ca8139dcb665e9a51a0d52dbcc144b00c8dc"
+    },
+    "generation": {
+      "model_alias": "plantilla-sin-modelo",
+      "temperature": null
+    },
+    "retrieval": {
+      "top_k": 4,
+      "max_distance": null,
+      "chunk_size": 500,
+      "chunk_overlap": 50
+    },
+    "synthetic": false
+  },
+  "counts": {
+    "cases": 28,
+    "pass": 0,
+    "fail": 28,
+    "blocked": 0,
+    "not_run": 0
+  },
+  "metrics": {
+    "ACC-1": {
+      "k": 0,
+      "n": 20,
+      "rate": 0.0,
+      "ci95": [
+        0.0,
+        0.161125
+      ],
+      "available": true,
+      "target": null
+    },
+    "ACC-2": {
+      "k": 26,
+      "n": 51,
+      "rate": 0.509804,
+      "ci95": [
+        0.376809,
+        0.641425
+      ],
+      "available": true,
+      "judged": {
+        "k": 0,
+        "n": 30,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.113513
+        ],
+        "available": true
+      },
+      "target": {
+        "comparator": ">=",
+        "value": 0.9,
+        "origin": "ADR-0002",
+        "provisional": true,
+        "met": false
+      }
+    },
+    "ACC-3": {
+      "groups": {
+        "clarify": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.390334
+          ],
+          "available": true
+        },
+        "abstain": {
+          "k": 0,
+          "n": 2,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.65762
+          ],
+          "available": true
+        }
+      },
+      "target": null
+    },
+    "REL-1": {
+      "k": 16,
+      "n": 20,
+      "rate": 0.8,
+      "ci95": [
+        0.583983,
+        0.919342
+      ],
+      "available": true,
+      "target": null
+    },
+    "REL-2": {
+      "k": 6,
+      "n": 20,
+      "rate": 0.3,
+      "ci95": [
+        0.145477,
+        0.518973
+      ],
+      "available": true,
+      "target": null
+    },
+    "REL-3": {
+      "groups": {
+        "answer": {
+          "k": 0,
+          "n": 20,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.161125
+          ],
+          "available": true
+        },
+        "clarify": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.390334
+          ],
+          "available": true
+        },
+        "abstain": {
+          "k": 0,
+          "n": 2,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.65762
+          ],
+          "available": true
+        }
+      },
+      "target": null
+    },
+    "REL-4": {
+      "n": 20,
+      "median": 0.7403736348865821,
+      "q1": 0.6401224993562733,
+      "q3": 0.7992394052141105,
+      "available": true,
+      "target": null
+    },
+    "GRD-1": {
+      "k": 60,
+      "n": 60,
+      "rate": 1.0,
+      "ci95": [
+        0.939828,
+        1.0
+      ],
+      "available": true,
+      "target": null
+    },
+    "GRD-2": {
+      "total": 0,
+      "by_case": {},
+      "critical_failures": [],
+      "available": true,
+      "target": {
+        "comparator": "==",
+        "value": 0,
+        "origin": "ADR-0002",
+        "provisional": true,
+        "scope": "casos criticos",
+        "met": true
+      }
+    },
+    "GRD-3": {
+      "k": 60,
+      "n": 60,
+      "rate": 1.0,
+      "ci95": [
+        0.939828,
+        1.0
+      ],
+      "available": true,
+      "target": null
+    },
+    "LAT-1": {
+      "stages": {
+        "embedding": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "retrieval": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "generation": {
+          "n": 28,
+          "value": 1402.319,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "total": {
+          "n": 28,
+          "value": 1402.319,
+          "covers": "successful calls only",
+          "target": null
+        }
+      },
+      "corpus": {
+        "documents": 4,
+        "chunks": 52
+      }
+    },
+    "LAT-2": {
+      "stages": {
+        "embedding": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "retrieval": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "generation": {
+          "n": 28,
+          "value": 1835.492,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "total": {
+          "n": 28,
+          "value": 1835.492,
+          "covers": "successful calls only",
+          "target": {
+            "comparator": "<=",
+            "value": 10000,
+            "origin": "ADR-0002",
+            "provisional": true,
+            "scope": "etapa total, en desarrollo",
+            "met": true
+          }
+        }
+      },
+      "corpus": {
+        "documents": 4,
+        "chunks": 52
+      }
+    },
+    "LAT-3": {
+      "stages": {
+        "embedding": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "retrieval": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "generation": {
+          "n": 28,
+          "value": 1899.481,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "total": {
+          "n": 28,
+          "value": 1899.481,
+          "covers": "successful calls only",
+          "target": null
+        }
+      },
+      "corpus": {
+        "documents": 4,
+        "chunks": 52
+      }
+    },
+    "LAT-4": {
+      "stages": {
+        "embedding": {
+          "k": 0,
+          "n": 28,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.120643
+          ],
+          "available": true
+        },
+        "retrieval": {
+          "k": 0,
+          "n": 28,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.120643
+          ],
+          "available": true
+        },
+        "generation": {
+          "k": 0,
+          "n": 28,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.120643
+          ],
+          "available": true
+        }
+      },
+      "target": null
+    },
+    "STR-1": {
+      "k": 28,
+      "n": 28,
+      "rate": 1.0,
+      "ci95": [
+        0.879357,
+        1.0
+      ],
+      "available": true,
+      "target": {
+        "comparator": ">=",
+        "value": 0.95,
+        "origin": "ADR-0002",
+        "provisional": true,
+        "met": true
+      }
+    },
+    "STR-2": {
+      "by_category": {
+        "timeout": 0,
+        "connection": 0,
+        "transport": 0,
+        "authentication": 0,
+        "request": 0,
+        "redirect": 0,
+        "rate_limit": 0,
+        "upstream": 0,
+        "invalid_response": 0,
+        "schema_validation": 0
+      },
+      "total": 0,
+      "target": null
+    },
+    "AVL-1": {
+      "k": 56,
+      "n": 56,
+      "rate": 1.0,
+      "ci95": [
+        0.935806,
+        1.0
+      ],
+      "available": true,
+      "target": null
+    }
+  },
+  "gaps": [
+    "JUP-069-024",
+    "JUP-069-026"
+  ],
+  "critical": {
+    "cases": [
+      "JUP-069-001",
+      "JUP-069-002",
+      "JUP-069-005",
+      "JUP-069-006",
+      "JUP-069-007",
+      "JUP-069-011",
+      "JUP-069-013",
+      "JUP-069-014",
+      "JUP-069-016",
+      "JUP-069-017",
+      "JUP-069-018",
+      "JUP-069-019",
+      "JUP-069-021",
+      "JUP-069-027"
+    ],
+    "single_decider_cases": [
+      "JUP-069-001",
+      "JUP-069-002",
+      "JUP-069-005",
+      "JUP-069-006",
+      "JUP-069-007",
+      "JUP-069-011",
+      "JUP-069-013",
+      "JUP-069-014",
+      "JUP-069-016",
+      "JUP-069-017",
+      "JUP-069-018",
+      "JUP-069-019",
+      "JUP-069-021",
+      "JUP-069-027"
+    ]
+  },
+  "notes": [
+    "El proveedor de embeddings es mock: la similitud y los aciertos de recuperacion no tienen significado semantico."
+  ],
+  "generated_at": "2026-10-08T23:30:00Z"
+}

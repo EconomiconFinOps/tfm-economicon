@@ -71,6 +71,18 @@ Todos los ficheros con texto (respuestas, hoja de revisión, juicios) van **fuer
 
    Se publican todas. No se sustituye una ejecución mala por otra mejor.
 
+## Medir con embeddings reales a través del gateway local
+
+La ejecución con `mock` no mide relevancia. Para REL-1 y REL-2 con embeddings reales se levanta el gateway de `infra/litellm` solo en local y se le pide una clave virtual por servicio, restringida a los alias de embeddings y con presupuesto:
+
+1. Las claves del proveedor y las claves virtuales van en ficheros fuera de Git; no se imprimen ni se pegan en el chat.
+2. El stack de la medición recibe la clave virtual y la URL del gateway (`host.docker.internal` desde un contenedor, puerto de loopback) por variables de entorno del shell, que tienen prioridad sobre el `.env`.
+3. Se carga el corpus con el flujo de ingesta y se comprueba que el proveedor registrado es `litellm` antes de recoger.
+4. La ficha de la ejecución lleva el proveedor y el alias reales. Se consulta el gasto de la clave en el gateway al terminar.
+5. Hay que parar el stack con `docker compose -p <proyecto> down -v` y el gateway al terminar.
+
+Solo se pagan llamadas de embeddings (céntimos de dólar con 28 preguntas y 52 fragmentos). Mientras el chat no genere con modelo, la evaluación no llama a ningún modelo de lenguaje.
+
 ## Cómo se decide una cifra
 
 Se leen las cifras de cada frase con ambos convenios decimales (`1.000,50` y `1,000.50`), el signo de porcentaje y las formas de la unidad (`EUR`, `euros`, `€`; `%`, `por ciento`; y los periodos `/día`, `al mes`, `por pedido`). Una cifra cuenta solo si el valor está dentro de la tolerancia absoluta, la unidad coincide y la etiqueta (o uno de sus alias) está en la misma frase. Un número dentro de otro mayor (`190` por `90`), pegado a una palabra o con signo negativo no vale. Una cifra escrita con palabras («seiscientos») no se reconoce y la comprobación falla: se prefiere un falso fallo visible a un falso acierto.
@@ -96,6 +108,7 @@ Un umbral obligatorio que no se puede calcular se informa como no disponible y e
 - **Una muestra pequeña:** 28 casos. No se compara 80 % con 75 % como una diferencia.
 - **Solo se mide el tiempo total** de la petición, porque es lo único que ve el cliente. El formato de resultados exige la latencia de cuatro etapas: la herramienta atribuye la petición completa a la etapa `generation` y deja `embedding` y `retrieval` a cero. Solo el total es una medida; las otras filas del informe no se interpretan.
 - **`structured_ok`** significa que la respuesta cumple el contrato de respuesta del chat. No es la salida estructurada `FinOpsResponse` de JUP-024; cuando el chat la devuelva, esa comprobación tendrá que añadirse.
+- **Cuando el chat genere con modelo** (JUP-035), la ficha lleva el alias y la temperatura reales de la generación, y la latencia de `generation` pasa a tener sentido junto a la del total; hasta entonces las filas de etapa no se interpretan.
 - **Los embeddings `mock`** no tienen significado semántico: las métricas de recuperación (REL) de una ejecución con `mock` no miden relevancia real.
 - **Las reglas de las prohibiciones son una cota inferior** y las cifras con palabras fallan por diseño.
 - **Un modelo puede variar** entre ejecuciones aunque la temperatura sea cero; por eso las tres repeticiones.

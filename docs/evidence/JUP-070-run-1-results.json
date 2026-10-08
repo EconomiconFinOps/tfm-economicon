@@ -1,0 +1,2500 @@
+{
+  "results_version": 1,
+  "catalogue_version": "1.0.0",
+  "synthetic": false,
+  "run": {
+    "commit": "b12b3c80d0954a1f1a7bd12fae31456f269cff52",
+    "date": "2026-10-08T20:13:54Z",
+    "bank": {
+      "suite_version": "1.0.0",
+      "suite_sha256": "e15349564edfa5ce6cef94ff90ee2bfd15ef17656a2c4b201ac37bcd6d44571c"
+    },
+    "corpus": {
+      "sha256": "cf2633b96ca30a63f70952c6cb23ca8139dcb665e9a51a0d52dbcc144b00c8dc",
+      "documents": 4,
+      "chunks": 52
+    },
+    "provider": "mock",
+    "alias": "mock",
+    "retrieval": {
+      "top_k": 4,
+      "max_distance": null,
+      "chunk_size": 500,
+      "chunk_overlap": 50
+    },
+    "generation": {
+      "model_alias": "plantilla-sin-modelo",
+      "temperature": null
+    },
+    "availability": {
+      "requests": 56,
+      "server_errors": 0
+    }
+  },
+  "cases": [
+    {
+      "case": "JUP-069-001",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-2",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-3",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:10",
+          "source": "glossary",
+          "heading": "Embedding",
+          "distance": 0.416870067440857
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:7",
+          "source": "finops",
+          "heading": "Jerarquia Azure Relevante",
+          "distance": 0.44318472592722946
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:2",
+          "source": "glossary",
+          "heading": "Scope",
+          "distance": 0.4868285567251608
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:8",
+          "source": "glossary",
+          "heading": "Cost Analysis",
+          "distance": 0.49182016141774176
+        }
+      ],
+      "citations": [
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:10",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:7",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:2"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1362.32,
+        "total": 1362.32
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-002",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-2",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:5",
+          "source": "product",
+          "heading": "Scope, Dataset Y Tenant",
+          "distance": 0.3598775006437267
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:10",
+          "source": "glossary",
+          "heading": "Embedding",
+          "distance": 0.4165758890766311
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:3",
+          "source": "rules",
+          "heading": "Estados De Allocation",
+          "distance": 0.4892485065626816
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:8",
+          "source": "product",
+          "heading": "Rol Del Corpus Documental",
+          "distance": 0.494483987341116
+        }
+      ],
+      "citations": [
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:5",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:10",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:3"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1368.088,
+        "total": 1368.088
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-003",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:0",
+          "source": "finops",
+          "heading": "Proposito",
+          "distance": 0.16264900127356263
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:3",
+          "source": "finops",
+          "heading": "Inform",
+          "distance": 0.19391207333719174
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:6",
+          "source": "product",
+          "heading": "Lo Que El Asistente No Debe Exponer",
+          "distance": 0.3109918081302814
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:10",
+          "source": "finops",
+          "heading": "Tagging Y Allocation",
+          "distance": 0.3883692108333099
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:0",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:3",
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:6"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1835.492,
+        "total": 1835.492
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-004",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:6",
+          "source": "glossary",
+          "heading": "Rightsizing",
+          "distance": 0.25962636511341786
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:5",
+          "source": "finops",
+          "heading": "Conceptos FinOps Basicos",
+          "distance": 0.43404644168046413
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:13",
+          "source": "finops",
+          "heading": "Budgets, Forecast Y Alertas",
+          "distance": 0.4797418228813126
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8",
+          "source": "rules",
+          "heading": "Recomendaciones",
+          "distance": 0.5056809706294422
+        }
+      ],
+      "citations": [
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:6",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:5",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:13"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1899.481,
+        "total": 1899.481
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-005",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-2",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-2",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-3",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:8",
+          "source": "finops",
+          "heading": "Cost Management Y Cost Analysis",
+          "distance": 0.20415761060659332
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:6",
+          "source": "rules",
+          "heading": "Budgets Y Forecast",
+          "distance": 0.3952447616337206
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:2",
+          "source": "finops",
+          "heading": "Idea Fundamental De FinOps",
+          "distance": 0.4346564036990983
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:3",
+          "source": "glossary",
+          "heading": "Allocated Cost",
+          "distance": 0.44179308634564285
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:8",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:6",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:2"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1457.002,
+        "total": 1457.002
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-006",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:2",
+          "source": "product",
+          "heading": "Capacidades Funcionales",
+          "distance": 0.19842825967661426
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:1",
+          "source": "finops",
+          "heading": "Alcance Del MVP",
+          "distance": 0.22428954653401578
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:7",
+          "source": "glossary",
+          "heading": "Savings Plan",
+          "distance": 0.36824187061402347
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:8",
+          "source": "glossary",
+          "heading": "Cost Analysis",
+          "distance": 0.4801310601926796
+        }
+      ],
+      "citations": [
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:2",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:1",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:7"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "question"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1576.568,
+        "total": 1576.568
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-007",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:4",
+          "source": "glossary",
+          "heading": "Budget",
+          "distance": 0.28487884054273993
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:2",
+          "source": "rules",
+          "heading": "Reglas De Tagging",
+          "distance": 0.3026621019244986
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:3",
+          "source": "finops",
+          "heading": "Inform",
+          "distance": 0.42678859647902934
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:1",
+          "source": "rules",
+          "heading": "Reglas De Tagging",
+          "distance": 0.4645122266393483
+        }
+      ],
+      "citations": [
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:4",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:2",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:3"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1059.242,
+        "total": 1059.242
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-008",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-2",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:1",
+          "source": "finops",
+          "heading": "Alcance Del MVP",
+          "distance": 0.2230380100153554
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:2",
+          "source": "product",
+          "heading": "Capacidades Funcionales",
+          "distance": 0.28903573711301256
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:7",
+          "source": "glossary",
+          "heading": "Savings Plan",
+          "distance": 0.3101144302203531
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:0",
+          "source": "product",
+          "heading": "Proposito",
+          "distance": 0.5685348256317324
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:1",
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:2",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:7"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1447.474,
+        "total": 1447.474
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-009",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:8",
+          "source": "product",
+          "heading": "Rol Del Corpus Documental",
+          "distance": 0.22522970130966435
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:9",
+          "source": "glossary",
+          "heading": "Azure Advisor",
+          "distance": 0.2838081885055084
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:0",
+          "source": "rules",
+          "heading": "Alcance",
+          "distance": 0.4112997281122899
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:0",
+          "source": "finops",
+          "heading": "Proposito",
+          "distance": 0.4596602261356042
+        }
+      ],
+      "citations": [
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:8",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:9",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:0"
+      ],
+      "figures": [
+        {
+          "origin": "question"
+        },
+        {
+          "origin": "question"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1331.465,
+        "total": 1331.465
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-010",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8",
+          "source": "rules",
+          "heading": "Recomendaciones",
+          "distance": 0.36402653580261
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:4",
+          "source": "product",
+          "heading": "Modelo Funcional De Datos",
+          "distance": 0.4540785826684983
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:14",
+          "source": "finops",
+          "heading": "Anomalias De Coste",
+          "distance": 0.45740964234163684
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:0",
+          "source": "rules",
+          "heading": "Alcance",
+          "distance": 0.586234654633734
+        }
+      ],
+      "citations": [
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8",
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:4",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:14"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1331.929,
+        "total": 1331.929
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-011",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:4",
+          "source": "rules",
+          "heading": "KPIs Minimos",
+          "distance": 0.3191206922479588
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:5",
+          "source": "rules",
+          "heading": "KPIs Minimos",
+          "distance": 0.3235181316779122
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:6",
+          "source": "glossary",
+          "heading": "Rightsizing",
+          "distance": 0.40463840812031315
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:11",
+          "source": "finops",
+          "heading": "Showback Y Chargeback",
+          "distance": 0.4360283973233132
+        }
+      ],
+      "citations": [
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:4",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:5",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:6"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "evidence"
+        },
+        {
+          "origin": "evidence"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1427.84,
+        "total": 1427.84
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-012",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:4",
+          "source": "product",
+          "heading": "Modelo Funcional De Datos",
+          "distance": 0.23387848016827695
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:7",
+          "source": "rules",
+          "heading": "Anomalias",
+          "distance": 0.2591875976822946
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:1",
+          "source": "finops",
+          "heading": "Alcance Del MVP",
+          "distance": 0.3733691159214162
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:1",
+          "source": "rules",
+          "heading": "Reglas De Tagging",
+          "distance": 0.4123197479006231
+        }
+      ],
+      "citations": [
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:4",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:7",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:1"
+      ],
+      "figures": [
+        {
+          "origin": "evidence"
+        },
+        {
+          "origin": "evidence"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1257.115,
+        "total": 1257.115
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-013",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-2",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:8",
+          "source": "finops",
+          "heading": "Cost Management Y Cost Analysis",
+          "distance": 0.47646134582862265
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:9",
+          "source": "rules",
+          "heading": "Recomendaciones",
+          "distance": 0.5095735128677352
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:6",
+          "source": "rules",
+          "heading": "Budgets Y Forecast",
+          "distance": 0.54094043997102
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:13",
+          "source": "finops",
+          "heading": "Budgets, Forecast Y Alertas",
+          "distance": 0.5452269499873112
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:8",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:9",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:6"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1304.694,
+        "total": 1304.694
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-014",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-2",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-2",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:7",
+          "source": "finops",
+          "heading": "Jerarquia Azure Relevante",
+          "distance": 0.1576234350462289
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:2",
+          "source": "rules",
+          "heading": "Reglas De Tagging",
+          "distance": 0.2638002333655812
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:1",
+          "source": "rules",
+          "heading": "Reglas De Tagging",
+          "distance": 0.26577966093005856
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:1",
+          "source": "glossary",
+          "heading": "Subscription",
+          "distance": 0.396400665061051
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:7",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:2",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:1"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1432.04,
+        "total": 1432.04
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-015",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:8",
+          "source": "product",
+          "heading": "Rol Del Corpus Documental",
+          "distance": 0.1546036466126003
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:0",
+          "source": "rules",
+          "heading": "Alcance",
+          "distance": 0.21122031866834268
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:17",
+          "source": "finops",
+          "heading": "Errores Comunes",
+          "distance": 0.37816316507058967
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:9",
+          "source": "glossary",
+          "heading": "Azure Advisor",
+          "distance": 0.42227814515751605
+        }
+      ],
+      "citations": [
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:8",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:0",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:17"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1403.47,
+        "total": 1403.47
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-016",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-2",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:2",
+          "source": "finops",
+          "heading": "Idea Fundamental De FinOps",
+          "distance": 0.2917482483117453
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:10",
+          "source": "glossary",
+          "heading": "Embedding",
+          "distance": 0.33557191798081654
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:0",
+          "source": "finops",
+          "heading": "Proposito",
+          "distance": 0.46992800954858094
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:8",
+          "source": "product",
+          "heading": "Rol Del Corpus Documental",
+          "distance": 0.47257590810190886
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:2",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:10",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:0"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1499.699,
+        "total": 1499.699
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-017",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-2",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-2",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:5",
+          "source": "rules",
+          "heading": "KPIs Minimos",
+          "distance": 0.36523123526509815
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:11",
+          "source": "glossary",
+          "heading": "Citation",
+          "distance": 0.41111534085792856
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:11",
+          "source": "finops",
+          "heading": "Showback Y Chargeback",
+          "distance": 0.4288405937922586
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:10",
+          "source": "rules",
+          "heading": "Anomaly",
+          "distance": 0.5195305972378801
+        }
+      ],
+      "citations": [
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:5",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:11",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:11"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "question"
+        },
+        {
+          "origin": "question"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1534.951,
+        "total": 1534.951
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-018",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-2",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:3",
+          "source": "glossary",
+          "heading": "Allocated Cost",
+          "distance": 0.2404503384424005
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:7",
+          "source": "glossary",
+          "heading": "Savings Plan",
+          "distance": 0.4165796542972484
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:4",
+          "source": "finops",
+          "heading": "Optimize",
+          "distance": 0.41764857652421794
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:5",
+          "source": "finops",
+          "heading": "Conceptos FinOps Basicos",
+          "distance": 0.44236264514222634
+        }
+      ],
+      "citations": [
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:3",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:7",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:4"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "question"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "question"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1285.941,
+        "total": 1285.941
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-019",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:9",
+          "source": "finops",
+          "heading": "Cost Management Y Cost Analysis",
+          "distance": 0.3233184057261844
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:0",
+          "source": "rules",
+          "heading": "Alcance",
+          "distance": 0.4341448346730227
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:16",
+          "source": "finops",
+          "heading": "Azure Advisor, Rightsizing Y Commitments",
+          "distance": 0.4459958209970819
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:14",
+          "source": "finops",
+          "heading": "Anomalias De Coste",
+          "distance": 0.4849811299010174
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:9",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:0",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:16"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1329.015,
+        "total": 1329.015
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-020",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-2",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:5",
+          "source": "rules",
+          "heading": "KPIs Minimos",
+          "distance": 0.20076059478588948
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:11",
+          "source": "finops",
+          "heading": "Showback Y Chargeback",
+          "distance": 0.24115148425017197
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:6",
+          "source": "rules",
+          "heading": "Budgets Y Forecast",
+          "distance": 0.35450265632155975
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:4",
+          "source": "glossary",
+          "heading": "Budget",
+          "distance": 0.3623282679231422
+        }
+      ],
+      "citations": [
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:5",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:11",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:6"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1240.086,
+        "total": 1240.086
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-021",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-2",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:4",
+          "source": "product",
+          "heading": "Modelo Funcional De Datos",
+          "distance": 0.23181636198558164
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:2",
+          "source": "glossary",
+          "heading": "Scope",
+          "distance": 0.40562424950963427
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8",
+          "source": "rules",
+          "heading": "Recomendaciones",
+          "distance": 0.4683741681364544
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:4",
+          "source": "glossary",
+          "heading": "Budget",
+          "distance": 0.4780265358575623
+        }
+      ],
+      "citations": [
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:4",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:2",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1412.636,
+        "total": 1412.636
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-022",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-2",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:1",
+          "source": "finops",
+          "heading": "Alcance Del MVP",
+          "distance": 0.2732494879866998
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:4",
+          "source": "product",
+          "heading": "Modelo Funcional De Datos",
+          "distance": 0.4048719528555196
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:0",
+          "source": "product",
+          "heading": "Proposito",
+          "distance": 0.4406015622480486
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:17",
+          "source": "finops",
+          "heading": "Errores Comunes",
+          "distance": 0.45932000526068417
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:1",
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:4",
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:0"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1152.978,
+        "total": 1152.978
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-023",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-2",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:10",
+          "source": "glossary",
+          "heading": "Embedding",
+          "distance": 0.0831299969460384
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8",
+          "source": "rules",
+          "heading": "Recomendaciones",
+          "distance": 0.3307646777049872
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:0",
+          "source": "glossary",
+          "heading": "Proposito",
+          "distance": 0.3579207072365055
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:8",
+          "source": "product",
+          "heading": "Rol Del Corpus Documental",
+          "distance": 0.4164389260368143
+        }
+      ],
+      "citations": [
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:10",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:0"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1544.828,
+        "total": 1544.828
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-024",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-2",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:6",
+          "source": "glossary",
+          "heading": "Rightsizing",
+          "distance": 0.43494261271564083
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:2",
+          "source": "product",
+          "heading": "Capacidades Funcionales",
+          "distance": 0.4471125503235889
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8",
+          "source": "rules",
+          "heading": "Recomendaciones",
+          "distance": 0.46547724267578117
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:4",
+          "source": "product",
+          "heading": "Modelo Funcional De Datos",
+          "distance": 0.5101067582928605
+        }
+      ],
+      "citations": [
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:6",
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:2",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1390.543,
+        "total": 1390.543
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-025",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:9",
+          "source": "finops",
+          "heading": "Cost Management Y Cost Analysis",
+          "distance": 0.28715634747511076
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:0",
+          "source": "glossary",
+          "heading": "Proposito",
+          "distance": 0.3291014035605262
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:9",
+          "source": "glossary",
+          "heading": "Azure Advisor",
+          "distance": 0.41388672302171314
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:6",
+          "source": "rules",
+          "heading": "Budgets Y Forecast",
+          "distance": 0.48354197489806305
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:9",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:0",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:9"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1499.75,
+        "total": 1499.75
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-026",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:11",
+          "source": "finops",
+          "heading": "Showback Y Chargeback",
+          "distance": 0.4517504181173454
+        },
+        {
+          "chunk_id": "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:8",
+          "source": "product",
+          "heading": "Rol Del Corpus Documental",
+          "distance": 0.45687546305394044
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:0",
+          "source": "finops",
+          "heading": "Proposito",
+          "distance": 0.5614899249071197
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:5",
+          "source": "rules",
+          "heading": "KPIs Minimos",
+          "distance": 0.603476284543216
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:11",
+        "61173e7c-9216-411d-91ae-e7579f0bea5a:chunk:8",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:0"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1402.319,
+        "total": 1402.319
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-027",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "numbers-1",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-2",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "numbers-3",
+          "class": "objective",
+          "result": "fail",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        },
+        {
+          "id": "required-2",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8",
+          "source": "rules",
+          "heading": "Recomendaciones",
+          "distance": 0.16640821128109606
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:14",
+          "source": "finops",
+          "heading": "Anomalias De Coste",
+          "distance": 0.2458636449018503
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:0",
+          "source": "rules",
+          "heading": "Alcance",
+          "distance": 0.28912975668516316
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:0",
+          "source": "glossary",
+          "heading": "Proposito",
+          "distance": 0.453882456916299
+        }
+      ],
+      "citations": [
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:8",
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:14",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:0"
+      ],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1296.073,
+        "total": 1296.073
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    },
+    {
+      "case": "JUP-069-028",
+      "outcome": "fail",
+      "checks": [
+        {
+          "id": "forbidden-1",
+          "class": "objective",
+          "result": "pass",
+          "decided_by": [
+            "rule"
+          ]
+        },
+        {
+          "id": "required-1",
+          "class": "judged",
+          "result": "fail",
+          "decided_by": [
+            "lucia"
+          ]
+        }
+      ],
+      "retrieved": [
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:7",
+          "source": "finops",
+          "heading": "Jerarquia Azure Relevante",
+          "distance": 0.14878235077748114
+        },
+        {
+          "chunk_id": "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:1",
+          "source": "glossary",
+          "heading": "Subscription",
+          "distance": 0.2434893660987456
+        },
+        {
+          "chunk_id": "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:1",
+          "source": "rules",
+          "heading": "Reglas De Tagging",
+          "distance": 0.3029680019042299
+        },
+        {
+          "chunk_id": "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:15",
+          "source": "finops",
+          "heading": "Recomendaciones De Optimizacion",
+          "distance": 0.30391642347156733
+        }
+      ],
+      "citations": [
+        "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:7",
+        "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:1",
+        "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:1"
+      ],
+      "figures": [],
+      "latency_ms": {
+        "embedding": 0,
+        "retrieval": 0,
+        "generation": 1592.003,
+        "total": 1592.003
+      },
+      "failure_category": null,
+      "failure_stage": null,
+      "structured_ok": true,
+      "evidence_refs": {
+        "total": 3,
+        "dangling": 0
+      }
+    }
+  ]
+}

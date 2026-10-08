@@ -5,6 +5,7 @@ import copy
 import importlib.util
 import io
 import json
+import os
 import socket
 import subprocess
 import sys
@@ -732,6 +733,18 @@ class CommandLineTests(unittest.TestCase):
             self.assertIn("0.7", out)
             self.assertIn("0.8", out)
             self.assertRegex(out, r"(?i)variaci")
+
+    def test_compare_prints_accents_even_when_the_console_is_not_utf8(self):
+        with tempfile.TemporaryDirectory() as folder:
+            paths = []
+            for label in ("uno", "dos"):
+                path = Path(folder) / f"{label}.json"
+                path.write_text(json.dumps({"metrics": {"ACC-1": {"available": True, "k": 1, "n": 2, "rate": 0.5}}}), encoding="utf-8")
+                paths.append(str(path))
+            env = {**os.environ, "PYTHONIOENCODING": "ascii"}
+            done = subprocess.run([sys.executable, str(ROOT / "tools" / "assistant-eval.py"), "compare", *paths], env=env, capture_output=True)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertIn("variación".encode("utf-8"), done.stdout)
 
 
 if __name__ == "__main__":
