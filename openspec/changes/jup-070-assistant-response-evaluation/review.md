@@ -35,3 +35,20 @@ Además, al revisar se vio que los ficheros generados llevaban saltos de línea 
 Ataques que resistieron: números dentro de otros, ambos convenios decimales, unidad y tolerancia, determinismo byte a byte, ausencia de texto y de credenciales en la evidencia, escritura fuera del repositorio, reglas completas, casos sin juicio, discrepancia entre revisores, bloqueos por infraestructura y reducción de muestra.
 
 Barrido del patrón: la normalización de identificadores solo estaba en `reviewers_of`; la excepción fuera del `except` se repetía en el inicio de sesión (corregido); la negación por defecto afectaba a las dos reglas de importe (corregido); las cifras sin unidad o con signo afectaban a `classify_figures` y a `amount_not_in_prompt` (la primera corregida; la segunda no cambia el criterio «importe con unidad»).
+
+## Adversarial Review (pass 2)
+
+Revisor independiente, sobre los cambios de la pasada 1. Veredicto: changes-requested (1 BLOCKING, 3 HIGH).
+
+| ID | Sev. | Resolución |
+| --- | --- | --- |
+| ADV-1 | BLOCKING | Una respuesta malformada se recogía como `schema_validation`, que `score_case` trataba como bloqueo y el calculador rechazaba, de modo que un solo caso abortaba toda la puntuación. Corregido: se recoge como `invalid_response` (fallo de proveedor del calculador, caso `blocked`) y una prueba puntúa una batería completa con ese caso. |
+| ADV-2 | HIGH | La proximidad de etiqueta daba falsos fallos con «200 EUR (20 %)» y similares. Corregido: solo bloquea que justo antes de la cifra aparezca la etiqueta de otra cifra; si no hay ninguna etiqueta, vale la del resto de la frase. Diez redacciones naturales en las pruebas. «Julio … (agosto)» queda como RF-070-005. |
+| ADV-3 | HIGH | Alias que faltaban (`superamos`, `pasamos`, `aumenta`, `sube`…). Añadidos en los casos que usan `supera` y `aumento`. |
+| ADV-4 | HIGH | Cifras derivadas correctas se marcaban sin rastro. Corregido: sumas, diferencias y cocientes (en %) de los números del caso y de los valores esperados cuentan como derivadas del contexto. Una cifra inventada que coincida con una derivada pasaría; las pruebas fijan que 9.999, 777 y 4.321 siguen sin rastro. |
+| ADV-5 | MEDIUM | Identificadores sin guion («fragmento 120», «ISO 8601», `chunk:105`) dejan de contar como importes. Los años de 1900 a 2100 sin unidad siguen exentos (decisión documentada). |
+| ADV-6 | MEDIUM | La recogida valida el tipo de los campos del fragmento y captura `RecursionError`: el caso queda `blocked` y la recogida sigue. |
+| ADV-7 | MEDIUM | Con `structured_output: true` y STR-1 no calculable, el veredicto da `not_available`. |
+| ADV-8 | LOW | Los caracteres de formato Unicode se quitan del nombre del revisor. «Ana G.» y «Ana» siguen siendo dos personas. |
+| ADV-9 | LOW | Decisión deliberada, registrada como RF-070-006. |
+| ADV-10 | LOW | Registrado como RF-070-005. |

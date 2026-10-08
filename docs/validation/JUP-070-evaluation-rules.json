@@ -39,7 +39,9 @@
         "aumenta",
         "diferencia",
         "sube",
-        "crecimiento"
+        "crecimiento",
+        "aumentan",
+        "crece"
       ],
       "2": [
         "crecimiento",
@@ -50,7 +52,10 @@
         "porcentaje",
         "sube",
         "variacion",
-        "respecto a julio"
+        "respecto a julio",
+        "aumenta",
+        "aumentan",
+        "crece"
       ]
     },
     "JUP-069-005": {
@@ -109,7 +114,13 @@
         "diferencia",
         "variacion",
         "pasaria",
-        "previsto"
+        "previsto",
+        "superamos",
+        "pasamos",
+        "nos pasamos",
+        "sobrepasamos",
+        "superado",
+        "previstos"
       ],
       "2": [
         "desviacion",
@@ -126,7 +137,13 @@
         "pasaria",
         "previsto",
         "relativa",
-        "porcentaje"
+        "porcentaje",
+        "superamos",
+        "pasamos",
+        "nos pasamos",
+        "sobrepasamos",
+        "superado",
+        "previstos"
       ]
     },
     "JUP-069-014": {
@@ -143,7 +160,13 @@
         "diferencia",
         "variacion",
         "pasaria",
-        "previsto"
+        "previsto",
+        "superamos",
+        "pasamos",
+        "nos pasamos",
+        "sobrepasamos",
+        "superado",
+        "previstos"
       ],
       "2": [
         "desviacion",
@@ -160,7 +183,13 @@
         "pasaria",
         "previsto",
         "relativo",
-        "porcentaje"
+        "porcentaje",
+        "superamos",
+        "pasamos",
+        "nos pasamos",
+        "sobrepasamos",
+        "superado",
+        "previstos"
       ]
     },
     "JUP-069-016": {
@@ -171,7 +200,11 @@
         "diferencia",
         "incremento",
         "aumento",
-        "subida"
+        "subida",
+        "aumenta",
+        "aumentan",
+        "sube",
+        "crece"
       ],
       "2": [
         "delta relativo",
@@ -180,7 +213,11 @@
         "porcentaje",
         "incremento",
         "aumento",
-        "subida"
+        "subida",
+        "aumenta",
+        "aumentan",
+        "sube",
+        "crece"
       ]
     },
     "JUP-069-017": {
@@ -191,7 +228,11 @@
         "diferencia",
         "incremento",
         "aumento",
-        "subida"
+        "subida",
+        "aumenta",
+        "aumentan",
+        "sube",
+        "crece"
       ],
       "2": [
         "delta relativo",
@@ -200,7 +241,11 @@
         "porcentaje",
         "incremento",
         "aumento",
-        "subida"
+        "subida",
+        "aumenta",
+        "aumentan",
+        "sube",
+        "crece"
       ]
     },
     "JUP-069-018": {
@@ -211,7 +256,11 @@
         "diferencia",
         "incremento",
         "aumento",
-        "subida"
+        "subida",
+        "aumenta",
+        "aumentan",
+        "sube",
+        "crece"
       ],
       "2": [
         "delta relativo",
@@ -220,7 +269,11 @@
         "porcentaje",
         "incremento",
         "aumento",
-        "subida"
+        "subida",
+        "aumenta",
+        "aumentan",
+        "sube",
+        "crece"
       ]
     },
     "JUP-069-019": {
@@ -231,7 +284,11 @@
         "diferencia",
         "incremento",
         "aumento",
-        "subida"
+        "subida",
+        "aumenta",
+        "aumentan",
+        "sube",
+        "crece"
       ]
     },
     "JUP-069-021": {

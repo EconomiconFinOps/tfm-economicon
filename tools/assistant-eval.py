@@ -14,6 +14,7 @@ import argparse
 import importlib.util
 import http.client
 import json
+import math
 import os
 import re
 import socket
@@ -46,7 +47,7 @@ FAILURE_BY_STATUS = {401: "authentication", 403: "authentication", 429: "rate_li
 INFRA_STAGE = "embedding"
 RAW_VERSION = 1
 # A reply that parses badly is the chat's fault; a cut or invalid HTTP exchange is a connection one.
-MALFORMED = (ValueError, KeyError, AttributeError, TypeError)
+MALFORMED = (ValueError, KeyError, AttributeError, TypeError, RecursionError)
 TRANSPORT = (urllib.error.URLError, OSError, http.client.HTTPException)
 MAX_REVIEWERS = 2
 
@@ -113,7 +114,7 @@ def label_fragments(fragments: list[dict], document_map: dict, chunk_size: int, 
 
 def normalize(text: str) -> str:
     folded = unicodedata.normalize("NFD", text)
-    folded = "".join(char for char in folded if not unicodedata.combining(char))
+    folded = "".join(char for char in folded if not unicodedata.combining(char) and unicodedata.category(char) != "Cf")
     folded = folded.replace("*", "").replace("`", "")
     return re.sub(r"\s+", " ", folded.casefold()).strip()
 
@@ -209,15 +210,12 @@ def answer_sentences(response: str, prompt: str) -> list[str]:
 
 
 def labelled_by(sentence: str, figures: list[Figure], position: int, own: list[str], others: list[str]) -> bool:
-    """The label sits next to the figure: before it, or after it when nothing before it names another figure."""
+    """The figure is not claimed by another label: the text just before it names its own label or none at all."""
     previous_end = figures[position - 1].end if position else 0
-    next_start = figures[position + 1].start if position + 1 < len(figures) else len(sentence)
-    left, right = sentence[previous_end:figures[position].start], sentence[figures[position].end:next_start]
+    left = sentence[previous_end:figures[position].start]
     if any(has_alias(left, alias) for alias in own):
         return True
-    if any(has_alias(left, alias) for alias in others):
-        return False
-    return any(has_alias(right, alias) for alias in own)
+    return not any(has_alias(left, alias) for alias in others)
 
 
 def check_number(response: str, spec: dict, aliases: list[str], prompt: str = "", others: list[str] = ()) -> bool:
@@ -320,11 +318,22 @@ def bare_amounts(sentence: str) -> list[Figure]:
     for match in SIGNED_NUMBER.finditer(sentence):
         value = parse_number_token(match.group(1))
         inside = any(start <= match.start() < end for start, end in covered)
-        identifier = re.search(r"[a-z]-$", sentence[:match.start()]) is not None
+        identifier = re.search(r"([a-z]-|\b(fragmento|chunk|iso|jup|adr|rf|seccion|apartado|punto|paso|version|id|ref)\W{0,2})$", sentence[:match.start()]) is not None
         year = value is not None and value == value.to_integral_value() and 1900 <= value <= 2100
         if value is None or inside or identifier or year or value < 100:
             continue
         found.append(Figure(value, None, match.start(), match.end()))
+    return found
+
+
+def arithmetic_of(values: set) -> set:
+    """Sums, differences and shares of the numbers of the case: what a right answer computes from its context."""
+    found = set()
+    for a in values:
+        for b in values:
+            found |= {a + b, abs(a - b)}
+            if b:
+                found.add(a / b * 100)
     return found
 
 
@@ -334,6 +343,7 @@ def classify_figures(answer: str, case: dict, retrieved: list[dict]) -> list[dic
     for item in retrieved:
         evidence |= numbers_in(item.get("content", ""))
     derived = [(Decimal(str(n["value"])), Decimal(str(n["tolerance"]))) for n in case["expected"].get("numbers", [])]
+    derived += [(value, Decimal("0.01")) for value in arithmetic_of(question | context | {value for value, _ in derived})]
     found = []
     for sentence in split_sentences(answer):
         for figure in [*parse_figures(sentence, SIGNED_NUMBER), *bare_amounts(sentence)]:
@@ -491,10 +501,7 @@ def verdict(report: dict, rules: dict) -> dict:
             if metric in unstructured and not structured:
                 add(metric, label, "not_applicable", f"{description}; el chat no devuelve salida estructurada")
             elif target["met"] is None:
-                if metric in unstructured:
-                    add(metric, label, "not_applicable", f"{description}; el chat no devuelve salida estructurada")
-                else:
-                    add(metric, label, "not_available", f"{description} no se puede calcular")
+                add(metric, label, "not_available", f"{description} no se puede calcular")
             else:
                 add(metric, label, "met" if target["met"] else "unmet", f"{description}" + ("" if target["met"] else " no se cumple"))
     for extra in rules["acceptance"]["extra"]:
@@ -546,7 +553,7 @@ def failure_of(error: Exception) -> tuple[int | None, str]:
     if isinstance(error, (TimeoutError, socket.timeout)) or isinstance(reason, (TimeoutError, socket.timeout)):
         return None, "timeout"
     if isinstance(error, MALFORMED):
-        return None, "schema_validation"
+        return None, "invalid_response"
     return None, "connection"
 
 
@@ -577,6 +584,10 @@ def collect_cases(base_url: str, email: str, password: str, tenant: str, inputs:
             message = reply["assistant_message"]
             if not isinstance(message.get("content"), str) or not isinstance(reply.get("retrieved_context"), list):
                 raise ValueError("invalid reply")
+            for r in reply["retrieved_context"]:
+                if not (isinstance(r["chunk_id"], str) and isinstance(r["source"], str) and isinstance(r.get("content", ""), str)
+                        and isinstance(r["distance"], (int, float)) and not isinstance(r["distance"], bool) and math.isfinite(r["distance"])):
+                    raise ValueError("invalid fragment")
             sections = {c.get("evidence_id"): c.get("section") for c in message.get("metadata", {}).get("source_citations", [])}
             entry["answer"] = message["content"]
             entry["citations"] = [str(c) for c in message.get("metadata", {}).get("citations", [])]

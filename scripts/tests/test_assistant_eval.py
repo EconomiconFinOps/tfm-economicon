@@ -293,7 +293,7 @@ class ScoreCaseTests(unittest.TestCase):
         self.assertTrue(all(c["decided_by"] == ["rule"] for c in entry["checks"] if c["class"] == "objective"))
 
     def test_an_untraceable_amount_without_a_unit_or_with_a_sign_blocks_a_critical_pass(self):
-        for extra in (" Además gastamos 9.999 en red.", " Hay -500 € extra.", " Sobran 777 pedidos.", " Sobran -1.250,50 EUR."):
+        for extra in (" Además gastamos 9.999 en red.", " Hay -777 € extra.", " Sobran 777 pedidos.", " Sobran -1.250,50 EUR."):
             entry, _ = self.score("JUP-069-001", GOLD["JUP-069-001"] + extra)
             self.assertEqual(entry["outcome"], "fail", extra)
             self.assertIn("untraceable", [f["origin"] for f in entry["figures"]], extra)
@@ -302,6 +302,37 @@ class ScoreCaseTests(unittest.TestCase):
         extra = " Según el punto 2 de JUP-107 y el informe de 2026, hay 3 servicios (ADR-0002) en 12 meses."
         entry, _ = self.score("JUP-069-001", GOLD["JUP-069-001"] + extra)
         self.assertEqual(entry["outcome"], "pass", entry["figures"])
+
+    NATURAL = (
+        ("JUP-069-013", "La desviación es de 200 EUR (20 %)."), ("JUP-069-013", "El coste supera el presupuesto en 200 EUR, un 20 % más."),
+        ("JUP-069-013", "Superamos el presupuesto en 200 EUR (un 20 %)."), ("JUP-069-013", "Nos pasamos en 200 EUR, es decir un 20 % sobre el presupuesto."),
+        ("JUP-069-014", "Sí: el exceso previsto es de 200 EUR (un 20 % sobre el presupuesto)."), ("JUP-069-014", "Exceso previsto: 200 EUR, equivalente al 20 %."),
+        ("JUP-069-016", "Aumenta 150 EUR/día, un 37,5 % sobre el baseline."), ("JUP-069-016", "El incremento absoluto es 150 EUR/día (37,5 %)."),
+        ("JUP-069-005", "El coste elegible es 1.000 EUR; sin asignar: 100 EUR, el 10 %."),
+        ("JUP-069-027", "Julio: 10 EUR por pedido. Agosto: 6 EUR por pedido, un 40 % menos."),
+    )
+
+    def test_natural_wordings_with_a_percentage_in_brackets_or_after_a_comma_pass_every_figure(self):
+        for case_id, text in self.NATURAL:
+            entry, _ = self.score(case_id, text, provisional=True)
+            self.assertEqual([c["id"] for c in entry["checks"] if c["id"].startswith("numbers") and c["result"] == "fail"], [], text)
+
+    def test_the_total_and_the_shares_a_right_answer_computes_are_not_untraceable(self):
+        text = "Total: 1.000 EUR. Virtual Machines: 600 EUR (60 %). Storage: 250 EUR (25 %). Log Analytics: 150 EUR (15 %)."
+        entry, _ = self.score("JUP-069-001", text)
+        self.assertNotIn("untraceable", [f["origin"] for f in entry["figures"]])
+        self.assertEqual(entry["outcome"], "pass")
+
+    def test_a_difference_of_two_context_figures_is_not_untraceable(self):
+        entry, _ = self.score("JUP-069-001", GOLD["JUP-069-001"] + " La diferencia entre Virtual Machines y Storage es de 350 EUR.")
+        self.assertNotIn("untraceable", [f["origin"] for f in entry["figures"]])
+
+    def test_identifiers_without_a_hyphen_are_not_amounts_but_a_loose_big_number_still_is(self):
+        for extra in (" Fuente: fragmento 120 del corpus.", " Según ISO 8601.", " Ver doc:chunk:105."):
+            entry, _ = self.score("JUP-069-001", GOLD["JUP-069-001"] + extra)
+            self.assertEqual(entry["outcome"], "pass", extra)
+        entry, _ = self.score("JUP-069-001", GOLD["JUP-069-001"] + " Sobran 4.321 pedidos.")
+        self.assertEqual(entry["outcome"], "fail")
 
     def test_a_missing_figure_fails_the_case_even_when_reviewers_pass_it(self):
         entry, _ = self.score("JUP-069-001", "Virtual Machines es el servicio con más coste en este escenario simulado.")
@@ -327,7 +358,7 @@ class ScoreCaseTests(unittest.TestCase):
         self.assertIn("juicio", analysis["reason"])
 
     def test_the_same_person_written_differently_is_not_a_second_reviewer(self):
-        for pair in (("Ana", "ana"), ("ana", " ANA "), ("José", "Jose"), ("María  López", "maria lopez")):
+        for pair in (("Ana", "Ana" + chr(0x200b)), ("Ana", "ana"), ("ana", " ANA "), ("José", "Jose"), ("María  López", "maria lopez")):
             entry, analysis = self.score("JUP-069-001", GOLD["JUP-069-001"], judgment("JUP-069-001", reviewers=pair))
             self.assertEqual(entry["outcome"], "not_run", pair)
             self.assertIn("revisor", analysis["reason"])
@@ -580,6 +611,14 @@ class VerdictTests(unittest.TestCase):
         structured["acceptance"]["structured_output"] = True
         self.assertFalse(evaluation.verdict(report, structured)["accepted"])
 
+    def test_a_schema_threshold_that_cannot_be_computed_is_not_available_even_with_structured_output(self):
+        report = self.report(STR_1={"available": False, "rate": None, "target": {"comparator": ">=", "value": 0.95, "met": None}})
+        structured = copy.deepcopy(RULES)
+        structured["acceptance"]["structured_output"] = True
+        result = evaluation.verdict(report, structured)
+        self.assertEqual({i["metric"]: i["status"] for i in result["thresholds"]}["STR-1"], "not_available")
+        self.assertFalse(result["accepted"])
+
     def test_the_schema_threshold_is_not_applicable_while_the_chat_has_no_structured_output_even_if_the_contract_check_is_met(self):
         report = self.report(STR_1={"available": True, "rate": 1.0, "target": {"comparator": ">=", "value": 0.95, "met": True}})
         result = evaluation.verdict(report, RULES)
@@ -775,9 +814,29 @@ class MalformedReplyTests(unittest.TestCase):
             self.assertIsNotNone(raw["cases"][1]["failure_category"], name)
             self.assertIsNone(raw["cases"][2]["failure_category"], name)
 
-    def test_a_reply_that_does_not_follow_the_contract_is_a_schema_failure(self):
+    def test_a_reply_that_does_not_follow_the_contract_blocks_the_case_and_the_whole_run_still_scores(self):
         raw = self.collect({"assistant_message": [], "retrieved_context": []})
-        self.assertEqual(raw["cases"][1]["failure_category"], "schema_validation")
+        self.assertEqual(raw["cases"][1]["failure_category"], "invalid_response")
+        full = {"raw_version": 1, "cases": [raw_case(c["id"], "x", [fragment()]) for c in BANK["cases"]]}
+        full["cases"][22] = dict(full["cases"][22], failure_category="invalid_response", status=None, total_ms=None, answer="", citations=[], retrieved=[])
+        judgments = {"judgments_version": 1, "cases": {c["id"]: judgment(c["id"], "fail") for c in BANK["cases"]}}
+        results, _ = evaluation.build_results(BANK, RULES, full, judgments, RunHeaderAndResultsTests.RUN_INFO, provisional=True)
+        report = metrics.compute(results, BANK, LABELS, CATALOGUE)
+        self.assertEqual(results["cases"][22]["outcome"], "blocked")
+        self.assertTrue(report["metrics"]["AVL-1"]["available"])
+
+    def test_fragments_with_the_wrong_types_block_only_their_case(self):
+        bad = [{"chunk_id": 5, "source": "s", "distance": 0.1, "content": "c"}, {"chunk_id": "a", "source": "s", "distance": "abc", "content": "c"},
+               {"chunk_id": "a", "source": "s", "distance": float("nan"), "content": "c"}, {"chunk_id": "a", "source": "s", "distance": 0.1, "content": None}]
+        for fragment_ in bad:
+            raw = self.collect({"assistant_message": {"content": "ok", "metadata": {}}, "retrieved_context": [fragment_]})
+            self.assertEqual(raw["cases"][1]["failure_category"], "invalid_response", fragment_)
+            self.assertIsNone(raw["cases"][2]["failure_category"])
+
+    def test_a_reply_nested_beyond_the_parser_limit_blocks_only_its_case(self):
+        opener = ScriptedOpener([GOOD_REPLY, RecursionError(), GOOD_REPLY])
+        raw = evaluation.collect_cases("http://x", "u", "p", "t", self.INPUTS, opener=opener)
+        self.assertEqual([c["failure_category"] for c in raw["cases"]], [None, "invalid_response", None])
 
 
 class CommandLineTests(unittest.TestCase):
