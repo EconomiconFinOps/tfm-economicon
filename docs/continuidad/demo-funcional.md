@@ -1,6 +1,6 @@
 # Demo funcional — JUP-065
 
-Actualizado: 2026-10-05. Origen: «JUP-065 — Preparar la demo funcional».
+Actualizado: 2026-10-08. Origen: «JUP-065 — Preparar la demo funcional».
 [Tarjeta](https://trello.com/c/SZUFo4ol).
 
 ## Alcance
@@ -11,7 +11,27 @@ solicitar formalmente revisión/validación. El paquete canónico compartido est
 conserva escenarios y tareas. La [evidencia](../evidence/JUP-065-validation.md)
 distingue comprobaciones automáticas y pendientes humanos.
 
-## Corrección P2 de cobertura CI — 05/10/2026
+## Índice reconciliado tras JUP-025/JUP-029 — 08/10/2026
+
+El aviso de validar PR #63 encuentra un único conflicto add/add en el índice de
+continuidad. Se conservan las entradas y los dos resúmenes: demo propia y
+presupuestos entrante de develop `8cc5db0`. La fila de presupuestos conserva su
+corte histórico del 02/10; no se presenta como un estado verificado hoy.
+
+El guion mensual publicado en `3fe2886`, sus quince artefactos, corpus, prompts,
+rúbricas, scripts, lector/contrato de costes y CI se conservan. La base integra
+citas JUP-025 y presupuestos JUP-029: cambia assistant/metadata/visualización de
+evidencia y añade un POST de presupuesto; el GET de costes y dashboard mensual
+no cambian. Es una dependencia nueva para el ensayo, no una ejecución de él.
+
+[Paris revisó favorablemente 3fe2886](https://github.com/EconomiconFinOps/tfm-economicon/pull/63#pullrequestreview-5447622145).
+Tras publicar esta reconciliación, solicitar relectura/validación únicamente del
+índice y del efecto de las dependencias entrantes en la preparación. Se mantienen
+el pairing real de Lucía y el ensayo con modelo/pertinencia/citas/rúbricas/tiempos
+pendientes. Las pruebas anteriores conservan sus fechas y no se atribuyen a este
+merge como nuevas ejecuciones. Sin integración de PR a develop, despliegue o cierre.
+
+## Histórico: corrección P2 de cobertura CI — 05/10/2026
 
 Paris solicitó proteger los tres comandos de demo y el historial completo del
 checkout de gobernanza en su [review sobre b77d596](https://github.com/EconomiconFinOps/tfm-economicon/pull/63#pullrequestreview-5408829450).
