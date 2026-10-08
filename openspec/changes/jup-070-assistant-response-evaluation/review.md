@@ -52,3 +52,19 @@ Revisor independiente, sobre los cambios de la pasada 1. Veredicto: changes-requ
 | ADV-8 | LOW | Los caracteres de formato Unicode se quitan del nombre del revisor. «Ana G.» y «Ana» siguen siendo dos personas. |
 | ADV-9 | LOW | Decisión deliberada, registrada como RF-070-006. |
 | ADV-10 | LOW | Registrado como RF-070-005. |
+
+## Adversarial Review (pass 3)
+
+Revisor independiente, sobre el último commit. Veredicto: changes-requested (3 HIGH, 2 MEDIUM, 2 LOW).
+
+| ID | Sev. | Resolución |
+| --- | --- | --- |
+| ADV-1 | HIGH | La asociación de etiqueta solo mira lo que hay justo antes de la cifra; con etiquetas pospuestas hay falsos aciertos y falsos fallos. **No corregido; aceptado por Lucía el 2026-10-09 como RF-070-007.** Los puntos `required` los siguen juzgando personas. |
+| ADV-2 | HIGH | Reglas de 006 y 007 que marcan la explicación correcta del tramo amarillo. **Aceptado por Lucía el 2026-10-09 como RF-070-008.** |
+| ADV-3 | HIGH | Las cifras derivadas redondeadas a un decimal (53,3 %) se marcaban sin rastro. Corregido: tolerancia de medio decimal y prueba. |
+| ADV-4 | MEDIUM | Un texto con un sustituto Unicode suelto rompía la escritura de toda la recogida. Corregido: bloquea solo su caso como `invalid_response`, con prueba. |
+| ADV-5 | MEDIUM | Años de 1900 a 2100 y palabras identificadoras ocultan un importe. **Aceptado por Lucía el 2026-10-09 como RF-070-009.** |
+| ADV-6 | LOW | Coste cuadrático con miles de cifras. **Aceptado por Lucía el 2026-10-09 como RF-070-010.** |
+| ADV-7 | LOW | Unidad `/pedido` obligatoria. **Aceptado por Lucía el 2026-10-09 como RF-070-010.** |
+
+Lucía aceptó el 2026-10-09 («si») dejar abiertos los hallazgos ADV-1, 2, 5, 6 y 7, tal y como se le propuso: no cambian el veredicto de la medición de referencia (la respuesta es la plantilla) y las reglas son una cota inferior con juicio humano.
