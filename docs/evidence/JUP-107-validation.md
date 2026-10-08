@@ -74,3 +74,9 @@ Con los datos cargados, el fragmento de `preparacion.md` imprime `data_status: p
 - El vídeo final, que no es parte de este change.
 - La lógica de la receta no tiene pruebas automáticas propias (RF-107-001).
 - Navegadores distintos de Chromium y pantallas móviles.
+
+## Nota de release
+
+| Fecha | JUP | Nota de release | Review | ADRs |
+| --- | --- | --- | --- | --- |
+| 2026-10-08 | JUP-107 | Demo reproducible de la funcionalidad de costes con los datos sintéticos de JUP-106: guion de 3 minutos, preparación, preguntas, valores esperados verificados, receta de navegador y paso de CI `synthetic-demo:test`. | [review](../../openspec/changes/archive/2026-10-08-jup-107-synthetic-cost-demo/review.md) | Ninguno (no aplicable) |
