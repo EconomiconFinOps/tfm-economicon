@@ -87,7 +87,7 @@ Solo se pagan llamadas de embeddings (céntimos de dólar con 28 preguntas y 52 
 
 Se leen las cifras de cada frase con ambos convenios decimales (`1.000,50` y `1,000.50`), el signo de porcentaje y las formas de la unidad (`EUR`, `euros`, `€`; `%`, `por ciento`; y los periodos `/día`, `al mes`, `por pedido`). Una cifra cuenta solo si el valor está dentro de la tolerancia absoluta, la unidad coincide y la etiqueta (o uno de sus alias) está en la misma frase. Un número dentro de otro mayor (`190` por `90`), pegado a una palabra o con signo negativo no vale. Una cifra escrita con palabras («seiscientos») no se reconoce y la comprobación falla: se prefiere un falso fallo visible a un falso acierto.
 
-Si un falso fallo molesta, **se corrige la regla** (un alias o una forma nueva en el fichero de reglas) y se repite la puntuación; no se cambia a mano un resultado. Una cifra con unidad que afirma la respuesta se clasifica como proveniente de la pregunta, del contexto, de un fragmento recuperado o sin rastro; las que coinciden con un valor esperado de la batería (los totales o porcentajes que el caso pide calcular) cuentan como derivadas del contexto. Una cifra sin rastro en un caso crítico impide el `pass`.
+Si un falso fallo molesta, **se corrige la regla** (un alias o una forma nueva en el fichero de reglas) y se repite la puntuación; no se cambia a mano un resultado. La etiqueta tiene que estar junto a la cifra (antes, o después si lo de antes nombra otra cifra del caso): la cifra correcta bajo la etiqueta de otra no cuenta. Una cifra con unidad, con signo o de tres o más dígitos sin unidad (salvo años e identificadores como JUP-107) que afirma la respuesta se clasifica como proveniente de la pregunta, del contexto, de un fragmento recuperado o sin rastro; las que coinciden con un valor esperado de la batería (los totales o porcentajes que el caso pide calcular) cuentan como derivadas del contexto. Una cifra sin rastro en un caso crítico impide el `pass`.
 
 ## Umbrales de aceptación
 
@@ -110,6 +110,8 @@ Un umbral obligatorio que no se puede calcular se informa como no disponible y e
 - **`structured_ok`** significa que la respuesta cumple el contrato de respuesta del chat. No es la salida estructurada `FinOpsResponse` de JUP-024; cuando el chat la devuelva, esa comprobación tendrá que añadirse.
 - **Cuando el chat genere con modelo** (JUP-035), la ficha lleva el alias y la temperatura reales de la generación, y la latencia de `generation` pasa a tener sentido junto a la del total; hasta entonces las filas de etapa no se interpretan.
 - **Los embeddings `mock`** no tienen significado semántico: las métricas de recuperación (REL) de una ejecución con `mock` no miden relevancia real.
+- **Formas que el lector de cifras no reconoce:** el espacio como separador de miles y las cifras con palabras. Una cifra previa en «pasó de 80 % a 90 %» puede cumplir un 90 % esperado. Los puntos juzgados por personas cubren esos huecos y están registrados en `openspec/findings/backlog.md` (RF-070-001 a RF-070-004).
+- **Un revisor se identifica por su nombre sin tildes ni mayúsculas:** «Ana» y «ana» son la misma persona. Más de dos revisores en un punto es un error.
 - **Las reglas de las prohibiciones son una cota inferior** y las cifras con palabras fallan por diseño.
 - **Un modelo puede variar** entre ejecuciones aunque la temperatura sea cero; por eso las tres repeticiones.
 - **La batería y sus respuestas esperadas no se cargan en el índice** ni se envían al chat; los datos numéricos van dentro del prompt.

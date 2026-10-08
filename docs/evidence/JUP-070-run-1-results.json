@@ -116,7 +116,17 @@
         "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:7",
         "dc3e881b-5647-4cf9-9ac2-13f2b2723f44:chunk:2"
       ],
-      "figures": [],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
       "latency_ms": {
         "embedding": 0,
         "retrieval": 0,
@@ -463,7 +473,17 @@
         "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:6",
         "9e3aca4d-c4c7-46f3-9f42-db3db6f51cf9:chunk:2"
       ],
-      "figures": [],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
       "latency_ms": {
         "embedding": 0,
         "retrieval": 0,
@@ -1901,6 +1921,9 @@
         },
         {
           "origin": "context"
+        },
+        {
+          "origin": "context"
         }
       ],
       "latency_ms": {
@@ -2408,6 +2431,12 @@
         "b9a720f9-bdb1-4f61-9056-2014c5d9262a:chunk:0"
       ],
       "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
         {
           "origin": "context"
         },

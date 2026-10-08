@@ -116,7 +116,17 @@
         "fe63856e-c299-4ea2-9a38-b5b4a15f365a:chunk:1",
         "44d28bd4-e985-42a0-9eb4-36184d8919ac:chunk:5"
       ],
-      "figures": [],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
       "latency_ms": {
         "embedding": 0,
         "retrieval": 0,
@@ -463,7 +473,17 @@
         "44d28bd4-e985-42a0-9eb4-36184d8919ac:chunk:5",
         "44d28bd4-e985-42a0-9eb4-36184d8919ac:chunk:2"
       ],
-      "figures": [],
+      "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        }
+      ],
       "latency_ms": {
         "embedding": 0,
         "retrieval": 0,
@@ -1924,6 +1944,9 @@
         },
         {
           "origin": "context"
+        },
+        {
+          "origin": "context"
         }
       ],
       "latency_ms": {
@@ -2431,6 +2454,12 @@
         "fe63856e-c299-4ea2-9a38-b5b4a15f365a:chunk:3"
       ],
       "figures": [
+        {
+          "origin": "context"
+        },
+        {
+          "origin": "context"
+        },
         {
           "origin": "context"
         },

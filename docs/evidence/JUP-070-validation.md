@@ -15,7 +15,7 @@ Fecha: 2026-10-08. Rama: `feat/JUP-070-assistant-response-evaluation`. [Trello](
 
 ## Qué se midió
 
-Las dos ejecuciones usan el mismo corpus (4 documentos, 52 fragmentos), la misma batería de JUP-069 (28 casos), `top_k` 4, distancia máxima 0,6 y fragmentos de 500 con solape 50. El código de `apps/` es el mismo en ambas.
+Las dos ejecuciones usan el mismo corpus (4 documentos, 52 fragmentos), la misma batería de JUP-069 (28 casos), `top_k` 4 y fragmentos de 500 con solape 50. La distancia máxima fue 0,6 en la ejecución 2 y no hubo umbral en la ejecución 1 (`max_distance` nulo). El código de `apps/` es el mismo en ambas.
 
 **Ningún modelo generó las respuestas.** El chat actual devuelve una plantilla que repite la pregunta y lista fragmentos recuperados (la generación con modelo es JUP-035). Por eso esta medición es la línea base del chat de hoy, no una tasa de acierto del producto final.
 
@@ -27,7 +27,8 @@ Las dos ejecuciones usan el mismo corpus (4 documentos, 52 fragmentos), la misma
 | REL-1 (acierto de documento) | 16 de 20 | 20 de 20 |
 | REL-2 (acierto de sección) | 6 de 20 | 16 de 20 |
 | GRD-2 (cifras sin rastro, críticos) | 0 | 0 |
-| STR-1, AVL-1, GRD-1, GRD-3 | 100 % | 100 % |
+| AVL-1, GRD-1, GRD-3 | 100 % | 100 % |
+| STR-1 | 100 % del contrato de respuesta del chat; umbral «no aplica» | igual |
 | LAT-2 total, percentil 95 | 1835 ms | 4562 ms |
 | Veredicto | No aceptado | No aceptado |
 
@@ -35,6 +36,7 @@ El veredicto es «No aceptado» por ACC-1 (umbral propuesto, 0,8) y ACC-2 (umbra
 
 ## Límites de esta medición
 
+- **STR-1 no mide salida estructurada.** `structured_ok` solo dice que la respuesta cumple el contrato de respuesta del chat, que la recogida ya exige, así que el calculador da 100 %. El veredicto lo trata como «no aplica» (`acceptance.structured_output` en las reglas) hasta que el chat devuelva la salida estructurada de JUP-024.
 - **Provisional.** Los 46 puntos `required-N` los juzgó una sola persona (Lucía) como `fail`, porque la respuesta es la plantilla y no hace lo que pide ningún punto. Los 14 casos críticos deberían tener dos revisores: se puntuó con `--provisional` y el informe los lista.
 - **Una sola repetición por proveedor.** El método pide tres ejecuciones con la misma configuración; aquí hay una de cada. La variación entre las dos mide el cambio de embeddings, no la variabilidad de una misma configuración.
 - **Solo se mide la latencia total.** Las filas de embedding y recuperación valen 0 por construcción y no se interpretan. La latencia de la ejecución 2 incluye la llamada de embeddings a través del gateway local.

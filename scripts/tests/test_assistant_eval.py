@@ -134,6 +134,25 @@ class NumberCheckTests(unittest.TestCase):
         text = "Virtual Machines cuesta 1.000 EUR. El resto no se detalla."
         self.assertFalse(evaluation.check_number(text, self.TOTAL, ["total", "suma"]))
 
+    VM = {"label": "Virtual Machines", "value": 600, "unit": "EUR", "tolerance": 0.01}
+
+    def test_a_right_figure_under_the_label_of_another_figure_in_the_same_sentence_fails(self):
+        own, other = ["virtual machines", "vm"], ["total", "suma"]
+        wrong = "Virtual Machines cuesta 50 EUR y el total es 600 EUR."
+        self.assertFalse(evaluation.check_number(wrong, self.VM, own, others=other))
+        self.assertFalse(evaluation.check_number("El total es 600 EUR y Virtual Machines cuesta 50 EUR.", self.VM, own, others=other))
+
+    def test_the_label_may_come_before_or_after_the_figure_when_nothing_else_claims_it(self):
+        own, other = ["virtual machines", "vm"], ["total", "suma"]
+        for text in ("Virtual Machines cuesta 600 EUR.", "600 EUR en Virtual Machines.", "El total es 1.000 EUR, de los cuales Virtual Machines 600 EUR.",
+                     "Virtual Machines: 600 EUR y Storage: 250 EUR.", "Virtual Machines concentra más coste, 600 EUR, el 60 % del total."):
+            self.assertTrue(evaluation.check_number(text, self.VM, own, others=other), text)
+
+    def test_a_currency_word_before_the_number_and_markdown_emphasis_still_count(self):
+        for text in ("El total es EUR 1.000.", "El total es USD 1.000.".replace("USD", "EUR"), "El **total** es **1.000** euros.", "El total: `1.000 EUR`."):
+            self.assertTrue(evaluation.check_number(text, self.TOTAL, ["total"]), text)
+        self.assertFalse(evaluation.check_number("El total es USD 1.000.", self.TOTAL, ["total"]))
+
     def test_label_must_be_in_the_same_sentence_as_the_figure(self):
         self.assertFalse(evaluation.check_number("El total del mes. Son 1.000 EUR en agosto.", self.TOTAL, ["total"]))
 
@@ -273,6 +292,17 @@ class ScoreCaseTests(unittest.TestCase):
         self.assertEqual([c["result"] for c in entry["checks"]], ["pass"] * len(entry["checks"]))
         self.assertTrue(all(c["decided_by"] == ["rule"] for c in entry["checks"] if c["class"] == "objective"))
 
+    def test_an_untraceable_amount_without_a_unit_or_with_a_sign_blocks_a_critical_pass(self):
+        for extra in (" Además gastamos 9.999 en red.", " Hay -500 € extra.", " Sobran 777 pedidos.", " Sobran -1.250,50 EUR."):
+            entry, _ = self.score("JUP-069-001", GOLD["JUP-069-001"] + extra)
+            self.assertEqual(entry["outcome"], "fail", extra)
+            self.assertIn("untraceable", [f["origin"] for f in entry["figures"]], extra)
+
+    def test_small_numbers_years_and_identifiers_are_not_untraceable_figures(self):
+        extra = " Según el punto 2 de JUP-107 y el informe de 2026, hay 3 servicios (ADR-0002) en 12 meses."
+        entry, _ = self.score("JUP-069-001", GOLD["JUP-069-001"] + extra)
+        self.assertEqual(entry["outcome"], "pass", entry["figures"])
+
     def test_a_missing_figure_fails_the_case_even_when_reviewers_pass_it(self):
         entry, _ = self.score("JUP-069-001", "Virtual Machines es el servicio con más coste en este escenario simulado.")
         self.assertEqual(entry["outcome"], "fail")
@@ -295,6 +325,19 @@ class ScoreCaseTests(unittest.TestCase):
         self.assertEqual(entry["checks"], [])
         self.assertEqual((entry["citations"], entry["figures"], entry["latency_ms"]), ([], [], {}))
         self.assertIn("juicio", analysis["reason"])
+
+    def test_the_same_person_written_differently_is_not_a_second_reviewer(self):
+        for pair in (("Ana", "ana"), ("ana", " ANA "), ("José", "Jose"), ("María  López", "maria lopez")):
+            entry, analysis = self.score("JUP-069-001", GOLD["JUP-069-001"], judgment("JUP-069-001", reviewers=pair))
+            self.assertEqual(entry["outcome"], "not_run", pair)
+            self.assertIn("revisor", analysis["reason"])
+
+    def test_a_reviewer_that_is_not_a_name_is_a_clear_error_and_not_a_crash(self):
+        for name in (None, 3, ["a"]):
+            bad = judgment("JUP-069-001", reviewers=("lucia",))
+            bad["required-1"].append({"reviewer": name, "result": "pass", "note": ""})
+            with self.assertRaises(evaluation.EvaluationError):
+                self.score("JUP-069-001", GOLD["JUP-069-001"], bad)
 
     def test_critical_cases_need_two_different_reviewers_unless_provisional(self):
         one = judgment("JUP-069-001", reviewers=("lucia",))
@@ -533,7 +576,16 @@ class VerdictTests(unittest.TestCase):
 
     def test_structured_threshold_applies_when_the_chat_returns_structured_output(self):
         report = self.report(STR_1={"available": True, "rate": 0.5, "target": {"comparator": ">=", "value": 0.95, "met": False}})
-        self.assertFalse(evaluation.verdict(report, RULES)["accepted"])
+        structured = copy.deepcopy(RULES)
+        structured["acceptance"]["structured_output"] = True
+        self.assertFalse(evaluation.verdict(report, structured)["accepted"])
+
+    def test_the_schema_threshold_is_not_applicable_while_the_chat_has_no_structured_output_even_if_the_contract_check_is_met(self):
+        report = self.report(STR_1={"available": True, "rate": 1.0, "target": {"comparator": ">=", "value": 0.95, "met": True}})
+        result = evaluation.verdict(report, RULES)
+        status = {item["metric"]: item["status"] for item in result["thresholds"]}
+        self.assertEqual(status["STR-1"], "not_applicable")
+        self.assertNotIn("met", [status["STR-1"]])
 
 
 class CollectTests(unittest.TestCase):
@@ -662,6 +714,72 @@ class CollectTests(unittest.TestCase):
             self.assertTrue(target.exists())
 
 
+class ScriptedOpener:
+    """Answers the login, the conversation and the message of each case with what the test scripts."""
+
+    def __init__(self, messages):
+        self.messages = list(messages)
+
+    def open(self, req, timeout=None):
+        url = req.full_url
+        if url.endswith("/auth/login"):
+            body = {"access_token": "tok"}
+        elif url.endswith("/assistant/conversations"):
+            body = {"id": "conv"}
+        else:
+            step = self.messages.pop(0)
+            if isinstance(step, Exception):
+                raise step
+            body = step
+        payload = json.dumps(body).encode()
+
+        class Response:
+            status = 201
+
+            def read(self):
+                return payload
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+        return Response()
+
+
+GOOD_REPLY = {"assistant_message": {"content": "ok", "metadata": {}}, "retrieved_context": []}
+
+
+class MalformedReplyTests(unittest.TestCase):
+    INPUTS = {"cases": [{"id": f"JUP-069-00{n}", "prompt": "p"} for n in (1, 2, 3)]}
+
+    def collect(self, middle):
+        opener = ScriptedOpener([GOOD_REPLY, middle, GOOD_REPLY])
+        return evaluation.collect_cases("http://x", "u", "p", "t", self.INPUTS, opener=opener)
+
+    def test_a_broken_reply_blocks_only_its_case_and_the_run_goes_on(self):
+        import http.client
+        broken = {
+            "message is a list": {"assistant_message": [], "retrieved_context": []},
+            "message is null": {"assistant_message": None, "retrieved_context": []},
+            "metadata is a string": {"assistant_message": {"content": "x", "metadata": "m"}, "retrieved_context": []},
+            "fragment without id": {"assistant_message": {"content": "x", "metadata": {}}, "retrieved_context": [None]},
+            "body cut short": http.client.IncompleteRead(b"", 10),
+            "bad status line": http.client.BadStatusLine("x"),
+        }
+        for name, middle in broken.items():
+            raw = self.collect(middle)
+            self.assertEqual([c["case"] for c in raw["cases"]], ["JUP-069-001", "JUP-069-002", "JUP-069-003"], name)
+            self.assertIsNone(raw["cases"][0]["failure_category"], name)
+            self.assertIsNotNone(raw["cases"][1]["failure_category"], name)
+            self.assertIsNone(raw["cases"][2]["failure_category"], name)
+
+    def test_a_reply_that_does_not_follow_the_contract_is_a_schema_failure(self):
+        raw = self.collect({"assistant_message": [], "retrieved_context": []})
+        self.assertEqual(raw["cases"][1]["failure_category"], "schema_validation")
+
+
 class CommandLineTests(unittest.TestCase):
     def run_cli(self, argv):
         out, err = io.StringIO(), io.StringIO()
@@ -691,6 +809,8 @@ class CommandLineTests(unittest.TestCase):
             results = json.loads((folder / "results.json").read_text(encoding="utf-8"))
             metrics.validate_results(results, BANK, LABELS, CATALOGUE)
             report = (folder / "report.md").read_text(encoding="utf-8")
+            for name in ("results.json", "report.md", "report.json"):
+                self.assertNotIn(bytes([13]), (folder / name).read_bytes(), name)
             self.assertIn("No aceptado", report)
             self.assertNotIn("No dispongo de datos", report)
             self.assertIn("No aceptado", out)
@@ -724,6 +844,31 @@ class CommandLineTests(unittest.TestCase):
             self.assertIn("required-1", sheet)
             code, _, err = self.run_cli(["review-sheet", "--raw", str(folder / "raw.json"), "--output", str(ROOT / "docs" / "hoja-prohibida.md")])
             self.assertEqual(code, 2)
+
+    def test_a_malformed_run_header_names_the_field_and_not_only_the_exception_type(self):
+        with tempfile.TemporaryDirectory() as folder:
+            folder = Path(folder)
+            raw = {"raw_version": 1, "cases": [raw_case(c["id"], "x", [fragment()]) for c in BANK["cases"]]}
+            judgments = {"judgments_version": 1, "cases": {c["id"]: judgment(c["id"], "fail") for c in BANK["cases"]}}
+            run = dict(RunHeaderAndResultsTests.RUN_INFO, commit=3)
+            for name, value in (("raw.json", raw), ("judgments.json", judgments), ("run.json", run)):
+                (folder / name).write_text(json.dumps(value), encoding="utf-8")
+            code, _, err = self.run_cli(["score", "--raw", str(folder / "raw.json"), "--judgments", str(folder / "judgments.json"),
+                                        "--run-info", str(folder / "run.json"), "--output", str(folder / "r.json"), "--report", str(folder / "r.md")])
+            self.assertEqual(code, 2)
+            self.assertIn("run.commit", err)
+
+    def test_the_report_says_which_latency_stages_are_not_measured(self):
+        with tempfile.TemporaryDirectory() as folder:
+            folder = Path(folder)
+            raw = {"raw_version": 1, "cases": [raw_case(c["id"], "No dispongo de datos.", [fragment()]) for c in BANK["cases"]]}
+            judgments = {"judgments_version": 1, "cases": {c["id"]: judgment(c["id"], "fail") for c in BANK["cases"]}}
+            for name, value in (("raw.json", raw), ("judgments.json", judgments), ("run.json", RunHeaderAndResultsTests.RUN_INFO)):
+                (folder / name).write_text(json.dumps(value), encoding="utf-8")
+            code, _, err = self.run_cli(["score", "--raw", str(folder / "raw.json"), "--judgments", str(folder / "judgments.json"),
+                                        "--run-info", str(folder / "run.json"), "--output", str(folder / "r.json"), "--report", str(folder / "r.md")])
+            self.assertEqual(code, 0, err)
+            self.assertIn("Etapas no medidas", (folder / "r.md").read_text(encoding="utf-8"))
 
     def test_compare_shows_the_variation_between_runs_and_never_picks_the_best(self):
         with tempfile.TemporaryDirectory() as folder:

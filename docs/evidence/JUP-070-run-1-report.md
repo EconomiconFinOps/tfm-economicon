@@ -81,12 +81,14 @@ Casos criticos con una sola persona decidiendo los puntos juzgados: JUP-069-001,
 
 Medición **provisional**: los casos críticos con un solo revisor se listan abajo.
 
+Etapas no medidas: la herramienta solo ve la petición completa, así que la latencia de `embedding` y `retrieval` vale 0 por construcción y no es una medición.
+
 | Umbral | Estado | Detalle |
 | --- | --- | --- |
 | ACC-2 | unmet | >= 0.9 no se cumple |
 | GRD-2 | met | == 0 |
 | LAT-2 (total) | met | <= 10000 |
-| STR-1 | met | >= 0.95 |
+| STR-1 | not_applicable | >= 0.95; el chat no devuelve salida estructurada |
 | ACC-1 | unmet | >= 0.8 (JUP-070 (propuesta, a validar por el equipo)): medido 0.0 |
 
 - Casos no ejecutados (`not_run`): ninguno

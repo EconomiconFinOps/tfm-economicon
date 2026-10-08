@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import http.client
 import json
 import os
 import re
@@ -34,14 +35,19 @@ Figure = namedtuple("Figure", "value unit start end")
 CURRENCIES = ("eur", "usd")
 NEGATORS = re.compile(r"(?<!\w)(no|ni|tampoco|nunca|jamas|evit\w+|nadie)(?!\w)")
 NUMBER = re.compile(r"(?<![\w.,\-])(\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?)(?![\w]|[.,]\d)")
+# For tracing only: a sign does not hide an amount that the chat invented.
+SIGNED_NUMBER = re.compile(NUMBER.pattern.replace(r"(?<![\w.,\-])", r"(?<![\w.,])", 1))
 PERCENT = re.compile(r"^\s*(?:%|por ciento|puntos? porcentuales?|pp\b)")
 CURRENCY = re.compile(r"^\s*(eur\b|euros?\b|usd\b|dolares?\b|[€$])")
 PERIOD = re.compile(r"^\s*(?:/|\bal\b|\bpor\b|\bcada\b)\s*(dia|mes|pedido)\b|^\s*(diarios?|mensuales?)")
-PREFIX_CURRENCY = re.compile(r"([€$])\s*$")
+PREFIX_CURRENCY = re.compile(r"([€$]|\beur|\busd)\s*$")
 SENTENCE_BREAK = re.compile(r"(?<=[.!?;])\s+|\s*\n+\s*")
 FAILURE_BY_STATUS = {401: "authentication", 403: "authentication", 429: "rate_limit"}
 INFRA_STAGE = "embedding"
 RAW_VERSION = 1
+# A reply that parses badly is the chat's fault; a cut or invalid HTTP exchange is a connection one.
+MALFORMED = (ValueError, KeyError, AttributeError, TypeError)
+TRANSPORT = (urllib.error.URLError, OSError, http.client.HTTPException)
 MAX_REVIEWERS = 2
 
 
@@ -108,6 +114,7 @@ def label_fragments(fragments: list[dict], document_map: dict, chunk_size: int, 
 def normalize(text: str) -> str:
     folded = unicodedata.normalize("NFD", text)
     folded = "".join(char for char in folded if not unicodedata.combining(char))
+    folded = folded.replace("*", "").replace("`", "")
     return re.sub(r"\s+", " ", folded.casefold()).strip()
 
 
@@ -140,9 +147,9 @@ def unit_key(unit: str) -> str:
     return normalize(unit)
 
 
-def parse_figures(sentence: str) -> list[Figure]:
+def parse_figures(sentence: str, pattern: re.Pattern = NUMBER) -> list[Figure]:
     figures = []
-    for match in NUMBER.finditer(sentence):
+    for match in pattern.finditer(sentence):
         value = parse_number_token(match.group(1))
         if value is None:
             continue
@@ -164,7 +171,7 @@ def parse_figures(sentence: str) -> list[Figure]:
         else:
             prefix = PREFIX_CURRENCY.search(sentence[:match.start()])
             if prefix:
-                unit = "usd" if prefix.group(1) == "$" else "eur"
+                unit = "usd" if prefix.group(1) in ("$", "usd") else "eur"
         if unit is not None:
             figures.append(Figure(value, unit, match.start(), end))
     return figures
@@ -201,14 +208,28 @@ def answer_sentences(response: str, prompt: str) -> list[str]:
     return [sentence for sentence in split_sentences(response) if not is_echo(sentence, normalized)] if prompt else split_sentences(response)
 
 
-def check_number(response: str, spec: dict, aliases: list[str], prompt: str = "") -> bool:
+def labelled_by(sentence: str, figures: list[Figure], position: int, own: list[str], others: list[str]) -> bool:
+    """The label sits next to the figure: before it, or after it when nothing before it names another figure."""
+    previous_end = figures[position - 1].end if position else 0
+    next_start = figures[position + 1].start if position + 1 < len(figures) else len(sentence)
+    left, right = sentence[previous_end:figures[position].start], sentence[figures[position].end:next_start]
+    if any(has_alias(left, alias) for alias in own):
+        return True
+    if any(has_alias(left, alias) for alias in others):
+        return False
+    return any(has_alias(right, alias) for alias in own)
+
+
+def check_number(response: str, spec: dict, aliases: list[str], prompt: str = "", others: list[str] = ()) -> bool:
     wanted, tolerance = Decimal(str(spec["value"])), Decimal(str(spec["tolerance"]))
     unit = unit_key(spec["unit"])
+    rivals = [alias for alias in others if normalize(alias) not in {normalize(own) for own in aliases}]
     for sentence in answer_sentences(response, prompt):
         if not any(has_alias(sentence, alias) for alias in aliases):
             continue
-        for figure in parse_figures(sentence):
-            if figure.unit == unit and abs(figure.value - wanted) <= tolerance:
+        figures = parse_figures(sentence)
+        for position, figure in enumerate(figures):
+            if figure.unit == unit and abs(figure.value - wanted) <= tolerance and labelled_by(sentence, figures, position, aliases, rivals):
                 return True
     return False
 
@@ -246,7 +267,8 @@ def rule_hits(rule: dict, response: str, prompt: str) -> bool:
             for start, end in alternative_hits(alt, sentence, prompt_numbers):
                 if exempt and exempt.search(sentence):
                     continue
-                if check_negation and negated(sentence, start, end):
+                # An amount that is not in the prompt is invented even after a "no".
+                if check_negation and alt.get("kind") != "amount_not_in_prompt" and negated(sentence, start, end):
                     continue
                 return True
     return False
@@ -267,6 +289,8 @@ def validate_rules(rules: dict, bank: dict) -> None:
     for name in ("rules_version", "aliases", "forbidden", "acceptance"):
         if name not in rules:
             raise EvaluationError(f"el fichero de reglas no tiene «{name}»")
+    if not isinstance(rules["acceptance"].get("structured_output"), bool):
+        raise EvaluationError("«acceptance.structured_output» debe ser true o false")
     cases = {case["id"]: case for case in bank["cases"]}
     for case_id, case in cases.items():
         for position in range(1, len(case["expected"]["forbidden"]) + 1):
@@ -289,6 +313,21 @@ def validate_rules(rules: dict, bank: dict) -> None:
             raise EvaluationError(f"regla de una conducta que no existe en {case_id}")
 
 
+def bare_amounts(sentence: str) -> list[Figure]:
+    """Numbers of three digits or more that carry no unit; years and identifiers such as JUP-107 are not amounts."""
+    covered = [(figure.start, figure.end) for figure in parse_figures(sentence, SIGNED_NUMBER)]
+    found = []
+    for match in SIGNED_NUMBER.finditer(sentence):
+        value = parse_number_token(match.group(1))
+        inside = any(start <= match.start() < end for start, end in covered)
+        identifier = re.search(r"[a-z]-$", sentence[:match.start()]) is not None
+        year = value is not None and value == value.to_integral_value() and 1900 <= value <= 2100
+        if value is None or inside or identifier or year or value < 100:
+            continue
+        found.append(Figure(value, None, match.start(), match.end()))
+    return found
+
+
 def classify_figures(answer: str, case: dict, retrieved: list[dict]) -> list[dict]:
     question, context = numbers_in(case["question"]), numbers_in(case["context"])
     evidence: set[Decimal] = set()
@@ -297,7 +336,7 @@ def classify_figures(answer: str, case: dict, retrieved: list[dict]) -> list[dic
     derived = [(Decimal(str(n["value"])), Decimal(str(n["tolerance"]))) for n in case["expected"].get("numbers", [])]
     found = []
     for sentence in split_sentences(answer):
-        for figure in parse_figures(sentence):
+        for figure in [*parse_figures(sentence, SIGNED_NUMBER), *bare_amounts(sentence)]:
             if figure.value in question:
                 origin = "question"
             elif figure.value in context:
@@ -321,7 +360,14 @@ def blank_entry(case_id: str, outcome: str) -> dict:
 
 
 def reviewers_of(verdicts: list[dict]) -> list[str]:
-    return sorted({item["reviewer"].strip() for item in verdicts if item.get("reviewer", "").strip()})
+    names = set()
+    for item in verdicts:
+        name = item.get("reviewer", "")
+        if not isinstance(name, str):
+            raise EvaluationError("el revisor de un juicio debe ser un nombre")
+        if normalize(name):
+            names.add(normalize(name))
+    return sorted(names)
 
 
 def score_case(case: dict, raw: dict | None, judgments: dict, rules: dict, *, provisional: bool = False):
@@ -341,7 +387,8 @@ def score_case(case: dict, raw: dict | None, judgments: dict, rules: dict, *, pr
     checks = []
     for position, spec in enumerate(expected.get("numbers", []), start=1):
         aliases = rules["aliases"][case_id].get(str(position)) or [spec["label"]]
-        passed = check_number(raw["answer"], spec, aliases, prompt)
+        rivals = [alias for key, item in rules["aliases"][case_id].items() if key != str(position) for alias in item]
+        passed = check_number(raw["answer"], spec, aliases, prompt, rivals)
         checks.append({"id": f"numbers-{position}", "class": "objective", "result": "pass" if passed else "fail", "decided_by": ["rule"]})
     for position in range(1, len(expected["forbidden"]) + 1):
         violated = rule_hits(rules["forbidden"][case_id][str(position)], raw["answer"], prompt)
@@ -422,7 +469,9 @@ def verdict(report: dict, rules: dict) -> dict:
     def compare(comparator: str, value, target) -> bool:
         return {">=": value >= target, "<=": value <= target, "==": value == target}[comparator]
 
+    # Without structured output the schema metric only proves the reply contract, which collect already enforces.
     unstructured = set(rules["acceptance"]["not_applicable_when_unstructured"])
+    structured = rules["acceptance"]["structured_output"]
     items, reasons = [], []
 
     def add(metric, label, status, detail):
@@ -439,7 +488,9 @@ def verdict(report: dict, rules: dict) -> dict:
                 targets.append((f"{metric} ({stage})", value["target"], value.get("n", 0) > 0))
         for label, target, available in targets:
             description = f"{target['comparator']} {target['value']}"
-            if target["met"] is None:
+            if metric in unstructured and not structured:
+                add(metric, label, "not_applicable", f"{description}; el chat no devuelve salida estructurada")
+            elif target["met"] is None:
                 if metric in unstructured:
                     add(metric, label, "not_applicable", f"{description}; el chat no devuelve salida estructurada")
                 else:
@@ -466,10 +517,16 @@ def outside_repository(path: Path) -> bool:
     return target != ROOT and ROOT not in target.parents
 
 
+def write_text(path: Path, text: str) -> None:
+    # Same bytes on every system, so a result can be compared with another machine's.
+    with open(path, "w", encoding="utf-8", newline=chr(10)) as handle:
+        handle.write(text)
+
+
 def write_private(path: Path, value) -> None:
     if not outside_repository(path):
         raise EvaluationError(f"{path}: este fichero lleva texto de respuestas y no puede escribirse dentro del repositorio")
-    Path(path).write_text(value if isinstance(value, str) else dumps(value), encoding="utf-8")
+    write_text(path, value if isinstance(value, str) else dumps(value))
 
 
 def request(opener, url: str, body: dict | None, headers: dict, timeout: float):
@@ -488,6 +545,8 @@ def failure_of(error: Exception) -> tuple[int | None, str]:
     reason = getattr(error, "reason", error)
     if isinstance(error, (TimeoutError, socket.timeout)) or isinstance(reason, (TimeoutError, socket.timeout)):
         return None, "timeout"
+    if isinstance(error, MALFORMED):
+        return None, "schema_validation"
     return None, "connection"
 
 
@@ -499,7 +558,7 @@ def collect_cases(base_url: str, email: str, password: str, tenant: str, inputs:
     try:
         _, login = request(opener, base + "/auth/login", {"email": email, "password": password}, {}, timeout)
         token = login["access_token"]
-    except (urllib.error.URLError, OSError, KeyError, ValueError) as error:
+    except (*TRANSPORT, *MALFORMED) as error:
         raise EvaluationError(f"no se pudo iniciar sesión en {base}: {type(error).__name__}") from None
     headers = {"Authorization": "Bearer " + token, "X-Tenant-Id": tenant}
     cases = []
@@ -523,7 +582,7 @@ def collect_cases(base_url: str, email: str, password: str, tenant: str, inputs:
             entry["citations"] = [str(c) for c in message.get("metadata", {}).get("citations", [])]
             entry["retrieved"] = [{"chunk_id": r["chunk_id"], "source": r["source"], "heading": sections.get(r["chunk_id"]) or "",
                                    "distance": r["distance"], "content": r.get("content", "")} for r in reply.get("retrieved_context", [])]
-        except (urllib.error.URLError, OSError, ValueError, KeyError) as error:
+        except (*TRANSPORT, *MALFORMED) as error:
             status, category = failure_of(error)
             if isinstance(error, urllib.error.HTTPError):
                 error.close()
@@ -577,6 +636,7 @@ def render_report(base_report: str, result: dict, analysis: dict) -> str:
              f"**Veredicto: {'Aceptado' if result['accepted'] else 'No aceptado'}**", ""]
     if analysis["provisional"]:
         lines += ["Medición **provisional**: los casos críticos con un solo revisor se listan abajo.", ""]
+    lines += ["Etapas no medidas: la herramienta solo ve la petición completa, así que la latencia de `embedding` y `retrieval` vale 0 por construcción y no es una medición.", ""]
     lines += ["| Umbral | Estado | Detalle |", "| --- | --- | --- |"]
     lines += [f"| {item['label']} | {item['status']} | {item['detail']} |" for item in result["thresholds"]]
     lines += ["", f"- Casos no ejecutados (`not_run`): {', '.join(analysis['not_run']) or 'ninguno'}",
@@ -626,10 +686,10 @@ def run_score(args) -> int:
     result = verdict(report, rules)
     if args.generated_at:
         report["generated_at"] = args.generated_at
-    Path(args.output).write_text(dumps(results), encoding="utf-8")
-    Path(args.report).write_text(render_report(metrics.render_markdown(report, catalogue), result, analysis), encoding="utf-8")
+    write_text(args.output, dumps(results))
+    write_text(args.report, render_report(metrics.render_markdown(report, catalogue), result, analysis))
     if args.report_json:
-        Path(args.report_json).write_text(dumps(report), encoding="utf-8")
+        write_text(args.report_json, dumps(report))
     print(f"Veredicto: {'Aceptado' if result['accepted'] else 'No aceptado'}")
     for reason in result["reasons"]:
         print(f"- {reason}")
@@ -686,7 +746,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error: {error}", file=sys.stderr)
         return 2
     except Exception as error:  # the message could carry a response or a header
-        print(f"Error: {type(error).__name__}", file=sys.stderr)
+        # The calculator's own errors name a field of the results and never carry text.
+        detail = str(error) if type(error).__name__ == "ResultsError" else type(error).__name__
+        print(f"Error: {detail}", file=sys.stderr)
         return 2
 
 
