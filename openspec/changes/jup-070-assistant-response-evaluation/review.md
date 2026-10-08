@@ -79,3 +79,24 @@ Pasada corta sobre el último cambio y el cierre. Veredicto: changes-requested (
 | ADV-2 | MEDIUM | La banda de ±0,05 admitía cifras inventadas cercanas (53,38 %; 230,04 EUR/mes). Corregido: solo vale el valor calculado redondeado a entero, a uno o a dos decimales. |
 | ADV-3 | MEDIUM | El redondeo a entero («el 53 %») daba un falso fallo. Corregido por el mismo cambio. |
 | ADV-4 | LOW | La regla de las cifras derivadas no estaba en la metodología. Añadida a `docs/validation/JUP-070-evaluation.md`. |
+
+## Riesgos y hallazgos
+
+- Los hallazgos fuera de alcance están en `openspec/findings/backlog.md` (RF-070-001 a RF-070-010), todos abiertos y aceptados por Lucía el 2026-10-09.
+- La pasada 4 se corrigió con pruebas y no se hizo una quinta; Lucía lo aceptó el 2026-10-09.
+- La medición de referencia es provisional (una sola revisora) y mide la plantilla del chat actual, no un modelo.
+
+## ADR
+
+No aplica: no se introduce ninguna decisión arquitectónica duradera; la herramienta es de verificación, no cambia el producto.
+
+## Human Approval
+
+- Change: jup-070-assistant-response-evaluation
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-09
+- Adversarial review: accepted findings: ADV-1, ADV-2, ADV-5, ADV-6 y ADV-7 de la pasada 3 (RF-070-007 a RF-070-010), RF-070-001 a RF-070-006 y cierre tras la pasada 4 sin una quinta
+- Archive decision: archive
+- Notes: Alcance revisado: herramienta, reglas, metodología, dos mediciones de referencia y evidencia. Pendiente en Trello: revisión y validación por las personas con ese rol, repetir tres veces la medición con un chat que genere con modelo (JUP-035) y juicio de dos revisores en los casos críticos.

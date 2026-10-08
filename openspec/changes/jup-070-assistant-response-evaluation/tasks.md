@@ -22,5 +22,5 @@
 
 - [x] 4.1 Batería completa: `assistant-eval:test`, `assistant-metrics:test`, `validation-questions:test`, las suites de gobernanza, `openspec:validate`, `jup:check -- --change jup-070-assistant-response-evaluation`, `jup:check:all`, `jup:cleanup:check` y `git diff --check`. Registrar comandos y resultados. Hecho: resultados en `docs/evidence/JUP-070-validation.md`.
 - [x] 4.2 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con la sección `## Adversarial Review`, el barrido de patrones, los riesgos y los hallazgos registrados en `openspec/findings/backlog.md`. Hecho: cuatro pasadas; todos los BLOCKING y HIGH corregidos con prueba salvo los aceptados por Lucía el 2026-10-09 (RF-070-007 a RF-070-010); la pasada 4 se corrigió sin una quinta, a la espera de que Lucía lo acepte en la aprobación.
-- [ ] 4.3 Evidencia en `docs/evidence/JUP-070-validation.md` y bloque `## Human Approval` post-review de Lucia.
+- [x] 4.3 Evidencia en `docs/evidence/JUP-070-validation.md` y bloque `## Human Approval` post-review de Lucia. Hecho.
 - [ ] 4.4 Archivar el change en la misma rama, revisar la documentación posterior al archivo y abrir el PR a develop.
