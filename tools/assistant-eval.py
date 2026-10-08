@@ -136,10 +136,28 @@ def has_alias(sentence: str, alias: str) -> bool:
     return re.search(r"(?<!\w)" + re.escape(normalize(alias)) + r"(?!\w)", sentence) is not None
 
 
-def check_number(response: str, spec: dict, aliases: list[str]) -> bool:
+def is_echo(sentence: str, normalized_prompt: str) -> bool:
+    """A sentence copied from the prompt (with or without a leading label) is not an answer."""
+    candidates = {sentence, re.sub(r"^[^:]{1,20}:\s*", "", sentence)}
+    for item in candidates:
+        if len(item) < 12:
+            continue
+        # A question repeated as a statement ("el gasto es cero") is an assertion, not an echo.
+        for match in re.finditer(re.escape(item), normalized_prompt):
+            if item.startswith("¿") or match.start() == 0 or normalized_prompt[match.start() - 1] != "¿":
+                return True
+    return False
+
+
+def answer_sentences(response: str, prompt: str) -> list[str]:
+    normalized = normalize(prompt)
+    return [sentence for sentence in split_sentences(response) if not is_echo(sentence, normalized)] if prompt else split_sentences(response)
+
+
+def check_number(response: str, spec: dict, aliases: list[str], prompt: str = "") -> bool:
     wanted, tolerance = Decimal(str(spec["value"])), Decimal(str(spec["tolerance"]))
     unit = unit_key(spec["unit"])
-    for sentence in split_sentences(response):
+    for sentence in answer_sentences(response, prompt):
         if not any(has_alias(sentence, alias) for alias in aliases):
             continue
         for figure in parse_figures(sentence):
@@ -176,7 +194,7 @@ def rule_hits(rule: dict, response: str, prompt: str) -> bool:
     exempt = re.compile(rule["exempt"]) if rule.get("exempt") else None
     check_negation = rule.get("negation", True)
     prompt_numbers = numbers_in(prompt)
-    for sentence in split_sentences(response):
+    for sentence in answer_sentences(response, prompt):
         for alt in rule["any"]:
             for start, end in alternative_hits(alt, sentence, prompt_numbers):
                 if exempt and exempt.search(sentence):
@@ -276,7 +294,7 @@ def score_case(case: dict, raw: dict | None, judgments: dict, rules: dict, *, pr
     checks = []
     for position, spec in enumerate(expected.get("numbers", []), start=1):
         aliases = rules["aliases"][case_id].get(str(position)) or [spec["label"]]
-        passed = check_number(raw["answer"], spec, aliases)
+        passed = check_number(raw["answer"], spec, aliases, prompt)
         checks.append({"id": f"numbers-{position}", "class": "objective", "result": "pass" if passed else "fail", "decided_by": ["rule"]})
     for position in range(1, len(expected["forbidden"]) + 1):
         violated = rule_hits(rules["forbidden"][case_id][str(position)], raw["answer"], prompt)

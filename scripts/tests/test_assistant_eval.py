@@ -149,6 +149,37 @@ class NumberCheckTests(unittest.TestCase):
         self.assertFalse(evaluation.check_number(text, spec, ["unallocated"]))
 
 
+class EchoTests(unittest.TestCase):
+    """A sentence that only repeats the prompt is not an answer."""
+
+    PROMPT = "Un aumento de 100 EUR/día. ¿El presupuesto apagará mis máquinas cuando se supere?"
+    ABSOLUTE = {"label": "delta absoluto", "value": 100, "unit": "EUR/día", "tolerance": 0.01}
+
+    def test_a_figure_repeated_from_the_prompt_does_not_satisfy_the_check(self):
+        echo = "Pregunta: Un aumento de 100 EUR/día."
+        self.assertFalse(evaluation.check_number(echo, self.ABSOLUTE, ["aumento"], self.PROMPT))
+        self.assertTrue(evaluation.check_number(echo, self.ABSOLUTE, ["aumento"]))
+
+    def test_the_same_figure_stated_by_the_answer_still_counts(self):
+        answer = "Pregunta: Un aumento de 100 EUR/día. El delta absoluto es de 100 EUR/día."
+        self.assertTrue(evaluation.check_number(answer, self.ABSOLUTE, ["delta absoluto"], self.PROMPT))
+
+    def test_a_prohibited_wording_in_a_repeated_question_is_not_a_violation(self):
+        rule = {"any": [{"kind": "pattern", "pattern": r"apagara\w*\W+(\w+\W+){0,4}maquinas"}], "negation": True}
+        self.assertFalse(evaluation.rule_hits(rule, "Pregunta: ¿El presupuesto apagará mis máquinas cuando se supere?", self.PROMPT))
+        self.assertTrue(evaluation.rule_hits(rule, "Sí, el presupuesto apagará tus máquinas.", self.PROMPT))
+
+    def test_a_question_repeated_as_a_statement_is_an_assertion_not_an_echo(self):
+        prompt = evaluation.normalize("¿El gasto de septiembre es cero?")
+        self.assertFalse(evaluation.is_echo("el gasto de septiembre es cero", prompt))
+        self.assertTrue(evaluation.is_echo("¿el gasto de septiembre es cero", prompt))
+        self.assertTrue(evaluation.is_echo("pregunta: ¿el gasto de septiembre es cero", prompt))
+
+    def test_short_fragments_are_never_treated_as_echo(self):
+        self.assertFalse(evaluation.is_echo("100 eur", evaluation.normalize(self.PROMPT)))
+        self.assertTrue(evaluation.is_echo("un aumento de 100 eur/dia", evaluation.normalize(self.PROMPT)))
+
+
 class RuleEngineTests(unittest.TestCase):
     def test_pattern_is_ignored_when_negated_right_before(self):
         rule = {"any": [{"kind": "pattern", "pattern": r"factura real"}], "negation": True}
