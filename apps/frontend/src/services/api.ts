@@ -1,3 +1,5 @@
+import type { SystemHealth, HealthComponent, HealthReason } from "./contracts";
+import { healthReasons, isSystemHealth, isProviderObservation } from "./contracts";
 import type { QueryClient } from "@tanstack/react-query";
 import type {
   AssistantReply,
@@ -83,6 +85,7 @@ type FetchJsonOptions = Omit<RequestInit, "headers"> & {
   tenantId?: string;
   headers?: Record<string, string>;
   validate?: (value: unknown) => boolean;
+  safeHealthError?: boolean;
 };
 
 function buildHeaders(token?: string, tenantId?: string, headers: Record<string, string> = {}) {
@@ -96,7 +99,7 @@ function buildHeaders(token?: string, tenantId?: string, headers: Record<string,
 
 async function fetchJson<T>(path: string, options: FetchJsonOptions = {}): Promise<T> {
   const generation = getSessionGeneration();
-  const { token, tenantId, headers, validate, ...requestInit } = options;
+  const { token, tenantId, headers, validate, safeHealthError, ...requestInit } = options;
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
       headers: buildHeaders(token, tenantId, headers),
@@ -115,6 +118,18 @@ async function fetchJson<T>(path: string, options: FetchJsonOptions = {}): Promi
     if (!response.ok) {
       const body = await response.text();
       if (generation !== getSessionGeneration()) return discardResponse();
+      if (safeHealthError) {
+        let reason: HealthReason = response.status === 409 ? "busy" : response.status === 429 ? "budget_unavailable" : "upstream_error";
+        let retryAfter: number | undefined;
+        try {
+          const decoded: unknown = JSON.parse(body.slice(0, 512));
+          if (typeof decoded === "object" && decoded !== null && "reason_code" in decoded && healthReasons.includes(decoded.reason_code as HealthReason)) {
+            reason = decoded.reason_code as HealthReason;
+            if ("retry_after" in decoded && typeof decoded.retry_after === "number" && Number.isSafeInteger(decoded.retry_after) && decoded.retry_after > 0 && decoded.retry_after <= 86400) retryAfter = decoded.retry_after;
+          }
+        } catch { /* Free-form upstream/proxy text is deliberately discarded. */ }
+        throw new HealthDiagnosticError(response.status, reason, retryAfter);
+      }
       const message = token ? body.split(token).join("[redacted]") : body;
       throw new ApiError(response.status, message.slice(0, 512) || `Request failed for ${path}`);
     }
@@ -122,6 +137,7 @@ async function fetchJson<T>(path: string, options: FetchJsonOptions = {}): Promi
     const data: unknown = await response.json();
     if (generation !== getSessionGeneration()) return discardResponse();
     if (validate && !validate(data)) {
+      if (safeHealthError) throw new HealthDiagnosticError(response.status, "invalid_response");
       throw new ApiError(response.status, `Invalid response for ${path}`);
     }
     return data as T;
@@ -213,5 +229,22 @@ export function sendConversationMessage(
     token,
     tenantId,
     body: JSON.stringify(payload)
+  });
+}
+
+export class HealthDiagnosticError extends Error {
+  constructor(public readonly status: number, public readonly reason: HealthReason, public readonly retryAfter?: number) {
+    super("Operational health request could not be verified.");
+    this.name = "HealthDiagnosticError";
+  }
+}
+
+export function fetchSystemHealth(token: string, tenantId: string, signal: AbortSignal) {
+  return fetchJson<SystemHealth>("/health/status", { token, tenantId, signal, validate: isSystemHealth, safeHealthError: true });
+}
+export function checkHealthProvider(token: string, tenantId: string, idempotencyKey: string, signal: AbortSignal) {
+  return fetchJson<HealthComponent>("/health/provider-check", {
+    token, tenantId, signal, method: "POST", body: JSON.stringify({ idempotency_key: idempotencyKey }),
+    validate: isProviderObservation, safeHealthError: true
   });
 }
