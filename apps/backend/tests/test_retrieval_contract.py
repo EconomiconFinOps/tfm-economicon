@@ -14,6 +14,11 @@ from app.services.assistant import AssistantService
 from app.services.vector_store import PgVectorQueryStore
 
 
+class RecordedRows(list):
+    def all(self):
+        return self
+
+
 class RecordingEngine:
     def __init__(self, rows=()):
         self.rows = list(rows)
@@ -24,6 +29,10 @@ class RecordingEngine:
         self.connected += 1
         return self
 
+    def execution_options(self, **options):
+        self.options = options
+        return self
+
     def __enter__(self):
         return self
 
@@ -32,7 +41,9 @@ class RecordingEngine:
 
     def execute(self, statement, params):
         self.executed.append((" ".join(str(statement).split()), dict(params)))
-        return iter(self.rows)
+        if "text_content" in str(statement):
+            return [SimpleNamespace(id=identifier, text_content="text") for identifier in params["document_ids"]]
+        return RecordedRows(self.rows)
 
 
 def store_with(rows=()):
@@ -42,11 +53,11 @@ def store_with(rows=()):
 
 
 def row(chunk_id, distance, source="doc", content="text", document_id="doc-1"):
-    return SimpleNamespace(chunk_id=chunk_id, document_id=document_id, source=source, content=content, distance=distance)
+    return SimpleNamespace(chunk_id=chunk_id, document_id=document_id, source=source, content=content, distance=distance, tenant_id="tenant-a", chunk_index=0)
 
 
 def last(store):
-    return store.engine.executed[-1]
+    return next(item for item in reversed(store.engine.executed) if "<=>" in item[0])
 
 
 # Current behaviour that must not change by accident (task 1.2).
@@ -78,8 +89,8 @@ def test_rows_are_mapped_in_the_order_returned_by_the_database():
     store = store_with([row("b", 0.2, "s1", "x"), row("a", 0.2, "s2", "y")])
     result = store.search_chunks("tenant-a", [1.0])
     assert result == [
-        {"chunk_id": "b", "document_id": "doc-1", "source": "s1", "content": "x", "distance": 0.2},
-        {"chunk_id": "a", "document_id": "doc-1", "source": "s2", "content": "y", "distance": 0.2},
+        {"chunk_id": "b", "document_id": "doc-1", "tenant_id": "tenant-a", "chunk_index": 0, "title": "s1", "section": None, "source": "s1", "content": "x", "distance": 0.2},
+        {"chunk_id": "a", "document_id": "doc-1", "tenant_id": "tenant-a", "chunk_index": 0, "title": "s2", "section": None, "source": "s2", "content": "y", "distance": 0.2},
     ]
 
 
@@ -187,12 +198,14 @@ def test_route_defaults_keep_four_results_and_no_threshold(monkeypatch):
 def test_empty_retrieval_gives_the_no_context_answer_and_no_citations(monkeypatch):
     reply = ask(Store([]), monkeypatch)
     assert "No he encontrado contexto relevante" in reply.assistant_message.content
-    assert reply.assistant_message.metadata == {"citations": []}
+    assert reply.assistant_message.metadata == {"citations": [], "source_citations": []}
     assert reply.retrieved_context == []
 
 
 def test_non_empty_retrieval_cites_the_returned_fragments(monkeypatch):
-    chunk = {"chunk_id": "c-9", "source": "rules", "content": "Umbral del 5 %", "distance": 0.2}
+    chunk = {"tenant_id": "tenant-a", "document_id": "doc-9", "title": "Rules", "chunk_index": 0, "chunk_id": "c-9", "source": "rules", "content": "Umbral del 5 %", "distance": 0.2}
     reply = ask(Store([chunk]), monkeypatch)
-    assert reply.assistant_message.metadata == {"citations": ["c-9"]}
+    assert reply.assistant_message.metadata["citations"] == ["c-9"]
+    [citation] = reply.assistant_message.metadata["source_citations"]
+    assert citation["evidence_id"] == "c-9" and citation["excerpt"] == chunk["content"]
     assert [item.chunk_id for item in reply.retrieved_context] == ["c-9"]

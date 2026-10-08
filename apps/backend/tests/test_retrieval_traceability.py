@@ -44,7 +44,7 @@ class Store:
 
 
 def chunk(identifier, document, distance):
-    return {"chunk_id": identifier, "document_id": document, "source": "rules", "content": CONTENT, "distance": distance}
+    return {"tenant_id": "tenant-a", "title": "Rules", "chunk_index": 0, "chunk_id": identifier, "document_id": document, "source": "rules", "content": CONTENT, "distance": distance}
 
 
 def ask(embedding, store, monkeypatch=None, **env):
