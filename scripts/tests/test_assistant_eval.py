@@ -471,8 +471,8 @@ class CollectTests(unittest.TestCase):
                 outer.requests.append((self.path, dict(self.headers), body))
                 if self.path == "/auth/login":
                     return self.respond(200, {"access_token": "tok-123", "token_type": "bearer"})
-                if self.path == "/conversations":
-                    count = sum(1 for p, _, _ in outer.requests if p == "/conversations")
+                if self.path == "/assistant/conversations":
+                    count = sum(1 for p, _, _ in outer.requests if p == "/assistant/conversations")
                     return self.respond(201, {"id": f"conv-{count}", "title": body["title"]})
                 if self.path.endswith("/messages"):
                     if outer.mode["messages"] != 201:
@@ -502,12 +502,24 @@ class CollectTests(unittest.TestCase):
         raw = self.collect()
         sent = [body["content"] for path, _, body in self.requests if path.endswith("/messages")]
         self.assertEqual(sent, ["  Prompt uno exacto\ncon salto y espacios  \n", "Prompt dos"])
-        self.assertEqual(sum(1 for p, _, _ in self.requests if p == "/conversations"), 2)
+        self.assertEqual(sum(1 for p, _, _ in self.requests if p == "/assistant/conversations"), 2)
         paths = [p for p, _, _ in self.requests if p.endswith("/messages")]
-        self.assertEqual(paths, ["/conversations/conv-1/messages", "/conversations/conv-2/messages"])
+        self.assertEqual(paths, ["/assistant/conversations/conv-1/messages", "/assistant/conversations/conv-2/messages"])
         self.assertEqual([c["answer"] for c in raw["cases"]], ["respuesta", "respuesta"])
         self.assertEqual(raw["cases"][0]["citations"], ["doc#1"])
         self.assertEqual(raw["cases"][0]["retrieved"][0]["distance"], 0.3)
+
+    def test_the_paths_used_are_the_ones_the_backend_actually_serves(self):
+        source = (ROOT / "apps" / "backend" / "app" / "api" / "routes" / "assistant.py").read_text(encoding="utf-8")
+        self.assertIn('APIRouter(prefix="/assistant"', source)
+        self.assertIn('"/conversations/{conversation_id}/messages"', source)
+        self.assertRegex(source, r'@router\.post\(\s*"/conversations"')
+        tool = (ROOT / "tools" / "assistant-eval.py").read_text(encoding="utf-8")
+        self.assertIn('"/assistant/conversations"', tool)
+        self.assertIn("/assistant/conversations/{conversation[", tool)
+        auth = (ROOT / "apps" / "backend" / "app" / "api" / "routes" / "auth.py").read_text(encoding="utf-8")
+        self.assertIn('@router.post("/auth/login"', auth)
+        self.assertIn('"/auth/login"', tool)
 
     def test_nothing_from_the_expected_section_is_sent(self):
         self.collect()
@@ -518,7 +530,7 @@ class CollectTests(unittest.TestCase):
 
     def test_the_tenant_and_the_token_travel_as_headers_and_the_password_only_in_the_login(self):
         raw = self.collect()
-        conv = [h for p, h, _ in self.requests if p == "/conversations"][0]
+        conv = [h for p, h, _ in self.requests if p == "/assistant/conversations"][0]
         self.assertEqual(conv.get("X-Tenant-Id"), "tenant-core")
         self.assertEqual(conv.get("Authorization"), "Bearer tok-123")
         login_bodies = [b for p, _, b in self.requests if p == "/auth/login"]

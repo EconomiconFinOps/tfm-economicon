@@ -440,10 +440,10 @@ def collect_cases(base_url: str, email: str, password: str, tenant: str, inputs:
         started = time.perf_counter()
         try:
             entry["requests"] += 1
-            _, conversation = request(opener, base + "/conversations", {"title": f"evaluacion {item['id']}"}, headers, timeout)
+            _, conversation = request(opener, base + "/assistant/conversations", {"title": f"evaluacion {item['id']}"}, headers, timeout)
             entry["requests"] += 1
             started = time.perf_counter()
-            status, reply = request(opener, f"{base}/conversations/{conversation['id']}/messages", {"content": item["prompt"]}, headers, timeout)
+            status, reply = request(opener, f"{base}/assistant/conversations/{conversation['id']}/messages", {"content": item["prompt"]}, headers, timeout)
             entry["total_ms"] = round((time.perf_counter() - started) * 1000, 3)
             entry["status"] = status
             message = reply["assistant_message"]
