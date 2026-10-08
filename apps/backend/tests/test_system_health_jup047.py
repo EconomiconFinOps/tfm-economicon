@@ -348,3 +348,32 @@ def test_route_selects_exclusive_gateway_probe_without_real_inference(
         conn.close.assert_called_once()
     provider.check.assert_not_called()
     assert provider.observation.call_count == 2
+
+def test_simulator_health_and_real_result_retained_until_new_timeout(operational_api, monkeypatch, main_module):
+    from test_health_provider_admission_jup047 import build, check
+    service, gateway, clock = build(main_module)
+    first = check(service)
+    routes = importlib.import_module("app.api.routes.health")
+    monkeypatch.setattr(operational_api.app.state, "health_provider_check", service, raising=False)
+    monkeypatch.setattr(routes, "run_probes", lambda probes: [
+        {"id": name, "status": "ok", "reason_code": "none", "latency_ms": 0}
+        for name in probes
+    ])
+    clock.advance(601)
+    _, body = status(operational_api)
+    items = {item["id"]: item for item in body["components"]}
+    assert items["azure_cost_api"]["status"] == "ok"
+    assert items["azure_cost_api"]["source_kind"] == "simulated"
+    assert items["litellm"]["status"] == "ok" and items["litellm"]["source_kind"] == "live"
+    assert items["openrouter"]["status"] == "ok"
+    assert items["openrouter"]["expires_at"] is None
+    assert utc(items["openrouter"]["checked_at"]) == first["checked_at"]
+    gateway.error = TimeoutError("synthetic-private")
+    later = check(service, "new-timeout")
+    _, body = status(operational_api)
+    item = next(item for item in body["components"] if item["id"] == "openrouter")
+    assert item["status"] == "unknown" and item["reason_code"] == "timeout"
+    assert utc(item["verified_at"]) == first["verified_at"]
+    assert item["check_id"] == first["check_id"]
+    assert utc(item["last_attempt_at"]) == later["last_attempt_at"]
+    assert len(gateway.requests) == 2, "The two authenticated GETs must not infer"

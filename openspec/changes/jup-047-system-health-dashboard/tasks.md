@@ -1,5 +1,52 @@
 # JUP-047 — tareas técnicas propuestas
 
+## Estado de ejecución acreditado — E14, 08/10/2026
+
+Consolidación documental posterior al diseño autorizado PM10:09:29/TL10:11:38, encargada por TL a las11:56:46 Atlantic/Canary. HEAD `6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6`, rama `feat/JUP-047-system-health-dashboard`, base LOCAL `origin/develop` `2f9a5f530c9fe3b60007ba5060c189133e353bf6`; frescura remota no acreditada. El bloque de decisión/diseño que sigue, y la matriz prevista, describen su fase histórica: sus expresiones «solo análisis/diseño» o «pendiente» no niegan la ejecución posterior documentada aquí. Se conservan literalmente las aprobaciones, requisitos, escenarios y registros anteriores. E13 corresponde a la revisión anterior y a seis intentos reales históricos; no prueba el nuevo temporizador ni la retención sin TTL.
+
+| Fase | Evidencia ejecutada y límites |
+| --- | --- |
+| Red y correcciones separadas | Red inicial185 PASS/42 fallos significativos; primer Green96 frontend PASS y214 backend PASS/4 FAIL, conservado como no satisfactorio. TC1 corrigió dos expectativas backend contradictorias con el contrato, con resultado anterior al Green112 PASS/23 FAIL. TC2 añadió casos de entradas históricas/métricas: Red92 PASS/2 FAIL; detector F16 con5 PASS/2 FAIL y controles7 PASS. TC3 añadió la limpieza de temporizador visible al desmontar: original95 PASS, F19 mutado94 PASS/1 FAIL, restaurado95 PASS. Los ajustes de tests y producto tienen checkpoints separados. |
+| Green final de implementación | **341 casos distintos**:123 frontend actuales y218 backend reutilizados por identidad. Sin fallos, errores ni skips en estas suites. Tipos, lint, compilación y sintaxis con resultados y reutilización detallados en el paquete. Los Green intermedios338 y340, así como los intentos incompletos o fallidos, siguen históricos; no se suman campañas. |
+| Sensibilidad dirigida | **27 operadores dispuestos**:25 kills reutilizados por identidad de producto/casos/helpers y2 reensayos actuales B04/F19 KILLED, con controles originales/restaurados95 frontend y1 backend PASS. F16 y F19 SURVIVED y B04 TOOL_FAILURE originales permanecen en sus recibos. B04 careció de resultado válido por bloqueo auxiliar Windows y se reensayó con su detector existente; no se convierte aquel intento en kill. No son27 ejecuciones nuevas ni un score global. |
+| Revisión interna independiente | Revisor: **REVIEW_PASS**, sin hallazgos, con **341 pruebas nuevas propias** (123 frontend+218 backend), sin fallos, errores ni skips. No constituye revisión humana ni aceptación de criterios. |
+| Validación interna independiente | Validador: **VALIDATION_FAIL**; `local_behavior=PASS`, `documentation=FAIL`, con **341 pruebas nuevas propias** (123 frontend+218 backend), sin fallos, errores ni skips. Detectó README244/246: TTL60 contradictorio y omisión del ciclo visible600000 ms. Su informe original y ADENDUM permanecen intactos; los intentos de preparación/ejecución sin resultado no cuentan como PASS. |
+| Corrección documental actual | README frontend corregido: observación real retenida, timeout unknown con historia, apertura/manual/ciclo visible600000 ms, GET30 s no generativo, limpieza y gates, Azure SIMULADO y tolerancia1000 ms. Relectura independiente documental **PENDIENTE**; no se anticipa VALIDATION_PASS. Backend README y runbook ya estaban alineados y no se editan en este despacho. |
+
+Referencias externas E14, entregadas al TL; recibos privados fuera del repositorio:
+
+- Implementación: `jup047-retained-observation-implementation-20261008/delivery-handoff.json`, SHA256 `34c1d7a1e17eccf2cbe1aad7d9c50c159dc3e0ef6eb40c64f96c0e5efed7884b`; manifiesto852 fuentes SHA256 `ad9544c9ff102d59ecc62cf52cebc88ac9ecb17da9507ed6331c850815e344ee`.
+- Revisor: `jup047-retained-observation-review-20261008/handoff.json`, SHA256 `6dfbd973edcf8fa17ea6a9dd608637e10c5cd820ca3e5db1dcf4be1bed254d2c`; `review-report.md`, SHA256 `7f707d24bdc9388c527ce087d04ad70aafec26b01e051904674b3f02e3cd6009`.
+- Validador: `jup047-retained-observation-validation-20261008/handoff.json`, SHA256 `77838d8b2d55af361c9828a230cde812417e486ef95f5a76dd53dd68824bdaca`; `VALIDATION.md`, SHA256 `47bf9b58d62d4f9a04008452fc4fa5a1204c94f122a1343624b03cd8c49ebe33`; `ADENDUM.md`, SHA256 `f9e03a86bac67b64db024c8073a17fba4565c227d2709a5df4b8ac4306953257`.
+
+El PM conservó sus originales independientes: Revisor84cc77c168f683a2b14879613dab1febe54044120046aa269c8814cc66a7a10f y Validador5c046571042c3ca09db66a49786070c9801f19a47f0d95bb3d4f6faf6a95d50e; según TL, retornos PASS sin violaciones (Val PM11:55:06). No se sustituyen estas referencias. Tras esta corrección, TL coteja entrega y PM obtiene original fresco antes de revisión/validación documental proporcional. La12.6 sigue abierta por esa revalidación; la12.7 y gates globales no se cierran.
+
+AC1/AC2 PASS solo en alcance local simulado; AC3 FAIL original, corrección pendiente de revalidación; AC4/AC5 NOT_VALIDATED globalmente, aunque AC5 cuenta con evidencia local sin vínculo oficial. M5 remoto con Alejandro, recorrido visual/teclado aplicable (5.2), hallazgo móvil diferido, CI/base remotas, PR/vínculos, reviews humanas, aprobación final y archivo específicamente autorizado en la misma rama permanecen pendientes. Paris/Víctor/Alejandro/Lucía son asignaciones, no participación acreditada.
+
+No se ejecutan nuevas suites de producto ni mutaciones por esta edición textual. Se mantienen seis intentos acumulados, cohorte6/6 agotada/caducada, H=0.000050625 USD, U=0.010080 USD, P=0, cap0.03 USD y techo humano0,20 EUR acumulado. No hay nuevas llamadas, gasto, servicios, credenciales, configuración, Git, archivo o publicación. La antigua respuesta de permiso de aperturas no renueva la cohorte ni cambia estos límites.
+
+**Decisión vigente de retención y ciclo visible — 08/10/2026**
+
+Paris autorizó «ok dile al TL que haga los cambios», según PM 08/10/26 10:09:29 transmitido por TL 10:11:38. Esta decisión sustituye la caducidad automática de 60 s y el ciclo exclusivamente manual/apertura descritos en fases anteriores: el resultado real se retiene hasta otra observación, y OpenRouter se comprueba al abrir y cada 10 minutos solo con el panel abierto y visible. Un timeout nuevo produce unknown con historia conservada. Azure sigue siendo explícitamente SIMULADO; LiteLLM conserva liveliness real no generativa. Las fechas válidas hasta 1000 ms futuras inclusive reciben tolerancia de presentación, sin modificar su valor.
+
+Esta fase es solo análisis/diseño en seis OpenSpec, sobre HEAD 6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6 y base LOCAL origin/develop 2f9a5f530c9fe3b60007ba5060c189133e353bf6; frescura remota no acreditada. Los registros E12/E13 y las aprobaciones históricas inferiores conservan literalmente hechos/decisiones de su revisión. No validan el comportamiento nuevo. Las menciones históricas a TTL60 o ausencia de periodicidad pagada quedan supersedidas por el contrato nuevo; el cooldown financiero de 60 s permanece.
+
+La autorización funcional no activa gasto: ledger6 intacto, certificado6/6 agotado/caducado y techo0,20 EUR acumulado. Sin nuevos envíos, credenciales, configuración, servicios, commits, archivo o publicación en este diseño. Autenticación, tenant, modelo/coste informativos, ruta, reservas H/U/P, contadores, M5 externo y móvil diferido permanecen. Las fases Red/Green/mutación requieren despachos separados tras coherencia TL.
+
+## 12. Retención y ciclo visible autorizados — 08/10/2026
+
+La autorización PM 10:09:29/TL 10:11:38 sustituye expresamente TTL60 y falta de periodicidad pagada; no cambia cooldown60, reservas, ruta ni permisos. Los resultados E13 acreditan HEAD anterior al cambio funcional; no cerrar estas tareas por la validación antigua.
+
+- [x] 12.1 Diseñar retención, expires_at compatible null, último resultado/intento/historia, scheduler visible600000, Azure SIMULADO y tolerancia1000 ms; alinear propuesta, deltas y aceptación, preservar aprobaciones anteriores.
+- [x] 12.2 Red separado en los cinco TEST de design.md: sustituir expectativas antiguas expresamente contradichas y añadir fallos significativos por comportamiento ausente, usando relojes falsos y red denegada.
+- [x] 12.3 Green separado en cuatro PRODUCT y dos DOC exactos: tests Red fijos, backend/frontend coherentes, sin alterar gates financieros/servicios ni ejecutar inferencias.
+- [x] 12.4 Ejecutar suites afectadas y regresiones necesarias, lint/typecheck/build/sintaxis disponibles; registrar entorno/comandos/exits/no validado, conservar límites de pruebas reutilizadas.
+- [x] 12.5 Mutación dirigida separada con controles originales/restaurados y guard; diagnosticar supervivientes sin debilitar tests ni mezclar permisos de producto.
+- [ ] 12.6 Revisor y Validador afectados con original/control PM independientes: probar retención, timeout, apertura600000/hidden/remount/manual/scope, fechas1000/1001 y simulación, sin diez minutos de espera real ni nueva llamada facturada.
+- [ ] 12.7 TL comprueba entrega y PM presenta decisión final a Paris; mantener M5, CI y aprobación final, archivo específico/PR/reviews humanas pendientes.
+
+Todas las rutas, casos y mutantes están en design.md. Este diseño solo modifica los seis OpenSpec y requiere guard exacto, OpenSpec estricto, trace y whitespace del DELTA. Los tres blancos EOF preexistentes en tests no se limpian ni se cuentan como fallo nuevo/PASS global. La casilla 12.1 acredita diseño documental, no ejecución de los comportamientos.
+
 **Estado final local — 08/10/2026; evidencia E13**
 
 Resultado vigente comunicado por PM09:40:27/TL09:43:52 Atlantic/Canary: revisión técnica interna afectada favorable y validación funcional local acreditada. Hay **6 intentos reales acumulados**, sin reset: la sexta petición, iniciada manualmente desde «Salud del sistema», recibió HTTP200, JSON válido, una elección, finish_reason=stop y contenido exacto OK. La quinta conserva HTTP429 como caso de error; los cuatro anteriores no se convierten retrospectivamente en éxitos. GET/polling no genera inferencias.

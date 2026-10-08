@@ -221,3 +221,24 @@ describe("JUP-047 provider API information is separate from functional validity"
     await expect(checkProvider()).rejects.toThrow();
   });
 });
+
+describe("JUP-047 retained observation expiration compatibility", () => {
+  const stamp = "2026-10-06T12:00:00Z";
+  it.each([null, "2026-10-06T12:01:00Z"])("accepts null/legacy expiry %s without changing the real result", async (expires_at) => {
+    const item = { id: "openrouter", status: "ok", reason_code: "none", source_kind: "live",
+      checked_at: stamp, latency_ms: 1, verified_at: stamp, last_attempt_at: stamp,
+      expires_at, check_id: "retained-synthetic" };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(item), { status: 200 })));
+    vi.setSystemTime(new Date("2026-10-08T12:00:00Z"));
+    const result = await checkHealthProvider("synthetic-token", "tenant-a", "retained", new AbortController().signal);
+    expect(result).toMatchObject({ status: "ok", verified_at: stamp, checked_at: stamp, expires_at });
+  });
+  it.each(["2026-02-30T12:00:00Z", "not-a-date", "2026-10-06T12:00:00+02:00"])("rejects malformed required observation %s", async (checked_at) => {
+    const item = { id: "openrouter", status: "ok", reason_code: "none", source_kind: "live",
+      checked_at, latency_ms: 1, verified_at: stamp, last_attempt_at: stamp,
+      expires_at: null, check_id: "retained-synthetic" };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(item), { status: 200 })));
+    await expect(checkHealthProvider("synthetic-token", "tenant-a", "invalid", new AbortController().signal))
+      .rejects.toMatchObject({ reason: "invalid_response" });
+  });
+});

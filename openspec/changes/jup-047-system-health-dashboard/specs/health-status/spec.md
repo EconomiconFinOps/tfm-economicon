@@ -1,5 +1,64 @@
 ## ADDED Requirements
 
+**Decisión vigente de retención y ciclo visible — 08/10/2026**
+
+Paris autorizó «ok dile al TL que haga los cambios», según PM 08/10/26 10:09:29 transmitido por TL 10:11:38. Esta decisión sustituye la caducidad automática de 60 s y el ciclo exclusivamente manual/apertura descritos en fases anteriores: el resultado real se retiene hasta otra observación, y OpenRouter se comprueba al abrir y cada 10 minutos solo con el panel abierto y visible. Un timeout nuevo produce unknown con historia conservada. Azure sigue siendo explícitamente SIMULADO; LiteLLM conserva liveliness real no generativa. Las fechas válidas hasta 1000 ms futuras inclusive reciben tolerancia de presentación, sin modificar su valor.
+
+Esta fase es solo análisis/diseño en seis OpenSpec, sobre HEAD 6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6 y base LOCAL origin/develop 2f9a5f530c9fe3b60007ba5060c189133e353bf6; frescura remota no acreditada. Los registros E12/E13 y las aprobaciones históricas inferiores conservan literalmente hechos/decisiones de su revisión. No validan el comportamiento nuevo. Las menciones históricas a TTL60 o ausencia de periodicidad pagada quedan supersedidas por el contrato nuevo; el cooldown financiero de 60 s permanece.
+
+La autorización funcional no activa gasto: ledger6 intacto, certificado6/6 agotado/caducado y techo0,20 EUR acumulado. Sin nuevos envíos, credenciales, configuración, servicios, commits, archivo o publicación en este diseño. Autenticación, tenant, modelo/coste informativos, ruta, reservas H/U/P, contadores, M5 externo y móvil diferido permanecen. Las fases Red/Green/mutación requieren despachos separados tras coherencia TL.
+
+### Requirement: Retained real provider observations and truthful history
+The backend SHALL initially expose unknown/not_verified without a fabricated provider verification. It SHALL retain the latest real result and its observation time until another real attempt supplies a result, without age-based expiration. A new timeout SHALL expose unknown/timeout while retaining the last successful verified_at/check_id only as history. Ordinary admission, accounting and configured routing SHALL remain unchanged.
+
+#### Scenario: Initial observation
+- **WHEN** no real attempt has produced a result since startup
+- **THEN** OpenRouter is unknown/not_verified with null verified_at, check_id and last_attempt_at
+- **AND** a GET evaluation timestamp does not constitute a successful provider observation
+
+#### Scenario: Retained success across time and reads
+- **WHEN** a valid real response was received and time advances through59999 ms,60000 ms,60001 ms and beyond ten minutes without another result
+- **THEN** the result remains ok with its original verified_at/check_id and last attempt timestamps
+- **AND** repeated GET performs no inference and does not renew those timestamps
+
+#### Scenario: New timeout preserves historical success
+- **WHEN** an admitted attempt times out after a previous success
+- **THEN** current status/reason becomes unknown/timeout with the new last_attempt_at and checked_at for that attempt
+- **AND** the previous verified_at/check_id remain historical and do not turn the timed-out attempt into ok
+
+#### Scenario: Ordinary refusal is not a new real observation
+- **WHEN** admission refuses an action before sending
+- **THEN** the action exposes its explicit refusal without advancing real attempt or verification dates or rewriting the latest real observation
+- **AND** subsequent GET retains that observation and all financial guards/history remain effective
+
+#### Scenario: Duplicate replay cannot renew or roll back
+- **WHEN** the same scope-bound idempotency action is replayed after sixty seconds or after a newer attempt
+- **THEN** its original receipt is returned without artificial expiration, new charge or renewed dates
+- **AND** the stored current observation is not rolled back to the replayed historical receipt
+
+#### Scenario: Expiration field compatibility
+- **WHEN** the backend serializes retained provider observations
+- **THEN** expires_at remains present and nullable and is emitted as null rather than a fabricated deadline
+- **AND** last_attempt_at denotes attempt start, checked_at denotes latest real attempt completion and verified_at/check_id identify the latest valid response separately from current result
+
+### Requirement: Simulator provenance and bounded observation time presentation
+Diagnostic dates SHALL remain the original valid UTC observation timestamps. The client SHALL accept observation timestamps at most1000 ms in the future relative to the captured reception clock, inclusive, while rejecting malformed, missing, non-UTC or disproportionately future observations. This tolerance SHALL NOT relax transport, authorization or provider verification.
+
+#### Scenario: Simulator provenance is not a failure
+- **WHEN** the Azure simulator returns a valid healthy observation
+- **THEN** its state may be ok with explicit SIMULADO provenance
+- **AND** neither simulated provenance nor elapsed age alone produces unknown/stale or claims Azure real health
+
+#### Scenario: Small future offset does not invalidate healthy probes
+- **WHEN** valid Azure simulated or LiteLLM live checked_at is0,29,40,999 or1000 ms beyond the captured reception time
+- **THEN** the original timestamp and healthy observation remain displayable
+- **AND** LiteLLM still requires its existing exact non-generative liveliness contract independently of OpenRouter
+
+#### Scenario: Temporal boundary and invalid structure
+- **WHEN** an observation is1001 ms or60000 ms future, malformed, missing or not UTC
+- **THEN** the affected observation is not displayed as verified healthy and retained history remains honestly dated
+- **AND** no timestamp is clamped, fabricated or used as proof of continuous availability
+
 **Estado final local — 08/10/2026; evidencia E13**
 
 Resultado vigente comunicado por PM09:40:27/TL09:43:52 Atlantic/Canary: revisión técnica interna afectada favorable y validación funcional local acreditada. Hay **6 intentos reales acumulados**, sin reset: la sexta petición, iniciada manualmente desde «Salud del sistema», recibió HTTP200, JSON válido, una elección, finish_reason=stop y contenido exacto OK. La quinta conserva HTTP429 como caso de error; los cuatro anteriores no se convierten retrospectivamente en éxitos. GET/polling no genera inferencias.
@@ -44,13 +103,13 @@ The backend SHALL provide GET `/health/status` for an authenticated user and an 
 Operational diagnostics SHALL describe backend API, database, queue, processor API, vector storage, simulated Azure API, LiteLLM gateway and an independently identified OpenRouter observation. Every observation SHALL have a closed id/status/reason and timestamp with declared live/simulated/mock/unverified provenance. Status SHALL be one of ok, degraded, failed or unknown.
 
 #### Scenario: Real provider check distinct from gateway
-- **WHEN** an authorized panel opening or manual update admits a provider check
+- **WHEN** an authorized panel opening, visible periodic deadline or manual update admits a provider check
 - **THEN** one real synthetic inference is sent through the pinned economicon-chat alias to z-ai/glm-5.2, with disabled reasoning/retries/fallbacks and no user data
 - **AND** a valid functional response through the configured route marks OpenRouter ok with its own verified_at independently of returned model spelling or cost information; mock/liveliness cannot satisfy the real-provider requirement
 - **AND** configured models/routing, access controls, fixed payload and usage limits remain enforced; returned model name does not certify executed model identity
 
 #### Scenario: Reachable gateway without current real inference
-- **WHEN** gateway liveliness succeeds but the real inference is absent, failed, timed out, blocked or stale
+- **WHEN** gateway liveliness succeeds but no real result exists or the latest admitted real attempt failed or timed out
 - **THEN** gateway availability remains distinct and OpenRouter has the corresponding explicit non-ok result
 - **AND** a prior successful verified_at is not advanced or described as the result of the new attempt
 

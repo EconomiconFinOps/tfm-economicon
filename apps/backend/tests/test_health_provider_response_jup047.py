@@ -154,7 +154,7 @@ def test_actual_http_parser_second_check_keeps_prior_reserve_and_cumulative_limi
 def test_authenticated_get_serializes_provider_information_after_post(
     main_module, api, monkeypatch, model, cost, expected_model, expected_cost, cost_status,
 ):
-    service, connection, _ = runtime_service(main_module, monkeypatch, data=body(model), header=cost)
+    service, connection, retained_clock = runtime_service(main_module, monkeypatch, data=body(model), header=cost)
     monkeypatch.setattr(api.app.state, "health_provider_check", service, raising=False)
     routes = importlib.import_module("app.api.routes.health")
     # Isolate DTO/HTTP/auth behavior: external health probes and activity queries
@@ -174,12 +174,15 @@ def test_authenticated_get_serializes_provider_information_after_post(
     post = call(api, "POST", "/health/provider-check", headers=auth,
                 json={"idempotency_key": "get-serialized-information"})
     assert post.status_code == 200 and post.json()["status"] == "ok"
+    retained_clock.advance(601)
     response = call(api, "GET", "/health/status", headers=auth)
     assert response.status_code == 200 and response.headers["Cache-Control"] == "no-store"
     snapshot = response.json()
     assert snapshot["tenant_id"] == "tenant-a"
     item = next(component for component in snapshot["components"] if component["id"] == "openrouter")
     assert item["status"] == "ok"
+    assert item["expires_at"] is None
+    assert datetime.fromisoformat(item["checked_at"].replace("Z", "+00:00")) == datetime.fromisoformat(post.json()["checked_at"].replace("Z", "+00:00"))
     assert datetime.fromisoformat(item["verified_at"].replace("Z", "+00:00")) == datetime.fromisoformat(post.json()["verified_at"])
     assert item["reported_model"] == expected_model
     assert item["model_identity"] == "unconfirmed"

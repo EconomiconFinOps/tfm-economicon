@@ -1,5 +1,13 @@
 ## ADDED Requirements
 
+**Decisión vigente de retención y ciclo visible — 08/10/2026**
+
+Paris autorizó «ok dile al TL que haga los cambios», según PM 08/10/26 10:09:29 transmitido por TL 10:11:38. Esta decisión sustituye la caducidad automática de 60 s y el ciclo exclusivamente manual/apertura descritos en fases anteriores: el resultado real se retiene hasta otra observación, y OpenRouter se comprueba al abrir y cada 10 minutos solo con el panel abierto y visible. Un timeout nuevo produce unknown con historia conservada. Azure sigue siendo explícitamente SIMULADO; LiteLLM conserva liveliness real no generativa. Las fechas válidas hasta 1000 ms futuras inclusive reciben tolerancia de presentación, sin modificar su valor.
+
+Esta fase es solo análisis/diseño en seis OpenSpec, sobre HEAD 6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6 y base LOCAL origin/develop 2f9a5f530c9fe3b60007ba5060c189133e353bf6; frescura remota no acreditada. Los registros E12/E13 y las aprobaciones históricas inferiores conservan literalmente hechos/decisiones de su revisión. No validan el comportamiento nuevo. Las menciones históricas a TTL60 o ausencia de periodicidad pagada quedan supersedidas por el contrato nuevo; el cooldown financiero de 60 s permanece.
+
+La autorización funcional no activa gasto: ledger6 intacto, certificado6/6 agotado/caducado y techo0,20 EUR acumulado. Sin nuevos envíos, credenciales, configuración, servicios, commits, archivo o publicación en este diseño. Autenticación, tenant, modelo/coste informativos, ruta, reservas H/U/P, contadores, M5 externo y móvil diferido permanecen. Las fases Red/Green/mutación requieren despachos separados tras coherencia TL.
+
 **Estado final local — 08/10/2026; evidencia E13**
 
 Resultado vigente comunicado por PM09:40:27/TL09:43:52 Atlantic/Canary: revisión técnica interna afectada favorable y validación funcional local acreditada. Hay **6 intentos reales acumulados**, sin reset: la sexta petición, iniciada manualmente desde «Salud del sistema», recibió HTTP200, JSON válido, una elección, finish_reason=stop y contenido exacto OK. La quinta conserva HTTP429 como caso de error; los cuatro anteriores no se convierten retrospectivamente en éxitos. GET/polling no genera inferencias.
@@ -40,42 +48,58 @@ The application SHALL expose an authenticated `/system-health` page through its 
 - **AND** the panel adds no horizontal overflow and every state has visible text beyond color
 - **AND** existing StatusPill consumers keep their prior appearance if health-specific tones are added
 
-### Requirement: Refresh, freshness and session isolation
-The panel SHALL initiate one real provider-check action when opened and one for each admitted manual Actualizar action, without render/StrictMode duplication. Automatic refresh every30seconds while visible/mounted with valid scope SHALL perform only non-generative GET diagnostics. It SHALL avoid overlapping calls/retries, use seven-second GET and35-second real-check client waits, show checked_at and provider verified_at separately, mark observations stale/unknown when their age is greater than or equal to 60 seconds (age < 60 seconds remains current) and discard abandoned tenant/session work.
+### Requirement: Refresh, retained results and visible periodic provider checks
+The scoped authenticated panel SHALL initiate one provider-check intent on its logical visible navigation opening and then at600000 ms from the most recently dispatched opening/manual/periodic intent while it remains mounted and visible. Visible30000 ms GET polling SHALL remain non-generative. Hidden or closed panels SHALL initiate no background checks or monitor. Ordinary backend admission,35 s POST and7 s GET waits, scope isolation and non-overlap SHALL remain authoritative. The latest real result SHALL remain dated without a 60 s TTL; later timeout/failure SHALL replace current availability while retaining the last successful response as history.
 
-#### Scenario: Open and manual provider check
-- **WHEN** the authenticated scoped panel opens, or the operator manually updates after admission permits it
-- **THEN** each action initiates exactly one real provider-check intent and shows its pending/result state with its own observation time
-- **AND** repeats/renders/extra tabs do not cause duplicate or overlapping unreserved inferences
+#### Scenario: Opening and exact periodic boundary
+- **WHEN** a valid scoped visible navigation entry opens and its opening POST is dispatched at t0
+- **THEN** exactly one intent is created, no periodic POST occurs at t0+599999 ms and one occurs at t0+600000 ms if still eligible
+- **AND** the next deadline uses the latest dispatch time rather than GET, render, completion or verified_at
 
-#### Scenario: Automatic polling does not spend
-- **WHEN** the30second refresh runs
-- **THEN** only GET diagnostics are requested and no real inference is triggered
-- **AND** the real provider verified_at remains unchanged and becomes explicitly stale at exactly 60 seconds and thereafter, while remaining current before that boundary
+#### Scenario: Hidden pause and resumed visibility
+- **WHEN** the panel is hidden before opening or while a deadline is pending
+- **THEN** it starts no GET/manual/periodic POST while hidden and pauses timers without restarting an already sent request
+- **AND** becoming visible reads GET and sends at most one opening/due intent; an unexpired deadline waits its remaining duration and missed intervals are not replayed
 
-#### Scenario: Real-check refusal or failure
-- **WHEN** budget/cooldown/busy blocks the action or the real request errors/times out
-- **THEN** the UI reports that result and preserves the last real verification time only as historical data
-- **AND** neither a gateway success nor a recent GET timestamp replaces proof of the attempted provider verification
+#### Scenario: Manual and simultaneous triggers
+- **WHEN** manual Actualizar, opening, periodic deadline or duplicate consumers compete
+- **THEN** synchronous scope ownership permits one active POST with one idempotency action; manual dispatch resets nextDue to its own time plus600000 ms
+- **AND** in-flight overlap is coalesced, refusals expose their reason without immediate retries and every later actual inference still requires ordinary admission
 
-#### Scenario: Refresh fails after prior success
-- **WHEN** a refresh times out or fails after a successful observation for the same tenant/session
-- **THEN** any retained data remains labelled with the old update time and a visible failure/stale notice
-- **AND** the page does not report the current refresh time as a successful health observation
+#### Scenario: Remount and navigation episode
+- **WHEN** StrictMode or remount recreates the same navigation entry, or the same history entry is resumed
+- **THEN** the existing episode opening mark, last dispatch and deadline prevent another opening POST and a due check is coalesced once
+- **AND** a new navigation entry opens one new episode; same-document coordination shares operation ownership without persisting tokens or diagnostic data
 
-#### Scenario: Tenant switches while response is pending
-- **WHEN** the operator changes tenant or session before an older request settles
-- **THEN** prior scope data is removed, prior timers/requests are cancelled or discarded, and only the new scope may populate the panel
+#### Scenario: Non-generative polling and retained results
+- **WHEN** visible30000 ms GET polling runs or an observation ages beyond sixty seconds
+- **THEN** GET alone performs no inference and result/verified_at/check_id remain tied to the real attempt rather than the GET
+- **AND** a nullable or legacy UTC expires_at does not impose local expiry
 
-#### Scenario: Expired session and forbidden scope
-- **WHEN** an authenticated diagnostic request returns401 or403
-- **THEN**401 follows existing session-expiry behavior and403 presents access failure without falsely logging out or exposing old tenant data
-- **AND** logout/unmount stops diagnostic polling
+#### Scenario: Retained and contradictory results
+- **WHEN** the first valid result arrives, a later real attempt times out/fails or admission refuses without sending
+- **THEN** initial unknown becomes the received result, later real timeout/failure becomes the current non-ok result, and refusal is shown separately without fabricating another observation
+- **AND** last successful verified_at/check_id remain clearly historical after a contradictory result and pending checking does not claim a new success
 
-#### Scenario: Invalid response or unavailable data
-- **WHEN** required states/timestamps/counts are invalid or a summary source is unavailable
-- **THEN** the panel shows explicit unknown/unavailable information rather than fabricated healthy states or zero activity
-- **AND** invalid/future/absent timestamps are not displayed as fresh successful observations
+#### Scenario: Old GET after client timeout
+- **WHEN** a client check times out and an older GET snapshot later arrives
+- **THEN** current unknown/timeout and its historical success are not replaced by that old ok
+- **AND** only a coherent server result for that dispatched attempt, with last_attempt_at at least dispatch UTC minus1000 ms, or a subsequent completed action can reconcile the timeout
+
+#### Scenario: Scope cleanup and expired session
+- **WHEN** unmount, logout, tenant change or session generation change abandons the panel
+- **THEN** its timers/listeners are removed, its requests are aborted or ignored and no late result crosses scopes
+- **AND**401 follows existing session expiry and403 remains access failure without falsely logging out; no session/tenant means no diagnostic request
+
+#### Scenario: Failed GET preserves dated history
+- **WHEN** a GET times out or fails after a prior successful diagnostic
+- **THEN** current diagnostic is unknown with a visible failure notice while stored history keeps its original date
+- **AND** it does not fabricate new success or spin a paid retry
+
+#### Scenario: Bounded future observations
+- **WHEN** a valid UTC observation is within1000 ms future inclusive of one captured reception clock
+- **THEN** its original date, component state, label and metric remain mutually consistent, including healthy SIMULADO Azure and live LiteLLM
+- **AND**1001 ms or greater future, invalid UTC/calendar or absent required dates are not displayed as healthy; no date is clamped and one invalid component does not erase healthy sibling observations
 
 ### Requirement: Separate functional availability identity and cost display
 The panel SHALL show availability independently of informational model identity and cost, using the same selected attempt/tenant observation as the existing hook. It SHALL NOT claim verified model identity or confirmed upstream cost from matching names, configured routes or gateway headers. Missing or invalid informational fields SHALL be safely normalized without invalidating otherwise valid availability; invalid functional states/structure/timestamps SHALL retain rejection.
@@ -92,10 +116,10 @@ The panel SHALL show availability independently of informational model identity 
 - **AND** estimates and missing/zero costs are not presented as confirmed billing or free calls
 - **AND** financial refusal of a later call retains explicit refusal/history semantics without rewriting the earlier result
 
-#### Scenario: Informational fields unavailable and stale attempts
+#### Scenario: Informational fields unavailable and retained attempts
 - **WHEN** informational fields are absent/malformed or GET and POST refer to different attempts/scopes
 - **THEN** missing information is shown safely as unconfirmed/unavailable or invalid and only fields from the selected current attempt/tenant are combined
-- **AND** expiry at exactly60seconds, cancellation, generation checks and historical failure/refusal labels remain unchanged
+- **AND** age alone does not expire observations; cancellation, generation checks and truthful latest-attempt versus historical-response labels remain effective
 - **AND** invalid functional responses never display a new successful timestamp
 
 ### Requirement: Reproducible validation and required M5 deployment

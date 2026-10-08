@@ -1,5 +1,89 @@
 # JUP-047 — diseño propuesto del dashboard de salud
 
+**Decisión vigente de retención y ciclo visible — 08/10/2026**
+
+Paris autorizó «ok dile al TL que haga los cambios», según PM 08/10/26 10:09:29 transmitido por TL 10:11:38. Esta decisión sustituye la caducidad automática de 60 s y el ciclo exclusivamente manual/apertura descritos en fases anteriores: el resultado real se retiene hasta otra observación, y OpenRouter se comprueba al abrir y cada 10 minutos solo con el panel abierto y visible. Un timeout nuevo produce unknown con historia conservada. Azure sigue siendo explícitamente SIMULADO; LiteLLM conserva liveliness real no generativa. Las fechas válidas hasta 1000 ms futuras inclusive reciben tolerancia de presentación, sin modificar su valor.
+
+Esta fase es solo análisis/diseño en seis OpenSpec, sobre HEAD 6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6 y base LOCAL origin/develop 2f9a5f530c9fe3b60007ba5060c189133e353bf6; frescura remota no acreditada. Los registros E12/E13 y las aprobaciones históricas inferiores conservan literalmente hechos/decisiones de su revisión. No validan el comportamiento nuevo. Las menciones históricas a TTL60 o ausencia de periodicidad pagada quedan supersedidas por el contrato nuevo; el cooldown financiero de 60 s permanece.
+
+La autorización funcional no activa gasto: ledger6 intacto, certificado6/6 agotado/caducado y techo0,20 EUR acumulado. Sin nuevos envíos, credenciales, configuración, servicios, commits, archivo o publicación en este diseño. Autenticación, tenant, modelo/coste informativos, ruta, reservas H/U/P, contadores, M5 externo y móvil diferido permanecen. Las fases Red/Green/mutación requieren despachos separados tras coherencia TL.
+
+## Diseño vigente — retención, periodicidad y tiempo, 08/10/2026
+
+### Diagnóstico y límites
+
+El servicio HealthProviderCheck._observation y el replay de idempotencia expiran a 60 s. El hook vuelve a imponer60 s y la página rechaza cualquier milisegundo futuro mediante comparaciones distintas. El transporte y la sonda LiteLLM ya satisfacen sus contratos y no necesitan cambios. El hallazgo TL de dos GET observó Azure/gateway ok con fechas29/40 ms posteriores a la recepción de Windows: reproduce el predicado, pero no prueba un desfase permanente Docker/Windows ni el Date.now de una captura anterior.
+
+La autorización humana actual cambia estas reglas de presentación/retención y añade periodicidad visible. Las decisiones antiguas se conservan abajo como historia, sin atribuir esta aprobación a fechas anteriores. No se añade almacenamiento persistente ni nueva autoridad de gasto.
+
+### Resultado real y fechas
+
+| Situación | Resultado actual y fechas |
+| --- | --- |
+| Sin resultado recibido desde arranque | unknown/not_verified; verified_at, check_id y last_attempt_at null. checked_at de diagnóstico no es verificación. |
+| Respuesta real válida | ok/none retenido sin TTL. verified_at/check_id identifican última respuesta válida; last_attempt_at registra inicio real y checked_at finalización del último intento. |
+| Solo pasan60 s,10min o un día; GET o replay | Resultado real/fechas permanecen; no inferencia ni fecha de éxito renovada. Backend deja de aplicar expiración en observación y replay. |
+| Nuevo intento admitido pendiente | La UI conserva el resultado anterior con Comprobando; no afirma un nuevo éxito. Una vez concluido, su resultado sustituye al anterior. |
+| Nuevo timeout/resultado no válido/error upstream | unknown/timeout, unknown/invalid_response o failed/razón existente según contrato; nueva fecha de intento/resultado, última verified_at/check_id conservadas solo como historia. No reutilizar ok actual tras timeout. |
+| Rechazo ordinario sin envío (busy/cooldown/budget) | Mostrar rechazo como acción, sin inventar last_attempt_at ni sustituir la última observación real. Si no había resultado continúa unknown. Las ventanas/contadores/reservas no cambian salvo lo que ya prescribe el backend. |
+| Error/timeout del GET | Diagnóstico actual unknown y aviso visible; conservar las fechas/datos anteriores como historia. Un GET válido posterior puede recuperar el estado realmente observado, sin adelantar verified_at. |
+| Reinicio con estado de observación perdido | unknown; no reconstruir ok desde configuración/certificado/fecha histórica. La recuperación financiera sigue sus gates existentes. |
+
+No se añaden campos: status/reason_code describen el último resultado seleccionado; last_attempt_at su inicio, checked_at su finalización y verified_at/check_id la última respuesta válida. Guardar internamente el instante finished del último intento para que GET no lo reemplace por ahora en la fila OpenRouter. checked_at global sigue siendo la evaluación GET; las otras sondas conservan su propia fecha real de observación. Fechas de coste/modelo pertenecen al intento seleccionado, sin mezclar información anterior con un intento posterior.
+
+expires_at permanece en ambos tipos como campo de compatibilidad nullable y se emite null. El cliente admite el nullable y una fecha UTC legacy estructuralmente válida, pero no la utiliza para expirar resultados. No inventar un vencimiento infinito ni desplazarlo con cada GET. Clientes antiguos pueden seguir aplicando su TTL local: backend y frontend deben desplegarse como revisión coherente; no se modifica ni activa un entorno desde esta fase.
+
+El replay idempotente devuelve el recibo original sin caducidad ni gasto/fecha renovados y nunca revierte _last a un intento antiguo. La selección frontend prioriza last_attempt_at más reciente; un GET anterior no desplaza el POST nuevo. Si hay timeout de cliente, la UI mantiene unknown y su historia hasta un resultado posterior coherente: solo un GET que corresponda al intento despachado (last_attempt_at >= hora de despacho menos1000 ms) o una nueva comprobación concluida puede quitar ese estado. Un snapshot anterior no borra un timeout nuevo. Cancelar por salida/tenant/logout descarta actualizaciones tardías; abortar un cliente no demuestra que el upstream no gastara.
+
+### Temporizador y deduplicación
+
+- Interfaz del hook: useSystemHealth(token, tenantId, panelEntryKey), con clave no vacía de navegación proporcionada por SystemHealthDashboard; el scope incluye generación de sesión y tenant. Sin clave/scope válidos no se despacha. Los usos directos del hook en el TEST asignado reciben una clave sintética estable. Entrada lógica: esa clave de navegación. Una navegación nueva es una apertura; remount/StrictMode de la misma clave y volver a la misma entrada del historial son reanudación. La apertura inicialmente oculta espera a visible y solo entonces despacha su primer intento.
+- En memoria del mismo documento se retiene solo coordinación del episodio/scope: clave de entrada, marca de apertura, último instante de despacho, próximo plazo y operación activa; nunca tokens/datos de usuario en almacenamiento persistente o logs. Una entrada nueva puede abrir otro episodio, pero comparte exclusión del scope; no duplica una operación activa. Limpiar scopes obsoletos al cambiar tenant/generación y no conservar datos del scope abandonado.
+- Referencia temporal de periodicidad: instante monotónico de despacho del último POST (apertura/manual/periódico), no verified_at, tiempo de GET, finalización o render. nextDue = dispatchedAt +600000 ms. Un rechazo también mueve el próximo plazo, sin retry inmediato ni reinterpretarlo como inferencia ejecutada.
+- GET visible cada 30000 ms, con 7 s de espera y exclusión de lecturas; POST con 35 s y gates backend intactos. Ningún intervalo GET llama al POST. Se usan temporizadores deterministas y reloj monotónico para duración; UTC de recepción se reserva para validar/presentar fechas.
+- A599999 ms no hay POST; a 600000 ms visible se despacha uno. La misma exclusión se reclama sincrónicamente para manual/timer/apertura/consumidores duplicados. Un manual antes del vencimiento mueve nextDue otros10min; coincidencia manual/timer crea solo un intento y una clave idempotente. No se cola otro mientras siga checking.
+- Ocultar cancela timers GET/POST; no inicia solicitudes nuevas. La petición ya enviada puede concluir bajo sus límites, sin cancelarla/reintentarlo por visibilidad. Al volver se hace un GET y, si no se envió apertura o nextDue venció, como máximo un POST; si aún no venció se espera el resto. No se reproducen intervalos perdidos. Si la operación seguía activa se reutiliza/espera y nunca se solapa.
+- Desmontar cancela timers/listener y aborta solicitudes propias; conservar solo la marca/plazo del episodio evita duplicar al remount de la misma navegación. Al remount se lee GET y se aplica vencimiento, no se paga otra apertura ya despachada. Una nueva navegación abre episodio nuevo una vez, con admisión ordinaria.
+- Logout y401 invalidan sesión y eliminan datos visibles;403 muestra acceso denegado y nunca conserva datos de un scope no autorizado. Token/generación/tenant nuevos invalidan el scope antes de aplicar respuestas. Sin sesión/tenant o estando oculto no hay apertura/manual/periódico. Fuera del panel no existe temporizador activo ni monitor. Pestañas diferentes conservan su lifecycle local; backend global single-instance mantiene admisión/cooldown/no solapamiento sin prometer deduplicación distribuida nueva.
+- Si un timer vence durante una operación activa, se coalesce un único vencimiento y se reevalúa al finalizar con panel visible; no hay ráfaga acumulada. Las negativas se muestran y el siguiente automático espera10min. Los límites6/hora/24 día pueden rechazar periodicidad prolongada y no se amplían por esta funcionalidad.
+
+### Tolerancia temporal y procedencia
+
+Constante frontend compartida de 1000 ms inclusive para fechas de observación: UTC válida y t <= observedNow +1000. No límite de edad para convertir una observación retenida en stale. observedNow se captura una vez al recibir cada GET/POST y se usa consistentemente en selección, filas, métricas y formato; no comparar por separado contra Date.now dentro de date(). Un render sin dato usa ahora solo para presentar ausencia, nunca para inventar fecha. No se clamp/regraban timestamps ni se hace sincronización de relojes.
+
+Casos0/29/40/999/1000 ms futuros se aceptan;1001 ms/60 s futuros se muestran no verificables para la observación afectada, sin borrar la historia. Fechas ausentes, malformed o no UTC siguen rechazadas por contrato; el parser compartido conserva la validación semántica de calendario. Un futuro global desproporcionado invalida el diagnóstico; uno de componente invalida esa fila/métrica de forma coherente, no convierte otros probes sanos en caídos ni inventa salud. Fechas reales antiguas se muestran con su valor original. Azure source_kind=simulated se etiqueta SIMULADO y puede estar ok; no forzar unknown/stale por esa procedencia. LiteLLM exige su HTTP200/string JSON exacto en liveliness; la tolerancia de UI no relaja el parser ni transforma gateway sano en prueba OpenRouter.
+
+### Paths exhaustivos de fases posteriores
+
+| Fase | Rutas exactas | Responsabilidad |
+| --- | --- | --- |
+| TEST Red y correcciones de sensibilidad | apps/backend/tests/test_health_provider_admission_jup047.py | Retención/60 s/replay, último intento y fechas, rechazo sin envío, timeout después de éxito; sustituir expectativas TTL contradictorias por la decisión actual y conservar Red nuevo significativo. |
+| TEST | apps/backend/tests/test_health_provider_response_jup047.py | POST→GET serializados con expires_at=null, fecha original retenida y timeout posterior/historia. |
+| TEST | apps/backend/tests/test_system_health_jup047.py | GET no generativo, agregado/DTO y probes Azure simulated/LiteLLM live bajo el nuevo resultado retenido. |
+| TEST | apps/frontend/tests/system-health-jup047.test.tsx | Fake clock/lifecycle/timers/StrictMode/remount/manual/hidden/scope/timeout/tolerancia/fechas/métricas/etiqueta SIMULADO. |
+| TEST | apps/frontend/src/services/api.test.ts | DTO null/legacy expires_at ignorado, estructura UTC/coste/modelo y fechas compartidas válidas/inválidas. |
+| PRODUCT Green | apps/backend/app/services/health_provider_check.py | Retirar ambos TTL, conservar instante final/recibo e historia sin alterar gates/payload/liquidación. |
+| PRODUCT | apps/frontend/src/hooks/useSystemHealth.ts | Resultado retenido, latch timeout, schedule600000 visible, exclusión compartida y scope/lifecycle. |
+| PRODUCT | apps/frontend/src/services/contracts.ts | Helper temporal puro compartido y constante1000; tipos y validación UTC existentes, expires_at compatible. |
+| PRODUCT | apps/frontend/src/pages/SystemHealthDashboard.tsx | Clave de entrada al hook, formato/estados/métricas temporales coherentes, última respuesta/último intento diferenciados y SIMULADO. |
+| DOC Green | apps/backend/README.md; docs/runbooks/system-health.md | Retención, periodicidad visible, lifecycle, compatibilidad, tolerancia, gates y pruebas reproducibles; no activar gasto. |
+
+No otros paths: schema backend ya nullable, API fetch/transport/runtime/probe/StatusPill/infra/dependencias no requieren edición. Si la implementación encuentra necesidad material adicional, volver TL antes de escribir fuera del contrato. OpenSpec queda fijo durante Red/Green/mutación.
+
+### Plan Red, Green y mutación
+
+Red debe fallar por TTL antiguo/backend-replay, ausencia de timer600000/deduplicación y rechazo de fechas+29/+40 ms; no por importaciones o reloj real. Fixtures de red denegada/transportes simulados y reloj inyectado existentes; avanzar10min con fake clock, sin esperar/gastar. Cubrir59.999/60/60.001 s y más de 10min, duplicate antes/después de timeout, refusal sin intento, costes informativos sin liberar U, reset/reinicio bloqueado y timestamps exactos. Las expectativas viejas contradictorias se reemplazan expresamente en Red, no en Green.
+
+Green conserva esos cinco tests fijos. Ejecutar las cinco suites backend afectadas/regresión (admission/response/system_health/policy/boundaries); frontend system-health, api y StatusPill/sesión/navegación relacionadas, lint/typecheck/build frontend y sintaxis backend en copia externa. Los comandos exactos y entorno disponibles se registrarán por fase; no instalar runtimes ni deps. Reutilizar evidencias no afectadas de infraestructura/processor/Azure-parser, aislamiento DNS, M5 simulado y campañas anteriores con límites; no reutilizar como PASS tests que dependen del TTL/lifecycle viejo. E12/E13 no aceptan el nuevo comportamiento ni justifican una nueva inferencia real.
+
+Mutantes dirigidos en copias externas: mantener TTL backend; mantener TTL de replay; renovar checked_at/verified_at en GET; mantener ok tras timeout; borrar verified_at/check_id; emitir expires_at ficticio; conservar TTL frontend; usar30 s en POST; alterar600000 a 599999/600001; POST desde GET; permitir hidden; catch-up múltiple; no reset de manual; omitir exclusión; duplicar remount; aceptar respuesta de scope antiguo; dejar GET viejo borrar timeout; tolerancia0 ms; aceptar1001 ms; aceptar fecha malformada; forzar simulated aunknown o quitar etiqueta. Controles originales/restaurados y hash de producto/tests al terminar; supervivientes se diagnostican, no se declaran equivalentes sin evidencia ni se altera producto dentro de mutación.
+
+### Riesgos, alternativas y gates
+
+Retención comunica última observación, no disponibilidad continua: UI debe mantener fechas y mostrar timeout nuevo honestamente. Se descarta TTL largo alternativo por contradecir la decisión. Se descarta intervalos globales/background/monitor y catch-up por gasto/alcance. Tolerancia1000 ms es finita y proporcional a los29/40 ms observados; se descarta aceptar todo futuro, clamp o asumir sincronía exacta. La periodicidad aumenta intenciones y puede topar con gates habituales; no concede presupuesto ni7.º envío. El registro temporal solo vive en memoria del documento y no pretende coordinación cross-tab/backend distribuido.
+
+Fuente histórica actual limpia: HEAD 6fa3ef7,852 fuentes; originales R/V/PM y commit previos inmutables. La base local cambió y su frescura remota no está acreditada; no integrar Git. Solo después de coherencia TL, despachos separados Red→Green→mutación y revisión/validación afectadas. Aprobación funcional humana actual cubre estos cambios; decisiones materiales nuevas se elevan. Final, archivo específico, PR/reviews humanas y M5 externo siguen sus gates.
+
 **Estado final local — 08/10/2026; evidencia E13**
 
 Resultado vigente comunicado por PM09:40:27/TL09:43:52 Atlantic/Canary: revisión técnica interna afectada favorable y validación funcional local acreditada. Hay **6 intentos reales acumulados**, sin reset: la sexta petición, iniciada manualmente desde «Salud del sistema», recibió HTTP200, JSON válido, una elección, finish_reason=stop y contenido exacto OK. La quinta conserva HTTP429 como caso de error; los cuatro anteriores no se convierten retrospectivamente en éxitos. GET/polling no genera inferencias.

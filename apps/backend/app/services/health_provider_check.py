@@ -120,17 +120,14 @@ class HealthProviderCheck:
     def _observation(self, now):
         last = self._last or {}
         verified = self._verified
-        expired = verified is not None and now >= verified + timedelta(seconds=60)
         status = last.get("status", "unknown")
         reason = last.get("reason_code", "not_verified")
-        if expired and status == "ok":
-            status, reason = "unknown", "stale"
         return {
             "id": "openrouter", "status": status, "reason_code": reason,
             "source_kind": "live" if verified is not None else "unverified",
-            "checked_at": now, "latency_ms": last.get("latency_ms"),
+            "checked_at": last.get("checked_at", now), "latency_ms": last.get("latency_ms"),
             "verified_at": verified, "last_attempt_at": last.get("last_attempt_at"),
-            "expires_at": verified + timedelta(seconds=60) if verified else None,
+            "expires_at": None,
             "check_id": self._verified_id,
             "reported_model": last.get("reported_model"),
             "model_identity": "unconfirmed",
@@ -167,10 +164,7 @@ class HealthProviderCheck:
             if action in self._actions:
                 previous = self._actions[action][1]
                 if previous is not None:
-                    result = deepcopy(previous)
-                    if result.get("status") == "ok" and result["verified_at"] + timedelta(seconds=60) <= now:
-                        result.update(status="unknown", reason_code="stale")
-                    return result
+                    return deepcopy(previous)
             if self._active:
                 return self._refuse(now, 409, "busy")
             try:
@@ -266,6 +260,7 @@ class HealthProviderCheck:
                 if state == "ok":
                     self._verified, self._verified_id = finished, check_id
                 self._last = {"status": state, "reason_code": reason, "last_attempt_at": now,
+                              "checked_at": finished,
                               "latency_ms": round((time.monotonic() - started) * 1000, 2),
                               **information}
                 self._active = False

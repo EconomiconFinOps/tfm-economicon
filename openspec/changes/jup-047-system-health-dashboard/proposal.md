@@ -1,6 +1,26 @@
 JUP: JUP-047
 Trello: https://trello.com/c/iMXH0o3a
 
+**Decisión vigente de retención y ciclo visible — 08/10/2026**
+
+Paris autorizó «ok dile al TL que haga los cambios», según PM 08/10/26 10:09:29 transmitido por TL 10:11:38. Esta decisión sustituye la caducidad automática de 60 s y el ciclo exclusivamente manual/apertura descritos en fases anteriores: el resultado real se retiene hasta otra observación, y OpenRouter se comprueba al abrir y cada 10 minutos solo con el panel abierto y visible. Un timeout nuevo produce unknown con historia conservada. Azure sigue siendo explícitamente SIMULADO; LiteLLM conserva liveliness real no generativa. Las fechas válidas hasta 1000 ms futuras inclusive reciben tolerancia de presentación, sin modificar su valor.
+
+Esta fase es solo análisis/diseño en seis OpenSpec, sobre HEAD 6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6 y base LOCAL origin/develop 2f9a5f530c9fe3b60007ba5060c189133e353bf6; frescura remota no acreditada. Los registros E12/E13 y las aprobaciones históricas inferiores conservan literalmente hechos/decisiones de su revisión. No validan el comportamiento nuevo. Las menciones históricas a TTL60 o ausencia de periodicidad pagada quedan supersedidas por el contrato nuevo; el cooldown financiero de 60 s permanece.
+
+La autorización funcional no activa gasto: ledger6 intacto, certificado6/6 agotado/caducado y techo0,20 EUR acumulado. Sin nuevos envíos, credenciales, configuración, servicios, commits, archivo o publicación en este diseño. Autenticación, tenant, modelo/coste informativos, ruta, reservas H/U/P, contadores, M5 externo y móvil diferido permanecen. Las fases Red/Green/mutación requieren despachos separados tras coherencia TL.
+
+## Cambio aprobado — retención y comprobación visible
+
+El estado inicial es unknown/no verificado hasta recibir datos. Una observación real no se convierte en stale por antigüedad: conserva resultado y fecha. El intento posterior reemplaza el resultado actual; si termina en timeout, muestra unknown y conserva por separado la última respuesta funcional válida. El tiempo de un GET no certifica otra inferencia.
+
+El panel inicia una comprobación al abrir una entrada de navegación autenticada y visible, y otra al cumplirse600000 ms desde el último intento despachado mientras esa entrada siga abierta/visible. Pestaña oculta pausa los temporizadores; reentrada/remount del mismo episodio no equivale a nueva apertura. Actualizar manualmente comparte exclusión/deduplicación y reinicia el plazo. El GET periódico sigue siendo no generativo. El diseño de lifecycle, rechazo y coexistencia se fija en design.md.
+
+El simulador Azure conserva su salud propia con procedencia SIMULADO y no certifica Azure real. Las diferencias temporales pequeñas no invalidan una sonda LiteLLM saludable. Se admite una fecha UTC real hasta 1000 ms posterior al reloj de recepción/render fijado para esa observación; se rechazan formatos inválidos y futuros superiores. No se altera el dato para ocultar un desfase.
+
+Impacto: servicio backend de observación e idempotencia, hook/página/contratos frontend, pruebas focales y README/runbook en fases posteriores. Sin nueva dependencia, ADR, monitor, infraestructura ni estado financiero. expires_at queda presente y nullable por compatibilidad, se emite null y no determina caducidad del nuevo cliente. Los datos ya existentes no se fabrican ni se migran.
+
+Aceptación del diseño: tabla de escenarios y cinco criterios oficiales en acceptance-map.md, rutas exhaustivas por fase y pruebas/mutantes en design.md. E13 acredita la revisión anterior, no este cambio. Pendientes: Red significativo, Green, mutación, revisión/validación afectadas, control PM y decisión final; M5, CI y gates humanos conservados.
+
 **Estado final local — 08/10/2026; evidencia E13**
 
 Resultado vigente comunicado por PM09:40:27/TL09:43:52 Atlantic/Canary: revisión técnica interna afectada favorable y validación funcional local acreditada. Hay **6 intentos reales acumulados**, sin reset: la sexta petición, iniciada manualmente desde «Salud del sistema», recibió HTTP200, JSON válido, una elección, finish_reason=stop y contenido exacto OK. La quinta conserva HTTP429 como caso de error; los cuatro anteriores no se convierten retrospectivamente en éxitos. GET/polling no genera inferencias.

@@ -217,7 +217,8 @@ def test_passive_reads_and_staleness_preserve_actual_verified_at(main_module):
     clock.advance(61)
     for _ in range(3):
         observation = service.observation()
-        assert observation["status"] == "unknown" and observation["reason_code"] == "stale"
+        assert observation["status"] == "ok" and observation["reason_code"] == "none"
+        assert observation["checked_at"] == first["checked_at"]
         assert observation["verified_at"] == first["verified_at"]
     assert len(gateway.requests) == 1
 
@@ -248,18 +249,18 @@ def test_admitted_budget_just_below_exact_reserve_never_sends(main_module, price
     assert service.accounting()["pending_usd"] == Decimal("0")
 
 
-@pytest.mark.parametrize("milliseconds,expired", [(59_999, False), (60_000, True), (60_001, True)])
-def test_verification_expires_at_exactly_sixty_seconds_without_renewing(main_module, milliseconds, expired):
+@pytest.mark.parametrize("milliseconds", [59_999, 60_000, 60_001, 601_000])
+def test_verification_is_retained_without_expiry_or_renewal(main_module, milliseconds):
     service, gateway, clock = build(main_module)
     first = check(service)
     verified_at = first["verified_at"]
     clock.value = verified_at + timedelta(milliseconds=milliseconds)
     observed = service.observation()
-    assert observed["status"] == ("unknown" if expired else "ok")
-    assert observed["reason_code"] == ("stale" if expired else "none")
+    assert observed["status"] == "ok"
+    assert observed["reason_code"] == "none"
     assert observed["verified_at"] == verified_at
-    assert observed["expires_at"] == verified_at + timedelta(seconds=60)
-    assert observed["checked_at"] == clock.value
+    assert observed["expires_at"] is None
+    assert observed["checked_at"] == first["checked_at"]
     assert len(gateway.requests) == 1, "Reading the boundary cannot send or renew verification"
 
 
@@ -325,9 +326,9 @@ def test_valid_functional_response_with_uncertain_cost_keeps_full_reserve(main_m
     duplicate = check(service)
     assert duplicate["verified_at"] == result["verified_at"]
     assert len(gateway.requests) == 1
-    # Passive observation becomes stale without sending or changing history.
+    # Decision08/10 supersedes TTL: passive reads retain the real result.
     clock.advance(61)
-    assert service.observation()["reason_code"] == "stale"
+    assert service.observation()["reason_code"] == "none"
     assert service.observation()["verified_at"] == result["verified_at"]
     next_result = check(service, "next-action")
     assert next_result["http_status"] == 200 and next_result["status"] == "ok"
@@ -454,3 +455,41 @@ def test_exhausted_or_invalid_cumulative_counter_does_not_send(main_module, call
     assert check(service)["reason_code"] == "budget_unavailable"
     assert gateway.requests == [] and service.accounting() == before
 
+
+# Decision 08/10: retention replaces age expiry; no real transports.
+def test_retained_replay_cannot_roll_back_a_later_timeout(main_module):
+    service, gateway, clock = build(main_module)
+    first = check(service, "retained-original")
+    clock.advance(61)
+    started = clock.value
+    gateway.error = TimeoutError("synthetic-private")
+    gateway.before_send = lambda: clock.advance(2)
+    later = check(service, "later-timeout")
+    assert later["status"] == "unknown" and later["reason_code"] == "timeout"
+    assert later["verified_at"] == first["verified_at"]
+    assert later["check_id"] == first["check_id"]
+    assert later["last_attempt_at"] == started and later["checked_at"] == clock.value
+    account = service.accounting()
+    clock.advance(7200)
+    replay = check(service, "retained-original")
+    assert replay["status"] == "ok" and replay["verified_at"] == first["verified_at"]
+    assert replay["checked_at"] == first["checked_at"]
+    current = service.observation()
+    assert current["status"] == "unknown" and current["reason_code"] == "timeout"
+    assert current["checked_at"] == later["checked_at"]
+    assert current["last_attempt_at"] == later["last_attempt_at"]
+    assert current["verified_at"] == first["verified_at"] and current["expires_at"] is None
+    assert service.accounting() == account and len(gateway.requests) == 2
+
+
+def test_refusal_without_send_keeps_retained_result_and_observation_time(main_module):
+    service, gateway, clock = build(main_module)
+    first = check(service)
+    clock.advance(1)
+    refused = check(service, "too-early")
+    assert refused["http_status"] == 429 and refused["reason_code"] == "cooldown"
+    current = service.observation()
+    for field in ("status", "reason_code", "checked_at", "verified_at", "check_id", "last_attempt_at"):
+        assert current[field] == first[field]
+    assert current["expires_at"] is None
+    assert len(gateway.requests) == 1

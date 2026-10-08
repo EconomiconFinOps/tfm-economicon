@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createMemoryRouter, matchRoutes, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { routeConfig } from "../src/routes";
+import { advanceSessionGeneration } from "../src/services/api";
 import { useSystemHealth } from "../src/hooks/useSystemHealth";
 import { loginResponse, tenants } from "./fixtures";
 import { deferredResponse, expectTenantRequest, jsonResponse, mockBackend, renderApp, restoreSession, SESSION_KEY } from "./test-support";
@@ -86,7 +87,7 @@ async function mount(overrides: Parameters<typeof mockBackend>[0] = {}, strict =
 function useHealthTimers() {
   // A second useFakeTimers call does not reinstall an already active Date-only clock.
   vi.useRealTimers();
-  vi.useFakeTimers({ toFake: ["Date", "setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
+  vi.useFakeTimers({ toFake: ["Date", "performance", "setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
   vi.setSystemTime(new Date("2026-10-06T12:00:30Z"));
   // Testing Library detects fake timers via its Jest-compatible advancement seam.
   vi.stubGlobal("jest", { advanceTimersByTime: vi.advanceTimersByTime });
@@ -94,6 +95,7 @@ function useHealthTimers() {
 
 const clients: QueryClient[] = [];
 beforeEach(() => {
+  advanceSessionGeneration();
   vi.useRealTimers();
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-10-06T12:00:30Z"));
@@ -285,7 +287,7 @@ describe("JUP-047 system health public flow", () => {
 
 
 describe("JUP-047 elapsed verification and first scope render", () => {
-  it.each([[30, false], [61, true]] as const)("derives staleness at %ss even when reason_code is none", async (seconds, stale) => {
+  it.each([[30, false], [61, false]] as const)("retains successful observations at %ss without age expiry", async (seconds, stale) => {
     vi.setSystemTime(new Date(Date.parse(verified) + seconds * 1000));
     const snapshot = diagnostic();
     Object.assign(snapshot.components.find((component) => component.id === "openrouter")!, provider());
@@ -308,7 +310,7 @@ describe("JUP-047 elapsed verification and first scope render", () => {
     restoreSession(tenants[0].id);
     const commits: { tenant: string; stamp: string | null; loading: boolean }[] = [];
     function ScopeView({ tenant }: { tenant: string }) {
-      const health = useSystemHealth(loginResponse.access_token, tenant);
+      const health = useSystemHealth(loginResponse.access_token, tenant, "scope-test-entry");
       useLayoutEffect(() => {
         commits.push({ tenant, stamp: screen.getByTestId("scope-stamp").textContent, loading: health.loading });
       }, [health.loading, tenant]);
@@ -327,7 +329,7 @@ describe("JUP-047 elapsed verification and first scope render", () => {
 
 
 describe("JUP-047 approved exact expiry and cancelled opening intent", () => {
-  it.each([[59_999, false], [60_000, true], [60_001, true]] as const)("agrees with backend expiry at %sms and preserves verified_at", async (milliseconds, expired) => {
+  it.each([[59_999, false], [60_000, false], [60_001, false]] as const)("retains the backend observation at %sms and preserves verified_at", async (milliseconds, expired) => {
     vi.setSystemTime(new Date(Date.parse(verified) + milliseconds));
     const snapshot = diagnostic();
     Object.assign(snapshot.components.find((component) => component.id === "openrouter")!, provider());
@@ -351,7 +353,7 @@ describe("JUP-047 approved exact expiry and cancelled opening intent", () => {
     });
     restoreSession(tenants[0].id);
     function OpeningIntent() {
-      useSystemHealth(loginResponse.access_token, tenants[0].id);
+      useSystemHealth(loginResponse.access_token, tenants[0].id, "cancelled-entry");
       return null;
     }
     let microtasksDrained = false;
@@ -444,3 +446,201 @@ describe("JUP-047 approved functional availability and informational identity/co
   });
 });
 
+
+function RetentionProbe({ entry = "retention-entry", name = "probe" }: { entry?: string; name?: string }) {
+  const health = useSystemHealth(loginResponse.access_token, tenants[0].id, entry);
+  return <><button onClick={health.refresh}>Probe refresh {name}</button><output data-testid={name}>{JSON.stringify({
+    state: health.providerStatus, reason: health.providerReason, verified: health.verified,
+    checked: health.provider?.checked_at, last: health.provider?.last_attempt_at
+  })}</output></>;
+}
+async function drainRetention() {
+  for (let i = 0; i < 5; i += 1) await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+}
+function probeValue() { return JSON.parse(screen.getByTestId("probe").textContent ?? "{}"); }
+function probeBackend(overrides: Parameters<typeof mockBackend>[0] = {}) {
+  const backend = mockBackend({
+    ["GET " + statusPath]: () => jsonResponse(diagnostic()),
+    ["POST " + checkPath]: () => jsonResponse(provider()), ...overrides
+  });
+  // Browser fetch rejects on abort; the deferred in-memory double must do so too.
+  const intercepted = globalThis.fetch;
+  vi.stubGlobal("fetch", vi.fn<typeof fetch>(async (input, init) => {
+    const signal = init?.signal;
+    if (!signal) return intercepted(input, init);
+    let listener!: () => void;
+    const aborted = new Promise<never>((_, reject) => {
+      listener = () => reject(new DOMException("Aborted", "AbortError"));
+      signal.addEventListener("abort", listener, { once: true });
+      if (signal.aborted) listener();
+    });
+    try { return await Promise.race([intercepted(input, init), aborted]); }
+    finally { signal.removeEventListener("abort", listener); }
+  }));
+  return backend;
+}
+describe("JUP-047 retained result and visible ten-minute lifecycle", () => {
+  it("dispatches periodically at exactly 600000ms, not 599999, with GET isolated", async () => {
+    useHealthTimers();
+    const { requests } = probeBackend();
+    render(<RetentionProbe />); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1);
+    await act(async () => { await vi.advanceTimersByTimeAsync(599_999); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1);
+    expect(probeValue().state).toBe("ok");
+    await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(2);
+    await act(async () => { await vi.advanceTimersByTimeAsync(600_000); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(3);
+    expect(requests.filter((r) => r.path === statusPath).every((r) => r.method === "GET")).toBe(true);
+  });
+  it("does not start hidden and coalesces overdue reentry without catch-up", async () => {
+    useHealthTimers();
+    const visibility = vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+    const { requests } = probeBackend(); render(<RetentionProbe />); await drainRetention();
+    await act(async () => { await vi.advanceTimersByTimeAsync(1_800_000); });
+    expect(requests).toHaveLength(0);
+    visibility.mockReturnValue("visible");
+    await act(async () => { document.dispatchEvent(new Event("visibilitychange")); }); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1);
+    visibility.mockReturnValue("hidden");
+    await act(async () => { document.dispatchEvent(new Event("visibilitychange")); await vi.advanceTimersByTimeAsync(1_800_000); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1);
+    visibility.mockReturnValue("visible");
+    await act(async () => { document.dispatchEvent(new Event("visibilitychange")); }); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(2);
+    await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(2);
+  });
+  it("preserves remaining time across a short hidden pause", async () => {
+    useHealthTimers(); const { requests } = probeBackend(); render(<RetentionProbe />); await drainRetention();
+    await act(async () => { await vi.advanceTimersByTimeAsync(300_000); });
+    const visibility = vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+    await act(async () => { document.dispatchEvent(new Event("visibilitychange")); await vi.advanceTimersByTimeAsync(100_000); });
+    visibility.mockReturnValue("visible");
+    await act(async () => { document.dispatchEvent(new Event("visibilitychange")); await vi.advanceTimersByTimeAsync(199_999); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1);
+    await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(2);
+  });
+  it("manual dispatch resets the deadline and cannot overlap a periodic request", async () => {
+    useHealthTimers(); let calls = 0; const pending = deferredResponse();
+    const { requests } = probeBackend({ ["POST " + checkPath]: () => ++calls === 3 ? pending.promise : jsonResponse(provider()) });
+    render(<RetentionProbe />); await drainRetention();
+    await act(async () => { await vi.advanceTimersByTimeAsync(300_000); screen.getByText("Probe refresh probe").click(); }); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(2);
+    await act(async () => { await vi.advanceTimersByTimeAsync(599_999); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(2);
+    await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(3);
+    await act(async () => { screen.getByText("Probe refresh probe").click(); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(3);
+    await act(async () => { pending.resolve(provider()); });
+  });
+  it("remounting the same entry keeps one opening and its existing deadline", async () => {
+    useHealthTimers(); const { requests } = probeBackend();
+    const view = render(<RetentionProbe />); await drainRetention();
+    await act(async () => { await vi.advanceTimersByTimeAsync(300_000); }); view.unmount();
+    render(<RetentionProbe />); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1);
+    await act(async () => { await vi.advanceTimersByTimeAsync(300_000); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(2);
+  });
+  it("duplicate consumers share ownership and a genuinely new navigation opens once", async () => {
+    useHealthTimers(); const { requests } = probeBackend();
+    const view = render(<><RetentionProbe name="a" /><RetentionProbe name="b" /></>); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1);
+    view.rerender(<><RetentionProbe entry="new-entry" name="a" /><RetentionProbe entry="new-entry" name="b" /></>); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(2);
+  });
+  it.each([false, true])("returning to the same historical entry preserves shared deadline, manual=%s", async (manual) => {
+    useHealthTimers(); const { requests } = probeBackend();
+    const view = render(<RetentionProbe entry="history-a" />); await drainRetention();
+    await act(async () => { await vi.advanceTimersByTimeAsync(100_000); });
+    view.rerender(<RetentionProbe entry="history-b" />); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(2);
+    await act(async () => { await vi.advanceTimersByTimeAsync(100_000); });
+    if (manual) {
+      await act(async () => { screen.getByText("Probe refresh probe").click(); }); await drainRetention();
+    }
+    const expected = manual ? 3 : 2;
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(expected);
+    view.rerender(<RetentionProbe entry="history-a" />); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(expected);
+    await act(async () => { await vi.advanceTimersByTimeAsync((manual ? 600_000 : 500_000) - 1); });
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(expected);
+    await act(async () => { await vi.advanceTimersByTimeAsync(1); }); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(expected + 1);
+    await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(expected + 1);
+  });
+  it("keeps the last real success when a manual action is refused without sending", async () => {
+    useHealthTimers(); let calls = 0;
+    probeBackend({ ["POST " + checkPath]: () => ++calls === 1 ? jsonResponse(provider()) : jsonResponse({ reason_code: "cooldown" }, 429) });
+    render(<RetentionProbe />); await drainRetention();
+    await act(async () => { screen.getByText("Probe refresh probe").click(); }); await drainRetention();
+    expect(probeValue()).toMatchObject({ state: "ok", reason: "cooldown", verified });
+  });
+  it("new client timeout stays unknown despite an older GET and retains successful history", async () => {
+    useHealthTimers(); let calls = 0; const pending = deferredResponse();
+    const old = diagnostic(); Object.assign(old.components.find((c) => c.id === "openrouter")!, provider());
+    probeBackend({ ["GET " + statusPath]: () => jsonResponse(old),
+      ["POST " + checkPath]: () => ++calls === 1 ? jsonResponse(provider()) : pending.promise });
+    render(<RetentionProbe />); await drainRetention();
+    await act(async () => { await vi.advanceTimersByTimeAsync(61_000); screen.getByText("Probe refresh probe").click(); }); await drainRetention();
+    await act(async () => { await vi.advanceTimersByTimeAsync(35_000); });
+    expect(probeValue()).toMatchObject({ state: "unknown", reason: "timeout", verified });
+    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    expect(probeValue()).toMatchObject({ state: "unknown", reason: "timeout", verified });
+  });
+  it("visible unmount releases every active health timer and prevents future dispatch", async () => {
+    useHealthTimers(); const { requests } = probeBackend();
+    const view = render(<RetentionProbe />); await drainRetention();
+    expect(document.visibilityState).toBe("visible");
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1);
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
+    view.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+    const before = requests.length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(1_800_000); });
+    expect(requests).toHaveLength(before);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+  it("stops periodic checks on unmount and does not dispatch manual actions while hidden", async () => {
+    useHealthTimers(); const { requests } = probeBackend(); const view = render(<RetentionProbe />); await drainRetention();
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+    await act(async () => { document.dispatchEvent(new Event("visibilitychange")); screen.getByText("Probe refresh probe").click(); }); await drainRetention();
+    expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1);
+    view.unmount(); const before = requests.length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(1_800_000); });
+    expect(requests).toHaveLength(before);
+  });
+  it.each([0, 29, 40, 999, 1000, 1001, 60000])("uses one bounded observation clock for simulator/gateway at +%sms", async (offset) => {
+    const snapshot = diagnostic();
+    const stamp = new Date(Date.now() + offset).toISOString();
+    for (const id of ["azure_cost_api", "litellm"]) snapshot.components.find((c) => c.id === id)!.checked_at = stamp;
+    await mount({ ["GET " + statusPath]: () => jsonResponse(snapshot) });
+    for (const label of ["Servicio de costes Azure", "Gateway de modelos"]) {
+      const row = within(screen.getByText(label).closest("li")!);
+      expect(row.getByText(offset <= 1000 ? "correcto" : "no verificado")).toBeVisible();
+      if (offset <= 1000) {
+        expect(row.queryByText(/Fecha no disponible/)).not.toBeInTheDocument();
+        expect(row.getByText(/Observación:/)).toHaveTextContent(stamp);
+      }
+    }
+    const providerRow = within(screen.getByText("OpenRouter").closest("li")!);
+    expect(await providerRow.findByText("Disponible", { exact: true })).toBeVisible();
+    await waitFor(() => expect(providerRow.queryByText("Comprobando…")).not.toBeInTheDocument());
+    const metric = within(screen.getByText("Servicios correctos").closest("article")!);
+    expect(metric.getByText(offset <= 1000 ? "8" : "6", { exact: true })).toBeVisible();
+    expect(screen.getByText(/SIMULADO: no acredita/)).toBeVisible();
+  });
+  it.each([40, 1000, 1001])("applies the same finite tolerance to real verified timestamps +%sms", async (offset) => {
+    const stamp = new Date(Date.now() + offset).toISOString();
+    const item = { ...provider(), checked_at: stamp, verified_at: stamp, last_attempt_at: stamp };
+    await mount({ ["POST " + checkPath]: () => jsonResponse(item) });
+    const row = within(screen.getByText("OpenRouter").closest("li")!);
+    expect(row.getByText(offset <= 1000 ? "Disponible" : "no verificado")).toBeVisible();
+    if (offset <= 1000) expect(row.getByText(/Respuesta válida a:/)).toHaveTextContent(stamp);
+  });
+});

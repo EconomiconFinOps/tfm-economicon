@@ -223,6 +223,11 @@ export function isHealthUTC(value: unknown): value is string {
   return typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|\+00:00)$/.test(value)
     && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 19) === value.slice(0, 19);
 }
+export const HEALTH_FUTURE_TOLERANCE_MS = 1000;
+export function isHealthObservationTime(value: unknown, observedNow: number): value is string {
+  return isHealthUTC(value) && Number.isFinite(observedNow)
+    && Date.parse(value) <= observedNow + HEALTH_FUTURE_TOLERANCE_MS;
+}
 const nullableHealthDate = (value: unknown) => value === null || isHealthUTC(value);
 const healthCount = (value: unknown) => typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
 export function isHealthComponent(value: unknown): value is HealthComponent {

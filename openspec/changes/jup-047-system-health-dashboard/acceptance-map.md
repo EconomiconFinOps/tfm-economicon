@@ -1,5 +1,52 @@
 # JUP-047 — criterio, escenario, tarea y evidencia prevista
 
+## Correspondencia de ejecución — E14, 08/10/2026
+
+Estado consolidado tras implementación, revisión y validación internas, por encargo TL08/10/26 11:56:46 Atlantic/Canary. La decisión y las matrices previstas conservadas debajo pertenecen al diseño anterior: se preservan literalmente aprobaciones, requisitos, escenarios e historia. Esta sección actualiza únicamente hechos de ejecución; E13 corresponde a la revisión anterior y seis intentos históricos, sin acreditar el temporizador nuevo. Rama `feat/JUP-047-system-health-dashboard`, HEAD `6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6`, base LOCAL `origin/develop` `2f9a5f530c9fe3b60007ba5060c189133e353bf6`, frescura remota no acreditada.
+
+| Criterio oficial | Evidencia independiente del delta | Resultado y límite vigente |
+| --- | --- | --- |
+| AC1 Resultado funcional verificable | Validador: retención sin TTL, timeout unknown con éxito histórico, apertura y600000 ms visibles, manual, hidden, remount, scope, fechas1000/1001 ms y Azure SIMULADO, mediante relojes falsos y transportes simulados; casos de error/límite incluidos. | **PASS local simulado**. Sin nueva inferencia real; M5 remoto con Alejandro y visual/teclado aplicable pendientes. |
+| AC2 Pruebas necesarias en verde | Implementación341:123 frontend actuales+218 backend por identidad. Revisor341 nuevas propias y Validador341 nuevas propias (cada campaña123+218), sin fallos, errores ni skips. Sensibilidad27 dispuestos:25 kills reutilizados+2 reensayos actuales B04/F19, con controles. | **PASS local** de las suites afectadas; campañas no sumadas. CI y frescura de base remotas no acreditadas. No son27 mutantes nuevos ni score global. |
+| AC3 Documentación y decisiones actuales | Validador detectó README244/246: TTL60 y omisión de POST600000 visible. Esta edición corrige ese README y consolida tasks/acceptance-map; backend README/runbook alineados previamente. | **FAIL en el dictamen original**, `documentation=FAIL`. Corrección realizada por Desarrollador; revalidación documental independiente **PENDIENTE**. No se declara PASS posterior. |
+| AC4 PR revisada y vinculada | Revisor interno REVIEW_PASS sin hallazgos; no representa review humana ni PR publicada. | **NOT_VALIDATED globalmente**: PR, vínculo y reviews humanas pendientes. |
+| AC5 Validación funcional y evidencias vinculadas | Validador tiene evidencia local nueva341 PASS y `local_behavior=PASS`, pero dictamen agregado **VALIDATION_FAIL** por AC3. Informe original y ADENDUM intactos. | **NOT_VALIDATED globalmente**: evidencia local disponible, vínculo/publicación oficial y validación humana pendientes; revalidación documental pendiente. |
+
+La correspondencia detallada de fases y hashes consta en [tasks.md, E14](tasks.md): implementación `delivery-handoff.json` SHA256 `34c1d7a1e17eccf2cbe1aad7d9c50c159dc3e0ef6eb40c64f96c0e5efed7884b`; revisión `handoff.json` SHA256 `6dfbd973edcf8fa17ea6a9dd608637e10c5cd820ca3e5db1dcf4be1bed254d2c`; validación `handoff.json` SHA256 `77838d8b2d55af361c9828a230cde812417e486ef95f5a76dd53dd68824bdaca`. Los originales, Red/Green no satisfactorios, TC1/TC2/TC3, F16/F19 SURVIVED y B04 TOOL_FAILURE permanecen conservados. Una corrección posterior no cambia retrospectivamente su resultado.
+
+TL cotejará esta entrega; PM conserva originales de retorno y prepara uno fresco antes de revisión/validación documental proporcional. Las tareas12.6/12.7,5.2, M5/Alejandro, CI/base remotas, PR y reviews humanas, aprobación final y archivo específico permanecen abiertos; el hallazgo móvil diferido se conserva. Las asignaciones humanas no acreditan participación efectiva. No se repiten suites de producto o mutaciones en este cambio textual.
+
+Ledger y permisos intactos: seis intentos acumulados, cohorte6/6 agotada/caducada, H=0.000050625 USD, U=0.010080 USD, P=0, cap0.03 USD y techo0,20 EUR acumulado. Sin nuevas llamadas, gasto, servicios, claves, configuración, operaciones Git, archivo ni publicación.
+
+**Decisión vigente de retención y ciclo visible — 08/10/2026**
+
+Paris autorizó «ok dile al TL que haga los cambios», según PM 08/10/26 10:09:29 transmitido por TL 10:11:38. Esta decisión sustituye la caducidad automática de 60 s y el ciclo exclusivamente manual/apertura descritos en fases anteriores: el resultado real se retiene hasta otra observación, y OpenRouter se comprueba al abrir y cada 10 minutos solo con el panel abierto y visible. Un timeout nuevo produce unknown con historia conservada. Azure sigue siendo explícitamente SIMULADO; LiteLLM conserva liveliness real no generativa. Las fechas válidas hasta 1000 ms futuras inclusive reciben tolerancia de presentación, sin modificar su valor.
+
+Esta fase es solo análisis/diseño en seis OpenSpec, sobre HEAD 6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6 y base LOCAL origin/develop 2f9a5f530c9fe3b60007ba5060c189133e353bf6; frescura remota no acreditada. Los registros E12/E13 y las aprobaciones históricas inferiores conservan literalmente hechos/decisiones de su revisión. No validan el comportamiento nuevo. Las menciones históricas a TTL60 o ausencia de periodicidad pagada quedan supersedidas por el contrato nuevo; el cooldown financiero de 60 s permanece.
+
+La autorización funcional no activa gasto: ledger6 intacto, certificado6/6 agotado/caducado y techo0,20 EUR acumulado. Sin nuevos envíos, credenciales, configuración, servicios, commits, archivo o publicación en este diseño. Autenticación, tenant, modelo/coste informativos, ruta, reservas H/U/P, contadores, M5 externo y móvil diferido permanecen. Las fases Red/Green/mutación requieren despachos separados tras coherencia TL.
+
+## Matriz vigente del delta — 08/10/2026
+
+| Alcance aprobado | Escenarios del delta | Tarea y evidencia posterior requerida |
+| --- | --- | --- |
+| Resultado retenido e inicial unknown | health-status: Initial observation, Retained success, New timeout, Refusal, Duplicate replay; dashboard: Retained and contradictory results | 12.2–12.6; relojes backend 59.999/60/60.001/>600 s, POST→GET, null expires_at y replay sin gasto/renovar/rollback. |
+| Apertura y600000 ms visibles | dashboard: Opening and exact boundary, Hidden and resumed, Manual and simultaneous triggers, Remount and scope cleanup | 12.2–12.6; fake clock599999/600000, un único POST por episodio/acción, timersGET no pagados, reentrada sin catch-up, manual reinicia, hidden/logout/unmount cancelan. |
+| Historia sincera tras timeout | Ambos deltas: New timeout; dashboard: Old GET after timeout | 12.2–12.6; unknown actual más fecha/check_id válidos históricos, GET viejo no restaura ok, respuesta nueva coherente sí, intento rechazado no inventa observación. |
+| Azure SIMULADO y LiteLLM real no generativo | health-status: Simulator provenance; dashboard: Bounded future observations | 12.2–12.6; Azure ok/simulated no stale, etiqueta visible; gateway+29/40 ms ok por sonda exacta, no prueba proveedor. |
+| Tolerancia finita y compatibilidad | Ambos deltas: Temporal tolerance and compatibility | 12.2–12.6;0/29/40/999/1000 ms aceptados,1001/60000 rechazados; malformed/noUTC/ausente rechazados; originales no clamp; expires_at legacy no impone TTL. |
+| Seguridad/contabilidad y límites no afectados | Escenarios de auth/tenant/admisión anteriores conservados; nuevos escenarios de scope y rechazo | Regresión sin red: payload/ruta/modelo/coste, H/U/P/counters/cooldown60 s, límites6/hora y24/día existentes; certificado6/6 no activa envíos. No nueva exigencia financiera. |
+
+| Cinco criterios oficiales | Estado del cambio nuevo y evidencia prevista |
+| --- | --- |
+| Resultado funcional verificable | Diseño completo; pendiente Red/Green/validación afectada de retención/temporizador/tolerancia. E13 fue válido en la revisión anterior y se conserva como historia. |
+| Pruebas necesarias en verde | Pendientes suites focales y mutantes dirigidos del delta; pruebas no afectadas se reutilizan identificadas, sin sumar campañas ni contar skips/timeouts. |
+| Documentación y decisiones actuales | Estos seis OpenSpec describen decisión nueva y contradicciones supersedidas; README/runbook se actualizarán solo en Green separado, actualmente históricos. |
+| PR revisada y vinculada | PR/vínculo/review humana pendientes; revisión local anterior no acepta este delta. |
+| Validación funcional y evidencias vinculadas | Pendiente Validador afectado y publicación/vínculo autorizados; validación previa permanece inmutable. |
+
+El diseño no borra M5 externo de Alejandro ni el estado móvil diferido. Revisión/validación nueva, control PM, CI, decisión final, archivo específico en misma rama y reviews humanas mantienen su orden. Los registros anteriores se conservan literalmente con su revisión y límites; no atribuirles PASS de esta corrección.
+
 **Estado final local — 08/10/2026; evidencia E13**
 
 Resultado vigente comunicado por PM09:40:27/TL09:43:52 Atlantic/Canary: revisión técnica interna afectada favorable y validación funcional local acreditada. Hay **6 intentos reales acumulados**, sin reset: la sexta petición, iniciada manualmente desde «Salud del sistema», recibió HTTP200, JSON válido, una elección, finish_reason=stop y contenido exacto OK. La quinta conserva HTTP429 como caso de error; los cuatro anteriores no se convierten retrospectivamente en éxitos. GET/polling no genera inferencias.
