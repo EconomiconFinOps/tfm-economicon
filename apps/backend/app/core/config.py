@@ -18,7 +18,7 @@ MAX_QUESTION_ATTEMPT_SECONDS = 60
 # Settings whose names may appear in the startup error; their values never do.
 REPORTABLE_SETTINGS = frozenset({
     "embedding_provider", "embedding_dimension", "embedding_model", "embedding_timeout_seconds",
-    "embedding_max_retries", "litellm_base_url", "litellm_api_key", "retrieval_top_k", "retrieval_max_distance",
+    "health_probe_timeout_seconds", "embedding_max_retries", "litellm_base_url", "litellm_api_key", "retrieval_top_k", "retrieval_max_distance",
 })
 
 
@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     retrieval_max_distance: float | None = None
     processor_health_base_url: str | None = None
     azure_cost_health_base_url: str | None = None
+    health_probe_timeout_seconds: float = Field(default=8.0, ge=2, le=8, allow_inf_nan=False)
     health_gateway_probe_enabled: bool = False
     health_provider_enabled: bool = False
     health_provider_api_key: SecretStr | None = None

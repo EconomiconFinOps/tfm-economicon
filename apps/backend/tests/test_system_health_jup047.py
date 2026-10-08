@@ -297,6 +297,7 @@ def test_route_selects_exclusive_gateway_probe_without_real_inference(
         processor_health_base_url="http://synthetic-processor.invalid/health",
         azure_cost_health_base_url="http://synthetic-azure.invalid/health",
         health_gateway_probe_enabled=enabled,
+        health_probe_timeout_seconds=8,
     ))
     connections = []
     def connection(host, *, port=None, timeout):
@@ -318,7 +319,8 @@ def test_route_selects_exclusive_gateway_probe_without_real_inference(
         assert operation in {"http", "litellm_liveliness"}
         return adapter(*args, timeout_seconds=timeout_seconds)
     monkeypatch.setattr(runtime, "isolated_operation", isolated)
-    def probes(callbacks):
+    def probes(callbacks, *, probe_seconds, overall_seconds):
+        assert (probe_seconds, overall_seconds) == (8, 18)
         return [
             {"id": name, **(callback(timeout_seconds=0.2) if name in {"processor", "azure_cost_api", "litellm"} else {"status": "ok", "reason_code": "none"})}
             for name, callback in callbacks.items()
@@ -355,10 +357,13 @@ def test_simulator_health_and_real_result_retained_until_new_timeout(operational
     first = check(service)
     routes = importlib.import_module("app.api.routes.health")
     monkeypatch.setattr(operational_api.app.state, "health_provider_check", service, raising=False)
-    monkeypatch.setattr(routes, "run_probes", lambda probes: [
-        {"id": name, "status": "ok", "reason_code": "none", "latency_ms": 0}
-        for name in probes
-    ])
+    def probes(callbacks, *, probe_seconds, overall_seconds):
+        assert (probe_seconds, overall_seconds) == (8, 18)
+        return [
+            {"id": name, "status": "ok", "reason_code": "none", "latency_ms": 0}
+            for name in callbacks
+        ]
+    monkeypatch.setattr(routes, "run_probes", probes)
     clock.advance(601)
     _, body = status(operational_api)
     items = {item["id"]: item for item in body["components"]}
@@ -377,3 +382,19 @@ def test_simulator_health_and_real_result_retained_until_new_timeout(operational
     assert item["check_id"] == first["check_id"]
     assert utc(item["last_attempt_at"]) == later["last_attempt_at"]
     assert len(gateway.requests) == 2, "The two authenticated GETs must not infer"
+
+
+@pytest.mark.parametrize("budget", [2, 4.5, 8])
+def test_operational_route_applies_configured_probe_budget_with_fixed_aggregate(operational_api, monkeypatch, budget):
+    from app.core.config import get_settings
+    monkeypatch.setenv("HEALTH_PROBE_TIMEOUT_SECONDS", str(budget))
+    get_settings.cache_clear()
+    routes = importlib.import_module("app.api.routes.health")
+    probes = MagicMock(return_value=[])
+    monkeypatch.setattr(routes, "run_probes", probes)
+    response = call(operational_api, "GET", "/health/status", headers=headers())
+    assert response.status_code == 200
+    assert probes.call_args.kwargs == {"probe_seconds": budget, "overall_seconds": 18}
+    assert len(probes.call_args.args[0]) == 6
+    assert response.headers["Cache-Control"] == "no-store"
+    operational_api.queue.publish.assert_not_called()

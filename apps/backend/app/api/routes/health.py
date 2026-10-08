@@ -72,7 +72,7 @@ def operational_health(
         "azure_cost_api": partial(http_probe, settings.azure_cost_health_base_url),
         "litellm": partial(litellm_liveliness_probe, gateway_url if settings.health_gateway_probe_enabled else None),
     }
-    results = run_probes(probes)
+    results = run_probes(probes, probe_seconds=settings.health_probe_timeout_seconds, overall_seconds=18)
     jobs, ingestion = unavailable_summary(), unavailable_summary(ingestion=True)
     components = [{"id": "backend", "status": "ok", "reason_code": "none", "source_kind": "live", "checked_at": checked, "latency_ms": 0}]
     for item in results:

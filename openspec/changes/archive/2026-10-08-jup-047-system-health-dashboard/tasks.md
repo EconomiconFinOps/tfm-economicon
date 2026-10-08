@@ -237,3 +237,57 @@ El change JUP-047 quedó archivado el 08/10/2026 en `openspec/changes/archive/20
 Paris aprobó la entrega local final el 08/10/2026 a las 14:36, Atlantic/Canary, con respuesta literal «si»; los segundos humanos no están disponibles y PM confirmó a las 14:36:07. Paris autorizó la corrección mecánica de los dos encabezados E12 a las 15:07, con respuesta literal «SI», confirmada por PM a las 15:07:04; el intento de archivo anterior quedó abortado sin cambios. Tras esa corrección, TL renovó el DoD final code/final con el change todavía ACTIVO: PASS, exit 0, sin errores; registro UTC `2026-10-08T14:16:00.6434523Z`. Se conserva [el resultado original exacto de ese DoD final renovado](local-dod-final.json), SHA256 `4b1b13ff29ea848e7d71e37b99c2e660a81d2bbc8a8a9ca2bc388a74095fda82`. No se vuelve a ejecutar el helper tras retirar el directorio activo.
 
 El archivo aplica la autorización específica de las 13:11:51 y el encargo separado posterior al DoD final. Esta nota supersede únicamente los pendientes históricos de aprobación local, DoD final y archivo; no borra historia ni cambia casillas, requisitos, escenarios o dictámenes técnicos. No acredita M5, participación ni reviews humanas, AC4/AC5 globales, CI remota o vínculos oficiales. Commit, subida, PR y publicación siguen pendientes con sus permisos propios. No hay pruebas de producto, builds, mutaciones, llamadas o gasto nuevos por este archivo.
+
+
+## Corrección propuesta tras PR81 — diseño 08/10/2026
+
+Estas tareas son nuevas y pendientes; no alteran casillas ni aprobaciones históricas. Fuente PM20:30:00/TL20:31:16; contrato y paths exactos en adenda final de design.md.
+
+- [ ] TL supervisa diseño; PM obtiene decisión humana expresa para2/5/7→8/18/20s y sonda configurable2..8s; registrar gate pre-code verificado antes de producto/tests.
+- [ ] Red separado: key exacta/incrustada en transporte/POST/DTO/observación/replay/GET; sano normal; operación >2s sana/estancada y recursos; configuración acotada; cliente20s/POST35s. Retirar blank EOF test policy en este scope test.
+- [ ] Green separado con Red fijo: frontera saneada, presupuesto coherente servidor/cliente, docs técnicas; Compose local no generativo temprano y luego checks afectados. No modificar alcance por fallo.
+- [ ] Mutation separada: operadores dirigidos en copias; control original/restaurado, guard y disposición completa. Sin instalar runner ni autocertificar excepciones.
+- [ ] TL consolida sólo incremento y aclara TTL histórico E13; alinea requisito temporal tras decisión, sin desarchivo ni reescritura de aprobaciones.
+- [ ] Revisor y Validador independientes con originales/hash PM frescos; aprobación final humana del incremento y publicación específica siguen gates separados.
+
+
+## Corrección PR81 aprobada y ejecutada localmente — 08/10/2026
+
+Esta sección sustituye el estado de propuesta/espera del incremento anterior, sin alterar casillas ni resultados históricos. Aprobación Paris «ok entonces apruebo los cambios», PM20:47:37 Atlantic/Canary; registro y límites en proposal.md.
+
+- [x] Aprobar diseño correctivo8/18/20s y sonda configurable2..8, sin nueva arquitectura/finanzas ni llamadas pagadas.
+- [x] Red separado significativo para credencial y límites; guards originales conservados.
+- [x] Green y correcciones separadas de fixtures incompatibles, sin debilitar expectativas ni modificar tests durante Green; resultados/incidencias en evidencia del incremento.
+- [x] Compose temprano sin LLM: seis lecturas sanas, dos Azure detenido failed y dos recuperado ok; diferencia de recursos y ruta host no verificada declaradas.
+- [x] Mutación dirigida14/14 detectadas, restauración y controles; cuatro reensayos afectados y diez reusos por identidad, sin sumar campañas.
+- [x] Consolidar aprobación, límites canónicos/archivados, E13 histórico y evidencia del Desarrollador; conservar archivo previo.
+- [x] Revisión técnica interna independiente afectada con original/hash PM previo y control de retorno; DOC-01 corregido y relectura REVIEW_PASS.
+- [x] Validación independiente local del incremento y caso error, con original/hash PM previo y retorno PASS; cuotas y límites físicos declarados, 18 casos propios y recorrido host/panel acreditados.
+- [x] Obtener aprobación humana final del incremento y autorización específica para commit/subida a PR81: Paris «aprobado», confirmación PM 08/10/2026 22:12:11 Atlantic/Canary.
+- [ ] PM ejecuta commit/subida y comprueba CI; respuesta/comentario todavía requiere presentación y aprobación específica. Reviews humanas siguen sus gates.
+
+
+## Cierre técnico independiente del incremento PR81 — 08/10/2026
+
+Este cierre actualiza únicamente los pendientes técnicos locales del incremento correctivo; conserva los resultados históricos, el archivo previo y sus aprobaciones con su alcance original. HEAD recibido `aa8f276ba04dba51148d11a8d6315dec26d8d32c`, base `2f9a5f530c9fe3b60007ba5060c189133e353bf6`; incremento todavía sin commit publicado. Aprobación humana final nueva PENDING. Roles humanos: Paris líder, Víctor pairing, Alejandro revisión, Lucía validación; proceso 2026-09-30/JUP-100.
+
+Revisor examinó el incremento y ejecutó 26 casos backend y 2 frontend PASS (59 no seleccionados). Su REVIEW_FAIL original identificó solamente DOC-01: un párrafo histórico de diseño parecía mantener pendiente el contrato temporal ya aprobado. TL añadió la aclaración sin borrar el párrafo; la relectura independiente terminó REVIEW_PASS a las 21:42:19 Atlantic/Canary, sin repetir suites. Addendum SHA256 `5d7df1e1cf80d3a9a512374fc803cdd383b0825be70464c4bd45a7d73970bb4a`; el fallo inicial no se reescribe.
+
+Validador entregó LOCAL_CORRECTIVE_SCOPE_PASS_WITH_DECLARED_LIMITS: 18 casos propios PASS (10 configuración/presupuesto, 4 tiempo/recuperación, 4 credencial exacta/incrustada con recibo, POST, replay y GET de otro usuario). Conservó las aserciones originales de credenciales en un adaptador externo Windows que permite IPC loopback y deniega conexiones externas. El intento nativo bloqueó socketpair interno de asyncio; Linux carecía de pytest y no ejecutó casos. Ambos intentos quedan registrados, sin atribuirles éxito ni cambiar producto/tests.
+
+Seis GET autenticados desde el host con DB/cola/procesador/vector sanos: 1,891–2,250 s; dos Azure simulado detenido failed/connection: 5,968–6,078 s; dos recuperados ok/simulated: 1,953–2,266 s. Todos inferiores a 18 s servidor/20 s cliente. Panel autenticado /system-health: sano, caída y recuperación 6→5→6; proveedor sin verificar y actividad vacía declarados correctamente. Capturas persistentes de los tres estados y procedencia SHA256 del build Vite en el informe externo. Cuotas agregadas verificadas de seis contenedores: 8 CPU/7040 MiB; host físico 28 CPU/33,6 GB y navegador fuera de cuotas. No es reproducción física exacta del entorno de Lucía. Recursos propios detenidos y conservados, puente/pestañas cerrados; sin LLM pagado, secretos reales o servicios ajenos.
+
+Evidencia externa: jup047-corrections-validation-20261008/REPORT.md SHA256 `b8e2fe5677720eec1487f6ca71be62e82807273fa735dfe9aba1544ad32af07e`; result.json `73ecdbc619e3f7ac65efbbb01c2cf17afe12414ff0ec7fea1e55de1270b548a8`; evidence-index.json `b70788aee82926497d67b7fe425751a36c33fb78bf07fbd4d94890fa191b13a4`, 19 archivos verificados por TL. No se suman campañas: 896 backend PASS/34 SKIP y 99 frontend PASS son Green previo del Desarrollador; 14/14 mutantes detectados pertenecen a aquella campaña y conservan su disposición individual.
+
+PM comunicó control independiente de retorno Validador PASS, salida 0/sin violaciones, a las 22:04:08 Atlantic/Canary, contra el mismo original SHA256 `272a036944049b30a9390a28c76e860ee6f35eb166e6120de521d061efb835df`. Validador repitió su guard final PASS/0 violaciones a las 21:05:19 UTC y cedió la plaza a las 22:05:32 Atlantic/Canary. PM había comunicado retornos Revisor y DOC-01 PASS a las 21:39:07 y 21:43:20. TL verificó identidad de las 924 fuentes respecto al original validado antes de esta adenda y conserva comprobación de identidad de producto/tests al cierre. Controles conductuales, sin afirmar sandbox de lectura; PM conserva el control independiente final antes de publicación.
+
+AC1–AC3 acreditados únicamente para este incremento local. AC4 global y vínculo/publicación de AC5 NOT_VALIDATED aquí; requieren PM y participantes humanos. Las 34 pruebas opt-in JUP086, CI remota, proveedor pagado y DockerServer/M5 remoto no se han validado en esta campaña. Móvil sigue diferido; la observación informativa de desplazamiento horizontal global a 390 px no es un PASS móvil ni amplía el alcance.
+
+Pendientes: aprobación humana final nueva, control final independiente PM, autorización específica y ejecución de commit/push, lectura oficial actualizada de todas las reviews/comentarios/conversación, CI y vínculos tras publicar, respuesta autorizada y relectura/revalidación por Alejandro y Lucía. No se desarchiva, no se altera el DoD activo histórico ni se solicita nuevo archivo. Este registro no autoriza publicaciones ni sustituye reviews humanas. PM aplica sus comprobaciones y, si propusiera publicar con acciones propias pendientes, las dos confirmaciones específicas exigidas.
+
+
+## Aprobación humana final del incremento correctivo — 08/10/2026
+
+Paris respondió literalmente «aprobado» a la pregunta explícita de aprobación final de la entrega correctiva y autorización de commit/subida a PR81. Fuente: confirmación del Project Manager en el chat `01a1063b-fed3-7480-a0d6-cc6f374ecacf`, 08/10/2026 22:12:11 Atlantic/Canary; no se dispone del segundo exacto del mensaje humano. PM confirmó además su control independiente final previo: sólo los cuatro documentos de cierre diferentes y las otras 920 fuentes intactas frente al original validado, sin cambios Git.
+
+Esta decisión supersede únicamente los estados PENDING de aprobación final humana del incremento y de autorización de commit/subida consignados arriba; conserva esos registros históricos, dictámenes, resultados y límites. PM ejecutará commit/subida a PR81 y comprobará CI. El comentario/respuesta requiere que PM lo muestre y Paris lo apruebe: todavía no está autorizado. Las reviews humanas de Alejandro y Lucía y los restantes gates oficiales permanecen pendientes. TL sólo registra esta aprobación, sin producto/tests, Git, nuevas pruebas, delegación ni publicación.

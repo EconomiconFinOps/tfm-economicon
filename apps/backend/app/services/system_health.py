@@ -77,7 +77,7 @@ def _bounded_http_get(url, *, timeout_seconds, litellm_liveliness):
         _ = started
 
 
-def run_probes(probes, *, probe_seconds=2, overall_seconds=5, max_active=4):
+def run_probes(probes, *, probe_seconds=8, overall_seconds=18, max_active=4):
     """Fixed finite waves, no pending request queue, shared process-wide slots.
 
     Runtime callbacks own an isolated-operation deadline including DNS/driver

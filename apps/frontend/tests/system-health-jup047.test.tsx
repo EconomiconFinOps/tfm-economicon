@@ -261,11 +261,13 @@ describe("JUP-047 system health public flow", () => {
     expect(screen.queryByText(/respuesta válida a/i)).not.toBeInTheDocument();
   });
 
-  it.each([[statusPath, 7_000], [checkPath, 35_000]] as const)("aborts a stalled %s at its client deadline %sms without retrying inference", async (path, deadline) => {
+  it.each([[statusPath, 20_000], [checkPath, 35_000]] as const)("aborts a stalled %s at its client deadline %sms without retrying inference", async (path, deadline) => {
     useHealthTimers();
     const pending = deferredResponse();
     const { requests, signals } = await mount({ [`${path === statusPath ? "GET" : "POST"} ${path}`]: () => pending.promise });
-    await act(async () => { await vi.advanceTimersByTimeAsync(deadline - 1); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(7_000); });
+    expect(signals.find((entry) => entry.path === path)?.signal?.aborted).toBe(false);
+    await act(async () => { await vi.advanceTimersByTimeAsync(deadline - 7_000 - 1); });
     expect(signals.find((entry) => entry.path === path)?.signal?.aborted).toBe(false);
     await act(async () => { await vi.advanceTimersByTimeAsync(1); });
     expect(signals.find((entry) => entry.path === path)?.signal?.aborted).toBe(true);

@@ -59,7 +59,9 @@ Diagnostic dates SHALL remain the original valid UTC observation timestamps. The
 - **THEN** the affected observation is not displayed as verified healthy and retained history remains honestly dated
 - **AND** no timestamp is clamped, fabricated or used as proof of continuous availability
 
-**Estado final local — 08/10/2026; evidencia E13**
+**Estado histórico local — 08/10/2026; evidencia E13 (TTL sustituido)**
+
+El párrafo de caducidad de60 segundos que sigue describe aquella fase y queda sustituido por la decisión posterior de retención sin TTL del08/10/2026. No es el estado final vigente: el resultado real se retiene hasta otra observación; cooldown60s permanece. El texto y los resultados originales de E13 se conservan como historia.
 
 Resultado vigente comunicado por PM09:40:27/TL09:43:52 Atlantic/Canary: revisión técnica interna afectada favorable y validación funcional local acreditada. Hay **6 intentos reales acumulados**, sin reset: la sexta petición, iniciada manualmente desde «Salud del sistema», recibió HTTP200, JSON válido, una elección, finish_reason=stop y contenido exacto OK. La quinta conserva HTTP429 como caso de error; los cuatro anteriores no se convierten retrospectivamente en éxitos. GET/polling no genera inferencias.
 
@@ -160,6 +162,13 @@ For an admitted provider check, availability SHALL depend on the valid functiona
 - **AND** the earlier uncertain trial reservation and ledger remain unchanged and this design itself sends no real request
 - **AND** accepting new financial evidence or changing reconciliation policy requires a separate PM decision
 
+
+
+#### Scenario: Diagnostic credential in otherwise valid informational model
+- **WHEN** an otherwise valid provider response reports a model containing the complete diagnostic credential, exactly or embedded in other text
+- **THEN** the boundary that knows the credential discards reported_model before IPC, receipt, retention or serialization
+- **AND** POST, replay and subsequent authorized GET expose no credential and availability remains ok; safe ordinary model information remains available
+
 ### Requirement: Tenant-scoped job and ingestion summaries
 The diagnostic SHALL summarize persisted jobs and Azure ingestion runs only for the authorized tenant, using parametrized read-only queries, a24-hour UTC failure window and available latest timestamps. It SHALL distinguish available, empty and unavailable data, with unknown timestamps represented by null.
 
@@ -184,7 +193,7 @@ The diagnostic SHALL summarize persisted jobs and Azure ingestion runs only for 
 - **AND** failed/running runs do not replace the last completed timestamp
 
 ### Requirement: Bounded and sanitized diagnostics
-Operational aggregation SHALL use real transport/query deadlines and bounded concurrency without unlimited retries or queues. The proposed contract SHALL cap each probe at two seconds, aggregation after successful authorization at five seconds, and active probes at four per backend process. It SHALL return closed reason codes and SHALL exclude secrets, DSNs, destination URLs, payloads and upstream free-form responses from diagnostics/logs.
+Operational aggregation SHALL use real transport/query deadlines and bounded concurrency without unlimited retries or queues. The contract SHALL use HEALTH_PROBE_TIMEOUT_SECONDS with a default of eight seconds and a finite inclusive configurable range of two to eight seconds; aggregation after successful authorization SHALL be capped at eighteen seconds, and active probes SHALL remain capped at four per backend process. The existing client GET deadline SHALL be twenty seconds; provider POST deadlines and thirty-second GET polling SHALL remain unchanged. It SHALL return closed reason codes and SHALL exclude secrets, DSNs, destination URLs, payloads and upstream free-form responses from diagnostics/logs.
 
 #### Scenario: Slow probe and resource recovery
 - **WHEN** a dependency stalls in DNS, connection, read or query, or probe slots are saturated
@@ -200,6 +209,12 @@ Operational aggregation SHALL use real transport/query deadlines and bounded con
 - **WHEN** GET diagnostics or automatic30second polling is repeated
 - **THEN** product data, queue messages, vector contents and generative costs are unchanged
 - **AND** no LLM/OpenRouter inference is caused by the GET or polling
+
+
+#### Scenario: Approved configurable probe and coordinated client deadlines
+- **WHEN** a configured non-generative probe starts or a valid value from two to eight seconds inclusive is selected
+- **THEN** the default total probe deadline is eight seconds including startup, the selected finite deadline is applied, aggregation is bounded to eighteen seconds and the client GET deadline is twenty seconds
+- **AND** invalid nonfinite or out-of-range configuration is rejected without exposing its raw input; failed connections remain failed, timeout remains unknown, and cancelled resources are released
 
 ### Requirement: Real inference admission and conservative cost reservation
 Every real provider request SHALL authenticate and authorize before cost, use a fixed short synthetic payload without client-selected prompt/model, request max_tokens32, and reserve a verified conservative maximum before sending. Known spend plus pending/uncertain reserves SHALL never exceed the authorized remaining limit; missing price, billable token/fee bounds, effective cap, diagnostic admission accounting or enforceable cost ceiling SHALL block sending and require consultation. Uncertain cost SHALL remain reserved until trustworthy reconciliation.
@@ -287,3 +302,23 @@ Only the configured LiteLLM GET /health/liveliness probe SHALL accept the pinned
 ## Nota de evidencia de implementación — E12
 
 La implementación local de los requisitos de petición fija y LiteLLM específica está acreditada por E12: Red143/38, Green214PASS,15kills dirigidos, controles37/37 y guard conjunto cero cambios/852fuentes/4tests fijos. No se modifica ningún Requirement ni Scenario en esta consolidación. El cap0.03, conversión monetaria y próxima cohorte son operación separada; la cabecera sustituye importes/cupos humanos históricos sin cambiar la admisión genérica. Revisión/validación afectadas y respuesta funcional real pendientes.
+
+
+### Requirement: Diagnostic credentials are excluded from informational provider metadata
+The runtime transport SHALL remove informational model metadata containing the complete diagnostic Authorization credential, exactly or embedded, before returning an internal receipt or retaining/exposing an observation. Discarding informational metadata SHALL NOT invalidate an otherwise valid functional response or change accounting and configured routing.
+
+#### Scenario: Exact or embedded synthetic credential
+- **WHEN** a synthetic valid HTTP200 response reports the diagnostic key exactly or embedded in an otherwise ASCII model value
+- **THEN** reported_model is null before the transport receipt crosses IPC, and the key is absent from the POST, serialized DTO, retained observation, idempotent replay and later authorized GET
+- **AND** functional status remains ok with unconfirmed identity and unchanged financial controls
+
+#### Scenario: Ordinary safe metadata remains informative
+- **WHEN** a valid response reports a safe ordinary model identifier without the diagnostic credential
+- **THEN** the safe identifier remains informative and model_identity remains unconfirmed
+- **AND** the parser does not introduce an equality or prefix gate against the configured model
+
+**Historical design checkpoint — superseded by human approval on 08/10/2026**
+
+The following paragraph is retained verbatim only as the earlier analysis-design checkpoint. It no longer states the current decision or normative deadlines. Paris approved the corrective design with «ok entonces apruebo los cambios», communicated by Project Manager at 20:47:37 Atlantic/Canary on 08/10/2026: finite configurable probe deadline2..8 s, default8 s; aggregation18 s; client GET20 s. POST30/35 s and polling30 s remain unchanged. This approval supersedes the pending/unapproved/two-five-second statements below. The approved requirement above is current. DOC-01 from the independent corrective review identified this historical ambiguity; this documentary correction does not change product or tests and still requires the focused independent re-reading.
+
+The proposed timing correction in the final design adendum is pending a human decision. The existing two/five-second requirement above is not superseded by this unapproved design; the coordinated server/client limits must be approved and reconciled before implementation.

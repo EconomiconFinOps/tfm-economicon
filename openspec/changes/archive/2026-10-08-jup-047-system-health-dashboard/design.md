@@ -326,3 +326,60 @@ Los cuatro tests previstos cambiaron solo en Red, con 38 fallos significativos y
 Quince operadores dirigidos en copias externas detectaron petición ambigua, relajación del gate, tipos/strings/HTTP/size/cierre incorrectos, despacho/selección específicos y check desde GET, además de omisión de terminate. Cada operador murió por aserciones; control de 37 tests antes y después, restauración de 852 fuentes y cuatro hashes Red fijos. M10/M11 usan dobles del despacho; M15 simula proceso atascado, sin acreditar DNS real en esta fase. No campaña global.
 
 Se conserva el Green parcial timeout240s sin JUnit como noPASS y el guard de interfaz con AllowedPath vacío rechazado. TL03:37:12 autorizó mismo rol/checkpoint/snapshot, cuatro rutas Red exactas solo para satisfacer API y condición adicional obligatoria changedPaths=[] más hashes idénticos; no permiso para editar tests ni rebaseline. E12 contiene comandos, JUnit, logs, hashes, parches y cierres separados. OpenSpec estricto47/47, trazabilidad y sintaxis/whitespace correctos; no comando backend separado de tipos inventado. Revisión y validación nuevas, prueba real funcional y gates finales pendientes.
+
+
+## Diseño correctivo propuesto para PR 81 — 08/10/2026
+
+Modo analysis-design; fuente PM20:30:00/TL20:31:16. Rama feat/JUP-047-system-health-dashboard limpia al inicio, HEAD aa8f276ba04dba51148d11a8d6315dec26d8d32c; base local2f9a5f530c9fe3b60007ba5060c189133e353bf6. Git common dir C:/Repositorios/tfm-economicon-1/.git; adapter heredado confirmado por git-common-dir, no por nombre/remoto. Proceso CONTRIBUTING2026-09-30/JUP-100; roles humanos Paris/Víctor/Alejandro/Lucía. Sin acreditación nueva de frescura remota. Esta adenda no modifica bloques de aprobación históricos.
+
+### Hechos, alternativa y decisión necesaria
+
+_provider_request devuelve body.model sin consultar la key que conoce; el filtro ASCII posterior admite una key sintética válida como nombre. La observación retenida y el replay pueden conservarla. Sanear únicamente al serializar dejaría estado privado contaminado.
+
+isolated_operation usa spawn para sondas nativas y comienza el deadline antes de process.start; importa pika/SQLAlchemy y los módulos transitivos. El paquete PM documenta imports de2.55s y app.main3.19s, con12 lecturas fallidas de servicios sanos y Azure intermitente. Se reutilizan estos datos como diagnóstico del entorno de Lucía, no como ejecución propia. El código local confirma deadline2s y run_probes2/5s; useSystemHealth cancela GET7s. Docker local28.0.4, linux/amd64, disponible mediante acceso técnico autorizado; no se han levantado recursos en diseño.
+
+Solución mínima recomendada: conservar procesos desechables, IPC y cuatro slots; añadir HEALTH_PROBE_TIMEOUT_SECONDS con default8s y validación finita inclusiva2..8s, aplicar ese valor en GET /health/status; defaults de run_probes8s/18s y agregación operativa fija18s; GET del hook20s. Con seis sondas y cuatro slots hay dos oleadas:16s de presupuesto nominal y2s de margen de agregación. La autenticación sigue fuera del plazo de agregación. No se promete disponibilidad bajo cualquier contención del SO:8s es una hipótesis conservadora respecto a3.19s que debe comprobar Compose temprano. Si no basta, detener y devolver mediciones, sin aumentar unilateralmente el límite.
+
+DECISION_REQUIRED: sustituir explícitamente2s/5s/7s por8s/18s/20s y admitir configuración de sonda2..8s. La aprobación genérica de arreglar la PR no se registra como aprobación de esos números. El siguiente gate corresponde a Paris por PM/TL, tras supervisar este diseño. Hasta entonces siguen vigentes los límites anteriores y no se edita producto/tests.
+
+Alternativas: subir solo servidor deja cancelación prematura del cliente; separar arranque de operación necesita handshake, dos deadlines y coordinación con agregación/cliente; un pool/forkserver caliente añade ciclo de vida y diferencias de plataforma; fork desde el backend multihilo arriesga conexiones/locks heredados. No se recomiendan para esta corrección. No nuevas dependencias, arquitectura persistente ni cambios al health público.
+
+### Frontera de credencial
+
+En _provider_request, antes del return/IPC, aplicar el filtro de modelo informativo existente y convertir a null cualquier valor que contenga literalmente la key diagnóstica completa, exacta o incrustada. No sustituir fragmentos dejando un nombre inventado. No registrar key/model bruto ni excepción libre. Conservar result_valid, ruta certificada y status funcional; metadata descartada no degrada una respuesta válida. HealthProviderCheck conserva solo el recibo saneado. Uso/coste, reserva histórica, cooldown, contador, idempotencia y POST30s permanecen.
+
+### Rutas exactas propuestas por fase
+
+Cada fase comienza con snapshot/guard fresco, conserva su referencia original/hash y termina antes de conceder permisos de otra fase. No se mezclan rutas ni se modifican tests en Green.
+
+Red y mutation: apps/backend/tests/test_health_provider_response_jup047.py; apps/backend/tests/test_system_health_boundaries_jup047.py; apps/backend/tests/test_system_health_jup047.py; apps/backend/tests/test_health_provider_policy_jup047.py; apps/frontend/tests/system-health-jup047.test.tsx. El blank EOF de policy se retira únicamente en fase test autorizada. Usar los fixtures existentes de auth/tenant y transporte sintético, sin listener ni proveedor real para credenciales.
+
+Green: apps/backend/app/services/system_health_runtime.py; apps/backend/app/services/system_health.py; apps/backend/app/core/config.py; apps/backend/app/api/routes/health.py; apps/frontend/src/hooks/useSystemHealth.ts. Documentación técnica mínima: docs/runbooks/system-health.md; apps/backend/README.md; README.md, únicamente límites/configuración que realmente resulten implementados. No cambios de layout ni nueva conexión frontend/backend; el hook existente solo adapta su plazo GET. Tests y especificación fijos durante Green.
+
+TL consolida tareas/evidencia y aclara E13 histórico TTL60 en health-status/spec.md canónico y archivado, conservando texto/aprobaciones originales; alineará el requisito temporal canónico/archivado exclusivamente después de la decisión de Paris. No modificación de review.md/local-dod-final.json históricos por el Desarrollador. No desarchivo, Git, publicación, servicios externos ni config.toml.
+
+### Red diferencial, Green y sensibilidad
+
+1. Canary exacta y prefijada/sufijada en body.model ASCII: recibo del transporte, resultado POST, DTO, observation(), replay y GET autenticado posterior (incluido otro usuario autorizado) excluyen la cadena. status sigue ok y reported_model null; modelo normal permanece informativo. No sólo afirmar ausencia del texto: comprobar campo nulo y éxito funcional, fechas y reserva sin cambios. Red significativo contra producto actual.
+2. Operación sintética que completa después del límite antiguo2s y antes del nuevo8s produce ok/actividad disponible; estancamiento excedido produce unknown/timeout, conexión rechazada failed/connection, liberación/cierre/slots sin trabajo creciente. Comprobar semántica con proceso/temporizador real acotado, complementada por reloj/procesos simulados para deadlines; un assert de constante aislado no acredita funcionalidad.
+3. Configuración: default/valores2 y8 válidos; NaN/infinito, fuera de rango y texto inválido rechazados saneadamente. El endpoint transmite el presupuesto elegido y no altera auth/tenant, GET público, no-inferencia ni POST30s.
+4. Cliente con reloj falso: GET pendiente sigue activo a7s, aborto a20s exactos, sin reintento ni POST extra; POST35s, cancelación por sesión/tenant/unmount y polling30s conservados.
+
+Ejecutar las cinco suites backend JUP047 afectadas (incluye admission como regresión financiera sin editarla), suite frontend system-health y tests del hook/contratos afectados; comandos nativos y runtimes existentes, sin instalación. Comprobar tipos/lint de archivos/paquetes afectados, OpenSpec estricto y trazabilidad. Reutilizar campaña previa2013 y build global solo donde identidad/base/entorno lo permitan; no atribuir una suite global nueva ni omitir un check obligatorio aplicable.
+
+Mutación dirigida en copias desechables mediante runner existente: devolver modelo bruto; omitir filtro; comparar sólo igualdad y permitir key incrustada; invalidar éxito por metadata; restaurar presupuestos2/5/7; ignorar clamp o cierre/liberación. Cada operador necesita control original, kill significativo y restauración exacta; sobreviviente/herramienta insuficiente vuelve a TL, sin excepción autoconcedida. No mutación de gates financieros intactos ni runner nuevo.
+
+### Compose temprano y condiciones de entrega
+
+Tras Red válido y primer Green focal, antes de una campaña amplia: proyecto local propio y envfile sintético privado, compose documentado+health override, imágenes/runtimes ya existentes, proveedor false y sin credenciales/policy/egress LLM. No usar .env ajeno ni imprimir config resuelta. Registrar versión/recursos, SHA, presupuestos, comandos/exits, duraciones y DTO estructural saneado; indicar explícitamente que es Docker Desktop local, no DockerServer externo.
+
+Comprobar al menos seis lecturas sanas, incluyendo primera lectura y reposo: database/rabbitmq/processor/vector_store ok; resúmenes jobs/ingesta available o empty conforme a fixtures. Detener sólo azure-cost-api del proyecto propio: dos lecturas failed/connection o failed/upstream_error verificadas; reiniciar y dos lecturas ok, siempre simulated. Estancamiento sintético demuestra unknown/timeout dentro de18s de agregación con margen de scheduling medido y GET antes20s; cuatro slots máximos, conexiones/procesos recuperados tras repeticiones. Fallo por DNS/driver no se convierte en caída confirmada.
+
+Si imágenes/motor/recursos impiden Compose, conservar error y diagnóstico, completar seguridad independiente y reportar a TL limitación, impacto y alternativas; no sustituir integración por mocks ni cerrar aceptado. Recursos existentes autorizados; sin descarga/instalación nueva ni acceso remoto. Revisor independiente contrasta código/tests/mutación; Validador repite criterios afectados y error con original/hash PM fresco antes de cada rol. Alejandro y Lucía conservan sus responsabilidades humanas. Móvil diferido y M5 ya simulado/externo no se reabren. Sin push/publicación; nueva aprobación final humana permanece necesaria para el incremento.
+
+
+## Aprobación pre-code de la corrección PR81 — 08/10/2026
+
+Paris Arcos aprobó expresamente «ok entonces apruebo los cambios», según comunicación del Project Manager del 08/10/2026 a las 20:47:37 Atlantic/Canary, chat 01a1063b-fed3-7480-a0d6-cc6f374ecacf. No se dispone aquí del segundo exacto del mensaje humano. La aprobación cubre el diseño correctivo: HEALTH_PROBE_TIMEOUT_SECONDS predeterminado 8 s y rango finito inclusivo 2..8 s, agregación 18 s y GET cliente 20 s; POST servidor/cliente 30/35 s y polling 30 s conservados. Los límites originales eran decisiones técnicas documentadas, no exigencias de Trello/equipo. También cubre el saneamiento de metadatos en la frontera que conoce la credencial y la aclaración histórica de E13.
+
+Esta decisión levanta el DECISION_REQUIRED y la espera pre-code del diseño correctivo anterior; no reescribe aprobaciones/resultados históricos ni concede aprobación final del incremento, push, publicaciones, gestión Git, archivo adicional o cambios de directrices. HEAD de partida aa8f276ba04dba51148d11a8d6315dec26d8d32c, base local 2f9a5f530c9fe3b60007ba5060c189133e353bf6; mismo change ya archivado. Revisión y validación independientes del incremento permanecen pendientes.

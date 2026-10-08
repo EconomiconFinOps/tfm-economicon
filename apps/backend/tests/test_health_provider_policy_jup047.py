@@ -184,3 +184,24 @@ def test_expiration_between_admission_and_send_never_calls_isolated_transport(
         transport({"model":"economicon-chat"}, timeout_seconds=30)
     assert calls == []
 
+
+@pytest.mark.parametrize("raw,expected", [(None, 8), ("2", 2), ("8", 8), ("4.5", 4.5)])
+def test_health_probe_budget_default_and_finite_boundaries(monkeypatch, raw, expected):
+    from app.core.config import get_settings
+    if raw is None:
+        monkeypatch.delenv("HEALTH_PROBE_TIMEOUT_SECONDS", raising=False)
+    else:
+        monkeypatch.setenv("HEALTH_PROBE_TIMEOUT_SECONDS", raw)
+    get_settings.cache_clear()
+    assert getattr(get_settings(), "health_probe_timeout_seconds", None) == expected
+
+
+@pytest.mark.parametrize("raw", ["1.999", "8.001", "NaN", "Infinity", "-Infinity", "synthetic-private-timeout"])
+def test_invalid_health_probe_budget_fails_startup_without_disclosing_input(monkeypatch, raw):
+    from app.core.config import get_settings
+    from app.core.runtime_secrets import StartupError
+    monkeypatch.setenv("HEALTH_PROBE_TIMEOUT_SECONDS", raw)
+    get_settings.cache_clear()
+    with pytest.raises(StartupError) as error:
+        get_settings()
+    assert raw not in str(error.value)

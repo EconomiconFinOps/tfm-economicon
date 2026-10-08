@@ -210,3 +210,48 @@ def test_fixed_request_keeps_exact_normalized_response_contract(main_module, mon
         assert result["check_id"] is None
         assert service.accounting()["uncertain_usd"] == Decimal("0.00500752")
     connection.close.assert_called_once()
+
+
+@pytest.mark.parametrize("model", ["synthetic-diagnostic-key", "prefix-synthetic-diagnostic-key-suffix"])
+def test_diagnostic_credential_is_removed_before_receipt_and_retention(main_module, monkeypatch, model):
+    service, connection, clock = runtime_service(main_module, monkeypatch, data=body(model))
+    runtime = importlib.import_module("app.services.system_health_runtime")
+    receipt = runtime._provider_request("http://synthetic-gateway.invalid", "synthetic-diagnostic-key",
+                                        {"provider": {"max_price": {"prompt": "0.6", "completion": "0.9"}}}, 30, "deepinfra/fp4", "b" * 32)
+    assert receipt["result_valid"] is True
+    assert receipt["model"] is None
+    assert "synthetic-diagnostic-key" not in json.dumps(receipt)
+    result = check(service, "secret-metadata")
+    assert result["status"] == "ok" and result["verified_at"] == clock.value
+    assert result["reported_model"] is None and result["model_identity"] == "unconfirmed"
+    assert service.accounting()["spent_usd"] == Decimal("0.00002")
+    assert service.accounting()["uncertain_usd"] == 0
+    replay = check(service, "secret-metadata")
+    assert replay == result
+    assert "synthetic-diagnostic-key" not in json.dumps([result, replay, service.observation()], default=str)
+    assert connection.request.call_count == 2  # direct receipt + one admitted action; no replay send
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+@pytest.mark.parametrize("model", ["synthetic-diagnostic-key", "prefix-synthetic-diagnostic-key-suffix"])
+def test_post_dto_and_other_authorized_user_get_never_disclose_diagnostic_key(main_module, api, monkeypatch, model):
+    service, connection, clock = runtime_service(main_module, monkeypatch, data=body(model))
+    monkeypatch.setattr(api.app.state, "health_provider_check", service, raising=False)
+    routes = importlib.import_module("app.api.routes.health")
+    monkeypatch.setattr(routes, "run_probes", MagicMock(return_value=[]))
+    payload = {"idempotency_key": "credential-boundary"}
+    auth = headers()  # Idempotency is scoped to this exact authenticated session.
+    post = call(api, "POST", "/health/provider-check", headers=auth, json=payload)
+    assert post.status_code == 200 and post.json()["status"] == "ok"
+    assert post.json()["reported_model"] is None
+    replay = call(api, "POST", "/health/provider-check", headers=auth, json=payload)
+    assert replay.json() == post.json()
+    clock.advance(601)
+    get = call(api, "GET", "/health/status", headers=headers(user="other-a"))
+    assert get.status_code == 200
+    item = next(item for item in get.json()["components"] if item["id"] == "openrouter")
+    assert item["status"] == "ok" and item["reported_model"] is None
+    assert datetime.fromisoformat(item["verified_at"].replace("Z", "+00:00")) == datetime.fromisoformat(post.json()["verified_at"].replace("Z", "+00:00"))
+    assert item["model_identity"] == "unconfirmed"
+    assert "synthetic-diagnostic-key" not in post.text + replay.text + get.text
+    connection.request.assert_called_once()

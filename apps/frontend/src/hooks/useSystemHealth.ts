@@ -128,7 +128,7 @@ export function useSystemHealth(token: string, tenantId?: string, panelEntryKey?
     const read = async () => {
       if (!current() || !visible()) return;
       update({ loading: true });
-      const operation = record.read ?? timed(7, (signal) => fetchSystemHealth(token, tenantId, signal));
+      const operation = record.read ?? timed(20, (signal) => fetchSystemHealth(token, tenantId, signal));
       if (!record.read) { record.read = operation; record.readOwner = owner; }
       try {
         const data = await operation;

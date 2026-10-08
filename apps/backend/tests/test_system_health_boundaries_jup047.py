@@ -283,3 +283,78 @@ def test_litellm_isolated_dns_deadline_terminates_and_releases(main_module, monk
     process.close.assert_called_once()
     receive.close.assert_called_once()
     assert send.close.call_count >= 1
+
+
+def test_healthy_transport_after_old_two_second_limit_still_completes(main_module):
+    health = module(main_module)
+    ready = threading.Event()
+    timer = threading.Timer(2.2, ready.set)
+    timer.start()
+    def startup_then_probe(*, timeout_seconds):
+        if not ready.wait(timeout_seconds):
+            raise TimeoutError()
+        return {"status": "ok", "reason_code": "none"}
+    started = time.monotonic()
+    try:
+        result = health.run_probes({"processor": startup_then_probe})
+    finally:
+        timer.cancel()
+        timer.join()
+    assert result[0]["status"] == "ok"
+    assert 2 < time.monotonic() - started < 8
+
+
+def test_two_full_probe_waves_fit_the_eighteen_second_aggregation(main_module, monkeypatch):
+    health = module(main_module)
+    # Deterministic wall-clock progression models parallel waves without waiting16s.
+    clock = [0.0]
+    monkeypatch.setattr(health.time, "monotonic", lambda: clock[0])
+    lock = threading.Lock()
+    def full_budget_probe(*, timeout_seconds):
+        with lock:
+            clock[0] = 8.0 if clock[0] < 8 else 16.0
+        return {"status": "ok" if timeout_seconds >= 8 else "unknown", "reason_code": "none"}
+    # One active callback per wave makes the simulated progression unambiguous.
+    result = health.run_probes({"first": full_budget_probe, "second": full_budget_probe}, max_active=1)
+    assert [item["status"] for item in result] == ["ok", "ok"]
+    assert clock[0] == 16
+
+
+class _StalledHealthPort:
+    def ping(self):
+        time.sleep(5)
+        return True
+
+
+def test_real_isolated_timeout_reaps_children_without_orphaned_work(main_module):
+    import multiprocessing
+    runtime = importlib.import_module("app.services.system_health_runtime")
+    before = {child.pid for child in multiprocessing.active_children()}
+    for _ in range(2):
+        started = time.monotonic()
+        try:
+            with pytest.raises(TimeoutError):
+                runtime.isolated_operation("port", (_StalledHealthPort(),), timeout_seconds=0.2)
+            assert time.monotonic() - started < 2
+            assert {child.pid for child in multiprocessing.active_children()} == before
+        finally:
+            # Only own new children: even a faulty disposable mutant cannot leave work behind.
+            for child in multiprocessing.active_children():
+                if child.pid not in before:
+                    child.terminate()
+                    child.join(timeout=1)
+                    if child.is_alive():
+                        child.kill()
+                        child.join(timeout=1)
+
+
+def test_timed_out_probe_slots_are_reusable_by_a_following_healthy_read(main_module):
+    health = module(main_module)
+    def stalled(*, timeout_seconds):
+        time.sleep(min(timeout_seconds, 0.005))
+        raise TimeoutError()
+    for _ in range(2):
+        timed_out = health.run_probes({str(i): stalled for i in range(4)}, probe_seconds=0.05, overall_seconds=0.2)
+        assert all(item["status"] == "unknown" and item["reason_code"] == "timeout" for item in timed_out)
+        recovered = health.run_probes({"processor": lambda **kwargs: {"status": "ok", "reason_code": "none"}}, probe_seconds=0.05, overall_seconds=0.2)
+        assert recovered[0]["status"] == "ok", "A completed timeout must not consume a future probe slot"

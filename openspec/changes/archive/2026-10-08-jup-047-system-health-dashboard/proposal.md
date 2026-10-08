@@ -127,3 +127,21 @@ Esta aprobación autoriza la implementación mediante fases separadas del Desarr
 ## Entrega técnica acreditada — E12
 
 El despacho condicional TL03:22:56 separó Red, Green y mutación. La petición fija y la sonda LiteLLM están implementadas con el analizador funcional del proveedor intacto; el GET continúa no generativo. E12 acredita el delta local y sus límites; este documento ya no está esperando iniciar el Red de esa corrección. La consolidación posterior es factual, no otra ceremonia de diseño ni una nueva decisión humana. Antes de revisión independiente: original y control de PM, coordinación TL y estado final de fuentes. No publicación o archivo por este registro.
+
+
+## Corrección propuesta tras las reviews de PR 81 — 08/10/2026
+
+Fuente oficial recibida, sin consulta externa del Desarrollador: PM20:30:00, despacho TL20:31:16; Paris «pues vamos a arreglarlo no?». HEAD aa8f276ba04dba51148d11a8d6315dec26d8d32c, base declarada/verificada local 2f9a5f530c9fe3b60007ba5060c189133e353bf6. Proceso2026-09-30/JUP-100; Paris líder, Víctor pairing, Alejandro/Iber1to revisión, Lucía/lmatsan validación.
+
+Se propone eliminar la credencial diagnóstica exacta o incrustada en reported_model antes de que el transporte devuelva el recibo, y resolver los falsos timeouts de servicios sanos en Docker Desktop. No consta fuga real; la reproducción comunicada es sintética. El diseño completo, rutas y decisión temporal pendiente están en la adenda final de design.md.
+
+El diseño propone límites coordinados 8s por sonda,18s de agregación y20s de GET del cliente, con sonda configurable entre2 y8s. **Esta propuesta cambia el contrato vigente2/5/7s y requiere decisión humana expresa y gate pre-code antes de implementar.** No es una aprobación ni una medición nueva. Se conserva el límite POST30/35s.
+
+Se mantiene el archivo existente y PR81; no se desarchiva ni se abre otro change/PR. Este incremento no concede push, publicación, gestión de ramas, credenciales reales ni inferencia pagada. Las aprobaciones/resultados anteriores siguen fechados y no aceptan esta corrección por anticipado.
+
+
+## Aprobación pre-code de la corrección PR81 — 08/10/2026
+
+Paris Arcos aprobó expresamente «ok entonces apruebo los cambios», según comunicación del Project Manager del 08/10/2026 a las 20:47:37 Atlantic/Canary, chat 01a1063b-fed3-7480-a0d6-cc6f374ecacf. No se dispone aquí del segundo exacto del mensaje humano. La aprobación cubre el diseño correctivo: HEALTH_PROBE_TIMEOUT_SECONDS predeterminado 8 s y rango finito inclusivo 2..8 s, agregación 18 s y GET cliente 20 s; POST servidor/cliente 30/35 s y polling 30 s conservados. Los límites originales eran decisiones técnicas documentadas, no exigencias de Trello/equipo. También cubre el saneamiento de metadatos en la frontera que conoce la credencial y la aclaración histórica de E13.
+
+Esta decisión levanta el DECISION_REQUIRED y la espera pre-code del diseño correctivo anterior; no reescribe aprobaciones/resultados históricos ni concede aprobación final del incremento, push, publicaciones, gestión Git, archivo adicional o cambios de directrices. HEAD de partida aa8f276ba04dba51148d11a8d6315dec26d8d32c, base local 2f9a5f530c9fe3b60007ba5060c189133e353bf6; mismo change ya archivado. Revisión y validación independientes del incremento permanecen pendientes.

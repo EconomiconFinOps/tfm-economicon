@@ -18,7 +18,7 @@ import pika
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
-from app.services.health_provider_check import GUARANTEES, HealthProviderCheck, ProviderDiagnosticFailure, amount
+from app.services.health_provider_check import GUARANTEES, HealthProviderCheck, ProviderDiagnosticFailure, amount, reported_model
 from app.services.system_health import bounded_http_get, bounded_litellm_liveliness_get, observation, summary, unavailable_summary
 
 INSTANCE_ID = uuid4().hex
@@ -111,7 +111,11 @@ def _provider_request(base_url, key, payload, timeout, certified_route, check_id
                  and choices[0].get("finish_reason") == "stop"
                  and choices[0].get("message", {}).get("content", "").strip().upper() == "OK"
                  and isinstance(body.get("id"), str) and 0 < len(body["id"]) <= 256)
-        model = body.get("model")
+        model = reported_model(body.get("model"))
+        # Drop reflected credentials before IPC, retention or public serialization.
+        # Metadata is optional and never changes functional availability.
+        if model is not None and key in model:
+            model = None
         # Routing is certified out of band for the dedicated gateway/alias.
         # A body model name alone is never sufficient to certify the route.
         return {"model": model, "provider": certified_route, "route_verified": certified_route == "deepinfra/fp4",
