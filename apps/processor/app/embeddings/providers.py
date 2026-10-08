@@ -1,4 +1,8 @@
 import hashlib
+import math
+
+from app.clients.litellm import LiteLLMClient, ProviderError
+from app.core.config import Settings
 
 
 class MockEmbeddingProvider:
@@ -18,7 +22,38 @@ class MockEmbeddingProvider:
         return vector
 
 
-def get_embedding_provider(provider_name: str, dimension: int):
+class LiteLLMEmbeddingProvider:
+    def __init__(self, dimension: int, settings: Settings):
+        if dimension != 1536:
+            raise ValueError("economicon-embedding requires dimension=1536")
+        self.dimension = dimension
+        self.name = "litellm"
+        self.model = settings.embedding_model
+        self.client = LiteLLMClient(settings)
+
+    def embed(self, text: str) -> list[float]:
+        payload = self.client.post("embeddings", {
+            "model": self.model, "input": text, "dimensions": self.dimension,
+        })
+        try:
+            data = payload["data"]
+            vector = data[0]["embedding"]
+            if (
+                isinstance(data, list) and len(data) == 1
+                and isinstance(vector, list) and len(vector) == self.dimension
+                and all(type(value) in {int, float} and math.isfinite(value) for value in vector)
+            ):
+                return [float(value) for value in vector]
+        except (KeyError, IndexError, TypeError, OverflowError):
+            pass
+        raise ProviderError("invalid_response")
+
+
+def get_embedding_provider(provider_name: str, dimension: int, settings: Settings | None = None):
     if provider_name == "mock":
         return MockEmbeddingProvider(dimension)
+    if provider_name == "litellm":
+        if settings is None:
+            raise ValueError("LiteLLM requires explicit settings")
+        return LiteLLMEmbeddingProvider(dimension, settings)
     raise ValueError(f"Unsupported embedding provider: {provider_name}")

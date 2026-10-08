@@ -25,12 +25,14 @@ const coverage: TagCoverage = {
 
 async function openPanel() {
   await screen.findByText("Dashboard Ejecutivo - Coste Global");
+  fireEvent.change(screen.getByLabelText("Mes inicial"), { target: { value: "2024-06" } });
+  fireEvent.change(screen.getByLabelText("Mes final"), { target: { value: "2024-06" } });
   await userEvent.click(screen.getByText("Cobertura de etiquetas FinOps"));
   return screen.findByRole("region", { name: "Cobertura de etiquetas" });
 }
 
 describe("TagCoveragePanel", () => {
-  it("loads on expansion with tenant headers and exact money, separately from demos", async () => {
+  it("loads on expansion with tenant headers and exact money, within the current executive dashboard", async () => {
     const { requests } = mockBackend({ "GET /billing/tag-coverage": () => jsonResponse(coverage) });
     restoreSession(); renderApp();
     await screen.findByText("Dashboard Ejecutivo - Coste Global");
@@ -42,7 +44,8 @@ describe("TagCoveragePanel", () => {
     expect(panel).toHaveTextContent("owner: 1");
     const request = requests.find((r) => r.path === "/billing/tag-coverage")!;
     expectTenantRequest(request);
-    expect(request.search.has("start_date")).toBe(true);
+    expect(request.search.get("start_date")).toBe("2024-06-01");
+    expect(request.search.get("end_date")).toBe("2024-07-01");
     expect(request.search.has("group_by")).toBe(false);
   });
 
@@ -77,7 +80,7 @@ describe("TagCoveragePanel", () => {
     restoreSession(); renderApp();
     const panel = await openPanel();
     expect(panel).toHaveTextContent("Cargando cobertura");
-    fireEvent.change(screen.getByLabelText("Inicio (UTC)"), { target: { value: "2024-05-01" } });
+    fireEvent.change(screen.getByLabelText("Mes inicial"), { target: { value: "2024-05" } });
     await waitFor(() => expect(calls).toBe(2));
     await act(async () => { stale.resolve(coverage); });
     await waitFor(() => expect(panel).toHaveTextContent("Sin datos"));
@@ -97,6 +100,18 @@ describe("TagCoveragePanel", () => {
     expect(panel).toHaveTextContent("Cargando cobertura");
     await act(async () => { pending.resolve({ ...coverage, currencies: [], data_status: "empty" }); });
     await waitFor(() => expect(panel).toHaveTextContent("Sin datos"));
+  });
+
+  it("hides coverage and stops requests when the dashboard month range is invalid", async () => {
+    const { requests } = mockBackend({ "GET /billing/tag-coverage": () => jsonResponse(coverage) });
+    restoreSession(); renderApp();
+    const panel = await openPanel();
+    await within(panel).findAllByText("9007199254740993.01 USD");
+    const count = requests.filter((r) => r.path === "/billing/tag-coverage").length;
+    fireEvent.change(screen.getByLabelText("Mes inicial"), { target: { value: "2024-08" } });
+    expect(panel).toHaveTextContent("Selecciona un cliente y un periodo válido");
+    expect(panel).not.toHaveTextContent("9007199254740993");
+    expect(requests.filter((r) => r.path === "/billing/tag-coverage")).toHaveLength(count);
   });
 
   it("validates policy, typed amounts, dates and percentage states before rendering", () => {

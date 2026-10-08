@@ -98,11 +98,29 @@ Puerto visible:
 - `RABBITMQ_URL`
 - `VECTOR_DATABASE_URL`
 - `PROCESSOR_QUEUE_NAME`
-- `EMBEDDING_DIMENSION`
+- `EMBEDDING_PROVIDER` (`mock` solo con `RUNTIME_ENVIRONMENT=development|test`, o `litellm`)
+- `EMBEDDING_DIMENSION` (1536 con `litellm`)
+- `EMBEDDING_MODEL`
+- `LITELLM_BASE_URL`
+- `LITELLM_API_KEY` (clave virtual propia del backend; en Compose se lee de `BACKEND_LITELLM_API_KEY`)
+- `EMBEDDING_TIMEOUT_SECONDS` (por intento, 10 s por defecto) y `EMBEDDING_MAX_RETRIES` (1 por defecto): una pregunta espera como mucho (reintentos + 1) x plazo, 20 s en el peor caso con los valores por defecto, mas las esperas entre reintentos (0,25 s la primera, hasta 1 s las siguientes); el par no puede superar 60 s de intentos
+- `RETRIEVAL_TOP_K` (1 a 20, por defecto 4) y `RETRIEVAL_MAX_DISTANCE` (mayor que 0 y como maximo 2; en blanco usa 0.6 con `litellm` y ningun umbral con `mock`; `none` u `off` lo desactiva)
 - `AUTH_SECRET_KEY`
 - `AUTH_TOKEN_TTL_MINUTES`
 - `RUNTIME_ENVIRONMENT`
 - `CORS_ALLOWED_ORIGINS`
+
+## Recuperacion Semantica Y Reindexado
+
+El chat embebe la pregunta con `EMBEDDING_PROVIDER` y recupera los fragmentos del tenant activo con `RETRIEVAL_TOP_K` y `RETRIEVAL_MAX_DISTANCE` (distancia coseno, inclusiva; 0.6 por defecto con `litellm`, calibrado en `docs/spikes/JUP-022-retrieval-calibration.md`). Si ningun fragmento cumple, la lista es vacia y el asistente responde sin contexto. Decision y alternativas: [ADR-0017](../../docs/adr/ADR-0017-backend-query-embedding-own-key.md).
+
+Con `litellm` el backend usa su propia clave virtual (`BACKEND_LITELLM_API_KEY` en Compose) y exige `EMBEDDING_DIMENSION=1536`; el arranque la rechaza si falta, y `mock` solo se admite con `RUNTIME_ENVIRONMENT=development|test`.
+
+`EMBEDDING_PROVIDER` es una unica variable de Compose compartida con el processor a proposito: la ingesta y la consulta deben usar el mismo proveedor. El processor ya soporta `litellm` (JUP-023, PR #65); la recuperacion solo considera los vectores del proveedor configurado, asi que tras activarlo hay que reindexar el corpus con ese proveedor o devolvera vacio.
+
+Una base pgvector creada con `vector(8)` (proveedor `mock`) no sirve con el modelo real: los vectores de la ingesta y de la pregunta deben tener la misma dimension y el mismo modelo. Para pasar a `vector(1536)` hay que reindexar el corpus en una coleccion nueva, nunca en caliente: en un entorno desechable, parar el stack, borrar el volumen `pgvector-data`, poner `EMBEDDING_PROVIDER=litellm` y `EMBEDDING_DIMENSION=1536` en processor y backend con sus claves y volver a ingerir los documentos. El procedimiento se ejecuto en la revision del PR #67 contra un gateway simulado (al borrar el volumen, el processor crea `vector(1536)` y guarda `provider=litellm`) y no se ha repetido de extremo a extremo con el modelo real. Un cambio de modelo con la misma dimension no se detecta: finding RF-022-001.
+
+Las rutas sincronas del backend comparten el pool de hilos (40 por defecto): con un gateway que acepta la conexion y no responde, muchas preguntas en espera pueden retrasar `/health` mientras dure el plazo de cada una; el tope por pregunta acota ese efecto y queda registrado como finding RF-022-005.
 
 ## CORS Y Sesion Demo
 
@@ -165,10 +183,13 @@ python -m pytest tests
 
 `POST /jobs/ingest` requiere `text_content` como fuente principal del pipeline de embeddings.
 
-`GET /billing/summary` devuelve hoy `monthly_spend` y `savings_identified` con valores fijos de
-demostracion; solo `open_ingestions` se calcula de verdad. No lee las tablas de coste Azure que
-alimenta el `processor` (`azure_cost_ingestion_runs`, `azure_cost_records`). Verificado en JUP-091:
-ver `RF-091-004` en `openspec/findings/backlog.md`.
+`GET /billing/summary` devuelve el contrato v2 de JUP-026 sobre los costes Azure
+ingeridos, separados por moneda y periodo. Los importes son strings decimales;
+`savings_identified` permanece null. Las fuentes ambiguas devuelven 409.
+
+`POST /billing/budget/evaluate` evalua un presupuesto del tenant activo sin
+guardarlo. Requiere el mismo bearer y `X-Tenant-Id`. Ver
+[contrato y ejemplos JUP-029](../../docs/manuals/budget-evaluation.md).
 
 La cuenta demo solo se crea con `DEMO_SEED_ENABLED=true` y una
 `DEMO_PASSWORD` externa no heredada:

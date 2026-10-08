@@ -110,3 +110,34 @@ owners/application. No ingestion mutation or automatic tag repair is exposed.
 Lucia's assigned pairing/co-authorship has not been evidenced by this automation.
 Paris's assigned PR review and Victor's validation remain human/team work.
 No merge, task closure or completion of JUP-015 is claimed.
+
+## Develop reconciliation — 2026-10-08
+
+Reconciled the PR branch with develop `8cc5db0b8f96b7289f9b90dfed42527b76d0222d`.
+GitHub reviews, conversation and inline comments were empty at verification.
+Four conflicts were resolved:
+
+- Billing keeps `/tag-coverage`, `/summary` and the new `/budget/evaluate` route.
+- The dashboard retains JUP-055's current monthly selection, live KPI/chart/table
+  and removal of demos; tag coverage receives its derived [start, end) range.
+- ADR inventory and architecture retain the updated develop documentation and
+  the Proposed tagged-coverage decision without restoring superseded sections.
+
+The tag-coverage SQL, policy and contracts were not changed by the resolution.
+Tests now exercise the monthly controls, exact June-to-July boundaries, stale
+responses and disabling coverage on invalid dashboard intervals.
+
+Local checks after resolution:
+
+- `python -m pytest tests/test_tag_coverage.py tests/test_billing_summary.py tests/test_budget_evaluation.py -q --tb=short`
+  (backend directory): **64 passed, 30 skipped**. Skips require CockroachDB;
+  no new real-SQL run is claimed. Earlier SQL evidence above remains dated.
+- `corepack pnpm --filter @finops/frontend exec vitest run src/components/TagCoveragePanel.test.tsx src/pages/ExecutiveCostDashboard.test.tsx --maxWorkers=2 --minWorkers=1 --reporter=dot`:
+  **11 passed**.
+- Frontend typecheck, lint and build pass; existing large-bundle warning remains.
+- Strict OpenSpec: **52 passed**; JUP traceability passes; governance **13 passed**.
+
+No human pairing, review or validation is asserted. Draft and assigned roles
+remain unchanged; the user declined a pairing exception on 2026-10-05.
+Changes inherited from develop affect behaviour, so independent validation must
+use this reconciled head rather than the original `bae4902` evidence alone.
