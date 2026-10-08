@@ -238,3 +238,9 @@ CI ejecuta lint y pruebas antes del build en el check obligatorio `Frontend
 build`. El typecheck tambien verifica los tests en `tsconfig.test.json`, sin
 introducir globals de Node o del runner en el proyecto browser. Todos los
 componentes son `.tsx` con contratos de props comprobados por TypeScript.
+
+## Salud del sistema — JUP-047
+
+La ruta `/system-health`, bajo sesión y ámbito del cliente, muestra disponibilidad y resúmenes de jobs e ingesta con componentes y tokens compartidos. Apertura y Actualizar realizan una intención de comprobación del proveedor; polling visible cada 30 segundos solo solicita diagnóstico GET. Logout, cambio de ámbito y unmount cancelan solicitudes y descartan resultados antiguos. Estados desconocidos y procedencias simuladas son explícitos; fechas de verificación no se renuevan por polling. Véase el [runbook de salud](../../docs/runbooks/system-health.md) para contrato, configuración y gates reales. Las pruebas semánticas jsdom no acreditan píxeles/overflow ni OpenRouter real.
+
+OpenRouter muestra «Disponible» y «Respuesta válida a» para la última respuesta funcional válida. «Modelo informado»/«Identidad no confirmada» y coste del gateway no confirmado/no disponible/inválido aparecen aparte. Se usa el intento/tenant seleccionado; polling no renueva la fecha y a los60s es obsoleta. Conformidad visual de preview sintética no acredita funcionalidad real ni M5; la comprobación remota corresponde a Alejandro y sigue pendiente.
