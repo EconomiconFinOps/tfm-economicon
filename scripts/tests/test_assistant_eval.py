@@ -466,6 +466,13 @@ class FragmentLabelTests(unittest.TestCase):
         self.assertEqual(labelled[0]["source"], "glossary")
         self.assertEqual((labelled[1]["source"], labelled[1]["heading"]), ("assistant-corpus", ""))
 
+    def test_an_index_that_is_not_a_number_or_is_past_the_last_chunk_is_left_unlabelled(self):
+        text = (ROOT / self.FINOPS).read_text(encoding="utf-8")
+        past_the_end = len(evaluation.load_calibration().chunk_spans(text, 500, 50))
+        for index in ("x", "-1", "", str(past_the_end)):
+            labelled = evaluation.label_fragments([self.fragment_at("doc-finops", index)], self.MAP, 500, 50)
+            self.assertEqual((labelled[0]["source"], labelled[0]["heading"]), ("assistant-corpus", ""), index)
+
     def test_a_path_outside_the_repository_corpus_is_rejected(self):
         for path in ("../../etc/hosts", "/etc/hosts", "docs/../README.md", "apps/backend/app/main.py"):
             with self.assertRaises(evaluation.EvaluationError):
