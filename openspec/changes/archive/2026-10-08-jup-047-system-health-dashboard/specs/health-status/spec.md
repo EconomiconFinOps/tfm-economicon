@@ -1,36 +1,12 @@
-# health-status Specification
+## ADDED Requirements
 
-## Purpose
+**Decisión vigente de retención y ciclo visible — 08/10/2026**
 
-Define the backend health response contract used by clients to inspect aggregate service status, per-service status, and the timestamp at which the health check was evaluated.
-## Requirements
-### Requirement: Health response includes evaluation timestamp
+Paris autorizó «ok dile al TL que haga los cambios», según PM 08/10/26 10:09:29 transmitido por TL 10:11:38. Esta decisión sustituye la caducidad automática de 60 s y el ciclo exclusivamente manual/apertura descritos en fases anteriores: el resultado real se retiene hasta otra observación, y OpenRouter se comprueba al abrir y cada 10 minutos solo con el panel abierto y visible. Un timeout nuevo produce unknown con historia conservada. Azure sigue siendo explícitamente SIMULADO; LiteLLM conserva liveliness real no generativa. Las fechas válidas hasta 1000 ms futuras inclusive reciben tolerancia de presentación, sin modificar su valor.
 
-The backend `GET /health` response SHALL include a `checked_at` timestamp representing when the server evaluated the health status.
+Esta fase es solo análisis/diseño en seis OpenSpec, sobre HEAD 6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6 y base LOCAL origin/develop 2f9a5f530c9fe3b60007ba5060c189133e353bf6; frescura remota no acreditada. Los registros E12/E13 y las aprobaciones históricas inferiores conservan literalmente hechos/decisiones de su revisión. No validan el comportamiento nuevo. Las menciones históricas a TTL60 o ausencia de periodicidad pagada quedan supersedidas por el contrato nuevo; el cooldown financiero de 60 s permanece.
 
-#### Scenario: Successful health evaluation
-
-- **WHEN** a client requests `GET /health`
-- **THEN** the response includes `status`, `services`, and `checked_at`.
-
-#### Scenario: Timestamp is UTC aware
-
-- **WHEN** the backend creates a health response
-- **THEN** `checked_at` is a timezone-aware UTC timestamp.
-
-### Requirement: Existing health status semantics remain unchanged
-
-The backend `GET /health` response SHALL continue to report `ok` only when all checked services are healthy and `degraded` otherwise.
-
-#### Scenario: All services healthy
-
-- **WHEN** database, queue, and vector store checks return healthy
-- **THEN** the response status is `ok`.
-
-#### Scenario: At least one service unhealthy
-
-- **WHEN** any checked service returns unhealthy
-- **THEN** the response status is `degraded`.
+La autorización funcional no activa gasto: ledger6 intacto, certificado6/6 agotado/caducado y techo0,20 EUR acumulado. Sin nuevos envíos, credenciales, configuración, servicios, commits, archivo o publicación en este diseño. Autenticación, tenant, modelo/coste informativos, ruta, reservas H/U/P, contadores, M5 externo y móvil diferido permanecen. Las fases Red/Green/mutación requieren despachos separados tras coherencia TL.
 
 ### Requirement: Retained real provider observations and truthful history
 The backend SHALL initially expose unknown/not_verified without a fabricated provider verification. It SHALL retain the latest real result and its observation time until another real attempt supplies a result, without age-based expiration. A new timeout SHALL expose unknown/timeout while retaining the last successful verified_at/check_id only as history. Ordinary admission, accounting and configured routing SHALL remain unchanged.
@@ -263,6 +239,7 @@ Every real provider request SHALL authenticate and authorize before cost, use a 
 - **THEN** trials use an external private cumulative ledger with limit0.40USD and an initial plan of TWO real requests, including failures/uncertain costs without reset
 - **AND** further trial requests require explicit cumulative authorization without resetting spent calls or historical reserves, while deployed operation requires its own finite explicitly authorized budget and cannot inherit trial credit as unlimited allowance
 
+
 ### Requirement: Ordinary admission retains historical uncertainty without automatic veto
 The ordinary certificate and admission SHALL preserve historical receipts, known spend, uncertain and pending reservations, cumulative execution count and frequency history. A recorded historical uncertain reserve or lack of reconciliation SHALL NOT by itself block a new explicitly authorized check. Admission SHALL require exact conservative H+U+P+R<=B, all other safety gates and remaining authorized calls. No per-call financial exception, fabricated reconciliation, reset or zero-uncertainty certificate SHALL be used. Upstream key sharing SHALL NOT require upstream exclusivity; accounting scope SHALL be the authorized diagnostic execution.
 
@@ -288,6 +265,7 @@ The ordinary certificate and admission SHALL preserve historical receipts, known
 - **THEN** missing state/pending operation/invalid preflight rejects without transport; a possibly sent request retains its conservative reserve and incremented cumulative count
 - **AND** restart with lost state remains blocked until existing state/limits are faithfully recovered; no reset of H/U/P, cumulative count or cooldown/hour/day limits and no treatment of unconfirmed cost as zero is allowed
 - **AND** nonzero U alone is never a rejection predicate
+
 
 ### Requirement: Unambiguous fixed request preserves the functional criterion
 The provider diagnostic SHALL send exactly one fixed user message with content "Return exactly the two uppercase letters OK. Do not include punctuation, quotes, whitespace, or any other text.". Its normalized response criterion SHALL remain content.strip().upper()==OK, with the existing HTTP200, bounded JSON, single choice, finish_reason stop and bounded nonempty ID requirements. The clarified request SHALL NOT change routing/model, max_tokens32, retry/fallback policy, input/output bounds, privacy or conservative admission.
@@ -319,3 +297,28 @@ Only the configured LiteLLM GET /health/liveliness probe SHALL accept the pinned
 - **WHEN** processor or simulated Azure is probed, or LiteLLM probing is disabled
 - **THEN** the generic JSON status contract and explicit disabled/unconfigured result remain unchanged
 - **AND** a LiteLLM string is not accepted by the generic parser and a generic status object is not accepted by the LiteLLM parser; public health/auth/tenant contracts remain unchanged
+
+
+## Nota de evidencia de implementación — E12
+
+La implementación local de los requisitos de petición fija y LiteLLM específica está acreditada por E12: Red143/38, Green214PASS,15kills dirigidos, controles37/37 y guard conjunto cero cambios/852fuentes/4tests fijos. No se modifica ningún Requirement ni Scenario en esta consolidación. El cap0.03, conversión monetaria y próxima cohorte son operación separada; la cabecera sustituye importes/cupos humanos históricos sin cambiar la admisión genérica. Revisión/validación afectadas y respuesta funcional real pendientes.
+
+
+### Requirement: Diagnostic credentials are excluded from informational provider metadata
+The runtime transport SHALL remove informational model metadata containing the complete diagnostic Authorization credential, exactly or embedded, before returning an internal receipt or retaining/exposing an observation. Discarding informational metadata SHALL NOT invalidate an otherwise valid functional response or change accounting and configured routing.
+
+#### Scenario: Exact or embedded synthetic credential
+- **WHEN** a synthetic valid HTTP200 response reports the diagnostic key exactly or embedded in an otherwise ASCII model value
+- **THEN** reported_model is null before the transport receipt crosses IPC, and the key is absent from the POST, serialized DTO, retained observation, idempotent replay and later authorized GET
+- **AND** functional status remains ok with unconfirmed identity and unchanged financial controls
+
+#### Scenario: Ordinary safe metadata remains informative
+- **WHEN** a valid response reports a safe ordinary model identifier without the diagnostic credential
+- **THEN** the safe identifier remains informative and model_identity remains unconfirmed
+- **AND** the parser does not introduce an equality or prefix gate against the configured model
+
+**Historical design checkpoint — superseded by human approval on 08/10/2026**
+
+The following paragraph is retained verbatim only as the earlier analysis-design checkpoint. It no longer states the current decision or normative deadlines. Paris approved the corrective design with «ok entonces apruebo los cambios», communicated by Project Manager at 20:47:37 Atlantic/Canary on 08/10/2026: finite configurable probe deadline2..8 s, default8 s; aggregation18 s; client GET20 s. POST30/35 s and polling30 s remain unchanged. This approval supersedes the pending/unapproved/two-five-second statements below. The approved requirement above is current. DOC-01 from the independent corrective review identified this historical ambiguity; this documentary correction does not change product or tests and still requires the focused independent re-reading.
+
+The proposed timing correction in the final design adendum is pending a human decision. The existing two/five-second requirement above is not superseded by this unapproved design; the coordinated server/client limits must be approved and reconciled before implementation.

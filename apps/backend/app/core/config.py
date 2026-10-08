@@ -18,7 +18,7 @@ MAX_QUESTION_ATTEMPT_SECONDS = 60
 # Settings whose names may appear in the startup error; their values never do.
 REPORTABLE_SETTINGS = frozenset({
     "embedding_provider", "embedding_dimension", "embedding_model", "embedding_timeout_seconds",
-    "embedding_max_retries", "litellm_base_url", "litellm_api_key", "retrieval_top_k", "retrieval_max_distance",
+    "health_probe_timeout_seconds", "embedding_max_retries", "litellm_base_url", "litellm_api_key", "retrieval_top_k", "retrieval_max_distance",
 })
 
 
@@ -39,6 +39,34 @@ class Settings(BaseSettings):
     embedding_max_retries: int = 1
     retrieval_top_k: int = 4
     retrieval_max_distance: float | None = None
+    processor_health_base_url: str | None = None
+    azure_cost_health_base_url: str | None = None
+    health_probe_timeout_seconds: float = Field(default=8.0, ge=2, le=8, allow_inf_nan=False)
+    health_gateway_probe_enabled: bool = False
+    health_provider_enabled: bool = False
+    health_provider_api_key: SecretStr | None = None
+    health_provider_policy_path: str | None = None
+
+    @field_validator("processor_health_base_url", "azure_cost_health_base_url")
+    @classmethod
+    def validate_health_url(cls, value):
+        if value is None:
+            return None
+        parsed = urlsplit(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment:
+            raise ValueError("Health destination must be an absolute HTTP(S) URL without credentials")
+        parsed.port
+        return value.rstrip("/")
+
+    @field_validator("health_provider_api_key")
+    @classmethod
+    def validate_diagnostic_key(cls, value):
+        if value is not None:
+            key = value.get_secret_value()
+            if not key or key.startswith("sk-or-") or any(character.isspace() for character in key):
+                raise ValueError("A dedicated single-line gateway credential is required")
+        return value
+
     auth_secret_key: SecretStr
     auth_token_ttl_minutes: int = Field(default=480, gt=0)
     cors_allowed_origins: Json[list[StrictStr]] = Field(default_factory=list)
