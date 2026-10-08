@@ -7,6 +7,7 @@ Pasos para dejar lista la demo de [guion.md](guion.md) y para deshacerla. Los da
 - Usar un **stack aislado con volúmenes nuevos**, no el de otra tarea. Los ejemplos usan el proyecto `jup107`.
 - `-p` aísla contenedores y volúmenes, **no los puertos del equipo**: Compose publica puertos fijos (frontend 5173, API 8000, processor 8001, Azure simulada 8002). Parar antes cualquier otro stack que los use, o `up` fallará o chocará.
 - No cambiar el puerto del frontend sin cambiar también el CORS: el backend solo acepta los orígenes de `CORS_ALLOWED_ORIGINS` (el ejemplo del README del proyecto usa `http://localhost:5173` y `http://127.0.0.1:5173`) y con otro puerto la interfaz no podrá hablar con la API.
+- Antes de la declaración del paso D1 no debe haber **cifras en pantalla**: abrir la aplicación con **Core Finance** seleccionado (sin cifras en pantalla). El navegador recuerda el último cliente y periodo, así que tras un ensayo conviene cambiar a Core Finance o abrir una ventana privada. D9 y D1 suponen además que Core Finance no tiene costes en este stack: se comprueba en el paso 3.
 - La demo de JUP-065 y el recorrido de JUP-104 **suponen `tenant-growth` sin costes**. Esta demo lo carga a propósito, así que no se prepara sobre un stack donde esas demos vayan a usarse después sin retirar los datos antes.
 - El archivo `.env` se completa como indica el README del proyecto; no se muestra ni se copia en ningún documento. La contraseña de demostración la conoce quien prepara la demo.
 
@@ -43,7 +44,7 @@ import os
 import urllib.request
 
 BASE = "http://localhost:8000"
-TENANT = "tenant-growth"
+TENANT = os.environ.get("TENANT", "tenant-growth")
 
 
 def call(path, data=None, headers=None):
@@ -63,9 +64,12 @@ for total in summary["totals"]:
 
 ```sh
 docker compose -p jup107 exec -T backend python - < resumen.py
+docker compose -p jup107 exec -T -e TENANT=tenant-core backend python - < resumen.py
 ```
 
-Con los datos cargados debe imprimir exactamente `data_status: partial` (por el registro sin fecha y el que no tiene dimensión), `EUR 90.00 6` y `USD 35.75 2`. El periodo es semiabierto: termina el 1 de julio, así que julio no entra.
+En PowerShell: `Get-Content -Raw resumen.py | docker compose -p jup107 exec -T backend python -` (y la misma línea con `-e TENANT=tenant-core` antes de `backend`).
+
+Con los datos cargados debe imprimir exactamente `data_status: partial` (por el registro sin fecha y el que no tiene dimensión), `EUR 90.00 6` y `USD 35.75 2`. El periodo es semiabierto: termina el 1 de julio, así que julio no entra. La segunda orden consulta Core Finance y debe imprimir solo `data_status: empty`; si no, hay costes en Core Finance y D1 y D9 no valen (se corrige el stack, no el guion).
 
 Después, por la interfaz: entrar en `http://localhost:5173` con la cuenta de demostración, elegir Growth Ops, poner Mes inicial 2026-01 y Mes final 2026-06 y agrupar por Servicio. Deben salir los valores del paso D3 de [guion.md](guion.md): 90.00 EUR (6 registros) y 35.75 USD (2 registros). La [receta de navegador](receta-navegador.md) hace esta comprobación y la del resto de pasos automáticamente sobre los valores de [esperados.json](esperados.json).
 

@@ -11,9 +11,10 @@
       "seconds": 15,
       "screen": "none",
       "declares_synthetic": true,
-      "action": "Con la aplicación abierta en el dashboard, sin tocar nada todavía.",
+      "action": "Con la aplicación abierta en el dashboard con Core Finance seleccionado (sin cifras en pantalla), sin tocar nada todavía.",
       "say": "Todo lo que vais a ver son datos sintéticos de coste, generados por nosotros para probar la aplicación. No son facturas de Azure ni vienen del dataset público.",
-      "expect": "Nada que comprobar en pantalla; el público oye la declaración antes de ver ninguna cifra."
+      "expect": "Nada que comprobar en pantalla; el público oye la declaración antes de ver ninguna cifra.",
+      "no_amounts": true
     },
     {
       "id": "D2",
@@ -25,7 +26,7 @@
         "from": "2026-01",
         "to": "2026-06"
       },
-      "action": "Elegir Growth Ops en el selector de cliente. Poner Mes inicial 2026-01 y Mes final 2026-06 (el valor por defecto son los seis últimos meses completos, que hoy no coinciden con los datos).",
+      "action": "Elegir Growth Ops en el selector de cliente. Poner Mes inicial 2026-01 y Mes final 2026-06; el periodo por defecto depende de la fecha, así que se fija siempre antes de leer ninguna cifra.",
       "say": "Elegimos el cliente Growth Ops y los seis primeros meses de 2026. Los dos meses extremos están incluidos.",
       "expect": "Aparece «enero de 2026 – junio de 2026 (UTC)» y los totales EUR y USD del periodo.",
       "ui_contains": [
@@ -71,7 +72,8 @@
       "expect": "Febrero 0.00 con 1 registro; marzo con «—» y «Sin datos de esta moneda.»; enero 100.00 (2) y abril 40.00 (2).",
       "ui_contains": [
         "Sin datos de esta moneda."
-      ]
+      ],
+      "chart_gap": true
     },
     {
       "id": "D5",

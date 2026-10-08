@@ -163,7 +163,17 @@ async function main() {
       const text = await main();
       for (const needle of step.ui_contains || []) if (!text.includes(needle)) notes.push(`no aparece «${needle}»`);
       for (const f of pack.figures.filter((x) => x.step === step.id)) notes.push(...checkFigure(text, f));
-      if (step.screen === 'none') info.push('paso hablado: sin comprobación de interfaz');
+      if (step.no_amounts) {
+        // La declaración de datos sintéticos va antes de ver ninguna cifra.
+        if (/\d[\d.,]*\s*(EUR|USD)\b/.test(text)) notes.push('hay importes en pantalla antes de la declaración');
+        else info.push('comprobado: sin importes en pantalla');
+      } else if (step.screen === 'none') info.push('paso hablado: sin comprobación de interfaz');
+      if (step.chart_gap) {
+        // Un hueco en la serie parte la curva del área en varios trazos (varios comandos M).
+        const curve = await page.locator('path.recharts-area-curve').first().getAttribute('d');
+        if (!curve || (curve.match(/M/g) || []).length < 2) notes.push('el gráfico no deja hueco en el mes sin datos');
+        else info.push('comprobado: la curva del gráfico se interrumpe');
+      }
       if (step.id === 'D9') {
         await tenant().selectOption('tenant-growth');
         await settle();

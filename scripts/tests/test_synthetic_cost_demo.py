@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import contextlib
 import importlib.util
+import io
 import json
 import re
 import sys
@@ -18,6 +20,12 @@ sys.modules[SPEC.name] = costs
 SPEC.loader.exec_module(costs)
 
 TENANT = "tenant-growth"
+TOOL_TESTS_PATH = ROOT / "scripts" / "tests" / "test_synthetic_costs.py"
+TOOL_SPEC = importlib.util.spec_from_file_location("economicon_synthetic_costs_tests_for_demo", TOOL_TESTS_PATH)
+assert TOOL_SPEC is not None and TOOL_SPEC.loader is not None
+TOOL_TESTS = importlib.util.module_from_spec(TOOL_SPEC)
+sys.modules[TOOL_SPEC.name] = TOOL_TESTS
+TOOL_SPEC.loader.exec_module(TOOL_TESTS)
 MAX_SECONDS = 240
 BIG_MONTH = "2026-07"
 ALLOWED_SCREENS = {"none", "billing-dashboard"}
@@ -101,7 +109,19 @@ def mismatches(records, figures):
     return found
 
 
-QUANTITY = re.compile(r"(\d+(?:[.,]\d+)?)\s*(?:euros|dólares|por ciento|EUR|USD|%)")
+# Any decimal number, and an integer only when it carries a unit.
+QUANTITY = re.compile(r"(?<![\w.])(\d+[.,]\d+|\d+(?=\s*(?:euros|dólares|por ciento|EUR|USD|%)))")
+SECRET_PROSE = re.compile(r"(?i)(contraseña|password)\s+(es|is)\s+\S{4,}|(contraseña|password)\s*[:=]\s*(?!process\.env)[^<\s'\"]\S{3,}")
+REHEARSAL_CLAIM = re.compile(r"(?i)\b(se ensayó|ensayó|ensayaron|hemos ensayado|fue ensayada|ha sido ensayada)\b")
+STEP_CLAIMS = {
+    "D4": r"[Ff]ebrero tiene un cero registrado y marzo no tiene ningún dato",
+    "D5": r"[Mm]ayo es un crédito",
+    "D9": r"al cambiar a Core Finance no aparece ninguno",
+}
+ANSWER_CLAIMS = {
+    "moneda": ("EUR", "USD"), "cero": ("cero",), "crédito": ("-50.00",), "cliente": ("No:", "no aparece"),
+    "etiqueta": ("Etiqueta",), "grande": ("no se dibuja",),
+}
 NAV_NAMES = ("anomalías", "recomendaciones", "corte global", "coste detallado")
 SECRET = re.compile(r"(?i)(DEMO_PASSWORD|TOKEN|SECRET|API[_-]?KEY)\s*[=:]\s*['\"]?[A-Za-z0-9][A-Za-z0-9._\-]{5,}")
 TOPIC_STEPS = {"moneda": {"D3", "D6"}, "hueco": {"D4"}, "cero": {"D4"}, "crédito": {"D5"}, "grande": {"D11"},
@@ -393,7 +413,75 @@ class PackageTests(unittest.TestCase):
 
     def test_no_file_of_the_package_holds_a_secret_like_assignment(self):
         for path in PACKAGE.iterdir():
-            self.assertIsNone(SECRET.search(path.read_text(encoding="utf-8")), path.name)
+            text = path.read_text(encoding="utf-8")
+            self.assertIsNone(SECRET.search(text), path.name)
+            self.assertIsNone(SECRET_PROSE.search(text), path.name)
+
+    def test_no_default_period_claim_that_depends_on_todays_date(self):
+        for step in self.steps:
+            text = " ".join(str(step.get(k, "")) for k in ("action", "say", "expect"))
+            self.assertNotRegex(text, r"(?i)\bhoy\b", step["id"])
+        self.assertNotRegex(self.read("guion.md"), r"(?i)\bhoy\b")
+
+    def test_the_first_step_is_taken_with_no_amount_on_screen_and_the_preparation_says_how(self):
+        first = self.steps[0]
+        self.assertTrue(first.get("no_amounts"))
+        self.assertIn("Core Finance", first["action"])
+        preparation = self.read("preparacion.md")
+        self.assertRegex(preparation, r"Core Finance[^\n]*sin cifras|sin cifras[^\n]*Core Finance")
+        code = "\n".join(re.findall(r"(?s)```js\n(.*?)```", self.read("receta-navegador.md")))
+        self.assertIn("no_amounts", code)
+
+    def test_no_document_claims_a_rehearsal_that_has_no_record(self):
+        for path in PACKAGE.iterdir():
+            if path.name == "registro-ensayo.md":
+                continue
+            self.assertIsNone(REHEARSAL_CLAIM.search(path.read_text(encoding="utf-8")), path.name)
+
+    def test_the_qualitative_claims_of_the_key_steps_and_answers_are_pinned(self):
+        say = {s["id"]: s["say"] for s in self.steps}
+        for step_id, pattern in STEP_CLAIMS.items():
+            self.assertRegex(say[step_id], pattern, step_id)
+        rows = [l for l in self.read("preguntas.md").splitlines()
+                if l.startswith("|") and "---" not in l and not l.startswith("| Pregunta")]
+        for row in rows:
+            cells = [c.strip() for c in row.strip("|").split("|")]
+            for topic, words in ANSWER_CLAIMS.items():
+                if topic in cells[0].lower():
+                    for word in words:
+                        self.assertIn(word, cells[2], (topic, word))
+
+    def test_the_gap_in_the_chart_is_checked_by_the_recipe_and_flagged_in_the_step(self):
+        step = next(s for s in self.steps if s["id"] == "D4")
+        self.assertTrue(step.get("chart_gap"))
+        code = "\n".join(re.findall(r"(?s)```js\n(.*?)```", self.read("receta-navegador.md")))
+        self.assertIn("chart_gap", code)
+
+    def test_the_preparation_checks_the_other_client_and_gives_the_powershell_variant(self):
+        text = self.read("preparacion.md")
+        self.assertIn("tenant-core", text)
+        self.assertIn('os.environ.get("TENANT"', text)
+        self.assertRegex(text, r"Get-Content -Raw resumen\.py \| docker compose")
+
+    def test_the_tool_messages_quoted_by_the_preparation_are_what_the_tool_prints(self):
+        text = self.read("preparacion.md")
+        store = TOOL_TESTS.FakeStore()
+        env = {"DATABASE_URL": "cockroachdb://u:pw@host/db"}
+
+        def run(command):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                code = costs.main([command], env=env, store_factory=lambda url: store)
+            return code, out.getvalue().strip()
+
+        self.assertEqual(run("status")[1].split(":")[1].split(",")[0].strip(), "estado absent")
+        applied = run("apply")
+        self.assertEqual(applied, (0, "loaded: 2 ingestas y 10 registros en tenant-growth."))
+        first, second = run("remove"), run("remove")
+        self.assertEqual(first, (0, "Retiradas 2 ingestas y 10 registros sinteticos."))
+        self.assertEqual(second, (0, "Retiradas 0 ingestas y 0 registros sinteticos."))
+        for quoted in (applied[1].rstrip("."), first[1], second[1], "absent"):
+            self.assertIn(quoted, text, quoted)
 
     def test_the_undated_amount_is_not_spoken_because_the_screen_only_shows_the_count(self):
         step = next(s for s in self.steps if s["id"] == "D8")

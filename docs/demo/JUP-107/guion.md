@@ -9,14 +9,14 @@ Antes de empezar, seguir [preparacion.md](preparacion.md) hasta tener los datos 
 ### D1 · Declarar que los datos son sintéticos
 
 - **Duración:** 15 s
-- **Acción:** Con la aplicación abierta en el dashboard, sin tocar nada todavía.
+- **Acción:** Con la aplicación abierta en el dashboard con Core Finance seleccionado (sin cifras en pantalla), sin tocar nada todavía.
 - **Qué decir:** «Todo lo que vais a ver son datos sintéticos de coste, generados por nosotros para probar la aplicación. No son facturas de Azure ni vienen del dataset público.»
 - **Resultado esperado:** Nada que comprobar en pantalla; el público oye la declaración antes de ver ninguna cifra.
 
 ### D2 · Elegir el cliente y el periodo
 
 - **Duración:** 15 s
-- **Acción:** Elegir Growth Ops en el selector de cliente. Poner Mes inicial 2026-01 y Mes final 2026-06 (el valor por defecto son los seis últimos meses completos, que hoy no coinciden con los datos).
+- **Acción:** Elegir Growth Ops en el selector de cliente. Poner Mes inicial 2026-01 y Mes final 2026-06; el periodo por defecto depende de la fecha, así que se fija siempre antes de leer ninguna cifra.
 - **Qué decir:** «Elegimos el cliente Growth Ops y los seis primeros meses de 2026. Los dos meses extremos están incluidos.»
 - **Resultado esperado:** Aparece «enero de 2026 – junio de 2026 (UTC)» y los totales EUR y USD del periodo.
 
