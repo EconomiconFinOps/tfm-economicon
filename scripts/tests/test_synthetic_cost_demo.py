@@ -347,7 +347,8 @@ class PackageTests(unittest.TestCase):
             for line in (f"- **Acción:** {step['action']}", f"- **Qué decir:** «{step['say']}»",
                          f"- **Resultado esperado:** {step['expect']}"):
                 self.assertIn(line, lines, (step["id"], line[:40]))
-            self.assertTrue(any(l.startswith(f"- **Duración:** {step['seconds']} s") for l in lines), step["id"])
+            duration = f"- **Duración:** {step['seconds']} s" + (" (opcional, no cuenta en el total)" if step.get("optional") else "")
+            self.assertIn(duration, lines, step["id"])
         declaring = [s for s in self.steps if s.get("declares_synthetic")]
         self.assertIn("sintétic", declaring[0]["say"].lower())
 
@@ -482,6 +483,44 @@ class PackageTests(unittest.TestCase):
         self.assertEqual(second, (0, "Retiradas 0 ingestas y 0 registros sinteticos."))
         for quoted in (applied[1].rstrip("."), first[1], second[1], "absent"):
             self.assertIn(quoted, text, quoted)
+
+    def test_the_literals_the_recipe_looks_for_are_tied_to_the_figures_and_periods(self):
+        steps = {s["id"]: s for s in self.steps}
+        figures = self.package["figures"]
+        undated = next(f for f in figures if f["kind"] == "undated")
+        self.assertIn(f"{undated['records']} registros sin fecha excluidos", steps["D8"]["ui_contains"])
+        keys = {f["group_by"] for f in figures if f["step"] == "D7"}
+        self.assertEqual(keys, {"cost_center"})
+        self.assertIn("Etiqueta consultada: cost_center", steps["D7"]["ui_contains"])
+        months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio"]
+        period = steps["D2"]["period"]
+        label = lambda ym: f"{months[int(ym[5:7]) - 1]} de {ym[:4]}"
+        self.assertIn(f"{label(period['from'])} – {label(period['to'])} (UTC)", steps["D2"]["ui_contains"])
+
+    def test_the_azure_labels_on_the_screen_are_announced_and_answered(self):
+        step = next(s for s in self.steps if s.get("declares_synthetic"))
+        self.assertRegex(step["say"], r"rótulos[^.]*Azure")
+        rows = [l for l in self.read("preguntas.md").splitlines()
+                if l.startswith("|") and len(l.split("|")) > 3 and "azure" in l.split("|")[1].lower()]
+        self.assertTrue(rows, "falta la pregunta sobre los rótulos de Azure")
+        self.assertIn("sintétic", rows[0].split("|")[3].lower())
+
+    def test_the_first_step_checks_the_active_client_and_not_only_the_absence_of_amounts(self):
+        code = "\n".join(re.findall(r"(?s)```js\n(.*?)```", self.read("receta-navegador.md")))
+        block = code.split("if (step.no_amounts)")[1].split("if (step.chart_gap)")[0]
+        self.assertIn("inputValue()", block)
+        self.assertIn("tenant-core", block)
+
+    def test_the_cautions_that_keep_the_demo_honest_are_pinned_in_the_documents(self):
+        questions = self.read("preguntas.md")
+        self.assertIn("Es una demostración visual; el aislamiento está cubierto por sus propias pruebas", questions)
+        self.assertNotRegex(questions, r"(?i)prueba de autorización completa")
+        preparation = self.read("preparacion.md")
+        self.assertIn("Parar antes cualquier otro stack", preparation)
+        self.assertIn("no sustituye una prueba de autorización", self.read("guion.md"))
+
+    def test_the_preparation_does_not_call_the_ports_fixed(self):
+        self.assertNotIn("puertos fijos", self.read("preparacion.md"))
 
     def test_the_undated_amount_is_not_spoken_because_the_screen_only_shows_the_count(self):
         step = next(s for s in self.steps if s["id"] == "D8")

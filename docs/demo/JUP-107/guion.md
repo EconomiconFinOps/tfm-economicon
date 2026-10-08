@@ -10,7 +10,7 @@ Antes de empezar, seguir [preparacion.md](preparacion.md) hasta tener los datos 
 
 - **Duración:** 15 s
 - **Acción:** Con la aplicación abierta en el dashboard con Core Finance seleccionado (sin cifras en pantalla), sin tocar nada todavía.
-- **Qué decir:** «Todo lo que vais a ver son datos sintéticos de coste, generados por nosotros para probar la aplicación. No son facturas de Azure ni vienen del dataset público.»
+- **Qué decir:** «Todo lo que vais a ver son datos sintéticos de coste, generados por nosotros para probar la aplicación. No son facturas de Azure ni vienen del dataset público, aunque los rótulos de la pantalla digan Azure.»
 - **Resultado esperado:** Nada que comprobar en pantalla; el público oye la declaración antes de ver ninguna cifra.
 
 ### D2 · Elegir el cliente y el periodo

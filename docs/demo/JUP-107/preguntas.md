@@ -13,6 +13,7 @@ Respaldo para la ronda de preguntas. Cada fila dice qué paso de [guion.md](guio
 | ¿Se pueden repartir los costes por etiqueta? | D7 | Sí: agrupando por Etiqueta con una clave, aquí `cost_center`; lo que no tiene etiqueta queda en «Sin dimensión». |
 | ¿Qué pasa con los registros sin fecha o sin dimensión? | D8 | No se reparten ni se esconden: se avisan como datos parciales y se cuentan aparte. |
 | ¿Un cliente ve los costes de otro? | D9 | No: al cambiar a Core Finance no aparece ningún coste de Growth Ops. Es una demostración visual; el aislamiento está cubierto por sus propias pruebas. |
+| ¿Por qué pone «Azure» en pantalla si los datos no son de Azure? | D1 | Los rótulos de la interfaz dicen Azure porque los datos tienen la forma de los costes de Azure, pero son sintéticos: no son facturas ni proceden del dataset público. |
 | ¿Son datos reales? | D1, D10 | No: son datos sintéticos creados para probar la aplicación; no vienen de Azure ni del dataset público. |
 | ¿Funciona el ahorro potencial, las anomalías o las recomendaciones con estos datos? | D10 | No: esas pantallas usan datos fijos de la maqueta y no salen de estos costes; el ahorro potencial no está disponible. |
 

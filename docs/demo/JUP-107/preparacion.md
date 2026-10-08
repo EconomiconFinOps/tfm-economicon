@@ -5,7 +5,7 @@ Pasos para dejar lista la demo de [guion.md](guion.md) y para deshacerla. Los da
 ## Antes de empezar
 
 - Usar un **stack aislado con volúmenes nuevos**, no el de otra tarea. Los ejemplos usan el proyecto `jup107`.
-- `-p` aísla contenedores y volúmenes, **no los puertos del equipo**: Compose publica puertos fijos (frontend 5173, API 8000, processor 8001, Azure simulada 8002). Parar antes cualquier otro stack que los use, o `up` fallará o chocará.
+- `-p` aísla contenedores y volúmenes, **no los puertos del equipo**: Compose publica puertos por defecto (frontend 5173, API 8000, processor 8001, Azure simulada 8002). Parar antes cualquier otro stack que los use, o `up` fallará o chocará.
 - No cambiar el puerto del frontend sin cambiar también el CORS: el backend solo acepta los orígenes de `CORS_ALLOWED_ORIGINS` (el ejemplo del README del proyecto usa `http://localhost:5173` y `http://127.0.0.1:5173`) y con otro puerto la interfaz no podrá hablar con la API.
 - Antes de la declaración del paso D1 no debe haber **cifras en pantalla**: abrir la aplicación con **Core Finance** seleccionado (sin cifras en pantalla). El navegador recuerda el último cliente y periodo, así que tras un ensayo conviene cambiar a Core Finance o abrir una ventana privada. D9 y D1 suponen además que Core Finance no tiene costes en este stack: se comprueba en el paso 3.
 - La demo de JUP-065 y el recorrido de JUP-104 **suponen `tenant-growth` sin costes**. Esta demo lo carga a propósito, así que no se prepara sobre un stack donde esas demos vayan a usarse después sin retirar los datos antes.

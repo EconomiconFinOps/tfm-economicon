@@ -165,8 +165,9 @@ async function main() {
       for (const f of pack.figures.filter((x) => x.step === step.id)) notes.push(...checkFigure(text, f));
       if (step.no_amounts) {
         // La declaración de datos sintéticos va antes de ver ninguna cifra.
+        if ((await tenant().inputValue()) !== 'tenant-core') notes.push('el cliente activo no es tenant-core (Core Finance)');
         if (/\d[\d.,]*\s*(EUR|USD)\b/.test(text)) notes.push('hay importes en pantalla antes de la declaración');
-        else info.push('comprobado: sin importes en pantalla');
+        else info.push('comprobado: Core Finance activo y sin importes en pantalla');
       } else if (step.screen === 'none') info.push('paso hablado: sin comprobación de interfaz');
       if (step.chart_gap) {
         // Un hueco en la serie parte la curva del área en varios trazos (varios comandos M).
