@@ -421,5 +421,5 @@
   "notes": [
     "El proveedor de embeddings es mock: la similitud y los aciertos de recuperacion no tienen significado semantico."
   ],
-  "generated_at": "2026-10-08T23:30:00Z"
+  "generated_at": "2026-10-08T21:30:00Z"
 }

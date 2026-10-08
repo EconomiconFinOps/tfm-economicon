@@ -1,6 +1,6 @@
 # Informe de metricas tecnicas del asistente
 
-Catalogo 1.0.0 · generado 2026-10-08T23:30:00Z
+Catalogo 1.0.0 · generado 2026-10-08T21:30:00Z
 Commit 8a116df28472a30b21b996ab6fa02377dde7b2c1 · fecha de la ejecucion 2026-10-08T21:01:44Z · proveedor litellm · alias economicon-embedding
 Generacion: {"model_alias": "plantilla-sin-modelo", "temperature": null}
 Huellas: corpus cf2633b96ca30a63f70952c6cb23ca8139dcb665e9a51a0d52dbcc144b00c8dc · bateria 1.0.0 e15349564edfa5ce6cef94ff90ee2bfd15ef17656a2c4b201ac37bcd6d44571c

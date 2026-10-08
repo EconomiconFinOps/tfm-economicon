@@ -110,7 +110,10 @@ Un umbral obligatorio que no se puede calcular se informa como no disponible y e
 - **`structured_ok`** significa que la respuesta cumple el contrato de respuesta del chat. No es la salida estructurada `FinOpsResponse` de JUP-024; cuando el chat la devuelva, esa comprobación tendrá que añadirse.
 - **Cuando el chat genere con modelo** (JUP-035), la ficha lleva el alias y la temperatura reales de la generación, y la latencia de `generation` pasa a tener sentido junto a la del total; hasta entonces las filas de etapa no se interpretan.
 - **Los embeddings `mock`** no tienen significado semántico: las métricas de recuperación (REL) de una ejecución con `mock` no miden relevancia real.
-- **Formas que el lector de cifras no reconoce:** el espacio como separador de miles y las cifras con palabras. Una cifra previa en «pasó de 80 % a 90 %» puede cumplir un 90 % esperado. Los puntos juzgados por personas cubren esos huecos y están registrados en `openspec/findings/backlog.md` (RF-070-001 a RF-070-004).
+- **Formas que el lector de cifras no reconoce:** el espacio como separador de miles y las cifras con palabras. Una cifra previa en «pasó de 80 % a 90 %» puede cumplir un 90 % esperado. Los puntos juzgados por personas cubren esos huecos y están registrados en `openspec/findings/backlog.md` (RF-070-001 a RF-070-010).
+- **Cifras derivadas:** una cifra que está en el prompt, o que sale de sumar, restar o dividir las cifras del prompt, cuenta como rastreable. Por eso GRD-2 igual a cero es una cota inferior de lo inventado y no una garantía.
+- **La latencia de un caso bloqueado se atribuye a la etapa `embedding`** (`INFRA_STAGE` en la herramienta), aunque el fallo sea un timeout de la petición completa. La nota «Etapas no medidas» del informe solo habla de la latencia.
+- **Requiere Python 3.12 o superior:** la herramienta usa comillas anidadas dentro de f-strings y no carga en 3.11. El README y la CI usan 3.12.
 - **Un revisor se identifica por su nombre sin tildes ni mayúsculas:** «Ana» y «ana» son la misma persona. Más de dos revisores en un punto es un error.
 - **Las reglas de las prohibiciones son una cota inferior** y las cifras con palabras fallan por diseño.
 - **Un modelo puede variar** entre ejecuciones aunque la temperatura sea cero; por eso las tres repeticiones.

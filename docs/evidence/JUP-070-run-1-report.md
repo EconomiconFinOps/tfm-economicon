@@ -1,6 +1,6 @@
 # Informe de metricas tecnicas del asistente
 
-Catalogo 1.0.0 · generado 2026-10-08T23:30:00Z
+Catalogo 1.0.0 · generado 2026-10-08T21:30:00Z
 Commit b12b3c80d0954a1f1a7bd12fae31456f269cff52 · fecha de la ejecucion 2026-10-08T20:13:54Z · proveedor mock · alias mock
 Generacion: {"model_alias": "plantilla-sin-modelo", "temperature": null}
 Huellas: corpus cf2633b96ca30a63f70952c6cb23ca8139dcb665e9a51a0d52dbcc144b00c8dc · bateria 1.0.0 e15349564edfa5ce6cef94ff90ee2bfd15ef17656a2c4b201ac37bcd6d44571c
