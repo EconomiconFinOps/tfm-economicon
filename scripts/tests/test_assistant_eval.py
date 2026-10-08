@@ -579,8 +579,14 @@ class CommandLineTests(unittest.TestCase):
             (folder / "run.json").write_text(json.dumps(header), encoding="utf-8")
             code, out, err = self.run_cli(["score", "--raw", str(folder / "raw.json"), "--judgments", str(folder / "judgments.json"),
                                           "--run-info", str(folder / "run.json"), "--output", str(folder / "results.json"),
-                                          "--report", str(folder / "report.md"), "--generated-at", "2026-10-09T12:00:00Z"])
+                                          "--report", str(folder / "report.md"), "--report-json", str(folder / "report.json"),
+                                          "--generated-at", "2026-10-09T12:00:00Z"])
             self.assertEqual(code, 0, err)
+            saved = json.loads((folder / "report.json").read_text(encoding="utf-8"))
+            self.assertEqual(saved["metrics"]["ACC-1"]["k"], 0)
+            code, shown, _ = self.run_cli(["compare", str(folder / "report.json"), str(folder / "report.json")])
+            self.assertEqual(code, 0)
+            self.assertIn("ACC-1", shown)
             results = json.loads((folder / "results.json").read_text(encoding="utf-8"))
             metrics.validate_results(results, BANK, LABELS, CATALOGUE)
             report = (folder / "report.md").read_text(encoding="utf-8")

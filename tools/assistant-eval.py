@@ -456,6 +456,8 @@ def collect_cases(base_url: str, email: str, password: str, tenant: str, inputs:
                                    "distance": r["distance"], "content": r.get("content", "")} for r in reply.get("retrieved_context", [])]
         except (urllib.error.URLError, OSError, ValueError, KeyError) as error:
             status, category = failure_of(error)
+            if isinstance(error, urllib.error.HTTPError):
+                error.close()
             entry["status"], entry["failure_category"], entry["total_ms"] = status, category, None
             if status is not None and status >= 500:
                 entry["server_errors"] += 1
@@ -556,6 +558,8 @@ def run_score(args) -> int:
         report["generated_at"] = args.generated_at
     Path(args.output).write_text(dumps(results), encoding="utf-8")
     Path(args.report).write_text(render_report(metrics.render_markdown(report, catalogue), result, analysis), encoding="utf-8")
+    if args.report_json:
+        Path(args.report_json).write_text(dumps(report), encoding="utf-8")
     print(f"Veredicto: {'Aceptado' if result['accepted'] else 'No aceptado'}")
     for reason in result["reasons"]:
         print(f"- {reason}")
@@ -589,6 +593,7 @@ def parser() -> argparse.ArgumentParser:
     score.add_argument("--run-info", type=Path, required=True)
     score.add_argument("--output", type=Path, required=True)
     score.add_argument("--report", type=Path, required=True)
+    score.add_argument("--report-json", type=Path, help="informe del calculador en JSON, para compare")
     score.add_argument("--rules", type=Path, default=RULES_PATH)
     score.add_argument("--provisional", action="store_true")
     score.add_argument("--generated-at")

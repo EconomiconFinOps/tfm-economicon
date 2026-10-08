@@ -13,7 +13,7 @@
 
 ## 3. Metodología y medición de referencia
 
-- [ ] 3.1 Escribir `docs/validation/JUP-070-evaluation.md` (cómo ejecutar, qué decide la regla y qué las personas, doble revisión, repeticiones, lectura del veredicto, límites y qué no demuestra) y enlazarlo desde `docs/validation/README.md`.
+- [x] 3.1 Escribir `docs/validation/JUP-070-evaluation.md` (cómo ejecutar, qué decide la regla y qué las personas, doble revisión, repeticiones, lectura del veredicto, límites y qué no demuestra) y enlazarlo desde `docs/validation/README.md`.
 - [ ] 3.2 Levantar un stack aislado (`docker compose -p jup070`), cargar el corpus del proyecto por el flujo existente y recoger las respuestas del chat actual con `collect`; generar la hoja de revisión.
 - [ ] 3.3 Puntuar la medición de referencia con los juicios que se aporten, calcular el informe con `tools/assistant-metrics.py`, guardar el fichero de resultados y el informe sin texto y escribir `docs/evidence/JUP-070-validation.md` con lo medido, el commit, el proveedor, que ningún modelo generó las respuestas y si la medición es provisional.
 - [ ] 3.4 Parar el stack y borrar sus volúmenes, y comprobar que `apps/`, `tools/assistant-metrics.py` y la batería no han cambiado.
