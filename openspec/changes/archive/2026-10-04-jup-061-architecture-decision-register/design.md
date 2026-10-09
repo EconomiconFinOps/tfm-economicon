@@ -2,13 +2,13 @@ JUP: JUP-061
 
 ## Diseño
 
-El [índice ADR](../../../docs/adr/README.md) es el único inventario. Las justificaciones
+El [índice ADR](../../../../docs/adr/README.md) es el único inventario. Las justificaciones
 permanecen en cada ADR o fuente existente; la evidencia de esta auditoría registra
 método y comprobaciones.
 
-ADR aplicables: [pgvector](../../../docs/adr/ADR-0013-pgvector-retrieval-baseline.md),
-[auth demo](../../../docs/adr/ADR-0014-demo-auth-boundary.md) y
-[Compose](../../../docs/adr/ADR-0015-local-compose-deployment-boundary.md), Proposed.
+ADR aplicables: [pgvector](../../../../docs/adr/ADR-0013-pgvector-retrieval-baseline.md),
+[auth demo](../../../../docs/adr/ADR-0014-demo-auth-boundary.md) y
+[Compose](../../../../docs/adr/ADR-0015-local-compose-deployment-boundary.md), Proposed.
 Son reconstrucciones explícitas de razones del baseline; no nuevas tecnologías,
 aceptaciones humanas ni justificaciones históricas atribuidas retroactivamente.
 
@@ -31,7 +31,9 @@ Paris revisa la coherencia documental; Lucia valida enlaces, estados y uso en
 memoria. Victor tiene pairing previsto, sin atribuirlo como hecho. Intercambio
 actualizado el 03/10 según la validación de Lucia en PR #60; reemplaza los roles
 del corte inicial. La ratificación corresponde a los responsables, no al autor.
-ADR-0002 mantiene sus condiciones de aceptación conjunta. ADR-0005 requiere aclarar
+Actualización05/10: ADR-0002 Accepted por #71, integrada en54bbbcd; sus condiciones
+de aprobación documental están satisfechas y la clave virtual sigue pendiente
+como seguimiento operativo, sin provisión acreditada. ADR-0005 requiere aclarar
 su estado pese al merge de implementación. El despliegue productivo y la selección
 comparativa original de CockroachDB no quedan acreditados por documentar el baseline.
 
@@ -51,3 +53,11 @@ hacia atrás. Se conservan la captura completa de transiciones y la aserción qu
 rechaza cualquier reaparición de sessionExpired. Cambiar REPLACE por PUSH o usar
 opciones vacías debe seguir fallando: la espera no sustituye esa comprobación.
 Esta es una reparación del test, sin cambios en LoginPage ni nueva decisión ADR.
+
+## Cierre documental — 04/10/2026
+
+PR #60 integrada en develop (d61e631). Reviews de Paris y Lucía aprobadas,
+enlazadas en la evidencia; la review de Victor no acredita coautoría.
+El archivo promueve los dos requisitos del registro a la especificación
+principal. Las ratificaciones de ADR y el pairing no acreditado mantienen
+el seguimiento delimitado en tasks.md; no se conceden por archivar el cambio.

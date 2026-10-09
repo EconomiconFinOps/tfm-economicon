@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "scripts": {
+    "contributions:test": "python -m unittest discover -s tools/tests -p test_team_contributions.py -v",
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
     "lint": "turbo run lint",
@@ -38,6 +39,7 @@
     "retrieval-labels:test": "node --test tools/retrieval-labels.test.mjs",
     "retrieval-calibration:test": "python -m unittest discover -s scripts/tests -p test_retrieval_calibration.py",
     "assistant-metrics:test": "python -m unittest discover -s scripts/tests -p test_assistant_metrics.py",
+    "assistant-eval:test": "python -m unittest discover -s scripts/tests -p test_assistant_eval.py",
     "synthetic-costs:test": "python -m unittest discover -s scripts/tests -p test_synthetic_costs.py"
   },
   "devDependencies": {
