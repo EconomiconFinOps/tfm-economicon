@@ -26,8 +26,8 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 | e. Diseño y desarrollo de la solución de IA | JUP-063 |
 | f. Integración con herramientas DevOps | Sin tarjeta confirmada: el documento apunta a JUP-061 o JUP-060, pendiente de decidir en Trello |
 | g. Uso de modelos preentrenados | JUP-063 |
-| h. Evaluación de la solución | Sin tarjeta de documentación propia: los resultados salen de las tarjetas de evaluación JUP-067 a JUP-071 y JUP-077, y quién redacta el apartado se decide en Trello |
-| i. Conclusiones y trabajo futuro | Sin tarjeta propia (cierre de la memoria) |
+| h. Evaluación de la solución | JUP-109 (los resultados salen de las tarjetas de evaluación JUP-067 a JUP-071 y JUP-077) |
+| i. Conclusiones y trabajo futuro | JUP-110 |
 
 La persona responsable de cada apartado es la que figura en su tarjeta.
 

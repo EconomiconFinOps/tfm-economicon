@@ -10,6 +10,7 @@ Documento `docs/memoria/README.md` y una línea en `AGENTS.md` que declaran dón
 - El mapa de apartados enlaza con tarjetas y no copia personas ni fechas, que son de Trello.
 - La autorización para leer o modificar la concede quien lidera la tarjeta del apartado afectado, por separado para leer y para modificar y por apartado.
 - No se incluye la URL del documento en el repositorio; el enlace vive en la tarjeta.
+- Los apartados de evaluación y conclusiones recibieron tarjeta propia (JUP-109 y JUP-110) después de las pasadas adversariales; el documento y la spec se actualizaron en consecuencia. Queda sin tarjeta confirmada el apartado de integración con DevOps.
 
 ## Adversarial Review (pass 1)
 

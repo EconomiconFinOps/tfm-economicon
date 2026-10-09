@@ -44,8 +44,8 @@ The governance document SHALL list every memory section, from the introduction t
 
 #### Scenario: A section has no card
 
-- **WHEN** a contributor looks up the evaluation or conclusions sections
-- **THEN** the document states that they have no documentation card of their own instead of leaving them blank
+- **WHEN** a contributor looks up a section whose card is not yet confirmed, such as the DevOps integration section
+- **THEN** the document states that it has no confirmed card instead of leaving it blank
 
 #### Scenario: The map names no person and no date
 
