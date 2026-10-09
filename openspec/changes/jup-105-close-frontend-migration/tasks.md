@@ -34,26 +34,33 @@
 
 ## 3. Recuento de pantallas y textos vivos que nadie más toca
 
-- [ ] 3.1 Recontar las rutas contra `apps/frontend/src/routes.tsx` y, para cada una, comprobar en su
+- [x] 3.1 Recontar las rutas contra `apps/frontend/src/routes.tsx` y, para cada una, comprobar en su
   página de dónde salen los datos y si la interfaz muestra un rótulo de demostración. Guardar la
   tabla y los comandos en la evidencia. Resultado esperado: 9 rutas bajo sesión más `/login`; 5 con
-  datos del backend, 4 de demostración, 3 de ellas sin rótulo.
-- [ ] 3.2 `apps/frontend/README.md`, sección «Rutas»: añadir las columnas de origen de datos y de
+  datos del backend, 4 de demostración, 3 de ellas sin rótulo. Hecho: coincide con lo esperado;
+  tabla en «Recuento de pantallas» de la evidencia.
+- [x] 3.2 `apps/frontend/README.md`, sección «Rutas»: añadir las columnas de origen de datos y de
   rótulo de demostración, la fila de `/system-health` y la línea con fecha y commit de verificación.
   Revisar que las notas del mismo archivo sobre las pantallas de demostración coinciden con la tabla.
-- [ ] 3.3 `apps/frontend/src/routes.tsx`: corregir el comentario de cabecera. Debe decir que las
+  Hecho: la nota de «Notas» ya coincidía y ahora remite a la tabla.
+- [x] 3.3 `apps/frontend/src/routes.tsx`: corregir el comentario de cabecera. Debe decir que las
   pantallas ya no son «las 8 portadas», que `/overview-legacy` no es el único dashboard con datos
   reales y que la condición para retirarla ya se cumple, remitiendo a `RF-105-001`. Sin cambios en
-  el código. Ejecutar `typecheck` y `lint` del frontend.
-- [ ] 3.4 `docs/planning/JUP-097-frontend-data-gap-map.md`: comprobar en
+  el código. Ejecutar `typecheck` y `lint` del frontend. Hecho: ambos con salida 0.
+- [x] 3.4 `docs/planning/JUP-097-frontend-data-gap-map.md`: comprobar en
   `ExecutiveCostDashboard.tsx` qué datos muestra hoy `/` y actualizar sus filas, la nota del 27/09
-  («pendiente de integración») y el resumen por capacidad. Enlazar al recuento del README.
-- [ ] 3.5 `docs/evidence/JUP-095-validation.md`: añadir una nota fechada, sin reescribir las líneas
+  («pendiente de integración») y el resumen por capacidad. Enlazar al recuento del README. Hecho:
+  la serie mensual (C1) y el desglose (C2) pasan a resueltos en `/`, el inventario (C7) a retirado y
+  el ahorro a capacidad ausente en `RF-091-003`.
+- [x] 3.5 `docs/evidence/JUP-095-validation.md`: añadir una nota fechada, sin reescribir las líneas
   25, 102 y 110, que diga que `Frontend tests` dejó de ser un check obligatorio el 19/09 y remita a
-  `docs/governance/github-branch-protection.md`.
-- [ ] 3.6 Comprobar si `docs/architecture.md` y el `README.md` de la raíz afirman algo del frontend
+  `docs/governance/github-branch-protection.md`. Hecho: nota al inicio del documento, que añade las
+  otras dos afirmaciones superadas (datos reales y CORS).
+- [x] 3.6 Comprobar si `docs/architecture.md` y el `README.md` de la raíz afirman algo del frontend
   que ya no sea cierto (recomendación 7 del spike). Corregirlo o dejar escrito en la evidencia que no
-  hay nada que cambiar.
+  hay nada que cambiar. Hecho: `docs/architecture.md` tenía el recuadro de `GET /billing/summary`
+  desfasado y se corrigió tras comprobarlo en el backend; el `README.md` de la raíz no necesita
+  cambios.
 
 ## 4. Deuda documental: enlaces relativos (`RF-099-004`)
 

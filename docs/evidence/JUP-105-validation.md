@@ -10,8 +10,8 @@
 - CI: pendiente.
 
 > Estado de este documento: en curso. Contiene la línea base y la consulta al equipo (grupo 1 de
-> `tasks.md`) y el endurecimiento de `allowJs` (grupo 2). El resto de secciones se añade según avanza
-> la tarjeta.
+> `tasks.md`), el endurecimiento de `allowJs` (grupo 2) y el recuento de pantallas con los textos
+> vivos corregidos (grupo 3). El resto de secciones se añade según avanza la tarjeta.
 
 ## Línea base: antes de cambiar nada
 
@@ -250,3 +250,80 @@ guardián (decisión 1 del `design.md`).
 
 La sección de seguimiento de [ADR-0003](../adr/ADR-0003-frontend-typescript.md) recoge la ejecución
 de su decisión 2 con fecha y enlace a este documento. El texto de la decisión no se editó.
+
+## Recuento de pantallas (grupo 3, tarea 3.1)
+
+Verificado el 2026-10-09 sobre `develop` en `ff2ea6b`, ruta por ruta contra
+`apps/frontend/src/routes.tsx`. Método: para cada pantalla se leyeron sus imports y las llamadas de
+sus hooks a `services/api.ts`, se buscó texto visible de demostración en la pantalla y en
+`src/components/`, y se contrastó con los puntos de entrada de `api.ts`. La primera búsqueda de
+rótulos no devolvió nada ni siquiera para `/anomalies`, que sí lo tiene, así que se descartó y se
+repitió con otras rutas de búsqueda.
+
+| Ruta | Pantalla | Origen de los datos | Evidencia | Rótulo de demostración |
+| --- | --- | --- | --- | --- |
+| `/login` | `LoginPage` | Backend | `login()` → `POST /auth/login` | No aplica |
+| `/` | `ExecutiveCostDashboard` | Backend | `useExecutiveCostKpis` → `fetchBillingSummary`; sin imports de `src/data/demo/` | No aplica |
+| `/operational` | `OperationalCostDashboard` | Demostración | importa `@/data/demo/operationalCostDashboard`; sin llamadas a la API | No |
+| `/cuts` | `ExecutiveCutDashboard` | Demostración | importa `@/data/demo/executiveCutDashboard`; sin llamadas a la API | No |
+| `/anomalies` | `AnomaliesPanel` | Demostración | importa `@/data/demo/anomaliesPanel`; sin llamadas a la API | Sí: aviso «Datos de demostración · periodo», leyenda de la tabla y rótulo en la exportación |
+| `/recommendations` | `RecommendationsPanel` | Demostración | importa `@/data/demo/recommendationsPanel`; sin llamadas a la API | No |
+| `/ingest` | `IngestPage` | Backend | `createIngestJob` → `POST /jobs/ingest` | No aplica |
+| `/assistant` | `ConversationsPage` | Backend | `createConversation`, `listConversations`, `getConversation`, `sendConversationMessage` → `/assistant/conversations` | No aplica |
+| `/overview-legacy` | `DashboardPage` | Backend | `useDashboardData` → `fetchBillingSummary` y `fetchHealth` (`GET /health`) | No aplica |
+| `/system-health` | `SystemHealthDashboard` | Backend | `useSystemHealth` → `GET /health/status` y `POST /health/provider-check` | No aplica; rotula «Datos de ejemplo» por componente cuando su origen es `mock` |
+
+**Resultado: 9 rutas bajo sesión más `/login`; 5 con datos del backend, 4 de demostración, 3 de ellas
+sin rótulo** (`/operational`, `/cuts` y `/recommendations`). Coincide con lo que dio la lectura al
+proponer. El recuento vive en la sección «Rutas» de `apps/frontend/README.md`, con fecha y commit.
+
+Se repetirá tras traer `develop` (tarea 6.1) por si se fusionan #66 o #69.
+
+## Textos vivos corregidos (grupo 3, tareas 3.2 a 3.6)
+
+| Archivo | Qué decía | Qué dice ahora |
+| --- | --- | --- |
+| `apps/frontend/README.md`, «Rutas» | Tabla sin `/system-health`, sin distinguir demostración de backend ni rótulo; notas aparte | Tabla con las columnas de origen y de rótulo, fila de `/system-health`, recuento fechado y aviso de que es el único recuento |
+| `apps/frontend/src/routes.tsx`, comentario de cabecera | `/overview-legacy` «sigue siendo el único dashboard con datos reales»; «las 8 pantallas portadas»; condición de retirada «todavía no existe» | Remite al README para el recuento; dice que la condición de retirada ya se cumple y que la ruta queda registrada como `RF-105-001`. Solo comentarios: 14 líneas añadidas y 13 eliminadas, sin cambio de código |
+| `docs/planning/JUP-097-frontend-data-gap-map.md` | Filas de `/` «implementado localmente, pendiente de integración»; total, serie mensual y desglose como demostración o pendientes; ahorro asignado a `RF-091-004` | Filas de `/` marcadas como resueltas (JUP-026 #52, JUP-055 #77) o retiradas (inventario, C7); ahorro como capacidad ausente en `RF-091-003`; resumen por capacidad al día; enlace al recuento |
+| `docs/evidence/JUP-095-validation.md` | `Frontend tests` como check obligatorio; solo `/overview-legacy` con datos reales; CORS pendiente | Nota fechada al inicio, sin reescribir las líneas históricas, que remite a `docs/governance/github-branch-protection.md`, al README y a `RF-095-001` (`Fixed`) |
+| `docs/architecture.md`, recuadro de `GET /billing/summary` | «Todavía no lee los costes de Azure»; valores fijos; «ningún endpoint expone `azure_cost_records`» | Lee `azure_cost_records` y devuelve el contrato v2; el ahorro es siempre `null`; el frontend lo consume en `/` y en `/overview-legacy`. Comprobado en `apps/backend/app/db/database.py` (línea 211, lectura de `azure_cost_records`) y en `apps/backend/app/schemas/billing.py` (`savings_identified: None`) |
+
+**Tarea 3.6.** `docs/architecture.md` tenía una afirmación falsa (el recuadro anterior) y se corrigió.
+El `README.md` de la raíz no afirma nada desfasado sobre el frontend: sus menciones son de puertos,
+de `VITE_API_BASE_URL` y de comandos, y los comandos coinciden con los del repositorio. No se tocó.
+Queda sin tocar `docs/planning/JUP-091-economicon-source-inventory.md`, que tiene una fila de
+`RF-091-004` con «hardcodeados» y estado `Open`: es el inventario del 31/08 y se deja como registro
+de lo que se midió ese día.
+
+### Hallazgos de este grupo para el grupo 6
+
+- **`Layout.tsx` tiene comentarios desfasados** (líneas 53-61, 156-158 y 186-189): hablan de «las 5
+  pantallas de demostración» y «las 3 conectadas al backend». Hoy el menú agrupa `/` (que sirve datos
+  reales) con las de demostración y tiene 4 entradas del backend. No se corrigen aquí porque el gate
+  pre-código limita los archivos de `apps/**` que se tocan; se anotan en el inventario de
+  `RF-105-001`, cuya retirada de `/overview-legacy` obliga a tocar esa navegación.
+- **`src/hooks/useCostKpis.ts` no lo importa ningún archivo.** Entra en `RF-105-002` junto con
+  `src/data/demo/executiveCostDashboard.ts`.
+- **`/overview-legacy` la nombran 9 archivos de pruebas** (8 pruebas y `tests/test-support.tsx`),
+  cifra que el comentario de `routes.tsx` ya usa.
+- **`RF-026-002` sigue `Open`** (Medium, desbordamiento en móvil del `Layout` compartido). No es de la
+  épica, pero es una limitación conocida del frontend al cerrarla: el punto 13 del spike (tarea 7.4)
+  debe mencionarla.
+- **`RF-091-004` se puede cerrar con base comprobada**: el backend ya no devuelve importes fijos ni
+  ahorro calculado. Eso adelanta la comprobación de la tarea 6.2.
+
+### Verificación del grupo
+
+| Comprobación | Resultado |
+| --- | --- |
+| `corepack pnpm --filter @finops/frontend typecheck` tras editar `routes.tsx` | código de salida 0 |
+| `corepack pnpm --filter @finops/frontend lint` | código de salida 0 |
+| Recorrido de enlaces relativos | 66 rotos en 26 archivos, igual que la línea base: no se introdujo ninguno; los enlaces nuevos (`README.md#rutas`, `backlog.md#rf-026-002`) apuntan a encabezados que existen |
+| `corepack pnpm openspec:validate`, `jup:check` y `jup:cleanup:check` | los tres en verde |
+
+**No se validó:** no se volvieron a ejecutar `build` ni `test` del frontend tras este grupo, porque
+solo cambió un comentario de `routes.tsx` (sin efecto en el código compilado) y documentación; la
+batería completa desde la raíz se ejecuta en el grupo 8. Las filas de `/` del mapa de carencias se
+contrastaron con la lectura de `ExecutiveCostDashboard.tsx`, no con una ejecución de la pantalla en
+un navegador.
