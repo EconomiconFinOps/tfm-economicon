@@ -12,7 +12,7 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 
 - La memoria se corrige con el guion oficial del Proyecto Júpiter: define los nueve apartados, el máximo de 20 páginas y la ponderación de los entregables.
 - Quien redacta un apartado, o la herramienta que propone su redacción, lo contrasta con la descripción de ese apartado en el guion.
-- El guion no se copia al repositorio. La copia de referencia es el PDF de `materiales/01-requisitos/`, fuera de Git, y hay una versión en Markdown (`Guion_PJ.md`) junto al documento de la memoria.
+- El guion no se copia al repositorio. La copia de referencia es `materiales/01-requisitos/Guion-proyecto-Jupiter.pdf`, fuera de Git, y hay una versión en Markdown (`Guion_PJ.md`) en la misma carpeta de Drive que el documento de la memoria. Leer el guion no exige la autorización que sí exige leer la memoria; si la herramienta no tiene acceso a él, se lo pide a la persona y no lo sustituye por suposiciones.
 
 ## Qué apartado corresponde a qué tarjeta
 
@@ -49,7 +49,8 @@ La persona responsable de cada apartado es la que figura en su tarjeta.
 - La memoria no está en el repositorio: no se busca ni se regenera desde Git, y las exportaciones de `materiales/06-entregables/` son la memoria y siguen las mismas reglas que el documento.
 - No se lee ni se modifica el documento sin autorización expresa de quien lidera la tarjeta del apartado afectado. Si falta, la herramienta la solicita y no lee ni modifica nada.
 - La autorización para leer no autoriza a modificar, y la de un apartado no se extiende a los demás: leer el apartado b no permite modificar el d.
-- Una herramienta con acceso de lectura (por ejemplo, un conector de Drive) prepara una propuesta de redacción del apartado que le corresponde, con cada cifra y su fuente y con `[Pendiente]` donde falte, y se la entrega a la persona. Sin acceso de lectura, trabaja solo con el texto que la persona le dé.
+- Una herramienta con acceso de lectura al documento compartido y con autorización expresa para leer el apartado prepara una propuesta de redacción de ese apartado, con cada cifra y su fuente y con `[Pendiente]` donde falte, y se la entrega a la persona. Tener acceso sin la autorización equivale a no tener acceso: la herramienta la solicita, no lee nada y trabaja solo con el texto que la persona le dé, sin buscar el documento en otro sitio.
+- Para dar contexto a un borrador hace falta además la autorización de lectura del otro apartado. El texto que la persona pega de otro apartado se usa solo para ese encargo y no se modifica.
 - La propuesta la revisa y la incorpora la persona. La herramienta solo escribe en el documento con autorización expresa para modificar, y es habitual que no pueda hacerlo.
 - Ningún texto se publica en el documento sin que una persona lo revise.
 - No se inventan cifras ni fuentes: lo que falte se marca como `[Pendiente]`.

@@ -117,18 +117,29 @@ A tool or assistant that reads the repository SHALL NOT search the repository fo
 
 ### Requirement: Tools prepare a draft proposal for their section instead of writing it
 
-A tool or assistant that has read access to the shared document SHALL prepare a proposed draft of the section it was asked to help with, SHALL attach to each figure its source, SHALL mark as pending what has no source, and SHALL hand the draft to the person, who reviews and incorporates it. A tool without read access SHALL work only from the text the person gives it. The location of the shared document SHALL be looked up on the Trello card named in the governance document, not in the repository.
+A tool or assistant that has both read access to the shared document and the express authorization to read the affected section SHALL, when asked to help with that section, prepare a proposed draft of it, SHALL attach to each figure its source, SHALL mark as pending what has no source, and SHALL hand the draft to the person, who reviews and incorporates it. Having access without the authorization SHALL be treated as having no access. A tool without access or authorization SHALL request the authorization where it is missing, SHALL read nothing, SHALL work only from the text the person gives it and SHALL NOT look for the document elsewhere. Reading another section for context SHALL require the authorization of that section, and text the person pastes SHALL be used only for that request. The location of the shared document SHALL be looked up on the Trello card named in the governance document, not in the repository.
 
-#### Scenario: A tool with read access is asked for a section
+#### Scenario: A tool with access and authorization is asked for a section
 
-- **WHEN** a tool with authorization to read is asked to help with a section
+- **WHEN** a tool with read access and authorization to read a section is asked to help with it
 - **THEN** it returns a draft proposal for that section with each figure and its source
 - **AND** it does not write the draft into the document
 
-#### Scenario: A tool without read access is asked for a section
+#### Scenario: A tool with access but without authorization is asked for a section
+
+- **WHEN** a tool with read access but without authorization to read the section is asked to help with it
+- **THEN** it requests the authorization from the person who leads that section's card, reads nothing and works only from the text the person provides
+
+#### Scenario: A tool without access is asked for a section
 
 - **WHEN** a tool without read access is asked to help with a section
 - **THEN** it works only from the text the person provides and does not look for the document elsewhere
+
+#### Scenario: A draft needs context from another section
+
+- **WHEN** a tool drafting one section needs to read a different section for context
+- **THEN** it needs the authorization of that other section as well
+- **AND** text that the person pastes from another section is used only for that request and is not edited
 
 #### Scenario: A tool needs the location of the document
 
@@ -137,12 +148,17 @@ A tool or assistant that has read access to the shared document SHALL prepare a 
 
 ### Requirement: The official project brief is the correction reference
 
-The governance document SHALL declare the official project brief as the reference against which every section is written and corrected, SHALL say where its reference copy is kept, and SHALL NOT copy it into the repository. A section and a tool's draft for it SHALL be contrasted with that section's description in the brief.
+The governance document SHALL declare the official project brief as the reference against which every section is written and corrected, SHALL say where its reference copy is kept, and SHALL NOT copy it into the repository. A section and a tool's draft for it SHALL be contrasted with that section's description in the brief. A tool without access to the brief SHALL ask the person for it and SHALL NOT replace it with assumptions. Reading the brief SHALL NOT require the authorization needed to read the memory.
 
 #### Scenario: An author prepares a section
 
 - **WHEN** an author or a tool prepares a section
 - **THEN** it is contrasted with the description of that section in the official brief
+
+#### Scenario: A tool cannot reach the brief
+
+- **WHEN** a tool without access to the brief prepares a draft
+- **THEN** it asks the person for the brief and does not guess its content
 
 #### Scenario: Someone looks for the brief
 
