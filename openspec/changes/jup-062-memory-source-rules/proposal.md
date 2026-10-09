@@ -29,7 +29,7 @@ None. The `business-memory` capability, still inside the active `jup-062-busines
 ## Out of Scope
 
 - Writing any section of the memory or changing the Google Doc.
-- Assigning an owner to the section whose card is not yet confirmed (DevOps integration); that is a team decision recorded in Trello.
+- Reassigning sections once their cards exist; that is a team decision recorded in Trello.
 - Moving, deleting or regenerating the dated exports already stored outside Git.
 - Changing the `JUP reviews` check or any CI workflow.
 
