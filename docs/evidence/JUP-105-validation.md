@@ -10,7 +10,8 @@
 - CI: pendiente.
 
 > Estado de este documento: en curso. Contiene la línea base y la consulta al equipo (grupo 1 de
-> `tasks.md`). El resto de secciones se añade según avanza la tarjeta.
+> `tasks.md`) y el endurecimiento de `allowJs` (grupo 2). El resto de secciones se añade según avanza
+> la tarjeta.
 
 ## Línea base: antes de cambiar nada
 
@@ -199,3 +200,53 @@ Respuestas recogidas el 2026-10-09:
 **Consecuencia para el hallazgo.** Con una de las dos confirmaciones pendientes sin respuesta,
 `RF-093-001` no pasa a `Fixed`. Se registra en el backlog en el grupo 6 de `tasks.md`, con el
 resultado por persona y Alejandro como «no confirmado».
+
+## Endurecimiento de `allowJs`
+
+Ejecutado el 2026-10-09 sobre la rama en `259f6f9`, con el único cambio de
+`apps/frontend/tsconfig.json`: la línea 24 pasa de `"allowJs": true` a `"allowJs": false`.
+`checkJs: false` se deja como estaba. `git diff` del archivo: 1 inserción y 1 eliminación.
+
+### Comprobaciones del paquete
+
+Los cuatro comandos se ejecutan desde la raíz con el filtro del paquete, que es el mismo script que
+lanza turbo; la batería completa desde la raíz va en su propia sección, más adelante.
+
+| Comprobación | Comando | Resultado |
+| --- | --- | --- |
+| Type-check (app, Vite y pruebas) | `corepack pnpm --filter @finops/frontend typecheck` | código de salida 0 |
+| Lint | `corepack pnpm --filter @finops/frontend lint` | código de salida 0, sin violaciones |
+| Build | `corepack pnpm --filter @finops/frontend build` | código de salida 0; 2483 módulos; Vite avisa de que un fragmento supera 500 kB, aviso que no es un error |
+| Pruebas | `corepack pnpm --filter @finops/frontend test -- --maxWorkers=1` | 53 archivos y 629 pruebas correctas; 178 s |
+
+Las pruebas se ejecutan con un solo worker porque con los de por defecto fallan por plazos de tiempo
+en esta máquina (`RF-098-004`).
+
+### Control positivo
+
+Sin un control, «sigue en verde» no distingue una opción que hace algo de una que no hace nada. Se
+crearon dos archivos temporales en `apps/frontend/src/jup105-control/`: `legacy.js`
+(`export const legacy = 1;`) y `consumer.ts` (que lo importa con `./legacy.js`), y se ejecutó
+`corepack pnpm --filter @finops/frontend exec tsc --noEmit`:
+
+| `allowJs` | Resultado |
+| --- | --- |
+| `false` | `src/jup105-control/consumer.ts(1,24): error TS7016: Could not find a declaration file for module './legacy.js'`; código de salida 1 |
+| `true` (`--allowJs true` en la misma ejecución) | sin salida; código de salida 0 |
+
+Con la opción en `false` el compilador rechaza el import y con `true` lo acepta en silencio, así que
+el endurecimiento tiene efecto real. Tras la prueba se borró la carpeta temporal y `git status` solo
+muestra los archivos de la tarjeta. Con el error, pnpm imprime además un mensaje propio
+(`Command "tsc" not found`) que no procede del compilador: el error del compilador es la línea
+`TS7016`.
+
+**Límite.** El compilador rechaza un JavaScript *importado* desde TypeScript. Un `.js` suelto en
+`src/` que nadie importe no participa en la aplicación y no hace fallar nada. El bloque de
+`eslint.config.js` para los `.js` y `.jsx` de `src/` se conserva a propósito (ADR-0003): es el que
+mantendría la validación de props sobre un JSX que alguien añadiera. No se añadió ningún test
+guardián (decisión 1 del `design.md`).
+
+### Seguimiento de ADR-0003
+
+La sección de seguimiento de [ADR-0003](../adr/ADR-0003-frontend-typescript.md) recoge la ejecución
+de su decisión 2 con fecha y enlace a este documento. El texto de la decisión no se editó.

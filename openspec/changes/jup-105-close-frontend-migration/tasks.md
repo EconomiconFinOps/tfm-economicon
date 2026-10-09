@@ -17,18 +17,20 @@
 
 ## 2. Endurecer `allowJs`
 
-- [ ] 2.1 Cambiar `"allowJs": true` por `"allowJs": false` en `apps/frontend/tsconfig.json`, sin
-  tocar ninguna otra línea.
-- [ ] 2.2 Ejecutar `corepack pnpm --filter @finops/frontend typecheck`, `lint`, `build` y
+- [x] 2.1 Cambiar `"allowJs": true` por `"allowJs": false` en `apps/frontend/tsconfig.json`, sin
+  tocar ninguna otra línea. Hecho: diff de una línea.
+- [x] 2.2 Ejecutar `corepack pnpm --filter @finops/frontend typecheck`, `lint`, `build` y
   `test -- --maxWorkers=1` y guardar la salida real de cada uno, con el número de pruebas. Si alguno
   falla por el cambio, revertir 2.1 y registrar con precisión por qué no puede endurecerse todavía.
-- [ ] 2.3 Control positivo: crear un archivo temporal `.js` en `apps/frontend/src/` importado desde
+  Hecho: los cuatro en verde; 53 archivos y 629 pruebas con un worker.
+- [x] 2.3 Control positivo: crear un archivo temporal `.js` en `apps/frontend/src/` importado desde
   un `.ts` también temporal, ejecutar `typecheck`, comprobar que termina con error y guardar el
   mensaje; borrar los dos archivos y comprobar con `git status` que no queda rastro. Anotar el límite:
-  un `.js` que nadie importa no lo detecta el compilador.
-- [ ] 2.4 Anotar en la sección de seguimiento de `docs/adr/ADR-0003-frontend-typescript.md` que
+  un `.js` que nadie importa no lo detecta el compilador. Hecho: `TS7016` con `allowJs: false` y
+  salida 0 con `true`; sin rastro.
+- [x] 2.4 Anotar en la sección de seguimiento de `docs/adr/ADR-0003-frontend-typescript.md` que
   JUP-105 ejecutó el endurecimiento, con fecha y enlace a la evidencia. No editar el texto de la
-  decisión.
+  decisión. Hecho: viñeta «Hecho en JUP-105» tras la de F5.
 
 ## 3. Recuento de pantallas y textos vivos que nadie más toca
 
