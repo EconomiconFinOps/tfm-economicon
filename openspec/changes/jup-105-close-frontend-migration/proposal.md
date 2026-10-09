@@ -99,3 +99,61 @@ las pantallas de demostración y no se retira ninguna ruta, página, hook ni pru
   pantalla del asistente. Si alguno se fusiona antes del cierre, se repite el recuento de pantallas.
 - **ADR:** no aplica uno nuevo. Se ejecuta la decisión 2 de ADR-0003, ya aceptada (ver `design.md`,
   decisión 9).
+
+## Human Approval
+
+- Change: jup-105-close-frontend-migration
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-08
+- Carril: light
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Scope adjustment approved: la tarjeta dejaba dos decisiones para este gate y la verificación contra
+  el código (2026-10-08, `develop` en `ff2ea6b`) añadió una tercera. **Alcance 5 de la tarjeta:** no
+  se retira `/overview-legacy` ni los módulos sin uso; se registran como hallazgos. **Alcance 7:** la
+  deuda documental de `RF-099-001` y `RF-099-004` se absorbe aquí, en commits propios. **Añadido al
+  proponer, fuera de la tarjeta:** la spec vigente `frontend-typescript-tooling` se pone al día en
+  tres requisitos, porque uno contradice el endurecimiento de `allowJs` y los otros dos describen el
+  estado de JUP-093. También se incorporan al alcance el segundo módulo sin uso
+  (`src/hooks/useCostKpis.ts`), el estado desfasado de JUP-103 en el spike y la frase desfasada de
+  `RF-104-004`.
+- Decisions approved: se aprueban las once decisiones del `design.md`. (1) **`allowJs` pasa a
+  `false`** cambiando solo ese valor, con un control positivo; no se añade test guardián. (2) **La
+  spec se corrige en tres requisitos**, no solo en el del compilador: dos se retiran y se sustituyen
+  y el de lint se modifica en el sitio, por exigencia de `openspec validate`. (3) **El recuento de
+  pantallas vive en la tabla de rutas de `apps/frontend/README.md`**; los demás documentos enlazan.
+  (4) **Lo vivo se corrige y lo histórico se anota** con nota fechada. (5) **`/overview-legacy` y los
+  dos módulos sin uso no se retiran**: `RF-105-001` y `RF-105-002`; solo se corrige el comentario de
+  `routes.tsx`. (6) **La deuda documental se absorbe**: guion de enlaces de un solo uso, sin
+  versionar como herramienta y con su texto en la evidencia; menciones sustituidas con las
+  equivalencias de JUP-099; en los registros archivados cambia la referencia, nunca un resultado; la
+  falta de comprobación automática queda como `RF-105-003`. (7) **Disposición de los 21 hallazgos**:
+  `RF-099-001` y `RF-099-004` a `Fixed`; `RF-091-004` a `Fixed` tras comprobarlo en el backend, con
+  el cálculo de ahorro trasladado a `RF-091-003`; `RF-093-001` a `Fixed` solo si confirman Alejandro
+  y Paris; el resto sobrevive en `Open` con motivo y con quién da el siguiente paso. (8) **El estado
+  final se declara en el punto 13 del spike.** (9) **No aplica ADR nuevo**; se anota el seguimiento
+  de ADR-0003. (10) **Sin ciclo Red/Green**; la excepción se deja escrita en `review.md`. (11)
+  **Orden de trabajo**: consulta al equipo primero, archivos compartidos al final.
+- Constraints: en `apps/**` solo cambian `apps/frontend/tsconfig.json` (un valor), el comentario de
+  cabecera de `apps/frontend/src/routes.tsx`, un comentario de `apps/frontend/vite.config.ts` y
+  `apps/frontend/README.md`. Sin cambios en `package.json`, `turbo.json`, `pnpm-lock.yaml`,
+  `.github/**` ni `tools/**`. No se retira ninguna ruta, página, hook ni prueba. El backlog y el
+  spike se editan después de traer `develop`. No se cita configuración local de herramientas de
+  asistencia en documentos versionados. No se da por validado nada que no se haya ejecutado, y la
+  evidencia lista lo que no se validó.
+- Main risks: (a) `allowJs: false` puede romper una herramienta que lee `tsconfig.json`; la prueba en
+  seco solo cubre `tsc`. Si falla `lint`, `test` o `build`, se revierte y se registra por qué no
+  puede endurecerse todavía. (b) El guion de enlaces puede cambiar más de lo debido: se revisa el
+  diff completo y se compara el recuento (de 66 a 2). (c) Alejandro o Paris pueden no contestar a
+  tiempo: `RF-093-001` se queda en `Open` con el nombre de quien falta. (d) `develop` puede avanzar
+  (#66 o #69 fusionados): se repiten el recuento de pantallas, el recorrido de enlaces y la búsqueda
+  de menciones. (e) Los hallazgos `RF-105-NNN` pueden quedarse sin tarjeta, como les pasó a los dos
+  que esta tarjeta absorbe: se piden al líder al abrir el pull request.
+- Required changes before execution: none
+- Notes: última tarjeta de la épica de migración del frontend. Lleva `review.md` y
+  `docs/evidence/JUP-105-validation.md`. Dos tareas no las puede ejecutar la herramienta de
+  implementación: 1.2 (consulta a Alejandro y a Paris, la envía Victor) y 6.1 (traer `develop`).
+  Queda una pregunta abierta que no cambia las tareas: qué persona figura como dueño de cada hallazgo
+  que sobrevive; mientras no haya respuesta figura como «decisión de producto del equipo» o «tarjeta
+  pedida», porque Trello es la fuente de verdad de los responsables.
