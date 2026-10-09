@@ -97,6 +97,33 @@ nada. Origen: [RF-093-001](openspec/findings/backlog.md) y [JUP-103](docs/eviden
 
 ### Con Docker Compose
 
+#### Modo mock: stack completo sin OpenRouter
+
+En el `.env` local ignorado, ademas de completar los secretos normales del
+stack, selecciona explicitamente:
+
+```dotenv
+RUNTIME_ENVIRONMENT=development
+ALLOW_INSECURE_LOCAL_DATABASE=true
+LLM_PROVIDER=mock
+EMBEDDING_PROVIDER=mock
+EMBEDDING_DIMENSION=8
+AI_EXECUTION_MODE=development
+```
+
+El opt-in de base insegura solo corresponde a datos locales desechables y
+puertos loopback, como se explica en Variables De Entorno. Mock no necesita
+`OPENROUTER_API_KEY`, `LITELLM_MASTER_KEY`, `LITELLM_DATABASE_PASSWORD`,
+`BACKEND_LITELLM_API_KEY` ni `LITELLM_API_KEY`: pueden quedar vacias en `.env`.
+Conserva las credenciales de IA por separado en `.env.ai`, sin versionarlas.
+
+Ejecuta desde una consola sin `COMPOSE_PROFILES`, `COMPOSE_FILE` ni variables
+de proveedor/proyecto exportadas para otro entorno: el shell tiene prioridad
+sobre los archivos dotenv. Los comandos mock no fijan `-p`; conservan el nombre
+original del proyecto de este directorio o el `COMPOSE_PROJECT_NAME` de `.env`.
+Si lo creaste con `-p`, guarda ese mismo nombre en `COMPOSE_PROJECT_NAME` dentro
+de `.env` antes de volver a arrancar; cambiarlo seleccionaria otros volumenes.
+
 Desde la raiz de un clon limpio, con Docker y Node instalados (en Linux o macOS, el primer comando es `cp -n .env.example .env`):
 
 ```powershell
@@ -104,7 +131,7 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 # Completa en .env los secretos y opt-ins descritos en "Variables De Entorno".
 corepack pnpm install --frozen-lockfile
 corepack pnpm local:doctor
-docker compose up -d --build --wait
+docker compose --env-file .env -f docker-compose.yml up -d --build --wait
 corepack pnpm local:smoke
 ```
 
@@ -138,6 +165,102 @@ lectura, `/tmp` temporal, `no-new-privileges` y healthchecks. Las dependencias
 de infraestructura y las imagenes base estan fijadas por digest; una
 actualizacion exige cambiar de forma explicita el tag y el digest en el mismo
 pull request.
+
+#### Perfil opcional de IA real
+
+El arranque anterior no activa LiteLLM: conserva los proveedores `mock` y no
+requiere secretos de OpenRouter. Usa `RUNTIME_ENVIRONMENT=development` o `test`
+para ese modo. El perfil `ai` anade LiteLLM y su PostgreSQL dedicado al **mismo**
+proyecto Compose; no hace falta conectar un segundo proyecto. Usa Docker
+Compose 2.24.4 o posterior. El archivo adicional `infra/litellm/compose.ai.yml`
+hace obligatoria la salud del gateway para backend y processor. En modo IA usa
+siempre ese archivo junto con `--profile ai`: el perfil por si solo no aplica
+esa barrera de arranque. El comando base sin perfil conserva el modo mock.
+
+Si el proyecto mock ya contiene vectores de ocho dimensiones, **no** cambies
+solo `EMBEDDING_DIMENSION`: la tabla existente no admite vectores de 1536.
+Deten ese proyecto con `docker compose down` (sin `-v`), conserva su `.env` y
+sus volumenes, y prepara un `.env.ai` local ignorado con las credenciales y
+URLs del nuevo entorno. Los comandos siguientes usan un proyecto distinto,
+`economicon-ai`, con volumenes nuevos. Requiere inicializar sus datos y volver
+a ingerir documentos: no migra ni elimina los datos del proyecto mock. Si
+`economicon-ai` ya existe, comprueba antes que su base vectorial es de 1536;
+no reutilices una base de ocho dimensiones. Para volver a mock, deten primero
+el proyecto IA sin borrar volumenes y arranca el proyecto mock con su `.env`.
+
+Antes del primer arranque real, completa en el `.env.ai` ignorado por Git las
+credenciales normales del stack, `OPENROUTER_API_KEY`, una clave maestra
+`LITELLM_MASTER_KEY` y un `LITELLM_DATABASE_PASSWORD` unico y apto para URL.
+Conserva esa password al recrear los contenedores. No uses la clave maestra ni
+la upstream como clave de backend o processor. `local:doctor` comprueba el
+stack base, pero no acredita estas credenciales ni el presupuesto de IA.
+
+Inicializa solo gateway y su base desde la raiz:
+
+```powershell
+docker compose --env-file .env.ai -p economicon-ai -f docker-compose.yml -f infra/litellm/compose.ai.yml --profile ai up -d --wait litellm
+```
+
+Desde la administracion en `http://127.0.0.1:44000` (o
+`LITELLM_ADMIN_PORT`), crea **dos** claves virtuales con `POST /key/generate`:
+una limitada a `models: ["economicon-embedding"]` para
+`BACKEND_LITELLM_API_KEY`, y otra limitada a los aliases necesarios
+(`economicon-chat`, `economicon-chat-deepseek`, `economicon-embedding`) para
+`LITELLM_API_KEY` del processor. Usa la clave maestra solo para esa operacion
+administrativa. Configura expiracion y limites de gasto, tasa y concurrencia
+aprobados; la suma de los topes no sustituye el presupuesto agregado de
+[ADR-0002](docs/adr/ADR-0002-litellm-openrouter.md). Guarda las claves
+devueltas solo en `.env.ai` o en un gestor de secretos, sin imprimirlas en logs,
+commits ni capturas. La [guia del gateway](infra/litellm/README.md) conserva
+las reglas de privacidad, rotacion y gasto.
+
+Selecciona `LLM_PROVIDER=litellm`, `EMBEDDING_PROVIDER=litellm`,
+`EMBEDDING_DIMENSION=1536` y ambas claves virtuales en `.env.ai`. Despues, el
+arranque habitual de IA real es un unico comando:
+
+```powershell
+docker compose --env-file .env.ai -p economicon-ai -f docker-compose.yml -f infra/litellm/compose.ai.yml --profile ai up -d --build --wait
+```
+
+`LITELLM_BASE_URL` permanece en `http://litellm:4000/v1` dentro de la red
+Compose. La administracion solo se publica en loopback; PostgreSQL del gateway
+no publica puerto. El volumen `gateway-data` conserva claves y metadatos de
+gasto al recrear contenedores. Para detener IA conservando sus datos:
+
+```powershell
+docker compose --env-file .env.ai -p economicon-ai -f docker-compose.yml -f infra/litellm/compose.ai.yml --profile ai down
+```
+
+`down -v` borraria **todos** los volumenes del proyecto, no solo el del
+gateway; no lo uses sobre un entorno con datos que deban conservarse. Activar
+el perfil no autoriza llamadas pagadas: se requiere presupuesto y autorizacion
+especificos para OpenRouter.
+
+#### Volver de IA al proyecto mock original
+
+Conserva los archivos `.env` (mock8) y `.env.ai` (IA1536), sus secretos y sus
+volumenes. Desde una consola limpia como la indicada en el modo mock, comprueba
+en `.env` los seis valores mock anteriores y el nombre original del proyecto.
+Deten primero IA para liberar sus puertos; despues arranca el stack mock:
+
+```powershell
+docker compose --env-file .env.ai -p economicon-ai -f docker-compose.yml -f infra/litellm/compose.ai.yml --profile ai down
+corepack pnpm local:doctor
+docker compose --env-file .env -f docker-compose.yml up -d --build --wait
+corepack pnpm local:smoke
+```
+
+Para detener mock conservando sus datos:
+
+```powershell
+docker compose --env-file .env -f docker-compose.yml down
+```
+
+Usa el mismo directorio/nombre de proyecto mock que antes de activar IA; no
+apuntes mock al proyecto `economicon-ai` ni a su base vectorial1536. Ninguno de
+estos comandos usa `-v`, modifica claves del gateway o migra vectores. Para
+volver a IA, deten mock con el ultimo comando y sigue el arranque IA anterior
+con `.env.ai`, el mismo proyecto `economicon-ai` y sus claves ya emitidas.
 
 `VITE_API_BASE_URL` se incorpora al build del frontend. Si cambia, reconstruir
 esa imagen antes de arrancarla:
