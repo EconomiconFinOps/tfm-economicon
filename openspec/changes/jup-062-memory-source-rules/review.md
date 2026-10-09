@@ -9,7 +9,7 @@ Documento `docs/memoria/README.md` y una línea en `AGENTS.md` que declaran dón
 - La memoria sigue en un documento compartido fuera de Git; el repositorio solo declara las reglas, no copia el contenido.
 - El mapa de apartados enlaza con tarjetas y no copia personas ni fechas, que son de Trello.
 - La autorización para leer o modificar la concede quien lidera la tarjeta del apartado afectado, por separado para leer y para modificar y por apartado.
-- No se incluye la URL del documento en el repositorio; el enlace vive en la tarjeta.
+- No se incluye la URL del documento en el repositorio; los enlaces de la memoria y del guion viven en la tarjeta de Trello «PROYECTO — Enlaces y coordinación».
 - Los apartados de evaluación y conclusiones recibieron tarjeta propia (JUP-109 y JUP-110) después de las pasadas adversariales; el documento y la spec se actualizaron en consecuencia. Queda sin tarjeta confirmada el apartado de integración con DevOps.
 
 ## Adversarial Review (pass 1)

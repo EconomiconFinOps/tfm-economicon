@@ -4,7 +4,7 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 
 ## Dónde vive
 
-- La fuente editable es un documento compartido de Google Docs llamado `Memoria_Economicon`. Su enlace está en la tarjeta de Trello de JUP-062.
+- La fuente editable es un documento compartido de Google Docs llamado `Memoria_Economicon`. Su enlace está en la tarjeta de Trello «PROYECTO — Enlaces y coordinación».
 - No se copia a Git ni se mantiene una segunda versión canónica en el repositorio. Es una decisión del change `jup-062-business-memory`.
 - Las exportaciones fechadas (PDF y Markdown) y su manifiesto SHA-256 se guardan en `materiales/06-entregables/`, fuera de Git, junto al resto de entregables finales. Una exportación registrada no se edita: se vuelve a exportar al revisar o cerrar un hito, y el manifiesto lista la fecha y el SHA-256 de cada archivo, PDF y Markdown.
 
@@ -13,7 +13,7 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 - La memoria se corrige con el guion oficial del Proyecto Júpiter: define los apartados de la memoria, su extensión máxima y la ponderación de los entregables. Si el documento de la memoria dice otra cosa sobre la extensión o la ponderación, manda el guion.
 - Quien redacta un apartado, o la herramienta que propone su redacción, lo contrasta con tres partes del guion: la descripción de ese apartado en la lista de entregables de la memoria, los requisitos técnicos y funcionales que le afectan (por ejemplo, el caso de negocio pide impacto, viabilidad y diferenciación, aunque eso no esté en su descripción) y el desglose de la evaluación en el que cae.
 - La propuesta incluye una lista de cobertura: cada requisito del guion que le afecta, con el número del párrafo de la propuesta que lo cubre o `[Pendiente]` si no está cubierto. Si una de las tres partes no tiene nada para el apartado, la lista lo dice ("ninguno encontrado en esa parte") en lugar de quedarse en silencio.
-- El guion no se copia al repositorio. La copia de referencia es `Guion_PJ.md`, una transcripción en Markdown guardada en la misma carpeta de Drive que el documento de la memoria. El PDF original lo custodia el equipo y no está en el repositorio. Leer el guion no exige la autorización que sí exige leer la memoria, pero se abre por su nombre, sin listar ni abrir otros ficheros de esa carpeta. Si la herramienta no tiene acceso a él, se lo pide a la persona, no lo sustituye por suposiciones y entrega como mucho un esquema marcado como no contrastado.
+- El guion no se copia al repositorio. La copia de referencia es `Guion_PJ.md`, una transcripción en Markdown guardada en la misma carpeta de Drive que el documento de la memoria, con su enlace en esa misma tarjeta. El PDF original lo custodia el equipo y no está en el repositorio. Leer el guion no exige la autorización que sí exige leer la memoria, pero se abre por su nombre, sin listar ni abrir otros ficheros de esa carpeta. Si la herramienta no tiene acceso a él, se lo pide a la persona, no lo sustituye por suposiciones y entrega como mucho un esquema marcado como no contrastado.
 
 ## Qué apartado corresponde a qué tarjeta
 
@@ -46,7 +46,7 @@ La persona responsable de cada apartado es la que figura en su tarjeta.
 
 ## Para herramientas y asistentes
 
-- El enlace del documento se busca en la tarjeta de Trello de JUP-062, no en el repositorio.
+- El enlace del documento y el del guion se buscan en la tarjeta de Trello «PROYECTO — Enlaces y coordinación», no en el repositorio.
 - La memoria no está en el repositorio: no se busca ni se regenera desde Git, y las exportaciones de `materiales/06-entregables/` son la memoria y siguen las mismas reglas que el documento.
 - No se lee ni se modifica el documento sin autorización expresa de quien lidera la tarjeta del apartado afectado. Para un apartado sin tarjeta propia, autoriza quien lidera JUP-062 hasta que Trello asigne a alguien. Si falta la autorización, la herramienta la solicita y no lee ni modifica nada.
 - La autorización para leer no autoriza a modificar, y la de un apartado no se extiende a los demás: leer el apartado b no permite modificar el d. Leer el documento completo o una exportación completa exige la autorización de todos los apartados que contiene; con la de uno solo, la persona entrega a la herramienta el fragmento y no el fichero.
