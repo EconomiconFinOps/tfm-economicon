@@ -18,9 +18,11 @@ See proposal.md for the motivation. The memory is edited by several people in on
 
 - **A documentation file plus one pointer line, not a new section of CONTRIBUTING.** `docs/memoria/README.md` holds the rules and `AGENTS.md` gets one bullet under the source-of-truth rules. CONTRIBUTING is about the pull request flow and the memory is not a pull request; `AGENTS.md` is what tools read. Alternative considered: putting everything in `AGENTS.md`, rejected because it would grow a file meant to stay short.
 - **A new capability instead of extending `business-memory`.** `business-memory` governs the content of one section and still lives inside an active change. Governing the whole memory's location and handling is a different contract with a different lifecycle. Alternative considered: adding requirements to that change, rejected because it would couple two unrelated closures.
-- **No document URL and no assignee names in the repository.** The link lives on the Trello card, which controls who can reach it; assignments change with the rotation and Trello owns them. The map therefore only joins sections to cards.
+- **No document URL and no assignee names in the repository.** The links to the memory and to the brief live on the Trello card "PROYECTO — Enlaces y coordinación", which controls who can reach them; assignments change with the rotation and Trello owns them. The map therefore only joins sections to cards.
 - **Neutral wording for tools.** The rules speak of "tools and assistants" without naming any, as `AGENTS.md` requires.
 - **Authorization is separate for reading and modifying, and per section.** Read access is cheaper to grant than write access, and the memory is a graded deliverable edited by several people.
+- **Drafts are proposals, not edits.** Connectors that read the shared document are common, but none we could rely on writes to it, so a tool hands its draft to the person and attaches a coverage list; this also keeps a person between a tool and the graded deliverable.
+- **The brief is a Markdown transcription next to the memory, not a copy in Git.** It is the only copy a tool can read; the original PDF is held by the team. The governance document says where it is and how to open it, without listing the folder that also holds the memory.
 - **ADR assessment:** no new ADR. This is process documentation, not a durable architecture decision; the source-of-truth choice for the business section is already recorded in `jup-062-business-memory`.
 
 ## Risks / Trade-offs

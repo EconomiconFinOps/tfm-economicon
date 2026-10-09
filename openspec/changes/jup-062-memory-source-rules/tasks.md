@@ -7,6 +7,7 @@ JUP: JUP-062
 - [x] 1.3 JUP-062 state in the document that authorization to read does not authorize modifying, and that authorization for one section does not extend to another
 
 - [x] 1.4 JUP-062 add to the document the correction reference (the official brief), the lookup of the document location on the Trello card and the draft-proposal flow for tools with and without read access
+- [x] 1.5 JUP-062 add the entry for the governance document to the documentation index of the root `README.md`
 
 ## 2. Checks against the specification
 
