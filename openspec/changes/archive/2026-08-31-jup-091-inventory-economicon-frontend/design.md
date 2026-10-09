@@ -3,7 +3,7 @@ JUP: JUP-091
 ## Context
 
 La épica de migración del frontend ya tiene inventariados el destino (JUP-090,
-[línea base](../../../docs/planning/JUP-090-frontend-migration-baseline.md)) y los supuestos del
+[línea base](../../../../docs/planning/JUP-090-frontend-migration-baseline.md)) y los supuestos del
 origen (JUP-083). Falta el inventario **detallado** del origen, que el spike dejó como dos ítems
 abiertos de la tarjeta `inventariar-frontend-economicon`.
 

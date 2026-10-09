@@ -3,7 +3,7 @@ Trello: https://trello.com/c/dsBZ7y0S/89-jup-097-reconciliar-la-capa-de-datos-de
 
 ## Why
 
-[JUP-095](../archive/2026-09-12-jup-095-portar-codigo-fuente/) portó la capa de presentación y montó
+[JUP-095](../../archive/2026-09-12-jup-095-portar-codigo-fuente/) portó la capa de presentación y montó
 el enrutado real, pero declaró como non-goal explícito tocar la capa de datos: `services/api.js` pasó
 a `api.ts` **sin revisar una sola llamada**. El resultado es una capa HTTP que nadie ha verificado
 nunca contra el backend de este repositorio, con dos deudas concretas encima:

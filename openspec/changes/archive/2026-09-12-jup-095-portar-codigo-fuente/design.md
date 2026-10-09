@@ -6,16 +6,16 @@ Ver [proposal.md](proposal.md) — Why. Aquí solo el estado verificado que cond
 
 **Decisiones heredadas vinculantes.** Esta tarjeta **no reabre** ninguna de las dos:
 
-- [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md) (`Accepted`, JUP-092): `strict: true`,
+- [ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md) (`Accepted`, JUP-092): `strict: true`,
   `allowJs: true` mientras dure la migración, type-check obligatorio en CI, `tsconfig` local al
   paquete. Su sección de seguimiento asigna **explícitamente a esta tarjeta** la migración a `.tsx` de
   los archivos hoy señalados por `react/prop-types`.
-- [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) (`Accepted`, JUP-094): se adopta
+- [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) (`Accepted`, JUP-094): se adopta
   shadcn/ui con 6 primitivos Radix, y **copiar el código de cada componente a `src/components/ui/` es
   trabajo de esta fase, componente por componente, solo cuando la pantalla que lo necesita se
   construye**.
 
-El spike ([docs/spikes/frontend-migration.md](../../../docs/spikes/frontend-migration.md), decisión 1)
+El spike ([docs/spikes/frontend-migration.md](../../../../docs/spikes/frontend-migration.md), decisión 1)
 exige que toda tarjeta de F2 y F3 enlace ADR-0003 desde su `design.md`; ADR-0004 añade la misma
 convención para las tarjetas que usen sus primitivos. Este documento cumple ambas.
 

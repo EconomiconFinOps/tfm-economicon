@@ -353,7 +353,7 @@ aquí. No se toca ningún archivo de `apps/backend/**` (confirmado abajo).
 ### 6.1 — Capacidad ausente por pantalla
 
 Apoyado en `RF-091-003` y en
-[docs/planning/JUP-091-economicon-source-inventory.md](../../../docs/planning/JUP-091-economicon-source-inventory.md)
+[docs/planning/JUP-091-economicon-source-inventory.md](../../../../docs/planning/JUP-091-economicon-source-inventory.md)
 (sección "Mapeo de pantallas a contratos del backend", que ya hizo este análisis sobre el código del
 origen antes de portar). Traducido dato a dato a los 5 módulos ya portados en JUP-095
 (`apps/frontend/src/data/demo/*.ts`), verificando variable a variable que los nombres coinciden con
@@ -371,7 +371,7 @@ no tienen ninguno (`C7`, `C2`).
 
 ### 6.3 — Documento del mapa
 
-[docs/planning/JUP-097-frontend-data-gap-map.md](../../../docs/planning/JUP-097-frontend-data-gap-map.md):
+[docs/planning/JUP-097-frontend-data-gap-map.md](../../../../docs/planning/JUP-097-frontend-data-gap-map.md):
 tabla de 16 filas (pantalla → dato → capacidad ausente → finding), más el resumen por capacidad (C1-C7)
 con las pantallas ya portadas que la necesitan, y una sección explícita de qué hacer cuando una
 capacidad se construya (para que el mapa no envejezca en silencio).
@@ -466,7 +466,7 @@ Commit pendiente de este grupo tras revisión del usuario.
 `install --frozen-lockfile` (sin error) desde la raíz. `test`/`typecheck`/`lint`/`build` vía
 `--filter @finops/frontend` (sustituto de `RF-093-001`): 38/38 archivos, 96/96 tests, ambos limpios,
 build correcto. Detalle completo con comandos exactos en
-[docs/evidence/JUP-097-validation.md](../../../docs/evidence/JUP-097-validation.md) (tarea 8.3),
+[docs/evidence/JUP-097-validation.md](../../../../docs/evidence/JUP-097-validation.md) (tarea 8.3),
 incluida la nota de *flakiness* de entorno observada y descartada como regresión.
 
 ### Resumen de cierre
@@ -481,7 +481,7 @@ incluida la nota de *flakiness* de entorno observada y descartada como regresió
   respetada íntegramente (confirmado por QA con `git diff` línea a línea).
 - **Mapa de carencias (grupo 6):** las 16 filas dato→pantalla de las 5 pantallas de coste, cada una
   con su capacidad de `RF-091-003` nombrada, en
-  [docs/planning/JUP-097-frontend-data-gap-map.md](../../../docs/planning/JUP-097-frontend-data-gap-map.md)
+  [docs/planning/JUP-097-frontend-data-gap-map.md](../../../../docs/planning/JUP-097-frontend-data-gap-map.md)
   y en los comentarios de los 5 módulos `src/data/demo/*.ts`. `RF-095-002` refinado, permanece `Open`
   a propósito.
 - **Findings nuevos:** ninguno de contrato (auditoría sin desviaciones). Ninguno sobre `apps/backend/**`

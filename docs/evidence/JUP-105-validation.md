@@ -10,8 +10,9 @@
 - CI: pendiente.
 
 > Estado de este documento: en curso. Contiene la línea base y la consulta al equipo (grupo 1 de
-> `tasks.md`), el endurecimiento de `allowJs` (grupo 2) y el recuento de pantallas con los textos
-> vivos corregidos (grupo 3). El resto de secciones se añade según avanza la tarjeta.
+> `tasks.md`), el endurecimiento de `allowJs` (grupo 2), el recuento de pantallas con los textos
+> vivos corregidos (grupo 3) y la corrección de los enlaces relativos rotos (grupo 4). El resto de
+> secciones se añade según avanza la tarjeta.
 
 ## Línea base: antes de cambiar nada
 
@@ -327,3 +328,230 @@ solo cambió un comentario de `routes.tsx` (sin efecto en el código compilado) 
 batería completa desde la raíz se ejecuta en el grupo 8. Las filas de `/` del mapa de carencias se
 contrastaron con la lectura de `ExecutiveCostDashboard.tsx`, no con una ejecución de la pantalla en
 un navegador.
+
+## Deuda documental: enlaces relativos rotos, `RF-099-004` (grupo 4)
+
+Ejecutado el 2026-10-09 sobre un árbol sin cambios pendientes (`git status` vacío, rama en `7c82266`).
+
+### Guion de corrección
+
+Un guion de un solo uso, que no se versiona como herramienta. Lee los `.md` versionados, y para cada
+enlace relativo cuyo destino no existe prueba las dos causas que describe el hallazgo:
+
+- **A.** El destino es la carpeta de un change que ahora vive en
+  `openspec/changes/archive/<fecha>-<change>/`: se sustituye el nombre por el de la carpeta
+  archivada.
+- **B.** El enlace está dentro de un documento archivado, que bajó un nivel al archivarse y perdió un
+  `../`: se le añade.
+
+Un arreglo solo se aplica si el destino corregido existe. Lo que no tiene arreglo se informa y no se
+toca. Modos: `--list` (propone sin escribir), `--dry` (igual) y `--apply`. Para repetirlo, guardar
+como `fix-links.mjs` fuera del repositorio y ejecutar `node <carpeta>/fix-links.mjs . --list` desde
+la raíz.
+
+```js
+// Corrige enlaces relativos rotos de los .md versionados sin cambiar ningun otro texto.
+// Uso: node fix-links.mjs <raiz> [--list | --dry | --apply]
+//
+// Dos causas mecanicas (RF-099-004):
+//  A) el destino es la carpeta de un change que ahora vive en openspec/changes/archive/<fecha>-<change>/
+//  B) el enlace esta dentro de un documento archivado, que bajo un nivel al archivarse y perdio un "../"
+// Un arreglo solo se aplica si el destino corregido existe. Lo que no tiene arreglo se informa y no se toca.
+import { execFileSync } from "node:child_process";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve, relative, sep } from "node:path";
+
+const root = resolve(process.argv[2]);
+const mode = process.argv.includes("--apply") ? "apply" : process.argv.includes("--dry") ? "dry" : "list";
+const changesDir = resolve(root, "openspec/changes");
+const archiveDir = resolve(changesDir, "archive");
+
+// nombre de change -> carpeta archivada (<fecha>-<nombre>); si hay varias, la mas reciente por fecha
+const archived = new Map();
+for (const d of readdirSync(archiveDir, { withFileTypes: true })) {
+  if (!d.isDirectory()) continue;
+  const m = d.name.match(/^\d{4}-\d{2}-\d{2}-(.+)$/);
+  if (m) archived.set(m[1], [...(archived.get(m[1]) ?? []), d.name].sort());
+}
+
+const files = execFileSync("git", ["-C", root, "ls-files", "*.md"], { encoding: "utf8" }).split("\n").filter(Boolean);
+const linkRe = /\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
+const isExternal = (t) => /^(https?:|mailto:|#|<)/.test(t);
+const exists = (file, target) => existsSync(resolve(root, dirname(file), decodeURIComponent(target)));
+
+// Intenta variantes del destino: 0..2 niveles "../" de mas y, en cada una, la sustitucion por la carpeta archivada
+function candidates(file, pathPart) {
+  const out = [];
+  for (let extra = 0; extra <= 2; extra += 1) {
+    const base = "../".repeat(extra) + pathPart;
+    out.push({ target: base, cause: extra ? `B(+${extra} ../)` : null });
+    const mapped = mapToArchive(base);
+    if (mapped) out.push({ target: mapped, cause: extra ? `A+B(+${extra} ../)` : "A" });
+  }
+  return out.filter((c) => c.cause);
+}
+
+// ".../changes/<name>/..." -> ".../changes/archive/<fecha>-<name>/..." (solo si <name> no es ya "archive")
+function mapToArchive(target) {
+  const m = target.match(/^(.*\/changes\/)([^/]+)(\/.*|)$/);
+  if (!m || m[2] === "archive" || !archived.has(m[2])) return null;
+  const dirs = archived.get(m[2]);
+  return `${m[1]}archive/${dirs[dirs.length - 1]}${m[3]}`;
+}
+
+const plan = []; // {file, line, old, neu, cause} | {file, line, old, neu: null}
+for (const file of files) {
+  const lines = readFileSync(resolve(root, file), "utf8").split("\n");
+  lines.forEach((line, i) => {
+    for (const m of line.matchAll(linkRe)) {
+      const target = m[1];
+      if (isExternal(target)) continue;
+      const [pathPart, ...frag] = target.split("#");
+      if (!pathPart || exists(file, pathPart)) continue;
+      const fragment = frag.length ? "#" + frag.join("#") : "";
+      const fix = candidates(file, pathPart).find((c) => exists(file, c.target));
+      plan.push({
+        file, line: i + 1, old: target,
+        neu: fix ? fix.target + fragment : null, cause: fix?.cause ?? null,
+        index: m.index + 2
+      });
+    }
+  });
+}
+
+const fixable = plan.filter((p) => p.neu);
+const unfixable = plan.filter((p) => !p.neu);
+console.log(`rotos=${plan.length} con_arreglo=${fixable.length} sin_arreglo=${unfixable.length}`);
+const byCause = {};
+for (const p of fixable) byCause[p.cause] = (byCause[p.cause] ?? 0) + 1;
+console.log("por causa:", JSON.stringify(byCause));
+if (mode === "list" || mode === "dry") {
+  for (const p of plan) console.log(`${p.file}:${p.line}\n   ${p.old}\n   -> ${p.neu ?? "SIN ARREGLO"} ${p.cause ? "[" + p.cause + "]" : ""}`);
+}
+
+if (mode === "apply") {
+  const byFile = new Map();
+  for (const p of fixable) byFile.set(p.file, [...(byFile.get(p.file) ?? []), p]);
+  for (const [file, items] of byFile) {
+    const abs = resolve(root, file);
+    const lines = readFileSync(abs, "utf8").split("\n");
+    // de derecha a izquierda dentro de cada linea para no desplazar los indices
+    for (const p of items.sort((a, b) => b.line - a.line || b.index - a.index)) {
+      const line = lines[p.line - 1];
+      if (line.slice(p.index, p.index + p.old.length) !== p.old) throw new Error(`desfase en ${file}:${p.line}`);
+      lines[p.line - 1] = line.slice(0, p.index) + p.neu + line.slice(p.index + p.old.length);
+    }
+    writeFileSync(abs, lines.join("\n"), "utf8");
+  }
+  console.log(`archivos escritos=${byFile.size} enlaces corregidos=${fixable.length}`);
+}
+```
+
+El guion conserva los finales de línea de cada archivo (corta por `\n` y deja el `\r` en su sitio) y
+solo sustituye el texto del destino dentro de los paréntesis.
+
+### Comprobación de que solo cambian destinos
+
+Segundo guion, también de un solo uso: compara cada archivo modificado con su versión en `HEAD`, con
+los finales de línea normalizados, y exige que (a) tengan el mismo número de líneas, (b) cada línea
+distinta lo sea únicamente por el destino de uno o más enlaces y (c) ningún archivo con CRLF haya
+quedado con finales mezclados.
+
+```js
+// Comprueba que la unica diferencia entre HEAD y el arbol de trabajo son destinos de enlaces.
+// Uso: node verify-diff.mjs <raiz>
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const root = resolve(process.argv[2]);
+const git = (...a) => execFileSync("git", ["-C", root, ...a], { encoding: "utf8", maxBuffer: 1 << 26 });
+const changed = git("diff", "--name-only").split("\n").filter(Boolean);
+const stripTargets = (l) => l.replace(/\]\([^)\s]+(?:\s+"[^"]*")?\)/g, "]<destino>");
+
+let changedLines = 0, problems = 0, mixedEol = 0, crlfFiles = 0;
+for (const file of changed) {
+  const oldLines = git("show", `HEAD:${file}`).replace(/\r\n/g, "\n").split("\n");
+  const rawNew = readFileSync(resolve(root, file), "utf8");
+  const crlf = (rawNew.match(/\r\n/g) ?? []).length;
+  const lf = (rawNew.match(/\n/g) ?? []).length;
+  if (crlf > 0) { crlfFiles += 1; if (crlf !== lf) mixedEol += 1; }
+  const newLines = rawNew.replace(/\r\n/g, "\n").split("\n");
+  if (oldLines.length !== newLines.length) { console.log(`LINEAS DISTINTAS ${file}`); problems += 1; continue; }
+  oldLines.forEach((o, i) => {
+    if (o === newLines[i]) return;
+    changedLines += 1;
+    if (stripTargets(o) !== stripTargets(newLines[i])) { console.log(`TEXTO CAMBIADO ${file}:${i + 1}`); problems += 1; }
+  });
+}
+console.log(`archivos=${changed.length} lineas_cambiadas=${changedLines} problemas=${problems} archivos_con_CRLF=${crlfFiles} con_EOL_mezclado=${mixedEol}`);
+```
+
+### Resultado
+
+| Medida | Antes | Después |
+| --- | ---: | ---: |
+| Enlaces relativos rotos | 66 en 26 archivos | **2 en 1 archivo** |
+| De ellos, dentro de `openspec/changes/archive/` | 53 | 0 |
+| De ellos, fuera de `archive/` | 13 | 2 |
+
+- El guion propuso `rotos=66 con_arreglo=64 sin_arreglo=2`: 11 por la causa A y 53 por la B. No hizo
+  falta ninguna combinación de las dos.
+- Aplicado: `archivos escritos=25 enlaces corregidos=64`. `git diff --stat`: 64 inserciones y 64
+  eliminaciones en 25 archivos, una línea por enlace.
+- Comprobación de solo destinos: `archivos=25 lineas_cambiadas=64 problemas=0 archivos_con_CRLF=8
+  con_EOL_mezclado=0`. Ningún texto cambió salvo el destino de los enlaces.
+- Los 2 restantes son los falsos positivos ya identificados: `docs/evidence/JUP-099-validation.md`,
+  líneas 505 y 793, un ejemplo de código con un corchete y un paréntesis seguidos que no es un
+  enlace. Se dejan como están.
+- Anclas: los 64 enlaces cambiados incluyen 3 destinos con ancla distintos; los tres encabezados
+  existen (`#autorizacion-de-publicacion-para-revision` en el `review.md` archivado de JUP-085,
+  `#incremento-actual-tolerancia-jwt-de-5-s` y `#revalidacion-qa-tras-mitigacion-2309` en la
+  evidencia de JUP-085). El guion de corrección solo comprueba que existe el archivo de destino; las
+  anclas se comprobaron aparte, solo para estos enlaces.
+- Los avisos `CRLF will be replaced by LF` que imprime Git vienen de 8 archivos que tienen CRLF solo
+  en la copia de trabajo de Windows (`core.autocrlf=true`): el índice los guarda con LF, como fuerza
+  `.gitattributes` (`* text=auto eol=lf`), y el commit los normaliza. El guion conservó los finales
+  de línea que había en cada archivo y el diff del commit no contiene cambios de finales de línea.
+
+### Enlaces corregidos por archivo
+
+Causa A (carpeta archivada, 11 enlaces en 3 evidencias):
+
+| Enlaces | Archivo |
+| ---: | --- |
+| 1 | `docs/evidence/JUP-013-validation.md` |
+| 8 | `docs/evidence/JUP-085-validation.md` |
+| 2 | `docs/evidence/JUP-097-validation.md` |
+
+Causa B (falta un `../` dentro de un documento archivado, 53 enlaces en 22 archivos). Las carpetas
+están en `openspec/changes/archive/`:
+
+| Enlaces | Carpeta y archivo |
+| ---: | --- |
+| 1 | `2026-08-31-jup-091-inventory-economicon-frontend/design.md` |
+| 1 | `2026-08-31-jup-091-inventory-economicon-frontend/proposal.md` |
+| 1 | `2026-09-01-jup-043-technical-metrics/design.md` |
+| 4 | `2026-09-02-jup-092-frontend-typescript-adr/design.md` |
+| 3 | `2026-09-02-jup-092-frontend-typescript-adr/proposal.md` |
+| 7 | `2026-09-07-jup-094-reconcile-package-json/design.md` |
+| 4 | `2026-09-07-jup-094-reconcile-package-json/proposal.md` |
+| 2 | `2026-09-07-jup-094-reconcile-package-json/review.md` |
+| 1 | `2026-09-07-jup-094-reconcile-package-json/tasks.md` |
+| 3 | `2026-09-12-jup-095-portar-codigo-fuente/design.md` |
+| 4 | `2026-09-12-jup-095-portar-codigo-fuente/proposal.md` |
+| 2 | `2026-09-12-jup-095-portar-codigo-fuente/review.md` |
+| 2 | `2026-09-12-jup-095-portar-codigo-fuente/tasks.md` |
+| 1 | `2026-09-18-jup-013-normalize-azure-costs/review.md` |
+| 1 | `2026-09-19-jup-095-reconciliar-develop/proposal.md` |
+| 1 | `2026-09-21-jup-097-reconcile-api-layer/proposal.md` |
+| 4 | `2026-09-21-jup-097-reconcile-api-layer/review.md` |
+| 3 | `2026-09-24-jup-085-auth-session-contract/design.md` |
+| 2 | `2026-09-24-jup-085-auth-session-contract/proposal.md` |
+| 3 | `2026-09-24-jup-085-auth-session-contract/review.md` |
+| 1 | `2026-09-24-jup-085-auth-session-contract/specs/demo-auth-session/spec.md` |
+| 2 | `2026-09-24-jup-085-auth-session-contract/tasks.md` |
+
+**Qué no resuelve.** Que los enlaces vuelvan a romperse con cada archivado es un problema distinto de
+la deuda acumulada, y nada lo impide hoy: no hay comprobación automática. Se registra como
+`RF-105-003` en el grupo 6. Esta misma tarjeta corrige sus propios enlaces al archivar (tarea 8.5).

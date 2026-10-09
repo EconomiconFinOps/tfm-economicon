@@ -3,10 +3,10 @@ Trello: https://trello.com/c/G4FPtBdE/87-jup-095-portar-el-c%C3%B3digo-fuente-de
 
 ## Why
 
-F2 quedó cerrada con [JUP-093](../archive/2026-09-06-jup-093-configure-typescript/) (TypeScript
-`strict`, type-check obligatorio en CI) y [JUP-094](../archive/2026-09-07-jup-094-reconcile-package-json/)
+F2 quedó cerrada con [JUP-093](../../archive/2026-09-06-jup-093-configure-typescript/) (TypeScript
+`strict`, type-check obligatorio en CI) y [JUP-094](../../archive/2026-09-07-jup-094-reconcile-package-json/)
 (`react-router`, `recharts`, `lucide-react`, Tailwind v4 y los 6 primitivos Radix de
-[ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)). **Nada de eso se usa todavía**:
+[ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)). **Nada de eso se usa todavía**:
 `apps/frontend/src/**` sigue siendo el scaffold del destino —14 archivos, 11 de ellos `.jsx`, cero
 líneas del origen— y la aplicación navega con un `switch` manual sobre estado local
 (`App.jsx:127-150`), sin rutas reales ni URL compartible.
@@ -37,7 +37,7 @@ prohíbe.
 - **Los datos estáticos del origen quedan aislados** en un módulo propio, señalizado como sustituible,
   en vez de vivir como constantes dentro de cada dashboard. Las 5 pantallas del origen se alimentan de
   datos fijos: solo 2 de 14 tienen contrato en el backend, y ambos parcialmente
-  ([JUP-091](../../../docs/planning/JUP-091-economicon-source-inventory.md), `RF-091-003`).
+  ([JUP-091](../../../../docs/planning/JUP-091-economicon-source-inventory.md), `RF-091-003`).
 - **Se migran a `.tsx` los archivos del destino que el enrutado obliga a tocar**, preservando su
   lógica sin cambio de comportamiento. La sesión, el tenant activo, TanStack Query y
   `src/services/api.js` **no se tocan**: reconciliarlos es alcance de `reconciliar-capa-api` y

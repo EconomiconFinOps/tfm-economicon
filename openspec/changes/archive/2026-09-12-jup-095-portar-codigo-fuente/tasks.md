@@ -74,7 +74,7 @@
 
 - [x] 4.1 Copiar a `src/components/ui/` únicamente los primitivos que las pantallas reconstruidas
   vayan a usar, uno a uno, del subconjunto de 6 autorizado por
-  [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md). Ningún otro de los 48 archivos de
+  [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md). Ningún otro de los 48 archivos de
   `ui/` del origen entra. Hecho: `label.tsx`, `separator.tsx`, `select.tsx`, `dialog.tsx`,
   `tooltip.tsx`, copias literales del origen verificadas por `diff` (por mí y por QA). Sin archivo
   para `@radix-ui/react-slot`: ninguno de los 5 lo importa, no hay bloque que portar.
@@ -295,7 +295,7 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
   manual E2E (6.6/7.3), limitaciones/deuda y enlaces de PR/CI en pendiente (se completan al abrir el
   PR).
 - [x] 9.6 Actualizar `apps/frontend/README.md` (stack, estructura y rutas) y la sección de seguimiento
-  de [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md) con lo que esta tarjeta ejecutó.
+  de [ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md) con lo que esta tarjeta ejecutó.
   Hecho: README con stack real (TS en casi todo `src/`, react-router real, Vitest, shadcn/ui
   cableado), árbol de `estructura` actualizado (sin `AppShell.jsx`, con `data/demo`, `layouts`,
   `lib`, `test`), sección nueva "Rutas" con el mapa completo y qué pantallas tienen datos reales vs.

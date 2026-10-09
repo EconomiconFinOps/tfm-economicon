@@ -64,14 +64,15 @@
 
 ## 4. Deuda documental: enlaces relativos (`RF-099-004`)
 
-- [ ] 4.1 Escribir el guion de un solo uso que aplica las dos correcciones del hallazgo (el nivel
+- [x] 4.1 Escribir el guion de un solo uso que aplica las dos correcciones del hallazgo (el nivel
   que falta dentro de `openspec/changes/archive/` y la ruta archivada desde fuera) y que comprueba
   que cada destino corregido existe. Guardar su texto en la evidencia. No se versiona como
-  herramienta.
-- [ ] 4.2 Ejecutarlo sobre un árbol limpio y revisar el diff completo: solo cambian destinos de
+  herramienta. Hecho: texto del guion y de su comprobación en la evidencia.
+- [x] 4.2 Ejecutarlo sobre un árbol limpio y revisar el diff completo: solo cambian destinos de
   enlace, ningún otro texto. Repetir el recorrido de 1.1. Resultado esperado: de 66 a 2, y los 2 son
-  los falsos positivos de `docs/evidence/JUP-099-validation.md` (líneas 505 y 793).
-- [ ] 4.3 Registrar en la evidencia el recuento por archivo de enlaces corregidos.
+  los falsos positivos de `docs/evidence/JUP-099-validation.md` (líneas 505 y 793). Hecho: de 66 a
+  2, los esperados; 64 líneas en 25 archivos y comprobación mecánica de que solo cambian destinos.
+- [x] 4.3 Registrar en la evidencia el recuento por archivo de enlaces corregidos. Hecho.
 
 ## 5. Deuda documental: menciones a configuración local (`RF-099-001`)
 

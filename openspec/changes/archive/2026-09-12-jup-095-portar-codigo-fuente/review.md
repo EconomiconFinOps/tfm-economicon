@@ -206,7 +206,7 @@ el grupo 6/7 reconcilie el entrypoint; `main.css` sigue gobernando el render.
 ## Grupo 4 — Primitivos de shadcn/ui
 
 **Objetivo:** portar el subconjunto de 6 paquetes Radix que
-[ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) autorizó, con el primer consumidor real
+[ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) autorizó, con el primer consumidor real
 del alias `@/` del grupo 3.
 
 **Red** (tester, commit `5d27677`): 6 tests reales que fallaban porque el código de producto no
@@ -949,7 +949,7 @@ ninguno de los 5 lo importa, tarea 4.1), más la utilidad `cn()` de `@/lib/utils
 consumidor real** fuera de sus propios tests al
 cierre de la tarjeta (verificado por `grep` de `components/ui/` y de imports por alias `@/components/
 ui`, cero resultados en `src/pages`/`src/layouts`/`src/components` que no sean los propios archivos
-`ui/*`). Es el peso muerto que [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) aceptó
+`ui/*`). Es el peso muerto que [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) aceptó
 por escrito como riesgo (tarea 4.4): ninguna de las 8 pantallas portadas del origen los necesitaba, y
 ninguna pantalla nueva del armazón (`SessionGate`, `Layout`, `LoginPage`, etc.) los adoptó tampoco,
 al construirse todas directamente sobre Tailwind. Quedan disponibles para consumo futuro sin trabajo

@@ -4,7 +4,7 @@
 - Trello: https://trello.com/c/dsBZ7y0S/89-jup-097-reconciliar-la-capa-de-datos-del-frontend-con-los-contratos-del-backend
 - Rama: `feat/JUP-097-reconcile-api-layer`.
 - Base: `origin/develop` en `cb4edc3889ca440e04989bfecd4c0855248bb610`.
-- OpenSpec: [jup-097-reconcile-api-layer](../../openspec/changes/jup-097-reconcile-api-layer/).
+- OpenSpec: [jup-097-reconcile-api-layer](../../openspec/changes/archive/2026-09-21-jup-097-reconcile-api-layer/).
 - Pull request: pendiente de abrir (tarea 8.7).
 - CI de implementación: pendiente (se enlaza tras abrir el PR).
 
@@ -25,7 +25,7 @@
 ## Trazabilidad con requisitos
 
 Capacidad nueva `frontend-api-layer` (6 requisitos, 14 escenarios,
-[spec.md](../../openspec/changes/jup-097-reconcile-api-layer/specs/frontend-api-layer/spec.md)):
+[spec.md](../../openspec/changes/archive/2026-09-21-jup-097-reconcile-api-layer/specs/frontend-api-layer/spec.md)):
 
 | Requisito | Cómo se verifica |
 | --- | --- |
