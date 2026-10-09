@@ -45,3 +45,12 @@ corrección de sincronización al test heredado JUP-098 de historial de sesión:
 esperar a que el router haya consumido la marca antes de observar el recorrido
 hacia atrás. No cambian el componente de login ni su contrato. La validación de
 este incremento incluye frontend y dos controles de mutación del test existente.
+
+## Cierre documental — 04/10/2026
+
+La participación prevista del 01/10 arriba es histórica. Roles vigentes:
+Alejandro liderazgo, Victor pairing previsto, Paris revisión, Lucía validación.
+PR #60 integrada y validación publicada; fuentes en
+[evidencia](../../../../docs/evidence/JUP-061-validation.md).
+No consta pairing realizado. El archivo y la promoción cierran el registro
+documental; no aceptan ADR Proposed ni completan condiciones de otros cambios.
