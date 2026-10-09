@@ -18,4 +18,4 @@ JUP: JUP-062
 - [x] 3.1 Batería completa: `openspec:validate`, `jup:check -- --change jup-062-memory-source-rules`, `jup:check:all`, `jup:cleanup:check` y `git diff --check`. Registrar comandos y resultados.
 - [x] 3.2 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con la sección `## Adversarial Review`, el barrido de patrones, los riesgos y los hallazgos registrados en `openspec/findings/backlog.md`.
 - [x] 3.3 Bloque `## Human Approval` post-review de Lucia.
-- [ ] 3.4 Archivar el change en la misma rama, revisar la documentación posterior al archivo y abrir el PR a develop.
+- [x] 3.4 Archivar el change en la misma rama, revisar la documentación posterior al archivo y abrir el PR a develop. Hecho: archivado el 2026-10-09, revisión documental sin deriva pendiente y PR #85 abierto.
