@@ -49,7 +49,7 @@ Context.
 - **Decidir y registrar qué pasa con el código que la épica deja sin uso**: la ruta puente
   `/overview-legacy` (su condición de retirada ya se cumple) y dos módulos que ya nadie importa. Se
   propone no retirarlos aquí y registrarlos como hallazgos con dueño (ver `design.md`, decisión 5).
-- **Absorber la deuda documental** en commits propios: los 64 enlaces relativos rotos y las 41
+- **Absorber la deuda documental** en commits propios: los 64 enlaces relativos rotos y las 42
   menciones a configuración local de herramientas de asistencia (ver `design.md`, decisión 6).
 - **Revisar los 21 hallazgos abiertos de la épica**: cuáles cierra, cuáles sobreviven, con qué motivo
   y con qué dueño. Pedir a Alejandro y a Paris la confirmación que le falta a `RF-093-001`.

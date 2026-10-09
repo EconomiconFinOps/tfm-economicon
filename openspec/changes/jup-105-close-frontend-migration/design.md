@@ -17,17 +17,13 @@ parte de ese commit).
 | Rutas | `apps/frontend/src/routes.tsx` | 9 bajo `SessionGate`, más `/login` |
 | Origen de datos por ruta | imports de cada página | Backend (5): `/`, `/overview-legacy`, `/ingest`, `/assistant`, `/system-health`. Demostración (4): `/operational`, `/cuts`, `/anomalies`, `/recommendations` |
 | Rótulo de demostración | texto visible de cada página | Solo `/anomalies` lo muestra; `/operational`, `/cuts` y `/recommendations` no (`RF-104-004`) |
-| Enlaces relativos rotos | recorrido de los `.md` versionados | 66 en 26 archivos: 53 en `openspec/changes/archive/` y 13 fuera (8 en la evidencia de JUP-085, 2 en la de JUP-097, 1 en la de JUP-013 y 2 falsos positivos en la de JUP-099, líneas 505 y 793, que son texto `](route)` dentro de un ejemplo de código) |
+| Enlaces relativos rotos | recorrido de los `.md` versionados | 66 en 26 archivos: 53 en `openspec/changes/archive/` y 13 fuera (8 en la evidencia de JUP-085, 2 en la de JUP-097, 1 en la de JUP-013 y 2 falsos positivos en la de JUP-099, líneas 505 y 793, donde un ejemplo de código contiene un corchete y un paréntesis seguidos que no son un enlace) |
+| Menciones a configuración local | búsqueda de los seis términos que enumera la fila `RF-099-001` del backlog, con sus mismas exclusiones | 42 líneas en 11 archivos: 36 en 7 archivos archivados (17 en el `review.md` de JUP-095), 5 en 3 evidencias y 1 en `apps/frontend/vite.config.ts`. Aparte, 9 menciones legítimas que describen el propio hallazgo (8 en el `review.md` de JUP-099 y 1 en el backlog) |
 | Changes de la épica | `openspec/changes/archive/` | Las doce tarjetas archivadas (13 carpetas: JUP-095 tiene dos); ninguna activa |
 | Hallazgos de la épica | `openspec/findings/backlog.md` | 21 en `Open`, todos con `Owner: Equipo Economicon` |
 
 **Lo que difiere de la tarjeta o no estaba en ella.**
 
-- **Menciones a configuración local: 41 líneas en 11 archivos, no 42.** Medido con el patrón que
-  define el propio `RF-099-001` (`git grep -F` de `.claude/`, `check-dod`, `stryker.conf`,
-  `lock-committed`, `harness/workflow` y `mutation.md`, sin tests, `.gitignore`, `.dockerignore`,
-  `tools/jup-cleanup-check.mjs` ni los documentos de JUP-098 y JUP-099): 35 en 7 archivos archivados
-  (16 en el `review.md` de JUP-095), 5 en 3 evidencias y 1 en `apps/frontend/vite.config.ts`.
 - **El spike tiene una tercera tarjeta con el estado desfasado.** Además de JUP-099 (línea 255) y
   JUP-104 (línea 320), JUP-103 figura como «implementada» (línea 299) y se fusionó el 07/10 (#75).
 - **El spike repite la afirmación sobre `/overview-legacy` en registros históricos.** Las líneas 231,

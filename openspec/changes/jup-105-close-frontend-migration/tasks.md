@@ -1,14 +1,19 @@
 ## 1. Línea base y consulta al equipo
 
-- [ ] 1.1 Crear `docs/evidence/JUP-105-validation.md` con la cabecera (fecha, enlace a Trello, rama,
+- [x] 1.1 Crear `docs/evidence/JUP-105-validation.md` con la cabecera (fecha, enlace a Trello, rama,
   commit base de `develop`) y registrar las medidas de partida con el comando de cada una: valor de
   `allowJs`, archivos JavaScript en `src/` y `tests/`, enlaces relativos rotos (66 en 26 archivos),
-  menciones a configuración local con el patrón de `RF-099-001` (41 en 11 archivos) y número de
+  menciones a configuración local con el patrón de `RF-099-001` (42 en 11 archivos) y número de
   hallazgos de la épica en `Open` (21). Incluir en la evidencia el texto del recorrido de enlaces,
-  para que se pueda repetir sin nada que no esté en el repositorio.
-- [ ] 1.2 Pedir a Alejandro y a Paris que ejecuten `corepack pnpm exec pnpm --version` y
+  para que se pueda repetir sin nada que no esté en el repositorio. Hecho: sección «Línea base» de
+  la evidencia. La medida corrigió una cifra de la propuesta: las menciones son 42, como decía la
+  tarjeta, y no 41.
+- [x] 1.2 Pedir a Alejandro y a Paris que ejecuten `corepack pnpm exec pnpm --version` y
   `corepack pnpm lint --force` desde la raíz de `develop`, en una consola externa, y que indiquen
   sistema operativo y resultado. Lo envía Victor. Anotar en la evidencia la fecha de la consulta.
+  Hecho: Paris contestó el 2026-10-09 (el fallo no se reproduce en su máquina, sin haber necesitado
+  `corepack enable`); Alejandro no contestó y figura como «no confirmado». `RF-093-001` no pasa a
+  `Fixed` (se registra en 6.4).
 
 ## 2. Endurecer `allowJs`
 
@@ -61,7 +66,7 @@
 
 ## 5. Deuda documental: menciones a configuración local (`RF-099-001`)
 
-- [ ] 5.1 Sustituir las 41 menciones con las equivalencias que JUP-099 ya probó (ver `design.md`,
+- [ ] 5.1 Sustituir las 42 menciones con las equivalencias que JUP-099 ya probó (ver `design.md`,
   decisión 6). En los registros archivados cambia solo la referencia, nunca un resultado, una cifra
   ni un veredicto.
 - [ ] 5.2 `apps/frontend/vite.config.ts`: sustituir en el comentario la ruta local por una
