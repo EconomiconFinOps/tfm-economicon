@@ -11,7 +11,8 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 ## Con qué criterio se corrige
 
 - La memoria se corrige con el guion oficial del Proyecto Júpiter: define los nueve apartados, el máximo de 20 páginas y la ponderación de los entregables.
-- Quien redacta un apartado, o la herramienta que propone su redacción, lo contrasta con la descripción de ese apartado en el guion.
+- Quien redacta un apartado, o la herramienta que propone su redacción, lo contrasta con tres partes del guion: la descripción de ese apartado en la lista de entregables de la memoria, los requisitos técnicos y funcionales que le afectan (por ejemplo, el caso de negocio pide impacto, viabilidad y diferenciación, y la parte de DevOps pide monitorización y registro) y el desglose de la evaluación en el que cae.
+- La propuesta incluye una lista de cobertura: cada requisito del guion que le afecta, con el párrafo que lo cubre o `[Pendiente]` si no está cubierto.
 - El guion no se copia al repositorio. La copia de referencia es `Guion_PJ.md`, una transcripción en Markdown guardada en la misma carpeta de Drive que el documento de la memoria. El PDF original lo custodia el equipo y no está en el repositorio. Leer el guion no exige la autorización que sí exige leer la memoria; si la herramienta no tiene acceso a él, se lo pide a la persona y no lo sustituye por suposiciones.
 
 ## Qué apartado corresponde a qué tarjeta

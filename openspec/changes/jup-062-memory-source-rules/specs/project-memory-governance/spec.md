@@ -148,12 +148,22 @@ A tool or assistant that has both read access to the shared document and the exp
 
 ### Requirement: The official project brief is the correction reference
 
-The governance document SHALL declare the official project brief as the reference against which every section is written and corrected, SHALL say where its reference copy is kept, and SHALL NOT copy it into the repository. A section and a tool's draft for it SHALL be contrasted with that section's description in the brief. A tool without access to the brief SHALL ask the person for it and SHALL NOT replace it with assumptions. Reading the brief SHALL NOT require the authorization needed to read the memory.
+The governance document SHALL declare the official project brief as the reference against which every section is written and corrected, SHALL say where its reference copy is kept, and SHALL NOT copy it into the repository. A section and a tool's draft for it SHALL be contrasted with three parts of the brief: the description of that section in the list of memory deliverables, the technical and functional requirements of the brief that affect that section, and the evaluation breakdown in which it falls. A tool's draft SHALL include a coverage list that names each requirement that affects the section and the paragraph that covers it, or marks it as pending. A tool without access to the brief SHALL ask the person for it and SHALL NOT replace it with assumptions. Reading the brief SHALL NOT require the authorization needed to read the memory.
 
 #### Scenario: An author prepares a section
 
 - **WHEN** an author or a tool prepares a section
 - **THEN** it is contrasted with the description of that section in the official brief
+
+#### Scenario: A requirement lives outside the section description
+
+- **WHEN** the brief states a requirement that affects a section in a part other than that section's description, such as impact, viability and differentiation for the business case
+- **THEN** the draft for that section is also contrasted with that requirement
+
+#### Scenario: A draft shows its coverage
+
+- **WHEN** a tool hands over a draft for a section
+- **THEN** the draft lists each affected requirement with the paragraph that covers it or a pending mark
 
 #### Scenario: A tool cannot reach the brief
 
