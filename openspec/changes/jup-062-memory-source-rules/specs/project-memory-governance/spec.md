@@ -88,11 +88,11 @@ Because the memory has no diff in the repository, its review and validation SHAL
 
 ### Requirement: Tools and assistants never search, regenerate or edit the memory unprompted
 
-A tool or assistant that reads the repository SHALL NOT search the repository for the memory, SHALL NOT regenerate it from the repository, and SHALL NOT store a copy or an export of it in the repository. It SHALL NOT read the shared document or modify it without the express authorization of the person who leads it, and that authorization SHALL be given separately for reading and for modifying. Authorization for one section SHALL NOT extend to another. No text SHALL be published to the document before a person reviews it.
+A tool or assistant that reads the repository SHALL NOT search the repository for the memory, SHALL NOT regenerate it from the repository, and SHALL NOT store a copy or an export of it in the repository. It SHALL NOT read or modify the shared document, or any export of it, without the express authorization of the person who leads the Trello card of the affected section, and that authorization SHALL be given separately for reading and for modifying. Authorization for one section SHALL NOT extend to another. No text SHALL be published to the document before a person reviews it.
 
 #### Scenario: A tool has no authorization
 
-- **WHEN** a tool is asked to work on the memory without express authorization from the person who leads it
+- **WHEN** a tool is asked to work on a section of the memory without express authorization from the person who leads that section's card
 - **THEN** it asks for that authorization and does not read or modify the document
 
 #### Scenario: Authorization to read does not allow editing
@@ -102,8 +102,13 @@ A tool or assistant that reads the repository SHALL NOT search the repository fo
 
 #### Scenario: Authorization covers one section only
 
-- **WHEN** a tool has authorization for one section
-- **THEN** it does not read or modify any other section
+- **WHEN** a tool has authorization to read one section
+- **THEN** it does not read or modify any other section, so reading the business case does not allow modifying the architecture section
+
+#### Scenario: A tool reads an export
+
+- **WHEN** a tool is asked to read an export of the memory outside the repository
+- **THEN** it needs the same authorization as for the shared document
 
 #### Scenario: A tool drafts text for the memory
 

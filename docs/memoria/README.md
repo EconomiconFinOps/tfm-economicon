@@ -6,7 +6,7 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 
 - La fuente editable es un documento compartido de Google Docs llamado `Memoria_Economicon`. Su enlace está en la tarjeta de Trello de JUP-062.
 - No se copia a Git ni se mantiene una segunda versión canónica en el repositorio. Es una decisión del change `jup-062-business-memory`.
-- Las exportaciones fechadas (PDF y Markdown) y su manifiesto SHA-256 se guardan en `materiales/06-entregables/`, fuera de Git, junto al resto de entregables finales. Una exportación registrada no se edita: si cambia el documento, se hace otra exportación.
+- Las exportaciones fechadas (PDF y Markdown) y su manifiesto SHA-256 se guardan en `materiales/06-entregables/`, fuera de Git, junto al resto de entregables finales. Una exportación registrada no se edita: se vuelve a exportar al revisar o cerrar un hito, y el manifiesto lista la fecha y el SHA-256 de cada archivo, PDF y Markdown.
 
 ## Qué apartado corresponde a qué tarjeta
 
@@ -17,9 +17,9 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 | c. Contribución individual | JUP-064 |
 | d. Arquitectura técnica de la solución | JUP-060 |
 | e. Diseño y desarrollo de la solución de IA | JUP-063 |
-| f. Integración con herramientas DevOps | JUP-061 (por confirmar) |
+| f. Integración con herramientas DevOps | Sin tarjeta confirmada: el documento apunta a JUP-061 o JUP-060, pendiente de decidir en Trello |
 | g. Uso de modelos preentrenados | JUP-063 |
-| h. Evaluación de la solución | JUP-067 a JUP-071 y JUP-077 (sin tarjeta de documentación propia) |
+| h. Evaluación de la solución | Sin tarjeta de documentación propia: los resultados salen de las tarjetas de evaluación JUP-067 a JUP-071 y JUP-077, y quién redacta el apartado se decide en Trello |
 | i. Conclusiones y trabajo futuro | Sin tarjeta propia (cierre de la memoria) |
 
 La persona responsable de cada apartado es la que figura en su tarjeta.
@@ -39,8 +39,9 @@ La persona responsable de cada apartado es la que figura en su tarjeta.
 
 ## Para herramientas y asistentes
 
-- La memoria no está en el repositorio: no se busca ni se regenera desde Git.
-- No se lee ni se modifica el documento sin autorización expresa de quien lo lidera. La autorización para leer no autoriza a modificar, y la de un apartado no se extiende a los demás.
+- La memoria no está en el repositorio: no se busca ni se regenera desde Git, y las exportaciones de `materiales/06-entregables/` son la memoria y siguen las mismas reglas que el documento.
+- No se lee ni se modifica el documento sin autorización expresa de quien lidera la tarjeta del apartado afectado. Si falta, la herramienta la solicita y no lee ni modifica nada.
+- La autorización para leer no autoriza a modificar, y la de un apartado no se extiende a los demás: leer el apartado b no permite modificar el d.
 - Ningún texto se publica en el documento sin que una persona lo revise.
 - No se inventan cifras ni fuentes: lo que falte se marca como `[Pendiente]`.
 - No se guardan en el repositorio copias del documento ni exportaciones.
