@@ -6,7 +6,7 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 
 - La fuente editable es un documento compartido de Google Docs llamado `Memoria_Economicon`. Su enlace está en la tarjeta de Trello de JUP-062.
 - No se copia a Git ni se mantiene una segunda versión canónica en el repositorio. Es una decisión del change `jup-062-business-memory`.
-- Las exportaciones fechadas (PDF y Markdown) y su manifiesto SHA-256 se guardan en `materiales/06-entregables/`, fuera de Git, junto al resto de entregables finales.
+- Las exportaciones fechadas (PDF y Markdown) y su manifiesto SHA-256 se guardan en `materiales/06-entregables/`, fuera de Git, junto al resto de entregables finales. Una exportación registrada no se edita: si cambia el documento, se hace otra exportación.
 
 ## Qué apartado corresponde a qué tarjeta
 
@@ -33,13 +33,14 @@ La persona responsable de cada apartado es la que figura en su tarjeta.
 
 ## Revisión y validación del entregable
 
-- No son reviews de GitHub, porque la memoria no tiene diff en el repositorio. Se registran en comentarios del documento y en la tarjeta de Trello, indicando la versión exportada que se revisó.
+- No son reviews de GitHub, porque la memoria no tiene diff en el repositorio. Se registran en comentarios del documento y en la tarjeta de Trello, indicando la versión exportada que se revisó por su fecha y su SHA-256.
 - El check `JUP reviews` solo se aplica a pull requests.
 - La evidencia versionada va en `docs/evidence/`, por ejemplo [JUP-062-business-memory-review.md](../evidence/JUP-062-business-memory-review.md). El cierre de cada change se hace con un pull request de documentación.
 
 ## Para herramientas y asistentes
 
 - La memoria no está en el repositorio: no se busca ni se regenera desde Git.
-- No se lee ni se modifica el documento sin autorización expresa de quien lo lidera, y ningún texto se publica sin que una persona lo revise.
+- No se lee ni se modifica el documento sin autorización expresa de quien lo lidera. La autorización para leer no autoriza a modificar, y la de un apartado no se extiende a los demás.
+- Ningún texto se publica en el documento sin que una persona lo revise.
 - No se inventan cifras ni fuentes: lo que falte se marca como `[Pendiente]`.
 - No se guardan en el repositorio copias del documento ni exportaciones.
