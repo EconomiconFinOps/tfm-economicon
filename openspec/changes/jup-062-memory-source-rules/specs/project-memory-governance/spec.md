@@ -88,7 +88,7 @@ Because the memory has no diff in the repository, its review and validation SHAL
 
 ### Requirement: Tools and assistants never search, regenerate or edit the memory unprompted
 
-A tool or assistant that reads the repository SHALL NOT search the repository for the memory, SHALL NOT regenerate it from the repository, and SHALL NOT store a copy or an export of it in the repository. It SHALL NOT read or modify the shared document, or any export of it, without the express authorization of the person who leads the Trello card of the affected section, and that authorization SHALL be given separately for reading and for modifying. Authorization for one section SHALL NOT extend to another. No text SHALL be published to the document before a person reviews it.
+A tool or assistant that reads the repository SHALL NOT search the repository for the memory, SHALL NOT regenerate it from the repository, and SHALL NOT store a copy or an export of it in the repository. It SHALL NOT read or modify the shared document, or any export of it, without the express authorization of the person who leads the Trello card of the affected section, or, for a section with no card of its own, of the person who leads the card JUP-062 until Trello assigns someone to that section, and that authorization SHALL be given separately for reading and for modifying. Reading a complete export, or the complete document, SHALL require the authorization of every section it contains; otherwise the person gives the tool only the fragment to work on. Authorization for one section SHALL NOT extend to another. No text SHALL be published to the document before a person reviews it.
 
 #### Scenario: A tool has no authorization
 
@@ -109,6 +109,16 @@ A tool or assistant that reads the repository SHALL NOT search the repository fo
 
 - **WHEN** a tool is asked to read an export of the memory outside the repository
 - **THEN** it needs the same authorization as for the shared document
+
+#### Scenario: A tool reads a complete export
+
+- **WHEN** a tool is asked to read a complete export and has authorization for only one section
+- **THEN** it does not read the export and works only from the fragment the person provides
+
+#### Scenario: A section has no card of its own
+
+- **WHEN** a tool is asked to work on a section that has no Trello card of its own
+- **THEN** the authorization comes from the person who leads the card JUP-062 until Trello assigns someone to that section
 
 #### Scenario: A tool drafts text for the memory
 
@@ -148,7 +158,7 @@ A tool or assistant that has both read access to the shared document and the exp
 
 ### Requirement: The official project brief is the correction reference
 
-The governance document SHALL declare the official project brief as the reference against which every section is written and corrected, SHALL say where its reference copy is kept, and SHALL NOT copy it into the repository. A section and a tool's draft for it SHALL be contrasted with three parts of the brief: the description of that section in the list of memory deliverables, the technical and functional requirements of the brief that affect that section, and the evaluation breakdown in which it falls. A tool's draft SHALL include a coverage list that names each requirement that affects the section and the paragraph that covers it, or marks it as pending. A tool without access to the brief SHALL ask the person for it and SHALL NOT replace it with assumptions. Reading the brief SHALL NOT require the authorization needed to read the memory.
+The governance document SHALL declare the official project brief as the reference against which every section is written and corrected, SHALL say where its reference copy is kept, and SHALL NOT copy it into the repository. A section and a tool's draft for it SHALL be contrasted with three parts of the brief: the description of that section in the list of memory deliverables, the technical and functional requirements of the brief that affect that section, and the evaluation breakdown in which it falls. A tool's draft SHALL include a coverage list that names each requirement that affects the section and the numbered paragraph of the draft that covers it, or marks it as pending; where one of the three parts of the brief has nothing for the section, the list SHALL say so explicitly instead of staying silent. A tool without access to the brief SHALL ask the person for it, SHALL NOT replace it with assumptions and SHALL hand over at most an outline marked as not contrasted. Reading the brief SHALL NOT require the authorization needed to read the memory, and a tool SHALL open the brief by its name without listing or opening other files in its folder. If the brief and the memory document differ on length or weighting, the brief prevails.
 
 #### Scenario: An author prepares a section
 
@@ -160,6 +170,16 @@ The governance document SHALL declare the official project brief as the referenc
 - **WHEN** the brief states a requirement that affects a section in a part other than that section's description, such as impact, viability and differentiation for the business case
 - **THEN** the draft for that section is also contrasted with that requirement
 
+#### Scenario: A part of the brief has nothing for the section
+
+- **WHEN** one of the three parts of the brief contains nothing that applies to the section being drafted
+- **THEN** the coverage list states that none was found in that part
+
+#### Scenario: The brief is in a folder with the memory
+
+- **WHEN** a tool opens the brief
+- **THEN** it opens it by name and does not list or open the other files in that folder
+
 #### Scenario: A draft shows its coverage
 
 - **WHEN** a tool hands over a draft for a section
@@ -169,6 +189,7 @@ The governance document SHALL declare the official project brief as the referenc
 
 - **WHEN** a tool without access to the brief prepares a draft
 - **THEN** it asks the person for the brief and does not guess its content
+- **AND** it hands over at most an outline marked as not contrasted
 
 #### Scenario: Someone looks for the brief
 

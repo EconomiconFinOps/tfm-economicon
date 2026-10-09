@@ -43,6 +43,23 @@ Revisor independiente sobre lo añadido tras la pasada 1 (el guion oficial como 
 
 Barrido del patrón: la confusión entre «acceso» y «autorización» aparecía en el requisito, el escenario y el documento, y se corrigió en los tres. Tras las correcciones `openspec:validate --strict` y `jup:check` siguen correctos. No se hizo una tercera pasada: los cambios son de redacción de los mismos requisitos.
 
+## Adversarial Review (pass 3)
+
+Revisor independiente sobre las correcciones de la pasada 2 y las dos últimas ampliaciones (contraste con tres partes del guion, lista de cobertura y `Guion_PJ.md` como única referencia). Veredicto: revise, sin BLOCKING. La estructura del guion la tomó como dato dado, sin verificarla. Hallazgos contrastados:
+
+| ID | Sev. | Resolución |
+| --- | --- | --- |
+| ADV-1 | HIGH | Corregido: la pasada 2 dejó sin nadie que pudiera autorizar la lectura a los apartados sin tarjeta propia. Para esos apartados autoriza quien lidera JUP-062 hasta que Trello asigne a alguien; escenario nuevo. |
+| ADV-2 | HIGH | Corregido: una exportación o el documento completos contienen todos los apartados, así que leerlos exige la autorización de todos; con la de uno solo, la persona entrega el fragmento. Escenario nuevo. |
+| ADV-3 | MEDIUM | Corregido: el guion está en la misma carpeta que la memoria, así que se abre por su nombre sin listar ni abrir otros ficheros de la carpeta. Escenario nuevo. |
+| ADV-4 | MEDIUM | Corregido: la lista de cobertura referencia párrafos por número, dice explícitamente «ninguno encontrado en esa parte» cuando una parte del guion no tiene nada para el apartado, y sin acceso al guion la herramienta entrega como mucho un esquema marcado como no contrastado. Dos escenarios nuevos. |
+| ADV-5 | MEDIUM | Corregido: se quitó del documento el ejemplo de la parte de DevOps y los números del guion, y se declaró una sola fuente para la extensión y la ponderación: si el documento de la memoria difiere, manda el guion. |
+| ADV-6 | MEDIUM | Cubierto por la corrección de ADV-4: si una de las tres partes no tiene nada para el apartado, la lista lo dice. |
+| ADV-7 | LOW | Corregido en parte: se retiró «es habitual que no pueda hacerlo»; la ruta de las exportaciones y las fechas remiten a donde ya constan. |
+| ADV-8 | LOW | Sin acción: sin nombres de personas, URLs ni herramientas nombradas en el documento ni en la spec. |
+
+Barrido del patrón: la dependencia de «quien lidera la tarjeta» aparecía en el requisito de herramientas, el de borrador, el documento y la tabla de apartados, y se cubrió en los cuatro. Esta pasada no se repite con una cuarta: los cambios son de redacción de requisitos ya revisados, y la aceptación queda en manos de Lucía, como en JUP-070. La verificación de que `Guion_PJ.md` coincide con el PDF original sigue pendiente.
+
 ## Riesgos y hallazgos
 
 - El contenido real del documento compartido y las tarjetas de cada apartado viven fuera del repositorio; el revisor no pudo contrastarlos y la fila de DevOps depende de una decisión pendiente en Trello.

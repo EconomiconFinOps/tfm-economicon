@@ -10,10 +10,10 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 
 ## Con qué criterio se corrige
 
-- La memoria se corrige con el guion oficial del Proyecto Júpiter: define los nueve apartados, el máximo de 20 páginas y la ponderación de los entregables.
-- Quien redacta un apartado, o la herramienta que propone su redacción, lo contrasta con tres partes del guion: la descripción de ese apartado en la lista de entregables de la memoria, los requisitos técnicos y funcionales que le afectan (por ejemplo, el caso de negocio pide impacto, viabilidad y diferenciación, y la parte de DevOps pide monitorización y registro) y el desglose de la evaluación en el que cae.
-- La propuesta incluye una lista de cobertura: cada requisito del guion que le afecta, con el párrafo que lo cubre o `[Pendiente]` si no está cubierto.
-- El guion no se copia al repositorio. La copia de referencia es `Guion_PJ.md`, una transcripción en Markdown guardada en la misma carpeta de Drive que el documento de la memoria. El PDF original lo custodia el equipo y no está en el repositorio. Leer el guion no exige la autorización que sí exige leer la memoria; si la herramienta no tiene acceso a él, se lo pide a la persona y no lo sustituye por suposiciones.
+- La memoria se corrige con el guion oficial del Proyecto Júpiter: define los apartados de la memoria, su extensión máxima y la ponderación de los entregables. Si el documento de la memoria dice otra cosa sobre la extensión o la ponderación, manda el guion.
+- Quien redacta un apartado, o la herramienta que propone su redacción, lo contrasta con tres partes del guion: la descripción de ese apartado en la lista de entregables de la memoria, los requisitos técnicos y funcionales que le afectan (por ejemplo, el caso de negocio pide impacto, viabilidad y diferenciación, aunque eso no esté en su descripción) y el desglose de la evaluación en el que cae.
+- La propuesta incluye una lista de cobertura: cada requisito del guion que le afecta, con el número del párrafo de la propuesta que lo cubre o `[Pendiente]` si no está cubierto. Si una de las tres partes no tiene nada para el apartado, la lista lo dice ("ninguno encontrado en esa parte") en lugar de quedarse en silencio.
+- El guion no se copia al repositorio. La copia de referencia es `Guion_PJ.md`, una transcripción en Markdown guardada en la misma carpeta de Drive que el documento de la memoria. El PDF original lo custodia el equipo y no está en el repositorio. Leer el guion no exige la autorización que sí exige leer la memoria, pero se abre por su nombre, sin listar ni abrir otros ficheros de esa carpeta. Si la herramienta no tiene acceso a él, se lo pide a la persona, no lo sustituye por suposiciones y entrega como mucho un esquema marcado como no contrastado.
 
 ## Qué apartado corresponde a qué tarjeta
 
@@ -48,11 +48,11 @@ La persona responsable de cada apartado es la que figura en su tarjeta.
 
 - El enlace del documento se busca en la tarjeta de Trello de JUP-062, no en el repositorio.
 - La memoria no está en el repositorio: no se busca ni se regenera desde Git, y las exportaciones de `materiales/06-entregables/` son la memoria y siguen las mismas reglas que el documento.
-- No se lee ni se modifica el documento sin autorización expresa de quien lidera la tarjeta del apartado afectado. Si falta, la herramienta la solicita y no lee ni modifica nada.
-- La autorización para leer no autoriza a modificar, y la de un apartado no se extiende a los demás: leer el apartado b no permite modificar el d.
+- No se lee ni se modifica el documento sin autorización expresa de quien lidera la tarjeta del apartado afectado. Para un apartado sin tarjeta propia, autoriza quien lidera JUP-062 hasta que Trello asigne a alguien. Si falta la autorización, la herramienta la solicita y no lee ni modifica nada.
+- La autorización para leer no autoriza a modificar, y la de un apartado no se extiende a los demás: leer el apartado b no permite modificar el d. Leer el documento completo o una exportación completa exige la autorización de todos los apartados que contiene; con la de uno solo, la persona entrega a la herramienta el fragmento y no el fichero.
 - Una herramienta con acceso de lectura al documento compartido y con autorización expresa para leer el apartado prepara una propuesta de redacción de ese apartado, con cada cifra y su fuente y con `[Pendiente]` donde falte, y se la entrega a la persona. Tener acceso sin la autorización equivale a no tener acceso: la herramienta la solicita, no lee nada y trabaja solo con el texto que la persona le dé, sin buscar el documento en otro sitio.
 - Para dar contexto a un borrador hace falta además la autorización de lectura del otro apartado. El texto que la persona pega de otro apartado se usa solo para ese encargo y no se modifica.
-- La propuesta la revisa y la incorpora la persona. La herramienta solo escribe en el documento con autorización expresa para modificar, y es habitual que no pueda hacerlo.
+- La propuesta la revisa y la incorpora la persona. La herramienta solo escribe en el documento con autorización expresa para modificar; si no puede hacerlo, entrega la propuesta a la persona.
 - Ningún texto se publica en el documento sin que una persona lo revise.
 - No se inventan cifras ni fuentes: lo que falte se marca como `[Pendiente]`.
 - No se guardan en el repositorio copias del documento ni exportaciones.
