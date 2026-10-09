@@ -11,6 +11,10 @@ la [auditoría](../evidence/JUP-061-validation.md). Registro vigente verificado
 fuentes locales. #65 integrada el 03/10 UTC aporta ADR-0016, Proposed,
 incorporado al mismo inventario. Los merges no ratifican los ADR Proposed.
 
+Actualización de cierre **04/10/2026**, base `c3aa9d6`: #67/JUP-022 integrada
+aporta ADR-0017 Proposed, añadido al registro. JUP-061/PR #60 integrada; su
+archivo y promoción no conceden ratificación a los ADR propuestos.
+
 [Tarjeta JUP-061](https://trello.com/c/qXoHFxyy). Liderazgo: Alejandro Aguado;
 pairing previsto: Victor Mendez; revisión: Paris Arcos Martin; validación: Lucia
 Mateo. El intercambio sustituye las asignaciones del 01/10 y consta en la
@@ -41,6 +45,7 @@ benchmarks de ADR-0002 conservan su fecha; no son precios actuales.
 | [0014 · Auth propia para demo](ADR-0014-demo-auth-boundary.md) | 01/10 · Proposed | Formalizar sesión existente sin añadir IdP; no acreditar producción. | JUP-061 consolida; contrato JUP-085 integrado. Justificación retrospectiva pendiente de ratificar. |
 | [0015 · Compose local](ADR-0015-local-compose-deployment-boundary.md) | 01/10 · Proposed | Repetir topología y builds; orquestador/hosting productivo no seleccionados. | JUP-061 consolida; JUP-049 integrado. JUP-050 [PR #59](https://github.com/EconomiconFinOps/tfm-economicon/pull/59) integrada el 02/10 UTC, [evidencia](../evidence/JUP-050-validation.md). Ratificación y despliegue final pendientes. |
 | [0016 · Pin de LiteLLM 1.103.2](ADR-0016-litellm-version-pin.md) | 02/10 · Proposed | Fijar imagen/digest para validación aislada; baseline anterior afectada por avisos, latest no reproducible. | JUP-023; [PR #65](https://github.com/EconomiconFinOps/tfm-economicon/pull/65) integrada el 03/10 UTC y [evidencia](../evidence/JUP-023-validation.md); [diseño archivado](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/design.md). Decisión operativa de Paris del 02/10 documentada en ADR; no acepta ADR-0002 ni autoriza uso real. |
+| [0017 · Embedding de pregunta y clave propia](ADR-0017-backend-query-embedding-own-key.md) | 02/10 · Proposed | Usar el mismo modelo de ingesta y pregunta, separar credenciales por servicio y fijar ranking/umbral reproducibles; mock no acredita semántica real. | JUP-022; [PR #67](https://github.com/EconomiconFinOps/tfm-economicon/pull/67) integrada el 04/10 UTC; [diseño archivado](../../openspec/changes/archive/2026-10-03-jup-022-semantic-retrieval/design.md). Implementación integrada, ratificación del ADR pendiente. |
 
 | [0018 · CD privado DockerServer](ADR-0018-private-dockerserver-cd.md) | 03/10 · Proposed | Agente pull con CI y smoke antes de promover; runner público privilegiado descartado en servidor compartido. | JUP-052; [PR #73](https://github.com/EconomiconFinOps/tfm-economicon/pull/73) en revisión y [evidencia](../evidence/JUP-052-validation.md). No acredita producción ni aceptación independiente. |
 
@@ -73,9 +78,12 @@ material de referencia y no certifica que el contenido ya esté incorporado all�
 
 ### Pendientes documentales antes del freeze
 
-- ADR-0002: aceptado el 04/10 (JUP-078); queda emitir la clave virtual de desarrollo,
-  a cargo de quien administra el gateway.
+- ADR-0002: Accepted por #71, integrada05/10 (54bbbcd), con aceptación04/10 registrada
+  en el ADR. Seguimiento operativo JUP-078: provisionar la clave virtual limitada;
+  aceptación documental no acredita provisión ni habilita gasto fuera de sus condiciones.
 - ADR-0005 y ADR-0013/14/15: confirmar o rechazar ratificación con evidencia atribuible.
+- [ADR-0016](ADR-0016-litellm-version-pin.md), fuente JUP-023: ratificación pendiente; la decisión operativa y el merge #65 no cambian su estado Proposed.
+- [ADR-0017](ADR-0017-backend-query-embedding-own-key.md), fuente JUP-022: ratificación pendiente en su fuente original; la implementación integrada en #67 no cambia su estado Proposed.
 - Confirmar justificación original de CockroachDB si se quiere defender una ventaja
   comparativa, y registrar decisión de despliegue final cuando exista en su tarea.
 

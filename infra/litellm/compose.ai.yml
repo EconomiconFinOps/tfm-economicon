@@ -1,0 +1,12 @@
+# Apply with the root Compose and --profile ai; mock mode has no gateway dependency.
+services:
+  backend:
+    depends_on:
+      litellm:
+        condition: service_healthy
+        required: true
+  processor:
+    depends_on:
+      litellm:
+        condition: service_healthy
+        required: true
