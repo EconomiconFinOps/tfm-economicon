@@ -63,7 +63,7 @@ Barrido del patrón: la dependencia de «quien lidera la tarjeta» aparecía en 
 
 ## Riesgos y hallazgos
 
-- El contenido real del documento compartido y las tarjetas de cada apartado viven fuera del repositorio; el revisor no pudo contrastarlos y la fila de DevOps depende de una decisión pendiente en Trello.
+- El contenido real del documento compartido y las tarjetas de cada apartado viven fuera del repositorio; el revisor no pudo contrastarlos.
 - El directorio `materiales/06-entregables/` no existe en el repositorio por diseño, así que el manifiesto y las exportaciones no se pueden comprobar desde él.
 - No hay hallazgos que registrar en `openspec/findings/backlog.md`.
 
@@ -73,4 +73,11 @@ No se necesita un ADR: es documentación de proceso, no una decisión de arquite
 
 ## Human Approval
 
-Pendiente de la aprobación posterior a la revisión de Lucía.
+- Change: jup-062-memory-source-rules
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-09
+- Adversarial review: tres pasadas; todos los hallazgos BLOCKING y HIGH corregidos; la pasada 3 se corrigió sin una cuarta, aceptado por Lucía
+- Archive decision: archive
+- Notes: Alcance revisado: documento `docs/memoria/README.md`, la línea de `AGENTS.md`, la entrada del índice del `README.md` y la spec `project-memory-governance`. Pendiente fuera del change: que quien custodia el PDF original confirme que `Guion_PJ.md` coincide con él, registrar en el roadmap de JUP-080 las tarjetas JUP-109, JUP-110 y JUP-111 en el hito M6, y la revisión y validación del resto de personas en Trello según su rol.
