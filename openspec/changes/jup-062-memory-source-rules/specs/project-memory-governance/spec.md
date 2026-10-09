@@ -115,6 +115,41 @@ A tool or assistant that reads the repository SHALL NOT search the repository fo
 - **WHEN** a tool prepares text for the memory
 - **THEN** a person reviews it before it is published to the document
 
+### Requirement: Tools prepare a draft proposal for their section instead of writing it
+
+A tool or assistant that has read access to the shared document SHALL prepare a proposed draft of the section it was asked to help with, SHALL attach to each figure its source, SHALL mark as pending what has no source, and SHALL hand the draft to the person, who reviews and incorporates it. A tool without read access SHALL work only from the text the person gives it. The location of the shared document SHALL be looked up on the Trello card named in the governance document, not in the repository.
+
+#### Scenario: A tool with read access is asked for a section
+
+- **WHEN** a tool with authorization to read is asked to help with a section
+- **THEN** it returns a draft proposal for that section with each figure and its source
+- **AND** it does not write the draft into the document
+
+#### Scenario: A tool without read access is asked for a section
+
+- **WHEN** a tool without read access is asked to help with a section
+- **THEN** it works only from the text the person provides and does not look for the document elsewhere
+
+#### Scenario: A tool needs the location of the document
+
+- **WHEN** a tool needs to know where the shared document is
+- **THEN** it takes the location from the Trello card named in the governance document and not from the repository
+
+### Requirement: The official project brief is the correction reference
+
+The governance document SHALL declare the official project brief as the reference against which every section is written and corrected, SHALL say where its reference copy is kept, and SHALL NOT copy it into the repository. A section and a tool's draft for it SHALL be contrasted with that section's description in the brief.
+
+#### Scenario: An author prepares a section
+
+- **WHEN** an author or a tool prepares a section
+- **THEN** it is contrasted with the description of that section in the official brief
+
+#### Scenario: Someone looks for the brief
+
+- **WHEN** a contributor reads the governance document
+- **THEN** it says where the reference copy of the brief is kept
+- **AND** the repository does not contain the brief
+
 ### Requirement: The repository guidelines point to the memory governance document
 
 `AGENTS.md` SHALL contain one reference to the memory governance document under its source-of-truth rules, in neutral wording that names no specific tool, so that every contributor and tool that reads the guidelines is directed to it.

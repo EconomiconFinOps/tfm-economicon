@@ -8,6 +8,12 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 - No se copia a Git ni se mantiene una segunda versión canónica en el repositorio. Es una decisión del change `jup-062-business-memory`.
 - Las exportaciones fechadas (PDF y Markdown) y su manifiesto SHA-256 se guardan en `materiales/06-entregables/`, fuera de Git, junto al resto de entregables finales. Una exportación registrada no se edita: se vuelve a exportar al revisar o cerrar un hito, y el manifiesto lista la fecha y el SHA-256 de cada archivo, PDF y Markdown.
 
+## Con qué criterio se corrige
+
+- La memoria se corrige con el guion oficial del Proyecto Júpiter: define los nueve apartados, el máximo de 20 páginas y la ponderación de los entregables.
+- Quien redacta un apartado, o la herramienta que propone su redacción, lo contrasta con la descripción de ese apartado en el guion.
+- El guion no se copia al repositorio. La copia de referencia es el PDF de `materiales/01-requisitos/`, fuera de Git, y hay una versión en Markdown (`Guion_PJ.md`) junto al documento de la memoria.
+
 ## Qué apartado corresponde a qué tarjeta
 
 | Apartado | Tarjeta de Trello |
@@ -39,9 +45,12 @@ La persona responsable de cada apartado es la que figura en su tarjeta.
 
 ## Para herramientas y asistentes
 
+- El enlace del documento se busca en la tarjeta de Trello de JUP-062, no en el repositorio.
 - La memoria no está en el repositorio: no se busca ni se regenera desde Git, y las exportaciones de `materiales/06-entregables/` son la memoria y siguen las mismas reglas que el documento.
 - No se lee ni se modifica el documento sin autorización expresa de quien lidera la tarjeta del apartado afectado. Si falta, la herramienta la solicita y no lee ni modifica nada.
 - La autorización para leer no autoriza a modificar, y la de un apartado no se extiende a los demás: leer el apartado b no permite modificar el d.
+- Una herramienta con acceso de lectura (por ejemplo, un conector de Drive) prepara una propuesta de redacción del apartado que le corresponde, con cada cifra y su fuente y con `[Pendiente]` donde falte, y se la entrega a la persona. Sin acceso de lectura, trabaja solo con el texto que la persona le dé.
+- La propuesta la revisa y la incorpora la persona. La herramienta solo escribe en el documento con autorización expresa para modificar, y es habitual que no pueda hacerlo.
 - Ningún texto se publica en el documento sin que una persona lo revise.
 - No se inventan cifras ni fuentes: lo que falte se marca como `[Pendiente]`.
 - No se guardan en el repositorio copias del documento ni exportaciones.

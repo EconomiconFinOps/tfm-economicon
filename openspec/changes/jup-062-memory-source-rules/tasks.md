@@ -6,6 +6,8 @@ JUP: JUP-062
 - [x] 1.2 JUP-062 add the single pointer bullet to `AGENTS.md` under the source-of-truth rules, in tool-neutral wording
 - [x] 1.3 JUP-062 state in the document that authorization to read does not authorize modifying, and that authorization for one section does not extend to another
 
+- [x] 1.4 JUP-062 add to the document the correction reference (the official brief), the lookup of the document location on the Trello card and the draft-proposal flow for tools with and without read access
+
 ## 2. Checks against the specification
 
 - [x] 2.1 JUP-062 verify that the document names no assignee, no delivery date and no document URL, and that every local link resolves
