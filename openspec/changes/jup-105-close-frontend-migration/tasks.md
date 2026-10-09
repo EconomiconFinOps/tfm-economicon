@@ -76,16 +76,19 @@
 
 ## 5. Deuda documental: menciones a configuración local (`RF-099-001`)
 
-- [ ] 5.1 Sustituir las 42 menciones con las equivalencias que JUP-099 ya probó (ver `design.md`,
+- [x] 5.1 Sustituir las 42 menciones con las equivalencias que JUP-099 ya probó (ver `design.md`,
   decisión 6). En los registros archivados cambia solo la referencia, nunca un resultado, una cifra
-  ni un veredicto.
-- [ ] 5.2 `apps/frontend/vite.config.ts`: sustituir en el comentario la ruta local por una
+  ni un veredicto. Hecho: 42 menciones en 11 archivos; donde no hay equivalente versionado la
+  redacción es neutral y no se inventó ningún comando.
+- [x] 5.2 `apps/frontend/vite.config.ts`: sustituir en el comentario la ruta local por una
   descripción neutral de la carpeta temporal del mutation testing. Ejecutar `build` y `test` del
-  frontend.
-- [ ] 5.3 Repetir la búsqueda de 1.1. Resultado esperado: 0 líneas con el patrón del hallazgo.
+  frontend. Hecho: `typecheck`, `lint` y `build` con salida 0; 53 archivos y 629 pruebas.
+- [x] 5.3 Repetir la búsqueda de 1.1. Resultado esperado: 0 líneas con el patrón del hallazgo.
   Comprobar aparte que las menciones legítimas (el `review.md` de JUP-099 y la fila del backlog, que
   describen el hallazgo) siguen intactas. Registrar en la evidencia las líneas cambiadas por archivo.
-- [ ] 5.4 Ejecutar `corepack pnpm jup:cleanup:check` y `corepack pnpm repository:governance:test`.
+  Hecho: 0 líneas; las 9 legítimas intactas; recuento por archivo en la evidencia.
+- [x] 5.4 Ejecutar `corepack pnpm jup:cleanup:check` y `corepack pnpm repository:governance:test`.
+  Hecho: `[OK] 930 archivos` y 13 de 13.
 
 ## 6. Hallazgos de la épica (archivo compartido: después de traer `develop`)
 

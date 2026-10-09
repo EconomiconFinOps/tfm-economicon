@@ -31,7 +31,7 @@ Accepted (pendiente del gate post-review de Victor antes de archivar).
   real de ejecución respetó el gate que el propio `design.md` fijó.
 - [x] `tasks.md` marcado 22/22 (20 originales + 2 añadidas durante la revisión: 2.5/2.6).
 - [x] Checks de la batería completa en verde.
-- [x] Ningún archivo de `.claude/` colado en ningún commit (`jup:cleanup:check`).
+- [x] Ninguna configuración personal de agentes colada en ningún commit (`jup:cleanup:check`).
 
 ## Revisión de la decisión de shadcn/ui durante el `apply`
 

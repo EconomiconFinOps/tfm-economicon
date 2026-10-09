@@ -41,7 +41,7 @@
   *Frontend build* y *Frontend type check* (`corepack pnpm --filter @finops/frontend test`). Hecho:
   job `frontend-tests`, copiado literal del patrón de `frontend-typecheck` (Red `f07367d` sobre
   `tools/ci-workflow.test.mjs`, Green pendiente de commit). Requirió desactivar y reactivar el hook
-  `lock-committed-tests.mjs` con autorización de Victor — ver `review.md`.
+  de protección de tests del entorno local con autorización de Victor — ver `review.md`.
 - [x] 2.5 Registrar *Frontend tests* como comprobación obligatoria en `.github/rulesets/develop.json`
   y `.github/rulesets/main.json`, y documentarlo en `docs/governance/github-branch-protection.md`,
   anotando que la activación remota es acción de administrador (mismo patrón que JUP-093). Hecho:

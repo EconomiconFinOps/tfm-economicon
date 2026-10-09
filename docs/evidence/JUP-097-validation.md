@@ -78,7 +78,7 @@ sin ningún cambio de por medio (falla una vez, pasa la siguiente). Documentado 
 | `SessionGate.tsx` (grupo 3) | 68.16% (51 supervivientes) | 17 (`SessionGate.mutation.test.tsx`) | **84.36%** |
 | `useDashboardData.ts` + `DashboardPage.tsx` (grupo 5) | 75.00% (12 supervivientes) | 7 (2 archivos `.mutation.test.tsx`) | **83.33%** |
 
-Ambos por encima del umbral `break: 80` de `.claude/harness/stryker.conf.mjs`. Supervivientes
+Ambos por encima del umbral de 80 que se usa como criterio de lectura del resultado. Supervivientes
 restantes en ambos casos clasificados y justificados como mutantes equivalentes o código muerto
 defensivo (guardas de estrechamiento de tipos de TypeScript ya inalcanzables dado el contrato
 público, claves de caché de React Query sin colisión posible en el flujo real) — detalle completo en
@@ -96,14 +96,15 @@ confirmados de nuevo al cierre.
 `39.69 kB` / gzip `7.87 kB`. El aviso de chunk >500kB es preexistente a esta tarjeta (no se investiga,
 fuera de alcance).
 
-### DoD (`node .claude/harness/check-dod.mjs`)
+### DoD (comprobador local, no versionado)
 
 Falla por `RF-093-001` (preexistente, documentado en `openspec/findings/backlog.md`): `corepack pnpm
 test/lint/typecheck` desde la raíz pasan por turbo, que resuelve pnpm v11.9.0 en subprocesos pese a
 `packageManager: pnpm@9.0.0`, y fallan en los 4 paquetes del monorepo (incluidos `backend`,
 `processor`, `azure-cost-api`, que esta tarjeta no toca). Sustituto verificado en su lugar (mismo
 criterio que JUP-093/094/095): `corepack pnpm --filter @finops/frontend {test,typecheck,lint,build}`,
-los cuatro en verde — ver arriba. Escaneo de secretos del propio `check-dod.mjs`: `[PASS]`.
+los cuatro en verde — ver arriba. Escaneo de secretos del comprobador local: `[PASS]` (no hay
+equivalente versionado en el repositorio, así que ese resultado no se puede reproducir desde él).
 
 ### Checks de trazabilidad OpenSpec/Trello
 

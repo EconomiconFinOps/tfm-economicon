@@ -11,8 +11,8 @@
 
 > Estado de este documento: en curso. Contiene la línea base y la consulta al equipo (grupo 1 de
 > `tasks.md`), el endurecimiento de `allowJs` (grupo 2), el recuento de pantallas con los textos
-> vivos corregidos (grupo 3) y la corrección de los enlaces relativos rotos (grupo 4). El resto de
-> secciones se añade según avanza la tarjeta.
+> vivos corregidos (grupo 3) la corrección de los enlaces relativos rotos (grupo 4) y la retirada de las menciones a configuración
+> local (grupo 5). El resto de secciones se añade según avanza la tarjeta.
 
 ## Línea base: antes de cambiar nada
 
@@ -555,3 +555,86 @@ están en `openspec/changes/archive/`:
 **Qué no resuelve.** Que los enlaces vuelvan a romperse con cada archivado es un problema distinto de
 la deuda acumulada, y nada lo impide hoy: no hay comprobación automática. Se registra como
 `RF-105-003` en el grupo 6. Esta misma tarjeta corrige sus propios enlaces al archivar (tarea 8.5).
+
+## Deuda documental: menciones a configuración local, `RF-099-001` (grupo 5)
+
+Ejecutado el 2026-10-09 sobre la rama en `2f5237e`.
+
+### Criterio
+
+Es el que aplicó JUP-099 a los documentos de JUP-098 (ver su `review.md` archivado, tarea 2.3):
+
+- Cambia **solo la referencia**: una ruta, un nombre de herramienta o un comando que no se puede
+  reproducir desde el repositorio. **Nunca** una cifra, un resultado, un veredicto ni un enlace.
+- Donde el texto ya traía comandos reales del repositorio, la referencia se sustituye por ellos
+  (`corepack pnpm test`, `lint` y `typecheck` desde la raíz en la evidencia de JUP-095).
+- Donde no existe equivalente versionado (el comprobador local de DoD, la protección de tests contra
+  edición, el procedimiento local de mutación), la redacción pasa a ser neutral y **no se inventa un
+  comando**: se nombra la existencia de una herramienta local sin ruta ni nombre de archivo, como
+  hizo JUP-099 con «el test estaba protegido contra edición en el entorno local».
+- Donde había un resultado de una herramienta sin equivalente (el escaneo de secretos del comprobador
+  local en la evidencia de JUP-097) el resultado se conserva y se dice que no se puede reproducir.
+- Este documento y el `design.md` de la tarjeta sí nombran los términos que se retiran de los demás,
+  porque describen el propio hallazgo y su búsqueda. Es el caso «legítimo» que ya existe en el
+  `review.md` archivado de JUP-099 y en la fila del backlog, y por eso la búsqueda los excluye.
+
+### Sustituciones
+
+| Referencia original | Redacción nueva |
+| --- | --- |
+| `.claude/harness/check-dod.mjs`, `check-dod.mjs` | «el comprobador local de DoD» (la evidencia de JUP-095 nombra los tres comandos de la raíz) |
+| `lock-committed-tests.mjs`, hook con ruta en `.claude/hooks/` | «la protección de tests del entorno local» / «el hook de protección de tests del entorno local» |
+| `.claude/settings.json` (vaciado y restaurado durante el bypass) | «la configuración local de esa protección», «archivo local de configuración de la protección» |
+| `.claude/` en `.gitignore` y «ningún archivo de `.claude/` colado» | «la carpeta de configuración de agentes» y «ninguna configuración personal de agentes colada» (lo que comprueba `jup:cleanup:check`) |
+| `.claude/harness/mutation.md`, `mutation.md` | «el procedimiento local de mutación»; en dos puntos «excepción doc-only», como en JUP-099 |
+| `.claude/harness/stryker.conf.mjs` (umbral `break: 80`) | «umbral de 80 que se usa como criterio de lectura del resultado», que es la redacción de JUP-099 |
+| `.claude/harness/workflow.md` §5-7, §7 | «el flujo de trabajo del equipo» (pasos 5 a 7 en uno de los dos) |
+| Comentario de `apps/frontend/vite.config.ts` | «el mutation testing con Stryker» (se retira la ruta; la explicación de `.stryker-tmp` sigue igual) |
+
+### Líneas con mención sustituidas por archivo
+
+| Menciones | Archivo |
+| ---: | --- |
+| 1 | `apps/frontend/vite.config.ts` (solo comentario) |
+| 1 | `docs/evidence/JUP-093-validation.md` |
+| 1 | `docs/evidence/JUP-095-validation.md` |
+| 3 | `docs/evidence/JUP-097-validation.md` |
+| 1 | `openspec/changes/archive/2026-09-02-jup-092-frontend-typescript-adr/review.md` |
+| 6 | `openspec/changes/archive/2026-09-06-jup-093-configure-typescript/review.md` |
+| 3 | `openspec/changes/archive/2026-09-06-jup-093-configure-typescript/tasks.md` |
+| 1 | `openspec/changes/archive/2026-09-07-jup-094-reconcile-package-json/review.md` |
+| 17 | `openspec/changes/archive/2026-09-12-jup-095-portar-codigo-fuente/review.md` |
+| 1 | `openspec/changes/archive/2026-09-12-jup-095-portar-codigo-fuente/tasks.md` |
+| 7 | `openspec/changes/archive/2026-09-21-jup-097-reconcile-api-layer/review.md` |
+| **42** | **11 archivos** |
+
+`git diff --stat`: 47 inserciones y 45 eliminaciones en 11 archivos. Hay más líneas tocadas que
+menciones porque en la evidencia de JUP-093 se reajustó el párrafo (4 líneas) y porque las
+evidencias de JUP-095 y JUP-097 ganan una línea cada una, al ser más larga la frase nueva (las dos
+líneas de diferencia entre inserciones y eliminaciones). Se revisó el diff palabra a palabra
+(`git diff --word-diff`): en todas las líneas cambia únicamente el texto de la referencia.
+
+### Resultado
+
+| Comprobación | Antes | Después |
+| --- | --- | --- |
+| Búsqueda de menciones (misma de la línea base) | 42 líneas en 11 archivos | **0** |
+| Menciones legítimas que describen el propio hallazgo (8 en el `review.md` archivado de JUP-099 y 1 en el backlog) | 9 | 9, sin tocar |
+| `corepack pnpm --filter @finops/frontend typecheck`, `lint` y `build` tras el cambio de `vite.config.ts` | — | los tres con salida 0 |
+| `corepack pnpm --filter @finops/frontend test -- --maxWorkers=1` | — | 53 archivos y 629 pruebas correctas, 160 s |
+| `corepack pnpm jup:cleanup:check` | — | `[OK] 930 archivos sin agentes personales, binarios ni tareas paralelas.` |
+| `corepack pnpm repository:governance:test` | — | 13 de 13 |
+
+### Lo que este grupo no resuelve ni valida
+
+- **Los registros siguen diciendo que existió una herramienta local.** Es lo que pasó y lo que se
+  quiere conservar: lo que se retira es la ruta y el nombre. «El comprobador local de DoD» sigue sin
+  poder reproducirse desde el repositorio; lo que ya eran comandos reales se dejó con esos comandos.
+- **No se volvió a ejecutar ninguno de los comandos históricos** (mutación, DoD, hooks): las
+  sustituciones son de redacción y no acreditan de nuevo ningún resultado de aquellas tarjetas.
+- **La palabra «hook» y la expresión «hook-disable dance» se conservan.** No identifican una ruta ni
+  un archivo y la búsqueda del hallazgo no las incluye. Si el equipo quiere un criterio más estricto
+  que el de JUP-099, es una decisión a tomar aparte.
+- **La protección contra reincidencias ya existe**: `tools/jup-cleanup-check.mjs` rechaza configuración
+  personal de agentes en el repositorio. Lo que no impide es que un documento nuevo cite esa
+  herramienta por su nombre; no se añadió ninguna comprobación de eso.

@@ -88,7 +88,8 @@ turbo) sustituidos por sus equivalentes `--filter @finops/frontend`, por la mism
 entorno preexistente que documenta `RF-093-001` (un `pnpm` global instalado vía `npm` en la máquina
 de desarrollo pisa al gestionado por `corepack` cuando `turbo` invoca los scripts por paquete;
 confirmado que afecta a los 4 paquetes del monorepo por igual, no específico de esta tarjeta). El
-mismo motivo bloqueó `.claude/harness/check-dod.mjs` en las tareas 7.1/7.2 y 8.1/8.2; verificado
+mismo motivo bloqueó la verificación de DoD desde la raíz (`corepack pnpm test`, `lint` y
+`typecheck`) en las tareas 7.1/7.2 y 8.1/8.2; verificado
 manualmente con los comandos `--filter` equivalentes en ambos casos (detalle en `review.md`).
 
 ## Verificación manual E2E
