@@ -12,8 +12,8 @@
 > Estado de este documento: en curso. Contiene la línea base y la consulta al equipo (grupo 1 de
 > `tasks.md`), el endurecimiento de `allowJs` (grupo 2), el recuento de pantallas con los textos
 > vivos corregidos (grupo 3) la corrección de los enlaces relativos rotos (grupo 4) y la retirada de las menciones a configuración
-> local (grupo 5) y los hallazgos de la épica (grupo 6). El resto de secciones se añade según avanza
-> la tarjeta.
+> local (grupo 5) los hallazgos de la épica (grupo 6) y el cierre del spike (grupo 7). El resto de
+> secciones se añade según avanza la tarjeta.
 
 ## Línea base: antes de cambiar nada
 
@@ -692,9 +692,9 @@ celda anterior se altera (21 filas cambiadas, 0 problemas).
 | `RF-099-002`, `RF-099-003` | `Open` | `Open` | Decisión de producto del equipo | Decisiones de diseño sobre los datos demo y los tonos |
 | `RF-098-002` | `Open` | `Open` | Decisión del equipo (técnica) | Exige cambiar un requisito vigente de `demo-auth-session` |
 | `RF-098-004`, `RF-103-005` | `Open` | `Open` | Decisión del equipo (técnica) | Plazos de tests bajo carga; el `README.md` documenta las dos mitades |
-| `RF-104-001` | `Open` | `Open` | Equipo Economicon (tarjeta por pedir al líder) | Único defecto funcional visible; el efecto sigue igual (líneas 52 a 63 de `ConversationsPage.tsx`) |
-| `RF-103-001`, `RF-103-002` | `Open` | `Open` | Equipo Economicon (tarjeta por pedir al líder) | Una sola tarjeta de tooling de `dev` |
-| `RF-098-003` | `Open` | `Open` | Equipo Economicon (tarjeta por pedir al líder) | Defecto de presentación; la opción «JUP-099» ya no existe |
+| `RF-104-001` | `Open` | `Open` | Equipo Economicon (tarjeta pedida) | Único defecto funcional visible; el efecto sigue igual (líneas 52 a 63 de `ConversationsPage.tsx`) |
+| `RF-103-001`, `RF-103-002` | `Open` | `Open` | Equipo Economicon (tarjeta pedida) | Una sola tarjeta de tooling de `dev` |
+| `RF-098-003` | `Open` | `Open` | Equipo Economicon (tarjeta pedida) | Defecto de presentación; la opción «JUP-099» ya no existe |
 | `RF-098-001`, `RF-103-003`, `RF-103-004`, `RF-104-002` | `Open` | `Open` | Equipo Economicon (sin tarjeta; se pide si se prioriza) | Sin riesgo funcional conocido o sin causa verificada |
 
 Resultado: 3 pasan a `Fixed` y 18 siguen `Open`, cada uno con motivo y con quién da el siguiente paso.
@@ -724,15 +724,19 @@ No pasa a `Fixed` porque falta la confirmación de Alejandro en consola externa.
 | `RF-105-002` | Dos módulos sin importador: `src/data/demo/executiveCostDashboard.ts` y `src/hooks/useCostKpis.ts` |
 | `RF-105-003` | No hay comprobación automática de enlaces relativos: volverá a pasar al archivar |
 
-### Tarjetas por pedir al líder (tarea 6.6)
+### Tarjetas pedidas al líder (tarea 6.6)
 
-Quedan **por pedir** y la petición la hace Victor, que es quien lleva el tablero. No se ha pedido
-ninguna ni se ha inventado ningún número:
+La petición se hace en Trello, de forma independiente de esta rama, por Victor, que es quien lleva el
+tablero; esta tarjeta no la ejecuta ni la comprueba. Se dio por hecha el 2026-10-09 por indicación
+del líder, y **ningún número de tarjeta consta en el repositorio** (no se ha inventado ninguno). Las
+filas del backlog dicen «tarjeta pedida» para estos cuatro hallazgos:
 
 1. `RF-104-001`: conversación nueva que no recibe el mensaje. Es la de mayor valor.
 2. `RF-103-001` y `RF-103-002`: `dev` desde la raíz (una sola tarjeta).
 3. `RF-098-003`: JSON crudo en el error de credenciales.
-4. Opcionales si se prioriza: `RF-105-001` (retirar `/overview-legacy`), `RF-105-002`, `RF-105-003`.
+
+`RF-105-001`, `RF-105-002` y `RF-105-003` quedan «sin tarjeta; se pide si se prioriza», como los
+demás hallazgos de bajo riesgo.
 
 ### Verificación del grupo
 
@@ -746,3 +750,68 @@ ninguna ni se ha inventado ningún número:
 **No se validó:** que `GET /billing/summary` devuelva lo descrito (se leyó el código, no se ejecutó
 el backend ni sus pruebas); quién es el responsable de cada hallazgo según Trello; que Alejandro
 reproduzca o no el fallo de `RF-093-001`.
+
+## Cierre del spike (grupo 7)
+
+Ejecutado el 2026-10-09 sobre la rama tras fusionar `develop`. Es el último archivo compartido que se
+edita, como pide la regla 9 de la tarjeta, y el diff es de 122 inserciones y 18 eliminaciones: las 18
+líneas eliminadas son todas sustituciones previstas (se listaron una a una).
+
+### Cambios en `docs/spikes/frontend-migration.md`
+
+| Qué | Antes | Ahora |
+| --- | --- | --- |
+| F1: JUP-090, JUP-091 y JUP-092 | Sin enlace a su change archivado | Enlazados a `openspec/changes/archive/` |
+| F3: JUP-095 | Sin enlace | Enlazado, junto con su reconciliación con `develop` (`jup-095-reconciliar-develop`), con PR #36 y fecha |
+| F3: JUP-099 | «implementada, validada y archivada el 2026-10-01; integración de PR #54 pendiente» | «fusionada el 2026-10-01 (PR #54)» |
+| F4: JUP-103 | «implementada» | «fusionada el 2026-10-07 (PR #75)» |
+| F5: JUP-104 | «implementada» | «fusionada el 2026-10-07 (PR #79)» |
+| F1: casilla de ADR-0003 en los `design.md` | Sin marcar | Marcada con su comprobación y una salvedad (abajo) |
+| F5: marcador provisional de cierre | Una tarjeta con tres casillas sin marcar | `jup-105-close-frontend-migration` con dos casillas marcadas y una pendiente con su explicación; la revisión del equipo se declara como la del propio pull request |
+| Afirmaciones históricas «único dashboard con datos reales» | Sin matizar | Tres notas fechadas, sin reescribir el texto |
+| Tabla «Contexto: origen vs destino» | Sin aviso de que la columna «Destino actual» era el punto de partida | Nota fechada |
+| Plantilla «Checklist operacional» | Casillas sin marcar sin explicación | Declarada plantilla |
+| «Próximos pasos» | Terminaba en el punto 12 | Punto 13 con el estado final |
+
+**Fechas de fusión.** Salen de `git log` sobre `origin/develop` (el commit de fusión de cada pull
+request) y se dan en UTC. `#75` figura en Git como `2026-10-06T20:27:47-04:00`, que es el 7 de octubre
+en UTC y coincide con la fecha de la tarjeta; el resto no cambia de día.
+
+**Salvedad de la casilla de ADR-0003.** Se comprobó con `Select-String` sobre cada `design.md`
+archivado de F2 y F3: JUP-093, JUP-094, JUP-095, JUP-098 y JUP-099 enlazan el ADR; **JUP-097 lo cita
+tres veces por su identificador pero no lo enlaza**. La casilla se marca con esa salvedad escrita y
+no se edita el `design.md` archivado de JUP-097.
+
+**Casillas del marcador de F5.**
+
+| Casilla | Estado | Por qué |
+| --- | --- | --- |
+| Comandos de la batería (`openspec:validate`, `lint`, `build`, `install --frozen-lockfile`) | **Sin marcar, con explicación** | Se ejecutan en el grupo 8; la tarea 8.1 la marca con el resultado |
+| ADR de TS `Accepted` y documentación sincronizada | Marcada | ADR-0003, ADR-0004 y ADR-0012 en `Accepted` en su archivo y en `docs/adr/README.md` (líneas 34, 35 y 43); README del frontend y `docs/architecture.md` corregidos en el grupo 3 |
+| Archivado de los cambios OpenSpec de la épica | Marcada | Los doce (JUP-083, 090 a 095, 097, 098, 099, 103 y 104) están en `openspec/changes/archive/`; `openspec list` no muestra ninguno activo |
+| Revisión del equipo | No es casilla | Es la del propio pull request de JUP-105; no se puede registrar de antemano |
+
+### Punto 13 del spike: de dónde sale cada afirmación
+
+| Afirmación | Fuente |
+| --- | --- |
+| TypeScript estricto con `allowJs: false`, 0 archivos `.js` o `.jsx` en `src/` y `tests/` | Grupos 1 y 2 de esta evidencia |
+| 629 pruebas en 53 archivos con `--maxWorkers=1` | Grupo 2 y grupo 5; se contrasta de nuevo en el grupo 8 |
+| 9 rutas, 5 con backend, 4 de demostración, 3 sin rótulo | Grupo 3 y 6.1 |
+| Pull requests y fases | `git log` sobre `origin/develop` por el título de cada fusión |
+| 21 hallazgos, 3 `Fixed` y 18 `Open` | Grupo 6, comparación del backlog con `HEAD` |
+| Tarjetas pedidas en Trello | Indicación del líder; esta rama no lo comprueba |
+| `RF-026-002` como limitación conocida | Backlog (`Open`, Medium) |
+
+### Verificación del grupo
+
+| Comprobación | Resultado |
+| --- | --- |
+| `git grep -n -e "jup-0xx" -e "\- \[ \]"` sobre el spike | Quedan 3 usos y se revisaron uno a uno: `jup-0xx-verificar-docker-compose` (tarjeta resuelta que nunca tuvo número, y su texto lo dice), la casilla de la batería (con su explicación) y la plantilla, que ahora se declara como tal |
+| Recorrido de enlaces relativos | 2 rotos, los falsos positivos conocidos; los enlaces nuevos del spike resuelven |
+| `corepack pnpm openspec:validate`, `jup:check` y `jup:cleanup:check` | Los tres en verde |
+
+**No se validó:** que los pull requests se fusionaran en esas fechas según la interfaz de GitHub (se
+usó Git, no la API); que las tarjetas de Trello de los hallazgos existan; ni las cifras del punto 13
+que dependen de la batería completa (629 pruebas, 0 archivos JavaScript), que se contrastan en el
+grupo 8.

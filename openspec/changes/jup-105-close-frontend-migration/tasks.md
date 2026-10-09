@@ -111,26 +111,36 @@
   arrastra), `RF-105-002` (módulos sin consumidor) y `RF-105-003` (no hay comprobación automática de
   enlaces relativos). Añadir cualquier otro hallazgo que haya aparecido durante la tarjeta. Hecho:
   los tres; los comentarios desfasados de `Layout.tsx` van dentro de `RF-105-001`.
-- [ ] 6.6 Pedir al líder las tarjetas de Trello que necesiten los hallazgos que sobreviven y anotar
-  «tarjeta pedida» donde corresponda, sin inventar números. Pendiente: la lista está en la evidencia
-  («Tarjetas por pedir al líder») y las filas dicen «tarjeta por pedir»; la petición en Trello la
-  hace Victor y, cuando la haga, estas celdas pasan a «tarjeta pedida».
+- [x] 6.6 Pedir al líder las tarjetas de Trello que necesiten los hallazgos que sobreviven y anotar
+  «tarjeta pedida» donde corresponda, sin inventar números. Hecho por indicación del líder
+  (2026-10-09): la petición se hace en Trello de forma independiente y esta rama no la comprueba.
+  Cuatro hallazgos (`RF-104-001`, `RF-103-001`, `RF-103-002` y `RF-098-003`) dicen «tarjeta pedida»;
+  ningún número consta en el repositorio.
 
 ## 7. Cerrar el spike (archivo compartido)
 
-- [ ] 7.1 `docs/spikes/frontend-migration.md`, fases F1 a F5: enlazar los changes archivados de
+- [x] 7.1 `docs/spikes/frontend-migration.md`, fases F1 a F5: enlazar los changes archivados de
   JUP-090, JUP-091, JUP-092 y JUP-095; corregir el estado de JUP-099, JUP-103 y JUP-104 con su pull
-  request y fecha de fusión; marcar la casilla pendiente de JUP-092 con su comprobación.
-- [ ] 7.2 Sustituir `jup-0xx-checks-y-archive` por `jup-105-close-frontend-migration` y marcar sus
-  tres casillas según lo verificado; la que no se cumpla del todo lleva su explicación.
-- [ ] 7.3 Añadir una nota fechada a las afirmaciones históricas de que `/overview-legacy` es el único
-  dashboard con datos reales (líneas 231, 464 y 481), sin reescribirlas.
-- [ ] 7.4 Añadir el punto 13 de «Próximos pasos» con el estado final de la épica: qué se migró, las
+  request y fecha de fusión; marcar la casilla pendiente de JUP-092 con su comprobación. Hecho:
+  enlaces añadidos (también el de la reconciliación de JUP-095 con `develop`); JUP-099 (#54,
+  2026-10-01), JUP-103 (#75, 2026-10-07 UTC) y JUP-104 (#79, 2026-10-07); la casilla de JUP-092 se
+  marca con la salvedad de que el `design.md` archivado de JUP-097 cita ADR-0003 pero no lo enlaza.
+- [x] 7.2 Sustituir `jup-0xx-checks-y-archive` por `jup-105-close-frontend-migration` y marcar sus
+  tres casillas según lo verificado; la que no se cumpla del todo lleva su explicación. Hecho: dos
+  casillas marcadas con su comprobación; la de la batería queda sin marcar con su explicación y se
+  marca en 8.1; la revisión del equipo no es una casilla, porque es la del propio pull request.
+- [x] 7.3 Añadir una nota fechada a las afirmaciones históricas de que `/overview-legacy` es el único
+  dashboard con datos reales (líneas 231, 464 y 481), sin reescribirlas. Hecho: tres notas (puntos
+  JUP-097, 7 y 8).
+- [x] 7.4 Añadir el punto 13 de «Próximos pasos» con el estado final de la épica: qué se migró, las
   dos tarjetas eliminadas, las tarjetas ajenas que cambiaron el frontend, qué quedó fuera y qué
-  decisiones de producto siguen abiertas, cada una con su hallazgo.
-- [ ] 7.5 Comprobar que no queda ningún marcador `jup-0xx` de tarjeta pendiente ni ninguna casilla
+  decisiones de producto siguen abiertas, cada una con su hallazgo. Hecho, con las fases y sus pull
+  requests, los hallazgos, las limitaciones conocidas y qué haría falta para darla por completa.
+- [x] 7.5 Comprobar que no queda ningún marcador `jup-0xx` de tarjeta pendiente ni ninguna casilla
   sin marcar sin explicación (`git grep -n -e "jup-0xx" -e "\- \[ \]"` sobre el spike) y revisar el
   resultado línea a línea: el «Checklist operacional» es una plantilla y sus casillas no cuentan.
+  Hecho: queda `jup-0xx-verificar-docker-compose` (tarjeta resuelta, que nunca tuvo número y lo dice
+  su texto), la casilla de la batería (con su explicación) y la plantilla, que ahora lo declara.
 
 ## 8. Revisión y cierre
 
@@ -141,7 +151,9 @@
   entorno virtual de Python activo, `corepack pnpm openspec:validate`,
   `corepack pnpm jup:check -- --change jup-105-close-frontend-migration` y
   `corepack pnpm jup:cleanup:check`. Guardar la salida real y decir en la evidencia que `test` se
-  ejecutó por mitades.
+  ejecutó por mitades. Con el resultado: marcar en `docs/spikes/frontend-migration.md` la casilla de
+  esos comandos (F5) y contrastar con la batería las cifras del punto 13 del spike (629 pruebas en
+  53 archivos, 0 archivos JavaScript, 21 hallazgos con 3 `Fixed` y 18 `Open`).
 - [ ] 8.2 Completar `docs/evidence/JUP-105-validation.md`: trazabilidad de los nueve criterios de
   aceptación de la tarjeta con su evidencia, tabla de antes y después, y lo que no se validó y por
   qué.
@@ -151,7 +163,8 @@
   asistencia y que los comandos escritos se pueden reproducir tal cual.
 - [ ] 8.5 Tras la aprobación post-revisión, archivar el change sincronizando la spec
   `frontend-typescript-tooling` y corregir en el mismo paso los enlaces relativos de la tarjeta, que
-  bajan un nivel al pasar a `openspec/changes/archive/`. Repetir el recorrido de enlaces: deben
-  seguir siendo 2.
+  bajan un nivel al pasar a `openspec/changes/archive/`. Añadir en el spike (F5) el enlace al change
+  archivado de JUP-105, que no se puso antes porque su carpeta lleva la fecha del archivado. Repetir
+  el recorrido de enlaces: deben seguir siendo 2.
 - [ ] 8.6 Traer `develop` y reverificar, abrir el pull request hacia `develop` con los cuatro roles
   en la descripción y registrar en la evidencia el enlace al pull request y a la ejecución de CI.

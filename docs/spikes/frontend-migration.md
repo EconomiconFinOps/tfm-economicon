@@ -19,6 +19,10 @@ Tasks            -> pasos verificables dentro de cada tarjeta
 
 ## Contexto: origen vs destino
 
+*Nota del 2026-10-09 (JUP-105): esta tabla describe el estado al abrir la épica, que es el que motivó
+la estrategia. La columna «Destino actual» ya no es el estado actual: el frontend es TypeScript con
+react-router, sin `App.jsx` ni `main.css`. El estado final está en el punto 13 de «Próximos pasos».*
+
 | Aspecto              | Origen (Economicon)        | Destino actual (tfm-economicon)                         |
 | -------------------- | -------------------------- | ------------------------------------------------------- |
 | Framework            | React 18.3.1 + Vite 6      | React 18.3.1 + Vite 5                                   |
@@ -148,7 +152,7 @@ tarjeta en Trello.
 
 ### F1. Preparacion e inventario
 
-**JUP `jup-090-inventory-current-frontend`** — carril `light`
+**JUP [`jup-090-inventory-current-frontend`](../../openspec/changes/archive/2026-08-29-jup-090-inventory-current-frontend/)** — carril `light`
 - [x] Documentar que se preserva del destino (nombre paquete, scripts, puerto, Docker, contratos). Ver
   [docs/planning/JUP-090-frontend-migration-baseline.md](../planning/JUP-090-frontend-migration-baseline.md).
 - [x] Marcar archivos a reemplazar vs. a conservar. Ver la misma línea base, sección
@@ -156,7 +160,7 @@ tarjeta en Trello.
 - [x] Definir criterios de aceptacion de paridad funcional (login -> tenant -> dashboard). Ver la
   misma línea base, sección "Criterios de paridad funcional".
 
-**JUP `jup-091-inventory-economicon-frontend`** — carril `light`
+**JUP [`jup-091-inventory-economicon-frontend`](../../openspec/changes/archive/2026-08-31-jup-091-inventory-economicon-frontend/)** — carril `light`
 - [x] Completar el "Checklist de inspeccion del origen" y confirmar todos los supuestos en JUP-083.
 - [x] Listar dependencias del origen y clasificarlas (mantener / sustituir / descartar). Ver
   [docs/planning/JUP-091-economicon-source-inventory.md](../planning/JUP-091-economicon-source-inventory.md),
@@ -166,13 +170,16 @@ tarjeta en Trello.
   ningun endpoint (datos estaticos), y de los 14 datos que muestra solo 2 tienen contrato, ambos
   parciales. Siete capacidades ausentes agrupadas en `RF-091-003`.
 
-**JUP `jup-092-frontend-typescript-adr`** — carril `standard` (decision de arquitectura)
+**JUP [`jup-092-frontend-typescript-adr`](../../openspec/changes/archive/2026-09-02-jup-092-frontend-typescript-adr/)** — carril `standard` (decision de arquitectura)
 - [x] Redactar ADR `docs/adr/ADR-0003-frontend-typescript.md` con `docs/templates/adr.md`.
 - [x] Estado `Proposed` -> `Accepted` tras HiTL.
 - [x] Enlazar el ADR desde este spike (decision nº 1, arriba).
-- [ ] Enlazar el ADR desde el `design.md` de cada tarjeta de F2 y F3 **al crearse** — no es tarea de
+- [x] Enlazar el ADR desde el `design.md` de cada tarjeta de F2 y F3 **al crearse** — no es tarea de
   JUP-092, que ya termino; queda registrado aqui y en la seccion de seguimiento del propio ADR como
-  requisito de esas tarjetas futuras.
+  requisito de esas tarjetas futuras. **Comprobado el 2026-10-09 sobre los `design.md` archivados:**
+  JUP-093, JUP-094, JUP-095, JUP-098 y JUP-099 lo enlazan; **JUP-097 lo cita tres veces por su
+  identificador pero no lo enlaza**. Se da por cumplida con esa salvedad y no se edita el `design.md`
+  archivado de JUP-097 por una referencia que ya nombra el ADR.
 
 ### F2. Tooling y dependencias
 
@@ -201,7 +208,7 @@ tarjeta en Trello.
 
 ### F3. Reemplazo del codigo fuente
 
-**JUP `jup-095-portar-codigo-fuente`** — carril `standard` — **completa**
+**JUP [`jup-095-portar-codigo-fuente`](../../openspec/changes/archive/2026-09-12-jup-095-portar-codigo-fuente/) — carril `standard` — completa** (fusionada el 2026-09-20, PR #36; su reconciliación con `develop` está en [`jup-095-reconciliar-develop`](../../openspec/changes/archive/2026-09-19-jup-095-reconciliar-develop/))
 - [x] Reemplazar `src/**` por el codigo de Economicon (componentes, pages, hooks, layouts).
 - [x] Reconciliar `index.html` y entrypoint (`main.tsx`).
 - [x] Asegurar arranque sin errores de tipo ni de runtime (`pnpm dev`, `pnpm build`).
@@ -229,7 +236,8 @@ tarjeta en Trello.
   refinando `RF-095-002` (permanece `Open`, es insumo para la decisión de épica sobre
   `RF-091-003`, no la resuelve). Por decisión de alcance tomada antes de proponer, **no se tocó
   backend y no se retiró `/overview-legacy`**: sigue siendo el único dashboard con datos reales, sin
-  Overview real que la sustituya todavía.
+  Overview real que la sustituya todavía. *(Nota del 2026-10-09, JUP-105: dejó de ser cierto cuando
+  JUP-026 y JUP-055 conectaron `/` a costes almacenados; ver el punto 13.)*
 
 **JUP [`jup-098-reconcile-auth-session`](../../openspec/changes/archive/2026-09-27-jup-098-reconcile-auth-session/) — carril `standard` — completa**
 - [x] Adaptar login/sesion al flujo del backend (token + perfil `/me`). **Ya lo había cerrado
@@ -252,7 +260,7 @@ tarjeta en Trello.
       no sobrevive a una recarga de `/login` ni al botón "atrás" del navegador. El `403` de tenant
       conserva la sesión, tal como ya especificaba JUP-085 — se reafirma la decisión, sin cambiarla.
 
-**JUP [`jup-099-unify-styles-assets`](../../openspec/changes/archive/2026-10-01-jup-099-unify-styles-assets/) — carril `standard` (el spike la proponía `light`) — implementada, validada y archivada el 2026-10-01; integración de PR #54 pendiente**
+**JUP [`jup-099-unify-styles-assets`](../../openspec/changes/archive/2026-10-01-jup-099-unify-styles-assets/) — carril `standard` (el spike la proponía `light`) — fusionada el 2026-10-01 (PR #54)**
 - [x] Unificar el sistema de estilos. **El problema real era mayor que "duplicados con el tema
       oscuro"**: convivían tres fuentes de color (241 hexadecimales y 229 utilidades de la paleta de
       Tailwind escritos a mano en las pantallas, más los tokens de `theme.css`, que eran el tema por
@@ -296,7 +304,7 @@ tarjeta propia** (verificado sobre `develop` en `dad5662` el 2026-10-03; no lleg
   build falla con `ERR_PNPM_OUTDATED_LOCKFILE`).
 
 **JUP [`jup-103-verify-turbo-workspace`](../../openspec/changes/archive/2026-10-04-jup-103-verify-turbo-workspace/)** —
-carril `light` — **implementada**
+carril `light` — **fusionada el 2026-10-07 (PR #75)**
 - [x] Confirmar `pnpm dev` (turbo paralelo) levanta frontend junto a backend/processor: turbo lanza en
   paralelo las cuatro tareas con el pnpm correcto, **pero por sí solo no deja sirviendo a backend ni
   a processor** (turbo en modo `strict` no les pasa su configuración y el `.env` de Compose usa
@@ -317,7 +325,7 @@ carril `light` — **implementada**
 
 ### F5. Verificacion y cierre
 
-**JUP [`jup-104-e2e-validation`](../../openspec/changes/archive/2026-10-06-jup-104-e2e-validation/) — carril `standard` — implementada**
+**JUP [`jup-104-e2e-validation`](../../openspec/changes/archive/2026-10-06-jup-104-e2e-validation/) — carril `standard` — fusionada el 2026-10-07 (PR #79)**
 - [x] E2E con la cuenta de demostración contra backend local, que **no** usa `operator@example.com` /
   `secret` (ver «Hechos del destino»): acceso por el formulario desde otro origen que el backend, sin
   desactivar ninguna protección del navegador.
@@ -329,10 +337,23 @@ carril `light` — **implementada**
   [receta del guion](../evidence/JUP-104-browser-recipe.md), fuera del repositorio solo el proyecto de
   Playwright y las capturas.
 
-**JUP `jup-0xx-checks-y-archive`** — carril `light`
-- [ ] `pnpm openspec:validate`, `pnpm lint`, `pnpm build`, `pnpm install --frozen-lockfile`.
-- [ ] Confirmar ADR de TS `Accepted` y documentacion sincronizada (READMEs, architecture).
-- [ ] Revision del equipo y archivado de los cambios OpenSpec de la epica.
+**JUP `jup-105-close-frontend-migration`** — carril `light` — cierre de la épica. Sustituye al
+marcador provisional de cierre que tenía este spike; su evidencia es
+[JUP-105-validation.md](../evidence/JUP-105-validation.md) y su estado final es el punto 13 de
+«Próximos pasos».
+- [ ] `pnpm openspec:validate`, `pnpm lint`, `pnpm build`, `pnpm install --frozen-lockfile`. **Se
+  marca al terminar la batería de JUP-105**, ejecutada desde la raíz con `corepack pnpm` y con
+  `test` por mitades por `RF-103-005`.
+- [x] Confirmar ADR de TS `Accepted` y documentacion sincronizada (READMEs, architecture).
+  Comprobado el 2026-10-09: [ADR-0003](../adr/ADR-0003-frontend-typescript.md),
+  [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md) y
+  [ADR-0012](../adr/ADR-0012-frontend-color-tokens.md) están en `Accepted` en su archivo y en el
+  [registro de decisiones](../adr/README.md). `apps/frontend/README.md` (tabla de rutas y recuento) y
+  `docs/architecture.md` (recuadro de `GET /billing/summary`) se pusieron al día en JUP-105.
+- [x] Archivado de los cambios OpenSpec de la epica. Los doce de la épica (JUP-083, 090 a 095, 097,
+  098, 099, 103 y 104) están en `openspec/changes/archive/`, ninguno activo.
+- La revisión del equipo no se registra aquí: es la del propio pull request de JUP-105 (reviews
+  `Revision JUP-105` y `Validacion JUP-105`, que exige el check `JUP reviews`).
 
 ## Manejo de conflictos con archivos existentes
 
@@ -413,7 +434,9 @@ Notas:
 ## Checklist operacional de la migracion
 
 Alineado con [el flujo Trello + OpenSpec](../workflows/trello-openspec.md). Aplicar **por cada
-tarjeta JUP** de la epica.
+tarjeta JUP** de la epica. **Es una plantilla:** sus casillas están sin marcar a propósito y no
+describen el estado de ninguna tarjeta; el estado real de cada una está en «Descomposicion» y en el
+punto 13 de «Próximos pasos».
 
 ```md
 - [ ] Crear la tarjeta Trello y el OpenSpec change `jup-NNN-slug` con su identificador real.
@@ -462,7 +485,8 @@ tarjeta JUP** de la epica.
    (`Fixed`): línea base de lint en 0 (era 49 violaciones en 9 archivos `.jsx`), 0 archivos `.jsx`
    restantes en `src/**`. Deuda explícita dejada para la siguiente tarjeta de F3
    (`reconciliar-capa-api`): la ruta puente `/overview-legacy` (único dashboard con datos reales,
-   decisión 6 de `design.md`) y el finding nuevo `RF-095-002` (datos de demostración en las 5
+   decisión 6 de `design.md`; *nota del 2026-10-09, JUP-105: ya no es el único, ver el punto 13*) y
+   el finding nuevo `RF-095-002` (datos de demostración en las 5
    pantallas de coste, relacionado con `RF-091-003`/`RF-091-004`). Hallazgo nuevo fuera de alcance de
    esta tarjeta: `RF-095-001` (backend sin `CORSMiddleware`, responsabilidad del backend). **Queda de
    F3:** `reconciliar-capa-api`, `reconciliar-auth-tenant` y `unificar-estilos-assets`, en ese orden
@@ -479,8 +503,9 @@ tarjeta JUP** de la epica.
    [docs/planning/JUP-097-frontend-data-gap-map.md](../planning/JUP-097-frontend-data-gap-map.md).
    **Por decisión de alcance explícita, tomada antes de proponer:** ningún archivo de
    `apps/backend/**` se tocó, y `/overview-legacy` se conserva sin retirar — sigue siendo el único
-   dashboard con datos reales, sin Overview real que la sustituya todavía. `RF-091-003` y
-   `RF-091-004` permanecen `Open` sin cambio. **Queda de F3:** `reconciliar-auth-tenant` (construye
+   dashboard con datos reales, sin Overview real que la sustituya todavía *(nota del 2026-10-09,
+   JUP-105: ya no es cierto, ver el punto 13)*. `RF-091-003` y
+   `RF-091-004` permanecen `Open` sin cambio *(`RF-091-004` pasó a `Fixed` en JUP-105)*. **Queda de F3:** `reconciliar-auth-tenant` (construye
    sesión real sobre la capa ya auditada) y `unificar-estilos-assets`.
 9. **Hecho en JUP-098 (`jup-098-reconcile-auth-session`): `reconciliar-auth-tenant` queda completa,
    con alcance muy reducido respecto a lo que este spike listaba como pendiente.** Entre que JUP-097
@@ -543,3 +568,82 @@ tarjeta JUP** de la epica.
     **Queda de la épica:** `checks-y-archive` (JUP-105), la deuda documental (`RF-099-001` y
     `RF-099-004`) y las decisiones que ninguna tarjeta de migración resuelve (`RF-091-003`,
     `RF-091-004`, `RF-098-002`, `RF-098-003` y `RF-098-004`).
+13. **Hecho en JUP-105 (`jup-105-close-frontend-migration`): la épica queda cerrada.** Estado final
+    a 2026-10-09, sobre `develop` en `ceb6520`; las cifras se midieron ese día y su detalle está en
+    [la evidencia de JUP-105](../evidence/JUP-105-validation.md). **La migración técnica (código,
+    herramientas, entorno y validación) está completa; lo que queda abierto es de producto y de
+    tooling, no de migración.**
+
+    **Qué se migró.** `apps/frontend` es TypeScript estricto con `allowJs: false` (0 archivos `.js` o
+    `.jsx` en `src/` y `tests/`; el endurecimiento que asignaba a esta tarjeta
+    [ADR-0003](../adr/ADR-0003-frontend-typescript.md) lo ejecuta JUP-105 y lo anota en su
+    seguimiento), con el enrutado de react-router y la sesión portados del origen, una paleta de color
+    única ([ADR-0012](../adr/ADR-0012-frontend-color-tokens.md)) y un subconjunto de shadcn/ui
+    ([ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md)). Pasa `typecheck`, `lint` y `build`, y sus 629
+    pruebas en 53 archivos (con `--maxWorkers=1`, ver `RF-098-004`), y se recorrió en navegador real
+    contra Compose en JUP-104. Por fases (entre paréntesis, el pull request):
+
+    | Fase | Tarjetas | Qué dejó |
+    | --- | --- | --- |
+    | F1 | JUP-083 (#3), JUP-090 (#22), JUP-091 (#24), JUP-092 (#26) | Inventarios del destino y del origen, supuestos confirmados y ADR-0003 |
+    | F2 | JUP-093 (#27), JUP-094 (#28) | TypeScript con type-check obligatorio, ESLint con soporte TS, dependencias fusionadas y ADR-0004 |
+    | F3 | JUP-095 (#36), JUP-097 (#42), JUP-098 (#50), JUP-099 (#54) | Código portado, capa de datos auditada, aviso de sesión expirada y paleta única |
+    | F4 | JUP-103 (#75), con JUP-049 (#16) y JUP-050 (#59) | Pipeline de turbo verificado; Docker y entorno local reproducible |
+    | F5 | JUP-104 (#79) y JUP-105 | Recorrido del operador en navegador real y cierre de la épica |
+
+    **Tarjetas eliminadas sin abrirse (2).** *Configurar CORS en el backend*: JUP-085 (#43) ya había
+    resuelto todo su alcance (`CORS_ALLOWED_ORIGINS` por entorno, `RF-095-001` y `RF-087-001` en
+    `Fixed`, ADR-0007). *Verificar la integración Docker del frontend*: JUP-049 y JUP-050 ya cumplían
+    sus criterios (`RF-090-001` en `Fixed`); JUP-103 la marcó como resuelta en F4.
+
+    **Tarjetas ajenas a la épica que cambiaron el frontend mientras duraba (6).** JUP-085 (#43,
+    sesión demo y CORS), JUP-026 (#52) y JUP-055 (#77), que pasaron la pantalla principal `/` de datos
+    de demostración a costes almacenados del backend, JUP-057 (#62, anomalías con datos de prueba
+    rotulados), JUP-025 (#55, citas en el asistente) y JUP-047 (#81, la pantalla `/system-health`). Por
+    eso este spike, escrito antes de ellas, se quedó atrás en varios puntos: ver las notas fechadas.
+
+    **Pantallas.** 9 rutas bajo sesión más `/login`: 5 sirven datos del backend (`/`, `/ingest`,
+    `/assistant`, `/overview-legacy` y `/system-health`) y 4 son de demostración (`/operational`,
+    `/cuts`, `/anomalies` y `/recommendations`), de las cuales solo `/anomalies` lo indica en la
+    interfaz. El recuento vigente, con su fecha, vive en la sección «Rutas» de
+    [`apps/frontend/README.md`](../../apps/frontend/README.md#rutas) y no se repite aquí.
+
+    **Qué quedó fuera de la épica.** Conectar a datos reales las 4 pantallas de demostración (faltan
+    en el backend las acciones de recorte, la detección de anomalías, las recomendaciones, el
+    multi-cloud, la serie por hora, el inventario de recursos y el cálculo de ahorro), rotular las 3
+    sin aviso, retirar `/overview-legacy` y dos módulos sin uso, y todo lo que no sea migración. El
+    asistente sigue sin generar texto (compone una plantilla con hasta tres fragmentos recuperados,
+    JUP-104).
+
+    **Hallazgos de la épica: 21, de los que JUP-105 cierra 3 y deja 18 `Open`**, cada uno con motivo
+    y con quién da el siguiente paso en el [backlog](../../openspec/findings/backlog.md). Pasan a
+    `Fixed` `RF-091-004` (el dato ficticio ya no existe; la falta de un motor de ahorro pasa a
+    `RF-091-003`), `RF-099-001` y `RF-099-004`. Se registran `RF-105-001` (retirar `/overview-legacy`),
+    `RF-105-002` (módulos sin uso) y `RF-105-003` (nada comprueba los enlaces al archivar).
+
+    **Decisiones que la épica deja abiertas, y que JUP-105 no toma:**
+
+    | Decisión | Hallazgo | Quién |
+    | --- | --- | --- |
+    | Qué capacidades de backend se construyen para las pantallas de demostración, y si se conectan o se retiran | `RF-091-003`, `RF-095-002`, `RF-099-002` | Producto |
+    | Rotular las 3 pantallas de demostración sin aviso | `RF-104-004` | Producto |
+    | Leer el estado de un trabajo de ingesta desde la interfaz | `RF-104-003` | Producto |
+    | Cambiar el requisito de reintentos de la sesión, que retrasa unos 7 s el aviso de sesión expirada | `RF-098-002` | Equipo (técnica) |
+    | Plazos de tests bajo carga y cómo ejecutar `test` desde la raíz | `RF-098-004`, `RF-103-005` | Equipo (técnica) |
+    | Consolidar tonos casi iguales de la paleta | `RF-099-003` | Producto y diseño |
+
+    Con tarjeta pedida en Trello: la conversación nueva que no recibe el mensaje (`RF-104-001`, el
+    único defecto funcional visible para el operador), `dev` desde la raíz (`RF-103-001` y
+    `RF-103-002`) y el JSON crudo del error de credenciales (`RF-098-003`). `RF-093-001` espera la
+    confirmación de Alejandro en consola externa: Paris no reproduce el fallo y no necesitó la
+    corrección.
+
+    **Limitaciones conocidas del frontend al cerrar.** El desbordamiento horizontal en móvil del
+    `Layout` compartido (`RF-026-002`, `Open`, ajeno a la épica) y que `corepack pnpm test` con los
+    cuatro paquetes a la vez falla de forma distinta en cada ejecución (`RF-103-005`); por mitades
+    pasa.
+
+    **Qué haría falta para darla por completa del todo.** (1) Que producto decida `RF-091-003`, con
+    las capacidades de backend que se construyan o las pantallas que se retiren. (2) Retirar
+    `/overview-legacy` y los módulos sin uso (`RF-105-001` y `RF-105-002`). (3) Corregir `RF-104-001`.
+    (4) Que Alejandro confirme `RF-093-001`. Ninguno de los cuatro es trabajo de migración.
