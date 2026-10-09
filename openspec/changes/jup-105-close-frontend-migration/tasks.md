@@ -92,22 +92,29 @@
 
 ## 6. Hallazgos de la épica (archivo compartido: después de traer `develop`)
 
-- [ ] 6.1 Traer `develop` a la rama (lo ejecuta Victor). Comprobar si se fusionaron #66 o #69: si
+- [x] 6.1 Traer `develop` a la rama (lo ejecuta Victor). Comprobar si se fusionaron #66 o #69: si
   es así, repetir 3.1 y ajustar 3.2. Repetir el recorrido de enlaces y la búsqueda de menciones por
-  si la fusión trae deuda nueva.
-- [ ] 6.2 Comprobar en `apps/backend` que `GET /billing/summary` ya no devuelve importes fijos y que
-  el ahorro es `null`, antes de proponer el cierre de `RF-091-004`. Guardar la comprobación.
-- [ ] 6.3 `openspec/findings/backlog.md`: aplicar la disposición de la decisión 7 del `design.md` a
+  si la fusión trae deuda nueva. Hecho: `develop` (`ceb6520`, con #83, #76, #72 y #82) fusionado sin
+  conflictos en `ce1a87d`; #66 y #69 no están, el recuento no cambia; enlaces en 2 y menciones en 0.
+- [x] 6.2 Comprobar en `apps/backend` que `GET /billing/summary` ya no devuelve importes fijos y que
+  el ahorro es `null`, antes de proponer el cierre de `RF-091-004`. Guardar la comprobación. Hecho:
+  lectura de `database.py` y `billing.py`; no se ejecutó el backend.
+- [x] 6.3 `openspec/findings/backlog.md`: aplicar la disposición de la decisión 7 del `design.md` a
   los 21 hallazgos. Los que se cierran pasan a `Fixed` con su evidencia; los que sobreviven reciben
   motivo y quién da el siguiente paso. Reformular `RF-091-003`, `RF-095-002` y `RF-104-004`
-  enlazando al recuento del README. Cada fila conserva su descripción original.
-- [ ] 6.4 Registrar con la respuesta de 1.2 el resultado de `RF-093-001` por persona. Pasa a `Fixed`
-  solo si confirman los dos; quien no haya contestado figura como «no confirmado».
-- [ ] 6.5 Añadir `RF-105-001` (retirar la ruta puente `/overview-legacy`, con el inventario de lo que
+  enlazando al recuento del README. Cada fila conserva su descripción original. Hecho: 3 `Fixed` y
+  18 `Open`; los responsables son categorías (decisión o tarjeta), no personas.
+- [x] 6.4 Registrar con la respuesta de 1.2 el resultado de `RF-093-001` por persona. Pasa a `Fixed`
+  solo si confirman los dos; quien no haya contestado figura como «no confirmado». Hecho: `Open`;
+  Paris no reproduce el fallo y Alejandro figura como no confirmado.
+- [x] 6.5 Añadir `RF-105-001` (retirar la ruta puente `/overview-legacy`, con el inventario de lo que
   arrastra), `RF-105-002` (módulos sin consumidor) y `RF-105-003` (no hay comprobación automática de
-  enlaces relativos). Añadir cualquier otro hallazgo que haya aparecido durante la tarjeta.
+  enlaces relativos). Añadir cualquier otro hallazgo que haya aparecido durante la tarjeta. Hecho:
+  los tres; los comentarios desfasados de `Layout.tsx` van dentro de `RF-105-001`.
 - [ ] 6.6 Pedir al líder las tarjetas de Trello que necesiten los hallazgos que sobreviven y anotar
-  «tarjeta pedida» donde corresponda, sin inventar números.
+  «tarjeta pedida» donde corresponda, sin inventar números. Pendiente: la lista está en la evidencia
+  («Tarjetas por pedir al líder») y las filas dicen «tarjeta por pedir»; la petición en Trello la
+  hace Victor y, cuando la haga, estas celdas pasan a «tarjeta pedida».
 
 ## 7. Cerrar el spike (archivo compartido)
 

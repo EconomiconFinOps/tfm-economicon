@@ -12,7 +12,8 @@
 > Estado de este documento: en curso. Contiene la línea base y la consulta al equipo (grupo 1 de
 > `tasks.md`), el endurecimiento de `allowJs` (grupo 2), el recuento de pantallas con los textos
 > vivos corregidos (grupo 3) la corrección de los enlaces relativos rotos (grupo 4) y la retirada de las menciones a configuración
-> local (grupo 5). El resto de secciones se añade según avanza la tarjeta.
+> local (grupo 5) y los hallazgos de la épica (grupo 6). El resto de secciones se añade según avanza
+> la tarjeta.
 
 ## Línea base: antes de cambiar nada
 
@@ -638,3 +639,110 @@ líneas de diferencia entre inserciones y eliminaciones). Se revisó el diff pal
 - **La protección contra reincidencias ya existe**: `tools/jup-cleanup-check.mjs` rechaza configuración
   personal de agentes en el repositorio. Lo que no impide es que un documento nuevo cite esa
   herramienta por su nombre; no se añadió ninguna comprobación de eso.
+
+## Hallazgos de la épica (grupo 6)
+
+### Tras traer `develop` (tarea 6.1)
+
+Ejecutado el 2026-10-09. La rama partía de `ff2ea6b`; `origin/develop` estaba en `ceb6520`, con cuatro
+pull requests nuevos: #83 (JUP-108, LiteLLM en el Compose principal), #76 (JUP-064, contribuciones
+del equipo), #72 (JUP-061, archivado del registro de decisiones) y #82 (JUP-070, evaluación de las
+respuestas del chat). Fusionado con `git merge origin/develop` (commit `ce1a87d`), **sin
+conflictos**. El único archivo tocado por las dos partes fue `docs/architecture.md`.
+
+| Comprobación tras la fusión | Resultado |
+| --- | --- |
+| `develop` toca `apps/frontend` | 0 archivos; `routes.tsx` y las pantallas no cambian |
+| #66 (JUP-017) y #69 (JUP-036) | no están en `develop`; el recuento de pantallas no cambia (9 rutas bajo sesión, 5 con backend, 4 de demostración) |
+| Enlaces relativos rotos | 2 (los falsos positivos de `JUP-099-validation.md`); lo traído de `develop` no añade ninguno |
+| Menciones a configuración local (búsqueda del hallazgo) | 0; lo traído de `develop` no añade ninguna |
+
+### Comprobación de `GET /billing/summary` (tarea 6.2)
+
+Hecha el 2026-10-09 leyendo el código del backend, sin ejecutarlo (no se levantó CockroachDB):
+
+- `apps/backend/app/db/database.py` (líneas 206 a 286): los totales y los grupos salen de una consulta
+  que une `azure_cost_records` con `azure_cost_ingestion_runs` completadas, filtradas por cliente, y
+  suma `pretax_cost` por moneda; `monthly_spend` es el total único o `None`. No hay ningún importe
+  constante.
+- `savings_identified` es `None` en la respuesta (línea 285) y el modelo lo declara como `None = None`
+  (`apps/backend/app/schemas/billing.py`, línea 43). `open_ingestions` cuenta filas de `jobs`.
+- El `README.md` del backend describe el contrato v2 de JUP-026 con el ahorro en `null`.
+
+Con eso `RF-091-004` se cierra por lo que dice: el dato ficticio ya no existe. **No** se cierra la
+ausencia de un motor de ahorro, que pasa a `RF-091-003`.
+
+### Disposición de los 21 hallazgos (tareas 6.3 y 6.4)
+
+Cada fila del backlog conserva su descripción original y recibe al final de su última celda una nota
+«Cierre de épica (JUP-105, 2026-10-09)» con el motivo; el estado y el responsable se cambian en sus
+celdas. Se comprobó fila por fila contra `HEAD` que solo cambian esas tres celdas y que ninguna
+celda anterior se altera (21 filas cambiadas, 0 problemas).
+
+| Hallazgo | Antes | Después | Responsable | Motivo |
+| --- | --- | --- | --- | --- |
+| `RF-091-004` | `Open` | **`Fixed`** | Equipo Economicon | El dato ficticio ya no existe (JUP-026 y JUP-055); el ahorro pasa a `RF-091-003` |
+| `RF-099-001` | `Open` | **`Fixed`** | Equipo Economicon | Grupo 5: 42 menciones sustituidas, búsqueda en 0 |
+| `RF-099-004` | `Open` | **`Fixed`** | Equipo Economicon | Grupo 4: 64 de 66 enlaces corregidos; prevención en `RF-105-003` |
+| `RF-093-001` | `Open` | `Open` | Alejandro (confirmación pendiente) | Ver abajo |
+| `RF-091-003` | `Open` | `Open`, reformulado | Decisión de producto del equipo | Quedan 4 pantallas de demostración sin contrato, más inventario y ahorro |
+| `RF-095-002` | `Open` | `Open`, actualizado | Decisión de producto del equipo | Pasa de «5 pantallas» a 4; enlaza al recuento |
+| `RF-104-004` | `Open` | `Open`, frase corregida | Decisión de producto del equipo | Depende de `RF-091-003`; `/` ya no tiene sección de demostración |
+| `RF-104-003` | `Open` | `Open` | Decisión de producto del equipo | Capacidad ausente del contrato (leer el estado de un trabajo) |
+| `RF-099-002`, `RF-099-003` | `Open` | `Open` | Decisión de producto del equipo | Decisiones de diseño sobre los datos demo y los tonos |
+| `RF-098-002` | `Open` | `Open` | Decisión del equipo (técnica) | Exige cambiar un requisito vigente de `demo-auth-session` |
+| `RF-098-004`, `RF-103-005` | `Open` | `Open` | Decisión del equipo (técnica) | Plazos de tests bajo carga; el `README.md` documenta las dos mitades |
+| `RF-104-001` | `Open` | `Open` | Equipo Economicon (tarjeta por pedir al líder) | Único defecto funcional visible; el efecto sigue igual (líneas 52 a 63 de `ConversationsPage.tsx`) |
+| `RF-103-001`, `RF-103-002` | `Open` | `Open` | Equipo Economicon (tarjeta por pedir al líder) | Una sola tarjeta de tooling de `dev` |
+| `RF-098-003` | `Open` | `Open` | Equipo Economicon (tarjeta por pedir al líder) | Defecto de presentación; la opción «JUP-099» ya no existe |
+| `RF-098-001`, `RF-103-003`, `RF-103-004`, `RF-104-002` | `Open` | `Open` | Equipo Economicon (sin tarjeta; se pide si se prioriza) | Sin riesgo funcional conocido o sin causa verificada |
+
+Resultado: 3 pasan a `Fixed` y 18 siguen `Open`, cada uno con motivo y con quién da el siguiente paso.
+
+**Qué no se hizo con los responsables.** Trello es la fuente de verdad de las personas asignadas y
+esta tarjeta no la consulta, así que el backlog no pone nombres de personas salvo en `RF-093-001`,
+donde la confirmación que falta es de Alejandro y consta en esta evidencia. En el resto la columna
+dice si lo que falta es una decisión (de producto o técnica) o una tarjeta. **Asignar personas queda
+para quien lleva el tablero.**
+
+**`RF-093-001` por persona (tarea 6.4).** Estado `Open`, con la frase de estado reformulada:
+
+| Persona | Resultado |
+| --- | --- |
+| Victor | Reproducido y corregido con `corepack enable` (JUP-103) |
+| Lucía | Reproducido y corregido (JUP-103) |
+| Paris | **No reproduce el fallo** (2026-10-09): el diagnóstico imprime `9.0.0` y `lint --force` pasa 4 de 4 sin haber hecho `corepack enable`. No acredita la corrección ni explica por qué allí no falla |
+| Alejandro | **No confirmado**: no hizo el procedimiento |
+
+No pasa a `Fixed` porque falta la confirmación de Alejandro en consola externa.
+
+### Hallazgos nuevos (tarea 6.5)
+
+| ID | Qué registra |
+| --- | --- |
+| `RF-105-001` | Retirar la ruta puente `/overview-legacy`, con el inventario de lo que arrastra (página, hook, pruebas, 9 archivos de pruebas que la nombran en 30 líneas, entrada del menú) y los comentarios desfasados de `Layout.tsx`. Carril `standard` |
+| `RF-105-002` | Dos módulos sin importador: `src/data/demo/executiveCostDashboard.ts` y `src/hooks/useCostKpis.ts` |
+| `RF-105-003` | No hay comprobación automática de enlaces relativos: volverá a pasar al archivar |
+
+### Tarjetas por pedir al líder (tarea 6.6)
+
+Quedan **por pedir** y la petición la hace Victor, que es quien lleva el tablero. No se ha pedido
+ninguna ni se ha inventado ningún número:
+
+1. `RF-104-001`: conversación nueva que no recibe el mensaje. Es la de mayor valor.
+2. `RF-103-001` y `RF-103-002`: `dev` desde la raíz (una sola tarjeta).
+3. `RF-098-003`: JSON crudo en el error de credenciales.
+4. Opcionales si se prioriza: `RF-105-001` (retirar `/overview-legacy`), `RF-105-002`, `RF-105-003`.
+
+### Verificación del grupo
+
+| Comprobación | Resultado |
+| --- | --- |
+| Comparación del backlog con `HEAD` | 21 filas cambiadas, 0 problemas, 18 `Open` y 3 `Fixed` |
+| Columnas de las filas nuevas | 10 cada una |
+| Referencias a `RF-105-00x` en el repositorio | todas apuntan a un hallazgo definido |
+| Recorrido de enlaces | 2 rotos, los falsos positivos conocidos |
+
+**No se validó:** que `GET /billing/summary` devuelva lo descrito (se leyó el código, no se ejecutó
+el backend ni sus pruebas); quién es el responsable de cada hallazgo según Trello; que Alejandro
+reproduzca o no el fallo de `RF-093-001`.
