@@ -90,14 +90,15 @@ def docker_gateway():
                 "environment": {"EXPECTED_KEY": upstream}, "networks": ["gateway"],
                 "volumes": [f"{fake_script.as_posix()}:/fixture/server.py:ro",
                             f"{directory.as_posix()}/response.json:/fixture/response.json:ro"]},
-        }, "networks": {"gateway": {"internal": True}},
+        }, "networks": {"gateway": {"internal": True}, "default": {"internal": True}},
     }
     override_path = directory / "override.yaml"
     if mutation == "tracebacks":
         override["services"]["litellm"]["environment"] = {"LITELLM_SUPPRESS_SPEND_LOG_TRACEBACKS": "false"}
     override_path.write_text(yaml.safe_dump(override))
     compose = ["docker", "compose", "--env-file", str(env_file), "-p", project,
-               "-f", str(ROOT / "infra/litellm/docker-compose.yml"), "-f", str(override_path)]
+               "-f", str(ROOT / "infra/litellm/docker-compose.yml"), "-f", str(override_path),
+               "--profile", "ai"]
     receipt = {"project": project, "mode": "simulated-upstream-no-real-spend", "checks": {},
                "commands": [], "images": [GATEWAY, DATABASE], "mutation": mutation,
                "python": sys.executable, "pytest_argv": sys.argv,
@@ -149,6 +150,9 @@ def docker_gateway():
         network = json.loads(run(["docker", "network", "inspect", project + "_gateway"]).stdout)[0]
         receipt["checks"]["internal_network"] = network["Internal"] is True
         assert receipt["checks"]["internal_network"]
+        default_network = json.loads(run(["docker", "network", "inspect", project + "_default"]).stdout)[0]
+        receipt["checks"]["internal_default_network"] = default_network["Internal"] is True
+        assert receipt["checks"]["internal_default_network"]
         receipt["published_port"] = run(compose + ["port", "litellm", "4000"], check=False).stdout.strip()
         # Docker Desktop may not publish ports on internal-only networks. Relay
         # over exec, preserving gateway responses; never attach an egress network.
@@ -391,4 +395,5 @@ def test_real_gateway_with_simulated_upstream(docker_gateway):
         "upstream_before_denial": before, "upstream_after_denial": after,
         "spend_rows_after_calls": len(budget_rows),
     }
+
     assert all(checks.values()), "Measured gateway checks failed; see receipt.json"
