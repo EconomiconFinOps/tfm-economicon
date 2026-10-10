@@ -60,6 +60,29 @@ git diff --check
 Resultados: trazabilidad de nueve changes PASS; gobernanza **82/82**;
 OpenSpec **56/56**; higiene, compilación y diff check PASS.
 
+## CI y limitación de regresión local
+
+[CI 38035311598](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035311598),
+head `b07c73a`: **7/7 controles técnicos SUCCESS**. Backend: **948 passed,
+34 skipped** en 120.64 s; también pasan processor, azure-cost-api, OpenSpec,
+política y lint/tests/build/typecheck frontend. Los skips de infraestructura
+no acreditan SQL de coste real. El workflow de push `38035309564` también
+terminó SUCCESS. `JUP reviews` falla únicamente porque faltan `Revision
+JUP-038` y `Validacion JUP-038`; no se elude ni se considera aceptación.
+
+La batería completa local de Windows se interrumpió tras confirmar una
+incompatibilidad de un fixture heredado, sin declararla verde. Reproducción:
+`python -m pytest tests/test_health_provider_admission_jup047.py -x -q`
+con temporal propio, fuera del sandbox. Primer caso `price_verified` falla
+antes del endpoint: el fixture prohíbe `socket.connect`, pero el event loop
+Selector de Windows lo usa en `socket.socketpair()` para su canal interno.
+Resultado diagnóstico: 1 failed, 32 warnings; no se cambia esa protección
+ni se amplía el delta JUP-038. La evidencia de regresión completa es CI Linux
+Python 3.12; las 50 pruebas específicas también pasan localmente.
+
+Trello enlazado por integración DockerServer, comentario
+`6ac9ec7fb411812e61009f4d`, lectura exacta confirmada. No se mueve la tarjeta.
+
 ## Contraste con el candidato JUP-030
 
 ```text

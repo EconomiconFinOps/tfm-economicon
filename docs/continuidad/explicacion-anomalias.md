@@ -37,6 +37,14 @@ Pruebas nuevas 50/50 (26 explicador y 24 API/adaptador), gobernanza82/82,
 OpenSpec56/56 y probe real de módulos
 candidatos JUP-030 7/7, con facturación sintética. Hashes y versiones en informe.
 
+CI `38035311598` sobre `b07c73a`: 7/7 técnicos SUCCESS; backend948passed/
+34skipped. `JUP reviews` pendiente por ausencia de ambos dictámenes humanos.
+Regresión local general interrumpida: fixture heredado de salud prohíbe
+socket.connect necesario para asyncio.socketpair en Windows; reproducción
+acotada documentada, sin ampliar alcance. No se declara PASS local general.
+Nota Trello `6ac9ec7fb411812e61009f4d` publicada exclusivamente por DockerServer
+y lectura exacta confirmada; lista/roles/criterios conservados.
+
 La dependencia JUP-030 no está integrada en develop de partida: el runtime
 actual devuelve 503, sin fixture de demostración. Revalidar después de integrar
 su contrato y con SQL de coste real. La entrada libre/selector visual
