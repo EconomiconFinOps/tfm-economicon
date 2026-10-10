@@ -13,7 +13,7 @@ la validación independiente de Paris. No acredita pairing humano realizado.
 | Resultado funcional verificable | [Arquitectura](../architecture.md): ocho diagramas de componentes, secuencias, datos, despliegue y objetivo; contraste de código integrado. | Entrega documental verificable; apartado d de memoria pendiente de incorporación revisada. No nueva ejecución del producto. |
 | Pruebas necesarias añadidas y en verde | Comprobación de enlaces/diagrama/especificación y controles existentes, resultados abajo. | No se añaden tests de producto para prosa; ejecución documental se registra sin sustituir QA funcional. |
 | Documentación y decisiones actualizadas | Arquitectura, [change](../../openspec/changes/jup-060-technical-architecture-deliverable/proposal.md), continuidad y propuesta AWS preservada. | Implementado; no ratifica ADR Proposed ni aprovisiona recursos. |
-| PR revisado y vinculado | Contribución en rama propia, PR de documentación cuando se publique. | Revisión Lucía y validación Paris pendientes, sin merge. |
+| PR revisado y vinculado | Contribución en rama propia, [PR #92 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/92). | Vinculado; revisión Lucía y validación Paris pendientes, sin merge. |
 | Validación funcional y evidencia enlazadas | Esta matriz y fuentes históricas fechadas; handoff del apartado d. | Pendiente validación humana del entregable, exportación/hash de memoria y cierre de tarjeta. |
 
 El residual de la descripción está cubierto técnicamente: componentes (§2),
@@ -83,7 +83,7 @@ el tarball de OpenSpec; no se cambió lockfile ni versión para resolverlo.
 | `node tools/jup-cleanup-check.mjs` | OK, 982 archivos en el corte de la ejecución. |
 | Enlaces relativos de los 11 Markdown afectados | 72 destinos/anchors comprobados; 0 errores. |
 | `git diff --check` | Correcto. |
-| Ocho bloques Mermaid | Inspección estática correcta; render pendiente de registrar. |
+| Ocho bloques Mermaid | 8/8 renderizados con Mermaid CLI 11.4.2 y Chromium headless 1228; diagrama 1 repetido correctamente tras orientar TB. Inspección visual de 1, 2, 6 y 7, sin recortes de contenido. |
 | Estado externo de PR73 | Lectura 10/10: OPEN, no draft, head a75472d9e83af56e4ecc4ae1f3acc50d5178e55e, sin merge. No verifica runtime. |
 
 Los intentos iniciales de Node test runner y del checker de higiene dentro del
@@ -92,12 +92,27 @@ las repeticiones autorizadas fuera del sandbox son los resultados anteriores.
 Un primer comando incluyó por error el nombre inexistente jup-cleanup.test.mjs;
 la suite real se ejecutó después por separado (6/6), sin contar pruebas omitidas.
 
-Recibos locales en `materiales/07-evidencias/JUP-060-arquitectura-2026-10-10/`:
-document-checks.json, fuentes diagram-1..8.mmd, propuesta de d y comandos de render.
+El intento de render durante la instalación incompleta falló por módulo ausente;
+Edge después no arrancó. Se conservaron ambos recibos y se usó Chromium de pruebas
+instalado, sin perfiles personales. El render final fue correcto. Fuentes Mermaid
+quedan editables en Git; PNG y recibos locales en
+`materiales/07-evidencias/JUP-060-arquitectura-2026-10-10/`: document-checks.json,
+mermaid-results.json, diagram-1..8.mmd/png, propuesta de d y comandos de render.
+
+CI del primer head e8f951e: [run PR](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035168806)
+con siete checks técnicos correctos (policy, OpenSpec, tres Python, frontend build
+y typecheck). [JUP reviews](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035168777)
+falla exclusivamente por falta de Revision JUP-060 y Validacion JUP-060 de otra
+persona; no se falsea ese gate. Las actualizaciones documentales posteriores tienen
+su propio run en la PR; la evidencia anterior conserva su SHA.
 No se han ejecutado Compose, migraciones, ingestas, Azure real, llamadas LLM,
 provisioning AWS ni operación CD. No se reutiliza evidencia histórica como nueva.
 
 ## Handoff y aceptación pendiente
+
+PR/evidencia enlazadas y releídas en Trello mediante integración oficial:
+comentario `6ac9edb77c321c49fcc1f612`, 10/10/2026 07:48:07Z. Recibo local
+trello-receipt.json. Tarjeta conserva lista, prioridad, roles y fechas.
 
 Trello: Victor Mendez liderazgo, Alejandro Aguado pairing/coautoría, Lucia Mateo
 revisión, Paris Arcos Martin validación. Identidad GitHub activa: Iber1to; esta

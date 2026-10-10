@@ -9,8 +9,8 @@
 
 ## 2. Comprobación y entrega
 
-- [ ] 2.1 Ejecutar controles documentales, enlaces, diagramas y gobernanza; registrar resultados.
-- [ ] 2.2 Publicar contribución revisable y enlazar evidencia en Trello.
+- [x] 2.1 Ejecutar controles documentales, enlaces, diagramas y gobernanza; registrar resultados.
+- [x] 2.2 Publicar contribución revisable y enlazar evidencia en Trello (PR92, comentario 6ac9edb77c321c49fcc1f612).
 - [ ] 2.3 Incorporación revisada/autorizada por Victor del apartado d en memoria canónica.
 - [ ] 2.4 Review Lucia y validación Paris, exportación/evidencia atribuible del entregable.
 - [ ] 2.5 Archivar/promover OpenSpec en rama de entrega al completar aceptación; integrar PR.

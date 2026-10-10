@@ -35,7 +35,14 @@ no se abrió la memoria ni apartados ajenos. Fuente canónica y reglas:
 
 ## Próximos pasos
 
-Completar controles y PR de contribución; mantener resultados en evidencia.
+[PR #92 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/92) publicada
+contra develop. OpenSpec 56/56, gobernanza 89/89, higiene 6/6 y checker correcto;
+72 enlaces sin error, ocho Mermaid renderizados con Chromium de pruebas.
+CI inicial e8f951e: siete checks técnicos correctos; JUP reviews falla por los dos
+dictámenes humanos ausentes. Ver informe para intentos fallidos de entorno y límites.
+Propuesta d revisable fuera de Git en materiales/07-evidencias/JUP-060-arquitectura-2026-10-10/.
+Nota Trello publicada y releída por integración oficial el 10/10 a las 07:48Z:
+6ac9edb77c321c49fcc1f612, enlaza PR/evidencia y pendientes. Sin mover tarjeta.
 Victor revisa e incorpora el apartado d en la fuente canónica con autorización
 expresa y revisión humana; exportar versión/hash. Lucia/Paris emiten dictámenes
 independientes. Solo después archivar/promover change, integrar PR y decidir

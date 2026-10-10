@@ -14,8 +14,10 @@ públicos/sintéticos; no conecta a una cuenta Azure real. El chat actual recupe
 contexto y devuelve una **plantilla determinista**. El processor dispone de un
 cliente LLM, pero no compone todavía el vertical conversacional tools/RAG/LLM.
 
-Las flechas continuas describen conexiones implementadas; las punteadas,
-capacidades opcionales o propuestas, rotuladas en cada figura. Configuración,
+En los diagramas de bloques las flechas continuas describen conexiones implementadas;
+las punteadas, capacidades opcionales o propuestas, rotuladas en cada figura.
+En las secuencias, las flechas discontinuas representan el retorno de la llamada.
+Configuración,
 ejecución y aceptación son evidencias distintas. El [registro ADR](adr/README.md)
 conserva las decisiones; el [informe JUP-060](evidence/JUP-060-validation.md)
 relaciona criterios y comprobaciones. La memoria del TFM mantiene su
@@ -25,7 +27,7 @@ técnica, no una copia de sus apartados.
 ## 2. Componentes y fronteras
 
 ```mermaid
-flowchart LR
+flowchart TB
   U[Usuario] --> UI[Frontend React]
   UI -->|HTTP: JWT y X-Tenant-Id| API[Backend FastAPI]
   API --> DB[(CockroachDB)]
