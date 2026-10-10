@@ -9,6 +9,12 @@ identificador del chat de implementacion no suministrado.
 - Rama propia `feat/JUP-030-cost-anomalies`, worktree `tfm-economicon-jup030`,
   base `origin/develop` `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
   Checkout compartido y trabajo previo de otras tarjetas preservados.
+- Contribucion publicada en [PR #91](https://github.com/EconomiconFinOps/tfm-economicon/pull/91),
+  borrador contra develop; codigo verificado `0b35a72`. No se declara
+  revision, validacion humana, merge ni cierre de tarjeta.
+- Trello enlaza PR, contrato, evidencia y limites mediante comentario
+  `6ac9ebeafa9f85a51f1b7647` del puente oficial. Se conserva columna Backlog;
+  no se cambian roles, prioridades, criterios ni fechas.
 - Liderazgo Lucia Mateo; pairing Paris Arcos Martin; revision Victor Mendez;
   validacion Alejandro Aguado. Asignaciones conservadas, sin acreditar participacion.
   La contribucion tecnica automatizada no sustituye ninguno de esos dictamenes.
@@ -38,6 +44,8 @@ La evidencia tecnica por criterio se registra en
 150 pruebas focales pasaron sin omisiones, incluidas dos nuevas contra
 CockroachDB v24.1.11. Regresion backend: 997 PASS, 21 integraciones externas
 omitidas; compilacion PASS. OpenSpec 56/56; gobernanza 89 tests PASS.
+CI del codigo `0b35a72`: siete checks tecnicos SUCCESS en run `38035032995`.
+`JUP reviews` pendiente de review y validacion humanas, como corresponde al draft.
 Entorno exclusivo Linux eliminado al terminar; los intentos Windows lentos
 interrumpidos no se cuentan como evidencia favorable.
 Pendientes: participacion real, review y validacion independientes, integracion
