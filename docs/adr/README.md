@@ -90,6 +90,10 @@ pendiente queda resuelto sin copiar documentación ni ratificar propuestas.
 
 ## Naming And Status
 
+Nueva propuesta 10/10/2026: [ADR-0018 — frontera de la landing pública](ADR-0018-public-landing-boundary.md),
+JUP-089, `Proposed`. Artefacto estático separado de la aplicación; dominio/hosting
+y aceptación humana pendientes. No modifica la ratificación de registros anteriores.
+
 - Store records as `docs/adr/ADR-0001-short-slug.md` and increment numbers sequentially.
 - Use `Proposed`, `Accepted`, `Superseded` or `Deprecated` as the record status.
 - Link the related Trello card, `JUP-XXX` identifier and OpenSpec change.

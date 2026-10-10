@@ -22,6 +22,8 @@ importers:
 
   apps/backend: {}
 
+  apps/landing: {}
+
   apps/frontend:
     dependencies:
       '@radix-ui/react-dialog':

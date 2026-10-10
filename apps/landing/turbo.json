@@ -1,0 +1,11 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": ["PUBLIC_SITE_URL", "PUBLIC_VIDEO_URL", "PUBLIC_VIDEO_TITLE"]
+    },
+    "dev": {
+      "env": ["PUBLIC_SITE_URL", "PUBLIC_VIDEO_URL", "PUBLIC_VIDEO_TITLE", "PORT"]
+    }
+  }
+}

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2B2359" />
+    <title>Economicon — FinOps sin fricción</title>
+    <meta name="description" content="Un proyecto para entender el gasto en Azure con contexto. Explora la propuesta, el estado del producto y el código de Economicon." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Economicon — FinOps sin fricción" />
+    <meta property="og:description" content="El gasto cloud, en una conversación que tu equipo puede compartir. Conoce el proyecto y su estado de desarrollo." />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:image:alt" content="Economicon. Vista ilustrativa del concepto de dashboard, con datos de demostración." />
+    <!-- PUBLIC_METADATA -->
+    <link rel="icon" href="/assets/economicon-mark.png" type="image/png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="site-header shell">
+      <a class="brand" href="#inicio" aria-label="Economicon, inicio">
+        <img src="/assets/economicon-mark.png" width="36" height="36" alt="" />
+        <span>Economicon<span class="brand-period">.</span></span>
+      </a>
+      <nav class="primary-nav" aria-label="Navegación principal">
+        <a href="#producto">Producto</a>
+        <a href="#proyecto">Proyecto</a>
+        <a href="#equipo">Equipo</a>
+      </nav>
+      <a class="header-cta" href="https://github.com/EconomiconFinOps/tfm-economicon">Explorar el proyecto <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main id="contenido" tabindex="-1">
+      <section class="hero shell" id="inicio" aria-labelledby="hero-title">
+        <div class="hero-intro">
+          <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Proyecto en desarrollo</p>
+          <h1 id="hero-title">FinOps<br />sin fricción<span class="accent-dot">.</span></h1>
+        </div>
+        <div class="hero-copy">
+          <p class="hero-proposition">Entender tu gasto en Azure.<br /><strong>Decidir con más contexto.</strong></p>
+          <p>Una propuesta para equipos pequeños que necesitan conectar el gasto cloud con lo que de verdad importa a su negocio.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://github.com/EconomiconFinOps/tfm-economicon">Explorar el proyecto <span aria-hidden="true">↗</span></a>
+            <a class="text-link" href="#producto">Ver el recorrido <span aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="product-section shell" id="producto" aria-labelledby="product-title">
+        <div class="section-label media-label"><span>01 / EL PRODUCTO</span><span>AZURE · COSTES · CONTEXTO</span></div>
+        <figure class="product-figure">
+          <div class="window-bar">
+            <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="window-name" aria-hidden="true">economicon / visión del producto</span>
+            <span class="window-kind">Vista conceptual · datos simulados</span>
+          </div>
+          <img class="product-image" src="/assets/dashboard-concept.png" width="1470" height="810" alt="Vista ilustrativa del concepto de marca: un dashboard con cifras simuladas de gasto, previsión, ahorro y recomendaciones. Estas capacidades no están acreditadas por la imagen." fetchpriority="high" />
+          <figcaption><span class="caption-label">Concepto visual de marca · Datos simulados</span><span>No representa funcionalidades terminadas: previsiones, ahorro y recomendaciones de esta imagen son ilustrativos.</span></figcaption>
+        </figure>
+        <div class="section-heading product-heading">
+          <h2 id="product-title">El coste es un dato.<br /><span class="muted-heading">El contexto lo cambia todo.</span></h2>
+          <p>Ingeniería y negocio necesitan un punto de partida común. Economicon explora cómo hacer más fácil esa conversación, con un alcance visible y verificable.</p>
+        </div>
+        <div class="capability-list" aria-label="Capacidades y estado del proyecto">
+          <article class="capability-row">
+            <span class="row-number" aria-hidden="true">01</span>
+            <h3>Una lectura del gasto</h3>
+            <p>KPIs de costes y un dashboard ejecutivo para reunir indicadores y consultar la evolución del gasto.</p>
+            <span class="state-label"><span class="state-dot" aria-hidden="true"></span> Integrado en el código</span>
+          </article>
+          <article class="capability-row">
+            <span class="row-number" aria-hidden="true">02</span>
+            <h3>Señales para investigar</h3>
+            <p>Las vistas de anomalías y recomendaciones muestran escenarios de demostración. Su funcionamiento con datos reales está pendiente de validación.</p>
+            <span class="state-label state-demo">Demostración simulada</span>
+          </article>
+          <article class="capability-row">
+            <span class="row-number" aria-hidden="true">03</span>
+            <h3>Preguntas con contexto</h3>
+            <p>Una interfaz conversacional como parte de la propuesta. El recorrido generativo de extremo a extremo sigue pendiente de verificación.</p>
+            <span class="state-label state-pending">En desarrollo</span>
+          </article>
+        </div>
+        <div class="evidence-section">
+          <div class="evidence-copy">
+            <p class="section-label">DEL CONCEPTO AL CÓDIGO</p>
+            <h3>El recorrido también<br />deja evidencia.</h3>
+            <p>Esta captura del dashboard ejecutivo pertenece a las pruebas del proyecto del 1 de octubre de 2026. Utiliza una API simulada y no representa un entorno de producción.</p>
+            <a class="text-link" href="/assets/executive-cost-test.png">Ver la captura completa <span aria-hidden="true">↗</span></a>
+          </div>
+          <figure class="evidence-figure">
+            <a href="/assets/executive-cost-test.png" aria-label="Abrir la captura completa del dashboard ejecutivo en pruebas"><img src="/assets/executive-cost-test.png" width="1440" height="1613" loading="lazy" alt="Captura histórica de pruebas del dashboard ejecutivo, con KPIs y desglose de costes procedentes de una API simulada." /></a>
+            <figcaption>Captura de pruebas · 01/10/2026 · API simulada</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="architecture-section" aria-labelledby="architecture-title">
+        <div class="shell">
+          <p class="section-label">02 / CÓMO SE CONECTA</p>
+          <div class="section-heading architecture-heading">
+            <h2 id="architecture-title">Del dato a una<br />lectura compartida.</h2>
+            <p>La arquitectura del proyecto organiza el recorrido en tres pasos. El repositorio permite seguir la implementación y los contratos de cada parte.</p>
+          </div>
+          <ol class="architecture-flow">
+            <li>
+              <span class="flow-number">01 <span aria-hidden="true">→</span></span>
+              <h3>Datos de Azure</h3>
+              <p>Datos de coste como punto de partida y conjuntos de prueba documentados para desarrollar y verificar el recorrido.</p>
+              <span class="flow-footnote">Entrada de datos</span>
+            </li>
+            <li>
+              <span class="flow-number">02 <span aria-hidden="true">→</span></span>
+              <h3>Procesamiento y análisis</h3>
+              <p>Servicios y contratos para organizar los datos y transformarlos en indicadores que puedan consultarse.</p>
+              <span class="flow-footnote">Código y contratos</span>
+            </li>
+            <li>
+              <span class="flow-number">03 <span aria-hidden="true">↗</span></span>
+              <h3>Dashboard y conversación</h3>
+              <p>Dashboard ejecutivo integrado en el código. La experiencia conversacional completa requiere validación.</p>
+              <span class="flow-footnote">Integración parcial</span>
+            </li>
+          </ol>
+          <p class="architecture-note"><span aria-hidden="true">↳</span> La propuesta no implica previsiones de gasto ni optimización automática ya disponibles.</p>
+        </div>
+      </section>
+
+      <section class="project-section shell" id="proyecto" aria-labelledby="project-title">
+        <div class="project-intro">
+          <p class="section-label">03 / UN PROYECTO ABIERTO A EXPLORAR</p>
+          <h2 id="project-title">La propuesta.<br />Y lo que la sostiene.</h2>
+          <p>Economicon nace como Trabajo de Fin de Máster. Aquí puedes conocer la visión; en el repositorio, consultar el código, las decisiones y los límites actuales.</p>
+          <a class="text-link" href="https://github.com/EconomiconFinOps/tfm-economicon">Ir al repositorio <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="project-resources">
+          <a class="resource-link" href="https://github.com/EconomiconFinOps/tfm-economicon/blob/develop/README.md">
+            <span><span class="resource-type">GUÍA DEL PROYECTO</span><strong>Conoce el punto de partida</strong><span class="resource-description">Contexto, estructura y puesta en marcha.</span></span>
+            <span class="resource-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="resource-link" href="https://github.com/EconomiconFinOps/tfm-economicon/blob/develop/docs/architecture.md">
+            <span><span class="resource-type">ARQUITECTURA</span><strong>Explora cómo está construido</strong><span class="resource-description">Componentes, servicios y decisiones técnicas.</span></span>
+            <span class="resource-arrow" aria-hidden="true">↗</span>
+          </a>
+          <div class="concept-resource">
+            <span class="resource-type">IDENTIDAD Y MATERIAL DE CONCEPTO</span>
+            <h3>Una visión que también se cuenta.</h3>
+            <p>La identidad y las piezas audiovisuales se desarrollaron en el módulo de Herramientas de IA Generativa. Los vídeos presentan el concepto de producto.</p>
+            <p class="small-copy">Estas piezas no son evidencia de funcionamiento del producto.</p>
+            <!-- VIDEO_SECTION -->
+          </div>
+        </div>
+      </section>
+
+      <section class="team-section shell" id="equipo" aria-labelledby="team-title">
+        <div class="team-heading">
+          <p class="section-label">04 / EL EQUIPO</p>
+          <h2 id="team-title">Cuatro personas.<br />Una pregunta en común.</h2>
+          <p>¿Cómo hacer más comprensible el gasto cloud?</p>
+        </div>
+        <ul class="team-list" aria-label="Integrantes del equipo">
+          <li><span aria-hidden="true">PA</span>Paris Arcos Martin</li>
+          <li><span aria-hidden="true">VM</span>Victor Mendez</li>
+          <li><span aria-hidden="true">AA</span>Alejandro Aguado</li>
+          <li><span aria-hidden="true">LM</span>Lucia Mateo</li>
+        </ul>
+      </section>
+
+      <section class="closing-section" aria-labelledby="closing-title">
+        <div class="shell closing-content">
+          <div><p class="section-label">SIGUE EL RECORRIDO</p><h2 id="closing-title">Menos ruido.<br />Más contexto<span class="accent-dot">.</span></h2></div>
+          <div class="closing-action"><p>Conoce el proyecto desde dentro.<br />Código, documentación y próximos pasos.</p><a class="button button-light" href="https://github.com/EconomiconFinOps/tfm-economicon">Explorar Economicon <span aria-hidden="true">↗</span></a></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer shell">
+      <a class="brand footer-brand" href="#inicio" aria-label="Economicon, volver al inicio"><img src="/assets/economicon-mark.png" width="28" height="28" alt="" /><span>Economicon<span class="brand-period">.</span></span></a>
+      <p>Proyecto académico en desarrollo.</p>
+      <p>Esta página no incorpora cookies, analítica ni formularios.</p>
+      <a href="https://github.com/EconomiconFinOps/tfm-economicon">GitHub <span aria-hidden="true">↗</span></a>
+    </footer>
+  </body>
+</html>

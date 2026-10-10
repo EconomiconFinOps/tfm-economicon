@@ -1,0 +1,147 @@
+{
+  "lighthouseVersion": "12.8.2",
+  "fetchTime": "2026-10-10T07:49:00.567Z",
+  "requestedUrl": "http://127.0.0.1:4179/",
+  "configSettings": {
+    "output": [
+      "json",
+      "html"
+    ],
+    "maxWaitForFcp": 30000,
+    "maxWaitForLoad": 45000,
+    "pauseAfterFcpMs": 1000,
+    "pauseAfterLoadMs": 1000,
+    "networkQuietThresholdMs": 1000,
+    "cpuQuietThresholdMs": 1000,
+    "formFactor": "mobile",
+    "throttling": {
+      "rttMs": 150,
+      "throughputKbps": 1638.4,
+      "requestLatencyMs": 562.5,
+      "downloadThroughputKbps": 1474.5600000000002,
+      "uploadThroughputKbps": 675,
+      "cpuSlowdownMultiplier": 4
+    },
+    "throttlingMethod": "simulate",
+    "screenEmulation": {
+      "mobile": true,
+      "width": 412,
+      "height": 823,
+      "deviceScaleFactor": 1.75,
+      "disabled": false
+    },
+    "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "auditMode": false,
+    "gatherMode": false,
+    "clearStorageTypes": [
+      "file_systems",
+      "shader_cache",
+      "service_workers",
+      "cache_storage"
+    ],
+    "disableStorageReset": false,
+    "debugNavigation": false,
+    "channel": "cli",
+    "usePassiveGathering": false,
+    "disableFullPageScreenshot": false,
+    "skipAboutBlank": false,
+    "blankPage": "about:blank",
+    "ignoreStatusCode": false,
+    "locale": "en-US",
+    "blockedUrlPatterns": null,
+    "additionalTraceCategories": null,
+    "extraHeaders": null,
+    "precomputedLanternData": null,
+    "onlyAudits": null,
+    "onlyCategories": [
+      "performance",
+      "accessibility",
+      "best-practices",
+      "seo"
+    ],
+    "skipAudits": null
+  },
+  "categoryScores": {
+    "performance": 0.89,
+    "accessibility": 1,
+    "best-practices": 1,
+    "seo": 0.58
+  },
+  "metrics": {
+    "first-contentful-paint": {
+      "unit": "millisecond",
+      "value": 1518.02925,
+      "display": "1.5 s"
+    },
+    "largest-contentful-paint": {
+      "unit": "millisecond",
+      "value": 3687.0195,
+      "display": "3.7 s"
+    },
+    "total-blocking-time": {
+      "unit": "millisecond",
+      "value": 52.98049999999989,
+      "display": "50 ms"
+    },
+    "cumulative-layout-shift": {
+      "unit": "unitless",
+      "value": 0.007791888695741741,
+      "display": "0.008"
+    },
+    "speed-index": {
+      "unit": "millisecond",
+      "value": 2334.766199983311,
+      "display": "2.3 s"
+    }
+  },
+  "runWarnings": [],
+  "robotsAudit": {
+    "id": "robots-txt",
+    "title": "robots.txt is not valid",
+    "description": "If your robots.txt file is malformed, crawlers may not be able to understand how you want your website to be crawled or indexed. [Learn more about robots.txt](https://developer.chrome.com/docs/lighthouse/seo/invalid-robots-txt/).",
+    "score": 0,
+    "scoreDisplayMode": "binary",
+    "explanation": "Lighthouse was unable to download a robots.txt file"
+  },
+  "indexingAudit": {
+    "id": "is-crawlable",
+    "title": "Page is blocked from indexing",
+    "description": "Search engines are unable to include your pages in search results if they don't have permission to crawl them. [Learn more about crawler directives](https://developer.chrome.com/docs/lighthouse/seo/is-crawlable/).",
+    "score": 0,
+    "scoreDisplayMode": "binary",
+    "warnings": [],
+    "details": {
+      "type": "table",
+      "headings": [
+        {
+          "key": "source",
+          "valueType": "code",
+          "label": "Blocking Directive Source"
+        }
+      ],
+      "items": [
+        {
+          "source": {
+            "type": "node",
+            "lhId": "1-35-META",
+            "path": "1,HTML,0,HEAD,10,META",
+            "selector": "head > meta",
+            "boundingRect": {
+              "top": 0,
+              "bottom": 0,
+              "left": 0,
+              "right": 0,
+              "width": 0,
+              "height": 0
+            },
+            "snippet": "<meta name=\"robots\" content=\"noindex,nofollow\" />",
+            "nodeLabel": "head > meta"
+          }
+        },
+        {
+          "source": "X-Robots-Tag: noindex, nofollow"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,236 @@
+{
+  "checkedAt": "2026-10-10T07:44:52.262Z",
+  "browser": "149.0.7827.55",
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "viewport": 1440,
+      "contentWidth": 1425,
+      "images": [
+        {
+          "src": "/assets/economicon-mark.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/dashboard-concept.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/executive-cost-test.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/economicon-mark.png",
+          "loaded": true
+        }
+      ],
+      "h1": 1,
+      "lang": "es",
+      "fonts": true,
+      "bodyFontSize": "16px",
+      "cookies": "",
+      "storageKeys": [],
+      "axe": {
+        "violations": [],
+        "passes": 20,
+        "incomplete": [
+          "aria-prohibited-attr",
+          "color-contrast"
+        ]
+      }
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "viewport": 768,
+      "contentWidth": 753,
+      "images": [
+        {
+          "src": "/assets/economicon-mark.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/dashboard-concept.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/executive-cost-test.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/economicon-mark.png",
+          "loaded": true
+        }
+      ],
+      "h1": 1,
+      "lang": "es",
+      "fonts": true,
+      "bodyFontSize": "16px",
+      "cookies": "",
+      "storageKeys": [],
+      "axe": {
+        "violations": [],
+        "passes": 20,
+        "incomplete": [
+          "aria-prohibited-attr",
+          "color-contrast"
+        ]
+      }
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "viewport": 390,
+      "contentWidth": 375,
+      "images": [
+        {
+          "src": "/assets/economicon-mark.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/dashboard-concept.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/executive-cost-test.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/economicon-mark.png",
+          "loaded": true
+        }
+      ],
+      "h1": 1,
+      "lang": "es",
+      "fonts": true,
+      "bodyFontSize": "16px",
+      "cookies": "",
+      "storageKeys": [],
+      "axe": {
+        "violations": [],
+        "passes": 20,
+        "incomplete": [
+          "aria-prohibited-attr",
+          "color-contrast"
+        ]
+      }
+    },
+    {
+      "name": "narrow",
+      "width": 320,
+      "height": 800,
+      "viewport": 320,
+      "contentWidth": 305,
+      "images": [
+        {
+          "src": "/assets/economicon-mark.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/dashboard-concept.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/executive-cost-test.png",
+          "loaded": true
+        },
+        {
+          "src": "/assets/economicon-mark.png",
+          "loaded": true
+        }
+      ],
+      "h1": 1,
+      "lang": "es",
+      "fonts": true,
+      "bodyFontSize": "16px",
+      "cookies": "",
+      "storageKeys": [],
+      "axe": {
+        "violations": [],
+        "passes": 20,
+        "incomplete": [
+          "aria-prohibited-attr",
+          "color-contrast"
+        ]
+      }
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    "http://127.0.0.1:4179/",
+    "http://127.0.0.1:4179/styles.css",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/dashboard-concept.png",
+    "http://127.0.0.1:4179/assets/Inter.woff2",
+    "http://127.0.0.1:4179/assets/SpaceGrotesk.woff2",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/executive-cost-test.png",
+    "http://127.0.0.1:4179/",
+    "http://127.0.0.1:4179/styles.css",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/dashboard-concept.png",
+    "http://127.0.0.1:4179/assets/Inter.woff2",
+    "http://127.0.0.1:4179/assets/SpaceGrotesk.woff2",
+    "http://127.0.0.1:4179/assets/executive-cost-test.png",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/",
+    "http://127.0.0.1:4179/styles.css",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/dashboard-concept.png",
+    "http://127.0.0.1:4179/assets/Inter.woff2",
+    "http://127.0.0.1:4179/assets/SpaceGrotesk.woff2",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/executive-cost-test.png",
+    "http://127.0.0.1:4179/",
+    "http://127.0.0.1:4179/styles.css",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/dashboard-concept.png",
+    "http://127.0.0.1:4179/assets/Inter.woff2",
+    "http://127.0.0.1:4179/assets/SpaceGrotesk.woff2",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/executive-cost-test.png",
+    "http://127.0.0.1:4179/",
+    "http://127.0.0.1:4179/styles.css",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/dashboard-concept.png",
+    "http://127.0.0.1:4179/assets/Inter.woff2",
+    "http://127.0.0.1:4179/assets/SpaceGrotesk.woff2",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/pagina-que-no-existe",
+    "http://127.0.0.1:4179/styles.css",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/Inter.woff2",
+    "http://127.0.0.1:4179/assets/SpaceGrotesk.woff2",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/",
+    "http://127.0.0.1:4179/styles.css",
+    "http://127.0.0.1:4179/assets/economicon-mark.png",
+    "http://127.0.0.1:4179/assets/dashboard-concept.png",
+    "http://127.0.0.1:4179/assets/Inter.woff2",
+    "http://127.0.0.1:4179/assets/SpaceGrotesk.woff2"
+  ],
+  "checks": [
+    "skip link is keyboard reachable and focuses main",
+    "all local anchors resolve",
+    "real HTTP404 and recovery link",
+    "security headers and preview noindex present",
+    "no third-party network requests or browser exceptions"
+  ],
+  "links": [
+    "#contenido",
+    "#inicio",
+    "#producto",
+    "#proyecto",
+    "#equipo",
+    "https://github.com/EconomiconFinOps/tfm-economicon",
+    "/assets/executive-cost-test.png",
+    "https://github.com/EconomiconFinOps/tfm-economicon/blob/develop/README.md",
+    "https://github.com/EconomiconFinOps/tfm-economicon/blob/develop/docs/architecture.md"
+  ],
+  "status": "PASS"
+}
