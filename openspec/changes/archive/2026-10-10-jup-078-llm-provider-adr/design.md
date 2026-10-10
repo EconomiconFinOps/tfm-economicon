@@ -1,6 +1,15 @@
 JUP: JUP-078
 ADR: docs/adr/ADR-0002-litellm-openrouter.md
 
+## Cierre operativo 2026-10-10
+
+ADR-0002 aceptado por PR #71. Claves emitidas en gateway dedicado de
+DockerServer: processor USD9 y backend USD1 por 30 dias, caducidad30d,
+RPM10/TPM20000/concurrencia1. Sin rotacion automatica ni gasto real.
+Herramienta idempotente y recibos sanitizados en
+`docs/evidence/JUP-078-operational-closure.md`; 26 controles Docker simulados
+pasan. Los apartados siguientes conservan el diseño inicial fechado.
+
 ## Context
 
 El codigo actual usa mocks. Trello recoge la propuesta LiteLLM/OpenRouter y la

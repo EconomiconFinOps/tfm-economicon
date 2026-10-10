@@ -1,0 +1,96 @@
+{
+  "project": "jup078-keys-5ec250a33b",
+  "mode": "fake-upstream-no-real-spend",
+  "checks": {
+    "gateway_no_egress": true,
+    "default_no_egress": true,
+    "issuance_idempotent": true,
+    "private_key_file": true,
+    "separate_keys": true,
+    "aggregate_budget_10": true,
+    "backend_embeddings": true,
+    "processor_chat": true,
+    "upstream_secret_isolated": true,
+    "privacy_flags": true,
+    "backend_chat_denied": true,
+    "evaluation_secondary_denied": true,
+    "denied_scope_no_upstream": true,
+    "expired_denied": true,
+    "expired_no_upstream": true,
+    "revoke_accepted": true,
+    "revoked_denied": true,
+    "revoked_no_upstream": true,
+    "budget_initial_call": true,
+    "budget_accrued": true,
+    "budget_exhausted_denied": true,
+    "budget_denied_no_upstream": true,
+    "processor_key_survives_restart": true,
+    "revocation_survives_restart": true,
+    "private_logs": true,
+    "cleanup_complete": true
+  },
+  "provisioning_receipt": {
+    "period": "30d",
+    "aggregate_max_budget_usd": 10,
+    "services": {
+      "LITELLM_API_KEY": {
+        "models": [
+          "economicon-chat",
+          "economicon-embedding"
+        ],
+        "max_budget": 9.0,
+        "budget_duration": "30d",
+        "rpm_limit": 10,
+        "tpm_limit": 20000,
+        "max_parallel_requests": 1,
+        "expires": "2026-11-09T19:33:58.095000+00:00",
+        "spend": 0.0
+      },
+      "BACKEND_LITELLM_API_KEY": {
+        "models": [
+          "economicon-embedding"
+        ],
+        "max_budget": 1.0,
+        "budget_duration": "30d",
+        "rpm_limit": 10,
+        "tpm_limit": 20000,
+        "max_parallel_requests": 1,
+        "expires": "2026-11-09T19:33:58.236000+00:00",
+        "spend": 0.0
+      }
+    },
+    "model_calls": 0,
+    "accounting_limit": "Counters are asynchronous; individual calls may overshoot."
+  },
+  "effective_synthetic_key_policies": [
+    {
+      "models": [
+        "economicon-embedding"
+      ],
+      "max_budget": 1.0,
+      "budget_duration": "30d",
+      "expires": "2026-11-09T19:33:58.236000+00:00",
+      "rpm_limit": 10,
+      "tpm_limit": 20000,
+      "max_parallel_requests": 1
+    },
+    {
+      "models": [
+        "economicon-chat",
+        "economicon-embedding"
+      ],
+      "max_budget": 9.0,
+      "budget_duration": "30d",
+      "expires": "2026-11-09T19:33:58.095000+00:00",
+      "rpm_limit": 10,
+      "tpm_limit": 20000,
+      "max_parallel_requests": 1
+    }
+  ],
+  "cleanup_exit": 0,
+  "leftovers": {
+    "container": [],
+    "volume": [],
+    "network": []
+  }
+}
