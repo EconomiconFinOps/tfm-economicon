@@ -15,6 +15,7 @@ name: CI
       - edited
       - ready_for_review
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -81,6 +82,7 @@ jobs:
           corepack pnpm llm-gateway:test
           corepack pnpm docker:validate
           corepack pnpm local:test
+          corepack pnpm cd:test
           corepack pnpm collaboration:test
           corepack pnpm contributions:test
           corepack pnpm openspec:validate

@@ -9,6 +9,7 @@ COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
+RUN find /app/app -type d -exec chmod 755 {} +
 
 RUN useradd --create-home --uid 10001 economicon
 

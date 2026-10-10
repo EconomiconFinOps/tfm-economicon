@@ -47,6 +47,8 @@ benchmarks de ADR-0002 conservan su fecha; no son precios actuales.
 | [0016 · Pin de LiteLLM 1.103.2](ADR-0016-litellm-version-pin.md) | 02/10 · Proposed | Fijar imagen/digest para validación aislada; baseline anterior afectada por avisos, latest no reproducible. | JUP-023; [PR #65](https://github.com/EconomiconFinOps/tfm-economicon/pull/65) integrada el 03/10 UTC y [evidencia](../evidence/JUP-023-validation.md); [diseño archivado](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/design.md). Decisión operativa de Paris del 02/10 documentada en ADR; no acepta ADR-0002 ni autoriza uso real. |
 | [0017 · Embedding de pregunta y clave propia](ADR-0017-backend-query-embedding-own-key.md) | 02/10 · Proposed | Usar el mismo modelo de ingesta y pregunta, separar credenciales por servicio y fijar ranking/umbral reproducibles; mock no acredita semántica real. | JUP-022; [PR #67](https://github.com/EconomiconFinOps/tfm-economicon/pull/67) integrada el 04/10 UTC; [diseño archivado](../../openspec/changes/archive/2026-10-03-jup-022-semantic-retrieval/design.md). Implementación integrada, ratificación del ADR pendiente. |
 
+| [0018 · CD privado DockerServer](ADR-0018-private-dockerserver-cd.md) | 03/10 · Proposed | Agente pull con CI y smoke antes de promover; runner público privilegiado descartado en servidor compartido. | JUP-052; [PR #73](https://github.com/EconomiconFinOps/tfm-economicon/pull/73) en revisión y [evidencia](../evidence/JUP-052-validation.md). No acredita producción ni aceptación independiente. |
+
 ### Decisiones ya explicadas fuera de un ADR
 
 Estas fuentes se reutilizan; no se copian en registros nuevos ni se atribuye a sus

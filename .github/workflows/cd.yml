@@ -1,0 +1,30 @@
+name: CD DockerServer
+
+"on":
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cd-dockerserver-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    if: github.ref == 'refs/heads/develop'
+    uses: ./.github/workflows/ci.yml
+  eligible:
+    name: DockerServer deployment eligible
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Record the validated revision
+        env:
+          REVISION: ${{ github.sha }}
+        run: |
+          printf 'Validated develop revision: %s\n' "$REVISION" >> "$GITHUB_STEP_SUMMARY"
+          printf 'DockerServer pulls this revision; this run does not claim runtime success.\n' >> "$GITHUB_STEP_SUMMARY"

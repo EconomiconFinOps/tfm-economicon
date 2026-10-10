@@ -1,0 +1,11 @@
+[Unit]
+Description=Check validated Economicon develop every five minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=5min
+AccuracySec=30s
+Unit=economicon-cd.service
+
+[Install]
+WantedBy=timers.target
