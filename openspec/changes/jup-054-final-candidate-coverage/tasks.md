@@ -58,7 +58,7 @@ código ya existe, la prueba pasa a la primera: el Red es la comprobación de la
 `design.md` (romper a mano el comportamiento cubierto, ver que la prueba falla, revertir y anotar qué
 se rompió y qué falló). Orden: prioridad A y después B.
 
-- [ ] 5.1 H-02, backend `tests/test_tenants_route.py`: `GET /tenants` con SQLite real. Cada usuario ve
+- [x] 5.1 H-02, backend `tests/test_tenants_route.py`: `GET /tenants` con SQLite real. Cada usuario ve
   exactamente sus membresías, otro usuario no ve las ajenas y sin token responde 401.
 - [ ] 5.2 H-03, backend `tests/test_conversation_creation.py`: `POST /assistant/conversations` con
   éxito. La conversación se crea en el tenant activo y a nombre del usuario autenticado, y otro
