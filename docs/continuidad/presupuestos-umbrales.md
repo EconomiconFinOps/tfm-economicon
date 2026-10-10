@@ -69,3 +69,33 @@ Pendientes: nueva revision de Paris para levantar Request changes, validacion
 de Victor sobre la combinacion afectada por JUP-096 y pairing de Lucia.
 El avance posterior de develop con JUP-050 requiere actualizar y comprobar
 la combinacion antes de integrar; no se da por probado en esta correccion.
+
+
+## Reconciliacion posterior a PR #61 — 2026-10-10
+
+PR #61 fue integrada por Victorh1397 el 08/10/2026 a las 00:24:28 UTC en
+`8cc5db0b8f96b7289f9b90dfed42527b76d0222d`. Esta entrega posterior incorpora
+las dos regresiones propuestas por Victor: normalizacion del cero negativo y
+maximos documentados/comparacion exacta con 26 digitos. El manual explica el
+redondeo previo del total de billing v2. No cambia codigo de producto.
+
+Las siguientes revisiones pertenecen a PR #61, no aprueban esta entrega:
+- [Paris](https://github.com/EconomiconFinOps/tfm-economicon/pull/61#pullrequestreview-5408848343), sobre 0c9f6f0: 14 archivos, 12 enlaces y dos anclas, cuatro casos de configuracion y cuatro de calculo. Sin suite completa ni servicios reales.
+- [Victor](https://github.com/EconomiconFinOps/tfm-economicon/pull/61#pullrequestreview-5407722492), sobre 0c9f6f0: backend estilo CI 626/29; presupuesto/billing 64/0 (8 Cockroach y 56 unitarios/SQLite); seleccion ampliada 250/0, adversarias 69 y 30 llamadas HTTP (corrige 31). Stack development/mock. Suite completa Cockroach sin conclusion por su entorno; managed_resolver no es hallazgo confirmado. Produccion/LiteLLM real no probados en Compose.
+
+Las cifras historicas conservan fecha, SHA y autoria. La consulta del 10/10
+no encontro nueva nota de conformidad de Lucia en Trello. El acuerdo operativo
+06/10 admite aportaciones o visto bueno explicito mediante contraste asincrono,
+registrado por la persona asignada en Trello; no exige sesion, commit coautor
+ni repetir baterias. No se atribuye participacion no observada.
+
+Pendientes: conformidad Lucia, archivo OpenSpec con actualizacion conjunta de
+sus enlaces y reviews propias de esta entrega. Las tareas distinguen reviews
+anteriores completadas del pairing pendiente. La tarjeta padre sigue abierta:
+persistencia, UI, agente, forecast y notificaciones quedan fuera del incremento.
+Las secciones anteriores son evidencia historica, no el estado actual.
+
+Entrega posterior preparada desde develop412ae411: 50 pruebas correctas/1
+omitida, OpenSpec57/57 e higiene correctos; comandos y limites en
+[la evidencia](../evidence/JUP-029-validation.md). Rama docs/JUP-029-budget-closure;
+publicacion en borrador, pendiente pairing y archivo.

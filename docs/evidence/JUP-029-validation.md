@@ -90,3 +90,46 @@ Esto no cierra la tarjeta padre: falta definir/implementar persistencia y el
 flujo de usuario, y completar pairing, revision Paris y validacion Victor.
 Estas pruebas automatizadas no sustituyen sus participaciones. No hay cambios
 de frontend, notificaciones, motor forecast ni integracion del agente.
+
+
+## Reconciliacion posterior a PR #61 — 2026-10-10
+
+PR #61 fue integrada por Victorh1397 el 08/10/2026 a las 00:24:28 UTC en
+`8cc5db0b8f96b7289f9b90dfed42527b76d0222d`. Esta entrega posterior incorpora
+las dos regresiones propuestas por Victor: normalizacion del cero negativo y
+maximos documentados/comparacion exacta con 26 digitos. El manual explica el
+redondeo previo del total de billing v2. No cambia codigo de producto.
+
+Las siguientes revisiones pertenecen a PR #61, no aprueban esta entrega:
+- [Paris](https://github.com/EconomiconFinOps/tfm-economicon/pull/61#pullrequestreview-5408848343), sobre 0c9f6f0: 14 archivos, 12 enlaces y dos anclas, cuatro casos de configuracion y cuatro de calculo. Sin suite completa ni servicios reales.
+- [Victor](https://github.com/EconomiconFinOps/tfm-economicon/pull/61#pullrequestreview-5407722492), sobre 0c9f6f0: backend estilo CI 626/29; presupuesto/billing 64/0 (8 Cockroach y 56 unitarios/SQLite); seleccion ampliada 250/0, adversarias 69 y 30 llamadas HTTP (corrige 31). Stack development/mock. Suite completa Cockroach sin conclusion por su entorno; managed_resolver no es hallazgo confirmado. Produccion/LiteLLM real no probados en Compose.
+
+Las cifras historicas conservan fecha, SHA y autoria. La consulta del 10/10
+no encontro nueva nota de conformidad de Lucia en Trello. El acuerdo operativo
+06/10 admite aportaciones o visto bueno explicito mediante contraste asincrono,
+registrado por la persona asignada en Trello; no exige sesion, commit coautor
+ni repetir baterias. No se atribuye participacion no observada.
+
+Pendientes: conformidad Lucia, archivo OpenSpec con actualizacion conjunta de
+sus enlaces y reviews propias de esta entrega. Las tareas distinguen reviews
+anteriores completadas del pairing pendiente. La tarjeta padre sigue abierta:
+persistencia, UI, agente, forecast y notificaciones quedan fuera del incremento.
+Las secciones anteriores son evidencia historica, no el estado actual.
+
+
+### Comprobaciones de esta entrega posterior — 2026-10-10
+
+Base: develop `412ae411c7f3a9b51f65407974962ac2b4545686`.
+Ejecucion propia en Windows/Python 3.14 desde apps/backend:
+`python -m pytest tests/test_budget_evaluation.py -q -x --tb=short`:
+**50 passed, 1 skipped**, 13.04 s. Cockroach real no configurado; no se
+certifican servicios reales ni suite backend completa. Las dos nuevas pruebas
+estan incluidas en esas 50. Warnings de dependencias no auditados individualmente.
+Primer intento desde raiz fallo por imports; desde backend el sandbox bloqueo
+la preparacion de fixtures. Repeticion fuera del sandbox correcta, sin cambiar
+producto para acomodar el entorno.
+
+OpenSpec estricto 57/57, trazabilidad del cambio, higiene (1032 archivos) y
+diff check correctos. El control de higiene tambien requirio ejecutar Git
+fuera del sandbox (EPERM inicial). Sin nuevos mutantes propios; los ensayos
+de mutacion de Victor se conservan como evidencia historica suya.

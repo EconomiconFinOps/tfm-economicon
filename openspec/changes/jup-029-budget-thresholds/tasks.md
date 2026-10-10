@@ -7,4 +7,6 @@ JUP: JUP-029
 - [x] Test calculations, input validation and API boundaries.
 - [x] Record reproducible evidence and limitations.
 - [x] Open linked PR against develop and update Trello with first-increment scope.
-- [ ] Obtain assigned pairing, human review and independent validation.
+- [x] Obtain human review and independent validation (Paris/Victor, incremental checks on 0c9f6f0).
+- [ ] Record assigned pairing: asynchronous feedback or explicit agreement from Lucia in Trello, per the operational agreement of 2026-10-06.
+- [ ] Archive this change and update document links when the remaining participation task is resolved.

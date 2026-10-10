@@ -51,6 +51,11 @@ El calculo reutiliza el total monetario v2, ya redondeado a centimos; no suma
 los grupos redondeados ni convierte divisas. Los porcentajes se redondean
 HALF_UP a dos decimales, con aritmetica Decimal.
 
+Por ejemplo, un coste bruto de 0.005 llega como 0.01 desde billing v2. Con un
+presupuesto de 0.01 alcanza el 100%, aunque el bruto represente el 50%.
+La comparacion exacta de umbrales usa el total en centimos y no recupera la
+precision previa a ese redondeo (diferencia maxima de medio centimo).
+
 - `evaluated`: existe consumo observado para la moneda y data_status=available.
   No certifica cobertura completa de todas las facturas del periodo.
 - `provisional`: existe total, pero billing informa datos parciales. Se conservan

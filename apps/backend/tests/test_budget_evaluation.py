@@ -53,6 +53,21 @@ def test_threshold_comparison_precedes_rounding_and_supports_custom_limits():
     assert evaluate_budget(budget, observed("1250.00")).reached_thresholds_percent == ["80.00", "125.00"]
 
 
+def test_negative_zero_is_never_displayed():
+    budget = BudgetDefinition(**{**BODY, "amount": "1000.00"})
+    assert evaluate_budget(budget, observed("-0.01")).consumption_percent == "0.00"
+
+
+def test_documented_maximums_are_accepted_and_keep_exact_comparison():
+    budget = BudgetDefinition(**{
+        **BODY, "amount": "9" * 26 + ".99", "thresholds_percent": ["80.00", "1000.00"],
+    })
+    below = evaluate_budget(budget, observed("7" + "9" * 25 + ".99"))
+    assert below.consumption_percent == "80.00"
+    assert below.reached_thresholds_percent == []
+    assert evaluate_budget(budget, observed("8" + "0" * 25 + ".00")).reached_thresholds_percent == ["80.00"]
+
+
 def test_large_money_and_decimal_context_do_not_lose_cents():
     budget = BudgetDefinition(**{**BODY, "amount": "9007199254740993.00"})
     with localcontext() as context:
