@@ -1,0 +1,144 @@
+{
+  "provenance": "Synthetic arithmetic example, not Azure billing or measured real accuracy",
+  "verified_on": "2026-10-10",
+  "versions": {
+    "python": "3.14.4",
+    "fastapi": "0.115.12",
+    "pydantic": "2.12.5",
+    "SQLAlchemy": "2.0.52",
+    "pytest": "9.0.3"
+  },
+  "response": {
+    "contract_version": 1,
+    "history_period": {
+      "start_date": "2024-01-01",
+      "end_date": "2025-01-01",
+      "timezone": "UTC"
+    },
+    "forecast_period": {
+      "start_date": "2025-01-01",
+      "end_date": "2025-04-01",
+      "timezone": "UTC"
+    },
+    "group_by": "subscription",
+    "horizon_months": 3,
+    "minimum_history_months": 11,
+    "data_status": "available",
+    "excluded_undated_count": 0,
+    "missing_dimension_count": 0,
+    "series": [
+      {
+        "value": "synthetic-subscription",
+        "currency": "EUR",
+        "status": "forecast",
+        "reason": null,
+        "history": [
+          {
+            "month": "2024-01-01",
+            "cost": "100.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-02-01",
+            "cost": "110.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-03-01",
+            "cost": "120.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-04-01",
+            "cost": "130.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-05-01",
+            "cost": "140.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-06-01",
+            "cost": "150.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-07-01",
+            "cost": "160.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-08-01",
+            "cost": "170.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-09-01",
+            "cost": "180.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-10-01",
+            "cost": "190.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-11-01",
+            "cost": "200.00",
+            "record_count": 1
+          },
+          {
+            "month": "2024-12-01",
+            "cost": "210.00",
+            "record_count": 1
+          }
+        ],
+        "missing_months": [],
+        "method": "linear_trend",
+        "backtest": {
+          "origins": [
+            "2024-08-01",
+            "2024-09-01",
+            "2024-10-01"
+          ],
+          "horizon_months": 3,
+          "baseline_mae": "20.00",
+          "trend_mae": "0.00",
+          "selected_mae": "0.00",
+          "interval_method": "max_absolute_backtest_error_by_horizon",
+          "nominal_coverage": null
+        },
+        "points": [
+          {
+            "month": "2025-01-01",
+            "estimate": "220.00",
+            "baseline": "210.00",
+            "lower": "220.00",
+            "upper": "220.00"
+          },
+          {
+            "month": "2025-02-01",
+            "estimate": "230.00",
+            "baseline": "210.00",
+            "lower": "230.00",
+            "upper": "230.00"
+          },
+          {
+            "month": "2025-03-01",
+            "estimate": "240.00",
+            "baseline": "210.00",
+            "lower": "240.00",
+            "upper": "240.00"
+          }
+        ]
+      }
+    ],
+    "warnings": [
+      "Indicative net pre-tax costs in each original currency; credits can produce negative forecasts.",
+      "Monthly observations do not certify ingestion coverage or billing completeness.",
+      "Empirical error envelopes have no guaranteed coverage; model selection uses the same three backtest origins.",
+      "No seasonal, price, exchange-rate or infrastructure-change model; not Azure's native forecast."
+    ]
+  }
+}
