@@ -44,26 +44,50 @@
 
 ## 4. Aprobación de la lista de huecos
 
-- [ ] 4.1 Presentar la lista de 3.6 y obtener la decisión sobre qué huecos críticos se cubren en
+- [x] 4.1 Presentar la lista de 3.6 y obtener la decisión sobre qué huecos críticos se cubren en
   esta pasada. Anotar en la evidencia la decisión y cualquier recorte. No se escribe ninguna prueba
-  antes de este punto.
-- [ ] 4.2 Desglosar el grupo 5 en una tarea por hueco aprobado, con el archivo de prueba de destino.
+  antes de este punto. Decisión (2026-10-10): se cubren las prioridades A y B (9 huecos); la C
+  (H-05, H-10, H-12) pasa a diferidos; `RF-096-004` no se amplía; aceptados y diferidos conformes.
+- [x] 4.2 Desglosar el grupo 5 en una tarea por hueco aprobado, con el archivo de prueba de destino.
 
 ## 5. Pruebas de los huecos críticos
 
-- [ ] 5.1 Backend: una prueba por cada hueco crítico aprobado, con componentes reales de la
-  aplicación y los dobles externos declarados en la propia prueba. Comprobar cada una según la
-  decisión 7 del `design.md`: romper a mano el comportamiento cubierto, ver que falla, revertir, y
-  anotar qué se rompió y qué falló.
-- [ ] 5.2 Processor: igual que 5.1.
-- [ ] 5.3 Azure Cost API: igual que 5.1.
-- [ ] 5.4 Frontend: igual que 5.1, con el árbol de rutas, los componentes y el cliente de API reales
-  y `fetch` como único doble.
-- [ ] 5.5 Si una prueba nueva falla contra el candidato sin modificar, parar: registrar el defecto
+Cada tarea añade un archivo de pruebas nuevo, con componentes reales de la aplicación y los dobles
+externos declarados en la propia prueba. No se modifica ningún archivo de pruebas existente. Como el
+código ya existe, la prueba pasa a la primera: el Red es la comprobación de la decisión 7 del
+`design.md` (romper a mano el comportamiento cubierto, ver que la prueba falla, revertir y anotar qué
+se rompió y qué falló). Orden: prioridad A y después B.
+
+- [ ] 5.1 H-02, backend `tests/test_tenants_route.py`: `GET /tenants` con SQLite real. Cada usuario ve
+  exactamente sus membresías, otro usuario no ve las ajenas y sin token responde 401.
+- [ ] 5.2 H-03, backend `tests/test_conversation_creation.py`: `POST /assistant/conversations` con
+  éxito. La conversación se crea en el tenant activo y a nombre del usuario autenticado, y otro
+  tenant no la ve.
+- [ ] 5.3 H-07, processor `tests/test_ingest_redelivery.py`: `IngestTask` con repositorio SQLite. La
+  reentrega de un trabajo completado devuelve el resultado guardado sin reejecutar el pipeline ni
+  escribir vectores, y un mensaje persistido con JSON corrupto es `InvalidJobMessage`.
+- [ ] 5.4 H-08, processor `tests/test_azure_cost_scope_rejection.py`: repositorio de costes con SQLite.
+  Iniciar, completar o fallar un run con un tenant o una suscripción ajenos lanza `PermissionError` y
+  no modifica el run ni sus registros.
+- [ ] 5.5 H-01, backend `tests/test_billing_error_contract.py`: rutas reales de `GET /billing/tag-coverage`
+  y `GET /billing/summary` con la base doblada. 200 con el contrato de la respuesta y 409
+  `{"detail":{"code":"ambiguous_cost_source"}}` cuando la base detecta fuentes solapadas.
+- [ ] 5.6 H-04, backend `tests/test_job_reservation_rejection.py`: `POST` de trabajos con una cola doble.
+  Si la reserva no se envía (`not_sent`) o el resultado de publicación queda fuera de contrato, la
+  respuesta es un error controlado y no se crea ningún trabajo.
+- [ ] 5.7 H-06, processor `tests/test_guardrail_validation.py`: funciones reales de los guardrails.
+  Origen, payload, estado y metadatos inválidos se rechazan con su error, los metadatos grandes se
+  recortan y una respuesta vacía o que no es JSON se rechaza sin retener la carga del proveedor.
+- [ ] 5.8 H-09, processor `tests/test_azure_client_failures.py`: cliente de la API Azure contra un
+  servidor HTTP real de loopback y un puerto cerrado. Tiempo agotado, conexión rechazada y páginas
+  malformadas dan errores tipificados y no se escribe ningún registro.
+- [ ] 5.9 H-11, azure-cost-api `tests/test_unsupported_filters.py`: `TestClient` real. Un filtro con una
+  dimensión o una etiqueta no soportada responde 400 `BadRequest` con el nombre rechazado.
+- [ ] 5.10 Si una prueba nueva falla contra el candidato sin modificar, parar: registrar el defecto
   como `RF-054-NNN` con su reproducción y decidir si la prueba se entrega como fallo esperado
   estricto o se deja fuera. No se debilita la aserción ni se toca el producto.
-- [ ] 5.6 Comprobar con `git diff --stat` contra la base que no hay cambios en `apps/*/app/**`, en
-  archivos de `apps/frontend/src/**` que no sean `*.test.*`, ni en dependencias o CI.
+- [ ] 5.11 Comprobar con `git diff --stat` contra la base que no hay cambios en `apps/*/app/**`, en
+  archivos de `apps/frontend/src/**`, en pruebas existentes, ni en dependencias o CI.
 
 ## 6. Verificación
 
@@ -71,8 +95,8 @@
   cobertura antes y después de cada área cubierta.
 - [ ] 6.2 Ejecutar la suite completa de cada servicio modificado, sin instrumentar, en el contenedor
   equivalente a CI, y anotar aprobadas, fallidas y omitidas.
-- [ ] 6.3 Ejecutar `corepack pnpm --filter @finops/frontend lint`, `typecheck` y `build` si hay
-  pruebas nuevas de frontend.
+- [ ] 6.3 Comprobar que `apps/frontend` no tiene cambios (H-12 queda diferido). Si los tuviera,
+  ejecutar `corepack pnpm --filter @finops/frontend lint`, `typecheck` y `build`.
 - [ ] 6.4 Ejecutar `corepack pnpm openspec:validate`,
   `corepack pnpm jup:check -- --change jup-054-final-candidate-coverage` y
   `corepack pnpm jup:cleanup:check`.

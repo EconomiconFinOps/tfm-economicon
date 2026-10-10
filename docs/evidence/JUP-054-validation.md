@@ -371,3 +371,25 @@ Recomendación de alcance: cubrir las prioridades A y B (9 huecos) y decidir sob
 (3) según el tiempo. Si se prefiere acotar, el orden sugerido es H-02, H-03, H-07,
 H-08, H-01. Queda además la decisión de ampliar o no `RF-096-004`: es la causa de
 que el mayor volumen de código nuevo (JUP-017 y JUP-037) no se ejecute en CI.
+
+#### Decisión sobre los huecos (2026-10-10)
+
+Decisión de Victor sobre la lista anterior, tomada antes de escribir ninguna prueba:
+
+- **Se cubren las prioridades A y B (9 huecos):** H-02, H-03, H-07, H-08, H-01, H-04,
+  H-06, H-09 y H-11. Cada uno con un archivo de pruebas nuevo, sin tocar las
+  pruebas existentes (tareas 5.1 a 5.9).
+- **La prioridad C (H-05, H-10, H-12) no se cubre en esta pasada** y pasa a
+  diferidos junto con D-01 a D-08. Se registrarán como `RF-054-NNN` al cerrar.
+  Con ello esta pasada no añade pruebas de frontend.
+- **`RF-096-004` no se amplía.** Provisionar CockroachDB, pgvector y RabbitMQ en
+  CI toca `ci.yml` y sus pruebas de política, fuera del alcance acordado. Las 127
+  omitidas y el código que sólo ellas ejercitan (JUP-017 y JUP-037) quedan
+  documentados como evidencia de esa prioridad.
+- **Los aceptados (A-01 a A-09) y los diferidos (D-01 a D-08) se dan por conformes.**
+  A-01 y A-02 (código sin uso) son candidatos a retirarse, pero eso es un cambio de
+  producto y no se hace aquí.
+
+Como el código de producto ya existe, las pruebas nuevas pasan a la primera. Su
+valor se acredita rompiendo a mano el comportamiento cubierto y comprobando que la
+prueba falla (decisión 7 del diseño), no con mutación automática.
