@@ -8,6 +8,12 @@ mínima de tagging y costes», delegado desde chat
 Copia propia `tfm-economicon-jup015`, rama `docs/JUP-015-tagging-taxonomy`, base
 `c2995a118d419dfe725247bac9c6f219a3f0ea77`. Checkout compartido intacto.
 
+[PR #88](https://github.com/EconomiconFinOps/tfm-economicon/pull/88) draft contra
+develop, MERGEABLE. Entrega técnica `c638b4c`; CI técnica 7/7 verde en
+[run 38034907273](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38034907273).
+Gate JUP reviews pendiente humano. Trello enlazado por el puente oficial,
+action `6ac9eb50c8c89dfec635a3e7`, 10/10 07:37:52Z; sin mover tarjeta.
+
 ## Conclusiones y decisiones
 
 [Taxonomía canónica](../architecture/tagging-taxonomy.md),

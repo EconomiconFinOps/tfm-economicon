@@ -3,6 +3,8 @@
 Fecha: 10/10/2026, Europe/Paris. [Tarjeta](https://trello.com/c/UDIyjTyl).
 Base: `origin/develop` `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
 Rama: `docs/JUP-015-tagging-taxonomy`, copia aislada `tfm-economicon-jup015`.
+Entrega técnica: `c638b4c`. [PR #88](https://github.com/EconomiconFinOps/tfm-economicon/pull/88)
+abierta en borrador contra develop; no revisada ni fusionada.
 
 ## Entrega
 
@@ -44,7 +46,7 @@ La suite de referencia sólo usa la biblioteca estándar; CI ejecutará Python 3
 | `node --test tools/jup-check.test.mjs tools/pr-policy.test.mjs tools/ci-workflow.test.mjs tools/repository-governance.test.mjs tools/jup-cleanup-check.test.mjs` | 95 PASS, 0 fail |
 | `node tools/jup-check.mjs --all` | 9 changes trazables, incluido JUP-015 |
 | `node tools/jup-cleanup-check.mjs` | PASS; el primer intento falló por `spawnSync git EPERM` del sandbox; ejecución permitida posterior pasó |
-| `openspec validate --all --strict --no-interactive` | 56 PASS, 0 fail antes del archivo |
+| `openspec validate --all --strict --no-interactive` | 56 PASS, 0 fail antes y después del archivo |
 | `git diff --check` | PASS |
 
 La revisión técnica asistida adicional no encontró defectos accionables; no es
@@ -70,6 +72,16 @@ entre Python y CockroachDB. Los límites ASCII y los ejemplos ordinarios de trim
 están cubiertos; no se afirma equivalencia universal de motores regex.
 
 ## Participación y pendientes
+
+Publicación comprobada el 10/10: PR88 draft, MERGEABLE, base develop. CI técnica
+[38034907273](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38034907273)
+7/7 verde en `c638b4c` (incluye nuevos tests Python 3.12, servicios y frontend).
+`JUP reviews` sigue pendiente de las reviews humanas; no se considera verde ni
+se modifica ese control. Los posteriores commits de este registro son documentales.
+
+Evidencia enlazada en Trello por el puente oficial el 10/10 07:37:52Z,
+action `6ac9eb50c8c89dfec635a3e7`, con texto devuelto por la operación.
+No se modificaron descripción, criterios, prioridad, fechas, roles o columna.
 
 Roles registrados: Paris Arcos Martin liderazgo, Victor Mendez pairing,
 Alejandro Aguado revisión, Lucia Mateo validación/pruebas/documentación.
