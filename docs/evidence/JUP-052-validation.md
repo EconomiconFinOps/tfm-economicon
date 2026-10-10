@@ -263,3 +263,11 @@ Evidencia local saneada: materiales/07-evidencias/JUP-052-full-validation-202610
 en el workspace del autor (diagnose.log, scripts de reproducción y logs de pruebas).
 El ensayo usa datos sintéticos, nueve servicios mock y puertos loopback propios;
 no activa el perfil AI ni proveedores de pago. Reboot no incluido en esta ventana.
+
+La primera repetición con 508c348 detectó además que BuildKit reutilizó la capa
+COPY previa: release/core 755, imagen/core 700 confirmado con stat como root y
+PermissionError como UID10001. Normalizar sólo la fuente no invalida esa caché.
+Los tres Dockerfiles Python ahora normalizan explícitamente los directorios de
+/app/app después de COPY y antes de USER; esto fuerza una capa nueva y asegura
+la importación incluso al reutilizar la copia anterior. No se amplían permisos
+de secretos ni se cambia el usuario de ejecución. Repetición real pendiente.
