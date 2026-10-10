@@ -1,10 +1,9 @@
 from datetime import date, datetime, timezone
-import re
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.dependencies import get_active_tenant, get_database
-from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSummary
+from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSummary, canonical_tag_key
 from app.schemas.budget import BudgetDefinition, BudgetEvaluation
 from app.services.budget import evaluate_budget
 
@@ -29,14 +28,7 @@ def evaluate_billing_budget(
 
 
 def _canonical_tag_key(value: str) -> str:
-    normalized = re.sub(r"[^a-z0-9]+", "_", value.strip().casefold()).strip("_")
-    aliases = {
-        "costcenter": "cost_center",
-        "cost_centre": "cost_center",
-        "env": "environment",
-        "org": "organization",
-    }
-    return aliases.get(normalized, normalized)
+    return canonical_tag_key(value)
 
 
 @router.get("/summary", response_model=BillingSummary)

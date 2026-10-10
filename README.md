@@ -567,6 +567,7 @@ El flujo principal del sistema es este:
 - [API Azure Cost simulada](apps/azure-cost-api/README.md)
 - [Cliente de ingesta Azure Cost Management](docs/api/azure-cost-ingestion-client.md)
 - [Batería de preguntas FinOps (JUP-069)](docs/validation/README.md)
+- [Memoria del TFM: dónde vive y cómo se edita (JUP-062)](docs/memoria/README.md)
 
 ## Estado Actual
 

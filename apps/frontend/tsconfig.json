@@ -21,7 +21,7 @@
     "skipLibCheck": true,
     "noEmit": true,
 
-    "allowJs": true,
+    "allowJs": false,
     "checkJs": false,
 
     "strict": true

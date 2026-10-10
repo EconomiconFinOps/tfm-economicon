@@ -6,7 +6,7 @@ Trello: https://trello.com/c/pVfcfvhu/83-jup-091-inventariar-dependencias-y-endp
 JUP-083 confirmó los 7 supuestos del origen (React 18.3.1, Vite 6, react-router 7, sin capa de datos
 ni auth, Tailwind v4 + shadcn/ui + MUI 7, iconos lucide-react, sin variables `VITE_*`) y JUP-090
 inventarió el destino con su
-[línea base](../../../docs/planning/JUP-090-frontend-migration-baseline.md). Pero el spike deja dos
+[línea base](../../../../docs/planning/JUP-090-frontend-migration-baseline.md). Pero el spike deja dos
 tareas abiertas sobre el **origen** que bloquean planificar F2 y F3 con datos reales:
 
 - **F2 (tooling) no puede dimensionarse:** el origen declara **61 dependencias** (55 runtime +
