@@ -10,22 +10,22 @@
 
 ## 2. Medición de cobertura
 
-- [ ] 2.1 Preparar el contenedor de medición de Python con el árbol de `git archive <SHA>`, sin
+- [x] 2.1 Preparar el contenedor de medición de Python con el árbol de `git archive <SHA>`, sin
   volúmenes compartidos con el repositorio y sin puertos publicados. Comprobar con `git status` que
   no deja nada dentro del repositorio.
-- [ ] 2.2 Medir `apps/azure-cost-api` con cobertura de líneas y de ramas sobre `app`. Comparar
+- [x] 2.2 Medir `apps/azure-cost-api` con cobertura de líneas y de ramas sobre `app`. Comparar
   aprobadas, fallidas y omitidas con la referencia de 1.2 y guardar el resumen.
-- [ ] 2.3 Medir `apps/backend` del mismo modo y comparar con la referencia.
-- [ ] 2.4 Medir `apps/processor` del mismo modo y comparar con la referencia. Anotar qué pruebas
+- [x] 2.3 Medir `apps/backend` del mismo modo y comparar con la referencia.
+- [x] 2.4 Medir `apps/processor` del mismo modo y comparar con la referencia. Anotar qué pruebas
   lanzan subprocesos, porque el código del proceso hijo no aparece en la medición.
-- [ ] 2.5 Medir `apps/frontend` en el contenedor de Node: instalar con el lockfile congelado, anotar
+- [x] 2.5 Medir `apps/frontend` en el contenedor de Node: instalar con el lockfile congelado, anotar
   la versión resuelta de Vitest, añadir el proveedor en esa versión, volver a anotar la versión de
   Vitest y ejecutar la suite con cobertura sobre `src`, incluidos los archivos que ninguna prueba
   importa.
-- [ ] 2.6 Para cada servicio cuya ejecución instrumentada no coincida con la referencia, repetirlo
+- [x] 2.6 Para cada servicio cuya ejecución instrumentada no coincida con la referencia, repetirlo
   aislado una vez. Si sigue sin coincidir, anotar la diferencia y marcar esa cifra como no válida.
   No se cambia ningún plazo ni guard.
-- [ ] 2.7 Escribir en la evidencia la tabla de cobertura por servicio (líneas y ramas) con los
+- [x] 2.7 Escribir en la evidencia la tabla de cobertura por servicio (líneas y ramas) con los
   comandos exactos, y documentar esos comandos en `docs/testing/critical-flows.md`.
 
 ## 3. Auditoría de huecos

@@ -226,3 +226,48 @@ dentro del contenedor; no entra en el repositorio ni en `pnpm-lock.yaml`.
 CI usa Python 3.12 y Node 22 en `ubuntu-latest`. Las imágenes coinciden en la
 versión mayor/menor; el parche exacto de CI no se ha podido leer (ver arriba), así
 que no se afirma que coincida.
+
+### Cobertura medida del candidato
+
+Medición del 2026-10-10 sobre el árbol de `e1c2a8f` (`git archive`), con los
+comandos de [la matriz](../testing/critical-flows.md#medición-de-cobertura-diagnóstico).
+Es un **diagnóstico**: no hay umbral ni se exige en ningún check. Cada cifra sólo
+vale si la ejecución instrumentada reproduce a CI para ese servicio.
+
+| Servicio | Reproduce CI | Líneas | Ramas | Archivos medidos |
+| --- | --- | --- | --- | --- |
+| azure-cost-api | Sí: 59 passed, 1 warning | 95,6 % (518/542) | 88,7 % (94/106) | 10 |
+| backend | Sí: 960 passed, 62 skipped, 2408 warnings | 87,0 % (2950/3391) | 77,7 % (730/940) | 51 |
+| processor | Sí: 462 passed, 65 skipped, 822 warnings | 88,8 % (1757/1979) | 76,0 % (357/470) | 55 |
+| frontend | Sí en el 2.º intento: 56 archivos y 654 passed | 90,4 % (2990/3306) | 95,1 % (1109/1166) | 43 de 44 |
+
+Los servicios Python usan `coverage` 7.16.2 con `pytest-cov` 7.1.0, líneas y ramas
+sobre `app`, incluidos los archivos que ninguna prueba importa. El frontend usa
+Vitest 3.2.7 y `@vitest/coverage-v8` 3.2.7 sobre `src/**`. La versión de Vitest
+fue la misma antes y después de añadir el proveedor (3.2.7). El único archivo
+de `src` fuera del informe es `src/test/setup.ts`, infraestructura de pruebas que
+Vitest excluye por defecto. **Las ramas del frontend (V8) y las de Python
+(`coverage`) se cuentan con criterios distintos y no son comparables entre sí.**
+
+Intentos que no se ocultan:
+
+- **Frontend, 1.er intento: 653 passed y 1 failed**, con el informe sin escribir.
+  Falló `tests/login-session-expired-notice.test.tsx` (tarea 4.1: no encontró el
+  botón «Sign in» en la espera por defecto). Se repitió el servicio completo, con
+  la misma imagen y el mismo comando salvo forzar la escritura del informe: 56
+  archivos y 654 passed. La prueba pasa sola y sin instrumentar (9 de 9). La causa
+  no está probada; es compatible con que la instrumentación alargue la espera de
+  una prueba con plazo corto, y no se cambió ningún plazo ni guard. Se usa la cifra
+  del 2.º intento porque reproduce a CI.
+- Los tres servicios Python reprodujeron a CI en el primer intento. La ejecución
+  fue como `root` en un contenedor sin red restringida durante la instalación; CI
+  usa un usuario sin privilegios. No se observó ninguna diferencia de resultado.
+
+Pruebas que lanzan subprocesos o procesos hijo, y cuyo código hijo esta medición
+no observa: processor `test_azure_api_contract_integration.py`,
+`test_ingest_task.py`, `test_litellm_docker.py`,
+`test_schema_migration_ownership.py` y `test_tenant_isolation_integration.py`;
+backend `test_managed_resolver.py`, `test_rabbitmq_publisher.py`,
+`test_system_health_boundaries_jup047.py` y el apoyo `billing_support.py`. Las
+líneas no cubiertas que dependan de ellas se contrastan a mano en el grupo de
+auditoría antes de llamarlas hueco. azure-cost-api no lanza subprocesos.

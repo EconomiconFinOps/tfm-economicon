@@ -107,6 +107,49 @@ creado. Exigen Cockroach sin bases/tablas de aplicación y pgvector limpio.
 Ejecutar un único proceso pytest por nodo Cockroach; backend y processor en serie.
 Detener únicamente los contenedores/túnel creados para esta ejecución al terminar.
 
+## Medición de cobertura (diagnóstico)
+
+JUP-054 (segunda pasada) mide la cobertura de un SHA concreto, sin exigirla en CI y
+sin umbral. La herramienta se instala sólo en contenedores Linux desechables
+(`python:3.12`, `node:22`); no forma parte de los `requirements-dev.txt`, de
+`package.json` ni de `pnpm-lock.yaml`. Se mide el árbol versionado, sin volúmenes
+compartidos ni puertos publicados. Docker 29.8.1; imágenes y versiones exactas en la
+[evidencia](../evidence/JUP-054-validation.md#entorno-de-medición).
+
+Servicios Python (sustituir `SERVICIO` por `azure-cost-api`, `backend` o
+`processor`; uno cada vez, porque la contención de CPU altera las pruebas con plazos):
+
+```sh
+SHA=<sha-de-develop-a-auditar>
+git archive --format=tar "$SHA" | docker run -i --name cov python:3.12 sh -c '
+  mkdir /src && tar -x -C /src && cd /src/apps/$0
+  python -m pip install -q -r requirements-dev.txt pytest-cov==7.1.0
+  python -m compileall -q app
+  python -m pytest tests -q -p no:cacheprovider --cov=app --cov-branch     --cov-report=json:/tmp/coverage.json --cov-report=term:skip-covered
+' SERVICIO
+docker cp cov:/tmp/coverage.json . && docker rm cov
+```
+
+Frontend:
+
+```sh
+git archive --format=tar "$SHA" | docker run -i --name cov node:22 sh -c '
+  export CI=true COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+  mkdir /src && tar -x -C /src && cd /src
+  corepack enable && corepack pnpm install --frozen-lockfile
+  corepack pnpm --filter @finops/frontend add -D @vitest/coverage-v8@3.2.7
+  cd apps/frontend
+  corepack pnpm exec vitest run --coverage.enabled --coverage.provider=v8     --coverage.include="src/**" --coverage.reporter=text-summary     --coverage.reporter=json-summary --coverage.reportsDirectory=/tmp/cov-fe     --coverage.reportOnFailure=true
+'
+docker cp cov:/tmp/cov-fe . && docker rm cov
+```
+
+La versión de `@vitest/coverage-v8` debe ser la del Vitest resuelto en el lockfile.
+`add` modifica sólo la copia del contenedor. Antes de usar una cifra se compara la
+línea final de pruebas aprobadas, fallidas y omitidas con la ejecución de CI de ese
+SHA; si no coinciden la cifra no es la cobertura del candidato. El código ejecutado
+únicamente por subprocesos no aparece en la medición.
+
 ## Interpretación
 
 Éxito offline demuestra los componentes y contratos indicados, no fiabilidad de
