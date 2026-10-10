@@ -183,6 +183,14 @@ pospone hasta que haya un segundo consumidor real.
   puede migrar a continuación. Debe citar este ADR en su `design.md`.
 - F5, tarjeta de cierre: endurecer `allowJs` a `false` una vez no quede JavaScript en `src/`;
   confirmar en ese punto que no queda ningún `.jsx` con violaciones pendientes.
+- **Hecho en JUP-105 (2026-10-09)**: `allowJs` pasa a `false` en `apps/frontend/tsconfig.json`, sin
+  tocar ninguna otra línea, con `src/` y `tests/` sin ningún archivo JavaScript. El type-check, el
+  lint, el build y las 629 pruebas del frontend siguen en verde, y un control positivo (un `.js`
+  temporal importado desde un `.ts`) demuestra que el compilador lo rechaza con `TS7016`. El lint
+  del frontend no reporta ninguna violación. Evidencia en
+  [JUP-105-validation.md](../evidence/JUP-105-validation.md). Un `.js` que nadie importe no lo
+  detecta el compilador; el bloque de `eslint.config.js` para `src/**/*.{js,jsx}` se conserva para
+  que cualquier JSX futuro mantenga la validación de props.
 - `openspec/findings/backlog.md`: `RF-082-002` se anotó con la resolución prevista al aceptar este
   ADR y permaneció `Open` desde F2 hasta el cierre material en JUP-095 (línea base de
   `react/prop-types` en cero, 8 archivos migrados + 1 eliminado sin migrar) — **cerrado `Fixed`**, no

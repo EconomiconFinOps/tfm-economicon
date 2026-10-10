@@ -69,12 +69,14 @@ Por ejemplo, el backend:
 
 El backend es como el punto central de entrada para las peticiones normales de la aplicacion.
 
-> **Estado actual de `GET /billing/summary` (verificado en JUP-091).** Este endpoint todavia **no
-> lee** los costes de Azure que el `processor` ingesta y normaliza. Devuelve `monthly_spend` y
-> `savings_identified` con valores fijos de demostracion; solo `open_ingestions` se calcula de
-> verdad, contando filas en `jobs`. Es decir: hoy **ningun endpoint del backend expone las tablas
-> `azure_cost_ingestion_runs` ni `azure_cost_records`**. El dato existe en CockroachDB, pero falta
-> el camino de lectura hasta el frontend. Ver `RF-091-004` en
+> **Estado actual de `GET /billing/summary` (actualizado en JUP-105, 2026-10-09).** Desde JUP-026
+> el endpoint **lee** los costes de Azure que el `processor` ingesta y normaliza
+> (`azure_cost_records`) y devuelve el contrato v2: totales y grupos como cadenas decimales exactas,
+> por moneda y periodo UTC, con desglose por suscripcion, grupo de recursos, servicio, proyecto o
+> etiqueta. `savings_identified` es siempre `null`: **no existe un motor de ahorro**.
+> `open_ingestions` se sigue calculando contando filas en `jobs`. El frontend lo consume en `/` y en
+> `/overview-legacy`. Hasta JUP-026 (verificado en JUP-091) el endpoint devolvia `monthly_spend` y
+> `savings_identified` con valores fijos de demostracion; ver `RF-091-004` en
 > [openspec/findings/backlog.md](../openspec/findings/backlog.md).
 
 ### `apps/processor`
