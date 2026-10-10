@@ -325,6 +325,25 @@ class RecoveryTests(unittest.TestCase):
         if os.name == "posix":
             self.assertEqual((release / ".env").stat().st_mode & 0o777, 0o600)
 
+    @unittest.skipUnless(os.name == "posix", "Requires POSIX directory modes")
+    @patch.object(deploy, "run", return_value='{"services": {}}')
+    def test_private_archive_source_is_traversable_inside_nonroot_images(self, run):
+        package = self.source / "apps" / "backend" / "app" / "core"
+        package.mkdir(parents=True)
+        (package / "config.py").write_text("VALUE = 1\n")
+        for path in (self.source, *self.source.rglob("*")):
+            if path.is_dir():
+                os.chmod(path, 0o700)
+        release = deploy.prepare(self.root, self.source, self.new, 0)
+        for path in release.rglob("*"):
+            if path.is_dir():
+                self.assertEqual(path.stat().st_mode & 0o777, 0o755)
+        self.assertEqual(release.stat().st_mode & 0o777, 0o700)
+        self.assertEqual(self.root.stat().st_mode & 0o777, 0o700)
+        self.assertEqual((release / ".env").stat().st_mode & 0o777, 0o600)
+        self.assertEqual((release / "compose.json").stat().st_mode & 0o777, 0o600)
+        self.assertEqual((release / "apps/backend/app/core/config.py").read_text(), "VALUE = 1\n")
+
     def test_short_uppercase_and_traversal_sha_are_rejected(self):
         for sha in ("a" * 4, "a" * 39, "a" * 41, "A" * 40, "../" + "a" * 40):
             with self.subTest(sha=sha), self.assertRaises(ValueError):

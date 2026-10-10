@@ -108,6 +108,17 @@ def prepare(root, source, sha, slot):
     try:
         shutil.copytree(source, temporary, dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns(".git", "node_modules", ".venv", ".env*", "__pycache__"))
+        # data-filtered Git archives extracted under our private umask have
+        # 0700 directories. Docker COPY preserves those modes, preventing the
+        # non-root app user from traversing its code inside the image.
+        # Only copied source directories become traversable; the enclosing
+        # release/root and generated credentials remain private on the host.
+        for directory, children, _ in os.walk(temporary):
+            for child in children:
+                path = Path(directory) / child
+                if not path.is_symlink():
+                    os.chmod(path, 0o755)
+        os.chmod(temporary, 0o700)
         base = json.loads((root / "config.json").read_text())["port_base"] + slot * 100
         values = json.loads((root / "secrets.json").read_text())
         values.update({name: str(base + offset) for name, offset in PORTS.items()})

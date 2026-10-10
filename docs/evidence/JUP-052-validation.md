@@ -236,3 +236,30 @@ con develop54bbbcd (ADR/documentación, sin cambios del agente CD); ADR0002
 Accepted de JUP078 y fila ADR0018 Proposed preservadas. OpenSpec/trazabilidad/
 higiene repetidos tras la actualización documental; se solicita revalidación
 sobre el head final, no se atribuye a validaciones anteriores.
+
+## Validación completa en DockerServer — 2026-10-10
+
+Ventana operativa y primera promoción integrada autorizadas explícitamente por
+el usuario. No se dispensa revisión ni checks de GitHub. Base actualizada a
+412ae411c7f3a9b51f65407974962ac2b4545686, merge de rama 3c938b3.
+
+El primer ensayo real aislado, con fuente archivada exacta y umask 077, construyó
+las cuatro imágenes pero el backend salió con ModuleNotFoundError para
+app.core.config. Los directorios extraídos mediante tar filter=data quedaron
+700; Docker COPY conservó esos modos y el usuario 10001 no pudo recorrerlos.
+El agente registró candidate-failed y retiró la pila; no creó state.json.
+El root automático y su timer permanecieron intactos.
+
+Corrección: prepare normaliza únicamente los directorios del código copiado a
+755, omite symlinks y conserva release/root 700 y los archivos generados con
+secretos 600. La privacidad del host depende del root padre 700; dentro de las
+imágenes el código puede ser recorrido por el usuario no privilegiado.
+Regresión POSIX añadida con fuente 700, comprobación de todos los directorios,
+contenido de módulo y permisos privados. Pruebas Windows: 54 total, 52 pasan y
+2 omitidas POSIX. La repetición Linux/Docker real queda pendiente hasta ejecutarse;
+esta corrección no se da por validada solo por esas pruebas Windows.
+
+Evidencia local saneada: materiales/07-evidencias/JUP-052-full-validation-20261010/
+en el workspace del autor (diagnose.log, scripts de reproducción y logs de pruebas).
+El ensayo usa datos sintéticos, nueve servicios mock y puertos loopback propios;
+no activa el perfil AI ni proveedores de pago. Reboot no incluido en esta ventana.
