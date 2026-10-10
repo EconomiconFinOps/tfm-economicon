@@ -77,3 +77,52 @@ y no se corrige aquí.
   La excepción de plazo que cerró la PR #93 no se extiende a esta rama.
 - **ADR:** no aplica; no se añade ninguna dependencia ni se cambia la arquitectura (ver
   `design.md`, decisión 8).
+
+## Human Approval
+
+- Change: jup-054-final-candidate-coverage
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-10
+- Carril: standard
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Scope adjustment approved: es una segunda pasada sobre una tarjeta ya entregada. El alcance se
+  limita a lo que la tarjeta deja pendiente tras la PR #93: comprobar la cobertura del candidato
+  final y cubrir los huecos. No se rehace ni se duplica nada de la primera pasada. La cobertura se
+  mide como diagnóstico, sin umbral. Provisionar servicios reales en CI (`RF-096-004`) queda fuera
+  salvo que la auditoría lo señale como hueco crítico y se acuerde ampliarlo.
+- Decisions approved: se aprueban las nueve decisiones del `design.md`. (1) **La herramienta de
+  cobertura no entra en el repositorio**: se instala en el contenedor de medición con versión fijada
+  y anotada. (2) **Medición en contenedores Linux desechables equivalentes a CI** (`python:3.12` y
+  `node:22`), con el árbol de `git archive <SHA>`, sin volúmenes compartidos ni puertos publicados.
+  (3) **El candidato es un SHA de `develop`**, de partida `e1c2a8f`; si `develop` recibe cambios de
+  aplicación antes de entregar, se repite lo afectado o se declara qué queda sin auditar. (4) **La
+  cifra solo vale si la ejecución instrumentada reproduce la de CI** para ese SHA; no se relajan
+  plazos ni guards. (5) **Criterio de hueco crítico sin porcentaje**, con tres destinos: cubierto,
+  aceptado con motivo o diferido como `RF-054-NNN`; el código que solo ejercitan las suites opt-in
+  se lista aparte. (6) **Parada de aprobación entre auditar y escribir pruebas.** (7) **Cada prueba
+  nueva se comprueba rompiendo el producto a mano y revirtiendo**; si una prueba falla contra el
+  candidato sin modificar, se para y se registra como hallazgo. (8) **No aplica ADR.** (9) **La
+  evidencia se añade en una sección nueva**, sin reescribir la de la primera pasada.
+- Constraints: ningún cambio en `apps/*/app/**`, en archivos de `apps/frontend/src/**` que no sean
+  `*.test.*` nuevos, ni en `packages/**`, `tools/**`, `.github/**`, `docker-compose.yml`,
+  `package.json`, `pnpm-lock.yaml` o los `requirements*.txt`. No se renombra ningún check
+  obligatorio ni se toca la protección de ramas. No se versionan los informes de cobertura ni los
+  cambios usados para comprobar las pruebas. No se presentan como aprobadas pruebas omitidas ni
+  resultados históricos. No se cita configuración local de herramientas de asistencia en documentos
+  versionados. No se da por validado nada que no se haya ejecutado.
+- Main risks: (a) la instrumentación ralentiza las pruebas y puede disparar las de plazos de
+  `RF-103-005`; se repite el servicio aislado antes de concluir y, si no cuadra, la cifra se marca
+  como no válida. (b) Añadir el proveedor de cobertura en la copia del frontend puede alterar el
+  árbol de dependencias; se anota la versión de Vitest antes y después. (c) Las líneas que solo se
+  ejecutan en subprocesos aparecen como no cubiertas; se contrastan a mano. (d) La auditoría puede
+  sacar más huecos de los que caben; lo limita el criterio de la decisión 5 y la parada del grupo 4.
+  (e) `develop` puede avanzar antes de entregar; aplica la regla de la decisión 3.
+- Required changes before execution: none
+- Notes: nada de lo descrito en `design.md` se ha ejecutado todavía; se leyó en el repositorio sobre
+  `e1c2a8f`. Son 34 tareas en 7 grupos; el grupo 5 se desglosa por hueco al aprobar la lista del
+  grupo 4, así que el número final de tareas cambiará. Esta pasada sigue el flujo ordinario de
+  revisión y validación; la excepción de plazo de la PR #93 no se extiende a esta rama. Quedan dos
+  preguntas abiertas que no cambian las tareas: quién revisa y quién valida, y qué SHA se promoverá
+  a `main`.
