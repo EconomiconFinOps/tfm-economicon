@@ -41,7 +41,7 @@ Logs de trabajo locales fuera de Git en
 `governance.log`, `python-versions.txt`. No guardar credenciales en esta continuidad.
 Tambien `backend-real.log` (17 pass) y `backend-baseline.log` (fallo Windows original).
 
-## Pendientes
+## Entrega inicial y excepcion posterior
 
 Entrega publicada: [PR #108 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/108),
 implementacion `bfffbea4be94ad9e8a01a687fc3cd28e58fdd606`. JUP policy PASS en la
@@ -56,8 +56,16 @@ publicado por el puente oficial y leido de vuelta con texto identico. No cambio
 de lista/roles/criterios. Contenedor sintetico y tunel propios retirados al acabar;
 ningun volumen JUP-021 utilizado o eliminado.
 
-Entrega tecnica propia para Lucia; no se atribuye liderazgo, pairing o aceptacion
-por abrir una contribucion asistida. CI y dictamenes humanos deben comprobarse
-sobre el head publicado; validacion independiente no puede inferirse de estos tests.
-Integracion en develop y evidencia enlazada en Trello antes de Hecho. No merge,
-movimiento de tarjeta ni mensajes Discord realizados.
+El estado anterior de espera de adopcion por Lucia queda superado por la
+instruccion explicita del usuario de completar la entrega fuera de plazo del MVP.
+La [excepcion de atribucion](../contributions/JUP-102-mvp-exception.md) registra
+liderazgo operativo, implementacion, pruebas y documentacion bajo Alejandro
+con asistencia de Codex; pairing y reviews humanas no realizados se dispensan,
+sin acreditarlos como hechos. Se conservan las asignaciones originales como historia.
+
+Auditoria de otro agente sobre d1d2c51 sin defectos bloqueantes: 26 passed/6 skipped,
+sin nueva ejecucion PostgreSQL. Base c2995a1 y feedback de PR releidos: sin reviews,
+comentarios ni inline pendientes. Ruleset21475971 conserva bypass admin solo por PR;
+no se modifican politicas ni se publica una review humana ficticia. Cierre mediante
+PR existente, SHA exacto y CI tecnica, con verificacion posterior de merge/Trello.
+La PR y Trello conservan los recibos finales; no hay mensajes Discord.

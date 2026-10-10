@@ -3,9 +3,11 @@
 Trello: https://trello.com/c/4OJ1OK53
 Verification date: 2026-10-10. Base: `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
 Technical implementation evidence; not a `Validacion JUP-102` human review.
-Delivery: [PR #108 (draft)](https://github.com/EconomiconFinOps/tfm-economicon/pull/108),
-implementation commit `bfffbea4be94ad9e8a01a687fc3cd28e58fdd606`. The draft preserves
-the assigned leader's handoff and the need for independent human decisions.
+Delivery: [PR #108](https://github.com/EconomiconFinOps/tfm-economicon/pull/108),
+implementation commit `bfffbea4be94ad9e8a01a687fc3cd28e58fdd606`.
+On 2026-10-10 the user authorized completion under the
+[late MVP delivery attribution exception](../contributions/JUP-102-mvp-exception.md).
+This supersedes the previous draft handoff; no missing human review is claimed performed.
 
 ## Reproduction before the correction
 
@@ -36,7 +38,7 @@ resolution, and a missing explicit migration argument. Three unchanged cases pas
 | Existing volume accepts matching settings and rejects mismatches without loss | Snapshot comparison includes column OIDs/types/dimensions, indexes, ledger timestamps and every document/chunk/vector. Repeated initialization is identical; mismatches 16→8, 16→32 and legacy 8→16 raise actionable StartupError with unchanged snapshots. |
 | Repeatable migrations, write/retrieval and tenant isolation | Real processor writer, MockEmbeddingProvider and actual backend PgVectorQueryStore exercise two synthetic tenants, exact cosine ranking, foreign nearest match exclusion and an empty tenant. Existing replacement/collision tests are run separately. |
 | Update runbook and resolve RF-021-001 after verification | Runbook describes effective Settings and removes duplicate export for corrected code; finding records technical correction separately from human acceptance. |
-| Archived OpenSpec, green CI, separate reviews, merge and evidence before Done | Technical specification is archived in this branch. CI, human review by Victor, separate validation assigned to Alejandro, pairing evidence from Paris and integration by Lucia are recorded as pending until actually observed. No claim of Done or approval. |
+| Archived OpenSpec, green CI, separate reviews, merge and evidence before Done | OpenSpec archived and technical CI passes. The user's explicit late-MVP exception dispenses the missing independent human reviews/pairing, with real attribution documented. Merge and Trello closure are verified separately through the PR; absence of reviews remains visible. |
 
 ## Reproduction commands
 
@@ -74,8 +76,8 @@ Results obtained on the corrected source:
 - GitHub Linux CI on `037295524f3708ca04cd0e6fbb67e6c77c9b1b85`: **7/7 SUCCESS**,
   [run 38036880694](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38036880694).
   Backend, processor, Azure API, frontend build/types, OpenSpec and JUP policy pass.
-  This later evidence update changes documentation only. JUP reviews remains
-  blocked pending the two independent human decisions.
+  This later evidence update changes documentation only. Missing JUP reviews
+  remain visible and are covered by the documented, user-authorized exception.
 
 - Processor complete suite with both PostgreSQL opt-ins: **467 passed, 53 skipped**.
   This includes all eight new real scenarios and the existing four vector isolation tests.
@@ -105,5 +107,6 @@ Results obtained on the corrected source:
 - Existing 001-only databases retain the historical application of pending 002.
   This correction adds no migration and does not resize already created columns.
 - The contribution is prepared on an isolated branch under the implementation
-  dispatch. Trello role assignments are preserved, not proof of participation.
-  Automated or agent checks are not independent human reviews.
+  dispatch. Original Trello role assignments are preserved as history alongside
+  actual attribution under the late-MVP exception. Automated or agent checks are
+  not independent human reviews.
