@@ -22,3 +22,10 @@
 - [x] 3.2 JUP-078 ejecutar `openspec:validate`, `jup:check` y tests aplicables del monorepo
 - [x] 3.3 JUP-078 registrar rama, commit y evidencia tecnica en Trello
 - [x] 3.4 JUP-078 preparar y publicar PR en el repositorio confirmado hacia `develop`
+
+## 4. Cierre operativo de claves (2026-10-10)
+
+- [x] 4.1 JUP-078 emitir claves distintas de processor y backend con presupuestos de 9 y 1 USD por 30 dias, caducidad, alcance y limites verificables
+- [x] 4.2 JUP-078 guardar secretos solo en DockerServer y entregar archivos privados por servicio
+- [x] 4.3 JUP-078 verificar revocacion, expiracion, presupuesto y persistencia contra gateway real con upstream simulado
+- [x] 4.4 JUP-078 registrar revision y validacion por subagentes autorizados y evidencia para cierre de Trello
