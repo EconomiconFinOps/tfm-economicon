@@ -19,8 +19,24 @@ frontend a la guía de estilo e imagen de marca». Chat origen delegado:
   paleta clara, fuentes locales, responsive; API/rutas/cálculos intactos.
 - JUP-056/JUP-058/JUP-089 tienen alcance funcional separado. Pendiente comprobar
   reconciliación sobre sus futuros heads; no se editan sus copias.
-- Evidencia: [informe](../evidence/JUP-112-validation.md). Ejecución en curso.
+- Entrega: [PR draft #102](https://github.com/EconomiconFinOps/tfm-economicon/pull/102).
+  Primer commit `105bcb0`; correcciones y evidencia final entregadas en la misma rama.
+- Evidencia: [informe](../evidence/JUP-112-validation.md), capturas portables y
+  resúmenes JSON en `docs/evidence/JUP-112/`. Matriz visual 50 combinaciones a
+  320/390/768/1440 px, sin overflow global, errores JS o fallos de fuentes.
+  Contraste y evaluación visual favorable, API simulada. Preferencias de color
+  iguales y máximo violeta observado 3,7647 %.
+- Typecheck/lint/build frontend, OpenSpec 56/56, gobernanza 82/82 y trazabilidad
+  pasan. CI inicial detectó cuatro expectativas antiguas de estilo; corregidas.
+  Pruebas específicas 64/64 (guardia) y 61/61 (salud) pasan. Suite final completa:
+  **55 archivos / 667 pruebas PASS**, timeout original, 241,78 s.
+  Repetir desde `apps/frontend`: `node node_modules/vitest/vitest.mjs run --maxWorkers=1`.
+- Limitaciones conservadas: sin backend real; Turbo toma pnpm11 fallback y falla
+  en el entorno local. Se usan comandos Corepack9/directos para el frontend.
 
-Próximos pasos: terminar código y pruebas, abrir candidato revisable contra
-develop y enlazar evidencia a Trello. Pairing, revisión, validación independiente,
-aceptación de marca y merge quedan pendientes de personas responsables.
+Próximos pasos: confirmar CI y transferencia al responsable. Paris debe
+reutilizar la contribución en PR propia o el equipo regularizar explícitamente
+los roles: Alejandro conserva revisión, pero `Iber1to` publica este candidato y
+no puede autoaprobarlo. Pairing, revisión, validación independiente, aceptación
+de marca y merge quedan pendientes de personas responsables. No se modifica
+estado, prioridad ni atribuciones de la tarjeta, ni se envían mensajes Discord.

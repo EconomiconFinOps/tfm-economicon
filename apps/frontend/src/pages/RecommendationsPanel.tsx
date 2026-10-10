@@ -76,9 +76,9 @@ export function RecommendationsPanel() {
       <div className="space-y-4">
         {recommendations.map((rec) => (
           <div key={rec.id} className="bg-card rounded-lg border border-border shadow-sm overflow-hidden hover:border-highlight transition-all">
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                <div className="flex min-w-0 items-start gap-4">
+                <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:gap-4">
                   <div className={`p-3 rounded-lg ${
                     rec.prioridad === 'Alta' ? 'bg-danger-tint/20 border border-danger-tint/30' : 'bg-info-tint/20 border border-info-tint/30'
                   }`}>
@@ -88,7 +88,7 @@ export function RecommendationsPanel() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-3 mb-2">
-                      <h2 className="font-semibold text-brand">{rec.titulo}</h2>
+                      <h2 className="text-xl font-semibold text-brand sm:text-2xl">{rec.titulo}</h2>
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         rec.prioridad === 'Alta' ? 'bg-danger-tint/20 text-danger-foreground border border-danger-tint/30' :
                         'bg-info-tint/20 text-info-foreground border border-info-tint/30'

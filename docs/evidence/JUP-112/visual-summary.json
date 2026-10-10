@@ -1,0 +1,381 @@
+{
+  "card": "JUP-112",
+  "consolidatedAt": "2026-10-10T07:51:13.110Z",
+  "syntheticApi": true,
+  "totalExecutions": 57,
+  "uniqueLatestCombinations": 50,
+  "sourceReports": [
+    "main/visual-report.json",
+    "final-responsive/visual-report.json",
+    "final-320/visual-report.json"
+  ],
+  "completed": 50,
+  "scenarioFailures": [],
+  "documentOverflow": [],
+  "pageErrors": [],
+  "unmockedApi": [],
+  "externalRequests": [],
+  "unexpectedConsoleErrors": [],
+  "fontFailures": [],
+  "contrastCandidates": [],
+  "viewportWidths": [
+    320,
+    390,
+    768,
+    1440
+  ],
+  "keyboard": [
+    {
+      "name": "keyboard-nav-1440",
+      "navigation": "Enter navigated to /ingest",
+      "inspectedTabStops": 18
+    },
+    {
+      "name": "keyboard-nav-390",
+      "navigation": "Enter navigated to /ingest",
+      "inspectedTabStops": 18
+    },
+    {
+      "name": "skiplink-focus-768",
+      "focus": {
+        "tag": "A",
+        "text": "Saltar al contenido",
+        "href": "#main-content",
+        "outline": "rgb(91, 79, 232) solid 3px",
+        "boxShadow": "none",
+        "left": 16,
+        "top": 12,
+        "right": 188.859375,
+        "bottom": 61.59375
+      }
+    },
+    {
+      "name": "skiplink-focus-320",
+      "focus": {
+        "tag": "A",
+        "text": "Saltar al contenido",
+        "href": "#main-content",
+        "outline": "rgb(91, 79, 232) solid 3px",
+        "boxShadow": "none",
+        "left": 16,
+        "top": 12,
+        "right": 188.859375,
+        "bottom": 61.59375
+      }
+    }
+  ],
+  "supersession": [
+    "Initial failed smoke had Vite500 from font imports and is superseded by all later runs.",
+    "main/recommendations-1440 and main/recommendations-390 precede the chart label spacing fix and are superseded by final-responsive.",
+    "final-responsive 320px authenticated pages exposed 15px body overflow from min-width320 plus classic scrollbar; final-320 rechecks supersede those four combinations.",
+    "final-320/recommendations-390 also supersedes the preceding 390px capture after improving mobile card padding, icon placement and title sizing.",
+    "main browser shutdown stalled after all38 contexts completed; source JSON persisted and shutdown was interrupted. Later harness bounds browser shutdown."
+  ],
+  "limitations": [
+    "All API responses are synthetic. No backend, provider availability, billing accuracy, human acceptance or complete accessibility conformance is claimed.",
+    "Automatic contrast checks exclude gradients, opacity, disabled controls and SVG. The screenshot review covers chart clipping separately.",
+    "Horizontal scrolling within nav and tables is intentional; document-level overflow was checked independently."
+  ],
+  "latestEvidence": [
+    {
+      "name": "login-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/login-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "executive-cost-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/executive-cost-1440.png",
+      "fullScreenshot": "main/executive-cost-1440-full.png"
+    },
+    {
+      "name": "operational-cost-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/operational-cost-1440.png",
+      "fullScreenshot": "main/operational-cost-1440-full.png"
+    },
+    {
+      "name": "executive-cuts-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/executive-cuts-1440.png",
+      "fullScreenshot": "main/executive-cuts-1440-full.png"
+    },
+    {
+      "name": "anomalies-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/anomalies-1440.png",
+      "fullScreenshot": "main/anomalies-1440-full.png"
+    },
+    {
+      "name": "recommendations-1440",
+      "source": "final-responsive/visual-report.json",
+      "screenshot": "final-responsive/recommendations-1440.png",
+      "fullScreenshot": "final-responsive/recommendations-1440-full.png"
+    },
+    {
+      "name": "overview-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/overview-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "ingest-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/ingest-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "assistant-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/assistant-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "system-health-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/system-health-1440.png",
+      "fullScreenshot": "main/system-health-1440-full.png"
+    },
+    {
+      "name": "login-error-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/login-error-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "cost-loading-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/cost-loading-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "cost-error-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/cost-error-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "cost-empty-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/cost-empty-1440.png",
+      "fullScreenshot": "main/cost-empty-1440-full.png"
+    },
+    {
+      "name": "assistant-empty-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/assistant-empty-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "health-error-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/health-error-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "health-empty-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/health-empty-1440.png",
+      "fullScreenshot": "main/health-empty-1440-full.png"
+    },
+    {
+      "name": "keyboard-nav-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/keyboard-nav-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "chart-tooltip-1440",
+      "source": "main/visual-report.json",
+      "screenshot": "main/chart-tooltip-1440.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "login-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/login-390.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "executive-cost-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/executive-cost-390.png",
+      "fullScreenshot": "main/executive-cost-390-full.png"
+    },
+    {
+      "name": "operational-cost-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/operational-cost-390.png",
+      "fullScreenshot": "main/operational-cost-390-full.png"
+    },
+    {
+      "name": "executive-cuts-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/executive-cuts-390.png",
+      "fullScreenshot": "main/executive-cuts-390-full.png"
+    },
+    {
+      "name": "anomalies-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/anomalies-390.png",
+      "fullScreenshot": "main/anomalies-390-full.png"
+    },
+    {
+      "name": "recommendations-390",
+      "source": "final-320/visual-report.json",
+      "screenshot": "final-320/recommendations-390.png",
+      "fullScreenshot": "final-320/recommendations-390-full.png"
+    },
+    {
+      "name": "overview-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/overview-390.png",
+      "fullScreenshot": "main/overview-390-full.png"
+    },
+    {
+      "name": "ingest-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/ingest-390.png",
+      "fullScreenshot": "main/ingest-390-full.png"
+    },
+    {
+      "name": "assistant-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/assistant-390.png",
+      "fullScreenshot": "main/assistant-390-full.png"
+    },
+    {
+      "name": "system-health-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/system-health-390.png",
+      "fullScreenshot": "main/system-health-390-full.png"
+    },
+    {
+      "name": "login-error-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/login-error-390.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "cost-loading-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/cost-loading-390.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "cost-error-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/cost-error-390.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "cost-empty-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/cost-empty-390.png",
+      "fullScreenshot": "main/cost-empty-390-full.png"
+    },
+    {
+      "name": "assistant-empty-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/assistant-empty-390.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "health-error-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/health-error-390.png",
+      "fullScreenshot": "main/health-error-390-full.png"
+    },
+    {
+      "name": "health-empty-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/health-empty-390.png",
+      "fullScreenshot": "main/health-empty-390-full.png"
+    },
+    {
+      "name": "keyboard-nav-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/keyboard-nav-390.png",
+      "fullScreenshot": "main/keyboard-nav-390-full.png"
+    },
+    {
+      "name": "chart-tooltip-390",
+      "source": "main/visual-report.json",
+      "screenshot": "main/chart-tooltip-390.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "login-768",
+      "source": "final-responsive/visual-report.json",
+      "screenshot": "final-responsive/login-768.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "executive-cost-768",
+      "source": "final-responsive/visual-report.json",
+      "screenshot": "final-responsive/executive-cost-768.png",
+      "fullScreenshot": "final-responsive/executive-cost-768-full.png"
+    },
+    {
+      "name": "recommendations-768",
+      "source": "final-responsive/visual-report.json",
+      "screenshot": "final-responsive/recommendations-768.png",
+      "fullScreenshot": "final-responsive/recommendations-768-full.png"
+    },
+    {
+      "name": "system-health-768",
+      "source": "final-responsive/visual-report.json",
+      "screenshot": "final-responsive/system-health-768.png",
+      "fullScreenshot": "final-responsive/system-health-768-full.png"
+    },
+    {
+      "name": "login-hover-768",
+      "source": "final-responsive/visual-report.json",
+      "screenshot": "final-responsive/login-hover-768.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "skiplink-focus-768",
+      "source": "final-responsive/visual-report.json",
+      "screenshot": "final-responsive/skiplink-focus-768.png",
+      "fullScreenshot": "final-responsive/skiplink-focus-768-full.png"
+    },
+    {
+      "name": "login-320",
+      "source": "final-responsive/visual-report.json",
+      "screenshot": "final-responsive/login-320.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "executive-cost-320",
+      "source": "final-320/visual-report.json",
+      "screenshot": "final-320/executive-cost-320.png",
+      "fullScreenshot": "final-320/executive-cost-320-full.png"
+    },
+    {
+      "name": "recommendations-320",
+      "source": "final-320/visual-report.json",
+      "screenshot": "final-320/recommendations-320.png",
+      "fullScreenshot": "final-320/recommendations-320-full.png"
+    },
+    {
+      "name": "system-health-320",
+      "source": "final-320/visual-report.json",
+      "screenshot": "final-320/system-health-320.png",
+      "fullScreenshot": "final-320/system-health-320-full.png"
+    },
+    {
+      "name": "login-hover-320",
+      "source": "final-responsive/visual-report.json",
+      "screenshot": "final-responsive/login-hover-320.png",
+      "fullScreenshot": null
+    },
+    {
+      "name": "skiplink-focus-320",
+      "source": "final-320/visual-report.json",
+      "screenshot": "final-320/skiplink-focus-320.png",
+      "fullScreenshot": "final-320/skiplink-focus-320-full.png"
+    }
+  ]
+}

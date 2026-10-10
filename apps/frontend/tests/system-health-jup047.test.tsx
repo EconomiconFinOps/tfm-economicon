@@ -280,7 +280,7 @@ describe("JUP-047 system health public flow", () => {
     expect(screen.getByRole("heading", { level: 1, name: /salud del sistema/i })).toBeVisible();
     expect(await screen.findByText(/simulad/i)).toBeVisible();
     expect(screen.getAllByText(/OpenRouter/i).length).toBeGreaterThan(0);
-    const cards = container.querySelectorAll("section.from-card.border-border, article.from-card.border-border");
+    const cards = container.querySelectorAll("section.bg-card.border-border, article.bg-card.border-border");
     expect(cards.length).toBeGreaterThan(1);
     cards.forEach((card) => expect(card.className).toContain("rounded-lg"));
     // jsdom proves semantic/style integration only, not pixels or overflow.

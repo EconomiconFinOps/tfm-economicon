@@ -327,7 +327,7 @@ describe("guardián de colores - bordes del detector (en memoria)", () => {
     expect(isAllowed("src/components/ui/dialog.tsx", "bg-black/60")).toBe(
       false,
     );
-    expect(isAllowed("src/components/ExportButton.tsx", "#DDD")).toBe(true);
+    expect(isAllowed("src/components/ExportButton.tsx", "#d9D6e9")).toBe(true);
     expect(isAllowed("src/components/ExportButton.tsx", "#fff")).toBe(false);
   });
 });

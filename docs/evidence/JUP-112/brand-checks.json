@@ -1,0 +1,200 @@
+{
+  "card": "JUP-112",
+  "verifiedAt": "2026-10-10T07:53:29.755Z",
+  "violetSurface": {
+    "target": "#5B4FE8",
+    "maximumPercent": 10,
+    "method": "Read-only Pillow RGB histogram. Exact target plus conservative near group: maximum per-channel distance40 and blue >= max(red,green)+70. Denominator is all pixels in each screenshot, including scrollbar. No image modified.",
+    "samples": [
+      {
+        "screenshot": "main/login-390.png",
+        "width": 390,
+        "height": 900,
+        "totalPixels": 351000,
+        "exactVioletPixels": 13152,
+        "exactPercent": 3.747,
+        "nearVioletPixels": 13214,
+        "nearPercent": 3.7647,
+        "belowTenPercent": true
+      },
+      {
+        "screenshot": "final-responsive/login-320.png",
+        "width": 320,
+        "height": 900,
+        "totalPixels": 288000,
+        "exactVioletPixels": 10072,
+        "exactPercent": 3.4972,
+        "nearVioletPixels": 10139,
+        "nearPercent": 3.5205,
+        "belowTenPercent": true
+      },
+      {
+        "screenshot": "main/executive-cost-1440.png",
+        "width": 1440,
+        "height": 900,
+        "totalPixels": 1296000,
+        "exactVioletPixels": 5168,
+        "exactPercent": 0.3988,
+        "nearVioletPixels": 5343,
+        "nearPercent": 0.4123,
+        "belowTenPercent": true
+      },
+      {
+        "screenshot": "final-320/executive-cost-320.png",
+        "width": 320,
+        "height": 900,
+        "totalPixels": 288000,
+        "exactVioletPixels": 5161,
+        "exactPercent": 1.792,
+        "nearVioletPixels": 5291,
+        "nearPercent": 1.8372,
+        "belowTenPercent": true
+      },
+      {
+        "screenshot": "final-responsive/recommendations-1440.png",
+        "width": 1440,
+        "height": 900,
+        "totalPixels": 1296000,
+        "exactVioletPixels": 10924,
+        "exactPercent": 0.8429,
+        "nearVioletPixels": 11229,
+        "nearPercent": 0.8664,
+        "belowTenPercent": true
+      },
+      {
+        "screenshot": "final-320/recommendations-320-full.png",
+        "width": 320,
+        "height": 4586,
+        "totalPixels": 1467520,
+        "exactVioletPixels": 28252,
+        "exactPercent": 1.9252,
+        "nearVioletPixels": 29082,
+        "nearPercent": 1.9817,
+        "belowTenPercent": true
+      },
+      {
+        "screenshot": "main/system-health-1440.png",
+        "width": 1440,
+        "height": 900,
+        "totalPixels": 1296000,
+        "exactVioletPixels": 3753,
+        "exactPercent": 0.2896,
+        "nearVioletPixels": 3858,
+        "nearPercent": 0.2977,
+        "belowTenPercent": true
+      },
+      {
+        "screenshot": "final-320/system-health-320.png",
+        "width": 320,
+        "height": 900,
+        "totalPixels": 288000,
+        "exactVioletPixels": 3745,
+        "exactPercent": 1.3003,
+        "nearVioletPixels": 3857,
+        "nearPercent": 1.3392,
+        "belowTenPercent": true
+      },
+      {
+        "screenshot": "final-responsive/login-hover-320.png",
+        "width": 320,
+        "height": 900,
+        "totalPixels": 288000,
+        "exactVioletPixels": 10072,
+        "exactPercent": 3.4972,
+        "nearVioletPixels": 10139,
+        "nearPercent": 3.5205,
+        "belowTenPercent": true
+      }
+    ],
+    "allSampledBelowTenPercent": true,
+    "maximumObservedNearPercent": 3.7647,
+    "limitation": "Pixel coverage of9 representative screenshots; does not establish the fraction of every possible state, and near group is color-based rather than semantic CTA classification."
+  },
+  "colorScheme": {
+    "route": "/login",
+    "viewport": {
+      "width": 390,
+      "height": 900
+    },
+    "states": [
+      {
+        "requested": "light",
+        "prefersDark": false,
+        "body": {
+          "color": "rgb(20, 18, 31)",
+          "backgroundColor": "rgb(250, 250, 252)",
+          "fontFamily": "\"Inter Variable\", \"Segoe UI\", sans-serif"
+        },
+        "heading": {
+          "color": "rgb(43, 35, 89)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "\"Space Grotesk Variable\", \"Segoe UI\", sans-serif"
+        },
+        "input": {
+          "color": "rgb(20, 18, 31)",
+          "backgroundColor": "rgb(250, 250, 252)",
+          "fontFamily": "\"Inter Variable\", \"Segoe UI\", sans-serif"
+        },
+        "button": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(91, 79, 232)",
+          "fontFamily": "\"Inter Variable\", \"Segoe UI\", sans-serif"
+        },
+        "tokens": {
+          "background": "#FAFAFC",
+          "foreground": "#14121F",
+          "primary": "#5B4FE8",
+          "primary-foreground": "#FFFFFF",
+          "brand": "#2B2359",
+          "card": "#FFFFFF"
+        },
+        "loadedFonts": [
+          "Inter Variable",
+          "Space Grotesk Variable"
+        ]
+      },
+      {
+        "requested": "dark",
+        "prefersDark": true,
+        "body": {
+          "color": "rgb(20, 18, 31)",
+          "backgroundColor": "rgb(250, 250, 252)",
+          "fontFamily": "\"Inter Variable\", \"Segoe UI\", sans-serif"
+        },
+        "heading": {
+          "color": "rgb(43, 35, 89)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "\"Space Grotesk Variable\", \"Segoe UI\", sans-serif"
+        },
+        "input": {
+          "color": "rgb(20, 18, 31)",
+          "backgroundColor": "rgb(250, 250, 252)",
+          "fontFamily": "\"Inter Variable\", \"Segoe UI\", sans-serif"
+        },
+        "button": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(91, 79, 232)",
+          "fontFamily": "\"Inter Variable\", \"Segoe UI\", sans-serif"
+        },
+        "tokens": {
+          "background": "#FAFAFC",
+          "foreground": "#14121F",
+          "primary": "#5B4FE8",
+          "primary-foreground": "#FFFFFF",
+          "brand": "#2B2359",
+          "card": "#FFFFFF"
+        },
+        "loadedFonts": [
+          "Inter Variable",
+          "Space Grotesk Variable"
+        ]
+      }
+    ],
+    "externalRequests": [],
+    "pageErrors": [],
+    "darkPreferenceScreenshot": "login-dark-preference-390.png",
+    "preferenceApplied": true,
+    "identicalComputedColorsAndFonts": true,
+    "requiredFontsLoaded": true
+  }
+}
