@@ -2,7 +2,7 @@
 
 Verificación: 10/10/2026, Europe/Paris. [Tarjeta](https://trello.com/c/H0woDubz).
 Base `origin/develop`: `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
-Contribución técnica en `test/JUP-071-robustness`; no dictamen humano independiente.
+Contribución técnica en `test/JUP-071-robustness`, [PR #90 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/90), commit técnico `d98d18d`; no dictamen humano independiente.
 
 ## Resultado y alcance
 
@@ -32,7 +32,7 @@ datos de aplicación. Los dos perfiles no son tres repeticiones equivalentes.
 | Resultado funcional verificable | Runner ejecutable, 29 casos emparejados, informes anteriores y [protocolo](../validation/JUP-071-robustness.md) | Campaña generativa real |
 | Pruebas necesarias añadidas y en verde | `scripts/tests/test_assistant_robustness.py`, validación de suite y checks indicados abajo | CI y validación independiente al publicar |
 | Documentación y decisiones actualizadas | Protocolo, OpenSpec activo, este informe y continuidad | Cambios de procedencia cuando JUP-035 esté integrado |
-| Pull request revisado y vinculado | Contribución propia preparada para Paris, liderazgo registrado | Revisión humana y PR de integración, sin suplantar roles |
+| Pull request revisado y vinculado | PR #90 draft publicada como contribución para Paris, liderazgo registrado | Revisión humana e integración, sin suplantar roles |
 | Validación funcional y evidencia enlazadas | Ejecuciones locales e informes sanitizados reproducibles | Lucía valida criterios; no se le atribuye ejecución alguna |
 
 ## Dependencia JUP-035 y roles
@@ -91,6 +91,15 @@ Los logs globales contienen un resultado de Azure API reproducido desde caché d
 otro worktree; no se contabiliza como ejecución propia. Logs específicos y
 globales conservados junto a los crudos privados. No se modificó Turbo/pnpm para
 resolver un problema ajeno a JUP-071.
+
+CI remota observada sobre `d98d18d37221e90065d5328beccec4c78bc73665`: SUCCESS en
+OpenSpec (incluye las pruebas nuevas), JUP policy, Python tests de backend,
+processor y Azure API, frontend build y frontend type check. `JUP reviews` falla
+por falta de los dictámenes humanos; el draft sigue abierto, sin merge.
+Esto acredita la ejecución de CI en su entorno y no convierte el intento local
+de `pnpm test/build` en exitoso. La nota Trello `6ac9ebf65589a5a1741240c1`,
+publicada por la integración oficial el 10/10/2026 a las 07:40:38Z, enlaza esta
+entrega sin mover la tarjeta ni completar criterios humanos.
 
 ## Límites y siguiente paso concreto
 
