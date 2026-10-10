@@ -1,409 +1,398 @@
-# Arquitectura del proyecto
+# Arquitectura técnica de Economicon
 
-> Nota documental JUP-061, 01/10/2026: el [registro de decisiones](adr/README.md)
-> distingue estado, integración y evidencia vigente. Las descripciones anteriores
-> a JUP-026 sobre billing fijo y a JUP-086 sobre aislamiento pendiente, conservadas
-> debajo, son históricas: PR #52 y #47 ya están integradas. Para esos contratos,
-> consultar [costes](evidence/JUP-026-validation.md) y
-> [aislamiento](evidence/JUP-086-validation.md). La consolidación integral de los
-> diagramas y el despliegue final corresponde a JUP-060.
+JUP-060 · [Trello](https://trello.com/c/alMIpBOQ) · Corte de código: **10/10/2026,
+develop c2995a118d419dfe725247bac9c6f219a3f0ea77**. Esta vista sustituye las
+descripciones históricas de billing fijo, aislamiento pendiente y citas pendientes.
+Describe código integrado; las ejecuciones citadas conservan su fecha, host y SHA.
+No certifica que un servidor esté ejecutando ahora esa versión.
 
-## 1. Para que sirve este documento
+## 1. Alcance y lectura
 
-Este documento explica la arquitectura del proyecto de una forma simple, pensando en personas junior o en gente que no ha trabajado antes con sistemas separados en varios servicios.
+Economicon es un asistente FinOps para Azure con interfaz web, API, procesamiento
+asíncrono y recuperación vectorial. El entorno reproducible es una demo con datos
+públicos/sintéticos; no conecta a una cuenta Azure real. El chat actual recupera
+contexto y devuelve una **plantilla determinista**. El processor dispone de un
+cliente LLM, pero no compone todavía el vertical conversacional tools/RAG/LLM.
 
-La idea principal es esta:
+Las flechas continuas describen conexiones implementadas; las punteadas,
+capacidades opcionales o propuestas, rotuladas en cada figura. Configuración,
+ejecución y aceptación son evidencias distintas. El [registro ADR](adr/README.md)
+conserva las decisiones; el [informe JUP-060](evidence/JUP-060-validation.md)
+relaciona criterios y comprobaciones. La memoria del TFM mantiene su
+[fuente compartida y reglas](memoria/README.md): este documento es referencia
+técnica, no una copia de sus apartados.
 
-**este repo no es una sola aplicacion, sino varias piezas que trabajan juntas.**
+## 2. Componentes y fronteras
 
-## 2. Vista general
+```mermaid
+flowchart LR
+  U[Usuario] --> UI[Frontend React]
+  UI -->|HTTP: JWT y X-Tenant-Id| API[Backend FastAPI]
+  API --> DB[(CockroachDB)]
+  API -->|Publicación confirmada| Q[RabbitMQ]
+  Q --> W[Processor: worker y API operativa]
+  W --> DB
+  W -->|Documentos y embeddings| V[(PostgreSQL y pgvector)]
+  API -->|Recuperación por tenant| V
+  CLI[CLI ingesta Azure] --> AZ[API Azure simulada]
+  CLI -->|Normalización y persistencia| DB
+  CSV[CSV público fijado] --> AZ
+  API -.->|Opcional: embedding de pregunta| GW[LiteLLM]
+  W -.->|Opcional: análisis y embeddings| GW
+  GW --> GDB[(PostgreSQL del gateway)]
+  GW -.->|Solo con credenciales y uso autorizado| OR[OpenRouter]
+  P[Prometheus] -->|Scrape /metrics| API
+  P -->|Scrape /metrics| W
+  G[Grafana] --> P
+```
 
-En este proyecto hay varios submodulos importantes:
+| Componente | Responsabilidad y límite | Implementación |
+| --- | --- | --- |
+| Frontend | Sesión, tenant, conversaciones y dashboard ejecutivo conectado a billing. Paneles operativo, recortes, anomalías y recomendaciones conservan fixtures demo. No accede a DB, cola ni claves del proveedor. | [Cliente HTTP](../apps/frontend/src/services/api.ts), [rutas](../apps/frontend/src/routes.tsx) |
+| Backend | Autenticación, autorización, costes/presupuesto, publicación de jobs, conversaciones, recuperación/citas y salud agregada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
+| Processor | Worker documental y pipeline LangGraph; CLI independiente para costes Azure. API de salud/métricas interna. AgentRuntime es módulo Python, no servicio de red. | [Pipeline](../apps/processor/app/graphs/pipeline.py), [CLI Azure](../apps/processor/app/run_azure_cost_ingestion.py), [agentes](../apps/processor/app/agents/service.py) |
+| API Azure simulada | HTTP posicional, bearer local, paginación y errores reproducibles sobre CSV público. No autentica contra Azure ni representa una factura completa. | [README](../apps/azure-cost-api/README.md), [fixture](../fixtures/azure-cost/README.md) |
+| LiteLLM, opcional | Proxy del processor y de embeddings del backend; claves virtuales separadas y DB propia. OpenRouter es el upstream configurado. | [Configuración](../infra/litellm/config.example.yaml), [operación](../infra/litellm/README.md) |
+| Shared config | Configuración reutilizable del workspace; no es servicio de runtime. | [Paquete](../packages/shared-config/README.md) |
 
-- `apps/frontend`
-- `apps/backend`
-- `apps/processor`
-- `apps/azure-cost-api`
-- `packages/shared-config`
+## 3. Flujos implementados y vertical objetivo
 
-Y ademas hay tres servicios de infraestructura:
+### 3.1 Chat síncrono: recuperación y citas
 
-- `CockroachDB`
-- `RabbitMQ`
-- `Postgres + pgvector`
+```mermaid
+sequenceDiagram
+  actor U as Usuario
+  participant UI as Frontend
+  participant B as Backend
+  participant DB as CockroachDB
+  participant E as Proveedor de embeddings
+  participant V as pgvector
+  U->>UI: Pregunta en conversación
+  UI->>B: POST /assistant/conversations/{id}/messages
+  B->>DB: Usuario, membership y propietario de conversación
+  B->>DB: Persistir mensaje de usuario
+  B->>E: Embedding de pregunta (mock o LiteLLM)
+  E-->>B: Vector
+  B->>V: Tenant y provider, top_k y umbral
+  V-->>B: Chunks y documentos de la misma instantánea
+  B->>B: Plantilla determinista y validación de citas
+  B->>DB: Persistir mensaje de asistente
+  B-->>UI: Respuesta y citas estructuradas
+  UI-->>U: Texto y fuentes
+```
 
-Cada pieza tiene una responsabilidad distinta.
+La [ruta](../apps/backend/app/api/routes/assistant.py) no llama al processor ni
+a la cola. [AssistantService](../apps/backend/app/services/assistant.py) muestra
+hasta tres fragmentos o indica falta de contexto. La consulta vectorial filtra
+tenant y proveedor, ordena por distancia coseno e identificador y limita con
+`RETRIEVAL_TOP_K` (1–20, defecto 4). Con LiteLLM el umbral por defecto es 0.6;
+mock no aplica umbral por defecto. Los embeddings reales requieren dimensión
+1536 y el mismo modelo que la ingesta: cambiar de proveedor exige reindexar
+en un almacén compatible, no mezclar vectores.
 
-## 3. Que hace cada submodulo
+[Citas](../apps/backend/app/services/citations.py) valida cada referencia contra
+chunks recuperados y tenant; devuelve documento/chunk, título, sección cuando
+puede localizarse sin ambigüedad y fragmento. Fallos de embedding/retrieval devuelven 503; referencias
+inválidas, 502. Como el mensaje de usuario se guarda antes de recuperar, un
+fallo no implica que la conversación quede sin cambios. Las evidencias de
+[recuperación](evidence/JUP-022-validation.md) y
+[citas](evidence/JUP-025-validation.md) son históricas, no nuevas llamadas de JUP-060.
 
-### `apps/frontend`
+### 3.2 Ingesta documental asíncrona
 
-Es la parte visual del sistema.
+```mermaid
+sequenceDiagram
+  participant UI as Frontend o cliente
+  participant B as Backend
+  participant DB as CockroachDB
+  participant Q as RabbitMQ
+  participant W as Worker
+  participant V as pgvector
+  UI->>B: POST /jobs/ingest con text_content y tenant
+  B->>B: Autenticar, autorizar y reservar publisher
+  B->>DB: Crear job
+  B->>Q: Publicar envelope
+  Q-->>B: Confirmación
+  B-->>UI: 202 y job_id
+  Q->>W: Entregar job
+  W->>DB: Contrastar job persistido, creador y membership
+  W->>W: normalize, chunk, analyze, embed_and_store, summarize
+  W->>V: Documentos, chunks y embeddings
+  W->>DB: Estado y resultado o fallo
+```
 
-Es la aplicacion que ve el usuario en el navegador. Su trabajo principal es:
+`text_content` es obligatorio; `artifact_uri` es metadato, no prueba de descarga
+ni extracción de archivos. No hay endpoint `GET /jobs/{id}` en esta base.
+La figura muestra el camino exitoso; publicación rechazada, no enviada o de
+resultado desconocido tiene tratamiento en
+[jobs](../apps/backend/app/api/routes/jobs.py) y
+[ADR-0009](adr/ADR-0009-rabbitmq-publisher-lifecycle.md). No hay transacción
+distribuida DB/cola ni outbox; no se promete exactly-once ni reintento sin duplicados.
 
-- mostrar informacion
-- pedir datos al backend
-- ensenar el estado general del sistema
+La fase analyze puede usar AgentRuntime/LiteLLM, schema FinOpsResponse y
+guardrails. Su entrada contiene source, status y metadatos saneados; no recibe
+la pregunta del chat, chunks ni consulta de costes. El mock produce
+`insufficient_data`. Esto no acredita una respuesta generativa FinOps
+fundamentada extremo a extremo.
 
-El frontend **no habla directamente** con las bases de datos ni con RabbitMQ.
-Siempre pasa por el backend.
+### 3.3 Datos de coste y lectura de billing
 
-### `apps/backend`
+```mermaid
+flowchart LR
+  F[Fixture CSV público] --> A[API Azure simulada]
+  C[CLI del processor] -->|Query HTTP y paginación| A
+  A --> N[Normalización decimal y dimensiones]
+  N --> R[(Runs completados y registros en CockroachDB)]
+  R --> B[GET /billing/summary]
+  B --> D[Dashboard ejecutivo]
+  R --> E[POST /billing/budget/evaluate]
+```
 
-Es la API principal del sistema.
+La entrada comprobable es `python -m app.run_azure_cost_ingestion --tenant-id …
+--subscription-id …` desde el processor; el job documental no llama a ese
+servicio. La ingesta es idempotente por tenant/suscripción/definición y trata
+errores sin registros de coste parciales. Véanse
+[flujo Azure](architecture/azure-cost-e2e.md) y
+[normalización](architecture/azure-cost-normalization.md).
 
-Su trabajo es recibir peticiones HTTP, validar datos y coordinar operaciones.
+Billing **sí lee** azure_cost_records de ejecuciones completadas: período UTC
+semiabierto, dimensiones permitidas, importes decimales como cadenas y totales
+separados por moneda. Rechaza solapamientos ambiguos con 409 según
+[ADR-0010](adr/ADR-0010-azure-cost-source-overlap.md).
+`savings_identified` es null; no hay ahorro realizado calculado.
+`open_ingestions` cuenta todos los jobs del tenant en esta base, pese a su
+nombre. Evaluar presupuesto no lo persiste ni envía notificaciones.
+[Contrato billing](../openspec/specs/azure-cost-kpis/spec.md) y
+[consulta SQL](../apps/backend/app/db/database.py).
 
-Por ejemplo, el backend:
+### 3.4 Vertical objetivo: contratos pendientes de integración
 
-- responde al frontend
-- gestiona autenticacion basica y el usuario seed local de desarrollo
-- valida el tenant activo usando `X-Tenant-Id`
-- consulta o guarda datos en la base de datos operativa
-- devuelve resumenes de billing
-- crea jobs de procesamiento
-- envia esos jobs a RabbitMQ
-- gestiona conversaciones del asistente
-- consulta `Postgres + pgvector` para buscar contexto en `/assistant`
+```mermaid
+flowchart LR
+  U[Usuario] -.-> UI[UI]
+  UI -.-> B[Backend: identidad y tenant]
+  B -.-> O[Orquestación conversacional pendiente]
+  O -.-> T[Tools deterministas de costes y ownership]
+  O -.-> R[RAG del mismo tenant]
+  T -.-> G[Contexto y respuesta estructurada]
+  R -.-> G
+  G -.-> L[LLM vía LiteLLM]
+  L -.-> V[Validar cifras, citas, permisos y guardrails]
+  V -.-> UI
+```
 
-El backend es como el punto central de entrada para las peticiones normales de la aplicacion.
-
-> **Estado actual de `GET /billing/summary` (verificado en JUP-091).** Este endpoint todavia **no
-> lee** los costes de Azure que el `processor` ingesta y normaliza. Devuelve `monthly_spend` y
-> `savings_identified` con valores fijos de demostracion; solo `open_ingestions` se calcula de
-> verdad, contando filas en `jobs`. Es decir: hoy **ningun endpoint del backend expone las tablas
-> `azure_cost_ingestion_runs` ni `azure_cost_records`**. El dato existe en CockroachDB, pero falta
-> el camino de lectura hasta el frontend. Ver `RF-091-004` en
-> [openspec/findings/backlog.md](../openspec/findings/backlog.md).
-
-### `apps/processor`
-
-Es el servicio que hace trabajo en segundo plano.
-
-No esta pensado para que el usuario hable con el directamente desde la interfaz. Su trabajo es:
-
-- escuchar jobs pendientes en RabbitMQ
-- procesarlos
-- consultar la API Azure Cost Management configurada mediante un cliente HTTP
-  con autenticación local, paginación segura y reintentos acotados
-- normalizar importes, monedas, fechas y dimensiones de Azure, y persistir sus
-  ejecuciones y registros de forma idempotente y aislada por tenant
-- dividir `text_content` en chunks
-- generar embeddings
-- guardar esos embeddings en pgvector
-- ejecutar el pipeline interno
-- guardar resultados o actualizar estados en la base de datos operativa
-
-Ademas, el processor expone una API operativa interna en `:8001/health`.
-En Docker y en local, `app.run_all` levanta dos cosas dentro del mismo servicio:
-
-- el worker que consume RabbitMQ
-- una API FastAPI pequena para healthcheck operativo
-
-Esa API del processor no es una API de producto para el frontend.
-El frontend sigue hablando solo con el backend.
-
-Esto permite que las tareas pesadas o lentas no bloqueen al backend, y tambien permite comprobar si el processor esta vivo.
-
-### Métricas técnicas (Prometheus + Grafana)
-
-El backend y el processor exponen `GET /metrics` en formato Prometheus (verificado en JUP-043): volumen y latencia de requests HTTP, y contadores de dominio (`backend_ingest_jobs_total`, `backend_assistant_queries_total`, `processor_ingest_jobs_failed_total`). Un servicio `prometheus` en `docker-compose.yml` scrapea ambos endpoints, y un servicio `grafana` visualiza un dashboard mínimo (latencia p95, tasa de error, volumen de ingestas y consultas) provisionado como código en `apps/monitoring/`.
-
-Sobre el contador de fallos de ingesta hay una regla de Grafana Unified Alerting provisionada como código (`apps/monitoring/grafana/provisioning/alerting/ingest-failures.yml`, JUP-045), que pasa a `Firing` cuando los fallos superan un umbral en una ventana de tiempo. Sin receptor externo en esta iteración (decisión explícita para no reabrir la política de solo-lectura de Discord de JUP-081): el estado de la alerta solo es visible dentro del dashboard de Grafana.
-
-### `apps/azure-cost-api`
-
-Es un servicio FastAPI independiente que simula el subconjunto de Azure Cost
-Management Query aprobado en JUP-073. Lee exclusivamente el fixture público
-`EA-Cost-Actual.sample.csv`, expone healthcheck en `:8002/health` y responde con
-la estructura posicional `columns`/`rows` utilizada por Azure.
-
-No se conecta a un tenant ni valida credenciales Azure reales. Su función es
-proporcionar un endpoint HTTP reproducible para el cliente de ingesta.
-JUP-075 incorpora autenticación Bearer exclusivamente local, paginación con
-tokens opacos firmados y escenarios deterministas de throttling, errores,
-timeout, páginas vacías y datos inválidos. El contenedor conserva ejecución
-sin privilegios y filesystem de solo lectura. JUP-076 conecta el processor con
-este servicio mediante URL, bearer, timeout, reintentos y límite de páginas
-configurables. JUP-077 completa el recorrido dataset → API simulada → cliente →
-normalización → CockroachDB, con ejecuciones idempotentes, trazabilidad por
-tenant y tratamiento explícito de errores sin registros parciales.
-
-### `packages/shared-config`
-
-Es un paquete compartido del monorepo.
-
-Ahora mismo es pequeno, pero su objetivo es ser un lugar comun para poner:
-
-- configuraciones compartidas
-- constantes
-- convenciones del workspace
-- utilidades comunes del lado JavaScript
-
-No es un servicio que se ejecute solo. Es una pieza de apoyo.
+**Todas las conexiones de esta figura son el objetivo de integración, no un
+recorrido implementado.** Los contratos de
+[tools](architecture/finops-agent-tools.md) y
+[respuesta/guardrails](architecture/finops-response-guardrails.md) establecen
+que la aplicación autoriza y ejecuta: el modelo no elige libremente tenant,
+SQL, credenciales o acciones. No existe un registro ejecutor de tools FinOps
+en el processor de esta base. Recuperación, citas, AgentRuntime y gateway
+son piezas implementadas; conectarlas al chat requiere trabajo y validación
+propios. Ni CI verde ni una prueba del proxy certifican ese vertical.
 
 ## 4. Que papel tienen RabbitMQ, CockroachDB y pgvector
 
-### CockroachDB
-
-Es la base de datos principal del sistema.
-
-Aqui se guarda la informacion operativa importante, por ejemplo:
-
-- users
-- tenants
-- user_tenants
-- jobs
-- conversations
-- messages
-- estados de ejecucion
-- resultados de procesamiento
-- ejecuciones de ingesta Azure y registros normalizados de costes por tenant
-
-Piensa en CockroachDB como la memoria permanente del sistema para la parte transaccional.
-
-Cada tabla tiene un unico servicio dueño que la crea y la modifica en sus migraciones (JUP-096):
-
-- el `backend` es dueño de `users`, `tenants`, `user_tenants`, `jobs`, `conversations` y `messages`
-- el `processor` es dueño de `azure_cost_ingestion_runs` y `azure_cost_records`
-
-Cada servicio lleva su propio registro de versiones (`schema_migrations` y `processor_schema_migrations`). Como el processor lee tablas del backend (`jobs`, y `users` y `user_tenants` para autorizar cada job), en Docker Compose arranca solo cuando el backend esta sano, es decir, cuando ya ha migrado. La decision esta en [ADR-0011](adr/ADR-0011-single-owner-per-table.md) y la regla en la spec [`schema-migration-ownership`](../openspec/specs/schema-migration-ownership/spec.md) y la vigila un test estatico en CI.
-
-### RabbitMQ
-
-Es el sistema de colas.
-
-Sirve para pasar trabajo del backend al processor sin que ambos tengan que hacer todo al mismo tiempo.
-
-Piensa en RabbitMQ como una bandeja de tareas pendientes:
-
-- el backend deja un job de procesamiento en la cola
-- el processor recoge ese trabajo
-- el processor lo procesa cuando le toca
-
-RabbitMQ no guarda datos de negocio ni sustituye a la base de datos.
-Solo transporta jobs de procesamiento entre servicios.
-
-En el entorno local, la cola es durable y su estado vive en el volumen `rabbitmq-data` (JUP-050): un job que sigue en cola sobrevive a `docker compose down` y `up`, y el processor lo consume al volver.
-
-Esto desacopla servicios y hace la arquitectura mas robusta.
-
-### Postgres + pgvector
-
-Es el almacenamiento vectorial del sistema.
-
-Aqui se guardan:
-
-- documentos procesados
-- chunks de texto
-- embeddings de cada chunk
-
-El `processor` escribe estos documentos, chunks y embeddings durante la ingesta.
-Despues, el `backend` consulta esos chunks cuando responde al asistente en `/assistant`.
-
-Piensa en `pgvector` como una base especializada para busqueda semantica y RAG.
-No sustituye a CockroachDB: CockroachDB guarda el estado operativo y pgvector guarda el indice vectorial.
-
-## 5. Relacion entre los submodulos
-
-Hay dos relaciones principales entre las piezas.
-
-La primera es el flujo de ingesta:
-
-1. El usuario usa el `frontend`
-2. El `frontend` llama al `backend` por HTTP
-3. El `backend` guarda o consulta datos en `CockroachDB`
-4. Si hace falta procesamiento asincrono, el `backend` publica un job en `RabbitMQ`
-5. El `processor` consume ese job desde `RabbitMQ`
-6. El `processor` procesa el trabajo, guarda embeddings en `Postgres + pgvector` y actualiza `CockroachDB`
-7. El `backend` puede devolver despues informacion actualizada al `frontend`
-
-La segunda es el flujo de chat con retrieval:
-
-1. El usuario escribe en el asistente desde el `frontend`
-2. El `frontend` llama al `backend` por HTTP
-3. El `backend` valida usuario y tenant
-4. El `backend` genera un embedding de la pregunta
-5. El `backend` consulta `Postgres + pgvector` para recuperar chunks relevantes del mismo tenant
-6. El `backend` guarda la conversacion y mensajes en `CockroachDB`
-7. El `backend` construye actualmente una respuesta determinista a partir de los chunks
-8. El `backend` devuelve la respuesta al `frontend`
-
-El flujo existe como baseline tecnico, pero no constituye todavia el vertical
-RAG real: el backend usa el proveedor simulado (`mock`) por defecto en desarrollo y test y no invoca un LLM
-para redactar la respuesta. JUP-020, JUP-021, JUP-023 a JUP-025 y JUP-036 cubren ese residual.
-
-Recuperacion (JUP-022, [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.md)):
-con `EMBEDDING_PROVIDER=litellm` el backend embebe la pregunta con el mismo
-alias y dimension (1536) que la ingesta, usando su propia clave virtual
-(`BACKEND_LITELLM_API_KEY`). `RETRIEVAL_TOP_K` (1 a 20, por defecto 4) y
-`RETRIEVAL_MAX_DISTANCE` (0.6 por defecto con `litellm`, ninguno con `mock`) acotan los
-fragmentos; el orden es distancia coseno y despues identificador, y si ninguno
-cumple el asistente responde con el estado sin contexto. `mock` solo se admite
-con `RUNTIME_ENVIRONMENT=development|test`.
-
-## 6. Flujo simplificado
-
-### Ingesta asincrona
-
-```text
-Usuario
-  |
-  v
-Frontend (React)
-  |
-  v
-Backend (FastAPI)
-  | \
-  |  \--> CockroachDB
-  |
-  \----> RabbitMQ ----> Processor
-                         | \
-                         |  \--> Postgres + pgvector
-                         |
-                         v
-                    CockroachDB
+```mermaid
+flowchart TB
+  B[Backend: dueño del esquema operativo] --> U[users, tenants, user_tenants]
+  B --> J[jobs, conversations, messages]
+  P[Processor: dueño del esquema Azure] --> R[azure_cost_ingestion_runs]
+  P --> C[azure_cost_records]
+  U -->|Autoridad de acceso| J
+  R -->|Tenant y ejecución| C
+  P --> D[pgvector: documentos y chunks con tenant]
+  D --> E[Embeddings por provider y dimensión]
+  J -->|Referencia del job documental| D
+  B -->|Lectura autorizada| C
+  B -->|Recuperación autorizada| D
 ```
 
-### Chat con retrieval
+Es un mapa lógico de responsabilidad/procedencia, **no un ERD de claves
+foráneas entre bases**. CockroachDB guarda estado transaccional; pgvector
+el índice recuperable; RabbitMQ transporta envelopes y conserva la cola
+durable. La DB del gateway es independiente: no almacena costes FinOps.
 
-```text
-Usuario
-  |
-  v
-Frontend (React)
-  |
-  v
-Backend (FastAPI)
-  | \
-  |  \--> CockroachDB
-  |
-  \----> Postgres + pgvector
-          ^
-          |
-    chunks y embeddings
-    escritos por Processor
+Según [ADR-0011](adr/ADR-0011-single-owner-per-table.md), backend migra sus seis
+tablas y processor las dos de Azure; cada servicio tiene su registro de
+migraciones. Processor también actualiza estados de jobs, pero no es dueño de
+su DDL: espera a backend sano después de migrar. El índice vectorial lo migra
+processor; backend comprueba la dimensión al iniciar cuando puede consultar la
+tabla, sin garantizar readiness del índice si esa comprobación se omite.
+No hay commit atómico
+entre CockroachDB, pgvector y RabbitMQ ni backup de conjunto demostrado.
+
+## 5. Identidad, tenant y secretos
+
+La API valida JWT propio HS256 (sub/iat/exp, tolerancia 5 s) y consulta al
+usuario persistido. `X-Tenant-Id` selecciona una membresía de user_tenants;
+no concede acceso por sí solo. Conversaciones/mensajes requieren además
+usuario propietario. Documentos/chunks se comparten dentro del tenant.
+Worker contrasta envelope con job persistido, creador existente y membresía vigente;
+no confía en campos del productor. Roles guardados no equivalen a RBAC completo.
+Fuentes: [ADR-0008](adr/ADR-0008-tenant-isolation-boundaries.md),
+[sesión](../openspec/specs/demo-auth-session/spec.md) y
+[evidencia de aislamiento](evidence/JUP-086-validation.md).
+
+Frontend conserva sesión en localStorage, revalida /me y /tenants y gestiona
+expiración/cambio de sesión. CORS usa orígenes explícitos
+([ADR-0007](adr/ADR-0007-backend-cors-policy.md)); no sustituye autorización.
+La auth demo [ADR-0014](adr/ADR-0014-demo-auth-boundary.md) no acredita IdP,
+MFA, revocación ni seguridad de una aplicación pública.
+
+Las credenciales operativas se suministran en runtime, fuera de Git e imágenes;
+el simulador Azure conserva valores locales de prueba explícitos. Variables VITE_*
+son públicas. Clave upstream OpenRouter y clave maestra quedan en gateway;
+backend usa BACKEND_LITELLM_API_KEY de embeddings y processor su clave virtual.
+No se publican valores en evidencias.
+[ADR-0006](adr/ADR-0006-runtime-secret-boundaries.md) limita CockroachDB
+`--insecure` a demo local desechable con development/test y opt-in explícito:
+trasladar el host a cloud no amplía esa excepción.
+
+## 6. Despliegue reproducible y propuesta cloud
+
+### 6.1 Topología local declarada
+
+```mermaid
+flowchart TB
+  Browser[Navegador: acceso privado previsto] --> F[Frontend: host 5173]
+  Browser --> B[Backend: host 8000]
+  subgraph Compose[Compose local: red de aplicación]
+    F
+    B
+    W[Processor: host 8001]
+    AZ[Azure simulada: host 8002]
+    CR[CockroachDB: host 26257 y 8080]
+    Q[RabbitMQ: host 5672 y 15672]
+    V[pgvector: host 5433]
+    P[Prometheus: host 9090]
+    G[Grafana: host 3000]
+  end
+  subgraph AI[Perfil ai opcional]
+    L[LiteLLM: host 44000]
+    PG[PostgreSQL gateway: sin puerto host]
+    L --> PG
+  end
+  B -.-> L
+  W -.-> L
+  CR --> CV[(cockroach-data)]
+  Q --> QV[(rabbitmq-data)]
+  V --> VV[(pgvector-data)]
+  P --> PV[(prometheus-data)]
+  G --> GV[(grafana-data)]
+  PG --> LV[(gateway-data)]
 ```
+
+Valores por defecto de [docker-compose.yml](../docker-compose.yml): **9 servicios
+base y 5 volúmenes**; ai añade LiteLLM/PostgreSQL/gateway-data (**11 y 6**).
+Las cuatro apps publican puerto **sin dirección loopback por defecto**;
+las publicaciones de infraestructura sí usan 127.0.0.1. El objetivo privado
+requiere configurar bindings/red/firewall del host: Compose por sí solo no
+demuestra privacidad. /metrics tampoco exige auth al publicar la API.
+La red base no restringe egress. No hay HA: host, bases single-node y cola
+son puntos de fallo.
+
+| Dependencia | Referencia fijada en código |
+| --- | --- |
+| CockroachDB | v24.1.11 por digest |
+| RabbitMQ / pgvector | 3-management / pg17 por digest; esos tags no identifican patch por sí solos |
+| Prometheus / Grafana | v2.55.1 / 11.3.0 por tag, sin digest |
+| LiteLLM / DB gateway | 1.103.2 / postgres:17-alpine por digest |
+| Apps Python | python:3.12-slim por digest; requirements usan rangos, no resolución pip completamente fijada |
+| Frontend | node:20-alpine por digest; pnpm 9.0.0 y lockfile. CI usa Node 22 |
+
+Los digests completos están en los Dockerfiles de las aplicaciones, Compose y
+[Compose gateway](../infra/litellm/docker-compose.yml); no se mantiene otra
+lista que pueda divergir. Son versiones del proyecto, no recomendaciones
+de versiones actuales. Orden: DB/cola/vector sanos → backend migrado →
+processor; processor espera además Azure. Frontend espera backend;
+Prometheus espera backend/processor y Grafana espera Prometheus.
+Grafana no tiene healthcheck Compose.
+
+[Overlay ai](../infra/litellm/compose.ai.yml) exige gateway sano a ambos
+consumidores. Activar solo el perfil no sustituye overlay, providers,
+dimensiones ni claves. Seguir los recorridos mock/IA/retorno del
+[README](../README.md), con proyectos separados para índices mock y reales.
+Frontend sirve con **Vite preview**, no servidor de producción.
+Las cuatro apps usan usuario sin privilegios, raíz de solo lectura y tmpfs;
+no se extiende esa garantía a toda la infraestructura.
+`down` conserva volúmenes nombrados; `down -v` los elimina.
+Persistencia ante recreación no equivale a backup/restore.
+
+### 6.2 Evidencia de despliegue
+
+| Fuente | Afirmación soportada | Límite |
+| --- | --- | --- |
+| [JUP-049](evidence/JUP-049-validation.md) | Smoke histórico 08/09 en DockerServer, tree 1d05259b2db193bded864d7491a238d89e0f524c. | No estado vivo actual; sus cuatro volúmenes preceden a persistencia RabbitMQ. |
+| [JUP-050](evidence/JUP-050-validation.md) | Ensayo 01/10 en Windows/Docker Desktop: nueve servicios, smoke 5/5, error con processor parado y persistencia down/up. | No Linux/macOS nuevos, backup/restore o runtime c2995a1. |
+| [JUP-108](evidence/JUP-108-validation.md) | Pruebas históricas mock/IA, claves/gateway/persistencia, con upstream sintético y campaña real separadas en su informe. | No chat web generativo completo, nueva ejecución por JUP-060 ni permiso de consumo pagado. |
+| [JUP-052 / PR #73](https://github.com/EconomiconFinOps/tfm-economicon/pull/73) | Trabajo de CD hacia DockerServer externo a la base revisada. | CD no integrado en c2995a1; esta revisión no verifica timer ni versión del host. |
+| Revisión estática JUP-060 | Código/configuración disponibles para reproducir. | No inventario vivo, capacidad, HA, RPO/RTO o despliegue final aceptado. |
+
+### 6.3 AWS: propuesta separada, sin provisioning
+
+```mermaid
+flowchart LR
+  O[Operador autorizado: pendiente] -.-> S[SSM y túneles restringidos]
+  S -.-> H[EC2 único: Compose seguro por implementar]
+  H -.-> D[EBS cifrado: persistencia y restore por probar]
+  H -.-> E[ECR: imágenes por digest]
+  H -.-> M[Secretos y logs con IAM acotado]
+  CI[CI y rol OIDC separados] -.-> E
+```
+
+Todo este diagrama es **propuesto**. La
+[propuesta AWS del 09/10](planning/aws-deployment-proposal.md) se conserva como
+aportación revisable: demo temporal privada EC2/Compose/SSM, sin ingress de app;
+publicación pública sería otra fase. Cuenta/región/presupuesto/duración/operador
+y dominio siguen sin ratificar; no hay IaC o ensayo AWS acreditado.
+La propuesta cita trabajo JUP-052 no integrado en esta base y precios históricos:
+no son verificación actual ni autorización de gasto.
+
+Antes de provisioning: acordar alcance/coste; implementar y probar DB/TLS/secretos
+seguros, datos estables entre releases, IAM separado y manifiestos; revisar plan
+de infraestructura. Después, en recursos autorizados: smoke auth/tenant/jobs,
+backup/restore medidos, handoff y caducidad. RPO/RTO son objetivos. Exponer la app
+exige además servidor web adecuado, TLS/DNS y decisión de auth pública.
+JUP-060 no ejecuta estas operaciones.
 
 ## 7. Por que esta separado asi
 
-Este tipo de arquitectura se usa porque no todas las tareas tienen la misma naturaleza.
+| Elección | Justificación, alternativa y límite |
+| --- | --- |
+| Frontend/API/processor | Aislar presentación, autoridad de acceso y trabajo lento. Hacerlo todo en la petición acoplaría latencia/fallos; escalar workers es posibilidad, no benchmark. |
+| CockroachDB + pgvector | Compatibilidad con estado operativo e índice existentes. [ADR-0013](adr/ADR-0013-pgvector-retrieval-baseline.md) explica ranking exacto; no se acredita superioridad de Cockroach frente a PostgreSQL ni necesidad de SQL distribuido. |
+| RabbitMQ | Publisher confirmado y consumidor asíncrono según ADR-0009; exige tratar duplicados e incertidumbre DB/cola. |
+| API Azure simulada | [ADR-0001](adr/ADR-0001-azure-cost-api-simulation.md): HTTP, paginación y errores sin tenant real; CSV directo no probaría ese contrato. Datos limitados. |
+| LiteLLM/OpenRouter | [ADR-0002](adr/ADR-0002-litellm-openrouter.md): concentrar credenciales/políticas; su aceptación no implica calidad ni gasto autorizado. [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.md) separa clave del backend y fija compatibilidad de embeddings. |
+| Compose local | [ADR-0015](adr/ADR-0015-local-compose-deployment-boundary.md): topología reproducible; no selecciona Kubernetes, HA o hosting productivo. |
 
-### El frontend esta separado porque:
+Se conservan estados de los ADR originales, incluidos los Proposed:
+documentar o integrar no ratifica decisiones. Esta consolidación no introduce
+una decisión arquitectónica nueva.
 
-- su trabajo es mostrar interfaz
-- no debe contener logica de base de datos
-- no debe ejecutar procesamiento interno
+## 8. Observabilidad, entrega y límites
 
-### El backend esta separado porque:
+Prometheus scrapea backend/processor cada 15 s. Grafana aprovisiona dashboards
+y alerta de fallos de ingesta, **sin receptor externo**. El contador mide
+marcas de fallo persistidas, incluidos reintentos, no jobs únicos.
+Los logs JSON con request_id y los estados de job ayudan al diagnóstico;
+no se acredita stack central de logs ni trazado distribuido completo.
+Fuentes: [monitorización](../apps/monitoring),
+[ADR-0005](adr/ADR-0005-prometheus-grafana-metrics.md).
+/health/status exige auth; diagnóstico de proveedor es explícito.
+Salud HTTP de processor no confirma progreso del worker (worker_status puede
+ser unknown). Calidad offline del asistente se documenta por separado en
+[JUP-067](validation/JUP-067-metrics.md) y [JUP-070](validation/JUP-070-evaluation.md).
 
-- centraliza la API
-- controla acceso a datos
-- decide cuando una tarea debe ejecutarse en segundo plano
-- consulta pgvector cuando necesita contexto semantico para el asistente
+[CI](../.github/workflows/ci.yml) ejecuta gobernanza/OpenSpec, pruebas y sintaxis
+de tres servicios Python, lint/test/build/typecheck frontend.
+[Reviews](../.github/workflows/pr-reviews.yml) aplica el proceso JUP.
+No se deduce despliegue de sus checks. Rama JUP → PR a develop → revisión y
+validación separadas → integración según [CONTRIBUTING](../CONTRIBUTING.md).
+El detalle académico DevOps corresponde al apartado f/JUP-111 y no se reescribe aquí.
 
-### El processor esta separado porque:
-
-- puede dedicarse solo a trabajos pesados o largos
-- no bloquea las respuestas HTTP del backend
-- permite escalar el procesamiento de forma independiente en el futuro
-- expone un healthcheck operativo sin convertirse en la API publica del producto
-
-## 8. Diferencia entre backend y processor
-
-Es una duda muy comun al empezar.
-
-La diferencia simple es:
-
-- el `backend` responde a peticiones
-- el `processor` ejecuta trabajos en segundo plano y expone un healthcheck interno
-
-Ejemplo mental:
-
-- `backend`: "He recibido tu solicitud"
-- `processor`: "Ahora hago el trabajo interno necesario"
-
-Separarlos mejora el orden del codigo y evita que una sola app haga demasiado.
-
-## 9. Como pensar el sistema como junior
-
-Una buena forma de entenderlo es verlo por capas:
-
-- **capa de interfaz**: `frontend`
-- **capa de API y coordinacion**: `backend`
-- **capa de procesamiento**: `processor`
-- **capa de infraestructura**: `RabbitMQ`, `CockroachDB` y `Postgres + pgvector`
-
-Si te preguntas "donde va esta logica", puedes usar estas reglas:
-
-- si es interfaz o experiencia visual, va en `frontend`
-- si es endpoint, validacion o coordinacion de peticiones, va en `backend`
-- si es retrieval del asistente contra chunks ya indexados, lo coordina el `backend`
-- si es trabajo asincrono o pipeline interno, va en `processor`
-- si es almacenamiento transaccional, va en `CockroachDB`
-- si es paso de trabajos entre servicios, va en `RabbitMQ`
-- si es almacenamiento vectorial para embeddings, va en `Postgres + pgvector`
-
-## 10. Ejemplo real dentro de este repo
-
-Un caso tipico de ingesta seria este:
-
-1. El frontend pide crear un job de ingesta.
-2. El backend recibe la peticion.
-3. El backend crea el registro del job en la base de datos.
-4. El backend publica ese job en RabbitMQ.
-5. El processor recoge el job.
-6. El processor ejecuta el pipeline.
-7. El processor genera chunks y embeddings; por defecto el provider es `mock`.
-8. El processor guarda los embeddings en `Postgres + pgvector`.
-9. El processor actualiza el estado del job en la base de datos.
-10. El frontend puede consultar despues el estado actualizado a traves del backend.
-
-Un caso tipico de chat con retrieval seria este:
-
-1. El frontend envia un mensaje del usuario al backend.
-2. El backend valida autenticacion y tenant.
-3. El backend guarda o carga la conversacion desde CockroachDB.
-4. El backend genera actualmente un embedding mock de la pregunta.
-5. El backend busca chunks relevantes en `Postgres + pgvector`.
-6. El backend construye una respuesta determinista usando ese contexto; la
-   generacion mediante LLM real sigue pendiente.
-7. El backend guarda los mensajes en CockroachDB.
-8. El frontend muestra la respuesta.
-
-## 11. Resumen rapido
-
-La arquitectura de este proyecto se basa en dividir responsabilidades:
-
-- `frontend` muestra la interfaz
-- `backend` expone la API, coordina y consulta pgvector para el asistente
-- `processor` procesa trabajos en segundo plano
-- `processor` tambien expone un healthcheck interno
-- `RabbitMQ` mueve jobs de procesamiento entre servicios
-- `CockroachDB` guarda la informacion operativa del sistema
-- `Postgres + pgvector` guarda embeddings y chunks
-
-Si recuerdas solo una idea, que sea esta:
-
-**cada submodulo tiene una responsabilidad concreta, y se comunican entre si para formar una sola aplicacion completa.**
-
-## 12. Estado de madurez y contratos residuales
-
-La arquitectura distingue capacidad desplegable de prototipo heredado:
-
-- La API Azure simulada, su cliente, la normalizacion y la persistencia de costes
-  tienen contratos y pruebas integradas en `develop`.
-- Auth propia, selector de tenant, pgvector y chat retrieval forman un baseline
-  demostrable. JUP-085 cierra el contrato de sesion demo (login, `/me`, TTL/JWT
-  con leeway de 5s, ciclo de vida de sesion en frontend y CORS con origenes
-  explicitos via [ADR-0007](adr/ADR-0007-backend-cors-policy.md)); JUP-086
-  (aislamiento y autorizacion por tenant) sigue pendiente de cerrar su contrato
-  de seguridad.
-- La recuperacion semantica del backend (JUP-022, [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.md), en estado Proposed) embebe la pregunta con `litellm` y su propia clave virtual, con `top_k` y distancia maxima configurables (0.6 por defecto con `litellm`); `mock` solo arranca en development o test y la respuesta del asistente sigue siendo determinista. Activar `litellm` exige reindexar el corpus en `vector(1536)` con el cliente del processor (JUP-023, integrado). Las citas y la evaluacion pertenecen a JUP-025 y JUP-036; ver la [evidencia](evidence/JUP-022-validation.md).
-- La calidad del asistente se mide con un calculador offline (JUP-067), separado de las metricas operativas de Prometheus: dado un fichero de resultados por caso, `tools/assistant-metrics.py` valida el formato contra la bateria de JUP-069 y las etiquetas de JUP-022 y calcula exactitud, relevancia y confianza de la recuperacion, fundamento (citas y cifras), latencia, robustez de la salida estructurada y disponibilidad del chat, con intervalos de Wilson. Las definiciones estan en [docs/validation/JUP-067-metrics.md](validation/JUP-067-metrics.md). El productor de resultados contra el asistente real es `tools/assistant-eval.py` (JUP-070): recoge las respuestas del chat con la bateria de JUP-069, decide por regla las cifras y las conductas prohibidas, deja los puntos requeridos a revision humana y escribe el fichero de resultados con el veredicto de aceptacion; se explica en [docs/validation/JUP-070-evaluation.md](validation/JUP-070-evaluation.md). La medicion de referencia de hoy mide la plantilla del chat, sin modelo, y queda en `docs/evidence/`.
-- JUP-087 elimina el lint heredado mediante contratos TypeScript y añade pruebas
-  reales de login/sesion, tenant, dashboard, ingesta y conversaciones. Lint y
-  pruebas forman parte del check obligatorio `Frontend build`; la
-  [evidencia de validacion](evidence/JUP-087-validation.md) documenta el alcance
-  y las capacidades funcionales que siguen pendientes.
+Quedan por acreditar el vertical generativo conversacional, la cobertura de datos
+y aceptación del MVP completo, el despliegue final y su recuperación, y la
+incorporación revisada en la memoria. Los enlaces permiten revisar afirmaciones
+sin convertir esas pendientes en resultados.
