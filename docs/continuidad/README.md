@@ -5,4 +5,4 @@ Trello mantiene el estado operativo; estos resumenes enlazan decisiones y eviden
 | Tema | Contenido y estado | Actualizado |
 | --- | --- | --- |
 | [Presupuestos y umbrales](presupuestos-umbrales.md) | JUP-029 / PR #61: correccion documental del P2 de Paris; convencion global separada en JUP-101, nueva revision y validacion pendientes. | 2026-10-02 |
-| [Memoria de IA](memoria-ia.md) | JUP-063: propuesta e/g fuera de Git, evidencia de código y controles; incorporación canónica y dictámenes humanos pendientes. | 2026-10-10 |
+| [Memoria de IA](memoria-ia.md) | JUP-063 / PR95 borrador: propuesta e/g fuera de Git; controles documentales correctos, 11 fallos Python pendientes; incorporación y dictámenes humanos pendientes. | 2026-10-10 |

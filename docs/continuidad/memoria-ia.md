@@ -3,6 +3,8 @@
 Verificado el 10/10/2026. Encargo: «Implementa JUP-063 — Redactar memoria de IA»;
 recibido del chat coordinador `01a1248a-4e9e-7963-a891-5d8cb49345a6`.
 [Tarjeta](https://trello.com/c/sRKGpYEy), id `69da4531119a60549856c34a`.
+[PR #95 en borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/95),
+contra `develop`; revisión, validación e incorporación canónica pendientes.
 
 ## Alcance y decisiones
 

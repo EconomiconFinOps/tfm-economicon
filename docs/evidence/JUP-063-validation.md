@@ -1,6 +1,7 @@
 # JUP-063 — Evidencia de redacción de IA
 
 Fecha: 10/10/2026. [Tarjeta](https://trello.com/c/sRKGpYEy).
+[PR #95](https://github.com/EconomiconFinOps/tfm-economicon/pull/95), borrador contra develop.
 Base de las afirmaciones: `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
 Esta es evidencia de una contribución preparada para Paris, no el dictamen
 independiente `Validacion JUP-063`, ni la memoria, ni aceptación del MVP.
@@ -28,7 +29,7 @@ CONTRIBUTING, sin atribuciones ficticias.
 | Resultado funcional verificable | Propuesta e/g, revisión contra código y matriz del guion | Preparado; incorporación canónica y aceptación del contenido pendientes |
 | Pruebas necesarias añadidas y en verde | Controles documentales y gateway correctos; suites focalizadas: 353 PASS, 11 FAIL, 6 SKIP | No satisfecho globalmente: fallos de timing/subprocesos pendientes de reproducción; no se añaden tests que repliquen prosa |
 | Documentación y decisiones actualizadas | Contrato OpenSpec, esta evidencia y continuidad | Preparado; conserva gobernanza y decisiones existentes |
-| Pull request revisado y vinculado | PR de soporte de esta rama | Publicación/vínculo y dictámenes se registrarán; revisión humana pendiente |
+| Pull request revisado y vinculado | PR #95 de soporte, en borrador contra develop | Publicada y enlazada; revisión humana pendiente, criterio no completado |
 | Validación funcional y evidencia enlazadas | Referencias verificables y logs externos | Evidencia técnica local; validación independiente y export revisado pendientes |
 
 ## Mapa de afirmaciones verificadas
@@ -81,8 +82,8 @@ No se lanzaron Docker, consultas SQL reales, OpenRouter ni llamadas pagadas.
   Se reutilizó el ejecutable ya instalado sin modificar dependencias compartidas.
 - `node tools/jup-check.mjs --all`: **9 changes correctos**. No significa que
   sus tareas estén terminadas, sólo que cumplen la estructura y trazabilidad.
-- `node tools/jup-cleanup-check.mjs`: **979 archivos correctos** en el primer
-  control; el tema de continuidad ignorado localmente se añadió explícitamente.
+- `node tools/jup-cleanup-check.mjs`: **980 archivos correctos** en el control
+  final; el tema de continuidad ignorado localmente se añadió explícitamente.
 - `git diff --check` y `git diff --cached --check`: sin errores de espacios.
 - `node --test --test-isolation=none tools/llm-gateway-config.test.mjs`:
   **7 PASS**, 0 fallos/skips. Se copió yaml ya disponible a los `node_modules`
