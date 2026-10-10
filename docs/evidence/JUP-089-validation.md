@@ -5,8 +5,11 @@ Verificación: 10/10/2026, Europe/Paris. Base `c2995a1` (`origin/develop`).
 `feat/JUP-089-economicon-promotional-landing`.
 [PR #106, borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/106),
 implementación `6966109`. [Entrega enlazada en Trello](https://trello.com/c/fD7nJKRl#comment-6ac9ef25add980965e1843c6)
-el 10/10 a las 07:54:13 Z. [CI específica de landing](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035984657)
-correcta en Node 22 sobre `6966109`. Controles generales en curso, sin reviews humanas.
+el 10/10 a las 07:54:13 Z. Después, la [CI general](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38036100966)
+y la [CI específica de landing en Node 22](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38036100954)
+pasaron sobre `ffbeb0a`. [JUP reviews](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38036100924)
+falla únicamente por ausencia de `Revision JUP-089` y `Validacion JUP-089` de personas
+distintas del autor. El commit posterior registra este resultado sin modificar código.
 
 Esta es evidencia técnica de implementación, no la review humana
 `Validacion JUP-089`. La contribución se prepara con la cuenta `Iber1to` por encargo

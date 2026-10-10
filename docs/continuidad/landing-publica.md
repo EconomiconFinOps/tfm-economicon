@@ -24,10 +24,14 @@ Worktree aislado `tfm-economicon-jup089`, rama
 Checkout compartido preservado. [PR #106 en borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/106),
 implementación publicada en `6966109`. [Nota de entrega en Trello](https://trello.com/c/fD7nJKRl#comment-6ac9ef25add980965e1843c6)
 registrada el 10/10 a las 07:54:13 Z mediante la integración oficial; sin cambios
-de roles, lista, prioridad ni fechas. El [workflow de landing](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035984657)
-pasó con Node 22 sobre `6966109`; controles generales aún pendientes al registrar
-esta nota, sin reviews humanas. El seguimiento documental posterior no cambia
-código ni pruebas de landing. Continuidad y evidencia permanecen en la PR.
+de roles, lista, prioridad ni fechas. La [CI general](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38036100966)
+y el [workflow de landing con Node 22](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38036100954)
+pasaron sobre `ffbeb0a`, el 10/10. El único control fallido fue
+[JUP reviews](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38036100924):
+faltan `Revision JUP-089` y `Validacion JUP-089` de personas distintas del autor.
+Esto sustituye el estado de CI pendiente de la nota inicial de Trello. El registro
+documental posterior no cambia código ni pruebas. Recibo local:
+`materiales/07-evidencias/JUP-089-landing-2026-10-10/github-checks-ffbeb0a.json`.
 
 [Evidencia](../evidence/JUP-089-validation.md)
 y [runbook](../operations/public-landing.md). Build, 14 tests de landing, lint y
