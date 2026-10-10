@@ -5,7 +5,7 @@
 - Trello: https://trello.com/c/YZvtBdGV/100-jup-105
 - Rama: `chore/JUP-105-close-frontend-migration`.
 - Base: `develop` en `ff2ea6b`.
-- OpenSpec: [jup-105-close-frontend-migration](../../openspec/changes/jup-105-close-frontend-migration/).
+- OpenSpec: [jup-105-close-frontend-migration](../../openspec/changes/archive/2026-10-09-jup-105-close-frontend-migration/).
 - Pull request: pendiente.
 - CI: pendiente.
 
@@ -13,8 +13,8 @@
 > `tasks.md`), el endurecimiento de `allowJs` (grupo 2), el recuento de pantallas con los textos
 > vivos corregidos (grupo 3) la corrección de los enlaces relativos rotos (grupo 4) y la retirada de las menciones a configuración
 > local (grupo 5) los hallazgos de la épica (grupo 6), el cierre del spike (grupo 7) y la batería completa con la
-> trazabilidad de los criterios (grupo 8). Quedan por registrar el enlace al pull request y la
-> ejecución de CI (tarea 8.6).
+> trazabilidad de los criterios y el archivado (grupo 8). Quedan por registrar el enlace al pull
+> request y la ejecución de CI (tarea 8.6).
 
 ## Línea base: antes de cambiar nada
 
@@ -954,3 +954,36 @@ que no se tocó; se anota en el inventario de `RF-105-001`, cuya retirada borra 
 - **La integración continua del pull request**: se registra al abrirlo (tarea 8.6).
 - **`local:doctor` y `local:smoke`**: no se ejecutaron; la tarjeta no toca el entorno de Compose.
 - **Que las pruebas de Linux de JUP-047 pasen**, por lo dicho arriba.
+
+## Gate post-review y archivado (grupo 8, tarea 8.5)
+
+Ejecutado el 2026-10-09.
+
+**Gate post-review.** El líder revisó el `review.md` y fijó tres puntos: `RF-093-001` se queda `Open`
+(Alejandro sin confirmar), el comentario de `DashboardPage.test.tsx` se deja como está (anotado en
+`RF-105-001`) y los roles del pull request son los vigentes. Se registró como `post-review`,
+`approved`, `archive` en el bloque `## Human Approval` del `review.md`, **a partir de su respuesta
+«Continúa» y no de una frase aparte de «aprobado»**; el bloque lo dice y se corrige antes de abrir el
+pull request si esa lectura fuera incorrecta.
+
+**Comprobaciones previas al archivado:** `corepack pnpm openspec:validate` (55 de 55) y
+`corepack pnpm jup:check -- --change jup-105-close-frontend-migration`, las dos en verde.
+
+**Archivado:** `corepack pnpm exec openspec archive jup-105-close-frontend-migration --yes` →
+`openspec/changes/archive/2026-10-09-jup-105-close-frontend-migration/`.
+
+| Qué | Resultado |
+| --- | --- |
+| Spec `frontend-typescript-tooling` sincronizada | 2 requisitos añadidos, 1 modificado y 2 retirados, como el delta; la spec principal queda con 6 requisitos y sin marcador `TBD` en su propósito |
+| Avisos del comando (no bloqueantes) | La sección «Why» del `proposal.md` supera los 1000 caracteres; 2 tareas sin marcar (8.5 y 8.6, las que se estaban ejecutando) |
+| Enlaces rotos creados por el archivado | 5: 4 dentro del change (bajó un nivel) y 1 en la cabecera de esta evidencia (apuntaba a la carpeta sin archivar) |
+| Corrección | Con el guion de enlaces del grupo 4, adaptado para leer también archivos aún sin versionar: 4 archivos escritos, 5 enlaces |
+| Comparación del change archivado con su versión en `HEAD` | 6 archivos; cambian 4 líneas, todas destinos de enlace; el `review.md` añade al final las 39 líneas del bloque de aprobación; 0 problemas |
+| Recorrido de enlaces relativos | 7 → **2** (los falsos positivos de `JUP-099-validation.md`) |
+| Enlace del spike (F5) al change archivado | Añadido |
+| `openspec:validate` tras archivar | 54 de 54 |
+| `jup:cleanup:check` y `jup:check:all` | En verde |
+
+`jup:check -- --change jup-105-close-frontend-migration` ya no puede ejecutarse tras archivar (falla
+con «No existe `openspec/changes/jup-105-close-frontend-migration`», porque solo mira changes
+activos); se ejecutó antes, como indica el flujo, y pasó.

@@ -5,7 +5,7 @@
 Listo para el gate post-review de Victor. **No es un veredicto independiente**: lo redacta quien
 implementó. La revisión y la validación de terceros llegan con el pull request («Revision JUP-105» y
 «Validacion JUP-105»). Evidencia completa, con las salidas reales, en
-[`docs/evidence/JUP-105-validation.md`](../../../docs/evidence/JUP-105-validation.md).
+[`docs/evidence/JUP-105-validation.md`](../../../../docs/evidence/JUP-105-validation.md).
 
 Resumen: la épica «Migrar frontend de Economicon» queda cerrada. Esta tarjeta no construye nada nuevo:
 endurece lo que quedó provisional, pone al día lo que otras tarjetas dejaron desfasado y declara qué se
@@ -201,3 +201,42 @@ Incidencias del proceso, para que no se repitan:
   los tres que editan archivos, solo el de corrección de enlaces (con su comprobación) tiene el texto
   en la evidencia; los que escriben las celdas del backlog y la comprobación de anclas no se
   versionan, y lo que cambiaron se verificó comparando el backlog con `HEAD` fila a fila.
+
+## Human Approval
+
+- Change: jup-105-close-frontend-migration
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-09
+- Archive decision: archive
+- Scope reviewed: las tareas 1.1 a 8.4 de `tasks.md` (35 de 37; quedan el archivado y el pull
+  request); este `review.md`; la evidencia `docs/evidence/JUP-105-validation.md` (línea base,
+  `allowJs`, recuento de pantallas, enlaces, menciones, hallazgos, spike, batería completa y
+  trazabilidad de los criterios); y los cambios en `apps/frontend`, `docs/`, `openspec/findings/` y
+  los registros archivados.
+- Conditions approved: (1) **`RF-093-001` se mantiene `Open`**, a la espera de la comprobación de
+  Alejandro en una consola externa; Paris no reproduce el fallo pero tampoco aplicó la corrección.
+  (2) **El comentario de cabecera de `DashboardPage.test.tsx` se deja como está**, anotado en el
+  inventario de `RF-105-001`; no se amplía el alcance aprobado en el gate pre-código. (3) **Los roles
+  del pull request son los vigentes**: Liderazgo, Victor Mendez; Pairing/coautoria, Alejandro Aguado;
+  Revision de PR, Lucia Mateo; Validacion, pruebas y documentacion, Paris Arcos.
+- Resultado verificado: desde la raíz, sin caché y con `corepack pnpm`, `install --frozen-lockfile`,
+  `lint`, `typecheck` y `build` en verde; `openspec:validate` 55 de 55, `jup:check` y
+  `jup:cleanup:check` en verde; `test` por mitades con el frontend (629), `processor` (448) y
+  `azure-cost-api` (59) en verde. Enlaces relativos rotos de 66 a 2 (los falsos positivos conocidos)
+  y menciones a configuración local de 42 a 0.
+- Salvedades aceptadas: **el criterio 1 no se da por cumplido del todo**: el `test` del backend falla
+  145 tests de JUP-047 en Windows (`RF-105-004`), con causa medida y sin verificar en Linux; **el
+  criterio 5** queda cumplido en los documentos y con una excepción en un comentario de código
+  (`RF-105-001`). `RF-105-001` a `RF-105-004` quedan registrados como hallazgos `Open`, sin corregir
+  en esta tarjeta.
+- Constraints: la aprobación **no** sustituye la revisión y la validación del pull request
+  («Revision JUP-105» y «Validacion JUP-105»), no acredita el CI y no autoriza fusionar. Ninguna ruta
+  de solo lectura aparece en el diff de la rama.
+- Required changes before archive: ninguno. Al archivar se corrigen en el mismo paso los enlaces
+  relativos de la tarjeta y se añade al spike el enlace al change archivado (tarea 8.5).
+- Notes: la decisión se registra a partir de la respuesta del líder del 2026-10-09 («punto 1 déjalo
+  Open, punto 2 déjalo como está actualmente, punto 3 es correcto. Continúa»), dada tras pedirle que
+  revisara este documento y decidiera esos tres puntos. No hubo una frase aparte de «aprobado»; si
+  esa lectura fuera incorrecta, el bloque se corrige antes de abrir el pull request.

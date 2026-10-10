@@ -337,7 +337,7 @@ carril `light` — **fusionada el 2026-10-07 (PR #75)**
   [receta del guion](../evidence/JUP-104-browser-recipe.md), fuera del repositorio solo el proyecto de
   Playwright y las capturas.
 
-**JUP `jup-105-close-frontend-migration`** — carril `light` — cierre de la épica. Sustituye al
+**JUP [`jup-105-close-frontend-migration`](../../openspec/changes/archive/2026-10-09-jup-105-close-frontend-migration/)** — carril `light` — cierre de la épica. Sustituye al
 marcador provisional de cierre que tenía este spike; su evidencia es
 [JUP-105-validation.md](../evidence/JUP-105-validation.md) y su estado final es el punto 13 de
 «Próximos pasos».

@@ -9,10 +9,10 @@ Quien llegue hoy al proyecto y lea el spike, el README del frontend y el backlog
 encuentra tres cosas en las que no puede fiarse:
 
 - **Una configuración provisional que nadie retiró.** `apps/frontend/tsconfig.json` sigue con
-  `allowJs: true`, la convivencia con JavaScript que [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md)
+  `allowJs: true`, la convivencia con JavaScript que [ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md)
   aceptó solo «durante la migración» y que asigna expresamente a esta tarjeta endurecer. En `src/` y
   `tests/` ya no queda ningún archivo JavaScript.
-- **Un spike sin cerrar.** [`docs/spikes/frontend-migration.md`](../../../docs/spikes/frontend-migration.md)
+- **Un spike sin cerrar.** [`docs/spikes/frontend-migration.md`](../../../../docs/spikes/frontend-migration.md)
   conserva el marcador `jup-0xx-checks-y-archive` con tres casillas sin marcar, da JUP-099, JUP-103 y
   JUP-104 por «implementadas» cuando están fusionadas, y no declara el estado final.
 - **Textos que contradicen el código.** El frontend cambió mientras duraba la épica por tarjetas

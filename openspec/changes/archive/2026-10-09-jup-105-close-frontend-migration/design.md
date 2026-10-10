@@ -236,7 +236,7 @@ ADR-0003.
 ### 9. ADR: no aplica uno nuevo
 
 No se toma ninguna decisión de arquitectura. El endurecimiento de `allowJs` ejecuta la decisión 2 de
-[ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md), ya aceptada, y se anota en su sección
+[ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md), ya aceptada, y se anota en su sección
 de seguimiento, que es donde cada tarjeta ha ido dejando constancia. El texto de la decisión no se
 edita. Los números de ADR siguen como estaban: el último en `develop` es ADR-0017 y el pull request
 #73 reserva ADR-0018.

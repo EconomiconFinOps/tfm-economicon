@@ -178,10 +178,13 @@
   líneas), porque describe el propio hallazgo, igual que el `review.md` archivado de JUP-099 y el
   backlog. Los comandos de la evidencia se ejecutaron tal cual; los guiones de un solo uso de enlaces
   están completos en ella.
-- [ ] 8.5 Tras la aprobación post-revisión, archivar el change sincronizando la spec
+- [x] 8.5 Tras la aprobación post-revisión, archivar el change sincronizando la spec
   `frontend-typescript-tooling` y corregir en el mismo paso los enlaces relativos de la tarjeta, que
   bajan un nivel al pasar a `openspec/changes/archive/`. Añadir en el spike (F5) el enlace al change
   archivado de JUP-105, que no se puso antes porque su carpeta lleva la fecha del archivado. Repetir
-  el recorrido de enlaces: deben seguir siendo 2.
+  el recorrido de enlaces: deben seguir siendo 2. Hecho el 2026-10-09: archivado como
+  `2026-10-09-jup-105-close-frontend-migration` con la spec sincronizada (+2, ~1, -2); eran 5 los
+  enlaces que se rompían (4 en el change por bajar un nivel y 1 en la cabecera de la evidencia),
+  corregidos; el recorrido da 2 y el enlace del spike está añadido.
 - [ ] 8.6 Traer `develop` y reverificar, abrir el pull request hacia `develop` con los cuatro roles
   en la descripción y registrar en la evidencia el enlace al pull request y a la ejecución de CI.
