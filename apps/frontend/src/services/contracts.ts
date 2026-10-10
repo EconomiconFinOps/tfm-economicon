@@ -127,6 +127,16 @@ export interface ConversationCreateRequest {
 
 export interface MessageCreateRequest {
   content: string;
+  ownership_query?: OwnershipQuery;
+}
+
+export interface OwnershipQuery {
+  group_by: "project" | "application" | "owner" | "cost_center" | "tag";
+  tag_key?: string;
+  value?: string;
+  currency?: string;
+  start_date?: string;
+  end_date?: string;
 }
 
 export interface RetrievedChunk {
