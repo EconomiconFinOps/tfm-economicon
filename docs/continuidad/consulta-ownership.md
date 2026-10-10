@@ -13,6 +13,12 @@ Paris/Victor no realizadas, exceptuadas. No autoaprobar PR ni alterar workflows.
 Se prepara integración administrativa PR-only después de CI técnica final;
 estado definitivo de merge/cierre se consulta y registra en Trello/GitHub.
 
+Reconciliado develop `1f57f91` después de la publicación `8af2eb9`: AGENTS e
+índice resueltos conservando convención JUP-101 y filas JUP-054/JUP-102, sin
+cambios de producto de ownership. Revalidación de migraciones/SQL **209 pasan
+sin omisiones**, 96.44s; OpenSpec combinado57/57, gobernanza82/82 e higiene1019.
+CI8af2eb9 verde; CI del nuevo head e integración administrativa por verificar.
+
 Revalidación propia: 209 backend sin omisiones con CockroachDB v24.1.2 efímero,
 35 frontend y regresión diferida del hilo; OpenSpec56/56, gobernanza82/82,
 lint/tipos/build pasan. Navegador real → HTTP/rutas/auth reales → SQL sintético

@@ -8,6 +8,21 @@ Base de pruebas: PR100 `7f63a1418fa1e573ca68f3cfeec7854c9a71b99f`, develop
 `c2995a118d419dfe725247bac9c6f219a3f0ea77`; después corrección de selección del
 nuevo hilo, ajuste de línea del texto y regresión frontend. No cambios backend.
 
+### Reconciliación con develop posterior
+
+Incorporado `1f57f9112647328f5caceba35eff7865792c51f6` (JUP-102, JUP-101 y JUP-054).
+Conflictos únicamente de referencia a continuidad e índice: se conserva la
+convención entrante y todas sus filas, además de JUP-037. Aportes y atribución
+de otras tareas preservados. Diff de `apps/backend/app` y `apps/frontend` contra
+`8af2eb9` vacío; no cambió el producto probado en navegador.
+
+Por el cambio de migraciones del processor se repitió la batería SQL completa
+de este informe en clúster propio recreado: **209 passed/0 failed/0 skipped,
+96.44 s**. OpenSpec sobre base combinada **57/57**, gobernanza **82/82**, higiene
+**1019 archivos PASS** antes del commit de reconciliación. La CI de 8af2eb9
+(`38041183887`) pasa; la del commit combinado se comprobará por su propio SHA.
+Los 56/56 de abajo pertenecen al corte anterior, no al combinado.
+
 ## Revisión técnica asistida
 
 **Verdict: APPROVE técnico para el alcance descrito**, confianza alta tras las
