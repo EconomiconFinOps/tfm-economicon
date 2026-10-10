@@ -15,6 +15,10 @@ del detector JUP-030. Contribución independiente para liderazgo de Lucía;
 Paris pairing, Víctor revisión y Alejandro validación siguen siendo roles
 asignados, sin acreditarlos como realizados ni asumirlos por inferencia.
 
+[PR #94 en borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/94)
+publicada contra develop. Implementación `e7132a7`; sin merge ni solicitudes
+de aprobación formal mientras no se resuelvan integración y roles efectivos.
+
 El servicio explica reglas con Decimal y conserva evidencia v1. Ruta propia
 `POST /assistant/conversations/{id}/anomaly-explanations`, sesión/tenant/propiedad
 antes de leer costes; IDs y definición como entrada, sin importes del cliente.

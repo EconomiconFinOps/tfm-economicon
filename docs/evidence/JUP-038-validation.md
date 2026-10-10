@@ -11,7 +11,7 @@ Verificado el 2026-10-10, base `origin/develop` `c2995a1`.
 | Resultado funcional verificable | Explicador determinista, ruta autenticada e historial. Contrato probado con dobles y siete escenarios contra módulos candidatos JUP-030; SQL de coste real y despliegue conjunto pendientes. La base sin JUP-030 responde 503. |
 | Pruebas necesarias añadidas y en verde | Pruebas unitarias, API y adaptador añadidas; resultados reproducibles debajo. |
 | Documentación y decisiones actualizadas | [Contrato](../contracts/JUP-038-anomaly-explanations.md), [OpenSpec](../../openspec/changes/jup-038-explain-anomalies/), README backend y continuidad. |
-| Pull request revisado y vinculado | Entrega preparada como borrador; revisión de Víctor pendiente. No se acredita revisión humana por una inspección automática. |
+| Pull request revisado y vinculado | [PR #94](https://github.com/EconomiconFinOps/tfm-economicon/pull/94) en borrador contra develop; revisión de Víctor pendiente. No se acredita revisión humana por una inspección automática. |
 | Validación funcional y evidencia enlazadas | Este informe acredita comprobaciones técnicas; aceptación funcional independiente de Alejandro pendiente, sin autoaprobar la contribución. |
 
 Roles preservados desde Trello, contraste mediante integración oficial
