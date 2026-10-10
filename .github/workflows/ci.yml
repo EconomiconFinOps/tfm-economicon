@@ -138,7 +138,7 @@ jobs:
       - name: Lint frontend
         run: corepack pnpm lint --filter=@finops/frontend
       - name: Test frontend journeys
-        run: corepack pnpm test --filter=@finops/frontend
+        run: corepack pnpm --filter @finops/frontend test
       - name: Build frontend
         run: corepack pnpm --filter @finops/frontend build
 

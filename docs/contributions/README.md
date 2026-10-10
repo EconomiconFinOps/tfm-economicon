@@ -115,3 +115,22 @@ Las filas de JUP-064 se añadieron después del corte de las fuentes.
 La preparación de JUP-064 por Alejandro y el contraste de Víctor no acreditan
 participación de Lucía o Paris en esta historia; revisión y validación
 permanecen pendientes.
+
+## Excepción de entrega del MVP — JUP-054
+
+Fecha: 2026-10-10. El usuario autorizó completar y cerrar JUP-054 con una
+excepción explícita por estar fuera de plazo para la entrega del MVP.
+Esta decisión sustituye la espera inicial de adopción y revisiones para esta
+historia; no cambia el proceso ordinario de las demás historias.
+
+| Historia | Persona / rol efectivo | Fecha | Acción | Enlace original | Contraste |
+| --- | --- | --- | --- | --- | --- |
+| JUP-054 | Alejandro Aguado (`Iber1to`) / ejecución y cierre excepcional, con asistencia de Codex | 2026-10-10 | Implementación, pruebas, documentación, revisión técnica asistida y uso autorizado de la excepción administrativa mediante PR | [PR #93](https://github.com/EconomiconFinOps/tfm-economicon/pull/93), [Trello](https://trello.com/c/ZsxwmagI), [evidencia](../evidence/JUP-054-validation.md) | Excepción por entrega del MVP fuera de plazo; no acredita pairing ni revisión/validación humanas independientes |
+
+Las asignaciones nominales iniciales fueron Lucía (liderazgo), Paris (pairing),
+Víctor (revisión) y Alejandro (validación). Se conservan como planificación
+histórica, sin atribuir a Lucía, Paris o Víctor trabajo o aprobaciones no observados.
+Las comprobaciones técnicas se mantienen; `JUP reviews` no se declara aprobado.
+La integración usa el bypass administrativo ya existente, limitado a la PR,
+sin cambiar las protecciones ni realizar pushes directos a ramas permanentes.
+El snapshot JUP-064 conserva su fecha original y no incorpora todavía esta fila.

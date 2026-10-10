@@ -8,6 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Pruebas unitarias e integradas](pruebas-unitarias-integradas.md) | JUP-054: entrega técnica completada, 7 tests nuevos, CI Linux 2041 pass/91 skips y recorrido real 3 pass; cierre de PR93 autorizado por excepción de plazo del MVP, con atribución real y límites documentados. | 2026-10-10 |
 | [Dimension vectorial desde Settings](dimension-vectorial-settings.md) | JUP-102 / PR #108: pruebas y CI tecnica verificadas; excepcion de entrega fuera de plazo autorizada, atribucion real bajo Alejandro y cierre por PR. Reviews humanas dispensadas, no simuladas. | 2026-10-10 |
 | [Presupuestos y umbrales](presupuestos-umbrales.md) | JUP-029 / PR #61: correccion documental del P2 de Paris; convencion global separada en JUP-101, nueva revision y validacion pendientes. | 2026-10-02 |
 | [Convención compartida](convencion-compartida.md) | JUP-101 / PR #64: adopción para el MVP por excepción de plazo autorizada por el usuario; ejecución asistida atribuida y requisitos humanos dispensados para este cierre, sin consenso ni reviews inventados. | 2026-10-10 |
