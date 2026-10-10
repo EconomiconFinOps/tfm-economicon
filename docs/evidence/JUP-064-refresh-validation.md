@@ -41,3 +41,13 @@ offline de la validación publicada por Paris para PR #76.
 
 Esta actualización se entrega bajo la misma tarjeta JUP-064, en PR posterior a
 #76, para resolver la condición de datos antes de usarlos en la memoria.
+
+## Excepción explícita de integración de PR #109
+
+El usuario pidió ejecutar el pendiente, completar y archivar por estar fuera de
+plazo. Ante la pregunta concreta de integrar PR #109 sin nuevas reviews, respondió
+«Tienes autorizacion» el 10/10/2026 en este chat. La excepción se limita a este
+PR y a la espera de dictámenes independientes; no se transfieren las aprobaciones
+de #76 ni se atribuye review/validación humana a comprobaciones del autor.
+Se mantienen las pruebas técnicas y se utiliza el bypass administrativo de la
+PR, sin modificar políticas globales ni hacer push directo a develop.
