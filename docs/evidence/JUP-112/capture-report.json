@@ -1,0 +1,482 @@
+[
+  {
+    "theme": "claro",
+    "width": 1280,
+    "name": "login",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 1280,
+    "name": "coste-global",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 1280,
+    "name": "coste-detallado",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 1280,
+    "name": "corte-global",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 1280,
+    "name": "anomalias",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 1280,
+    "name": "recomendaciones",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 1280,
+    "name": "ingesta",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 1280,
+    "name": "asistente",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 1280,
+    "name": "overview",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 1280,
+    "name": "salud",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 390,
+    "name": "login",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 390,
+    "name": "coste-global",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 390,
+    "name": "coste-detallado",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 390,
+    "name": "corte-global",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 390,
+    "name": "anomalias",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 390,
+    "name": "recomendaciones",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 390,
+    "name": "ingesta",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 390,
+    "name": "asistente",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 390,
+    "name": "overview",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "claro",
+    "width": 390,
+    "name": "salud",
+    "overflowX": false,
+    "dataTheme": null,
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 1280,
+    "name": "login",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 1280,
+    "name": "coste-global",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 1280,
+    "name": "coste-detallado",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 1280,
+    "name": "corte-global",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 1280,
+    "name": "anomalias",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 1280,
+    "name": "recomendaciones",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 1280,
+    "name": "ingesta",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 1280,
+    "name": "asistente",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 1280,
+    "name": "overview",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 1280,
+    "name": "salud",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 390,
+    "name": "login",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 390,
+    "name": "coste-global",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 390,
+    "name": "coste-detallado",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 390,
+    "name": "corte-global",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 390,
+    "name": "anomalias",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 390,
+    "name": "recomendaciones",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 390,
+    "name": "ingesta",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 390,
+    "name": "asistente",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 390,
+    "name": "overview",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  },
+  {
+    "theme": "oscuro",
+    "width": 390,
+    "name": "salud",
+    "overflowX": false,
+    "dataTheme": "dark",
+    "fonts": [
+      "Inter Variable",
+      "Space Grotesk Variable"
+    ],
+    "errors": []
+  }
+]

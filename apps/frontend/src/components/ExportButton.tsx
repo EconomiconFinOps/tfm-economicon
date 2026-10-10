@@ -42,10 +42,10 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
           <title>${filename}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { color: #1e40af; }
+            h1 { color: #2b2359; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #1e40af; color: white; }
+            th, td { border: 1px solid #d9d5f2; padding: 8px; text-align: left; }
+            th { background-color: #2b2359; color: #fafafc; }
           </style>
         </head>
         <body>
@@ -78,7 +78,7 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-highlight text-foreground rounded-lg hover:shadow-lg hover:shadow-info-tint/30 transition-all"
+        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all"
       >
         <Download className="w-4 h-4" />
         Exportar Resultados

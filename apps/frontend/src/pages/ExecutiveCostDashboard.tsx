@@ -4,7 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { RefreshCw } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { SectionCard } from "@/components/SectionCard";
-import { chartTooltipStyle } from "@/components/chartTheme";
+import { chartTooltipItemStyle, chartTooltipStyle } from "@/components/chartTheme";
 import { useExecutiveCostKpis } from "@/hooks/useExecutiveCostKpis";
 import {
   compareEndpoints, currentUtcMonth, defaultMonthSelection, describeCostError,
@@ -14,8 +14,8 @@ import type { MonthlyCostPoint } from "@/lib/executiveCostDashboard";
 import type { SessionOutletContext } from "@/layouts/SessionGate";
 import type { BillingGrouping } from "@/services/contracts";
 
-const inputClass = "mt-1 block w-full min-w-0 rounded-md border border-border bg-background p-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-const buttonClass = "inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary to-highlight px-4 py-2 text-sm text-foreground transition-all hover:shadow-lg hover:shadow-info-tint/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-50";
+const inputClass = "mt-1 block w-full min-w-0 rounded-md border border-input bg-background p-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const buttonClass = "inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-50";
 
 export function ExecutiveCostDashboard() {
   const { token, activeTenant } = useOutletContext<SessionOutletContext>();
@@ -199,13 +199,13 @@ export function ExecutiveCostDashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="label" stroke="var(--chart-axis)" />
                   <YAxis stroke="var(--chart-axis)" />
-                  <Tooltip contentStyle={chartTooltipStyle} formatter={(_value, _name, item) => {
+                  <Tooltip contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle} formatter={(_value, _name, item) => {
                     const point = item.payload as MonthlyCostPoint;
                     return point.cost === null ? "Sin datos" : point.cost + " " + currency;
                   }} />
                   <Area type="monotone" dataKey="value" name={currency} connectNulls={false} isAnimationActive={false}
-                    dot={{ r: 3, fill: "var(--highlight)", fillOpacity: 1 }}
-                    stroke="var(--highlight)" fill="var(--primary)" fillOpacity={0.3} />
+                    dot={{ r: 3, fill: "var(--chart-1)", fillOpacity: 1 }}
+                    stroke="var(--chart-1)" fill="var(--chart-1)" fillOpacity={0.3} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>}

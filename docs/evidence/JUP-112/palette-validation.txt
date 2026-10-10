@@ -1,0 +1,45 @@
+# Validador de paletas de dataviz (scripts/validate_palette.js), ejecutado el 2026-10-10 tras la revisión adversarial
+
+## series de grafica, tema light, superficie #FFFFFF
+## paleta: #8E3B8A,#2F8BD9,#BF8300,#1BA39C,#D6334F
+Palette (light, surface #FFFFFF, categorical): 5 slots
+  [PASS] Lightness band         all 5 inside L 0.43–0.77
+  [PASS] Chroma floor           all 5 >= 0.1
+  [PASS] CVD separation         worst adjacent #D6334F↔#1BA39C ΔE 11.0 (deutan) · tritan 22.8
+  [PASS] Normal-vision floor    worst adjacent #1BA39C↔#BF8300 ΔE 20.4 (normal)
+  [PASS] Contrast vs surface    all 5 >= 3:1
+  → ALL CHECKS PASS  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+  scope: categorical palettes only. For a lone status/text color check WCAG text contrast; for a sequential ramp, lightness monotonicity.
+
+## series de grafica, tema dark, superficie #1F1A3D
+## paleta: #B565A9,#4A93E0,#BA8B1C,#1CA89E,#E8587A
+Palette (dark, surface #1F1A3D, categorical): 5 slots
+  [PASS] Lightness band         all 5 inside L 0.48–0.67
+  [PASS] Chroma floor           all 5 >= 0.1
+  [WARN] CVD separation         worst adjacent #E8587A↔#1CA89E ΔE 6.7 (deutan) · tritan 21.0
+  [PASS] Normal-vision floor    worst adjacent #4A93E0↔#B565A9 ΔE 17.9 (normal)
+  [PASS] Contrast vs surface    all 5 >= 3:1
+  → ALL CHECKS PASS  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+  scope: categorical palettes only. For a lone status/text color check WCAG text contrast; for a sequential ramp, lightness monotonicity.
+
+## estados exito aviso peligro info (--pairs all), tema light, superficie #FFFFFF
+## paleta: #0B8A6E,#BF8300,#D03A3A,#3B7DDB
+Palette (light, surface #FFFFFF, categorical): 4 slots
+  [PASS] Lightness band         all 4 inside L 0.43–0.77
+  [PASS] Chroma floor           all 4 >= 0.1
+  [PASS] CVD separation         worst all-pairs #D03A3A↔#BF8300 ΔE 8.6 (deutan) · tritan 4.8
+  [PASS] Normal-vision floor    worst all-pairs #D03A3A↔#BF8300 ΔE 16.8 (normal)
+  [PASS] Contrast vs surface    all 4 >= 3:1
+  → ALL CHECKS PASS  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+  scope: categorical palettes only. For a lone status/text color check WCAG text contrast; for a sequential ramp, lightness monotonicity.
+
+## estados exito aviso peligro info (--pairs all), tema dark, superficie #1F1A3D
+## paleta: #1AA68F,#BA8B1C,#F0566E,#5A8BEA
+Palette (dark, surface #1F1A3D, categorical): 4 slots
+  [PASS] Lightness band         all 4 inside L 0.48–0.67
+  [PASS] Chroma floor           all 4 >= 0.1
+  [WARN] CVD separation         worst all-pairs #F0566E↔#BA8B1C ΔE 6.6 (deutan) · tritan 3.9
+  [PASS] Normal-vision floor    worst all-pairs #BA8B1C↔#1AA68F ΔE 18.1 (normal)
+  [PASS] Contrast vs surface    all 4 >= 3:1
+  → ALL CHECKS PASS  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+  scope: categorical palettes only. For a lone status/text color check WCAG text contrast; for a sequential ramp, lightness monotonicity.
