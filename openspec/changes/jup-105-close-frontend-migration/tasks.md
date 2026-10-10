@@ -167,10 +167,17 @@
   aceptación de la tarjeta con su evidencia, tabla de antes y después, y lo que no se validó y por
   qué. Hecho: el criterio 1 se declara cumplido salvo `test` del backend en Windows, y el 5 solo en
   los documentos vivos; los enlaces al pull request y a CI se rellenan en 8.6.
-- [ ] 8.3 Escribir `review.md`: resultado, decisiones, hallazgos, la excepción del ciclo Red/Green y
-  que no aplica ADR nuevo.
-- [ ] 8.4 Comprobar que ningún documento de la tarjeta cita configuración local de herramientas de
-  asistencia y que los comandos escritos se pueden reproducir tal cual.
+- [x] 8.3 Escribir `review.md`: resultado, decisiones, hallazgos, la excepción del ciclo Red/Green y
+  que no aplica ADR nuevo. Hecho: 9 criterios (7 sin reservas, 2 con salvedad), 11 decisiones, la
+  excepción Red/Green, hallazgos cerrados y nuevos, incidencias del proceso y riesgos. El bloque
+  `## Human Approval` del gate post-review se añade cuando lo apruebe el líder.
+- [x] 8.4 Comprobar que ningún documento de la tarjeta cita configuración local de herramientas de
+  asistencia y que los comandos escritos se pueden reproducir tal cual. Hecho: 0 menciones en
+  `proposal.md`, `design.md`, `tasks.md`, la spec y `review.md`; la evidencia nombra los términos solo
+  en el comando de búsqueda y en la columna «referencia original» de la tabla de sustituciones (9
+  líneas), porque describe el propio hallazgo, igual que el `review.md` archivado de JUP-099 y el
+  backlog. Los comandos de la evidencia se ejecutaron tal cual; los guiones de un solo uso de enlaces
+  están completos en ella.
 - [ ] 8.5 Tras la aprobación post-revisión, archivar el change sincronizando la spec
   `frontend-typescript-tooling` y corregir en el mismo paso los enlaces relativos de la tarjeta, que
   bajan un nivel al pasar a `openspec/changes/archive/`. Añadir en el spike (F5) el enlace al change
