@@ -17,6 +17,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { routeConfig } from "./routes";
 import type { TenantCollection, UserProfile } from "./services/contracts";
+import { billing } from "../tests/fixtures";
+
+function billingResponse(input: RequestInfo | URL) {
+  const search = new URL(input instanceof Request ? input.url : String(input)).searchParams;
+  return Response.json({ ...billing,
+    period: { start_date: search.get("start_date"), end_date: search.get("end_date"), timezone: "UTC" },
+    group_by: search.get("group_by"), tag_key: search.get("tag_key") });
+}
 
 const profile = {
   id: "u1", full_name: "Ada Lovelace", email: "ada@example.com", role: "operator"
@@ -67,13 +75,13 @@ describe("Arbol de rutas real: abrir una direccion directamente presenta su pant
     // "/").
     stubSession();
 
-    // OperationalCostDashboard usa datos de demostracion estaticos: solo
-    // hace falta mockear /tenants, que SessionGate consulta en su bootstrap.
+    // The operational route now loads tenant-scoped stored costs (JUP-056).
     vi.stubGlobal(
       "fetch",
       vi.fn<typeof fetch>(async (input) => {
         const path = new URL(input instanceof Request ? input.url : String(input)).pathname;
         if (path === "/me") return Response.json(profile);
+        if (path === "/billing/summary") return billingResponse(input);
         if (path === "/tenants") {
           return Response.json({
             items: [{ id: "t1", name: "Acme", slug: "acme", plan: "pro" }]
@@ -109,6 +117,7 @@ describe("Arbol de rutas real: el ambito activo sobrevive a la navegacion", () =
       vi.fn<typeof fetch>(async (input) => {
         const path = new URL(input instanceof Request ? input.url : String(input)).pathname;
         if (path === "/me") return Response.json(profile);
+        if (path === "/billing/summary") return billingResponse(input);
         if (path === "/tenants") {
           return Response.json({
             items: [

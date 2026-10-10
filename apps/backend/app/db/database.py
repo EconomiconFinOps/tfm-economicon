@@ -181,6 +181,9 @@ class Database:
     def fetch_billing_summary(
         self, tenant_id: str, *, start_date, end_date,
         group_by: str = "subscription", tag_key: str | None = None,
+        subscription_id: str | None = None, service_name: str | None = None,
+        project: str | None = None, filter_tag_key: str | None = None,
+        filter_tag_value: str | None = None,
     ) -> dict:
         from decimal import Decimal, ROUND_HALF_UP, localcontext
 
@@ -202,12 +205,29 @@ class Database:
                         else "CAST(NULL AS STRING)")
         group_value = "lower(value)" if group_by == "resource_group" else "value"
         display_value = "min(value)" if group_by == "resource_group" else "value"
+        filters = {
+            "subscription_id": subscription_id, "service_name": service_name,
+            "project": project, "filter_tag_value": filter_tag_value,
+        }
+        filter_columns = {
+            "subscription_id": "subscription_id", "service_name": "filter_service",
+            "project": "filter_project", "filter_tag_value": "filter_tag",
+        }
+        selection = " AND ".join(
+            f"{filter_columns[key]} = :{key}" for key, value in filters.items() if value is not None
+        ) or "TRUE"
+        # Source overlap remains a tenant/period property: user filters cannot
+        # conceal conflicting ingestions. Only monetary rows and missing
+        # selected dimensions are filtered; the undated count stays tenant-wide.
         # Only enum-selected expressions enter SQL; all request values are bound.
         query = text(f"""
             WITH completed AS (
                 SELECT r.ingestion_id, r.subscription_id, r.usage_date,
                        r.currency, r.pretax_cost, {dimension} AS value,
-                       {subscription} AS group_subscription
+                       {subscription} AS group_subscription,
+                       {dimensions['service']} AS filter_service,
+                       {dimensions['project']} AS filter_project,
+                       {present('r.tags ->> :filter_tag_key')} AS filter_tag
                 FROM azure_cost_records r
                 JOIN azure_cost_ingestion_runs i
                   ON i.id = r.ingestion_id AND i.tenant_id = r.tenant_id
@@ -221,19 +241,21 @@ class Database:
                 SELECT subscription_id, usage_date FROM period_records
                 GROUP BY subscription_id, usage_date
                 HAVING count(DISTINCT ingestion_id) > 1
+            ), selected_records AS (
+                SELECT * FROM period_records WHERE {selection}
             ), metadata AS (
                 SELECT (SELECT count(*) FROM completed WHERE usage_date IS NULL) AS undated,
-                       (SELECT count(*) FROM period_records WHERE value IS NULL) AS missing,
+                       (SELECT count(*) FROM selected_records WHERE value IS NULL) AS missing,
                        (SELECT count(*) FROM conflicts) AS ambiguous
             ), aggregates AS (
                 SELECT 'total' AS kind, currency, CAST(NULL AS STRING) AS subscription_id,
                        CAST(NULL AS STRING) AS value, sum(pretax_cost) AS cost,
                        count(*) AS record_count
-                FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
+                FROM selected_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
                 GROUP BY currency
                 UNION ALL
                 SELECT 'group', currency, group_subscription, {display_value}, sum(pretax_cost), count(*)
-                FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
+                FROM selected_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
                 GROUP BY currency, group_subscription, {group_value}
             )
             SELECT a.*, m.undated, m.missing, m.ambiguous
@@ -245,7 +267,7 @@ class Database:
             with connection.begin():
                 rows = connection.execute(query, {
                     "tenant_id": tenant_id, "start_date": start_date, "end_date": end_date,
-                    "tag_key": tag_key,
+                    "tag_key": tag_key, "filter_tag_key": filter_tag_key, **filters,
                 }).mappings().all()
                 job_count = connection.execute(
                     text("SELECT count(*) FROM jobs WHERE tenant_id = :tenant_id"),

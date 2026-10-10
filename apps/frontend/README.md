@@ -86,13 +86,39 @@ Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el
 | --- | --- | --- |
 | `/login` | `LoginPage` | Fuera de `SessionGate`; crea la sesión |
 | `/` | `ExecutiveCostDashboard` | Costes almacenados vía `GET /billing/summary` v2: intervalo mensual, desglose, tendencia y comparación del primer/último mes observado con coste no cero por moneda (JUP-055) |
-| `/operational` | `OperationalCostDashboard` | Datos de demostración |
+| `/operational` | `OperationalCostDashboard` | Costes almacenados con filtros conjuntos de suscripción, servicio, proyecto y etiqueta; desglose y CSV del ámbito (JUP-056) |
 | `/cuts` | `ExecutiveCutDashboard` | Datos de demostración |
 | `/anomalies` | `AnomaliesPanel` | Datos de demostración |
 | `/recommendations` | `RecommendationsPanel` | Datos de demostración |
 | `/ingest` | `IngestPage` | Datos reales vía `services/api.ts` |
 | `/assistant` | `ConversationsPage` | Datos reales vía `services/api.ts` |
 | `/overview-legacy` | `DashboardPage` | Ruta puente conservada, conectada al backend (`GET /billing/summary`, `GET /health`) |
+
+## Análisis operativo de costes (JUP-056)
+
+En `/operational`, selecciona el cliente autorizado y el intervalo UTC (inicio
+incluido, fin excluido). El periodo inicial es el último mes completo. Escribe
+los filtros que necesites y pulsa **Aplicar filtros**; todos deben cumplirse a
+la vez. **Cuenta** es el ID de suscripción Azure. Servicio, proyecto y valor de
+etiqueta distinguen mayúsculas y conservan espacios; la clave de etiqueta usa
+la normalización existente (`env` → `environment`). Una etiqueta requiere clave
+y valor. **Limpiar filtros** conserva las fechas y la agrupación elegidas.
+
+La tabla y los totales pertenecen al ámbito aplicado. Los importes se conservan
+exactamente, con monedas separadas, créditos y ceros. El CSV incluye ese ámbito,
+los totales y el desglose; no se ofrece la antigua exportación de datos demo.
+Durante edición, carga o error se ocultan resultados/exportación anteriores.
+Cambiar de cliente reinicia los filtros. No hay datos de ejemplo de respaldo.
+
+`GET /billing/summary` acepta filtros opcionales y devuelve su metadata. La
+pantalla rechaza una respuesta filtrada sin esa metadata, por lo que requiere
+el backend de JUP-056 para filtrar. Las consultas sin filtros conservan v2.
+Consulta el [contrato](../../docs/api/operational-cost-filters.md) y la
+[evidencia y limitaciones](../../docs/evidence/JUP-056-validation.md).
+
+El aviso de registros sin fecha pertenece al cliente completo, no al resultado
+filtrado. La presencia de datos no certifica cobertura completa de Azure. El
+layout móvil compartido mantiene su limitación previa RF-026-002.
 
 ## Estilos y colores
 
@@ -217,9 +243,8 @@ pnpm build
 - El panel ejecutivo `/` consume costes almacenados con `hooks/useExecutiveCostKpis.ts`;
   ya no muestra inventario, tendencia ni exportación de demostración. El ahorro potencial sigue
   no disponible porque el contrato no lo calcula.
-- Las otras cuatro pantallas de coste (`/operational`, `/cuts`, `/anomalies`, `/recommendations`)
-  conservan los datos de demostración estáticos (`src/data/demo/`); los gaps restantes de
-  `RF-095-002` en `openspec/findings/backlog.md` no se dan por resueltos por JUP-055.
+- `/operational` consulta costes almacenados con los filtros de JUP-056. Los gaps de las
+  demás pantallas registrados en `RF-095-002` no se dan por resueltos por este cambio.
 
 ## Panel ejecutivo de costes (JUP-055)
 

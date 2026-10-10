@@ -50,7 +50,37 @@ export interface TenantCollection {
 
 export type BillingGrouping = "subscription" | "resource_group" | "service" | "project" | "tag";
 
-export interface BillingSelection {
+export const billingFilterKeys = ["subscription_id", "service_name", "project", "filter_tag_key", "filter_tag_value"] as const;
+export type BillingFilters = Partial<Record<typeof billingFilterKeys[number], string>>;
+
+export function validBillingFilterValue(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0
+    && !Array.from(value).some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127);
+}
+
+// Backend casefold is followed by an ASCII-only key alphabet. These are the
+// Unicode folds that introduce ASCII beyond JavaScript's lowercase mapping.
+export function canonicalBillingTagKey(value: string): string {
+  const folds: Record<string, string> = {
+    "ß": "ss", "ŉ": "ʼn", "ſ": "s", "ǰ": "ǰ", "ẖ": "ẖ", "ẗ": "ẗ", "ẘ": "ẘ",
+    "ẙ": "ẙ", "ẚ": "aʾ", "ﬀ": "ff", "ﬁ": "fi", "ﬂ": "fl", "ﬃ": "ffi", "ﬄ": "ffl", "ﬅ": "st", "ﬆ": "st"
+  };
+  const normalized = Array.from(value.toLowerCase(), (character) => folds[character] ?? character).join("")
+    .replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  const aliases: Record<string, string> = { env: "environment", costcenter: "cost_center", cost_centre: "cost_center", org: "organization" };
+  return Object.prototype.hasOwnProperty.call(aliases, normalized) ? aliases[normalized] : normalized;
+}
+
+function isBillingFilters(value: unknown): value is BillingFilters {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const entries = Object.entries(value);
+  if (!entries.length || !entries.every(([key, item]) => billingFilterKeys.includes(key as typeof billingFilterKeys[number]) && validBillingFilterValue(item))) return false;
+  const filters = value as BillingFilters;
+  return (filters.filter_tag_key === undefined) === (filters.filter_tag_value === undefined)
+    && (filters.filter_tag_key === undefined || filters.filter_tag_key === canonicalBillingTagKey(filters.filter_tag_key));
+}
+
+export interface BillingSelection extends BillingFilters {
   start_date?: string;
   end_date?: string;
   group_by?: BillingGrouping;
@@ -73,6 +103,7 @@ export interface BillingSummary {
   period: { start_date: string; end_date: string; timezone: "UTC" };
   group_by: BillingGrouping;
   tag_key: string | null;
+  filters?: BillingFilters;
   data_status: "available" | "partial" | "empty";
   totals: BillingTotal[];
   groups: BillingGroup[];
@@ -98,6 +129,7 @@ export function isBillingSummary(value: unknown): value is BillingSummary {
     && String(value.period.start_date) < String(value.period.end_date) && value.period.timezone === "UTC"
     && ["subscription", "resource_group", "service", "project", "tag"].includes(String(value.group_by))
     && (value.group_by === "tag" ? typeof value.tag_key === "string" && value.tag_key.trim().length > 0 : value.tag_key === null)
+    && (!("filters" in value) || isBillingFilters(value.filters))
     && ["available", "partial", "empty"].includes(String(value.data_status))
     && Array.isArray(value.totals) && value.totals.every(total)
     && Array.isArray(value.groups) && value.groups.every((item) => total(item) && object(item)

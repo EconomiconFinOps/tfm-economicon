@@ -1,0 +1,7 @@
+﻿"tipo","cliente_id","desde_UTC_incluido","hasta_UTC_excluido","agrupacion","etiqueta_agrupacion","subscription_id","service_name","project","filter_tag_key","filter_tag_value","estado","sin_dimension","sin_fecha_cliente","dimension","suscripcion_grupo","moneda","coste","registros"
+"total","jup056-tenant-a","2026-09-01","2026-10-01","service","","subscription-fixture","Virtual Machines","FinOps","environment","Prod","available","0","0","","","EUR","1234.56","4"
+"total","jup056-tenant-a","2026-09-01","2026-10-01","service","","subscription-fixture","Virtual Machines","FinOps","environment","Prod","available","0","0","","","USD","-12.34","2"
+"total","jup056-tenant-a","2026-09-01","2026-10-01","service","","subscription-fixture","Virtual Machines","FinOps","environment","Prod","available","0","0","","","GBP","0.00","1"
+"grupo","jup056-tenant-a","2026-09-01","2026-10-01","service","","subscription-fixture","Virtual Machines","FinOps","environment","Prod","available","0","0","Virtual Machines","","EUR","1234.56","4"
+"grupo","jup056-tenant-a","2026-09-01","2026-10-01","service","","subscription-fixture","Virtual Machines","FinOps","environment","Prod","available","0","0","Credit adjustment","","USD","-12.34","2"
+"grupo","jup056-tenant-a","2026-09-01","2026-10-01","service","","subscription-fixture","Virtual Machines","FinOps","environment","Prod","available","0","0","Storage","","GBP","0.00","1"

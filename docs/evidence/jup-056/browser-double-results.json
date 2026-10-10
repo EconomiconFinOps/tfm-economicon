@@ -1,0 +1,105 @@
+{
+  "target": "http://127.0.0.1:5256/operational",
+  "api": "explicit Playwright route doubles at 8056",
+  "checks": [
+    "Exact >MAX_SAFE_INTEGER, negative and zero currency strings visible, currencies separate",
+    {
+      "viewport": "desktop",
+      "dimensions": {
+        "viewport": 1440,
+        "bodyWidth": 1440,
+        "mainWidth": 1440
+      }
+    },
+    {
+      "viewport": "tablet",
+      "dimensions": {
+        "viewport": 768,
+        "bodyWidth": 1134,
+        "mainWidth": 768
+      }
+    },
+    {
+      "viewport": "mobile",
+      "dimensions": {
+        "viewport": 375,
+        "bodyWidth": 1134,
+        "mainWidth": 375
+      }
+    },
+    "Draft combines all dimensions without HTTP; old table and export hidden",
+    "Apply sends all five AND filter parameters and canonical environment; confirmed scope shown",
+    "CSV contains current filtered metadata and exact positive/negative/zero amounts only",
+    "Clear removes dimension filters and restores unfiltered response",
+    "Incomplete tag pair blocks Apply, request and old result",
+    "Invalid date range blocks Apply and hides results",
+    "Pending refresh removes cached data and export until completion",
+    "503 produces error with retry; previous table/totals are absent (not zero)",
+    "Empty response shows helpful empty state without table/export",
+    "Partial state explains missing dimensions and tenant-wide excluded undated count",
+    "Tenant change sends distinct tenant header and removes old results while pending"
+  ],
+  "requests": [
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-a",
+      "mode": "normal"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-a",
+      "mode": "normal"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service&subscription_id=subscription-fixture&service_name=Virtual+Machines&project=FinOps&filter_tag_key=environment&filter_tag_value=Prod",
+      "tenant": "jup056-tenant-a",
+      "mode": "normal"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-a",
+      "mode": "normal"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-a",
+      "mode": "normal"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-a",
+      "mode": "normal"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-a",
+      "mode": "pending"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-a",
+      "mode": "error"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-a",
+      "mode": "empty"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-a",
+      "mode": "partial"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-b",
+      "mode": "pending"
+    },
+    {
+      "url": "http://127.0.0.1:8056/billing/summary?start_date=2026-09-01&end_date=2026-10-01&group_by=service",
+      "tenant": "jup056-tenant-b",
+      "mode": "pending"
+    }
+  ],
+  "errors": []
+}

@@ -29,11 +29,21 @@ class BillingGroup(BillingTotal):
     value: str | None
 
 
+class BillingFilters(BaseModel):
+    subscription_id: str | None = None
+    service_name: str | None = None
+    project: str | None = None
+    filter_tag_key: str | None = None
+    filter_tag_value: str | None = None
+
+
 class BillingSummary(BaseModel):
     contract_version: Literal[2] = 2
     period: BillingPeriod
     group_by: BillingGrouping
     tag_key: str | None
+    # Omitted on original v2 requests; filtered queries echo their exact scope.
+    filters: BillingFilters | None = None
     data_status: Literal["available", "partial", "empty"]
     totals: list[BillingTotal]
     groups: list[BillingGroup]

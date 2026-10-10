@@ -39,7 +39,7 @@ def _canonical_tag_key(value: str) -> str:
     return aliases.get(normalized, normalized)
 
 
-@router.get("/summary", response_model=BillingSummary)
+@router.get("/summary", response_model=BillingSummary, response_model_exclude_unset=True)
 def get_billing_summary(
     tenant_id: str = Depends(get_active_tenant),
     database=Depends(get_database),
@@ -47,6 +47,11 @@ def get_billing_summary(
     end_date: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
     group_by: BillingGrouping = "subscription",
     tag_key: str | None = None,
+    subscription_id: str | None = None,
+    service_name: str | None = None,
+    project: str | None = None,
+    filter_tag_key: str | None = None,
+    filter_tag_value: str | None = None,
 ) -> BillingSummary:
     try:
         if start_date is None and end_date is None:
@@ -67,13 +72,31 @@ def get_billing_summary(
                 raise ValueError()
         elif tag_key is not None:
             raise ValueError()
+        filters = {
+            "subscription_id": subscription_id, "service_name": service_name,
+            "project": project, "filter_tag_key": filter_tag_key,
+            "filter_tag_value": filter_tag_value,
+        }
+        for value in filters.values():
+            if value is not None and (not value.strip() or any(ord(char) < 32 or ord(char) == 127 for char in value)):
+                raise ValueError()
+        if (filter_tag_key is None) != (filter_tag_value is None):
+            raise ValueError()
+        if filter_tag_key is not None:
+            filters["filter_tag_key"] = _canonical_tag_key(filter_tag_key)
+            if not filters["filter_tag_key"]:
+                raise ValueError()
+        filters = {key: value for key, value in filters.items() if value is not None}
     except ValueError:
         raise HTTPException(status_code=422, detail="Invalid billing selection") from None
 
     try:
         result = database.fetch_billing_summary(
             tenant_id, start_date=start, end_date=end, group_by=group_by, tag_key=tag_key,
+            **filters,
         )
     except AmbiguousCostSource:
         raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
+    if filters:
+        result = {**result, "filters": filters}
     return BillingSummary(**result)
