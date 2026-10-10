@@ -1,0 +1,20 @@
+# Fictional inputs for documentation. Not a deployable account configuration.
+region             = "eu-west-1"
+availability_zones = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+route53_zone_id     = "Z_REPLACE_WITH_OWN_ZONE"
+frontend_domain    = "app.example.com"
+origin_domain      = "origin.example.com"
+
+# Illustrative engine versions only; compatibility/availability not tested in AWS.
+postgres_version          = "16.9"
+postgres_parameter_family = "postgres16"
+rabbitmq_version          = "3.13"
+
+single_nat_gateway               = false
+deploy_applications              = false
+application_adaptations_verified = false
+container_images                = {}
+bedrock_model_arns               = []
+
+# No mq_admin_password here. aws_mq_broker stores it in state even if sensitive.
+# No credentials or real secret values belong in this example.

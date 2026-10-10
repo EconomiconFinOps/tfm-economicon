@@ -6,6 +6,7 @@
 - [x] 1.4 Describir auth/tenant, secretos, observabilidad, CI y límites del dataset.
 - [x] 1.5 Enlazar contratos, ADR y evidencia; preservar propuesta AWS sin provisioning.
 - [x] 1.6 Contrastar las tres partes relevantes del guion oficial y preparar handoff.
+- [x] 1.7 Incorporar esquema AWS/Terraform del 10/10; reconciliar alcance documental y antecedente EC2 sin ejecución.
 
 ## 2. Comprobación y entrega
 

@@ -16,10 +16,13 @@ Tools FinOps son contrato; gateway/AgentRuntime no acreditan vertical generativo
 Compose: 9 servicios/5 volúmenes; ai 11/6. Apps publican sin loopback por defecto;
 infra publica en loopback. Insecure local/Vite preview no son base productiva.
 JUP052 no integrado en esta base; no inventario vivo ni despliegue nuevo.
-[Propuesta AWS](../planning/aws-deployment-proposal.md) del 09/10 preservada
-exacta (SHA256 5f5ade08941dab08edb7cd7704dc1691db364ae1920918400a6a0603c9d71855).
-Su continuidad histórica [cloud-aws](cloud-aws.md) no se refecha como comprobación
-actual de cloud. Ningún provisioning, gasto o llamada pagada.
+[Propuesta AWS](../planning/aws-deployment-proposal.md) del 09/10 conservada como
+antecedente con aviso de alcance operativo superado. El hash original
+`5f5ade08941dab08edb7cd7704dc1691db364ae1920918400a6a0603c9d71855` es histórico,
+anterior al aviso. El usuario confirmó alcance documental e incorporación de
+[esquema AWS](../architecture-aws.md) y [Terraform](../../infra/aws-reference/README.md)
+a esta PR. [Continuidad AWS](cloud-aws.md) distingue ambos cortes. Ningún
+provisioning, gasto o llamada pagada; no se ratifica una migración de arquitectura.
 
 ## Gobernanza y evidencia
 

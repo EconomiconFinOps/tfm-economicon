@@ -8,6 +8,37 @@ la validación independiente de Paris. No acredita pairing humano realizado.
 
 ## Criterios de la tarjeta
 
+### Actualización de alcance AWS incorporada el 10/10
+
+Por petición directa «Completa el punto 1» se añaden [esquema AWS](../architecture-aws.md)
+y [Terraform](../../infra/aws-reference/README.md) a la rama de PR92. Se actualizan
+arquitectura §6.3, antecedente EC2, OpenSpec y continuidad para mantener alcance
+exclusivamente documental. Terraform es fuente de referencia sin ejecución,
+no un despliegue; PostgreSQL/Cognito/Bedrock siguen siendo brechas hipotéticas.
+Los fuentes se copiaron del paquete local tras verificar su manifiesto SHA-256;
+guías y enlaces se adaptaron a rutas de repositorio. No se añaden ZIP, binarios,
+provider cache, tfstate ni secretos. Los resultados históricos de abajo conservan
+su base y fecha: no se atribuyen al nuevo contenido pruebas de runtime antiguas.
+
+Comprobaciones nuevas desde esta rama: Terraform fmt/validate correctos, seis
+tests con proveedores mock y ocho rutas Node correctos; OpenSpec estricto 56/56,
+trazabilidad JUP-060 correcta y checker de higiene correcto (1003 archivos en
+ese corte). Este último requirió repetición fuera del sandbox por spawnSync git
+EPERM. El proveedor se reutilizó offline con lockfile; ver su
+[informe de validación](../../infra/aws-reference/VALIDACION.md).
+
+Tres diagramas nuevos o modificados (vista AWS de architecture.md y dos del
+esquema completo) renderizados e inspeccionados visualmente sin recortes. Fuentes
+y PNG de evidencia en `materiales/07-evidencias/JUP-060-arquitectura-2026-10-10/aws-reference-integration/`,
+fuera del repositorio; Mermaid editable dentro. El documento general mantiene
+ocho diagramas y el esquema AWS añade dos. Sin plan AWS real, apply, SQL,
+memoria compartida, nuevas reviews humanas o cambio de estado de aceptación.
+Comprobados 88 destinos de enlaces locales en 13 Markdown afectados, sin rutas
+rotas; `git diff --check` correcto. Esta comprobación no consulta URLs externas
+ni valida nuevamente todos los anchors históricos.
+
+### Matriz de entrega
+
 | Criterio | Entrega/evidencia | Estado y pendiente |
 | --- | --- | --- |
 | Resultado funcional verificable | [Arquitectura](../architecture.md): ocho diagramas de componentes, secuencias, datos, despliegue y objetivo; contraste de código integrado. | Entrega documental verificable; apartado d de memoria pendiente de incorporación revisada. No nueva ejecución del producto. |

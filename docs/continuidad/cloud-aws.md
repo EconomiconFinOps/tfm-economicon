@@ -1,4 +1,14 @@
-# Cloud AWS — planificación de despliegue
+# Cloud AWS — arquitectura documental
+
+## Alcance vigente e incorporación a PR92 — 10/10/2026
+
+El usuario confirmó que no habrá despliegue AWS y después pidió preparar Terraform e incorporar esquema/plantilla a JUP-060 («Completa el punto 1»). La referencia vigente es [arquitectura AWS](../architecture-aws.md) y [Terraform](../../infra/aws-reference/README.md), con [validación local](../../infra/aws-reference/VALIDACION.md). El código IaC se entrega sin plan real ni apply; no requiere cuenta, presupuesto o migraciones para aceptar la documentación. Las brechas PostgreSQL/Cognito/Bedrock son hipotéticas. CodePipeline/CodeBuild permanecen conceptuales y Terraform es alternativa a CDK/CloudFormation.
+
+La propuesta EC2 del 09/10 queda como antecedente marcado en su cabecera; sus fases, preguntas de acceso/presupuesto y asignación de operador ya no son pendientes. Se reconciliaron arquitectura §6.3, OpenSpec y guías. Los fuentes de plantilla proceden del paquete documental local verificado por SHA; se excluyen ZIP, binarios, provider cache, state y tfvars reales. Ver [evidencia JUP-060](../evidence/JUP-060-validation.md).
+
+Rama `docs/JUP-060-technical-architecture`, PR92, trabajo desde head `fec55b2f8997496fe0aea1c407522a2b51d289ff`; comentarios generales, reviews e inline leídos y vacíos antes de editar. Base documental c2995a1 conservada; fetch observó develop412ae41, sin atribuir nueva validación de runtime a ese cambio. Sin memoria, roles, merge ni recursos AWS. Pendientes generales: incorporación por Víctor a memoria, dictámenes Lucía/Paris y cierre OpenSpec/PR. El historial que sigue conserva evidencia del 09/10, no planificación operativa vigente.
+
+## Antecedentes del 09/10
 
 Verificado09/10/2026. Origen: petición de planificación cloud transmitida por Coordinador desde Discord20:29Europe/Paris. [Propuesta completa revisable](../planning/aws-deployment-proposal.md), guardada en ambos checkouts del proyecto; **solo planificación**, sin recursos, gasto, inventario de cuenta/credenciales ni IaC ejecutada.
 

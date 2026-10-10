@@ -331,32 +331,42 @@ Persistencia ante recreación no equivale a backup/restore.
 | [JUP-052 / PR #73](https://github.com/EconomiconFinOps/tfm-economicon/pull/73) | Trabajo de CD hacia DockerServer externo a la base revisada. | CD no integrado en c2995a1; esta revisión no verifica timer ni versión del host. |
 | Revisión estática JUP-060 | Código/configuración disponibles para reproducir. | No inventario vivo, capacidad, HA, RPO/RTO o despliegue final aceptado. |
 
-### 6.3 AWS: propuesta separada, sin provisioning
+### 6.3 AWS: arquitectura de referencia y Terraform sin despliegue
 
 ```mermaid
-flowchart LR
-  O[Operador autorizado: pendiente] -.-> S[SSM y túneles restringidos]
-  S -.-> H[EC2 único: Compose seguro por implementar]
-  H -.-> D[EBS cifrado: persistencia y restore por probar]
-  H -.-> E[ECR: imágenes por digest]
-  H -.-> M[Secretos y logs con IAM acotado]
-  CI[CI y rol OIDC separados] -.-> E
+flowchart TB
+  U[Usuario] -.-> CF[CloudFront y WAF]
+  CF -.-> S3[S3 privado: frontend]
+  CF -.-> ALB[ALB interno: origen VPC]
+  ALB -.-> API[ECS Fargate: backend]
+  API -.-> DB[RDS PostgreSQL y pgvector]
+  API -.-> MQ[Amazon MQ: RabbitMQ]
+  MQ -.-> P[ECS Fargate: processor]
+  P -.-> DB
+  API -.-> AI[Amazon Bedrock]
+  P -.-> AI
+  C[Cognito: identidad; tenant en aplicación] -.-> API
 ```
 
-Todo este diagrama es **propuesto**. La
-[propuesta AWS del 09/10](planning/aws-deployment-proposal.md) se conserva como
-aportación revisable: demo temporal privada EC2/Compose/SSM, sin ingress de app;
-publicación pública sería otra fase. Cuenta/región/presupuesto/duración/operador
-y dominio siguen sin ratificar; no hay IaC o ensayo AWS acreditado.
-La propuesta cita trabajo JUP-052 no integrado en esta base y precios históricos:
-no son verificación actual ni autorización de gasto.
+Todas las conexiones son **conceptuales**. El usuario confirmó el 10/10 que AWS
+forma parte del entregable documental y no se desplegará. El
+[esquema AWS completo](architecture-aws.md) incluye correspondencia con el stack,
+seguridad, alternativas de acceso, operación, fuentes y límites. La
+[plantilla Terraform](../infra/aws-reference/README.md) incorpora recursos,
+variables, ejemplos y pruebas simuladas como complemento técnico solicitado.
+Terraform es alternativa a CDK/CloudFormation; el pipeline CodePipeline/CodeBuild
+del esquema sigue conceptual y no está implementado por la plantilla.
 
-Antes de provisioning: acordar alcance/coste; implementar y probar DB/TLS/secretos
-seguros, datos estables entre releases, IAM separado y manifiestos; revisar plan
-de infraestructura. Después, en recursos autorizados: smoke auth/tenant/jobs,
-backup/restore medidos, handoff y caducidad. RPO/RTO son objetivos. Exponer la app
-exige además servidor web adecuado, TLS/DNS y decisión de auth pública.
-JUP-060 no ejecuta estas operaciones.
+CockroachDB → PostgreSQL, Cognito y Bedrock requieren adaptaciones hipotéticas;
+no son capacidades integradas ni nuevas tareas de runtime en JUP-060. Las tareas
+ECS están desactivadas por defecto; un apply crearía el resto de recursos con
+coste, por lo que ese flag no es un modo de simulación. Solo se validan formato,
+esquema y pruebas con proveedores mock, sin plan real, credenciales ni apply.
+
+La [propuesta EC2 del 09/10](planning/aws-deployment-proposal.md) queda como
+antecedente histórico: sus preguntas de cuenta/presupuesto, demo y fases
+operativas ya no son pendientes para esta entrega. La aceptación documental
+no exige recursos, migraciones, URL operativa ni pruebas AWS.
 
 ## 7. Por que esta separado asi
 

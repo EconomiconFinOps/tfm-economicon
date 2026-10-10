@@ -25,8 +25,16 @@ historical execution evidence and proposed integrations or cloud deployment.
 #### Scenario: A reviewer reads the AWS proposal
 
 - **WHEN** the proposal is linked from the deployment view
-- **THEN** account, budget, secure runtime and operator decisions remain explicit
-  prerequisites, and no provisioned infrastructure or authorized spend is inferred
+- **THEN** AWS is identified as a documentary reference without deployment,
+  and account, budget or runtime migration are not prerequisites for accepting
+  the documentation; historical EC2 execution steps are marked superseded
+
+#### Scenario: A reviewer inspects the Terraform reference
+
+- **WHEN** the requested Terraform template is included with the architecture
+- **THEN** source, provider lockfile, examples and mock validation evidence are
+  available in the repository, application adaptations are explicit, and neither
+  mock tests nor disabled workloads imply deployed resources or a cost-free apply
 
 ### Requirement: Security and operations evidence boundaries
 

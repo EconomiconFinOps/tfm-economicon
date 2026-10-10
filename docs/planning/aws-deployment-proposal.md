@@ -1,5 +1,7 @@
 # Propuesta AWS para Economicon
 
+> **Alcance actualizado el 10/10/2026:** el usuario confirma que AWS es exclusivamente documental y no se realizará despliegue. Este texto del 09/10 se conserva como antecedente; las fases operativas y preguntas de cuenta/presupuesto no son pendientes de JUP-060. La referencia vigente es [el esquema AWS](../architecture-aws.md), complementado por [Terraform sin ejecución](../../infra/aws-reference/README.md). No se requiere provisionar ni adaptar aplicaciones para aceptar la documentación.
+
 09/10/2026 · Propuesta revisable, no decisión aceptada ni autorización de gasto. Origen: petición de planificación transmitida por Coordinador desde Discord (20:29 Europe/Paris). No se han consultado credenciales, inventariado cuentas AWS, creado recursos, cambiado fechas/roles ni provisionado accesos.
 
 ## Decisión que se propone

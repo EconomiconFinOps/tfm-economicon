@@ -12,7 +12,9 @@ pendientes, evidencia de despliegue y propuesta cloud.
 - Actualizar docs/architecture.md con componentes, datos, secuencias y despliegue.
 - Separar chat síncrono, job documental, CLI Azure y objetivo tools/RAG/LLM.
 - Enlazar auth/tenant, secretos, observabilidad, CI, ADR y evidencia fechada.
-- Versionar sin alterar la propuesta AWS existente del 09/10, como planificación.
+- Incorporar el esquema AWS del 10/10 y la plantilla Terraform validada localmente
+  en docs/architecture-aws.md e infra/aws-reference; marcar EC2 del 09/10 como
+  antecedente, con su interpretación operativa superada.
 - Registrar verificaciones por criterio y cobertura del guion oficial; mantener
   la memoria compartida como fuente canónica conforme a docs/memoria/README.md.
 
@@ -28,8 +30,10 @@ pendientes, evidencia de despliegue y propuesta cloud.
 
 ## Impact
 
-Solo documentación; sin cambios de runtime, datos, dependencias, infraestructura,
-presupuestos, prioridades, fechas o roles. No cierra el vertical generativo.
+Documentación y código Terraform de referencia sin ejecución; sin cambios de
+runtime, datos o infraestructura desplegada, presupuestos, prioridades, fechas
+o roles. La plantilla fija sus herramientas de validación de forma aislada;
+no modifica dependencias de las aplicaciones. No cierra el vertical generativo.
 La memoria no se copia al repositorio ni se publica sin revisión humana.
 
 ## Participación registrada
