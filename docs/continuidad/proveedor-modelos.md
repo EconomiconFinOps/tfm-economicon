@@ -35,6 +35,10 @@ por llamada. Los limites mas restrictivos del uso real siguen vigentes.
 
 ## Siguientes pasos
 
-Pruebas simuladas: 26/26 pasan, revision asistida APPROVE. Pendiente de
-publicacion: PR/CI y estado final de Trello. No hay autorizacion para publicar en Discord. Las revisiones asistidas
+Pruebas simuladas: 26/26 pasan, revision asistida APPROVE. Entrega en
+[PR113](https://github.com/EconomiconFinOps/tfm-economicon/pull/113), fuente
+del estado de integracion y CI; Trello conserva el estado operativo. El
+cambio OpenSpec se archiva como `2026-10-10-jup-078-llm-provider-adr`,
+preservando y extendiendo la especificacion canonica. Proxima accion
+operativa: renovar antes del 09/11 conciliando gasto, sin duplicar el techo. No hay autorizacion para publicar en Discord. Las revisiones asistidas
 se atribuyen a subagentes, nunca como intervenciones de los miembros humanos.

@@ -88,3 +88,14 @@ real. El gateway legado4100 sigue activo, fuera de esta nueva ruta operativa.
 
 Contrato de claves contrastado con la [documentacion oficial LiteLLM](https://docs.litellm.ai/docs/proxy/virtual_keys)
 el 2026-10-10 y, para la compatibilidad concreta, con el gateway fijado.
+
+## Entrega e integracion
+
+[PR #113](https://github.com/EconomiconFinOps/tfm-economicon/pull/113) contra
+`develop`. Revisar sus checks por SHA para el estado final de CI. El requisito
+humano `JUP reviews` se dispensa exclusivamente para este cierre por la
+autorizacion del usuario de sustituir esas interacciones por subagentes; no
+se simulan reviews independientes desde la cuenta del autor ni se modifican
+protecciones. La integracion requiere CI tecnica satisfactoria y ausencia de
+peticiones de cambios pendientes. El estado final de merge y el recibo de
+Trello se conservan en sus fuentes, evitando anticipar resultados.
