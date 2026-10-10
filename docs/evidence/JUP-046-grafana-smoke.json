@@ -1,0 +1,68 @@
+{
+  "verifiedOn": "2026-10-10",
+  "result": "PASS",
+  "health": {
+    "database": "ok",
+    "version": "11.3.0",
+    "commit": "d9455ff7db73b694db7d412e49a68bec767f2b5a"
+  },
+  "image": "grafana/grafana:11.3.0",
+  "imageId": "sha256:a0f881232a6fb71a0554a47d0fe2203b6888fe77f4cefb7ea62bed7eb54e13c3",
+  "container": "jup046-grafana-01a124a5",
+  "rules": [
+    {
+      "uid": "llm-provider-error-ratio",
+      "for": "2m",
+      "noDataState": "NoData",
+      "execErrState": "Error"
+    },
+    {
+      "uid": "llm-embedding-latency",
+      "for": "2m",
+      "noDataState": "NoData",
+      "execErrState": "Error"
+    },
+    {
+      "uid": "llm-generation-latency",
+      "for": "2m",
+      "noDataState": "NoData",
+      "execErrState": "Error"
+    }
+  ],
+  "dashboard": {
+    "uid": "economicon-llm-degradation",
+    "panels": 6
+  },
+  "datasource": {
+    "uid": "prometheus",
+    "type": "prometheus",
+    "url": "http://prometheus:9090"
+  },
+  "isolation": {
+    "networkMode": "none",
+    "portBindings": {},
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ]
+  },
+  "checks": [
+    "3 provisioned rules accepted",
+    "PromQL matches source exactly",
+    "threshold conditions match source",
+    "pending period and NoData/Error states match source",
+    "dashboard provisioned with 6 panels",
+    "prometheus datasource provisioned",
+    "no network or published ports"
+  ],
+  "limitations": [
+    "Provisioning/API smoke only; alert evaluation disabled",
+    "No browser rendering or live LLM/provider tested",
+    "No external notification delivery tested",
+    "API snapshots precede annotation-only runbook URL correction; PromQL and conditions unchanged",
+    "Runbook canonical develop link becomes available after merge"
+  ],
+  "cleanup": "Named ephemeral container removed successfully; temporary configuration and receipts retained under /tmp/economicon-jup046-grafana-01a124a5"
+}

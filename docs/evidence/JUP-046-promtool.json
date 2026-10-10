@@ -1,0 +1,27 @@
+{
+  "verifiedOn": "2026-10-10",
+  "result": "PASS",
+  "prometheusVersion": "2.55.1",
+  "revision": "6d7569113f1ca814f1e149f74176656540043b8d",
+  "platform": "linux/amd64",
+  "rules": 3,
+  "scenarios": 19,
+  "extraction": "tools/llm-alerts-promtool.mjs",
+  "fixtures": "tools/fixtures/llm-alerts/scenarios.mjs",
+  "ruleSha256": "4b59ad941f5c9db89e01f0525627a543e4d885881dacd697a4ad69bdffc2b26e",
+  "testSha256": "5e5d8ecac55190213304ad1f35ce67ddb0ddbd7f6099fd1a319d67cd2bbc87b4",
+  "commands": [
+    "promtool check rules llm-rules.yml",
+    "promtool test rules llm-tests.yml"
+  ],
+  "isolation": [
+    "network none",
+    "read-only container",
+    "read-only fixtures",
+    "tmpfs /tmp"
+  ],
+  "limitations": [
+    "Synthetic time series; no paid model requests",
+    "Grafana state transitions represented by the extracted equivalent A > 0 condition and for, not a live notification test"
+  ]
+}

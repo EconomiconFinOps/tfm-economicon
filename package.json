@@ -27,6 +27,8 @@
     "assistant-corpus:validate": "node tools/assistant-corpus.mjs validate",
     "assistant-corpus:test": "node --test tools/assistant-corpus.test.mjs",
     "llm-gateway:test": "node --test tools/llm-gateway-config.test.mjs",
+    "llm-alerts:test": "node --test tools/llm-alerts.test.mjs",
+    "llm-alerts:promtool": "node tools/llm-alerts-promtool.mjs",
     "pr:check": "node tools/pr-policy.mjs",
     "pr:check:test": "node --test tools/pr-policy.test.mjs",
     "ci:check:test": "node --test tools/ci-workflow.test.mjs",

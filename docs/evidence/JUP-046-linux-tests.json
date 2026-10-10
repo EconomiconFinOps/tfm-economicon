@@ -1,0 +1,101 @@
+{
+  "verifiedOn": "2026-10-10",
+  "result": "PASS",
+  "sourceArchiveSha256": "6a16bfbb66daa2a8c33b0d6f8fa9e42b3cce7eed24641149bd6bbf5df50aeb3f",
+  "sourceArchiveFiles": 990,
+  "appPythonFilesStillMatchCurrentWorktree": 198,
+  "baseCommit": "c2995a118d419dfe725247bac9c6f219a3f0ea77",
+  "processor": {
+    "image": "jup108-validation-mock-2688e975-processor",
+    "imageId": "sha256:33a903823c8df9fff8a207412df88c46363632d690b08bab1ef58d472a5a5230",
+    "passed": 466,
+    "skipped": 57,
+    "warnings": 330,
+    "failed": 0,
+    "seconds": 12.01,
+    "versions": {
+      "python": "3.12.13 (main, Jun 11 2026, 01:09:00) [GCC 14.2.0]",
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.41",
+      "packages": {
+        "pytest": "9.1.1",
+        "httpx": "0.28.1",
+        "PyYAML": "6.0.3",
+        "prometheus-client": "0.26.0",
+        "pydantic": "2.13.5",
+        "pydantic-settings": "2.15.0",
+        "structlog": "26.1.0",
+        "langchain-core": "1.6.2",
+        "fastapi": "0.141.1",
+        "sqlalchemy": "2.0.52",
+        "psycopg": "3.3.5"
+      }
+    },
+    "extraReadOnlyBackendDependencies": {
+      "PyJWT": "2.13.0",
+      "email-validator": "2.3.0",
+      "dnspython": "2.8.0"
+    },
+    "log": "processor-tests-with-backend-deps.log"
+  },
+  "backend": {
+    "image": "jup108-validation-mock-2688e975-backend",
+    "imageId": "sha256:753fc625dab96835c184a3c52c6ff43674881d02e08c9dc5c2480b31adda9960",
+    "passed": 910,
+    "skipped": 34,
+    "warnings": 2166,
+    "failed": 0,
+    "seconds": 122.63,
+    "versions": {
+      "python": "3.12.13 (main, Jun 11 2026, 01:09:00) [GCC 14.2.0]",
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.41",
+      "packages": {
+        "pytest": "9.1.1",
+        "httpx": "0.28.1",
+        "PyYAML": "6.0.3",
+        "prometheus-client": "0.26.0",
+        "pydantic": "2.13.5",
+        "pydantic-settings": "2.15.0",
+        "structlog": "26.1.0",
+        "langchain-core": null,
+        "fastapi": "0.141.1",
+        "sqlalchemy": "2.0.52",
+        "psycopg": "3.3.5"
+      }
+    },
+    "log": "backend-tests.log"
+  },
+  "command": "python -m pytest tests -q -p no:cacheprovider --basetemp=/tmp/pytest",
+  "testIsolation": {
+    "networkMode": "none",
+    "sourceMount": "read-only",
+    "dependenciesMount": "read-only",
+    "rootFilesystem": "read-only",
+    "tmp": "writable tmpfs",
+    "user": "10001 (image default)",
+    "healthcheck": "disabled",
+    "entrypoint": "python",
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ],
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTHONPATH": "/deps",
+    "processorPYTHONUSERBASE": "/backend-deps"
+  },
+  "setupNotes": [
+    "First pip --target attempt failed due permissions in the isolated host directory; adjusted only that temporary directory and retried successfully.",
+    "Installed pytest/httpx/PyYAML into separate task target directory; package versions recorded. No application startup.",
+    "First processor run: 460 passed, 57 skipped, 6 failed because its production image lacks backend PyJWT required by cross-service subprocess tests.",
+    "Copied PyJWT/email-validator/dnspython from the existing backend image without network downloads; mounted as Python user site so subprocess PYTHONPATH replacement does not hide them.",
+    "No product source or tests modified; all archived app Python files still match the current worktree."
+  ],
+  "limitations": [
+    "Skipped cases were not validated; no opt-in live integration environment supplied.",
+    "No real LLM, database, broker, Discord or external notification integration exercised.",
+    "Production dependencies come from the existing validation images; this is not a newly built final application image.",
+    "Known Windows 3.14 failures are contrasted by passing Linux 3.12 tests, not repaired by this validation."
+  ],
+  "cleanup": "All task containers used --rm and completed; temporary source, dependencies and receipts retained under /tmp/economicon-jup046-python-01a124a5."
+}

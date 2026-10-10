@@ -1,0 +1,81 @@
+{
+  "title": "Economicon — Degradación LLM",
+  "uid": "economicon-llm-degradation",
+  "description": "JUP-046. Llamadas completas al proveedor, incluidos reintentos; dimensión job / instance / operation.",
+  "tags": ["Economicon", "JUP-046", "LLM"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Cómo interpretar el estado",
+      "type": "text",
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "**Firing**: umbral superado durante 2 minutos, con ≥5 llamadas en 5 minutos por servicio, instancia y operación. **Normal**: no hay una degradación que cumpla esos requisitos; con poco tráfico no demuestra salud. **NoData**: faltan observaciones (p. ej., proveedor sin configurar, modo mock o serie ausente). **Error**: no se pudo evaluar la regla. Los fallos reales de autenticación, cuota o red sí cuentan como errores observados. El p95 se estima por buckets. Consultar el [runbook de diagnóstico y recuperación](https://github.com/EconomiconFinOps/tfm-economicon/blob/develop/docs/runbooks/llm-degradation.md), disponible en develop tras integrar esta entrega."
+      }
+    },
+    {
+      "id": 2,
+      "title": "Alertas LLM — incluye NoData y Error",
+      "type": "alertlist",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 4 },
+      "options": {
+        "alertName": "LLM -",
+        "alertInstanceLabelFilter": "{jup=\"JUP-046\"}",
+        "dashboardAlerts": false,
+        "datasource": "grafana",
+        "groupMode": "default",
+        "maxItems": 30,
+        "showInstances": true,
+        "sortOrder": 3,
+        "stateFilter": { "firing": true, "pending": true, "normal": true, "noData": true, "error": true },
+        "viewMode": "list"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Volumen en 5 minutos — mínimo 5 para alertar",
+      "description": "increase extrapola entre scrapes y puede mostrar decimales. Menos de 5 equivale a evidencia insuficiente para activar estas alertas.",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
+      "fieldConfig": { "defaults": { "min": 0, "unit": "short", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "blue", "value": 5 }] }, "custom": { "thresholdsStyle": { "mode": "line" } } }, "overrides": [] },
+      "targets": [{ "refId": "A", "expr": "sum by (job, instance, operation) (increase(llm_provider_requests_total[5m]))", "legendFormat": "{{job}} / {{instance}} / {{operation}}" }]
+    },
+    {
+      "id": 4,
+      "title": "Errores de llamadas completas — umbral >20%",
+      "description": "Incluye todos los resultados terminales; un fallo transitorio recuperado por reintento cuenta como éxito de la llamada completa.",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
+      "fieldConfig": { "defaults": { "min": 0, "max": 100, "unit": "percent", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 20 }] }, "custom": { "thresholdsStyle": { "mode": "line" } } }, "overrides": [] },
+      "targets": [{ "refId": "A", "expr": "100 * ((sum by (job, instance, operation) (increase(llm_provider_requests_total{outcome=\"failure\"}[5m])) or on (job, instance, operation) (0 * sum by (job, instance, operation) (increase(llm_provider_requests_total[5m])))) / clamp_min(sum by (job, instance, operation) (increase(llm_provider_requests_total[5m])), 1))", "legendFormat": "{{job}} / {{instance}} / {{operation}}" }]
+    },
+    {
+      "id": 5,
+      "title": "Embeddings p95 — umbral >10 segundos",
+      "description": "Latencia de llamada completa, incluidos reintentos y esperas. Comparar con el volumen antes de interpretar el p95.",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "fieldConfig": { "defaults": { "min": 0, "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 10 }] }, "custom": { "thresholdsStyle": { "mode": "line" } } }, "overrides": [] },
+      "targets": [{ "refId": "A", "expr": "histogram_quantile(0.95, sum by (job, instance, operation, le) (rate(llm_provider_request_duration_seconds_bucket{operation=\"embedding\"}[5m])))", "legendFormat": "{{job}} / {{instance}} / {{operation}}" }]
+    },
+    {
+      "id": 6,
+      "title": "Generación p95 — umbral >20 segundos",
+      "description": "Latencia de llamada completa, incluidos reintentos y esperas. Comparar con el volumen antes de interpretar el p95.",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "fieldConfig": { "defaults": { "min": 0, "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 20 }] }, "custom": { "thresholdsStyle": { "mode": "line" } } }, "overrides": [] },
+      "targets": [{ "refId": "A", "expr": "histogram_quantile(0.95, sum by (job, instance, operation, le) (rate(llm_provider_request_duration_seconds_bucket{operation=\"generation\"}[5m])))", "legendFormat": "{{job}} / {{instance}} / {{operation}}" }]
+    }
+  ]
+}

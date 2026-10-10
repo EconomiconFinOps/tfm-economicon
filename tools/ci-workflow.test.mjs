@@ -128,6 +128,7 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "synthetic-costs:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
+    "llm-alerts:test",
     "docker:validate",
     "local:test",
     "collaboration:test",
@@ -135,6 +136,17 @@ test("retains all existing governance, corpus and gateway validations", () => {
   ]) {
     assert.match(commands, new RegExp(`pnpm ${check.replaceAll(":", "\\:")}`));
   }
+});
+
+test("executes real LLM PromQL thresholds and recovery without network access", () => {
+  const step = workflow.jobs.governance.steps.find(({ name }) => name === "Validate LLM thresholds and recovery with Prometheus");
+  assert.ok(step);
+  assert.equal(step.if, undefined);
+  assert.equal(step["continue-on-error"], undefined);
+  assert.match(step.run, /llm-alerts-promtool\.mjs --prepare/);
+  assert.match(step.run, /prom\/prometheus:v2\.55\.1 check rules llm-rules\.yml/);
+  assert.match(step.run, /--tmpfs \/tmp:rw,nosuid,size=128m.*prom\/prometheus:v2\.55\.1 test rules llm-tests\.yml/);
+  assert.equal((step.run.match(/docker run --rm --network none --read-only/g) ?? []).length, 2);
 });
 
 test("requires real frontend tests and lint before the mandatory build", () => {

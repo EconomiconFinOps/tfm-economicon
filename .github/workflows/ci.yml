@@ -79,11 +79,17 @@ jobs:
           corepack pnpm assistant-eval:test
           corepack pnpm synthetic-costs:test
           corepack pnpm llm-gateway:test
+          corepack pnpm llm-alerts:test
           corepack pnpm docker:validate
           corepack pnpm local:test
           corepack pnpm collaboration:test
           corepack pnpm contributions:test
           corepack pnpm openspec:validate
+      - name: Validate LLM thresholds and recovery with Prometheus
+        run: |
+          node tools/llm-alerts-promtool.mjs --prepare "$RUNNER_TEMP/jup046-promtool"
+          docker run --rm --network none --read-only -v "$RUNNER_TEMP/jup046-promtool:/work:ro" -w /work --entrypoint /bin/promtool prom/prometheus:v2.55.1 check rules llm-rules.yml
+          docker run --rm --network none --read-only --tmpfs /tmp:rw,nosuid,size=128m -v "$RUNNER_TEMP/jup046-promtool:/work:ro" -w /work --entrypoint /bin/promtool prom/prometheus:v2.55.1 test rules llm-tests.yml
 
   python-tests:
     name: Python tests (${{ matrix.service.name }})

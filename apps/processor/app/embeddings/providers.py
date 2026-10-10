@@ -3,6 +3,7 @@ import math
 
 from app.clients.litellm import LiteLLMClient, ProviderError
 from app.core.config import Settings
+from app.core.llm_metrics import observe_provider_call
 
 
 class MockEmbeddingProvider:
@@ -32,6 +33,10 @@ class LiteLLMEmbeddingProvider:
         self.client = LiteLLMClient(settings)
 
     def embed(self, text: str) -> list[float]:
+        with observe_provider_call("embedding", ProviderError):
+            return self._embed(text)
+
+    def _embed(self, text: str) -> list[float]:
         payload = self.client.post("embeddings", {
             "model": self.model, "input": text, "dimensions": self.dimension,
         })

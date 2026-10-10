@@ -1,3 +1,5 @@
+from contextlib import nullcontext
+
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.agents.guardrails import (
@@ -11,6 +13,7 @@ from app.agents.providers import get_provider
 from app.agents.schemas import FinOpsResponse, finops_response_format
 from app.clients.litellm import ProviderError
 from app.core.config import Settings
+from app.core.llm_metrics import observe_provider_call
 
 
 class AgentRuntime:
@@ -37,18 +40,23 @@ class AgentRuntime:
             metadata_json=prepared.metadata_json,
         )
         rendered_prompt = "\n".join(message.content for message in messages)
-        raw_response = self.provider.invoke(
-            rendered_prompt,
-            response_format=self.response_format,
+        observation = (
+            observe_provider_call("generation", ProviderError)
+            if self.settings.llm_provider == "litellm" else nullcontext()
         )
-        try:
-            response = parse_and_validate_response(raw_response)
-        except AgentResponseError:
-            if self.settings.llm_provider != "litellm":
-                raise
-        else:
-            return self._result(response)
-        raise ProviderError("invalid_response")
+        with observation:
+            raw_response = self.provider.invoke(
+                rendered_prompt,
+                response_format=self.response_format,
+            )
+            try:
+                response = parse_and_validate_response(raw_response)
+            except AgentResponseError:
+                if self.settings.llm_provider != "litellm":
+                    raise
+            else:
+                return self._result(response)
+            raise ProviderError("invalid_response")
 
     def _result(self, response: FinOpsResponse) -> dict:
         return {

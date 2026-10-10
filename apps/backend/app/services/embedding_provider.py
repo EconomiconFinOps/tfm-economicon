@@ -9,6 +9,8 @@ from functools import partial
 from http.client import HTTPConnection, HTTPException, HTTPResponse, HTTPSConnection, RemoteDisconnected
 from urllib import error, request
 
+from app.core.llm_metrics import observe_provider_call
+
 PROVIDER_ERROR_CATEGORIES = frozenset({
     "timeout", "connection", "transport", "authentication", "request",
     "redirect", "rate_limit", "upstream", "invalid_response",
@@ -213,14 +215,15 @@ class LiteLLMEmbeddingProvider:
 
     def embed(self, text: str) -> list[float]:
         payload = json.dumps({"model": self.alias, "input": text, "dimensions": self.dimension}, allow_nan=False).encode("utf-8")
-        for attempt in range(self._retries + 1):
-            category, retryable = self._attempt(payload)
-            if isinstance(category, list):
-                return category
-            if not retryable or attempt == self._retries:
-                raise ProviderError(category)
-            _sleep(min(0.25 * (2 ** attempt), 1.0))
-        raise ProviderError("transport")
+        with observe_provider_call("embedding", ProviderError):
+            for attempt in range(self._retries + 1):
+                category, retryable = self._attempt(payload)
+                if isinstance(category, list):
+                    return category
+                if not retryable or attempt == self._retries:
+                    raise ProviderError(category)
+                _sleep(min(0.25 * (2 ** attempt), 1.0))
+            raise ProviderError("transport")
 
     def _attempt(self, payload: bytes):
         req = request.Request(
