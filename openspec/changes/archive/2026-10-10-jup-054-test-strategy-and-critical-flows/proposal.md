@@ -29,7 +29,9 @@ explicit coverage and reproducible evidence.
 ## Impact
 
 Tests, CI frontend command and technical documentation only. No new application
-functionality, production deployment, paid model calls or changes to human roles.
+functionality, production deployment or paid model calls. Initial human role
+assignments are retained as historical planning; the user-authorized overdue-MVP
+exception and actual attribution are recorded in the delivery evidence.
 JUP-087 is reused; real infrastructure checks stay opt-in and are never equated
 with offline results. This contribution does not constitute independent review
 or validation of its own changes.

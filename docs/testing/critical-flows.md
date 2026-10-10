@@ -112,4 +112,6 @@ Detener únicamente los contenedores/túnel creados para esta ejecución al term
 Éxito offline demuestra los componentes y contratos indicados, no fiabilidad de
 un LLM, Azure real, despliegue cloud, ni comportamiento visual en navegador.
 Éxito del recorrido real demuestra sólo esos escenarios y las versiones registradas.
-La revisión y aceptación humanas se conservan como pendientes hasta sus dictámenes.
+No se acredita revisión ni aceptación humana sin sus dictámenes. La excepción
+por plazo del MVP autorizada para el cierre de JUP-054 se documenta en la
+[evidencia de entrega](../evidence/JUP-054-validation.md#entrega-y-atribución).

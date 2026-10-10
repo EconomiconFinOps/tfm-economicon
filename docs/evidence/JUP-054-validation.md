@@ -1,7 +1,7 @@
 # Evidencia técnica — JUP-054
 
 Fecha: 2026-10-10. [Trello](https://trello.com/c/ZsxwmagI).
-[PR draft #93](https://github.com/EconomiconFinOps/tfm-economicon/pull/93), rama
+[PR #93](https://github.com/EconomiconFinOps/tfm-economicon/pull/93), rama
 `test/JUP-054-critical-flows`. Base: `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
 
 ## Entrega y atribución
@@ -21,9 +21,22 @@ Contribución preparada en copia aislada
 compartido y las ramas ajenas permanecen intactos. Roles confirmados por la
 integración oficial de DockerServer el 10/10: Lucia Mateo, liderazgo; Paris
 Arcos Martin, pairing; Victor Mendez, revisión; Alejandro Aguado,
-validación/pruebas/documentación. Esta es una rama de aportación propia para su
-adopción por Lucía, no un dictamen independiente de los propios cambios.
-No acredita pairing ni aceptación humana ni reasigna roles.
+validación/pruebas/documentación. Son las asignaciones nominales iniciales, no
+una certificación de participación efectiva.
+
+**Excepción por entrega del MVP fuera de plazo, autorizada por el usuario el
+10/10/2026:** completar la implementación y el cierre de JUP-054 sin esperar la
+adopción y los dictámenes humanos inicialmente pendientes. La ejecución,
+pruebas, documentación e integración se atribuyen a Alejandro (`Iber1to`) con
+asistencia de Codex. La revisión técnica asistida no encontró hallazgos nuevos;
+incluye autorrevisión de las aserciones de historial, no independencia humana.
+No se acredita pairing ni aprobación humana no observados. Se usa la excepción
+administrativa ya existente, sólo mediante PR y tras los controles técnicos,
+sin alterar protecciones. [Registro de atribución](../contributions/README.md#excepción-de-entrega-del-mvp--jup-054).
+
+OpenSpec archivado en
+`openspec/changes/archive/2026-10-10-jup-054-test-strategy-and-critical-flows/`;
+los tres requisitos están en `openspec/specs/critical-flow-testing/spec.md`.
 
 ## Resultados aprobados
 
@@ -48,7 +61,8 @@ conservan estos conteos. Los checks del head vigente se consultan en la PR.
 
 Son **2041 pruebas de aplicación aprobadas en CI**, más los tres escenarios
 reales externos a CI. Los 91 skips de servicios no prueban sus integraciones.
-`JUP reviews` queda pendiente de dictámenes humanos; no se presenta como verde.
+`JUP reviews` no dispone de dictámenes humanos y no se presenta como verde;
+su exigencia para este cierre queda exceptuada por la autorización anterior.
 
 ## Intentos Windows y contraste
 
@@ -119,18 +133,17 @@ XML, logs y comandos de la ejecución real quedan conservados. Se retiran los
 contenedores/red/túnel propios tras comprobar sus etiquetas de propiedad;
 recibo local `cleanup.txt`. No se toca ningún servicio compartido.
 
-## Criterios y pendientes
+## Criterios y límites de la entrega
 
 | Criterio de Trello | Evidencia / situación |
 | --- | --- |
 | Resultado funcional verificable | Contratos, persistencia y errores comprobados en las suites nuevas y reales |
 | Pruebas necesarias añadidas y en verde | 7 casos nuevos, suite CI completa y recorrido real aprobados; limitaciones Windows arriba |
 | Documentación y decisiones actualizadas | Matriz, OpenSpec, este informe y continuidad |
-| Pull request revisado y vinculado | PR #93 draft enlazada; revisión humana pendiente |
-| Validación funcional y evidencia enlazadas | Evidencia técnica por criterio; aceptación independiente pendiente |
+| Pull request revisado y vinculado | PR #93 enlazada; revisión técnica asistida sin hallazgos, requisito de revisión humana exceptuado por plazo MVP |
+| Validación funcional y evidencia enlazadas | Evidencia técnica por criterio; aceptación independiente exceptuada por plazo MVP |
 
-Pendiente de Lucía: adoptar la contribución y coordinar pairing/revisión/validación
-independientes; después, integración y cierre según CONTRIBUTING.md. No se mueve
-ni se cierra la tarjeta. Sin mensajes Discord. La evidencia no acredita Azure
+La PR registra el evento de integración administrativa y Trello el cierre de la
+tarjeta conforme a esta excepción. Sin mensajes Discord. La evidencia no acredita Azure
 cloud, LLM externo, gateway LiteLLM real, reinicio RabbitMQ, todas las migraciones,
 Compose completo ni navegador real. RF-096-004 (infraestructura en CI) sigue separado.

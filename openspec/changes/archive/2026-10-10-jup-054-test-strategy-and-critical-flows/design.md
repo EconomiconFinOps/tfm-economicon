@@ -26,7 +26,11 @@ cloud deployment and browser rendering remain outside offline test evidence.
 
 ## Delivery
 
-The assigned validator contributes tests in an independent branch for Lucía's
-adoption. Pairing and independent review remain human actions; no attribution
-is inferred from automation. Scope, commands and evidence are recorded in
+The initial plan submitted the assigned validator's contribution for Lucía's
+adoption. On 2026-10-10 the user explicitly authorized completion under an
+exception because the MVP delivery was overdue. Implementation, validation
+evidence and administrative PR closure are attributed to Alejandro with Codex
+assistance; no human pairing or independent approval is inferred. The existing
+PR-only administrator exception is used without changing branch protections.
+Scope, commands, attribution and evidence are recorded in
 `docs/testing/critical-flows.md` and `docs/evidence/JUP-054-validation.md`.
