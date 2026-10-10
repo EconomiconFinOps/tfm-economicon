@@ -60,7 +60,7 @@ se rompió y qué falló). Orden: prioridad A y después B.
 
 - [x] 5.1 H-02, backend `tests/test_tenants_route.py`: `GET /tenants` con SQLite real. Cada usuario ve
   exactamente sus membresías, otro usuario no ve las ajenas y sin token responde 401.
-- [ ] 5.2 H-03, backend `tests/test_conversation_creation.py`: `POST /assistant/conversations` con
+- [x] 5.2 H-03, backend `tests/test_conversation_creation.py`: `POST /assistant/conversations` con
   éxito. La conversación se crea en el tenant activo y a nombre del usuario autenticado, y otro
   tenant no la ve.
 - [ ] 5.3 H-07, processor `tests/test_ingest_redelivery.py`: `IngestTask` con repositorio SQLite. La

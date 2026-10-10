@@ -42,3 +42,40 @@ checklist y el cierre se completan en la tarea 7.5.
   con el esquema actual equivale a no tener fila en `user_tenants`, ya cubierto por `admin-alone` y
   por la ausencia de tenants ajenos.
 - **Producto:** sin cambios (`git diff --stat -- apps` vacío; sólo el archivo nuevo).
+
+## Tarea 5.2 — H-03, `POST /assistant/conversations` con éxito (backend)
+
+- **Archivo nuevo:** `apps/backend/tests/test_conversation_creation.py`, 26 casos con SQLite real,
+  autenticación real y validación de pertenencia real; sin skips ni xfail. No repite los casos de
+  `test_tenant_isolation_api.py` (422 por `user_id` en el cuerpo y 404 indistinguible de ids ajenos).
+- **Comando:** `python -m pytest tests/test_conversation_creation.py -q -p no:cacheprovider -W ignore`
+  desde `apps/backend` (Python 3.12).
+- **Resultado limpio:** 26 passed. Con `test_tenants_route.py`, `test_tenant_isolation_api.py` y
+  `test_assistant_service.py`: 54 passed y 2 omitidas (opt-in CockroachDB preexistentes). QA repitió el
+  archivo tres veces seguidas, en orden inverso y duplicado en la misma invocación: 26 passed siempre.
+- **Qué cubre:** respuesta 201 con la forma exacta del registro, id uuid4 por patrón, tenant y usuario
+  tomados del contexto autenticado (cuatro identidades y un usuario multi-tenant en ambos tenants),
+  título recortado, `created_at == updated_at`, fila persistida idéntica a lo devuelto, una sola fila
+  nueva sin tocar las existentes ni `messages`, ids distintos en creaciones consecutivas, lectura por su
+  dueño, invisibilidad para otro tenant, otro usuario y el mismo usuario en otro tenant, presencia sólo
+  en el listado de su dueño y tenant, y rechazos sin escritura (401 sin token y con token inválido, 400
+  sin `X-Tenant-Id`, 403 sin pertenencia incluido un admin sin membresías, 422 con título vacío o ausente).
+- **Roturas del tester** (copia desechable): título fijo o sin recortar (también vía esquema), `user_id` y
+  `tenant_id` fijos en la inserción, ruta sin autenticación, `get_active_tenant` sin pertenencia,
+  `fetch_conversation(es)` sin filtro de usuario o de tenant, `updated_at` distinto, INSERT omitido con
+  registro devuelto e `id` fijo. Todas detectadas. Una (listado sin filtro de tenant) sobrevivió a la primera
+  versión del archivo y se mató añadiendo el caso del usuario multi-tenant.
+- **Roturas independientes de QA** (siete): fechas fijas en el año 2000, 200 en lugar de 201, una fila extra
+  en `messages`, título persistido distinto del devuelto, campo extra en el registro, detalle sin filtro de
+  usuario con 404 de cuerpo distinto, y `uuid1` en lugar de `uuid4`. Las siete se detectan.
+- **Matiz de la rotura «ruta sin autenticación»:** quitar `get_current_user` sólo de la ruta no se observa
+  como 401 porque `get_active_tenant` depende de él; por eso se rompió también `get_current_user`, y eso sí
+  se detecta.
+- **Riesgo de reloj, valorado por QA:** la ventana `antes <= created_at <= despues` usa el mismo reloj, en el
+  mismo proceso, que el producto, sin red de por medio, así que la deriva entre host y contenedor de
+  `RF-085-002` no le afecta. Sólo fallaría con un retroceso del reloj durante los milisegundos de la
+  llamada. Se acepta sin tolerancia añadida.
+- **Límite conocido:** `get_active_tenant` también responde 400 con cabecera `X-Tenant-Id` duplicada, con
+  espacios o con comas; aquí sólo se prueba la cabecera ausente. Es una dependencia compartida por todas
+  las rutas y queda fuera de este hueco.
+- **Sin supervivientes.** Veredicto QA: accept. Producto sin cambios (`git diff --stat -- apps` vacío).
