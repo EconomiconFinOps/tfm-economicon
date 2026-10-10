@@ -4,11 +4,44 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.dependencies import get_active_tenant, get_database
 from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSummary, canonical_tag_key
+from app.schemas.tag_coverage import TagCoverage
 from app.schemas.budget import BudgetDefinition, BudgetEvaluation
 from app.services.budget import evaluate_budget
 
 
 router = APIRouter(prefix="/billing", tags=["billing"])
+
+
+def _billing_period(start_date: str | None, end_date: str | None) -> tuple[date, date]:
+    if start_date is None and end_date is None:
+        start = datetime.now(timezone.utc).date().replace(day=1)
+        end = (start.replace(year=start.year + 1, month=1) if start.month == 12
+               else start.replace(month=start.month + 1))
+    elif start_date is not None and end_date is not None:
+        start, end = date.fromisoformat(start_date), date.fromisoformat(end_date)
+    else:
+        raise ValueError()
+    if start >= end:
+        raise ValueError()
+    return start, end
+
+
+@router.get("/tag-coverage", response_model=TagCoverage)
+def get_tag_coverage(
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+    start_date: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end_date: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+) -> TagCoverage:
+    try:
+        start, end = _billing_period(start_date, end_date)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid billing selection") from None
+    try:
+        result = database.fetch_tag_coverage(tenant_id, start_date=start, end_date=end)
+    except AmbiguousCostSource:
+        raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
+    return TagCoverage(**result)
 
 
 @router.post("/budget/evaluate", response_model=BudgetEvaluation)
@@ -41,16 +74,7 @@ def get_billing_summary(
     tag_key: str | None = None,
 ) -> BillingSummary:
     try:
-        if start_date is None and end_date is None:
-            start = datetime.now(timezone.utc).date().replace(day=1)
-            end = (start.replace(year=start.year + 1, month=1) if start.month == 12
-                   else start.replace(month=start.month + 1))
-        elif start_date is not None and end_date is not None:
-            start, end = date.fromisoformat(start_date), date.fromisoformat(end_date)
-        else:
-            raise ValueError()
-        if start >= end:
-            raise ValueError()
+        start, end = _billing_period(start_date, end_date)
         if group_by == "tag":
             if tag_key is None or any(ord(char) < 32 or ord(char) == 127 for char in tag_key):
                 raise ValueError()
