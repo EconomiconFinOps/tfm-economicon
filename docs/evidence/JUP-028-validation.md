@@ -7,7 +7,7 @@ Base: `origin/develop` en `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
 Worktree aislado: `../tfm-economicon-jup028`, relativo al checkout canónico.
 
 Estado de esta evidencia: implementación, pruebas locales acotadas y regresión
-Linux final disponibles; publicación/CI de PR y validación independiente pendientes.
+Linux final disponibles; [PR #104](https://github.com/EconomiconFinOps/tfm-economicon/pull/104) publicada en borrador. Revisión y validación independientes pendientes; los checks de la PR conservan el estado de CI.
 Este documento registra evidencia técnica propia; no es una review
 `Validacion JUP-028` ni acredita aceptación de la tarjeta.
 
@@ -45,8 +45,8 @@ inicial no encontró una PR existente de JUP-028.
 | Resultado funcional verificable | Endpoint y contrato implementados; respuesta autenticada, importes de referencia y SQL real verificados por la ejecución local acotada. Sólo candidatos por metadatos; no asignación financiera definitiva ni despliegue. |
 | Pruebas necesarias añadidas y en verde | 55 pruebas locales aprobaron con los 22 casos JUP-028 originales. La regresión Linux final aprobó 934 pruebas, incluidos los 23 casos JUP-028 finales y la frontera 20000/19999 con neto cero; 21 pruebas quedaron omitidas y no se consideran validadas. |
 | Documentación y decisiones actualizadas | Contrato API, OpenSpec, esta evidencia y continuidad disponibles; límites y dependencias sin integración declarados. OpenSpec estricto, trazabilidad y controles descritos más abajo aprobaron. |
-| Pull request revisado y vinculado | Pendiente de publicación/vínculo de PR y revisión humana. No se acredita con los tests locales. |
-| Validación funcional y evidencia enlazadas | Evidencia funcional técnica propia disponible; validación independiente de Paris Arcos Martin y enlace final desde Trello pendientes. |
+| Pull request revisado y vinculado | PR #104 publicada en borrador y enlazada en Trello; revisión humana pendiente. No se acredita con los tests locales. |
+| Validación funcional y evidencia enlazadas | Evidencia funcional técnica propia disponible; enlace publicado en Trello, validación independiente de Paris Arcos Martin pendiente. |
 
 ## Entorno Y Versiones
 
@@ -125,9 +125,7 @@ Desde la raíz del worktree:
 Tras añadir el puntero de continuidad a AGENTS.md, el control de gobernanza
 del repositorio volvió a ejecutarse: **13 pruebas aprobadas**.
 
-No se interpreta esta batería como CI verde de una PR todavía no publicada.
-Las comprobaciones finales posteriores a cambios o al archivo de OpenSpec
-deben registrarse con su resultado correspondiente.
+La batería local no sustituye los checks de CI de la PR. El cambio OpenSpec permanece activo mientras la PR está en borrador. Un intento de publicar su archivo técnico fue rechazado por revisión automática al requerir autorización de archivo; se restauró el cambio activo, sin pérdida de especificación ni código.
 
 ## Regresión Completa: Incidencia Windows Y Resultado Linux
 
@@ -211,9 +209,7 @@ reales registrados: Victor Mendez, liderazgo; Alejandro Aguado,
 pairing/coautoría; Lucia Mateo, revisión; Paris Arcos Martin, validación.
 La asignación no acredita trabajo conjunto, revisiones ni aceptación.
 
-Pendientes: preparar o publicar la PR contra develop y su CI, enlazarla por la integración oficial de
-Trello y obtener la participación/revisión/validación humanas exigidas. No se
-afirma cierre, merge ni aceptación.
+Entrega publicada: PR #104 draft contra develop; comentario Trello `6ac9ee6799d750dfd0c25c14`, 10/10/2026 09:51 Europe/Paris, mediante integración oficial. Pendientes: participación/pairing, revisión de Lucía y validación de Paris. No se afirma cierre, merge ni aceptación. El check JUP reviews requiere ambas reviews humanas; consultar el estado técnico de CI en la PR.
 
 Limpieza confirmada: retirado el contenedor exclusivo
 `economicon-jup028-tests`, terminado el túnel SSH local del puerto 28428 y

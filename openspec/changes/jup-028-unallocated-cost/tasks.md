@@ -26,5 +26,5 @@ JUP: JUP-028
 ## 4. Reviewable Delivery
 
 - [x] 4.1 Record evidence by card criterion, commands, versions and untested limits.
-- [ ] 4.2 Update continuity and link the implementation and evidence from its pull request.
+- [x] 4.2 Update continuity and link the implementation and evidence from its pull request.
 - [x] 4.3 Record the actual state of pairing, independent review and validation without attributing unverified participation.

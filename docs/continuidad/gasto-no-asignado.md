@@ -19,8 +19,7 @@ Trello se leyó por la integración oficial
 seguían sin cambios. No existía una PR de JUP-028 en la consulta inicial.
 El registro de partida está en
 `../materiales/07-evidencias/hito-mvp-2026-10-09/backlog-dispatch-source.json`
-relativo a la raíz del repositorio. Publicación, CI, pairing y reviews humanas
-siguen pendientes al redactar este estado. No hay aceptación ni merge acreditados.
+relativo a la raíz del repositorio. [PR #104](https://github.com/EconomiconFinOps/tfm-economicon/pull/104) publicada en borrador contra develop; los checks contienen el estado de CI. Pairing y reviews humanas pendientes; sin aceptación ni merge acreditados. Enlace Trello publicado mediante la integración oficial, comentario `6ac9ee6799d750dfd0c25c14`, 10/10/2026 09:51 Europe/Paris.
 
 ## Decisiones Confirmadas
 
@@ -55,7 +54,7 @@ con esta unión de defectos. La integración entre las tarjetas no está probada
 
 La [evidencia por criterio](../evidence/JUP-028-validation.md) contiene comandos,
 versiones, casos, límites y el fallo de entorno Windows. La
-[especificación activa](../../openspec/changes/jup-028-unallocated-cost/specs/unallocated-cost/spec.md)
+[especificación versionada](../../openspec/changes/jup-028-unallocated-cost/specs/unallocated-cost/spec.md)
 y el [diseño](../../openspec/changes/jup-028-unallocated-cost/design.md) describen
 el contrato. No duplicar sus tablas en este resumen.
 
@@ -91,16 +90,18 @@ servicios desplegados. La fuente puede perder tags al agregar y no garantiza
 factura completa ni catálogo organizativo. Los resultados son candidatos sobre
 datos observados y no prueban la ausencia de etiquetas en Azure.
 
-## Próximos Pasos
+## Entrega Y Próximos Pasos
 
-1. Finalizar evidencias y tareas OpenSpec; al archivarlo, corregir los enlaces
-   activos de esta continuidad, evidencia y documentación relacionada.
-2. Preparar/publicar la PR contra develop, registrar CI y enlazarla desde Trello
-   exclusivamente mediante la integración oficial.
-3. Mantener los roles de Trello: Victor Mendez liderazgo, Alejandro Aguado
-   pairing, Lucia Mateo revisión, Paris Arcos Martin validación. Acreditar cada
-   participación real y las dos reviews requeridas sin inventarlas. Las pruebas
-   propias no sustituyen la validación independiente.
+OpenSpec permanece activo en `jup-028-unallocated-cost`, enlazado arriba.
+La revisión automática rechazó publicar su archivo técnico; se conservó el
+cambio activo. No se ha cerrado Trello ni acreditado aceptación.
 
-No enviar mensajes Discord sin autorización específica ni cerrar/archivar el
-chat por inferencia del estado técnico.
+1. Consultar los checks técnicos de la PR #104 y atender findings nuevos.
+2. Victor Mendez conserva liderazgo; Alejandro Aguado, pairing; Lucia Mateo,
+   revisión; Paris Arcos Martin, validación. Acreditar participación real y
+   ambas reviews requeridas antes de ready/aceptación, sin inventarlas.
+3. Integrar sólo tras el proceso de CONTRIBUTING. JUP-015/027/017 conservan sus
+   entregas independientes; revalidar cualquier integración que cambie el contrato.
+
+El comentario Trello enlaza la entrega; no se movió la lista de la tarjeta.
+No se enviaron mensajes Discord ni se archivó el chat.
