@@ -10,6 +10,7 @@ from app.api.routes.auth import router as auth_router
 from app.api.routes.billing import router as billing_router
 from app.api.routes.health import router as health_router
 from app.api.routes.jobs import router as jobs_router
+from app.api.routes.recommendation_impact import router as recommendation_impact_router
 from app.api.routes.tenants import router as tenants_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
@@ -91,3 +92,4 @@ app.include_router(tenants_router)
 app.include_router(billing_router)
 app.include_router(jobs_router)
 app.include_router(assistant_router)
+app.include_router(recommendation_impact_router)

@@ -17,6 +17,13 @@ Responsabilidades principales:
 - persistencia operativa
 - publicacion de jobs asincronos
 
+### Impacto potencial de recomendaciones (JUP-034)
+
+`POST /recommendations/impact/evaluate` calcula ahorro mensual/anual de escenarios
+aportados por el usuario autenticado, con supuestos y exclusión de alternativas
+solapadas. Requiere Bearer y `X-Tenant-Id`; no mide ahorro observado ni ejecuta
+acciones cloud. Véanse [contrato y ejemplo](../../docs/contracts/recommendation-impact.md).
+
 ## Stack
 
 - `Python`

@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "baseline_month": "2026-09-01",
+  "scenarios": [
+    {"recommendation_id": "rightsize-vm", "cost_scope_ids": ["subscription-demo/vm-a"], "currency": "EUR", "baseline_monthly_cost": "100", "target_monthly_cost": "60", "evidence_ids": ["synthetic:vm-a"], "assumptions": ["Synthetic monthly workload and target sizing remain stable."]},
+    {"recommendation_id": "schedule-vm", "cost_scope_ids": ["subscription-demo/vm-a"], "currency": "EUR", "baseline_monthly_cost": "100", "target_monthly_cost": "70", "evidence_ids": ["synthetic:vm-a"], "assumptions": ["Synthetic off-hours schedule; alternative to rightsizing."]},
+    {"recommendation_id": "cleanup-disk", "cost_scope_ids": ["subscription-demo/disk-a"], "currency": "EUR", "baseline_monthly_cost": "15", "target_monthly_cost": "0", "evidence_ids": ["synthetic:disk-a"], "assumptions": ["Synthetic unused disk can be removed after human approval."]},
+    {"recommendation_id": "investigate-storage", "cost_scope_ids": ["subscription-demo/storage-b"], "currency": "EUR", "baseline_monthly_cost": null, "target_monthly_cost": null, "evidence_ids": ["synthetic:storage-b"], "assumptions": ["Missing comparable target cost; investigation required."]}
+  ]
+}
