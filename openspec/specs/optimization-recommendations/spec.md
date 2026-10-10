@@ -1,7 +1,9 @@
 # optimization-recommendations Specification
 
 ## Purpose
-TBD - created by archiving change jup-033-optimization-recommendations. Update Purpose after archive.
+Define evidence-backed, read-only optimization proposals from tenant-scoped
+project costs, preserving business context and separating observed cost from
+unavailable savings estimates (JUP-033).
 ## Requirements
 ### Requirement: Explicit authenticated recommendation selection
 The system SHALL generate recommendations only for the authenticated active
@@ -125,4 +127,3 @@ state, invoking a language model or applying changes to cloud resources.
 #### Scenario: Repeated generation
 - **WHEN** an authorized user requests the same recommendation report repeatedly
 - **THEN** generation performs only the existing billing read and in-memory evaluation and initiates no resource change or recommendation workflow write
-

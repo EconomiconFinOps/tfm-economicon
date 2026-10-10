@@ -4,6 +4,15 @@ Fecha de verificación: **10/10/2026**. [Tarjeta](https://trello.com/c/ndrittYl)
 Base `origin/develop=c2995a1`, rama `feat/JUP-033-recommendations`, copia aislada
 `tfm-economicon-jup033`. El checkout compartido no se ha editado.
 
+[PR #97 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/97),
+código validado `1c8dabf62c99a7ec55a0367d3e1c418a5c05733f`; la actualización
+posterior completa únicamente documentación y el propósito de la spec.
+CI técnica del código **7/7 verde** en la ejecución de PR
+[38035291884](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035291884).
+`JUP reviews` queda rojo por ausencia de los dos dictámenes, como corresponde
+al draft. Trello En curso, nota `6ac9edbb7d64a2e99928110b`, sin marcar criterios
+de aceptación como completados.
+
 Esta es evidencia técnica del liderazgo, no una review `Validacion JUP-033`
 ni aceptación humana. Asignaciones de la tarjeta leídas en vivo mediante
 DockerServer `/home/danteadmin/economicon-collaboration`: Alejandro Aguado,
@@ -28,9 +37,9 @@ pairing, revisión y validación. No se acredita aquí pairing ni dictámenes.
 | Criterio | Evidencia / estado |
 | --- | --- |
 | Resultado funcional verificable | GET autenticado genera propuestas de tagging e investigación, contexto de proyecto, costes exactos, moneda y evidencia. Ejemplo y tests enlazados; no hay aplicación cloud ni ahorro estimado. |
-| Pruebas necesarias añadidas y en verde | 30/30 reglas/API pasan. En la ejecución inicial se omiten 3 Cockroach por ausencia de URL; su comprobación separada se registra abajo. |
+| Pruebas necesarias añadidas y en verde | 30 reglas/API y 3 Cockroach reales pasan; backend completo en CI Linux: 928 pass, 37 skip de integraciones optativas. Limitación local Windows registrada abajo. |
 | Documentación y decisiones actualizadas | Contrato, README backend, OpenSpec, continuidad; se reutilizan ADR-0001/0008/0010 y guardrails JUP-024/084 sin ratificar nuevas decisiones. |
-| Pull request revisado y vinculado | Preparación técnica en esta rama; revisión humana asignada y merge pendientes. |
+| Pull request revisado y vinculado | PR #97 draft enlazada; revisión humana asignada y merge pendientes. |
 | Validación funcional y evidencia enlazadas | Evidencia del liderazgo aquí; validación independiente de Victor pendiente. No marcar la tarjeta como aceptada. |
 
 ## Ejecuciones
@@ -58,18 +67,54 @@ Los tres escenarios `[cockroach]` ejercitan SQL real, controles de fuente,
 project/fallback, fechas, créditos y un proyecto `60+60` en dos suscripciones
 frente a otro de `100`. Requieren `JUP086_COCKROACH_TEST_URL` hacia un clúster
 efímero vacío identificado como `processor-integration-tests`; nunca reutilizar
-datos compartidos. Resultado independiente pendiente de completar.
+datos compartidos. **Resultado: 3 passed, 13 deselected, 62 warnings, 89.14 s**:
 
-Gobernanza: trazabilidad de los 9 changes y limpieza del repositorio correctas;
-OpenSpec **56/56** estricto. Primera ejecución Node bloqueada por `spawn EPERM`
-del sandbox; al repetir fuera, **83 pruebas correctas** y una carga fallida por
-dependencia `yaml` ausente en la copia nueva. Se está instalando el lockfile desde
-caché para repetir ese control. No es un fallo de reglas de recomendaciones.
+```powershell
+$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'
+$env:JUP086_COCKROACH_TEST_URL='cockroachdb+psycopg://root@127.0.0.1:49333/defaultdb?sslmode=disable'
+python -m pytest tests/test_recommendations_api.py -q -k real
+```
+
+CockroachDB **24.1.11**, psycopg **3.2.13**, sqlalchemy-cockroachdb **2.0.4**;
+Docker cliente **29.4.0**, servidor **29.6.2**. Instancia efímera propia en
+memoria, sin volúmenes, publicada sólo en loopback del servidor y accesible por
+túnel SSH. Se ejecutó el binario `/cockroach/cockroach` directamente tras fallos
+del wrapper de inicialización con el puerto de pruebas. Contenedor
+`jup033-sql-20261010-a2f9033d` retirado y túnel detenido, puerto local libre.
+No se modificaron bases ni contenedores existentes.
+
+Gobernanza: trazabilidad y limpieza correctas; OpenSpec **56/56** estricto antes
+y después del archivo/promoción. Primera ejecución Node bloqueada por `spawn
+EPERM`; al repetir fuera, 83 pruebas correctas y una carga fallida por `yaml`
+ausente. Tras `corepack pnpm install --frozen-lockfile --offline`, el control
+restante pasa **12/12**: **95 pruebas de herramientas distintas en verde**.
+
+`corepack pnpm build`: **4/4 tareas correctas, sin caché**, 3m49s. Primer intento
+falló por el fallback pnpm del entorno (`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`).
+Se antepuso al PATH **sólo del proceso** un `pnpm.cmd` temporal que llama a
+`corepack.cmd pnpm`; `corepack pnpm exec pnpm --version` confirmó **9.0.0**.
+No cambios globales. Avisos existentes: chunk frontend >500 kB y outputs de
+Turbo para compileall; no afectan al resultado.
 
 La primera ejecución pytest sin salida se detuvo identificando su línea exacta
 de comando y se repitió fuera del sandbox sin plugins automáticos. La ejecución
-confirmada conserva avisos de deprecación de dependencias bajo Python 3.14;
-no se ocultan fallos de assertions con ellos.
+confirmada conserva avisos de deprecación de dependencias bajo Python 3.14.
+
+La regresión general local `python -m pytest tests -q --disable-warnings` se
+interrumpió al 67% tras múltiples fallos. **No se declara verde en Windows.**
+Diagnóstico reproducido de su primer bloque con
+`python -m pytest tests/test_health_provider_admission_jup047.py -x -q --tb=short`:
+la fixture bloquea `socket.connect`; `asyncio` de Windows necesita ese método
+para crear su socketpair antes de atender el ASGI y dispara «Only controlled
+gateway doubles are permitted in Red». El test y los servicios de salud no
+cambian respecto de la base. No se modifica esa protección en JUP-033.
+
+La regresión completa del mismo código sí pasa en
+[CI Linux, ejecución 38035246060](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035246060):
+**928 passed, 37 skipped**, 104.31 s. Python **3.12.15**, pytest **9.1.1**,
+FastAPI **0.143.0**, Pydantic **2.14.0**, SQLAlchemy **2.0.54**. Los saltos
+corresponden a integraciones optativas sin sus URLs; los tres escenarios
+Cockroach de esta tarjeta se ejecutaron por separado como consta arriba.
 
 ## Límites y pendientes
 

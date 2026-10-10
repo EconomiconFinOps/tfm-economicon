@@ -96,7 +96,7 @@ python -m pytest tests/test_recommendations.py tests/test_recommendations_api.py
 ```
 
 Las pruebas de API usan auth/membership reales con SQLite y un doble explícito
-de la agregación. Dos pruebas Cockroach optativas usan la fixture aislada
+de la agregación. Tres pruebas Cockroach optativas usan la fixture aislada
 `JUP086_COCKROACH_TEST_URL`; no apuntar esta variable a una base compartida.
 La fixture exige un clúster vacío de pruebas en un puerto local no estándar y
 crea/elimina sólo su base propia. [Evidencia y límites](../evidence/JUP-033-validation.md).
