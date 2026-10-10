@@ -45,8 +45,11 @@ confirmado; focales 63/12 correctos. No se relajan pruebas. Recibos en evidencia
 [PR #105 en borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/105)
 publicada contra develop: implementación `c980ba2e9b20812c9227cfcbcf1d9814b6a1ebf0`.
 87 controles Node, 56 OpenSpec, trazabilidad y 993 archivos de higiene correctos.
-CI remota inicial en curso/cola; algunos checks técnicos ya correctos, sin afirmar
-suite remota completa. Gate de dictámenes humanos pendiente; no cambio de roles.
+CI remota técnica del commit de implementación: 7/7 jobs correctos, incluido el
+paso promtool; [ejecución](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035834083),
+verificada el 2026-10-10 a las 09:57 Europe/Paris. Esta evidencia no se atribuye a
+commits documentales posteriores. `JUP reviews` falla por ausencia de los dos
+dictámenes humanos; cero reviews publicadas, no cambio de roles.
 El comentario de entrega en Trello no se publicó: la revisión automática rechazó
 la escritura antes de ejecutarla al exigir autorización específica del contenido
 y destino. Borrador y recibo local en `../tmp/jup046-trello-comment.json`

@@ -47,6 +47,14 @@ Instalación con `corepack pnpm install --frozen-lockfile --ignore-scripts`; loc
 - `python -m compileall -q apps/backend/app apps/processor/app`: correcto.
 - `git diff --check`: correcto.
 
+CI remota del commit de implementación `c980ba2`: **7/7 jobs técnicos correctos**
+(JUP policy, OpenSpec, Python de tres servicios, frontend build y typecheck),
+incluido promtool. [Ejecución](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035834083)
+verificada el 2026-10-10 a las 09:57 Europe/Paris; no acredita commits documentales
+posteriores. El gate `JUP reviews` falla por faltar `Revision JUP-046` y
+`Validacion JUP-046` de personas distintas del autor; cero reviews publicadas.
+[Diagnóstico del gate](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035834092/job/114165936213).
+
 PromQL se ejecutó con la imagen ya disponible `prom/prometheus:v2.55.1` en
 DockerServer. Comandos, desde directorio temporal con reglas extraídas:
 
