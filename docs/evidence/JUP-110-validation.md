@@ -74,10 +74,11 @@ despliegues, suites de producto o cambios en contenido de otras secciones.
   citadas contrastadas con JSON; PASS. Recibo externo `documentary-check.json`.
 - `git diff --check`: correcto para el delta propio.
 - `node tools/jup-cleanup-check.mjs`: 980 archivos correctos.
-- La suite `tools/ci-workflow.test.mjs` todavía no ejecutada correctamente por
-  dependencia `yaml` ausente al corte de estos controles; instalación offline
-  iniciada. Se mantiene la PR como borrador y se registra el límite, sin
-  atribuir el fallo de carga al contenido documental.
+- Tras `corepack pnpm install --offline --frozen-lockfile --filter
+  finops-assistant-monorepo --ignore-scripts`, `node --test
+  tools/ci-workflow.test.mjs`: 12/12 correctas. Total de las cinco suites
+  seleccionadas: 95 pruebas correctas (83 previas + 12 reintentadas).
+  No cambió el lockfile. El fallo de dependencia queda resuelto.
 
 ## Límites y siguiente paso
 
