@@ -9,8 +9,8 @@ Verificado el 2026-10-10. [Tarjeta](https://trello.com/c/W6gAiOWt). Base de impl
 | Resultado funcional verificable | GET /billing/showback implementado con cuatro dimensiones, tenant autenticado, reparto directo, importes sin asignar, monedas separadas y reconciliación exacta. [Contrato y uso](../api/showback.md). HTTP y SQL real aprobados, incluida atribución a equipo/aplicación desde el endpoint. |
 | Pruebas necesarias añadidas y en verde | 80 casos aprobados: 48 de servicio, 23 HTTP y 9 SQL real. La última ejecución SQL terminó con 9 passed en 80,08 s; sin omisiones. |
 | Documentación y decisiones actualizadas | Contrato API, diseño y escenarios [OpenSpec](../../openspec/changes/jup-027-organizational-showback/proposal.md), [continuidad](../continuidad/showback-unidad.md). OpenSpec estricto: 56/56. |
-| Pull request revisado y vinculado | PR draft por publicar. `Revision JUP-027` de Alejandro pendiente; la comprobación automatizada no la sustituye. |
-| Validación funcional y evidencia enlazadas | Documento preparado; enlace Trello pendiente. `Validacion JUP-027` de Lucia pendiente. No se afirma aceptación humana. |
+| Pull request revisado y vinculado | [PR #101](https://github.com/EconomiconFinOps/tfm-economicon/pull/101) draft hacia develop, código probado `699a9b3`. Revisión independiente pendiente de regularización de roles; la comprobación automatizada no la sustituye. |
+| Validación funcional y evidencia enlazadas | Evidencia enlazada desde Trello, comentario `6ac9ed3da7b90649326c2076`, publicado por la integración oficial y verificado en la respuesta. `Validacion JUP-027` de Lucia pendiente. No se afirma aceptación humana. |
 
 ## Entorno y reproducción
 
