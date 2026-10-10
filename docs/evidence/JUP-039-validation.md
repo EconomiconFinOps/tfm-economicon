@@ -5,6 +5,11 @@ Verificación: 2026-10-10. Tarjeta https://trello.com/c/ojFr6fCU. Base
 `feat/JUP-039-savings-summary`. Entrega en copia aislada; no cambios del
 checkout compartido, otros roles ni otras tarjetas.
 
+Entrega: [PR #98 borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/98)
+contra develop, commit técnico `863f8ab` más cierre documental.
+Enlace en Trello confirmado por el cliente oficial: comentario
+`6ac9ece9a408960336ce0489`; la tarjeta conserva Backlog.
+
 ## Criterios de la tarjeta
 
 | Criterio | Evidencia | Estado y límites |
@@ -12,7 +17,7 @@ checkout compartido, otros roles ni otras tarjetas.
 | Resultado funcional verificable | Servicio determinista, comando `/ahorro inicio fin`, petición savings_query, adaptador033/034 | Incremento técnico implementado. Runtime financiero pendiente de loaders reales; por defecto503 explícito. |
 | Pruebas necesarias añadidas y verdes | test_savings_summary.py, test_savings_sources.py, test_savings_summary_api.py y regresiones de asistente | Resultados finales se registran debajo; fuentes sintéticas y repositorios SQLite reales en API. |
 | Documentación y decisiones actualizadas | Contrato docs/api/savings-summary.md, OpenSpec jup-039-savings-summary, continuidad | Conserva las diferencias entre candidatos033 y escenarios034 y la dependencia pendiente. |
-| PR revisado y vinculado | PR draft de contribución para liderazgo Paris | Revisión humana pendiente; no sustituida por auditoría interna. |
+| PR revisado y vinculado | PR #98 draft de contribución para liderazgo Paris | Vinculado; revisión humana pendiente, no sustituida por auditoría interna. |
 | Validación funcional y evidencia enlazadas | Pruebas automatizadas, smoke con funciones productoras y este informe | Validacion JUP-039 de Lucia pendiente; no aceptación de tarjeta. |
 
 ## Entorno y comandos

@@ -16,6 +16,14 @@ No existían rama ni PR039 remotas. Copia Git propia `tfm-economicon-jup039`,
 rama `feat/JUP-039-savings-summary`, base origin/develop `c2995a1`.
 No se edita el checkout compartido ni ramas de otros chats.
 
+Entrega publicada: [PR #98 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/98),
+contra develop; implementación en `863f8ab`, seguida de cierre documental.
+La PR está adjunta al chat. Es contribución para liderazgo, no revisión propia.
+
+PR y evidencias vinculadas mediante comentario oficial Trello
+`6ac9ece9a408960336ce0489`, 10/10. Respuesta del cliente confirma tarjeta correcta
+y lista `10 — Backlog`; no se mueven estados ni se marcan criterios humanos.
+
 Servicio determinista, selección explícita y comando `/ahorro inicio fin`.
 Fuentes y supuestos completos en metadata.savings_evidence. Sin confundir
 estimaciones con ahorro realizado, sin mezclar monedas ni sumar solapamientos.

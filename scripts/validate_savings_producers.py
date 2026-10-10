@@ -77,4 +77,3 @@ report = dict(status="passed", verification="local producer functions; synthetic
               producer_files_sha256=fingerprints,
               source_snapshot_sha256=result["snapshot_sha256"])
 print(json.dumps(report, indent=2))
-
