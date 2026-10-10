@@ -6,7 +6,7 @@
 - [x] 1.4 Expose typed API, insufficient-data states and explicit limitations.
 - [x] 1.5 Add arithmetic, authenticated API and opt-in SQL tests.
 - [x] 1.6 Run applicable checks and record exact outcomes by acceptance criterion.
-- [ ] 1.7 Publish contribution for assigned leader and link evidence in Trello.
+- [x] 1.7 Publish contribution for assigned leader and link evidence in Trello (draft PR103).
 
 ## 2. Human acceptance
 
