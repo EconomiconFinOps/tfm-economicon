@@ -1,6 +1,6 @@
 # Showback por unidad — JUP-027
 
-Verificación: 2026-10-10. Encargo «Implementa JUP-027 — Implementar showback por unidad organizativa»; chat `01a124a4-4e5d-7772-95bd-4eae859a903c`. Tarjeta: https://trello.com/c/W6gAiOWt.
+Verificación: 2026-10-10. Encargo «Implementa JUP-027 — Implementar showback por unidad organizativa», delegado desde el chat `01a1248a-4e9e-7963-a891-5d8cb49345a6`; identificador del chat receptor no confirmado. Tarjeta: https://trello.com/c/W6gAiOWt.
 
 ## Alcance y decisiones
 
