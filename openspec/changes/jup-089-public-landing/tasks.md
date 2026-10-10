@@ -8,7 +8,7 @@
 - [x] 2.3 Añadir pruebas de contrato/errores y CI aplicable.
 - [x] 3.1 Ejecutar pruebas, navegador y mediciones; registrar evidencia y limitaciones.
 - [x] 3.2 Documentar publicación, rollback y actualizar continuidad.
-- [ ] 3.3 Publicar contribución revisable contra develop y enlazar evidencia en Trello.
+- [x] 3.3 Publicar contribución revisable contra develop y enlazar evidencia en Trello (PR #106 draft; no aceptación ni merge).
 - [ ] 4.1 Obtener decisión de dominio, responsable de renovación, hosting y HTTPS.
 - [ ] 4.2 Aprobar y publicar material audiovisual, verificar destino y reproducción pública.
 - [ ] 4.3 Contrastar dependencias M4/M5 y obtener revisión/validación humanas.

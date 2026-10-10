@@ -21,8 +21,16 @@ Dispatch desde chat `01a1248a-4e9e-7963-a891-5d8cb49345a6`.
 
 Worktree aislado `tfm-economicon-jup089`, rama
 `feat/JUP-089-economicon-promotional-landing`, base `origin/develop` c2995a1.
-Checkout compartido preservado. [Evidencia por criterio](../evidence/JUP-089-validation.md)
-y [runbook](../operations/public-landing.md). Build, 14 tests de landing y lint y
+Checkout compartido preservado. [PR #106 en borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/106),
+implementación publicada en `6966109`. [Nota de entrega en Trello](https://trello.com/c/fD7nJKRl#comment-6ac9ef25add980965e1843c6)
+registrada el 10/10 a las 07:54:13 Z mediante la integración oficial; sin cambios
+de roles, lista, prioridad ni fechas. El [workflow de landing](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035984657)
+pasó con Node 22 sobre `6966109`; controles generales aún pendientes al registrar
+esta nota, sin reviews humanas. El seguimiento documental posterior no cambia
+código ni pruebas de landing. Continuidad y evidencia permanecen en la PR.
+
+[Evidencia](../evidence/JUP-089-validation.md)
+y [runbook](../operations/public-landing.md). Build, 14 tests de landing, lint y
 OpenSpec 56/56 correctos; frontend 629/629 en ejecución serial tras timeouts del
 intento concurrente, build correcto. Navegador cuatro anchuras sin overflow e infracciones
 axe tras corregir contraste. Fuentes WOFF2 suman 70.544 bytes. Pruebas anteriores

@@ -3,6 +3,10 @@
 Verificación: 10/10/2026, Europe/Paris. Base `c2995a1` (`origin/develop`).
 [Tarjeta](https://trello.com/c/fD7nJKRl); rama
 `feat/JUP-089-economicon-promotional-landing`.
+[PR #106, borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/106),
+implementación `6966109`. [Entrega enlazada en Trello](https://trello.com/c/fD7nJKRl#comment-6ac9ef25add980965e1843c6)
+el 10/10 a las 07:54:13 Z. [CI específica de landing](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035984657)
+correcta en Node 22 sobre `6966109`. Controles generales en curso, sin reviews humanas.
 
 Esta es evidencia técnica de implementación, no la review humana
 `Validacion JUP-089`. La contribución se prepara con la cuenta `Iber1to` por encargo
@@ -45,14 +49,15 @@ por ninguna vía alternativa ni se enviaron mensajes Discord.
 | Rendimiento, accesibilidad y SEO medidos | Medición Lighthouse local registrada debajo. No rendimiento de producción ni aceptación del dominio. |
 | Enlaces, vídeo, metadata y 404 | **Parcial**: enlaces/anclas/imágenes/favicon/metadata/configuración y 404 probados; tres destinos GitHub HTTP 200. Vídeo breve original decodificado y reproducido localmente silenciado, pero audio/subtítulos, destino y reproducción pública pendientes. No se inserta enlace ficticio. |
 | Despliegue y rollback documentados | **Documento entregado** con promoción de dist inmutable y rollback; ejecución del proveedor pendiente de decisión de hosting. |
-| PR revisado, CI verde y evidencia enlazada | Contribución preparada para PR borrador. Revisión/validación humanas y merge pendientes; CI se registra en la PR. No cerrar tarjeta por estos tests. |
+| PR revisado, CI verde y evidencia enlazada | PR #106 draft y evidencia enlazada en Trello. CI de landing correcta; CI general, revisión/validación humanas y merge pendientes. No cerrar tarjeta por estos tests. |
 
 ## Verificaciones ejecutadas
 
 Entorno local: Windows, Node **24.14.1**, pnpm **9.0.0**, OpenSpec **1.8.0**,
 Playwright **1.61.0**, Chromium **149.0.7827.55**, axe-core **4.10.3**.
-Workflow `Public landing checks` fijado a Node **22**; no confundir ejecución local
-Node 24 con CI 22.
+Workflow `Public landing checks` ejecutado correctamente en Node **22** sobre
+`6966109`; se distingue de la ejecución local Node 24. El posterior cambio de
+seguimiento documental conserva código y pruebas de landing.
 
 | Comando o comprobación | Resultado |
 | --- | --- |
