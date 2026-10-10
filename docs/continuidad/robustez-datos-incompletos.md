@@ -12,6 +12,13 @@ Contribución propia en `test/JUP-071-robustness`, copia
 `origin/develop`. El checkout compartido no se cambia. No había rama ni PR propia
 JUP-071 en la inspección inicial; se reutilizan JUP-069/JUP-070 ya integradas.
 
+Entrega publicada como [PR #90 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/90)
+contra `develop`, commit técnico `d98d18d`. Es una contribución para Paris, sin
+asumir su liderazgo ni presentar una revisión propia como independiente.
+Enlace/evidencia publicados mediante el puente oficial en nota Trello
+`6ac9ebf65589a5a1741240c1` del 10/10/2026 a las 07:40:38Z (09:40 Europe/Paris).
+No se alteraron lista, criterios, fechas o roles.
+
 La [batería](../validation/JUP-071-robustness-cases.json) añade 16 variantes y
 ejecuta 13 originales: 29 casos. El [runner](../../tools/assistant-robustness.py)
 reutiliza prompts, transporte y comprobación numérica de JUP-070. Requeridos,
@@ -39,6 +46,9 @@ medición completa de JUP-067/JUP-070.
 - Pruebas: 38 propias, 109 JUP-070, 103 métricas y 90 Node OK; OpenSpec 56/56,
   trazabilidad e higiene correctas. `pnpm test/build` global bloqueado por fallback
   pnpm/Turbo `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`, sin corrección ajena al alcance.
+- CI remota del commit técnico `d98d18d`: OpenSpec, JUP policy, los tres servicios
+  Python, frontend build y frontend type check SUCCESS. `JUP reviews` FAILURE por
+  dictámenes pendientes; PR draft y mergeable, sin autorización de cierre inferida.
 
 ## Roles, pendientes y siguiente paso
 
