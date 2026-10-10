@@ -42,7 +42,17 @@ Linux: processor 466 pass/57 skip y backend 910 pass/34 skip; 198 archivos Pytho
 contrastados por SHA256 con las fuentes actuales. Windows: processor 6 fallos en
 pruebas existentes (todos pasan Linux), backend completo interrumpido sin diagnóstico
 confirmado; focales 63/12 correctos. No se relajan pruebas. Recibos en evidencia.
-Publicación del enlace de contribución para liderazgo pendiente en este corte.
+[PR #105 en borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/105)
+publicada contra develop: implementación `c980ba2e9b20812c9227cfcbcf1d9814b6a1ebf0`.
+87 controles Node, 56 OpenSpec, trazabilidad y 993 archivos de higiene correctos.
+CI remota inicial en curso/cola; algunos checks técnicos ya correctos, sin afirmar
+suite remota completa. Gate de dictámenes humanos pendiente; no cambio de roles.
+El comentario de entrega en Trello no se publicó: la revisión automática rechazó
+la escritura antes de ejecutarla al exigir autorización específica del contenido
+y destino. Borrador y recibo local en `../tmp/jup046-trello-comment.json`
+(ruta relativa a la raíz del worktree), sin `commentId`. Pendiente autorización
+del usuario para publicar ese borrador por la integración oficial; sin reintentos
+ni vías alternativas.
 Adopción de la contribución, pairing atribuible, revisión de Víctor y validación
 independiente siguen pendientes; esta implementación no emite dictámenes propios
 de aceptación. Confirmar umbrales con tráfico representativo y revisar políticas

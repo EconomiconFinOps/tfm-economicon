@@ -4,6 +4,11 @@ Fecha: 2026-10-10. [Tarjeta](https://trello.com/c/R6CVFCif).
 Base: `c2995a118d419dfe725247bac9c6f219a3f0ea77` (`origin/develop`).
 Rama propia: `feat/JUP-046-llm-alerts`. Contribución técnica para liderazgo;
 no sustituye los dictámenes humanos `Revision JUP-046` y `Validacion JUP-046`.
+[PR #105 en borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/105),
+contra develop, implementación `c980ba2e9b20812c9227cfcbcf1d9814b6a1ebf0`.
+La publicación del comentario de entrega en Trello fue rechazada por la revisión
+automática antes de ejecutarse: exige autorización específica del contenido y
+destino. No se publicó ningún comentario; el enlace operativo queda pendiente.
 
 ## Evidencia por criterio original
 
@@ -12,7 +17,7 @@ no sustituye los dictámenes humanos `Revision JUP-046` y `Validacion JUP-046`.
 | Resultado funcional verificable | Métricas de operaciones LiteLLM completas, tres reglas Grafana y panel; errores/latencia, muestra mínima y recuperación verificables con dobles y motor real PromQL. | Sin llamadas a un modelo real ni calidad semántica certificada. |
 | Pruebas necesarias añadidas y en verde | Linux: processor 466 pass / 57 skip; backend 910 pass / 34 skip. Node comprueba provisioning y extracción; promtool 2.55.1 pasa 19 escenarios. | Windows presenta discrepancias detalladas abajo; integraciones opt-in omitidas explícitamente. |
 | Documentación y decisiones actualizadas | OpenSpec, runbook, convenciones Python y continuidad. | Política inicial de umbrales pendiente de confirmación operativa. |
-| Pull request revisado y vinculado | Contribución en rama propia, preparada para liderazgo. | PR y dictámenes humanos pendientes, no criterio aceptado. |
+| Pull request revisado y vinculado | PR #105 en borrador publicada en rama propia contra develop, para adopción de liderazgo. | Dictámenes humanos pendientes, no criterio aceptado. |
 | Validación funcional y evidencia enlazadas | Evidencia técnica sintética aquí; reproduce errores, umbrales y recuperación. | Validación funcional independiente de Alejandro y enlace operativo pendientes; no criterio aceptado. |
 
 ## Métodos y resultados
@@ -35,8 +40,8 @@ Instalación con `corepack pnpm install --frozen-lockfile --ignore-scripts`; loc
 - Windows backend focal: **63/63** antes de inicialización de categorías y **12/12**
   después, con todos los casos nuevos. Suite completa interrumpida tras 61% y
   fallos sin resumen/traceback utilizable; no se declara verde ni causa confirmada.
-- Node: 86/86 controles de alertas, política PR, CI y gobernanza, más corte final
-  17/17 de CI/alertas tras añadir la prueba del paso promtool. Higiene: 6/6 tests.
+- Node: **87/87** controles finales de alertas, política PR, CI y gobernanza,
+  incluido el paso promtool. Higiene: **6/6** tests y **993** archivos correctos.
 - `corepack pnpm jup:check:all`: 9 cambios correctos.
 - `corepack pnpm openspec:validate`: 56/56 correctos.
 - `python -m compileall -q apps/backend/app apps/processor/app`: correcto.

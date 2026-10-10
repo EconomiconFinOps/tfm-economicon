@@ -11,6 +11,7 @@
 - [x] 2.4 Record versions, per-criterion evidence and limits.
 
 ## 3. Human delivery
+- [x] 3.0 Publish contribution in own branch as draft PR #105 against develop; assigned roles unchanged.
 - [ ] 3.1 Leadership adopts contribution and confirms operational thresholds/pairing.
 - [ ] 3.2 Publish independent Revision JUP-046 and Validacion JUP-046.
 - [ ] 3.3 Archive change, merge reviewed PR and close Trello through leadership.
