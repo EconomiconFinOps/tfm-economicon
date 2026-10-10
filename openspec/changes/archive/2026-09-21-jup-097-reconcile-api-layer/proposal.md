@@ -1,6 +1,12 @@
 JUP: JUP-097
 Trello: https://trello.com/c/dsBZ7y0S/89-jup-097-reconciliar-la-capa-de-datos-del-frontend-con-los-contratos-del-backend
 
+> **Nota del 2026-10-09 (JUP-105).** Este documento archivado es un registro de lo que se decidió
+> hasta el archivado de la tarjeta (2026-09-21) y no se reescribe. Una afirmación suya dejó de ser
+> cierta después: **`/overview-legacy` como único dashboard con datos reales.** Ya no lo es: JUP-026 y
+> JUP-055 conectaron `/` a costes almacenados y JUP-047 añadió `/system-health`. El recuento vigente de
+> pantallas está en la sección «Rutas» de [`apps/frontend/README.md`](../../../../apps/frontend/README.md#rutas).
+
 ## Why
 
 [JUP-095](../../archive/2026-09-12-jup-095-portar-codigo-fuente/) portó la capa de presentación y montó

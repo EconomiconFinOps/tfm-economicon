@@ -1,5 +1,17 @@
 JUP: JUP-095
 
+> **Nota del 2026-10-09 (JUP-105).** Este documento archivado es un registro de lo que se decidió y
+> verificó hasta el archivado de la tarjeta (2026-09-12) y no se reescribe. Dos afirmaciones suyas
+> dejaron de ser ciertas después:
+>
+> - **`Frontend tests` como comprobación obligatoria.** El job que esta tarjeta añadió duplicaba la
+>   ejecución de pruebas que ya cubre `Frontend build` y se retiró el 2026-09-19, al reconciliar con
+>   `develop`, junto con sus entradas en los rulesets. Los checks obligatorios vigentes son ocho; la
+>   historia está en [la guía de gobernanza](../../../../docs/governance/github-branch-protection.md).
+> - **`/overview-legacy` como único dashboard con datos reales.** Ya no lo es: JUP-026 y JUP-055
+>   conectaron `/` a costes almacenados y JUP-047 añadió `/system-health`. El recuento vigente de
+>   pantallas está en la sección «Rutas» de [`apps/frontend/README.md`](../../../../apps/frontend/README.md#rutas).
+
 ## Context
 
 Ver [proposal.md](proposal.md) — Why. Aquí solo el estado verificado que condiciona el enfoque.
