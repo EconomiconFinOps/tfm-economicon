@@ -99,24 +99,27 @@ export function ConversationsPage() {
         title="Conversations"
         subtitle="Each conversation stays scoped to the active tenant and operator."
       >
-        <form className="flex gap-2" onSubmit={handleCreate}>
+        <form className="flex flex-wrap gap-2" onSubmit={handleCreate}>
           <input
-            className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+            className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
             value={title}
+            aria-label="Título de la conversación"
+            maxLength={200}
+            required
             onChange={(event) => setTitle(event.target.value)}
             placeholder="New conversation title"
           />
           <button
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
             type="submit"
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || !title.trim()}
           >
             New
           </button>
         </form>
 
         {createMutation.error ? (
-          <p className="mt-2 text-sm text-danger">{createMutation.error.message}</p>
+          <p className="mt-2 text-sm text-danger" role="alert">{createMutation.error.message}</p>
         ) : null}
         {conversationsQuery.error ? (
           <p className="mt-2 text-sm text-danger" role="alert">
@@ -125,6 +128,7 @@ export function ConversationsPage() {
         ) : null}
 
         <div className="mt-4 flex flex-col gap-2">
+          {conversationsQuery.isLoading && <p role="status">Cargando conversaciones…</p>}
           {(conversationsQuery.data?.items ?? []).map((conversation) => (
             <button
               key={conversation.id}
@@ -135,6 +139,7 @@ export function ConversationsPage() {
                   : "rounded-md border border-border bg-background px-3 py-2 text-left hover:border-primary"
               }
               onClick={() => setSelectedConversationId(conversation.id)}
+              aria-pressed={conversation.id === selectedConversationId}
             >
               <strong className="block text-sm text-foreground">{conversation.title}</strong>
               <span className="text-xs text-muted-foreground">
@@ -154,10 +159,11 @@ export function ConversationsPage() {
             {conversationDetailQuery.error.message}
           </p>
         ) : conversationDetailQuery.isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading conversation...</p>
+          <p className="text-sm text-muted-foreground" role="status">Loading conversation...</p>
         ) : selectedConversationId ? (
           <>
-            <div className="flex flex-col gap-3">
+            <div className="flex min-w-0 flex-col gap-3" role="log" aria-label="Mensajes de la conversación" aria-live="polite">
+              {messages.length === 0 && <p className="text-sm text-muted-foreground">Todavía no hay mensajes. Escribe una pregunta para comenzar.</p>}
               {messages.map((entry) => (
                 <article
                   key={entry.id}
@@ -166,7 +172,7 @@ export function ConversationsPage() {
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">{entry.role}</p>
                   {entry.role === "assistant"
                     ? <AnswerEvidence content={entry.content} metadata={entry.metadata} />
-                    : <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{entry.content}</p>}
+                    : <p className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">{entry.content}</p>}
                 </article>
               ))}
             </div>

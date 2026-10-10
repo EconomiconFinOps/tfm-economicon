@@ -12,13 +12,13 @@ NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_lengt
 class ConversationCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    title: NonEmptyText
+    title: NonEmptyText = Field(max_length=200)
 
 
 class MessageCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    content: NonEmptyText
+    content: NonEmptyText = Field(max_length=4000)
     ownership_query: OwnershipSelection | None = None
 
 

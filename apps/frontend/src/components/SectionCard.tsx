@@ -15,7 +15,7 @@ interface SectionCardProps {
 
 export function SectionCard({ title, subtitle, children }: SectionCardProps) {
   return (
-    <section className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-6 shadow-xl">
+    <section className="min-w-0 bg-gradient-to-br from-card to-accent rounded-lg border border-border p-6 shadow-xl">
       <div className="mb-4">
         <h2 className="text-lg font-bold text-foreground">{title}</h2>
         {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}

@@ -67,11 +67,11 @@ export function Layout() {
   ];
 
   return (
-    <div className="size-full flex flex-col bg-background">
+    <div className="size-full min-w-0 max-w-full flex flex-col bg-background">
       {/* Header */}
       <header className="bg-gradient-to-r from-card to-accent border-b border-border px-6 py-4 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-highlight shadow-lg shadow-info-tint/30">
               <Activity className="w-6 h-6 text-foreground" />
             </div>
@@ -80,7 +80,7 @@ export function Layout() {
               <p className="text-sm text-muted-foreground">Automatización Inteligente del Ciclo Operativo</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3">
             {/* Selector de ambito de cliente: mismo patron que
                 AppShell.jsx:38-49 (select nativo controlado), adaptado a
                 Tailwind. Solo se renderiza cuando SessionGate provee los tres
@@ -89,7 +89,7 @@ export function Layout() {
             {tenants && activeTenantId !== undefined && onTenantChange ? (
               <select
                 aria-label="Ambito de cliente"
-                className="text-sm text-foreground bg-card px-3 py-2 rounded-lg border border-border focus:outline-none focus:border-highlight"
+                className="max-w-full text-sm text-foreground bg-card px-3 py-2 rounded-lg border border-border focus:outline-none focus:border-highlight"
                 value={activeTenantId}
                 onChange={(event) => onTenantChange(event.target.value)}
               >
@@ -105,7 +105,7 @@ export function Layout() {
                 (identidad + boton de logout), adaptado a Tailwind. */}
             {user && onLogout ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-card px-4 py-2 rounded-lg border border-border">
-                <div className="text-right leading-tight">
+                <div className="min-w-0 break-words text-right leading-tight">
                   <p className="text-foreground font-medium">{user.full_name}</p>
                   <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
@@ -133,8 +133,8 @@ export function Layout() {
       </header>
 
       {/* Navigation */}
-      <nav className="bg-card border-b border-border px-6 shadow-lg">
-        <div className="flex items-center gap-1">
+      <nav className="max-w-full overflow-x-auto bg-card border-b border-border px-6 shadow-lg" aria-label="Navegación principal">
+        <div className="flex w-max items-center gap-1">
           {navItems.map((item) => (
             <NavLink
               key={item.path}

@@ -18,6 +18,7 @@ from app.core.request_context import RequestIdMiddleware, validation_error_handl
 from app.core.runtime_secrets import StartupError
 from app.db.database import Database
 from app.services.assistant import AssistantService
+from app.services.chat_provider import LiteLLMChatProvider
 from app.core.embedding_startup import log_embedding_configuration
 from app.services.embedding_provider import LiteLLMEmbeddingProvider, MockEmbeddingProvider
 from app.services.rabbitmq_queue import RabbitMQQueue
@@ -44,7 +45,9 @@ async def lifespan(app: FastAPI):
             app.state.database = database
             app.state.queue = queue
             app.state.vector_store = vector_store
-            app.state.assistant_service = AssistantService()
+            app.state.assistant_service = AssistantService(
+                LiteLLMChatProvider(settings) if settings.chat_provider == "litellm" else None
+            )
             embedding_provider = (
                 LiteLLMEmbeddingProvider(settings) if settings.embedding_provider == "litellm"
                 else MockEmbeddingProvider(settings.embedding_dimension)

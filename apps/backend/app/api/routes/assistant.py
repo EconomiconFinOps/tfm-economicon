@@ -107,6 +107,11 @@ def send_message(
             raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
         except OwnershipResultTooLarge:
             raise HTTPException(status_code=422, detail={"code": "ownership_result_too_large"}) from None
+        try:
+            output = assistant_service.answer_cost(payload.content, output)
+        except ProviderError as exc:
+            logger.warning("chat_failed", tenant_id=tenant_id, category=exc.category)
+            raise HTTPException(status_code=503, detail="No se pudo generar una respuesta verificable. Conserva la selección e inténtalo de nuevo.") from None
         user_message = database.append_message(
             conversation_id=conversation_id, tenant_id=tenant_id, user_id=current_user["id"],
             requester_id=current_user["id"], role="user", content=payload.content,
@@ -115,7 +120,9 @@ def send_message(
         assistant_message = database.append_message(
             conversation_id=conversation_id, tenant_id=tenant_id, user_id=None,
             requester_id=current_user["id"], role="assistant", content=output["content"],
-            metadata={"citations": [], "cost_evidence": output["cost_evidence"]},
+            metadata={"citations": [], "cost_evidence": output["cost_evidence"],
+                      **({"generation": "litellm", "answer_status": output["answer_status"],
+                          "claims": output["claims"]} if "answer_status" in output else {})},
         )
         assistant_queries_total.inc()
         return AssistantReply(
@@ -172,6 +179,9 @@ def send_message(
     try:
         assistant_output = assistant_service.answer(payload.content, retrieved_chunks)
         source_citations = resolve_citations(assistant_output["citations"], retrieved_chunks, tenant_id)
+    except ProviderError as exc:
+        logger.warning("chat_failed", tenant_id=tenant_id, user_message_id=user_message["id"], category=exc.category)
+        raise HTTPException(status_code=503, detail="No se pudo generar una respuesta verificable. La pregunta se ha guardado; inténtalo de nuevo.") from None
     except InvalidCitation:
         raise HTTPException(status_code=502, detail="Invalid response evidence.") from None
 
@@ -182,7 +192,10 @@ def send_message(
         requester_id=current_user["id"],
         role="assistant",
         content=assistant_output["content"],
-        metadata={"citations": assistant_output["citations"], "source_citations": source_citations},
+        metadata={"citations": assistant_output["citations"], "source_citations": source_citations,
+                  "answer_status": assistant_output.get("answer_status", "mock"),
+                  "claims": assistant_output.get("claims", []),
+                  "generation": "litellm" if getattr(assistant_service, "provider", None) is not None else "mock"},
     )
 
     assistant_queries_total.inc()

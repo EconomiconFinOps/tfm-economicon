@@ -1,5 +1,7 @@
 # Backend
 
+Chat generativo JUP-035: [configuración, pruebas y límites](../../docs/operations/conversational-generation.md).
+
 ## Descripcion
 
 `apps/backend` es la API principal del sistema.

@@ -30,6 +30,9 @@ export function MessageComposer({ token, tenantId, conversationId }: {
       queryClient.invalidateQueries({ queryKey: ["conversations", tenantId] });
       queryClient.invalidateQueries({ queryKey: ["conversation", tenantId, conversationId] });
       setMessage("");
+    },
+    onError: () => {
+      queryClient.invalidateQueries({ queryKey: ["conversation", tenantId, conversationId] });
     }
   });
 
@@ -115,12 +118,15 @@ export function MessageComposer({ token, tenantId, conversationId }: {
     <textarea
       className={fieldClass}
       rows={5}
+      maxLength={4000}
       aria-label="Pregunta"
       placeholder={ownership ? "Pregunta sobre los costes de la selección." : "Ask the assistant about the ingested tenant documents."}
       value={message}
       disabled={sendMutation.isPending}
       onChange={(event) => setMessage(event.target.value)}
     />
+    <p className="text-xs text-muted-foreground">{message.length}/4000 caracteres. Cada pregunta se responde por separado; no se usa el historial como contexto.</p>
+    {sendMutation.isPending && <p role="status" className="text-sm text-muted-foreground">Consultando las fuentes y preparando la respuesta…</p>}
     {validationError && <p className="text-sm text-danger" role="alert">{validationError}</p>}
     {sendMutation.error && <p className="text-sm text-danger" role="alert">{sendMutation.error.message}</p>}
     <button className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"

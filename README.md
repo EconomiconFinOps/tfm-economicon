@@ -583,7 +583,7 @@ Esta base prioriza:
 - API Azure Cost simulada y cliente de ingesta paginado
 - normalizacion y persistencia idempotente de costes por tenant
 - almacenamiento vectorial basico con provider mock por defecto en development y test, y recuperacion semantica del backend con `litellm` (ver [apps/backend/README.md](apps/backend/README.md))
-- chat con retrieval minimo por tenant y respuesta determinista, todavia sin LLM real
+- chat con retrieval por tenant y generación opcional por gateway (`CHAT_PROVIDER=litellm`); el modo `mock` conserva la plantilla y se identifica en la interfaz. Configuración y límites: [JUP-035](docs/operations/conversational-generation.md).
 - CI en GitHub Actions con validaciones de gobernanza, OpenSpec, pruebas y build
 - documentacion versionada de arquitectura, ADR, roadmap y evidencias
 

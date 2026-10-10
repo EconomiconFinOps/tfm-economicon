@@ -198,7 +198,8 @@ def test_route_defaults_keep_four_results_and_no_threshold(monkeypatch):
 def test_empty_retrieval_gives_the_no_context_answer_and_no_citations(monkeypatch):
     reply = ask(Store([]), monkeypatch)
     assert "No he encontrado contexto relevante" in reply.assistant_message.content
-    assert reply.assistant_message.metadata == {"citations": [], "source_citations": []}
+    assert reply.assistant_message.metadata == {"citations": [], "source_citations": [],
+        "answer_status": "mock", "claims": [], "generation": "mock"}
     assert reply.retrieved_context == []
 
 

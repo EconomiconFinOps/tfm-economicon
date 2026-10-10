@@ -9,6 +9,21 @@ const citation = {
 };
 
 describe("AnswerEvidence", () => {
+  it("opens persisted evidence from a generated claim without interpreting HTML", () => {
+    render(<AnswerEvidence content="El presupuesto <b>no</b> es forecast. [1]" metadata={{
+      generation: "litellm", citations: ["chunk-1"], source_citations: [citation],
+      claims: [{ text: "El presupuesto <b>no</b> es forecast.", evidence_ids: ["chunk-1"] }]
+    }} />);
+    fireEvent.click(screen.getByRole("link", { name: "Ver fuente 1" }));
+    expect(screen.getByText(/Guía Azure/).closest("details")).toHaveAttribute("open");
+    expect(screen.getByText(/presupuesto <b>no/).querySelector("b")).toBeNull();
+  });
+
+  it("labels mock and insufficient-data results", () => {
+    render(<AnswerEvidence content="Sin evidencia" metadata={{ generation: "mock", answer_status: "insufficient_data" }} />);
+    expect(screen.getByText(/sin modelo generativo/)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Evidencia insuficiente");
+  });
   it("links each used passage to its persisted source and evidence", () => {
     const { container } = render(<AnswerEvidence content={`Contexto:\n- [1] FinOps: ${citation.excerpt}`} metadata={{ citations: ["chunk-1"], source_citations: [citation] }} />);
     const link = screen.getByRole("link", { name: "Ver fuente 1" });

@@ -17,6 +17,7 @@ LITELLM_DEFAULT_MAX_DISTANCE = 0.6
 MAX_QUESTION_ATTEMPT_SECONDS = 60
 # Settings whose names may appear in the startup error; their values never do.
 REPORTABLE_SETTINGS = frozenset({
+    "chat_provider", "chat_model", "chat_timeout_seconds", "chat_max_output_tokens",
     "embedding_provider", "embedding_dimension", "embedding_model", "embedding_timeout_seconds",
     "health_probe_timeout_seconds", "embedding_max_retries", "litellm_base_url", "litellm_api_key", "retrieval_top_k", "retrieval_max_distance",
 })
@@ -33,6 +34,10 @@ class Settings(BaseSettings):
     embedding_provider: str = "mock"
     embedding_dimension: int = 8
     embedding_model: str = "economicon-embedding"
+    chat_provider: Literal["mock", "litellm"] = "mock"
+    chat_model: str = "economicon-chat"
+    chat_timeout_seconds: float = Field(default=30, gt=0, le=60, allow_inf_nan=False)
+    chat_max_output_tokens: int = Field(default=1600, ge=128, le=4096)
     litellm_base_url: str = "http://litellm:4000/v1"
     litellm_api_key: SecretStr | None = None
     embedding_timeout_seconds: float = 10.0
@@ -88,7 +93,7 @@ class Settings(BaseSettings):
             raise ValueError("embedding_provider must be either 'mock' or 'litellm'")
         return normalized
 
-    @field_validator("embedding_model")
+    @field_validator("embedding_model", "chat_model")
     @classmethod
     def validate_embedding_model(cls, value: str) -> str:
         normalized = value.strip()
@@ -186,6 +191,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_embedding_configuration(self) -> "Settings":
+        if self.chat_provider == "litellm":
+            key = self.litellm_api_key.get_secret_value().strip() if self.litellm_api_key else ""
+            if not key or (self.runtime_environment != "test" and key.lower() in PLACEHOLDERS):
+                raise ValueError("litellm_api_key is required when chat_provider is litellm")
         if (self.embedding_max_retries + 1) * self.embedding_timeout_seconds > MAX_QUESTION_ATTEMPT_SECONDS:
             raise ValueError(
                 "embedding_timeout_seconds and embedding_max_retries together may not exceed "
