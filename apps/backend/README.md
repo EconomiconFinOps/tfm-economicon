@@ -14,6 +14,7 @@ Responsabilidades principales:
 - resumen de billing
 - creacion de jobs de ingesta
 - conversaciones y chat con retrieval
+- explicación estructurada de anomalías: [contrato JUP-038](../../docs/contracts/JUP-038-anomaly-explanations.md), dependiente de JUP-030
 - persistencia operativa
 - publicacion de jobs asincronos
 
