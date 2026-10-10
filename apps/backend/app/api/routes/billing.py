@@ -7,9 +7,31 @@ from app.api.dependencies import get_active_tenant, get_database
 from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSummary
 from app.schemas.budget import BudgetDefinition, BudgetEvaluation
 from app.services.budget import evaluate_budget
+from app.schemas.anomalies import AnomalyDefinition, AnomalyEvaluation
+from app.services.anomalies import evaluate_anomalies
 
 
 router = APIRouter(prefix="/billing", tags=["billing"])
+
+
+@router.post("/anomalies/evaluate", response_model=AnomalyEvaluation)
+def evaluate_billing_anomalies(
+    definition: AnomalyDefinition,
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> AnomalyEvaluation:
+    def read(start, end):
+        return BillingSummary(**database.fetch_billing_summary(
+            tenant_id, start_date=start, end_date=end, group_by=definition.group_by, tag_key=None,
+        ))
+
+    try:
+        current = read(definition.start_date, definition.end_date)
+        period = definition.baseline_period
+        baseline = read(period.start_date, period.end_date) if period is not None else None
+    except AmbiguousCostSource:
+        raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
+    return evaluate_anomalies(definition, current, baseline, tenant_id=tenant_id)
 
 
 @router.post("/budget/evaluate", response_model=BudgetEvaluation)
