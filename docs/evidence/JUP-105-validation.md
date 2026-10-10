@@ -12,8 +12,9 @@
 > Estado de este documento: en curso. Contiene la línea base y la consulta al equipo (grupo 1 de
 > `tasks.md`), el endurecimiento de `allowJs` (grupo 2), el recuento de pantallas con los textos
 > vivos corregidos (grupo 3) la corrección de los enlaces relativos rotos (grupo 4) y la retirada de las menciones a configuración
-> local (grupo 5) los hallazgos de la épica (grupo 6) y el cierre del spike (grupo 7). El resto de
-> secciones se añade según avanza la tarjeta.
+> local (grupo 5) los hallazgos de la épica (grupo 6), el cierre del spike (grupo 7) y la batería completa con la
+> trazabilidad de los criterios (grupo 8). Quedan por registrar el enlace al pull request y la
+> ejecución de CI (tarea 8.6).
 
 ## Línea base: antes de cambiar nada
 
@@ -815,3 +816,141 @@ no se edita el `design.md` archivado de JUP-097.
 usó Git, no la API); que las tarjetas de Trello de los hallazgos existan; ni las cifras del punto 13
 que dependen de la batería completa (629 pruebas, 0 archivos JavaScript), que se contrastan en el
 grupo 8.
+
+## Batería completa (grupo 8, tarea 8.1)
+
+Ejecutada el 2026-10-09 en Windows 11, Node `v24.15.0`, desde la raíz con `corepack pnpm`, sobre la
+rama en `364ad7d` (con `develop` en `ceb6520` ya fusionado). Entorno virtual de Python
+`C:\Users\victo\Pontia\.venv-tfm` (Python 3.13.7) activado dentro de cada ejecución, porque turbo usa
+el `python` del `PATH`. La salida íntegra de cada comando se guardó fuera del repositorio.
+
+**Entorno.** Docker Desktop corría, pero sin ningún proyecto de Compose (`docker compose ls` vacío) y
+con un único contenedor: `buildx_buildkit_desktop-linux`, el constructor interno de Docker Desktop,
+que no se tocó porque no ocupa ningún puerto de la batería. Había un PostgreSQL nativo de Windows en
+el puerto 5432, ajeno a Docker y a este repositorio, que tampoco se tocó. Los puertos que usan
+`local:test` y `dev` (5173, 8000, 8001, 8002, 26257, 8080, 5672 y 15672) estaban libres. La batería
+no necesita la infraestructura de Compose.
+
+| Comando | Resultado | Tareas forzadas |
+| --- | --- | --- |
+| `corepack pnpm install --frozen-lockfile` | código 0; `git status` sin cambios (lockfile intacto) | no aplica |
+| `corepack pnpm lint --force` | código 0; 4 de 4, 0 en caché | 4 `cache bypass, force executing` |
+| `corepack pnpm typecheck --force` | código 0; 1 de 1, 0 en caché | 1 |
+| `corepack pnpm build --force` | código 0; 4 de 4, 0 en caché | 4 |
+| `TURBO_FORCE=true corepack pnpm run test "--filter=!@finops/frontend"` | **código 1**: 2 de 3 paquetes correctos; falla `@finops/backend` | 3 |
+| `TURBO_FORCE=true corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1` | código 0; 53 archivos y 629 pruebas | 1 |
+| `corepack pnpm openspec:validate` | código 0; 55 de 55 | no aplica |
+| `corepack pnpm jup:check -- --change jup-105-close-frontend-migration` | código 0 | no aplica |
+| `corepack pnpm jup:cleanup:check` | código 0; 971 archivos | no aplica |
+
+Ninguna ejecución tuvo `cache hit`. `build` avisa de que los paquetes de Python no declaran salidas en
+`turbo.json`, y el frontend de que un fragmento supera 500 kB: ninguno es un error. Tras toda la
+batería `git status` está vacío.
+
+### `test` por mitades
+
+`corepack pnpm test` literal, con los cuatro paquetes a la vez, no se ejecutó: falla de forma distinta
+en cada ejecución (`RF-103-005`, `RF-098-004`) y el `README.md` indica las dos mitades.
+
+| Paquete | Resultado |
+| --- | --- |
+| `@finops/azure-cost-api` | 59 pasan |
+| `@finops/processor` | 448 pasan, 57 omitidos |
+| `@finops/frontend` | 629 pasan en 53 archivos, con `--maxWorkers=1` |
+| `@finops/backend` | **753 pasan, 145 fallan**, 34 omitidos (159 s) |
+
+### Los 145 fallos del backend
+
+No son un fallo de la migración ni de esta tarjeta (no se toca ningún archivo del backend), y no son
+los plazos de tiempo conocidos. Son de cuatro archivos de JUP-047, fusionado en #81 después de que
+JUP-103 ejecutara esta misma batería:
+
+| Archivo | Fallos |
+| --- | ---: |
+| `tests/test_health_provider_admission_jup047.py` | 72 |
+| `tests/test_health_provider_response_jup047.py` | 37 |
+| `tests/test_system_health_jup047.py` | 33 |
+| `tests/test_health_provider_policy_jup047.py` | 3 |
+
+Dos mensajes: «Only controlled gateway doubles are permitted in Red» (112) y «JUP-047 Red must not
+open a socket or spend inference credit» (33). **Causa medida con las trazas:** los 145 fallos pasan
+por `asyncio.run` → bucle `Proactor` → `_make_self_pipe` → `socket.socketpair()`; en Windows, este
+Python no tiene `AF_UNIX` (`hasattr(socket, "AF_UNIX")` da `False`), así que `socketpair` usa
+`_fallback_socketpair`, que hace una conexión TCP a `127.0.0.1`, y el fixture automático `no_network`
+de esos archivos sustituye `socket.socket.connect` por un fallo. Hay 145 trazas con
+`_fallback_socketpair` para 145 fallos, así que explica todos y los otros 753 tests del paquete
+pasan. Registrado como `RF-105-004`.
+
+**No verificado:** que esos tests pasen en Linux. Se infiere de que allí `socketpair` es nativo y no
+conecta, y de que `Python tests (backend)` es un check obligatorio de CI; no se ejecutó en Linux.
+
+## Trazabilidad de los criterios de aceptación (grupo 8, tarea 8.2)
+
+| # | Criterio de la tarjeta | Estado | Evidencia |
+| ---: | --- | --- | --- |
+| 1 | `openspec:validate`, `jup:check`, `jup:cleanup:check`, `lint`, `typecheck`, `build`, `test` (por mitades) e `install --frozen-lockfile` en verde, desde la raíz | **Cumplido salvo `test` del backend en Windows** | Batería completa. Todo en verde excepto 145 tests de JUP-047 del backend (`RF-105-004`); frontend, `processor` y `azure-cost-api` pasan. No se da por cumplido del todo |
+| 2 | `allowJs` en `false` y el frontend compila y pasa sus pruebas | Cumplido | «Endurecimiento de `allowJs`»: diff de una línea, control positivo con `TS7016`, 629 pruebas |
+| 3 | El spike sin placeholder `jup-0xx` pendiente ni casilla sin marcar sin explicación, y su último punto declara el estado final | Cumplido | «Cierre del spike»; queda `jup-0xx-verificar-docker-compose` (tarjeta resuelta que nunca tuvo número) y la plantilla del checklist, declarada como tal |
+| 4 | Un único recuento de pantallas, fechado y verificado contra el código; README, `RF-095-002`, `RF-091-003` y el mapa de carencias coinciden | Cumplido | «Recuento de pantallas»; vive en la sección «Rutas» del README y los demás enlazan a ella |
+| 5 | Ningún documento versionado afirma ya que `/overview-legacy` es el único dashboard con datos reales ni que `Frontend tests` es un check obligatorio, sin una nota que lo corrija | **Cumplido en los documentos; una salvedad en un comentario de código** | Notas fechadas en la evidencia de JUP-095, en el spike y en 5 registros archivados (ver abajo). Queda un comentario de `DashboardPage.test.tsx` (línea 6) con la afirmación, anotado en `RF-105-001` |
+| 6 | Cada hallazgo abierto de la épica con responsable y motivo; los que cierra la épica, en `Fixed` con su evidencia | Cumplido | «Hallazgos de la épica»: 3 `Fixed` y 18 `Open`; los responsables son categorías, no personas |
+| 7 | Deuda documental resuelta (cero enlaces rotos salvo falsos positivos, cero menciones no legítimas) o `Open` con responsable | Cumplido | Enlaces 66 → 2 (los falsos positivos); menciones 42 → 0 |
+| 8 | Decisión sobre `/overview-legacy` y el módulo huérfano registrada | Cumplido | Decisión 5 del `design.md`, aprobada en el gate; `RF-105-001` y `RF-105-002` |
+| 9 | Estado final de la épica declarado sin ambigüedad: logrado, no logrado y decisiones de producto pendientes | Cumplido | Punto 13 del spike |
+
+**Sobre el criterio 5.** Al comprobarlo en todo el repositorio, incluidos los registros archivados,
+aparecieron afirmaciones que mi búsqueda del grupo 3 había excluido: los cuatro documentos
+archivados de JUP-095 (`design.md`, `proposal.md`, `review.md` y `tasks.md`) dicen que `Frontend
+tests` se promueve a comprobación obligatoria (12 líneas), y `design.md`, `proposal.md` y `review.md`
+de JUP-095 y `proposal.md` de JUP-097 llaman a `/overview-legacy` el único dashboard o la única
+pantalla con datos reales (7 líneas). Eran ciertos el día que cada tarjeta los escribió y no se
+reescriben. **Por indicación del líder (2026-10-09) se les añadió una nota fechada al inicio**, y
+solo se añadieron líneas: 51 insertadas y 0 eliminadas en 5 archivos.
+
+| Archivo archivado | Afirmaciones que anota |
+| --- | --- |
+| `2026-09-12-jup-095-portar-codigo-fuente/design.md` | `Frontend tests` obligatorio; único dashboard |
+| `2026-09-12-jup-095-portar-codigo-fuente/proposal.md` | ambas |
+| `2026-09-12-jup-095-portar-codigo-fuente/review.md` | ambas |
+| `2026-09-12-jup-095-portar-codigo-fuente/tasks.md` | `Frontend tests` obligatorio (tareas 1.1, 2.4 y 2.5) |
+| `2026-09-21-jup-097-reconcile-api-layer/proposal.md` | único dashboard |
+
+Cada nota remite a la guía de gobernanza y a la sección «Rutas» del README del frontend, y sus 8
+enlaces resuelven. **Dos búsquedas anteriores fallaron por la misma razón:** las frases partidas entre
+dos líneas (por ejemplo, «su único» al final de una línea y «dashboard» al inicio de la siguiente en
+el `proposal.md` de JUP-095) no las encuentra una búsqueda por línea; se repitió con búsqueda
+multilínea.
+
+**Salvedad que queda.** El comentario de cabecera de `apps/frontend/src/pages/DashboardPage.test.tsx`
+(línea 6) dice «es la unica pantalla que consume datos reales del backend». Es código de pruebas vivo,
+no un documento, y el gate pre-código limita los archivos de `apps/**` que esta tarjeta modifica, así
+que no se tocó; se anota en el inventario de `RF-105-001`, cuya retirada borra ese archivo.
+
+### Antes y después
+
+| Medida | Línea base (2026-10-09) | Al cerrar |
+| --- | --- | --- |
+| `allowJs` | `true` | `false` |
+| Archivos JavaScript en `src/` y `tests/` | 0 | 0 |
+| Pruebas del frontend (un worker) | — | 629 en 53 archivos |
+| Lint del frontend | 0 violaciones | 0 violaciones |
+| Enlaces relativos rotos | 66 en 26 archivos | 2 en 1 archivo (falsos positivos) |
+| Menciones a configuración local | 42 en 11 archivos | 0 |
+| Hallazgos de la épica | 21 `Open` | 3 `Fixed` y 18 `Open` |
+| Hallazgos nuevos | — | `RF-105-001` a `RF-105-004` |
+| Recuentos de pantallas | Tres textos que se contradecían | Uno, en el README del frontend |
+| Marcador de cierre en el spike | Sin cerrar | Cerrado, con punto 13 |
+
+### Lo que no se validó
+
+- **`test` del backend en Windows** (`RF-105-004`): 145 fallos de JUP-047; no se ejecutó en Linux.
+- **El comando literal `corepack pnpm test`** con los cuatro paquetes a la vez (`RF-103-005`).
+- **Ninguna pantalla en un navegador.** No se levantó el stack ni se abrió el frontend: el recuento
+  de pantallas y el mapa de carencias se contrastaron con el código, y el frontend se comprobó con
+  `typecheck`, `lint`, `build` y las pruebas.
+- **El backend en ejecución.** Lo de `GET /billing/summary` se leyó en el código.
+- **Que Alejandro reproduzca o no `RF-093-001`** y qué versión de pnpm global tiene Paris.
+- **Los responsables de los hallazgos en Trello** y que las tarjetas pedidas existan.
+- **La integración continua del pull request**: se registra al abrirlo (tarea 8.6).
+- **`local:doctor` y `local:smoke`**: no se ejecutaron; la tarjeta no toca el entorno de Compose.
+- **Que las pruebas de Linux de JUP-047 pasen**, por lo dicho arriba.

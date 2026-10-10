@@ -341,9 +341,12 @@ carril `light` — **fusionada el 2026-10-07 (PR #75)**
 marcador provisional de cierre que tenía este spike; su evidencia es
 [JUP-105-validation.md](../evidence/JUP-105-validation.md) y su estado final es el punto 13 de
 «Próximos pasos».
-- [ ] `pnpm openspec:validate`, `pnpm lint`, `pnpm build`, `pnpm install --frozen-lockfile`. **Se
-  marca al terminar la batería de JUP-105**, ejecutada desde la raíz con `corepack pnpm` y con
-  `test` por mitades por `RF-103-005`.
+- [x] `pnpm openspec:validate`, `pnpm lint`, `pnpm build`, `pnpm install --frozen-lockfile`.
+  Ejecutados el 2026-10-09 desde la raíz con `corepack pnpm` y sin caché (`--force`): los cuatro en
+  verde, más `typecheck`, `jup:check` y `jup:cleanup:check`. `test` se ejecutó por mitades por
+  `RF-103-005`: el frontend (629 pruebas), `processor` (448) y `azure-cost-api` (59) pasan; en
+  Windows el `backend` falla 145 tests de JUP-047 por una causa medida y ajena a la migración
+  (`RF-105-004`).
 - [x] Confirmar ADR de TS `Accepted` y documentacion sincronizada (READMEs, architecture).
   Comprobado el 2026-10-09: [ADR-0003](../adr/ADR-0003-frontend-typescript.md),
   [ADR-0004](../adr/ADR-0004-frontend-shadcn-ui.md) y
@@ -619,7 +622,8 @@ punto 13 de «Próximos pasos».
     y con quién da el siguiente paso en el [backlog](../../openspec/findings/backlog.md). Pasan a
     `Fixed` `RF-091-004` (el dato ficticio ya no existe; la falta de un motor de ahorro pasa a
     `RF-091-003`), `RF-099-001` y `RF-099-004`. Se registran `RF-105-001` (retirar `/overview-legacy`),
-    `RF-105-002` (módulos sin uso) y `RF-105-003` (nada comprueba los enlaces al archivar).
+    `RF-105-002` (módulos sin uso), `RF-105-003` (nada comprueba los enlaces al archivar) y `RF-105-004`
+    (145 tests de JUP-047 del backend que no pueden ejecutarse en Windows).
 
     **Decisiones que la épica deja abiertas, y que JUP-105 no toma:**
 
@@ -641,9 +645,11 @@ punto 13 de «Próximos pasos».
     **Limitaciones conocidas del frontend al cerrar.** El desbordamiento horizontal en móvil del
     `Layout` compartido (`RF-026-002`, `Open`, ajeno a la épica) y que `corepack pnpm test` con los
     cuatro paquetes a la vez falla de forma distinta en cada ejecución (`RF-103-005`); por mitades
-    pasa.
+    pasa salvo en Windows, donde el `backend` falla 145 tests de JUP-047 que arrancan un bucle de
+    `asyncio` mientras su guardián prohíbe abrir sockets (`RF-105-004`).
 
     **Qué haría falta para darla por completa del todo.** (1) Que producto decida `RF-091-003`, con
     las capacidades de backend que se construyan o las pantallas que se retiren. (2) Retirar
     `/overview-legacy` y los módulos sin uso (`RF-105-001` y `RF-105-002`). (3) Corregir `RF-104-001`.
-    (4) Que Alejandro confirme `RF-093-001`. Ninguno de los cuatro es trabajo de migración.
+    (4) Que Alejandro confirme `RF-093-001`. (5) Que los tests de JUP-047 del backend puedan
+    ejecutarse en Windows (`RF-105-004`). Ninguno de los cinco es trabajo de migración.

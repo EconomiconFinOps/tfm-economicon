@@ -61,6 +61,12 @@
   hay nada que cambiar. Hecho: `docs/architecture.md` tenía el recuadro de `GET /billing/summary`
   desfasado y se corrigió tras comprobarlo en el backend; el `README.md` de la raíz no necesita
   cambios.
+- [x] 3.7 Añadida a petición del líder tras la batería (2026-10-09): nota fechada al inicio de los
+  cinco registros archivados que afirman que `Frontend tests` es obligatorio o que `/overview-legacy`
+  es el único dashboard con datos reales (`design.md`, `proposal.md`, `review.md` y `tasks.md` de
+  JUP-095 y `proposal.md` de JUP-097), para cumplir el criterio 5 sin excepción en los documentos.
+  Hecho: 51 líneas añadidas, 0 eliminadas, 8 enlaces nuevos que resuelven. Queda un comentario de
+  `DashboardPage.test.tsx` anotado en `RF-105-001`.
 
 ## 4. Deuda documental: enlaces relativos (`RF-099-004`)
 
@@ -144,7 +150,7 @@
 
 ## 8. Revisión y cierre
 
-- [ ] 8.1 Ejecutar la batería completa desde la raíz: `corepack pnpm install --frozen-lockfile`,
+- [x] 8.1 Ejecutar la batería completa desde la raíz: `corepack pnpm install --frozen-lockfile`,
   `corepack pnpm lint --force`, `corepack pnpm build --force`, `corepack pnpm typecheck --force`,
   `corepack pnpm run test "--filter=!@finops/frontend"` y
   `corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1` con `TURBO_FORCE=true` y el
@@ -153,10 +159,14 @@
   `corepack pnpm jup:cleanup:check`. Guardar la salida real y decir en la evidencia que `test` se
   ejecutó por mitades. Con el resultado: marcar en `docs/spikes/frontend-migration.md` la casilla de
   esos comandos (F5) y contrastar con la batería las cifras del punto 13 del spike (629 pruebas en
-  53 archivos, 0 archivos JavaScript, 21 hallazgos con 3 `Fixed` y 18 `Open`).
-- [ ] 8.2 Completar `docs/evidence/JUP-105-validation.md`: trazabilidad de los nueve criterios de
+  53 archivos, 0 archivos JavaScript, 21 hallazgos con 3 `Fixed` y 18 `Open`). Hecho el 2026-10-09,
+  con el entorno virtual activado dentro de cada ejecución: todo en verde salvo el `test` del
+  backend en Windows, que falla 145 tests de JUP-047 por una causa medida y se registra como
+  `RF-105-004`. Las cifras del punto 13 coinciden y la casilla del spike está marcada.
+- [x] 8.2 Completar `docs/evidence/JUP-105-validation.md`: trazabilidad de los nueve criterios de
   aceptación de la tarjeta con su evidencia, tabla de antes y después, y lo que no se validó y por
-  qué.
+  qué. Hecho: el criterio 1 se declara cumplido salvo `test` del backend en Windows, y el 5 solo en
+  los documentos vivos; los enlaces al pull request y a CI se rellenan en 8.6.
 - [ ] 8.3 Escribir `review.md`: resultado, decisiones, hallazgos, la excepción del ciclo Red/Green y
   que no aplica ADR nuevo.
 - [ ] 8.4 Comprobar que ningún documento de la tarjeta cita configuración local de herramientas de
