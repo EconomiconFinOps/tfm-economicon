@@ -271,3 +271,64 @@ Los tres Dockerfiles Python ahora normalizan explícitamente los directorios de
 /app/app después de COPY y antes de USER; esto fuerza una capa nueva y asegura
 la importación incluso al reutilizar la copia anterior. No se amplían permisos
 de secretos ni se cambia el usuario de ejecución. Repetición real pendiente.
+
+### Resultado de la repetición real — 10/10/2026
+
+Fuente probada: efad3cacd2a3da17a407d1e44b4c2533217478f9, Python3.12.3,
+Docker29.6.2 y Compose5.3.1 en DockerServer compartido. Root exclusivo
+/home/danteadmin/economicon-validation/jup052-full-20261010-3c938b3,
+base de puertos25452/25552; fuentes Git archivadas, extracción filter=data,
+umask077, proveedores mock, sin perfil/overlay AI ni gasto de proveedor.
+
+Resultado: cuatro imágenes construidas, nueve servicios arrancados, once puertos
+loopback y tres binds dentro de la release congelada. Primera promoción aislada
+correcta con current=efad3ca y run_id=null: no es la promoción automática integrada.
+Smoke5/5 real: salud/frontend, login, ingesta simulada, billing y job RabbitMQ.
+Linux54/54 CD; Windows52pass/2skipPOSIX; tooling/topología63/63; OpenSpec58/58.
+CI del código probado: https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38066373776
+siete controles SUCCESS. Una sonda seleccionada en copia temporal retira la
+normalización y hace fallar la regresión POSIX (700 frente a755); no cobertura
+universal de mutación.
+
+Diez casos reales del ensayo terminaron correctamente:
+1. Login erróneo401 y state idéntico.
+2. Init rechaza sobrescribir secretos existentes.
+3. Lock real entre procesos excluye un segundo operador.
+4. Colisión real en25560 retira candidato y conserva current sano/smoke5.
+5. Resume conserva failure y permite reintento.
+6. Validate-source rechaza una etiqueta ya congelada sin alterar state.
+7. Reintento promueve, retira anterior y marca failure resolved_at.
+8. Rollback supera smoke5; repetirlo conserva los bytes de state bajo pausa.
+9. Poll recupera backend/processor/frontend detenidos y supera smoke5.
+10. Resume elimina pausa manual y recovery no queda pendiente.
+
+Para la segunda release se usó la etiqueta de fixture explícitamente sintética
+ffffffffffffffffffffffffffffffffffff0052 con la misma fuente efad3ca. No se
+atribuye a un commit Git ni a un candidato elegible. El poll real consulta GitHub
+y encuentra cd.yml todavía no integrado; no descarga/promueve un candidato.
+Los casos con API/carreras/fallos de escritura simulados siguen bajo las pruebas
+unitarias; no se afirman como incidentes reales de GitHub o del disco.
+
+Límite visual: login renderizado por túnel SSH, pero la API25457 devuelve
+net::ERR_BLOCKED_BY_CLIENT en el navegador integrado y la UI Failed to fetch.
+La salud HTTP y login por ese mismo túnel desde PowerShell pasan (200/token
+recibido, sin mostrar credenciales). URL API compilada y CORS coinciden con los
+puertos; no se diagnostica el bloqueo como fallo del producto. No se acredita el
+recorrido completo de UI ni se cambia su transporte para aparentar una pasada.
+Captura ui-login-blocked.png conservada en la evidencia del workspace.
+
+Pendientes externos: Revision/Validacion nuevas del head final y aprobación
+posterior al último push, exigida por GitHub. JUP reviews verde no sustituye
+reviewDecision=REVIEW_REQUIRED. Solicitud formal existente6021728894 actualizada,
+Lucia/Paris solicitados. La autorización humana de la ventana ya está concedida,
+no pendiente: parar timer antes de integrar, instalar tools/cd del SHA integrado
+con backup/lock, reactivar tras CD verde y acreditar primer current/run_id/smoke.
+No ejecutados todavía merge, sustitución de agente ni primera promoción integrada;
+timer automático sigue activo con agente antiguo y root sin state. Reboot fuera
+ de esta ventana. Sin Discord enviado ni tarjeta cerrada prematuramente.
+
+Evidencia saneada exportada: server-evidence.tar SHA256
+2b086cde4b557218391aa7e6c44482dd53dc6925febc53f0dd305a712e78c2b1;
+manifest.json, exercise-results.json, environment.json, state/failure y logs
+sin secrets.json/.env/compose.json. Las actualizaciones documentales posteriores
+no sustituyen la fuente runtime exacta indicada arriba.
