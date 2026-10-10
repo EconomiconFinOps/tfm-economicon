@@ -96,9 +96,12 @@ Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el
 
 ## Estilos y colores
 
-La aplicacion tiene **una unica paleta**, definida una sola vez en `src/styles/theme.css` (bloque
-`:root`, solo tema oscuro; no hay `.dark` ni `class="dark"` en `index.html`). Decision y motivos en
-[ADR-0012](../../docs/adr/ADR-0012-frontend-color-tokens.md).
+La aplicacion tiene la marca de Economicon en **dos paletas con los mismos tokens**, definidas en
+`src/styles/theme.css`: la clara en `:root` (por defecto) y la oscura en `[data-theme="dark"]`. Un script
+de `index.html` fija ese atributo antes del primer pintado (eleccion guardada o preferencia del sistema)
+y el boton "Tema oscuro" de la cabecera alterna. Decision y motivos en
+[ADR-0012](../../docs/adr/ADR-0012-frontend-color-tokens.md) (enmienda JUP-112); tipografia y logotipos
+en [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
 
 **Regla: ninguna pantalla, layout, componente ni dato demo escribe un color literal.** Ni
 hexadecimales (`#1a1f2e`) ni utilidades de la paleta de Tailwind (`text-slate-400`, `bg-red-500/20`):
@@ -109,25 +112,32 @@ se usa la utilidad del token.
 | Fondo de pagina, tarjeta, degradado de tarjeta | `bg-background`, `bg-card`, `from-card to-accent` |
 | Texto principal, secundario, intermedio, tenue | `text-foreground`, `text-muted-foreground`, `text-subtle-foreground`, `text-neutral` |
 | Bordes y separadores | `border-border`, `divide-border` |
-| Marca, foco, acento de navegacion | `bg-primary`, `border-primary`, `text-highlight` |
-| Estados (exito, error, info, aviso, atencion) | `text-success`, `bg-danger-tint/20 text-danger-foreground`, `text-info`, `text-warning`, `bg-attention-tint/20` |
-| Atributos de Recharts (`stroke`, `fill`) y estilos en linea | `var(--chart-axis)`, `var(--chart-2)`, `var(--primary)`, o `chartTooltipStyle` para el tooltip |
+| Boton primario (el violeta es solo de botones) | `bg-primary text-primary-foreground` |
+| Navegacion activa, seleccion y foco | `text-highlight`, `border-highlight`, `outline-highlight` |
+| Cabecera de marca y sus controles | `bg-brand`, `text-brand-foreground` |
+| Ahorro e insights (coral; el texto es siempre casi negro) | `bg-saving text-saving-foreground` |
+| Borde de un campo de formulario | `border-input` |
+| Estados (exito, peligro, info, aviso) | `text-success`, `bg-danger-tint/20 text-danger-foreground`, `text-info`, `text-warning`; relleno suave como maximo al 30 % y siempre con icono o texto |
+| Atributos de Recharts (`stroke`, `fill`) y estilos en linea | `var(--chart-axis)`, `var(--chart-2)`, o `chartTooltipStyle`, `chartTooltipItemStyle` y `chartLegendFormatter` para tooltip y leyenda; nunca `var(--primary)` |
 
 - **Cambiar un color** = editar su valor en `theme.css`; llega a todas las pantallas sin tocarlas.
 - **Anadir un color** = crear un token con nombre de **funcion** (no de color), con consumidor real, en
-  `:root` y en `@theme inline` (`--color-<nombre>`). Un token sin uso hace fallar los tests.
+  `:root`, en `[data-theme="dark"]` y en `@theme inline` (`--color-<nombre>`). Un token sin uso o que
+  solo exista en una paleta hace fallar los tests, y un color de estado debe pasar `theme-contrast.test.ts`.
 - **No construyas clases por interpolacion** (`` `text-${color}-400` ``): Tailwind no las detecta. Usa un
   mapa cerrado de cadenas completas (`Record<string, string>`), como `MetricCard`.
 - **Excepciones**: solo si el tema no puede alcanzar el color (p. ej. el HTML autonomo que `ExportButton`
   abre para imprimir, que no carga `theme.css`). Se declaran una a una, con archivo, valor y motivo, en
   la lista de `src/test/color-tokens.guard.test.ts`.
 - Los primitivos de `src/components/ui/` se conservan tal como los publica shadcn/ui; sus variantes
-  `dark:` funcionan siempre porque `theme.css` declara `@custom-variant dark (&)`.
+  `dark:` aplican solo con el tema oscuro porque `theme.css` declara
+  `@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *))`.
 
-Dos tests estaticos lo hacen cumplir: `color-tokens.guard.test.ts` (ningun color literal fuera de las
-excepciones) y `theme-palette.test.ts` (paleta unica, tokens sin duplicar ni huerfanos, `<html>` sin
-clase de tema). Las atribuciones del codigo de terceros copiado estan en
-[`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
+Cuatro tests estaticos lo hacen cumplir: `color-tokens.guard.test.ts` (ningun color literal fuera de las
+excepciones), `theme-palette.test.ts` (dos paletas con los mismos tokens, sin duplicar ni huerfanos),
+`theme-contrast.test.ts` (contraste de estados, botones, foco y series en ambos temas) y
+`brand-usage.guard.test.ts` (violeta solo en botones, opacidad maxima de los rellenos, foco visible y
+tooltips). Las atribuciones del codigo de terceros copiado estan en [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
 
 ## Como correrlo
 

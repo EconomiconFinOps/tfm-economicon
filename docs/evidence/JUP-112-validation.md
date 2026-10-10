@@ -3,10 +3,10 @@
 - Fecha: 2026-10-10.
 - Trello: https://trello.com/c/XTZU3vj3
 - Rama: `feat/JUP-112-brand-identity`, desde `origin/develop` en `d057537`.
-- OpenSpec: `openspec/changes/jup-112-brand-identity/` (proposal, design, specs y tasks).
+- OpenSpec: `openspec/changes/archive/2026-10-10-jup-112-brand-identity/` (proposal, design, specs y tasks).
 - ADR: [ADR-0012](../adr/ADR-0012-frontend-color-tokens.md), enmendado en este cambio.
 - Alcance: implementación nueva sobre `develop`; no reutiliza el borrador paralelo de otra rama (PR #102) sobre la misma tarjeta. El tema oscuro amplía el alcance de la tarjeta (que lo declara fuera de alcance) por decisión de Lucia; la confirmación del liderazgo de la tarjeta queda pendiente.
-- Estado: evidencia técnica y visual de esta sesión, tras dos pasadas de revisión adversarial (ver `openspec/changes/jup-112-brand-identity/review.md`). No sustituye la revisión de código ni la validación funcional de las personas con esos roles en Trello.
+- Estado: evidencia técnica y visual de esta sesión, tras dos pasadas de revisión adversarial (ver `openspec/changes/archive/2026-10-10-jup-112-brand-identity/review.md`). No sustituye la revisión de código ni la validación funcional de las personas con esos roles en Trello.
 
 ## Qué se comprobó y cómo
 

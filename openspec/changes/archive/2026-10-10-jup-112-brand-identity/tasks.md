@@ -8,7 +8,7 @@
 
 ## 2. Armazón, marca y conmutador de tema
 
-- [x] 2.1 Cabecera índigo con monograma inverso y "Economicon"; navegación activa con `brand` y borde, sin violeta
+- [x] 2.1 Cabecera índigo con monograma inverso y "Economicon"; navegación activa con `highlight` y borde, sin violeta
 - [x] 2.2 Pantalla de acceso con monograma primario y botón primario en violeta
 - [x] 2.3 Botones primarios de todas las pantallas en `primary` y comprobar que el violeta no aparece fuera de botones
 - [x] 2.4 Script de `index.html` que fija `data-theme` antes del primer pintado (elección guardada o preferencia del sistema, con `try/catch` en el almacenamiento) y control accesible en la cabecera que alterna, guarda y indica el tema activo
@@ -39,5 +39,7 @@
 - [x] 6.1 Capturas en 1280 px y 390 px, en tema claro y oscuro, de cada pantalla (con datos, carga, vacío y error) con Chromium real, revisadas a ojo contra los requisitos de legibilidad y de uso del violeta y el coral; comprobar que las gráficas se repintan al cambiar de tema; guardar la evidencia en `docs/evidence/JUP-112/` junto con la salida del validador de paletas
 - [x] 6.2 Batería completa: `corepack pnpm build`, `lint`, `test`, typecheck del frontend, `openspec:validate`, `jup:check` para este cambio y `jup:cleanup:check`
 - [x] 6.3 Revisión adversarial con el agente `adversarial-reviewer` hasta `accept` y registro en `review.md`
-- [ ] 6.4 Sección `## Human Approval` posterior a la revisión, a cumplimentar por Lucia
-- [ ] 6.5 Archivar el cambio en el mismo PR y abrir el PR contra `develop` desde `feat/JUP-112-brand-identity`, indicando en la descripción que el tema oscuro amplía el alcance de la tarjeta por decisión de Lucia
+- [x] 6.4 Sección `## Human Approval` posterior a la revisión, a cumplimentar por Lucia
+- [x] 6.5 Archivar el cambio en el mismo PR y abrir el PR contra `develop` desde `feat/JUP-112-brand-identity`, indicando en la descripción que el tema oscuro amplía el alcance de la tarjeta por decisión de Lucia
+
+Nota de cierre (2026-10-10): 6.4 se cumple con el bloque `## Human Approval` de `review.md`, rellenado con la aprobación explícita de Lucia. 6.5 se cumple al archivar en esta rama; el PR se abre justo después como borrador y su estado queda en GitHub y Trello. La revisión de código y la validación funcional por quienes tienen esos roles en Trello siguen pendientes y no se dan por hechas.
