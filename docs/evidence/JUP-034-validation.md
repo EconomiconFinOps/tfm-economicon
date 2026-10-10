@@ -4,6 +4,9 @@ Fecha: 2026-10-10. [Tarjeta](https://trello.com/c/Hdwz4SXw).
 Base: `c2995a118d419dfe725247bac9c6f219a3f0ea77` (`origin/develop`).
 Rama: `feat/JUP-034-impact`. Esta evidencia de implementación no sustituye
 `Revision JUP-034` ni `Validacion JUP-034` de las personas asignadas.
+[PR #96 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/96), contra
+develop. Código probado en `08fbcfa86cdc752012ef2b792d61180c366c4dd9`; los commits
+posteriores que sólo registren enlaces/resultados no cambian el runtime.
 
 ## Criterios de la tarjeta
 
@@ -12,7 +15,7 @@ Rama: `feat/JUP-034-impact`. Esta evidencia de implementación no sustituye
 | Resultado funcional verificable | POST autenticado `/recommendations/impact/evaluate`; [contrato y ejemplo](../contracts/recommendation-impact.md); mensual/anual y cartera sin scopes duplicados | Implementado y comprobado con datos sintéticos |
 | Pruebas necesarias en verde | `apps/backend/tests/test_recommendation_impact.py`: aritmética independiente, precisión, desconocidos, solapes, monedas y autorización real/SQLite | 54/54 propias; batería amplia limitada por fallo previo Windows |
 | Documentación y decisiones actualizadas | Contrato versionado, OpenSpec, README backend y [continuidad](../continuidad/impacto-recomendaciones.md) | Preparado |
-| Pull request revisado y vinculado | Entrega draft; revisión humana aún no emitida | Pendiente |
+| Pull request revisado y vinculado | PR #96 draft enlazada; revisión humana aún no emitida | Vinculación entregada; revisión pendiente |
 | Validación funcional y evidencia enlazadas | Ejemplo sintético y pruebas por escenario; Alejandro conserva la validación independiente | Validación humana pendiente |
 
 ## Entorno y comprobaciones
@@ -20,6 +23,15 @@ Rama: `feat/JUP-034-impact`. Esta evidencia de implementación no sustituye
 Windows; Python 3.14.4, FastAPI 0.115.12, Pydantic 2.12.5, httpx 0.28.1,
 SQLAlchemy 2.0.52, pytest 9.0.3, Node 24.14.1. CI usa Python 3.12/Node 22;
 no se declara equivalencia sin sus resultados.
+
+CI sobre el código publicado `08fbcfa`: [backend Linux/Python3.12](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035231095/job/114164172826)
+**952 passed, 34 skipped**, 120.56s. Los skips se mantienen como límites de
+integraciones opcionales; no son evidencia de ejecución CockroachDB/pgvector reales.
+También SUCCESS OpenSpec, azure-cost-api, processor, frontend build y typecheck
+en ese run, y JUP policy en [evento PR](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035278744).
+`JUP reviews` pendiente/fallido por ausencia de los dictámenes humanos; draft
+conservado. La comprobación CI anterior acredita el runtime del código y no
+convierte en verde la batería Windows incompleta descrita debajo.
 
 - `python -m compileall -q app` en backend: correcto.
 - `node tools/jup-check.mjs --all`: 9 changes correctos.
@@ -69,3 +81,7 @@ técnica en rama propia, no validación independiente ni reasignación del lider
 Si Alejandro figura como autor de la PR canónica, no puede validar esa misma PR:
 el liderazgo debe regularizar la entrega y, cuando corresponda, acordar cualquier
 reasignación explícitamente en Trello antes de satisfacer los gates humanos.
+
+Vinculación Trello mediante integración DockerServer confirmada por relectura:
+comentario `6ac9ece763aa2861b02209f3`, 2026-10-10T07:44:39.713Z. No se modificaron
+descripción, fechas, prioridad, roles ni lista; sin cierre ni mensajes Discord.

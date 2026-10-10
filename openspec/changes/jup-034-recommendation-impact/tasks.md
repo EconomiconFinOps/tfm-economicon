@@ -6,7 +6,7 @@ JUP: JUP-034
 - [x] Implement exact monthly/annual calculation, unknowns and overlap handling.
 - [x] Add authenticated tenant-bound endpoint with no writes or cloud calls.
 - [x] Verify arithmetic, overlap and authorization acceptance tests (54 passed).
-- [ ] Record evidence, versions, limits and continuity; publish a draft delivery.
+- [x] Record evidence, versions, limits and continuity; publish draft PR #96.
 
 ## Human and integration gates
 

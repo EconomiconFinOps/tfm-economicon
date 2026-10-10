@@ -38,7 +38,13 @@ Ver [evidencia por criterio](../evidence/JUP-034-validation.md) para resultados,
 versiones y limitaciones. 54/54 pruebas propias, 82 de gobernanza, OpenSpec56/56,
 ejemplo55/660 y sintaxis correctos. Batería amplia:355pass/8skip/fallo Windows
 en test de salud, reproducido también sobre la base limpia sin JUP-034.
-Completar CI y entrega draft, después revisión del
+[PR #96 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/96) publicada
+contra develop, código probado `08fbcfa86cdc752012ef2b792d61180c366c4dd9`.
+CI Linux [38035231095](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035231095):
+backend952pass/34skip; demás checks técnicos verdes y JUP policy verde en eventoPR.
+Gate JUP reviews pendiente de dictámenes humanos. Trello vinculado y releído:
+comentario `6ac9ece763aa2861b02209f3`, 2026-10-10T07:44:39.713Z; lista/roles intactos.
+Pendientes: revisión del
 contrato por liderazgo, pairing Paris y dictámenes independientes Víctor/Alejandro.
 No fusionar ni cerrar Trello hasta completar el proceso de CONTRIBUTING.
 No hay despliegue, ahorro observado, prueba cloud, conexión al frontend ni
