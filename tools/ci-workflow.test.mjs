@@ -137,6 +137,29 @@ test("retains all existing governance, corpus and gateway validations", () => {
   }
 });
 
+for (const command of [
+  "python docs/demo/JUP-065/verificar.py --repo .",
+  "python -m unittest discover -s docs/demo/JUP-065 -p 'test_*.py' -v",
+  "node docs/demo/JUP-065/generado/sources/tools/validation-questions.mjs validate",
+]) {
+  test(`retains the demo validation command: ${command}`, () => {
+    const step = workflow.jobs.governance.steps.find(({ run }) =>
+      run?.split("\n").some((line) => line.trim() === command),
+    );
+    assert.ok(step, `Missing demo validation command: ${command}`);
+    assert.equal(step["continue-on-error"], undefined);
+    assert.equal(workflow.jobs.governance["continue-on-error"], undefined);
+  });
+}
+
+test("fetches the complete Git history needed to reproduce the demo sources", () => {
+  const checkout = workflow.jobs.governance.steps.find(({ uses }) =>
+    uses?.startsWith("actions/checkout@"),
+  );
+  assert.ok(checkout, "Missing governance checkout");
+  assert.equal(checkout.with["fetch-depth"], 0);
+});
+
 test("requires real frontend tests and lint before the mandatory build", () => {
   const steps = workflow.jobs["frontend-build"].steps;
   const lint = steps.findIndex(({ run }) => run === "corepack pnpm lint --filter=@finops/frontend");

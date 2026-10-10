@@ -46,6 +46,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -72,6 +73,9 @@ jobs:
           corepack pnpm assistant-corpus:validate
           corepack pnpm validation-questions:validate
           corepack pnpm validation-questions:test
+          python docs/demo/JUP-065/verificar.py --repo .
+          python -m unittest discover -s docs/demo/JUP-065 -p 'test_*.py' -v
+          node docs/demo/JUP-065/generado/sources/tools/validation-questions.mjs validate
           corepack pnpm retrieval-labels:validate
           corepack pnpm retrieval-labels:test
           corepack pnpm retrieval-calibration:test

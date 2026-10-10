@@ -8,6 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Demo funcional](demo-funcional.md) | JUP-065 / PR #63: reconciliada con develop 412ae411; paquete fijado conservado y controles CI combinados. Revalidación del incremento, pairing Lucía y ensayo integrado pendientes. | 2026-10-10 |
 | [Consulta de ownership](consulta-ownership.md) | JUP-037 / PR100: cierre preparado bajo excepción de plazo MVP; atribución real documentada, 209 backend/35 frontend y navegador HTTP/SQL pasan. Corrección de nuevo hilo; CI final/integración por verificar al publicar. | 2026-10-10 |
 | [Pruebas unitarias e integradas](pruebas-unitarias-integradas.md) | JUP-054: entrega técnica completada, 7 tests nuevos, CI Linux 2041 pass/91 skips y recorrido real 3 pass; cierre de PR93 autorizado por excepción de plazo del MVP, con atribución real y límites documentados. | 2026-10-10 |
 | [Dimension vectorial desde Settings](dimension-vectorial-settings.md) | JUP-102 / PR #108: pruebas y CI tecnica verificadas; excepcion de entrega fuera de plazo autorizada, atribucion real bajo Alejandro y cierre por PR. Reviews humanas dispensadas, no simuladas. | 2026-10-10 |
