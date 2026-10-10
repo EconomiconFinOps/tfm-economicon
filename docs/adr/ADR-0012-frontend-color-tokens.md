@@ -7,6 +7,7 @@
 - OpenSpec relacionado: [jup-099-unify-styles-assets](../../openspec/changes/archive/2026-10-01-jup-099-unify-styles-assets/) (archivado).
 - Sustituye a: ninguno
 - Sustituido por: ninguno
+- Enmendado por: [JUP-112](https://trello.com/c/XTZU3vj3), change `jup-112-brand-identity` (decisiones 2 y 3, ver la enmienda más abajo)
 
 ## Contexto
 
@@ -65,6 +66,22 @@ frontend y determina cómo se copian los primitivos de shadcn/ui.
    `src/test/theme-palette.test.ts` comprueba el contrato del tema: sin bloque `.dark`, cada token
    declarado una sola vez, cada alias resuelto, `<html>` sin clase de tema y **cada token con al menos
    un consumidor** (un token sin uso se retira).
+
+## Enmienda JUP-112 (2026-10-10): marca de Economicon en dos paletas
+
+[JUP-112](https://trello.com/c/XTZU3vj3) aplica la identidad de marca de Economicon al frontend y sustituye la paleta oscura azul heredada. La decisión 1 (ningún color literal, solo tokens) y las decisiones 4 a 8 siguen vigentes. Cambian dos:
+
+- **La decisión 2 ya no exige reproducir el valor que sustituye.** Los nombres siguen siendo por función y se reutilizan los de shadcn/ui, pero los valores son los de la marca (paleta de la guía: índigo `#2B2359`, violeta `#5B4FE8`, lila `#E4E1FB`, coral `#FF8A5B`, casi negro `#14121F`, blanco roto `#FAFAFC`) y la paleta de estados y de gráficas definida con criterio de diseño y validada con contraste WCAG y separación para daltonismo. Se añaden `brand`, `brand-foreground` y `saving`/`saving-foreground`, y se retiran `attention-*`.
+- **La decisión 3 pasa de "una única paleta oscura" a "dos paletas con los mismos tokens".** `:root` es el tema claro, activo por defecto, y `[data-theme="dark"]` redefine los mismos tokens para el tema oscuro. No hay bloque `.dark` ni clase en `<html>`: un script de `index.html` fija el atributo antes del primer pintado (elección guardada o preferencia del sistema) y un control en la cabecera alterna. `@custom-variant dark` pasa a `(&:where([data-theme="dark"], [data-theme="dark"] *))`, de modo que las variantes `dark:` de los primitivos shadcn siguen sin editarse. La alternativa antes descartada ("conservar `:root` claro más `.dark`") procede ahora porque los dos temas tienen consumidor.
+
+Reglas que obliga a respetar a las tarjetas futuras:
+
+- Todo token nuevo se define en las dos paletas con el mismo nombre y tiene al menos un consumidor (`theme-palette.test.ts`).
+- `primary` (violeta) es solo de botones y llamadas a la acción; la navegación y la selección usan `highlight`. `saving` (coral) solo marca ahorro e insights y su texto es siempre `saving-foreground`.
+- Un color de estado nuevo debe cumplir el contraste de `theme-contrast.test.ts` y llevar icono o texto, no solo color.
+- Los tests de contraste fijan el relleno suave de un estado en como máximo el 30 % de opacidad.
+
+Evidencia: [docs/evidence/JUP-112-validation.md](../evidence/JUP-112-validation.md). Los riesgos de este ADR sobre "tonos casi iguales" y "solo tema oscuro" quedan resueltos por esta enmienda; el riesgo de redondeo con `color-mix` sigue vigente.
 
 ## Consecuencias
 

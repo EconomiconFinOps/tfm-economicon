@@ -263,3 +263,29 @@ Paris respondió «aprobado» al cierre local con el límite móvil y al archiva
 OpenSpec; registro 15:33:40 Atlantic/Canary. Se acepta su aplazamiento fuera de
 JUP-055, manteniendo Open/Medium y owner Equipo Economicon. No hay reparación
 de Layout ni PASS visual global, nueva asignación o autorización de publicación.
+
+## RF-112-001 Series de grafica poco distinguibles con deuteranopia simulada
+
+Fecha: 2026-10-10. Origen: JUP-112, revision adversarial pasada 2 (ADV-6).
+Tipo: accesibilidad visual. Severidad: Medium. Estado: Open. Owner: Equipo Economicon.
+
+Con una simulacion de deuteranopia (matriz de Machado, distancia OKLab) algunas parejas de
+`--chart-1..5` quedan cerca: en oscuro `chart-1` frente a `chart-4` mide 0,048 y en claro el
+minimo entre series es 0,092. El validador de dataviz da PASS (aviso en el tema oscuro, ΔE 6,7 entre
+rojo y verde azulado). Las leyendas identifican cada serie, por eso no incumple un requisito de la
+spec, pero no hay un test de distancia minima entre series. Alternativa: anadir ese test y reajustar
+tonos, o aceptar el riesgo documentado.
+
+## RF-112-002 Cabos sueltos de menor severidad tras JUP-112
+
+Fecha: 2026-10-10. Origen: JUP-112, revision adversarial pasada 2 (ADV-9 a ADV-11).
+Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
+
+- El tema no se sincroniza entre pestanas ni escucha cambios del sistema en caliente; la spec solo exige
+  arrancar con la preferencia.
+- `components/ui/select.tsx` (primitivo shadcn sin importadores) usa `--input` como relleno con
+  `dark:hover:bg-input/50`, y `--input` es ahora un color de borde; revisarlo si se importa.
+- `--chart-3` es identico a `--warning-tint` y `--chart-negative` a `--chart-5`: en una grafica, una serie
+  puede compartir color con un estado.
+- Los tooltips de las graficas fijan el color de sus items con `itemStyle`, comprobado por un guardian
+  estatico pero no capturado en un navegador real.

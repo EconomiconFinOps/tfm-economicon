@@ -35,9 +35,10 @@ Los materiales de marca (paleta, tipografías, monograma E primario e inverso) e
 | `brand` (nuevo) | `#2B2359` | `#2B2359` | cabecera y texto de marca |
 | `primary` | `#5B4FE8` | `#5B4FE8` | solo botones y CTA, texto blanco (5,63:1) |
 | `saving` (nuevo) | `#FF8A5B` | `#FF8A5B` | ahorro e insights, con texto `#14121F` encima (7,96:1) |
-| `muted-foreground`, `border` | `#5F5B7A`, `#D9D5F2` | `#A9A5C4`, `#3A3470` | texto secundario y bordes |
+| `muted-foreground`, `neutral` | `#524E6B`, `#5A5675` | `#B3AFCC`, `#ABA7C4` | texto secundario y neutro, legibles sobre fondo, tarjeta y acento |
+| `border`, `input` | `#D9D5F2`, `#7F7A9C` | `#3A3470`, `#8A86A8` | borde decorativo y borde de campos (≥3:1 contra su fondo) |
 
-`primary` deja de usarse para navegación y selección: la navegación activa usa `brand` en claro y el blanco roto en oscuro, con borde y peso, no solo color.
+`primary` deja de usarse para navegación y selección: la navegación activa, la selección y el foco usan `highlight` (índigo `#2B2359` en claro, lavanda `#BDB8F7` en oscuro), con borde y peso, no solo color. Sobre la cabecera índigo los controles usan `brand-foreground`, porque `highlight` en claro tiene el mismo color que ella.
 
 **3. Estados con criterio propio, validados en los dos temas** con el validador de dataviz (`--pairs all`, con la superficie de tarjeta de cada tema) y con razón de contraste WCAG para el texto. El verde es azulado y el peligro un rojo frío, para que no se confundan entre sí (con un verde puro el rojo y el verde quedaban a ΔE 2,2 para daltonismo en oscuro) ni con el coral. `attention` (naranja) se elimina: sus usos pasan a aviso o a coral según signifiquen alarma o ahorro.
 
@@ -45,23 +46,23 @@ Los materiales de marca (paleta, tipografías, monograma E primario e inverso) e
 | --- | --- | --- |
 | éxito | `#0B8A6E` / `#075340` | `#1AA68F` / `#5FD6BF` |
 | aviso | `#BF8300` / `#6E4200` | `#BA8B1C` / `#E2B84C` |
-| peligro | `#D03A3A` / `#9E2020` | `#F0566E` / `#FF8FA0` |
+| peligro | `#D03A3A` / `#8F1B1B` | `#F0566E` / `#FF9DAC` |
 | información | `#3B7DDB` / `#174A99` | `#5A8BEA` / `#9DB8F5` |
 | neutro | gris índigo, no se valida como categórico | gris índigo |
 
-El relleno suave mezcla el color de relleno con la superficie (14 % en claro, 22 % en oscuro). Contraste medido del texto sobre su relleno suave: 5,1–7,6 en claro y 5,7–6,8 en oscuro. La separación para daltonismo entre estados queda en ΔE 8,6 (claro) y 6,6 (oscuro, en zona de aviso del validador): solo es legal porque cada indicación de estado lleva icono y texto, que es un requisito de la spec. Alternativa descartada: conservar los tonos Tailwind actuales aclarados; no alcanzan el contraste de texto sobre fondo claro.
+El relleno suave es el color de relleno con una opacidad de /10 a /30 sobre la superficie (nunca más del 30 %, lo comprueba un guardián); el test de contraste usa el 30 % como peor caso. El texto sobre ese relleno y sobre fondo, tarjeta y acento llega a 4,5:1 o más en los dos temas. La separación para daltonismo entre estados queda en ΔE 8,6 (claro) y 6,6 (oscuro, en zona de aviso del validador): solo es legal porque cada indicación de estado lleva icono y texto, que es un requisito de la spec. Alternativa descartada: conservar los tonos Tailwind actuales aclarados; no alcanzan el contraste de texto sobre fondo claro.
 
-**4. Gráficas.** Cinco tonos por tema, ordenados para que dos series adyacentes difieran en tono, sin violeta de CTA y con el coral solo cuando la serie representa ahorro. Ambas paletas pasan los cinco chequeos del validador.
+**4. Gráficas.** Cinco tonos por tema, ordenados para que dos series adyacentes difieran en tono, sin violeta de CTA y con el coral solo cuando la serie representa ahorro. Ambas paletas pasan los cinco chequeos del validador; en oscuro la separación entre rojo y verde azulado queda en zona de aviso (ΔE 6,7), legal porque cada serie lleva leyenda.
 
 | Serie | Claro | Oscuro |
 | --- | --- | --- |
-| 1 | `#4B46B8` | `#7C75E6` |
-| 2 | `#1BA39C` | `#1CA89E` |
+| 1 | `#8E3B8A` | `#B565A9` |
+| 2 | `#2F8BD9` | `#4A93E0` |
 | 3 | `#BF8300` | `#BA8B1C` |
-| 4 | `#3B7DDB` | `#4A93E0` |
+| 4 | `#1BA39C` | `#1CA89E` |
 | 5 / pico | `#D6334F` | `#E8587A` |
 
-Ejes y rejillas en tonos apagados derivados de `muted-foreground`. Alternativa descartada: monocromo índigo con luminosidades; no distingue series en la leyenda.
+La primera serie es un ciruela, no un índigo, porque un índigo se confundía con el violeta de botones (la distancia de color con `primary` se comprueba en un test). Ejes y rejillas en tonos apagados derivados de `muted-foreground`. Alternativa descartada: monocromo índigo con luminosidades; no distingue series en la leyenda.
 
 **5. Contraste como contrato ejecutable.** Un test nuevo calcula la razón de contraste WCAG de los pares declarados, en cada tema (texto de estado sobre relleno suave, base y tarjeta; texto sobre violeta; texto sobre coral; series sobre tarjeta), y falla por debajo de 4,5:1 (3:1 para gráficos). La separación entre series para daltonismo se validó con el script de dataviz y se deja registrada en la evidencia; no se reimplementa en el test.
 
