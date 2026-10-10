@@ -30,9 +30,9 @@ texto sin añadir criterios ni convertir pendientes humanos en aprobaciones.
 | Conservar resúmenes, enlaces y evidencia | [Presupuestos](../continuidad/presupuestos-umbrales.md) idéntico a la base; [citas](../continuidad/citas-asistente.md) conserva íntegro el cuerpo de `711f641` tras su nota de vigencia | Comprobado documentalmente; no repite pruebas históricas. |
 | Conservar la unión al integrar las PR | Unión por destino de ambos índices; tres temas, sin duplicados ni marcadores | Comprobado en esta reconciliación; no garantiza conflictos futuros. |
 | Evitar duplicar el backlog | [Convención](../continuidad/convencion-compartida.md): fuentes de verdad, cortes fechados, procedimiento y plantilla | Implementado documentalmente. |
-| PR documental independiente y extracción de #55 | Reutiliza PR #64 y el resumen extraído en `711f641`; sólo AGENTS, continuidad y esta evidencia difieren de la base | Comprobado; no se abre PR duplicada. |
+| PR documental independiente y extracción de #55 | Reutiliza PR #64 y el resumen extraído en `711f641`; sólo AGENTS, continuidad, esta evidencia y la fila de atribución en contributions difieren de la base | Comprobado; no se abre PR duplicada. |
 | Acordar adaptación de #60/#61/#62 antes de sus merges | Las PR ya se integraron; se registra debajo el hecho y se corrige la referencia histórica | Acuerdo previo no acreditado; no se inventa retrospectivamente. |
-| No atribuir aprobaciones ni eliminar trabajo ajeno | Conformidad de Paris enlazada; roles propuestos y reviews pendientes explícitos; preservación del tema ajeno | Comprobado en la documentación; acuerdo del equipo pendiente. |
+| No atribuir aprobaciones ni eliminar trabajo ajeno | Conformidad de Paris enlazada; roles históricos propuestos y excepción de cierre explícitos; preservación del tema ajeno | Comprobado; no se acredita consenso ni reviews independientes. |
 
 ## Fuentes consultadas de nuevo
 
@@ -109,10 +109,51 @@ La preservación del tema ajeno también se comprueba con
 (salida vacía); `git diff 711f641 -- docs/continuidad/citas-asistente.md` debe
 mostrar sólo la nota de vigencia añadida.
 
-## Pendientes para aceptar y cerrar
+## Excepción de atribución y cierre por plazo del MVP
 
-Registrar acuerdo o correcciones del equipo, confirmar roles propuestos,
-acreditar pairing real y recibir reviews independientes `Revision JUP-101` y
-`Validacion JUP-101` según CONTRIBUTING. Mantener draft hasta resolver el acuerdo
-y completar los requisitos de revisión. No se cambia prioridad, fecha, roles ni
-estado operativo por inferencia; no se atribuye consenso ni se hace merge.
+El 2026-10-10 el usuario instruyó en este chat: «Estamos fuera de fecha, completa
+todas las tareas necesarias marcando en la atribucion la excepcion por estar
+fuera de plazo para la entrega del MVP». Esta autorización posterior sustituye
+para **JUP-101** la espera de acuerdo/roles/reviews y habilita el cierre excepcional
+por PR #64. No convierte esos actos humanos en hechos ocurridos ni modifica
+permanentemente CONTRIBUTING, el checker o las reglas de protección.
+
+| Participante / medio | Atribución real | Requisito humano dispensado para este cierre |
+| --- | --- | --- |
+| Alejandro Aguado (`Iber1to`), con ejecución asistida por Codex | Implementación y comprobación técnica mediante su cuenta, por encargo del usuario; integración prevista por esa vía tras verificar CI final | No se presenta la autocomprobación como review independiente. |
+| Paris Arcos Martin | Conformidad sobre la convención del 04/10, enlazada arriba | Pairing no acreditado; no se inventa coautoría. |
+| Lucia Mateo | Revisora propuesta históricamente | `Revision JUP-101` independiente no realizada ni atribuida; dispensada. |
+| Victor Mendez | Validador propuesto históricamente | `Validacion JUP-101` independiente no realizada ni atribuida; dispensada. |
+| Usuario | Instrucción expresa de completar y registrar la excepción por plazo | Adopción excepcional para el MVP; no equivale a consenso de todo el equipo. |
+
+Se verificó de nuevo el ruleset activo `21475971`: permite a administradores
+(`RepositoryRole`, `actor_id: 5`) bypass sólo en `pull_request`. La cuenta conectada
+es `Iber1to` y tiene permiso admin. Se usará esa facultad ya configurada en la
+PR existente; no se eliminan checks, no se simula su éxito y no se hace push
+directo a develop. La línea de excepción de «revisión y validación por la misma
+persona» no se aplica: no describe lo ocurrido.
+
+El head previo `c58616c` pasó los siete trabajos técnicos de
+[CI](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38034739888).
+Sobre el delta de excepción se vuelven a comprobar preservación/enlaces e higiene;
+el head final debe completar su CI técnico antes de integrar. La ausencia de
+reviews y el bypass se mantienen explícitos en PR y Trello; no se acreditan
+pruebas funcionales humanas mediante esta nota.
+
+Recomprobación local del delta: tres temas conservados, 24 enlaces relativos
+resueltos en siete documentos, presupuestos/cuerpo histórico de citas/AGENTS
+preservados, diff sin errores e higiene de 976 archivos correcta. La descripción
+de PR pasa el checker de metadatos; esto no acredita ejecución de los roles
+históricos propuestos. El manifiesto `exception-documentation-check.json`
+acompaña al script `check-exception.py` en el directorio de evidencias local.
+El sandbox volvió a impedir el subproceso Git del control de higiene; la
+repetición autorizada fuera del sandbox pasó sin modificar código ni controles.
+
+Secuencia de cierre: registrar excepción y atribución en PR/Trello, publicar
+el delta documental, verificar CI final, integrar PR #64 por squash con head
+fijado y, tras comprobar el merge, pasar JUP-101 a Hecho. El recibo final con SHA,
+CI y acción Trello se guarda junto a las fuentes del espacio de coordinación.
+La condición de fuera de plazo procede del usuario: la tarjeta no tenía `due`,
+y no se inventa uno ni se cambia prioridad. Las revisiones humanas omitidas
+permanecen identificadas como dispensadas, no como trabajo futuro necesario para
+este cierre excepcional.

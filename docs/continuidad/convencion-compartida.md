@@ -3,9 +3,12 @@
 Verificación documental: **2026-10-10**. Origen: [JUP-101](https://trello.com/c/ReMOdXEK)
 y [PR #64](https://github.com/EconomiconFinOps/tfm-economicon/pull/64), a partir de
 la [observación de Víctor en JUP-025](https://github.com/EconomiconFinOps/tfm-economicon/pull/55#pullrequestreview-5385253656).
-Estado: **propuesta implementada documentalmente, pendiente de acuerdo del equipo**.
-La autorización del encargo actual permite completar esta entrega; no acredita
-consenso, pairing, aprobación ni cierre de la tarjeta.
+Estado: **adopción para el MVP por excepción de plazo autorizada por el usuario**.
+El 10/10 el usuario ordenó completar las tareas necesarias y marcar en la
+atribución la excepción por estar fuera de plazo para entregar el MVP. Esta
+decisión permite completar JUP-101 mediante la PR existente; no acredita consenso,
+pairing ni aprobaciones del equipo. El estado de integración está en PR #64 y
+la tarjeta, y su atribución en la [evidencia de cierre](../evidence/JUP-101-continuity.md#excepción-de-atribución-y-cierre-por-plazo-del-mvp).
 
 ## Alcance y fuentes de verdad
 
@@ -98,9 +101,9 @@ La instrucción original de adaptar #60/#61/#62 **antes de sus merges** describ�
 la situación del 02/10. Las cuatro PR de origen ya están integradas, según el
 [contraste actual](../evidence/JUP-101-continuity.md); no se atribuye un acuerdo
 retrospectivo ni se reabren esas ramas. Las ramas futuras pueden aplicar el
-procedimiento anterior después de acordar la convención.
+procedimiento anterior. La excepción de cierre siguiente sólo se aplica a JUP-101.
 
-## Acuerdo y pendientes humanos
+## Conformidad y excepción de cierre
 
 [Paris expresó conformidad el 04/10](https://github.com/EconomiconFinOps/tfm-economicon/pull/64#issuecomment-5974860953)
 con índice y referencia únicos, temas estables, conservación de aportaciones y
@@ -108,15 +111,23 @@ fuentes de verdad. Aclaró que revisión, validación y confirmación de roles s
 su procedimiento. Se conserva esa conformidad; no prueba pairing ni aprobación
 de PR, y no equivale a consenso completo.
 
-La tarjeta conserva roles **propuestos**: Alejandro Aguado (liderazgo), Paris
-Arcos Martin (pairing), Lucia Mateo (revisión) y Victor Mendez (validación).
-La comprobación documental del implementador no se atribuye a esas personas
-como participación, review o aceptación realizada. No hay quorum definido en
-la tarjeta; no se añade uno.
+Los roles originalmente **propuestos** fueron Alejandro Aguado (liderazgo),
+Paris Arcos Martin (pairing), Lucia Mateo (revisión) y Victor Mendez (validación).
+Se conservan como historia; no acreditan participación. La ejecución y comprobación
+técnica asistidas por Codex se registran bajo la cuenta de Alejandro (`Iber1to`).
+El pairing y las reviews independientes no realizados se **dispensan para este
+cierre por instrucción del usuario**, sin marcarlos como completados ni atribuirlos
+a Paris, Lucia o Victor. La conformidad de Paris permanece limitada a su alcance.
 
-Pendiente del equipo: registrar el acuerdo concreto o las correcciones a esta
-propuesta en JUP-101/PR #64, confirmar roles y acreditar el pairing realizado.
-Después, solicitar `Revision JUP-101` y `Validacion JUP-101` sobre el head publicado.
-El borrador y la tarjeta permanecen abiertos hasta resolver esos pendientes
-y cumplir el flujo de integración. La prioridad sigue sin etiqueta; no se infiere
-ni se cambia una fecha de entrega.
+Queda superada para JUP-101 la espera del borrador por acuerdo, roles y reviews:
+la adopción del MVP se resuelve excepcionalmente, sin afirmar consenso del equipo.
+El cierre exige comprobar la documentación y CI técnico del head final, integrar
+por PR #64 usando la facultad administrativa ya existente y enlazar la evidencia
+en Trello antes de pasarla a Hecho. No se cambian las reglas de protección ni se
+publican reviews del autor como si fueran independientes. El bypass y los requisitos
+humanos dispensados quedan visibles; `JUP reviews` no se falsea como satisfecho.
+
+Esta decisión no crea una excepción permanente, no completa otras tarjetas ni
+reescribe aportaciones históricas. La prioridad sigue sin etiqueta y no se inventa
+una fecha de entrega; la condición de fuera de plazo procede de la instrucción
+del usuario. Las correcciones futuras siguen el proceso general de CONTRIBUTING.
