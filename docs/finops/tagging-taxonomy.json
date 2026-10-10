@@ -1,0 +1,11 @@
+{
+  "policy_version": "economicon-minimum-v1",
+  "catalog_policy_version": "economicon-catalog-v1",
+  "required_tags": ["owner", "environment", "application", "cost_center", "project"],
+  "identifier_pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+  "invalid_values": ["unknown", "n/a", "null", "none", "true", "false", "undefined", "unassigned", "-"],
+  "environments": {
+    "dev": "dev", "development": "dev", "test": "test", "testing": "test",
+    "staging": "staging", "stage": "staging", "prod": "prod", "production": "prod"
+  }
+}

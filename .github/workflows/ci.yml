@@ -83,6 +83,8 @@ jobs:
           corepack pnpm local:test
           corepack pnpm collaboration:test
           corepack pnpm contributions:test
+          python tools/tagging_taxonomy.py --cases docs/finops/tagging-taxonomy-cases.json
+          python -m unittest discover -s tools/tests -p test_tagging_taxonomy.py -v
           corepack pnpm openspec:validate
 
   python-tests:

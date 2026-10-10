@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "policy_version": "economicon-catalog-v1",
+  "catalog_version": "pending",
+  "tenant_id": "pending",
+  "status": "draft",
+  "approval_reference": null,
+  "valid_from": "2026-10-10",
+  "valid_to": null,
+  "values": {
+    "owner": [], "application": [], "cost_center": [], "project": [], "organization_unit": []
+  },
+  "owner_to_org_unit": {}
+}

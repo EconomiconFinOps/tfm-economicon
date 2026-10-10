@@ -1,0 +1,425 @@
+{
+  "catalog": {
+    "schema_version": 1,
+    "policy_version": "economicon-catalog-v1",
+    "catalog_version": "synthetic-2026-10",
+    "tenant_id": "tenant-demo",
+    "status": "example",
+    "approval_reference": null,
+    "valid_from": "2026-10-01",
+    "valid_to": "2026-11-01",
+    "values": {
+      "owner": [
+        "team-demo",
+        "team-unmapped"
+      ],
+      "application": [
+        "app-demo"
+      ],
+      "cost_center": [
+        "cc-demo"
+      ],
+      "project": [
+        "project-demo"
+      ],
+      "organization_unit": [
+        "unit-demo"
+      ]
+    },
+    "owner_to_org_unit": {
+      "team-demo": "unit-demo"
+    }
+  },
+  "cases": [
+    {
+      "name": "complete-example-not-approval",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "team-demo",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "minimum_compliant": true,
+        "catalog_status": "example",
+        "catalog_match": true,
+        "organizationally_valid": null,
+        "organization_unit": "unit-demo"
+      }
+    },
+    {
+      "name": "no-application-from-project",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "team-demo",
+        "environment": "prod",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "minimum_compliant": false,
+        "defects": {
+          "application": "missing"
+        },
+        "catalog_match": false
+      }
+    },
+    {
+      "name": "no-owner-from-organization",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo",
+        "organization": "team-demo",
+        "owner_team": "team-demo"
+      },
+      "expected": {
+        "minimum_compliant": false,
+        "defects": {
+          "owner": "missing"
+        },
+        "organization_unit": null
+      }
+    },
+    {
+      "name": "multiple-defects-one-row",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "environment": "prod",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "defects": {
+          "owner": "missing",
+          "application": "missing"
+        },
+        "catalog_match": false
+      }
+    },
+    {
+      "name": "blank-owner",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "   ",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "defects": {
+          "owner": "empty"
+        },
+        "organization_unit": null
+      }
+    },
+    {
+      "name": "null-owner",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": null,
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "defects": {
+          "owner": "type"
+        }
+      }
+    },
+    {
+      "name": "boolean-owner",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": true,
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "defects": {
+          "owner": "type"
+        }
+      }
+    },
+    {
+      "name": "numeric-owner",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": 123,
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "defects": {
+          "owner": "type"
+        }
+      }
+    },
+    {
+      "name": "placeholder-case-insensitive",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": " UnKnOwN ",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "defects": {
+          "owner": "placeholder"
+        }
+      }
+    },
+    {
+      "name": "environment-alias-and-trim",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": " team-demo ",
+        "environment": " Production ",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "minimum_compliant": true,
+        "catalog_match": true,
+        "organization_unit": "unit-demo"
+      }
+    },
+    {
+      "name": "invalid-environment",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "team-demo",
+        "environment": "qa",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "defects": {
+          "environment": "invalid_value"
+        }
+      }
+    },
+    {
+      "name": "unknown-owner-valid-syntax",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "team-other",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "minimum_compliant": true,
+        "unknown_catalog_values": [
+          "owner"
+        ],
+        "catalog_match": false,
+        "organization_unit": null
+      }
+    },
+    {
+      "name": "application-is-case-sensitive",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "team-demo",
+        "environment": "prod",
+        "application": "App-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "minimum_compliant": true,
+        "unknown_catalog_values": [
+          "application"
+        ],
+        "catalog_match": false
+      }
+    },
+    {
+      "name": "owner-without-unit",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "team-unmapped",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "minimum_compliant": true,
+        "catalog_match": true,
+        "organization_unit": null
+      }
+    },
+    {
+      "name": "other-tenant",
+      "tenant_id": "tenant-other",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "team-demo",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "catalog_status": "not_applicable",
+        "catalog_match": null,
+        "organizationally_valid": null,
+        "organization_unit": null
+      }
+    },
+    {
+      "name": "before-validity",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-09-30",
+      "tags": {
+        "owner": "team-demo",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "catalog_status": "not_applicable",
+        "organization_unit": null
+      }
+    },
+    {
+      "name": "start-inclusive",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-01",
+      "tags": {
+        "owner": "team-demo",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "catalog_status": "example",
+        "catalog_match": true
+      }
+    },
+    {
+      "name": "end-exclusive",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-11-01",
+      "tags": {
+        "owner": "team-demo",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "catalog_status": "not_applicable",
+        "catalog_match": null
+      }
+    },
+    {
+      "name": "128-character-id",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "team-demo",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp"
+      },
+      "expected": {
+        "minimum_compliant": true,
+        "unknown_catalog_values": [
+          "project"
+        ]
+      }
+    },
+    {
+      "name": "129-character-id",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "team-demo",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp"
+      },
+      "expected": {
+        "minimum_compliant": false,
+        "defects": {
+          "project": "invalid_value"
+        }
+      }
+    },
+    {
+      "name": "extra-tags-do-not-repair",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "team": "team-demo",
+        "app": "app-demo",
+        "organization": "unit-demo",
+        "environment": "prod",
+        "project": "project-demo",
+        "cost_center": "cc-demo"
+      },
+      "expected": {
+        "defects": {
+          "owner": "missing",
+          "application": "missing"
+        }
+      }
+    },
+    {
+      "name": "source-coerced-number-is-syntax-only",
+      "tenant_id": "tenant-demo",
+      "usage_date": "2026-10-10",
+      "tags": {
+        "owner": "123",
+        "environment": "prod",
+        "application": "app-demo",
+        "cost_center": "cc-demo",
+        "project": "project-demo"
+      },
+      "expected": {
+        "minimum_compliant": true,
+        "unknown_catalog_values": [
+          "owner"
+        ],
+        "catalog_match": false
+      }
+    }
+  ]
+}

@@ -49,6 +49,11 @@ benchmarks de ADR-0002 conservan su fecha; no son precios actuales.
 
 ### Decisiones ya explicadas fuera de un ADR
 
+Actualización JUP-015, 10/10/2026: [ADR-0018 · Taxonomía de etiquetas](ADR-0018-tagging-taxonomy.md),
+Proposed, separa sintaxis, membresía de catálogos y relación equipo/unidad.
+[Evidencia](../evidence/JUP-015-validation.md); no acredita aprobación organizativa
+ni adopción de los consumidores.
+
 Estas fuentes se reutilizan; no se copian en registros nuevos ni se atribuye a sus
 contratos una implementación que no documentan.
 
