@@ -169,3 +169,60 @@ La PR registra el evento de integración administrativa y Trello el cierre de la
 tarjeta conforme a esta excepción. Sin mensajes Discord. La evidencia no acredita Azure
 cloud, LLM externo, gateway LiteLLM real, reinicio RabbitMQ, todas las migraciones,
 Compose completo ni navegador real. RF-096-004 (infraestructura en CI) sigue separado.
+
+## Segunda pasada: cobertura del candidato final
+
+Fecha: 2026-10-10. [Trello](https://trello.com/c/ZsxwmagI). Rama
+`test/JUP-054-final-candidate-coverage`. OpenSpec:
+`jup-054-final-candidate-coverage`. Las secciones anteriores son la primera pasada
+(PR #93) y se conservan con su atribución; ésta no las modifica ni las repite.
+Es una contribución con el flujo ordinario de revisión y validación: la excepción
+de plazo del MVP que cerró la PR #93 no se extiende a ella. Estado: **en curso**.
+
+### Candidato auditado y referencia
+
+- Candidato: `develop` en `e1c2a8f64399ec9434b57ac31d86ac9b09e73f72`
+  (`origin/develop` comprobado el 2026-10-10; sin commits posteriores). Se mide el
+  árbol de ese commit con `git archive`, no el de la rama de trabajo.
+- Referencia de CI: [ejecución 38079384876](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38079384876),
+  evento `push` sobre `develop` y ese SHA. Seis jobs en `success`: Frontend build,
+  Frontend type check, OpenSpec y las tres Python tests (azure-cost-api, backend y
+  processor). `JUP policy` figura `skipped` porque sólo se evalúa en pull requests.
+- Los registros de Actions exigen autenticación y el entorno de medición no tiene
+  credencial: el resultado por job se verificó con la API pública y los conteos se
+  copiaron a mano de los registros desde una sesión autenticada de GitHub (el
+  paso `Run tests` de cada job Python y `Test frontend journeys` del job
+  `Frontend build`).
+
+| Servicio | Resultado del job | Aprobadas | Fallidas | Omitidas | Línea del registro |
+| --- | --- | --- | --- | --- | --- |
+| azure-cost-api | success | 59 | 0 | 0 | `59 passed, 1 warning in 0.61s` |
+| backend | success | 960 | 0 | 62 | `960 passed, 62 skipped, 2408 warnings in 122.01s (0:02:02)` |
+| processor | success | 462 | 0 | 65 | `462 passed, 65 skipped, 822 warnings in 11.61s` |
+| frontend (Vitest en `Frontend build`) | success | 654 | 0 | 0 | `Test Files  56 passed (56)` / `Tests  654 passed (654)` |
+| **Total** | | **2135** | **0** | **127** | |
+
+Son los conteos de la referencia de CI, no de esta pasada. Respecto al cierre de la
+PR #93 (2048 aprobadas y 99 omitidas) el candidato suma 87 aprobadas y 28
+omitidas más. El origen de esas omitidas nuevas no se ha investigado todavía: la
+auditoría de huecos (grupo 3) debe separar cuáles son suites opt-in con servicios
+reales y cuáles no.
+
+### Entorno de medición
+
+Contenedores Linux desechables equivalentes a CI, sin volúmenes compartidos con el
+repositorio ni puertos publicados. La herramienta de cobertura se instala sólo
+dentro del contenedor; no entra en el repositorio ni en `pnpm-lock.yaml`.
+
+| Elemento | Valor |
+| --- | --- |
+| Docker (cliente y servidor) | 29.8.1, `linux/amd64` |
+| Imagen Python | `python:3.12`, `sha256:63828510c8b5ccce3bf0d6fabd6f3d17d4effa1ffe690f80a67c8e2d394e03ee`, Python 3.12.15 |
+| Imagen Node | `node:22`, `sha256:0e5f906573693feaa1e21057ebdcfdb5bd5021f050b2dc7c9deceb629c7da2a8`, Node v22.23.3, corepack 0.36.0 |
+| pnpm | 9.0.0 (`packageManager` del repositorio) |
+| Cobertura Python | `pytest-cov==7.1.0`; `coverage` lo resuelve pip y se anota al medir (última publicada: 7.16.2) |
+| Cobertura frontend | `@vitest/coverage-v8@3.2.7`, la misma versión que el Vitest resuelto en `pnpm-lock.yaml` (3.2.7) |
+
+CI usa Python 3.12 y Node 22 en `ubuntu-latest`. Las imágenes coinciden en la
+versión mayor/menor; el parche exacto de CI no se ha podido leer (ver arriba), así
+que no se afirma que coincida.

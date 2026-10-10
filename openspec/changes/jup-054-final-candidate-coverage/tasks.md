@@ -1,11 +1,11 @@
 ## 1. Candidato y referencia
 
-- [ ] 1.1 Comprobar `origin/develop` y fijar el SHA auditado (base de partida `e1c2a8f`). Abrir en
+- [x] 1.1 Comprobar `origin/develop` y fijar el SHA auditado (base de partida `e1c2a8f`). Abrir en
   `docs/evidence/JUP-054-validation.md` una sección nueva con fecha, rama, SHA auditado y enlace a
   Trello, después de las secciones de la primera pasada y sin modificarlas.
-- [ ] 1.2 Localizar la ejecución de CI del SHA auditado y anotar, por servicio, las pruebas
+- [x] 1.2 Localizar la ejecución de CI del SHA auditado y anotar, por servicio, las pruebas
   aprobadas, fallidas y omitidas. Es la referencia de la decisión 4 del `design.md`.
-- [ ] 1.3 Anotar el entorno de medición: versión de Docker, digest de las imágenes `python:3.12` y
+- [x] 1.3 Anotar el entorno de medición: versión de Docker, digest de las imágenes `python:3.12` y
   `node:22`, y versiones fijadas de `pytest-cov` y del proveedor `v8` de Vitest.
 
 ## 2. Medición de cobertura
