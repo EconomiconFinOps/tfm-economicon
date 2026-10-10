@@ -105,8 +105,9 @@ por captura y método; no se extrapola a pantallas o contenidos no capturados.
 
 ## Pendiente
 
-Comprobar CI del head publicado; los checks de revisión humana permanecerán
-pendientes. La suite local y la matriz visual están finalizadas.
+La suite local y la matriz visual están finalizadas. El estado actualizado de CI
+se consulta en los checks de PR102; al publicar el candidato continuaba en curso.
+Los checks de revisión humana permanecen pendientes.
 Pairing Victor, `Revision JUP-112` Alejandro, `Validacion JUP-112` Lucia,
 aceptación visual de Paris/equipo, integración y cierre Trello siguen pendientes.
 La revisión automatizada de agentes no sustituye ninguno de esos actos.
@@ -115,3 +116,6 @@ Como `Iber1to` publica el candidato y Alejandro conserva el rol de revisión,
 Paris debe reutilizar esta contribución en una PR propia, o el equipo debe
 regularizar explícitamente los roles en Trello antes de revisión formal. No se
 aprueba la PR propia ni se reasigna un rol por inferencia.
+
+[Entrega enlazada en Trello](https://trello.com/c/XTZU3vj3#comment-6ac9f0090d16be592106c9c6),
+sin mover la tarjeta ni cambiar su prioridad, roles o criterios.
