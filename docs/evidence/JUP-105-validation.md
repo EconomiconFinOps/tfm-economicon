@@ -1058,3 +1058,86 @@ añade este registro.
 **Cuándo se hizo este registro.** Con el pull request ya abierto y **sin reviews ni comentarios
 publicados** (0 reviews, 0 comentarios de la conversación y 0 en línea, comprobado con la API justo
 antes). El commit que lo añade no invalida ninguna aprobación porque todavía no hay ninguna.
+
+## Reverificación tras fusionar `develop` (posterior al pull request)
+
+Ejecutada el 2026-10-10. Esta sección solo cubre **la fusión con `develop` y su efecto sobre lo ya
+medido**; no renueva el gate post-review del 2026-10-09 ni la decisión del líder de dejar el
+comentario de `DashboardPage.test.tsx` como estaba, que son anteriores al aporte residual y a esta
+fusión.
+
+**Por qué.** `develop` avanzó mientras el pull request estaba abierto y GitHub lo marcó en conflicto
+(`mergeable_state: dirty`). Además, la rama remota del pull request llevaba cinco commits que la
+copia local no tenía: tres de Alejandro, su aporte residual
+([JUP-105-residual.md](JUP-105-residual.md)), y dos de Lucía que llegaron con una fusión parcial de
+`develop` que él hizo.
+
+**Qué se hizo, por orden.**
+
+1. Avance rápido de la copia local a la cabeza remota (`b154c98`), sin reescribir historia.
+2. `git merge origin/develop` (`d057537`), que trae 6 commits: JUP-037 (#100), JUP-054, JUP-101
+   (#64), JUP-102 (#108), JUP-062 (#85) y JUP-070 (#84).
+3. Dos conflictos de contenido, resueltos así, y el commit de fusión `6491f5c` (padres `b154c98` y
+   `d057537`):
+
+| Archivo | Causa | Resolución |
+| --- | --- | --- |
+| `AGENTS.md` | Las dos partes añadían la línea de continuidad con redacción distinta (la de la rama era un borrador anterior de JUP-101) y la de la memoria, idéntica | Versión de `develop`; el pull request deja de tener diff en este archivo |
+| `docs/continuidad/README.md` | Cada lado añadía filas distintas a la misma tabla | Se conservan las 5: las 3 de `develop` (JUP-037, JUP-054 y JUP-102) y las 2 de Alejandro; los 9 enlaces de la tabla resuelven |
+
+El backlog se fusionó sin conflicto y se comprobó: las 21 filas de la épica siguen en 18 `Open` y 3
+`Fixed`, están `RF-105-001` a `RF-105-004` y el total pasa de 89 a 93 filas, es decir, +4.
+
+**Resultado en GitHub tras el push.** Pull request #86: `mergeable: true`, 19 commits, 53 archivos,
++2722 −278, 0 reviews y 0 comentarios de conversación.
+
+**Reverificación local del árbol fusionado.**
+
+| Comprobación | Resultado |
+| --- | --- |
+| `typecheck`, `lint` y `build` del frontend | Los tres con salida 0, con `allowJs: false` |
+| Archivos JavaScript en `src/` y `tests/` | 0 |
+| `test` del frontend con `--maxWorkers=1` | **55 archivos y 646 pruebas**, 217 s |
+| `openspec:validate` | 57 de 57 |
+| `jup:cleanup:check` | 1029 archivos |
+| `jup:check:all` | En verde |
+| Tests de las herramientas de higiene, de la política de PR y de gobernanza | 6, 57 y 13 correctos |
+| Enlaces relativos rotos | 2 de 1114: los falsos positivos de `JUP-099-validation.md` |
+| Búsqueda de menciones a configuración local, con los mismos términos | 0 |
+| Búsqueda de secretos en las 2306 líneas añadidas frente a `develop` | 0 coincidencias |
+| Diff frente a `develop` | 53 archivos, todos de JUP-105; no se revierte nada de `develop` |
+
+**Una corrección de método.** Las primeras medidas de enlaces (1133) y de archivos de higiene
+(1033), tomadas con la fusión aún sin cerrar, estaban infladas: durante una fusión con conflictos Git
+lista cada archivo en conflicto una vez por etapa, y los dos guiones lo contaron varias veces (los 4
+archivos de diferencia encajan exactamente con 2 archivos en conflicto por 2 etapas de más; los 19
+enlaces de diferencia no se desglosaron archivo a archivo). Las
+cifras de la tabla son las del árbol ya commiteado; el resultado (2 enlaces rotos, higiene en verde)
+no cambia.
+
+**Qué cambia en las cifras.** Las pruebas del frontend pasan de 629 en 53 archivos a **646 en 55**:
+las 17 de más son de `develop` (`ownership-conversations.test.tsx` y `CostEvidence.test.tsx`). Las
+cifras de 629 y 53 que figuran antes en este documento, en el spike y en el `review.md` son medidas
+fechadas del 2026-10-09 sobre `develop` en `ceb6520` y se conservan como historia. El recuento de
+pantallas **no cambia**: `develop` no modifica `routes.tsx` ni añade páginas, y lo que sí cambia
+(`ConversationsPage` y sus componentes de evidencia) sigue siendo `/assistant`, con datos del backend.
+
+**CI sobre `6491f5c`** (ejecuciones del
+[push, 38057372656](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38057372656) y del
+[pull request, 38057375735](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38057375735)):
+al consultar, `Frontend type check`, `OpenSpec`, `JUP policy`, `Python tests (azure-cost-api)` y
+`Python tests (processor)` estaban en verde; `Frontend build` y `Python tests (backend)` seguían en
+curso, y `JUP reviews` en rojo, como se espera sin las dos reviews. El estado final se consulta en la
+pestaña de checks del pull request. Sobre `ca9e67f`, el commit anterior, todos los jobs técnicos
+terminaron en verde, incluido `Python tests (backend)`.
+
+**Lo que esta reverificación no cubre.**
+
+- **El aporte residual de Alejandro.** Se leyó lo necesario para resolver la fusión y para ver qué
+  afirmaciones de este documento quedaban desfasadas, pero no se revalidó: tiene su propia evidencia
+  y no concede aceptación humana.
+- **Las dos mitades de Python en local.** `develop` modifica `backend` y `processor`; no se
+  repitieron aquí y se confía en la CI. En Windows el backend sigue con los 145 fallos de
+  `RF-105-004`, que esta fusión no toca.
+- **Pantallas en un navegador, el backend en ejecución y la consola normal de Alejandro** para
+  `RF-093-001`, igual que antes.
