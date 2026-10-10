@@ -12,10 +12,14 @@ Responsabilidades principales:
 - autenticacion propia minima con token
 - gestion inicial de tenants
 - resumen de billing
+- showback por owner, proyecto, aplicacion y centro de coste
 - creacion de jobs de ingesta
 - conversaciones y chat con retrieval
 - persistencia operativa
 - publicacion de jobs asincronos
+
+`GET /billing/showback` ofrece reparto directo e importes exactos por moneda con
+sin asignar y reconciliacion. Consulta [el contrato y sus limites](../../docs/api/showback.md).
 
 ## Stack
 
