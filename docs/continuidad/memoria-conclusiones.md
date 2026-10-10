@@ -19,6 +19,15 @@ actual no proporcionado explícitamente; chat origen delegado:
   texto de la memoria o del guion en Git.
 - [Evidencia, criterios, controles y límites](../evidence/JUP-110-validation.md).
   [Contrato y pendientes](../../openspec/changes/jup-110-memory-conclusions/tasks.md).
+- [PR #89](https://github.com/EconomiconFinOps/tfm-economicon/pull/89), borrador
+  contra `develop`, con 95 pruebas de herramientas y 56/56 OpenSpec correctos.
+  Propuesta identificada por SHA-256
+  `9b4bed0efe21d644419232d00bfab5f424a9018490b9a0253d9ff1ed52e9b243`.
+- Nota de entrega Trello `6ac9eb40ed6c4c7873797a2b`, 10/10 a las
+  07:37:36Z (09:37:36 Europe/Paris), publicada por integración DockerServer y
+  texto verificado. Recibo externo en
+  `materiales/07-evidencias/JUP-110-conclusiones-2026-10-10/trello-note-receipt.json`.
+  Estado/roles/prioridades/fechas intactos; cierre pendiente.
 
 ## Fuentes y conclusiones acotadas
 

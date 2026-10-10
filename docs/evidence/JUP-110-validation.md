@@ -54,7 +54,7 @@ Git indicados. No sustituye las revisiones humanas asignadas.
 | Resultado funcional verificable | Propuesta completa de i, fuentes y cobertura externa | Preparada; falta revisión humana e incorporación canónica |
 | Pruebas necesarias añadidas y en verde | Contraste documental y controles existentes; no se añade test que replique prosa | Resultados de controles abajo; no suites de producto por cambio sólo documental |
 | Documentación y decisiones actualizadas | Este informe, change y [continuidad](../continuidad/memoria-conclusiones.md) | Preparación documentada; actualizar al incorporar/exportar |
-| Pull request revisado y vinculado | PR documental contra develop | Borrador; reviews humanas pendientes |
+| Pull request revisado y vinculado | [PR #89](https://github.com/EconomiconFinOps/tfm-economicon/pull/89) contra develop, enlazada en Trello | Borrador; reviews humanas pendientes |
 | Validación funcional y evidencia enlazadas | Matriz de criterio y fuentes; propuesta identificada por hash | Falta validación del entregable sobre exportación con fecha/SHA-256 |
 
 ## Comprobaciones locales
@@ -91,3 +91,8 @@ o confirma que está vacío. Después se incorpora con autorización expresa, se
 reconcilian nuevos resultados, se exporta por el flujo autorizado y se registran
 la revisión de Víctor y validación de Lucía sobre fecha/SHA-256. La PR documental
 requiere sus propias reviews. El change permanece activo con pasos incompletos.
+
+Entrega enlazada en Trello mediante la integración oficial, nota
+`6ac9eb40ed6c4c7873797a2b`, 10/10/2026 a las 07:37:36Z. Respuesta del servidor
+contrastada con el texto enviado; recibo fuera de Git. Sin cambio de lista,
+responsables, criterios, prioridades o fechas; no se marcaron criterios completos.
