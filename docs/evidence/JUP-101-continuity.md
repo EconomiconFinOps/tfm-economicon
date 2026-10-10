@@ -26,11 +26,11 @@ texto sin añadir criterios ni convertir pendientes humanos en aprobaciones.
 
 | Alcance original | Evidencia de la entrega | Resultado |
 | --- | --- | --- |
-| Una referencia en AGENTS y un índice común | [AGENTS](../../AGENTS.md), [índice](../continuidad/README.md); comparación con la base quitando sólo el puntero | Comprobado; instrucciones de memoria y JUP-100 conservadas. |
+| Una referencia en AGENTS y un índice común | [AGENTS](../../AGENTS.md), [índice](../continuidad/README.md); el puntero incorporado por JUP-102 se conserva sin duplicarlo | Comprobado; AGENTS idéntico a develop d7c0725, memoria y JUP-100 conservados. |
 | Conservar resúmenes, enlaces y evidencia | [Presupuestos](../continuidad/presupuestos-umbrales.md) idéntico a la base; [citas](../continuidad/citas-asistente.md) conserva íntegro el cuerpo de `711f641` tras su nota de vigencia | Comprobado documentalmente; no repite pruebas históricas. |
-| Conservar la unión al integrar las PR | Unión por destino de ambos índices; tres temas, sin duplicados ni marcadores | Comprobado en esta reconciliación; no garantiza conflictos futuros. |
+| Conservar la unión al integrar las PR | Tres temas en la primera unión; cuatro tras incorporar JUP-102 desde develop d7c0725, sin duplicados ni marcadores | Comprobado en ambas reconciliaciones; no garantiza conflictos futuros. |
 | Evitar duplicar el backlog | [Convención](../continuidad/convencion-compartida.md): fuentes de verdad, cortes fechados, procedimiento y plantilla | Implementado documentalmente. |
-| PR documental independiente y extracción de #55 | Reutiliza PR #64 y el resumen extraído en `711f641`; sólo AGENTS, continuidad, esta evidencia y la fila de atribución en contributions difieren de la base | Comprobado; no se abre PR duplicada. |
+| PR documental independiente y extracción de #55 | Reutiliza PR #64 y el resumen extraído en `711f641`; frente a develop d7c0725 sólo continuidad, esta evidencia y la fila de atribución en contributions difieren | Comprobado; no se abre PR duplicada. |
 | Acordar adaptación de #60/#61/#62 antes de sus merges | Las PR ya se integraron; se registra debajo el hecho y se corrige la referencia histórica | Acuerdo previo no acreditado; no se inventa retrospectivamente. |
 | No atribuir aprobaciones ni eliminar trabajo ajeno | Conformidad de Paris enlazada; roles históricos propuestos y excepción de cierre explícitos; preservación del tema ajeno | Comprobado; no se acredita consenso ni reviews independientes. |
 
@@ -148,6 +148,18 @@ históricos propuestos. El manifiesto `exception-documentation-check.json`
 acompaña al script `check-exception.py` en el directorio de evidencias local.
 El sandbox volvió a impedir el subproceso Git del control de higiene; la
 repetición autorizada fuera del sandbox pasó sin modificar código ni controles.
+
+La verificación previa al merge detectó una actualización concurrente de develop:
+PR #108 / JUP-102 integrada como `d7c07255c51ad9484971ddcdff42e0a8cf7dc994`.
+Se incorpora la base nueva y se preservan sus filas de continuidad y atribución,
+su tema y sus cambios técnicos. El merge automático dejaba dos punteros de AGENTS;
+se elimina el añadido de JUP-101 y queda exactamente AGENTS de la base nueva.
+La unión final contiene cuatro temas; el CI de `9f9e7ef` era correcto pero precede
+esta reconciliación, por lo que se vuelve a exigir CI técnico al head resultante.
+Comprobación final documental: cuatro temas, 30 enlaces relativos válidos en ocho
+documentos, AGENTS y tema JUP-102 idénticos a la base, todas sus filas conservadas
+y ninguna modificación funcional propia. Manifiesto `exception-reconciled-check.json`
+y script `check-reconciled.py` en el directorio de evidencias local.
 
 Secuencia de cierre: registrar excepción y atribución en PR/Trello, publicar
 el delta documental, verificar CI final, integrar PR #64 por squash con head

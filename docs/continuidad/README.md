@@ -8,6 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Dimension vectorial desde Settings](dimension-vectorial-settings.md) | JUP-102 / PR #108: pruebas y CI tecnica verificadas; excepcion de entrega fuera de plazo autorizada, atribucion real bajo Alejandro y cierre por PR. Reviews humanas dispensadas, no simuladas. | 2026-10-10 |
 | [Presupuestos y umbrales](presupuestos-umbrales.md) | JUP-029 / PR #61: correccion documental del P2 de Paris; convencion global separada en JUP-101, nueva revision y validacion pendientes. | 2026-10-02 |
 | [Convención compartida](convencion-compartida.md) | JUP-101 / PR #64: adopción para el MVP por excepción de plazo autorizada por el usuario; ejecución asistida atribuida y requisitos humanos dispensados para este cierre, sin consenso ni reviews inventados. | 2026-10-10 |
 | [Citas del asistente — JUP-025](citas-asistente.md) | Evidencia histórica de implementación conservada; consultar PR #55 para el estado posterior y el cambio OpenSpec archivado. | 2026-10-10 |

@@ -1,12 +1,12 @@
 # Repository Guidelines
 
-Project continuity: read and maintain the [topic index](docs/continuidad/README.md), preserving other contributors' summaries.
-
 ## Project Structure
 
 This pnpm/Turborepo monorepo contains the frontend, Python backend and processor in `apps/`, reusable configuration in `packages/`, project documentation in `docs/`, and technical specifications in `openspec/`.
 
 ## Source Of Truth And Identifiers
+
+- Read [docs/continuidad/README.md](docs/continuidad/README.md) and the relevant topic before project work; update them after meaningful milestones.
 
 - Trello owns scope, priorities, assignees, rotating responsibilities, delivery dates and task status.
 - OpenSpec stores versioned requirements, implementation design, technical tasks and acceptance scenarios.

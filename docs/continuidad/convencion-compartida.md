@@ -91,11 +91,18 @@ desde `develop` `c2995a118d419dfe725247bac9c6f219a3f0ea77`. El candidato local d
 09/10 se usa como referencia de preservación, no como base actual: precede la
 gobernanza de memoria incorporada por PR #85.
 
-Se resuelve el único conflicto documental del índice conservando sus tres temas:
+La primera reconciliación resolvió el conflicto del índice conservando tres temas:
 presupuestos JUP-029, citas JUP-025 y convención JUP-101. El resumen y la fila
 histórica de presupuestos se conservan; citas mantiene todo su texto y evidencia
 de 01–02/10, con una nota separada de vigencia. AGENTS conserva la regla de memoria
 externa y el proceso de reviews JUP-100 de la base actual.
+
+Antes del cierre, PR #108 incorporó JUP-102 a develop
+`d7c07255c51ad9484971ddcdff42e0a8cf7dc994`. Se incorporan su fila y tema de dimensión
+vectorial sin alterarlos: el índice resultante tiene **cuatro temas**. Se conserva
+el único puntero de AGENTS ya integrado por esa PR y se retira la adición equivalente
+de esta rama, evitando duplicarlo. La nueva entrada de atribución de JUP-102 y
+todos sus cambios técnicos se conservan; JUP-101 no los reimplementa ni se los atribuye.
 
 La instrucción original de adaptar #60/#61/#62 **antes de sus merges** describía
 la situación del 02/10. Las cuatro PR de origen ya están integradas, según el
