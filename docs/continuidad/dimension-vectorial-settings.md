@@ -47,6 +47,10 @@ Entrega publicada: [PR #108 draft](https://github.com/EconomiconFinOps/tfm-econo
 implementacion `bfffbea4be94ad9e8a01a687fc3cd28e58fdd606`. JUP policy PASS en la
 apertura; JUP reviews falla por ausencia de los dos dictamenes requeridos, no
 se modifica ese control. Consultar CI sobre el head final en la PR.
+Evidencia enlazada en Trello mediante comentario `6ac9f273ba91202e4a30910a`,
+publicado por el puente oficial y leido de vuelta con texto identico. No cambio
+de lista/roles/criterios. Contenedor sintetico y tunel propios retirados al acabar;
+ningun volumen JUP-021 utilizado o eliminado.
 
 Entrega tecnica propia para Lucia; no se atribuye liderazgo, pairing o aceptacion
 por abrir una contribucion asistida. CI y dictamenes humanos deben comprobarse
