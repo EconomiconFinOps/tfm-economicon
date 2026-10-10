@@ -1,19 +1,19 @@
-// Contrato del tema (JUP-099, tarea 3.2, decisiones 2, 3 y 5 de design.md y
-// requisitos "El tema define una única paleta activa" y "Un cambio de token
-// se propaga a toda la interfaz"). Sustituye a index-html-dark-scope.test.ts.
+// Contrato del tema (JUP-099, enmendado en JUP-112; decisiones 6 y 9 de
+// design.md y requisitos "El tema define una paleta clara y una oscura con los
+// mismos tokens" y "Un cambio de token se propaga a toda la interfaz").
 //
 // Qué protege:
-//   a. `theme.css` no tiene bloque `.dark` ni una variante `dark:` atada a un
-//      ancestro `.dark`: la paleta única vive en `:root` y `dark:` está siempre
-//      activo (`@custom-variant dark (&);`).
-//   b. Cada propiedad personalizada se declara UNA sola vez (sin paleta
-//      paralela con los mismos nombres repetidos en `:root` y `.dark`).
+//   a. `theme.css` tiene la paleta clara en `:root` y la oscura en un único
+//      bloque `[data-theme="dark"]`; `dark:` aplica solo con ese atributo.
+//   b. Cada propiedad se declara una sola vez por paleta y las dos paletas
+//      declaran exactamente los mismos tokens temáticos.
 //   c. Cada `var(--x)` de `@theme inline` apunta a un token realmente
 //      declarado (un alias roto compilaría sin avisar y la utilidad no
 //      pintaría nada).
 //   d. Cada `--color-*` expuesto en `@theme inline` tiene al menos un
-//      consumidor en `src/` (decisión 3: los tokens sin uso se retiran).
-//   e. El `<html>` de index.html no depende de una clase de tema.
+//      consumidor en `src/` (un token sin uso se retira).
+//   e. El `<html>` de index.html no depende de una clase de tema ni arranca
+//      con el tema oscuro fijado.
 //
 // Metodología (igual que index-html-dark-scope.test.ts): NO renderiza; lee
 // theme.css, index.html y los fuentes con `node:fs`. Determinista y rápido.
@@ -146,13 +146,16 @@ function hasConsumer(source: string, name: string): boolean {
   return utility.test(source) || variable.test(source);
 }
 
-// Para theme.css solo cuentan los usos FUERA de `:root` (donde un alias
+// Para theme.css solo cuentan los usos FUERA de las paletas (donde un alias
 // `--input: var(--border)` no es un consumidor real) y de `@theme` (donde
 // `--color-x: var(--x)` es la propia definición del token).
 function themeConsumerText(css: string): string {
   return parseThemeFile(css)
     .children.filter(
-      (block) => block.header !== ":root" && !isThemeBlock(block),
+      (block) =>
+        block.header !== ":root" &&
+        block.header !== '[data-theme="dark"]' &&
+        !isThemeBlock(block),
     )
     .map((block) => block.raw)
     .join("\n");
@@ -226,10 +229,10 @@ const THEME_INLINE_BLOCKS = THEME_BLOCKS.filter(isThemeBlock);
 // Todas las declaraciones `--x: valor` de `@theme inline`.
 const THEME_INLINE_DECLARATIONS = THEME_INLINE_BLOCKS.flatMap(declarations);
 
-// Nombres declarados fuera de `@theme` (los tokens reales, en `:root`).
-const ROOT_DECLARED_NAMES = THEME_BLOCKS.filter(
-  (node) => !isThemeBlock(node),
-).flatMap(declaredNames);
+// Nombres declarados en cada paleta (fuera de `@theme`).
+const LIGHT_NAMES = THEME_BLOCKS.filter((node) => node.header === ":root").flatMap(declaredNames);
+const DARK_NAMES = THEME_BLOCKS.filter((node) => node.header === '[data-theme="dark"]').flatMap(declaredNames);
+const ROOT_DECLARED_NAMES = [...LIGHT_NAMES, ...DARK_NAMES];
 
 // Tokens de color expuestos como utilidades: `--color-card` -> `card`.
 const EXPOSED_COLOR_TOKENS = THEME_INLINE_DECLARATIONS.map(([name]) => name)
@@ -256,56 +259,72 @@ describe("theme.css - lectura del archivo real", () => {
   });
 });
 
-describe("theme.css - paleta única activa sin ámbito .dark (a)", () => {
+const DARK_HEADER = '[data-theme="dark"]';
+
+// Tokens que solo viven en `:root` porque no son cromáticos ni dependen del tema.
+const NON_THEMED_TOKENS = [
+  "--font-size",
+  "--font-weight-medium",
+  "--font-weight-normal",
+  "--font-weight-bold",
+  "--radius",
+];
+
+describe("theme.css - paleta clara en :root y oscura bajo data-theme (a)", () => {
   it("no contiene ningún selector ni bloque `.dark { ... }`", () => {
-    // Se revisa la cabecera de todos los bloques, a cualquier profundidad,
-    // para cubrir también un `.dark` anidado en `@layer` o combinado
-    // (`.dark, .foo`, `html.dark`).
     const darkHeaders = THEME_BLOCKS.map((node) => node.header).filter(
       (header) => /\.dark(?![\w-])/.test(header),
     );
     expect(
       darkHeaders,
-      "theme.css no debe tener una segunda paleta bajo `.dark`: los tokens viven una sola vez en :root",
+      "El tema oscuro se activa con el atributo data-theme, no con una clase `.dark`",
     ).toEqual([]);
   });
 
-  // Sentencia `@custom-variant dark ...;` del archivo (sin comentarios).
+  it("existe un único bloque `[data-theme=\"dark\"]` además de `:root`", () => {
+    const headers = THEME_BLOCKS.map((node) => node.header);
+    expect(headers.filter((header) => header === ":root")).toHaveLength(1);
+    expect(headers.filter((header) => header === DARK_HEADER)).toHaveLength(1);
+  });
+
   const customVariant = THEME_BLOCKS.flatMap((node) => node.statements).find(
     (statement) => /^@custom-variant\s+dark\b/.test(statement),
   );
 
-  it("la declaración `@custom-variant dark` no depende de un ancestro `.dark`", () => {
+  it("`@custom-variant dark` aplica solo con el atributo data-theme=\"dark\"", () => {
     expect(
       customVariant,
-      "Debe seguir existiendo `@custom-variant dark`: sin ella Tailwind v4 interpreta `dark:` como prefers-color-scheme y el select cambiaría según el sistema operativo",
+      "Sin `@custom-variant dark` Tailwind v4 interpreta `dark:` como prefers-color-scheme",
     ).toBeDefined();
-    expect(customVariant).not.toMatch(/\.dark(?![\w-])/);
-  });
-
-  it("`@custom-variant dark` es incondicional: `(&)`, las variantes `dark:` aplican siempre", () => {
-    // Decisión 2 de design.md: la aplicación solo tiene tema oscuro, así que
-    // `dark:` debe estar siempre activo sin depender de ninguna clase ni
-    // atributo en el documento.
     const argument = customVariant?.match(/^@custom-variant\s+dark\s*\(([\s\S]*)\)\s*$/)?.[1];
-    expect(argument?.trim()).toBe("&");
+    expect(argument?.trim()).toBe('&:where([data-theme="dark"], [data-theme="dark"] *)');
   });
 });
 
-describe("theme.css - cada propiedad personalizada se declara una sola vez (b)", () => {
-  it("ninguna propiedad personalizada (fuera de @theme inline) aparece declarada más de una vez", () => {
+describe("theme.css - las dos paletas declaran los mismos tokens, una vez cada uno (b)", () => {
+  const duplicatesIn = (names: string[]) => {
     const counts = new Map<string, number>();
-    for (const name of ROOT_DECLARED_NAMES) {
-      counts.set(name, (counts.get(name) ?? 0) + 1);
-    }
-    const duplicated = [...counts.entries()]
+    for (const name of names) counts.set(name, (counts.get(name) ?? 0) + 1);
+    return [...counts.entries()]
       .filter(([, count]) => count > 1)
       .map(([name, count]) => `${name} (x${count})`);
+  };
 
-    expect(
-      duplicated,
-      "Cada token debe tener una sola definición: una paleta paralela repite los mismos nombres en otro bloque",
-    ).toEqual([]);
+  it("ninguna propiedad se declara más de una vez dentro de su paleta", () => {
+    expect(duplicatesIn(LIGHT_NAMES), "paleta clara").toEqual([]);
+    expect(duplicatesIn(DARK_NAMES), "paleta oscura").toEqual([]);
+  });
+
+  it("la paleta oscura redefine exactamente los tokens temáticos de la clara", () => {
+    const themedLight = LIGHT_NAMES.filter((name) => !NON_THEMED_TOKENS.includes(name));
+    const onlyLight = themedLight.filter((name) => !DARK_NAMES.includes(name));
+    const onlyDark = DARK_NAMES.filter((name) => !LIGHT_NAMES.includes(name));
+    expect(onlyLight, "tokens que solo existen en la paleta clara").toEqual([]);
+    expect(onlyDark, "tokens que solo existen en la paleta oscura").toEqual([]);
+  });
+
+  it("los tokens no temáticos no se repiten en la paleta oscura", () => {
+    expect(DARK_NAMES.filter((name) => NON_THEMED_TOKENS.includes(name))).toEqual([]);
   });
 });
 
@@ -484,6 +503,12 @@ describe("index.html - el <html> no depende de una clase de tema (e)", () => {
       classes,
       "La paleta ya no depende de un ancestro `.dark`: retira class=\"dark\" del <html>",
     ).not.toContain("dark");
+  });
+
+  it("el tag <html> no fija el tema oscuro: lo decide el script de arranque", () => {
+    const html = readFileSync(INDEX_HTML_PATH, "utf-8");
+    const tag = html.match(/<html\b[^>]*>/i)?.[0] ?? "";
+    expect(tag).not.toMatch(/\sdata-theme\s*=/i);
   });
 
   it("extrae las clases como conjunto de palabras (en memoria)", () => {

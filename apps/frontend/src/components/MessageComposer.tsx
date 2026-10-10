@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { sendConversationMessage } from "../services/api";
 import type { MessageCreateRequest, OwnershipQuery } from "../services/contracts";
 
-const fieldClass = "rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary";
+const fieldClass = "rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight";
 
 // The parent keys this composer by tenant and conversation. A pending request
 // keeps its original query keys and cannot clear another conversation's draft.
@@ -123,7 +123,7 @@ export function MessageComposer({ token, tenantId, conversationId }: {
     />
     {validationError && <p className="text-sm text-danger" role="alert">{validationError}</p>}
     {sendMutation.error && <p className="text-sm text-danger" role="alert">{sendMutation.error.message}</p>}
-    <button className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
+    <button className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
       type="submit" disabled={sendMutation.isPending || !message.trim()}>
       {sendMutation.isPending ? "Sending..." : "Send"}
     </button>

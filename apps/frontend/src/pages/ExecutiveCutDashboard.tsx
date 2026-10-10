@@ -1,6 +1,6 @@
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ExportButton } from "@/components/ExportButton";
-import { chartTooltipStyle } from "@/components/chartTheme";
+import { chartLegendFormatter, chartTooltipStyle } from "@/components/chartTheme";
 // Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
 // tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
 import { savingsData, cutActions, kpiData } from "@/data/demo/executiveCutDashboard";
@@ -16,7 +16,7 @@ import { savingsData, cutActions, kpiData } from "@/data/demo/executiveCutDashbo
 const toneBoxClass: Record<string, string> = {
   green: 'bg-success-tint/20 border-success-tint/30',
   blue: 'bg-info-tint/20 border-info-tint/30',
-  orange: 'bg-attention-tint/20 border-attention-tint/30',
+  orange: 'bg-accent border-border',
 };
 const toneIconClass: Record<string, string> = {
   green: 'text-success',
@@ -71,7 +71,7 @@ export function ExecutiveCutDashboard() {
               formatter={(value) => `${value.toLocaleString()}€`}
               contentStyle={chartTooltipStyle}
             />
-            <Legend />
+            <Legend formatter={chartLegendFormatter} />
             <Bar dataKey="objetivo" fill="var(--chart-baseline)" name="Objetivo" />
             <Bar dataKey="alcanzado" fill="var(--chart-2)" name="Alcanzado" />
             <Bar dataKey="pendiente" fill="var(--chart-negative)" name="Pendiente" />
@@ -132,7 +132,7 @@ export function ExecutiveCutDashboard() {
               formatter={(value) => `${value.toLocaleString()}€`}
               contentStyle={chartTooltipStyle}
             />
-            <Legend />
+            <Legend formatter={chartLegendFormatter} />
             <Line type="monotone" dataKey="alcanzado" stroke="var(--chart-2)" strokeWidth={2} name="Ahorro Acumulado" />
             <Line type="monotone" dataKey="objetivo" stroke="var(--chart-baseline)" strokeWidth={2} strokeDasharray="5 5" name="Objetivo" />
           </LineChart>

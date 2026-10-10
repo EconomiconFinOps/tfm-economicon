@@ -1,4 +1,5 @@
-import type { CSSProperties } from "react";
+import { createElement } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 // Estilo unico del tooltip de Recharts. Antes se repetia literal en las 9
 // graficas de los dashboards; centralizarlo evita que las copias diverjan.
@@ -12,3 +13,7 @@ export const chartTooltipStyle: CSSProperties = {
   borderRadius: "8px",
   color: "var(--foreground)"
 };
+
+// Recharts pinta el texto de la leyenda con el color de la serie; el texto usa tokens de texto.
+export const chartLegendFormatter = (value: ReactNode) =>
+  createElement("span", { style: { color: "var(--muted-foreground)" } }, value);

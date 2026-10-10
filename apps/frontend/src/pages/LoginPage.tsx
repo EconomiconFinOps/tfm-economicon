@@ -1,5 +1,7 @@
 // Accept only validated login responses from the current generation.
 // SessionGate revalidates the persisted session after navigation.
+import logoPrimary from "@/assets/brand/economicon-primary.png";
+import logoInverse from "@/assets/brand/economicon-inverse.png";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router";
@@ -101,7 +103,12 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
       <section className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-xl">
-        <p className="text-sm uppercase tracking-wide text-muted-foreground">Operator login</p>
+        <div className="flex items-center gap-3">
+          <img src={logoPrimary} alt="" className="size-12 object-contain dark:hidden" />
+          <img src={logoInverse} alt="" className="hidden size-12 object-contain dark:block" />
+          <span className="font-heading text-2xl font-bold text-highlight">Economicon</span>
+        </div>
+        <p className="mt-6 text-sm uppercase tracking-wide text-muted-foreground">Operator login</p>
         <h1 className="mt-2 text-xl font-bold text-foreground">Access the tenant control tower</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           This demo build uses the seeded operator account so the team can validate
@@ -115,7 +122,7 @@ export function LoginPage() {
             </label>
             <input
               id="login-email"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight"
               type="email"
               value={form.email}
               onChange={(event) =>
@@ -130,7 +137,7 @@ export function LoginPage() {
             </label>
             <input
               id="login-password"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight"
               type="password"
               value={form.password}
               onChange={(event) =>
@@ -154,7 +161,7 @@ export function LoginPage() {
           ) : null}
 
           <button
-            className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
+            className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             type="submit"
             disabled={mutation.isPending}
           >
