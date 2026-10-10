@@ -13,6 +13,14 @@
 - [x] 2.3 Record per-criterion evidence, limitations and continuity.
 - [x] 2.4 Publish draft PR against develop and link Trello evidence (PR100; Trello comment 6ac9ede7d532f7533a85b38d).
 
-Human pairing Lucia, Revision Paris and Validacion Victor remain external gates;
-automated checks do not satisfy them. Deployed application/owner data and combined
-JUP-036 integration are explicitly unverified, not implementation claims.
+## 3. Deadline exception requested by the user, 2026-10-10
+
+- [x] 3.1 Record real attribution and explicit MVP deadline exception, without claiming human pairing or independent reviews.
+- [x] 3.2 Revalidate SQL/auth/persistence and browser journey; fix new-conversation selection race with meaningful regression.
+- [x] 3.3 Preserve deployed-data, free-text, PR69 and inherited mobile limits in final evidence.
+
+Human pairing Lucia, Revision Paris and Validacion Victor are explicitly waived
+for this delivery by the user's deadline instruction, not falsely marked performed.
+Administrative integration remains tied to actual CI and GitHub/Trello evidence.
+See docs/contributions/JUP-037-mvp-exception.md and docs/evidence/JUP-037-mvp-exception.md.
+Deployed application/owner data and combined JUP-036 integration remain unverified.

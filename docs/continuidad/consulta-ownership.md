@@ -1,5 +1,32 @@
 # Consulta de ownership — JUP-037
 
+## Cierre con excepción de plazo MVP — 10/10/2026
+
+El usuario del chat de refinamiento ordena completar las tareas y declarar la
+excepción por estar fuera de plazo. Autoriza superar la espera por pairing y
+dictámenes para este incremento; no atribuir participación humana ficticia.
+[Atribución](../contributions/JUP-037-mvp-exception.md) y
+[verificación final](../evidence/JUP-037-mvp-exception.md).
+
+Responsabilidad Alejandro/Iber1to con asistencia Codex; pairing Lucia y reviews
+Paris/Victor no realizadas, exceptuadas. No autoaprobar PR ni alterar workflows.
+Se prepara integración administrativa PR-only después de CI técnica final;
+estado definitivo de merge/cierre se consulta y registra en Trello/GitHub.
+
+Revalidación propia: 209 backend sin omisiones con CockroachDB v24.1.2 efímero,
+35 frontend y regresión diferida del hilo; OpenSpec56/56, gobernanza82/82,
+lint/tipos/build pasan. Navegador real → HTTP/rutas/auth reales → SQL sintético
+confirma 80EUR seleccionado, contexto130, null10, recarga/evidence y cambio tenant,
+sin modelos/broker/vector. Descubierta y corregida carrera de creación de hilo;
+texto largo ajustado. RF-026-002 global persiste (móvil390/1134), sin pase global.
+
+Entrega MVP: selector de ownership existente, sin NL libre/datos desplegados
+application/owner ni integración conjunta PR69. No ampliar mapping/dataset,
+desplegar, consumir proveedor o actuar sobre tareas ajenas. Los estados pendientes
+de la sección histórica siguiente no son bloqueos humanos actuales tras la excepción.
+
+## Histórico — entrega anterior a la excepción
+
 Verificación: 10/10/2026, Europe/Paris. Origen: encargo «Implementa JUP-037 —
 Responder preguntas por aplicación, equipo o etiqueta», delegado desde el chat
 `01a1248a-4e9e-7963-a891-5d8cb49345a6`; identificador receptor no confirmado.

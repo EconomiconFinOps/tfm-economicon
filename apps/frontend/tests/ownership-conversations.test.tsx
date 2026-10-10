@@ -49,6 +49,34 @@ async function start() {
 }
 
 describe("JUP-037 ownership conversations", () => {
+  it("keeps a newly created conversation selected after refreshing the existing list", async () => {
+    const created = { ...conversation, id: "created-ownership", title: "New ownership" };
+    const refreshed = deferredResponse();
+    let published = false;
+    const { requests } = backend({
+      [`GET ${collection}`]: () => published ? refreshed.promise : jsonResponse({ items: [conversation] }),
+      [`POST ${collection}`]: () => {
+        published = true;
+        return jsonResponse(created, 201);
+      },
+      [`GET ${collection}/${created.id}`]: () => jsonResponse({ conversation: created, messages: [] }),
+      [`POST ${collection}/${created.id}/messages`]: () => jsonResponse({ ...assistantReply, conversation: created }, 201)
+    });
+    const { user } = await start();
+    await user.click(screen.getByRole("button", { name: /^New$/ }));
+    await waitFor(() => expect(requests.filter((request) => request.method === "GET"
+      && request.path === collection)).toHaveLength(2));
+    await act(async () => refreshed.resolve({ items: [conversation, created] }));
+    await screen.findByRole("button", { name: /New ownership/ });
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Pregunta" })).toHaveValue(""));
+    await user.click(screen.getByRole("checkbox", { name: "Consultar costes por propiedad" }));
+    await user.type(screen.getByRole("textbox", { name: "Pregunta" }), "Coste del nuevo hilo");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() => expect(requests.some((request) => request.method === "POST"
+      && request.path === `${collection}/${created.id}/messages`)).toBe(true));
+    expect(requests.some((request) => request.method === "POST" && request.path === messagePath)).toBe(false);
+  });
+
   it("sends an exact custom-tag selection and displays the persisted cost evidence", async () => {
     let sent = false;
     const { requests } = backend({

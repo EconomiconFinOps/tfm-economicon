@@ -1,5 +1,8 @@
 # Contribuciones y roles rotatorios
 
+Excepción puntual de cierre por plazo del MVP:
+[JUP-037, atribución real y participación humana exceptuada](JUP-037-mvp-exception.md).
+
 JUP-064 · [Trello](https://trello.com/c/wluz6AGW). El proceso de los cuatro roles
 se mantiene en [CONTRIBUTING](../../CONTRIBUTING.md#rotating-roles).
 

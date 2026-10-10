@@ -1,5 +1,10 @@
 # JUP-037 — Evidencia de implementación
 
+**Cierre actualizado 10/10/2026:** ver [verificación final y excepción de plazo
+del MVP](JUP-037-mvp-exception.md). Los pendientes humanos del informe original
+quedan exceptuados por instrucción expresa del usuario, sin atribuirlos como
+realizados. Las pruebas y resultados siguientes mantienen su fecha y alcance.
+
 Verificación del líder asistida por herramientas, 10/10/2026 (Europe/Paris).
 No sustituye `Revision JUP-037` de Paris ni `Validacion JUP-037` de Victor.
 Tarjeta: https://trello.com/c/n4Aplko2. Base: c2995a1 (`origin/develop`).

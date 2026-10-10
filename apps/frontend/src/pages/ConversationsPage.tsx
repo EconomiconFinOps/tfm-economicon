@@ -66,8 +66,10 @@ export function ConversationsPage() {
       }
       return createConversation(token, activeTenant.id, payload);
     },
-    onSuccess: (conversation) => {
-      queryClient.invalidateQueries({ queryKey: ["conversations", activeTenant?.id] });
+    onSuccess: async (conversation) => {
+      // Refresh the list before selecting the new ID. Otherwise the effect
+      // above sees the old list and switches back to the previous conversation.
+      await queryClient.invalidateQueries({ queryKey: ["conversations", activeTenant?.id] });
       setSelectedConversationId(conversation.id);
       setTitle("Ops review");
     }

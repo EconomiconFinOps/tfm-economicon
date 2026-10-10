@@ -37,7 +37,7 @@ export function AnswerEvidence({ content, metadata }: {
     && raw.every((item, index) => references[index] === item.evidence_id) ? raw : [];
 
   return <>
-    <div className="mt-1 whitespace-pre-wrap text-sm text-foreground">
+    <div className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">
       {content.split("\n").map((line, index) => {
         const match = /^- \[(\d+)\] /.exec(line);
         const number = match ? Number(match[1]) : 0;
