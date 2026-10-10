@@ -32,11 +32,11 @@
   --accent-foreground: var(--foreground);
   --border: #d9d5f2;
   --muted: var(--border);
-  --input: var(--border);
+  --input: #7f7a9c;
   --input-background: #ffffff;
-  --muted-foreground: #5f5b7a;
+  --muted-foreground: #524e6b;
   --subtle-foreground: #3b3656;
-  --neutral: #6e6a86;
+  --neutral: #5a5675;
 
   /* Marca */
   --brand: #2b2359;
@@ -66,10 +66,10 @@
   --warning-text: var(--warning-foreground);
 
   /* Gráficas */
-  --chart-1: #4b46b8;
-  --chart-2: #1ba39c;
+  --chart-1: #8e3b8a;
+  --chart-2: #2f8bd9;
   --chart-3: #bf8300;
-  --chart-4: #3b7ddb;
+  --chart-4: #1ba39c;
   --chart-5: #d6334f;
   --chart-negative: var(--chart-5);
   --chart-baseline: #8b87a3;
@@ -88,11 +88,11 @@
   --accent-foreground: var(--foreground);
   --border: #3a3470;
   --muted: var(--border);
-  --input: var(--border);
+  --input: #8a86a8;
   --input-background: #2b2359;
-  --muted-foreground: #a9a5c4;
+  --muted-foreground: #b3afcc;
   --subtle-foreground: #d4d0ea;
-  --neutral: #8f8ba8;
+  --neutral: #aba7c4;
 
   --brand: #2b2359;
   --brand-foreground: #fafafc;
@@ -119,10 +119,10 @@
   --warning: var(--warning-foreground);
   --warning-text: var(--warning-foreground);
 
-  --chart-1: #7c75e6;
-  --chart-2: #1ca89e;
+  --chart-1: #b565a9;
+  --chart-2: #4a93e0;
   --chart-3: #ba8b1c;
-  --chart-4: #4a93e0;
+  --chart-4: #1ca89e;
   --chart-5: #e8587a;
   --chart-negative: var(--chart-5);
   --chart-baseline: #7c789a;

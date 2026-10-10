@@ -5,9 +5,11 @@ export type Theme = "light" | "dark";
 const STORAGE_KEY = "economicon-theme";
 
 function systemTheme(): Theme {
-  return typeof window.matchMedia === "function" && window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  try {
+    return typeof window.matchMedia === "function" && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  } catch {
+    return "light";
+  }
 }
 
 function storedTheme(): Theme | null {

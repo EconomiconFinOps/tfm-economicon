@@ -95,7 +95,7 @@ export const savingsByCategory = [
 ];
 
 export const stats = [
-  { label: "Ahorro Potencial Total", value: "106.000€", subtitle: "/mes", color: "green" },
+  { label: "Ahorro Potencial Total", value: "106.000€", subtitle: "/mes", color: "saving" },
   { label: "Recomendaciones Activas", value: "24", subtitle: "6 priorizadas", color: "blue" },
   { label: "Implementación Rápida", value: "37.000€", subtitle: "<1 semana", color: "purple" },
   { label: "ROI Promedio", value: "285%", subtitle: "Último trimestre", color: "orange" },

@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { sendConversationMessage } from "../services/api";
 import type { MessageCreateRequest, OwnershipQuery } from "../services/contracts";
 
-const fieldClass = "rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight";
+const fieldClass = "rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight";
 
 // The parent keys this composer by tenant and conversation. A pending request
 // keeps its original query keys and cannot clear another conversation's draft.

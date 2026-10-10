@@ -101,7 +101,7 @@ export function ConversationsPage() {
       >
         <form className="flex gap-2" onSubmit={handleCreate}>
           <input
-            className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight"
+            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="New conversation title"

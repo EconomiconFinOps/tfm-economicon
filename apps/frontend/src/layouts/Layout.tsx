@@ -90,7 +90,7 @@ export function Layout() {
             {tenants && activeTenantId !== undefined && onTenantChange ? (
               <select
                 aria-label="Ambito de cliente"
-                className="rounded-lg border border-brand-foreground/30 bg-brand px-3 py-2 text-sm text-brand-foreground focus:border-brand-foreground focus:outline-none"
+                className="rounded-lg border border-brand-foreground/30 bg-brand px-3 py-2 text-sm text-brand-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-foreground"
                 value={activeTenantId}
                 onChange={(event) => onTenantChange(event.target.value)}
               >
@@ -113,7 +113,7 @@ export function Layout() {
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="ml-2 rounded-lg p-2 text-brand-foreground/75 hover:bg-brand-foreground/10 hover:text-brand-foreground"
+                  className="ml-2 rounded-lg p-2 text-brand-foreground/75 hover:bg-brand-foreground/10 hover:text-brand-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-foreground"
                   aria-label="Cerrar sesion"
                 >
                   <LogOut className="w-4 h-4" />

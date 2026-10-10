@@ -111,6 +111,30 @@ describe("ThemeToggle", () => {
     expect(currentTheme()).toBeNull();
   });
 
+  it("si matchMedia lanza una excepción arranca en claro sin romper", () => {
+    vi.stubGlobal("matchMedia", () => {
+      throw new Error("matchMedia roto");
+    });
+    expect(() => render(<ThemeToggle />)).not.toThrow();
+    expect(currentTheme()).toBeNull();
+  });
+
+  it("el nombre accesible del botón contiene su texto visible (etiqueta en el nombre)", () => {
+    mockSystemTheme(false);
+    render(<ThemeToggle />);
+    const button = screen.getByRole("button", { name: /tema oscuro/i });
+
+    expect(button.textContent?.trim()).toBe("Tema oscuro");
+    expect(button.getAttribute("aria-label")).toBeNull();
+  });
+
+  it("el botón tiene un indicador de foco propio visible sobre la cabecera índigo", () => {
+    mockSystemTheme(false);
+    render(<ThemeToggle />);
+
+    expect(screen.getByRole("button", { name: /tema oscuro/i }).className).toContain("focus-visible:outline-brand-foreground");
+  });
+
   it("sin matchMedia en el navegador arranca en claro", () => {
     vi.stubGlobal("matchMedia", undefined);
     render(<ThemeToggle />);

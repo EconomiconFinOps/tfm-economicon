@@ -45,11 +45,11 @@ export function RecommendationsPanel() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, idx) => (
-          <div key={idx} className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-5 shadow-xl hover:shadow-info-tint/10 transition-shadow">
-            <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
+          <div key={idx} className={`rounded-lg border p-5 shadow-xl transition-shadow ${stat.color === 'saving' ? 'border-saving bg-saving text-saving-foreground' : 'border-border bg-gradient-to-br from-card to-accent hover:shadow-info-tint/10'}`}>
+            <p className={`text-sm mb-1 ${stat.color === 'saving' ? '' : 'text-muted-foreground'}`}>{stat.label}</p>
             <div className="flex items-baseline gap-1">
               <p className={`font-bold ${toneTextClass[stat.color] ?? ''}`}>{stat.value}</p>
-              <span className="text-xs text-neutral">{stat.subtitle}</span>
+              <span className={`text-xs ${stat.color === 'saving' ? '' : 'text-neutral'}`}>{stat.subtitle}</span>
             </div>
           </div>
         ))}

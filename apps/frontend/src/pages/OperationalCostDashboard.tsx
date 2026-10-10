@@ -105,7 +105,7 @@ export function OperationalCostDashboard() {
                 contentStyle={chartTooltipStyle}
               />
               <Legend formatter={chartLegendFormatter} />
-              <Bar dataKey="compute" fill="var(--primary)" name="Compute" />
+              <Bar dataKey="compute" fill="var(--chart-1)" name="Compute" />
               <Bar dataKey="storage" fill="var(--chart-2)" name="Storage" />
               <Bar dataKey="network" fill="var(--chart-5)" name="Network" />
             </BarChart>

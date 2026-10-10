@@ -62,6 +62,27 @@ export function contrast(first: string, second: string): number {
   return (light + 0.05) / (dark + 0.05);
 }
 
+function oklab(hex: string): number[] {
+  const [red, green, blue] = channels(hex).map((value) => {
+    const unit = value / 255;
+    return unit <= 0.04045 ? unit / 12.92 : ((unit + 0.055) / 1.055) ** 2.4;
+  });
+  const l = Math.cbrt(0.4122214708 * red + 0.5363325363 * green + 0.0514459929 * blue);
+  const m = Math.cbrt(0.2119034982 * red + 0.6806995451 * green + 0.1073969566 * blue);
+  const s = Math.cbrt(0.0883024619 * red + 0.2817188376 * green + 0.6299787005 * blue);
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s
+  ];
+}
+
+// Distancia de color en OKLab (0 idénticos, ~0,1 apenas distinguibles de un vistazo).
+export function colorDistance(first: string, second: string): number {
+  const [a, b] = [oklab(first), oklab(second)];
+  return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+}
+
 const SURFACES = ["background", "card", "accent"];
 const STATES = ["success", "danger", "info", "warning"];
 // Opacidad máxima con la que las pantallas pintan el relleno suave de un estado.
@@ -122,10 +143,35 @@ describe.each([
     },
   );
 
+  it.each(SURFACES)("el anillo de foco se distingue de %s (≥3:1)", (surface) => {
+    expect(contrast(color("ring"), color(surface))).toBeGreaterThanOrEqual(3);
+  });
+
+  it("el borde de los campos se distingue de su fondo y de la tarjeta (≥3:1)", () => {
+    expect(contrast(color("input"), color("input-background"))).toBeGreaterThanOrEqual(3);
+    expect(contrast(color("input"), color("card"))).toBeGreaterThanOrEqual(3);
+  });
+
+  it.each(SURFACES)("el texto neutro se lee sobre %s (≥4,5:1)", (surface) => {
+    expect(contrast(color("neutral"), color(surface))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("el texto secundario se lee sobre los rellenos tintados de acento y neutro (≥4,5:1)", () => {
+    const accent = color("accent");
+    for (const [token, alpha] of [["highlight", 0.1], ["neutral", 0.2]] as const) {
+      expect(contrast(color("muted-foreground"), mix(color(token), accent, alpha))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(color("subtle-foreground"), mix(color(token), accent, alpha))).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it("el violeta y el coral de marca son los de la guía en ambas paletas", () => {
     expect(color("primary").toLowerCase()).toBe("#5b4fe8");
     expect(color("saving").toLowerCase()).toBe("#ff8a5b");
     expect(color("brand").toLowerCase()).toBe("#2b2359");
+  });
+
+  it.each(["chart-1", "chart-2", "chart-3", "chart-4", "chart-5"])("la serie %s no se confunde con el violeta de botones", (series) => {
+    expect(colorDistance(color(series), color("primary"))).toBeGreaterThanOrEqual(0.12);
   });
 
   it("las series de gráfica no usan el violeta de botones ni el coral", () => {

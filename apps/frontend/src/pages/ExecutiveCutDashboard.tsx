@@ -17,10 +17,12 @@ const toneBoxClass: Record<string, string> = {
   green: 'bg-success-tint/20 border-success-tint/30',
   blue: 'bg-info-tint/20 border-info-tint/30',
   orange: 'bg-accent border-border',
+  saving: 'bg-saving-foreground/10 border-saving-foreground/30',
 };
 const toneIconClass: Record<string, string> = {
   green: 'text-success',
   blue: 'text-info',
+  saving: 'text-saving-foreground',
 };
 
 export function ExecutiveCutDashboard() {
@@ -46,15 +48,15 @@ export function ExecutiveCutDashboard() {
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpiData.map((kpi, idx) => (
-          <div key={idx} className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-5 shadow-xl hover:shadow-info-tint/10 transition-shadow">
+          <div key={idx} className={`rounded-lg border p-5 shadow-xl transition-shadow ${kpi.color === 'saving' ? 'border-saving bg-saving text-saving-foreground' : 'border-border bg-gradient-to-br from-card to-accent hover:shadow-info-tint/10'}`}>
             <div className="flex items-center gap-3 mb-3">
               <div className={`p-2 rounded-lg ${toneBoxClass[kpi.color] ?? ''} border`}>
                 <kpi.icon className={`w-6 h-6 ${toneIconClass[kpi.color] ?? ''}`} />
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-1">{kpi.title}</p>
-            <p className="font-bold text-foreground">{kpi.value}</p>
-            <p className="text-xs text-neutral mt-1">{kpi.subtitle}</p>
+            <p className={`text-sm mb-1 ${kpi.color === 'saving' ? '' : 'text-muted-foreground'}`}>{kpi.title}</p>
+            <p className={`font-bold ${kpi.color === 'saving' ? '' : 'text-foreground'}`}>{kpi.value}</p>
+            <p className={`text-xs mt-1 ${kpi.color === 'saving' ? '' : 'text-neutral'}`}>{kpi.subtitle}</p>
           </div>
         ))}
       </div>

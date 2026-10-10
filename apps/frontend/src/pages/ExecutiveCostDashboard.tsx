@@ -14,7 +14,7 @@ import type { MonthlyCostPoint } from "@/lib/executiveCostDashboard";
 import type { SessionOutletContext } from "@/layouts/SessionGate";
 import type { BillingGrouping } from "@/services/contracts";
 
-const inputClass = "mt-1 block w-full min-w-0 rounded-md border border-border bg-background p-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const inputClass = "mt-1 block w-full min-w-0 rounded-md border border-input bg-background p-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const buttonClass = "inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-50";
 
 export function ExecutiveCostDashboard() {

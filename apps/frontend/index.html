@@ -7,14 +7,20 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <script>
       (function () {
-        var theme = "light";
-        try {
-          var saved = window.localStorage.getItem("economicon-theme");
-          if (saved === "light" || saved === "dark") theme = saved;
-          else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
-        } catch (error) {
-          if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
+        function systemDark() {
+          try {
+            return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          } catch (error) {
+            return false;
+          }
         }
+        var saved = null;
+        try {
+          saved = window.localStorage.getItem("economicon-theme");
+        } catch (error) {
+          saved = null;
+        }
+        var theme = saved === "light" || saved === "dark" ? saved : systemDark() ? "dark" : "light";
         if (theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
       })();
     </script>
