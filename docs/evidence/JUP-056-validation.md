@@ -12,12 +12,21 @@ humana para esta entrega. No hay coautoría, aceptación o revisión humana inve
 | Criterio de Trello | Evidencia y estado |
 | --- | --- |
 | Resultado funcional verificable | `/operational` reemplaza la demo: filtros conjuntos de cuenta/suscripción, servicio, proyecto y etiqueta sobre billing v2; periodos UTC, agrupación, totales por moneda y CSV del ámbito. Código y escenarios verificables entregados; ver recibos abajo. |
-| Pruebas necesarias añadidas y en verde | Nuevas pruebas backend de parsing/SQL/aislamiento; frontend de formulario, metadata, caché, carreras y CSV. Resultados finales se registran en los recibos de esta carpeta. |
+| Pruebas necesarias añadidas y en verde | CI técnica 7/7 sobre `f1e0dd6`: frontend 640 PASS, backend 909 PASS / 38 SKIP. Nuevas pruebas propias: frontend16, API11 y SQL4 PASS, con Cockroach real para SQL. Fallos/limitaciones locales conservados en los recibos; no se afirma verde local global. |
 | Documentación y decisiones actualizadas | [Contrato](../api/operational-cost-filters.md), [guía frontend](../../apps/frontend/README.md#análisis-operativo-de-costes-jup-056), [OpenSpec](../../openspec/changes/jup-056-operational-analysis/proposal.md), [continuidad](../continuidad/dashboard-operativo-costes.md). |
-| Pull request revisado y vinculado | PR draft de contribución contra develop por preparar/enlazar; revisión humana pendiente. No se marca este criterio como completado. |
+| Pull request revisado y vinculado | [PR #99 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/99), contribución contra develop; revisión humana pendiente. No se marca este criterio como completado. |
 | Validación funcional y evidencia enlazadas | Comprobación técnica reproducible en esta evidencia. Validación funcional atribuible a Paris pendiente; no se marca aceptación humana. |
 
 ## Comprobaciones comunes
+
+[CI técnica completa](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035433148)
+**7/7 SUCCESS** sobre `f1e0dd6f5231276b19e685203fda2c3a8c3b2f4a`;
+[recibo de estado](jup-056/ci-f1e0dd6.json). El gate separado `JUP reviews`
+falla exclusivamente por faltar `Revision JUP-056` y `Validacion JUP-056`,
+confirmado en [su log](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035433157).
+No se interpreta el CI como aceptación humana. La PR/evidencia está enlazada
+en [Trello](https://trello.com/c/4AbHqWKW#comment-6ac9ee3cbd594dd83fa9eef2)
+por el puente oficial, conservando lista y roles.
 
 - `corepack pnpm install --frozen-lockfile --ignore-scripts`: correcto, lockfile intacto. Primer intento offline no encontró OpenSpec en caché; instalación autorizada posterior completada.
 - `node tools/jup-check.mjs --all`: 9 cambios correctos, incluido JUP-056.
@@ -64,4 +73,4 @@ una sesión de navegador conectada al backend desplegado ni facturación Azure r
 - El periodo sin fecha se contabiliza por tenant completo; la cobertura de costes no equivale a una factura completa. Fuentes solapadas conservan error 409 aun cuando se filtra otra dimensión.
 - La responsabilidad visual se limita a la pantalla operativa. RF-026-002 del shell móvil, marca JUP-112 y recomendaciones JUP-058 siguen separados.
 - La evaluación independiente disponible utiliza un segundo agente del mismo proveedor; no se dispone de evaluador de otro proveedor. No equivale a una review humana.
-- Pendientes: conformidad de liderazgo/pairing, `Revision JUP-056` de Lucia, `Validacion JUP-056` de Paris, CI de la PR y posterior merge. No se mueve ni cierra la tarjeta desde la contribución y no se envía Discord.
+- Pendientes: conformidad de liderazgo/pairing, disposición del OpenSpec activo para ready, `Revision JUP-056` de Lucia, `Validacion JUP-056` de Paris y posterior merge. No se mueve ni cierra la tarjeta desde la contribución y no se envía Discord.
