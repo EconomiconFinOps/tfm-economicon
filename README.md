@@ -49,7 +49,80 @@ tfm-economicon
 
 ## Como correrlo
 
+### Requisito previo: pnpm con corepack
+
+El repositorio fija `pnpm@9.0.0` en `packageManager`. Los scripts de la raiz (`lint`, `build`, `test`,
+`typecheck`, `dev`) pasan por turbo, que lanza `pnpm run <script>` en cada paquete buscando `pnpm` en el
+`PATH`. Si en la maquina no estan activados los lanzadores de corepack, turbo encuentra otro pnpm (por
+ejemplo uno global instalado con `npm install -g pnpm`, o uno que aporta el entorno de ejecucion de un
+asistente de codigo) y falla. Con un pnpm global `11.9.0` o `11.1.3` el mensaje es
+`This project is configured to use 9.0.0 of pnpm. Your current pnpm is v...`; con otras versiones el
+sintoma puede ser distinto (con una `11.19.0` las tareas abortan con
+`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`). CI no lo sufre porque ejecuta `corepack enable` antes de
+usar pnpm.
+
+Una vez por maquina:
+
+```powershell
+corepack enable
+```
+
+- En Windows, ejecutalo en una consola de PowerShell **como administrador**: escribe en
+  `C:\Program Files\nodejs`. No importa desde que carpeta lo lances. No imprime nada si funciona.
+  Esta verificado en Windows; en macOS y Linux puede necesitar `sudo` segun donde este instalado Node.
+- No hace falta desinstalar un pnpm global: el lanzador de corepack tiene prioridad si el directorio de
+  Node va antes que el de npm global en el `PATH`. Comprueba el orden con `where.exe pnpm` (Windows) o
+  `which -a pnpm` (macOS y Linux).
+- Fuera del repositorio, `pnpm --version` pasara a mostrar la version por defecto de corepack y no la
+  de tu pnpm global. No afecta al repositorio.
+
+Para comprobar que funciona, desde la raiz y en una consola nueva:
+
+```powershell
+corepack pnpm exec pnpm --version
+```
+
+Debe imprimir exactamente `9.0.0`. Cualquier otra salida (el error de version de arriba, o una version
+distinta como `11.x`) significa que falta `corepack enable` o que hay otro `pnpm` por delante en el
+`PATH`, por ejemplo uno global de npm o uno que aporta el entorno de ejecucion de un asistente de
+codigo; en ese ultimo caso `corepack enable` puede no bastar si su carpeta va antes que la de Node
+(no verificado). Como salida de emergencia, `pnpm <script>` sin `corepack` funciona si
+el pnpm global es lo bastante reciente para cambiar de version por si mismo (verificado con `11.9.0`),
+pero no es la forma documentada y depende de lo que haya instalado en cada maquina.
+
+turbo cachea los resultados sin tener en cuenta la version de pnpm. Si cambias la configuracion de la
+maquina y quieres comprobar que los scripts funcionan de verdad, anade `--force` (por ejemplo
+`corepack pnpm lint --force`): una ejecucion con `cache hit` no lanza ningun subproceso y no demuestra
+nada. Origen: [RF-093-001](openspec/findings/backlog.md) y [JUP-103](docs/evidence/JUP-103-validation.md).
+
 ### Con Docker Compose
+
+#### Modo mock: stack completo sin OpenRouter
+
+En el `.env` local ignorado, ademas de completar los secretos normales del
+stack, selecciona explicitamente:
+
+```dotenv
+RUNTIME_ENVIRONMENT=development
+ALLOW_INSECURE_LOCAL_DATABASE=true
+LLM_PROVIDER=mock
+EMBEDDING_PROVIDER=mock
+EMBEDDING_DIMENSION=8
+AI_EXECUTION_MODE=development
+```
+
+El opt-in de base insegura solo corresponde a datos locales desechables y
+puertos loopback, como se explica en Variables De Entorno. Mock no necesita
+`OPENROUTER_API_KEY`, `LITELLM_MASTER_KEY`, `LITELLM_DATABASE_PASSWORD`,
+`BACKEND_LITELLM_API_KEY` ni `LITELLM_API_KEY`: pueden quedar vacias en `.env`.
+Conserva las credenciales de IA por separado en `.env.ai`, sin versionarlas.
+
+Ejecuta desde una consola sin `COMPOSE_PROFILES`, `COMPOSE_FILE` ni variables
+de proveedor/proyecto exportadas para otro entorno: el shell tiene prioridad
+sobre los archivos dotenv. Los comandos mock no fijan `-p`; conservan el nombre
+original del proyecto de este directorio o el `COMPOSE_PROJECT_NAME` de `.env`.
+Si lo creaste con `-p`, guarda ese mismo nombre en `COMPOSE_PROJECT_NAME` dentro
+de `.env` antes de volver a arrancar; cambiarlo seleccionaria otros volumenes.
 
 Desde la raiz de un clon limpio, con Docker y Node instalados (en Linux o macOS, el primer comando es `cp -n .env.example .env`):
 
@@ -58,7 +131,7 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 # Completa en .env los secretos y opt-ins descritos en "Variables De Entorno".
 corepack pnpm install --frozen-lockfile
 corepack pnpm local:doctor
-docker compose up -d --build --wait
+docker compose --env-file .env -f docker-compose.yml up -d --build --wait
 corepack pnpm local:smoke
 ```
 
@@ -92,6 +165,102 @@ lectura, `/tmp` temporal, `no-new-privileges` y healthchecks. Las dependencias
 de infraestructura y las imagenes base estan fijadas por digest; una
 actualizacion exige cambiar de forma explicita el tag y el digest en el mismo
 pull request.
+
+#### Perfil opcional de IA real
+
+El arranque anterior no activa LiteLLM: conserva los proveedores `mock` y no
+requiere secretos de OpenRouter. Usa `RUNTIME_ENVIRONMENT=development` o `test`
+para ese modo. El perfil `ai` anade LiteLLM y su PostgreSQL dedicado al **mismo**
+proyecto Compose; no hace falta conectar un segundo proyecto. Usa Docker
+Compose 2.24.4 o posterior. El archivo adicional `infra/litellm/compose.ai.yml`
+hace obligatoria la salud del gateway para backend y processor. En modo IA usa
+siempre ese archivo junto con `--profile ai`: el perfil por si solo no aplica
+esa barrera de arranque. El comando base sin perfil conserva el modo mock.
+
+Si el proyecto mock ya contiene vectores de ocho dimensiones, **no** cambies
+solo `EMBEDDING_DIMENSION`: la tabla existente no admite vectores de 1536.
+Deten ese proyecto con `docker compose down` (sin `-v`), conserva su `.env` y
+sus volumenes, y prepara un `.env.ai` local ignorado con las credenciales y
+URLs del nuevo entorno. Los comandos siguientes usan un proyecto distinto,
+`economicon-ai`, con volumenes nuevos. Requiere inicializar sus datos y volver
+a ingerir documentos: no migra ni elimina los datos del proyecto mock. Si
+`economicon-ai` ya existe, comprueba antes que su base vectorial es de 1536;
+no reutilices una base de ocho dimensiones. Para volver a mock, deten primero
+el proyecto IA sin borrar volumenes y arranca el proyecto mock con su `.env`.
+
+Antes del primer arranque real, completa en el `.env.ai` ignorado por Git las
+credenciales normales del stack, `OPENROUTER_API_KEY`, una clave maestra
+`LITELLM_MASTER_KEY` y un `LITELLM_DATABASE_PASSWORD` unico y apto para URL.
+Conserva esa password al recrear los contenedores. No uses la clave maestra ni
+la upstream como clave de backend o processor. `local:doctor` comprueba el
+stack base, pero no acredita estas credenciales ni el presupuesto de IA.
+
+Inicializa solo gateway y su base desde la raiz:
+
+```powershell
+docker compose --env-file .env.ai -p economicon-ai -f docker-compose.yml -f infra/litellm/compose.ai.yml --profile ai up -d --wait litellm
+```
+
+Desde la administracion en `http://127.0.0.1:44000` (o
+`LITELLM_ADMIN_PORT`), crea **dos** claves virtuales con `POST /key/generate`:
+una limitada a `models: ["economicon-embedding"]` para
+`BACKEND_LITELLM_API_KEY`, y otra limitada a los aliases necesarios
+(`economicon-chat`, `economicon-chat-deepseek`, `economicon-embedding`) para
+`LITELLM_API_KEY` del processor. Usa la clave maestra solo para esa operacion
+administrativa. Configura expiracion y limites de gasto, tasa y concurrencia
+aprobados; la suma de los topes no sustituye el presupuesto agregado de
+[ADR-0002](docs/adr/ADR-0002-litellm-openrouter.md). Guarda las claves
+devueltas solo en `.env.ai` o en un gestor de secretos, sin imprimirlas en logs,
+commits ni capturas. La [guia del gateway](infra/litellm/README.md) conserva
+las reglas de privacidad, rotacion y gasto.
+
+Selecciona `LLM_PROVIDER=litellm`, `EMBEDDING_PROVIDER=litellm`,
+`EMBEDDING_DIMENSION=1536` y ambas claves virtuales en `.env.ai`. Despues, el
+arranque habitual de IA real es un unico comando:
+
+```powershell
+docker compose --env-file .env.ai -p economicon-ai -f docker-compose.yml -f infra/litellm/compose.ai.yml --profile ai up -d --build --wait
+```
+
+`LITELLM_BASE_URL` permanece en `http://litellm:4000/v1` dentro de la red
+Compose. La administracion solo se publica en loopback; PostgreSQL del gateway
+no publica puerto. El volumen `gateway-data` conserva claves y metadatos de
+gasto al recrear contenedores. Para detener IA conservando sus datos:
+
+```powershell
+docker compose --env-file .env.ai -p economicon-ai -f docker-compose.yml -f infra/litellm/compose.ai.yml --profile ai down
+```
+
+`down -v` borraria **todos** los volumenes del proyecto, no solo el del
+gateway; no lo uses sobre un entorno con datos que deban conservarse. Activar
+el perfil no autoriza llamadas pagadas: se requiere presupuesto y autorizacion
+especificos para OpenRouter.
+
+#### Volver de IA al proyecto mock original
+
+Conserva los archivos `.env` (mock8) y `.env.ai` (IA1536), sus secretos y sus
+volumenes. Desde una consola limpia como la indicada en el modo mock, comprueba
+en `.env` los seis valores mock anteriores y el nombre original del proyecto.
+Deten primero IA para liberar sus puertos; despues arranca el stack mock:
+
+```powershell
+docker compose --env-file .env.ai -p economicon-ai -f docker-compose.yml -f infra/litellm/compose.ai.yml --profile ai down
+corepack pnpm local:doctor
+docker compose --env-file .env -f docker-compose.yml up -d --build --wait
+corepack pnpm local:smoke
+```
+
+Para detener mock conservando sus datos:
+
+```powershell
+docker compose --env-file .env -f docker-compose.yml down
+```
+
+Usa el mismo directorio/nombre de proyecto mock que antes de activar IA; no
+apuntes mock al proyecto `economicon-ai` ni a su base vectorial1536. Ninguno de
+estos comandos usa `-v`, modifica claves del gateway o migra vectores. Para
+volver a IA, deten mock con el ultimo comando y sigue el arranque IA anterior
+con `.env.ai`, el mismo proyecto `economicon-ai` y sus claves ya emitidas.
 
 `VITE_API_BASE_URL` se incorpora al build del frontend. Si cambia, reconstruir
 esa imagen antes de arrancarla:
@@ -143,18 +312,41 @@ Puertos visibles:
 
 ### Con Turborepo
 
-Desde la raiz del repo:
+Necesita el [requisito previo de corepack](#requisito-previo-pnpm-con-corepack). Desde la raiz del repo,
+preferiblemente dentro de un entorno virtual de Python (`turbo` usa el `python` que encuentra en el
+`PATH`, asi que activalo en la misma consola que lanza pnpm):
 
 ```powershell
-pnpm install
+corepack pnpm install --frozen-lockfile
 Set-Location apps/backend; python -m pip install -r requirements-dev.txt
 Set-Location ../processor; python -m pip install -r requirements-dev.txt
 Set-Location ../azure-cost-api; python -m pip install -r requirements-dev.txt
 Set-Location ../..
-pnpm dev
 ```
 
-Esto levanta `frontend`, `backend`, `processor` y `azure-cost-api` en paralelo.
+`corepack pnpm dev` lanza en paralelo `frontend`, `backend`, `processor` y `azure-cost-api`. **Por si
+solo no deja sirviendo al backend ni al processor**, y en cuanto uno falla turbo termina todos:
+`backend` y `processor` leen su configuracion solo del entorno del proceso, y turbo (modo `strict`)
+no le pasa a las tareas las variables del shell. Ademas, el `.env` de Compose usa los nombres
+internos de los servicios (`cockroachdb`, `rabbitmq`, `postgres-pgvector`), que tu maquina no resuelve.
+Para que queden las cuatro aplicaciones sirviendo (verificado en Windows):
+
+1. Levanta solo la infraestructura de Compose, sin los servicios de aplicacion:
+   `docker compose up -d --wait cockroachdb rabbitmq postgres-pgvector`.
+2. Crea un archivo de entorno **fuera del repositorio**: copia de tu `.env` con `DATABASE_URL`,
+   `RABBITMQ_URL` y `VECTOR_DATABASE_URL` apuntando a `127.0.0.1` y a los puertos publicados
+   (`26257`, `5672` y `5433` por defecto, o los de `COCKROACH_SQL_PORT`, `RABBITMQ_PORT` y
+   `PGVECTOR_PORT`). Usa `127.0.0.1` y no `localhost`: con `localhost` el backend se quedo bloqueado
+   en el arranque en la maquina verificada (causa sin determinar).
+3. Lanza `dev` indicando ese archivo y el modo de entorno `loose`:
+
+```powershell
+$env:ECONOMICON_ENV_FILE = "C:\ruta\fuera\del\repo\local-dev.env"
+corepack pnpm dev --env-mode=loose
+```
+
+Es una limitacion conocida del repositorio, no de tu maquina; el seguimiento esta en
+[RF-103-001](openspec/findings/backlog.md). Para el stack completo en contenedores, usa Docker Compose.
 
 Puertos visibles:
 
@@ -266,16 +458,29 @@ antes de preparar una instalacion existente.
 - `AUTH_SECRET_KEY`: secreto para firmar tokens propios del backend
 - `AUTH_TOKEN_TTL_MINUTES`: vida util del token
 - `CORS_ALLOWED_ORIGINS`: lista JSON de origenes del navegador permitidos
-- `EMBEDDING_PROVIDER`: provider configurado para embeddings
+- `EMBEDDING_PROVIDER`: provider de embeddings (`mock` solo con `RUNTIME_ENVIRONMENT=development` o `test`; `litellm` en el resto)
+- `BACKEND_LITELLM_API_KEY`: clave virtual propia del backend, obligatoria solo con `EMBEDDING_PROVIDER=litellm`
+- `EMBEDDING_TIMEOUT_SECONDS` y `EMBEDDING_MAX_RETRIES`: plazo y reintentos de la llamada de embedding del backend
+- `RETRIEVAL_TOP_K` y `RETRIEVAL_MAX_DISTANCE`: fragmentos recuperados por pregunta (por defecto 4) y distancia coseno maxima (0.6 por defecto con `litellm`, sin umbral con `mock`)
 - `VITE_API_BASE_URL`: URL base consumida por el frontend
 - `LLM_PROVIDER`: provider configurado para el modulo de agentes
 
 ## Comandos Principales
 
-- `pnpm dev`: arranca frontend, backend, processor y Azure Cost API en paralelo
+Con el [requisito previo de corepack](#requisito-previo-pnpm-con-corepack) cumplido, `pnpm <script>` y
+`corepack pnpm <script>` ejecutan lo mismo; el resto del documento usa `corepack pnpm` porque es la forma
+que usan CI y la guia de contribucion.
+
+- `pnpm dev`: lanza en paralelo el proceso de desarrollo de frontend, backend, processor y Azure Cost API
+  (backend y processor necesitan configuracion adicional, ver "Con Turborepo")
 - `pnpm build`: ejecuta las tareas de build declaradas por cada app
 - `pnpm lint`: ejecuta las tareas de lint declaradas por cada app
-- `pnpm test`: ejecuta los tests disponibles
+- `pnpm typecheck`: ejecuta la verificacion de tipos; solo la declara el frontend
+- `pnpm test`: ejecuta los tests disponibles. Con los cuatro paquetes a la vez, algunos tests con
+  plazos de tiempo (frontend, backend y processor) pueden fallar segun la maquina, y no siempre los
+  mismos (`RF-098-004`, `RF-103-005`); aislados y por mitades pasan. Si te ocurre, ejecutalos asi:
+  `corepack pnpm run test "--filter=!@finops/frontend"` y
+  `corepack pnpm run test --filter=@finops/frontend -- --maxWorkers=1`
 - `pnpm docker:build`: construye las imagenes Docker de las apps
 - `pnpm docker:validate`: valida topologia, digests, healthchecks y privilegios
   sin necesitar un daemon Docker
@@ -283,6 +488,45 @@ antes de preparar una instalacion existente.
   Compose, sin mostrar valores secretos
 - `pnpm local:smoke`: verifica el recorrido minimo contra el stack ya arrancado
 - `pnpm local:test`: tests de las dos herramientas anteriores
+
+## Integracion Continua
+
+El workflow [CI](.github/workflows/ci.yml) se ejecuta con cada push a cualquier
+rama (`branches: ['**']`, sin filtros de rutas), con pull requests hacia `main`
+o `develop` en eventos `opened`, `synchronize`, `reopened`, `edited` y
+`ready_for_review`, y manualmente mediante `workflow_dispatch`. Un push solo
+de tags no lo activa. No requiere configurar `.gitconfig` ni hooks locales.
+
+Cada push valida el ultimo head enviado: los commits locales sin push y los
+commits intermedios de un push multiple no tienen ejecuciones individuales.
+Una ejecucion posterior del mismo grupo de concurrencia puede cancelar la
+anterior. Con un PR abierto pueden ejecutarse tanto el evento push como el
+evento PR; sus refs normalmente pertenecen a grupos distintos.
+
+Los jobs instalan las dependencias del workspace con
+`corepack pnpm install --frozen-lockfile` y ejecutan:
+
+- Frontend: `corepack pnpm lint --filter=@finops/frontend`,
+  `corepack pnpm test --filter=@finops/frontend`,
+  `corepack pnpm --filter @finops/frontend build` y, en otro job,
+  `corepack pnpm --filter @finops/frontend typecheck`.
+- Python 3.12: en cada directorio `apps/azure-cost-api`, `apps/backend` y
+  `apps/processor`, `python -m pip install -r requirements-dev.txt`, despues
+  `python -m compileall -q app` y finalmente `python -m pytest tests -q`.
+  Compileall cubre una sola vez los scripts identicos de lint/build; un error
+  de sintaxis falla el job. Comprueba sintaxis y genera bytecode, pero no
+  comprueba estilo, imports en runtime ni construye paquetes.
+- Gobernanza: los comandos del job `OpenSpec` en el workflow enlazado,
+  incluidos `corepack pnpm ci:check:test`, `corepack pnpm jup:check:all`,
+  `corepack pnpm docker:validate` y `corepack pnpm openspec:validate`.
+- Solo en PR: `node tools/pr-policy.mjs --event "$GITHUB_EVENT_PATH"`.
+  Este job se omite en push y ejecuciones manuales.
+
+Los tests que requieren CockroachDB, RabbitMQ o pgvector aislados pueden
+quedar omitidos si esos servicios no estan disponibles. Esos skips no validan
+integraciones reales. `docker:validate` es una comprobacion estatica; CI verde
+no acredita arranque de contenedores, despliegue ni aceptacion humana. Los
+tests locales del workflow tampoco acreditan ejecuciones alojadas en GitHub.
 
 ## Planificacion de entrega
 
@@ -323,6 +567,7 @@ El flujo principal del sistema es este:
 - [API Azure Cost simulada](apps/azure-cost-api/README.md)
 - [Cliente de ingesta Azure Cost Management](docs/api/azure-cost-ingestion-client.md)
 - [Batería de preguntas FinOps (JUP-069)](docs/validation/README.md)
+- [Memoria del TFM: dónde vive y cómo se edita (JUP-062)](docs/memoria/README.md)
 
 ## Estado Actual
 
@@ -337,7 +582,7 @@ Esta base prioriza:
 - cola local para jobs
 - API Azure Cost simulada y cliente de ingesta paginado
 - normalizacion y persistencia idempotente de costes por tenant
-- almacenamiento vectorial basico con provider mock por defecto
+- almacenamiento vectorial basico con provider mock por defecto en development y test, y recuperacion semantica del backend con `litellm` (ver [apps/backend/README.md](apps/backend/README.md))
 - chat con retrieval minimo por tenant y respuesta determinista, todavia sin LLM real
 - CI en GitHub Actions con validaciones de gobernanza, OpenSpec, pruebas y build
 - documentacion versionada de arquitectura, ADR, roadmap y evidencias
@@ -353,3 +598,9 @@ No incluye todavia:
 Los contratos residuales de autenticacion demo, aislamiento completo por tenant
 y calidad minima del frontend se mantienen en JUP-085, JUP-086 y JUP-087. Que
 exista un prototipo o un provider mock no acredita el cierre de esas tarjetas.
+
+### Presupuesto de sondas operativas — JUP-047
+
+GET `/health/status` usa `HEALTH_PROBE_TIMEOUT_SECONDS=8` por defecto (número finito entre 2 y 8 segundos inclusivos), 18 segundos de agregación después de autorizar y 20 segundos de espera del cliente. El plazo de la sonda incluye arranque/importaciones del proceso desechable; conserva cuatro slots y no añade reintentos. Puede reducirse dentro del rango si el entorno lo permite; un timeout sigue siendo no verificado. POST conserva 30/35 segundos servidor/cliente y el polling GET visible 30 segundos. El health público mantiene su contrato.
+
+El transporte elimina del modelo informativo cualquier reflexión de la credencial diagnóstica completa antes del recibo y de su retención/serialización, sin invalidar una respuesta funcional sana por metadata descartada. Para reproducir disponibilidad y recuperación, usar el Compose documentado y el override no generativo del [runbook de salud](docs/runbooks/system-health.md), con recursos propios y credenciales sintéticas; no activar proveedor real para regresiones.

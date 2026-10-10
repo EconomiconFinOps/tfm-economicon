@@ -1,9 +1,32 @@
 # Isolated LiteLLM runtime (JUP-023 / JUP-078)
 
 This opt-in Compose project supplies the gateway and its own plain PostgreSQL
-for revocable virtual keys and spend metadata. The root Compose and processor
-mock defaults remain unchanged. Never reuse the shared DockerServer, its
+for revocable virtual keys and spend metadata. The same two services are
+included by the root Compose under its optional `ai` profile; the root mock
+defaults remain unchanged. Never reuse the shared DockerServer, its
 containers, networks, volumes, product database or vector database.
+
+For the complete root stack, use both `-f docker-compose.yml` and
+`-f infra/litellm/compose.ai.yml` with `--profile ai`. The additional file
+makes gateway health mandatory for backend and processor; the profile alone
+does not gate their startup. Follow the [root startup instructions](../../README.md#perfil-opcional-de-ia-real)
+for two scoped keys and a separate project when replacing eight-dimensional
+mock embeddings with 1536-dimensional real embeddings. Preserve the mock
+project volumes; changing the dimension does not migrate an existing table.
+
+For the complete application stack, the root README is the canonical guide:
+
+- [Mock startup without OpenRouter](../../README.md#modo-mock-stack-completo-sin-openrouter):
+  explicit mock providers/dimension8, normal stack credentials, doctor, startup
+  and smoke. No gateway or virtual key is required.
+- [AI startup](../../README.md#perfil-opcional-de-ia-real): bootstrap, two scoped
+  keys, `.env.ai`, separate1536-dimensional volumes and full stack command.
+- [Return from AI to the original mock project](../../README.md#volver-de-ia-al-proyecto-mock-original):
+  stop AI without deleting volumes, restore the original mock environment/project
+  and restart. Keep shell overrides from selecting a different mode or project.
+
+The isolated gateway commands below run only LiteLLM/PostgreSQL; they do not
+start frontend, backend, processor or the other application infrastructure.
 
 ## Approved pins and pending runtime checks
 
@@ -19,7 +42,7 @@ not applicable, LiteLLM version verified with networking disabled, and Prisma
 it does not establish compatibility with the real OpenRouter service.
 Never run the vulnerable historical 1.82.6 image or `latest`. The version decision
 is documented in [ADR-0016](../../docs/adr/ADR-0016-litellm-version-pin.md), whose
-status remains Proposed; ADR-0002 and real-use approvals are separate.
+status remains Proposed; ADR-0002 was accepted on 2026-10-04 and real-use approvals are separate.
 
 The fake-upstream runtime check requires a
 synthetic upstream, a config mount override pointing every alias only to that
@@ -43,6 +66,7 @@ the owner must prevent real credentials from replacing synthetic values.
 | `LITELLM_DATABASE_PASSWORD` | Gateway DB and gateway connection only; unique strong URL-safe password, e.g. random hexadecimal; no default |
 | `LITELLM_ADMIN_PORT` | Optional loopback port, default 44000; choose a free port |
 | `LITELLM_API_KEY` | Processor only; separate scoped, revocable virtual key |
+| `BACKEND_LITELLM_API_KEY` | Backend only in the root Compose; embedding alias only |
 
 Only explicitly listed variables enter containers; no wholesale `env_file`
 forwarding. PostgreSQL has no public port. Gateway administration binds only to
@@ -53,8 +77,8 @@ From the repository root, after the applicable runtime gate, substitute a unique
 owned project name and absolute environment-file path:
 
 ```text
-docker compose --env-file <absolute-isolated-env-file> -p <owned-unique-project> -f infra/litellm/docker-compose.yml config --quiet
-docker compose --env-file <absolute-isolated-env-file> -p <owned-unique-project> -f infra/litellm/docker-compose.yml up -d
+docker compose --env-file <absolute-isolated-env-file> -p <owned-unique-project> -f infra/litellm/docker-compose.yml --profile ai config --quiet
+docker compose --env-file <absolute-isolated-env-file> -p <owned-unique-project> -f infra/litellm/docker-compose.yml --profile ai up -d
 ```
 
 For manual fake-upstream runs, append `-f <isolated-fake-override>`
@@ -62,6 +86,9 @@ before each subcommand. Do not start the base configuration against OpenRouter
 during that phase. Never run full `docker compose config`, dump container
 environments or retain unsanitized API output. `/health/liveliness` does not
 invoke a model. Cleanup belongs to the owner and targets only that project.
+The isolated fake override must make both `gateway` and `default` networks
+internal: LiteLLM joins the root application's default network when included
+there, but synthetic tests must not gain an external route.
 
 ## Synthetic integration replay
 
@@ -273,5 +300,5 @@ not an individual invoice. Price re-verification and stop rules above remain
 mandatory; the USD 0.40 upstream cap without reset and EUR 0.50 aggregate ceiling
 are unchanged. No new chat or persistence run, CockroachDB/RabbitMQ end-to-end
 test, or real budget-denial request was performed for this correction.
-Internal technical review and local QA passed; see the [current status](../../openspec/changes/jup-023-litellm-openrouter/review.md#final-local-qa-and-post-qa-gate).
-Human reviews, validation, final approval and publication remain pending; no PR or delivery completion is authorized.
+Internal technical review and local QA passed; see the [review history](../../openspec/changes/archive/2026-10-04-jup-023-litellm-openrouter/review.md#final-local-qa-and-post-qa-gate).
+PR [#65](https://github.com/EconomiconFinOps/tfm-economicon/pull/65) was reviewed, validated and merged into develop. This does not approve ADR-0002/0016 or remove the limits above.

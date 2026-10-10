@@ -1,0 +1,57 @@
+{
+  "workItem": "JUP-108",
+  "branch": "feat/JUP-108-litellm-compose",
+  "headBase": "ff2ea6be12abf1bea4789791c34efb46c3b55aa8",
+  "nativeHelperFinalResult": {
+    "ok": false,
+    "profile": "code",
+    "stage": "final",
+    "missingEvents": [
+      "guard-desarrollador-design",
+      "guard-desarrollador-red",
+      "guard-desarrollador-green"
+    ],
+    "invalidEvents": [],
+    "artifactErrors": [],
+    "message": "Definition of Done incomplete; no repair was attempted."
+  },
+  "nativeHelperExitCode": 20,
+  "humanDisposition": {
+    "approver": "Paris Arcos",
+    "exceptionApproved": true,
+    "scope": [
+      "guard-desarrollador-design",
+      "guard-desarrollador-red",
+      "guard-desarrollador-green"
+    ],
+    "decision": "la apruebo",
+    "pmRegisteredAt": "2026-10-09T00:07:28+01:00",
+    "source": "jup108-historical-guards-exception-approved-20261009.md",
+    "sourceSha256": "91feeb60b9ab356245122e56403ac718ec09d974fce8a578e6d0a20fd6bb9566",
+    "historicalGuardsPassed": false,
+    "helperFailPreserved": true
+  },
+  "finalDeliveryApproval": {
+    "approver": "Paris Arcos",
+    "decision": "apruebo",
+    "pmRegisteredAt": "2026-10-09T00:08:45+01:00",
+    "humanExactTimestamp": "not asserted",
+    "source": "jup108-final-approval-and-roles-20261009.md",
+    "sourceSha256": "11ce0ba113970697a9d9d7c10bf110587dab0c91af9580b5981dc329722e9f94"
+  },
+  "archiveAuthorization": {
+    "approved": true,
+    "scope": "JUP108 in same branch, promote delta and preserve evidence"
+  },
+  "limits": [
+    "Not a native DoD PASS; explicit human exception retained separately.",
+    "No authorization for commit/push, PR/publication or merge.",
+    "Human reviews remain pending under current assignments."
+  ],
+  "repositoryCheckMatrix": {
+    "rows": 38,
+    "nativeEquivalences": true,
+    "originalDatesAndSkipsPreserved": true,
+    "noFunctionalTestsRepeated": true
+  }
+}

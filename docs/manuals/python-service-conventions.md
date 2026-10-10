@@ -73,6 +73,7 @@ readiness o conexion verificada.
 | DEMO_PASSWORD | Operador de la cuenta; requerida solo para crear con seed opt-in |
 | GRAFANA_ADMIN_PASSWORD | Valor existente conservado en .env local ignorado; no generar ni rotar como parte del traslado |
 | LITELLM_API_KEY | Clave virtual del processor; solo obligatoria para proveedor litellm |
+| BACKEND_LITELLM_API_KEY | Clave virtual propia del backend (restringida al alias de embeddings; en el backend es `LITELLM_API_KEY`); solo obligatoria con `EMBEDDING_PROVIDER=litellm`, ver ADR-0017 |
 | OPENROUTER_API_KEY / LITELLM_MASTER_KEY | Solo gateway; nunca aplicaciones o build |
 | AZURE_COST_* tokens y skiptoken | Fixtures sinteticas del simulador publico local/test, nunca Azure real |
 

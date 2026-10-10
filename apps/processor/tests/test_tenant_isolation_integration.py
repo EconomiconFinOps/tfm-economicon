@@ -153,6 +153,30 @@ def test_two_tenant_http_ingest_worker_retrieval_and_completed_replay(real_datab
     assert reply["status"] == 201
     assert "tenant-a-content-marker" in str(reply)
     assert "tenant-b-content-marker" not in str(reply)
+
+    # JUP-054 / RF-087-002: a successful POST did not previously prove that
+    # psycopg's already-decoded JSONB could be read on a later HTTP request.
+    # Each http() call starts a fresh backend process, so this reads persisted
+    # messages rather than reusing the response or application state of POST.
+    assistant_message = reply["body"]["assistant_message"]
+    metadata = assistant_message["metadata"]
+    assert metadata["citations"] and metadata["source_citations"]
+    with real_database.engine.connect() as connection:
+        persisted_metadata = connection.execute(
+            text("SELECT metadata FROM messages WHERE id = :id"),
+            {"id": assistant_message["id"]},
+        ).scalar_one()
+    assert isinstance(persisted_metadata, dict), "Exercise the real psycopg JSONB decoding boundary"
+    assert persisted_metadata == metadata
+
+    detail_path = f"/assistant/conversations/{conversation['body']['id']}"
+    reopened = http(real_database, real_queue, vector_store, "alice", "tenant-a", "GET", detail_path)
+    assert reopened["status"] == 200
+    assert reopened["body"]["conversation"]["id"] == conversation["body"]["id"]
+    assert reopened["body"]["messages"] == [reply["body"]["user_message"], assistant_message]
+    denied = http(real_database, real_queue, vector_store, "bob", "tenant-b", "GET", detail_path)
+    assert denied == {"status": 404, "body": {"detail": "Conversation not found."}}
+
     before = (snapshot(real_database, "jobs"), vector_snapshot(vector_store))
     real_queue.channel.basic_publish(exchange="", routing_key=real_queue.queue_name, body=json.dumps(message.payload), properties=pika.BasicProperties(delivery_mode=2))
     replay = real_queue.blocking_pop(timeout=2)

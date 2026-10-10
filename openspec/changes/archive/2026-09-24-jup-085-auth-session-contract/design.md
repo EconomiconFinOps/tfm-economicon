@@ -1,5 +1,5 @@
 JUP: JUP-085
-ADR: [ADR-0007: Backend CORS policy](../../../docs/adr/ADR-0007-backend-cors-policy.md), Accepted. Gate pre-code registrado en proposal.md el 23/09/2026 a las 13:05:53 UTC. Residual/CORS REVIEW_PASS; QA_BLOCKED_ENV por RF-085-002; gate humano pendiente.
+ADR: [ADR-0007: Backend CORS policy](../../../../docs/adr/ADR-0007-backend-cors-policy.md), Accepted. Gate pre-code registrado en proposal.md el 23/09/2026 a las 13:05:53 UTC. Residual/CORS REVIEW_PASS; QA_BLOCKED_ENV por RF-085-002; gate humano pendiente.
 
 ## Context
 
@@ -7,7 +7,7 @@ Incremento autorizado de 5 s: [addendum literal](proposal.md#addendum-tolerancia
 Red/Green y mutacion completados; REVIEW_PASS incremental y navegador 8/8
 sobre la imagen actualizada. QA_PASS acotado al incremento; no se levanta el bloqueo
 ambiental ni se intervienen relojes. Resultados propios en
-[evidencia incremental](../../../docs/evidence/JUP-085-validation.md#incremento-actual-tolerancia-jwt-de-5-s)
+[evidencia incremental](../../../../docs/evidence/JUP-085-validation.md#incremento-actual-tolerancia-jwt-de-5-s)
 y [review](review.md). Los inventarios y resultados previos conservan su fecha.
 
 Estado del 2026-09-23: HEAD del worktree es
@@ -452,7 +452,7 @@ ya actualizados por el orquestador se leen sin editar aqui.
 - [CORS en navegador real] -> implementado y review runtime entregado;
   hallazgos Open hasta completar QA final.
 - [RF-085-002, High, entorno] -> Open; mitigacion temporal insuficiente;
-  alcance temporal y limites en [evidencia](../../../docs/evidence/JUP-085-validation.md#revalidacion-qa-tras-mitigacion-2309).
+  alcance temporal y limites en [evidencia](../../../../docs/evidence/JUP-085-validation.md#revalidacion-qa-tras-mitigacion-2309).
 - [Compatibilidad CORS] -> lista vacia no habilita navegador entre puertos;
   production con origen HTTP fallara al arrancar. Operador debe configurar
   HTTPS o elegir explicitamente development/test para entorno local; no cambiar

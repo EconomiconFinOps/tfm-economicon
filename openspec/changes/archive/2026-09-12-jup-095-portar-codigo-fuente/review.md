@@ -4,10 +4,23 @@ Rama: `feat/JUP-095-portar-codigo-fuente`
 
 Documento vivo: se actualiza al cerrar cada grupo de `tasks.md`, no solo al final de la tarjeta.
 
+> **Nota del 2026-10-09 (JUP-105).** Este documento archivado es un registro de lo que se decidió y
+> verificó hasta el archivado de la tarjeta (2026-09-12) y no se reescribe. Dos afirmaciones suyas
+> dejaron de ser ciertas después:
+>
+> - **`Frontend tests` como comprobación obligatoria.** El job que esta tarjeta añadió duplicaba la
+>   ejecución de pruebas que ya cubre `Frontend build` y se retiró el 2026-09-19, al reconciliar con
+>   `develop`, junto con sus entradas en los rulesets. Los checks obligatorios vigentes son ocho; la
+>   historia está en [la guía de gobernanza](../../../../docs/governance/github-branch-protection.md).
+> - **`/overview-legacy` como única pantalla o único dashboard con datos reales.** Ya no lo es:
+>   JUP-026 y JUP-055 conectaron `/` a costes almacenados y JUP-047 añadió `/system-health`. El
+>   recuento vigente de pantallas está en la sección «Rutas» de
+>   [`apps/frontend/README.md`](../../../../apps/frontend/README.md#rutas).
+
 ## Grupo 1 — Gate pre-código y línea base
 
 Doc-only, sin código de producto: sin tester/coder/mutación (excepción documentada en
-`.claude/harness/mutation.md`).
+el procedimiento local de mutación).
 
 - Línea base confirmada antes de tocar nada: 49 violaciones de `react/prop-types` en 9 `.jsx`; bundle
   `203.37 kB` JS / gzip `63.38 kB`, CSS `5.60 kB`; 14 archivos en `src/**`; 7 checks obligatorios en
@@ -58,7 +71,7 @@ nuevas.
 
 **Mutación** (Stryker efímero vía `pnpm dlx`, acotado a `src/test/HarnessSmoke.tsx`): 1 mutante
 generado, 1 matado, 0 supervivientes, **score 100%**. Receta real documentada en
-`.claude/harness/mutation.md` tras tres correcciones sobre lo escrito originalmente ahí (sintaxis de
+el procedimiento local de mutación tras tres correcciones sobre lo escrito originalmente ahí (sintaxis de
 `pnpm dlx --package=` en pnpm 9.0.0, `typescript` fijado explícito para el preprocesador de
 `tsconfig` de Stryker, `plugins: ["@stryker-mutator/vitest-runner"]` explícito porque el
 descubrimiento automático no ve el sandbox efímero).
@@ -73,7 +86,7 @@ excludes por defecto en vez de sobrescribirlos. Verificado por mí y de forma in
 simulando el escenario exacto (sandbox falso con copia real del test): `Test Files 1 passed (1)`.
 **Veredicto final QA: `accept`.**
 
-**DoD:** `node .claude/harness/check-dod.mjs` falla por `RF-093-001` (preexistente, documentado desde
+**DoD:** el comprobador local de DoD falla por `RF-093-001` (preexistente, documentado desde
 JUP-093: turbo resuelve pnpm 11.9.0 en subprocesos en esta máquina Windows, afectando también a
 `@finops/backend`/`@finops/processor`, ajenos a esta tarea). El escaneo de secretos del propio script
 sí pasa (no depende de turbo). Sustituido por `corepack pnpm --filter @finops/frontend
@@ -92,17 +105,17 @@ JUP-093 aplicó a *Frontend type check*.
 los rulesets — `tools/ci-workflow.test.mjs` (introducido en JUP-093). No son tareas doc-only: tienen
 comportamiento testeable propio, distinto del de `apps/frontend`.
 
-**Bloqueo de proceso y su resolución.** El hook `.claude/hooks/lock-committed-tests.mjs` bloquea
+**Bloqueo de proceso y su resolución.** El hook de protección de tests del entorno local bloquea
 cualquier escritura sobre un archivo de test ya tracked en git, sin distinguir agente (el propio
 comentario del hook explica por qué: no hay forma fiable de verificar identidad desde un hook). Como
 `tools/ci-workflow.test.mjs` está commiteado desde JUP-093, el tester no podía extenderlo para el
 octavo check. El tester **no rodeó el hook** por su cuenta (nada de `git rm --cached`, ediciones vía
-Bash fuera de las tools, ni tocar `.claude/settings.json` sin autorización) y escaló la decisión.
+Bash fuera de las tools, ni tocar la configuración local de esa protección sin autorización) y escaló la decisión.
 Se presentaron tres opciones al usuario (editar manualmente, desactivar el hook temporalmente, omitir
 TDD para estas tareas); **Victor eligió desactivar el hook temporalmente**. Se vació
-`.claude/settings.json` a `{"hooks": {}}`, el tester aplicó las dos aserciones nuevas, y el hook se
+la configuración local de esa protección (sin ningún hook activo), el tester aplicó las dos aserciones nuevas, y el hook se
 reactivó **antes** de la fase Green (para que el test recién extendido quedara protegido en cuanto se
-commiteara). `.claude/settings.json` no está versionado (`.claude/` en `.gitignore`), así que esta
+commiteara). Esa configuración local no está versionada (la carpeta de configuración de agentes está en `.gitignore`), así que esta
 manipulación fue puramente local y efímera — no dejó rastro en el repo. Verificado de forma
 independiente por QA.
 
@@ -127,7 +140,7 @@ YAML/JSON de configuración declarativa); la cobertura de comportamiento la da e
 exhaustivo (`deepStrictEqual` sobre arrays completos, regex sobre SHAs pineados,
 `persist-credentials`). Confirmado por QA como caracterización correcta, no como excepción forzada.
 
-**DoD:** `node .claude/harness/check-dod.mjs` falla en `test`/`lint`/`typecheck` por `RF-093-001`
+**DoD:** el comprobador local de DoD falla en `test`/`lint`/`typecheck` por `RF-093-001`
 (mismo patrón que en la tarea 2.3, no relacionado con este cambio). Sustituido por: `node --test
 tools/ci-workflow.test.mjs` (7/7); `corepack pnpm --filter @finops/frontend {test,lint,typecheck}`
 para confirmar que el cambio de CI no rompió nada del paquete que sí toca (1 test pasa, lint 49/49 sin
@@ -206,7 +219,7 @@ el grupo 6/7 reconcilie el entrypoint; `main.css` sigue gobernando el render.
 ## Grupo 4 — Primitivos de shadcn/ui
 
 **Objetivo:** portar el subconjunto de 6 paquetes Radix que
-[ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) autorizó, con el primer consumidor real
+[ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) autorizó, con el primer consumidor real
 del alias `@/` del grupo 3.
 
 **Red** (tester, commit `5d27677`): 6 tests reales que fallaban porque el código de producto no
@@ -229,7 +242,7 @@ auto-cleanup depende de un `afterEach` global, y este proyecto usa `test.globals
 grupo 2 (imports explícitos de vitest) — sin registrar `afterEach(cleanup)` de forma explícita, nunca
 se desmontan los árboles entre tests. `apps/frontend/src/test/setup.ts` ya estaba commiteado (grupo 2,
 `771bb0b`): arreglarlo requirió el mismo procedimiento que en el grupo 2 para
-`tools/ci-workflow.test.mjs` — Victor autorizó desactivar `lock-committed-tests.mjs` temporalmente, se
+`tools/ci-workflow.test.mjs` — Victor autorizó desactivar temporalmente la protección de tests del entorno local, se
 añadió `afterEach(cleanup)` (patrón oficial de Testing Library para proyectos sin `globals: true`), y
 el hook se reactivó antes de continuar. Diff de `setup.ts`: exactamente 3 líneas (import + llamada).
 
@@ -254,7 +267,7 @@ montan al interactuar o que las pantallas reconstruidas del grupo 6 renderizará
 cubrirlos ahora habría exigido tests de interacción muy por encima del alcance de "prueba de render"
 de la tarea 4.3.
 
-**DoD:** `check-dod.mjs` falla en `test`/`lint`/`typecheck` por `RF-093-001` (mismo patrón, no
+**DoD:** el comprobador local de DoD falla en `test`/`lint`/`typecheck` por `RF-093-001` (mismo patrón, no
 relacionado). Sustituido por `--filter`: `test` 15/15, `typecheck` limpio, `lint` 49/49 sin regresión.
 Escaneo de secretos en verde.
 
@@ -346,7 +359,7 @@ código que puede reescribirse pronto tiene bajo retorno. No se hizo remediació
 de los supervivientes de `Layout`/`ExportButton` (que quedan documentados igual que los de los
 dashboards, sin distinción especial pese a su mejor cobertura de partida).
 
-**DoD:** `check-dod.mjs` falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
+**DoD:** el comprobador local de DoD falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
 `--filter`: `test` 23/23, `typecheck` limpio, `lint` 49/49. Escaneo de secretos en verde.
 
 **QA:** `accept` en primera pasada. Verificó de forma independiente los 5 dashboards completos contra
@@ -430,7 +443,7 @@ más UI; `SessionGate` no cambia más), y la prueba de enrutado real de la tarea
 grupo 6) ejercitará el flujo completo de forma más realista que mutantes aislados en esta pieza
 intermedia.
 
-**DoD:** `check-dod.mjs` falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
+**DoD:** el comprobador local de DoD falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
 `--filter`: los cuatro comandos en verde. Escaneo de secretos en verde.
 
 **QA:** `accept` en primera pasada. Verificó de forma independiente la fidelidad verbatim de
@@ -471,13 +484,13 @@ observar sin inspeccionar el historial del router en este entorno), `event.preve
 eliminado (jsdom no navega páginas reales, efecto no observable), y el texto `"Signing in..."` del
 botón pendiente (NoCoverage, riesgo mínimo de UI).
 
-**DoD:** `check-dod.mjs` falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
+**DoD:** el comprobador local de DoD falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
 `--filter`: los cuatro comandos en verde. Escaneo de secretos en verde.
 
 **QA:** `accept` en primera pasada. Verificó de forma independiente que `handleLogin` está preservado
 verbatim, que `SESSION_KEY` no quedó duplicado, que los tests de mutación inspeccionan el cuerpo real
 de `fetch` (no tautológicos), y reprodujo la mutación desde cero con el comando documentado en
-`mutation.md`.
+el procedimiento local de mutación.
 
 **Findings de esta sub-ronda:** ninguno nuevo.
 
@@ -513,7 +526,7 @@ conversación, enviar mensaje) se prueba mejor de forma end-to-end en la tarea 6
 manual con el seed) que con mutantes aislados aquí — mismo criterio ya aplicado en el grupo 5 y en la
 sub-ronda (a) de este grupo.
 
-**DoD:** `check-dod.mjs` falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
+**DoD:** el comprobador local de DoD falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
 `--filter`: los cuatro comandos en verde. Escaneo de secretos en verde.
 
 **QA:** `accept` en primera pasada. Verificó de forma independiente la preservación verbatim de la
@@ -578,7 +591,7 @@ Presentado a Victor: **aceptar y documentar**. Motivo: son componentes de presen
 lógica de negocio real que proteger; el esfuerzo de tests dedicados no compensa frente al riesgo
 mínimo.
 
-**DoD:** `check-dod.mjs` falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
+**DoD:** el comprobador local de DoD falla por `RF-093-001` (mismo patrón, no relacionado). Sustituido por
 `--filter`: los cuatro comandos en verde. Escaneo de secretos en verde.
 
 **QA:** `accept` en primera pasada — **cierra el grupo 6 entero** (las 4 sub-rondas). Verificó de
@@ -612,7 +625,7 @@ integración real sobre comportamiento que ya existía, no introduce comportamie
 **Mutación: N/A.** Ningún archivo de producto cambió en esta tarea (`routes.tsx` ya tenía
 `routeConfig` desde el commit anterior) — no hay código nuevo que mutar.
 
-**DoD:** `check-dod.mjs` falla por `RF-093-001` (no relacionado). Escaneo de secretos en verde.
+**DoD:** el comprobador local de DoD falla por `RF-093-001` (no relacionado). Escaneo de secretos en verde.
 
 **QA:** `accept`, con verificación activa del mecanismo (no solo lectura): rompió temporalmente
 `path: "operational"` en `routes.tsx` (los 3 tests fallan, confirma que casos 1 y 3 ejercitan de
@@ -949,7 +962,7 @@ ninguno de los 5 lo importa, tarea 4.1), más la utilidad `cn()` de `@/lib/utils
 consumidor real** fuera de sus propios tests al
 cierre de la tarjeta (verificado por `grep` de `components/ui/` y de imports por alias `@/components/
 ui`, cero resultados en `src/pages`/`src/layouts`/`src/components` que no sean los propios archivos
-`ui/*`). Es el peso muerto que [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) aceptó
+`ui/*`). Es el peso muerto que [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) aceptó
 por escrito como riesgo (tarea 4.4): ninguna de las 8 pantallas portadas del origen los necesitaba, y
 ninguna pantalla nueva del armazón (`SessionGate`, `Layout`, `LoginPage`, etc.) los adoptó tampoco,
 al construirse todas directamente sobre Tailwind. Quedan disponibles para consumo futuro sin trabajo

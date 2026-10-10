@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+
+from app.schemas.ownership import OwnershipSelection
 
 
 NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -17,6 +19,7 @@ class MessageCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     content: NonEmptyText
+    ownership_query: OwnershipSelection | None = None
 
 
 class RetrievedChunk(BaseModel):
@@ -24,6 +27,20 @@ class RetrievedChunk(BaseModel):
     source: str
     content: str
     distance: float
+
+
+class SourceCitation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_id: NonEmptyText
+    kind: Literal["corpus"]
+    document_id: NonEmptyText
+    title: NonEmptyText
+    source: NonEmptyText
+    reference: NonEmptyText
+    section: NonEmptyText | None = None
+    page: int | None = Field(default=None, ge=1)
+    excerpt: str
 
 
 class MessageRecord(BaseModel):

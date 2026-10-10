@@ -1,4 +1,10 @@
 JUP: JUP-097
+
+> **Nota JUP-105, 10/10/2026:** este registro archivado conserva sus resultados
+> históricos. Desde JUP-026 y JUP-055, `/` también consume costes almacenados.
+> La afirmación inferior de que `/overview-legacy` es la única ruta con datos
+> reales está superada; véase [Rutas del frontend](../../../../apps/frontend/README.md#rutas).
+
 Trello: https://trello.com/c/dsBZ7y0S/89-jup-097-reconciliar-la-capa-de-datos-del-frontend-con-los-contratos-del-backend
 Rama: `feat/JUP-097-reconcile-api-layer`
 
@@ -7,7 +13,7 @@ Documento vivo: se actualiza al cerrar cada grupo de `tasks.md`, no solo al fina
 ## Grupo 1 — Auditoría de contratos
 
 Doc-only en su mayor parte (investigación + verificación), sin código de producto propio: sin
-tester/coder/mutación para este grupo (excepción documentada en `.claude/harness/mutation.md`). Las
+tester/coder/mutación para este grupo (excepción doc-only). Las
 correcciones que la auditoría exija, si las hay, van al ciclo Red/Green del grupo 2.
 
 ### 1.1 — Backend levantado y `/health` confirmado
@@ -127,7 +133,7 @@ necesarios** en el README.
 ## Grupo 2 — Corrección de las desviaciones encontradas
 
 **Doc-only: grupo cerrado sin código de producto**, excepción documentada aquí (equivalente a
-`.claude/harness/mutation.md` para el caso "no hay nada que corregir"). El grupo 1 concluyó con
+la excepción doc-only del procedimiento local de mutación para el caso "no hay nada que corregir"). El grupo 1 concluyó con
 **cero desviaciones de contrato** en las 10 operaciones, tanto por lectura de código como por
 verificación contra el backend real. En consecuencia:
 
@@ -180,8 +186,8 @@ ninguna de las 26 aserciones necesitó cambiar) — más una segunda ronda: un t
 `/tenants` y `/health`; ampliada la lista blanca a `+"/me"` (no depende de tenant, la intención
 original del test —ninguna petición *tenant-scoped* sin tenant activo— queda intacta). Ambos archivos
 estaban commiteados: **hook-disable dance** autorizado explícitamente por Victor en cada caso
-(`.claude/settings.json`, `PreToolUse` vacío durante el cambio puntual, reactivado y verificado con
-una invocación directa del hook antes de continuar). Ningún archivo de `.claude/` quedó modificado al
+(archivo local de configuración de la protección, sin hooks activos durante el cambio puntual, reactivado y verificado con
+una invocación directa del hook antes de continuar). Ningún archivo de configuración local de agentes quedó modificado al
 cerrar el grupo (es local, no se commitea).
 
 **No se activó la parada de control (tarea 3.7) por rediseño de sesión**: el único bloqueo real fueron
@@ -197,7 +203,7 @@ Boolean(...)`, claves de caché de React Query sin colisión posible en el flujo
 entre el efecto de auto-selección de tenant y `handleLogout` al limpiar `TENANT_KEY`) — sin hueco de
 cobertura real, sin tocar `SessionGate.tsx`.
 
-**DoD**: `node .claude/harness/check-dod.mjs` falla — pero por `RF-093-001` (preexistente, turbo
+**DoD**: el comprobador local de DoD falla — pero por `RF-093-001` (preexistente, turbo
 resuelve pnpm v11.9.0 en subprocesos pese a `packageManager: pnpm@9.0.0`), no por esta tarea: falla
 en los 4 paquetes del monorepo (`backend`, `frontend`, `processor`, `azure-cost-api`), incluidos los
 que esta tarjeta no toca. Sustituto verificado (mismo criterio que JUP-093/094/095):
@@ -353,7 +359,7 @@ aquí. No se toca ningún archivo de `apps/backend/**` (confirmado abajo).
 ### 6.1 — Capacidad ausente por pantalla
 
 Apoyado en `RF-091-003` y en
-[docs/planning/JUP-091-economicon-source-inventory.md](../../../docs/planning/JUP-091-economicon-source-inventory.md)
+[docs/planning/JUP-091-economicon-source-inventory.md](../../../../docs/planning/JUP-091-economicon-source-inventory.md)
 (sección "Mapeo de pantallas a contratos del backend", que ya hizo este análisis sobre el código del
 origen antes de portar). Traducido dato a dato a los 5 módulos ya portados en JUP-095
 (`apps/frontend/src/data/demo/*.ts`), verificando variable a variable que los nombres coinciden con
@@ -371,7 +377,7 @@ no tienen ninguno (`C7`, `C2`).
 
 ### 6.3 — Documento del mapa
 
-[docs/planning/JUP-097-frontend-data-gap-map.md](../../../docs/planning/JUP-097-frontend-data-gap-map.md):
+[docs/planning/JUP-097-frontend-data-gap-map.md](../../../../docs/planning/JUP-097-frontend-data-gap-map.md):
 tabla de 16 filas (pantalla → dato → capacidad ausente → finding), más el resumen por capacidad (C1-C7)
 con las pantallas ya portadas que la necesitan, y una sección explícita de qué hacer cuando una
 capacidad se construya (para que el mapa no envejezca en silencio).
@@ -422,7 +428,7 @@ investigar, que **`JUP-096` es un número de tarjeta Trello real** asignado a un
 distinto (`RF-044-002`, carrera de migraciones concurrentes entre `backend` y `processor` — ver
 `openspec/findings/backlog.md`), no solo un placeholder libre: la confusión original no era
 inofensiva, apuntaba a la tarjeta equivocada. Consultado y autorizado por Victor, corregidos los dos
-comentarios de test con el mismo criterio (hook-disable dance: `.claude/settings.json` vaciado
+comentarios de test con el mismo criterio (hook-disable dance: archivo local de configuración de la protección vaciado
 temporalmente, reactivado y verificado con invocación directa del hook antes de continuar, igual que
 en el grupo 3).
 
@@ -466,7 +472,7 @@ Commit pendiente de este grupo tras revisión del usuario.
 `install --frozen-lockfile` (sin error) desde la raíz. `test`/`typecheck`/`lint`/`build` vía
 `--filter @finops/frontend` (sustituto de `RF-093-001`): 38/38 archivos, 96/96 tests, ambos limpios,
 build correcto. Detalle completo con comandos exactos en
-[docs/evidence/JUP-097-validation.md](../../../docs/evidence/JUP-097-validation.md) (tarea 8.3),
+[docs/evidence/JUP-097-validation.md](../../../../docs/evidence/JUP-097-validation.md) (tarea 8.3),
 incluida la nota de *flakiness* de entorno observada y descartada como regresión.
 
 ### Resumen de cierre
@@ -481,7 +487,7 @@ incluida la nota de *flakiness* de entorno observada y descartada como regresió
   respetada íntegramente (confirmado por QA con `git diff` línea a línea).
 - **Mapa de carencias (grupo 6):** las 16 filas dato→pantalla de las 5 pantallas de coste, cada una
   con su capacidad de `RF-091-003` nombrada, en
-  [docs/planning/JUP-097-frontend-data-gap-map.md](../../../docs/planning/JUP-097-frontend-data-gap-map.md)
+  [docs/planning/JUP-097-frontend-data-gap-map.md](../../../../docs/planning/JUP-097-frontend-data-gap-map.md)
   y en los comentarios de los 5 módulos `src/data/demo/*.ts`. `RF-095-002` refinado, permanece `Open`
   a propósito.
 - **Findings nuevos:** ninguno de contrato (auditoría sin desviaciones). Ninguno sobre `apps/backend/**`
@@ -510,7 +516,7 @@ Red/Green real sin `any`/`@ts-ignore` (7), y backend fuera del diff (8).
 ### Siguiente
 
 `docs/evidence/JUP-097-validation.md` queda con los enlaces de PR/CI pendientes hasta que se abra el
-PR (tarea 8.7). Orden real del cierre, según `.claude/harness/workflow.md` §5-7 (corrección de una
+PR (tarea 8.7). Orden real del cierre, según el flujo de trabajo del equipo, pasos 5 a 7 (corrección de una
 nota anterior de este mismo documento, que invertía el orden: el gate post-review y el archivado van
 **antes** del PR, no después): gate post-review (bloque abajo) → archivar el change → abrir el PR.
 

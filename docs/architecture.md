@@ -1,5 +1,13 @@
 # Arquitectura del proyecto
 
+> Nota documental JUP-061, 01/10/2026: el [registro de decisiones](adr/README.md)
+> distingue estado, integración y evidencia vigente. Las descripciones anteriores
+> a JUP-026 sobre billing fijo y a JUP-086 sobre aislamiento pendiente, conservadas
+> debajo, son históricas: PR #52 y #47 ya están integradas. Para esos contratos,
+> consultar [costes](evidence/JUP-026-validation.md) y
+> [aislamiento](evidence/JUP-086-validation.md). La consolidación integral de los
+> diagramas y el despliegue final corresponde a JUP-060.
+
 ## 1. Para que sirve este documento
 
 Este documento explica la arquitectura del proyecto de una forma simple, pensando en personas junior o en gente que no ha trabajado antes con sistemas separados en varios servicios.
@@ -61,12 +69,14 @@ Por ejemplo, el backend:
 
 El backend es como el punto central de entrada para las peticiones normales de la aplicacion.
 
-> **Estado actual de `GET /billing/summary` (verificado en JUP-091).** Este endpoint todavia **no
-> lee** los costes de Azure que el `processor` ingesta y normaliza. Devuelve `monthly_spend` y
-> `savings_identified` con valores fijos de demostracion; solo `open_ingestions` se calcula de
-> verdad, contando filas en `jobs`. Es decir: hoy **ningun endpoint del backend expone las tablas
-> `azure_cost_ingestion_runs` ni `azure_cost_records`**. El dato existe en CockroachDB, pero falta
-> el camino de lectura hasta el frontend. Ver `RF-091-004` en
+> **Estado actual de `GET /billing/summary` (actualizado en JUP-105, 2026-10-09).** Desde JUP-026
+> el endpoint **lee** los costes de Azure que el `processor` ingesta y normaliza
+> (`azure_cost_records`) y devuelve el contrato v2: totales y grupos como cadenas decimales exactas,
+> por moneda y periodo UTC, con desglose por suscripcion, grupo de recursos, servicio, proyecto o
+> etiqueta. `savings_identified` es siempre `null`: **no existe un motor de ahorro**.
+> `open_ingestions` se sigue calculando contando filas en `jobs`. El frontend lo consume en `/` y en
+> `/overview-legacy`. Hasta JUP-026 (verificado en JUP-091) el endpoint devolvia `monthly_spend` y
+> `savings_identified` con valores fijos de demostracion; ver `RF-091-004` en
 > [openspec/findings/backlog.md](../openspec/findings/backlog.md).
 
 ### `apps/processor`
@@ -223,8 +233,17 @@ La segunda es el flujo de chat con retrieval:
 8. El `backend` devuelve la respuesta al `frontend`
 
 El flujo existe como baseline tecnico, pero no constituye todavia el vertical
-RAG real: el backend usa `MockEmbeddingProvider` y no invoca un LLM para redactar
-la respuesta. JUP-020 a JUP-025 y JUP-036 cubren ese residual.
+RAG real: el backend usa el proveedor simulado (`mock`) por defecto en desarrollo y test y no invoca un LLM
+para redactar la respuesta. JUP-020, JUP-021, JUP-023 a JUP-025 y JUP-036 cubren ese residual.
+
+Recuperacion (JUP-022, [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.md)):
+con `EMBEDDING_PROVIDER=litellm` el backend embebe la pregunta con el mismo
+alias y dimension (1536) que la ingesta, usando su propia clave virtual
+(`BACKEND_LITELLM_API_KEY`). `RETRIEVAL_TOP_K` (1 a 20, por defecto 4) y
+`RETRIEVAL_MAX_DISTANCE` (0.6 por defecto con `litellm`, ninguno con `mock`) acotan los
+fragmentos; el orden es distancia coseno y despues identificador, y si ninguno
+cumple el asistente responde con el estado sin contexto. `mock` solo se admite
+con `RUNTIME_ENVIRONMENT=development|test`.
 
 ## 6. Flujo simplificado
 
@@ -383,8 +402,8 @@ La arquitectura distingue capacidad desplegable de prototipo heredado:
   explicitos via [ADR-0007](adr/ADR-0007-backend-cors-policy.md)); JUP-086
   (aislamiento y autorizacion por tenant) sigue pendiente de cerrar su contrato
   de seguridad.
-- Embeddings y respuesta del asistente usan mocks por defecto. El vertical RAG
-  real, sus citas y su evaluacion pertenecen a JUP-020 a JUP-025 y JUP-036.
+- La recuperacion semantica del backend (JUP-022, [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.md), en estado Proposed) embebe la pregunta con `litellm` y su propia clave virtual, con `top_k` y distancia maxima configurables (0.6 por defecto con `litellm`); `mock` solo arranca en development o test y la respuesta del asistente sigue siendo determinista. Activar `litellm` exige reindexar el corpus en `vector(1536)` con el cliente del processor (JUP-023, integrado). Las citas y la evaluacion pertenecen a JUP-025 y JUP-036; ver la [evidencia](evidence/JUP-022-validation.md).
+- La calidad del asistente se mide con un calculador offline (JUP-067), separado de las metricas operativas de Prometheus: dado un fichero de resultados por caso, `tools/assistant-metrics.py` valida el formato contra la bateria de JUP-069 y las etiquetas de JUP-022 y calcula exactitud, relevancia y confianza de la recuperacion, fundamento (citas y cifras), latencia, robustez de la salida estructurada y disponibilidad del chat, con intervalos de Wilson. Las definiciones estan en [docs/validation/JUP-067-metrics.md](validation/JUP-067-metrics.md). El productor de resultados contra el asistente real es `tools/assistant-eval.py` (JUP-070): recoge las respuestas del chat con la bateria de JUP-069, decide por regla las cifras y las conductas prohibidas, deja los puntos requeridos a revision humana y escribe el fichero de resultados con el veredicto de aceptacion; se explica en [docs/validation/JUP-070-evaluation.md](validation/JUP-070-evaluation.md). La medicion de referencia de hoy mide la plantilla del chat, sin modelo, y queda en `docs/evidence/`.
 - JUP-087 elimina el lint heredado mediante contratos TypeScript y añade pruebas
   reales de login/sesion, tenant, dashboard, ingesta y conversaciones. Lint y
   pruebas forman parte del check obligatorio `Frontend build`; la

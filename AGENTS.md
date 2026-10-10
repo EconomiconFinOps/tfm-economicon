@@ -6,9 +6,12 @@ This pnpm/Turborepo monorepo contains the frontend, Python backend and processor
 
 ## Source Of Truth And Identifiers
 
+- Read [docs/continuidad/README.md](docs/continuidad/README.md) and the relevant topic before project work; update them after meaningful milestones.
+
 - Trello owns scope, priorities, assignees, rotating responsibilities, delivery dates and task status.
 - OpenSpec stores versioned requirements, implementation design, technical tasks and acceptance scenarios.
 - GitHub stores code, documentation, pull requests and technical review history.
+- The project memory (the final TFM deliverable) is written in a shared document outside Git; see `docs/memoria/README.md` for its location, section map and editing rules, and do not copy it into the repository.
 - Reuse the same Trello identifier everywhere: `JUP-085`, `openspec/changes/jup-085-auth-session-contract/` and `feat/JUP-085-auth-session-contract`.
 - Do not create a second numbering system or duplicate the operational backlog inside the repository.
 

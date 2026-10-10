@@ -1,15 +1,26 @@
 services:
   litellm:
+    profiles: [ai]
     # Approved LiteLLM 1.103.2; the digest is the execution identity.
     image: ghcr.io/berriai/litellm@sha256:f63fb81b831b170ec16851e23c36ac5bf52ef106b271406429524a2ed730bbfd
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        : "$${OPENROUTER_API_KEY:?Set the gateway-only upstream key}"
+        : "$${LITELLM_MASTER_KEY:?Set a unique gateway administration key}"
+        : "$${LITELLM_DATABASE_PASSWORD:?Set a URL-safe gateway database password}"
+        exec docker/prod_entrypoint.sh "$$@"
+      - --
     command: ["--config", "/app/economicon-config.yaml", "--port", "4000"]
     environment:
       # In 1.103.2, ERROR diagnostics can contain raw upstream response bodies.
       LITELLM_LOG: CRITICAL
       LITELLM_SUPPRESS_SPEND_LOG_TRACEBACKS: "true"
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?Set the gateway-only upstream key}
-      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?Set a unique gateway administration key}
-      DATABASE_URL: postgresql://litellm:${LITELLM_DATABASE_PASSWORD:?Set a URL-safe gateway database password}@litellm-db:5432/litellm
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-}
+      LITELLM_DATABASE_PASSWORD: ${LITELLM_DATABASE_PASSWORD:-}
+      DATABASE_URL: postgresql://litellm:${LITELLM_DATABASE_PASSWORD:-}@litellm-db:5432/litellm
     ports:
       - "127.0.0.1:${LITELLM_ADMIN_PORT:-44000}:4000"
     volumes:
@@ -22,6 +33,7 @@ services:
           create_host_path: false
     networks:
       - gateway
+      - default
     depends_on:
       litellm-db:
         condition: service_healthy
@@ -33,11 +45,12 @@ services:
       start_period: 60s
 
   litellm-db:
+    profiles: [ai]
     image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
     environment:
       POSTGRES_DB: litellm
       POSTGRES_USER: litellm
-      POSTGRES_PASSWORD: ${LITELLM_DATABASE_PASSWORD:?Set a URL-safe gateway database password}
+      POSTGRES_PASSWORD: ${LITELLM_DATABASE_PASSWORD:-}
     volumes:
       - gateway-data:/var/lib/postgresql/data
     networks:
