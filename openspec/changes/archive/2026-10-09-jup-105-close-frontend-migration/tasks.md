@@ -186,5 +186,9 @@
   `2026-10-09-jup-105-close-frontend-migration` con la spec sincronizada (+2, ~1, -2); eran 5 los
   enlaces que se rompían (4 en el change por bajar un nivel y 1 en la cabecera de la evidencia),
   corregidos; el recorrido da 2 y el enlace del spike está añadido.
-- [ ] 8.6 Traer `develop` y reverificar, abrir el pull request hacia `develop` con los cuatro roles
+- [x] 8.6 Traer `develop` y reverificar, abrir el pull request hacia `develop` con los cuatro roles
   en la descripción y registrar en la evidencia el enlace al pull request y a la ejecución de CI.
+  Hecho el 2026-10-09: `develop` ya estaba fusionado (`ceb6520`, 0 commits nuevos) y se reverificó la
+  higiene; pull request #86 abierto por Victor con la descripción validada con `pr:check`; enlaces al
+  pull request y a las ejecuciones de CI registrados en la evidencia. La CI del pull request seguía en
+  curso al consultar y su estado final se ve en la pestaña de checks.

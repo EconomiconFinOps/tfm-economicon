@@ -6,15 +6,21 @@
 - Rama: `chore/JUP-105-close-frontend-migration`.
 - Base: `develop` en `ff2ea6b`.
 - OpenSpec: [jup-105-close-frontend-migration](../../openspec/changes/archive/2026-10-09-jup-105-close-frontend-migration/).
-- Pull request: pendiente.
-- CI: pendiente.
+- Pull request: [#86](https://github.com/EconomiconFinOps/tfm-economicon/pull/86), contra `develop`.
+- CI sobre `502dd44`: ejecución del `push`
+  [38013186253](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38013186253) en
+  verde, y la del pull request
+  [38013497033](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38013497033); el
+  detalle y el estado final están en la sección «Pull request y CI» y en la pestaña de checks del
+  propio pull request.
 
-> Estado de este documento: en curso. Contiene la línea base y la consulta al equipo (grupo 1 de
-> `tasks.md`), el endurecimiento de `allowJs` (grupo 2), el recuento de pantallas con los textos
-> vivos corregidos (grupo 3) la corrección de los enlaces relativos rotos (grupo 4) y la retirada de las menciones a configuración
-> local (grupo 5) los hallazgos de la épica (grupo 6), el cierre del spike (grupo 7) y la batería completa con la
-> trazabilidad de los criterios y el archivado (grupo 8). Quedan por registrar el enlace al pull
-> request y la ejecución de CI (tarea 8.6).
+> Estado de este documento: completo salvo lo que solo puede registrarse tras las reviews. Contiene
+> la línea base y la consulta al equipo (grupo 1 de `tasks.md`), el endurecimiento de `allowJs`
+> (grupo 2), el recuento de pantallas con los textos vivos corregidos (grupo 3), la corrección de los
+> enlaces relativos rotos (grupo 4), la retirada de las menciones a configuración local (grupo 5),
+> los hallazgos de la épica (grupo 6), el cierre del spike (grupo 7), la batería completa con la
+> trazabilidad de los criterios y el archivado (grupo 8) y el pull request con su CI (tarea 8.6).
+> Las reviews `Revision JUP-105` y `Validacion JUP-105` viven en el pull request.
 
 ## Línea base: antes de cambiar nada
 
@@ -881,8 +887,12 @@ de esos archivos sustituye `socket.socket.connect` por un fallo. Hay 145 trazas 
 `_fallback_socketpair` para 145 fallos, así que explica todos y los otros 753 tests del paquete
 pasan. Registrado como `RF-105-004`.
 
-**No verificado:** que esos tests pasen en Linux. Se infiere de que allí `socketpair` es nativo y no
-conecta, y de que `Python tests (backend)` es un check obligatorio de CI; no se ejecutó en Linux.
+**Contraste en Linux, añadido tras abrir el pull request:** no se ejecutó en Linux en esta máquina,
+pero el check `Python tests (backend)` de la CI pasó sobre este mismo commit (ver «Pull request y
+CI»), y ese job ejecuta `python -m pytest tests -q` en `apps/backend`, es decir, también los cuatro
+archivos de JUP-047. Lo hace en `ubuntu-latest` con Python 3.12, y la máquina de Windows usa 3.13.7,
+así que la CI es coherente con la causa medida pero **no aísla el sistema operativo como única
+diferencia**.
 
 ## Trazabilidad de los criterios de aceptación (grupo 8, tarea 8.2)
 
@@ -943,7 +953,8 @@ que no se tocó; se anota en el inventario de `RF-105-001`, cuya retirada borra 
 
 ### Lo que no se validó
 
-- **`test` del backend en Windows** (`RF-105-004`): 145 fallos de JUP-047; no se ejecutó en Linux.
+- **`test` del backend en Windows** (`RF-105-004`): 145 fallos de JUP-047; no se ejecutó en Linux
+  fuera de la CI, que sí pasa con Python 3.12.
 - **El comando literal `corepack pnpm test`** con los cuatro paquetes a la vez (`RF-103-005`).
 - **Ninguna pantalla en un navegador.** No se levantó el stack ni se abrió el frontend: el recuento
   de pantallas y el mapa de carencias se contrastaron con el código, y el frontend se comprobó con
@@ -953,7 +964,8 @@ que no se tocó; se anota en el inventario de `RF-105-001`, cuya retirada borra 
 - **Los responsables de los hallazgos en Trello** y que las tarjetas pedidas existan.
 - **La integración continua del pull request**: se registra al abrirlo (tarea 8.6).
 - **`local:doctor` y `local:smoke`**: no se ejecutaron; la tarjeta no toca el entorno de Compose.
-- **Que las pruebas de Linux de JUP-047 pasen**, por lo dicho arriba.
+- **Que las pruebas de JUP-047 pasen en Linux con la misma versión de Python** que esta máquina: la
+  CI las pasa con la 3.12, no con la 3.13.7.
 
 ## Gate post-review y archivado (grupo 8, tarea 8.5)
 
@@ -987,3 +999,47 @@ pull request si esa lectura fuera incorrecta.
 `jup:check -- --change jup-105-close-frontend-migration` ya no puede ejecutarse tras archivar (falla
 con «No existe `openspec/changes/jup-105-close-frontend-migration`», porque solo mira changes
 activos); se ejecutó antes, como indica el flujo, y pasó.
+
+## Pull request y CI (grupo 8, tarea 8.6)
+
+Consultado el 2026-10-09 con la API pública de GitHub, sin credenciales.
+
+**Pull request.** [#86](https://github.com/EconomiconFinOps/tfm-economicon/pull/86), abierto por
+Victor contra `develop`, con título `chore(JUP-105): cerrar la epica de migracion del frontend` y
+rama `chore/JUP-105-close-frontend-migration`. La cabeza es `502dd44` y GitHub cuenta 14 commits y 47
+archivos con 2446 inserciones y 256 eliminaciones, que coincide con el diff local frente a `develop`.
+La descripción se validó antes con `corepack pnpm pr:check` sobre un evento construido con ese
+título, cuerpo, rama y base (`[OK] Pull request enlazado a JUP y preparado para revision`), y un
+control negativo con una etiqueta de rol con tilde falló como debía.
+
+**Higiene previa a abrirlo** (paso 7 del flujo): `jup:cleanup:check` (972 archivos),
+`jup:check:all`, `openspec:validate` (54 de 54), los tests de `jup:cleanup` (6), de `pr:check` (57) y
+de gobernanza (13), y la búsqueda de secretos en las 2072 líneas añadidas (0 coincidencias).
+
+**CI sobre `502dd44`.** Hay dos ejecuciones del workflow `CI` para el mismo commit, porque lo lanzan
+el `push` y el pull request:
+
+| Ejecución | Estado al consultar | Jobs |
+| --- | --- | --- |
+| [CI del `push`, 38013186253](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38013186253) | **Completada con éxito** | `Frontend build`, `Frontend type check`, `OpenSpec`, `Python tests (azure-cost-api)`, `Python tests (backend)` y `Python tests (processor)` en verde; `JUP policy` omitido, porque solo corre en pull requests |
+| [CI del pull request, 38013497033](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38013497033) | **En curso** | `JUP policy`, `OpenSpec`, `Frontend build`, `Frontend type check`, `Python tests (processor)` y `Python tests (azure-cost-api)` en verde; `Python tests (backend)` en ejecución |
+| [PR reviews, 38013496936](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38013496936) | Completada con fallo | `JUP reviews` en rojo, **como se espera**: faltan las reviews `Revision JUP-105` y `Validacion JUP-105` |
+
+El estado final de la ejecución del pull request no consta aquí, porque seguía en curso al consultar;
+se consulta en la pestaña de checks del propio pull request, que además incluirá la CI del commit que
+añade este registro.
+
+**Qué acredita y qué no.**
+
+- La CI de Linux pasa `Python tests (backend)` sobre `502dd44`, con los cuatro archivos de JUP-047
+  incluidos. Es coherente con la causa de `RF-105-004`, pero la CI usa Python 3.12 y la máquina de
+  Windows la 3.13.7, así que no demuestra que el sistema operativo sea la única diferencia.
+- El criterio 1 sigue sin darse por cumplido del todo: la batería local con el backend en Windows no
+  quedó en verde. Lo que cambia es que el check obligatorio de CI sí lo está.
+- `JUP reviews` en rojo no es un fallo de la tarjeta: es la política esperando las dos reviews.
+- Las reviews de Lucía y de Paris, y la CI final de la ejecución del pull request, quedan fuera de
+  este documento.
+
+**Cuándo se hizo este registro.** Con el pull request ya abierto y **sin reviews ni comentarios
+publicados** (0 reviews, 0 comentarios de la conversación y 0 en línea, comprobado con la API justo
+antes). El commit que lo añade no invalida ninguna aprobación porque todavía no hay ninguna.
