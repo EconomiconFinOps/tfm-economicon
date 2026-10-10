@@ -3,7 +3,8 @@
 ## RF-021-001 — Dimension desde fichero de entorno
 
 Fecha: 2026-10-01. Origen: JUP-021, [validacion de Victor en PR #53](https://github.com/EconomiconFinOps/tfm-economicon/pull/53#pullrequestreview-5383443171).
-Tipo: divergencia de configuracion de migracion. Severidad: Medium. Estado: Open.
+Tipo: divergencia de configuracion de migracion. Severidad: Medium.
+Estado: Fixed en la contribucion JUP-102 (2026-10-10); integracion y aceptacion humana pendientes.
 Owner: Equipo Economicon. Scope: preexistente, no bloqueante segun el validador.
 
 `apps/processor/app/vector_store/migrations/001_initial.py` consulta
@@ -14,11 +15,17 @@ ledger 001/002 y arranque rechazado. Inspeccion de codigo confirma ambos origene
 no se repite aqui la reproduccion con fichero. Compose proporciona la variable
 por entorno y no presenta esta divergencia.
 
-Accion: acordar una fuente unica para la dimension durante migraciones, con
-prueba de base nueva desde Settings/fichero, sin convertir volumenes existentes
-automaticamente. Mientras tanto, exportar la variable antes de migrar segun
-el [runbook](../../docs/runbooks/vector-database.md). Tarjeta de correccion por
-acordar; JUP-021 mejora el diagnostico pero no cierra este hallazgo.
+Correccion: [JUP-102](https://trello.com/c/4OJ1OK53) pasa explicitamente la dimension
+efectiva de PgVectorStore a 001, sin releer el entorno ni convertir volumenes.
+Reproduccion original y smoke PostgreSQL 17.11/pgvector 0.8.6 verificados el
+2026-10-10: fichero16, default8, entorno/fichero/precedencia, escritura/retrieval,
+aislamiento y snapshots intactos al rechazar 16→8, 16→32 y volumen legado 8→16.
+Processor: 467 passed / 53 skipped; los skips ajenos no acreditan integraciones.
+Ver [evidencia y limites](../../docs/evidence/JUP-102-validation.md) y
+[runbook](../../docs/runbooks/vector-database.md). El workaround de exportar
+duplicadamente sigue siendo necesario para versiones anteriores a esta correccion;
+no se convierte automaticamente una base que ya se creo con dimension incorrecta.
+Fixed tecnico no equivale a merge, validacion humana ni Hecho de la tarjeta.
 
 ## RF-098-002 Observation In JUP-026
 
