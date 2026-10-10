@@ -3,6 +3,11 @@
 Fecha: 2026-10-10. [Tarjeta](https://trello.com/c/ScxJi1TO).
 Base: `c2995a118d419dfe725247bac9c6f219a3f0ea77` (`origin/develop`).
 Rama de contribucion: `feat/JUP-030-cost-anomalies`.
+PR de contribucion en borrador: [#91](https://github.com/EconomiconFinOps/tfm-economicon/pull/91).
+CI tecnica del codigo `0b35a72`: **7/7 SUCCESS** en
+[run 38035032995](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38035032995),
+incluidos frontend build/typecheck, tres servicios Python, OpenSpec y JUP policy.
+`JUP reviews` permanece pendiente de los dictamenes humanos requeridos.
 
 Esta evidencia de implementacion no es una review `Validacion JUP-030`.
 Roles registrados y conservados: Lucia Mateo liderazgo, Paris Arcos Martin
@@ -16,7 +21,7 @@ no acredita participacion ni autoriza atribuir dictamenes humanos.
 | Resultado funcional verificable | API autenticada `/billing/anomalies/evaluate`, con alertas por importe y aumento entre periodos. Las dos integraciones nuevas usan CockroachDB real, migraciones del proyecto y costes sinteticos: Compute actual 10.00 frente a 1.00 anterior produce 9.00 / 900.00%; otro tenant queda excluido. Entrega bajo demanda; panel y notificaciones programadas pendientes. |
 | Pruebas necesarias anadidas y en verde | `test_anomaly_evaluation.py` y regresion focal de presupuesto/billing: **150 passed**, cero skips, 27.96 s, con base real activada. Incluye limites exactos, precision decimal, creditos, baseline cero/negativo/ausente, moneda, grupos, calidad, IDs, 422, 401/403/400 y 409 en cualquiera de los periodos. |
 | Documentacion y decisiones actualizadas | [Contrato y reproduccion](../api/cost-anomalies.md), OpenSpec y continuidad. **56/56** validaciones OpenSpec estrictas; nueve changes trazables. |
-| Pull request revisado y vinculado | PR de contribucion a preparar; review humana pendiente. No se declara cumplido. |
+| Pull request revisado y vinculado | PR de contribucion [#91](https://github.com/EconomiconFinOps/tfm-economicon/pull/91) vinculada, en borrador; review humana pendiente. No se declara cumplido. |
 | Validacion funcional y evidencia enlazadas | Evidencia tecnica aqui; validacion funcional independiente asignada pendiente. No se declara cumplido. |
 
 ## Reproduccion
