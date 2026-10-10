@@ -1,12 +1,24 @@
 JUP: JUP-095
 Trello: https://trello.com/c/G4FPtBdE/87-jup-095-portar-el-c%C3%B3digo-fuente-del-frontend-de-economicon
 
+> **Nota del 2026-10-09 (JUP-105).** Este documento archivado es un registro de lo que se decidió y
+> verificó hasta el archivado de la tarjeta (2026-09-12) y no se reescribe. Dos afirmaciones suyas
+> dejaron de ser ciertas después:
+>
+> - **`Frontend tests` como comprobación obligatoria.** El job que esta tarjeta añadió duplicaba la
+>   ejecución de pruebas que ya cubre `Frontend build` y se retiró el 2026-09-19, al reconciliar con
+>   `develop`, junto con sus entradas en los rulesets. Los checks obligatorios vigentes son ocho; la
+>   historia está en [la guía de gobernanza](../../../../docs/governance/github-branch-protection.md).
+> - **`/overview-legacy` como único dashboard con datos reales.** Ya no lo es: JUP-026 y JUP-055
+>   conectaron `/` a costes almacenados y JUP-047 añadió `/system-health`. El recuento vigente de
+>   pantallas está en la sección «Rutas» de [`apps/frontend/README.md`](../../../../apps/frontend/README.md#rutas).
+
 ## Why
 
-F2 quedó cerrada con [JUP-093](../archive/2026-09-06-jup-093-configure-typescript/) (TypeScript
-`strict`, type-check obligatorio en CI) y [JUP-094](../archive/2026-09-07-jup-094-reconcile-package-json/)
+F2 quedó cerrada con [JUP-093](../../archive/2026-09-06-jup-093-configure-typescript/) (TypeScript
+`strict`, type-check obligatorio en CI) y [JUP-094](../../archive/2026-09-07-jup-094-reconcile-package-json/)
 (`react-router`, `recharts`, `lucide-react`, Tailwind v4 y los 6 primitivos Radix de
-[ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)). **Nada de eso se usa todavía**:
+[ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)). **Nada de eso se usa todavía**:
 `apps/frontend/src/**` sigue siendo el scaffold del destino —14 archivos, 11 de ellos `.jsx`, cero
 líneas del origen— y la aplicación navega con un `switch` manual sobre estado local
 (`App.jsx:127-150`), sin rutas reales ni URL compartible.
@@ -37,7 +49,7 @@ prohíbe.
 - **Los datos estáticos del origen quedan aislados** en un módulo propio, señalizado como sustituible,
   en vez de vivir como constantes dentro de cada dashboard. Las 5 pantallas del origen se alimentan de
   datos fijos: solo 2 de 14 tienen contrato en el backend, y ambos parcialmente
-  ([JUP-091](../../../docs/planning/JUP-091-economicon-source-inventory.md), `RF-091-003`).
+  ([JUP-091](../../../../docs/planning/JUP-091-economicon-source-inventory.md), `RF-091-003`).
 - **Se migran a `.tsx` los archivos del destino que el enrutado obliga a tocar**, preservando su
   lógica sin cambio de comportamiento. La sesión, el tenant activo, TanStack Query y
   `src/services/api.js` **no se tocan**: reconciliarlos es alcance de `reconciliar-capa-api` y

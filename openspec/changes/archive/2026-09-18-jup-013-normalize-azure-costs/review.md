@@ -52,7 +52,7 @@ per-migration transactions and rollback behavior.
   [run 34245176166](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/34245176166).
   Any subsequent evidence-only commit must also pass CI before merge.
 - Full commands, warnings and reproduction context:
-  [validation evidence](../../../docs/evidence/JUP-013-validation.md).
+  [validation evidence](../../../../docs/evidence/JUP-013-validation.md).
 
 ## Synchronization and residual risks
 

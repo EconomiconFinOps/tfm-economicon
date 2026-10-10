@@ -18,7 +18,7 @@ its logout validity window below; other requirements remain unchanged. The prior
 zero-leeway rule `0 <= iat <= now < exp` is historical, not the current rule or an
 inferred specific human choice. BE1 was reevaluated and KILLED in this increment;
 its former equivalence remains historical. Current evidence and the reviewer's
-8/8 browser pass are recorded in [incremental evidence](../../../../../docs/evidence/JUP-085-validation.md#incremento-actual-tolerancia-jwt-de-5-s),
+8/8 browser pass are recorded in [incremental evidence](../../../../../../docs/evidence/JUP-085-validation.md#incremento-actual-tolerancia-jwt-de-5-s),
 not inferred from prior results. Native leeway does not resolve RF-085-002 or close CORS
 findings. No product tests run in this documentation update; proxy stays unselected.
 

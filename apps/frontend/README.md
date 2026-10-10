@@ -82,17 +82,26 @@ apps/frontend
 Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el resto cuelga de
 `SessionGate` (redirige a `/login` sin sesión) y `Layout` (navegación, selector de tenant, sesión):
 
-| Ruta | Pantalla | Notas |
-| --- | --- | --- |
-| `/login` | `LoginPage` | Fuera de `SessionGate`; crea la sesión |
-| `/` | `ExecutiveCostDashboard` | Costes almacenados vía `GET /billing/summary` v2: intervalo mensual, desglose, tendencia y comparación del primer/último mes observado con coste no cero por moneda (JUP-055) |
-| `/operational` | `OperationalCostDashboard` | Datos de demostración |
-| `/cuts` | `ExecutiveCutDashboard` | Datos de demostración |
-| `/anomalies` | `AnomaliesPanel` | Datos de demostración |
-| `/recommendations` | `RecommendationsPanel` | Datos de demostración |
-| `/ingest` | `IngestPage` | Datos reales vía `services/api.ts` |
-| `/assistant` | `ConversationsPage` | Datos reales vía `services/api.ts` |
-| `/overview-legacy` | `DashboardPage` | Ruta puente conservada, conectada al backend (`GET /billing/summary`, `GET /health`) |
+| Ruta | Pantalla | Origen de los datos | ¿La interfaz rotula la demostración? | Notas |
+| --- | --- | --- | --- | --- |
+| `/login` | `LoginPage` | Backend (`POST /auth/login`) | No aplica | Fuera de `SessionGate`; crea la sesión |
+| `/` | `ExecutiveCostDashboard` | Backend (`GET /billing/summary` v2) | No aplica | Costes almacenados: intervalo mensual, desglose, tendencia y comparación del primer/último mes observado con coste no cero por moneda (JUP-055) |
+| `/operational` | `OperationalCostDashboard` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
+| `/cuts` | `ExecutiveCutDashboard` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
+| `/anomalies` | `AnomaliesPanel` | Demostración (`src/data/demo/`) | Sí | Aviso visible, periodo de muestra y rótulo en la exportación (JUP-057) |
+| `/recommendations` | `RecommendationsPanel` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
+| `/ingest` | `IngestPage` | Backend (`POST /jobs/ingest`) | No aplica | Vía `services/api.ts` |
+| `/assistant` | `ConversationsPage` | Backend (`/assistant/conversations`) | No aplica | Vía `services/api.ts` |
+| `/overview-legacy` | `DashboardPage` | Backend (`GET /billing/summary`, `GET /health`) | No aplica | Ruta puente conservada; ver `RF-105-001` en `openspec/findings/backlog.md` |
+| `/system-health` | `SystemHealthDashboard` | Backend (`GET /health/status`, `POST /health/provider-check`) | No aplica | Rotula «Datos de ejemplo» por componente cuando su origen es `mock` (JUP-047) |
+
+**Recuento (verificado el 2026-10-09 contra `src/routes.tsx` y los imports de cada pantalla, sobre
+`develop` en `ff2ea6b`):** 9 rutas bajo sesión más `/login`. 5 sirven datos del backend (`/`,
+`/ingest`, `/assistant`, `/overview-legacy`, `/system-health`) y 4 son de demostración (`/operational`,
+`/cuts`, `/anomalies`, `/recommendations`), de las cuales solo `/anomalies` lo indica en la interfaz
+(`RF-104-004`). Este es el único recuento de pantallas del repositorio: el backlog, el mapa de
+carencias de JUP-097 y el spike enlazan aquí en lugar de repetir cifras. Quien añada, retire o
+conecte una pantalla actualiza esta tabla y la fecha.
 
 ## Estilos y colores
 
@@ -218,8 +227,9 @@ pnpm build
   ya no muestra inventario, tendencia ni exportación de demostración. El ahorro potencial sigue
   no disponible porque el contrato no lo calcula.
 - Las otras cuatro pantallas de coste (`/operational`, `/cuts`, `/anomalies`, `/recommendations`)
-  conservan los datos de demostración estáticos (`src/data/demo/`); los gaps restantes de
-  `RF-095-002` en `openspec/findings/backlog.md` no se dan por resueltos por JUP-055.
+  conservan los datos de demostración estáticos (`src/data/demo/`; recuento en la sección «Rutas»);
+  los gaps restantes de `RF-095-002` en `openspec/findings/backlog.md` no se dan por resueltos por
+  JUP-055.
 
 ## Panel ejecutivo de costes (JUP-055)
 

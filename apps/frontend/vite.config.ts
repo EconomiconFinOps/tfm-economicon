@@ -37,7 +37,7 @@ export default defineConfig({
     // `test.exclude` reemplaza el array por defecto en vez de fusionarse con
     // el; se parte de `configDefaults.exclude` para no perder sus patrones
     // (node_modules, dist...) y se suma `.stryker-tmp`, la carpeta temporal
-    // que deja el mutation testing (`.claude/harness/mutation.md`). Sin esta
+    // que deja el mutation testing con Stryker. Sin esta
     // exclusion, Vitest la recoge como archivos de test propios si queda en
     // disco, contaminando en silencio el conteo de la suite (detectado en
     // QA de la tarea 2.3, reproducible corriendo Stryker y relanzando test).
