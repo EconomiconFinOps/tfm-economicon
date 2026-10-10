@@ -4,4 +4,5 @@ Trello mantiene el estado operativo; estos resumenes enlazan decisiones y eviden
 
 | Tema | Contenido y estado | Actualizado |
 | --- | --- | --- |
+| [Conclusiones de la memoria](memoria-conclusiones.md) | JUP-110: propuesta del apartado i fuera de Git, contrastada con guion y evidencia; incorporación y revisión humana pendientes. | 2026-10-10 |
 | [Presupuestos y umbrales](presupuestos-umbrales.md) | JUP-029 / PR #61: correccion documental del P2 de Paris; convencion global separada en JUP-101, nueva revision y validacion pendientes. | 2026-10-02 |

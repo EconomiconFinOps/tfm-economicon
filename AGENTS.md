@@ -4,6 +4,10 @@
 
 This pnpm/Turborepo monorepo contains the frontend, Python backend and processor in `apps/`, reusable configuration in `packages/`, project documentation in `docs/`, and technical specifications in `openspec/`.
 
+## Project Continuity
+
+Read [docs/continuidad/README.md](docs/continuidad/README.md) and relevant topics before project work; update them after meaningful milestones.
+
 ## Source Of Truth And Identifiers
 
 - Trello owns scope, priorities, assignees, rotating responsibilities, delivery dates and task status.
