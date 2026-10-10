@@ -11,6 +11,7 @@ import {
   MessageSquare,
   LayoutDashboard
 } from "lucide-react";
+import { BrandMark } from "../components/BrandMark";
 import type { SessionOutletContext } from "./SessionGate";
 
 // TenantScopedOutlet: frontera de remontaje por tenant (reconciliacion con
@@ -67,20 +68,13 @@ export function Layout() {
   ];
 
   return (
-    <div className="size-full flex flex-col bg-background">
+    <div className="min-h-screen min-w-0 flex flex-col bg-background">
+      <a className="skip-link" href="#main-content">Saltar al contenido</a>
       {/* Header */}
-      <header className="bg-gradient-to-r from-card to-accent border-b border-border px-6 py-4 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-highlight shadow-lg shadow-info-tint/30">
-              <Activity className="w-6 h-6 text-foreground" />
-            </div>
-            <div>
-              <h1 className="font-bold text-foreground">FinOps AI Platform</h1>
-              <p className="text-sm text-muted-foreground">Automatización Inteligente del Ciclo Operativo</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
+      <header className="border-b border-border bg-card px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-x-8 gap-y-5">
+          <BrandMark />
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3">
             {/* Selector de ambito de cliente: mismo patron que
                 AppShell.jsx:38-49 (select nativo controlado), adaptado a
                 Tailwind. Solo se renderiza cuando SessionGate provee los tres
@@ -89,7 +83,7 @@ export function Layout() {
             {tenants && activeTenantId !== undefined && onTenantChange ? (
               <select
                 aria-label="Ambito de cliente"
-                className="text-sm text-foreground bg-card px-3 py-2 rounded-lg border border-border focus:outline-none focus:border-highlight"
+                className="max-w-full text-sm text-foreground bg-background px-3 py-2.5 rounded-md border border-input"
                 value={activeTenantId}
                 onChange={(event) => onTenantChange(event.target.value)}
               >
@@ -104,15 +98,15 @@ export function Layout() {
             {/* Panel de sesion: mismo patron que AppShell.jsx:52-61
                 (identidad + boton de logout), adaptado a Tailwind. */}
             {user && onLogout ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-card px-4 py-2 rounded-lg border border-border">
-                <div className="text-right leading-tight">
+              <div className="flex min-w-0 max-w-full items-center gap-2 text-sm text-muted-foreground">
+                <div className="min-w-0 break-words text-left leading-tight sm:text-right">
                   <p className="text-foreground font-medium">{user.full_name}</p>
                   <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="ml-2 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+                  className="ml-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-brand hover:bg-accent transition-colors"
                   aria-label="Cerrar sesion"
                 >
                   <LogOut className="w-4 h-4" />
@@ -120,7 +114,7 @@ export function Layout() {
               </div>
             ) : null}
 
-            <div className="text-sm text-muted-foreground bg-card px-4 py-2 rounded-lg border border-border">
+            <div className="hidden text-xs text-muted-foreground 2xl:block">
               {new Date().toLocaleDateString('es-ES', {
                 weekday: 'long',
                 year: 'numeric',
@@ -133,17 +127,17 @@ export function Layout() {
       </header>
 
       {/* Navigation */}
-      <nav className="bg-card border-b border-border px-6 shadow-lg">
-        <div className="flex items-center gap-1">
+      <nav aria-label="Navegación principal" className="max-w-full overflow-x-auto border-b border-border bg-card px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex w-max min-w-full max-w-[1600px] items-center gap-1 py-1">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.path === "/"}
               className={({ isActive }) =>
-                `flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
+                `flex shrink-0 items-center gap-2 px-3 py-3 border-b-2 transition-colors ${
                   isActive
-                    ? "border-highlight text-highlight bg-primary/10 shadow-inner"
+                    ? "border-brand text-brand bg-accent/60"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`
               }
@@ -156,16 +150,16 @@ export function Layout() {
           {/* Separador entre las 5 pantallas de demostracion y las 3
               conectadas al backend (Punto 5): misma barra de navegacion,
               distincion visual de que unas sirven datos reales y otras no. */}
-          <div className="mx-2 h-6 w-px bg-muted" aria-hidden="true" />
+          <div className="mx-2 h-6 w-px shrink-0 bg-border" aria-hidden="true" />
 
           {backendNavItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
+                `flex shrink-0 items-center gap-2 px-3 py-3 border-b-2 transition-colors ${
                   isActive
-                    ? "border-highlight text-highlight bg-primary/10 shadow-inner"
+                    ? "border-brand text-brand bg-accent/60"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`
               }
@@ -178,7 +172,7 @@ export function Layout() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-background">
+      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1600px] min-w-0 flex-1 bg-background">
         {/* Reenvia el mismo contexto hacia las rutas hijas: necesario para
             las siguientes sub-rondas del grupo 6, aunque hoy ningun hijo lo
             consuma todavia.

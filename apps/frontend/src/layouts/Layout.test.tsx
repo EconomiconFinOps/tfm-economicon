@@ -16,6 +16,15 @@ import { MemoryRouter } from "react-router";
 import { Layout } from "./Layout";
 
 describe("Layout", () => {
+  it("identifies Economicon and offers a skip link to the focusable main content", () => {
+    render(<MemoryRouter><Layout /></MemoryRouter>);
+    expect(screen.getByText("Economicon")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Saltar al contenido" })).toHaveAttribute("href", "#main-content");
+    expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
+    expect(screen.getByRole("main")).toHaveAttribute("tabindex", "-1");
+    expect(screen.getByRole("navigation", { name: "Navegación principal" })).toBeInTheDocument();
+  });
+
   it("muestra los 5 enlaces de navegacion a las vistas portadas", () => {
     render(
       <MemoryRouter>

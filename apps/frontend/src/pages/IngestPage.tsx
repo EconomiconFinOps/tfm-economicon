@@ -56,18 +56,22 @@ export function IngestPage() {
 
   if (!activeTenant) {
     return (
-      <SectionCard
-        title="Tenant required"
-        subtitle="Choose a tenant before enqueuing ingestion jobs."
-      >
-        <p className="text-sm text-muted-foreground">No active tenant selected.</p>
-      </SectionCard>
+      <div className="page-content">
+        <SectionCard
+          headingLevel={1}
+          title="Tenant required"
+          subtitle="Choose a tenant before enqueuing ingestion jobs."
+        >
+          <p className="text-sm text-muted-foreground">No active tenant selected.</p>
+        </SectionCard>
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="page-content flex flex-col gap-6">
       <SectionCard
+        headingLevel={1}
         title="Create ingestion job"
         subtitle="The backend creates the job in CockroachDB and publishes it to RabbitMQ."
       >
@@ -78,7 +82,7 @@ export function IngestPage() {
             </label>
             <input
               id="ingest-source"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
               value={form.source}
               onChange={(event) =>
                 setForm((current) => ({ ...current, source: event.target.value }))
@@ -92,7 +96,7 @@ export function IngestPage() {
             </label>
             <input
               id="ingest-artifact-uri"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
               placeholder="s3://billing/report.csv"
               value={form.artifact_uri}
               onChange={(event) =>
@@ -107,7 +111,7 @@ export function IngestPage() {
             </label>
             <textarea
               id="ingest-text-content"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
               rows={10}
               placeholder="Paste the document content to be chunked and embedded."
               value={form.text_content}
@@ -122,7 +126,7 @@ export function IngestPage() {
           ) : null}
 
           <button
-            className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
+            className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             type="submit"
             disabled={mutation.isPending}
           >
@@ -139,15 +143,15 @@ export function IngestPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Job ID</p>
-              <strong className="text-foreground">{mutation.data.job_id}</strong>
+              <strong className="break-all text-foreground">{mutation.data.job_id}</strong>
             </div>
             <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Status</p>
-              <strong className="text-foreground">{mutation.data.status}</strong>
+              <strong className="break-all text-foreground">{mutation.data.status}</strong>
             </div>
             <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Queue</p>
-              <strong className="text-foreground">{mutation.data.queue}</strong>
+              <strong className="break-all text-foreground">{mutation.data.queue}</strong>
             </div>
           </div>
         </SectionCard>

@@ -36,7 +36,7 @@ export function AnswerEvidence({ content, metadata }: {
     && raw.every((item, index) => references[index] === item.evidence_id) ? raw : [];
 
   return <>
-    <div className="mt-1 whitespace-pre-wrap text-sm text-foreground">
+    <div className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">
       {content.split("\n").map((line, index) => {
         const match = /^- \[(\d+)\] /.exec(line);
         const number = match ? Number(match[1]) : 0;
@@ -57,8 +57,8 @@ export function AnswerEvidence({ content, metadata }: {
         </> : line}</p>;
       })}
     </div>
-    {citations.length > 0 ? <section className="mt-3 space-y-2 text-sm text-subtle-foreground" aria-label="Fuentes utilizadas">
-      <h3 className="font-semibold text-foreground">Fuentes utilizadas</h3>
+    {citations.length > 0 ? <section className="mt-3 space-y-2 break-words text-sm text-subtle-foreground" aria-label="Fuentes utilizadas">
+      <h3 className="font-semibold text-brand">Fuentes utilizadas</h3>
       {citations.map((citation, index) => <details key={citation.evidence_id} id={`${prefix}-source-${index + 1}`} className="rounded border border-border p-2">
         <summary className="cursor-pointer">[{index + 1}] {citation.title} — {citation.source}</summary>
         <p>Documento: {citation.document_id}</p>

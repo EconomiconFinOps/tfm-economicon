@@ -237,8 +237,8 @@ export function SessionGate() {
     || generation !== getSessionGeneration()
     || profileQuery.data?.id !== session.user.id) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-        <section className="rounded-lg border border-border bg-card px-8 py-6 text-center shadow-lg">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8 text-foreground">
+        <section className="w-full max-w-lg rounded-xl border border-border bg-card px-6 py-8 text-center shadow-sm">
           <p className="text-sm uppercase tracking-wide text-muted-foreground">Tenant bootstrap</p>
           <h1 className="mt-2 font-bold">Cargando tenants disponibles...</h1>
         </section>
@@ -250,13 +250,13 @@ export function SessionGate() {
     const message =
       tenantsQuery.error instanceof Error ? tenantsQuery.error.message : "Error desconocido";
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-        <section className="rounded-lg border border-border bg-card px-8 py-6 text-center shadow-lg">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8 text-foreground">
+        <section className="w-full max-w-lg rounded-xl border border-border bg-card px-6 py-8 text-center shadow-sm">
           <p className="text-sm uppercase tracking-wide text-muted-foreground">Tenant bootstrap failed</p>
           <h1 className="mt-2 font-bold">No se han podido cargar los tenants</h1>
           <p className="mt-2 text-sm text-muted-foreground">{message}</p>
           <button
-            className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80"
+            className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             type="button"
             // Se envuelve en una lambda sin argumentos (en vez de pasar
             // `handleLogout` directo) porque, tras aceptar un motivo

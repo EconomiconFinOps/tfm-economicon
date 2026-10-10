@@ -7,20 +7,20 @@ import { detailedData, hourlyData, providerData } from "@/data/demo/operationalC
 
 export function OperationalCostDashboard() {
   return (
-    <div className="p-6 space-y-6">
+    <div className="page-content space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="font-bold text-foreground">Dashboard Operativo - Coste Detallado</h2>
+          <h1 className="page-title">Dashboard Operativo - Coste Detallado</h1>
           <p className="text-sm text-muted-foreground">Análisis granular por servicio, proyecto y proveedor</p>
         </div>
         <ExportButton data={detailedData} filename="coste-operativo-detallado" />
       </div>
 
       {/* Detailed Table */}
-      <div className="bg-gradient-to-br from-card to-accent rounded-lg border border-border shadow-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <div className="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
+        <div role="region" aria-label="Detalle de costes; desplazamiento horizontal disponible" tabIndex={0} className="overflow-x-auto">
+          <table className="w-full min-w-[40rem]">
             <thead className="bg-background border-b border-border">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Servicio</th>
@@ -76,8 +76,8 @@ export function OperationalCostDashboard() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Hourly Cost */}
-        <div className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-6 shadow-xl">
-          <h3 className="font-semibold text-foreground mb-4">Coste por Hora (Hoy)</h3>
+        <div className="min-w-0 bg-card rounded-lg border border-border p-4 sm:p-6 shadow-sm">
+          <h2 className="font-semibold text-brand mb-4">Coste por Hora (Hoy)</h2>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={hourlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -93,8 +93,8 @@ export function OperationalCostDashboard() {
         </div>
 
         {/* Provider Breakdown */}
-        <div className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-6 shadow-xl">
-          <h3 className="font-semibold text-foreground mb-4">Coste por Proveedor</h3>
+        <div className="min-w-0 bg-card rounded-lg border border-border p-4 sm:p-6 shadow-sm">
+          <h2 className="font-semibold text-brand mb-4">Coste por Proveedor</h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={providerData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -105,7 +105,7 @@ export function OperationalCostDashboard() {
                 contentStyle={chartTooltipStyle}
               />
               <Legend />
-              <Bar dataKey="compute" fill="var(--primary)" name="Compute" />
+              <Bar dataKey="compute" fill="var(--chart-1)" name="Compute" />
               <Bar dataKey="storage" fill="var(--chart-2)" name="Storage" />
               <Bar dataKey="network" fill="var(--chart-5)" name="Network" />
             </BarChart>

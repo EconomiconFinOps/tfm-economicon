@@ -4,8 +4,8 @@
 //
 // Qué protege:
 //   a. `theme.css` no tiene bloque `.dark` ni una variante `dark:` atada a un
-//      ancestro `.dark`: la paleta única vive en `:root` y `dark:` está siempre
-//      activo (`@custom-variant dark (&);`).
+//      ancestro `.dark`: la paleta clara vive en `:root` y `dark:` no aplica
+//      (`@custom-variant dark (&:not(*));`, JUP-112).
 //   b. Cada propiedad personalizada se declara UNA sola vez (sin paleta
 //      paralela con los mismos nombres repetidos en `:root` y `.dark`).
 //   c. Cada `var(--x)` de `@theme inline` apunta a un token realmente
@@ -283,12 +283,12 @@ describe("theme.css - paleta única activa sin ámbito .dark (a)", () => {
     expect(customVariant).not.toMatch(/\.dark(?![\w-])/);
   });
 
-  it("`@custom-variant dark` es incondicional: `(&)`, las variantes `dark:` aplican siempre", () => {
-    // Decisión 2 de design.md: la aplicación solo tiene tema oscuro, así que
-    // `dark:` debe estar siempre activo sin depender de ninguna clase ni
-    // atributo en el documento.
+  it("JUP-112 desactiva dark: con un selector imposible, independientemente del sistema operativo", () => {
+    // JUP-112 cambia la paleta a clara sin reescribir los primitivos shadcn.
+    // :not(*) nunca coincide: tampoco depende de una preferencia del SO.
     const argument = customVariant?.match(/^@custom-variant\s+dark\s*\(([\s\S]*)\)\s*$/)?.[1];
-    expect(argument?.trim()).toBe("&");
+    expect(argument?.trim()).toBe("&:not(*)");
+    expect(stripComments(THEME_CSS)).toMatch(/color-scheme:\s*light\s*;/);
   });
 });
 

@@ -104,32 +104,37 @@ export function ConversationsPage() {
 
   if (!activeTenant) {
     return (
-      <SectionCard
-        title="Tenant required"
-        subtitle="Choose a tenant before opening assistant conversations."
-      >
-        <p className="text-sm text-muted-foreground">No active tenant selected.</p>
-      </SectionCard>
+      <div className="page-content">
+        <SectionCard
+          headingLevel={1}
+          title="Tenant required"
+          subtitle="Choose a tenant before opening assistant conversations."
+        >
+          <p className="text-sm text-muted-foreground">No active tenant selected.</p>
+        </SectionCard>
+      </div>
     );
   }
 
   const messages = conversationDetailQuery.data?.messages ?? [];
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div className="page-content grid grid-cols-1 gap-6 lg:grid-cols-2">
       <SectionCard
+        headingLevel={1}
         title="Conversations"
         subtitle="Each conversation stays scoped to the active tenant and operator."
       >
-        <form className="flex gap-2" onSubmit={handleCreate}>
+        <form className="flex flex-wrap gap-2" onSubmit={handleCreate}>
           <input
-            className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+            aria-label="New conversation title"
+            className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="New conversation title"
           />
           <button
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             type="submit"
             disabled={createMutation.isPending}
           >
@@ -153,12 +158,12 @@ export function ConversationsPage() {
               type="button"
               className={
                 conversation.id === selectedConversationId
-                  ? "rounded-md border border-primary bg-primary/10 px-3 py-2 text-left"
-                  : "rounded-md border border-border bg-background px-3 py-2 text-left hover:border-primary"
+                  ? "rounded-md border border-brand bg-accent px-3 py-2 text-left"
+                  : "rounded-md border border-border bg-background px-3 py-2 text-left hover:border-brand"
               }
               onClick={() => setSelectedConversationId(conversation.id)}
             >
-              <strong className="block text-sm text-foreground">{conversation.title}</strong>
+              <strong className="block break-words text-sm text-foreground">{conversation.title}</strong>
               <span className="text-xs text-muted-foreground">
                 {new Date(conversation.updated_at).toLocaleString()}
               </span>
@@ -188,14 +193,15 @@ export function ConversationsPage() {
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">{entry.role}</p>
                   {entry.role === "assistant"
                     ? <AnswerEvidence content={entry.content} metadata={entry.metadata} />
-                    : <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{entry.content}</p>}
+                    : <p className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">{entry.content}</p>}
                 </article>
               ))}
             </div>
 
             <form className="mt-4 flex flex-col gap-4" onSubmit={handleSend}>
               <textarea
-                className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+                aria-label="Message to the assistant"
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
                 rows={5}
                 placeholder="Ask the assistant about the ingested tenant documents."
                 value={message}
@@ -205,7 +211,7 @@ export function ConversationsPage() {
                 <p className="text-sm text-danger">{sendMutation.error.message}</p>
               ) : null}
               <button
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
+                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
                 type="submit"
                 disabled={sendMutation.isPending || !message.trim()}
               >

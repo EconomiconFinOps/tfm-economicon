@@ -42,10 +42,10 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
           <title>${filename}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { color: #1e40af; }
+            h1 { color: #2B2359; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #1e40af; color: white; }
+            th, td { border: 1px solid #D9D6E9; padding: 8px; text-align: left; }
+            th { background-color: #2B2359; color: white; }
           </style>
         </head>
         <body>
@@ -78,7 +78,7 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-highlight text-foreground rounded-lg hover:shadow-lg hover:shadow-info-tint/30 transition-all"
+        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all"
       >
         <Download className="w-4 h-4" />
         Exportar Resultados
@@ -90,7 +90,7 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-xl border border-border z-20">
+          <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-sm border border-border z-20">
             <button
               onClick={exportToCSV}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left text-foreground"

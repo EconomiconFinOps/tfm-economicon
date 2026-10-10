@@ -1,91 +1,82 @@
-/*
- * Tema de la aplicación (JUP-099, design.md decisiones 1, 2 y 3).
- *
- * Paleta única: la aplicación solo tiene tema oscuro, así que todos los tokens
- * viven una sola vez en `:root`. No hay bloque `.dark` ni valores claros de
- * shadcn: nadie los consumía y mantenerlos obligaba a un ancestro `.dark` en
- * <html> como apaño de ámbito.
- *
- * Cada token lleva el nombre de su función (no el de su color) y el valor
- * EXACTO del color que sustituye: es un refactor visual, no un rediseño.
- * Cuando dos funciones comparten valor, se define una vez y el resto son
- * alias `var(--otro)`, para que un cambio se propague sin editar dos sitios.
- *
- * Los valores "v4" (estados, texto secundario) son literales copiados de
- * `tailwindcss/theme.css` 4.3.3. No se referencian las variables de la paleta
- * de Tailwind a propósito: así el tema no cambia si una actualización de
- * Tailwind retoca su paleta. Los hexadecimales de las gráficas son la paleta
- * v3 del origen y NO equivalen al mismo tono v4 (p. ej. #94a3b8 != slate-400 v4).
+/* JUP-112: Economicon light brand theme, retaining JUP-099 semantic tokens.
+ * Brand source: guide + dossier, JUP-112 evidence. State and chart colors are
+ * accessible derivatives; violet is reserved for actions and focus.
+ * Keep copied shadcn primitives intact. The impossible selector disables their
+ * dark variants independently of OS preferences; there is no second palette.
  */
-
-/*
- * `dark:` siempre activo. Sin esta línea Tailwind v4 lo interpretaría como
- * `prefers-color-scheme` y los primitivos de shadcn (p. ej. select.tsx, con
- * `dark:bg-input/30`) cambiarían según el sistema operativo. Se redefine en
- * vez de borrarla o de editar los primitivos, que se copian tal cual (ADR-0004).
- */
-@custom-variant dark (&);
+@custom-variant dark (&:not(*));
 
 :root {
   /* No cromáticos: fuera del criterio de "un consumidor por token". */
+  color-scheme: light;
   --font-size: 16px;
+  --font-body: "Inter Variable", "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk Variable", "Segoe UI", sans-serif;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --radius: 0.625rem;
 
   /* Superficie y texto */
-  --background: #0f1419;
-  --foreground: #ffffff;
-  --card: #1a1f2e;
+  --background: #FAFAFC;
+  --foreground: #14121F;
+  --card: #FFFFFF;
   --popover: var(--card);
   --popover-foreground: var(--foreground);
-  --accent: #232834;
-  --accent-foreground: var(--foreground);
-  --border: #2d3748;
-  --muted: var(--border);
-  --input: var(--border);
-  --input-background: #f3f3f5;
-  --muted-foreground: oklch(70.4% 0.04 256.788);
-  --subtle-foreground: oklch(86.9% 0.022 252.894);
-  --neutral: oklch(55.4% 0.046 257.417);
+  --accent: #E4E1FB;
+  --accent-foreground: var(--brand);
+  --border: #D9D6E9;
+  --muted: #EEEDF5;
+  --input: #928CA8;
+  --input-background: var(--card);
+  --muted-foreground: #625C77;
+  --subtle-foreground: #49435B;
+  --neutral: #6E677E;
 
-  /* Marca */
-  --primary: #0078d4;
-  --primary-foreground: var(--foreground);
+  /* Marca: primary is an action; brand is the identity and heading color. */
+  --brand: #2B2359;
+  --insight: #FF8A5B;
+  --insight-foreground: var(--brand);
+  --primary: #5B4FE8;
+  --primary-foreground: #FFFFFF;
   --ring: var(--primary);
-  --highlight: #00bcf2;
+  --highlight: var(--brand);
 
-  /* Estados (valores literales de la paleta v4 de Tailwind 4.3.3) */
-  --success: oklch(79.2% 0.209 151.711);
-  --success-tint: oklch(72.3% 0.219 149.579);
-  --success-foreground: oklch(87.1% 0.15 154.449);
-  --danger: oklch(70.4% 0.191 22.216);
-  --danger-tint: oklch(63.7% 0.237 25.331);
-  --danger-foreground: oklch(80.8% 0.114 19.571);
+  /* Accessible status colors for light surfaces; labels retain their meaning. */
+  --success: #176B4C;
+  --success-tint: #178158;
+  --success-foreground: #15563E;
+  --danger: #B32B43;
+  --danger-tint: #C23B52;
+  --danger-foreground: #8A1732;
   --destructive: var(--danger-tint);
-  --info: oklch(70.7% 0.165 254.624);
-  --info-tint: oklch(62.3% 0.214 259.815);
-  --info-foreground: oklch(80.9% 0.105 251.813);
-  --warning: oklch(82.8% 0.189 84.429);
-  --warning-tint: oklch(79.5% 0.184 86.047);
-  --warning-foreground: oklch(90.5% 0.182 98.111);
-  --warning-text: oklch(87.9% 0.169 91.605);
-  --attention-tint: oklch(70.5% 0.213 47.604);
-  --attention-foreground: oklch(83.7% 0.128 66.29);
-  --positive: oklch(76.5% 0.177 163.223);
+  --info: #3E3A8F;
+  --info-tint: #7E73D1;
+  --info-foreground: #363070;
+  --warning: #8A5711;
+  --warning-tint: #C19036;
+  --warning-foreground: #70420D;
+  --warning-text: var(--warning-foreground);
+  --attention-tint: var(--insight);
+  --attention-foreground: #873D1E;
+  --positive: var(--success);
 
-  /* Gráficas (hexadecimales del origen, paleta v3 de Tailwind) */
-  --chart-1: #3b82f6;
-  --chart-2: #10b981;
-  --chart-3: #f59e0b;
-  --chart-4: #8b5cf6;
-  --chart-5: #ff8c00;
-  --chart-negative: #ef4444;
-  --chart-baseline: #64748b;
-  --chart-axis: #94a3b8;
+  /* Chart series: distinct accessible derivatives, separate from actions. */
+  --chart-1: var(--brand);
+  --chart-2: #1A775B;
+  --chart-3: #A06417;
+  --chart-4: #75648C;
+  --chart-5: #AF512A;
+  --chart-negative: var(--danger);
+  --chart-baseline: #787186;
+  --chart-axis: var(--muted-foreground);
 }
 
 @theme inline {
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --color-brand: var(--brand);
+  --color-insight: var(--insight);
+  --color-insight-foreground: var(--insight-foreground);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -136,62 +127,57 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-
+  * { @apply border-border outline-ring/50; }
+  html { font-size: var(--font-size); }
   body {
     @apply bg-background text-foreground;
+    margin: 0;
+    min-width: 320px;
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
   }
-
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
-
-  html {
-    font-size: var(--font-size);
+  h1, h2, h3, h4 {
+    color: var(--brand);
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
   }
+  h1 { font-size: clamp(2rem, 3.2vw, 2.75rem); letter-spacing: -0.035em; }
+  h2 { font-size: 1.5rem; letter-spacing: -0.02em; }
+  h3 { font-size: 1.25rem; letter-spacing: -0.015em; }
+  h4 { font-size: 1rem; }
+  button, input, select, textarea { font: inherit; }
+  input, select, textarea { min-width: 0; max-width: 100%; border-color: var(--input); }
+  input::placeholder, textarea::placeholder { color: var(--muted-foreground); opacity: 1; }
+  button, a, input, select, textarea, [tabindex] { -webkit-tap-highlight-color: transparent; }
+  button:not(:disabled), select { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+  :focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+  input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+  ::selection { background: var(--accent); color: var(--brand); }
+}
 
-  h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+@layer components {
+  .brand-mark { display: inline-flex; align-items: center; gap: 0.75rem; color: var(--brand); }
+  .brand-mark img { width: 3.25rem; height: 3.25rem; object-fit: contain; flex: none; }
+  .brand-mark__name { font-family: var(--font-display); font-size: 1.65rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.04em; }
+  .brand-mark__descriptor { display: block; margin-top: 0.3rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; }
+  .brand-mark--inverse { color: var(--primary-foreground); }
+  .skip-link { position: fixed; top: 0.75rem; left: 1rem; z-index: 50; transform: translateY(-200%); padding: 0.75rem 1rem; border-radius: 0.5rem; background: var(--brand); color: var(--primary-foreground); }
+  .skip-link:focus { transform: translateY(0); }
+  .page-title { color: var(--brand); font-family: var(--font-display); font-size: clamp(2rem, 3.2vw, 2.75rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.035em; }
+  .page-content { min-width: 0; padding: 1.5rem; }
+  .page-content > * { min-width: 0; }
+  .recharts-responsive-container { min-width: 0; }
+  .recharts-default-legend { font-size: 0.875rem; }
+  .recharts-tooltip-wrapper { max-width: min(24rem, 90vw); }
+  @media (max-width: 639px) {
+    .page-content { padding: 1rem; }
+    .brand-mark__name { font-size: 1.5rem; }
   }
-
-  h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  label {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  input {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
-    line-height: 1.5;
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   }
 }

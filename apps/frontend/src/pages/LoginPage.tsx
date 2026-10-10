@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router";
 import { advanceSessionGeneration, clearSessionMutations, getSessionGeneration, login } from "../services/api";
+import { BrandMark } from "../components/BrandMark";
 import { SESSION_KEY } from "../layouts/SessionGate";
 
 interface LoginFormState {
@@ -99,23 +100,24 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
-      <section className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-xl">
-        <p className="text-sm uppercase tracking-wide text-muted-foreground">Operator login</p>
-        <h1 className="mt-2 text-xl font-bold text-foreground">Access the tenant control tower</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background px-4 py-10 text-foreground">
+      <BrandMark />
+      <section className="w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-sm sm:p-10">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Operator login</p>
+        <h1 className="page-title mt-3">Access the tenant control tower</h1>
+        <p className="mt-4 text-sm text-muted-foreground">
           This demo build uses the seeded operator account so the team can validate
           auth, tenant isolation and assistant flows end-to-end.
         </p>
 
-        <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
+        <form className="mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1">
             <label className="text-sm text-muted-foreground" htmlFor="login-email">
               Email
             </label>
             <input
               id="login-email"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="rounded-md border border-input bg-background px-3 py-3 text-sm text-foreground"
               type="email"
               value={form.email}
               onChange={(event) =>
@@ -130,7 +132,7 @@ export function LoginPage() {
             </label>
             <input
               id="login-password"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="rounded-md border border-input bg-background px-3 py-3 text-sm text-foreground"
               type="password"
               value={form.password}
               onChange={(event) =>
@@ -154,7 +156,7 @@ export function LoginPage() {
           ) : null}
 
           <button
-            className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
+            className="mt-2 rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             type="submit"
             disabled={mutation.isPending}
           >
@@ -162,6 +164,6 @@ export function LoginPage() {
           </button>
         </form>
       </section>
-    </div>
+    </main>
   );
 }

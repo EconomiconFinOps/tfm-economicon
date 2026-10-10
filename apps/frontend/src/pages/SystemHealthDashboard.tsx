@@ -68,14 +68,14 @@ export function SystemHealthDashboard() {
     return item;
   });
   return (
-    <div className="p-6 space-y-6 min-w-0 text-foreground">
+    <div className="page-content space-y-6 text-foreground">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-xl font-bold">Salud del sistema</h1>
+          <h1 className="page-title">Salud del sistema</h1>
           <p className="mt-1 text-sm text-muted-foreground">Disponibilidad de los servicios y actividad de {activeTenant?.name ?? "su cliente"}.</p>
         </div>
         <button type="button" onClick={health.refresh} disabled={health.checking}
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-primary px-4 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-highlight disabled:opacity-60">
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-primary text-primary-foreground px-4 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-highlight disabled:opacity-60">
           <RefreshCw className="size-4" aria-hidden="true" />Actualizar
         </button>
       </div>

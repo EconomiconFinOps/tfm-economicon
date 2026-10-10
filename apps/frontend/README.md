@@ -41,8 +41,11 @@ Aqui vive la parte visual del sistema:
 
 ```text
 apps/frontend
+|-- public/licenses/     # avisos OFL de las fuentes, copiados tambien a dist/
 |-- src/
+|   |-- assets/brand/    # simbolos oficiales primario e inverso del dossier
 |   |-- components/
+|   |   |-- BrandMark.tsx # identidad reutilizable con simbolo decorativo
 |   |   |-- chartTheme.ts # estilo compartido del tooltip de Recharts (variables del tema)
 |   |   `-- ui/          # primitivos shadcn/ui copiados (label, select, separator, dialog, tooltip)
 |   |-- data/
@@ -67,7 +70,7 @@ apps/frontend
 |   |-- main.tsx          # entrypoint: QueryClientProvider + App
 |   `-- routes.tsx        # mapa de rutas (routeConfig + router)
 |-- tests/                # regresion end-to-end (sesion, tenant, ingesta, conversaciones)
-|-- ATTRIBUTIONS.md       # atribuciones de terceros (codigo copiado de shadcn/ui, MIT)
+|-- ATTRIBUTIONS.md       # marca, fuentes OFL y codigo copiado de shadcn/ui (MIT)
 |-- Dockerfile
 |-- index.html
 |-- package.json
@@ -97,7 +100,8 @@ Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el
 ## Estilos y colores
 
 La aplicacion tiene **una unica paleta**, definida una sola vez en `src/styles/theme.css` (bloque
-`:root`, solo tema oscuro; no hay `.dark` ni `class="dark"` en `index.html`). Decision y motivos en
+`:root`, tema claro Economicon desde JUP-112; no hay `.dark` ni `class="dark"` en `index.html`).
+El tema no depende de la preferencia de color del sistema operativo. Decision y motivos en
 [ADR-0012](../../docs/adr/ADR-0012-frontend-color-tokens.md).
 
 **Regla: ninguna pantalla, layout, componente ni dato demo escribe un color literal.** Ni
@@ -106,12 +110,14 @@ se usa la utilidad del token.
 
 | Necesitas | Escribe |
 | --- | --- |
-| Fondo de pagina, tarjeta, degradado de tarjeta | `bg-background`, `bg-card`, `from-card to-accent` |
+| Fondo de pagina, tarjeta, panel suave | `bg-background`, `bg-card`, `bg-accent` |
 | Texto principal, secundario, intermedio, tenue | `text-foreground`, `text-muted-foreground`, `text-subtle-foreground`, `text-neutral` |
 | Bordes y separadores | `border-border`, `divide-border` |
-| Marca, foco, acento de navegacion | `bg-primary`, `border-primary`, `text-highlight` |
+| Marca, titulos y navegacion | `text-brand`, `border-brand`, `bg-accent` |
+| Acciones y foco | `bg-primary text-primary-foreground`, `outline-ring` |
+| Insight/ahorro destacado | `bg-insight text-insight-foreground` (no texto coral sobre fondo claro) |
 | Estados (exito, error, info, aviso, atencion) | `text-success`, `bg-danger-tint/20 text-danger-foreground`, `text-info`, `text-warning`, `bg-attention-tint/20` |
-| Atributos de Recharts (`stroke`, `fill`) y estilos en linea | `var(--chart-axis)`, `var(--chart-2)`, `var(--primary)`, o `chartTooltipStyle` para el tooltip |
+| Atributos de Recharts (`stroke`, `fill`) y estilos en linea | `var(--chart-axis)`, `var(--chart-2)`, `var(--chart-1)`, o `chartTooltipStyle` para el tooltip |
 
 - **Cambiar un color** = editar su valor en `theme.css`; llega a todas las pantallas sin tocarlas.
 - **Anadir un color** = crear un token con nombre de **funcion** (no de color), con consumidor real, en
@@ -122,12 +128,23 @@ se usa la utilidad del token.
   abre para imprimir, que no carga `theme.css`). Se declaran una a una, con archivo, valor y motivo, en
   la lista de `src/test/color-tokens.guard.test.ts`.
 - Los primitivos de `src/components/ui/` se conservan tal como los publica shadcn/ui; sus variantes
-  `dark:` funcionan siempre porque `theme.css` declara `@custom-variant dark (&)`.
+  `dark:` quedan inactivas porque `theme.css` declara `@custom-variant dark (&:not(*))`.
+  Este selector nunca coincide y evita activar estilos oscuros por la preferencia del sistema.
 
 Dos tests estaticos lo hacen cumplir: `color-tokens.guard.test.ts` (ningun color literal fuera de las
 excepciones) y `theme-palette.test.ts` (paleta unica, tokens sin duplicar ni huerfanos, `<html>` sin
-clase de tema). Las atribuciones del codigo de terceros copiado estan en
-[`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
+clase de tema). `brand-accessibility.test.ts` comprueba contraste del texto, CTAs, badges y graficas
+con los valores reales del tema.
+
+`BrandMark` reutiliza el simbolo oficial, con variante inversa para superficies de marca, sin efectos
+ni alteraciones de la imagen. La identidad visible se presenta como texto y el simbolo adyacente es
+decorativo. Inter Variable y Space Grotesk Variable se sirven localmente desde los paquetes Fontsource;
+no se cargan fuentes de una CDN. Sus licencias se distribuyen con el build en `licenses/`. Los origenes
+del logo y las atribuciones del codigo y fuentes estan en [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
+
+Las tablas anchas mantienen desplazamiento horizontal dentro de regiones enfocables. Usa
+`page-content` en el contenedor de pagina (una sola vez), `page-title` para su titulo y evita aplicar
+`overflow-wrap:anywhere` al contenedor general: comprime las columnas y corta importes en movil.
 
 ## Como correrlo
 

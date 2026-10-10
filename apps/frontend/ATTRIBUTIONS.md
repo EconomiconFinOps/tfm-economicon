@@ -55,16 +55,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Lo que NO requiere atribución aquí
+## Marca Economicon y fuentes (JUP-112, 2026-10-10)
 
-- **Fotografías de Unsplash.** El proyecto de origen las incluía, pero **no se portó ninguna imagen**:
-  `apps/frontend` no contiene archivos de imagen (`.png`, `.jpg`, `.svg`, `.ico`…) ni `src/assets` ni
-  `public/`, y ningún archivo de `src/` ni `index.html` las referencia. Verificado el 2026-09-29.
-- **Fuentes.** No hay `@font-face` ni archivos de fuente (`.woff`, `.woff2`, `.ttf`), ni en el código ni
-  en el CSS generado (0 reglas `@font-face`). El texto usa la pila de fuentes **del sistema** que aplica
-  Tailwind por defecto (`-apple-system`, `Segoe UI`, `Roboto`, `Arial`…), y el documento de impresión de
-  `ExportButton` pide `Arial`; ninguna se distribuye con la aplicación. La hoja `fonts.css` del origen
-  estaba vacía y no se portó.
+El logotipo es material del proyecto Economicon, procedente del dossier de marca de Lucía:
+`materiales/05-marketing/economicon_dossier.pptx`, diapositiva 5, en el workspace de proyecto.
+Se conservan los PNG originales, sin recoloración, recorte ni efectos; no se les atribuye una licencia
+abierta no declarada. El componente `src/components/BrandMark.tsx` mantiene el espacio del original,
+presenta el nombre como texto accesible y trata el símbolo adyacente como decorativo.
+
+| Archivo distribuido | Origen dentro del PPTX | SHA-256 |
+| --- | --- | --- |
+| `src/assets/brand/economicon-primary.png` | `ppt/media/image2.png` | `3d642d739a7550827c60f32d281b8ad4d79df0fab9d1a5e683ae0bd96085d93e` |
+| `src/assets/brand/economicon-inverse.png` | `ppt/media/image1.png` | `bb7aa6b5158edc020ccf92eec77a322a231efa3ac60dd8ca52806404cc61062e` |
+
+Se empaquetan **Inter Variable** (UI) y **Space Grotesk Variable** (títulos), mediante las dependencias
+`@fontsource-variable/inter` y `@fontsource-variable/space-grotesk`, con carga por rangos Unicode. Vite distribuye sus
+archivos WOFF2 localmente; no se consulta Google Fonts ni una CDN al abrir la aplicación. Ambas fuentes
+usan SIL Open Font License 1.1; las versiones exactas están fijadas en `pnpm-lock.yaml` y los paquetes
+incluyen sus avisos en `LICENSE`. Se distribuyen copias literales en
+`public/licenses/inter-OFL.txt` y `public/licenses/space-grotesk-OFL.txt`: Vite las conserva en
+`dist/licenses/` junto al build. Fuentes y licencia originales:
+[Inter](https://github.com/rsms/inter/blob/master/LICENSE.txt) y
+[Space Grotesk](https://github.com/floriankarsten/space-grotesk/blob/master/OFL.txt).
+El documento autónomo de impresión de `ExportButton` mantiene su fallback Arial y no descarga fuentes;
+usa los mismos valores índigo y borde de la marca mediante las excepciones documentadas del guardián.
+
+## Otras atribuciones
+
+- **Fotografías de Unsplash.** No se portaron las fotografías del scaffold. Los únicos assets de marca
+  incorporados por JUP-112 son los PNG oficiales anteriores.
 - **Iconos y otras dependencias de npm.** Se consumen como **paquetes**, no se copia su código al
   repositorio, y cada paquete lleva su propia licencia. Licencias declaradas por las versiones
   instaladas (leídas de su `package.json` el 2026-09-29):

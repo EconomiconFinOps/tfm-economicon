@@ -11,12 +11,12 @@ import { recommendations, savingsByCategory, stats } from "@/data/demo/recommend
 // solo generaba la clase si el literal completo aparecia en otro sitio del
 // codigo. Con los literales migrados a tokens esas clases dejarian de
 // generarse, asi que se declara un mapa explicito con cadenas completas.
-// Los tonos ausentes (`purple`, y `orange` en el texto) no tenian clase
-// generada; se conservan sin ella para que el resultado visual sea identico,
-// no para fijar ese comportamiento.
+// Los tonos se resuelven en la paleta clara de marca (JUP-112).
 const toneTextClass: Record<string, string> = {
   green: 'text-success',
   blue: 'text-info',
+  purple: 'text-brand',
+  orange: 'text-attention-foreground',
 };
 
 export function RecommendationsPanel() {
@@ -32,11 +32,11 @@ export function RecommendationsPanel() {
   }));
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="page-content space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="font-bold text-foreground">Panel de Recomendaciones</h2>
+          <h1 className="page-title">Panel de Recomendaciones</h1>
           <p className="text-sm text-muted-foreground">Optimizaciones generadas por agentes especializados de IA</p>
         </div>
         <ExportButton data={exportData} filename="recomendaciones-finops" />
@@ -45,10 +45,10 @@ export function RecommendationsPanel() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, idx) => (
-          <div key={idx} className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-5 shadow-xl hover:shadow-info-tint/10 transition-shadow">
+          <div key={idx} className="bg-card rounded-lg border border-border p-5 shadow-sm hover:shadow-md transition-shadow">
             <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
             <div className="flex items-baseline gap-1">
-              <p className={`font-bold ${toneTextClass[stat.color] ?? ''}`}>{stat.value}</p>
+              <p className={`font-heading text-3xl font-bold tabular-nums ${toneTextClass[stat.color] ?? ''}`}>{stat.value}</p>
               <span className="text-xs text-neutral">{stat.subtitle}</span>
             </div>
           </div>
@@ -56,13 +56,13 @@ export function RecommendationsPanel() {
       </div>
 
       {/* Savings by Category Chart */}
-      <div className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-6 shadow-xl">
-        <h3 className="font-semibold text-foreground mb-4">Ahorro Potencial por Categoría</h3>
+      <div className="min-w-0 bg-card rounded-lg border border-border p-4 sm:p-6 shadow-sm">
+        <h2 className="font-semibold text-brand mb-4">Ahorro Potencial por Categoría</h2>
         <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={savingsByCategory} layout="vertical">
+          <BarChart data={savingsByCategory} layout="vertical" margin={{ top: 8, right: 32, left: 0, bottom: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis type="number" stroke="var(--chart-axis)" />
-            <YAxis dataKey="categoria" type="category" width={100} stroke="var(--chart-axis)" />
+            <XAxis type="number" stroke="var(--chart-axis)" tick={{ fontSize: 12 }} minTickGap={24} />
+            <YAxis dataKey="categoria" type="category" width={120} stroke="var(--chart-axis)" tick={{ fontSize: 14 }} />
             <Tooltip
               formatter={(value) => `${value.toLocaleString()}€/mes`}
               contentStyle={chartTooltipStyle}
@@ -75,10 +75,10 @@ export function RecommendationsPanel() {
       {/* Recommendations List */}
       <div className="space-y-4">
         {recommendations.map((rec) => (
-          <div key={rec.id} className="bg-gradient-to-br from-card to-accent rounded-lg border border-border shadow-xl overflow-hidden hover:border-highlight transition-all">
+          <div key={rec.id} className="bg-card rounded-lg border border-border shadow-sm overflow-hidden hover:border-highlight transition-all">
             <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                <div className="flex min-w-0 items-start gap-4">
                   <div className={`p-3 rounded-lg ${
                     rec.prioridad === 'Alta' ? 'bg-danger-tint/20 border border-danger-tint/30' : 'bg-info-tint/20 border border-info-tint/30'
                   }`}>
@@ -86,9 +86,9 @@ export function RecommendationsPanel() {
                       rec.prioridad === 'Alta' ? 'text-danger' : 'text-info'
                     }`} />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-foreground">{rec.titulo}</h3>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                      <h2 className="font-semibold text-brand">{rec.titulo}</h2>
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         rec.prioridad === 'Alta' ? 'bg-danger-tint/20 text-danger-foreground border border-danger-tint/30' :
                         'bg-info-tint/20 text-info-foreground border border-info-tint/30'
@@ -100,10 +100,10 @@ export function RecommendationsPanel() {
                       </span>
                     </div>
                     <p className="text-sm text-subtle-foreground mb-3">{rec.descripcion}</p>
-                    <div className="flex items-center gap-6 text-sm">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
                       <div className="flex items-center gap-2">
                         <TrendingDown className="w-4 h-4 text-success" />
-                        <span className="font-semibold text-success">{rec.ahorro.toLocaleString()}€/mes</span>
+                        <span className="rounded bg-insight/30 px-2 py-1 font-semibold text-insight-foreground">{rec.ahorro.toLocaleString()}€/mes</span>
                       </div>
                       <div className="text-muted-foreground">
                         <span className="font-medium">Esfuerzo:</span> {rec.esfuerzo}
@@ -117,7 +117,7 @@ export function RecommendationsPanel() {
                     </div>
                   </div>
                 </div>
-                <button className="px-4 py-2 bg-gradient-to-r from-primary to-highlight text-foreground rounded-lg hover:shadow-lg hover:shadow-info-tint/30 transition-all text-sm font-medium">
+                <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all text-sm font-medium">
                   Implementar
                 </button>
               </div>
@@ -127,19 +127,19 @@ export function RecommendationsPanel() {
       </div>
 
       {/* AI Agents Summary */}
-      <div className="bg-gradient-to-r from-primary/20 to-chart-4/20 rounded-lg border border-primary/30 p-6">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-lg bg-gradient-to-br from-primary to-highlight shadow-lg shadow-info-tint/30">
-            <Lightbulb className="w-6 h-6 text-foreground" />
+      <div className="bg-accent/50 rounded-lg border border-border p-6">
+        <div className="flex min-w-0 items-start gap-4">
+          <div className="p-3 rounded-lg bg-insight text-insight-foreground shrink-0">
+            <Lightbulb className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground mb-2">Agentes IA Especializados Activos</h3>
+            <h2 className="font-semibold text-brand mb-2">Agentes IA Especializados Activos</h2>
             <p className="text-sm text-subtle-foreground mb-3">
               6 agentes especializados analizan continuamente tu infraestructura cloud para identificar oportunidades de optimización.
             </p>
             <div className="flex flex-wrap gap-2">
               {['AI-ReservationAdvisor', 'AI-StorageOptimizer', 'AI-DBOptimizer', 'AI-ScalingAdvisor', 'AI-ResourceCleaner', 'AI-NetworkOptimizer'].map((agent) => (
-                <span key={agent} className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-card text-info border border-primary/30">
+                <span key={agent} className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-card text-info border border-border">
                   {agent}
                 </span>
               ))}

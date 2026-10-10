@@ -17,12 +17,15 @@ export function DashboardPage() {
 
   if (!activeTenant) {
     return (
-      <SectionCard
-        title="Select a tenant"
-        subtitle="The dashboard needs an active tenant to load billing and assistant context."
-      >
-        <p className="text-sm text-muted-foreground">No tenant is active for this session.</p>
-      </SectionCard>
+      <div className="page-content">
+        <SectionCard
+          headingLevel={1}
+          title="Select a tenant"
+          subtitle="The dashboard needs an active tenant to load billing and assistant context."
+        >
+          <p className="text-sm text-muted-foreground">No tenant is active for this session.</p>
+        </SectionCard>
+      </div>
     );
   }
 
@@ -34,9 +37,9 @@ export function DashboardPage() {
   // Se sigue esperando mientras no haya ni error ni payload.
   if (loading || (!error && !payload)) {
     return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-2 text-foreground">
+      <div className="page-content flex min-h-[50vh] flex-col items-center justify-center gap-2 text-foreground">
         <p className="text-sm uppercase tracking-wide text-muted-foreground">Bootstrapping</p>
-        <h2 className="text-xl font-bold">Connecting to the FinOps control plane...</h2>
+        <h1 className="page-title text-center">Connecting to the FinOps control plane...</h1>
       </div>
     );
   }
@@ -44,14 +47,17 @@ export function DashboardPage() {
   if (error) {
     const overlap = error.includes("ambiguous_cost_source");
     return (
-      <SectionCard
-        title={overlap ? "Possible overlapping ingestion sources" : "Backend unavailable"}
-        subtitle="The dashboard could not retrieve its initial context."
-      >
-        <p role="alert" className="text-sm text-muted-foreground">{overlap
-          ? "Costs are unavailable because ingestion sources may overlap for this period."
-          : error}</p>
-      </SectionCard>
+      <div className="page-content">
+        <SectionCard
+          headingLevel={1}
+          title={overlap ? "Possible overlapping ingestion sources" : "Backend unavailable"}
+          subtitle="The dashboard could not retrieve its initial context."
+        >
+          <p role="alert" className="text-sm text-muted-foreground">{overlap
+            ? "Costs are unavailable because ingestion sources may overlap for this period."
+            : error}</p>
+        </SectionCard>
+      </div>
     );
   }
 
@@ -62,11 +68,11 @@ export function DashboardPage() {
   const { billing, health } = payload;
 
   return (
-    <div className="flex flex-col gap-6">
-      <section className="flex flex-col justify-between gap-4 rounded-lg border border-border bg-gradient-to-br from-card to-accent p-6 shadow-xl sm:flex-row sm:items-center">
+    <div className="page-content flex flex-col gap-6">
+      <section className="flex flex-col justify-between gap-4 rounded-lg border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-center">
         <div>
           <p className="text-sm uppercase tracking-wide text-muted-foreground">Active operator</p>
-          <h2 className="mt-1 text-xl font-bold text-foreground">{user?.full_name}</h2>
+          <h1 className="page-title mt-1">{user?.full_name}</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Tenant-aware FinOps workspace for billing visibility, document ingestion,
             retrieval-backed chat and async processing with RabbitMQ.

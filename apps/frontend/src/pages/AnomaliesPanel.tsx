@@ -46,7 +46,7 @@ export function AnomaliesPanel() {
       <header className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-info-foreground">Supervisión de costes</p>
-          <h2 className="text-2xl font-bold text-foreground">Panel de Anomalías y Alertas</h2>
+          <h1 className="page-title">Panel de Anomalías y Alertas</h1>
           <p className="mt-1 text-sm text-subtle-foreground">Prioriza las alertas por criticidad e impacto estimado.</p>
         </div>
         <div className="self-start">
@@ -92,7 +92,7 @@ export function AnomaliesPanel() {
 
       <section aria-labelledby="alerts-title" className="min-w-0 rounded-lg border border-border bg-card">
         <div className="space-y-5 border-b border-border p-5">
-          <div className="flex items-center gap-2"><SlidersHorizontal aria-hidden="true" className="h-4 w-4 text-info-foreground" /><h3 id="alerts-title" className="font-semibold text-foreground">Bandeja de alertas</h3></div>
+          <div className="flex items-center gap-2"><SlidersHorizontal aria-hidden="true" className="h-4 w-4 text-info-foreground" /><h2 id="alerts-title" className="font-semibold text-brand">Bandeja de alertas</h2></div>
           <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-[1fr_1fr_auto]">
             <div><label className="text-sm text-subtle-foreground" htmlFor="anomaly-severity">Criticidad</label>
               <select id="anomaly-severity" className={selectStyle} value={severity} onChange={event => setSeverity(event.target.value as SeverityFilter)}>
@@ -111,7 +111,7 @@ export function AnomaliesPanel() {
           {visible.length > 0 && <p className="text-xs text-info-foreground lg:hidden">Desliza la tabla para ver impacto, fecha y estado.</p>}
         </div>
         {visible.length === 0 ? <div className="px-5 py-12 text-center">
-          <h4 className="font-semibold text-foreground">No hay alertas con estos filtros</h4>
+          <h3 className="font-semibold text-brand">No hay alertas con estos filtros</h3>
           <p className="mt-2 text-sm text-subtle-foreground">Prueba otra criticidad o restablece los filtros para ver las anomalías abiertas.</p>
           <button onClick={reset} className="mt-5 rounded-md border border-highlight/50 px-4 py-2 text-sm text-info-foreground hover:bg-highlight/10">Ver anomalías abiertas</button>
         </div> : <div role="region" aria-label="Lista de anomalías; desplazamiento horizontal disponible" tabIndex={0} className="overflow-x-auto rounded-b-lg focus-visible:outline-2 focus-visible:outline-highlight">

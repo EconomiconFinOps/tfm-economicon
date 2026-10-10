@@ -10,6 +10,18 @@
 
 ## Contexto
 
+### Evolución propuesta por JUP-112 (2026-10-10)
+
+El [cambio de marca JUP-112](../../openspec/changes/jup-112-brand-frontend/design.md)
+conserva la convención de tokens y sus guardianes, y propone sustituir la elección
+visual oscura de la decisión 3 por una paleta clara única. `dark:` deja de estar
+siempre activo; las preferencias del sistema no cambian el tema. Los valores
+anteriores se conservan abajo como contexto histórico de JUP-099. La aceptación
+de este ADR en 2026-10-01 no equivale a ratificación humana del rediseño JUP-112.
+
+La procedencia, contraste y contrato para otras pantallas están en
+[frontend-brand.md](../frontend-brand.md).
+
 [JUP-095](../../openspec/changes/archive/2026-09-12-jup-095-portar-codigo-fuente/) retiró el `main.css`
 del scaffold y dejó el frontend sobre Tailwind v4, pero la unificación de color quedó a medias y su
 propio `design.md` lo anotó como trabajo pendiente. Medido sobre `develop` (`688fe2d`) el 2026-09-29,

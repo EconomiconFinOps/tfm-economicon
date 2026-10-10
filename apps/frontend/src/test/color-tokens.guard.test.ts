@@ -48,13 +48,13 @@ interface ColorException {
 const EXCEPTIONS: ColorException[] = [
   {
     file: "src/components/ExportButton.tsx",
-    value: "#1e40af",
+    value: "#2B2359",
     reason:
       "El <style> del documento HTML autónomo que se abre en otra ventana para imprimir a PDF no carga theme.css, así que no puede resolver tokens ni var(--...).",
   },
   {
     file: "src/components/ExportButton.tsx",
-    value: "#ddd",
+    value: "#D9D6E9",
     reason:
       "Mismo motivo: color de borde dentro del <style> del documento de exportación, que vive fuera de la aplicación y de theme.css.",
   },
@@ -94,7 +94,7 @@ const PALETTE_UTILITY = new RegExp(
   "g",
 );
 
-// Hexadecimal de color (#fff, #1e40af, #00000080). El `(?<![&\w])` evita las
+// Hexadecimal de color (#fff, #2B2359, #00000080). El `(?<![&\w])` evita las
 // entidades HTML (`&#160;`) y los identificadores con almohadilla pegada.
 const HEX_COLOR = /(?<![&\w])#[0-9a-fA-F]{3,8}\b/g;
 

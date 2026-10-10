@@ -14,8 +14,8 @@ import type { MonthlyCostPoint } from "@/lib/executiveCostDashboard";
 import type { SessionOutletContext } from "@/layouts/SessionGate";
 import type { BillingGrouping } from "@/services/contracts";
 
-const inputClass = "mt-1 block w-full min-w-0 rounded-md border border-border bg-background p-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-const buttonClass = "inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary to-highlight px-4 py-2 text-sm text-foreground transition-all hover:shadow-lg hover:shadow-info-tint/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-50";
+const inputClass = "mt-1 block w-full min-w-0 rounded-md border border-input bg-background p-2 text-foreground focus-visible:ring-2 focus-visible:ring-ring";
+const buttonClass = "inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-all hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-50";
 
 export function ExecutiveCostDashboard() {
   const { token, activeTenant } = useOutletContext<SessionOutletContext>();
@@ -58,10 +58,10 @@ export function ExecutiveCostDashboard() {
   const partialMonths = points.some((point) => point.partial);
 
   return (
-    <div className="min-w-0 space-y-6 p-6">
+    <div className="page-content space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="font-bold text-foreground">Dashboard Ejecutivo - Coste Global</h2>
+          <h1 className="page-title">Dashboard Ejecutivo - Coste Global</h1>
           <p className="text-sm text-muted-foreground">Costes de Azure almacenados y normalizados</p>
         </div>
         {activeTenant && validSelection && <button type="button" className={buttonClass}
@@ -133,8 +133,8 @@ export function ExecutiveCostDashboard() {
         </p>}
 
         {billing.totals.length > 0 && <SectionCard title="Desglose del periodo" subtitle={labels}>
-          <div className="max-w-full overflow-x-auto">
-            <table className="w-full text-left text-sm text-subtle-foreground">
+          <div role="region" aria-label="Desglose de costes; desplazamiento horizontal disponible" tabIndex={0} className="max-w-full overflow-x-auto">
+            <table className="w-full min-w-[40rem] text-left text-sm text-subtle-foreground">
               <caption className="pb-3 text-left font-semibold text-foreground">Desglose de costes de Azure</caption>
               <thead className="border-b border-border"><tr>
                 <th scope="col" className="p-2">Dimensión</th>
@@ -157,7 +157,7 @@ export function ExecutiveCostDashboard() {
         </SectionCard>}
 
         {billing.totals.length ? <section aria-label="Totales de costes" className="space-y-3">
-          <h3 className="font-semibold text-foreground">Coste total del periodo</h3>
+          <h2 className="font-semibold text-brand">Coste total del periodo</h2>
           <div className="grid min-w-0 grid-cols-1 gap-4 break-all sm:grid-cols-2 lg:grid-cols-3">
             {billing.totals.map((total) => <MetricCard key={total.currency} label={"Total " + total.currency}
               value={total.cost + " " + total.currency} detail={labels + " · " + total.record_count + " registros"} />)}
@@ -165,11 +165,11 @@ export function ExecutiveCostDashboard() {
         </section> : <p role="status" className="text-subtle-foreground">Sin datos de costes para este periodo.</p>}
 
         <section aria-label="Comparación de meses" className="space-y-3">
-          <h3 className="font-semibold text-foreground">
+          <h2 className="font-semibold text-brand">
             {comparison.available
               ? "Comparación: " + monthLabel(comparison.lastMonth) + " frente a " + monthLabel(comparison.firstMonth)
               : "Comparación de meses"}{currency ? " · " + currency : ""}
-          </h3>
+          </h2>
           {comparison.available ? <>
             {comparison.interiorErrors && <p role="status" className="text-sm text-warning-text">
               Comparación de costes observados: hay errores en meses interiores. Consulta sus causas en la tabla mensual.
@@ -205,7 +205,7 @@ export function ExecutiveCostDashboard() {
                   }} />
                   <Area type="monotone" dataKey="value" name={currency} connectNulls={false} isAnimationActive={false}
                     dot={{ r: 3, fill: "var(--highlight)", fillOpacity: 1 }}
-                    stroke="var(--highlight)" fill="var(--primary)" fillOpacity={0.3} />
+                    stroke="var(--highlight)" fill="var(--chart-1)" fillOpacity={0.3} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>}
@@ -216,8 +216,8 @@ export function ExecutiveCostDashboard() {
               Los huecos indican ausencia, error o límite de representación, nunca un cero supuesto.
               El total del intervalo y cada mes se redondean por consulta: la suma de meses puede diferir del total.
             </p>
-            <div className="max-w-full overflow-x-auto">
-              <table className="w-full text-left text-sm text-subtle-foreground">
+            <div role="region" aria-label="Costes mensuales; desplazamiento horizontal disponible" tabIndex={0} className="max-w-full overflow-x-auto">
+              <table className="w-full min-w-[40rem] text-left text-sm text-subtle-foreground">
                 <caption className="pb-3 text-left font-semibold text-foreground">Costes mensuales</caption>
                 <thead className="border-b border-border"><tr>
                   <th scope="col" className="p-2">Mes</th>
