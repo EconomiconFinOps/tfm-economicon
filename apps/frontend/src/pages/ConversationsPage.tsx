@@ -2,22 +2,20 @@
 // sub-ronda c -- ver Addendum de design.md) deja de recibir `token`/
 // `activeTenant` como props desde `App.jsx` y pasa a leerlos via
 // `useOutletContext<SessionOutletContext>()`, mismo patron que `IngestPage`.
-// Las dos queries, el efecto de auto-seleccion de conversacion y las dos
-// mutaciones se conservan verbatim del origen (`ConversationsPage.jsx`);
-// solo cambian el origen de `token`/`activeTenant` y la presentacion
-// (Tailwind + SectionCard reconstruido).
+// JUP-037 isolates the message composer per conversation and tenant, while
+// preserving document retrieval alongside structured ownership questions.
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useOutletContext } from "react-router";
 import { SectionCard } from "../components/SectionCard";
 import { AnswerEvidence } from "../components/AnswerEvidence";
+import { MessageComposer } from "../components/MessageComposer";
 import {
   createConversation,
   getConversation,
-  listConversations,
-  sendConversationMessage
+  listConversations
 } from "../services/api";
-import type { ConversationCreateRequest, MessageCreateRequest } from "../services/contracts";
+import type { ConversationCreateRequest } from "../services/contracts";
 import type { SessionOutletContext } from "../layouts/SessionGate";
 
 export function ConversationsPage() {
@@ -25,7 +23,6 @@ export function ConversationsPage() {
   const queryClient = useQueryClient();
   const [selectedConversationId, setSelectedConversationId] = useState<string>("");
   const [title, setTitle] = useState<string>("Ops review");
-  const [message, setMessage] = useState<string>("");
 
   const conversationsQuery = useQuery({
     queryKey: ["conversations", activeTenant?.id],
@@ -76,30 +73,9 @@ export function ConversationsPage() {
     }
   });
 
-  const sendMutation = useMutation({
-    mutationFn: (payload: MessageCreateRequest) => {
-      if (!activeTenant) {
-        throw new Error("Tenant required");
-      }
-      return sendConversationMessage(token, activeTenant.id, selectedConversationId, payload);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations", activeTenant?.id] });
-      queryClient.invalidateQueries({
-        queryKey: ["conversation", activeTenant?.id, selectedConversationId]
-      });
-      setMessage("");
-    }
-  });
-
   function handleCreate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     createMutation.mutate({ title });
-  }
-
-  function handleSend(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    sendMutation.mutate({ content: message });
   }
 
   if (!activeTenant) {
@@ -169,7 +145,7 @@ export function ConversationsPage() {
 
       <SectionCard
         title="Assistant chat"
-        subtitle="Replies use retrieval over pgvector filtered by the active tenant."
+        subtitle="Consulta documentos o costes por propiedad dentro del tenant activo."
       >
         {conversationDetailQuery.error ? (
           <p className="text-sm text-danger" role="alert">
@@ -193,25 +169,8 @@ export function ConversationsPage() {
               ))}
             </div>
 
-            <form className="mt-4 flex flex-col gap-4" onSubmit={handleSend}>
-              <textarea
-                className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-                rows={5}
-                placeholder="Ask the assistant about the ingested tenant documents."
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-              />
-              {sendMutation.error ? (
-                <p className="text-sm text-danger">{sendMutation.error.message}</p>
-              ) : null}
-              <button
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
-                type="submit"
-                disabled={sendMutation.isPending || !message.trim()}
-              >
-                {sendMutation.isPending ? "Sending..." : "Send"}
-              </button>
-            </form>
+            <MessageComposer key={`${activeTenant.id}:${selectedConversationId}`}
+              token={token} tenantId={activeTenant.id} conversationId={selectedConversationId} />
           </>
         ) : conversationsQuery.error ? null : (
           <p className="text-sm text-muted-foreground">Create a conversation to start the assistant flow.</p>

@@ -1,0 +1,80 @@
+# JUP-037 — Evidencia de implementación
+
+Verificación del líder asistida por herramientas, 10/10/2026 (Europe/Paris).
+No sustituye `Revision JUP-037` de Paris ni `Validacion JUP-037` de Victor.
+Tarjeta: https://trello.com/c/n4Aplko2. Base: c2995a1 (`origin/develop`).
+
+## Criterios de la tarjeta
+
+| Criterio | Entrega y prueba | Estado |
+| --- | --- | --- |
+| Resultado funcional verificable | Consulta estructurada de proyecto/application/owner/cost_center/tag, respuesta exacta y evidencia persistida; schema/servicio/API/UI en esta rama | Implementado; ver resultados abajo |
+| Pruebas necesarias añadidas y en verde | `test_ownership_questions.py`, `test_ownership_provenance.py`, `ownership-conversations.test.tsx`, `CostEvidence.test.tsx` y regresión AnswerEvidence | Ejecución final en curso |
+| Documentación y decisiones actualizadas | [Contrato](../api/ownership-questions.md), OpenSpec y [continuidad](../continuidad/consulta-ownership.md) | Entregado |
+| Pull request revisado y vinculado | PR contra develop prevista; revisión Paris y pairing Lucia no acreditados | Pendiente humano; no marcar cumplido |
+| Validación funcional y evidencia enlazadas | Esta evidencia contiene pruebas automatizadas con dobles explícitos y SQL sintético; dictamen Victor pendiente | Pendiente validación humana |
+
+## Entorno y resultados
+
+Windows; Python 3.12.13, pytest 9.1.1, FastAPI 0.142.2, Pydantic 2.13.5,
+SQLAlchemy 2.0.54, psycopg 3.3.6; Node 24.14.1, pnpm 9.0.0, Vitest 3.2.7.
+Dependencias pnpm instaladas con lockfile congelado; sin cambios al lockfile.
+CockroachDB v24.1.2 efímero en DockerServer, puerto remoto/local loopback 56537,
+organización `processor-integration-tests`. El fixture crea/elimina su base propia;
+ningún servicio o dato de la aplicación se modifica.
+
+- OpenSpec estricto: **56 pasan / 0 fallos**.
+- Trazabilidad JUP y limpieza del repositorio: **PASS**.
+- Gobernanza (`pr-policy`, `ci-workflow`, `repository-governance`): **82 pasan**.
+- Typecheck frontend (source, node, tests): **PASS**.
+- Lint de los ocho archivos frontend cambiados: **PASS**.
+- Build frontend: **PASS**, advertencia existente de chunk mayor de 500 kB.
+- Regresión final de escape de etiquetas y hash: **2 pasan**; selector `-k` incluyó
+  además un caso SQL omitido en este pase sin DB (se comprueba en la batería SQL).
+- Backend focal con SQL: pendiente del resultado final.
+- Frontend focal: pendiente del resultado final.
+
+El primer intento dentro del sandbox produjo errores de ACL de temporales y
+`spawn EPERM`. Se repitieron comandos autorizados fuera del sandbox. Un intento
+SQL concurrente encontró una base de fixture preexistente y fue rechazado por
+su protección; se recreó solo el contenedor propio antes del pase definitivo.
+La primera ejecución frontend tuvo 20 pass / 15 fallos de tiempo de espera con
+dos workers; se repite secuencialmente sin modificar las pruebas existentes.
+Un pase backend con salida redirigida se interrumpió por falta de progreso visible
+y se sustituyó por salida inmediata/diagnóstico. Ninguno de esos intentos se
+presenta como validación funcional satisfactoria.
+
+## Reproducción
+
+Desde `apps/backend`, con dependencias de `requirements.txt` y de test instaladas:
+
+```powershell
+$env:JUP086_COCKROACH_TEST_URL='cockroachdb+psycopg://root@127.0.0.1:56537/defaultdb?sslmode=disable'
+python -u -m pytest tests/test_ownership_questions.py tests/test_ownership_provenance.py tests/test_billing_summary.py tests/test_budget_evaluation.py tests/test_citations.py tests/test_retrieval_contract.py tests/test_retrieval_failures.py -vv -p no:cacheprovider -o faulthandler_timeout=90 --basetemp=RUTA_TEMP_NUEVA --tb=short --maxfail=1
+```
+
+El fixture exige un clúster efímero vacío, usuario root sin contraseña, conexión
+loopback no estándar y la organización arriba indicada. No apuntar a otro clúster.
+SQLite verifica auth/membresía/propiedad y persistencia real de mensajes con un
+doble explícito de billing; no acredita SQL financiero. Los casos Cockroach
+ejecutan el repositorio real con ingestas/costes sintéticos: tenants cruzados,
+fuentes incompletas, límites de fecha, overlap, precisión y etiquetas distintas.
+
+Desde la raíz, los scripts habituales `pnpm --filter @finops/frontend ...`
+pueden utilizarse; en esta máquina se usaron los ejecutables Node directos por
+fallos/bloqueos de wrappers:
+
+```powershell
+node apps/frontend/node_modules/vitest/vitest.mjs run --root apps/frontend tests/ownership-conversations.test.tsx tests/conversations.test.tsx tests/tenant-switching.test.tsx src/components/AnswerEvidence.test.tsx src/components/CostEvidence.test.tsx src/pages/ConversationsPage.test.tsx --maxWorkers=1 --minWorkers=1 --testTimeout=30000 --hookTimeout=30000
+```
+
+## Límites y pendientes
+
+- Fixtures application/owner sintéticos: no acreditan datos desplegados ni
+  disponibilidad de esas dimensiones en el mapping de Azure simulado actual.
+- Sin catálogo JUP-015 validado, equivalencias semánticas nuevas, interpretación
+  libre, conversión de divisas ni reparto de costes.
+- JUP-036 PR69 no integrada; contrato compatible por diseño, combinación no probada.
+- Sin ensayo visual manual, stack completo, proveedor IA ni despliegue.
+- Pairing Lucia, revisión Paris, validación Victor, CI y merge/cierre pendientes;
+  este documento no los sustituye ni modifica atribuciones.
