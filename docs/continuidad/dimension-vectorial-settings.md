@@ -43,6 +43,11 @@ Tambien `backend-real.log` (17 pass) y `backend-baseline.log` (fallo Windows ori
 
 ## Pendientes
 
+Entrega publicada: [PR #108 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/108),
+implementacion `bfffbea4be94ad9e8a01a687fc3cd28e58fdd606`. JUP policy PASS en la
+apertura; JUP reviews falla por ausencia de los dos dictamenes requeridos, no
+se modifica ese control. Consultar CI sobre el head final en la PR.
+
 Entrega tecnica propia para Lucia; no se atribuye liderazgo, pairing o aceptacion
 por abrir una contribucion asistida. CI y dictamenes humanos deben comprobarse
 sobre el head publicado; validacion independiente no puede inferirse de estos tests.

@@ -3,6 +3,9 @@
 Trello: https://trello.com/c/4OJ1OK53
 Verification date: 2026-10-10. Base: `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
 Technical implementation evidence; not a `Validacion JUP-102` human review.
+Delivery: [PR #108 (draft)](https://github.com/EconomiconFinOps/tfm-economicon/pull/108),
+implementation commit `bfffbea4be94ad9e8a01a687fc3cd28e58fdd606`. The draft preserves
+the assigned leader's handoff and the need for independent human decisions.
 
 ## Reproduction before the correction
 

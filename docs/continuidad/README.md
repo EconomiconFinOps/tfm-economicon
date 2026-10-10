@@ -4,5 +4,5 @@ Trello mantiene el estado operativo; estos resumenes enlazan decisiones y eviden
 
 | Tema | Contenido y estado | Actualizado |
 | --- | --- | --- |
-| [Dimension vectorial desde Settings](dimension-vectorial-settings.md) | JUP-102: correccion y regresion real en copia aislada; entrega para liderazgo, CI y dictamenes humanos pendientes. | 2026-10-10 |
+| [Dimension vectorial desde Settings](dimension-vectorial-settings.md) | JUP-102 / PR #108 draft: processor467/53 y vector backend17PASS; suite Windows amplia con limites. Entrega para Lucia, dictamenes y merge pendientes. | 2026-10-10 |
 | [Presupuestos y umbrales](presupuestos-umbrales.md) | JUP-029 / PR #61: correccion documental del P2 de Paris; convencion global separada en JUP-101, nueva revision y validacion pendientes. | 2026-10-02 |
