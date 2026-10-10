@@ -30,17 +30,17 @@
 
 ## 3. Auditoría de huecos
 
-- [ ] 3.1 Confirmar con `git log 1f57f91..<SHA> -- apps` a qué tarjeta pertenece cada archivo
+- [x] 3.1 Confirmar con `git log 1f57f91..<SHA> -- apps` a qué tarjeta pertenece cada archivo
   añadido o ampliado después de la PR #93 y añadir a la matriz de `docs/testing/critical-flows.md`
   las áreas que falten (preguntas de ownership y cobertura de etiquetado, en backend y frontend),
   con su suite y sus límites reales o simulados.
-- [ ] 3.2 Listar, por área de la matriz, el código que ninguna prueba ejecuta según la medición.
-- [ ] 3.3 Cruzar esa lista con las pruebas omitidas de 1.2 y separar el código que solo ejercitan
+- [x] 3.2 Listar, por área de la matriz, el código que ninguna prueba ejecuta según la medición.
+- [x] 3.3 Cruzar esa lista con las pruebas omitidas de 1.2 y separar el código que solo ejercitan
   las suites opt-in con servicios reales.
-- [ ] 3.4 Contrastar a mano las líneas que solo se ejecutan en subprocesos antes de llamarlas hueco.
-- [ ] 3.5 Clasificar cada hueco restante con el criterio de la decisión 5 del `design.md`: crítico,
+- [x] 3.4 Contrastar a mano las líneas que solo se ejecutan en subprocesos antes de llamarlas hueco.
+- [x] 3.5 Clasificar cada hueco restante con el criterio de la decisión 5 del `design.md`: crítico,
   aceptado con su motivo, o diferido.
-- [ ] 3.6 Escribir en la evidencia la lista de huecos con su clasificación y el motivo de cada uno.
+- [x] 3.6 Escribir en la evidencia la lista de huecos con su clasificación y el motivo de cada uno.
 
 ## 4. Aprobación de la lista de huecos
 

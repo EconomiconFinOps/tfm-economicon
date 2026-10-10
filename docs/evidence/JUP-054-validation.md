@@ -271,3 +271,103 @@ backend `test_managed_resolver.py`, `test_rabbitmq_publisher.py`,
 `test_system_health_boundaries_jup047.py` y el apoyo `billing_support.py`. Las
 líneas no cubiertas que dependan de ellas se contrastan a mano en el grupo de
 auditoría antes de llamarlas hueco. azure-cost-api no lanza subprocesos.
+
+### Huecos de cobertura
+
+Auditoría sobre `e1c2a8f`, con el criterio de la decisión 5 del diseño: un hueco es
+**crítico** si es código de un flujo de la matriz, o añadido después de la PR #93,
+que ninguna prueba ejecuta y que decide autorización o pertenencia a un tenant,
+validación de entrada, tratamiento de errores con efecto visible o una escritura.
+Las líneas citadas son del árbol `e1c2a8f`. **La clasificación está pendiente de
+aprobación (tarea 4.1): hasta entonces no se ha escrito ninguna prueba.**
+
+#### Procedencia del código nuevo
+
+`git log 1f57f91..e1c2a8f -- apps` devuelve tres commits: JUP-017 (`76221e8`:
+cobertura de etiquetado, backend y panel), JUP-037 (`d057537`: consultas de
+ownership, backend y conversaciones) y JUP-105 (`412ae41`, sólo `routes.tsx` y
+configuración del frontend). JUP-068 (`e1c2a8f`) y JUP-064 no cambian código de
+aplicación.
+
+#### Omitidas: todas son opt-in
+
+Las 127 omitidas de CI se reprodujeron sin instrumentar (processor 462/65 y
+backend 960/62 en el contenedor) y se agruparon por motivo. **Ninguna es
+inesperada**: todas exigen una base, un broker o un doble que CI no provisiona.
+
+| Servicio | Omitidas | Origen |
+| --- | --- | --- |
+| backend | 62 | CockroachDB 42 (`test_tag_coverage` 22, `test_billing_summary` 7, `test_ownership_provenance` 5, `test_job_publication` 2, `test_tenant_isolation_api` 2, y 1 en cada uno de `test_budget_evaluation`, `test_ownership_questions`, `test_rabbitmq_publisher_integration` y `test_tenant_isolation_repository`); pgvector 17 (`test_retrieval_contract_pgvector` 12, `test_tenant_isolation_vector` 5); RabbitMQ 3 |
+| processor | 65 | CockroachDB 52 (`test_azure_cost_cockroach_integration` 34, `test_ingest_task` 6, `test_schema_migration_ownership` 6, `test_tenant_isolation_costs` 3, `test_tenant_isolation_integration` 3); pgvector 12 (`test_vector_settings_pgvector` 8, `test_tenant_isolation_vector` 4); Docker 1 (`test_litellm_docker`) |
+
+El aumento de 28 omitidas del backend frente al cierre de la PR #93 coincide con
+`test_tag_coverage` (22) + `test_ownership_provenance` (5) + `test_ownership_questions` (1).
+Consecuencia relevante: **todo el SQL de cobertura de etiquetado (`fetch_tag_coverage`
+y `tag_policy.py`, JUP-017) y la procedencia de ownership (JUP-037) sólo se prueban
+contra CockroachDB real y CI no los ejecuta.** Offline sólo corren las pruebas de
+periodo inválido y de precedencia de autenticación, que sustituyen la base por un
+doble antes de llegar al SQL. Este código se lista aparte y **no es un hueco de esta
+pasada ni queda acreditado por ella**; lo cierra `RF-096-004`.
+
+#### Contraste de lo que depende de procesos hijo
+
+Se repitió la medición de backend y processor registrando también los procesos hijo
+(`patch = subprocess`, configuración sólo dentro del contenedor). Resultado:
+processor idéntico (222 líneas sin cubrir); backend gana 12 líneas
+(`managed_resolver.py` 6 y `rabbitmq_queue.py` 6) y las mismas pruebas pasan (960/62
+y 462/65). `dns_resolver_child.py` (60) y `system_health_runtime.py` (75) no ganan
+ninguna: el primero se lanza como script aislado y el segundo con `spawn`, y la
+herramienta no llega a esos procesos. Por tanto esas líneas **no se han verificado**
+y se clasifican abajo con esa salvedad, sin darlas por ejecutadas.
+
+#### Huecos críticos propuestos para cubrir
+
+Prioridad A: aislamiento y escrituras; B: validación y errores; C: bajo coste o
+alcance limitado.
+
+| ID | Prio | Código sin cubrir (`e1c2a8f`) | Qué falta | Prueba propuesta |
+| --- | --- | --- | --- | --- |
+| H-01 | A | backend `api/routes/billing.py` 40-44, 93-94 | Las rutas `GET /billing/tag-coverage` (éxito y esquema) y el 409 `ambiguous_cost_source` de ésta y de `/billing/summary` sólo se ejercitan con CockroachDB | Rutas reales con autenticación y pertenencia reales y la base doblada: 200 con contrato, 409 con `{"detail":{"code":"ambiguous_cost_source"}}` |
+| H-02 | A | backend `api/routes/tenants.py` 12 | `GET /tenants` no tiene prueba funcional (sólo el preflight de `test_cors.py`); devuelve los tenants del usuario | SQLite real: cada usuario ve exactamente sus membresías, otro usuario no ve las ajenas, sin token 401 |
+| H-03 | A | backend `api/routes/assistant.py` 63, `db/database.py` 497-507 | La creación de conversación con éxito no se ejecuta offline (sólo sus rechazos) | SQLite real: crea en el tenant activo y a nombre del usuario; otro tenant no la ve |
+| H-07 | A | processor `tasks/ingest.py` 30-31, 72-74 | Mensaje persistido corrupto y reentrega de un trabajo ya completado (devuelve el resultado guardado sin reprocesar) | `IngestTask` con repositorio SQLite: la reentrega no reejecuta el pipeline ni escribe vectores; el JSON corrupto es `InvalidJobMessage` |
+| H-08 | A | processor `repositories/azure_cost.py` 74, 117, 194, 221, 248 | Rechazo por tenant o suscripción ajenos al iniciar, completar o fallar un run; hoy sólo con CockroachDB | SQLite real: el alcance equivocado lanza `PermissionError` y no modifica el run ni los registros |
+| H-04 | B | backend `api/routes/jobs.py` 39, 49 | Cola que no acepta la reserva (`not_sent`) y resultado de publicación fuera de contrato | Cola doble y SQLite: respuesta de error controlada y ningún trabajo creado |
+| H-06 | B | processor `agents/guardrails.py` 56, 65, 71, 75, 98-106, 111, 123, 131-133, 138, 146-147 | Validación de entrada del agente (origen, payload, estado, metadatos) y de su salida (respuesta vacía o JSON inválido), y el recorte de metadatos | Funciones reales del guardrail: cada entrada inválida se rechaza con su error; la respuesta vacía o no JSON no retiene la carga del proveedor |
+| H-09 | B | processor `clients/azure_cost.py` 92-97, 286-318 | Fallos de transporte (tiempo agotado, conexión rechazada) y páginas malformadas del productor | Servidor HTTP real de loopback, como en la primera pasada, y un puerto cerrado: errores tipificados y ningún registro escrito |
+| H-11 | B | azure-cost-api `query_engine.py` 55, 57 | Filtro con dimensión o etiqueta no soportada debe dar 400 | `TestClient` real: 400 `BadRequest` con el nombre rechazado |
+| H-05 | C | backend `core/tag_policy.py` 3-20, `database.py` 303-310 | Contrato de `tag_rule_sql`: clave desconocida y uso de constantes cerradas (frontera de inyección SQL) | Función pura: clave fuera de la política lanza `ValueError`; ninguna entrada ajena aparece en el SQL |
+| H-10 | C | processor `normalization/azure_cost.py` 184-185, 192, 203-204, 224, 234, 258-260, 276, 285 | Filas con importes no numéricos o no finitos, etiquetas en conflicto o dimensiones no admitidas | Normalizador real: cada fila se rechaza con `AzureCostNormalizationError` antes de persistir |
+| H-12 | C | frontend `components/TagCoveragePanel.tsx` 23, 43, 51 | Avisos «Datos parciales» y «Solo costes cero» y la política de reintento | Componente real con `fetch` doble: aparecen con los datos que los provocan |
+
+#### Aceptados (sin prueba nueva, con motivo)
+
+| ID | Código | Motivo |
+| --- | --- | --- |
+| A-01 | backend `models/domain.py` (0 %) | Ningún archivo de `apps/` ni de `tools/` lo importa en `e1c2a8f` (`git grep`); código sin uso |
+| A-02 | frontend `hooks/useCostKpis.ts` (0 %) | Ningún archivo de `src` ni de `tests` lo importa; hook sin uso. La retirada es un cambio de producto |
+| A-03 | frontend `main.tsx`, `App.tsx` (0 %) | Arranque y montaje; las pruebas montan el árbol de rutas por su cuenta. El `QueryClient` por defecto ya consta en `RF-098-002` |
+| A-04 | frontend guardas `Tenant required` (`ConversationsPage` 31-32, 42-43, 65-66; `IngestPage` 37-38, 46-47) | Inalcanzables: la consulta no se habilita y el envío no se ofrece sin tenant activo |
+| A-05 | frontend `components/ui/select.tsx`, `ui/dialog.tsx` | Envoltorios de Radix con pruebas propias del disparador y los colores; el resto es comportamiento de la biblioteca |
+| A-06 | frontend `data/demo/executiveCostDashboard.ts` | Datos de demostración fijos, sólo protegidos por la guarda de colores |
+| A-07 | backend `dns_resolver_child.py`, parte de `managed_resolver.py` | Proceso hijo aislado que `test_managed_resolver.py` ejecuta; la medición no lo observa (ver contraste). No verificado línea a línea |
+| A-08 | backend `run.py` 25; processor `run_api.py` 23, `run_worker.py` 12-19, `run_all.py` 41 | Cableado de arranque sin lógica propia |
+| A-09 | backend `database.py` 449, 465; `migration_runner.py` 14-36 | Ramas defensivas que sólo se alcanzan con una base que viola su contrato, y un ejecutor de migraciones con SQL de CockroachDB que sólo corre contra la base real |
+
+#### Diferidos (se registrarán como `RF-054-NNN` al aprobar)
+
+| ID | Código | Por qué se difiere |
+| --- | --- | --- |
+| D-01 | backend `system_health_runtime.py` 36-86, 135-160 | Los sondeos de base, vector y cola y el despacho del hijo no los ejercita ninguna suite, tampoco las opt-in (`git grep` sin resultados). Necesita servicios reales: `RF-096-004` |
+| D-02 | backend `config.py` 55-67, `runtime_secrets.py` 41-44, 50, 74, 89, 111-112, 120 | Validación de configuración de arranque sin caso negativo (URL de salud con credenciales, clave de pasarela con prefijo `sk-or-`) |
+| D-03 | backend `embedding_provider.py` 123-127, 153-160, 185-191 | Proveedor `mock` por defecto sin prueba unitaria, clasificación de fallos de transporte y handshake TLS |
+| D-04 | processor `clients/litellm.py` 100-134, 156-194, `agents/providers.py` 56-57, 66, 68, `embeddings/chunker.py` 4-8, 16, `embeddings/providers.py` | Clasificación de errores y de coste del cliente de la pasarela, y validación de parámetros |
+| D-05 | processor `workers/runner.py` 26-66 | Ciclo de vida del worker; se construye con servicios reales |
+| D-06 | processor `run_azure_cost_ingestion.py` 49-103 | CLI manual: códigos de salida y salida JSON |
+| D-07 | azure-cost-api `repository.py`, `main.py` 37-38, 44, `models.py` | Errores de carga de contrato y de fixture en el arranque |
+| D-08 | frontend `components/ExportButton.tsx` 22-75 y ramas menores de `SessionGate`, `DashboardPage`, `IngestPage`, `useSystemHealth` | Exportación CSV de pantallas de demostración y ramas de presentación de bajo riesgo |
+
+Recomendación de alcance: cubrir las prioridades A y B (9 huecos) y decidir sobre C
+(3) según el tiempo. Si se prefiere acotar, el orden sugerido es H-02, H-03, H-07,
+H-08, H-01. Queda además la decisión de ampliar o no `RF-096-004`: es la causa de
+que el mayor volumen de código nuevo (JUP-017 y JUP-037) no se ejecute en CI.
