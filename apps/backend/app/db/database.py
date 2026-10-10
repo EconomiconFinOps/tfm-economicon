@@ -285,6 +285,13 @@ class Database:
             "savings_identified": None, "open_ingestions": int(job_count),
         }
 
+    def fetch_unallocated_cost(self, tenant_id: str, *, start_date, end_date) -> dict:
+        from app.services.unallocated_cost import fetch_unallocated_cost
+
+        return fetch_unallocated_cost(
+            self.engine, tenant_id, start_date=start_date, end_date=end_date,
+        )
+
     def create_job(self, payload: dict, created_by: str) -> dict:
         now = datetime.now(timezone.utc)
         job = {

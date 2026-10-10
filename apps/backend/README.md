@@ -175,6 +175,7 @@ python -m pytest tests
 - `GET /me`
 - `GET /tenants`
 - `GET /billing/summary`
+- `GET /billing/unallocated-cost` (JUP-028; fechas explícitas, candidatos por metadatos)
 - `POST /jobs/ingest`
 - `GET /assistant/conversations`
 - `POST /assistant/conversations`
@@ -217,6 +218,16 @@ aportan credenciales sinteticas explicitas y no necesitan servicios reales.
 - `services/rabbitmq_queue.py` publica jobs hacia el `processor`.
 - `services/vector_store.py` consulta el contexto vectorial en pgvector.
 - `api/routes/` agrupa la superficie REST.
+
+## Candidatos de gasto no asignado — JUP-028
+
+La ruta autenticada `/billing/unallocated-cost` detecta costes sin owner o con
+clasificación mínima incompleta. Agrupa cada fila una sola vez, conserva ajustes
+negativos y separa monedas. La respuesta declara `allocation_status=not_evaluated`:
+no aplica reglas contables de reparto. El [contrato y ejemplos](../../docs/api/unallocated-cost.md)
+explican la política compartida con JUP-017, la diferencia con JUP-027 y los límites
+de los datos recibidos. Pruebas focales: `python -m pytest tests/test_unallocated_cost.py -q`;
+la [evidencia](../../docs/evidence/JUP-028-validation.md) describe cómo activar SQL real.
 
 ## Dashboard de salud — JUP-047
 

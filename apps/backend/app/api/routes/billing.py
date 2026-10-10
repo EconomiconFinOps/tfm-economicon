@@ -7,9 +7,30 @@ from app.api.dependencies import get_active_tenant, get_database
 from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSummary
 from app.schemas.budget import BudgetDefinition, BudgetEvaluation
 from app.services.budget import evaluate_budget
+from app.schemas.unallocated_cost import UnallocatedCost
 
 
 router = APIRouter(prefix="/billing", tags=["billing"])
+
+
+@router.get("/unallocated-cost", response_model=UnallocatedCost)
+def get_unallocated_cost(
+    start_date: str = Query(pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end_date: str = Query(pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> UnallocatedCost:
+    try:
+        start, end = date.fromisoformat(start_date), date.fromisoformat(end_date)
+        if start >= end:
+            raise ValueError()
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid billing selection") from None
+    try:
+        result = database.fetch_unallocated_cost(tenant_id, start_date=start, end_date=end)
+    except AmbiguousCostSource:
+        raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
+    return UnallocatedCost(**result)
 
 
 @router.post("/budget/evaluate", response_model=BudgetEvaluation)
