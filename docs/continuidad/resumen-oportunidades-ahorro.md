@@ -18,7 +18,9 @@ No se edita el checkout compartido ni ramas de otros chats.
 
 Entrega publicada: [PR #98 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/98),
 contra develop; implementación en `863f8ab`, seguida de cierre documental.
-La PR está adjunta al chat. Es contribución para liderazgo, no revisión propia.
+Se solicitó adjuntar la PR al chat, pero la herramienta de la aplicación no
+devolvió confirmación; el enlace GitHub está verificado. Es contribución para
+liderazgo, no revisión propia.
 
 PR y evidencias vinculadas mediante comentario oficial Trello
 `6ac9ece9a408960336ce0489`, 10/10. Respuesta del cliente confirma tarjeta correcta
@@ -51,6 +53,9 @@ serialización no JSON) corregidos y cubiertos; las7 regresiones HTTP finales
 pasan. No equivale a revisión humana.
 GitHub Iber1to/autor Git Alejandro: entrega como contribución propia para Paris,
 no se acredita revisión independiente de Alejandro ni reasignación implícita.
+Control remoto `JUP reviews` comprobado: faltan ambas reviews tituladas, esperado
+en este borrador. CI técnico remoto aún sin resultado definitivo en el corte;
+las ejecuciones canceladas por nuevos eventos no cuentan como evidencia verde.
 Pendiente real: loaders servidor033/034 integrados y comprobados, pairing
 efectivo, Revision JUP-039 y Validacion JUP-039. No merge, cierre de tarjeta,
 mensajes Discord ni archivo del chat.
