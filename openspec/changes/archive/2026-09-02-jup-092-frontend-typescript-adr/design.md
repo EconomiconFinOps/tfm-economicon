@@ -5,9 +5,9 @@ JUP: JUP-092
 Última tarjeta de F1 y la única de carril `standard`: produce una **decisión de arquitectura**, no un
 inventario. Las dos anteriores dejaron el terreno medido:
 
-- **JUP-090** ([línea base del destino](../../../docs/planning/JUP-090-frontend-migration-baseline.md)):
+- **JUP-090** ([línea base del destino](../../../../docs/planning/JUP-090-frontend-migration-baseline.md)):
   `apps/frontend` es JavaScript con JSX, 14 archivos en `src/`, sin `typescript` ni tipos declarados.
-- **JUP-091** ([inventario del origen](../../../docs/planning/JUP-091-economicon-source-inventory.md)):
+- **JUP-091** ([inventario del origen](../../../../docs/planning/JUP-091-economicon-source-inventory.md)):
   el origen es TSX **sin `tsconfig` ni dependencia `typescript`** — nunca se ha verificado. De sus 61
   dependencias, 48 están clasificadas `DESCARTAR`, y los 48 componentes de `ui/` (shadcn) son código
   muerto que ninguna pantalla importa.
@@ -17,13 +17,13 @@ Estado verificado del repo hoy:
 - **No existe ningún `tsconfig.json`** en todo el árbol.
 - `apps/frontend` acumula **49 violaciones de `react/prop-types`** (recuento reproducido en esta HU),
   el motivo por el que su lint no es check obligatorio de CI (`RF-082-002`,
-  [github-branch-protection.md](../../../docs/governance/github-branch-protection.md)).
+  [github-branch-protection.md](../../../../docs/governance/github-branch-protection.md)).
 - `apps/frontend` no tiene tests: su script `test` es `echo "No frontend tests configured yet"`.
 - Existe `packages/shared-config` (`@finops/shared-config`), hoy con un único `index.js` de
   metadatos del workspace.
 - Backend y processor son Python: TypeScript sería el primer código tipado del lado JavaScript.
 
-El ADR es obligatorio por [docs/adr/README.md](../../../docs/adr/README.md) (patrones compartidos que
+El ADR es obligatorio por [docs/adr/README.md](../../../../docs/adr/README.md) (patrones compartidos que
 afectan a varios módulos y tareas futuras) y por la decisión nº 1 del spike.
 
 ## Goals / Non-Goals
