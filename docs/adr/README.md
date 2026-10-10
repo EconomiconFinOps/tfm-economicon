@@ -114,3 +114,9 @@ Local implementation details, small refactors and documentation-only changes wit
 2. Start from `docs/templates/adr.md` and link the relevant `JUP-XXX` card.
 3. Link the ADR from the OpenSpec `design.md` and keep its status `Proposed` during review.
 4. Once accepted, preserve the decision in Git-tracked documentation and update `docs/architecture.md` if the current architecture changes.
+
+## Cost Coverage Decision
+
+| Record | Status | Date |
+| --- | --- | --- |
+| [ADR-0013: Tagged cost coverage](ADR-0013-tagged-cost-coverage.md) | Accepted for MVP; user-authorized delivery exception and assisted review documented in JUP-017 evidence | 2026-10-10 |

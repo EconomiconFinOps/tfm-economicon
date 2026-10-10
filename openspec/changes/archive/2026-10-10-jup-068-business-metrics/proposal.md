@@ -25,5 +25,7 @@ Ninguna.
 ## Impact
 
 Herramienta Node sin nuevas dependencias y documentación de evaluación. No cambia
-runtime ni añade capturas automáticas. El piloto, objetivos y revisión humana
+runtime ni añade capturas automáticas. El piloto y la acreditación de objetivos
 siguen pendientes; JUP-070 conserva la evaluación de calidad de respuestas.
+La entrega técnica se cierra bajo excepción MVP autorizada el 10/10/2026,
+con revisión independiente asistida, sin atribuir aprobación humana del equipo.

@@ -1,0 +1,18 @@
+{
+  "source": "JUP-017 explicit synthetic controls; not modified Microsoft data",
+  "valid_tags": {
+    "owner": "platform-team",
+    "environment": "prod",
+    "application": "economicon",
+    "cost_center": "cc-jupiter",
+    "project": "jupiter"
+  },
+  "records": [
+    {"id": "eur-compliant", "cost": "80", "currency": "EUR", "complete": true},
+    {"id": "eur-partial", "cost": "20", "currency": "EUR", "complete": false},
+    {"id": "eur-credit", "cost": "-30", "currency": "EUR", "complete": true},
+    {"id": "usd-large", "cost": "9007199254740993.005", "currency": "USD", "complete": true},
+    {"id": "gbp-credit-only", "cost": "-20", "currency": "GBP", "complete": false},
+    {"id": "jpy-zero", "cost": "0", "currency": "JPY", "complete": true}
+  ]
+}

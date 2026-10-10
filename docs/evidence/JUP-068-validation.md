@@ -103,4 +103,59 @@ El verificador comprueba referencias presentes; una persona debe inspeccionar su
 Liderazgo Víctor, pairing Alejandro, revisión Lucía, validación Paris, según Trello
 consultado por el puente DockerServer `snapshot-20261003T210000Z.json`.
 Confirmación del método/objetivos, participación efectiva, reviews y piloto pendientes.
-No se declara la tarjeta terminada ni se reasignan roles.
+No se declara la tarjeta terminada ni se reasignan roles en ese corte histórico.
+
+## Cierre técnico por excepción MVP — 2026-10-10
+
+El usuario ordenó «Haz lo mismo con JUP-068» después del cierre de JUP-017 con
+subagente, validación y excepción de entrega MVP, en el chat
+`01a12707-b0dd-7043-915a-3922cd941a8f`. Esta autorización sustituye para esta entrega
+las interacciones humanas pendientes; no cambia la gobernanza global.
+Alejandro asume el cierre asistido: agente principal integra/documenta/valida y
+subagente independiente `/root/review_jup068` revisa. Los roles anteriores de
+Víctor, Alejandro, Lucía y Paris son asignaciones históricas, no atribución de
+intervenciones o aprobaciones nuevas. No se simulan reviews humanas GitHub.
+
+Se incorpora develop `76221e86235fad90a6f4d273d68a60d9d0c55b4b` sin conflictos.
+Instrumento, fixture y pruebas funcionales intactos. Se actualizan los pendientes
+documentales, se archiva el cambio OpenSpec y se publica la especificación.
+
+### Revisión independiente asistida
+
+Subagente: dictamen técnico APPROVE, confianza alta, sin defectos bloqueantes.
+Examinados contrato, aritmética, errores, denominadores cero, negativos temporales,
+exclusiones, enteros inseguros, solapamientos y controles CI aditivos.
+Ejecutó `node --test tools/business-metrics.test.mjs tools/ci-workflow.test.mjs`:
+**43/43 pasan**, incluyendo las 31 pruebas del instrumento. Ejecutó además CLI
+`validate` y `report`. Revisó el cierre documental sin atribuciones falsas.
+
+### Validación por criterio del instrumento
+
+- Resultado funcional: CLI `validate` acepta el fixture sintético y `report`
+  conserva procedencia/hash; reproduce 360000 ms/40%, cobertura asignada70%,
+  gobernada90% y potencial14000 unidades menores/14%; realizado permanece null.
+  Son resultados aritméticos sintéticos, no beneficio observado del MVP.
+- Pruebas necesarias: **113/113** pasan con
+  `node --test tools/business-metrics.test.mjs tools/pr-policy.test.mjs tools/ci-workflow.test.mjs tools/repository-governance.test.mjs`.
+  Incluyen fallos/bloqueos sin inflación del ahorro, datos vacíos, valores inválidos,
+  duplicados, solapamientos, moneda/periodo incoherentes y CLI desde otro directorio.
+- Documentación/decisiones: protocolo, tareas archivadas y spec actualizados;
+  OpenSpec estricto **59/59**, trazabilidad JUP y corpus correctos.
+- PR revisada/vinculada: PR68 y revisión de subagente descrita arriba. El cierre
+  administrativo por PR aplica la dispensa autorizada; no falsifica reviews.
+- Evidencia funcional: comandos anteriores, fixture
+  `docs/validation/JUP-068-example.json`, protocolo enlazado y CI final en la PR.
+
+Los errores iniciales spawn EPERM del sandbox se resolvieron repitiendo las
+herramientas instaladas con permisos de ejecución; no se omitieron pruebas.
+La CI remota del commit final debe verificarse antes de integrar.
+
+### Límite de aceptación del MVP
+
+Se entrega la definición e instrumentación reproducible de métricas solicitada
+por JUP-068. El piloto con usuarios/tiempos/optimización observados sigue pendiente
+antes de afirmar beneficio. No se ha ejecutado ni se marca como ejecutado; los
+objetivos continúan siendo hipótesis. No hay Azure/LLM real, ahorro observado,
+calidad del asistente certificada ni autenticidad de referencias verificada por
+este calculador. La excepción dispensa interacciones humanas para entregar el
+instrumento, no convierte datos sintéticos en resultados reales.

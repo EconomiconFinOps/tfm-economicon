@@ -7,9 +7,11 @@ aportados por el equipo, offline y sin dependencias nuevas. No obtiene datos de
 Azure, ejecuta consultas al asistente ni demuestra beneficios reales por sí mismo.
 Versión del contrato: `schema_version: 1`. Las reglas de allocation proceden de
 [las reglas internas MVP](../assistant-corpus/business-rules/economicon-mvp-rules.md).
-Se conservan los roles de Trello: Víctor liderazgo, Alejandro pairing/coautoría,
-Lucía revisión, Paris validación. La participación efectiva y la aprobación de los
-objetivos propuestos quedan pendientes; no se atribuyen por crear este instrumento.
+Asignación histórica: Víctor liderazgo, Alejandro pairing/coautoría, Lucía revisión,
+Paris validación. El 10/10/2026 el usuario autorizó cerrar esta entrega bajo la
+excepción MVP, con ejecución de Alejandro asistida por agente principal y subagente
+independiente. No se atribuyen intervenciones ni aprobaciones humanas a los demás.
+Los objetivos de piloto siguen siendo hipótesis, no resultados ni consenso del equipo.
 
 ## Definiciones y objetivos propuestos
 
@@ -118,9 +120,13 @@ del producto ni recomendación ejecutable. No son evidencia de objetivos cumplid
 
 ## Entrega y límites
 
-Se entrega el método, registro, cálculo y pruebas. Pendientes: contraste de método
-y objetivos con Víctor, participación de pairing, revisión Lucía, validación Paris
-y captura del piloto con evidencia de ambas modalidades y recomendaciones. Las
-dependencias de captura son baseline de costes/asignación y oportunidades sustentadas,
-y resultados conformes al protocolo de JUP-069/JUP-070; no bloquean la prueba offline
-del instrumento. No cambiar Trello a Hecho sin la revisión y validación requeridas.
+Se entrega el método, registro, cálculo y pruebas bajo la excepción MVP autorizada
+el 10/10/2026 (chat `01a12707-b0dd-7043-915a-3922cd941a8f`). La revisión asistida
+independiente y validación técnica sustituyen las intervenciones humanas pendientes
+para este cierre; véase la evidencia enlazada. No se simulan pairing ni reviews humanas.
+
+La captura del piloto sigue sin realizarse: hacen falta tiempos observados de ambas
+modalidades, baseline homogénea y oportunidades sustentadas, con calidad conforme
+a JUP-069/JUP-070. Es condición para afirmar beneficio real, no un resultado de esta
+entrega de definición/instrumentación. Cerrar JUP-068 para el MVP no acredita ahorros,
+cumplimiento de los objetivos propuestos ni aprobación de estos por el equipo.
