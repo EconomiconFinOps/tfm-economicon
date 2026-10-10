@@ -6,7 +6,7 @@
 
 - Rama `feat/JUP-112-brand-identity`, creada desde `develop` en `d057537`. Implementación nueva; no reutiliza el borrador paralelo de otra rama (PR #102) sobre la misma tarjeta, por decisión de Lucia.
 - OpenSpec: `openspec/changes/archive/2026-10-10-jup-112-brand-identity/` (capacidad nueva `frontend-brand-identity` y delta de `frontend-navigation-shell`). ADR: [ADR-0012](../adr/ADR-0012-frontend-color-tokens.md), enmendado.
-- Evidencia: [JUP-112-validation.md](../evidence/JUP-112-validation.md) con capturas, validación de paletas y comportamiento del conmutador. Roles en Trello (2026-10-10): Lucia Mateo lidera y Paris Arcos Martin valida, por decisión de Lucia (intercambio de esos dos roles). Sin revisiones humanas todavía.
+- Evidencia: [JUP-112-validation.md](../evidence/JUP-112-validation.md) con capturas, validación de paletas y comportamiento del conmutador. Roles en Trello (2026-10-10): Lucia Mateo lidera y Paris Arcos Martin valida, por decisión de Lucia (intercambio de esos dos roles). PR [#112](https://github.com/EconomiconFinOps/tfm-economicon/pull/112) abierto como borrador contra `develop`; `JUP reviews` falla hasta que existan las dos reviews humanas. Sin revisiones humanas todavía.
 
 ## Decisiones que no se deducen del código
 
