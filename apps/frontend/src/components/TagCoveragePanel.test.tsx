@@ -32,6 +32,23 @@ async function openPanel() {
 }
 
 describe("TagCoveragePanel", () => {
+  it("refreshes coverage with dashboard costs and hides the previous snapshot while loading", async () => {
+    const pending = deferredResponse();
+    let calls = 0;
+    mockBackend({ "GET /billing/tag-coverage": () => ++calls === 1 ? jsonResponse(coverage) : pending.promise });
+    restoreSession(); renderApp();
+    const panel = await openPanel();
+    await within(panel).findAllByText("9007199254740993.01 USD");
+    const refresh = screen.getByRole("button", { name: /Actualizar costes|Reintentar/ });
+    await waitFor(() => expect(refresh).toBeEnabled());
+    await userEvent.click(refresh);
+    await waitFor(() => expect(calls).toBe(2));
+    expect(panel).toHaveTextContent("Cargando cobertura");
+    expect(panel).not.toHaveTextContent("9007199254740993");
+    await act(async () => { pending.resolve({ ...coverage, currencies: [], data_status: "empty" }); });
+    await waitFor(() => expect(panel).toHaveTextContent("Sin datos"));
+  });
+
   it("loads on expansion with tenant headers and exact money, within the current executive dashboard", async () => {
     const { requests } = mockBackend({ "GET /billing/tag-coverage": () => jsonResponse(coverage) });
     restoreSession(); renderApp();

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useOutletContext } from "react-router";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { RefreshCw } from "lucide-react";
@@ -19,6 +20,7 @@ const inputClass = "mt-1 block w-full min-w-0 rounded-md border border-border bg
 const buttonClass = "inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary to-highlight px-4 py-2 text-sm text-foreground transition-all hover:shadow-lg hover:shadow-info-tint/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-50";
 
 export function ExecutiveCostDashboard() {
+  const queryClient = useQueryClient();
   const { token, activeTenant } = useOutletContext<SessionOutletContext>();
   const [period, setPeriod] = useState(defaultMonthSelection);
   const [groupBy, setGroupBy] = useState<BillingGrouping>("service");
@@ -66,7 +68,10 @@ export function ExecutiveCostDashboard() {
           <p className="text-sm text-muted-foreground">Costes de Azure almacenados y normalizados</p>
         </div>
         {activeTenant && validSelection && <button type="button" className={buttonClass}
-          disabled={query.isFetching} onClick={() => { void query.refetch(); }}>
+          disabled={query.isFetching} onClick={() => {
+            void query.refetch();
+            void queryClient.invalidateQueries({ queryKey: ["tag-coverage", activeTenant.id] });
+          }}>
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
           {hasError ? "Reintentar" : "Actualizar costes"}
         </button>}

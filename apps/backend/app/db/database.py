@@ -181,6 +181,7 @@ class Database:
     def fetch_billing_summary(
         self, tenant_id: str, *, start_date, end_date,
         group_by: str = "subscription", tag_key: str | None = None,
+        include_provenance: bool = False,
     ) -> dict:
         from decimal import Decimal, ROUND_HALF_UP, localcontext
 
@@ -224,7 +225,11 @@ class Database:
             ), metadata AS (
                 SELECT (SELECT count(*) FROM completed WHERE usage_date IS NULL) AS undated,
                        (SELECT count(*) FROM period_records WHERE value IS NULL) AS missing,
-                       (SELECT count(*) FROM conflicts) AS ambiguous
+                       (SELECT count(*) FROM conflicts) AS ambiguous,
+                       (SELECT array_agg(DISTINCT ingestion_id) FROM period_records) AS source_ids,
+                       (SELECT min(usage_date) FROM period_records) AS first_date,
+                       (SELECT max(usage_date) FROM period_records) AS last_date,
+                       (SELECT count(DISTINCT usage_date) FROM period_records) AS observed_days
             ), aggregates AS (
                 SELECT 'total' AS kind, currency, CAST(NULL AS STRING) AS subscription_id,
                        CAST(NULL AS STRING) AS value, sum(pretax_cost) AS cost,
@@ -236,7 +241,8 @@ class Database:
                 FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
                 GROUP BY currency, group_subscription, {group_value}
             )
-            SELECT a.*, m.undated, m.missing, m.ambiguous
+            SELECT a.*, m.undated, m.missing, m.ambiguous,
+                   m.source_ids, m.first_date, m.last_date, m.observed_days
             FROM metadata m LEFT JOIN aggregates a ON TRUE
             ORDER BY a.currency ASC NULLS LAST, a.subscription_id ASC NULLS LAST,
                      a.value ASC NULLS LAST, a.kind
@@ -273,7 +279,7 @@ class Database:
             else:
                 groups.append({**item, "subscription_id": row["subscription_id"], "value": row["value"]})
         missing, undated = int(metadata["missing"]), int(metadata["undated"])
-        return {
+        result = {
             "contract_version": 2,
             "period": {"start_date": start_date.isoformat(), "end_date": end_date.isoformat(), "timezone": "UTC"},
             "group_by": group_by, "tag_key": tag_key,
@@ -284,6 +290,14 @@ class Database:
             "currency": totals[0]["currency"] if len(totals) == 1 else None,
             "savings_identified": None, "open_ingestions": int(job_count),
         }
+        if include_provenance:
+            result["provenance"] = {
+                "ingestion_ids": sorted(metadata["source_ids"] or []),
+                "first_usage_date": metadata["first_date"].isoformat() if metadata["first_date"] else None,
+                "last_usage_date": metadata["last_date"].isoformat() if metadata["last_date"] else None,
+                "observed_day_count": int(metadata["observed_days"]),
+            }
+        return result
 
     def fetch_tag_coverage(self, tenant_id: str, *, start_date, end_date) -> dict:
         from decimal import Decimal, ROUND_HALF_UP, localcontext

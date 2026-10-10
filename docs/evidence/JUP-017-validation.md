@@ -105,7 +105,7 @@ dashboard, select the period and expand “Cobertura de etiquetas FinOps”.
 Datasets ingested without required tags should show noncompliance, not inferred
 owners/application. No ingestion mutation or automatic tag repair is exposed.
 
-## Pending independent delivery work
+## Historical independent delivery work (superseded by the 2026-10-10 exception below)
 
 Lucia's assigned pairing/co-authorship has not been evidenced by this automation.
 Paris's assigned PR review and Victor's validation remain human/team work.
@@ -141,3 +141,77 @@ No human pairing, review or validation is asserted. Draft and assigned roles
 remain unchanged; the user declined a pairing exception on 2026-10-05.
 Changes inherited from develop affect behaviour, so independent validation must
 use this reconciled head rather than the original `bae4902` evidence alone.
+
+## MVP delivery exception and reconciliation — 2026-10-10
+
+The user explicitly instructed completion of PR66 with a subagent and asked
+to record an exception for MVP delivery in task
+`01a12707-b0dd-7043-915a-3922cd941a8f` ("Revisa las PR en draft"). This supersedes
+the 2026-10-05 refusal for JUP-017 only. Pending team interactions, human pairing,
+review and validation are waived for this delivery; they are not retrospectively
+claimed as performed. No global governance rules or required checks are changed.
+
+Actual attribution: Alejandro Aguado's authorized assisted execution; primary
+agent resolves, implements and validates; independent subagent
+`/root/review_jup017` reviews code and executes frontend regressions. No pairing,
+review, validation or approval is attributed to Lucia, Paris or Victor. The
+subagent's technical opinion is not a GitHub approval from another team member.
+
+Reconciled against develop `412ae411c7f3a9b51f65407974962ac2b4545686`.
+The billing conflict retains the shared `canonical_tag_key` and the tag-coverage
+route alongside summary and budget evaluation. SQL coverage/policy unchanged.
+The dashboard's refresh now invalidates coverage for its active tenant, and the
+panel hides the old snapshot while fetching. A regression exercises that click,
+the new request and replacement of stale amounts. A duplicate continuity pointer
+introduced by the merge was removed; existing instructions remain intact.
+
+### Independent assisted code review
+
+Subagent verdict: technical APPROVE, medium confidence, no new blocking findings.
+Inspected merge resolution, policy, aggregation, authorization, error paths and
+refresh correction. Ran from `apps/frontend`:
+
+```powershell
+node node_modules/vitest/vitest.mjs run src/components/TagCoveragePanel.test.tsx src/pages/ExecutiveCostDashboard.test.tsx src/services/api.test.ts --maxWorkers=2 --minWorkers=1 --reporter=dot
+```
+
+Result: **46/46 passed**. Mocked HTTP; not a deployed end-to-end test. The subagent
+could not execute Python fixtures due to sandbox temporary-directory permissions;
+the primary agent runs the isolated SQL validation separately below.
+
+### Other current checks
+
+- Frontend application and test TypeScript checks, ESLint and Vite build pass.
+  Existing bundle-size warning remains.
+- PR/CI/repository governance: **82/82 passed**.
+- Strict OpenSpec: **58/58 passed**. JUP traceability and repository hygiene pass.
+- Initial Python run in the sandbox failed at setup (temporary-directory access);
+  this was an environment failure, not a successful functional validation.
+
+Historical evidence above retains its original dates. This exception does not
+close JUP-015 or certify corporate catalogs, Azure production data or new browser
+E2E coverage. Remote CI and final integration are recorded in the PR and Trello.
+
+### Current functional validation with real SQL
+
+Primary agent: **94 passed, 0 skipped**, 159.21s on 2026-10-10:
+
+```powershell
+# apps/backend; JUP086_COCKROACH_TEST_URL points to the exclusively owned test instance
+python -m pytest tests/test_tag_coverage.py tests/test_billing_summary.py tests/test_budget_evaluation.py -q --tb=short -p no:cacheprovider --basetemp=C:/Users/DanteInferno/Documents/Economicon/tmp/jup017-mvp-backend-sql
+```
+
+CockroachDB v24.1.11, dedicated ephemeral container `economicon-jup017-mvp-tests`,
+remote loopback 56517 and local tunnel 28417. Organization marker checked by
+fixtures; only unique test databases created/dropped. Synthetic data only.
+Ran outside sandbox to allow owned pytest temporary files and the SQL tunnel.
+Python 3.14 deprecation warnings are retained; no test was skipped or suppressed.
+
+Acceptance evidence: five valid tags/invalid values, positive-cost weighting,
+negative adjustments, net-zero, zero/empty periods, separate currencies and
+large Decimal amounts, tenant/auth/period isolation, and overlap rejection are
+exercised by test_tag_coverage. Shared summary and budget regressions exercise
+the reconciled route. Frontend's 46 cases cover loading/error/selection changes,
+exact amounts and the new refresh. Documentation/ADR/spec and PR links provide
+the documentary criteria; this is assisted validation under the exception,
+not a human validator's review or a production deployment certification.

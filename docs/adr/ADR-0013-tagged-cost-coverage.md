@@ -1,6 +1,6 @@
 # ADR-0013: Coverage weighted by positive cost and a versioned tag policy
 
-- Status: Proposed
+- Status: Accepted for MVP under the user-authorized delivery exception (2026-10-10)
 - Date: 2026-10-03
 - Related JUP/OpenSpec: JUP-017 / jup-017-tagged-cost-coverage
 - Trello: https://trello.com/c/3wiy5PJS

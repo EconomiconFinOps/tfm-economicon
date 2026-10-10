@@ -22,7 +22,7 @@ export function TagCoveragePanel({ token, tenantId, period }: Props) {
     retry: (count, error) => !(error instanceof ApiError && [400, 401, 403, 409, 422].includes(error.status))
       && count < 2
   });
-  const coverage = valid && !query.isError ? query.data : undefined;
+  const coverage = valid && !query.isFetching && !query.isError ? query.data : undefined;
   const overlap = query.error instanceof ApiError && query.error.status === 409;
   return <details className="rounded-lg border border-border bg-card p-4"
     onToggle={(event) => setOpen(event.currentTarget.open)}>

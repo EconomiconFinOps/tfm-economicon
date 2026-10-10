@@ -124,6 +124,7 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "retrieval-labels:test",
     "retrieval-calibration:test",
     "assistant-metrics:test",
+    "assistant-eval:test",
     "synthetic-costs:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
@@ -139,11 +140,13 @@ test("retains all existing governance, corpus and gateway validations", () => {
 test("requires real frontend tests and lint before the mandatory build", () => {
   const steps = workflow.jobs["frontend-build"].steps;
   const lint = steps.findIndex(({ run }) => run === "corepack pnpm lint --filter=@finops/frontend");
-  const tests = steps.findIndex(({ run }) => run === "corepack pnpm test --filter=@finops/frontend");
+  // Execute Vitest directly: a Turbo cache hit is not fresh test evidence.
+  const tests = steps.findIndex(({ run }) => run === "corepack pnpm --filter @finops/frontend test");
   const build = steps.findIndex(({ run }) => run === "corepack pnpm --filter @finops/frontend build");
   assert.ok(lint >= 0 && tests > lint && build > tests);
   assert.equal(steps[lint]["continue-on-error"], undefined);
   assert.equal(steps[tests]["continue-on-error"], undefined);
+  assert.equal(steps[tests].if, undefined);
   assert.equal(workflow.jobs["frontend-build"]["continue-on-error"], undefined);
   const frontend = JSON.parse(fs.readFileSync(path.join(root, "apps/frontend/package.json"), "utf8"));
   assert.equal(frontend.scripts.test, "vitest run");

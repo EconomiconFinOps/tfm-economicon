@@ -1,10 +1,9 @@
-import os
-
 from sqlalchemy import text
 
 
-def upgrade(connection) -> None:
-    embedding_dimension = int(os.getenv("EMBEDDING_DIMENSION", "8"))
+def upgrade(connection, *, embedding_dimension: int) -> None:
+    # Use the store's resolved Settings value, including an optional env file.
+    # This migration only creates a new schema; existing vectors are never resized.
     connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
     connection.execute(
         text(

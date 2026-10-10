@@ -3,7 +3,7 @@ Trello: https://trello.com/c/Yqg2iZsj/86-jup-094-reconciliar-packagejson-del-fro
 
 ## Why
 
-[JUP-093](../archive/2026-09-06-jup-093-configure-typescript/) dejó la cadena de herramientas de
+[JUP-093](../../archive/2026-09-06-jup-093-configure-typescript/) dejó la cadena de herramientas de
 `apps/frontend` lista (TypeScript, lint, type-check obligatorio en CI), pero **el paquete sigue
 declarando solo lo que necesita el destino actual**: 3 dependencias de runtime y ninguna de las que
 el código del origen usa de verdad. F3 no puede reemplazar `src/**` sin que estén: la primera
@@ -12,7 +12,7 @@ pantalla portada importaría `react-router`, `recharts` o `lucide-react` y no co
 Esta tarjeta cierra F2 resolviendo, además, **las dos decisiones que JUP-093 aplazó explícitamente**
 y que ninguna otra tarjeta tiene asignadas:
 
-- **`RF-091-002` (shadcn/ui).** El inventario de [JUP-091](../../../docs/planning/JUP-091-economicon-source-inventory.md)
+- **`RF-091-002` (shadcn/ui).** El inventario de [JUP-091](../../../../docs/planning/JUP-091-economicon-source-inventory.md)
   clasificó 48 de las 61 dependencias del origen como `DESCARTAR`, de las cuales **38 son shadcn/ui y
   su soporte**. La etiqueta refleja el uso real —ninguna pantalla del origen importa esos
   componentes—, pero el destino sí necesita primitivos de formulario, así que la decisión de adoptar
@@ -55,7 +55,7 @@ mismo que hoy, pero su `package.json` ya sostiene lo que F3 va a importar.
   previsto, sin arrastres del origen y sin romper el contrato del paquete con el monorepo
   (nombre, tipo de módulo, scripts, puerto) ni la reproducibilidad del lockfile. Es comportamiento
   verificable de la plataforma de build, complementario a
-  [`frontend-typescript-tooling`](../../specs/frontend-typescript-tooling/spec.md) (JUP-093), que
+  [`frontend-typescript-tooling`](../../../specs/frontend-typescript-tooling/spec.md) (JUP-093), que
   cubre la verificación de tipos.
 
 ### Modified Capabilities
@@ -118,7 +118,7 @@ subconjunto de 6 paquetes (`@radix-ui/react-label`, `-select`, `-slot`, `-separa
 
 **Consecuencia sobre el ADR (decisión 2 original):** al ser ahora una adopción, y no un descarte, el
 ADR pasa de "no aplica" a **obligatorio**, tal como la propia decisión 2 ya anticipaba condicionalmente.
-Redactado como [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md), en estado `Proposed`.
+Redactado como [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md), en estado `Proposed`.
 **Ningún paquete `@radix-ui/*` se instala hasta que se acepte** (tarea 1.2/2.5 de `tasks.md`).
 
 **Alcance sin cambios en lo demás:** las decisiones 3, 4 y 5 (Vite en la serie 5, reparto

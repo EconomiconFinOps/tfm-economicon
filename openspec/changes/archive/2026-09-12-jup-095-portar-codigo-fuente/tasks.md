@@ -1,3 +1,11 @@
+> **Nota del 2026-10-09 (JUP-105).** Este documento archivado es un registro de lo que se decidió y
+> verificó hasta el archivado de la tarjeta (2026-09-12) y no se reescribe. Una afirmación suya dejó
+> de ser cierta después: **`Frontend tests` como comprobación obligatoria** (tareas 1.1, 2.4 y 2.5).
+> El job duplicaba la ejecución de pruebas que ya cubre `Frontend build` y se retiró el 2026-09-19, al
+> reconciliar con `develop`, junto con sus entradas en los rulesets. Los checks obligatorios vigentes
+> son ocho; la historia está en
+> [la guía de gobernanza](../../../../docs/governance/github-branch-protection.md).
+
 ## 1. Gate pre-código y línea base
 
 - [x] 1.1 Llevar al **gate pre-código** las decisiones del `design.md` y registrar la resolución en el
@@ -41,7 +49,7 @@
   *Frontend build* y *Frontend type check* (`corepack pnpm --filter @finops/frontend test`). Hecho:
   job `frontend-tests`, copiado literal del patrón de `frontend-typecheck` (Red `f07367d` sobre
   `tools/ci-workflow.test.mjs`, Green pendiente de commit). Requirió desactivar y reactivar el hook
-  `lock-committed-tests.mjs` con autorización de Victor — ver `review.md`.
+  de protección de tests del entorno local con autorización de Victor — ver `review.md`.
 - [x] 2.5 Registrar *Frontend tests* como comprobación obligatoria en `.github/rulesets/develop.json`
   y `.github/rulesets/main.json`, y documentarlo en `docs/governance/github-branch-protection.md`,
   anotando que la activación remota es acción de administrador (mismo patrón que JUP-093). Hecho:
@@ -74,7 +82,7 @@
 
 - [x] 4.1 Copiar a `src/components/ui/` únicamente los primitivos que las pantallas reconstruidas
   vayan a usar, uno a uno, del subconjunto de 6 autorizado por
-  [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md). Ningún otro de los 48 archivos de
+  [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md). Ningún otro de los 48 archivos de
   `ui/` del origen entra. Hecho: `label.tsx`, `separator.tsx`, `select.tsx`, `dialog.tsx`,
   `tooltip.tsx`, copias literales del origen verificadas por `diff` (por mí y por QA). Sin archivo
   para `@radix-ui/react-slot`: ninguno de los 5 lo importa, no hay bloque que portar.
@@ -295,7 +303,7 @@ Tailwind). Veredicto QA: `accept` — **cierra el grupo 6 entero**.
   manual E2E (6.6/7.3), limitaciones/deuda y enlaces de PR/CI en pendiente (se completan al abrir el
   PR).
 - [x] 9.6 Actualizar `apps/frontend/README.md` (stack, estructura y rutas) y la sección de seguimiento
-  de [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md) con lo que esta tarjeta ejecutó.
+  de [ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md) con lo que esta tarjeta ejecutó.
   Hecho: README con stack real (TS en casi todo `src/`, react-router real, Vitest, shadcn/ui
   cableado), árbol de `estructura` actualizado (sin `AppShell.jsx`, con `data/demo`, `layouts`,
   `lib`, `test`), sección nueva "Rutas" con el mapa completo y qué pantallas tienen datos reales vs.

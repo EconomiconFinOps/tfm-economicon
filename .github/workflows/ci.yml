@@ -76,11 +76,13 @@ jobs:
           corepack pnpm retrieval-labels:test
           corepack pnpm retrieval-calibration:test
           corepack pnpm assistant-metrics:test
+          corepack pnpm assistant-eval:test
           corepack pnpm synthetic-costs:test
           corepack pnpm llm-gateway:test
           corepack pnpm docker:validate
           corepack pnpm local:test
           corepack pnpm collaboration:test
+          corepack pnpm contributions:test
           corepack pnpm openspec:validate
 
   python-tests:
@@ -136,7 +138,7 @@ jobs:
       - name: Lint frontend
         run: corepack pnpm lint --filter=@finops/frontend
       - name: Test frontend journeys
-        run: corepack pnpm test --filter=@finops/frontend
+        run: corepack pnpm --filter @finops/frontend test
       - name: Build frontend
         run: corepack pnpm --filter @finops/frontend build
 
