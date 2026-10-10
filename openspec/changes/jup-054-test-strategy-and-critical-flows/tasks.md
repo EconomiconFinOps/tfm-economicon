@@ -13,6 +13,6 @@
 
 ## 3. Evidence and delivery
 
-- [ ] 3.1 JUP-054 run applicable checks freshly and record versions, passes, skips and limitations.
-- [ ] 3.2 JUP-054 document evidence by criterion and update continuity.
-- [ ] 3.3 JUP-054 prepare the independent contribution for leadership review, without claiming human pairing or acceptance.
+- [x] 3.1 JUP-054 run applicable checks freshly and record versions, passes, skips and limitations.
+- [x] 3.2 JUP-054 document evidence by criterion and update continuity.
+- [x] 3.3 JUP-054 prepare the independent contribution for leadership review, without claiming human pairing or acceptance.

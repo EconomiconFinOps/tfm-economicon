@@ -139,7 +139,9 @@ def ingestion_factory(azure_api_url, isolation_database, monkeypatch):
             _env_file=None,
             azure_cost_api_base_url=azure_api_url,
             azure_cost_api_token=token,
-            azure_cost_api_timeout_seconds=2,
+            # Contract tests allow a loaded host to reply; deadline behavior is
+            # tested separately in test_azure_cost_client.py.
+            azure_cost_api_timeout_seconds=10,
             azure_cost_api_max_retries=0,
         )
         return AzureCostIngestionService(

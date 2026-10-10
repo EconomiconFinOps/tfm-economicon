@@ -26,7 +26,7 @@ unitarias e integradas»; chat de origen del encargo:
 
 ## Estado y próximos pasos
 
-Contribución técnica en verificación. Consultar el informe para los resultados
+[PR draft #93](https://github.com/EconomiconFinOps/tfm-economicon/pull/93) publicada: 7 pruebas nuevas, CI Linux 2041 passed / 91 skipped y recorrido real 3 passed. Windows presenta limitaciones de socketpair y tiempos, conservadas en el informe. Consultar el informe para los resultados
 finales, limitaciones y enlace de PR. Completar revisión/adopción de Lucía y los
-dictámenes independientes antes de integrar/cerrar. Sin movimientos Trello ni
-mensajes Discord. Actualizar esta entrada al publicar la entrega.
+dictámenes independientes antes de integrar/cerrar. Sin movimientos de lista Trello ni
+mensajes Discord. Evidencia enlazada desde la PR; adopción de liderazgo y dictámenes pendientes.
