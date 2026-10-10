@@ -23,7 +23,11 @@ el comentario de DashboardPage, incorpora el diagnóstico Codex ya entregado y
 registra el resultado final de la CI de ca9e67f. El historial de aprobación del
 09/10 se conserva con una nota que distingue el encargo posterior.
 
-Pendientes tras la publicación: CI del nuevo aporte; criterio 1 con
+Publicación confirmada: #86 recibió `12841e6487b5bb3ae3154e53f1e5ac649b422d88`
+por fast-forward desde `ca9e67f`. La CI se consulta por SHA en la pestaña de checks
+y el cuerpo de #86; el verde histórico de ca9e67f no se atribuye a commits nuevos.
+
+Pendientes: criterio 1 con
 fallos Windows RF-105-004; confirmación de
 [consola normal y runtime RF-093-001](pnpm-entorno-rf093001.md); responsables
 individuales/tarjetas de seguimientos que Trello aún no asigna; dictámenes
