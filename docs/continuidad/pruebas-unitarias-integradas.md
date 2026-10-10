@@ -30,3 +30,5 @@ unitarias e integradas»; chat de origen del encargo:
 finales, limitaciones y enlace de PR. Completar revisión/adopción de Lucía y los
 dictámenes independientes antes de integrar/cerrar. Sin movimientos de lista Trello ni
 mensajes Discord. Evidencia enlazada desde la PR; adopción de liderazgo y dictámenes pendientes.
+
+Evidencia enlazada en Trello mediante comentario 6ac9ee125de4e83652da6c32 (10/10/2026); tarjeta conservada en Backlog y roles sin cambios. Los contenedores/red/tunel exclusivos ya se retiraron. Repeticion final conjunta: 7 passed en 24.53 s.
