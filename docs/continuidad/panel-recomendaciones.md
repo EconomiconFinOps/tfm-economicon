@@ -58,5 +58,13 @@ asignado a validación. Entrega en rama propia para Lucía, sin reasignar roles
 ni acreditar pairing o dictámenes humanos. No debe validarse el propio cambio;
 el liderazgo resolverá autoría/independencia antes de aceptación formal.
 
-Pendiente de publicación del borrador y enlace en Trello. Después: integración
-033/034, contraste con backend, pairing, revisiones independientes y aceptación.
+Publicado el commit de implementación `8e1b644` y el borrador
+[PR #107](https://github.com/EconomiconFinOps/tfm-economicon/pull/107), contra
+`develop`, adjunto a este chat. El 10/10 se enlazaron PR y evidencias desde la
+integración oficial, comentario Trello `6ac9ef79f5a45d6ff660e2b5` a las
+07:55:37 UTC. La tarjeta conserva Backlog y sus criterios/roles originales;
+no se atribuye movimiento al liderazgo ni se marca completada.
+
+Pendientes: revisión y decisión de Lucía sobre la contribución y la independencia,
+pairing, revisiones formales, integración 033/034 y contraste con backend.
+No se solicitó merge, no se publicaron dictámenes humanos y no se archivó el chat.

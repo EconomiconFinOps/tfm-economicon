@@ -12,7 +12,7 @@ Esta evidencia es propia de implementación; no constituye las reviews
 | Resultado funcional verificable | Panel en `/recommendations`: filtros combinados, orden, mensual/anual, detalle, evidencia y CSV. Demo explícita; consulta del cliente con contrato propuesto JUP-033 y estados carga/error/reintento/vacío. Ver capturas y pruebas. Backend desplegado no comprobado. |
 | Pruebas necesarias añadidas y en verde | 16 pruebas focales superadas; contratos Python 9/9; typecheck y lint correctos. Resultado de suite completa registrado abajo. |
 | Documentación y decisiones actualizadas | OpenSpec `jup-058-recommendations-panel`, [arquitectura](../../architecture/recommendations-panel.md), README frontend, mapa JUP-097 y [continuidad](../../continuidad/panel-recomendaciones.md). |
-| Pull request revisado y vinculado | PR de entrega preparada para `develop`; revisión humana pendiente. La evaluación interna asistida no cubre este criterio. |
+| Pull request revisado y vinculado | [PR #107](https://github.com/EconomiconFinOps/tfm-economicon/pull/107) draft contra `develop`, enlazada en Trello mediante comentario `6ac9ef79f5a45d6ff660e2b5`; revisión humana pendiente. La evaluación interna asistida no cubre este criterio. |
 | Validación funcional y evidencia enlazadas | Interacciones comprobadas con Chromium y dobles HTTP; [contraste Python](contract-check.json) reproducible. Validación formal independiente pendiente; Alejandro sigue asignado en Trello, pero no puede validar esta contribución preparada desde su cuenta. No se declara aceptado el criterio global. |
 
 ## Pruebas y comandos
