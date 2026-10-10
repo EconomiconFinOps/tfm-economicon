@@ -19,6 +19,7 @@ import type {
   UserProfile
 } from "./contracts";
 import { isBillingSummary, isLoginResponse, isUserProfile } from "./contracts";
+import { isRecommendationReport, type RecommendationReport } from "./recommendations";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
@@ -166,6 +167,16 @@ export function fetchBillingSummary(token: string, tenantId: string, selection: 
   const query = params.toString();
   return fetchJson<BillingSummary>(`/billing/summary${query ? `?${query}` : ""}`, {
     token, tenantId, signal, validate: isBillingSummary
+  });
+}
+
+// JUP-033 proposed read-only contract. The backend dependency must be deployed;
+// a missing endpoint is an explicit error and never falls back to demo data.
+export function fetchRecommendations(token: string, tenantId: string, selection: { start_date: string; end_date: string }, signal?: AbortSignal) {
+  const params = new URLSearchParams(selection);
+  return fetchJson<RecommendationReport>(`/billing/recommendations?${params}`, {
+    token, tenantId, signal,
+    validate: value => isRecommendationReport(value) && value.period.start_date === selection.start_date && value.period.end_date === selection.end_date,
   });
 }
 

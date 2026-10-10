@@ -409,3 +409,18 @@ La ruta `/system-health`, bajo sesión y ámbito del cliente, muestra disponibil
 Se conserva la última observación real y su fecha hasta otro resultado real, sin caducidad automática por TTL. Un timeout nuevo produce `unknown` y conserva la fecha y el identificador del éxito anterior como historia; GET/polling no renueva fechas ni convierte esa historia en disponibilidad actual. OpenRouter muestra «Disponible» y «Respuesta válida a» para la última respuesta funcional válida que siga siendo el resultado actual. «Modelo informado»/«Identidad no confirmada» y coste del gateway no confirmado/no disponible/inválido aparecen aparte. Se usa el intento y tenant seleccionados. Azure mantiene la procedencia explícita «SIMULADO»; las fechas UTC válidas admiten hasta 1000 ms futuros inclusive respecto de la recepción para su presentación, conservando su valor original.
 
 Véase el [runbook de salud](../../docs/runbooks/system-health.md) para contrato, configuración y gates reales. Las pruebas semánticas jsdom y la preview sintética no acreditan píxeles, overflow, recorrido completo de teclado ni OpenRouter real. La comprobación remota M5 corresponde a Alejandro y sigue pendiente.
+
+## Panel de recomendaciones (JUP-058)
+
+La ruta `/recommendations` abre una demostración explícita con filtros por tipo
+y dificultad, orden por ahorro o dificultad, detalle con evidencia y exportación
+CSV de la selección. Los ejemplos son independientes del cliente seleccionado.
+
+«Consultar cliente» reutiliza sesión, tenant y mes completo UTC para leer
+`GET /billing/recommendations`, contrato propuesto JUP-033. Si el endpoint aún
+no está integrado, muestra error/no disponibilidad; no sustituye datos por demo.
+El impacto JUP-034 se recibe como informe ya evaluado en el adaptador; no se
+inventan costes objetivo ni se invoca un motor desde el panel.
+
+Véanse el [contrato y límites](../../docs/architecture/recommendations-panel.md)
+y la [evidencia reproducible](../../docs/validation/jup058/README.md).

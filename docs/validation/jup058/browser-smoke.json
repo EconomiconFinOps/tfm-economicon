@@ -1,0 +1,42 @@
+{
+  "target": "http://127.0.0.1:5859",
+  "source": "Compiled production frontend; synthetic session/profile/tenant and HTTP503 doubles; no backend or Azure validation.",
+  "desktop": {
+    "viewport": 1440,
+    "width": 1440
+  },
+  "mobile": {
+    "viewport": 390,
+    "width": 1134
+  },
+  "checks": [
+    "Demo opens with five contract doubles without querying recommendations",
+    "Downloaded CSV contains only the filtered recommendation and preserves zero, period and scenario basis",
+    "Empty intersection disables CSV",
+    "Client HTTP503 and retry show explicit error with tenant header, no silent demo fallback"
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tenants",
+      "tenant": null
+    },
+    {
+      "method": "GET",
+      "path": "/me",
+      "tenant": null
+    },
+    {
+      "method": "GET",
+      "path": "/billing/recommendations",
+      "tenant": "tenant-a"
+    },
+    {
+      "method": "GET",
+      "path": "/billing/recommendations",
+      "tenant": "tenant-a"
+    }
+  ],
+  "inventory": "OPTIMIZACIÓN DE COSTES · AZURE\n\nPanel de Recomendaciones\n\nPrioriza oportunidades y revisa su evidencia antes de decidir.\n\nDemostración\nConsultar cliente\n\nDemostración · septiembre de 2026\n\nEjemplos estáticos independientes del cliente seleccionado. Las dificultades y los escenarios de ahorro son hipotéticos; no son resultados reales ni ahorros garantizados.\n\nVista actual · el resumen cambia con los filtros\n2026-09-01 → 2026-10-01 (fin exclusivo · UTC)\nRecomendaciones visibles\n5\n\nde 5 recibidas\n\nCon estimación de ahorro\n4\n\nIncluye estimaciones de cero\n\nDificultad baja\n2\n\nSegún la evaluación recibida\n\nAhorro sin estimar\n1\n\nInformación pendiente\n\nOportunidades para revisar\nExportar vista CSV\nTipo\nTodos los tipos\nEtiquetado\nInvestigación\nDificultad\nTodas las dificultades\nBaja\nMedia\nAlta\nPor evaluar\nOrdenar por\nMayor ahorro estimado\nMenor dificultad\nAhorro estimado\nMensual\nAnual\nRestablecer filtros\n\nMostrando 5 de 5 recomendaciones\n\nMonedas separadas · mayor ahorro primero · sin estimación al final\n\nLas estimaciones no se suman: pueden solaparse. La proyección anual es la del escenario recibido, no un ahorro realizado.\n\nInvestigación\nCandidato a investigación\nRevisar el consumo de Atlas · producción\n\nAtlas concentra el mayor coste de su grupo en la muestra. El coste observado justifica investigar; no demuestra que los recursos estén sobredimensionados.\n\nDificultad: Media\nProyecto: Atlas · producción\n\nAhorro potencial · mensual\n\n900,00EUR\n\nEstimación de escenario\n\nVer acción y evidencia\n: Revisar el consumo de Atlas · producción\nInvestigación\nCandidato a investigación\nContrastar una alternativa para Atlas\n\nEl escenario comparte alcance de costes con la revisión de Atlas. Son alternativas: no deben sumarse como oportunidades independientes.\n\nDificultad: Alta\nProyecto: Atlas · producción\n\nAhorro potencial · mensual\n\n650,00EUR\n\nEstimación de escenario\n\nAlternativa solapada · excluida del total\n\nVer acción y evidencia\n: Contrastar una alternativa para Atlas\nEtiquetado\nHallazgo respaldado por costes\nCompletar la atribución de costes por proyecto\n\nHay costes de Azure sin proyecto asignado. Confirmar su propietario permite mejorar la atribución; etiquetar por sí solo no reduce el consumo.\n\nDificultad: Baja\nProyecto: Sin asignar\n\nAhorro potencial · mensual\n\n0,00EUR\n\nEscenario sin ahorro previsto\n\nVer acción y evidencia\n: Completar la atribución de costes por proyecto\nInvestigación\nCandidato a investigación\nInvestigar el consumo de Boreal\n\nEl conjunto de muestra incluye un proyecto facturado en USD. Cualquier escenario se mantiene separado de las estimaciones en EUR.\n\nDificultad: Baja\nProyecto: Boreal\n\nAhorro potencial · mensual\n\n400,00USD\n\nEstimación de escenario\n\nVer acción y evidencia\n: Investigar el consumo de Boreal\nInvestigación\nCandidato a investigación\nRecopilar métricas del proyecto Nébula\n\nFaltan métricas de uso y un escenario objetivo verificable para estimar el ahorro o la dificultad. No se presupone una reducción de costes.\n\nDificultad: Por evaluar\nProyecto: Nébula\n\nAhorro potencial · mensual\n\nNo estimado\n\nFaltan datos para cuantificar\n\nVer acción y evidencia\n: Recopilar métricas del proyecto Nébula\nCobertura y límites del informe\n\nDatos parciales: 16 registros sin proyecto; 0 registros sin fecha excluidos.\n\nMuestra estática de interfaz: acciones y dificultad redactadas para demostrar la priorización.\nEl coste observado no equivale a un ahorro alcanzable.\nLos ejemplos son independientes del cliente seleccionado y no provienen de una ejecución real.\nLa evaluación de recursos requiere telemetría y revisión de su propietario.\nLa proyección anual del escenario mantiene las condiciones mensuales durante doce meses.\nNinguna estimación es un ahorro realizado o garantizado.\nLos escenarios que comparten alcance no son aditivos; la interfaz conserva las exclusiones del informe.\n\nFuera de la evaluación\n\nDimensionamiento: faltan Métricas de utilización, Validación del propietario."
+}

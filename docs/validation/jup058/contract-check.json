@@ -1,0 +1,84 @@
+{
+  "checked_at_utc": "2026-10-10T09:47:39.4845+02:00",
+  "scope": "Local serialized fixtures and actual proposed Pydantic models/service; no HTTP, database or deployment",
+  "sources": {
+    "recommendation_schema": {
+      "path": "../tfm-economicon-jup033\\apps\\backend\\app\\schemas\\recommendations.py",
+      "sha256": "4f92f9496fa37f6d0c02e6a1805c25bb23077e7d2dbd39debf3b557512e2b4d2",
+      "resolved_json_schema_sha256": "c4797ac3e7d0e7695c231a32ee5e85b165208fcc5fa3a4909e4cdc4fe6c5a8c4"
+    },
+    "billing_schema_dependency": {
+      "path": "../tfm-economicon-jup033\\apps\\backend\\app\\schemas\\billing.py",
+      "sha256": "5ed20aea76a049b7bd8feaaddd9a92b5abc46ed8fc960f038d7604523c0a4424"
+    },
+    "impact_schema": {
+      "path": "../tfm-economicon-jup034\\apps\\backend\\app\\schemas\\recommendation_impact.py",
+      "sha256": "9efcdffc23260eb2016b5ab4e526b73114c006a23947680107c6859f9fffd1b5",
+      "resolved_json_schema_sha256": "8e09dc5654d6fc54050cebc3928f2115c9f86f18cd59cc68f8f09f87fb02e9bb"
+    },
+    "impact_service": {
+      "path": "../tfm-economicon-jup034\\apps\\backend\\app\\services\\recommendation_impact.py",
+      "sha256": "dbe815eea6522fd07714e48695c2134793b429de2aef25a5d95d76f977047914"
+    },
+    "fixture": {
+      "path": "../tfm-economicon-jup058\\apps\\frontend\\src\\data\\demo\\recommendationsPanel.ts",
+      "sha256": "4944f757f3a4a4c5a76d3bb4993309c417f19bcdd74b0872e41a8ab546a78aa7"
+    },
+    "frontend_contract": {
+      "path": "../tfm-economicon-jup058\\apps\\frontend\\src\\services\\recommendations.ts",
+      "sha256": "5a5d92779b422b7f96abcb47f3fe6100e3a878e4e8b2643f6240b1e74857bd61"
+    }
+  },
+  "checks": [
+    {
+      "name": "frontend guard accepts serialized recommendation fixture",
+      "passed": true
+    },
+    {
+      "name": "recommendations: Pydantic accepts fixture and JSON round-trip is identical",
+      "passed": true
+    },
+    {
+      "name": "impact: Pydantic accepts fixture and JSON round-trip is identical",
+      "passed": true
+    },
+    {
+      "name": "ImpactRequest validates the fixture scenarios together",
+      "passed": true
+    },
+    {
+      "name": "impact financial fields, membership and exclusions match the actual JUP-034 service",
+      "passed": true,
+      "differences": []
+    },
+    {
+      "name": "rejects false human approval requirement",
+      "passed": true
+    },
+    {
+      "name": "rejects broken evidence references",
+      "passed": true
+    },
+    {
+      "name": "rejects unpaired baseline/target costs",
+      "passed": true
+    },
+    {
+      "name": "source hashes stable during the run",
+      "passed": true,
+      "changed": []
+    }
+  ],
+  "limitations": [
+    "Other chats own these dependency checkouts; source hashes identify the observed versions.",
+    "JUP-058 data is explicitly authored demonstration data, not output observed from the JUP-033 engine.",
+    "No validation of real tenant authorization, database contents, endpoint availability or human acceptance."
+  ],
+  "versions": {
+    "python": "3.14.4",
+    "pydantic": "2.12.5",
+    "typescript": "5.9.3",
+    "node": "v24.14.1"
+  },
+  "passed": true
+}

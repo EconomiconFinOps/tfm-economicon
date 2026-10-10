@@ -40,8 +40,8 @@ Los gráficos mensuales, la exportación y el inventario siguen siendo demostrac
 | `ExecutiveCutDashboard` | `/cuts` | `executiveCutDashboard.ts` | `kpiData` (ahorro total, objetivo mensual, alcanzado, acciones activas) | **C4** — objetivos y acciones de recorte | `RF-091-003` |
 | `AnomaliesPanel` | `/anomalies` | `anomaliesPanel.ts` | `anomalies` (tipo, servicio, severidad, descripción, agente) | **C5** — detección de anomalías | `RF-091-003` |
 | `AnomaliesPanel` | `/anomalies` | `anomaliesPanel.ts` | Indicadores derivados de `anomalies` (abiertas, altas abiertas, impacto abierto y resueltas); JUP-057 retira `trendData` y `stats` ficticios | **C5** — detección de anomalías; los indicadores siguen basados en fixtures | `RF-091-003` |
-| `RecommendationsPanel` | `/recommendations` | `recommendationsPanel.ts` | `recommendations` (título, categoría, ahorro estimado, agente) | **C6** — motor de recomendaciones | `RF-091-003` |
-| `RecommendationsPanel` | `/recommendations` | `recommendationsPanel.ts` | `savingsByCategory` + `stats` | **C6** — motor de recomendaciones | `RF-091-003` |
+| `RecommendationsPanel` | `/recommendations` | `recommendationsPanel.ts` | JUP-058: `demoRecommendationReport` + `demoImpactReport`, dobles explícitos de los contratos propuestos JUP-033/034; filtros, detalle y CSV de la vista | **C6** — lectura optativa de `/billing/recommendations`; integración desplegada pendiente. No ejecuta el motor ni infiere escenarios | `RF-091-003` |
+| `RecommendationsPanel` | `/recommendations` | `recommendationsPanel.ts` | JUP-058 elimina `savingsByCategory`/`stats` y deriva recuentos de filas visibles, sin sumar escenarios ni monedas | **C6** — backend 033/034 fuera de esta entrega; no acredita ahorros realizados | `RF-091-003` |
 
 ## Resumen por capacidad (referencia: `RF-091-003`)
 
