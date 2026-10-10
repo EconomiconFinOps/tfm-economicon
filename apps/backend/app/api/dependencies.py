@@ -24,6 +24,11 @@ def get_embedding_provider(request: Request):
     return request.app.state.embedding_provider
 
 
+def get_savings_provider(request: Request):
+    # JUP-033/034 supply this internal adapter; no fixture or client data fallback.
+    return getattr(request.app.state, "savings_provider", None)
+
+
 def get_current_user(
     request: Request,
     authorization: list[str] | None = Header(default=None),

@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "verification": "local producer functions; synthetic billing/scenarios; no persistence or API integration",
+  "checks": [
+    "real generated recommendation and evidence IDs",
+    "model-to-adapter serialization",
+    "separate rounded individual estimates and original totals",
+    "unquantified impact remains null",
+    "producer rejects unpaired costs"
+  ],
+  "producer_files_sha256": {
+    "tfm-economicon-jup033/apps/backend/app/schemas/recommendations.py": "4f92f9496fa37f6d0c02e6a1805c25bb23077e7d2dbd39debf3b557512e2b4d2",
+    "tfm-economicon-jup033/apps/backend/app/services/recommendations.py": "7889e82736426d25b3bd17ef9f4836965947b5fe39ea2b76c965a2568e7a853e",
+    "tfm-economicon-jup034/apps/backend/app/schemas/recommendation_impact.py": "9efcdffc23260eb2016b5ab4e526b73114c006a23947680107c6859f9fffd1b5",
+    "tfm-economicon-jup034/apps/backend/app/services/recommendation_impact.py": "dbe815eea6522fd07714e48695c2134793b429de2aef25a5d95d76f977047914"
+  },
+  "source_snapshot_sha256": "f21e51953d9582267f01143a0e359a952aae55307ff0c79acdd28cfb524fa0a5"
+}

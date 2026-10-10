@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
+
+from app.schemas.savings import SavingsSelection
 
 
 NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -17,6 +19,19 @@ class MessageCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     content: NonEmptyText
+    savings_query: SavingsSelection | None = None
+
+    @model_validator(mode="after")
+    def explicit_savings_command(self):
+        # Usable from the existing chat without interpreting free text as filters.
+        parts = self.content.split()
+        if not parts:
+            raise ValueError("content must contain non-whitespace text")
+        if parts[0].lower() == "/ahorro":
+            if len(parts) != 3 or self.savings_query is not None:
+                raise ValueError("Use /ahorro YYYY-MM-DD YYYY-MM-DD or savings_query, not both")
+            self.savings_query = SavingsSelection(start_date=parts[1], end_date=parts[2])
+        return self
 
 
 class RetrievedChunk(BaseModel):

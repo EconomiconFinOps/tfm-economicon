@@ -11,11 +11,13 @@ from app.api.dependencies import (
     get_embedding_provider,
     get_vector_store,
     get_database,
+    get_savings_provider,
 )
 from app.core.config import get_settings
 from app.core.metrics import assistant_queries_total, retrieval_empty_total, retrieval_failures_total
 from app.services.citations import InvalidCitation, resolve_citations, validate_context
 from app.services.embedding_provider import PROVIDER_ERROR_CATEGORIES, ProviderError
+from app.services.savings_summary import InvalidSavingsEvidence, summarize_savings
 from app.schemas.assistant import (
     AssistantReply,
     ConversationCollection,
@@ -93,10 +95,42 @@ def send_message(
     vector_store=Depends(get_vector_store),
     embedding_provider=Depends(get_embedding_provider),
     assistant_service=Depends(get_assistant_service),
+    savings_provider=Depends(get_savings_provider),
 ) -> AssistantReply:
     conversation = database.fetch_conversation(conversation_id, tenant_id, current_user["id"])
     if conversation is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found.")
+
+    if payload.savings_query is not None:
+        # Validate all evidence before writing messages. This branch needs no RAG/LLM.
+        if savings_provider is None:
+            raise HTTPException(status_code=503, detail="Savings recommendations and impact provider unavailable.")
+        try:
+            snapshot = savings_provider.load_snapshot(tenant_id, payload.savings_query)
+        except InvalidSavingsEvidence:
+            raise HTTPException(status_code=502, detail="Invalid savings evidence.") from None
+        except Exception:
+            raise HTTPException(status_code=503, detail="Savings recommendations and impact provider unavailable.") from None
+        try:
+            output = summarize_savings(snapshot, tenant_id, payload.savings_query)
+        except InvalidSavingsEvidence:
+            raise HTTPException(status_code=502, detail="Invalid savings evidence.") from None
+        user_message = database.append_message(
+            conversation_id=conversation_id, tenant_id=tenant_id,
+            user_id=current_user["id"], requester_id=current_user["id"],
+            role="user", content=payload.content,
+        )
+        assistant_message = database.append_message(
+            conversation_id=conversation_id, tenant_id=tenant_id,
+            user_id=None, requester_id=current_user["id"], role="assistant",
+            content=output["content"],
+            metadata={"citations": [], "source_citations": [], "savings_evidence": output["evidence"]},
+        )
+        assistant_queries_total.inc()
+        return AssistantReply(
+            conversation=ConversationRecord(**conversation), user_message=user_message,
+            assistant_message=assistant_message, retrieved_context=[],
+        )
 
     user_message = database.append_message(
         conversation_id=conversation_id,
