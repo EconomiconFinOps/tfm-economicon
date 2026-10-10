@@ -1,0 +1,227 @@
+{
+  "contract_version": 1,
+  "period": {
+    "start_date": "2024-06-01",
+    "end_date": "2024-07-01",
+    "timezone": "UTC"
+  },
+  "source": "azure_cost_records",
+  "cloud": "azure",
+  "data_environment": "simulated",
+  "data_status": "partial",
+  "status": "available",
+  "recommendations": [
+    {
+      "id": "recommendation:sha256:52a6f2cb6654ac8d61a62b42d552b1e3095bb488de4e646ef9f573e312eb0214",
+      "rule_id": "largest_project_cost",
+      "rule_version": 1,
+      "category": "investigation",
+      "qualification": "investigation_candidate",
+      "action": "Revisar el consumo del proyecto con su equipo y reunir datos de utilizacion y requisitos de negocio.",
+      "rationale": "Es el mayor coste neto positivo entre los proyectos identificados de esta moneda y periodo. La regla selecciona un punto de investigacion; no demuestra desperdicio ni justifica reducir recursos.",
+      "scope": {
+        "dimension": "project",
+        "value": "Checkout"
+      },
+      "observed_cost": {
+        "amount": "250.00",
+        "currency": "EUR",
+        "record_count": 3
+      },
+      "estimated_savings": null,
+      "currency": null,
+      "confidence": "low",
+      "risk": "low",
+      "difficulty": "unknown",
+      "evidence_ids": [
+        "cost-query:sha256:2edc1a56e4b0ac669c61b78214926285e8ae438f1687a3e37f49b6d061919782"
+      ],
+      "requires_human_approval": true
+    },
+    {
+      "id": "recommendation:sha256:dacf61cb99babfd3ed30db49058d866166216cd4a279bffac15ac07677f44b8c",
+      "rule_id": "missing_project",
+      "rule_version": 1,
+      "category": "tagging",
+      "qualification": "supported",
+      "action": "Revisar con el equipo de negocio y proponer un proyecto o aplicacion para los registros sin proyecto.",
+      "rationale": "Hay registros de coste sin proyecto ni tag project utilizable. Asignar contexto de negocio permite revisar la imputacion; el coste observado no representa ahorro.",
+      "scope": {
+        "dimension": "project",
+        "value": null
+      },
+      "observed_cost": {
+        "amount": "-10.00",
+        "currency": "EUR",
+        "record_count": 2
+      },
+      "estimated_savings": null,
+      "currency": null,
+      "confidence": "high",
+      "risk": "low",
+      "difficulty": "unknown",
+      "evidence_ids": [
+        "cost-query:sha256:056d59672abdad97708c77d14527c7270b72f365e8dbd19c5aefbbcc6eecf17d"
+      ],
+      "requires_human_approval": true
+    },
+    {
+      "id": "recommendation:sha256:df63c0ebf05d743566200dab002404e56aedb89b0b1b39209116c6bcc0b42a59",
+      "rule_id": "largest_project_cost",
+      "rule_version": 1,
+      "category": "investigation",
+      "qualification": "investigation_candidate",
+      "action": "Revisar el consumo del proyecto con su equipo y reunir datos de utilizacion y requisitos de negocio.",
+      "rationale": "Es el mayor coste neto positivo entre los proyectos identificados de esta moneda y periodo. La regla selecciona un punto de investigacion; no demuestra desperdicio ni justifica reducir recursos.",
+      "scope": {
+        "dimension": "project",
+        "value": "Analytics"
+      },
+      "observed_cost": {
+        "amount": "9007199254740993.01",
+        "currency": "USD",
+        "record_count": 1
+      },
+      "estimated_savings": null,
+      "currency": null,
+      "confidence": "low",
+      "risk": "low",
+      "difficulty": "unknown",
+      "evidence_ids": [
+        "cost-query:sha256:eaf8be2549d5e1782ba8335c9df551297b81db60a19d76675609431f3f8a0d3a"
+      ],
+      "requires_human_approval": true
+    }
+  ],
+  "evidence": [
+    {
+      "id": "cost-query:sha256:2edc1a56e4b0ac669c61b78214926285e8ae438f1687a3e37f49b6d061919782",
+      "kind": "cost_query",
+      "source": "azure_cost_records",
+      "query": {
+        "period": {
+          "start_date": "2024-06-01",
+          "end_date": "2024-07-01",
+          "timezone": "UTC"
+        },
+        "group_by": "project",
+        "tag_key": null
+      },
+      "rule_id": "largest_project_cost",
+      "rule_version": 1,
+      "scope": {
+        "dimension": "project",
+        "value": "Checkout"
+      },
+      "observed_cost": {
+        "amount": "250.00",
+        "currency": "EUR",
+        "record_count": 3
+      }
+    },
+    {
+      "id": "cost-query:sha256:056d59672abdad97708c77d14527c7270b72f365e8dbd19c5aefbbcc6eecf17d",
+      "kind": "cost_query",
+      "source": "azure_cost_records",
+      "query": {
+        "period": {
+          "start_date": "2024-06-01",
+          "end_date": "2024-07-01",
+          "timezone": "UTC"
+        },
+        "group_by": "project",
+        "tag_key": null
+      },
+      "rule_id": "missing_project",
+      "rule_version": 1,
+      "scope": {
+        "dimension": "project",
+        "value": null
+      },
+      "observed_cost": {
+        "amount": "-10.00",
+        "currency": "EUR",
+        "record_count": 2
+      }
+    },
+    {
+      "id": "cost-query:sha256:eaf8be2549d5e1782ba8335c9df551297b81db60a19d76675609431f3f8a0d3a",
+      "kind": "cost_query",
+      "source": "azure_cost_records",
+      "query": {
+        "period": {
+          "start_date": "2024-06-01",
+          "end_date": "2024-07-01",
+          "timezone": "UTC"
+        },
+        "group_by": "project",
+        "tag_key": null
+      },
+      "rule_id": "largest_project_cost",
+      "rule_version": 1,
+      "scope": {
+        "dimension": "project",
+        "value": "Analytics"
+      },
+      "observed_cost": {
+        "amount": "9007199254740993.01",
+        "currency": "USD",
+        "record_count": 1
+      }
+    }
+  ],
+  "total_candidates": 3,
+  "truncated": false,
+  "assumptions": [
+    "El intervalo de consulta es UTC, incluye start_date y excluye end_date.",
+    "Proyecto usa la columna normalizada project y, si falta, el tag project; blancos se consideran ausentes.",
+    "Los valores de proyecto conservan mayusculas y minusculas; un valor literal Unknown no se considera ausente.",
+    "Cada moneda se evalua por separado; no se convierte ni se compara con otras monedas.",
+    "Un empate de coste positivo se resuelve por orden lexicografico del nombre de proyecto."
+  ],
+  "limitations": [
+    "Solo se analizan costes ingeridos del entorno simulado; no se acredita ahorro potencial ni realizado.",
+    "Los importes son costes netos: los creditos y ajustes pueden compensar cargos positivos.",
+    "No hay telemetria de utilizacion, tarifas alternativas ni una fuente de ownership o requisitos de negocio.",
+    "La dificultad es desconocida; el riesgo bajo se refiere a la revision propuesta, no a modificar recursos.",
+    "La consulta agrega por proyecto dentro del tenant; no identifica recursos ni atribuye una suscripcion al candidato.",
+    "Los identificadores no implican persistencia, historial, una instantanea conservada ni un workflow de aprobacion.",
+    "No se ejecutan cambios cloud. Cada propuesta requiere revision y aprobacion humana antes de cualquier accion.",
+    "Hay registros del periodo sin proyecto; la cobertura de contexto de negocio es parcial.",
+    "Se excluyen registros sin fecha de las ingestas completadas del tenant; no puede atribuirse su coste al periodo solicitado."
+  ],
+  "not_evaluated": [
+    {
+      "action": "rightsizing",
+      "missing_inputs": [
+        "CPU, memoria, I/O, picos y SLA"
+      ]
+    },
+    {
+      "action": "scheduling",
+      "missing_inputs": [
+        "Horarios de uso y restricciones operativas"
+      ]
+    },
+    {
+      "action": "orphan_cleanup",
+      "missing_inputs": [
+        "Inventario, dependencias y ownership verificados"
+      ]
+    },
+    {
+      "action": "rate_optimization",
+      "missing_inputs": [
+        "Tarifas y recomendaciones de compromisos verificadas"
+      ]
+    },
+    {
+      "action": "savings_impact",
+      "missing_inputs": [
+        "Baseline comparable y supuestos de impacto versionados"
+      ]
+    }
+  ],
+  "missing_dimension_count": 2,
+  "excluded_undated_count": 1
+}

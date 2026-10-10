@@ -7,9 +7,34 @@ from app.api.dependencies import get_active_tenant, get_database
 from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSummary
 from app.schemas.budget import BudgetDefinition, BudgetEvaluation
 from app.services.budget import evaluate_budget
+from app.schemas.recommendations import RecommendationReport
+from app.services.recommendations import generate_recommendations
 
 
 router = APIRouter(prefix="/billing", tags=["billing"])
+
+
+@router.get("/recommendations", response_model=RecommendationReport)
+def get_billing_recommendations(
+    start_date: str = Query(pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end_date: str = Query(pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> RecommendationReport:
+    """Generate evidence-backed proposals; never apply changes or calculate savings."""
+    try:
+        start, end = date.fromisoformat(start_date), date.fromisoformat(end_date)
+        if not 0 < (end - start).days <= 366:
+            raise ValueError()
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid recommendation period") from None
+    try:
+        result = database.fetch_billing_summary(
+            tenant_id, start_date=start, end_date=end, group_by="project", tag_key=None,
+        )
+    except AmbiguousCostSource:
+        raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
+    return generate_recommendations(BillingSummary(**result), tenant_id=tenant_id)
 
 
 @router.post("/budget/evaluate", response_model=BudgetEvaluation)

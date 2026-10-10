@@ -12,10 +12,24 @@ Responsabilidades principales:
 - autenticacion propia minima con token
 - gestion inicial de tenants
 - resumen de billing
+- recomendaciones de optimizacion sustentadas en costes observados
 - creacion de jobs de ingesta
 - conversaciones y chat con retrieval
 - persistencia operativa
 - publicacion de jobs asincronos
+
+## Recomendaciones de optimizacion (JUP-033)
+
+`GET /billing/recommendations?start_date=2024-06-01&end_date=2024-07-01`
+requiere bearer de sesión y `X-Tenant-Id` autorizado. El periodo UTC es
+obligatorio, incluye inicio y excluye fin, con un máximo de 366 días.
+Propone completar el proyecto ausente o investigar el mayor coste positivo
+por moneda, con evidencia, contexto y aprobación humana. No estima ahorro
+ni ejecuta cambios en recursos. Fuente simulada, sin conexión cloud real.
+
+[Contrato para JUP-034/039/058](../../docs/architecture/optimization-recommendations.md),
+[ejemplo generado con datos sintéticos](../../docs/evidence/JUP-033-example.json)
+y [evidencia de pruebas](../../docs/evidence/JUP-033-validation.md).
 
 ## Stack
 
