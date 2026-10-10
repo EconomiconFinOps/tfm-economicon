@@ -112,12 +112,21 @@ original y quién la contrastó. No marcarla confirmada hasta contrastarla.
 | --- | --- | --- | --- | --- | --- |
 | JUP-064 | Alejandro / preparación como coautor | 2026-10-04 | Recolector, matriz, specs, tests y documentación | [Commit a75bcd4](https://github.com/EconomiconFinOps/tfm-economicon/commit/a75bcd4) | Implementación publicada; no acredita sesión de pairing con Víctor |
 | JUP-064 | Víctor / liderazgo | 2026-10-05 | Contraste de alcance y evidencia de la entrega; corrección de las líneas de rol de seis tarjetas en Trello | [Contraste del líder](../evidence/JUP-064-validation.md#contraste-del-líder) | Sin sesión de pairing: la coordinación con Alejandro fue el traspaso por chat. Pendiente de contraste por Lucía y Paris en la PR |
+| JUP-064 | Lucía / revisión | 2026-10-08 | Segunda revisión: aprobación y levantamiento de cambios de código; condición de actualizar datos antes de la memoria | [Review 5457415248](https://github.com/EconomiconFinOps/tfm-economicon/pull/76#pullrequestreview-5457415248) | Acredita la revisión del código; excluye recogida real |
+| JUP-064 | Paris / validación | 2026-10-08 | Validación incremental aprobada: 27 tests, dos renders, caso de error y límites del corte histórico | [Review 5460182550](https://github.com/EconomiconFinOps/tfm-economicon/pull/76#pullrequestreview-5460182550) | Alcance offline; no valida independientemente la recogida en vivo |
 | JUP-101 | Alejandro (`Iber1to`) / ejecución y comprobación técnica asistidas por Codex | 2026-10-10 | Convención de continuidad y preparación del cierre excepcional del MVP por instrucción del usuario, fuera de plazo | [PR #64](https://github.com/EconomiconFinOps/tfm-economicon/pull/64), [atribución y excepción](../evidence/JUP-101-continuity.md#excepción-de-atribución-y-cierre-por-plazo-del-mvp) | Pairing de Paris y reviews de Lucia/Victor no acreditados y dispensados para este cierre; se conserva únicamente la conformidad de Paris del 04/10. Sin atribuir consenso ni aprobación. |
 
 Las filas de JUP-064 se añadieron después del corte de las fuentes.
-La preparación de JUP-064 por Alejandro y el contraste de Víctor no acreditan
-participación de Lucía o Paris en esta historia; revisión y validación
-permanecen pendientes.
+Las dos primeras filas conservan la situación histórica del 04–05/10. Las
+reviews posteriores acreditan revisión y validación de Lucía y Paris en los
+alcances expresos de sus dictámenes. La recogida actual del coautor no amplía
+por sí sola esos alcances ni constituye validación independiente.
+
+La actualización del registro se sigue bajo JUP-064 y se entrega en un PR
+posterior a #76. La prueba de coherencia entre snapshot y registro versionados
+protege contra la desalineación histórica señalada por Lucía. El registro sigue
+siendo un corte fechado: sus huecos requieren valorar las fuentes originales,
+no inventar participación a partir de la asignación de un rol.
 
 ## Excepción de entrega del MVP — JUP-054
 
