@@ -47,6 +47,10 @@ Entrega publicada: [PR #108 draft](https://github.com/EconomiconFinOps/tfm-econo
 implementacion `bfffbea4be94ad9e8a01a687fc3cd28e58fdd606`. JUP policy PASS en la
 apertura; JUP reviews falla por ausencia de los dos dictamenes requeridos, no
 se modifica ese control. Consultar CI sobre el head final en la PR.
+CI tecnica de `037295524f3708ca04cd0e6fbb67e6c77c9b1b85`: **7/7 SUCCESS**, incluido
+backend sobre Linux, [run 38036880694](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38036880694).
+Esta anotacion posterior solo cambia documentacion. Los fallos Windows permanecen
+documentados; no son fallos del smoke vectorial ni se afirma haberlos corregido.
 Evidencia enlazada en Trello mediante comentario `6ac9f273ba91202e4a30910a`,
 publicado por el puente oficial y leido de vuelta con texto identico. No cambio
 de lista/roles/criterios. Contenedor sintetico y tunel propios retirados al acabar;

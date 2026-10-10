@@ -71,6 +71,12 @@ These preparation failures do not count as successful application checks.
 
 Results obtained on the corrected source:
 
+- GitHub Linux CI on `037295524f3708ca04cd0e6fbb67e6c77c9b1b85`: **7/7 SUCCESS**,
+  [run 38036880694](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38036880694).
+  Backend, processor, Azure API, frontend build/types, OpenSpec and JUP policy pass.
+  This later evidence update changes documentation only. JUP reviews remains
+  blocked pending the two independent human decisions.
+
 - Processor complete suite with both PostgreSQL opt-ins: **467 passed, 53 skipped**.
   This includes all eight new real scenarios and the existing four vector isolation tests.
   Skips require CockroachDB or the explicit LiteLLM Docker fixture and are not passes.
