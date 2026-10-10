@@ -85,3 +85,14 @@ ADR-0012 enmendado ([enmienda JUP-112](../../../docs/adr/ADR-0012-frontend-color
 - La sección `## Human Approval` se rellena solo con la aprobación explícita de Lucia tras esta revisión.
 - Revisión de código y validación funcional por las personas con esos roles en Trello; no se dan por hechas.
 - Confirmar con el liderazgo de la tarjeta la ampliación del alcance al tema oscuro.
+
+## Human Approval
+
+- Change: jup-112-brand-identity
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-10
+- Adversarial review: accept (pass 2) | accepted findings: ADV-6 de la pasada 2 (RF-112-001), ADV-10 y ADV-11 de la pasada 2 (RF-112-002), registrados en `openspec/findings/backlog.md`
+- Archive decision: archive
+- Notes: Lucia acepta los hallazgos sin corregir y la ampliación al tema oscuro, y decide ser quien lidera la tarjeta (en Trello, Lucia Mateo pasa a Liderazgo y Paris Arcos Martin a Validación, pruebas y documentación). Pendientes en Trello: revisión de código por Alejandro Aguado, validación funcional por Paris Arcos Martin y confirmación del liderazgo del alcance del tema oscuro. Sin verificar en navegador real: foco y tooltips, Firefox y Safari y "Coste Global" con datos reales.
