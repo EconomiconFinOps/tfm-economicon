@@ -109,6 +109,7 @@ original y quién la contrastó. No marcarla confirmada hasta contrastarla.
 | --- | --- | --- | --- | --- | --- |
 | JUP-064 | Alejandro / preparación como coautor | 2026-10-04 | Recolector, matriz, specs, tests y documentación | [Commit a75bcd4](https://github.com/EconomiconFinOps/tfm-economicon/commit/a75bcd4) | Implementación publicada; no acredita sesión de pairing con Víctor |
 | JUP-064 | Víctor / liderazgo | 2026-10-05 | Contraste de alcance y evidencia de la entrega; corrección de las líneas de rol de seis tarjetas en Trello | [Contraste del líder](../evidence/JUP-064-validation.md#contraste-del-líder) | Sin sesión de pairing: la coordinación con Alejandro fue el traspaso por chat. Pendiente de contraste por Lucía y Paris en la PR |
+| JUP-101 | Alejandro (`Iber1to`) / ejecución y comprobación técnica asistidas por Codex | 2026-10-10 | Convención de continuidad y preparación del cierre excepcional del MVP por instrucción del usuario, fuera de plazo | [PR #64](https://github.com/EconomiconFinOps/tfm-economicon/pull/64), [atribución y excepción](../evidence/JUP-101-continuity.md#excepción-de-atribución-y-cierre-por-plazo-del-mvp) | Pairing de Paris y reviews de Lucia/Victor no acreditados y dispensados para este cierre; se conserva únicamente la conformidad de Paris del 04/10. Sin atribuir consenso ni aprobación. |
 
 Las filas de JUP-064 se añadieron después del corte de las fuentes.
 La preparación de JUP-064 por Alejandro y el contraste de Víctor no acreditan
