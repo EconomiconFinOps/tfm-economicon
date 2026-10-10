@@ -57,6 +57,13 @@ anterior a esta autorización: Backlog y draft. Queda superado por la excepción
 de este apartado. Los contenedores/red/túnel exclusivos ya se retiraron.
 Repetición final conjunta: 7 passed en 24.53 s. Sin mensajes Discord.
 
+Reconciliación del 10/10 con `develop` `d7c0725` (JUP-102 / PR #108): se
+conservaron ambos temas y atribuciones. Revalidación por dependencia vectorial:
+los 3 recorridos reales y un caso real de inicialización JUP-102 pasaron juntos
+en 13.23 s, sin skips. Evidencia y recibo de retirada de servicios propios en
+`.artifacts/jup054/linux-reconciled-*` y `reconciled-cleanup.txt`. El CI final de
+la PR cubre la base reconciliada; 2041/91 son los conteos de la base inicial.
+
 ## Límites conservados
 
 La entrega no certifica Azure cloud, LLM externo, gateway LiteLLM real, reinicio

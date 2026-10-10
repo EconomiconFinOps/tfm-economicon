@@ -64,6 +64,28 @@ reales externos a CI. Los 91 skips de servicios no prueban sus integraciones.
 `JUP reviews` no dispone de dictámenes humanos y no se presenta como verde;
 su exigencia para este cierre queda exceptuada por la autorización anterior.
 
+### Revalidación tras integrar JUP-102
+
+Durante el cierre se actualizó la base con `d7c0725` (PR #108): dimensión
+vectorial explícita desde Settings. Los conflictos se limitaban al puntero
+AGENTS y al índice de continuidad; se conservaron ambas aportaciones.
+La actualización sí afecta a migraciones usadas por el recorrido real.
+
+Sobre los fuentes reconciliados se repitió el archivo completo
+`test_tenant_isolation_integration.py` y el caso
+`test_vector_settings_pgvector.py::test_new_schema_settings_sources_and_real_retrieval[default-8]`:
+**4 passed en 13.23 s, 0 skips** (3 recorridos JUP-054 y una comprobación JUP-102).
+Se usaron los mismos servicios desechables, una red propia sin puertos publicados
+y PostgreSQL con contraseña exclusiva de prueba. Se transfirieron los mismos
+130 fuentes permitidos, más ese único archivo de pruebas JUP-102.
+Artefactos `.artifacts/jup054/linux-reconciled-{source.tar.gz,real.log,real.xml,python-dependencies.txt}`.
+Los contenedores y la red exclusivos se retiran al terminar; recibo
+`reconciled-cleanup.txt`. No se modifica ni reinicia infraestructura compartida.
+
+Los conteos de la tabla anterior pertenecen a la base inicial. El CI completo
+del último commit de PR #93 se vuelve a ejecutar tras esta reconciliación;
+los tests incorporados por JUP-102 pueden aumentar los conteos.
+
 ## Intentos Windows y contraste
 
 Los intentos que fallaron se conservan, no se borran de la evidencia:

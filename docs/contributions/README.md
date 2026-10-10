@@ -3,6 +3,10 @@
 JUP-064 · [Trello](https://trello.com/c/wluz6AGW). El proceso de los cuatro roles
 se mantiene en [CONTRIBUTING](../../CONTRIBUTING.md#rotating-roles).
 
+Excepciones puntuales de atribucion autorizadas para la entrega:
+- [JUP-102 — MVP fuera de plazo](JUP-102-mvp-exception.md): ejecucion asistida
+  bajo Alejandro, con pairing y reviews humanas dispensadas, sin atribucion ficticia.
+
 El [registro fechado](JUP-064-register.md) enlaza las acciones observadas de los
 cuatro miembros por historia, los commits, PR, reviews, comentarios de PR,
 pruebas y documentación.

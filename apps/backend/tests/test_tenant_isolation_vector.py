@@ -37,9 +37,8 @@ def retrieval(monkeypatch):
         spec = importlib.util.spec_from_file_location("jup086_vector_schema", path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        monkeypatch.setenv("EMBEDDING_DIMENSION", "8")
         with store.engine.begin() as connection:
-            module.upgrade(connection)
+            module.upgrade(connection, embedding_dimension=8)
             for identifier, tenant, content, vector in (("own", "tenant-a", "own-source-content", "[0,1,0,0,0,0,0,0]"), ("foreign", "tenant-b", "foreign-secret-marker", "[1,0,0,0,0,0,0,0]")):
                 params = {"id": identifier, "tenant": tenant, "content": content, "vector": vector, "now": datetime.now(timezone.utc)}
                 connection.execute(text("INSERT INTO knowledge_documents VALUES (:id, :id, :tenant, :content, NULL, :content, 1, :now, :now)"), params)
