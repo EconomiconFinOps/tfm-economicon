@@ -3,6 +3,8 @@
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "scripts": {
+    "assistant-robustness:validate": "python tools/assistant-robustness.py validate",
+    "assistant-robustness:test": "python -m unittest discover -s scripts/tests -p test_assistant_robustness.py -v",
     "contributions:test": "python -m unittest discover -s tools/tests -p test_team_contributions.py -v",
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",

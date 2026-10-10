@@ -77,6 +77,8 @@ jobs:
           corepack pnpm retrieval-calibration:test
           corepack pnpm assistant-metrics:test
           corepack pnpm assistant-eval:test
+          corepack pnpm assistant-robustness:validate
+          corepack pnpm assistant-robustness:test
           corepack pnpm synthetic-costs:test
           corepack pnpm llm-gateway:test
           corepack pnpm docker:validate

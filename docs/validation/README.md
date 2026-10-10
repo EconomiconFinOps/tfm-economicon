@@ -107,8 +107,12 @@ benchmarks de latencia, nuevas reglas de negocio ni integración con Azure real.
 
 ## Métricas de las ejecuciones (JUP-067)
 
-Cómo se calculan la exactitud, la relevancia, el fundamento, la latencia, la robustez y la disponibilidad de una ejecución sobre esta batería está definido en [JUP-067-metrics.md](JUP-067-metrics.md), con el catálogo [JUP-067-metrics-catalogue.json](JUP-067-metrics-catalogue.json) y el calculador `tools/assistant-metrics.py`. Los resultados de JUP-070 y JUP-071 deben usar ese formato para que las cifras sean comparables.
+Cómo se calculan la exactitud, la relevancia, el fundamento, la latencia, la robustez y la disponibilidad de una ejecución sobre esta batería está definido en [JUP-067-metrics.md](JUP-067-metrics.md), con el catálogo [JUP-067-metrics-catalogue.json](JUP-067-metrics-catalogue.json) y el calculador `tools/assistant-metrics.py`. Para comparar esas métricas se usa el formato de JUP-067 y la batería completa. La campaña de perturbaciones JUP-071 publica un informe separado con sus propios denominadores; no se presenta como una ejecución completa de las 28 preguntas ni sustituye esas métricas.
 
 ## Evaluación de las respuestas (JUP-070)
 
 Cómo se decide si una respuesta cumple la rúbrica de esta batería, qué decide una regla y qué una persona, cómo se ejecuta y con qué umbrales se acepta está en [JUP-070-evaluation.md](JUP-070-evaluation.md); la herramienta es [`tools/assistant-eval.py`](../../tools/assistant-eval.py) y sus reglas, [JUP-070-evaluation-rules.json](JUP-070-evaluation-rules.json).
+
+## Robustez ante datos incompletos (JUP-071)
+
+[Protocolo y comandos](JUP-071-robustness.md), [16 perturbaciones](JUP-071-robustness-cases.json) y [evidencia](../evidence/JUP-071-validation.md). Se ejecutan junto a 13 referencias originales, con separación entre plantilla/recuperación simulada y recogida HTTP de runtime no acreditado. Las rúbricas y los controles `answer` impiden premiar una abstención universal.

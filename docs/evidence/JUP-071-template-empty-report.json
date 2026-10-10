@@ -1,0 +1,1678 @@
+{
+  "report_version": 1,
+  "jup": "JUP-071",
+  "suite_version": "1.0.0",
+  "suite_sha256": "91d4763d7f1224ecc6f3dd7807b5144a61581be49c4f89fdd39f98c56b3ea532",
+  "raw_sha256": "d0051423bdd094e3ed728e896874e2b278fc11a1f04c57e5cf7cee8b950b0d70",
+  "judgments_sha256": "a8bec439e896511ee1b0a98e705ac2a02e09a4bbc828eee8dd56b9cb6de234fb",
+  "kind": "template_mock",
+  "harness_commit": "c2995a118d419dfe725247bac9c6f219a3f0ea77",
+  "harness_sha256": "c69cd452b2d34b4e0776fa8287a652ab9f228debefdd41ee717ed288c9bf6c7c",
+  "python_version": "3.14.4",
+  "service_sha256": "e8335a95cdf477dd8057d5ef94c3137ac6c0727248241fc03b44bba645403516",
+  "configuration_sha256": "71ff2831cb6633f06c49e1c22318ec2ea7696dc8bed330c383a7bc5b17c69449",
+  "collected_at": "2026-10-10T07:30:55.240264+00:00",
+  "provisional": false,
+  "model_execution_verified": false,
+  "generative_robustness_accepted": false,
+  "totals": {
+    "total": 29,
+    "pass": 0,
+    "fail": 8,
+    "blocked": 0,
+    "not_run": 21,
+    "evaluated": 8,
+    "pass_over_evaluated": 0.0,
+    "pass_over_total": 0.0
+  },
+  "groups": {
+    "baseline": {
+      "answer": {
+        "total": 7,
+        "pass": 0,
+        "fail": 5,
+        "blocked": 0,
+        "not_run": 2,
+        "evaluated": 5,
+        "pass_over_evaluated": 0.0,
+        "pass_over_total": 0.0
+      },
+      "clarify": {
+        "total": 5,
+        "pass": 0,
+        "fail": 0,
+        "blocked": 0,
+        "not_run": 5,
+        "evaluated": 0,
+        "pass_over_evaluated": null,
+        "pass_over_total": 0.0
+      },
+      "abstain": {
+        "total": 1,
+        "pass": 0,
+        "fail": 0,
+        "blocked": 0,
+        "not_run": 1,
+        "evaluated": 0,
+        "pass_over_evaluated": null,
+        "pass_over_total": 0.0
+      }
+    },
+    "perturbation": {
+      "answer": {
+        "total": 3,
+        "pass": 0,
+        "fail": 2,
+        "blocked": 0,
+        "not_run": 1,
+        "evaluated": 2,
+        "pass_over_evaluated": 0.0,
+        "pass_over_total": 0.0
+      },
+      "clarify": {
+        "total": 12,
+        "pass": 0,
+        "fail": 1,
+        "blocked": 0,
+        "not_run": 11,
+        "evaluated": 1,
+        "pass_over_evaluated": 0.0,
+        "pass_over_total": 0.0
+      },
+      "abstain": {
+        "total": 1,
+        "pass": 0,
+        "fail": 0,
+        "blocked": 0,
+        "not_run": 1,
+        "evaluated": 0,
+        "pass_over_evaluated": null,
+        "pass_over_total": 0.0
+      }
+    }
+  },
+  "cases": [
+    {
+      "case": "JUP-069-002",
+      "baseline_id": "JUP-069-002",
+      "group": "baseline",
+      "behavior": "answer",
+      "outcome": "fail",
+      "checks": {
+        "numbers-1": "fail",
+        "numbers-2": "fail",
+        "behavior": "missing",
+        "required-1": "missing",
+        "forbidden-1": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "forbidden-1"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-003",
+      "baseline_id": "JUP-069-003",
+      "group": "baseline",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-005",
+      "baseline_id": "JUP-069-005",
+      "group": "baseline",
+      "behavior": "answer",
+      "outcome": "fail",
+      "checks": {
+        "numbers-1": "fail",
+        "numbers-2": "fail",
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-008",
+      "baseline_id": "JUP-069-008",
+      "group": "baseline",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-009",
+      "baseline_id": "JUP-069-009",
+      "group": "baseline",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-010",
+      "baseline_id": "JUP-069-010",
+      "group": "baseline",
+      "behavior": "answer",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-011",
+      "baseline_id": "JUP-069-011",
+      "group": "baseline",
+      "behavior": "answer",
+      "outcome": "fail",
+      "checks": {
+        "numbers-1": "fail",
+        "behavior": "missing",
+        "required-1": "missing",
+        "forbidden-1": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "forbidden-1"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-012",
+      "baseline_id": "JUP-069-012",
+      "group": "baseline",
+      "behavior": "answer",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-016",
+      "baseline_id": "JUP-069-016",
+      "group": "baseline",
+      "behavior": "answer",
+      "outcome": "fail",
+      "checks": {
+        "numbers-1": "fail",
+        "numbers-2": "fail",
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-023",
+      "baseline_id": "JUP-069-023",
+      "group": "baseline",
+      "behavior": "abstain",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-024",
+      "baseline_id": "JUP-069-024",
+      "group": "baseline",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-026",
+      "baseline_id": "JUP-069-026",
+      "group": "baseline",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-069-027",
+      "baseline_id": "JUP-069-027",
+      "group": "baseline",
+      "behavior": "answer",
+      "outcome": "fail",
+      "checks": {
+        "numbers-1": "fail",
+        "numbers-2": "fail",
+        "numbers-3": "fail",
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-001",
+      "baseline_id": "JUP-069-012",
+      "group": "perturbation",
+      "behavior": "answer",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-002",
+      "baseline_id": "JUP-069-011",
+      "group": "perturbation",
+      "behavior": "answer",
+      "outcome": "fail",
+      "checks": {
+        "numbers-1": "fail",
+        "numbers-2": "fail",
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-003",
+      "baseline_id": "JUP-069-011",
+      "group": "perturbation",
+      "behavior": "answer",
+      "outcome": "fail",
+      "checks": {
+        "numbers-1": "fail",
+        "numbers-2": "fail",
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-004",
+      "baseline_id": "JUP-069-010",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-005",
+      "baseline_id": "JUP-069-012",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-006",
+      "baseline_id": "JUP-069-009",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-007",
+      "baseline_id": "JUP-069-009",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-008",
+      "baseline_id": "JUP-069-005",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-009",
+      "baseline_id": "JUP-069-008",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-010",
+      "baseline_id": "JUP-069-027",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "fail",
+      "checks": {
+        "numbers-1": "fail",
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-011",
+      "baseline_id": "JUP-069-002",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-012",
+      "baseline_id": "JUP-069-003",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-013",
+      "baseline_id": "JUP-069-024",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-014",
+      "baseline_id": "JUP-069-016",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-015",
+      "baseline_id": "JUP-069-026",
+      "group": "perturbation",
+      "behavior": "clarify",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    },
+    {
+      "case": "JUP-071-016",
+      "baseline_id": "JUP-069-023",
+      "group": "perturbation",
+      "behavior": "abstain",
+      "outcome": "not_run",
+      "checks": {
+        "behavior": "missing",
+        "required-1": "missing",
+        "required-2": "missing",
+        "forbidden-1": "missing",
+        "forbidden-2": "missing",
+        "forbidden-3": "missing"
+      },
+      "reviewer_coverage": {
+        "behavior": {
+          "received": 0,
+          "required": 2
+        },
+        "required-1": {
+          "received": 0,
+          "required": 2
+        },
+        "required-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-1": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-2": {
+          "received": 0,
+          "required": 2
+        },
+        "forbidden-3": {
+          "received": 0,
+          "required": 2
+        }
+      },
+      "missing": [
+        "behavior",
+        "required-1",
+        "required-2",
+        "forbidden-1",
+        "forbidden-2",
+        "forbidden-3"
+      ],
+      "prompt_echo": false
+    }
+  ],
+  "pairs": [
+    {
+      "baseline": "JUP-069-012",
+      "perturbation": "JUP-071-001",
+      "before": "not_run",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-011",
+      "perturbation": "JUP-071-002",
+      "before": "fail",
+      "after": "fail"
+    },
+    {
+      "baseline": "JUP-069-011",
+      "perturbation": "JUP-071-003",
+      "before": "fail",
+      "after": "fail"
+    },
+    {
+      "baseline": "JUP-069-010",
+      "perturbation": "JUP-071-004",
+      "before": "not_run",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-012",
+      "perturbation": "JUP-071-005",
+      "before": "not_run",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-009",
+      "perturbation": "JUP-071-006",
+      "before": "not_run",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-009",
+      "perturbation": "JUP-071-007",
+      "before": "not_run",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-005",
+      "perturbation": "JUP-071-008",
+      "before": "fail",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-008",
+      "perturbation": "JUP-071-009",
+      "before": "not_run",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-027",
+      "perturbation": "JUP-071-010",
+      "before": "fail",
+      "after": "fail"
+    },
+    {
+      "baseline": "JUP-069-002",
+      "perturbation": "JUP-071-011",
+      "before": "fail",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-003",
+      "perturbation": "JUP-071-012",
+      "before": "not_run",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-024",
+      "perturbation": "JUP-071-013",
+      "before": "not_run",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-016",
+      "perturbation": "JUP-071-014",
+      "before": "fail",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-026",
+      "perturbation": "JUP-071-015",
+      "before": "not_run",
+      "after": "not_run"
+    },
+    {
+      "baseline": "JUP-069-023",
+      "perturbation": "JUP-071-016",
+      "before": "not_run",
+      "after": "not_run"
+    }
+  ],
+  "perturbations": {
+    "missing_tag_with_sufficient_allocation_rule": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "null_tag_value": {
+      "total": 1,
+      "pass": 0,
+      "fail": 1,
+      "blocked": 0,
+      "not_run": 0,
+      "evaluated": 1,
+      "pass_over_evaluated": 0.0,
+      "pass_over_total": 0.0
+    },
+    "empty_and_whitespace_tag_values": {
+      "total": 1,
+      "pass": 0,
+      "fail": 1,
+      "blocked": 0,
+      "not_run": 0,
+      "evaluated": 1,
+      "pass_over_evaluated": 0.0,
+      "pass_over_total": 0.0
+    },
+    "unknown_controlled_tag_value": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "conflicting_tags_after_key_normalization": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "missing_shared_weights": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "ambiguous_shared_weight_units": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "missing_eligible_cost_denominator": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "confirmed_zero_denominator": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "missing_business_volume_denominator": {
+      "total": 1,
+      "pass": 0,
+      "fail": 1,
+      "blocked": 0,
+      "not_run": 0,
+      "evaluated": 1,
+      "pass_over_evaluated": 0.0,
+      "pass_over_total": 0.0
+    },
+    "partial_vs_complete_period": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "ambiguous_date_format": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "missing_currency_unit": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "incompatible_time_units": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "empty_result_with_incomplete_ingestion": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "unavailable_real_tenant_with_synthetic_decoy": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    }
+  },
+  "assessment_complete": false
+}

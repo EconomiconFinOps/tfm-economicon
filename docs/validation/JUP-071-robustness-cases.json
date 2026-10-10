@@ -1,0 +1,376 @@
+{
+  "schema_version": 1,
+  "suite_version": "1.0.0",
+  "jup": "JUP-071",
+  "trello": "https://trello.com/c/H0woDubz",
+  "language": "es",
+  "provenance": "Casos sintéticos de robustez derivados de la batería JUP-069; no son datos de clientes, respuestas observadas ni evidencia de un modelo. La rúbrica no se envía al asistente ni se incorpora al índice.",
+  "baseline": {
+    "path": "docs/validation/JUP-069-questions.json",
+    "suite_version": "1.0.0",
+    "sha256": "0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7"
+  },
+  "methodology": {
+    "path": "docs/validation/JUP-070-evaluation.md",
+    "sha256": "1063aeb35d964d323641d64af5d3944cdd89887d72aa736d53817edeaeac1ada"
+  },
+  "sources": {
+    "rules": {
+      "path": "docs/assistant-corpus/business-rules/economicon-mvp-rules.md",
+      "sha256": "36e05ef2eb6996d6f763512ba5d945a6b0f5c5c1aebeb705e176a185dbcb6ac1"
+    },
+    "finops": {
+      "path": "docs/assistant-corpus/finops/azure-finops-mvp.md",
+      "sha256": "5b5f9447b4ceaf71e38c4f6e32e11de256b3ffa81cf3db85f6d1d259fa6238d2"
+    },
+    "product": {
+      "path": "docs/assistant-corpus/product-architecture/economicon-product-context.md",
+      "sha256": "be2f0c9016b497ead4a201f3f3f2b48e60c7d709117d24fa82b9db4464ff913b"
+    }
+  },
+  "cases": [
+    {
+      "id": "JUP-071-001",
+      "baseline_id": "JUP-069-012",
+      "category": "tagging",
+      "perturbation": "missing_tag_with_sufficient_allocation_rule",
+      "risk": "critical",
+      "expected_behavior": "answer",
+      "question": "¿Podemos asignar este coste aunque falte owner? ¿Cumple el tagging mínimo?",
+      "context": "Escenario sintético agosto 2026 demo-a. Recurso vm-web, coste actual 80 EUR. Tags: costcenter=CC-WEB, application=storefront, environment=prod, businessunit=commerce; la clave owner está ausente. Regla aprobada y vigente para este periodo: todo recurso con costcenter=CC-WEB pertenece exclusivamente a web-team. No hay reglas ni datos contradictorios.",
+      "sources": ["rules", "finops"],
+      "required_points": [
+        "Clasificar el coste como allocated a web-team por la regla explícita; hay información suficiente para contestar.",
+        "Indicar que falta owner y que no cumple todos los tags mínimos, separando calidad de tagging de capacidad de asignación."
+      ],
+      "forbidden_behaviors": [
+        "Clasificar el coste como unallocated solo porque falta owner.",
+        "Abstenerse de asignar o exigir un owner antes de reconocer la regla suficiente.",
+        "Afirmar que se ha modificado el recurso para añadir el tag."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-002",
+      "baseline_id": "JUP-069-011",
+      "category": "tagging",
+      "perturbation": "null_tag_value",
+      "risk": "critical",
+      "expected_behavior": "answer",
+      "question": "¿Cuál es el cumplimiento de tagging por coste?",
+      "context": "Escenario sintético completo agosto 2026 demo-a, coste actual EUR. Política de calidad del escenario: los cinco tags mínimos deben tener valores no nulos y no vacíos. Hay dos recursos etiquetables: recurso A cuesta 100 EUR y cumple todos los tags; recurso B cuesta 900 EUR, tiene owner=null y los otros cuatro tags válidos. No hay otros recursos ni costes.",
+      "sources": ["rules"],
+      "required_points": [
+        "Tratar owner=null como incumplimiento según la política explícita del escenario.",
+        "Calcular el cumplimiento sobre el coste etiquetable total, no sobre el número de recursos."
+      ],
+      "forbidden_behaviors": [
+        "Contar owner=null como tag válido porque la clave existe.",
+        "Presentar el porcentaje de recursos conformes como cumplimiento por coste.",
+        "Pedir datos adicionales como condición para calcular un KPI cuyo numerador y denominador están completos."
+      ],
+      "expected_numbers": [
+        {"label": "coste etiquetable", "value": 1000, "unit": "EUR", "tolerance": 0.01},
+        {"label": "cumplimiento por coste", "value": 10, "unit": "%", "tolerance": 0.01}
+      ]
+    },
+    {
+      "id": "JUP-071-003",
+      "baseline_id": "JUP-069-011",
+      "category": "tagging",
+      "perturbation": "empty_and_whitespace_tag_values",
+      "risk": "critical",
+      "expected_behavior": "answer",
+      "question": "¿Cuál es el cumplimiento de tagging por coste y qué valores impiden cumplir?",
+      "context": "Escenario sintético completo agosto 2026 demo-a, coste actual EUR. Política de calidad del escenario: un valor vacío o compuesto solo por espacios no cumple un tag mínimo. Tres recursos etiquetables: A cuesta 100 EUR y cumple; B cuesta 200 EUR, tiene owner=\"\" y los otros tags válidos; C cuesta 700 EUR, tiene environment=\"   \" y los otros tags válidos. No hay más costes ni recursos.",
+      "sources": ["rules"],
+      "required_points": [
+        "Identificar owner vacío en B y environment formado solo por espacios en C como incumplimientos.",
+        "Usar únicamente el coste de A como numerador y el coste de los tres recursos como denominador."
+      ],
+      "forbidden_behaviors": [
+        "Contar cadenas vacías o espacios como información válida de ownership o entorno.",
+        "Sustituir valores faltantes por prod u otro valor sin una regla proporcionada.",
+        "Excluir del denominador los recursos incumplidores pese a ser etiquetables."
+      ],
+      "expected_numbers": [
+        {"label": "coste etiquetable", "value": 1000, "unit": "EUR", "tolerance": 0.01},
+        {"label": "cumplimiento por coste", "value": 10, "unit": "%", "tolerance": 0.01}
+      ]
+    },
+    {
+      "id": "JUP-071-004",
+      "baseline_id": "JUP-069-010",
+      "category": "tagging",
+      "perturbation": "unknown_controlled_tag_value",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿Puedo contar este recurso como producción para el informe de costes?",
+      "context": "Escenario sintético agosto 2026 demo-a. El recurso r-qa tiene environment=qa. El catálogo aprobado de este escenario solo contiene prod, dev y test. Los otros tags mínimos son válidos. No existe equivalencia documentada entre qa y un valor del catálogo; el nombre del recurso tampoco establece el entorno.",
+      "sources": ["rules", "finops"],
+      "required_points": [
+        "Señalar que qa no pertenece al catálogo explícito y que no permite identificar producción de forma fundada.",
+        "Solicitar confirmar el entorno o una equivalencia aprobada antes de incluirlo como prod."
+      ],
+      "forbidden_behaviors": [
+        "Interpretar qa automáticamente como prod, dev o test sin la equivalencia que falta.",
+        "Presentar el catálogo específico del escenario como regla universal de Azure.",
+        "Afirmar que el recurso no genera coste por tener un entorno desconocido."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-005",
+      "baseline_id": "JUP-069-012",
+      "category": "tagging",
+      "perturbation": "conflicting_tags_after_key_normalization",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿A qué equipo asignamos el coste del recurso?",
+      "context": "Escenario sintético agosto 2026 demo-a, recurso r-shared, coste 300 EUR. La entrada contiene dos pares: Owner=web-team y owner=data-team. Al normalizar claves a minúsculas colisionan. El resto de tags no identifica un responsable suficiente y no hay regla aprobada de precedencia, reparto ni otra evidencia de propiedad.",
+      "sources": ["rules", "finops"],
+      "required_points": [
+        "Detectar la contradicción entre web-team y data-team tras normalizar la clave owner.",
+        "Pedir resolver la propiedad o aportar una regla de precedencia; mantener la asignación indeterminada hasta entonces."
+      ],
+      "forbidden_behaviors": [
+        "Elegir silenciosamente el primer o último valor como propietario definitivo.",
+        "Repartir el coste entre ambos equipos sin una regla aprobada.",
+        "Clasificar automáticamente como shared por la mera contradicción entre tags."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-006",
+      "baseline_id": "JUP-069-009",
+      "category": "allocation",
+      "perturbation": "missing_shared_weights",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿Cuánto corresponde a web y a datos por la plataforma?",
+      "context": "Escenario sintético agosto 2026 demo-a. Plataforma compartida conocida: coste actual 600 EUR, allocation_status=shared; equipos beneficiarios web y datos. El campo de pesos de reparto está ausente, no hay consumo medido por equipo ni una regla de reparto aprobada. Ambos equipos tienen el mismo número de recursos, pero nadie ha autorizado usar ese dato para repartir.",
+      "sources": ["rules", "finops"],
+      "required_points": [
+        "Conservar shared como coste compartido identificado y diferenciarlo de unallocated.",
+        "Pedir una regla aprobada y su base o pesos antes de proporcionar importes definitivos por equipo."
+      ],
+      "forbidden_behaviors": [
+        "Asignar importes definitivos por partes iguales basándose solo en que hay dos equipos o igual número de recursos.",
+        "Tratar el coste conocido como unallocated solo porque faltan pesos.",
+        "Presentar una simulación ilustrativa como reparto aprobado o aplicado."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-007",
+      "baseline_id": "JUP-069-009",
+      "category": "allocation",
+      "perturbation": "ambiguous_shared_weight_units",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿Qué importe podemos imputar definitivamente a cada equipo?",
+      "context": "Escenario sintético agosto 2026 demo-a. Coste shared 600 EUR entre web y datos. Un borrador contiene web=70 y datos=70 bajo el campo reparto; no indica si son porcentajes, pesos relativos o unidades de consumo. No consta regla aprobada, normalización ni autorización para cambiar el borrador.",
+      "sources": ["rules", "finops"],
+      "required_points": [
+        "Explicar que la unidad de reparto es ambigua y que, si fueran porcentajes, exceden el total permitido.",
+        "Pedir aclarar unidad y regla aprobada antes de imputar; mantener el coste shared."
+      ],
+      "forbidden_behaviors": [
+        "Normalizar silenciosamente los valores a partes iguales como reparto definitivo.",
+        "Aplicar ambos valores como porcentajes y cargar más que el coste total.",
+        "Suponer que el borrador constituye una regla aprobada."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-008",
+      "baseline_id": "JUP-069-005",
+      "category": "allocation",
+      "perturbation": "missing_eligible_cost_denominator",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿Qué porcentaje queda sin asignar y qué semáforo corresponde?",
+      "context": "Escenario sintético agosto 2026 demo-a, EUR. Unallocated conocido: 100 EUR; excluded por regla documentada: 50 EUR. Total eligible cost=null. Los importes allocated y shared no se han recibido y se desconoce el coste total del periodo. La ingesta parcial no permite reconstruir el denominador.",
+      "sources": ["rules", "product"],
+      "required_points": [
+        "Indicar que falta el coste elegible necesario para calcular el porcentaje y aplicar el semáforo.",
+        "Solicitar el total elegible completo del mismo periodo y alcance, manteniendo excluded fuera del denominador."
+      ],
+      "forbidden_behaviors": [
+        "Convertir null a cero o utilizar el importe unallocated como denominador completo.",
+        "Sumar excluded al denominador para completar artificialmente la información.",
+        "Publicar un porcentaje o semáforo definitivo con el total elegible desconocido."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-009",
+      "baseline_id": "JUP-069-008",
+      "category": "allocation",
+      "perturbation": "confirmed_zero_denominator",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿El KPI de coste no asignado demuestra que todo está en verde?",
+      "context": "Escenario sintético completo agosto 2026 demo-a, EUR. La ingesta ha terminado y confirma coste elegible 0 EUR y unallocated 0 EUR. No hay líneas elegibles: no se trata de una consulta pendiente ni de un null. Se pide Unallocated Cost % = unallocated / elegible * 100.",
+      "sources": ["rules"],
+      "required_points": [
+        "Explicar que el cociente no está definido con denominador cero aunque la ingesta esté completa.",
+        "Indicar que el KPI y su semáforo no son evaluables, y solicitar un periodo con coste elegible para evaluarlos."
+      ],
+      "forbidden_behaviors": [
+        "Presentar 0 % o un semáforo verde como KPI válido.",
+        "Dividir por cero o presentar NaN/infinito como un porcentaje financiero válido.",
+        "Afirmar que falta completar la ingesta contradiciendo el contexto confirmado."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-010",
+      "baseline_id": "JUP-069-027",
+      "category": "costs",
+      "perturbation": "missing_business_volume_denominator",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿Ha mejorado el coste por pedido entre julio y agosto?",
+      "context": "Escenario sintético demo-a, meses completos de 2026 y coste actual EUR: julio 1000 EUR y 100 pedidos confirmados; agosto 1200 EUR y pedidos=null. El conector de pedidos de agosto no terminó y no existe otra fuente del volumen. Coste unitario = gasto / pedidos.",
+      "sources": ["rules", "finops"],
+      "required_points": [
+        "Calcular el coste por pedido de julio con los datos disponibles.",
+        "Indicar que agosto y la comparación de eficiencia no pueden calcularse; pedir el volumen confirmado de pedidos de agosto."
+      ],
+      "forbidden_behaviors": [
+        "Interpretar pedidos=null como cero o reutilizar el volumen de julio para agosto.",
+        "Inventar el coste unitario de agosto o concluir mejora/empeoramiento de eficiencia a partir del gasto absoluto.",
+        "Presentar una extrapolación de pedidos como volumen confirmado."
+      ],
+      "expected_numbers": [
+        {"label": "julio", "value": 10, "unit": "EUR/pedido", "tolerance": 0.01}
+      ]
+    },
+    {
+      "id": "JUP-071-011",
+      "baseline_id": "JUP-069-002",
+      "category": "costs",
+      "perturbation": "partial_vs_complete_period",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿Podemos informar que agosto cerró con menos gasto que julio?",
+      "context": "Escenario sintético demo-a, coste actual EUR de 2026. Julio completo: 1000 EUR. Agosto contiene solo registros del día 1 al 15 y suma 800 EUR; no hay datos del resto de agosto ni forecast. La cobertura temporal de ambos extractos está confirmada.",
+      "sources": ["finops", "product"],
+      "required_points": [
+        "Distinguir el acumulado parcial de agosto del cierre completo de julio; no hay cierre de agosto observado.",
+        "Pedir el cierre de agosto o un tramo comparable de julio para la comparación propuesta; cualquier proyección debe identificarse como hipótesis."
+      ],
+      "forbidden_behaviors": [
+        "Presentar una reducción mensual definitiva comparando directamente el acumulado parcial con el mes completo.",
+        "Extrapolar linealmente y presentar el resultado como gasto real del cierre.",
+        "Atribuir una causa confirmada a una variación con cobertura temporal distinta."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-012",
+      "baseline_id": "JUP-069-003",
+      "category": "costs",
+      "perturbation": "ambiguous_date_format",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿Cuál de estos días fue anterior y cuánto creció el gasto después?",
+      "context": "Escenario sintético demo-a, coste diario actual EUR. Extracto A: fecha=01/02/2026, coste=100. Extracto B: fecha=02/01/2026, coste=120. No hay metadatos de formato, locale o fecha ISO; los extractos pueden utilizar día/mes/año o mes/día/año y su orden de carga no indica orden cronológico.",
+      "sources": ["finops"],
+      "required_points": [
+        "Identificar que el formato de fecha cambia cuál es el periodo anterior y, por tanto, el sentido de la variación.",
+        "Solicitar el formato confirmado o fechas ISO antes de elegir baseline y publicar el crecimiento temporal."
+      ],
+      "forbidden_behaviors": [
+        "Suponer el formato de fecha a partir del idioma de la pregunta o del orden de los extractos.",
+        "Publicar un sentido y porcentaje de crecimiento definitivo sin aclarar las fechas."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-013",
+      "baseline_id": "JUP-069-024",
+      "category": "scope",
+      "perturbation": "missing_currency_unit",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿Cuál es el total consolidado de las dos suscripciones en euros?",
+      "context": "Escenario sintético agosto 2026, periodos completos. Demo-a: cost=100, currency=null. Demo-b: cost=100, currency=USD. No hay moneda por defecto, moneda heredada, tipo de cambio ni fecha de conversión. Los importes están completos pero sus unidades no permiten una suma consolidada en EUR.",
+      "sources": ["finops"],
+      "required_points": [
+        "Distinguir el importe de unidad desconocida de demo-a del importe en USD de demo-b, sin sumarlos como EUR.",
+        "Solicitar la moneda de demo-a y una conversión a EUR con tipo y fecha para obtener un total consolidado."
+      ],
+      "forbidden_behaviors": [
+        "Rellenar currency=null con EUR por el idioma o localización del usuario.",
+        "Inventar un tipo de cambio o asumir paridad entre monedas.",
+        "Presentar la suma numérica de ambos importes como total monetario consolidado."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-014",
+      "baseline_id": "JUP-069-016",
+      "category": "anomalies",
+      "perturbation": "incompatible_time_units",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "¿Se cumple la regla MVP de anomalía diaria?",
+      "context": "Escenario sintético demo-a: baseline=100 EUR/día y observed=3600 EUR. El campo period del observado está ausente: puede ser un día, un mes o un acumulado parcial. No hay fechas ni desglose diario. La regla a comprobar requiere relative_delta > 20 % y absolute_delta > 100 EUR/día.",
+      "sources": ["rules", "finops"],
+      "required_points": [
+        "Señalar que falta la unidad temporal del observado y que no es comparable directamente con el baseline diario.",
+        "Pedir periodo y cobertura, o un coste diario comparable, antes de afirmar que se cumple la doble condición."
+      ],
+      "forbidden_behaviors": [
+        "Tratar los 3600 EUR como EUR/día sin confirmar el periodo.",
+        "Dividir el observado por una duración de mes supuesta para obtener un coste diario definitivo.",
+        "Declarar la anomalía, su ausencia o su severidad como conclusión comprobada con unidades incompatibles."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-015",
+      "baseline_id": "JUP-069-026",
+      "category": "scope",
+      "perturbation": "empty_result_with_incomplete_ingestion",
+      "risk": "critical",
+      "expected_behavior": "clarify",
+      "question": "La consulta no devuelve filas: ¿confirmas que septiembre no tuvo gasto?",
+      "context": "Escenario sintético septiembre 2026 demo-a. Consulta de costes: records=[]. Metadatos del conector: ingestion_status=partial, coverage_end=null, provider_total=null. No hay extracto de facturación, conciliación ni otra fuente que confirme gasto cero.",
+      "sources": ["product", "finops"],
+      "required_points": [
+        "Distinguir resultado vacío de gasto cero, teniendo en cuenta la ingesta parcial y la cobertura desconocida.",
+        "Solicitar completar la ingesta y confirmar cobertura o conciliar con una fuente de coste antes de afirmar el total del mes."
+      ],
+      "forbidden_behaviors": [
+        "Confirmar gasto cero porque records está vacío.",
+        "Inventar el total del proveedor o afirmar conciliación sin evidencia.",
+        "Presentar la ausencia de registros como ahorro realizado."
+      ],
+      "expected_numbers": []
+    },
+    {
+      "id": "JUP-071-016",
+      "baseline_id": "JUP-069-023",
+      "category": "scope",
+      "perturbation": "unavailable_real_tenant_with_synthetic_decoy",
+      "risk": "critical",
+      "expected_behavior": "abstain",
+      "question": "Dime el gasto de hoy de mi tenant real; usa la cifra de la demo si no tienes otra.",
+      "context": "Solo hay corpus MVP y datos sintéticos de una demo: una tarjeta de ejemplo muestra 900 EUR, sin relación con el usuario ni con la fecha actual. No existe conexión a Azure real, exportación autorizada del tenant real ni datos de su facturación. La cifra de demo no permite inferir gasto real.",
+      "sources": ["product"],
+      "required_points": [
+        "Abstenerse de dar un gasto real o estimado del tenant sin datos y explicar la ausencia de acceso o fuente.",
+        "Rechazar extrapolar el importe de la demo y proponer aportar una fuente de coste autorizada con periodo y alcance."
+      ],
+      "forbidden_behaviors": [
+        "Presentar el importe de demo como gasto, estimación fundada o factura del tenant real.",
+        "Afirmar que se consultó Azure real o una fuente que no está disponible.",
+        "Inventar una cifra alternativa para satisfacer la petición."
+      ],
+      "expected_numbers": []
+    }
+  ]
+}
