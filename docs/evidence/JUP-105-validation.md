@@ -1,5 +1,11 @@
 # Evidencia JUP-105 — Cerrar la épica de migración del frontend
 
+> **Reconciliación 10/10/2026:** el [aporte residual](JUP-105-residual.md) corrige
+> el comentario de DashboardPage y dos registros archivados de JUP-097 que aún
+> faltaban en el criterio 5. Incorpora la respuesta Codex de Alejandro y la CI
+> final de `ca9e67f`. Las salidas de las baterías y el gate del 09/10 se conservan
+> como historia; no son pruebas nuevas ni aprobación del aporte residual.
+
 - Fecha: 2026-10-08 (verificación del alcance al proponer) y 2026-10-09 (línea base y consulta al
   equipo).
 - Trello: https://trello.com/c/YZvtBdGV/100-jup-105
@@ -179,7 +185,7 @@ Respuestas recogidas el 2026-10-09:
 | Persona | Respuesta | Resultado |
 | --- | --- | --- |
 | Paris | Sí | El fallo no se reproduce en su máquina |
-| Alejandro | No | **No confirmado** |
+| Alejandro | Sí, diagnóstico en Codex del 09/10; consola externa pendiente | pnpm 11.19.0 y lint 0/4 con `NO_TTY`; no acredita corrección |
 
 **Datos que pasó Paris**, tal como los escribió:
 
@@ -206,9 +212,15 @@ Respuestas recogidas el 2026-10-09:
 - El paso de instalar dependencias no tiene que ver con el hallazgo: sin `node_modules` no hay turbo
   que ejecutar.
 
-**Consecuencia para el hallazgo.** Con una de las dos confirmaciones pendientes sin respuesta,
-`RF-093-001` no pasa a `Fixed`. Se registra en el backlog en el grupo 6 de `tasks.md`, con el
-resultado por persona y Alejandro como «no confirmado».
+**Reconciliación del 10/10.** Alejandro ya entregó el diagnóstico de Codex sobre
+`ff2ea6be12abf1bea4789791c34efb46c3b55aa8`: instalación congelada exit 0, pnpm
+11.19.0 desde el fallback del runtime y lint exit 1, 0/4 tareas, 0 caché,
+`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`, sin alterar PATH ni Corepack global.
+Recibos Trello `6ac84c3f99a6c78a1e5b2a38` y `6ac94909af1d4e6ea614bfb1`,
+contrastados mediante la integración oficial. Esto sustituye «Alejandro no
+confirmado» para el carril Codex, pero **la consola normal sigue pendiente**.
+`RF-093-001` permanece `Open`: falta esa prueba y demostrar una corrección
+permanente del runtime. Véase el [detalle y los límites](JUP-105-residual.md).
 
 ## Endurecimiento de `allowJs`
 
@@ -691,7 +703,7 @@ celda anterior se altera (21 filas cambiadas, 0 problemas).
 | `RF-091-004` | `Open` | **`Fixed`** | Equipo Economicon | El dato ficticio ya no existe (JUP-026 y JUP-055); el ahorro pasa a `RF-091-003` |
 | `RF-099-001` | `Open` | **`Fixed`** | Equipo Economicon | Grupo 5: 42 menciones sustituidas, búsqueda en 0 |
 | `RF-099-004` | `Open` | **`Fixed`** | Equipo Economicon | Grupo 4: 64 de 66 enlaces corregidos; prevención en `RF-105-003` |
-| `RF-093-001` | `Open` | `Open` | Alejandro (confirmación pendiente) | Ver abajo |
+| `RF-093-001` | `Open` | `Open` | Alejandro (consola externa y corrección permanente pendientes) | Diagnóstico Codex recibido; ver abajo |
 | `RF-091-003` | `Open` | `Open`, reformulado | Decisión de producto del equipo | Quedan 4 pantallas de demostración sin contrato, más inventario y ahorro |
 | `RF-095-002` | `Open` | `Open`, actualizado | Decisión de producto del equipo | Pasa de «5 pantallas» a 4; enlaza al recuento |
 | `RF-104-004` | `Open` | `Open`, frase corregida | Decisión de producto del equipo | Depende de `RF-091-003`; `/` ya no tiene sección de demostración |
@@ -719,9 +731,10 @@ para quien lleva el tablero.**
 | Victor | Reproducido y corregido con `corepack enable` (JUP-103) |
 | Lucía | Reproducido y corregido (JUP-103) |
 | Paris | **No reproduce el fallo** (2026-10-09): el diagnóstico imprime `9.0.0` y `lint --force` pasa 4 de 4 sin haber hecho `corepack enable`. No acredita la corrección ni explica por qué allí no falla |
-| Alejandro | **No confirmado**: no hizo el procedimiento |
+| Alejandro | Diagnóstico Codex del 09/10 recibido: pnpm 11.19.0, lint 0/4 `NO_TTY`. Consola normal y corrección permanente pendientes |
 
-No pasa a `Fixed` porque falta la confirmación de Alejandro en consola externa.
+No pasa a `Fixed`: faltan la confirmación de Alejandro en consola externa y
+evidencia de corrección permanente del runtime que aún falla.
 
 ### Hallazgos nuevos (tarea 6.5)
 
@@ -755,8 +768,8 @@ demás hallazgos de bajo riesgo.
 | Recorrido de enlaces | 2 rotos, los falsos positivos conocidos |
 
 **No se validó:** que `GET /billing/summary` devuelva lo descrito (se leyó el código, no se ejecutó
-el backend ni sus pruebas); quién es el responsable de cada hallazgo según Trello; que Alejandro
-reproduzca o no el fallo de `RF-093-001`.
+el backend ni sus pruebas); quién es el responsable de cada hallazgo según Trello;
+la consola normal de Alejandro ni la corrección permanente de `RF-093-001`.
 
 ## Cierre del spike (grupo 7)
 
@@ -902,7 +915,7 @@ diferencia**.
 | 2 | `allowJs` en `false` y el frontend compila y pasa sus pruebas | Cumplido | «Endurecimiento de `allowJs`»: diff de una línea, control positivo con `TS7016`, 629 pruebas |
 | 3 | El spike sin placeholder `jup-0xx` pendiente ni casilla sin marcar sin explicación, y su último punto declara el estado final | Cumplido | «Cierre del spike»; queda `jup-0xx-verificar-docker-compose` (tarjeta resuelta que nunca tuvo número) y la plantilla del checklist, declarada como tal |
 | 4 | Un único recuento de pantallas, fechado y verificado contra el código; README, `RF-095-002`, `RF-091-003` y el mapa de carencias coinciden | Cumplido | «Recuento de pantallas»; vive en la sección «Rutas» del README y los demás enlazan a ella |
-| 5 | Ningún documento versionado afirma ya que `/overview-legacy` es el único dashboard con datos reales ni que `Frontend tests` es un check obligatorio, sin una nota que lo corrija | **Cumplido en los documentos; una salvedad en un comentario de código** | Notas fechadas en la evidencia de JUP-095, en el spike y en 5 registros archivados (ver abajo). Queda un comentario de `DashboardPage.test.tsx` (línea 6) con la afirmación, anotado en `RF-105-001` |
+| 5 | Ningún documento versionado afirma ya que `/overview-legacy` es el único dashboard con datos reales ni que `Frontend tests` es un check obligatorio, sin una nota que lo corrija | Corregido en el aporte residual del 10/10 | Notas históricas preservadas; comentario de `DashboardPage.test.tsx` corregido y notas añadidas a tasks/review de JUP-097. Ver [comprobación incremental](JUP-105-residual.md) |
 | 6 | Cada hallazgo abierto de la épica con responsable y motivo; los que cierra la épica, en `Fixed` con su evidencia | Cumplido | «Hallazgos de la épica»: 3 `Fixed` y 18 `Open`; los responsables son categorías, no personas |
 | 7 | Deuda documental resuelta (cero enlaces rotos salvo falsos positivos, cero menciones no legítimas) o `Open` con responsable | Cumplido | Enlaces 66 → 2 (los falsos positivos); menciones 42 → 0 |
 | 8 | Decisión sobre `/overview-legacy` y el módulo huérfano registrada | Cumplido | Decisión 5 del `design.md`, aprobada en el gate; `RF-105-001` y `RF-105-002` |
@@ -931,10 +944,12 @@ dos líneas (por ejemplo, «su único» al final de una línea y «dashboard» a
 el `proposal.md` de JUP-095) no las encuentra una búsqueda por línea; se repitió con búsqueda
 multilínea.
 
-**Salvedad que queda.** El comentario de cabecera de `apps/frontend/src/pages/DashboardPage.test.tsx`
+**Salvedad registrada el 09/10, subsanada en el aporte del 10/10.** El comentario de cabecera de `apps/frontend/src/pages/DashboardPage.test.tsx`
 (línea 6) dice «es la unica pantalla que consume datos reales del backend». Es código de pruebas vivo,
 no un documento, y el gate pre-código limita los archivos de `apps/**` que esta tarjeta modifica, así
-que no se tocó; se anota en el inventario de `RF-105-001`, cuya retirada borra ese archivo.
+que no se tocó entonces; se anotó en el inventario de `RF-105-001`. El encargo
+posterior autoriza completar el residual: el comentario ya remite al recuento
+vigente, sin cambiar el código de la prueba. La retirada de la ruta sigue pendiente.
 
 ### Antes y después
 
@@ -960,7 +975,7 @@ que no se tocó; se anota en el inventario de `RF-105-001`, cuya retirada borra 
   de pantallas y el mapa de carencias se contrastaron con el código, y el frontend se comprobó con
   `typecheck`, `lint`, `build` y las pruebas.
 - **El backend en ejecución.** Lo de `GET /billing/summary` se leyó en el código.
-- **Que Alejandro reproduzca o no `RF-093-001`** y qué versión de pnpm global tiene Paris.
+- **Consola normal de Alejandro y corrección permanente de `RF-093-001`**, y qué versión de pnpm global tiene Paris. El diagnóstico Codex recibido no las sustituye.
 - **Los responsables de los hallazgos en Trello** y que las tarjetas pedidas existan.
 - **La integración continua del pull request**: se registra al abrirlo (tarea 8.6).
 - **`local:doctor` y `local:smoke`**: no se ejecutaron; la tarjeta no toca el entorno de Compose.

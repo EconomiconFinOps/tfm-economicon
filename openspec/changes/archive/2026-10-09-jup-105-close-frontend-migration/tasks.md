@@ -1,5 +1,11 @@
 ## 1. Línea base y consulta al equipo
 
+> **Actualización 10/10/2026:** el [aporte residual](../../../../docs/evidence/JUP-105-residual.md)
+> incorpora la respuesta Codex ya entregada por Alejandro, corrige el comentario
+> de DashboardPage y anota dos registros de JUP-097. Los hitos inferiores son
+> históricos; no sustituyen las reviews ni el gate original. CI técnica de
+> `ca9e67f` confirmada verde; criterio 1 Windows sigue con su limitación.
+
 - [x] 1.1 Crear `docs/evidence/JUP-105-validation.md` con la cabecera (fecha, enlace a Trello, rama,
   commit base de `develop`) y registrar las medidas de partida con el comando de cada una: valor de
   `allowJs`, archivos JavaScript en `src/` y `tests/`, enlaces relativos rotos (66 en 26 archivos),
@@ -12,7 +18,8 @@
   `corepack pnpm lint --force` desde la raíz de `develop`, en una consola externa, y que indiquen
   sistema operativo y resultado. Lo envía Victor. Anotar en la evidencia la fecha de la consulta.
   Hecho: Paris contestó el 2026-10-09 (el fallo no se reproduce en su máquina, sin haber necesitado
-  `corepack enable`); Alejandro no contestó y figura como «no confirmado». `RF-093-001` no pasa a
+  `corepack enable`); Alejandro entregó diagnóstico Codex del 09/10, incorporado el 10/10;
+  consola normal y corrección permanente pendientes. `RF-093-001` no pasa a
   `Fixed` (se registra en 6.4).
 
 ## 2. Endurecer `allowJs`
@@ -65,8 +72,9 @@
   cinco registros archivados que afirman que `Frontend tests` es obligatorio o que `/overview-legacy`
   es el único dashboard con datos reales (`design.md`, `proposal.md`, `review.md` y `tasks.md` de
   JUP-095 y `proposal.md` de JUP-097), para cumplir el criterio 5 sin excepción en los documentos.
-  Hecho: 51 líneas añadidas, 0 eliminadas, 8 enlaces nuevos que resuelven. Queda un comentario de
-  `DashboardPage.test.tsx` anotado en `RF-105-001`.
+  Hecho entonces: 51 líneas añadidas, 0 eliminadas, 8 enlaces nuevos que resuelven.
+  El aporte del 10/10 corrige además `DashboardPage.test.tsx` y anota tasks/review
+  de JUP-097. La retirada de la ruta sigue en `RF-105-001`.
 
 ## 4. Deuda documental: enlaces relativos (`RF-099-004`)
 
@@ -112,7 +120,8 @@
   18 `Open`; los responsables son categorías (decisión o tarjeta), no personas.
 - [x] 6.4 Registrar con la respuesta de 1.2 el resultado de `RF-093-001` por persona. Pasa a `Fixed`
   solo si confirman los dos; quien no haya contestado figura como «no confirmado». Hecho: `Open`;
-  Paris no reproduce el fallo y Alejandro figura como no confirmado.
+  Paris no reproduce el fallo; Alejandro documentó el fallo Codex y aún tiene
+  pendientes consola normal y corrección permanente del runtime.
 - [x] 6.5 Añadir `RF-105-001` (retirar la ruta puente `/overview-legacy`, con el inventario de lo que
   arrastra), `RF-105-002` (módulos sin consumidor) y `RF-105-003` (no hay comprobación automática de
   enlaces relativos). Añadir cualquier otro hallazgo que haya aparecido durante la tarjeta. Hecho:

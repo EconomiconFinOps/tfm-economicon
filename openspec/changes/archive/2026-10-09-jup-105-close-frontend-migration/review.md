@@ -1,5 +1,13 @@
 # Review: jup-105-close-frontend-migration
 
+> **Actualización 10/10/2026:** el [aporte residual](../../../../docs/evidence/JUP-105-residual.md)
+> corrige la salvedad del comentario Dashboard y añade notas a tasks/review de
+> JUP-097. Alejandro ya entregó el diagnóstico Codex: consola normal y corrección
+> permanente siguen pendientes. La CI técnica de `ca9e67f` terminó verde.
+> El dictamen y `Human Approval` inferiores conservan el corte del 09/10;
+> no acreditan aprobación de este aporte ni revisión independiente. #86 sigue
+> abierta y requiere los dictámenes de Lucía y Paris y la integración del líder.
+
 ## Result
 
 Listo para el gate post-review de Victor. **No es un veredicto independiente**: lo redacta quien

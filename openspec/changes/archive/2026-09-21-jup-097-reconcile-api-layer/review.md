@@ -1,4 +1,10 @@
 JUP: JUP-097
+
+> **Nota JUP-105, 10/10/2026:** este registro archivado conserva sus resultados
+> históricos. Desde JUP-026 y JUP-055, `/` también consume costes almacenados.
+> La afirmación inferior de que `/overview-legacy` es la única ruta con datos
+> reales está superada; véase [Rutas del frontend](../../../../apps/frontend/README.md#rutas).
+
 Trello: https://trello.com/c/dsBZ7y0S/89-jup-097-reconciliar-la-capa-de-datos-del-frontend-con-los-contratos-del-backend
 Rama: `feat/JUP-097-reconcile-api-layer`
 
