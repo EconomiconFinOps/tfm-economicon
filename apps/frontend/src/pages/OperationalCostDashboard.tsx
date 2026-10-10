@@ -1,6 +1,6 @@
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ExportButton } from "@/components/ExportButton";
-import { chartLegendFormatter, chartTooltipStyle } from "@/components/chartTheme";
+import { chartLegendFormatter, chartTooltipItemStyle, chartTooltipStyle } from "@/components/chartTheme";
 // Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
 // tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
 import { detailedData, hourlyData, providerData } from "@/data/demo/operationalCostDashboard";
@@ -48,7 +48,7 @@ export function OperationalCostDashboard() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-foreground">{row.coste.toLocaleString()}€</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <div className="w-16 bg-muted rounded-full h-2">
+                      <div className="h-2 w-16 rounded-full border border-border bg-card">
                         <div
                           className={`h-2 rounded-full ${row.uso > 80 ? 'bg-danger-tint' : row.uso > 60 ? 'bg-warning-tint' : 'bg-success-tint'}`}
                           style={{ width: `${row.uso}%` }}
@@ -85,7 +85,7 @@ export function OperationalCostDashboard() {
               <YAxis stroke="var(--chart-axis)" />
               <Tooltip
                 formatter={(value) => `${value}€/hora`}
-                contentStyle={chartTooltipStyle}
+                contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle}
               />
               <Line type="monotone" dataKey="coste" stroke="var(--chart-1)" strokeWidth={2} />
             </LineChart>
@@ -102,7 +102,7 @@ export function OperationalCostDashboard() {
               <YAxis stroke="var(--chart-axis)" />
               <Tooltip
                 formatter={(value) => `${value.toLocaleString()}€`}
-                contentStyle={chartTooltipStyle}
+                contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle}
               />
               <Legend formatter={chartLegendFormatter} />
               <Bar dataKey="compute" fill="var(--chart-1)" name="Compute" />

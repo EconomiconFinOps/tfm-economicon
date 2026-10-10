@@ -4,7 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { RefreshCw } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { SectionCard } from "@/components/SectionCard";
-import { chartTooltipStyle } from "@/components/chartTheme";
+import { chartTooltipItemStyle, chartTooltipStyle } from "@/components/chartTheme";
 import { useExecutiveCostKpis } from "@/hooks/useExecutiveCostKpis";
 import {
   compareEndpoints, currentUtcMonth, defaultMonthSelection, describeCostError,
@@ -199,7 +199,7 @@ export function ExecutiveCostDashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="label" stroke="var(--chart-axis)" />
                   <YAxis stroke="var(--chart-axis)" />
-                  <Tooltip contentStyle={chartTooltipStyle} formatter={(_value, _name, item) => {
+                  <Tooltip contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle} formatter={(_value, _name, item) => {
                     const point = item.payload as MonthlyCostPoint;
                     return point.cost === null ? "Sin datos" : point.cost + " " + currency;
                   }} />

@@ -1,7 +1,7 @@
 import { Lightbulb, TrendingDown } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ExportButton } from "@/components/ExportButton";
-import { chartTooltipStyle } from "@/components/chartTheme";
+import { chartTooltipItemStyle, chartTooltipStyle } from "@/components/chartTheme";
 // Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
 // tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
 import { recommendations, savingsByCategory, stats } from "@/data/demo/recommendationsPanel";
@@ -65,7 +65,7 @@ export function RecommendationsPanel() {
             <YAxis dataKey="categoria" type="category" width={120} stroke="var(--chart-axis)" />
             <Tooltip
               formatter={(value) => `${value.toLocaleString()}€/mes`}
-              contentStyle={chartTooltipStyle}
+              contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle}
             />
             <Bar dataKey="ahorro" fill="var(--chart-2)" />
           </BarChart>

@@ -78,7 +78,7 @@ export function IngestPage() {
             </label>
             <input
               id="ingest-source"
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-highlight"
               value={form.source}
               onChange={(event) =>
                 setForm((current) => ({ ...current, source: event.target.value }))
@@ -92,7 +92,7 @@ export function IngestPage() {
             </label>
             <input
               id="ingest-artifact-uri"
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-highlight"
               placeholder="s3://billing/report.csv"
               value={form.artifact_uri}
               onChange={(event) =>
@@ -107,7 +107,7 @@ export function IngestPage() {
             </label>
             <textarea
               id="ingest-text-content"
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-highlight"
               rows={10}
               placeholder="Paste the document content to be chunked and embedded."
               value={form.text_content}

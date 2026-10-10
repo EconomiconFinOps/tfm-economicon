@@ -14,6 +14,9 @@ export const chartTooltipStyle: CSSProperties = {
   color: "var(--foreground)"
 };
 
+// Recharts pinta cada ítem del tooltip con el color de su serie: el texto usa el del tema.
+export const chartTooltipItemStyle: CSSProperties = { color: "var(--foreground)" };
+
 // Recharts pinta el texto de la leyenda con el color de la serie; el texto usa tokens de texto.
 export const chartLegendFormatter = (value: ReactNode) =>
   createElement("span", { style: { color: "var(--muted-foreground)" } }, value);

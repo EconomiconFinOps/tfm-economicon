@@ -122,7 +122,7 @@ export function LoginPage() {
             </label>
             <input
               id="login-email"
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-highlight"
               type="email"
               value={form.email}
               onChange={(event) =>
@@ -137,7 +137,7 @@ export function LoginPage() {
             </label>
             <input
               id="login-password"
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-highlight"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-highlight"
               type="password"
               value={form.password}
               onChange={(event) =>

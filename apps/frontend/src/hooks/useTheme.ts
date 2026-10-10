@@ -35,16 +35,14 @@ export function useTheme() {
   }, [theme]);
 
   const toggleTheme = useCallback(() => {
-    setTheme((current) => {
-      const next: Theme = current === "dark" ? "light" : "dark";
-      try {
-        window.localStorage.setItem(STORAGE_KEY, next);
-      } catch {
-        // Sin almacenamiento la elección dura lo que la sesión.
-      }
-      return next;
-    });
-  }, []);
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    try {
+      window.localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // Sin almacenamiento la elección dura lo que la sesión.
+    }
+    setTheme(next);
+  }, [theme]);
 
   return { theme, toggleTheme };
 }

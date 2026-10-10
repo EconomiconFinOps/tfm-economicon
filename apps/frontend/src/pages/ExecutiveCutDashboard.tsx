@@ -1,6 +1,6 @@
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ExportButton } from "@/components/ExportButton";
-import { chartLegendFormatter, chartTooltipStyle } from "@/components/chartTheme";
+import { chartLegendFormatter, chartTooltipItemStyle, chartTooltipStyle } from "@/components/chartTheme";
 // Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
 // tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
 import { savingsData, cutActions, kpiData } from "@/data/demo/executiveCutDashboard";
@@ -71,7 +71,7 @@ export function ExecutiveCutDashboard() {
             <YAxis stroke="var(--chart-axis)" />
             <Tooltip
               formatter={(value) => `${value.toLocaleString()}€`}
-              contentStyle={chartTooltipStyle}
+              contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle}
             />
             <Legend formatter={chartLegendFormatter} />
             <Bar dataKey="objetivo" fill="var(--chart-baseline)" name="Objetivo" />
@@ -132,7 +132,7 @@ export function ExecutiveCutDashboard() {
             <YAxis stroke="var(--chart-axis)" />
             <Tooltip
               formatter={(value) => `${value.toLocaleString()}€`}
-              contentStyle={chartTooltipStyle}
+              contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle}
             />
             <Legend formatter={chartLegendFormatter} />
             <Line type="monotone" dataKey="alcanzado" stroke="var(--chart-2)" strokeWidth={2} name="Ahorro Acumulado" />
