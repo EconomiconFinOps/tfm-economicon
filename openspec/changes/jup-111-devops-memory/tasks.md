@@ -15,5 +15,5 @@ JUP: JUP-111
 - [ ] 2.2 Incorporate only section f into the canonical shared document
 - [ ] 2.3 Record real pairing, review and validation by assigned people
 - [ ] 2.4 Export reviewed PDF/Markdown with date and SHA-256 and verify total page limit
-- [ ] 2.5 Link delivery/evidence from Trello and the documentation PR
+- [x] 2.5 Link delivery/evidence from Trello and the documentation PR
 - [ ] 2.6 Complete PR review, merge and archive/promote this change after acceptance

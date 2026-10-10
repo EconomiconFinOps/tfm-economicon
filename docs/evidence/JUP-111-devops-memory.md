@@ -2,6 +2,13 @@
 
 Fecha de contraste: 10/10/2026 (Europe/Paris). [Trello](https://trello.com/c/mnqNDpC0). [Contrato](../../openspec/changes/jup-111-devops-memory/proposal.md). Fuente canónica y reglas: [JUP-062](../memoria/README.md).
 
+[PR #87](https://github.com/EconomiconFinOps/tfm-economicon/pull/87), draft contra
+develop. CI [38034787702](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38034787702)
+SUCCESS sobre entrega `1eaa36f15785dc8ad8e1c8c15594d09ce19903a3`;
+`PR reviews` 38034787828 no satisfecho, dictámenes humanos pendientes.
+Los cambios posteriores de esta entrega sólo añaden estos enlaces y el recibo
+Trello; no se atribuye el run anterior a otro SHA.
+
 ## Estado de entrega
 
 Propuesta completa de nueve párrafos y lista de cobertura preparada fuera de Git en `materiales/06-entregables/JUP-111-propuesta-2026-10-10/`, relativa al workspace padre del clon. No es copia de la memoria ni exportación del Google Doc. El manifiesto de esa carpeta identifica `apartado-f.md` y `cobertura-y-entrega.md`. Su publicación queda pendiente de revisión humana y reconciliación con el fragmento existente; no se acredita incorporación, formato final, máximo de páginas o aceptación.
@@ -75,3 +82,10 @@ un dictamen aceptado. El control documental y los hashes de fuentes están
 conservados en `document-checks.json` y `pinned-source-hashes.json` externos.
 
 Sin escritura de memoria/Discord, cambios de prioridades o roles, despliegue, merge o declaración Hecho. El change sigue activo hasta la publicación y aceptación, según las tareas explícitamente pendientes.
+
+Enlace operativo publicado mediante integración DockerServer: comentario
+`6ac9eb23166e2ecab90fd85d`, 10/10/2026 07:37:07Z; tarjeta situada en
+`30 — En curso`, sin marcar los criterios como aceptados. Se mantiene P0 y los
+cuatro roles. Recibo externo `trello-readback.json`. El conector GitHub rechazó
+la creación con 403; la CLI autenticada como `Iber1to` creó la PR, sin cambiar
+atribuciones.
