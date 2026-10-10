@@ -48,3 +48,19 @@ Reproducción en el workspace:
 `python materiales/07-evidencias/JUP-109-evaluacion/verify-evidence.py`.
 Recibos: `materiales/07-evidencias/JUP-109-evaluacion/` (consulta Trello,
 recomputación y propuesta por hash), sin secretos.
+
+## Entrega publicada y límite de cierre
+
+Rama propia publicada con commit inicial `c67735bd3848336b6fcea39905238f4577d24eeb`.
+El 10/10 a las 07:29:00Z se enlazaron rama/evidencia y propuesta por hash en
+el bloque Enlaces de Trello, con lectura posterior exacta y roles, criterios,
+prioridad, fechas y lista Backlog conservados. Recibo
+`materiales/07-evidencias/JUP-109-evaluacion/trello-link-result.json`.
+Descripción de PR preparada en `pr-para-liderazgo.md` del mismo paquete;
+no se abre PR asumiendo el liderazgo de Lucía ni se atribuye revisión propia.
+
+Comprobación final: 13 enlaces relativos válidos y hash de propuesta
+coincidente. Solicitud de revisión humana de Lucía y fragmento h/guía de
+estilo pendiente; no se interpreta el silencio como autorización. La
+incorporación canónica sigue pendiente, por la regla de revisión previa
+de [gobernanza](../memoria/README.md). Sin Discord ni archivo de chats.

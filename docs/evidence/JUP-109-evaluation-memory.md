@@ -135,3 +135,29 @@ de contraste de estilo y extensión, revisión/validación del entregable con
 fecha y hash de exportación autorizada. Las reviews de documentación GitHub
 no reemplazan ese registro. Este trabajo no autoriza exportar o leer la
 memoria completa, ni cambia estados de otras tarjetas.
+
+## Entrega de la contribución — 10/10/2026
+
+Rama propia publicada: [docs/JUP-109-evaluacion](https://github.com/EconomiconFinOps/tfm-economicon/tree/docs/JUP-109-evaluacion).
+Primer commit documental: `c67735bd3848336b6fcea39905238f4577d24eeb`.
+No se abre una PR en nombre de la líder ni se publica un dictamen sobre el
+texto preparado aquí. Descripción de PR lista para liderazgo fuera de Git:
+`materiales/07-evidencias/JUP-109-evaluacion/pr-para-liderazgo.md`.
+
+El 10/10/2026 a las 07:29:00Z se actualizó únicamente el bloque de enlaces de
+JUP-109 mediante `collaboration trello-update --confirm-write` del puente
+autorizado. Lectura posterior confirma descripción exacta y preservación de
+nombre, lista, miembros, fechas y etiquetas; el resto de la descripción,
+incluidos criterios y roles, permanece idéntico. Recibo:
+`materiales/07-evidencias/JUP-109-evaluacion/trello-link-result.json`.
+El enlace de evidencia apunta al commit inicial; la rama conserva la
+continuidad del registro. No se movió la tarjeta ni se completaron criterios
+de incorporación/revisión. No se enviaron mensajes a Discord.
+
+Control documental adicional: 13 enlaces relativos existentes y SHA-256 de
+propuesta coincidente con este registro
+(`materiales/07-evidencias/JUP-109-evaluacion/document-checks.json`).
+Revisión automatizada auxiliar de fuentes realizada y tres precisiones
+editoriales incorporadas; no sustituye revisión humana ni participación
+atribuible. La solicitud de revisión de Lucía queda pendiente, sin inferir
+aprobación por el transcurso del tiempo.
