@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "jup": "JUP-068",
+  "run_id": "JUP-068-synthetic-example-v1",
+  "provenance": "synthetic",
+  "commit": "6410950315b0e3c22057d09015e11e38c5e455ab",
+  "scope": "subscription-demo; mismos recursos, periodo y tareas en ambas modalidades",
+  "dataset_version": "JUP-068-example-v1",
+  "configuration": "Ejemplo aritmético construido; no ejecución de Azure ni del asistente",
+  "reviewer": "fixture sintético; revisión humana pendiente",
+  "period": { "start": "2026-09-01", "end": "2026-09-30" },
+  "currency": "EUR",
+  "minor_unit_digits": 2,
+  "cost_basis": "actual",
+  "evidence": ["docs/validation/JUP-068-business-metrics.md#ejemplo-sintético"],
+  "trials": [
+    { "id": "pair-1", "case_id": "JUP-069-001", "participant": "participant-demo", "repetition": 1,
+      "context_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "result": "pass", "manual_ms": 600000, "assisted_ms": 180000, "evidence": ["synthetic:pair-1"] },
+    { "id": "pair-2", "case_id": "JUP-069-005", "participant": "participant-demo", "repetition": 1,
+      "context_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "result": "pass", "manual_ms": 300000, "assisted_ms": 360000, "evidence": ["synthetic:pair-2"] },
+    { "id": "pair-3", "case_id": "JUP-069-020", "participant": "participant-demo", "repetition": 1,
+      "context_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "result": "fail", "manual_ms": 600000, "assisted_ms": 10000, "evidence": ["synthetic:incorrect-answer"] }
+  ],
+  "costs": [
+    { "id": "line-1", "resource_id": "vm-demo", "amount_minor": 70000, "allocation": "allocated", "owner": "team-demo", "evidence": ["synthetic:line-1"] },
+    { "id": "line-2", "resource_id": "shared-demo", "amount_minor": 20000, "allocation": "shared", "owner": "platform-demo", "rule": "synthetic:shared-rule", "evidence": ["synthetic:line-2"] },
+    { "id": "line-3", "resource_id": "unknown-demo", "amount_minor": 10000, "allocation": "unallocated", "evidence": ["synthetic:line-3"] },
+    { "id": "line-4", "resource_id": "excluded-demo", "amount_minor": 5000, "allocation": "excluded", "rule": "synthetic:excluded-rule", "evidence": ["synthetic:line-4"] }
+  ],
+  "opportunities": [
+    { "id": "estimate-1", "resource_id": "vm-demo", "status": "estimated", "savings_minor": 14000,
+      "reason": "Escenario sintético de optimización", "owner": "team-demo", "risk": "Verificar capacidad antes de aplicar",
+      "method": "700 EUR del mismo periodo multiplicado por reducción hipotética del 20%; solo fixture",
+      "evidence": ["synthetic:baseline-and-utilization"] },
+    { "id": "candidate-1", "resource_id": "shared-demo", "status": "candidate", "savings_minor": null,
+      "reason": "Falta evidencia de utilización", "evidence": ["synthetic:missing-utilization"] }
+  ]
+}
