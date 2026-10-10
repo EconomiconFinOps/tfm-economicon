@@ -5,6 +5,9 @@ recibido del chat coordinador `01a1248a-4e9e-7963-a891-5d8cb49345a6`.
 [Tarjeta](https://trello.com/c/sRKGpYEy), id `69da4531119a60549856c34a`.
 [PR #95 en borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/95),
 contra `develop`; revisión, validación e incorporación canónica pendientes.
+Entrega enlazada por la integración oficial en comentario Trello
+`6ac9ed27b9e2053ee991465b`, 10/10/2026 07:45:43 UTC; relectura exacta verificada,
+lista Backlog intacta. Recibo externo `trello-receipt.json` en el directorio de evidencia.
 
 ## Alcance y decisiones
 

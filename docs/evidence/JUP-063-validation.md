@@ -2,6 +2,8 @@
 
 Fecha: 10/10/2026. [Tarjeta](https://trello.com/c/sRKGpYEy).
 [PR #95](https://github.com/EconomiconFinOps/tfm-economicon/pull/95), borrador contra develop.
+Vínculo registrado y releído en Trello: comentario `6ac9ed27b9e2053ee991465b`
+del 10/10/2026 07:45:43 UTC. La tarjeta conserva Backlog; no se completan criterios.
 Base de las afirmaciones: `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
 Esta es evidencia de una contribución preparada para Paris, no el dictamen
 independiente `Validacion JUP-063`, ni la memoria, ni aceptación del MVP.
