@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { CostEvidence } from "./CostEvidence";
 
 interface Citation {
   evidence_id: string;
@@ -36,7 +37,7 @@ export function AnswerEvidence({ content, metadata }: {
     && raw.every((item, index) => references[index] === item.evidence_id) ? raw : [];
 
   return <>
-    <div className="mt-1 whitespace-pre-wrap text-sm text-foreground">
+    <div className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">
       {content.split("\n").map((line, index) => {
         const match = /^- \[(\d+)\] /.exec(line);
         const number = match ? Number(match[1]) : 0;
@@ -67,7 +68,7 @@ export function AnswerEvidence({ content, metadata }: {
         <p className="break-all">Referencia: {citation.reference}</p>
         <blockquote className="mt-2 whitespace-pre-wrap border-l-2 border-info pl-3">{citation.excerpt}</blockquote>
       </details>)}
-    </section> : <p className="mt-2 text-xs text-muted-foreground">
+    </section> : "cost_evidence" in metadata ? <CostEvidence evidence={metadata.cost_evidence} /> : <p className="mt-2 text-xs text-muted-foreground">
       {Array.isArray(references) && references.length > 0
         ? "La evidencia de esta respuesta no está disponible."
         : "Sin fuentes documentales utilizadas."}

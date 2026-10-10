@@ -1,7 +1,27 @@
 # Demo funcional — JUP-065
 
-Actualizado: 2026-10-08. Origen: «JUP-065 — Preparar la demo funcional».
+Actualizado: 2026-10-10. Origen: «JUP-065 — Preparar la demo funcional», chat `01a0f8dc-e719-7161-a17b-d7686751fe0f`.
 [Tarjeta](https://trello.com/c/SZUFo4ol).
+
+## Reanudación y reconciliación — 10/10/2026
+
+El usuario pide retomar exclusivamente JUP-065 y dejar la auditoría del Coordinador;
+después autoriza reconciliar la PR63. Se incorpora develop `412ae411` sobre head
+`48ee742`, resolviendo sólo el conflicto del índice con todos los temas conservados.
+CI combina controles actuales y demo. README/guion/preflight fijan desmarcar la
+opción nueva de costes por propiedad para recorrer el corpus documental.
+
+[Evidencia actual](../evidence/JUP-065-validation.md): 15 artefactos intactos/reproducibles,
+dos tests negativos, 28 consultas/siete categorías, 99 tests de herramientas,
+OpenSpec58/58, ocho changes trazables, higiene1061 y diff correcto. Producto/config
+igual a develop; ningún ensayo/runtime/proveedor real ejecutado.
+
+Revalidación incremental Paris/Víctor de esta combinación, pairing Lucía y ensayo
+integrado pendientes. Las reviews históricas no se atribuyen al nuevo head;
+`registro-ensayo.md` sigue `not_run`. Trello50 verificado por puenteDockerServer
+en `snapshot-20261010T163724Z.json`, synced16:37:16Z/18:37:16Europe/Paris.
+El siguiente paso es publicar el commit y sus evidencias y solicitar revalidación,
+sin cerrar la tarjeta ni enviar Discord.
 
 ## Alcance
 

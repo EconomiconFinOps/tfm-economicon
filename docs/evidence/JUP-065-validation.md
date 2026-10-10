@@ -7,6 +7,42 @@ Rama: `docs/JUP-065-functional-demo`, sobre develop
 [Paquete](../demo/JUP-065/README.md) y
 [alcance OpenSpec](../../openspec/changes/archive/2026-10-03-jup-065-functional-demo/proposal.md).
 
+## Reconciliación con develop — 10/10/2026
+
+Preparación reconciliada desde `48ee74250714c6fe50946906824b80dc9ffd59fa` con
+`develop` `412ae411c7f3a9b51f65407974962ac2b4545686`, por Alejandro a petición del usuario.
+Único conflicto: `docs/continuidad/README.md`; conserva todos los temas entrantes,
+la fila de demo y la fila histórica de presupuestos. CI conserva los tres comandos
+de demo e historial completo, e incorpora los controles actuales de develop,
+incluidos evaluación, contribuciones y ejecución directa de tests frontend.
+
+JUP-037 introduce un modo de consultas estructuradas en el chat. README, guion y
+preflight explicitan mantener desmarcado «Consultar costes por propiedad» para
+los prompts documentales de la demo. Los quince artefactos y los tres scripts de
+preparación/integridad conservan sus blobs respecto de `48ee742`; no se regeneran
+los originales ni se modifica su commit fijo. No hay cambios propios en producto,
+Compose, variables de entorno, paquetes, infraestructura o scripts frente a develop.
+
+Comprobaciones propias en Windows, Python 3.14 y Node 24.14.1:
+
+- Integridad offline: 15 archivos reproducibles; dos tests con casos negativos pasan.
+- Preguntas: 28 consultas / siete categorías, fuentes y rúbricas correctas.
+- CI/política/gobernanza/trazabilidad/higiene: 99 tests pasan; ocho changes trazables,
+  higiene de 1061 archivos y `git diff --check` correctos.
+- OpenSpec estricto: 58/58 elementos, sin fallos.
+
+La primera ejecución restringida encontró denegaciones de procesos/temporales del
+sandbox; las comprobaciones afectadas se ejecutaron después con permisos aprobados
+y temporales propios. No se atribuyen esos errores al producto. Logs y recibos
+locales en `materiales/07-evidencias/JUP-065-estado-2026-10-10/`, fuera del repositorio.
+
+Estos resultados comprueban la preparación, no son reviews humanas. Paris revisó
+favorablemente `48ee742` el 09/10; Víctor conserva su dictamen histórico en `a75b707`.
+La combinación nueva requiere revisión/validación incremental de lo afectado.
+Pairing Lucía, CI remota del nuevo commit, ensayo integrado, proveedor real,
+ingesta/SQL, navegador, citas, duración y reproducción independiente pendientes.
+El registro de ensayo permanece `not_run`; no se cierra JUP-065 con esta actualización.
+
 ## Protección de la demo en CI — 05/10/2026
 
 Paris solicita un P2 sobre `b77d596` en

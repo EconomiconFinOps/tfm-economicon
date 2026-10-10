@@ -22,6 +22,7 @@ class PgVectorStore:
             "app.vector_store.migrations",
             Path(__file__).with_name("migrations"),
             version_table="vector_schema_migrations",
+            migration_kwargs={"001": {"embedding_dimension": self.embedding_dimension}},
         )
         runner.run()
         with self.engine.connect() as connection:

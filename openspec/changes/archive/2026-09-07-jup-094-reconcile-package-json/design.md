@@ -4,10 +4,10 @@ JUP: JUP-094
 
 Ver [proposal.md](proposal.md) — Why. Aquí solo el estado verificado que condiciona el enfoque.
 
-**Decisión heredada vinculante.** [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md)
+**Decisión heredada vinculante.** [ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md)
 (`Accepted`, JUP-092) sigue rigiendo: `strict: true`, `allowJs: true` durante la migración,
 type-check obligatorio en CI, `tsconfig` local a `apps/frontend`. Esta tarjeta **no la reabre**; solo
-añade dependencias bajo ella. El spike ([línea 170](../../../docs/spikes/frontend-migration.md))
+añade dependencias bajo ella. El spike ([línea 170](../../../../docs/spikes/frontend-migration.md))
 exige que toda tarjeta de F2 y F3 lo enlace desde su `design.md`; este documento lo hace.
 
 **Punto de partida** (tras el merge de JUP-093, `283a1d8`):
@@ -22,7 +22,7 @@ exige que toda tarjeta de F2 y F3 lo enlace desde su `design.md`; este documento
   tipos globales entra automáticamente**. `tsconfig.node.json` conserva `"types": ["node"]`.
 - `src/**`: 14 archivos `.js`/`.jsx` intactos. Línea base de lint: **49 violaciones exactas** de
   `react/prop-types` (`RF-082-002`, `Open`).
-- Inventario del origen ([JUP-091](../../../docs/planning/JUP-091-economicon-source-inventory.md)):
+- Inventario del origen ([JUP-091](../../../../docs/planning/JUP-091-economicon-source-inventory.md)):
   61 declaradas → **11 `MANTENER`, 2 `SUSTITUIR`, 48 `DESCARTAR`**.
 
 **Hechos verificados en esta HU** (no supuestos), decisivos para la decisión 3:
@@ -78,7 +78,7 @@ componente nuevo, uno por uno, en vez de resolverlo una sola vez.
 **Alcance acotado, no el `ui/` completo del origen.** Los 20 primitivos Radix restantes que el
 inventario clasifica `DESCARTAR` siguen sin consumidor conocido en el destino y no se incorporan.
 Detalle completo de la decisión y sus consecuencias en
-[ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md).
+[ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md).
 
 <details>
 <summary>Razonamiento original (descartar), superado por la revisión de arriba</summary>
@@ -98,10 +98,10 @@ confirmados en vez de "quizá".
 
 La decisión 1 es ahora una adopción de sistema de diseño: un patrón compartido que ata todos los
 componentes de F3 y el cierre de F5. Exactamente lo que
-[docs/adr/README.md](../../../docs/adr/README.md) exige registrar como ADR, con el precedente directo
+[docs/adr/README.md](../../../../docs/adr/README.md) exige registrar como ADR, con el precedente directo
 de JUP-092 (ADR-0003) antes de que JUP-093 pudiera tocar el tooling.
 
-**Redactado como [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)**, en estado `Proposed`.
+**Redactado como [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)**, en estado `Proposed`.
 Pasa a `Accepted` en un commit separado, tras la aprobación del equipo — mismo patrón de dos commits
 que usó ADR-0003. **Ningún paquete `@radix-ui/*` se instala antes de esa aceptación.**
 
@@ -188,6 +188,6 @@ código; `src/**` nunca se toca. Si además se revirtiera ADR-0004, seguiría el
 ## Open Questions
 
 - Ninguna que bloquee. La decisión sobre shadcn/ui se revisó durante el `apply` (ver decisiones 1 y
-  2, y [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)): el equipo pasó de descartarlo a
+  2, y [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)): el equipo pasó de descartarlo a
   adoptar un subconjunto de 6 paquetes, con el ADR como bloqueante de la instalación hasta que se
   acepte. El resto del plan no se ve afectado por el cambio.

@@ -81,7 +81,7 @@ prueba estabilidad sostenida. Se retira la propuesta de ajuste persistente
 por decision del usuario. El leeway no corrige CockroachDB; no se atribuye
 el 500 a esa causa sin prueba, ni error horario obsoleto a un fallo de app.
 RF-087-001/RF-095-001 y otros hallazgos conservan su estado. Ver
-[evidencia incremental](../../../docs/evidence/JUP-085-validation.md#incremento-actual-tolerancia-jwt-de-5-s).
+[evidencia incremental](../../../../docs/evidence/JUP-085-validation.md#incremento-actual-tolerancia-jwt-de-5-s).
 
 Gate post-QA humano PENDING: decision, aprobador y fecha final pendientes.
 No implica pairing/validacion humana, publicacion, merge, archivo ni tracker.
@@ -123,7 +123,7 @@ mediciones, transitorios y conservacion de todos los fallos anteriores.
 
 RF-087-001/RF-095-001 tienen correccion CORS implementada y evidencia funcional,
 pero conservan Open hasta completar QA estable. RF-087-002 y los otros
-residuales ajenos no se cierran. Ver [evidencia actual](../../../docs/evidence/JUP-085-validation.md).
+residuales ajenos no se cierran. Ver [evidencia actual](../../../../docs/evidence/JUP-085-validation.md).
 
 Limites: las promesas abandonadas retenidas externamente siguen pending; no se
 aborta transporte ni se deshacen operaciones del servidor. Retries de mutaciones
@@ -201,7 +201,7 @@ Revision posterior, evidencia consolidada, QA final y aprobacion humana:
 - Base: `1ff8e071f83a58f630c496740d712e8c0e2cc443`, `origin/develop`.
 - Rama: `feat/JUP-085-auth-session-contract`; cambios locales sin commit ni PR.
 - Aprobacion previa de Paris: [proposal.md](proposal.md), 18:30:51 UTC.
-- Evidencia: [JUP-085-validation.md](../../../docs/evidence/JUP-085-validation.md).
+- Evidencia: [JUP-085-validation.md](../../../../docs/evidence/JUP-085-validation.md).
 - Resultado QA: **QA_BACKEND_PASS**; frontend, QA integral y aprobacion final pendientes.
 
 ## Alcance Revisado

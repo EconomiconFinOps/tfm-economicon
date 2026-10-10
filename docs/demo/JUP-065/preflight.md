@@ -58,6 +58,8 @@ En el flujo existente `/ingest`, para cada documento permitido: seleccionar Core
 
 Antes de la sesión pública comprobar que la pregunta JUP-069-004 recupera el documento FinOps y que la cita abre evidencia pertinente. Si el contrato integrado requiere una carga distinta, registrar su comando validado en el ensayo. La preparación del corpus está hecha; la carga y compatibilidad de embeddings/modelo quedan por ejecutar en el MVP.
 
+En `/assistant`, mantener desmarcado «Consultar costes por propiedad» para todos los prompts de este paquete. JUP-037 añade ese modo estructurado con evidencia de costes; activarlo evita el recorrido de recuperación documental y no comprueba las respuestas conceptuales ni sus citas. Verificar además que cada conversación nueva permanece seleccionada: el cambio de JUP-037 en la creación del hilo no sustituye una prueba del navegador durante el ensayo.
+
 Registrar proveedor/modelo exactos de **consulta y embeddings**, dimensión y versión de índice, chunking, configuración de generación, commit y hash del corpus; no guardar tokens. Comprobar el proveedor realmente usado por `/assistant` mediante trazas seguras. Si queda un mock, indicar `blocked` para el ensayo de IA real. No comparar únicamente textos idénticos: aplicar todos los `required`, ningún `forbidden` y las tolerancias de `numbers` de cada rúbrica.
 
 ## 4. Controles para autorizar el ensayo
