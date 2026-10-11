@@ -414,3 +414,48 @@ reentrega como máximo y reencolado sin tope si no se puede leer o registrar el 
 
 **DoD:** no se ejecutó `check-dod.mjs` completo en este grupo; el processor completo pasa (754 pasan, 65
 se omiten, 0 fallan) y lint, type-check y la batería final se ejecutan en las tareas 8.1 y 8.3.
+
+## Grupo 5 — Resultado de un trabajo completado (`RF-054-001`)
+
+### Red (tareas 5.1 y 5.2), 2026-10-11
+
+Ajuste de tareas: la 5.1 decía que las pruebas iban en `tests/test_ingest_redelivery.py`, pero ese archivo
+está commiteado y bloqueado por el hook, así que van en un archivo nuevo que reutiliza sus ayudantes por
+importación. El texto de la tarea se actualizó, y se añadieron los valores ya decodificados «falsy» que
+la precedencia de `A if cond else result or {}` convierte hoy en `{}`.
+
+`apps/processor/tests/test_completed_result_shape.py` (nuevo, 56 casos), con `IngestTask`, `JobRepository`
+y `ProcessorWorker` reales sobre SQLite (`cd apps/processor && python -m pytest tests/test_completed_result_shape.py -q`).
+
+**Resultado Red, repetido por el orquestador: 45 fallan y 11 pasan.** Los 45 fallan por comportamiento, ninguno
+por `ImportError`:
+
+- **24 «DID NOT RAISE»**: el valor guardado se devuelve sin validar (listas, `"x"`, `""`, números, booleanos,
+  tanto como texto como ya decodificados) y los falsy ya decodificados (`[]`, `0`, `False`) caen en `{}`.
+- **11 `JSONDecodeError` sin envolver**: texto corrupto (`''`, `'not json'`, `'{'`, objeto truncado) y
+  cadenas ya decodificadas (`"x"`, `""`); a través del worker, esas excepciones salen por el `except
+  Exception` genérico y producen `nack(requeue=True)` y relanzar, que es el bucle de `RF-054-001`.
+- **5 con el worker haciendo `ack`** de resultados que no son objeto (`[1]`, lista con marcador, `"x"`,
+  `123`, `true`) en lugar de `nack(requeue=False)`, y 3 casos en que el trabajo válido de otro tenant
+  queda retenido o no se emite `job_message_rejected`.
+- **1 con el texto `null`**, que devuelve `None` en vez de `{}`.
+
+Pasan hoy, a propósito, 11 guardas de la reentrega legítima: resultado `NULL`, `{}` y objeto con claves,
+como texto y como valor ya decodificado, y el `ack` con `{"ok": 1}`.
+
+Cada rechazo exige además el tipo exacto `InvalidJobMessage`, el mensaje `Invalid job message.`, el
+marcador del resultado guardado ausente de `str`, `repr` y traza, fila sin cambios, solo
+`fetch_authorized_job` llamado, pipeline sin ejecutar y contador `ingest_jobs_failed_total` sin cambios.
+Contraste (`test_ingest_redelivery`, `test_ingest_task`, `test_tenant_isolation_jobs`,
+`test_agent_ingestion_integration`): 76 pasan y 6 se omiten, igual con y sin el archivo nuevo. Sin cambios
+en `apps/*/app/**`.
+
+Hallazgos del tester para Green:
+
+1. **SQLite entrega `'123'` y `'0'` como `int`**, no como `str`, por la afinidad de la columna; `'true'`,
+   `'false'`, `'null'`, `'[]'`, `'""'` y `''` llegan como `str` y `NULL` como `None`. La validación debe
+   comprobar `isinstance(result, dict)` también para valores que no sean `str` y rechazar un `int` ya
+   decodificado, incluido `0`, en lugar de dejarlo caer en `or {}`.
+2. Un `str` ya decodificado es indistinguible de texto: un JSONB que sea el texto `"x"` llega como `str`
+   `x`, y `json.loads('x')` falla; ambos deben acabar en `InvalidJobMessage`.
+3. `None` ya decodificado, `NULL` y el texto `null` devuelven `{}`.

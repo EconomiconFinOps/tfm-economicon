@@ -76,11 +76,14 @@ del backend (`RF-105-004`).
 
 ## 5. Resultado de un trabajo completado (`RF-054-001`)
 
-- [ ] 5.1 Red, processor, en `tests/test_ingest_redelivery.py`: un trabajo `completed` con resultado
-  `''` o `not json` lanza `InvalidJobMessage`, no cambia la fila, no ejecuta el pipeline y la
-  excepción no contiene el resultado; lo mismo con `[1]`, `"x"`, `123` y `true`, como texto y ya
-  decodificados; `null` como texto devuelve `{}`.
-- [ ] 5.2 Red, processor: a través del worker, esos casos terminan en `nack(requeue=False)`.
+- [x] 5.1 Red, processor, en un archivo nuevo `tests/test_completed_result_shape.py` (el
+  `test_ingest_redelivery.py` existente está commiteado y bloqueado, y se reutilizan sus ayudantes):
+  un trabajo `completed` con resultado `''` o `not json` lanza `InvalidJobMessage`, no cambia la
+  fila, no ejecuta el pipeline y la excepción no contiene el resultado; lo mismo con `[1]`, `"x"`,
+  `123` y `true`, como texto y ya decodificados, y con los falsy ya decodificados `[]`, `0`, `False`
+  y `""`, que hoy se convierten en `{}` por la precedencia de `... if ... else result or {}`;
+  `null` como texto o ausente devuelve `{}`.
+- [x] 5.2 Red, processor: a través del worker, esos casos terminan en `nack(requeue=False)`.
 - [ ] 5.3 Green, processor: validación del resultado en `IngestTask` (decisión 6).
 - [ ] 5.4 Comprobar que `test_completed_redelivery_returns_stored_result_in_any_representation` pasa
   sin cambios.
