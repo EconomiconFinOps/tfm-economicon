@@ -410,7 +410,7 @@ class GuideTests(unittest.TestCase):
         rows = {}
         for line in self.text.splitlines():
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            if line.startswith("|") and len(cells) == 6 and cells[0] not in ("Servicio", "---"):
+            if line.startswith("|") and len(cells) == 6 and cells[0] != "Servicio" and not re.fullmatch(r"-+", cells[0]):
                 self.assertNotIn(cells[0], rows, "fila duplicada")
                 rows[cells[0]] = cells
             elif line.startswith("| Servicio"):
