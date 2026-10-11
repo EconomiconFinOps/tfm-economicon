@@ -1,5 +1,83 @@
 # JUP-060 — evidencia de consolidación de arquitectura
 
+## Entrega revisada del 11/10/2026
+
+Origen: «Implementa JUP-060», chat `01a12ad8-69f9-75b1-9003-94d5e33386be`.
+El usuario autoriza expresamente sustituir los roles humanos por llamadas a
+subagentes. Esta excepción se aplica solo a JUP-060: ejecución asistida bajo
+Iber1to, pairing `/root/pairing`, revisión `/root/revision`, validación
+`/root/validacion` y revisión de memoria `/root/memoria`. No atribuye trabajo
+a los cuatro responsables humanos anteriores ni altera los checks compartidos.
+
+### Reconciliación y alcance
+
+PR92 fue cerrada sin merge el 10/10 a las 18:02:58Z, sin reviews/comentarios
+pendientes en las tres superficies GitHub al consultar el 11/10. Se retoma su
+rama con `develop a0e9a56` y se conservan los temas del índice de ambos lados.
+La secuencia distingue ownership SQL de recuperación documental; se añaden
+cobertura de etiquetas, dimensión desde Settings, CD privado integrado y
+evidencias fechadas del gateway y métricas. El CD mock no adopta ese gateway.
+AWS/Terraform conservan alcance documental, sin provisioning ni llamadas reales.
+
+### Memoria y exportación preexistentes
+
+Trello, leído por la integración oficial DockerServer, supera las notas locales
+de incorporación/exportación pendientes: apartado d incorporado el 10/10 y
+exportación completa publicada con autorización anterior. Verificado el 11/10
+únicamente el apartado d por rangos de Google Docs, heading `h.6hqakt1qyepu`,
+igual al fragmento del 10/10. No se leen los apartados ajenos. La memoria
+conserva explícitamente su corte histórico `c2995a1/d523bc3`; la actualización
+a `a0e9a56` está en la referencia del repositorio y no se atribuye a esa exportación.
+
+- [Memoria canónica, apartado d](https://docs.google.com/document/d/1RPccdfwmiKtPOdOAhHHQjkOk1RHhYrjy0N4MgOnXpnQ/edit#heading=h.6hqakt1qyepu).
+- [PDF publicado](https://drive.google.com/file/d/1YmUdFaen4kJcw51eRRxyO9KjJe2rdjJC/view), exportado 10/10/2026 16:58:53Z; SHA-256 `eef0fc2c75eeacb6e0cb32720b085a84e02b05b7e05b1fed4ff89e94a969e814`.
+- [Markdown publicado](https://drive.google.com/file/d/1Oh-G0H6CSfEGp2hA5b_rAxnYUe2TxAV7/view), SHA-256 `e3dbb1351c79f39d77dcff076209bb31ccc188c120a3206453e3195f55696a7e`.
+- [Manifiesto publicado](https://drive.google.com/file/d/1J-p9EaLD4de1YtSoaPxqQvOMblLjU-Hg/view).
+
+Las 11 páginas y figuras en páginas6–9 son comprobación visual histórica del
+10/10 registrada en Trello, no una nueva inspección visual del PDF. El guion
+oficial fue releído el 11/10 en sus tres partes; la matriz histórica conserva
+su aplicabilidad. Revisión textual independiente de `/root/memoria` favorable
+para ese corte y límites: no acredita el requisito generativo completo del MVP.
+Registro publicado en comentario Google Docs `AAACIbtoIrc` el 11/10 a las
+12:13:04Z, con dictámenes y hashes de la versión revisada. Metadatos Drive
+confirmados para los tres archivos publicados, sin descargar memoria completa.
+La frase histórica de revisión humana pendiente queda superada por el registro
+de revisión autorizada; no se inventan aprobaciones de Lucía o Paris.
+
+### Validación del candidato reconciliado
+
+| Comprobación (11/10) | Resultado y límite |
+| --- | --- |
+| Gobernanza Node: jup-check, pr-policy, ci-workflow, repository-governance y jup-cleanup tests | 95/95 correctos. |
+| OpenSpec estricto antes de archivo | 60/60 antes y después del archivo; trazabilidad 8 changes (7 tras archivo) e higiene 1110 archivos correctos en ese corte. |
+| Terraform fmt/validate/mock tests, subagente de validación | Formato y esquema correctos,6/6 runs; negativos de activación sin adaptación, AZ ajena y familia PostgreSQL incompatible. Proveedor cacheado y simulado, sin AWS real. |
+| Enrutamiento edge Node | 8/8 por líder, revisión y validación independiente. |
+| Enlaces focales architecture/AWS/Terraform/proposal/design | 74 destinos sin roturas por validación; revisión amplia107/109, dos roturas heredadas en índice para temas ajenos, ya presentes en develop. |
+| Diagramas modificados chat y billing | Renderizados con Mermaid CLI/Chromium e inspeccionados sin recortes; fuentes y PNG fuera de Git en materiales/07-evidencias/JUP-060-arquitectura-2026-10-11/. |
+| diff --check | Correcto. |
+
+Reproducción Terraform: binario local 1.13.3, AWS6.13.0 fijado;
+`TF_DATA_DIR` fuera del repositorio, caché existente `.tmp/aws-pr92-tf-data`;
+`terraform fmt -check -recursive`, `terraform validate -no-color`,
+`terraform test -no-color`; `node infra/aws-reference/tests/edge-functions.test.cjs`.
+No se repite runtime de aplicación para cambios documentales ni se presentan
+resultados antiguos como pruebas nuevas. CI y resultado de integración se
+registran en la PR y tarjeta. No se modifican protecciones ni se fabrican reviews.
+
+### Dictámenes independientes
+
+`Revision JUP-060`: `/root/revision` favorable, sin P0/P1; detectó un P2
+de orden de persistencia ownership. Corregido en ambas ramas del diagrama y
+prosa:409/422 ocurren antes de guardar la pregunta ownership; la rama documental
+guarda antes de embeddings. `/root/validacion` detectó y contrastó lo mismo.
+`/root/pairing` propuso la bifurcación y actualización CD/etiquetas/gateway.
+Los revisores no publicaron commits en la rama. Los dictámenes completos y
+el cierre de la corrección se registran en PR como evidencia de subagentes.
+
+## Historial del 10/10/2026 — pendientes operativos superados por el corte anterior
+
+
 10/10/2026 · Base revisada `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
 [Tarjeta](https://trello.com/c/alMIpBOQ). Rama propia
 `docs/JUP-060-technical-architecture`; copia aislada `tfm-economicon-jup060`.
@@ -43,7 +121,7 @@ ni valida nuevamente todos los anchors históricos.
 | --- | --- | --- |
 | Resultado funcional verificable | [Arquitectura](../architecture.md): ocho diagramas de componentes, secuencias, datos, despliegue y objetivo; contraste de código integrado. | Entrega documental verificable; apartado d de memoria pendiente de incorporación revisada. No nueva ejecución del producto. |
 | Pruebas necesarias añadidas y en verde | Comprobación de enlaces/diagrama/especificación y controles existentes, resultados abajo. | No se añaden tests de producto para prosa; ejecución documental se registra sin sustituir QA funcional. |
-| Documentación y decisiones actualizadas | Arquitectura, [change](../../openspec/changes/jup-060-technical-architecture-deliverable/proposal.md), continuidad y propuesta AWS preservada. | Implementado; no ratifica ADR Proposed ni aprovisiona recursos. |
+| Documentación y decisiones actualizadas | Arquitectura, [change](../../openspec/changes/archive/2026-10-11-jup-060-technical-architecture-deliverable/proposal.md), continuidad y propuesta AWS preservada. | Implementado; no ratifica ADR Proposed ni aprovisiona recursos. |
 | PR revisado y vinculado | Contribución en rama propia, [PR #92 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/92). | Vinculado; revisión Lucía y validación Paris pendientes, sin merge. |
 | Validación funcional y evidencia enlazadas | Esta matriz y fuentes históricas fechadas; handoff del apartado d. | Pendiente validación humana del entregable, exportación/hash de memoria y cierre de tarjeta. |
 

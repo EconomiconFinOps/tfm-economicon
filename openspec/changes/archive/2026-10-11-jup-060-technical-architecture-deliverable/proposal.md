@@ -41,3 +41,13 @@ La memoria no se copia al repositorio ni se publica sin revisión humana.
 Trello contrastado 10/10: Victor Mendez liderazgo; Alejandro Aguado
 pairing/coautoría; Lucia Mateo revisión; Paris Arcos Martin validación.
 La aportación asistida no acredita pairing entre humanos ni dictámenes.
+
+## Excepción de ejecución del 11/10/2026
+
+El usuario autoriza sustituir los roles humanos por llamadas a subagentes para
+JUP-060. Ejecución asistida bajo Iber1to, pairing /root/pairing, revisión
+/root/revision, validación /root/validacion y revisión documental /root/memoria.
+La asignación humana anterior es historia, no participación acreditada.
+La excepción se limita a esta entrega; no cambia política global ni simula
+reviews de cuentas humanas distintas. Memoria y exportación ya incorporadas
+el 10/10: su corte c2995a1/d523bc3 se valida como histórico.

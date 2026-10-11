@@ -12,10 +12,12 @@
 
 - [x] 2.1 Ejecutar controles documentales, enlaces, diagramas y gobernanza; registrar resultados.
 - [x] 2.2 Publicar contribución revisable y enlazar evidencia en Trello (PR92, comentario 6ac9edb77c321c49fcc1f612).
-- [ ] 2.3 Incorporación revisada/autorizada por Victor del apartado d en memoria canónica.
-- [ ] 2.4 Review Lucia y validación Paris, exportación/evidencia atribuible del entregable.
-- [ ] 2.5 Archivar/promover OpenSpec en rama de entrega al completar aceptación; integrar PR.
+- [x] 2.3 Incorporación del apartado d y exportación publicada el 10/10, confirmadas en Trello y por lectura acotada el 11/10.
+- [x] 2.4 Pairing, revisión y validación por subagentes autorizados; revisión de memoria histórica, sin atribución humana inventada.
+- [x] 2.5 Preparar archivo/promoción OpenSpec y entrega por PR; resultado de integración se registra en evidencia/PR/Trello.
 
-La asignación de roles no acredita su ejecución. Excepción explícita:
-este change permanece activo y la contribución draft mientras 2.3–2.5 estén
-pendientes. No se completa el criterio «PR revisado» con una inspección de agentes.
+El usuario autoriza el 11/10 sustituir los roles humanos por llamadas a subagentes.
+Queda superada la espera humana del draft original, sin presentar sus dictámenes
+como reviews de otras cuentas GitHub ni modificar los controles compartidos.
+La memoria conserva el corte histórico c2995a1/d523bc3 validado; docs/architecture.md
+se reconcilia con develop a0e9a56. No se despliega AWS ni se acepta el MVP generativo.

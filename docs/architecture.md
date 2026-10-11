@@ -73,12 +73,13 @@ sequenceDiagram
   U->>UI: Pregunta en conversación
   UI->>B: POST /assistant/conversations/{id}/messages
   B->>DB: Usuario, membership y propietario de conversación
-  B->>DB: Persistir mensaje de usuario
   alt ownership_query explícito
     B->>DB: Agregación SQL por tenant, periodo, moneda y dimensiones
     DB-->>B: Costes y procedencia
     B->>B: Respuesta determinista y cost_evidence
+    B->>DB: Persistir mensaje de usuario tras resolver consulta
   else Consulta documental
+  B->>DB: Persistir mensaje de usuario
   B->>E: Embedding de pregunta (mock o LiteLLM)
   E-->>B: Vector
   B->>V: Tenant y provider, top_k y umbral
@@ -95,7 +96,8 @@ a la cola. Cuando recibe `ownership_query`, usa
 [OwnershipQuestionService](../apps/backend/app/services/ownership_questions.py):
 agrega costes de ejecuciones completadas por tenant, período y moneda, con
 dimensiones permitidas y procedencia verificable. Devuelve `cost_evidence`,
-sin embeddings, recuperación documental ni llamada LLM. La interfaz ofrece un
+sin embeddings, recuperación documental ni llamada LLM. Los rechazos de la
+consulta (409/422) ocurren antes de persistir el mensaje de usuario. La interfaz ofrece un
 formulario explícito; no interpreta libremente lenguaje natural en SQL. Véase
 [contrato ownership](api/ownership-questions.md). Para la rama documental, [AssistantService](../apps/backend/app/services/assistant.py) muestra
 hasta tres fragmentos o indica falta de contexto. La consulta vectorial filtra

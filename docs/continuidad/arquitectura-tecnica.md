@@ -1,53 +1,49 @@
 # Arquitectura técnica — JUP-060
 
-Verificado 10/10/2026. Origen: encargo «Implementa JUP-060 — Documentar arquitectura
-técnica», chat 01a124a3-8135-7f53-8cf8-7d268a4caedd; delegado desde
-01a1248a-4e9e-7963-a891-5d8cb49345a6. [Tarjeta](https://trello.com/c/alMIpBOQ).
+Verificado 11/10/2026. Origen «Implementa JUP-060», chat
+`01a12ad8-69f9-75b1-9003-94d5e33386be`. [Tarjeta](https://trello.com/c/alMIpBOQ),
+[PR92](https://github.com/EconomiconFinOps/tfm-economicon/pull/92).
 
-## Alcance y conclusiones
+## Alcance y decisiones
 
-Copia aislada tfm-economicon-jup060, rama docs/JUP-060-technical-architecture,
-base c2995a118d419dfe725247bac9c6f219a3f0ea77. Checkout compartido preservado.
-[Arquitectura](../architecture.md) sustituye descripciones obsoletas sin cambiar
-runtime: billing lee costes; aislamiento y citas integrados; chat sigue plantilla
-síncrona, no llama al processor. Job documental y CLI Azure son flujos distintos.
-Tools FinOps son contrato; gateway/AgentRuntime no acreditan vertical generativo.
+Copia `tfm-economicon-jup060`, rama local `docs/JUP-060-delivery`; entrega sobre
+la rama existente de PR92. Checkout compartido preservado. Base reconciliada
+`develop a0e9a56`, después de la contribución inicial `d523bc3` sobre `c2995a1`.
+PR92 se encontró cerrada sin merge y sin feedback pendiente el 11/10.
+[Arquitectura](../architecture.md) distingue chat documental determinista,
+ownership SQL, job documental, CLI Azure, cobertura tags y objetivo generativo.
+CD privado052 integrado, gateway078 con evidencia propia y métricas068 offline;
+no se confunden elegibilidad, despliegue vivo, calidad IA o beneficio realizado.
 
-Compose: 9 servicios/5 volúmenes; ai 11/6. Apps publican sin loopback por defecto;
-infra publica en loopback. Insecure local/Vite preview no son base productiva.
-JUP052 no integrado en esta base; no inventario vivo ni despliegue nuevo.
-[Propuesta AWS](../planning/aws-deployment-proposal.md) del 09/10 conservada como
-antecedente con aviso de alcance operativo superado. El hash original
-`5f5ade08941dab08edb7cd7704dc1691db364ae1920918400a6a0603c9d71855` es histórico,
-anterior al aviso. El usuario confirmó alcance documental e incorporación de
-[esquema AWS](../architecture-aws.md) y [Terraform](../../infra/aws-reference/README.md)
-a esta PR. [Continuidad AWS](cloud-aws.md) distingue ambos cortes. Ningún
-provisioning, gasto o llamada pagada; no se ratifica una migración de arquitectura.
+[AWS](../architecture-aws.md) y [Terraform](../../infra/aws-reference/README.md)
+son referencia documental. No apply, cloud, migración ni gasto. La propuesta
+EC209/10 sigue como antecedente superado; [continuidad AWS](cloud-aws.md).
 
-## Gobernanza y evidencia
+## Memoria y atribución
 
-Trello oficial leído por DockerServer:/home/danteadmin/economicon-collaboration:
-misma descripción/roles, P0, Backlog, actividad 09/10 18:46:52Z.
-Victor liderazgo, Alejandro pairing, Lucia revisión, Paris validación. Identidad
-GitHub Iber1to: aportación asistida propia, sin atribuir trabajo al resto.
-Guion_PJ.md leído por su enlace de coordinación y contrastado en las tres partes;
-no se abrió la memoria ni apartados ajenos. Fuente canónica y reglas:
-[docs/memoria/README.md](../memoria/README.md).
-[Evidencia por criterio](../evidence/JUP-060-validation.md).
-[Change activo](../../openspec/changes/jup-060-technical-architecture-deliverable/proposal.md).
+Trello oficial confirma apartado d incorporado y exportación publicada el10/10.
+Se leyó solo d por rangos el11/10, sin otros apartados. Conserva corte histórico
+c2995a1/d523bc3; la referencia del repo se actualiza a a0e9a56. PDF/Markdown/manifiesto
+Drive y hashes en [evidencia](../evidence/JUP-060-validation.md). No nueva exportación
+ni nueva comprobación de paginación:11 páginas y figuras6–9 son evidencia10/10.
 
-## Próximos pasos
+Usuario autoriza expresamente sustituir roles humanos por subagentes en este
+encargo. Ejecución bajo Iber1to; pairing `/root/pairing`, revisión `/root/revision`,
+validación `/root/validacion`, revisión de memoria `/root/memoria`. Dictámenes
+favorables con límites; P2 de orden persistencia ownership corregido/revalidado.
+No se atribuyen aportaciones a Victor/Alejandro/Lucia/Paris por su asignación
+anterior; no se inventan aprobaciones GitHub ni se alteran protecciones.
+La excepción se limita a JUP060 y no acepta el MVP completo.
 
-[PR #92 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/92) publicada
-contra develop. OpenSpec 56/56, gobernanza 89/89, higiene 6/6 y checker correcto;
-72 enlaces sin error, ocho Mermaid renderizados con Chromium de pruebas.
-CI inicial e8f951e: siete checks técnicos correctos; JUP reviews falla por los dos
-dictámenes humanos ausentes. Ver informe para intentos fallidos de entorno y límites.
-Propuesta d revisable fuera de Git en materiales/07-evidencias/JUP-060-arquitectura-2026-10-10/.
-Nota Trello publicada y releída por integración oficial el 10/10 a las 07:48Z:
-6ac9edb77c321c49fcc1f612, enlaza PR/evidencia y pendientes. Sin mover tarjeta.
-Victor revisa e incorpora el apartado d en la fuente canónica con autorización
-expresa y revisión humana; exportar versión/hash. Lucia/Paris emiten dictámenes
-independientes. Solo después archivar/promover change, integrar PR y decidir
-estado Trello conforme a CONTRIBUTING. No atribuir aceptación, pairing, merge o
-cierre por esta documentación; no mensajes Discord.
+## Evidencia y siguiente lectura
+
+95 pruebas gobernanza,60 OpenSpec antes/después archivo, Terraform fmt/validate,
+6 mock tests y8 rutas correctos. Enlaces focales74 correctos; revisión amplia
+107/109,2 enlaces heredados ajenos rotos en índice de develop. Dos diagramas
+modificados renderizados/inspeccionados. Sin nueva prueba runtime ni AWS.
+[Change archivado](../../openspec/changes/archive/2026-10-11-jup-060-technical-architecture-deliverable/proposal.md).
+
+Consultar PR92/Trello para CI del SHA final, dictámenes publicados y resultado
+de integración. La evidencia conserva fechas/limitaciones y la fuente canónica
+sigue fuera de Git. No mensajes Discord. Las correcciones futuras parten del
+corte integrado y mantienen el alcance exclusivamente documental de AWS.
