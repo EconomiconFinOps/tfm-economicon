@@ -70,6 +70,21 @@ El sistema SHALL medir estado, latencia, alias, modelo resuelto, tokens y coste 
 - **WHEN** termina una llamada real
 - **THEN** puede atribuirse su uso y coste sin almacenar prompt ni respuesta
 
+#### Scenario: Emision de claves de producto
+- **WHEN** se provisionan las credenciales operativas
+- **THEN** processor y backend reciben claves distintas, con 9 y 1 USD respectivamente por 30 dias, caducidad de 30 dias, RPM 10, TPM 20000 y concurrencia 1
+- **AND** backend solo accede a `economicon-embedding`, processor a `economicon-chat` y `economicon-embedding`, y ninguna clave puede administrar el gateway
+- **AND** los secretos se guardan en archivos privados fuera de Git y los recibos solo incluyen limites, caducidad y gasto
+
+#### Scenario: Clave no utilizable
+- **WHEN** una clave esta revocada, caducada, ha agotado su presupuesto o solicita un alias no permitido
+- **THEN** el gateway rechaza la solicitud antes de llamar al upstream
+
+#### Scenario: Reemision y ventana presupuestaria
+- **WHEN** existen credenciales guardadas o se solicita rotacion automatica
+- **THEN** la emision vuelve a verificar las credenciales existentes y la rotacion automatica se rechaza para no reiniciar el presupuesto
+- **AND** una renovacion manual exige conciliar la ventana y el gasto antes de emitir reemplazos
+
 ### Requirement: Benchmark verificable y seguro
 El benchmark SHALL validar casos y alias, rechazar redirecciones HTTP y
 conservar exclusivamente metricas de estado, modelo, latencia, tokens y coste.
