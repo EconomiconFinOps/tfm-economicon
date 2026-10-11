@@ -294,3 +294,45 @@ excepción.
 Pendiente de este requisito, por pertenecer a otros grupos: la variante con `redelivered=True` (4.2),
 el tope de reintentos (grupo 4), el resultado corrupto de un `completed` (grupo 5) y la comprobación
 con broker real (grupo 6).
+
+## Grupo 4 — Tope de un reintento
+
+### Red (tareas 4.1, 4.2 y 4.3), 2026-10-11
+
+Dos archivos nuevos, con `IngestTask`, `JobRepository` y `ProcessorWorker` reales sobre SQLite
+(`cd apps/processor && python -m pytest tests/test_queue_message_redelivered.py tests/test_ingest_bounded_retry.py -q`):
+
+- `tests/test_queue_message_redelivered.py` (13 casos, tarea 4.1): `blocking_pop` copia `redelivered`
+  del frame (verdadero y falso), un frame sin el atributo cuenta como primera entrega, los valores no
+  booleanos se convierten con `bool`, `QueueMessage` vale `False` por defecto y admite la palabra clave,
+  y un mensaje ilegible se descarta sin afectar a la marca del siguiente.
+- `tests/test_ingest_bounded_retry.py` (28 casos, tareas 4.2 y 4.3): primera entrega con fallo no
+  clasificado (reencola y relanza); reentrega con el mismo fallo (un `nack(requeue=False)`, no relanza,
+  fila `failed`, contador +1, evento `job_retry_exhausted` solo con `request_id`, sin `source`,
+  contenido ni texto de la causa); reintento que se completa (`ack`); secuencia completa con el
+  pipeline invocado exactamente 2 veces; trabajo válido de otro tenant detrás; permanente de entrada,
+  `InvalidJobMessage` y `ProviderError` sin cambios con `redelivered` verdadero; y, para la lectura del
+  trabajo, `mark_running` y `mark_failed` que fallan, el reencolado sin tope también en una reentrega.
+
+**Resultado Red, repetido por el orquestador: 19 fallan y 22 pasan** (41 casos).
+
+- **13 fallan por el campo inexistente**: `AttributeError: 'QueueMessage' object has no attribute
+  'redelivered'` (11) y `TypeError ... unexpected keyword argument 'redelivered'` (2).
+- **6 fallan por comportamiento del worker**: `IngestionFailed` escapa y se hace `nack(requeue=True)` con
+  `redelivered` verdadero (reentrega sin descarte: `RuntimeError`, `ValueError` y `KeyError`; evento
+  `job_retry_exhausted` ausente; la 2ª entrega de la secuencia relanza), y el bucle deja un
+  `worker_loop_failed` antes del trabajo válido siguiente.
+- **22 pasan hoy a propósito**: primera entrega, reintento que se completa, permanente de entrada,
+  `InvalidJobMessage`, `ProviderError` y los 12 casos de estado no disponible. Son guardas contra una
+  implementación que aplique el tope de más; los de estado no disponible con reentrega verdadera son los
+  más importantes, porque matan un worker que descarte toda reentrega.
+
+Contraste (`test_ingest_task`, `test_tenant_isolation_jobs`, `test_tenant_isolation_malformed_queue`,
+`test_secret_boundaries`, `test_worker_tracing`, `test_ingest_permanent_input_failure`): 91 pasan y 6 se
+omiten, igual con y sin los archivos nuevos. Sin cambios en `apps/*/app/**`.
+
+Notas del tester para Green: el helper de `test_ingest_bounded_retry.py` marca la reentrega asignando
+`message.redelivered = True` sobre un `QueueMessage(job, tag)`, así que el dataclass **no debe** ser
+`frozen` ni usar `__slots__`; y los dobles `SimpleNamespace(delivery_tag=..)` de
+`test_tenant_isolation_malformed_queue.py` no tienen `redelivered`, por eso el valor por defecto de un
+frame sin el atributo es `False`.

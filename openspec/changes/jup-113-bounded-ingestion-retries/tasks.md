@@ -55,15 +55,15 @@ del backend (`RF-105-004`).
 
 ## 4. Tope de un reintento
 
-- [ ] 4.1 Red, processor: `blocking_pop` entrega `QueueMessage.redelivered` con el valor de la
+- [x] 4.1 Red, processor: `blocking_pop` entrega `QueueMessage.redelivered` con el valor de la
   respuesta de `basic_get`, verdadero y falso, con un canal doblado; un `QueueMessage` creado sin ese
   campo vale `False`.
-- [ ] 4.2 Red, processor: un fallo no clasificado con `redelivered=True` deja el trabajo `failed`,
+- [x] 4.2 Red, processor: un fallo no clasificado con `redelivered=True` deja el trabajo `failed`,
   llama a `nack(requeue=False)`, no relanza y registra el evento fijo de reintento agotado sin datos
   del trabajo; con `redelivered=False` reencola y relanza como hoy; una reentrega que termina bien
   queda `completed` con `ack`. Un fallo permanente de entrada con `redelivered=True` se descarta
   igual que con `False` (variante diferida de la 3.1).
-- [ ] 4.3 Red, processor: si falla la lectura del trabajo, `mark_running` o `mark_failed`, el worker
+- [x] 4.3 Red, processor: si falla la lectura del trabajo, `mark_running` o `mark_failed`, el worker
   llama a `nack(requeue=True)` también con `redelivered=True`.
 - [ ] 4.4 Green, processor: campo `redelivered` en `QueueMessage` y `blocking_pop`, y política de la
   tabla de la decisión 5 en `runner.py`.
