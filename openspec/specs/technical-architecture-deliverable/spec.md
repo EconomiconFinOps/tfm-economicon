@@ -1,7 +1,10 @@
 # technical-architecture-deliverable Specification
 
 ## Purpose
-TBD - created by archiving change jup-060-technical-architecture-deliverable. Update Purpose after archive.
+Provide a dated, traceable technical architecture of Economicon, separating
+implemented flows, optional configuration, historical evidence and documentary
+AWS/Terraform references without claiming unverified runtime capabilities.
+
 ## Requirements
 ### Requirement: Traceable architecture views
 
@@ -61,4 +64,3 @@ coverage of the official guide, human participation and criterion evidence.
 - **WHEN** the repository contribution is delivered
 - **THEN** pending memory incorporation, review and validation remain pending,
   without copying the complete memory or treating agent checks as human approval
-
