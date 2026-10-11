@@ -91,16 +91,16 @@ se rompió y qué falló). Orden: prioridad A y después B.
 
 ## 6. Verificación
 
-- [ ] 6.1 Repetir la medición de los servicios con pruebas nuevas, sobre la rama, y anotar la
+- [x] 6.1 Repetir la medición de los servicios con pruebas nuevas, sobre la rama, y anotar la
   cobertura antes y después de cada área cubierta.
-- [ ] 6.2 Ejecutar la suite completa de cada servicio modificado, sin instrumentar, en el contenedor
+- [x] 6.2 Ejecutar la suite completa de cada servicio modificado, sin instrumentar, en el contenedor
   equivalente a CI, y anotar aprobadas, fallidas y omitidas.
-- [ ] 6.3 Comprobar que `apps/frontend` no tiene cambios (H-12 queda diferido). Si los tuviera,
+- [x] 6.3 Comprobar que `apps/frontend` no tiene cambios (H-12 queda diferido). Si los tuviera,
   ejecutar `corepack pnpm --filter @finops/frontend lint`, `typecheck` y `build`.
-- [ ] 6.4 Ejecutar `corepack pnpm openspec:validate`,
+- [x] 6.4 Ejecutar `corepack pnpm openspec:validate`,
   `corepack pnpm jup:check -- --change jup-054-final-candidate-coverage` y
   `corepack pnpm jup:cleanup:check`.
-- [ ] 6.5 Comprobar `origin/develop` otra vez. Si hay commits nuevos que tocan `apps/**`, repetir la
+- [x] 6.5 Comprobar `origin/develop` otra vez. Si hay commits nuevos que tocan `apps/**`, repetir la
   medición de los servicios afectados o anotar en la evidencia qué commits quedan sin auditar.
 
 ## 7. Registro y cierre

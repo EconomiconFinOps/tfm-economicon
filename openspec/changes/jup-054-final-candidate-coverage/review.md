@@ -524,3 +524,28 @@ añadidos (`A`), todos `test_*.py` nuevos bajo `apps/*/tests/`: cuatro en backen
 azure-cost-api. No hay ningún archivo modificado ni borrado, ninguno que no sea una prueba nueva, y nada en
 `apps/frontend`, `apps/*/app`, `apps/*/requirements*.txt`, CI ni dependencias.
 
+
+## Grupo 6 — verificación
+
+Sin ciclo Red/Green: sólo mediciones y comprobaciones sobre pruebas ya aceptadas (excepción de los grupos 1 a 4).
+Árbol medido: la rama en `8cfc05a`, contenedores `python:3.12` con las mismas dependencias y comandos que la
+medición inicial.
+
+- **6.2 Suites completas sin instrumentar:** azure-cost-api 81 passed; processor 644 passed y 65 omitidas;
+  backend 1047 passed y 62 omitidas; 0 fallos. Frente a la referencia de CI (59, 462/65 y 960/62) las diferencias
+  son exactamente las pruebas nuevas (+22, +182 y +87 = 291) y no se añade ninguna omitida.
+- **6.1 Cobertura:** cada ejecución instrumentada reproduce a la ejecución sin instrumentar (mismas pasadas y
+  omitidas), por lo que las cifras valen. Totales y líneas de cada hueco, antes y después, en la sección «Resultado
+  tras las pruebas nuevas» de `docs/evidence/JUP-054-validation.md`. Todas las líneas objetivo quedan cubiertas
+  salvo `guardrails.py:146-147`, la rama inalcanzable (`RF-054-003`).
+- **6.3 Frontend:** `git diff e1c2a8f -- apps/frontend` está vacío; no hay lint, tipos ni build que repetir. No se
+  volvió a ejecutar su suite ni su medición, y se conservan los datos de la inicial.
+- **6.4 Checks de gobernanza:** `corepack pnpm openspec:validate` (60 passed, 0 failed),
+  `corepack pnpm jup:check -- --change jup-054-final-candidate-coverage` y `corepack pnpm jup:cleanup:check`,
+  todos en verde sobre el estado final de esta tarea.
+- **6.5 `origin/develop`:** sigue en `e1c2a8f` tras `git fetch origin --prune`, sin commits posteriores, así que no
+  hay nada que repetir ni commits sin auditar.
+- **Limitación del entorno de pruebas, corregida a mitad de la pasada:** el ejecutor de contenedores usado para
+  comprobar cada tarea copiaba sólo `apps/`, lo que hacía fallar cuatro pruebas de la primera pasada que leen
+  archivos de la raíz del repositorio; ya copia el árbol versionado completo. No afectaba a las pruebas nuevas ni al
+  producto, y las mediciones de este grupo se hicieron con `git archive HEAD`, que incluye todo el árbol.

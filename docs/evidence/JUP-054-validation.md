@@ -393,3 +393,53 @@ Decisión de Victor sobre la lista anterior, tomada antes de escribir ninguna pr
 Como el código de producto ya existe, las pruebas nuevas pasan a la primera. Su
 valor se acredita rompiendo a mano el comportamiento cubierto y comprobando que la
 prueba falla (decisión 7 del diseño), no con mutación automática.
+
+
+#### Resultado tras las pruebas nuevas
+
+Medición del 2026-10-10 sobre el árbol de la rama (`8cfc05a`, que sólo añade pruebas y documentación sobre el
+candidato `e1c2a8f`), en los mismos contenedores y con los mismos comandos que la medición inicial. Es un
+diagnóstico sin umbral. Las cifras valen porque cada ejecución instrumentada reproduce a la ejecución sin
+instrumentar del mismo árbol. `origin/develop` sigue en `e1c2a8f` (comprobado de nuevo: sin commits
+posteriores), por lo que la medición cubre el candidato final sin lagunas.
+
+| Servicio | Pasadas antes → después | Omitidas | Líneas | Ramas | Combinado |
+| --- | --- | --- | --- | --- | --- |
+| azure-cost-api | 59 → 81 (+22) | 0 → 0 | 95,6 % → 95,9 % (518 → 520 de 542) | 88,7 % → 90,6 % (94 → 96 de 106) | 94,4 % → 95,1 % |
+| backend | 960 → 1047 (+87) | 62 → 62 | 87,0 % → 87,7 % (2950 → 2975 de 3391) | 77,7 % → 78,1 % (730 → 734 de 940) | 85,0 % → 85,6 % |
+| processor | 462 → 644 (+182) | 65 → 65 | 88,8 % → 90,3 % (1757 → 1788 de 1979) | 76,0 % → 81,1 % (357 → 381 de 470) | 86,3 % → 88,6 % |
+| frontend | 654 (sin cambios) | 0 | 90,4 % (sin cambios) | 95,1 % (sin cambios) | no se volvió a ejecutar |
+
+Las pruebas nuevas suman 291 (22 + 182 + 87) y **no añaden ninguna omitida**: 0 fallos y las mismas 62 y 65
+omitidas que la referencia. El frontend no tiene cambios (`git diff` vacío bajo `apps/frontend`), por lo que no se
+repitió su medición y se conservan los datos de la inicial. Con las pruebas nuevas el candidato suma 2426
+aprobadas (81 + 1047 + 644 + 654) y las mismas 127 omitidas; esta cifra procede de mi contenedor, no de CI: el
+resultado de CI de la PR se enlaza al abrirla.
+
+Líneas de cada hueco crítico cubierto, sin cubrir antes y después (el árbol medido ya incluye todas las pruebas):
+
+| Hueco | Archivo | Líneas sin cubrir antes | Después |
+| --- | --- | --- | --- |
+| H-02 | backend `api/routes/tenants.py` | 12 | ninguna |
+| H-03 | backend `api/routes/assistant.py`, `db/database.py` | 63; 497, 498, 507 | ninguna |
+| H-01 | backend `api/routes/billing.py` | 40-44, 93-94 | ninguna |
+| H-04 | backend `api/routes/jobs.py` | 39, 49 | ninguna |
+| H-07 | processor `tasks/ingest.py` | 30-31, 73-74 | ninguna |
+| H-08 | processor `repositories/azure_cost.py` | 74, 117, 194, 221, 248 | ninguna |
+| H-06 | processor `agents/guardrails.py` | 56, 65, 71, 75, 98, 111, 123, 131-133, 138, 146-147 | **146-147** (rama inalcanzable, `RF-054-003`) |
+| H-09 | processor `clients/azure_cost.py` | 92-97, 286, 290, 294, 306, 318 | ninguna |
+| H-11 | azure-cost-api `query_engine.py` | 55, 57 | ninguna |
+
+Que una línea se ejecute no demuestra que la prueba detecte su rotura: cada prueba nueva se acreditó rompiendo a
+mano el comportamiento en una copia desechable (más de 250 roturas entre el tester y QA en total, con sus
+supervivientes justificados en `review.md`). Sigue sin cubrir lo diferido (H-05, H-10, H-12 y D-01 a D-08), lo que
+sólo ejercitan las suites opt-in (127 omitidas) y lo aceptado (A-01 a A-09), con su motivo en la sección de huecos.
+
+#### Hallazgos de producto descubiertos
+
+Ninguna prueba nueva falló contra el candidato sin modificar; los defectos aparecieron por sondeos y por la lectura
+del código, y no se fijaron con aserciones. Se registran en `openspec/findings/backlog.md`: `RF-054-001`
+(resultado persistido corrupto en un trabajo completado, `ingest.py:74`), `RF-054-002` (clave recortada a 100
+caracteres antes de buscar palabras sensibles, `guardrails.py:115-119`), `RF-054-003` (rama inalcanzable,
+informativo), `RF-054-004` (el transporte deja escapar excepciones crudas, `azure_cost.py:92-97`) y `RF-054-005`
+(ambigüedad de contrato sobre mayúsculas en nombres de campo).
