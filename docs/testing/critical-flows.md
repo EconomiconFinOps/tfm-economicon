@@ -4,6 +4,11 @@ Trello: https://trello.com/c/ZsxwmagI. Auditoría: 2026-10-10, base
 `c2995a118d419dfe725247bac9c6f219a3f0ea77`. Resultados de ejecución y límites:
 [evidencia JUP-054](../evidence/JUP-054-validation.md).
 
+Segunda pasada (2026-10-10): candidato `e1c2a8f` (`develop` tras cinco PR posteriores a la #93), cobertura
+medida como diagnóstico y nueve huecos cubiertos con pruebas nuevas. Ver la columna «Delta JUP-054», la
+sección [Medición de cobertura](#medición-de-cobertura-diagnóstico) y la
+[evidencia](../evidence/JUP-054-validation.md#segunda-pasada-cobertura-del-candidato-final).
+
 La referencia del 27/08 (58 Azure + 126 processor + 10 backend) es histórica.
 JUP-087 incorporó Vitest y resolvió el baseline de lint; JUP-085/086/096 añadieron
 contratos de autenticación, aislamiento y migraciones. Se reutilizan esas suites.
@@ -17,12 +22,13 @@ Rutas relativas a la raíz; las llaves agrupan archivos existentes.
 | Área / riesgo | Suite reutilizada | Componentes reales / límites | Delta JUP-054 |
 | --- | --- | --- | --- |
 | Auth: token inválido, expiración, exposición de secretos | `apps/backend/tests/test_{auth_api,security_utils,secret_boundaries}.py`; frontend `tests/auth-session.test.tsx` y tests de expiración | JWT, rutas y guards reales; almacén de usuarios doble en auth API, fetch doble en frontend | Sin duplicación. Login con almacén real seguido de todas las rutas sigue fuera de esta evidencia |
-| Tenant: lectura/escritura cruzada, membresía revocada, redelivery | Backend `test_tenant_isolation_{api,repository,vector}.py`; processor `test_tenant_isolation_{jobs,costs,malformed_queue,integration}.py` | Rutas/repository/SQL reales en SQLite; variantes Cockroach/vector/Rabbit opt-in. Tokens creados por fixture | Se amplía el recorrido existente con GET de historial, igualdad íntegra de mensajes, JSONB y 404 para otro tenant |
-| Azure: contrato, paginación, errores e idempotencia | Azure `test_{query_api,resilience,repository}.py`; processor `test_azure_cost_{client,ingestion,cockroach_integration}.py` | API local sobre CSV; cliente unitario con respuestas dobladas; Cockroach opt-in | `apps/processor/tests/test_azure_api_contract_integration.py`: API local real por HTTP loopback → UrllibTransport → cliente → normalizador → SQL SQLite; no Azure cloud |
-| RAG: selección, evidencia, dimensiones y aislamiento | Backend `test_retrieval_{contract,failures,traceability,contract_pgvector}.py`, `test_citations.py`; processor `test_{embedding_pipeline,vector_dimensions,tenant_isolation_vector}.py` | Embeddings deterministas y vector doubles en offline; pgvector real opt-in | Reutiliza el recorrido real y comprueba conservación de citas al reabrir |
-| Agente: salida inválida y efectos parciales | Processor `test_agent_runtime.py`, `test_ingest_task.py` | Guardrails reales, proveedor y agente doblados por separado en suites anteriores | `test_agent_ingestion_integration.py`: AgentRuntime + LangGraph + IngestTask + repositorio SQLite; proveedor/embeddings/vector explícitamente doblados. Éxito normalizado y rechazo sin escritura vectorial |
-| Frontend: navegación, caché entre tenants, errores visibles | `apps/frontend/tests/{session-and-dashboard,tenant-switching,ingestion,conversations,dashboard-tenant-transition}.test.tsx`; `src/routes.integration.test.tsx` | Route tree, componentes, QueryClient, storage y API client reales en jsdom; fetch doble. No navegador/backend real | Vitest directo en CI; se conservan suites de JUP-087 y posteriores |
-| Docker/runtime: wiring, salud, migraciones, fallos de transporte | `tools/{docker-topology,local-doctor,local-smoke,litellm-compose}.test.mjs`; processor `test_{schema_migration_ownership,tenant_isolation_integration,litellm_docker}.py`; backend `test_rabbitmq_publisher_integration.py` | Tests de herramientas estáticos/doblados no prueban stack levantado. Integraciones opt-in usan servicios reales aislados | Ejecución acotada de recorrido real, detallada en evidencia; no acredita todo Compose ni gateway/LLM real |
+| Tenant: lectura/escritura cruzada, membresía revocada, redelivery | Backend `test_tenant_isolation_{api,repository,vector}.py`; processor `test_tenant_isolation_{jobs,costs,malformed_queue,integration}.py` | Rutas/repository/SQL reales en SQLite; variantes Cockroach/vector/Rabbit opt-in. Tokens creados por fixture | Se amplía el recorrido existente con GET de historial, igualdad íntegra de mensajes, JSONB y 404 para otro tenant **Segunda pasada:** `GET /tenants` devuelve sólo las membresías del usuario (`test_tenants_route.py`), la creación de conversaciones usa el tenant y el usuario del contexto y queda aislada después (`test_conversation_creation.py`) y una reserva de cola rechazada no crea trabajo (`test_job_reservation_rejection.py`), con SQLite real; las variantes opt-in siguen sin ejecutarse en CI. |
+| Azure: contrato, paginación, errores e idempotencia | Azure `test_{query_api,resilience,repository}.py`; processor `test_azure_cost_{client,ingestion,cockroach_integration}.py` | API local sobre CSV; cliente unitario con respuestas dobladas; Cockroach opt-in | `apps/processor/tests/test_azure_api_contract_integration.py`: API local real por HTTP loopback → UrllibTransport → cliente → normalizador → SQL SQLite; no Azure cloud **Segunda pasada:** fallos de red reales del transporte y páginas malformadas (`test_azure_client_failures.py`), rechazo de runs ajenos y atomicidad de las guardas de `rowcount` con triggers de SQLite (`test_azure_cost_scope_rejection.py`) y filtros o agrupaciones no soportados del simulador (`apps/azure-cost-api/tests/test_unsupported_filters.py`). Límites: la semántica de `rowcount` de CockroachDB no se demuestra y el transporte deja escapar excepciones crudas (`RF-054-004`), sin fijar. |
+| RAG: selección, evidencia, dimensiones y aislamiento | Backend `test_retrieval_{contract,failures,traceability,contract_pgvector}.py`, `test_citations.py`; processor `test_{embedding_pipeline,vector_dimensions,tenant_isolation_vector}.py` | Embeddings deterministas y vector doubles en offline; pgvector real opt-in | Reutiliza el recorrido real y comprueba conservación de citas al reabrir Segunda pasada: sin cambios. |
+| Agente: salida inválida y efectos parciales | Processor `test_agent_runtime.py`, `test_ingest_task.py` | Guardrails reales, proveedor y agente doblados por separado en suites anteriores | `test_agent_ingestion_integration.py`: AgentRuntime + LangGraph + IngestTask + repositorio SQLite; proveedor/embeddings/vector explícitamente doblados. Éxito normalizado y rechazo sin escritura vectorial **Segunda pasada:** guardrails de entrada y de salida (`test_guardrail_validation.py`) y reentrega idempotente de un trabajo completado y payload persistido corrupto (`test_ingest_redelivery.py`). Defectos sin fijar: `RF-054-001` y `RF-054-002`. |
+| Frontend: navegación, caché entre tenants, errores visibles | `apps/frontend/tests/{session-and-dashboard,tenant-switching,ingestion,conversations,dashboard-tenant-transition}.test.tsx`; `src/routes.integration.test.tsx` | Route tree, componentes, QueryClient, storage y API client reales en jsdom; fetch doble. No navegador/backend real | Vitest directo en CI; se conservan suites de JUP-087 y posteriores Segunda pasada: sin cambios ni pruebas nuevas; los avisos de `TagCoveragePanel` quedan diferidos (`RF-054-006`). |
+| Docker/runtime: wiring, salud, migraciones, fallos de transporte | `tools/{docker-topology,local-doctor,local-smoke,litellm-compose}.test.mjs`; processor `test_{schema_migration_ownership,tenant_isolation_integration,litellm_docker}.py`; backend `test_rabbitmq_publisher_integration.py` | Tests de herramientas estáticos/doblados no prueban stack levantado. Integraciones opt-in usan servicios reales aislados | Ejecución acotada de recorrido real, detallada en evidencia; no acredita todo Compose ni gateway/LLM real Segunda pasada: sin cambios. |
+| Ownership y cobertura de etiquetado (JUP-037, JUP-017; posteriores a la PR #93): selección inválida, evidencia de coste, procedencia, aislamiento entre tenants y ponderación | Backend `test_ownership_{questions,provenance}.py`, `test_tag_coverage.py`; frontend `tests/ownership-conversations.test.tsx`, `src/components/{CostEvidence,TagCoveragePanel}.test.tsx` | Las preguntas de ownership se prueban offline con datos propios. La procedencia y el SQL de cobertura de etiquetado (`fetch_tag_coverage`, `tag_policy.py`) sólo contra CockroachDB real (opt-in, omitidas en CI); offline únicamente periodos inválidos y precedencia de autenticación con la base doblada. Frontend con `fetch` doble | **Segunda pasada:** contrato de las rutas de billing con la base doblada (200, esquema y 409 sin fugas) en `test_billing_error_contract.py`; el SQL real sigue sólo en CockroachDB (`RF-096-004`). Los avisos del panel de etiquetado quedan diferidos (`RF-054-006`). Huecos y decisión en la [evidencia](../evidence/JUP-054-validation.md#huecos-de-cobertura) |
 
 ## Suites obligatorias en CI
 
@@ -106,6 +112,49 @@ Los fixtures validan el destino, crean bases/colas con UUID y eliminan sólo lo
 creado. Exigen Cockroach sin bases/tablas de aplicación y pgvector limpio.
 Ejecutar un único proceso pytest por nodo Cockroach; backend y processor en serie.
 Detener únicamente los contenedores/túnel creados para esta ejecución al terminar.
+
+## Medición de cobertura (diagnóstico)
+
+JUP-054 (segunda pasada) mide la cobertura de un SHA concreto, sin exigirla en CI y
+sin umbral. La herramienta se instala sólo en contenedores Linux desechables
+(`python:3.12`, `node:22`); no forma parte de los `requirements-dev.txt`, de
+`package.json` ni de `pnpm-lock.yaml`. Se mide el árbol versionado, sin volúmenes
+compartidos ni puertos publicados. Docker 29.8.1; imágenes y versiones exactas en la
+[evidencia](../evidence/JUP-054-validation.md#entorno-de-medición).
+
+Servicios Python (sustituir `SERVICIO` por `azure-cost-api`, `backend` o
+`processor`; uno cada vez, porque la contención de CPU altera las pruebas con plazos):
+
+```sh
+SHA=<sha-de-develop-a-auditar>
+git archive --format=tar "$SHA" | docker run -i --name cov python:3.12 sh -c '
+  mkdir /src && tar -x -C /src && cd /src/apps/$0
+  python -m pip install -q -r requirements-dev.txt pytest-cov==7.1.0
+  python -m compileall -q app
+  python -m pytest tests -q -p no:cacheprovider --cov=app --cov-branch     --cov-report=json:/tmp/coverage.json --cov-report=term:skip-covered
+' SERVICIO
+docker cp cov:/tmp/coverage.json . && docker rm cov
+```
+
+Frontend:
+
+```sh
+git archive --format=tar "$SHA" | docker run -i --name cov node:22 sh -c '
+  export CI=true COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+  mkdir /src && tar -x -C /src && cd /src
+  corepack enable && corepack pnpm install --frozen-lockfile
+  corepack pnpm --filter @finops/frontend add -D @vitest/coverage-v8@3.2.7
+  cd apps/frontend
+  corepack pnpm exec vitest run --coverage.enabled --coverage.provider=v8     --coverage.include="src/**" --coverage.reporter=text-summary     --coverage.reporter=json-summary --coverage.reportsDirectory=/tmp/cov-fe     --coverage.reportOnFailure=true
+'
+docker cp cov:/tmp/cov-fe . && docker rm cov
+```
+
+La versión de `@vitest/coverage-v8` debe ser la del Vitest resuelto en el lockfile.
+`add` modifica sólo la copia del contenedor. Antes de usar una cifra se compara la
+línea final de pruebas aprobadas, fallidas y omitidas con la ejecución de CI de ese
+SHA; si no coinciden la cifra no es la cobertura del candidato. El código ejecutado
+únicamente por subprocesos no aparece en la medición.
 
 ## Interpretación
 
