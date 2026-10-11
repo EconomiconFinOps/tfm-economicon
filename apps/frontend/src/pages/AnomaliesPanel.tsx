@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AlertTriangle, FlaskConical, SlidersHorizontal } from "lucide-react";
 import { ExportButton } from "@/components/ExportButton";
 import { anomalies, demoPeriod, type AnomalySeverity, type AnomalyStatus } from "@/data/demo/anomaliesPanel";
+import { demoDataset, useFunctionalScreen } from "@/components/chat/ScreenCaptureProvider";
 
 type StatusFilter = "Abiertas" | "Todos" | AnomalyStatus;
 type SeverityFilter = "Todas" | AnomalySeverity;
@@ -29,6 +30,21 @@ export function AnomaliesPanel() {
     (status === "Todos" || (status === "Abiertas" ? anomaly.estado !== "Resuelto" : anomaly.estado === status))
   ).sort((a, b) => severityRank[b.severidad] - severityRank[a.severidad] || b.coste - a.coste);
   const reset = () => { setSeverity("Todas"); setStatus("Abiertas"); };
+  const capture = useMemo(() => {
+    const selection = { period: { start_date: "2026-04-18", end_date: "2026-04-20", timezone: "UTC" },
+      filters: { tags: [{ key: "severity", value: severity }, { key: "status", value: status }] } };
+    const rows = anomalies.filter(row => (severity === "Todas" || row.severidad === severity)
+      && (status === "Todos" || (status === "Abiertas" ? row.estado !== "Resuelto" : row.estado === status)))
+      .sort((a, b) => severityRank[b.severidad] - severityRank[a.severidad] || b.coste - a.coste);
+    const groups = rows.map(row => ({ label: `${row.servicio} · ${row.tipo} · ${row.severidad} · ${row.estado} · ${row.descripcion}`, amount: String(row.coste), currency: "EUR" }));
+    return { source: "loaded-screen" as const, selection, datasets: [
+      demoDataset("demo:anomalies-visible", groups, selection),
+      demoDataset("demo:anomalies-summary", anomalies.filter(row => row.estado !== "Resuelto").map(row => ({
+        label: `${row.servicio} · ${row.severidad}`, amount: String(row.coste), currency: "EUR"
+      })), { period: selection.period }, [], [{ amount: String(anomalies.filter(row => row.estado !== "Resuelto").reduce((sum, row) => sum + row.coste, 0)), currency: "EUR" }])
+    ] };
+  }, [severity, status]);
+  useFunctionalScreen(capture);
   const exportData = visible.map(anomaly => ({
     Origen: "Datos de demostración",
     Periodo: demoPeriod,

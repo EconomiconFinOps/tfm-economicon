@@ -5,6 +5,8 @@ import { chartTooltipStyle } from "@/components/chartTheme";
 // Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
 // tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
 import { recommendations, savingsByCategory, stats } from "@/data/demo/recommendationsPanel";
+import { useMemo } from "react";
+import { demoDataset, useFunctionalScreen } from "@/components/chat/ScreenCaptureProvider";
 
 // Traduce el tono de los datos demo a clases del tema. Antes se interpolaba
 // `bg-${color}-500/20`, `text-${color}-400`..., que Tailwind no puede detectar:
@@ -20,6 +22,11 @@ const toneTextClass: Record<string, string> = {
 };
 
 export function RecommendationsPanel() {
+  const capture = useMemo(() => ({ source: "loaded-screen" as const, selection: {}, datasets: [
+    demoDataset("demo:recommendations", recommendations.map(row => ({ label: `${row.titulo} · ${row.categoria} · ${row.prioridad} · ${row.esfuerzo} · ${row.implementacion}`, amount: String(row.ahorro), currency: "EUR" })), {}, ["descriptive_details", "nonmonetary_kpis"]),
+    demoDataset("demo:recommendations-categories", savingsByCategory.map(row => ({ label: row.categoria, amount: String(row.ahorro), currency: "EUR" })))
+  ] }), []);
+  useFunctionalScreen(capture);
   const exportData = recommendations.map(r => ({
     Título: r.titulo,
     Categoría: r.categoria,

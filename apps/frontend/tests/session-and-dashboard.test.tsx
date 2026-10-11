@@ -166,14 +166,15 @@ describe("tenant bootstrap and dashboard", () => {
     const user = userEvent.setup();
     const { requests } = mockBackend({ "GET /tenants": () => jsonResponse({ items: [] }) });
     restoreSession();
-    renderApp(["/overview-legacy"]);
+    const { router } = renderApp(["/overview-legacy"]);
 
     expect(await screen.findByRole("heading", { name: "Select a tenant" })).toBeVisible();
     expect(screen.getByText("No tenant is active for this session.")).toBeVisible();
     await user.click(screen.getByRole("link", { name: "Ingestions" }));
     expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
     expect(screen.queryByRole("button", { name: "Queue ingestion" })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("link", { name: "Assistant" }));
+    expect(screen.queryByRole("link", { name: "Assistant" })).toBeNull();
+    await act(async () => { await router.navigate("/assistant"); });
     expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
     expect(requests.every((request) => ["/tenants", "/health", "/me"].includes(request.path))).toBe(true);
   });

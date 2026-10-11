@@ -8,10 +8,11 @@ import {
   Activity,
   LogOut,
   Upload,
-  MessageSquare,
   LayoutDashboard
 } from "lucide-react";
 import type { SessionOutletContext } from "./SessionGate";
+import { ChatPanel } from "../components/chat/ChatPanel";
+import { ScreenCaptureProvider } from "../components/chat/ScreenCaptureProvider";
 
 // TenantScopedOutlet: frontera de remontaje por tenant (reconciliacion con
 // develop, Punto 1 -- aislamiento de estado entre tenants). Se usa como
@@ -61,12 +62,12 @@ export function Layout() {
   // 5 de demostracion (traducidas del origen Figma).
   const backendNavItems = [
     { path: "/ingest", label: "Ingestions", icon: Upload },
-    { path: "/assistant", label: "Assistant", icon: MessageSquare },
     { path: "/overview-legacy", label: "Overview", icon: LayoutDashboard },
     { path: "/system-health", label: "Salud del sistema", icon: Activity },
   ];
 
   return (
+    <ScreenCaptureProvider token={ctx.token} tenantId={ctx.activeTenant?.id} userId={user?.id}>
     <div className="size-full flex flex-col bg-background">
       {/* Header */}
       <header className="bg-gradient-to-r from-card to-accent border-b border-border px-6 py-4 shadow-lg">
@@ -178,7 +179,8 @@ export function Layout() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-background">
+      <div className="flex min-h-0 flex-1">
+      <main className="min-w-0 flex-1 overflow-auto bg-background">
         {/* Reenvia el mismo contexto hacia las rutas hijas: necesario para
             las siguientes sub-rondas del grupo 6, aunque hoy ningun hijo lo
             consuma todavia.
@@ -199,6 +201,12 @@ export function Layout() {
             cambio real de tenant. */}
         <Outlet context={ctx} />
       </main>
+      {ctx.token && user?.id && ctx.activeTenant?.id && ctx.activeTenantId === ctx.activeTenant.id
+        ? <ChatPanel key={JSON.stringify([ctx.token, user.id, ctx.activeTenant.id])}
+            scope={{ token: ctx.token, tenantId: ctx.activeTenant.id, userId: user.id }} userRole={user.role} />
+        : null}
+      </div>
     </div>
+    </ScreenCaptureProvider>
   );
 }

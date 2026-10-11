@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Any
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
@@ -44,7 +44,7 @@ class MessageRecord(BaseModel):
     id: str
     role: str
     content: str
-    metadata: dict
+    metadata: Any
     created_at: datetime
 
 

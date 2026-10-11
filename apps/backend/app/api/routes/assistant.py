@@ -13,6 +13,8 @@ from app.api.dependencies import (
     get_database,
 )
 from app.core.config import get_settings
+from app.db.chat_repository import ChatError
+from app.db import chat_history
 from app.core.metrics import assistant_queries_total, retrieval_empty_total, retrieval_failures_total
 from app.services.citations import InvalidCitation, resolve_citations, validate_context
 from app.services.embedding_provider import PROVIDER_ERROR_CATEGORIES, ProviderError
@@ -73,10 +75,14 @@ def get_conversation(
     conversation = database.fetch_conversation(conversation_id, tenant_id, current_user["id"])
     if conversation is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found.")
-    return ConversationDetail(
-        conversation=ConversationRecord(**conversation),
-        messages=database.fetch_messages(conversation_id, tenant_id, current_user["id"]),
-    )
+    try:
+        detail = ConversationDetail(
+            conversation=ConversationRecord(**conversation),
+            messages=database.fetch_messages(conversation_id, tenant_id, current_user["id"]),
+        )
+        return chat_history.http_response(detail.model_dump(mode='python'))
+    except ChatError as exc:
+        raise HTTPException(exc.status, exc.code) from None
 
 
 @router.post(
@@ -98,7 +104,12 @@ def send_message(
     if conversation is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found.")
 
-    user_message = database.append_message(
+    try:
+        database.assert_conversation_idle(conversation_id=conversation_id, tenant_id=tenant_id, user_id=current_user["id"])
+    except ChatError as exc:
+        raise HTTPException(exc.status, exc.code) from None
+
+    user_message = database.prepare_message(
         conversation_id=conversation_id,
         tenant_id=tenant_id,
         user_id=current_user["id"],
@@ -150,24 +161,31 @@ def send_message(
     except InvalidCitation:
         raise HTTPException(status_code=502, detail="Invalid response evidence.") from None
 
-    assistant_message = database.append_message(
+    assistant_message = database.prepare_message(
         conversation_id=conversation_id,
         tenant_id=tenant_id,
         user_id=None,
         requester_id=current_user["id"],
         role="assistant",
         content=assistant_output["content"],
-        metadata={"citations": assistant_output["citations"], "source_citations": source_citations},
+        metadata={"citations": assistant_output["citations"], "source_citations": source_citations,
+            "generation": {"question_message_id": user_message["id"]}},
     )
+
+    try:
+        user_message, assistant_message = database.append_pair(question=user_message, assistant=assistant_message)
+    except ChatError as exc:
+        raise HTTPException(exc.status, exc.code) from None
 
     assistant_queries_total.inc()
 
-    return AssistantReply(
+    reply = AssistantReply(
         conversation=ConversationRecord(**conversation),
         user_message=user_message,
         assistant_message=assistant_message,
         retrieved_context=retrieved_chunks,
     )
+    return chat_history.http_response(reply.model_dump(mode='python'), status_code=201)
 
 
 def _retrieval_failed(category: str, trace: dict, started: float) -> None:

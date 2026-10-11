@@ -4,6 +4,8 @@ import { chartTooltipStyle } from "@/components/chartTheme";
 // Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
 // tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
 import { savingsData, cutActions, kpiData } from "@/data/demo/executiveCutDashboard";
+import { useMemo } from "react";
+import { demoDataset, useFunctionalScreen } from "@/components/chat/ScreenCaptureProvider";
 
 // Traduce el tono de los datos demo a clases del tema. Antes se interpolaba
 // `bg-${color}-500/20`, `text-${color}-400`..., que Tailwind no puede detectar:
@@ -24,6 +26,12 @@ const toneIconClass: Record<string, string> = {
 };
 
 export function ExecutiveCutDashboard() {
+  const capture = useMemo(() => ({ source: "loaded-screen" as const, selection: {}, datasets: [
+    demoDataset("demo:cut-actions", cutActions.map(row => ({ label: `${row.accion} · ${row.estado} · ${row.fecha}`, amount: String(row.impacto), currency: "EUR" })), {}, ["responsible_team"]),
+    ...(["objetivo", "alcanzado", "pendiente"] as const).map(metric => demoDataset(`demo:cut-${metric}`,
+      savingsData.map(row => ({ label: row.mes, amount: String(row[metric]), currency: "EUR" })), {}, ["series_year"]))
+  ] }), []);
+  useFunctionalScreen(capture);
   const exportData = cutActions.map(a => ({
     Acción: a.accion,
     'Impacto (€)': a.impacto,

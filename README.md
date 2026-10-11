@@ -603,3 +603,33 @@ exista un prototipo o un provider mock no acredita el cierre de esas tarjetas.
 GET `/health/status` usa `HEALTH_PROBE_TIMEOUT_SECONDS=8` por defecto (número finito entre 2 y 8 segundos inclusivos), 18 segundos de agregación después de autorizar y 20 segundos de espera del cliente. El plazo de la sonda incluye arranque/importaciones del proceso desechable; conserva cuatro slots y no añade reintentos. Puede reducirse dentro del rango si el entorno lo permite; un timeout sigue siendo no verificado. POST conserva 30/35 segundos servidor/cliente y el polling GET visible 30 segundos. El health público mantiene su contrato.
 
 El transporte elimina del modelo informativo cualquier reflexión de la credencial diagnóstica completa antes del recibo y de su retención/serialización, sin invalidar una respuesta funcional sana por metadata descartada. Para reproducir disponibilidad y recuperación, usar el Compose documentado y el override no generativo del [runbook de salud](docs/runbooks/system-health.md), con recursos propios y credenciales sintéticas; no activar proveedor real para regresiones.
+# QA dialogue memory: summary bundle v3
+
+The active compression bundle is
+`apps/processor/app/agents/prompt_resources/jup035/summary/v3`. It preserves the
+SummaryResponse v2 JSON shape; the chat still uses FinOpsResponse 1.0 and reserves
+800 output tokens. Compression reserves 10000 output tokens independently, accepts
+at most 8192 canonical JSON tokens and 6144 textual tokens, and requests concise
+complete sentences. These are ceilings, not target lengths.
+
+Both services must agree on `CHAT_CONTEXT_TOKENS` and `SUMMARY_CONTEXT_TOKENS`;
+the default is 1048576. Summary context must exceed 11024 tokens (output plus
+margin). For the bounded large-history QA run, set both variables to 32768 in
+both services. The authenticated descriptor includes the effective reserve.
+Request byte guards remain 1 MiB for summary and 2 MiB for chat.
+
+Package or mount the **whole summary directory**, retaining the unmodified `v2`
+beside `v3`. Backend defaults to `/opt/economicon/summary/v3`; processor defaults
+to its packaged `app/agents/prompt_resources/jup035/summary/v3`. Override
+`SUMMARY_RESOURCE_DIRECTORY` per service when mounting an isolated QA bundle.
+Keep the existing pinned chat tokenizer and `CHAT_TOKENIZER_FILE` configuration.
+Copying only v3 is insufficient: startup verifies the legacy sibling before
+accepting existing artifacts. The processor's existing `COPY app` includes both
+versions; backend packaging must supply both through its existing QA resource
+mount/copy. This snapshot's Dockerfiles are not a complete deployment recipe.
+
+V2 artifacts are validated with their original exact contract and limits. Reading
+does not relabel or rewrite them. Successor v3 artifacts retain parent identity,
+hash, lineage and previous payload; new observations include the execution
+budget. Chat measures the complete escaped memory prefix together with essentials,
+schema, output and margin, and rejects insufficient context rather than truncating.

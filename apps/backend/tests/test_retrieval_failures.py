@@ -4,6 +4,7 @@ import logging
 from types import SimpleNamespace
 
 import pytest
+from app.db.chat_history import loads
 from fastapi import HTTPException
 from sqlalchemy.exc import OperationalError
 
@@ -117,11 +118,11 @@ def test_the_failure_category_is_logged_without_the_question_or_upstream_text(ca
     logging.getLogger().handlers.clear()
 
 
-def test_the_user_message_is_already_stored_when_retrieval_fails():
+def test_retrieval_failure_leaves_no_partial_visible_pair():
     database = RecordingDatabase()
     with pytest.raises(HTTPException):
         ask(Failing(ProviderError("timeout")), Store(), database)
-    assert database.messages == ["user"]
+    assert database.messages == []  # JUP035 approved final-pair contract
 
 
 def test_a_question_vector_of_the_wrong_length_is_not_searched():
@@ -239,3 +240,13 @@ def test_a_matching_column_logs_no_skip(capsys):
     store_with_column(1536).verify_dimension(1536)
     assert "embedding_dimension_check_skipped" not in capsys.readouterr().out
     logging.getLogger().handlers.clear()
+
+
+def test_successful_legacy_reply_commits_exactly_one_complete_pair():
+    database = RecordingDatabase()
+    reply = ask(GoodEmbedding(), Store(), database)
+    assert reply.status_code == 201
+    reply = loads(reply.body)
+    assert database.messages == ["user", "assistant"]
+    assert reply["user_message"]["id"] == "m-user"
+    assert reply["assistant_message"]["content"]

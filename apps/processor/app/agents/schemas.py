@@ -95,6 +95,24 @@ class ResponseScope(StrictModel):
     period: Period | None
 
 
+def chat_provider_schema():
+    schema = FinOpsResponse.model_json_schema()
+    scope = schema['$defs']['ResponseScope']
+    scope['properties'].pop('period')
+    scope['required'].remove('period')
+    schema['$defs'].pop('Period')
+    return schema
+
+
+def assemble_chat_response(value, period):
+    if not isinstance(value, dict) or not isinstance(value.get('scope'), dict):
+        raise ValueError('Invalid response scope.')
+    if 'period' in value['scope']:
+        raise ValueError('Period is server-owned.')
+    assembled = {**value, 'scope': {**value['scope'], 'period': period}}
+    return FinOpsResponse.model_validate(assembled).model_dump(mode='json', by_alias=True)
+
+
 class Evidence(StrictModel):
     id: EvidenceId
     kind: EvidenceKind
