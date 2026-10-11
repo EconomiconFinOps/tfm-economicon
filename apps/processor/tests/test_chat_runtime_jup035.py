@@ -1,5 +1,6 @@
 """Two supervised listener apps retain one initialized ingestion resource owner."""
 import asyncio
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -38,7 +39,7 @@ def combined(monkeypatch,tmp_path):
     monkeypatch.setenv('PROCESSOR_CHAT_PORT','8003')
     key=tmp_path/'synthetic.key';key.write_bytes(b'jup035-only-synthetic-signing-key-at-least32')
     monkeypatch.setenv('CHAT_SIGNING_KEY_FILE',str(key))
-    monkeypatch.setenv('CHAT_RESOURCE_DIRECTORY','/workspace/apps/processor/app/agents/prompt_resources/jup035/chat/v2')
+    monkeypatch.setenv('CHAT_RESOURCE_DIRECTORY',str(Path(__file__).resolve().parents[1]/'app/agents/prompt_resources/jup035/chat/v2'))
     worker=MagicMock()
     worker_factory=MagicMock(return_value=worker)
     monkeypatch.setattr(run_all,'ProcessorWorker',worker_factory)

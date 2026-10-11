@@ -4,6 +4,7 @@ Artifacts in these tests use explicitly synthetic candidates through the existin
 CAS; they never claim model dispatch/fidelity. Main producer is existing fixture.
 """
 import asyncio,copy,hashlib,json
+from pathlib import Path
 from uuid import uuid4
 import pytest
 from sqlalchemy import text
@@ -16,7 +17,7 @@ from test_chat_summary_lifecycle_jup035 import summary_resources53,contract53
 from test_chat_summary_scheduler_jup035 import source,document,derived,digest,SCOPE
 
 ROOT='/assistant/conversations/alice-chat/summary'
-SUMMARY_ROOT='/workspace/apps/processor/app/agents/prompt_resources/jup035/summary/v2'
+SUMMARY_ROOT=str(Path(__file__).resolve().parents[3]/'apps/processor/app/agents/prompt_resources/jup035/summary/v2')
 
 def package(api,resources):return (api[0],api[1],api[2],None,resources,api[3])
 

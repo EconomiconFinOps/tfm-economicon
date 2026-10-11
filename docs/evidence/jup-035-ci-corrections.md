@@ -96,3 +96,42 @@ build-frontend-followup.log, mutation-history-recovery.log,
 mutation-uncertain-history.log y frontend-followup-review.md. Los logs Red
 compactos conservan recuentos; algunos detalles de assertions se mostraron
 en la salida de ejecucion y no estan completos en esos archivos.
+
+## Tercera correccion focal: fixtures Python
+
+Los logs de CI suministrados por el PM mostraron rutas de recursos fijadas a
+`/workspace`, pruebas que aun leian el Compose auxiliar retirado y contratos
+de prueba anteriores al plazo configurable y al escritor atomico de mensajes.
+Se corrigen exclusivamente pruebas, sin modificar codigo del producto.
+
+- Los bundles chat/v2, summary/v2 y summary/v3 se localizan desde `__file__`.
+  Se conservan las versiones historicas y todas las comprobaciones de hashes,
+  aislamiento, limites, instalacion y preservacion de originales.
+- Las pruebas Compose leen `docker-compose.yml` y, para la clave separada de
+  compresion, `infra/litellm/compose.ai.yml`. El mock no exige ese secreto;
+  el overlay IA conserva su archivo obligatorio y su montaje en processor.
+- Los casos de plazo invalido y preparacion tardia superan el plazo configurado,
+  no el antiguo valor fijo de 30 segundos. La asercion de cero llamadas al
+  proveedor tras vencimiento permanece intacta.
+- El contrato de facturacion comprueba `append_pair`, escritor actual vigilado
+  por su fixture, en vez del espia retirado `append_message`. Se conserva la
+  comparacion del estado persistido y la ausencia de publicaciones en cola.
+
+Las comprobaciones usan Python 3.12 en imagenes locales existentes, checkout
+readonly montado en `/checkout`, sin red externa ni claves. La primera ejecucion
+backend conserva 169 PASS / 16 ERROR por una segunda ruta compartida; la siguiente
+conserva 211 PASS / 1 FAIL / 3 SKIP por el plazo fijo de otro caso. No se ocultan
+esos antecedentes. Las tres omisiones pertenecen a SQL nativo CockroachDB no
+configurado en este ensayo, no a una nueva exclusion de CI.
+
+Processor: 120 PASS en las cinco suites afectadas y 7 PASS en arranque combinado.
+Backend final: 212 PASS / 3 SKIP en once archivos afectados, sin errores ni
+fallos. Persisten avisos heredados del adaptador datetime de SQLite. El ajuste
+del plazo del caso SQL nativo tambien se conserva, pero sus tres escenarios
+requieren CockroachDB y no fueron ejecutados en esta comprobacion offline.
+Revision interna independiente del delta: REVIEW_PASS, sin escrituras ni
+ejecucion de pruebas por el revisor. Los 14 hashes tecnicos permanecen identicos
+tras su retorno; no se presenta como revision humana ni validacion formal.
+No se ejecutan suites completas, ensayos funcionales ni llamadas OpenRouter.
+Los logs y SHA256 originales se conservan bajo `ci-corrections/` junto a las
+entregas anteriores; no sustituyen las referencias independientes del PM.

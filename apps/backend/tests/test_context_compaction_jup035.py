@@ -13,7 +13,7 @@ from test_chat_summary_scheduler_jup035 import packet
 from test_chat_summary_lifecycle_jup035 import summary_resources53
 
 SCOPE = {'tenant_id': 't', 'user_id': 'alice', 'conversation_id': 'alice-chat'}
-ROOT = Path('/workspace/apps/processor/app/agents/prompt_resources/jup035')
+ROOT = Path(__file__).resolve().parents[3]/'apps/processor/app/agents/prompt_resources/jup035'
 
 
 def repository(api):

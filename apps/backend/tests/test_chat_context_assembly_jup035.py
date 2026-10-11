@@ -12,7 +12,7 @@ from tokenizers import Tokenizer
 from test_chat_operations_jup035 import api,body,existing,headers,messages,path,run
 from test_chat_screen_jup035 import demo_dataset,no_operation
 
-RESOURCE_ROOT=Path('/workspace/apps/processor/app/agents/prompt_resources/jup035/chat/v2')
+RESOURCE_ROOT=Path(__file__).resolve().parents[3]/'apps/processor/app/agents/prompt_resources/jup035/chat/v2'
 
 
 def canonical(value):

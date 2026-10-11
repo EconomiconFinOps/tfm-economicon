@@ -9,7 +9,7 @@ from app.db.chat_repository import ChatError
 from app.core.summary_resources import load_resources
 
 KEY=b'jup035-synthetic-private-hmac-summary-control'
-ROOT=Path('/workspace/apps/processor/app/agents/prompt_resources/jup035')
+ROOT=Path(__file__).resolve().parents[3]/'apps/processor/app/agents/prompt_resources/jup035'
 Q='q-'+'1'*64;A='a-'+'2'*64
 SOURCES={Q:'No autoricé eliminar R-1. ¿Cómo comparar EUR y USD?',A:'No se confirmó un ahorro; las divisas permanecen separadas.'}
 OUTPUT={'v':2,'topics':[{'text':'Intenciones sobre filtros y divisas, sin autoridad financiera.','question_refs':[Q],'answer_refs':[A]}],

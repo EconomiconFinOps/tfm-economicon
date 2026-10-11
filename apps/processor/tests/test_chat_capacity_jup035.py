@@ -119,14 +119,14 @@ def test_descriptor_and_admission_use_frozen_five_and_release_on_final(private,m
 
 
 def test_compose_passes_same_configurable_capacity_to_both_services():
-    source=(Path(__file__).parents[3]/'infra/jup035/docker-compose.chat.yml').read_text()
+    source=(Path(__file__).resolve().parents[3]/'docker-compose.yml').read_text()
     services={};current=None
     for line in source.splitlines():
         if line.startswith('  ') and not line.startswith('   ') and line.endswith(':'):
             current=line.strip()[:-1];services[current]={}
         elif current and line.startswith('      ') and ':' in line:
             key,value=line.strip().split(':',1);services[current][key]=value.strip()
-    assert services['backend'].get('CHAT_MAX_ACTIVE')=='${CHAT_MAX_ACTIVE-8}'
+    assert services['backend'].get('CHAT_MAX_ACTIVE')=='${CHAT_MAX_ACTIVE:-8}'
     assert services['processor'].get('CHAT_MAX_ACTIVE')==services['backend']['CHAT_MAX_ACTIVE']
 
 

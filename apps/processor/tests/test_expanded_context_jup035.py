@@ -5,7 +5,7 @@ from app.core.chat_resources import load_resources, TokenBudgetExceeded
 from app.core.summary_resources import load_resources as summary_resources
 from app.agents.schemas import chat_provider_schema
 
-ROOT = Path('/workspace/apps/processor/app/agents/prompt_resources/jup035')
+ROOT = Path(__file__).resolve().parents[1]/'app/agents/prompt_resources/jup035'
 
 
 def test_expanded_chat_admits_over_old_ceiling():

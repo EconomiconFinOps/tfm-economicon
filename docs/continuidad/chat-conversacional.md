@@ -54,3 +54,14 @@ y los controles de instalacion de dependencias incorporados por develop. Sus
 pruebas locales no se presentan como una repeticion de las llamadas reales.
 CI remota, publicacion, archivado y cierre global siguen su procedimiento y
 autorizaciones especificas; no se han acreditado por este hito local.
+
+## Correcciones CI de fixtures Python (2026-10-11)
+
+Se adaptan las pruebas al checkout portable, al Compose principal y su overlay
+IA, al escritor atomico append_pair y al plazo de resumen configurado. No cambia
+el producto ni se reducen las aserciones funcionales. Processor: 127 PASS;
+backend: 212 PASS / 3 SKIP de SQL nativo no configurado. Revision interna
+incremental: REVIEW_PASS, con hashes tecnicos sin cambios tras su retorno.
+La evidencia [de correcciones CI](../evidence/jup-035-ci-corrections.md) conserva
+los fallos intermedios y las omisiones SQL nativas; la confirmacion remota sigue
+a cargo del PM.

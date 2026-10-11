@@ -139,18 +139,23 @@ def test_summary_descriptor_reports_frozen_boot_capacity_and_policy_before_admis
     exercise(summary_session,run)
 
 def test_compose_summary_is_server_only_same_strict_optional_flag_and_separate_key_path():
-    source=(Path(__file__).parents[3]/'infra/jup035/docker-compose.chat.yml').read_text()
+    root=Path(__file__).resolve().parents[3]
+    source=(root/'docker-compose.yml').read_text()
+    ai=(root/'infra/litellm/compose.ai.yml').read_text()
     services={};current=None
     for line in source.splitlines():
         if line.startswith('  ') and not line.startswith('   ') and line.endswith(':'):
             current=line.strip()[:-1];services[current]={}
         elif current and line.startswith('      ') and ':' in line:
             key,value=line.strip().split(':',1);services[current][key]=value.strip()
-    assert services['backend'].get('SUMMARY_ENABLED')=='${SUMMARY_ENABLED-false}'
+    assert services['backend'].get('SUMMARY_ENABLED')=='${SUMMARY_ENABLED:-true}'
     assert services['processor'].get('SUMMARY_ENABLED')==services['backend']['SUMMARY_ENABLED']
-    assert services['processor'].get('SUMMARY_API_KEY_FILE')=='${SUMMARY_API_KEY_FILE:-}'
-    assert services['backend'].get('SUMMARY_RESOURCE_DIRECTORY')=='/opt/economicon/summary/v2'
-    assert 'chat_summary_api_key' not in source.split('secrets:')[-1] # OFF must start without that optional file.
+    assert services['backend'].get('SUMMARY_RESOURCE_DIRECTORY')=='/opt/economicon/summary/v3'
+    assert services['processor'].get('SUMMARY_RESOURCE_DIRECTORY')=='/app/app/agents/prompt_resources/jup035/summary/v3'
+    assert 'SUMMARY_API_KEY_FILE' not in source
+    assert 'SUMMARY_API_KEY_FILE: /run/secrets/summary-api-key' in ai
+    assert '- summary-api-key' in ai
+    assert 'file: ${SUMMARY_API_KEY_FILE:?required separate summary virtual-key file}' in ai
 
 def test_private_second_summary_at_eight_and_zero_main_is_rejected_by_max_one_not_total_capacity(summary_session,monkeypatch):
     application=summary_session[0][0][0]

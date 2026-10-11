@@ -36,9 +36,13 @@ def test_private_summary_rejects_bad_auth_scope_versions_and_sources_before_prov
     elif defect=='body_extra':body['unapproved']='not allowed'
     elif defect in ['screen','metadata','cost_evidence']:body['payload'][defect]='synthetic-not-model'
     elif defect=='expired':body['deadline']=time.time()-1
-    else:body['deadline']=time.time()+31
+    else:
+        from app.core.config import get_settings
+        body['deadline']=time.time()+get_settings().summary_timeout_seconds+1
     async def run(client,application):
-        if defect=='too_long':body['deadline']=time.time()+31
+        if defect=='too_long':
+            from app.core.config import get_settings
+            body['deadline']=time.time()+get_settings().summary_timeout_seconds+1
         response=await request(client,'POST',path,body,headers)
         assert response.status_code in [401,404,409,413,503],response.text
         assert summary_session[2]==[]

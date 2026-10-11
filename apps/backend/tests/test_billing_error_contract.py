@@ -109,7 +109,7 @@ def snapshot(api):
 
 def assert_no_side_effects(api, before):
     assert snapshot(api) == before
-    for name in ("create_job", "create_conversation", "append_message"):
+    for name in ("create_job", "create_conversation", "append_pair"):
         api.spies[name].assert_not_called()
     api.queue.publish.assert_not_called()
     api.queue.reserve.assert_not_called()

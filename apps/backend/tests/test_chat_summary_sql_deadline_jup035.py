@@ -97,7 +97,9 @@ def test_existing_summary_service_closes_real_owned_sql_before_releasing_reserva
             await native.wait_active()
             assert child.reserved and main.occupied==1 and not native.driver.closed
             if mode=='deadline':
-                monkeypatch.setattr(time,'time',lambda:clock['now']+31)
+                from app.core.config import get_settings
+                elapsed=get_settings().summary_timeout_seconds+1
+                monkeypatch.setattr(time,'time',lambda:clock['now']+elapsed)
             else:closer=asyncio.create_task(main.close())
             await native.wait_closed(1.2)
             native.verify_closed()
@@ -147,7 +149,9 @@ def test_preparation_after_original_deadline_never_dispatches_and_retains_worker
                 if entered.is_set():break
                 await asyncio.sleep(.005)
             assert entered.is_set() and child.reserved and child.workers
-            now=time.time();monkeypatch.setattr(time,'time',lambda:now+31)
+            from app.core.config import get_settings
+            now=time.time();elapsed=get_settings().summary_timeout_seconds+1
+            monkeypatch.setattr(time,'time',lambda:now+elapsed)
             await asyncio.sleep(.06)
             assert child.reserved and not returned.is_set() and packet[3].calls==[]
             release.set();await child.wait_idle()

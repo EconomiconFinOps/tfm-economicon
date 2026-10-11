@@ -12,7 +12,7 @@ from pydantic import SecretStr
 from app.summary import valid_previous,ledger,digest
 from test_chat_summary_gateway_jup035 import source_document,SCOPE
 
-ROOT=Path('/workspace/apps/processor/app/agents/prompt_resources/jup035')
+ROOT=Path(__file__).resolve().parents[1]/'app/agents/prompt_resources/jup035'
 def current():return load_resources(ROOT/'summary/v3',ROOT/'chat/v2/tokenizer.json')
 def old():return load_resources(ROOT/'summary/v2',ROOT/'chat/v2/tokenizer.json')
 def contract(r):

@@ -310,8 +310,8 @@ def test_quarantined_diagnostic_does_not_nest_or_change_on_a_later_final(repo):
 def summary_resources53():
     from pathlib import Path
     from app.core.summary_resources import load_resources
-    return load_resources('/workspace/apps/processor/app/agents/prompt_resources/jup035/summary/v2',
-        '/workspace/apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json')
+    root=Path(__file__).resolve().parents[3]/'apps/processor/app/agents/prompt_resources/jup035'
+    return load_resources(root/'summary/v2', root/'chat/v2/tokenizer.json')
 
 def contract53(resources):
     import json

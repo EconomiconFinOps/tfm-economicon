@@ -17,7 +17,7 @@ from test_chat_summary_lifecycle_jup035 import summary_resources53, contract53
 from test_chat_summary_context_jup035 import install_memory, package
 from test_chat_summary_scheduler_jup035 import source, document, derived, SCOPE
 
-ROOT=Path('/workspace/apps/processor/app/agents/prompt_resources/jup035')
+ROOT=Path(__file__).resolve().parents[3]/'apps/processor/app/agents/prompt_resources/jup035'
 
 def current():
     return load_resources(ROOT/'summary/v3', ROOT/'chat/v2/tokenizer.json')
