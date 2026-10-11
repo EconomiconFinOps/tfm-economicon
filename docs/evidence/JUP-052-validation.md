@@ -332,3 +332,33 @@ Evidencia saneada exportada: server-evidence.tar SHA256
 manifest.json, exercise-results.json, environment.json, state/failure y logs
 sin secrets.json/.env/compose.json. Las actualizaciones documentales posteriores
 no sustituyen la fuente runtime exacta indicada arriba.
+
+## Cierre autorizado por excepción de entrega — 2026-10-11
+
+Origen: «Completar JUP-052 — CD hacia DockerServe», chat
+`01a12ab4-174c-7c73-a4de-35531260b348`. El usuario autoriza explícitamente
+sustituir cualquier rol humano por un subagente y las excepciones por estar
+fuera del plazo de entrega. Alejandro conserva la atribución de liderazgo;
+la revisión y validación finales se realizan mediante subagentes separados.
+No se atribuyen nuevos dictámenes a Lucía o Paris ni una aprobación GitHub
+humana posterior al push. El pairing histórico de Víctor conserva su alcance.
+Esta autorización supera el requisito de esperar nuevos dictámenes humanos
+para este cierre; no dispensa pruebas técnicas ni permite simular controles.
+La integración se hará por la PR existente, con excepción administrativa
+visible si los controles de aprobación humana lo requieren.
+
+Fuente actualizada `1e6ac99682e8ff5cecb8fee0462759849f870a85`, base develop
+`e69dd29`: único conflicto en package.json resuelto conservando cd:test y
+las herramientas business-metrics. Agente y Dockerfiles conservan la corrección
+probada de permisos. La revisión separada ejecutó 28/28 Node y 52 pruebas Python
+correctas/2 omitidas POSIX en Windows. Linux DockerServer: 54/54 Python.
+Validación separada: 120/120 Node, OpenSpec estricto59/59, trazabilidad7 cambios
+activos e higiene1081 archivos correctos. Las nuevas rutas de cobertura no
+cambian totals/data_status empleados por el smoke de facturación.
+
+La primera promoción integrada y su current/run_id se documentarán en la PR
+y Trello tras observarlos; esta sección no afirma que ya hayan ocurrido.
+La ejecución no incluye reboot del host. Evidencia detallada del cierre y
+los dos dictámenes en `materiales/07-evidencias/JUP-052-cierre-20261011/` del
+workspace de coordinación. El CD mantiene IA mock y nueve servicios; no
+adopta automáticamente el gateway de JUP-078 ni consume inferencias de pago.
