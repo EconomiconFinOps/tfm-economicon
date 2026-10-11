@@ -1,5 +1,42 @@
 # Isolated LiteLLM runtime (JUP-023 / JUP-078)
 
+## Product key administration (JUP-078)
+
+Run `tools/litellm-product-keys.py` on the POSIX gateway host. The administrator
+credential comes from `LITELLM_MASTER_KEY`, or `--master-env-file` pointing to
+an owner-only **JSON** file containing that field (not a dotenv file).
+Never supply secrets in command arguments, paste them into chat or commit them.
+
+```bash
+python3 tools/litellm-product-keys.py issue --url http://127.0.0.1:44000 --keys-file /private/product-keys.json
+python3 tools/litellm-product-keys.py inspect --url http://127.0.0.1:44000 --keys-file /private/product-keys.json
+python3 -m unittest discover -s tools -p test_litellm_product_keys.py -v
+JUP078_DOCKER_FAKE=1 python3 tools/test_litellm_product_keys_docker.py
+```
+
+The destination parent must already exist and be private. An existing file is
+inspected rather than replaced. Serialize administration against one canonical
+file: this tool does not prevent concurrent administrators or issuance through
+other paths. An interrupted/uncertain request requires gateway reconciliation
+before retrying. If rollback fails, use `rollback-pending` with the same file
+path to revoke credentials kept privately for recovery. `revoke` deletes the
+stored keys from the gateway and removes the private file; first stop their
+consumers. Revocation does not authorize resetting the budget by issuing again.
+
+Processor gets USD 9 and backend USD 1 per 30 days, both expiring after 30 days;
+RPM 10, TPM 20000, one concurrent request per key. Backend is embedding-only;
+processor has primary chat and embeddings. DeepSeek evaluation is deliberately
+excluded from operational credentials. Automatic rotation is disabled because
+it would reset spend: manually reconcile remaining budget and the original
+window before replacement, including asynchronous and in-flight charges.
+Renewal is manual; expiry intentionally fails closed. Counters may overshoot
+by an in-flight request and are not a hard atomic reservation.
+
+The 2026-10-10 deployment receipt and private handoff paths are documented in
+[JUP-078 operational closure](../../docs/evidence/JUP-078-operational-closure.md).
+No model calls are made by issuance or inspection. All real-spend gates below
+remain applicable.
+
 This opt-in Compose project supplies the gateway and its own plain PostgreSQL
 for revocable virtual keys and spend metadata. The same two services are
 included by the root Compose under its optional `ai` profile; the root mock

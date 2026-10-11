@@ -3,6 +3,13 @@ Trello: https://trello.com/c/M4zqDGlW
 
 ## Why
 
+Actualizacion 2026-10-10: ADR-0002 ya aceptado e integrado por PR #71. Este
+cierre implementa el seguimiento operativo de claves en un gateway dedicado
+de DockerServer. No modifica el gateway compartido ni repite el benchmark.
+Las interacciones nuevas del equipo se sustituyen por subagentes por
+autorizacion expresa del usuario, sin atribuir aprobaciones humanas nuevas.
+Los apartados originales siguientes conservan su contexto historico.
+
 Economicon solo dispone de proveedores mock. El equipo necesita decidir y validar una frontera reproducible para chat y embeddings reales antes de evaluar el RAG del MVP.
 
 ## What Changes

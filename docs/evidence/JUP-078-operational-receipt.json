@@ -1,0 +1,44 @@
+{
+  "issuance": {
+    "period": "30d",
+    "aggregate_max_budget_usd": 10,
+    "services": {
+      "LITELLM_API_KEY": {
+        "models": [
+          "economicon-chat",
+          "economicon-embedding"
+        ],
+        "max_budget": 9.0,
+        "budget_duration": "30d",
+        "rpm_limit": 10,
+        "tpm_limit": 20000,
+        "max_parallel_requests": 1,
+        "expires": "2026-11-09T19:31:44.688000+00:00",
+        "spend": 0.0
+      },
+      "BACKEND_LITELLM_API_KEY": {
+        "models": [
+          "economicon-embedding"
+        ],
+        "max_budget": 1.0,
+        "budget_duration": "30d",
+        "rpm_limit": 10,
+        "tpm_limit": 20000,
+        "max_parallel_requests": 1,
+        "expires": "2026-11-09T19:31:44.699000+00:00",
+        "spend": 0.0
+      }
+    },
+    "model_calls": 0,
+    "accounting_limit": "Counters are asynchronous; individual calls may overshoot."
+  },
+  "checks": {
+    "LITELLM_API_KEY_scope": true,
+    "LITELLM_API_KEY_admin_denied": true,
+    "BACKEND_LITELLM_API_KEY_scope": true,
+    "BACKEND_LITELLM_API_KEY_admin_denied": true,
+    "service_keys_absent_from_logs": true,
+    "private_service_files": true,
+    "keys_and_limits_survive_recreation": true
+  }
+}
