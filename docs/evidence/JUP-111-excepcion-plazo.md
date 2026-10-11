@@ -27,6 +27,8 @@ la tarjeta pasó a En curso. Los nombres previos se conservan como asignación
 histórica, no como ejecución acreditada.
 
 Se autoriza implementar el apartado f; no se extiende esa edición a otros
-apartados. La lectura/exportación completa se ha solicitado expresamente
-para reconciliación y control conjunto de 20 páginas y sigue pendiente.
+apartados. El usuario respondió expresamente el 11/10: «Sí, leer y exportar la
+memoria completa; editar solo f». Quedan autorizadas lectura y exportación
+integrales para reconciliación y control conjunto de 20 páginas, manteniendo
+la edición limitada a f. Esto supera el pendiente de autorización anterior.
 No hay publicaciones Discord autorizadas ni realizadas.

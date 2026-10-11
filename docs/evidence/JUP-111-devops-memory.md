@@ -1,6 +1,68 @@
 # JUP-111 — Evidencia del apartado f de la memoria
 
-## Estado vigente — 11/10/2026
+## Entrega canónica verificada — 11/10/2026
+
+Aceptación de JUP-111 favorable por los subagentes independientes de revisión y
+validación, incluyendo sus adendas finales de exportación. Registrada en dos
+comentarios del documento: `AAACIXGuv_U` (revisión) y `AAACIXGuv_Y` (validación),
+11/10/2026 12:58:59/12:59:00 UTC, ambos con fecha y hashes revisados.
+Contrato promovido a `openspec/specs/devops-memory/spec.md` y cambio archivado
+como `2026-10-11-jup-111-devops-memory`. La integración se completa mediante PR87;
+consultar PR/Trello para su estado posterior, sin inventar aprobaciones humanas.
+
+
+El usuario autorizó expresamente leer/exportar la memoria completa y editar sólo
+f. Se sustituyó únicamente su recuadro de reserva por nueve párrafos revisados
+con dieciséis referencias nativas agrupadas D1–D7; no había redacción sustantiva
+previa en f. Guía de estilo aplicada: Inter10.5, identidad existente, cifras
+trazables y pendientes explícitos. El documento compartido sigue siendo la única
+fuente editable.
+
+Readback independiente `verified-readback.json`: texto exacto,16 enlaces exactos,
+prefijo y sufijo preservados incluyendo estilos y estructura al normalizar sólo
+índices. Desplazamiento5934 unidades UTF-16. La adaptación no modifica los nueve
+párrafos aprobados, sólo marcas editoriales y disposición de referencias.
+
+Exportaciones canónicas PDF/Markdown y `manifest-sha256.json`, fuera de Git:
+`materiales/06-entregables/JUP-111-memoria-2026-10-11-final/`, relativa al workspace
+padre. PDF13 páginas A4, bajo el máximo20; sección f en páginas9–11, inspeccionadas
+visualmente sin cortes, solapamientos o desbordamientos. Otros apartados conservan
+placeholders y el índice previo: no se declara completa la memoria entera.
+
+- PDF452342bytes, SHA-256 `9fc194f3d08501c29261bb16f3fb41a3c7b75a2b9ff893bc33f411e2540b330d`.
+- Markdown83510bytes, SHA-256 `1f5f7bb1e75c8a6eec64fe379b6b63b9006da2cab0ae1453e8cfa7e7b6caef67`.
+- Inserción final: SHA-256 `015ddfdfe449aed67d45a1cc293b47ae4737054b9e712fecb1fd2fde72632f91`.
+
+La primera exportación local, carpeta sin sufijo `-final`, queda preservada como
+versión superada de referencias. Se detectó que al modificar enlaces dentro de
+un párrafo vinculado Google Docs extendía el enlace a todo el párrafo; se separó
+cada fuente en una línea y se verificaron las16 URL exactas. Se corrigió una
+herencia de negrita en la línea vacía limítrofe; la comparación final confirma
+preservación total fuera de f. No se presentó el primer resultado como final.
+
+Publicaciones iniciales de dictámenes automatizados:
+[Revision](https://github.com/EconomiconFinOps/tfm-economicon/pull/87#pullrequestreview-5483348105) y
+[Validacion](https://github.com/EconomiconFinOps/tfm-economicon/pull/87#pullrequestreview-5483348175).
+Sus adendas finales se conservan en los mismos archivos externos. CI técnica
+`38140544950` y `38140541461` SUCCESS sobre7c6463d. El check JUP reviews requiere
+cuentas humanas distintas del autor y no reconoce al subagente publicado por la
+misma cuenta: se documenta la excepción, no se simula una aprobación humana.
+
+Subida inicialmente rechazada por revisión automática por no incluir divulgación.
+El usuario autorizó después explícitamente subir los tres archivos a la carpeta
+«economicon» enlazada en Trello. Subida completada y metadata releída:
+[PDF](https://drive.google.com/file/d/14E4SyQtT-KiHeEimEV5hrZKr0pDiI53F/view),
+[Markdown](https://drive.google.com/file/d/1D9GAPJXzPUENen7qOFUMy9JiPQKy9UXX/view),
+[manifiesto](https://drive.google.com/file/d/1rQbCOqc-duzekFsmZuxxVFUiazUc5Ceu/view).
+El manifiesto conserva nombres de los archivos locales; en Drive los nombres
+incorporan JUP-111. Recibo de correspondencia externo `drive-upload-receipts.json`.
+No se cambian permisos ni se publican mensajes Discord.
+
+Controles tras archivo: OpenSpec estricto61/61, trazabilidad de activos correcta,
+higiene1125 archivos y diff sin errores. La comprobación de activos no se presenta
+como prueba específica del cambio archivado; archivo/spec canónica inspeccionados.
+
+## Corte intermedio del 11/10 (pendientes editoriales superados arriba)
 
 Se retoma la implementación por encargo del chat
 `01a12af2-8d4e-7252-a21a-55a3ddd92364` con [excepción de plazo y sustitución
@@ -64,7 +126,7 @@ versión incorporada o PDF que todavía no existe.
 
 ## Corte histórico del 10/10 (conservado, estados superados arriba)
 
-Fecha de contraste: 10/10/2026 (Europe/Paris). [Trello](https://trello.com/c/mnqNDpC0). [Contrato](../../openspec/changes/jup-111-devops-memory/proposal.md). Fuente canónica y reglas: [JUP-062](../memoria/README.md).
+Fecha de contraste: 10/10/2026 (Europe/Paris). [Trello](https://trello.com/c/mnqNDpC0). [Contrato](../../openspec/changes/archive/2026-10-11-jup-111-devops-memory/proposal.md). Fuente canónica y reglas: [JUP-062](../memoria/README.md).
 
 [PR #87](https://github.com/EconomiconFinOps/tfm-economicon/pull/87), draft contra
 develop. CI [38034787702](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38034787702)
