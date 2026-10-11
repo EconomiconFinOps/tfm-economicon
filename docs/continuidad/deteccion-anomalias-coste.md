@@ -1,6 +1,6 @@
 # Deteccion de anomalias de coste — JUP-030
 
-Verificacion: 2026-10-10. Encargo: «Implementa JUP-030 — Detectar anomalias de coste».
+Verificacion: 2026-10-10; retomada el 2026-10-11 (ver el final). Encargo: «Implementa JUP-030 — Detectar anomalias de coste».
 Origen conocido: despacho desde chat `01a1248a-4e9e-7963-a891-5d8cb49345a6`;
 identificador del chat de implementacion no suministrado.
 
@@ -52,3 +52,7 @@ Pendientes: participacion real, review y validacion independientes, integracion
 del consumidor JUP-038, alertas persistentes/notificaciones y conexion del panel.
 Mantener esos limites al evaluar el cierre de la tarjeta; no marcarla Hecho
 por la sola existencia de la contribucion tecnica. No se enviaron mensajes Discord.
+
+## Retomada (2026-10-11)
+
+El PR #91 se cerro el 10/10 sin integrar. La contribucion se retoma en la rama `feat/JUP-030-anomaly-evaluator`, desde `develop` y con los dos commits originales de Alejandro (autoria conservada). Se aplica la excepcion temporal: revision adversarial independiente (sin hallazgos graves, un hueco de test cerrado), validacion propia y aprobacion de Lucia en `review.md`; no se piden reviews de otras personas. Cuatro hallazgos menores quedan registrados y aceptados (`RF-030-001` a `004`). El panel `/anomalies` sigue con datos de demostracion y su conexion es un paso aparte; las pruebas con CockroachDB real no se han repetido en esta pasada.

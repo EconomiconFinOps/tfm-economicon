@@ -75,6 +75,24 @@ git diff --check
 # sin errores
 ```
 
+## Revalidacion sobre `develop` (2026-10-11)
+
+El PR #91 se cerro el 10/10 sin integrar y la contribucion se retoma en `feat/JUP-030-anomaly-evaluator`, rehecha sobre `develop` en `4406477` con los dos commits originales (autoria conservada). Se trabaja con la excepcion temporal del 2026-10-11: sin revision ni validacion humanas de otras personas en GitHub; esta seccion no es una review `Validacion JUP-030`.
+
+Ejecutado el 2026-10-11 en Windows con el entorno virtual del backend, sin CockroachDB (Docker no estaba disponible):
+
+```sh
+cd apps/backend
+python -m pytest tests/test_anomaly_evaluation.py tests/test_budget_evaluation.py tests/test_billing_summary.py tests/test_tag_coverage.py -q -p no:cacheprovider
+# 149 passed, 32 skipped (las pruebas con CockroachDB real no se ejecutan sin la base)
+corepack pnpm openspec:validate
+# 62 passed, 0 failed
+```
+
+- La revision adversarial independiente (`review.md`) ejecuto 84 casos del archivo de anomalias y los ataques de limites exactos, importes por encima de 2**53, linea base ausente o no positiva, errores por la capa real (500 generico sin filtrar mensajes, 409 de fuente ambigua, 401/403/422 sin lectura de datos) y aislamiento entre tenants: todos resistieron.
+- Se cerro un hueco de test (ADV-3): un cambio solo en la calidad del periodo base debe cambiar `evidence_id`; con el test nuevo falla la mutacion que la quita del hash.
+- Las dos integraciones con CockroachDB real **no se han vuelto a ejecutar**: la evidencia con base real (150 pruebas, cero omitidas) es la del 10/10 de la entrega original.
+
 ## Limites de la evidencia
 
 - Los tests unitarios/API usan SQLite para autenticacion y dobles explicitos
