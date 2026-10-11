@@ -336,3 +336,81 @@ Notas del tester para Green: el helper de `test_ingest_bounded_retry.py` marca l
 `frozen` ni usar `__slots__`; y los dobles `SimpleNamespace(delivery_tag=..)` de
 `test_tenant_isolation_malformed_queue.py` no tienen `redelivered`, por eso el valor por defecto de un
 frame sin el atributo es `False`.
+
+### Green (tareas 4.4 y 4.5), 2026-10-11
+
+Producto modificado (solo processor, dos archivos): `clients/rabbitmq_queue.py` (`QueueMessage.redelivered:
+bool = False`, mutable; `blocking_pop` lo rellena con `bool(getattr(method_frame, "redelivered", False))`, con
+el valor por defecto a propósito para los dobles `SimpleNamespace` existentes y porque ante la duda se
+reencola) y `workers/runner.py` (en la rama `IngestionFailed` no permanente: reentrega → evento fijo
+`job_retry_exhausted`, un `nack(requeue=False)` y retorno sin relanzar; primera entrega → `nack(requeue=True)`
+y relanza como hoy; el `except Exception` genérico, que cubre el estado no legible o no registrable, no
+cambia y reencola sin tope, con un comentario que explica por qué). `ingest.py` y `guardrails.py` no se
+tocan. Ningún test cambia desde el commit Red.
+
+Resultado, ejecutado por el orquestador:
+
+- `test_queue_message_redelivered.py` y `test_ingest_bounded_retry.py`: **41 pasan** (antes 19 fallaban).
+- **Tarea 4.5**: las cuatro aserciones de `requeue=True` pasan sin editar (`test_ingest_task.py:225`,
+  `test_secret_boundaries.py:428` y `test_tenant_isolation_jobs.py:176` y `:293`); con sus suites
+  completas, 54 pasan y 6 se omiten (las variantes de CockroachDB sin URL).
+- Suite completa del processor: **754 pasan, 65 se omiten, 0 fallan** (713 anteriores más los 41).
+
+### Mutación (tarea 4.6), 2026-10-11
+
+Contenedor desechable `python:3.12` sobre una copia del árbol (repositorio en solo lectura), 22 mutantes
+escritos a mano sobre las líneas que cambian y ocho suites del processor como ejecutor (línea base: 132
+pasan, 6 se omiten). **22 muertos, 0 supervivientes.**
+
+| Zona | Mutantes muertos |
+| --- | --- |
+| Lectura de `redelivered` | siempre falso; siempre verdadero; valor por defecto verdadero del frame sin atributo; sin `bool()`; valor invertido; valor por defecto verdadero del dataclass |
+| Rama de reentrega | condición invertida; descartar siempre; reencolar siempre; descartar con `requeue=True`; sin `return`; relanzar tras descartar; sin `nack`; evento con otro nombre, a nivel `error` o con un campo extra; permanente tratado como reintento agotado |
+| Primera entrega | `requeue=False`; sin `raise` |
+| Estado no disponible | `requeue=False`; tope por reentrega (`requeue=not message.redelivered`); sin `raise` |
+
+El mutante «tope por reentrega» en el estado no disponible es el que corresponde a la implementación
+ingenua que descartaría toda reentrega aunque el trabajo siga en `queued` o `running`: muere gracias a los
+12 casos de estado no disponible con reentrega verdadera.
+
+Límite: mutantes manuales sobre las líneas del grupo, no una herramienta automática sobre el archivo
+entero. Las pruebas usan un broker doblado: demuestran lo que el worker hace con la marca, no que la marca
+llegue; esa comprobación con RabbitMQ real se hizo en la tarea 1.3 y se repite de extremo a extremo en el
+grupo 6.
+
+### QA del grupo 4
+
+**Veredicto del agente QA independiente: `accept-with-notes`**, sin hallazgos que exijan tocar producto ni
+tests. Comprobó con comandos propios: los tests no cambian desde el commit Red; el producto es solo
+`rabbitmq_queue.py` y `runner.py` y es mínimo; `ingest.py` y `guardrails.py` no cambian respecto del
+commit del grupo 3 y no hay nada del grupo 5; el descarte está solo en la rama `IngestionFailed` no
+permanente con `redelivered` verdadero, y las ramas `InvalidJobMessage`, `ProviderError`, permanente de
+entrada y el `except Exception` genérico quedan intactas, con la permanente evaluada antes que la de
+reentrega; 78 pasan en las cinco suites relacionadas; las cuatro aserciones de `requeue=True` siguen sin
+editar; y los gates de OpenSpec pasan. Los 22 mutantes le parecen suficientes: `ack` en lugar de `nack`,
+el orden de las ramas `except` y quitar la limpieza del contexto los mataría el código actual sin
+ejecutarlos.
+
+Notas y cómo se atienden:
+
+1. **Escenario «Reentrega sin fallo anterior registrado»** (primera entrega interrumpida). No tiene una
+   prueba que lo nombre. Lo representa `test_redelivered_unclassified_failure_is_discarded_without_reraising`
+   (`tests/test_ingest_bounded_retry.py`): siembra el trabajo en `queued` y lo entrega con `redelivered`
+   verdadero sin una primera entrega previa, que es lo que ocurre tras una interrupción. Demuestra lo que
+   hace el worker ante la marca. Que RabbitMQ marque como reentrega un mensaje interrumpido sin respuesta
+   lo demostró la sonda de la tarea 1.3, con el caso «tras cerrar sin ack»
+   (`docs/evidence/JUP-113-validation.md`, apartado «Marca de reentrega del broker»), y se repite de
+   extremo a extremo en el grupo 6. No se añade código.
+2. **«El reintento conserva el sobre original y el identificador de correlación»** solo se ejerce de forma
+   débil (se reentrega el mismo diccionario y se comprueba el `request_id` del evento). La conservación
+   del cuerpo al reencolar es del broker, que no interviene en estas pruebas; queda para el grupo 6.
+3. **Enlace de la evidencia del broker real:** ver la nota 1; la medición con RabbitMQ 3.13.7 y pika 1.4.4
+   consta en el apartado citado de la evidencia.
+
+Riesgo de diseño: el coste de que una caída de pgvector o de los embeddings de más de unos 2 s marque
+`failed` los trabajos en cola está registrado en la aprobación (`proposal.md`, «Cost accepted»), en
+`design.md` (Riesgos) y en el ADR-0019 (Consecuencias), y el ADR coincide con lo implementado: una
+reentrega como máximo y reencolado sin tope si no se puede leer o registrar el estado.
+
+**DoD:** no se ejecutó `check-dod.mjs` completo en este grupo; el processor completo pasa (754 pasan, 65
+se omiten, 0 fallan) y lint, type-check y la batería final se ejecutan en las tareas 8.1 y 8.3.

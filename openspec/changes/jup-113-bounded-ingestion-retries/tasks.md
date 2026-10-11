@@ -65,12 +65,12 @@ del backend (`RF-105-004`).
   igual que con `False` (variante diferida de la 3.1).
 - [x] 4.3 Red, processor: si falla la lectura del trabajo, `mark_running` o `mark_failed`, el worker
   llama a `nack(requeue=True)` también con `redelivered=True`.
-- [ ] 4.4 Green, processor: campo `redelivered` en `QueueMessage` y `blocking_pop`, y política de la
+- [x] 4.4 Green, processor: campo `redelivered` en `QueueMessage` y `blocking_pop`, y política de la
   tabla de la decisión 5 en `runner.py`.
-- [ ] 4.5 Comprobar que `test_ingest_task.py:225`, `test_secret_boundaries.py:428` y
+- [x] 4.5 Comprobar que `test_ingest_task.py:225`, `test_secret_boundaries.py:428` y
   `test_tenant_isolation_jobs.py:176` y `:293` pasan sin editarlas. Si alguna falla, parar: no se
   adapta la prueba.
-- [ ] 4.6 Mutación sobre la lectura de `redelivered` y las ramas del worker (invertir la condición,
+- [x] 4.6 Mutación sobre la lectura de `redelivered` y las ramas del worker (invertir la condición,
   reencolar siempre, descartar siempre, relanzar tras el descarte); cubrir los mutantes que
   sobrevivan.
 
