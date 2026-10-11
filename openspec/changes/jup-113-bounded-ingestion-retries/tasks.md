@@ -28,7 +28,7 @@ del backend (`RF-105-004`).
 - [x] 2.2 Red, backend: para cada caso rechazado de la tabla, `POST /jobs/ingest` responde 422 con el
   cuerpo saneado, no crea trabajo, no reserva y no publica, y ni la respuesta ni los registros
   contienen el valor; para cada caso aceptado responde 202 y guarda y publica el valor literal.
-- [ ] 2.3 Green, backend: validar el `source` en `IngestJobRequest` con la regla de la decisión 1.
+- [x] 2.3 Green, backend: validar el `source` en `IngestJobRequest` con la regla de la decisión 1.
 - [x] 2.4 Processor: prueba que recorre la misma tabla con `normalize_source`. Describe el
   comportamiento actual, así que se espera en verde desde el principio; se anota como prueba de
   contrato y no como Red.

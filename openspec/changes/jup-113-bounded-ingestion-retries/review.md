@@ -50,3 +50,31 @@ final, ni `re.ASCII` ni `re.IGNORECASE`), porque `no-break-space-padding`,
 `kelvin-sign-lowers-to-ascii` y `newline-inside` dependen de ello. Un NUL en una columna de texto de
 PostgreSQL o CockroachDB podría dar un error de base de datos; con SQLite no, así que esa parte no
 queda demostrada por esta prueba.
+
+### Green (tarea 2.3), 2026-10-11
+
+Producto modificado: solo `apps/backend/app/schemas/jobs.py`. `IngestJobRequest.validate_source`
+aplica `SAFE_SOURCE.fullmatch(value.strip().lower())` y devuelve el valor original sin normalizar;
+un único camino sustituye la comprobación de vacío. El patrón es una copia deliberada del de
+`apps/processor/app/agents/guardrails.py`; la tabla compartida vigila que no diverjan.
+
+- `test_ingest_source_admission.py`: **36 pasan, 0 fallan** (antes 17 fallaban con `assert 202 == 422`).
+  Con el 422 ya existente se ejercitan de verdad las comprobaciones de no-efectos, de `jobs` sin
+  cambios y de que el valor no aparece en la respuesta ni en los registros.
+- Contraste, ejecutado por el coder y repetido por el orquestador: `test_tenant_isolation_api.py`,
+  `test_job_publication.py`, `test_job_reservation_rejection.py`, `test_jobs_schema.py` y
+  `test_ingest_tracing.py`, junto con la prueba nueva: 78 pasan y 4 se omiten (variantes opt-in).
+  `test_ingest_padded_source_is_preserved` y `test_ingest_blank_source_is_rejected_without_effects`
+  siguen pasando sin cambios.
+- Processor, `test_ingest_source_contract.py`: 36 pasan (sin cambios de producto en el processor).
+- Suite completa del backend en Windows, ejecutada por el coder: 1023 pasan, 64 se omiten y **145
+  fallan**, todas en los cuatro archivos `*_jup047.py` de salud (`RF-105-004`, error
+  `ProactorEventLoop ... _ssock`). El coder comprobó con el cambio retirado que dos de esos archivos
+  fallan igual en la línea base (36 fallos); los otros dos no se ejecutaron en línea base. No se da
+  por demostrado que los 145 sean preexistentes hasta la batería de la tarea 8.1 en contenedor Linux.
+- Productores de `source` de `POST /jobs/ingest` revisados (`aws-cur`, `local-smoke`, `cd-smoke`,
+  `assistant-corpus`, `test`, `azure-cost` y el caso con relleno ` azure `): ninguno es rechazado
+  por la regla. La pantalla de ingesta envía el texto libre del usuario, así que un valor con
+  espacios interiores pasa a recibir 422; lo que muestra la pantalla se comprueba en la tarea 6.4.
+- Un comentario del coder decía que el processor «descartaría» ese trabajo; hoy lo reencola (es el
+  defecto), así que el orquestador reformuló esa frase. Sin cambio de comportamiento.
