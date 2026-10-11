@@ -75,7 +75,7 @@ se rompió y qué falló). Orden: prioridad A y después B.
 - [x] 5.6 H-04, backend `tests/test_job_reservation_rejection.py`: `POST` de trabajos con una cola doble.
   Si la reserva no se envía (`not_sent`) o el resultado de publicación queda fuera de contrato, la
   respuesta es un error controlado y no se crea ningún trabajo.
-- [ ] 5.7 H-06, processor `tests/test_guardrail_validation.py`: funciones reales de los guardrails.
+- [x] 5.7 H-06, processor `tests/test_guardrail_validation.py`: funciones reales de los guardrails.
   Origen, payload, estado y metadatos inválidos se rechazan con su error, los metadatos grandes se
   recortan y una respuesta vacía o que no es JSON se rechaza sin retener la carga del proveedor.
 - [ ] 5.8 H-09, processor `tests/test_azure_client_failures.py`: cliente de la API Azure contra un
@@ -111,6 +111,9 @@ se rompió y qué falló). Orden: prioridad A y después B.
   corrupto en un trabajo completado: `JSONDecodeError` crudo y reentrega sin fin, ver `review.md`).
   Candidato a diferido de 5.4: `complete_run` con `records=()` sobre un run propio con registros previos
   no se comprueba que los vacíe (ver `review.md`).
+  Defectos detectados en 5.7: `RF-054-002` (la clave se recorta a 100 caracteres antes de buscar palabras
+  sensibles y el valor se filtra al prompt) y `RF-054-003` (rama inalcanzable `except ValueError` de
+  `parse_and_validate_response`, informativo); ver `review.md`.
 - [ ] 7.2 Completar la sección de la evidencia: tabla de criterios de aceptación con su prueba, lo
   que no se validó y por qué, y los límites que se conservan de la primera pasada.
 - [ ] 7.3 Actualizar la matriz de `docs/testing/critical-flows.md` con el delta de esta pasada.

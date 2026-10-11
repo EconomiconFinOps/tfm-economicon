@@ -314,3 +314,75 @@ checklist y el cierre se completan en la tarea 7.5.
   comprobación estructural, supervivientes `b10` y `b12`) y su recorte los verifiqué yo (ejecución, lectura y
   una rotura independiente) sin una nueva ronda de QA, por ser cambios que QA propuso y de alcance pequeño.
   Producto sin cambios (`git diff --stat -- apps` vacío).
+
+
+## Tarea 5.7 — H-06, guardrails de entrada y salida del agente (processor)
+
+- **Archivo nuevo:** `apps/processor/tests/test_guardrail_validation.py`, 389 líneas, 25 funciones y 95 casos
+  sobre las funciones reales de `app.agents.guardrails` (puras, sin dobles salvo un proveedor que cuenta
+  llamadas en un caso); sin skips ni xfail y con marcadores sintéticos (`SECRETO-SINTETICO-*`). No repite lo
+  que ya cubre `test_agent_runtime.py` (tenant vacío, origen `<script>`, metadatos públicos con `inf` y texto
+  no JSON). El objetivo inicial de menos de 250 líneas no era alcanzable sin perder detección (QA lo midió con
+  una batería de 86 mutantes) y se da por no aplicable: los límites 50, 100, 500, 4000 y la profundidad 4 son
+  límites de seguridad y de tamaño del prompt, y los casos parametrizados caben en una o dos líneas.
+- **Comando:** `python -m pytest tests/test_guardrail_validation.py -q -p no:cacheprovider -W ignore` desde
+  `apps/processor` (Python 3.12).
+- **Resultado limpio:** 95 passed. Junto a `test_agent_runtime.py` y `test_agent_ingestion_integration.py`: 135
+  passed, en dos ejecuciones; QA lo repitió en orden inverso y no hay nombres de test duplicados.
+- **Qué cubre:** entrada (payload que no es objeto; tenant ausente, `None`, no cadena o en blanco; estado
+  inseguro y su límite de 64 caracteres; origen ausente, vacío, no cadena e inseguro, y su normalización con
+  `strip` y minúsculas; metadatos que no son un objeto, con un caso que demuestra que se rechazan antes de
+  llamar al proveedor), saneado de metadatos (redacción de claves sensibles en cualquier nivel y en cualquier
+  capitalización sin que el valor secreto aparezca en la salida, profundidad y su frontera exacta, recorte a 50
+  elementos de listas y diccionarios, cadenas anidadas y de primer nivel a 500, claves a 100, no finitos, tipos
+  desconocidos, tuplas, claves no cadena y el aviso de truncado con una vista previa de 3900 caracteres y la
+  frontera exacta de 4000) y salida (respuesta vacía o que no es texto, cinco entradas hostiles que no filtran
+  su contenido ni por el mensaje, ni por `__cause__`, ni por `__context__`, ni por el traceback, y la guarda
+  `NUMERIC_CLAIM` contra cifras sin evidencia estructurada, con ocho formas de unidad rechazadas y cinco
+  entradas con cifras sin unidad o unidades sin cifra aceptadas).
+- **Roturas del tester** (copia desechable, ~70 entre las tres rondas) y **de QA** (15 manuales y una batería de
+  86 mutantes): cada guarda, los patrones de origen y estado, `strip` y minúsculas, la redacción y su
+  sensibilidad a mayúsculas y nivel, `credential` y `token` en la lista de palabras, profundidad, límites,
+  vista previa, tuplas, `ensure_ascii`, separadores, no finitos, respuesta vacía, el payload en el error,
+  `raise ... from exc`, `isinstance`, la lista de fuentes soportadas y `NUMERIC_CLAIM` (`%`, `USD`, `euros?`,
+  `IGNORECASE`, `€`, el límite de palabra y aceptar sin evidencias). Detectadas.
+- **Primera pasada de QA: `changes-requested`.** Pidió cubrir `NUMERIC_CLAIM` (sobrevivían `%`, `USD`, `euros`
+  e `IGNORECASE`, ni en este archivo ni en los vecinos), el recorte de cadenas anidadas (sólo se probaba en el
+  primer nivel) y retirar dos tests que fijaban detalles incidentales (el orden «tenant primero» y el formato
+  compacto exacto, ya protegido por otros tests). Aplicado; se redujeron además a cinco las entradas hostiles.
+- **Corrección de la afirmación de QA:** QA daba por matables dos mutantes de `NUMERIC_CLAIM` (quitar `-?` y
+  quitar la coma o la parte decimal). Son **equivalentes**: el `(?<!\w)` permite al motor emparejar `5 EUR`
+  dentro de `12,5 EUR` y `4 euros` dentro de `-4 euros`, así que el resultado booleano de `search` no cambia.
+  El tester lo comprobó por fuerza bruta (21.435.887 cadenas, 0 diferencias) y el orquestador lo reprodujo de
+  forma independiente (111.110 cadenas sobre un alfabeto menor, 0 diferencias). Los casos `12,5 EUR` y
+  `-4 euros` se mantienen como documentación del contrato, no como detección.
+- **Supervivientes conocidos y aceptados:** recorte de cadenas sólo hasta profundidad 2 (un caso a
+  profundidad 3 lo mataría; no se añade por proporción); añadir `key` o `bearer` a `SENSITIVE_KEY` (sobre-redacción
+  que ningún caso de clave pública distingue); `AgentResponseError` que deje de heredar de `AgentGuardrailError`
+  (nadie captura la base); `sort_keys=False` (equivalente, `_sanitize_value` ya ordena antes de insertar) y
+  quitar `bool` de los escalares (equivalente, `bool` es subclase de `int`).
+- **Defecto de producto confirmado, no fijado con una prueba (a registrar como `RF-054-002`):**
+  `_sanitize_value` (`guardrails.py:115-119`) recorta la clave con `str(key)[:100]` y *después* busca la palabra
+  sensible, de modo que una clave con la palabra más allá del carácter 100, o cortada por el recorte, no se
+  redacta y su valor llega íntegro al prompt del proveedor (`service.py:34-38`). Reproducido por el tester,
+  por QA (con `"a"*95+"password"` y `"a"*100+"password"` filtrando; con `"a"*90+"password"` y
+  `"a"*92+"password"`, que llegan justo a 100, redactando) y por el orquestador, tanto con `sanitize_metadata`
+  como con `prepare_agent_input`. Los metadatos los aporta quien envía el trabajo (`IngestJobRequest.metadata`
+  es un `dict` libre sin validar claves). Gravedad propuesta por QA: **baja**, defensa en profundidad, porque
+  no hay fuga entre tenants y el remitente sólo expone sus propios datos a un proveedor externo; sube a
+  **media** si algún flujo compone `metadata` con claves de terceros (por ejemplo etiquetas de Azure).
+  Corrección mínima: `SENSITIVE_KEY.search(str(key))`, que pasa todas las pruebas actuales. No se escribe un
+  test que consagre la fuga ni uno que exija la corrección, porque fallaría sin `xfail`; tras corregir el
+  producto habrá que añadir una prueba de regresión.
+- **Código inalcanzable, informativo (a registrar como `RF-054-003`):** las líneas 146-147 (`except ValueError`,
+  mensaje «provider response is not valid JSON») no se pueden alcanzar: `ValidationError` de pydantic v2 es
+  subclase de `ValueError` y se captura antes, y ninguna entrada hostil (NUL, `{`, `NaN`, anidación de 100.000
+  niveles, un número de 5.000 dígitos, BOM, un objeto de 5 MB) produce ese mensaje: todas dan «does not match
+  the FinOps response schema». Corrección sugerida: borrar el `except ValueError` o invertir el orden. Queda
+  documentado en un comentario del test y no se fuerza por mock.
+- **Detalle de diseño, sin hallazgo:** el aviso `metadata_truncated` puede acabar en torno al doble de 4000
+  caracteres, porque la vista previa de 3900 se vuelve a serializar y cada `"` o `\` se escapa (medido: 7.824
+  y 7.828 caracteres con diez valores de 500 comillas). Sigue siendo JSON válido y está acotado.
+- **Veredicto QA:** changes-requested en la primera pasada; las correcciones las verifiqué yo (ejecución dos
+  veces, git y la equivalencia de los mutantes de `NUMERIC_CLAIM`) sin una segunda ronda de QA, por ser
+  exactamente lo que QA pidió. Producto sin cambios (`git diff --stat -- apps` vacío).
