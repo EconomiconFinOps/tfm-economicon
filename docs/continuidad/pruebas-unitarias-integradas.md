@@ -98,13 +98,14 @@ candidato final y cubrir los huecos; la PR #93 no se rehace ni se duplica.
   fallo (`RF-054-004`), una rama inalcanzable (`RF-054-003`) y una ambigüedad de
   contrato sobre mayúsculas (`RF-054-005`). Los huecos diferidos y los supervivientes
   están en `RF-054-006` a `RF-054-009`.
-- **Lo que sigue sin acreditarse:** la ejecución de CI de esta PR, el SQL real que
+- **Lo que sigue sin acreditarse:** el SQL real que
   sólo corre con CockroachDB, pgvector y RabbitMQ (127 omitidas; `RF-096-004` no se
   amplía), la semántica de `rowcount` de CockroachDB, el frontend nuevo y Windows.
 - **Revisión:** sigue el flujo ordinario de `CONTRIBUTING.md`; la excepción de
   plazo del MVP de la primera pasada no se extiende a esta rama. Los veredictos de
   QA y los informes del tester son de agentes de apoyo, no una revisión humana
   independiente. Quién revisa y quién valida lo decide el equipo en Trello.
-- **Siguiente acción:** abrir la PR contra `develop`, enlazar su CI en la evidencia
-  y, si el equipo lo prioriza, corregir los defectos (cada uno con su prueba de
-  regresión) o aclarar el contrato de `RF-054-005`.
+- **Siguiente acción:** la [PR #114](https://github.com/EconomiconFinOps/tfm-economicon/pull/114) está abierta
+  con la CI en verde (2426 pruebas aprobadas y 127 omitidas, los mismos conteos que la medición); faltan la
+  revisión y la validación humanas y el merge. Después, si el equipo lo prioriza, corregir los defectos (cada
+  uno con su prueba de regresión) o aclarar el contrato de `RF-054-005`.

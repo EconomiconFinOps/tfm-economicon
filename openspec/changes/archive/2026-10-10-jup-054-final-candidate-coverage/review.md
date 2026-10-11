@@ -67,7 +67,7 @@ partes superan con holgura las 250 roturas.
 - [x] Hallazgos registrados en `openspec/findings/backlog.md` (`RF-054-001` a `RF-054-009`) sin duplicar `RF-105-002`
   ni `RF-105-004`, con una nota en `RF-096-004`.
 - [x] Evidencia, matriz y continuidad actualizadas.
-- [ ] Ejecución de CI de la PR sobre el último commit (tarea 7.6, tras abrirla).
+- [x] Ejecución de CI de la PR sobre el último commit (tarea 7.6, cumplida tras abrirla: ver el apéndice del final).
 - [ ] Revisión y validación humanas de la PR (flujo ordinario de `CONTRIBUTING.md`); los veredictos de QA de este
   documento son de un agente de apoyo y no sustituyen a ninguna de las dos.
 - [ ] Gate post-review (`Human Approval`, `post-review`), archivado del change y actualización del enlace de la
@@ -681,3 +681,21 @@ medición inicial.
   (tarea 7.6); (b) la revisión y la validación por las personas con ese rol, que no pueden ser quien ha
   implementado la pasada; (c) actualizar en `docs/continuidad/pruebas-unitarias-integradas.md` el enlace al change tras
   archivarlo, porque pasa a `archive/`; (d) decidir en Trello si los defectos se abren como tarjetas.
+
+## Tarea 7.6 — enlace de la PR y de la CI (posterior a la aprobación)
+
+Apéndice posterior al gate post-review; el bloque `Human Approval` de arriba no se modifica y refleja el estado en el
+momento de aprobar.
+
+- **PR:** [#114](https://github.com/EconomiconFinOps/tfm-economicon/pull/114), `test/JUP-054-final-candidate-coverage`
+  hacia `develop`, no borrador, 21 commits y 21 archivos (+4013 −8), último commit `17796c0`.
+- **CI de la PR** ([ejecución 38107894599](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38107894599)):
+  7 de 7 jobs en `success`, incluido `JUP policy`. Conteos copiados de los registros desde una sesión autenticada:
+  azure-cost-api 81 passed, processor 644 passed y 65 omitidas, backend 1047 passed y 62 omitidas, frontend 654 passed.
+  Coinciden exactamente con la medición en contenedor, de modo que las 291 pruebas nuevas se ejecutan en CI y no se
+  omite ninguna. Detalle en la sección «CI de la pull request» de `docs/evidence/JUP-054-validation.md`.
+- **Lo que sigue sin estar hecho:** `JUP reviews` figura en `failure` ([ejecución 38107894571](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38107894571))
+  hasta que existan `Revision JUP-054` y `Validacion JUP-054`, y no se presenta como verde; la revisión y la validación
+  humanas y el merge siguen pendientes. La salvedad del gate («el criterio de CI queda parcial») queda resuelta en lo
+  que respecta a la ejecución de la suite, no a la revisión ni a la validación.
+

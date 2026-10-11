@@ -126,4 +126,4 @@ se rompió y qué falló). Orden: prioridad A y después B.
   `docs/continuidad/README.md`.
 - [x] 7.5 Escribir `review.md` en este change: resultado, comprobación de cada prueba nueva,
   hallazgos y la nota de que no aplica ADR.
-- [ ] 7.6 Tras abrir la PR, enlazar en la evidencia la PR y la ejecución de CI del último commit.
+- [x] 7.6 Tras abrir la PR, enlazar en la evidencia la PR y la ejecución de CI del último commit.

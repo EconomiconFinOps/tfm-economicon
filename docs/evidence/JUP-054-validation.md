@@ -177,7 +177,7 @@ Fecha: 2026-10-10. [Trello](https://trello.com/c/ZsxwmagI). Rama
 `jup-054-final-candidate-coverage`. Las secciones anteriores son la primera pasada
 (PR #93) y se conservan con su atribución; ésta no las modifica ni las repite.
 Es una contribución con el flujo ordinario de revisión y validación: la excepción
-de plazo del MVP que cerró la PR #93 no se extiende a ella. Estado: **implementación técnica completada; pendientes la PR, su CI, la revisión y validación humanas y el gate post-review**.
+de plazo del MVP que cerró la PR #93 no se extiende a ella. Estado: **implementación técnica completada y archivada; [PR #114](https://github.com/EconomiconFinOps/tfm-economicon/pull/114) abierta con la CI en verde; pendientes la revisión y la validación humanas y el merge**.
 
 ### Candidato auditado y referencia
 
@@ -465,6 +465,38 @@ que ya constaba.
 | 127 omitidas en CI y el código que sólo ellas ejercitan | nota en `RF-096-004` |
 
 
+### CI de la pull request
+
+[PR #114](https://github.com/EconomiconFinOps/tfm-economicon/pull/114), `test/JUP-054-final-candidate-coverage` hacia
+`develop`, no borrador, con 21 commits y 21 archivos (+4013 −8). Commit verificado por esta CI: `17796c0`, el de
+archivado del change. El commit que enlaza este apartado y los posteriores sólo tocan documentación y el change
+archivado, no pruebas ni producto; los checks del head vigente se consultan en la propia PR. Los estados de los jobs
+se leyeron con la API pública de GitHub; los **conteos de pruebas
+se copiaron a mano de los registros desde una sesión autenticada** (la API no los sirve sin credencial), no se
+leyeron por máquina.
+
+| Ejecución | Resultado |
+| --- | --- |
+| [CI de la PR 38107894599](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38107894599), evento `pull_request` | 7 de 7 jobs en `success`: `OpenSpec`, `JUP policy`, `Frontend build`, `Frontend type check` y los tres `Python tests` |
+| [CI por `push` 38107761524](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38107761524) | 6 jobs en `success`; `JUP policy` figura `skipped` porque sólo se evalúa en pull requests |
+| [`PR reviews` 38107894571](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38107894571) | `JUP reviews` en **`failure`**, como corresponde mientras no existan `Revision JUP-054` y `Validacion JUP-054`; **no se presenta como verde** y se resuelve con las dos reviews |
+
+Conteos de pruebas de la CI de la PR frente a la referencia de CI del candidato `e1c2a8f` y a la medición de esta
+pasada en contenedores:
+
+| Servicio | Referencia `e1c2a8f` | Medición en contenedor | CI de la PR | Línea del registro |
+| --- | --- | --- | --- | --- |
+| azure-cost-api | 59 | 81 | **81 passed** | `81 passed, 1 warning in 0.97s` |
+| backend | 960 passed, 62 omitidas | 1047, 62 | **1047 passed, 62 omitidas** | `1047 passed, 62 skipped, 4035 warnings in 138.40s (0:02:18)` |
+| processor | 462 passed, 65 omitidas | 644, 65 | **644 passed, 65 omitidas** | `644 passed, 65 skipped, 1526 warnings in 12.44s` |
+| frontend | 654 | 654 (sin cambios) | **654 passed** (56 archivos) | `Test Files  56 passed (56)` / `Tests  654 passed (654)` |
+| **Total** | 2135 y 127 omitidas | 2426 y 127 | **2426 passed y 127 omitidas** | |
+
+Las 291 pruebas nuevas se ejecutaron en CI y pasan junto con la suite completa, sin ninguna omitida añadida: los
+conteos coinciden con la medición en contenedor, lo que corrobora que esos contenedores eran una aproximación válida a
+CI para estos tres servicios (la herramienta de cobertura no corre en CI y su cifra no se pudo contrastar allí). La
+CI verde demuestra que la suite pasa, no que la revisión ni la validación humanas estén hechas.
+
 ### Criterios de aceptación y límites de la segunda pasada
 
 Criterios del change (`proposal.md`) y de la tarjeta, que deja pendiente comprobar la cobertura del candidato
@@ -474,7 +506,7 @@ final y cubrir los huecos:
 | --- | --- | --- |
 | La evidencia recoge el SHA auditado, los comandos y la cobertura medida por servicio | Secciones «Candidato auditado y referencia» (`e1c2a8f` y ejecución de CI 38079384876), «Entorno de medición» (imágenes por digest y versiones), «Cobertura medida del candidato» (líneas y ramas por servicio) y «Resultado tras las pruebas nuevas»; comandos reproducibles en la [matriz](../testing/critical-flows.md#medición-de-cobertura-diagnóstico) | Cumplido |
 | Cada hueco identificado está cubierto con una prueba o registrado como finding con su motivo | Nueve huecos cubiertos con una prueba nueva (tabla siguiente), tres de prioridad C diferidos por decisión y los demás aceptados o diferidos con motivo, todos en «Huecos de cobertura»; cinco defectos y cuatro agrupaciones de lo diferido en `openspec/findings/backlog.md` (`RF-054-001` a `RF-054-009`, ver «Registro en el backlog») | Cumplido |
-| Las pruebas nuevas pasan en CI junto con la suite completa | 291 pruebas nuevas y 0 fallos en contenedores Linux equivalentes a CI (azure-cost-api 81, processor 644 y 65 omitidas, backend 1047 y 62 omitidas; frontend sin cambios); **la ejecución de CI de la PR todavía no existe** | Parcial: se completa al abrir la PR (tarea 7.6) |
+| Las pruebas nuevas pasan en CI junto con la suite completa | 291 pruebas nuevas y 0 fallos en contenedores Linux equivalentes a CI (azure-cost-api 81, processor 644 y 65 omitidas, backend 1047 y 62 omitidas; frontend sin cambios); **CI de la PR #114: 7 de 7 jobs en verde y los mismos conteos** (ver «CI de la pull request») | Cumplido |
 | La matriz y la continuidad reflejan el estado tras esta pasada | [`docs/testing/critical-flows.md`](../testing/critical-flows.md) con el delta de cada área y [`docs/continuidad/pruebas-unitarias-integradas.md`](../continuidad/pruebas-unitarias-integradas.md) con su fila del índice | Cumplido |
 
 Huecos cubiertos y su prueba (cada una acreditada rompiendo a mano el comportamiento en una copia desechable y con
@@ -494,10 +526,10 @@ el veredicto de un agente QA; ver `review.md`):
 
 #### Lo que no se validó y por qué
 
-- **La ejecución de CI de esta pasada.** Aún no hay PR. Los resultados proceden de contenedores Linux con las
-  mismas versiones mayor y menor de Python y Node que CI y de las dependencias de `requirements-dev.txt`, no de
-  `ubuntu-latest`; el parche exacto de CI no se pudo leer. Se ejecutaron como `root` en el contenedor, mientras que
-  CI usa un usuario sin privilegios; no se observó ninguna diferencia.
+- **La cifra de cobertura en CI.** La CI de la PR confirma los conteos de pruebas, pero la herramienta de cobertura
+  sólo se ejecutó en contenedores Linux con las mismas versiones mayor y menor de Python y Node que CI y las
+  dependencias de `requirements-dev.txt`, no en `ubuntu-latest`, y como `root` mientras que CI usa un usuario sin
+  privilegios; no se observó ninguna diferencia entre los conteos del contenedor y los de CI.
 - **Las 127 pruebas omitidas** y el código que sólo ellas ejercitan: el SQL de cobertura de etiquetado
   (`fetch_tag_coverage`, `tag_policy.py`), la procedencia de ownership, el resumen de billing, la recuperación con
   pgvector, el publicador de RabbitMQ y la carrera de finalización de trabajos. Siguen requiriendo servicios reales
