@@ -124,6 +124,6 @@ se rompió y qué falló). Orden: prioridad A y después B.
 - [x] 7.3 Actualizar la matriz de `docs/testing/critical-flows.md` con el delta de esta pasada.
 - [x] 7.4 Actualizar `docs/continuidad/pruebas-unitarias-integradas.md` y su fila en
   `docs/continuidad/README.md`.
-- [ ] 7.5 Escribir `review.md` en este change: resultado, comprobación de cada prueba nueva,
+- [x] 7.5 Escribir `review.md` en este change: resultado, comprobación de cada prueba nueva,
   hallazgos y la nota de que no aplica ADR.
 - [ ] 7.6 Tras abrir la PR, enlazar en la evidencia la PR y la ejecución de CI del último commit.

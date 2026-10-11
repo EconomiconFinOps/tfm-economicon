@@ -177,7 +177,7 @@ Fecha: 2026-10-10. [Trello](https://trello.com/c/ZsxwmagI). Rama
 `jup-054-final-candidate-coverage`. Las secciones anteriores son la primera pasada
 (PR #93) y se conservan con su atribución; ésta no las modifica ni las repite.
 Es una contribución con el flujo ordinario de revisión y validación: la excepción
-de plazo del MVP que cerró la PR #93 no se extiende a ella. Estado: **en curso**.
+de plazo del MVP que cerró la PR #93 no se extiende a ella. Estado: **implementación técnica completada; pendientes la PR, su CI, la revisión y validación humanas y el gate post-review**.
 
 ### Candidato auditado y referencia
 

@@ -1,7 +1,95 @@
 # Review — jup-054-final-candidate-coverage
 
-JUP: JUP-054. Registro de evidencia por tarea durante el apply. El resultado global, la
-checklist y el cierre se completan en la tarea 7.5.
+JUP: JUP-054. Resultado global, checklist y cierre, seguidos del registro de evidencia por tarea
+durante el apply.
+
+## Resultado
+
+**Implementación técnica completada; pendientes la PR, su CI, la revisión y la validación humanas y el gate
+post-review.** La segunda pasada de JUP-054 mide la cobertura del candidato final `e1c2a8f` y cubre los huecos
+críticos aprobados con 291 pruebas nuevas en nueve archivos, sin ningún cambio de código de producto, de
+dependencias ni de CI. Todas las líneas objetivo quedan cubiertas salvo `guardrails.py:146-147`, una rama
+inalcanzable (`RF-054-003`). Se detectaron cinco hallazgos de producto, que se registran y no se corrigen.
+
+| Tarea | Hueco | Archivo nuevo | Casos | Roturas tester / QA | Veredicto QA |
+| --- | --- | --- | --- | --- | --- |
+| 5.1 | H-02 `GET /tenants` | `backend/tests/test_tenants_route.py` | 10 | 4 / 9 | accept |
+| 5.2 | H-03 crear conversación | `backend/tests/test_conversation_creation.py` | 26 | ≈15 / 7 | accept |
+| 5.3 | H-07 reentrega y payload corrupto | `processor/tests/test_ingest_redelivery.py` | 50 | 15 / 10 | accept |
+| 5.4 | H-08 runs ajenos y guardas de `rowcount` | `processor/tests/test_azure_cost_scope_rejection.py` | 21 | ≈30 / 22 | `changes-requested`, luego accept |
+| 5.5 | H-01 contrato de error de billing | `backend/tests/test_billing_error_contract.py` | 37 | 50 / ≈30 | accept |
+| 5.6 | H-04 reserva rechazada y outcome inválido | `backend/tests/test_job_reservation_rejection.py` | 14 | 31 (+9) / 14 | accept |
+| 5.7 | H-06 guardrails del agente | `processor/tests/test_guardrail_validation.py` | 95 | ≈70 / 15 y 86 mutantes | `changes-requested`, luego verificado |
+| 5.8 | H-09 red real y páginas malformadas | `processor/tests/test_azure_client_failures.py` | 16 | 36 / 20 | accept |
+| 5.9 | H-11 filtros no soportados | `azure-cost-api/tests/test_unsupported_filters.py` | 22 | 34 / 13 | accept |
+
+Los recuentos de roturas son los de los informes de cada tarea y se dan como orden de magnitud (≈ cuando el informe
+no los fijó); sus listas, sus supervivientes y su justificación están en la entrada de cada tarea. Entre las dos
+partes superan con holgura las 250 roturas.
+
+## Evidencia Red/Green/mutación
+
+- **Red:** sustituido por la rotura manual en copias desechables de contenedor (excepción de arriba). Cada prueba
+  nueva falla ante las roturas que dice cubrir y pasa contra el candidato sin modificar.
+- **Green y coder:** sin trabajo, porque no hay cambio de producto. Ninguna de las pruebas entregadas falla contra el
+  candidato sin modificar (5.10); los fallos de algunos borradores se debieron a errores de la propia prueba y se
+  corrigieron.
+- **Mutación:** sin herramienta automática ni puntuación; los supervivientes, con su motivo, están en cada tarea y
+  los aceptados se resumen en `RF-054-009`. Varios supervivientes eran en realidad mutantes equivalentes: dos de
+  `NUMERIC_CLAIM` (sin `-?` o sin coma decimal) se confirmaron por fuerza bruta (0 diferencias en millones de
+  cadenas) y otros dos (`sort_keys=False` y quitar `bool` de los escalares) se razonaron, sin comprobarlos así.
+- **QA:** dos tareas volvieron con `changes-requested` (5.4 y 5.7) y los cambios eran fundados; en 5.6 y 5.8 se
+  aplicaron además mejoras de QA antes del commit. En 5.4 QA contradijo con razón una afirmación del tester
+  (`_lock_run` no era equivalente) y en 5.7 el tester contradijo con razón a QA (dos mutantes de `NUMERIC_CLAIM`
+  eran equivalentes); el orquestador reprodujo cada una por su cuenta en lugar de aceptarla por defecto.
+
+## Validación ejecutada
+
+- `corepack pnpm openspec:validate`: 60 passed, 0 failed. `corepack pnpm jup:check -- --change
+  jup-054-final-candidate-coverage` y `corepack pnpm jup:cleanup:check`: en verde sobre el estado final.
+- Suites completas sin instrumentar sobre la rama en contenedores Linux: azure-cost-api 81 passed, processor 644
+  passed y 65 omitidas, backend 1047 passed y 62 omitidas, 0 fallos. Frente a la referencia de CI las diferencias
+  son exactamente las pruebas nuevas (+22, +182 y +87) y no se añade ninguna omitida.
+- Cobertura combinada antes → después: azure-cost-api 94,4 % → 95,1 %, backend 85,0 % → 85,6 % y processor
+  86,3 % → 88,6 %; el frontend no cambia. Diagnóstico, sin umbral y fuera del repositorio.
+- `origin/develop` sigue en `e1c2a8f`; no hay commits sin auditar.
+- `git diff --name-status e1c2a8f` bajo `apps/`, CI y dependencias: nueve archivos añadidos, todos `test_*.py`.
+- **No ejecutado:** la CI de la PR, `lint` ni `build` del frontend (sin cambios), nada en Windows y ninguna de las 127
+  pruebas omitidas.
+
+## Checklist
+
+- [x] Gate pre-código aprobado y validado antes de tocar nada (`Human Approval`, `pre-code`).
+- [x] Candidato fijado, referencia de CI anotada y medición reproducible con comandos documentados.
+- [x] Huecos clasificados y aprobados antes de escribir ninguna prueba (parada del grupo 4).
+- [x] Cada prueba nueva acreditada con roturas manuales y con el veredicto de un agente QA.
+- [x] Ningún cambio en `apps/*/app`, `apps/frontend`, `requirements*.txt`, `pnpm-lock.yaml`, CI ni protección de ramas.
+- [x] Hallazgos registrados en `openspec/findings/backlog.md` (`RF-054-001` a `RF-054-009`) sin duplicar `RF-105-002`
+  ni `RF-105-004`, con una nota en `RF-096-004`.
+- [x] Evidencia, matriz y continuidad actualizadas.
+- [ ] Ejecución de CI de la PR sobre el último commit (tarea 7.6, tras abrirla).
+- [ ] Revisión y validación humanas de la PR (flujo ordinario de `CONTRIBUTING.md`); los veredictos de QA de este
+  documento son de un agente de apoyo y no sustituyen a ninguna de las dos.
+- [ ] Gate post-review (`Human Approval`, `post-review`), archivado del change y actualización del enlace de la
+  continuidad.
+
+## Hallazgos
+
+Cinco de producto, ninguno corregido ni fijado con una prueba (consagrarían el defecto o exigirían la corrección
+sin `xfail`): `RF-054-001` (resultado persistido corrupto en un trabajo completado, `ingest.py:74`, Low),
+`RF-054-002` (clave recortada a 100 caracteres antes de buscar palabras sensibles, `guardrails.py:115-119`, Low y
+Medium si hay claves de terceros), `RF-054-003` (rama inalcanzable, informativo), `RF-054-004` (el transporte deja
+escapar excepciones crudas, `azure_cost.py:92-97`, Medium) y `RF-054-005` (ambigüedad de contrato sobre
+mayúsculas en los nombres de campo, documental). Lo diferido y los supervivientes aceptados están en `RF-054-006`
+a `RF-054-009`. Nada de esto bloquea la entrega de pruebas, pero `RF-054-004` y `RF-054-002` merecen decisión del
+equipo sobre si se corrigen antes de promover el candidato a `main`.
+
+## ADR
+
+**No aplica.** No se añade ninguna dependencia ni se cambia la arquitectura, el contrato de CI ni la protección de
+ramas, y la herramienta de cobertura se queda fuera del repositorio (`design.md`, decisiones 1 y 8). La decisión de
+no versionarla es reversible y consta en el diseño; si el equipo quiere medir de forma recurrente, es una tarjeta
+propia con su ADR.
 
 ## Excepción del ciclo Red/Green/mutación (grupos 1 a 4 y 5)
 
@@ -507,7 +595,7 @@ checklist y el cierre se completan en la tarea 7.5.
 
 ## Tarea 5.10 — pruebas nuevas que fallan contra el candidato sin modificar
 
-Ninguna prueba nueva falló contra el candidato `e1c2a8f` sin modificar, de modo que no hubo que entregar ningún
+Ninguna de las pruebas entregadas falla contra el candidato `e1c2a8f` sin modificar (los fallos de algunos borradores se debieron a errores de la propia prueba y se corrigieron), de modo que no hubo que entregar ningún
 fallo esperado estricto ni dejar ninguna prueba fuera. Los defectos de producto aparecieron por sondeos y por la
 lectura del código, no por un fallo de prueba, y **no se fijaron con ninguna aserción** (consagrarían el defecto o
 exigirían la corrección sin `xfail`): `RF-054-001` (resultado persistido corrupto en un trabajo completado,
