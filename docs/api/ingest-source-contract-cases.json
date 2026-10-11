@@ -22,8 +22,8 @@
     {"id": "uppercase", "source": "Azure-Cost", "normalized": "azure-cost"},
     {"id": "padded-and-uppercase", "source": " Azure-Cost ", "normalized": "azure-cost"},
     {"id": "tab-and-newline-padding", "source": "\tazure\n", "normalized": "azure"},
-    {"id": "no-break-space-padding", "source": " azure ", "normalized": "azure"},
-    {"id": "kelvin-sign-lowers-to-ascii", "source": "K8s", "normalized": "k8s"}
+    {"id": "no-break-space-padding", "source": "\u00a0azure\u00a0", "normalized": "azure"},
+    {"id": "kelvin-sign-lowers-to-ascii", "source": "\u212a8s", "normalized": "k8s"}
   ],
   "rejected": [
     {"id": "empty", "source": "", "reason": "vacio"},
@@ -40,10 +40,11 @@
     {"id": "colon", "source": "azure:cost", "reason": "caracter no admitido"},
     {"id": "at-sign", "source": "azure@cost", "reason": "caracter no admitido"},
     {"id": "comma", "source": "azure,cost", "reason": "caracter no admitido"},
-    {"id": "accented-letter", "source": "café", "reason": "letra no ASCII"},
-    {"id": "cyrillic-lookalike", "source": "аzure", "reason": "letra cirilica que parece una a"},
-    {"id": "zero-width-space", "source": "azure​", "reason": "espacio de ancho cero, que strip() no quita"},
+    {"id": "accented-letter", "source": "caf\u00e9", "reason": "letra no ASCII"},
+    {"id": "cyrillic-lookalike", "source": "\u0430zure", "reason": "letra cirilica que parece una a"},
+    {"id": "zero-width-space", "source": "azure\u200b", "reason": "espacio de ancho cero, que strip() no quita"},
     {"id": "nul-character", "source": "azure\u0000", "reason": "caracter nulo"},
-    {"id": "dotted-capital-i", "source": "İstanbul", "reason": "lower() lo convierte en i mas un acento combinado, que no es ASCII"}
+    {"id": "dotted-capital-i", "source": "\u0130stanbul", "reason": "lower() lo convierte en i mas un acento combinado, que no es ASCII"},
+    {"id": "eszett-casefold-differs", "source": "stra\u00dfe", "reason": "lower() conserva la eszett, que no es ASCII; casefold() la convertiria en ss y aceptaria el valor"}
   ]
 }

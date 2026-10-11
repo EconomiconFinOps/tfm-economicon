@@ -32,9 +32,9 @@ del backend (`RF-105-004`).
 - [x] 2.4 Processor: prueba que recorre la misma tabla con `normalize_source`. Describe el
   comportamiento actual, así que se espera en verde desde el principio; se anota como prueba de
   contrato y no como Red.
-- [ ] 2.5 Mutación sobre la validación del backend (quitar `strip`, quitar `lower`, coincidencia
+- [x] 2.5 Mutación sobre la validación del backend (quitar `strip`, quitar `lower`, coincidencia
   parcial en vez de completa, límite de 63 o 65) y cubrir los mutantes que sobrevivan.
-- [ ] 2.6 Ejecutar la suite completa del backend y comprobar que
+- [x] 2.6 Ejecutar la suite completa del backend y comprobar que
   `test_ingest_padded_source_is_preserved` y `test_ingest_blank_source_is_rejected_without_effects`
   pasan sin cambios.
 
