@@ -1,5 +1,69 @@
 # JUP-111 — Evidencia del apartado f de la memoria
 
+## Estado vigente — 11/10/2026
+
+Se retoma la implementación por encargo del chat
+`01a12af2-8d4e-7252-a21a-55a3ddd92364` con [excepción de plazo y sustitución
+de roles por subagentes](JUP-111-excepcion-plazo.md). Esta sección supera las
+exigencias de espera humana y los estados de CD/PR del corte histórico inferior.
+No convierte las pruebas del 10/10 en nuevas ejecuciones.
+
+- PR #87 cerrada sin merge el 10/10 a las 18:02 UTC y reabierta el 11/10;
+  sigue en borrador mientras falten incorporación y aceptación canónicas.
+- Base reconciliada con develop `c3eb665aff7b5cfa53a5ad6a3795bd8c5e6c27e3`;
+  conflicto del índice resuelto conservando todas las filas de ambos lados.
+- Nueva propuesta externa: `materiales/06-entregables/JUP-111-propuesta-2026-10-11/`;
+  nueve párrafos, cobertura y manifiesto. La versión del 10/10 no se modifica.
+- CD #73 integrado el 11/10 a las 11:34:15 UTC en `a0e9a56d49d765036f51a342fb043ee1ef4ca36f`.
+  [Cierre operativo publicado](https://github.com/EconomiconFinOps/tfm-economicon/pull/73#issuecomment-6108634067)
+  acredita primera promoción automática y smoke 5/5, con
+  [run 38136049444](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38136049444).
+  Se leyó el recibo de runtime, no se reejecutó desde esta tarea.
+- Lectura independiente de DockerServer el 11/10 a las 12:38:43 UTC:
+  `current=c3eb665aff7b5cfa53a5ad6a3795bd8c5e6c27e3`, `previous=a0e9a56d49d765036f51a342fb043ee1ef4ca36f`,
+  `run_id=38138774581`, timer activo; journal contiene `Runtime verified`
+  de ambos SHA. [Run actual](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38138774581)
+  SUCCESS con SHA coincidente. Recibo externo `materiales/07-evidencias/JUP-111-devops-2026-10-11/cd-readback.json`.
+  No se arrancaron pilas, dispararon workflows ni ejecutaron despliegues para escribir la memoria.
+- Reboot del host y validación integral de producción siguen sin acreditar.
+  La evidencia es de un entorno privado mock y no demuestra calidad de IA.
+- Pairing automatizado realizado; revisión independiente favorable de la
+  propuesta y validación documental ejecutada. No se atribuyen a Paris, Lucía ni Víctor.
+- Pendiente de respuesta expresa: lectura/exportación completa para reconciliar
+  f y comprobar las 20 páginas. No se ha leído ni editado la memoria; sólo se
+  comprobaron sus metadatos. La edición seguirá limitada a f.
+
+### Controles del 11/10 y versión revisada
+
+Resultados del subagente independiente `/root/validacion`, logs externos en la
+carpeta de evidencia del 11/10:
+
+| Comprobación | Resultado y límite |
+| --- | --- |
+| Suites Node de gobernanza ejecutadas | 83/83 pasan; no son pruebas nuevas de producto |
+| `corepack pnpm openspec:validate` | 61/61 estrictos |
+| `node tools/jup-check.mjs --all` | Correcto |
+| `node tools/jup-cleanup-check.mjs` | 1119 archivos, correcto |
+| `validate-independent.mjs` externo | 9 párrafos, 15 fuentes fijadas, 2 hashes correctos |
+| Negativos documentales | 2 alteraciones de bytes, run_id=null, SHA discordante y smoke4/5 rechazados |
+| Guion oficial | Lectura completa independiente por Drive el 11/10; cobertura coherente con las tres partes; sin comprobar PDF original |
+
+Primer intento de pruebas/higiene afectado por EPERM del sandbox; repetición
+autorizada correcta, logs iniciales y finales conservados. No se oculta ese
+primer fallo de entorno. `git diff --check` correcto.
+
+Versión de propuesta revisada (no exportación canónica):
+
+- `apartado-f.md`: SHA-256 `2c75e1f6200dd41a955871940b0661102aa46ed20b1b8916356a8a9330b39b80`.
+- `cobertura-y-entrega.md`: SHA-256 `ca54f146a993c465c3325baff567c7aa55ee1803b18421ee3785ff2ca544d579`.
+
+Dictámenes externos `revision-subagente.md` y `validacion-subagente.md`. La revisión
+identifica el hash inicial y una adenda verifica el delta único: enlace público
+de cierre CD; no cambio de afirmaciones técnicas. No aprueba por extensión una
+versión incorporada o PDF que todavía no existe.
+
+## Corte histórico del 10/10 (conservado, estados superados arriba)
+
 Fecha de contraste: 10/10/2026 (Europe/Paris). [Trello](https://trello.com/c/mnqNDpC0). [Contrato](../../openspec/changes/jup-111-devops-memory/proposal.md). Fuente canónica y reglas: [JUP-062](../memoria/README.md).
 
 [PR #87](https://github.com/EconomiconFinOps/tfm-economicon/pull/87), draft contra

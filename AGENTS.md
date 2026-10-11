@@ -11,8 +11,6 @@ work; update both after meaningful milestones.
 
 ## Source Of Truth And Identifiers
 
-- Read [docs/continuidad/README.md](docs/continuidad/README.md) and the relevant topic before project work; update them after meaningful milestones.
-
 - Trello owns scope, priorities, assignees, rotating responsibilities, delivery dates and task status.
 - OpenSpec stores versioned requirements, implementation design, technical tasks and acceptance scenarios.
 - GitHub stores code, documentation, pull requests and technical review history.

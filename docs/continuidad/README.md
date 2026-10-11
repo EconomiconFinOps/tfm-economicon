@@ -8,7 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Memoria: integración DevOps](memoria-devops.md) | JUP-111 / PR87 draft, Trello En curso: propuesta externa f y cobertura del guion, 95 pruebas/56 OpenSpec correctos. Revisión humana, incorporación canónica y exportación pendientes; primera promoción CD sin acreditar. | 2026-10-10 |
+| [Memoria: integración DevOps](memoria-devops.md) | JUP-111 / PR87 reabierta draft: excepción de plazo y roles delegados registrada, CD automático actualizado; propuesta revisada,83 pruebas y61 OpenSpec correctos; lectura/exportación completa pendiente de autorización. | 2026-10-11 |
 | [Arquitectura técnica](arquitectura-tecnica.md) | JUP-060 / PR92: arquitectura reconciliada con a0e9a56, memoria histórica verificada y dictámenes por subagentes autorizados; OpenSpec archivado. Estado de integración en PR/Trello. | 2026-10-11 |
 | [Arquitectura documental AWS](cloud-aws.md) | Referencia Fargate y Terraform sin ejecución; antecedente EC2 operativo superado. 6 pruebas mock/8 rutas correctos, sin despliegue. | 2026-10-10 |
 | [Proveedor y modelos](proveedor-modelos.md) | JUP-078 / PR113: gateway dedicado, claves9+1 USD/30d y26 controles Docker verificados; OpenSpec archivado, revision asistida aprobada, sin gasto real. | 2026-10-10 |

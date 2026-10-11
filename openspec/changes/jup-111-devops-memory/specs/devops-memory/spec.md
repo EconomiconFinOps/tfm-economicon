@@ -39,7 +39,10 @@ promotion of an integrated develop commit.
 
 The section MUST follow project-memory-governance and retain the shared document
 as the only editable canonical memory. Proposal prose and exports MUST remain
-outside Git, and no publication may be claimed before human review.
+outside Git, and no publication may be claimed before independent review.
+For JUP-111 only, the user's explicit deadline exception of 2026-10-11 permits
+independent subagents to replace human roles, with honest attribution and
+unchanged evidence requirements. This does not extend access to other sections.
 
 #### Scenario: Draft is delivered for review
 
@@ -49,6 +52,6 @@ outside Git, and no publication may be claimed before human review.
 
 #### Scenario: Publication or final export is unavailable
 
-- **WHEN** human review, authorized section context or export validation is pending
+- **WHEN** independent review, authorized section context or export validation is pending
 - **THEN** the evidence records that limitation without declaring canonical delivery or acceptance
 - **AND** the change remains active with concrete remaining tasks

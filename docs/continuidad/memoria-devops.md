@@ -1,41 +1,62 @@
 # Memoria: integración con herramientas DevOps — JUP-111
 
-Verificado el 10/10/2026. Origen: «Implementa JUP-111 — Redactar el apartado de integración con herramientas DevOps de la memoria». Encargo recibido del chat `01a1248a-4e9e-7963-a891-5d8cb49345a6`; identificador del chat de implementación no consultado.
+Verificado: 11/10/2026. Origen: «Implementa JUP-111 — Memoria de DevOps», chat
+`01a12af2-8d4e-7252-a21a-55a3ddd92364`.
 
-## Alcance y entrega
+## Alcance y decisión vigente
 
-[Tarjeta](https://trello.com/c/mnqNDpC0), P0, apartado f únicamente. Alejandro lidera, Paris pairing, Lucía revisión y Víctor validación según snapshot oficial del 10/10; asignación no equivale a participación realizada. Clon aislado `tfm-economicon-jup111`, rama `docs/JUP-111-devops-memory`, base `c2995a118d419dfe725247bac9c6f219a3f0ea77` de origin/develop. No se modificó el checkout compartido.
+Apartado f de la memoria, [Trello](https://trello.com/c/mnqNDpC0), P0.
+El usuario autoriza sustituir los roles humanos por subagentes y registrar la
+excepción como necesaria por estar fuera de plazo. El motivo se atribuye a su
+instrucción; Trello no tiene due y el calendario institucional sigue sin confirmar.
+[Excepción y atribución](../evidence/JUP-111-excepcion-plazo.md).
 
-- [Contrato activo](../../openspec/changes/jup-111-devops-memory/proposal.md) y [evidencia por criterio](../evidence/JUP-111-devops-memory.md).
-- [PR #87](https://github.com/EconomiconFinOps/tfm-economicon/pull/87) draft contra develop, entrega inicial `1eaa36f`. CI [38034787702](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38034787702) SUCCESS sobre ese commit; `PR reviews` pendiente/fallido por dictámenes aún ausentes. No equivale a aceptación editorial.
-- Propuesta fuera de Git: `materiales/06-entregables/JUP-111-propuesta-2026-10-10/apartado-f.md`, relativa al workspace que contiene los clones. Cobertura y procedimiento en `cobertura-y-entrega.md`; identidad en `manifest-sha256.json` de esa carpeta. Es propuesta, no exportación de la memoria.
-- Fuentes/recibos y resultados propios: `materiales/07-evidencias/JUP-111-devops-2026-10-10/`, fuera de Git.
+La excepción sustituye la puerta humana de JUP-111 por revisión independiente de
+subagente; no cambia las reglas generales ni extiende el acceso a otros apartados.
+Pairing `/root/pairing` realizado; revisión independiente favorable de propuesta,
+validación documental 83/83 y OpenSpec61/61 correctos.
+No atribuir esos trabajos a Paris, Lucía o Víctor.
 
-La memoria editable sigue en el Google Doc localizado mediante la tarjeta PROYECTO — Enlaces y coordinación. No se leyó ni editó la memoria completa ni apartados ajenos. Se leyó íntegro el guion oficial enlazado, sin copiarlo a Git; su fidelidad al PDF original no está verificada.
+## Entrega y evidencia
 
-## Conclusiones y decisiones
+- Clon `tfm-economicon-jup111`, rama `docs/JUP-111-devops-memory`.
+  Base reconciliada `c3eb665aff7b5cfa53a5ad6a3795bd8c5e6c27e3`;
+  índice fusionado conservando filas de ambos lados.
+- [PR #87](https://github.com/EconomiconFinOps/tfm-economicon/pull/87): cerrada
+  sin merge el 10/10; reabierta draft el 11/10 por este encargo.
+- [Evidencia vigente e histórica](../evidence/JUP-111-devops-memory.md) y
+  [contrato activo](../../openspec/changes/jup-111-devops-memory/proposal.md).
+- Propuesta nueva fuera de Git: `materiales/06-entregables/JUP-111-propuesta-2026-10-11/`
+  relativa al workspace padre; apartado-f.md, cobertura-y-entrega.md y manifiesto.
+  La propuesta del 10/10 se conserva inmutable y no es una exportación canónica.
+- Recibos nuevos en `materiales/07-evidencias/JUP-111-devops-2026-10-11/`.
+  Fuentes iniciales del 10/10 siguen en la carpeta homónima de esa fecha.
+- Guion oficial: metadata del 11/10 conserva modificación 09/10 08:24:51.390Z;
+  cobertura leída el 10/10 sigue aplicable. PDF original no contrastado.
 
-- CI, Docker, logging y métricas se contrastaron con el código de la base y evidencias fechadas. Los runs CI del 05/10 siguen siendo históricos; se releyeron sus jobs, no se volvieron a ejecutar.
-- PR #73 de CD permanece abierta en `a75472d`, sin workflow CD en la base. La validación de Paris del 09/10 prueba build/arranque/smoke local mock 5/5, `run_id=null`. No demuestra primera promoción automática integrada, operación del timer ni reboot. Se conserva el pendiente explícito.
-- El texto distingue la prueba estática de topología en CI del ensayo Docker real, observabilidad técnica de calidad de respuestas y estado Proposed de los ADR de implementación integrada.
-- Por la [gobernanza de JUP-062](../memoria/README.md), «Ningún texto se publica en el documento sin que una persona lo revise». Se entrega primero contenido revisable; el encargo no acredita que alguien haya revisado este texto nuevo. La revisión automatizada no sustituye esa puerta humana.
+CD actualizado: PR73 integrada en a0e9a56 el 11/10, run38136049444 y primera
+promoción automática acreditados por [cierre publicado](https://github.com/EconomiconFinOps/tfm-economicon/pull/73#issuecomment-6108634067).
+Lectura propia DockerServer 12:38:43UTC confirma current=c3eb665,
+previous=a0e9a56, run38138774581, timer activo y journal Runtime verified.
+El recibo identifica los SHA completos. Supera la afirmación del borrador del
+10/10 de que CD seguía abierto; no reatribuye a este chat el smoke de JUP-052.
+Reboot/producción permanecen pendientes, entorno mock privado. Ningún despliegue
+ni gasto de IA se ejecutó para redactar esta memoria.
 
-## Siguientes pasos concretos
+## Pendientes y siguientes pasos
 
-1. Alejandro revisa la propuesta y facilita el fragmento f y la guía de estilo para reconciliar texto existente sin leer otros apartados. No se sabe si f ya contiene aportaciones.
-2. Incorporar sólo f tras revisión y autorización de escritura; registrar pairing real de Paris, revisión de Lucía y validación de Víctor. No inventar sesiones, coautorías ni aceptación.
-3. Exportar versión revisada PDF/Markdown con las autorizaciones de lectura correspondientes, registrar fecha/hash en documento/Trello, comprobar paginación conjunta de 20 páginas y cerrar el change por PR documental.
-4. Actualizar CD sólo con evidencia nueva de JUP-052; no desplegar para completar esta redacción. No se enviaron mensajes Discord.
+1. Respuesta del usuario a lectura/exportación de la memoria completa para
+   reconciliar sólo f y comprobar el límite conjunto de 20 páginas. Pregunta
+   enviada; no leer el documento mientras esté pendiente. Sólo metadata consultada.
+2. Dictámenes separados de subagentes conservados externamente; propuesta final
+   hash2c75e1f6 y cobertura ca54f146. No acreditan incorporación/exportación.
+3. Con el alcance de lectura resuelto: revisar contexto, incorporar f, verificar
+   preservación de otros apartados y exportar PDF/Markdown fechados con hashes.
+4. Completar aceptación, PR y Trello; mantener change activo y tarjeta En curso
+   hasta resolver entrega canónica. No cerrar por entregar sólo propuesta.
 
-El change permanece activo por publicación y aceptación pendientes; no declarar JUP-111 Hecho por entregar esta propuesta.
-
-Controles propios del 10/10: gobernanza 95/95, OpenSpec estricto 56/56,
-trazabilidad e higiene correctas, 40 enlaces y 16 fuentes fijadas comprobados;
-dos hashes de propuesta y dos controles negativos de integridad correctos.
-Primer intento Node/Git bloqueado por EPERM del sandbox, reintento autorizado
-correcto. Detalle y comandos en la evidencia; no nuevas pruebas de producto.
-
-Trello: nota `6ac9eb23166e2ecab90fd85d` del 10/10 07:37:07Z y paso a
-`30 — En curso` por la integración DockerServer; roles, prioridad, criterios y
-fechas conservados. Se enlazan PR y propuesta/hash sin cerrar criterios de
-incorporación o revisión. Recibo externo `trello-readback.json`.
+Trello: excepción añadida a descripción y movimiento a En curso por integración
+DockerServer el 11/10 12:37UTC. Sin mensajes Discord. Controles95/95 y
+OpenSpec56/56 del 10/10 son históricos. Nuevos:83/83 gobernanza,61/61 OpenSpec,
+trazabilidad/higiene1119 correctas, integridad y negativos documentales pasan;
+resultados en evidencia vigente, sin pruebas nuevas de producto.
