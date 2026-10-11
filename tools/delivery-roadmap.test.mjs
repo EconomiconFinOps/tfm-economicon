@@ -12,6 +12,9 @@ const narrative = fs.readFileSync(
   path.join(root, "docs", "planning", "JUP-080-delivery-roadmap.md"),
   "utf8",
 );
+const snapshot = JSON.parse(fs.readFileSync(
+  path.join(root, "docs", "planning", "JUP-080-p0-snapshot.json"), "utf8",
+));
 
 test("pins delivery, freeze and defense dates in chronological order", () => {
   assert.equal(roadmap.internal_code_freeze, "2026-10-09");
@@ -31,7 +34,7 @@ test("assigns every P0 task in the dated snapshot exactly once", () => {
 
   assert.equal(roadmap.p0_snapshot.source, "https://trello.com/b/CawMVPoy/economicon");
   assert.equal(roadmap.p0_snapshot.captured_at, roadmap.as_of);
-  assert.equal(roadmap.p0_snapshot.count, 50);
+  assert.equal(roadmap.p0_snapshot.count, snapshot.cards.length);
   assert.equal(expectedP0.length, roadmap.p0_snapshot.count);
   assert.equal(new Set(expectedP0).size, expectedP0.length);
   assert.deepEqual(
@@ -40,6 +43,26 @@ test("assigns every P0 task in the dated snapshot exactly once", () => {
   );
   assert.equal(new Set(assigned).size, assigned.length);
   assert.deepEqual([...assigned].sort(), [...expectedP0].sort());
+  assert.deepEqual([...expectedP0].sort(), snapshot.cards.map(c => c.task_id).sort());
+  assert.equal(roadmap.p0_snapshot.queried_at, snapshot.queried_at);
+});
+
+test("recovery covers open P0 only and never backdates completed cards", () => {
+  const targets = roadmap.recovery_plan.targets;
+  const open = snapshot.cards.filter(c => !c.state.startsWith("70"));
+  assert.deepEqual(targets.map(t => t.task_id).sort(), open.map(c => c.task_id).sort());
+  assert.equal(new Set(targets.map(t => t.task_id)).size, targets.length);
+  for (const target of targets) {
+    assert.match(target.date, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(target.date >= roadmap.as_of);
+    assert.ok(target.date <= roadmap.defense_date);
+  }
+  const date = id => targets.find(t => t.task_id === id).date;
+  assert.ok(date("JUP-035") < date("JUP-054"));
+  assert.ok(date("JUP-036") < date("JUP-071"));
+  assert.ok(date("JUP-071") < date("JUP-109"));
+  assert.ok(date("JUP-110") < date("JUP-065"));
+  assert.ok(date("JUP-065") < date("JUP-066"));
 });
 
 test("protects the official Jupiter deliverables and evaluation constraints", () => {
