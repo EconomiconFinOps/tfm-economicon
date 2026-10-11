@@ -1,6 +1,6 @@
 ## Context
 
-JUP-112. Ver `proposal.md` para la motivación. Estado actual (Lucia decidió incluir tema claro y oscuro): Tailwind v4 con tokens semánticos en `apps/frontend/src/styles/theme.css` ([ADR-0012](../../../docs/adr/ADR-0012-frontend-color-tokens.md), JUP-099). Hoy hay una sola paleta, oscura, y ningún color literal en pantallas, así que cambiar de paleta es sobre todo reescribir el tema. Lo que no es solo tema:
+JUP-112. Ver `proposal.md` para la motivación. Estado actual (Lucia decidió incluir tema claro y oscuro): Tailwind v4 con tokens semánticos en `apps/frontend/src/styles/theme.css` ([ADR-0012](../../../../docs/adr/ADR-0012-frontend-color-tokens.md), JUP-099). Hoy hay una sola paleta, oscura, y ningún color literal en pantallas, así que cambiar de paleta es sobre todo reescribir el tema. Lo que no es solo tema:
 
 - Tonos que asumían fondo oscuro: textos `*-foreground` claros sobre rellenos `/20`, degradados `from-card to-accent`, sombras y `text-foreground` blanco sobre fondos de color.
 - `chartTheme.ts` y las gráficas, con hexadecimales de series que no se verían bien en claro.
@@ -87,5 +87,5 @@ La primera serie es un ciruela, no un índigo, porque un índigo se confundía c
 - [Los rellenos suaves con `color-mix` se ven distintos a los `/20` de hoy] → se comparan capturas por pantalla y se ajusta la opacidad por estado, no por pantalla.
 - [Dos tarjetas en curso (JUP-056/058/089) usan clases que cambian] → mantener los nombres de token reduce el solape; se avisa en el PR de qué tokens desaparecen (`attention-*`) y qué se añade (`brand`, `saving`).
 - [Elegir los tonos a ojo] → los valores ya pasaron el validador y el cálculo de contraste; la aprobación estética de Lucia con las capturas reales cubre lo subjetivo.
-- [Fuentes empaquetadas aumentan el peso] → variables y solo los subconjuntos latino y latino-extendido.
+- [Fuentes empaquetadas aumentan el peso] → fuentes variables; los paquetes incluyen los subconjuntos latino, cirílico, griego y vietnamita, pero el navegador solo descarga los latinos que usa la página (`unicode-range`).
 - [Los PNG del logotipo son rasterizados y grandes (23–59 KB, 2000 px)] → se muestran en tamaño reducido; si se ve borroso en pantallas de alta densidad se pide una versión vectorial al equipo, sin vectorizarla por cuenta propia.

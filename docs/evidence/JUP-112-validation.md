@@ -12,7 +12,7 @@
 
 | Comprobación | Resultado |
 | --- | --- |
-| `corepack pnpm test` en `apps/frontend` | 61 archivos y 768 tests pasan (antes del cambio: 55 archivos y 646 tests) |
+| `corepack pnpm test` en `apps/frontend` | 63 archivos y 787 tests pasan, ya integrado `develop` en `e1c2a8f` (antes del cambio: 55 archivos y 646 tests) |
 | `corepack pnpm typecheck`, `lint`, `build` en `apps/frontend` | sin errores |
 | `corepack pnpm openspec:validate` | 58 de 58 correctos |
 | `corepack pnpm jup:check -- --change jup-112-brand-identity` | correcto |
@@ -29,7 +29,7 @@
 | Tema oscuro derivado de la marca, arranque según el sistema, elección que prevalece, almacenamiento no disponible | `useTheme.test.tsx` (8 casos); `toggle-report.json`: con el sistema en claro arranca claro, con el sistema en oscuro arranca oscuro desde el primer pintado, una elección clara con sistema oscuro se conserva tras recargar |
 | Control accesible para alternar | `ThemeToggle` con `aria-pressed` y etiqueta fija; `toggle-report.json`: el atributo pasa de `null` a `dark` sin recargar y se guarda `economicon-theme` |
 | Violeta exclusivo de botones | revisión de usos de `primary` en `src/` (los botones usan `bg-primary` con `text-primary-foreground`; navegación, selección, foco y bordes pasan a `highlight`); `theme-contrast.test.ts` fija 5,63:1 del texto sobre el violeta. No se midió el porcentaje de superficie (≤10 %): se revisó a ojo en las capturas |
-| Coral solo para ahorro e insights, con texto casi negro | `saving` solo se consume en `RecommendationsPanel` (cifras de ahorro e insignia de agentes de IA); `theme-contrast.test.ts` fija 7,96:1 del texto sobre el coral y que ninguna serie de gráfica lo usa |
+| Coral solo para ahorro e insights, con texto casi negro | `saving` solo se consume en `RecommendationsPanel` y `ExecutiveCutDashboard` (cifras de ahorro e insignia de agentes de IA), y un guardián comprueba que ningún otro componente lo usa; `theme-contrast.test.ts` fija 7,96:1 del texto sobre el coral y que ninguna serie de gráfica lo usa |
 | Estados distinguibles y legibles en ambos temas | `theme-contrast.test.ts`: texto de estado sobre su relleno (30 % de opacidad, el máximo que usan las pantallas), sobre fondo, tarjeta y lila ≥4,5:1; relleno contra tarjeta ≥3:1. Los indicadores de estado llevan texto o icono |
 | Gráficas con paleta propia y legible | series ≥3:1 sobre la tarjeta en ambos temas (test); validador de dataviz sin fallos; texto de leyenda en `muted-foreground` y no en el color de la serie (`chartTheme.test.tsx`) |
 | Tipografía empaquetada | `toggle-report.json`: las únicas fuentes cargadas son `Inter Variable` y `Space Grotesk Variable` y los hosts solicitados son el propio servidor y la API; ningún CDN. El host `gc.kis.v2.scr.kaspersky-labs.com` que aparece lo inyecta el antivirus del navegador, no la aplicación |

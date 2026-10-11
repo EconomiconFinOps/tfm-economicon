@@ -14,7 +14,7 @@ El tema claro SHALL presentar la aplicación sobre el blanco roto `#FAFAFC` como
 
 - **WHEN** se carga cualquier pantalla de la aplicación con el tema claro
 - **THEN** el fondo de la página es el blanco roto y el texto principal es el casi negro
-- **AND** las tarjetas y secciones suaves usan el lila claro como fondo
+- **AND** las secciones suaves usan el lila claro como fondo y las tarjetas un degradado del blanco al lila claro
 
 ### Requirement: El tema oscuro deriva de la marca y es opcional
 

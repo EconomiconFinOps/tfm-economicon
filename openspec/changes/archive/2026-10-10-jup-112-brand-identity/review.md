@@ -25,7 +25,7 @@ Comandos ejecutados en la rama (resultado de la última pasada, tras `148f328`):
 | `corepack pnpm jup:check -- --change jup-112-brand-identity` | correcto |
 | `corepack pnpm jup:cleanup:check` | correcto |
 
-Capturas en Chromium real (10 pantallas × 2 temas × 1280 y 390 px) y comportamiento del conmutador: [evidencia](../../../docs/evidence/JUP-112-validation.md). Límites de lo no validado, allí.
+Capturas en Chromium real (10 pantallas × 2 temas × 1280 y 390 px) y comportamiento del conmutador: [evidencia](../../../../docs/evidence/JUP-112-validation.md). Límites de lo no validado, allí.
 
 ## Adversarial Review (pass 1)
 
@@ -74,11 +74,11 @@ Los defectos de uso del violeta, del foco y de los tooltips se barrieron en todo
 
 ## Hallazgos registrados
 
-[RF-112-001](../../findings/backlog.md#rf-112-001-series-de-grafica-poco-distinguibles-con-deuteranopia-simulada) y [RF-112-002](../../findings/backlog.md#rf-112-002-cabos-sueltos-de-menor-severidad-tras-jup-112) en `openspec/findings/backlog.md`.
+[RF-112-001](../../../findings/backlog.md#rf-112-001-series-de-grafica-poco-distinguibles-con-deuteranopia-simulada) y [RF-112-002](../../../findings/backlog.md#rf-112-002-cabos-sueltos-de-menor-severidad-tras-jup-112) en `openspec/findings/backlog.md`.
 
 ## ADR
 
-ADR-0012 enmendado ([enmienda JUP-112](../../../docs/adr/ADR-0012-frontend-color-tokens.md)). Obliga a las tarjetas futuras a definir tokens en las dos paletas y a no usar `primary` fuera de botones.
+ADR-0012 enmendado ([enmienda JUP-112](../../../../docs/adr/ADR-0012-frontend-color-tokens.md)). Obliga a las tarjetas futuras a definir tokens en las dos paletas y a no usar `primary` fuera de botones.
 
 ## Pendiente
 
@@ -96,3 +96,7 @@ ADR-0012 enmendado ([enmienda JUP-112](../../../docs/adr/ADR-0012-frontend-color
 - Adversarial review: accept (pass 2) | accepted findings: ADV-6 de la pasada 2 (RF-112-001), ADV-10 y ADV-11 de la pasada 2 (RF-112-002), registrados en `openspec/findings/backlog.md`
 - Archive decision: archive
 - Notes: Lucia acepta los hallazgos sin corregir y la ampliación al tema oscuro, y decide ser quien lidera la tarjeta (en Trello, Lucia Mateo pasa a Liderazgo y Paris Arcos Martin a Validación, pruebas y documentación). Pendientes en Trello: revisión de código por Alejandro Aguado, validación funcional por Paris Arcos Martin y confirmación del liderazgo del alcance del tema oscuro. Sin verificar en navegador real: foco y tooltips, Firefox y Safari y "Coste Global" con datos reales.
+
+## Nota posterior (2026-10-11)
+
+La revisión de la PR #112 pidió cambios y se atendieron en el mismo cambio: pestañas de navegación que caben a 1280 px con la barra de desplazamiento visible (relleno `px-2`), `<h1>` de marca, integración de `develop`, un archivo de tests de la spec con 11 mutaciones que ahora fallan (`brand-spec.guard.test.tsx`), enlaces corregidos y documentación alineada. La aprobación humana de arriba se refiere al estado revisado entonces. Sobre las asignaciones que cita su campo Notes: las de revisión y validación viven en Trello y en la descripción del PR, esta nota no las repite y prevalece lo que figure allí.
