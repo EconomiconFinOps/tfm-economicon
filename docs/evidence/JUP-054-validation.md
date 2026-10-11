@@ -443,3 +443,23 @@ del código, y no se fijaron con aserciones. Se registran en `openspec/findings/
 caracteres antes de buscar palabras sensibles, `guardrails.py:115-119`), `RF-054-003` (rama inalcanzable,
 informativo), `RF-054-004` (el transporte deja escapar excepciones crudas, `azure_cost.py:92-97`) y `RF-054-005`
 (ambigüedad de contrato sobre mayúsculas en nombres de campo).
+
+#### Registro en el backlog
+
+Tarea 7.1: todo lo que esta pasada no cubre o descubre queda en `openspec/findings/backlog.md`, sin duplicar lo
+que ya constaba.
+
+| Qué | Dónde |
+| --- | --- |
+| Defecto: `result` persistido corrupto en un trabajo completado (`ingest.py:74`) | `RF-054-001` |
+| Defecto: la clave se recorta a 100 caracteres antes de buscar palabras sensibles (`guardrails.py:115-119`) | `RF-054-002` |
+| Código inalcanzable `except ValueError` (`guardrails.py:146-147`), informativo | `RF-054-003` |
+| Defecto: el transporte deja escapar excepciones crudas (`azure_cost.py:92-97`) | `RF-054-004` |
+| Ambigüedad de contrato sobre mayúsculas en nombres de campo | `RF-054-005` |
+| Huecos de prioridad C: H-05, H-10 y H-12 | `RF-054-006` |
+| D-01 (sondeos de salud sin ninguna suite) y A-07 (procesos hijo no observados) | `RF-054-007` |
+| D-02 a D-08 y A-01 (`models/domain.py` sin uso) | `RF-054-008` |
+| Supervivientes conocidos de las pruebas nuevas | `RF-054-009` |
+| A-02 y A-06 (`useCostKpis.ts` y `executiveCostDashboard.ts` sin consumidor) | `RF-105-002`, ya existente |
+| Fallos del backend en Windows por los fixtures de JUP-047 (primera pasada) | `RF-105-004`, ya existente |
+| 127 omitidas en CI y el código que sólo ellas ejercitan | nota en `RF-096-004` |

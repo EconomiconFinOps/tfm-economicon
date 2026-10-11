@@ -105,7 +105,7 @@ se rompió y qué falló). Orden: prioridad A y después B.
 
 ## 7. Registro y cierre
 
-- [ ] 7.1 Registrar en `openspec/findings/backlog.md` los huecos diferidos y los defectos
+- [x] 7.1 Registrar en `openspec/findings/backlog.md` los huecos diferidos y los defectos
   encontrados como `RF-054-NNN`, y revisar si `RF-096-004` necesita una nota con lo observado.
   Defectos ya detectados que deben quedar registrados: `RF-054-001` (H-07, `result` persistido
   corrupto en un trabajo completado: `JSONDecodeError` crudo y reentrega sin fin, ver `review.md`).
