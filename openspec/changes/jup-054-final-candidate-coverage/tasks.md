@@ -69,7 +69,7 @@ se rompió y qué falló). Orden: prioridad A y después B.
 - [x] 5.4 H-08, processor `tests/test_azure_cost_scope_rejection.py`: repositorio de costes con SQLite.
   Iniciar, completar o fallar un run con un tenant o una suscripción ajenos lanza `PermissionError` y
   no modifica el run ni sus registros.
-- [ ] 5.5 H-01, backend `tests/test_billing_error_contract.py`: rutas reales de `GET /billing/tag-coverage`
+- [x] 5.5 H-01, backend `tests/test_billing_error_contract.py`: rutas reales de `GET /billing/tag-coverage`
   y `GET /billing/summary` con la base doblada. 200 con el contrato de la respuesta y 409
   `{"detail":{"code":"ambiguous_cost_source"}}` cuando la base detecta fuentes solapadas.
 - [ ] 5.6 H-04, backend `tests/test_job_reservation_rejection.py`: `POST` de trabajos con una cola doble.

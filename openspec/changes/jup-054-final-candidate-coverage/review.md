@@ -196,3 +196,61 @@ checklist y el cierre se completan en la tarea 7.5.
   la misma definición, y la única llamada de producto a `start_run` es `AzureCostIngestionService.ingest`.
   Sólo divergiría con un llamador futuro que reutilice un id con otra definición. No se registra `RF-054`.
 - **Veredicto QA:** accept (segunda pasada). Producto sin cambios (`git diff --stat -- apps` vacío).
+
+
+## Tarea 5.5 — H-01, contrato de error de las rutas de billing (backend)
+
+- **Archivo nuevo:** `apps/backend/tests/test_billing_error_contract.py`, 37 casos (461 líneas) con la
+  aplicación real, la autenticación y la pertenencia reales y la base sustituida por un doble; sin skips ni
+  xfail. **El SQL real de `fetch_tag_coverage` y `fetch_billing_summary` no se prueba aquí** (usa `jsonb_typeof`,
+  `->>` y `regexp_replace`, que SQLite no tiene): sigue cubierto sólo por las variantes CockroachDB, omitidas
+  en CI. El docstring lo dice.
+- **Comando:** `python -m pytest tests/test_billing_error_contract.py -q -p no:cacheprovider -W ignore` desde
+  `apps/backend` (Python 3.12).
+- **Resultado limpio:** 37 passed, tres veces seguidas y en orden inverso. Con `test_tag_coverage.py`,
+  `test_billing_summary.py`, `test_budget_evaluation.py` y `test_tenant_isolation_api.py` en ambos órdenes:
+  117 passed y 32 omitidas (CockroachDB preexistentes). La suite completa del backend en el contenedor da 1033
+  passed y 62 omitidas, las mismas omitidas que en la referencia de CI.
+- **Qué cubre:** en `GET /billing/tag-coverage`, el camino feliz con importes decimales conservados como
+  cadena (incluido `9007199254740993.01`) y los `null`; el reenvío del tenant activo y del periodo como `date`
+  (también para un usuario multi-tenant en ambos tenants); el periodo por defecto, con el reloj congelado en
+  cinco instantes (mitad de mes, 31 de diciembre con cambio de año, año bisiesto, 1 de enero y último segundo
+  de junio); que con fechas explícitas no se lee el reloj; que una clave extra del doble no llega a la
+  respuesta; el 409 con cuerpo exacto `{"detail": {"code": "ambiguous_cost_source"}}` sin que el mensaje de la
+  excepción aparezca en la respuesta, en stdout, en stderr ni en los registros; y que un error plano o un
+  resultado malformado dé 500 y no 409 ni un 200 parcial. En `GET /billing/summary`, el mismo 409 para
+  distintas agrupaciones (con `tag_key` canónico), el 500 para errores planos, una sola llamada al repositorio,
+  y que el 409 no enmascara nunca un 401 ni un 403 ni afecta a otras rutas.
+- **Roturas del tester** (copia desechable, 50): quitar o ensanchar el `except`, cambiar estado, código o
+  `detail` del 409, tenant fijo, `start` y `end` intercambiados o ignorados, `group_by` y `tag_key` sin
+  canonizar, sin `response_model` o con `model_construct`, importes como float, periodo por defecto en varias
+  formas erróneas, 409 que imprime, registra o escribe, doble llamada y `except` demasiado ancho. 49 se
+  detectan y una es equivalente.
+- **Roturas independientes de QA** (~30, entre tag-coverage, summary y periodo por defecto): llamar a otro
+  método del repositorio, `end` inclusivo, 409 convertido en 200, `required_tags` incompleto, caché o 409
+  pegajoso por tenant, 409 condicionado a una fecha explícita o a la agrupación, tenant fijo en la firma y
+  orden de monedas alterado, entre otras. Detectadas.
+- **Supervivientes:** (1) una cabecera de respuesta `X-Debug` con datos añadida al 409 no la detecta ningún
+  test porque ninguno mira las cabeceras de respuesta; es una rotura exótica y se deja como superviviente
+  conocido (cerrarlo es una aserción sobre `response.headers`). (2) Quitar el `from None` del
+  `raise HTTPException` no cambia la respuesta. (3) `return result` conservando el `response_model` es
+  equivalente porque FastAPI valida y filtra igual.
+- **Comportamiento fijado a propósito:** un error plano del repositorio o un resultado del doble que viola el
+  esquema responden 500 sin filtrar detalles (fallar cerrado), y `ValueError` plano no se convierte en 409
+  aunque `AmbiguousCostSource` herede de `ValueError`. QA lo valora contrato deseable: el 500 lo produce
+  `RequestIdMiddleware` (`request_context.py:19-23`), que registra sólo el tipo de la excepción. Detalle
+  incidental menor: `assert tz is timezone.utc` fija la identidad del objeto, de modo que un refactor a
+  `ZoneInfo("UTC")` lo rompería sin cambiar el comportamiento; el patrón ya existe en
+  `test_ownership_questions.py`.
+- **Reloj:** se congela con un `monkeypatch` local sobre `app.api.routes.billing.datetime`, restaurado por
+  test, sin contaminar otros módulos. QA lo probó con zonas horarias extremas (`Pacific/Kiritimati`,
+  `America/Los_Angeles`) y barrió cada día de 2024-01-01 a 2026-12-31 a las 23:59:59 UTC sin ninguna forma
+  inválida. No hay dependencia del reloj real ni del orden.
+- **Proporcionalidad (ruido conocido, no bloqueante):** 37 casos para ~6 líneas de producto. QA midió con las
+  roturas hechas que se podrían retirar 15 casos y ~25 líneas de aserción (casos `multi-*` de reenvío,
+  variantes redundantes de error plano y de agrupación, instantes del reloj subsumidos, el test del
+  reloj que falla si se lee y la aserción de `contract_version` por defecto) sin perder la detección de
+  ninguna rotura, dejando ~390 líneas y 22 casos. La diferencia es de un 15 % y se decidió no abrir otra
+  ronda; la mayoría son filas de parametrización baratas (4,5 s en total). Si un revisor lo prefiere, es un
+  recorte mecánico.
+- **Veredicto QA:** accept. Producto sin cambios (`git diff --stat -- apps` vacío).
