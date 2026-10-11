@@ -119,10 +119,10 @@ se rompió y qué falló). Orden: prioridad A y después B.
   su JSON de fallo y `startup_boundary` lo reescribe como un error de configuración); ver `review.md`.
   Contrato: `RF-054-005` (los nombres de campo del filtro se validan en exacto y el contrato dice que los filtros
   ignoran mayúsculas sin aclarar si se refiere a nombres o a valores; baja, documental); ver `review.md`.
-- [ ] 7.2 Completar la sección de la evidencia: tabla de criterios de aceptación con su prueba, lo
+- [x] 7.2 Completar la sección de la evidencia: tabla de criterios de aceptación con su prueba, lo
   que no se validó y por qué, y los límites que se conservan de la primera pasada.
-- [ ] 7.3 Actualizar la matriz de `docs/testing/critical-flows.md` con el delta de esta pasada.
-- [ ] 7.4 Actualizar `docs/continuidad/pruebas-unitarias-integradas.md` y su fila en
+- [x] 7.3 Actualizar la matriz de `docs/testing/critical-flows.md` con el delta de esta pasada.
+- [x] 7.4 Actualizar `docs/continuidad/pruebas-unitarias-integradas.md` y su fila en
   `docs/continuidad/README.md`.
 - [ ] 7.5 Escribir `review.md` en este change: resultado, comprobación de cada prueba nueva,
   hallazgos y la nota de que no aplica ADR.

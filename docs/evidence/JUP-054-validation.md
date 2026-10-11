@@ -463,3 +463,65 @@ que ya constaba.
 | A-02 y A-06 (`useCostKpis.ts` y `executiveCostDashboard.ts` sin consumidor) | `RF-105-002`, ya existente |
 | Fallos del backend en Windows por los fixtures de JUP-047 (primera pasada) | `RF-105-004`, ya existente |
 | 127 omitidas en CI y el código que sólo ellas ejercitan | nota en `RF-096-004` |
+
+
+### Criterios de aceptación y límites de la segunda pasada
+
+Criterios del change (`proposal.md`) y de la tarjeta, que deja pendiente comprobar la cobertura del candidato
+final y cubrir los huecos:
+
+| Criterio | Evidencia | Estado |
+| --- | --- | --- |
+| La evidencia recoge el SHA auditado, los comandos y la cobertura medida por servicio | Secciones «Candidato auditado y referencia» (`e1c2a8f` y ejecución de CI 38079384876), «Entorno de medición» (imágenes por digest y versiones), «Cobertura medida del candidato» (líneas y ramas por servicio) y «Resultado tras las pruebas nuevas»; comandos reproducibles en la [matriz](../testing/critical-flows.md#medición-de-cobertura-diagnóstico) | Cumplido |
+| Cada hueco identificado está cubierto con una prueba o registrado como finding con su motivo | Nueve huecos cubiertos con una prueba nueva (tabla siguiente), tres de prioridad C diferidos por decisión y los demás aceptados o diferidos con motivo, todos en «Huecos de cobertura»; cinco defectos y cuatro agrupaciones de lo diferido en `openspec/findings/backlog.md` (`RF-054-001` a `RF-054-009`, ver «Registro en el backlog») | Cumplido |
+| Las pruebas nuevas pasan en CI junto con la suite completa | 291 pruebas nuevas y 0 fallos en contenedores Linux equivalentes a CI (azure-cost-api 81, processor 644 y 65 omitidas, backend 1047 y 62 omitidas; frontend sin cambios); **la ejecución de CI de la PR todavía no existe** | Parcial: se completa al abrir la PR (tarea 7.6) |
+| La matriz y la continuidad reflejan el estado tras esta pasada | [`docs/testing/critical-flows.md`](../testing/critical-flows.md) con el delta de cada área y [`docs/continuidad/pruebas-unitarias-integradas.md`](../continuidad/pruebas-unitarias-integradas.md) con su fila del índice | Cumplido |
+
+Huecos cubiertos y su prueba (cada una acreditada rompiendo a mano el comportamiento en una copia desechable y con
+el veredicto de un agente QA; ver `review.md`):
+
+| Hueco | Archivo nuevo | Casos |
+| --- | --- | --- |
+| H-02 `GET /tenants` | `apps/backend/tests/test_tenants_route.py` | 10 |
+| H-03 creación de conversaciones | `apps/backend/tests/test_conversation_creation.py` | 26 |
+| H-01 contrato de error de billing | `apps/backend/tests/test_billing_error_contract.py` | 37 |
+| H-04 reserva de cola rechazada | `apps/backend/tests/test_job_reservation_rejection.py` | 14 |
+| H-07 reentrega y payload corrupto | `apps/processor/tests/test_ingest_redelivery.py` | 50 |
+| H-08 runs ajenos y guardas de `rowcount` | `apps/processor/tests/test_azure_cost_scope_rejection.py` | 21 |
+| H-06 guardrails del agente | `apps/processor/tests/test_guardrail_validation.py` | 95 |
+| H-09 red real y páginas malformadas | `apps/processor/tests/test_azure_client_failures.py` | 16 |
+| H-11 filtros no soportados | `apps/azure-cost-api/tests/test_unsupported_filters.py` | 22 |
+
+#### Lo que no se validó y por qué
+
+- **La ejecución de CI de esta pasada.** Aún no hay PR. Los resultados proceden de contenedores Linux con las
+  mismas versiones mayor y menor de Python y Node que CI y de las dependencias de `requirements-dev.txt`, no de
+  `ubuntu-latest`; el parche exacto de CI no se pudo leer. Se ejecutaron como `root` en el contenedor, mientras que
+  CI usa un usuario sin privilegios; no se observó ninguna diferencia.
+- **Las 127 pruebas omitidas** y el código que sólo ellas ejercitan: el SQL de cobertura de etiquetado
+  (`fetch_tag_coverage`, `tag_policy.py`), la procedencia de ownership, el resumen de billing, la recuperación con
+  pgvector, el publicador de RabbitMQ y la carrera de finalización de trabajos. Siguen requiriendo servicios reales
+  que CI no provisiona (`RF-096-004`, que esta pasada no amplía).
+- **La semántica de `rowcount` de CockroachDB.** Las pruebas de H-08 demuestran, sobre SQLite, que cuando una
+  sentencia afecta 0 filas la guarda lanza su excepción y la transacción se revierte entera. No demuestran cómo
+  devuelve `rowcount` CockroachDB con psycopg ni el bloqueo `SET id = id`.
+- **El SQL real** de `fetch_tag_coverage` y `fetch_billing_summary`: las pruebas de H-01 sustituyen la base por un
+  doble y comprueban el contrato de la ruta, no el cálculo.
+- **El frontend:** no se añadió ninguna prueba (H-12 se difirió) y no se repitió su medición; se conservan los
+  datos de la inicial.
+- **Windows nativo:** no se ejecutó nada allí. Los tests con sockets reales (H-09) usan plazos pequeños donde hace
+  falta expirar y uno generoso donde Windows rechaza el puerto con retraso, pero no se comprobó.
+- **Revisión y validación humanas.** Esta pasada sigue el flujo ordinario de revisión de `CONTRIBUTING.md`, que no se
+  ha hecho todavía. Los veredictos de QA y los informes del tester son de agentes de apoyo, no una revisión humana
+  independiente ni una aceptación, y no se presentan como tales; la PR y sus dictámenes siguen pendientes.
+- **La mutación como medida.** El valor de cada prueba se acreditó con roturas manuales y sus supervivientes, no con
+  una herramienta de mutación ni un porcentaje. Los supervivientes aceptados están en `review.md` y en `RF-054-009`.
+- **Los defectos de producto** (`RF-054-001`, `-002` y `-004`, y los demás hallazgos) se detectaron y se registraron,
+  no se corrigieron: esta pasada no cambia código de producto.
+
+#### Límites que se conservan de la primera pasada
+
+La evidencia sigue sin acreditar Azure cloud, un LLM externo, el gateway LiteLLM real, el reinicio de RabbitMQ, todas
+las migraciones, Compose completo ni un navegador real, y los límites de ejecución en Windows (socketpair y plazos)
+siguen documentados en la sección «Intentos Windows y contraste» (`RF-105-004`). El resultado de la excepción de
+plazo del MVP que cerró la PR #93 no se extiende a esta rama.
