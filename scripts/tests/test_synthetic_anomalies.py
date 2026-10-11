@@ -200,7 +200,7 @@ class DatasetTests(unittest.TestCase):
     def test_the_file_states_the_reference_outcome(self):
         names = {g["service"]: g for g in self.expected["groups"]}
         self.assertEqual(set(names), {"Compute", "Analytics", "Storage", "Database", "Tools", "Backup", "Networking"})
-        self.assertEqual(self.expected["alerts"], ["Compute", "Analytics"])
+        self.assertEqual(self.expected["alerts"], ["Analytics", "Compute"])
         self.assertEqual(names["Compute"]["trigger_reasons"], ["absolute_threshold", "period_increase"])
         self.assertEqual(names["Analytics"]["trigger_reasons"], ["absolute_threshold"])
         self.assertEqual(names["Tools"]["deviation_status"], "below")
@@ -308,13 +308,41 @@ class ToolTests(unittest.TestCase):
         self.assertGreater(mine_view["real_records"], 0)
         self.assertEqual(anomalies.apply(mine, "tenant-growth")["outcome"], "refused")
 
-    def test_the_command_line_reports_that_the_rows_are_synthetic(self):
-        store = self.new_store()
+    def run_cli(self, store, *argv):
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
-            code = anomalies.main(["status"], env={"DATABASE_URL": "sqlite://"}, store_factory=lambda url: store)
-        self.assertEqual(code, 0)
-        self.assertIn("sinteticos", output.getvalue())
+            code = anomalies.main(list(argv), env={"DATABASE_URL": "sqlite://"}, store_factory=lambda url: store)
+        return code, output.getvalue()
+
+    def test_every_command_declares_in_its_output_that_the_rows_are_synthetic(self):
+        store = self.new_store()
+        for argv in (("status",), ("apply",), ("apply",), ("status",), ("remove",), ("remove",)):
+            code, text = self.run_cli(store, *argv)
+            self.assertEqual(code, 0, argv)
+            self.assertIn("sintetic", text, (argv, text))
+        refused = self.new_store()
+        refused.add_foreign("records", TENANT)
+        code, text = self.run_cli(refused, "apply")
+        self.assertEqual(code, 2)
+        self.assertIn("sintetic", text)
+        self.assertIn("ya tiene datos de coste reales", text)
+
+    def test_refusals_exit_with_status_2_and_say_why(self):
+        hanging = self.new_store(hanging=3)
+        anomalies.apply(hanging, TENANT)
+        code, text = self.run_cli(hanging, "remove")
+        self.assertEqual(code, 2)
+        self.assertIn("colgando", text)
+        self.assertEqual(hanging.writes, 1)
+        store = self.new_store()
+        anomalies.apply(store, TENANT)
+        writes = store.writes
+        code, text = self.run_cli(store, "remove", "--tenant", "tenant-growth")
+        self.assertEqual(code, 2)
+        self.assertIn("no acepta --tenant", text)
+        self.assertEqual(store.writes, writes)
+        code, _ = self.run_cli(store, "status", "--tenant", "Tenant_Invalido")
+        self.assertEqual(code, 2)
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(anomalies.main(["status"], env={}, store_factory=lambda url: store), 2)
 
@@ -328,26 +356,81 @@ class ToolTests(unittest.TestCase):
                 self.assertIn(module, {"__future__", "argparse", "os", "re", "sys", "json", "datetime", "decimal", "typing", "sqlalchemy"}, line)
 
 
+def comma(value: str) -> str:
+    return value.replace(".", ",")
+
+
 class GuideTests(unittest.TestCase):
     def setUp(self):
         self.text = GUIDE_PATH.read_text(encoding="utf-8")
+        self.body = "\n".join(line for line in self.text.splitlines() if not line.lstrip().startswith("#"))
+        self.expected = json.loads(EXPECTED_PATH.read_text(encoding="utf-8"))
+        self.script = (ROOT / "docs" / "demo" / "JUP-107" / "llamar-anomalias.py").read_text(encoding="utf-8")
 
     def test_the_synthetic_declaration_precedes_the_first_amount(self):
-        declaration = re.search(r"sint[eé]tic", self.text, re.IGNORECASE)
-        first_amount = re.search(r"\d[\d.,]*\s?(EUR|€)|\b\d{3,}\.\d{2}\b", self.text)
-        self.assertIsNotNone(declaration)
+        first_amount = re.search(r"\d[\d.,]*\s?(EUR|\u20ac)|\b\d{3,}[.,]\d{2}\b", self.body)
         self.assertIsNotNone(first_amount)
-        self.assertLess(declaration.start(), first_amount.start())
-        self.assertIn("Azure", self.text[: first_amount.start()])
+        before = self.body[: first_amount.start()]
+        opening = self.body.strip().split("\n\n")[0]
+        self.assertLessEqual(len(opening), len(before))
+        self.assertRegex(opening, r"(?i)datos sint[e\u00e9]ticos")
+        self.assertIn("Azure", opening)
+        self.assertIn("dataset p\u00fablico", opening)
+        self.assertIsNone(re.search(r"\d[\d.,]*\s?(EUR|\u20ac)|\b\d{3,}[.,]\d{2}\b", opening))
 
-    def test_the_panel_limitation_is_explicit(self):
-        self.assertIn("/anomalies", self.text)
-        self.assertRegex(self.text, r"(?is)panel[^.]*(datos fijos|fixture|demostraci[oó]n)")
+    def test_the_panel_limitation_is_explicit_and_negative(self):
+        self.assertIn("/anomalies", self.body)
+        self.assertRegex(self.body, r"(?is)panel `/anomalies`[^.]*datos de demostraci[o\u00f3]n fijos")
+        self.assertRegex(self.body, r"(?is)panel `/anomalies`[^.]*no lee este endpoint")
+        self.assertIn("no refleja estas alertas", self.body)
+
+    def test_the_request_of_the_guide_and_of_the_script_equal_the_expected_file(self):
+        blocks = re.findall(r"```json\n(.*?)```", self.text, re.S)
+        self.assertEqual(len(blocks), 1)
+        in_guide = json.loads(blocks[0])
+        namespace = {}
+        for line in self.script.splitlines():
+            if line.startswith(("RULES =", "REQUEST =")):
+                exec(line, namespace)
+        wanted = {
+            "start_date": self.expected["periods"]["current"]["start"],
+            "end_date": self.expected["periods"]["current"]["end"],
+            "group_by": self.expected["group_by"],
+            "currency": self.expected["currency"],
+            **self.expected["rules"],
+        }
+        self.assertEqual(in_guide, wanted)
+        self.assertEqual(namespace["REQUEST"], wanted)
+        self.assertIn(f'TENANT = "{self.expected["tenant"]}"', self.script)
+        first = date.fromisoformat(self.expected["periods"]["baseline"]["start"])
+        last = date.fromisoformat(self.expected["periods"]["baseline"]["end"]) - timedelta(days=1)
+        self.assertIn(f"del {first.day} al {last.day} de septiembre de {first.year}, ambos incluidos", self.body)
+
+    def test_every_figure_of_the_guide_table_comes_from_the_expected_file(self):
+        rows = {}
+        for line in self.text.splitlines():
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if line.startswith("|") and len(cells) == 6 and cells[0] not in ("Servicio", "---"):
+                rows[cells[0]] = cells
+        self.assertEqual(set(rows), {g["service"] for g in self.expected["groups"]})
+        for group in self.expected["groups"]:
+            service, cells = group["service"], rows[group["service"]]
+            self.assertEqual(cells[1], comma(group["current_cost"]), service)
+            self.assertEqual(cells[2], "sin datos" if group["baseline_cost"] is None else comma(group["baseline_cost"]), service)
+            alert = service in self.expected["alerts"]
+            self.assertEqual(cells[4], "**S\u00ed**" if alert else "No", service)
+            if group["delta_amount"] is None:
+                self.assertEqual(cells[3], "\u2014", service)
+            else:
+                amount = comma(group["delta_amount"].lstrip("-"))
+                sign = "\u2212" if group["delta_amount"].startswith("-") else "+"
+                self.assertTrue(cells[3].startswith(sign + amount), (service, cells[3]))
+                if group["deviation_percent"] is not None:
+                    self.assertIn(comma(group["deviation_percent"].replace("-", "\u2212")) + " %", cells[3], service)
 
     def test_the_script_never_prints_the_password_or_the_token(self):
-        script = (ROOT / "docs" / "demo" / "JUP-107" / "llamar-anomalias.py").read_text(encoding="utf-8")
         self.assertIn("llamar-anomalias.py", self.text)
-        blocks = [script] + re.findall(r"```python\n(.*?)```", self.text, re.S)
+        blocks = [self.script] + re.findall(r"```python\n(.*?)```", self.text, re.S)
         printed = 0
         for block in blocks:
             for line in block.splitlines():
@@ -355,12 +438,13 @@ class GuideTests(unittest.TestCase):
                     printed += 1
                     self.assertNotRegex(line, r"(?i)password|token|DEMO_PASSWORD|access_token")
         self.assertGreater(printed, 0)
-        self.assertIn("os.environ", script)
+        self.assertIn("os.environ", self.script)
 
     def test_the_guide_covers_preparation_and_return_to_the_initial_state(self):
         for needle in ("apply", "status", "remove", "tenant-core", "down -v", "esperados-anomalias.json"):
             self.assertIn(needle, self.text)
         self.assertLess(self.text.index("apply"), self.text.index("remove"))
+        self.assertIn("no acepta `--tenant`", self.text)
 
 
 @unittest.skipUnless(os.environ.get("JUP086_COCKROACH_TEST_URL"), "JUP086_COCKROACH_TEST_URL is not set")
@@ -472,6 +556,16 @@ class CockroachTests(unittest.TestCase):
         before = self.counts()
         self.assertTrue(anomalies.remove(self.store)["refused"])
         self.assertEqual(self.counts(), before)
+
+    def test_the_jup_106_tool_sees_these_rows_as_real_and_never_removes_them(self):
+        theirs = costs.SqlStore(engine=self.engine)
+        anomalies.apply(self.store, TENANT)
+        loaded = self.counts()
+        report = costs.status(theirs, TENANT)
+        self.assertEqual((report["state"], report["records"], report["real_records"]), ("absent", 0, loaded[1]))
+        self.assertEqual(costs.apply(theirs, TENANT)["outcome"], "refused")
+        costs.remove(theirs)
+        self.assertEqual(self.counts(), loaded)
 
     def test_it_coexists_with_the_jup_106_dataset_and_never_touches_it(self):
         self.assertEqual(costs.apply(costs.SqlStore(engine=self.engine), "tenant-growth")["outcome"], "loaded")

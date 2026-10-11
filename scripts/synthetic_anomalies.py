@@ -204,13 +204,15 @@ class SqlStore:
 def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Datos de coste sinteticos para ensenar las alertas de anomalias (JUP-107).")
     parser.add_argument("command", choices=("apply", "status", "remove"))
-    parser.add_argument("--tenant", default=DEFAULT_TENANT)
+    parser.add_argument("--tenant", default=None)
     return parser.parse_args(list(argv))
 
 
 def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None,
          store_factory: Callable[[str], object] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
+    explicit_tenant = args.tenant is not None
+    args.tenant = args.tenant if explicit_tenant else DEFAULT_TENANT
     env = os.environ if env is None else env
     url = env.get("DATABASE_URL")
     if not url:
@@ -218,10 +220,13 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
         return 2
     try:
         validate_tenant(args.tenant)
+        if args.command == "remove" and explicit_tenant:
+            print("remove retira el conjunto sintetico de todos los tenants y no acepta --tenant; usa status para ver donde esta.")
+            return 2
         store = (store_factory or SqlStore)(url)
         if args.command == "apply":
             result = apply(store, args.tenant)
-            print(f"{result['outcome']}: {result['runs']} ingestas y {result['records']} registros en {args.tenant}. {result['reason']}".strip())
+            print(f"{result['outcome']}: {result['runs']} ingestas y {result['records']} registros sinteticos en {args.tenant}. {result['reason']}".strip())
             return 2 if result["outcome"] == "refused" else 0
         if args.command == "remove":
             result = remove(store)

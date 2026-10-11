@@ -46,7 +46,7 @@ Dos periodos consecutivos de siete días, uno por servicio y en euros, con estas
 }
 ```
 
-El periodo anterior (1 a 8 de septiembre de 2026) lo calcula el servicio. Para ejecutarla, el script [`llamar-anomalias.py`](llamar-anomalias.py) hace login con el usuario demo, llama al endpoint y muestra el resultado sin imprimir la contraseña ni el token:
+El periodo anterior (del 1 al 7 de septiembre de 2026, ambos incluidos) lo calcula el servicio. Para ejecutarla, el script [`llamar-anomalias.py`](llamar-anomalias.py) hace login con el usuario demo, llama al endpoint y muestra el resultado sin imprimir la contraseña ni el token:
 
 ```sh
 docker compose -p jup107b exec -T backend python - < docs/demo/JUP-107/llamar-anomalias.py
@@ -54,7 +54,7 @@ docker compose -p jup107b exec -T backend python - < docs/demo/JUP-107/llamar-an
 
 ## Qué debe verse
 
-Dos alertas y cinco evaluaciones sin alerta, cada una por una rama distinta de la lógica:
+Dos alertas y cinco evaluaciones sin alerta, cada una por una rama distinta de la lógica. El endpoint devuelve los grupos y las alertas ordenados alfabéticamente (Analytics antes que Compute); la tabla los ordena de más a menos llamativo:
 
 | Servicio | Actual | Base | Diferencia | Alerta | Por qué |
 | --- | --- | --- | --- | --- | --- |
@@ -72,8 +72,8 @@ Además: el estado de la evaluación es `provisional` y la completitud `not_veri
 
 Se cambia un campo de la petición de referencia y se vuelve a llamar:
 
-- Con `deviation_threshold_percent` en `4.55` y sin umbral absoluto, Analytics **no** salta; con `4.54` sí. El porcentaje mostrado (4,55) está redondeado: la comparación se hace antes de redondear (100,00 sobre 2200,00 es 4,5454… %).
-- Con solo la regla de subida y `min_absolute_increase` en `30.00`, Tools pasa a ser alerta: el incremento mínimo es lo que la frenaba.
+- Con `deviation_threshold_percent` en `4.55`, sin umbral absoluto y conservando `min_absolute_increase` en `100.00`, Analytics **no** salta; con `4.54` sí. El porcentaje mostrado (4,55) está redondeado: la comparación se hace antes de redondear (100,00 sobre 2200,00 es 4,5454… %).
+- Con solo la regla de subida (quita `absolute_threshold`) y `min_absolute_increase` en `30.00`, Tools pasa a ser alerta: el incremento mínimo es lo que la frenaba.
 
 ## Limitaciones que hay que decir
 
@@ -92,4 +92,4 @@ docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defa
 docker compose -p jup107b down -v
 ```
 
-El segundo `remove` debe retirar 0 ingestas y 0 registros (es seguro repetirlo); `status` debe decir `absent` y la consulta devolver 0. `down -v` borra el stack y sus volúmenes. La herramienta solo retira sus propias filas: los datos de JUP-106 en `tenant-growth` no se tocan.
+El segundo `remove` debe retirar 0 ingestas y 0 registros (es seguro repetirlo); `status` debe decir `absent` y la consulta devolver 0. `down -v` borra el stack y sus volúmenes. La herramienta solo retira sus propias filas: los datos de JUP-106 en `tenant-growth` no se tocan. `remove` actúa sobre todos los tenants a la vez y no acepta `--tenant` (sale con error); `status` te dice en cuál estaba el conjunto.

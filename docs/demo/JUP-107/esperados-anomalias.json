@@ -64,5 +64,5 @@
       "trigger_reasons": []
     }
   ],
-  "alerts": ["Compute", "Analytics"]
+  "alerts": ["Analytics", "Compute"]
 }
