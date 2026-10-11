@@ -5,7 +5,10 @@ Estado inicial: **not_run**. Copiar esta plantilla por ejecución, fuera de `gen
 - Fecha/hora/zona: pendiente.
 - Presentador, observador y validador: pendiente.
 - Commit de aplicación / imágenes / rama integrada: pendiente.
-- Paquete de preparación: base `de0d62e7c0028f35a81c5087f531d19031a90e81`; hashes en `generado/procedencia.json`.
+- SHA de PR63 usado para preparar / evidencia offline: pendiente.
+- SHAs integrados y dictámenes JUP-035 / JUP-036: pendiente.
+- Autorización de ejecución y proveedor; presupuesto si procede: pendiente (esta preparación no autoriza consumo).
+- Paquete de datos: base `de0d62e7c0028f35a81c5087f531d19031a90e81`; hashes en `generado/procedencia.json`.
 - Host, URL frontend/backend, proyecto Compose y dataset: pendiente.
 - Proveedor/modelo chat realmente usado; parámetros de generación: pendiente.
 - Proveedor/modelo/dimensión embeddings; índice, chunking, hash corpus: pendiente.
@@ -13,6 +16,7 @@ Estado inicial: **not_run**. Copiar esta plantilla por ejecución, fuera de `gen
 
 | Comprobación | Resultado | Evidencia / valor observado / duración | Responsable |
 | --- | --- | --- | --- |
+| Puertas JUP-035/036 y autorización del entorno satisfechas | not_run | pendiente | pendiente |
 | Configuración, servicios y navegador/CORS | not_run | pendiente | pendiente |
 | Primera ingesta: 38 registros, 4 páginas, 0,06 USD | not_run | pendiente | pendiente |
 | Repetición: mismo run_id, sin duplicar | not_run | pendiente | pendiente |
@@ -26,6 +30,7 @@ Estado inicial: **not_run**. Copiar esta plantilla por ejecución, fuera de `gen
 | Reserva JUP-069-001: 1.000 EUR, 600 EUR, 60 % | not_run | opcional en presentación; preflight pendiente | pendiente |
 | Reserva JUP-069-023: tenant real inaccesible | not_run | pendiente | pendiente |
 | Reserva JUP-069-025: no ejecutar apagado | not_run | pendiente | pendiente |
+| Consulta JUP-036: ámbito/periodo explícitos, respuesta frente a billing | not_run | pendiente de contrato integrado; registrar aparte del guion de 7 minutos | pendiente |
 | Reproducción independiente | not_run | pendiente | pendiente |
 
 `pass`: todos los criterios aplicables cumplidos; `fail`: aplicación disponible con resultado incorrecto; `blocked`: dependencia/infraestructura impide ejecutar; `not_run`: no ejecutado. Las reservas no se cuentan en el recorrido principal si no se muestran; su omisión no debe ocultarse.
@@ -33,3 +38,19 @@ Estado inicial: **not_run**. Copiar esta plantilla por ejecución, fuera de `gen
 Guardar respuesta original y citas por pregunta, rúbrica con cada criterio, latencia, errores y captura. Evitar credenciales, Authorization, cookies, HAR sin sanear y datos personales. Separar resultados nuevos de evidencias históricas. Anotar incidencias con enlace y siguiente acción; no transformar un bloqueo en aprobado.
 
 Decisión final y conformidades: pendiente. Enlazar revisión técnica y validación en JUP-065 antes de proponer cierre. Este registro vacío no es evidencia funcional.
+
+## Evidencia por caso y decisión
+
+Copiar para cada paso/pregunta: ID, fecha/hora, SHA, tenant, conversación/job,
+entrada exacta, respuesta original, fuente/cita, valor esperado, valor observado,
+criterios required/forbidden/numbers y resultado individual, latencia, enlace a
+captura/recibo sanitizado, incidencia y siguiente acción. No copiar secretos.
+
+- Tabla de resultados y duración total: pendiente.
+- Incidencias corregidas y repetición que lo acredita: pendiente.
+- Limitaciones aceptadas: pendiente; indicar persona, fecha y acuerdo explícito.
+- Pairing Lucía (enlace a nota de trabajo real): pendiente.
+- Revision JUP-065 de Paris (SHA/URL/alcance): pendiente para esta ejecución.
+- Validacion JUP-065 de Víctor (SHA/URL/criterios): pendiente para esta ejecución.
+- Reproducción independiente (persona, fecha, entorno, resultados): pendiente.
+- Decisión: not_run; la plantilla no acredita aceptación ni autoriza cierre.

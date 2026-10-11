@@ -7,7 +7,67 @@ Rama: `docs/JUP-065-functional-demo`, sobre develop
 [Paquete](../demo/JUP-065/README.md) y
 [alcance OpenSpec](../../openspec/changes/archive/2026-10-03-jup-065-functional-demo/proposal.md).
 
-## Reconciliación con develop — 10/10/2026
+## Preparación reconciliada — 11/10/2026
+
+Corte nuevo que sustituye el estado de preparación del 10/10, sin convertir las
+pruebas históricas en ejecuciones actuales. Origen: «Adelanta JUP-065 — Preparar
+demo funcional del MVP», chat `01a12c49-7488-72f0-9077-1137c5c4f2a6`.
+
+GitHub confirmó PR63 OPEN/CONFLICTING en `af132c1`. Se leyeron las 14 reviews,
+los cuatro comentarios de conversación y la lista inline vacía. Paris publicó
+[Revision favorable de af132c1](https://github.com/EconomiconFinOps/tfm-economicon/pull/63#pullrequestreview-5483308218)
+el 11/10. Víctor conserva su dictamen sobre `a75b707`; ambos son evidencia de
+sus versiones, no de la nueva combinación. No se cambian roles ni se extienden
+las excepciones de otras tareas.
+
+Reconciliación desde `af132c11019319258233f00523cb1d12453da122` con develop
+`3b8e95288000b1f14513cbc5158324017554f514` en el checkout aislado limpio de
+JUP-065. Dos conflictos resueltos: CI conserva la unión de comandos de ambos
+padres, incluidos business-metrics y demo/historial completo; índice conserva
+todos los temas y fechas. Sin cambios propios de producto/configuración,
+infraestructura, dependencias, AGENTS o CONTRIBUTING frente a esa base.
+
+Guion aclara cómo acreditar 38 registros; preflight incorpora consulta SQL de
+jobs por tenant/UUID, escenario normal explícito y prevención de cargas previas.
+README diagnostica el objeto Git ausente sin cambiar el generador.
+[Procedimiento integrado](../demo/JUP-065/ensayo-integrado.md) y plantilla cubren
+prerrequisitos JUP-035/036, secuencia, respuesta/cita/rúbrica, tramo de costes,
+reproducción independiente y aceptación pendiente. No se implementan 035/036.
+
+**Comprobaciones propias**, Windows, Python 3.14.4 / Node 24.14.1:
+
+- Integridad normal/optimizada: 15 archivos idénticos; dos tests negativos pasan;
+  28 consultas/siete categorías. Originales no regenerados.
+- Los 31 comandos del paso de gobernanza del workflow pasan (exit 0), incluidos
+  99 tests focales, OpenSpec 63/63 y seis changes trazables. Once omisiones:
+  calibración pgvector 1, costes sintéticos SQL 8, CD POSIX/Linux 2. No son pruebas
+  de base real ni de despliegue. Higiene 1188 en el corte anterior a añadir este recibo.
+- Diez fuentes fijadas coinciden por SHA-256 con develop; quince artefactos y tres
+  scripts conservan blobs de af132c1. DEFAULT_DEFINITION coincide con la consulta
+  fijada; junio completo selecciona las mismas 40 filas, última fecha 19/06 y suma
+  exacta 0.060113199075769. Es contraste estático/offline, no ingesta nueva.
+- Dieciséis enlaces del paquete comprobados y diff propio sin errores.
+
+[Recibo estructurado](JUP-065-preparation-20261011.json). Logs y fuentes de
+GitHub/Trello: `materiales/07-evidencias/JUP-065-preparacion-2026-10-11/` del
+workspace, fuera del repositorio. Los errores iniciales de permisos del sandbox
+se resolvieron repitiendo los checks con permisos aprobados y temporales propios.
+Los tests CI siguen teniendo los límites ante desactivaciones deliberadas ya
+anotados por Víctor; conservar comandos no equivale a un control de seguridad.
+
+Trello leído sólo por DockerServer, snapshot `snapshot-20261011T184737Z.json`:
+JUP-065 mantiene roles Alejandro/Lucía/Paris/Víctor y estado 50; JUP-035/036
+conservan su trabajo pendiente. La descripción antigua de la tarjeta no es un
+estado actual del head; el nuevo recibo se enlaza tras publicar.
+
+**Pendiente:** CI remota del SHA que contiene esta sección (consultar PR63),
+revisión/validación incremental de lo afectado, pairing Lucía, entorno/consumo
+autorizados y ensayo integrado con JUP-035/036, modelo real/citas/rúbricas/duración y
+reproducción independiente. El runtime parcial con mock de Víctor en bf50073/
+b77d596 mantiene su fecha y límites; no valida esta base. Registro `not_run`.
+Sin merge, cierre, despliegue, pago de modelos, Discord ni reviews inventadas.
+
+## Histórico: reconciliación con develop — 10/10/2026
 
 Preparación reconciliada desde `48ee74250714c6fe50946906824b80dc9ffd59fa` con
 `develop` `412ae411c7f3a9b51f65407974962ac2b4545686`, por Alejandro a petición del usuario.

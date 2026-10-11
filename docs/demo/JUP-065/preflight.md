@@ -4,6 +4,8 @@ Antes de preparar cualquier entorno, ejecutar las comprobaciones del README
 sobre los artefactos publicados. La regeneración opcional se hace en un destino
 temporal distinto; no reemplazar `generado/` antes de validar su integridad.
 
+Aplicar primero las [puertas de entrada del ensayo integrado](ensayo-integrado.md). Estos comandos son instrucciones para una ejecución futura autorizada; no se han ejecutado como ensayo en esta preparación.
+
 ## 1. Fijar la ejecución
 
 Responsable de preparación: liderazgo/pairing de JUP-065. Validador: Victor según Trello; pendiente ejecución humana. Usar una instancia desechable dedicada, nunca los volúmenes de otro trabajo. Registrar SHA de aplicación, SHA del paquete, imágenes, URLs y nombre Compose en `registro-ensayo.md`. El commit de preparación no implica que el MVP completo esté integrado.
@@ -26,7 +28,7 @@ Los marcadores se rellenan con el despliegue elegido; no son credenciales ni com
 
 ## 2. Cargar y repetir los costes
 
-La imagen Azure debe usar el CSV exacto de `generado/sources/fixtures/azure-cost/EA-Cost-Actual.sample.csv`. Su hash está en `procedencia.json`. Configuración de escenario normal y tamaño de página 10. El comando existente sin `--definition-file` coincide con `generado/consulta-costes.json` en la base fijada; verificar esa igualdad si se cambia de versión.
+La imagen Azure debe usar el CSV exacto de `generado/sources/fixtures/azure-cost/EA-Cost-Actual.sample.csv`. Su hash está en `procedencia.json`. Fijar explícitamente `AZURE_COST_DEFAULT_SCENARIO=normal` y `AZURE_COST_PAGE_SIZE=10` en el entorno privado. El comando existente sin `--definition-file` coincide con `generado/consulta-costes.json` en la base fijada; verificar esa igualdad si se cambia de versión.
 
 ```powershell
 docker compose --env-file $demoEnv -p $demoProject exec -T processor python -m app.run_azure_cost_ingestion --tenant-id tenant-core --subscription-id 64e355d7-997c-491d-b0c1-8414dccfcf42
@@ -55,6 +57,26 @@ Verificar Growth vacío en el entorno dedicado, sin el conjunto sintético de JU
 Ejecutar la validación offline de JUP-069 indicada en README. Las copias indexables están bajo `generado/sources/docs/assistant-corpus/` y aparecen en `manifest.yaml`; el corpus incluye FinOps, reglas, glosario y contexto de producto. No indexar `rubricas-privadas.json`, `prompts.json`, la batería JUP-069 ni este paquete de demo.
 
 En el flujo existente `/ingest`, para cada documento permitido: seleccionar Core Finance, Source `assistant-corpus`, Artifact URI igual al path del manifest y Text content igual al documento íntegro. Guardar job/documento/chunks y esperar `completed`, no solo «encolado». Conservar el alcance declarado en manifest: la carga manual al tenant demo no prueba la implementación del enrutado global/dataset. En esta base la integración automática del manifest es un residual documentado.
+
+Para obtener el estado sin depender de un endpoint de consulta de jobs, usar
+CockroachDB del proyecto desechable. Rellenar el nombre de base (componente de
+base de `DATABASE_URL`, no la URL completa) y el ID devuelto por `/ingest`.
+Comprobar que el ID es un UUID antes de interpolarlo:
+
+```powershell
+$demoDatabase = '<nombre-de-base-del-ensayo>'
+$demoJob = '<uuid-devuelto-al-encolar>'
+$demoJob = ([guid]::Parse($demoJob)).ToString()
+docker compose --env-file $demoEnv -p $demoProject exec -T cockroachdb /cockroach/cockroach sql --insecure --host=localhost:26257 --database=$demoDatabase --format=csv -e "SELECT id, tenant_id, status, artifact_uri FROM jobs WHERE tenant_id = 'tenant-core' AND id = '$demoJob';"
+```
+
+Este comando sólo corresponde al CockroachDB local desechable con opt-in
+inseguro de §1; un entorno seguro requiere su conexión TLS autorizada. Esperado:
+una fila, mismo ID y URI del documento permitido, tenant Core, `completed`.
+Cero filas, `failed` o espera agotada bloquean ese paso. Adjuntar la salida
+sanitizada por cada documento y los IDs/chunks de la recuperación posterior;
+no inferir chunks ni éxito generativo del estado del job. No usar `local:smoke`
+antes de la carga controlada, pues también ingiere datos y altera la línea base.
 
 Antes de la sesión pública comprobar que la pregunta JUP-069-004 recupera el documento FinOps y que la cita abre evidencia pertinente. Si el contrato integrado requiere una carga distinta, registrar su comando validado en el ensayo. La preparación del corpus está hecha; la carga y compatibilidad de embeddings/modelo quedan por ejecutar en el MVP.
 

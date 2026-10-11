@@ -1,9 +1,30 @@
 # Demo funcional — JUP-065
 
-Actualizado: 2026-10-10. Origen: «JUP-065 — Preparar la demo funcional», chat `01a0f8dc-e719-7161-a17b-d7686751fe0f`.
+Actualizado: 2026-10-11. Origen: «JUP-065 — Preparar la demo funcional», chat `01a0f8dc-e719-7161-a17b-d7686751fe0f`.
 [Tarjeta](https://trello.com/c/SZUFo4ol).
 
-## Reanudación y reconciliación — 10/10/2026
+## Preparación y reconciliación — 11/10/2026
+
+Origen: «Adelanta JUP-065 — Preparar demo funcional del MVP», chat
+`01a12c49-7488-72f0-9077-1137c5c4f2a6`. PR63 af132c1 seguía abierta con conflictos;
+14 reviews/cuatro comentarios/sin inline leídos. Paris revisó ese head hoy;
+Víctor conserva a75b707. Nueva combinación con develop 3b8e952 resuelve CI e
+índice conservando ambas ramas, sin cambios propios de producto/configuración.
+
+[Preparación y comprobaciones](../evidence/JUP-065-validation.md): 15 artefactos,
+2 tests de integridad, 28 preguntas, 99 tests focales, 31 comandos de gobernanza,
+OpenSpec 63/63, seis changes; 11 omisiones explícitas. Diez fuentes coincidentes;
+consulta actual compatible y datos fijos intactos. Guion/preflight aclaran 38
+registros y SQL de jobs; [ensayo integrado](../demo/JUP-065/ensayo-integrado.md) y
+plantilla preparados con puertas JUP-035/036 y resultados esperados, sin ejecutarlo.
+
+Trello sólo puente DockerServer / snapshot20261011T184737Z: roles intactos, lista 50.
+Pendiente publicar y comprobar CI del SHA final, revalidación incremental
+Paris/Víctor, pairing Lucía y ensayo real/reproducción/aceptación. No implementar
+035/036 ni suplir Paris; no aplicar excepciones externas. Sin merge, cierre,
+despliegue, pagos o Discord. Evidencia local: `materiales/07-evidencias/JUP-065-preparacion-2026-10-11/`.
+
+## Histórico: reanudación y reconciliación — 10/10/2026
 
 El usuario pide retomar exclusivamente JUP-065 y dejar la auditoría del Coordinador;
 después autoriza reconciliar la PR63. Se incorpora develop `412ae411` sobre head

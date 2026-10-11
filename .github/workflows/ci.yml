@@ -15,6 +15,7 @@ name: CI
       - edited
       - ready_for_review
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -76,6 +77,8 @@ jobs:
           python docs/demo/JUP-065/verificar.py --repo .
           python -m unittest discover -s docs/demo/JUP-065 -p 'test_*.py' -v
           node docs/demo/JUP-065/generado/sources/tools/validation-questions.mjs validate
+          corepack pnpm business-metrics:validate
+          corepack pnpm business-metrics:test
           corepack pnpm retrieval-labels:validate
           corepack pnpm retrieval-labels:test
           corepack pnpm retrieval-calibration:test
@@ -83,8 +86,10 @@ jobs:
           corepack pnpm assistant-eval:test
           corepack pnpm synthetic-costs:test
           corepack pnpm llm-gateway:test
+          python -m unittest discover -s tools -p test_litellm_product_keys.py -v
           corepack pnpm docker:validate
           corepack pnpm local:test
+          corepack pnpm cd:test
           corepack pnpm collaboration:test
           corepack pnpm contributions:test
           corepack pnpm openspec:validate

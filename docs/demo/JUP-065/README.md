@@ -11,7 +11,8 @@
 3. [Registro de ensayo](registro-ensayo.md): completar sobre el commit realmente desplegado.
 4. [Datos y referencias generados](generado/procedencia.json): commit y SHA-256 de cada fuente; copias exactas de Git y licencia Microsoft.
 5. [Costes esperados](generado/costes-esperados.json), [consulta de carga](generado/consulta-costes.json), [prompts](generado/prompts.json) y [rúbricas para el evaluador](generado/rubricas-privadas.json).
-6. [Preparador reproducible](preparar.py), [verificación offline](verificar.py) y [evidencia de publicación](../../evidence/JUP-065-validation.md).
+6. [Procedimiento del ensayo integrado](ensayo-integrado.md): puertas de entrada JUP-035/036, secuencia y aceptación pendiente.
+7. [Preparador reproducible](preparar.py), [verificación offline](verificar.py) y [evidencia de publicación](../../evidence/JUP-065-validation.md).
 
 Desde la raíz del repositorio, Python 3.10+, Node.js 22+ y Git:
 
@@ -31,7 +32,7 @@ $demoOutput = Join-Path ([IO.Path]::GetTempPath()) ('jup065-' + [guid]::NewGuid(
 python docs/demo/JUP-065/preparar.py --repo . --output $demoOutput
 ```
 
-El preparador lee objetos Git del commit fijo, no los archivos modificados del checkout. El objeto debe estar disponible: en un clon superficial, ejecutar primero `git fetch origin de0d62e7c0028f35a81c5087f531d19031a90e81`. CI obtiene el historial completo para el job de gobernanza. No instala dependencias, no accede a servicios y solo escribe en `generado/` o en el destino `--output`. El verificador regenera en un temporal y compara todos los bytes. No guardar resultados de ensayos dentro de `generado/`, porque se reconstruye.
+El preparador lee objetos Git del commit fijo, no los archivos modificados del checkout. Para diagnosticar un objeto ausente antes de ejecutar, usar `git cat-file -e "de0d62e7c0028f35a81c5087f531d19031a90e81^{commit}"`. Si falla, recuperar ese objeto y repetir la comprobación. El objeto debe estar disponible: en un clon superficial, ejecutar primero `git fetch origin de0d62e7c0028f35a81c5087f531d19031a90e81`. CI obtiene el historial completo para el job de gobernanza. No instala dependencias, no accede a servicios y solo escribe en `generado/` o en el destino `--output`. El verificador regenera en un temporal y compara todos los bytes. No guardar resultados de ensayos dentro de `generado/`, porque se reconstruye.
 
 ## Decisiones y alcance
 
@@ -47,10 +48,12 @@ El preparador lee objetos Git del commit fijo, no los archivos modificados del c
 
 Corte histórico de preparación del 01/10: snapshot `snapshot-20261001T190808Z.json` del puente autorizado DockerServer. JUP-065 estaba en Backlog, JUP-022/023 en Backlog, JUP-025 en revisión y JUP-021 pendiente de revalidación. No es un estado operativo actual. La actualización del 03/10 incorpora develop `d6fc408`, incluidas JUP-021 y JUP-050; conserva el commit original de datos sin alterar sus quince artefactos. La integración de esas tareas no acredita el ensayo completo de JUP-065.
 
+Corte de preparación 11/10/2026: reconciliación con develop `3b8e952`; JUP-035 y JUP-036 siguen pendientes de integración/validación del recorrido final. Sus roles se conservan; este paquete no implementa esas tareas. Los datos permanecen fijados a `de0d62e`, no al commit de aplicación. Véase el procedimiento del ensayo.
+
 Antes del ensayo: integrar y validar base vectorial, embeddings/retrieval, modelo real y citas visibles; comprobar que la ruta `/assistant` usa realmente ese proveedor y el índice correspondiente. Activar variables en el processor por sí solo no acredita el chat. Registrar versiones/dimensiones y reconstruir el índice si cambian. JUP-026/097/098 aportan la base de costes/datos/sesión, pero deben comprobarse otra vez en el despliegue elegido.
 
 El cierre de JUP-065 requiere un ensayo completo registrado, reproducido por otra persona, fallos resueltos o limitaciones aceptadas, evidencias enlazadas y revisión/validación según Trello. La preparación presente satisface el trabajo adelantable pedido, sin declarar completada la tarjeta.
 
 ## Revisión de esta entrega
 
-Esta PR cubre únicamente la preparación reproducible. Paris revisa el guion, alcance y código auxiliar; Victor reproduce las comprobaciones offline y valida la preparación. La revisión, validación humana y pairing siguen pendientes hasta disponer de evidencia explícita. No se requiere levantar el MVP para validar esta fase; su ensayo completo conserva el registro `not_run`.
+Esta PR cubre únicamente la preparación reproducible. Paris revisa el guion, alcance y código auxiliar; Victor reproduce las comprobaciones offline y valida la preparación. Paris publicó revisión favorable de `af132c1` el 11/10; Víctor mantiene su validación histórica de `a75b707`. La nueva combinación requiere revalidación de lo afectado, y el pairing de Lucía sigue pendiente de acreditar. No se requiere levantar el MVP para validar esta fase; su ensayo completo conserva el registro `not_run`.
