@@ -8,6 +8,8 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Arquitectura técnica](arquitectura-tecnica.md) | JUP-060 / PR92: arquitectura reconciliada con a0e9a56, memoria histórica verificada y dictámenes por subagentes autorizados; OpenSpec archivado. Estado de integración en PR/Trello. | 2026-10-11 |
+| [Arquitectura documental AWS](cloud-aws.md) | Referencia Fargate y Terraform sin ejecución; antecedente EC2 operativo superado. 6 pruebas mock/8 rutas correctos, sin despliegue. | 2026-10-10 |
 | [Proveedor y modelos](proveedor-modelos.md) | JUP-078 / PR113: gateway dedicado, claves9+1 USD/30d y26 controles Docker verificados; OpenSpec archivado, revision asistida aprobada, sin gasto real. | 2026-10-10 |
 | [Métricas funcionales de negocio](metricas-funcionales-negocio.md) | JUP-068 / PR68: cierre técnico por excepción MVP con subagente;113 pruebas y59 OpenSpec pasan. Piloto/beneficio real sin medir. | 2026-10-10 |
 | [Cobertura de etiquetado](cobertura-etiquetado.md) | JUP-017 / PR66: excepción MVP autorizada; conflicto y refresco corregidos, revisión asistida y pruebas en curso. Evidencia versionada en docs/evidence/JUP-017-validation.md. | 2026-10-10 |

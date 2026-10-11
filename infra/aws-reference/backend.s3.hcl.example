@@ -1,0 +1,9 @@
+# Optional future backend config for an EXISTING separately bootstrapped bucket.
+# Activate with a terraform { backend "s3" {} } block only outside documentation work.
+bucket       = "REPLACE-existing-private-state-bucket"
+key          = "economicon/reference/terraform.tfstate"
+region       = "eu-west-1"
+encrypt      = true
+use_lockfile = true
+# kms_key_id = "arn:aws:kms:REGION:ACCOUNT:key/KEY-ID"
+# Bucket needs versioning, Block Public Access, TLS policy and scoped IAM.
