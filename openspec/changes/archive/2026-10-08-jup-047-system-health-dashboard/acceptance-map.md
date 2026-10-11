@@ -1,0 +1,246 @@
+# JUP-047 — criterio, escenario, tarea y evidencia prevista
+
+## Correspondencia de ejecución — E14, 08/10/2026
+
+Estado consolidado tras implementación, revisión y validación internas, por encargo TL08/10/26 11:56:46 Atlantic/Canary. La decisión y las matrices previstas conservadas debajo pertenecen al diseño anterior: se preservan literalmente aprobaciones, requisitos, escenarios e historia. Esta sección actualiza únicamente hechos de ejecución; E13 corresponde a la revisión anterior y seis intentos históricos, sin acreditar el temporizador nuevo. Rama `feat/JUP-047-system-health-dashboard`, HEAD `6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6`, base LOCAL `origin/develop` `2f9a5f530c9fe3b60007ba5060c189133e353bf6`, frescura remota no acreditada.
+
+| Criterio oficial | Evidencia independiente del delta | Resultado y límite vigente |
+| --- | --- | --- |
+| AC1 Resultado funcional verificable | Validador: retención sin TTL, timeout unknown con éxito histórico, apertura y600000 ms visibles, manual, hidden, remount, scope, fechas1000/1001 ms y Azure SIMULADO, mediante relojes falsos y transportes simulados; casos de error/límite incluidos. | **PASS local simulado**. Sin nueva inferencia real; M5 remoto con Alejandro y visual/teclado aplicable pendientes. |
+| AC2 Pruebas necesarias en verde | Implementación341:123 frontend actuales+218 backend por identidad. Revisor341 nuevas propias y Validador341 nuevas propias (cada campaña123+218), sin fallos, errores ni skips. Sensibilidad27 dispuestos:25 kills reutilizados+2 reensayos actuales B04/F19, con controles. | **PASS local** de las suites afectadas; campañas no sumadas. CI y frescura de base remotas no acreditadas. No son27 mutantes nuevos ni score global. |
+| AC3 Documentación y decisiones actuales | Validador detectó README244/246: TTL60 y omisión de POST600000 visible. Esta edición corrige ese README y consolida tasks/acceptance-map; backend README/runbook alineados previamente. | **FAIL en el dictamen original**, `documentation=FAIL`. Corrección realizada por Desarrollador; revalidación documental independiente **PENDIENTE**. No se declara PASS posterior. |
+| AC4 PR revisada y vinculada | Revisor interno REVIEW_PASS sin hallazgos; no representa review humana ni PR publicada. | **NOT_VALIDATED globalmente**: PR, vínculo y reviews humanas pendientes. |
+| AC5 Validación funcional y evidencias vinculadas | Validador tiene evidencia local nueva341 PASS y `local_behavior=PASS`, pero dictamen agregado **VALIDATION_FAIL** por AC3. Informe original y ADENDUM intactos. | **NOT_VALIDATED globalmente**: evidencia local disponible, vínculo/publicación oficial y validación humana pendientes; revalidación documental pendiente. |
+
+La correspondencia detallada de fases y hashes consta en [tasks.md, E14](tasks.md): implementación `delivery-handoff.json` SHA256 `34c1d7a1e17eccf2cbe1aad7d9c50c159dc3e0ef6eb40c64f96c0e5efed7884b`; revisión `handoff.json` SHA256 `6dfbd973edcf8fa17ea6a9dd608637e10c5cd820ca3e5db1dcf4be1bed254d2c`; validación `handoff.json` SHA256 `77838d8b2d55af361c9828a230cde812417e486ef95f5a76dd53dd68824bdaca`. Los originales, Red/Green no satisfactorios, TC1/TC2/TC3, F16/F19 SURVIVED y B04 TOOL_FAILURE permanecen conservados. Una corrección posterior no cambia retrospectivamente su resultado.
+
+TL cotejará esta entrega; PM conserva originales de retorno y prepara uno fresco antes de revisión/validación documental proporcional. Las tareas12.6/12.7,5.2, M5/Alejandro, CI/base remotas, PR y reviews humanas, aprobación final y archivo específico permanecen abiertos; el hallazgo móvil diferido se conserva. Las asignaciones humanas no acreditan participación efectiva. No se repiten suites de producto o mutaciones en este cambio textual.
+
+Ledger y permisos intactos: seis intentos acumulados, cohorte6/6 agotada/caducada, H=0.000050625 USD, U=0.010080 USD, P=0, cap0.03 USD y techo0,20 EUR acumulado. Sin nuevas llamadas, gasto, servicios, claves, configuración, operaciones Git, archivo ni publicación.
+
+**Decisión vigente de retención y ciclo visible — 08/10/2026**
+
+Paris autorizó «ok dile al TL que haga los cambios», según PM 08/10/26 10:09:29 transmitido por TL 10:11:38. Esta decisión sustituye la caducidad automática de 60 s y el ciclo exclusivamente manual/apertura descritos en fases anteriores: el resultado real se retiene hasta otra observación, y OpenRouter se comprueba al abrir y cada 10 minutos solo con el panel abierto y visible. Un timeout nuevo produce unknown con historia conservada. Azure sigue siendo explícitamente SIMULADO; LiteLLM conserva liveliness real no generativa. Las fechas válidas hasta 1000 ms futuras inclusive reciben tolerancia de presentación, sin modificar su valor.
+
+Esta fase es solo análisis/diseño en seis OpenSpec, sobre HEAD 6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6 y base LOCAL origin/develop 2f9a5f530c9fe3b60007ba5060c189133e353bf6; frescura remota no acreditada. Los registros E12/E13 y las aprobaciones históricas inferiores conservan literalmente hechos/decisiones de su revisión. No validan el comportamiento nuevo. Las menciones históricas a TTL60 o ausencia de periodicidad pagada quedan supersedidas por el contrato nuevo; el cooldown financiero de 60 s permanece.
+
+La autorización funcional no activa gasto: ledger6 intacto, certificado6/6 agotado/caducado y techo0,20 EUR acumulado. Sin nuevos envíos, credenciales, configuración, servicios, commits, archivo o publicación en este diseño. Autenticación, tenant, modelo/coste informativos, ruta, reservas H/U/P, contadores, M5 externo y móvil diferido permanecen. Las fases Red/Green/mutación requieren despachos separados tras coherencia TL.
+
+## Matriz vigente del delta — 08/10/2026
+
+| Alcance aprobado | Escenarios del delta | Tarea y evidencia posterior requerida |
+| --- | --- | --- |
+| Resultado retenido e inicial unknown | health-status: Initial observation, Retained success, New timeout, Refusal, Duplicate replay; dashboard: Retained and contradictory results | 12.2–12.6; relojes backend 59.999/60/60.001/>600 s, POST→GET, null expires_at y replay sin gasto/renovar/rollback. |
+| Apertura y600000 ms visibles | dashboard: Opening and exact boundary, Hidden and resumed, Manual and simultaneous triggers, Remount and scope cleanup | 12.2–12.6; fake clock599999/600000, un único POST por episodio/acción, timersGET no pagados, reentrada sin catch-up, manual reinicia, hidden/logout/unmount cancelan. |
+| Historia sincera tras timeout | Ambos deltas: New timeout; dashboard: Old GET after timeout | 12.2–12.6; unknown actual más fecha/check_id válidos históricos, GET viejo no restaura ok, respuesta nueva coherente sí, intento rechazado no inventa observación. |
+| Azure SIMULADO y LiteLLM real no generativo | health-status: Simulator provenance; dashboard: Bounded future observations | 12.2–12.6; Azure ok/simulated no stale, etiqueta visible; gateway+29/40 ms ok por sonda exacta, no prueba proveedor. |
+| Tolerancia finita y compatibilidad | Ambos deltas: Temporal tolerance and compatibility | 12.2–12.6;0/29/40/999/1000 ms aceptados,1001/60000 rechazados; malformed/noUTC/ausente rechazados; originales no clamp; expires_at legacy no impone TTL. |
+| Seguridad/contabilidad y límites no afectados | Escenarios de auth/tenant/admisión anteriores conservados; nuevos escenarios de scope y rechazo | Regresión sin red: payload/ruta/modelo/coste, H/U/P/counters/cooldown60 s, límites6/hora y24/día existentes; certificado6/6 no activa envíos. No nueva exigencia financiera. |
+
+| Cinco criterios oficiales | Estado del cambio nuevo y evidencia prevista |
+| --- | --- |
+| Resultado funcional verificable | Diseño completo; pendiente Red/Green/validación afectada de retención/temporizador/tolerancia. E13 fue válido en la revisión anterior y se conserva como historia. |
+| Pruebas necesarias en verde | Pendientes suites focales y mutantes dirigidos del delta; pruebas no afectadas se reutilizan identificadas, sin sumar campañas ni contar skips/timeouts. |
+| Documentación y decisiones actuales | Estos seis OpenSpec describen decisión nueva y contradicciones supersedidas; README/runbook se actualizarán solo en Green separado, actualmente históricos. |
+| PR revisada y vinculada | PR/vínculo/review humana pendientes; revisión local anterior no acepta este delta. |
+| Validación funcional y evidencias vinculadas | Pendiente Validador afectado y publicación/vínculo autorizados; validación previa permanece inmutable. |
+
+El diseño no borra M5 externo de Alejandro ni el estado móvil diferido. Revisión/validación nueva, control PM, CI, decisión final, archivo específico en misma rama y reviews humanas mantienen su orden. Los registros anteriores se conservan literalmente con su revisión y límites; no atribuirles PASS de esta corrección.
+
+**Estado final local — 08/10/2026; evidencia E13**
+
+Resultado vigente comunicado por PM09:40:27/TL09:43:52 Atlantic/Canary: revisión técnica interna afectada favorable y validación funcional local acreditada. Hay **6 intentos reales acumulados**, sin reset: la sexta petición, iniciada manualmente desde «Salud del sistema», recibió HTTP200, JSON válido, una elección, finish_reason=stop y contenido exacto OK. La quinta conserva HTTP429 como caso de error; los cuatro anteriores no se convierten retrospectivamente en éxitos. GET/polling no genera inferencias.
+
+La observación válida caduca contractualmente a los **60 segundos**: después se presenta unknown/stale conservando verified_at y check_id. Este comportamiento y el criterio funcional permanecen intactos. Modelo y coste siguen siendo informativos, con identidad y facturación upstream no confirmadas. Se conserva la reserva incierta histórica; la cohorte operativa terminó **6/6, sin envíos restantes**, y no se autoriza una séptima petición.
+
+E13 acredita revisión interna con214 pruebas propias y validación afectada con214 PASS en cuatro ejecuciones completas (102+33+29+50); la ejecución conjunta sin resultado no cuenta como PASS. E12 conserva Red143 PASS/38 fallos significativos, Green214 PASS y15 mutantes detectados, con controles37/37. No se repiten suites de producto en esta consolidación documental.
+
+Siguen pendientes DockerServer M5 con Alejandro, CI remota, aprobación humana final, archivo específicamente autorizado en la misma rama, PR vinculada y las dos reviews humanas. La asignación Paris/Víctor/Alejandro/Lucía no acredita participación efectiva. Los bloques siguientes, incluso cuando dicen «vigente» o «pendiente», son historia fechada de sus fases; E13 actualiza sus hechos de ejecución, no sus decisiones ni requisitos/escenarios. El techo humano sigue siendo **0,20 EUR acumulados incluyendo intentos anteriores**; no equivale a0,20 USD.
+
+## Correspondencia final con los cinco criterios oficiales — E13
+
+| Criterio oficial | Evidencia local vigente | Límite o comprobación externa |
+| --- | --- | --- |
+| Resultado funcional verificable | Sexto ensayo real desde el panel: HTTP200, JSON válido, una choice, stop y OK exacto; verified_at/check_id conservados al caducar a60s. Quinta petición429 preservada. | Identidad del modelo/factura upstream no confirmadas; DockerServer M5 no acreditado. |
+| Pruebas necesarias en verde | Implementación214 PASS, revisión214 propias y validación214 PASS en cuatro procesos completos;15 mutantes detectados y controles37/37 conservados de E12. | No se suman ejecuciones ni se cuentan timeouts/SKIP como PASS; CI remota pendiente. |
+| Documentación y decisiones actuales | Seis OpenSpec consolidados y, en checkpoint documental posterior condicionado, README/runbook alineados con E13; aprobaciones y requisitos/escenarios preservados. | El cierre documental requiere sus guards exactos, strictOpenSpec, trazabilidad y comprobación final del TL/PM. |
+| PR revisada y vinculada | Revisión técnica interna favorable sobre las852 fuentes previas a esta consolidación; dictamen original inmutable. | PR, vínculo oficial y revisión humana pendientes; el dictamen interno no los sustituye. |
+| Validación funcional y evidencias vinculadas | Comprobación funcional local afectada y evidencia E13 completas; un error real429 y GET posterior sin nueva inferencia registrados. | Validación humana y publicación/vínculo en PR/fuentes oficiales pendientes. Visual/teclado no repetidos y M5 separados explícitamente. |
+
+E13 remite al borrador original validation-draft-current.md, índice evidence-index.json y ledger final de jup047-prompt-liveliness-validation-20261008; revisión afectada en jup047-prompt-liveliness-review-20261008. Los originales se conservan externamente. No se altera el certificado presexta5/6 para fabricar un certificado posterior: el ledger final6/6 es un artefacto distinto.
+
+**Estado vigente tras implementación — 08/10/2026**
+
+Fuente: PM03:31:30 transmitido por TL03:32:20 Atlantic/Canary: Paris autoriza las pruebas necesarias para completar JUP-047 hasta **0,20 EUR acumulados, incluyendo los intentos previos**. Sustituye el anterior presupuesto humano de 0,40 USD y el cupo humano de 13 llamadas. El contador verdadero sigue en **4 intentos reales**, sin reset ni éxito retrospectivo. La equivalencia conservadora fechada en USD corresponde al PM y no se calcula ni incorpora aquí. TL coordina cohortes operativas finitas dentro del techo; no se presenta un resto fijo de nueve ni un veto a la tercera llamada como autorización vigente. El contador y límite operativo de cada cohorte siguen siendo finitos y fieles, con admisión ordinaria, cooldown, frecuencia, cero retries/fallbacks y reservas intactos.
+
+La autonomía local transmitida por PM03:34:40/TL03:35:12 permite pasos locales ordinarios dentro del alcance y proceso; no es aprobación funcional ni permiso de publicación, nuevos accesos remotos o cambios materiales. El cap diagnóstico de **0,03 USD** previamente aprobado permanece **sin aplicar** en esta consolidación; H=0.000031275 USD, U=0.008064 USD y P=0 se conservan. La captura cuarta no aporta un texto literal conocido ni respuesta funcional válida.
+
+Los apartados y bloques anteriores conservados más abajo, incluso si usan «vigente», 4/13, dos envíos o 0,40 USD, son antecedentes fechados de su fase. Sus importes/cupos quedan sustituidos por esta nota; las aprobaciones históricas no se reescriben. No se modifica el criterio funcional, arquitectura, producto, pruebas, routing, privacidad o política de admisión.
+
+La corrección offline está implementada: **Red 143 PASS / 38 fallos significativos; Green afectado 214 PASS; mutación nueva 15/15 KILLED; control original y restaurado 37 PASS cada uno**. No errores ni SKIP en el Green o controles. Guard conjunto de mutación con cero cambios y 852 fuentes/4 tests fijos; referencias originales intactas. Primer Green parcial con timeout y primer guard rechazado por interfaz se conservan como no satisfactorios; su corrección está descrita en E12. Cero nuevas llamadas, gasto, servicios o cambios de cap. Revisión y validación independientes afectadas siguen pendientes; E10 no las anticipa.
+
+E12: `jup047-prompt-liveliness-implementation-20261008/delivery-handoff.json`, SHA256 `fb1a45b669d7ea9eda87baeac6f6157e78a464befe110d2d6a6f22721b2b12de`; índice de 151 artefactos `artifact-sha256.json`, SHA256 `b0c4491afde9637f92128b57c276cd6612d19d77f7be3d9cd2c74d819bb0e776`. Referencias externas entregadas al TL; no se copian recibos privados al producto. Rama `feat/JUP-047-system-health-dashboard`, HEAD `f0cacddb037dcb38878dd02de8adf5aff479d1b6`, cambios sin commit; Python 3.12 aislado Windows, transportes/procesos simulados y fixtures de denegación de red conservadas. No prueba remota ni aceptación por el Desarrollador. M5/Alejandro, CI remoto, aprobación final, archivo específico y reviews humanas permanecen pendientes.
+
+Fuente: alcance trasladado por coordinación06/10 y continuidad visual pedida por Paris; decisiones posteriores: OpenRouter REAL apertura/manual, polling sin coste generativo, ensayo0,40USD, Docker local primero y M5 coordinado antes de despliegue. Corrección autorizada transmitida por PM22:47:49/TL22:49:38 Atlantic/Canary el07/10: identidad no confirmada y coste separado, detallados en proposal/design. Matriz de evidencia prevista y de implementación consolidada E1–E9; la aprobación pre-code consta en proposal.md y se conserva. La matriz por sí sola no acredita aceptación independiente; los resultados ejecutados y reutilizados se distinguen abajo. Precio/clave/reservas antes del gasto; detalles M5 antes de despliegue, sin bloquear diseño.
+
+## Estado vigente y corrección acotada — 08/10/2026
+
+Fuente: TL03:13:52 Atlantic/Canary transmite PM03:13:09 y el mandato humano «arréglalo»: aclarar el prompt fijo conservando el criterio funcional y adaptar específicamente la respuesta no generativa de LiteLLM. Este despacho es analysis-design, únicamente estos seis documentos; después se requiere encargo Red separado. No se inventa otra aprobación humana ni se habilita código por este documento. Las decisiones y aprobaciones históricas se conservan verbatim; sus cifras de una/dos llamadas describen aquella fase, no el cupo vigente.
+
+Ensayo acumulado verdadero: **4/13** solicitudes reales, sin reset; la ampliación a diez adicionales fue transmitida por PM02:48:58/TL02:50:08 del08/10. La cuarta fue despachada al Desarrollador para diagnóstico propio, no validación independiente. Su captura saneada demuestra HTTP200/JSON838bytes/una choice/finish_reason stop/ID válido y solo content_OK rechazado: cadena de3caracteres,2letras+1puntuación, sin cambio por strip. No se conoce el texto ni el signo y no se atribuye al tercer cuerpo. No es fallo por alias/coste ni PASS funcional.
+
+El ledger privado conserva H=0.000031275USD, U=0.008064USD, P=0 y R=0.002016USD. Con el cap efectivo0.01 conservado al cierre, otra reserva exigiría0.010111275USD (exceso0.000111275). PM03:14:41 transmitido por TL03:17:15 acredita autorización humana específica para subir la MISMA credencial a0.03USD y actualizar su certificado ordinario; ejecución operativa pendiente de encargo separado, sin alterar H/U/P,4/13,routing/permisos/RPM/TPM/paralelismo ni límite global0.40. Registro privado PM jup047-diagnostic-cap-003-authorization-20261008.md. Esta autorización no se ejecuta ni habilita una quinta intención en estas fases. No se eleva el cap, concilia/libera U, renueva credencial ni se hace una quinta llamada en diseño/Red/Green/mutación. La limitación financiera no bloquea la corrección offline. Recibos/secretos/ledger completos permanecen fuera de Git; la autorización de aperturas no cambia el criterio ni los gates.
+
+| Criterio | Escenarios especificados | Tareas | Evidencia de implementación y pendiente de aceptación |
+| --- | --- | --- | --- |
+| Panel funcional de conectores, jobs, vector y LLM | Pantalla de operación; fuentes y procedencia; fallo independiente; jobs/ingesta disponibles | 2.1–2.3,3.1–3.4,4.1,4.3,5.2 | API+capturas de todos los componentes y resúmenes con datos propios; gateway y upstream se prueban como observaciones distintas |
+| Ingesta y jobs fallidos | Tenant autorizado; ventana UTC; vacío y tabla ausente; ejecución fallida y recuperación | 2.1,2.2,3.1,4.3,5.2 | Fixtures de dos tenants, conteos SQL de referencia, última actualización/última completed_at; snapshot before/after sin escrituras de GET; no mostrar payloads ni inferir worker vivo |
+| pgvector y Azure simulada | Vector disponible o esquema ausente; fuente simulada explícita; error aislado | 2.2,3.2,4.3,5.2 | Probes locales reales de DB/extensión/esquema y simulador/HTTP; UI indica simulación, no Azure real |
+| LiteLLM/OpenRouter REAL | Gateway distinto de inferencia real; apertura/manual únicos; polling sin inferencia; modelo/routing configurados conservados | 1.1,2.2,2.3,3.2,4.3,4.3a,5.2 | Plan inicial DOS conservado como antecedente; estado vigente4/13, E11 diagnóstico sin éxito funcional y próximo real sujeto a9.5; llamadas sintéticas reales por economicon-chat/z-ai/glm-5.2, config/ruta verificada y correlación/usage/coste/latencia sanitizados, verified_at de respuesta funcional, identidad no confirmada y coste independiente. Fake cubre errores sin coste pero no satisface real; GET/poll cero inferencias |
+| Disponibilidad independiente de identidad | Canónico/alias/versionado/distinto válidos; nombre ausente/inseguro; respuesta inválida | 6.1–6.6 | Red/Green sin red y mutantes: ok con respuesta válida sin igualdad/prefijo/allowlist/marker; reported_model sanitizado nullable y model_identity=unconfirmed incluso coincidente. HTTP/formato/errores siguen fallando; configuración/routing/seguridad intactos |
+| Coste informativo y contabilidad vigente | Coste gateway válido/ausente/cero/malformed; usage inválido; éxito con reserva incierta | 6.1–6.6 | reported_cost_usd/cost_status separados y cost_confirmation=unconfirmed; sin derivar ni afirmar cargo upstream. Mismos controles financieros; reserva incierta íntegra; falta de liquidación no veta por sí sola otra comprobación autorizada con margen ordinario. Ledger/reserva anterior intactos, sin llamada real nueva |
+| UI sin certificación ni mezcla de intentos | Disponible/Respuesta válida a; Identidad no confirmada; coste no confirmado/no disponible/inválido; stale/scope | 6.2–6.6 | UI/API sintéticos: información no invalida disponibilidad; nunca modelo verificado por igualdad ni estimación como factura; campos del intento/tenant seleccionado. Hallazgo móvil diferido no se reabre |
+| Reserva histórica sin veto automático | Segundo autorizado con U>0; margen exacto/insuficiente; tercero; certificado ordinario mínimo/estado/reinicio verdaderos | 7.1–7.6 | Red nuevo, Green con tests fijos y mutantes de veto U/omisión U/reset/tercero/falsa conciliación; H+U+P+R<=B, counter1→2, historial/recibo anterior intactos. Certificado ordinario no exige incertidumbre cero ni key upstream exclusiva. El ejemplo histórico1→2 no limita ni resetea el contador vigente4/13. Futuro real solo tras despacho/preflight/cap y PM guards; no inferencia en diseño |
+| Ensayo real≤0,40USD y uso habitual acotado | Reserva previa/coste incierto/concurrencia/cooldown/reinicio/price no verificable | 1.1,2.2,3.2,4.2,4.3,4.3a | Ledger/recibos privados externos acumulados, precios actuales verificados por Coordinador, cotas/fees/capacidad asignada al diagnóstico/gateway key y max_price comprobables antes de cada envío. No usar precios históricos, resetear gasto o liberar coste incierto.0,40 no es autorización monetaria habitual; producción requiere presupuesto finito separado |
+| Estados ok/degraded/failed/unknown | Clasificación y agregado; timeout/saturación; recuperación | 2.2,3.1,3.2,4.2,4.3,5.2 | Tabla truth-cases, mutantes, reloj/latencias y recursos liberados; error/timeout de un probe no bloquea otros |
+| Última actualización | Timestamp UTC; verified_at real; refresco/obsolescencia/fechas inválidas | 2.2,2.3,3.1,3.3,3.4,4.2,5.2 | checked_at GET, ingesta y verified_at LLM distintos; poll/timeout/cooldown nunca renuevan éxito real previo. Capturas de pendiente/error/stale/recuperación y relojes controlados |
+| Aislamiento y seguridad | No token/tenant ajeno; GET sin efectos, POST reservado; secretos sanitizados; respuestas tardías | 2.1–2.3,3.1–3.3,4.2,4.3,4.3a,5.2 |401/400/403 antes de costes, DB tenant, claves solo servidor/gateway, prompt sintético sin usuario, private markers ausentes de respuesta/log/DOM; GET/poll sin inferencia y DB producto read-only; POST real solamente tras reserva/auth |
+| Máxima continuidad visual | Estilo de la app; responsive y teclado | 2.3,3.4,4.1,5.2 | Comparación misma sesión/viewport de dashboard existente y Salud: cards/tokens/botones/tipografía/espaciado,390/768/1440, foco y texto además de color; medir shell y panel por separado |
+| Pruebas necesarias y docs/decisiones | Contratos y regresiones; plazos/liberación; plan Docker | 2.*,3.5,4.*,5.1,5.2 | Logs/exits nativos, tests opt-in efectivamente ejecutados, sensibilidad, instrucciones reproducibles, sin PASS para skips/entornos no ensayados; decisiones nuevas vuelven a autorización |
+| Desplegar DockerServer M5 | Despliegue compartido observado, local primero aceptado | 1.2,5.3 | Coordinación con Alejandro antes de desplegar: responsable/permiso/proyecto seguro/revisión/HTTP/capturas/M5/rollback. PENDIENTE EXTERNO; evidencia M5 disponible identificada como simulación local, trabajo real con Alejandro sin acreditar. Por decisión PM23:31:51 se separa entrega técnica local y comprobación remota de Alejandro; no SSH ni repetir simulación vigente por sistema. Criterio oficial pendiente, sin cumplimiento/dispensa local |
+| PR revisada/vinculada y validación/evidencia | Flujo humano del proyecto | 5.1,5.2,5.4,5.5 | Evidencia local+aprobación final+archivo autorizado y dos reviews humanos separados con títulos/proceso vigente y vínculo Trello. Agentes no son participación humana; ninguna acción publicada por este diseño |
+
+Las filas no crean un segundo backlog ni autorizan despliegue, uso real de proveedores, cambios de alcance, archivos fuera del change o implementación. Guard y validación OpenSpec comprueban límites/estructura; no aceptan criterios funcionales.
+
+Decisión adicional PM23:31:51 del07/10: preparación financiera mínima y proporcionada; no nuevas garantías no comprobadas ni auditoría del gasto. [tasks.md](tasks.md#evidencia-consolidada-y-alcance-de-casillas) conserva E1–E5 y añade E6–E9 con fuentes externas, SHA256, rama, HEAD, entorno y límites. El ajuste integrado ya tiene Red, Green y sensibilidad dirigida acreditados; revisión anterior acreditadaE10; validación funcional y controles afectados9 siguen pendientes. Entrega local y M5 externo permanecen separados.
+
+## Evidencia técnica consolidada — 08/10/2026
+
+Revisión local de implementación: rama `feat/JUP-047-system-health-dashboard`, HEAD `f0cacddb037dcb38878dd02de8adf5aff479d1b6`, con cambios sin commit. Proceso `CONTRIBUTING.md` 2026-09-30 (JUP-100). Fuentes oficiales y decisiones recibidas del PM a través del TL; roles humanos comunicados: Paris líder, Víctor pairing, Alejandro revisión, Lucía validación. Asignación no acredita participación ni aprobación.
+
+| Criterios/escenarios | Evidencia realizada o reutilizada | Límite y pendiente de aceptación |
+| --- | --- | --- |
+| Disponibilidad, identidad/coste y reserva histórica ordinaria | E6: Red integrado 79 PASS / 47 FAIL backend; frontend Red 39 PASS / 26 FAIL reutilizado sin cambios. E7: implementación con pruebas fijas y Green completo previo. | No retro-PASS del Red, cargo/identidad upstream confirmados ni nueva conciliación. La configuración, routing y controles financieros aprobados se conservan. Revisión anterior acreditadaE10; validación funcional y revisión/validación afectadas9 pendientes. |
+| Contratos, auth/tenant, estados, fechas y regresiones | E7 reutilizado: 746 PASS / 28 SKIP backend, 508 PASS frontend previos; 65 afectados frontend posteriores. E9 actual: 53 backend / 68 frontend PASS, lint nativo/tipos/sintaxis y whitespace directo de los dos tests incluyendo untracked. | 28 SKIP originales (13 Cockroach, 12 pgvector, 3 Rabbit) no son PASS. Infraestructura y processor/Azure no afectados reutilizan E1/E5 con sus límites; no se ejecutó una nueva matriz completa. |
+| GET serializado y normalización de información | E9 añade tres casos backend y tres cliente: modelo/coste válidos, ausentes e inseguros. POST autenticado seguido de GET real del DTO, auth/tenant SQLite, mismo instante verified_at y ninguna inferencia adicional por GET; cliente conserva validez funcional y normaliza información sin certificarla. | Sondas externas/historial aislados mediante run_probes en la prueba nueva; fetch del cliente simulado. No acredita proveedores, servicios remotos ni aceptación visual. Las pruebas anteriores de sondas/historial se conservan. |
+| Sensibilidad de decisiones modificadas | E8: 35 kills y dos lagunas; E9 cierra S01 (campo JSON ausente: tres fallos) y F07 (normalización omitida: dos fallos), con originales restaurados y PASS posterior. Se reutilizan los 35 kills anteriores; hay dos remutaciones actuales, no 37 nuevas. | E4 conserva45kills/14survivors/2failure_requires_review originales. E10 dispone12survivors detectados después,2equivalencias contextuales no kills y2fallos conductuales; sin pendiente nuevo entre16IDs ni PASS global61/35familias. terminate-alone conserva límite fuera de esos16. |
+| Vigencia por fuente y entorno | E9 contrasta 852 fuentes: solo los dos tests ampliados difieren del Green previo; producto, dependencias, configuración, fixture Windows y deltas técnicos intactos. Python 3.12 aislado y frontend Windows nativo, copias externas y guards separados. | Corrección editorial final de un LF con AST/aserciones/fixtures idénticos: suites 53/68 reutilizadas por identidad semántica. Fallos iniciales de formato UTC, filtro y whitespace conservados con corrección; no son aceptación ni Red significativo. |
+| Uso real, M5, visual y cierre humano | E1/E5 siguen siendo simulación local; E6–E9 no hacen inferencias reales ni gasto. Preview sintética conservada. | Estado vigente4/13; E11 demuestra rechazo funcional del cuarto y cap insuficiente para nuevaR. Siguiente real solo con despacho/preflight/cap resuelto/controlesPM, sin reset. M5 externo de Alejandro, hallazgo móvil diferido (sin reabrir), comprobaciones visuales/teclado pendientes según 5.2, CI remoto, revisión/validación independientes, aprobación final humana, archivo específico, PR y revisiones humanas siguen pendientes. |
+
+Fuente final externa: `jup047-get-coverage-20261008/delivery-handoff.json`, SHA256 `d3921b95f71df52c8f3a75b47045b5034bc7871385d8c8641d456a014db49c3d`; manifiesto de 852 fuentes SHA256 `a9e2cd18c57f2883021805f221e784f91d8fa42169dbfc489a45b5a8bb803b9c`. Sus rutas completas, cinco hashes de tests/producto, diffs, comandos, recibos y handoffs de fases están en el índice externo entregado al TL, sin copiar artefactos privados al repositorio. Esta consolidación modifica únicamente tasks.md y acceptance-map.md; el manifiesto posterior y su diff se entregan fuera del repositorio al TL para solicitar al PM una referencia original independiente antes del Revisor. No crea ni sustituye ese control del PM.
+
+Ninguna fila marca un criterio como aceptado por el propio Desarrollador. La evidencia técnica local queda preparada para revisión y validación independientes y los gates humanos vigentes; no autoriza inferencia, despliegue, publicación, archivo o merge.
+
+
+## Corrección acotada08/10 y aceptación afectada
+
+| Criterio/escenario | Tareas/paths planificados | Evidencia y límite |
+| --- | --- | --- |
+| Petición fija inequívoca, gate OK intacto | 9.2–9.5; health_provider_check.py y tests admission/response | Red del literal y JSON wire, Green con tests fijos, mutante prompt original detectado; OK. y texto extra siguen rechazados, strip/upper vigentes. Cota1024 y todos los parámetros/routing/reservas conservados; no garantía remota por prompt. |
+| LiteLLM HTTP200 JSON string exacto | 9.2–9.5; system_health.py, system_health_runtime.py, api/routes/health.py; tests boundaries/system_health | Primitive/parser y selección/operación aislada específicos; otros tipos/strings/HTTP/size inválidos fallan, deadline/cierre/redacción efectivos. Genérico processor/Azure y /health legado sin cambios; liveliness no prueba OpenRouter. |
+| No generación ni falsa verificación | 9.2–9.5; tests route/admission/response | Repetir GET con LiteLLM ok y OpenRouter unknown conserva verified_at/check_id y contador de inferencias. UI/fechas/scope conservan evidencia anterior; repetir afectado, no matriz global por ceremonia. |
+| Historia y control financiero | 9.1,9.5,4.3a; E10/E11 privados | Cuarto solo content_OK rechazado,4/13,H0.000031275/U0.008064/P0. PróximaR0.002016 supera cap0.01 en0.000111275. Cap0.03 autorizado por PM, aún no activado; sin liberaciónU/cambio operativo/gasto en estas fases. E10 REVIEW_PASS y E4 disposición no aceptan la corrección nueva ni funcionalidad real. |
+
+E10/E11 y sus SHA están en tasks.md/design.md; originales externos conservados. Seis documentos cambiados en este diseño; producto/tests/docs de ejecución permanecen congelados hasta despachos separados. STOP después de validación estructural/trazabilidad para encargo Red; no publicación, archivo, merge ni aceptación independiente por el Desarrollador.
+
+
+## Evidencia ejecutada de la corrección — E12
+
+| Criterio/escenario afectado | Evidencia actual | Límite |
+| --- | --- | --- |
+| Literal fijo y contrato funcional | Red143/38 y Green214; M01–M03 detectados; AST del parser intacto | OK con normalización existente; puntuación/texto extra sigue fallando; no garantía de respuesta remota |
+| LiteLLM exclusivo y genéricos compatibles | RawHTTP200/tipos/16384–16385/non200/cierre/URL/selección; M04–M13 detectados | Dobles HTTP/dispatch; no nuevo upstream real ni certificación de salud por mocks |
+| GET/auth/tenant y ausencia de generación | Suites afectadas y policy; M14 detectado con política bloqueada | Mantiene verified_at/check_id; no nueva llamada real |
+| Deadline/aislamiento y restauración | M15 detecta terminate omitido; controles37/37,852fuentes y4tests fijos, guard cero cambios | Proceso simulado; no nuevo ensayo de DNS real ni campaña global |
+| Proceso/evidencia | Fases separadas; incidencias noPASS preservadas; strict47/47/trace/sintaxis/whitespace | Revisor/Validador afectados, PM original, real funcional, M5/CI/final/archivo/reviews humanas pendientes |
+
+La tabla planificada anterior conserva el estado de diseño. Esta tabla y la cabecera identifican lo ejecutado y la autorización presupuestaria vigente. E12 no transforma los cuatro intentos anteriores en PASS, no confirma identidad/cargo upstream ni acepta criterios por cuenta del Desarrollador.
+
+
+## E15 — resultado local posterior a la base
+
+08/10/2026, consolidación exclusivamente documental sobre `feat/JUP-047-system-health-dashboard`, HEAD `8770897bab29c79df54659e362f89d97c28b132a`, padres `e1f58d01ed984be95021953bebb97ab9b5479ad0` y `2f9a5f530c9fe3b60007ba5060c189133e353bf6`. E14 y los bloques anteriores conservan literalmente su fecha, historia, aprobación, escenarios y casillas; esta sección acredita los hechos posteriores, sin aceptación propia del Desarrollador.
+
+| Criterio oficial | Esperado y observado en la validación afectada | Resultado y límite |
+|---|---|---|
+| AC1. Resultado funcional verificable | Ruta/sesión/tenant/billing/asistente conservados; Validador 85 frontend+10 backend propios PASS, incluido 422 antes de lectura, user parcial sin fetch y respuestas tardías aisladas | PASS_LOCAL_AFFECTED; proveedores/M5 reales y observación visual nueva no acreditados |
+| AC2. Pruebas necesarias añadidas y en verde | Validador 95 propios sin FAIL/ERROR/SKIP; Dev 2013 PASS/91 SKIP/35 comandos y 53 OpenSpec, build/lint/tipos; matriz 40/siete mínimos con equivalencias nativas exhaustivas | PASS_LOCAL_AFFECTED; 91 integraciones opt-in NOT_VALIDATED, pnpm/Turbo literal y frozen-install no ejecutados, Node 24 local no prueba CI 22 |
+| AC3. Documentación y decisiones actualizadas | Revisor REVIEW_PASS,29 rutas propias intactas y dos README preservados; contrato sin TTL/ciclo 600000/tolerancia 1000/Azure SIMULADO; revalidación documental anterior resuelve la discrepancia TTL | PASS_LOCAL_AFFECTED; E14 PENDIENTE/VALIDATION_FAIL originales siguen históricos, sin reescritura |
+| AC4. PR revisado y vinculado | No PR/vínculo ni reviews humanas acreditadas | NOT_VALIDATED global; revisión interna no sustituye Alejandro/Lucía |
+| AC5. Validación funcional y evidencia enlazadas | Evidencia local consolidada y 95 casos propios; publicación/vínculos/M5 remoto no acreditados | NOT_VALIDATED global; coordinación y publicación de PM pendientes |
+
+Los 2013 del Desarrollador contienen los 341 históricos (123+218); no se suman ni a esos 341 ni a los 95 del Validador. Se conservan 27 disposiciones históricas de mutación (25 reutilizadas y dos reensayos en su fase), sin nueva campaña postmerge. Integridad 920 fuentes y originales PM/retornos comunicados por TL; no equivalen a sandbox de lectura ni a gates humanos.
+
+Resultado de revisión, fuentes y límites: [review.md](review.md). Pasos y criterios: [evidencia JUP-047](../../../../docs/evidence/JUP-047-validation.md). [tasks.md, E15](tasks.md) registra la continuación sin cerrar casillas globales.
+
+La aprobación humana final post-base está PENDIENTE. Después corresponde DoD final del change activo y despacho del archivo específico ya autorizado 13:11:51. No se archiva aquí. M5/Alejandro, participación de Víctor/reviews humanas externos; CI remota/publicación/vínculos bajo PM. Presentación aceptada por Paris 13:05:44; no es una observación del Validador ni reabre UI/teclado/finding móvil.0,20 EUR es techo autorizado acumulado, no gasto acreditado. Cero llamadas o gasto nuevos.
+
+
+## Aprobación humana final posterior a la base — 08/10/2026 14:36
+
+Paris Arcos aprobó la entrega local final con respuesta literal «si» el 08/10/2026 a las 14:36, Atlantic/Canary; el segundo exacto del mensaje humano no está disponible. PM confirmó la decisión a las 14:36:07 y TL verificó la pregunta y respuesta originales. Fuente: mensaje humano `01a11bba-6640-7c71-8d13-3b541b40f4b4`, turno `01a11bba-65e9-7b81-a303-fe0c1ca509e8`; pregunta en turno `01a11bb9-af92-7fb3-934e-fe48c355393a`, chat PM `01a1063b-fed3-7480-a0d6-cc6f374ecacf`. La pregunta, alcance y fuente verificada se registran en [la aprobación de review.md](review.md#post-validation-human-approval--approved).
+
+Esta nota supersede únicamente el estado PENDING de la aprobación humana final post-base consignado históricamente en E15; conserva literalmente el contenido anterior, sus casillas y los resultados AC1–AC3 locales y AC4/AC5 globales NOT_VALIDATED. El código revisado sigue siendo `8770897bab29c79df54659e362f89d97c28b132a`, base `2f9a5f530c9fe3b60007ba5060c189133e353bf6`. Por identidad de producto, tests, base y alcance se reutilizan los dictámenes y campañas anteriores con sus fechas y límites; no son dictámenes nuevos ni nuevas ejecuciones.
+
+El pre-validation DoD del change activo fue PASS por TL. El registro de aprobación y DoD final activo corresponden al TL; el archivo específicamente autorizado a las 13:11:51 requiere después un encargo separado. No se archiva aquí ni se concede permiso de commit, push, PR o publicación. Los controles humanos, M5 y vínculos oficiales conservan sus límites y responsables.
+
+
+## Archivo específico y DoD final local — 08/10/2026
+
+El change JUP-047 quedó archivado el 08/10/2026 en `openspec/changes/archive/2026-10-08-jup-047-system-health-dashboard`, en la misma rama `feat/JUP-047-system-health-dashboard`, código `8770897bab29c79df54659e362f89d97c28b132a` y base `2f9a5f530c9fe3b60007ba5060c189133e353bf6`. Se incorporaron los deltas a las especificaciones [health-status](../../../specs/health-status/spec.md) y [system-health-dashboard](../../../specs/system-health-dashboard/spec.md); los dos requisitos anteriores de health-status permanecen.
+
+Paris aprobó la entrega local final el 08/10/2026 a las 14:36, Atlantic/Canary, con respuesta literal «si»; los segundos humanos no están disponibles y PM confirmó a las 14:36:07. Paris autorizó la corrección mecánica de los dos encabezados E12 a las 15:07, con respuesta literal «SI», confirmada por PM a las 15:07:04; el intento de archivo anterior quedó abortado sin cambios. Tras esa corrección, TL renovó el DoD final code/final con el change todavía ACTIVO: PASS, exit 0, sin errores; registro UTC `2026-10-08T14:16:00.6434523Z`. Se conserva [el resultado original exacto de ese DoD final renovado](local-dod-final.json), SHA256 `4b1b13ff29ea848e7d71e37b99c2e660a81d2bbc8a8a9ca2bc388a74095fda82`. No se vuelve a ejecutar el helper tras retirar el directorio activo.
+
+El archivo aplica la autorización específica de las 13:11:51 y el encargo separado posterior al DoD final. Esta nota supersede únicamente los pendientes históricos de aprobación local, DoD final y archivo; no borra historia ni cambia casillas, requisitos, escenarios o dictámenes técnicos. No acredita M5, participación ni reviews humanas, AC4/AC5 globales, CI remota o vínculos oficiales. Commit, subida, PR y publicación siguen pendientes con sus permisos propios. No hay pruebas de producto, builds, mutaciones, llamadas o gasto nuevos por este archivo.
+
+
+## Correspondencia propuesta de corrección PR81 — 08/10/2026
+
+Paquete PM20:30:00/TL20:31:16, HEAD aa8f276ba04dba51148d11a8d6315dec26d8d32c. Diseño, sin ejecución ni aceptación nueva. Los criterios oficiales AC1–AC5 no cambian. La ampliación2/5/7→8/18/20s está pendiente de decisión humana.
+
+| Criterio oficial | Incremento y evidencia planificada | Estado del incremento |
+| --- | --- | --- |
+| AC1 Funcionalidad | Frontera sin key exacta/incrustada; éxito normal y metadata inválida; Compose seis lecturas sanas, Azure detenido failed/recuperado ok; jobs/ingesta disponibles | NOT_VALIDATED; escenarios finales health-status y design |
+| AC2 Pruebas | Red significativo, Green focal, deadlines/recursos/auth/tenant/no-inferencia, sensibilidad dirigida con original/restauración | PENDING; sin nueva suite ejecutada |
+| AC3 Documentación | Límites coordinados y configuración tras decisión; E13 TTL60 identificado como historia por TL | PENDING; texto previo conservado |
+| AC4 PR revisada y vinculada | PR81 existente; nuevas revisión/validación afectadas según roles Alejandro/Lucía y protocolo actual | NOT_VALIDATED; dictamen interno no sustituye review humana |
+| AC5 Validación y evidencia | Validador independiente con referencia PM fresca, DTO saneados, tiempos y caso error local | NOT_VALIDATED; Docker local no acredita DockerServer externo |
+
+
+## Estado actual del incremento PR81 tras implementación — 08/10/2026
+
+La aprobación pre-code transmitida por PM20:47:37 levanta la espera contractual2/5/7→8/18/20s; el mapa de diseño anterior es histórico. Los criterios oficiales AC1–AC5 no se modifican.
+
+| Criterio | Evidencia actual del incremento | Estado independiente |
+| --- | --- | --- |
+| AC1 Funcionalidad | Regresión sintética de credencial; Compose10 lecturas con caída/recuperación y actividad; recursos distintos declarados | PENDING Validador |
+| AC2 Pruebas | Red significativo;896backend/99frontend;34SKIP no validados;14kills y controles actuales | PENDING Revisor; no sumar campañas |
+| AC3 Documentación | Contrato8/18/20, configuración2..8, E13 histórico y evidencia incremental coherentes | PENDING revisión/validación documental |
+| AC4 PR revisada y vinculada | PR81 existente, sin nueva publicación en este encargo | NOT_VALIDATED global; reviews humanas pendientes |
+| AC5 Validación y evidencia | Handoff Dev y recibos íntegros; referencia PM antes de cada rol aún necesaria | PENDING Validador; M5 externo no reabierto |
+
+
+## Cierre técnico independiente del incremento PR81 — 08/10/2026
+
+Este cierre actualiza únicamente los pendientes técnicos locales del incremento correctivo; conserva los resultados históricos, el archivo previo y sus aprobaciones con su alcance original. HEAD recibido `aa8f276ba04dba51148d11a8d6315dec26d8d32c`, base `2f9a5f530c9fe3b60007ba5060c189133e353bf6`; incremento todavía sin commit publicado. Aprobación humana final nueva PENDING. Roles humanos: Paris líder, Víctor pairing, Alejandro revisión, Lucía validación; proceso 2026-09-30/JUP-100.
+
+Revisor examinó el incremento y ejecutó 26 casos backend y 2 frontend PASS (59 no seleccionados). Su REVIEW_FAIL original identificó solamente DOC-01: un párrafo histórico de diseño parecía mantener pendiente el contrato temporal ya aprobado. TL añadió la aclaración sin borrar el párrafo; la relectura independiente terminó REVIEW_PASS a las 21:42:19 Atlantic/Canary, sin repetir suites. Addendum SHA256 `5d7df1e1cf80d3a9a512374fc803cdd383b0825be70464c4bd45a7d73970bb4a`; el fallo inicial no se reescribe.
+
+Validador entregó LOCAL_CORRECTIVE_SCOPE_PASS_WITH_DECLARED_LIMITS: 18 casos propios PASS (10 configuración/presupuesto, 4 tiempo/recuperación, 4 credencial exacta/incrustada con recibo, POST, replay y GET de otro usuario). Conservó las aserciones originales de credenciales en un adaptador externo Windows que permite IPC loopback y deniega conexiones externas. El intento nativo bloqueó socketpair interno de asyncio; Linux carecía de pytest y no ejecutó casos. Ambos intentos quedan registrados, sin atribuirles éxito ni cambiar producto/tests.
+
+Seis GET autenticados desde el host con DB/cola/procesador/vector sanos: 1,891–2,250 s; dos Azure simulado detenido failed/connection: 5,968–6,078 s; dos recuperados ok/simulated: 1,953–2,266 s. Todos inferiores a 18 s servidor/20 s cliente. Panel autenticado /system-health: sano, caída y recuperación 6→5→6; proveedor sin verificar y actividad vacía declarados correctamente. Capturas persistentes de los tres estados y procedencia SHA256 del build Vite en el informe externo. Cuotas agregadas verificadas de seis contenedores: 8 CPU/7040 MiB; host físico 28 CPU/33,6 GB y navegador fuera de cuotas. No es reproducción física exacta del entorno de Lucía. Recursos propios detenidos y conservados, puente/pestañas cerrados; sin LLM pagado, secretos reales o servicios ajenos.
+
+Evidencia externa: jup047-corrections-validation-20261008/REPORT.md SHA256 `b8e2fe5677720eec1487f6ca71be62e82807273fa735dfe9aba1544ad32af07e`; result.json `73ecdbc619e3f7ac65efbbb01c2cf17afe12414ff0ec7fea1e55de1270b548a8`; evidence-index.json `b70788aee82926497d67b7fe425751a36c33fb78bf07fbd4d94890fa191b13a4`, 19 archivos verificados por TL. No se suman campañas: 896 backend PASS/34 SKIP y 99 frontend PASS son Green previo del Desarrollador; 14/14 mutantes detectados pertenecen a aquella campaña y conservan su disposición individual.
+
+PM comunicó control independiente de retorno Validador PASS, salida 0/sin violaciones, a las 22:04:08 Atlantic/Canary, contra el mismo original SHA256 `272a036944049b30a9390a28c76e860ee6f35eb166e6120de521d061efb835df`. Validador repitió su guard final PASS/0 violaciones a las 21:05:19 UTC y cedió la plaza a las 22:05:32 Atlantic/Canary. PM había comunicado retornos Revisor y DOC-01 PASS a las 21:39:07 y 21:43:20. TL verificó identidad de las 924 fuentes respecto al original validado antes de esta adenda y conserva comprobación de identidad de producto/tests al cierre. Controles conductuales, sin afirmar sandbox de lectura; PM conserva el control independiente final antes de publicación.
+
+AC1–AC3 acreditados únicamente para este incremento local. AC4 global y vínculo/publicación de AC5 NOT_VALIDATED aquí; requieren PM y participantes humanos. Las 34 pruebas opt-in JUP086, CI remota, proveedor pagado y DockerServer/M5 remoto no se han validado en esta campaña. Móvil sigue diferido; la observación informativa de desplazamiento horizontal global a 390 px no es un PASS móvil ni amplía el alcance.
+
+Pendientes: aprobación humana final nueva, control final independiente PM, autorización específica y ejecución de commit/push, lectura oficial actualizada de todas las reviews/comentarios/conversación, CI y vínculos tras publicar, respuesta autorizada y relectura/revalidación por Alejandro y Lucía. No se desarchiva, no se altera el DoD activo histórico ni se solicita nuevo archivo. Este registro no autoriza publicaciones ni sustituye reviews humanas. PM aplica sus comprobaciones y, si propusiera publicar con acciones propias pendientes, las dos confirmaciones específicas exigidas.
+
+
+## Aprobación humana final del incremento correctivo — 08/10/2026
+
+Paris respondió literalmente «aprobado» a la pregunta explícita de aprobación final de la entrega correctiva y autorización de commit/subida a PR81. Fuente: confirmación del Project Manager en el chat `01a1063b-fed3-7480-a0d6-cc6f374ecacf`, 08/10/2026 22:12:11 Atlantic/Canary; no se dispone del segundo exacto del mensaje humano. PM confirmó además su control independiente final previo: sólo los cuatro documentos de cierre diferentes y las otras 920 fuentes intactas frente al original validado, sin cambios Git.
+
+Esta decisión supersede únicamente los estados PENDING de aprobación final humana del incremento y de autorización de commit/subida consignados arriba; conserva esos registros históricos, dictámenes, resultados y límites. PM ejecutará commit/subida a PR81 y comprobará CI. El comentario/respuesta requiere que PM lo muestre y Paris lo apruebe: todavía no está autorizado. Las reviews humanas de Alejandro y Lucía y los restantes gates oficiales permanecen pendientes. TL sólo registra esta aprobación, sin producto/tests, Git, nuevas pruebas, delegación ni publicación.

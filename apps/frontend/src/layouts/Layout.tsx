@@ -63,6 +63,7 @@ export function Layout() {
     { path: "/ingest", label: "Ingestions", icon: Upload },
     { path: "/assistant", label: "Assistant", icon: MessageSquare },
     { path: "/overview-legacy", label: "Overview", icon: LayoutDashboard },
+    { path: "/system-health", label: "Salud del sistema", icon: Activity },
   ];
 
   return (

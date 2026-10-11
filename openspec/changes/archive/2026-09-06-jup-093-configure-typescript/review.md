@@ -11,7 +11,7 @@ Accepted (pendiente del gate post-review de Victor antes de archivar).
 - `apps/frontend/vite.config.ts` (renombrado desde `.js`, contenido idéntico).
 - `apps/frontend/eslint.config.js` — bloque nuevo `src/**/*.{ts,tsx}`.
 - `package.json` (raíz) y `turbo.json` — script/entrada `typecheck` (añadido no listado
-  originalmente en `tasks.md`, necesario para que `check-dod.mjs` deje de omitir el gate de tipos).
+  originalmente en `tasks.md`, necesario para que el comprobador local de DoD deje de omitir el gate de tipos).
 - `pnpm-lock.yaml` (raíz) — actualizado por la instalación de dependencias.
 - `.github/workflows/ci.yml` — job nuevo `frontend-typecheck` (`Frontend type check`).
 - `.github/rulesets/develop.json`, `.github/rulesets/main.json` — séptima context.
@@ -42,7 +42,7 @@ Accepted (pendiente del gate post-review de Victor antes de archivar).
 - [x] `tasks.md` marcado 24/24.
 - [x] ADR-0003 enlazado desde `proposal.md`, `design.md` y ahora desde el spike (tarjeta F2).
 - [x] Checks de la batería completa en verde (con sustitución documentada, ver "Validation").
-- [x] Ningún archivo de `.claude/` colado en el commit (`jup:cleanup:check`).
+- [x] Ninguna configuración personal de agentes colada en el commit (`jup:cleanup:check`).
 
 ADR aplicable: no se produce uno nuevo — esta tarjeta **ejecuta** ADR-0003 (JUP-092), no toma
 decisiones de arquitectura nuevas.
@@ -66,14 +66,14 @@ ambos rulesets:
 ✔ 7 tests, 7 pass, 0 fail
 ```
 
-**Incidencia de proceso durante Red:** `.claude/hooks/lock-committed-tests.mjs` bloqueó al tester al
+**Incidencia de proceso durante Red:** la protección de tests del entorno local bloqueó al tester al
 intentar editar `tools/ci-workflow.test.mjs` (ya commiteado desde JUP-081) — por diseño, sin
 distinguir el rol que llama ("los tests commiteados son inmutables"). La alternativa que el propio
 hook sugiere (archivo de test nuevo) no servía: la tarea exige que un `deepEqual` existente pase de
 6 a 7 elementos exactos, y un archivo nuevo no puede invalidar esa aserción vieja, que además corre
 dentro del job `OpenSpec` de CI — dejarla como estaba habría roto esa misma PR en cuanto los
 rulesets llegaran a 7 contexts. Resuelto con Victor: bypass puntual del hook (mover
-`.claude/settings.json` fuera, aplicar el diff ya preparado para el tester, restaurar el archivo, y
+la configuración local de esa protección fuera, aplicar el diff ya preparado para el tester, restaurar el archivo, y
 **confirmar funcionalmente** que el candado volvía a bloquear antes de continuar). El archivo
 duplicado que el tester había creado como cobertura alternativa se eliminó por quedar redundante.
 
@@ -91,7 +91,7 @@ Dos justificaciones distintas, no una sola "doc-only" genérica:
 - **Grupo 5** (`ci.yml` + rulesets): **sí** tiene comportamiento testeable (el propio ciclo Red/Green
   lo demuestra), pero el artefacto bajo test es configuración YAML/JSON parseada, no código JS/TS.
   Ningún runner disponible en el repo (Stryker para JS/TS, mutmut para Python — ver
-  `.claude/harness/mutation.md`) muta claves de un mapa YAML/JSON. QA verificó a mano los dos
+  el procedimiento local de mutación) muta claves de un mapa YAML/JSON. QA verificó a mano los dos
   mutantes hipotéticos más plausibles (borrar el job dejando la entrada en el ruleset; typo en el
   nombre del job/context) y confirmó que los tests actuales los detectan igualmente pese a la
   ausencia de mutación automatizada.
@@ -177,7 +177,7 @@ Verificación adicional por tarea, no repetida en la batería:
   obligatorio materializado como séptimo check (`Frontend type check`), `tsconfig` local a
   `apps/frontend`. Único grupo con TDD real (grupo 5, `tools/ci-workflow.test.mjs`): Red → Green →
   QA `accept`, con una incidencia de proceso resuelta en el momento (bypass puntual y verificado del
-  hook `lock-committed-tests.mjs`, autorizado explícitamente antes de actuar). Grupos 1-4 y 6 sin
+  hook de protección de tests del entorno local, autorizado explícitamente antes de actuar). Grupos 1-4 y 6 sin
   tester/coder/QA por no haber comportamiento unit-testeable en el frontend (sin test runner),
   mismo criterio que JUP-092; verificados con los comandos reales de cada tarea. `apps/frontend/src/**`
   confirmado sin tocar: `RF-082-002` permanece `Open`, tal como exigía el alcance. Batería completa

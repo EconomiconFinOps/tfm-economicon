@@ -216,7 +216,40 @@ Las secciones anteriores conservan su fecha. Lo que ha cambiado:
 - **Claves.** Ademas de la separacion entre gateway y servicios, cada servicio usa su propia clave virtual: el backend tiene una distinta de la del processor (ADR-0017, `Proposed`).
 - **Embeddings.** El alias `economicon-embedding` con 1536 dimensiones se ha validado de extremo a extremo (JUP-023 y JUP-022, integrados). Un cambio de modelo con la misma dimension no se detecta (finding RF-022-001, abierto en `openspec/findings/backlog.md`).
 
-## Referencias consultadas
+## Cierre operativo de claves (2026-10-10)
+
+Se completa el seguimiento de la condicion 4 en un gateway nuevo y dedicado
+de DockerServer, con LiteLLM 1.103.2 y PostgreSQL 17 fijados por los digests
+versionados en `infra/litellm/docker-compose.yml`. Administracion en loopback
+`127.0.0.1:44000`, volumen de base propio y secretos solo en el servidor.
+La observacion actual encontro el contenedor historico 1.82.6 aun activo en
+4100: la afirmacion anterior «ya no se utiliza» describia la baseline aprobada,
+no su retirada efectiva. No se reutiliza ni se modifica ese contenedor ni el
+gateway compartido de 4000 para este cierre.
+
+El presupuesto de producto se reparte de forma conservadora: processor
+9 USD y backend 1 USD por 30 dias, nunca 10 USD por cada servicio. Ambos
+caducan a los 30 dias, con RPM 10, TPM 20000 y concurrencia 1. Backend solo
+puede usar embeddings; processor puede usar chat principal y embeddings.
+DeepSeek sigue siendo una seleccion de evaluacion explicita y queda excluido
+de estas credenciales operativas. Su evaluacion exige reservar presupuesto
+dentro del mismo techo, sin emitir otra asignacion adicional de 10 USD.
+
+La herramienta `tools/litellm-product-keys.py` emite, inspecciona y revoca
+claves sin invocar modelos. La rotacion automatica se rechaza: una clave nueva
+no debe reiniciar una ventana de gasto ya consumida. La renovacion manual
+requiere conciliacion previa. Los contadores de LiteLLM son asincronos y
+pueden superar el limite en una llamada; el presupuesto no es una reserva
+atomica. Se mantienen las restricciones adicionales de gasto real, precios
+y privacidad de ADR-0016. Emitir claves no ejecuta ni autoriza un benchmark.
+
+El usuario autoriza expresamente este despliegue dedicado para completar
+JUP-078 y sustituir las interacciones restantes por subagentes. Esta
+autorizacion actual amplía el alcance operativo anterior de pruebas locales;
+no altera las aprobaciones humanas historicas ni autoriza mensajes Discord.
+Evidencia, limites y comandos: [cierre operativo](../evidence/JUP-078-operational-closure.md).
+
+## Referencias operativas
 
 - [LiteLLM: proveedor OpenRouter y prefijos de modelo](https://docs.litellm.ai/docs/providers/openrouter)
 - [LiteLLM: configuracion del proxy y general_settings.master_key](https://docs.litellm.ai/docs/proxy/configs)

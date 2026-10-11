@@ -1,0 +1,396 @@
+{
+  "source": "DockerServer:/home/danteadmin/economicon-collaboration; TrelloClient",
+  "queried_at": "2026-10-11T15:12:03.926036+00:00",
+  "cards": [
+    {
+      "task_id": "JUP-054",
+      "url": "https://trello.com/c/ZsxwmagI",
+      "state": "10 — Backlog",
+      "due": null
+    },
+    {
+      "task_id": "JUP-063",
+      "url": "https://trello.com/c/sRKGpYEy",
+      "state": "10 — Backlog",
+      "due": null
+    },
+    {
+      "task_id": "JUP-066",
+      "url": "https://trello.com/c/6HjNIvoy",
+      "state": "10 — Backlog",
+      "due": null
+    },
+    {
+      "task_id": "JUP-071",
+      "url": "https://trello.com/c/H0woDubz",
+      "state": "10 — Backlog",
+      "due": null
+    },
+    {
+      "task_id": "JUP-109",
+      "url": "https://trello.com/c/orFyeUW2",
+      "state": "10 — Backlog",
+      "due": null
+    },
+    {
+      "task_id": "JUP-110",
+      "url": "https://trello.com/c/Bseh2T57",
+      "state": "10 — Backlog",
+      "due": null
+    },
+    {
+      "task_id": "JUP-035",
+      "url": "https://trello.com/c/BJfABykd",
+      "state": "20 — Preparado",
+      "due": null
+    },
+    {
+      "task_id": "JUP-062",
+      "url": "https://trello.com/c/5sBSKurr",
+      "state": "30 — En curso",
+      "due": null
+    },
+    {
+      "task_id": "JUP-036",
+      "url": "https://trello.com/c/LxaVVLcH",
+      "state": "30 — En curso",
+      "due": null
+    },
+    {
+      "task_id": "JUP-065",
+      "url": "https://trello.com/c/SZUFo4ol",
+      "state": "50 — Validación",
+      "due": null
+    },
+    {
+      "task_id": "JUP-080",
+      "url": "https://trello.com/c/yNNs74Vn",
+      "state": "60 — Bloqueado",
+      "due": "2026-08-28T16:00:00.000Z"
+    },
+    {
+      "task_id": "JUP-105",
+      "url": "https://trello.com/c/YZvtBdGV",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-104",
+      "url": "https://trello.com/c/lVvZa7P5",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-103",
+      "url": "https://trello.com/c/P33co27E",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-099",
+      "url": "https://trello.com/c/WBnzwDHR",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-014",
+      "url": "https://trello.com/c/xLIfC3am",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-095",
+      "url": "https://trello.com/c/G4FPtBdE",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-094",
+      "url": "https://trello.com/c/Yqg2iZsj",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-023",
+      "url": "https://trello.com/c/O8elKkm9",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-085",
+      "url": "https://trello.com/c/Z8M443Hu",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-067",
+      "url": "https://trello.com/c/bwvfLpUG",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-093",
+      "url": "https://trello.com/c/MNgMl60p",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-092",
+      "url": "https://trello.com/c/R5t2PL2F",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-053",
+      "url": "https://trello.com/c/2UCJTDhi",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-084",
+      "url": "https://trello.com/c/m1i7iXBm",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-020",
+      "url": "https://trello.com/c/Mi3kPCOD",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-021",
+      "url": "https://trello.com/c/0oUtjfnH",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-090",
+      "url": "https://trello.com/c/DtlNd0u0",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-042",
+      "url": "https://trello.com/c/vKCJl5NY",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-091",
+      "url": "https://trello.com/c/pVfcfvhu",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-048",
+      "url": "https://trello.com/c/l7mloFNe",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-025",
+      "url": "https://trello.com/c/qzRy4RQc",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-024",
+      "url": "https://trello.com/c/8SDUi2t9",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-050",
+      "url": "https://trello.com/c/4VYnTkuD",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-083",
+      "url": "https://trello.com/c/GdGEHPvL",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-072",
+      "url": "https://trello.com/c/gfhukWIZ",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-013",
+      "url": "https://trello.com/c/vw0xIKRN",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-098",
+      "url": "https://trello.com/c/YqgPReKN",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-082",
+      "url": "https://trello.com/c/QiZTzj7D",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-019",
+      "url": "https://trello.com/c/S1FHo2mt",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-074",
+      "url": "https://trello.com/c/g94u3J8S",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-073",
+      "url": "https://trello.com/c/ll3GzmuN",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-044",
+      "url": "https://trello.com/c/XxBbQEoy",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-043",
+      "url": "https://trello.com/c/TI46x9Sr",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-075",
+      "url": "https://trello.com/c/tIJgZo6y",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-051",
+      "url": "https://trello.com/c/MklqbF5b",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-077",
+      "url": "https://trello.com/c/2ZCQUbhr",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-078",
+      "url": "https://trello.com/c/M4zqDGlW",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-079",
+      "url": "https://trello.com/c/10RWrMCS",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-049",
+      "url": "https://trello.com/c/yZnjgiSp",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-052",
+      "url": "https://trello.com/c/q3TahHoj",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-060",
+      "url": "https://trello.com/c/alMIpBOQ",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-061",
+      "url": "https://trello.com/c/qXoHFxyy",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-022",
+      "url": "https://trello.com/c/DPZpQ09b",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-064",
+      "url": "https://trello.com/c/wluz6AGW",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-068",
+      "url": "https://trello.com/c/JYaiGKKv",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-069",
+      "url": "https://trello.com/c/Qi5uwxgW",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-070",
+      "url": "https://trello.com/c/tpSyzXOS",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-086",
+      "url": "https://trello.com/c/bKxQK9HI",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-087",
+      "url": "https://trello.com/c/JHcidwiR",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-026",
+      "url": "https://trello.com/c/anUswta8",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-076",
+      "url": "https://trello.com/c/2EuI8tsV",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-055",
+      "url": "https://trello.com/c/UbyhMsNF",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-111",
+      "url": "https://trello.com/c/mnqNDpC0",
+      "state": "70 — Hecho",
+      "due": null
+    },
+    {
+      "task_id": "JUP-047",
+      "url": "https://trello.com/c/iMXH0o3a",
+      "state": "70 — Hecho",
+      "due": null
+    }
+  ]
+}

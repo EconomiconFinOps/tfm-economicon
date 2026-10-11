@@ -1,21 +1,33 @@
 JUP: JUP-095
 
+> **Nota del 2026-10-09 (JUP-105).** Este documento archivado es un registro de lo que se decidió y
+> verificó hasta el archivado de la tarjeta (2026-09-12) y no se reescribe. Dos afirmaciones suyas
+> dejaron de ser ciertas después:
+>
+> - **`Frontend tests` como comprobación obligatoria.** El job que esta tarjeta añadió duplicaba la
+>   ejecución de pruebas que ya cubre `Frontend build` y se retiró el 2026-09-19, al reconciliar con
+>   `develop`, junto con sus entradas en los rulesets. Los checks obligatorios vigentes son ocho; la
+>   historia está en [la guía de gobernanza](../../../../docs/governance/github-branch-protection.md).
+> - **`/overview-legacy` como único dashboard con datos reales.** Ya no lo es: JUP-026 y JUP-055
+>   conectaron `/` a costes almacenados y JUP-047 añadió `/system-health`. El recuento vigente de
+>   pantallas está en la sección «Rutas» de [`apps/frontend/README.md`](../../../../apps/frontend/README.md#rutas).
+
 ## Context
 
 Ver [proposal.md](proposal.md) — Why. Aquí solo el estado verificado que condiciona el enfoque.
 
 **Decisiones heredadas vinculantes.** Esta tarjeta **no reabre** ninguna de las dos:
 
-- [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md) (`Accepted`, JUP-092): `strict: true`,
+- [ADR-0003](../../../../docs/adr/ADR-0003-frontend-typescript.md) (`Accepted`, JUP-092): `strict: true`,
   `allowJs: true` mientras dure la migración, type-check obligatorio en CI, `tsconfig` local al
   paquete. Su sección de seguimiento asigna **explícitamente a esta tarjeta** la migración a `.tsx` de
   los archivos hoy señalados por `react/prop-types`.
-- [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) (`Accepted`, JUP-094): se adopta
+- [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md) (`Accepted`, JUP-094): se adopta
   shadcn/ui con 6 primitivos Radix, y **copiar el código de cada componente a `src/components/ui/` es
   trabajo de esta fase, componente por componente, solo cuando la pantalla que lo necesita se
   construye**.
 
-El spike ([docs/spikes/frontend-migration.md](../../../docs/spikes/frontend-migration.md), decisión 1)
+El spike ([docs/spikes/frontend-migration.md](../../../../docs/spikes/frontend-migration.md), decisión 1)
 exige que toda tarjeta de F2 y F3 enlace ADR-0003 desde su `design.md`; ADR-0004 añade la misma
 convención para las tarjetas que usen sus primitivos. Este documento cumple ambas.
 

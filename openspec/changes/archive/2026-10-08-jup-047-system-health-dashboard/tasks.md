@@ -1,0 +1,293 @@
+# JUP-047 — tareas técnicas propuestas
+
+## Estado de ejecución acreditado — E14, 08/10/2026
+
+Consolidación documental posterior al diseño autorizado PM10:09:29/TL10:11:38, encargada por TL a las11:56:46 Atlantic/Canary. HEAD `6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6`, rama `feat/JUP-047-system-health-dashboard`, base LOCAL `origin/develop` `2f9a5f530c9fe3b60007ba5060c189133e353bf6`; frescura remota no acreditada. El bloque de decisión/diseño que sigue, y la matriz prevista, describen su fase histórica: sus expresiones «solo análisis/diseño» o «pendiente» no niegan la ejecución posterior documentada aquí. Se conservan literalmente las aprobaciones, requisitos, escenarios y registros anteriores. E13 corresponde a la revisión anterior y a seis intentos reales históricos; no prueba el nuevo temporizador ni la retención sin TTL.
+
+| Fase | Evidencia ejecutada y límites |
+| --- | --- |
+| Red y correcciones separadas | Red inicial185 PASS/42 fallos significativos; primer Green96 frontend PASS y214 backend PASS/4 FAIL, conservado como no satisfactorio. TC1 corrigió dos expectativas backend contradictorias con el contrato, con resultado anterior al Green112 PASS/23 FAIL. TC2 añadió casos de entradas históricas/métricas: Red92 PASS/2 FAIL; detector F16 con5 PASS/2 FAIL y controles7 PASS. TC3 añadió la limpieza de temporizador visible al desmontar: original95 PASS, F19 mutado94 PASS/1 FAIL, restaurado95 PASS. Los ajustes de tests y producto tienen checkpoints separados. |
+| Green final de implementación | **341 casos distintos**:123 frontend actuales y218 backend reutilizados por identidad. Sin fallos, errores ni skips en estas suites. Tipos, lint, compilación y sintaxis con resultados y reutilización detallados en el paquete. Los Green intermedios338 y340, así como los intentos incompletos o fallidos, siguen históricos; no se suman campañas. |
+| Sensibilidad dirigida | **27 operadores dispuestos**:25 kills reutilizados por identidad de producto/casos/helpers y2 reensayos actuales B04/F19 KILLED, con controles originales/restaurados95 frontend y1 backend PASS. F16 y F19 SURVIVED y B04 TOOL_FAILURE originales permanecen en sus recibos. B04 careció de resultado válido por bloqueo auxiliar Windows y se reensayó con su detector existente; no se convierte aquel intento en kill. No son27 ejecuciones nuevas ni un score global. |
+| Revisión interna independiente | Revisor: **REVIEW_PASS**, sin hallazgos, con **341 pruebas nuevas propias** (123 frontend+218 backend), sin fallos, errores ni skips. No constituye revisión humana ni aceptación de criterios. |
+| Validación interna independiente | Validador: **VALIDATION_FAIL**; `local_behavior=PASS`, `documentation=FAIL`, con **341 pruebas nuevas propias** (123 frontend+218 backend), sin fallos, errores ni skips. Detectó README244/246: TTL60 contradictorio y omisión del ciclo visible600000 ms. Su informe original y ADENDUM permanecen intactos; los intentos de preparación/ejecución sin resultado no cuentan como PASS. |
+| Corrección documental actual | README frontend corregido: observación real retenida, timeout unknown con historia, apertura/manual/ciclo visible600000 ms, GET30 s no generativo, limpieza y gates, Azure SIMULADO y tolerancia1000 ms. Relectura independiente documental **PENDIENTE**; no se anticipa VALIDATION_PASS. Backend README y runbook ya estaban alineados y no se editan en este despacho. |
+
+Referencias externas E14, entregadas al TL; recibos privados fuera del repositorio:
+
+- Implementación: `jup047-retained-observation-implementation-20261008/delivery-handoff.json`, SHA256 `34c1d7a1e17eccf2cbe1aad7d9c50c159dc3e0ef6eb40c64f96c0e5efed7884b`; manifiesto852 fuentes SHA256 `ad9544c9ff102d59ecc62cf52cebc88ac9ecb17da9507ed6331c850815e344ee`.
+- Revisor: `jup047-retained-observation-review-20261008/handoff.json`, SHA256 `6dfbd973edcf8fa17ea6a9dd608637e10c5cd820ca3e5db1dcf4be1bed254d2c`; `review-report.md`, SHA256 `7f707d24bdc9388c527ce087d04ad70aafec26b01e051904674b3f02e3cd6009`.
+- Validador: `jup047-retained-observation-validation-20261008/handoff.json`, SHA256 `77838d8b2d55af361c9828a230cde812417e486ef95f5a76dd53dd68824bdaca`; `VALIDATION.md`, SHA256 `47bf9b58d62d4f9a04008452fc4fa5a1204c94f122a1343624b03cd8c49ebe33`; `ADENDUM.md`, SHA256 `f9e03a86bac67b64db024c8073a17fba4565c227d2709a5df4b8ac4306953257`.
+
+El PM conservó sus originales independientes: Revisor84cc77c168f683a2b14879613dab1febe54044120046aa269c8814cc66a7a10f y Validador5c046571042c3ca09db66a49786070c9801f19a47f0d95bb3d4f6faf6a95d50e; según TL, retornos PASS sin violaciones (Val PM11:55:06). No se sustituyen estas referencias. Tras esta corrección, TL coteja entrega y PM obtiene original fresco antes de revisión/validación documental proporcional. La12.6 sigue abierta por esa revalidación; la12.7 y gates globales no se cierran.
+
+AC1/AC2 PASS solo en alcance local simulado; AC3 FAIL original, corrección pendiente de revalidación; AC4/AC5 NOT_VALIDATED globalmente, aunque AC5 cuenta con evidencia local sin vínculo oficial. M5 remoto con Alejandro, recorrido visual/teclado aplicable (5.2), hallazgo móvil diferido, CI/base remotas, PR/vínculos, reviews humanas, aprobación final y archivo específicamente autorizado en la misma rama permanecen pendientes. Paris/Víctor/Alejandro/Lucía son asignaciones, no participación acreditada.
+
+No se ejecutan nuevas suites de producto ni mutaciones por esta edición textual. Se mantienen seis intentos acumulados, cohorte6/6 agotada/caducada, H=0.000050625 USD, U=0.010080 USD, P=0, cap0.03 USD y techo humano0,20 EUR acumulado. No hay nuevas llamadas, gasto, servicios, credenciales, configuración, Git, archivo o publicación. La antigua respuesta de permiso de aperturas no renueva la cohorte ni cambia estos límites.
+
+**Decisión vigente de retención y ciclo visible — 08/10/2026**
+
+Paris autorizó «ok dile al TL que haga los cambios», según PM 08/10/26 10:09:29 transmitido por TL 10:11:38. Esta decisión sustituye la caducidad automática de 60 s y el ciclo exclusivamente manual/apertura descritos en fases anteriores: el resultado real se retiene hasta otra observación, y OpenRouter se comprueba al abrir y cada 10 minutos solo con el panel abierto y visible. Un timeout nuevo produce unknown con historia conservada. Azure sigue siendo explícitamente SIMULADO; LiteLLM conserva liveliness real no generativa. Las fechas válidas hasta 1000 ms futuras inclusive reciben tolerancia de presentación, sin modificar su valor.
+
+Esta fase es solo análisis/diseño en seis OpenSpec, sobre HEAD 6fa3ef75674734bcc5198c1f8fb760d43ee2d0a6 y base LOCAL origin/develop 2f9a5f530c9fe3b60007ba5060c189133e353bf6; frescura remota no acreditada. Los registros E12/E13 y las aprobaciones históricas inferiores conservan literalmente hechos/decisiones de su revisión. No validan el comportamiento nuevo. Las menciones históricas a TTL60 o ausencia de periodicidad pagada quedan supersedidas por el contrato nuevo; el cooldown financiero de 60 s permanece.
+
+La autorización funcional no activa gasto: ledger6 intacto, certificado6/6 agotado/caducado y techo0,20 EUR acumulado. Sin nuevos envíos, credenciales, configuración, servicios, commits, archivo o publicación en este diseño. Autenticación, tenant, modelo/coste informativos, ruta, reservas H/U/P, contadores, M5 externo y móvil diferido permanecen. Las fases Red/Green/mutación requieren despachos separados tras coherencia TL.
+
+## 12. Retención y ciclo visible autorizados — 08/10/2026
+
+La autorización PM 10:09:29/TL 10:11:38 sustituye expresamente TTL60 y falta de periodicidad pagada; no cambia cooldown60, reservas, ruta ni permisos. Los resultados E13 acreditan HEAD anterior al cambio funcional; no cerrar estas tareas por la validación antigua.
+
+- [x] 12.1 Diseñar retención, expires_at compatible null, último resultado/intento/historia, scheduler visible600000, Azure SIMULADO y tolerancia1000 ms; alinear propuesta, deltas y aceptación, preservar aprobaciones anteriores.
+- [x] 12.2 Red separado en los cinco TEST de design.md: sustituir expectativas antiguas expresamente contradichas y añadir fallos significativos por comportamiento ausente, usando relojes falsos y red denegada.
+- [x] 12.3 Green separado en cuatro PRODUCT y dos DOC exactos: tests Red fijos, backend/frontend coherentes, sin alterar gates financieros/servicios ni ejecutar inferencias.
+- [x] 12.4 Ejecutar suites afectadas y regresiones necesarias, lint/typecheck/build/sintaxis disponibles; registrar entorno/comandos/exits/no validado, conservar límites de pruebas reutilizadas.
+- [x] 12.5 Mutación dirigida separada con controles originales/restaurados y guard; diagnosticar supervivientes sin debilitar tests ni mezclar permisos de producto.
+- [ ] 12.6 Revisor y Validador afectados con original/control PM independientes: probar retención, timeout, apertura600000/hidden/remount/manual/scope, fechas1000/1001 y simulación, sin diez minutos de espera real ni nueva llamada facturada.
+- [ ] 12.7 TL comprueba entrega y PM presenta decisión final a Paris; mantener M5, CI y aprobación final, archivo específico/PR/reviews humanas pendientes.
+
+Todas las rutas, casos y mutantes están en design.md. Este diseño solo modifica los seis OpenSpec y requiere guard exacto, OpenSpec estricto, trace y whitespace del DELTA. Los tres blancos EOF preexistentes en tests no se limpian ni se cuentan como fallo nuevo/PASS global. La casilla 12.1 acredita diseño documental, no ejecución de los comportamientos.
+
+**Estado final local — 08/10/2026; evidencia E13**
+
+Resultado vigente comunicado por PM09:40:27/TL09:43:52 Atlantic/Canary: revisión técnica interna afectada favorable y validación funcional local acreditada. Hay **6 intentos reales acumulados**, sin reset: la sexta petición, iniciada manualmente desde «Salud del sistema», recibió HTTP200, JSON válido, una elección, finish_reason=stop y contenido exacto OK. La quinta conserva HTTP429 como caso de error; los cuatro anteriores no se convierten retrospectivamente en éxitos. GET/polling no genera inferencias.
+
+La observación válida caduca contractualmente a los **60 segundos**: después se presenta unknown/stale conservando verified_at y check_id. Este comportamiento y el criterio funcional permanecen intactos. Modelo y coste siguen siendo informativos, con identidad y facturación upstream no confirmadas. Se conserva la reserva incierta histórica; la cohorte operativa terminó **6/6, sin envíos restantes**, y no se autoriza una séptima petición.
+
+E13 acredita revisión interna con214 pruebas propias y validación afectada con214 PASS en cuatro ejecuciones completas (102+33+29+50); la ejecución conjunta sin resultado no cuenta como PASS. E12 conserva Red143 PASS/38 fallos significativos, Green214 PASS y15 mutantes detectados, con controles37/37. No se repiten suites de producto en esta consolidación documental.
+
+Siguen pendientes DockerServer M5 con Alejandro, CI remota, aprobación humana final, archivo específicamente autorizado en la misma rama, PR vinculada y las dos reviews humanas. La asignación Paris/Víctor/Alejandro/Lucía no acredita participación efectiva. Los bloques siguientes, incluso cuando dicen «vigente» o «pendiente», son historia fechada de sus fases; E13 actualiza sus hechos de ejecución, no sus decisiones ni requisitos/escenarios. El techo humano sigue siendo **0,20 EUR acumulados incluyendo intentos anteriores**; no equivale a0,20 USD.
+
+## 11. Cierre documental local — E13, 08/10/2026
+
+- [x] 11.1 Consolidar el resultado real final: seis intentos, sexta respuesta funcional válida, quinto429 y anteriores conservados sin retro-PASS; GET posterior stale a60s mantiene fecha/identificador sin generar.
+- [x] 11.2 Registrar revisión interna afectada favorable y validación local afectada, con214 PASS propias cada una y límites explícitos; PM conserva su original independiente y verificó el retorno antes de este despacho documental.
+- [x] 11.3 Mantener aprobaciones y decisiones históricas literalmente, requisitos/escenarios intactos, casillas locales afectadas acreditadas y los gates externos pendientes.
+- [ ] 11.4 TL coteja esta consolidación; PM controla cierre documental e integridad final, presenta la entrega a Paris y obtiene su decisión final y la autorización específica de archivo cuando corresponda.
+
+E13: validation-draft-current.md y evidence-index.json de jup047-prompt-liveliness-validation-20261008 contienen la comprobación funcional afectada y sus límites; el handoff de jup047-prompt-liveliness-review-20261008 conserva el dictamen técnico. Son referencias de evidencia externa, no nuevas aprobaciones ni participación humana. El ledger final independiente conserva6/6; el certificado previo a la sexta quedó en5/6 y no se reescribe como estado final.
+
+Las casillas1.1,4.3a,6.6,7.5,9.5 y10.4 acreditan exclusivamente preparación y controles locales afectados ya realizados. La tarea5.2 conserva pendiente el recorrido visual completo390/768/1440 y teclado no repetido, con el hallazgo móvil diferido sin reabrir; no invalida la comprobación funcional afectada. Las tareas1.2/5.3 (M5),4.4a (CI),5.4 (aprobación final) y5.5 (archivo/PR/reviews/merge) siguen abiertas. Las reservas históricas no se liberan: coste gateway y delta de clave concuerdan, sin factura emitida por OpenRouter.
+
+**Estado vigente tras implementación — 08/10/2026**
+
+Fuente: PM03:31:30 transmitido por TL03:32:20 Atlantic/Canary: Paris autoriza las pruebas necesarias para completar JUP-047 hasta **0,20 EUR acumulados, incluyendo los intentos previos**. Sustituye el anterior presupuesto humano de 0,40 USD y el cupo humano de 13 llamadas. El contador verdadero sigue en **4 intentos reales**, sin reset ni éxito retrospectivo. La equivalencia conservadora fechada en USD corresponde al PM y no se calcula ni incorpora aquí. TL coordina cohortes operativas finitas dentro del techo; no se presenta un resto fijo de nueve ni un veto a la tercera llamada como autorización vigente. El contador y límite operativo de cada cohorte siguen siendo finitos y fieles, con admisión ordinaria, cooldown, frecuencia, cero retries/fallbacks y reservas intactos.
+
+La autonomía local transmitida por PM03:34:40/TL03:35:12 permite pasos locales ordinarios dentro del alcance y proceso; no es aprobación funcional ni permiso de publicación, nuevos accesos remotos o cambios materiales. El cap diagnóstico de **0,03 USD** previamente aprobado permanece **sin aplicar** en esta consolidación; H=0.000031275 USD, U=0.008064 USD y P=0 se conservan. La captura cuarta no aporta un texto literal conocido ni respuesta funcional válida.
+
+Los apartados y bloques anteriores conservados más abajo, incluso si usan «vigente», 4/13, dos envíos o 0,40 USD, son antecedentes fechados de su fase. Sus importes/cupos quedan sustituidos por esta nota; las aprobaciones históricas no se reescriben. No se modifica el criterio funcional, arquitectura, producto, pruebas, routing, privacidad o política de admisión.
+
+La corrección offline está implementada: **Red 143 PASS / 38 fallos significativos; Green afectado 214 PASS; mutación nueva 15/15 KILLED; control original y restaurado 37 PASS cada uno**. No errores ni SKIP en el Green o controles. Guard conjunto de mutación con cero cambios y 852 fuentes/4 tests fijos; referencias originales intactas. Primer Green parcial con timeout y primer guard rechazado por interfaz se conservan como no satisfactorios; su corrección está descrita en E12. Cero nuevas llamadas, gasto, servicios o cambios de cap. Revisión y validación independientes afectadas siguen pendientes; E10 no las anticipa.
+
+E12: `jup047-prompt-liveliness-implementation-20261008/delivery-handoff.json`, SHA256 `fb1a45b669d7ea9eda87baeac6f6157e78a464befe110d2d6a6f22721b2b12de`; índice de 151 artefactos `artifact-sha256.json`, SHA256 `b0c4491afde9637f92128b57c276cd6612d19d77f7be3d9cd2c74d819bb0e776`. Referencias externas entregadas al TL; no se copian recibos privados al producto. Rama `feat/JUP-047-system-health-dashboard`, HEAD `f0cacddb037dcb38878dd02de8adf5aff479d1b6`, cambios sin commit; Python 3.12 aislado Windows, transportes/procesos simulados y fixtures de denegación de red conservadas. No prueba remota ni aceptación por el Desarrollador. M5/Alejandro, CI remoto, aprobación final, archivo específico y reviews humanas permanecen pendientes.
+
+Diseño aprobado por Paris el 06/10/2026 a las 18:08:29 Atlantic/Canary; el registro consta en proposal.md. Las casillas pendientes requieren consolidación con sus evidencias y no acreditan una fase ejecutada por sí solas. Decisiones de alcance recibidas06/10: OpenRouter real apertura/manual, polling sin inferencia, ensayo acumulado0,40USD, local primero y M5 antes del cierre. Los gates de gasto y despliegue no se ocultan mediante equivalencia local.
+
+## Estado vigente y corrección acotada — 08/10/2026
+
+Fuente: TL03:13:52 Atlantic/Canary transmite PM03:13:09 y el mandato humano «arréglalo»: aclarar el prompt fijo conservando el criterio funcional y adaptar específicamente la respuesta no generativa de LiteLLM. Este despacho es analysis-design, únicamente estos seis documentos; después se requiere encargo Red separado. No se inventa otra aprobación humana ni se habilita código por este documento. Las decisiones y aprobaciones históricas se conservan verbatim; sus cifras de una/dos llamadas describen aquella fase, no el cupo vigente.
+
+Ensayo acumulado verdadero: **4/13** solicitudes reales, sin reset; la ampliación a diez adicionales fue transmitida por PM02:48:58/TL02:50:08 del08/10. La cuarta fue despachada al Desarrollador para diagnóstico propio, no validación independiente. Su captura saneada demuestra HTTP200/JSON838bytes/una choice/finish_reason stop/ID válido y solo content_OK rechazado: cadena de3caracteres,2letras+1puntuación, sin cambio por strip. No se conoce el texto ni el signo y no se atribuye al tercer cuerpo. No es fallo por alias/coste ni PASS funcional.
+
+El ledger privado conserva H=0.000031275USD, U=0.008064USD, P=0 y R=0.002016USD. Con el cap efectivo0.01 conservado al cierre, otra reserva exigiría0.010111275USD (exceso0.000111275). PM03:14:41 transmitido por TL03:17:15 acredita autorización humana específica para subir la MISMA credencial a0.03USD y actualizar su certificado ordinario; ejecución operativa pendiente de encargo separado, sin alterar H/U/P,4/13,routing/permisos/RPM/TPM/paralelismo ni límite global0.40. Registro privado PM jup047-diagnostic-cap-003-authorization-20261008.md. Esta autorización no se ejecuta ni habilita una quinta intención en estas fases. No se eleva el cap, concilia/libera U, renueva credencial ni se hace una quinta llamada en diseño/Red/Green/mutación. La limitación financiera no bloquea la corrección offline. Recibos/secretos/ledger completos permanecen fuera de Git; la autorización de aperturas no cambia el criterio ni los gates.
+
+## 1. Refinamiento y aprobación
+
+- [x] 1.1 Preparar gates de ejecución real: Coordinador reverifica precio/modelo/cotas/fees/cap efectivo, capacidad asignada al diagnóstico y ledger externo0,40USD, usando preparación mínima vigente sin auditoría global de la key compartida; sin garantía, stop/consulta, sin enviar. Esto se obtiene antes del gasto, no es autorización de código ni tarifa histórica vigente.
+- [ ] 1.2 Coordinar con Alejandro antes de desplegar el contexto operativo M5: responsable/acceso/proyecto/red/puertos/entorno/secretos-TLS/rollout-rollback/permiso; mantener criterio/tarea sin bloquear aprobar el diseño local primero.
+- [x] 1.3 Aprobación explícita de Paris del 06/10/2026 a las 18:08:29 Atlantic/Canary de propuesta, escenarios y opciones técnicas; rutas de tests/producto y estrategia de badges definidas antes de Red. Registro en proposal.md.
+
+## Evidencia consolidada y alcance de casillas
+
+Decisión Paris transmitida por PM23:31:51 del07/10: consolidar lo acreditado, no repetir por casillas desmarcadas. Las casillas de las secciones 2/3 acreditan la base histórica E1; las secciones 6/7 se consolidan ahora con E6–E9. Marcar ejecución técnica no acredita aceptación. Cada referencia conserva revisión, entorno, fecha y limitaciones; E10 acredita revisión independiente del ajuste anterior; la validación funcional y la revisión/validación de la nueva corrección9 siguen pendientes. Solo se repiten comprobaciones afectadas o requeridas por proceso.
+
+| Ref | Resultado / entorno / revisión y límite | Evidencia externa conservada (SHA256) |
+| --- | --- | --- |
+| E1 | Green base histórico:59backend/471frontend/664backendconinfra(1skip)/504processor(1skip)/59Azure; build/lint/typecheck y47OpenSpec. Docker aislado y copias nativas con850fuentes contrastadas. No aceptación independiente; el ajuste posterior 6/7 se acredita separadamente en E6–E9. | jup047-green-final/green-handoff.json · ba84badad3ca2de5a81d11988db070af63fa75f13a1899618880dfa054ce8460 |
+| E2 | Red funcional autorizado:47PASS/31FAIL backend,39PASS/26FAIL frontend,0errores/skips; typecheck0. WindowsPython3.12 + frontend nativo con copias/hashes. Resultado Red histórico, no Green/PASS; expectativas U sustituidas explícitamente en E6, sin retro-PASS. | jup047-availability-red-20261007/handoff.json · b5467acd56a164f60f7d6edcc8fa483016cdc2a2928052e025acee6fc46639e8 |
+| E3 | Compatibilidad fixtureWindows: regresión1PASS, suite89PASS/31FAILidénticosRed,42regresionesPASS,14cuerpostestASTidénticos y6equivalenciaspickle. Sin producto ni red. | jup047-windows-fixture-compat-20261007/handoff.json · 43da9a0627fe3eb506eeb8f8a42599e7d54ddd3765f17ca3d31d97eabb5c2c45 |
+| E4 | Campaña histórica61operadores:45killed/14survived/2failure_requires_review, NEEDS_TEST_WORK. Resultado original conservado; la disposición posterior independiente E10 resuelve los16IDs sin declarar PASS global ni repetir campaña. | jup047-native-followup-plan/jup047-mutation-execution-20261007/handoff-final-v2.json · 2b2e723d45d561707f60836d05218dab5b8303c869d7f65ccd44df86ec6b73ae |
+| E5 | SimulaciónDocker local:2envíosfake admitidos ywireprobe adicional separado,0reales; negativas16,deadline/cierre,fallo/recuperación yDBread-only vacía. No seededCockroach completo, upstream real niDockerServer. Reutilizarlo si vigente; no repetir por sistema. | jup047-green-final/green-handoff.json · ba84badad3ca2de5a81d11988db070af63fa75f13a1899618880dfa054ce8460 |
+| E6 | Red integrado de disponibilidad y reserva ordinaria: 79 PASS / 47 FAIL backend, cero errores/skips; 31 fallos funcionales retenidos y 16 del nuevo comportamiento. Frontend 39 PASS / 26 FAIL reutilizado por hashes sin cambios. Python 3.12 aislado y copias nativas Windows, sin red/inferencia. Rama feat/JUP-047-system-health-dashboard, HEAD f0cacddb037dcb38878dd02de8adf5aff479d1b6; 07/10/2026. Resultados Red conservados, no retro-PASS. | jup047-historical-reserve-red-20261007/handoff.json · ce5a51e6d79c5bfa85156c85cb28964251a52c2b7d2dc6fe00f3eade0d33e3f4 |
+| E7 | Green completo previo: 746 PASS / 28 SKIP backend y 508 PASS frontend; después 65 afectados frontend PASS tras correcciones de pruebas separadas. Windows, Python 3.12 aislado con preparación externa limitada a fixtures no_network y frontend nativo; sin adaptador de reglas de lint. Misma rama/HEAD; consolidado 08/10/2026. Se reutiliza, no es una ejecución completa con las seis adiciones E9. Los 28 SKIP (13 Cockroach, 12 pgvector, 3 Rabbit) siguen no ejecutados en este entorno. | jup047-green-consolidation-20261008/handoff.json · 6f9e41f2835faeeda974ffd754898e481ba2c5916c43f68bfd2b3add3f8cac42 |
+| E8 | Mutación dirigida del ajuste: 37 operadores independientes, 35 kills de comportamiento y dos lagunas (S01 serialización GET, F07 normalización GET); NEEDS_TEST_WORK original conservado. Copias externas de 196 fuentes, pruebas fijas, carga y restauración exacta por SHA, guard limpio; misma rama/HEAD, 08/10/2026. No sustituye ni borra E4. | jup047-integrated-mutation-20261008/mutation-handoff.json · 0744ee8d6e911ecf87511cf52fde62ba747c5e6cc5def6034c3fae5b58ba408d |
+| E9 | Cobertura posterior: tres casos backend y tres cliente, GET válido/ausente/inseguro; 53 backend / 68 frontend PASS, lint/tipos/sintaxis y comparación directa de whitespace incluidos untracked. Dos remutaciones actuales: S01 3 fallos por campo ausente, restaurado 3 PASS; F07 2 fallos de normalización, restaurado 68 PASS. Los 35 kills E8 se reutilizan; no 37 ejecuciones nuevas. Copias Windows nativas, auth/tenant SQLite y DTO reales, sondas externas aisladas, fetch simulado; misma rama/HEAD. Fases y corrección de un LF final separadas con guards y hashes, 08/10/2026. | jup047-get-coverage-20261008/delivery-handoff.json · d3921b95f71df52c8f3a75b47045b5034bc7871385d8c8641d456a014db49c3d |
+| E10 | Revisión independiente anterior REVIEW_PASS:171backend/68frontend PASS propios;852fuentes sin cambios. E4:12de14survivors detectados después,2equivalencias contextuales (no kills),2failure_requires_review adjudicados conductuales; sin pendiente nuevo entre16IDs ni PASS global. terminate-alone fuera de esos16, límite histórico conservado. No validación funcional ni revisión anticipada de9. | jup047-correction-review-20261008/review-report.md · 2fda902d07fe7c55cef0a3b622c24c13392237fe7aa218df67ad136641c38e04 |
+| E11 | Cuarta llamada diagnóstica propia:4/13,HTTP200/838bytes,solo content_OK falla;3caracteres2L+1P,sin texto bruto. H/U/P y límites arriba. Un POST en backend nuevo; otras7services y852fuentes intactas; guardPASS. No quinta ni PASS funcional. | jup047-fourth-attempt-capture-activation-20261008/delivery-handoff.json · fe36aa816ba19d29fcabe5b3d42ec6d6f5f642f9d0491152090b1ee047f58210 |
+
+Referencias E1–E11: identificadores de artefactos del índice externo entregado al TL; sus rutas completas, comandos, recibos y hashes se conservan allí. No se incorporan artefactos privados a Git. E2/E3 conservan su resultado histórico; E6 integra el Red posterior, E7 acredita Green previo y E9 cierra las dos lagunas dirigidas de E8. E4 conserva su resultado original; E10 documenta la disposición independiente de sus16IDs sin pendiente técnico nuevo ni PASS global. La nueva corrección9 requiere sus controles afectados.
+
+Reutilización E7 → E9: contraste de 852 fuentes; solo difieren los dos tests ampliados, con funciones/aserciones existentes preservadas. Producto, dependencias, configuración, fixture Windows y documentos/deltas técnicos no cambian en esas fases. La corrección editorial final retira exactamente un LF, con AST/aserciones/fixtures idénticos; por ello no repite las suites 53/68. E9 conserva el fallo inicial de comparación de dos formatos UTC equivalentes, el filtro de pruebas y la limitación del diff tracked, junto a su corrección y comprobación directa; ninguno se convierte en Red significativo ni en PASS anterior. No se suman resultados de campañas distintas para inventar un total actual.
+
+Las casillas de ejecución son evidencia del Desarrollador, no revisión/validación independiente ni aprobación humana. Siguen pendientes las tareas 1.1/1.2, el resultado funcional real pendiente4.3a (cuatro intentos consumidos; estado4/13), CI remoto 4.4a, validación5.2 y controles afectados de9; revisión anterior5.1 acreditadaE10, sin anticipar la nueva, M5 externo de Alejandro 5.3, aprobación final 5.4 y archivo/PR/revisiones humanas/merge 5.5. El hallazgo móvil diferido no se reabre; su estado y los límites visuales de 5.2 se conservan. La preview sintética disponible no acredita aceptación visual final ni M5.
+
+## 2. Red separado
+
+- [x] 2.1 Crear pruebas de contrato GET health/status ausente, compatibilidad health público y resumen tenant de jobs/ingesta; demostrar Red significativo sin modificar producto.
+- [x] 2.2 Crear pruebas estados, deadlines/liberación, saturación, errores parciales y redacción; cubrir vacíos/tablas ausentes/fechas y POST real con reserva previa, budget inexistente/agotado, coste desconocido, concurrencia/idempotencia/reinicio/cooldown, sin gasto en Red.
+- [x] 2.3 Crear pruebas navegación/pantalla, apertura/manual POST único, pollingGET sin inferencia, verified_at no renovado por poll/error, obsolescencia/abort/tenant/sesión/401/403; demostrar Red y devolver checkpoint antes de Green.
+
+Base histórica E1 realizada; corrección integrada6/7 ejecutada E6–E9 y revisada independientemente E10. Validación funcional y controles afectados de9 pendientes.
+
+## 3. Green separado
+
+- [x] 3.1 Implementar schema/servicio/ruta autenticada, consultas parametrizadas read-only, settings opcionales seguros y fuentes cerradas; no modificar health público ni propiedad de migraciones.
+- [x] 3.2 Implementar probes GET acotados y POST separado de comprobación REAL OpenRouter vía economicon-chat/z-ai/glm-5.2: prompt sintético fijo, max_tokens32 solicitado, reserva conservadora, privacidad/retries0/fallback0, deadlines30s, credencial diagnóstico servidor y admisión única/cooldown60s/6hora/24día. No inferencia por polling ni budget de pruebas hard-coded en producto; fallo cerrado sin datos fiables/permiso.
+- [x] 3.3 Integrar contracts/API/hook con sesión, tenant, validación runtime, cancelación y refresco visible sin retries ilimitados.
+- [x] 3.4 Implementar página/ruta/nav reutilizando Layout, SectionCard, MetricCard, tokens y botones; badges semánticos compatibles y accesibilidad, fechas y responsive.
+- [x] 3.5 Documentar contrato, significado/límites de probes, configuración, pruebas reproducibles, despliegue M5 y permisos de uso real; sin exponer secretos ni sustituir evidencia.
+
+## 4. Verificación y sensibilidad
+
+- [x] 4.1 Ejecutar pruebas enfocadas y suites afectadas backend/processor/frontend, lint/typecheck/build; preservar regresiones de health, auth, jobs, billing y navegación. E7 acredita las suites completas previas y checks; E9 las 53/68 afectadas actuales y lint/tipos. Processor/Azure e infraestructura no afectados se reutilizan de E1/E5 con sus límites, sin atribuir ejecución nueva ni PASS a skips.
+- [x] 4.2 Sensibilidad anterior y disposición independiente E4 acreditadas E8/E9/E10: conservar resultados originales,12repeticiones detectadas,2equivalencias contextuales y2fallos conductuales; no PASS global61operadores. Mutación del alcance nuevo pendiente9.4; no repetir la campaña histórica por sistema.
+- [x] 4.3 Ejecutar en Docker local exclusivo pruebas efectivas de Cockroach, pgvector, RabbitMQ, processor, simulador Azure y gateway/upstream falso; registrar cambios de estado/recuperación, deadlines y before/after read-only. E1/E5 acreditan simulación local en entorno aislado; DB real vacía y perfiles skipped conservan sus límites originales. No equivalen a aceptación real, seededCockroach ni M5. Reutilizar evidencia vigente y repetir solo lo afectado; casos skipped no pasan.
+- [x] 4.3a Obtener evidencia funcional real válida mediante nuevo despacho y preflight ordinario/controles PM: estado acumulado4/13, cuatro intentos no convertidos en PASS; E11 identifica el rechazo del cuarto. Máximo humano restante9, pero cap0.01 insuficiente para siguienteR y activación del cap0.03 autorizada pendiente de despacho operativo separado. No gasto en fases9.1–9.4 ni reset/conciliación; simulación no sustituye respuesta válida niM5.
+- [x] 4.4 Matriz nativa base completada según E1 (checks actuales del delta en6/7): jup:check:all, pr:check:test, ci:check:test, repository:governance:test, openspec:validate, test/build globales y lint/typecheck aplicables; evidencia de comandos reales y límites;47OpenSpec y checkerstraceability basePASS. CI remoto no se acredita con comprobaciones locales.
+- [ ] 4.4a Comprobar CI remoto cuando corresponda por PM; no ejecutar/publicar desde esta fase.
+
+## 5. Validación y despliegue
+
+- [x] 5.1 Revisión independiente anterior REVIEW_PASS acreditadaE10, sin aceptación funcional. Corrección nueva9 requiere revisión afectada9.5 antes de entrega final.
+- [ ] 5.2 Validación independiente siguiendo instrucciones entregadas: cada criterio/escenario, al menos edge/error, comparación visual con pantallas existentes a390/768/1440, teclado, tenants y recuperación; registrar lo no validado.
+- [ ] 5.3 Desplegar revisión aprobada en DockerServer M5 mediante responsable/autorización específicos y configuración segura acordada; observar ruta autenticada y fuentes reales/simuladas declaradas, registrar identidad/revisión/fechas y rollback. PENDIENTE EXTERNO de Alejandro, separado de la entrega técnica local por decisión PM23:31:51. No SSH ni repetición sistemática de E5; local no lo sustituye ni aprueba.
+- [ ] 5.4 Consolidar evidencia y decisiones, resolver pendientes de alcance y obtener aprobación humana final; no cerrar por CI verde.
+- [ ] 5.5 Con autorización específica, archivar/promover health-status y la nueva capacidad en la misma rama; validar enlaces/OpenSpec/trazabilidad y preparar PR hacia develop, vinculada a Trello, para revisión/validación humanas asignadas. Archivo/PR/merge no autorizados por esta lista.
+
+## 6. Corrección de disponibilidad autorizada — 07/10/2026
+
+Fuente: decisión Paris transmitida por PM22:47:49 y TL22:49:38 Atlantic/Canary; ver proposal.md y design.md. Sustituye gates/recomendaciones de igualdad exacta, flags/marcadores o allowlists de identidad. El registro histórico no se modifica. Las fases de ejecución siguientes quedan acreditadas por E6–E9; este registro no cambia el diseño aprobado ni sustituye revisión o validación independiente.
+
+- [x] 6.1 Actualizar diseño, ambos deltas y matriz: respuesta funcional válida determina disponibilidad; identidad unconfirmed y coste separado; conservar configuración, seguridad, límites y contabilidad vigente. Validaciones estructurales y hashes se entregan fuera del repo, sin aceptación funcional.
+- [x] 6.2 Red separado por TL en los cuatro paths exactos del diseño: canónico/alias/versionado/distinto/ausente, respuesta inválida, coste/usage independientes, UI/API e invariantes financieras; E2 acredita Red significativo sin red ni producto. E3 resuelve la regresión Windows; los 31 FAIL backend / 26 FAIL frontend son resultados Red históricos conservados, no fallos actuales tras Green E7. Las expectativas antiguas de veto U fueron sustituidas explícitamente en el Red 7.2/E6.
+- [x] 6.3 Green separado por TL en los cinco paths de producto y tres docs exactos: separar éxito funcional/verified_at de identidad y liquidación, añadir campos/etiquetas; tests Red fijos, sin cambiar routing ni ledger privado ni liberar reserva anterior; la política/certificado ordinarios siguen la decisión posterior documentada en tareas 7. Implementado y comprobado en E7/E9; pruebas fijas durante Green.
+- [x] 6.4 Mutación separada por TL sobre los cinco paths de producto: detectar igualdad exacta, acoplamiento a coste, certificación indebida, respuesta inválida y liberación incierta; regresiones de seguridad/límites/frescura, guard/hashes limpios al terminar. E8 detecta 35 operadores y E9 cierra S01/F07 mediante cobertura separada y dos remutaciones; E10 recoge la disposición independiente de los16IDs E4 sin PASS global.
+- [x] 6.5 Ejecutar suites afectadas y controles nativos, entregar comandos/exits/limits; E7/E9 conservan resultados completos previos, 53/68 actuales y checks con límites explícitos. Sin nueva inferencia/servicio/contenedor en estas fases.
+- [x] 6.6 Revisión anterior E10 acreditada; validación funcional y nueva revisión/validación afectadas9 pendientes por despacho TL, conservando aprobación final humana y demás pendientes; no reabrir hallazgo móvil diferido.
+- [x] 6.7 Mantener evidencia M5 identificada como simulación local y trabajo real pendiente con Alejandro; no afirmar despliegue remoto ni conciliación realizados.
+
+
+## 7. Reserva histórica no bloqueante — decisión autorizada 07/10/2026
+
+Fuente PM: Paris «ok vamos a ello»,23:23:23 Atlantic/Canary; prefijo23:20:00 corregido. Sustituye propuesta one-shot y expectativas anteriores de bloqueo por U/no conciliación. No modifica el registro humano06/10 ni autoriza inferencia durante estas fases.
+
+- [x] 7.1 Actualizar los seis documentos del change: admisión y certificado ordinarios con estado fiel H/U/P, counter1/2, reserva histórica íntegra y presupuesto acumulado0,40USD. No exigir key upstream exclusiva ni inventar conciliación.
+- [x] 7.2 NUEVO Red separado: revisar explícitamente expectativas antiguas en los cuatro tests congelados (E2), añadir test_health_provider_policy_jup047.py según paths exactos de design; probar admisión U>0 con margen, borde Decimal, segundo/tercero, estado ordinario existente, reinicio/límites preservados, nonce/digest/caducidad y negativas sin red. Despacho separado TL del 07/10 ejecutado y acreditado por E6; expectativas supersedidas revisadas expresamente, sin borrar resultados Red ni cambiar producto en esa fase.
+- [x] 7.3 Green separado con Red fijo: integrar disponibilidad/identidad/coste y admisión/certificado ordinarios en los cinco archivos de producto y tres docs del diseño; E7 acredita implementación y E9 cobertura añadida. Sin tocar ledger real, routing, servicios, dependencias o claves.
+- [x] 7.4 Mutación separada: vetar U>0, omitir U/P, liberar incertidumbre, resetear contador/ventanas, aceptar tercer envío, exigir falsa conciliación o saltar digest; conservar también sensibilidad de disponibilidad/UI y controles anteriores. E8/E9 acreditan los operadores dirigidos ejecutados, guard y restauración exacta; los controles no alterados conservan su evidencia; E10 dispone los16IDs E4 sin nuevo pendiente ni atribución de nuevas ejecuciones.
+- [x] 7.5 Revisor y Validador independientes tras corrección; PM controla referencia original/guards y preflight ordinario vigente. La revisión anterior se acreditaE10; validación funcional y controles afectados9 siguen pendientes. El siguiente ensayo requiere despacho específico con estado4/13 y margen vigente; esta lista no ejecuta ni reinicia cupos.
+- [x] 7.6 Entregar evidencia y límites sin retro-PASS, conciliación/saldo/coste inventados ni publicación/archivo/merge; E9 contiene fuente final de 852 archivos, hashes de los cinco tests y producto, diffs/recibos y handoffs separados. M5 sigue pendiente externo; esta consolidación documental no es aceptación independiente.
+
+## 8. Proporcionalidad aprobada — 07/10/2026 23:31:51 Atlantic/Canary
+
+- [x] 8.1 Integrar decisión transmitida de Paris: delta ordinario mínimo sin nuevos flags/fechas de conciliación, excepción especial ni auditoría del gasto; conservar controles comprobados no afectados.
+- [x] 8.2 Separar entrega local y comprobación remota Alejandro sin borrar criterioM5; reutilizar E5 vigente, sin SSH.
+- [x] 8.3 Consolidar base acreditada E1, RedE2 y compatibilidadE3 con hashes/entornos/límites. La disposición independiente posterior de E4 y revisión anterior constan enE10; validación funcional y nueva corrección9 no se dan por completadas.
+
+
+## 9. Petición inequívoca y liveliness específica — 08/10/2026
+
+Mandato y alcance transmitidos TL03:13:52/PM03:13:09; contrato exacto, paths y escenarios en design.md. No modificación del criterio OK, ruta/modelo, contabilidad, dependencias o UI. El ajuste de cap pendiente es separado de este trabajo offline.
+
+- [x] 9.1 Alinear exclusivamente los seis documentos autorizados, conservar aprobaciones/originales, estado4/13 y E4/E10/E11 sin retro-PASS; validar OpenSpec estricto y trazabilidad antes de entrega del diseño.
+- [x] 9.2 Red separado: los cuatro tests backend exactos de design; literal/wire nuevo y parser/selección de LiteLLM ausentes deben fallar por comportamiento; negativas y contratos genéricos, no-inferencia, auth/plazo/cierre conservados. Ningún producto ni red real.
+- [x] 9.3 Green separado: cuatro archivos backend y dos docs exactos de design, tests Red fijos; prompt ampliado dentro de cota de entrada y adaptador LiteLLM exclusivo; ejecutar suites afectadas y regresión policy. No quinto, servicios, renovación o cap.
+- [x] 9.4 Mutación dirigida de prompt/wire, criterio OK intacto, parser/tipos/HTTP/size/cierre/aislamiento/selección/no-inferencia; copias externas, restauración exacta y guards distintos; supervivientes vuelven TL.
+- [x] 9.5 Revisión y validación independientes afectadas; revisiónE10 permanece histórica. Real posterior solo con despacho/preflight/cap resuelto y controlesPM; no garantía por prompt ni PASS por mock. M5/Alejandro y gates humanos finales se conservan.
+
+
+## 10. Consolidación factual posterior a implementación — E12
+
+- [x] 10.1 Registrar ejecución separada de 9.2/9.3/9.4: Red143/38 significativo; Green214PASS;15kills y controles37/37; guard conjunto cero cambios/852fuentes/4tests fijos.
+- [x] 10.2 Conservar incidencias como noPASS, referencias originales y límites sintéticos; no borrar E4/E10/E11 ni atribuir nueva aceptación.
+- [x] 10.3 Identificar vigencia EUR0.20 acumulados, contadorreal4 y cohortes operativas finitas; cap0.03 autorizado aún no aplicado y conversión PM fuera de código. Conservar aprobaciones históricas literalmente.
+- [x] 10.4 TL coordina original y control independiente PM, Revisor y Validador del alcance afectado. 9.5,4.3a,5.2,M5/CI/final/archivo/reviews humanas permanecen pendientes.
+
+E12 no suma campañas para fabricar un total global. La ejecución de los puntos 9.2–9.4 queda acreditada por su handoff y no constituye aceptación independiente. Las casillas históricas y pendientes conservan su significado fechado. La tarea1.1 y cualquier referencia anterior a importe/cupo se ejecutarán con la autorización vigente de la cabecera, sin reset ni interpretación EUR=USD.
+
+
+## E15 — consolidación factual posterior a develop, 08/10/2026
+
+Esta adenda actualiza hechos posteriores a E14, conservado literalmente junto con decisiones, escenarios, requisitos, resultados y casillas históricos. Rama `feat/JUP-047-system-health-dashboard`, HEAD `8770897bab29c79df54659e362f89d97c28b132a`; padres `e1f58d01ed984be95021953bebb97ab9b5479ad0` y base incorporada `2f9a5f530c9fe3b60007ba5060c189133e353bf6`. PM comunicó fetch 13:11:51; no se acredita una nueva consulta remota.
+
+- Merge local autorizado: siete commits, dos README combinados sin conflictos; 920 fuentes verificadas, 29 rutas propias no solapadas intactas, 100 entrantes idénticas y siete orígenes de movimientos retirados conforme a develop. El registro durable es [review.md](review.md).
+- Desarrollador: campaña nueva 2013 PASS/0 FAIL/91 SKIP, 35 comandos exit 0, OpenSpec 53/53 y build/lint/tipos correctos. Matriz 40/siete mínimos; scripts nativos completos de cuatro paquetes equivalentes a test/build, sin pnpm/Turbo literal ni frozen-install; Node 24 local/22 CI y fallos de herramienta conservados. Los 91 opt-in siguen NOT_VALIDATED. Los 341 históricos están incluidos (123+218), no añadidos al total; 27 operadores históricos dispuestos (25 reusos, dos reensayos de aquella fase), sin nueva mutación postmerge.
+- Revisor independiente: REVIEW_PASS local, sin corrección nueva; cero suites propias nuevas, revisión del delta e identidad y auditoría de evidencia. Adenda factual: techo autorizado acumulado 0,20 EUR, no gasto acreditado.
+- Validador independiente: LOCAL_POST_BASE_PASS, 95 casos propios nuevos (85 frontend/10 backend), sin FAIL/ERROR/SKIP; billing 422 antes de leer, sesión parcial sin fetch y aislamiento frente a respuesta/error tardío de otro tenant. AC1–AC3 solo locales; AC4/AC5 globales NOT_VALIDATED. [Criterios y reproducción](../../../../docs/evidence/JUP-047-validation.md).
+- La revalidación documental anterior LOCAL_DOCUMENTARY_PASS resolvió AC3 sin reescribir su VALIDATION_FAIL original. La parte técnica local afectada de 12.6 queda acreditada por los informes posteriores; no se cambia su casilla histórica ni se cierra 12.7 o gates humanos/globales.
+- TL comunicó originales PM del Revisor `b7b15a4b43a3df69ad88a8e6345f54b3c42ed7dffff3fea69f9da7ad99915097` y Validador `37e35026768ff6cbfbdab818099c232cabc204d84594782baf13cc3b85918955`, retornos PASS del mismo original sin violaciones; Val retorno 14:07:55. No se fabrican recibos nativos ni se afirma sandbox de lectura.
+
+Pendiente aprobación humana final post-base y DoD final con el change activo. El archivo específico ya autorizado 13:11:51 requiere despacho posterior en esta misma rama; no se pide otro grant ni se ejecuta aquí. M5/Alejandro, participación de Víctor y reviews humanas son externos; CI remota/publicación/vínculos corresponden a PM. Presentación aceptada por Paris 13:05:44, sin más UI/teclado ni atribuir esa observación al Validador; finding móvil diferido intacto. No nuevas llamadas/gasto, producto/tests/configuración/Git ni archivo.
+
+Fuentes: handoff Desarrollador `8af91a16368715db7d2c4a310c22db2da462e550ad27aea7207e04ca71ff13a2`; handoff Revisor `6ee24e1ba034c2a6114401f0cf35298dfec883cb71308bf712f9241ea702dc96`; handoff Validador `86852d562997a8b81be3a523e3a96a1a0f8ddfc471bf93b343ca22d947649a15`. Recibos completos fuera de Git; hashes y límites en [review.md](review.md#procedencia-verificable) y la evidencia durable, sin volcar datos financieros privados.
+
+
+## Aprobación humana final posterior a la base — 08/10/2026 14:36
+
+Paris Arcos aprobó la entrega local final con respuesta literal «si» el 08/10/2026 a las 14:36, Atlantic/Canary; el segundo exacto del mensaje humano no está disponible. PM confirmó la decisión a las 14:36:07 y TL verificó la pregunta y respuesta originales. Fuente: mensaje humano `01a11bba-6640-7c71-8d13-3b541b40f4b4`, turno `01a11bba-65e9-7b81-a303-fe0c1ca509e8`; pregunta en turno `01a11bb9-af92-7fb3-934e-fe48c355393a`, chat PM `01a1063b-fed3-7480-a0d6-cc6f374ecacf`. La pregunta, alcance y fuente verificada se registran en [la aprobación de review.md](review.md#post-validation-human-approval--approved).
+
+Esta nota supersede únicamente el estado PENDING de la aprobación humana final post-base consignado históricamente en E15; conserva literalmente el contenido anterior, sus casillas y los resultados AC1–AC3 locales y AC4/AC5 globales NOT_VALIDATED. El código revisado sigue siendo `8770897bab29c79df54659e362f89d97c28b132a`, base `2f9a5f530c9fe3b60007ba5060c189133e353bf6`. Por identidad de producto, tests, base y alcance se reutilizan los dictámenes y campañas anteriores con sus fechas y límites; no son dictámenes nuevos ni nuevas ejecuciones.
+
+El pre-validation DoD del change activo fue PASS por TL. El registro de aprobación y DoD final activo corresponden al TL; el archivo específicamente autorizado a las 13:11:51 requiere después un encargo separado. No se archiva aquí ni se concede permiso de commit, push, PR o publicación. Los controles humanos, M5 y vínculos oficiales conservan sus límites y responsables.
+
+
+## Archivo específico y DoD final local — 08/10/2026
+
+El change JUP-047 quedó archivado el 08/10/2026 en `openspec/changes/archive/2026-10-08-jup-047-system-health-dashboard`, en la misma rama `feat/JUP-047-system-health-dashboard`, código `8770897bab29c79df54659e362f89d97c28b132a` y base `2f9a5f530c9fe3b60007ba5060c189133e353bf6`. Se incorporaron los deltas a las especificaciones [health-status](../../../specs/health-status/spec.md) y [system-health-dashboard](../../../specs/system-health-dashboard/spec.md); los dos requisitos anteriores de health-status permanecen.
+
+Paris aprobó la entrega local final el 08/10/2026 a las 14:36, Atlantic/Canary, con respuesta literal «si»; los segundos humanos no están disponibles y PM confirmó a las 14:36:07. Paris autorizó la corrección mecánica de los dos encabezados E12 a las 15:07, con respuesta literal «SI», confirmada por PM a las 15:07:04; el intento de archivo anterior quedó abortado sin cambios. Tras esa corrección, TL renovó el DoD final code/final con el change todavía ACTIVO: PASS, exit 0, sin errores; registro UTC `2026-10-08T14:16:00.6434523Z`. Se conserva [el resultado original exacto de ese DoD final renovado](local-dod-final.json), SHA256 `4b1b13ff29ea848e7d71e37b99c2e660a81d2bbc8a8a9ca2bc388a74095fda82`. No se vuelve a ejecutar el helper tras retirar el directorio activo.
+
+El archivo aplica la autorización específica de las 13:11:51 y el encargo separado posterior al DoD final. Esta nota supersede únicamente los pendientes históricos de aprobación local, DoD final y archivo; no borra historia ni cambia casillas, requisitos, escenarios o dictámenes técnicos. No acredita M5, participación ni reviews humanas, AC4/AC5 globales, CI remota o vínculos oficiales. Commit, subida, PR y publicación siguen pendientes con sus permisos propios. No hay pruebas de producto, builds, mutaciones, llamadas o gasto nuevos por este archivo.
+
+
+## Corrección propuesta tras PR81 — diseño 08/10/2026
+
+Estas tareas son nuevas y pendientes; no alteran casillas ni aprobaciones históricas. Fuente PM20:30:00/TL20:31:16; contrato y paths exactos en adenda final de design.md.
+
+- [ ] TL supervisa diseño; PM obtiene decisión humana expresa para2/5/7→8/18/20s y sonda configurable2..8s; registrar gate pre-code verificado antes de producto/tests.
+- [ ] Red separado: key exacta/incrustada en transporte/POST/DTO/observación/replay/GET; sano normal; operación >2s sana/estancada y recursos; configuración acotada; cliente20s/POST35s. Retirar blank EOF test policy en este scope test.
+- [ ] Green separado con Red fijo: frontera saneada, presupuesto coherente servidor/cliente, docs técnicas; Compose local no generativo temprano y luego checks afectados. No modificar alcance por fallo.
+- [ ] Mutation separada: operadores dirigidos en copias; control original/restaurado, guard y disposición completa. Sin instalar runner ni autocertificar excepciones.
+- [ ] TL consolida sólo incremento y aclara TTL histórico E13; alinea requisito temporal tras decisión, sin desarchivo ni reescritura de aprobaciones.
+- [ ] Revisor y Validador independientes con originales/hash PM frescos; aprobación final humana del incremento y publicación específica siguen gates separados.
+
+
+## Corrección PR81 aprobada y ejecutada localmente — 08/10/2026
+
+Esta sección sustituye el estado de propuesta/espera del incremento anterior, sin alterar casillas ni resultados históricos. Aprobación Paris «ok entonces apruebo los cambios», PM20:47:37 Atlantic/Canary; registro y límites en proposal.md.
+
+- [x] Aprobar diseño correctivo8/18/20s y sonda configurable2..8, sin nueva arquitectura/finanzas ni llamadas pagadas.
+- [x] Red separado significativo para credencial y límites; guards originales conservados.
+- [x] Green y correcciones separadas de fixtures incompatibles, sin debilitar expectativas ni modificar tests durante Green; resultados/incidencias en evidencia del incremento.
+- [x] Compose temprano sin LLM: seis lecturas sanas, dos Azure detenido failed y dos recuperado ok; diferencia de recursos y ruta host no verificada declaradas.
+- [x] Mutación dirigida14/14 detectadas, restauración y controles; cuatro reensayos afectados y diez reusos por identidad, sin sumar campañas.
+- [x] Consolidar aprobación, límites canónicos/archivados, E13 histórico y evidencia del Desarrollador; conservar archivo previo.
+- [x] Revisión técnica interna independiente afectada con original/hash PM previo y control de retorno; DOC-01 corregido y relectura REVIEW_PASS.
+- [x] Validación independiente local del incremento y caso error, con original/hash PM previo y retorno PASS; cuotas y límites físicos declarados, 18 casos propios y recorrido host/panel acreditados.
+- [x] Obtener aprobación humana final del incremento y autorización específica para commit/subida a PR81: Paris «aprobado», confirmación PM 08/10/2026 22:12:11 Atlantic/Canary.
+- [ ] PM ejecuta commit/subida y comprueba CI; respuesta/comentario todavía requiere presentación y aprobación específica. Reviews humanas siguen sus gates.
+
+
+## Cierre técnico independiente del incremento PR81 — 08/10/2026
+
+Este cierre actualiza únicamente los pendientes técnicos locales del incremento correctivo; conserva los resultados históricos, el archivo previo y sus aprobaciones con su alcance original. HEAD recibido `aa8f276ba04dba51148d11a8d6315dec26d8d32c`, base `2f9a5f530c9fe3b60007ba5060c189133e353bf6`; incremento todavía sin commit publicado. Aprobación humana final nueva PENDING. Roles humanos: Paris líder, Víctor pairing, Alejandro revisión, Lucía validación; proceso 2026-09-30/JUP-100.
+
+Revisor examinó el incremento y ejecutó 26 casos backend y 2 frontend PASS (59 no seleccionados). Su REVIEW_FAIL original identificó solamente DOC-01: un párrafo histórico de diseño parecía mantener pendiente el contrato temporal ya aprobado. TL añadió la aclaración sin borrar el párrafo; la relectura independiente terminó REVIEW_PASS a las 21:42:19 Atlantic/Canary, sin repetir suites. Addendum SHA256 `5d7df1e1cf80d3a9a512374fc803cdd383b0825be70464c4bd45a7d73970bb4a`; el fallo inicial no se reescribe.
+
+Validador entregó LOCAL_CORRECTIVE_SCOPE_PASS_WITH_DECLARED_LIMITS: 18 casos propios PASS (10 configuración/presupuesto, 4 tiempo/recuperación, 4 credencial exacta/incrustada con recibo, POST, replay y GET de otro usuario). Conservó las aserciones originales de credenciales en un adaptador externo Windows que permite IPC loopback y deniega conexiones externas. El intento nativo bloqueó socketpair interno de asyncio; Linux carecía de pytest y no ejecutó casos. Ambos intentos quedan registrados, sin atribuirles éxito ni cambiar producto/tests.
+
+Seis GET autenticados desde el host con DB/cola/procesador/vector sanos: 1,891–2,250 s; dos Azure simulado detenido failed/connection: 5,968–6,078 s; dos recuperados ok/simulated: 1,953–2,266 s. Todos inferiores a 18 s servidor/20 s cliente. Panel autenticado /system-health: sano, caída y recuperación 6→5→6; proveedor sin verificar y actividad vacía declarados correctamente. Capturas persistentes de los tres estados y procedencia SHA256 del build Vite en el informe externo. Cuotas agregadas verificadas de seis contenedores: 8 CPU/7040 MiB; host físico 28 CPU/33,6 GB y navegador fuera de cuotas. No es reproducción física exacta del entorno de Lucía. Recursos propios detenidos y conservados, puente/pestañas cerrados; sin LLM pagado, secretos reales o servicios ajenos.
+
+Evidencia externa: jup047-corrections-validation-20261008/REPORT.md SHA256 `b8e2fe5677720eec1487f6ca71be62e82807273fa735dfe9aba1544ad32af07e`; result.json `73ecdbc619e3f7ac65efbbb01c2cf17afe12414ff0ec7fea1e55de1270b548a8`; evidence-index.json `b70788aee82926497d67b7fe425751a36c33fb78bf07fbd4d94890fa191b13a4`, 19 archivos verificados por TL. No se suman campañas: 896 backend PASS/34 SKIP y 99 frontend PASS son Green previo del Desarrollador; 14/14 mutantes detectados pertenecen a aquella campaña y conservan su disposición individual.
+
+PM comunicó control independiente de retorno Validador PASS, salida 0/sin violaciones, a las 22:04:08 Atlantic/Canary, contra el mismo original SHA256 `272a036944049b30a9390a28c76e860ee6f35eb166e6120de521d061efb835df`. Validador repitió su guard final PASS/0 violaciones a las 21:05:19 UTC y cedió la plaza a las 22:05:32 Atlantic/Canary. PM había comunicado retornos Revisor y DOC-01 PASS a las 21:39:07 y 21:43:20. TL verificó identidad de las 924 fuentes respecto al original validado antes de esta adenda y conserva comprobación de identidad de producto/tests al cierre. Controles conductuales, sin afirmar sandbox de lectura; PM conserva el control independiente final antes de publicación.
+
+AC1–AC3 acreditados únicamente para este incremento local. AC4 global y vínculo/publicación de AC5 NOT_VALIDATED aquí; requieren PM y participantes humanos. Las 34 pruebas opt-in JUP086, CI remota, proveedor pagado y DockerServer/M5 remoto no se han validado en esta campaña. Móvil sigue diferido; la observación informativa de desplazamiento horizontal global a 390 px no es un PASS móvil ni amplía el alcance.
+
+Pendientes: aprobación humana final nueva, control final independiente PM, autorización específica y ejecución de commit/push, lectura oficial actualizada de todas las reviews/comentarios/conversación, CI y vínculos tras publicar, respuesta autorizada y relectura/revalidación por Alejandro y Lucía. No se desarchiva, no se altera el DoD activo histórico ni se solicita nuevo archivo. Este registro no autoriza publicaciones ni sustituye reviews humanas. PM aplica sus comprobaciones y, si propusiera publicar con acciones propias pendientes, las dos confirmaciones específicas exigidas.
+
+
+## Aprobación humana final del incremento correctivo — 08/10/2026
+
+Paris respondió literalmente «aprobado» a la pregunta explícita de aprobación final de la entrega correctiva y autorización de commit/subida a PR81. Fuente: confirmación del Project Manager en el chat `01a1063b-fed3-7480-a0d6-cc6f374ecacf`, 08/10/2026 22:12:11 Atlantic/Canary; no se dispone del segundo exacto del mensaje humano. PM confirmó además su control independiente final previo: sólo los cuatro documentos de cierre diferentes y las otras 920 fuentes intactas frente al original validado, sin cambios Git.
+
+Esta decisión supersede únicamente los estados PENDING de aprobación final humana del incremento y de autorización de commit/subida consignados arriba; conserva esos registros históricos, dictámenes, resultados y límites. PM ejecutará commit/subida a PR81 y comprobará CI. El comentario/respuesta requiere que PM lo muestre y Paris lo apruebe: todavía no está autorizado. Las reviews humanas de Alejandro y Lucía y los restantes gates oficiales permanecen pendientes. TL sólo registra esta aprobación, sin producto/tests, Git, nuevas pruebas, delegación ni publicación.

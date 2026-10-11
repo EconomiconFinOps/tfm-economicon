@@ -6,6 +6,23 @@
 - Base: `origin/develop` en `278769c` (JUP-094, PR #28).
 - Pull request: pendiente de abrir (se completa este enlace y el de CI tras el paso 7 del flujo).
 
+> **Nota del 2026-10-09 (JUP-105).** Este documento es un registro de lo que se validó el 2026-09-12 y
+> no se reescribe. Tres afirmaciones suyas dejaron de ser ciertas después:
+>
+> - **`Frontend tests` no es un check obligatorio.** El job que esta tarjeta añadió duplicaba la
+>   ejecución de pruebas que ya cubre `Frontend build`, y se retiró al reconciliar con `develop` el
+>   2026-09-19 junto con sus entradas en los rulesets. Los checks obligatorios vigentes son ocho
+>   (hoy incluyen `JUP reviews`, de JUP-100). Las líneas sobre `Frontend tests` de las secciones
+>   «Alcance validado», «Limitaciones y deuda declaradas» y «Pendiente» describen un estado que ya no existe; la
+>   historia correcta está en
+>   [docs/governance/github-branch-protection.md](../governance/github-branch-protection.md).
+> - **«Solo `/overview-legacy` consume datos reales» y «las 5 pantallas de coste son de
+>   demostración».** JUP-026 y JUP-055 conectaron `/` a costes almacenados y JUP-047 añadió
+>   `/system-health`. El recuento vigente está en la sección «Rutas» de
+>   [apps/frontend/README.md](../../apps/frontend/README.md#rutas).
+> - **«`RF-095-001` bloquea cualquier navegador real».** CORS lo resolvió JUP-085 y el hallazgo está
+>   en `Fixed`.
+
 ## Alcance validado
 
 - Los 8 `.tsx` vivos del origen portados (5 dashboards de coste, `Layout`, `ExportButton`,
@@ -71,7 +88,8 @@ turbo) sustituidos por sus equivalentes `--filter @finops/frontend`, por la mism
 entorno preexistente que documenta `RF-093-001` (un `pnpm` global instalado vía `npm` en la máquina
 de desarrollo pisa al gestionado por `corepack` cuando `turbo` invoca los scripts por paquete;
 confirmado que afecta a los 4 paquetes del monorepo por igual, no específico de esta tarjeta). El
-mismo motivo bloqueó `.claude/harness/check-dod.mjs` en las tareas 7.1/7.2 y 8.1/8.2; verificado
+mismo motivo bloqueó la verificación de DoD desde la raíz (`corepack pnpm test`, `lint` y
+`typecheck`) en las tareas 7.1/7.2 y 8.1/8.2; verificado
 manualmente con los comandos `--filter` equivalentes en ambos casos (detalle en `review.md`).
 
 ## Verificación manual E2E

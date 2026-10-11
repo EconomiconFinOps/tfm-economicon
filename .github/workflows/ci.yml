@@ -15,6 +15,7 @@ name: CI
       - edited
       - ready_for_review
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -72,16 +73,22 @@ jobs:
           corepack pnpm assistant-corpus:validate
           corepack pnpm validation-questions:validate
           corepack pnpm validation-questions:test
+          corepack pnpm business-metrics:validate
+          corepack pnpm business-metrics:test
           corepack pnpm retrieval-labels:validate
           corepack pnpm retrieval-labels:test
           corepack pnpm retrieval-calibration:test
           corepack pnpm assistant-metrics:test
+          corepack pnpm assistant-eval:test
           corepack pnpm synthetic-costs:test
           corepack pnpm synthetic-demo:test
           corepack pnpm llm-gateway:test
+          python -m unittest discover -s tools -p test_litellm_product_keys.py -v
           corepack pnpm docker:validate
           corepack pnpm local:test
+          corepack pnpm cd:test
           corepack pnpm collaboration:test
+          corepack pnpm contributions:test
           corepack pnpm openspec:validate
 
   python-tests:
@@ -137,7 +144,7 @@ jobs:
       - name: Lint frontend
         run: corepack pnpm lint --filter=@finops/frontend
       - name: Test frontend journeys
-        run: corepack pnpm test --filter=@finops/frontend
+        run: corepack pnpm --filter @finops/frontend test
       - name: Build frontend
         run: corepack pnpm --filter @finops/frontend build
 

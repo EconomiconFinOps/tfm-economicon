@@ -17,13 +17,41 @@ implementar escritor y lector compatibles, crear una base nueva, reingerir el
 corpus y validar antes de cambiar las conexiones. No modificar la dimension
 sobre un volumen existente: el processor ahora rechaza ese desajuste al iniciar.
 
-Limitacion heredada RF-021-001: la migracion 001 obtiene la dimension del entorno
-del proceso, mientras Settings tambien puede leer `ECONOMICON_ENV_FILE`. Para
-crear una base con dimension distinta de ocho, exportar `EMBEDDING_DIMENSION`
-con el mismo valor antes de arrancar; definirlo solo en ese fichero no basta.
-Compose ya lo proporciona por entorno. No cambiar la dimension de un volumen
-para resolver este problema: conservar la configuracion compatible o reingerir
-en una base nueva. Ver [registro del hallazgo](../../openspec/findings/backlog.md#rf-021-001--dimension-desde-fichero-de-entorno).
+JUP-102 / RF-021-001: la migracion 001 recibe la dimension efectiva del store,
+resuelta por Settings. La precedencia permanece: argumento explicito de Settings,
+variable del proceso, fichero seleccionado por `ECONOMICON_ENV_FILE`, valor
+predeterminado (8). Para una base nueva basta `EMBEDDING_DIMENSION=16` en ese
+fichero; no hace falta exportar la dimension otra vez. Una variable ya exportada
+prevalece sobre el fichero: retirarla si se desea usar el valor del fichero.
+`ECONOMICON_ENV_FILE` lo carga `get_settings()`; un caller directo de Settings
+debe pasar `_env_file` explicitamente. No se modifica el entorno durante migraciones.
+
+Un volumen existente conserva su dimension, datos y ledger. Si ya se creo como
+vector(8) por el fallo anterior, esta correccion no lo convierte a vector(16).
+Mantener configuracion compatible o reingerir expresamente en una base nueva.
+El guard de arranque conserva el StartupError accionable. Ver
+[evidencia JUP-102](../evidence/JUP-102-validation.md) y
+[hallazgo](../../openspec/findings/backlog.md#rf-021-001--dimension-desde-fichero-de-entorno).
+
+### Regresion de configuracion con pgvector real
+
+En una instancia desechable exclusiva (no la de JUP-021 ni una base de usuarios),
+publicar PostgreSQL solo en loopback con puerto no estandar. La base `postgres`
+debe estar vacia y no debe haber otras bases de usuario. Proporcionar una URL
+autenticada `postgresql+psycopg` mediante `JUP102_VECTOR_TEST_URL`, sin guardarla
+en Git. Desde `apps/processor`, con `requirements-dev.txt` instalado:
+
+```bash
+python -m pytest tests/test_vector_settings_migrations.py tests/test_vector_settings_pgvector.py -v
+```
+
+Sin esa variable, las pruebas reales se omiten y no acreditan PostgreSQL. Con
+ella, cada caso crea y elimina solamente su propia base UUID. Ejecutarlas de
+forma serial: se rechazan instancias con bases/tablas preexistentes. Se prueban
+8 por defecto, 16 por entorno/fichero, precedencia entorno 24 sobre fichero 16,
+argumento explicito 32, retrieval real del backend y aislamiento por tenant.
+Tambien se comparan esquema, indices, ledger con timestamps y todas las filas
+antes/despues de rechazar 16→8, 16→32 y volumen legado 8→16.
 
 ## Arranque y smoke en una base dedicada vacia
 

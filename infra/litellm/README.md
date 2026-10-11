@@ -1,9 +1,69 @@
 # Isolated LiteLLM runtime (JUP-023 / JUP-078)
 
+## Product key administration (JUP-078)
+
+Run `tools/litellm-product-keys.py` on the POSIX gateway host. The administrator
+credential comes from `LITELLM_MASTER_KEY`, or `--master-env-file` pointing to
+an owner-only **JSON** file containing that field (not a dotenv file).
+Never supply secrets in command arguments, paste them into chat or commit them.
+
+```bash
+python3 tools/litellm-product-keys.py issue --url http://127.0.0.1:44000 --keys-file /private/product-keys.json
+python3 tools/litellm-product-keys.py inspect --url http://127.0.0.1:44000 --keys-file /private/product-keys.json
+python3 -m unittest discover -s tools -p test_litellm_product_keys.py -v
+JUP078_DOCKER_FAKE=1 python3 tools/test_litellm_product_keys_docker.py
+```
+
+The destination parent must already exist and be private. An existing file is
+inspected rather than replaced. Serialize administration against one canonical
+file: this tool does not prevent concurrent administrators or issuance through
+other paths. An interrupted/uncertain request requires gateway reconciliation
+before retrying. If rollback fails, use `rollback-pending` with the same file
+path to revoke credentials kept privately for recovery. `revoke` deletes the
+stored keys from the gateway and removes the private file; first stop their
+consumers. Revocation does not authorize resetting the budget by issuing again.
+
+Processor gets USD 9 and backend USD 1 per 30 days, both expiring after 30 days;
+RPM 10, TPM 20000, one concurrent request per key. Backend is embedding-only;
+processor has primary chat and embeddings. DeepSeek evaluation is deliberately
+excluded from operational credentials. Automatic rotation is disabled because
+it would reset spend: manually reconcile remaining budget and the original
+window before replacement, including asynchronous and in-flight charges.
+Renewal is manual; expiry intentionally fails closed. Counters may overshoot
+by an in-flight request and are not a hard atomic reservation.
+
+The 2026-10-10 deployment receipt and private handoff paths are documented in
+[JUP-078 operational closure](../../docs/evidence/JUP-078-operational-closure.md).
+No model calls are made by issuance or inspection. All real-spend gates below
+remain applicable.
+
 This opt-in Compose project supplies the gateway and its own plain PostgreSQL
-for revocable virtual keys and spend metadata. The root Compose and processor
-mock defaults remain unchanged. Never reuse the shared DockerServer, its
+for revocable virtual keys and spend metadata. The same two services are
+included by the root Compose under its optional `ai` profile; the root mock
+defaults remain unchanged. Never reuse the shared DockerServer, its
 containers, networks, volumes, product database or vector database.
+
+For the complete root stack, use both `-f docker-compose.yml` and
+`-f infra/litellm/compose.ai.yml` with `--profile ai`. The additional file
+makes gateway health mandatory for backend and processor; the profile alone
+does not gate their startup. Follow the [root startup instructions](../../README.md#perfil-opcional-de-ia-real)
+for two scoped keys and a separate project when replacing eight-dimensional
+mock embeddings with 1536-dimensional real embeddings. Preserve the mock
+project volumes; changing the dimension does not migrate an existing table.
+
+For the complete application stack, the root README is the canonical guide:
+
+- [Mock startup without OpenRouter](../../README.md#modo-mock-stack-completo-sin-openrouter):
+  explicit mock providers/dimension8, normal stack credentials, doctor, startup
+  and smoke. No gateway or virtual key is required.
+- [AI startup](../../README.md#perfil-opcional-de-ia-real): bootstrap, two scoped
+  keys, `.env.ai`, separate1536-dimensional volumes and full stack command.
+- [Return from AI to the original mock project](../../README.md#volver-de-ia-al-proyecto-mock-original):
+  stop AI without deleting volumes, restore the original mock environment/project
+  and restart. Keep shell overrides from selecting a different mode or project.
+
+The isolated gateway commands below run only LiteLLM/PostgreSQL; they do not
+start frontend, backend, processor or the other application infrastructure.
 
 ## Approved pins and pending runtime checks
 
@@ -43,6 +103,7 @@ the owner must prevent real credentials from replacing synthetic values.
 | `LITELLM_DATABASE_PASSWORD` | Gateway DB and gateway connection only; unique strong URL-safe password, e.g. random hexadecimal; no default |
 | `LITELLM_ADMIN_PORT` | Optional loopback port, default 44000; choose a free port |
 | `LITELLM_API_KEY` | Processor only; separate scoped, revocable virtual key |
+| `BACKEND_LITELLM_API_KEY` | Backend only in the root Compose; embedding alias only |
 
 Only explicitly listed variables enter containers; no wholesale `env_file`
 forwarding. PostgreSQL has no public port. Gateway administration binds only to
@@ -53,8 +114,8 @@ From the repository root, after the applicable runtime gate, substitute a unique
 owned project name and absolute environment-file path:
 
 ```text
-docker compose --env-file <absolute-isolated-env-file> -p <owned-unique-project> -f infra/litellm/docker-compose.yml config --quiet
-docker compose --env-file <absolute-isolated-env-file> -p <owned-unique-project> -f infra/litellm/docker-compose.yml up -d
+docker compose --env-file <absolute-isolated-env-file> -p <owned-unique-project> -f infra/litellm/docker-compose.yml --profile ai config --quiet
+docker compose --env-file <absolute-isolated-env-file> -p <owned-unique-project> -f infra/litellm/docker-compose.yml --profile ai up -d
 ```
 
 For manual fake-upstream runs, append `-f <isolated-fake-override>`
@@ -62,6 +123,9 @@ before each subcommand. Do not start the base configuration against OpenRouter
 during that phase. Never run full `docker compose config`, dump container
 environments or retain unsanitized API output. `/health/liveliness` does not
 invoke a model. Cleanup belongs to the owner and targets only that project.
+The isolated fake override must make both `gateway` and `default` networks
+internal: LiteLLM joins the root application's default network when included
+there, but synthetic tests must not gain an external route.
 
 ## Synthetic integration replay
 

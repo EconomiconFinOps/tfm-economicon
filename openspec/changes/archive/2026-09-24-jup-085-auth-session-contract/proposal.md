@@ -25,7 +25,7 @@ QA_PASS acotado al incremento, registrado el 23/09 a las 16:33:02.775 UTC.
 El residual aprobado de sesion y CORS esta implementado en el worktree sobre
 HEAD `3a08d60` mas diff local: REVIEW_PASS de codigo; QA_BLOCKED_ENV por
 RF-085-002, mitigacion temporal insuficiente; gate humano pendiente. Estado
-actual en [review.md](review.md) y [evidencia incremental](../../../docs/evidence/JUP-085-validation.md#incremento-actual-tolerancia-jwt-de-5-s).
+actual en [review.md](review.md) y [evidencia incremental](../../../../docs/evidence/JUP-085-validation.md#incremento-actual-tolerancia-jwt-de-5-s).
 El gate pre-code del 23/09 esta resuelto por el registro literal al final;
 ADR-0007 Accepted, sin cambios. Resultados anteriores al incremento de 5 s: backend 245 y frontend 235 PASS;
 899 PASS / 34 SKIP totales, 215 casos residuales nuevos. Mutacion: 37 variantes,
@@ -165,7 +165,7 @@ El backend del worktree ya configura CORS; el commit base upstream no lo hacia.
 RF-087-001 y RF-095-001 siguen Open hasta QA runtime estable. [design.md](design.md)
 concreta la direccion elegida: middleware existente, allowlist JSON de origenes
 exactos vacia por defecto, GET/POST, cabeceras del cliente y sin cookies.
-[ADR-0007](../../../docs/adr/ADR-0007-backend-cors-policy.md) esta Accepted;
+[ADR-0007](../../../../docs/adr/ADR-0007-backend-cors-policy.md) esta Accepted;
 incluye limites de errores observables y compatibilidad HTTPS/HTTP. Se propone
 dentro de JUP-085, sin nueva tarjeta ni asignaciones. Antecedente del 23/09, antes de mitigar el reloj:
 Chromium normal sobre Compose aislado de cinco servicios registro login 500;

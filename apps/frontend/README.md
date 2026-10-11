@@ -82,17 +82,26 @@ apps/frontend
 Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el resto cuelga de
 `SessionGate` (redirige a `/login` sin sesión) y `Layout` (navegación, selector de tenant, sesión):
 
-| Ruta | Pantalla | Notas |
-| --- | --- | --- |
-| `/login` | `LoginPage` | Fuera de `SessionGate`; crea la sesión |
-| `/` | `ExecutiveCostDashboard` | Costes almacenados vía `GET /billing/summary` v2: intervalo mensual, desglose, tendencia y comparación del primer/último mes observado con coste no cero por moneda (JUP-055) |
-| `/operational` | `OperationalCostDashboard` | Datos de demostración |
-| `/cuts` | `ExecutiveCutDashboard` | Datos de demostración |
-| `/anomalies` | `AnomaliesPanel` | Datos de demostración |
-| `/recommendations` | `RecommendationsPanel` | Datos de demostración |
-| `/ingest` | `IngestPage` | Datos reales vía `services/api.ts` |
-| `/assistant` | `ConversationsPage` | Datos reales vía `services/api.ts` |
-| `/overview-legacy` | `DashboardPage` | Ruta puente conservada, conectada al backend (`GET /billing/summary`, `GET /health`) |
+| Ruta | Pantalla | Origen de los datos | ¿La interfaz rotula la demostración? | Notas |
+| --- | --- | --- | --- | --- |
+| `/login` | `LoginPage` | Backend (`POST /auth/login`) | No aplica | Fuera de `SessionGate`; crea la sesión |
+| `/` | `ExecutiveCostDashboard` | Backend (`GET /billing/summary` v2) | No aplica | Costes almacenados: intervalo mensual, desglose, tendencia y comparación del primer/último mes observado con coste no cero por moneda (JUP-055) |
+| `/operational` | `OperationalCostDashboard` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
+| `/cuts` | `ExecutiveCutDashboard` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
+| `/anomalies` | `AnomaliesPanel` | Demostración (`src/data/demo/`) | Sí | Aviso visible, periodo de muestra y rótulo en la exportación (JUP-057) |
+| `/recommendations` | `RecommendationsPanel` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
+| `/ingest` | `IngestPage` | Backend (`POST /jobs/ingest`) | No aplica | Vía `services/api.ts` |
+| `/assistant` | `ConversationsPage` | Backend (`/assistant/conversations`) | No aplica | Vía `services/api.ts` |
+| `/overview-legacy` | `DashboardPage` | Backend (`GET /billing/summary`, `GET /health`) | No aplica | Ruta puente conservada; ver `RF-105-001` en `openspec/findings/backlog.md` |
+| `/system-health` | `SystemHealthDashboard` | Backend (`GET /health/status`, `POST /health/provider-check`) | No aplica | Rotula «Datos de ejemplo» por componente cuando su origen es `mock` (JUP-047) |
+
+**Recuento (verificado el 2026-10-09 contra `src/routes.tsx` y los imports de cada pantalla, sobre
+`develop` en `ff2ea6b`):** 9 rutas bajo sesión más `/login`. 5 sirven datos del backend (`/`,
+`/ingest`, `/assistant`, `/overview-legacy`, `/system-health`) y 4 son de demostración (`/operational`,
+`/cuts`, `/anomalies`, `/recommendations`), de las cuales solo `/anomalies` lo indica en la interfaz
+(`RF-104-004`). Este es el único recuento de pantallas del repositorio: el backlog, el mapa de
+carencias de JUP-097 y el spike enlazan aquí en lugar de repetir cifras. Quien añada, retire o
+conecte una pantalla actualiza esta tabla y la fecha.
 
 ## Estilos y colores
 
@@ -218,8 +227,9 @@ pnpm build
   ya no muestra inventario, tendencia ni exportación de demostración. El ahorro potencial sigue
   no disponible porque el contrato no lo calcula.
 - Las otras cuatro pantallas de coste (`/operational`, `/cuts`, `/anomalies`, `/recommendations`)
-  conservan los datos de demostración estáticos (`src/data/demo/`); los gaps restantes de
-  `RF-095-002` en `openspec/findings/backlog.md` no se dan por resueltos por JUP-055.
+  conservan los datos de demostración estáticos (`src/data/demo/`; recuento en la sección «Rutas»);
+  los gaps restantes de `RF-095-002` en `openspec/findings/backlog.md` no se dan por resueltos por
+  JUP-055.
 
 ## Panel ejecutivo de costes (JUP-055)
 
@@ -401,3 +411,11 @@ CI ejecuta lint y pruebas antes del build en el check obligatorio `Frontend
 build`. El typecheck tambien verifica los tests en `tsconfig.test.json`, sin
 introducir globals de Node o del runner en el proyecto browser. Todos los
 componentes son `.tsx` con contratos de props comprobados por TypeScript.
+
+## Salud del sistema — JUP-047
+
+La ruta `/system-health`, bajo sesión y ámbito del cliente, muestra disponibilidad y resúmenes de jobs e ingesta con componentes y tokens compartidos. OpenRouter recibe una intención de comprobación al abrir el panel y cada 10 minutos (600000 ms), únicamente con sesión autenticada y el panel abierto y visible. Actualizar comparte la exclusión de solicitudes y reinicia el plazo periódico. Ocultar el panel pausa los envíos; volver a mostrarlo no acumula comprobaciones atrasadas. El polling visible cada 30 segundos solo solicita diagnóstico GET, sin generar inferencias. Logout, cambio de ámbito y unmount cancelan solicitudes, limpian temporizadores y descartan resultados antiguos. Cada intención conserva los gates ordinarios de admisión, cooldown, presupuesto y reservas; el temporizador no autoriza gasto por sí mismo.
+
+Se conserva la última observación real y su fecha hasta otro resultado real, sin caducidad automática por TTL. Un timeout nuevo produce `unknown` y conserva la fecha y el identificador del éxito anterior como historia; GET/polling no renueva fechas ni convierte esa historia en disponibilidad actual. OpenRouter muestra «Disponible» y «Respuesta válida a» para la última respuesta funcional válida que siga siendo el resultado actual. «Modelo informado»/«Identidad no confirmada» y coste del gateway no confirmado/no disponible/inválido aparecen aparte. Se usa el intento y tenant seleccionados. Azure mantiene la procedencia explícita «SIMULADO»; las fechas UTC válidas admiten hasta 1000 ms futuros inclusive respecto de la recepción para su presentación, conservando su valor original.
+
+Véase el [runbook de salud](../../docs/runbooks/system-health.md) para contrato, configuración y gates reales. Las pruebas semánticas jsdom y la preview sintética no acreditan píxeles, overflow, recorrido completo de teclado ni OpenRouter real. La comprobación remota M5 corresponde a Alejandro y sigue pendiente.
