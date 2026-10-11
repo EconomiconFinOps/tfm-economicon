@@ -40,7 +40,10 @@ async function openHistory() {
 }
 async function selectRequest() {
   const dialog = await openHistory();
-  fireEvent.click(await within(dialog).findByRole("button", { name: /Pregunta guardada/ }));
+  const select = await within(dialog).findByRole("button", { name: "Conversación propia" });
+  await waitFor(() => expect(select).toBeEnabled());
+  expect(within(dialog).queryByText(/Solicitudes guardadas|Pregunta guardada/)).toBeNull();
+  fireEvent.click(select);
 }
 async function uncertainSend() {
   failGeneration = true;
@@ -65,7 +68,9 @@ beforeEach(() => {
       queue: { state: "idle", reason: "cold", active: false, pending: false, blocked: false, retryable: false } });
     if (path === "/assistant/conversations") {
       if (method === "POST" && failCreation) throw new TypeError("Synthetic lost creation response");
-      return json(method === "POST" ? conversation : { items: [conversation] });
+      return json(method === "POST" ? conversation : { items: [conversation,
+        ...(requests.some(item => (item as { conversation_id: string }).conversation_id === "other-saved")
+          ? [{ ...conversation, id: "other-saved", title: "Otra conversación" }] : [])] });
     }
     if (path.endsWith("/generations") && method === "POST" || path.endsWith("/events")) {
       if (method === "POST" && failGeneration) throw new TypeError("Synthetic lost reservation response");
@@ -87,7 +92,7 @@ describe("Solicitudes privadas y envío incierto JUP-035", () => {
     const view = mount();
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Abrir asistente" })); });
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Historial" })); });
-    await act(async () => { fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: /Pregunta guardada/ })); });
+    await act(async () => { fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Conversación propia" })); });
     await act(async () => { await vi.advanceTimersByTimeAsync(0); });
     return view;
   }
@@ -140,7 +145,7 @@ describe("Solicitudes privadas y envío incierto JUP-035", () => {
       current = { ...current, operation_id: "other", request_id: "other-intent", retry_at: new Date(start + 5000).toISOString() };
       requests = [{ tenant_id: "t", user_id: "alice", conversation_id: "other-saved", question: "Otra pregunta pausada", operation: current }];
       await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Historial" })); });
-      await act(async () => { fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: /Otra pregunta pausada/ })); });
+      await act(async () => { fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Otra conversación" })); });
       const resume = screen.getByRole("button", { name: "Reanudar solicitud" });
       await act(async () => { await vi.advanceTimersByTimeAsync(1001); });
       expect(resume).toBeDisabled();
@@ -194,8 +199,8 @@ describe("Solicitudes privadas y envío incierto JUP-035", () => {
     expect(calls.some(call => call.path.endsWith("/generations/op") && call.method === "GET")).toBe(true);
     expect(calls.filter(call => call.method === "POST")).toHaveLength(0);
   });
-  it("reintenta una solicitud terminal sólo por acción humana con clave nueva y vínculo a la anterior", async () => {
-    current = { ...current, state: "cancelled" };
+  it("reintenta una solicitud fallida sólo por acción humana con clave nueva y vínculo a la anterior", async () => {
+    current = { ...current, state: "failed" };
     requests = [{ tenant_id: "t", user_id: "alice", conversation_id: "saved", question: "Pregunta guardada", operation: current }];
     mount(); await selectRequest();
     const retry = await screen.findByRole("button", { name: "Reintentar respuesta" });
@@ -210,10 +215,14 @@ describe("Solicitudes privadas y envío incierto JUP-035", () => {
   it.each([["other", "alice"], ["t", "bob"]])("rechaza solicitudes ajenas %s/%s conservando el historial propio", async (tenant_id, user_id) => {
     requests = [{ tenant_id, user_id, conversation_id: "saved", question: "Privado ajeno", operation }];
     mount(); const dialog = await openHistory();
-    expect(await within(dialog).findByText("No se pudieron cargar las solicitudes guardadas.")).toBeVisible();
-    expect(within(dialog).getByRole("button", { name: "Conversación propia" })).toBeVisible();
+    const select = await within(dialog).findByRole("button", { name: "Conversación propia" });
+    await waitFor(() => expect(select).toBeEnabled());
+    expect(within(dialog).queryByText(/Solicitudes guardadas/i)).toBeNull();
+    fireEvent.click(select);
+    expect(await screen.findByRole("textbox", { name: "Pregunta" })).toHaveValue("");
     expect(screen.queryByText("Privado ajeno")).toBeNull();
     expect(calls.some(call => call.path.endsWith("/events"))).toBe(false);
+    expect(calls.some(call => call.path.endsWith(`/generations/${operation.operation_id}`))).toBe(false);
   });
   it("comprueba el envío incierto con idéntica clave, pregunta y captura aunque cambie la pantalla", async () => {
     const mounted = mount(); await uncertainSend();
@@ -237,6 +246,25 @@ describe("Solicitudes privadas y envío incierto JUP-035", () => {
     fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
     expect(calls.filter(call => call.path.endsWith("/generations"))).toHaveLength(1);
     expect(screen.getByText("Pregunta incierta")).toBeVisible();
+  });
+  it("seleccionar el historial no sustituye un envío incierto por una operación antigua", async () => {
+    mount(); await uncertainSend();
+    const original = calls.find(call => call.path.endsWith("/generations"))!;
+    fireEvent.click(screen.getByRole("button", { name: "Historial" }));
+    const select = await within(await screen.findByRole("dialog")).findByRole("button", { name: "Conversación propia" });
+    await waitFor(() => expect(select).toBeEnabled());
+    fireEvent.click(select);
+    expect(await screen.findByRole("button", { name: "Comprobar envío" })).toBeVisible();
+    expect(screen.getByText("Pregunta incierta")).toBeVisible();
+    expect(screen.queryByText("Pregunta guardada")).toBeNull();
+    expect(calls.filter(call => call.path.endsWith("/generations"))).toHaveLength(1);
+    failGeneration = false;
+    fireEvent.click(screen.getByRole("button", { name: "Comprobar envío" }));
+    await waitFor(() => expect(reader).toBeDefined());
+    const submitted = calls.filter(call => call.path.endsWith("/generations"));
+    expect(submitted).toHaveLength(2);
+    expect(submitted[1].raw).toBe(original.raw);
+    expect(calls.some(call => call.path.endsWith("/resume") || call.path.endsWith("/stop"))).toBe(false);
   });
   it("descarta la comprobación y pregunta incierta al cambiar de tenant sin Stop", async () => {
     const mounted = mount(); await uncertainSend();

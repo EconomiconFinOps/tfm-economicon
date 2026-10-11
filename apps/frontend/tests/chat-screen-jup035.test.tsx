@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "../src/layouts/Layout";
 import { OperationalCostDashboard } from "../src/pages/OperationalCostDashboard";
@@ -54,7 +55,8 @@ function mount(path: string) {
     { path: "recommendations", element: <RecommendationsPanel /> },
     { path: "ingest", element: <p>Sin adaptador financiero</p> }
   ] }] }], { initialEntries: [path] });
-  return { ...render(<RouterProvider router={router} />), router };
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+  return { ...render(<QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>), router };
 }
 async function send() {
   if (screen.queryByRole("button", { name: "Abrir asistente" })) fireEvent.click(screen.getByRole("button", { name: "Abrir asistente" }));

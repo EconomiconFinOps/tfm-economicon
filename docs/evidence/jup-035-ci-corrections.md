@@ -53,3 +53,46 @@ Logs y referencia SHA256 de los seis archivos iniciales bajo la ruta local
 `e5-context-compression-evidence/restart-20261011/ci-corrections/`, junto al
 worktree entregado al PM. `original.csv` es referencia local de este delta,
 no un reemplazo de las referencias originales ni un guard del PM.
+
+## Segunda correccion focal tras CI de 305d41a
+
+La CI avanzo hasta los tests de frontend y detecto 14 fallos en dos archivos.
+Se reprodujeron localmente: 14 FAIL / 13 PASS. Las pruebas de pantalla montaban
+el dashboard sin QueryClientProvider; ahora usan un cliente aislado como el
+runtime real, sin modificar las comprobaciones de importes, monedas y captura.
+
+Las pruebas de solicitudes pulsaban elementos del apartado retirado del
+historial. Ahora seleccionan la conversacion y conservan las aserciones de
+deadline, presupuesto, GET/SSE, resultado confirmado, aislamiento y clave de
+reintento. El caso de reintento terminal usa `failed`, no `cancelled`, conforme
+a la decision de mostrarlo exclusivamente en respuestas fallidas.
+
+La adaptacion puso de manifiesto un defecto real: seleccionar una conversacion
+no restauraba su operacion guardada. ChatPanel conecta esa seleccion con el
+restaurador existente para la operacion mas reciente del listado ordenado por
+el backend, sin volver a mostrar Solicitudes guardadas. Espera la carga del
+listado y preserva las operaciones locales, los envios en curso y los inciertos.
+
+La revision independiente detecto que la primera correccion podia sustituir
+un envio incierto por una operacion anterior. Se anadio un caso focal que fallo
+antes de corregirlo; despues comprueba la pregunta, Comprobar envio y la misma
+clave/payload. El dictamen interno incremental posterior es REVIEW_PASS; no
+se presenta como review humana formal ni validacion funcional real.
+
+- Red con fixtures actuales antes de reparar recuperacion: 9 FAIL / 18 PASS.
+- Green final: 70 PASS en seis archivos, sin omisiones.
+- Tipos de aplicacion y pruebas: PASS; lint: cero errores, el mismo aviso.
+- Build: PASS antes de la proteccion final del envio incierto; esa proteccion
+  posterior fue comprobada con tipos y tests, no un segundo build.
+- Mutaciones: retirar recuperacion o proteccion de incertidumbre provoca
+  fallo conductual en copia desechable; ninguna mutacion en el worktree.
+- SHA256 de las tres rutas tecnicas intacto tras revision, referencia original
+  preservada. Sin nuevas llamadas, backend, stack, commit o push.
+
+Registros bajo la misma carpeta externa: red-frontend-followup.log,
+red-conversation-recovery.log, red-uncertain-history.log,
+green-frontend-followup2.log, lint-frontend-followup.log,
+build-frontend-followup.log, mutation-history-recovery.log,
+mutation-uncertain-history.log y frontend-followup-review.md. Los logs Red
+compactos conservan recuentos; algunos detalles de assertions se mostraron
+en la salida de ejecucion y no estan completos en esos archivos.

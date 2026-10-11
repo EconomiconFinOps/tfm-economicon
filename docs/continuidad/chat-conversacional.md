@@ -10,7 +10,8 @@ La continuidad no sustituye alcance y roles de Trello ni las reviews humanas.
 ## Referencias
 
 - [Correcciones locales de CI](../evidence/jup-035-ci-corrections.md): tokenizer
-  declarado, prueba portable, plugin de lint compatible y fixtures HMAC;
+  declarado, prueba portable, plugin de lint compatible, fixtures HMAC y
+  recuperacion de operaciones desde conversaciones sin mostrar solicitudes;
   confirmacion remota pendiente.
 - [Cambio OpenSpec](../../openspec/changes/archive/2026-10-11-jup-035-conversational-web-interface/proposal.md).
 - [Integracion con Compose](../../openspec/changes/archive/2026-10-11-jup-035-conversational-web-interface/compose-chat-design.md).

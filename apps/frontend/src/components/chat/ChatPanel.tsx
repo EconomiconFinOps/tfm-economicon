@@ -160,8 +160,13 @@ export function ChatPanel({ scope, userRole }: { scope: ChatScope; userRole?: st
                   {!value.historyLoading && !value.historyError && !value.history.length && <p>No hay conversaciones guardadas.</p>}
                   {value.history.map(record => <div key={record.id} className="mb-2 flex min-w-0 items-center gap-1 rounded-lg border border-border bg-card p-1">
                     <ConversationTitleEditor title={record.title} label={`Renombrar ${record.title}`} onSave={title => session.rename(record.id, title)}>
-                      <button className="min-w-0 flex-1 self-stretch break-words rounded px-2 py-2 text-left text-sm text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-highlight" onClick={() => {
-                        void session.select(record); setHistoryShown(false);
+                      <button className="min-w-0 flex-1 self-stretch break-words rounded px-2 py-2 text-left text-sm text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-highlight" disabled={value.requestsLoading} onClick={() => {
+                        const request = value.requests.find(item => item.conversation_id === record.id);
+                        const cell = value.cells[record.id];
+                        // Restore the newest persisted operation without exposing a second history list.
+                        if (request && !cell?.operation && !cell?.starting && !cell?.uncertain) void session.selectRequest(request);
+                        else void session.select(record);
+                        setHistoryShown(false);
                       }}>{record.title}</button>
                     </ConversationTitleEditor>
                     <button type="button" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-highlight disabled:opacity-50"
