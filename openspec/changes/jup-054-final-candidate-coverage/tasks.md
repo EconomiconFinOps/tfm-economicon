@@ -81,12 +81,12 @@ se rompió y qué falló). Orden: prioridad A y después B.
 - [x] 5.8 H-09, processor `tests/test_azure_client_failures.py`: cliente de la API Azure contra un
   servidor HTTP real de loopback y un puerto cerrado. Tiempo agotado, conexión rechazada y páginas
   malformadas dan errores tipificados y no se escribe ningún registro.
-- [ ] 5.9 H-11, azure-cost-api `tests/test_unsupported_filters.py`: `TestClient` real. Un filtro con una
+- [x] 5.9 H-11, azure-cost-api `tests/test_unsupported_filters.py`: `TestClient` real. Un filtro con una
   dimensión o una etiqueta no soportada responde 400 `BadRequest` con el nombre rechazado.
-- [ ] 5.10 Si una prueba nueva falla contra el candidato sin modificar, parar: registrar el defecto
+- [x] 5.10 Si una prueba nueva falla contra el candidato sin modificar, parar: registrar el defecto
   como `RF-054-NNN` con su reproducción y decidir si la prueba se entrega como fallo esperado
   estricto o se deja fuera. No se debilita la aserción ni se toca el producto.
-- [ ] 5.11 Comprobar con `git diff --stat` contra la base que no hay cambios en `apps/*/app/**`, en
+- [x] 5.11 Comprobar con `git diff --stat` contra la base que no hay cambios en `apps/*/app/**`, en
   archivos de `apps/frontend/src/**`, en pruebas existentes, ni en dependencias o CI.
 
 ## 6. Verificación
@@ -117,6 +117,8 @@ se rompió y qué falló). Orden: prioridad A y después B.
   Defecto detectado en 5.8: `RF-054-004` (`UrllibTransport.post` deja escapar `RemoteDisconnected`,
   `BadStatusLine`, `IncompleteRead` y `ConnectionResetError` sin mapear a `AzureCostClientError`; el CLI no emite
   su JSON de fallo y `startup_boundary` lo reescribe como un error de configuración); ver `review.md`.
+  Contrato: `RF-054-005` (los nombres de campo del filtro se validan en exacto y el contrato dice que los filtros
+  ignoran mayúsculas sin aclarar si se refiere a nombres o a valores; baja, documental); ver `review.md`.
 - [ ] 7.2 Completar la sección de la evidencia: tabla de criterios de aceptación con su prueba, lo
   que no se validó y por qué, y los límites que se conservan de la primera pasada.
 - [ ] 7.3 Actualizar la matriz de `docs/testing/critical-flows.md` con el delta de esta pasada.

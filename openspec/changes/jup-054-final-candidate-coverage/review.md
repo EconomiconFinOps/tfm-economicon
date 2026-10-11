@@ -452,3 +452,75 @@ checklist y el cierre se completan en la tarea 7.5.
   pasada que leen archivos de la raíz del repositorio; ahora copia el árbol versionado completo. Los errores no
   eran del archivo nuevo ni del producto (la prueba de contrato también fallaba sola).
 - **Veredicto QA:** accept. Producto sin cambios (`git diff --stat -- apps` vacío).
+
+
+## Tarea 5.9 — H-11, filtros con dimensión o etiqueta no soportada (azure-cost-api)
+
+- **Archivo nuevo:** `apps/azure-cost-api/tests/test_unsupported_filters.py`, 86 líneas y 22 casos (16 + 5 + 1,
+  contados con `--co -q`), con el `TestClient` real sobre la aplicación y el CSV público; sin skips ni xfail.
+  Reutiliza `CASES_BY_ID` y `post_query` de `test_query_api.py` y no repite sus casos: el caso contractual
+  `unsupported-dimension` es una agrupación (línea 39 del motor), no un filtro.
+- **Comando:** `python -m pytest tests/test_unsupported_filters.py -q -p no:cacheprovider -W ignore` desde
+  `apps/azure-cost-api` (Python 3.12).
+- **Resultado limpio:** 22 passed. Junto a `test_query_api.py`, `test_repository.py` y `test_resilience.py`: 81
+  passed, tres veces seguidas y en orden inverso; sin nombres de test duplicados.
+- **Qué cubre:** un nombre de dimensión o de etiqueta no soportado en un filtro se rechaza con un 400 de cuerpo
+  exacto `{"error": {"code": "BadRequest", "message": "Unsupported dimension|tag: <nombre>"}}`, sin filas ni
+  `properties`, tanto en la raíz como anidado en cualquier posición (primero, medio y último hijo de `and` y de `or`,
+  `and` dentro de `or` y `or` dentro de `and`); la agrupación por una etiqueta no soportada; que dimensiones y
+  etiquetas son conjuntos distintos (un nombre válido como etiqueta no vale como dimensión, ni al revés, en
+  agrupación y en filtro); y un control positivo con filtros válidos de dimensión, de etiqueta y de ambos.
+- **Roturas del tester** (copia desechable, 34): quitar cada comprobación (líneas 55 y 57), quitar la recursión
+  o limitarla a `and`, a `or`, al primer hijo o al último, intercambiar los conjuntos, 422 o 500 en lugar de 400,
+  cambiar el código o el mensaje, validar después de leer registros, datos en el error, condiciones invertidas y
+  `return` en cada rama. 31 detectadas; una equivalente (`is not None` frente a la veracidad de un modelo
+  pydantic, siempre verdadera) y M13 (ver abajo). **Roturas independientes de QA** (13): tres relevantes para
+  este hueco (no validar el filtro sin agrupación, nombre de etiqueta en minúsculas en el mensaje y `return` en
+  lugar de `raise` en la rama de etiqueta) se detectan sólo con el archivo nuevo y ningún test vecino las
+  detecta, lo que acredita su valor.
+- **Supervivientes conocidos y aceptados (fuera del hueco o equivalentes):** validar sólo `grouping[:1]` (una
+  segunda agrupación inválida no se prueba en ninguna parte; el producto la rechaza hoy), el orden entre el 400 y
+  el 404 de suscripción desconocida, las cabeceras del 400, `strip` del nombre (hoy `"ServiceName "` da 400) y el
+  orden en que se informa de dos hijos inválidos (no es contractual). `and` de un solo hijo y `dimensions` más
+  `tags` a la vez no son construibles: el modelo (`QueryFilter`, `models.py:64-84`) exige exactamente una rama y
+  al menos dos operandos.
+- **Ambigüedad de contrato, gravedad baja (a registrar como `RF-054-005`, documental):** la validación de
+  **nombres** de campo es exacta (`not in frozenset`: `servicename`, `SERVICENAME`, `ENV`, `Env`, `"env "` y
+  `"ServiceName "` dan 400), mientras que los **valores** se comparan sin distinguir mayúsculas (`STORAGE` y `PROD`
+  dan 200 con filas). El contrato dice «los filtros de dimensiones y tags ignoran mayúsculas»
+  (`docs/api/azure-cost-query-contract.md:78`; `azure-cost-query-mapping.json:49`:
+  `dimensionAndTagFilters: case-insensitive`; `openspec/specs/simulated-azure-cost-api/spec.md:70`:
+  «case-insensitive `In` comparisons») sin aclarar si se refiere a nombres o a valores. El comportamiento actual
+  es coherente con la lectura natural (las comparaciones `In` comparan valores) y conservador (400 en lugar de
+  aceptar). Único indicio contrario: `repository.tag_value` hace `casefold()` del nombre de la etiqueta, hoy
+  inalcanzable por la validación exacta; y relajar sólo la validación de dimensiones daría `KeyError` y un 500
+  (deducido leyendo `dimension_value`, no ejecutado). Es una pregunta al responsable del contrato, no al tester ni
+  al coder. **No se fija con un test**: congelaría una decisión no tomada; si el contrato se aclara a «nombres
+  exactos», bastarían un caso con `servicename` y otro con `ENV`.
+- **Observaciones menores, no bloqueantes:** el texto del mensaje (`Unsupported dimension: X`) está literal en 21
+  casos y no figura en el contrato (sólo fija el estado 400 y el código `BadRequest`), de modo que una
+  reformulación razonable los rompería todos a la vez; es el único canal que distingue qué comprobación se
+  disparó y con qué nombre, y se mantiene. La matriz de 16 posiciones es sobredimensionada: tres casos
+  (`and-medio` de dimensión, `or-dentro-de-and` de dimensión y la raíz de etiqueta) detectan las mismas roturas
+  (se podrían retirar 6 de etiqueta sin pérdida), pero cuesta ~0,1 s y es una tabla legible; no se recorta.
+- **Veredicto QA:** accept. Producto sin cambios (`git diff --stat -- apps` vacío).
+
+## Tarea 5.10 — pruebas nuevas que fallan contra el candidato sin modificar
+
+Ninguna prueba nueva falló contra el candidato `e1c2a8f` sin modificar, de modo que no hubo que entregar ningún
+fallo esperado estricto ni dejar ninguna prueba fuera. Los defectos de producto aparecieron por sondeos y por la
+lectura del código, no por un fallo de prueba, y **no se fijaron con ninguna aserción** (consagrarían el defecto o
+exigirían la corrección sin `xfail`): `RF-054-001` (resultado persistido corrupto en un trabajo completado,
+`ingest.py:74`), `RF-054-002` (la clave se recorta a 100 caracteres antes de buscar palabras sensibles,
+`guardrails.py:115-119`), `RF-054-003` (rama inalcanzable `except ValueError`, informativo), `RF-054-004`
+(`UrllibTransport.post` deja escapar excepciones crudas, `azure_cost.py:92-97`) y `RF-054-005` (ambigüedad de
+contrato sobre mayúsculas en los nombres de campo). Se registran en `openspec/findings/backlog.md` en la tarea 7.1.
+
+## Tarea 5.11 — el diff sólo añade pruebas
+
+Contra la base auditada `e1c2a8f`, `git diff --name-status` bajo `apps/`, `.github/`, `package.json`,
+`pnpm-lock.yaml`, `turbo.json`, `docker-compose.yml`, `packages/` y `tools/` muestra únicamente nueve archivos
+añadidos (`A`), todos `test_*.py` nuevos bajo `apps/*/tests/`: cuatro en backend, cuatro en processor y uno en
+azure-cost-api. No hay ningún archivo modificado ni borrado, ninguno que no sea una prueba nueva, y nada en
+`apps/frontend`, `apps/*/app`, `apps/*/requirements*.txt`, CI ni dependencias.
+
