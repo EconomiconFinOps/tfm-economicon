@@ -6,6 +6,10 @@ seven-day periods in EUR so that the anomaly evaluation of JUP-030 produces two 
 Run it inside the processor container so it uses that container's DATABASE_URL:
 
     docker compose exec -T processor python - apply < scripts/synthetic_anomalies.py
+
+In PowerShell there is no `<`:
+
+    Get-Content -Raw scripts/synthetic_anomalies.py | docker compose exec -T processor python - apply
 """
 from __future__ import annotations
 

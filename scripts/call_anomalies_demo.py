@@ -5,6 +5,10 @@ Se ejecuta dentro del contenedor del backend, que ya tiene DEMO_PASSWORD en su e
 no se imprimen nunca:
 
     docker compose -p jup107b exec -T backend python - < scripts/call_anomalies_demo.py
+
+En PowerShell no existe `<`:
+
+    Get-Content -Raw scripts/call_anomalies_demo.py | docker compose -p jup107b exec -T backend python -
 """
 import json
 import os

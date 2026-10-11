@@ -57,15 +57,15 @@ docker compose -p jup107b exec -T backend python - < scripts/call_anomalies_demo
 
 Dos alertas y cinco evaluaciones sin alerta, cada una por una rama distinta de la lógica. El endpoint devuelve los grupos y las alertas ordenados alfabéticamente (Analytics antes que Compute); la tabla los ordena de más a menos llamativo:
 
-| Servicio | Actual | Base | Diferencia | Alerta | Por qué |
-| --- | --- | --- | --- | --- | --- |
-| Compute | 2400,00 | 1000,00 | +1400,00 (140,00 %) | **Sí** | Supera el umbral (2400 ≥ 2000) y sube más de un 50 % y más de 100,00: las dos razones |
-| Analytics | 2300,00 | 2200,00 | +100,00 (4,55 %) | **Sí** | Solo supera el umbral; la subida es del 4,55 %, muy por debajo del 50 % |
-| Storage | 820,00 | 800,00 | +20,00 (2,50 %) | No | Estable: por debajo del umbral y sin subida relevante |
-| Database | 1200,00 | 1500,00 | −300,00 (−20,00 %) | No | Baja: una bajada nunca dispara la regla de subida |
-| Tools | 40,00 | 10,00 | +30,00 (300,00 %) | No | Sube un 300 %, pero solo 30,00, por debajo del incremento mínimo de 100,00 |
-| Backup | 300,00 | 0,00 | +300,00 | No | La base es un cero registrado: no se puede calcular un porcentaje (`baseline_nonpositive`) |
-| Networking | 600,00 | sin datos | — | No | Servicio nuevo sin periodo anterior (`baseline_missing`) |
+| Servicio   | Actual  | Base      | Diferencia          | Alerta | Por qué                                                                                    |
+| ---------- | ------- | --------- | ------------------- | ------ | ------------------------------------------------------------------------------------------ |
+| Compute    | 2400,00 | 1000,00   | +1400,00 (140,00 %) | **Sí** | Supera el umbral (2400 ≥ 2000) y sube más de un 50 % y más de 100,00: las dos razones      |
+| Analytics  | 2300,00 | 2200,00   | +100,00 (4,55 %)    | **Sí** | Solo supera el umbral; la subida es del 4,55 %, muy por debajo del 50 %                    |
+| Storage    | 820,00  | 800,00    | +20,00 (2,50 %)     | No     | Estable: por debajo del umbral y sin subida relevante                                      |
+| Database   | 1200,00 | 1500,00   | −300,00 (−20,00 %)  | No     | Baja: una bajada nunca dispara la regla de subida                                          |
+| Tools      | 40,00   | 10,00     | +30,00 (300,00 %)   | No     | Sube un 300 %, pero solo 30,00, por debajo del incremento mínimo de 100,00                 |
+| Backup     | 300,00  | 0,00      | +300,00             | No     | La base es un cero registrado: no se puede calcular un porcentaje (`baseline_nonpositive`) |
+| Networking | 600,00  | sin datos | —                   | No     | Servicio nuevo sin periodo anterior (`baseline_missing`)                                   |
 
 Además: el estado de la evaluación es `provisional` y la completitud `not_verified` (el servicio no verifica cobertura diaria ni frescura de la fuente), ambos periodos tienen estado `available` con 0 registros sin servicio, y cada alerta lleva `cause_status: not_established`. Al repetir la petición los identificadores de alerta y de evidencia no cambian.
 
