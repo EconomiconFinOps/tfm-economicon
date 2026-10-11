@@ -107,6 +107,64 @@ export function isBillingSummary(value: unknown): value is BillingSummary {
     && nullableString(value.currency) && value.savings_identified === null && count(value.open_ingestions);
 }
 
+export interface CurrencyTagCoverage {
+  currency: string;
+  record_count: number;
+  compliant_record_count: number;
+  noncompliant_record_count: number;
+  positive_cost: string;
+  compliant_cost: string;
+  noncompliant_cost: string;
+  negative_adjustments: string;
+  compliant_negative_adjustments: string;
+  noncompliant_negative_adjustments: string;
+  net_cost: string;
+  compliant_net_cost: string;
+  noncompliant_net_cost: string;
+  compliant_percent: string | null;
+  noncompliant_percent: string | null;
+  no_positive_cost_reason: "zero_cost_only" | "negative_adjustments_only" | null;
+  missing_or_invalid_tag_counts: Record<string, number>;
+}
+
+export interface TagCoverage {
+  contract_version: 1;
+  policy_version: "economicon-minimum-v1";
+  required_tags: string[];
+  period: BillingSummary["period"];
+  data_status: "available" | "partial" | "empty";
+  excluded_undated_count: number;
+  currencies: CurrencyTagCoverage[];
+}
+
+export function isTagCoverage(value: unknown): value is TagCoverage {
+  const object = (v: unknown): v is Record<string, unknown> =>
+    typeof v === "object" && v !== null && !Array.isArray(v);
+  const count = (v: unknown) => typeof v === "number" && Number.isSafeInteger(v) && v >= 0;
+  const money = (v: unknown) => typeof v === "string" && /^-?(0|[1-9][0-9]*)\.[0-9]{2}$/.test(v) && v !== "-0.00";
+  const percent = (v: unknown) => typeof v === "string" && /^(100\.00|(0|[1-9][0-9]?)\.[0-9]{2})$/.test(v);
+  const required = ["owner", "environment", "application", "cost_center", "project"];
+  const isoDate = (v: unknown) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)
+    && !Number.isNaN(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v;
+  return object(value) && value.contract_version === 1 && value.policy_version === "economicon-minimum-v1"
+    && Array.isArray(value.required_tags) && JSON.stringify(value.required_tags) === JSON.stringify(required)
+    && object(value.period) && isoDate(value.period.start_date) && isoDate(value.period.end_date)
+    && String(value.period.start_date) < String(value.period.end_date) && value.period.timezone === "UTC"
+    && ["available", "partial", "empty"].includes(String(value.data_status))
+    && count(value.excluded_undated_count) && Array.isArray(value.currencies)
+    && value.currencies.every((c) => object(c) && isNonemptyString(c.currency)
+      && ["record_count", "compliant_record_count", "noncompliant_record_count"].every((key) => count(c[key]))
+      && ["positive_cost", "compliant_cost", "noncompliant_cost", "negative_adjustments",
+        "compliant_negative_adjustments", "noncompliant_negative_adjustments", "net_cost",
+        "compliant_net_cost", "noncompliant_net_cost"].every((key) => money(c[key]))
+      && (c.no_positive_cost_reason === null
+        ? percent(c.compliant_percent) && percent(c.noncompliant_percent)
+        : ["zero_cost_only", "negative_adjustments_only"].includes(String(c.no_positive_cost_reason))
+          && c.compliant_percent === null && c.noncompliant_percent === null)
+      && object(c.missing_or_invalid_tag_counts)
+      && required.every((key) => object(c.missing_or_invalid_tag_counts) && count(c.missing_or_invalid_tag_counts[key])));
+}
+
 export interface IngestJobRequest {
   tenant_id: string;
   source: string;

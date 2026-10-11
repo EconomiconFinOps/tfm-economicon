@@ -169,3 +169,13 @@ Read-only, no key, public OpenRouter API, repeated by the reviewer at 14:59 UTC 
 | `deepseek/deepseek-v4-pro` | 10 | 0.21 to 1.91 | 1.63 to 4.20 | 0.24 to 0.57 USD |
 
 Catalogue headline prices (GLM-5.2 0.064 / 8.00, DeepSeek 0.21 / 0.42) belong to endpoints that are not all in the ZDR list. `deepseek/deepseek-v4-pro-0813` is a different model and is excluded. Prices move during the day.
+
+
+## Operational completion — 2026-10-10
+
+The October 4 outstanding key provisioning is now superseded by the
+[operational closure](JUP-078-operational-closure.md): dedicated pinned gateway,
+separate scoped keys at USD9+USD1 per 30 days, private service handoff, actual
+readback/recreation checks and 26/26 synthetic Docker acceptance controls.
+No paid model call, price refresh or new model-quality claim. Prior evidence
+and team approvals retain their original dates.

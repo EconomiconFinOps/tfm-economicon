@@ -73,6 +73,8 @@ jobs:
           corepack pnpm assistant-corpus:validate
           corepack pnpm validation-questions:validate
           corepack pnpm validation-questions:test
+          corepack pnpm business-metrics:validate
+          corepack pnpm business-metrics:test
           corepack pnpm retrieval-labels:validate
           corepack pnpm retrieval-labels:test
           corepack pnpm retrieval-calibration:test
@@ -80,6 +82,7 @@ jobs:
           corepack pnpm assistant-eval:test
           corepack pnpm synthetic-costs:test
           corepack pnpm llm-gateway:test
+          python -m unittest discover -s tools -p test_litellm_product_keys.py -v
           corepack pnpm docker:validate
           corepack pnpm local:test
           corepack pnpm cd:test
