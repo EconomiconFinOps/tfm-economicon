@@ -386,3 +386,69 @@ checklist y el cierre se completan en la tarea 7.5.
 - **Veredicto QA:** changes-requested en la primera pasada; las correcciones las verifiqué yo (ejecución dos
   veces, git y la equivalencia de los mutantes de `NUMERIC_CLAIM`) sin una segunda ronda de QA, por ser
   exactamente lo que QA pidió. Producto sin cambios (`git diff --stat -- apps` vacío).
+
+
+## Tarea 5.8 — H-09, fallos de transporte y páginas malformadas del cliente Azure (processor)
+
+- **Archivo nuevo:** `apps/processor/tests/test_azure_client_failures.py`, 226 líneas, 6 funciones y 16 casos
+  (el informe del tester decía 18: era un error de cuenta; `--co` da 16), sin skips ni xfail y con un token
+  sintético. Reutiliza sólo nombres no test de `test_azure_cost_client.py`. No repite lo que ya cubren esa
+  suite (errores HTTP, JSON y celdas inválidos, columnas duplicadas o ausentes, páginas vacías, ciclos,
+  `nextLink` cruzado y la redirección real) ni `test_azure_api_contract_integration.py` (401, 403 y 404 con
+  servidor real).
+- **Comando:** `python -m pytest tests/test_azure_client_failures.py -q -p no:cacheprovider -W ignore` desde
+  `apps/processor` (Python 3.12).
+- **Resultado limpio:** 16 passed, diez veces seguidas y bajo carga de CPU (16 bucles sobre 8 núcleos, de 2,4 a
+  3,3 s); con `python -X dev -W error::ResourceWarning` también; junto a `test_azure_cost_client.py`,
+  `test_azure_cost_ingestion.py` y `test_azure_api_contract_integration.py`: 136 passed, en tres ejecuciones y
+  en orden inverso. Al terminar queda un solo hilo y ningún socket abierto.
+- **Qué cubre:** (A) transporte real con un `ThreadingHTTPServer` en loopback: una conexión rechazada da
+  exactamente `AzureCostClientError` («connection failed») y un servidor que no responde o se detiene a mitad de
+  cuerpo da exactamente `AzureCostTimeoutError`, sin token ni puerto en el mensaje y con una sola petición (sin
+  reintentos de red); un caso con el `_opener` sustituido para `URLError` con motivo de timeout, que no se puede
+  reproducir de forma determinista con sockets. (B) A través de `AzureCostIngestionService` con SQLite: el run
+  queda `failed` con `error_code` igual al nombre de la excepción, contadores a 0, sin registros nuevos y sin
+  tocar un run completado de otro tenant. (C) Nueve páginas malformadas (columnas vacías o no lista, columna que no
+  es objeto, nombre vacío o no cadena, tipo fuera de contrato, `rows` que no es lista y `nextLink` numérico o
+  vacío) con una sola petición, y una página malformada en la segunda posición que no devuelve el resultado
+  parcial.
+- **Roturas del tester** (copia desechable, 36) y **de QA** (20, distintas): cada `except` del transporte, los
+  tipos de excepción cruzados, token o URL en el mensaje, no pasar `timeout` a `opener.open`, reintentar errores
+  de red, cada una de las cinco comprobaciones de página y sus variantes, devolver el resultado parcial, y en el
+  servicio no marcar `failed`, `error_code` constante, `completed` vacío, contadores, registro parcial, borrar
+  registros de todos los tenants, no guardar `error_code` y `fail_run` con el tenant equivocado. Detectadas, sin
+  supervivientes reales: cuatro roturas de QA las detectan sólo los vecinos (`HTTPError` que lanza `Timeout`,
+  `nextLink` de otro origen, página intermedia vacía y columnas sin `Currency`), que es funcionalidad de otra
+  suite; `except TimeoutError` sin `socket.timeout` es equivalente (en Python 3.10+ son el mismo tipo).
+- **Defecto de producto confirmado, no fijado con una prueba (a registrar como `RF-054-004`):**
+  `UrllibTransport.post` (`azure_cost.py:92-97`) sólo captura `TimeoutError` y `URLError`, y
+  `OpenerDirector.open` sólo envuelve en `URLError` los fallos de `request()`; los de `getresponse()` y los de
+  `response.read()` salen **crudos**. Con un servidor que cierra sin responder sale `http.client.RemoteDisconnected`,
+  con una línea de estado basura `BadStatusLine`, con un `Content-Length` mayor que el cuerpo `IncompleteRead`, y
+  con un RST `ConnectionResetError`; ninguno es `AzureCostClientError`. Reproducido por el tester, por QA (que
+  además ejecutó el `main()` real con `startup_boundary` contra un servidor hostil) y por el orquestador con un
+  socket crudo. El servicio (`azure_cost_ingest.py:73`, `except Exception`) marca el run `failed` con el nombre
+  crudo como `error_code` y relanza, así que la base queda coherente. El CLI (`run_azure_cost_ingestion.py:91-97`)
+  sólo captura las tres excepciones seguras, de modo que no emite su JSON de fallo
+  `{"error_code": ..., "status": "failed"}`: `startup_boundary` (`runtime_secrets.py:39-40`) lo reescribe como
+  `StartupError("Runtime startup failed; check configuration and dependency availability.")` sin causa visible,
+  un mensaje que apunta a configuración cuando el fallo es de red; el código de salida 1 se deduce del código,
+  no se midió. Plausible en operación: `RemoteDisconnected` y `ConnectionResetError` son lo que ve un cliente
+  cuando la API de Azure o un balanceador reinicia a mitad de petición. Sin pérdida de datos ni fuga en el CLI
+  (los logs y la base sólo guardan el nombre de la excepción), aunque `BadStatusLine` lleva en su `str` la línea
+  recibida del servidor, que vería quien use el cliente sin `startup_boundary`. Gravedad propuesta por QA:
+  **media-baja**. Corrección mínima: en `post`, tras `except URLError`, capturar
+  `(http.client.HTTPException, OSError)` y lanzar `AzureCostClientError("Azure Cost API connection failed") from exc`
+  (después de `HTTPError` y de los timeouts, porque `TimeoutError` es subclase de `OSError`); eso haría perder la
+  distinción actual del `error_code`, que se puede conservar con una subclase. Una vez corregido, un test que lo
+  exija pasa de rojo a verde sin `xfail`; no se escribió ninguno que lo exija ni que consagre la fuga.
+- **Observaciones de QA aplicadas o aceptadas:** (O1) en Windows nativo una conexión a un puerto cerrado con
+  `timeout=0.3` da `TimeoutError` tras ~0,32 s (medido con Python 3.13 local), por lo que el caso de conexión
+  rechazada usa un plazo generoso, ya que no espera nada; CI sólo usa `ubuntu-latest`. (O2) `closed_port()` reserva
+  y cierra el puerto antes de conectar, con una ventana teórica mínima de que otro proceso lo tome; ninguna
+  ejecución la mostró. El stub de `_opener` es aceptable: es la única costura de red de `UrllibTransport` y
+  sólo la detecta él (rotura m11).
+- **Corrección del ejecutor de pruebas:** el contenedor sólo copiaba `apps/` y fallaban 4 pruebas de la primera
+  pasada que leen archivos de la raíz del repositorio; ahora copia el árbol versionado completo. Los errores no
+  eran del archivo nuevo ni del producto (la prueba de contrato también fallaba sola).
+- **Veredicto QA:** accept. Producto sin cambios (`git diff --stat -- apps` vacío).

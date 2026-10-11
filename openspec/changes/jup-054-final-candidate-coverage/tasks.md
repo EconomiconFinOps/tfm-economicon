@@ -78,7 +78,7 @@ se rompió y qué falló). Orden: prioridad A y después B.
 - [x] 5.7 H-06, processor `tests/test_guardrail_validation.py`: funciones reales de los guardrails.
   Origen, payload, estado y metadatos inválidos se rechazan con su error, los metadatos grandes se
   recortan y una respuesta vacía o que no es JSON se rechaza sin retener la carga del proveedor.
-- [ ] 5.8 H-09, processor `tests/test_azure_client_failures.py`: cliente de la API Azure contra un
+- [x] 5.8 H-09, processor `tests/test_azure_client_failures.py`: cliente de la API Azure contra un
   servidor HTTP real de loopback y un puerto cerrado. Tiempo agotado, conexión rechazada y páginas
   malformadas dan errores tipificados y no se escribe ningún registro.
 - [ ] 5.9 H-11, azure-cost-api `tests/test_unsupported_filters.py`: `TestClient` real. Un filtro con una
@@ -114,6 +114,9 @@ se rompió y qué falló). Orden: prioridad A y después B.
   Defectos detectados en 5.7: `RF-054-002` (la clave se recorta a 100 caracteres antes de buscar palabras
   sensibles y el valor se filtra al prompt) y `RF-054-003` (rama inalcanzable `except ValueError` de
   `parse_and_validate_response`, informativo); ver `review.md`.
+  Defecto detectado en 5.8: `RF-054-004` (`UrllibTransport.post` deja escapar `RemoteDisconnected`,
+  `BadStatusLine`, `IncompleteRead` y `ConnectionResetError` sin mapear a `AzureCostClientError`; el CLI no emite
+  su JSON de fallo y `startup_boundary` lo reescribe como un error de configuración); ver `review.md`.
 - [ ] 7.2 Completar la sección de la evidencia: tabla de criterios de aceptación con su prueba, lo
   que no se validó y por qué, y los límites que se conservan de la primera pasada.
 - [ ] 7.3 Actualizar la matriz de `docs/testing/critical-flows.md` con el delta de esta pasada.
