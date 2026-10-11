@@ -1,3 +1,7 @@
+## Estado vigente — archivo autorizado 11/10/2026
+
+OpenSpec archivado por autorización expresa de Paris. Rama codex/JUP-035-e5-full-validation reconciliada con develop 3b8e952, HEAD previo al archivo 8886494. La compresión y el consumo por una respuesta posterior ya tienen evidencia histórica satisfactoria; no quedan pendientes globales por no repetirse en el último ensayo de Compose. Véase [entrega, evidencias y límites](../../openspec/changes/archive/2026-10-11-jup-035-conversational-web-interface/archive-delivery.md). Los cortes anteriores se conservan como historia; CI remota, publicación y gates humanos no se declaran cumplidos.
+
 # Chat conversacional
 
 Verificacion documental: 2026-10-11. Identificador: JUP-035.
@@ -5,9 +9,9 @@ La continuidad no sustituye alcance y roles de Trello ni las reviews humanas.
 
 ## Referencias
 
-- [Cambio OpenSpec](../../openspec/changes/jup-035-conversational-web-interface/proposal.md).
-- [Integracion con Compose](../../openspec/changes/jup-035-conversational-web-interface/compose-chat-design.md).
-- [Correccion del plazo de compresion](../../openspec/changes/jup-035-conversational-web-interface/summary-timeout-correction.md).
+- [Cambio OpenSpec](../../openspec/changes/archive/2026-10-11-jup-035-conversational-web-interface/proposal.md).
+- [Integracion con Compose](../../openspec/changes/archive/2026-10-11-jup-035-conversational-web-interface/compose-chat-design.md).
+- [Correccion del plazo de compresion](../../openspec/changes/archive/2026-10-11-jup-035-conversational-web-interface/summary-timeout-correction.md).
 - [Arranque y configuracion](../../README.md).
 - Commit de entrega previo a reconciliar: `01bfb7ba1361467b71301aeb08d9a6942c5e76cd`.
 - Base incorporada en la reconciliacion local: develop `3b8e952`.

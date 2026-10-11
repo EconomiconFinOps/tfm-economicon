@@ -1,3 +1,7 @@
+## Corte vigente para archivo — 11/10/2026
+
+Paris autoriza archivar y preparar la PR. Véase [entrega y límites](archive-delivery.md): E5, resumen real y consumo posterior, Compose y reconciliación tienen evidencias posteriores. Los estados y casillas anteriores son históricos; no se borran fallos ni se atribuyen al nuevo árbol ensayos antiguos.
+
 # JUP-035 — tareas de investigación
 
 ## Estado actual verificado — 11/10/2026

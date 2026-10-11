@@ -1,3 +1,7 @@
+## Estado vigente — archivo autorizado 11/10/2026
+
+OpenSpec archivado por autorización expresa de Paris. Rama codex/JUP-035-e5-full-validation reconciliada con develop 3b8e952, HEAD previo al archivo 8886494. La compresión y el consumo por una respuesta posterior ya tienen evidencia histórica satisfactoria; no quedan pendientes globales por no repetirse en el último ensayo de Compose. Véase [entrega, evidencias y límites](../../openspec/changes/archive/2026-10-11-jup-035-conversational-web-interface/archive-delivery.md). Los cortes anteriores se conservan como historia; CI remota, publicación y gates humanos no se declaran cumplidos.
+
 # Asistente conversacional
 
 Actualizado: 2026-10-11. JUP-035. Trello conserva el alcance, las responsabilidades y el estado oficial; este documento resume decisiones técnicas y evidencia local.
@@ -8,7 +12,7 @@ Rama `feat/JUP-035-conversational-web-interface`, base `ceb6520`. Paris Arcos li
 
 La interfaz conversacional, el historial canónico de preguntas y respuestas en un JSONB por conversación y los controles de aislamiento, recursos, cancelación y contratos están implementados localmente. La pregunta y respuesta completas se incorporan conjuntamente al finalizar. La memoria mediante resumen está en integración y todavía no tiene aceptación funcional completa. El resumen conserva referencias a las fuentes originales y no sustituye su historial ni habilita cálculos o citas financieras sin evidencia.
 
-Diseño y criterios: [OpenSpec](../../openspec/changes/jup-035-conversational-web-interface/design.md), [extensión de memoria](../../openspec/changes/jup-035-conversational-web-interface/context-compression-extension.md) y [tareas](../../openspec/changes/jup-035-conversational-web-interface/tasks.md).
+Diseño y criterios: [OpenSpec](../../openspec/changes/archive/2026-10-11-jup-035-conversational-web-interface/design.md), [extensión de memoria](../../openspec/changes/archive/2026-10-11-jup-035-conversational-web-interface/context-compression-extension.md) y [tareas](../../openspec/changes/archive/2026-10-11-jup-035-conversational-web-interface/tasks.md).
 
 ## Evidencia y límites
 
