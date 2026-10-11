@@ -60,3 +60,17 @@ La normalización de nombres usa tres mecanismos distintos (`lower()` en el serv
 
 - La sección `## Human Approval` se rellena solo con la aprobación explícita de Lucia tras esta revisión.
 - El panel `/anomalies` sigue con datos de demostración y su conexión es un cambio aparte.
+
+## Human Approval
+
+- Change: jup-030-cost-anomalies
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia Mateo
+- Date: 2026-10-11
+- Archive decision: archive
+- Scope reviewed: `review.md` con la revisión adversarial (veredicto `accept`), la evidencia `docs/evidence/JUP-030-validation.md` incluida la validación con Docker y CockroachDB real (181 pruebas sin omitir y 13 llamadas HTTP con importes iguales a los calculados con SQL independiente), el servicio, el esquema, la ruta y las pruebas de anomalías.
+- Conditions approved: (1) `RF-030-001` a `RF-030-004` quedan registrados como hallazgos `Open`, aceptados y sin corregir en esta tarjeta. (2) El panel `/anomalies` sigue con datos de demostración; su conexión es un cambio aparte.
+- Constraints: bajo la excepción temporal del 2026-10-11 esta aprobación sustituye la revisión y la validación de otras personas en GitHub, no las acredita, y no autoriza fusionar: el merge requiere orden expresa de Lucia.
+- Required changes before archive: ninguno.
+- Notes: decisión registrada a partir de la respuesta «si» de Lucia del 2026-10-11 a la pregunta de aprobar JUP-030 tras la validación con Docker.

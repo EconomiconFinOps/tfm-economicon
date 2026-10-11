@@ -33,7 +33,7 @@ estadistica, causalidad, ahorro ni integridad temporal de la ingesta.
 No se convierten divisas ni se rellenan datos ausentes con ceros.
 
 Contrato y ejemplos: [cost-anomalies.md](../api/cost-anomalies.md).
-OpenSpec: [jup-030-cost-anomalies](../../openspec/changes/jup-030-cost-anomalies/proposal.md).
+OpenSpec: [jup-030-cost-anomalies](../../openspec/changes/archive/2026-10-11-jup-030-cost-anomalies/proposal.md).
 La regla diaria del contrato JUP-084 (`>20%` y `>100 EUR/day`) es diferente:
 no se declara implementada por este evaluador de periodos configurables.
 

@@ -66,7 +66,7 @@ Return explicit limitations; empty alerts do not certify normal expenditure.
 
 ## Downstream compatibility
 
-[API contract](../../../docs/api/cost-anomalies.md) gives reproducible inputs,
+[API contract](../../../../docs/api/cost-anomalies.md) gives reproducible inputs,
 sample evidence and JUP-038 usage. The consumer explains the observed threshold
 crossing and cites evidence, keeping limitations; it must not attribute a cause
 or savings. Actual tool registration, common envelope adaptation and agent
@@ -80,7 +80,7 @@ resolve daily coverage, boundaries and rule conjunction.
 ## Architecture and validation
 
 ADR: not applicable to this local stateless calculation over the established
-billing boundary. [ADR-0010](../../../docs/adr/ADR-0010-azure-cost-source-overlap.md)
+billing boundary. [ADR-0010](../../../../docs/adr/ADR-0010-azure-cost-source-overlap.md)
 continues to govern overlapping source rejection.
 
 Test inclusive thresholds, rounded-percentage boundaries, large amounts,
