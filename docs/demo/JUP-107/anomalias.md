@@ -46,10 +46,10 @@ Dos periodos consecutivos de siete días, uno por servicio y en euros, con estas
 }
 ```
 
-El periodo anterior (del 1 al 7 de septiembre de 2026, ambos incluidos) lo calcula el servicio. Para ejecutarla, el script [`llamar-anomalias.py`](llamar-anomalias.py) hace login con el usuario demo, llama al endpoint y muestra el resultado sin imprimir la contraseña ni el token:
+El periodo anterior (del 1 al 7 de septiembre de 2026, ambos incluidos) lo calcula el servicio. Para ejecutarla, el script [`scripts/call_anomalies_demo.py`](../../../scripts/call_anomalies_demo.py) hace login con el usuario demo, llama al endpoint y muestra el resultado sin imprimir la contraseña ni el token:
 
 ```sh
-docker compose -p jup107b exec -T backend python - < docs/demo/JUP-107/llamar-anomalias.py
+docker compose -p jup107b exec -T backend python - < scripts/call_anomalies_demo.py
 ```
 
 ## Qué debe verse

@@ -75,6 +75,49 @@ Con los datos cargados, el fragmento de `preparacion.md` imprime `data_status: p
 - La lógica de la receta no tiene pruebas automáticas propias (RF-107-001).
 - Navegadores distintos de Chromium y pantallas móviles.
 
+## Ampliación: datos sintéticos de anomalías (`jup-107-anomaly-demo-data`, 2026-10-11)
+
+Segundo change de JUP-107, en la misma rama. Añade `scripts/synthetic_anomalies.py` (carga, estado y retirada), `docs/demo/JUP-107/esperados-anomalias.json`, `docs/demo/JUP-107/anomalias.md` y `scripts/call_anomalies_demo.py`, para enseñar las alertas de JUP-030 con dos periodos de siete días consecutivos en `tenant-core`. Son datos sintéticos: no son facturas de Azure ni vienen del dataset público.
+
+### Pruebas
+
+- `corepack pnpm synthetic-anomalies:test`: 30 pruebas, 24 sin base de datos y 6 con CockroachDB real (se omiten sin `JUP086_COCKROACH_TEST_URL`). Cubren: cada cifra del fichero de esperados frente a sumas exactas con `Decimal` y a las reglas reescritas desde el contrato; periodos consecutivos y de igual duración; fecha final no posterior al día UTC; idempotencia, negativa con datos ajenos, estado parcial y de otro tenant; retirada que solo toca lo suyo y es repetible; que cada herramienta ve las filas de la otra como ajenas; salida que declara el origen sintético en todos los comandos; códigos de salida 2 en las negativas; y la guía atada a los esperados (petición, script, tabla, primer párrafo, limitación del panel).
+- Con CockroachDB real (`cockroachdb/cockroach:v24.1.11`, nodo desechable, migraciones del processor): 6 pruebas aprobadas. La CI **no** las ejecuta (no levanta CockroachDB): esta parte es manual y se ejecuta con `JUP086_COCKROACH_TEST_URL` apuntando a un nodo desechable.
+- Mutantes: 12 sobre la herramienta (10 muertos sin base de datos; los 2 de SQL, `OR` en vez de `AND` en el borrado y marca sintética ignorada, mueren con la base real), y 22 más sobre guía, script, esperados y códigos de salida. Quedan 0 supervivientes. Como control negativo, quitar el paso de `ci.yml` hace fallar `tools/ci-workflow.test.mjs`.
+
+### Contra el endpoint real
+
+Stack aislado `docker compose -p jup107b` (todos los servicios sanos), `tenant-core` sin costes antes de cargar.
+
+| Comprobación | Resultado |
+| --- | --- |
+| `status` previo, `apply` y `apply` repetido | `absent`; `loaded` con 1 ingesta y 22 registros; `already-present` |
+| `POST /billing/anomalies/evaluate` con la petición de referencia, comparado automáticamente con el fichero de esperados | 0 diferencias en las siete evaluaciones; alertas `Analytics` y `Compute`; `evaluation_status` `provisional`; calidad `available` con 0 registros sin servicio en ambos periodos; `cause_status` `not_established` |
+| Misma petición repetida | `id` y `evidence_id` idénticos |
+| `deviation_threshold_percent` 4.55 y 4.54 sin umbral absoluto, con incremento mínimo 100.00 | 4.55: solo Compute; 4.54: Analytics y Compute (la comparación se hace antes de redondear) |
+| Solo regla de subida con incremento mínimo 30.00 | Compute y Tools |
+| `tenant-growth`, moneda `USD` | `unavailable` |
+| Sin reglas, sin token, tenant ajeno | 422, 401, 403 |
+| `/docs` y `/openapi.json` | 200, pero la cabecera `X-Tenant-Id` no está en OpenAPI: Swagger no sirve para esta ruta; la guía usa un script |
+| JUP-106 cargado en `tenant-growth` | Esta herramienta lo ve como `other-tenant` con 2 ingestas y 10 registros reales y se niega a cargar ahí (salida 2); su `remove` deja el conjunto de JUP-106 intacto y `remove` repetido retira 0 |
+| Ingesta del dataset público en `tenant-core` (38 filas) | `apply` se niega (salida 2) |
+| La guía repetida paso a paso con los comandos tal cual | Funciona: `apply`, `status`, la llamada, `remove` repetido, `status` `absent` y 0 filas en `tenant-core` |
+
+Nota: el script de la llamada se movió a `scripts/call_anomalies_demo.py` después de repetir la guía, porque `docs/demo/JUP-107/` solo admite `.md` y `.json`; su contenido no cambió salvo la ruta citada y no se volvió a ejecutar contra el stack.
+
+Limpieza: `docker compose -p jup107b down -v` y borrado del nodo desechable; sin contenedores ni volúmenes restantes.
+
+### Revisión adversarial
+
+Primera pasada: `changes-requested`, con un BLOCKING (la salida de `apply` no declaraba el origen sintético, incumpliendo un SHALL), cuatro MEDIUM (guía no atada a los esperados, limitación del panel y declaración sin comprobar, códigos de salida sin probar, SQL no ejecutado por la CI) y tres LOW (orden de las alertas, `remove` con `--tenant` ignorado, periodo base ambiguo). Resueltos en `6e4afd1`; la segunda pasada dio `accept` y está en `review.md`.
+
+### No validado
+
+- Que una persona ensaye la guía y la cronometre.
+- El panel `/anomalies`: sigue con datos de demostración y no lee el endpoint (cambio aparte con su propia tarjeta).
+- La calidad de la detección con gasto real: los importes ilustran las reglas.
+- El SQL de las pruebas con CockroachDB real en CI (manual).
+
 ## Nota de release
 
 | Fecha | JUP | Nota de release | Review | ADRs |

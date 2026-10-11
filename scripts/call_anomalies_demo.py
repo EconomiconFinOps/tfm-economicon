@@ -4,7 +4,7 @@ Los datos son sinteticos (scripts/synthetic_anomalies.py): no son facturas de Az
 Se ejecuta dentro del contenedor del backend, que ya tiene DEMO_PASSWORD en su entorno; la contrasena y el token
 no se imprimen nunca:
 
-    docker compose -p jup107b exec -T backend python - < docs/demo/JUP-107/llamar-anomalias.py
+    docker compose -p jup107b exec -T backend python - < scripts/call_anomalies_demo.py
 """
 import json
 import os

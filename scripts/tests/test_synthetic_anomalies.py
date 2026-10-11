@@ -365,7 +365,7 @@ class GuideTests(unittest.TestCase):
         self.text = GUIDE_PATH.read_text(encoding="utf-8")
         self.body = "\n".join(line for line in self.text.splitlines() if not line.lstrip().startswith("#"))
         self.expected = json.loads(EXPECTED_PATH.read_text(encoding="utf-8"))
-        self.script = (ROOT / "docs" / "demo" / "JUP-107" / "llamar-anomalias.py").read_text(encoding="utf-8")
+        self.script = (ROOT / "scripts" / "call_anomalies_demo.py").read_text(encoding="utf-8")
 
     def test_the_synthetic_declaration_precedes_the_first_amount(self):
         first_amount = re.search(r"\d[\d.,]*\s?(EUR|\u20ac)|\b\d{3,}[.,]\d{2}\b", self.body)
@@ -373,7 +373,7 @@ class GuideTests(unittest.TestCase):
         before = self.body[: first_amount.start()]
         opening = self.body.strip().split("\n\n")[0]
         self.assertLessEqual(len(opening), len(before))
-        self.assertRegex(opening, r"(?i)datos sint[e\u00e9]ticos")
+        self.assertIn("Todos los importes de esta gu\u00eda son datos sint\u00e9ticos", opening)
         self.assertIn("Azure", opening)
         self.assertIn("dataset p\u00fablico", opening)
         self.assertIsNone(re.search(r"\d[\d.,]*\s?(EUR|\u20ac)|\b\d{3,}[.,]\d{2}\b", opening))
@@ -411,8 +411,16 @@ class GuideTests(unittest.TestCase):
         for line in self.text.splitlines():
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
             if line.startswith("|") and len(cells) == 6 and cells[0] not in ("Servicio", "---"):
+                self.assertNotIn(cells[0], rows, "fila duplicada")
                 rows[cells[0]] = cells
+            elif line.startswith("| Servicio"):
+                self.assertEqual(cells, ["Servicio", "Actual", "Base", "Diferencia", "Alerta", "Por qué"])
         self.assertEqual(set(rows), {g["service"] for g in self.expected["groups"]})
+        minimum = comma(self.expected["rules"]["min_absolute_increase"])
+        self.assertIn(f"por debajo del incremento mínimo de {minimum}", rows["Tools"][5])
+        alerts, ordinal = self.expected["alerts"], {2: "Dos", 3: "Tres", 1: "Una"}[len(self.expected["alerts"])]
+        self.assertIn(f"{ordinal} alertas" if len(alerts) > 1 else "Una alerta", self.text)
+        self.assertIn(f"({alerts[0]} antes que {alerts[1]})", self.text)
         for group in self.expected["groups"]:
             service, cells = group["service"], rows[group["service"]]
             self.assertEqual(cells[1], comma(group["current_cost"]), service)
@@ -424,12 +432,18 @@ class GuideTests(unittest.TestCase):
             else:
                 amount = comma(group["delta_amount"].lstrip("-"))
                 sign = "\u2212" if group["delta_amount"].startswith("-") else "+"
-                self.assertTrue(cells[3].startswith(sign + amount), (service, cells[3]))
+                wanted = sign + amount
                 if group["deviation_percent"] is not None:
-                    self.assertIn(comma(group["deviation_percent"].replace("-", "\u2212")) + " %", cells[3], service)
+                    shown_percent = comma(group["deviation_percent"].replace("-", "\u2212"))
+                    wanted += " (" + shown_percent + " %)"
+                self.assertEqual(cells[3], wanted, service)
+            if group["deviation_status"] in ("baseline_missing", "baseline_nonpositive"):
+                self.assertIn(f"`{group['deviation_status']}`", cells[5], service)
+            if group["threshold_status"] == "triggered":
+                self.assertIn("umbral", cells[5], service)
 
     def test_the_script_never_prints_the_password_or_the_token(self):
-        self.assertIn("llamar-anomalias.py", self.text)
+        self.assertIn("scripts/call_anomalies_demo.py", self.text)
         blocks = [self.script] + re.findall(r"```python\n(.*?)```", self.text, re.S)
         printed = 0
         for block in blocks:
