@@ -63,7 +63,7 @@ se rompió y qué falló). Orden: prioridad A y después B.
 - [x] 5.2 H-03, backend `tests/test_conversation_creation.py`: `POST /assistant/conversations` con
   éxito. La conversación se crea en el tenant activo y a nombre del usuario autenticado, y otro
   tenant no la ve.
-- [ ] 5.3 H-07, processor `tests/test_ingest_redelivery.py`: `IngestTask` con repositorio SQLite. La
+- [x] 5.3 H-07, processor `tests/test_ingest_redelivery.py`: `IngestTask` con repositorio SQLite. La
   reentrega de un trabajo completado devuelve el resultado guardado sin reejecutar el pipeline ni
   escribir vectores, y un mensaje persistido con JSON corrupto es `InvalidJobMessage`.
 - [ ] 5.4 H-08, processor `tests/test_azure_cost_scope_rejection.py`: repositorio de costes con SQLite.
@@ -107,6 +107,8 @@ se rompió y qué falló). Orden: prioridad A y después B.
 
 - [ ] 7.1 Registrar en `openspec/findings/backlog.md` los huecos diferidos y los defectos
   encontrados como `RF-054-NNN`, y revisar si `RF-096-004` necesita una nota con lo observado.
+  Defectos ya detectados que deben quedar registrados: `RF-054-001` (H-07, `result` persistido
+  corrupto en un trabajo completado: `JSONDecodeError` crudo y reentrega sin fin, ver `review.md`).
 - [ ] 7.2 Completar la sección de la evidencia: tabla de criterios de aceptación con su prueba, lo
   que no se validó y por qué, y los límites que se conservan de la primera pasada.
 - [ ] 7.3 Actualizar la matriz de `docs/testing/critical-flows.md` con el delta de esta pasada.

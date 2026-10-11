@@ -79,3 +79,55 @@ checklist y el cierre se completan en la tarea 7.5.
   espacios o con comas; aquí sólo se prueba la cabecera ausente. Es una dependencia compartida por todas
   las rutas y queda fuera de este hueco.
 - **Sin supervivientes.** Veredicto QA: accept. Producto sin cambios (`git diff --stat -- apps` vacío).
+
+## Tarea 5.3 — H-07, reentrega idempotente y payload persistido corrupto (processor)
+
+- **Archivo nuevo:** `apps/processor/tests/test_ingest_redelivery.py`, 50 casos que salen de siete
+  funciones parametrizadas, con SQLite real, el `JobRepository` real y el `IngestTask` real. Sólo son
+  dobles el proveedor del agente y el sumidero vectorial (como en la primera pasada). Sin skips ni xfail.
+- **Comando:** `python -m pytest tests/test_ingest_redelivery.py -q -p no:cacheprovider -W ignore` desde
+  `apps/processor` (Python 3.12).
+- **Resultado limpio:** 50 passed, tres veces seguidas. Con `test_ingest_task.py`,
+  `test_tenant_isolation_jobs.py` y `test_agent_ingestion_integration.py`: 76 passed y 6 omitidas
+  (opt-in CockroachDB preexistentes).
+- **Qué cubre:** la reentrega de un trabajo completado tras un primer procesamiento real devuelve el mismo
+  resultado sin repetir efectos (mismas llamadas al proveedor, a los embeddings y al sumidero vectorial,
+  sólo se consulta el repositorio y la fila no cambia, ni siquiera `updated_at`); las variantes del
+  resultado almacenado (texto JSON, dict, vacío y `NULL`); doce intentos de usar un trabajo completado
+  como atajo (contenido, metadatos, origen, `artifact_uri`, tenant o creador distintos) que dan
+  `InvalidJobMessage` sin filtrar el resultado guardado; y el payload persistido corrupto o que no es un
+  objeto, con trabajos en cola, completados y fallidos, que da `InvalidJobMessage` exacto (sin
+  `JSONDecodeError`, sin causa encadenada), sin pipeline, sin cambios de estado y sin tocar la fila.
+- **`RecordingRepository`:** subclase real de `JobRepository` que delega siempre con `super()` y sólo
+  anota llamadas. Su única alteración (`decode_result`) emula que CockroachDB entrega JSONB ya como dict,
+  que SQLite no puede ejercitar; está acotada y documentada, y el primer caso usa el flujo real sin ella.
+- **Roturas del tester** (copia desechable, 15): eliminar la rama completada, devolver `{}`, validar
+  después de devolver, quitar el `try/except` del `json.loads`, que el corrupto marque fallido o
+  `running`, no deserializar el texto, `mark_running` en completados (con y sin guarda de la base),
+  quitar la comprobación de objeto, `None` en lugar de `{}`, quitar `from None`, quitar
+  `incoming != payload`, tratar igual en cola y completado y lanzar un `ValueError` genérico. Detectadas.
+- **Roturas independientes de QA** (diez): `mark_completed` en la reentrega, devolver el resultado de otro
+  trabajo, comparar contra `running`, ejecutar el pipeline y descartar su resultado, `mark_running` en la
+  reentrega, añadir una clave al resultado, sustituir el payload corrupto por `{}`, filtrar el payload en
+  el mensaje de error y devolver el resultado de un completado con payload corrupto. Nueve detectadas.
+- **Superviviente de QA, cubierto por vecinos:** bloquear también los trabajos `failed` en la rama de
+  completados no se detecta en este archivo, pero sí lo detectan `test_ingest_task.py` (dos fallos). La
+  reentrega de `failed` o `running` con payload válido queda a cargo de esos suites.
+- **Supervivientes equivalentes (2):** quitar `job.get("artifact_uri") != stored.get("artifact_uri")` o
+  `"source"` del bucle de comparación no cambia ningún comportamiento observable: `_payload` obliga a que
+  ambos coincidan con su propio payload e `incoming != payload` iguala los dos payloads, de modo que la
+  igualdad ya está garantizada por transitividad (defensa en profundidad). QA lo comprobó con pruebas
+  desechables.
+- **Hallazgo de producto (no fijado con una prueba):** con un trabajo `completed` cuyo `result` almacenado es
+  corrupto, `IngestTask.execute` lanza un `json.JSONDecodeError` crudo en `ingest.py:74` (`''` y
+  `'not json'`), y si el resultado no es un objeto (`'[1]'`, `'"x"'`, `'123'`, `'true'`, `'null'`) lo
+  devuelve tal cual aunque la firma promete `dict`. Reproducido por separado por el tester y por QA con
+  pruebas desechables en el contenedor. En `workers/runner.py:83-91` sólo `InvalidJobMessage` y
+  `ProviderError` van a `nack(requeue=False)`; cualquier otra excepción hace `nack(requeue=True)` y se
+  relanza, así que un `result` corrupto dejaría el mensaje reentregándose sin salida automática (leído en
+  el código, no ejecutado contra un broker). Atenuante según QA: `result` sólo lo escribe el propio
+  repositorio con `json.dumps`, por lo que el estado exige corrupción externa o manual. Gravedad propuesta:
+  baja-media. No se fija con una prueba porque afirmaría un defecto como comportamiento esperado. **Se
+  registrará como `RF-054-001` en la tarea 7.1**, con la corrección sugerida (validar que el resultado
+  decodificado es un objeto y, si no, lanzar `InvalidJobMessage`).
+- **Veredicto QA:** accept. Producto sin cambios (`git diff --stat -- apps` vacío).
