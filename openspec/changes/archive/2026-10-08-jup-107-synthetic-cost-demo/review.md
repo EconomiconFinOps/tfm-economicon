@@ -72,7 +72,7 @@ Tres pasadas con el agente `adversarial-reviewer`, que recibió solo la ruta del
 
 Sin BLOCKING ni HIGH. Hallazgos: ADV-1 MEDIUM (los literales `ui_contains` no estaban atados a las cifras), ADV-2 MEDIUM (los rótulos «Azure» de la pantalla pueden leerse como contradicción con D1), ADV-3 LOW (la lógica de la receta no está bajo prueba), ADV-4 LOW (D1 no comprobaba el cliente activo), ADV-5 LOW (mutaciones de redacción que sobrevivían) y ADV-6 LOW («puertos fijos» impreciso).
 
-Resolución tras el accept, con prueba y mutantes: ADV-1 (los literales se atan a las cifras y a los periodos), ADV-2 (D1 anuncia los rótulos y hay una pregunta que lo responde), ADV-4 (D1 comprueba que el cliente activo es `tenant-core`), ADV-5 (cautelas fijadas en las preguntas, la preparación y la duración del paso opcional) y ADV-6 («por defecto»). **ADV-3 queda abierto** y se registra como RF-107-001.
+Resolución tras el accept, con prueba y mutantes: ADV-1 (los literales se atan a las cifras y a los periodos), ADV-2 (D1 anuncia los rótulos y hay una pregunta que lo responde), ADV-4 (D1 comprueba que el cliente activo es `tenant-core`), ADV-5 (cautelas fijadas en las preguntas, la preparación y la duración del paso opcional) y ADV-6 («por defecto»). **ADV-3 queda abierto** y se registra como RF-107-001, aceptado por Lucia el 2026-10-08.
 
 ### Barrido de patrones
 
@@ -82,12 +82,23 @@ Todo texto duplicado entre `guion.md`, `esperados.json`, `preguntas.md` y `prepa
 
 - La interfaz cambia y el guion queda obsoleto: la receta lo detecta al ejecutarse contra el stack; la CI no ve la interfaz y no se afirma lo contrario.
 - La lógica de la receta (`checkFigure` y similares) no tiene pruebas automáticas propias; está cubierta por los controles positivos manuales descritos arriba (RF-107-001).
-- No se ha hecho ningún ensayo con una persona presentando: el cronometraje de 180 s es el suma de las duraciones propuestas, no una medida.
+- No se ha hecho ningún ensayo con una persona presentando: el cronometraje de 180 s es la suma de las duraciones propuestas, no una medida.
 
 ## Hallazgos registrados
 
-- RF-107-001 en `openspec/findings/backlog.md`: la lógica de la receta de navegador no está bajo prueba automática. Pendiente de aceptación de Lucia.
+- RF-107-001 en `openspec/findings/backlog.md`: la lógica de la receta de navegador no está bajo prueba automática. Aceptado por Lucia el 2026-10-08.
 
 ## ADR
 
 No aplicable.
+
+## Human Approval
+
+- Change: jup-107-synthetic-cost-demo
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-08
+- Adversarial review: accept (pass 3) | accepted findings: RF-107-001 (la lógica de la receta de navegador no tiene pruebas automáticas propias; la cubren los controles positivos manuales de la evidencia)
+- Archive decision: archive
+- Notes: se aprueba el paquete de demo, la prueba de CI y la evidencia de la ejecución automatizada. Queda pendiente en Trello la validación funcional por quien tenga el rol de validación, la revisión de PR, un ensayo humano con registro rellenado en `registro-ensayo.md` y la decisión sobre cómo conviven las demos de JUP-065 y JUP-107 en la defensa.
