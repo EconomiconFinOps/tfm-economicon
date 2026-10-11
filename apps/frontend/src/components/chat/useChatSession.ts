@@ -1,12 +1,14 @@
 import { isChatMemory, type ChatMemory } from "../../services/chat";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { chatJson, chatPath, generateChat, isChatOperation, isSavedChatRequest, type ChatOperation, type ChatScope, type GenerationPayload, type SavedChatRequest } from "../../services/chat";
-import { getSessionGeneration } from "../../services/api";
+import { ApiError, fetchChatResponse, getSessionGeneration } from "../../services/api";
 import { readChatEvents, type ChatFrame } from "../../services/chatStream";
 import { PreparedScreen } from "../../services/screenCapture";
 import type { ConversationRecord, MessageRecord } from "../../services/contracts";
 
 export interface ChatCell {
+  deleting?: boolean;
+  manualTitle?: boolean;
   result?: { operationId: string; messageId: string };
   memory: ChatMemory | null; memoryLoading: boolean; memoryError: boolean;
   id: string; title: string; messages: MessageRecord[]; operation: ChatOperation | null;
@@ -18,8 +20,9 @@ interface Snapshot { selected: string; cells: Record<string, ChatCell>; history:
 const emptyCell = (id: string): ChatCell => ({ memory: null, memoryLoading: false, memoryError: false, id, title: "Nueva conversación", messages: [], operation: null,
   question: "", partial: "", attempt: null, sequence: 0, revision: 0, starting: false, stopping: false, loading: false, notice: "", recovering: false, uncertain: false });
 const openStates = ["reserved", "active", "waiting", "paused"];
+export const normalizeConversationTitle = (title: string) => title.replace(/\s+/gu, " ").trim();
 export const isOpen = (cell: ChatCell) => cell.starting || !!cell.operation && openStates.includes(cell.operation.state);
-export const memoryBlocked = (cell: ChatCell) => !cell.id.startsWith("draft-") &&
+export const memoryBlocked = (cell: ChatCell) => cell.deleting === true || !cell.id.startsWith("draft-") &&
   (cell.memoryLoading || cell.memoryError || !cell.memory || cell.memory.queue.blocked === true
     || cell.memory.queue.active || cell.memory.queue.pending);
 
@@ -27,11 +30,16 @@ class ChatSession {
   private alive = true;
   private generation = getSessionGeneration();
   private listeners = new Set<() => void>();
-  private readers = new Set<AbortController>();
-  private timers = new Set<ReturnType<typeof setTimeout>>();
+  private readers = new Map<AbortController, string | undefined>();
+  private timers = new Map<ReturnType<typeof setTimeout>, string>();
   private previousAttempts = new Map<string, Set<string>>();
   private intents = new Map<string, GenerationPayload>();
   private memoryEpoch = new Map<string, number>();
+  private titleRevision = 0;
+  private renamedTitles = new Map<string, { revision: number; record: ConversationRecord }>();
+  private renaming = new Set<string>();
+  private deleting = new Set<string>();
+  private deleted = new Set<string>();
   readonly screen: PreparedScreen;
   private value: Snapshot;
   constructor(readonly scope: ChatScope, prepared?: PreparedScreen | null) {
@@ -57,14 +65,21 @@ class ChatSession {
   attach() { this.alive = true; }
   detach() {
     this.alive = false;
-    for (const reader of this.readers) reader.abort();
-    for (const timer of this.timers) clearTimeout(timer);
+    for (const reader of this.readers.keys()) reader.abort();
+    for (const timer of this.timers.keys()) clearTimeout(timer);
     this.readers.clear(); this.timers.clear(); this.previousAttempts.clear(); this.intents.clear(); this.screen.clear();
   }
-  private controller() { const value = new AbortController(); this.readers.add(value); return value; }
+  private controller(id?: string) { const value = new AbortController(); this.readers.set(value, id); return value; }
   private async json<T>(path: string, method = "GET", body?: unknown): Promise<T> {
-    const controller = this.controller();
-    try { return await chatJson<T>(this.scope, path, controller.signal, method, body); }
+    const match = /^\/assistant\/conversations\/([^/]+)(?:\/|$)/.exec(path);
+    const id = match ? decodeURIComponent(match[1]) : undefined;
+    if (id && this.deleted.has(id)) throw new Error("conversation_deleted");
+    const controller = this.controller(id);
+    try {
+      const result = await chatJson<T>(this.scope, path, controller.signal, method, body);
+      if (id && this.deleted.has(id)) throw new Error("conversation_deleted");
+      return result;
+    }
     finally { this.readers.delete(controller); }
   }
   newConversation = () => {
@@ -72,12 +87,18 @@ class ChatSession {
     this.update({ ...this.value, selected: id, cells: { ...this.value.cells, [id]: emptyCell(id) } });
   };
   loadHistory = async () => {
+    const titleRevision = this.titleRevision;
     this.update({ ...this.value, historyLoading: true, historyError: false });
     const requests = this.loadRequests();
     try {
       const collection = await this.json<{ items: ConversationRecord[] }>("/assistant/conversations");
       if (!Array.isArray(collection.items) || collection.items.some(item => item.tenant_id !== this.scope.tenantId || item.user_id !== this.scope.userId)) throw new Error("scope_invalid");
-      this.update({ ...this.value, history: collection.items, historyLoading: false });
+      // A list request started before a rename must not restore its old title.
+      const history = collection.items.filter(item => !this.deleted.has(item.id)).map(item => {
+        const renamed = this.renamedTitles.get(item.id);
+        return renamed && renamed.revision > titleRevision ? renamed.record : item;
+      });
+      this.update({ ...this.value, history, historyLoading: false });
     } catch { this.update({ ...this.value, historyLoading: false, historyError: true }); }
     await requests;
   };
@@ -86,13 +107,13 @@ class ChatSession {
     try {
       const collection = await this.json<{ items: unknown[] }>("/assistant/requests");
       if (!Array.isArray(collection.items) || !collection.items.every(item => isSavedChatRequest(item, this.scope))) throw new Error("scope_invalid");
-      const requests = (collection.items as SavedChatRequest[]).map(item => ({ tenant_id: item.tenant_id, user_id: item.user_id,
+      const requests = (collection.items as SavedChatRequest[]).filter(item => !this.deleted.has(item.conversation_id)).map(item => ({ tenant_id: item.tenant_id, user_id: item.user_id,
         conversation_id: item.conversation_id, question: item.question, operation: item.operation }));
       this.update({ ...this.value, requests, requestsLoading: false });
     } catch { this.update({ ...this.value, requests: [], requestsLoading: false, requestsError: true }); }
   }
   select = async (record: ConversationRecord) => {
-    if (record.tenant_id !== this.scope.tenantId || record.user_id !== this.scope.userId) return;
+    if (!this.valid() || this.deleted.has(record.id) || record.tenant_id !== this.scope.tenantId || record.user_id !== this.scope.userId) return;
     const cell = this.value.cells[record.id];
     this.update({ ...this.value, selected: record.id, cells: { ...this.value.cells,
       [record.id]: cell ?? { ...emptyCell(record.id), title: record.title, loading: true } } });
@@ -116,11 +137,71 @@ class ChatSession {
       this.patch(id, { memory: value, memoryLoading: false, memoryError: false });
       if (value.queue.blocked && value.queue.state !== "failed") {
         const timer = setTimeout(() => { this.timers.delete(timer); if (this.valid()) void this.loadMemory(id); }, 2000);
-        this.timers.add(timer);
+        this.timers.set(timer, id);
       }
     } catch {
       if (this.memoryEpoch.get(id) === epoch) this.patch(id, { memoryLoading: false, memoryError: true });
     }
+  };
+  rename = async (id: string, input: string): Promise<void> => {
+    const title = normalizeConversationTitle(input);
+    if (!title || Array.from(title).length > 60) throw new Error("title_invalid");
+    if (!this.valid() || this.renaming.has(id) || this.deleting.has(id) || this.deleted.has(id)) throw new Error("rename_unavailable");
+    if (id.startsWith("draft-")) {
+      if (!this.value.cells[id] || this.value.cells[id].starting) throw new Error("rename_unavailable");
+      this.patch(id, { title, manualTitle: true });
+      return;
+    }
+    this.renaming.add(id);
+    try {
+      const record = await this.json<ConversationRecord>(`/assistant/conversations/${encodeURIComponent(id)}`, "PATCH", { title });
+      if (!this.valid()) throw new Error("session_expired");
+      if (record.id !== id || record.tenant_id !== this.scope.tenantId || record.user_id !== this.scope.userId
+          || record.title !== title || typeof record.updated_at !== "string" || typeof record.created_at !== "string") throw new Error("scope_invalid");
+      this.renamedTitles.set(id, { revision: ++this.titleRevision, record });
+      const cell = this.value.cells[id];
+      this.update({ ...this.value,
+        cells: cell ? { ...this.value.cells, [id]: { ...cell, title, manualTitle: true } } : this.value.cells,
+        history: this.value.history.map(item => item.id === id ? record : item) });
+    } finally { this.renaming.delete(id); }
+  };
+  deletionBlock = (id: string): string | null => {
+    const cell = this.value.cells[id];
+    const queue = cell?.memory?.queue;
+    if (cell && (isOpen(cell) || cell.uncertain) || queue && (queue.active || queue.pending
+        || queue.state === "pending" || queue.state === "running" || queue.state === "reconciling")
+        || this.value.requests.some(request => request.conversation_id === id && openStates.includes(request.operation.state))) {
+      return "No se puede eliminar mientras haya una respuesta o compresión pendiente. Espera a que termine o resuelve su estado.";
+    }
+    return null;
+  };
+  remove = async (id: string): Promise<void> => {
+    if (!this.valid() || id.startsWith("draft-") || this.deleted.has(id) || this.deleting.has(id)) throw new Error("La conversación no está disponible.");
+    const blocked = this.deletionBlock(id);
+    if (blocked) throw new Error(blocked);
+    this.deleting.add(id);
+    this.patch(id, { deleting: true });
+    const controller = this.controller(id);
+    try {
+      const response = await fetchChatResponse(`/assistant/conversations/${encodeURIComponent(id)}`, {
+        token: this.scope.token, tenantId: this.scope.tenantId, signal: controller.signal, method: "DELETE" });
+      if (response.status !== 204 || !this.valid()) throw new Error("delete_unconfirmed");
+      // Tombstones are session-local: old readers/lists cannot recreate a deleted cell.
+      this.deleted.add(id);
+      for (const [reader, owner] of this.readers) if (owner === id && reader !== controller) reader.abort();
+      for (const [timer, owner] of this.timers) if (owner === id) { clearTimeout(timer); this.timers.delete(timer); }
+      this.memoryEpoch.delete(id); this.previousAttempts.delete(id); this.intents.delete(id); this.renamedTitles.delete(id);
+      const cells = { ...this.value.cells }; delete cells[id];
+      const selected = this.value.selected === id ? `draft-${crypto.randomUUID()}` : this.value.selected;
+      if (!cells[selected]) cells[selected] = emptyCell(selected);
+      this.update({ ...this.value, selected, cells, history: this.value.history.filter(item => item.id !== id),
+        requests: this.value.requests.filter(item => item.conversation_id !== id) });
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 409) {
+        throw new Error("No se puede eliminar mientras haya una respuesta o compresión pendiente. Espera a que termine o resuelve su estado.");
+      }
+      throw new Error("No se pudo confirmar la eliminación. Revisa el historial antes de reintentar.");
+    } finally { this.readers.delete(controller); this.deleting.delete(id); this.patch(id, { deleting: false }); }
   };
   retryMemory = async () => {
     const id = this.value.selected;
@@ -131,7 +212,7 @@ class ChatSession {
     } catch { this.patch(id, { notice: "No se pudo recuperar la memoria. Se conserva el historial." }); }
   };
   selectRequest = async (request: SavedChatRequest) => {
-    if (!this.valid() || !isSavedChatRequest(request, this.scope)) return;
+    if (!this.valid() || !isSavedChatRequest(request, this.scope) || this.deleted.has(request.conversation_id)) return;
     const id = request.conversation_id;
     const existing = this.value.cells[id];
     if (existing && isOpen(existing) && existing.operation?.operation_id !== request.operation.operation_id) {
@@ -142,7 +223,7 @@ class ChatSession {
     const record = this.value.history.find(item => item.id === id) ?? { id, tenant_id: this.scope.tenantId, user_id: this.scope.userId,
       title: request.question.slice(0, 64), created_at: "", updated_at: "" };
     await this.select(record);
-    if (!this.valid()) return;
+    if (!this.valid() || this.deleted.has(id)) return;
     this.patch(id, { question: request.question, operation: request.operation, partial: "", notice: "", uncertain: false });
     try {
       const operation: unknown = await this.json(chatPath(id, request.operation.operation_id));
@@ -167,7 +248,8 @@ class ChatSession {
       ...(retryOf ? { retry_of_operation_id: retryOf } : {}) });
     try {
       if (id.startsWith("draft-")) {
-        const record = await this.json<ConversationRecord>("/assistant/conversations", "POST", { title: "Nueva conversación" });
+        const title = cell.manualTitle ? cell.title : Array.from(normalizeConversationTitle(content)).slice(0, 60).join("");
+        const record = await this.json<ConversationRecord>("/assistant/conversations", "POST", { title });
         if (!this.valid()) return;
         if (record.tenant_id !== this.scope.tenantId || record.user_id !== this.scope.userId) throw new Error("scope_invalid");
         const priorId = id;
@@ -189,11 +271,11 @@ class ChatSession {
     await this.submit(id, payload);
   };
   private async submit(id: string, payload: GenerationPayload) {
-    const controller = this.controller();
+    const controller = this.controller(id);
     this.patch(id, { starting: true, notice: "" });
     try {
       await generateChat(this.scope, id, payload, controller.signal, frame => this.receive(id, frame));
-      if (!this.valid()) return;
+      if (!this.valid() || this.deleted.has(id)) return;
       const current = this.value.cells[id];
       if (current.operation?.state === "waiting") this.poll(id);
       else if (isOpen(current) && current.operation?.state !== "paused") this.patch(id, { notice: "Conexión interrumpida. La solicitud sigue guardada." });
@@ -279,15 +361,15 @@ class ChatSession {
   reconnect = async (id = this.value.selected) => {
     const operation = this.value.cells[id]?.operation;
     if (!operation) return;
-    const controller = this.controller();
+    const controller = this.controller(id);
     try {
       const response = await import("../../services/api").then(({ fetchChatResponse }) => fetchChatResponse(chatPath(id, operation.operation_id, "events"),
         { token: this.scope.token, tenantId: this.scope.tenantId, signal: controller.signal }));
       this.patch(id, { partial: "", attempt: null, sequence: 0, revision: 0, notice: "", recovering: false });
       await readChatEvents(response, frame => this.receive(id, frame));
       const cell = this.value.cells[id];
-      if (this.valid() && (cell.operation?.state === "waiting" || cell.recovering)) this.poll(id);
-      else if (this.valid() && isOpen(cell) && cell.operation?.state !== "paused") this.patch(id, { notice: "Conexión interrumpida. La solicitud sigue guardada." });
+      if (this.valid() && cell && (cell.operation?.state === "waiting" || cell.recovering)) this.poll(id);
+      else if (this.valid() && cell && isOpen(cell) && cell.operation?.state !== "paused") this.patch(id, { notice: "Conexión interrumpida. La solicitud sigue guardada." });
     } catch { if (!controller.signal.aborted) this.patch(id, { notice: "No se pudo recuperar la conexión. La solicitud sigue guardada." }); }
     finally { this.readers.delete(controller); }
   };
@@ -306,7 +388,7 @@ class ChatSession {
         else if (next.state === "active") await this.reconnect(id);
       } catch { this.patch(id, { notice: "No se pudo consultar la solicitud guardada." }); }
     }, 5000);
-    this.timers.add(timer);
+    this.timers.set(timer, id);
   }
   stop = async () => {
     const id = this.value.selected, cell = this.value.cells[id];

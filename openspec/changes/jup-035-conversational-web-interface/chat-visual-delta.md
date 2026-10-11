@@ -84,3 +84,11 @@ Compositor: alineacion centrada; Enviar tiene tamano fijo 48x48px, sin stretch,
 sin padding, sin encogimiento e icono centrado. Se centra verticalmente respecto
 al campo, que conserva crecimiento multilinea hasta 160px y min-width 0 para movil.
 Solo clases visuales, sin cambios de envio ni nuevas pruebas funcionales.
+
+Fuentes: AnswerEvidence compartido por chat e historial muestra una fila pequena
+y muted por cita, con FileText, titulo y source solo si difiere del titulo.
+Sin encabezado visible, desplegable, extracto ni identificadores/localizacion.
+Las referencias inline ya verificadas enfocan su fila accesible. No hay aviso
+para ausencia de fuentes; referencias no resueltas conservan el aviso de evidencia
+no disponible. Validacion metadata/citations intacta; no cambia contenido respuesta
+ni contratos backend. Filas ajustan texto largo sin solapamiento.

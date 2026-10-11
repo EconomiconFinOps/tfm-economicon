@@ -2,7 +2,7 @@ import math
 from time import perf_counter
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from app.api.dependencies import (
     get_active_tenant,
@@ -13,7 +13,7 @@ from app.api.dependencies import (
     get_database,
 )
 from app.core.config import get_settings
-from app.db.chat_repository import ChatError
+from app.db.chat_repository import ChatError, ChatRepository
 from app.db import chat_history
 from app.core.metrics import assistant_queries_total, retrieval_empty_total, retrieval_failures_total
 from app.services.citations import InvalidCitation, resolve_citations, validate_context
@@ -24,6 +24,7 @@ from app.schemas.assistant import (
     ConversationCreateRequest,
     ConversationDetail,
     ConversationRecord,
+    ConversationRenameRequest,
     MessageCreateRequest,
 )
 
@@ -63,6 +64,35 @@ def create_conversation(
     return ConversationRecord(
         **database.create_conversation(tenant_id, current_user["id"], payload.title)
     )
+
+
+@router.patch("/conversations/{conversation_id}", response_model=ConversationRecord)
+def rename_conversation(
+    conversation_id: str,
+    payload: ConversationRenameRequest,
+    current_user=Depends(get_current_user),
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> ConversationRecord:
+    conversation = database.rename_conversation(conversation_id, tenant_id, current_user["id"], payload.title)
+    if conversation is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found.")
+    return ConversationRecord(**conversation)
+
+
+@router.delete("/conversations/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_conversation(
+    conversation_id: str,
+    current_user=Depends(get_current_user),
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> Response:
+    try:
+        ChatRepository(database).delete_conversation({"conversation_id": conversation_id,
+            "tenant_id": tenant_id, "user_id": current_user["id"]})
+    except ChatError as exc:
+        raise HTTPException(exc.status, exc.code) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/conversations/{conversation_id}", response_model=ConversationDetail)

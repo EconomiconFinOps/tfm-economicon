@@ -409,6 +409,16 @@ class Database:
             )
         return conversation
 
+    def rename_conversation(self, conversation_id: str, tenant_id: str, user_id: str, title: str) -> dict | None:
+        with self.engine.begin() as connection:
+            row = connection.execute(text("""
+                UPDATE conversations SET title = :title, updated_at = :updated_at
+                WHERE id = :conversation_id AND tenant_id = :tenant_id AND user_id = :user_id
+                RETURNING id, tenant_id, user_id, title, created_at, updated_at
+            """), {"conversation_id": conversation_id, "tenant_id": tenant_id, "user_id": user_id,
+                   "title": title, "updated_at": datetime.now(timezone.utc)}).mappings().first()
+        return dict(row) if row else None
+
     def fetch_conversations(self, tenant_id: str, user_id: str) -> list[dict]:
         with self.engine.connect() as connection:
             rows = connection.execute(

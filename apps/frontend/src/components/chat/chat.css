@@ -1,3 +1,17 @@
+.chat-history-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) transparent;
+}
+
+@supports selector(::-webkit-scrollbar) {
+  .chat-history-scroll { scrollbar-width: auto; scrollbar-color: auto; }
+  .chat-history-scroll::-webkit-scrollbar { width: 6px; height: 6px; background: transparent; }
+  .chat-history-scroll::-webkit-scrollbar-track { background: transparent; }
+  .chat-history-scroll::-webkit-scrollbar-thumb { background: var(--muted-foreground); border-radius: 3px; }
+  .chat-history-scroll::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+  .chat-history-scroll::-webkit-scrollbar-corner { background: transparent; }
+}
+
 .chat-message {
   min-width: 0;
   margin-block: 1.25rem;

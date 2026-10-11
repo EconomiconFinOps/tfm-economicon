@@ -95,6 +95,34 @@ class ChatRepository:
                 # Caller resolves ambiguous commits by stable operation/result IDs.
                 raise ChatError(503,'commit_unknown' if code=='40003' else 'storage_unavailable') from None
 
+    def delete_conversation(self, scope):
+        def remove(c):
+            # Check every child of the locked parent before removing any data.
+            inconsistent = c.execute(text('SELECT operation_id FROM chat_operations '
+                'WHERE conversation_id=:conversation_id AND (tenant_id<>:tenant_id OR user_id<>:user_id) '
+                'LIMIT 1'), scope).first()
+            legacy_inconsistent = c.execute(text('SELECT id FROM messages WHERE conversation_id=:conversation_id '
+                'AND (tenant_id<>:tenant_id OR (user_id IS NOT NULL AND user_id<>:user_id)) LIMIT 1'), scope).first()
+            if inconsistent or legacy_inconsistent:
+                raise ChatError(503, 'conversation_integrity')
+            opened = c.execute(text("SELECT operation_id FROM chat_operations WHERE conversation_id=:conversation_id "
+                "AND tenant_id=:tenant_id AND user_id=:user_id AND state IN ('active','waiting','paused') LIMIT 1"), scope).first()
+            if opened:
+                raise ChatError(409, 'conversation_busy')
+            control = self.compactions.read(c, scope)
+            if control is not None and (control['state'] != 'failed'
+                    or control.get('job') is not None or control.get('owner') is not None):
+                raise ChatError(409, 'conversation_compacting')
+            c.execute(text("DELETE FROM chat_operations WHERE conversation_id=:conversation_id "
+                "AND tenant_id=:tenant_id AND user_id=:user_id AND state IN ('completed','failed','cancelled')"), scope)
+            c.execute(text('DELETE FROM messages WHERE conversation_id=:conversation_id '
+                'AND tenant_id=:tenant_id AND (user_id=:user_id OR user_id IS NULL)'), scope)
+            deleted = c.execute(text('DELETE FROM conversations WHERE id=:conversation_id '
+                'AND tenant_id=:tenant_id AND user_id=:user_id'), scope)
+            if deleted.rowcount != 1:
+                raise ChatError(503, 'conversation_integrity')
+        return self._transaction(scope, remove)
+
     def _row(self,c,scope,operation_id):
         row = c.execute(text('SELECT o.* FROM chat_operations o JOIN conversations c ON '
             'c.id=o.conversation_id AND c.tenant_id=o.tenant_id AND c.user_id=o.user_id '

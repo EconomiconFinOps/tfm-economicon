@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { useState } from "react";
 import { Layout } from "../src/layouts/Layout";
+import * as chatSession from "../src/components/chat/useChatSession";
 
 const record = (id: string, title: string) => ({ id, title, tenant_id: "t", user_id: "alice",
   created_at: "2026-10-10T00:00:00Z", updated_at: "2026-10-10T00:00:00Z" });
@@ -229,25 +230,36 @@ describe("Panel conversacional propio JUP-035", () => {
     expect(screen.getAllByRole("status", { name: "Actividad de la conversación" })).toHaveLength(1);
   });
 
-  it("ancla fallo guardado a su pregunta historica aunque haya mensajes posteriores", async () => {
+  it("oculta solicitudes guardadas y conserva recuperacion interna del fallo historico", async () => {
     const previous = globalThis.fetch;
     const failed = { ...operation, question_id: "old-q", state: "failed" };
+    const originalSession = chatSession.useChatSession;
+    let current!: ReturnType<typeof originalSession>;
+    const sessionSpy = vi.spyOn(chatSession, "useChatSession").mockImplementation((...args) => {
+      current = originalSession(...args); return current;
+    });
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, options: RequestInit = {}) => {
       const path = new URL(String(input), "http://test").pathname;
       if (path === "/assistant/requests") return json({ items: [{ tenant_id: "t", user_id: "alice", conversation_id: "old", question: "Pregunta histórica", operation: failed }] });
       if (path === "/assistant/conversations/old/generations/op") return json(failed);
       return previous(input, options);
     }));
-    mount();
-    fireEvent.click(screen.getByRole("button", { name: "Abrir asistente" }));
-    fireEvent.click(screen.getByRole("button", { name: "Historial" }));
-    fireEvent.click(await screen.findByRole("button", { name: /Pregunta histórica/ }));
-    const retry = await screen.findByRole("button", { name: "Reintentar respuesta" });
-    const activity = retry.closest('[role="status"]')!;
-    expect(screen.getByText("Pregunta histórica").compareDocumentPosition(activity) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
-    expect(activity.compareDocumentPosition(screen.getByText("Respuesta histórica")) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
-    expect(screen.getAllByRole("status", { name: "Actividad de la conversación" })).toHaveLength(1);
-    expect(screen.queryByText("Preparando contexto")).toBeNull();
+    try {
+      mount();
+      fireEvent.click(screen.getByRole("button", { name: "Abrir asistente" }));
+      fireEvent.click(screen.getByRole("button", { name: "Historial" }));
+      await waitFor(() => expect(current.value.requests).toHaveLength(1));
+      const history = screen.getByRole("dialog", { name: "Historial de conversaciones" });
+      expect(within(history).queryAllByText(/Solicitudes guardadas|Pregunta histórica/i)).toHaveLength(0);
+      fireEvent.click(within(history).getByRole("button", { name: "Cerrar historial" }));
+      await act(async () => current.session.selectRequest(current.value.requests[0]));
+      const retry = await screen.findByRole("button", { name: "Reintentar respuesta" });
+      const activity = retry.closest('[role="status"]')!;
+      expect(screen.getByText("Pregunta histórica").compareDocumentPosition(activity) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+      expect(activity.compareDocumentPosition(screen.getByText("Respuesta histórica")) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+      expect(screen.getAllByRole("status", { name: "Actividad de la conversación" })).toHaveLength(1);
+      expect(screen.queryByText("Preparando contexto")).toBeNull();
+    } finally { sessionSpy.mockRestore(); }
   });
 
   it.each([false, true])("reintento junto a fila failed, parcial=%s, respeta bloqueo y no duplica envio", async partial => {

@@ -3,12 +3,13 @@ import { useLocation } from "react-router";
 import { AssistantRuntimeProvider, ComposerPrimitive, MessagePrimitive, ThreadPrimitive,
   useAuiState, useExternalStoreRuntime, type AppendMessage, type ThreadMessageLike } from "@assistant-ui/react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { MessageSquare, X, History, Plus, ArrowDown, Send, Square, RotateCcw } from "lucide-react";
+import { MessageSquare, X, History, Plus, ArrowDown, Send, Square, RotateCcw, Trash2 } from "lucide-react";
 import { AnswerEvidence } from "../AnswerEvidence";
+import { ConversationTitleEditor } from "./ConversationTitleEditor";
 import type { ChatScope } from "../../services/chat";
 import { isOpen, memoryBlocked, useChatSession, type ChatCell } from "./useChatSession";
 import { usePreparedScreen } from "./ScreenCaptureProvider";
-import { ChatProgress, MessageTimestamp, operationStatus, userRoleLabel, useChatActivity } from "./ChatPresentation";
+import { ChatProgress, MessageTimestamp, userRoleLabel, useChatActivity } from "./ChatPresentation";
 import "./chat.css";
 
 const button = "inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-highlight disabled:opacity-50 disabled:cursor-not-allowed";
@@ -94,6 +95,13 @@ function Thread({ cell, send, stop, captureReady, userRole, activity, retryMemor
 export function ChatPanel({ scope, userRole }: { scope: ChatScope; userRole?: string }) {
   const [shown, setShown] = useState(false);
   const [historyShown, setHistoryShown] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const deleteBusy = useRef(false);
+  const deleteTrigger = useRef<HTMLButtonElement | null>(null);
+  const deleteCancel = useRef<HTMLButtonElement>(null);
+  const historyClose = useRef<HTMLButtonElement>(null);
   const prepared = usePreparedScreen();
   const { session, value, cell } = useChatSession(scope, prepared);
   const activity = useChatActivity(cell, value.cells);
@@ -116,6 +124,14 @@ export function ChatPanel({ scope, userRole }: { scope: ChatScope; userRole?: st
     const content = message.content.filter(part => part.type === "text").map(part => part.text).join("");
     await session.send(content, location.pathname);
   };
+  const deleteBlock = deleteTarget ? session.deletionBlock(deleteTarget) : null;
+  const confirmDelete = async () => {
+    if (!deleteTarget || deleteBusy.current) return;
+    deleteBusy.current = true; setDeletePending(true); setDeleteError("");
+    try { await session.remove(deleteTarget); setDeleteTarget(null); }
+    catch (error) { setDeleteError(error instanceof Error ? error.message : "No se pudo eliminar la conversación."); }
+    finally { deleteBusy.current = false; setDeletePending(false); }
+  };
   return <>
     <button ref={trigger} type="button" style={shown ? { display: "none" } : undefined} className={`${button} fixed bottom-6 right-6 z-30 shadow-lg`} aria-label="Abrir asistente" aria-expanded={shown} aria-controls="finops-chat"
       onClick={() => setShown(true)}><MessageSquare size={18} />Asistente FinOps</button>
@@ -123,30 +139,55 @@ export function ChatPanel({ scope, userRole }: { scope: ChatScope; userRole?: st
       className="fixed inset-y-0 right-0 z-40 flex w-full min-w-0 flex-col border-l border-border bg-background shadow-2xl md:w-1/2"
       onKeyDown={event => { if (event.key === "Escape" && !historyShown) { event.preventDefault(); hide(); } }}>
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-4 py-3">
-        <div><h2 className="font-semibold text-foreground">Asistente FinOps</h2><p className="text-xs text-muted-foreground">{cell.title}</p></div>
+        <div className="min-w-0 flex-1"><h2 className="font-semibold text-foreground">Asistente FinOps</h2>
+          <ConversationTitleEditor key={cell.id} title={cell.title} label="Renombrar conversación"
+            disabled={cell.id.startsWith("draft-") && cell.starting} onSave={title => session.rename(cell.id, title)}>
+            <p className="min-w-0 max-w-[calc(100%-2.25rem)] break-words text-xs text-muted-foreground">{cell.title}</p>
+          </ConversationTitleEditor></div>
         <div className="flex gap-2"><button className={button} onClick={() => { session.newConversation(); setHistoryShown(false); }}><Plus size={16} /><span className="sr-only">Nueva conversación</span></button>
           <Dialog.Root open={historyShown} onOpenChange={open => { setHistoryShown(open); if (open) void session.loadHistory(); }}>
             <Dialog.Trigger className={button} aria-label="Historial"><History size={16} /><span className="sr-only">Historial</span></Dialog.Trigger>
             <Dialog.Portal><Dialog.Overlay className="fixed inset-0 z-50 bg-background/40" />
-              <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l border-border bg-card p-4 shadow-2xl sm:w-80" aria-describedby={undefined}>
+              <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l border-border bg-card p-4 shadow-2xl sm:w-80" aria-describedby={undefined}
+                onEscapeKeyDown={event => {
+                  if (event.target instanceof Element && event.target.closest('[data-conversation-title-editor="editing"]')) event.preventDefault();
+                }}>
                 <div className="flex items-center justify-between"><Dialog.Title className="font-semibold">Historial de conversaciones</Dialog.Title>
-                  <Dialog.Close className={button} aria-label="Cerrar historial"><X size={16} /></Dialog.Close></div>
-                <div className="mt-4 flex-1 overflow-y-auto">
+                  <Dialog.Close ref={historyClose} className={button} aria-label="Cerrar historial"><X size={16} /></Dialog.Close></div>
+                <div className="chat-history-scroll mt-4 flex-1 overflow-y-auto">
                   {value.historyLoading && <p role="status">Cargando historial…</p>}
                   {value.historyError && <p role="alert">No se pudo cargar el historial.</p>}
                   {!value.historyLoading && !value.historyError && !value.history.length && <p>No hay conversaciones guardadas.</p>}
-                  {value.history.map(record => <button key={record.id} className={`${button} mb-2 w-full justify-start text-left`} onClick={() => {
-                    void session.select(record); setHistoryShown(false);
-                  }}>{record.title}</button>)}
-                  <h3 className="mt-4 mb-2 text-sm font-semibold">Solicitudes guardadas</h3>
-                  {value.requestsLoading && <p role="status">Cargando solicitudes…</p>}
-                  {value.requestsError && <p role="alert">No se pudieron cargar las solicitudes guardadas.</p>}
-                  {!value.requestsLoading && !value.requestsError && !value.requests.length && <p>No hay solicitudes guardadas.</p>}
-                  {value.requests.map(request => <button key={request.operation.operation_id} className={`${button} mb-2 w-full flex-col items-start text-left`}
-                    onClick={() => { void session.selectRequest(request); setHistoryShown(false); }}>
-                    <span className="line-clamp-2 break-words">{request.question}</span><span className="text-xs text-muted-foreground">{operationStatus({ ...cell, starting: false, operation: request.operation })}</span>
-                  </button>)}
+                  {value.history.map(record => <div key={record.id} className="mb-2 flex min-w-0 items-center gap-1 rounded-lg border border-border bg-card p-1">
+                    <ConversationTitleEditor title={record.title} label={`Renombrar ${record.title}`} onSave={title => session.rename(record.id, title)}>
+                      <button className="min-w-0 flex-1 self-stretch break-words rounded px-2 py-2 text-left text-sm text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-highlight" onClick={() => {
+                        void session.select(record); setHistoryShown(false);
+                      }}>{record.title}</button>
+                    </ConversationTitleEditor>
+                    <button type="button" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-highlight disabled:opacity-50"
+                      aria-label={`Eliminar ${record.title}`} title={session.deletionBlock(record.id) ?? `Eliminar ${record.title}`}
+                      disabled={!!session.deletionBlock(record.id)} onClick={event => {
+                        deleteTrigger.current = event.currentTarget; setDeleteError(""); setDeleteTarget(record.id);
+                      }}><Trash2 size={14} aria-hidden="true" /></button>
+                  </div>)}
                 </div>
+                <Dialog.Root open={deleteTarget !== null} onOpenChange={open => { if (!open && !deleteBusy.current) setDeleteTarget(null); }}>
+                  <Dialog.Portal><Dialog.Overlay className="fixed inset-0 z-[60] bg-background/60" />
+                    <Dialog.Content className="fixed left-1/2 top-1/2 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl"
+                      aria-describedby={undefined} onOpenAutoFocus={event => { event.preventDefault(); deleteCancel.current?.focus(); }}
+                      onCloseAutoFocus={event => { event.preventDefault(); (deleteTrigger.current?.isConnected ? deleteTrigger.current : historyClose.current)?.focus(); }}
+                      onEscapeKeyDown={event => { if (deleteBusy.current) event.preventDefault(); }}
+                      onInteractOutside={event => event.preventDefault()}>
+                      <Dialog.Title className="text-sm font-semibold text-foreground">¿Estás seguro? No podrás recuperar esta conversación</Dialog.Title>
+                      {(deleteError || deleteBlock) && <p role="alert" className="mt-3 text-sm text-muted-foreground">{deleteError || deleteBlock}</p>}
+                      {deletePending && <p role="status" className="mt-3 text-sm text-muted-foreground">Eliminando conversación…</p>}
+                      <div className="mt-4 flex justify-end gap-2">
+                        <button type="button" className={button} disabled={deletePending || !!deleteBlock} onClick={() => void confirmDelete()}>Sí</button>
+                        <Dialog.Close ref={deleteCancel} className={button} disabled={deletePending}>No</Dialog.Close>
+                      </div>
+                    </Dialog.Content>
+                  </Dialog.Portal>
+                </Dialog.Root>
               </Dialog.Content></Dialog.Portal>
           </Dialog.Root>
           <button className={button} aria-label="Ocultar asistente" onClick={hide}><X size={16} /></button>

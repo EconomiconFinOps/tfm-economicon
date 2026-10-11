@@ -426,6 +426,67 @@ fijo de cuatro y sin duplicar los pares cubiertos por memoria valida.
 - **WHEN** agregar un par completo supera tokens o bytes del sobre con las reservas
 - **THEN** se conserva el mayor conjunto que cabe o se devuelve limite explicito si no cabe un par; no se afirma que un millon de tokens quepa en1MiB
 
+### Requirement: Nombres de conversaciones editables y aislados
+
+El ChatPanel SHALL crear el nombre desde la primera pregunta, normalizando espacios
+y limitando a 60 puntos de codigo Unicode, sin llamadas adicionales al modelo.
+SHALL preservar nombres manuales, incluidos borradores, y no recalcular nombres
+de conversaciones existentes al enviar, reintentar o completar respuestas.
+La cabecera y cada entrada de historial SHALL ofrecer edicion accesible con lapiz,
+guardar/cancelar, Enter/Escape, estado pendiente y error sin perder el texto.
+PATCH /assistant/conversations/{conversation_id} SHALL aceptar solo title, normalizar
+espacios y rechazar vacio o mas de 60 puntos de codigo con 422. SHALL actualizar
+solo title y updated_at con filtro SQL id, tenant_id y user_id autenticados.
+
+#### Scenario: Primer envio y nombre manual
+
+- **WHEN** el primer envio crea una conversacion desde un borrador
+- **THEN** el nombre es su nombre manual explicito o los primeros 60 puntos de codigo de la pregunta normalizada; la pregunta se conserva completa
+
+#### Scenario: Edicion y respuestas tardias
+
+- **WHEN** se guarda un nombre desde cabecera o historial y llega una respuesta tardia
+- **THEN** se actualizan solo la celda y entrada correspondientes, sin cambiar seleccion; una lectura de historial iniciada antes no revierte el nombre confirmado
+
+#### Scenario: Cancelacion y error
+
+- **WHEN** el usuario cancela con Escape o guardar falla
+- **THEN** Escape cancela solo el editor sin escritura ni cierre del panel/dialogo; el fallo conserva nombre previo, texto editable y mensaje de error; no se duplica el envio pendiente
+
+#### Scenario: Propiedad y contenido intacto
+
+- **WHEN** se intenta renombrar un id inexistente, de otro usuario o de otro tenant
+- **THEN** se devuelve el mismo 404 sin modificar datos; un renombrado autorizado conserva historial, resumen y operaciones
+
+### Requirement: Eliminacion individual segura de conversaciones
+
+El historial SHALL ofrecer una papelera junto al lapiz en cada conversacion, con
+confirmacion modal "¿Estás seguro? No podrás recuperar esta conversación" y botones
+"Sí" y "No". No/Escape SHALL cancelar sin escritura; el foco inicial SHALL ser No.
+La eliminacion SHALL ser definitiva, individual, autenticada y atomica, sin migracion.
+DELETE /assistant/conversations/{id} SHALL devolver204 sin cuerpo o el mismo404
+para inexistente/ajena. CORS SHALL permitir DELETE sin ampliar origenes/headers.
+
+#### Scenario: Eliminacion propia y conservacion de terceros
+
+- **WHEN** se confirma una conversacion propia sin trabajo pendiente
+- **THEN** una transaccion serializable con bloqueo del padre elimina sus operaciones terminales, mensajes legacy y conversacion con su historial/resumen; no modifica otras conversaciones ni corpus
+
+#### Scenario: Trabajo pendiente o incoherencia
+
+- **WHEN** hay operacion active/waiting/paused o compresion pending/running/reconciling o failed con job/owner residual
+- **THEN** se rechaza con409 y explicacion sin borrar; una incoherencia de propietarios o fallo de almacenamiento aborta toda la transaccion
+
+#### Scenario: Confirmacion pendiente y respuestas tardias
+
+- **WHEN** se confirma el borrado y despues responden lectores antiguos
+- **THEN** no se duplica DELETE ni se resucitan celda, historial o solicitudes; se cancelan lectores/timers propios, se crea borrador solo si sigue seleccionada la eliminada y se conserva otra seleccion posterior
+
+#### Scenario: Error de eliminacion
+
+- **WHEN** el servidor rechaza o no se confirma el borrado
+- **THEN** el modal conserva error visible y los datos locales, sin afirmar exito ni ejecutar inferencia para recuperar
+
 ### Requirement: Compresion durable excluyente y recuperable
 
 El sistema SHALL persistir dialogue_compaction JSONB nullable mediante migracion

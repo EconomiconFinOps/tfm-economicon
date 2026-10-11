@@ -39,6 +39,21 @@ def test_packaged_prompt_explains_non_actionable_response_contract():
     assert 'Indicaciones para obtener datos: usa next_actions, no recommendations.' in system
 
 
+def test_packaged_prompt_requires_only_used_documentary_sources_without_user_request():
+    from app.core.chat_resources import load_resources
+    default = Path(__file__).parents[1]/'app/agents/prompt_resources/jup035/chat/v2'
+    root = Path(os.getenv('JUP035_RESOURCE_BUNDLE', str(default)))
+    resource = load_resources(root)
+    system = ' '.join(resource.system.split())
+    assert 'Citas documentales obligatorias, aunque el usuario no las solicite:' in system
+    assert 'Toda afirmacion de answer apoyada en corpus debe incluir en evidence el id exacto de cada fuente realmente usada' in system
+    assert 'Recuperar un documento no implica usarlo: no listes todo el corpus recuperado ni fuentes no usadas.' in system
+    assert 'No inventes ids, referencias, titulos ni sources; copia id, kind, title y source de la evidencia autorizada.' in system
+    manifest = json.loads((root/'manifest.json').read_bytes())
+    assert manifest['system_sha256'] == digest((root/'system.md').read_bytes())
+    assert resource.prompt_version == 'jup-035.chat.v2:' + digest(canonical(manifest))
+
+
 @pytest.fixture
 def resources(private,tmp_path,monkeypatch):
     root=tmp_path/'trusted-chat-v2';root.mkdir()

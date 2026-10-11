@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { FileText } from "lucide-react";
 
 interface Citation {
   evidence_id: string;
@@ -46,10 +47,9 @@ export function AnswerEvidence({ content, metadata }: {
           <a className="text-info-foreground underline" href={`#${prefix}-source-${number}`} aria-label={`Ver fuente ${number}`}
             onClick={(event) => {
               const target = event.currentTarget.ownerDocument.getElementById(`${prefix}-source-${number}`);
-              if (target instanceof HTMLDetailsElement) {
+              if (target instanceof HTMLElement) {
                 event.preventDefault();
-                target.open = true;
-                target.querySelector("summary")?.focus();
+                target.focus();
               }
             }}>
             [{number}]
@@ -57,20 +57,16 @@ export function AnswerEvidence({ content, metadata }: {
         </> : line}</p>;
       })}
     </div>
-    {citations.length > 0 ? <section className="mt-3 space-y-2 text-sm text-subtle-foreground" aria-label="Fuentes utilizadas">
-      <h3 className="font-semibold text-foreground">Fuentes utilizadas</h3>
-      {citations.map((citation, index) => <details key={citation.evidence_id} id={`${prefix}-source-${index + 1}`} className="rounded border border-border p-2">
-        <summary className="cursor-pointer">[{index + 1}] {citation.title} — {citation.source}</summary>
-        <p>Documento: {citation.document_id}</p>
-        {citation.section && <p>Sección: {citation.section}</p>}
-        {citation.page !== null && <p>Página: {citation.page}</p>}
-        <p className="break-all">Referencia: {citation.reference}</p>
-        <blockquote className="mt-2 whitespace-pre-wrap border-l-2 border-info pl-3">{citation.excerpt}</blockquote>
-      </details>)}
-    </section> : <p className="mt-2 text-xs text-muted-foreground">
-      {Array.isArray(references) && references.length > 0
-        ? "La evidencia de esta respuesta no está disponible."
-        : "Sin fuentes documentales utilizadas."}
-    </p>}
+    {citations.length > 0 ? <section className="mt-3 text-muted-foreground" aria-label="Fuentes utilizadas">
+      <ul className="m-0 grid list-none gap-1.5 p-0">
+        {citations.map((citation, index) => <li key={citation.evidence_id} id={`${prefix}-source-${index + 1}`} tabIndex={-1}
+          className="flex min-h-6 items-center gap-2 text-[0.8125rem] focus-visible:outline-2 focus-visible:outline-highlight">
+          <FileText size={15} strokeWidth={1.6} className="shrink-0" aria-hidden="true" />
+          <span className="min-w-0 [overflow-wrap:anywhere]">{citation.title}
+            {citation.source.trim().toLocaleLowerCase() !== citation.title.trim().toLocaleLowerCase() && ` · ${citation.source}`}</span>
+        </li>)}
+      </ul>
+    </section> : Array.isArray(references) && references.length > 0 &&
+      <p className="mt-2 text-xs text-muted-foreground">La evidencia de esta respuesta no está disponible.</p>}
   </>;
 }

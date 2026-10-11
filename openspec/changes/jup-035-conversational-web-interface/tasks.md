@@ -175,3 +175,25 @@ referencia persistente nueva; incidente anterior conservado sin convalidarlo.
   validacion independientes; migracion y UI reales aisladas tienen evidencia aparte.
 
 La aprobación concreta del delta queda satisfecha; TL encarga al único Desarrollador fases separadas tras contraste del checkpoint seguro. Tareas46–51 y comportamiento siguen pendientes de ejecución/evidencia/independientes; no otra confirmación del mismo esquema/backfill local aislado. El resto035 aprobado continúa sin repetir pruebas no afectadas.
+
+## Nombres de conversaciones - delta autonomo autorizado 11/10/2026
+
+Fuente: conversation-titles-design.md y autorizacion explicita del usuario para
+PATCH sobre title existente, sin migracion ni llamadas adicionales al modelo.
+
+- [x] 56. Disenar nombre inicial Unicode60 y edicion manual scoped sin cambiar titulos existentes.
+- [x] 57. Red focal: contrato PATCH, aislamiento/validacion y nombre/editor frontend.
+- [x] 58. Green: PATCH parametrizado y editor compartido de cabecera/historial; seleccion y nombres protegidos frente a callbacks tardios.
+- [x] 59. Comprobar pruebas afectadas, typecheck/build y mutaciones focales en copias offline.
+- [ ] 60. Comprobacion del padre en runtime aislado reconstruido y decision humana, sin inferir aceptacion de los resultados locales.
+
+## Eliminacion individual - delta autonomo autorizado 11/10/2026
+
+Fuente: conversation-deletion-design.md y aprobacion humana expresa de hard delete
+sin migracion, modal exacto y comprobaciones offline con fixtures desechables.
+
+- [x] 61. Inspeccionar relaciones, aprobar bloqueo/propiedad y confirmacion explicita.
+- [x] 62. Red focal: DELETE, preflight, propiedad, bloqueos, rollback y modal/seleccion/callbacks.
+- [x] 63. Green: transaccion scoped y modal Radix; conservar otras conversaciones y cambios previos de nombres/citas/scroll.
+- [x] 64. Regresiones afectadas, ambos typechecks/build y mutaciones focales de compresion y resurreccion de celda.
+- [ ] 65. Padre despliega backend/frontend y comprueba navegador/Cockroach aislados antes de decision humana; no borrar fixtures reales desde este ejecutor.

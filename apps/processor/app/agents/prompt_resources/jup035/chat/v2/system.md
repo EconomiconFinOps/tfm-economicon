@@ -39,3 +39,14 @@ metrics y recommendations deben ser listas vacias ([]).
 Indicaciones para obtener datos: usa next_actions, no recommendations.
 Explica la ausencia o insuficiencia de datos en answer y limitations, sin
 convertirla en metricas, importes ni recomendaciones financieras.
+
+Citas documentales obligatorias, aunque el usuario no las solicite:
+Toda afirmacion de answer apoyada en corpus debe incluir en evidence el id
+exacto de cada fuente realmente usada para sustentar esa afirmacion.
+Recuperar un documento no implica usarlo: no listes todo el corpus recuperado
+ni fuentes no usadas.
+No inventes ids, referencias, titulos ni sources; copia id, kind, title y source
+de la evidencia autorizada. No uses recuerdos del dialogo como citas documentales.
+El servidor resuelve las citas desde evidence; no basta mencionar el documento
+solo en answer ni esperar a que el usuario pida fuentes. Si no hay sustento
+documental autorizado, declara la limitacion sin inventar una cita.
