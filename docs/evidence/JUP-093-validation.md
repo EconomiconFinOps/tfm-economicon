@@ -28,10 +28,10 @@ tarjeta es `tools/ci-workflow.test.mjs`, que valida la estructura de `ci.yml` y 
 | Green (coder) | `corepack pnpm ci:check:test` | 7/7 pass |
 | QA | checklist independiente | `accept`, sin escalados |
 
-Incidencia de proceso durante Red: el hook `lock-committed-tests.mjs` bloqueo la edicion directa del
-test ya commiteado (por diseno, no distingue rol). Resuelto con bypass puntual autorizado por
-Victor, verificado funcionalmente que el candado volvia a bloquear antes de continuar. Detalle
-completo en `review.md`.
+Incidencia de proceso durante Red: la proteccion de tests contra edicion del entorno local bloqueo
+la edicion directa del test ya commiteado (por diseno, no distingue rol). Resuelto con bypass
+puntual autorizado por Victor, verificado funcionalmente que la proteccion volvia a bloquear antes
+de continuar. Detalle completo en `review.md`.
 
 Mutacion: sin runner aplicable en ambos casos (grupos 1-4/6 sin comportamiento testeable; grupo 5
 con artefacto YAML/JSON, no JS/TS mutable por Stryker/mutmut). QA verifico a mano dos mutantes

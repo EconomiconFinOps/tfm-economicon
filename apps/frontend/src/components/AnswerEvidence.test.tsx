@@ -46,4 +46,11 @@ describe("AnswerEvidence", () => {
     expect(screen.getAllByRole("link")).toHaveLength(1);
     expect(screen.getByText("- [1] Una cifra inventada")).toBeInTheDocument();
   });
+
+  it("shows unavailable cost evidence without a misleading documentary warning", () => {
+    render(<AnswerEvidence content="No hay datos suficientes." metadata={{ cost_evidence: { schema_version: "future" } }} />);
+    expect(screen.getByText("No hay datos suficientes.")).toBeInTheDocument();
+    expect(screen.getByText("La evidencia de costes de esta respuesta no está disponible.")).toBeInTheDocument();
+    expect(screen.queryByText("Sin fuentes documentales utilizadas.")).not.toBeInTheDocument();
+  });
 });

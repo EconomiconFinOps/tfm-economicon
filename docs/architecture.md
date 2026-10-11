@@ -1,7 +1,7 @@
 # Arquitectura técnica de Economicon
 
-JUP-060 · [Trello](https://trello.com/c/alMIpBOQ) · Corte de código: **10/10/2026,
-develop c2995a118d419dfe725247bac9c6f219a3f0ea77**. Esta vista sustituye las
+JUP-060 · [Trello](https://trello.com/c/alMIpBOQ) · Corte de código: **11/10/2026,
+develop a0e9a56**. Esta vista sustituye las
 descripciones históricas de billing fijo, aislamiento pendiente y citas pendientes.
 Describe código integrado; las ejecuciones citadas conservan su fecha, host y SHA.
 No certifica que un servidor esté ejecutando ahora esa versión.
@@ -10,8 +10,9 @@ No certifica que un servidor esté ejecutando ahora esa versión.
 
 Economicon es un asistente FinOps para Azure con interfaz web, API, procesamiento
 asíncrono y recuperación vectorial. El entorno reproducible es una demo con datos
-públicos/sintéticos; no conecta a una cuenta Azure real. El chat actual recupera
-contexto y devuelve una **plantilla determinista**. El processor dispone de un
+públicos/sintéticos; no conecta a una cuenta Azure real. El chat documental recupera
+contexto y devuelve una **plantilla determinista**; las consultas estructuradas
+de ownership agregan costes mediante SQL y generan evidencia determinista. El processor dispone de un
 cliente LLM, pero no compone todavía el vertical conversacional tools/RAG/LLM.
 
 En los diagramas de bloques las flechas continuas describen conexiones implementadas;
@@ -51,7 +52,7 @@ flowchart TB
 | Componente | Responsabilidad y límite | Implementación |
 | --- | --- | --- |
 | Frontend | Sesión, tenant, conversaciones y dashboard ejecutivo conectado a billing. Paneles operativo, recortes, anomalías y recomendaciones conservan fixtures demo. No accede a DB, cola ni claves del proveedor. | [Cliente HTTP](../apps/frontend/src/services/api.ts), [rutas](../apps/frontend/src/routes.tsx) |
-| Backend | Autenticación, autorización, costes/presupuesto, publicación de jobs, conversaciones, recuperación/citas y salud agregada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
+| Backend | Autenticación, autorización, costes/presupuesto, publicación de jobs, conversaciones, recuperación/citas, ownership SQL, cobertura de etiquetas y salud agregada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
 | Processor | Worker documental y pipeline LangGraph; CLI independiente para costes Azure. API de salud/métricas interna. AgentRuntime es módulo Python, no servicio de red. | [Pipeline](../apps/processor/app/graphs/pipeline.py), [CLI Azure](../apps/processor/app/run_azure_cost_ingestion.py), [agentes](../apps/processor/app/agents/service.py) |
 | API Azure simulada | HTTP posicional, bearer local, paginación y errores reproducibles sobre CSV público. No autentica contra Azure ni representa una factura completa. | [README](../apps/azure-cost-api/README.md), [fixture](../fixtures/azure-cost/README.md) |
 | LiteLLM, opcional | Proxy del processor y de embeddings del backend; claves virtuales separadas y DB propia. OpenRouter es el upstream configurado. | [Configuración](../infra/litellm/config.example.yaml), [operación](../infra/litellm/README.md) |
@@ -59,7 +60,7 @@ flowchart TB
 
 ## 3. Flujos implementados y vertical objetivo
 
-### 3.1 Chat síncrono: recuperación y citas
+### 3.1 Chat síncrono: recuperación documental y consultas de ownership
 
 ```mermaid
 sequenceDiagram
@@ -73,18 +74,30 @@ sequenceDiagram
   UI->>B: POST /assistant/conversations/{id}/messages
   B->>DB: Usuario, membership y propietario de conversación
   B->>DB: Persistir mensaje de usuario
+  alt ownership_query explícito
+    B->>DB: Agregación SQL por tenant, periodo, moneda y dimensiones
+    DB-->>B: Costes y procedencia
+    B->>B: Respuesta determinista y cost_evidence
+  else Consulta documental
   B->>E: Embedding de pregunta (mock o LiteLLM)
   E-->>B: Vector
   B->>V: Tenant y provider, top_k y umbral
   V-->>B: Chunks y documentos de la misma instantánea
   B->>B: Plantilla determinista y validación de citas
+  end
   B->>DB: Persistir mensaje de asistente
-  B-->>UI: Respuesta y citas estructuradas
+  B-->>UI: Respuesta con citations o cost_evidence
   UI-->>U: Texto y fuentes
 ```
 
 La [ruta](../apps/backend/app/api/routes/assistant.py) no llama al processor ni
-a la cola. [AssistantService](../apps/backend/app/services/assistant.py) muestra
+a la cola. Cuando recibe `ownership_query`, usa
+[OwnershipQuestionService](../apps/backend/app/services/ownership_questions.py):
+agrega costes de ejecuciones completadas por tenant, período y moneda, con
+dimensiones permitidas y procedencia verificable. Devuelve `cost_evidence`,
+sin embeddings, recuperación documental ni llamada LLM. La interfaz ofrece un
+formulario explícito; no interpreta libremente lenguaje natural en SQL. Véase
+[contrato ownership](api/ownership-questions.md). Para la rama documental, [AssistantService](../apps/backend/app/services/assistant.py) muestra
 hasta tres fragmentos o indica falta de contexto. La consulta vectorial filtra
 tenant y proveedor, ordena por distancia coseno e identificador y limita con
 `RETRIEVAL_TOP_K` (1–20, defecto 4). Con LiteLLM el umbral por defecto es 0.6;
@@ -148,6 +161,8 @@ flowchart LR
   R --> B[GET /billing/summary]
   B --> D[Dashboard ejecutivo]
   R --> E[POST /billing/budget/evaluate]
+  R --> T[GET /billing/tag-coverage]
+  T --> D
 ```
 
 La entrada comprobable es `python -m app.run_azure_cost_ingestion --tenant-id …
@@ -166,6 +181,14 @@ separados por moneda. Rechaza solapamientos ambiguos con 409 según
 nombre. Evaluar presupuesto no lo persiste ni envía notificaciones.
 [Contrato billing](../openspec/specs/azure-cost-kpis/spec.md) y
 [consulta SQL](../apps/backend/app/db/database.py).
+
+La [cobertura de etiquetas](../openspec/specs/tagged-cost-coverage/spec.md)
+pondera por coste positivo el cumplimiento de cinco etiquetas FinOps, por
+tenant, período y moneda. Los ajustes negativos se muestran aparte; sin cargos
+positivos devuelve N/D. El dashboard ejecutivo carga el panel bajo demanda.
+Es cumplimiento de la política, no calidad demostrada de las etiquetas.
+[JUP-068](validation/JUP-068-business-metrics.md) calcula métricas offline a partir
+de evidencia declarada; no prueba adopción, ahorro realizado ni un piloto real.
 
 ### 3.4 Vertical objetivo: contratos pendientes de integración
 
@@ -219,7 +242,8 @@ Según [ADR-0011](adr/ADR-0011-single-owner-per-table.md), backend migra sus sei
 tablas y processor las dos de Azure; cada servicio tiene su registro de
 migraciones. Processor también actualiza estados de jobs, pero no es dueño de
 su DDL: espera a backend sano después de migrar. El índice vectorial lo migra
-processor; backend comprueba la dimensión al iniciar cuando puede consultar la
+processor, con dimensión obtenida de Settings (JUP-102), sin conversión ni
+reindexación automática al cambiarla; backend comprueba la dimensión al iniciar cuando puede consultar la
 tabla, sin garantizar readiness del índice si esa comprobación se omite.
 No hay commit atómico
 entre CockroachDB, pgvector y RabbitMQ ni backup de conjunto demostrado.
@@ -328,7 +352,8 @@ Persistencia ante recreación no equivale a backup/restore.
 | [JUP-049](evidence/JUP-049-validation.md) | Smoke histórico 08/09 en DockerServer, tree 1d05259b2db193bded864d7491a238d89e0f524c. | No estado vivo actual; sus cuatro volúmenes preceden a persistencia RabbitMQ. |
 | [JUP-050](evidence/JUP-050-validation.md) | Ensayo 01/10 en Windows/Docker Desktop: nueve servicios, smoke 5/5, error con processor parado y persistencia down/up. | No Linux/macOS nuevos, backup/restore o runtime c2995a1. |
 | [JUP-108](evidence/JUP-108-validation.md) | Pruebas históricas mock/IA, claves/gateway/persistencia, con upstream sintético y campaña real separadas en su informe. | No chat web generativo completo, nueva ejecución por JUP-060 ni permiso de consumo pagado. |
-| [JUP-052 / PR #73](https://github.com/EconomiconFinOps/tfm-economicon/pull/73) | Trabajo de CD hacia DockerServer externo a la base revisada. | CD no integrado en c2995a1; esta revisión no verifica timer ni versión del host. |
+| [JUP-052](evidence/JUP-052-validation.md) / [PR #73](https://github.com/EconomiconFinOps/tfm-economicon/pull/73) | CD privado integrado en a0e9a56: elegibilidad por CI, agente systemd, releases por SHA y smoke antes de promover. | La evidencia distingue ensayo de recuperación de primera promoción; esta revisión documental no vuelve a inspeccionar el host. |
+| [JUP-078](evidence/JUP-078-operational-closure.md) | Gateway dedicado y claves limitadas verificados en su corte del 10/10. | No adopción automática por el CD mock ni nueva prueba upstream o de chat generativo. |
 | Revisión estática JUP-060 | Código/configuración disponibles para reproducir. | No inventario vivo, capacidad, HA, RPO/RTO o despliegue final aceptado. |
 
 ### 6.3 AWS: arquitectura de referencia y Terraform sin despliegue
@@ -400,11 +425,21 @@ ser unknown). Calidad offline del asistente se documenta por separado en
 [CI](../.github/workflows/ci.yml) ejecuta gobernanza/OpenSpec, pruebas y sintaxis
 de tres servicios Python, lint/test/build/typecheck frontend.
 [Reviews](../.github/workflows/pr-reviews.yml) aplica el proceso JUP.
+El [workflow CD](../.github/workflows/cd.yml) reutiliza CI y publica elegibilidad
+para el SHA de develop. El [agente privado](deployment/dockerserver-cd.md) consulta
+cada cinco minutos, construye una release aislada, fuerza puertos a loopback y
+ejecuta smoke antes de promover; state.json/journal acreditan despliegue real.
+Este CD usa nueve servicios en modo mock y datos desechables; no incorpora
+automáticamente el gateway dedicado de JUP-078 ni es un despliegue productivo.
 No se deduce despliegue de sus checks. Rama JUP → PR a develop → revisión y
 validación separadas → integración según [CONTRIBUTING](../CONTRIBUTING.md).
+El [plan de pruebas críticas](testing/critical-flows.md) conserva las ejecuciones
+y limitaciones de JUP-054; esta entrega no las presenta como pruebas nuevas.
 El detalle académico DevOps corresponde al apartado f/JUP-111 y no se reescribe aquí.
 
 Quedan por acreditar el vertical generativo conversacional, la cobertura de datos
-y aceptación del MVP completo, el despliegue final y su recuperación, y la
-incorporación revisada en la memoria. Los enlaces permiten revisar afirmaciones
+y aceptación del MVP completo. El despliegue privado y su recuperación conservan
+la evidencia fechada de JUP-052; no se reejecutan para esta documentación. La
+memoria incorporó el apartado d el 10/10 y tiene su propia versión y revisión
+registradas en la [evidencia de entrega](evidence/JUP-060-validation.md). Los enlaces permiten revisar afirmaciones
 sin convertir esas pendientes en resultados.

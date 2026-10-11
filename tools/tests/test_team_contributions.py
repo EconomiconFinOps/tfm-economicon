@@ -388,5 +388,15 @@ class ContributionTests(unittest.TestCase):
             self.assertEqual(output.read_bytes(), b'previous register')
 
 
+class VersionedContributionReportTests(unittest.TestCase):
+    def test_versioned_report_matches_versioned_snapshot(self):
+        root = Path(__file__).resolve().parents[2]
+        import json
+        snapshot = json.loads((root / 'docs/contributions/JUP-064-snapshot.json').read_text(encoding='utf-8'))
+        report = (root / 'docs/contributions/JUP-064-register.md').read_text(encoding='utf-8')
+        self.assertEqual(m.render(snapshot), report,
+                         'Regenerate the versioned report whenever the snapshot or renderer changes')
+
+
 if __name__ == '__main__':
     unittest.main()
