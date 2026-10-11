@@ -23,13 +23,13 @@ del backend (`RF-105-004`).
 
 ## 2. Regla de admisión del origen en el backend
 
-- [ ] 2.1 Crear `docs/api/ingest-source-contract-cases.json` con los casos aceptados y rechazados de
+- [x] 2.1 Crear `docs/api/ingest-source-contract-cases.json` con los casos aceptados y rechazados de
   la decisión 2 del `design.md`.
-- [ ] 2.2 Red, backend: para cada caso rechazado de la tabla, `POST /jobs/ingest` responde 422 con el
+- [x] 2.2 Red, backend: para cada caso rechazado de la tabla, `POST /jobs/ingest` responde 422 con el
   cuerpo saneado, no crea trabajo, no reserva y no publica, y ni la respuesta ni los registros
   contienen el valor; para cada caso aceptado responde 202 y guarda y publica el valor literal.
 - [ ] 2.3 Green, backend: validar el `source` en `IngestJobRequest` con la regla de la decisión 1.
-- [ ] 2.4 Processor: prueba que recorre la misma tabla con `normalize_source`. Describe el
+- [x] 2.4 Processor: prueba que recorre la misma tabla con `normalize_source`. Describe el
   comportamiento actual, así que se espera en verde desde el principio; se anota como prueba de
   contrato y no como Red.
 - [ ] 2.5 Mutación sobre la validación del backend (quitar `strip`, quitar `lower`, coincidencia

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Casos compartidos de la regla de admision del campo source de POST /jobs/ingest (JUP-113). El backend y el processor deben dar el mismo veredicto para cada caso.",
+  "rule": {
+    "normalization": "source.strip().lower() de Python",
+    "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+    "match": "fullmatch sobre el valor normalizado",
+    "storedValue": "el valor admitido se guarda y se publica tal como se envio, sin normalizar"
+  },
+  "accepted": [
+    {"id": "ui-default", "source": "aws-cur", "normalized": "aws-cur"},
+    {"id": "local-smoke", "source": "local-smoke", "normalized": "local-smoke"},
+    {"id": "cd-smoke", "source": "cd-smoke", "normalized": "cd-smoke"},
+    {"id": "assistant-corpus", "source": "assistant-corpus", "normalized": "assistant-corpus"},
+    {"id": "single-word", "source": "test", "normalized": "test"},
+    {"id": "azure-supported", "source": "azure-cost-management", "normalized": "azure-cost-management"},
+    {"id": "dots-and-underscores", "source": "azure.cost_v2", "normalized": "azure.cost_v2"},
+    {"id": "digit-first", "source": "0day", "normalized": "0day"},
+    {"id": "single-character", "source": "a", "normalized": "a"},
+    {"id": "max-length-64", "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "normalized": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {"id": "max-length-64-padded", "source": "  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  ", "normalized": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {"id": "uppercase", "source": "Azure-Cost", "normalized": "azure-cost"},
+    {"id": "padded-and-uppercase", "source": " Azure-Cost ", "normalized": "azure-cost"},
+    {"id": "tab-and-newline-padding", "source": "\tazure\n", "normalized": "azure"},
+    {"id": "no-break-space-padding", "source": " azure ", "normalized": "azure"},
+    {"id": "kelvin-sign-lowers-to-ascii", "source": "K8s", "normalized": "k8s"}
+  ],
+  "rejected": [
+    {"id": "empty", "source": "", "reason": "vacio"},
+    {"id": "whitespace-only", "source": " \t\n ", "reason": "solo espacios"},
+    {"id": "spaces-inside", "source": "Azure Cost Management", "reason": "espacios interiores (RF-086-004)"},
+    {"id": "two-words-lowercase", "source": "azure cost", "reason": "espacio interior"},
+    {"id": "newline-inside", "source": "azure\ncost", "reason": "salto de linea interior"},
+    {"id": "too-long-65", "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "reason": "65 caracteres"},
+    {"id": "too-long-padded", "source": " aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ", "reason": "65 caracteres tras quitar espacios"},
+    {"id": "leading-hyphen", "source": "-azure", "reason": "primer caracter no alfanumerico"},
+    {"id": "leading-dot", "source": ".azure", "reason": "primer caracter no alfanumerico"},
+    {"id": "leading-underscore", "source": "_azure", "reason": "primer caracter no alfanumerico"},
+    {"id": "slash", "source": "azure/cost", "reason": "caracter no admitido"},
+    {"id": "colon", "source": "azure:cost", "reason": "caracter no admitido"},
+    {"id": "at-sign", "source": "azure@cost", "reason": "caracter no admitido"},
+    {"id": "comma", "source": "azure,cost", "reason": "caracter no admitido"},
+    {"id": "accented-letter", "source": "café", "reason": "letra no ASCII"},
+    {"id": "cyrillic-lookalike", "source": "аzure", "reason": "letra cirilica que parece una a"},
+    {"id": "zero-width-space", "source": "azure​", "reason": "espacio de ancho cero, que strip() no quita"},
+    {"id": "nul-character", "source": "azure\u0000", "reason": "caracter nulo"},
+    {"id": "dotted-capital-i", "source": "İstanbul", "reason": "lower() lo convierte en i mas un acento combinado, que no es ASCII"}
+  ]
+}
