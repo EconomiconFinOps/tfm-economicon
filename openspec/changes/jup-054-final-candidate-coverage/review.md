@@ -131,3 +131,68 @@ checklist y el cierre se completan en la tarea 7.5.
   registrará como `RF-054-001` en la tarea 7.1**, con la corrección sugerida (validar que el resultado
   decodificado es un objeto y, si no, lanzar `InvalidJobMessage`).
 - **Veredicto QA:** accept. Producto sin cambios (`git diff --stat -- apps` vacío).
+
+
+## Tarea 5.4 — H-08, alcance de `start_run` y atomicidad del repositorio de costes (processor)
+
+- **Corrección de alcance:** la auditoría describía H-08 como «rechazo de run ajeno sólo con CockroachDB».
+  Al leer los tests, `complete_run` y `fail_run` con un run ajeno ya estaban cubiertos en SQLite por
+  `test_tenant_isolation_costs.py`. Lo que faltaba de verdad: `start_run` con un run ajeno (sólo existía la
+  variante CockroachDB, omitida en CI) y las guardas de integridad por `rowcount` (líneas 74, 194, 221 y 248),
+  que ninguna prueba ejercita: el helper `ReportZeroUpdatedRows` está definido y ningún test lo usa. La fila
+  H-08 de la evidencia se corrigió en ese sentido.
+- **Archivo nuevo:** `apps/processor/tests/test_azure_cost_scope_rejection.py`, 21 casos con SQLite real y el
+  `SqlAzureCostRepository` real; sin skips ni xfail.
+- **Comando:** `python -m pytest tests/test_azure_cost_scope_rejection.py -q -p no:cacheprovider -W ignore`
+  desde `apps/processor` (Python 3.12).
+- **Resultado limpio:** 21 passed. Con `test_tenant_isolation_costs.py` y `test_azure_cost_ingestion.py`: 85
+  passed y 3 omitidas (variantes CockroachDB preexistentes), en ambos órdenes y en dos ejecuciones.
+- **Qué cubre:** `start_run` con un run ajeno (otro tenant, otra suscripción, tenant o suscripción erróneos
+  y ambos), con el run ajeno también en estado `failed`, que da `PermissionError` con el mensaje exacto y deja
+  runs y registros idénticos; el reinicio del run propio, incluido el reintento tras un fallo (limpia
+  `error_code` y `completed_at`, contadores a 0, sin borrar hijos); `complete_run` sobre un run ajeno con un
+  registro colisionante y con uno inválido, que debe dar `PermissionError` y no un error de integridad que
+  revelaría la existencia de registros ajenos; y, con triggers de SQLite, las guardas de `_delete_records`, del
+  INSERT por registro y de los UPDATE finales de `complete_run` y `fail_run`, con rollback total y control
+  positivo tras quitar el trigger.
+- **Primera pasada de QA: `changes-requested`.** Cuatro roturas sobrevivían: el reinicio no limpiaba
+  `error_code` (la aserción era vacua porque el run de partida ya tenía `error_code` nulo), un run ajeno
+  `failed` era reiniciable, `fail_run` dejaba `row_count = 1` sin que nada lo notara y `_lock_run` sin guarda
+  no se detectaba. Esta última contradecía la afirmación del tester de que era equivalente en SQLite: sin la
+  guarda `complete_run` sobre un run ajeno lanza `IntegrityError` en lugar de `PermissionError`, y el `UNIQUE`
+  haría de oráculo de existencia de registros de otro tenant. Reproducido de forma independiente por el
+  orquestador con una prueba desechable. El tester añadió siete casos (de 14 a 21) y las cuatro roturas se
+  detectan; la segunda pasada de QA lo confirma.
+- **Roturas del tester** (copia desechable, ~30): condiciones del `WHERE` de `start_run` (tenant, suscripción,
+  todo y `OR status = 'failed'`), cada guarda de `rowcount`, cambios de tipo y mensaje de excepción, `commit`
+  parcial en cuatro puntos, `start_run` que rechaza el run propio o borra sus hijos, `row_count`, `page_count`
+  y `retry_count` de `fail_run`, y `_lock_run` sin guarda. Todas detectadas.
+- **Roturas independientes de QA** (22 entre las dos pasadas): detectadas, salvo los supervivientes que se
+  documentan abajo.
+- **Supervivientes conocidos (no bloqueantes):**
+  - `complete_run` sobre un run ajeno en estado `failed`: una guarda de `_lock_run` con excepción «salvo si
+    está failed» es indistinguible, porque el UPDATE final también rechaza con `PermissionError`. Impacto
+    bajo: el run no se reescribe y los registros ajenos no se tocan. Mejora opcional y barata.
+  - `complete_run` con `records=()` sobre un run propio con registros previos: ninguna prueba comprueba que
+    se vacíen (una reingesta con 0 filas debe limpiar los datos viejos). Queda fuera del alcance de H-08
+    y se anotará como candidato a diferido en la tarea 7.1.
+  - Equivalentes: un `DO UPDATE` que además asigne `tenant_id` es un no-op porque el `WHERE` ya exige
+    igualdad. Que `_delete_records` ignore `subscription_id` lo detecta el vecino
+    `test_cleanup_preserves_inconsistent_cross_scope_children`.
+- **Aserción vacua conocida:** `assert restarted["error_code"] is None` del control positivo del run
+  `completed` no discrimina (el valor ya era nulo); es inocua y la cobertura real está en el caso del
+  reintento tras fallo. No se retira para no debilitar nada.
+- **Limitación de la técnica (redacción de QA):** estas pruebas demuestran, sobre SQLite, que cuando una
+  sentencia del repositorio afecta 0 filas la guarda lanza la excepción esperada y la transacción se revierte
+  entera. No demuestran la semántica de `rowcount` de CockroachDB con psycopg: CockroachDB podría devolver
+  otro `rowcount` para UPDATE, DELETE o INSERT, o 0 para `INSERT ... ON CONFLICT DO UPDATE ... WHERE` en un
+  caso que SQLite no reproduce. Un `RAISE(IGNORE)` en un trigger BEFORE se parece al fallo real, pero no es
+  igual a una escritura rechazada por la base en un nodo remoto. Tampoco demuestran el bloqueo por
+  `SET id = id` ni la serialización de `_lock_run`. La verificación en CockroachDB sigue pendiente en la
+  variante `cockroach` (omitida en CI) y en `test_azure_cost_cockroach_integration.py`.
+- **Observación de producto, sin hallazgo:** `start_run` no actualiza `request` al reiniciar un run propio
+  (el `DO UPDATE` no lo incluye). QA lo confirmó con un script desechable y lo valora informativo: el id del
+  run es un `uuid5` que incluye la definición canónica (`ingestion_run_id`), de modo que el mismo id implica
+  la misma definición, y la única llamada de producto a `start_run` es `AzureCostIngestionService.ingest`.
+  Sólo divergiría con un llamador futuro que reutilice un id con otra definición. No se registra `RF-054`.
+- **Veredicto QA:** accept (segunda pasada). Producto sin cambios (`git diff --stat -- apps` vacío).
