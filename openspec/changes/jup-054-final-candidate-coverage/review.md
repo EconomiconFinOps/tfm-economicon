@@ -254,3 +254,63 @@ checklist y el cierre se completan en la tarea 7.5.
   ronda; la mayoría son filas de parametrización baratas (4,5 s en total). Si un revisor lo prefiere, es un
   recorte mecánico.
 - **Veredicto QA:** accept. Producto sin cambios (`git diff --stat -- apps` vacío).
+
+
+## Tarea 5.6 — H-04, reserva rechazada y resultado de publicación fuera de contrato (backend)
+
+- **Archivo nuevo:** `apps/backend/tests/test_job_reservation_rejection.py`, 137 líneas y 14 casos de tres
+  funciones, con la aplicación, la autenticación y la pertenencia reales, SQLite real y sólo la cola doblada;
+  sin skips ni xfail. Reutiliza los dobles de `test_job_publication.py` importando sólo nombres que no son
+  tests, y no repite lo que ese archivo ya cubre (los resultados `not_sent`, `rejected` y `unknown` que llegan
+  por `publish` y el fallo SQL de finalización).
+- **Comando:** `python -m pytest tests/test_job_reservation_rejection.py -q -p no:cacheprovider -W ignore`
+  desde `apps/backend` (Python 3.12).
+- **Resultado limpio:** 14 passed. Con `test_job_publication.py`, `test_tenant_isolation_api.py` y
+  `test_cors.py`: 114 passed y 4 omitidas (variantes CockroachDB preexistentes), en dos ejecuciones; QA lo
+  repitió en ambos órdenes y sin nombres de test duplicados.
+- **Qué cubre:** una reserva con `outcome == "not_sent"` da 503 con cuerpo exacto
+  `{"detail": ..., "code": "publish_not_sent", "job_id": null, "retryable": false}` antes de crear el trabajo,
+  sin `Retry-After`, sin el contenido enviado por el cliente, sin filas nuevas en `jobs`, sin llamar a
+  `create_job`, `finalize_job_publication` ni `publish`, y sin tocar la métrica de trabajos aceptados
+  (también para un usuario multi-tenant sobre tenant-b). Como control positivo, sólo la cadena exacta
+  `not_sent` corta la ruta: una reserva sin `outcome`, con `reserved`, `rejected`, `unknown` o `NOT_SENT` sigue
+  el flujo normal con 202, se publica con esa reserva, se cancela una vez y suma una a la métrica. Un
+  `outcome` de publicación fuera de contrato (`bogus`, vacío, `None`, `CONFIRMED`, `Confirmed`, un entero y un
+  marcador distintivo) da un 500 genérico sin filtrar el valor, no finaliza la publicación, cancela la reserva
+  una vez, no cuenta como aceptado y no deja el trabajo en `queued` ni persiste el valor.
+- **Roturas del tester** (copia desechable, 31 en la primera ronda y 9 tras cada mejora): quitar o alterar el
+  retorno temprano, el código o el cuerpo del 503, `retryable`, la métrica, comparar con `!=` o con la
+  veracidad de la reserva, crear el trabajo antes de reservar, quitar o ensanchar la guarda del outcome,
+  normalizar mayúsculas, que el valor inválido llegue a `finalize_job_publication`, mover, duplicar o anular
+  `cancel`, reflejar el valor en la respuesta, imprimirlo, registrarlo o persistirlo. Todas detectadas salvo los
+  supervivientes de abajo.
+- **Roturas independientes de QA** (14) y mías: una segunda reserva antes de comprobar el tenant, `Retry-After`
+  o retorno temprano sólo para un tenant, la métrica antes de finalizar, el outcome inválido que devuelve 503,
+  que finalice como `unknown`, que deje el trabajo `queued` o que se persista, y un `print(outcome)` en el
+  camino inválido. Detectadas.
+- **No hay fuga de reserva en la salida temprana (hallazgo descartado):** `RabbitMQQueue.reserve()`
+  (`rabbitmq_queue.py:305-319`) devuelve `PublishResult("not_sent", ...)` en sus tres fallos (`stopping`,
+  `owner_unavailable`, `capacity`) sin registrar ningún ticket, y `cancel()` sólo actúa si la reserva está en
+  `_tickets`. Por eso la ruta no llama a `cancel` ahí y no se asierta; la versión inicial lo fijaba y se retiró
+  por estar acoplada a la implementación.
+- **Fragilidad corregida:** una primera mejora sustituyó la búsqueda de la palabra `outcome` en los logs por
+  la igualdad exacta del conjunto de cabeceras, de los loggers y de los eventos, lo que habría fallado ante
+  cualquier cabecera o evento legítimo nuevo (por ejemplo un `X-Request-Id`). Se recortó a lo que no tiene ese
+  riesgo: subcadenas distintivas en respuesta, cabeceras y logs; todas las líneas de stdout y stderr son JSON y
+  objetos; ninguna clave de registro contiene `outcome` ni `publication`; y `exception_type` es exactamente
+  `RuntimeError`.
+- **Supervivientes conocidos y aceptados:** un valor no distintivo (vacío, `None`, `7`) en una cabecera de
+  depuración, en un registro JSON sin esas claves o en un `logging.warning` no es observable sin fijar el
+  conjunto exacto de cabeceras o eventos, y se prefiere no fijarlo; persistir el valor vacío en `jobs.result`
+  tampoco (es subcadena de cualquier texto). Es inobservable offline que el mensaje del `RuntimeError` incluya
+  el valor, porque el middleware sólo registra el tipo de la excepción. Quitar el `from None` o condicionar
+  `cancel` al contenido del cuerpo son equivalentes o artificiales.
+- **Fuera de alcance, detectado por un vecino:** reservar antes de validar `payload.tenant_id` sin cancelar en
+  el 400 lo detecta `test_tenant_isolation_api.py::test_ingest_error_precedence_without_effects`.
+- **Estado real del trabajo con outcome inválido:** queda en `publish_pending` con
+  `{"publication": {"outcome": "pending", "code": "awaiting_publisher"}}` (se crea antes de publicar). El test
+  sólo fija que no es `queued` y que no se persiste el valor, no el estado concreto, que es incidental.
+- **Veredicto QA:** accept en la primera ronda. Las mejoras posteriores (quitar la aserción de `cancel`,
+  comprobación estructural, supervivientes `b10` y `b12`) y su recorte los verifiqué yo (ejecución, lectura y
+  una rotura independiente) sin una nueva ronda de QA, por ser cambios que QA propuso y de alcance pequeño.
+  Producto sin cambios (`git diff --stat -- apps` vacío).

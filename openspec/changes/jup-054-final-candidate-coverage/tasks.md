@@ -72,7 +72,7 @@ se rompió y qué falló). Orden: prioridad A y después B.
 - [x] 5.5 H-01, backend `tests/test_billing_error_contract.py`: rutas reales de `GET /billing/tag-coverage`
   y `GET /billing/summary` con la base doblada. 200 con el contrato de la respuesta y 409
   `{"detail":{"code":"ambiguous_cost_source"}}` cuando la base detecta fuentes solapadas.
-- [ ] 5.6 H-04, backend `tests/test_job_reservation_rejection.py`: `POST` de trabajos con una cola doble.
+- [x] 5.6 H-04, backend `tests/test_job_reservation_rejection.py`: `POST` de trabajos con una cola doble.
   Si la reserva no se envía (`not_sent`) o el resultado de publicación queda fuera de contrato, la
   respuesta es un error controlado y no se crea ningún trabajo.
 - [ ] 5.7 H-06, processor `tests/test_guardrail_validation.py`: funciones reales de los guardrails.
