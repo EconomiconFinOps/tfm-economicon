@@ -6,7 +6,7 @@
   el equipo cambió a adoptar un subconjunto de 6 paquetes Radix, por facilidad de desarrollo y
   consistencia visual sin reescribir primitivos accesibles a mano (no por paridad con el origen, que
   tampoco los usa). Ver adenda en el `## Human Approval` de `proposal.md` y `design.md`, decisión 1.
-- [x] 1.2 Redactar y aceptar [ADR-0004](../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)
+- [x] 1.2 Redactar y aceptar [ADR-0004](../../../../docs/adr/ADR-0004-frontend-shadcn-ui.md)
   (adopción de shadcn/ui, subconjunto de 6 paquetes Radix) **antes** de instalar ningún paquete
   `@radix-ui/*`. Aceptado por Victor el 2026-09-07, en commit separado del de redacción (mismo
   patrón de dos commits que ADR-0003).

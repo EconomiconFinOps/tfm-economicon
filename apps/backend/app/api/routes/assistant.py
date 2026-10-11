@@ -18,6 +18,8 @@ from app.db import chat_history
 from app.core.metrics import assistant_queries_total, retrieval_empty_total, retrieval_failures_total
 from app.services.citations import InvalidCitation, resolve_citations, validate_context
 from app.services.embedding_provider import PROVIDER_ERROR_CATEGORIES, ProviderError
+from app.schemas.billing import AmbiguousCostSource
+from app.services.ownership_questions import OwnershipQuestionService, OwnershipResultTooLarge
 from app.schemas.assistant import (
     AssistantReply,
     ConversationCollection,
@@ -138,6 +140,35 @@ def send_message(
         database.assert_conversation_idle(conversation_id=conversation_id, tenant_id=tenant_id, user_id=current_user["id"])
     except ChatError as exc:
         raise HTTPException(exc.status, exc.code) from None
+
+    if payload.ownership_query is not None:
+        try:
+            output = OwnershipQuestionService().answer(database, tenant_id, payload.ownership_query)
+        except AmbiguousCostSource:
+            raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
+        except OwnershipResultTooLarge:
+            raise HTTPException(status_code=422, detail={"code": "ownership_result_too_large"}) from None
+        user_message = database.prepare_message(
+            conversation_id=conversation_id, tenant_id=tenant_id, user_id=current_user["id"],
+            requester_id=current_user["id"], role="user", content=payload.content,
+            metadata={"ownership_query": output["cost_evidence"]["selection"]},
+        )
+        assistant_message = database.prepare_message(
+            conversation_id=conversation_id, tenant_id=tenant_id, user_id=None,
+            requester_id=current_user["id"], role="assistant", content=output["content"],
+            metadata={"citations": [], "cost_evidence": output["cost_evidence"],
+                "generation": {"question_message_id": user_message["id"]}},
+        )
+        try:
+            user_message, assistant_message = database.append_pair(question=user_message, assistant=assistant_message)
+        except ChatError as exc:
+            raise HTTPException(exc.status, exc.code) from None
+        assistant_queries_total.inc()
+        reply = AssistantReply(
+            conversation=ConversationRecord(**conversation), user_message=user_message,
+            assistant_message=assistant_message, retrieved_context=[],
+        )
+        return chat_history.http_response(reply.model_dump(mode='python'), status_code=201)
 
     user_message = database.prepare_message(
         conversation_id=conversation_id,

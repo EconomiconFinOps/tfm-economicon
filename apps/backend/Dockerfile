@@ -14,6 +14,7 @@ COPY apps/backend/app ./app
 COPY apps/processor/app/agents/prompt_resources/jup035/chat/v2 /opt/economicon/chat/v2
 COPY apps/processor/app/agents/prompt_resources/jup035/summary /opt/economicon/summary
 RUN python -c "from app.core.chat_resources import load_resources; from app.core.summary_resources import load_resources as summary; load_resources(None); summary()"
+RUN find /app/app -type d -exec chmod 755 {} +
 
 RUN useradd --create-home --uid 10001 economicon
 

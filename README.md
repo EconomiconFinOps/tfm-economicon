@@ -567,6 +567,7 @@ El flujo principal del sistema es este:
 - [API Azure Cost simulada](apps/azure-cost-api/README.md)
 - [Cliente de ingesta Azure Cost Management](docs/api/azure-cost-ingestion-client.md)
 - [Batería de preguntas FinOps (JUP-069)](docs/validation/README.md)
+- [Memoria del TFM: dónde vive y cómo se edita (JUP-062)](docs/memoria/README.md)
 
 ## Estado Actual
 
@@ -691,3 +692,7 @@ valid memory are preserved. Local cancellation does not guarantee upstream work
 or billing stops. A result ending at length or failing validation still fails even
 if it arrives in time. After review rebuild only backend/processor, preserve the
 isolated database/gateway, and repeat only the compression check within its budget.
+
+## Despliegue privado
+
+JUP-052: [CD hacia DockerServer](docs/deployment/dockerserver-cd.md), con selección del SHA validado, smoke y rollback.

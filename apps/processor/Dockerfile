@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirem
 
 COPY app ./app
 RUN python -c "from app.core.chat_resources import load_resources; from app.core.summary_resources import load_resources as summary; load_resources(); summary()"
+RUN find /app/app -type d -exec chmod 755 {} +
 
 RUN useradd --create-home --uid 10001 economicon
 

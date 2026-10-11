@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-10",
+  "head": "7f63a1418fa1e573ca68f3cfeec7854c9a71b99f",
+  "mode": "real frontend + real subset HTTP/auth/billing/messages + real Cockroach SQL, synthetic owned data; no model/vector/broker",
+  "checks": [
+    "Real SQL charge100/adjustment-20 => selected80EUR; context130; missing10; foreign tenant excluded",
+    "Reload preserves message, exact evidence ID, amount and SQL provenance",
+    "Mobile screenshot recorded; whole-page overflow={\"client\":390,\"scroll\":1134}",
+    "Tenant switch clears selection/draft and does not expose previous tenant message",
+    "No browser page errors"
+  ],
+  "errors": [],
+  "financial": {
+    "id": "cost:e235ae5334920b7999e1ddbd5de09c2d5f80487b5b067cceefc790df2b44e738",
+    "selected_totals": [
+      {
+        "currency": "EUR",
+        "cost": "80.00",
+        "record_count": 2
+      }
+    ],
+    "provenance": {
+      "ingestion_ids": [
+        "browser-a"
+      ],
+      "first_usage_date": "2024-06-15",
+      "last_usage_date": "2024-06-15",
+      "observed_day_count": 1
+    }
+  }
+}

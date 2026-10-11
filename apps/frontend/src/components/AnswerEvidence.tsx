@@ -1,5 +1,6 @@
 import { useId } from "react";
 import { FileText } from "lucide-react";
+import { CostEvidence } from "./CostEvidence";
 
 interface Citation {
   evidence_id: string;
@@ -37,7 +38,7 @@ export function AnswerEvidence({ content, metadata }: {
     && raw.every((item, index) => references[index] === item.evidence_id) ? raw : [];
 
   return <>
-    <div className="mt-1 whitespace-pre-wrap text-sm text-foreground">
+    <div className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">
       {content.split("\n").map((line, index) => {
         const match = /^- \[(\d+)\] /.exec(line);
         const number = match ? Number(match[1]) : 0;
@@ -66,7 +67,8 @@ export function AnswerEvidence({ content, metadata }: {
             {citation.source.trim().toLocaleLowerCase() !== citation.title.trim().toLocaleLowerCase() && ` · ${citation.source}`}</span>
         </li>)}
       </ul>
-    </section> : Array.isArray(references) && references.length > 0 &&
+    </section> : "cost_evidence" in metadata ? <CostEvidence evidence={metadata.cost_evidence} />
+      : Array.isArray(references) && references.length > 0 &&
       <p className="mt-2 text-xs text-muted-foreground">La evidencia de esta respuesta no está disponible.</p>}
   </>;
 }

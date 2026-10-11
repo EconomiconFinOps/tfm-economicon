@@ -6,7 +6,7 @@ Trello: https://trello.com/c/R5t2PL2F/84-jup-092-adr-de-adopción-de-typescript-
 El spike de migración fija como **decisión número 1** la adopción de TypeScript en `apps/frontend` y
 la califica de "decisión transversal y duradera (afecta tooling, build, lint y todas las tareas
 futuras del frontend)", exigiendo un ADR **antes** de implementar la feature de tooling.
-[docs/adr/README.md](../../../docs/adr/README.md) lo respalda: los patrones compartidos que afectan a
+[docs/adr/README.md](../../../../docs/adr/README.md) lo respalda: los patrones compartidos que afectan a
 varios módulos o tareas futuras requieren ADR.
 
 El punto de partida real —verificado, no supuesto— es que **hoy no existe verificación de tipos en
@@ -29,7 +29,7 @@ convive con el JavaScript existente.
 ## What Changes
 
 - Crear `docs/adr/ADR-0003-frontend-typescript.md` con
-  [docs/templates/adr.md](../../../docs/templates/adr.md). `0003` es el siguiente número libre
+  [docs/templates/adr.md](../../../../docs/templates/adr.md). `0003` es el siguiente número libre
   (existen `ADR-0001` y `ADR-0002`).
 - Resolver en el ADR, de forma inequívoca, las cuatro decisiones que hoy bloquean F2:
   1. **Nivel de rigor**: `strict` completo desde el inicio o adopción gradual.
@@ -38,7 +38,7 @@ convive con el JavaScript existente.
   3. **Encaje con CI**: si el type-check pasa a ser check obligatorio, y qué ocurre con el finding
      `RF-082-002` — **49 violaciones de `react/prop-types`** (recuento verificado hoy) que mantienen
      el lint del frontend fuera de los checks obligatorios
-     ([docs/governance/github-branch-protection.md](../../../docs/governance/github-branch-protection.md)).
+     ([docs/governance/github-branch-protection.md](../../../../docs/governance/github-branch-protection.md)).
      Los tipos de TypeScript sustituyen a `prop-types` como mecanismo de validación, así que esta
      decisión determina si ese finding se cierra, se transforma o se mantiene.
   4. **Ubicación del `tsconfig`**: a nivel de `apps/frontend` o compartido en

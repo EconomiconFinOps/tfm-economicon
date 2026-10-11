@@ -1,7 +1,31 @@
 # Continuidad del proyecto
 
-Trello mantiene el estado operativo; estos resumenes enlazan decisiones y evidencia.
+Resúmenes técnicos para retomar el trabajo. Trello conserva alcance, responsables
+y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
+requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
+Leer la [convención](convencion-compartida.md) y sólo los temas pertinentes.
+Las fechas indican la última actualización documental, no una nueva ejecución de pruebas.
 
-| Tema | Contenido y estado | Actualizado |
+| Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Chat conversacional](chat-conversacional.md) | JUP-035: Compose mock/IA y recuperacion de resumen real comprobados antes de incorporar develop `3b8e952`; reconciliacion local, sin nueva prueba de pago ni cierre por PR. | 2026-10-11 |
+| [Hitos de entrega y cierre del MVP](hitos-entrega.md) | JUP-080: fechas23/10 y29/10 confirmadas por usuario;11 vencimientos activados y verificados. Archivo OpenSpec y cierre por PR en curso. | 2026-10-11 |
+| [Memoria: integración DevOps](memoria-devops.md) | JUP-111 / PR87: f incorporado y preservación verificada; PDF13p, Markdown y hashes fuera de Git; revisión delegada por excepción de plazo, integración en curso. | 2026-10-11 |
+| [Arquitectura técnica](arquitectura-tecnica.md) | JUP-060 / PR92: arquitectura reconciliada con a0e9a56, memoria histórica verificada y dictámenes por subagentes autorizados; OpenSpec archivado. Estado de integración en PR/Trello. | 2026-10-11 |
+| [Arquitectura documental AWS](cloud-aws.md) | Referencia Fargate y Terraform sin ejecución; antecedente EC2 operativo superado. 6 pruebas mock/8 rutas correctos, sin despliegue. | 2026-10-10 |
+| [Proveedor y modelos](proveedor-modelos.md) | JUP-078 / PR113: gateway dedicado, claves9+1 USD/30d y26 controles Docker verificados; OpenSpec archivado, revision asistida aprobada, sin gasto real. | 2026-10-10 |
+| [Métricas funcionales de negocio](metricas-funcionales-negocio.md) | JUP-068 / PR68: cierre técnico por excepción MVP con subagente;113 pruebas y59 OpenSpec pasan. Piloto/beneficio real sin medir. | 2026-10-10 |
+| [Cobertura de etiquetado](cobertura-etiquetado.md) | JUP-017 / PR66: excepción MVP autorizada; conflicto y refresco corregidos, revisión asistida y pruebas en curso. Evidencia versionada en docs/evidence/JUP-017-validation.md. | 2026-10-10 |
+| [Consulta de ownership](consulta-ownership.md) | JUP-037 / PR100: cierre preparado bajo excepción de plazo MVP; atribución real documentada, 209 backend/35 frontend y navegador HTTP/SQL pasan. Corrección de nuevo hilo; CI final/integración por verificar al publicar. | 2026-10-10 |
+| [Pruebas unitarias e integradas](pruebas-unitarias-integradas.md) | JUP-054: PR93 integrada por excepción de plazo del MVP (7 tests nuevos, CI Linux 2041 pass/91 skips). Segunda pasada en rama, con flujo ordinario: cobertura del candidato `e1c2a8f` y 291 pruebas nuevas, sin cambios de producto; 5 defectos registrados sin corregir (`RF-054-001` a `005`); PR #114 abierta con CI en verde, revisión y validación pendientes. | 2026-10-10 |
+| [Dimension vectorial desde Settings](dimension-vectorial-settings.md) | JUP-102 / PR #108: pruebas y CI tecnica verificadas; excepcion de entrega fuera de plazo autorizada, atribucion real bajo Alejandro y cierre por PR. Reviews humanas dispensadas, no simuladas. | 2026-10-10 |
+| [Pipeline Turbo y pnpm](pipeline-turbo-pnpm.md) | JUP-105 / PR #86: residual publicado en 12841e6 desde copia propia; comentario y evidencia reconciliados. CI por SHA enlazada en PR; dictámenes Lucía/Paris y merge pendientes. | 2026-10-10 |
+| [Entorno pnpm de Alejandro](pnpm-entorno-rf093001.md) | Diagnóstico Codex ff2ea6b entregado; consola normal y corrección permanente pendientes. RF-093-001 sigue Open. | 2026-10-10 |
+| [Deteccion de anomalias de coste](deteccion-anomalias-coste.md) | JUP-030 / PR #117: evaluador `POST /billing/anomalies/evaluate` y contrato para JUP-038; 181 pruebas con CockroachDB real (cero omitidas), validacion por HTTP con Docker, OpenSpec 62/62. Archivado con aprobacion de Lucia por la excepcion temporal; sin revision ni validacion humanas de otras personas. Panel `/anomalies` aun con datos de demostracion. | 2026-10-11 |
 | [Presupuestos y umbrales](presupuestos-umbrales.md) | JUP-029 / PR #61: correccion documental del P2 de Paris; convencion global separada en JUP-101, nueva revision y validacion pendientes. | 2026-10-02 |
+| [Convención compartida](convencion-compartida.md) | JUP-101 / PR #64: adopción para el MVP por excepción de plazo autorizada por el usuario; ejecución asistida atribuida y requisitos humanos dispensados para este cierre, sin consenso ni reviews inventados. | 2026-10-10 |
+| [Citas del asistente — JUP-025](citas-asistente.md) | Evidencia histórica de implementación conservada; consultar PR #55 para el estado posterior y el cambio OpenSpec archivado. | 2026-10-10 |
+
+La fila y el resumen de presupuestos conservan su corte histórico de 2026-10-02.
+La reconciliación de JUP-101 no revalida ese trabajo; el contraste posterior de
+las PR de origen está en la evidencia enlazada desde la convención.

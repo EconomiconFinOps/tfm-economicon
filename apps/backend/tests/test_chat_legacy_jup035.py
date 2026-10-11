@@ -3,10 +3,12 @@ import asyncio
 from types import SimpleNamespace
 
 import httpx
+import pytest
 from sqlalchemy import text
 
 from app.services.assistant import AssistantService
 from test_chat_operations_jup035 import api,body,existing,headers,messages,path,run
+from test_ownership_questions import billing_double, request_body
 
 
 def legacy_resources(api,monkeypatch):
@@ -15,7 +17,8 @@ def legacy_resources(api,monkeypatch):
     monkeypatch.setattr(api[0].state,'assistant_service',AssistantService(),raising=False)
 
 
-def test_legacy_message_cannot_interleave_with_open_operation(api,monkeypatch):
+@pytest.mark.parametrize('ownership', [False, True])
+def test_legacy_message_cannot_interleave_with_open_operation(api,monkeypatch,ownership):
     legacy_resources(api,monkeypatch)
     async def scenario(c):
         api[2].release=asyncio.Event()
@@ -38,7 +41,7 @@ def test_legacy_message_cannot_interleave_with_open_operation(api,monkeypatch):
             assert not task.done() and not api[2].release.is_set()
             op=await existing(c,payload)
             assert op['operation_id']==reserved_id==observed['operation_id']
-            result=await c.post('/assistant/conversations/alice-chat/messages',json={'content':'Otra pregunta'},headers=headers())
+            result=await c.post('/assistant/conversations/alice-chat/messages',json=request_body() if ownership else {'content':'Otra pregunta'},headers=headers())
             assert result.status_code==409,result.text
             assert messages(api[1])==[]
             await c.post(op['status_url']+'/stop',headers=headers())
@@ -49,14 +52,16 @@ def test_legacy_message_cannot_interleave_with_open_operation(api,monkeypatch):
     run(scenario,api)
 
 
-def test_legacy_assistant_sql_failure_rolls_back_question(api,monkeypatch):
+@pytest.mark.parametrize('ownership', [False, True])
+def test_legacy_assistant_sql_failure_rolls_back_question(api,monkeypatch,ownership):
     legacy_resources(api,monkeypatch)
+    monkeypatch.setattr(api[1],'fetch_billing_summary',lambda *a,**k: billing_double())
     with api[1].engine.begin() as connection:
         connection.execute(text("""CREATE TRIGGER reject_legacy_final BEFORE UPDATE OF dialogue_history ON conversations
             BEGIN SELECT RAISE(ABORT,'synthetic failure'); END"""))
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=api[0],raise_app_exceptions=False),base_url='http://test') as c:
-            result=await c.post('/assistant/conversations/alice-chat/messages',json={'content':'Pregunta'},headers=headers())
+            result=await c.post('/assistant/conversations/alice-chat/messages',json=request_body() if ownership else {'content':'Pregunta'},headers=headers())
             assert messages(api[1])==[], 'Partial question committed by legacy route'
             assert result.status_code==503,result.text
     asyncio.run(scenario())

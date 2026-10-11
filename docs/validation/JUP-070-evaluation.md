@@ -112,7 +112,8 @@ Un umbral obligatorio que no se puede calcular se informa como no disponible y e
 - **Los embeddings `mock`** no tienen significado semántico: las métricas de recuperación (REL) de una ejecución con `mock` no miden relevancia real.
 - **Formas que el lector de cifras no reconoce:** el espacio como separador de miles y las cifras con palabras. Una cifra previa en «pasó de 80 % a 90 %» puede cumplir un 90 % esperado. Los puntos juzgados por personas cubren esos huecos y están registrados en `openspec/findings/backlog.md` (RF-070-001 a RF-070-010).
 - **Cifras derivadas:** una cifra que está en el prompt, o que sale de sumar, restar o dividir las cifras del prompt, cuenta como rastreable. Por eso GRD-2 igual a cero es una cota inferior de lo inventado y no una garantía.
-- **La latencia de un caso bloqueado se atribuye a la etapa `embedding`** (`INFRA_STAGE` en la herramienta), aunque el fallo sea un timeout de la petición completa. La nota «Etapas no medidas» del informe solo habla de la latencia.
+- **El fallo de un caso bloqueado (LAT-4) se atribuye a la etapa `embedding`** (`INFRA_STAGE` en la herramienta), aunque sea un timeout de la petición completa; un caso bloqueado no aporta latencia. La nota «Etapas no medidas» del informe solo habla de la latencia, no de este reparto.
+- **El etiquetado de fragmentos no se contrasta con nada:** el documento y la sección de cada fragmento salen de la ficha y del mapa de documentos, escritos a mano. Un `chunk_size` o una ruta mal escritos cambian REL-1 y REL-2 sin ningún error (RF-070-011).
 - **Requiere Python 3.12 o superior:** la herramienta usa comillas anidadas dentro de f-strings y no carga en 3.11. El README y la CI usan 3.12.
 - **Un revisor se identifica por su nombre sin tildes ni mayúsculas:** «Ana» y «ana» son la misma persona. Más de dos revisores en un punto es un error.
 - **Las reglas de las prohibiciones son una cota inferior** y las cifras con palabras fallan por diseño.

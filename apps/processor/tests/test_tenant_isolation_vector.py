@@ -33,10 +33,9 @@ def vector_store(monkeypatch):
             assert connection.execute(text("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")).scalar_one() == 0
             connection.execute(text(f'CREATE DATABASE "{name}"'))
             created = True
-        monkeypatch.setenv("EMBEDDING_DIMENSION", "8")
         store = PgVectorStore(url.set(database=name), 8)
         with store.engine.begin() as connection:
-            importlib.import_module("app.vector_store.migrations.001_initial").upgrade(connection)
+            importlib.import_module("app.vector_store.migrations.001_initial").upgrade(connection, embedding_dimension=8)
         yield store
     finally:
         if store is not None:

@@ -1,20 +1,10 @@
-// DashboardPage: en la nueva arquitectura de rutas (JUP-095, grupo 6,
-// sub-ronda d -- ver Addendum de design.md) esta pantalla deja de recibir
-// `token`/`user`/`tenants`/`activeTenant` como props desde `App.jsx` y pasa a
-// leerlos via `useOutletContext<SessionOutletContext>()`, mismo patron que
-// `IngestPage`/`ConversationsPage`. Pasa a vivir en la ruta puente
-// `/overview-legacy` (decision 6 de design.md): es la unica pantalla que
-// consume datos reales del backend (`GET /billing/summary` y `GET /health`
-// via `useDashboardData`, que se preserva verbatim). Ruta puente hasta que
-// exista un Overview real que la sustituya (correccion JUP-097, grupo 7: el
-// comentario original citaba "JUP-096" para esto, pero ese numero de Trello
-// lo ocupa un tema ajeno -- ver RF-044-002 en openspec/findings/backlog.md).
-//
-// La version actual (`./DashboardPage.jsx`) sigue exigiendo props: montada
-// como ruta sin props, `token`/`activeTenant` llegan `undefined`, asi que
-// `useDashboardData` nunca activa sus queries (`enabled: Boolean(token &&
-// tenantId)`) y la pantalla queda bloqueada en "loading" para siempre -- esta
-// suite debe fallar en fase Red por ese motivo exacto.
+// DashboardPage recibe la sesion mediante
+// `useOutletContext<SessionOutletContext>()` y sirve `/overview-legacy`.
+// Consume `GET /billing/summary` y `GET /health` via `useDashboardData`.
+// Desde JUP-026 y JUP-055, `/` tambien consume costes almacenados: la
+// condicion original para retirar la ruta puente ya se cumple. Su retirada
+// sigue pendiente en RF-105-001 (openspec/findings/backlog.md).
+// Recuento vigente de rutas: apps/frontend/README.md, seccion "Rutas".
 //
 // Importamos describe/it/expect/vi explicitos: el proyecto no usa
 // `globals: true` en vite.config.ts (ver SessionGate.test.tsx/IngestPage.test.tsx,
@@ -24,11 +14,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// Contrato esperado (a implementar por el agente coder en fase Green):
-// `DashboardPage` reconstruida sobre `useOutletContext`, sin los props
-// `token`/`user`/`tenants`/`activeTenant`. Hoy `apps/frontend/src/pages/DashboardPage.jsx`
-// sigue exigiendolos -- este import por si solo no rompe la suite (el modulo
-// existe), pero el comportamiento que se verifica abajo si difiere del actual.
+// La suite protege el contrato de sesion por contexto, sin props de sesion.
 import { DashboardPage } from "./DashboardPage";
 import { billing } from "../../tests/fixtures";
 

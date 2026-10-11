@@ -3,6 +3,8 @@ from typing import Annotated, Literal, Any
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
+from app.schemas.ownership import OwnershipSelection
+
 
 NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
@@ -31,6 +33,7 @@ class MessageCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     content: NonEmptyText
+    ownership_query: OwnershipSelection | None = None
 
 
 class RetrievedChunk(BaseModel):

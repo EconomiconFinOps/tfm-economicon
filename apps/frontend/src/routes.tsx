@@ -12,23 +12,24 @@ import { ConversationsPage } from "./pages/ConversationsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { SystemHealthDashboard } from "./pages/SystemHealthDashboard";
 
-// Mapa de rutas completo (JUP-095, grupo 6, sub-ronda d -- ver Addendum de
+// Mapa de rutas (JUP-095, grupo 6, sub-ronda d -- ver Addendum de
 // design.md, decision 3). `/login` vive fuera de `SessionGate` (no requiere
 // sesion, es donde se crea). `SessionGate` resuelve sesion y bootstrap de
 // tenants (redirigiendo a /login si no hay sesion) antes de exponerlos via
-// Outlet context hacia `Layout` y, desde ahi, hacia las 8 pantallas
-// portadas. `/overview-legacy` es la ruta puente que conserva el unico
-// dashboard con datos reales (decision 6 de design.md de JUP-095).
+// Outlet context hacia `Layout` y, desde ahi, hacia el resto de pantallas.
+// Cuantas hay, y de cuales se sirven datos del backend y cuales son de
+// demostracion, cambia con cada tarjeta: el unico recuento vigente esta en
+// la seccion "Rutas" de apps/frontend/README.md, no aqui.
 //
-// Correccion de numeracion (JUP-097, grupo 7): la numeracion secuencial que
-// asumia el comentario original ("JUP-096 conectara el nuevo Overview") dejo
-// de valer -- un companero ocupo JUP-096 para un tema ajeno. JUP-097
-// (reconciliar-api-layer) audito la capa de datos pero, por decision de
-// alcance explicita, no construyo backend ni conecto pantallas nuevas (ver
-// RF-091-003 en openspec/findings/backlog.md): `/overview-legacy` sigue
-// siendo el unico dashboard con datos reales. Se reafirma como deuda con
-// dueno explicito: se retira cuando exista un Overview real que la
-// sustituya (todavia no existe), en una tarjeta futura de F3 -- no antes.
+// `/overview-legacy` es la ruta puente que JUP-095 conservo cuando era el
+// unico dashboard con datos reales (decision 6 de su design.md), con la
+// condicion de retirarla cuando existiera un Overview real que la
+// sustituyera. Esa condicion ya se cumple: `/` consume costes almacenados
+// desde JUP-026 y JUP-055. La ruta no es ya el unico dashboard con datos
+// reales y sigue montada porque retirarla es un cambio con su ciclo de
+// pruebas (la nombran 9 archivos de pruebas y la navegacion de `Layout`),
+// no un cierre de epica. JUP-105 la dejo registrada como RF-105-001 en
+// openspec/findings/backlog.md.
 // Configuración de rutas exportada por separado del router construido: para
 // que las pruebas de enrutado (JUP-095, tarea 6.5) puedan montar la MISMA
 // definición sobre `createMemoryRouter` (con distintas `initialEntries` por

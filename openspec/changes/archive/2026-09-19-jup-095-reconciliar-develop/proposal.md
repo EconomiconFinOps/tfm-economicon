@@ -3,7 +3,7 @@ Trello: https://trello.com/c/G4FPtBdE/87-jup-095-portar-el-c%C3%B3digo-fuente-de
 
 ## Why
 
-[JUP-095](../archive/2026-09-12-jup-095-portar-codigo-fuente/) cerró archivada (40/40 tareas) desde
+[JUP-095](../../archive/2026-09-12-jup-095-portar-codigo-fuente/) cerró archivada (40/40 tareas) desde
 un punto de `develop` anterior a [PR #29](https://github.com/EconomiconFinOps/tfm-economicon/pull/29)
 (JUP-087, línea base de calidad del frontend) y a [PR #34](https://github.com/EconomiconFinOps/tfm-economicon/pull/34)
 (JUP-020). Su propia rama, al abrir [PR #36](https://github.com/EconomiconFinOps/tfm-economicon/pull/36),
