@@ -54,7 +54,9 @@ La normalización de nombres usa tres mecanismos distintos (`lower()` en el serv
 
 ## Hallazgos registrados
 
-`RF-030-001` a `RF-030-004` en `openspec/findings/backlog.md`.
+`RF-030-001` a `RF-030-005` en `openspec/findings/backlog.md`.
+
+`RF-030-005` procede de la revision adversarial del PR #117 (2026-10-11, veredicto `accept`, sin BLOCKING ni HIGH): `min_absolute_increase` entra en el `id` aunque solo este activo el umbral absoluto. Aceptado por Lucia sin corregir. Esa misma pasada volvio a encontrar el caso de `RF-030-001` y la limitacion de `evidence_id` ya documentada.
 
 ## Pendiente
 
