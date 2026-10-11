@@ -86,3 +86,12 @@ independent subagents; record their actual verdicts without impersonating team
 members. It does not confirm campus dates or waive academic participation.
 Institutional confirmation and operational activation remain explicit pending
 conditions until a documented decision resolves them.
+
+## Calendar activation completed — 2026-10-11
+
+The user confirmed delivery23/10 and defense29/10 in this chat. This is
+user-supplied confirmation, not independent access to the campus. All eleven
+recovery dates were applied through the deployed DockerServer integration and
+read back; other fields and92 other cards were preserved. Receipt:
+`docs/evidence/JUP-080-calendar-activation.json`. This resolves the pending
+conditions above without claiming that future product milestones are achieved.

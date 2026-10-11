@@ -73,11 +73,11 @@
       "JUP-111"
     ]
   },
-  "calendar_status": "team-baseline-pending-institutional-confirmation",
+  "calendar_status": "confirmed-by-user",
   "roadmap_approval": {
     "status": "approved-by-authorized-subagents",
     "date": "2026-10-11",
-    "scope": "Operational roadmap only; institutional confirmation and Trello date activation pending",
+    "scope": "Operational roadmap; dates confirmed by user and Trello activation verified",
     "pairing": "/root/pairing",
     "review": "/root/revision",
     "validation": "/root/validacion"
@@ -289,7 +289,7 @@
   "recovery_plan": {
     "as_of": "2026-10-11",
     "timezone": "Europe/Paris",
-    "status": "approved-pending-calendar-decision-and-activation",
+    "status": "activated-and-verified",
     "working_day_end": "18:00",
     "scope": "Open P0 only; completed cards retain their existing due dates and completion state.",
     "targets": [
@@ -337,6 +337,15 @@
         "task_id": "JUP-110",
         "date": "2026-10-16"
       }
-    ]
+    ],
+    "activation_evidence": "docs/evidence/JUP-080-calendar-activation.json"
+  },
+  "calendar_confirmation": {
+    "date": "2026-10-11",
+    "source": "User reply: Confirmadas las fechas",
+    "thread_id": "01a12b84-1441-7780-9064-ad14043dc249",
+    "delivery_date": "2026-10-23",
+    "defense_date": "2026-10-29",
+    "limitation": "Confirmation supplied by user; no independent campus or tutor access."
   }
 }
