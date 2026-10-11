@@ -35,6 +35,7 @@
     "collaboration:test": "python -m unittest discover -s tools/collaboration/tests -v",
     "validation-questions:validate": "node tools/validation-questions.mjs validate",
     "validation-questions:test": "node --test tools/validation-questions.test.mjs",
+    "cd:test": "node --test tools/cd-workflow.test.mjs && python -m unittest discover -s tools/cd -p test_*.py -v",
     "business-metrics:validate": "node tools/business-metrics.mjs validate docs/validation/JUP-068-example.json",
     "business-metrics:report": "node tools/business-metrics.mjs report",
     "business-metrics:test": "node --test tools/business-metrics.test.mjs",
