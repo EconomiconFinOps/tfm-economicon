@@ -497,6 +497,40 @@ conteos coinciden con la medición en contenedor, lo que corrobora que esos cont
 CI para estos tres servicios (la herramienta de cobertura no corre en CI y su cifra no se pudo contrastar allí). La
 CI verde demuestra que la suite pasa, no que la revisión ni la validación humanas estén hechas.
 
+### Cambio pedido por la revisión de la PR
+
+La revisión y la validación de la [PR #114](https://github.com/EconomiconFinOps/tfm-economicon/pull/114)
+(`Revision JUP-054` y `Validacion JUP-054`, 2026-10-11, sobre `23e6845`) pidieron **un único cambio**, el mismo en las
+dos: `test_complete_run_rolls_back_inserted_records_when_final_update_is_rejected`, de
+`apps/processor/tests/test_azure_cost_scope_rejection.py`, era **intermitente en Windows**. La revisión lo midió en 11 de 25
+ejecuciones del test solo y en 5 de 12 de los cuatro archivos juntos; la validación en 6 de 15.
+
+- **Causa:** el trigger que aislaba el UPDATE final se disparaba con `NEW.completed_at IS NOT OLD.completed_at`, pero la
+  fila sembrada ya se había completado con `datetime.now(timezone.utc)` y el UPDATE final vuelve a escribir otro
+  `datetime.now(...)`. Si los dos valores coinciden, algo que la resolución del reloj de Windows permite, el trigger no
+  salta, el UPDATE final no se rechaza y la prueba no recibe la excepción. El fallo dependía del reloj, no del código.
+- **Por qué no lo vimos:** todas nuestras ejecuciones fueron en contenedores Linux, donde el reloj tiene resolución de
+  microsegundos y los dos valores casi nunca coinciden; por eso la CI de la PR salió en verde y las rondas de QA,
+  que repitieron el archivo varias veces, tampoco lo detectaron. Windows sólo lo ejecutó la revisión.
+- **Corrección:** la condición del trigger pasa a `NEW.page_count IS NOT OLD.page_count`. La fila sembrada tiene
+  `page_count = 2` y el UPDATE final lo cambia a 9, mientras que el UPDATE de bloqueo (`SET id = id`) no lo toca, de modo
+  que la condición distingue las dos sentencias sin depender del reloj. Es la propuesta de la revisión; el comentario del
+  test explica por qué no se usa `completed_at`. Es el único cambio de código de esta ronda: un archivo, una condición y
+  su comentario. Como el archivo ya estaba commiteado, se aplicó con autorización expresa de Víctor para ese cambio
+  concreto, con un reemplazo exacto de una sola coincidencia.
+- **Verificación, en contenedores Linux:** se reprodujo el fallo de forma determinista congelando `datetime.now()` en el
+  repositorio (simula la resolución de Windows): el test original falla y es el único de los 21 del archivo; con la
+  condición nueva pasa congelado y **0 de 25 veces falla con el reloj normal**. Con el mismo reloj congelado aplicado a
+  los repositorios de costes y de trabajos, los cuatro archivos nuevos del processor dan 182 passed, así que ningún otro
+  test del processor depende del reloj en ese sentido. La rotura que quita la guarda del UPDATE final de `complete_run`
+  sigue haciendo fallar ese test, y sólo ése. Suite completa del processor: 644 passed y 65 omitidas, como antes.
+- **Límites:** el reloj congelado simula la resolución de Windows pero no es Windows; la comprobación definitiva en Windows
+  es la de quien revisa. Esta simulación sólo cubre el processor: los archivos nuevos del backend los ejecutó la revisión
+  en Windows (87 de 87) y `test_conversation_creation.py`, la única prueba con comparación de reloj real, acota la marca de
+  tiempo entre un antes y un después y pasó 20 de 20 allí.
+- **Hallazgos:** ninguno nuevo; la revisión confirma que los defectos de producto ya constan como `RF-054-001` a `005`.
+  La revisión reprodujo `RF-054-001`, `RF-054-002` y `RF-054-004` por su cuenta.
+
 ### Criterios de aceptación y límites de la segunda pasada
 
 Criterios del change (`proposal.md`) y de la tarjeta, que deja pendiente comprobar la cobertura del candidato
@@ -541,8 +575,10 @@ el veredicto de un agente QA; ver `review.md`):
   doble y comprueban el contrato de la ruta, no el cálculo.
 - **El frontend:** no se añadió ninguna prueba (H-12 se difirió) y no se repitió su medición; se conservan los
   datos de la inicial.
-- **Windows nativo:** no se ejecutó nada allí. Los tests con sockets reales (H-09) usan plazos pequeños donde hace
-  falta expirar y uno generoso donde Windows rechaza el puerto con retraso, pero no se comprobó.
+- **Windows nativo:** no lo ejecutamos nosotros. La revisión de la PR sí ejecutó allí los archivos nuevos, encontró un
+  test intermitente y se corrigió (ver «Cambio pedido por la revisión de la PR»). Los tests con sockets reales (H-09)
+  usan plazos pequeños donde hace falta expirar y uno generoso donde Windows rechaza el puerto con retraso; la
+  validación repitió 15 veces processor y azure-cost-api sin encontrar otra prueba intermitente.
 - **Revisión y validación humanas.** Esta pasada sigue el flujo ordinario de revisión de `CONTRIBUTING.md`, que no se
   ha hecho todavía. Los veredictos de QA y los informes del tester son de agentes de apoyo, no una revisión humana
   independiente ni una aceptación, y no se presentan como tales; la PR y sus dictámenes siguen pendientes.

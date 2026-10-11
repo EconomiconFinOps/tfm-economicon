@@ -283,10 +283,12 @@ def test_complete_run_aborts_and_rolls_back_when_insert_is_rejected(seeded, when
 @SQLITE_ONLY
 def test_complete_run_rolls_back_inserted_records_when_final_update_is_rejected(seeded):
     before = state(seeded)
-    # Solo el UPDATE final modifica `completed_at`; el UPDATE de bloqueo
+    # Solo el UPDATE final cambia `page_count` (de 2 a 9); el UPDATE de bloqueo
     # (`SET id = id`) no lo toca, por lo que la guarda de `_lock_run` sigue pasando
-    # y se aisla la guarda del UPDATE final.
-    create_trigger(seeded, "UPDATE", "azure_cost_ingestion_runs", "NEW.completed_at IS NOT OLD.completed_at")
+    # y se aisla la guarda del UPDATE final. No se usa `completed_at`: lo escriben dos
+    # `datetime.now()` seguidos y, con la resolucion del reloj de Windows, pueden coincidir:
+    # el trigger no saltaria y el test seria intermitente.
+    create_trigger(seeded, "UPDATE", "azure_cost_ingestion_runs", "NEW.page_count IS NOT OLD.page_count")
 
     with pytest.raises(PermissionError, match=r"^Cost run not found\.$"):
         seeded.repository.complete_run("run-a", "tenant-a", SHARED, new_records(), page_count=9, retry_count=3)

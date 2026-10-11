@@ -699,3 +699,26 @@ momento de aprobar.
   humanas y el merge siguen pendientes. La salvedad del gate («el criterio de CI queda parcial») queda resuelta en lo
   que respecta a la ejecución de la suite, no a la revisión ni a la validación.
 
+## Revisión de la PR #114 (2026-10-11)
+
+Apéndice posterior al gate post-review y al apéndice de la tarea 7.6; el bloque `Human Approval` no se modifica.
+
+- **Reviews recibidas:** `Revision JUP-054` y `Validacion JUP-054` de Lucia Mateo (`lmatsan`), ambas `Changes requested` sobre
+  `23e6845`; ningún comentario en línea ni en la conversación. Las dos piden el mismo cambio de código y la validación
+  añade uno sobre la descripción de la PR (ver abajo).
+- **Cambio de código aplicado:** `test_complete_run_rolls_back_inserted_records_when_final_update_is_rejected`, del
+  processor, era intermitente en Windows (11 de 25 ejecuciones en solitario según la revisión): su trigger comparaba dos
+  `datetime.now()`. La condición pasa a `NEW.page_count IS NOT OLD.page_count`. Causa, verificación y límites en la sección
+  «Cambio pedido por la revisión de la PR» de `docs/evidence/JUP-054-validation.md`. Un archivo, una condición y su
+  comentario; sin cambios de producto. El archivo estaba commiteado y el hook del harness bloquea esas ediciones, así que
+  se aplicó con autorización expresa de Víctor para ese cambio concreto.
+- **Por qué no se detectó antes:** todas las ejecuciones previas, incluidas las rondas de QA, fueron en contenedores Linux,
+  con resolución de reloj de microsegundos; la CI de la PR también es Linux. Sólo Windows lo muestra.
+- **Descripción de la PR:** la validación señala que revisión y validación las publicó la misma persona, de modo que la
+  sección Participación debe reflejarlo y llevar la línea `- Excepcion: revision y validacion por la misma persona,
+  acordado en Trello`, o falla `JUP reviews`. Eso se edita en GitHub y lo decide el equipo en Trello; **queda pendiente**
+  de quien lidera.
+- **Después del push:** el commit con la corrección descarta las aprobaciones obsoletas (`dismiss_stale_reviews_on_push`) y
+  exige una nueva aprobación del último push. Quien pidió los cambios los levanta aprobando una vez revisados; un
+  `Comment` no los levanta.
+

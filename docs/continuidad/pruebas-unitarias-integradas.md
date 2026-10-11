@@ -100,11 +100,13 @@ candidato final y cubrir los huecos; la PR #93 no se rehace ni se duplica.
   están en `RF-054-006` a `RF-054-009`.
 - **Lo que sigue sin acreditarse:** el SQL real que
   sólo corre con CockroachDB, pgvector y RabbitMQ (127 omitidas; `RF-096-004` no se
-  amplía), la semántica de `rowcount` de CockroachDB, el frontend nuevo y Windows.
+  amplía), la semántica de `rowcount` de CockroachDB, el frontend nuevo y las suites completas en Windows (la revisión de la PR ejecutó allí los archivos nuevos).
 - **Revisión:** sigue el flujo ordinario de `CONTRIBUTING.md`; la excepción de
   plazo del MVP de la primera pasada no se extiende a esta rama. Los veredictos de
   QA y los informes del tester son de agentes de apoyo, no una revisión humana
-  independiente. Quién revisa y quién valida lo decide el equipo en Trello.
+  independiente. Quién revisa y quién valida lo decide el equipo en Trello. La revisión de la PR (2026-10-11)
+  pidió un único cambio, un test del processor intermitente en Windows por depender del reloj, ya corregido;
+  la revisión y la validación coinciden en ese cambio y vuelven a revisarse tras él.
 - **Siguiente acción:** la [PR #114](https://github.com/EconomiconFinOps/tfm-economicon/pull/114) está abierta
   con la CI en verde (2426 pruebas aprobadas y 127 omitidas, los mismos conteos que la medición); faltan la
   revisión y la validación humanas y el merge. Después, si el equipo lo prioriza, corregir los defectos (cada
