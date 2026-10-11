@@ -1,4 +1,5 @@
 from datetime import date
+import re
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
@@ -6,6 +7,13 @@ from pydantic import BaseModel, Field
 
 BillingGrouping = Literal["subscription", "resource_group", "service", "project", "tag"]
 DecimalString = Annotated[str, Field(pattern=r"^-?(0|[1-9][0-9]*)\.[0-9]{2}$")]
+
+
+def canonical_tag_key(value: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "_", value.strip().casefold()).strip("_")
+    aliases = {"costcenter": "cost_center", "cost_centre": "cost_center",
+               "env": "environment", "org": "organization"}
+    return aliases.get(normalized, normalized)
 
 
 class AmbiguousCostSource(ValueError):

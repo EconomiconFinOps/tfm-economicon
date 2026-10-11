@@ -5,34 +5,7 @@
 La cadena de herramientas de `apps/frontend` verifica tipos: compila TypeScript con el rigor acordado
 en ADR-0003, lo comprueba en cada pull request y lo lintea sin perder la cobertura de reglas de React
 que ya existe, manteniendo la instalación reproducible desde el lockfile del workspace.
-
 ## Requirements
-### Requirement: Configuración de compilador conforme a la decisión de arquitectura
-
-`apps/frontend` SHALL declarar una configuración de compilador de TypeScript propia, alineada con las
-decisiones 1, 2 y 4 de [ADR-0003](../../../docs/adr/ADR-0003-frontend-typescript.md): rigor
-máximo desde el inicio, convivencia temporal con el JavaScript aún no migrado, y ubicación local al
-paquete en lugar de compartida.
-
-#### Scenario: Rigor máximo activo desde el primer archivo
-
-- **WHEN** se inspecciona la configuración de compilador de `apps/frontend`
-- **THEN** el modo estricto está activado
-- **AND** no se relaja mediante excepciones por archivo, directorio ni comentarios de supresión
-
-#### Scenario: El JavaScript existente sigue siendo válido durante la migración
-
-- **WHEN** el compilador procesa `apps/frontend/src/**`, que hoy contiene únicamente archivos `.js` y
-  `.jsx`
-- **THEN** la comprobación de tipos termina sin errores
-- **AND** ningún archivo JavaScript existente necesita ser renombrado, migrado o excluido para lograrlo
-
-#### Scenario: Configuración local al paquete, no compartida
-
-- **WHEN** se localiza la configuración de compilador
-- **THEN** reside dentro de `apps/frontend`
-- **AND** no se extrae a `packages/shared-config`, que no tiene un segundo consumidor de TypeScript
-
 ### Requirement: La verificación de tipos es ejecutable y obligatoria en integración continua
 
 El repositorio SHALL exponer un comando de verificación de tipos del frontend que cualquier
@@ -55,7 +28,7 @@ anotación decorativa (ADR-0003, decisión 3).
 ### Requirement: El lint acepta TypeScript sin perder la validación vigente de React
 
 La configuración de lint de `apps/frontend` SHALL analizar archivos TypeScript y TSX además de los
-JavaScript y JSX actuales, conservando las reglas de React y de hooks ya vigentes, y SHALL relevar la
+JavaScript y JSX, conservando las reglas de React y de hooks ya vigentes, y SHALL relevar la
 validación de props en tiempo de ejecución únicamente en los archivos que la verificación de tipos ya
 cubre.
 
@@ -79,10 +52,10 @@ cubre.
 
 #### Scenario: La línea base de violaciones no empeora
 
-- **WHEN** se ejecuta el lint del frontend tras el cambio
-- **THEN** las violaciones reportadas son exactamente las 49 de la línea base heredada, registradas en
-  el finding `RF-082-002`
-- **AND** no aparece ninguna violación nueva atribuible a este cambio
+- **WHEN** se ejecuta el lint del frontend sobre el código fuente migrado
+- **THEN** no reporta ninguna violación
+- **AND** la línea base heredada de 49 violaciones del finding `RF-082-002` ya no existe, porque los
+  archivos que la originaban fueron tipados o retirados
 
 ### Requirement: La instalación del workspace sigue siendo reproducible
 
@@ -101,30 +74,6 @@ versionado, de modo que una instalación reproducible no requiera modificarlo.
 - **WHEN** se comparan las dependencias del paquete del frontend antes y después del cambio
 - **THEN** las dependencias de runtime son idénticas
 - **AND** todo lo añadido lo es como dependencia de desarrollo
-
-### Requirement: El frontend conserva su comportamiento de arranque y build
-
-El cambio de tooling SHALL ser transparente para el producto: `apps/frontend` SHALL seguir
-arrancando en desarrollo y construyéndose para producción con el mismo contrato de red que el
-monorepo espera, sin que se migre ningún archivo fuente.
-
-#### Scenario: Arranque de desarrollo con el contrato de red del monorepo
-
-- **WHEN** se levanta el frontend en modo desarrollo
-- **THEN** queda accesible en el puerto y la interfaz de escucha que el monorepo tiene configurados
-- **AND** no se producen errores de compilación ni de tipos
-
-#### Scenario: Build de producción sin regresión
-
-- **WHEN** se construye el frontend para producción
-- **THEN** el build termina con éxito
-
-#### Scenario: Ningún archivo fuente migrado
-
-- **WHEN** se comparan los archivos de `apps/frontend/src/**` antes y después del cambio
-- **THEN** ninguno ha sido renombrado a TypeScript ni reescrito
-- **AND** el finding `RF-082-002` permanece abierto, porque los archivos que lo originan no han sido
-  tipados
 
 ### Requirement: La verificación automática incluye ejecución de pruebas
 
@@ -149,3 +98,53 @@ error cuando alguna prueba falle, de modo que la verificación no pueda pasar en
 - **WHEN** se propone un cambio que toca el frontend
 - **THEN** la integración continua ejecuta las pruebas del frontend sobre ese cambio
 - **AND** su resultado es visible junto al resto de comprobaciones de la propuesta
+
+### Requirement: Configuración de compilador con código fuente solo en TypeScript
+
+`apps/frontend` SHALL declarar una configuración de compilador de TypeScript propia, alineada con las
+decisiones 1, 2 y 4 de ADR-0003 (`docs/adr/ADR-0003-frontend-typescript.md`): rigor máximo, código
+fuente exclusivamente en TypeScript una vez cerrada la migración, y ubicación local al paquete en
+lugar de compartida.
+
+#### Scenario: Rigor máximo activo
+
+- **WHEN** se inspecciona la configuración de compilador de `apps/frontend`
+- **THEN** el modo estricto está activado
+- **AND** no se relaja mediante excepciones por archivo, directorio ni comentarios de supresión
+
+#### Scenario: El código fuente ya no admite JavaScript
+
+- **WHEN** se inspecciona la configuración de compilador de `apps/frontend`
+- **THEN** la convivencia con JavaScript está desactivada para el código fuente y para las pruebas
+- **AND** la comprobación de tipos termina sin errores sobre `apps/frontend/src/**` y
+  `apps/frontend/tests/**`, que no contienen ningún archivo JavaScript
+
+#### Scenario: Un import de JavaScript hace fallar la comprobación de tipos
+
+- **WHEN** un archivo TypeScript del código fuente importa un módulo JavaScript sin tipos
+- **THEN** la comprobación de tipos termina con error
+- **AND** el cambio no puede integrarse mientras el check obligatorio de tipos esté en rojo
+
+#### Scenario: Configuración local al paquete, no compartida
+
+- **WHEN** se localiza la configuración de compilador
+- **THEN** reside dentro de `apps/frontend`
+- **AND** no se extrae a `packages/shared-config`, que no tiene un segundo consumidor de TypeScript
+
+### Requirement: El frontend arranca y se construye con el contrato de red del monorepo
+
+Los cambios de tooling SHALL ser transparentes para el producto: `apps/frontend` SHALL seguir
+arrancando en desarrollo y construyéndose para producción con el mismo contrato de red que el
+monorepo espera.
+
+#### Scenario: Arranque de desarrollo con el contrato de red del monorepo
+
+- **WHEN** se levanta el frontend en modo desarrollo
+- **THEN** queda accesible en el puerto y la interfaz de escucha que el monorepo tiene configurados
+- **AND** no se producen errores de compilación ni de tipos
+
+#### Scenario: Build de producción sin regresión
+
+- **WHEN** se construye el frontend para producción
+- **THEN** el build termina con éxito
+

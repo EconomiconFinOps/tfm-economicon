@@ -32,7 +32,7 @@
   proyecto se encadena en 3.1) y comprobar que `corepack pnpm --filter @finops/frontend typecheck`
   termina en verde sobre los 14 archivos `.js`/`.jsx` actuales, sin renombrar ni excluir ninguno.
   **Añadido no listado originalmente:** también se agregó `"typecheck": "turbo run typecheck"` al
-  `package.json` raíz y la entrada `typecheck` a `turbo.json`, para que `check-dod.mjs` deje de
+  `package.json` raíz y la entrada `typecheck` a `turbo.json`, para que el comprobador local de DoD deje de
   omitir el gate de tipos (hoy solo lo ejecuta si existe ese script en la raíz). **Limitación de
   entorno descubierta (preexistente, no introducida aquí):** en esta máquina, `corepack pnpm
   typecheck`/`lint`/`test` en la raíz fallan porque turbo resuelve pnpm v11.9.0 en los subprocesos
@@ -83,11 +83,11 @@
 - [x] 5.1 **Red** — actualizar `tools/ci-workflow.test.mjs` para que espere la séptima check context
   `Frontend type check` (hoy asevera seis, en `keeps the six branch-protection check contexts stable`
   y en la lista de contexts de los rulesets) y demostrar que `corepack pnpm ci:check:test` falla.
-  **Incidencia de proceso:** el hook `.claude/hooks/lock-committed-tests.mjs` bloquea la edición de
+  **Incidencia de proceso:** el hook de protección de tests del entorno local bloquea la edición de
   cualquier test ya commiteado sin distinguir el rol que llama — el agente **tester** lo confirmó
   intentando este mismo cambio y quedó bloqueado igual que lo estaría el coder. Es un diseño
   deliberado del hook ("los tests commiteados son inmutables"), no un bug. Se decidió con Victor
-  (bypass puntual y verificado: mover `.claude/settings.json` fuera, aplicar el diff exacto ya
+  (bypass puntual y verificado: mover la configuración local de esa protección fuera, aplicar el diff exacto ya
   preparado para el tester, restaurar el archivo y **confirmar funcionalmente que el candado volvía
   a bloquear** antes de continuar) en vez de dejar cobertura duplicada en un archivo nuevo — la
   alternativa que el propio hook sugiere (`agrega casos nuevos` en archivo aparte) no servía aquí

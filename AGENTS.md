@@ -4,6 +4,11 @@
 
 This pnpm/Turborepo monorepo contains the frontend, Python backend and processor in `apps/`, reusable configuration in `packages/`, project documentation in `docs/`, and technical specifications in `openspec/`.
 
+## Project Continuity
+
+Read `docs/continuidad/README.md` and the relevant topic at the start of project
+work; update both after meaningful milestones.
+
 ## Source Of Truth And Identifiers
 
 - Read [docs/continuidad/README.md](docs/continuidad/README.md) and the relevant topic before project work; update them after meaningful milestones.

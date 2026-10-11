@@ -92,7 +92,7 @@ violaciones reproducidas viven en **9 archivos `.jsx`**; F2 desactiva `react/pro
 mismas 49 violaciones al terminar F2.
 
 Se corrigió, en la misma rama y PR (sin nueva HU, por tratarse de cambio no mergeado — ver
-`.claude/harness/workflow.md` §7): `docs/adr/ADR-0003-frontend-typescript.md` (decisión 3 y
+el flujo de trabajo del equipo): `docs/adr/ADR-0003-frontend-typescript.md` (decisión 3 y
 seguimiento), `docs/spikes/frontend-migration.md` (decisión nº 1) y
 `openspec/findings/backlog.md` (`RF-082-002`), para que los tres digan lo mismo: el finding
 permanece `Open` hasta que F3 (o el cierre de F5) migre esos 9 archivos a `.tsx` con cobertura real

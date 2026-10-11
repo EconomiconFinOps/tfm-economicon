@@ -7,7 +7,7 @@ Reviewer: navegador 8/8 sobre imagen `03904ecbf021`, sin intervenir relojes.
 Auditoria QA incremental PASS (6.4), 23/09 a las 16:33:02.775 UTC; bloqueo ambiental y gate humano
 post-QA sin resolver. Resultados propios, sin sumar rondas ni reejecutar suites
 ajenas; detalle en [review](review.md) y
-[evidencia incremental](../../../docs/evidence/JUP-085-validation.md#incremento-actual-tolerancia-jwt-de-5-s).
+[evidencia incremental](../../../../docs/evidence/JUP-085-validation.md#incremento-actual-tolerancia-jwt-de-5-s).
 
 ### Ronda anterior del 23/09 (historica, margen cero)
 
@@ -37,7 +37,7 @@ Cuatro fixtures legacy corregidas sin ampliar alcance: una en
 QA_BLOCKED_ENV, gate del 23/09 a las 15:35:35 UTC: Windows volvio a error 2
 (informacion horaria obsoleta) a las 15:34:54 UTC, pese a muestras sin retrocesos
 y navegador PASS. RF-085-002 Open: mitigacion temporal insuficiente, no estable.
-Fuentes historicas: [review](review.md) y [evidencia](../../../docs/evidence/JUP-085-validation.md#revalidacion-qa-tras-mitigacion-2309),
+Fuentes historicas: [review](review.md) y [evidencia](../../../../docs/evidence/JUP-085-validation.md#revalidacion-qa-tras-mitigacion-2309),
 que conservan la mitigacion y resultados previos como historia. El usuario
 excluye cambios de reloj Windows/WSL/Docker/DB y autoriza solo leeway JWT de 5 s.
 No resuelve RF-085-002 ni exceptua QA; JUP-097 intacto. CORS Open y gate humano

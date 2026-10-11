@@ -1,5 +1,8 @@
 # Batería de preguntas FinOps — JUP-069
 
+Para medir tiempo ahorrado, cobertura de gasto asignado y ahorro potencial,
+consultar el [instrumento funcional JUP-068](JUP-068-business-metrics.md).
+
 [Tarjeta](https://trello.com/c/Qi5uwxgW) · [Preguntas y respuestas esperadas](JUP-069-questions.json) · [Evidencia técnica](../evidence/JUP-069-validation.md)
 
 La batería contiene **28 consultas representativas en español**, redactadas para

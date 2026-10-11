@@ -51,7 +51,7 @@ sin autorizacion de merge, actualizacion de Trello ni nuevo archivado.
 ## Publicacion Para Revision: 23/09/2026
 
 Paris autoriza commit, push y PR hacia `develop`; registro a 17:15:32 UTC
-en [review.md](../../openspec/changes/jup-085-auth-session-contract/review.md#autorizacion-de-publicacion-para-revision).
+en [review.md](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/review.md#autorizacion-de-publicacion-para-revision).
 PR prevista como borrador: no levanta QA_BLOCKED_ENV ni cierra RF-085-002,
 no supone aprobacion humana final ni permite ejecutar merge o archivado.
 `origin/develop` comprobado antes de publicar: `3a08d60`, sin cambios frente
@@ -65,7 +65,7 @@ no se anticipan como PASS. `.env` real, relojes y trackers quedan intactos.
 
 Paris autorizo explicitamente "ok implementa la medida de tolerancia y deja el
 reloj de cockrachDB"; addendum registrado el 23/09/2026 a 16:01:44 UTC en la
-[propuesta](../../openspec/changes/jup-085-auth-session-contract/proposal.md).
+[propuesta](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/proposal.md).
 Base `3a08d60ddd48a8693a95025948bc941a0e54b7de` mas diff local sin publicar.
 Cambio de producto de este incremento: una linea `leeway=5` en `jwt.decode`.
 No cambia TTL emitido, HS256, firma, claims requeridos, tipos estrictos,
@@ -157,10 +157,10 @@ Base `3a08d60ddd48a8693a95025948bc941a0e54b7de` mas diff local, rama
 `feat/JUP-085-auth-session-contract`. HEAD no contiene aun esta implementacion:
 no hay nuevo commit ni PR. `develop` principal permanece limpio.
 
-[Propuesta y aprobacion](../../openspec/changes/jup-085-auth-session-contract/proposal.md),
-[diseno](../../openspec/changes/jup-085-auth-session-contract/design.md),
-[tareas](../../openspec/changes/jup-085-auth-session-contract/tasks.md),
-[review](../../openspec/changes/jup-085-auth-session-contract/review.md) y
+[Propuesta y aprobacion](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/proposal.md),
+[diseno](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/design.md),
+[tareas](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/tasks.md),
+[review](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/review.md) y
 [ADR-0007](../adr/ADR-0007-backend-cors-policy.md).
 Paris aprobo el residual y los parametros CORS el 23/09; registro 13:05:53 UTC.
 Se avanzo la rama desde `1ff8e07` preservando byte a byte los 15 archivos
@@ -465,8 +465,8 @@ Trello: https://trello.com/c/Z8M443Hu
 
 Registro del 2026-09-10. Base `1ff8e071f83a58f630c496740d712e8c0e2cc443`,
 rama `feat/JUP-085-auth-session-contract`, diff local sin commit ni PR.
-[Aprobacion](../../openspec/changes/jup-085-auth-session-contract/proposal.md)
-de Paris a las 18:30:51 UTC; [revision backend](../../openspec/changes/jup-085-auth-session-contract/review.md)
+[Aprobacion](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/proposal.md)
+de Paris a las 18:30:51 UTC; [revision backend](../../openspec/changes/archive/2026-09-24-jup-085-auth-session-contract/review.md)
 PASS. QA backend PASS, registrado a las 19:15:39 UTC; no se declara QA integral
 ni entrega completa.
 
