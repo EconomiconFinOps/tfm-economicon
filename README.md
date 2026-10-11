@@ -582,7 +582,7 @@ Esta base prioriza:
 - API Azure Cost simulada y cliente de ingesta paginado
 - normalizacion y persistencia idempotente de costes por tenant
 - almacenamiento vectorial basico con provider mock por defecto en development y test, y recuperacion semantica del backend con `litellm` (ver [apps/backend/README.md](apps/backend/README.md))
-- chat con retrieval minimo por tenant y respuesta determinista, todavia sin LLM real
+- chat con retrieval por tenant, mock explicito e IA mediante el gateway JUP-108; la configuracion no acredita calidad semantica
 - CI en GitHub Actions con validaciones de gobernanza, OpenSpec, pruebas y build
 - documentacion versionada de arquitectura, ADR, roadmap y evidencias
 
@@ -625,11 +625,69 @@ to its packaged `app/agents/prompt_resources/jup035/summary/v3`. Override
 Keep the existing pinned chat tokenizer and `CHAT_TOKENIZER_FILE` configuration.
 Copying only v3 is insufficient: startup verifies the legacy sibling before
 accepting existing artifacts. The processor's existing `COPY app` includes both
-versions; backend packaging must supply both through its existing QA resource
-mount/copy. This snapshot's Dockerfiles are not a complete deployment recipe.
+versions; the backend image copies both from the repository build context.
 
 V2 artifacts are validated with their original exact contract and limits. Reading
 does not relabel or rewrite them. Successor v3 artifacts retain parent identity,
 hash, lineage and previous payload; new observations include the execution
 budget. Chat measures the complete escaped memory prefix together with essentials,
 schema, output and margin, and rejects insufficient context rather than truncating.
+
+## Project Compose chat (JUP-035)
+
+Use an isolated Compose project and an external environment file populated from
+`.env.example`; the example intentionally has no usable secrets. Supply
+`CHAT_HMAC_FILE` as an absolute path to an operator-owned private file containing
+at least 32 bytes, readable by container uid 10001. It is mounted read-only in
+backend and processor, not frontend. Choose an unused `CHAT_PRIVATE_SUBNET` and
+matching `PROCESSOR_CHAT_PRIVATE_IP`; private port 8003 is not published.
+
+For mock set `RUNTIME_ENVIRONMENT=development`, explicitly opt into the disposable
+local database, `AI_EXECUTION_MODE=development`, `LLM_PROVIDER=mock`,
+`EMBEDDING_PROVIDER=mock`, `EMBEDDING_DIMENSION=8`. Configure the existing database,
+broker, authentication and browser-origin settings. Then:
+
+```sh
+docker compose --env-file /absolute/private/mock.env -p economicon-chat-mock build backend processor
+docker compose --env-file /absolute/private/mock.env -p economicon-chat-mock up -d
+```
+
+The existing backend migrator runs once before the verify-only backend; processor
+keeps ownership of its own and vector migrations. No manual schema creation is
+needed. Image builds install the existing hash-locked dependency closure together,
+check compatibility and validate pinned assets. Runtime needs no tokenizer download.
+Public health alone does not verify the private handshake: after processor is
+healthy, sign in and submit a question through the actual chat UI/backend.
+
+Mock output explicitly identifies simulation. Its compression preserves only
+bounded literal quotes and reports omissions; it does not certify semantic memory
+or real RAG. Original messages are not deleted. Mock never replaces a failed AI call.
+
+For AI reuse [JUP-108 configuration](infra/litellm/README.md), its gateway, aliases
+and separate application virtual keys. Select both providers `litellm`, dimension
+1536 and `AI_EXECUTION_MODE=evaluation`; supply `SUMMARY_API_KEY_FILE` pointing to
+a third, budgeted virtual-key file distinct from the main key. Only processor
+receives it. Never inject gateway master/upstream keys into applications.
+
+```sh
+docker compose --env-file /absolute/private/ai.env -p economicon-chat-ai -f docker-compose.yml -f infra/litellm/compose.ai.yml --profile ai up -d --build
+```
+
+Use separate volumes/projects for mock8 and real1536; do not change dimensions on
+an existing corpus. Real requests require an explicit budget. Chat remains 800
+output tokens; summary reserves 10000 independently. Reduced context values must
+match across both services. Do not change the shared gateway/model defaults for
+this deployment. Build and isolated runtime validation are distinct checks.
+
+`SUMMARY_TIMEOUT_SECONDS` sets the absolute compression-lot deadline independently
+of chat: integer 30..300 seconds, default 180, mirrored in backend and processor.
+It includes source preparation, generation, validation and installation. The
+summary request and its local socket deadline reserve five seconds for validating
+and installing the result; connection establishment remains capped at five
+seconds. The compression lease lasts this configured window plus 15 seconds.
+Main chat and `LLM_TIMEOUT_SECONDS` retain their existing deadlines. An expired
+lot cannot install output or automatically dispatch again; originals and the last
+valid memory are preserved. Local cancellation does not guarantee upstream work
+or billing stops. A result ending at length or failing validation still fails even
+if it arrives in time. After review rebuild only backend/processor, preserve the
+isolated database/gateway, and repeat only the compression check within its budget.

@@ -14,6 +14,7 @@ from app.clients.chat_stream_parser import complete_json
 from app.clients.summary_gateway import SummaryGatewayError,configured_gateway
 from app.core.summary_resources import validate_output
 from app.core.summary_sql import SummarySQL,SummarySQLDeadline
+from app.core.config import get_settings
 
 ROOT='/internal/chat/v2/summaries'
 SCOPE_KEYS={'tenant_id','user_id','conversation_id'}
@@ -184,7 +185,7 @@ def parse_envelope(raw,app,resources):
             or any(not all(identifier(r[k]) for k in ('question_id','answer_id'))
                 or not all(type(r[k]) is int and r[k]>=0 for k in ('question_ordinal','answer_ordinal'))
                 or not all(hash_value(r[k]) for k in ('question_sha256','answer_sha256')) for r in value['source_refs'])
-            or type(value['deadline']) not in (int,float) or not time.time()<value['deadline']<=time.time()+30):
+            or type(value['deadline']) not in (int,float) or not time.time()<value['deadline']<=time.time()+get_settings().summary_timeout_seconds):
             raise ValueError()
         resources.prepare_input(value['payload'])
         if value['input_hash']!=digest(value['payload']):raise ValueError()

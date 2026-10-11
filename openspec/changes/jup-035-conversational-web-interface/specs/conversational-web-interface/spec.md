@@ -516,3 +516,44 @@ obsoletos; la instalacion valida y la transicion del control SHALL ser atomicas.
 
 - **WHEN** se abre, recarga o finaliza un chat con memoria ocupada
 - **THEN** el frontend recupera el estado del servidor, conserva borrador editable y bloquea Enter y boton hasta instalar la memoria; error y recuperacion son visibles
+
+### Requirement: Reproducible private Compose chat
+
+The project Compose SHALL package pinned offline chat and summary resources and
+hash-locked dependencies. The existing exclusive backend migrator SHALL complete
+before verify-only API startup. Processor SHALL retain its schema ownership.
+The chat listener SHALL bind only a private concrete address, with no host port,
+and authenticate with an operator-owned shared HMAC file. Context budgets SHALL
+agree between services, with chat output 800 and summary output 10000.
+
+The summary lot SHALL have a configurable independent absolute deadline
+SUMMARY_TIMEOUT_SECONDS (30..300 seconds, default 180) mirrored across services.
+Its ownership lease SHALL outlast that configured window by 15 seconds. Generation
+SHALL reserve five seconds inside the lot deadline for validating/installing the
+result. Timeout SHALL preserve originals and existing uncertainty/reconciliation
+rules, without changing main-chat deadlines or creating another model dispatch.
+
+#### Scenario: Summary completes after the former 30-second ceiling
+
+- **WHEN** an authenticated summary lot remains within its configured deadline
+- **THEN** both private boundaries admit it, the generation timeout uses remaining time minus five seconds, and only a validated result may be installed
+
+#### Scenario: Summary deadline or invalid configuration
+
+- **WHEN** the lot expires or configuration falls outside integer 30..300 seconds
+- **THEN** expired work cannot install a result, invalid settings fail startup, and the chat deadline remains unchanged
+
+#### Scenario: Isolated mock startup
+
+- **WHEN** an operator configures a disposable development/test stack with mock providers
+- **THEN** chat and compression use explicit deterministic adapters without network inference, disclose simulated output and omissions, preserve originals and validate source references
+
+#### Scenario: Real provider failure
+
+- **WHEN** the AI profile uses the existing JUP-108 gateway and a request fails
+- **THEN** no mock fallback runs, and summary uses its separate virtual key without exposing upstream credentials to applications
+
+#### Scenario: Offline image and migration readiness
+
+- **WHEN** built project images start with a read-only root and no model-asset network access
+- **THEN** pinned resources are locally available, and backend cannot start before successful migration or silently create schema in verify mode

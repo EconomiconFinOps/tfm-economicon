@@ -72,7 +72,7 @@ def envelope(resources):
         'summary_version':resources.summary_version,'deadline':time.time()+30,'input_hash':digest(payload),'payload':payload}
 
 def test_existing_constructor_summary_uses_authenticated_descriptor_and_one_bounded_post(summary_server,resources54):
-    server,calls,_=summary_server;body=envelope(resources54)
+    server,calls,_=summary_server;body=envelope(resources54);body['deadline']=time.time()+180
     async def run():
         child=summary(f'http://127.0.0.1:{server.server_port}');descriptor=await child.descriptor();resources54.verify_descriptor(descriptor)
         value=await child.submit(body);assert value['job_id']==body['job_id'] and value['receipt']['dispatch_count']==1
@@ -108,6 +108,15 @@ def test_expired_lot_deadline_never_posts(summary_server,resources54):
         child=summary(f'http://127.0.0.1:{server.server_port}')
         with pytest.raises(ChatError):await child.submit(body)
         assert calls==[]
+    asyncio.run(run())
+
+
+def test_summary_deadline_above_configured_ceiling_never_posts(summary_server,resources54):
+    server,calls,_=summary_server;body=envelope(resources54);body['deadline']=time.time()+181
+    async def run():
+        child=summary(f'http://127.0.0.1:{server.server_port}')
+        with pytest.raises(ChatError) as error:await child.submit(body)
+        assert error.value.code=='summary_input_invalid' and calls==[]
     asyncio.run(run())
 
 @pytest.mark.parametrize('defect',['valid','unknown_ref','invented_quote','invented_number','invented_url','invented_unit','negation','contradiction','unreferenced_topic','bad_schema'])

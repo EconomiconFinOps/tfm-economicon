@@ -74,6 +74,7 @@ class CompactionRepository:
         return value
 
     def claim(self, scope, owner, explicit=False):
+        from app.core.config import get_settings
         def action(c):
             value = self.read(c, scope)
             if value is None or (value['state'] == 'failed' and not explicit):
@@ -81,7 +82,7 @@ class CompactionRepository:
             if value.get('owner') and (value.get('lease_until') or 0) > self.repository.clock():
                 return None
             value['owner'] = owner
-            value['lease_until'] = self.repository.clock() + 45
+            value['lease_until'] = self.repository.clock() + get_settings().summary_timeout_seconds + 15
             value['revision'] += 1
             if value.get('job') is not None:
                 value.update(state='reconciling', reason='remote_uncertain')

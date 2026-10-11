@@ -197,3 +197,25 @@ sin migracion, modal exacto y comprobaciones offline con fixtures desechables.
 - [x] 63. Green: transaccion scoped y modal Radix; conservar otras conversaciones y cambios previos de nombres/citas/scroll.
 - [x] 64. Regresiones afectadas, ambos typechecks/build y mutaciones focales de compresion y resurreccion de celda.
 - [ ] 65. Padre despliega backend/frontend y comprueba navegador/Cockroach aislados antes de decision humana; no borrar fixtures reales desde este ejecutor.
+
+## Compose chat - delta autorizado 11/10/2026
+
+Fuente: compose-chat-design.md y aprobacion expresa de Paris, sin gasto real.
+
+- [x] 66. Inspeccionar assets, locks, migrador existente y red/HMAC; registrar diseno aprobado.
+- [x] 67. Red focal de empaquetado/Compose y adaptadores mock sin fallback.
+- [x] 68. Green: Dockerfiles, orden migrador/verify, red privada y configuracion JUP-108.
+- [x] 69. Comprobar mocks, integridad de dependencias/assets y mutaciones focales por fases.
+- [x] 70. Construir Dockerfiles del proyecto y comprobar cargas offline read-only sin montajes de codigo (build y ambas cargas comunicados por el padre; backend y hash final processor contrastados localmente).
+- [ ] 71. Padre valida arranque aislado y chat persistido; IA pagada requiere nuevo presupuesto/autorizacion.
+
+## Plazo de compresion - correccion autorizada 11/10/2026
+
+Fuente: summary-timeout-correction.md, evidencia independiente Compose y
+autorizacion expresa de Paris; no llamadas pagadas desde implementacion.
+
+- [x] 72. Diagnosticar ventanas locales y registrar correccion limitada al resumen.
+- [x] 73. Red: configuracion/deadline/lease, fronteras privadas y reserva de validacion.
+- [x] 74. Green: plazo independiente compartido por Compose, conservando cancelacion y originales.
+- [x] 75. Mutaciones focales y regresiones afectadas; entrega con guard y hashes.
+- [ ] 76. Revision independiente y repeticion exclusiva de compresion real con presupuesto restante.

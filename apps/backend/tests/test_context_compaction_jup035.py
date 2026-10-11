@@ -104,7 +104,10 @@ def test_durable_control_excludes_second_owner_and_stale_release(api):
     with pytest.raises(ChatError):
         repo.compactions.transition(SCOPE, stale, clear=True)
     assert repo.compactions.get(SCOPE)['job'] == running['job']
-    api[3].advance(100)
+    from app.core.config import get_settings
+    api[3].advance(get_settings().summary_timeout_seconds)
+    assert repo.compactions.claim(SCOPE, 'owner-two') is None
+    api[3].advance(16)
     recovered = repo.compactions.claim(SCOPE, 'owner-two')
     assert recovered['state'] == 'reconciling' and recovered['job'] == running['job']
     with pytest.raises(ChatError):

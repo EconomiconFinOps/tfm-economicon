@@ -173,7 +173,7 @@ def test_oldest_contiguous_two_lots_reuse_exact_confirmed_previous_and_preserve_
             assert second['payload']['previous_summary']==packet[3].results[first['job_id']]['output']
             assert second['parent_hash'] is not None and first['job_id']!=second['job_id']
             assert all(0<call['selected_pairs']<=len(chat_history.latest_pairs(before)[0])-4 for call in calls)
-            assert all(call['deadline']<=time.time()+30 and digest(call['payload'])==call['input_hash'] for call in calls)
+            assert all(150 < call['deadline']-time.time() <= 180 and digest(call['payload'])==call['input_hash'] for call in calls)
             assert 'SYNTHETIC_METADATA_NEVER_SUMMARY_MODEL' not in json.dumps([call['payload'] for call in calls])
             state=derived(packet);artifact=state['artifact']
             assert state['validity']['valid'] and artifact['previous_payload_used']==packet[3].results[first['job_id']]['output']
@@ -185,6 +185,27 @@ def test_oldest_contiguous_two_lots_reuse_exact_confirmed_previous_and_preserve_
             assert service.occupied==0
         finally:await service.close()
     asyncio.run(run())
+
+@pytest.mark.parametrize('value',['29','301','30.5','NaN'])
+def test_summary_timeout_configuration_rejects_invalid_bounds(monkeypatch,value):
+    from app.core.config import Settings
+    from pydantic import ValidationError
+    monkeypatch.setenv('SUMMARY_TIMEOUT_SECONDS',value)
+    with pytest.raises(ValidationError):Settings(_env_file=None)
+
+
+@pytest.mark.parametrize('value',[30,180,300])
+def test_summary_timeout_configuration_and_lease_are_independent_of_chat(packet,monkeypatch,value):
+    from app.core.config import get_settings
+    monkeypatch.setenv('SUMMARY_TIMEOUT_SECONDS',str(value));get_settings.cache_clear()
+    settings=get_settings()
+    assert settings.summary_timeout_seconds==value
+    service,child=runtime(packet)
+    service.repository._transaction(SCOPE,lambda c:service.repository.compactions.pending(c,SCOPE))
+    control=service.repository.compactions.claim(SCOPE,'synthetic-owner')
+    assert control['lease_until']==service.repository.clock()+value+15
+    assert service.repository.compactions.claim(SCOPE,'other-owner') is None
+
 
 def test_small_history_does_not_trigger_without_pressure_but_pressure_does(packet):
     service,child=runtime(packet);source(packet,count=5,long=False)

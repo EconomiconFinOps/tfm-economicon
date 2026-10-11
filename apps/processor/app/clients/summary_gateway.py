@@ -46,7 +46,8 @@ class SummaryGateway:
         self.jobs={}
 
     def _post(self,messages,resources,deadline,holder,cancelled):
-        remaining=deadline-time.time()
+        # Leave time inside the lot deadline for validation and installation.
+        remaining=deadline-time.time()-5
         if remaining<=0 or cancelled.is_set():raise SummaryGatewayError(504,'summary_deadline')
         payload={'model':'economicon-chat','messages':messages,'stream':False,'max_tokens':resources.context_budget['output_tokens'],
             'num_retries':0,'timeout':remaining,'reasoning':{'enabled':False},
@@ -54,7 +55,7 @@ class SummaryGateway:
             'response_format':{'type':'json_schema','json_schema':{'name':'SummaryResponse','strict':True,'schema':resources.provider_response_schema}}}
         req=request.Request(self.client.base_url+'/chat/completions',data=canonical(payload),
             headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
-        req._attempt_deadline=_AttemptDeadline(max(.001,deadline-time.time()))
+        req._attempt_deadline=_AttemptDeadline(max(.001,deadline-time.time()-5))
         req._chat_cancelled=cancelled
         req._summary_holder=holder
         try:
@@ -134,6 +135,10 @@ def configured_gateway():
     from app.core.runtime_secrets import register_secrets
     try:
         settings=Settings()
+        if settings.llm_provider=='mock':
+            from app.clients.mock_chat import MockSummaryGateway,require_local_mock
+            require_local_mock(settings)
+            return MockSummaryGateway()
         if settings.llm_provider!='litellm' or settings.llm_model!='economicon-chat':return None
         path=Path(os.environ['SUMMARY_API_KEY_FILE'])
         if path.is_symlink() or not path.is_file() or not 16<=path.stat().st_size<=512:return None

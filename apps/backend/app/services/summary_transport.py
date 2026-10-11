@@ -11,6 +11,7 @@ from uuid import UUID
 from app.db.chat_repository import ChatError
 from app.schemas.chat import canonical
 from app.services.summary_validation import validate_output
+from app.core.config import get_settings
 
 ROOT='/internal/chat/v2/summaries'
 
@@ -124,7 +125,7 @@ class SummaryTransport:
         try:
             job=envelope['job_id'];assert str(UUID(job))==job
             deadline=envelope['deadline']
-            assert type(deadline) in (int,float) and time.time()<deadline<=time.time()+30
+            assert type(deadline) in (int,float) and time.time()<deadline<=time.time()+get_settings().summary_timeout_seconds
         except (ValueError,KeyError,AssertionError,TypeError):
             raise ChatError(409,'summary_input_invalid') from None
         # Retain replay protection and uncertain outcomes. At capacity, defer;

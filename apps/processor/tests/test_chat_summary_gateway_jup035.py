@@ -109,8 +109,14 @@ def exercise(session,callback):
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=application),base_url='http://private') as client:return await callback(client,application)
     return asyncio.run(run())
 
-def test_summary_gateway_dispatches_once_nonstream_strict_qa_only_separate_key(summary_session):
-    body=envelope(summary_session)
+def test_summary_gateway_dispatches_once_nonstream_strict_qa_only_separate_key(summary_session,monkeypatch):
+    from app.clients import summary_gateway
+    original=summary_gateway._AttemptDeadline;socket_budgets=[]
+    def counted_deadline(seconds):
+        socket_budgets.append(seconds)
+        return original(seconds)
+    monkeypatch.setattr(summary_gateway,'_AttemptDeadline',counted_deadline)
+    body=envelope(summary_session,deadline=time.time()+180)
     async def run(client,application):
         result=await request(client,'POST',ROUTE,body);assert result.status_code==200,result.text
         response=result.json();assert response['state']=='completed' and response['settled'] is True
@@ -119,6 +125,10 @@ def test_summary_gateway_dispatches_once_nonstream_strict_qa_only_separate_key(s
         assert len(summary_session[2])==1;call=summary_session[2][0];payload=call['body']
         assert call['summary_key_used'] and call['path']=='/v1/chat/completions'
         assert payload['model']=='economicon-chat' and payload['stream'] is False and payload['max_tokens']==10000 and payload['num_retries']==0
+        assert 150 < payload['timeout'] < 175
+        assert len(socket_budgets)==1 and 150 < socket_budgets[0] < 175
+        from app.core.config import Settings
+        assert Settings(_env_file=None).llm_timeout_seconds==30
         assert payload['reasoning']=={'enabled':False} and payload['provider']['allow_fallbacks'] is False
         assert payload['response_format']['json_schema']['name']=='SummaryResponse' and payload['response_format']['json_schema']['strict'] is True
 
@@ -163,7 +173,7 @@ def test_summary_gateway_unknown_usage_and_cost_remain_unknown(summary_session):
 def test_summary_gateway_absolute_deadline_closes_only_own_request_without_retry(summary_session):
     summary_session[1].behavior='stall'
     async def run(client,application):
-        start=time.monotonic();body=envelope(summary_session,deadline=time.time()+.35)
+        start=time.monotonic();body=envelope(summary_session,deadline=time.time()+5.35)
         result=await request(client,'POST',ROUTE,body);assert result.status_code==504,result.text
         assert result.json()['state'] in ['failed','cancelling'] and len(summary_session[2])<=1
         for _ in range(40):
@@ -172,6 +182,22 @@ def test_summary_gateway_absolute_deadline_closes_only_own_request_without_retry
             await asyncio.sleep(.025)
         assert status.json()['settled'] is True and len(summary_session[2])<=1
         assert time.monotonic()-start<2.5
+    exercise(summary_session,run)
+
+
+@pytest.mark.parametrize('value',['29','301','30.5','NaN'])
+def test_summary_timeout_configuration_is_bounded_separately(monkeypatch,value):
+    from app.core.config import Settings
+    from pydantic import ValidationError
+    monkeypatch.setenv('SUMMARY_TIMEOUT_SECONDS',value)
+    with pytest.raises(ValidationError):Settings(_env_file=None)
+
+
+def test_processor_rejects_summary_deadline_above_configured_window(summary_session):
+    async def run(client,application):
+        body=envelope(summary_session,deadline=time.time()+181)
+        result=await request(client,'POST',ROUTE,body)
+        assert result.status_code==409 and summary_session[2]==[]
     exercise(summary_session,run)
 
 # Register every existing fixture dependency in this collected module.

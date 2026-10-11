@@ -356,5 +356,9 @@ class ChatGateway:
 def configured_gateway():
     from app.core.config import get_settings
     settings=get_settings()
+    if settings.llm_provider=='mock':
+        from app.clients.mock_chat import MockChatGateway,require_local_mock
+        require_local_mock(settings)
+        return MockChatGateway()
     if settings.llm_provider!='litellm': return None
     return ChatGateway(settings)

@@ -11,6 +11,7 @@ from app.services.summary_sql import SummarySQL
 from types import SimpleNamespace
 from app.db.chat_summary_repository import ledger,digest
 from app.db.chat_history import dumps
+from app.core.config import get_settings
 
 ADMISSION_POLICY='jup-035.summary-one-reserve-five.v2'
 
@@ -164,7 +165,7 @@ class SummaryService:
             record.uncertain=False
             await self._transition(record,state='failed',reason='failed',job=None,owner=None,lease_until=None)
             return
-        deadline=time.time()+30
+        deadline=time.time()+get_settings().summary_timeout_seconds
         owner=SummarySQL(self.main.repository.engine,deadline);self.sql_owners.add(owner)
         repository=ChatRepository(SimpleNamespace(engine=owner),self.main.clock)
         try:
