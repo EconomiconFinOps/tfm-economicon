@@ -8,6 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Hitos de entrega y cierre del MVP](hitos-entrega.md) | JUP-080: fechas23/10 y29/10 confirmadas por usuario;11 vencimientos activados y verificados. Archivo OpenSpec y cierre por PR en curso. | 2026-10-11 |
 | [Memoria: integración DevOps](memoria-devops.md) | JUP-111 / PR87: f incorporado y preservación verificada; PDF13p, Markdown y hashes fuera de Git; revisión delegada por excepción de plazo, integración en curso. | 2026-10-11 |
 | [Arquitectura técnica](arquitectura-tecnica.md) | JUP-060 / PR92: arquitectura reconciliada con a0e9a56, memoria histórica verificada y dictámenes por subagentes autorizados; OpenSpec archivado. Estado de integración en PR/Trello. | 2026-10-11 |
 | [Arquitectura documental AWS](cloud-aws.md) | Referencia Fargate y Terraform sin ejecución; antecedente EC2 operativo superado. 6 pruebas mock/8 rutas correctos, sin despliegue. | 2026-10-10 |

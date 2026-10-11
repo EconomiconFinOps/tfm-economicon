@@ -1,5 +1,89 @@
 # Evidencia JUP-080
 
+## Confirmacion y activacion — 2026-10-11
+
+El usuario responde «Confirmadas las fechas» a la pregunta explicita sobre
+entrega23/10/2026 y defensa29/10/2026. Se registra como confirmacion aportada
+por el usuario, sin inventar acceso al campus/tutor. Supera el pendiente
+institucional de los apartados historicos siguientes.
+
+Las once fechas del plan aprobado se aplicaron mediante `run(trello-update)`
+en DockerServer, con comparacion previa de todos los campos y lectura posterior.
+Los otros campos de las once tarjetas y las92 tarjetas restantes se preservaron.
+JUP-110 habia cambiado de lista desde la primera captura: se uso su estado
+fresco En curso, sin deshacerlo. El cambio horario se respeta:27/10 a18:00 Paris
+es17:00Z; el resto de objetivos de este plan son16:00Z.
+[Recibo reducido](JUP-080-calendar-activation.json). Evidencia completa local:
+`materiales/07-evidencias/JUP-080-activacion-2026-10-11/dates-activated.json`.
+
+PR115 ya integrada en22baa2d, CI7/7. Este incremento cierra el residual de
+calendario y archiva OpenSpec; no entrega funcionalidades ni certifica hitos
+futuros. Cierre administrativo de la tarjeta tras integrar la PR de este delta.
+
+
+## Reconciliacion actual — 2026-10-11
+
+Origen: «Completa JUP-080. Tienes autorizacion explicita para sustituir los roles
+humanos por subagentes», chat `01a12b84-1441-7780-9064-ad14043dc249`.
+Base: `4406477`, rama `docs/JUP-080-roadmap-activation`.
+
+Consulta exclusiva mediante `Settings/TrelloClient` del despliegue
+`DockerServer:/home/danteadmin/economicon-collaboration` a las
+`2026-10-11T15:12:03.926036+00:00`: 65 P0, 54 Hecho y 11 abiertas.
+Fuente reducida versionada: [snapshot](../planning/JUP-080-p0-snapshot.json).
+Fuente completa y scripts de lectura fuera del repositorio, en el workspace
+Economicon: `materiales/07-evidencias/JUP-080-activacion-2026-10-11/`.
+No se emplea un acceso Trello alternativo.
+
+Se incorporan quince P0 al mapa, conservando las 50 anteriores. Las once abiertas
+tienen objetivos internos de recuperacion, separados de fechas historicas. El
+calendario institucional permanece sin confirmar; ninguna prueba tecnica acredita
+campus/tutor, capacidad humana ni aceptacion material de los hitos.
+
+### Atribucion y dictamenes autorizados
+
+- Liderazgo: agente principal bajo la solicitud del usuario; publicaciones con
+  la cuenta disponible Iber1to. No se atribuye ejecucion a Victor.
+- Pairing `/root/pairing`: contraste de fuente y diseno de asignacion. Propuso
+  084->M3, bloque frontend->M4, 109/110/111->M6 y recuperacion secuencial.
+  Conforme con el plan condicionado; sin confirmacion institucional.
+- **Revision JUP-080**, `/root/revision`: APPROVE tecnico, sin P0/P1.
+  Comparo los 65 registros por ID, URL, estado y fecha; cobertura unica, WIP,
+  dependencias y limites correctos. 6/6 roadmap tests. P2 documental atendido:
+  bloques antiguos rotulados historicos y tarea4.5 actualizada. No modifico ni
+  publico archivos; no verifico runtime, fechas aplicadas ni campus/tutor.
+- **Validacion JUP-080**, `/root/validacion`: favorable a la reconciliacion.
+  Verifico65P0/54Hecho/11abiertas, preservacion documental de requisitos Jupiter,
+  WIP y dependencias. 6/6 pruebas y rechazo de duplicado, omision y fecha
+  `2026-10-99` mediante mutaciones solo en memoria. No reinspecciono visualmente
+  el PDF, ni valido capacidad, activacion Trello, CI remota o integracion.
+
+La sustitucion es excepcional para esta tarjeta. Los dictamenes no son reviews
+humanas ni consenso del equipo. No se simulan identidades para satisfacer
+`JUP reviews`; cualquier integracion por excepcion debe quedar visible en la PR.
+
+### Verificacion ejecutada
+
+- Roadmap: 6/6 (incluye cobertura contra snapshot independiente y recovery).
+- Politica PR, gobernanza, trazabilidad e higiene: 83/83; CI workflow:12/12.
+  Total de estas suites mas roadmap:101 pruebas correctas.
+- `node tools/jup-check.mjs --all`: siete changes correctos.
+- OpenSpec estricto:61/61 tras la ampliacion final. `git diff --check` correcto.
+- Limitaciones de entorno: primer runner bloqueado por `spawn EPERM`; repetido
+  fuera del sandbox. Suite CI inicialmente sin `yaml`, resuelta usando las
+  dependencias locales existentes; no se cuentan esos intentos como aprobados.
+- No se reejecutan pruebas funcionales, build ni despliegue por este cambio
+  exclusivamente documental/de validacion del calendario. CI remota se enlaza
+  en la PR y no se sustituye con resultados historicos.
+
+### Pendiente operativo historico (resuelto por la confirmacion y activacion anteriores)
+
+Resolver la confirmacion institucional de entrega23/10 y defensa29/10 o una
+decision explicita de alcance sobre fechas internas provisionales; despues,
+activar el calendario autorizado con guardas y readback. JUP-080 no se declara
+Hecho mientras estos criterios sigan pendientes. Las secciones siguientes son
+evidencia historica y conservan sus fechas originales.
+
 - Fecha: 2026-08-26.
 - Trello: https://trello.com/c/yNNs74Vn
 - Rama: `docs/JUP-080-delivery-roadmap`.
