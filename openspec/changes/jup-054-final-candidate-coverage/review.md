@@ -637,3 +637,47 @@ medición inicial.
   comprobar cada tarea copiaba sólo `apps/`, lo que hacía fallar cuatro pruebas de la primera pasada que leen
   archivos de la raíz del repositorio; ya copia el árbol versionado completo. No afectaba a las pruebas nuevas ni al
   producto, y las mediciones de este grupo se hicieron con `git archive HEAD`, que incluye todo el árbol.
+
+## Human Approval
+
+- Change: jup-054-final-candidate-coverage
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-10
+- Archive decision: archive
+- Scope reviewed: las tareas 1.1 a 7.5 de `tasks.md` (39 de 40; queda la 7.6, que enlaza la pull request y su CI
+  y sólo puede hacerse tras abrirla); este `review.md`; la sección «Segunda pasada: cobertura del candidato final»
+  de `docs/evidence/JUP-054-validation.md` (candidato y referencia, entorno de medición, cobertura, huecos,
+  criterios, límites y registro en el backlog); la matriz `docs/testing/critical-flows.md`; la continuidad
+  `docs/continuidad/pruebas-unitarias-integradas.md` y su fila del índice; las filas `RF-054-001` a `RF-054-009`
+  y la nota de `RF-096-004` en `openspec/findings/backlog.md`; y los nueve archivos de prueba nuevos bajo
+  `apps/*/tests/`. Ningún cambio de producto, de dependencias ni de CI.
+- Conditions approved: (1) **Los cinco defectos de producto quedan registrados y sin corregir**: `RF-054-001`,
+  `RF-054-002`, `RF-054-003`, `RF-054-004` y `RF-054-005`, ninguno fijado con una prueba. Corregirlos, cada uno
+  con su prueba de regresión, es decisión del equipo; `RF-054-004` y `RF-054-002` conviene decidirlos antes de
+  promover el candidato a `main`. (2) **`RF-096-004` no se amplía** (provisionar CockroachDB, pgvector y RabbitMQ
+  en CI queda fuera); sólo se documenta con la nota de las 127 omitidas. (3) **La prioridad C (H-05, H-10 y H-12) y
+  lo diferido (D-01 a D-08) quedan sin cubrir**, registrados en `RF-054-006` a `RF-054-009`. (4) **Los veredictos
+  de QA y los informes del tester son de agentes de apoyo**: no sustituyen la revisión ni la validación humanas de
+  la PR, que siguen el flujo ordinario de `CONTRIBUTING.md`; la excepción de plazo del MVP de la PR #93 no se
+  extiende a esta rama. (5) **No aplica ADR.** (6) Al archivar se sincroniza el delta de
+  `critical-flow-testing` con la spec principal (tres requisitos nuevos).
+- Resultado verificado: `corepack pnpm openspec:validate` 60 de 60, `jup:check -- --change
+  jup-054-final-candidate-coverage` y `jup:cleanup:check` en verde. Suites completas sin instrumentar sobre la
+  rama en contenedores Linux con Python 3.12: azure-cost-api 81 passed; processor 644 passed y 65 omitidas;
+  backend 1047 passed y 62 omitidas; 0 fallos. Frente a la referencia de CI las diferencias son exactamente las
+  291 pruebas nuevas, sin ninguna omitida añadida. Cobertura combinada antes → después: azure-cost-api
+  94,4 % → 95,1 %, backend 85,0 % → 85,6 % y processor 86,3 % → 88,6 %. `origin/develop` sigue en `e1c2a8f`. El
+  diff contra `e1c2a8f` bajo `apps/`, CI y dependencias son sólo nueve `test_*.py` añadidos.
+- Salvedades aceptadas: **el criterio «las pruebas nuevas pasan en CI junto con la suite completa» queda
+  parcial**: hay 0 fallos en contenedores equivalentes a CI, pero la ejecución de CI de la pull request todavía no
+  existe y se enlaza en la tarea 7.6. **No se ejecutó nada en Windows ni ninguna de las 127 pruebas omitidas**, y
+  la semántica de `rowcount` de CockroachDB y el SQL real de cobertura de etiquetado y de billing siguen sin
+  acreditarse. **La cobertura es un diagnóstico sin umbral**: que una línea se ejecute no prueba que su prueba
+  detecte la rotura; eso lo acreditan las roturas manuales y sus supervivientes, no una herramienta de mutación.
+  Los supervivientes aceptados constan en cada tarea y en `RF-054-009`.
+- Notes: pendiente fuera del change: (a) abrir la pull request contra `develop` y enlazar su CI en la evidencia
+  (tarea 7.6); (b) la revisión y la validación por las personas con ese rol, que no pueden ser quien ha
+  implementado la pasada; (c) actualizar en `docs/continuidad/pruebas-unitarias-integradas.md` el enlace al change tras
+  archivarlo, porque pasa a `archive/`; (d) decidir en Trello si los defectos se abren como tarjetas.
