@@ -8,6 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Identidad de marca del frontend](identidad-marca-frontend.md) | JUP-112: marca de Economicon en tema claro y oscuro con estados y gráficas validados; implementación local sobre `develop`, 787 tests del frontend, capturas en 1280 y 390 px. PR #112 abierto y con cambios pedidos por la revisión, ya atendidos; falta confirmar en Trello la ampliación al tema oscuro. | 2026-10-11 |
 | [Hitos de entrega y cierre del MVP](hitos-entrega.md) | JUP-080: fechas23/10 y29/10 confirmadas por usuario;11 vencimientos activados y verificados. Archivo OpenSpec y cierre por PR en curso. | 2026-10-11 |
 | [Memoria: integración DevOps](memoria-devops.md) | JUP-111 / PR87: f incorporado y preservación verificada; PDF13p, Markdown y hashes fuera de Git; revisión delegada por excepción de plazo, integración en curso. | 2026-10-11 |
 | [Arquitectura técnica](arquitectura-tecnica.md) | JUP-060 / PR92: arquitectura reconciliada con a0e9a56, memoria histórica verificada y dictámenes por subagentes autorizados; OpenSpec archivado. Estado de integración en PR/Trello. | 2026-10-11 |

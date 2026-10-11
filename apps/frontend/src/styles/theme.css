@@ -1,91 +1,138 @@
 /*
- * Tema de la aplicación (JUP-099, design.md decisiones 1, 2 y 3).
+ * Tema de la aplicación: marca de Economicon en dos paletas (claro por defecto
+ * y oscuro con `data-theme="dark"`). ADR-0012, enmendado en JUP-112.
  *
- * Paleta única: la aplicación solo tiene tema oscuro, así que todos los tokens
- * viven una sola vez en `:root`. No hay bloque `.dark` ni valores claros de
- * shadcn: nadie los consumía y mantenerlos obligaba a un ancestro `.dark` en
- * <html> como apaño de ámbito.
- *
- * Cada token lleva el nombre de su función (no el de su color) y el valor
- * EXACTO del color que sustituye: es un refactor visual, no un rediseño.
- * Cuando dos funciones comparten valor, se define una vez y el resto son
- * alias `var(--otro)`, para que un cambio se propague sin editar dos sitios.
- *
- * Los valores "v4" (estados, texto secundario) son literales copiados de
- * `tailwindcss/theme.css` 4.3.3. No se referencian las variables de la paleta
- * de Tailwind a propósito: así el tema no cambia si una actualización de
- * Tailwind retoca su paleta. Los hexadecimales de las gráficas son la paleta
- * v3 del origen y NO equivalen al mismo tono v4 (p. ej. #94a3b8 != slate-400 v4).
+ * Las dos paletas declaran exactamente los mismos tokens y cada token se
+ * declara una sola vez por paleta. Los nombres son por función, no por color.
+ * Los valores de estado y de gráficas se validaron con contraste WCAG y con
+ * separación para daltonismo (docs/evidence/JUP-112/); el violeta `primary` es
+ * exclusivo de botones y el coral `saving` de ahorro e insights.
  */
 
-/*
- * `dark:` siempre activo. Sin esta línea Tailwind v4 lo interpretaría como
- * `prefers-color-scheme` y los primitivos de shadcn (p. ej. select.tsx, con
- * `dark:bg-input/30`) cambiarían según el sistema operativo. Se redefine en
- * vez de borrarla o de editar los primitivos, que se copian tal cual (ADR-0004).
- */
-@custom-variant dark (&);
+/* `dark:` de los primitivos shadcn aplica solo con el tema oscuro activo (ADR-0004). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
+  color-scheme: light;
+
   /* No cromáticos: fuera del criterio de "un consumidor por token". */
   --font-size: 16px;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
+  --font-weight-bold: 700;
   --radius: 0.625rem;
 
   /* Superficie y texto */
-  --background: #0f1419;
-  --foreground: #ffffff;
-  --card: #1a1f2e;
+  --background: #fafafc;
+  --foreground: #14121f;
+  --card: #ffffff;
   --popover: var(--card);
   --popover-foreground: var(--foreground);
-  --accent: #232834;
+  --accent: #e4e1fb;
   --accent-foreground: var(--foreground);
-  --border: #2d3748;
+  --border: #d9d5f2;
   --muted: var(--border);
-  --input: var(--border);
-  --input-background: #f3f3f5;
-  --muted-foreground: oklch(70.4% 0.04 256.788);
-  --subtle-foreground: oklch(86.9% 0.022 252.894);
-  --neutral: oklch(55.4% 0.046 257.417);
+  --input: #7f7a9c;
+  --input-background: #ffffff;
+  --muted-foreground: #524e6b;
+  --subtle-foreground: #3b3656;
+  --neutral: #5a5675;
 
   /* Marca */
-  --primary: #0078d4;
-  --primary-foreground: var(--foreground);
-  --ring: var(--primary);
-  --highlight: #00bcf2;
+  --brand: #2b2359;
+  --brand-foreground: #fafafc;
+  --highlight: #2b2359;
+  --primary: #5b4fe8;
+  --primary-foreground: #ffffff;
+  --ring: var(--highlight);
+  --saving: #ff8a5b;
+  --saving-foreground: #14121f;
 
-  /* Estados (valores literales de la paleta v4 de Tailwind 4.3.3) */
-  --success: oklch(79.2% 0.209 151.711);
-  --success-tint: oklch(72.3% 0.219 149.579);
-  --success-foreground: oklch(87.1% 0.15 154.449);
-  --danger: oklch(70.4% 0.191 22.216);
-  --danger-tint: oklch(63.7% 0.237 25.331);
-  --danger-foreground: oklch(80.8% 0.114 19.571);
+  /* Estados: `-tint` es el relleno y `-foreground` el texto sobre él */
+  --success-tint: #0b8a6e;
+  --success-foreground: #075340;
+  --success: var(--success-foreground);
+  --positive: var(--success-foreground);
+  --danger-tint: #d03a3a;
+  --danger-foreground: #8f1b1b;
+  --danger: var(--danger-foreground);
   --destructive: var(--danger-tint);
-  --info: oklch(70.7% 0.165 254.624);
-  --info-tint: oklch(62.3% 0.214 259.815);
-  --info-foreground: oklch(80.9% 0.105 251.813);
-  --warning: oklch(82.8% 0.189 84.429);
-  --warning-tint: oklch(79.5% 0.184 86.047);
-  --warning-foreground: oklch(90.5% 0.182 98.111);
-  --warning-text: oklch(87.9% 0.169 91.605);
-  --attention-tint: oklch(70.5% 0.213 47.604);
-  --attention-foreground: oklch(83.7% 0.128 66.29);
-  --positive: oklch(76.5% 0.177 163.223);
+  --info-tint: #3b7ddb;
+  --info-foreground: #174a99;
+  --info: var(--info-foreground);
+  --warning-tint: #bf8300;
+  --warning-foreground: #6e4200;
+  --warning: var(--warning-foreground);
+  --warning-text: var(--warning-foreground);
 
-  /* Gráficas (hexadecimales del origen, paleta v3 de Tailwind) */
-  --chart-1: #3b82f6;
-  --chart-2: #10b981;
-  --chart-3: #f59e0b;
-  --chart-4: #8b5cf6;
-  --chart-5: #ff8c00;
-  --chart-negative: #ef4444;
-  --chart-baseline: #64748b;
-  --chart-axis: #94a3b8;
+  /* Gráficas */
+  --chart-1: #8e3b8a;
+  --chart-2: #2f8bd9;
+  --chart-3: #bf8300;
+  --chart-4: #1ba39c;
+  --chart-5: #d6334f;
+  --chart-negative: var(--chart-5);
+  --chart-baseline: #8b87a3;
+  --chart-axis: var(--muted-foreground);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: #14121f;
+  --foreground: #fafafc;
+  --card: #1f1a3d;
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --accent: #2b2359;
+  --accent-foreground: var(--foreground);
+  --border: #3a3470;
+  --muted: var(--border);
+  --input: #8a86a8;
+  --input-background: #2b2359;
+  --muted-foreground: #b3afcc;
+  --subtle-foreground: #d4d0ea;
+  --neutral: #aba7c4;
+
+  --brand: #2b2359;
+  --brand-foreground: #fafafc;
+  --highlight: #bdb8f7;
+  --primary: #5b4fe8;
+  --primary-foreground: #ffffff;
+  --ring: var(--highlight);
+  --saving: #ff8a5b;
+  --saving-foreground: #14121f;
+
+  --success-tint: #1aa68f;
+  --success-foreground: #5fd6bf;
+  --success: var(--success-foreground);
+  --positive: var(--success-foreground);
+  --danger-tint: #f0566e;
+  --danger-foreground: #ff9dac;
+  --danger: var(--danger-foreground);
+  --destructive: var(--danger-tint);
+  --info-tint: #5a8bea;
+  --info-foreground: #9db8f5;
+  --info: var(--info-foreground);
+  --warning-tint: #ba8b1c;
+  --warning-foreground: #e2b84c;
+  --warning: var(--warning-foreground);
+  --warning-text: var(--warning-foreground);
+
+  --chart-1: #b565a9;
+  --chart-2: #4a93e0;
+  --chart-3: #ba8b1c;
+  --chart-4: #1ca89e;
+  --chart-5: #e8587a;
+  --chart-negative: var(--chart-5);
+  --chart-baseline: #7c789a;
+  --chart-axis: var(--muted-foreground);
 }
 
 @theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: "Space Grotesk Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -100,13 +147,18 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-subtle-foreground: var(--subtle-foreground);
   --color-neutral: var(--neutral);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-highlight: var(--highlight);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-ring: var(--ring);
-  --color-highlight: var(--highlight);
+  --color-saving: var(--saving);
+  --color-saving-foreground: var(--saving-foreground);
   --color-success: var(--success);
   --color-success-tint: var(--success-tint);
   --color-success-foreground: var(--success-foreground);
+  --color-positive: var(--positive);
   --color-danger: var(--danger);
   --color-danger-tint: var(--danger-tint);
   --color-danger-foreground: var(--danger-foreground);
@@ -118,9 +170,6 @@
   --color-warning-tint: var(--warning-tint);
   --color-warning-foreground: var(--warning-foreground);
   --color-warning-text: var(--warning-text);
-  --color-attention-tint: var(--attention-tint);
-  --color-attention-foreground: var(--attention-foreground);
-  --color-positive: var(--positive);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -137,11 +186,11 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 
   /**
@@ -153,28 +202,29 @@
     font-size: var(--font-size);
   }
 
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.25;
+  }
+
   h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-size: clamp(1.75rem, 1.2rem + 2vw, 2.25rem);
   }
 
   h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
   }
 
   h3 {
     font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
   }
 
   h4 {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
   }
 
   label {

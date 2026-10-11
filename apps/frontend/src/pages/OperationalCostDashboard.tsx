@@ -1,6 +1,6 @@
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ExportButton } from "@/components/ExportButton";
-import { chartTooltipStyle } from "@/components/chartTheme";
+import { chartLegendFormatter, chartTooltipItemStyle, chartTooltipStyle } from "@/components/chartTheme";
 // Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
 // tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
 import { detailedData, hourlyData, providerData } from "@/data/demo/operationalCostDashboard";
@@ -38,7 +38,7 @@ export function OperationalCostDashboard() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-subtle-foreground">{row.proyecto}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
-                      row.proveedor === 'AWS' ? 'bg-attention-tint/20 text-attention-foreground border border-attention-tint/30' :
+                      row.proveedor === 'AWS' ? 'bg-neutral/20 text-muted-foreground border border-neutral/30' :
                       row.proveedor === 'Azure' ? 'bg-info-tint/20 text-info-foreground border border-info-tint/30' :
                       'bg-success-tint/20 text-success-foreground border border-success-tint/30'
                     }`}>
@@ -48,7 +48,7 @@ export function OperationalCostDashboard() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-foreground">{row.coste.toLocaleString()}€</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <div className="w-16 bg-muted rounded-full h-2">
+                      <div className="h-2 w-16 rounded-full border border-border bg-card">
                         <div
                           className={`h-2 rounded-full ${row.uso > 80 ? 'bg-danger-tint' : row.uso > 60 ? 'bg-warning-tint' : 'bg-success-tint'}`}
                           style={{ width: `${row.uso}%` }}
@@ -85,9 +85,9 @@ export function OperationalCostDashboard() {
               <YAxis stroke="var(--chart-axis)" />
               <Tooltip
                 formatter={(value) => `${value}€/hora`}
-                contentStyle={chartTooltipStyle}
+                contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle}
               />
-              <Line type="monotone" dataKey="coste" stroke="var(--highlight)" strokeWidth={2} />
+              <Line type="monotone" dataKey="coste" stroke="var(--chart-1)" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -102,10 +102,10 @@ export function OperationalCostDashboard() {
               <YAxis stroke="var(--chart-axis)" />
               <Tooltip
                 formatter={(value) => `${value.toLocaleString()}€`}
-                contentStyle={chartTooltipStyle}
+                contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle}
               />
-              <Legend />
-              <Bar dataKey="compute" fill="var(--primary)" name="Compute" />
+              <Legend formatter={chartLegendFormatter} />
+              <Bar dataKey="compute" fill="var(--chart-1)" name="Compute" />
               <Bar dataKey="storage" fill="var(--chart-2)" name="Storage" />
               <Bar dataKey="network" fill="var(--chart-5)" name="Network" />
             </BarChart>

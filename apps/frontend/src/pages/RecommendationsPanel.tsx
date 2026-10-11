@@ -1,7 +1,7 @@
 import { Lightbulb, TrendingDown } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ExportButton } from "@/components/ExportButton";
-import { chartTooltipStyle } from "@/components/chartTheme";
+import { chartTooltipItemStyle, chartTooltipStyle } from "@/components/chartTheme";
 // Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
 // tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
 import { recommendations, savingsByCategory, stats } from "@/data/demo/recommendationsPanel";
@@ -45,11 +45,11 @@ export function RecommendationsPanel() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, idx) => (
-          <div key={idx} className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-5 shadow-xl hover:shadow-info-tint/10 transition-shadow">
-            <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
+          <div key={idx} className={`rounded-lg border p-5 shadow-xl transition-shadow ${stat.color === 'saving' ? 'border-saving bg-saving text-saving-foreground' : 'border-border bg-gradient-to-br from-card to-accent hover:shadow-info-tint/10'}`}>
+            <p className={`text-sm mb-1 ${stat.color === 'saving' ? '' : 'text-muted-foreground'}`}>{stat.label}</p>
             <div className="flex items-baseline gap-1">
               <p className={`font-bold ${toneTextClass[stat.color] ?? ''}`}>{stat.value}</p>
-              <span className="text-xs text-neutral">{stat.subtitle}</span>
+              <span className={`text-xs ${stat.color === 'saving' ? '' : 'text-neutral'}`}>{stat.subtitle}</span>
             </div>
           </div>
         ))}
@@ -62,10 +62,10 @@ export function RecommendationsPanel() {
           <BarChart data={savingsByCategory} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis type="number" stroke="var(--chart-axis)" />
-            <YAxis dataKey="categoria" type="category" width={100} stroke="var(--chart-axis)" />
+            <YAxis dataKey="categoria" type="category" width={120} stroke="var(--chart-axis)" />
             <Tooltip
               formatter={(value) => `${value.toLocaleString()}€/mes`}
-              contentStyle={chartTooltipStyle}
+              contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle}
             />
             <Bar dataKey="ahorro" fill="var(--chart-2)" />
           </BarChart>
@@ -76,9 +76,9 @@ export function RecommendationsPanel() {
       <div className="space-y-4">
         {recommendations.map((rec) => (
           <div key={rec.id} className="bg-gradient-to-br from-card to-accent rounded-lg border border-border shadow-xl overflow-hidden hover:border-highlight transition-all">
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start gap-4">
+            <div className="p-4 sm:p-6">
+              <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex min-w-0 items-start gap-4">
                   <div className={`p-3 rounded-lg ${
                     rec.prioridad === 'Alta' ? 'bg-danger-tint/20 border border-danger-tint/30' : 'bg-info-tint/20 border border-info-tint/30'
                   }`}>
@@ -86,8 +86,8 @@ export function RecommendationsPanel() {
                       rec.prioridad === 'Alta' ? 'text-danger' : 'text-info'
                     }`} />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                       <h3 className="font-semibold text-foreground">{rec.titulo}</h3>
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         rec.prioridad === 'Alta' ? 'bg-danger-tint/20 text-danger-foreground border border-danger-tint/30' :
@@ -100,10 +100,10 @@ export function RecommendationsPanel() {
                       </span>
                     </div>
                     <p className="text-sm text-subtle-foreground mb-3">{rec.descripcion}</p>
-                    <div className="flex items-center gap-6 text-sm">
-                      <div className="flex items-center gap-2">
-                        <TrendingDown className="w-4 h-4 text-success" />
-                        <span className="font-semibold text-success">{rec.ahorro.toLocaleString()}€/mes</span>
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                      <div className="flex items-center gap-2 rounded-full bg-saving px-3 py-1 text-saving-foreground">
+                        <TrendingDown className="w-4 h-4" aria-hidden="true" />
+                        <span className="font-semibold">{rec.ahorro.toLocaleString()}€/mes</span>
                       </div>
                       <div className="text-muted-foreground">
                         <span className="font-medium">Esfuerzo:</span> {rec.esfuerzo}
@@ -117,7 +117,7 @@ export function RecommendationsPanel() {
                     </div>
                   </div>
                 </div>
-                <button className="px-4 py-2 bg-gradient-to-r from-primary to-highlight text-foreground rounded-lg hover:shadow-lg hover:shadow-info-tint/30 transition-all text-sm font-medium">
+                <button className="self-start px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all text-sm font-medium">
                   Implementar
                 </button>
               </div>
@@ -127,10 +127,10 @@ export function RecommendationsPanel() {
       </div>
 
       {/* AI Agents Summary */}
-      <div className="bg-gradient-to-r from-primary/20 to-chart-4/20 rounded-lg border border-primary/30 p-6">
+      <div className="bg-accent rounded-lg border border-border p-6">
         <div className="flex items-start gap-4">
-          <div className="p-3 rounded-lg bg-gradient-to-br from-primary to-highlight shadow-lg shadow-info-tint/30">
-            <Lightbulb className="w-6 h-6 text-foreground" />
+          <div className="p-3 rounded-lg bg-saving text-saving-foreground">
+            <Lightbulb className="w-6 h-6" aria-hidden="true" />
           </div>
           <div>
             <h3 className="font-semibold text-foreground mb-2">Agentes IA Especializados Activos</h3>
@@ -139,7 +139,7 @@ export function RecommendationsPanel() {
             </p>
             <div className="flex flex-wrap gap-2">
               {['AI-ReservationAdvisor', 'AI-StorageOptimizer', 'AI-DBOptimizer', 'AI-ScalingAdvisor', 'AI-ResourceCleaner', 'AI-NetworkOptimizer'].map((agent) => (
-                <span key={agent} className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-card text-info border border-primary/30">
+                <span key={agent} className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-card text-info border border-border">
                   {agent}
                 </span>
               ))}
