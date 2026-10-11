@@ -5,18 +5,18 @@ del backend (`RF-105-004`).
 
 ## 1. Reproducción y decisión (antes de tocar producto)
 
-- [ ] 1.1 Comprobar `origin/develop`, fijar el SHA base y abrir `docs/evidence/JUP-113-validation.md`
+- [x] 1.1 Comprobar `origin/develop`, fijar el SHA base y abrir `docs/evidence/JUP-113-validation.md`
   con fecha, rama, SHA base y enlace a Trello.
-- [ ] 1.2 Reproducir `RF-086-004` con Compose en un proyecto aislado: enviar `POST /jobs/ingest` con
+- [x] 1.2 Reproducir `RF-086-004` con Compose en un proyecto aislado: enviar `POST /jobs/ingest` con
   `source` igual a `Azure Cost Management`, comprobar el 202 y anotar las reentregas (eventos
   `worker_loop_failed`, cambios de la fila en `jobs` y valor de
   `processor_ingest_jobs_failed_total`). Publicar después un trabajo válido de otro tenant y anotar
   si se completa. Guardar comandos y salida en la evidencia. Si no se reproduce, parar y revisar el
   `design.md`.
-- [ ] 1.3 Comprobar con RabbitMQ real que `basic_get` devuelve `redelivered=False` en la primera
+- [x] 1.3 Comprobar con RabbitMQ real que `basic_get` devuelve `redelivered=False` en la primera
   entrega y `True` tras `nack(requeue=True)` y tras cerrar la conexión sin responder. Es la hipótesis
   de la decisión 4; si no se cumple, parar y revisar el `design.md`.
-- [ ] 1.4 Redactar `docs/adr/ADR-0019-ingestion-retry-policy.md` desde `docs/templates/adr.md`, en
+- [x] 1.4 Redactar `docs/adr/ADR-0019-ingestion-retry-policy.md` desde `docs/templates/adr.md`, en
   estado `Proposed`, con las decisiones 4 y 5 del `design.md`, su coste y las alternativas, enlazado
   a JUP-113 y a este change. Añadir su fila en `docs/adr/README.md`. Comprobar antes que el número
   0019 sigue libre en `develop` y en las ramas de `origin`.
