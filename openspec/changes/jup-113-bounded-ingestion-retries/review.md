@@ -154,3 +154,45 @@ Limitación declarada por QA: no repitió la ejecución de `mutmut` en contenedo
 informe y en los datos que sí verificó. Notas: (1) cifras históricas de la sección Red, aclaradas
 arriba; (2) los cambios sin commitear de la tabla, `review.md` y `tasks.md` entran en el commit de
 cierre del grupo, porque las pruebas dependen de la tabla corregida.
+
+## Grupo 3 — Fallo permanente de entrada en el processor
+
+### Red (tarea 3.1), 2026-10-11
+
+Ajuste de tareas: la variante `redelivered=True` de la 3.1 pasa a la 4.2, porque el campo
+`QueueMessage.redelivered` no existe hasta la 4.4 y no se puede escribir antes. Mismo alcance, otra
+posición.
+
+`apps/processor/tests/test_ingest_permanent_input_failure.py` (nuevo, 32 casos), con `AgentRuntime`,
+`PipelineRunner` (LangGraph), `JobRepository` y `ProcessorWorker` reales sobre SQLite y solo el
+proveedor y el almacén vectorial doblados:
+`cd apps/processor && python -m pytest tests/test_ingest_permanent_input_failure.py -q`.
+
+**Resultado Red: 32 fallan, 0 pasan**, repetido por el orquestador. Motivos:
+
+- **3 por comportamiento del worker**, sin depender de nombres nuevos: la entrega del trabajo con
+  `Azure Cost Management` lanza `RuntimeError: ingestion_failed` (hoy `nack(requeue=True)` y relanza;
+  2 casos) y el trabajo envenenado deja un `worker_loop_failed` en el bucle antes del válido siguiente
+  (1 caso).
+- **29 por el contrato aún inexistente**: `ImportError` de `AgentInputError` (20) o de `IngestionFailed`
+  (9), importados dentro de cada test para que la colección funcione y cada caso falle por separado.
+
+Cubren: descarte en una entrega (un `nack(requeue=False)`, sin `ack`, sin relanzar, fila `failed`,
+proveedor y almacén vectorial sin llamadas, contador +1); diagnóstico con el evento fijo
+`job_input_rejected` y el `request_id` y sin el `source`, el contenido ni el texto de la excepción;
+trabajo válido de otro tenant procesado detrás; clasificación (`permanent` verdadero solo para
+`AgentInputError`; falso para `RuntimeError`, `ValueError`, `AgentGuardrailError` base y
+`AgentResponseError`); los fallos de `mark_failed` y `mark_running` se propagan sin convertirse en
+`IngestionFailed`; y que las comprobaciones de entrada de los guardrails lanzan `AgentInputError`
+mientras `parse_and_validate_response` no.
+
+Contraste (`test_ingest_task.py`, `test_tenant_isolation_jobs.py`, `test_secret_boundaries.py`,
+`test_guardrail_validation.py`, `test_ingest_failure_metrics.py`): 152 pasan y 6 se omiten, igual con
+y sin el archivo nuevo. Sin cambios en `apps/*/app/**`.
+
+Hallazgos del tester para Green: LangGraph **no** envuelve la excepción del guardrail
+(`AgentGuardrailError` llega tal cual a `IngestTask`, sin `__cause__`), así que basta
+`isinstance(..., AgentInputError)`; el `request_id` llega al registro en JSON; y el caso del
+diagnóstico exige además que el evento sea `warning` y que sus claves estén dentro de
+`{event, level, logger, request_id, timestamp, service}`, parte que hoy no se ejercita porque el
+test cae antes.
