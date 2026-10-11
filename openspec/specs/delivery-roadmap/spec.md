@@ -61,4 +61,3 @@ and SHALL cover exactly the open P0 cards in its dated source snapshot.
 #### Scenario: Card changes before a planned date write
 - **WHEN** a live card differs from the expected prior state
 - **THEN** the write stops for reconciliation rather than overwriting concurrent work
-
