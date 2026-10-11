@@ -143,4 +143,4 @@ actualización en la revisión de código.
 
 ## Datos sintéticos para validar costes (JUP-106)
 
-El dataset público cubre un periodo corto y una sola moneda. Para validar en la interfaz casos que no cubre (varios meses, huecos, ceros, créditos, dos monedas, importes grandes) hay un conjunto sintético, separado y marcado, que se carga y se retira con una herramienta local: [JUP-106-synthetic-costs.md](../validation/JUP-106-synthetic-costs.md). No sustituye ni modifica este dataset. Con esos datos hay además una demo corta y reproducible de la funcionalidad de costes (JUP-107), con guion, preparación y valores esperados: [demo JUP-107](../demo/JUP-107/README.md).
+El dataset público cubre un periodo corto y una sola moneda. Para validar en la interfaz casos que no cubre (varios meses, huecos, ceros, créditos, dos monedas, importes grandes) hay un conjunto sintético, separado y marcado, que se carga y se retira con una herramienta local: [JUP-106-synthetic-costs.md](../validation/JUP-106-synthetic-costs.md). No sustituye ni modifica este dataset.
