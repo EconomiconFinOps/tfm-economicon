@@ -89,10 +89,22 @@ test("keeps scope and work in progress bounded", () => {
   assert.match(narrative, /A partir del 09\/10 solo entran correcciones/i);
 });
 
-test("does not authorize bulk Trello dates before team approval", () => {
+test("records approval and user confirmation before calendar activation", () => {
   assert.equal(
     roadmap.calendar_status,
-    "team-baseline-pending-institutional-confirmation",
+    "confirmed-by-user",
   );
   assert.match(narrative, /no se aplican masivamente hasta que el\s+equipo apruebe/i);
+  assert.equal(roadmap.roadmap_approval.status, "approved-by-authorized-subagents");
+  assert.equal(roadmap.calendar_confirmation.delivery_date, roadmap.delivery_date);
+  assert.equal(roadmap.calendar_confirmation.defense_date, roadmap.defense_date);
+  assert.equal(roadmap.recovery_plan.status, "activated-and-verified");
+  const receipt = JSON.parse(fs.readFileSync(path.join(root, roadmap.recovery_plan.activation_evidence), "utf8"));
+  assert.deepEqual(receipt.results.map(r => r.task_id).sort(), roadmap.recovery_plan.targets.map(t => t.task_id).sort());
+  for (const result of receipt.results) {
+    const target = roadmap.recovery_plan.targets.find(t => t.task_id === result.task_id);
+    const local = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(result.after_due));
+    assert.equal(local, `${target.date} 18:00`);
+    assert.equal(result.preserved_fields, true);
+  }
 });

@@ -5,9 +5,9 @@
 - Reconciliacion de cobertura P0: 2026-08-28.
 - Entrega documental de trabajo: 2026-10-23.
 - Defensa de trabajo: 2026-10-29.
-- Estado de las fechas: base comunicada por el equipo en Discord; debe
-  contrastarse con campus o tutor antes del 2026-08-28 porque el guion no
-  contiene fechas de calendario.
+- Estado de las fechas: confirmadas por el usuario el 11/10/2026 mediante
+  «Confirmadas las fechas», en respuesta a entrega23/10 y defensa29/10.
+  No se afirma acceso independiente al campus o tutor; el guion no incluye calendario.
 
 ## Reconciliacion y recuperacion — 11/10/2026
 
@@ -56,8 +56,8 @@ El freeze funcional del 09/10 queda como objetivo historico incumplido para el
 vertical pendiente: se admite terminar exclusivamente el P0 ya acordado, sin
 ampliar funcionalidades. Se mantiene el objetivo 16/10 para memoria/evaluacion,
 20/10 candidato, 23/10 entrega de trabajo, 27/10 ensayo y 29/10 defensa. La
-confirmacion institucional sigue pendiente; aprobar el plan mediante subagentes
-no sustituye evidencia del campus o tutor.
+confirmacion de ambas fechas la aporta el usuario el 11/10, separadamente de
+la aprobacion del plan mediante subagentes.
 
 Revision de puertas: 13/10 recorrido integrado, 15/10 pruebas/evaluacion,
 16/10 memoria, 20/10 paquete y demo. Si una falla, registrar evidencia faltante,
@@ -68,10 +68,11 @@ historica al 28/10 no lo modifica sin decision registrada.
 
 Pairing, revision y validacion independientes son favorables al plan operativo
 el 11/10; los dictamenes estan en `docs/evidence/JUP-080-validation.md`.
-La activacion de fechas permanece pendiente de decision sobre el calendario.
-Se aplicara solo el plan explicito a P0 abiertas, con comparacion de
-estado previo, registro por tarjeta y lectura posterior. Cualquier cambio
-concurrente se revisa antes de escribir. No se publican mensajes en Discord.
+Las once fechas se aplicaron mediante el puente exclusivo DockerServer y se
+verificaron por lectura posterior. Se preservaron los otros campos y las otras
+92 tarjetas del tablero, incluidas las54 P0 Hecho. Vencimientos a18:00 Europe/Paris
+(16:00Z hasta20/10 y17:00Z el27/10). Recibo en
+`docs/evidence/JUP-080-calendar-activation.json`. No se publicaron mensajes en Discord.
 
 ## Objetivo y restricciones
 

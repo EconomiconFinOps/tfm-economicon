@@ -34,4 +34,4 @@
 - [x] 5.2 JUP-080 asignar las quince altas y separar recuperacion de once P0 abiertas de hitos historicos
 - [x] 5.3 JUP-080 comprobar cobertura contra fuente independiente, dependencias y fechas de recuperacion
 - [x] 5.4 JUP-080 registrar dictamenes independientes bajo sustitucion autorizada por el usuario
-- [ ] 5.5 JUP-080 resolver confirmacion institucional y activar fechas con guardas y lectura posterior
+- [x] 5.5 JUP-080 resolver confirmacion institucional y activar fechas con guardas y lectura posterior

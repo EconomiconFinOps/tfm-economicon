@@ -1,5 +1,26 @@
 # Evidencia JUP-080
 
+## Confirmacion y activacion — 2026-10-11
+
+El usuario responde «Confirmadas las fechas» a la pregunta explicita sobre
+entrega23/10/2026 y defensa29/10/2026. Se registra como confirmacion aportada
+por el usuario, sin inventar acceso al campus/tutor. Supera el pendiente
+institucional de los apartados historicos siguientes.
+
+Las once fechas del plan aprobado se aplicaron mediante `run(trello-update)`
+en DockerServer, con comparacion previa de todos los campos y lectura posterior.
+Los otros campos de las once tarjetas y las92 tarjetas restantes se preservaron.
+JUP-110 habia cambiado de lista desde la primera captura: se uso su estado
+fresco En curso, sin deshacerlo. El cambio horario se respeta:27/10 a18:00 Paris
+es17:00Z; el resto de objetivos de este plan son16:00Z.
+[Recibo reducido](JUP-080-calendar-activation.json). Evidencia completa local:
+`materiales/07-evidencias/JUP-080-activacion-2026-10-11/dates-activated.json`.
+
+PR115 ya integrada en22baa2d, CI7/7. Este incremento cierra el residual de
+calendario y archiva OpenSpec; no entrega funcionalidades ni certifica hitos
+futuros. Cierre administrativo de la tarjeta tras integrar la PR de este delta.
+
+
 ## Reconciliacion actual — 2026-10-11
 
 Origen: «Completa JUP-080. Tienes autorizacion explicita para sustituir los roles
@@ -55,7 +76,7 @@ humanas ni consenso del equipo. No se simulan identidades para satisfacer
   exclusivamente documental/de validacion del calendario. CI remota se enlaza
   en la PR y no se sustituye con resultados historicos.
 
-### Pendiente operativo
+### Pendiente operativo historico (resuelto por la confirmacion y activacion anteriores)
 
 Resolver la confirmacion institucional de entrega23/10 y defensa29/10 o una
 decision explicita de alcance sobre fechas internas provisionales; despues,
