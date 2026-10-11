@@ -604,3 +604,7 @@ exista un prototipo o un provider mock no acredita el cierre de esas tarjetas.
 GET `/health/status` usa `HEALTH_PROBE_TIMEOUT_SECONDS=8` por defecto (número finito entre 2 y 8 segundos inclusivos), 18 segundos de agregación después de autorizar y 20 segundos de espera del cliente. El plazo de la sonda incluye arranque/importaciones del proceso desechable; conserva cuatro slots y no añade reintentos. Puede reducirse dentro del rango si el entorno lo permite; un timeout sigue siendo no verificado. POST conserva 30/35 segundos servidor/cliente y el polling GET visible 30 segundos. El health público mantiene su contrato.
 
 El transporte elimina del modelo informativo cualquier reflexión de la credencial diagnóstica completa antes del recibo y de su retención/serialización, sin invalidar una respuesta funcional sana por metadata descartada. Para reproducir disponibilidad y recuperación, usar el Compose documentado y el override no generativo del [runbook de salud](docs/runbooks/system-health.md), con recursos propios y credenciales sintéticas; no activar proveedor real para regresiones.
+
+## Despliegue privado
+
+JUP-052: [CD hacia DockerServer](docs/deployment/dockerserver-cd.md), con selección del SHA validado, smoke y rollback.
