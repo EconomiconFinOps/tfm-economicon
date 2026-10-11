@@ -19,6 +19,8 @@ docker compose -p jup107b up -d --wait --wait-timeout 900
 
 Si RabbitMQ sale con `eacces` o el processor aún no está sano, repite el mismo `up -d --wait`.
 
+**Si usas PowerShell:** no existe el operador `<`. Todos los comandos de esta guía que lo llevan (`apply`, `status`, `remove` y la llamada al endpoint) se escriben con una tubería: `Get-Content -Raw <fichero> | docker compose -p jup107b exec -T <servicio> python - <argumentos>`. Por ejemplo, para cargar los datos: `Get-Content -Raw scripts/synthetic_anomalies.py | docker compose -p jup107b exec -T processor python - apply`, y para la llamada: `Get-Content -Raw scripts/call_anomalies_demo.py | docker compose -p jup107b exec -T backend python -`. Las consultas a CockroachDB no llevan `<` y valen igual.
+
 1. Comprueba que `tenant-core` no tiene costes (debe devolver 0 filas). Si tuviera la ingesta del dataset público, la herramienta se negará a cargar:
    ```sh
    docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defaultdb -e "SELECT count(*) FROM azure_cost_records WHERE tenant_id = 'tenant-core'"
@@ -28,7 +30,6 @@ Si RabbitMQ sale con `eacces` o el processor aún no está sano, repite el mismo
    docker compose -p jup107b exec -T processor python - apply < scripts/synthetic_anomalies.py
    docker compose -p jup107b exec -T processor python - status < scripts/synthetic_anomalies.py
    ```
-   En PowerShell no existe `<`: `Get-Content -Raw scripts/synthetic_anomalies.py | docker compose -p jup107b exec -T processor python - apply`.
 
 ## La petición de referencia
 

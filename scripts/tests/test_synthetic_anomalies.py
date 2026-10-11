@@ -459,6 +459,9 @@ class GuideTests(unittest.TestCase):
             self.assertIn(needle, self.text)
         self.assertLess(self.text.index("apply"), self.text.index("remove"))
         self.assertIn("no acepta `--tenant`", self.text)
+        self.assertIn("PowerShell", self.text)
+        self.assertIn("Get-Content -Raw scripts/synthetic_anomalies.py | docker compose -p jup107b exec -T processor python - apply", self.text)
+        self.assertIn("Get-Content -Raw scripts/call_anomalies_demo.py | docker compose -p jup107b exec -T backend python -", self.text)
 
 
 @unittest.skipUnless(os.environ.get("JUP086_COCKROACH_TEST_URL"), "JUP086_COCKROACH_TEST_URL is not set")
