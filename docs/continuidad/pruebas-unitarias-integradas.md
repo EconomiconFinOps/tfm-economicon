@@ -74,10 +74,9 @@ RabbitMQ, todas las migraciones, Compose completo ni navegador real. RF-096-004
 ## Segunda pasada: cobertura del candidato final
 
 Verificación: 2026-10-10. Rama `test/JUP-054-final-candidate-coverage`, OpenSpec
-[`jup-054-final-candidate-coverage`](../../openspec/changes/jup-054-final-candidate-coverage/proposal.md)
-(al archivarse hay que actualizar este enlace a su ruta en `archive/`). La
-tarjeta deja pendiente comprobar la cobertura del candidato final y cubrir los
-huecos; la PR #93 no se rehace ni se duplica.
+[`jup-054-final-candidate-coverage`](../../openspec/changes/archive/2026-10-10-jup-054-final-candidate-coverage/proposal.md)
+(archivado el 10/10). La tarjeta deja pendiente comprobar la cobertura del
+candidato final y cubrir los huecos; la PR #93 no se rehace ni se duplica.
 
 - **Candidato auditado:** `develop` en `e1c2a8f`, que ya incluye cinco PR
   posteriores a la #93. Referencia de CI sobre ese SHA: ejecución `38079384876`,
