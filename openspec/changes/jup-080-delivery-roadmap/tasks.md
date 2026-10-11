@@ -17,7 +17,7 @@
 - [x] 3.1 JUP-080 add machine-readable milestones and automated tests
 - [x] 3.2 JUP-080 run repository and strict OpenSpec validation
 - [x] 3.3 JUP-080 update its Trello card with the draft and proposed due date
-- [ ] 3.4 JUP-080 obtain team approval before applying dates to other cards
+- [x] 3.4 JUP-080 obtain operational roadmap approval through explicitly authorized independent subagents (2026-10-11); no human consensus claimed
 - [x] 3.5 JUP-080 publish the pull request toward develop and pass remote CI
 
 ## 4. Reconciliacion M1 posterior
@@ -26,4 +26,12 @@
 - [x] 4.2 JUP-080 incorporar JUP-085, JUP-086 y JUP-087 exactamente una vez en M1
 - [x] 4.3 JUP-080 sustituir la lista codificada del test por la captura versionada del JSON
 - [x] 4.4 JUP-080 contrastar el tablero el 2026-09-02 y registrar las dos P0 adicionales JUP-090/091
-- [ ] 4.5 JUP-080 acordar el hito de JUP-090/091 y actualizar la captura antes de afirmar cobertura de las 52 P0 actuales
+- [x] 4.5 JUP-080 asignar JUP-090/091 a M4 bajo dictamenes autorizados y reconciliar las 65 P0 del 11/10
+
+## 5. Recuperacion de octubre
+
+- [x] 5.1 JUP-080 capturar las 65 P0 mediante el puente exclusivo DockerServer y preservar la captura historica
+- [x] 5.2 JUP-080 asignar las quince altas y separar recuperacion de once P0 abiertas de hitos historicos
+- [x] 5.3 JUP-080 comprobar cobertura contra fuente independiente, dependencias y fechas de recuperacion
+- [x] 5.4 JUP-080 registrar dictamenes independientes bajo sustitucion autorizada por el usuario
+- [ ] 5.5 JUP-080 resolver confirmacion institucional y activar fechas con guardas y lectura posterior

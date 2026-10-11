@@ -46,3 +46,19 @@ and SHALL NOT apply bulk Trello due dates before roadmap approval.
 #### Scenario: Draft roadmap passes automated tests
 - **WHEN** technical validation completes but team approval is absent
 - **THEN** JUP-080 may enter review while all other card dates remain unchanged
+
+#### Scenario: Authorized delegated review
+- **WHEN** the user explicitly substitutes JUP-080 human roles with independent subagents
+- **THEN** their attributable verdicts may approve the operational roadmap without claiming human consensus or institutional confirmation
+
+### Requirement: Auditable recovery calendar
+The roadmap SHALL distinguish historical milestone dates from recovery targets
+and SHALL cover exactly the open P0 cards in its dated source snapshot.
+
+#### Scenario: Completed work appears in the historical milestone map
+- **WHEN** recovery dates are activated
+- **THEN** completed cards retain their due dates, status and completion evidence
+
+#### Scenario: Card changes before a planned date write
+- **WHEN** a live card differs from the expected prior state
+- **THEN** the write stops for reconciliation rather than overwriting concurrent work
