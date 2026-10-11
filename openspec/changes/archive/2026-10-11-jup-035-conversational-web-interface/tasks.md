@@ -1,3 +1,7 @@
+## Reconciliación de casillas — 11/10/2026
+
+Diez de las 17 entradas sin marcar cuentan con evidencia posterior y se marcan completadas. Véase [correspondencia y límites](task-evidence-reconciliation.md). La tarea55 se entrega al PM por la transición autorizada a Autónomo, no se atribuye una nueva entrega al TL. Las aprobaciones pre-code de22/28/31 se acreditan con38/40 y las decisiones conservadas, sin repetirlas. Las casillas16/42/48/49/50/51/60 conservan componentes sin respaldo completo y se ha pedido la referencia existente a Autónomo; no se encargan pruebas nuevas.
+
 ## Corte vigente para archivo — 11/10/2026
 
 Paris autoriza archivar y preparar la PR. Véase [entrega y límites](archive-delivery.md): E5, resumen real y consumo posterior, Compose y reconciliación tienen evidencias posteriores. Los estados y casillas anteriores son históricos; no se borran fallos ni se atribuyen al nuevo árbol ensayos antiguos.
@@ -92,7 +96,7 @@ Quedan diagnóstico y prueba real de memoria/consumer, revisión y validación i
 - [x] 19. Ensayo externo mínimo caché autorizado PM19:47:29: dos intentos consumidos≤0,01 EUR, INCONCLUSIVE (0/429sinusage), guard original PASS. No repetir.
 - [x] 20. Diagnóstico documental TL del429 solicitado Paris PM19:59:56: fuentes OpenRouter, recibo sinbody/headers, causa/origen indeterminados; ninguna inferencia nueva.
 - [x] 21. Consolidar documentos y escenarios con decisiones/diseños/evidencia fechadas; preservar originales y dictámenes Dev, guard TL documental y checks nativos. No pre-code ni aceptación inferida.
-- [ ] 22. PM acuerda adaptación036 y capacidades037 según criterio/alcance condicional, sin gate037 automático, y detalles técnicos de cola/configuración restantes; admisión/esperas resueltas PM23:05:12 con dos presupuestos120s acumulados por solicitud; framing/protección/compatibilidad examinados durante diseño, implementación/pruebas aún futuras; Paris revisa materiales y otorga aprobación pre-code completa antes de14→15.
+- [x] 22. PM acuerda adaptación036 y capacidades037 según criterio/alcance condicional, sin gate037 automático, y detalles técnicos de cola/configuración restantes; admisión/esperas resueltas PM23:05:12 con dos presupuestos120s acumulados por solicitud; framing/protección/compatibilidad examinados durante diseño, implementación/pruebas aún futuras; Paris revisa materiales y otorga aprobación pre-code completa antes de14→15.
 
 Matrices de tareas/pruebas futuras en ambos diseños; NOT_RUN excepto checks documentales y ensayos expresamente descritos. No se duplican como backlog operativo.
 
@@ -106,13 +110,13 @@ Matrices de tareas/pruebas futuras en ambos diseños; NOT_RUN excepto checks doc
 - [x] 25. Desarrollador inspecciona backend/processor/Compose y fuentes oficiales; entrega integration-readiness-plan.md con recomendaciones concretas, contrato036 publicado PM20:23:30 y límite037 no confirmado.
 - [x] 26. TL revisa coherencia de entrega/finales grandes y duplicados; Desarrollador corrige bajo checkpoint fresco, preserva primera versión y originales. Plan definitivo y límites wire/GET verificados documentalmente, pruebas conductuales NOT_RUN.
 - [x] 27. TL contrasta guard original y hashes, enlaza plan en diseño/resumen y registra condición cache cumplida; sin rehacer spikes, controles de producto o dictámenes Dev.
-- [ ] 28. PM presenta recomendaciones/materiales a Paris; resolver detalles de migración/seguridad/topología y adaptación036/capacidades037 aplicables, sin gate universal por relación, antes de aprobación pre-code completa. Protocolo ya concretado en25, no ejecutar desde recetas propuestas.
+- [x] 28. PM presenta recomendaciones/materiales a Paris; resolver detalles de migración/seguridad/topología y adaptación036/capacidades037 aplicables, sin gate universal por relación, antes de aprobación pre-code completa. Protocolo ya concretado en25, no ejecutar desde recetas propuestas.
 
 ## Ampliación QA, concurrencia y canal — decisiones PM21:07–21:17
 
 - [x] 29. Desarrollador entrega compresor mínimo actual QA y corrige plan de integración: resumen local persistido, pantalla separada, scope completo y cinco chats concurrentes, límites aprobados y HTTP interno privado autenticado. Sin producto, migración, servicios o gasto.
 - [x] 30. TL conserva originales, reconcilia documentos/delta spec, verifica controles documentales y entrega al PM para revisión de Paris.
-- [ ] 31. Resolver detalles de columna/resumen y migración (elección operacional aprobada EN DISEÑO), capacidad/reparto/defaults/bind/secret y adaptación036/037 condicional; contador fijado aprobado PM21:54:52, prueba focal futura; validar diseño completo y obtener pre-code humano. Decisiones funcionales ya aprobadas no se reconsultan.
+- [x] 31. Resolver detalles de columna/resumen y migración (elección operacional aprobada EN DISEÑO), capacidad/reparto/defaults/bind/secret y adaptación036/037 condicional; contador fijado aprobado PM21:54:52, prueba focal futura; validar diseño completo y obtener pre-code humano. Decisiones funcionales ya aprobadas no se reconsultan.
 
 Pruebas focales futuras en delta QA y plan: cinco productores antes del primer final, negativos tenant/usuario en cada ruta, summaryCAS/offsets/omisiones/retry/fallo, snapshot por pestaña y red/listeners. NOT_RUN; cache/spike anteriores no sustituyen estas pruebas.
 
@@ -168,14 +172,14 @@ Fuente: context-compression-design.md y encargo TL con aprobacion expresa de
 Paris de migracion e implementacion aisladas. Reinicio de fase autorizado con
 referencia persistente nueva; incidente anterior conservado sin convalidarlo.
 
-- [ ] 52. Red: barrera durable por identidad, final-pending atomico, fences de
+- [x] 52. Red: barrera durable por identidad, final-pending atomico, fences de
   contexto, propietario obsoleto, recuperacion e idempotencia; tokens y bytes
   completos, mayor sufijo y estado de envio recuperable.
-- [ ] 53. Green: migracion aditiva, control CAS, presupuestos configurables
+- [x] 53. Green: migracion aditiva, control CAS, presupuestos configurables
   contrastados con descriptor y frontend con borrador editable y envio bloqueado.
-- [ ] 54. Mutacion focal: retirar barrera y limites; comprobar deteccion y
+- [x] 54. Mutacion focal: retirar barrera y limites; comprobar deteccion y
   restauracion del producto propio mediante hashes.
-- [ ] 55. Entregar evidencia de implementacion al TL y ceder antes de revision y
+- [x] 55. Entregar evidencia de implementacion al TL y ceder antes de revision y
   validacion independientes; migracion y UI reales aisladas tienen evidencia aparte.
 
 La aprobación concreta del delta queda satisfecha; TL encarga al único Desarrollador fases separadas tras contraste del checkpoint seguro. Tareas46–51 y comportamiento siguen pendientes de ejecución/evidencia/independientes; no otra confirmación del mismo esquema/backfill local aislado. El resto035 aprobado continúa sin repetir pruebas no afectadas.
@@ -200,7 +204,7 @@ sin migracion, modal exacto y comprobaciones offline con fixtures desechables.
 - [x] 62. Red focal: DELETE, preflight, propiedad, bloqueos, rollback y modal/seleccion/callbacks.
 - [x] 63. Green: transaccion scoped y modal Radix; conservar otras conversaciones y cambios previos de nombres/citas/scroll.
 - [x] 64. Regresiones afectadas, ambos typechecks/build y mutaciones focales de compresion y resurreccion de celda.
-- [ ] 65. Padre despliega backend/frontend y comprueba navegador/Cockroach aislados antes de decision humana; no borrar fixtures reales desde este ejecutor.
+- [x] 65. Padre despliega backend/frontend y comprueba navegador/Cockroach aislados antes de decision humana; no borrar fixtures reales desde este ejecutor.
 
 ## Compose chat - delta autorizado 11/10/2026
 
@@ -211,7 +215,7 @@ Fuente: compose-chat-design.md y aprobacion expresa de Paris, sin gasto real.
 - [x] 68. Green: Dockerfiles, orden migrador/verify, red privada y configuracion JUP-108.
 - [x] 69. Comprobar mocks, integridad de dependencias/assets y mutaciones focales por fases.
 - [x] 70. Construir Dockerfiles del proyecto y comprobar cargas offline read-only sin montajes de codigo (build y ambas cargas comunicados por el padre; backend y hash final processor contrastados localmente).
-- [ ] 71. Padre valida arranque aislado y chat persistido; IA pagada requiere nuevo presupuesto/autorizacion.
+- [x] 71. Padre valida arranque aislado y chat persistido; IA pagada requiere nuevo presupuesto/autorizacion.
 
 ## Plazo de compresion - correccion autorizada 11/10/2026
 
@@ -222,4 +226,4 @@ autorizacion expresa de Paris; no llamadas pagadas desde implementacion.
 - [x] 73. Red: configuracion/deadline/lease, fronteras privadas y reserva de validacion.
 - [x] 74. Green: plazo independiente compartido por Compose, conservando cancelacion y originales.
 - [x] 75. Mutaciones focales y regresiones afectadas; entrega con guard y hashes.
-- [ ] 76. Revision independiente y repeticion exclusiva de compresion real con presupuesto restante.
+- [x] 76. Revision independiente y repeticion exclusiva de compresion real con presupuesto restante.
