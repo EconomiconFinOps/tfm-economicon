@@ -76,7 +76,7 @@ export function Layout() {
           <div className="flex items-center gap-3">
             <img src={logoInverse} alt="" className="size-10 object-contain" />
             <div>
-              <p className="font-heading text-xl font-bold leading-tight">Economicon</p>
+              <h1 className="font-heading text-xl font-bold leading-tight">Economicon</h1>
               <p className="text-sm text-brand-foreground/75">Control de costes cloud con IA</p>
             </div>
           </div>
@@ -142,7 +142,7 @@ export function Layout() {
               to={item.path}
               end={item.path === "/"}
               className={({ isActive }) =>
-                `flex items-center gap-2 whitespace-nowrap px-3 py-3 border-b-2 transition-all ${
+                `flex items-center gap-2 whitespace-nowrap px-2 py-3 border-b-2 transition-all ${
                   isActive
                     ? "border-highlight bg-accent text-highlight font-semibold"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -164,7 +164,7 @@ export function Layout() {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-2 whitespace-nowrap px-3 py-3 border-b-2 transition-all ${
+                `flex items-center gap-2 whitespace-nowrap px-2 py-3 border-b-2 transition-all ${
                   isActive
                     ? "border-highlight bg-accent text-highlight font-semibold"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent"
