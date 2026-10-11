@@ -9,7 +9,7 @@ import pytest
 from app.schemas.chat import _validate
 from test_chat_operations_jup035 import api
 
-ROOT=Path('/workspace')
+ROOT=Path(__file__).resolve().parents[3]
 BUNDLE=ROOT/'apps/processor/app/agents/prompt_resources/jup035/summary/v2'
 SCHEMA=json.loads((BUNDLE/'schema.json').read_bytes())
 VALUE={'v':2,'topics':[{'text':'Intención sintética','question_refs':['q-'+'1'*64],'answer_refs':['a-'+'2'*64]}],
@@ -42,14 +42,14 @@ def test_processor_schema_is_strict_in_existing_backend_validator(defect):
 
 def test_backend_image_copies_authoritative_summary_bundle_and_validates_it_at_build():
     docker=(ROOT/'apps/backend/Dockerfile').read_text(encoding='utf-8')
-    assert 'COPY apps/processor/app/agents/prompt_resources/jup035/summary/v2 /opt/economicon/summary/v2' in docker
-    assert 'from app.core.summary_resources import load_resources' in docker
-    assert "load_resources(None)" in docker
+    assert 'COPY apps/processor/app/agents/prompt_resources/jup035/summary /opt/economicon/summary' in docker
+    assert 'from app.core.summary_resources import load_resources as summary' in docker
+    assert 'summary()' in docker
 
 def test_processor_image_validates_summary_bundle_at_build_without_new_dependency():
     docker=(ROOT/'apps/processor/Dockerfile').read_text(encoding='utf-8')
-    assert 'from app.core.summary_resources import load_resources' in docker
-    assert "load_resources(None)" in docker
+    assert 'from app.core.summary_resources import load_resources as summary' in docker
+    assert 'summary()' in docker
 
 @pytest.fixture
 def summary_bundle(api,tmp_path,monkeypatch):
