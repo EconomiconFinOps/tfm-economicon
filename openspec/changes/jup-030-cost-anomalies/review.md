@@ -14,7 +14,7 @@ El backend ofrece `POST /billing/anomalies/evaluate`, autenticado y por tenant, 
 
 ## Validación
 
-Comandos ejecutados el 2026-10-11 en Windows con el entorno virtual del backend, sin CockroachDB (Docker no estaba disponible):
+Comandos ejecutados el 2026-10-11 en Windows con el entorno virtual del backend, primero sin CockroachDB y despues con Docker (ver la tabla siguiente):
 
 | Comando | Resultado |
 | --- | --- |
@@ -23,7 +23,10 @@ Comandos ejecutados el 2026-10-11 en Windows con el entorno virtual del backend,
 | `corepack pnpm jup:check -- --change jup-030-cost-anomalies` | correcto |
 | `corepack pnpm jup:cleanup:check` | correcto |
 
-Las pruebas con CockroachDB real **no se han repetido**: la evidencia con base real (150 pruebas, cero omitidas) es la entrega original del 10/10.
+| Mismos tests con CockroachDB real (`cockroachdb/cockroach:v24.1.11`, nodo desechable) | 181 aprobadas, 0 omitidas, 0 errores |
+| Stack Docker aislado, ingesta del dataset publico y 13 llamadas HTTP al endpoint | Importes y alertas iguales a los calculados con SQL independiente; errores 401, 403 y 422 correctos; aislamiento entre tenants |
+
+Detalle y limites en `docs/evidence/JUP-030-validation.md` (seccion "Validacion con Docker y CockroachDB real"). Para la ejecucion con base real se subio solo en local el plazo de migraciones de 60 a 400 s y se revirtio.
 
 ## Adversarial Review (pass 1)
 
@@ -31,7 +34,7 @@ Veredicto: **accept**. Sin hallazgos BLOCKING ni HIGH; 2 MEDIUM y 3 LOW. El revi
 
 | ID | Sev. | Hallazgo | Resolución |
 | --- | --- | --- | --- |
-| ADV-1 | MEDIUM | `resource_group` se normaliza con `lower()` de Python y la agrupación SQL con el de CockroachDB; con alfabetos exóticos pueden diferir (colisión que da 500, o grupo sin emparejar). Reproducido con `ΑΣ` y `ας`; el SQL real no se pudo comprobar | Aceptado por Lucia, `RF-030-001` |
+| ADV-1 | MEDIUM | `resource_group` se normaliza con `lower()` de Python y la agrupación SQL con el de CockroachDB; con alfabetos exóticos pueden diferir (colisión que da 500, o grupo sin emparejar). Reproducido con `ΑΣ` y `ας`; **confirmado con CockroachDB real** (`lower('ΑΣ')` = `ασ`, `lower('ας')` = `ας`) | Aceptado por Lucia, `RF-030-001` |
 | ADV-2 | MEDIUM | La respuesta no tiene límite de grupos: con 50.000 grupos son 41,7 MB y 3,9 s de CPU. Defecto heredado de `GET /billing/summary` | Aceptado por Lucia, `RF-030-002` |
 | ADV-3 | MEDIUM | Ningún test comprobaba que un cambio solo en la calidad del periodo base cambia `evidence_id` | **Corregido**: test nuevo; la mutación que la quita del hash lo hace fallar |
 | ADV-4 | LOW | Sin prueba con CockroachDB real de `resource_group` con distinta capitalización entre periodos | Aceptado por Lucia, `RF-030-003` |
@@ -47,7 +50,7 @@ La normalización de nombres usa tres mecanismos distintos (`lower()` en el serv
 
 - **Probados**: límites, importes, estados de línea base, errores por la capa real, aislamiento entre tenants y estabilidad de los identificadores.
 - **Aceptados por Lucia (2026-10-11)**: `RF-030-001` a `RF-030-004`.
-- **No comprobados**: el SQL real de CockroachDB en esta pasada, CPU y memoria con una base real, y la integración con JUP-038 y con el panel `/anomalies`.
+- **No comprobados**: CPU y memoria con una base real de gran tamaño, el caso `RG`/`rg` entre periodos con base real (`RF-030-003`), el límite de grupos con volumen real (`RF-030-002`) y la integración con JUP-038 y con el panel `/anomalies`.
 
 ## Hallazgos registrados
 

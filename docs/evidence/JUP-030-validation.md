@@ -91,7 +91,41 @@ corepack pnpm openspec:validate
 
 - La revision adversarial independiente (`review.md`) ejecuto 84 casos del archivo de anomalias y los ataques de limites exactos, importes por encima de 2**53, linea base ausente o no positiva, errores por la capa real (500 generico sin filtrar mensajes, 409 de fuente ambigua, 401/403/422 sin lectura de datos) y aislamiento entre tenants: todos resistieron.
 - Se cerro un hueco de test (ADV-3): un cambio solo en la calidad del periodo base debe cambiar `evidence_id`; con el test nuevo falla la mutacion que la quita del hash.
-- Las dos integraciones con CockroachDB real **no se han vuelto a ejecutar**: la evidencia con base real (150 pruebas, cero omitidas) es la del 10/10 de la entrega original.
+- Las integraciones con CockroachDB real se ejecutaron despues en esta misma rama: ver la seccion siguiente (181 pruebas, cero omitidas).
+
+## Validacion con Docker y CockroachDB real (2026-10-11)
+
+Tras la revalidacion nativa se repitio la validacion con Docker Desktop, sobre la rama `feat/JUP-030-anomaly-evaluator` en `7d0b61d`.
+
+**1. Pruebas con CockroachDB real.** Nodo desechable `cockroachdb/cockroach:v24.1.11` (`start-single-node --insecure`, puerto local 26299, `cluster.organization = 'processor-integration-tests'`):
+
+```sh
+cd apps/backend
+JUP086_COCKROACH_TEST_URL='cockroachdb+psycopg://root@127.0.0.1:26299/defaultdb?sslmode=disable'   python -m pytest tests/test_anomaly_evaluation.py tests/test_budget_evaluation.py tests/test_billing_summary.py tests/test_tag_coverage.py -q -p no:cacheprovider -rs
+# 181 passed, 0 skipped, 0 errors (12 min 29 s)
+```
+
+Para esa ejecucion se subio solo en la copia local, y se revirtio despues (`git status` limpio), el plazo de 60 s a 400 s de `subprocess.run(... timeout=60)` en `apps/backend/tests/billing_support.py`, porque las migraciones del processor tardan mas en esta maquina. Un primer intento con el plazo original dio 32 errores por esa causa (no por el codigo), y los 149 restantes pasaron.
+
+**2. Extremo a extremo por HTTP.** Stack aislado `docker compose -p jup030` (todos los servicios sanos tras repetir una vez el `up` por un fallo de arranque interno de CockroachDB, ajeno al cambio), ingesta del dataset publico de Azure (`tenant-core`, 38 filas, 2024-06-02 a 2024-06-19) y llamadas a `POST /billing/anomalies/evaluate` con el usuario demo (contrasena leida del entorno del contenedor, nunca impresa). Importes esperados calculados antes con SQL independiente sobre `azure_cost_records`:
+
+| # | Peticion | Esperado | Observado |
+| --- | --- | --- | --- |
+| 1 | `resource_group`, 10-19 jun 2024, umbral `0.03` y subida 50 % con minimo `0.01` | `zfinops` 0,03 frente a 0,01 (+0,02; 200,00 %): umbral y subida. `DevTestLab` 0,03 frente a 0,00: solo umbral (base no positiva, sin division) | 2 alertas exactamente asi; `deviation_status: baseline_nonpositive` en DevTestLab; `cause_status: not_established` |
+| 2 | Misma peticion repetida | `id` y `evidence_id` identicos | Identicos |
+| 3 | Solo umbral `0.04` | Sin alertas, `baseline_period` nulo | Sin alertas, `evaluation_status: evaluated` |
+| 4 | Solo subida 50 % con minimo `0.05` | Ninguna alerta (el incremento 0,02 no llega al minimo) | Sin alertas |
+| 5 | Mismo periodo en `tenant-growth` | Sin datos, no se ven los de `tenant-core` | `data_status: empty`, `evaluation_status: unavailable` |
+| 6 | Sin ninguna regla | 422 antes de leer datos | 422 |
+| 7 | `end_date` en 2999 | 422 | 422 |
+| 8 | Moneda `EUR` (sin datos) | Sin evaluacion | `evaluation_status: unavailable` |
+| 9 | Periodo de julio de 2024 (sin datos) | Sin evaluacion | `empty` en ambos periodos |
+| 10-12 | Tenant ajeno, sin token, importe como numero JSON | 403, 401, 422 | 403, 401, 422 |
+| 13 | `group_by: service` (la ingesta por defecto no rellena el servicio) | Calidad honesta | `data_status: partial`, 18 registros sin dimension, grupo `null`, 0,05 frente a 0,01 (+400,00 %) |
+
+**3. Hallazgo RF-030-001 comprobado con SQL real.** En CockroachDB `lower('ΑΣ')` devuelve `ασ` y `lower('ας')` devuelve `ας` (distintos), mientras que en Python los dos dan `ας`. La divergencia entre la agrupacion SQL y la normalizacion del servicio existe de verdad; el finding sigue aceptado y abierto.
+
+**Limpieza.** Stack, volumenes y nodo desechable eliminados (`docker compose -p jup030 down -v`); sin contenedores ni volumenes restantes.
 
 ## Limites de la evidencia
 
