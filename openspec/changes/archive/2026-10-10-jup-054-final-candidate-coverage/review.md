@@ -722,3 +722,19 @@ Apéndice posterior al gate post-review y al apéndice de la tarea 7.6; el bloqu
   exige una nueva aprobación del último push. Quien pidió los cambios los levanta aprobando una vez revisados; un
   `Comment` no los levanta.
 
+## Candidato actualizado con develop (2026-10-11)
+
+Apéndice posterior al gate post-review; el bloque `Human Approval` no se modifica y refleja el estado al aprobar.
+
+- **Qué cambia:** las frases «`origin/develop` sigue en `e1c2a8f`; no hay commits sin auditar» (sección Validación
+  ejecutada y tarea 6.5) y su repetición en el bloque de aprobación eran ciertas el 2026-10-10 y **dejaron de serlo** el
+  2026-10-11, cuando se actualizó la rama de la PR con `develop` (`536fb4b`, siete PR de otras tarjetas).
+- **Qué se hizo:** se midió el árbol integrado y se dejó escrito en la sección «Candidato actualizado con `develop`» de
+  `docs/evidence/JUP-054-validation.md`, como pide el escenario «Candidate advances before delivery»: las 291 pruebas
+  nuevas siguen pasando (azure-cost-api 81, processor 644 y 65 omitidas, backend 1132 y 64 omitidas, 0 fallos); sólo cambia
+  código de aplicación en el backend (JUP-030, con sus propias pruebas y su cobertura, y una línea de `Dockerfile` por
+  servicio) y las líneas de nuestros huecos del backend siguen cubiertas.
+- **Qué no se audita:** el código de JUP-030 hueco a hueco ni los cambios de CI y de `tools/` de las demás tarjetas.
+- **CI del head vigente:** se consulta en la propia PR y no se vuelve a registrar aquí, para no mover la rama tras la
+  revisión; los 2511 aprobados y 129 omitidos de esta medición son de contenedores, no de CI.
+

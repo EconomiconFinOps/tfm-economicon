@@ -80,8 +80,9 @@ candidato final y cubrir los huecos; la PR #93 no se rehace ni se duplica.
 
 - **Candidato auditado:** `develop` en `e1c2a8f`, que ya incluye cinco PR
   posteriores a la #93. Referencia de CI sobre ese SHA: ejecución `38079384876`,
-  2135 pruebas aprobadas y 127 omitidas. `develop` no había avanzado al cerrar la
-  pasada.
+  2135 pruebas aprobadas y 127 omitidas. `develop` avanzó después (siete PR el
+  11/10, entre ellas JUP-030, con código nuevo en el backend); la rama se actualizó y se
+  volvió a medir, ver la evidencia («Candidato actualizado con `develop`»).
 - **Medición:** diagnóstico sin umbral y fuera del repositorio (herramienta sólo
   en contenedores Linux desechables). Cada cifra vale porque la ejecución
   instrumentada reproduce a CI. Comandos en la
@@ -108,6 +109,7 @@ candidato final y cubrir los huecos; la PR #93 no se rehace ni se duplica.
   pidió un único cambio, un test del processor intermitente en Windows por depender del reloj, ya corregido;
   la revisión y la validación coinciden en ese cambio y vuelven a revisarse tras él.
 - **Siguiente acción:** la [PR #114](https://github.com/EconomiconFinOps/tfm-economicon/pull/114) está abierta
-  con la CI en verde (2426 pruebas aprobadas y 127 omitidas, los mismos conteos que la medición); faltan la
+  con la CI en verde (2426 aprobadas y 127 omitidas en `17796c0`; con `develop` integrado la medición da 2511 y 129, y su CI se
+  consulta en la PR); faltan la
   revisión y la validación humanas y el merge. Después, si el equipo lo prioriza, corregir los defectos (cada
   uno con su prueba de regresión) o aclarar el contrato de `RF-054-005`.

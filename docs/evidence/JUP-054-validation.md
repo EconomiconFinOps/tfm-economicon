@@ -400,8 +400,8 @@ prueba falla (decisión 7 del diseño), no con mutación automática.
 Medición del 2026-10-10 sobre el árbol de la rama (`8cfc05a`, que sólo añade pruebas y documentación sobre el
 candidato `e1c2a8f`), en los mismos contenedores y con los mismos comandos que la medición inicial. Es un
 diagnóstico sin umbral. Las cifras valen porque cada ejecución instrumentada reproduce a la ejecución sin
-instrumentar del mismo árbol. `origin/develop` sigue en `e1c2a8f` (comprobado de nuevo: sin commits
-posteriores), por lo que la medición cubre el candidato final sin lagunas.
+instrumentar del mismo árbol. `origin/develop` seguía en `e1c2a8f` el 2026-10-10, sin commits
+posteriores. **Dejó de ser cierto el 2026-10-11**: ver «Candidato actualizado con `develop`».
 
 | Servicio | Pasadas antes → después | Omitidas | Líneas | Ramas | Combinado |
 | --- | --- | --- | --- | --- | --- |
@@ -530,6 +530,53 @@ ejecuciones del test solo y en 5 de 12 de los cuatro archivos juntos; la validac
   tiempo entre un antes y un después y pasó 20 de 20 allí.
 - **Hallazgos:** ninguno nuevo; la revisión confirma que los defectos de producto ya constan como `RF-054-001` a `005`.
   La revisión reprodujo `RF-054-001`, `RF-054-002` y `RF-054-004` por su cuenta.
+
+### Candidato actualizado con `develop`
+
+El 2026-10-11 la rama de la PR se actualizó con `develop` (*Update branch*, merge `5d2a28c`), que había avanzado de
+`e1c2a8f` a `536fb4b` con siete PR de otras tarjetas. **La auditoría de las secciones anteriores es del candidato
+`e1c2a8f`**; este apartado cubre el avance, como pide el escenario «Candidate advances before delivery» de la spec, y
+corrige lo que decían «Resultado tras las pruebas nuevas» y la tarea 6.5 del `review.md` («`develop` sigue en
+`e1c2a8f`»): era cierto el 2026-10-10 y dejó de serlo con esta actualización.
+
+| PR | Commit | Tarjeta y asunto | Qué toca en `apps/` |
+| --- | --- | --- | --- |
+| #113 | `e69dd296` | JUP-078, completar proveedor y modelos con claves limitadas | nada |
+| #73 | `a0e9a56d` | JUP-052, desplegar entorno privado hacia DockerServer con recuperación verificada | una línea en el `Dockerfile` de azure-cost-api, backend y processor; además `cd.yml` nuevo, 3 líneas en `ci.yml` y `tools/cd/` |
+| #92 | `c3eb665a` | JUP-060, arquitectura y referencia AWS con Terraform | nada |
+| #87 | `44064776` | JUP-111, evidencia del apartado DevOps de la memoria | nada |
+| #115 | `22baa2d6` | JUP-080, hitos P0 y calendario de recuperación | nada |
+| #116 | `659c2962` | JUP-080, confirmar calendario y cerrar activación | nada |
+| #117 | `536fb4b4` | JUP-030, anomalías de coste por umbral y desviación | backend: `services/anomalies.py`, `schemas/anomalies.py`, 22 líneas en `routes/billing.py`, README y `tests/test_anomaly_evaluation.py` |
+
+No hay ningún cambio en `apps/frontend`. El diff real de la PR contra el `develop` actual sigue siendo sólo nuestro: 21
+archivos (+4127 −8), nueve `test_*.py` nuevos bajo `apps/`, el change archivado y documentación, y nada en `.github/`,
+`tools/` ni dependencias.
+
+Medición sobre el árbol integrado (`4602c08`: la rama con `develop` dentro y la corrección de la ronda de revisión), en
+los mismos contenedores y con los mismos comandos que antes; las suites completas sin instrumentar y el backend
+instrumentado, cuya ejecución reproduce a la anterior:
+
+| Servicio | Rama sobre `e1c2a8f` | Rama integrada con `develop` | Diferencia |
+| --- | --- | --- | --- |
+| azure-cost-api | 81 passed | 81 passed | sin cambios |
+| processor | 644 passed, 65 omitidas | 644 passed, 65 omitidas | sin cambios |
+| backend | 1047 passed, 62 omitidas | **1132 passed, 64 omitidas** | +85 y +2: `test_anomaly_evaluation.py` de JUP-030, el único archivo de prueba nuevo; sus 2 omitidas son opt-in de CockroachDB |
+| frontend | 654 passed | 654 (sin cambios en `apps/frontend`, no se volvió a ejecutar) | sin cambios |
+| **Total** | 2426 y 127 omitidas | **2511 y 129 omitidas** | +85 aprobadas y +2 omitidas, ninguna de ellas nuestra |
+
+0 fallos. Cobertura del backend: combinada 85,6 % → **86,1 %** (líneas 3140 de 3561, 88,2 %; ramas 784 de 994, 78,9 %).
+El código nuevo de JUP-030 llega cubierto por sus propias pruebas (`services/anomalies.py` 74 de 74 líneas,
+`schemas/anomalies.py` 82 de 83, la 28 sin cubrir) y `routes/billing.py` no tiene líneas sin cubrir. Las líneas de
+nuestros huecos del backend (H-01 a H-04) siguen cubiertas. En processor y azure-cost-api sólo cambia una línea de
+`Dockerfile`, por lo que no se repitió su cobertura y se mantienen las cifras anteriores.
+
+**Lo que no se audita de este avance:** el código y las pruebas de JUP-030 no se revisaron hueco a hueco; sólo se
+comprobó que nuestras pruebas siguen pasando con él y se midió su cobertura. Tampoco se ejecutaron ni se auditaron los
+cambios de `.github/workflows/cd.yml` y `ci.yml` (los pasos `cd:test` y el `unittest` de LiteLLM nuevos se ejecutan en el
+job `OpenSpec` de CI), `tools/cd/`, `tools/litellm-product-keys.py` ni los documentos de las demás tarjetas. La CI del
+head vigente de la PR se consulta en la propia PR y no se vuelve a registrar aquí, para no mover la rama después de la
+revisión; los 2511 y 129 de esta tabla son de contenedores, no de CI.
 
 ### Criterios de aceptación y límites de la segunda pasada
 
