@@ -148,3 +148,19 @@ Ninguna.
   8 grupos. Comprobaciones del gate el 2026-10-11: `corepack pnpm openspec:validate` (64 de 64),
   `corepack pnpm jup:check -- --change jup-113-bounded-ingestion-retries` y
   `corepack pnpm jup:cleanup:check`, las tres correctas.
+
+### Adenda a la aprobación pre-código: excepción a «no se adapta ninguna prueba existente»
+
+- Fecha: 2026-10-11. Decide: Victor, a pregunta expresa del orquestador durante la tarea 3.2.
+- Motivo: `IngestionFailed` (subclase de `RuntimeError`, necesaria para llevar el indicador
+  `permanent` al worker) hace que el registro `worker_loop_failed` anote `exception_type` con el
+  valor `IngestionFailed` en lugar de `RuntimeError`. La prueba existente
+  `apps/processor/tests/test_secret_boundaries.py::test_rf053_003_task_to_worker_preserves_sanitized_root_diagnostics`
+  exigía el nombre antiguo (línea 439).
+- Decisión: cambiar solo esa aserción a `IngestionFailed`. Lo que la prueba protege (tipo de la
+  excepción visible, sin el texto del proveedor ni secretos en el diagnóstico) se mantiene y las
+  demás aserciones no cambian. No se encontró ningún panel, alerta ni documento que dependa del
+  nombre antiguo.
+- Alcance: solo esa línea. Las cuatro aserciones de `requeue=True` siguen sin tocarse.
+- Alternativas descartadas: registrar un nombre de tipo distinto del real solo para contentar a la
+  prueba, y rediseñar sin subclase (obligaba a rehacer los 32 casos del Red ya commiteado).

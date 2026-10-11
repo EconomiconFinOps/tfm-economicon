@@ -46,11 +46,11 @@ del backend (`RF-105-004`).
   uno al contador de fallos y registra el evento fijo sin el `source` ni la causa. Un trabajo válido
   de otro tenant publicado detrás se procesa. (La variante con `redelivered=True` pasa a la 4.2,
   porque el campo no existe hasta la 4.4.)
-- [ ] 3.2 Green, processor: error de entrada tipado en `guardrails.py`, error de fallo registrado con
+- [x] 3.2 Green, processor: error de entrada tipado en `guardrails.py`, error de fallo registrado con
   indicador de permanente en `ingest.py` y rama nueva en `runner.py` (decisiones 3 y 5).
-- [ ] 3.3 Comprobar que las pruebas de `test_guardrail_validation.py` que esperan
+- [x] 3.3 Comprobar que las pruebas de `test_guardrail_validation.py` que esperan
   `AgentGuardrailError` pasan sin cambios.
-- [ ] 3.4 Mutación sobre la clasificación en `IngestTask` y la rama del worker; cubrir los mutantes
+- [x] 3.4 Mutación sobre la clasificación en `IngestTask` y la rama del worker; cubrir los mutantes
   que sobrevivan.
 
 ## 4. Tope de un reintento

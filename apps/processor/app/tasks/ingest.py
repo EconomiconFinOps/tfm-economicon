@@ -1,5 +1,6 @@
 import json
 
+from app.agents.guardrails import AgentInputError
 from app.clients.litellm import ProviderError
 from app.graphs.pipeline import PipelineRunner
 from app.repositories.jobs import JobRepository
@@ -7,6 +8,19 @@ from app.repositories.jobs import JobRepository
 
 class InvalidJobMessage(ValueError):
     """A permanent delivery rejection that must not change persisted state."""
+
+
+class IngestionFailed(RuntimeError):
+    """Fallo de ingesta ya registrado como `failed`, con su clasificacion de permanencia.
+
+    Sigue siendo `RuntimeError("ingestion_failed")` para no romper a quien ya lo captura.
+    El booleano `permanent` es el unico dato de la causa que viaja al worker: True solo si
+    la causa fue un `AgentInputError`; el texto de la causa nunca se conserva.
+    """
+
+    def __init__(self, *, permanent: bool):
+        super().__init__("ingestion_failed")
+        self.permanent = permanent
 
 
 def _identifier(value) -> bool:
@@ -90,6 +104,11 @@ class IngestTask:
         except ProviderError:
             self.repository.mark_failed(job_id, "ingestion_failed", **scope)
             raise
-        except Exception:
+        except Exception as exc:
             self.repository.mark_failed(job_id, "ingestion_failed", **scope)
-            raise RuntimeError("ingestion_failed") from None
+            # Si `mark_failed` falla, su excepcion se propaga tal cual (reencolable): no se
+            # sabe que quedo escrito y descartar la entrega podria perder el fallo.
+            # `permanent` se calcula aqui, donde aun se ve la causa, y no se deja que el
+            # worker la lea: la causa se aplana a proposito (`from None`) para no filtrar
+            # secretos ni el motivo del guardrail por trazas (JUP-053).
+            raise IngestionFailed(permanent=isinstance(exc, AgentInputError)) from None

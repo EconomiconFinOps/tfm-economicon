@@ -14,7 +14,7 @@ from app.embeddings.chunker import TextChunker
 from app.embeddings.providers import get_embedding_provider
 from app.graphs.pipeline import PipelineRunner
 from app.repositories.jobs import JobRepository
-from app.tasks.ingest import IngestTask, InvalidJobMessage
+from app.tasks.ingest import IngestTask, IngestionFailed, InvalidJobMessage
 from app.vector_store.pgvector_store import PgVectorStore
 
 
@@ -86,6 +86,17 @@ class ProcessorWorker:
         except ProviderError as exc:
             logger.warning("job_provider_failed", category=exc.category)
             self.queue.nack(message.delivery_tag, requeue=False)
+        except IngestionFailed as exc:
+            if exc.permanent:
+                # Reintentar una entrada rechazada por el guardrail fallaria igual y
+                # retendria la cola: se descarta en una entrega. Evento fijo, sin campos
+                # del trabajo (el `request_id` ya lo aporta el contexto de structlog).
+                logger.warning("job_input_rejected")
+                self.queue.nack(message.delivery_tag, requeue=False)
+                return
+            # No permanente: se conserva el comportamiento de siempre (reencolar y relanzar).
+            self.queue.nack(message.delivery_tag, requeue=True)
+            raise
         except Exception:
             self.queue.nack(message.delivery_tag, requeue=True)
             raise

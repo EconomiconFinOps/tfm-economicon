@@ -196,3 +196,101 @@ Hallazgos del tester para Green: LangGraph **no** envuelve la excepción del gua
 diagnóstico exige además que el evento sea `warning` y que sus claves estén dentro de
 `{event, level, logger, request_id, timestamp, service}`, parte que hoy no se ejercita porque el
 test cae antes.
+
+### Green (tarea 3.2), 2026-10-11: producto hecho, una prueba existente pendiente de ajuste
+
+Producto modificado (solo processor): `agents/guardrails.py` (`AgentInputError`, subclase de
+`AgentGuardrailError`, que lanzan `normalize_source` y las cuatro comprobaciones de entrada de
+`prepare_agent_input`, sin cambiar ningún mensaje), `tasks/ingest.py` (`IngestionFailed`, subclase de
+`RuntimeError` con el booleano `permanent`, que se lanza tras `mark_failed` con `from None`) y
+`workers/runner.py` (rama `IngestionFailed`: si `permanent`, evento fijo `job_input_rejected`, un
+`nack(requeue=False)` y retorno sin relanzar; si no, `nack(requeue=True)` y relanza como hoy).
+
+- `test_ingest_permanent_input_failure.py`: **32 pasan** (antes 32 fallaban).
+- Contraste de nueve suites del processor y suite completa (coder): 712 pasan, 65 se omiten y **1
+  falla**, que es `test_secret_boundaries.py::test_rf053_003_task_to_worker_preserves_sanitized_root_diagnostics`.
+  Las demás aserciones de esa prueba pasan (`nack(42, requeue=True)`, sin secretos, sin el texto del
+  proveedor); falla solo la de la línea 439, que exige `"RuntimeError"` en el diagnóstico, y ahora el
+  worker registra `IngestionFailed`.
+- El coder paró y no tocó la prueba, como debe. Decisión de Victor: cambiar solo esa aserción (ver la
+  adenda de `proposal.md`). El hook del harness bloquea editar un test ya commiteado, así que el
+  cambio de la línea 439 queda pendiente de hacerse a mano. Hasta entonces el Green está completo en
+  producto pero no cerrado: la tarea 3.2 no se marca.
+
+### Mutación (tareas 3.3 y 3.4), 2026-10-11
+
+**3.3.** `tests/test_guardrail_validation.py` y las demás pruebas que esperan `AgentGuardrailError`
+pasan sin cambios: `AgentInputError` es subclase y ningún mensaje cambió.
+
+**3.4.** Contenedor desechable `python:3.12` sobre una copia del árbol (repositorio montado en solo
+lectura), con 23 mutantes dirigidos sobre las líneas que cambia el grupo, aplicados por sustitución
+de texto, y nueve suites del processor como ejecutor. En la copia, y solo en la copia, la línea 439 de
+`test_secret_boundaries.py` lleva la aserción pendiente (`IngestionFailed`), para medir el estado
+final real sin tocar el repositorio. Línea base de la copia: **240 pasan, 6 se omiten, 0 fallan**, lo
+que confirma que ese cambio de una línea basta para dejar la suite en verde.
+
+**22 muertos y 1 superviviente equivalente.**
+
+| Zona | Mutantes muertos |
+| --- | --- |
+| `IngestionFailed` (`ingest.py`) | `permanent` siempre verdadero, siempre falso, calculado con la base `AgentGuardrailError`; conservar la causa (`from exc`); mensaje distinto; dejar de ser `RuntimeError` |
+| Worker (`runner.py`) | condición invertida; `requeue=True` al descartar; descartar sin `nack`; sin `return` tras descartar; `requeue=False` y sin `raise` en la rama no permanente; evento con otro nombre, a nivel `error` o con un campo extra |
+| Guardrails (`guardrails.py`) | cada uno de los seis `raise` degradado a `AgentGuardrailError`; `AgentResponseError` pasa a ser de entrada; `AgentInputError` pierde su base |
+
+- **Superviviente equivalente:** importar `AgentGuardrailError` sin usarlo en `ingest.py`. Es un
+  control que se añadió a propósito; no cambia ningún comportamiento observable.
+- Un mutante («sin `return`») no se aplicó la primera vez por un patrón mal escrito en el guion; se
+  repitió con el patrón correcto y murió.
+- Sin pruebas nuevas: ningún superviviente real, así que no hace falta remediación del tester.
+
+Límite: son mutantes escritos a mano sobre las líneas del grupo, no una herramienta automática sobre
+el archivo entero (`mutmut` genera mucho ruido en `guardrails.py`, que tiene 400 líneas ajenas a este
+cambio).
+
+### Green cerrado (tarea 3.2), 2026-10-11
+
+El cambio de la línea 439 de `test_secret_boundaries.py` (de `"RuntimeError"` a `"IngestionFailed"`, con
+dos líneas de comentario) lo hizo Victor a mano: el hook del harness bloquea editar tests commiteados
+y el clasificador de permisos de Claude Code denegó levantarlo por tratarse de autoconfiguración del
+harness, así que no se rodeó. `git diff` del test: solo esa aserción y el comentario.
+
+Resultado, ejecutado por el orquestador con el cambio ya aplicado (entorno virtual local, Windows):
+
+- `test_ingest_permanent_input_failure.py`: **32 pasan** (antes 32 fallaban).
+- `test_secret_boundaries.py`: 31 pasan.
+- Suite completa del processor: **713 pasan, 65 se omiten, 0 fallan**, igual que el recuento predicho
+  y que el de la copia usada para la mutación (240 pasan, 6 se omiten en las nueve suites).
+- Las 65 omitidas son pruebas opt-in con servicios reales; no se comparó el recuento con el de la base
+  del change (681 pasan y 65 se omiten antes del grupo 3, con los 32 casos fallando).
+
+### Mutantes adicionales contra el repo real y QA del grupo 3
+
+Los 23 mutantes de arriba se midieron sobre una copia con la aserción pendiente aplicada. Ya con la
+línea 439 cambiada en el repositorio, se repitieron en contenedor, sin ninguna sustitución, los tres
+que la QA razonó pero no había ejecutado más uno equivalente: **4 muertos de 4**. Línea base sobre el
+repo real: 240 pasan, 6 se omiten, 0 fallan.
+
+| Mutante | Resultado |
+| --- | --- |
+| Quitar `mark_failed` del `except Exception` | muerto |
+| Envolver `ProviderError` en `IngestionFailed` | muerto |
+| Quitar `mark_failed` del `except ProviderError` | muerto |
+| `mark_failed` después del `raise` (inalcanzable) | muerto |
+
+**DoD:** no se repitió `check-dod.mjs` completo para este grupo; la regresión completa del backend en
+Windows falla por `RF-105-004` (ver el grupo 2) y el processor completo pasa: 713 pasan, 65 se omiten,
+0 fallan. Lint y type-check del repositorio se ejecutan en la tarea 8.3.
+
+**QA (agente independiente): `accept-with-notes`, sin hallazgos para tester ni coder.** Comprobó con
+comandos propios: el test del tester no cambia desde el commit Red; el único cambio de tests es la
+aserción de la línea 439, legítima según la adenda (ninguna otra aserción, panel, alerta ni documento
+depende de `RuntimeError` en `exception_type`); el producto es el mínimo y no adelanta nada de los
+grupos 4 y 5; los tres escenarios del requisito tienen prueba; y 181 pasan y 6 se omiten en las cinco
+suites relacionadas. Notas: (1) producto, línea 439 y documentos entran en un único commit Green;
+(2) los mutantes extra, ya ejecutados arriba; (3) `__context__` conserva la causa original (`from None`
+solo suprime `__cause__`), preexistente y sin fuga: la rama permanente no relanza ni imprime la
+excepción.
+
+Pendiente de este requisito, por pertenecer a otros grupos: la variante con `redelivered=True` (4.2),
+el tope de reintentos (grupo 4), el resultado corrupto de un `completed` (grupo 5) y la comprobación
+con broker real (grupo 6).
