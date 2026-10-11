@@ -240,6 +240,15 @@ def test_changed_quality_changes_evidence_but_not_alert_identity():
     assert first.alerts[0].evidence_id != second.alerts[0].evidence_id
 
 
+def test_changed_baseline_quality_changes_evidence_but_not_alert_identity():
+    current = observed(group("120.00"))
+    first = evaluate(current, observed(group("100.00"), baseline=True))
+    second = evaluate(current, observed(group("100.00"), baseline=True, data_status="partial", excluded_undated_count=1))
+    assert [alert.trigger_reasons for alert in first.alerts] == [alert.trigger_reasons for alert in second.alerts]
+    assert first.alerts[0].id == second.alerts[0].id
+    assert first.alerts[0].evidence_id != second.alerts[0].evidence_id
+
+
 @pytest.mark.parametrize("changes", [
     {"period": PRIOR_PERIOD}, {"group_by": "project"}, {"tag_key": "environment"},
     {"groups": [group("100.00"), group("100.00")]},
