@@ -14,7 +14,7 @@ Validación hecha por la líder de la tarjeta bajo la excepción temporal del 20
 | El impacto se muestra por moneda, sin mezclarlas. | Cubierto en la API | Cada episodio lleva su moneda; la lista no tiene totales entre monedas (prueba con episodios EUR y USD). Otras monedas no se evalúan y se informan. La presentación en el panel es del change 2. |
 | Hay datos de demostración reproducibles que enseñan varias criticidades. | No (change 2) | Con la regla diaria, el conjunto de JUP-107 abre 4 episodios, todos P2 (ver abajo); los datos de demo con gasto diario y varias criticidades son del change 2. |
 | (Etapa 2) Se avisa de las anomalías antes del cierre. | No (change 3) | Sin ejecución periódica ni avisos. |
-| Pruebas, documentación y decisiones actualizadas; PR revisado y vinculado; validación y evidencia enlazadas. | Parcial | Pruebas, ADR, contrato, arquitectura, continuidad y hallazgos en este change; el PR se abre al archivar. |
+| Pruebas, documentación y decisiones actualizadas; PR revisado y vinculado; validación y evidencia enlazadas. | Parcial | Pruebas, ADR, contrato, arquitectura, continuidad y hallazgos en este change; el PR es único para los tres changes de la tarjeta y se abre al terminar el último. |
 
 ## Comprobación contra el stack real
 
