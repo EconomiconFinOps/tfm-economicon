@@ -60,3 +60,23 @@ Commits: implementación hasta `b048e43`; los comandos se ejecutaron sobre ese c
 | Stack real aislado (`docker compose -p jup114`, volúmenes nuevos) | migraciones `001` y `002` aplicadas; datos de JUP-107 cargados; 15/15 comprobaciones HTTP; cifras verificadas a mano con SQL independiente; `down -v` |
 
 Incidencias de entorno, no del cambio: el fixture de billing da 60 s a las migraciones del processor y en esta máquina tardan más; se subió solo en la copia local y se revirtió antes de cada commit. pgvector arrancó `unhealthy` la primera vez y se resolvió repitiendo `up -d --wait`, como en JUP-030.
+
+## Adversarial Review (pass 1)
+
+Agente `adversarial-reviewer`, independiente, sobre `8035a3d..76952eb` con solo la spec, el diseño, el ADR y el contrato. Veredicto: **changes-requested** (un HIGH).
+
+| ID | Severidad | Hallazgo | Reproducción del revisor | Resolución |
+| --- | --- | --- | --- | --- |
+| ADV-1 | HIGH | Tras `investigating` (alice) y `resolved` (bob) se pierde quién hizo el primer cambio; la spec («stores both actors and times») y el diseño se contradecían | Sonda con CockroachDB real: ninguna columna contiene `alice` | Columna `first_reviewed_by` en la misma migración `002` (no publicada), expuesta en la API; pruebas de acceso a datos y de API (`a499515`) |
+| ADV-2 | MEDIUM | `POST /detect` con cuerpo rechazaba con 422 antes de 401/400/403 (contrato de orden de JUP-086) | Prueba temporal: sin token y con cuerpo, 422 | La comprobación del cuerpo depende de `get_active_tenant`; prueba parametrizada 401/400/403 sin llamadas al almacén |
+| ADV-3 | MEDIUM | El motivo aceptaba controles C1, override bidi, separadores de línea, guion blando y un motivo de solo U+200B | `EpisodeStatusChange(status='resolved', reason='ok\x85x')` aceptado | Rechazo de categorías Unicode `C*`, `Zl`, `Zp` como `ownership_questions.py`; seis casos 422 y casos válidos aceptados |
+| ADV-4 | LOW | Impacto exacto 499,996 se muestra `500.00` con `P3` | Sonda con 899.996 sobre 400 | Comportamiento correcto (criticidad sobre el valor exacto); escrito en la spec, la API y una prueba |
+| ADV-5 | LOW (plausible) | Un PATCH que pierde por `40001` recibía `invalid_status_transition` | No reproducido de forma determinista | Excepción y código propios `status_change_conflict`; prueba con `OperationalError` 40001 simulado y prueba de API |
+| ADV-6 | LOW | La detección y la lista abierta cargaban todo el histórico del tenant | Lectura del código | Lista filtrada en SQL; la detección lee solo episodios en seguimiento y el último de cada grupo; prueba con CockroachDB real del enlace al episodio anterior (el mutante que quita el último por grupo la hace fallar) |
+| ADV-7 | LOW | El diseño citaba `SELECT … FOR UPDATE` que no se usa; el ADR decía evidencia «por crear»; `review.md` citaba la rama nueva | Lectura | Diseño y ADR corregidos; la rama `feat/JUP-114-anomaly-circuit` es la real tras el renombrado pedido por Lucia |
+
+Ataques que resistieron (resumen del revisor): concurrencia de detecciones en el mismo tenant (3 a la vez, 5 rondas: una `completed`, dos `DetectionConflict`, un episodio); entre tenants sin falsos 409; PATCH simultáneos (un éxito); PATCH frente a detección sin escrituras parciales; igualdades estrictas y equivalencia exacta de la fórmula ×7; `service` nulo frente al literal `"null"`; aislamiento en todas las lecturas y escrituras y 404 idéntico; id de 200 000 caracteres; huecos y días perdidos; `test_schema_migration_ownership.py` del processor 6/6 con la nueva `002`; limitaciones documentadas.
+
+Barrido de patrón: ADV-1 sin otras trazas de autores; ADV-2 es la única dependencia de ruta con lectura del cuerpo; ADV-3 se repite en `billing.py` (`tag_key`), `dependencies.py` (`X-Tenant-Id`) y dos tareas del processor, registrado como `RF-114-009`; ADV-4 y ADV-5 solo en este código.
+
+Tras las correcciones: 281 pruebas de anomalías, billing, presupuesto y aislamiento con CockroachDB real en verde.
