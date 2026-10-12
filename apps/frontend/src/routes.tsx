@@ -10,6 +10,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { IngestPage } from "./pages/IngestPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { SystemHealthDashboard } from "./pages/SystemHealthDashboard";
+import { ConversationsPage } from "./pages/ConversationsPage";
 
 // Mapa de rutas (JUP-095, grupo 6, sub-ronda d -- ver Addendum de
 // design.md, decision 3). `/login` vive fuera de `SessionGate` (no requiere
@@ -58,6 +59,7 @@ export const routeConfig: RouteObject[] = [
             children: [
               { path: "ingest", Component: IngestPage },
               { path: "assistant", element: <Navigate to="/?chat=open" replace /> },
+              { path: "ownership", Component: ConversationsPage },
               { path: "system-health", Component: SystemHealthDashboard },
             ],
           },

@@ -1,4 +1,4 @@
-export type ScreenRoute = "/" | "/overview-legacy" | "/operational" | "/cuts" | "/anomalies" | "/recommendations" | "/ingest" | "/assistant" | "/system-health";
+export type ScreenRoute = "/" | "/overview-legacy" | "/operational" | "/cuts" | "/anomalies" | "/recommendations" | "/ingest" | "/assistant" | "/ownership" | "/system-health";
 export interface ScreenCapture {
   schema_version: "2";
   screen_version: string;
@@ -10,7 +10,7 @@ export interface ScreenCapture {
   selection: Record<string, unknown>;
   datasets: Record<string, unknown>[];
 }
-const routes: readonly string[] = ["/", "/overview-legacy", "/operational", "/cuts", "/anomalies", "/recommendations", "/ingest", "/assistant", "/system-health"];
+const routes: readonly string[] = ["/", "/overview-legacy", "/operational", "/cuts", "/anomalies", "/recommendations", "/ingest", "/assistant", "/ownership", "/system-health"];
 /** Per authenticated workspace. Only receive/change handlers prepare data. */
 export class PreparedScreen {
   readonly tabId = crypto.randomUUID();

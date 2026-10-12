@@ -41,9 +41,11 @@ def demo_dataset(groups=None):
             'counts':{'records':len(groups or []),'groups':len(groups or [])}}
 
 
-def test_demo_capture_is_preserved_complete_without_promoting_it_to_evidence(api):
+@pytest.mark.parametrize('route',['/operational','/ownership'])
+def test_demo_capture_is_preserved_complete_without_promoting_it_to_evidence(api,route):
     async def scenario(c):
-        payload=body();payload['screen_context']['datasets']=[demo_dataset([
+        payload=body();payload['screen_context']['route']=route
+        payload['screen_context']['datasets']=[demo_dataset([
             {'label':'Compute','currency':'EUR','amount':'-12.3400'}])]
         response=await c.post(path(),json=payload,headers=headers())
         assert response.status_code==200,response.text

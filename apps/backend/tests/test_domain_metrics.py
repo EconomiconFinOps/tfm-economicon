@@ -4,6 +4,7 @@ from app.core import metrics
 from app.schemas.assistant import MessageCreateRequest
 from app.schemas.jobs import IngestJobRequest
 from app.services.rabbitmq_queue import PublishResult
+from test_chat_operations_jup035 import api, body, headers, path, run
 
 
 class _FakeQueue:
@@ -97,18 +98,13 @@ def test_create_ingest_job_increments_ingest_counter():
     assert metrics.ingest_jobs_total._value.get() == before + 1
 
 
-def test_send_message_increments_assistant_queries_counter():
+def test_new_generation_counts_once_and_replay_does_not_count_again(api):
     before = metrics.assistant_queries_total._value.get()
-
-    send_message(
-        conversation_id="conversation-1",
-        payload=MessageCreateRequest(content="How are my costs?"),
-        current_user={"id": "user-1"},
-        tenant_id="tenant-core",
-        database=_FakeDatabase(),
-        vector_store=_FakeVectorStore(),
-        embedding_provider=_FakeEmbeddingProvider(),
-        assistant_service=_FakeAssistantService(),
-    )
-
+    async def scenario(client):
+        payload = body()
+        first = await client.post(path(), json=payload, headers=headers())
+        assert first.status_code == 200 and "event: final" in first.text
+        repeated = await client.post(path(), json=payload, headers=headers())
+        assert repeated.status_code == 200 and repeated.json()["outcome"] == "existing"
+    run(scenario, api)
     assert metrics.assistant_queries_total._value.get() == before + 1

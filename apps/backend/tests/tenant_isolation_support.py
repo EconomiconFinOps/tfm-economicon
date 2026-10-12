@@ -8,7 +8,6 @@ from uuid import uuid4
 import pytest
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import make_url
-from sqlalchemy.pool import StaticPool
 
 from pathlib import Path
 from app.db.database import Database
@@ -93,7 +92,7 @@ def clean_owned_database(database):
 
 
 @pytest.fixture(params=["sqlite", "cockroach"])
-def tenant_database(request):
+def tenant_database(request, tmp_path):
     if request.param == "cockroach":
         database = request.getfixturevalue("tenant_cockroach_database")
         clean_owned_database(database)
@@ -103,7 +102,10 @@ def tenant_database(request):
             clean_owned_database(database)
         return
     database = Database.__new__(Database)
-    database.engine = create_engine("sqlite://", poolclass=StaticPool, connect_args={"check_same_thread": False})
+    # Worker threads need independent connections, not concurrent transactions
+    # sharing a single in-memory DBAPI connection.
+    database.engine = create_engine("sqlite:///" + str(tmp_path / "tenant.db"),
+                                   connect_args={"check_same_thread": False})
     try:
         _prepare_current_schema(database)
         yield database

@@ -1,5 +1,10 @@
 # JUP-035: anexo real focal013 semantic3200i
 
+Nota del 12/10/2026: esta evidencia conserva un ensayo historico y sus rutas
+locales; esos recibos no son accesibles desde otro checkout. La
+[guia reproducible](../validation/JUP-035-chat-reproduction.md) usa entradas
+versionadas y el chat vigente. No sustituye ni revalida este resultado.
+
 Actualizacion documental autorizada por Paris, basada en evidencia parent existente:
 C:/Users/Trabajo/.codex/visualizations/2026/09/07/01a07c55-c454-7bb3-8053-cbf2ad70d2ec/e5-context-compression-evidence/restart-20261011/jup069-real-battery/corrections-runtime/semantic3200i-focused013-assessment.md
 

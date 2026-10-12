@@ -1,5 +1,10 @@
 # JUP-035: aceptacion focal de las tres correcciones
 
+Nota del 12/10/2026: esta evidencia conserva un ensayo historico y sus rutas
+locales; esos recibos no son accesibles desde otro checkout. La
+[guia reproducible](../validation/JUP-035-chat-reproduction.md) usa entradas
+versionadas y el chat vigente. No sustituye ni revalida este resultado.
+
 ## Resultado comunicado por parent
 
 12/10/2026: revision independiente REVIEW_PASS de semantic3200l-citationstatus,

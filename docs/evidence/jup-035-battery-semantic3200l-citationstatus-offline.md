@@ -1,5 +1,10 @@
 # JUP-035: sustento antes de estado semantic3200l-citationstatus
 
+Nota del 12/10/2026: esta evidencia conserva un ensayo historico y sus rutas
+locales; esos recibos no son accesibles desde otro checkout. La
+[guia reproducible](../validation/JUP-035-chat-reproduction.md) usa entradas
+versionadas y el chat vigente. No sustituye ni revalida este resultado.
+
 Parent comunica019022aceptados y024k completed con formula/aritmeticaPASS
 pero citaKPIFAIL. Corregir solo seleccion de evidencia/estado en productor:
 determinar sustento antes de status, no elegir ok/partial para rellenar citas.

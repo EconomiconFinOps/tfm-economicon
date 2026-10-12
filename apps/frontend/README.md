@@ -91,13 +91,15 @@ Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el
 | `/anomalies` | `AnomaliesPanel` | Demostración (`src/data/demo/`) | Sí | Aviso visible, periodo de muestra y rótulo en la exportación (JUP-057) |
 | `/recommendations` | `RecommendationsPanel` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
 | `/ingest` | `IngestPage` | Backend (`POST /jobs/ingest`) | No aplica | Vía `services/api.ts` |
-| `/assistant` | `ConversationsPage` | Backend (`/assistant/conversations`) | No aplica | Vía `services/api.ts` |
+| `/assistant` | Redirección al panel assistant-ui | Backend (`.../generations`) | No aplica | Abre `/?chat=open`; no genera plantillas |
+| `/ownership` | `ConversationsPage` | Backend (`.../messages` con `ownership_query`) | No aplica | Consulta estructurada de costes por propiedad, sin chat ficticio |
 | `/overview-legacy` | `DashboardPage` | Backend (`GET /billing/summary`, `GET /health`) | No aplica | Ruta puente conservada; ver `RF-105-001` en `openspec/findings/backlog.md` |
 | `/system-health` | `SystemHealthDashboard` | Backend (`GET /health/status`, `POST /health/provider-check`) | No aplica | Rotula «Datos de ejemplo» por componente cuando su origen es `mock` (JUP-047) |
 
-**Recuento (verificado el 2026-10-09 contra `src/routes.tsx` y los imports de cada pantalla, sobre
-`develop` en `ff2ea6b`):** 9 rutas bajo sesión más `/login`. 5 sirven datos del backend (`/`,
-`/ingest`, `/assistant`, `/overview-legacy`, `/system-health`) y 4 son de demostración (`/operational`,
+**Recuento (verificado el 2026-10-12 en la entrega local de JUP-035):** 10 rutas bajo sesión
+más `/login`, incluida la redirección `/assistant`. Cinco pantallas sirven datos del backend
+(`/`, `/ingest`, `/ownership`, `/overview-legacy`, `/system-health`), además del panel
+conversacional disponible bajo sesión; cuatro son de demostración (`/operational`,
 `/cuts`, `/anomalies`, `/recommendations`), de las cuales solo `/anomalies` lo indica en la interfaz
 (`RF-104-004`). Este es el único recuento de pantallas del repositorio: el backlog, el mapa de
 carencias de JUP-097 y el spike enlazan aquí en lugar de repetir cifras. Quien añada, retire o

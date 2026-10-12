@@ -44,3 +44,11 @@ aceptacion focal no equivale a otra bateria completa ni a validacion humana.
 
 Parche para Paris en rama propia. Revision Alejandro y validacion Lucia
 independientes siguen pendientes. No push a la rama original, merge o despliegue.
+
+## Convivencia con consulta de propiedad
+
+Paris aprueba el 12/10/2026 conservar JUP-037 en `/ownership`, reutilizando su
+formulario, aislamiento y endpoint `messages` con `ownership_query` obligatorio.
+No se restituye la generacion ficticia ni la pestaña `/assistant`: esa ruta abre
+el panel nuevo. El evaluador sigue usando generaciones. La captura de la nueva
+vista es `no-adapter`, sin promover el historial o formulario a evidencia financiera.

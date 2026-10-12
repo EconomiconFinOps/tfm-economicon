@@ -186,9 +186,9 @@ condicional de alertas, sustento de cada fragmento citado y limites temporales d
 captured_at, sin reloj nuevo ni cambios del contrato. Pruebas locales no acreditan
 reparacion real; revision/aceptacion pendientes. Presupuesto TOTAL0.15USD intacto;
 restante comunicado0.039264117USD no permite otra tanda completa comparable segura.
-Detalle y cortes historicos: [chat conversacional](chat-conversacional.md).
+Detalle y cortes historicos: [chat conversacional](../continuidad/chat-conversacional.md).
 
-Correccion local de bateria JUP-035: ver [chat conversacional](chat-conversacional.md).
+Correccion local de bateria JUP-035: ver [chat conversacional](../continuidad/chat-conversacional.md).
 El corte de diagnostico identifica tres metricas no verificadas; la aceptacion
 real de las 28 consultas del bundle v3 sigue pendiente.
 El ajuste autorizado de recuperacion contigua y completitud de reglas conserva

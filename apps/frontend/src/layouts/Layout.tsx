@@ -64,6 +64,7 @@ export function Layout() {
   // 5 de demostracion (traducidas del origen Figma).
   const backendNavItems = [
     { path: "/ingest", label: "Ingestions", icon: Upload },
+    { path: "/ownership", label: "Costes por propiedad", icon: BarChart3 },
     { path: "/overview-legacy", label: "Overview", icon: LayoutDashboard },
     { path: "/system-health", label: "Salud del sistema", icon: Activity },
   ];

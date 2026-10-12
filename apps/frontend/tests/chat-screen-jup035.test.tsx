@@ -53,7 +53,8 @@ function mount(path: string) {
     { path: "cuts", element: <ExecutiveCutDashboard /> },
     { path: "anomalies", element: <AnomaliesPanel /> },
     { path: "recommendations", element: <RecommendationsPanel /> },
-    { path: "ingest", element: <p>Sin adaptador financiero</p> }
+    { path: "ingest", element: <p>Sin adaptador financiero</p> },
+    { path: "ownership", element: <p>Consulta estructurada de propiedad</p> }
   ] }] }], { initialEntries: [path] });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   return { ...render(<QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>), router };
@@ -121,11 +122,11 @@ describe("Capturas funcionales preparadas antes de Send JUP-035", () => {
       expect.objectContaining({ amount: "12500" })
     ]));
   });
-  it("un cambio de ruta elimina el descriptor financiero anterior", async () => {
+  it.each(["/ingest", "/ownership"])("un cambio a %s elimina el descriptor financiero anterior", async route => {
     const mounted = mount("/operational");
-    await act(async () => mounted.router.navigate("/ingest"));
+    await act(async () => mounted.router.navigate(route));
     const capture = await send();
-    expect(capture).toMatchObject({ route: "/ingest", source: "no-adapter", datasets: [] });
+    expect(capture).toMatchObject({ route, source: "no-adapter", datasets: [] });
   });
   it("captura el filtro de resueltas sin mezclar el resumen global de abiertas", async () => {
     mount("/anomalies");

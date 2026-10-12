@@ -2,8 +2,7 @@
 // sub-ronda c -- ver Addendum de design.md) deja de recibir `token`/
 // `activeTenant` como props desde `App.jsx` y pasa a leerlos via
 // `useOutletContext<SessionOutletContext>()`, mismo patron que `IngestPage`.
-// JUP-037 isolates the message composer per conversation and tenant, while
-// preserving document retrieval alongside structured ownership questions.
+// This view preserves JUP-037 structured ownership queries, not the retired chat.
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useOutletContext } from "react-router";
@@ -84,7 +83,7 @@ export function ConversationsPage() {
     return (
       <SectionCard
         title="Tenant required"
-        subtitle="Choose a tenant before opening assistant conversations."
+        subtitle=""
       >
         <p className="text-sm text-muted-foreground">No active tenant selected.</p>
       </SectionCard>
@@ -96,8 +95,8 @@ export function ConversationsPage() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <SectionCard
-        title="Conversations"
-        subtitle="Each conversation stays scoped to the active tenant and operator."
+        title="Consultas de propiedad"
+        subtitle=""
       >
         <form className="flex gap-2" onSubmit={handleCreate}>
           <input
@@ -146,8 +145,8 @@ export function ConversationsPage() {
       </SectionCard>
 
       <SectionCard
-        title="Assistant chat"
-        subtitle="Consulta documentos o costes por propiedad dentro del tenant activo."
+        title="Costes por propiedad"
+        subtitle=""
       >
         {conversationDetailQuery.error ? (
           <p className="text-sm text-danger" role="alert">
@@ -175,7 +174,7 @@ export function ConversationsPage() {
               token={token} tenantId={activeTenant.id} conversationId={selectedConversationId} />
           </>
         ) : conversationsQuery.error ? null : (
-          <p className="text-sm text-muted-foreground">Create a conversation to start the assistant flow.</p>
+          <p className="text-sm text-muted-foreground">Crea una consulta de propiedad.</p>
         )}
       </SectionCard>
     </div>

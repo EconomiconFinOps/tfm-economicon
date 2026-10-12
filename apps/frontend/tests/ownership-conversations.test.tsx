@@ -41,10 +41,9 @@ function backend(overrides: Parameters<typeof mockBackend>[0] = {}) {
 
 async function start() {
   restoreSession();
-  const app = renderApp(["/assistant"]);
+  const app = renderApp(["/ownership"]);
   const user = userEvent.setup();
-  await user.click(await screen.findByRole("checkbox", { name: "Consultar costes por propiedad" }));
-  await user.type(screen.getByRole("textbox", { name: "Pregunta" }), "¿Cuál es el coste registrado?");
+  await user.type(await screen.findByRole("textbox", { name: "Pregunta" }), "¿Cuál es el coste registrado?");
   return { ...app, user };
 }
 
@@ -69,7 +68,6 @@ describe("JUP-037 ownership conversations", () => {
     await act(async () => refreshed.resolve({ items: [conversation, created] }));
     await screen.findByRole("button", { name: /New ownership/ });
     await waitFor(() => expect(screen.getByRole("textbox", { name: "Pregunta" })).toHaveValue(""));
-    await user.click(screen.getByRole("checkbox", { name: "Consultar costes por propiedad" }));
     await user.type(screen.getByRole("textbox", { name: "Pregunta" }), "Coste del nuevo hilo");
     await user.click(screen.getByRole("button", { name: "Send" }));
     await waitFor(() => expect(requests.some((request) => request.method === "POST"
@@ -162,11 +160,9 @@ describe("JUP-037 ownership conversations", () => {
     expect(screen.getByRole("textbox", { name: "Valor exacto (opcional)" })).toHaveValue("Private application");
     expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
     await user.click(screen.getByRole("button", { name: /Second conversation/ }));
-    const checkbox = await screen.findByRole("checkbox", { name: "Consultar costes por propiedad" });
-    expect(checkbox).not.toBeChecked();
+    expect(await screen.findByRole("combobox", { name: "Agrupar por" })).toHaveValue("application");
     expect(screen.getByRole("textbox", { name: "Pregunta" })).toHaveValue("");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    await user.click(checkbox);
     expect(screen.getByRole("textbox", { name: "Valor exacto (opcional)" })).toHaveValue("");
   });
 
@@ -177,7 +173,6 @@ describe("JUP-037 ownership conversations", () => {
     await user.click(screen.getByRole("button", { name: "Send" }));
     expect(screen.getByRole("button", { name: "Sending..." })).toBeDisabled();
     await user.click(screen.getByRole("button", { name: /Second conversation/ }));
-    await user.click(await screen.findByRole("checkbox", { name: "Consultar costes por propiedad" }));
     await user.type(screen.getByRole("textbox", { name: "Pregunta" }), "New question");
     await user.type(screen.getByRole("textbox", { name: "Valor exacto (opcional)" }), "New value");
     await act(async () => pending.resolve(outcome === "success" ? assistantReply : { detail: "Old request failed" }, outcome === "success" ? 201 : 503));
@@ -196,11 +191,9 @@ describe("JUP-037 ownership conversations", () => {
     await user.click(screen.getByRole("button", { name: "Send" }));
     expect(screen.getByRole("alert")).toBeVisible();
     await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
-    const checkbox = await screen.findByRole("checkbox", { name: "Consultar costes por propiedad" });
-    expect(checkbox).not.toBeChecked();
+    expect(await screen.findByRole("combobox", { name: "Agrupar por" })).toHaveValue("application");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Pregunta" })).toHaveValue("");
-    await user.click(checkbox);
     expect(screen.getByRole("textbox", { name: "Valor exacto (opcional)" })).toHaveValue("");
     expect(screen.getByLabelText("Inicio UTC (incluido)")).toHaveValue("");
   });

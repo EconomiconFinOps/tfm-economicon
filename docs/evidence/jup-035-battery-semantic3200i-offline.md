@@ -1,5 +1,10 @@
 # JUP-035: esquema privado accionable, semantic3200i
 
+Nota del 12/10/2026: esta evidencia conserva un ensayo historico y sus rutas
+locales; esos recibos no son accesibles desde otro checkout. La
+[guia reproducible](../validation/JUP-035-chat-reproduction.md) usa entradas
+versionadas y el chat vigente. No sustituye ni revalida este resultado.
+
 Anexo posterior: [focal013 real i](jup-035-battery-semantic3200i-focused013.md),
 completed en un intento y validacion independiente PASS. Acredita solo la rama
 no accionable de ese ensayo; no full28i ni ambas ramas remotas. Los resultados,

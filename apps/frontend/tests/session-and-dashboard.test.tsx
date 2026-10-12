@@ -174,7 +174,7 @@ describe("tenant bootstrap and dashboard", () => {
     expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
     expect(screen.queryByRole("button", { name: "Queue ingestion" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Assistant" })).toBeNull();
-    await act(async () => { await router.navigate("/assistant"); });
+    await act(async () => { await router.navigate("/ownership"); });
     expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
     expect(requests.every((request) => ["/tenants", "/health", "/me"].includes(request.path))).toBe(true);
   });

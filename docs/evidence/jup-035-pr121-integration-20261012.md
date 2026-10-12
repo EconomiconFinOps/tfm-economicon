@@ -99,6 +99,11 @@ comandos anteriores permiten repetir el alcance con credenciales propias.
 
 ## Pendientes reales
 
+Este apartado conserva el corte del ensayo focal. El avance posterior de las
+mejoras y sus resultados estan en el
+[informe de correcciones](jup-035-review-improvements-20261012.md); no sustituye
+ni reejecuta los ensayos reales descritos aqui.
+
 La incorporacion no cierra las mejoras pendientes del plan completo, incluida
 la adaptacion de pruebas antiguas de JUP-022 al chat nuevo, formato, documentacion
 y controles finales. No acredita compresion, alta disponibilidad, todas las

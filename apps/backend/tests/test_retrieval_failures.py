@@ -8,12 +8,11 @@ from app.db.chat_history import loads
 from fastapi import HTTPException
 from sqlalchemy.exc import OperationalError
 
-from app.api.routes.assistant import RETRIEVAL_UNAVAILABLE, send_message
-from app.schemas.assistant import MessageCreateRequest
-from app.services.assistant import AssistantService
 from app.services.embedding_provider import ProviderError
 from app.services.vector_store import EmbeddingDimensionMismatch, PgVectorQueryStore
-from test_retrieval_contract import Database, RecordingEngine, row, store_with
+from test_retrieval_contract import RecordingEngine, retrieve, row, store_with
+from test_chat_operations_jup035 import api
+from app.services.chat_context import ChatContext
 
 QUESTION = "frase-secreta-de-la-pregunta"
 UPSTREAM_TEXT = "texto-interno-del-upstream"
@@ -52,33 +51,19 @@ class Store:
         return self.result
 
 
-class RecordingDatabase(Database):
-    def __init__(self):
-        self.messages = []
-
-    def append_message(self, **kwargs):
-        self.messages.append(kwargs["role"])
-        return super().append_message(**kwargs)
-
-
-def ask(embedding, store, database=None):
-    return send_message(
-        conversation_id="c1", payload=MessageCreateRequest(content=QUESTION),
-        current_user={"id": "u"}, tenant_id="tenant-a", database=database or RecordingDatabase(),
-        vector_store=store, embedding_provider=embedding, assistant_service=AssistantService(),
-    )
+def ask(embedding, store):
+    return retrieve(embedding, store, QUESTION)
 
 
 def failure_of(embedding, store):
-    with pytest.raises(HTTPException) as error:
-        ask(embedding, store)
-    return error.value
+    evidence, citations, omission = ask(embedding, store)
+    assert evidence == [] and citations == []
+    return omission
 
 
 def assert_fixed(error):
-    assert error.status_code == 503
-    assert error.detail == RETRIEVAL_UNAVAILABLE
-    text = json.dumps(error.detail) + str(error.headers)
+    assert error == {"collection": "corpus", "reason": "retrieval_unavailable"}
+    text = json.dumps(error)
     assert QUESTION not in text and UPSTREAM_TEXT not in text
 
 
@@ -96,7 +81,7 @@ def test_vector_store_failure_gives_the_same_fixed_503_without_database_text():
     database_error = OperationalError("SELECT secret FROM t", {"p": QUESTION}, Exception(UPSTREAM_TEXT + " password=hunter2"))
     error = failure_of(GoodEmbedding(), Store(error=database_error))
     assert_fixed(error)
-    assert "hunter2" not in repr(error.detail) and "SELECT" not in repr(error.detail)
+    assert "hunter2" not in repr(error) and "SELECT" not in repr(error)
 
 
 def test_an_unexpected_error_in_the_provider_is_also_sanitized():
@@ -118,11 +103,16 @@ def test_the_failure_category_is_logged_without_the_question_or_upstream_text(ca
     logging.getLogger().handlers.clear()
 
 
-def test_retrieval_failure_leaves_no_partial_visible_pair():
-    database = RecordingDatabase()
-    with pytest.raises(HTTPException):
-        ask(Failing(ProviderError("timeout")), Store(), database)
-    assert database.messages == []  # JUP035 approved final-pair contract
+def test_retrieval_failure_leaves_no_partial_visible_pair(api, monkeypatch):
+    monkeypatch.setattr(api[0].state, "embedding_provider", Failing(ProviderError("timeout")), raising=False)
+    monkeypatch.setattr(api[0].state, "vector_store", Store(), raising=False)
+    scope = {"tenant_id": "t", "user_id": "alice", "conversation_id": "alice-chat"}
+    before = api[1].fetch_dialogue_history(**scope)
+    evidence, citations, omission = ChatContext(api[0], None).retrieve(scope, QUESTION)
+    assert evidence == [] and citations == []
+    assert_fixed(omission)
+    assert api[1].fetch_dialogue_history(**scope) == before
+    assert api[1].fetch_messages("alice-chat", "t", "alice") == []
 
 
 def test_a_question_vector_of_the_wrong_length_is_not_searched():
@@ -242,11 +232,5 @@ def test_a_matching_column_logs_no_skip(capsys):
     logging.getLogger().handlers.clear()
 
 
-def test_successful_legacy_reply_commits_exactly_one_complete_pair():
-    database = RecordingDatabase()
-    reply = ask(GoodEmbedding(), Store(), database)
-    assert reply.status_code == 201
-    reply = loads(reply.body)
-    assert database.messages == ["user", "assistant"]
-    assert reply["user_message"]["id"] == "m-user"
-    assert reply["assistant_message"]["content"]
+def test_retrieval_without_results_does_not_invent_a_reply():
+    assert ask(GoodEmbedding(), Store()) == ([], [], None)

@@ -1,5 +1,10 @@
 # JUP-035: conversion monetaria semantic3200k-currencylimit
 
+Nota del 12/10/2026: esta evidencia conserva un ensayo historico y sus rutas
+locales; esos recibos no son accesibles desde otro checkout. La
+[guia reproducible](../validation/JUP-035-chat-reproduction.md) usa entradas
+versionadas y el chat vigente. No sustituye ni revalida este resultado.
+
 Paris acepta focal019/022 y autoriza corregir/repetir SOLO024. Parent comunica
 019PASS022PASS024FAIL en j: formula monetaria con destino/direccion ambiguos,
 no las citas irrelevantes anteriores. Historico full28i25PASS/3FAIL preservado;

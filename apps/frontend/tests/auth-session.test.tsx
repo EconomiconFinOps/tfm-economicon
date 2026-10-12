@@ -214,7 +214,7 @@ describe("JUP-097 strict profile policy regressions", () => {
 
 describe("global numeric 401 and local cleanup", () => {
   it.each([
-    ["/tenants", "/"], ["/billing/summary", "/overview-legacy"], ["/assistant/conversations", "/assistant"]
+    ["/tenants", "/"], ["/billing/summary", "/overview-legacy"], ["/assistant/conversations", "/ownership"]
   ])("current query %s invalidates without reset or retry, even with a non-JSON body", async (path, route) => {
     const { requests } = mockBackend({ [`GET ${path}`]: () => failure(401) });
     restoreSession(tenants[0].id);
@@ -234,7 +234,7 @@ describe("global numeric 401 and local cleanup", () => {
       [`POST ${path}`]: () => failure(401)
     });
     restoreSession();
-    const { client } = renderApp([flow === "ingestion" ? "/ingest" : "/assistant"]);
+    const { client } = renderApp([flow === "ingestion" ? "/ingest" : "/ownership"]);
     if (flow === "ingestion") {
       await user.type(await screen.findByLabelText("Text content"), "synthetic cost data");
       await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
@@ -403,7 +403,7 @@ describe("session generations exclude abandoned HTTP work", () => {
         : jsonResponse(conversation)
     });
     restoreSession(tenants[0].id);
-    const { client, router } = renderApp(["/assistant"], (queryClient) => {
+    const { client, router } = renderApp(["/ownership"], (queryClient) => {
       // A configured retry exposes an abandoned rejection as a new HTTP request.
       queryClient.setDefaultOptions({
         ...queryClient.getDefaultOptions(), mutations: { retry: 1, retryDelay: 0 }
@@ -416,7 +416,7 @@ describe("session generations exclude abandoned HTTP work", () => {
     await loggedOut(client);
     await signIn(user);
     await screen.findByRole("button", { name: "Cerrar sesion" });
-    await act(async () => { await router.navigate("/assistant"); });
+    await act(async () => { await router.navigate("/ownership"); });
     await user.type(await screen.findByPlaceholderText("New conversation title"), "B draft");
     await waitFor(() => expect(client.isFetching()).toBe(0));
     const savedSession = window.localStorage.getItem(SESSION_KEY);
@@ -471,7 +471,7 @@ describe("session generations exclude abandoned HTTP work", () => {
       "POST /assistant/conversations": () => pendingResult()
     });
     restoreSession(tenants[0].id);
-    const route = flow === "conversation" ? "/assistant" : "/overview-legacy";
+    const route = flow === "conversation" ? "/ownership" : "/overview-legacy";
     const { client, router } = renderApp([route]);
     await screen.findByRole("button", { name: "Cerrar sesion" });
     if (flow === "conversation") await screen.findByRole("button", { name: "New" });

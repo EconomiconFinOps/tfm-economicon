@@ -311,7 +311,7 @@ def test_api_rejected_cost_answer_never_persists_a_partial_turn_or_calls_retriev
 
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
-def test_ownership_then_documentary_answer_preserves_separate_evidence_after_reload(api):
+def test_ownership_then_documentary_answer_preserves_separate_evidence_after_reload(api, monkeypatch):
     api.spies["fetch_billing_summary"].return_value = billing_double()
     response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(),
                     json=request_body(value="Payments", currency="usd"))
@@ -339,25 +339,21 @@ def test_ownership_then_documentary_answer_preserves_separate_evidence_after_rel
         tag_key="application", include_provenance=True,
     )
 
+    from test_tenant_isolation_api import chat_generation
     api.vector.search_chunks.return_value = [citation_record()]
-    documentary = call(api, "POST", "/assistant/conversations/own/messages",
-                       headers=headers(), json={"content": "Cómo interpretar los costes"})
-    assert documentary.status_code == 201, documentary.text
-    doc_message = documentary.json()["assistant_message"]
+    documentary = chat_generation(api, monkeypatch)
+    assert documentary.response.status_code == 200 and "event: final" in documentary.response.text
+    persisted = documentary.reopened.json()["messages"]
+    doc_message = persisted[-1]
     assert "cost_evidence" not in doc_message["metadata"]
     assert doc_message["metadata"]["source_citations"][0]["evidence_id"] == "chunk-1"
     api.embedding.embed.assert_called_once()
     api.vector.search_chunks.assert_called_once()
     assert api.spies["fetch_billing_summary"].call_count == 1
-
-    reopened = call(api, "GET", "/assistant/conversations/own", headers=headers())
-    assert reopened.status_code == 200
-    persisted = reopened.json()["messages"]
     assert [item["role"] for item in persisted] == ["user", "assistant", "user", "assistant"]
     assert persisted[0]["metadata"] == owned["user_message"]["metadata"]
     assert persisted[1]["metadata"] == owned["assistant_message"]["metadata"]
-    assert persisted[3]["metadata"] == doc_message["metadata"]
-    assert call(api, "GET", "/assistant/conversations/own", headers=headers("bob", "tenant-b")).status_code == 404
+    assert documentary.foreign.status_code == 404
 
 
 @pytest.mark.parametrize("tenant_database", ["cockroach"], indirect=True)

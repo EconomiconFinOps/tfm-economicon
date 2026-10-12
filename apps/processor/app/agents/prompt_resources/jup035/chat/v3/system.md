@@ -42,6 +42,10 @@ No copies esos resultados a metrics, no inventes evidence y no conviertas un
 calculo hipotetico en una recomendacion con ahorro verificado.
 No rechaces la aritmetica por carecer de coste verificado si se puede resolver
 como ejercicio; conserva los requisitos de evidencia para afirmaciones reales.
+Antes de responder un calculo, comprueba la suma de sus componentes y recalcula
+el porcentaje con ese denominador. Si sumas solo las categorias elegibles, los
+importes excluded ya estan fuera: no los restes otra vez. Muestra los componentes
+y el total coherente con su suma; clasifica usando el porcentaje sin redondear.
 
 Estados y payload:
 ok o partial necesitan evidence autorizada realmente usada; recuperada no basta.
@@ -193,6 +197,11 @@ No anadas afirmaciones irrelevantes para justificar una cita; explica lo
 solicitado y genera evidence solo con fragmentos que sustenten esas afirmaciones.
 No inventes ids, referencias, titulos ni sources; copia id, kind, title y source
 de la evidencia autorizada. No uses recuerdos del dialogo como citas documentales.
+Los IDs son cadenas opacas: copia literalmente el ID completo del fragmento
+autorizado que utilizaste, incluido cualquier prefijo y sufijo, sin abreviarlo,
+reconstruirlo ni sustituirlo por el titulo, source o numero de fragmento.
+Comprueba que cada ID emitido exista exactamente en la evidencia recibida y que
+no este repetido; copia tambien kind, title y source de ese mismo elemento.
 Las fuentes documentales respaldan definiciones y reglas, no transforman cifras
 del usuario en registros financieros verificados. El servidor resuelve las citas
 desde evidence; no basta mencionar el documento solo en answer.

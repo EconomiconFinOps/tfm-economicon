@@ -212,14 +212,13 @@ def test_public_retry_reuses_question_and_old_results_without_second_authority(a
     run(scenario,api)
 
 
-def test_legacy_route_appends_pair_to_canonical_document(api,monkeypatch):
-    legacy_resources(api,monkeypatch)
+def test_generation_appends_pair_to_canonical_document(api,monkeypatch):
     async def scenario(client):
-        reply=await client.post('/assistant/conversations/alice-chat/messages',json={'content':'Pregunta'},headers=headers())
-        assert reply.status_code==201,reply.text
-        result=reply.json()
+        reply=await client.post('/assistant/conversations/alice-chat/generations',json=body(content='Pregunta'),headers=headers())
+        assert reply.status_code==200 and 'event: final' in reply.text,reply.text
+        result=api[1].fetch_messages('alice-chat','t','alice')
         value=json.loads(raw(api[1],'alice-chat'))
-        assert [m['id'] for m in value['messages']]==[result['user_message']['id'],result['assistant_message']['id']]
+        assert [m['id'] for m in value['messages']]==[item['id'] for item in result]
         assert [m['ordinal'] for m in value['messages']]==[0,1]
         assert value['revision']==1
         with api[1].engine.connect() as c:

@@ -1,5 +1,7 @@
 import copy
+import asyncio
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from sqlalchemy import text
@@ -10,6 +12,22 @@ from app.schemas.chat import ResponseValidationError, validate_response
 from app.services.chat_context import ChatContext, response_subscriptions
 from test_chat_operations_jup035 import ANSWER, api, body, headers, path, run
 from test_chat_screen_jup035 import demo_dataset, no_operation
+
+
+def test_context_wait_timeout_is_a_sanitized_503(api, monkeypatch):
+    resources = SimpleNamespace(verify_descriptor=lambda descriptor: None)
+    builder = ChatContext(api[0], resources)
+    monkeypatch.setattr(ChatContext, "build", lambda *args: {})
+
+    async def expired(*args, **kwargs):
+        raise asyncio.TimeoutError("PRIVATE CONTEXT")
+
+    monkeypatch.setattr(asyncio, "wait_for", expired)
+    with pytest.raises(ChatError) as failure:
+        asyncio.run(builder({}, {}, {}))
+    assert failure.value.status == 503
+    assert failure.value.code == "context_timeout"
+    assert "PRIVATE" not in str(failure.value)
 
 
 @pytest.mark.parametrize("selection", [

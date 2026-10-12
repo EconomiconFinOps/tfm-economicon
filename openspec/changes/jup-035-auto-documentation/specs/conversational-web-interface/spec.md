@@ -1,5 +1,16 @@
 ## MODIFIED Requirements
 
+### Requirement: Consulta estructurada de propiedad preservada
+
+La retirada del chat ficticio SHALL conservar la consulta de propiedad JUP-037
+en una vista especifica, sin cambiar su contrato SQL ni simular generacion LLM.
+
+#### Scenario: Consulta de propiedad sin chat ficticio
+
+- **WHEN** un usuario autenticado abre `/ownership` y envia una pregunta con seleccion de propiedad
+- **THEN** el formulario SHALL enviar `ownership_query` obligatorio al endpoint existente, conservar filtros, evidencia y aislamiento por tenant/conversacion; SHALL no permitir envio documental de plantilla
+- **AND** `/assistant` SHALL abrir el panel nuevo y el evaluador SHALL usar generaciones; el panel abierto desde `/ownership` SHALL usar captura `no-adapter`, sin datos financieros inferidos
+
 ### Requirement: Respuesta natural real y evidenciada
 
 El sistema SHALL responder preguntas con la vertical 020–026, gateway023,

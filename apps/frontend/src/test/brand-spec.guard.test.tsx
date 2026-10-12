@@ -56,12 +56,13 @@ describe("armazón de marca", () => {
     expect(headings.map((heading) => heading.textContent)).toEqual(["Economicon"]);
   });
 
-  it("las pestañas de navegación caben a 1280 px con la barra de desplazamiento vertical", () => {
-    // jsdom no mide el diseño: la anchura (1242 px frente a los 1265 disponibles) se comprobó en Chrome
-    // real; este test fija el relleno que la hace posible (con px-3 la fila necesita 1314 px).
-    const tabs = [...renderLayout().querySelectorAll("nav a")];
-    // JUP-035 removes the fictitious assistant tab; the real chat remains in the panel.
-    expect(tabs).toHaveLength(8);
+  it("conserva navegación compacta y desplazable sin pestaña de chat ficticio", () => {
+    // jsdom checks the layout contract, not pixel widths in a real browser.
+    const nav = renderLayout().querySelector("nav")!;
+    const tabs = [...nav.querySelectorAll("a")];
+    expect(tabs).toHaveLength(9);
+    expect(nav.className).toContain("overflow-x-auto");
+    expect(tabs.some((tab) => tab.getAttribute("href") === "/ownership")).toBe(true);
     expect(tabs.some((tab) => tab.getAttribute("href") === "/assistant")).toBe(false);
     for (const tab of tabs) {
       expect(tab.className).toContain("px-2");

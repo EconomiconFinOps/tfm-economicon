@@ -33,6 +33,9 @@ La interfaz utiliza assistant-ui y los componentes del template. Se muestra
 estado no accionable y evidencia de costes separada de las citas documentales.
 La ruta antigua abre el panel nuevo; las plantillas historicas siguen visibles
 pero se excluyen del contexto y del resumen nuevos.
+Paris aprueba conservar JUP-037 en una vista especifica `/ownership` el 12/10/2026:
+reutiliza el formulario y endpoint estructurados, sin generacion ficticia ni
+duplicacion del chat nuevo. El evaluador sigue usando generaciones.
 
 El tokenizer se incorpora al construir las dos imagenes mediante el descargador
 [build_tokenizer.py](../../apps/processor/build_tokenizer.py). Fuente oficial:

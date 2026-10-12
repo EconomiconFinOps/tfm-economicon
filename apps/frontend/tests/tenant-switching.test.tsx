@@ -21,7 +21,7 @@ const southConversation = {
 };
 const southDetailPath = `${collectionPath}/${southConversation.id}`;
 const southMessage = { ...userMessage, id: "message-south", content: "South tenant history" };
-const composerPlaceholder = "Ask the assistant about the ingested tenant documents.";
+const composerPlaceholder = "Pregunta sobre los costes de la selección.";
 
 function mockTenantConversations(overrides: Parameters<typeof mockBackend>[0] = {}) {
   return mockBackend({
@@ -47,7 +47,7 @@ describe("tenant changes isolate page state", () => {
         : pendingSouthList.promise
     });
     restoreSession(tenants[0].id);
-    renderApp(["/assistant"]);
+    renderApp(["/ownership"]);
     expect(await screen.findByText(userMessage.content)).toBeVisible();
     await user.clear(screen.getByPlaceholderText("New conversation title"));
     await user.type(screen.getByPlaceholderText("New conversation title"), "North private title");
@@ -86,7 +86,7 @@ describe("tenant changes isolate page state", () => {
         })
       });
       restoreSession(tenants[0].id);
-      const { client } = renderApp(["/assistant"]);
+      const { client } = renderApp(["/ownership"]);
       await screen.findByText(userMessage.content);
       await user.clear(screen.getByPlaceholderText("New conversation title"));
       await user.type(screen.getByPlaceholderText("New conversation title"), createdNorth.title);

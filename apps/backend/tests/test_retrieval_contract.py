@@ -7,11 +7,7 @@ import re
 from types import SimpleNamespace
 
 import pytest
-from app.db.chat_history import loads
-
-from app.api.routes.assistant import send_message
-from app.schemas.assistant import MessageCreateRequest
-from app.services.assistant import AssistantService
+from app.services.chat_context import ChatContext
 from app.services.vector_store import PgVectorQueryStore
 
 
@@ -190,41 +186,39 @@ class Embedding:
 def ask(store, monkeypatch, **env):
     for name, value in env.items():
         monkeypatch.setenv(name.upper(), str(value))
-    return send_message(
-        conversation_id="c1", payload=MessageCreateRequest(content="pregunta"),
-        current_user={"id": "u"}, tenant_id="tenant-a", database=Database(), vector_store=store,
-        embedding_provider=Embedding(), assistant_service=AssistantService(),
-    )
+    return retrieve(Embedding(), store)
+
+
+def retrieve(embedding, store, question="pregunta", *, tenant="tenant-a", holder=None):
+    application = SimpleNamespace(state=SimpleNamespace(
+        embedding_provider=embedding, vector_store=store))
+    return ChatContext(application, None).retrieve(
+        {"tenant_id": tenant}, question, holder=holder)
 
 
 def test_route_passes_the_configured_parameters(monkeypatch):
     store = Store([])
     ask(store, monkeypatch, retrieval_top_k=6, retrieval_max_distance="0.4")
-    assert store.calls == [("tenant-a", 6, 0.4)]
+    assert store.calls == [("tenant-a", 20, 0.4)]
 
 
 def test_route_defaults_keep_four_results_and_no_threshold(monkeypatch):
     store = Store([])
     ask(store, monkeypatch)
-    assert store.calls == [("tenant-a", 4, None)]
+    assert store.calls == [("tenant-a", 20, None)]
 
 
 def test_empty_retrieval_gives_the_no_context_answer_and_no_citations(monkeypatch):
-    reply = ask(Store([]), monkeypatch)
-    assert reply.status_code == 201
-    reply = loads(reply.body)
-    assert "No he encontrado contexto relevante" in reply["assistant_message"]["content"]
-    assert reply["assistant_message"]["metadata"] == {"citations": [], "source_citations": [],
-        "generation": {"question_message_id": reply["user_message"]["id"]}}
-    assert reply["retrieved_context"] == []
+    evidence, citations, omission = ask(Store([]), monkeypatch)
+    assert evidence == [] and citations == [] and omission is None
 
 
 def test_non_empty_retrieval_cites_the_returned_fragments(monkeypatch):
     chunk = {"tenant_id": "tenant-a", "document_id": "doc-9", "title": "Rules", "chunk_index": 0, "chunk_id": "c-9", "source": "rules", "content": "Umbral del 5 %", "distance": 0.2}
-    reply = ask(Store([chunk]), monkeypatch)
-    assert reply.status_code == 201
-    reply = loads(reply.body)
-    assert reply["assistant_message"]["metadata"]["citations"] == ["c-9"]
-    [citation] = reply["assistant_message"]["metadata"]["source_citations"]
+    holder = {}
+    evidence, citations, omission = retrieve(Embedding(), Store([chunk]), holder=holder)
+    assert [item["id"] for item in evidence] == ["c-9"]
+    [citation] = citations
     assert citation["evidence_id"] == "c-9" and citation["excerpt"] == chunk["content"]
-    assert [item["chunk_id"] for item in reply["retrieved_context"]] == ["c-9"]
+    assert [item["chunk_id"] for item in holder["retrieval_records"]] == ["c-9"]
+    assert omission["reason"] == "contiguous_context_bounded"

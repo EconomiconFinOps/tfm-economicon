@@ -1,7 +1,7 @@
 import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { assistantMessage, assistantReply, conversation, userMessage } from "./fixtures";
+import { assistantMessage as documentMessage, conversation, userMessage } from "./fixtures";
 import {
   deferredResponse,
   expectTenantRequest,
@@ -11,11 +11,25 @@ import {
   restoreSession
 } from "./test-support";
 
+const assistantMessage = { ...documentMessage, content: "Coste por propiedad: 10.00 EUR.", metadata: { citations: [] } };
+const assistantReply = { conversation, user_message: userMessage, assistant_message: assistantMessage, retrieved_context: [] };
+
 const collectionPath = "/assistant/conversations";
 const detailPath = `${collectionPath}/${conversation.id}`;
 const messagePath = `${detailPath}/messages`;
 
-describe("assistant conversations", () => {
+describe("structured ownership consultations", () => {
+  it("redirects the retired assistant view to the new panel without calling messages", async () => {
+    const { requests } = mockBackend();
+    restoreSession();
+    const { router } = renderApp(["/assistant"]);
+    expect(await screen.findByRole("region", { name: "Asistente FinOps" })).toBeVisible();
+    expect(router.state.location).toMatchObject({ pathname: "/", search: "?chat=open" });
+    expect(requests.some(request => request.path.includes("/assistant/"))).toBe(false);
+    expect(screen.queryByRole("heading", { name: "Assistant chat" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Costes por propiedad" })).toHaveAttribute("href", "/ownership");
+  });
+
   it("creates a conversation from an empty list and sends a message with a visible reply", async () => {
     const user = userEvent.setup();
     const pendingReply = deferredResponse();
@@ -38,15 +52,15 @@ describe("assistant conversations", () => {
       }
     });
     restoreSession();
-    renderApp(["/assistant"]);
-    expect(await screen.findByText("Create a conversation to start the assistant flow.")).toBeVisible();
+    renderApp(["/ownership"]);
+    expect(await screen.findByText("Crea una consulta de propiedad.")).toBeVisible();
 
     const title = screen.getByPlaceholderText("New conversation title");
     await user.clear(title);
     await user.type(title, conversation.title);
     await user.click(screen.getByRole("button", { name: "New" }));
     expect(await screen.findByRole("button", { name: new RegExp(conversation.title) })).toBeVisible();
-    const composer = await screen.findByPlaceholderText("Ask the assistant about the ingested tenant documents.");
+    const composer = await screen.findByPlaceholderText("Pregunta sobre los costes de la selección.");
     expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
     await user.type(composer, "   ");
     expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
@@ -63,7 +77,8 @@ describe("assistant conversations", () => {
     const createdRequest = requests.find((request) => request.method === "POST" && request.path === collectionPath);
     const sentRequest = requests.find((request) => request.path === messagePath);
     expect(createdRequest?.body).toEqual({ title: conversation.title });
-    expect(sentRequest?.body).toEqual({ content: userMessage.content });
+    expect(sentRequest?.body).toEqual({ content: userMessage.content, ownership_query: { group_by: "application" } });
+    expect(screen.queryByRole("checkbox", { name: "Consultar costes por propiedad" })).toBeNull();
     for (const request of requests.filter((request) => request.path.startsWith(collectionPath))) {
       expectTenantRequest(request);
     }
@@ -79,7 +94,7 @@ describe("assistant conversations", () => {
       [`GET ${collectionPath}/${secondConversation.id}`]: () => pendingDetail.promise
     });
     restoreSession();
-    renderApp(["/assistant"]);
+    renderApp(["/ownership"]);
     expect(await screen.findByText(userMessage.content)).toBeVisible();
     await user.click(screen.getByRole("button", { name: /Storage review/ }));
     expect(await screen.findByText("Loading conversation...")).toBeVisible();
@@ -100,7 +115,7 @@ describe("assistant conversations", () => {
       [`POST ${collectionPath}`]: () => jsonResponse({ detail: "Conversation creation unavailable." }, 503)
     });
     restoreSession();
-    renderApp(["/assistant"]);
+    renderApp(["/ownership"]);
     const title = await screen.findByPlaceholderText("New conversation title");
     await user.clear(title);
     await user.type(title, "Retain this cost investigation");
@@ -130,8 +145,8 @@ describe("assistant conversations", () => {
       }
     });
     restoreSession();
-    renderApp(["/assistant"]);
-    const composer = await screen.findByPlaceholderText("Ask the assistant about the ingested tenant documents.");
+    renderApp(["/ownership"]);
+    const composer = await screen.findByPlaceholderText("Pregunta sobre los costes de la selección.");
     await user.type(composer, userMessage.content);
     await user.click(screen.getByRole("button", { name: "Send" }));
 
@@ -150,10 +165,10 @@ describe("assistant conversations", () => {
       [`GET ${collectionPath}`]: () => jsonResponse({ detail: "Conversation access denied." }, 403)
     });
     restoreSession();
-    renderApp(["/assistant"]);
+    renderApp(["/ownership"]);
 
     expect(await screen.findByText(/Conversation access denied/)).toBeVisible();
-    expect(screen.queryByText("Create a conversation to start the assistant flow.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Crea una consulta de propiedad.")).not.toBeInTheDocument();
     // El shell (Layout) sigue disponible aunque el listado falle: la
     // pantalla no revienta y el enlace de vuelta al indice sigue visible.
     // "Overview" no existe como boton en el Layout real (Spanish, NavLink);
@@ -167,7 +182,7 @@ describe("assistant conversations", () => {
       [`GET ${detailPath}`]: () => jsonResponse({ detail: "Conversation not found." }, 404)
     });
     restoreSession();
-    renderApp(["/assistant"]);
+    renderApp(["/ownership"]);
 
     expect(await screen.findByText(/Conversation not found/)).toBeVisible();
     expect(screen.queryByRole("button", { name: "Send" })).not.toBeInTheDocument();

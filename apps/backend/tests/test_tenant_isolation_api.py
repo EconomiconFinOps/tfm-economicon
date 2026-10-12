@@ -48,38 +48,83 @@ def citation_record():
             "section": "Costes", "chunk_index": 0, "distance": 0.1}
 
 
+def chat_generation(api, monkeypatch, *, returned=None):
+    """Real scoped routes/repository; only the processor output is controlled."""
+    import asyncio
+    import copy
+    import httpx
+    from uuid import uuid4
+    from app.services.chat_context import ChatContext
+    from app.services.chat_operations import service
+    from test_chat_operations_jup035 import ANSWER, Processor
+
+    processor = Processor()
+    records = {}
+    async def context(scope, payload, descriptor):
+        evidence, citations, omission = ChatContext(api.app, None).retrieve(
+            scope, payload["content"], holder=records)
+        processor.candidate = copy.deepcopy(ANSWER)
+        if evidence or returned is not None:
+            processor.candidate.update(status="partial", answer="Respuesta documental.",
+                evidence=returned if returned is not None else [
+                    {key: item[key] for key in ("id", "kind", "source", "title")}
+                    for item in evidence])
+        return {"prompt_version": descriptor["prompt_version"], "messages": [
+            {"role": "user", "content": payload["content"]}],
+            "authorized_evidence": evidence, "source_citations": citations,
+            "retrieval_records": records.get("retrieval_records", [])}
+    monkeypatch.setattr(api.app.state, "chat_transport", processor, raising=False)
+    monkeypatch.setattr(api.app.state, "chat_context_builder", context, raising=False)
+    monkeypatch.setattr(api.app.state, "chat_max_active", 8, raising=False)
+    monkeypatch.delattr(api.app.state, "chat_service", raising=False)
+    payload = {"request_id": str(uuid4()), "content": "Costes", "screen_context": {
+        "schema_version": "2", "screen_version": "synthetic-1", "route": "/",
+        "tab_id": "costs", "source": "loaded-screen",
+        "identity": {"tenant_id": "tenant-a", "user_id": "alice"},
+        "captured_at": "2026-10-12T00:00:00Z", "selection": {}, "datasets": []}}
+    async def execute():
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=api.app),
+                                    base_url="http://test") as client:
+            try:
+                reply = await client.post("/assistant/conversations/own/generations",
+                                          json=payload, headers=dict(headers()))
+                reopened = await client.get("/assistant/conversations/own", headers=dict(headers()))
+                foreign = await client.get("/assistant/conversations/own",
+                                           headers=dict(headers("bob", "tenant-b")))
+                return SimpleNamespace(response=reply, reopened=reopened, foreign=foreign)
+            finally:
+                await service(api.app).close()
+    return asyncio.run(execute())
+
+
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
 @pytest.mark.parametrize("document", ["# \r\nLos costes observados.\r\n", "#  \nLos costes observados."])
-def test_empty_markdown_headings_return_valid_citations_not_500(api, document):
+def test_empty_markdown_headings_return_valid_citations_not_500(api, document, monkeypatch):
     from app.services.citations import DocumentCitations
     locations = DocumentCitations(document)
     record = citation_record()
     record.update(content="Los costes observados.", title=locations.title or record["source"],
                   section=locations.section("Los costes observados."))
     api.vector.search_chunks.return_value = [record]
-    response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
-    assert response.status_code == 201
-    [citation] = response.json()["assistant_message"]["metadata"]["source_citations"]
-    assert citation["title"] == "FinOps"
-    assert citation["section"] is None
+    reply = chat_generation(api, monkeypatch)
+    assert reply.response.status_code == 200 and "event: final" in reply.response.text
+    [citation] = reply.reopened.json()["messages"][-1]["metadata"]["source_citations"]
+    assert citation["title"] == "FinOps" and citation["section"] is None
 
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
-def test_citations_persist_and_reopen_with_authorized_conversation(api):
+def test_citations_persist_and_reopen_with_authorized_conversation(api, monkeypatch):
     api.vector.search_chunks.return_value = [citation_record()]
-    response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
-    assert response.status_code == 201
-    message = response.json()["assistant_message"]
-    assert message["metadata"]["generation"]["question_message_id"] == response.json()["user_message"]["id"]
+    reply = chat_generation(api, monkeypatch)
+    assert reply.response.status_code == 200 and "event: final" in reply.response.text
+    assert reply.reopened.status_code == 200
+    question, message = reply.reopened.json()["messages"]
+    assert message["metadata"]["generation"]["question_message_id"] == question["id"]
     [citation] = message["metadata"]["source_citations"]
     assert citation["evidence_id"] == "chunk-1"
-    assert citation["excerpt"] == "# Costes\nEvidencia"
-    assert citation["section"] == "Costes"
-    assert "tenant_id" not in response.json()["retrieved_context"][0]
-    reopened = call(api, "GET", "/assistant/conversations/own", headers=headers())
-    assert reopened.status_code == 200
-    assert reopened.json()["messages"][-1]["metadata"] == message["metadata"]
-    assert call(api, "GET", "/assistant/conversations/own", headers=headers("bob", "tenant-b")).status_code == 404
+    assert citation["excerpt"] == "# Costes\nEvidencia" and citation["section"] == "Costes"
+    assert "tenant_id" not in message["metadata"]["retrieved_context"][0]
+    assert reply.foreign.status_code == 404
 
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
@@ -89,17 +134,15 @@ def test_invalid_citations_never_persist_an_assistant_answer(api, case, monkeypa
     if case == "foreign":
         record.update(tenant_id="tenant-b", content="foreign-secret-marker")
     api.vector.search_chunks.return_value = [record]
-    service = MagicMock()
-    service.answer.return_value = {"content": "untrusted-answer", "citations": ["missing"] if case == "missing" else ["chunk-1", "chunk-1"]}
-    monkeypatch.setattr(api.app.state, "assistant_service", service)
-    before = (rows(api.db, "conversations"), rows(api.db, "messages"))
-    response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
-    assert response.status_code == 502
-    assert response.json() == {"detail": "Invalid response evidence."}
-    api.spies["append_pair"].assert_not_called()
-    assert (rows(api.db, "conversations"), rows(api.db, "messages")) == before
-    if case == "foreign":
-        service.answer.assert_not_called()
+    item = {key: record[key] for key in ("source", "title")}
+    item.update(id="missing" if case == "missing" else "chunk-1", kind="corpus")
+    before = api.db.fetch_messages("own", "tenant-a", "alice")
+    reply = chat_generation(api, monkeypatch, returned=[item, item] if case == "duplicate" else [item])
+    assert reply.response.status_code == 200 and "event: terminal" in reply.response.text
+    assert '"state":"failed"' in reply.response.text.replace(" ", "")
+    assert "event: final" not in reply.response.text
+    assert reply.reopened.json()["messages"] == before
+    assert "foreign-secret-marker" not in reply.response.text
 
 
 def call(api, method, path, **kwargs):

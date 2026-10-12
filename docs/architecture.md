@@ -90,8 +90,10 @@ El resumen derivado conserva los mensajes originales y bloquea el envio durante
 la compresion. La [decision ADR-0019](adr/ADR-0019-conversational-runtime.md)
 describe limites de proceso unico, canal privado, almacenamiento e interfaz.
 
-La ruta frontend `/assistant` redirige al panel nuevo. El endpoint historico
-`.../messages` rechaza la generacion de plantilla con 410. Se conserva solo su
+La ruta frontend `/assistant` redirige al panel nuevo. La consulta estructurada
+de propiedad se conserva en la vista `/ownership`, que envia siempre
+una seleccion estructurada y no ofrece generacion documental de plantilla.
+El endpoint historico `.../messages` rechaza la generacion de plantilla con 410. Se conserva solo su
 contrato explicito `ownership_query`, que llama a
 [OwnershipQuestionService](../apps/backend/app/services/ownership_questions.py);
 no interpreta lenguaje natural como SQL. Las respuestas historicas se muestran

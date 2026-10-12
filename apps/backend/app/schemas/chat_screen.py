@@ -1,4 +1,5 @@
 """Closed functional captures. Validation never normalizes the stored snapshot."""
+
 import json
 from datetime import date, datetime
 from typing import Annotated, Literal
@@ -6,34 +7,37 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 Text = Annotated[str, Field(strict=True, min_length=1, max_length=256)]
-Currency = Annotated[str, Field(strict=True, pattern=r'^[A-Z]{3}$')]
-Amount = Annotated[str, Field(strict=True, max_length=128, pattern=r'^-?(0|[1-9][0-9]*)(\.[0-9]+)?$')]
+Currency = Annotated[str, Field(strict=True, pattern=r"^[A-Z]{3}$")]
+Amount = Annotated[
+    str, Field(strict=True, max_length=128, pattern=r"^-?(0|[1-9][0-9]*)(\.[0-9]+)?$")
+]
 Count = Annotated[int, Field(strict=True, ge=0)]
 
 
 class Closed(BaseModel):
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra="forbid")
 
-    @field_validator('start_date', 'end_date', check_fields=False, mode='before')
+    @field_validator("start_date", "end_date", check_fields=False, mode="before")
     @classmethod
     def iso_date(cls, value):
         if value is None:
             return value
         if type(value) is not str or len(value) != 10:
-            raise ValueError('Date requires ISO YYYY-MM-DD.')
+            raise ValueError("Date requires ISO YYYY-MM-DD.")
         if date.fromisoformat(value).isoformat() != value:
-            raise ValueError('Date requires ISO YYYY-MM-DD.')
+            raise ValueError("Date requires ISO YYYY-MM-DD.")
         return value
+
 
 class Period(Closed):
     start_date: date
     end_date: date
-    timezone: Literal['UTC'] = 'UTC'
+    timezone: Literal["UTC"] = "UTC"
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def ordered(self):
         if self.start_date >= self.end_date:
-            raise ValueError('Invalid period.')
+            raise ValueError("Invalid period.")
         return self
 
 
@@ -54,18 +58,20 @@ class Selection(Closed):
     period: Period | None = None
     start_date: date | None = None
     end_date: date | None = None
-    group_by: Literal['subscription','resource_group','service','project','tag'] | None = None
+    group_by: (
+        Literal["subscription", "resource_group", "service", "project", "tag"] | None
+    ) = None
     tag_key: Text | None = None
     selected_currency: Currency | None = None
     currency: Currency | None = None
     filters: Filters | None = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def ordered(self):
         if (self.start_date is None) != (self.end_date is None):
-            raise ValueError('Incomplete period.')
+            raise ValueError("Incomplete period.")
         if self.start_date is not None and self.start_date >= self.end_date:
-            raise ValueError('Invalid period.')
+            raise ValueError("Invalid period.")
         return self
 
 
@@ -88,11 +94,13 @@ class Group(Total):
 class Series(Total):
     period: Period
     label: Annotated[str, Field(strict=True, max_length=256)] | None = None
-    load_state: Literal['loaded','loading','error','empty','partial','refresh_pending'] = 'loaded'
+    load_state: Literal[
+        "loaded", "loading", "error", "empty", "partial", "refresh_pending"
+    ] = "loaded"
 
 
 class Completeness(Closed):
-    status: Literal['complete','partial','empty','unknown','unavailable']
+    status: Literal["complete", "partial", "empty", "unknown", "unavailable"]
     missing_dimensions: list[Text] = Field(max_length=128)
     excluded_undated_count: Count | None = None
 
@@ -105,10 +113,18 @@ class Counts(Closed):
 
 class Dataset(Closed):
     source: Text
-    load_state: Literal['loaded','loading','error','empty','partial','refresh_pending','unavailable']
+    load_state: Literal[
+        "loaded",
+        "loading",
+        "error",
+        "empty",
+        "partial",
+        "refresh_pending",
+        "unavailable",
+    ]
     loaded_at: datetime | None
     selection: Selection
-    data_environment: Literal['demo','simulated','unknown','unavailable']
+    data_environment: Literal["demo", "simulated", "unknown", "unavailable"]
     completeness: Completeness
     totals: list[Total]
     groups: list[Group]
@@ -116,30 +132,43 @@ class Dataset(Closed):
     counts: Counts
     missing_dimensions: list[Text] | None = None
 
-    @field_validator('loaded_at')
+    @field_validator("loaded_at")
     @classmethod
     def timestamp(cls, value):
         if value is not None and value.utcoffset() is None:
-            raise ValueError('Timestamp requires timezone.')
+            raise ValueError("Timestamp requires timezone.")
         return value
 
 
 class ScreenCapture(Closed):
-    schema_version: Literal['2']
+    schema_version: Literal["2"]
     screen_version: Text
-    route: Literal['/','/overview-legacy','/operational','/cuts','/anomalies','/recommendations','/ingest','/assistant','/system-health']
+    route: Literal[
+        "/",
+        "/overview-legacy",
+        "/operational",
+        "/cuts",
+        "/anomalies",
+        "/recommendations",
+        "/ingest",
+        "/assistant",
+        "/ownership",
+        "/system-health",
+    ]
     tab_id: Text
-    source: Literal['loaded-screen','loading','error','no-adapter','refresh_pending']
+    source: Literal[
+        "loaded-screen", "loading", "error", "no-adapter", "refresh_pending"
+    ]
     identity: Identity
     captured_at: datetime
     selection: Selection
     datasets: list[Dataset] = Field(max_length=128)
 
-    @field_validator('captured_at')
+    @field_validator("captured_at")
     @classmethod
     def timestamp(cls, value):
         if value.utcoffset() is None:
-            raise ValueError('Timestamp requires timezone.')
+            raise ValueError("Timestamp requires timezone.")
         return value
 
 
@@ -171,7 +200,7 @@ def reject_duplicates(pairs):
     result = {}
     for key, value in pairs:
         if key in result:
-            raise ValueError('Duplicate input field.')
+            raise ValueError("Duplicate input field.")
         result[key] = value
     return result
 
@@ -179,29 +208,47 @@ def reject_duplicates(pairs):
 async def read_generation(request, model):
     from fastapi import HTTPException
     from pydantic import ValidationError
+
     chunks = []
     size = 0
     async for chunk in request.stream():
         size += len(chunk)
         if size > 2097152:
-            raise HTTPException(413, 'input_limit')
+            raise HTTPException(413, "input_limit")
         chunks.append(chunk)
-    raw = b''.join(chunks)
+    raw = b"".join(chunks)
     if depth_exceeds(raw):
-        raise HTTPException(413, 'input_limit')
+        raise HTTPException(413, "input_limit")
     try:
-        value = json.loads(raw, object_pairs_hook=reject_duplicates,
-                           parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
+        value = json.loads(
+            raw,
+            object_pairs_hook=reject_duplicates,
+            parse_constant=lambda _: (_ for _ in ()).throw(ValueError()),
+        )
         if isinstance(value, dict):
-            content = value.get('content')
-            if isinstance(content, str) and len(content.encode('utf-8')) > 16384:
-                raise HTTPException(413, 'question_limit')
-            screen = value.get('screen_context')
-            if isinstance(screen,dict) and isinstance(screen.get('datasets'),list) and len(screen['datasets'])>20:
-                raise HTTPException(413,'screen_dataset_limit')
-            if len(json.dumps(screen, ensure_ascii=False, sort_keys=True,
-                              separators=(',', ':'), allow_nan=False).encode('utf-8')) > 1048576:
-                raise HTTPException(413, 'screen_limit')
+            content = value.get("content")
+            if isinstance(content, str) and len(content.encode("utf-8")) > 16384:
+                raise HTTPException(413, "question_limit")
+            screen = value.get("screen_context")
+            if (
+                isinstance(screen, dict)
+                and isinstance(screen.get("datasets"), list)
+                and len(screen["datasets"]) > 20
+            ):
+                raise HTTPException(413, "screen_dataset_limit")
+            if (
+                len(
+                    json.dumps(
+                        screen,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                        allow_nan=False,
+                    ).encode("utf-8")
+                )
+                > 1048576
+            ):
+                raise HTTPException(413, "screen_limit")
         return model.model_validate(value)
     except (ValueError, TypeError, UnicodeError, RecursionError, ValidationError):
-        raise HTTPException(422, 'invalid_generation') from None
+        raise HTTPException(422, "invalid_generation") from None

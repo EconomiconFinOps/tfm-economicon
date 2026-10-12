@@ -42,7 +42,7 @@ def test_legacy_message_cannot_interleave_with_open_operation(api,monkeypatch,ow
             op=await existing(c,payload)
             assert op['operation_id']==reserved_id==observed['operation_id']
             result=await c.post('/assistant/conversations/alice-chat/messages',json=request_body() if ownership else {'content':'Otra pregunta'},headers=headers())
-            assert result.status_code==409,result.text
+            assert result.status_code==(409 if ownership else 410),result.text
             assert messages(api[1])==[]
             await c.post(op['status_url']+'/stop',headers=headers())
             api[2].release.set();await task
@@ -63,5 +63,5 @@ def test_legacy_assistant_sql_failure_rolls_back_question(api,monkeypatch,owners
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=api[0],raise_app_exceptions=False),base_url='http://test') as c:
             result=await c.post('/assistant/conversations/alice-chat/messages',json=request_body() if ownership else {'content':'Pregunta'},headers=headers())
             assert messages(api[1])==[], 'Partial question committed by legacy route'
-            assert result.status_code==503,result.text
+            assert result.status_code==(503 if ownership else 410),result.text
     asyncio.run(scenario())
