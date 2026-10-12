@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 from app.schemas.billing import DecimalString
 
 EpisodeStatus = Literal["new", "investigating", "resolved", "false_positive"]
+_BLANK_GLYPHS = frozenset("ᅟᅠㅤﾠ⠀")
 
 
 class AnomalyEpisode(BaseModel):
@@ -86,7 +87,9 @@ class EpisodeStatusChange(BaseModel):
         reason = (self.reason or "").strip()
         hidden = any(unicodedata.category(char).startswith("C") or unicodedata.category(char) in {"Zl", "Zp"}
                      for char in reason)
-        if not 1 <= len(reason) <= 500 or hidden:
+        # Hangul fillers and the blank braille pattern are letters or symbols that render as nothing.
+        visible = any(unicodedata.category(char)[0] in "LNPS" and char not in _BLANK_GLYPHS for char in reason)
+        if not 1 <= len(reason) <= 500 or hidden or not visible:
             raise ValueError("Closing requires a reason of 1 to 500 characters without control characters")
         self.reason = reason
         return self

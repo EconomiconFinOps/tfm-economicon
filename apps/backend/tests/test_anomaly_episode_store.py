@@ -9,7 +9,7 @@ from sqlalchemy import text
 
 from app.schemas.billing import AmbiguousCostSource
 from app.services.anomaly_episodes import DetectionConflict, EpisodeConflict, EpisodeNotFound, StatusChangeConflict
-from anomaly_episode_support import D, episode_rows, episode_store, load_series
+from anomaly_episode_support import D, episode_rows, episode_store, insert_episode, load_series
 from billing_support import billing_schema, insert_cost, insert_run
 from tenant_isolation_support import tenant_cockroach_database
 
@@ -247,3 +247,16 @@ def test_return_after_end_links_to_the_previous_episode_through_sql(episode_stor
     assert len(episode_rows(db)) == 3
     open_ids = {row["id"] for row in db.fetch_anomaly_episodes("tenant-a", scope="open")}
     assert compute[1]["id"] in open_ids and compute[0]["id"] not in open_ids
+
+
+def test_new_episode_links_to_the_latest_own_previous_episode(episode_store):
+    db = episode_store
+    insert_episode(db, "old-first", start=D - timedelta(days=30))
+    insert_episode(db, "old-latest", start=D - timedelta(days=20), status="false_positive")
+    insert_episode(db, "foreign-later", tenant="tenant-b", start=D - timedelta(days=10), observation="no_longer_observed",
+                   status="new")
+    load_series(db, SPIKE)
+    assert db.run_anomaly_detection("tenant-a", today=TODAY)["opened"] == 1
+    [new] = [row for row in episode_rows(db, "tenant-a") if row["start_date"] == D]
+    assert new["previous_episode_id"] == "old-latest"
+    assert {row["id"] for row in episode_rows(db, "tenant-b")} == {"foreign-later"}

@@ -220,3 +220,13 @@ def test_visible_reasons_are_accepted(reason):
     from app.schemas.anomaly_episodes import EpisodeStatusChange
 
     assert EpisodeStatusChange(status="resolved", reason=reason).reason == reason
+
+
+@pytest.mark.parametrize("reason", ["\u3164", "\uffa0", "\u2800", "\u115f\u1160", "\u034f", "\ufe0f", "\u0301", "\u3164\u0301 \u2800"])
+def test_reasons_that_look_blank_are_rejected(reason):
+    from pydantic import ValidationError
+
+    from app.schemas.anomaly_episodes import EpisodeStatusChange
+
+    with pytest.raises(ValidationError):
+        EpisodeStatusChange(status="resolved", reason=reason)

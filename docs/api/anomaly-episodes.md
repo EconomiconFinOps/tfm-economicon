@@ -142,7 +142,9 @@ decimales (HALF_UP); internamente se guardan exactos.
 - `resolved` y `false_positive` exigen `reason` de 1 a 500 caracteres tras
   quitar espacios, sin caracteres de control ni invisibles (categorias Unicode
   `C*`, `Zl` y `Zp`: por ejemplo U+0085, U+202E, U+2028 o un espacio de ancho
-  cero); `investigating` no la admite.
+  cero) y con al menos un caracter visible (un motivo de solo rellenos como
+  U+3164 o U+2800 o de marcas combinantes sueltas se rechaza); `investigating`
+  no la admite.
   Peticiones invalidas o con campos extra dan 422 sin cambiar nada.
 - Una transicion no permitida da
   `409 {"detail":{"code":"invalid_status_transition"}}`. Dos cambios

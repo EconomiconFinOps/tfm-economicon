@@ -133,7 +133,7 @@ Each episode SHALL store its accumulated impact: the sum, over every evaluated d
 
 ### Requirement: Traceable status
 
-Episode status SHALL be one of new, investigating, resolved and false_positive. Allowed changes SHALL be new to investigating, and new or investigating to resolved or false_positive. Closing as resolved or false_positive SHALL require a reason of 1 to 500 characters after trimming, without Unicode control, format, private-use, surrogate, unassigned, line-separator or paragraph-separator characters; the reason SHALL be rejected for investigating. Any member of the active tenant SHALL be able to change status. Each change SHALL record who made it and when; the episode SHALL keep who made the first change out of new and when, and the closing time. A change that loses a concurrent race SHALL be reported as a concurrency conflict, distinct from an invalid transition. A closed episode SHALL NOT change status again. Concurrent conflicting changes SHALL result in exactly one success.
+Episode status SHALL be one of new, investigating, resolved and false_positive. Allowed changes SHALL be new to investigating, and new or investigating to resolved or false_positive. Closing as resolved or false_positive SHALL require a reason of 1 to 500 characters after trimming, without Unicode control, format, private-use, surrogate, unassigned, line-separator or paragraph-separator characters, and with at least one visible letter, number, punctuation mark or symbol other than blank fillers; the reason SHALL be rejected for investigating. Any member of the active tenant SHALL be able to change status. Each change SHALL record who made it and when; the episode SHALL keep who made the first change out of new and when, and the closing time. A change that loses a concurrent race SHALL be reported as a concurrency conflict, distinct from an invalid transition. A closed episode SHALL NOT change status again. Concurrent conflicting changes SHALL result in exactly one success.
 
 #### Scenario: Investigate then resolve
 - **WHEN** a member sets investigating and later resolved with reason "Escalado revertido"
@@ -144,7 +144,7 @@ Episode status SHALL be one of new, investigating, resolved and false_positive. 
 - **THEN** the request is rejected with 422 and nothing changes
 
 #### Scenario: Invisible or control characters in the reason
-- **WHEN** the reason contains U+0085, U+202E, U+2028, U+2029, a soft hyphen or only a zero-width space
+- **WHEN** the reason contains U+0085, U+202E, U+2028, U+2029, a soft hyphen or only a zero-width space, or only blank fillers such as U+3164 or U+2800 or isolated combining marks
 - **THEN** the request is rejected with 422 and nothing changes
 
 #### Scenario: Closed episode

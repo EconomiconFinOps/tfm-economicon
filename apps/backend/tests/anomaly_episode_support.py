@@ -51,3 +51,23 @@ def episode_rows(db, tenant=None):
     query = "SELECT * FROM anomaly_episodes" + (" WHERE tenant_id = :tenant" if tenant else "") + " ORDER BY id"
     with db.engine.connect() as connection:
         return [dict(row) for row in connection.execute(text(query), {"tenant": tenant}).mappings()]
+
+
+def insert_episode(db, identifier, *, tenant="tenant-a", start, status="resolved", observation="observed",
+                   service="Compute", currency="EUR"):
+    """A stored past episode, processed up to five days after its start."""
+    from datetime import datetime, timezone
+
+    through = start + timedelta(days=5)
+    now = datetime.now(timezone.utc)
+    with db.engine.begin() as connection:
+        connection.execute(text(
+            "INSERT INTO anomaly_episodes (id, tenant_id, currency, service, service_key, start_date, last_seen_date, "
+            "observation, no_longer_observed_on, reference_week_cost, opening_observed_cost, impact_numerator, "
+            "impact_day_count, impact_through_date, severity, status, rules_version, rules, created_at, updated_at) "
+            "VALUES (:id, :tenant, :currency, :service, :key, :start, :start, :observation, :ended, 2800, 550, 1050, 1, "
+            ":through, 'P3', :status, 'jup019-daily-v1', '{}'::JSONB, :now, :now)"
+        ), {"id": identifier, "tenant": tenant, "currency": currency, "service": service,
+            "key": '"' + service + '"', "start": start, "observation": observation,
+            "ended": through if observation == "no_longer_observed" else None, "through": through,
+            "status": status, "now": now})
