@@ -88,6 +88,10 @@ Veredicto: **accept**. Sin hallazgos BLOCKING ni HIGH; ejecutó vitest completo 
 
 Datos de demostración fijos en inglés, formato de importes sin idioma, etiquetas de estado duplicadas, y lista cerrada de la prueba de regresión. Ver `openspec/findings/backlog.md`.
 
+## Revisión propia posterior al PR (2026-10-12)
+
+Por la excepción temporal, Lucia y el asistente revisaron el PR #123 antes de integrarlo, sin publicar una review en GitHub. Se leyó el diff de producción completo y se probaron mutantes sobre lo añadido: la tabla de roles (`Object.hasOwn`), el texto «Cerrar» del diálogo y el rótulo «Ingesta» del menú los detectan las pruebas existentes. Hallazgo: el formato `es-ES` de las fechas de conversaciones y de salud no tenía prueba (cambiarlo a `en-US` no rompía nada). Corregido con dos pruebas que fallan con ese cambio; vitest del frontend pasa en 797 de 797.
+
 ## Human Approval
 
 - Change: jup-117-frontend-espanol

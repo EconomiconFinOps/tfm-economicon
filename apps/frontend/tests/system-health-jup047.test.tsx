@@ -396,6 +396,7 @@ describe("JUP-047 approved functional availability and informational identity/co
       const row = providerRow();
       expect(await row.findByText("Disponible", { exact: true })).toBeVisible();
       expect(row.getByText(/Respuesta válida a:/i)).toHaveTextContent(verified);
+      expect(row.getByText(/Respuesta válida a:/i)).not.toHaveTextContent(/ [AP]M/);
       expect(row.getByText(`Modelo informado: ${model}`, { exact: true })).toBeVisible();
       expect(row.getByText("Identidad no confirmada", { exact: true })).toBeVisible();
       expect(row.getByText(/Coste informado por el gateway:/i)).toHaveTextContent("0.00002");

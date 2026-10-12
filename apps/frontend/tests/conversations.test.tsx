@@ -16,6 +16,19 @@ const detailPath = `${collectionPath}/${conversation.id}`;
 const messagePath = `${detailPath}/messages`;
 
 describe("assistant conversations", () => {
+  it("muestra la fecha de cada conversación con el formato de 24 horas de es-ES", async () => {
+    mockBackend({
+      [`GET ${collectionPath}`]: () => jsonResponse({ items: [{ ...conversation, updated_at: "2026-10-12T12:00:00Z" }] }),
+      [`GET ${detailPath}`]: () => jsonResponse({ conversation, messages: [] })
+    });
+    restoreSession();
+    renderApp(["/assistant"]);
+
+    const item = await screen.findByRole("button", { name: new RegExp(conversation.title) });
+    expect(item).toHaveTextContent(/\d{1,2}\/\d{1,2}\/2026/);
+    expect(item).not.toHaveTextContent(/ [AP]M/);
+  });
+
   it("rotula en español quién escribió cada mensaje y deja pasar un rol que no conoce", async () => {
     mockBackend({
       [`GET ${collectionPath}`]: () => jsonResponse({ items: [conversation] }),
