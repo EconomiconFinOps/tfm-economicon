@@ -8,7 +8,6 @@ import json
 RULES_VERSION = "jup019-daily-v1"
 REFERENCE_DAYS = 7
 TOLERANCE_DAYS = 3
-MAX_DAYS_PER_RUN = 7
 ONE_DAY = timedelta(days=1)
 SUPPORTED_CURRENCIES = ("EUR", "USD")
 RULES = {
@@ -25,7 +24,6 @@ _TRANSITIONS = {"new": {"investigating", "resolved", "false_positive"}, "investi
 LIMITATIONS = [
     "A candidate for investigation, not a demonstrated cause, saving or statistical confidence.",
     "Cost data completeness is not verified; a day may be evaluated before late records arrive.",
-    "Days older than the seven most recent pending days are not evaluated by a single run.",
     "New spend from a zero reference does not open an episode.",
     "Weekly cycles may produce false candidates and a recent spike raises the seven-day mean.",
     "Only the service dimension is watched; only EUR and USD are evaluated, with nominal thresholds.",
@@ -157,8 +155,6 @@ def run_summary(window: "DetectionWindow", plan: "DetectionPlan | None") -> dict
         "last_complete_day": window.last_complete_day.isoformat() if window.last_complete_day else None,
         "evaluated_days": [day.isoformat() for day in plan.evaluated_days] if plan else [],
         "skipped_days": [{"date": day.isoformat(), "reason": reason} for day, reason in plan.skipped_days] if plan else [],
-        "unevaluated_range": ({"start_date": window.unevaluated[0].isoformat(), "end_date": window.unevaluated[1].isoformat()}
-                              if window.unevaluated and status == "completed" else None),
         "unsupported_currencies": plan.unsupported_currencies if plan else [],
         "opened": len(plan.opened) if plan else 0,
         "continued": plan.continued if plan else 0,
@@ -207,7 +203,6 @@ class DetectionWindow:
     status: str
     last_complete_day: date | None
     days: list[date]
-    unevaluated: tuple[date, date] | None
 
     @property
     def read_start(self) -> date | None:
@@ -227,19 +222,17 @@ class DetectionPlan:
     new_last_evaluated: date | None
 
 
-def detection_window(*, today: date, last_evaluated: date | None, latest_observed: date | None) -> DetectionWindow:
-    if latest_observed is None:
-        return DetectionWindow("insufficient_data", None, [], None)
+def detection_window(*, today: date, last_evaluated: date | None, latest_observed: date | None,
+                     earliest_observed: date | None = None) -> DetectionWindow:
+    if latest_observed is None or (last_evaluated is None and earliest_observed is None):
+        return DetectionWindow("insufficient_data", None, [])
     # The latest day with data may still be receiving late records, and today is never closed.
     last_complete = min(latest_observed, today) - timedelta(days=1)
-    first_pending = last_complete - timedelta(days=MAX_DAYS_PER_RUN - 1) if last_evaluated is None \
-        else last_evaluated + timedelta(days=1)
-    if first_pending > last_complete:
-        return DetectionWindow("up_to_date", last_complete, [], None)
-    first = max(first_pending, last_complete - timedelta(days=MAX_DAYS_PER_RUN - 1))
-    unevaluated = (first_pending, first - timedelta(days=1)) if first > first_pending else None
+    first = earliest_observed if last_evaluated is None else last_evaluated + timedelta(days=1)
+    if first > last_complete:
+        return DetectionWindow("insufficient_data" if last_evaluated is None else "up_to_date", last_complete, [])
     days = [first + timedelta(days=offset) for offset in range((last_complete - first).days + 1)]
-    return DetectionWindow("pending", last_complete, days, unevaluated)
+    return DetectionWindow("pending", last_complete, days)
 
 
 def episode_id(tenant_id: str, currency: str, service: str | None, start: date) -> str:

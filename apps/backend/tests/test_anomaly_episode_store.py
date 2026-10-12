@@ -37,7 +37,7 @@ def test_daily_read_keeps_only_completed_tenant_records_per_service_currency_and
     with db.engine.connect() as connection:
         observed, daily = db.read_daily_service_costs(connection, "tenant-a", start_date=date(2026, 9, 1),
                                                       end_date=date(2026, 9, 3))
-        latest = db.latest_observed_cost_day(connection, "tenant-a")
+        earliest, latest = db.observed_cost_day_range(connection, "tenant-a")
     assert observed == {date(2026, 9, 1), date(2026, 9, 2)}
     assert daily == {
         ("EUR", "Compute"): {date(2026, 9, 1): Decimal("10.006")},
@@ -45,7 +45,7 @@ def test_daily_read_keeps_only_completed_tenant_records_per_service_currency_and
         ("EUR", None): {date(2026, 9, 1): Decimal("7.00")},
         ("USD", "Compute"): {date(2026, 9, 2): Decimal("-1.00")},
     }
-    assert latest == date(2026, 9, 3)
+    assert (earliest, latest) == (date(2026, 9, 1), date(2026, 9, 3))
 
 
 def test_daily_read_rejects_overlapping_sources_inside_the_range_only(episode_store):
@@ -260,3 +260,14 @@ def test_new_episode_links_to_the_latest_own_previous_episode(episode_store):
     [new] = [row for row in episode_rows(db, "tenant-a") if row["start_date"] == D]
     assert new["previous_episode_id"] == "old-latest"
     assert {row["id"] for row in episode_rows(db, "tenant-b")} == {"foreign-later"}
+
+
+def test_first_run_reaches_spikes_older_than_a_week(episode_store):
+    db = episode_store
+    load_series(db, ["400.00"] * 7 + ["550.00"] + ["400.00"] * 20)
+    result = db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert result["last_complete_day"] == (D + timedelta(days=19)).isoformat()
+    assert result["evaluated_days"][0] == D.isoformat() and len(result["evaluated_days"]) == 20
+    assert "unevaluated_range" not in result
+    [row] = episode_rows(db)
+    assert (row["start_date"], row["observation"]) == (D, "no_longer_observed")

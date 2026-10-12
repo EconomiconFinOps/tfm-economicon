@@ -2,7 +2,7 @@ JUP: JUP-114
 
 ## 1. Backend
 
-- [ ] 1.1 Ejecución sin límite de días (D1): `detection_window` con el primer día observado del tenant, sin `MAX_DAYS_PER_RUN` ni `unevaluated_range`; pruebas de primera ejecución sobre toda la historia, días perdidos entre ejecuciones y equivalencia entre una pulsación y una por día; mutantes del nuevo límite inferior.
+- [x] 1.1 Ejecución sin límite de días (D1): `detection_window` con el primer día observado del tenant, sin `MAX_DAYS_PER_RUN` ni `unevaluated_range`; pruebas de primera ejecución sobre toda la historia, días perdidos entre ejecuciones y equivalencia entre una pulsación y una por día; mutantes del nuevo límite inferior.
 - [ ] 1.2 La lista devuelve `last_evaluated_date`, `includes_synthetic_data` y `open_impact_by_currency` (D2) para cualquier `scope`; pruebas con CockroachDB real de nunca detectado, marca sintética por tenant (solo sintético, solo ingesta, mezcla, otro tenant), totales exactos por moneda y aislamiento.
 - [ ] 1.3 Actualizar ADR-0019, `docs/api/anomaly-episodes.md`, `LIMITATIONS` y `RF-114-006` (resuelto) por la eliminación del límite.
 

@@ -53,18 +53,12 @@ class SkippedDay(BaseModel):
     reason: Literal["not_observed", "reference_incomplete"]
 
 
-class DateRange(BaseModel):
-    start_date: date
-    end_date: date
-
-
 class AnomalyDetectionRun(BaseModel):
     status: Literal["completed", "up_to_date", "insufficient_data"]
     rules_version: str
     last_complete_day: date | None
     evaluated_days: list[date]
     skipped_days: list[SkippedDay]
-    unevaluated_range: DateRange | None
     unsupported_currencies: list[str]
     opened: int
     continued: int

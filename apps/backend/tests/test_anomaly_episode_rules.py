@@ -25,7 +25,8 @@ def series(start, values):
 def run(daily, *, last_evaluated=None, episodes=(), observed=None, latest=None, today=TODAY, tenant="tenant-a"):
     observed = set(observed) if observed is not None else {day for values in daily.values() for day in values}
     latest = latest if latest is not None else max(observed)
-    window = detection_window(today=today, last_evaluated=last_evaluated, latest_observed=latest)
+    window = detection_window(today=today, last_evaluated=last_evaluated, latest_observed=latest,
+                              earliest_observed=min(observed) if observed else None)
     return window, plan_detection(window, tenant_id=tenant, observed_days=observed, daily=daily,
                                   episodes=[episode.copy() for episode in episodes])
 
@@ -147,11 +148,28 @@ def test_missing_group_on_an_observed_day_counts_as_zero():
 # Windows, coverage and idempotence -----------------------------------------
 
 def test_latest_day_is_not_complete_and_today_is_never_evaluated():
-    window = detection_window(today=TODAY, last_evaluated=None, latest_observed=date(2026, 9, 14))
+    window = detection_window(today=TODAY, last_evaluated=None, latest_observed=date(2026, 9, 14),
+                              earliest_observed=date(2026, 9, 1))
     assert window.last_complete_day == date(2026, 9, 13)
-    assert window.days == days(date(2026, 9, 7), 7)
-    window = detection_window(today=TODAY, last_evaluated=None, latest_observed=date(2026, 10, 20))
+    assert window.days == days(date(2026, 9, 1), 13)
+    window = detection_window(today=TODAY, last_evaluated=None, latest_observed=date(2026, 10, 20),
+                              earliest_observed=date(2026, 10, 1))
     assert window.last_complete_day == date(2026, 10, 11)
+
+
+def test_first_run_covers_the_whole_history_without_a_day_limit():
+    window = detection_window(today=TODAY, last_evaluated=None, latest_observed=date(2026, 9, 21),
+                              earliest_observed=date(2026, 6, 1))
+    assert window.days[0] == date(2026, 6, 1) and window.days[-1] == date(2026, 9, 20)
+    assert len(window.days) == 112
+    assert window.read_start == date(2026, 5, 25)
+
+
+@pytest.mark.parametrize("earliest", [date(2026, 9, 14), date(2026, 9, 20)])
+def test_history_without_a_complete_day_is_insufficient(earliest):
+    window = detection_window(today=TODAY, last_evaluated=None, latest_observed=date(2026, 9, 14),
+                              earliest_observed=earliest)
+    assert window.status == "insufficient_data" and window.days == []
 
 
 def test_without_data_detection_is_insufficient():
@@ -165,17 +183,18 @@ def test_nothing_new_is_up_to_date(last_evaluated):
     assert window.status == "up_to_date" and window.days == []
 
 
-def test_missed_days_are_reported_and_window_is_bounded():
-    window = detection_window(today=TODAY, last_evaluated=date(2026, 9, 1), latest_observed=date(2026, 9, 21))
-    assert window.days == days(date(2026, 9, 14), 7)
-    assert window.unevaluated == (date(2026, 9, 2), date(2026, 9, 13))
-    assert window.read_start == date(2026, 9, 7)
+def test_every_missed_day_is_evaluated():
+    window = detection_window(today=TODAY, last_evaluated=date(2026, 9, 1), latest_observed=date(2026, 9, 21),
+                              earliest_observed=date(2026, 8, 1))
+    assert window.days == days(date(2026, 9, 2), 19)
+    assert window.read_start == date(2026, 8, 26)
+    assert not hasattr(window, "unevaluated")
 
 
-def test_short_pending_range_has_no_unevaluated_days():
-    window = detection_window(today=TODAY, last_evaluated=date(2026, 9, 11), latest_observed=date(2026, 9, 14))
+def test_short_pending_range():
+    window = detection_window(today=TODAY, last_evaluated=date(2026, 9, 11), latest_observed=date(2026, 9, 14),
+                              earliest_observed=date(2026, 9, 1))
     assert window.days == [date(2026, 9, 12), date(2026, 9, 13)]
-    assert window.unevaluated is None
 
 
 def test_gap_skips_the_missing_day_and_every_day_that_needs_it():
@@ -185,8 +204,9 @@ def test_gap_skips_the_missing_day_and_every_day_that_needs_it():
     values[10] = "9000.00"  # spike on 2026-09-08 would trigger if it were evaluated
     daily = {EUR: series(start, values)}
     window, plan = run(daily, latest=date(2026, 9, 12))
-    assert window.days == days(date(2026, 9, 5), 7)
-    assert dict(plan.skipped_days) == {date(2026, 9, 5): "not_observed",
+    assert window.days == days(start, 14)
+    assert dict(plan.skipped_days) == {**{day: "reference_incomplete" for day in days(start, 7)},
+                                       date(2026, 9, 5): "not_observed",
                                        **{day: "reference_incomplete" for day in days(date(2026, 9, 6), 6)}}
     assert plan.opened == [] and plan.updated == []
     assert plan.status == "insufficient_data"
@@ -382,3 +402,37 @@ def test_severity_uses_the_exact_impact_before_display_rounding():
     item = only(run(one_day("400.00", "899.996"))[1])
     assert item.accumulated_impact == "500.00"
     assert item.severity == "P3"
+
+
+
+DEMO_WEEKS = {
+    "Compute": (["140"] * 5 + ["150"] * 2, ["140"] + ["377"] * 4 + ["376"] * 2, ["377"] * 7),
+    "Analytics": (["314"] * 5 + ["315"] * 2, ["303", "303", "480", "303", "303", "304", "304"], ["305"] * 7),
+    "Storage": (["114"] * 6 + ["116"], ["117"] * 6 + ["118"], ["117"] * 7),
+    "Database": (["214"] * 5 + ["215"] * 2, ["171"] * 4 + ["172"] * 3, ["171", "300", "300", "300", "300", "300", "171"]),
+    "Tools": (["1"] * 4 + ["2"] * 3, ["5"] * 2 + ["6"] * 5, ["6"] * 7),
+    "Backup": (["0"] * 7, ["0", "0", "300", "0", "0", "0", "0"], ["0"] * 7),
+    "Networking": ([None] * 7, [None] * 6 + ["600"], ["85"] * 7),
+}
+
+
+def demo_daily():
+    start = date(2026, 9, 1)
+    return {("EUR", service): series(start, sum(weeks, [])) for service, weeks in DEMO_WEEKS.items()}
+
+
+def snapshot(stored):
+    return sorted((e.service, e.start_date, e.last_seen_date, e.observation, e.no_longer_observed_on,
+                   e.reference_week_cost, e.impact_numerator, e.impact_day_count, e.impact_through_date,
+                   e.previous_episode_id) for e in stored.values())
+
+
+def test_one_press_equals_one_press_per_day():
+    daily = demo_daily()
+    observed = {day for values in daily.values() for day in values}
+    one, _ = run_in_batches(daily, batches=[date(2026, 9, 21)])
+    daily_presses, _ = run_in_batches(daily, batches=[date(2026, 9, 1) + timedelta(days=n) for n in range(1, 21)])
+    assert snapshot(one) == snapshot(daily_presses)
+    assert {(e.service, e.severity, e.accumulated_impact) for e in one.values()} == {
+        ("Compute", "P1", "2807.71"), ("Database", "P2", "642.86"), ("Analytics", "P3", "168.86")}
+    assert min(observed) == date(2026, 9, 1)

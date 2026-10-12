@@ -636,11 +636,12 @@ class Database:
           AND i.status = 'completed'
     """
 
-    def latest_observed_cost_day(self, connection, tenant_id: str):
-        return connection.execute(
-            text("SELECT max(r.usage_date) " + self._COMPLETED_COSTS),
+    def observed_cost_day_range(self, connection, tenant_id: str) -> tuple:
+        row = connection.execute(
+            text("SELECT min(r.usage_date), max(r.usage_date) " + self._COMPLETED_COSTS),
             {"tenant_id": tenant_id},
-        ).scalar_one()
+        ).one()
+        return row[0], row[1]
 
     def read_daily_service_costs(self, connection, tenant_id: str, *, start_date, end_date) -> tuple[set, dict]:
         from app.schemas.billing import AmbiguousCostSource
@@ -693,8 +694,9 @@ class Database:
                     last_evaluated = connection.execute(text(
                         "SELECT last_evaluated_date FROM anomaly_detection_state WHERE tenant_id = :tenant_id"
                     ), {"tenant_id": tenant_id}).scalar_one_or_none()
-                    latest = self.latest_observed_cost_day(connection, tenant_id)
-                    window = rules.detection_window(today=today, last_evaluated=last_evaluated, latest_observed=latest)
+                    earliest, latest = self.observed_cost_day_range(connection, tenant_id)
+                    window = rules.detection_window(today=today, last_evaluated=last_evaluated, latest_observed=latest,
+                                                    earliest_observed=earliest)
                     if window.status != "pending":
                         return rules.run_summary(window, None)
                     observed, daily = self.read_daily_service_costs(
