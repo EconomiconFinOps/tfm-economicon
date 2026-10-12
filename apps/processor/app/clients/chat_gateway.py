@@ -268,7 +268,7 @@ class ChatGateway:
                     'schema':chat_provider_schema(financial_metrics_allowed=context.get('financial_metrics_allowed'))}}
             if tool_choice is not None:
                 from app.core.chat_resources import CHAT_TOOLS
-                payload.update(tools=CHAT_TOOLS,tool_choice=tool_choice)
+                payload.update(tools=CHAT_TOOLS,tool_choice=tool_choice,parallel_tool_calls=False)
             req=request.Request(self.client.base_url+'/chat/completions',data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode(),
                 headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
             request_hash=hashlib.sha256(req.data).hexdigest()

@@ -326,6 +326,12 @@ class ChatOperations:
             except ChatError:
                 # No database truth, no new claims. Existing producers recheck.
                 continue
+            except Exception:
+                # Connection acquisition and summary recovery can raise outside
+                # repository transactions. Retry on the next scheduled tick;
+                # never log SQL, parameters, credentials or conversation data.
+                # CancelledError must still propagate so shutdown can finish.
+                logger.warning('Chat scheduler recovery failed; retrying next tick')
 
     async def stop(self,scope,identifier):
         row=await self.get(scope,identifier)

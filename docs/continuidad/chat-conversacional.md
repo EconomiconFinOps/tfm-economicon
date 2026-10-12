@@ -1,3 +1,14 @@
+## PR121: recuperación y aceptación real — 12/10/2026
+
+Continuación de la revisión de PR121 autorizada con «Hazlo». Corregido el
+planificador ante excepciones ordinarias; regresiones de recuperación y cierre
+pasan. La matriz real con el prompt del producto confirma una búsqueda con auto
+sin esquema frente a ninguna con auto estricto. La primera full28 detecta
+llamadas múltiples: se añade parallel_tool_calls=false, validación real final
+en curso. Backend22+62 PASS en suites distintas; processor65 PASS.
+[Informe y límites](../evidence/jup-035-pr121-live-20261012.md). Este corte sustituye
+el NOT_RUN de matriz/navegador; no declara aceptación semántica ni reviews oficiales.
+
 ## Backend corregido y suite verde — 12/10/2026
 
 Mismo origen JUP-035/PR120 y chat `01a1302b-c7a5-7c71-ba85-4d2391f8ff33`.

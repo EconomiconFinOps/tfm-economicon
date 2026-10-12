@@ -70,6 +70,7 @@ def test_auto_finalizes_in_two_calls_and_sums_usage(monkeypatch, search):
     records = asyncio.run(exercise())
     assert len(requests) == 2
     assert [p['tool_choice'] for p in requests] == ['auto', 'none']
+    assert all(p['parallel_tool_calls'] is False for p in requests)
     assert 'response_format' not in requests[0]
     assert requests[1]['response_format']['json_schema']['strict'] is True
     assert len(calls) == int(search)

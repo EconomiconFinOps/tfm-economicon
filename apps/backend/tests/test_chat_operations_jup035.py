@@ -14,6 +14,7 @@ from uuid import uuid4
 import httpx
 import pytest
 from sqlalchemy import create_engine, event, text
+from sqlalchemy.exc import OperationalError
 
 from app.api.dependencies import get_current_user
 from app.db.database import Database
@@ -316,6 +317,64 @@ def test_local_capacity_wait_does_not_consume_attempt_or_reset_on_resume(api):
             api[2].release.set()
             for task in [first,second]:
                 if task is not None and not task.done(): task.cancel()
+    run(scenario,api)
+
+
+@pytest.mark.parametrize('failure_source', ['repository', 'summary'])
+def test_scheduler_survives_database_outage_and_completes_waiting_operation(api, monkeypatch, caplog, failure_source):
+    api[0].state.chat_max_active=1
+    async def scenario(c):
+        api[2].release=asyncio.Event()
+        first=asyncio.create_task(c.post(path(),json=body(),headers=headers()))
+        try:
+            for _ in range(100):
+                if api[2].claims: break
+                await asyncio.sleep(.01)
+            assert len(api[2].claims)==1
+            payload=body('bob')
+            assert (await c.post(path('bob'),json=payload,headers=headers('bob'))).status_code==200
+            op=await existing(c,payload,'bob')
+            assert op['state']=='waiting' and op['attempt_count']==0
+            service=api[0].state.chat_service
+            scheduler=service.scheduler
+            failed=asyncio.Event()
+            restored=asyncio.Event()
+            error=OperationalError('sensitive SQL', {'secret':'private-value'}, Exception('private DSN'))
+            if failure_source=='repository':
+                original=service.repository.recoverable
+                def flaky():
+                    if not restored.is_set():
+                        raise error
+                    return original()
+                monkeypatch.setattr(service.repository,'recoverable',flaky)
+            else:
+                original=service.summary.recover
+                async def flaky():
+                    if not restored.is_set():
+                        raise error
+                    return await original()
+                monkeypatch.setattr(service.summary,'recover',flaky)
+            for _ in range(100):
+                if 'Chat scheduler recovery failed' in caplog.text:
+                    failed.set()
+                    break
+                await asyncio.sleep(.01)
+            assert failed.is_set()
+            assert service.scheduler is scheduler and not scheduler.done()
+            assert all(value not in caplog.text for value in ['sensitive SQL','private-value','private DSN'])
+            restored.set()
+            api[2].release.set()
+            await first
+            final=await until_state(c,op['status_url'],'completed','bob')
+            assert final['attempt_count']==1
+            assert len(api[2].claims)==2 and len(messages(api[1]))==4
+            await service.close()
+            assert scheduler.cancelled()
+        finally:
+            api[2].release.set()
+            if not first.done(): first.cancel()
+            if hasattr(api[0].state,'chat_service'):
+                await api[0].state.chat_service.close()
     run(scenario,api)
 
 

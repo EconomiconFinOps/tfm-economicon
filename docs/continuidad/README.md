@@ -1,5 +1,9 @@
 # Continuidad del proyecto
 
+12/10/2026 — [PR121: recuperación y aceptación real](chat-conversacional.md):
+planificador corregido, matriz real confirma auto sin esquema; full28 y control
+de llamadas paralelas en validación. [Evidencia](../evidence/jup-035-pr121-live-20261012.md).
+
 ## Parche auto de PR120 — 12/10/2026
 
 Último corte: [backend corregido](chat-conversacional.md), suite completa Linux
