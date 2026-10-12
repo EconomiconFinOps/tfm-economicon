@@ -77,3 +77,14 @@ Ataques que resistieron: aserciones negativas con dónde fallar, prueba de Atrá
 
 - `RF-116-001`: `FIXED_DATA_ROUTES` en `scripts/tests/test_synthetic_cost_demo.py` lista rutas que ya no existen.
 - `RF-116-002`: pruebas de formularios del frontend fallan por tiempo (5 s) con el equipo saturado.
+
+## Human Approval
+
+- Change: jup-116-hide-mockup-screens
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-12
+- Adversarial review: accept (pass 2) | accepted findings: ADV-3 y ADV-7 (las pruebas "sin sesión" no discriminan el comodín; son escenario de la spec), ADV-4 (Overview sin menú pero montada, pendiente de confirmar con el equipo) y los dos findings registrados (RF-116-001, RF-116-002)
+- Archive decision: archive
+- Notes: alcance revisado: código, pruebas, documentación y evidencia del frontend. Pendiente en Trello: validación funcional por quien tenga el rol; sin comprobar el envío de mensajes del asistente (sin stack de IA) ni el tema oscuro. Se mergea antes que JUP-114, que resolverá los conflictos de documentación.
