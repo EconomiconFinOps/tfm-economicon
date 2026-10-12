@@ -36,7 +36,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='auto-documentation-v2', tools=CHAT_TOOL
     continuation_roles=['assistant-tool-call','tool'], max_searches=1,
     max_generations=2, decision_format='native-auto', final_format='strict-finops',
     no_search_policy='authorized-context-or-abstention',
-    evidence_selection='effective-context-exact-records-v1')
+    evidence_selection='effective-context-exact-records-v2')
 
 
 def validate_search_call(assistant):

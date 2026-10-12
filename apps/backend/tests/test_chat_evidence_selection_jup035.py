@@ -20,13 +20,12 @@ def candidate(evidence=()):
     return value
 
 
-@pytest.mark.parametrize('problem', ['unknown', 'duplicate', 'kind', 'title', 'source', 'foreign_tenant', 'foreign_user'])
+@pytest.mark.parametrize('problem', ['unknown', 'kind', 'title', 'source', 'foreign_tenant', 'foreign_user'])
 def test_effective_schema_rejects_invalid_evidence_before_backend_firewall(problem):
     schema = provider_response_schema(authorized_evidence=[SOURCE])
     record = {key: SOURCE[key] for key in ('id', 'kind', 'title', 'source')}
     values = [record]
-    if problem == 'duplicate': values.append(copy.deepcopy(record))
-    elif problem in ('unknown', 'foreign_tenant', 'foreign_user'): record['id'] = 'corpus:' + problem
+    if problem in ('unknown', 'foreign_tenant', 'foreign_user'): record['id'] = 'corpus:' + problem
     else: record[problem] = 'user_input' if problem == 'kind' else 'Altered provenance'
     with pytest.raises(ResponseValidationError):
         _validate(candidate(values), schema, schema)
@@ -66,3 +65,22 @@ def test_independent_backend_firewall_keeps_rejecting_and_distinguishes_causes(p
     else: record['source'] = 'Altered source'
     with pytest.raises(ResponseValidationError) as failure: validate_response(value, [SOURCE])
     assert failure.value.rule_code == rule
+
+
+def test_provider_projection_omits_unsupported_uniqueness_but_processor_rejects_duplicates():
+    import json
+    from pydantic import ValidationError
+    path = Path(__file__).parents[2] / 'processor/app/agents/schemas.py'
+    spec = importlib.util.spec_from_file_location('processor_duplicate_schema', path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    for sources in ([], [SOURCE]):
+        for financial in (False, True):
+            schema = provider_response_schema(financial_metrics_allowed=financial, authorized_evidence=sources)
+            assert 'uniqueItems' not in json.dumps(schema)
+    record = {key: SOURCE[key] for key in ('id', 'kind', 'title', 'source')}
+    value = copy.deepcopy(ANSWER)
+    value['evidence'] = [record, copy.deepcopy(record)]
+    with pytest.raises(ValidationError, match='evidence ids must be unique'):
+        module.FinOpsResponse.model_validate(value)

@@ -81,8 +81,8 @@ def _bind_chat_evidence(schema, authorized_evidence):
                 choice['properties'][key] = rule
             rule['const'] = value
         choices.append(choice)
-    for branch in [schema, *schema['anyOf']]:
-        branch['properties']['evidence']['uniqueItems'] = True
+    # The endpoint rejects uniqueItems; processor and backend reject duplicates
+    # independently after generation. Keep exact provenance constraints here.
     if choices:
         schema['$defs']['Evidence'] = {'anyOf': choices}
     else:

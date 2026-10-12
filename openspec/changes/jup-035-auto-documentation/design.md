@@ -37,8 +37,12 @@ extension HMAC ya validada. Cada alternativa fija id, kind, title y source; una
 lista vacia solo admite estados no accionables sin citas. Backend y processor
 cuentan esa variante. El backend conserva un firewall independiente: no confia
 en que el proveedor respete el esquema y nunca repara un candidato invalido.
-El hash de ensamblador identifica effective-context-exact-records-v1.
+El hash de ensamblador identifica effective-context-exact-records-v2.
 
 Las llamadas multiples del endpoint actual se reproducen y permanecen
 rechazadas; no se presentan como corregidas sin un control compatible probado.
 El nuevo esquema tiene regresiones offline; su aceptacion real sigue pendiente.
+
+La proyeccion v2 omite uniqueItems, rechazado con HTTP400 por el endpoint real.
+Se conservan las alternativas exactas y el rechazo local de IDs duplicados en
+FinOpsResponse del processor y en el firewall backend; no se normaliza salida.

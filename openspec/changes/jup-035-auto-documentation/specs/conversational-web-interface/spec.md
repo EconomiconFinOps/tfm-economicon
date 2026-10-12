@@ -156,7 +156,9 @@ evidencia insuficiente sin inventar cifras.
 La respuesta final SHALL generarse con un esquema derivado de la evidencia del
 intento autenticado, incluyendo los resultados documentales aceptados por la
 continuacion HMAC. El esquema SHALL permitir solo registros exactos de id, kind,
-title y source y excluir duplicados. El backend SHALL conservar su validacion
+title y source. La proyeccion enviada SHALL omitir uniqueItems por compatibilidad
+con el proveedor; processor y backend SHALL rechazar IDs duplicados
+independientemente despues de la generacion. El backend SHALL conservar su validacion
 independiente y SHALL rechazar candidatos invalidos sin reparar, filtrar ni
 persistir texto parcial.
 
