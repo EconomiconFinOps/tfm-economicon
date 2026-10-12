@@ -27,6 +27,7 @@ async def exercise(resources,change=None,large=False,recount=False):
         counted=len(counter.encode(canonical(messages[1:]).decode(),add_special_tokens=False).ids)
         if large: assert counted>8192
         context={'prompt_version':version,'messages':messages,'authorized_evidence':[],
+                 'financial_metrics_allowed':False,'tool_protocol':'required-documentation-v1',
                  'manifest':{'prompt_version':version,'tokenizer_sha256':manifest['tokenizer']['sha256'],
                     'response_schema_sha256':manifest['response_schema_sha256'],
                     'input_contract_sha256':manifest['input_contract_sha256'],'assembler_sha256':manifest['assembler_sha256'],

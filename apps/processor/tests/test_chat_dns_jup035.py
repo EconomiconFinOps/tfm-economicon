@@ -19,7 +19,8 @@ def gateway_instance():
     return module.configured_gateway()
 
 async def collect(gateway,deadline):
-    return [record async for record in gateway({'messages':[{'role':'system','content':'Synthetic'}]},deadline)]
+    return [record async for record in gateway({'messages':[{'role':'system','content':'Synthetic'}],
+        'financial_metrics_allowed':False,'tool_protocol':'required-documentation-v1'},deadline)]
 
 def blocked_dns(monkeypatch):
     original_dns=socket.getaddrinfo
