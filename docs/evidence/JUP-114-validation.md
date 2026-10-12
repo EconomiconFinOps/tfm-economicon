@@ -31,6 +31,8 @@ Resultado de la detección: último día completo 2026-09-13 (el 14 es el últim
 
 El conjunto de JUP-107 concentra el gasto de cada semana en uno o dos días, así que, día a día, esos días son picos: Database abre episodio aunque su suma semanal baje. Es el comportamiento de la regla con esos datos, no un fallo; los datos de demo del change 2 tienen que tener gasto diario.
 
+**Revalidación tras la revisión adversarial** (commit `53b5af9`, esquema con `first_reviewed_by`): stack reconstruido con volúmenes nuevos, migraciones `001` y `002` con la columna nueva, mismos datos y 18 de 18 comprobaciones (las 15 anteriores más motivo que se ve en blanco 422, `first_reviewed_by` guardado y conservado tras cerrar, y detección con cuerpo y sin token 401). Las cifras de los cuatro episodios son idénticas.
+
 Al retirar los datos con `remove`, los costes quedan en 0 pero los 4 episodios y la marca de agua (`2026-09-13`) permanecen: confirma `RF-114-007`, que resuelve el change 2. El stack se paró con `down -v`.
 
 ## Pruebas automáticas

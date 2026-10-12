@@ -58,6 +58,8 @@ Commits: implementación hasta `b048e43`; los comandos se ejecutaron sobre ese c
 | `corepack pnpm jup:cleanup:check` | OK, 1236 archivos |
 | `git diff --check develop` | sin errores |
 | Stack real aislado (`docker compose -p jup114`, volúmenes nuevos) | migraciones `001` y `002` aplicadas; datos de JUP-107 cargados; 15/15 comprobaciones HTTP; cifras verificadas a mano con SQL independiente; `down -v` |
+| Revalidación tras la pasada 2 (`53b5af9`, volúmenes nuevos) | columna `first_reviewed_by` creada; 18/18 comprobaciones HTTP, cifras idénticas; `down -v` |
+| Pruebas de anomalías tras las correcciones (CockroachDB real) | 121 pasan; antes, 281 de anomalías, billing, presupuesto y aislamiento |
 
 Incidencias de entorno, no del cambio: el fixture de billing da 60 s a las migraciones del processor y en esta máquina tardan más; se subió solo en la copia local y se revirtió antes de cada commit. pgvector arrancó `unhealthy` la primera vez y se resolvió repitiendo `up -d --wait`, como en JUP-030.
 
