@@ -47,13 +47,13 @@ Cada pantalla publicada que consuma el backend SHALL tener, además de una direc
 
 ### Requirement: Ninguna pantalla de demostración se publica en el MVP
 
-El frontend NO SHALL publicar, ni con dirección ni con enlace en el menú, ninguna pantalla cuyos datos procedan solo de un origen de demostración. Su código y sus datos de demostración PUEDEN conservarse en el repositorio siempre que ninguna dirección ni enlace los presente. Las pantallas de Coste Detallado, Corte Global y Recomendaciones SHALL quedar no publicadas.
+El frontend NO SHALL publicar, ni con dirección ni con enlace en el menú, ninguna pantalla cuyos datos procedan solo de un origen de demostración, salvo que la propia pantalla declare de forma visible que sus datos son de demostración. Su código y sus datos de demostración PUEDEN conservarse en el repositorio siempre que ninguna dirección ni enlace los presente. Las pantallas de Coste Detallado, Corte Global y Recomendaciones SHALL quedar no publicadas.
 
 #### Scenario: El menú solo enlaza pantallas conectadas al backend
 
 - **WHEN** se muestra el menú de navegación con sesión establecida
 - **THEN** no contiene ningún enlace a Coste Detallado, Corte Global ni Recomendaciones
-- **AND** cada enlace que contiene lleva a una pantalla que consulta el backend
+- **AND** cada enlace que contiene lleva a una pantalla que consulta el backend o que declara de forma visible que sus datos son de demostración
 
 #### Scenario: Las pantallas de demostración no tienen dirección
 
@@ -62,6 +62,12 @@ El frontend NO SHALL publicar, ni con dirección ni con enlace en el menú, ning
 
 #### Scenario: Ocultar no cambia las pantallas con datos reales
 
-- **WHEN** se inspeccionan Coste Global, Anomalías, Ingestions, Assistant y Salud del sistema
+- **WHEN** se inspeccionan Coste Global, Ingestions, Assistant y Salud del sistema
 - **THEN** siguen en sus mismas direcciones y con los mismos enlaces del menú
 - **AND** siguen tomando sus datos del backend
+
+#### Scenario: Una pantalla de demostración rotulada puede seguir publicada
+
+- **WHEN** se abre Anomalías mientras sus datos sean de demostración
+- **THEN** la pantalla declara de forma visible que sus datos son de demostración
+- **AND** conserva su dirección y su enlace del menú

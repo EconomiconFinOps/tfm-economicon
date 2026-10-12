@@ -10,7 +10,7 @@ Una auditoría del frontend con el stack completo (2026-10-12) comprobó que Cos
 - Quitar de `routeConfig` las rutas `/operational`, `/cuts` y `/recommendations` y sus tres entradas del menú. Las pantallas, sus datos de demostración (`src/data/demo/`) y sus pruebas **se conservan** en el repositorio, sin ninguna ruta que las monte.
 - Quitar del menú la entrada «Overview», que repite lo que ya muestra Coste Global. Su ruta `/overview-legacy` **se mantiene** como ruta puente sin enlace: alrededor de 35 usos en 8 archivos de pruebas la emplean como vehículo de una petición autenticada, y la spec vigente exige que el resumen de facturación conserve dirección propia. Retirar la ruta queda para la tarjeta que cierre `RF-105-001`.
 - Una dirección no publicada (las tres ocultas o cualquier otra desconocida) lleva a la pantalla inicial en lugar de a la pantalla de error por defecto del enrutador.
-- Con solo pantallas conectadas al backend, el menú pasa a ser una sola lista: desaparece el separador que distinguía demostración de datos reales.
+- El menú pasa a ser una sola lista: desaparece el separador que distinguía demostración de datos reales, porque la única pantalla de demostración que queda (Anomalías) está rotulada.
 - Actualizar la documentación que cuenta o nombra esas pantallas: tabla «Rutas» del README del frontend (único recuento), mapa de carencias de JUP-097, guía de la demo de JUP-107 y los findings afectados.
 
 **Fuera de alcance:** construir las capacidades que esas pantallas necesitarían (trabajo futuro, JUP-110); borrar su código o sus datos; retirar `/overview-legacy`; arreglar el envío de mensajes del asistente sin el stack de IA; unificar el idioma de los rótulos del menú.

@@ -605,7 +605,7 @@ punto 13 de «Próximos pasos».
     rotulados), JUP-025 (#55, citas en el asistente) y JUP-047 (#81, la pantalla `/system-health`). Por
     eso este spike, escrito antes de ellas, se quedó atrás en varios puntos: ver las notas fechadas.
 
-    **Pantallas.** 9 rutas bajo sesión más `/login`: 5 sirven datos del backend (`/`, `/ingest`,
+    **Pantallas (a 2026-10-09; JUP-116 ocultó después tres de ellas, ver el recuento vigente).** 9 rutas bajo sesión más `/login`: 5 sirven datos del backend (`/`, `/ingest`,
     `/assistant`, `/overview-legacy` y `/system-health`) y 4 son de demostración (`/operational`,
     `/cuts`, `/anomalies` y `/recommendations`), de las cuales solo `/anomalies` lo indica en la
     interfaz. El recuento vigente, con su fecha, vive en la sección «Rutas» de

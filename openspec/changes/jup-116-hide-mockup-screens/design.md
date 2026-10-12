@@ -5,7 +5,7 @@ JUP: JUP-116
 Ver `proposal.md` para el motivo. Estado actual del frontend (`develop` en `3c6517b`):
 
 - `src/routes.tsx` monta bajo `SessionGate` y `Layout` diez rutas. Tres son de demostración sin ninguna petición (`/operational`, `/cuts`, `/recommendations`), y `/overview-legacy` es la ruta puente de JUP-095.
-- `src/layouts/Layout.tsx` tiene dos listas de menú (`navItems`, con las cinco pantallas heredadas del origen, y `backendNavItems`, con cuatro) separadas por una línea vertical que distinguía «demostración» de «datos reales». Esa distinción ya no es cierta: Coste Global y Anomalías, de la primera lista, son reales.
+- `src/layouts/Layout.tsx` tiene dos listas de menú (`navItems`, con las cinco pantallas heredadas del origen, y `backendNavItems`, con cuatro) separadas por una línea vertical que distinguía «demostración» de «datos reales». Esa distinción ya no es fiable: Coste Global, de la primera lista, es real, y Anomalías conserva datos de demostración pero los rotula.
 - No hay ninguna ruta comodín: una dirección desconocida muestra la pantalla de error por defecto de React Router.
 - `/overview-legacy` la usan como vehículo de una petición autenticada ~35 puntos de 8 archivos de `tests/` y `src/pages/`, y `frontend-navigation-shell` exige que el resumen de facturación conserve dirección propia.
 - Las pruebas de las tres pantallas (`OperationalCostDashboard`, `ExecutiveCutDashboard`, `RecommendationsPanel`, `savings-coral`) montan el componente directamente, sin pasar por el enrutador.
@@ -14,7 +14,7 @@ Ver `proposal.md` para el motivo. Estado actual del frontend (`develop` en `3c65
 
 **Goals:**
 
-- Que ninguna pantalla solo de demostración sea alcanzable desde la interfaz ni por dirección, sin borrar su código, sus datos ni sus pruebas.
+- Que ninguna pantalla de demostración sin rótulo sea alcanzable desde la interfaz ni por dirección, sin borrar su código, sus datos ni sus pruebas. Anomalías, que sí declara visiblemente su origen, sigue publicada.
 - Que reactivar una de ellas sea añadir una ruta y una entrada de menú, sin reescribir pantalla ni datos.
 - Que una dirección antigua (marcador, enlace compartido) no deje al operador en una pantalla de error.
 
@@ -32,9 +32,9 @@ Ver `proposal.md` para el motivo. Estado actual del frontend (`develop` en `3c65
 
 **3. Ruta comodín hacia la pantalla inicial.** Se añade `{ path: "*", element: <Navigate to="/" replace /> }` como hija de `Layout`, de modo que `SessionGate` actúa antes (sin sesión, la dirección lleva al acceso, como hoy) y con sesión el operador cae en Coste Global con el armazón y el ámbito intactos. Se usa `replace` para que Atrás no devuelva a la dirección oculta. Alternativa descartada: una pantalla «no encontrada» propia: más código y diseño para un caso que la demo no necesita. Efecto lateral aceptado: cualquier dirección desconocida, no solo las ocultas, redirige a `/` en lugar de mostrar el error del enrutador.
 
-**4. Menú de una sola lista.** `navItems` y `backendNavItems` se fusionan en una sola, sin el separador, en el orden Coste Global, Anomalías, Ingestions, Assistant, Salud del sistema. El separador existía para distinguir demostración de datos reales; con solo datos reales no distingue nada. Los rótulos no se cambian (el idioma mixto queda fuera de alcance).
+**4. Menú de una sola lista.** `navItems` y `backendNavItems` se fusionan en una sola, sin el separador, en el orden Coste Global, Anomalías, Ingestions, Assistant, Salud del sistema. El separador existía para distinguir demostración de datos reales; con Anomalías (rotulada) como única pantalla de demostración, ya no separa dos grupos. Los rótulos no se cambian (el idioma mixto queda fuera de alcance).
 
-**5. Las pruebas que usaban Coste Detallado como ejemplo pasan a una pantalla publicada.** Las tres pruebas de `routes.integration.test.tsx` (abrir directamente, conservar el ámbito, redirigir sin sesión) usan `/operational` porque solo exige `/tenants`; se pasan a `/ingest`, que tampoco consulta nada más al montarse. `Layout.test.tsx` deja de esperar las tres etiquetas ocultas y pasa a afirmar su ausencia. Se añaden pruebas de: cada dirección oculta redirige a la inicial con el ámbito conservado, el menú no contiene las ocultas ni Overview, y `/overview-legacy` se presenta sin enlace. Cada prueba nueva lleva su control positivo (la misma comprobación falla con la ruta restaurada).
+**5. Las pruebas que usaban Coste Detallado como ejemplo pasan a una pantalla publicada.** Las tres pruebas de `routes.integration.test.tsx` (abrir directamente, conservar el ámbito, redirigir sin sesión) usan `/operational` porque solo exige `/tenants`; se pasan a `/ingest`, que tampoco consulta nada más al montarse. `Layout.test.tsx` deja de esperar las tres etiquetas ocultas y pasa a afirmar su ausencia. Se añaden pruebas de: cada dirección oculta redirige a la inicial con el ámbito conservado, el menú no contiene las ocultas ni Overview, y `/overview-legacy` se presenta sin enlace. Las pruebas con sesión llevan su control positivo (fallan con la ruta restaurada o sin el comodín); las de «sin sesión» son escenario de la spec y control de que el comodín no se salta `SessionGate`, pero pasarían también sin él.
 
 **5b. Las pruebas de las pantallas ocultas se conservan.** Siguen ejecutándose porque montan el componente. Dejan de acreditar que la pantalla sea alcanzable; el README lo dirá.
 
