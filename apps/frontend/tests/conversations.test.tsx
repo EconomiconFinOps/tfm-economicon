@@ -46,7 +46,7 @@ describe("assistant conversations", () => {
     await user.type(title, conversation.title);
     await user.click(screen.getByRole("button", { name: "Nueva" }));
     expect(await screen.findByRole("button", { name: new RegExp(conversation.title) })).toBeVisible();
-    const composer = await screen.findByPlaceholderText("Pregunta sobre los documentos ingestados del cliente.");
+    const composer = await screen.findByPlaceholderText("Pregunta sobre los documentos ingeridos del cliente.");
     expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
     await user.type(composer, "   ");
     expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
@@ -131,7 +131,7 @@ describe("assistant conversations", () => {
     });
     restoreSession();
     renderApp(["/assistant"]);
-    const composer = await screen.findByPlaceholderText("Pregunta sobre los documentos ingestados del cliente.");
+    const composer = await screen.findByPlaceholderText("Pregunta sobre los documentos ingeridos del cliente.");
     await user.type(composer, userMessage.content);
     await user.click(screen.getByRole("button", { name: "Enviar" }));
 

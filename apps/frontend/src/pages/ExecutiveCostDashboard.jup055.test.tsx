@@ -95,7 +95,7 @@ async function start(plan?: Plan, prepare?: Parameters<typeof renderApp>[1]) {
   const network = backend(plan);
   restoreSession();
   const view = renderApp(["/"], prepare);
-  await screen.findByText("Dashboard Ejecutivo - Coste Global");
+  await screen.findByText("Panel Ejecutivo - Coste Global");
   return { ...network, ...view };
 }
 
@@ -484,7 +484,7 @@ describe("JUP-055: aislamiento, metadata, cancelación y concurrencia", () => {
     }));
     restoreSession();
     renderApp();
-    await screen.findByText("Dashboard Ejecutivo - Coste Global");
+    await screen.findByText("Panel Ejecutivo - Coste Global");
     await waitFor(() => expect(blocked).toHaveLength(3));
     expect(signals).toHaveLength(3);
     expect(signals.every((signal) => !signal.aborted)).toBe(true);

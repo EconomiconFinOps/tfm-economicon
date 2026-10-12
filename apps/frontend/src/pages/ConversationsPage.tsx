@@ -140,7 +140,7 @@ export function ConversationsPage() {
             >
               <strong className="block text-sm text-foreground">{conversation.title}</strong>
               <span className="text-xs text-muted-foreground">
-                {new Date(conversation.updated_at).toLocaleString()}
+                {new Date(conversation.updated_at).toLocaleString("es-ES")}
               </span>
             </button>
           ))}

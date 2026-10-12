@@ -86,13 +86,13 @@ describe("Arbol de rutas real: abrir una direccion directamente presenta su pant
     renderRoutes(["/operational"]);
 
     await waitFor(() => {
-      expect(screen.getByText("Dashboard Operativo - Coste Detallado")).toBeInTheDocument();
+      expect(screen.getByText("Panel Operativo - Coste Detallado")).toBeInTheDocument();
     });
 
     // Aserción negativa complementaria: el encabezado de la ruta indice
     // (ExecutiveCostDashboard) no debe estar presente -- confirma que se
     // presento /operational, no "/".
-    expect(screen.queryByText("Dashboard Ejecutivo - Coste Global")).toBeNull();
+    expect(screen.queryByText("Panel Ejecutivo - Coste Global")).toBeNull();
   });
 });
 
@@ -140,7 +140,7 @@ describe("Arbol de rutas real: el ambito activo sobrevive a la navegacion", () =
     fireEvent.click(screen.getByText("Coste Detallado"));
 
     await waitFor(() => {
-      expect(screen.getByText("Dashboard Operativo - Coste Detallado")).toBeInTheDocument();
+      expect(screen.getByText("Panel Operativo - Coste Detallado")).toBeInTheDocument();
     });
 
     // El selector, ya en la nueva pantalla, sigue mostrando "t2": el cambio

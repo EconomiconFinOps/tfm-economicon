@@ -21,7 +21,7 @@ const southConversation = {
 };
 const southDetailPath = `${collectionPath}/${southConversation.id}`;
 const southMessage = { ...userMessage, id: "message-south", content: "South tenant history" };
-const composerPlaceholder = "Pregunta sobre los documentos ingestados del cliente.";
+const composerPlaceholder = "Pregunta sobre los documentos ingeridos del cliente.";
 
 function mockTenantConversations(overrides: Parameters<typeof mockBackend>[0] = {}) {
   return mockBackend({

@@ -53,7 +53,7 @@ describe("login and session recovery", () => {
     // especifico del dashboard conectado al backend lo cubren las pruebas de
     // "tenant bootstrap and dashboard" mas abajo, que navegan explicitamente
     // a "/overview-legacy".
-    expect(await screen.findByText("Dashboard Ejecutivo - Coste Global")).toBeVisible();
+    expect(await screen.findByText("Panel Ejecutivo - Coste Global")).toBeVisible();
     expect(screen.getByLabelText("Ámbito de cliente")).toHaveValue(tenants[0].id);
     expect(window.localStorage.getItem(TENANT_KEY)).toBe(tenants[0].id);
   });
@@ -85,7 +85,7 @@ describe("login and session recovery", () => {
     await user.click(screen.getByRole("button", { name: "Iniciar sesión" }));
     // Mismo razonamiento que el test anterior: tras login, "/" muestra
     // ExecutiveCostDashboard (demo), no el dashboard conectado al backend.
-    expect(await screen.findByText("Dashboard Ejecutivo - Coste Global")).toBeVisible();
+    expect(await screen.findByText("Panel Ejecutivo - Coste Global")).toBeVisible();
   });
 
   it("restores the saved session and tenant across reloads, then clears data on logout", async () => {

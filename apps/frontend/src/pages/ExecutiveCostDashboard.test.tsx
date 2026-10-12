@@ -28,7 +28,7 @@ describe("ExecutiveCostDashboard", () => {
     const { requests } = mockBackend({ "GET /billing/summary": (request) => jsonResponse(aligned(request, live)) });
     restoreSession();
     renderApp();
-    expect(await screen.findByText("Dashboard Ejecutivo - Coste Global")).toBeVisible();
+    expect(await screen.findByText("Panel Ejecutivo - Coste Global")).toBeVisible();
     const table = await screen.findByRole("table", { name: /desglose/i });
     expect(table).toHaveTextContent("9007199254740993.01");
     expect(table).toHaveTextContent("-1.01");

@@ -24,7 +24,7 @@ const coverage: TagCoverage = {
 };
 
 async function openPanel() {
-  await screen.findByText("Dashboard Ejecutivo - Coste Global");
+  await screen.findByText("Panel Ejecutivo - Coste Global");
   fireEvent.change(screen.getByLabelText("Mes inicial"), { target: { value: "2024-06" } });
   fireEvent.change(screen.getByLabelText("Mes final"), { target: { value: "2024-06" } });
   await userEvent.click(screen.getByText("Cobertura de etiquetas FinOps"));
@@ -52,7 +52,7 @@ describe("TagCoveragePanel", () => {
   it("loads on expansion with tenant headers and exact money, within the current executive dashboard", async () => {
     const { requests } = mockBackend({ "GET /billing/tag-coverage": () => jsonResponse(coverage) });
     restoreSession(); renderApp();
-    await screen.findByText("Dashboard Ejecutivo - Coste Global");
+    await screen.findByText("Panel Ejecutivo - Coste Global");
     expect(requests.some((r) => r.path === "/billing/tag-coverage")).toBe(false);
     const panel = await openPanel();
     expect((await within(panel).findAllByText("9007199254740993.01 USD"))[0]).toBeVisible();

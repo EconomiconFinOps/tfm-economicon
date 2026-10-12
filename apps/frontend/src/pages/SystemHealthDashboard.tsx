@@ -26,7 +26,7 @@ const JOB_LABELS: Record<string, string> = { publish_pending: "Pendientes de pub
 
 function date(value: string | null | undefined, now: number) {
   if (!isHealthObservationTime(value, now)) return "Fecha no disponible";
-  return `${new Date(value).toLocaleString()} (${value})`;
+  return `${new Date(value).toLocaleString("es-ES")} (${value})`;
 }
 
 function ActivitySummary({ title, item, now, ingestion = false }: { title: string; item: HealthActivitySummary; now: number; ingestion?: boolean }) {

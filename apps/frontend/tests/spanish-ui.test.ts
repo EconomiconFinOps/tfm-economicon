@@ -12,12 +12,14 @@ const ENGLISH_UI_TEXT = [
   "Conversations", "Assistant chat", "New conversation title", "Loading conversation", "Create a conversation",
   "Ask the assistant", "Sending...", "Each conversation",
   "Source", "Artifact URI", "Text content", "Queueing job", "Queue ingestion", "Job accepted", "Job ID",
-  "Create ingestion job", "Ingestions", "Assistant", "Overview",
+  "Create ingestion job", "Ingestions", "Assistant", "Overview", "Dashboard", "Close",
   "Bootstrapping", "Connecting to", "Backend unavailable", "Possible overlapping", "Monthly Spend",
   "Savings Identified", "Service Health", "Active operator", "Billing period", "Unavailable", "No cost data"
 ];
 
-const SEGMENTS = /"((?:[^"\\\n]|\\.)*)"|'((?:[^'\\\n]|\\.)*)'|`((?:[^`\\]|\\.)*)`|>([^<>{}\n]+)</g;
+const STRING_LITERAL = /"((?:[^"\\\n]|\\.)*)"|'((?:[^'\\\n]|\\.)*)'|`((?:[^`\\]|\\.)*)`/g;
+const JSX_TEXT = /(?<![=-])>([^<>]*)</g;
+const NON_VISIBLE_ATTRIBUTE = /(className|name|id|key|htmlFor|type|path|to|href|data-slot|dataKey)=$/;
 
 function stripComments(source: string): string {
   return source
@@ -25,19 +27,28 @@ function stripComments(source: string): string {
     .replace(/(^|[^:"'`\\])\/\/[^\n]*/g, "$1");
 }
 
+function containsPhrase(text: string, phrase: string): boolean {
+  const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const flags = phrase.includes(" ") ? "iu" : "u";
+  return new RegExp(`(^|[^\\p{L}\\p{N}_])${escaped}($|[^\\p{L}\\p{N}_])`, flags).test(text);
+}
+
 export function findEnglishUiText(source: string): string[] {
   const code = stripComments(source).replace(/^\s*(import|export)\b[^\n]*\bfrom\s+["'][^"']*["'];?/gm, "");
-  const found: string[] = [];
-  for (const match of code.matchAll(SEGMENTS)) {
-    const text = match[1] ?? match[2] ?? match[3] ?? match[4] ?? "";
-    for (const phrase of ENGLISH_UI_TEXT) {
-      if (new RegExp(`(^|[^\\p{L}\\p{N}_])${phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^\\p{L}\\p{N}_])`, "u").test(text)) {
-        found.push(phrase);
-      }
-    }
+  const texts: string[] = [];
+  for (const match of code.matchAll(STRING_LITERAL)) {
+    const before = code.slice(0, match.index);
+    const after = code.slice((match.index ?? 0) + match[0].length);
+    if (NON_VISIBLE_ATTRIBUTE.test(before) || /^\s*:/.test(after)) continue;
+    texts.push(match[1] ?? match[2] ?? match[3] ?? "");
   }
-  return found;
+  for (const match of code.matchAll(JSX_TEXT)) {
+    const text = match[1].replace(/\{[^{}]*\}/g, " ");
+    if (!/[;=]/.test(text)) texts.push(text);
+  }
+  return ENGLISH_UI_TEXT.filter((phrase) => texts.some((text) => containsPhrase(text, phrase)));
 }
+
 
 function interfaceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -81,5 +92,18 @@ describe("interfaz en español", () => {
 
   it("no marca un término que el glosario conserva en inglés", () => {
     expect(findEnglishUiText("<p>Gestión FinOps en Azure con UTC</p>")).toEqual([]);
+  });
+
+  it("detecta texto en varias líneas, junto a expresiones y con otras mayúsculas", () => {
+    expect(findEnglishUiText("<button>\n  Sign in\n</button>")).toEqual(["Sign in"]);
+    expect(findEnglishUiText("<p>Sign in {user}</p>")).toEqual(["Sign in"]);
+    expect(findEnglishUiText('const label = "SIGN IN";')).toEqual(["Sign in"]);
+    expect(findEnglishUiText('<span className="sr-only">Close</span>')).toEqual(["Close"]);
+  });
+
+  it("ignora claves de objeto y atributos que no se muestran", () => {
+    expect(findEnglishUiText('const o = { "Sign in": 1 };')).toEqual([]);
+    expect(findEnglishUiText('<div className="Assistant" id="Overview" />')).toEqual([]);
+    expect(findEnglishUiText("const f = (x) => x > 3 ? 1 : 2; const g = a < b;")).toEqual([]);
   });
 });

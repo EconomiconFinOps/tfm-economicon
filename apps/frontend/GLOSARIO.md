@@ -7,7 +7,7 @@ La interfaz del frontend está en español. Este glosario fija el nombre de los 
 | Concepto | Nombre en la interfaz | No usar |
 | --- | --- | --- |
 | Cliente (tenant del backend) | cliente, clientes | tenant, tenants |
-| Panel de resumen | panel | dashboard |
+| Pantalla de resumen general | Resumen (en el menú); el resto de pantallas de coste se llaman «Panel…» | dashboard |
 | Carga de documentos o costes | ingesta | ingestion, ingestions |
 | Trabajo de ingesta | trabajo de ingesta | ingestion job |
 | Asistente de IA | asistente | assistant |
@@ -26,6 +26,12 @@ La interfaz del frontend está en español. Este glosario fija el nombre de los 
 | Azure, CockroachDB, RabbitMQ, S3 | ayudas técnicas | Nombres propios de producto. |
 | `owner`, `application`, `cost_center`, `project` | etiquetas de coste | Claves literales de las etiquetas de Azure; se muestran tal cual porque la persona usuaria debe escribirlas igual. |
 | UTC | fechas | Siglas estándar de la hora universal. |
-| ID | «ID de trabajo» | Abreviatura de uso corriente en español. |
+| backend, gateway, endpoint, embeddings | ayudas técnicas y diagnóstico de salud | Términos de arquitectura sin equivalente de uso habitual en el sector; la persona que opera la plataforma los conoce. |
+| Compute, Storage, Network | leyendas y categorías de los datos de demostración | Categorías de coste de Azure; se tratan como valores de datos. |
+| ID | «ID del trabajo» | Abreviatura de uso corriente en español. |
 | URI | «URI del artefacto» | Siglas técnicas sin equivalente. |
 | Valores de la API | nombres de servicio, etiquetas, planes, títulos de conversación, mensajes del asistente | Datos del cliente: se muestran sin modificar. |
+
+## Tratamiento
+
+La interfaz tutea a la persona usuaria («Elige un cliente», «Inicia sesión»). Los puntos suspensivos se escriben con tres puntos (`...`).

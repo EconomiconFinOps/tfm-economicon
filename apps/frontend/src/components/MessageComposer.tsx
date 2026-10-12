@@ -116,7 +116,7 @@ export function MessageComposer({ token, tenantId, conversationId }: {
       className={fieldClass}
       rows={5}
       aria-label="Pregunta"
-      placeholder={ownership ? "Pregunta sobre los costes de la selección." : "Pregunta sobre los documentos ingestados del cliente."}
+      placeholder={ownership ? "Pregunta sobre los costes de la selección." : "Pregunta sobre los documentos ingeridos del cliente."}
       value={message}
       disabled={sendMutation.isPending}
       onChange={(event) => setMessage(event.target.value)}
