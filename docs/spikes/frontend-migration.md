@@ -630,7 +630,7 @@ punto 13 de «Próximos pasos».
     | Decisión | Hallazgo | Quién |
     | --- | --- | --- |
     | Qué capacidades de backend se construyen para las pantallas de demostración, y si se conectan o se retiran | `RF-091-003`, `RF-095-002`, `RF-099-002` | Producto |
-    | Rotular las 3 pantallas de demostración sin aviso | `RF-104-004` | Producto |
+    | Rotular las 3 pantallas de demostración sin aviso (resuelto después: JUP-116 las ocultó) | `RF-104-004` | Producto |
     | Leer el estado de un trabajo de ingesta desde la interfaz | `RF-104-003` | Producto |
     | Cambiar el requisito de reintentos de la sesión, que retrasa unos 7 s el aviso de sesión expirada | `RF-098-002` | Equipo (técnica) |
     | Plazos de tests bajo carga y cómo ejecutar `test` desde la raíz | `RF-098-004`, `RF-103-005` | Equipo (técnica) |

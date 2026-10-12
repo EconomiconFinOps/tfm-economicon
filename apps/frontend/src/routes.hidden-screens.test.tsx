@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
@@ -121,5 +123,30 @@ describe("vista heredada del resumen de facturación", () => {
 
     await waitFor(() => expect(screen.getByText(/Tenant-aware FinOps workspace/)).toBeInTheDocument());
     expect(screen.getByRole("combobox", { name: /ambito de cliente/i })).toBeInTheDocument();
+  });
+});
+
+describe("pantallas de demostración publicadas", () => {
+  const src = (...parts: string[]) => readFileSync(path.resolve(__dirname, ...parts), "utf8");
+
+  it("toda pantalla enrutada que lee datos de demostración declara visiblemente su origen", () => {
+    const screens = [...src("routes.tsx").matchAll(/from "\.\/pages\/(\w+)"/g)].map((m) => m[1]);
+    expect(screens).toContain("AnomaliesPanel");
+    const unlabelled = screens.filter((name) => {
+      const code = src("pages", `${name}.tsx`);
+      return code.includes("data/demo") && !code.includes("Datos de demostración");
+    });
+    expect(unlabelled).toEqual([]);
+  });
+});
+
+describe("direcciones hostiles no publicadas", () => {
+  it.each(["/%E0%A4%A", "/cuts?x=1#h", "/" + "a".repeat(5000)])("%s no presenta error del enrutador", async (address) => {
+    stubSession();
+    stubBackend();
+    renderRoutes([address]);
+
+    await waitFor(() => expect(screen.getByText("Dashboard Ejecutivo - Coste Global")).toBeInTheDocument());
+    expect(screen.queryByText(/Unexpected Application Error|404/)).toBeNull();
   });
 });

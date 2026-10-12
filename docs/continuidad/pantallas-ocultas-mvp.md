@@ -11,7 +11,7 @@
 ## Decisiones que no se deducen del código
 
 - **Ocultar, no borrar.** Decisión de Lucia frente a un interruptor de configuración: se quitan rutas y entradas de menú y las pantallas, sus datos y sus pruebas se quedan en el repositorio. Reactivar una son dos líneas (ruta y entrada), descritas en el README del frontend, «Pantallas no publicadas».
-- **`/overview-legacy` conserva su ruta.** Sale del menú porque repite Coste Global, pero unos 35 puntos de pruebas la usan de vehículo y la spec exige dirección propia para el resumen de facturación. Retirarla del todo es `RF-105-001`.
+- **`/overview-legacy` conserva su ruta.** Sale del menú porque repite Coste Global, pero 34 líneas de 9 archivos de pruebas la usan de vehículo y la spec exige dirección propia para el resumen de facturación. Retirarla del todo es `RF-105-001`.
 - **Una dirección desconocida lleva a `/`.** Se añadió una ruta comodín con `replace`, de modo que los marcadores antiguos no acaban en la pantalla de error del enrutador y Atrás no vuelve a la dirección oculta.
 - **Se retiró el token `--muted`.** Era un alias de `--border` cuyo único consumidor era el separador del menú; el guardián de tokens falla si un token no se usa.
 

@@ -49,7 +49,7 @@ Cada pantalla publicada que consuma el backend SHALL tener, además de una direc
 
 El frontend NO SHALL publicar, ni con dirección ni con enlace en el menú, ninguna pantalla cuyos datos procedan solo de un origen de demostración, salvo que la propia pantalla declare de forma visible que sus datos son de demostración. Su código y sus datos de demostración PUEDEN conservarse en el repositorio siempre que ninguna dirección ni enlace los presente. Las pantallas de Coste Detallado, Corte Global y Recomendaciones SHALL quedar no publicadas.
 
-#### Scenario: El menú solo enlaza pantallas conectadas al backend
+#### Scenario: El menú no enlaza pantallas ocultas ni de demostración sin aviso
 
 - **WHEN** se muestra el menú de navegación con sesión establecida
 - **THEN** no contiene ningún enlace a Coste Detallado, Corte Global ni Recomendaciones
