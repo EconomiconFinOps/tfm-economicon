@@ -6,7 +6,7 @@ JUP: JUP-114 · Trello: https://trello.com/c/F492abeY · Rama: `feat/JUP-114-ano
 
 Segundo change de JUP-114. Conecta el panel `/anomalies` con los episodios guardados (resumen, bandeja con filtros, «Detectar ahora», detalle con cambio de estado y exportación CSV/PDF), la detección sin límite de 7 días, la lista con «Revisado hasta», indicador sintético y total abierto por moneda, el conjunto de demo diario (134 registros con P1, P2 y P3) y la retirada de episodios con `remove` (`RF-114-007`).
 
-## Revisión adversarial, pasada 1
+## Adversarial Review (pass 1)
 
 Revisor independiente (agente `adversarial-reviewer`), que recibió solo los requisitos y el diff `0d98744..HEAD`, sin el razonamiento de quien implementó. Veredicto: `changes-needed`, sin hallazgos de severidad alta.
 
@@ -25,7 +25,7 @@ Revisor independiente (agente `adversarial-reviewer`), que recibió solo los req
 
 Ataques que resistieron según el revisor: recálculo independiente de los esperados de la demo (3619,43 EUR; P1 2807,71, P2 642,86, P3 168,86), validación del motivo de cierre frente al backend, neutralización de fórmulas en CSV y escape de HTML en el PDF, tipos y validadores del contrato, aislamiento entre clientes en SQL y los totales semanales de JUP-030.
 
-## Revisión adversarial, pasada 2
+## Adversarial Review (pass 2)
 
 Mismo revisor independiente, sobre los arreglos de la pasada 1 (`git diff 56d2393..HEAD`). Veredicto: `accept`, sin hallazgos bloqueantes ni altos. Ejecutó los 30 tests del panel; no pudo ejecutar la prueba del backend (necesita CockroachDB) ni verlo en navegador.
 
@@ -53,7 +53,9 @@ Resistieron: reintento sin camino sin asignar, conexión nueva y cerrada por int
 
 Defectos de maquetación encontrados en el stack real y corregidos antes de la revisión (`180aa2a`): el `sr-only` de la última cabecera de la tabla alargaba la página a 817 px, y las filas del diálogo se estiraban a 390 px.
 
-## Human Approval` de Lucia.
+## Hallazgos registrados
+
+`openspec/findings/backlog.md`: `RF-114-011` (CSV sin RFC 4180, componente compartido), `RF-114-012` (primera detección sobre toda la historia; aceptado por Lucia como riesgo conocido del PR), `RF-114-013` (nombres de servicio sin normalizar), `RF-114-014` (pequeñas incoherencias del detalle y del motivo) y `RF-114-015` (reintentos agotados de la lista). `RF-114-006` y `RF-114-007` quedan resueltos por este change.
 
 ## Human Approval
 
