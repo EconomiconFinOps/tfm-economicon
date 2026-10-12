@@ -55,16 +55,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## Material de marca y fuentes empaquetadas (JUP-112)
+
+**Logotipo de Economicon (material propio del proyecto).** `src/assets/brand/economicon-primary.png` y `economicon-inverse.png` son los bytes originales de las imágenes del monograma E del dossier de marca del proyecto (`economicon_dossier.pptx`, entradas `ppt/media/image2.png` y `image1.png`), sin recolorear ni editar. `public/favicon.png` es el monograma primario reescalado a 64 px. No se modifica ni se aplican efectos al logotipo.
+
+| Archivo | SHA-256 |
+| --- | --- |
+| `src/assets/brand/economicon-primary.png` | `3d642d739a7550827c60f32d281b8ad4d79df0fab9d1a5e683ae0bd96085d93e` |
+| `src/assets/brand/economicon-inverse.png` | `bb7aa6b5158edc020ccf92eec77a322a231efa3ac60dd8ca52806404cc61062e` |
+
+**Fuentes (SIL Open Font License 1.1).** Se empaquetan con la aplicación mediante los paquetes `@fontsource-variable/inter` y `@fontsource-variable/space-grotesk` (5.3.0), de modo que no se piden a terceros en ejecución. La licencia OFL permite su uso y redistribución con la aplicación y exige conservar estos avisos de copyright; el texto completo de la licencia va en el `LICENSE` de cada paquete.
+
+| Fuente | Aviso de copyright | Uso |
+| --- | --- | --- |
+| Inter | Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter) | cuerpo, etiquetas y datos |
+| Space Grotesk | Copyright 2020 The Space Grotesk Project Authors (https://github.com/floriankarsten/space-grotesk) | titulares y nombre de marca |
+
+El documento de impresión de `ExportButton` sigue pidiendo `Arial` porque se abre fuera de la aplicación y no carga estas fuentes.
+
 ## Lo que NO requiere atribución aquí
 
-- **Fotografías de Unsplash.** El proyecto de origen las incluía, pero **no se portó ninguna imagen**:
-  `apps/frontend` no contiene archivos de imagen (`.png`, `.jpg`, `.svg`, `.ico`…) ni `src/assets` ni
-  `public/`, y ningún archivo de `src/` ni `index.html` las referencia. Verificado el 2026-09-29.
-- **Fuentes.** No hay `@font-face` ni archivos de fuente (`.woff`, `.woff2`, `.ttf`), ni en el código ni
-  en el CSS generado (0 reglas `@font-face`). El texto usa la pila de fuentes **del sistema** que aplica
-  Tailwind por defecto (`-apple-system`, `Segoe UI`, `Roboto`, `Arial`…), y el documento de impresión de
-  `ExportButton` pide `Arial`; ninguna se distribuye con la aplicación. La hoja `fonts.css` del origen
-  estaba vacía y no se portó.
+- **Fotografías de Unsplash.** El proyecto de origen las incluía, pero **no se portó ninguna fotografía**: el único material gráfico del repositorio es el logotipo de Economicon descrito en la sección de marca. Verificado el 2026-09-29 y revisado en JUP-112.
 - **Iconos y otras dependencias de npm.** Se consumen como **paquetes**, no se copia su código al
   repositorio, y cada paquete lleva su propia licencia. Licencias declaradas por las versiones
   instaladas (leídas de su `package.json` el 2026-09-29):

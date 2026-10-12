@@ -101,13 +101,13 @@ export function ConversationsPage() {
       >
         <form className="flex gap-2" onSubmit={handleCreate}>
           <input
-            className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-highlight"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="New conversation title"
           />
           <button
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             type="submit"
             disabled={createMutation.isPending}
           >
@@ -131,8 +131,8 @@ export function ConversationsPage() {
               type="button"
               className={
                 conversation.id === selectedConversationId
-                  ? "rounded-md border border-primary bg-primary/10 px-3 py-2 text-left"
-                  : "rounded-md border border-border bg-background px-3 py-2 text-left hover:border-primary"
+                  ? "rounded-md border border-highlight bg-accent px-3 py-2 text-left"
+                  : "rounded-md border border-border bg-background px-3 py-2 text-left hover:border-highlight"
               }
               onClick={() => setSelectedConversationId(conversation.id)}
             >

@@ -30,7 +30,7 @@ export const cutActions = [
 ];
 
 export const kpiData = [
-  { title: "Ahorro Total", value: "295.200€", subtitle: "Últimos 6 meses", icon: TrendingDown, color: "green" },
+  { title: "Ahorro Total", value: "295.200€", subtitle: "Últimos 6 meses", icon: TrendingDown, color: "saving" },
   { title: "Objetivo Mensual", value: "55.000€", subtitle: "Junio 2026", icon: Target, color: "blue" },
   { title: "Alcanzado (Jun)", value: "47.200€", subtitle: "85.8% del objetivo", icon: CheckCircle, color: "purple" },
   { title: "Acciones Activas", value: "12", subtitle: "6 completadas", icon: Scissors, color: "orange" },

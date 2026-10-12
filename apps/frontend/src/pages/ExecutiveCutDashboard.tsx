@@ -1,6 +1,6 @@
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ExportButton } from "@/components/ExportButton";
-import { chartTooltipStyle } from "@/components/chartTheme";
+import { chartLegendFormatter, chartTooltipItemStyle, chartTooltipStyle } from "@/components/chartTheme";
 // Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
 // tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
 import { savingsData, cutActions, kpiData } from "@/data/demo/executiveCutDashboard";
@@ -16,11 +16,13 @@ import { savingsData, cutActions, kpiData } from "@/data/demo/executiveCutDashbo
 const toneBoxClass: Record<string, string> = {
   green: 'bg-success-tint/20 border-success-tint/30',
   blue: 'bg-info-tint/20 border-info-tint/30',
-  orange: 'bg-attention-tint/20 border-attention-tint/30',
+  orange: 'bg-accent border-border',
+  saving: 'bg-saving-foreground/10 border-saving-foreground/30',
 };
 const toneIconClass: Record<string, string> = {
   green: 'text-success',
   blue: 'text-info',
+  saving: 'text-saving-foreground',
 };
 
 export function ExecutiveCutDashboard() {
@@ -46,15 +48,15 @@ export function ExecutiveCutDashboard() {
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpiData.map((kpi, idx) => (
-          <div key={idx} className="bg-gradient-to-br from-card to-accent rounded-lg border border-border p-5 shadow-xl hover:shadow-info-tint/10 transition-shadow">
+          <div key={idx} className={`rounded-lg border p-5 shadow-xl transition-shadow ${kpi.color === 'saving' ? 'border-saving bg-saving text-saving-foreground' : 'border-border bg-gradient-to-br from-card to-accent hover:shadow-info-tint/10'}`}>
             <div className="flex items-center gap-3 mb-3">
               <div className={`p-2 rounded-lg ${toneBoxClass[kpi.color] ?? ''} border`}>
                 <kpi.icon className={`w-6 h-6 ${toneIconClass[kpi.color] ?? ''}`} />
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-1">{kpi.title}</p>
-            <p className="font-bold text-foreground">{kpi.value}</p>
-            <p className="text-xs text-neutral mt-1">{kpi.subtitle}</p>
+            <p className={`text-sm mb-1 ${kpi.color === 'saving' ? '' : 'text-muted-foreground'}`}>{kpi.title}</p>
+            <p className={`font-bold ${kpi.color === 'saving' ? '' : 'text-foreground'}`}>{kpi.value}</p>
+            <p className={`text-xs mt-1 ${kpi.color === 'saving' ? '' : 'text-neutral'}`}>{kpi.subtitle}</p>
           </div>
         ))}
       </div>
@@ -69,9 +71,9 @@ export function ExecutiveCutDashboard() {
             <YAxis stroke="var(--chart-axis)" />
             <Tooltip
               formatter={(value) => `${value.toLocaleString()}€`}
-              contentStyle={chartTooltipStyle}
+              contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle}
             />
-            <Legend />
+            <Legend formatter={chartLegendFormatter} />
             <Bar dataKey="objetivo" fill="var(--chart-baseline)" name="Objetivo" />
             <Bar dataKey="alcanzado" fill="var(--chart-2)" name="Alcanzado" />
             <Bar dataKey="pendiente" fill="var(--chart-negative)" name="Pendiente" />
@@ -130,9 +132,9 @@ export function ExecutiveCutDashboard() {
             <YAxis stroke="var(--chart-axis)" />
             <Tooltip
               formatter={(value) => `${value.toLocaleString()}€`}
-              contentStyle={chartTooltipStyle}
+              contentStyle={chartTooltipStyle} itemStyle={chartTooltipItemStyle}
             />
-            <Legend />
+            <Legend formatter={chartLegendFormatter} />
             <Line type="monotone" dataKey="alcanzado" stroke="var(--chart-2)" strokeWidth={2} name="Ahorro Acumulado" />
             <Line type="monotone" dataKey="objetivo" stroke="var(--chart-baseline)" strokeWidth={2} strokeDasharray="5 5" name="Objetivo" />
           </LineChart>

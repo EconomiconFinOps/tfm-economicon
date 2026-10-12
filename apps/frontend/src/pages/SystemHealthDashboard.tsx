@@ -75,7 +75,7 @@ export function SystemHealthDashboard() {
           <p className="mt-1 text-sm text-muted-foreground">Disponibilidad de los servicios y actividad de {activeTenant?.name ?? "su cliente"}.</p>
         </div>
         <button type="button" onClick={health.refresh} disabled={health.checking}
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-primary px-4 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-highlight disabled:opacity-60">
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-primary px-4 py-2 text-sm font-medium text-primary-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-highlight disabled:opacity-60">
           <RefreshCw className="size-4" aria-hidden="true" />Actualizar
         </button>
       </div>

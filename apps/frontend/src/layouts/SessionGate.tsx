@@ -256,7 +256,7 @@ export function SessionGate() {
           <h1 className="mt-2 font-bold">No se han podido cargar los tenants</h1>
           <p className="mt-2 text-sm text-muted-foreground">{message}</p>
           <button
-            className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80"
+            className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             type="button"
             // Se envuelve en una lambda sin argumentos (en vez de pasar
             // `handleLogout` directo) porque, tras aceptar un motivo
