@@ -17,7 +17,7 @@ Revisor independiente (agente `adversarial-reviewer`), que recibió solo los req
 | ADV-3: cadenas largas sin espacios en el detalle a 390 px (motivo de 500 caracteres, `previous_episode_id`, título) | Media | Corregido con `[overflow-wrap:anywhere]` y `pr-8` en el título. Comprobado en Chromium a 390 px, claro y oscuro: el diálogo mide 388 px de ancho y de contenido, sin desborde |
 | ADV-4: la exportación CSV escapa con `JSON.stringify` (no RFC 4180) y sin BOM | Media | Registrado `RF-114-011`: componente compartido por seis dashboards y anterior a este change |
 | ADV-5: la lista usa SERIALIZABLE sin tratar el reintento de CockroachDB (`40001`) | Media | Corregido: hasta 3 intentos, y el error pasa si no es `40001` o se agotan. Prueba con CockroachDB real |
-| ADV-6: la primera detección recorre toda la historia del cliente sin tope ni medida de tiempo | Media | Registrado `RF-114-012`, con medidas del stack real. Decisión de Lucia pendiente (aceptar como riesgo o arreglar) |
+| ADV-6: la primera detección recorre toda la historia del cliente sin tope ni medida de tiempo | Media | Registrado `RF-114-012`, con medidas del stack real. Aceptado por Lucia como riesgo conocido para el PR de JUP-114 (2026-10-12) |
 | ADV-7: `tasks.md` con una línea suelta y casillas sin marcar en el árbol de trabajo | Baja | Restaurado desde `HEAD`; el fichero del disco se había sobrescrito con un buffer antiguo del editor |
 | ADV-8: continuidad con «22 registros» como estado actual | Baja | Corregido |
 | ADV-9: límite de motivo en UTF-16 frente a puntos de código, «Close» en inglés, nombre accesible ambiguo | Baja | Registrado `RF-114-014` |
@@ -42,6 +42,5 @@ Defectos de maquetación encontrados en el stack real y corregidos antes de la r
 
 ## Pendiente
 
-- Decisión de Lucia sobre `RF-114-012`.
 - Pasada 2 de la revisión adversarial sobre los arreglos de ADV-1, ADV-2, ADV-3 y ADV-5.
 - Evidencia por criterio en `docs/evidence/JUP-114-validation.md` y bloque `## Human Approval` de Lucia.
