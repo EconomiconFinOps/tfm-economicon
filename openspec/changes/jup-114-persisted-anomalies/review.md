@@ -80,3 +80,18 @@ Ataques que resistieron (resumen del revisor): concurrencia de detecciones en el
 Barrido de patrón: ADV-1 sin otras trazas de autores; ADV-2 es la única dependencia de ruta con lectura del cuerpo; ADV-3 se repite en `billing.py` (`tag_key`), `dependencies.py` (`X-Tenant-Id`) y dos tareas del processor, registrado como `RF-114-009`; ADV-4 y ADV-5 solo en este código.
 
 Tras las correcciones: 281 pruebas de anomalías, billing, presupuesto y aislamiento con CockroachDB real en verde.
+
+## Adversarial Review (pass 2)
+
+Agente `adversarial-reviewer`, nueva instancia, sobre `8035a3d..9487a7a` centrado en `76952eb..9487a7a`, leyendo la pasada 1 solo al final. Veredicto: **accept** (sin BLOCKING ni HIGH).
+
+| ID | Severidad | Hallazgo | Reproducción del revisor | Resolución |
+| --- | --- | --- | --- | --- |
+| ADV2-1 | MEDIUM | Ninguna prueba fijaba el orden ni el filtro de tenant de la subconsulta `DISTINCT ON` que elige el último episodio de cada grupo; la frase de la pasada 1 sobre el mutante solo valía para quitar la subconsulta entera | Mutantes `ASC, ASC` y sin `tenant_id` dentro de la subconsulta: 59 pruebas en verde | Prueba con CockroachDB real: dos episodios propios anteriores y uno posterior de otro tenant en el mismo grupo; el nuevo enlaza con el propio más reciente. Los dos mutantes la hacen fallar (`53b5af9`) |
+| ADV2-2 | MEDIUM | El motivo aceptaba textos que se ven en blanco fuera de `C*`/`Zl`/`Zp`: rellenos Hangul (U+3164, U+FFA0, U+115F, U+1160), braille en blanco (U+2800) y marcas combinantes sueltas | `EpisodeStatusChange(status="resolved", reason="ㅤ")` aceptado | Exigir al menos un carácter visible (letra, número, puntuación o símbolo que no sea relleno); 8 casos 422 y casos válidos aceptados; spec y API actualizadas |
+| ADV2-3 | LOW | El filtro `C*` rechaza texto visible legítimo: emojis con ZWJ (U+200D), ZWNJ (U+200C) que necesitan el persa y escrituras índicas, y emojis más nuevos que la tabla Unicode de Python 3.12 (`Cn`) | `reason="ok \U0001F468‍\U0001F469"` rechazado | Pendiente de decisión de Lucia: registrar como limitación o permitir U+200C/U+200D entre caracteres visibles |
+| ADV2-4 | LOW | `first_reviewed_by` se añadió dentro de la `002` existente; el runner no tiene checksum, así que una base que ya aplicó la `002` anterior no recibe la columna (500 al listar). La evidencia de stack real era anterior | Sonda: quitar la columna y volver a migrar, `NoSuchColumnError` | La rama no está publicada y los volúmenes de la 5.2 se borraron. Revalidación con stack real y volúmenes nuevos sobre `53b5af9`. Una vez publicada, la `002` no se vuelve a editar: los cambios irán en `003` |
+
+Ataques que resistieron (resumen del revisor): prueba de propiedades con 400 semillas y unos 9000 episodios que compara la detección con todo el histórico frente a solo «en seguimiento + último por grupo», con 0 discrepancias; la consulta SQL devuelve exactamente el conjunto esperado con dos tenants, servicio nulo y dos monedas; carrera real de dos PATCH con barrera tras la lectura (`StatusChangeConflict` y un ganador, `first_reviewed_by` coherente); impacto exacto 3499.972 guardado y mostrado `500.00` con P3; ADV-1 y ADV-2 comprobados; rechazo de U+0085, U+202E, U+2028, U+2029, U+00AD, U+200B solo, etiquetas y surrogates; 500 caracteres y 500 emojis astrales aceptados.
+
+Barrido de patrón: `DISTINCT ON` solo en este punto; el criterio Unicode de `ownership_questions.py` escapa en vez de validar y no sufre ADV2-2; filtros débiles ajenos ya en `RF-114-009`; la `002` es la única migración editada en la rama.
