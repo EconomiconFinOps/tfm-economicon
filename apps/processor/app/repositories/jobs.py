@@ -6,6 +6,18 @@ class JobRepository:
     def __init__(self, database: Database):
         self.database = database
 
+    @property
+    def json_stored_as_text(self) -> bool:
+        """Indica si el JSON de `jobs.result` llega como TEXTO serializado o ya decodificado.
+
+        SQLite (solo pruebas) guarda el objeto serializado como texto; CockroachDB/psycopg
+        (JSONB) lo entrega ya decodificado. Es la capa de datos quien sabe cual de las dos
+        representaciones recibe, asi que la decision vive aqui y no en `IngestTask`, que solo
+        la consume. Es propiedad de solo lectura (sin setter) a proposito: un valor impuesto
+        desde fuera sobre CockroachDB reabriria la doble decodificacion de cadenas JSONB.
+        """
+        return self.database.engine.dialect.name == "sqlite"
+
     def fetch_authorized_job(self, job_id: str, *, tenant_id: str, created_by: str) -> dict | None:
         return self.database.fetch_authorized_job(job_id, tenant_id=tenant_id, created_by=created_by)
 

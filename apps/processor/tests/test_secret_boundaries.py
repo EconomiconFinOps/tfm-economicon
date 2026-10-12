@@ -436,6 +436,8 @@ def test_rf053_003_task_to_worker_preserves_sanitized_root_diagnostics(monkeypat
     assert ENCODED not in captured.out + captured.err
     assert dsn not in captured.out + captured.err
     assert "vector-fixture-pass" not in captured.out + captured.err
-    assert "RuntimeError" in diagnostics
+    # JUP-113: el fallo del pipeline llega al bucle como IngestionFailed (subclase de RuntimeError):
+    # el tipo sigue siendo visible en el diagnostico, sin el texto del proveedor ni secretos.
+    assert "IngestionFailed" in diagnostics
     assert "worker_loop_failed" in diagnostics
     assert harmless_message not in diagnostics, "Provider exception text is not a safe diagnostic"
