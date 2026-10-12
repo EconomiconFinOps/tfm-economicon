@@ -21,7 +21,7 @@
 
 ## 4. Comprobación en el navegador
 
-- [ ] 4.1 Levantar el frontend con el stack, entrar con el usuario demo y comprobar con capturas: menú con cinco entradas, las tres direcciones ocultas y una inexistente llevan a Coste Global con el cliente seleccionado, `/overview-legacy` se abre sin enlace, y Anomalías, Ingestions y Salud del sistema siguen funcionando. Anotar lo que no se pudo comprobar (por ejemplo, el envío de mensajes del asistente sin stack de IA).
+- [x] 4.1 Levantar el frontend con el stack, entrar con el usuario demo y comprobar con capturas: menú con cinco entradas, las tres direcciones ocultas y una inexistente llevan a Coste Global con el cliente seleccionado, `/overview-legacy` se abre sin enlace, y Anomalías, Ingestions y Salud del sistema siguen funcionando. Anotar lo que no se pudo comprobar (por ejemplo, el envío de mensajes del asistente sin stack de IA). Hecho con Edge y Playwright sobre el stack real (Vite del worktree en el puerto 5173, Growth Ops con datos sintéticos): 16 comprobaciones PASS (menú de 5 entradas en orden y sin separador, pestañas sin desplazamiento a 1280 px, las tres direcciones ocultas y una inexistente cargadas directamente llevan a `/` con el cliente intacto, `/cuts` desde la app redirige y Atrás vuelve a `/anomalies`, `/overview-legacy` se abre sin enlace, cada entrada del menú presenta su pantalla, Coste Global muestra totales reales, sin errores de página). No comprobado: envío de mensajes del asistente (el stack de IA no está levantado) ni el tema oscuro.
 
 ## 5. Cierre y verificación
 
