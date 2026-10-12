@@ -13,7 +13,9 @@ from test_chat_gateway_jup035 import ANSWER, _provider
 
 
 def step(left='73',right='20',operator='subtract',left_unit='EUR',right_unit='EUR'):
-    return dict(left=left,right=right,operator=operator,left_unit=left_unit,right_unit=right_unit)
+    def operand(value,unit):
+        return {'ref':int(value[1:])} if value.startswith('@') else {'literal':value,'unit':unit}
+    return dict(left=operand(left,left_unit),right=operand(right,right_unit),operator=operator)
 
 
 def context(question='Ejemplo hipotético: 73 EUR frente a 20 EUR.'):
@@ -160,3 +162,20 @@ def test_hyphenated_identifier_is_not_a_numeric_operand():
     assert calculate(context('73, luego 20.'),[step('73','20','subtract','','')])[0]['value']=='53'
     with pytest.raises(ValueError,match='literal absent'):
         calculate(context('cost-73-item y 20.'),[step('73','20','subtract','','')])
+
+
+def test_gateway_calculation_diagnostic_exposes_closed_rule_only(caplog):
+    from app.clients.chat_gateway import _record_diagnostic
+    from app.core.chat_calculations import CalculationError
+    _record_diagnostic('finish', CalculationError('sensitive rejected operand'), 'a'*64, 'stop')
+    value=json.loads(caplog.records[-1].message)
+    assert value['rule_code']=='calculation_invalid'
+    assert value['exception_class']=='CalculationError'
+    assert 'sensitive' not in caplog.text
+
+
+@pytest.mark.parametrize('operand',[{'ref':True},{'ref':-1},{'ref':0,'unit':'EUR'},
+    {'literal':'73','unit':'EUR','ref':0},{'literal':'73'},{'ref':'0'}])
+def test_typed_reference_rejects_extra_units_mixed_branches_and_invalid_indices(operand):
+    plan=[step(),{'left':operand,'right':{'literal':'20','unit':'EUR'},'operator':'subtract'}]
+    with pytest.raises(ValueError):calculate(context(),plan)

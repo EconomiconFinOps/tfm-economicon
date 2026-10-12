@@ -21,15 +21,17 @@ class CalculationError(ValueError):
 
 
 OPERATORS = ('add','subtract','multiply','divide','percentage','gt','gte','lt','lte','eq')
-OPERAND = r'^(?:-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,12})?|@[0-9]{1,2})$'
+OPERAND = r'^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,12})?$'
+OPERAND_SCHEMA = {'anyOf':[
+    {'type':'object','properties':{'literal':{'type':'string','pattern':OPERAND,'maxLength':26},
+        'unit':{'type':'string','maxLength':32}},'required':['literal','unit'],'additionalProperties':False},
+    {'type':'object','properties':{'ref':{'type':'integer','minimum':0,'maximum':11}},
+        'required':['ref'],'additionalProperties':False}]}
 PLAN_SCHEMA = {'type':'array','maxItems':12,'items':{'type':'object','properties':{
-    'left':{'type':'string','pattern':OPERAND,'maxLength':26},
-    'right':{'type':'string','pattern':OPERAND,'maxLength':26},
-    'left_unit':{'type':'string','maxLength':32},
-    'right_unit':{'type':'string','maxLength':32},
+    'left':OPERAND_SCHEMA,'right':OPERAND_SCHEMA,
     'operator':{'type':'string','enum':list(OPERATORS)}},
-    'required':['left','right','left_unit','right_unit','operator'],'additionalProperties':False}}
-FIELDS={'left','right','left_unit','right_unit','operator'}
+    'required':['left','right','operator'],'additionalProperties':False}}
+FIELDS={'left','right','operator'}
 MONETARY_UNITS={'EUR','USD','GBP','JPY','CHF','CAD','AUD','CNY','INR','€','$','£','¥'}
 
 
@@ -52,13 +54,19 @@ def validate_plan(plan):
         if not isinstance(step,dict) or set(step)!=FIELDS or step['operator'] not in OPERATORS:
             raise CalculationError('Calculation step shape.')
         for side in ('left','right'):
-            value=step[side];unit=step[side+'_unit']
-            if not isinstance(value,str) or re.fullmatch(OPERAND,value) is None:
-                raise CalculationError('Calculation operand.')
-            if value.startswith('@') and int(value[1:])>=index: raise CalculationError('Calculation forward reference.')
-            if (not isinstance(unit,str) or len(unit)>32 or unit!=unit.strip()
-                    or any(ord(char)<32 for char in unit)):
-                raise CalculationError('Calculation unit.')
+            operand=step[side]
+            if not isinstance(operand,dict): raise CalculationError('Calculation operand.')
+            if set(operand)=={'ref'}:
+                if type(operand['ref']) is not int or not 0<=operand['ref']<index:
+                    raise CalculationError('Calculation forward reference.')
+            elif set(operand)=={'literal','unit'}:
+                value=operand['literal'];unit=operand['unit']
+                if not isinstance(value,str) or re.fullmatch(OPERAND,value) is None:
+                    raise CalculationError('Calculation operand.')
+                if (not isinstance(unit,str) or len(unit)>32 or unit!=unit.strip()
+                        or any(ord(char)<32 for char in unit)):
+                    raise CalculationError('Calculation unit.')
+            else: raise CalculationError('Calculation operand.')
     return plan
 
 
@@ -91,13 +99,12 @@ def calculate(context, plan):
     literals=_literals(question)
     records=[];values=[]
     def operand(step,side):
-        raw=step[side];unit=step[side+'_unit']
-        if raw.startswith('@'):
-            index=int(raw[1:])
-            value,expected=values[index]
-            if isinstance(value,bool) or expected!=unit: raise CalculationError('Calculation reference unit.')
+        operand=step[side]
+        if 'ref' in operand:
+            value,unit=values[operand['ref']]
+            if isinstance(value,bool): raise CalculationError('Calculation reference unit.')
         else:
-            value=Decimal(raw)
+            value=Decimal(operand['literal']);unit=operand['unit']
             if value not in literals: raise CalculationError('Calculation literal absent from question.')
             if unit and unit.casefold() not in question.casefold(): raise CalculationError('Calculation unit absent from question.')
         return value,unit

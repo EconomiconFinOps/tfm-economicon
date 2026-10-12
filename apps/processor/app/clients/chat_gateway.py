@@ -91,6 +91,7 @@ def diagnostic_scope(operation_id, attempt_id):
 def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, category=None):
     """A bounded structural event; never serialize exceptions or candidate data."""
     try:
+        from app.core.chat_calculations import CalculationError
         correlation = _diagnostic_context.get() or (None, None)
         classes = {ValidationError: 'ValidationError', ValueError: 'ValueError',
                    json.JSONDecodeError: 'JSONDecodeError', UnicodeDecodeError: 'UnicodeDecodeError',
@@ -128,6 +129,9 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
                                                  'incomplete', 'invalid_response'} else None,
         }
         if isinstance(failure, _NativeEnvelopeError):
+            event['rule_code'] = failure.rule_code
+        if isinstance(failure, CalculationError):
+            event['exception_class'] = 'CalculationError'
             event['rule_code'] = failure.rule_code
         encoded = json.dumps(event, ensure_ascii=True, separators=(',', ':'), allow_nan=False)
         if len(encoded.encode()) <= 2048:

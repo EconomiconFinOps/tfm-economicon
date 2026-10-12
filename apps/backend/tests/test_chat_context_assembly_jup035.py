@@ -27,8 +27,7 @@ def test_none_calculation_extension_never_retrieves_or_grants_financial_authorit
     builder=ChatContext(api[0],load_resources(RESOURCE_ROOT,RESOURCE_ROOT.parent/'v2/tokenizer.json'))
     scope={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
     context=builder.build(scope,body(content='Ejercicio hipotético: 73 EUR frente a 20 EUR.'))
-    decision={'action':'none','query':None,'calculations':[{'left':'73','right':'20',
-        'left_unit':'EUR','right_unit':'EUR','operator':'subtract'}]}
+    decision={'action':'none','query':None,'calculations':[{'left':{'literal':'73','unit':'EUR'},'right':{'literal':'20','unit':'EUR'},'operator':'subtract'}]}
     monkeypatch.setattr(builder,'retrieve',lambda *a,**kw:pytest.fail('No-search arithmetic must not retrieve'))
     result,effective=asyncio.run(builder.tool_extension(scope,context,decision,time.time()+10))
     data=json.loads(result['content'])

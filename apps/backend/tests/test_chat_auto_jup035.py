@@ -25,7 +25,7 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
     from app.core.chat_calculations import CalculationStream, calculate, render_text
     question = 'Ejemplo hipotético: 73 EUR y 20 EUR.'
     context = {'messages': [{'role': 'user', 'content': 'UNTRUSTED_CURRENT_CONTEXT\n' + json.dumps({'question': question})}]}
-    plan = [{'left': '73', 'right': '20', 'operator': 'subtract', 'left_unit': 'EUR', 'right_unit': 'EUR'}]
+    plan = [{'left': {'literal':'73','unit':'EUR'}, 'right': {'literal':'20','unit':'EUR'}, 'operator': 'subtract'}]
     calculations = calculate(context, plan)
     raw = 'Ejemplo 😀: [[calc:0]]. Resultado hipotético.'
     result = copy.deepcopy(ANSWER)

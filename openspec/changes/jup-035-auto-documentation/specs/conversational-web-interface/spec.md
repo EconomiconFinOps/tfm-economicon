@@ -186,8 +186,10 @@ persistir texto parcial.
 ### Requirement: Aritmetica hipotetica calculada y proyectada
 
 La decision SHALL admitir un plan privado acotado a12 pasos con operandos
-decimales literales de la pregunta actual o referencias solo a pasos anteriores,
-operadores cerrados y unidades explicitas. El backend SHALL calcularlo con
+operandos tipados: objetos literal/unit de la pregunta actual o objetos ref con
+indice entero de un paso anterior. Una referencia SHALL heredar valor y unidad
+del resultado previo, sin aceptar una unidad adicional declarada por el modelo.
+El plan SHALL usar operadores cerrados y unidades explicitas. El backend SHALL calcularlo con
 Decimal sin eval y devolverlo en la extension HMAC; el processor SHALL verificar
 el mismo resultado. Ningun calculo SHALL conferir evidencia ni autoridad financiera.
 

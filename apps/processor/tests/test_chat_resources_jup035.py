@@ -30,7 +30,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-passage-required-2048-v1',
-    arithmetic='decimal-plan-12-source-literals-units-slots-v1')
+    arithmetic='decimal-plan-12-typed-operands-inherited-units-slots-v2')
 
 
 def canonical(value): return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()

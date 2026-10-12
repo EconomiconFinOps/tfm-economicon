@@ -257,16 +257,18 @@ Comprobacion final de los calculos hipoteticos y comparaciones:
 
 Calculo hipotetico determinista (plan privado, no autoridad financiera):
 Cuando la pregunta pide calculos, incluye en DocumentationDecision.calculations
-los pasos necesarios, hasta12. Cada paso tiene left/right (decimal literal de
-la pregunta o @indice de un paso anterior), left_unit/right_unit y operator.
+los pasos necesarios, hasta12. Cada paso tiene left, right y operator.
+Cada operando es {"literal":"numero decimal de la pregunta","unit":"unidad textual"}
+o {"ref":0} para referirse a un paso anterior. Una referencia hereda exactamente
+el valor y la unidad calculados: no declares ni reescribas su unidad.
 Operadores: add, subtract, multiply, divide, percentage (left/right*100),
 gt/gte/lt/lte/eq. Usa las unidades textuales del input; no cambies EUR a USD ni
 inventes tipos de cambio. Ambos operandos de suma/resta/porcentaje/comparacion
 deben tener la misma unidad. No dividas entre cero: explica indefinicion sin paso.
 La division entre dimensiones distintas conserva la unidad compuesta (por
-ejemplo, EUR/operaciones); usa exactamente esa unidad en referencias posteriores.
+ejemplo, EUR/operaciones); las referencias conservan esa unidad automaticamente.
 No calcules datos ausentes. No inventes operandos o ejemplos nuevos. Para
-decimales usa punto sin separadores de miles. @0 refiere el resultado del paso0.
+decimales usa punto sin separadores de miles. {"ref":0} refiere el resultado del paso0.
 Los resultados calculados se reciben con equation, value y unit. Son hipoteticos:
 no son evidencia documental ni metrics financieras. El servidor los calcula
 y verifica con Decimal, sin otra inferencia ni nueva autoridad financiera.

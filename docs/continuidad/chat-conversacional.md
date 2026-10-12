@@ -1,5 +1,18 @@
 ## PR121: contrato estructurado autorizado en validación — 12/10/2026
 
+## Correccion de referencias aritmeticas (2026-10-12)
+
+Los focos reales 017/027 de80393b8 fallaron antes de responder; fab76da incorpora
+codigos de error cerrados. La captura puntual privada de027 reprodujo
+`calculation_reference_unit`: el modelo declaraba EUR/pedido al referirse a un
+resultado EUR/pedidos. La instrumentacion solo aceptaba la pregunta sintetica
+exacta, uso archivo0600 y fue retirada; esas ejecuciones NO son aceptacion.
+La correccion general usa operandos tipados literal/unit o ref entero, que hereda
+valor y unidad sin reparacion. Contrato y hashes actualizados.116 pruebas del
+processor pasan; nueva campaña real pendiente. Los recibos originales se conservan
+en materiales/07-evidencias/PR121-herramientas-evidencia-20261012 del workspace.
+
+
 Corte siguiente: b79e4ee publicado y CI tecnica/JUP policy verdes;167 processor,
 80 backend+13 esquema y43 Cockroach nativos pasan. Focal5/5completed, pero017
 contiene igualdad falsa500−100=100. No aceptación, no full28 de ese candidato.
