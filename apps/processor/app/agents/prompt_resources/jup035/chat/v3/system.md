@@ -263,6 +263,8 @@ Operadores: add, subtract, multiply, divide, percentage (left/right*100),
 gt/gte/lt/lte/eq. Usa las unidades textuales del input; no cambies EUR a USD ni
 inventes tipos de cambio. Ambos operandos de suma/resta/porcentaje/comparacion
 deben tener la misma unidad. No dividas entre cero: explica indefinicion sin paso.
+La division entre dimensiones distintas conserva la unidad compuesta (por
+ejemplo, EUR/operaciones); usa exactamente esa unidad en referencias posteriores.
 No calcules datos ausentes. No inventes operandos o ejemplos nuevos. Para
 decimales usa punto sin separadores de miles. @0 refiere el resultado del paso0.
 Los resultados calculados se reciben con equation, value y unit. Son hipoteticos:

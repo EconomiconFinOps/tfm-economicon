@@ -36,6 +36,19 @@ def test_decimal_operations_and_references_keep_units_and_strict_boundaries():
     assert decimal[0]['value']=='0.3'
 
 
+def test_cost_per_count_ratios_preserve_dimensions_and_support_comparison():
+    initial=context('Ejemplo: 84 EUR para 7 operaciones; 65 EUR para 13 operaciones.')
+    plan=[step('84','7','divide','EUR','operaciones'),
+          step('65','13','divide','EUR','operaciones'),
+          step('@0','@1','subtract','EUR/operaciones','EUR/operaciones'),
+          step('@2','@0','percentage','EUR/operaciones','EUR/operaciones')]
+    result=calculate(initial,plan)
+    assert [item['value'] for item in result]==['12','5','7','58.333333']
+    assert result[0]['unit']==result[1]['unit']=='EUR/operaciones'
+    with pytest.raises(ValueError,match='Currency conversion'):
+        calculate(context('84 EUR y 7 USD.'),[step('84','7','divide','EUR','USD')])
+
+
 @pytest.mark.parametrize('plan,question', [
     ([step('99')],'73 EUR y 20 EUR'),
     ([step('73','0','divide')],'73 EUR y 0 EUR'),

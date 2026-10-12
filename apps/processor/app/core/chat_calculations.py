@@ -19,6 +19,20 @@ PLAN_SCHEMA = {'type':'array','maxItems':12,'items':{'type':'object','properties
     'operator':{'type':'string','enum':list(OPERATORS)}},
     'required':['left','right','left_unit','right_unit','operator'],'additionalProperties':False}}
 FIELDS={'left','right','left_unit','right_unit','operator'}
+MONETARY_UNITS={'EUR','USD','GBP','JPY','CHF','CAD','AUD','CNY','INR','€','$','£','¥'}
+
+
+def quotient_unit(left, right):
+    if left==right: return ''
+    if not right: return left
+    # A dimensioned ratio is not an exchange-rate authorization. Currency
+    # conversion is deliberately absent; retain ordinary cost/count dimensions.
+    lm={part for part in re.split(r'[/ *]',left.upper()) if part in MONETARY_UNITS}
+    rm={part for part in re.split(r'[/ *]',right.upper()) if part in MONETARY_UNITS}
+    if lm and rm and lm!=rm: raise ValueError('Currency conversion unsupported.')
+    unit=(left or '1')+'/'+right
+    if len(unit)>32: raise ValueError('Calculation derived unit limit.')
+    return unit
 
 
 def validate_plan(plan):
@@ -90,9 +104,8 @@ def calculate(context, plan):
                     value=left*right;unit=lu or ru;symbol='×'
                 elif op in ('divide','percentage'):
                     if right==0: raise ValueError('Calculation denominator zero.')
-                    if op=='divide' and ru and lu!=ru: raise ValueError('Incompatible calculation units.')
                     value=left/right*(100 if op=='percentage' else 1)
-                    unit='%' if op=='percentage' else '' if lu==ru else lu;symbol='/'
+                    unit='%' if op=='percentage' else quotient_unit(lu,ru);symbol='/'
                 else:
                     value={'gt':left>right,'gte':left>=right,'lt':left<right,'lte':left<=right,'eq':left==right}[op]
                     unit='';symbol={'gt':'>','gte':'>=','lt':'<','lte':'<=','eq':'=='}[op]
