@@ -65,7 +65,7 @@ class RuntimeCORSMiddleware(CORSMiddleware):
         super().__init__(
             app,
             allow_origins=get_settings().cors_allowed_origins,
-            allow_methods=["GET", "POST"],
+            allow_methods=["GET", "POST", "PATCH"],
             allow_headers=["Authorization", "Content-Type", "X-Tenant-Id"],
             allow_credentials=False,
             expose_headers=[],
