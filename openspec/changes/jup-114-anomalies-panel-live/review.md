@@ -25,6 +25,19 @@ Revisor independiente (agente `adversarial-reviewer`), que recibió solo los req
 
 Ataques que resistieron según el revisor: recálculo independiente de los esperados de la demo (3619,43 EUR; P1 2807,71, P2 642,86, P3 168,86), validación del motivo de cierre frente al backend, neutralización de fórmulas en CSV y escape de HTML en el PDF, tipos y validadores del contrato, aislamiento entre clientes en SQL y los totales semanales de JUP-030.
 
+## Revisión adversarial, pasada 2
+
+Mismo revisor independiente, sobre los arreglos de la pasada 1 (`git diff 56d2393..HEAD`). Veredicto: `accept`, sin hallazgos bloqueantes ni altos. Ejecutó los 30 tests del panel; no pudo ejecutar la prueba del backend (necesita CockroachDB) ni verlo en navegador.
+
+| Hallazgo | Severidad | Resultado |
+| --- | --- | --- |
+| ADV-1: con ida y vuelta A→B→A durante una detección, `knownIds` se vaciaba y al terminar se marcaban como nuevos todos los episodios de A | Media | Corregido: lo conocido se guarda por cliente y no lo borra el cambio de cliente. Prueba nueva que, sin el arreglo, falla con 4 filas marcadas en vez de 1 |
+| ADV-2: con A→B→A y la detección de A terminada mientras se estaba en B, el resumen de la detección se pierde | Baja | Aceptado: es la decisión de descartar el resultado de otro cliente; queda la lista actualizada |
+| ADV-3: con una detección de B en marcha, el botón de A se activa aunque la de A siga corriendo | Baja | Aceptado: el backend serializa y responde `detection_conflict` (409), que el panel explica |
+| ADV-4: la lista agota los reintentos sin pausa y devuelve un 500 sin traducir | Baja | Registrado `RF-114-015` |
+
+Resistieron: reintento sin camino sin asignar, conexión nueva y cerrada por intento, solo `40001` se reintenta, filtro por cliente en `onError` y tras la recarga, `reloadFailed` junto al resultado, `[overflow-wrap:anywhere]` sin partir importes, fechas ni etiquetas, y `pr-8` sin solapar el botón de cerrar.
+
 ## Validación
 
 | Comprobación | Resultado |
@@ -42,5 +55,4 @@ Defectos de maquetación encontrados en el stack real y corregidos antes de la r
 
 ## Pendiente
 
-- Pasada 2 de la revisión adversarial sobre los arreglos de ADV-1, ADV-2, ADV-3 y ADV-5.
 - Evidencia por criterio en `docs/evidence/JUP-114-validation.md` y bloque `## Human Approval` de Lucia.
