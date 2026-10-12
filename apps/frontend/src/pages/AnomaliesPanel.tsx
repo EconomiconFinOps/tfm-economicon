@@ -284,7 +284,7 @@ export function AnomaliesPanel() {
             <h4 className="font-semibold text-foreground">No hay anomalías con estos filtros</h4>
             <p className="mt-2 text-sm text-subtle-foreground">Prueba otra criticidad o restablece los filtros para ver las anomalías abiertas.</p>
             <button onClick={reset} className={`${buttonStyle} mt-5`}>Ver anomalías abiertas</button>
-          </div> : <div role="region" aria-label="Lista de anomalías; desplazamiento horizontal disponible" tabIndex={0} className="overflow-x-auto rounded-b-lg focus-visible:outline-2 focus-visible:outline-highlight">
+          </div> : <div role="region" aria-label="Lista de anomalías; desplazamiento horizontal disponible" tabIndex={0} className="relative overflow-x-auto rounded-b-lg focus-visible:outline-2 focus-visible:outline-highlight">
             <table className="w-full min-w-[860px] text-sm">
               <caption className="sr-only">Anomalías candidatas filtradas del cliente activo; impacto en la moneda de cada anomalía.</caption>
               <thead className="border-b border-border bg-background text-xs uppercase tracking-wider text-subtle-foreground">
@@ -314,7 +314,7 @@ export function AnomaliesPanel() {
       </>}
 
       <Dialog open={selected !== null} onOpenChange={(value) => { if (!value) setSelectedId(null); }}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto max-sm:h-full max-sm:max-h-full max-sm:max-w-full max-sm:rounded-none">
+        <DialogContent className="max-h-[90vh] content-start overflow-y-auto max-sm:h-full max-sm:max-h-full max-sm:max-w-full max-sm:rounded-none">
           {selected && <EpisodeDetail key={selected.id + selected.status} episode={selected} token={token} tenantId={tenantId}
             onChanged={reload} onReload={reload} />}
         </DialogContent>

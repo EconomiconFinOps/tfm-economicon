@@ -94,6 +94,24 @@ describe("JUP-114 panel de anomalías: lectura y resumen", () => {
     expect(within(summary).getByTestId("summary-open")).toHaveTextContent("3");
   });
 
+  it("recorta el texto solo para lectores de pantalla de la tabla dentro de su contenedor con desplazamiento", async () => {
+    stubApi({ list: demo });
+    renderPanel();
+    const region = await screen.findByRole("region", { name: /Lista de anomalías; desplazamiento horizontal disponible/ });
+    // Sin `relative`, el `sr-only` (posición absoluta) escapa del recorte y alarga la página a 390 px de ancho.
+    expect(region).toHaveClass("overflow-x-auto", "relative");
+    expect(region.querySelector("th .sr-only")).not.toBeNull();
+  });
+
+  it("alinea arriba el contenido del detalle para que a 390 px no se estiren las filas", async () => {
+    stubApi({ list: demo });
+    renderPanel();
+    await screen.findByRole("region", { name: /Lista de anomalías/ });
+    fireEvent.click(screen.getAllByRole("button", { name: /Detalle/ })[0]);
+    // La base del diálogo es un grid y en móvil ocupa toda la altura: sin `content-start` reparte la sobrante entre las filas.
+    expect(await screen.findByRole("dialog")).toHaveClass("content-start", "max-sm:h-full");
+  });
+
   it("enseña una línea por moneda sin total combinado", async () => {
     stubApi({ list: episodeList({ episodes: [compute, episode({ id: "usd", currency: "USD", accumulated_impact: "150.00", severity: "P3" })],
       open_impact_by_currency: [{ currency: "EUR", amount: "2807.71" }, { currency: "USD", amount: "150.00" }] }) });
