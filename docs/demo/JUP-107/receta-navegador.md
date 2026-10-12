@@ -107,7 +107,7 @@ async function main() {
   const page = await context.newPage();
   const problems = [];
   let watching = false;
-  const tenant = () => page.getByLabel('Ambito de cliente');
+  const tenant = () => page.getByLabel('Ámbito de cliente');
   page.on('pageerror', (e) => problems.push('error de página: ' + e.message));
   page.on('console', (m) => {
     if (m.type() === 'error' && /CORS|Access-Control/i.test(m.text())) problems.push('error de origen cruzado: ' + m.text().slice(0, 120));

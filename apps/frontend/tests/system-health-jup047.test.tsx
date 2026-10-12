@@ -110,7 +110,7 @@ describe("JUP-047 system health public flow", () => {
   it("adds an accessible navigation entry inside the authenticated layout", async () => {
     await mount();
     expect(screen.getByRole("link", { name: /salud del sistema/i })).toHaveAttribute("href", "/system-health");
-    expect(screen.getByRole("combobox", { name: "Ambito de cliente" })).toBeVisible();
+    expect(screen.getByRole("combobox", { name: "Ámbito de cliente" })).toBeVisible();
     expect(screen.getByRole("button", { name: /actualizar/i })).toBeEnabled();
   });
 
@@ -214,14 +214,14 @@ describe("JUP-047 system health public flow", () => {
       [`GET ${statusPath}`]: ({ headers }) => headers.get("X-Tenant-Id") === tenants[0].id ? pendingStatus.promise : jsonResponse(diagnostic(tenants[1].id)),
       [`POST ${checkPath}`]: ({ headers }) => headers.get("X-Tenant-Id") === tenants[0].id ? pendingCheck.promise : jsonResponse({ reason_code: "cooldown" }, 429)
     });
-    await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
+    await user.selectOptions(screen.getByRole("combobox", { name: "Ámbito de cliente" }), tenants[1].id);
     await waitFor(() => expect(requests.some((r) => r.path === statusPath && r.headers.get("X-Tenant-Id") === tenants[1].id)).toBe(true));
     await act(async () => {
       pendingStatus.resolve(diagnostic(tenants[0].id, "failed"), outcome === "success" ? 200 : 503);
       pendingCheck.resolve(provider(), outcome === "success" ? 200 : 503);
     });
     expect(screen.queryByText(/respuesta válida a/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Ambito de cliente" })).toHaveValue(tenants[1].id);
+    expect(screen.getByRole("combobox", { name: "Ámbito de cliente" })).toHaveValue(tenants[1].id);
   });
 
   it("logout ignores an old generation and stops timers", async () => {
@@ -230,7 +230,7 @@ describe("JUP-047 system health public flow", () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { requests } = await mount({ [`POST ${checkPath}`]: () => pending.promise });
     await waitFor(() => expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1));
-    await user.click(screen.getByRole("button", { name: "Cerrar sesion" }));
+    await user.click(screen.getByRole("button", { name: "Cerrar sesión" }));
     await act(async () => { pending.resolve(provider()); });
     expect(screen.queryByRole("heading", { name: /salud del sistema/i })).not.toBeInTheDocument();
     const before = requests.length;
@@ -247,12 +247,12 @@ describe("JUP-047 system health public flow", () => {
         ? jsonResponse({ reason_code: "cooldown" }, 429) : pending.promise
     });
     await waitFor(() => expect(requests.filter((r) => r.path === checkPath)).toHaveLength(1));
-    await user.click(screen.getByRole("button", { name: "Cerrar sesion" }));
-    await user.clear(screen.getByLabelText("Email"));
-    await user.type(screen.getByLabelText("Email"), "synthetic@example.com");
-    await user.type(screen.getByLabelText("Password"), "synthetic-password");
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
-    await screen.findByRole("button", { name: "Cerrar sesion" });
+    await user.click(screen.getByRole("button", { name: "Cerrar sesión" }));
+    await user.clear(screen.getByLabelText("Correo electrónico"));
+    await user.type(screen.getByLabelText("Correo electrónico"), "synthetic@example.com");
+    await user.type(screen.getByLabelText("Contraseña"), "synthetic-password");
+    await user.click(screen.getByRole("button", { name: "Iniciar sesión" }));
+    await screen.findByRole("button", { name: "Cerrar sesión" });
     await act(async () => { await router.navigate("/system-health"); });
     await waitFor(() => expect(requests.filter((r) => r.path === checkPath)).toHaveLength(2));
     await act(async () => { pending.resolve(code === 200 ? provider() : { detail: "Unauthorized" }, code); });
@@ -438,13 +438,13 @@ describe("JUP-047 approved functional availability and informational identity/co
       [`POST ${checkPath}`]: ({ headers }) => headers.get("X-Tenant-Id") === tenants[0].id
         ? pending.promise : jsonResponse(information("current-tenant-model"))
     });
-    await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
+    await user.selectOptions(screen.getByRole("combobox", { name: "Ámbito de cliente" }), tenants[1].id);
     await waitFor(() => expect(requests.filter((request) => request.path === checkPath)).toHaveLength(2));
     await act(async () => { pending.resolve(information("abandoned-tenant-model", { reported_cost_usd: "999" })); });
     const row = providerRow();
     expect(await row.findByText("Modelo informado: current-tenant-model", { exact: true })).toBeVisible();
     expect(row.queryByText(/abandoned-tenant-model|999/)).not.toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Ambito de cliente" })).toHaveValue(tenants[1].id);
+    expect(screen.getByRole("combobox", { name: "Ámbito de cliente" })).toHaveValue(tenants[1].id);
   });
 });
 

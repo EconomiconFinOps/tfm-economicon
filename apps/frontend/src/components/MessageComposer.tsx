@@ -116,7 +116,7 @@ export function MessageComposer({ token, tenantId, conversationId }: {
       className={fieldClass}
       rows={5}
       aria-label="Pregunta"
-      placeholder={ownership ? "Pregunta sobre los costes de la selección." : "Ask the assistant about the ingested tenant documents."}
+      placeholder={ownership ? "Pregunta sobre los costes de la selección." : "Pregunta sobre los documentos ingestados del cliente."}
       value={message}
       disabled={sendMutation.isPending}
       onChange={(event) => setMessage(event.target.value)}
@@ -125,7 +125,7 @@ export function MessageComposer({ token, tenantId, conversationId }: {
     {sendMutation.error && <p className="text-sm text-danger" role="alert">{sendMutation.error.message}</p>}
     <button className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
       type="submit" disabled={sendMutation.isPending || !message.trim()}>
-      {sendMutation.isPending ? "Sending..." : "Send"}
+      {sendMutation.isPending ? "Enviando..." : "Enviar"}
     </button>
   </form>;
 }

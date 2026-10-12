@@ -39,27 +39,27 @@ describe("assistant conversations", () => {
     });
     restoreSession();
     renderApp(["/assistant"]);
-    expect(await screen.findByText("Create a conversation to start the assistant flow.")).toBeVisible();
+    expect(await screen.findByText("Crea una conversación para empezar a usar el asistente.")).toBeVisible();
 
-    const title = screen.getByPlaceholderText("New conversation title");
+    const title = screen.getByPlaceholderText("Título de la nueva conversación");
     await user.clear(title);
     await user.type(title, conversation.title);
-    await user.click(screen.getByRole("button", { name: "New" }));
+    await user.click(screen.getByRole("button", { name: "Nueva" }));
     expect(await screen.findByRole("button", { name: new RegExp(conversation.title) })).toBeVisible();
-    const composer = await screen.findByPlaceholderText("Ask the assistant about the ingested tenant documents.");
-    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    const composer = await screen.findByPlaceholderText("Pregunta sobre los documentos ingestados del cliente.");
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
     await user.type(composer, "   ");
-    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
     await user.clear(composer);
     await user.type(composer, userMessage.content);
-    await user.click(screen.getByRole("button", { name: "Send" }));
-    expect(screen.getByRole("button", { name: "Sending..." })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
+    expect(screen.getByRole("button", { name: "Enviando..." })).toBeDisabled();
 
     await act(async () => pendingReply.resolve(assistantReply, 201));
     expect(await screen.findByText(assistantMessage.content)).toBeVisible();
     expect(screen.getByText(userMessage.content)).toBeVisible();
     expect(composer).toHaveValue("");
-    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
     const createdRequest = requests.find((request) => request.method === "POST" && request.path === collectionPath);
     const sentRequest = requests.find((request) => request.path === messagePath);
     expect(createdRequest?.body).toEqual({ title: conversation.title });
@@ -82,7 +82,7 @@ describe("assistant conversations", () => {
     renderApp(["/assistant"]);
     expect(await screen.findByText(userMessage.content)).toBeVisible();
     await user.click(screen.getByRole("button", { name: /Storage review/ }));
-    expect(await screen.findByText("Loading conversation...")).toBeVisible();
+    expect(await screen.findByText("Cargando conversación...")).toBeVisible();
     expect(screen.queryByText(userMessage.content)).not.toBeInTheDocument();
 
     await act(async () => pendingDetail.resolve({
@@ -101,15 +101,15 @@ describe("assistant conversations", () => {
     });
     restoreSession();
     renderApp(["/assistant"]);
-    const title = await screen.findByPlaceholderText("New conversation title");
+    const title = await screen.findByPlaceholderText("Título de la nueva conversación");
     await user.clear(title);
     await user.type(title, "Retain this cost investigation");
-    await user.click(screen.getByRole("button", { name: "New" }));
+    await user.click(screen.getByRole("button", { name: "Nueva" }));
 
     expect(await screen.findByText(/Conversation creation unavailable/)).toBeVisible();
     expect(title).toHaveValue("Retain this cost investigation");
-    expect(screen.getByRole("button", { name: "New" })).toBeEnabled();
-    expect(screen.queryByRole("button", { name: "Send" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Nueva" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Enviar" })).not.toBeInTheDocument();
   });
 
   it("retains an unsent message after a send error and permits retry", async () => {
@@ -131,15 +131,15 @@ describe("assistant conversations", () => {
     });
     restoreSession();
     renderApp(["/assistant"]);
-    const composer = await screen.findByPlaceholderText("Ask the assistant about the ingested tenant documents.");
+    const composer = await screen.findByPlaceholderText("Pregunta sobre los documentos ingestados del cliente.");
     await user.type(composer, userMessage.content);
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
 
     expect(await screen.findByText("Assistant connection interrupted")).toBeVisible();
     expect(composer).toHaveValue(userMessage.content);
-    expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeEnabled();
     expect(screen.queryByText(assistantMessage.content)).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(await screen.findByText(assistantMessage.content)).toBeVisible();
     await waitFor(() => expect(composer).toHaveValue(""));
     expect(screen.queryByText("Assistant connection interrupted")).not.toBeInTheDocument();
@@ -153,7 +153,7 @@ describe("assistant conversations", () => {
     renderApp(["/assistant"]);
 
     expect(await screen.findByText(/Conversation access denied/)).toBeVisible();
-    expect(screen.queryByText("Create a conversation to start the assistant flow.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Crea una conversación para empezar a usar el asistente.")).not.toBeInTheDocument();
     // El shell (Layout) sigue disponible aunque el listado falle: la
     // pantalla no revienta y el enlace de vuelta al indice sigue visible.
     // "Overview" no existe como boton en el Layout real (Spanish, NavLink);
@@ -170,9 +170,9 @@ describe("assistant conversations", () => {
     renderApp(["/assistant"]);
 
     expect(await screen.findByText(/Conversation not found/)).toBeVisible();
-    expect(screen.queryByRole("button", { name: "Send" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Enviar" })).not.toBeInTheDocument();
     // "Logout" no existe como texto visible en el Layout real: el boton usa
-    // aria-label="Cerrar sesion" (icono sin texto).
-    expect(screen.getByRole("button", { name: "Cerrar sesion" })).toBeEnabled();
+    // aria-label="Cerrar sesión" (icono sin texto).
+    expect(screen.getByRole("button", { name: "Cerrar sesión" })).toBeEnabled();
   });
 });

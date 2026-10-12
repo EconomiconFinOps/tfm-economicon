@@ -111,7 +111,7 @@ describe("TagCoveragePanel", () => {
     restoreSession(); renderApp();
     const panel = await openPanel();
     await within(panel).findAllByText("9007199254740993.01 USD");
-    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
+    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Ámbito de cliente" }), tenants[1].id);
     await waitFor(() => expect(requests.filter((r) => r.path === "/billing/tag-coverage").at(-1)?.headers.get("X-Tenant-Id")).toBe(tenants[1].id));
     expect(panel).not.toHaveTextContent("9007199254740993");
     expect(panel).toHaveTextContent("Cargando cobertura");

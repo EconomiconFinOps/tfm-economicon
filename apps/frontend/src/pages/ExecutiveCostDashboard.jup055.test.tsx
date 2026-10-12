@@ -488,7 +488,7 @@ describe("JUP-055: aislamiento, metadata, cancelación y concurrencia", () => {
     await waitFor(() => expect(blocked).toHaveLength(3));
     expect(signals).toHaveLength(3);
     expect(signals.every((signal) => !signal.aborted)).toBe(true);
-    await userEvent.setup().selectOptions(screen.getByLabelText("Ambito de cliente"), tenants[1].id);
+    await userEvent.setup().selectOptions(screen.getByLabelText("Ámbito de cliente"), tenants[1].id);
     await ready();
     expect(signals.slice(0, 3).every((signal) => signal.aborted)).toBe(true);
     expect(network.requests.filter((request) => request.path === "/billing/summary" && request.headers.get("X-Tenant-Id") === tenants[0].id)).toHaveLength(3);

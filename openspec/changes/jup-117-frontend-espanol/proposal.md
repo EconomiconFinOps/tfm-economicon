@@ -13,7 +13,7 @@ El frontend mezcla español e inglés: pantallas como la de conversaciones, la i
 - Ajustar las pruebas del frontend que comprueban textos cambiados.
 - Añadir una prueba que falle si reaparece en la interfaz un texto en inglés de la lista de términos ya traducidos.
 
-Fuera de alcance: internacionalización (selector de idioma, catálogos de traducción, inglés como segundo idioma), código, nombres de variables, rutas, claves de API y mensajes del backend que no se muestran a la persona usuaria, y cualquier cambio de diseño o de funcionalidad. No se traducen los valores que devuelve la API (por ejemplo, nombres de servicios de Azure o etiquetas de coste).
+Fuera de alcance: internacionalización (selector de idioma, catálogos de traducción, inglés como segundo idioma), código, nombres de variables, rutas, claves de API y mensajes del backend que no se muestran a la persona usuaria, y cualquier cambio de diseño o de funcionalidad. No se traducen los valores que devuelve la API (por ejemplo, nombres de servicios de Azure, etiquetas de coste, estados de salud o roles de mensaje) ni los mensajes de error internos que lanzan los servicios y los hooks.
 
 ## Capabilities
 
@@ -23,7 +23,7 @@ Fuera de alcance: internacionalización (selector de idioma, catálogos de tradu
 
 ### Modified Capabilities
 
-Ninguna. Los textos exactos que algunas specs de pantallas citan en sus escenarios se actualizan en este change si cambian (ver design).
+- `demo-auth-session`: un escenario cita el botón «Reset session», que pasa a llamarse «Restablecer sesión»; solo cambia el nombre citado.
 
 ## Impact
 
