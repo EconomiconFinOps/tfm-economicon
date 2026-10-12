@@ -30,4 +30,4 @@ JUP: JUP-114
 - [x] 5.2 Validación con stack real aislado y volúmenes nuevos: preparación de la guía, ruta de 3 minutos con la receta de navegador y comprobación visual del panel en escritorio y a 390 px, incluido el tema oscuro; retirada de los dos conjuntos con el tenant sin episodios ni marca de agua.
 - [x] 5.3 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con sus pasadas, el barrido de patrones, los riesgos y los hallazgos.
 - [x] 5.4 Evidencia en `docs/evidence/JUP-114-validation.md` por criterio de la tarjeta y bloque `## Human Approval` post-review de Lucia.
-- [ ] 5.5 Archivar el change en la misma rama, rellenar el Purpose de `openspec/specs/anomalies-panel/spec.md` y revisar la documentación posterior al archivo. No se abre PR: los tres changes de JUP-114 van en un solo PR que se abre al terminar el último.
+- [x] 5.5 Archivar el change en la misma rama, rellenar el Purpose de `openspec/specs/anomalies-panel/spec.md` y revisar la documentación posterior al archivo. No se abre PR: los tres changes de JUP-114 van en un solo PR que se abre al terminar el último.

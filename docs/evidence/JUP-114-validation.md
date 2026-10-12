@@ -91,3 +91,9 @@ Stack aislado `docker compose -p jup114v` con volúmenes nuevos, construido desd
 - Primera detección sobre una historia muy larga o con solapes antiguos: aceptado como riesgo conocido (`RF-114-012`).
 - Importes sintéticos: la calidad de la detección con gasto real no está medida.
 - Revisión y validación de las personas con esos roles en Trello.
+
+### Nota de release
+
+| Fecha | JUP | Nota de release | Review | ADRs |
+| --- | --- | --- | --- | --- |
+| 2026-10-12 | JUP-114 (change 2) | El panel `/anomalies` lee los episodios guardados del cliente activo, detecta bajo demanda sin límite de días y cambia estados; los datos de demo diarios abren P1, P2 y P3 y `remove` limpia los episodios. | [review.md](../../openspec/changes/archive/2026-10-12-jup-114-anomalies-panel-live/review.md) | [ADR-0019](../adr/ADR-0019-cost-anomaly-episodes.md) |
