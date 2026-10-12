@@ -1,3 +1,33 @@
+## Corrección de compatibilidad PR121 — 12/10/2026
+
+Origen: «Hazlo», código e56562f publicado en PR121. Proyección sin uniqueItems;
+rechazo local de duplicados y procedencia conservados. Backend20PASS,
+processor86PASS, OpenSpec67/67 y seis checks técnicosPASS sobre e56562f.
+Focal018/saludo completan;018 omite cita en focal y sí la incluye en batería:
+variabilidad pendiente, no aceptación semántica. UI:saludo correcto terminado,
+recarga y reapertura verificadas. Batería19/28:15completed,4failed por múltiples
+llamadas(003/005/006/008);020–028 NOT_RUN por guarda previa a caducidad18:25UTC.
+Gasto acumulado desde autorización0.0538128925USD; runtime detenido sin renovar
+claves/límites. Nuevos cambios solicitados por Víctor pendientes (streaming,
+truncación, emoji de test, conflicto documental y HMAC en CD). Sin merge/review
+propia/Discord. Aceptación globalNO PASS.
+[Informe completo](../evidence/jup-035-pr121-schema-compatibility-20261012.md).
+
+## Validación real autorizada de PR121 — 12/10/2026
+
+Origen: «Autorizado», para enviar JUP-069/saludo al gateway existente con máximo
+adicional 0,50 USD, sin renovar claves ni ampliar límites. Sustituye el bloqueo
+administrativo anterior, pero la aceptación técnica sigue **NO PASS**.
+Código funcional 0d91d33 de HEAD f370ff9 activado en runtime sintético; hashes
+75 backend/69 processor confirmados. 018 y saludo: failed, un intento, cero
+deltas, HTTP 400. Contraste aislado: auto sin esquema 200; final nuevo vacío
+400; final estático anterior 200; final nuevo sin uniqueItems 200. Señala
+incompatibilidad de uniqueItems; no prueba calidad ni recorrido con fuentes.
+Full28 y navegador finales NOT_RUN por fallo focal. Multiplicidad pendiente.
+Incremento observado de claves 0.004454135 USD; límites/caducidad intactos.
+Runtime detenido, sin cambios de producto, push, reviews o Discord.
+[Recibos y próximos pasos](../../../materiales/07-evidencias/PR121-herramientas-evidencia-20261012/authorized-validation.md).
+
 ## PR121: evidencia acotada, multiplicidad pendiente — 12/10/2026
 
 Encargo del usuario: «Prepara una orden de trabajo para que un agente corrija

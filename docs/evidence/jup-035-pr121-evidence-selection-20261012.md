@@ -5,7 +5,24 @@ implementación de Alejandro; no constituye review independiente. Base9c37a15,
 código0d91d337aa944404a76afa03ffbbc3e2c5501e7f, en la rama propia
 fix/JUP-035-auto-documentation. [PR121](https://github.com/EconomiconFinOps/tfm-economicon/pull/121).
 
-## Resultado y límites
+## Estado posterior
+
+Compatibilidad corregida en e56562f; validación parcial y pendientes en el
+[informe vigente](jup-035-pr121-schema-compatibility-20261012.md). Los cortes
+siguientes conservan sus resultados históricos.
+
+## Actualización: validación real autorizada
+
+El usuario autorizó explícitamente la campaña posterior. 018 y saludo fallan
+con HTTP400 antes de emitir texto. Probes aislados: decisión sin esquema200,
+esquema nuevo vacío400, esquema estático anterior200 y esquema nuevo retirando
+únicamente uniqueItems200. Incompatibilidad localizada; no corrección publicada.
+Full28/navegador finales sin ejecutar por fallo focal; multiplicidad pendiente.
+Incremento conjunto observado en claves0.004454135USD; runtime detenido y límites
+intactos. [Recibos de la campaña](../../../materiales/07-evidencias/PR121-herramientas-evidencia-20261012/authorized-validation.md).
+La sección siguiente conserva el corte previo a esta autorización.
+
+## Resultado y límites (corte anterior)
 
 Entrega parcial: el esquema final queda limitado a la evidencia efectiva del
 intento y sus regresiones pasan offline. No se acredita todavía la corrección
