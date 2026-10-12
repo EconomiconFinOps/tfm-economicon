@@ -193,7 +193,7 @@ Authenticated members SHALL list the active tenant's episodes, open ones (new or
 
 ### Requirement: Versioned rules and honest limitations
 
-Each episode SHALL store the rules version and thresholds that opened it; runs SHALL only use the current business rules. Episodes SHALL be presented as candidates: the system SHALL NOT claim a cause, savings, statistical confidence or completeness of the cost data. Documented limitations SHALL include: a day may be evaluated before late data arrives; days older than the seven-day catch-up window between runs are not evaluated; new spend from a zero reference is not detected; weekly cycles may produce false candidates; a recent spike raises the seven-day mean; currencies other than EUR and USD are not evaluated; only the service dimension is watched.
+Each episode SHALL store the rules version and thresholds that opened it; runs SHALL only use the current business rules. Episodes SHALL be presented as candidates: the system SHALL NOT claim a cause, savings, statistical confidence or completeness of the cost data. Documented limitations SHALL include: a day may be evaluated before late data arrives; a service with no earlier spend does not open an episode on its first day, but from its second day the reference is the seven-day mean including that first day, so steady new spend can open an episode and escalate until someone closes it; weekly cycles may produce false candidates; a recent spike raises the seven-day mean; currencies other than EUR and USD are not evaluated; only the service dimension is watched.
 
 #### Scenario: Rules recorded on the episode
 - **WHEN** an episode is opened

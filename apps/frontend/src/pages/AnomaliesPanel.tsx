@@ -173,7 +173,8 @@ export function AnomaliesPanel() {
     onError: (error, forTenant) => { if (tenantInView.current === forTenant) setOutcome({ error: detectionMessage(error) }); },
   });
 
-  const data = list.data;
+  // Una recarga fallida conserva en React Query los datos anteriores: no se enseñan junto al error.
+  const data = list.isError ? undefined : list.data;
   const episodes = data?.episodes ?? [];
   const visible = filterEpisodes(episodes, severity, status, observation);
   const open = episodes.filter(isOpen);

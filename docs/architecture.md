@@ -199,7 +199,7 @@ nombre. Evaluar presupuesto no lo persiste ni envía notificaciones.
 La evaluación de anomalías de JUP-030 tampoco guarda nada; los episodios de
 JUP-114 sí: «Detectar ahora» aplica la regla diaria de negocio sobre el coste
 diario por servicio y guarda episodios con criticidad y estado
-([API](api/anomaly-episodes.md), [ADR-0019](adr/ADR-0019-cost-anomaly-episodes.md)).
+([API](api/anomaly-episodes.md), [ADR-0020](adr/ADR-0020-cost-anomaly-episodes.md)).
 El panel `/anomalies` los lee, detecta bajo demanda y cambia estados. No hay ejecución periódica ni avisos.
 [Contrato billing](../openspec/specs/azure-cost-kpis/spec.md) y
 [consulta SQL](../apps/backend/app/db/database.py).

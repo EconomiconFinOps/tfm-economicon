@@ -13,7 +13,7 @@ JUP-030 detecta candidatas bajo demanda sin guardar nada: su `id` cambia con el 
 - **Estados** Nueva, Investigando, Resuelta y Falso positivo, con motivo obligatorio al cerrar; se guarda quién y cuándo cambió el estado, la fecha del primer cambio desde Nueva y la de cierre (para MTTA y MTTR).
 - **API autenticada** del cliente activo: detectar ahora (recorre día a día los días completos pendientes, como máximo 7, idempotente), listar episodios, ver uno y cambiar su estado. Ids ajenos o inexistentes dan el mismo 404.
 - **Migración 002 del backend** con las tablas de episodios y del estado de detección por cliente.
-- **ADR-0019** del modelo de anomalías: regla, referencia, episodio, criticidad, monedas, estados, limitaciones y trabajo futuro (puesta al día obligatoria en la etapa 2, línea base predictiva, conversión de monedas, responsable, permisos por rol, archivado automático).
+- **ADR-0020** del modelo de anomalías: regla, referencia, episodio, criticidad, monedas, estados, limitaciones y trabajo futuro (puesta al día obligatoria en la etapa 2, línea base predictiva, conversión de monedas, responsable, permisos por rol, archivado automático).
 - Enmiendas de contrato: la evaluación de JUP-030 queda como **consulta de prueba sin guardar** (no se toca su comportamiento) y el contrato del agente de JUP-084 aclara qué es lo esperado, la criticidad por impacto acumulado, las reglas versionadas y que la fuente de JUP-038 son los episodios.
 
 Fuera de alcance: el panel `/anomalies` y los datos de demostración (change 2, `jup-114-anomalies-panel-live`), la ejecución periódica y los avisos (change 3), la explicación con el agente (JUP-038), el documento de reglas del corpus del asistente (fijado por huella en las evaluaciones de JUP-022, JUP-069 y JUP-070; se registra un hallazgo para actualizarlo con JUP-038), conversión de moneda, detección estadística o predictiva, causa raíz y permisos por rol.
@@ -31,6 +31,6 @@ Fuera de alcance: el panel `/anomalies` y los datos de demostración (change 2, 
 
 ## Impact
 
-Backend: migración 002, acceso a datos (lectura diaria de costes por servicio con las protecciones de billing v2, y escritura de episodios), esquemas, servicio de detección, rutas nuevas bajo `/billing/anomalies/` y pruebas, incluidas pruebas con CockroachDB real. Documentación: `docs/api/cost-anomalies.md`, nueva `docs/api/anomaly-episodes.md`, `docs/adr/ADR-0019-…`, nota de continuidad y hallazgos. Sin cambios en el frontend, el processor, el corpus del asistente, los conjuntos de evaluación ni el comportamiento de `POST /billing/anomalies/evaluate`.
+Backend: migración 002, acceso a datos (lectura diaria de costes por servicio con las protecciones de billing v2, y escritura de episodios), esquemas, servicio de detección, rutas nuevas bajo `/billing/anomalies/` y pruebas, incluidas pruebas con CockroachDB real. Documentación: `docs/api/cost-anomalies.md`, nueva `docs/api/anomaly-episodes.md`, `docs/adr/ADR-0020-…`, nota de continuidad y hallazgos. Sin cambios en el frontend, el processor, el corpus del asistente, los conjuntos de evaluación ni el comportamiento de `POST /billing/anomalies/evaluate`.
 
 La interpretación de la criticidad sobre el impacto acumulado está pendiente de confirmar con la responsable de las reglas de negocio; si cambia, se ajusta antes de archivar.

@@ -1,7 +1,7 @@
 # Episodios de anomalias de coste
 
 JUP-114 — [Trello](https://trello.com/c/F492abeY). Contrato HTTP version 1.
-Decision: [ADR-0019](../adr/ADR-0019-cost-anomaly-episodes.md). Fuentes
+Decision: [ADR-0020](../adr/ADR-0020-cost-anomaly-episodes.md). Fuentes
 ejecutables: [schema](../../apps/backend/app/schemas/anomaly_episodes.py),
 [servicio](../../apps/backend/app/services/anomaly_episodes.py),
 [acceso a datos](../../apps/backend/app/db/database.py),
@@ -123,7 +123,7 @@ Ademas de los episodios, para cualquier `scope`, la lista devuelve:
 
 | Campo | Significado |
 | --- | --- |
-| `last_evaluated_date` | Ultimo dia evaluado del tenant («Revisado hasta»), o null si nunca se detecto. |
+| `last_evaluated_date` | Ultimo dia evaluado del tenant («Revisado hasta»), o null si nunca se detecto. Con un hueco de datos, pulsar cada dia puede dejar la marca en el dia anterior al hueco (`insufficient_data` no guarda nada) hasta el primer dia evaluable, mientras una sola pulsacion la lleva al ultimo dia completo; los episodios son los mismos. |
 | `includes_synthetic_data` | `true` si alguna ingesta completada del tenant lleva la marca `synthetic` (herramientas de JUP-106 y JUP-107). No dice que el resto sea real: hoy la ingesta usa el simulador con el dataset publico. |
 | `open_impact_by_currency` | Impacto acumulado de los episodios `new` e `investigating`, una entrada por moneda, sumado de forma exacta y redondeado una sola vez. Nunca se suman monedas. |
 
@@ -213,9 +213,11 @@ registran ninguna herramienta del agente.
 ## Limitaciones
 
 - Un dia puede evaluarse antes de que lleguen datos tardios; no se reevalua.
-- Un gasto nuevo desde cero no abre episodio (no hay porcentaje).
+- Un servicio sin gasto previo no abre episodio su primer dia (no hay porcentaje sobre una referencia cero). Desde el segundo dia su referencia es la media de 7 dias, que incluye ese primer dia: un gasto nuevo y estable por encima de 116,67 al dia abre episodio, llega a P1 a los 16 dias (con 200,00 al dia, 2742,86 de impacto) y sigue hasta que alguien lo cierre.
 - Los ciclos semanales pueden dar candidatas falsas y un pico reciente infla la
-  media de 7 dias.
+  media de 7 dias. Por ejemplo, un cargo semanal fijo de 700,00 abre un P2 nuevo
+  cada semana (600,00 de impacto cada uno) y los anteriores quedan abiertos
+  como "ya no se observa" (5 en 6 semanas).
 - Si se cierra un episodio con el gasto aun alto, la media puede no volver a
   saltar.
 - Solo se vigila el servicio; solo EUR y USD, con umbrales nominales (1 USD

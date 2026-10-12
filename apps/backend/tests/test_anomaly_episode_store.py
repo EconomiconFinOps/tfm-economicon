@@ -333,6 +333,36 @@ def test_list_overview_after_detection_reports_the_last_evaluated_day(episode_st
     assert overview["open_impact_by_currency"] == [{"currency": "EUR", "amount": "150.00"}]
 
 
+def test_equal_severity_and_impact_list_the_most_recent_start_first_then_by_id(episode_store):
+    db = episode_store
+    insert_episode(db, "old", start=D, status="new", service="Old")
+    insert_episode(db, "b-recent", start=D + timedelta(days=3), status="new", service="B")
+    insert_episode(db, "a-recent", start=D + timedelta(days=3), status="new", service="A")
+    listed = [item["id"] for item in db.fetch_anomaly_episode_list("tenant-a", scope="open")["episodes"]]
+    assert listed == ["a-recent", "b-recent", "old"]
+
+
+@pytest.mark.parametrize("sqlstate,conflict", [("40001", True), ("08006", False)])
+def test_detection_turns_only_serialization_failures_into_a_conflict(episode_store, monkeypatch, sqlstate, conflict):
+    from sqlalchemy import exc
+
+    class Failure(Exception):
+        pass
+
+    Failure.sqlstate = sqlstate
+    db = episode_store
+    load_series(db, SPIKE)
+
+    def fail(*args, **kwargs):
+        raise exc.OperationalError("SELECT 1", {}, Failure())
+
+    monkeypatch.setattr(db, "observed_cost_day_range", fail)
+    with pytest.raises(DetectionConflict if conflict else exc.OperationalError) as caught:
+        db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert isinstance(caught.value, DetectionConflict) is conflict
+    assert episode_rows(db) == []
+
+
 def test_list_read_retries_a_cockroach_retry_error_and_gives_up_after_three(episode_store, monkeypatch):
     from sqlalchemy import exc
 

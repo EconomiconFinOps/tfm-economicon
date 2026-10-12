@@ -1,4 +1,4 @@
-"""Stored cost-anomaly candidate episodes (JUP-114, ADR-0019)."""
+"""Stored cost-anomaly candidate episodes (JUP-114, ADR-0020)."""
 from datetime import date, datetime
 from typing import Literal
 import unicodedata

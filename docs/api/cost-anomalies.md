@@ -226,7 +226,7 @@ compara agregados de periodo con limites inclusivos (`>=`) y reglas
 independientes; no cumple ni reemplaza aquella regla. La aplica JUP-114 en los
 episodios guardados, sobre el coste diario observado y con limites estrictos
 (`>`) y las dos condiciones a la vez
-([ADR-0019](../adr/ADR-0019-cost-anomaly-episodes.md)). Por eso una subida de
+([ADR-0020](../adr/ADR-0020-cost-anomaly-episodes.md)). Por eso una subida de
 exactamente el 20 % salta en esta consulta con `deviation_threshold_percent`
 `20.00` y no abre un episodio. No se divide un agregado entre dias para afirmar
 que se ha verificado una serie diaria.

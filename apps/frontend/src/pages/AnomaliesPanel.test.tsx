@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { useState } from "react";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AnomaliesPanel } from "./AnomaliesPanel";
 import { episode, episodeList } from "../test/anomalyFixtures";
 
@@ -61,7 +61,7 @@ function renderPanel() {
 const rows = () => screen.getAllByRole("row").slice(1);
 const rowText = () => rows().map((row) => row.textContent ?? "");
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); focusManager.setFocused(undefined); });
 
 describe("JUP-114 panel de anomalías: lectura y resumen", () => {
   it("enseña las abiertas en el orden del backend, con etiquetas y sin textos inventados", async () => {
@@ -176,6 +176,17 @@ describe("JUP-114 panel de anomalías: lectura y resumen", () => {
     expect(document.body.textContent).not.toMatch(/datos reales/i);
   });
 
+  it("el resumen no cuenta episodios cerrados aunque sean P1 o ya no se observen", async () => {
+    const closedP1 = episode({ id: "anomaly-5", service: "Networking", status: "false_positive", observation: "no_longer_observed",
+      no_longer_observed_on: "2026-09-18", closed_at: "2026-10-12T11:00:00Z", closure_reason: "Esperado" });
+    stubApi({ list: { ...demo, episodes: [...demo.episodes, closedP1] } });
+    renderPanel();
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    expect(screen.getByTestId("summary-open")).toHaveTextContent(/^3$/);
+    expect(screen.getByTestId("summary-p1")).toHaveTextContent(/^1$/);
+    expect(screen.getByTestId("summary-ended")).toHaveTextContent(/^1$/);
+  });
+
   it("enseña siempre hasta qué día está revisado", async () => {
     stubApi({ list: demo });
     renderPanel();
@@ -208,6 +219,27 @@ describe("JUP-114 panel de anomalías: vacíos, errores y cambio de cliente", ()
     fail = false;
     fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
     await waitFor(() => expect(rows()).toHaveLength(3));
+  });
+
+  it("si una recarga falla tras una carga correcta, no deja las cifras de la carga anterior", async () => {
+    let listed = 0;
+    stubApi({ list: () => (listed++ === 0 ? json(demo) : json({ detail: "boom" }, 500)) });
+    renderPanel();
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    await act(async () => { focusManager.setFocused(false); focusManager.setFocused(true); });
+    expect(await screen.findByText("No se han podido cargar las anomalías.")).toBeInTheDocument();
+    expect(screen.queryByText(/EUR/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Resumen de todas las anomalías/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("al cambiar de cliente desaparece el resultado de la detección del anterior", async () => {
+    stubApi({ list: demo, detect: completedRun });
+    renderPanel();
+    fireEvent.click(await screen.findByRole("button", { name: "Detectar ahora" }));
+    expect(await screen.findByRole("status", { name: "Resultado de la detección" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Cambiar cliente" }));
+    await waitFor(() => expect(screen.queryByRole("status", { name: "Resultado de la detección" })).not.toBeInTheDocument());
   });
 
   it("al cambiar de cliente no enseña ni un instante los episodios del anterior", async () => {

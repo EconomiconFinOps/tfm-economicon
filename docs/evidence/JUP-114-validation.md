@@ -1,6 +1,6 @@
 # Evidencia JUP-114 — change 1: episodios de anomalía guardados
 
-Tarjeta: [JUP-114](https://trello.com/c/F492abeY). Change: `jup-114-persisted-anomalies`. Rama: `feat/JUP-114-anomaly-circuit`. Decisión: [ADR-0019](../adr/ADR-0019-cost-anomaly-episodes.md). Contrato: [anomaly-episodes.md](../api/anomaly-episodes.md).
+Tarjeta: [JUP-114](https://trello.com/c/F492abeY). Change: `jup-114-persisted-anomalies`. Rama: `feat/JUP-114-anomaly-circuit`. Decisión: [ADR-0020](../adr/ADR-0020-cost-anomaly-episodes.md). Contrato: [anomaly-episodes.md](../api/anomaly-episodes.md).
 
 Validación hecha por la líder de la tarjeta bajo la excepción temporal del 2026-10-11. No sustituye la revisión ni la validación de las personas con esos roles en Trello.
 
@@ -96,4 +96,4 @@ Stack aislado `docker compose -p jup114v` con volúmenes nuevos, construido desd
 
 | Fecha | JUP | Nota de release | Review | ADRs |
 | --- | --- | --- | --- | --- |
-| 2026-10-12 | JUP-114 (change 2) | El panel `/anomalies` lee los episodios guardados del cliente activo, detecta bajo demanda sin límite de días y cambia estados; los datos de demo diarios abren P1, P2 y P3 y `remove` limpia los episodios. | [review.md](../../openspec/changes/archive/2026-10-12-jup-114-anomalies-panel-live/review.md) | [ADR-0019](../adr/ADR-0019-cost-anomaly-episodes.md) |
+| 2026-10-12 | JUP-114 (change 2) | El panel `/anomalies` lee los episodios guardados del cliente activo, detecta bajo demanda sin límite de días y cambia estados; los datos de demo diarios abren P1, P2 y P3 y `remove` limpia los episodios. | [review.md](../../openspec/changes/archive/2026-10-12-jup-114-anomalies-panel-live/review.md) | [ADR-0020](../adr/ADR-0020-cost-anomaly-episodes.md) |

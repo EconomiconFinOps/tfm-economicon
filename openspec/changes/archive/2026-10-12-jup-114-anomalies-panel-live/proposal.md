@@ -29,4 +29,4 @@ Ninguna.
 
 ## Impact
 
-Frontend (`AnomaliesPanel`, cliente y contrato en `services/`, quitar `data/demo/anomaliesPanel.ts`, pruebas), backend (`detection_window`, lectura de la lista, esquemas, pruebas), `scripts/synthetic_anomalies.py` y su suite, `docs/demo/JUP-107/` (esperados, guía de anomalías, guion, preguntas, README, receta de navegador), `docs/api/anomaly-episodes.md`, ADR-0019 (límite de 7 días), hallazgos `RF-114-006` y `RF-114-007` y continuidad. La batería de cierre incluye backend, processor, frontend y scripts.
+Frontend (`AnomaliesPanel`, cliente y contrato en `services/`, quitar `data/demo/anomaliesPanel.ts`, pruebas), backend (`detection_window`, lectura de la lista, esquemas, pruebas), `scripts/synthetic_anomalies.py` y su suite, `docs/demo/JUP-107/` (esperados, guía de anomalías, guion, preguntas, README, receta de navegador), `docs/api/anomaly-episodes.md`, ADR-0020 (límite de 7 días), hallazgos `RF-114-006` y `RF-114-007` y continuidad. La batería de cierre incluye backend, processor, frontend y scripts.

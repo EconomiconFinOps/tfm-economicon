@@ -1,4 +1,4 @@
-"""JUP-019 daily business rule over observed daily costs, kept as candidate episodes (ADR-0019)."""
+"""JUP-019 daily business rule over observed daily costs, kept as candidate episodes (ADR-0020)."""
 from dataclasses import dataclass, field, replace
 from datetime import date, timedelta
 from decimal import Decimal, ROUND_HALF_UP, localcontext
@@ -24,7 +24,7 @@ _TRANSITIONS = {"new": {"investigating", "resolved", "false_positive"}, "investi
 LIMITATIONS = [
     "A candidate for investigation, not a demonstrated cause, saving or statistical confidence.",
     "Cost data completeness is not verified; a day may be evaluated before late records arrive.",
-    "New spend from a zero reference does not open an episode.",
+    "A service with no earlier spend does not open an episode on its first day; from its second day the reference is the seven-day mean that includes that first day, so steady new spend can open an episode and escalate until someone closes it.",
     "Weekly cycles may produce false candidates and a recent spike raises the seven-day mean.",
     "Only the service dimension is watched; only EUR and USD are evaluated, with nominal thresholds.",
 ]

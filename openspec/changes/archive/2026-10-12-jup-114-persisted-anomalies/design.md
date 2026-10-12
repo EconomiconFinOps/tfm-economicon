@@ -1,4 +1,4 @@
-JUP: JUP-114 · ADR: [ADR-0019](../../../../docs/adr/ADR-0019-cost-anomaly-episodes.md) (nuevo en este change)
+JUP: JUP-114 · ADR: [ADR-0020](../../../../docs/adr/ADR-0020-cost-anomaly-episodes.md) (nuevo en este change)
 
 ## Context
 

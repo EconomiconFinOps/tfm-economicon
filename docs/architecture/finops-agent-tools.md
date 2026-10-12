@@ -287,7 +287,7 @@ candidata cuando faltan historico y contexto operativo.
 
 Desde JUP-114 la regla se aplica en los episodios guardados
 ([anomaly-episodes.md](../api/anomaly-episodes.md),
-[ADR-0019](../adr/ADR-0019-cost-anomaly-episodes.md)): la serie es el coste
+[ADR-0020](../adr/ADR-0020-cost-anomaly-episodes.md)): la serie es el coste
 diario observado por servicio y moneda; lo esperado es la media de los 7 dias
 anteriores o, con un episodio en seguimiento, su referencia anclada; los limites
 son estrictos y las dos condiciones van juntas. La severidad P1/P2/P3 se calcula

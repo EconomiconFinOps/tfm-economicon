@@ -1,4 +1,4 @@
-JUP: JUP-114 · ADR: [ADR-0019](../../../docs/adr/ADR-0019-cost-anomaly-episodes.md) (se actualiza: se quita el límite de 7 días)
+JUP: JUP-114 · ADR: [ADR-0020](../../../../docs/adr/ADR-0020-cost-anomaly-episodes.md) (se actualiza: se quita el límite de 7 días)
 
 ## Context
 
@@ -16,7 +16,7 @@ Ver `proposal.md`. Estado de partida tras el change 1 (`openspec/changes/archive
 
 ## Decisions
 
-**D1. Ejecución sin límite de días.** `detection_window` recibe el primer día observado del tenant: en la primera ejecución evalúa desde ese día (los 7 primeros se saltan como `reference_incomplete`) y en las siguientes todos los días tras la marca de agua. Desaparecen `MAX_DAYS_PER_RUN` y `unevaluated_range` de la respuesta (el campo se quita del esquema; ningún cliente lo usa todavía). La lectura de costes sigue empezando 7 días antes del primer día a evaluar. Se añade una prueba de equivalencia: una pulsación sobre toda la historia da los mismos episodios que una pulsación por día. Se actualizan ADR-0019 (decisión 8 y limitaciones), `docs/api/anomaly-episodes.md` y `RF-114-006` (resuelto). Alternativa descartada: mantener el límite (decisión de Lucia del 2026-10-12, porque la alerta de Compute de la demo no saldría en el panel).
+**D1. Ejecución sin límite de días.** `detection_window` recibe el primer día observado del tenant: en la primera ejecución evalúa desde ese día (los 7 primeros se saltan como `reference_incomplete`) y en las siguientes todos los días tras la marca de agua. Desaparecen `MAX_DAYS_PER_RUN` y `unevaluated_range` de la respuesta (el campo se quita del esquema; ningún cliente lo usa todavía). La lectura de costes sigue empezando 7 días antes del primer día a evaluar. Se añade una prueba de equivalencia: una pulsación sobre toda la historia da los mismos episodios que una pulsación por día. Se actualizan ADR-0020 (decisión 8 y limitaciones), `docs/api/anomaly-episodes.md` y `RF-114-006` (resuelto). Alternativa descartada: mantener el límite (decisión de Lucia del 2026-10-12, porque la alerta de Compute de la demo no saldría en el panel).
 
 **D2. La lista devuelve tres datos del tenant.** `last_evaluated_date` (de `anomaly_detection_state`, null si nunca se detectó), `includes_synthetic_data` (`EXISTS` de una ingesta completada del tenant con `request->'synthetic' = true`, la misma marca que ponen las herramientas de JUP-106 y JUP-107) y `open_impact_by_currency` (suma exacta de `impact_numerator / 7` de los episodios `new` o `investigating` por moneda, redondeada una vez). Se calculan en la misma lectura que la lista, con predicado de tenant, para cualquier `scope`. Alternativa descartada: sumar en el navegador; los importes llegan redondeados y `Number` pierde céntimos con importes grandes.
 

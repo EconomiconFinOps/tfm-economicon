@@ -262,6 +262,6 @@ al coste diario por servicio y guarda episodios por tenant (migracion
 `002_anomaly_episodes`); `GET /billing/anomalies/episodes` los lista por
 criticidad e impacto y `PATCH /billing/anomalies/episodes/{id}` cambia su
 estado. Contrato y limites: [docs/api/anomaly-episodes.md](../../docs/api/anomaly-episodes.md);
-decision: [ADR-0019](../../docs/adr/ADR-0019-cost-anomaly-episodes.md). Las
+decision: [ADR-0020](../../docs/adr/ADR-0020-cost-anomaly-episodes.md). Las
 pruebas con CockroachDB real (`tests/test_anomaly_episode_*.py`) necesitan
 `JUP086_COCKROACH_TEST_URL` y no corren en CI.
