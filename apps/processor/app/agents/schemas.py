@@ -183,8 +183,11 @@ def assemble_chat_response(value, period, subscriptions=None, *, authorized_evid
         raise ValueError('Invalid canonical subscriptions.')
     if authorized_evidence is not None:
         known={item['id']:item for item in authorized_evidence}
+        if 'evidence' not in value or not isinstance(value['evidence'],list):
+            raise ValueError('Invalid evidence collection.')
         evidence=[]
-        for item in value.get('evidence',[]):
+        for item in value['evidence']:
+            if not isinstance(item,dict): raise ValueError('Invalid evidence record.')
             item=dict(item)
             if item.get('kind')=='corpus':
                 quote=item.pop('support_quote',None)
