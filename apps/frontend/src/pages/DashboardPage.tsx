@@ -141,7 +141,7 @@ export function DashboardPage() {
                 className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2"
               >
                 <span className="text-sm text-foreground">{service}</span>
-                <StatusPill status={SERVICE_STATUS_LABELS[serviceStatus] ?? serviceStatus} />
+                <StatusPill status={Object.hasOwn(SERVICE_STATUS_LABELS, serviceStatus) ? SERVICE_STATUS_LABELS[serviceStatus] : serviceStatus} />
               </div>
             ))}
           </div>

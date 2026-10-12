@@ -30,7 +30,7 @@ La interfaz del frontend está en español. Este glosario fija el nombre de los 
 | Compute, Storage, Network | leyendas y categorías de los datos de demostración | Categorías de coste de Azure; se tratan como valores de datos. |
 | ID | «ID del trabajo» | Abreviatura de uso corriente en español. |
 | URI | «URI del artefacto» | Siglas técnicas sin equivalente. |
-| Etiquetas sobre valores de la API | rol del mensaje (`user` → «Usuario», `assistant` → «Asistente») y estado de los servicios del panel de resumen (`ok` → «correcto», `degraded` → «degradado», `failed` → «fallido», `unknown` → «no verificado») | Etiqueta de la interfaz sobre un valor cerrado. Si llega un valor que no está en la tabla se muestra tal cual, sin romper. |
+| Etiquetas sobre valores de la API | rol del mensaje (`user` → «Usuario», `assistant` → «Asistente») y estado de los servicios del panel de resumen (`ok` → «correcto», `degraded` → «degradado», `failed` → «fallido», `unknown` → «no verificado») | Etiqueta de la interfaz sobre un valor cerrado. Si llega un valor que no está en la tabla se muestra tal cual, sin romper. Los estados se ven en minúsculas porque el componente `StatusPill` pasa a minúsculas todo lo que muestra. |
 | Datos de demostración fijos | contenido de `src/data/demo` en las pantallas de maqueta (nombres de equipo, servicios y acciones) | Son datos de ejemplo, no texto de la interfaz; se tratan como valores de datos. Esas pantallas se ocultan o retiran en JUP-116. |
 | `environment` | panel de cobertura de etiquetas | Clave literal de etiqueta de Azure, como `owner` o `project`. |
 | Valores de la API | nombres de servicio, etiquetas, planes, títulos de conversación, mensajes del asistente | Datos del cliente: se muestran sin modificar. |

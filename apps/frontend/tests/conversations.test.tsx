@@ -21,18 +21,20 @@ describe("assistant conversations", () => {
       [`GET ${collectionPath}`]: () => jsonResponse({ items: [conversation] }),
       [`GET ${detailPath}`]: () => jsonResponse({
         conversation,
-        messages: [userMessage, assistantMessage, { ...userMessage, id: "message-system", role: "system", content: "Aviso interno" }]
+        messages: [userMessage, assistantMessage, { ...userMessage, id: "message-system", role: "system", content: "Aviso interno" },
+          { ...userMessage, id: "message-proto", role: "constructor", content: "Rol heredado" }]
       })
     });
     restoreSession();
     renderApp(["/assistant"]);
 
     const articles = await screen.findAllByRole("article");
-    expect(articles).toHaveLength(3);
+    expect(articles).toHaveLength(4);
     expect(articles[0]).toHaveTextContent("Usuario");
     expect(articles[1]).toHaveTextContent("Asistente");
     expect(articles[2]).toHaveTextContent("system");
     expect(articles[2]).not.toHaveTextContent("Usuario");
+    expect(articles[3]).toHaveTextContent("constructor");
   });
 
   it("creates a conversation from an empty list and sends a message with a visible reply", async () => {

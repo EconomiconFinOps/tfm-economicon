@@ -165,7 +165,7 @@ export function ConversationsPage() {
                   key={entry.id}
                   className="rounded-md border border-border bg-background p-3"
                 >
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{ROLE_LABELS[entry.role] ?? entry.role}</p>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{Object.hasOwn(ROLE_LABELS, entry.role) ? ROLE_LABELS[entry.role] : entry.role}</p>
                   {entry.role === "assistant"
                     ? <AnswerEvidence content={entry.content} metadata={entry.metadata} />
                     : <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{entry.content}</p>}

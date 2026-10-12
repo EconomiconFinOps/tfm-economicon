@@ -162,7 +162,7 @@ describe("tenant bootstrap and dashboard", () => {
     mockBackend({
       "GET /health": () => jsonResponse({
         ...health,
-        services: { database: "ok", rabbitmq: "degraded", vector_store: "failed", queue: "unknown", cache: "paused" }
+        services: { database: "ok", rabbitmq: "degraded", vector_store: "failed", queue: "unknown", cache: "paused", extra: "toString" }
       })
     });
     restoreSession();
@@ -175,6 +175,7 @@ describe("tenant bootstrap and dashboard", () => {
     expect(row("vector_store")).toHaveTextContent("fallido");
     expect(row("queue")).toHaveTextContent("no verificado");
     expect(row("cache")).toHaveTextContent("paused");
+    expect(row("extra")).toHaveTextContent("tostring");
   });
 
   // Reactivado (Punto 5 implementado): Layout ya expone enlaces reales hacia
