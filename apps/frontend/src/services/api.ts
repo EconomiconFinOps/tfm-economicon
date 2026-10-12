@@ -20,6 +20,8 @@ import type {
   UserProfile
 } from "./contracts";
 import { isBillingSummary, isTagCoverage, isLoginResponse, isUserProfile } from "./contracts";
+import type { AnomalyDetectionRun, AnomalyEpisode, AnomalyEpisodeList, AnomalyStatusChange } from "./contracts";
+import { isAnomalyDetectionRun, isAnomalyEpisode, isAnomalyEpisodeList } from "./contracts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
@@ -246,5 +248,23 @@ export function checkHealthProvider(token: string, tenantId: string, idempotency
   return fetchJson<HealthComponent>("/health/provider-check", {
     token, tenantId, signal, method: "POST", body: JSON.stringify({ idempotency_key: idempotencyKey }),
     validate: isProviderObservation, safeHealthError: true
+  });
+}
+
+export function fetchAnomalyEpisodes(token: string, tenantId: string, signal?: AbortSignal) {
+  return fetchJson<AnomalyEpisodeList>("/billing/anomalies/episodes?scope=all", {
+    token, tenantId, signal, validate: isAnomalyEpisodeList
+  });
+}
+
+export function detectAnomalies(token: string, tenantId: string) {
+  return fetchJson<AnomalyDetectionRun>("/billing/anomalies/detect", {
+    token, tenantId, method: "POST", validate: isAnomalyDetectionRun
+  });
+}
+
+export function changeAnomalyEpisodeStatus(token: string, tenantId: string, episodeId: string, change: AnomalyStatusChange) {
+  return fetchJson<AnomalyEpisode>(`/billing/anomalies/episodes/${encodeURIComponent(episodeId)}`, {
+    token, tenantId, method: "PATCH", body: JSON.stringify(change), validate: isAnomalyEpisode
   });
 }
