@@ -133,6 +133,18 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
         if isinstance(failure, CalculationError):
             event['exception_class'] = 'CalculationError'
             event['rule_code'] = failure.rule_code
+        assembly_rules = {
+            'Citation passage is not grounded.':'citation_passage_not_grounded',
+            'Invalid evidence collection.':'invalid_evidence_collection',
+            'Invalid evidence record.':'invalid_evidence_record',
+            'Invalid response scope.':'invalid_response_scope',
+            'Period is server-owned.':'server_owned_period',
+            'Subscriptions are server-owned.':'server_owned_subscriptions',
+            'Invalid calculation response.':'invalid_calculation_response',
+            'Invalid calculation collection.':'invalid_calculation_collection',
+        }
+        if type(failure) is ValueError and failure.args and type(failure.args[0]) is str and failure.args[0] in assembly_rules:
+            event['rule_code'] = assembly_rules[failure.args[0]]
         encoded = json.dumps(event, ensure_ascii=True, separators=(',', ':'), allow_nan=False)
         if len(encoded.encode()) <= 2048:
             _diagnostic_logger.warning(encoded)

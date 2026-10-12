@@ -174,6 +174,15 @@ def test_gateway_calculation_diagnostic_exposes_closed_rule_only(caplog):
     assert 'sensitive' not in caplog.text
 
 
+def test_gateway_assembly_diagnostic_uses_only_closed_messages(caplog):
+    from app.clients.chat_gateway import _record_diagnostic
+    _record_diagnostic('model_validation',ValueError('Citation passage is not grounded.'),'a'*64,'stop')
+    assert json.loads(caplog.records[-1].message)['rule_code']=='citation_passage_not_grounded'
+    _record_diagnostic('model_validation',ValueError('sensitive unknown input'),'a'*64,'stop')
+    assert 'rule_code' not in json.loads(caplog.records[-1].message)
+    assert 'sensitive' not in caplog.text
+
+
 @pytest.mark.parametrize('operand',[{'ref':True},{'ref':-1},{'ref':0,'unit':'EUR'},
     {'literal':'73','unit':'EUR','ref':0},{'literal':'73'},{'ref':'0'}])
 def test_typed_reference_rejects_extra_units_mixed_branches_and_invalid_indices(operand):
