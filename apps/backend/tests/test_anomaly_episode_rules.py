@@ -375,3 +375,10 @@ def test_severity_follows_accumulated_impact_not_the_opening_day():
     [item] = stored.values()
     assert item.accumulated_impact == "750.00"
     assert item.severity == "P2"
+
+
+def test_severity_uses_the_exact_impact_before_display_rounding():
+    # 499.996 is shown as 500.00 but stays below the P2 boundary of 500.00.
+    item = only(run(one_day("400.00", "899.996"))[1])
+    assert item.accumulated_impact == "500.00"
+    assert item.severity == "P3"

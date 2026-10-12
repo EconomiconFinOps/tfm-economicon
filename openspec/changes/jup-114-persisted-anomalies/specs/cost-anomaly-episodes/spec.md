@@ -57,7 +57,7 @@ An observed tenant day is a UTC date with at least one completed cost record of 
 
 ### Requirement: Detection run on demand is bounded and idempotent
 
-An authenticated member of the active tenant SHALL be able to request a detection run. A run SHALL evaluate, in ascending date order, the days after the tenant's last evaluated day up to the last complete day, limited to the seven most recent of those days; on the first run, the seven days ending on the last complete day. After a successful run the last evaluated day SHALL be the last complete day. A run SHALL be atomic: on any failure, including an ambiguous cost source, nothing SHALL be stored. Repeating a run with no new complete day SHALL change nothing and report up_to_date. Concurrent runs for the same tenant SHALL NOT duplicate episodes; a run that loses the race SHALL return a conflict and store nothing. The run SHALL only read cost data and never use rules supplied in the request.
+An authenticated member of the active tenant SHALL be able to request a detection run. Identity, tenant selector and membership SHALL be checked before rejecting a request body. A run SHALL evaluate, in ascending date order, the days after the tenant's last evaluated day up to the last complete day, limited to the seven most recent of those days; on the first run, the seven days ending on the last complete day. After a successful run the last evaluated day SHALL be the last complete day. A run SHALL be atomic: on any failure, including an ambiguous cost source, nothing SHALL be stored. Repeating a run with no new complete day SHALL change nothing and report up_to_date. Concurrent runs for the same tenant SHALL NOT duplicate episodes; a run that loses the race SHALL return a conflict and store nothing. The run SHALL only read cost data and never use rules supplied in the request.
 
 #### Scenario: First run
 - **WHEN** the first run happens with a last complete day of 2026-09-13
@@ -109,7 +109,7 @@ A triggering group without a tracking episode SHALL open a new episode starting 
 
 ### Requirement: Accumulated impact and severity
 
-Each episode SHALL store its accumulated impact: the sum, over every evaluated day while it was tracking from its start day, of max(0, observed - reference), each day counted once, together with the number of counted days and the last day included. Impact SHALL stop accumulating once the episode is no longer tracking. Severity SHALL be derived from the accumulated impact in the episode currency: P1 when greater than 2000.00, P2 from 500.00 to 2000.00 inclusive, and P3 below 500.00. Impact and severity SHALL be shown in the episode currency only and SHALL never be summed or compared across currencies.
+Each episode SHALL store its accumulated impact: the sum, over every evaluated day while it was tracking from its start day, of max(0, observed - reference), each day counted once, together with the number of counted days and the last day included. Impact SHALL stop accumulating once the episode is no longer tracking. Severity SHALL be derived from the exact accumulated impact, before display rounding, in the episode currency: P1 when greater than 2000.00, P2 from 500.00 to 2000.00 inclusive, and P3 below 500.00. Impact and severity SHALL be shown in the episode currency only and SHALL never be summed or compared across currencies.
 
 #### Scenario: Severity from accumulated impact
 - **WHEN** a EUR episode with reference 1000.00 observes 2400.00 on its first two days
@@ -123,13 +123,17 @@ Each episode SHALL store its accumulated impact: the sum, over every evaluated d
 - **WHEN** accumulated impact is exactly 500.00 or exactly 2000.00
 - **THEN** severity is P2
 
+#### Scenario: Severity uses the exact impact
+- **WHEN** the exact accumulated impact is 499.996
+- **THEN** it is displayed as 500.00 and its severity is P3
+
 #### Scenario: Days below the reference
 - **WHEN** a tracking day observes less than the reference
 - **THEN** it adds 0.00 and does not reduce the accumulated impact
 
 ### Requirement: Traceable status
 
-Episode status SHALL be one of new, investigating, resolved and false_positive. Allowed changes SHALL be new to investigating, and new or investigating to resolved or false_positive. Closing as resolved or false_positive SHALL require a reason of 1 to 500 characters after trimming, without control characters; the reason SHALL be rejected for investigating. Any member of the active tenant SHALL be able to change status. Each change SHALL record who made it and when; the episode SHALL keep the time of the first change out of new and the closing time. A closed episode SHALL NOT change status again. Concurrent conflicting changes SHALL result in exactly one success.
+Episode status SHALL be one of new, investigating, resolved and false_positive. Allowed changes SHALL be new to investigating, and new or investigating to resolved or false_positive. Closing as resolved or false_positive SHALL require a reason of 1 to 500 characters after trimming, without Unicode control, format, private-use, surrogate, unassigned, line-separator or paragraph-separator characters; the reason SHALL be rejected for investigating. Any member of the active tenant SHALL be able to change status. Each change SHALL record who made it and when; the episode SHALL keep who made the first change out of new and when, and the closing time. A change that loses a concurrent race SHALL be reported as a concurrency conflict, distinct from an invalid transition. A closed episode SHALL NOT change status again. Concurrent conflicting changes SHALL result in exactly one success.
 
 #### Scenario: Investigate then resolve
 - **WHEN** a member sets investigating and later resolved with reason "Escalado revertido"
@@ -137,6 +141,10 @@ Episode status SHALL be one of new, investigating, resolved and false_positive. 
 
 #### Scenario: Missing closing reason
 - **WHEN** resolved or false_positive is requested with no reason or only whitespace
+- **THEN** the request is rejected with 422 and nothing changes
+
+#### Scenario: Invisible or control characters in the reason
+- **WHEN** the reason contains U+0085, U+202E, U+2028, U+2029, a soft hyphen or only a zero-width space
 - **THEN** the request is rejected with 422 and nothing changes
 
 #### Scenario: Closed episode

@@ -25,6 +25,7 @@ def upgrade(connection) -> None:
                 status_changed_by STRING,
                 status_changed_at TIMESTAMPTZ,
                 first_reviewed_at TIMESTAMPTZ,
+                first_reviewed_by STRING,
                 closed_at TIMESTAMPTZ,
                 closure_reason STRING,
                 previous_episode_id STRING,

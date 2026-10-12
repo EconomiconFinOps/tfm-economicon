@@ -1,6 +1,7 @@
 """Stored cost-anomaly candidate episodes (JUP-114, ADR-0019)."""
 from datetime import date, datetime
 from typing import Literal
+import unicodedata
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
@@ -28,6 +29,7 @@ class AnomalyEpisode(BaseModel):
     status_changed_by: str | None
     status_changed_at: datetime | None
     first_reviewed_at: datetime | None
+    first_reviewed_by: str | None
     closed_at: datetime | None
     closure_reason: str | None
     previous_episode_id: str | None
@@ -82,7 +84,9 @@ class EpisodeStatusChange(BaseModel):
                 raise ValueError("A reason is only accepted when closing an episode")
             return self
         reason = (self.reason or "").strip()
-        if not 1 <= len(reason) <= 500 or any(ord(char) < 32 or ord(char) == 127 for char in reason):
+        hidden = any(unicodedata.category(char).startswith("C") or unicodedata.category(char) in {"Zl", "Zp"}
+                     for char in reason)
+        if not 1 <= len(reason) <= 500 or hidden:
             raise ValueError("Closing requires a reason of 1 to 500 characters without control characters")
         self.reason = reason
         return self

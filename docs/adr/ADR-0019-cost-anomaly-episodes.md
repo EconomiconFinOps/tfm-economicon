@@ -19,7 +19,7 @@ JUP-030 evalúa candidatas bajo demanda con reglas que manda quien llama y no gu
 4. **Días evaluables:** el último día con datos del tenant se considera incompleto; el último día completo es el anterior. Un día solo se evalúa si él y sus 7 días previos tienen algún registro del tenant.
 5. **Impacto acumulado** = suma, cada día evaluado mientras el episodio está en seguimiento, de `max(0, observado − referencia)`. **Severidad** sobre ese impacto en la moneda del episodio: P1 > 2000, P2 de 500 a 2000, P3 < 500. Es la lectura de «EUR/mes» como impacto del episodio y no como proyección mensual (con una proyección ×30 casi todo sería P1); pendiente de confirmar con la responsable de las reglas.
 6. **Monedas:** umbrales nominales en EUR y USD, sin conversión. Otras monedas no se evalúan y la ejecución las informa.
-7. **Estados** `new`, `investigating`, `resolved`, `false_positive` (los de JUP-019 sin `acknowledged`), motivo obligatorio al cerrar, quién y cuándo cambió el estado, fecha del primer cambio desde `new` (reconocimiento, para MTTA) y de cierre (MTTR). Cualquier miembro del tenant puede cambiar el estado.
+7. **Estados** `new`, `investigating`, `resolved`, `false_positive` (los de JUP-019 sin `acknowledged`), motivo obligatorio al cerrar, quién y cuándo cambió el estado, quién y cuándo hizo el primer cambio desde `new` (reconocimiento, para MTTA) y fecha de cierre (MTTR). Cualquier miembro del tenant puede cambiar el estado.
 8. **Ejecución bajo demanda** («Detectar ahora»), idempotente, con una marca de agua por tenant: evalúa los días pendientes hasta el último día completo, como máximo los 7 más recientes, en una sola transacción. Abrir el panel solo lee.
 9. **Reglas versionadas** (`jup019-daily-v1`) copiadas en cada episodio.
 10. **La consulta de JUP-030 no cambia** (límites `>=`, reglas independientes y configurables): queda como consulta de prueba sin guardar. Los episodios son la fuente para el panel y JUP-038.
@@ -42,6 +42,6 @@ JUP-030 evalúa candidatas bajo demanda con reglas que manda quien llama y no gu
 
 ## Evidence And Follow-up
 
-- Evidencia: `docs/evidence/JUP-114-validation.md` (por crear al cerrar el change).
+- Evidencia: [JUP-114-validation.md](../evidence/JUP-114-validation.md).
 - **Obligatorio en la etapa 2** (change `jup-114-anomaly-alerts-schedule`): la ejecución periódica debe poner al día todos los días pendientes, porque el entorno no está siempre encendido.
 - Trabajo futuro, registrado en `openspec/findings/backlog.md`: incorporar las aclaraciones al corpus del asistente con JUP-038; tabla de umbrales por moneda o conversión documentada; línea base predictiva (modelo que aprenda el patrón esperado, por ejemplo con ciclos semanales); responsable asignado y permisos por rol; archivado automático de episodios no observados; histórico completo de cambios de estado; otras dimensiones además del servicio.

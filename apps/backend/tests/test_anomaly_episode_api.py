@@ -61,6 +61,7 @@ def test_detect_list_read_and_follow_an_episode(episode_store, api):
     body = resolved.json()
     assert (body["status"], body["status_changed_by"], body["closure_reason"]) == ("resolved", "multi", "Escalado revertido")
     assert body["first_reviewed_at"] == investigating.json()["first_reviewed_at"]
+    assert (body["first_reviewed_by"], investigating.json()["first_reviewed_by"]) == ("alice", "alice")
     assert call(api, "GET", EPISODES, headers=headers()).json()["episodes"] == []
     assert [e["id"] for e in call(api, "GET", EPISODES + "?scope=all", headers=headers()).json()["episodes"]] == [item["id"]]
     assert patch(api, item["id"], {"status": "false_positive", "reason": "otra"}).status_code == 409
@@ -71,6 +72,9 @@ def test_detect_list_read_and_follow_an_episode(episode_store, api):
 @pytest.mark.parametrize("body", [
     {"status": "resolved"}, {"status": "resolved", "reason": "   "}, {"status": "false_positive", "reason": ""},
     {"status": "resolved", "reason": "a\u0007b"}, {"status": "resolved", "reason": "x" * 501},
+    {"status": "resolved", "reason": "ok\x85x"}, {"status": "resolved", "reason": "\u202egnirts"},
+    {"status": "resolved", "reason": "a\u2028b"}, {"status": "resolved", "reason": "\u200b"},
+    {"status": "false_positive", "reason": "a\xadb"}, {"status": "resolved", "reason": "a\u2029b"},
     {"status": "investigating", "reason": "no se admite"}, {"status": "acknowledged"},
     {"status": "resolved", "reason": "ok", "actor": "mallory"}, {},
 ])
@@ -189,3 +193,30 @@ def test_detection_request_rejects_caller_rules(api):
     response = call(api, "POST", DETECT, headers=headers(), json={"absolute_increase": "1.00"})
     assert response.status_code == 422
     spies["run_anomaly_detection"].assert_not_called()
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+@pytest.mark.parametrize("auth,tenant,expected", [(False, "tenant-a", 401), (True, None, 400), (True, "tenant-b", 403)])
+def test_detection_body_check_follows_identity_selector_and_membership(api, auth, tenant, expected):
+    spies = spy_store(api)
+    response = call(api, "POST", DETECT, headers=headers(tenant=tenant) if auth else [], json={"rules": 1})
+    assert response.status_code == expected
+    spies["run_anomaly_detection"].assert_not_called()
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_status_change_concurrency_has_its_own_conflict_code(api):
+    from app.services.anomaly_episodes import StatusChangeConflict
+
+    spies = spy_store(api)
+    spies["change_anomaly_episode_status"].side_effect = StatusChangeConflict()
+    response = patch(api, "anomaly-x", {"status": "investigating"})
+    assert response.status_code == 409
+    assert response.json() == {"detail": {"code": "status_change_conflict"}}
+
+
+@pytest.mark.parametrize("reason", ["Motivo válido", "Revertido: coste esperado (ticket 42)", "ñandú — ok"])
+def test_visible_reasons_are_accepted(reason):
+    from app.schemas.anomaly_episodes import EpisodeStatusChange
+
+    assert EpisodeStatusChange(status="resolved", reason=reason).reason == reason

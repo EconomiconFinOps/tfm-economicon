@@ -26,7 +26,7 @@ estados; no hay permisos por rol.
 
 | Ruta | Uso |
 | --- | --- |
-| `POST /billing/anomalies/detect` | «Detectar ahora». Sin cuerpo: un cuerpo no vacio da 422. |
+| `POST /billing/anomalies/detect` | «Detectar ahora». Sin cuerpo: un cuerpo no vacio da 422, despues de comprobar sesion, cabecera y pertenencia. |
 | `GET /billing/anomalies/episodes?scope=open\|all` | Lista; por defecto `open` (`new` e `investigating`). Solo lee: nunca detecta. |
 | `GET /billing/anomalies/episodes/{id}` | Un episodio del tenant activo. |
 | `PATCH /billing/anomalies/episodes/{id}` | Cambio de estado con `{"status": ..., "reason": ...}`. |
@@ -111,8 +111,10 @@ Respuesta de `POST /billing/anomalies/detect`:
   en seguimiento.
 - **Criticidad** sobre el impacto acumulado, en la moneda del episodio:
   `P1` mayor que 2000, `P2` de 500 a 2000 (ambos incluidos), `P3` menor que 500.
-  Es la lectura de los tramos «EUR/mes» de JUP-019 como impacto del episodio;
-  pendiente de confirmar con la responsable de las reglas de negocio.
+  Se calcula con el impacto exacto, antes de redondear para mostrarlo: un
+  impacto de 499,996 se muestra como `500.00` y es `P3`. Es la lectura de los
+  tramos «EUR/mes» de JUP-019 como impacto del episodio; pendiente de
+  confirmar con la responsable de las reglas de negocio.
 
 La lista se ordena por criticidad (P1 a P3), impacto descendente, inicio mas
 reciente e `id`. Cada episodio muestra su impacto en su moneda; no hay totales
@@ -123,6 +125,7 @@ Campos de cada episodio: `id`, `kind: cost_anomaly_candidate`, `currency`,
 `no_longer_observed_on`, `reference_daily_cost`, `opening_observed_cost`,
 `accumulated_impact`, `impact_day_count`, `impact_through_date`, `severity`,
 `status`, `status_changed_by`, `status_changed_at`, `first_reviewed_at`,
+`first_reviewed_by`,
 `closed_at`, `closure_reason`, `previous_episode_id`, `rules_version`, `rules`
 (umbrales con los que se abrio), `cause_status: not_established`,
 `limitations`, `created_at` y `updated_at`. Los importes son cadenas con dos
@@ -137,15 +140,21 @@ decimales (HALF_UP); internamente se guardan exactos.
 | `resolved`, `false_positive` | ninguno (409) |
 
 - `resolved` y `false_positive` exigen `reason` de 1 a 500 caracteres tras
-  quitar espacios, sin caracteres de control; `investigating` no la admite.
+  quitar espacios, sin caracteres de control ni invisibles (categorias Unicode
+  `C*`, `Zl` y `Zp`: por ejemplo U+0085, U+202E, U+2028 o un espacio de ancho
+  cero); `investigating` no la admite.
   Peticiones invalidas o con campos extra dan 422 sin cambiar nada.
 - Una transicion no permitida da
-  `409 {"detail":{"code":"invalid_status_transition"}}`; dos cambios
-  simultaneos dejan exactamente uno.
+  `409 {"detail":{"code":"invalid_status_transition"}}`. Dos cambios
+  simultaneos dejan exactamente uno; el que pierde la carrera recibe
+  `409 {"detail":{"code":"invalid_status_transition"}}` si al releer ya no es
+  valido, o `409 {"detail":{"code":"status_change_conflict"}}` si la base de
+  datos abortó la transaccion: se puede reintentar.
 - Se guarda quien (`status_changed_by`, id de usuario) y cuando
-  (`status_changed_at`), el primer cambio desde `new` (`first_reviewed_at`, para
-  el tiempo hasta reconocimiento, MTTA) y el cierre (`closed_at`, para el tiempo
-  hasta resolucion, MTTR). No se guarda el historico completo de cambios.
+  (`status_changed_at`) hizo el ultimo cambio, quien y cuando hizo el primer
+  cambio desde `new` (`first_reviewed_by` y `first_reviewed_at`, para el tiempo
+  hasta reconocimiento, MTTA) y el cierre (`closed_at`, para el tiempo hasta
+  resolucion, MTTR). No se guarda el historico completo de cambios.
 
 ## Ejemplo reproducible con doble explicito
 

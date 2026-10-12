@@ -8,7 +8,7 @@ import pytest
 from sqlalchemy import text
 
 from app.schemas.billing import AmbiguousCostSource
-from app.services.anomaly_episodes import DetectionConflict, EpisodeConflict, EpisodeNotFound
+from app.services.anomaly_episodes import DetectionConflict, EpisodeConflict, EpisodeNotFound, StatusChangeConflict
 from anomaly_episode_support import D, episode_rows, episode_store, load_series
 from billing_support import billing_schema, insert_cost, insert_run
 from tenant_isolation_support import tenant_cockroach_database
@@ -169,6 +169,7 @@ def test_status_change_records_traceability_and_rejects_invalid_steps(episode_st
     [stored] = episode_rows(db)
     assert stored["status_changed_by"] == "bob" and stored["closure_reason"] == "Escalado revertido"
     assert stored["first_reviewed_at"] == investigating["first_reviewed_at"] < stored["closed_at"]
+    assert stored["first_reviewed_by"] == "alice" and resolved["first_reviewed_by"] == "alice"
     assert resolved["closed_at"] == stored["closed_at"]
     for target in ("false_positive", "investigating"):
         with pytest.raises(EpisodeConflict):
@@ -186,6 +187,27 @@ def test_status_change_never_reaches_another_tenant(episode_store):
     assert episode_rows(db) == [row]
 
 
+def test_serialization_failure_on_status_change_is_a_concurrency_conflict(episode_store, monkeypatch):
+    from sqlalchemy import exc
+
+    from app.services.anomaly_episodes import StatusChangeConflict
+
+    class Retry(Exception):
+        sqlstate = "40001"
+
+    db = episode_store
+    load_series(db, SPIKE)
+    db.run_anomaly_detection("tenant-a", today=TODAY)
+    [row] = episode_rows(db)
+
+    def fail(*args, **kwargs):
+        raise exc.OperationalError("UPDATE", {}, Retry())
+
+    monkeypatch.setattr(db, "_anomaly_episode_rows", fail)
+    with pytest.raises(StatusChangeConflict):
+        db.change_anomaly_episode_status("tenant-a", row["id"], status="investigating", reason=None, actor="alice")
+
+
 def test_concurrent_status_changes_have_exactly_one_winner(episode_store):
     db = episode_store
     load_series(db, SPIKE)
@@ -198,7 +220,7 @@ def test_concurrent_status_changes_have_exactly_one_winner(episode_store):
         try:
             db.change_anomaly_episode_status("tenant-a", row["id"], status=target, reason="motivo", actor=target)
             return "ok"
-        except EpisodeConflict:
+        except (EpisodeConflict, StatusChangeConflict):
             return "conflict"
 
     with ThreadPoolExecutor(2) as pool:
@@ -206,3 +228,22 @@ def test_concurrent_status_changes_have_exactly_one_winner(episode_store):
     assert outcomes == ["conflict", "ok"]
     [stored] = episode_rows(db)
     assert stored["status"] == stored["status_changed_by"]
+
+
+def test_return_after_end_links_to_the_previous_episode_through_sql(episode_store):
+    db = episode_store
+    load_series(db, ["400.00"] * 7 + ["550.00"] + ["400.00"] * 5)
+    load_series(db, ["400.00"] * 7 + ["550.00", "400.00"], service="Storage")
+    first = db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert first["opened"] == 2 and first["no_longer_observed"] == 2
+    [old_compute] = [row for row in episode_rows(db) if row["service"] == "Compute"]
+    db.change_anomaly_episode_status("tenant-a", old_compute["id"], status="resolved", reason="ok", actor="alice")
+    load_series(db, ["400.00"] * 6 + ["560.00", "400.00"], start=D + timedelta(days=6), prefix="later")
+    second = db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert second["opened"] == 1
+    compute = sorted((row for row in episode_rows(db) if row["service"] == "Compute"), key=lambda row: row["start_date"])
+    assert [row["start_date"] for row in compute] == [D, D + timedelta(days=12)]
+    assert compute[1]["previous_episode_id"] == compute[0]["id"]
+    assert len(episode_rows(db)) == 3
+    open_ids = {row["id"] for row in db.fetch_anomaly_episodes("tenant-a", scope="open")}
+    assert compute[1]["id"] in open_ids and compute[0]["id"] not in open_ids

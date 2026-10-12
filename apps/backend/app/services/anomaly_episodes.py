@@ -45,6 +45,10 @@ class EpisodeConflict(Exception):
     """The requested status change is not allowed from the stored status."""
 
 
+class StatusChangeConflict(Exception):
+    """A concurrent transaction changed the episode first; nothing was stored."""
+
+
 def check_transition(current: str, target: str) -> None:
     if target not in _TRANSITIONS.get(current, set()):
         raise EpisodeConflict()
@@ -184,6 +188,7 @@ def episode_payload(row) -> dict:
         "impact_day_count": item.impact_day_count, "impact_through_date": item.impact_through_date,
         "severity": item.severity, "status": item.status, "status_changed_by": row["status_changed_by"],
         "status_changed_at": row["status_changed_at"], "first_reviewed_at": row["first_reviewed_at"],
+        "first_reviewed_by": row["first_reviewed_by"],
         "closed_at": row["closed_at"], "closure_reason": row["closure_reason"],
         "previous_episode_id": item.previous_episode_id, "rules_version": item.rules_version, "rules": item.rules,
         "cause_status": "not_established", "limitations": list(LIMITATIONS),

@@ -7,7 +7,9 @@ from app.api.dependencies import get_active_tenant, get_current_user, get_databa
 from app.schemas.anomaly_episodes import (
     AnomalyDetectionRun, AnomalyEpisode, AnomalyEpisodeList, EpisodeStatusChange,
 )
-from app.services.anomaly_episodes import DetectionConflict, EpisodeConflict, EpisodeNotFound
+from app.services.anomaly_episodes import (
+    DetectionConflict, EpisodeConflict, EpisodeNotFound, StatusChangeConflict,
+)
 from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSummary, canonical_tag_key
 from app.schemas.tag_coverage import TagCoverage
 from app.schemas.budget import BudgetDefinition, BudgetEvaluation
@@ -71,7 +73,7 @@ def evaluate_billing_anomalies(
     return evaluate_anomalies(definition, current, baseline, tenant_id=tenant_id)
 
 
-async def _no_body(request: Request) -> None:
+async def _no_body(request: Request, tenant_id: str = Depends(get_active_tenant)) -> None:
     # Detection always uses the stored business rules; caller-supplied rules belong to /evaluate.
     if await request.body():
         raise HTTPException(status_code=422, detail="Detection does not accept a request body")
@@ -131,6 +133,8 @@ def change_anomaly_episode_status(
         raise HTTPException(status_code=404, detail=_EPISODE_NOT_FOUND) from None
     except EpisodeConflict:
         raise HTTPException(status_code=409, detail={"code": "invalid_status_transition"}) from None
+    except StatusChangeConflict:
+        raise HTTPException(status_code=409, detail={"code": "status_change_conflict"}) from None
     return AnomalyEpisode(**episode)
 
 

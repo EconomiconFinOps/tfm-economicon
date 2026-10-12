@@ -663,11 +663,23 @@ class Database:
             daily.setdefault((row["currency"], row["service"]), {})[row["usage_date"]] = row["cost"]
         return {row["usage_date"] for row in rows}, daily
 
-    def _anomaly_episode_rows(self, connection, tenant_id: str, episode_id: str | None = None) -> list:
+    def _anomaly_episode_rows(self, connection, tenant_id: str, episode_id: str | None = None,
+                              *, open_only: bool = False) -> list:
         query = "SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id"
         if episode_id is not None:
             query += " AND id = :id"
+        if open_only:
+            query += " AND status IN ('new', 'investigating')"
         return connection.execute(text(query), {"tenant_id": tenant_id, "id": episode_id}).mappings().all()
+
+    def _anomaly_episodes_for_detection(self, connection, tenant_id: str) -> list:
+        # Detection only needs tracking episodes and the latest episode of each group, not the whole history.
+        return connection.execute(text(
+            "SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id AND ("
+            "(observation = 'observed' AND status IN ('new', 'investigating')) OR id IN ("
+            "SELECT DISTINCT ON (currency, service_key) id FROM anomaly_episodes WHERE tenant_id = :tenant_id "
+            "ORDER BY currency, service_key, start_date DESC, id DESC))"
+        ), {"tenant_id": tenant_id}).mappings().all()
 
     def run_anomaly_detection(self, tenant_id: str, *, today) -> dict:
         from sqlalchemy import exc
@@ -689,7 +701,7 @@ class Database:
                         connection, tenant_id, start_date=window.read_start,
                         end_date=window.last_complete_day + rules.ONE_DAY,
                     )
-                    episodes = [rules.episode_from_row(row) for row in self._anomaly_episode_rows(connection, tenant_id)]
+                    episodes = [rules.episode_from_row(row) for row in self._anomaly_episodes_for_detection(connection, tenant_id)]
                     plan = rules.plan_detection(window, tenant_id=tenant_id, observed_days=observed,
                                                 daily=daily, episodes=episodes)
                     if plan.status != "completed":
@@ -728,9 +740,7 @@ class Database:
         from app.services import anomaly_episodes as rules
 
         with self.engine.connect() as connection:
-            rows = self._anomaly_episode_rows(connection, tenant_id)
-        if scope == "open":
-            rows = [row for row in rows if row["status"] in rules.TRACKING_STATUSES]
+            rows = self._anomaly_episode_rows(connection, tenant_id, open_only=scope == "open")
         return rules.order_payloads([rules.episode_payload(row) for row in rows])
 
     def fetch_anomaly_episode(self, tenant_id: str, episode_id: str) -> dict | None:
@@ -759,6 +769,7 @@ class Database:
                     changed = connection.execute(text(
                         "UPDATE anomaly_episodes SET status = :status, status_changed_by = :actor, "
                         "status_changed_at = :now, first_reviewed_at = COALESCE(first_reviewed_at, :now), "
+                        "first_reviewed_by = COALESCE(first_reviewed_by, :actor), "
                         "closed_at = :closed_at, closure_reason = :reason, updated_at = :now "
                         "WHERE id = :id AND tenant_id = :tenant_id AND status = :current"
                     ), {"status": status, "actor": actor, "now": now, "closed_at": now if closing else None,
@@ -770,7 +781,7 @@ class Database:
         except exc.OperationalError as error:
             if getattr(error.orig, "sqlstate", None) != "40001":
                 raise
-            raise rules.EpisodeConflict() from None
+            raise rules.StatusChangeConflict() from None
         return rules.order_payloads([rules.episode_payload(row)])[0]
 
     def dispose(self) -> None:
