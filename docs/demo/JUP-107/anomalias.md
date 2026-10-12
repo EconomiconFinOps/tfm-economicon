@@ -1,12 +1,17 @@
 # Demo de alertas de anomalías de coste con datos sintéticos
 
-**Todos los importes de esta guía son datos sintéticos**: los genera [`scripts/synthetic_anomalies.py`](../../../scripts/synthetic_anomalies.py), no son facturas de Azure y no proceden del dataset público. Existen para enseñar cómo se comportan las reglas de [JUP-030](../../api/cost-anomalies.md); no demuestran que la detección acierte con gasto real ni explican causas.
+**Todos los importes de esta guía son datos sintéticos**: los genera [`scripts/synthetic_anomalies.py`](../../../scripts/synthetic_anomalies.py), no son facturas de Azure y no proceden del dataset público. Existen para enseñar cómo se comportan las reglas de la consulta de prueba de [JUP-030](../../api/cost-anomalies.md) y la regla diaria de negocio de los [episodios de JUP-114](../../api/anomaly-episodes.md); no demuestran que la detección acierte con gasto real ni explican causas.
 
-Esta guía es la segunda parte de JUP-107 (la primera, [guion.md](guion.md), recorre el dashboard de costes con los datos de JUP-106). Los valores esperados están en [`esperados-anomalias.json`](esperados-anomalias.json) y una prueba los recalcula con suma exacta.
+Esta guía es la segunda parte de JUP-107 (la primera, [guion.md](guion.md), recorre el dashboard de costes con los datos de JUP-106). Los valores esperados están en [`esperados-anomalias.json`](esperados-anomalias.json) y una prueba los recalcula con aritmética exacta, sin usar el backend. El conjunto tiene un registro por servicio y día del 1 al 21 de septiembre de 2026; las dos primeras semanas son los periodos de la consulta de prueba.
 
 ## Qué se enseña
 
-Se llama al endpoint `POST /billing/anomalies/evaluate` y se leen las siete evaluaciones y las dos alertas que devuelve. No hay pantalla para esto: el panel `/anomalies` de la aplicación sigue mostrando datos de demostración fijos (un fixture del frontend) y no lee este endpoint, así que **no refleja estas alertas**. Tampoco sirve `/docs` (Swagger): la ruta exige la cabecera `X-Tenant-Id`, que esa página no ofrece.
+Dos cosas con los mismos datos:
+
+1. **La consulta de prueba** `POST /billing/anomalies/evaluate`: compara los totales de dos semanas con reglas que se mandan a mano y devuelve siete evaluaciones y dos alertas. No guarda nada y no tiene pantalla; tampoco sirve `/docs` (Swagger), porque la ruta exige la cabecera `X-Tenant-Id`, que esa página no ofrece.
+2. **El panel `/anomalies`**: al pulsar «Detectar ahora» aplica la regla diaria de negocio al coste de cada día y guarda episodios; el panel los enseña priorizados por criticidad (ver [En el panel](#en-el-panel-episodios-con-la-regla-diaria)).
+
+Son reglas distintas y dan resultados distintos: la consulta mira semanas enteras con umbrales que se eligen; el panel mira día a día con la regla fija de negocio.
 
 ## Preparación
 
@@ -25,7 +30,7 @@ Si RabbitMQ sale con `eacces` o el processor aún no está sano, repite el mismo
    ```sh
    docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defaultdb -e "SELECT count(*) FROM azure_cost_records WHERE tenant_id = 'tenant-core'"
    ```
-2. Carga los datos y comprueba su estado (`status` debe decir `present`, 1 ingesta y 22 registros sintéticos, y 0 datos reales). `apply` es idempotente: repetirlo responde `already-present`.
+2. Carga los datos y comprueba su estado (`status` debe decir `present`, 1 ingesta y 134 registros sintéticos, 0 datos reales y 0 episodios de anomalía). `apply` es idempotente: repetirlo responde `already-present`.
    ```sh
    docker compose -p jup107b exec -T processor python - apply < scripts/synthetic_anomalies.py
    docker compose -p jup107b exec -T processor python - status < scripts/synthetic_anomalies.py
@@ -76,11 +81,32 @@ Se cambia un campo de la petición de referencia y se vuelve a llamar:
 - Con `deviation_threshold_percent` en `4.55`, sin umbral absoluto y conservando `min_absolute_increase` en `100.00`, Analytics **no** salta; con `4.54` sí. El porcentaje mostrado (4,55) está redondeado: la comparación se hace antes de redondear (100,00 sobre 2200,00 es 4,5454… %).
 - Con solo la regla de subida (quita `absolute_threshold`) y `min_absolute_increase` en `30.00`, Tools pasa a ser alerta: el incremento mínimo es lo que la frenaba.
 
+## En el panel: episodios con la regla diaria
+
+Con los datos cargados, entra en la aplicación, elige **Core Finance** y abre **Anomalías**. Antes de detectar, el panel dice «Todavía no se han buscado anomalías en este cliente» y enseña el aviso «Datos sintéticos de demostración: no son facturas reales». Pulsa **Detectar ahora**: el resultado dice que se revisó hasta el 20/09/2026 (el 21 es el último día con datos y se considera incompleto) y que hay 3 anomalías nuevas.
+
+| Servicio | Criticidad | Impacto acumulado | Periodo | Observación |
+| --- | --- | --- | --- | --- |
+| Compute | Alta (P1) | 2807.71 EUR en 12 días | 09/09 → 20/09 | Se sigue observando |
+| Database | Media (P2) | 642.86 EUR en 5 días | 16/09 → 20/09 | Se sigue observando |
+| Analytics | Baja (P3) | 168.86 EUR en 4 días | 10/09 → 10/09 | Ya no se observa desde 14/09 |
+
+Por qué el resto no abre anomalía, aunque la consulta de prueba diga otra cosa:
+
+- **Analytics** salta en la consulta de prueba por su total semanal (supera el umbral de 2000,00), pero día a día solo tiene un pico el 10 de septiembre: abre un episodio pequeño que deja de observarse a los cuatro días.
+- **Tools** sube un 300 %, pero cada día solo unos céntimos sobre lo esperado: la regla exige además más de 100 al día.
+- **Backup** pasa de cero a 300 un solo día: con una referencia cero no hay porcentaje, y el gasto nuevo desde cero no abre episodio.
+- **Networking** aparece el 14 de septiembre sin gasto previo: mismo caso que Backup.
+- **Storage** se mantiene estable.
+
+Abre el detalle de Compute: enseña la referencia, el impacto, las reglas y «Candidata: causa no establecida». Desde ahí se puede marcar en investigación o cerrar con un motivo.
+
 ## Limitaciones que hay que decir
 
 - Los importes son inventados para ilustrar las reglas; no se ha medido la calidad de la detección ni se afirma que un caso real se comporte igual.
 - Las alertas son candidatos a investigar, no una causa ni un ahorro demostrado.
-- El panel `/anomalies` no muestra estos datos (ver arriba); verlas ahí es un cambio posterior con su propia tarjeta.
+- La consulta de prueba y el panel aplican reglas distintas (semanas con umbrales a mano frente a días con la regla de negocio): no hay que presentar sus resultados como la misma cosa.
+- «Detectar ahora» guarda episodios: para repetir la demo desde cero hay que retirar y volver a cargar el conjunto.
 - Mientras estén cargados, `tenant-core` deja de estar vacío: la demo de JUP-065 y los recorridos que lo suponen vacío no deben usarlo a la vez.
 
 ## Vuelta al estado inicial
@@ -90,7 +116,8 @@ docker compose -p jup107b exec -T processor python - remove < scripts/synthetic_
 docker compose -p jup107b exec -T processor python - remove < scripts/synthetic_anomalies.py
 docker compose -p jup107b exec -T processor python - status < scripts/synthetic_anomalies.py
 docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defaultdb -e "SELECT count(*) FROM azure_cost_records WHERE tenant_id = 'tenant-core'"
+docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defaultdb -e "SELECT count(*) FROM anomaly_episodes WHERE tenant_id = 'tenant-core'"
 docker compose -p jup107b down -v
 ```
 
-El segundo `remove` debe retirar 0 ingestas y 0 registros (es seguro repetirlo); `status` debe decir `absent` y la consulta devolver 0. `down -v` borra el stack y sus volúmenes. La herramienta solo retira sus propias filas: los datos de JUP-106 en `tenant-growth` no se tocan. `remove` actúa sobre todos los tenants a la vez y no acepta `--tenant` (sale con error); `status` te dice en cuál estaba el conjunto.
+El segundo `remove` debe retirar 0 ingestas y 0 registros (es seguro repetirlo); `status` debe decir `absent` y las dos consultas devolver 0: `remove` borra también los episodios y la marca «Revisado hasta» del cliente, porque salen de estos datos (si el cliente tuviera otros costes, los conserva y lo dice). `down -v` borra el stack y sus volúmenes. La herramienta solo retira sus propias filas: los datos de JUP-106 en `tenant-growth` no se tocan. `remove` actúa sobre todos los tenants a la vez y no acepta `--tenant` (sale con error); `status` te dice en cuál estaba el conjunto.

@@ -516,9 +516,28 @@ class GuideTests(unittest.TestCase):
 
     def test_the_panel_limitation_is_explicit_and_negative(self):
         self.assertIn("/anomalies", self.body)
-        self.assertRegex(self.body, r"(?is)panel `/anomalies`[^.]*datos de demostraci[o\u00f3]n fijos")
-        self.assertRegex(self.body, r"(?is)panel `/anomalies`[^.]*no lee este endpoint")
-        self.assertIn("no refleja estas alertas", self.body)
+        self.assertNotRegex(self.body, r"(?i)datos de demostraci[o\u00f3]n fijos")
+        self.assertIn("Detectar ahora", self.body)
+        self.assertIn("reglas distintas", self.body)
+        for service, reason in (("Tools", "100 al d\u00eda"), ("Backup", "desde cero"), ("Networking", "sin gasto previo")):
+            self.assertRegex(self.body, rf"\*\*{service}\*\*[^\n]*{reason}", service)
+
+    def test_the_panel_table_of_the_guide_comes_from_the_expected_episodes(self):
+        rows = {}
+        for line in self.text.splitlines():
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if line.startswith("|") and len(cells) == 5 and cells[0] not in ("Servicio",) and not re.fullmatch(r"-+", cells[0]):
+                rows[cells[0]] = cells
+        self.assertEqual(set(rows), {e["service"] for e in self.expected["episodes"]})
+        labels = {"P1": "Alta (P1)", "P2": "Media (P2)", "P3": "Baja (P3)"}
+        for episode in self.expected["episodes"]:
+            cells = rows[episode["service"]]
+            self.assertEqual(cells[1], labels[episode["severity"]])
+            self.assertEqual(cells[2], f"{episode['accumulated_impact']} EUR en {episode['impact_day_count']} d\u00edas")
+            first = episode["start_date"][8:10] + "/" + episode["start_date"][5:7]
+            self.assertTrue(cells[3].startswith(first), episode["service"])
+            ended = episode["no_longer_observed_on"]
+            self.assertEqual(cells[4], "Se sigue observando" if ended is None else f"Ya no se observa desde {ended[8:10]}/{ended[5:7]}")
 
     def test_the_request_of_the_guide_and_of_the_script_equal_the_expected_file(self):
         blocks = re.findall(r"```json\n(.*?)```", self.text, re.S)
@@ -549,7 +568,7 @@ class GuideTests(unittest.TestCase):
             if line.startswith("|") and len(cells) == 6 and cells[0] != "Servicio" and not re.fullmatch(r"-+", cells[0]):
                 self.assertNotIn(cells[0], rows, "fila duplicada")
                 rows[cells[0]] = cells
-            elif line.startswith("| Servicio"):
+            elif line.startswith("| Servicio") and len(cells) == 6:
                 self.assertEqual(cells, ["Servicio", "Actual", "Base", "Diferencia", "Alerta", "Por qué"])
         self.assertEqual(set(rows), {g["service"] for g in self.expected["groups"]})
         minimum = comma(self.expected["rules"]["min_absolute_increase"])
@@ -591,7 +610,7 @@ class GuideTests(unittest.TestCase):
         self.assertIn("os.environ", self.script)
 
     def test_the_guide_covers_preparation_and_return_to_the_initial_state(self):
-        for needle in ("apply", "status", "remove", "tenant-core", "down -v", "esperados-anomalias.json"):
+        for needle in ("apply", "status", "remove", "tenant-core", "down -v", "esperados-anomalias.json", "anomaly_episodes"):
             self.assertIn(needle, self.text)
         self.assertLess(self.text.index("apply"), self.text.index("remove"))
         self.assertIn("no acepta `--tenant`", self.text)
