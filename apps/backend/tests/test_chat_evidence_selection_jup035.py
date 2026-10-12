@@ -12,6 +12,17 @@ SOURCE = {'id': 'corpus:authorized:0', 'kind': 'corpus', 'title': 'Synthetic pol
           'source': 'Synthetic manual', 'content': 'A synthetic authorized rule.'}
 
 
+def test_decision_schema_and_backend_validator_reject_invalid_branches():
+    from app.core.chat_resources import DECISION_SCHEMA, validate_decision
+    for value in ({'action':'none','query':None},{'action':'search','query':'a'}):
+        _validate(value,DECISION_SCHEMA,DECISION_SCHEMA)
+        assert validate_decision(value)==value
+    for value in ({'action':'none','query':'a'},{'action':'search','query':None},
+                  {'action':'search','query':'a','tenant':'other'}):
+        with pytest.raises(ResponseValidationError): _validate(value,DECISION_SCHEMA,DECISION_SCHEMA)
+        with pytest.raises(ValueError): validate_decision(value)
+
+
 def candidate(evidence=()):
     value = copy.deepcopy(ANSWER)
     value['evidence'] = list(evidence)
@@ -44,7 +55,8 @@ def test_no_sources_allows_useful_greeting_but_no_invented_evidence_or_ok():
 
 def test_exact_authorized_source_is_allowed_and_contract_matches_processor():
     schema = provider_response_schema(authorized_evidence=[SOURCE])
-    _validate(candidate([{k: SOURCE[k] for k in ('id', 'kind', 'title', 'source')}]), schema, schema)
+    _validate(candidate([{**{k: SOURCE[k] for k in ('id', 'kind', 'title', 'source')},
+                          'support_quote':SOURCE['content']}]), schema, schema)
     path = Path(__file__).parents[2] / 'processor/app/agents/schemas.py'
     spec = importlib.util.spec_from_file_location('processor_evidence_schema', path)
     module = importlib.util.module_from_spec(spec)

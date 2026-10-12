@@ -80,6 +80,12 @@ def _bind_chat_evidence(schema, authorized_evidence):
                 rule = copy.deepcopy(schema['$defs'][rule['$ref'].removeprefix('#/$defs/')])
                 choice['properties'][key] = rule
             rule['const'] = value
+        if fields['kind']=='corpus':
+            # Provider-only grounding: force selection of an actual passage,
+            # not merely an allowed identifier with a similar document title.
+            choice['properties']['support_quote']={'type':'string','minLength':1,'maxLength':2048,
+                'description':'Exact contiguous quotation from this fragment supporting a relevant claim in answer. Do not cite a fragment merely because it is nearby or shares a title.'}
+            choice['required'].append('support_quote')
         choices.append(choice)
     # The endpoint rejects uniqueItems; processor and backend reject duplicates
     # independently after generation. Keep exact provenance constraints here.
@@ -105,6 +111,9 @@ def provider_response_schema(*, financial_metrics_allowed=False, authorized_evid
     schema['$defs'].pop('Period')
     if not financial_metrics_allowed:
         schema['properties']['metrics']['maxItems'] = 0
+    # Select documentary support before drafting prose in constrained decoding.
+    schema['properties'] = {'evidence':schema['properties']['evidence'],
+        **{key:value for key,value in schema['properties'].items() if key!='evidence'}}
     # Complete branches preserve every base constraint, sharing root definitions.
     branch_base = {key: value for key, value in schema.items() if key != '$defs'}
     actionable = copy.deepcopy(branch_base)

@@ -20,3 +20,11 @@ required-documentation-v1. El archivo de la entrega previa se conserva intacto.
 La compatibilidad del proveedor y batería real de 28 preguntas siguen pendientes;
 no se heredan presupuestos ni resultados de otros SHA. El usuario autoriza el
 12/10 la revisión y validación asistidas del parche, atribuidas al agente.
+
+## Actualizacion autorizada — 12/10/2026
+El objetivo explicito es resolver PR121 hasta ser valida. Se sustituye el
+protocolo auto nativo por decision estructurada none/search con una busqueda
+real maxima y dos generaciones. Se conserva proveedor/modelo, salida3200,
+deadline, scope HMAC y FinOpsResponse1.0. Las citas documentales llevan extracto
+literal privado verificado; la pertinencia y los calculos se aceptan solo tras
+evaluacion real completa. Los ensayos antiguos no acreditan el nuevo candidato.

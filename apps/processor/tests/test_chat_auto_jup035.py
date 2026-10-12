@@ -18,6 +18,17 @@ from test_chat_private_jup035 import private, claim, run, signed
 TOOL = {'id': 'call-auto', 'type': 'function', 'function': {
     'name': 'search_documentation', 'arguments': '{"query":"Synthetic policy"}'}}
 
+DECISION={'action':'search','query':'Synthetic policy'}
+
+
+def decision_id():
+    from app.core.chat_resources import validate_search_call
+    return validate_search_call(DECISION)[0]
+
+
+def decision_delta(search):
+    return {'content':json.dumps(DECISION if search else {'action':'none','query':None})}
+
 
 @pytest.mark.parametrize('fragmented', [False, True])
 def test_multiple_native_calls_fail_closed_before_search_without_retry(monkeypatch, caplog, fragmented):
@@ -29,12 +40,12 @@ def test_multiple_native_calls_fail_closed_before_search_without_retry(monkeypat
     gateway, requests = provider(monkeypatch, [response])
     async def search(assistant): pytest.fail('Multiple calls must never dispatch a partial search')
     async def exercise():
-        return [r async for r in gateway({'messages': [], 'tool_protocol': 'auto-documentation-v2',
+        return [r async for r in gateway({'messages': [], 'tool_protocol': 'structured-documentation-v3',
             'financial_metrics_allowed': False}, time.time()+60, tool_result=search)]
     records = asyncio.run(exercise())
     assert [r['type'] for r in records] == ['error']
     assert len(requests) == 1
-    assert 'native_multiple_calls' in caplog.text
+    assert 'native_final_invalid' in caplog.text
     assert 'call-extra' not in caplog.text and 'Synthetic policy' not in caplog.text
 
 
@@ -42,22 +53,22 @@ def test_multiple_native_calls_fail_closed_before_search_without_retry(monkeypat
 def test_final_schema_uses_only_effective_authenticated_evidence(monkeypatch, search):
     source = {'id': 'corpus:current:0', 'kind': 'corpus', 'title': 'Current synthetic source',
               'source': 'Current manual', 'content': 'Synthetic authorized text'}
-    delta = {'tool_calls': [{'index': 0, **TOOL}]} if search else {'content': 'Hello'}
-    gateway, requests = provider(monkeypatch, [wire(delta, 'tool_calls' if search else 'stop'),
+    delta = decision_delta(search)
+    gateway, requests = provider(monkeypatch, [wire(delta),
         wire({'content': json.dumps(_provider(ANSWER))})])
     async def result(assistant):
-        return {'tool_call_id': TOOL['id'], 'content': json.dumps({'evidence': [source], 'omissions': []}), 'variable_tokens': 0}
+        return {'tool_call_id': decision_id(), 'content': json.dumps({'evidence': [source], 'omissions': []}), 'variable_tokens': 0}
     async def exercise():
-        return [r async for r in gateway({'tool_protocol': 'auto-documentation-v2', 'financial_metrics_allowed': False,
+        return [r async for r in gateway({'tool_protocol': 'structured-documentation-v3', 'financial_metrics_allowed': False,
             'messages': [], 'authorized_evidence': []}, time.time()+60, tool_result=result)]
     records = asyncio.run(exercise())
     assert records[-1]['type'] == 'candidate' and len(requests) == 2
-    assert 'response_format' not in requests[0]
+    assert requests[0]['response_format']['json_schema']['name']=='DocumentationDecision'
     schema = requests[1]['response_format']['json_schema']['schema']
     if search:
         choices = schema['$defs']['Evidence']['anyOf']
         assert len(choices) == 1
-        assert {k: v['const'] for k, v in choices[0]['properties'].items()} == {k: source[k] for k in ('id','kind','title','source')}
+        assert {k: v['const'] for k, v in choices[0]['properties'].items() if k!='support_quote'} == {k: source[k] for k in ('id','kind','title','source')}
     else:
         assert schema['properties']['evidence']['maxItems'] == 0
         assert not {'ok', 'partial'} & set(schema['properties']['status']['enum'])
@@ -112,32 +123,32 @@ def test_final_raw_non_bmp_utf8_survives_one_byte_transport_chunks(monkeypatch):
 
 @pytest.mark.parametrize('search', [True, False])
 def test_auto_parser_accepts_decision_without_exposing_text(monkeypatch, search):
-    delta = {'tool_calls': [{'index': 0, **TOOL}]} if search else {'content': 'PROVISIONAL SECRET'}
-    gateway, requests = provider(monkeypatch, [wire(delta, 'tool_calls' if search else 'stop')])
+    delta = decision_delta(search)
+    gateway, requests = provider(monkeypatch, [wire(delta)])
     records = list(gateway._records({'messages': [], 'financial_metrics_allowed': False},
         time.time()+60, {}, threading.Event(), 'auto'))
     assert [r['type'] for r in records] == ['tool_call' if search else 'decision']
     assert 'PROVISIONAL SECRET' not in json.dumps(records)
-    assert 'response_format' not in requests[0]
+    assert requests[0]['response_format']['json_schema']['name']=='DocumentationDecision'
 
 
 @pytest.mark.parametrize('search', [True, False])
 def test_auto_finalizes_in_two_calls_and_sums_usage(monkeypatch, search):
-    delta = {'tool_calls': [{'index': 0, **TOOL}]} if search else {'content': 'PROVISIONAL SECRET'}
-    gateway, requests = provider(monkeypatch, [wire(delta, 'tool_calls' if search else 'stop'),
+    delta = decision_delta(search)
+    gateway, requests = provider(monkeypatch, [wire(delta),
         wire({'content': json.dumps(_provider(ANSWER))}, tokens=24)])
-    context = {'tool_protocol': 'auto-documentation-v2', 'financial_metrics_allowed': False,
+    context = {'tool_protocol': 'structured-documentation-v3', 'financial_metrics_allowed': False,
                'messages': [{'role': 'system', 'content': 'Synthetic'}, {'role': 'user', 'content': 'Hello'}]}
     calls = []
     async def result(assistant):
         calls.append(assistant)
-        return {'tool_call_id': TOOL['id'], 'content': '{"evidence":[],"omissions":[]}', 'variable_tokens': 0}
+        return {'tool_call_id': decision_id(), 'content': '{"evidence":[],"omissions":[]}', 'variable_tokens': 0}
     async def exercise():
         return [r async for r in gateway(context, time.time()+60, tool_result=result)]
     records = asyncio.run(exercise())
     assert len(requests) == 2
-    assert [p['tool_choice'] for p in requests] == ['auto', 'none']
-    assert 'response_format' not in requests[0]
+    assert all('tools' not in p and 'tool_choice' not in p for p in requests)
+    assert requests[0]['response_format']['json_schema']['name']=='DocumentationDecision'
     assert requests[1]['response_format']['json_schema']['strict'] is True
     assert len(calls) == int(search)
     assert records[-1]['type'] == 'candidate'
@@ -163,18 +174,18 @@ def test_auto_rejects_malformed_arguments(monkeypatch, arguments):
 def test_auto_failures_cannot_dispatch_a_third_call(monkeypatch, failure):
     tool = copy.deepcopy(TOOL)
     if failure == 'unknown_tool': tool['function']['name'] = 'other'
-    decision = wire({'tool_calls': [{'index': 0, **tool}]}, 'tool_calls')
+    decision = wire({'tool_calls': [{'index': 0, **tool}]}, 'tool_calls') if failure=='unknown_tool' else wire(decision_delta(True))
     final = wire({'content': json.dumps(_provider(ANSWER))})
-    if failure == 'second_tool': final = decision
+    if failure == 'second_tool': final = wire({'tool_calls':[{'index':0,**TOOL}]},'tool_calls')
     if failure == 'invalid_final': final = wire({'content': '{"answer":"not strict"}'})
     if failure == 'eof': final = final.replace(b'data: [DONE]\n\n', b'')
     if failure == 'length_decision': decision = wire({'content': 'incomplete'}, 'length')
     gateway, requests = provider(monkeypatch, [decision, final])
     async def result(assistant):
-        return {'tool_call_id': 'wrong' if failure == 'wrong_id' else TOOL['id'],
+        return {'tool_call_id': 'wrong' if failure == 'wrong_id' else decision_id(),
                 'content': '{"evidence":[],"omissions":[]}', 'variable_tokens': 0}
     async def exercise():
-        return [r async for r in gateway({'messages': [], 'tool_protocol': 'auto-documentation-v2',
+        return [r async for r in gateway({'messages': [], 'tool_protocol': 'structured-documentation-v3',
             'financial_metrics_allowed': False}, time.time()+60, tool_result=result)]
     if failure == 'wrong_id':
         with pytest.raises(ValueError, match='correlation'): asyncio.run(exercise())
@@ -200,18 +211,18 @@ def test_auto_cancellation_closes_work_without_candidate(monkeypatch, phase):
             assert cancelled.wait(2), 'Cancellation must reach the streaming worker'
             stopped.set()
             return
-        yield {'type': 'tool_call', 'assistant': {'role':'assistant','content':None,'tool_calls':[TOOL]}, 'usage': None}
+        yield {'type': 'tool_call', 'assistant': DECISION, 'usage': None}
     monkeypatch.setattr(gateway, '_records', records)
     async def result(assistant):
         if phase == 'search':
             entered.set()
             try: await asyncio.Event().wait()
             finally: stopped.set()
-        return {'tool_call_id': TOOL['id'], 'content': '{"evidence":[],"omissions":[]}', 'variable_tokens': 0}
+        return {'tool_call_id': decision_id(), 'content': '{"evidence":[],"omissions":[]}', 'variable_tokens': 0}
     async def exercise():
         deadline = time.time()+60
         async def consume():
-            return [r async for r in gateway({'tool_protocol':'auto-documentation-v2','messages':[]}, deadline, tool_result=result)]
+            return [r async for r in gateway({'tool_protocol':'structured-documentation-v3','messages':[]}, deadline, tool_result=result)]
         task = asyncio.create_task(consume())
         assert await asyncio.to_thread(entered.wait, 2)
         task.cancel()
@@ -230,12 +241,12 @@ def test_auto_deadline_is_not_reset_after_decision(monkeypatch, search):
         seen.append((limit, choice))
         if choice == 'auto':
             monkeypatch.setattr(time, 'time', lambda: deadline-4)
-            yield {'type': 'tool_call', 'assistant': {'role':'assistant','content':None,'tool_calls':[TOOL]}} if search else {'type':'decision'}
+            yield {'type': 'tool_call', 'assistant': DECISION} if search else {'type':'decision'}
         else: pytest.fail('Expired attempt reached second generation')
     monkeypatch.setattr(gateway, '_records', records)
     async def result(assistant): pytest.fail('Expired attempt reached retrieval')
     async def exercise():
-        return [r async for r in gateway({'tool_protocol':'auto-documentation-v2','messages':[]}, deadline, tool_result=result)]
+        return [r async for r in gateway({'tool_protocol':'structured-documentation-v3','messages':[]}, deadline, tool_result=result)]
     result_records = asyncio.run(exercise())
     assert result_records[-1] == {'type':'error','category':'timeout'}
     assert seen == [(deadline, 'auto')]
@@ -243,14 +254,14 @@ def test_auto_deadline_is_not_reset_after_decision(monkeypatch, search):
 
 @pytest.mark.parametrize('search', [True, False])
 def test_private_endpoint_runs_real_auto_gateway_and_hmac_continuation(private, monkeypatch, search):
-    delta = {'tool_calls': [{'index':0, **TOOL}]} if search else {'content':'PROVISIONAL SECRET'}
-    gateway, requests = provider(monkeypatch, [wire(delta, 'tool_calls' if search else 'stop'),
+    delta = decision_delta(search)
+    gateway, requests = provider(monkeypatch, [wire(delta),
         wire({'content':json.dumps(_provider(ANSWER))})])
     monkeypatch.setattr(private[0].state, 'chat_gateway', gateway)
     async def scenario(client):
         payload = claim(context={'prompt_version':'synthetic-v2', 'messages':[
             {'role':'user','content':'Synthetic policy'}], 'financial_metrics_allowed':False,
-            'tool_protocol':'auto-documentation-v2'})
+            'tool_protocol':'structured-documentation-v3'})
         raw = json.dumps(payload).encode()
         task = asyncio.create_task(client.post('/internal/chat/v2/attempts', content=raw,
             headers=signed('POST','/internal/chat/v2/attempts',raw)))
@@ -262,7 +273,7 @@ def test_private_endpoint_runs_real_auto_gateway_and_hmac_continuation(private, 
                     await asyncio.sleep(.005)
                 assert pending
                 endpoint = '/internal/chat/v2/attempts/attempt/tool-result'
-                value = {'v':2,'claim':payload,'tool_result':{'tool_call_id':TOOL['id'],
+                value = {'v':2,'claim':payload,'tool_result':{'tool_call_id':decision_id(),
                     'content':'{"evidence":[],"omissions":[]}', 'variable_tokens':0}}
                 raw_result = json.dumps(value).encode()
                 response = await client.post(endpoint, content=raw_result, headers=signed('POST',endpoint,raw_result))
@@ -284,10 +295,10 @@ def test_private_endpoint_runs_real_auto_gateway_and_hmac_continuation(private, 
 def test_auto_429_never_retries_or_changes_provider(monkeypatch, phase):
     from urllib.error import HTTPError
     failure = HTTPError('http://synthetic.invalid', 429, 'Synthetic', {'Retry-After':'17'}, io.BytesIO())
-    responses = [failure] if phase == 'decision' else [wire({'content':'private decision'}), failure]
+    responses = [failure] if phase == 'decision' else [wire(decision_delta(False)), failure]
     gateway, requests = provider(monkeypatch, responses)
     async def exercise():
-        return [r async for r in gateway({'tool_protocol':'auto-documentation-v2',
+        return [r async for r in gateway({'tool_protocol':'structured-documentation-v3',
             'messages':[], 'financial_metrics_allowed':False}, time.time()+60)]
     records = asyncio.run(exercise())
     assert records[-1] == {'type':'error','status':429,'retry_after':'17'}

@@ -122,6 +122,12 @@ def _bind_chat_evidence(schema, authorized_evidence):
                 rule = copy.deepcopy(schema['$defs'][rule['$ref'].removeprefix('#/$defs/')])
                 choice['properties'][key] = rule
             rule['const'] = value
+        if fields['kind']=='corpus':
+            # Provider-only grounding: force selection of an actual passage,
+            # not merely an allowed identifier with a similar document title.
+            choice['properties']['support_quote']={'type':'string','minLength':1,'maxLength':2048,
+                'description':'Exact contiguous quotation from this fragment supporting a relevant claim in answer. Do not cite a fragment merely because it is nearby or shares a title.'}
+            choice['required'].append('support_quote')
         choices.append(choice)
     # The endpoint rejects uniqueItems; processor and backend reject duplicates
     # independently after generation. Keep exact provenance constraints here.
@@ -147,6 +153,9 @@ def chat_provider_schema(*, financial_metrics_allowed=False, authorized_evidence
     schema['$defs'].pop('Period')
     if not financial_metrics_allowed:
         schema['properties']['metrics']['maxItems'] = 0
+    # Select documentary support before drafting prose in constrained decoding.
+    schema['properties'] = {'evidence':schema['properties']['evidence'],
+        **{key:value for key,value in schema['properties'].items() if key!='evidence'}}
     # Complete branches preserve every base constraint, sharing root definitions.
     branch_base = {key: value for key, value in schema.items() if key != '$defs'}
     actionable = copy.deepcopy(branch_base)
@@ -160,7 +169,7 @@ def chat_provider_schema(*, financial_metrics_allowed=False, authorized_evidence
     return _bind_chat_evidence(schema, authorized_evidence)
 
 
-def assemble_chat_response(value, period, subscriptions=None):
+def assemble_chat_response(value, period, subscriptions=None, *, authorized_evidence=None):
     if not isinstance(value, dict) or not isinstance(value.get('scope'), dict):
         raise ValueError('Invalid response scope.')
     if 'period' in value['scope']:
@@ -172,6 +181,19 @@ def assemble_chat_response(value, period, subscriptions=None):
             or any(type(item) is not str or not item or len(item) > 256 for item in selected)
             or selected != sorted(set(selected))):
         raise ValueError('Invalid canonical subscriptions.')
+    if authorized_evidence is not None:
+        known={item['id']:item for item in authorized_evidence}
+        evidence=[]
+        for item in value.get('evidence',[]):
+            item=dict(item)
+            if item.get('kind')=='corpus':
+                quote=item.pop('support_quote',None)
+                source=known.get(item.get('id'),{})
+                if (not isinstance(quote,str) or not quote.strip() or len(quote)>2048
+                        or quote not in source.get('content','')):
+                    raise ValueError('Citation passage is not grounded.')
+            evidence.append(item)
+        value={**value,'evidence':evidence}
     assembled = {**value, 'scope': {**value['scope'], 'period': period, 'subscription_ids': selected}}
     return FinOpsResponse.model_validate(assembled).model_dump(mode='json', by_alias=True)
 

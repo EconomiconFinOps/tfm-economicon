@@ -261,15 +261,15 @@ class ChatGateway:
                 'stream_options':{'include_usage':True},'max_tokens':budget('chat')['output_tokens'],'num_retries':0,
                 'timeout':remaining,'stream_timeout':remaining,'reasoning':{'enabled':False},
                 'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True}}
-            # The decision is private control flow, never a FinOps answer.
-            # Only finalization constrains/streams the public answer schema.
-            if tool_choice != 'auto':
-                payload['response_format']={'type':'json_schema','json_schema':{'name':'FinOpsResponse','strict':True,
-                    'schema':chat_provider_schema(financial_metrics_allowed=context.get('financial_metrics_allowed'),
+            # Both phases use structured output. No native tools or fabricated
+            # assistant/tool messages are sent to the provider.
+            from app.core.chat_resources import DECISION_SCHEMA
+            deciding=tool_choice=='auto'
+            payload['response_format']={'type':'json_schema','json_schema':{
+                'name':'DocumentationDecision' if deciding else 'FinOpsResponse','strict':True,
+                'schema':DECISION_SCHEMA if deciding else chat_provider_schema(
+                    financial_metrics_allowed=context.get('financial_metrics_allowed'),
                     authorized_evidence=context.get('authorized_evidence', []))}}
-            if tool_choice is not None:
-                from app.core.chat_resources import CHAT_TOOLS
-                payload.update(tools=CHAT_TOOLS,tool_choice=tool_choice)
             req=request.Request(self.client.base_url+'/chat/completions',data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode(),
                 headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
             request_hash=hashlib.sha256(req.data).hexdigest()
@@ -281,8 +281,6 @@ class ChatGateway:
         frames,answer=SSEFrames(),AnswerJSON()
         decoder=codecs.getincrementaldecoder('utf-8-sig')('strict')
         candidate=[];candidate_bytes=0;usage=None
-        native={'id':'','type':'','function':{'name':'','arguments':''}}
-        native_seen=False
         try:
             stage='transport'
             with self.client.transport.open(req,timeout=min(5,remaining)) as response:
@@ -304,32 +302,25 @@ class ChatGateway:
                         if data=='[DONE]':
                             stage='finish'
                             if tool_choice=='auto':
-                                from app.core.chat_resources import validate_search_call
+                                from app.core.chat_resources import validate_decision
                                 if finish=='length':
                                     diagnostic('finish',category='incomplete')
                                     yield {'type':'error','status':502,'category':'incomplete'}
                                     return
-                                if not native_seen:
-                                    if finish!='stop': raise ValueError('Incomplete tool decision.')
+                                if finish!='stop': raise ValueError('Incomplete structured decision.')
+                                decision=validate_decision(complete_json(''.join(candidate)))
+                                if decision['action']=='none':
                                     yield {'type':'decision','usage':usage}
-                                    return
-                                if finish!='tool_calls':
-                                    raise ValueError('Incomplete native search.')
-                                assistant={'role':'assistant','content':None,'tool_calls':[native]}
-                                try:
-                                    validate_search_call(assistant)
-                                except ValueError as failure:
-                                    raise _NativeEnvelopeError('native_final_invalid') from failure
-                                yield {'type':'tool_call','assistant':assistant,'usage':usage}
+                                else:
+                                    yield {'type':'tool_call','assistant':decision,'usage':usage}
                                 return
-                            if native_seen: raise ValueError('Second search forbidden.')
                             if finish not in ('stop','length'): raise ValueError('Gateway finish reason.')
                             raw=''.join(candidate)
                             try:
                                 stage='candidate_json'
                                 parsed=complete_json(raw)
                                 stage='model_validation'
-                                result=assemble_chat_response(parsed,context.get('response_period'), context.get('response_subscriptions', []))
+                                result=assemble_chat_response(parsed,context.get('response_period'), context.get('response_subscriptions', []), authorized_evidence=context.get('authorized_evidence', []))
                             except Exception as failure:
                                 diagnostic(stage,failure,category='incomplete' if finish=='length' else 'invalid_response')
                                 if finish=='length':
@@ -348,32 +339,8 @@ class ChatGateway:
                             if choice.get('finish_reason') is not None: finish=choice['finish_reason']
                             delta=choice.get('delta',{})
                             if not isinstance(delta,dict): raise ValueError('Gateway delta.')
-                            if delta.get('tool_calls') is not None:
-                                parts=delta['tool_calls']
-                                if not isinstance(parts,list): raise _NativeEnvelopeError('native_tool_count')
-                                if len(parts)>1: raise _NativeEnvelopeError('native_multiple_calls')
-                                for part in parts:
-                                    if native_seen and isinstance(part,dict) and type(part.get('index')) is int and part['index']>0:
-                                        raise _NativeEnvelopeError('native_multiple_calls')
-                                    if not isinstance(part,dict) or type(part.get('index')) is not int or part['index']!=0 or set(part)-{'index','id','type','function'}:
-                                        raise _NativeEnvelopeError('native_tool_index')
-                                    native_seen=True
-                                    for key in ('id','type'):
-                                        value=part.get(key)
-                                        if value is not None:
-                                            if not isinstance(value,str): raise _NativeEnvelopeError('native_metadata_type')
-                                            if native[key] and value and native[key]!=value:
-                                                raise _NativeEnvelopeError('native_metadata_conflict')
-                                            if value: native[key]=value
-                                    function=part.get('function')
-                                    if function is None: function={}
-                                    if not isinstance(function,dict) or set(function)-{'name','arguments'}: raise _NativeEnvelopeError('native_function_shape')
-                                    for key, value in function.items():
-                                        if value is None: continue
-                                        if not isinstance(value,str): raise _NativeEnvelopeError('native_fragment_type')
-                                        native['function'][key]+=value
-                                    if len(native['id'])>128 or len(native['type'])>8 or len(native['function']['name'])>64 or len(native['function']['arguments'].encode())>16384:
-                                        raise _NativeEnvelopeError('native_tool_limit')
+                            if delta.get('tool_calls') is not None or delta.get('function_call') is not None:
+                                raise _NativeEnvelopeError('native_final_invalid')
                             fragment=delta.get('content')
                             if fragment is None: continue
                             if not isinstance(fragment,str): raise ValueError('Gateway content.')
@@ -415,9 +382,9 @@ class ChatGateway:
     async def __call__(self,context,deadline,*,tool_result=None):
         holder={};cancelled=threading.Event()
         try:
-            if context.get('tool_protocol') not in (None,'auto-documentation-v2'):
+            if context.get('tool_protocol') not in (None,'structured-documentation-v3'):
                 yield {'type':'error','status':422,'category':'invalid_response'};return
-            deciding=context.get('tool_protocol')=='auto-documentation-v2'
+            deciding=context.get('tool_protocol')=='structured-documentation-v3'
             two_phase=deciding
             iterator=self._records(context,deadline,holder,cancelled,'auto' if deciding else None)
             first_usage=None

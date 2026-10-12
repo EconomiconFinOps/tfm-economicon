@@ -21,17 +21,17 @@ evidencia insuficiente sin inventar cifras.
 #### Scenario: Decision documental automatica dentro del mismo intento
 
 - **WHEN** el chat IA inicia un intento autorizado
-- **THEN** SHALL usar el contrato auto-documentation-v2 y realizar una primera peticion con search_documentation estricta y tool_choice auto sin response_format final, admitir cero o una llamada nativa con query acotada sin parametros de tenant y ejecutar la recuperacion existente en backend con el scope autenticado; SHALL mantener una operacion, un intento, un dispatch privado y el contexto/hash canonicos iniciales congelados, sin precargar corpus para simular la herramienta
+- **THEN** SHALL usar el contrato structured-documentation-v3 y realizar una primera peticion con response_format DocumentationDecision estricto, action none con query null o action search con query no vacia de hasta2048 caracteres y sin campos adicionales ni parametros de tenant y ejecutar la recuperacion existente en backend con el scope autenticado; SHALL mantener una operacion, un intento, un dispatch privado y el contexto/hash canonicos iniciales congelados, sin precargar corpus para simular una decision
 
 #### Scenario: Decision sin herramienta y finalizacion estricta
 
-- **WHEN** la primera peticion termina con stop sin llamada nativa
-- **THEN** SHALL descartar su texto sin mostrarlo, persistirlo ni reutilizarlo como contexto; SHALL realizar una segunda y ultima generacion con el contexto autorizado original, tool_choice none y FinOpsResponse estricto; SHALL permitir respuestas con evidencia existente, saludos o aclaraciones no accionables, y exigir abstencion si falta sustento documental, sin recuperacion oculta; SHALL conservar el deadline comun y sumar el uso real de ambas generaciones, sin autoridad financiera derivada de usuario o corpus
+- **WHEN** la primera peticion termina con stop y una decision valida action none y query null
+- **THEN** SHALL descartar su texto sin mostrarlo, persistirlo ni reutilizarlo como contexto; SHALL realizar una segunda y ultima generacion con el contexto autorizado original, FinOpsResponse estricto y sin herramientas nativas; SHALL permitir respuestas con evidencia existente, saludos o aclaraciones no accionables, y exigir abstencion si falta sustento documental, sin recuperacion oculta; SHALL conservar el deadline comun y sumar el uso real de ambas generaciones, sin autoridad financiera derivada de usuario o corpus
 
 #### Scenario: Resultado privado y continuacion final
 
-- **WHEN** el backend obtiene fuentes para la llamada nativa vigente
-- **THEN** SHALL devolver una extension autorizada mediante el HMAC existente a un endpoint privado del processor, vinculada al intento y tool_call_id, y continuar con el mensaje assistant original mas role tool correlacionado, las mismas tools y FinOpsResponse estricto con tool_choice none; SHALL conservar la autoridad financiera exclusivamente de billing, validar citas contra las fuentes realmente recuperadas, contar herramientas y continuacion en ambos servicios y sumar el consumo de las dos peticiones sin alterar FinOpsResponse 1.0
+- **WHEN** el backend obtiene fuentes para la unica decision search vigente
+- **THEN** SHALL devolver una extension autorizada mediante el HMAC existente a un endpoint privado del processor, vinculada al intento y digest canonico de la decision (campo privado tool_call_id), y continuar con un bloque user UNTRUSTED_RETRIEVAL_CONTEXT y FinOpsResponse estricto sin tools, tool_choice ni mensajes assistant/tool fabricados; SHALL conservar la autoridad financiera exclusivamente de billing, validar citas contra las fuentes realmente recuperadas, contar esquema de decision y continuacion en ambos servicios y sumar el consumo de las dos peticiones sin alterar FinOpsResponse 1.0
 
 #### Scenario: Cancelacion, resultado ajeno o segunda herramienta
 
@@ -106,14 +106,14 @@ evidencia insuficiente sin inventar cifras.
 - **THEN** SHALL conservar en answer la unidad completa del input junto al resultado, incluido su denominador temporal, sin convertir una tasa en un total
 - **AND** SHALL no completar duraciones, precios ni condiciones contractuales con conocimiento general si no constan en el input o corpus autorizado; SHALL explicar el concepto sin esos detalles y pedir las condiciones pertinentes cuando sean necesarias
 - **AND** SHALL citar solo fragmentos que sustenten afirmaciones expresadas, no instrucciones del sistema ni aritmetica del usuario; SHALL no anadir afirmaciones irrelevantes para justificar una cita
-- **AND** estas instrucciones SHALL aplicarse en el productor, sin borrado posterior de citas ni cambios en esquema publico o privado, validadores, retrieval, modelo, routing, reintentos o salida de 3200 tokens
+- **AND** estas instrucciones SHALL aplicarse en el productor, sin borrado posterior de citas ni cambios en esquema publico, retrieval, modelo, routing, reintentos o salida de3200 tokens; el esquema privado exige un extracto literal por cita documental, validado antes de proyectar FinOpsResponse publico
 
 #### Scenario: Formula monetaria con destino y direccion explicitos
 
 - **WHEN** una respuesta considera convertir importes en monedas diferentes
 - **THEN** sin destino, fecha y direccion del tipo de cambio autorizados SHALL mantener importes separados y pedir esos datos, sin formular una suma que presuponga un importe ya expresado en el destino desconocido
 - **AND** un ejemplo hipotetico de formula SHALL declarar moneda de origen, destino y unidades del tipo de cambio, convirtiendo cada importe necesario al mismo destino sin inventar cotizaciones ni inferir moneda por tenant o configuracion regional
-- **AND** las instrucciones aceptadas de unidades y condiciones contractuales SHALL permanecer intactas, sin cambios de schema, validadores, retrieval, modelo, routing, plazos ni salida de 3200 tokens
+- **AND** las instrucciones aceptadas de unidades y condiciones contractuales SHALL permanecer intactas, sin relajar schema publico ni validadores, retrieval, modelo, routing, plazos ni salida de3200 tokens
 
 #### Scenario: Sustento antes de seleccionar estado
 
@@ -163,16 +163,25 @@ independiente y SHALL rechazar candidatos invalidos sin reparar, filtrar ni
 persistir texto parcial.
 
 #### Scenario: Finalizacion sin fuentes
-- **WHEN** auto decide no buscar y no existe evidencia financiera autorizada
+- **WHEN** la decision estructurada indica none y no existe evidencia financiera autorizada
 - **THEN** el esquema SHALL admitir evidence vacia y estados no accionables; SHALL impedir inventar una cita para emitir ok o partial
 
 #### Scenario: Evidencia recuperada o ajena
 - **WHEN** una unica busqueda autenticada devuelve fuentes del alcance actual
 - **THEN** la finalizacion SHALL incluir esas fuentes exactas entre las opciones del esquema, sin admitir fuentes de otro usuario/tenant ni metadatos alterados; el presupuesto SHALL contar el esquema efectivo
 
-#### Scenario: Proveedor emite varias herramientas
-- **WHEN** el proveedor emite mas de una llamada nativa en una generacion
-- **THEN** el intento SHALL fallar antes de ejecutar cualquiera, sin ignorar llamadas extra ni iniciar una tercera generacion; el diagnostico SHALL distinguir cardinalidad multiple de un indice malformado sin registrar argumentos
+#### Scenario: Control estructurado cerrado
+- **WHEN** el proveedor emite una llamada nativa, campos extra, JSON duplicado, una decision truncada o una combinacion invalida de action y query
+- **THEN** el intento SHALL rechazarla antes de recuperar fuentes, sin reinterpretar llamadas, mostrar texto privado ni iniciar una tercera generacion; length SHALL conservar502 incomplete y la politica de reintentos existente
+
+#### Scenario: Sustento literal y pertinencia
+- **WHEN** el proveedor selecciona una cita de corpus en la respuesta final
+- **THEN** SHALL producir support_quote literal no vacio de hasta2048 caracteres del fragmento exacto; el processor SHALL rechazar el candidato si no existe en ese fragmento, y proyectar solo los campos publicos de evidencia tras validarlo
+- **AND** el extracto SHALL sustentar una afirmacion pertinente a la pregunta; la coincidencia literal no sustituye la aceptacion semantica, ni autoriza citas accesorias o afirmaciones añadidas para justificarlas; backend y processor SHALL contar la misma variante efectiva del esquema
+
+#### Scenario: Operadores y datos numericos ausentes
+- **WHEN** un calculo hipotetico evalua un umbral o combina monedas
+- **THEN** SHALL conservar el operador estricto o inclusivo de la fuente, evaluar cada condicion antes de combinar AND u OR y no redondear antes de comparar; SHALL no inventar cotizaciones numericas ni siquiera como ejemplo cuando falta tipo, fecha o destino autorizado
 
 ### Requirement: Cierre observable y truncacion transitoria
 
@@ -190,6 +199,6 @@ exponer ni reutilizar texto provisional.
 - **THEN** el stream SHALL entregar ese cierre una sola vez en lugar de quedar abierto con heartbeats
 
 #### Scenario: Decision con finish_reason length
-- **WHEN** la decision nativa termina por longitud
+- **WHEN** la decision estructurada termina por longitud
 - **THEN** el processor SHALL devolver 502 incomplete, sin candidato ni texto provisional, y el backend SHALL programar un reintento dentro de su politica existente
 

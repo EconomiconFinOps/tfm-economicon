@@ -115,8 +115,7 @@ def test_main_health_app_never_exposes_private_chat(private):
 def test_required_result_is_owned_signed_correlated_and_single_use(private, monkeypatch):
     async def scenario(client):
         entered=asyncio.Event();continued=[]
-        assistant={'role':'assistant','content':None,'tool_calls':[{'id':'call-synthetic','type':'function',
-            'function':{'name':'search_documentation','arguments':'{"query":"Synthetic policy"}'}}]}
+        assistant={'action': 'search', 'query': 'Synthetic policy'}
         async def gateway(context, deadline, *, tool_result):
             yield {'type':'tool_call','assistant':assistant}
             entered.set()
@@ -126,14 +125,15 @@ def test_required_result_is_owned_signed_correlated_and_single_use(private, monk
         gateway.requires_tool_result=True
         monkeypatch.setattr(private[0].state,'chat_gateway',gateway)
         payload=claim(context={'prompt_version':'synthetic-v2','messages':[{'role':'user','content':'Synthetic'}],
-            'tool_protocol':'auto-documentation-v2','financial_metrics_allowed':False})
+            'tool_protocol':'structured-documentation-v3','financial_metrics_allowed':False})
         raw=json.dumps(payload).encode()
         task=asyncio.create_task(client.post('/internal/chat/v2/attempts',content=raw,
             headers=signed('POST','/internal/chat/v2/attempts',raw)))
         try:
             await asyncio.wait_for(entered.wait(),2)
             endpoint='/internal/chat/v2/attempts/attempt/tool-result'
-            result={'tool_call_id':'call-synthetic','content':'{"evidence":[],"omissions":[]}', 'variable_tokens':0}
+            from app.core.chat_resources import validate_search_call
+            result={'tool_call_id':validate_search_call(assistant)[0],'content':'{"evidence":[],"omissions":[]}', 'variable_tokens':0}
             async def post(claim_value, result_value, authenticated=True):
                 body=json.dumps({'v':2,'claim':claim_value,'tool_result':result_value}).encode()
                 return await client.post(endpoint,content=body,

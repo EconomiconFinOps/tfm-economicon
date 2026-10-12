@@ -23,12 +23,13 @@ INPUT_CONTRACT={'version':2,'public_fields':['request_id','content','screen_cont
 ASSEMBLER_CONTRACT={'version':2,'roles':['system','user-summary-optional','user-current'],
                     'summary_label':'UNTRUSTED_DIALOGUE_SUMMARY','current_label':'UNTRUSTED_CURRENT_CONTEXT',
                     'serialization':'utf8-sorted-keys-significant-arrays','escape':'json-controls-angle-brackets'}
-from app.core.chat_resources import CHAT_TOOLS
-ASSEMBLER_CONTRACT.update(tool_protocol='auto-documentation-v2', tools=copy.deepcopy(CHAT_TOOLS),
-    continuation_roles=['assistant-tool-call','tool'], max_searches=1,
-    max_generations=2, decision_format='native-auto', final_format='strict-finops',
+from app.core.chat_resources import DECISION_SCHEMA
+ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_schema=copy.deepcopy(DECISION_SCHEMA),
+    continuation_roles=['user-untrusted-retrieval'], max_searches=1,
+    max_generations=2, decision_format='strict-none-search', final_format='strict-finops',
     no_search_policy='authorized-context-or-abstention',
-    evidence_selection='effective-context-exact-records-v2')
+    evidence_selection='effective-context-exact-records-quoted-v3',
+    grounding='corpus-literal-passage-required-2048-v1')
 
 
 def canonical(value): return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
@@ -152,7 +153,7 @@ def test_financial_authority_control_is_required_and_strict_boolean():
         {'role': 'user', 'content': 'UNTRUSTED_CURRENT_CONTEXT\n{}'}]
     declared = json.loads(resources.manifest_bytes)
     context = {'prompt_version': resources.prompt_version, 'messages': messages,
-        'tool_protocol':'auto-documentation-v2','manifest': {
+        'tool_protocol':'structured-documentation-v3','manifest': {
         'prompt_version': resources.prompt_version, 'tokenizer_sha256': resources.tokenizer_sha256,
         'response_schema_sha256': resources.response_schema_sha256,
         'input_contract_sha256': declared['input_contract_sha256'],

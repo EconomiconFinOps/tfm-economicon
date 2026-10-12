@@ -26,75 +26,30 @@ def _provider(value):
     return value
 
 
-@pytest.mark.parametrize('fragments', ['complete', 'nullable', 'repeated_metadata'])
-def test_required_native_search_then_strict_final_uses_exact_messages_and_total_usage(monkeypatch, fragments):
-    import asyncio, io
-    from types import SimpleNamespace
-    from pydantic import SecretStr
-    from app.clients.chat_gateway import ChatGateway
-    tool = {'id':'call-synthetic', 'type':'function', 'function':{
-        'name':'search_documentation', 'arguments':'{"query":"Synthetic internal policy"}'}}
-    wires = [
-        ('data: '+json.dumps({'choices':[{'index':0,'delta':{'tool_calls':[
-            {'index':0, **tool}]},'finish_reason':'tool_calls'}],
-            'usage':{'prompt_tokens':10,'completion_tokens':2,'total_tokens':12,'cost':.001}})
-            +'\n\ndata: [DONE]\n\n').encode(),
-        ('data: '+json.dumps({'choices':[{'index':0,'delta':{'content':json.dumps(_provider(ANSWER))},
-            'finish_reason':'stop'}],'usage':{'prompt_tokens':20,'completion_tokens':4,'total_tokens':24,'cost':.002}})
-            +'\n\ndata: [DONE]\n\n').encode()]
-    if fragments != 'complete':
-        parts = [
-            {'index':0, 'id':tool['id'], 'type':'function', 'function':{
-                'name':'search_', 'arguments':'{"query":'}},
-            {'index':0, 'id':None, 'type':None, 'function':{
-                'name':'documentation', 'arguments':None}},
-            {'index':0, 'id':None, 'type':None, 'function':None},
-            {'index':0, 'id':None, 'type':None, 'function':{
-                'name':None, 'arguments':'"Synthetic internal policy"}'}}]
-        if fragments == 'repeated_metadata':
-            parts[-1].update(id=tool['id'], type='function')
-        events = [{'choices':[{'index':0,'delta':{'tool_calls':[part]},'finish_reason':None}]} for part in parts]
-        events.append({'choices':[{'index':0,'delta':{},'finish_reason':'tool_calls'}],
-            'usage':{'prompt_tokens':10,'completion_tokens':2,'total_tokens':12,'cost':.001}})
-        wires[0] = (''.join('data: '+json.dumps(event)+'\n\n' for event in events)+'data: [DONE]\n\n').encode()
-    gateway = ChatGateway(SimpleNamespace(llm_model='economicon-chat',litellm_base_url='http://synthetic.invalid/v1',
-        litellm_api_key=SecretStr('synthetic')))
-    requests=[]
-    class Response(io.BytesIO):
-        headers={'Content-Type':'text/event-stream'}
-    def opened(req, **kwargs):
-        requests.append(json.loads(req.data))
-        return Response(wires[len(requests)-1])
-    monkeypatch.setattr(gateway.client.transport,'open',opened)
-    context={'tool_protocol':'auto-documentation-v2','messages':[{'role':'system','content':'Synthetic'},
-        {'role':'user','content':'Synthetic internal policy'}], 'financial_metrics_allowed':False,
-        'response_period':None,'response_subscriptions':[]}
+@pytest.mark.parametrize('read_size', [1, 7, 8192])
+def test_structured_search_then_final_uses_untrusted_data_and_total_usage(monkeypatch, read_size):
+    import asyncio
+    from test_chat_auto_jup035 import provider, wire, DECISION, decision_delta, decision_id
+    gateway, requests=provider(monkeypatch,[wire(decision_delta(True)),
+        wire({'content':json.dumps(_provider(ANSWER))},tokens=24)],read_size=read_size)
+    context={'tool_protocol':'structured-documentation-v3','messages':[{'role':'system','content':'Synthetic'},
+        {'role':'user','content':'Synthetic policy'}],'financial_metrics_allowed':False}
     seen=[]
-    async def result(assistant):
-        from app.core.chat_resources import canonical, load_resources
-        seen.append(assistant)
-        content='{"evidence":[],"omissions":[]}'
-        continued=context['messages']+[assistant,{'role':'tool','tool_call_id':tool['id'],'content':content}]
-        return {'tool_call_id':tool['id'],'content':content,
-            'variable_tokens':load_resources().count(canonical(continued[1:]).decode('utf-8'))}
+    async def result(decision):
+        seen.append(decision)
+        return {'tool_call_id':decision_id(),'content':'{"evidence":[],"omissions":[]}','variable_tokens':0}
     async def exercise():
         return [record async for record in gateway(context,time.time()+60,tool_result=result)]
     records=asyncio.run(exercise())
-    assert len(requests)==2 and requests[0]['tool_choice']=='auto'
-    assert requests[1]['tool_choice']=='none'
-    assert requests[0]['tools']==requests[1]['tools']
-    assert requests[0]['tools'][0]['function']['strict'] is True
-    assert 'response_format' not in requests[0]
-    assert requests[1]['response_format']['json_schema']['strict'] is True
-    assert requests[1]['messages'][:-2]==context['messages']
-    assert requests[1]['messages'][-2]==seen[0]
-    assert seen[0]['tool_calls']==[tool]
-    assert requests[1]['messages'][-1]=={'role':'tool','tool_call_id':tool['id'],
-        'content':'{"evidence":[],"omissions":[]}'}
-    assert records[0]['type']=='tool_call'
-    assert records[-1]['type']=='candidate' and records[-1]['usage']['total_tokens']==36
-    assert records[-1]['usage']['cost_usd']=='0.003'
-    assert context['messages']==requests[0]['messages'], 'Frozen input may not be mutated'
+    assert len(requests)==2 and seen==[DECISION]
+    assert all('tools' not in item and 'tool_choice' not in item for item in requests)
+    assert requests[0]['response_format']['json_schema']['name']=='DocumentationDecision'
+    assert requests[1]['response_format']['json_schema']['name']=='FinOpsResponse'
+    assert requests[1]['messages']==context['messages']+[{'role':'user',
+        'content':'UNTRUSTED_RETRIEVAL_CONTEXT\n{"evidence":[],"omissions":[]}'}]
+    assert records[0]['type']=='tool_call' and records[-1]['type']=='candidate'
+    assert records[-1]['usage']['total_tokens']==36 and records[-1]['usage']['cost_usd']=='0.002'
+    assert context['messages']==requests[0]['messages']
 
 
 @pytest.mark.parametrize('change,code', [
@@ -124,7 +79,7 @@ def test_native_envelope_closed_diagnostic_rejects_without_values(monkeypatch, c
     records=list(gateway._records({'messages':[], 'financial_metrics_allowed':False},time.time()+60,{},threading.Event(),'auto'))
     assert records[-1]['type']=='error' and records[-1]['category']=='invalid_response'
     events=[json.loads(record.message) for record in caplog.records if record.name=='app.clients.chat_gateway']
-    assert len(events)==1 and events[0]['rule_code']==code
+    assert len(events)==1 and events[0]['rule_code']=='native_final_invalid'
     assert events[0]['stage']=='envelope' and events[0]['finish_reason'] is None
     assert all(value not in caplog.text for value in ('private-marker','private-key-marker','different'))
 
@@ -148,7 +103,7 @@ def test_required_tool_rejects_invalid_arguments_before_backend_or_second_reques
         pytest.fail('Invalid tool arguments reached backend')
     async def exercise():
         return [item async for item in gateway({'messages':[], 'financial_metrics_allowed':False,
-            'tool_protocol':'auto-documentation-v2'},time.time()+60,tool_result=result)]
+            'tool_protocol':'structured-documentation-v3'},time.time()+60,tool_result=result)]
     records=asyncio.run(exercise())
     assert records[-1]['type']=='error' and len(calls)==1
 
@@ -319,7 +274,8 @@ def _diagnostic_run(monkeypatch,wire,caplog,transport_error=None,period=None):
         return Response(wire)
     monkeypatch.setattr(gateway.client.transport,'open',opened)
     context={'messages':[{'role':'user','content':'DIAGNOSTIC_SYNTHETIC_PROMPT_NEVER_LOG'}],
-        'response_period':period, 'financial_metrics_allowed':False}
+        'response_period':period, 'financial_metrics_allowed':False,
+        'authorized_evidence':[{'id':'known','kind':'corpus','title':'Synthetic','source':'Synthetic','content':'Synthetic grounding.'}]}
     caplog.set_level(logging.WARNING,logger='app.clients.chat_gateway')
     records=list(gateway._records(context,time.time()+120,{},threading.Event()))
     events=[]
@@ -342,7 +298,7 @@ def _diagnostic_run(monkeypatch,wire,caplog,transport_error=None,period=None):
 def _rule_candidate(rule):
     import copy
     value=copy.deepcopy(ANSWER)
-    evidence={'id':'known','kind':'corpus','title':'Synthetic','source':'Synthetic'}
+    evidence={'id':'known','kind':'corpus','title':'Synthetic','source':'Synthetic','support_quote':'Synthetic grounding.'}
     metric={'name':'Synthetic','value':'1','unit':'USD','evidence_ids':['known']}
     recommendation={'category':'investigation','action':'Synthetic','rationale':'Synthetic',
         'estimated_savings':'1','currency':None,'confidence':'low','risk':'low',

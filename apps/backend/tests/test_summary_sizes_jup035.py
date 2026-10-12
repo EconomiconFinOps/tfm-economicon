@@ -101,7 +101,7 @@ def test_persisted_v2_consumed_then_v3_installed_without_rewriting_history(prepa
     assert chat.count(prefix)>768 and result['manifest']['summary']['used'] is True
     assert digest(document(package(api,new)))==before_history
     from app.schemas.chat import canonical, provider_response_schema
-    from app.core.chat_resources import CHAT_TOOLS
+    from app.core.chat_resources import DECISION_SCHEMA
     essential=copy.deepcopy(result['messages'])
     current_context=json.loads(essential[-1]['content'].split('\n',1)[1])
     current_context['recent_pairs']=[]
@@ -110,7 +110,7 @@ def test_persisted_v2_consumed_then_v3_installed_without_rewriting_history(prepa
     effective_schema=provider_response_schema(
         financial_metrics_allowed=result['financial_metrics_allowed'],
         authorized_evidence=result['authorized_evidence'])
-    fixed=chat.count(canonical(effective_schema))+chat.count(canonical(CHAT_TOOLS))+1024+3200
+    fixed=chat.count(canonical(effective_schema))+chat.count(canonical(DECISION_SCHEMA))+1024+3200
     ceiling=chat.count(canonical(essential))+fixed-1
     without_prefix=[essential[0],essential[-1]]
     assert chat.count(canonical(without_prefix))+fixed<ceiling

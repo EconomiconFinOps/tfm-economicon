@@ -1,5 +1,33 @@
 JUP: JUP-035
 
+## Decision vigente — 12/10/2026
+El usuario autoriza sustituir auto-documentation-v2 por structured-documentation-v3.
+La primera generacion devuelve exclusivamente {action:none,query:null} o
+{action:search,query:string}. Ambas ramas estan acotadas en el esquema y se
+validan localmente; se rechazan campos extra, claves duplicadas, texto libre,
+llamadas nativas y truncacion. El proveedor fijo no necesita soporte de
+parallel_tool_calls. El servidor despacha como maximo una busqueda existente.
+
+La extension conserva el transporte HMAC vinculado al claim/tenant/intento.
+tool_call_id es ahora el SHA256 de la decision canonica, no un ID fabricado
+del proveedor. Su resultado se añade como dato user UNTRUSTED_RETRIEVAL_CONTEXT;
+no se incorporan la decision ni mensajes assistant/tool. La segunda generacion
+usa exclusivamente FinOpsResponse estricto con evidencia autorizada efectiva.
+Se conservan dos generaciones, plazo absoluto, cancelacion, billing, cuotas,
+3200 tokens de salida y contabilidad de ambas fases. Ambos servicios cuentan
+el mismo esquema de decision y esquema final efectivo junto al contexto.
+
+Cada alternativa documental exige support_quote privado del fragmento citado.
+El processor comprueba la subcadena literal antes de proyectar FinOpsResponse1.0.
+No modifica ni filtra citas o estados invalidos para admitirlos. Este control
+acredita procedencia textual, no entailment: pertinencia, completitud y calculos
+siguen sujetos a la bateria real. Las instrucciones generales conservan unidades,
+denominadores, operadores estrictos y prohibicion de cotizaciones inventadas.
+
+## Antecedente sustituido: protocolo auto nativo
+Las siguientes notas explican las decisiones previas; no describen el protocolo
+vigente. Los resultados reales negativos se conservan como evidencia historica.
+
 ## Decision
 Usar dos fases incluso sin herramienta. Una respuesta de la primera fase no
 cumple un esquema final impuesto y no puede ser aceptada como respuesta publica.

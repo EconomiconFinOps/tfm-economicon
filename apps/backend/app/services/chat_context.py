@@ -103,7 +103,7 @@ class ChatContext:
         self.resources.verify_descriptor(descriptor)
         context=await asyncio.to_thread(self.build, scope, payload)
         protocol=descriptor.get('tool_protocol')
-        if protocol not in ('auto-documentation-v2','mock-direct-v1'):
+        if protocol not in ('structured-documentation-v3','mock-direct-v1'):
             raise ChatError(503,'tool_contract_mismatch')
         context['tool_protocol']=protocol
         return context
@@ -237,7 +237,7 @@ class ChatContext:
     async def tool_extension(self, scope, context, assistant, deadline):
         from app.core.chat_resources import validate_search_call
         identifier,query=validate_search_call(assistant)
-        if context.get('tool_protocol')!='auto-documentation-v2': raise ValueError('Tool not admitted.')
+        if context.get('tool_protocol')!='structured-documentation-v3': raise ValueError('Tool not admitted.')
         initial=context.get('authorized_evidence',[])
         if any(item['kind']!='cost_query' for item in initial): raise ValueError('Initial corpus not allowed.')
         cancelled=threading.Event();holder={}
@@ -252,7 +252,7 @@ class ChatContext:
                 if len(corpus)<original:
                     omissions.append({'collection':'corpus','reason':'context_budget','omitted':original-len(corpus)})
                 content=escaped({'evidence':corpus,'omissions':omissions})
-                messages=context['messages']+[assistant,{'role':'tool','tool_call_id':identifier,'content':content}]
+                messages=context['messages']+[{'role':'user','content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+content}]
                 try:
                     counted=self.resources.count_messages(messages,financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=initial+corpus)
                     result={'tool_call_id':identifier,'content':content,'variable_tokens':counted}
@@ -415,7 +415,7 @@ class ChatContext:
             probe={'prompt_version':self.resources.prompt_version,'messages':messages,'manifest':manifest,
                 'authorized_evidence':authorized,'source_citations':citations,'verification_records':records,
                 'response_period':verified_response_period(records), 'response_subscriptions':subscriptions,
-                'financial_metrics_allowed':financial_metrics_allowed,'tool_protocol':'auto-documentation-v2'}
+                'financial_metrics_allowed':financial_metrics_allowed,'tool_protocol':'structured-documentation-v3'}
             # The actual private claim is checked again by ChatTransport. Reserve
             # its bounded controls and the subsequently attached revision fence.
             if len(canonical(probe).encode())>2097152-8192:
@@ -450,7 +450,7 @@ class ChatContext:
         context = {'prompt_version':self.resources.prompt_version,'messages':messages,'manifest':manifest,
                    'authorized_evidence':authorized,'source_citations':citations,'verification_records':records,
                    'response_period':verified_response_period(records), 'response_subscriptions':subscriptions,
-                   'financial_metrics_allowed':financial_metrics_allowed,'tool_protocol':'auto-documentation-v2'}
+                   'financial_metrics_allowed':financial_metrics_allowed,'tool_protocol':'structured-documentation-v3'}
         # Leave space for authenticated claim controls within the private2MiB body.
         if len(canonical(context).encode()) > 2097152-8192:
             raise ChatError(413,'context_body_limit')

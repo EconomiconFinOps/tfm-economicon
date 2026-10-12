@@ -11,7 +11,7 @@ def test_no_search_keeps_server_authority_and_one_pair(api, monkeypatch, case):
     source = {'id': 'authorized', 'kind': 'cost_query' if case == 'billing' else 'corpus',
               'title': 'Synthetic', 'source': 'server',
               'metrics': [{'name': 'cost', 'value': '12', 'unit': 'EUR'}]}
-    authorized = [source] if case in ('billing', 'corpus_number') else []
+    authorized = [source] if case in ('billing', 'user_number', 'corpus_number') else []
     answer = copy.deepcopy(ANSWER)
     if case == 'greeting':
         answer['answer'] = 'Hola. ¿Qué consulta FinOps quieres realizar?'
@@ -22,7 +22,7 @@ def test_no_search_keeps_server_authority_and_one_pair(api, monkeypatch, case):
     if case in ('billing', 'user_number', 'corpus_number'):
         answer['metrics'] = [{**source['metrics'][0], 'evidence_ids': ['authorized']}]
     async def build(scope, payload, descriptor):
-        return {'prompt_version': 'synthetic-v2', 'tool_protocol': 'auto-documentation-v2',
+        return {'prompt_version': 'synthetic-v2', 'tool_protocol': 'structured-documentation-v3',
                 'messages': [], 'authorized_evidence': authorized, 'source_citations': [],
                 'financial_metrics_allowed': case == 'billing', 'response_period': None,
                 'response_subscriptions': []}
@@ -54,12 +54,10 @@ def test_no_search_keeps_server_authority_and_one_pair(api, monkeypatch, case):
 
 @pytest.mark.parametrize('duplicate', [False, True])
 def test_invalid_or_second_tool_never_persists(api, monkeypatch, duplicate):
-    assistant = {'role': 'assistant', 'content': None, 'tool_calls': [{
-        'id': 'call-auto', 'type': 'function', 'function': {
-            'name': 'search_documentation' if duplicate else 'unknown', 'arguments': '{"query":"policy"}'}}]}
+    assistant = {'action':'search' if duplicate else 'unknown','query':'policy'}
     calls = []
     async def build(scope, payload, descriptor):
-        return {'prompt_version': 'synthetic-v2', 'tool_protocol': 'auto-documentation-v2',
+        return {'prompt_version': 'synthetic-v2', 'tool_protocol': 'structured-documentation-v3',
                 'messages': [], 'authorized_evidence': []}
     async def extension(scope, context, call, deadline):
         from app.core.chat_resources import validate_search_call

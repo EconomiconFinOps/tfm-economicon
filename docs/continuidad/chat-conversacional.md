@@ -1,3 +1,21 @@
+## PR121: contrato estructurado autorizado en validación — 12/10/2026
+
+Origen: objetivo explícito «Solucionar los problemas de PR-121 hasta que sea
+valida», delegado a `/root/pr121_correccion_pendientes`. Sustituye la decisión
+pendiente del corte anterior: el usuario autoriza none/search estructurado,
+máximo una búsqueda real y dos generaciones, sin mensajes tool fabricados.
+Implementación structured-documentation-v3 con ramas cerradas, HMAC existente
+vinculado al digest de la decisión y bloque UNTRUSTED_RETRIEVAL_CONTEXT.
+Cada cita documental exige un extracto literal privado verificado; se conserva
+FinOpsResponse1.0, autoridad financiera, plazo, proveedor y salida3200.
+La pertenencia literal no acredita pertinencia semántica: ésta requiere full28.
+Se han releído la única review de Víctor y comentarios/inline vacíos.
+Backend80PASS y OpenSpec67/67 en desarrollo; batería real y aceptación pendientes.
+Gasto previo verificado0.1895518525USD/0.50USD, claves caducadas19:28UTC.
+Ahora está autorizada renovar sólo su vigencia lo necesario, sin ampliar límites.
+No merge, Discord ni reviews atribuidas a terceros. La evidencia final sustituirá
+este estado de implementación, sin borrar los ensayos anteriores negativos.
+
 ## PR121: correcciones de review y aceptación pendiente — 12/10/2026
 
 Origen: «Prepara la orden de trabajo para corregir los problemas pendientes de

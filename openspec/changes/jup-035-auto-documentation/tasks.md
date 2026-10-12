@@ -1,6 +1,6 @@
 ## 1. Protocolo
 - [x] 1.1 Reproducir fallos observables en baseline con SSE controlado.
-- [x] 1.2 Implementar decision auto y finalizacion none, cero/una busqueda.
+- [x] 1.2 Implementar decision estructurada none/search y finalizacion estricta, cero/una busqueda (sustituye auto nativo por decision autorizada).
 - [x] 1.3 Coordinar contexto, endpoint, operaciones, prompt y hashes.
 - [x] 1.4 Ejecutar suites afectadas y controles; registrar fallos de base, omisiones y correcciones de fixtures.
 
@@ -21,7 +21,7 @@
 - [x] 4.1 Reproducir dos IDs nativos distintos en005/012 y comprobar capacidades publicas del endpoint.
 - [x] 4.2 Acotar esquema final al contexto efectivo, conservar firewall y coordinar conteo/manifiesto.
 - [x] 4.3 Cubrir fuentes desconocidas/duplicadas, procedencia alterada y multiples llamadas sin busqueda parcial.
-- [ ] 4.4 Demostrar control compatible de una sola llamada en el proveedor fijo.
+- [ ] 4.4 Demostrar decision estructurada compatible con el proveedor fijo y una sola recuperacion real, sin llamadas nativas.
 - [x] 4.5 Ejecutar esquema,018 y saludo reales tras autorización específica; se elimina HTTP400, sin confundir completed con aceptación semántica estable (018 mantiene citas accesorias en full28).
 - [ ] 4.6 Ejecutar full28 y navegador sobre una revision congelada; sin extrapolar resultados anteriores.
 
@@ -32,6 +32,12 @@
 - [x] 5.4 Fusionar develop3c6517b conservando JUP113; GitHubMERGEABLE y JUP policy pull_requestSUCCESS.
 - [x] 5.5 Provisionar HMAC estable en init/prepare; compose config real, UID10001/ro y55 pruebas CDLinux pasan.
 - [x] 5.6 Ejecutar focales y full28 del código congelado; publicar todos los fallos y costes, sin aceptación global.
-- [ ] 5.7 Decidir protocolo/proveedor para controlar multiplicidad sin ocultar llamadas.
+- [x] 5.7 Decision explicita del usuario: structured-documentation-v3 none/search, una busqueda y dos generaciones; proveedor fijo, sin ignorar llamadas ni fabricar mensajes tool.
 - [ ] 5.8 Resolver aceptación semántica:011,017,018,021,024 de la campaña actual; no otra afirmación de garantía sólo por prompts.
 - [ ] 5.9 Completar recorrido de navegador de esta revisión y reviews oficiales; no archivar el change antes de aceptación.
+
+## 6. Contrato estructurado autorizado
+- [ ] 6.1 Probar ramas, campos extra, duplicados, truncacion, llamadas nativas inesperadas, correlacion HMAC y plazo comun.
+- [ ] 6.2 Probar extracto literal por cita, contexto documental no confiable y esquema/conteo identicos en ambos servicios.
+- [ ] 6.3 Congelar SHA, desplegar solo runtime sintetico, ejecutar focales y full28 sin cambiar criterios; registrar gasto acumulado maximo0.50USD.
+- [ ] 6.4 Recorrido navegador sobre candidato final y evidencia de persistencia/aislamiento, sin confundir CI con reviews oficiales.
