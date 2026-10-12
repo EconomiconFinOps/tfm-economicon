@@ -11,6 +11,8 @@ from app.core.security import hash_password, verify_password
 from app.db.migration_runner import MigrationRunner
 
 
+LIST_READ_ATTEMPTS = 3
+
 TENANT_SEED = [
     {
         "id": "tenant-core",
@@ -746,19 +748,29 @@ class Database:
         return rules.order_payloads([rules.episode_payload(row) for row in rows])
 
     def fetch_anomaly_episode_list(self, tenant_id: str, *, scope: str = "open") -> dict:
+        from sqlalchemy import exc
+
         from app.services import anomaly_episodes as rules
 
         params = {"tenant_id": tenant_id}
-        with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
-            with connection.begin():
-                rows = self._anomaly_episode_rows(connection, tenant_id, open_only=scope == "open")
-                last_evaluated = connection.execute(text(
-                    "SELECT last_evaluated_date FROM anomaly_detection_state WHERE tenant_id = :tenant_id"
-                ), params).scalar_one_or_none()
-                synthetic = connection.execute(text(
-                    "SELECT EXISTS (SELECT 1 FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant_id "
-                    "AND status = 'completed' AND COALESCE(request->'synthetic' = 'true'::JSONB, false))"
-                ), params).scalar_one()
+        # Una lectura concurrente con una deteccion o un cambio de estado puede recibir el reintento de CockroachDB (40001).
+        # La lectura no cambia nada: se repite un numero acotado de veces antes de dejar pasar el error.
+        for attempt in range(LIST_READ_ATTEMPTS):
+            try:
+                with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+                    with connection.begin():
+                        rows = self._anomaly_episode_rows(connection, tenant_id, open_only=scope == "open")
+                        last_evaluated = connection.execute(text(
+                            "SELECT last_evaluated_date FROM anomaly_detection_state WHERE tenant_id = :tenant_id"
+                        ), params).scalar_one_or_none()
+                        synthetic = connection.execute(text(
+                            "SELECT EXISTS (SELECT 1 FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant_id "
+                            "AND status = 'completed' AND COALESCE(request->'synthetic' = 'true'::JSONB, false))"
+                        ), params).scalar_one()
+                break
+            except exc.OperationalError as error:
+                if getattr(error.orig, "sqlstate", None) != "40001" or attempt == LIST_READ_ATTEMPTS - 1:
+                    raise
         return {
             "episodes": rules.order_payloads([rules.episode_payload(row) for row in rows]),
             "last_evaluated_date": last_evaluated,

@@ -331,3 +331,39 @@ def test_list_overview_after_detection_reports_the_last_evaluated_day(episode_st
     assert overview["last_evaluated_date"] == D
     assert overview["includes_synthetic_data"] is False
     assert overview["open_impact_by_currency"] == [{"currency": "EUR", "amount": "150.00"}]
+
+
+def test_list_read_retries_a_cockroach_retry_error_and_gives_up_after_three(episode_store, monkeypatch):
+    from sqlalchemy import exc
+
+    class Retry(Exception):
+        sqlstate = "40001"
+
+    db = episode_store
+    original = db._anomaly_episode_rows
+    calls = {"count": 0}
+
+    def flaky(*args, **kwargs):
+        calls["count"] += 1
+        if calls["count"] <= 2:
+            raise exc.OperationalError("SELECT 1", {}, Retry())
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(db, "_anomaly_episode_rows", flaky)
+    assert db.fetch_anomaly_episode_list("tenant-a")["episodes"] == []
+    assert calls["count"] == 3
+
+    calls["count"] = -100
+    with pytest.raises(exc.OperationalError):
+        db.fetch_anomaly_episode_list("tenant-a")
+    assert calls["count"] == -97
+
+    class Other(Exception):
+        sqlstate = "08006"
+
+    def broken(*args, **kwargs):
+        raise exc.OperationalError("SELECT 1", {}, Other())
+
+    monkeypatch.setattr(db, "_anomaly_episode_rows", broken)
+    with pytest.raises(exc.OperationalError):
+        db.fetch_anomaly_episode_list("tenant-a")
