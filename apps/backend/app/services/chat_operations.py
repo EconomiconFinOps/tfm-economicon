@@ -238,7 +238,7 @@ class ChatOperations:
                     if self.clock()>=row['attempt_deadline']-5:
                         raise TimeoutError()
                     if record.get('type')=='tool_call':
-                        if searched or seq or claim['context'].get('tool_protocol')!='required-documentation-v1':
+                        if searched or seq or claim['context'].get('tool_protocol')!='auto-documentation-v2':
                             raise ValueError('Unexpected tool call.')
                         searched=True
                         from app.services.chat_context import retrieval_diagnostic_scope
@@ -265,8 +265,6 @@ class ChatOperations:
                         await self._error(scope,row,transient,self._delay(record.get('retry_after'),row['attempt_count']) if transient else 0)
                         return
                     elif record.get('type')=='candidate':
-                        if claim['context'].get('tool_protocol')=='required-documentation-v1' and not searched:
-                            raise ValueError('Missing search.')
                         if record.get('finish_reason')=='length':
                             await self._error(scope,row,True,self._delay(None,row['attempt_count']),'incomplete')
                             return
@@ -431,7 +429,18 @@ class ChatOperations:
             if replay is not None:
                 for frame in replay:
                     yield frame
-                if row['state'] in TERMINAL or row['state'] in ('paused','waiting'):
+                    # The row read can also precede an already-published end.
+                    if any(frame.startswith(f'event: {end}\n') for end in ['final','terminal','paused','retry_scheduled']):
+                        return
+                if row['state'] in TERMINAL:
+                    # SQL can commit before the producer publishes its RAM
+                    # event. Never close the winning POST with only a prefix.
+                    end='final' if row['state']=='completed' else 'terminal'
+                    if not any(frame.startswith(f'event: {end}\n') for frame in replay):
+                        values=await self._final_values(scope,row) if end=='final' else {'operation':value}
+                        yield self._frame(row,end,**values)
+                    return
+                if row['state'] in ('paused','waiting'):
                     return
             elif snapshot is not None:
                 yield snapshot

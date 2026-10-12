@@ -48,10 +48,15 @@ evidencia insuficiente sin inventar cifras.
 - **WHEN** no existe evidencia suficiente
 - **THEN** se declara no_data o insufficient_data sin hechos financieros inventados
 
-#### Scenario: Herramienta documental requerida dentro del mismo intento
+#### Scenario: Decision documental automatica dentro del mismo intento
 
 - **WHEN** el chat IA inicia un intento autorizado
-- **THEN** SHALL realizar una primera peticion con search_documentation estricta y tool_choice required, admitir una sola llamada nativa con query acotada sin parametros de tenant y ejecutar la recuperacion existente en backend con el scope autenticado; SHALL mantener una operacion, un intento, un dispatch privado y el contexto/hash canonicos iniciales congelados, sin precargar corpus para simular la herramienta
+- **THEN** SHALL usar el contrato auto-documentation-v2 y realizar una primera peticion con search_documentation estricta y tool_choice auto sin response_format final, admitir cero o una llamada nativa con query acotada sin parametros de tenant y ejecutar la recuperacion existente en backend con el scope autenticado; SHALL mantener una operacion, un intento, un dispatch privado y el contexto/hash canonicos iniciales congelados, sin precargar corpus para simular la herramienta
+
+#### Scenario: Decision sin herramienta y finalizacion estricta
+
+- **WHEN** la primera peticion termina con stop sin llamada nativa
+- **THEN** SHALL descartar su texto sin mostrarlo, persistirlo ni reutilizarlo como contexto; SHALL realizar una segunda y ultima generacion con el contexto autorizado original, tool_choice none y FinOpsResponse estricto; SHALL permitir respuestas con evidencia existente, saludos o aclaraciones no accionables, y exigir abstencion si falta sustento documental, sin recuperacion oculta; SHALL conservar el deadline comun y sumar el uso real de ambas generaciones, sin autoridad financiera derivada de usuario o corpus
 
 #### Scenario: Resultado privado y continuacion final
 

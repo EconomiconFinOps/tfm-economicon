@@ -20,7 +20,7 @@ def gateway_instance():
 
 async def collect(gateway,deadline):
     return [record async for record in gateway({'messages':[{'role':'system','content':'Synthetic'}],
-        'financial_metrics_allowed':False,'tool_protocol':'required-documentation-v1'},deadline)]
+        'financial_metrics_allowed':False,'tool_protocol':'auto-documentation-v2'},deadline)]
 
 def blocked_dns(monkeypatch):
     original_dns=socket.getaddrinfo

@@ -21,7 +21,7 @@ def main_context(application):
     messages=[{'role':'system','content':r.system},{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n{}'}]
     count=r.check_messages(messages,FinOpsResponse.model_json_schema())
     return {'prompt_version':r.prompt_version,'messages':messages,
-        'financial_metrics_allowed':False,'tool_protocol':'required-documentation-v1','manifest':{
+        'financial_metrics_allowed':False,'tool_protocol':'auto-documentation-v2','manifest':{
         'prompt_version':r.prompt_version,'tokenizer_sha256':r.tokenizer_sha256,'response_schema_sha256':r.response_schema_sha256,
         'input_contract_sha256':m['input_contract_sha256'],'assembler_sha256':m['assembler_sha256'],'variable_tokens':count,
         'context_budget':r.context_budget}}

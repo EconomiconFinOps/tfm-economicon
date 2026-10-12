@@ -245,7 +245,7 @@ class ChatGateway:
         self.client=LiteLLMClient(settings)
         self.client.transport=request.build_opener(request.ProxyHandler({}),_RejectRedirectHandler(),_ChatHTTPHandler(),_ChatHTTPSHandler())
 
-    def _records(self,context,deadline,holder,cancelled,tool_choice=None):
+    def _records(self,context,deadline,holder,cancelled,tool_choice=None,*,evidence_available=None):
         finish=None;request_hash=None;emitted=False;stage='request'
         def diagnostic(at,failure=None,**metadata):
             nonlocal emitted
@@ -260,9 +260,19 @@ class ChatGateway:
             payload={'model':'economicon-chat','messages':context['messages'],'stream':True,
                 'stream_options':{'include_usage':True},'max_tokens':budget('chat')['output_tokens'],'num_retries':0,
                 'timeout':remaining,'stream_timeout':remaining,'reasoning':{'enabled':False},
-                'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True},
-                'response_format':{'type':'json_schema','json_schema':{'name':'FinOpsResponse','strict':True,
-                    'schema':chat_provider_schema(financial_metrics_allowed=context.get('financial_metrics_allowed'))}}}
+                'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True}}
+            # The decision is private control flow, never a FinOps answer.
+            # Only finalization constrains/streams the public answer schema.
+            if tool_choice != 'auto':
+                schema=chat_provider_schema(financial_metrics_allowed=context.get('financial_metrics_allowed'))
+                if evidence_available is False:
+                    # No server sources: constrain the producer, never erase
+                    # invented references or weaken final backend validation.
+                    schema['properties']['evidence']['maxItems']=0
+                    schema['anyOf']=[schema['anyOf'][1]]
+                    schema['anyOf'][0]['properties']['evidence']['maxItems']=0
+                payload['response_format']={'type':'json_schema','json_schema':{'name':'FinOpsResponse','strict':True,
+                    'schema':schema}}
             if tool_choice is not None:
                 from app.core.chat_resources import CHAT_TOOLS
                 payload.update(tools=CHAT_TOOLS,tool_choice=tool_choice)
@@ -299,10 +309,14 @@ class ChatGateway:
                         stage='envelope'
                         if data=='[DONE]':
                             stage='finish'
-                            if tool_choice=='required':
+                            if tool_choice=='auto':
                                 from app.core.chat_resources import validate_search_call
-                                if finish!='tool_calls' or not native_seen or ''.join(candidate).strip():
-                                    raise ValueError('Required native search missing.')
+                                if not native_seen:
+                                    if finish!='stop': raise ValueError('Incomplete tool decision.')
+                                    yield {'type':'decision','usage':usage}
+                                    return
+                                if finish!='tool_calls':
+                                    raise ValueError('Incomplete native search.')
                                 assistant={'role':'assistant','content':None,'tool_calls':[native]}
                                 try:
                                     validate_search_call(assistant)
@@ -365,7 +379,7 @@ class ChatGateway:
                             candidate_bytes+=len(fragment.encode())
                             if candidate_bytes>1024*1024: raise ValueError('Candidate limit.')
                             candidate.append(fragment)
-                            if tool_choice=='required': continue
+                            if tool_choice=='auto': continue
                             stage='provisional_answer'
                             provisional=answer.feed(fragment)
                             # Escape-aware decoding completes surrogate pairs;
@@ -400,28 +414,35 @@ class ChatGateway:
     async def __call__(self,context,deadline,*,tool_result=None):
         holder={};cancelled=threading.Event()
         try:
-            required=context.get('tool_protocol')=='required-documentation-v1'
-            had_search=required
-            iterator=self._records(context,deadline,holder,cancelled,'required' if required else None)
+            if context.get('tool_protocol') not in (None,'auto-documentation-v2'):
+                yield {'type':'error','status':422,'category':'invalid_response'};return
+            deciding=context.get('tool_protocol')=='auto-documentation-v2'
+            two_phase=deciding
+            iterator=self._records(context,deadline,holder,cancelled,'auto' if deciding else None)
             first_usage=None
             while True:
                 record=await asyncio.to_thread(next,iterator,None)
                 if record is None: return
-                if record['type']=='tool_call':
-                    if not required or tool_result is None:
+                if record['type'] in ('tool_call','decision'):
+                    if not deciding or (record['type']=='tool_call' and tool_result is None):
                         yield {'type':'error','status':422,'category':'invalid_response'};return
-                    required=False
+                    deciding=False
                     first_usage=record.get('usage')
-                    yield record
-                    remaining=deadline-time.time()-5
-                    if remaining<=0: raise TimeoutError()
-                    result=await asyncio.wait_for(tool_result(record['assistant']),remaining)
-                    from app.core.chat_resources import continuation_messages
-                    messages=continuation_messages(context,record['assistant'],result)
+                    messages=context['messages']
+                    evidence_available=bool(context.get('authorized_evidence'))
+                    if record['type']=='tool_call':
+                        yield record
+                        remaining=deadline-time.time()-5
+                        if remaining<=0: raise TimeoutError()
+                        result=await asyncio.wait_for(tool_result(record['assistant']),remaining)
+                        from app.core.chat_resources import continuation_messages
+                        messages=continuation_messages(context,record['assistant'],result)
+                        evidence_available=evidence_available or bool(json.loads(result['content'])['evidence'])
                     if cancelled.is_set() or time.time()>=deadline-5: raise TimeoutError()
-                    iterator=self._records({**context,'messages':messages},deadline,holder,cancelled,'none')
+                    iterator=self._records({**context,'messages':messages},deadline,holder,cancelled,'none',
+                        evidence_available=evidence_available)
                 else:
-                    if record['type']=='candidate' and had_search:
+                    if record['type']=='candidate' and two_phase:
                         record={**record,'usage':combined_usage(first_usage,record.get('usage'))}
                     yield record
         except TimeoutError:

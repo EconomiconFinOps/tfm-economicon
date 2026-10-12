@@ -7,8 +7,9 @@ ni una validacion humana. Los responsables y el estado oficial siguen en Trello.
 
 La interfaz assistant-ui usa operaciones `/assistant/.../generations`.
 Backend autentica al propietario, valida el contexto y consulta los costes.
-Processor genera mediante el canal privado HMAC y solicita la herramienta RAG;
-backend ejecuta esa busqueda filtrada por tenant. La respuesta validada, las
+Processor decide con `auto-documentation-v2` si necesita la herramienta RAG;
+backend ejecuta la busqueda solicitada filtrada por tenant. Una segunda llamada
+produce la respuesta estricta, tambien cuando no se solicita busqueda. La respuesta validada, las
 citas y la evidencia se guardan atomicamente en el historial JSONB.
 
 El modo mock no llama a modelos. El modo IA utiliza LiteLLM/OpenRouter con
@@ -57,3 +58,21 @@ HA, ejecucion multiproceso ni exactitud financiera sin evidencia autorizada.
 Los ensayos anteriores, incluidos sus fallos, no se sobrescriben. Las referencias
 a discos personales son antecedentes no portables; la guia actual permite
 repetir la evaluacion desde el banco versionado sin copiarlos.
+
+## Incorporacion de PR #121
+
+Paris aprueba conservar el RAG automatico el 12/10/2026. Se incorpora la rama
+`fix/JUP-035-auto-documentation` de Alejandro, conservando sus commits y sus
+correcciones de cierre del streaming y pruebas SQL portables. Se mantienen las
+correcciones locales de resiliencia, timeout, despliegue, historial y UI.
+
+Sus resultados previos no acreditan esta combinacion. Las comprobaciones locales
+afectadas pasan: 210 casos focalizados, incluidos tres probes SQL reales.
+La pregunta documental recupera, cita y persiste correctamente con OpenRouter.
+El saludo inicial falla por evidence_membership y se corrige restringiendo el
+esquema sin fuentes; la repeticion pasa sin RAG ni citas y persiste el par.
+Gasto adicional observado: 0.006293990 USD de 0.03 autorizados. No se repite la
+bateria completa ni se declara validacion humana, publicacion o merge en develop.
+
+- [Evidencia original del compañero](../evidence/jup-035-auto-documentation-20261012.md).
+- [Incorporacion y ensayos focales](../evidence/jup-035-pr121-integration-20261012.md).

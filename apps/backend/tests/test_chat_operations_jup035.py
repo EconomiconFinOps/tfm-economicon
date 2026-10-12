@@ -133,11 +133,11 @@ async def existing(client, payload, owner='alice'):
     return result.json()
 
 
-async def until_state(client, base, expected, owner='alice'):
+async def until_state(client, base, expected, owner='alice', *, attempt_count=None):
     for _ in range(100):
         r=await client.get(base,headers=headers(owner))
         assert r.status_code==200,r.text
-        if r.json()['state']==expected:
+        if r.json()['state']==expected and (attempt_count is None or r.json()['attempt_count']==attempt_count):
             return r.json()
         await asyncio.sleep(0.01)
     pytest.fail(f'Operation did not reach {expected}: {r.text}')
@@ -175,7 +175,7 @@ def test_required_tool_extension_validates_and_persists_only_recovered_sources(a
     assistant={'role':'assistant','content':None,'tool_calls':[{'id':'call-synthetic','type':'function',
         'function':{'name':'search_documentation','arguments':'{"query":"Review rule"}'}}]}
     async def build(scope,payload,descriptor):
-        return {'prompt_version':'synthetic-v2','tool_protocol':'required-documentation-v1',
+        return {'prompt_version':'synthetic-v2','tool_protocol':'auto-documentation-v2',
             'messages':[], 'authorized_evidence':[],'source_citations':[],
             'financial_metrics_allowed':False,'response_period':None,'response_subscriptions':[]}
     async def extension(scope,context,call,deadline):
@@ -329,7 +329,9 @@ def test_provider_budget_accumulates_and_resume_respects_minimum_date(api):
             op=await existing(c,payload)
             base=op['status_url']
             for expected_count in [1,2]:
-                waiting=await until_state(c,base,'waiting')
+                # The scheduler can still expose the previous waiting attempt;
+                # a fixed 30ms sleep is not evidence that it has advanced.
+                waiting=await until_state(c,base,'waiting',attempt_count=expected_count)
                 assert waiting['attempt_count']==expected_count
                 api[3].advance(50)
                 await asyncio.sleep(0.03)

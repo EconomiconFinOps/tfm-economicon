@@ -126,7 +126,7 @@ def test_required_result_is_owned_signed_correlated_and_single_use(private, monk
         gateway.requires_tool_result=True
         monkeypatch.setattr(private[0].state,'chat_gateway',gateway)
         payload=claim(context={'prompt_version':'synthetic-v2','messages':[{'role':'user','content':'Synthetic'}],
-            'tool_protocol':'required-documentation-v1','financial_metrics_allowed':False})
+            'tool_protocol':'auto-documentation-v2','financial_metrics_allowed':False})
         raw=json.dumps(payload).encode()
         task=asyncio.create_task(client.post('/internal/chat/v2/attempts',content=raw,
             headers=signed('POST','/internal/chat/v2/attempts',raw)))
@@ -140,7 +140,10 @@ def test_required_result_is_owned_signed_correlated_and_single_use(private, monk
                     headers=signed('POST',endpoint,body) if authenticated else {})
             assert (await post(payload,result,False)).status_code==401
             assert (await post({**payload,'tenant_id':'other'},result)).status_code==404
+            assert (await post({**payload,'user_id':'other'},result)).status_code==404
+            assert (await post({**payload,'deadline':time.time()-1},result)).status_code in (404,409)
             assert (await post(payload,{**result,'tool_call_id':'unknown'})).status_code==409
+            assert (await post(payload,{**result,'content':'{"evidence":[{"kind":"cost_query"}],"omissions":[]}'})).status_code==409
             assert continued==[]
             assert (await post(payload,result)).status_code==200
             assert (await post(payload,result)).status_code==409

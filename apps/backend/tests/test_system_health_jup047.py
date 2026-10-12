@@ -101,8 +101,10 @@ def add_job(api, identifier, state, updated, tenant="tenant-a"):
 
 
 @pytest.mark.parametrize("method,path", [("GET", "/health/status"), ("POST", "/health/provider-check")])
-@pytest.mark.parametrize("auth,expected", [([], 401), (headers(tenant=None), 400), (headers(tenant="tenant-b"), 403), (headers(tenant=" tenant-a"), 400)])
-def test_authentication_and_tenant_precede_diagnostics(operational_api, method, path, auth, expected):
+@pytest.mark.parametrize("authenticated,tenant,expected", [(False, None, 401), (True, None, 400), (True, "tenant-b", 403), (True, " tenant-a", 400)])
+def test_authentication_and_tenant_precede_diagnostics(operational_api, method, path, authenticated, tenant, expected):
+    # Mint at execution time: collection may precede this test by many minutes.
+    auth = headers(tenant=tenant) if authenticated else []
     response = call(operational_api, method, path, headers=auth, **({"json": {"idempotency_key": "red-action"}} if method == "POST" else {}))
     assert response.status_code == expected
     operational_api.db.ping.assert_not_called()
