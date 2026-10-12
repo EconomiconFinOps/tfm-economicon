@@ -53,9 +53,7 @@ Resistieron: reintento sin camino sin asignar, conexión nueva y cerrada por int
 
 Defectos de maquetación encontrados en el stack real y corregidos antes de la revisión (`180aa2a`): el `sr-only` de la última cabecera de la tabla alargaba la página a 817 px, y las filas del diálogo se estiraban a 390 px.
 
-## Pendiente
-
-- Evidencia por criterio en `docs/evidence/JUP-114-validation.md` y bloque `## Human Approval` de Lucia.
+## Human Approval` de Lucia.
 
 ## Human Approval
 
