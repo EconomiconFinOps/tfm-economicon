@@ -248,7 +248,7 @@ def http_response(value, status_code=200):
     return Response(content=dumps(transport(value)), status_code=status_code, media_type='application/json')
 
 
-def latest_pairs(value):
+def latest_pairs(value, *, for_model=False):
     """Latest eligible assistant by ordinal, retaining original question order.
 
     Original metadata is opaque historical evidence. Only the canonical link
@@ -264,6 +264,12 @@ def latest_pairs(value):
         question = questions.get(message['question_id'])
         if question is None:
             excluded.append({'message_id': message['id'], 'reason': 'unlinked_legacy_message'})
+            continue
+        generation = message['metadata'].get('generation', {}) if isinstance(message['metadata'], dict) else {}
+        if for_model and (message['origin'] != 'completed' or question['origin'] != 'completed'
+                          or not isinstance(generation, dict) or generation.get('v') != 2
+                          or generation.get('state') != 'completed'):
+            excluded.append({'message_id': message['id'], 'reason': 'unverified_historical_response'})
             continue
         latest[question['id']] = {'question_id': question['id'], 'answer_id': message['id'],
             'question': question['content'], 'answer': message['content']}

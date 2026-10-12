@@ -15,13 +15,18 @@ SCOPE={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
 STAMP='2026-10-10T03:12:00.123456Z'
 
 
-def install(db,records):
+def install(db,records, *, verified=False):
     messages=[]
     for ordinal,(identifier,role,question,metadata) in enumerate(records):
         messages.append({'ordinal':ordinal,'id':identifier,'role':role,'author_id':'alice',
             'question_id':question,'origin':'legacy','content':'Texto '+identifier,
             'metadata':metadata,'created_at':STAMP})
     value={'schema_version':1,'identity':dict(SCOPE),'revision':0,'next_ordinal':len(messages),'messages':messages}
+    if verified:
+        for message in messages:
+            message['origin']='completed'
+            if message['role']=='assistant':
+                message['metadata']={'generation':{'v':2,'state':'completed','question_message_id':message['question_id']}}
     with db.engine.begin() as c:
         c.execute(text("UPDATE conversations SET dialogue_history=:doc WHERE id='alice-chat'"),{'doc':json.dumps(value)})
     return value
@@ -47,9 +52,12 @@ def test_canonical_link_not_original_metadata_selects_pair_and_latest_by_ordinal
     value['messages'][-1]['created_at']='2020-01-01T00:00:00.000001Z'
     with api[1].engine.begin() as c:
         c.execute(text("UPDATE conversations SET dialogue_history=:doc WHERE id='alice-chat'"),{'doc':json.dumps(value)})
-    pairs,older=ChatContext(api[0],None).recent_pairs(SCOPE)
+    from app.db import chat_history
+    pairs,_=chat_history.latest_pairs(value)
+    older=0
     assert [(p['question_id'],p['answer_id']) for p in pairs]==[('q-A','retry-A'),('q-B','a-B')]
     assert older==0
+    assert ChatContext(api[0],None).recent_pairs(SCOPE)[0]==[]
 
 
 def test_other_legacy_role_with_reference_is_not_an_assistant_answer(api):

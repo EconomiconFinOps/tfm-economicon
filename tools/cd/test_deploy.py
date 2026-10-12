@@ -81,6 +81,23 @@ class RuntimeTests(unittest.TestCase):
         self.assertNotEqual(secrets["POSTGRES_PASSWORD"], secrets["DEMO_PASSWORD"])
         self.assertTrue(secrets["DATABASE_URL"].startswith("cockroachdb+psycopg://"))
         self.assertTrue(secrets["VECTOR_DATABASE_URL"].startswith("postgresql+psycopg://"))
+        key = Path(secrets["CHAT_HMAC_FILE"])
+        self.assertTrue(key.is_file())
+        self.assertGreaterEqual(len(key.read_bytes()), 32)
+        self.assertNotIn(key.read_text().strip(), content)
+
+    @patch.object(deploy, "run", return_value='{"services": {}}')
+    def test_prepare_upgrades_hmac_without_changing_existing_credentials(self, run):
+        values = json.loads((self.root / "secrets.json").read_text())
+        values.pop("CHAT_HMAC_FILE", None)
+        deploy.atomic_json(self.root / "secrets.json", values)
+        release = deploy.prepare(self.root, self.source, self.new, 0)
+        upgraded = json.loads((self.root / "secrets.json").read_text())
+        key = Path(upgraded["CHAT_HMAC_FILE"])
+        self.assertTrue(key.is_file())
+        self.assertNotIn(".preparing", str(key))
+        self.assertEqual({k: v for k, v in upgraded.items() if k != "CHAT_HMAC_FILE"}, values)
+        self.assertIn(str(key), (release / ".env").read_text())
 
     def test_invalid_port_base_rejected_before_creating_files(self):
         for port in (0, 1023, 65425, 65535):

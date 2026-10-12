@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { FileText } from "lucide-react";
 import { CostEvidence } from "./CostEvidence";
+import { ChatCostEvidence } from "./chat/ChatCostEvidence";
 
 interface Citation {
   evidence_id: string;
@@ -31,6 +32,13 @@ export function AnswerEvidence({ content, metadata }: {
   const prefix = useId();
   const raw = metadata.source_citations;
   const references = metadata.citations;
+  const response = metadata.response;
+  const semanticStatus = typeof response === "object" && response !== null && !Array.isArray(response)
+    ? (response as Record<string, unknown>).status : undefined;
+  const labels: Record<string, string> = {
+    no_data: "Sin datos para esta consulta", insufficient_data: "Datos insuficientes",
+    unsupported: "Consulta no compatible", refused: "Consulta rechazada", error: "Respuesta no disponible"
+  };
   // Metadata is untrusted; never render partial or ambiguous citation sets.
   const citations = Array.isArray(raw) && raw.every(isCitation)
     && new Set(raw.map((item) => item.evidence_id)).size === raw.length
@@ -38,6 +46,8 @@ export function AnswerEvidence({ content, metadata }: {
     && raw.every((item, index) => references[index] === item.evidence_id) ? raw : [];
 
   return <>
+    {typeof semanticStatus === "string" && labels[semanticStatus] &&
+      <p role="status" className="mt-2 text-xs font-medium text-muted-foreground">{labels[semanticStatus]}</p>}
     <div className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">
       {content.split("\n").map((line, index) => {
         const match = /^- \[(\d+)\] /.exec(line);
@@ -67,8 +77,9 @@ export function AnswerEvidence({ content, metadata }: {
             {citation.source.trim().toLocaleLowerCase() !== citation.title.trim().toLocaleLowerCase() && ` · ${citation.source}`}</span>
         </li>)}
       </ul>
-    </section> : "cost_evidence" in metadata ? <CostEvidence evidence={metadata.cost_evidence} />
-      : Array.isArray(references) && references.length > 0 &&
+    </section> : Array.isArray(references) && references.length > 0 &&
       <p className="mt-2 text-xs text-muted-foreground">La evidencia de esta respuesta no está disponible.</p>}
+    <ChatCostEvidence records={metadata.cost_query_evidence} />
+    {"cost_evidence" in metadata && <CostEvidence evidence={metadata.cost_evidence} />}
   </>;
 }

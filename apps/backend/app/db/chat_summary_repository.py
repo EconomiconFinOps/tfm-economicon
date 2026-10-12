@@ -18,7 +18,7 @@ loads=chat_history.loads
 def opaque(scope,role,identifier):return ('q-' if role=='user' else 'a-')+digest({'scope':scope,'role':role,'id':identifier})
 
 def ledger(document):
-    pairs,excluded=chat_history.latest_pairs(document);by_id={x['id']:x for x in document['messages']};refs=[];qa=[]
+    pairs,excluded=chat_history.latest_pairs(document,for_model=True);by_id={x['id']:x for x in document['messages']};refs=[];qa=[]
     for pair in pairs:
         question,answer=by_id[pair['question_id']],by_id[pair['answer_id']]
         refs.append({'question_id':question['id'],'answer_id':answer['id'],'question_ordinal':question['ordinal'],

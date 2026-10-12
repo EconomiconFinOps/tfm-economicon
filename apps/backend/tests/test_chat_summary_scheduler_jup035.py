@@ -108,7 +108,7 @@ def source(packet,count=12,long=True,scope=None,first_large=False):
             'metadata':{'marker':'SYNTHETIC_METADATA_NEVER_SUMMARY_MODEL'}}
         a={**common,'id':str(uuid4()),'user_id':scope['user_id'],'role':'assistant',
             'content':'No se confirmó una conclusión financiera.; Se conserva el diálogo.',
-            'metadata':{'generation':{'question_message_id':qid}}}
+            'metadata':{'generation':{'v':2,'state':'completed','question_message_id':qid}}}
         db.append_pair(question=q,assistant=a)
     return document(packet,scope)
 

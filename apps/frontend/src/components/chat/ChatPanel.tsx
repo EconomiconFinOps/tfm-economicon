@@ -107,6 +107,9 @@ export function ChatPanel({ scope, userRole }: { scope: ChatScope; userRole?: st
   const activity = useChatActivity(cell, value.cells);
   useSyncExternalStore(session.screen.subscribe, session.screen.snapshot);
   const location = useLocation();
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("chat") === "open") setShown(true);
+  }, [location.search]);
   const [deadlineTick, setDeadlineTick] = useState(0);
   const retryAt = cell.operation?.state === "paused" ? cell.operation.retry_at : null;
   useEffect(() => {

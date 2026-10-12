@@ -45,6 +45,8 @@ async def generate(conversation_id:str,request:Request,
             del frozen['retry_of_operation_id']
         row,created=await runtime.open(owned,frozen)
         if not created: return JSONResponse(runtime.public(row,'existing'))
+        if 'application/json' in request.headers.get('accept',''):
+            return JSONResponse(runtime.public(row,'created'),status_code=202)
         return StreamingResponse(runtime.events(owned,row['operation_id'],initial=True),media_type='text/event-stream',
             headers={'Cache-Control':'no-store','X-Accel-Buffering':'no'})
     except ChatError as error: failure(error)

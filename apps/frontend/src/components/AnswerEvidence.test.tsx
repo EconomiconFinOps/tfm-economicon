@@ -9,6 +9,23 @@ const citation = {
 };
 
 describe("AnswerEvidence", () => {
+  it.each(["no_data", "insufficient_data"])("distinguishes a valid abstention (%s) from a normal answer", (status) => {
+    render(<AnswerEvidence content="No hay datos suficientes." metadata={{ response: { status }, citations: [], source_citations: [] }} />);
+    expect(screen.getByRole("status")).toHaveTextContent(status === "no_data" ? "Sin datos para esta consulta" : "Datos insuficientes");
+  });
+
+  it("shows verified costs alongside documentary sources without inventing a legacy contract", () => {
+    render(<AnswerEvidence content="Coste contrastado." metadata={{
+      response: { status: "partial" }, citations: [citation.evidence_id], source_citations: [citation],
+      cost_query_evidence: [{ id: "cost:snapshot:0", kind: "cost_query", title: "Consulta contrastada",
+        source: "billing-summary-v2", data_status: "available",
+        period: { start_date: "2026-01-01", end_date: "2026-02-01", timezone: "UTC" },
+        metrics: [{ name: "total_cost", value: "12.00", unit: "EUR" }] }]
+    }} />);
+    expect(screen.getByRole("region", { name: "Fuentes utilizadas" })).toBeInTheDocument();
+    expect(screen.getByText("Evidencia de costes contrastada")).toBeInTheDocument();
+    expect(screen.getByText("12.00 EUR")).toBeInTheDocument();
+  });
   it("links each used passage to its persisted source and evidence", () => {
     const { container } = render(<AnswerEvidence content={`Contexto:\n- [1] FinOps: ${citation.excerpt}`} metadata={{ citations: ["chunk-1"], source_citations: [citation] }} />);
     const link = screen.getByRole("link", { name: "Ver fuente 1" });

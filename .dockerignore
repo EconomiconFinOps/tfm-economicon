@@ -1,4 +1,7 @@
 .git
+.secrets
+.cache
+**/chat/v2/tokenizer.json
 .env
 .env.*
 **/.env

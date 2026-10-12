@@ -18,6 +18,8 @@ import urllib.request
 
 REPOSITORY = "EconomiconFinOps/tfm-economicon"
 REMOTE = f"https://github.com/{REPOSITORY}.git"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from chat_secrets import ensure_hmac
 SHA = re.compile(r"^[0-9a-f]{40}$")
 PORTS = {"COCKROACH_SQL_PORT": 0, "COCKROACH_HTTP_PORT": 1,
          "RABBITMQ_PORT": 2, "RABBITMQ_MANAGEMENT_PORT": 3, "PGVECTOR_PORT": 4,
@@ -81,7 +83,23 @@ def init(root, port_base):
                   RABBITMQ_URL=f"amqp://economicon:{values['RABBITMQ_DEFAULT_PASS']}@rabbitmq:5672/",
                   EMBEDDING_PROVIDER="mock", LLM_PROVIDER="mock", AI_EXECUTION_MODE="development")
     atomic_json(root / "secrets.json", values)
+    ensure_chat_key(root)
     atomic_json(root / "config.json", {"port_base": port_base})
+
+
+def ensure_chat_key(root):
+    path = root / "secrets.json"
+    values = json.loads(path.read_text())
+    selected = values.get("CHAT_HMAC_FILE")
+    if selected:
+        candidate = Path(selected)
+        if not candidate.is_file():
+            raise ValueError("Existing private chat key is missing; restore it before deploying")
+        ensure_hmac(candidate)
+    else:
+        values["CHAT_HMAC_FILE"] = ensure_hmac(root / "private" / "chat-hmac")
+        atomic_json(path, values)
+    return values
 
 
 def compose(release, *args, capture=False):
@@ -93,6 +111,7 @@ def compose(release, *args, capture=False):
 def prepare(root, source, sha, slot):
     if not SHA.fullmatch(sha):
         raise ValueError("Expected full lowercase commit SHA")
+    ensure_chat_key(root)
     release = root / "releases" / sha
     if release.exists():
         # Retrying a failed SHA uses its original immutable source/config.
@@ -107,7 +126,7 @@ def prepare(root, source, sha, slot):
     temporary.mkdir(parents=True, mode=0o700)
     try:
         shutil.copytree(source, temporary, dirs_exist_ok=True,
-                        ignore=shutil.ignore_patterns(".git", "node_modules", ".venv", ".env*", "__pycache__"))
+                        ignore=shutil.ignore_patterns(".git", "node_modules", ".venv", ".env*", ".secrets", "__pycache__"))
         # data-filtered Git archives extracted under our private umask have
         # 0700 directories. Docker COPY preserves those modes, preventing the
         # non-root app user from traversing its code inside the image.

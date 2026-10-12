@@ -674,15 +674,19 @@ class CollectTests(unittest.TestCase):
                     return self.respond(200, {"access_token": "tok-123", "token_type": "bearer"})
                 if self.path == "/assistant/conversations":
                     count = sum(1 for p, _, _ in outer.requests if p == "/assistant/conversations")
-                    return self.respond(201, {"id": f"conv-{count}", "title": body["title"]})
-                if self.path.endswith("/messages"):
+                    return self.respond(201, {"id": f"conv-{count}", "user_id": "operator", "title": body["title"]})
+                if self.path.endswith("/generations"):
                     if outer.mode["messages"] != 201:
                         return self.respond(outer.mode["messages"], {"detail": "boom"})
-                    return self.respond(201, {
-                        "conversation": {"id": "x"}, "user_message": {"id": "u1", "role": "user", "content": body["content"], "metadata": {}},
-                        "assistant_message": {"id": "a1", "role": "assistant", "content": "respuesta", "metadata": {"citations": ["doc#1"]}},
-                        "retrieved_context": [{"chunk_id": "doc#1", "source": "finops", "heading": "H", "distance": 0.3, "content": "texto"}],
-                    })
+                    return self.respond(202, {"operation_id": "op", "state": "completed", "attempt_count": 1})
+                self.respond(404, {})
+
+            def do_GET(self):
+                outer.requests.append((self.path, dict(self.headers), {}))
+                if self.path.endswith("/result"):
+                    return self.respond(200, {"id": "a1", "role": "assistant", "content": "respuesta",
+                        "metadata": {"citations": ["doc#1"], "retrieved_context": [
+                            {"chunk_id": "doc#1", "source": "finops", "heading": "H", "distance": 0.3, "content": "texto"}]}})
                 self.respond(404, {})
 
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -701,11 +705,11 @@ class CollectTests(unittest.TestCase):
 
     def test_each_case_uses_a_new_conversation_and_the_exact_prompt(self):
         raw = self.collect()
-        sent = [body["content"] for path, _, body in self.requests if path.endswith("/messages")]
+        sent = [body["content"] for path, _, body in self.requests if path.endswith("/generations")]
         self.assertEqual(sent, ["  Prompt uno exacto\ncon salto y espacios  \n", "Prompt dos"])
         self.assertEqual(sum(1 for p, _, _ in self.requests if p == "/assistant/conversations"), 2)
-        paths = [p for p, _, _ in self.requests if p.endswith("/messages")]
-        self.assertEqual(paths, ["/assistant/conversations/conv-1/messages", "/assistant/conversations/conv-2/messages"])
+        paths = [p for p, _, _ in self.requests if p.endswith("/generations")]
+        self.assertEqual(paths, ["/assistant/conversations/conv-1/generations", "/assistant/conversations/conv-2/generations"])
         self.assertEqual([c["answer"] for c in raw["cases"]], ["respuesta", "respuesta"])
         self.assertEqual(raw["cases"][0]["citations"], ["doc#1"])
         self.assertEqual(raw["cases"][0]["retrieved"][0]["distance"], 0.3)
@@ -713,11 +717,12 @@ class CollectTests(unittest.TestCase):
     def test_the_paths_used_are_the_ones_the_backend_actually_serves(self):
         source = (ROOT / "apps" / "backend" / "app" / "api" / "routes" / "assistant.py").read_text(encoding="utf-8")
         self.assertIn('APIRouter(prefix="/assistant"', source)
-        self.assertIn('"/conversations/{conversation_id}/messages"', source)
+        chat = (ROOT / "apps/backend/app/api/routes/chat.py").read_text(encoding="utf-8")
+        self.assertIn("/conversations/{conversation_id}/generations", chat)
         self.assertRegex(source, r'@router\.post\(\s*"/conversations"')
         tool = (ROOT / "tools" / "assistant-eval.py").read_text(encoding="utf-8")
         self.assertIn('"/assistant/conversations"', tool)
-        self.assertIn("/assistant/conversations/{conversation[", tool)
+        self.assertIn('conversation_path + "/generations"', tool)
         auth = (ROOT / "apps" / "backend" / "app" / "api" / "routes" / "auth.py").read_text(encoding="utf-8")
         self.assertIn('@router.post("/auth/login"', auth)
         self.assertIn('"/auth/login"', tool)
@@ -740,12 +745,12 @@ class CollectTests(unittest.TestCase):
         self.assertNotIn("tok-123", json.dumps(raw))
         self.assertNotIn("Authorization", json.dumps(raw))
 
-    def test_a_server_error_is_recorded_as_blocked_material_and_never_retried(self):
+    def test_a_server_error_stops_the_batch_until_the_operation_is_confirmed(self):
         self.mode["messages"] = 500
         raw = self.collect()
-        self.assertEqual([c["failure_category"] for c in raw["cases"]], ["upstream", "upstream"])
-        self.assertEqual(sum(1 for p, _, _ in self.requests if p.endswith("/messages")), 2)
-        self.assertEqual(sum(c["server_errors"] for c in raw["cases"]), 2)
+        self.assertEqual([c["failure_category"] for c in raw["cases"]], ["upstream", "previous_operation_unconfirmed"])
+        self.assertEqual(sum(1 for p, _, _ in self.requests if p.endswith("/generations")), 1)
+        self.assertEqual(sum(c["server_errors"] for c in raw["cases"]), 1)
 
     def test_status_codes_map_to_failure_categories(self):
         for status, category in ((401, "authentication"), (403, "authentication"), (404, "request"), (422, "request"), (429, "rate_limit"), (503, "upstream")):
@@ -809,12 +814,18 @@ class ScriptedOpener:
         if url.endswith("/auth/login"):
             body = {"access_token": "tok"}
         elif url.endswith("/assistant/conversations"):
-            body = {"id": "conv"}
+            body = {"id": "conv", "user_id": "operator"}
+        elif url.endswith("/generations"):
+            body = {"operation_id": "op", "state": "completed", "attempt_count": 1}
         else:
             step = self.messages.pop(0)
             if isinstance(step, Exception):
                 raise step
             body = step
+            if isinstance(step, dict) and "assistant_message" in step:
+                body = copy.deepcopy(step["assistant_message"])
+                if isinstance(body, dict) and isinstance(body.get("metadata"), dict):
+                    body["metadata"]["retrieved_context"] = step["retrieved_context"]
         payload = json.dumps(body).encode()
 
         class Response:
@@ -1097,9 +1108,9 @@ class SlowChatTests(unittest.TestCase):
 
             def do_POST(self):
                 self.rfile.read(int(self.headers.get("Content-Length", 0)))
-                if self.path.endswith("/messages"):
+                if self.path.endswith("/generations"):
                     time.sleep(1.5)
-                body = json.dumps({"access_token": "tok", "id": "conv"}).encode()
+                body = json.dumps({"access_token": "tok", "id": "conv", "user_id": "operator"}).encode()
                 with contextlib.suppress(OSError):
                     self.send_response(200)
                     self.send_header("Content-Length", str(len(body)))

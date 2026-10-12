@@ -183,7 +183,7 @@ def test_decimal_unicode_and_metadata_remain_lossless_in_preserved_diagnostic_an
     current=create(repository,operations[0][0]['question_content'],operations[0][0]['operation_id'])
     result_id=str(uuid4())
     opaque={'decimal':Decimal('12345678901234567890.000000000000000000001'),'large':9007199254740993,'text':'€ ñ 漢字 😀','nullable':None}
-    metadata={'generation':{'question_message_id':current['question_message_id']},'opaque':opaque}
+    metadata={'generation':{'v':2,'state':'completed','question_message_id':current['question_message_id']},'opaque':opaque}
     repository.complete(SCOPE,current['operation_id'],current['current_attempt_id'],{**ANSWER,'answer':'Nueva € 漢字 😀'},metadata,result_id)
     actual=summary(db)
     assert actual is not None and actual['artifact']==original['artifact']

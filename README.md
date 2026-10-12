@@ -130,6 +130,7 @@ Desde la raiz de un clon limpio, con Docker y Node instalados (en Linux o macOS,
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 # Completa en .env los secretos y opt-ins descritos en "Variables De Entorno".
 corepack pnpm install --frozen-lockfile
+corepack pnpm local:prepare
 corepack pnpm local:doctor
 docker compose --env-file .env -f docker-compose.yml up -d --build --wait
 corepack pnpm local:smoke
@@ -637,9 +638,14 @@ schema, output and margin, and rejects insufficient context rather than truncati
 ## Project Compose chat (JUP-035)
 
 Use an isolated Compose project and an external environment file populated from
-`.env.example`; the example intentionally has no usable secrets. Supply
-`CHAT_HMAC_FILE` as an absolute path to an operator-owned private file containing
-at least 32 bytes, readable by container uid 10001. It is mounted read-only in
+`.env.example`; the example intentionally has no usable secrets. For the local
+`.env`, `corepack pnpm local:prepare` creates an ignored persistent HMAC key;
+`corepack pnpm local:up` prepares it and starts Compose. Existing keys and other
+credentials are preserved. CD prepares its key in the private deployment root,
+outside releases. An explicit missing key must be restored, not silently rotated.
+For an external environment file, supply `CHAT_HMAC_FILE` as an absolute path to
+an operator-owned private file containing
+  at least 32 bytes, readable by container uid 10001. It is mounted read-only in
 backend and processor, not frontend. Choose an unused `CHAT_PRIVATE_SUBNET` and
 matching `PROCESSOR_CHAT_PRIVATE_IP`; private port 8003 is not published.
 
@@ -680,8 +686,12 @@ output tokens by default; summary reserves 10000 independently. Reduced context 
 match across both services. Do not change the shared gateway/model defaults for
 this deployment. Build and isolated runtime validation are distinct checks.
 
-The active chat bundle is `jup035/chat/v3`; the original v2 bundle is retained
-unchanged, including its pinned tokenizer reused by v3. Backend images package
+The active chat bundle is `jup035/chat/v3`; the original v2 prompt bundle is retained.
+The tokenizer is generated, not tracked in Git. Both Docker builds download the
+official pinned revision and verify its SHA256 with `apps/processor/build_tokenizer.py`.
+Local/CI tests use `corepack pnpm tokenizer:prepare` before pytest; a valid cache
+requires no network. A mismatch fails preparation and retains the previous file.
+Backend images package
 the v3 prompts and that tokenizer together. `CHAT_MAX_OUTPUT_TOKENS` accepts
 integers 1..3200 in both services, with 3200 as the approved default and maximum.
 Paris authorized this default directly on 11/10/2026, superseding the initial

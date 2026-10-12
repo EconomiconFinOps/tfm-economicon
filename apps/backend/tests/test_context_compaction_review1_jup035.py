@@ -52,7 +52,7 @@ def test_complete_context_pressure_survives_reload_without_ram_record(packet):
     row, won = repo.claim(SCOPE, row['operation_id'], 'synthetic-boot')
     assert won
     repo.complete(SCOPE, row['operation_id'], row['current_attempt_id'], ANSWER,
-        {'generation': {'question_message_id': row['question_message_id']}}, str(uuid4()))
+        {'generation': {'v':2,'state':'completed','question_message_id': row['question_message_id']}}, str(uuid4()))
     second, b = runtime(packet)
     async def exercise():
         try:

@@ -77,7 +77,10 @@ class ChatRepository:
                             raise ChatError(404,'not_found')
                         chat_history.read(c,scope)
                         return action(c)
-            except ChatError:
+            except ChatError as error:
+                if error.code in ('operation_changed','history_changed') and attempt<4:
+                    time.sleep(random.uniform(.02,.05))
+                    continue
                 raise
             except Exception as error:
                 original = getattr(error,'orig',None)
@@ -89,7 +92,8 @@ class ChatRepository:
                           and getattr(original,'sqlite_errorcode',None)==2067)
                 if unique and on_unique is not None:
                     return self._transaction(scope,on_unique)
-                if code == '40001' and attempt<4:
+                sqlite_busy = self.engine.dialect.name=='sqlite' and getattr(original,'sqlite_errorcode',None) in (5,517)
+                if (code == '40001' or sqlite_busy) and attempt<4:
                     time.sleep(random.uniform(.02,.2))
                     continue
                 # Caller resolves ambiguous commits by stable operation/result IDs.
@@ -258,8 +262,9 @@ class ChatRepository:
         def transition(c):
             row = self._row(c,scope,operation_id)
             if row['state']=='waiting':
+                before=canonical(row)
                 self._settle(row)
-                return self._write(c,scope,row)
+                return self._write(c,scope,row) if canonical(row)!=before else row
             return row
         return self._transaction(scope,transition)
 
@@ -267,6 +272,7 @@ class ChatRepository:
         attempt_id,capability = str(uuid4()),str(uuid4())
         def transition(c):
             row = self._row(c,scope,operation_id)
+            before=canonical(row)
             if row['state']=='waiting':
                 self._settle(row)
             if explicit:
@@ -275,7 +281,7 @@ class ChatRepository:
                 if row['retry_at'] is not None and self.clock()<row['retry_at']:
                     raise ChatError(409,'provider_not_ready')
             elif row['state']!='waiting' or row['private_control']['wait']['reason']=='provider_delay':
-                return self._write(c,scope,row),False
+                return (self._write(c,scope,row) if canonical(row)!=before else row),False
             if row['attempt_count']>=4:
                 row['state']='failed'
                 row['private_control']['pause_reason']='attempts_exhausted'
@@ -369,6 +375,15 @@ class ChatRepository:
             row['attempts'][-1]['outcome']='completed'
             return self._write(c,scope,row)
         return self._transaction(scope,transition)
+
+    def producer_state(self,scope,operation_id):
+        # A stream fragment needs its fence, not a parent lock or JSON history.
+        with self.engine.connect() as connection:
+            row=connection.execute(text('SELECT operation_id,state,current_attempt_id,attempt_count,revision FROM chat_operations '
+                'WHERE operation_id=:operation_id AND tenant_id=:tenant_id AND user_id=:user_id '
+                'AND conversation_id=:conversation_id'),{**scope,'operation_id':operation_id}).mappings().first()
+            if row is None: raise ChatError(404,'not_found')
+            return dict(row)
 
     def recoverable(self):
         with self.engine.connect() as c:

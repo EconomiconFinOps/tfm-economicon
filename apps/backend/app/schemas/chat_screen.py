@@ -14,6 +14,16 @@ Count = Annotated[int, Field(strict=True, ge=0)]
 class Closed(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
+    @field_validator('start_date', 'end_date', check_fields=False, mode='before')
+    @classmethod
+    def iso_date(cls, value):
+        if value is None:
+            return value
+        if type(value) is not str or len(value) != 10:
+            raise ValueError('Date requires ISO YYYY-MM-DD.')
+        if date.fromisoformat(value).isoformat() != value:
+            raise ValueError('Date requires ISO YYYY-MM-DD.')
+        return value
 
 class Period(Closed):
     start_date: date
@@ -187,6 +197,8 @@ async def read_generation(request, model):
             if isinstance(content, str) and len(content.encode('utf-8')) > 16384:
                 raise HTTPException(413, 'question_limit')
             screen = value.get('screen_context')
+            if isinstance(screen,dict) and isinstance(screen.get('datasets'),list) and len(screen['datasets'])>20:
+                raise HTTPException(413,'screen_dataset_limit')
             if len(json.dumps(screen, ensure_ascii=False, sort_keys=True,
                               separators=(',', ':'), allow_nan=False).encode('utf-8')) > 1048576:
                 raise HTTPException(413, 'screen_limit')

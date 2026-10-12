@@ -136,6 +136,9 @@ def send_message(
     if conversation is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found.")
 
+    if payload.ownership_query is None:
+        raise HTTPException(status_code=410, detail="legacy_chat_retired")
+
     try:
         database.assert_conversation_idle(conversation_id=conversation_id, tenant_id=tenant_id, user_id=current_user["id"])
     except ChatError as exc:
@@ -169,91 +172,3 @@ def send_message(
             assistant_message=assistant_message, retrieved_context=[],
         )
         return chat_history.http_response(reply.model_dump(mode='python'), status_code=201)
-
-    user_message = database.prepare_message(
-        conversation_id=conversation_id,
-        tenant_id=tenant_id,
-        user_id=current_user["id"],
-        requester_id=current_user["id"],
-        role="user",
-        content=payload.content,
-    )
-    settings = get_settings()
-    provider_name = embedding_provider.name
-    alias = getattr(embedding_provider, "alias", provider_name)
-    trace = {"tenant_id": tenant_id, "user_message_id": user_message["id"], "provider": provider_name, "alias": alias}
-    started = perf_counter()
-    try:
-        query_embedding = embedding_provider.embed(payload.content)
-        if (
-            len(query_embedding) != embedding_provider.dimension
-            or not all(math.isfinite(value) for value in query_embedding)
-            or not any(abs(value) >= 5e-7 for value in query_embedding)
-        ):
-            raise ProviderError("invalid_response")
-    except ProviderError as exc:
-        _retrieval_failed(exc.category, trace, started)
-    except Exception:
-        _retrieval_failed("transport", trace, started)
-    try:
-        retrieved_chunks = vector_store.search_chunks(
-            tenant_id, query_embedding, top_k=settings.retrieval_top_k,
-            max_distance=settings.retrieval_max_distance, provider=embedding_provider.name,
-        )
-    except Exception:
-        _retrieval_failed("vector_store", trace, started)
-    try:
-        validate_context(retrieved_chunks, tenant_id)
-    except InvalidCitation:
-        raise HTTPException(status_code=502, detail="Invalid response evidence.") from None
-    logger.info(
-        "retrieval", **trace,
-        chunk_ids=[item["chunk_id"] for item in retrieved_chunks],
-        document_ids=[item.get("document_id") for item in retrieved_chunks],
-        distances=[round(item["distance"], 4) for item in retrieved_chunks],
-        top_k=settings.retrieval_top_k, max_distance=settings.retrieval_max_distance,
-        results=len(retrieved_chunks), duration_ms=round((perf_counter() - started) * 1000, 2),
-    )
-    if not retrieved_chunks:
-        retrieval_empty_total.inc()
-    try:
-        assistant_output = assistant_service.answer(payload.content, retrieved_chunks)
-        source_citations = resolve_citations(assistant_output["citations"], retrieved_chunks, tenant_id)
-    except InvalidCitation:
-        raise HTTPException(status_code=502, detail="Invalid response evidence.") from None
-
-    assistant_message = database.prepare_message(
-        conversation_id=conversation_id,
-        tenant_id=tenant_id,
-        user_id=None,
-        requester_id=current_user["id"],
-        role="assistant",
-        content=assistant_output["content"],
-        metadata={"citations": assistant_output["citations"], "source_citations": source_citations,
-            "generation": {"question_message_id": user_message["id"]}},
-    )
-
-    try:
-        user_message, assistant_message = database.append_pair(question=user_message, assistant=assistant_message)
-    except ChatError as exc:
-        raise HTTPException(exc.status, exc.code) from None
-
-    assistant_queries_total.inc()
-
-    reply = AssistantReply(
-        conversation=ConversationRecord(**conversation),
-        user_message=user_message,
-        assistant_message=assistant_message,
-        retrieved_context=retrieved_chunks,
-    )
-    return chat_history.http_response(reply.model_dump(mode='python'), status_code=201)
-
-
-def _retrieval_failed(category: str, trace: dict, started: float) -> None:
-    category = category if category in FAILURE_CATEGORIES else "transport"
-    retrieval_failures_total.labels(category=category).inc()
-    logger.warning(
-        "retrieval_failed", **trace, category=category,
-        duration_ms=round((perf_counter() - started) * 1000, 2),
-    )
-    raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=RETRIEVAL_UNAVAILABLE) from None

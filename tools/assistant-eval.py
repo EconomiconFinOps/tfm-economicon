@@ -546,9 +546,9 @@ def write_private(path: Path, value) -> None:
     write_text(path, value if isinstance(value, str) else dumps(value))
 
 
-def request(opener, url: str, body: dict | None, headers: dict, timeout: float):
+def request(opener, url: str, body: dict | None, headers: dict, timeout: float, *, method="POST"):
     data = json.dumps(body).encode("utf-8") if body is not None else None
-    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json", **headers}, method="POST")
+    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json", **headers}, method=method)
     with opener.open(req, timeout=timeout) as response:
         return response.status, json.loads(response.read().decode("utf-8"))
 
@@ -577,18 +577,66 @@ def collect_cases(base_url: str, email: str, password: str, tenant: str, inputs:
         token = login["access_token"]
     except (*TRANSPORT, *MALFORMED) as error:
         raise EvaluationError(f"no se pudo iniciar sesión en {base}: {type(error).__name__}") from None
-    headers = {"Authorization": "Bearer " + token, "X-Tenant-Id": tenant}
+    headers = {"Authorization": "Bearer " + token, "X-Tenant-Id": tenant, "Accept": "application/json"}
     cases = []
+    blocked = False
     for item in inputs["cases"]:
         entry = {"case": item["id"], "prompt": item["prompt"], "status": None, "failure_category": None, "total_ms": None,
                  "answer": "", "citations": [], "retrieved": [], "requests": 0, "server_errors": 0}
         started = time.perf_counter()
+        operation = None
+        settled = False
+        if blocked:
+            entry["failure_category"] = "previous_operation_unconfirmed"
+            cases.append(entry)
+            continue
         try:
             entry["requests"] += 1
             _, conversation = request(opener, base + "/assistant/conversations", {"title": f"evaluacion {item['id']}"}, headers, timeout)
             entry["requests"] += 1
             started = time.perf_counter()
-            status, reply = request(opener, f"{base}/assistant/conversations/{conversation['id']}/messages", {"content": item["prompt"]}, headers, timeout)
+            from datetime import datetime, timezone
+            from uuid import uuid4
+            from urllib.parse import quote
+            conversation_path = base + "/assistant/conversations/" + quote(conversation["id"], safe="")
+            capture = item.get("screen_context") or {
+                "schema_version": "2", "screen_version": "evaluation-v2", "route": "/",
+                "tab_id": "evaluation", "source": "no-adapter",
+                "identity": {"tenant_id": tenant, "user_id": conversation["user_id"]},
+                "captured_at": datetime.now(timezone.utc).isoformat(), "selection": {}, "datasets": [],
+            }
+            status, operation = request(opener, conversation_path + "/generations",
+                {"request_id": str(uuid4()), "content": item["prompt"], "screen_context": capture}, headers, timeout)
+            identifier = operation["operation_id"]
+            if not isinstance(identifier, str) or not identifier or "/" in identifier:
+                raise ValueError("invalid operation")
+            operation_path = conversation_path + "/generations/" + quote(identifier, safe="")
+            deadline = time.monotonic() + 600
+            entry["operation_id"], entry["states"] = identifier, []
+            while True:
+                state = operation["state"]
+                entry["states"].append({"state": state, "attempt_count": operation.get("attempt_count")})
+                if state in ("completed", "failed", "cancelled", "paused"):
+                    settled = True
+                    entry["operation_state"] = state
+                    break
+                if state not in ("active", "waiting"):
+                    raise ValueError("invalid state")
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError()
+                time.sleep(min(1, remaining))
+                entry["requests"] += 1
+                _, operation = request(opener, operation_path, None, headers, min(timeout, remaining), method="GET")
+            if state != "completed":
+                entry["failure_category"] = "operation_" + state
+                entry["status"] = status
+                entry["total_ms"] = round((time.perf_counter() - started) * 1000, 3)
+                cases.append(entry)
+                continue
+            entry["requests"] += 1
+            status, message = request(opener, operation_path + "/result", None, headers, timeout, method="GET")
+            reply = {"assistant_message": message, "retrieved_context": message["metadata"]["retrieved_context"]}
             entry["total_ms"] = round((time.perf_counter() - started) * 1000, 3)
             entry["status"] = status
             message = reply["assistant_message"]
@@ -606,6 +654,12 @@ def collect_cases(base_url: str, email: str, password: str, tenant: str, inputs:
                                    "distance": r["distance"], "content": r.get("content", "")} for r in reply.get("retrieved_context", [])]
             json.dumps(entry, ensure_ascii=False).encode("utf-8")
         except (*TRANSPORT, *MALFORMED) as error:
+            # A lost acknowledgement may still have created work. Never overlap
+            # the next case until its terminal state has actually been observed.
+            if not settled and entry["requests"] >= 2 and not (
+                isinstance(error, urllib.error.HTTPError) and 400 <= error.code < 500
+            ):
+                blocked = True
             entry["answer"], entry["citations"], entry["retrieved"] = "", [], []
             status, category = failure_of(error)
             if isinstance(error, urllib.error.HTTPError):

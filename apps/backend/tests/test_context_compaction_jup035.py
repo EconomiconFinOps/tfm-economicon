@@ -70,7 +70,7 @@ def test_final_and_pending_share_transaction_and_replay_does_not_replace_control
     row, won = repo.claim(SCOPE, row['operation_id'], 'boot')
     assert won
     result_id = str(uuid4())
-    metadata = {'generation': {'question_message_id': row['question_message_id']}}
+    metadata = {'generation': {'v':2,'state':'completed','question_message_id': row['question_message_id']}}
     repo.complete(SCOPE, row['operation_id'], row['current_attempt_id'], ANSWER, metadata, result_id)
     with api[1].engine.connect() as c:
         raw = c.execute(text("SELECT dialogue_compaction FROM conversations WHERE id='alice-chat'")).scalar()
@@ -161,7 +161,7 @@ def test_chat_keeps_more_than_four_complete_pairs(api):
     records = []
     for i in range(9):
         records.extend([(f'q{i}', 'user', f'q{i}', {}), (f'a{i}', 'assistant', f'q{i}', {})])
-    install(api[1], records)
+    install(api[1], records, verified=True)
     resources = load_resources(ROOT/'chat/v3')
     context = ChatContext(api[0], resources).build(SCOPE, body())
     current = json.loads(context['messages'][-1]['content'].split('\n', 1)[1])
@@ -207,7 +207,7 @@ def test_chat_selects_maximal_byte_bounded_complete_suffix(api):
     records = []
     for i in range(9):
         records.extend([(f'q{i}', 'user', f'q{i}', {}), (f'a{i}', 'assistant', f'q{i}', {})])
-    document = install(api[1], records)
+    document = install(api[1], records, verified=True)
     for message in document['messages']:
         message['content'] = message['id']+'a'*120000
     with api[1].engine.begin() as c:

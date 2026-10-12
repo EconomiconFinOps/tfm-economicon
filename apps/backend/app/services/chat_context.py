@@ -87,7 +87,8 @@ def response_subscriptions(screen):
     selection = screen.get('selection') or {}
     filters = selection.get('filters') or {}
     selected = filters.get('subscriptions') or []
-    if not isinstance(selected, list) or any(type(item) is not str or not item.strip() or len(item) > 256 for item in selected):
+    if not isinstance(selected, list) or any(type(item) is not str or not item.strip() or len(item) > 256
+            or any(ord(char)<32 or ord(char)==127 for char in item) for item in selected):
         raise ChatError(422, 'invalid_subscription_selection')
     identifiers = sorted({item.strip() for item in selected})
     if len(identifiers) > 20:
@@ -101,7 +102,23 @@ class ChatContext:
 
     async def __call__(self, scope, payload, descriptor):
         self.resources.verify_descriptor(descriptor)
-        context=await asyncio.to_thread(self.build, scope, payload)
+        from types import SimpleNamespace
+        from app.services.summary_sql import SummarySQL, SummarySQLDeadline
+        owner=SummarySQL(self.app.state.database.engine,time.time()+30)
+        builder=copy.copy(self)
+        database=copy.copy(self.app.state.database)
+        database.engine=owner
+        builder.app=SimpleNamespace(state=SimpleNamespace(**{
+            **self.app.state._state,'database':database}))
+        worker=asyncio.create_task(asyncio.to_thread(builder.build,scope,payload))
+        try:
+            context=await asyncio.wait_for(asyncio.shield(worker),30)
+        except SummarySQLDeadline:
+            raise ChatError(503,'context_timeout') from None
+        finally:
+            owner.cancel()
+            await asyncio.gather(worker,return_exceptions=True)
+            await asyncio.to_thread(owner.close)
         protocol=descriptor.get('tool_protocol','required-documentation-v1')
         if protocol not in ('required-documentation-v1','mock-direct-v1'):
             raise ChatError(503,'tool_contract_mismatch')
@@ -187,6 +204,14 @@ class ChatContext:
                                 finally: holder.pop('response',None)
                     provider._transport=BoundedTransport()
             vector = provider.embed(question)
+            import math
+            dimension=getattr(provider,'dimension',len(vector))
+            if (not isinstance(vector,(list,tuple)) or len(vector)!=dimension
+                    or not vector or any(isinstance(value,bool) or not isinstance(value,(int,float))
+                    or not math.isfinite(value) for value in vector)
+                    or not any(abs(value)>=5e-7 for value in vector)):
+                from app.services.embedding_provider import ProviderError
+                raise ProviderError('invalid_response')
             current()
             stage='vector_query'
             from app.services.vector_store import PgVectorQueryStore
@@ -223,6 +248,9 @@ class ChatContext:
             citations = resolve_citations([item['chunk_id'] for item in chunks],chunks,scope['tenant_id'])
             evidence = [{'id':item['chunk_id'],'kind':'corpus','title':item['title'],'source':item['source'],
                          'content':item['content']} for item in chunks]
+            if holder is not None:
+                holder['retrieval_records']=[{key:item.get(key) for key in
+                    ('chunk_id','document_id','source','content','distance')} for item in chunks]
             omission = {'collection':'corpus','reason':'contiguous_context_bounded',
                         'candidate_limit':20,'omitted_neighbors':len(omitted)} if candidates else None
             return evidence, citations, omission
@@ -266,6 +294,8 @@ class ChatContext:
             effective=copy.deepcopy(context)
             effective['authorized_evidence']=initial+corpus
             effective['source_citations']=[item for item in citations if item['evidence_id'] in ids]
+            effective['retrieval_records']=[item for item in holder.get('retrieval_records',[])
+                if item['chunk_id'] in ids]
             effective['manifest'].update(evidence_ids=[item['id'] for item in effective['authorized_evidence']],
                 tool_result={'tool_call_id':identifier,'variable_tokens':counted,
                              'content_sha256':hashlib.sha256(content.encode()).hexdigest(),'omissions':omissions})
@@ -286,7 +316,7 @@ class ChatContext:
         document = self.app.state.database.fetch_dialogue_history(**scope)
         if document is None:
             raise ChatError(404,'not_found')
-        return chat_history.latest_pairs(document)
+        return chat_history.latest_pairs(document, for_model=True)
 
     def memory(self, scope, payload=None):
         """Read one scoped snapshot; derive no evidence and repair no stored state."""
@@ -332,7 +362,7 @@ class ChatContext:
         if snapshot is None:
             pairs, excluded = self.dialogue(scope)
         else:
-            pairs, excluded = chat_history.latest_pairs(snapshot.document)
+            pairs, excluded = chat_history.latest_pairs(snapshot.document, for_model=True)
         processed = snapshot.covered_pairs if snapshot is not None and meta['used'] else 0
         public = {'v': 2, 'scope': dict(scope), 'available': meta['used'], 'reason': meta['reason'],
             'coverage': {'processed_pairs': processed, 'pending_pairs': max(0, len(pairs) - 4 - processed),
@@ -347,6 +377,8 @@ class ChatContext:
 
     def build(self, scope, payload):
         screen = copy.deepcopy(payload['screen_context'])
+        if len(screen['datasets'])>20:
+            raise ChatError(413,'screen_dataset_limit')
         subscriptions = response_subscriptions(screen)
         screen_hash = hashlib.sha256(canonical(screen).encode()).hexdigest()
         snapshot_id = screen_hash[:24]

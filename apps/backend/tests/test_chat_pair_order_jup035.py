@@ -25,7 +25,7 @@ def complete_pair(api,monkeypatch,number):
     claim,won=repository.claim(SCOPE,row['operation_id'],'synthetic')
     assert won
     result_id=f'00000000-0000-4000-8000-{number:012d}'
-    metadata={'generation':{'question_message_id':row['question_message_id']},'unchanged':'value'}
+    metadata={'generation':{'v':2,'state':'completed','question_message_id':row['question_message_id']},'unchanged':'value'}
     result={**ANSWER,'answer':f'Respuesta {number}'}
     completed=repository.complete(SCOPE,row['operation_id'],claim['current_attempt_id'],result,metadata,result_id)
     assert completed['state']=='completed'
@@ -119,10 +119,12 @@ def test_different_dates_and_later_retry_keep_chronology_and_latest_answer(api):
     rows=history(api)
     assert [row['id'] for row in rows]==['old-question','original-answer','new-question','new-answer','0-late-retry']
     assert [row['created_at'] for row in rows]==sorted(row['created_at'] for row in rows)
-    recent,omitted=ChatContext(api[0],None).recent_pairs(SCOPE)
-    assert omitted==0
+    from app.db import chat_history
+    with api[1].engine.connect() as connection:
+        recent,_=chat_history.latest_pairs(chat_history.read(connection,SCOPE))
     assert [(row['question_id'],row['answer_id']) for row in recent]==[
         ('old-question','0-late-retry'),('new-question','new-answer')]
+    assert ChatContext(api[0],None).recent_pairs(SCOPE)[0]==[]
 
 
 def test_a_user_generation_reference_is_not_an_assistant_link(api):

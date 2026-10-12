@@ -121,7 +121,7 @@ def _artifact_reason(state, document, scope):
     ledger = artifact['source_refs']
     if not isinstance(ledger, list) or not ledger:
         return 'invalid_summary_sources'
-    pairs, _ = chat_history.latest_pairs(document)
+    pairs, _ = chat_history.latest_pairs(document, for_model=True)
     if len(ledger) > len(pairs):
         return 'invalid_summary_sources'
     by_id = {message['id']: message for message in document['messages']}

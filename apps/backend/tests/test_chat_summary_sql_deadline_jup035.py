@@ -1,4 +1,4 @@
-"""Own Cockroach probes with isolated conversation fixtures; no DDL or paid IO."""
+"""Disposable Cockroach probes with self-contained history; no paid IO."""
 import asyncio,os,threading,time
 from uuid import uuid4
 from sqlalchemy import create_engine,event,text
@@ -9,19 +9,32 @@ class Native:
     def __init__(self):
         url=os.environ.get('JUP035_COCKROACH_TEST_URL');assert url,'Documented own Cockroach test URL is required'
         self.engine=create_engine(url);self.inspect_engine=create_engine(url,poolclass=NullPool);self.inspector=self.inspect_engine.connect()
-        assert self.inspector.execute(text('SELECT current_database()')).scalar_one()=='economicon_jup035_mock_smoke_479b1dcb8293'
-        row=self.inspector.execute(text("SELECT id,tenant_id,user_id FROM conversations ORDER BY jsonb_array_length(dialogue_history->'messages') DESC,id LIMIT 1")).first()
-        assert row is not None,'Own prepared runtime conversation is required'
-        self.scope={'conversation_id':row[0],'tenant_id':row[1],'user_id':row[2]}
-        from app.db.chat_history import loads,dumps
+        name=self.inspector.execute(text('SELECT current_database()')).scalar_one()
+        assert name.startswith('jup035_test_'),'Use an explicitly disposable jup035_test_* database'
+        from pathlib import Path
+        import app.db.migrations
+        from app.db.migration_runner import MigrationRunner
+        MigrationRunner(self.engine,'app.db.migrations',Path(app.db.migrations.__file__).parent).run()
+        from app.db.chat_history import empty,dumps
+        from app.db.database import Database
+        self.scope={key:'native-'+str(uuid4()) for key in ('tenant_id','user_id','conversation_id')}
+        now=__import__('datetime').datetime.now(__import__('datetime').timezone.utc)
         with self.engine.begin() as connection:
-            document=loads(connection.execute(text('SELECT CAST(dialogue_history AS TEXT) FROM conversations WHERE id=:conversation_id'),self.scope).scalar_one())
-            fresh={**self.scope,'conversation_id':'native-summary-'+str(uuid4())}
-            document['identity']=fresh
+            connection.execute(text("INSERT INTO tenants VALUES (:tenant_id,'Native test',:tenant_id,'test')"),self.scope)
+            connection.execute(text("INSERT INTO users VALUES (:user_id,:email,'synthetic',:user_id,'member',:now)"),
+                {**self.scope,'email':self.scope['user_id']+'@example.invalid','now':now})
+            connection.execute(text("INSERT INTO user_tenants VALUES (:user_id,:tenant_id,'member',:now)"),{**self.scope,'now':now})
             connection.execute(text('INSERT INTO conversations(id,tenant_id,user_id,title,created_at,updated_at,dialogue_history) '
-                'SELECT :new_id,tenant_id,user_id,title,created_at,updated_at,:history FROM conversations WHERE id=:conversation_id'),
-                {**self.scope,'new_id':fresh['conversation_id'],'history':dumps(document)})
-        self.scope=fresh
+                "VALUES (:conversation_id,:tenant_id,:user_id,'Native test',:now,:now,:history)"),
+                {**self.scope,'now':now,'history':dumps(empty(self.scope))})
+        db=Database.__new__(Database);db.engine=self.engine
+        for index in range(8):
+            question_id=str(uuid4())
+            common={**self.scope,'requester_id':self.scope['user_id'],'created_at':now}
+            question={**common,'id':question_id,'role':'user','content':'Synthetic question '+str(index),'metadata':{}}
+            answer={**common,'id':str(uuid4()),'role':'assistant','content':'Synthetic answer',
+                'metadata':{'generation':{'v':2,'state':'completed','question_message_id':question_id}}}
+            db.append_pair(question=question,assistant=answer)
         self.marker='jup035-native-job-'+str(uuid4());self.other_marker='jup035-native-main-'+str(uuid4())
         self.entered=threading.Event();self.returned=threading.Event();self.driver=None;self.code=None;self.query_seconds=0
         self.listener=None;self.fired=False;self.other_connection=None;self.other_thread=None;self.other_returned=threading.Event();self.other_success=False
@@ -69,6 +82,11 @@ class Native:
             except Exception:pass
         if self.other_thread:self.other_thread.join(5)
         if self.other_connection:self.other_connection.close()
+        with self.engine.begin() as connection:
+            for table in ('chat_operations','conversations','user_tenants','users','tenants'):
+                key='user_id' if table=='user_tenants' else 'id' if table in ('users','tenants') else 'conversation_id' if table=='chat_operations' else 'id'
+                value=self.scope['user_id'] if table in ('users','user_tenants') else self.scope['tenant_id'] if table=='tenants' else self.scope['conversation_id']
+                connection.execute(text(f'DELETE FROM {table} WHERE {key}=:owned'),{'owned':value})
         self.inspector.close();self.inspect_engine.dispose();self.engine.dispose()
 
 import pytest

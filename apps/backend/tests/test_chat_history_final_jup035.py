@@ -37,7 +37,7 @@ def create(repository, content='Pregunta', retry=None):
 
 def complete(repository, operation, answer='Completa', result_id=None):
     result_id=result_id or str(uuid4())
-    metadata={'generation':{'question_message_id':operation['question_message_id']},'citations':[{'id':'synthetic'}]}
+    metadata={'generation':{'v':2,'state':'completed','question_message_id':operation['question_message_id']},'citations':[{'id':'synthetic'}]}
     result=repository.complete(SCOPE, operation['operation_id'], operation['current_attempt_id'],
         {**ANSWER,'answer':answer}, metadata, result_id)
     return result, result_id

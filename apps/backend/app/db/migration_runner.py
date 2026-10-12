@@ -24,7 +24,8 @@ class MigrationRunner:
                 module=import_module(f'{self.migration_package}.002_chat_operations')
                 module.verify(connection)
                 module=import_module(f'{self.migration_package}.003_dialogue_history')
-                module.verify(connection)
+                if not module.step_applied(connection,0):
+                    raise ValueError('Canonical history schema is missing.')
                 module=import_module(f'{self.migration_package}.004_dialogue_compaction')
                 module.verify(connection)
         except Exception:

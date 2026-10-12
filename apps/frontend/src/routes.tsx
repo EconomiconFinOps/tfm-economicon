@@ -1,4 +1,4 @@
-import { createBrowserRouter, type RouteObject } from "react-router";
+import { createBrowserRouter, Navigate, type RouteObject } from "react-router";
 import { SessionGate } from "./layouts/SessionGate";
 import { Layout, TenantScopedOutlet } from "./layouts/Layout";
 import { ExecutiveCostDashboard } from "./pages/ExecutiveCostDashboard";
@@ -8,7 +8,6 @@ import { AnomaliesPanel } from "./pages/AnomaliesPanel";
 import { RecommendationsPanel } from "./pages/RecommendationsPanel";
 import { LoginPage } from "./pages/LoginPage";
 import { IngestPage } from "./pages/IngestPage";
-import { ConversationsPage } from "./pages/ConversationsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { SystemHealthDashboard } from "./pages/SystemHealthDashboard";
 
@@ -58,7 +57,7 @@ export const routeConfig: RouteObject[] = [
             Component: TenantScopedOutlet,
             children: [
               { path: "ingest", Component: IngestPage },
-              { path: "assistant", Component: ConversationsPage },
+              { path: "assistant", element: <Navigate to="/?chat=open" replace /> },
               { path: "system-health", Component: SystemHealthDashboard },
             ],
           },

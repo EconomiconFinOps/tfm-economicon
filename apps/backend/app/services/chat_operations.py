@@ -32,6 +32,7 @@ class ChatOperations:
         self.tasks={}
         self.buffers={}
         self.scheduler=None
+        self.closed=False
         self.main_waiters=0
         from app.services.summary_service import SummaryService
         self.summary=SummaryService(self)
@@ -39,15 +40,31 @@ class ChatOperations:
             self.start()
 
     def start(self):
-        if self.scheduler is None and self.transport is not None and self.context_builder is not None:
+        if not self.closed and (self.scheduler is None or self.scheduler.done()) and self.transport is not None and self.context_builder is not None:
             self.scheduler=asyncio.create_task(self._schedule())
 
     async def close(self):
+        self.closed=True
         self.summary.begin_close()
         tasks=[task for task in [self.scheduler,*self.tasks.values()] if task is not None]
         for task in tasks: task.cancel()
         await asyncio.gather(*tasks,return_exceptions=True)
         await self.summary.close()
+        for buffer in self.buffers.values():
+            if buffer.get('expiry'): buffer['expiry'].cancel()
+        self.buffers.clear()
+
+    def _release_buffer(self,identifier,force=False):
+        buffer=self.buffers.get(identifier)
+        if buffer is None or identifier in self.tasks or buffer['subscribers']:
+            return
+        # Briefly retain the winning POST's original delivery; reconnects use SQL.
+        if buffer.get('initial_frame') and not force:
+            if not buffer.get('expiry'):
+                buffer['expiry']=asyncio.get_running_loop().call_later(1,self._release_buffer,identifier,True)
+            return
+        if buffer.get('expiry'): buffer['expiry'].cancel()
+        self.buffers.pop(identifier,None)
 
     async def _db(self,method,*args,**kwargs):
         return await asyncio.to_thread(method,*args,**kwargs)
@@ -93,10 +110,16 @@ class ChatOperations:
         if self.transport is None or self.context_builder is None:
             raise ChatError(503,'chat_not_ready')
         await self._db(self.repository.compactions.ensure_idle,scope)
-        descriptor=await asyncio.wait_for(self.transport.descriptor(),10)
+        try:
+            descriptor=await asyncio.wait_for(self.transport.descriptor(),10)
+        except TimeoutError:
+            raise ChatError(503,'processor_timeout') from None
         for retry in range(2):
             fence=await self._db(self.repository.compactions.fence,scope)
-            context=await asyncio.wait_for(self.context_builder(scope,payload,descriptor),30)
+            try:
+                context=await asyncio.wait_for(self.context_builder(scope,payload,descriptor),30)
+            except TimeoutError:
+                raise ChatError(503,'context_timeout') from None
             context['memory_fence']=fence
             try:
                 row,created=await self._db(self.repository.reserve,scope,payload,context)
@@ -209,7 +232,7 @@ class ChatOperations:
                 effective=claim['context']
                 searched=False
                 async for record in self.transport.stream(claim):
-                    current=await self.get(scope,row['operation_id'])
+                    current=await self._db(self.repository.producer_state,scope,row['operation_id'])
                     if current['state']!='active' or current['current_attempt_id']!=row['current_attempt_id']:
                         return
                     if self.clock()>=row['attempt_deadline']-5:
@@ -254,7 +277,11 @@ class ChatOperations:
                             expected_subscriptions=claim['context'].get('response_subscriptions', []))
                         result_id=str(uuid4())
                         references,citations=response_citations(candidate,effective)
+                        selected_costs={item['id'] for item in candidate['evidence'] if item['kind']=='cost_query'}
                         metadata={'response':candidate,'citations':references,'source_citations':citations,
+                            'cost_query_evidence':[item for item in effective.get('authorized_evidence',[])
+                                if item['kind']=='cost_query' and item['id'] in selected_costs],
+                            'retrieved_context':effective.get('retrieval_records',[]),
                             'generation':{'v':2,'operation_id':row['operation_id'],'attempt_id':row['current_attempt_id'],
                                 'question_message_id':row['question_message_id'],'prompt_version':claim['context']['prompt_version'],
                                 'state':'completed','input_hash':row['input_hash'],
@@ -303,14 +330,22 @@ class ChatOperations:
                 self.occupied-=1
                 self.tasks.pop(row['operation_id'],None)
             self.summary.wake()
+            self._release_buffer(row['operation_id'])
 
     async def _schedule(self):
         while True:
             await asyncio.sleep(self.interval)
             try:
                 await self.summary.recover()
+            except Exception:
+                logger.warning('chat_scheduler_diagnostic stage=summary_recovery code=recovery_unavailable')
+            try:
                 records=await self._db(self.repository.recoverable)
-                for record in records:
+            except Exception:
+                logger.warning('chat_scheduler_diagnostic stage=operation_scan code=recovery_unavailable')
+                continue
+            for record in records:
+                try:
                     scope={key:record[key] for key in ['tenant_id','user_id','conversation_id']}
                     row=await self.get(scope,record['operation_id'])
                     if row['state']=='active':
@@ -323,11 +358,11 @@ class ChatOperations:
                     row=await self._db(self.repository.reconcile,scope,row['operation_id'])
                     if row['state']=='paused':
                         self._emit(row,'paused',operation=self.public(row))
+                        self._release_buffer(row['operation_id'])
                     elif row['state']=='waiting' and row['private_control']['wait']['reason']=='local_capacity':
                         await self._try_claim(scope,row)
-            except ChatError:
-                # No database truth, no new claims. Existing producers recheck.
-                continue
+                except Exception:
+                    logger.warning('chat_scheduler_diagnostic stage=operation_recovery code=recovery_unavailable')
 
     async def stop(self,scope,identifier):
         row=await self.get(scope,identifier)
@@ -412,6 +447,8 @@ class ChatOperations:
                     return
         finally:
             buffer['subscribers'].discard(queue)
+            buffer.pop('initial_frame',None)
+            self._release_buffer(identifier)
 
 
 def service(app,active=False):

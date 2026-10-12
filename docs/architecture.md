@@ -3,17 +3,17 @@
 JUP-060 · [Trello](https://trello.com/c/alMIpBOQ) · Corte de código: **11/10/2026,
 develop a0e9a56**. Esta vista sustituye las
 descripciones históricas de billing fijo, aislamiento pendiente y citas pendientes.
-Describe código integrado; las ejecuciones citadas conservan su fecha, host y SHA.
+Addendum JUP-035 del 12/10/2026: el apartado de chat describe la rama de entrega,
+no afirma su integracion en develop. Las ejecuciones citadas conservan fecha, host y SHA.
 No certifica que un servidor esté ejecutando ahora esa versión.
 
 ## 1. Alcance y lectura
 
 Economicon es un asistente FinOps para Azure con interfaz web, API, procesamiento
 asíncrono y recuperación vectorial. El entorno reproducible es una demo con datos
-públicos/sintéticos; no conecta a una cuenta Azure real. El chat documental recupera
-contexto y devuelve una **plantilla determinista**; las consultas estructuradas
-de ownership agregan costes mediante SQL y generan evidencia determinista. El processor dispone de un
-cliente LLM, pero no compone todavía el vertical conversacional tools/RAG/LLM.
+públicos/sintéticos; no conecta a una cuenta Azure real. El chat de JUP-035
+conecta backend, processor, RAG y LLM; las consultas estructuradas de ownership
+agregan costes mediante SQL y generan evidencia determinista.
 
 En los diagramas de bloques las flechas continuas describen conexiones implementadas;
 las punteadas, capacidades opcionales o propuestas, rotuladas en cada figura.
@@ -60,60 +60,47 @@ flowchart TB
 
 ## 3. Flujos implementados y vertical objetivo
 
-### 3.1 Chat síncrono: recuperación documental y consultas de ownership
+### 3.1 Chat conversacional y ownership estructurado
 
 ```mermaid
 sequenceDiagram
-  actor U as Usuario
-  participant UI as Frontend
+  participant UI as Frontend assistant-ui
   participant B as Backend
   participant DB as CockroachDB
-  participant E as Proveedor de embeddings
+  participant P as Processor
+  participant G as LiteLLM / OpenRouter
   participant V as pgvector
-  U->>UI: Pregunta en conversación
-  UI->>B: POST /assistant/conversations/{id}/messages
-  B->>DB: Usuario, membership y propietario de conversación
-  alt ownership_query explícito
-    B->>DB: Agregación SQL por tenant, periodo, moneda y dimensiones
-    DB-->>B: Costes y procedencia
-    B->>B: Respuesta determinista y cost_evidence
-    B->>DB: Persistir mensaje de usuario tras resolver consulta
-  else Consulta documental
-  B->>DB: Persistir mensaje de usuario
-  B->>E: Embedding de pregunta (mock o LiteLLM)
-  E-->>B: Vector
-  B->>V: Tenant y provider, top_k y umbral
-  V-->>B: Chunks y documentos de la misma instantánea
-  B->>B: Plantilla determinista y validación de citas
-  end
-  B->>DB: Persistir mensaje de asistente
-  B-->>UI: Respuesta con citations o cost_evidence
-  UI-->>U: Texto y fuentes
+  UI->>B: POST /assistant/conversations/{id}/generations
+  B->>DB: Autorizacion, contexto de costes y reserva
+  B->>P: Contrato privado firmado HMAC
+  P->>G: Generacion y llamada de herramienta RAG
+  P->>B: Peticion de recuperacion autorizada
+  B->>V: Busqueda limitada por tenant
+  B-->>P: Fragmentos y procedencia
+  P->>G: Resultado de herramienta y salida estricta
+  P-->>B: Respuesta candidata
+  B->>DB: Validacion final y par atomico en historial JSONB
+  B-->>UI: Progreso, respuesta, citas y evidencia de costes
 ```
 
-La [ruta](../apps/backend/app/api/routes/assistant.py) no llama al processor ni
-a la cola. Cuando recibe `ownership_query`, usa
-[OwnershipQuestionService](../apps/backend/app/services/ownership_questions.py):
-agrega costes de ejecuciones completadas por tenant, período y moneda, con
-dimensiones permitidas y procedencia verificable. Devuelve `cost_evidence`,
-sin embeddings, recuperación documental ni llamada LLM. Los rechazos de la
-consulta (409/422) ocurren antes de persistir el mensaje de usuario. La interfaz ofrece un
-formulario explícito; no interpreta libremente lenguaje natural en SQL. Véase
-[contrato ownership](api/ownership-questions.md). Para la rama documental, [AssistantService](../apps/backend/app/services/assistant.py) muestra
-hasta tres fragmentos o indica falta de contexto. La consulta vectorial filtra
-tenant y proveedor, ordena por distancia coseno e identificador y limita con
-`RETRIEVAL_TOP_K` (1–20, defecto 4). Con LiteLLM el umbral por defecto es 0.6;
-mock no aplica umbral por defecto. Los embeddings reales requieren dimensión
-1536 y el mismo modelo que la ingesta: cambiar de proveedor exige reindexar
-en un almacén compatible, no mezclar vectores.
+La [API de operaciones](../apps/backend/app/api/routes/chat.py) admite streaming
+y seguimiento por estado. La generacion no termina al cerrarse una conexion;
+las operaciones waiting se recuperan hasta un estado terminal o pausa acotada.
+El resumen derivado conserva los mensajes originales y bloquea el envio durante
+la compresion. La [decision ADR-0019](adr/ADR-0019-conversational-runtime.md)
+describe limites de proceso unico, canal privado, almacenamiento e interfaz.
 
-[Citas](../apps/backend/app/services/citations.py) valida cada referencia contra
-chunks recuperados y tenant; devuelve documento/chunk, título, sección cuando
-puede localizarse sin ambigüedad y fragmento. Fallos de embedding/retrieval devuelven 503; referencias
-inválidas, 502. Como el mensaje de usuario se guarda antes de recuperar, un
-fallo no implica que la conversación quede sin cambios. Las evidencias de
-[recuperación](evidence/JUP-022-validation.md) y
-[citas](evidence/JUP-025-validation.md) son históricas, no nuevas llamadas de JUP-060.
+La ruta frontend `/assistant` redirige al panel nuevo. El endpoint historico
+`.../messages` rechaza la generacion de plantilla con 410. Se conserva solo su
+contrato explicito `ownership_query`, que llama a
+[OwnershipQuestionService](../apps/backend/app/services/ownership_questions.py);
+no interpreta lenguaje natural como SQL. Las respuestas historicas se muestran
+pero no alimentan el contexto generativo ni nuevos resumenes.
+
+`tools/assistant-eval.py collect` evalua operaciones del chat nuevo en serie,
+con conversaciones nuevas y recuperacion persistida. Los criterios y juicios
+humanos de JUP-070 permanecen separados. El modo mock comprueba el transporte
+y los guardrails, no acredita semantica OpenRouter real.
 
 ### 3.2 Ingesta documental asíncrona
 
@@ -192,7 +179,7 @@ Es cumplimiento de la política, no calidad demostrada de las etiquetas.
 [JUP-068](validation/JUP-068-business-metrics.md) calcula métricas offline a partir
 de evidencia declarada; no prueba adopción, ahorro realizado ni un piloto real.
 
-### 3.4 Vertical objetivo: contratos pendientes de integración
+### 3.4 Ampliaciones de herramientas FinOps
 
 ```mermaid
 flowchart LR
@@ -208,15 +195,15 @@ flowchart LR
   V -.-> UI
 ```
 
-**Todas las conexiones de esta figura son el objetivo de integración, no un
-recorrido implementado.** Los contratos de
+Esta figura conserva el objetivo general de herramientas FinOps. El recorrido
+de chat y RAG ya se describe en 3.1; no implica implementar todas las herramientas.
+Los contratos de
 [tools](architecture/finops-agent-tools.md) y
 [respuesta/guardrails](architecture/finops-response-guardrails.md) establecen
 que la aplicación autoriza y ejecuta: el modelo no elige libremente tenant,
-SQL, credenciales o acciones. No existe un registro ejecutor de tools FinOps
-en el processor de esta base. Recuperación, citas, AgentRuntime y gateway
-son piezas implementadas; conectarlas al chat requiere trabajo y validación
-propios. Ni CI verde ni una prueba del proxy certifican ese vertical.
+SQL, credenciales o acciones. JUP-035 expone recuperacion documental controlada;
+otras herramientas siguen su propio alcance. Ni CI verde ni una prueba del
+proxy certifican la calidad financiera del recorrido.
 
 ## 4. Que papel tienen RabbitMQ, CockroachDB y pgvector
 

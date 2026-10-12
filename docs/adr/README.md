@@ -48,6 +48,13 @@ benchmarks de ADR-0002 conservan su fecha; no son precios actuales.
 | [0017 · Embedding de pregunta y clave propia](ADR-0017-backend-query-embedding-own-key.md) | 02/10 · Proposed | Usar el mismo modelo de ingesta y pregunta, separar credenciales por servicio y fijar ranking/umbral reproducibles; mock no acredita semántica real. | JUP-022; [PR #67](https://github.com/EconomiconFinOps/tfm-economicon/pull/67) integrada el 04/10 UTC; [diseño archivado](../../openspec/changes/archive/2026-10-03-jup-022-semantic-retrieval/design.md). Implementación integrada, ratificación del ADR pendiente. |
 | [0018 · CD privado DockerServer](ADR-0018-private-dockerserver-cd.md) | 03/10 · Proposed | Agente pull con CI y smoke antes de promover; runner público privilegiado descartado en servidor compartido. | JUP-052; [PR #73](https://github.com/EconomiconFinOps/tfm-economicon/pull/73) en revisión y [evidencia](../evidence/JUP-052-validation.md). No acredita producción ni aceptación independiente. |
 
+### Chat conversacional - JUP-035
+
+[ADR-0019](ADR-0019-conversational-runtime.md) registra canal privado HMAC,
+historial JSONB, assistant-ui y tokenizer descargado con revision/hash fijos.
+Aceptacion de Paris del 12/10/2026 para esta entrega; no acredita merge ni
+validacion humana.
+
 ### Decisiones ya explicadas fuera de un ADR
 
 Estas fuentes se reutilizan; no se copian en registros nuevos ni se atribuye a sus
