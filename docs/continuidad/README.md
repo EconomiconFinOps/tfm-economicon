@@ -1,8 +1,8 @@
 # Continuidad del proyecto
 
 12/10/2026 — [PR121: recuperación y aceptación real](chat-conversacional.md):
-planificador corregido, matriz real confirma auto sin esquema; full28 y control
-de llamadas paralelas en validación. [Evidencia](../evidence/jup-035-pr121-live-20261012.md).
+planificador corregido; matriz auto real positiva, full28 con22 completed/6 failed
+y fallo de evidencia en envío de navegador. Aceptación NO PASS. [Evidencia](../evidence/jup-035-pr121-live-20261012.md).
 
 ## Parche auto de PR120 — 12/10/2026
 

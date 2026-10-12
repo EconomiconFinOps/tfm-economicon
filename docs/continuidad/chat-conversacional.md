@@ -1,13 +1,20 @@
-## PR121: recuperación y aceptación real — 12/10/2026
+## PR121: scheduler corregido, aceptación real NO PASS — 12/10/2026
 
-Continuación de la revisión de PR121 autorizada con «Hazlo». Corregido el
-planificador ante excepciones ordinarias; regresiones de recuperación y cierre
-pasan. La matriz real con el prompt del producto confirma una búsqueda con auto
-sin esquema frente a ninguna con auto estricto. La primera full28 detecta
-llamadas múltiples: se añade parallel_tool_calls=false, validación real final
-en curso. Backend22+62 PASS en suites distintas; processor65 PASS.
-[Informe y límites](../evidence/jup-035-pr121-live-20261012.md). Este corte sustituye
-el NOT_RUN de matriz/navegador; no declara aceptación semántica ni reviews oficiales.
+Continuación de «PR-121 corresponde a la orden de trabajo, verifica lo que se ha
+hecho y si solventa los problemas reportados por Paris», autorizada con «Hazlo».
+Scheduler corregido ante excepciones ordinarias; cancelación y recuperación de
+operaciones probadas: backend22+62 PASS en suites disjuntas. Matriz real confirma
+una búsqueda con auto sin esquema frente a ninguna con auto estricto. Full28:
+22 completed/6 failed; cinco llamadas múltiples, un evidence_membership.001
+completa pero no resuelve la aritmética sintética. No equivalen a22 aprobadas.
+
+Ensayo parallel_tool_calls=false devuelve404; retirado del código y runtime.
+El código funcional final coincide con la full28:75f4f41 más scheduler. Navegador
+reabre historial correctamente en localhost; envío de saludo falla validación
+de evidencia tras25 deltas, sin guardar parciales. HTTP LAN requiere contexto
+seguro. Delta observado en claves vigentes≈0.08035USD, sin modificar límites.
+[Informe y siguientes pasos](../evidence/jup-035-pr121-live-20261012.md).
+Sustituye NOT_RUN anterior, sin declarar aceptación ni reviews oficiales.
 
 ## Backend corregido y suite verde — 12/10/2026
 
