@@ -8,6 +8,7 @@ from pathlib import Path
 from sqlalchemy import text
 import pytest
 from app.agents.schemas import FinOpsResponse
+from app.core.chat_resources import decision_schema,sha
 from test_chat_private_jup035 import private,signed,claim
 from test_chat_resources_jup035 import resources
 from test_chat_summary_resources_jup035 import summary_bundle
@@ -24,6 +25,7 @@ def main_context(application):
         'financial_metrics_allowed':False,'tool_protocol':'structured-documentation-v3','manifest':{
         'prompt_version':r.prompt_version,'tokenizer_sha256':r.tokenizer_sha256,'response_schema_sha256':r.response_schema_sha256,
         'input_contract_sha256':m['input_contract_sha256'],'assembler_sha256':m['assembler_sha256'],'variable_tokens':count,
+        'decision_schema_sha256':sha(canonical(decision_schema({'messages':messages})).encode()),
         'context_budget':r.context_budget}}
 
 def claims(session,application,count):

@@ -412,7 +412,7 @@ class ChatContext:
         used_payload = summary.get('payload') if summary['used'] else None
         def measure(messages,current):
             counted=self.resources.count_messages(messages, financial_metrics_allowed=financial_metrics_allowed, authorized_evidence=authorized)
-            manifest=self.resources.metadata(counted)
+            manifest=self.resources.metadata(counted,messages)
             manifest.update(summary=summary,essential_tokens=0,screen_snapshot_sha256=screen_hash,
                 omissions=current['omissions'],evidence_ids=[item['id'] for item in authorized])
             probe={'prompt_version':self.resources.prompt_version,'messages':messages,'manifest':manifest,
@@ -447,7 +447,7 @@ class ChatContext:
                 high = middle-1
         messages,current = assemble(low,retained_recent,used_payload)
         counted = self.resources.count_messages(messages, financial_metrics_allowed=financial_metrics_allowed, authorized_evidence=authorized)
-        manifest = self.resources.metadata(counted)
+        manifest = self.resources.metadata(counted,messages)
         manifest.update(summary=summary,essential_tokens=essential_tokens,screen_snapshot_sha256=screen_hash,omissions=current['omissions'],
                         evidence_ids=[item['id'] for item in authorized])
         context = {'prompt_version':self.resources.prompt_version,'messages':messages,'manifest':manifest,

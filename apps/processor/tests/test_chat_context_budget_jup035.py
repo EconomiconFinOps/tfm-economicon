@@ -10,6 +10,7 @@ from tokenizers import Tokenizer
 
 from test_chat_private_jup035 import private,signed,claim
 from test_chat_resources_jup035 import resources,canonical,digest
+from app.core.chat_resources import decision_schema
 
 
 async def exercise(resources,change=None,large=False,recount=False):
@@ -31,6 +32,7 @@ async def exercise(resources,change=None,large=False,recount=False):
                  'manifest':{'prompt_version':version,'tokenizer_sha256':manifest['tokenizer']['sha256'],
                     'response_schema_sha256':manifest['response_schema_sha256'],
                     'input_contract_sha256':manifest['input_contract_sha256'],'assembler_sha256':manifest['assembler_sha256'],
+                    'decision_schema_sha256':digest(canonical(decision_schema({'messages':messages}))),
                     'variable_tokens':counted,'context_budget':application.state.chat_resources.context_budget}}
         if change: change(context)
         if recount:

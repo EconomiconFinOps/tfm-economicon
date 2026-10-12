@@ -86,6 +86,53 @@ def _literals(text):
     return {Decimal(item.replace('−','-').replace(',','.')) for item in found}
 
 
+
+def source_choices(context):
+    try: question=question_text(context)
+    except CalculationError: return [],['']
+    numbers=set()
+    for value in _literals(question):
+        text=format(value,'f')
+        if '.' in text:text=text.rstrip('0').rstrip('.')
+        if re.fullmatch(OPERAND,text):numbers.add(text)
+    units={''}
+    units.update(token for token in re.findall(r'[A-Za-zÀ-ÿ€$£¥%]+(?:/[A-Za-zÀ-ÿ€$£¥%]+)*',question)
+                 if len(token)<=32)
+    if len(numbers)>128 or len(units)>128:return [],['']
+    return sorted(numbers),sorted(units)
+
+
+
+def validate_contextual_plan(context, plan):
+    validate_plan(plan)
+    if not plan:return plan
+    numbers,units=source_choices(context)
+    if not numbers:raise CalculationError('Calculation literal absent from question.')
+    for step in plan:
+        for operand in (step['left'],step['right']):
+            if 'literal' in operand:
+                if operand['literal'] not in numbers:raise CalculationError('Calculation literal absent from question.')
+                if operand['unit'] not in units:raise CalculationError('Calculation unit absent from question.')
+    return plan
+
+
+def contextual_decision_schema(context, base):
+    import copy
+    schema=copy.deepcopy(base)
+    numbers,units=source_choices(context)
+    plan=copy.deepcopy(PLAN_SCHEMA)
+    if not numbers:
+        plan['maxItems']=0
+    else:
+        for side in ('left','right'):
+            literal=plan['items']['properties'][side]['anyOf'][0]['properties']
+            literal['literal']['enum']=numbers
+            literal['unit']['enum']=units
+    schema['properties']['calculations']=plan
+    for branch in schema['anyOf']:branch['properties']['calculations']=copy.deepcopy(plan)
+    return schema
+
+
 def _display(value):
     rounded=value.quantize(Decimal('0.000001'))
     raw=format(rounded,'f').rstrip('0').rstrip('.') if '.' in format(rounded,'f') else format(rounded,'f')
@@ -93,7 +140,7 @@ def _display(value):
 
 
 def calculate(context, plan):
-    validate_plan(plan)
+    validate_contextual_plan(context,plan)
     if not plan: return []
     question=question_text(context)
     literals=_literals(question)

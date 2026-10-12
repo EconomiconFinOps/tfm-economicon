@@ -2,6 +2,7 @@
 import copy
 import importlib.util
 import sys
+import json
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,47 @@ def test_decision_schema_and_backend_validator_reject_invalid_branches():
                   {'action':'search','query':'a','tenant':'other','calculations':[]}):
         with pytest.raises(ResponseValidationError): _validate(value,DECISION_SCHEMA,DECISION_SCHEMA)
         with pytest.raises(ValueError): validate_decision(value)
+
+
+def test_contextual_decision_schema_enforces_exact_source_enum_and_disabled_plan():
+    from app.core.chat_resources import decision_schema,validate_decision
+    context={'messages':[{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'73 EUR/día y 20 EUR/día.'})}]}
+    schema=decision_schema(context)
+    value={'action':'none','query':None,'calculations':[{'operator':'subtract',
+        'left':{'literal':'73','unit':'EUR/día'},'right':{'literal':'20','unit':'EUR/día'}}]}
+    _validate(value,schema,schema)
+    for operand in ({'literal':'100','unit':'EUR/día'},{'literal':'73','unit':'EUR'}):
+        value['calculations'][0]['left']=operand
+        with pytest.raises(ResponseValidationError):_validate(value,schema,schema)
+        with pytest.raises(ValueError):validate_decision(value,context)
+    disabled=decision_schema({'messages':[]})
+    with pytest.raises(ResponseValidationError):_validate(value,disabled,disabled)
+
+
+def test_contextual_schema_hash_and_full_token_accounting_match_both_services():
+    from dataclasses import replace
+    from app.core.chat_resources import load_resources,decision_schema
+    from app.schemas.chat import canonical
+    from app.db.chat_repository import ChatError
+    root=Path(__file__).parents[2]/'processor/app/agents/prompt_resources/jup035/chat/v3'
+    backend=load_resources(root,root.parent/'v2/tokenizer.json')
+    path=Path(__file__).parents[2]/'processor/app/core/chat_resources.py'
+    spec=importlib.util.spec_from_file_location('processor_counted_decision',path)
+    module=importlib.util.module_from_spec(spec);sys.modules[spec.name]=module;spec.loader.exec_module(module)
+    processor=module.ChatResources(backend.prompt_version,backend.system,'', '',backend.schema_sha256,
+        backend.manifest_bytes,backend._tokenizer)
+    messages=[{'role':'system','content':backend.system},{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({
+        'question':'Importes EUR/día '+', '.join(str(i) for i in range(64))})}]
+    context={'messages':messages}
+    schema=decision_schema(context);final_schema=provider_response_schema()
+    assert schema==module.decision_schema(context)
+    assert backend.count_messages(messages)==processor.check_messages(messages,final_schema)
+    assert backend.metadata(backend.count_messages(messages),messages)['decision_schema_sha256']==module.sha(module.canonical(schema))
+    required=sum(backend.count(canonical(value)) for value in (messages,final_schema,schema))+1024+3200
+    assert required<backend.context_budget['context_tokens']
+    limited={**backend.context_budget,'context_tokens':required-1}
+    with pytest.raises(ChatError):replace(backend,context_budget=limited).count_messages(messages)
+    with pytest.raises(module.TokenBudgetExceeded):replace(processor,context_budget=limited).check_messages(messages,final_schema)
 
 
 def candidate(evidence=()):

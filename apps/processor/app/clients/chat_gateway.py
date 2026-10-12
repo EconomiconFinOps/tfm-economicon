@@ -267,11 +267,11 @@ class ChatGateway:
                 'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True}}
             # Both phases use structured output. No native tools or fabricated
             # assistant/tool messages are sent to the provider.
-            from app.core.chat_resources import DECISION_SCHEMA
+            from app.core.chat_resources import decision_schema
             deciding=tool_choice=='auto'
             payload['response_format']={'type':'json_schema','json_schema':{
                 'name':'DocumentationDecision' if deciding else 'FinOpsResponse','strict':True,
-                'schema':DECISION_SCHEMA if deciding else chat_provider_schema(
+                'schema':decision_schema(context) if deciding else chat_provider_schema(
                     financial_metrics_allowed=context.get('financial_metrics_allowed'),
                     authorized_evidence=context.get('authorized_evidence', []))}}
             req=request.Request(self.client.base_url+'/chat/completions',data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode(),
@@ -314,7 +314,7 @@ class ChatGateway:
                                     yield {'type':'error','status':502,'category':'incomplete'}
                                     return
                                 if finish!='stop': raise ValueError('Incomplete structured decision.')
-                                decision=validate_decision(complete_json(''.join(candidate)))
+                                decision=validate_decision(complete_json(''.join(candidate)),context)
                                 if decision['action']=='none' and not decision['calculations']:
                                     yield {'type':'decision','usage':usage}
                                 else:

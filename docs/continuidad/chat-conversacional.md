@@ -1,5 +1,17 @@
 ## PR121: contrato estructurado autorizado en validación — 12/10/2026
 
+## Schema contextual (2026-10-12)
+
+99d9b47 elimino la unidad redundante en referencias; el foco027 siguio rechazando
+una unidad literal ausente del input y017 tuvo EOF remoto. Se conserva el NO PASS.
+La decision ahora enumera numeros y tokens de unidad de la pregunta, con limite128
+por conjunto; sin operandos o con exceso se deshabilita el plan. Gateway y backend
+validan esos limites localmente, y manifiesto/conteo incluyen el schema efectivo.
+121 pruebas processor y48 backend pasan, con comprobacion cruzada independiente
+de schema/hash/conteo. Tres cancelaciones de socket stalled en Windows pendientes
+de contraste Linux sin modificar sus deadlines. Nueva campaña real pendiente.
+
+
 ## Correccion de referencias aritmeticas (2026-10-12)
 
 Los focos reales 017/027 de80393b8 fallaron antes de responder; fab76da incorpora

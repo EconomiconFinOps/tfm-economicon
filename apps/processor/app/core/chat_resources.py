@@ -28,7 +28,7 @@ TOKENIZER = {
 }
 BUDGETS = {'variable_tokens':8192, 'wrapper_margin_tokens':1024,
            'output_tokens':3200, 'model_context_tokens':1048576}
-from app.core.chat_calculations import PLAN_SCHEMA, validate_plan, calculate
+from app.core.chat_calculations import PLAN_SCHEMA, validate_plan, calculate, contextual_decision_schema, validate_contextual_plan
 
 DECISION_SCHEMA = {'type':'object','properties':{
     'action':{'type':'string','enum':['none','search']},'calculations':PLAN_SCHEMA,
@@ -40,10 +40,15 @@ DECISION_SCHEMA = {'type':'object','properties':{
               'required':['action','query','calculations'],'additionalProperties':False}]}
 
 
-def validate_decision(value):
+def decision_schema(context):
+    return contextual_decision_schema(context,DECISION_SCHEMA)
+
+
+def validate_decision(value, context=None):
     if not isinstance(value,dict) or set(value)!={'action','query','calculations'}:
         raise ValueError('Invalid decision fields.')
     validate_plan(value['calculations'])
+    if context is not None:validate_contextual_plan(context,value['calculations'])
     if value['action']=='none' and value['query'] is None:
         return value
     if (value['action']=='search' and isinstance(value['query'],str)
@@ -69,7 +74,8 @@ ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-passage-required-2048-v1',
-    arithmetic='decimal-plan-12-typed-operands-inherited-units-slots-v2')
+    arithmetic='decimal-plan-12-typed-operands-inherited-units-slots-v2',
+    decision_values='source-number-unit-enums-128-disable-on-overflow-v1')
 
 
 def continuation_messages(context, assistant, result):
@@ -138,7 +144,7 @@ class ChatResources:
                for message in messages[1:]):
             raise ValueError('Invalid variable roles.')
         variable = self.count(canonical(messages[1:]).decode('utf-8'))
-        total = self.count(canonical(messages).decode('utf-8')) + self.count(canonical(schema).decode('utf-8')) + self.count(canonical(DECISION_SCHEMA).decode('utf-8'))
+        total = self.count(canonical(messages).decode('utf-8')) + self.count(canonical(schema).decode('utf-8')) + self.count(canonical(decision_schema({"messages":messages})).decode('utf-8'))
         if total + 1024 + self.context_budget['output_tokens'] > self.context_budget['context_tokens']:
             raise TokenBudgetExceeded('Token budget exceeded.')
         return variable
@@ -149,7 +155,7 @@ class ChatResources:
         sources=context.get('authorized_evidence',[])+json.loads(result['content'])['evidence']
         schema=chat_provider_schema(financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=sources)
         variable=self.count(canonical(messages[1:]).decode('utf-8'))
-        total=self.count(canonical(messages).decode('utf-8'))+self.count(canonical(schema).decode('utf-8'))+self.count(canonical(DECISION_SCHEMA).decode('utf-8'))
+        total=self.count(canonical(messages).decode('utf-8'))+self.count(canonical(schema).decode('utf-8'))+self.count(canonical(decision_schema({"messages":messages})).decode('utf-8'))
         if total+1024+self.context_budget['output_tokens']>self.context_budget['context_tokens']:
             raise TokenBudgetExceeded('Tool context token limit.')
         if variable!=result['variable_tokens']: raise ValueError('Tool count mismatch.')
@@ -194,6 +200,7 @@ class ChatResources:
                     'response_schema_sha256':self.response_schema_sha256,
                     'input_contract_sha256':manifest['input_contract_sha256'],
                     'assembler_sha256':manifest['assembler_sha256'],
+                    'decision_schema_sha256':sha(canonical(decision_schema(context))),
                     'variable_tokens':counted, 'context_budget':self.context_budget}
         if not isinstance(declared, dict) or any(type(declared.get(key)) is not type(value)
                                                 or declared.get(key) != value for key, value in expected.items()):

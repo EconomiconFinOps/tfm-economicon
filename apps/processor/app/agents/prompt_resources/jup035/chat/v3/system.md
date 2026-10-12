@@ -280,3 +280,7 @@ datos originales, explicar el significado y la conclusion sin recomputarlos.
 No menciones estos marcadores ni el mecanismo al usuario. Usa cada referencia
 solo para la magnitud correspondiente a sus operandos y unidades. Si la pregunta
 es conceptual o no hay calculos posibles, calculations=[] y ningun marcador.
+El schema de decision enumera los numeros y tokens de unidad de la pregunta.
+Escoge solo esas opciones exactas. No normalices singular/plural ni inventes
+constantes; una referencia hereda sus unidades. Si el schema no permite un plan,
+devuelve calculations=[] y explica que faltan datos para un calculo sustentado.

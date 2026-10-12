@@ -15,8 +15,8 @@ TOKENIZER_SHA = '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82
 TOKENIZER_REVISION = 'a66456a59f21345d1e5e586345c448a9106d29d7'
 BASE_SHA = 'ad44df5f061f4f128b66df1e7720b270b594846adc206fa5d7b85ed2c0ced93b'
 INPUT_SHA = 'a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42'
-ASSEMBLER_SHA = 'f06d8ab1e440686e4080c6db332915e9b9e70becf25cceed14c2f08fd37dd27a'
-from app.core.chat_calculations import PLAN_SCHEMA, validate_plan, calculate
+ASSEMBLER_SHA = '90b905ffae98a26928a2459371ae65237ed8f5a2894c582d67b05b55c0c79e69'
+from app.core.chat_calculations import PLAN_SCHEMA, validate_plan, calculate, contextual_decision_schema, validate_contextual_plan
 
 DECISION_SCHEMA = {'type':'object','properties':{
     'action':{'type':'string','enum':['none','search']},'calculations':PLAN_SCHEMA,
@@ -28,10 +28,15 @@ DECISION_SCHEMA = {'type':'object','properties':{
               'required':['action','query','calculations'],'additionalProperties':False}]}
 
 
-def validate_decision(value):
+def decision_schema(context):
+    return contextual_decision_schema(context,DECISION_SCHEMA)
+
+
+def validate_decision(value, context=None):
     if not isinstance(value,dict) or set(value)!={'action','query','calculations'}:
         raise ValueError('Invalid decision fields.')
     validate_plan(value['calculations'])
+    if context is not None:validate_contextual_plan(context,value['calculations'])
     if value['action']=='none' and value['query'] is None:
         return value
     if (value['action']=='search' and isinstance(value['query'],str)
@@ -71,17 +76,18 @@ class BackendChatResources:
     def count_messages(self, messages, *, financial_metrics_allowed=False, authorized_evidence=None):
         variable = self.count(canonical(messages[1:]))
         effective = provider_response_schema(financial_metrics_allowed=financial_metrics_allowed, authorized_evidence=authorized_evidence)
-        total = self.count(canonical(messages)) + self.count(canonical(effective)) + self.count(canonical(DECISION_SCHEMA))
+        total = self.count(canonical(messages)) + self.count(canonical(effective)) + self.count(canonical(decision_schema({"messages":messages})))
         if total + 1024 + self.context_budget['output_tokens'] > self.context_budget['context_tokens']:
             from app.db.chat_repository import ChatError
             raise ChatError(413, 'context_token_limit')
         return variable
 
-    def metadata(self, counted):
+    def metadata(self, counted, messages):
         manifest = json.loads(self.manifest_bytes)
         return {'prompt_version':self.prompt_version, 'tokenizer_sha256':TOKENIZER_SHA,
                 'response_schema_sha256':manifest['response_schema_sha256'],
                 'input_contract_sha256':INPUT_SHA, 'assembler_sha256':ASSEMBLER_SHA,
+                'decision_schema_sha256':sha(canonical(decision_schema({'messages':messages})).encode()),
                 'variable_tokens':counted, 'context_budget':dict(self.context_budget)}
 
     def verify_descriptor(self, descriptor):

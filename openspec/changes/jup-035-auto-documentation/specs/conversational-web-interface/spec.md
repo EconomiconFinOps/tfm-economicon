@@ -200,6 +200,11 @@ el mismo resultado. Ningun calculo SHALL conferir evidencia ni autoridad financi
 #### Scenario: Operandos, unidades y limites
 - **WHEN** un plan usa operandos ausentes, referencias futuras, unidades incompatibles, division por cero, mas de12 pasos o magnitudes fuera del limite
 - **THEN** SHALL rechazarlo sin inferencia adicional ni reparacion; SHALL permitir suma/resta, producto con al menos un operando adimensional, division compatible, porcentaje y comparaciones estrictas/inclusivas entre unidades iguales
+
+#### Scenario: Valores de decision vinculados a la pregunta
+- **WHEN** se construye el schema de decision
+- **THEN** SHALL enumerar hasta128 literales decimales canonicos y128 tokens textuales de unidad de la pregunta, incluyendo simbolos y compuestos con barra, mas la unidad vacia; sin numeros o al superar esos limites SHALL exigir calculations vacio
+- **AND** gateway y backend SHALL validar localmente los mismos enums y el plan deshabilitado aunque el proveedor ignore el schema; el manifiesto SHALL incluir el hash del schema efectivo y ambos servicios SHALL contar ese mismo schema completo
 - **AND** SHALL conservar operandos exactos en la ecuacion visible, comparar antes de redondear y marcar con aproximacion los resultados redondeados a seis decimales; SHALL limitar precision y magnitud, sin interpretar exponentes ni separadores de miles ambiguos
 
 #### Scenario: Proyeccion de ecuaciones y streaming

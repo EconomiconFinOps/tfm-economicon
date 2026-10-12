@@ -179,3 +179,40 @@ def test_gateway_calculation_diagnostic_exposes_closed_rule_only(caplog):
 def test_typed_reference_rejects_extra_units_mixed_branches_and_invalid_indices(operand):
     plan=[step(),{'left':operand,'right':{'literal':'20','unit':'EUR'},'operator':'subtract'}]
     with pytest.raises(ValueError):calculate(context(),plan)
+
+
+def test_contextual_schema_enumerates_source_literals_and_complete_unit_tokens():
+    from app.core.chat_resources import decision_schema
+    initial=context('Ejemplo: 73 EUR/día y 20 EUR/día. Variación 5 %.')
+    schema=decision_schema(initial)
+    literals=schema['properties']['calculations']['items']['properties']['left']['anyOf'][0]['properties']
+    assert literals['literal']['enum']==['20','5','73']
+    assert 'EUR/día' in literals['unit']['enum'] and '%' in literals['unit']['enum']
+    assert 'EUR' not in literals['unit']['enum'] and 'EUR/day' not in literals['unit']['enum']
+    value={'action':'none','query':None,'calculations':[step('73','20','subtract','EUR/día','EUR/día')]}
+    validate_decision(value,initial)
+    for operand in [{'literal':'100','unit':'EUR/día'},{'literal':'73','unit':'EUR/day'}]:
+        value['calculations'][0]['left']=operand
+        with pytest.raises(ValueError):validate_decision(value,initial)
+
+
+def test_contextual_source_limit_disables_plan_without_inventing_values():
+    from app.core.chat_resources import decision_schema
+    assert decision_schema(context('No hay números.'))['properties']['calculations']['maxItems']==0
+    assert decision_schema(context(' '.join(str(i) for i in range(129))))['properties']['calculations']['maxItems']==0
+
+
+@pytest.mark.parametrize('question,plan',[
+    ('73 EUR/día y 20 EUR/día',[step('73','20','subtract','EUR','EUR')]),
+    ('73 EUR y 20 EUR',[step('73.0','20')]),
+    (' '.join(str(i) for i in range(129)),[step('73','20','subtract','','')]),
+])
+def test_provider_cannot_bypass_contextual_enums_or_disabled_plan(monkeypatch,question,plan):
+    decision={'action':'none','query':None,'calculations':plan}
+    initial=context(question)
+    with pytest.raises(ValueError):calculate(initial,plan)
+    gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(decision)})])
+    async def exercise():return [record async for record in gateway(initial,time.time()+60)]
+    records=asyncio.run(exercise())
+    assert records[-1]['type']=='error' and len(requests)==1
+    assert not any(record['type'] in ('tool_call','candidate','delta') for record in records)

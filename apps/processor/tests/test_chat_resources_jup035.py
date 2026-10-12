@@ -23,14 +23,15 @@ INPUT_CONTRACT={'version':2,'public_fields':['request_id','content','screen_cont
 ASSEMBLER_CONTRACT={'version':2,'roles':['system','user-summary-optional','user-current'],
                     'summary_label':'UNTRUSTED_DIALOGUE_SUMMARY','current_label':'UNTRUSTED_CURRENT_CONTEXT',
                     'serialization':'utf8-sorted-keys-significant-arrays','escape':'json-controls-angle-brackets'}
-from app.core.chat_resources import DECISION_SCHEMA
+from app.core.chat_resources import DECISION_SCHEMA, decision_schema
 ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_schema=copy.deepcopy(DECISION_SCHEMA),
     continuation_roles=['user-untrusted-retrieval'], max_searches=1,
     max_generations=2, decision_format='strict-none-search', final_format='strict-finops',
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-passage-required-2048-v1',
-    arithmetic='decimal-plan-12-typed-operands-inherited-units-slots-v2')
+    arithmetic='decimal-plan-12-typed-operands-inherited-units-slots-v2',
+    decision_values='source-number-unit-enums-128-disable-on-overflow-v1')
 
 
 def canonical(value): return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
@@ -159,6 +160,7 @@ def test_financial_authority_control_is_required_and_strict_boolean():
         'response_schema_sha256': resources.response_schema_sha256,
         'input_contract_sha256': declared['input_contract_sha256'],
         'assembler_sha256': declared['assembler_sha256'],
+        'decision_schema_sha256': digest(canonical(decision_schema({'messages':messages}))),
         'variable_tokens': resources.check_messages(messages, chat_provider_schema()),
         'context_budget': resources.context_budget}}
     with pytest.raises(ValueError):
