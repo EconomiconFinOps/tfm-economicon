@@ -1,3 +1,18 @@
+## Batería real completa PR121 — 12/10/2026
+
+Origen: «Haz la batería real completa» y «sí» a extender claves una hora con
+límites intactos. Código e56562f / HEAD documental e1374cf;28/28 ejecutados,
+23completed y5failed (005/012/022/027/028: native_multiple_calls). Un intento
+por caso;23 finales con un par persistido,5 fallidos sin mensajes parciales.
+Sin HTTP400. Contraste manual:010 incompleto,011 citas sin soporte para reglas
+owner/PII,021 contradicción70 frente a93.33EUR;018 cita adicional poco pertinente.
+Aceptación globalNO PASS; revisión oficial de Víctor sigue pendiente.
+Campaña0.0596957425USD, acumulado0.113508635USD de0.50USD. Claves extendidas hasta
+19:28:33UTC, sin cambios de presupuesto/modelos/RPM/TPM/concurrencia. Runtime
+apagado; sin nuevas inferencias al terminar, merge ni Discord.
+[Informe y recibo completo versionado](../evidence/jup-035-pr121-full28-20261012.md).
+Sustituye el corte parcial19/28, sin borrar resultados históricos.
+
 ## Corrección de compatibilidad PR121 — 12/10/2026
 
 Origen: «Hazlo», código e56562f publicado en PR121. Proyección sin uniqueItems;

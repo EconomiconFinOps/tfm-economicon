@@ -49,7 +49,13 @@ al corte anterior, sin prueba de estabilidad.010 recupera la política de cinco
 tags y devuelve dos referencias exactas de corpus con persistencia de un par.
 Estos resultados no compensan el fallo de citas de018 ni la multiplicidad.
 
-## Resultado final de campaña
+## Campaña completa posterior
+
+Con extensión de claves expresamente autorizada, se han ejecutado los28casos.
+[Resultado vigente:23completed/5failed y defectos semánticos](jup-035-pr121-full28-20261012.md).
+El corte parcial siguiente se conserva como histórico.
+
+## Resultado final de campaña parcial
 
 Batería detenida por la guarda horaria a las18:24UTC, antes de caducidad18:25UTC:
 19/28 ejecutados en orden, cada uno un intento;15completed y4failed. Fallan003,

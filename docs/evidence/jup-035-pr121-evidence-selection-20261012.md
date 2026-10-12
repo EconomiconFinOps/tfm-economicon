@@ -5,6 +5,10 @@ implementación de Alejandro; no constituye review independiente. Base9c37a15,
 código0d91d337aa944404a76afa03ffbbc3e2c5501e7f, en la rama propia
 fix/JUP-035-auto-documentation. [PR121](https://github.com/EconomiconFinOps/tfm-economicon/pull/121).
 
+## Estado vigente
+
+[Batería completa28/28, respuestas y hallazgos](jup-035-pr121-full28-20261012.md).
+
 ## Estado posterior
 
 Compatibilidad corregida en e56562f; validación parcial y pendientes en el

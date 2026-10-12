@@ -1,10 +1,9 @@
 # Continuidad del proyecto
 
-12/10/2026 — [PR121: evidencia y multiplicidad](chat-conversacional.md):
-Compatibilidad corregida en e56562f; backend20/processor86PASS y CI técnica6/6.
-Real19/28:15completed,4failed;9 sin ejecutar por caducidad. Saludo UI persistido.
-Multiplicidad, estabilidad de citas y revisión de Víctor pendientes.
-[Informe vigente](../evidence/jup-035-pr121-evidence-selection-20261012.md).
+12/10/2026 — [PR121: batería completa](chat-conversacional.md):
+28/28 ejecutados sobre e56562f:23completed/5failed por múltiples llamadas.
+010/011/021 con defectos de contenido; aceptaciónNO PASS. Runtime detenido,
+gasto acumulado0.11351USD. [Informe y recibos](../evidence/jup-035-pr121-full28-20261012.md).
 
 12/10/2026 — [PR121: recuperación y aceptación real](chat-conversacional.md):
 planificador corregido; matriz auto real positiva, full28 con22 completed/6 failed
