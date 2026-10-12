@@ -167,7 +167,7 @@ Ninguna.
 
 ### Adenda: corrección de la cifra del coste aceptado
 
-- Fecha: 2026-10-12. Origen: medición con pgvector parado en el stack real (tarea 6.4).
+- Fecha: 2026-10-11 (hora local; 00:19 UTC del día siguiente en los registros de Docker). Origen: medición con pgvector parado en el stack real (tarea 6.4).
 - El texto aprobado decía «una caída de pgvector o de los embeddings de más de unos 2 s». Es inexacto: el
   trabajo se descarta tras dos intentos, y con pgvector parado cada intento tarda unos 4 s en fallar y el
   worker espera 2 s entre ambos, es decir, unos 10 s hasta el descarte. La caída que provoca el coste es la

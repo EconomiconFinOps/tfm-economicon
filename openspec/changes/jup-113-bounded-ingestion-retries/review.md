@@ -570,3 +570,41 @@ almacén vectorial reales. Resultados y comandos en `docs/evidence/JUP-113-valid
   formato admitido. Leído en `IngestPage.tsx` y `services/api.ts`; no ejecutado en navegador.
 - **No cubierto, y no se afirma:** el rendimiento o la carga, un LLM o embeddings reales, un clúster de varios
   nodos, la pantalla en navegador y la ejecución de estas pruebas en CI.
+
+## Grupo 7 — Documentación
+
+Mutación N/A — grupo doc-only (sin código de producto): no intervienen tester, coder ni mutación, y la QA
+global del change se hace en el grupo 8.
+
+Documentos modificados o creados:
+
+- `apps/processor/README.md` y `docs/architecture.md` (7.1): tabla de tratamiento de fallos del worker, tope de
+  una reentrega, el caso sin tope, el coste ante una caída de pgvector (~10 s medidos) y cómo cuenta el
+  contador de fallos. En `docs/architecture.md` también la nota del contador del apartado de observabilidad.
+- `apps/backend/README.md` (7.2): formato del `source`, su `422` sin efectos, que el valor admitido se guarda
+  literal y que la regla está duplicada con una tabla de casos compartida.
+- `docs/testing/critical-flows.md` (7.3): fila nueva «Ingesta: fallos permanentes y reintentos» con suites,
+  límites reales o simulados y que CI no ejecuta el opt-in; párrafo de la prueba con servicios reales; y la
+  fila del agente deja de dar `RF-054-001` por sin fijar. Una frase mía sobre las credenciales `guest` de
+  RabbitMQ no estaba verificada y se reescribió con lo que se hizo (se usó un usuario propio; `guest` no se
+  probó).
+- `docs/adr/ADR-0019-ingestion-retry-policy.md` (7.4): sección «Evidence And Follow-up» completa, con lo
+  medido y **lo que no se demuestra** (la decisión 4 no se ejercitó con una caída real de CockroachDB; ni
+  proveedor o LLM reales, ni varios nodos, ni la pantalla en navegador, ni CI). Sigue en `Proposed`.
+- `openspec/findings/backlog.md` (7.5): `RF-086-004` y `RF-054-001` pasan a `Fixed` (técnico; integración y
+  validación humana pendientes), con la corrección y los enlaces; la mención de límites de metadata de
+  `RF-086-004` no se reprodujo y `RF-086-005` sigue `Open`. Findings nuevos: `RF-113-001` (la pantalla de
+  ingesta muestra el cuerpo crudo del 422, Low), `RF-113-002` (el contrato `tenant-isolation` de JUP-086 y
+  ADR-0008 siguen diciendo que no hay límite de reintentos, Low) y `RF-113-003` (los jobs descartados por una
+  caída no se reprocesan, Medium, riesgo aceptado). No se registra como finding el mensaje que mata el proceso
+  antes de que el worker responda, porque no se reprodujo: queda como límite en el ADR.
+- `docs/continuidad/reintentos-ingesta.md` y su fila en `docs/continuidad/README.md` (7.6).
+
+Fechas: se unificaron a la hora local de la sesión (2026-10-11); los registros de Docker van en UTC y pasan
+de medianoche, de ahí una fecha 2026-10-12 que se corrigió.
+
+Comprobaciones: `openspec:validate` 64 de 64, `jup:check` y `jup:cleanup:check` correctos. Enlaces relativos de
+los documentos tocados comprobados con un recorrido ad hoc (existencia del archivo, no de los anclajes de los
+encabezados): sin enlaces rotos propios; el índice `docs/continuidad/README.md` ya tenía dos enlaces rotos en
+`develop` (`metricas-funcionales-negocio.md` y `cobertura-etiquetado.md`, temas que no existen en esa base) que
+no se tocan.

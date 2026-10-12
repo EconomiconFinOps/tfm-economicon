@@ -61,7 +61,7 @@ seguro.
 
 - **Coste aceptado:** una caída de pgvector o de los embeddings que cubra los dos intentos marca
   `failed` los trabajos en cola, que hoy esperarían, y hay que volver a enviarlos. Medido en el stack
-  real con pgvector parado (2026-10-12): el primer intento falla a los ~4 s, el worker espera 2 s y el
+  real con pgvector parado (2026-10-11, hora local): el primer intento falla a los ~4 s, el worker espera 2 s y el
   segundo vuelve a fallar a los ~4 s, de modo que el trabajo se descarta a los ~10 s del envío; el
   worker se recupera solo al volver pgvector, pero el trabajo descartado queda `failed` y no se
   reprocesa. El fallo queda en la base, en los registros y en la alerta de JUP-045; la interfaz no lo
@@ -94,15 +94,34 @@ seguro.
 
 ## Evidence And Follow-up
 
-Medido el 2026-10-11 sobre `develop` en `8511fb1f`, con la evidencia en
+Medido el 2026-10-11 (hora local) sobre `develop` en `8511fb1f` y sobre la rama, con la evidencia en
 [JUP-113-validation.md](../evidence/JUP-113-validation.md):
 
-- La reproducción de `RF-086-004` con Compose aislado y RabbitMQ real (secciones «Reproducción»).
-- La marca de reentrega: `redelivered` es falso solo en la primera entrega y verdadero tras
-  `nack(requeue=True)` y tras cerrar la conexión sin responder (pika 1.4.4, RabbitMQ 3.13.7). La
-  decisión 3 depende de ello; si dejara de cumplirse, hay que revisar este ADR.
+- **Reproducción antes de corregir** (RabbitMQ 3.13.7 real, Compose aislado): un `source` con espacios recibió
+  202 y se procesó cada ~2 s; el contador de fallos pasó de 0 a 66 y un trabajo válido de otro tenant siguió
+  `queued` durante los 60 s observados.
+- **Marca de reentrega** (pika 1.4.4 y RabbitMQ 3.13.7): `redelivered` es falso solo en la primera entrega y
+  verdadero tras `nack(requeue=True)` y tras cerrar la conexión sin responder. La decisión 3 depende de ello; si
+  dejara de cumplirse, hay que revisar este ADR.
+- **Pruebas con servicios reales** (CockroachDB, pgvector y RabbitMQ desechables): 15 casos pasan en la rama;
+  las mismas pruebas contra la base dan 11 fallos y 4 aciertos (9 fallos por comportamiento y 2 por API
+  inexistente). Cubren el envenenado seguido de un válido de otro tenant, el tope de una reentrega con la marca
+  real del broker, la primera entrega interrumpida y el resultado JSONB inválido con CockroachDB real.
+- **Compose sobre la rama:** un envenenado ya presente en la cola se descarta en una entrega y el trabajo
+  retenido se completa; la API responde 422 al `source` inválido sin crear trabajo.
+- **Coste medido:** con pgvector parado el trabajo se descarta a los ~10 s; el worker se recupera solo al volver
+  el servicio y el trabajo descartado queda `failed` (ver Consequences).
 
-Seguimiento: completar esta sección con la evidencia de las pruebas y de la comprobación con
-servicios reales (tareas 6 y 7.4 del change); decidir la ratificación del ADR en la revisión de la
-PR; valorar más adelante la DLQ y la lectura del estado de un trabajo (`RF-104-003`) si el coste de
-la decisión 3 resulta molesto en la práctica.
+**Lo que la evidencia no demuestra.** La decisión 4 (reencolar sin tope cuando no se puede leer o registrar el
+estado) se ejercita con dobles de fallo de la base en las pruebas unitarias, pero **no** se ejecutó con una
+caída real de CockroachDB. Tampoco se probó un proveedor de embeddings o un LLM reales, un clúster de varios
+nodos, el rendimiento ni la pantalla en navegador, y CI no ejecuta las pruebas con servicios reales
+(`RF-096-004`). Un mensaje que mata el proceso antes de que el worker responda al broker sigue sin tope y no se
+ha reproducido.
+
+**Seguimiento.** Ratificar o rechazar este ADR en la revisión de la PR de JUP-113 (el estado sigue siendo
+`Proposed`). Findings relacionados: `RF-113-001` (la pantalla muestra el cuerpo crudo del 422), `RF-113-002`
+(el contrato `tenant-isolation` de JUP-086 y ADR-0008 siguen diciendo que no hay límite de reintentos) y
+`RF-113-003` (los trabajos descartados por una caída de pgvector no se reprocesan). Valorar más adelante una
+DLQ o cola de reproceso y la lectura del estado de un trabajo (`RF-104-003`) si ese coste resulta molesto en
+la práctica.

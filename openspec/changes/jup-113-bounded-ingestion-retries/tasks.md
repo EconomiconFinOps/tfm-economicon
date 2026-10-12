@@ -107,16 +107,16 @@ del backend (`RF-105-004`).
 
 ## 7. Documentación
 
-- [ ] 7.1 `apps/processor/README.md` y `docs/architecture.md`: tabla de tratamiento de fallos, tope de
+- [x] 7.1 `apps/processor/README.md` y `docs/architecture.md`: tabla de tratamiento de fallos, tope de
   un reintento, caso sin tope y coste ante una caída de pgvector o de los embeddings.
-- [ ] 7.2 `apps/backend/README.md`: regla del `source` en `POST /jobs/ingest` y su 422.
-- [ ] 7.3 `docs/testing/critical-flows.md`: suites nuevas en las filas de tenant y de agente, con lo
+- [x] 7.2 `apps/backend/README.md`: regla del `source` en `POST /jobs/ingest` y su 422.
+- [x] 7.3 `docs/testing/critical-flows.md`: suites nuevas en las filas de tenant y de agente, con lo
   que queda opt-in.
-- [ ] 7.4 Completar ADR-0019 con la evidencia de 1.2, 1.3 y 6.
-- [ ] 7.5 `openspec/findings/backlog.md`: `RF-086-004` y `RF-054-001` a `Fixed` con enlace a la
+- [x] 7.4 Completar ADR-0019 con la evidencia de 1.2, 1.3 y 6.
+- [x] 7.5 `openspec/findings/backlog.md`: `RF-086-004` y `RF-054-001` a `Fixed` con enlace a la
   evidencia; registrar como `RF-113-NNN` lo que quede fuera (al menos la frase desactualizada del
   change `jup-086` y, si se observan, el mensaje que mata el proceso y el aviso de la pantalla).
-- [ ] 7.6 Crear `docs/continuidad/reintentos-ingesta.md` y añadir su fila en
+- [x] 7.6 Crear `docs/continuidad/reintentos-ingesta.md` y añadir su fila en
   `docs/continuidad/README.md`.
 
 ## 8. Verificación y cierre
