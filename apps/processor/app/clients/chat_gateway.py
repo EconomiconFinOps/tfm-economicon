@@ -305,6 +305,10 @@ class ChatGateway:
                             stage='finish'
                             if tool_choice=='auto':
                                 from app.core.chat_resources import validate_search_call
+                                if finish=='length':
+                                    diagnostic('finish',category='incomplete')
+                                    yield {'type':'error','status':502,'category':'incomplete'}
+                                    return
                                 if not native_seen:
                                     if finish!='stop': raise ValueError('Incomplete tool decision.')
                                     yield {'type':'decision','usage':usage}

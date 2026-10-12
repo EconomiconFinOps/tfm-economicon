@@ -478,7 +478,7 @@ def test_confirmed_stop_fences_a_complete_candidate_even_in_commit_race(api):
         payload=body()
         task=asyncio.create_task(c.post(path(),json=payload,headers=headers()))
         try:
-            await asyncio.sleep(0.03)
+            await until_reserved(api,payload,claimed=True)
             op=await existing(c,payload)
             attempt=op['current_attempt_id']
             r=await c.post(op['status_url']+'/stop',headers=headers())

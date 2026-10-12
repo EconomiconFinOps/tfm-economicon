@@ -395,6 +395,11 @@ class ChatOperations:
                 attempt_id=cursor['attempt_id'],number=cursor['number'],seq=cursor['seq'],
                 offset=len(buffer['partial'].encode('utf-16-le'))//2,text=buffer['partial'])
         buffer['subscribers'].add(queue)
+        # No await between taking the published tail and attaching: an end is
+        # either in this snapshot or arrives through the subscriber queue.
+        tail=buffer['events'][-1] if buffer['events'] else ''
+        published_end=tail if any(tail.startswith(f'event: {end}\n')
+            for end in ('final','terminal','paused','retry_scheduled')) else None
         try:
             yield started
             if replay is not None:
@@ -412,9 +417,14 @@ class ChatOperations:
                         yield self._frame(row,end,**values)
                     return
                 if row['state'] in ('paused','waiting'):
+                    yield self._frame(row,row['state'],operation=value)
                     return
-            elif snapshot is not None:
-                yield snapshot
+            else:
+                if snapshot is not None:
+                    yield snapshot
+                if published_end is not None:
+                    yield published_end
+                    return
             while True:
                 try:
                     frame=await asyncio.wait_for(queue.get(),10)

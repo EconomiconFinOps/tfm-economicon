@@ -88,6 +88,21 @@ class RuntimeTests(unittest.TestCase):
                 deploy.init(self.root / "invalid", port)
         self.assertFalse((self.root / "invalid").exists())
 
+    def test_chat_hmac_initialization_reuse_and_legacy_root(self):
+        path = self.root / 'private' / 'chat-hmac'
+        original = path.read_bytes()
+        self.assertEqual(len(original), 64)
+        self.assertEqual(deploy.chat_hmac_file(self.root), path.resolve())
+        self.assertEqual(path.read_bytes(), original)
+        legacy = self.root / 'legacy'
+        legacy.mkdir()
+        self.assertEqual(len(deploy.chat_hmac_file(legacy).read_bytes()), 64)
+        path.chmod(0o600)
+        path.write_bytes(b'invalid')
+        with self.assertRaisesRegex(ValueError, 'refusing to rotate'):
+            deploy.chat_hmac_file(self.root)
+        self.assertEqual(path.read_bytes(), b'invalid')
+
     @patch.object(deploy, "run")
     def test_prepare_private_ports_absolute_paths_and_shell_dollars(self, run):
         def render(*args, **kwargs):
@@ -107,6 +122,8 @@ class RuntimeTests(unittest.TestCase):
         self.assertNotIn("$$$$", backend["entrypoint"][2])
         self.assertNotIn("do-not-copy", (release / ".env").read_text())
         self.assertIn("API_HOST_PORT='19357'", (release / ".env").read_text())
+        self.assertIn("CHAT_HMAC_FILE='" + str((self.root / 'private' / 'chat-hmac').resolve()) + "'", (release / '.env').read_text())
+        self.assertFalse((release / 'private' / 'chat-hmac').exists())
         with self.assertRaises(ValueError):
             deploy.prepare(self.root, self.source, self.new, 0)
 

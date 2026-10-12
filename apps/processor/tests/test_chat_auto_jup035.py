@@ -70,6 +70,17 @@ def wire(delta, finish='stop', tokens=12):
     return ('data: '+json.dumps(event)+'\n\ndata: [DONE]\n\n').encode()
 
 
+def test_truncated_decision_is_transient_and_diagnostic_never_contains_text(monkeypatch, caplog):
+    gateway, requests = provider(monkeypatch, [wire({'content':'PRIVATE TRUNCATED DECISION'}, 'length')])
+    records = list(gateway._records({'messages': []}, time.time()+60, {}, threading.Event(), 'auto'))
+    assert records == [{'type':'error','status':502,'category':'incomplete'}]
+    assert len(requests) == 1
+    diagnostic = next(json.loads(r.message) for r in caplog.records if 'chat_gateway_diagnostic' in r.message)
+    assert diagnostic['stage'] == 'finish'
+    assert diagnostic['category'] == 'incomplete' and diagnostic['finish_reason'] == 'length'
+    assert 'PRIVATE TRUNCATED DECISION' not in caplog.text
+
+
 def provider(monkeypatch, responses):
     gateway = ChatGateway(SimpleNamespace(llm_model='economicon-chat',
         litellm_base_url='http://synthetic.invalid/v1', litellm_api_key=SecretStr('synthetic')))
@@ -158,6 +169,8 @@ def test_auto_failures_cannot_dispatch_a_third_call(monkeypatch, failure):
     else:
         records = asyncio.run(exercise())
         assert records[-1]['type'] == 'error'
+        if failure == 'length_decision':
+            assert records == [{'type':'error','status':502,'category':'incomplete'}]
         assert all(r['type'] != 'candidate' for r in records)
     assert len(requests) == (1 if failure in ('length_decision','wrong_id','unknown_tool') else 2)
 

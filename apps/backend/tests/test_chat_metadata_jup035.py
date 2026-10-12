@@ -35,9 +35,26 @@ def sources():
     returned=[{key:e[key] for key in ('id','kind','title','source')} for e in (evidence[1],evidence[2])]
     return evidence,citations,returned
 
-@pytest.mark.parametrize('state',['failed','completed'])
+
+def test_truncated_decision_schedules_retry_without_persisting_a_partial_pair(api):
+    runtime=service(api[0]);scope={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
+    row,_=runtime.repository.reserve(scope,body(),{'prompt_version':'synthetic'})
+    active,won=runtime.repository.claim(scope,row['operation_id'],'synthetic-boot')
+    assert won
+    api[2].errors=[{'status':502,'category':'incomplete'}]
+    runtime.occupied=1
+    asyncio.run(runtime._produce(scope,active))
+    stored=runtime.repository.get(scope,row['operation_id'])
+    assert stored['state']=='waiting' and stored['attempt_count']==1
+    assert stored['current_attempt_id'] is None and stored['retry_at']>api[3]()
+    assert len(api[2].claims)==1 and messages(api[1])==[]
+    frames=runtime.buffers[row['operation_id']]['events']
+    assert len(frames)==1 and frames[0].startswith('event: retry_scheduled\n')
+
+@pytest.mark.parametrize('state',['failed','completed','paused','waiting'])
 @pytest.mark.parametrize('delivery',['before_publication','published','stale_read'])
-def test_initial_stream_preserves_committed_terminal_before_ram_publication(api,monkeypatch,state,delivery):
+@pytest.mark.parametrize('initial',[True,False])
+def test_initial_stream_preserves_committed_terminal_before_ram_publication(api,monkeypatch,state,delivery,initial):
     """Force the DB-commit/RAM-event gap without depending on thread timing."""
     from uuid import uuid4
     runtime=service(api[0]);scope={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
@@ -48,21 +65,24 @@ def test_initial_stream_preserves_committed_terminal_before_ram_publication(api,
     active,won=runtime.repository.claim(scope,identifier,'synthetic-boot')
     assert won
     runtime._emit(active,'attempt_started',attempt_id=active['current_attempt_id'],number=1,seq=0)
-    if state=='failed':
-        row=runtime.repository.close_attempt(scope,identifier,active['current_attempt_id'],transient=False)
+    if state!='completed':
+        row=runtime.repository.close_attempt(scope,identifier,active['current_attempt_id'],
+            transient=state!='failed',delay=121 if state=='paused' else 1)
     else:
         row=runtime.repository.complete(scope,identifier,active['current_attempt_id'],ANSWER,{},str(uuid4()))
     async def scenario():
-        event='final' if state=='completed' else 'terminal'
+        event={'completed':'final','failed':'terminal','paused':'paused','waiting':'retry_scheduled'}[state]
         if delivery!='before_publication':
             values=await runtime._final_values(scope,row) if state=='completed' else {'operation':runtime.public(row)}
             runtime._emit(row,event,**values)
         if delivery=='stale_read':
             async def stale_get(*args):return active
             monkeypatch.setattr(runtime,'get',stale_get)
-        frames=[frame async for frame in runtime.events(scope,identifier,initial=True)]
+        frames=[frame async for frame in runtime.events(scope,identifier,initial=initial)]
         records=frame_records(type('Reply',(),{'text':''.join(frames)})())
-        assert [item['type'] for item in records]==['started','attempt_started',event]
+        expected_end='waiting' if state=='waiting' and (delivery=='before_publication' or not initial and delivery=='published') else event
+        prefix=['started','attempt_started'] if initial else ['started','snapshot'] if delivery=='stale_read' else ['started']
+        assert [item['type'] for item in records]==prefix+[expected_end]
         assert records[-1]['operation']['state']==state
         assert len(messages(api[1]))==(2 if state=='completed' else 0)
     asyncio.run(asyncio.wait_for(scenario(),2))

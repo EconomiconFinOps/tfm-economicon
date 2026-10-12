@@ -12,7 +12,7 @@ import pytest
 from test_chat_private_jup035 import private,claim,run,signed
 
 
-ANSWER={'schema_version':'1.0','status':'no_data','answer':'Sin evidencia: "Azure" ðŸ˜€\nFila.',
+ANSWER={'schema_version':'1.0','status':'no_data','answer':'Sin evidencia: "Azure" 😀\nFila.',
         'scope':{'cloud':'azure','data_environment':'simulated','subscription_ids':[],'period':None},
         'evidence':[],'metrics':[],'recommendations':[],'assumptions':[],
         'limitations':['No hay datos.'],'next_actions':[]}
@@ -216,6 +216,8 @@ def test_private_gateway_streams_only_answer_with_roles_and_dynamic_deadline(pri
     def scenario(records,context):
         deltas=[record['text'] for record in records if record['type']=='delta']
         assert ''.join(deltas)==ANSWER['answer']
+        assert '\U0001f600' in ''.join(deltas)
+        assert '\U0001f600'.encode('utf-8') == bytes.fromhex('f09f9880')
         assert 'NEVER DISPLAY REASONING' not in json.dumps(records)
         kinds=[record['type'] for record in records]
         assert kinds.index('delta')<kinds.index('candidate_end')
