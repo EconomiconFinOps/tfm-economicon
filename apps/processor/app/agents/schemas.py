@@ -6,6 +6,7 @@ from enum import Enum
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
+from app.core.chat_segments import bind_segments, quote_choices
 
 
 ShortText = Annotated[
@@ -126,6 +127,7 @@ def _bind_chat_evidence(schema, authorized_evidence):
             # Provider-only grounding: force selection of an actual passage,
             # not merely an allowed identifier with a similar document title.
             choice['properties']['support_quote']={'type':'string','minLength':1,'maxLength':2048,
+                'enum':quote_choices(source.get('content')),
                 'description':'Exact contiguous quotation from this fragment supporting a relevant claim in answer. Do not cite a fragment merely because it is nearby or shares a title.'}
             choice['required'].append('support_quote')
         choices.append(choice)
@@ -141,7 +143,7 @@ def _bind_chat_evidence(schema, authorized_evidence):
     return schema
 
 
-def chat_provider_schema(*, financial_metrics_allowed=False, authorized_evidence=None):
+def chat_provider_schema(*, financial_metrics_allowed=False, authorized_evidence=None, calculations=None):
     if type(financial_metrics_allowed) is not bool:
         raise ValueError('Invalid financial authority control.')
     schema = FinOpsResponse.model_json_schema()
@@ -166,7 +168,7 @@ def chat_provider_schema(*, financial_metrics_allowed=False, authorized_evidence
         status for status in schema['$defs']['ResponseStatus']['enum']
         if status not in ('ok', 'partial')]}
     schema['anyOf'] = [actionable, abstention]
-    return _bind_chat_evidence(schema, authorized_evidence)
+    return bind_segments(_bind_chat_evidence(schema, authorized_evidence), calculations)
 
 
 def assemble_chat_response(value, period, subscriptions=None, *, authorized_evidence=None):
@@ -193,7 +195,7 @@ def assemble_chat_response(value, period, subscriptions=None, *, authorized_evid
                 quote=item.pop('support_quote',None)
                 source=known.get(item.get('id'),{})
                 if (not isinstance(quote,str) or not quote.strip() or len(quote)>2048
-                        or quote not in source.get('content','')):
+                        or quote not in quote_choices(source.get('content',''))):
                     raise ValueError('Citation passage is not grounded.')
             evidence.append(item)
         value={**value,'evidence':evidence}

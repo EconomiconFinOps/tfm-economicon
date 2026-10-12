@@ -29,8 +29,8 @@ ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_
     max_generations=2, decision_format='strict-none-search', final_format='strict-finops',
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
-    grounding='corpus-literal-passage-required-2048-v1',
-    arithmetic='decimal-plan-12-typed-operands-inherited-units-slots-v2',
+    grounding='corpus-literal-window-enums-2048-v2',
+    arithmetic='decimal-plan-12-typed-operands-private-segments-v3',
     decision_values='source-number-unit-enums-128-disable-on-overflow-v1')
 
 

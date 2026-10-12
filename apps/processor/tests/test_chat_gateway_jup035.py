@@ -23,6 +23,17 @@ def _provider(value):
     value=copy.deepcopy(value)
     value['scope'].pop('period',None)
     value['scope'].pop('subscription_ids',None)
+    import re
+    def segments(text):
+        parts=[];position=0
+        for match in re.finditer(r'\[\[calc:(\d+)\]\]',text):
+            if match.start()>position:parts.append({'text':text[position:match.start()]})
+            parts.append({'calculation_id':match.group(1)});position=match.end()
+        if position<len(text) or not parts:parts.append({'text':text[position:]})
+        return parts
+    value['answer']=segments(value['answer'])
+    for field in ('assumptions','limitations','next_actions'):
+        value[field]=[segments(item) for item in value[field]]
     return value
 
 

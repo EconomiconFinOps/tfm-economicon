@@ -1,5 +1,27 @@
 ## PR121: contrato estructurado autorizado en validación — 12/10/2026
 
+## Estado actual: segmentos privados y ventanas literales (2026-10-12)
+
+Origen: subagente `/root/pr121_correccion_pendientes`, objetivo autorizado de
+corregir PR121 hasta aceptación.6c0592e no supera la focal017/027: referencia de
+cálculo inexistente y cita no literal, respectivamente; ambos historiales vacíos.
+La captura posterior no reprodujo esos fallos:017 tuvo EOF en decisión y027
+terminó correctamente; se conserva como diagnóstico, nunca aceptación.
+
+El contrato privado ahora usa segmentos text/calculation_id con IDs enumerados,
+y citas elegidas de ventanas literales hasta2048 caracteres. El esquema de
+decisión elimina anyOf raíz redundante, manteniendo coherencia action/query en
+validación local. No se atribuye el EOF a una causa demostrada. Parser y renderer
+validan texto contiguo, normalizan espacios globales como el contrato público y
+preservan límites4000/500 y8KiB. PúblicoFinOpsResponse1.0 sin cambios.
+
+Evidencia offline del cambio en `materiales/07-evidencias/PR121-herramientas-evidencia-20261012`
+del workspace:139 pruebas rápidas,64 segmentos/transporte,15 equivalencia de
+schema/conteo y10 persistencia pasan.45 pruebas contexto backend pasaron en la
+primera ejecución, con3 fixtures de esquema corregidas y revalidadas después.
+SQL nativo, nueva focal y full28 sobre candidato congelado pendientes. Los
+resultados históricos siguientes no constituyen aceptación de este contrato.
+
 ## Schema contextual (2026-10-12)
 
 99d9b47 elimino la unidad redundante en referencias; el foco027 siguio rechazando

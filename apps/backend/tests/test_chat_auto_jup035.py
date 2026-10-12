@@ -22,21 +22,27 @@ def test_calculation_diagnostic_is_closed_and_contains_no_rejected_text(api, mon
 
 
 def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch):
-    from app.core.chat_calculations import CalculationStream, calculate, render_text
+    from app.core.chat_calculations import calculate
+    from app.core.chat_segments import render_segments
+    import importlib.util
+    from pathlib import Path
+    location=Path(__file__).parents[2]/'processor/app/clients/chat_stream_parser.py'
+    spec=importlib.util.spec_from_file_location('segmented_stream_parser',location)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
     question = 'Ejemplo hipotético: 73 EUR y 20 EUR.'
     context = {'messages': [{'role': 'user', 'content': 'UNTRUSTED_CURRENT_CONTEXT\n' + json.dumps({'question': question})}]}
     plan = [{'left': {'literal':'73','unit':'EUR'}, 'right': {'literal':'20','unit':'EUR'}, 'operator': 'subtract'}]
     calculations = calculate(context, plan)
-    raw = 'Ejemplo 😀: [[calc:0]]. Resultado hipotético.'
+    segments=[{'text':'  Ejemplo 😀: '},{'calculation_id':'0'},{'text':'. Resultado hipotético.  '}]
+    raw = json.dumps({'answer':segments},ensure_ascii=True)
     result = copy.deepcopy(ANSWER)
-    result['answer'] = render_text(raw, calculations)
+    result['answer'] = render_segments(segments, calculations)
     async def stream(claim):
-        renderer = CalculationStream(calculations)
+        renderer = module.SegmentAnswerJSON(calculations)
         for char in raw:
             text = renderer.feed(char)
             if text: yield {'type': 'delta', 'text': text}
-        tail = renderer.feed('', final=True)
-        if tail: yield {'type': 'delta', 'text': tail}
+        assert renderer.finish()==result['answer']
         yield {'type': 'candidate', 'result': result, 'finish_reason': 'stop'}
     monkeypatch.setattr(api[2], 'stream', stream)
     async def scenario(client):

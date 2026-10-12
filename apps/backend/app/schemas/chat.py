@@ -9,6 +9,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.schemas.chat_screen import ScreenCapture
+from app.core.chat_segments import bind_segments, quote_choices
 
 
 class GenerationRequest(BaseModel):
@@ -84,6 +85,7 @@ def _bind_chat_evidence(schema, authorized_evidence):
             # Provider-only grounding: force selection of an actual passage,
             # not merely an allowed identifier with a similar document title.
             choice['properties']['support_quote']={'type':'string','minLength':1,'maxLength':2048,
+                'enum':quote_choices(source.get('content')),
                 'description':'Exact contiguous quotation from this fragment supporting a relevant claim in answer. Do not cite a fragment merely because it is nearby or shares a title.'}
             choice['required'].append('support_quote')
         choices.append(choice)
@@ -99,7 +101,7 @@ def _bind_chat_evidence(schema, authorized_evidence):
     return schema
 
 
-def provider_response_schema(*, financial_metrics_allowed=False, authorized_evidence=None):
+def provider_response_schema(*, financial_metrics_allowed=False, authorized_evidence=None, calculations=None):
     if type(financial_metrics_allowed) is not bool:
         raise ValueError('Invalid financial authority control.')
     schema, _ = response_schema()
@@ -124,7 +126,7 @@ def provider_response_schema(*, financial_metrics_allowed=False, authorized_evid
         status for status in schema['$defs']['ResponseStatus']['enum']
         if status not in ('ok', 'partial')]}
     schema['anyOf'] = [actionable, abstention]
-    return _bind_chat_evidence(schema, authorized_evidence)
+    return bind_segments(_bind_chat_evidence(schema, authorized_evidence), calculations)
 
 
 def _validate(value, rule, schema, depth=0):

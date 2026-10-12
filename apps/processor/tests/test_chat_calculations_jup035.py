@@ -88,8 +88,8 @@ def test_free_equations_and_bad_slots_are_never_repaired(text):
 def test_stream_fragmentation_unicode_escape_and_persistable_final_match(monkeypatch,width):
     computations=calculate(context(),[step()])
     value=_provider(ANSWER)
-    value['answer']='Hipotético 😀: [[calc:0]]. La diferencia está calculada.'
-    value['assumptions']=['Datos del usuario: [[calc:0]].']
+    value['answer']=[{'text':'Hipotético 😀: '},{'calculation_id':'0'},{'text':'. La diferencia está calculada.'}]
+    value['assumptions']=[[{'text':'Datos del usuario: '},{'calculation_id':'0'},{'text':'.'}]]
     event={'choices':[{'index':0,'delta':{'content':json.dumps(value,ensure_ascii=False)},'finish_reason':'stop'}]}
     data=('data: '+json.dumps(event,ensure_ascii=False)+'\n\ndata: [DONE]\n\n').encode()
     gateway,_=provider(monkeypatch,[data],read_size=width)
@@ -106,7 +106,7 @@ def test_stream_fragmentation_unicode_escape_and_persistable_final_match(monkeyp
 def test_none_with_calculation_uses_authenticated_extension_without_search(monkeypatch):
     decision={'action':'none','query':None,'calculations':[step()]}
     assert validate_decision(decision)==decision
-    candidate=_provider(ANSWER);candidate['answer']='Hipotético: [[calc:0]].'
+    candidate=_provider(ANSWER);candidate['answer']=[{'text':'Hipotético: '},{'calculation_id':'0'},{'text':'.'}]
     gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(decision)}),wire({'content':json.dumps(candidate)})])
     initial=context();calls=[]
     async def result(value):
@@ -141,7 +141,7 @@ def test_small_operands_remain_exact_when_result_is_rounded():
 
 
 def test_long_tail_without_sentence_boundary_respects_wire_limit(monkeypatch):
-    value=_provider(ANSWER);value['answer']='😀'*2400
+    value=_provider(ANSWER);value['answer']=[{'text':'😀'*2400}]
     gateway,_=provider(monkeypatch,[wire({'content':json.dumps(value)})],read_size=100000)
     import threading
     records=list(gateway._records({'messages':[],'financial_metrics_allowed':False},
@@ -149,7 +149,7 @@ def test_long_tail_without_sentence_boundary_respects_wire_limit(monkeypatch):
     assert records[-1]['type']=='candidate'
     deltas=[record['text'] for record in records if record['type']=='delta']
     assert len(deltas)>1 and all(len(text.encode())<=8192 for text in deltas)
-    assert ''.join(deltas)==records[-1]['result']['answer']==value['answer']
+    assert ''.join(deltas)==records[-1]['result']['answer']==value['answer'][0]['text']
 
 
 def test_sentence_punctuation_is_not_a_grouped_numeric_literal():

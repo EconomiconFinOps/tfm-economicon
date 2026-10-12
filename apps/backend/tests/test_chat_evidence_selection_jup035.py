@@ -13,15 +13,17 @@ SOURCE = {'id': 'corpus:authorized:0', 'kind': 'corpus', 'title': 'Synthetic pol
           'source': 'Synthetic manual', 'content': 'A synthetic authorized rule.'}
 
 
-def test_decision_schema_and_backend_validator_reject_invalid_branches():
+def test_simple_decision_schema_keeps_branch_coherence_in_local_validator():
     from app.core.chat_resources import DECISION_SCHEMA, validate_decision
     for value in ({'action':'none','query':None,'calculations':[]},{'action':'search','query':'a','calculations':[]}):
         _validate(value,DECISION_SCHEMA,DECISION_SCHEMA)
         assert validate_decision(value)==value
     for value in ({'action':'none','query':'a','calculations':[]},{'action':'search','query':None,'calculations':[]},
                   {'action':'search','query':'a','tenant':'other','calculations':[]}):
-        with pytest.raises(ResponseValidationError): _validate(value,DECISION_SCHEMA,DECISION_SCHEMA)
         with pytest.raises(ValueError): validate_decision(value)
+    assert 'anyOf' not in DECISION_SCHEMA
+    with pytest.raises(ResponseValidationError):
+        _validate({'action':'none','query':None,'calculations':[],'tenant':'other'},DECISION_SCHEMA,DECISION_SCHEMA)
 
 
 def test_contextual_decision_schema_enforces_exact_source_enum_and_disabled_plan():
@@ -63,6 +65,13 @@ def test_contextual_schema_hash_and_full_token_accounting_match_both_services():
     limited={**backend.context_budget,'context_tokens':required-1}
     with pytest.raises(ChatError):replace(backend,context_budget=limited).count_messages(messages)
     with pytest.raises(module.TokenBudgetExceeded):replace(processor,context_budget=limited).check_messages(messages,final_schema)
+    records=[{'id':'0','equation':'3 + 4 = 7','value':'7','unit':'','hypothetical':True}]
+    quoted=provider_response_schema(authorized_evidence=[SOURCE],calculations=records)
+    assert backend.count_messages(messages,authorized_evidence=[SOURCE],calculations=records)==processor.check_messages(messages,quoted)
+    required=sum(backend.count(canonical(value)) for value in (messages,quoted,schema))+1024+3200
+    limited={**backend.context_budget,'context_tokens':required-1}
+    with pytest.raises(ChatError):replace(backend,context_budget=limited).count_messages(messages,authorized_evidence=[SOURCE],calculations=records)
+    with pytest.raises(module.TokenBudgetExceeded):replace(processor,context_budget=limited).check_messages(messages,quoted)
 
 
 def candidate(evidence=()):
@@ -70,6 +79,9 @@ def candidate(evidence=()):
     value['evidence'] = list(evidence)
     value['scope'].pop('period')
     value['scope'].pop('subscription_ids')
+    value['answer']=[{'text':value['answer']}]
+    for field in ('assumptions','limitations','next_actions'):
+        value[field]=[[{'text':item}] for item in value[field]]
     return value
 
 
@@ -106,7 +118,8 @@ def test_exact_authorized_source_is_allowed_and_contract_matches_processor():
     spec.loader.exec_module(module)
     for sources in ([], [SOURCE]):
         for financial in (False, True):
-            assert provider_response_schema(financial_metrics_allowed=financial, authorized_evidence=sources) == module.chat_provider_schema(financial_metrics_allowed=financial, authorized_evidence=sources)
+            for records in ([],[{'id':'0','equation':'3 + 4 = 7','value':'7','unit':'','hypothetical':True}]):
+                assert provider_response_schema(financial_metrics_allowed=financial, authorized_evidence=sources,calculations=records) == module.chat_provider_schema(financial_metrics_allowed=financial, authorized_evidence=sources,calculations=records)
 
 
 @pytest.mark.parametrize('problem,rule', [('unknown','evidence_unknown_id'), ('duplicate','evidence_duplicate_id'), ('source','evidence_provenance')])

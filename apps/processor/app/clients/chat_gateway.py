@@ -25,7 +25,7 @@ from urllib import error,request
 from app.agents.schemas import chat_provider_schema, assemble_chat_response
 from app.clients.chat_dns import resolve
 from app.core.context_budget import budget
-from app.clients.chat_stream_parser import AnswerJSON,SSEFrames,complete_json
+from app.clients.chat_stream_parser import SegmentAnswerJSON,SSEFrames,complete_json
 from app.clients.litellm import LiteLLMClient,_AttemptDeadline,_DeadlineHTTPConnection,_DeadlineHTTPSConnection,_RejectRedirectHandler,_transport_failure,_usage_metadata
 
 
@@ -142,6 +142,15 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
             'Subscriptions are server-owned.':'server_owned_subscriptions',
             'Invalid calculation response.':'invalid_calculation_response',
             'Invalid calculation collection.':'invalid_calculation_collection',
+            'Invalid response segment.':'invalid_response_segment',
+            'Invalid segment text.':'invalid_segment_text',
+            'Invalid segment reference.':'invalid_segment_reference',
+            'Invalid segment collection.':'invalid_segment_collection',
+            'Rendered text limit.':'rendered_text_limit',
+            'Empty rendered text.':'empty_rendered_text',
+            'Response segment limit.':'response_segment_limit',
+            'Incomplete segmented answer.':'incomplete_segmented_answer',
+            'Stream candidate mismatch.':'stream_candidate_mismatch',
         }
         if type(failure) is ValueError and failure.args and type(failure.args[0]) is str and failure.args[0] in assembly_rules:
             event['rule_code'] = assembly_rules[failure.args[0]]
@@ -285,7 +294,7 @@ class ChatGateway:
                 'name':'DocumentationDecision' if deciding else 'FinOpsResponse','strict':True,
                 'schema':decision_schema(context) if deciding else chat_provider_schema(
                     financial_metrics_allowed=context.get('financial_metrics_allowed'),
-                    authorized_evidence=context.get('authorized_evidence', []))}}
+                    authorized_evidence=context.get('authorized_evidence', []), calculations=context.get('calculations',[]))}}
             req=request.Request(self.client.base_url+'/chat/completions',data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode(),
                 headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
             request_hash=hashlib.sha256(req.data).hexdigest()
@@ -294,9 +303,7 @@ class ChatGateway:
             raise
         req._attempt_deadline=_AttemptDeadline(max(.001,deadline-time.time()-5))
         req._chat_cancelled=cancelled
-        from app.core.chat_calculations import CalculationStream, render_text
-        frames,answer=SSEFrames(),AnswerJSON()
-        arithmetic=CalculationStream(context.get('calculations',[]))
+        frames,answer=SSEFrames(),SegmentAnswerJSON(context.get('calculations',[]))
         decoder=codecs.getincrementaldecoder('utf-8-sig')('strict')
         candidate=[];candidate_bytes=0;usage=None
         try:
@@ -338,7 +345,8 @@ class ChatGateway:
                                 stage='candidate_json'
                                 parsed=complete_json(raw)
                                 stage='model_validation'
-                                parsed=render_calculations(parsed,context.get('calculations',[]))
+                                from app.core.chat_segments import render_response
+                                parsed=render_response(parsed,context.get('calculations',[]))
                                 result=assemble_chat_response(parsed,context.get('response_period'), context.get('response_subscriptions', []), authorized_evidence=context.get('authorized_evidence', []))
                             except Exception as failure:
                                 diagnostic(stage,failure,category='incomplete' if finish=='length' else 'invalid_response')
@@ -346,8 +354,7 @@ class ChatGateway:
                                     yield {'type':'error','status':502,'category':'incomplete'}
                                     return
                                 raise
-                            tail=arithmetic.feed('',final=True)
-                            yield from text_deltas(tail)
+                            if answer.finish()!=result['answer']:raise ValueError('Stream candidate mismatch.')
                             yield {'type':'candidate','result':result,'finish_reason':finish,'usage':usage}
                             return
                         event=complete_json(data)
@@ -370,7 +377,7 @@ class ChatGateway:
                             candidate.append(fragment)
                             if tool_choice=='auto': continue
                             stage='provisional_answer'
-                            provisional=arithmetic.feed(answer.feed(fragment),final=(not answer.string and answer.key=='answer'))
+                            provisional=answer.feed(fragment)
                             # Escape-aware decoding completes surrogate pairs;
                             # chunking preserves codepoints and the8KiB wire bound.
                             yield from text_deltas(provisional)
@@ -446,16 +453,6 @@ def text_deltas(text):
             yield {'type':'delta','text':''.join(piece)};piece=[];size=0
         piece.append(char);size+=width
     if piece: yield {'type':'delta','text':''.join(piece)}
-
-
-def render_calculations(value, records):
-    from app.core.chat_calculations import render_text
-    if not isinstance(value,dict) or 'answer' not in value: raise ValueError('Invalid calculation response.')
-    result={**value,'answer':render_text(value['answer'],records)}
-    for field in ('assumptions','limitations','next_actions'):
-        if field not in value or not isinstance(value[field],list): raise ValueError('Invalid calculation collection.')
-        result[field]=[render_text(item,records) for item in value[field]]
-    return result
 
 
 def combined_usage(first,second):

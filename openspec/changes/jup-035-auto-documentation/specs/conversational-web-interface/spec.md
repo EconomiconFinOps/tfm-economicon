@@ -176,7 +176,7 @@ persistir texto parcial.
 
 #### Scenario: Sustento literal y pertinencia
 - **WHEN** el proveedor selecciona una cita de corpus en la respuesta final
-- **THEN** SHALL producir support_quote literal no vacio de hasta2048 caracteres del fragmento exacto; el processor SHALL rechazar el candidato si no existe en ese fragmento, y proyectar solo los campos publicos de evidencia tras validarlo
+- **THEN** SHALL seleccionar support_quote de ventanas literales no vacias de hasta2048 caracteres enumeradas para ese fragmento; el processor SHALL rechazar selecciones fuera de ese conjunto, y proyectar solo los campos publicos de evidencia tras validarlo
 - **AND** el extracto SHALL sustentar una afirmacion pertinente a la pregunta; la coincidencia literal no sustituye la aceptacion semantica, ni autoriza citas accesorias o afirmaciones añadidas para justificarlas; backend y processor SHALL contar la misma variante efectiva del esquema
 
 #### Scenario: Operadores y datos numericos ausentes
@@ -209,8 +209,8 @@ el mismo resultado. Ningun calculo SHALL conferir evidencia ni autoridad financi
 
 #### Scenario: Proyeccion de ecuaciones y streaming
 - **WHEN** la finalizacion incluye una referencia privada a un calculo autorizado
-- **THEN** SHALL renderizarla como la ecuacion calculada, sin reescribir ecuaciones arbitrarias recibidas; SHALL rechazar referencias desconocidas o incompletas e igualdades numericas libres reconocidas en notacion ordinaria, incluidas unidades, operadores x/÷ y enfasis Markdown
-- **AND** SHALL conservar caracteres Unicode, retener referencias partidas entre fragmentos, limitar cada delta a8192 bytes y hacer coincidir exactamente la concatenacion SSE con answer validado y persistido; las frases verificadas SHALL llegar antes de completar la generacion
+- **THEN** SHALL usar segmentos privados text o calculation_id con IDs enumerados del intento y renderizar cada referencia como la ecuacion calculada, sin reescribir ecuaciones arbitrarias recibidas; SHALL rechazar referencias desconocidas, segmentos mixtos y ecuaciones o marcadores libres incluso partidos entre segmentos contiguos de texto
+- **AND** SHALL conservar caracteres Unicode y escapes fragmentados, limitar128 segmentos y4000 caracteres para answer y500 para cada elemento de listas, normalizar solo espacios globales como el contrato publico, limitar cada delta a8192 bytes y hacer coincidir exactamente la concatenacion SSE con answer validado y persistido; los tramos verificados SHALL llegar antes de completar la generacion
 - **AND** la exactitud garantizada SHALL limitarse a las operaciones renderizadas: seleccion semantica de operandos/unidades, pertinencia y prosa circundante SHALL seguir requiriendo aceptacion real, sin afirmar entailment universal ni prohibir globalmente fechas, identificadores o numeros originales
 
 ### Requirement: Cierre observable y truncacion transitoria

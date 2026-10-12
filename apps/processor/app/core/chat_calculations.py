@@ -129,7 +129,7 @@ def contextual_decision_schema(context, base):
             literal['literal']['enum']=numbers
             literal['unit']['enum']=units
     schema['properties']['calculations']=plan
-    for branch in schema['anyOf']:branch['properties']['calculations']=copy.deepcopy(plan)
+    for branch in schema.get('anyOf',[]):branch['properties']['calculations']=copy.deepcopy(plan)
     return schema
 
 

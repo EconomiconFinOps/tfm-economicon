@@ -69,8 +69,9 @@ def test_literal_passage_is_private_and_does_not_change_public_response():
     source={'id':'s','kind':'corpus','title':'Manual','source':'manual','content':'A precise supported definition.'}
     value=_provider(ANSWER)
     value['evidence']=[{**{k:source[k] for k in ('id','kind','title','source')},
-                       'support_quote':'precise supported definition'}]
-    result=assemble_chat_response(value,None,authorized_evidence=[source])
+                       'support_quote':source['content']}]
+    from app.core.chat_segments import render_response
+    result=assemble_chat_response(render_response(value,[]),None,authorized_evidence=[source])
     assert result['evidence']==[{k:source[k] for k in ('id','kind','title','source')}]
     assert 'support_quote' in value['evidence'][0], 'Never mutate received candidate'
     schema=chat_provider_schema(authorized_evidence=[source])

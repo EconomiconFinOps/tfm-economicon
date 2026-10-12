@@ -3,8 +3,8 @@ JUP: JUP-035
 ## Decision vigente — 12/10/2026
 El usuario autoriza sustituir auto-documentation-v2 por structured-documentation-v3.
 La primera generacion devuelve exclusivamente {action:none,query:null} o
-{action:search,query:string}. Ambas ramas estan acotadas en el esquema y se
-validan localmente; se rechazan campos extra, claves duplicadas, texto libre,
+{action:search,query:string}, mas calculations. El esquema raiz simple acota
+campos y tipos; la relacion action/query se valida localmente. Se rechazan campos extra, claves duplicadas, texto libre,
 llamadas nativas y truncacion. El proveedor fijo no necesita soporte de
 parallel_tool_calls. El servidor despacha como maximo una busqueda existente.
 
@@ -18,7 +18,8 @@ Se conservan dos generaciones, plazo absoluto, cancelacion, billing, cuotas,
 el mismo esquema de decision y esquema final efectivo junto al contexto.
 
 Cada alternativa documental exige support_quote privado del fragmento citado.
-El processor comprueba la subcadena literal antes de proyectar FinOpsResponse1.0.
+El esquema enumera ventanas literales no vacias de hasta2048 caracteres, y el
+processor comprueba la seleccion exacta antes de proyectar FinOpsResponse1.0.
 No modifica ni filtra citas o estados invalidos para admitirlos. Este control
 acredita procedencia textual, no entailment: pertinencia, completitud y calculos
 siguen sujetos a la bateria real. Las instrucciones generales conservan unidades,
@@ -33,11 +34,14 @@ resultados por HMAC; processor vuelve a calcular para verificar la extension.
 none con calculos usa control privado pero cero busquedas. Los resultados son
 hipoteticos, no evidence ni metrics. El manifiesto identifica esta politica.
 
-La finalizacion usa slots privados [[calc:indice]] y se proyecta al contrato
-publico con ecuaciones calculadas. Se rechazan igualdades numericas libres
-reconocidas en notacion ordinaria y slots invalidos, sin arreglarlos. El stream
-retiene cada frase hasta poder validarla, nunca expone slots y divide tambien
-su cola a8192 bytes. Comparaciones usan Decimal sin redondear; solo la salida
+La finalizacion privada usa listas de segmentos text o calculation_id, con
+IDs enumerados a partir de los resultados autenticados. Answer y cada elemento
+de assumptions/limitations/next_actions se proyectan a strings publicos. El
+parser valida segmentos completos y tramos de texto contiguos, rechaza ecuaciones
+libres o marcadores incluso partidos entre segmentos, y emite antes del cierre
+JSON. Se conservan limites4000/500 caracteres,128 segmentos y deltas8192 bytes.
+La normalizacion global de espacios coincide con strip_whitespace publico;
+se preservan separadores internos. Comparaciones usan Decimal sin redondear; solo la salida
 del resultado se redondea a seis decimales con signo aproximado cuando procede.
 Los operandos visibles permanecen exactos. No existe garantia universal sobre
 prosa ni sobre notaciones matematicas arbitrarias; su pertinencia se evalua con

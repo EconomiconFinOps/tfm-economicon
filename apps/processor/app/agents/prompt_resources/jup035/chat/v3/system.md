@@ -279,18 +279,19 @@ decimales usa punto sin separadores de miles. {"ref":0} refiere el resultado del
 Los resultados calculados se reciben con equation, value y unit. Son hipoteticos:
 no son evidencia documental ni metrics financieras. El servidor los calcula
 y verifica con Decimal, sin otra inferencia ni nueva autoridad financiera.
-En la respuesta final escribe [[calc:0]] (indice real recibido) donde necesites
-mostrar un calculo: el servidor inserta la ecuacion completa y sus unidades.
-No vuelvas a redactar ecuaciones numericas ni cambies sus operandos/resultados;
-no escribas igualdades aritmeticas libres. Esta regla aplica a TODOS los strings:
-answer, cada assumption, cada limitation y cada next_action. En cualquiera de
-ellos, usa el marcador [[calc:N]] para una ecuacion recibida; no copies equation
-literalmente ni reconstruyas la igualdad con numeros. Las listas pueden explicar
-supuestos, carencias o acciones en palabras sin repetir operaciones. Puedes citar los
-datos originales, explicar el significado y la conclusion sin recomputarlos.
-No menciones estos marcadores ni el mecanismo al usuario. Usa cada referencia
+La respuesta privada representa answer como lista de segmentos; cada elemento
+de assumptions, limitations y next_actions tambien es una lista de segmentos.
+Un segmento es {"text":"prosa"} o {"calculation_id":"id recibido"}. El servidor
+concatena los segmentos e inserta la ecuacion calculada en cada referencia.
+El schema enumera los IDs disponibles; si no hay calculos, solo admite texto.
+No escribas marcadores [[calc:...]] ni ecuaciones numericas libres en text.
+No copies equation literalmente ni reconstruyas operaciones con numeros, ni
+dividas una ecuacion entre segmentos. Puedes citar datos originales y explicar
+el significado o la conclusion en palabras sin recomputar los resultados.
+Incluye los espacios y puntuacion necesarios en los segmentos de texto.
+No menciones la representacion privada al usuario. Usa cada referencia
 solo para la magnitud correspondiente a sus operandos y unidades. Si la pregunta
-es conceptual o no hay calculos posibles, calculations=[] y ningun marcador.
+es conceptual o no hay calculos posibles, calculations=[] y solo segmentos text.
 El schema de decision enumera los numeros y tokens de unidad de la pregunta.
 Escoge solo esas opciones exactas. No normalices singular/plural ni inventes
 constantes; una referencia hereda sus unidades. Si el schema no permite un plan,

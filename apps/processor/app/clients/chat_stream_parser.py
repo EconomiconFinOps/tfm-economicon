@@ -116,3 +116,62 @@ def complete_json(raw):
         return result
     def invalid_constant(value): raise ValueError('Non-finite JSON.')
     return json.loads(raw,object_pairs_hook=object_pairs,parse_constant=invalid_constant)
+
+
+class SegmentAnswerJSON:
+    """Emit only complete validated segment groups from the private answer.
+
+    Adjacent text segments are checked together. Trusted calculation segments
+    form explicit boundaries and never pass through the free-equation scanner.
+    The underlying lexer preserves duplicate-root/escape/surrogate checks.
+    """
+    def __init__(self, records):
+        self.lexer=AnswerJSON();self.records=records
+        self.segment=None;self.segments=[];self.pending=[]
+        self.text='';self.closed=False;self.trailing='';self.rendered_size=0
+
+    def _flush(self):
+        from app.core.chat_segments import render_segment
+        if not self.pending:return ''
+        result=render_segment({'text':''.join(self.pending)},self.records)
+        self.pending=[]
+        return result
+
+    def feed(self, fragment):
+        from app.core.chat_segments import render_segment
+        output=[]
+        for char in fragment:
+            lex=self.lexer
+            opening=(not lex.string and lex.depth==2 and lex.key=='answer' and char=='{')
+            closing=(not lex.string and lex.depth==2 and lex.key=='answer' and char==']')
+            if opening:self.segment=[]
+            if self.segment is not None:self.segment.append(char)
+            lex.feed(char)
+            if self.segment is not None and len(self.segment)>65536:
+                raise ValueError('Response segment limit.')
+            if self.segment is not None and not lex.string and lex.depth==2 and char=='}':
+                value=complete_json(''.join(self.segment));self.segment=None
+                rendered=render_segment(value,self.records)
+                self.rendered_size+=len(rendered)
+                if self.rendered_size>4000:raise ValueError('Rendered text limit.')
+                self.segments.append(value)
+                if len(self.segments)>128:raise ValueError('Invalid segment collection.')
+                if 'text' in value:self.pending.append(rendered)
+                else:output.extend([self._flush(),rendered])
+            if closing:
+                if not self.segments:raise ValueError('Invalid segment collection.')
+                output.append(self._flush());self.closed=True
+        # Match the existing public strip_whitespace contract across chunks,
+        # retaining internal spaces and withholding only a possible final tail.
+        result=self.trailing+''.join(output)
+        if not self.text:result=result.lstrip()
+        emitted=result.rstrip()
+        self.trailing=result[len(emitted):]
+        result=emitted;self.text+=result
+        return result
+
+    def finish(self):
+        if not self.closed or self.segment is not None or self.pending:
+            raise ValueError('Incomplete segmented answer.')
+        if not self.text:raise ValueError('Empty rendered text.')
+        return self.text

@@ -257,7 +257,7 @@ class ChatContext:
                 content=escaped({'evidence':corpus,'omissions':omissions,**({'calculations':computations} if computations else {})})
                 messages=context['messages']+[{'role':'user','content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+content}]
                 try:
-                    counted=self.resources.count_messages(messages,financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=initial+corpus)
+                    counted=self.resources.count_messages(messages,financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=initial+corpus, calculations=computations)
                     result={'tool_call_id':identifier,'content':content,'variable_tokens':counted}
                     if len(content.encode())>1024*1024 or len(canonical({'claim_context':context,'tool_result':result}).encode())>2097152-8192:
                         raise ChatError(413,'tool_body_limit')

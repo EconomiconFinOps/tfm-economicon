@@ -33,11 +33,9 @@ from app.core.chat_calculations import PLAN_SCHEMA, validate_plan, calculate, co
 DECISION_SCHEMA = {'type':'object','properties':{
     'action':{'type':'string','enum':['none','search']},'calculations':PLAN_SCHEMA,
     'query':{'anyOf':[{'type':'string','minLength':1,'maxLength':2048},{'type':'null'}]}},
-    'required':['action','query','calculations'],'additionalProperties':False,
-    'anyOf':[{'type':'object','properties':{'calculations':PLAN_SCHEMA,'action':{'type':'string','const':'none'},'query':{'type':'null'}},
-              'required':['action','query','calculations'],'additionalProperties':False},
-             {'type':'object','properties':{'calculations':PLAN_SCHEMA,'action':{'type':'string','const':'search'},'query':{'type':'string','minLength':1,'maxLength':2048}},
-              'required':['action','query','calculations'],'additionalProperties':False}]}
+    'required':['action','query','calculations'],'additionalProperties':False
+}
+
 
 
 def decision_schema(context):
@@ -73,8 +71,8 @@ ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_
     max_generations=2, decision_format='strict-none-search', final_format='strict-finops',
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
-    grounding='corpus-literal-passage-required-2048-v1',
-    arithmetic='decimal-plan-12-typed-operands-inherited-units-slots-v2',
+    grounding='corpus-literal-window-enums-2048-v2',
+    arithmetic='decimal-plan-12-typed-operands-private-segments-v3',
     decision_values='source-number-unit-enums-128-disable-on-overflow-v1')
 
 
@@ -153,7 +151,7 @@ class ChatResources:
         from app.agents.schemas import chat_provider_schema
         messages=continuation_messages(context,assistant,result)
         sources=context.get('authorized_evidence',[])+json.loads(result['content'])['evidence']
-        schema=chat_provider_schema(financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=sources)
+        schema=chat_provider_schema(financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=sources, calculations=json.loads(result['content']).get('calculations',[]))
         variable=self.count(canonical(messages[1:]).decode('utf-8'))
         total=self.count(canonical(messages).decode('utf-8'))+self.count(canonical(schema).decode('utf-8'))+self.count(canonical(decision_schema({"messages":messages})).decode('utf-8'))
         if total+1024+self.context_budget['output_tokens']>self.context_budget['context_tokens']:
