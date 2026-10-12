@@ -15,3 +15,12 @@
 - [x] 3.2 Corregir fixtures de JWT caducados en colección y respuesta HTTP pgvector.
 - [x] 3.3 Provisionar datos SQL sintéticos propios para los tres probes de summary y conservar sus aserciones.
 - [x] 3.4 Ejecutar la suite backend completa en contenedores aislados: 1671 PASS/47 SKIP, cero fallos/errores, exit 0 sobre 8294c48; evidencia y omisiones documentadas.
+
+
+## 4. Seleccion de evidencia y diagnostico de multiplicidad
+- [x] 4.1 Reproducir dos IDs nativos distintos en005/012 y comprobar capacidades publicas del endpoint.
+- [x] 4.2 Acotar esquema final al contexto efectivo, conservar firewall y coordinar conteo/manifiesto.
+- [x] 4.3 Cubrir fuentes desconocidas/duplicadas, procedencia alterada y multiples llamadas sin busqueda parcial.
+- [ ] 4.4 Demostrar control compatible de una sola llamada en el proveedor fijo.
+- [ ] 4.5 Validar esquema,018 y saludo reales; bloqueado por aprobacion automatica del envio/gasto especifico.
+- [ ] 4.6 Ejecutar full28 y navegador sobre una revision congelada; sin extrapolar resultados anteriores.

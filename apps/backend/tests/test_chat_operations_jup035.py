@@ -134,6 +134,20 @@ async def existing(client, payload, owner='alice'):
     return result.json()
 
 
+async def until_reserved(api, payload, owner='alice', *, claimed=False):
+    """Wait for the first POST's durable precondition, not a machine-speed sleep."""
+    async def poll():
+        while True:
+            runtime=getattr(api[0].state,'chat_service',None)
+            if runtime is not None:
+                row=await runtime._db(runtime.repository.existing,
+                    {'tenant_id':'t','user_id':owner,'conversation_id':owner+'-chat'}, payload['request_id'])
+                if row is not None and (not claimed or row['attempt_count']>0):
+                    return row
+            await asyncio.sleep(.005)
+    return await asyncio.wait_for(poll(),2)
+
+
 async def until_state(client, base, expected, owner='alice', *, attempt_count=None):
     for _ in range(100):
         r=await client.get(base,headers=headers(owner))
@@ -384,7 +398,7 @@ def test_provider_budget_accumulates_and_resume_respects_minimum_date(api):
         payload=body()
         task=asyncio.create_task(c.post(path(),json=payload,headers=headers()))
         try:
-            await asyncio.sleep(0.03)
+            await until_reserved(api,payload,claimed=True)
             op=await existing(c,payload)
             base=op['status_url']
             for expected_count in [1,2]:
@@ -552,11 +566,11 @@ def test_expired_claim_frees_slot_for_explicit_resume_without_restoring_wait_bud
         api[2].release=asyncio.Event()
         first_payload=body()
         first=asyncio.create_task(c.post(path(),json=first_payload,headers=headers()))
-        await asyncio.sleep(.04)
+        await until_reserved(api,first_payload,claimed=True)
         second_payload=body('bob')
         second=asyncio.create_task(c.post(path('bob'),json=second_payload,headers=headers('bob')))
         try:
-            await asyncio.sleep(.04)
+            await until_reserved(api,second_payload,'bob')
             op=await existing(c,second_payload,'bob')
             assert op['state']=='waiting' and op['attempt_count']==0
             api[3].advance(120)

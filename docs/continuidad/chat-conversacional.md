@@ -1,3 +1,29 @@
+## PR121: evidencia acotada, multiplicidad pendiente — 12/10/2026
+
+Encargo del usuario: «Prepara una orden de trabajo para que un agente corrija
+las llamadas múltiples y los problemas de evidencia en la PR-121 y mándaselo a
+un subagente». Implementación asistida del autor Alejandro. Código0d91d33:
+esquema final por intento con registros autorizados exactos, extensión HMAC,
+conteo coordinado y hash de ensamblador actualizado. Firewall independiente sin
+relajar; diagnósticos unknown/duplicate/provenance/multiple sin contenido.
+Processor134PASS; backend108PASS tras sincronizar dos fixtures que fallaron
+por esperar30/40ms en vez de una reserva SQL observable. Fallos conservados.
+Build backend/processor y hashes75/69PASS; OpenSpec67/67 y gobernanzaPASS.
+
+Reproducción real previa al bloqueo:005/012 devuelven dos IDs nativos distintos;
+019/020/022 una llamada en esta muestra. No hay control compatible demostrado
+para resolver multiplicidad conservando auto nativo/proveedor fijo/una llamada.
+No se truncan llamadas ni se cambian parámetros/routing. El nuevo esquema no
+se ha aceptado aún con el endpoint: auto-review rechazó dos veces el envío de
+018/saludo y gasto específico, exigiendo autorización humana. No se eludió.
+Full28/navegador finalesNOT_RUN; aceptación globalNO PASS. Delta virtual key
+processor0.0028309725USD; OpenRouter compartido0.012580027USD, no factura exclusiva.
+Claves/límites intactos; caducidad18:25UTC, no renovación implícita.
+
+[Informe, causas, comandos y próximos pasos](../evidence/jup-035-pr121-evidence-selection-20261012.md).
+Sustituye sólo el estado del código de evidencia de la campaña anterior; no
+convierte los22/28completed históricos en aceptación del parche nuevo.
+
 ## PR121: scheduler corregido, aceptación real NO PASS — 12/10/2026
 
 Continuación de «PR-121 corresponde a la orden de trabajo, verifica lo que se ha

@@ -1,5 +1,10 @@
 # Continuidad del proyecto
 
+12/10/2026 — [PR121: evidencia y multiplicidad](chat-conversacional.md):
+esquema acotado offline; processor134/backend108PASS, imágenes verificadas.
+Multiplicidad pendiente; aceptación real bloqueada por aprobación automática.
+[Informe vigente](../evidence/jup-035-pr121-evidence-selection-20261012.md).
+
 12/10/2026 — [PR121: recuperación y aceptación real](chat-conversacional.md):
 planificador corregido; matriz auto real positiva, full28 con22 completed/6 failed
 y fallo de evidencia en envío de navegador. Aceptación NO PASS. [Evidencia](../evidence/jup-035-pr121-live-20261012.md).

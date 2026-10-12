@@ -25,5 +25,20 @@ no una incapacidad de GLM, DeepInfra, OpenRouter o LiteLLM. La coexistencia del
 schema estricto es una hipotesis de proveedor que no se prueba sin presupuesto.
 
 ## Rollout
-Parche para Paris en rama propia. Revision Alejandro y validacion Lucia
-independientes siguen pendientes. No push a la rama original, merge o despliegue.
+Implementacion de Alejandro en PR121 sobre la base de Paris. Revision de Victor
+y validacion de Lucia siguen pendientes. No push a la rama original, merge ni
+cambio del despliegue compartido.
+
+
+## Seleccion de evidencia por intento (12/10/2026)
+El esquema estatico del manifiesto es una plantilla. Antes de finalizar se
+construye su variante efectiva con los registros autenticados iniciales y la
+extension HMAC ya validada. Cada alternativa fija id, kind, title y source; una
+lista vacia solo admite estados no accionables sin citas. Backend y processor
+cuentan esa variante. El backend conserva un firewall independiente: no confia
+en que el proveedor respete el esquema y nunca repara un candidato invalido.
+El hash de ensamblador identifica effective-context-exact-records-v1.
+
+Las llamadas multiples del endpoint actual se reproducen y permanecen
+rechazadas; no se presentan como corregidas sin un control compatible probado.
+El nuevo esquema tiene regresiones offline; su aceptacion real sigue pendiente.
