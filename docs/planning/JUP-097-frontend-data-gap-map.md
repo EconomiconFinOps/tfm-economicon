@@ -27,6 +27,10 @@ del backend y cuáles son de demostración) está en la sección «Rutas» de
 [`apps/frontend/README.md`](../../apps/frontend/README.md#rutas), no aquí.
 `RF-091-003` y `RF-095-002` permanecen abiertos; esto no modifica el estado operativo de las tarjetas.
 
+Actualización — **12/10/2026 (JUP-116)**: `/operational`, `/cuts` y `/recommendations` ya no tienen ruta ni
+entrada de menú (sus archivos, datos y pruebas se conservan; ver «Pantallas no publicadas» en el README del
+frontend). Sus filas siguientes describen ahora lo que necesitarían para volver a publicarse con datos reales.
+
 ## Tabla: pantalla → dato → capacidad ausente → finding
 
 | Pantalla (componente) | Ruta | Módulo de demostración | Dato | Capacidad ausente | Finding |

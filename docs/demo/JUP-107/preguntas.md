@@ -15,6 +15,6 @@ Respaldo para la ronda de preguntas. Cada fila dice qué paso de [guion.md](guio
 | ¿Un cliente ve los costes de otro? | D9 | No: al cambiar a Core Finance no aparece ningún coste de Growth Ops. Es una demostración visual; el aislamiento está cubierto por sus propias pruebas. |
 | ¿Por qué pone «Azure» en pantalla si los datos no son de Azure? | D1 | Los rótulos de la interfaz dicen Azure porque los datos tienen la forma de los costes de Azure, pero son sintéticos: no son facturas ni proceden del dataset público. |
 | ¿Son datos reales? | D1, D10 | No: son datos sintéticos creados para probar la aplicación; no vienen de Azure ni del dataset público. |
-| ¿Funciona el ahorro potencial, las anomalías o las recomendaciones con estos datos? | D10 | No: esas pantallas usan datos fijos de la maqueta y no salen de estos costes; el ahorro potencial no está disponible. |
+| ¿Funciona el ahorro potencial, las anomalías o las recomendaciones con estos datos? | D10 | No: Anomalías usa datos fijos de la maqueta y no sale de estos costes, las pantallas de recomendaciones, recortes y coste detallado no se publican, y el ahorro potencial no está disponible. |
 
 No improvisar cifras: si una pregunta no está en la tabla, decir que no se ha comprobado con estos datos.

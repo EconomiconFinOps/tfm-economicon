@@ -13,11 +13,11 @@
 
 ## 3. Documentación
 
-- [ ] 3.1 `apps/frontend/README.md`: reescribir la tabla «Rutas» con las pantallas publicadas, la ruta puente sin menú y una sección de pantallas no publicadas (dónde están y cómo reactivarlas con una ruta y una entrada de menú); rehacer el recuento y su fecha.
-- [ ] 3.2 `docs/planning/JUP-097-frontend-data-gap-map.md`: anotar que las tres pantallas ya no se publican y que la tabla describe lo que necesitarían para volver.
-- [ ] 3.3 `docs/demo/JUP-107/` (`README.md`, `guion.md`, `esperados.json`): sustituir la advertencia de «no abrir estas pantallas» por la de que ya no se publican, y volver a ejecutar `synthetic-demo:test`.
-- [ ] 3.4 `openspec/findings/backlog.md`: cerrar `RF-104-004` con su motivo; actualizar `RF-095-002`, `RF-091-003` y `RF-105-001` (el menú ya no enlaza Overview; la ruta sigue y el inventario de pruebas que la usan sigue vigente).
-- [ ] 3.5 Resumen de continuidad en `docs/continuidad/` y su índice.
+- [x] 3.1 `apps/frontend/README.md`: reescribir la tabla «Rutas» con las pantallas publicadas, la ruta puente sin menú y una sección de pantallas no publicadas (dónde están y cómo reactivarlas con una ruta y una entrada de menú); rehacer el recuento y su fecha. Hecho: tabla de rutas con 6 filas, recuento nuevo y sección «Pantallas no publicadas» con la forma de reactivarlas; también el párrafo de `RF-095-002` y `docs/architecture.md`.
+- [x] 3.2 `docs/planning/JUP-097-frontend-data-gap-map.md`: anotar que las tres pantallas ya no se publican y que la tabla describe lo que necesitarían para volver. Hecho: nota de actualización antes de la tabla.
+- [x] 3.3 `docs/demo/JUP-107/` (`README.md`, `guion.md`, `esperados.json`): sustituir la advertencia de «no abrir estas pantallas» por la de que ya no se publican, y volver a ejecutar `synthetic-demo:test`. Hecho: `guion.md`, `esperados.json`, `preguntas.md` y `README.md` de JUP-107; `synthetic-demo:test` pasa (40 pruebas). `FIXED_DATA_ROUTES` de la prueba no cambia porque `/anomalies` sigue siendo ruta de datos fijos en `develop`.
+- [x] 3.4 `openspec/findings/backlog.md`: cerrar `RF-104-004` con su motivo; actualizar `RF-095-002`, `RF-091-003` y `RF-105-001` (el menú ya no enlaza Overview; la ruta sigue y el inventario de pruebas que la usan sigue vigente). Hecho: `RF-104-004` pasa a `Fixed`; `RF-095-002`, `RF-091-003` y `RF-105-001` reciben nota y siguen `Open`.
+- [x] 3.5 Resumen de continuidad en `docs/continuidad/` y su índice. Hecho: `docs/continuidad/pantallas-ocultas-mvp.md` y su fila de índice.
 
 ## 4. Comprobación en el navegador
 

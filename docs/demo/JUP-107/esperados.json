@@ -166,8 +166,8 @@
       "screen": "none",
       "limits": true,
       "action": "Sin tocar la pantalla.",
-      "say": "Para ser claros con los límites: son datos sintéticos; Anomalías, Recomendaciones, Corte global y Coste detallado usan datos fijos de la maqueta y no salen de estos costes; y el ahorro potencial no está disponible.",
-      "expect": "Nada que comprobar en pantalla. Esas pantallas (`/anomalies`, `/recommendations`, `/cuts`, `/operational`) no leen los costes cargados: no abrirlas como si lo hicieran."
+      "say": "Para ser claros con los límites: son datos sintéticos; Anomalías usa datos fijos de la maqueta y no sale de estos costes; y el ahorro potencial no está disponible.",
+      "expect": "Nada que comprobar en pantalla. Esa pantalla (`/anomalies`) no lee los costes cargados: no abrirla como si los leyera. Coste Detallado, Corte Global y Recomendaciones ya no se publican."
     },
     {
       "id": "D11",

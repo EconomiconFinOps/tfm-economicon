@@ -73,8 +73,8 @@ Antes de empezar, seguir [preparacion.md](preparacion.md) hasta tener los datos 
 
 - **Duración:** 15 s
 - **Acción:** Sin tocar la pantalla.
-- **Qué decir:** «Para ser claros con los límites: son datos sintéticos; Anomalías, Recomendaciones, Corte global y Coste detallado usan datos fijos de la maqueta y no salen de estos costes; y el ahorro potencial no está disponible.»
-- **Resultado esperado:** Nada que comprobar en pantalla. Esas pantallas (`/anomalies`, `/recommendations`, `/cuts`, `/operational`) no leen los costes cargados: no abrirlas como si lo hicieran.
+- **Qué decir:** «Para ser claros con los límites: son datos sintéticos; Anomalías usa datos fijos de la maqueta y no sale de estos costes; y el ahorro potencial no está disponible.»
+- **Resultado esperado:** Nada que comprobar en pantalla. Esa pantalla (`/anomalies`) no lee los costes cargados: no abrirla como si los leyera. Coste Detallado, Corte Global y Recomendaciones ya no se publican.
 
 ### D11 · Opcional: un importe fuera del rango seguro
 
