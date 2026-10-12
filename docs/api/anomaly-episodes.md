@@ -27,7 +27,7 @@ estados; no hay permisos por rol.
 | Ruta | Uso |
 | --- | --- |
 | `POST /billing/anomalies/detect` | «Detectar ahora». Sin cuerpo: un cuerpo no vacio da 422, despues de comprobar sesion, cabecera y pertenencia. |
-| `GET /billing/anomalies/episodes?scope=open\|all` | Lista; por defecto `open` (`new` e `investigating`). Solo lee: nunca detecta. |
+| `GET /billing/anomalies/episodes?scope=open\|all` | Lista; por defecto `open` (`new` e `investigating`). Devuelve tambien `last_evaluated_date` (null si nunca se detecto), `includes_synthetic_data` y `open_impact_by_currency` (ver abajo). Solo lee: nunca detecta. |
 | `GET /billing/anomalies/episodes/{id}` | Un episodio del tenant activo. |
 | `PATCH /billing/anomalies/episodes/{id}` | Cambio de estado con `{"status": ..., "reason": ...}`. |
 
@@ -73,10 +73,10 @@ salta si   esperado > 0
   tenant en cualquier moneda. Si no, se salta con `not_observed` o
   `reference_incomplete` y no abre, extiende, termina ni suma impacto.
 - Cada tenant guarda hasta que dia se evaluo. Una ejecucion evalua, en orden,
-  los dias posteriores hasta el ultimo dia completo, como maximo los 7 mas
-  recientes; en la primera, los 7 dias que terminan en el ultimo dia completo.
-  Si quedan dias mas antiguos sin evaluar, la respuesta los devuelve en
-  `unevaluated_range`.
+  todos los dias posteriores hasta el ultimo dia completo; en la primera, toda
+  la historia desde el primer dia con datos del tenant (los 7 primeros dias se
+  saltan porque no tienen referencia). No hay limite de dias por ejecucion: una
+  pulsacion y una pulsacion por dia guardan los mismos episodios.
 - Repetir sin dias nuevos devuelve `up_to_date` y no cambia nada. Sin ningun
   dia evaluable devuelve `insufficient_data` y no guarda nada.
 - La ejecucion es una sola transaccion: si dos coinciden, una devuelve
@@ -92,7 +92,6 @@ Respuesta de `POST /billing/anomalies/detect`:
 | `rules_version` | `jup019-daily-v1`. |
 | `last_complete_day` | Ultimo dia completo, o null sin datos. |
 | `evaluated_days`, `skipped_days` | Dias evaluados y saltados con su motivo. |
-| `unevaluated_range` | Dias pendientes que no se evaluaron por el limite de 7, o null. |
 | `unsupported_currencies` | Monedas presentes en la ventana que no se evaluan. |
 | `opened`, `continued`, `no_longer_observed` | Episodios abiertos, que volvieron a saltar y que dejaron de observarse en esta ejecucion. |
 
@@ -119,6 +118,14 @@ Respuesta de `POST /billing/anomalies/detect`:
 La lista se ordena por criticidad (P1 a P3), impacto descendente, inicio mas
 reciente e `id`. Cada episodio muestra su impacto en su moneda; no hay totales
 entre monedas.
+
+Ademas de los episodios, para cualquier `scope`, la lista devuelve:
+
+| Campo | Significado |
+| --- | --- |
+| `last_evaluated_date` | Ultimo dia evaluado del tenant («Revisado hasta»), o null si nunca se detecto. |
+| `includes_synthetic_data` | `true` si alguna ingesta completada del tenant lleva la marca `synthetic` (herramientas de JUP-106 y JUP-107). No dice que el resto sea real: hoy la ingesta usa el simulador con el dataset publico. |
+| `open_impact_by_currency` | Impacto acumulado de los episodios `new` e `investigating`, una entrada por moneda, sumado de forma exacta y redondeado una sola vez. Nunca se suman monedas. |
 
 Campos de cada episodio: `id`, `kind: cost_anomaly_candidate`, `currency`,
 `service`, `start_date`, `last_seen_date`, `observation`,
@@ -174,7 +181,7 @@ start = date(2026, 9, 1)
 values = ["400.00"] * 7 + ["550.00", "650.00", "400.00"]
 daily = {("EUR", "Compute"): {start + timedelta(days=i): Decimal(v) for i, v in enumerate(values)}}
 window = detection_window(today=date(2026, 10, 12), last_evaluated=None,
-                          latest_observed=date(2026, 9, 10))
+                          latest_observed=date(2026, 9, 10), earliest_observed=start)
 plan = plan_detection(window, tenant_id="example-tenant", observed_days=set(daily[("EUR", "Compute")]),
                       daily=daily, episodes=[])
 [episode] = plan.opened
@@ -190,7 +197,7 @@ completed ['2026-09-08', '2026-09-09']
 2026-09-08 2026-09-09 400.00 400.00 2 P3
 ```
 
-El 10 de septiembre es el ultimo dia con datos y no se evalua; del 3 al 7 se
+El 10 de septiembre es el ultimo dia con datos y no se evalua; del 1 al 7 se
 saltan porque no tienen 7 dias previos con datos. El 8 sube 150 sobre 400 y abre
 el episodio; el 9 sube 250 y lo continua; el impacto acumulado es 400.
 
@@ -206,9 +213,6 @@ registran ninguna herramienta del agente.
 ## Limitaciones
 
 - Un dia puede evaluarse antes de que lleguen datos tardios; no se reevalua.
-- Si entre dos ejecuciones pasan mas de 7 dias, los anteriores no se evaluan
-  (se devuelven en `unevaluated_range`). La ejecucion periodica de la etapa 2
-  debe poner al dia todos los dias pendientes.
 - Un gasto nuevo desde cero no abre episodio (no hay porcentaje).
 - Los ciclos semanales pueden dar candidatas falsas y un pico reciente infla la
   media de 7 dias.

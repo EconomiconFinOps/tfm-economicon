@@ -20,7 +20,7 @@ JUP-030 evalúa candidatas bajo demanda con reglas que manda quien llama y no gu
 5. **Impacto acumulado** = suma, cada día evaluado mientras el episodio está en seguimiento, de `max(0, observado − referencia)`. **Severidad** sobre ese impacto en la moneda del episodio: P1 > 2000, P2 de 500 a 2000, P3 < 500. Es la lectura de «EUR/mes» como impacto del episodio y no como proyección mensual (con una proyección ×30 casi todo sería P1); pendiente de confirmar con la responsable de las reglas.
 6. **Monedas:** umbrales nominales en EUR y USD, sin conversión. Otras monedas no se evalúan y la ejecución las informa.
 7. **Estados** `new`, `investigating`, `resolved`, `false_positive` (los de JUP-019 sin `acknowledged`), motivo obligatorio al cerrar, quién y cuándo cambió el estado, quién y cuándo hizo el primer cambio desde `new` (reconocimiento, para MTTA) y fecha de cierre (MTTR). Cualquier miembro del tenant puede cambiar el estado.
-8. **Ejecución bajo demanda** («Detectar ahora»), idempotente, con una marca de agua por tenant: evalúa los días pendientes hasta el último día completo, como máximo los 7 más recientes, en una sola transacción. Abrir el panel solo lee.
+8. **Ejecución bajo demanda** («Detectar ahora»), idempotente, con una marca de agua por tenant: evalúa todos los días pendientes hasta el último día completo (en la primera, toda la historia) en una sola transacción. El límite inicial de 7 días por pulsación se quitó en el change `jup-114-anomalies-panel-live` (decisión de Lucia del 2026-10-12), porque impedía que la subida de Compute de la demo apareciera como episodio. Abrir el panel solo lee.
 9. **Reglas versionadas** (`jup019-daily-v1`) copiadas en cada episodio.
 10. **La consulta de JUP-030 no cambia** (límites `>=`, reglas independientes y configurables): queda como consulta de prueba sin guardar. Los episodios son la fuente para el panel y JUP-038.
 11. **El documento de reglas del corpus no se modifica** en este cambio: la regla que aplicamos es la misma y las aclaraciones (lo esperado, criticidad por acumulado, estados del MVP) se incorporan con JUP-038, regenerando las huellas en cadena de las evaluaciones.
@@ -29,7 +29,7 @@ JUP-030 evalúa candidatas bajo demanda con reglas que manda quien llama y no gu
 
 - El panel y el asistente leen episodios estables, priorizados y con estado trazable; los KPI MTTA y MTTR son calculables.
 - Se detectan picos de un día y subidas sostenidas; P1, P2 y P3 son alcanzables.
-- Limitaciones aceptadas: un día puede evaluarse antes de que lleguen datos tardíos; si entre pulsaciones pasan más de 7 días, los anteriores no se evalúan (la respuesta lo dice); un gasto nuevo desde cero no abre episodio; los ciclos semanales pueden producir candidatas falsas; un pico reciente infla la media de 7 días; si se cierra un episodio con el gasto aún alto, la media puede no volver a saltar; solo se vigila el servicio; 1 USD se trata como 1 EUR a efectos de umbral.
+- Limitaciones aceptadas: un día puede evaluarse antes de que lleguen datos tardíos; un gasto nuevo desde cero no abre episodio; los ciclos semanales pueden producir candidatas falsas; un pico reciente infla la media de 7 días; si se cierra un episodio con el gasto aún alto, la media puede no volver a saltar; solo se vigila el servicio; 1 USD se trata como 1 EUR a efectos de umbral.
 - Son candidatas: no se afirma causa, ahorro, confianza estadística ni completitud de los datos.
 
 ## Alternatives Considered
@@ -38,10 +38,10 @@ JUP-030 evalúa candidatas bajo demanda con reglas que manda quien llama y no gu
 - **Reutilizar la evaluación de JUP-030 y su `id`:** descartada. El `id` incluye periodo y reglas y no identifica un episodio; sus límites son inclusivos e independientes.
 - **Recalcular todos los episodios desde cero en cada pulsación:** descartada. Leería toda la historia y mezclaría episodios terminados con días ya vistos; la marca de agua da idempotencia con lecturas acotadas.
 - **Comparar con el día anterior:** descartada por sensible a un solo día raro.
-- **Sin límite de 7 días por pulsación:** posible y barato; se mantiene el límite por decisión de alcance y se revisará con la ejecución periódica.
+- **Límite de 7 días por pulsación:** fue la decisión inicial para acotar cada ejecución; se descartó en el change 2 porque con una sola pulsación la demo no enseñaba la subida de Compute, y quitarlo costaba poco gracias a la marca de agua.
 
 ## Evidence And Follow-up
 
 - Evidencia: [JUP-114-validation.md](../evidence/JUP-114-validation.md).
-- **Obligatorio en la etapa 2** (change `jup-114-anomaly-alerts-schedule`): la ejecución periódica debe poner al día todos los días pendientes, porque el entorno no está siempre encendido.
+- **Etapa 2** (change `jup-114-anomaly-alerts-schedule`): la ejecución periódica llama a la misma detección, que ya pone al día todos los días pendientes aunque el entorno haya estado apagado.
 - Trabajo futuro, registrado en `openspec/findings/backlog.md`: incorporar las aclaraciones al corpus del asistente con JUP-038; tabla de umbrales por moneda o conversión documentada; línea base predictiva (modelo que aprenda el patrón esperado, por ejemplo con ciclos semanales); responsable asignado y permisos por rol; archivado automático de episodios no observados; histórico completo de cambios de estado; otras dimensiones además del servicio.
