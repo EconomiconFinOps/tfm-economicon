@@ -459,3 +459,82 @@ Hallazgos del tester para Green:
 2. Un `str` ya decodificado es indistinguible de texto: un JSONB que sea el texto `"x"` llega como `str`
    `x`, y `json.loads('x')` falla; ambos deben acabar en `InvalidJobMessage`.
 3. `None` ya decodificado, `NULL` y el texto `null` devuelven `{}`.
+
+### Green (tareas 5.3 y 5.4), 2026-10-11
+
+Producto modificado (solo `apps/processor/app/tasks/ingest.py`): función privada `_stored_result`, que la rama
+`completed` de `IngestTask.execute` usa en lugar de `json.loads(result) if isinstance(result, str) else
+result or {}`. Decodifica el texto con `json.loads` (si falla, `InvalidJobMessage("Invalid job message.") from
+None`), devuelve `{}` para `None`, devuelve el valor si es `dict` y rechaza cualquier otra cosa. La forma se
+valida sobre cualquier valor y no solo sobre el texto: SQLite entrega `123` y `0` como entero por afinidad
+de la columna y CockroachDB entrega el JSONB ya decodificado. No se usa `or {}`, que convertía `[]`, `0`,
+`False` y `""` en «sin resultado». Ningún test cambia desde el commit Red.
+
+- `test_completed_result_shape.py`: **56 pasan** (antes 45 fallaban).
+- **Tarea 5.4**: `test_ingest_redelivery.py` pasa sin editar (50 pasan), incluidos
+  `test_completed_redelivery_returns_stored_result_in_any_representation`,
+  `test_completed_redelivery_ignores_payload_serialization_differences` y
+  `test_completed_job_is_not_a_shortcut_around_message_validation`.
+- Suite completa del processor: **810 pasan, 65 se omiten, 0 fallan** (754 más los 56 nuevos).
+
+### Mutación (tarea 5.5), 2026-10-11
+
+Contenedor desechable `python:3.12` sobre una copia del árbol (repositorio en solo lectura), mutantes
+manuales sobre `_stored_result` y `execute`, con siete suites del processor como ejecutor.
+
+Primera pasada: 17 mutantes, **14 muertos y 3 supervivientes**. Los muertos cubren no decodificar el texto,
+quitar `ValueError` del `except`, no rechazar el texto corrupto, convertir los falsy en `{}`, que `None`
+no devuelva `{}` o devuelva `None`, aceptar listas, enteros o cadenas, devolver siempre `{}`, que el rechazo
+final devuelva `{}`, cambiar el mensaje y no usar la validación en `execute`.
+
+| Superviviente | Tratamiento |
+| --- | --- |
+| Quitar `RecursionError` del `except` | **Hueco real.** Una anidación patológica no estaba probada. Caso nuevo del tester |
+| Quitar `from None` del primer `raise` | **Hueco real.** El `JSONDecodeError` guarda el texto íntegro en `.doc`; sin `from None` queda en `__context__`. Caso nuevo del tester |
+| Quitar `TypeError` del `except` | **Código muerto**: `json.loads` sobre un `str` nunca lanza `TypeError`. Simplificado por el coder, que es la excepción única que le permite el harness |
+
+Remediación: `apps/processor/tests/test_completed_result_exposure.py` (nuevo, 6 casos). Anidación de 100000
+niveles como lista y como objeto (con una sonda que falla si el intérprete deja de lanzar `RecursionError`),
+a través de `IngestTask` y del worker (un `nack(requeue=False)`, sin `worker_loop_failed`), y que la
+excepción de un texto corrupto lleva `__cause__ is None` y `__suppress_context__ is True` y no contiene el
+marcador del resultado. Estas pruebas pasan contra el código real: el producto ya era correcto y faltaba la
+prueba que lo fijara, así que no hay Red. El tester razonó, pero no pudo comprobar en su entorno, que matan
+a los mutantes; lo hizo el orquestador en contenedor, con la línea base de 198 pasan y 6 omitidas:
+
+| Mutante | Resultado |
+| --- | --- |
+| Sin `RecursionError` en el `except` | muerto |
+| Sin `from None` en el `raise` del `except` | muerto |
+| Repaso: no decodificar el texto; falsy a `{}`; aceptar enteros | muertos |
+
+`TypeError` ya no figura en `_stored_result`; sigue en el `except (ValueError, TypeError)` de `_payload`, que
+no es de este change y no se toca. Hallazgo del tester: `raise ... from None` deja `__context__` apuntando
+al `JSONDecodeError` y solo pone `__suppress_context__`, de modo que no se puede exigir `__context__ is
+None`; la traza formateada tampoco contiene el marcador sin `from None` (el mensaje del error no repite
+`.doc`), por lo que la aserción que mata ese mutante es `__suppress_context__`.
+
+Límite: mutantes manuales sobre las líneas del grupo, no una herramienta automática sobre el archivo entero.
+El `raise` final de `_stored_result` (resultado que no es objeto) también lleva `from None` y no se cubre por
+separado: ahí no hay contexto que suprimir.
+
+### DoD y QA del grupo 5
+
+**QA (agente independiente): `accept-with-notes`**, sin hallazgos que bloqueen. Comprobó con comandos propios:
+ningún test commiteado cambia desde el commit Red; el producto es solo `tasks/ingest.py` y mínimo, sin tocar
+`runner.py`, `rabbitmq_queue.py` ni `guardrails.py`; los cuatro escenarios de la spec tienen prueba, con las
+comprobaciones comunes de rechazo (tipo exacto, mensaje, marcador ausente de `str`, `repr` y traza, solo
+`fetch_authorized_job`, fila sin cambios y contador sin cambios) y la salida por el worker; los cinco casos de
+`test_completed_redelivery_returns_stored_result_in_any_representation` siguen siendo compatibles; y 172
+pasan en las cinco suites relacionadas. Juzgó correcta la aserción `__suppress_context__ is True` para el
+mutante sin `from None` (atributo estándar de Python, no un detalle frágil) y que la sonda de `RecursionError`
+evita un falso verde en otro intérprete. Limitación declarada por QA: no pudo repetir la mutación porque no
+puede crear copias del árbol; se apoya en la repetición del orquestador.
+
+Notas: (1) el docstring de `test_completed_result_exposure.py` citaba el `except` anterior con `TypeError`;
+corregido por el orquestador, es solo un comentario de un archivo nuevo sin trackear. (2) **La rama del JSONB
+ya decodificado se emula con un doble (`DecodedResultRepository` y el adaptador `decode_result`); no se ha
+ejecutado contra CockroachDB real.** No debe contarse como validada con CockroachDB: es parte de la
+comprobación opt-in con servicios reales del grupo 6. Solo se ejecuta la variante SQLite.
+
+**DoD:** no se ejecutó `check-dod.mjs` completo en este grupo; el processor completo pasa (810 pasan, 65 se
+omiten, 0 fallan) y la regresión completa en contenedor Linux, lint y type-check son las tareas 8.1 y 8.3.

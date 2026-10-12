@@ -59,6 +59,32 @@ def _payload(job: dict, *, persisted: bool = False) -> dict:
     return {"artifact_uri": None, "metadata": {}, **payload}
 
 
+def _stored_result(result) -> dict:
+    """Devuelve el resultado guardado de un trabajo `completed` como objeto, o lo rechaza (RF-054-001).
+
+    Se rechaza con `InvalidJobMessage` y no se relanza el error de decodificacion: el worker
+    descarta ese tipo con `nack(requeue=False)`, y un resultado corrupto no se arregla
+    reentregando el mismo mensaje (antes un `JSONDecodeError` caia en el camino generico,
+    se reencolaba y fallaba igual sin fin).
+    Se usa `from None` y nunca se formatea el valor: el resultado guardado puede contener
+    datos del tenant y no debe aparecer en el mensaje, la excepcion ni la traza.
+    """
+    if isinstance(result, str):
+        try:
+            result = json.loads(result)
+        except (ValueError, RecursionError):
+            # `RecursionError` cubre una anidacion patologica que `json.loads` no acota.
+            raise InvalidJobMessage("Invalid job message.") from None
+    # La forma se valida sobre CUALQUIER valor y no solo sobre el texto: CockroachDB entrega
+    # el JSONB ya decodificado y SQLite entrega `123`/`0` como entero por afinidad de columna.
+    # Por eso tampoco se usa `or {}`, que convertiria `[]`, `0`, `False` o `""` en "sin resultado".
+    if result is None:
+        return {}
+    if isinstance(result, dict):
+        return result
+    raise InvalidJobMessage("Invalid job message.") from None
+
+
 class IngestTask:
     def __init__(self, repository: JobRepository, pipeline: PipelineRunner):
         self.repository = repository
@@ -84,8 +110,7 @@ class IngestTask:
         ):
             raise InvalidJobMessage("Invalid job message.")
         if stored["status"] == "completed":
-            result = stored.get("result")
-            return json.loads(result) if isinstance(result, str) else result or {}
+            return _stored_result(stored.get("result"))
 
         self.repository.mark_running(job_id, **scope)
         try:

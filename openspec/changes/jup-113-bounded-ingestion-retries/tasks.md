@@ -84,10 +84,10 @@ del backend (`RF-105-004`).
   y `""`, que hoy se convierten en `{}` por la precedencia de `... if ... else result or {}`;
   `null` como texto o ausente devuelve `{}`.
 - [x] 5.2 Red, processor: a través del worker, esos casos terminan en `nack(requeue=False)`.
-- [ ] 5.3 Green, processor: validación del resultado en `IngestTask` (decisión 6).
-- [ ] 5.4 Comprobar que `test_completed_redelivery_returns_stored_result_in_any_representation` pasa
+- [x] 5.3 Green, processor: validación del resultado en `IngestTask` (decisión 6).
+- [x] 5.4 Comprobar que `test_completed_redelivery_returns_stored_result_in_any_representation` pasa
   sin cambios.
-- [ ] 5.5 Mutación sobre la validación del resultado; cubrir los mutantes que sobrevivan.
+- [x] 5.5 Mutación sobre la validación del resultado; cubrir los mutantes que sobrevivan.
 
 ## 6. Comprobación con servicios reales (opt-in, fuera de CI)
 
