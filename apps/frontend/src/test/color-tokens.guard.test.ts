@@ -48,13 +48,19 @@ interface ColorException {
 const EXCEPTIONS: ColorException[] = [
   {
     file: "src/components/ExportButton.tsx",
-    value: "#1e40af",
+    value: "#2b2359",
     reason:
-      "El <style> del documento HTML autónomo que se abre en otra ventana para imprimir a PDF no carga theme.css, así que no puede resolver tokens ni var(--...).",
+      "El <style> del documento HTML autónomo que se abre en otra ventana para imprimir a PDF no carga theme.css, así que no puede resolver tokens ni var(--...). Usa el índigo de marca.",
   },
   {
     file: "src/components/ExportButton.tsx",
-    value: "#ddd",
+    value: "#fafafc",
+    reason:
+      "Mismo motivo: texto de la cabecera de la tabla del documento de exportación (blanco roto de marca).",
+  },
+  {
+    file: "src/components/ExportButton.tsx",
+    value: "#d9d5f2",
     reason:
       "Mismo motivo: color de borde dentro del <style> del documento de exportación, que vive fuera de la aplicación y de theme.css.",
   },
@@ -327,7 +333,7 @@ describe("guardián de colores - bordes del detector (en memoria)", () => {
     expect(isAllowed("src/components/ui/dialog.tsx", "bg-black/60")).toBe(
       false,
     );
-    expect(isAllowed("src/components/ExportButton.tsx", "#DDD")).toBe(true);
+    expect(isAllowed("src/components/ExportButton.tsx", "#D9D5F2")).toBe(true);
     expect(isAllowed("src/components/ExportButton.tsx", "#fff")).toBe(false);
   });
 });

@@ -193,29 +193,38 @@ cambie el color en todas las pantallas que lo consumen sin tocar ninguna de ella
 - **THEN** todas esas pantallas muestran el color nuevo
 - **AND** ningún archivo de pantalla ni de componente cambia
 
-### Requirement: El tema define una única paleta activa
+### Requirement: El armazón presenta la marca de Economicon
 
-El tema SHALL definir una única paleta de colores, activa sin depender de ninguna clase ni atributo
-en el documento. NO SHALL existir una segunda paleta ni un ámbito alternativo sin consumidor.
+El armazón común SHALL mostrar el nombre "Economicon" y el monograma de marca en su cabecera, y NO SHALL mostrar el nombre ni el icono del prototipo anterior ("FinOps AI Platform", "FinOps Control Tower"). La navegación activa SHALL distinguirse con tokens del tema, sin usar el violeta reservado a botones.
 
-#### Scenario: La paleta no depende de un ámbito declarado
+#### Scenario: Cabecera sin identidad antigua
 
-- **WHEN** se carga la aplicación sin ninguna clase de tema en el documento
-- **THEN** pantallas y componentes compartidos se presentan con la paleta de la aplicación
+- **WHEN** se abre cualquier pantalla del armazón
+- **THEN** la cabecera muestra "Economicon" y el monograma
+- **AND** no aparece el texto "FinOps AI Platform" ni el título de pestaña "FinOps Control Tower"
 
-#### Scenario: No hay paleta paralela
+#### Scenario: Elemento de navegación activo
+
+- **WHEN** una ruta está activa en la navegación
+- **THEN** su elemento se distingue del resto con un token del tema distinto del violeta de botones
+- **AND** la distinción no depende solo del color (borde o peso tipográfico)
+
+### Requirement: El tema define una paleta clara y una oscura con los mismos tokens
+
+El tema SHALL definir dos paletas, una clara activa por defecto y una oscura que se activa mediante un atributo del documento, y ambas SHALL declarar exactamente el mismo conjunto de tokens, cada uno con una sola definición por paleta. NO SHALL existir una tercera paleta ni tokens que solo existan en una de ellas, y cada token SHALL tener al menos un consumidor.
+
+#### Scenario: Las dos paletas tienen los mismos tokens
 
 - **WHEN** se inspecciona la definición del tema
-- **THEN** cada token de color tiene una sola definición
-- **AND** no existe un bloque alternativo de tokens para otro tema
+- **THEN** el conjunto de tokens de color de la paleta clara es idéntico al de la oscura
+- **AND** cada token está definido una sola vez en cada paleta
 
-### Requirement: La unificación de colores no altera el aspecto de las pantallas
+#### Scenario: La paleta oscura depende del atributo
 
-La sustitución de colores literales por tokens SHALL conservar el aspecto de cada pantalla: cada
-token SHALL reproducir el valor que sustituye, sin consolidar tonos distintos en uno.
+- **WHEN** el documento no declara el tema oscuro
+- **THEN** pantallas y componentes compartidos se presentan con la paleta clara
 
-#### Scenario: Comparación antes y después
+#### Scenario: Token sin consumidor
 
-- **WHEN** se captura cada pantalla de la aplicación con los mismos datos antes y después de la
-  unificación
-- **THEN** las capturas coinciden, o cada diferencia queda explicada y aceptada una a una
+- **WHEN** un token declarado no lo usa ninguna pantalla, componente ni gráfica
+- **THEN** la batería de pruebas del frontend falla señalando el token

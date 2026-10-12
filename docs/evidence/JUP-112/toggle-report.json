@@ -1,0 +1,39 @@
+{
+  "claroInicial": {
+    "dataTheme": null,
+    "bg": "rgb(250, 250, 252)",
+    "serie": "rgb(142, 59, 138)|none"
+  },
+  "trasAlternar": {
+    "dataTheme": "dark",
+    "bg": "rgb(20, 18, 31)",
+    "serie": "rgb(181, 101, 169)|none",
+    "sinRecarga": true,
+    "guardado": "dark",
+    "aria": "true"
+  },
+  "trasRecargar": {
+    "dataTheme": "dark",
+    "bg": "rgb(20, 18, 31)"
+  },
+  "sistemaOscuro": {
+    "dataTheme": "dark",
+    "bg": "rgb(20, 18, 31)"
+  },
+  "eleccionClaraConSistemaOscuro": {
+    "dataTheme": null,
+    "guardado": "light"
+  },
+  "eleccionClaraTrasRecargar": {
+    "dataTheme": null
+  },
+  "hostsSolicitados": [
+    "127.0.0.1:57487",
+    "gc.kis.v2.scr.kaspersky-labs.com",
+    "localhost:8000"
+  ],
+  "fuentesCargadas": [
+    "Inter Variable",
+    "Space Grotesk Variable"
+  ]
+}
