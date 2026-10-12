@@ -24,4 +24,4 @@
 - [x] 4.2 Recorrer con el stack real las pantallas en tema claro y oscuro y comprobar que no queda texto propio en inglés ni desbordes por textos más largos
 - [x] 4.3 Revisión adversarial con el agente `adversarial-reviewer` hasta `accept` y `review.md`
 - [x] 4.4 Evidencia de validación en `docs/evidence/JUP-117-validation.md` y actualización de `docs/continuidad`
-- [ ] 4.5 `## Human Approval` posterior a la revisión, archivo del change en el mismo PR y apertura del PR contra `develop`
+- [x] 4.5 `## Human Approval` posterior a la revisión, archivo del change en el mismo PR y apertura del PR contra `develop` (Human Approval de Lucia del 2026-10-12; el PR se abre justo después del archivo)

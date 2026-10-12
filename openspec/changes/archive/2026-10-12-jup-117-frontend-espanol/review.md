@@ -90,4 +90,11 @@ Datos de demostración fijos en inglés, formato de importes sin idioma, etiquet
 
 ## Human Approval
 
-Pendiente: se rellena solo tras la aprobación explícita de Lucia.
+- Change: jup-117-frontend-espanol
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-12
+- Adversarial review: accept (pass 3) | accepted findings: datos de demostración fijos en inglés, formato de importes sin idioma en las pantallas de maqueta y errores de la capa de API en inglés (aceptados por Lucia el 2026-10-12, registrados en `openspec/findings/backlog.md`)
+- Archive decision: archive
+- Notes: revisión y validación humanas de otras personas sustituidas por la excepción temporal del 2026-10-11; la validación independiente por el rol de la tarjeta sigue sin hacerse. Falta confirmar en el PR la integración con JUP-116.
