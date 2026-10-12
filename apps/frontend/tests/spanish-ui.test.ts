@@ -14,7 +14,9 @@ const ENGLISH_UI_TEXT = [
   "Source", "Artifact URI", "Text content", "Queueing job", "Queue ingestion", "Job accepted", "Job ID",
   "Create ingestion job", "Ingestions", "Assistant", "Overview", "Dashboard", "Close",
   "Bootstrapping", "Connecting to", "Backend unavailable", "Possible overlapping", "Monthly Spend",
-  "Savings Identified", "Service Health", "Active operator", "Billing period", "Unavailable", "No cost data"
+  "Savings Identified", "Service Health", "Active operator", "Billing period", "Unavailable", "No cost data",
+  "Send", "Sending", "Status", "Queue", "Loading", "Costs are unavailable", "Partial data", "Sign in again",
+  "Ops review", "Tenant-aware", "Ambito de cliente", "Cerrar sesion"
 ];
 
 const STRING_LITERAL = /"((?:[^"\\\n]|\\.)*)"|'((?:[^'\\\n]|\\.)*)'|`((?:[^`\\]|\\.)*)`/g;
@@ -39,12 +41,12 @@ export function findEnglishUiText(source: string): string[] {
   for (const match of code.matchAll(STRING_LITERAL)) {
     const before = code.slice(0, match.index);
     const after = code.slice((match.index ?? 0) + match[0].length);
-    if (NON_VISIBLE_ATTRIBUTE.test(before) || /^\s*:/.test(after)) continue;
+    if (NON_VISIBLE_ATTRIBUTE.test(before) || /^\s*:/.test(after) || /(import\(|[!=]==?\s*)$/.test(before)) continue;
     texts.push(match[1] ?? match[2] ?? match[3] ?? "");
   }
   for (const match of code.matchAll(JSX_TEXT)) {
     const text = match[1].replace(/\{[^{}]*\}/g, " ");
-    if (!/[;=]/.test(text)) texts.push(text);
+    if (!/[;]\s*$|=>/.test(text)) texts.push(text);
   }
   return ENGLISH_UI_TEXT.filter((phrase) => texts.some((text) => containsPhrase(text, phrase)));
 }
@@ -99,11 +101,16 @@ describe("interfaz en español", () => {
     expect(findEnglishUiText("<p>Sign in {user}</p>")).toEqual(["Sign in"]);
     expect(findEnglishUiText('const label = "SIGN IN";')).toEqual(["Sign in"]);
     expect(findEnglishUiText('<span className="sr-only">Close</span>')).toEqual(["Close"]);
+    expect(findEnglishUiText("<p>Sign in; then continue</p>")).toEqual(["Sign in"]);
+    expect(findEnglishUiText("<button>Send</button>")).toEqual(["Send"]);
+    expect(findEnglishUiText('<button aria-label="Cerrar sesion" />')).toEqual(["Cerrar sesion"]);
   });
 
   it("ignora claves de objeto y atributos que no se muestran", () => {
     expect(findEnglishUiText('const o = { "Sign in": 1 };')).toEqual([]);
     expect(findEnglishUiText('<div className="Assistant" id="Overview" />')).toEqual([]);
     expect(findEnglishUiText("const f = (x) => x > 3 ? 1 : 2; const g = a < b;")).toEqual([]);
+    expect(findEnglishUiText('const P = lazy(() => import("./pages/Dashboard"));')).toEqual([]);
+    expect(findEnglishUiText('if (status === "Unavailable") { run(); }')).toEqual([]);
   });
 });

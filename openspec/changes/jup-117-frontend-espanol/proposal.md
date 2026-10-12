@@ -13,7 +13,7 @@ El frontend mezcla español e inglés: pantallas como la de conversaciones, la i
 - Ajustar las pruebas del frontend que comprueban textos cambiados.
 - Añadir una prueba que falle si reaparece en la interfaz un texto en inglés de la lista de términos ya traducidos.
 
-Fuera de alcance: internacionalización (selector de idioma, catálogos de traducción, inglés como segundo idioma), código, nombres de variables, rutas, claves de API y mensajes del backend que no se muestran a la persona usuaria, y cualquier cambio de diseño o de funcionalidad. No se traducen los valores que devuelve la API (por ejemplo, nombres de servicios de Azure, etiquetas de coste, estados de salud o roles de mensaje) ni los mensajes de error internos que lanzan los servicios y los hooks.
+Fuera de alcance: internacionalización (selector de idioma, catálogos de traducción, inglés como segundo idioma), código, nombres de variables, rutas, claves de API y mensajes del backend que no se muestran a la persona usuaria, y cualquier cambio de diseño o de funcionalidad. No se traducen los valores que devuelve la API (por ejemplo, nombres de servicios de Azure, etiquetas de coste o títulos de conversación), los datos de demostración fijos de las pantallas de maqueta (`src/data/demo`, que JUP-116 oculta) ni los mensajes de error internos que lanzan los servicios y los hooks.
 
 ## Capabilities
 

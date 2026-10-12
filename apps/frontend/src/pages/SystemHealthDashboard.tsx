@@ -19,7 +19,7 @@ const REASONS: Record<HealthReason, string> = {
   authentication: "Acceso al servicio rechazado", timeout: "Se agotó el tiempo de comprobación",
   invalid_response: "Respuesta no verificable", not_configured: "Pendiente de configuración",
   not_initialized: "Preparación del servicio incompleta", not_verified: "Todavía sin comprobar",
-  busy: "Comprobación ocupada", cooldown: "Espere antes de volver a comprobar",
+  busy: "Comprobación ocupada", cooldown: "Espera antes de volver a comprobar",
   budget_unavailable: "Presupuesto de comprobación sin autorizar", stale: "Verificación desactualizada"
 };
 const JOB_LABELS: Record<string, string> = { publish_pending: "Pendientes de publicar", publish_failed: "Publicación fallida", publish_unknown: "Publicación indeterminada", queued: "En cola", running: "En ejecución", completed: "Completados", failed: "Fallidos", other: "Otros estados" };
@@ -83,7 +83,7 @@ export function SystemHealthDashboard() {
         <Activity className="size-4 shrink-0" aria-hidden="true" />
         <StatusPill status={LABELS[state]} tone={state} />
         <span className="text-muted-foreground break-words">{health.data ? `Evaluado: ${date(health.data.checked_at, health.now)}` : "Esperando diagnóstico"}</span>
-        {health.loading ? <span>Actualizando disponibilidad…</span> : null}
+        {health.loading ? <span>Actualizando disponibilidad...</span> : null}
       </div>
       {health.diagnosticError || future ? <p role="alert" className="text-sm text-warning-text">No se pudo actualizar el diagnóstico. Los datos conservados tienen su fecha original.</p> : null}
       <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -104,7 +104,7 @@ export function SystemHealthDashboard() {
                   {item.id === "processor" ? <p className="text-xs text-muted-foreground">Actividad del procesador: sin señal verificable</p> : null}
                   {item.id === "openrouter" ? (
                     <>
-                      {health.checking ? <p className="text-sm">Comprobando…</p> : REASONS[providerReason] ? <p className="text-sm text-muted-foreground">{REASONS[providerReason]}{health.retryAfter ? ` (${health.retryAfter} s)` : ""}</p> : null}
+                      {health.checking ? <p className="text-sm">Comprobando...</p> : REASONS[providerReason] ? <p className="text-sm text-muted-foreground">{REASONS[providerReason]}{health.retryAfter ? ` (${health.retryAfter} s)` : ""}</p> : null}
                       {health.verified ? <p className="text-xs text-muted-foreground break-words">Respuesta válida a: {date(health.verified, health.now)}{health.providerStatus !== "ok" ? " · Histórica" : ""}</p> : null}
                       {health.provider?.last_attempt_at ? <p className="text-xs text-muted-foreground break-words">Último intento: {date(health.provider.last_attempt_at, health.now)}</p> : null}
                       <p className="text-xs text-muted-foreground break-words">{health.provider?.reported_model ? "Modelo informado: " + health.provider.reported_model : "Modelo no informado"}</p>

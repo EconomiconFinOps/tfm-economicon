@@ -158,6 +158,25 @@ describe("tenant bootstrap and dashboard", () => {
     for (const service of Object.keys(health.services)) expect(screen.getByText(service)).toBeVisible();
   });
 
+  it("muestra en español el estado de cada servicio y deja pasar uno que no conoce", async () => {
+    mockBackend({
+      "GET /health": () => jsonResponse({
+        ...health,
+        services: { database: "ok", rabbitmq: "degraded", vector_store: "failed", queue: "unknown", cache: "paused" }
+      })
+    });
+    restoreSession();
+    renderApp(["/overview-legacy"]);
+
+    await screen.findByText("correcto");
+    const row = (service: string) => screen.getByText(service).parentElement as HTMLElement;
+    expect(row("database")).toHaveTextContent("correcto");
+    expect(row("rabbitmq")).toHaveTextContent("degradado");
+    expect(row("vector_store")).toHaveTextContent("fallido");
+    expect(row("queue")).toHaveTextContent("no verificado");
+    expect(row("cache")).toHaveTextContent("paused");
+  });
+
   // Reactivado (Punto 5 implementado): Layout ya expone enlaces reales hacia
   // /ingest y /assistant. Son <NavLink> (role "link"), no botones -- se
   // ajustan los roles/etiquetas a la UI real en vez de a los del AppShell

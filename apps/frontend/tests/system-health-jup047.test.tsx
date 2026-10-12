@@ -632,7 +632,7 @@ describe("JUP-047 retained result and visible ten-minute lifecycle", () => {
     }
     const providerRow = within(screen.getByText("OpenRouter").closest("li")!);
     expect(await providerRow.findByText("Disponible", { exact: true })).toBeVisible();
-    await waitFor(() => expect(providerRow.queryByText("Comprobando…")).not.toBeInTheDocument());
+    await waitFor(() => expect(providerRow.queryByText("Comprobando...")).not.toBeInTheDocument());
     const metric = within(screen.getByText("Servicios correctos").closest("article")!);
     expect(metric.getByText(offset <= 1000 ? "8" : "6", { exact: true })).toBeVisible();
     expect(screen.getByText(/SIMULADO: no acredita/)).toBeVisible();
