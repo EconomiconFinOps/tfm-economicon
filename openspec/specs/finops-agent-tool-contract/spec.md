@@ -243,4 +243,3 @@ ID; prompts, respuestas, secretos y filas completas SHALL permanecer fuera de lo
 
 - **WHEN** una consulta agota su timeout
 - **THEN** el log contiene herramienta, estado, latencia y correlation ID sin argumentos sensibles ni credenciales
-

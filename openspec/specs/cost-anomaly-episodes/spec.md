@@ -185,4 +185,3 @@ Each episode SHALL store the rules version and thresholds that opened it; runs S
 #### Scenario: Limitations exposed
 - **WHEN** any episode is read
 - **THEN** the response includes cause_status not_established and the limitations list
-
