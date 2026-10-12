@@ -15,8 +15,8 @@ principal. No se usan los volúmenes de `tfm-economicon` ni de `jup104-e2e`.
 
 ## Estado
 
-Grupos 1 a 6 ejecutados (reproducción y decisión, admisión del origen, fallo permanente de entrada, tope de un
-reintento, forma del resultado guardado y servicios reales); documentación y cierre pendientes. Todo lo que
+Grupos 1 a 8 ejecutados (reproducción y decisión, admisión del origen, fallo permanente de entrada, tope de un
+reintento, forma del resultado guardado, servicios reales, documentación y verificación final); gate posterior a la revisión, archivo y PR pendientes. Todo lo que
 figura abajo está ejecutado; lo que no consta como ejecutado no se da por hecho. Los
 proveedores de LLM y de embeddings del stack son `mock`, y el worker es un único hilo
 (`apps/processor/app/run_all.py`).
@@ -232,3 +232,67 @@ Qué consta con su comando y qué no, para que nadie dé por reproducible lo que
   huérfanas tras la ejecución (declarada por el tester; el orquestador no la repitió antes de borrar los
   servicios). La sensibilidad de los casos de reintento queda además respaldada por la ejecución sobre la base,
   que sí consta.
+
+## Verificación final (grupo 8)
+
+Fecha: 2026-10-11 (hora local). Rama `fix/JUP-113-bounded-ingestion-retries`; `develop` sin cambios desde la base
+(`8511fb1f`, comprobado con `git fetch` antes y después de la batería).
+
+**Suites completas en contenedor `python:3.12` (equivalente a CI), sobre una copia del árbol, en serie:**
+
+| Suite | Base `8511fb1f` | Rama | Diferencia |
+| --- | --- | --- | --- |
+| Backend (`python -m pytest tests -q`) | 1132 pasan, 64 omitidas, 0 fallan | **1169 pasan, 64 omitidas, 0 fallan** | +37: `test_ingest_source_admission.py` |
+| Processor | 644 pasan, 65 omitidas, 0 fallan | **816 pasan, 80 omitidas, 0 fallan** | +172 = 37 + 32 + 41 + 56 + 6; +15 omitidas = `test_ingestion_retry_integration.py` sin servicios |
+
+`compileall` correcto en ambos. Las 64 y 80 omitidas son las pruebas opt-in con servicios reales; no se
+presentan como aprobadas. No se ejecutó `azure-cost-api` (este change no lo toca) ni el frontend en contenedor.
+La primera ejecución del processor dio 3 errores idénticos en la rama y en la base: era un fallo de mi copia, que
+no incluía la carpeta `fixtures/` de la raíz, y se corrigió; no eran del código.
+
+Otras comprobaciones (Windows, Python 3.13.7): `corepack pnpm lint` y `corepack pnpm typecheck` correctos,
+`openspec:validate` 64 de 64, `jup:check` del change, `jup:cleanup:check` (1209 archivos) y las pruebas de esas
+dos herramientas (7 y 6) correctos. En esa máquina la batería del backend falla 145 pruebas `*_jup047.py` por
+`RF-105-004`; no es de este change y pasan en Linux.
+
+**Alcance del diff contra la base** (`git diff --stat 8511fb1f HEAD`): el producto cambiado son exactamente los
+cinco archivos previstos, `apps/backend/app/schemas/jobs.py` y, en el processor, `agents/guardrails.py`,
+`tasks/ingest.py`, `clients/rabbitmq_queue.py` y `workers/runner.py` (125 inserciones y 12 borrados); 8 archivos de
+pruebas nuevos y **una sola aserción modificada en una prueba existente**
+(`test_secret_boundaries.py`, línea 439, por decisión de Victor registrada en la aprobación); y nada de
+dependencias, CI, frontend, Compose, migraciones, variables de entorno ni esquema.
+
+## Criterios de la tarjeta
+
+Texto de la tarjeta de Trello adaptado al alcance aprobado: el criterio 5 se cumple siempre que el estado del
+job se pueda registrar (ver la adenda de `proposal.md`). «Cumplido» significa ejecutado y con el resultado
+citado; no significa revisado ni validado por una persona.
+
+| # | Criterio | Evidencia | Estado |
+| --- | --- | --- | --- |
+| 1 | `POST /jobs/ingest` con `Azure Cost Management` responde 422 saneado y no crea trabajo, no reserva y no publica | `test_ingest_source_admission.py` (20 rechazados: 422 con el cuerpo exacto, `no_effects` y tabla `jobs` sin cambios, valor ausente de la respuesta y los registros). En Compose: 422 y la tabla `jobs` pasa de 2 a 2 filas | Cumplido. «No reserva ni publica» consta con la cola doblada de las pruebas; en Compose solo se comprobó que no se crea trabajo |
+| 2 | Un `source` admitido sigue dando 202 y se guarda como se envió | 16 aceptados en la misma prueba (fila, payload y mensaje publicado literales); en Compose `aws-cur` y ` Azure-Cost ` dan 202, completan y el segundo se guarda literal | Cumplido |
+| 3 | Un trabajo ya guardado con `source` no admitido queda `failed` y se descarta sin reencolar en una entrega | `test_ingest_permanent_input_failure.py` (32); servicios reales (6.1): `failed`, 2 entregas, cola vacía; Compose: `job_input_rejected` una vez | Cumplido |
+| 4 | Un `completed` con resultado corrupto o que no es un objeto se descarta sin reencolar y sin cambiar la fila | `test_completed_result_shape.py` (56) y `test_completed_result_exposure.py` (6); CockroachDB real: 7 valores JSONB que no son objeto → `nack(requeue=False)`, fila intacta | Cumplido. **El texto corrupto (`''`, `not json`) solo se prueba con SQLite**: una columna JSONB real no puede almacenarlo |
+| 5 | Un error no clasificado se reintenta como máximo una vez; después `failed` y descarte | `test_ingest_bounded_retry.py` (28) y `test_queue_message_redelivered.py` (13); broker real: `redelivered` `[False, True]` y 2 ejecuciones; Compose con pgvector parado: descarte a los ~10 s | Cumplido para el caso en que el estado se puede registrar. **Reencolar sin tope cuando no se puede leer o registrar el estado** está probado con fallos doblados de la base, **no con una caída real de CockroachDB** |
+| 6 | Un fallo transitorio que se resuelve dentro del tope se completa en el reintento | Caso del reintento que se completa, con servicios reales: `completed`, un documento, 2 entregas | Cumplido |
+| 7 | Los mensajes inválidos y los fallos de proveedor se comportan igual | Casos con `redelivered` falso y verdadero en `test_ingest_bounded_retry.py`; la mutación los cubre | Cumplido con dobles. **No se ejecutaron con servicios reales** |
+| 8 | Con RabbitMQ real, un envenenado seguido de un válido de otro ámbito: el válido se completa | Servicios reales (6.1) y Compose: el trabajo retenido de `tenant-growth` se completa a los 50 ms del descarte; sobre la base, las mismas pruebas fallan | Cumplido |
+| 9 | La decisión sobre el tope y su coste queda en un ADR enlazado a esta tarjeta | `docs/adr/ADR-0019-ingestion-retry-policy.md`, con el coste medido (~10 s con pgvector parado) | Cumplido en el documento. **El ADR sigue `Proposed`: la ratificación es de la revisión de la PR** |
+| 10 | `RF-086-004` y `RF-054-001` pasan a `Fixed` con enlace a la evidencia | `openspec/findings/backlog.md` | Cumplido como **Fixed técnico**; integración y validación humana pendientes |
+
+## Lo que no se ha validado
+
+- **Ninguna revisión ni validación humana.** No existen `Revision JUP-113` ni `Validacion JUP-113`; la PR aún no está abierta y el CI de GitHub no se ha ejecutado sobre esta rama.
+- **Las pruebas con servicios reales no corren en CI** (`RF-096-004`) y se ejecutaron a mano, en Windows contra contenedores, no dentro de un contenedor Linux.
+- Una **caída real de CockroachDB** (decisión 4), un proveedor de embeddings o un LLM reales, un clúster de varios nodos, la carga y el rendimiento.
+- La **pantalla de ingesta en navegador**: lo que muestra ante el 422 se leyó en el código (`RF-113-001`).
+- Un mensaje que mata el proceso antes de que el worker responda al broker: sigue sin tope y no se ha reproducido.
+- El **frontend** no se ha tocado ni se ha ejecutado en este change.
+- La integración con `develop`: no se ha hecho `Update branch` ni se ha simulado un merge.
+
+## Entorno de pruebas
+
+El proyecto Compose `jup113-repro` y sus volúmenes siguen en la máquina de Victor; se borran con
+`docker compose -p jup113-repro down -v`. Los tres servicios desechables de las pruebas reales ya se retiraron.
+Enlaces de PR y de CI: se rellenan al abrir la PR.

@@ -407,7 +407,8 @@ Notas y cómo se atienden:
 3. **Enlace de la evidencia del broker real:** ver la nota 1; la medición con RabbitMQ 3.13.7 y pika 1.4.4
    consta en el apartado citado de la evidencia.
 
-Riesgo de diseño: el coste de que una caída de pgvector o de los embeddings de más de unos 2 s marque
+Riesgo de diseño: el coste de que una caída de pgvector o de los embeddings de más de unos 2 s (cifra
+corregida después a ~10 s, ver el grupo 6 y la adenda de `proposal.md`) marque
 `failed` los trabajos en cola está registrado en la aprobación (`proposal.md`, «Cost accepted»), en
 `design.md` (Riesgos) y en el ADR-0019 (Consecuencias), y el ADR coincide con lo implementado: una
 reentrega como máximo y reencolado sin tope si no se puede leer o registrar el estado.
@@ -608,3 +609,86 @@ los documentos tocados comprobados con un recorrido ad hoc (existencia del archi
 encabezados): sin enlaces rotos propios; el índice `docs/continuidad/README.md` ya tenía dos enlaces rotos en
 `develop` (`metricas-funcionales-negocio.md` y `cobertura-etiquetado.md`, temas que no existen en esa base) que
 no se tocan.
+
+## Grupo 8 — Verificación y cierre
+
+### Resumen del change
+
+| Grupo | Qué hace | Red | Green | Mutación | QA |
+| --- | --- | --- | --- | --- | --- |
+| 1. Reproducción y decisión | Reproduce `RF-086-004` con RabbitMQ real, comprueba `redelivered` y redacta ADR-0019 | N/A (doc-only) | N/A | N/A | N/A |
+| 2. Admisión del `source` | El backend rechaza con 422 un `source` que el processor no aceptaría | 17 fallos | 36 pasan (37 con el caso `ß`) | 13 mutantes manuales y `mutmut`: el real `casefold` se cubrió | accept-with-notes |
+| 3. Fallo permanente de entrada | Descarte en una entrega del rechazo del guardrail (`AgentInputError`, `IngestionFailed`) | 32 fallos | 32 pasan | 23 mutantes más 4: 26 muertos, 1 equivalente | accept-with-notes |
+| 4. Tope de un reintento | `redelivered` y descarte en la reentrega; sin estado registrable se reencola sin tope | 19 fallos y 22 guardas | 41 pasan | 22 de 22 muertos | accept-with-notes |
+| 5. Resultado de un `completed` (`RF-054-001`) | `_stored_result` exige un objeto | 45 fallos y 11 guardas | 56 pasan | 17 mutantes: 2 huecos reales cubiertos y 1 código muerto eliminado | accept-with-notes |
+| 6. Servicios reales | 15 pruebas opt-in y recorrido con Compose | N/A (verifica lo implementado) | 15 pasan; sobre la base, 11 fallan | N/A | accept-with-notes |
+| 7. Documentación | READMEs, arquitectura, matriz, ADR, backlog y continuidad | N/A (doc-only) | N/A | N/A | N/A |
+| 8. Verificación | Batería final en contenedor, gates y alcance del diff | — | — | — | ver abajo |
+
+Producto: 5 archivos. Pruebas nuevas: 8 archivos. Una aserción de una prueba existente modificada por decisión
+de Victor (adenda de la aprobación). Dos adendas de la aprobación: la excepción de esa aserción y la corrección
+de la cifra del coste (de «unos 2 s» a ~10 s).
+
+### Batería final
+
+Suites completas en contenedor Linux: backend 1169 pasan, 64 omitidas, 0 fallan (base: 1132 y 64); processor
+816 pasan, 80 omitidas, 0 fallan (base: 644 y 65). `lint`, `typecheck`, `openspec:validate`, `jup:check` y
+`jup:cleanup:check` correctos. Detalle, criterios de la tarjeta y límites en
+`docs/evidence/JUP-113-validation.md`.
+
+### Hallazgos de este change y su disposición
+
+- `RF-086-004` y `RF-054-001`: `Fixed` técnico, integración y validación humana pendientes.
+- `RF-113-001` (Low): la pantalla de ingesta muestra el cuerpo crudo del 422. `Open`, sin tarjeta.
+- `RF-113-002` (Low): el contrato `tenant-isolation` de JUP-086 y ADR-0008 dicen que no hay límite de
+  reintentos. `Open`; hay que anotarlo al archivar JUP-086.
+- `RF-113-003` (Medium, riesgo aceptado): los jobs descartados por una caída no se reprocesan solos. `Open`.
+- `RF-086-005` (NaN y surrogates dan 500) y `RF-104-003` (lectura del estado de un job) siguen `Open` y fuera de
+  alcance.
+
+### Lo que este change no afirma
+
+No hay revisión ni validación humana. Las pruebas con servicios reales no corren en CI y se ejecutaron en
+Windows contra contenedores. La decisión de reencolar sin tope ante una caída real de CockroachDB no se
+ejercitó con una caída real. La pantalla de ingesta se leyó en el código y no se ejecutó en navegador. La
+mutación es de mutantes manuales sobre las líneas que cambian, salvo una pasada con `mutmut` en el grupo 2.
+
+### QA del grupo 6 (registro añadido en el cierre)
+
+El agente QA independiente emitió **`accept-with-notes`** sobre el grupo 6 (tareas 6.1 a 6.4); el veredicto no
+se había registrado en la sección del grupo y lo citaba la tabla del resumen. Verificó con comandos propios:
+las 15 omisiones limpias sin servicios, la salida guardada contra la base (11 fallan y 4 pasan), el archivo de
+pruebas entero (sin `skip` ni `xfail`, con las salvaguardas de las fixtures sin debilitar y `assert_queue_empty`
+sólido), la coherencia de la cifra de ~10 s con los eventos citados, el producto intacto y los gates. **No pudo
+verificar** que las 15 pruebas pasen con servicios reales ni los tiempos y las respuestas HTTP de 6.4, porque
+los servicios ya estaban retirados: eso consta solo como texto de la evidencia.
+
+Notas y cómo se atendieron: (1) la evidencia mezclaba los motivos de fallo sobre la base (atribuía a los casos de
+reintento un `assert 10 == 1` que es del JSONB `"x"` y llamaba «comportamiento real» a 2 fallos de API
+inexistente): reescrito con el reparto exacto, 9 por comportamiento y 2 por API; (2) faltaban comandos en
+algunas afirmaciones: se añadió el apartado «Comandos y su procedencia» y se declaró lo que no se conserva;
+(3) la sección de evidencia del ADR estaba desactualizada: completada en la tarea 7.4; (4) `tasks.md` 6.1 y 6.3
+decían un archivo y un entorno distintos de los reales: anotado en las propias tareas; (5) el apartado «Estado»
+de la evidencia decía «Grupo 1 en curso»: actualizado.
+
+### QA global del change (cierre de la tarea 8.4)
+
+**Veredicto del agente QA independiente: `accept-with-notes`; el change está listo para el gate posterior a
+la revisión de una persona**, sin hallazgos para el tester ni el coder. Verificó con comandos propios: el
+producto cambiado son exactamente los cinco archivos previstos; no hay cambios en dependencias, CI, frontend,
+Compose, migraciones ni entorno; hay 8 archivos de pruebas nuevos y una sola prueba existente modificada, con
+una única aserción; los 13 commits son de la misma autoría; el diff de producto cumple las decisiones 1 a 5 del
+ADR-0019 sin nada fuera de las specs; los gates pasan; 203 pruebas del processor y 37 del backend en las suites
+relacionadas, y 15 omitidas sin variables; y cada escenario de las dos specs delta tiene prueba.
+
+Notas atendidas: (A) la evidencia citaba «19 rechazados» en el criterio 1, cifra histórica de la fase Red; son 20
+(37 casos en la prueba del backend); (B) este registro del grupo 6, que faltaba; (C) el «unos 2 s» del grupo 4
+lleva ahora su corrección. Notas informativas: el estado de la evidencia («Grupos 1 a 8 ejecutados») cuadra con
+`tasks.md` al marcar la 8.4 en el mismo commit; y QA no repitió las suites completas en contenedor, la
+mutación, `lint` ni `typecheck`, y se apoya en lo registrado. No pudo contrastar los 10 criterios con el texto de
+la tarjeta de Trello, que no está en el repositorio.
+
+Lo que sigue sin darse por validado, según la propia QA: la revisión y la validación humanas, la PR, el CI de
+GitHub, la ratificación del ADR-0019, las pruebas con servicios reales en CI, la decisión 4 con una caída real
+de CockroachDB, un LLM o embeddings reales, la pantalla en navegador, el mensaje que mata el proceso y la
+integración con `develop`.

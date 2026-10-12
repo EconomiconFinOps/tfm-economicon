@@ -121,16 +121,16 @@ del backend (`RF-105-004`).
 
 ## 8. Verificación y cierre
 
-- [ ] 8.1 Ejecutar las suites completas de backend y processor en el contenedor equivalente a CI y
+- [x] 8.1 Ejecutar las suites completas de backend y processor en el contenedor equivalente a CI y
   anotar aprobadas, fallidas y omitidas frente a la base de 1.1.
-- [ ] 8.2 Comprobar con `git diff --stat` contra la base que el producto cambiado se limita a los
+- [x] 8.2 Comprobar con `git diff --stat` contra la base que el producto cambiado se limita a los
   cinco archivos del `proposal.md` y que no cambian dependencias, CI, frontend ni migraciones.
-- [ ] 8.3 Ejecutar `corepack pnpm lint`, `corepack pnpm openspec:validate`,
+- [x] 8.3 Ejecutar `corepack pnpm lint`, `corepack pnpm openspec:validate`,
   `corepack pnpm jup:check -- --change jup-113-bounded-ingestion-retries` y
   `corepack pnpm jup:cleanup:check`.
-- [ ] 8.4 Escribir `review.md` con la evidencia Red, Green y de mutación de cada grupo, y cerrar
+- [x] 8.4 Escribir `review.md` con la evidencia Red, Green y de mutación de cada grupo, y cerrar
   `docs/evidence/JUP-113-validation.md` con un apartado por criterio de la tarjeta y lo no validado.
-- [ ] 8.5 Comprobar `origin/develop` otra vez; si hay commits que tocan los archivos de producto de
+- [x] 8.5 Comprobar `origin/develop` otra vez; si hay commits que tocan los archivos de producto de
   este cambio, integrarlos y repetir 8.1.
 - [ ] 8.6 Registrar la aprobación posterior a la revisión, archivar el change en la rama y abrir la
   PR contra `develop` desde `fix/JUP-113-bounded-ingestion-retries`.
