@@ -1,6 +1,6 @@
 # Evidencia JUP-114 — change 1: episodios de anomalía guardados
 
-Tarjeta: [JUP-114](https://trello.com/c/F492abeY). Change: `jup-114-persisted-anomalies`. Rama: `feat/JUP-114-persisted-anomalies`. Decisión: [ADR-0019](../adr/ADR-0019-cost-anomaly-episodes.md). Contrato: [anomaly-episodes.md](../api/anomaly-episodes.md).
+Tarjeta: [JUP-114](https://trello.com/c/F492abeY). Change: `jup-114-persisted-anomalies`. Rama: `feat/JUP-114-anomaly-circuit`. Decisión: [ADR-0019](../adr/ADR-0019-cost-anomaly-episodes.md). Contrato: [anomaly-episodes.md](../api/anomaly-episodes.md).
 
 Validación hecha por la líder de la tarjeta bajo la excepción temporal del 2026-10-11. No sustituye la revisión ni la validación de las personas con esos roles en Trello.
 

@@ -1,6 +1,6 @@
 # Review JUP-114 (change 1) — Episodios de anomalía guardados
 
-JUP: JUP-114 · Trello: https://trello.com/c/F492abeY · Rama: `feat/JUP-114-persisted-anomalies` · ADR: [ADR-0019](../../../docs/adr/ADR-0019-cost-anomaly-episodes.md)
+JUP: JUP-114 · Trello: https://trello.com/c/F492abeY · Rama: `feat/JUP-114-anomaly-circuit` · ADR: [ADR-0019](../../../docs/adr/ADR-0019-cost-anomaly-episodes.md)
 
 ## Resumen
 
