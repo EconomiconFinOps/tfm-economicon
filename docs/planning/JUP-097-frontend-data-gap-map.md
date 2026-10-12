@@ -47,8 +47,8 @@ frontend). Sus filas siguientes describen ahora lo que necesitarían para volver
 | `ExecutiveCutDashboard` | `/cuts` | `executiveCutDashboard.ts` | `savingsData` (objetivo vs. alcanzado vs. pendiente) | **C4** — objetivos y acciones de recorte | `RF-091-003` |
 | `ExecutiveCutDashboard` | `/cuts` | `executiveCutDashboard.ts` | `cutActions` (acción, impacto, estado, responsable, fecha) | **C4** — objetivos y acciones de recorte | `RF-091-003` |
 | `ExecutiveCutDashboard` | `/cuts` | `executiveCutDashboard.ts` | `kpiData` (ahorro total, objetivo mensual, alcanzado, acciones activas) | **C4** — objetivos y acciones de recorte | `RF-091-003` |
-| `AnomaliesPanel` | `/anomalies` | `anomaliesPanel.ts` | `anomalies` (tipo, servicio, severidad, descripción, agente) | **C5** — detección de anomalías | `RF-091-003` |
-| `AnomaliesPanel` | `/anomalies` | `anomaliesPanel.ts` | Indicadores derivados de `anomalies` (abiertas, altas abiertas, impacto abierto y resueltas); JUP-057 retira `trendData` y `stats` ficticios | **C5** — detección de anomalías; los indicadores siguen basados en fixtures | `RF-091-003` |
+| `AnomaliesPanel` | `/anomalies` | ~~`anomaliesPanel.ts`~~ retirado | Episodios guardados (servicio, criticidad, impacto acumulado, periodo, estado); sin tipo, descripción ni agente inventados | **C5** — resuelto en JUP-114 (`GET /billing/anomalies/episodes`) | `RF-091-003` |
+| `AnomaliesPanel` | `/anomalies` | ~~`anomaliesPanel.ts`~~ retirado | Indicadores (impacto abierto por moneda, abiertas, Alta (P1) abiertas, ya no observadas) | **C5** — resuelto en JUP-114; el impacto por moneda lo calcula el backend | `RF-091-003` |
 | `RecommendationsPanel` | `/recommendations` | `recommendationsPanel.ts` | `recommendations` (título, categoría, ahorro estimado, agente) | **C6** — motor de recomendaciones | `RF-091-003` |
 | `RecommendationsPanel` | `/recommendations` | `recommendationsPanel.ts` | `savingsByCategory` + `stats` | **C6** — motor de recomendaciones | `RF-091-003` |
 
@@ -62,7 +62,7 @@ Mismas 7 capacidades que catalogó JUP-091, con las pantallas ya portadas que la
 | C2 | Desglose por dimensión: resuelto en `/` (JUP-026 y JUP-055, fusionados); C2 + C3 operativo sigue sin resolver | `ExecutiveCostDashboard`: tabla real por suscripción, grupo de recursos, servicio, proyecto o etiqueta; `OperationalCostDashboard`: pendiente | Dimensiones Azure normalizadas agregadas por periodo UTC y moneda; cobertura parcial explícita cuando faltan dimensiones |
 | C3 | Multi-cloud AWS / GCP | `OperationalCostDashboard` | No — solo se ingesta Azure |
 | C4 | Objetivos y acciones de recorte (impacto, estado, responsable, fecha) | `ExecutiveCutDashboard` | No — entidad de gestión inexistente |
-| C5 | Detección de anomalías | `AnomaliesPanel` | No — requiere lógica de detección |
+| C5 | Detección de anomalías: resuelto en `/anomalies` (JUP-114, episodios con la regla diaria de negocio) | `AnomaliesPanel` | Sí — episodios en `anomaly_episodes` |
 | C6 | Motor de recomendaciones | `RecommendationsPanel` | No — requiere lógica de análisis |
 | C7 | Inventario de recursos activos | Ninguna: `ExecutiveCostDashboard` lo mostraba y JUP-055 lo retiró | No |
 

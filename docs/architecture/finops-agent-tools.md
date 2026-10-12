@@ -285,6 +285,17 @@ Devuelve candidatos con baseline, observado, scope, severidad y evidencia. No
 confirma causa raiz ni utiliza la palabra anomalia sin calificarla como
 candidata cuando faltan historico y contexto operativo.
 
+Desde JUP-114 la regla se aplica en los episodios guardados
+([anomaly-episodes.md](../api/anomaly-episodes.md),
+[ADR-0020](../adr/ADR-0020-cost-anomaly-episodes.md)): la serie es el coste
+diario observado por servicio y moneda; lo esperado es la media de los 7 dias
+anteriores o, con un episodio en seguimiento, su referencia anclada; los limites
+son estrictos y las dos condiciones van juntas. La severidad P1/P2/P3 se calcula
+sobre el impacto acumulado del episodio en su moneda (sin conversion y sin
+«impacto critico») y cada episodio guarda la version de las reglas. La
+herramienta, cuando se implemente con JUP-038, lee esos episodios del tenant
+autorizado en lugar de recalcularlos o de usar la consulta de prueba de JUP-030.
+
 ## Herramientas futuras
 
 | Herramienta | Precondicion |

@@ -88,16 +88,16 @@ Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el
 | --- | --- | --- | --- | --- |
 | `/login` | `LoginPage` | Backend (`POST /auth/login`) | No aplica | Fuera de `SessionGate`; crea la sesión |
 | `/` | `ExecutiveCostDashboard` | Backend (`GET /billing/summary` v2) | No aplica | Costes almacenados: intervalo mensual, desglose, tendencia y comparación del primer/último mes observado con coste no cero por moneda (JUP-055) |
-| `/anomalies` | `AnomaliesPanel` | Demostración (`src/data/demo/`) | Sí | Aviso visible, periodo de muestra y rótulo en la exportación (JUP-057) |
+| `/anomalies` | `AnomaliesPanel` | Backend (`GET /billing/anomalies/episodes`, `POST /billing/anomalies/detect`, `PATCH /billing/anomalies/episodes/{id}`) | No aplica | Episodios guardados del cliente activo; avisa «Datos sintéticos de demostración» cuando el cliente tiene ingestas sintéticas (JUP-114) |
 | `/ingest` | `IngestPage` | Backend (`POST /jobs/ingest`) | No aplica | Vía `services/api.ts` |
 | `/assistant` | `ConversationsPage` | Backend (`/assistant/conversations`) | No aplica | Vía `services/api.ts` |
 | `/overview-legacy` | `DashboardPage` | Backend (`GET /billing/summary`, `GET /health`) | No aplica | Ruta puente sin entrada de menú (JUP-116); ver `RF-105-001` en `openspec/findings/backlog.md` |
 | `/system-health` | `SystemHealthDashboard` | Backend (`GET /health/status`, `POST /health/provider-check`) | No aplica | Rotula «Datos de ejemplo» por componente cuando su origen es `mock` (JUP-047) |
 
-**Recuento (verificado el 2026-10-12 contra `src/routes.tsx` y `src/layouts/Layout.tsx`, en la rama
-`feat/JUP-116-hide-mockup-screens` sobre `develop` en `3c6517b`):** 6 rutas bajo sesión más `/login`. 5
-sirven datos del backend (`/`, `/ingest`, `/assistant`, `/overview-legacy`, `/system-health`) y 1 es de
-demostración y lo indica en la interfaz (`/anomalies`). El menú enlaza cinco: `/`, `/anomalies`,
+**Recuento (verificado el 2026-10-13 contra `src/routes.tsx` y `src/layouts/Layout.tsx`, en la rama
+`feat/JUP-114-anomaly-circuit` sobre `develop` en `0643e1b`):** 6 rutas bajo sesión más `/login`. Las 6
+sirven datos del backend (`/`, `/anomalies`, `/ingest`, `/assistant`, `/overview-legacy`, `/system-health`) y
+ninguna es de demostración. El menú enlaza cinco: `/`, `/anomalies`,
 `/ingest`, `/assistant` y `/system-health`; `/overview-legacy` se conserva sin enlace. Otras tres
 pantallas de demostración (Coste Detallado, Corte Global y Recomendaciones) existen en el código pero no
 están publicadas: ver la sección siguiente. Una dirección que no corresponde a ninguna ruta lleva a `/`.
@@ -256,8 +256,10 @@ pnpm build
 - El panel ejecutivo `/` consume costes almacenados con `hooks/useExecutiveCostKpis.ts`;
   ya no muestra inventario, tendencia ni exportación de demostración. El ahorro potencial sigue
   no disponible porque el contrato no lo calcula.
-- Las otras pantallas de coste (`/anomalies` publicada; Coste Detallado, Corte Global y Recomendaciones
-  sin ruta) conservan los datos de demostración estáticos (`src/data/demo/`; recuento en la sección «Rutas»);
+- El panel `/anomalies` lee los episodios guardados del cliente activo (JUP-114): detección bajo demanda,
+  detalle con cambio de estado y exportación solo en CSV; los importes se muestran como texto exacto con su moneda.
+- Las otras pantallas de coste (Coste Detallado, Corte Global y Recomendaciones, sin ruta)
+  conservan los datos de demostración estáticos (`src/data/demo/`; recuento en la sección «Rutas»);
   los gaps restantes de `RF-095-002` en `openspec/findings/backlog.md` no se dan por resueltos por
   JUP-055.
 

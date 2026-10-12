@@ -51,8 +51,8 @@ flowchart TB
 
 | Componente | Responsabilidad y límite | Implementación |
 | --- | --- | --- |
-| Frontend | Sesión, tenant, conversaciones y dashboard ejecutivo conectado a billing. El panel de anomalías conserva fixtures demo; los paneles operativo, de recortes y de recomendaciones siguen en el código sin ruta ni menú (JUP-116). No accede a DB, cola ni claves del proveedor. | [Cliente HTTP](../apps/frontend/src/services/api.ts), [rutas](../apps/frontend/src/routes.tsx) |
-| Backend | Autenticación, autorización, costes/presupuesto, publicación de jobs, conversaciones, recuperación/citas, ownership SQL, cobertura de etiquetas y salud agregada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
+| Frontend | Sesión, tenant, conversaciones y dashboard ejecutivo conectado a billing. Panel de anomalías conectado a los episodios guardados. Los paneles operativo, de recortes y de recomendaciones siguen en el código sin ruta ni menú (JUP-116). No accede a DB, cola ni claves del proveedor. | [Cliente HTTP](../apps/frontend/src/services/api.ts), [rutas](../apps/frontend/src/routes.tsx) |
+| Backend | Autenticación, autorización, costes/presupuesto, episodios de anomalías, publicación de jobs, conversaciones, recuperación/citas, ownership SQL, cobertura de etiquetas y salud agregada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
 | Processor | Worker documental y pipeline LangGraph; CLI independiente para costes Azure. API de salud/métricas interna. AgentRuntime es módulo Python, no servicio de red. | [Pipeline](../apps/processor/app/graphs/pipeline.py), [CLI Azure](../apps/processor/app/run_azure_cost_ingestion.py), [agentes](../apps/processor/app/agents/service.py) |
 | API Azure simulada | HTTP posicional, bearer local, paginación y errores reproducibles sobre CSV público. No autentica contra Azure ni representa una factura completa. | [README](../apps/azure-cost-api/README.md), [fixture](../fixtures/azure-cost/README.md) |
 | LiteLLM, opcional | Proxy del processor y de embeddings del backend; claves virtuales separadas y DB propia. OpenRouter es el upstream configurado. | [Configuración](../infra/litellm/config.example.yaml), [operación](../infra/litellm/README.md) |
@@ -176,6 +176,10 @@ flowchart LR
   R --> E[POST /billing/budget/evaluate]
   R --> T[GET /billing/tag-coverage]
   T --> D
+  R --> Q[POST /billing/anomalies/evaluate: consulta de prueba]
+  R --> X[POST /billing/anomalies/detect]
+  X --> P[(Episodios de anomalía por tenant)]
+  P --> L[GET y PATCH /billing/anomalies/episodes]
 ```
 
 La entrada comprobable es `python -m app.run_azure_cost_ingestion --tenant-id …
@@ -192,6 +196,11 @@ separados por moneda. Rechaza solapamientos ambiguos con 409 según
 `savings_identified` es null; no hay ahorro realizado calculado.
 `open_ingestions` cuenta todos los jobs del tenant en esta base, pese a su
 nombre. Evaluar presupuesto no lo persiste ni envía notificaciones.
+La evaluación de anomalías de JUP-030 tampoco guarda nada; los episodios de
+JUP-114 sí: «Detectar ahora» aplica la regla diaria de negocio sobre el coste
+diario por servicio y guarda episodios con criticidad y estado
+([API](api/anomaly-episodes.md), [ADR-0020](adr/ADR-0020-cost-anomaly-episodes.md)).
+El panel `/anomalies` los lee, detecta bajo demanda y cambia estados. No hay ejecución periódica ni avisos.
 [Contrato billing](../openspec/specs/azure-cost-kpis/spec.md) y
 [consulta SQL](../apps/backend/app/db/database.py).
 
@@ -235,6 +244,7 @@ propios. Ni CI verde ni una prueba del proxy certifican ese vertical.
 flowchart TB
   B[Backend: dueño del esquema operativo] --> U[users, tenants, user_tenants]
   B --> J[jobs, conversations, messages]
+  B --> A[anomaly_episodes, anomaly_detection_state]
   P[Processor: dueño del esquema Azure] --> R[azure_cost_ingestion_runs]
   P --> C[azure_cost_records]
   U -->|Autoridad de acceso| J
@@ -243,6 +253,7 @@ flowchart TB
   D --> E[Embeddings por provider y dimensión]
   J -->|Referencia del job documental| D
   B -->|Lectura autorizada| C
+  C -->|Coste diario por servicio| A
   B -->|Recuperación autorizada| D
 ```
 
@@ -251,7 +262,7 @@ foráneas entre bases**. CockroachDB guarda estado transaccional; pgvector
 el índice recuperable; RabbitMQ transporta envelopes y conserva la cola
 durable. La DB del gateway es independiente: no almacena costes FinOps.
 
-Según [ADR-0011](adr/ADR-0011-single-owner-per-table.md), backend migra sus seis
+Según [ADR-0011](adr/ADR-0011-single-owner-per-table.md), backend migra sus ocho
 tablas y processor las dos de Azure; cada servicio tiene su registro de
 migraciones. Processor también actualiza estados de jobs, pero no es dueño de
 su DDL: espera a backend sano después de migrar. El índice vectorial lo migra

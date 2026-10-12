@@ -4,7 +4,8 @@ Guion que recorre la [demo](guion.md) en un navegador real y comprueba lo que mu
 
 ## Qué hace y qué no
 
-- Entra por el formulario de acceso con la cuenta de demostración, recorre los pasos D1 a D10 (y D11 si no se desactiva) y, en cada uno, comprueba los textos y las cifras de la interfaz: totales por periodo, filas de desglose, filas de la tabla mensual (incluido el mes sin datos), comparaciones, aviso de registros sin fecha y el cambio de cliente.
+- Entra por el formulario de acceso con la cuenta de demostración, recorre los pasos en el orden del guion (D7 y D11 si no se desactivan los opcionales) y, en cada uno, comprueba los textos y las cifras de la interfaz: totales por periodo, filas de desglose, filas de la tabla mensual (incluido el mes sin datos), comparaciones, aviso de registros sin fecha, el cambio de cliente y, en D12, la detección de anomalías (aviso sintético, «Revisado hasta», primera fila y detalle).
+- D12 pulsa «Detectar ahora», que guarda episodios: para repetir la receta desde cero, retirar y volver a cargar el conjunto de anomalías como dice la preparación.
 - Guarda una captura por paso, un vídeo mudo de la sesión y `resultado.json` con `pass`, `fail` o `not_run` por paso. Si un paso falla, los siguientes quedan como `not_run`.
 - **No carga ni retira datos**: `apply` y `remove` son comandos explícitos de [preparacion.md](preparacion.md).
 - **No intercepta ni responde peticiones** y no escribe la sesión en el almacenamiento: solo observa lo que la interfaz recibe del backend. Falla ante un error de página o de origen cruzado.
@@ -39,11 +40,11 @@ $env:COMMIT = '<commit del paquete de demo>'
 node demo107.js
 ```
 
-Variables opcionales: `BASE_URL` (por defecto `http://localhost:5173`) y `WITH_OPTIONAL=0` para omitir D11. La salida es una línea por paso; el código de salida es 1 si algún paso falla y 2 si faltan variables o hay un error de la propia receta.
+Variables opcionales: `BASE_URL` (por defecto `http://localhost:5173`) y `WITH_OPTIONAL=0` para omitir D7 y D11. La salida es una línea por paso; el código de salida es 1 si algún paso falla y 2 si faltan variables o hay un error de la propia receta.
 
 ## Control positivo
 
-Para comprobar que la receta detecta un desajuste, apuntar `EXPECTED_JSON` a una copia de `esperados.json` con una cifra alterada (por ejemplo el `expected` de `F03` o el `percent` de `F17`): el paso correspondiente debe salir `fail` nombrando la cifra y los siguientes `not_run`.
+Para comprobar que la receta detecta un desajuste, apuntar `EXPECTED_JSON` a una copia de `esperados.json` con una cifra alterada (por ejemplo el `expected` de `F03`, el `percent` de `F17` o el `expected` de `A01`): el paso correspondiente debe salir `fail` nombrando la cifra y los siguientes `not_run`.
 
 ## Script
 
@@ -94,6 +95,9 @@ function checkFigure(text, f) {
     if (!standalone(`${signed(f.percent)} %`).test(text)) out.push('falta la variación porcentual ' + signed(f.percent));
   } else if (f.kind === 'undated') {
     if (!new RegExp(`(?<![\\d])${f.records} registros sin fecha excluidos`).test(text)) out.push('falta el aviso de registros sin fecha');
+  } else if (f.kind === 'anomaly_episode') {
+    if (!standalone(`${f.expected} EUR`).test(text)) out.push(`falta el impacto ${f.expected} EUR de ${f.service}`);
+    if (!text.includes(`en ${f.records} días`)) out.push(`falta «en ${f.records} días» de ${f.service}`);
   }
   return out.map((m) => `${f.id}: ${m}`);
 }
@@ -122,9 +126,10 @@ async function main() {
   const settle = async () => { await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(1500); };
   const main = () => page.innerText('main');
   const setPeriod = async (from, to) => { await page.getByLabel('Mes inicial').fill(from); await page.getByLabel('Mes final').fill(to); };
+  const go = async (name) => { await page.getByRole('link', { name }).click(); await settle(); };
   const actions = {
-    D1: async () => {},
-    D2: async () => { await tenant().selectOption('tenant-growth'); await settle(); await setPeriod('2026-01', '2026-06'); },
+    D1: async () => { await go('Anomalías'); await tenant().selectOption('tenant-core'); },
+    D2: async () => { await go('Coste Global'); await tenant().selectOption('tenant-growth'); await settle(); await setPeriod('2026-01', '2026-06'); },
     D3: async () => { await page.getByLabel('Agrupar por').selectOption('service'); },
     D4: async () => { await page.getByLabel('Moneda').selectOption('EUR'); },
     D5: async () => {},
@@ -132,8 +137,13 @@ async function main() {
     D7: async () => { await page.getByLabel('Agrupar por').selectOption('tag'); await page.getByLabel('Clave de etiqueta').fill('cost_center'); },
     D8: async () => {},
     D9: async () => { await tenant().selectOption('tenant-core'); },
+    D12: async () => {
+      await go('Anomalías');
+      await page.getByRole('button', { name: 'Detectar ahora' }).first().click();
+      await page.getByRole('status', { name: 'Resultado de la detección' }).waitFor({ timeout: 60000 });
+    },
     D10: async () => {},
-    D11: async () => { await tenant().selectOption('tenant-growth'); await settle(); await setPeriod('2026-07', '2026-07'); await settle(); await page.getByLabel('Moneda').selectOption('USD'); },
+    D11: async () => { await go('Coste Global'); await tenant().selectOption('tenant-growth'); await settle(); await setPeriod('2026-07', '2026-07'); await settle(); await page.getByLabel('Moneda').selectOption('USD'); },
   };
 
   await page.goto(BASE_URL);
@@ -175,11 +185,15 @@ async function main() {
         if (!curve || (curve.match(/M/g) || []).length < 2) notes.push('el gráfico no deja hueco en el mes sin datos');
         else info.push('comprobado: la curva del gráfico se interrumpe');
       }
-      if (step.id === 'D9') {
-        await tenant().selectOption('tenant-growth');
-        await settle();
-        const back = await main();
-        if (!standalone('90.00 EUR').test(back)) notes.push('al volver a Growth Ops no reaparece el total 90.00 EUR');
+      if (step.first_row) {
+        // La primera fila de la tabla es la de mayor prioridad y su detalle se abre en un diálogo fuera de <main>.
+        const first = page.locator('table tbody tr').first();
+        if (!(await first.innerText()).includes(step.first_row)) notes.push(`la primera fila no es ${step.first_row}`);
+        await first.getByRole('button', { name: `Detalle de ${step.first_row}` }).click();
+        const dialog = await page.getByRole('dialog').innerText();
+        for (const needle of step.dialog_contains || []) if (!dialog.includes(needle)) notes.push(`el detalle no dice «${needle}»`);
+        await page.screenshot({ path: path.join(OUT, `${step.id}-detalle.png`), fullPage: true });
+        await page.keyboard.press('Escape');
       }
       await page.screenshot({ path: path.join(OUT, `${step.id}.png`), fullPage: true });
     } catch (e) {

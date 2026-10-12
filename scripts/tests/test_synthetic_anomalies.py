@@ -107,14 +107,81 @@ def check_expected(records, expected) -> list[str]:
     return problems
 
 
+def independent_episodes(records) -> list[dict]:
+    """The JUP-019 daily rule of docs/api/anomaly-episodes.md written again with fractions, not from the backend."""
+    from fractions import Fraction
+
+    daily: dict[str, dict[date, Fraction]] = {}
+    observed = set()
+    for record in records:
+        if record["currency"] != "EUR":
+            continue
+        day = record["usage_date"]
+        observed.add(day)
+        service = daily.setdefault(record["service_name"], {})
+        service[day] = service.get(day, Fraction(0)) + Fraction(record["pretax_cost"])
+    last_complete = max(observed) - timedelta(days=1)
+    tracking, episodes = {}, []
+    day = min(observed)
+    while day <= last_complete:
+        previous = [day - timedelta(days=offset) for offset in range(1, 8)]
+        if day in observed and all(item in observed for item in previous):
+            for service in sorted(daily):
+                values = daily[service]
+                observed_cost = values.get(day, Fraction(0))
+                episode = tracking.get(service)
+                reference = episode["reference"] if episode else sum((values.get(item, Fraction(0)) for item in previous), Fraction(0)) / 7
+                hit = reference > 0 and observed_cost - reference > 100 and (observed_cost - reference) * 100 > reference * 20
+                if episode:
+                    if not hit and (day - episode["last_seen_date"]).days > 3:
+                        episode["observation"], episode["no_longer_observed_on"] = "no_longer_observed", day
+                        del tracking[service]
+                    else:
+                        if hit:
+                            episode["last_seen_date"] = day
+                        episode["impact"] += max(Fraction(0), observed_cost - reference)
+                        episode["impact_day_count"] += 1
+                elif hit:
+                    episode = {"service": service, "start_date": day, "last_seen_date": day, "observation": "observed",
+                               "no_longer_observed_on": None, "reference": reference,
+                               "impact": observed_cost - reference, "impact_day_count": 1}
+                    tracking[service] = episode
+                    episodes.append(episode)
+        day += timedelta(days=1)
+
+    def shown(value):
+        return format(cents(D(value.numerator) / D(value.denominator)), "f")
+
+    result = []
+    for episode in episodes:
+        impact = episode["impact"]
+        severity = "P1" if impact > 2000 else "P2" if impact >= 500 else "P3"
+        result.append({
+            "service": episode["service"], "start_date": episode["start_date"].isoformat(),
+            "last_seen_date": episode["last_seen_date"].isoformat(), "observation": episode["observation"],
+            "no_longer_observed_on": episode["no_longer_observed_on"].isoformat() if episode["no_longer_observed_on"] else None,
+            "reference_daily_cost": shown(episode["reference"]), "accumulated_impact": shown(impact),
+            "impact_day_count": episode["impact_day_count"], "severity": severity,
+        })
+    order = {"P1": 0, "P2": 1, "P3": 2}
+    return sorted(result, key=lambda item: (order[item["severity"]], -D(item["accumulated_impact"])))
+
+
 class FakeStore:
     """In-memory stand-in with the contract of SqlStore, shared between the two tools through one dict."""
 
     def __init__(self, prefix: str, rows: dict | None = None, hanging: int = 0):
         self.prefix = prefix
         self.rows = {"runs": {}, "records": {}} if rows is None else rows
+        self.rows.setdefault("episodes", {})
         self.hanging = hanging
         self.writes = 0
+
+    def add_episodes(self, tenant: str, count: int = 2):
+        self.rows["episodes"][tenant] = count
+
+    def count_episodes(self, tenant):
+        return self.rows["episodes"].get(tenant, 0)
 
     def add_foreign(self, kind: str, tenant: str, identifier: str = "foreign-1"):
         self.rows[kind][identifier] = {"tenant": tenant, "prefix_ok": False}
@@ -144,12 +211,20 @@ class FakeStore:
 
     def delete_synthetic(self):
         self.writes += 1
+        tenants = set(self._mine("runs").values())
         deleted = {}
         for kind in ("runs", "records"):
             keys = [k for k in self.rows[kind] if k.startswith(self.prefix)]
             for key in keys:
                 del self.rows[kind][key]
             deleted[kind] = len(keys)
+        deleted["episodes"], deleted["kept_episode_tenants"] = 0, []
+        for tenant in sorted(tenants):
+            if sum(self.count_real(tenant).values()):
+                if self.rows["episodes"].get(tenant):
+                    deleted["kept_episode_tenants"].append(tenant)
+                continue
+            deleted["episodes"] += self.rows["episodes"].pop(tenant, 0)
         return deleted
 
 
@@ -180,14 +255,50 @@ class DatasetTests(unittest.TestCase):
             self.assertTrue(record["service_name"])
             self.assertEqual(record["tenant_id"], TENANT)
 
-    def test_periods_are_consecutive_equal_and_contain_every_record(self):
+    def test_periods_are_consecutive_equal_and_every_record_is_in_the_data_range(self):
         base, cur = (self.expected["periods"][n] for n in ("baseline", "current"))
         b0, b1, c0, c1 = (date.fromisoformat(x) for x in (base["start"], base["end"], cur["start"], cur["end"]))
         self.assertEqual(b1, c0)
         self.assertEqual(b1 - b0, c1 - c0)
         self.assertEqual((c1 - c0).days, 7)
+        first, last = (date.fromisoformat(self.expected["data_range"][k]) for k in ("first_day", "last_day"))
+        self.assertEqual(first, b0)
         for record in self.records:
-            self.assertTrue(b0 <= record["usage_date"] < c1, record["id"])
+            self.assertTrue(first <= record["usage_date"] <= last, record["id"])
+        self.assertEqual(max(r["usage_date"] for r in self.records), last)
+
+    def test_one_record_per_service_and_day_except_networking_before_it_appears(self):
+        seen = {}
+        for record in self.records:
+            key = (record["service_name"], record["usage_date"])
+            self.assertNotIn(key, seen, key)
+            seen[key] = record
+        days = [date(2026, 9, 1) + timedelta(days=n) for n in range(21)]
+        for service in ("Compute", "Analytics", "Storage", "Database", "Tools", "Backup"):
+            self.assertEqual([d for d in days if (service, d) in seen], days, service)
+        self.assertEqual(min(d for (s, d) in seen if s == "Networking"), date(2026, 9, 14))
+        self.assertEqual(len(self.records), 6 * 21 + 8)
+
+    def test_one_detection_opens_exactly_the_expected_episodes(self):
+        self.assertEqual(independent_episodes(self.records), self.expected["episodes"])
+        services = {episode["service"] for episode in self.expected["episodes"]}
+        self.assertEqual(services | set(self.expected["without_episode"]),
+                         {g["service"] for g in self.expected["groups"]})
+        self.assertFalse(services & set(self.expected["without_episode"]))
+        last = max(r["usage_date"] for r in self.records) - timedelta(days=1)
+        self.assertEqual(self.expected["detection"]["last_evaluated_date"], last.isoformat())
+
+    def test_every_severity_and_both_observations_are_shown(self):
+        episodes = self.expected["episodes"]
+        self.assertEqual({e["severity"] for e in episodes}, {"P1", "P2", "P3"})
+        self.assertEqual({e["observation"] for e in episodes}, {"observed", "no_longer_observed"})
+
+    def test_altering_a_third_week_amount_changes_the_episodes(self):
+        altered = copy.deepcopy(self.records)
+        row = next(r for r in altered if r["service_name"] == "Database" and r["usage_date"] == date(2026, 9, 17))
+        row["pretax_cost"] = D("171.00")
+        self.assertNotEqual(independent_episodes(altered), self.expected["episodes"])
+        self.assertEqual(check_expected(altered, self.expected), [])
 
     def test_current_period_is_closed_before_the_utc_day_of_the_run(self):
         end = date.fromisoformat(self.expected["periods"]["current"]["end"])
@@ -287,6 +398,31 @@ class ToolTests(unittest.TestCase):
         again = anomalies.remove(mine)
         self.assertEqual((again["runs"], again["records"], again["refused"]), (0, 0, False))
 
+    def test_remove_deletes_episodes_only_of_tenants_left_without_other_cost_data(self):
+        rows = {"runs": {}, "records": {}}
+        store = FakeStore(anomalies.PREFIX, rows)
+        anomalies.apply(store, TENANT)
+        store.add_episodes(TENANT, 3)
+        store.add_episodes("tenant-growth", 2)
+        removed = anomalies.remove(store)
+        self.assertEqual((removed["episodes"], removed["kept_episode_tenants"]), (3, []))
+        self.assertEqual(store.count_episodes(TENANT), 0)
+        self.assertEqual(store.count_episodes("tenant-growth"), 2)
+        again = anomalies.remove(store)
+        self.assertEqual(again["episodes"], 0)
+
+    def test_remove_keeps_episodes_of_a_tenant_that_still_has_other_cost_data(self):
+        store = self.new_store()
+        anomalies.apply(store, TENANT)
+        store.add_foreign("records", TENANT, "ingested-later")
+        store.add_episodes(TENANT, 3)
+        removed = anomalies.remove(store)
+        self.assertFalse(removed["refused"])
+        self.assertEqual((removed["episodes"], removed["kept_episode_tenants"]), (0, [TENANT]))
+        self.assertEqual(store.count_episodes(TENANT), 3)
+        code, text = self.run_cli(store, "status")
+        self.assertIn("3 episodios", text)
+
     def test_remove_refuses_when_real_rows_hang_from_a_synthetic_run(self):
         store = self.new_store(hanging=2)
         anomalies.apply(store, TENANT)
@@ -380,9 +516,28 @@ class GuideTests(unittest.TestCase):
 
     def test_the_panel_limitation_is_explicit_and_negative(self):
         self.assertIn("/anomalies", self.body)
-        self.assertRegex(self.body, r"(?is)panel `/anomalies`[^.]*datos de demostraci[o\u00f3]n fijos")
-        self.assertRegex(self.body, r"(?is)panel `/anomalies`[^.]*no lee este endpoint")
-        self.assertIn("no refleja estas alertas", self.body)
+        self.assertNotRegex(self.body, r"(?i)datos de demostraci[o\u00f3]n fijos")
+        self.assertIn("Detectar ahora", self.body)
+        self.assertIn("reglas distintas", self.body)
+        for service, reason in (("Tools", "100 al d\u00eda"), ("Backup", "desde cero"), ("Networking", "sin gasto previo")):
+            self.assertRegex(self.body, rf"\*\*{service}\*\*[^\n]*{reason}", service)
+
+    def test_the_panel_table_of_the_guide_comes_from_the_expected_episodes(self):
+        rows = {}
+        for line in self.text.splitlines():
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if line.startswith("|") and len(cells) == 5 and cells[0] not in ("Servicio",) and not re.fullmatch(r"-+", cells[0]):
+                rows[cells[0]] = cells
+        self.assertEqual(set(rows), {e["service"] for e in self.expected["episodes"]})
+        labels = {"P1": "Alta (P1)", "P2": "Media (P2)", "P3": "Baja (P3)"}
+        for episode in self.expected["episodes"]:
+            cells = rows[episode["service"]]
+            self.assertEqual(cells[1], labels[episode["severity"]])
+            self.assertEqual(cells[2], f"{episode['accumulated_impact']} EUR en {episode['impact_day_count']} d\u00edas")
+            first = episode["start_date"][8:10] + "/" + episode["start_date"][5:7]
+            self.assertTrue(cells[3].startswith(first), episode["service"])
+            ended = episode["no_longer_observed_on"]
+            self.assertEqual(cells[4], "Se sigue observando" if ended is None else f"Ya no se observa desde {ended[8:10]}/{ended[5:7]}")
 
     def test_the_request_of_the_guide_and_of_the_script_equal_the_expected_file(self):
         blocks = re.findall(r"```json\n(.*?)```", self.text, re.S)
@@ -413,7 +568,7 @@ class GuideTests(unittest.TestCase):
             if line.startswith("|") and len(cells) == 6 and cells[0] != "Servicio" and not re.fullmatch(r"-+", cells[0]):
                 self.assertNotIn(cells[0], rows, "fila duplicada")
                 rows[cells[0]] = cells
-            elif line.startswith("| Servicio"):
+            elif line.startswith("| Servicio") and len(cells) == 6:
                 self.assertEqual(cells, ["Servicio", "Actual", "Base", "Diferencia", "Alerta", "Por qué"])
         self.assertEqual(set(rows), {g["service"] for g in self.expected["groups"]})
         minimum = comma(self.expected["rules"]["min_absolute_increase"])
@@ -455,7 +610,7 @@ class GuideTests(unittest.TestCase):
         self.assertIn("os.environ", self.script)
 
     def test_the_guide_covers_preparation_and_return_to_the_initial_state(self):
-        for needle in ("apply", "status", "remove", "tenant-core", "down -v", "esperados-anomalias.json"):
+        for needle in ("apply", "status", "remove", "tenant-core", "down -v", "esperados-anomalias.json", "anomaly_episodes"):
             self.assertIn(needle, self.text)
         self.assertLess(self.text.index("apply"), self.text.index("remove"))
         self.assertIn("no acepta `--tenant`", self.text)
@@ -497,14 +652,58 @@ class CockroachTests(unittest.TestCase):
              "import sys; from app.db.database import Database; db = Database(sys.argv[1]); db.initialize(); db.dispose()", cls.url],
             cwd=ROOT / "apps" / "processor", env=env, check=True, capture_output=True, text=True, timeout=400,
         )
+        subprocess.run(
+            [sys.executable, "-B", "-c",
+             "import sys; from pathlib import Path; from sqlalchemy import create_engine; "
+             "from app.db.migration_runner import MigrationRunner; e = create_engine(sys.argv[1]); "
+             "MigrationRunner(e, 'app.db.migrations', Path('app/db/migrations')).run(); e.dispose()", cls.url],
+            cwd=ROOT / "apps" / "backend", env=env, check=True, capture_output=True, text=True, timeout=400,
+        )
         cls.engine = create_engine(cls.url, future=True)
         cls.addClassCleanup(cls.engine.dispose)
 
     def setUp(self):
         with self.engine.begin() as connection:
-            connection.execute(self.text("DELETE FROM azure_cost_records"))
-            connection.execute(self.text("DELETE FROM azure_cost_ingestion_runs"))
+            for table in ("azure_cost_records", "azure_cost_ingestion_runs", "anomaly_episodes", "anomaly_detection_state"):
+                connection.execute(self.text(f"DELETE FROM {table}"))
         self.store = anomalies.SqlStore(engine=self.engine)
+
+    def add_episode(self, identifier, tenant):
+        with self.engine.begin() as connection:
+            connection.execute(self.text(
+                "INSERT INTO anomaly_episodes (id, tenant_id, currency, service, service_key, start_date, last_seen_date, "
+                "observation, reference_week_cost, opening_observed_cost, impact_numerator, impact_day_count, "
+                "impact_through_date, severity, status, rules_version, rules, created_at, updated_at) VALUES "
+                "(:id, :tenant, 'EUR', 'Compute', :id, '2026-09-09', '2026-09-09', 'observed', 1000, 377, 1639, 1, "
+                "'2026-09-09', 'P3', 'new', 'jup019-daily-v1', '{}'::JSONB, now(), now())"), {"id": identifier, "tenant": tenant})
+            connection.execute(self.text(
+                "UPSERT INTO anomaly_detection_state (tenant_id, last_evaluated_date, rules_version, updated_at) "
+                "VALUES (:tenant, '2026-09-20', 'jup019-daily-v1', now())"), {"tenant": tenant})
+
+    def anomaly_counts(self, tenant):
+        with self.engine.connect() as connection:
+            return tuple(connection.execute(self.text(
+                "SELECT (SELECT count(*) FROM anomaly_episodes WHERE tenant_id = :t), "
+                "(SELECT count(*) FROM anomaly_detection_state WHERE tenant_id = :t)"), {"t": tenant}).one())
+
+    def test_remove_clears_episodes_and_detection_state_of_its_tenant_only(self):
+        anomalies.apply(self.store, TENANT)
+        self.add_episode("ep-core", TENANT)
+        self.add_episode("ep-growth", "tenant-growth")
+        self.assertEqual(anomalies.status(self.store, TENANT)["episodes"], 1)
+        removed = anomalies.remove(self.store)
+        self.assertEqual((removed["episodes"], removed["kept_episode_tenants"]), (1, []))
+        self.assertEqual(self.anomaly_counts(TENANT), (0, 0))
+        self.assertEqual(self.anomaly_counts("tenant-growth"), (1, 1))
+        self.assertEqual(anomalies.remove(self.store)["episodes"], 0)
+
+    def test_remove_keeps_episodes_when_the_tenant_still_has_other_cost_data(self):
+        anomalies.apply(self.store, TENANT)
+        self.insert_real("run-later", "rec-later")
+        self.add_episode("ep-core", TENANT)
+        removed = anomalies.remove(self.store)
+        self.assertEqual((removed["episodes"], removed["kept_episode_tenants"]), (0, [TENANT]))
+        self.assertEqual(self.anomaly_counts(TENANT), (1, 1))
 
     def insert_real(self, run_id, record_id, tenant=TENANT, request="{}"):
         with self.engine.begin() as connection:
@@ -531,7 +730,8 @@ class CockroachTests(unittest.TestCase):
             rows = connection.execute(self.text(
                 "SELECT service_name, CASE WHEN usage_date < '2026-09-08' THEN 'baseline' ELSE 'current' END AS period, "
                 "SUM(pretax_cost)::STRING AS total, count(*) AS n FROM azure_cost_records "
-                "WHERE tenant_id = :tenant AND currency = 'EUR' GROUP BY 1, 2"), {"tenant": TENANT}).mappings().all()
+                "WHERE tenant_id = :tenant AND currency = 'EUR' AND usage_date < '2026-09-15' GROUP BY 1, 2"),
+                {"tenant": TENANT}).mappings().all()
         stored = {(row["service_name"], row["period"]): (D(row["total"]), row["n"]) for row in rows}
         wanted = {}
         for group in expected["groups"]:
