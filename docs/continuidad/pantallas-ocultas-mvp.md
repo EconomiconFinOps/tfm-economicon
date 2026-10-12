@@ -1,12 +1,12 @@
 # Pantallas de maqueta ocultas del MVP — JUP-116
 
-Última actualización documental: 2026-10-12. Esta nota no repite el alcance de la tarjeta, que vive en [Trello](https://trello.com/c/IPB2nGxa).
+Última actualización documental: 2026-10-13. Esta nota no repite el alcance de la tarjeta, que vive en [Trello](https://trello.com/c/IPB2nGxa).
 
 ## Estado
 
-- Rama `feat/JUP-116-hide-mockup-screens`, creada desde `develop` en `3c6517b`. OpenSpec: `openspec/changes/archive/2026-10-12-jup-116-hide-mockup-screens/` (delta de `frontend-navigation-shell`).
+- PR #124 mergeado en `develop` el 2026-10-12 por squash (`0643e1b`) con la excepción temporal, después de JUP-117: los siete controles técnicos en verde y `JUP reviews` en rojo. Tarjeta en `70 — Hecho`. Rama creada desde `develop` en `3c6517b`. OpenSpec: `openspec/changes/archive/2026-10-12-jup-116-hide-mockup-screens/` (delta de `frontend-navigation-shell`).
 - Origen: una auditoría del frontend con el stack completo (2026-10-12) comprobó que Coste Detallado, Corte Global y Recomendaciones no hacían ninguna petición al backend, enseñaban cifras inventadas sin rótulo y no tenían spec ni tarjeta. El equipo dio su conformidad por Discord, con la condición de ocultarlas sin borrar lo hecho.
-- Pendiente de integración: esta tarjeta se mergea antes que la de JUP-114, que reescribió el README de rutas, el guion y los esperados de la demo, el mapa de JUP-097 y los findings; el conflicto lo resuelve quien mergee JUP-114 después.
+- Integración: se mergeó después de JUP-117; los conflictos con `develop` (menú, test de rutas y continuidad) se resolvieron en la rama conservando el menú de una sola lista con las etiquetas en español. Las reviews publicadas fueron sobre el commit anterior y no cubren ese commit de integración. JUP-114 (PR #122, abierto) ya integró `develop` con esos cambios en `dc22c07`.
 
 ## Decisiones que no se deducen del código
 
@@ -22,6 +22,6 @@
 
 ## Pendiente
 
-- Integrar JUP-114 después y resolver sus conflictos de documentación.
+- JUP-114 (PR #122) sigue abierto; ya integró `develop` con esta tarjeta.
 - Confirmar con el equipo que `/overview-legacy` se queda sin menú pero montada, que difiere de lo que decía el mensaje de Discord.
 - No se comprobó el envío de mensajes del asistente (sin stack de IA) ni el tema oscuro.
