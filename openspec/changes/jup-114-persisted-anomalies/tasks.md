@@ -29,8 +29,8 @@ JUP: JUP-114
 
 ## 5. Cierre y verificación
 
-- [ ] 5.1 Batería completa: pruebas del backend, pruebas con CockroachDB real en local (nodo desechable, `JUP086_COCKROACH_TEST_URL`), `openspec:validate`, `jup:check:all`, `jup:cleanup:check`, `corepack pnpm lint` y `git diff --check`. Registrar comandos y resultados.
-- [ ] 5.2 Comprobación contra el stack real aislado (`docker compose -p jup114`, volúmenes nuevos): cargar el conjunto de JUP-107, ejecutar la detección, listar, cambiar estados, repetir la pulsación y comprobar el aislamiento con `tenant-growth`; parar el stack y borrar los volúmenes.
+- [x] 5.1 Batería completa: pruebas del backend, pruebas con CockroachDB real en local (nodo desechable, `JUP086_COCKROACH_TEST_URL`), `openspec:validate`, `jup:check:all`, `jup:cleanup:check`, `corepack pnpm lint` y `git diff --check`. Registrar comandos y resultados.
+- [x] 5.2 Comprobación contra el stack real aislado (`docker compose -p jup114`, volúmenes nuevos): cargar el conjunto de JUP-107, ejecutar la detección, listar, cambiar estados, repetir la pulsación y comprobar el aislamiento con `tenant-growth`; parar el stack y borrar los volúmenes.
 - [ ] 5.3 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con la sección `## Adversarial Review`, el barrido de patrones, los riesgos y los hallazgos registrados.
 - [ ] 5.4 Sección de evidencia en `docs/evidence/JUP-114-validation.md` y bloque `## Human Approval` post-review de Lucia, con la respuesta sobre la criticidad por impacto acumulado reflejada o anotada como pendiente.
 - [ ] 5.5 Archivar el change en la misma rama, revisar la documentación posterior al archivo, poner la rama al día con `develop` y abrir el PR a `develop` con el bloque de excepción temporal.
