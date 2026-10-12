@@ -26,6 +26,8 @@ Saludo HTTPcompleted sin fuentes, statusunsupported; navegador actualNOT_RUN
 Incremento claves0.0760432175USD; acumulado0.1895518525USD de0.50USD. Sin renovación
 ni aumento de límites; caducidad19:28:33UTC. Runtime temporal apagado, volúmenes
 y recibos retenidos; CD compartido intacto. **NO PASS, no integrar.**
+Antes de activar CD, actualizar explícitamente su copia instalada de tools/cd/
+desde una revisión aprobada; este ensayo aislado no modifica el agente compartido.
 Decisión pendiente: protocolo de decisión estructurada none/search con una sola
 consulta autenticada (recomendado), o endpoint compatible con cardinalidad nativa.
 No se cambia ninguno sin decisión; no se ignoran llamadas ni se inventan resultados.

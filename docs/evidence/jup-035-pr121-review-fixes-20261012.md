@@ -140,3 +140,9 @@ reviews humanas pendientes no se sustituyen por estas pruebas. El recorrido
 en navegador de esta revisión no está acreditado: la sesión CUA del subagente
 no tiene la pestaña autenticada anterior y localhost28660 rechazó conexión.
 Las pruebas HTTP/SQL y frontend no se presentan como un ensayo de navegador.
+
+Antes de activar este cambio en el CD compartido, el operador debe actualizar
+su copia instalada de `tools/cd/` desde una revisión aprobada, como indica la
+[guía de CD](../deployment/dockerserver-cd.md). Aquí se valida esa herramienta
+en un root aislado; no se sustituye el agente de despliegue instalado ni se
+afirma que el servidor compartido ya disponga del nuevo archivo HMAC.
