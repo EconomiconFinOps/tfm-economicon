@@ -1,8 +1,13 @@
 from datetime import date, datetime, timezone
+from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
-from app.api.dependencies import get_active_tenant, get_database
+from app.api.dependencies import get_active_tenant, get_current_user, get_database
+from app.schemas.anomaly_episodes import (
+    AnomalyDetectionRun, AnomalyEpisode, AnomalyEpisodeList, EpisodeStatusChange,
+)
+from app.services.anomaly_episodes import DetectionConflict, EpisodeConflict, EpisodeNotFound
 from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSummary, canonical_tag_key
 from app.schemas.tag_coverage import TagCoverage
 from app.schemas.budget import BudgetDefinition, BudgetEvaluation
@@ -64,6 +69,69 @@ def evaluate_billing_anomalies(
     except AmbiguousCostSource:
         raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
     return evaluate_anomalies(definition, current, baseline, tenant_id=tenant_id)
+
+
+async def _no_body(request: Request) -> None:
+    # Detection always uses the stored business rules; caller-supplied rules belong to /evaluate.
+    if await request.body():
+        raise HTTPException(status_code=422, detail="Detection does not accept a request body")
+
+
+_EPISODE_NOT_FOUND = {"code": "anomaly_episode_not_found"}
+
+
+@router.post("/anomalies/detect", response_model=AnomalyDetectionRun, dependencies=[Depends(_no_body)])
+def detect_anomaly_episodes(
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> AnomalyDetectionRun:
+    try:
+        result = database.run_anomaly_detection(tenant_id, today=datetime.now(timezone.utc).date())
+    except AmbiguousCostSource:
+        raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
+    except DetectionConflict:
+        raise HTTPException(status_code=409, detail={"code": "detection_conflict"}) from None
+    return AnomalyDetectionRun(**result)
+
+
+@router.get("/anomalies/episodes", response_model=AnomalyEpisodeList)
+def list_anomaly_episodes(
+    scope: Literal["open", "all"] = "open",
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> AnomalyEpisodeList:
+    return AnomalyEpisodeList(scope=scope, episodes=database.fetch_anomaly_episodes(tenant_id, scope=scope))
+
+
+@router.get("/anomalies/episodes/{episode_id}", response_model=AnomalyEpisode)
+def read_anomaly_episode(
+    episode_id: str,
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> AnomalyEpisode:
+    episode = database.fetch_anomaly_episode(tenant_id, episode_id)
+    if episode is None:
+        raise HTTPException(status_code=404, detail=_EPISODE_NOT_FOUND)
+    return AnomalyEpisode(**episode)
+
+
+@router.patch("/anomalies/episodes/{episode_id}", response_model=AnomalyEpisode)
+def change_anomaly_episode_status(
+    episode_id: str,
+    change: EpisodeStatusChange,
+    tenant_id: str = Depends(get_active_tenant),
+    current_user: dict = Depends(get_current_user),
+    database=Depends(get_database),
+) -> AnomalyEpisode:
+    try:
+        episode = database.change_anomaly_episode_status(
+            tenant_id, episode_id, status=change.status, reason=change.reason, actor=current_user["id"],
+        )
+    except EpisodeNotFound:
+        raise HTTPException(status_code=404, detail=_EPISODE_NOT_FOUND) from None
+    except EpisodeConflict:
+        raise HTTPException(status_code=409, detail={"code": "invalid_status_transition"}) from None
+    return AnomalyEpisode(**episode)
 
 
 @router.post("/budget/evaluate", response_model=BudgetEvaluation)

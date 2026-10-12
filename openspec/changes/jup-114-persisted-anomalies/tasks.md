@@ -4,7 +4,7 @@ JUP: JUP-114
 
 - [x] 1.1 Escribir `docs/adr/ADR-0019-cost-anomaly-episodes.md` (plantilla `docs/templates/adr.md`) con la regla diaria, lo esperado y la referencia anclada, episodio y tolerancia, días evaluables, impacto acumulado y criticidad, monedas, estados y trazabilidad (MTTA y MTTR), la consulta de prueba de JUP-030 sin tocar, alternativas (regla semanal, recalcular desde cero, línea base predictiva), limitaciones y trabajo futuro (puesta al día obligatoria en la etapa 2, conversión de moneda, responsable, permisos por rol, archivado automático, histórico de cambios de estado), y añadirlo al índice de `docs/adr/README.md`.
 - [x] 1.2 Migración `apps/backend/app/db/migrations/002_anomaly_episodes.py` con `anomaly_episodes` y `anomaly_detection_state`, la clave primaria determinista, el índice único parcial de episodio en seguimiento y los índices de lectura por tenant; prueba de que se aplica una sola vez sobre una base con `001`.
-- [ ] 1.3 Esquemas Pydantic de episodio, respuesta de ejecución, listado y petición de cambio de estado (estados, motivo de 1 a 500 caracteres sin caracteres de control, importes como cadenas de dos decimales).
+- [x] 1.3 Esquemas Pydantic de episodio, respuesta de ejecución, listado y petición de cambio de estado (estados, motivo de 1 a 500 caracteres sin caracteres de control, importes como cadenas de dos decimales).
 
 ## 2. Lectura diaria y detección
 
@@ -15,10 +15,10 @@ JUP: JUP-114
 
 ## 3. API y estados
 
-- [ ] 3.1 Rutas `POST /billing/anomalies/detect`, `GET /billing/anomalies/episodes`, `GET /billing/anomalies/episodes/{id}` y `PATCH /billing/anomalies/episodes/{id}` con el tenant activo, orden del listado, `scope=open|all` y listado sin detección.
-- [ ] 3.2 Cambio de estado con transiciones permitidas, motivo obligatorio al cerrar, quién y cuándo, primer cambio desde `new`, cierre, 409 para cerrado o transición inválida y actualización condicionada al estado esperado; prueba de dos cambios simultáneos con CockroachDB real.
-- [ ] 3.3 Aislamiento: mismo 404 para id ajeno e inexistente en lectura y cambio de estado, denegación a no miembros antes de leer, y sin identificadores ajenos ni importes en los logs.
-- [ ] 3.4 Prueba del límite exacto del 20 %: la consulta de prueba de JUP-030 lo marca como candidato y la regla de negocio no abre episodio; comprobar que las pruebas existentes de JUP-030 siguen en verde sin cambios.
+- [x] 3.1 Rutas `POST /billing/anomalies/detect`, `GET /billing/anomalies/episodes`, `GET /billing/anomalies/episodes/{id}` y `PATCH /billing/anomalies/episodes/{id}` con el tenant activo, orden del listado, `scope=open|all` y listado sin detección.
+- [x] 3.2 Cambio de estado con transiciones permitidas, motivo obligatorio al cerrar, quién y cuándo, primer cambio desde `new`, cierre, 409 para cerrado o transición inválida y actualización condicionada al estado esperado; prueba de dos cambios simultáneos con CockroachDB real.
+- [x] 3.3 Aislamiento: mismo 404 para id ajeno e inexistente en lectura y cambio de estado, denegación a no miembros antes de leer, y sin identificadores ajenos ni importes en los logs.
+- [x] 3.4 Prueba del límite exacto del 20 %: la consulta de prueba de JUP-030 lo marca como candidato y la regla de negocio no abre episodio; comprobar que las pruebas existentes de JUP-030 siguen en verde sin cambios.
 
 ## 4. Documentación y contratos
 
