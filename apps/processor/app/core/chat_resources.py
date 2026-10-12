@@ -28,19 +28,22 @@ TOKENIZER = {
 }
 BUDGETS = {'variable_tokens':8192, 'wrapper_margin_tokens':1024,
            'output_tokens':3200, 'model_context_tokens':1048576}
+from app.core.chat_calculations import PLAN_SCHEMA, validate_plan, calculate
+
 DECISION_SCHEMA = {'type':'object','properties':{
-    'action':{'type':'string','enum':['none','search']},
+    'action':{'type':'string','enum':['none','search']},'calculations':PLAN_SCHEMA,
     'query':{'anyOf':[{'type':'string','minLength':1,'maxLength':2048},{'type':'null'}]}},
-    'required':['action','query'],'additionalProperties':False,
-    'anyOf':[{'type':'object','properties':{'action':{'type':'string','const':'none'},'query':{'type':'null'}},
-              'required':['action','query'],'additionalProperties':False},
-             {'type':'object','properties':{'action':{'type':'string','const':'search'},'query':{'type':'string','minLength':1,'maxLength':2048}},
-              'required':['action','query'],'additionalProperties':False}]}
+    'required':['action','query','calculations'],'additionalProperties':False,
+    'anyOf':[{'type':'object','properties':{'calculations':PLAN_SCHEMA,'action':{'type':'string','const':'none'},'query':{'type':'null'}},
+              'required':['action','query','calculations'],'additionalProperties':False},
+             {'type':'object','properties':{'calculations':PLAN_SCHEMA,'action':{'type':'string','const':'search'},'query':{'type':'string','minLength':1,'maxLength':2048}},
+              'required':['action','query','calculations'],'additionalProperties':False}]}
 
 
 def validate_decision(value):
-    if not isinstance(value,dict) or set(value)!={'action','query'}:
+    if not isinstance(value,dict) or set(value)!={'action','query','calculations'}:
         raise ValueError('Invalid decision fields.')
+    validate_plan(value['calculations'])
     if value['action']=='none' and value['query'] is None:
         return value
     if (value['action']=='search' and isinstance(value['query'],str)
@@ -56,7 +59,7 @@ def validate_search_call(decision):
     binds the request and its result to the operation, attempt and tenant scope.
     """
     validate_decision(decision)
-    if decision['action']!='search': raise ValueError('Search required.')
+    if decision['action']!='search' and not decision['calculations']: raise ValueError('Control action required.')
     raw=json.dumps(decision,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False)
     return hashlib.sha256(raw.encode()).hexdigest(),decision['query']
 
@@ -65,7 +68,8 @@ ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_
     max_generations=2, decision_format='strict-none-search', final_format='strict-finops',
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
-    grounding='corpus-literal-passage-required-2048-v1')
+    grounding='corpus-literal-passage-required-2048-v1',
+    arithmetic='decimal-plan-12-source-literals-units-slots-v1')
 
 
 def continuation_messages(context, assistant, result):
@@ -75,7 +79,10 @@ def continuation_messages(context, assistant, result):
     content=result['content']
     if not isinstance(content,str) or len(content.encode('utf-8'))>1024*1024: raise ValueError('Tool result limit.')
     data=json.loads(content,object_pairs_hook=unique)
-    if not isinstance(data,dict) or set(data)!={'evidence','omissions'} or not isinstance(data['omissions'],list): raise ValueError('Tool result format.')
+    expected_fields={'evidence','omissions','calculations'} if assistant['calculations'] else {'evidence','omissions'}
+    if not isinstance(data,dict) or set(data)!=expected_fields or not isinstance(data['omissions'],list): raise ValueError('Tool result format.')
+    if assistant['calculations'] and data['calculations']!=calculate(context,assistant['calculations']):
+        raise ValueError('Calculation result mismatch.')
     sources=data['evidence']
     if not isinstance(sources,list) or len(sources)+len(context.get('authorized_evidence',[]))>20: raise ValueError('Tool evidence limit.')
     ids=set(item['id'] for item in context.get('authorized_evidence',[]))

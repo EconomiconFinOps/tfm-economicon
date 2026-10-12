@@ -21,7 +21,7 @@ evidencia insuficiente sin inventar cifras.
 #### Scenario: Decision documental automatica dentro del mismo intento
 
 - **WHEN** el chat IA inicia un intento autorizado
-- **THEN** SHALL usar el contrato structured-documentation-v3 y realizar una primera peticion con response_format DocumentationDecision estricto, action none con query null o action search con query no vacia de hasta2048 caracteres y sin campos adicionales ni parametros de tenant y ejecutar la recuperacion existente en backend con el scope autenticado; SHALL mantener una operacion, un intento, un dispatch privado y el contexto/hash canonicos iniciales congelados, sin precargar corpus para simular una decision
+- **THEN** SHALL usar el contrato structured-documentation-v3 y realizar una primera peticion con response_format DocumentationDecision estricto, action none con query null o action search con query no vacia de hasta2048 caracteres, junto a calculations como lista cerrada de cero a12 pasos hipoteticos; SHALL rechazar otros campos y parametros de tenant y ejecutar la recuperacion existente solo para search con el scope autenticado; SHALL mantener una operacion, un intento, un dispatch privado y el contexto/hash canonicos iniciales congelados, sin precargar corpus para simular una decision
 
 #### Scenario: Decision sin herramienta y finalizacion estricta
 
@@ -182,6 +182,29 @@ persistir texto parcial.
 #### Scenario: Operadores y datos numericos ausentes
 - **WHEN** un calculo hipotetico evalua un umbral o combina monedas
 - **THEN** SHALL conservar el operador estricto o inclusivo de la fuente, evaluar cada condicion antes de combinar AND u OR y no redondear antes de comparar; SHALL no inventar cotizaciones numericas ni siquiera como ejemplo cuando falta tipo, fecha o destino autorizado
+
+### Requirement: Aritmetica hipotetica calculada y proyectada
+
+La decision SHALL admitir un plan privado acotado a12 pasos con operandos
+decimales literales de la pregunta actual o referencias solo a pasos anteriores,
+operadores cerrados y unidades explicitas. El backend SHALL calcularlo con
+Decimal sin eval y devolverlo en la extension HMAC; el processor SHALL verificar
+el mismo resultado. Ningun calculo SHALL conferir evidencia ni autoridad financiera.
+
+#### Scenario: Decision none con calculo
+- **WHEN** no se necesita corpus pero existe un plan aritmetico valido
+- **THEN** SHALL usar la extension privada autenticada sin ejecutar retrieval; SHALL conservar dos generaciones, deadline comun, uso agregado y conteo canonico del resultado y ambos esquemas
+
+#### Scenario: Operandos, unidades y limites
+- **WHEN** un plan usa operandos ausentes, referencias futuras, unidades incompatibles, division por cero, mas de12 pasos o magnitudes fuera del limite
+- **THEN** SHALL rechazarlo sin inferencia adicional ni reparacion; SHALL permitir suma/resta, producto con al menos un operando adimensional, division compatible, porcentaje y comparaciones estrictas/inclusivas entre unidades iguales
+- **AND** SHALL conservar operandos exactos en la ecuacion visible, comparar antes de redondear y marcar con aproximacion los resultados redondeados a seis decimales; SHALL limitar precision y magnitud, sin interpretar exponentes ni separadores de miles ambiguos
+
+#### Scenario: Proyeccion de ecuaciones y streaming
+- **WHEN** la finalizacion incluye una referencia privada a un calculo autorizado
+- **THEN** SHALL renderizarla como la ecuacion calculada, sin reescribir ecuaciones arbitrarias recibidas; SHALL rechazar referencias desconocidas o incompletas e igualdades numericas libres reconocidas en notacion ordinaria, incluidas unidades, operadores x/÷ y enfasis Markdown
+- **AND** SHALL conservar caracteres Unicode, retener referencias partidas entre fragmentos, limitar cada delta a8192 bytes y hacer coincidir exactamente la concatenacion SSE con answer validado y persistido; las frases verificadas SHALL llegar antes de completar la generacion
+- **AND** la exactitud garantizada SHALL limitarse a las operaciones renderizadas: seleccion semantica de operandos/unidades, pertinencia y prosa circundante SHALL seguir requiriendo aceptacion real, sin afirmar entailment universal ni prohibir globalmente fechas, identificadores o numeros originales
 
 ### Requirement: Cierre observable y truncacion transitoria
 

@@ -41,3 +41,4 @@
 - [ ] 6.2 Probar extracto literal por cita, contexto documental no confiable y esquema/conteo identicos en ambos servicios.
 - [ ] 6.3 Congelar SHA, desplegar solo runtime sintetico, ejecutar focales y full28 sin cambiar criterios; registrar gasto acumulado maximo0.50USD.
 - [ ] 6.4 Recorrido navegador sobre candidato final y evidencia de persistencia/aislamiento, sin confundir CI con reviews oficiales.
+- [ ] 6.5 Plan Decimal, extension HMAC sin busqueda para none, slots y rechazo sin reparacion; probar unidades/cero/limites y equivalencia SSE/candidato en fragmentacion UTF-8.

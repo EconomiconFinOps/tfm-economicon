@@ -235,23 +235,26 @@ class ChatContext:
             return [], [], {'collection':'corpus','reason':'retrieval_unavailable'}
 
     async def tool_extension(self, scope, context, assistant, deadline):
-        from app.core.chat_resources import validate_search_call
+        from app.core.chat_resources import validate_search_call, calculate
         identifier,query=validate_search_call(assistant)
         if context.get('tool_protocol')!='structured-documentation-v3': raise ValueError('Tool not admitted.')
+        computations=calculate(context,assistant['calculations'])
         initial=context.get('authorized_evidence',[])
         if any(item['kind']!='cost_query' for item in initial): raise ValueError('Initial corpus not allowed.')
         cancelled=threading.Event();holder={}
         try:
             remaining=deadline-time.time()
             if remaining<=0: raise TimeoutError('Retrieval deadline.')
-            corpus,citations,omission=await asyncio.wait_for(asyncio.to_thread(self.retrieve,scope,query,
-                evidence_limit=max(0,20-len(initial)),deadline=deadline,cancelled=cancelled,holder=holder),remaining)
+            corpus,citations,omission=[],[],None
+            if assistant['action']=='search':
+                corpus,citations,omission=await asyncio.wait_for(asyncio.to_thread(self.retrieve,scope,query,
+                    evidence_limit=max(0,20-len(initial)),deadline=deadline,cancelled=cancelled,holder=holder),remaining)
             original=len(corpus)
             while True:
                 omissions=[omission] if omission else []
                 if len(corpus)<original:
                     omissions.append({'collection':'corpus','reason':'context_budget','omitted':original-len(corpus)})
-                content=escaped({'evidence':corpus,'omissions':omissions})
+                content=escaped({'evidence':corpus,'omissions':omissions,**({'calculations':computations} if computations else {})})
                 messages=context['messages']+[{'role':'user','content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+content}]
                 try:
                     counted=self.resources.count_messages(messages,financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=initial+corpus)

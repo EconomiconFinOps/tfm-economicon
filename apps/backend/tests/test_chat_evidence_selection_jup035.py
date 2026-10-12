@@ -14,11 +14,11 @@ SOURCE = {'id': 'corpus:authorized:0', 'kind': 'corpus', 'title': 'Synthetic pol
 
 def test_decision_schema_and_backend_validator_reject_invalid_branches():
     from app.core.chat_resources import DECISION_SCHEMA, validate_decision
-    for value in ({'action':'none','query':None},{'action':'search','query':'a'}):
+    for value in ({'action':'none','query':None,'calculations':[]},{'action':'search','query':'a','calculations':[]}):
         _validate(value,DECISION_SCHEMA,DECISION_SCHEMA)
         assert validate_decision(value)==value
-    for value in ({'action':'none','query':'a'},{'action':'search','query':None},
-                  {'action':'search','query':'a','tenant':'other'}):
+    for value in ({'action':'none','query':'a','calculations':[]},{'action':'search','query':None,'calculations':[]},
+                  {'action':'search','query':'a','tenant':'other','calculations':[]}):
         with pytest.raises(ResponseValidationError): _validate(value,DECISION_SCHEMA,DECISION_SCHEMA)
         with pytest.raises(ValueError): validate_decision(value)
 

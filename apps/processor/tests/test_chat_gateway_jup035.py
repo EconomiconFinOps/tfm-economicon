@@ -215,7 +215,7 @@ def test_incomplete_or_invalid_gateway_output_never_announces_candidate(private,
     def scenario(records,context):
         assert all(record['type']!='candidate_end' for record in records)
         assert records[-1]['type']=='error'
-        if mode=='duplicate': assert ''.join(record['text'] for record in records if record['type']=='delta')=='Injected'
+        if mode=='duplicate': assert ''.join(record['text'] for record in records if record['type']=='delta')==''
         assert len(gateway[1])==1
     send(private,scenario)
 

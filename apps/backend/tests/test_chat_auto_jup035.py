@@ -1,9 +1,45 @@
 """Auto decisions retain the existing evidence and atomic history boundary."""
 import copy
+import json
 
 import pytest
 
 from test_chat_operations_jup035 import ANSWER, api, body, headers, messages, path, run
+
+
+def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch):
+    from app.core.chat_calculations import CalculationStream, calculate, render_text
+    question = 'Ejemplo hipotético: 73 EUR y 20 EUR.'
+    context = {'messages': [{'role': 'user', 'content': 'UNTRUSTED_CURRENT_CONTEXT\n' + json.dumps({'question': question})}]}
+    plan = [{'left': '73', 'right': '20', 'operator': 'subtract', 'left_unit': 'EUR', 'right_unit': 'EUR'}]
+    calculations = calculate(context, plan)
+    raw = 'Ejemplo 😀: [[calc:0]]. Resultado hipotético.'
+    result = copy.deepcopy(ANSWER)
+    result['answer'] = render_text(raw, calculations)
+    async def stream(claim):
+        renderer = CalculationStream(calculations)
+        for char in raw:
+            text = renderer.feed(char)
+            if text: yield {'type': 'delta', 'text': text}
+        tail = renderer.feed('', final=True)
+        if tail: yield {'type': 'delta', 'text': tail}
+        yield {'type': 'candidate', 'result': result, 'finish_reason': 'stop'}
+    monkeypatch.setattr(api[2], 'stream', stream)
+    async def scenario(client):
+        response = await client.post(path(), json=body(content=question), headers=headers())
+        assert 'event: final' in response.text
+        deltas = []
+        for block in response.text.split('\n\n'):
+            if 'event: delta' in block:
+                data = json.loads(next(line[6:] for line in block.splitlines() if line.startswith('data: ')))
+                deltas.append(data['text'])
+        saved = messages(api[1])
+        assert len(saved) == 2
+        assistant = next(row for row in saved if row['role'] == 'assistant')
+        assert ''.join(deltas) == result['answer'] == assistant['content']
+        assert assistant['metadata']['response'] == result
+        assert api[1].fetch_messages('alice-chat', 't', 'alice') == saved
+    run(scenario, api)
 
 
 @pytest.mark.parametrize('case', ['greeting', 'clarification', 'billing', 'invented_citation', 'user_number', 'corpus_number'])
@@ -54,7 +90,7 @@ def test_no_search_keeps_server_authority_and_one_pair(api, monkeypatch, case):
 
 @pytest.mark.parametrize('duplicate', [False, True])
 def test_invalid_or_second_tool_never_persists(api, monkeypatch, duplicate):
-    assistant = {'action':'search' if duplicate else 'unknown','query':'policy'}
+    assistant = {'action':'search' if duplicate else 'unknown','query':'policy','calculations':[]}
     calls = []
     async def build(scope, payload, descriptor):
         return {'prompt_version': 'synthetic-v2', 'tool_protocol': 'structured-documentation-v3',

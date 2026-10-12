@@ -18,7 +18,7 @@ from test_chat_private_jup035 import private, claim, run, signed
 TOOL = {'id': 'call-auto', 'type': 'function', 'function': {
     'name': 'search_documentation', 'arguments': '{"query":"Synthetic policy"}'}}
 
-DECISION={'action':'search','query':'Synthetic policy'}
+DECISION={'action':'search','query':'Synthetic policy','calculations':[]}
 
 
 def decision_id():
@@ -27,7 +27,7 @@ def decision_id():
 
 
 def decision_delta(search):
-    return {'content':json.dumps(DECISION if search else {'action':'none','query':None})}
+    return {'content':json.dumps(DECISION if search else {'action':'none','query':None,'calculations':[]})}
 
 
 @pytest.mark.parametrize('fragmented', [False, True])

@@ -24,6 +24,25 @@ acredita procedencia textual, no entailment: pertinencia, completitud y calculos
 siguen sujetos a la bateria real. Las instrucciones generales conservan unidades,
 denominadores, operadores estrictos y prohibicion de cotizaciones inventadas.
 
+## Calculo hipotetico autorizado — 12/10/2026
+La focal b79e4ee termina5/5 pero017 produce500−100=100, aunque aplica bien el
+umbral. Por ello no se acepta ni se lanza full28 de ese candidato. Se añade
+calculations a la primera decision: hasta12 pasos decimales con operandos de
+la pregunta o referencias anteriores y unidades. El backend calcula y devuelve
+resultados por HMAC; processor vuelve a calcular para verificar la extension.
+none con calculos usa control privado pero cero busquedas. Los resultados son
+hipoteticos, no evidence ni metrics. El manifiesto identifica esta politica.
+
+La finalizacion usa slots privados [[calc:indice]] y se proyecta al contrato
+publico con ecuaciones calculadas. Se rechazan igualdades numericas libres
+reconocidas en notacion ordinaria y slots invalidos, sin arreglarlos. El stream
+retiene cada frase hasta poder validarla, nunca expone slots y divide tambien
+su cola a8192 bytes. Comparaciones usan Decimal sin redondear; solo la salida
+del resultado se redondea a seis decimales con signo aproximado cuando procede.
+Los operandos visibles permanecen exactos. No existe garantia universal sobre
+prosa ni sobre notaciones matematicas arbitrarias; su pertinencia se evalua con
+la bateria real. No se prohíben numeros originales, fechas o identificadores.
+
 ## Antecedente sustituido: protocolo auto nativo
 Las siguientes notas explican las decisiones previas; no describen el protocolo
 vigente. Los resultados reales negativos se conservan como evidencia historica.

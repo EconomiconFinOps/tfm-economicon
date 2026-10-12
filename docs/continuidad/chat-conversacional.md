@@ -1,5 +1,14 @@
 ## PR121: contrato estructurado autorizado en validación — 12/10/2026
 
+Corte siguiente: b79e4ee publicado y CI tecnica/JUP policy verdes;167 processor,
+80 backend+13 esquema y43 Cockroach nativos pasan. Focal5/5completed, pero017
+contiene igualdad falsa500−100=100. No aceptación, no full28 de ese candidato.
+Se implementa plan Decimal acotado y slots privados con extension HMAC, sin
+busqueda para none, ni autoridad financiera nueva. Tests focales aritmeticos
+88PASS y backend82PASS; validacion real del nuevo calculo pendiente.
+Gasto confirmado tras focal0.20213783USD/0.50USD; vigencia renovada hasta21:44UTC,
+sin cambio de límites. Runtime aislado b79e4ee permanece para UI coordinada.
+
 Origen: objetivo explícito «Solucionar los problemas de PR-121 hasta que sea
 valida», delegado a `/root/pr121_correccion_pendientes`. Sustituye la decisión
 pendiente del corte anterior: el usuario autoriza none/search estructurado,

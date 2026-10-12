@@ -15,20 +15,23 @@ TOKENIZER_SHA = '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82
 TOKENIZER_REVISION = 'a66456a59f21345d1e5e586345c448a9106d29d7'
 BASE_SHA = 'ad44df5f061f4f128b66df1e7720b270b594846adc206fa5d7b85ed2c0ced93b'
 INPUT_SHA = 'a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42'
-ASSEMBLER_SHA = '12157b2b2865af749ef2092a77b01aa11a161d6743e7a284cd8e75e76663b732'
+ASSEMBLER_SHA = '56367532e5dc6ced7a41a0351c5f8685b59e84efd87d6756feb6e643faf9bffd'
+from app.core.chat_calculations import PLAN_SCHEMA, validate_plan, calculate
+
 DECISION_SCHEMA = {'type':'object','properties':{
-    'action':{'type':'string','enum':['none','search']},
+    'action':{'type':'string','enum':['none','search']},'calculations':PLAN_SCHEMA,
     'query':{'anyOf':[{'type':'string','minLength':1,'maxLength':2048},{'type':'null'}]}},
-    'required':['action','query'],'additionalProperties':False,
-    'anyOf':[{'type':'object','properties':{'action':{'type':'string','const':'none'},'query':{'type':'null'}},
-              'required':['action','query'],'additionalProperties':False},
-             {'type':'object','properties':{'action':{'type':'string','const':'search'},'query':{'type':'string','minLength':1,'maxLength':2048}},
-              'required':['action','query'],'additionalProperties':False}]}
+    'required':['action','query','calculations'],'additionalProperties':False,
+    'anyOf':[{'type':'object','properties':{'calculations':PLAN_SCHEMA,'action':{'type':'string','const':'none'},'query':{'type':'null'}},
+              'required':['action','query','calculations'],'additionalProperties':False},
+             {'type':'object','properties':{'calculations':PLAN_SCHEMA,'action':{'type':'string','const':'search'},'query':{'type':'string','minLength':1,'maxLength':2048}},
+              'required':['action','query','calculations'],'additionalProperties':False}]}
 
 
 def validate_decision(value):
-    if not isinstance(value,dict) or set(value)!={'action','query'}:
+    if not isinstance(value,dict) or set(value)!={'action','query','calculations'}:
         raise ValueError('Invalid decision fields.')
+    validate_plan(value['calculations'])
     if value['action']=='none' and value['query'] is None:
         return value
     if (value['action']=='search' and isinstance(value['query'],str)
@@ -44,7 +47,7 @@ def validate_search_call(decision):
     binds the request and its result to the operation, attempt and tenant scope.
     """
     validate_decision(decision)
-    if decision['action']!='search': raise ValueError('Search required.')
+    if decision['action']!='search' and not decision['calculations']: raise ValueError('Control action required.')
     raw=json.dumps(decision,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False)
     return hashlib.sha256(raw.encode()).hexdigest(),decision['query']
 

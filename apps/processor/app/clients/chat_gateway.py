@@ -278,7 +278,9 @@ class ChatGateway:
             raise
         req._attempt_deadline=_AttemptDeadline(max(.001,deadline-time.time()-5))
         req._chat_cancelled=cancelled
+        from app.core.chat_calculations import CalculationStream, render_text
         frames,answer=SSEFrames(),AnswerJSON()
+        arithmetic=CalculationStream(context.get('calculations',[]))
         decoder=codecs.getincrementaldecoder('utf-8-sig')('strict')
         candidate=[];candidate_bytes=0;usage=None
         try:
@@ -309,7 +311,7 @@ class ChatGateway:
                                     return
                                 if finish!='stop': raise ValueError('Incomplete structured decision.')
                                 decision=validate_decision(complete_json(''.join(candidate)))
-                                if decision['action']=='none':
+                                if decision['action']=='none' and not decision['calculations']:
                                     yield {'type':'decision','usage':usage}
                                 else:
                                     yield {'type':'tool_call','assistant':decision,'usage':usage}
@@ -320,6 +322,7 @@ class ChatGateway:
                                 stage='candidate_json'
                                 parsed=complete_json(raw)
                                 stage='model_validation'
+                                parsed=render_calculations(parsed,context.get('calculations',[]))
                                 result=assemble_chat_response(parsed,context.get('response_period'), context.get('response_subscriptions', []), authorized_evidence=context.get('authorized_evidence', []))
                             except Exception as failure:
                                 diagnostic(stage,failure,category='incomplete' if finish=='length' else 'invalid_response')
@@ -327,6 +330,8 @@ class ChatGateway:
                                     yield {'type':'error','status':502,'category':'incomplete'}
                                     return
                                 raise
+                            tail=arithmetic.feed('',final=True)
+                            yield from text_deltas(tail)
                             yield {'type':'candidate','result':result,'finish_reason':finish,'usage':usage}
                             return
                         event=complete_json(data)
@@ -349,16 +354,10 @@ class ChatGateway:
                             candidate.append(fragment)
                             if tool_choice=='auto': continue
                             stage='provisional_answer'
-                            provisional=answer.feed(fragment)
+                            provisional=arithmetic.feed(answer.feed(fragment),final=(not answer.string and answer.key=='answer'))
                             # Escape-aware decoding completes surrogate pairs;
                             # chunking preserves codepoints and the8KiB wire bound.
-                            piece=[];size=0
-                            for char in provisional:
-                                width=len(char.encode())
-                                if size+width>8192:
-                                    yield {'type':'delta','text':''.join(piece)};piece=[];size=0
-                                piece.append(char);size+=width
-                            if piece: yield {'type':'delta','text':''.join(piece)}
+                            yield from text_deltas(provisional)
         except error.HTTPError as failure:
             status=failure.code
             retry_after=failure.headers.get('Retry-After')
@@ -398,6 +397,7 @@ class ChatGateway:
                     first_usage=record.get('usage')
                     messages=context['messages']
                     evidence=context.get('authorized_evidence', [])
+                    computations=[]
                     if record['type']=='tool_call':
                         yield record
                         remaining=deadline-time.time()-5
@@ -407,8 +407,9 @@ class ChatGateway:
                         messages=continuation_messages(context,record['assistant'],result)
                         # continuation_messages validates the authenticated result first.
                         evidence=evidence+json.loads(result['content'])['evidence']
+                        computations=json.loads(result['content']).get('calculations',[])
                     if cancelled.is_set() or time.time()>=deadline-5: raise TimeoutError()
-                    iterator=self._records({**context,'messages':messages,'authorized_evidence':evidence},deadline,holder,cancelled,'none')
+                    iterator=self._records({**context,'messages':messages,'authorized_evidence':evidence,'calculations':computations},deadline,holder,cancelled,'none')
                 else:
                     if record['type']=='candidate' and two_phase:
                         record={**record,'usage':combined_usage(first_usage,record.get('usage'))}
@@ -419,6 +420,26 @@ class ChatGateway:
             cancelled.set()
             response=holder.get('response')
             if response is not None: interrupt(response)
+
+
+def text_deltas(text):
+    piece=[];size=0
+    for char in text:
+        width=len(char.encode())
+        if size+width>8192:
+            yield {'type':'delta','text':''.join(piece)};piece=[];size=0
+        piece.append(char);size+=width
+    if piece: yield {'type':'delta','text':''.join(piece)}
+
+
+def render_calculations(value, records):
+    from app.core.chat_calculations import render_text
+    if not isinstance(value,dict) or 'answer' not in value: raise ValueError('Invalid calculation response.')
+    result={**value,'answer':render_text(value['answer'],records)}
+    for field in ('assumptions','limitations','next_actions'):
+        if field not in value or not isinstance(value[field],list): raise ValueError('Invalid calculation collection.')
+        result[field]=[render_text(item,records) for item in value[field]]
+    return result
 
 
 def combined_usage(first,second):

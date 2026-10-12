@@ -187,7 +187,7 @@ def test_required_tool_extension_validates_and_persists_only_recovered_sources(a
         'reference':'document:manual/chunk:4','excerpt':full['content'],
         'kind':'corpus','document_id':'manual','section':None,'page':None}
     calls=[];extensions=[];claims=[]
-    assistant={'action': 'search', 'query': 'Review rule'}
+    assistant={'action': 'search', 'query': 'Review rule','calculations':[]}
     async def build(scope,payload,descriptor):
         return {'prompt_version':'synthetic-v2','tool_protocol':'structured-documentation-v3',
             'messages':[], 'authorized_evidence':[],'source_citations':[],
