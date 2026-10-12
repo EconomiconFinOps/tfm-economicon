@@ -215,7 +215,7 @@ class ChatOperations:
                     if self.clock()>=row['attempt_deadline']-5:
                         raise TimeoutError()
                     if record.get('type')=='tool_call':
-                        if searched or seq or claim['context'].get('tool_protocol')!='required-documentation-v1':
+                        if searched or seq or claim['context'].get('tool_protocol')!='auto-documentation-v2':
                             raise ValueError('Unexpected tool call.')
                         searched=True
                         from app.services.chat_context import retrieval_diagnostic_scope
@@ -242,8 +242,6 @@ class ChatOperations:
                         await self._error(scope,row,transient,self._delay(record.get('retry_after'),row['attempt_count']) if transient else 0)
                         return
                     elif record.get('type')=='candidate':
-                        if claim['context'].get('tool_protocol')=='required-documentation-v1' and not searched:
-                            raise ValueError('Missing search.')
                         if record.get('finish_reason')=='length':
                             await self._error(scope,row,True,self._delay(None,row['attempt_count']),'incomplete')
                             return

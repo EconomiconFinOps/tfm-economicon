@@ -45,11 +45,25 @@ async def initialize(application):
         await initializer(application)
 
 
+@pytest.mark.parametrize('protocol', [None, 'required-documentation-v1'])
+def test_descriptor_must_explicitly_negotiate_current_tool_protocol(prepared, monkeypatch, protocol):
+    from app.services.chat_context import ChatContext
+    from app.core.chat_resources import load_resources
+    from app.db.chat_repository import ChatError
+    api, _ = prepared
+    descriptor = asyncio.run(api[2].descriptor())
+    descriptor['tool_protocol'] = protocol
+    builder = ChatContext(api[0], load_resources(RESOURCE_ROOT, RESOURCE_ROOT.parent/'v2/tokenizer.json'))
+    with pytest.raises(ChatError) as failure:
+        asyncio.run(builder({'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}, body(), descriptor))
+    assert failure.value.code == 'tool_contract_mismatch'
+
+
 def test_required_tool_context_never_prefetches_corpus(prepared, monkeypatch):
     api, _ = prepared
     descriptor=api[2].descriptor
     async def required_descriptor():
-        return {**await descriptor(), 'tool_protocol':'required-documentation-v1'}
+        return {**await descriptor(), 'tool_protocol':'auto-documentation-v2'}
     monkeypatch.setattr(api[2], 'descriptor', required_descriptor)
     from app.services.chat_context import ChatContext
     calls = []
@@ -60,7 +74,7 @@ def test_required_tool_context_never_prefetches_corpus(prepared, monkeypatch):
         assert response.status_code == 200
         context, _ = current(api)
         assert calls == [], 'Corpus must be retrieved only after the native call'
-        assert context['tool_protocol'] == 'required-documentation-v1'
+        assert context['tool_protocol'] == 'auto-documentation-v2'
         assert context['authorized_evidence'] == []
         assert context['financial_metrics_allowed'] is False
     run(scenario, api)
@@ -211,7 +225,7 @@ def test_required_database_wait_really_stops_worker_and_query(monkeypatch, phase
         embedding_provider=SimpleNamespace(name='mock',embed=lambda query:[1.0])))
     resources=SimpleNamespace(count_messages=lambda *args,**kwargs:0)
     builder=ChatContext(application,resources)
-    context={'tool_protocol':'required-documentation-v1','authorized_evidence':[],
+    context={'tool_protocol':'auto-documentation-v2','authorized_evidence':[],
         'messages':[],'manifest':{},'financial_metrics_allowed':False}
     assistant={'role':'assistant','content':None,'tool_calls':[{'id':'call-db','type':'function',
         'function':{'name':'search_documentation','arguments':'{"query":"Review rule"}'}}]}
@@ -320,7 +334,7 @@ def test_required_retrieval_diagnostic_is_closed_correlated_and_private(monkeypa
             return [{'tenant_id':'PRIVATE_TENANT_NEVER_LOG','content':'PRIVATE_CONTENT_NEVER_LOG'}]
     application=SimpleNamespace(state=SimpleNamespace(embedding_provider=Provider(),vector_store=Store()))
     builder=chat_context.ChatContext(application,SimpleNamespace(count_messages=lambda *a,**kw:0))
-    context={'tool_protocol':'required-documentation-v1','authorized_evidence':[],
+    context={'tool_protocol':'auto-documentation-v2','authorized_evidence':[],
         'messages':[],'manifest':{},'financial_metrics_allowed':False}
     assistant={'role':'assistant','content':None,'tool_calls':[{'id':'call-private','type':'function',
         'function':{'name':'search_documentation','arguments':'{"query":"PRIVATE_QUERY_NEVER_LOG"}'}}]}

@@ -66,7 +66,7 @@ def test_required_native_search_then_strict_final_uses_exact_messages_and_total_
         requests.append(json.loads(req.data))
         return Response(wires[len(requests)-1])
     monkeypatch.setattr(gateway.client.transport,'open',opened)
-    context={'tool_protocol':'required-documentation-v1','messages':[{'role':'system','content':'Synthetic'},
+    context={'tool_protocol':'auto-documentation-v2','messages':[{'role':'system','content':'Synthetic'},
         {'role':'user','content':'Synthetic internal policy'}], 'financial_metrics_allowed':False,
         'response_period':None,'response_subscriptions':[]}
     seen=[]
@@ -80,11 +80,12 @@ def test_required_native_search_then_strict_final_uses_exact_messages_and_total_
     async def exercise():
         return [record async for record in gateway(context,time.time()+60,tool_result=result)]
     records=asyncio.run(exercise())
-    assert len(requests)==2 and requests[0]['tool_choice']=='required'
+    assert len(requests)==2 and requests[0]['tool_choice']=='auto'
     assert requests[1]['tool_choice']=='none'
     assert requests[0]['tools']==requests[1]['tools']
     assert requests[0]['tools'][0]['function']['strict'] is True
-    assert requests[0]['response_format']==requests[1]['response_format']
+    assert 'response_format' not in requests[0]
+    assert requests[1]['response_format']['json_schema']['strict'] is True
     assert requests[1]['messages'][:-2]==context['messages']
     assert requests[1]['messages'][-2]==seen[0]
     assert seen[0]['tool_calls']==[tool]
@@ -120,7 +121,7 @@ def test_native_envelope_closed_diagnostic_rejects_without_values(monkeypatch, c
         headers={'Content-Type':'text/event-stream'}
     gateway=ChatGateway(SimpleNamespace(llm_model='economicon-chat',litellm_base_url='http://synthetic.invalid/v1',litellm_api_key=SecretStr('private-key-marker')))
     monkeypatch.setattr(gateway.client.transport,'open',lambda *a,**kw: Response(wire))
-    records=list(gateway._records({'messages':[], 'financial_metrics_allowed':False},time.time()+60,{},threading.Event(),'required'))
+    records=list(gateway._records({'messages':[], 'financial_metrics_allowed':False},time.time()+60,{},threading.Event(),'auto'))
     assert records[-1]['type']=='error' and records[-1]['category']=='invalid_response'
     events=[json.loads(record.message) for record in caplog.records if record.name=='app.clients.chat_gateway']
     assert len(events)==1 and events[0]['rule_code']==code
@@ -147,7 +148,7 @@ def test_required_tool_rejects_invalid_arguments_before_backend_or_second_reques
         pytest.fail('Invalid tool arguments reached backend')
     async def exercise():
         return [item async for item in gateway({'messages':[], 'financial_metrics_allowed':False,
-            'tool_protocol':'required-documentation-v1'},time.time()+60,tool_result=result)]
+            'tool_protocol':'auto-documentation-v2'},time.time()+60,tool_result=result)]
     records=asyncio.run(exercise())
     assert records[-1]['type']=='error' and len(calls)==1
 
