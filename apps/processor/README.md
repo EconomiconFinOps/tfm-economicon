@@ -154,6 +154,8 @@ descarta. El último caso no tiene tope a propósito: descartar dejaría el job 
 mensaje y sin que nadie lo vea. Los eventos `job_input_rejected` y `job_retry_exhausted` son fijos y
 llevan solo el `request_id`: nunca el `source`, el contenido ni la causa.
 
+**Resultado guardado de un job `completed`.** En CockroachDB `jobs.result` es `JSONB` y llega ya decodificado, así que un `str` es una cadena JSON y se rechaza siempre, tenga el contenido que tenga (incluidos `{}` o `null`). Solo SQLite, que se usa en pruebas y guarda el objeto serializado como texto, lo decodifica; `JobRepository.json_stored_as_text` dice cuál de las dos representaciones se recibe.
+
 **Coste a tener presente.** Si pgvector o el proveedor de embeddings caen el tiempo suficiente para que
 fallen los dos intentos, los jobs que lleguen en ese intervalo quedan `failed` y **hay que volver a enviarlos**;
 no se reprocesan solos. Con pgvector parado se midieron unos 10 s hasta el descarte (dos intentos de unos 4 s

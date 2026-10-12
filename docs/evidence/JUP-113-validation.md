@@ -7,7 +7,7 @@ Base: `develop` en `8511fb1fc4141781bc76cde33b4c14855697330b` (el commit de rama
 `openspec/changes/archive/2026-10-11-jup-113-bounded-ingestion-retries/`.
 
 Evidencia técnica de implementación; no sustituye a las reviews humanas `Revision JUP-113` y
-`Validacion JUP-113`, que siguen pendientes. PR y CI: se rellenan al abrir la PR.
+`Validacion JUP-113`, que siguen pendientes. PR: [#118](https://github.com/EconomiconFinOps/tfm-economicon/pull/118). CI de GitHub sobre `f7327a20` (el SHA validado): tests de Python de los tres servicios, tipado y build del frontend, OpenSpec y `JUP policy` correctos; `JUP reviews` falla porque aún no existe `Revision JUP-113`. No se ha ejecutado sobre el SHA final.
 
 Entorno de medición: Docker 29.8.1 (Docker Compose 5.5.1) en Windows 11, proyecto Compose
 aislado `jup113-repro`, con volúmenes nuevos y puertos de host distintos de los del proyecto
@@ -16,7 +16,7 @@ principal. No se usan los volúmenes de `tfm-economicon` ni de `jup104-e2e`.
 ## Estado
 
 Grupos 1 a 8 ejecutados (reproducción y decisión, admisión del origen, fallo permanente de entrada, tope de un
-reintento, forma del resultado guardado, servicios reales, documentación y verificación final); el gate posterior a la revisión (Victor, 2026-10-11) y el archivo del change están hechos; la PR, la revisión y la validación humanas y el CI de GitHub siguen pendientes. Todo lo que
+reintento, forma del resultado guardado, servicios reales, documentación y verificación final); el gate posterior a la revisión (Victor, 2026-10-11) y el archivo del change están hechos; la revisión humana (`Revision JUP-113`), la revalidación de la corrección del criterio 4 y el CI de GitHub sobre el SHA final siguen pendientes; la PR es la [#118](https://github.com/EconomiconFinOps/tfm-economicon/pull/118). Todo lo que
 figura abajo está ejecutado; lo que no consta como ejecutado no se da por hecho. Los
 proveedores de LLM y de embeddings del stack son `mock`, y el worker es un único hilo
 (`apps/processor/app/run_all.py`).
@@ -141,7 +141,7 @@ Con servicios reales en esta rama:
    sin cambios, el pipeline sin ejecutar y sin `worker_loop_failed`. Tipos que entrega el controlador
    (`psycopg`): `dict`, `None` (JSONB `null` y SQL NULL son indistinguibles), `list`, `str` (el JSON texto
    `"x"` llega ya decodificado como `x`), `int` y `bool`. Con esto queda ejecutada contra CockroachDB real la
-   rama del JSONB ya decodificado que el grupo 5 solo había emulado.
+   rama del JSONB ya decodificado que el grupo 5 solo había emulado. **Alcance corregido después:** ese caso cubría solo la cadena `"x"`; la validación del PR #118 mostró que una cadena con contenido de objeto o `null` se aceptaba (ver «Validación del PR #118 y corrección del criterio 4»).
 
 Cada caso comprueba el estado final de la cola con `basic_get` (debe ser `None`), y repite la comprobación
 desde una conexión nueva para que un mensaje entregado sin ack ni nack, que el broker devolvería al cerrar, no
@@ -273,7 +273,7 @@ citado; no significa revisado ni validado por una persona.
 | 1 | `POST /jobs/ingest` con `Azure Cost Management` responde 422 saneado y no crea trabajo, no reserva y no publica | `test_ingest_source_admission.py` (20 rechazados: 422 con el cuerpo exacto, `no_effects` y tabla `jobs` sin cambios, valor ausente de la respuesta y los registros). En Compose: 422 y la tabla `jobs` pasa de 2 a 2 filas | Cumplido. «No reserva ni publica» consta con la cola doblada de las pruebas; en Compose solo se comprobó que no se crea trabajo |
 | 2 | Un `source` admitido sigue dando 202 y se guarda como se envió | 16 aceptados en la misma prueba (fila, payload y mensaje publicado literales); en Compose `aws-cur` y ` Azure-Cost ` dan 202, completan y el segundo se guarda literal | Cumplido |
 | 3 | Un trabajo ya guardado con `source` no admitido queda `failed` y se descarta sin reencolar en una entrega | `test_ingest_permanent_input_failure.py` (32); servicios reales (6.1): `failed`, 2 entregas, cola vacía; Compose: `job_input_rejected` una vez | Cumplido |
-| 4 | Un `completed` con resultado corrupto o que no es un objeto se descarta sin reencolar y sin cambiar la fila | `test_completed_result_shape.py` (56) y `test_completed_result_exposure.py` (6); CockroachDB real: 7 valores JSONB que no son objeto → `nack(requeue=False)`, fila intacta | Cumplido. **El texto corrupto (`''`, `not json`) solo se prueba con SQLite**: una columna JSONB real no puede almacenarlo |
+| 4 | Un `completed` con resultado corrupto o que no es un objeto se descarta sin reencolar y sin cambiar la fila | `test_completed_result_shape.py` (56) y `test_completed_result_exposure.py` (6); CockroachDB real: 7 valores JSONB que no son objeto → `nack(requeue=False)`, fila intacta | Cumplido. **El texto corrupto (`''`, `not json`) solo se prueba con SQLite**: una columna JSONB real no puede almacenarlo **Reabierto por la validación del PR #118 y corregido:** una cadena JSONB con contenido `{}`, `{"ok":1}` o `null` se aceptaba con `ack`; ver «Validación del PR #118 y corrección del criterio 4». |
 | 5 | Un error no clasificado se reintenta como máximo una vez; después `failed` y descarte | `test_ingest_bounded_retry.py` (28) y `test_queue_message_redelivered.py` (13); broker real: `redelivered` `[False, True]` y 2 ejecuciones; Compose con pgvector parado: descarte a los ~10 s | Cumplido para el caso en que el estado se puede registrar. **Reencolar sin tope cuando no se puede leer o registrar el estado** está probado con fallos doblados de la base, **no con una caída real de CockroachDB** |
 | 6 | Un fallo transitorio que se resuelve dentro del tope se completa en el reintento | Caso del reintento que se completa, con servicios reales: `completed`, un documento, 2 entregas | Cumplido |
 | 7 | Los mensajes inválidos y los fallos de proveedor se comportan igual | Casos con `redelivered` falso y verdadero en `test_ingest_bounded_retry.py`; la mutación los cubre | Cumplido con dobles. **No se ejecutaron con servicios reales** |
@@ -283,7 +283,7 @@ citado; no significa revisado ni validado por una persona.
 
 ## Lo que no se ha validado
 
-- **Ninguna revisión ni validación humana.** No existen `Revision JUP-113` ni `Validacion JUP-113`; la PR aún no está abierta y el CI de GitHub no se ha ejecutado sobre esta rama.
+- **La corrección del criterio 4 no está revalidada.** Alejandro (`Validacion JUP-113`, asistida por Codex) pidió cambios sobre `f7327a20`; están corregidos en esta rama y verificados por el autor, pero él no los ha vuelto a validar sobre el SHA final. No existe `Revision JUP-113` (Paris) y el CI de GitHub corrió sobre `f7327a20`, no sobre el SHA final.
 - **Las pruebas con servicios reales no corren en CI** (`RF-096-004`) y se ejecutaron a mano, en Windows contra contenedores, no dentro de un contenedor Linux.
 - Una **caída real de CockroachDB** (decisión 4), un proveedor de embeddings o un LLM reales, un clúster de varios nodos, la carga y el rendimiento.
 - La **pantalla de ingesta en navegador**: lo que muestra ante el 422 se leyó en el código (`RF-113-001`).
@@ -295,4 +295,32 @@ citado; no significa revisado ni validado por una persona.
 
 El proyecto Compose `jup113-repro` y sus volúmenes siguen en la máquina de Victor; se borran con
 `docker compose -p jup113-repro down -v`. Los tres servicios desechables de las pruebas reales ya se retiraron.
-Enlaces de PR y de CI: se rellenan al abrir la PR.
+PR: [#118](https://github.com/EconomiconFinOps/tfm-economicon/pull/118). El CI de GitHub corrió sobre `f7327a20`, no sobre el SHA con la corrección del criterio 4 ni sobre la fusión con `develop`.
+
+## Validación del PR #118 y corrección del criterio 4
+
+Fecha: 2026-10-12 (hora local). La PR #118 recibió una review `Validacion JUP-113` de Alejandro (cuenta `Iber1to`, asistida por Codex) con **cambios solicitados** sobre `f7327a20`, y además quedó en conflicto con `develop`, que había avanzado a `8035a3de` (JUP-107, #119). Su resumen: los criterios 1, 2, 3, 5, 6, 7 y 8 conformes (el 5 y el 7 con los límites ya declarados), el 9 documentado, el 10 pendiente de reconciliar y el **4 no satisfecho**. Los siete checks técnicos de GitHub pasaron sobre `f7327a20`; `JUP reviews` falló porque aún no existe `Revision JUP-113`.
+
+**El hallazgo (P2) es correcto y es de este change.** En CockroachDB `jobs.result` es `JSONB` y psycopg lo entrega ya decodificado, así que un `str` es una cadena JSON y nunca un objeto. `_stored_result` decodificaba cualquier `str`: si la cadena contenía `{}`, `{"ok":1}` o `null`, la segunda decodificación la convertía en `dict` o `None` y el worker hacía `ack` en lugar de `nack(requeue=False)`. El grupo 5 ya había anotado que un `str` ya decodificado era indistinguible de texto serializado, y se dio por bueno porque, con los valores probados, las dos rutas acababan igual en rechazo; los valores de Alejandro son justo los que no.
+
+**Reproducción independiente** (CockroachDB v24.1.11 y RabbitMQ 3.13.7 desechables, los mismos tres valores más una variante con marcador para comprobar que el valor guardado no se filtra): los 4 casos dan `ack=[call(1)]` y `nack=[]`, el valor leído es `str`, la fila queda intacta y el pipeline no se ejecuta. Coincide con lo que él describe.
+
+**Corrección** (dos archivos de producto): `JobRepository.json_stored_as_text` (propiedad de solo lectura en `apps/processor/app/repositories/jobs.py`) vale `True` si el motor es SQLite, que guarda el objeto serializado como texto, y `False` en cualquier otro dialecto (CockroachDB, JSONB ya decodificado). `IngestTask` lo lee con `getattr(..., True)` y, cuando es `False`, **rechaza cualquier `str`** sin decodificarlo; cuando es `True` conserva el comportamiento anterior. El valor por defecto `True` mantiene como estaban los dobles y los `MagicMock` que no declaran el atributo. No basta con rechazar todo `str`, como señala la propia review, porque SQLite necesita decodificarlo. Se descartaron dos vías porque rompían pruebas ya commiteadas: convertir todo a texto en SQL (cambia los tipos que fija la prueba con servicios reales) y decodificar en la capa de datos (rompe el adaptador de una prueba existente).
+
+**Verificación:**
+
+| Qué | Resultado |
+| --- | --- |
+| Red: dos archivos nuevos (`test_completed_result_json_representation.py`, 40 casos unitarios, y `test_ingestion_jsonb_string_integration.py`, 10 casos con servicios reales) | **18 fallan y 32 pasan** antes del arreglo; los 3 casos de la review y la variante con marcador dan `ack` |
+| Green, los dos archivos nuevos con CockroachDB y RabbitMQ reales | **50 pasan** |
+| Contraste con servicios reales (shape, exposure, redelivery, ingest_task, bounded_retry, permanent_input_failure, tenant_isolation_jobs, secret_boundaries, ingestion_retry_integration) | 243 pasan y 4 omitidas (las del opt-in que necesitan pgvector, que no estaba disponible) |
+| Suite completa del processor, Windows, sin variables | **856 pasan, 90 omitidas, 0 fallan** (antes 816 y 80; +40 y +10 omitidas del opt-in) |
+| Mutación: 12 mutantes manuales sobre la propiedad y sobre `IngestTask`, con los servicios reales | **12 de 12 muertos**: propiedad siempre `True` o `False`, invertida o con otro dialecto; condición invertida; sin rechazo; rechazo que devuelve `{}`; valor por defecto `False`; `execute` que fija `True` o `False` o no pasa el argumento; mensaje distinto |
+
+Ningún test commiteado se modificó. Spec principal: escenario nuevo «Cadena JSON con contenido de objeto o nulo» en `document-ingestion-handoff`. Backlog: `RF-054-001` reabierto y corregido de nuevo; sigue `Fixed` técnico y pendiente de revalidar. Esto reconcilia el criterio 10 que señalaba la review.
+
+**Integración con `develop`:** fusión de `origin/develop` (`8035a3de`) en la rama (commit `6ad621a1`) con dos conflictos aditivos, en `openspec/findings/backlog.md` (se conservan `RF-107-001` a `003` y `RF-113-001` a `003`; 113 filas, ningún ID duplicado) y en `docs/continuidad/README.md` (se conservan las dos filas). Lo que trae JUP-107 (scripts, CI, `package.json`, documentos y specs de demo) no toca nada bajo `apps/` ni los archivos de producto de este change. Aun así, la corrección del criterio 4 cambia comportamiento, así que se pide revalidar sobre el SHA final.
+
+**Finding derivado (`RF-113-004`, Low, `Open`):** la QA de la corrección señaló que `_payload(persisted=True)` aplica `json.loads` a un `str` del JSONB `payload`, el mismo patrón. Alcance reducido: la cadena tendría que contener la serialización exacta del payload del mensaje porque después se exige `incoming != payload`, y el backend inserta con `json.dumps` en una columna JSONB, que guarda el objeto, así que solo se alcanza con corrupción externa o doble serialización. No produce un `ack` de un resultado inválido y queda fuera del criterio 4; no se corrige aquí. `apps/backend/app/db/database.py:476` repite el patrón sobre `result`.
+
+**Lo que no cubre esta corrección:** la revalidación humana, el CI sobre el SHA final, `Revision JUP-113`, una caída real de CockroachDB, la pantalla de ingesta en navegador y las pruebas con servicios reales en CI. Las pruebas de esta corrección con CockroachDB y RabbitMQ reales se ejecutaron a mano en Windows contra contenedores.

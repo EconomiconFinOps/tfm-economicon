@@ -191,3 +191,9 @@ tiene otra forma convierte la entrega en un mensaje inválido.
 - **WHEN** el resultado guardado es un objeto, llegue como texto o ya decodificado
 - **THEN** la reentrega devuelve ese objeto sin ejecutar el pipeline ni cambiar la fila.
 
+#### Scenario: Cadena JSON con contenido de objeto o nulo
+
+- **WHEN** la base entrega el resultado ya decodificado (JSONB) y es una cadena JSON cuyo contenido es `{}`, `{"ok":1}` o `null`
+- **THEN** el mensaje se rechaza como inválido, como cualquier otro resultado que no es un objeto, sin decodificar el contenido de la cadena
+- **AND** con una base que guarda el JSON como texto serializado (SQLite, solo pruebas) ese mismo texto es el objeto serializado y se acepta.
+
