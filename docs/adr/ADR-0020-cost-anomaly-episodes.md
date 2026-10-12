@@ -29,7 +29,7 @@ JUP-030 evalúa candidatas bajo demanda con reglas que manda quien llama y no gu
 
 - El panel y el asistente leen episodios estables, priorizados y con estado trazable; los KPI MTTA y MTTR son calculables.
 - Se detectan picos de un día y subidas sostenidas; P1, P2 y P3 son alcanzables.
-- Limitaciones aceptadas: un día puede evaluarse antes de que lleguen datos tardíos; un servicio sin gasto previo no abre episodio su primer día, pero desde el segundo su referencia es la media de 7 días que incluye ese primer día, así que un gasto nuevo y estable (por encima de 116,67 al día) abre episodio, llega a P1 en unas dos semanas y sigue hasta que alguien lo cierre; los ciclos semanales pueden producir candidatas falsas; un pico reciente infla la media de 7 días; si se cierra un episodio con el gasto aún alto, la media puede no volver a saltar; solo se vigila el servicio; 1 USD se trata como 1 EUR a efectos de umbral.
+- Limitaciones aceptadas: un día puede evaluarse antes de que lleguen datos tardíos; un servicio sin gasto previo no abre episodio su primer día, pero desde el segundo su referencia es la media de 7 días que incluye ese primer día, así que un gasto nuevo y estable (por encima de 116,67 al día) abre episodio, llega a P1 a los 12 días y sigue hasta que alguien lo cierre; los ciclos semanales pueden producir candidatas falsas; un pico reciente infla la media de 7 días; si se cierra un episodio con el gasto aún alto, la media puede no volver a saltar; solo se vigila el servicio; 1 USD se trata como 1 EUR a efectos de umbral.
 - Son candidatas: no se afirma causa, ahorro, confianza estadística ni completitud de los datos.
 
 ## Alternatives Considered

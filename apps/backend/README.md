@@ -138,9 +138,7 @@ En `production` se exige HTTPS y el operador aporta los origenes. Solo en
 Son hosts distintos; ajustar el puerto al `FRONTEND_HOST_PORT` que realmente
 usa el navegador y recrear el backend. El bind de Docker no configura CORS.
 El ejemplo mantiene `production` y `[]` por defecto.
-Los metodos permitidos en CORS son GET, POST y PATCH (PATCH lo usa el cambio de estado de las anomalias, `PATCH /billing/anomalies/episodes/{id}`); cualquier ruta nueva con otro metodo necesita ampliar la lista y la prueba `test_cors.py`.
-
-La politica permite GET/POST y Authorization, Content-Type, X-Tenant-Id junto
+La politica permite GET, POST y PATCH (PATCH lo usa el cambio de estado de las anomalias, `PATCH /billing/anomalies/episodes/{id}`; una ruta nueva con otro metodo necesita ampliar la lista y la prueba `test_cors.py`) y Authorization, Content-Type, X-Tenant-Id junto
 a las cabeceras safelisted del framework. OPTIONS termina sin consultar JWT,
 usuarios o tenants; max-age 600, sin permisos de cookies y sin cabeceras
 expuestas adicionales. CORS no sustituye JWT ni autorizacion tenant: una
