@@ -14,9 +14,9 @@ JUP: JUP-114
 ## 3. Frontend
 
 - [x] 3.1 Cliente y contratos: `fetchAnomalyEpisodes`, `detectAnomalies`, `changeAnomalyEpisodeStatus` en `services/api.ts` y validadores en `services/contracts.ts`, con pruebas de respuestas válidas e inválidas.
-- [ ] 3.2 Panel: resumen, tabla, filtros, leyenda, «Detectar ahora» con su aviso, «Revisado hasta», estados vacíos, carga, error, cambio de tenant y aviso sintético (D3, D4, D6); quitar `data/demo/anomaliesPanel.ts`; pruebas de cada escenario de la spec, incluidos doble pulsación, importes grandes sin pérdida de céntimos y monedas que no se suman.
-- [ ] 3.3 Detalle con acciones (D5): investigación, cierre con motivo, confirmación y aviso de irreversible, errores 404/409/422, sin acciones en cerrados; pruebas de teclado y foco.
-- [ ] 3.4 Exportación CSV/PDF con las columnas nuevas y nombre de fichero; prueba de que coincide con las filas filtradas.
+- [x] 3.2 Panel: resumen, tabla, filtros, leyenda, «Detectar ahora» con su aviso, «Revisado hasta», estados vacíos, carga, error, cambio de tenant y aviso sintético (D3, D4, D6); quitar `data/demo/anomaliesPanel.ts`; pruebas de cada escenario de la spec, incluidos doble pulsación, importes grandes sin pérdida de céntimos y monedas que no se suman.
+- [x] 3.3 Detalle con acciones (D5): investigación, cierre con motivo, confirmación y aviso de irreversible, errores 404/409/422, sin acciones en cerrados; pruebas de teclado y foco.
+- [x] 3.4 Exportación CSV/PDF con las columnas nuevas y nombre de fichero; prueba de que coincide con las filas filtradas.
 
 ## 4. Demo y documentación
 

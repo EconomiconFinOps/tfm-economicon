@@ -10,6 +10,19 @@ import { useState } from "react";
 // interfaz mas amplia (p.ej. `unknown`) que obligaria a castear en cada uso.
 type ExportRow = Record<string, string | number>;
 
+// Rows may carry text typed by users (for example a closing reason), so the
+// print window gets escaped HTML and spreadsheet formulas are neutralised.
+function escapeHtml(value: unknown): string {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function csvCell(value: string | number | undefined): string {
+  const text = String(value ?? "");
+  const numeric = /^-?\d+(\.\d+)?$/.test(text);
+  return JSON.stringify(!numeric && /^[=+\-@\t\r]/.test(text) ? "'" + text : text);
+}
+
 interface ExportButtonProps {
   data: ExportRow[];
   filename: string;
@@ -23,7 +36,7 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
     const csvContent = [
       headers.join(','),
       ...data.map((row: ExportRow) =>
-        headers.map(h => JSON.stringify(row[h] || '')).join(',')
+        headers.map(h => csvCell(row[h])).join(',')
       )
     ].join('\n');
 
@@ -39,7 +52,7 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
     const content = `
       <html>
         <head>
-          <title>${filename}</title>
+          <title>${escapeHtml(filename)}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
             h1 { color: #2b2359; }
@@ -49,15 +62,15 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
           </style>
         </head>
         <body>
-          <h1>${filename}</h1>
+          <h1>${escapeHtml(filename)}</h1>
           <p>Generado: ${new Date().toLocaleString('es-ES')}</p>
           <table>
             <thead>
-              <tr>${Object.keys(data[0] || {}).map(h => `<th>${h}</th>`).join('')}</tr>
+              <tr>${Object.keys(data[0] || {}).map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr>
             </thead>
             <tbody>
               ${data.map((row: ExportRow) =>
-                `<tr>${Object.values(row).map(v => `<td>${v}</td>`).join('')}</tr>`
+                `<tr>${Object.values(row).map(v => `<td>${escapeHtml(v)}</td>`).join('')}</tr>`
               ).join('')}
             </tbody>
           </table>
