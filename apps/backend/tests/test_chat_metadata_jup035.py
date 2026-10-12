@@ -35,6 +35,35 @@ def sources():
     returned=[{key:e[key] for key in ('id','kind','title','source')} for e in (evidence[1],evidence[2])]
     return evidence,citations,returned
 
+@pytest.mark.parametrize('state',['failed','completed'])
+@pytest.mark.parametrize('published',[False,True])
+def test_initial_stream_preserves_committed_terminal_before_ram_publication(api,state,published):
+    """Force the DB-commit/RAM-event gap without depending on thread timing."""
+    from uuid import uuid4
+    runtime=service(api[0]);scope={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
+    row,_=runtime.repository.reserve(scope,body(),{'prompt_version':'synthetic'})
+    identifier=row['operation_id']
+    runtime.buffers[identifier]={'events':[],'subscribers':set(),'partial':'',
+        'initial_frame':runtime._frame(row,'started',operation=runtime.public(row))}
+    active,won=runtime.repository.claim(scope,identifier,'synthetic-boot')
+    assert won
+    runtime._emit(active,'attempt_started',attempt_id=active['current_attempt_id'],number=1,seq=0)
+    if state=='failed':
+        row=runtime.repository.close_attempt(scope,identifier,active['current_attempt_id'],transient=False)
+    else:
+        row=runtime.repository.complete(scope,identifier,active['current_attempt_id'],ANSWER,{},str(uuid4()))
+    async def scenario():
+        event='final' if state=='completed' else 'terminal'
+        if published:
+            values=await runtime._final_values(scope,row) if state=='completed' else {'operation':runtime.public(row)}
+            runtime._emit(row,event,**values)
+        frames=[frame async for frame in runtime.events(scope,identifier,initial=True)]
+        records=frame_records(type('Reply',(),{'text':''.join(frames)})())
+        assert [item['type'] for item in records]==['started','attempt_started',event]
+        assert records[-1]['operation']['state']==state
+        assert len(messages(api[1]))==(2 if state=='completed' else 0)
+    asyncio.run(asyncio.wait_for(scenario(),2))
+
 @pytest.mark.parametrize('reported,expected',[
     ({'prompt_tokens':12,'completion_tokens':7,'total_tokens':19,'cost_usd':'0.00001230',
       'authorization':'Bearer private-secret','cached_tokens':777,'model':'invented-model','headers':{'secret':'secret'}},

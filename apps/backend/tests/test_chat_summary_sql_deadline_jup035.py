@@ -1,4 +1,4 @@
-"""Own Cockroach probes with isolated conversation fixtures; no DDL or paid IO."""
+"""Opt-in disposable Cockroach probes with migrated synthetic data; no paid IO."""
 import asyncio,os,threading,time
 from uuid import uuid4
 from sqlalchemy import create_engine,event,text
@@ -6,22 +6,9 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.pool import NullPool
 
 class Native:
-    def __init__(self):
-        url=os.environ.get('JUP035_COCKROACH_TEST_URL');assert url,'Documented own Cockroach test URL is required'
-        self.engine=create_engine(url);self.inspect_engine=create_engine(url,poolclass=NullPool);self.inspector=self.inspect_engine.connect()
-        assert self.inspector.execute(text('SELECT current_database()')).scalar_one()=='economicon_jup035_mock_smoke_479b1dcb8293'
-        row=self.inspector.execute(text("SELECT id,tenant_id,user_id FROM conversations ORDER BY jsonb_array_length(dialogue_history->'messages') DESC,id LIMIT 1")).first()
-        assert row is not None,'Own prepared runtime conversation is required'
-        self.scope={'conversation_id':row[0],'tenant_id':row[1],'user_id':row[2]}
-        from app.db.chat_history import loads,dumps
-        with self.engine.begin() as connection:
-            document=loads(connection.execute(text('SELECT CAST(dialogue_history AS TEXT) FROM conversations WHERE id=:conversation_id'),self.scope).scalar_one())
-            fresh={**self.scope,'conversation_id':'native-summary-'+str(uuid4())}
-            document['identity']=fresh
-            connection.execute(text('INSERT INTO conversations(id,tenant_id,user_id,title,created_at,updated_at,dialogue_history) '
-                'SELECT :new_id,tenant_id,user_id,title,created_at,updated_at,:history FROM conversations WHERE id=:conversation_id'),
-                {**self.scope,'new_id':fresh['conversation_id'],'history':dumps(document)})
-        self.scope=fresh
+    def __init__(self,engine,scope):
+        self.engine=engine;self.inspect_engine=create_engine(engine.url,poolclass=NullPool)
+        self.inspector=self.inspect_engine.connect();self.scope=scope
         self.marker='jup035-native-job-'+str(uuid4());self.other_marker='jup035-native-main-'+str(uuid4())
         self.entered=threading.Event();self.returned=threading.Event();self.driver=None;self.code=None;self.query_seconds=0
         self.listener=None;self.fired=False;self.other_connection=None;self.other_thread=None;self.other_returned=threading.Event();self.other_success=False
@@ -74,15 +61,24 @@ class Native:
 import pytest
 from test_chat_operations_jup035 import api
 from test_chat_summary_lifecycle_jup035 import summary_resources53
-from test_chat_summary_scheduler_jup035 import packet,runtime
+from test_chat_summary_scheduler_jup035 import packet,runtime,source
+from test_chat_cockroach_jup035 import sql,owned_scope
 
 @pytest.fixture
-def native():
-    if not os.environ.get('JUP035_COCKROACH_TEST_URL'):
-        if os.environ.get('JUP035_REQUIRE_NATIVE_SQL')=='true':
-            pytest.fail('Required native SQL integration has no JUP035_COCKROACH_TEST_URL')
-        pytest.skip('Native SQL integration not configured; set JUP035_COCKROACH_TEST_URL and JUP035_REQUIRE_NATIVE_SQL=true')
-    value=Native()
+def native(packet,request):
+    # Reuse the opt-in disposable database guard and migrations, never a saved
+    # conversation from a developer's smoke environment.
+    if not os.getenv('JUP035_COCKROACH_TEST_URL') and os.getenv('JUP035_REQUIRE_NATIVE_SQL')=='true':
+        pytest.fail('Required native SQL integration has no JUP035_COCKROACH_TEST_URL')
+    sql=request.getfixturevalue('sql')
+    scope=owned_scope(sql)
+    original=packet[1].engine
+    try:
+        packet[1].engine=sql
+        source(packet,count=8,long=False,scope=scope)
+    finally:
+        packet[1].engine=original
+    value=Native(sql,scope)
     try:yield value
     finally:value.cleanup()
 

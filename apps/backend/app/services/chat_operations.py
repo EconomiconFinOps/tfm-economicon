@@ -394,7 +394,15 @@ class ChatOperations:
             if replay is not None:
                 for frame in replay:
                     yield frame
-                if row['state'] in TERMINAL or row['state'] in ('paused','waiting'):
+                if row['state'] in TERMINAL:
+                    # SQL can commit before the producer publishes its RAM
+                    # event. Never close the winning POST with only a prefix.
+                    end='final' if row['state']=='completed' else 'terminal'
+                    if not any(frame.startswith(f'event: {end}\n') for frame in replay):
+                        values=await self._final_values(scope,row) if end=='final' else {'operation':value}
+                        yield self._frame(row,end,**values)
+                    return
+                if row['state'] in ('paused','waiting'):
                     return
             elif snapshot is not None:
                 yield snapshot
