@@ -47,6 +47,7 @@ function TenantSwitcher() {
   const [tenant, setTenant] = useState({ id: "tenant-core", name: "Core Finance" });
   return <>
     <button onClick={() => setTenant({ id: "tenant-growth", name: "Growth Ops" })}>Cambiar cliente</button>
+    <button onClick={() => setTenant({ id: "tenant-core", name: "Core Finance" })}>Volver a Core Finance</button>
     <Outlet context={{ token: "tok-1", activeTenant: tenant, activeTenantId: tenant.id }} />
   </>;
 }
@@ -279,6 +280,27 @@ describe("JUP-114 panel de anomalías: Detectar ahora", () => {
     await act(async () => finish(json(completedRun)));
     expect(screen.queryByRole("status", { name: "Resultado de la detección" })).not.toBeInTheDocument();
     expect(screen.queryByText(/Detección hecha hasta/)).not.toBeInTheDocument();
+  });
+
+  it("tras ir a otro cliente y volver durante la detección, solo marca como nuevos los episodios creados por ella", async () => {
+    let finish: (value: Response) => void = () => undefined;
+    let detected = false;
+    const created = episode({ id: "anomaly-new", service: "Storage", severity: "P3", accumulated_impact: "99.00" });
+    stubApi({
+      list: () => json(detected ? episodeList({ episodes: [compute, database, analytics, created] }) : demo),
+      detect: () => new Promise<Response>((resolve) => { finish = (response) => { detected = true; resolve(response); }; }),
+    });
+    renderPanel();
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    fireEvent.click(screen.getAllByRole("button", { name: "Detectar ahora" })[0]);
+    await screen.findByRole("button", { name: "Detectando…" });
+    fireEvent.click(screen.getByRole("button", { name: "Cambiar cliente" }));
+    fireEvent.click(screen.getByRole("button", { name: "Volver a Core Finance" }));
+    await act(async () => { finish(json(completedRun)); });
+    await waitFor(() => expect(rows()).toHaveLength(4));
+    const flagged = rows().filter((row) => row.getAttribute("data-new") === "true");
+    expect(flagged).toHaveLength(1);
+    expect(flagged[0]).toHaveTextContent("Storage");
   });
 
   it.each([

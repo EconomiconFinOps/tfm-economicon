@@ -137,7 +137,8 @@ export function AnomaliesPanel() {
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const knownIds = useRef<Set<string>>(new Set());
+  // Episodios conocidos al pulsar «Detectar ahora», por cliente: un cambio de cliente no los borra y una ida y vuelta no marca todo como nuevo.
+  const knownIds = useRef(new Map<string, Set<string>>());
   const tenantInView = useRef(tenantId);
   tenantInView.current = tenantId;
 
@@ -149,13 +150,13 @@ export function AnomaliesPanel() {
   });
 
   useEffect(() => {
-    setOutcome(null); setNewIds(new Set()); setSelectedId(null); knownIds.current = new Set();
+    setOutcome(null); setNewIds(new Set()); setSelectedId(null);
     setSeverity("all"); setStatus("open"); setObservation("all");
   }, [tenantId]);
 
   const detect = useMutation({
     mutationFn: (forTenant: string) => detectAnomalies(token, forTenant),
-    onMutate: () => { knownIds.current = new Set((list.data?.episodes ?? []).map((item) => item.id)); },
+    onMutate: (forTenant) => { knownIds.current.set(forTenant, new Set((tenantInView.current === forTenant ? list.data?.episodes ?? [] : []).map((item) => item.id))); },
     // El resultado solo se enseña en el cliente que lo pidió: si se cambió de cliente mientras corría, se descarta.
     onSuccess: async (run, forTenant) => {
       if (tenantInView.current !== forTenant) return;
@@ -163,7 +164,7 @@ export function AnomaliesPanel() {
       try {
         const refreshed = await queryClient.fetchQuery({ queryKey, queryFn: ({ signal }) => fetchAnomalyEpisodes(token, forTenant, signal) });
         if (tenantInView.current !== forTenant) return;
-        setNewIds(new Set(refreshed.episodes.map((item) => item.id).filter((id) => !knownIds.current.has(id))));
+        setNewIds(new Set(refreshed.episodes.map((item) => item.id).filter((id) => !knownIds.current.get(forTenant)?.has(id))));
       } catch {
         // La detección ya está guardada: un fallo al recargar la lista no la convierte en un fallo de la detección.
         if (tenantInView.current === forTenant) setOutcome({ run, reloadFailed: true });
