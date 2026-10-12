@@ -240,4 +240,16 @@ El transporte elimina del modelo informativo cualquier reflexión de la credenci
 desviacion del periodo anterior para el tenant autenticado. Contrato, ejemplos
 y limites: [docs/api/cost-anomalies.md](../../docs/api/cost-anomalies.md).
 Las alertas se devuelven bajo demanda; no implica notificaciones programadas,
-causa demostrada ni conexion del panel de demostracion.
+causa demostrada ni conexion del panel de demostracion. Desde JUP-114 es la
+consulta de prueba sin guardar.
+
+### Episodios de anomalias (JUP-114)
+
+`POST /billing/anomalies/detect` aplica la regla diaria de negocio de JUP-019
+al coste diario por servicio y guarda episodios por tenant (migracion
+`002_anomaly_episodes`); `GET /billing/anomalies/episodes` los lista por
+criticidad e impacto y `PATCH /billing/anomalies/episodes/{id}` cambia su
+estado. Contrato y limites: [docs/api/anomaly-episodes.md](../../docs/api/anomaly-episodes.md);
+decision: [ADR-0019](../../docs/adr/ADR-0019-cost-anomaly-episodes.md). Las
+pruebas con CockroachDB real (`tests/test_anomaly_episode_*.py`) necesitan
+`JUP086_COCKROACH_TEST_URL` y no corren en CI.

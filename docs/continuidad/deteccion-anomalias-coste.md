@@ -56,3 +56,12 @@ por la sola existencia de la contribucion tecnica. No se enviaron mensajes Disco
 ## Retomada (2026-10-11)
 
 El PR #91 se cerro el 10/10 sin integrar. La contribucion se retoma en la rama `feat/JUP-030-anomaly-evaluator`, desde `develop` y con los dos commits originales de Alejandro (autoria conservada). Se aplica la excepcion temporal: revision adversarial independiente (sin hallazgos graves, un hueco de test cerrado), validacion propia y aprobacion de Lucia en `review.md`; no se piden reviews de otras personas. Cuatro hallazgos menores quedan registrados y aceptados (`RF-030-001` a `004`). El panel `/anomalies` sigue con datos de demostracion y su conexion es un paso aparte; se repitio la validacion con Docker: 181 pruebas con CockroachDB real (cero omitidas) y 13 llamadas HTTP con el dataset publico, con importes iguales a los calculados con SQL independiente (ver `docs/evidence/JUP-030-validation.md`).
+
+## Episodios guardados — JUP-114 (2026-10-12)
+
+[Tarjeta JUP-114](https://trello.com/c/F492abeY), liderada por Lucia Mateo, se divide en tres changes con un PR cada uno. El primero, `jup-114-persisted-anomalies` (rama `feat/JUP-114-persisted-anomalies`), guarda **episodios** de anomalia por tenant, moneda y servicio con la regla diaria de negocio de JUP-019, referencia anclada, impacto acumulado, criticidad P1/P2/P3 y estados `new`, `investigating`, `resolved` y `false_positive`; API en [anomaly-episodes.md](../api/anomaly-episodes.md) y decision en [ADR-0019](../adr/ADR-0019-cost-anomaly-episodes.md). La evaluacion de JUP-030 no cambia y queda como consulta de prueba sin guardar.
+
+- Decisiones de Lucia del 12/10, en el ADR: episodio con tolerancia de 3 dias, regla diaria (se descarto la semanal), referencia anclada, criticidad por impacto acumulado (pendiente de confirmar con Paris), umbrales nominales en EUR y USD, «Detectar ahora» con un maximo de 7 dias pendientes por pulsacion, cualquier miembro del tenant cambia estados.
+- El documento de reglas del corpus no se toca: esta fijado por huella en las evaluaciones de JUP-022, JUP-069 y JUP-070 (`RF-114-001`, para JUP-038).
+- Siguientes changes: `jup-114-anomalies-panel-live` (panel `/anomalies` y datos de demo, incluida la limpieza de episodios al retirarlos, `RF-114-007`) y `jup-114-anomaly-alerts-schedule` (ejecucion periodica con puesta al dia completa, `RF-114-006`, y avisos).
+- JUP-038 (explicar anomalias en el chat) esta en espera hasta que el change 1 se integre: entonces se puede liberar.
