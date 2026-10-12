@@ -24,11 +24,16 @@ Campañas amplias no verdes: processor 13 FAIL/4 ERROR reproducidos en base;
 backend 147 FAIL reproducidos en base y una carrera de fixture corregida.
 Los conteos solapados no se suman y no equivalen a una bateria real de 28.
 Sin presupuesto nuevo autorizado: matriz real, full28 y aceptacion en runtime
-pendientes. Copia/pruebas Linux en DockerServer detenidas por revision automatica
-de aprobacion (exportacion de codigo privado); permiso solicitado, sin respuesta.
+pendientes. El usuario autorizó posteriormente copia y pruebas aisladas Linux:
+SHA probado 9829d82, processor completo 1002 PASS/71 SKIP, backend focal 77 PASS
+incluidos 15 SQL CockroachDB. Backend amplio 1654 PASS/47 SKIP/8 FAIL/3 ERROR;
+un FAIL pgvector reproducido en base, otros siete no repetidos en focal51PASS,
+probes summary SQL pendientes por entorno específico. Ver informe para límites.
+Logs/receta en linux/ del paquete. Contenedores e imagen temporales retirados;
+archivos en /tmp/economicon-jup035-auto-01a1302b conservados como evidencia.
 
 Siguiente: Paris revisa el parche separado; resolver entorno/presupuesto para
-matriz real, CockroachDB/pgvector/navegador y full28 sobre un SHA final.
+matriz real, probes summary SQL/navegador y full28 sobre un SHA final.
 Revision Alejandro y validacion Lucia siguen separadas y pendientes. Sin mensajes,
 reviews publicadas, push a Paris, merge, despliegue ni cierre de tarjeta.
 

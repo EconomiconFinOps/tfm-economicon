@@ -99,6 +99,42 @@ CRLF. Turbo escogía pnpm de fallback; un wrapper temporal usa corepack/pnpm 9.0
 El build pasa después. Los tests de frontend/API pasan con env-mode=loose para
 transmitir el PYTHONPATH local. No se modifican límites o configuración de producción.
 
+## Ampliación Linux autorizada — 12/10/2026
+
+El usuario autorizó expresamente copiar el checkout y ejecutar pruebas aisladas
+en DockerServer, sin despliegue. Se probó `9829d82c799487e8223a91be4259605335d59a2f`
+(mismo código `5dd1597`), mediante git archive verificado por SHA256:
+`9a5c882d7472c0ae534b4162fc308281f1f6bf87dd928c2f787ec21d7e73ae27`.
+Fuente de solo lectura, Python 3.12.13, tokenizers 0.22.1, pytest 9.1.1,
+CockroachDB 24.1.11 y pgvector pg17. Contenedores sin puertos publicados,
+red aislada, datos sintéticos y ninguna credencial ni inferencia externa.
+Receta, identificadores de imágenes y logs están en `linux/` del paquete externo.
+
+| Ejecución Linux | Resultado |
+| --- | --- |
+| Processor completo | 1002 PASS / 71 SKIP; 420.73 s |
+| Backend completo | 1654 PASS / 47 SKIP / 8 FAIL / 3 ERROR; 434.61 s |
+| Backend focal final | 77 PASS, sin SKIP; 29.42 s; incluye 15 casos CockroachDB |
+| CockroachDB + aislamiento/contratos pgvector focales | 31 PASS / 1 FAIL |
+| Metadata de chat + salud, repetición focal | 51 PASS; también 51 PASS sobre f63c150 |
+
+No sumar ejecuciones solapadas. El fallo pgvector de citas se reproduce sobre
+f63c150: `test_filtered_ranked_context_resolves_only_its_document_citation_in_the_route`
+espera `retrieved_context` sobre un `Response`. Los otros siete FAIL de la campaña
+amplia (metadata mismatch y seis casos de autenticación de salud) no se repiten
+en sus módulos aislados; causa aún no establecida. No se declara suite amplia verde.
+
+Se conservan los intentos fallidos: instalación inicial con hashes, arranque SQL
+y campaña amplia. CockroachDB temporal se detuvo durante esta última, con causa
+no confirmada; fue recreado y las 15 pruebas del chat pasan. Los tres ERROR de
+summary SQL proceden de conexión rechazada; además ese módulo exige una base y
+conversación de smoke específicas que este entorno no provisiona. Esos probes
+siguen pendientes, al igual que las integraciones omitidas que los logs enumeran.
+Las pruebas focales posteriores no cambian código ni debilitan aserciones.
+Contenedores e imagen temporal retirados y ausencia de contenedores de esta
+campaña comprobada. Archivos en `/tmp/economicon-jup035-auto-01a1302b` conservados
+como evidencia; logs copiados al paquete local. No hubo despliegue.
+
 ## Matriz real y aceptación pendiente
 
 | Ruta / parámetros | Estado | finish_reason / herramientas / latencia / uso / coste |
@@ -115,11 +151,11 @@ efectiva del entorno verificada aquí. La simulación usa respuestas controladas
 no mide decisiones, costes ni latencias reales del proveedor.
 
 Pendientes: autorización de entorno/presupuesto y límite total, configuración
-efectiva/versiones del gateway, matriz comparable, CockroachDB/pgvector/navegador
+efectiva/versiones del gateway, matriz comparable, probes SQL de summary/navegador
 y batería JUP-069 completa de 28 preguntas sobre un único SHA final. No hay 28/28.
-La copia de código a DockerServer para pruebas aisladas fue bloqueada por revisión
-automática de aprobación por falta de autorización específica para exportar código
-privado. Se solicitó permiso y no se realizó la copia ni instalación remota.
+El bloqueo inicial de copia por revisión automática quedó resuelto con la
+autorización explícita del usuario. La ampliación Linux anterior acredita el
+alcance SQL indicado; no acredita aceptación del proveedor, navegador o full28.
 
 Paris conserva liderazgo, Víctor pairing, Alejandro revisión y Lucía validación.
 Este aporte no acredita sus dictámenes ni los sustituye; tampoco se envía a Discord,
