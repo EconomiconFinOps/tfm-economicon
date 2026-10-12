@@ -43,4 +43,3 @@ describe("Framing SSE propio cerrado JUP-035", () => {
     expect(frames).toEqual([]);
   });
 });
-

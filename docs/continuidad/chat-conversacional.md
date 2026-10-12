@@ -1,3 +1,18 @@
+## Cierre documental de entrega — 12/10/2026
+
+RAG/batería incorporados por PM en feat/JUP-035-chat-delivery,
+checkpoint42e9ff073bcc3380aeb9b8bda1315a092cbbc4b0 sobre2814403 y develop8035a3d.
+La aceptación interna real010 posterior completó required -> recuperación tenant
+-> continuación autenticada -> respuesta estricta en16,703s, un par persistido
+y reapertura con citas. Dos LLM y un embedding reales; corpus sintético SQL1536.
+No full28 actual ni reviews humanas ni CI del checkpoint final acreditadas aquí.
+Original1130 SHA46fc8e44 preservado y PM comunicó PASS11:06:45UTC precommit;
+nueva referencia PM y revisión/revalidación afectada pendientes tras editorial.
+Siete casillas históricas conservan límites explícitos. JUP-036 continúa en espera.
+Ver [evidencia final](../evidence/jup-035-required-tool-retrieval-20261012.md) y
+[conciliación de entrega](../evidence/jup-035-delivery-reconciliation-20261012.md).
+Los cortes siguientes se conservan como historial, no como estado actual.
+
 ## Correccion recuperacion acotada conninfo (12/10/2026)
 
 ProgrammingError reproducido antes de SQL: context=AdaptersMap entregado por

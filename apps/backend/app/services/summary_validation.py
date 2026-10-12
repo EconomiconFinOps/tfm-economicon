@@ -43,4 +43,3 @@ def validate_sources(value,sources):
 
 def validate_output(value,sources,resources):
     return validate_sources(resources.validate_payload(value),sources)
-

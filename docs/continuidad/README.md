@@ -1,5 +1,21 @@
 # Continuidad del proyecto
 
+## Cierre documental de entrega — 12/10/2026
+
+RAG/batería incorporados por PM en feat/JUP-035-chat-delivery,
+checkpoint42e9ff073bcc3380aeb9b8bda1315a092cbbc4b0 sobre2814403 y develop8035a3d.
+La aceptación interna real010 posterior completó required -> recuperación tenant
+-> continuación autenticada -> respuesta estricta en16,703s, un par persistido
+y reapertura con citas. Dos LLM y un embedding reales; corpus sintético SQL1536.
+No full28 actual ni reviews humanas ni CI del checkpoint final acreditadas aquí.
+Original1130 SHA46fc8e44 preservado y PM comunicó PASS11:06:45UTC precommit;
+nueva referencia PM y revisión/revalidación afectada pendientes tras editorial.
+Siete casillas históricas conservan límites explícitos. JUP-036 continúa en espera.
+Ver [evidencia final](../evidence/jup-035-required-tool-retrieval-20261012.md) y
+[conciliación de entrega](../evidence/jup-035-delivery-reconciliation-20261012.md).
+Los cortes siguientes se conservan como historial, no como estado actual.
+
+
 ## Correccion local retrieval conninfo (12/10/2026)
 
 Reproducido en backend existente: peer disponible, dimension1536, consulta
@@ -196,7 +212,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Chat conversacional](chat-conversacional.md) | JUP-035: OpenSpec archivado; evidencia histórica de Compose y consumo de resumen; correcciones frontend integradas por PM y fixtures Python reconciliados localmente, confirmacion de CI remota pendiente. | 2026-10-11 |
+| [Chat conversacional](chat-conversacional.md) | JUP-035: RAG/batería importados en rama de entrega; real010 con citas/par/reapertura acreditado. Editorial, checks del checkpoint final y reviews humanas pendientes; límites históricos conservados. | 2026-10-12 |
 | [Demo con datos sintéticos de coste](demo-datos-sinteticos-coste.md) | JUP-107: demo de tres minutos con los datos de JUP-106 y conjunto sintético de anomalías con herramienta, esperados y guía (30 pruebas de la parte nueva, 6 con CockroachDB real). Dos changes aprobados y archivados; panel `/anomalies` aún con datos fijos; sin ensayo humano. | 2026-10-11 |
 | [Identidad de marca del frontend](identidad-marca-frontend.md) | JUP-112: marca de Economicon en tema claro y oscuro con estados y gráficas validados; implementación local sobre `develop`, 787 tests del frontend, capturas en 1280 y 390 px. PR #112 abierto y con cambios pedidos por la revisión, ya atendidos; falta confirmar en Trello la ampliación al tema oscuro. | 2026-10-11 |
 | [Hitos de entrega y cierre del MVP](hitos-entrega.md) | JUP-080: fechas23/10 y29/10 confirmadas por usuario;11 vencimientos activados y verificados. Archivo OpenSpec y cierre por PR en curso. | 2026-10-11 |

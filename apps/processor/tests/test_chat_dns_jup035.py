@@ -286,4 +286,3 @@ def test_cancel_during_tls_handshake_closes_owned_socket_and_finishes_worker(mon
     finally:
         cancelled.set();worker.join(6);connection.close()
         for sock in list(live):sock.close()
-

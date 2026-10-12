@@ -169,4 +169,3 @@ def test_private_lifespan_keeps_entrypoint_capacity_frozen_even_if_environment_c
     async def scenario():
         async with chat.resource_lifespan(application):assert application.state.chat_capacity==5
     asyncio.run(scenario())
-

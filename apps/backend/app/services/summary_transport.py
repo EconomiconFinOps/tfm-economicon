@@ -151,4 +151,3 @@ class SummaryTransport:
     async def close(self):
         for holder,cancelled in list(self.connections.values()):self._interrupt(holder,cancelled)
         await asyncio.gather(*list(self.workers.values()),return_exceptions=True)
-

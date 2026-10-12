@@ -23,3 +23,30 @@ Comprobación documental del PM: 2026-10-11. No ejecución nueva de tests ni ace
 - 60: chat-titles-browser-20261011.md acredita renombrar, Escape y persistencia tras recarga; pendiente localizar decisión humana concreta que también exige esta casilla.
 
 Paris autoriza pedir las evidencias existentes a Autónomo. Solicitud enviada el11/10/2026 19:53:22 Atlantic/Canary. No se solicita reconstruir referencias de integridad, repetir baterías ni nuevas llamadas.
+
+## Cierre documental de entrega — 12/10/2026
+
+Actualización TL autorizada por PM; conserva las decisiones y dictámenes
+originales y las siete casillas sin marcarlas por inferencia. Fuente final:
+feat/JUP-035-chat-delivery, checkpoint42e9ff073bcc3380aeb9b8bda1315a092cbbc4b0
+con RAG/batería importados sobre2814403/develop8035a3d. No JUP-036.
+
+| Casilla | Evidencia posterior disponible | Condición aún no acreditada / siguiente acción |
+| --- | --- | --- |
+| 16 | Archivo11/10 autorizado; batería25/28 más focales; REVIEW_PASS y VALIDATION_PASS010; PM original1130 y controles independientes comunicados | Reviews humanas de Alejandro/Lucía futuras. La revisión/revalidación de importación exige checkpoint final; no marcar todo como hecho. |
+| 42 | Entrega unificada42e9ff0; consolidación técnica12/10; original1130 PASS antes de commit | Falta correspondencia completa de los controles históricos de diseño. Referencia nueva PM antes de lectores del checkpoint final; no reutilizar guard narrow010 como guard de todo el diseño. |
+| 48 | Informe posterior remaining-validation/report-48-50.md leído completo:94focales+5deadline y4Cockroach reales; matriz íntegra asignada VALIDATION_PASS | Supera la falta de referencia del mapa11Oct previo. ACK postCOMMIT, concurrencia, rollback, CAS/linaje y migración acreditados en sus entornos; cinco productores son scripted/SQLite, no llamadas reales. Reutilización histórica no es nueva batería final. |
+| 49 | Revisión conninfo/diagnósticos REVIEW_PASS y revisión incremental histórica archivada | No se localizó informe específico completo de retirada activa legacy y restos necesarios con original PM aplicable. Obtener referencia exacta mediante PM; no atribuir al review narrow010. |
+| 50 | Informe específico48/50 VALIDATION_PASS e original PM d8aea18e... verificado; snapshot previo20:05:47UTC11Oct y guard de retorno20:42:23UTC registrado | Matriz asignada acreditada con límites nativos/offline explícitos. Tres skips nativos summary excluidos; no scope nativo adversarial nuevo ni cincoLLM.010 es evidencia adicional posterior, no sustituto de esta matriz. |
+| 51 | TL consolida este índice y cierre versionado; separa evidencia vigente, histórica y límites;036 espera | Límite a medir identificado: tamaño del JSONB canónico y coste de lectura/actualización y render al acumular pares.010 no mide escala. No introducir retención/paginación ni integrar036. Conserva abierto el checklist amplio hasta correspondencia completa de las fuentes. |
+| 60 | chat-titles-browser-20261011.md histórico: rename, Escape, recarga; archivo autorizado11/10 y aprobación focal posterior comunicada | Falta referencia humana específica del hito runtime/títulos exigido por esta casilla. La aprobación de RAG/batería12/10 no demuestra retroactivamente esa decisión; PM localiza referencia o consulta decisión concreta. |
+
+«No localizada» significa falta de referencia en este corte, no prueba de que
+el trabajo no ocurrió. Los encabezados anteriores que decían revisión o real010
+pendientes conservan su fecha; el ensayo posterior los supera sólo en su alcance.
+La bateríafull28 y los FAIL originales permanecen sin recalificación.
+Para48/50 el mapa anterior quedó superado por informe específico posterior;
+las casillas originales se conservan como registro histórico y esta matriz
+acredita su disposición técnica. Originales PM SHA9ff66090... y d8aea18e...
+verificados, creados20:05:46/47UTC11Oct (21:05:46/47Atlantic/Canary), no ahora.
+Véase [cierre y checks del checkpoint](../../../../docs/evidence/jup-035-delivery-reconciliation-20261012.md).
