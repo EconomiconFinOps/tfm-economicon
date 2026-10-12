@@ -1,3 +1,37 @@
+## Parche incremental auto de PR120 — 12/10/2026
+
+Origen: «Implementa # Orden de trabajo — JUP-035 / PR120», chat
+`01a1302b-c7a5-7c71-ba85-4d2391f8ff33`. Orden externa del espacio:
+`materiales/07-evidencias/JUP-035-PR120-orden-trabajo.md`.
+
+Checkout propio `tfm-economicon-jup035-auto`, rama
+`fix/JUP-035-auto-documentation`, derivado de PR120
+`f63c15031b65c99f1da149e867675ff771d3c1dd`. HEAD/comentarios/reviews reconfirmados
+el 12/10: mismo SHA, sin comentarios ni reviews. No modifica la rama de Paris.
+
+Implementado `auto-documentation-v2`: decision privada sin response_format,
+cero/una busqueda y final estricto none, maximo dos generaciones y un plazo
+comun. Texto de decision descartado; contexto financiero y validadores intactos.
+Hashes, descriptor, prompt y OpenSpec coordinados; contrato antiguo rechazado.
+Reproduccion original: cuatro fallos funcionales y tres rechazos correctos con
+SSE sintetico. Demuestra rechazo propio, no incompatibilidad del proveedor.
+
+[Informe y pruebas](../evidence/jup-035-auto-documentation-20261012.md): commit de
+codigo `5dd15972e53afa1668d80ba5d75c07c821d7a61b`; aporte local terminado.
+Processor focal final 130 PASS, backend 62 PASS/15 SKIP, frontend 882 y API de
+costes 81 PASS; build 4/4, OpenSpec 67/67 y controles de gobernanza pasan.
+Campañas amplias no verdes: processor 13 FAIL/4 ERROR reproducidos en base;
+backend 147 FAIL reproducidos en base y una carrera de fixture corregida.
+Los conteos solapados no se suman y no equivalen a una bateria real de 28.
+Sin presupuesto nuevo autorizado: matriz real, full28 y aceptacion en runtime
+pendientes. Copia/pruebas Linux en DockerServer detenidas por revision automatica
+de aprobacion (exportacion de codigo privado); permiso solicitado, sin respuesta.
+
+Siguiente: Paris revisa el parche separado; resolver entorno/presupuesto para
+matriz real, CockroachDB/pgvector/navegador y full28 sobre un SHA final.
+Revision Alejandro y validacion Lucia siguen separadas y pendientes. Sin mensajes,
+reviews publicadas, push a Paris, merge, despliegue ni cierre de tarjeta.
+
 ## Cierre documental de entrega — 12/10/2026
 
 RAG/batería incorporados por PM en feat/JUP-035-chat-delivery,

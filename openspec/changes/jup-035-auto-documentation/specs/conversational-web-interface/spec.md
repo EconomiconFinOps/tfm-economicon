@@ -147,4 +147,3 @@ evidencia insuficiente sin inventar cifras.
 
 - **WHEN** una salida refiere evidencia desconocida o de otro tenant
 - **THEN** el backend rechaza esas referencias al validar el final, antes de guardar la respuesta como confirmada o presentar sus citas como verificadas; la evidencia de entrada se autoriza antes de generar y los fragmentos de texto visibles siguen siendo provisionales
-

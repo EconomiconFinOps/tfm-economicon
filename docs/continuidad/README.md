@@ -1,5 +1,12 @@
 # Continuidad del proyecto
 
+## Parche auto de PR120 — 12/10/2026
+
+[Chat conversacional](chat-conversacional.md): aporte local en rama propia sobre
+f63c150, contrato auto-documentation-v2 entregado en codigo 5dd1597. Focales
+processor130/backend62 pasan (15SKIP); build/OpenSpec/frontend/API pasan.
+Suites amplias con fallos de base; proveedor real/full28 y dictamenes pendientes. Los cortes siguientes pertenecen a la entrega original.
+
 ## Cierre documental de entrega — 12/10/2026
 
 RAG/batería incorporados por PM en feat/JUP-035-chat-delivery,
