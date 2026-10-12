@@ -30,6 +30,24 @@ Fecha: 2026-10-08, sobre `c1cc7bd`. Resultado por paso (segundos medidos por la 
 
 No se midió ni se afirma la duración de una presentación con una persona. Un ensayo humano solo existe cuando hay un registro relleno en `registro-ensayo.md`; no hay ninguno.
 
+## Repetición de la receta contra la interfaz con la identidad de marca (modo: automatizada)
+
+Fecha: 2026-10-12, sobre `9814e27` (la rama con `develop` al día, que ya incluye la identidad de marca de JUP-112 y los cambios de #114). La ejecución de 2026-10-08 se hizo antes de JUP-112; esta repetición comprueba que la demo sigue siendo válida con la interfaz nueva.
+
+Stack aislado `docker compose -p jup107b` con volúmenes nuevos y la interfaz reconstruida desde esta rama, datos de JUP-106 cargados en `tenant-growth` (`present`, 2 ingestas y 10 registros), Playwright con Chromium revisión 1243, receta tal cual está en `receta-navegador.md`.
+
+- **Resultado:** los 11 pasos (D1 a D11) `pass` con los `esperados.json` originales, sin cambiar la receta ni el paquete. Código de salida 0, dos veces seguidas (una antes y otra después de reiniciar CockroachDB, ver abajo).
+- **Control positivo:** con una copia de `esperados.json` con el total de `F03` cambiado de 100.00 a 91.00, la receta sale con código 1 en D3 con `F03: falta la fila Compute EUR 91.00 (2)` y los pasos siguientes quedan `not_run`.
+- Las capturas y el vídeo mudo se guardan fuera del repositorio.
+
+Incidencias de la ejecución, ninguna del cambio:
+
+- Hubo que descargar el binario de ffmpeg que pide la grabación de vídeo (`npx playwright-core install ffmpeg`), como cualquier persona que prepare la receta por primera vez.
+- Mi primer control positivo falló por la razón equivocada: PowerShell 5.1 reescribió el JSON alterado con otra codificación y estropeó la raya larga del periodo, así que D2 falló por el texto y no por la cifra. No cuenta como control. El válido es el de arriba, hecho leyendo y escribiendo en UTF-8.
+- CockroachDB del stack se paró una vez a mitad de trabajo con un error interno de su propio proceso (el mismo tipo que ya apareció arrancando bajo carga). Se reinició con `docker compose start`, los datos seguían y se repitió la ejecución completa.
+
+No se midió ni se afirma la duración de una presentación con una persona; sigue sin haber ensayo humano.
+
 ## Controles positivos
 
 La receta se ejecutó con `esperados.json` alterado y con entornos alterados; cada uno falla nombrando la causa y marca los pasos siguientes `not_run`:
