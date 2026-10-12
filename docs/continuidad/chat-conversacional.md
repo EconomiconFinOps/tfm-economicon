@@ -1,3 +1,41 @@
+## PR121: correcciones de review y aceptación pendiente — 12/10/2026
+
+Origen: «Prepara la orden de trabajo para corregir los problemas pendientes de
+la PR-121 y mándasela a un subagente», implementación asistida de Alejandro por
+`/root/pr121_correccion_pendientes`. Código551fb81, merge develop3c6517b en1d082fb,
+pruebas/docs85e1dc9. Cierra carreras SQL/RAM iniciales y de observadores para
+final/terminal/paused/retry_scheduled; decisión length pasa a502 incomplete;
+emoji real y fragmentación byte a byte; HMAC estable CD en init/prepare.
+Conservados controles, firewall, hashes, plazo y dos generaciones. GitHubMERGEABLE,
+fila JUP113 preservada; índice resumido y checkpoints antiguos movidos a tema.
+
+Backend68PASS; processor87PASS y auto29PASS (se solapan); Cockroach43PASS/0SKIP
+con24 cruces nuevos; CDLinux55PASS, frontend42PASS, gobernanza85PASS, OpenSpec67/67.
+Seis checks técnicos y JUP policy pull_request verdes sobre85e1dc9; JUP reviewsFAIL
+por reviews pendientes. No se atribuyen reviews a Víctor/Lucía ni se levantan.
+
+Focales010/011/018/021 conformes en una muestra, pero full28 actual:21completed/
+7failed por native_multiple_calls(005/006/007/012/016/022/027), todos un intento.
+Persistencia:21pares únicos, fallidos sin mensajes. Sin HTTP400. Entre completed:
+011 omite90%por recursos;017 trata100>100como verdadero;018/021 añaden citas sin
+sustento;024 inventa tipos de cambio de ejemplo prohibidos.010 vuelve completo
+y021 conserva70EUR/40%sin93.33. No confundir esos avances con aceptación global.
+Saludo HTTPcompleted sin fuentes, statusunsupported; navegador actualNOT_RUN
+(sesión CUA nueva, localhost28660 sin conexión). No otra ronda de prompts.
+
+Incremento claves0.0760432175USD; acumulado0.1895518525USD de0.50USD. Sin renovación
+ni aumento de límites; caducidad19:28:33UTC. Runtime temporal apagado, volúmenes
+y recibos retenidos; CD compartido intacto. **NO PASS, no integrar.**
+Decisión pendiente: protocolo de decisión estructurada none/search con una sola
+consulta autenticada (recomendado), o endpoint compatible con cardinalidad nativa.
+No se cambia ninguno sin decisión; no se ignoran llamadas ni se inventan resultados.
+La calidad requiere algo más que instrucciones de prompt;17/24 son fallos observados
+en esta muestra, sin atribuir causalidad estadística a la modificación.
+
+[Informe, matriz, opciones y evidencia](../evidence/jup-035-pr121-review-fixes-20261012.md),
+[recibo completo](../evidence/jup-035-pr121-review-fixes-20261012.json).
+Sustituye sólo el corte vigente de esta PR; conserva los ensayos históricos siguientes.
+
 ## Batería real completa PR121 — 12/10/2026
 
 Origen: «Haz la batería real completa» y «sí» a extender claves una hora con

@@ -22,5 +22,16 @@
 - [x] 4.2 Acotar esquema final al contexto efectivo, conservar firewall y coordinar conteo/manifiesto.
 - [x] 4.3 Cubrir fuentes desconocidas/duplicadas, procedencia alterada y multiples llamadas sin busqueda parcial.
 - [ ] 4.4 Demostrar control compatible de una sola llamada en el proveedor fijo.
-- [ ] 4.5 Validar esquema,018 y saludo reales; bloqueado por aprobacion automatica del envio/gasto especifico.
+- [x] 4.5 Ejecutar esquema,018 y saludo reales tras autorización específica; se elimina HTTP400, sin confundir completed con aceptación semántica estable (018 mantiene citas accesorias en full28).
 - [ ] 4.6 Ejecutar full28 y navegador sobre una revision congelada; sin extrapolar resultados anteriores.
+
+## 5. Cambios solicitados en review de Víctor
+- [x] 5.1 Corregir cruces SQL/RAM para cuatro estados y ambas entregas;43 pruebas Cockroach nativas pasan.
+- [x] 5.2 Clasificar length de decisión como502 incomplete y probar retry_scheduled sin par persistido.
+- [x] 5.3 Restaurar U+1F600 y ejercitar UTF-8 real partido byte a byte.
+- [x] 5.4 Fusionar develop3c6517b conservando JUP113; GitHubMERGEABLE y JUP policy pull_requestSUCCESS.
+- [x] 5.5 Provisionar HMAC estable en init/prepare; compose config real, UID10001/ro y55 pruebas CDLinux pasan.
+- [x] 5.6 Ejecutar focales y full28 del código congelado; publicar todos los fallos y costes, sin aceptación global.
+- [ ] 5.7 Decidir protocolo/proveedor para controlar multiplicidad sin ocultar llamadas.
+- [ ] 5.8 Resolver aceptación semántica:011,017,018,021,024 de la campaña actual; no otra afirmación de garantía sólo por prompts.
+- [ ] 5.9 Completar recorrido de navegador de esta revisión y reviews oficiales; no archivar el change antes de aceptación.
