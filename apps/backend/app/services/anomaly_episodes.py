@@ -9,6 +9,7 @@ RULES_VERSION = "jup019-daily-v1"
 REFERENCE_DAYS = 7
 TOLERANCE_DAYS = 3
 MAX_DAYS_PER_RUN = 7
+ONE_DAY = timedelta(days=1)
 SUPPORTED_CURRENCIES = ("EUR", "USD")
 RULES = {
     "relative_increase_percent": "20",
@@ -19,6 +20,34 @@ RULES = {
     "currencies": list(SUPPORTED_CURRENCIES),
 }
 TRACKING_STATUSES = ("new", "investigating")
+CLOSED_STATUSES = ("resolved", "false_positive")
+_TRANSITIONS = {"new": {"investigating", "resolved", "false_positive"}, "investigating": {"resolved", "false_positive"}}
+LIMITATIONS = [
+    "A candidate for investigation, not a demonstrated cause, saving or statistical confidence.",
+    "Cost data completeness is not verified; a day may be evaluated before late records arrive.",
+    "Days older than the seven most recent pending days are not evaluated by a single run.",
+    "New spend from a zero reference does not open an episode.",
+    "Weekly cycles may produce false candidates and a recent spike raises the seven-day mean.",
+    "Only the service dimension is watched; only EUR and USD are evaluated, with nominal thresholds.",
+]
+SEVERITY_RANK = {"P1": 0, "P2": 1, "P3": 2}
+
+
+class DetectionConflict(Exception):
+    """Another run for the same tenant changed the same rows first; nothing was stored."""
+
+
+class EpisodeNotFound(Exception):
+    """Missing and foreign episodes are indistinguishable by design."""
+
+
+class EpisodeConflict(Exception):
+    """The requested status change is not allowed from the stored status."""
+
+
+def check_transition(current: str, target: str) -> None:
+    if target not in _TRANSITIONS.get(current, set()):
+        raise EpisodeConflict()
 # Amounts are kept multiplied by REFERENCE_DAYS so that a mean never needs rounding.
 _ABSOLUTE_X7 = Decimal("100.00") * REFERENCE_DAYS
 _P1_X7 = Decimal("2000.00") * REFERENCE_DAYS
@@ -103,6 +132,69 @@ class Episode:
 
     def copy(self) -> "Episode":
         return replace(self, rules=json.loads(json.dumps(self.rules)))
+
+
+def episode_columns(item: Episode) -> dict:
+    return {
+        "id": item.id, "currency": item.currency, "service": item.service, "service_key": service_key(item.service),
+        "start_date": item.start_date, "last_seen_date": item.last_seen_date, "observation": item.observation,
+        "no_longer_observed_on": item.no_longer_observed_on, "reference_week_cost": item.reference_week_cost,
+        "opening_observed_cost": item.opening_observed, "impact_numerator": item.impact_numerator,
+        "impact_day_count": item.impact_day_count, "impact_through_date": item.impact_through_date,
+        "severity": item.severity, "status": item.status, "previous_episode_id": item.previous_episode_id,
+        "rules_version": item.rules_version, "rules": json.dumps(item.rules, sort_keys=True),
+    }
+
+
+def run_summary(window: "DetectionWindow", plan: "DetectionPlan | None") -> dict:
+    status = plan.status if plan is not None else window.status
+    return {
+        "status": status, "rules_version": RULES_VERSION,
+        "last_complete_day": window.last_complete_day.isoformat() if window.last_complete_day else None,
+        "evaluated_days": [day.isoformat() for day in plan.evaluated_days] if plan else [],
+        "skipped_days": [{"date": day.isoformat(), "reason": reason} for day, reason in plan.skipped_days] if plan else [],
+        "unevaluated_range": ({"start_date": window.unevaluated[0].isoformat(), "end_date": window.unevaluated[1].isoformat()}
+                              if window.unevaluated and status == "completed" else None),
+        "unsupported_currencies": plan.unsupported_currencies if plan else [],
+        "opened": len(plan.opened) if plan else 0,
+        "continued": plan.continued if plan else 0,
+        "no_longer_observed": plan.no_longer_observed if plan else 0,
+    }
+
+
+def episode_from_row(row) -> Episode:
+    return Episode(
+        id=row["id"], currency=row["currency"], service=row["service"], start_date=row["start_date"],
+        last_seen_date=row["last_seen_date"], observation=row["observation"],
+        no_longer_observed_on=row["no_longer_observed_on"], reference_week_cost=Decimal(row["reference_week_cost"]),
+        opening_observed=Decimal(row["opening_observed_cost"]), impact_numerator=Decimal(row["impact_numerator"]),
+        impact_day_count=int(row["impact_day_count"]), impact_through_date=row["impact_through_date"],
+        status=row["status"], previous_episode_id=row["previous_episode_id"], rules_version=row["rules_version"],
+        rules=row["rules"] if isinstance(row["rules"], dict) else json.loads(row["rules"]),
+    )
+
+
+def episode_payload(row) -> dict:
+    item = episode_from_row(row)
+    return {
+        "id": item.id, "kind": "cost_anomaly_candidate", "currency": item.currency, "service": item.service,
+        "start_date": item.start_date, "last_seen_date": item.last_seen_date, "observation": item.observation,
+        "no_longer_observed_on": item.no_longer_observed_on, "reference_daily_cost": item.reference_daily_cost,
+        "opening_observed_cost": item.opening_observed_cost, "accumulated_impact": item.accumulated_impact,
+        "impact_day_count": item.impact_day_count, "impact_through_date": item.impact_through_date,
+        "severity": item.severity, "status": item.status, "status_changed_by": row["status_changed_by"],
+        "status_changed_at": row["status_changed_at"], "first_reviewed_at": row["first_reviewed_at"],
+        "closed_at": row["closed_at"], "closure_reason": row["closure_reason"],
+        "previous_episode_id": item.previous_episode_id, "rules_version": item.rules_version, "rules": item.rules,
+        "cause_status": "not_established", "limitations": list(LIMITATIONS),
+        "created_at": row["created_at"], "updated_at": row["updated_at"],
+        "_order": (SEVERITY_RANK[item.severity], -item.impact_numerator, -item.start_date.toordinal(), item.id),
+    }
+
+
+def order_payloads(payloads: list[dict]) -> list[dict]:
+    return [{key: value for key, value in item.items() if key != "_order"}
+            for item in sorted(payloads, key=lambda item: item["_order"])]
 
 
 @dataclass

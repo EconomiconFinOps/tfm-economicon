@@ -8,9 +8,9 @@ JUP: JUP-114
 
 ## 2. Lectura diaria y detección
 
-- [ ] 2.1 Lectura diaria por servicio y moneda en `Database` con las mismas protecciones que billing v2 (ingestas completadas, tenant en las dos tablas, `AmbiguousCostSource`) y la lista de días observados del tenant; pruebas con CockroachDB real, incluida la de fuente solapada y la de otro tenant con los mismos servicios.
+- [x] 2.1 Lectura diaria por servicio y moneda en `Database` con las mismas protecciones que billing v2 (ingestas completadas, tenant en las dos tablas, `AmbiguousCostSource`) y la lista de días observados del tenant; pruebas con CockroachDB real, incluida la de fuente solapada y la de otro tenant con los mismos servicios.
 - [x] 2.2 Servicio de detección puro (sin base de datos): días evaluables y último día completo, lo esperado (media de 7 días o referencia anclada), regla estricta con `Decimal`, apertura, continuación con tolerancia de 3 días, `no_longer_observed`, enlace al episodio anterior, impacto acumulado, criticidad y monedas no soportadas. Una prueba por escenario de la spec `cost-anomaly-episodes`, incluidas las cuatro preguntas de JUP-069 (016 a 019) como casos de regla.
-- [ ] 2.3 Ejecución transaccional por tenant con la marca de agua: ventana de como máximo 7 días, `up_to_date`, rango no evaluado, 409 por fuente ambigua y por conflicto sin escrituras parciales; pruebas con CockroachDB real de pulsación repetida y de dos ejecuciones simultáneas.
+- [x] 2.3 Ejecución transaccional por tenant con la marca de agua: ventana de como máximo 7 días, `up_to_date`, rango no evaluado, 409 por fuente ambigua y por conflicto sin escrituras parciales; pruebas con CockroachDB real de pulsación repetida y de dos ejecuciones simultáneas.
 - [ ] 2.4 Mutantes sobre las condiciones clave (`>` frente a `>=`, `AND` frente a `OR`, tolerancia, referencia anclada frente a media, último día completo, tramos de criticidad, filtro por tenant en SQL) y registrar cuántos sobreviven y por qué.
 
 ## 3. API y estados

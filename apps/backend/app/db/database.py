@@ -627,5 +627,151 @@ class Database:
                 for row in rows
             ]
 
+    _COMPLETED_COSTS = """
+        FROM azure_cost_records r
+        JOIN azure_cost_ingestion_runs i
+          ON i.id = r.ingestion_id AND i.tenant_id = r.tenant_id
+         AND i.subscription_id = r.subscription_id
+        WHERE r.tenant_id = :tenant_id AND i.tenant_id = :tenant_id
+          AND i.status = 'completed'
+    """
+
+    def latest_observed_cost_day(self, connection, tenant_id: str):
+        return connection.execute(
+            text("SELECT max(r.usage_date) " + self._COMPLETED_COSTS),
+            {"tenant_id": tenant_id},
+        ).scalar_one()
+
+    def read_daily_service_costs(self, connection, tenant_id: str, *, start_date, end_date) -> tuple[set, dict]:
+        from app.schemas.billing import AmbiguousCostSource
+
+        scope = {"tenant_id": tenant_id, "start_date": start_date, "end_date": end_date}
+        period = " AND r.usage_date >= :start_date AND r.usage_date < :end_date"
+        ambiguous = connection.execute(text(
+            "SELECT count(*) FROM (SELECT r.subscription_id, r.usage_date " + self._COMPLETED_COSTS + period
+            + " GROUP BY r.subscription_id, r.usage_date HAVING count(DISTINCT r.ingestion_id) > 1) AS conflicts"
+        ), scope).scalar_one()
+        if ambiguous:
+            raise AmbiguousCostSource()
+        rows = connection.execute(text(
+            "SELECT r.usage_date, r.currency, "
+            "CASE WHEN r.service_name ~ '^\\s*$' THEN NULL ELSE r.service_name END AS service, "
+            "sum(r.pretax_cost) AS cost " + self._COMPLETED_COSTS + period + " GROUP BY 1, 2, 3"
+        ), scope).mappings().all()
+        daily = {}
+        for row in rows:
+            daily.setdefault((row["currency"], row["service"]), {})[row["usage_date"]] = row["cost"]
+        return {row["usage_date"] for row in rows}, daily
+
+    def _anomaly_episode_rows(self, connection, tenant_id: str, episode_id: str | None = None) -> list:
+        query = "SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id"
+        if episode_id is not None:
+            query += " AND id = :id"
+        return connection.execute(text(query), {"tenant_id": tenant_id, "id": episode_id}).mappings().all()
+
+    def run_anomaly_detection(self, tenant_id: str, *, today) -> dict:
+        from sqlalchemy import exc
+
+        from app.services import anomaly_episodes as rules
+
+        now = datetime.now(timezone.utc)
+        try:
+            with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+                with connection.begin():
+                    last_evaluated = connection.execute(text(
+                        "SELECT last_evaluated_date FROM anomaly_detection_state WHERE tenant_id = :tenant_id"
+                    ), {"tenant_id": tenant_id}).scalar_one_or_none()
+                    latest = self.latest_observed_cost_day(connection, tenant_id)
+                    window = rules.detection_window(today=today, last_evaluated=last_evaluated, latest_observed=latest)
+                    if window.status != "pending":
+                        return rules.run_summary(window, None)
+                    observed, daily = self.read_daily_service_costs(
+                        connection, tenant_id, start_date=window.read_start,
+                        end_date=window.last_complete_day + rules.ONE_DAY,
+                    )
+                    episodes = [rules.episode_from_row(row) for row in self._anomaly_episode_rows(connection, tenant_id)]
+                    plan = rules.plan_detection(window, tenant_id=tenant_id, observed_days=observed,
+                                                daily=daily, episodes=episodes)
+                    if plan.status != "completed":
+                        return rules.run_summary(window, plan)
+                    for item in plan.opened:
+                        connection.execute(text(
+                            "INSERT INTO anomaly_episodes (id, tenant_id, currency, service, service_key, start_date, "
+                            "last_seen_date, observation, no_longer_observed_on, reference_week_cost, "
+                            "opening_observed_cost, impact_numerator, impact_day_count, impact_through_date, "
+                            "severity, status, previous_episode_id, rules_version, rules, created_at, updated_at) "
+                            "VALUES (:id, :tenant_id, :currency, :service, :service_key, :start_date, :last_seen_date, "
+                            ":observation, :no_longer_observed_on, :reference_week_cost, :opening_observed_cost, "
+                            ":impact_numerator, :impact_day_count, :impact_through_date, :severity, :status, "
+                            ":previous_episode_id, :rules_version, CAST(:rules AS JSONB), :now, :now)"
+                        ), {**rules.episode_columns(item), "tenant_id": tenant_id, "now": now})
+                    for item in plan.updated:
+                        connection.execute(text(
+                            "UPDATE anomaly_episodes SET last_seen_date = :last_seen_date, observation = :observation, "
+                            "no_longer_observed_on = :no_longer_observed_on, impact_numerator = :impact_numerator, "
+                            "impact_day_count = :impact_day_count, impact_through_date = :impact_through_date, "
+                            "severity = :severity, updated_at = :now WHERE id = :id AND tenant_id = :tenant_id"
+                        ), {**rules.episode_columns(item), "tenant_id": tenant_id, "now": now})
+                    connection.execute(text(
+                        "INSERT INTO anomaly_detection_state (tenant_id, last_evaluated_date, rules_version, updated_at) "
+                        "VALUES (:tenant_id, :day, :version, :now) ON CONFLICT (tenant_id) DO UPDATE SET "
+                        "last_evaluated_date = excluded.last_evaluated_date, rules_version = excluded.rules_version, "
+                        "updated_at = excluded.updated_at"
+                    ), {"tenant_id": tenant_id, "day": plan.new_last_evaluated, "version": rules.RULES_VERSION, "now": now})
+                    return rules.run_summary(window, plan)
+        except (exc.IntegrityError, exc.OperationalError) as error:
+            if isinstance(error, exc.OperationalError) and getattr(error.orig, "sqlstate", None) != "40001":
+                raise
+            raise rules.DetectionConflict() from None
+
+    def fetch_anomaly_episodes(self, tenant_id: str, *, scope: str = "open") -> list[dict]:
+        from app.services import anomaly_episodes as rules
+
+        with self.engine.connect() as connection:
+            rows = self._anomaly_episode_rows(connection, tenant_id)
+        if scope == "open":
+            rows = [row for row in rows if row["status"] in rules.TRACKING_STATUSES]
+        return rules.order_payloads([rules.episode_payload(row) for row in rows])
+
+    def fetch_anomaly_episode(self, tenant_id: str, episode_id: str) -> dict | None:
+        from app.services import anomaly_episodes as rules
+
+        with self.engine.connect() as connection:
+            rows = self._anomaly_episode_rows(connection, tenant_id, episode_id)
+        return rules.order_payloads([rules.episode_payload(rows[0])])[0] if rows else None
+
+    def change_anomaly_episode_status(self, tenant_id: str, episode_id: str, *, status: str,
+                                      reason: str | None, actor: str) -> dict:
+        from sqlalchemy import exc
+
+        from app.services import anomaly_episodes as rules
+
+        now = datetime.now(timezone.utc)
+        closing = status in rules.CLOSED_STATUSES
+        try:
+            with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+                with connection.begin():
+                    rows = self._anomaly_episode_rows(connection, tenant_id, episode_id)
+                    if not rows:
+                        raise rules.EpisodeNotFound()
+                    current = rows[0]["status"]
+                    rules.check_transition(current, status)
+                    changed = connection.execute(text(
+                        "UPDATE anomaly_episodes SET status = :status, status_changed_by = :actor, "
+                        "status_changed_at = :now, first_reviewed_at = COALESCE(first_reviewed_at, :now), "
+                        "closed_at = :closed_at, closure_reason = :reason, updated_at = :now "
+                        "WHERE id = :id AND tenant_id = :tenant_id AND status = :current"
+                    ), {"status": status, "actor": actor, "now": now, "closed_at": now if closing else None,
+                        "reason": reason if closing else None, "id": episode_id, "tenant_id": tenant_id,
+                        "current": current}).rowcount
+                    if changed != 1:
+                        raise rules.EpisodeConflict()
+                    row = self._anomaly_episode_rows(connection, tenant_id, episode_id)[0]
+        except exc.OperationalError as error:
+            if getattr(error.orig, "sqlstate", None) != "40001":
+                raise
+            raise rules.EpisodeConflict() from None
+        return rules.order_payloads([rules.episode_payload(row)])[0]
+
     def dispose(self) -> None:
         self.engine.dispose()
