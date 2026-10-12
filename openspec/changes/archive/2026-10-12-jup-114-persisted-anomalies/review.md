@@ -1,6 +1,6 @@
 # Review JUP-114 (change 1) — Episodios de anomalía guardados
 
-JUP: JUP-114 · Trello: https://trello.com/c/F492abeY · Rama: `feat/JUP-114-anomaly-circuit` · ADR: [ADR-0019](../../../docs/adr/ADR-0019-cost-anomaly-episodes.md)
+JUP: JUP-114 · Trello: https://trello.com/c/F492abeY · Rama: `feat/JUP-114-anomaly-circuit` · ADR: [ADR-0019](../../../../docs/adr/ADR-0019-cost-anomaly-episodes.md)
 
 ## Resumen
 
@@ -18,7 +18,7 @@ Todas de Lucia, el 2026-10-12, en la exploración y la propuesta; recogidas en A
 - «Detectar ahora» con marca de agua por tenant y un máximo de 7 días pendientes por pulsación (Lucia mantuvo el límite «de momento» aunque quitarlo costaba poco).
 - Estados sin `acknowledged`; motivo obligatorio al cerrar; se guardan primer cambio desde `new` y cierre (MTTA y MTTR).
 - El documento de reglas del corpus no se modifica: está fijado por sha256 en las evaluaciones de JUP-022, JUP-069 y JUP-070 (`RF-114-001`).
-- ADR aplicable: [ADR-0019](../../../docs/adr/ADR-0019-cost-anomaly-episodes.md), `Proposed`.
+- ADR aplicable: [ADR-0019](../../../../docs/adr/ADR-0019-cost-anomaly-episodes.md), `Proposed`.
 
 ## Revisión documental de anomalías (tarea 4.4)
 

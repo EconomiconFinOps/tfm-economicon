@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-10-12
-- Related JUP/OpenSpec: JUP-114, [jup-114-persisted-anomalies](../../openspec/changes/jup-114-persisted-anomalies/design.md)
+- Related JUP/OpenSpec: JUP-114, [jup-114-persisted-anomalies](../../openspec/changes/archive/2026-10-12-jup-114-persisted-anomalies/design.md)
 - Trello: https://trello.com/c/F492abeY
 - Supersedes: none
 - Superseded by: none
