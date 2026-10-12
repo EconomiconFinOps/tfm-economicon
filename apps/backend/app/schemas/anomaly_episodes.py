@@ -42,10 +42,18 @@ class AnomalyEpisode(BaseModel):
     updated_at: datetime
 
 
+class CurrencyAmount(BaseModel):
+    currency: str
+    amount: DecimalString
+
+
 class AnomalyEpisodeList(BaseModel):
     contract_version: Literal[1] = 1
     scope: Literal["open", "all"]
     episodes: list[AnomalyEpisode]
+    last_evaluated_date: date | None
+    includes_synthetic_data: bool
+    open_impact_by_currency: list[CurrencyAmount]
 
 
 class SkippedDay(BaseModel):

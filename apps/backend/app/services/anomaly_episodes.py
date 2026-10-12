@@ -193,6 +193,14 @@ def episode_payload(row) -> dict:
     }
 
 
+def open_impact_by_currency(episodes: list[Episode]) -> list[dict]:
+    totals = {}
+    for item in episodes:
+        totals[item.currency] = totals.get(item.currency, Decimal(0)) + item.impact_numerator
+    # Sum exact numerators and round once, so the total never drifts from rounded episode figures.
+    return [{"currency": currency, "amount": _over_seven(total)} for currency, total in sorted(totals.items())]
+
+
 def order_payloads(payloads: list[dict]) -> list[dict]:
     return [{key: value for key, value in item.items() if key != "_order"}
             for item in sorted(payloads, key=lambda item: item["_order"])]

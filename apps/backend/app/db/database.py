@@ -745,6 +745,28 @@ class Database:
             rows = self._anomaly_episode_rows(connection, tenant_id, open_only=scope == "open")
         return rules.order_payloads([rules.episode_payload(row) for row in rows])
 
+    def fetch_anomaly_episode_list(self, tenant_id: str, *, scope: str = "open") -> dict:
+        from app.services import anomaly_episodes as rules
+
+        params = {"tenant_id": tenant_id}
+        with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+            with connection.begin():
+                rows = self._anomaly_episode_rows(connection, tenant_id, open_only=scope == "open")
+                last_evaluated = connection.execute(text(
+                    "SELECT last_evaluated_date FROM anomaly_detection_state WHERE tenant_id = :tenant_id"
+                ), params).scalar_one_or_none()
+                synthetic = connection.execute(text(
+                    "SELECT EXISTS (SELECT 1 FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant_id "
+                    "AND status = 'completed' AND COALESCE(request->'synthetic' = 'true'::JSONB, false))"
+                ), params).scalar_one()
+        return {
+            "episodes": rules.order_payloads([rules.episode_payload(row) for row in rows]),
+            "last_evaluated_date": last_evaluated,
+            "includes_synthetic_data": bool(synthetic),
+            "open_impact_by_currency": rules.open_impact_by_currency(
+                [rules.episode_from_row(row) for row in rows if row["status"] in rules.TRACKING_STATUSES]),
+        }
+
     def fetch_anomaly_episode(self, tenant_id: str, episode_id: str) -> dict | None:
         from app.services import anomaly_episodes as rules
 

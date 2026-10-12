@@ -16,7 +16,7 @@ from test_tenant_isolation_api import api, call, headers
 DETECT = "/billing/anomalies/detect"
 EPISODES = "/billing/anomalies/episodes"
 SPIKE = ["400.00"] * 7 + ["550.00", "400.00"]
-STORE_METHODS = ("run_anomaly_detection", "fetch_anomaly_episodes", "fetch_anomaly_episode",
+STORE_METHODS = ("run_anomaly_detection", "fetch_anomaly_episode_list", "fetch_anomaly_episode",
                  "change_anomaly_episode_status")
 
 
@@ -121,7 +121,11 @@ def test_listing_is_ordered_and_never_mixes_currencies(episode_store, api):
     load_series(episode_store, SPIKE, service="Compute", currency="USD")
     detect(api)
     result = call(api, "GET", EPISODES, headers=headers()).json()
-    assert set(result) == {"contract_version", "scope", "episodes"}
+    assert set(result) == {"contract_version", "scope", "episodes", "last_evaluated_date",
+                           "includes_synthetic_data", "open_impact_by_currency"}
+    assert result["open_impact_by_currency"] == [{"currency": "EUR", "amount": "9260.00"},
+                                                 {"currency": "USD", "amount": "150.00"}]
+    assert result["last_evaluated_date"] == D.isoformat() and result["includes_synthetic_data"] is False
     assert [(e["service"], e["currency"], e["severity"], e["accumulated_impact"]) for e in result["episodes"]] == [
         ("Compute", "EUR", "P1", "8600.00"), ("Network", "EUR", "P2", "500.00"),
         ("Storage", "EUR", "P3", "160.00"), ("Compute", "USD", "P3", "150.00"),
@@ -160,12 +164,13 @@ def test_authentication_and_membership_precede_any_read(api, method, path, auth,
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
 def test_listing_and_reading_never_run_a_detection(api):
     spies = spy_store(api)
-    spies["fetch_anomaly_episodes"].return_value = []
+    spies["fetch_anomaly_episode_list"].return_value = {
+        "episodes": [], "last_evaluated_date": None, "includes_synthetic_data": False, "open_impact_by_currency": []}
     spies["fetch_anomaly_episode"].return_value = None
     assert call(api, "GET", EPISODES, headers=headers()).status_code == 200
     assert call(api, "GET", EPISODES + "/anomaly-x", headers=headers()).status_code == 404
     spies["run_anomaly_detection"].assert_not_called()
-    spies["fetch_anomaly_episodes"].assert_called_once_with("tenant-a", scope="open")
+    spies["fetch_anomaly_episode_list"].assert_called_once_with("tenant-a", scope="open")
 
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
@@ -184,7 +189,7 @@ def test_detection_failures_return_conflict_codes(api, error, code):
 def test_unknown_scope_is_rejected_before_reading(api, query):
     spies = spy_store(api)
     assert call(api, "GET", EPISODES + query, headers=headers()).status_code == 422
-    spies["fetch_anomaly_episodes"].assert_not_called()
+    spies["fetch_anomaly_episode_list"].assert_not_called()
 
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)

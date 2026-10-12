@@ -271,3 +271,63 @@ def test_first_run_reaches_spikes_older_than_a_week(episode_store):
     assert "unevaluated_range" not in result
     [row] = episode_rows(db)
     assert (row["start_date"], row["observation"]) == (D, "no_longer_observed")
+
+
+def mark_run(db, run, tenant="tenant-a", synthetic=True, status="completed"):
+    from datetime import datetime, timezone
+
+    with db.engine.begin() as connection:
+        connection.execute(text(
+            "INSERT INTO azure_cost_ingestion_runs (id, tenant_id, subscription_id, request, status, started_at) "
+            "VALUES (:id, :tenant, 'sub-x', CAST(:request AS JSONB), :status, :now)"
+        ), {"id": run, "tenant": tenant, "request": '{"synthetic": true}' if synthetic else "{}",
+            "status": status, "now": datetime.now(timezone.utc)})
+
+
+def test_list_overview_before_any_detection(episode_store):
+    db = episode_store
+    mark_run(db, "synthetic-run")
+    overview = db.fetch_anomaly_episode_list("tenant-a", scope="all")
+    assert overview == {"episodes": [], "last_evaluated_date": None, "includes_synthetic_data": True,
+                        "open_impact_by_currency": []}
+
+
+@pytest.mark.parametrize("runs,expected", [
+    ([("plain", "tenant-a", False, "completed")], False),
+    ([("plain", "tenant-a", False, "completed"), ("synthetic", "tenant-a", True, "completed")], True),
+    ([("synthetic-other", "tenant-b", True, "completed")], False),
+    ([("synthetic-running", "tenant-a", True, "running")], False),
+    ([], False),
+])
+def test_synthetic_indicator_is_tenant_scoped_and_needs_a_completed_marked_run(episode_store, runs, expected):
+    db = episode_store
+    for run, tenant, synthetic, status in runs:
+        mark_run(db, run, tenant=tenant, synthetic=synthetic, status=status)
+    assert db.fetch_anomaly_episode_list("tenant-a", scope="open")["includes_synthetic_data"] is expected
+
+
+@pytest.mark.parametrize("scope", ["open", "all"])
+def test_open_totals_are_exact_per_currency_and_ignore_closed_and_foreign(episode_store, scope):
+    db = episode_store
+    for n in range(3):
+        insert_episode(db, f"eur-{n}", start=D + timedelta(days=n), status="new", impact_numerator="1",
+                       service=f"S{n}")
+    insert_episode(db, "usd", start=D, status="investigating", currency="USD", impact_numerator="7000")
+    insert_episode(db, "closed", start=D, status="resolved", service="Old", impact_numerator="70000")
+    insert_episode(db, "foreign", tenant="tenant-b", start=D, status="new", impact_numerator="70000")
+    overview = db.fetch_anomaly_episode_list("tenant-a", scope=scope)
+    # Three impacts of 1/7 are shown as 0.14 each, but their exact sum 3/7 rounds to 0.43.
+    assert overview["open_impact_by_currency"] == [{"currency": "EUR", "amount": "0.43"},
+                                                   {"currency": "USD", "amount": "1000.00"}]
+    assert {item["id"] for item in overview["episodes"]} >= {"eur-0", "eur-1", "eur-2", "usd"}
+    assert "foreign" not in {item["id"] for item in overview["episodes"]}
+
+
+def test_list_overview_after_detection_reports_the_last_evaluated_day(episode_store):
+    db = episode_store
+    load_series(db, SPIKE)
+    db.run_anomaly_detection("tenant-a", today=TODAY)
+    overview = db.fetch_anomaly_episode_list("tenant-a", scope="open")
+    assert overview["last_evaluated_date"] == D
+    assert overview["includes_synthetic_data"] is False
+    assert overview["open_impact_by_currency"] == [{"currency": "EUR", "amount": "150.00"}]

@@ -102,7 +102,7 @@ def list_anomaly_episodes(
     tenant_id: str = Depends(get_active_tenant),
     database=Depends(get_database),
 ) -> AnomalyEpisodeList:
-    return AnomalyEpisodeList(scope=scope, episodes=database.fetch_anomaly_episodes(tenant_id, scope=scope))
+    return AnomalyEpisodeList(scope=scope, **database.fetch_anomaly_episode_list(tenant_id, scope=scope))
 
 
 @router.get("/anomalies/episodes/{episode_id}", response_model=AnomalyEpisode)
