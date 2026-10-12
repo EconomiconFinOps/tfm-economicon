@@ -83,7 +83,10 @@ superar `llm_max_retries + 1` intentos con el backoff acotado existente.
 El sistema SHALL convertir el fallo de salida de `parse_and_validate_response`
 solo en ruta LiteLLM a ProviderError saneado. IngestTask SHALL conservar ese tipo
 al registrar `failed`/`ingestion_failed`; worker SHALL ejecutar nack con
-`requeue=False`. Otros errores y mocks SHALL conservar su comportamiento.
+`requeue=False`. Los errores que no son ProviderError, incluidos los de los
+proveedores mock, SHALL seguir la politica de fallo permanente de entrada y de
+reintento acotado de `document-ingestion-handoff`; este requisito no les da otro
+tratamiento.
 
 #### Scenario: JSON incompatible despues de invoke
 - **WHEN** el contenido LiteLLM llega al runtime pero incumple schema o guardrails
@@ -96,7 +99,9 @@ al registrar `failed`/`ingestion_failed`; worker SHALL ejecutar nack con
 
 #### Scenario: Exito y errores ajenos
 - **WHEN** se procesa un exito, un InvalidJobMessage o un error ajeno a proveedores reales
-- **THEN** se mantienen respectivamente ack, rechazo existente y tratamiento generico vigente
+- **THEN** el exito mantiene el ack y el InvalidJobMessage el rechazo existente
+- **AND** el error ajeno sigue la politica de `document-ingestion-handoff`: se
+  reintenta una vez como maximo y despues se descarta con el trabajo en `failed`
 
 ### Requirement: Integracion aislada con imagen aprobada
 
@@ -289,3 +294,4 @@ conservar exclusivamente metricas de estado, modelo, latencia, tokens y coste.
 #### Scenario: Casos de benchmark incompletos
 - **WHEN** el dataset incluye IDs duplicados, prompts vacios o criterios vacios
 - **THEN** el benchmark se detiene antes de ejecutar solicitudes externas
+

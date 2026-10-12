@@ -40,6 +40,17 @@ class AgentGuardrailError(RuntimeError):
     """Raised when agent input or output violates the local safety contract."""
 
 
+class AgentInputError(AgentGuardrailError):
+    """Fallo PERMANENTE de la entrada: reintentar la misma entrega fallaria igual.
+
+    Es subclase de `AgentGuardrailError` (y no una jerarquia aparte) para que quien ya
+    captura la base, y los mensajes existentes, sigan funcionando. Solo la lanzan las
+    comprobaciones de la ENTRADA; un fallo de la respuesta del proveedor
+    (`AgentResponseError`) es distinto a proposito, porque en un reintento el proveedor
+    puede acertar y descartarlo como permanente perderia trabajo recuperable.
+    """
+
+
 class AgentResponseError(AgentGuardrailError):
     """Raised when provider output cannot be accepted as a FinOps response."""
 
@@ -53,26 +64,28 @@ class PreparedAgentInput:
 
 def normalize_source(value: object) -> str:
     if not isinstance(value, str) or not value.strip():
-        raise AgentGuardrailError("source must be a non-empty string")
+        raise AgentInputError("source must be a non-empty string")
     source = value.strip().lower()
     if not SAFE_SOURCE.fullmatch(source):
-        raise AgentGuardrailError("source must be a safe provider identifier")
+        raise AgentInputError("source must be a safe provider identifier")
     return source
 
 
 def prepare_agent_input(job_payload: dict, status: str) -> PreparedAgentInput:
+    # Todas las comprobaciones de esta funcion miran la entrada ya guardada: son
+    # deterministas, por eso se tipan como permanentes (AgentInputError).
     if not isinstance(job_payload, dict):
-        raise AgentGuardrailError("job payload must be an object")
+        raise AgentInputError("job payload must be an object")
     if not isinstance(job_payload.get("tenant_id"), str) or not job_payload[
         "tenant_id"
     ].strip():
-        raise AgentGuardrailError("tenant context is required")
+        raise AgentInputError("tenant context is required")
     if not isinstance(status, str) or not SAFE_STATUS.fullmatch(status):
-        raise AgentGuardrailError("status contains unsupported characters")
+        raise AgentInputError("status contains unsupported characters")
 
     metadata = job_payload.get("metadata", {})
     if not isinstance(metadata, dict):
-        raise AgentGuardrailError("metadata must be an object")
+        raise AgentInputError("metadata must be an object")
 
     return PreparedAgentInput(
         source=normalize_source(job_payload.get("source")),

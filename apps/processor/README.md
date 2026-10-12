@@ -133,6 +133,40 @@ acredita calidad semantica ni la politica completa de reprocesado del corpus.
 Prueba HTTP y resultados con RabbitMQ, CockroachDB y pgvector reales:
 [evidencia JUP-020](../../docs/evidence/JUP-020-validation.md).
 
+### Fallos, reintentos y descarte (JUP-113)
+
+El worker consume `processor:jobs` con un único hilo. Tras contrastar el mensaje con el job guardado,
+trata cada entrega así:
+
+| Qué ocurre | Estado del job | Mensaje |
+| --- | --- | --- |
+| Termina bien | `completed` | `ack` |
+| Mensaje inválido (identidad, creador, membresía o payload), o el resultado guardado de un job `completed` no es un objeto | sin cambios | `nack` sin reencolar |
+| `ProviderError` | `failed` | `nack` sin reencolar |
+| El guardrail de entrada rechaza el trabajo, por ejemplo un `source` que no cumple `^[a-z0-9][a-z0-9._-]{0,63}$` tras `strip().lower()` | `failed` | `nack` sin reencolar; evento `job_input_rejected` |
+| Fallo no clasificado, primera entrega | `failed` | `nack` con reencolado; el bucle registra `worker_loop_failed` y espera 2 s |
+| Fallo no clasificado, reentrega (marca `redelivered` de RabbitMQ) | `failed` | `nack` sin reencolar; evento `job_retry_exhausted` |
+| No se puede leer el job o registrar su estado (base caída) | el que tuviera | `nack` con reencolado, **sin tope** |
+
+El tope es **una reentrega como máximo**, no «dos intentos siempre»: una primera entrega interrumpida
+(reinicio del worker, conexión perdida sin responder) ya llega marcada como reentrega, y su primer fallo
+descarta. El último caso no tiene tope a propósito: descartar dejaría el job en `queued` o `running` sin
+mensaje y sin que nadie lo vea. Los eventos `job_input_rejected` y `job_retry_exhausted` son fijos y
+llevan solo el `request_id`: nunca el `source`, el contenido ni la causa.
+
+**Resultado guardado de un job `completed`.** En CockroachDB `jobs.result` es `JSONB` y llega ya decodificado, así que un `str` es una cadena JSON y se rechaza siempre, tenga el contenido que tenga (incluidos `{}` o `null`). Solo SQLite, que se usa en pruebas y guarda el objeto serializado como texto, lo decodifica; `JobRepository.json_stored_as_text` dice cuál de las dos representaciones se recibe.
+
+**Coste a tener presente.** Si pgvector o el proveedor de embeddings caen el tiempo suficiente para que
+fallen los dos intentos, los jobs que lleguen en ese intervalo quedan `failed` y **hay que volver a enviarlos**;
+no se reprocesan solos. Con pgvector parado se midieron unos 10 s hasta el descarte (dos intentos de unos 4 s
+y 2 s de espera), y el worker se recupera solo al volver el servicio. No existe una lectura del estado de un
+job (`RF-104-003`): el fallo se ve en la base, en los registros y en la alerta de fallos de ingesta. El
+contador `processor_ingest_jobs_failed_total` suma cada marca de `failed`, así que un job con un fallo no
+clasificado cuenta hasta 2.
+
+Decisión y alternativas en [ADR-0019](../../docs/adr/ADR-0019-ingestion-retry-policy.md); evidencia, con
+RabbitMQ, CockroachDB y pgvector reales, en [JUP-113](../../docs/evidence/JUP-113-validation.md).
+
 ### Configuracion
 
 - `PROCESSOR_PORT`
@@ -191,7 +225,7 @@ python -m pytest tests
 ## Notas
 
 - Convenciones de código Python (logging, etc.): ver `docs/manuals/python-service-conventions.md`.
-- `workers/runner.py` consume la cola de RabbitMQ.
+- `workers/runner.py` consume la cola de RabbitMQ; su política de fallos y reintentos está en «Fallos, reintentos y descarte (JUP-113)».
 - `db/migration_runner.py` y `vector_store/migrations/` aplican migraciones formales. El runner exige indicar su tabla de versiones, y las migraciones del processor solo pueden tocar sus propias tablas (`tests/test_schema_ownership_static.py`).
 - `embeddings/` encapsula chunking y providers de embeddings.
 - `vector_store/pgvector_store.py` persiste documentos, chunks y vectores.
