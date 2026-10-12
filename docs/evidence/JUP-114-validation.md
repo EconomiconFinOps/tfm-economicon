@@ -46,3 +46,7 @@ Backend completo con CockroachDB real: 1126 pasan, 21 omitidas (servicios extern
 - Calidad de la detección con gasto real: los importes son sintéticos.
 - Rendimiento con mucha historia o muchos servicios: no medido.
 - Revisión y validación de las personas con esos roles en Trello.
+
+## Corrección posterior al archivado del change 1
+
+Al explorar el change 2 se vio que la guarda de propiedad de tablas del processor (`apps/processor/tests/test_schema_ownership_static.py`, exigida por [ADR-0011](../adr/ADR-0011-single-owner-per-table.md)) fallaba: la migración `002` del backend crea `anomaly_episodes` y `anomaly_detection_state`, que no estaban declaradas como tablas del backend. Esa prueba corre en la CI («Python tests»), así que el PR habría salido en rojo; la batería del change 1 solo incluyó el backend. Se declararon las dos tablas en esa guarda y en `BACKEND_TABLES` de `test_schema_migration_ownership.py`. Resultado: guarda estática 76/76, migraciones con CockroachDB real 6/6 (arranque en frío de los dos servicios) y 644 pruebas del processor sin base de datos en verde. La batería de cierre de los changes siguientes incluye el processor.
