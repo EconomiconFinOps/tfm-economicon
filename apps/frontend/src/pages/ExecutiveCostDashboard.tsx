@@ -64,7 +64,7 @@ export function ExecutiveCostDashboard() {
     <div className="min-w-0 space-y-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="font-bold text-foreground">Dashboard Ejecutivo - Coste Global</h2>
+          <h2 className="font-bold text-foreground">Panel Ejecutivo - Coste Global</h2>
           <p className="text-sm text-muted-foreground">Costes de Azure almacenados y normalizados</p>
         </div>
         {activeTenant && validSelection && <button type="button" className={buttonClass}

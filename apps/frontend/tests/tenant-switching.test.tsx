@@ -21,7 +21,7 @@ const southConversation = {
 };
 const southDetailPath = `${collectionPath}/${southConversation.id}`;
 const southMessage = { ...userMessage, id: "message-south", content: "South tenant history" };
-const composerPlaceholder = "Ask the assistant about the ingested tenant documents.";
+const composerPlaceholder = "Pregunta sobre los documentos ingeridos del cliente.";
 
 function mockTenantConversations(overrides: Parameters<typeof mockBackend>[0] = {}) {
   return mockBackend({
@@ -49,14 +49,14 @@ describe("tenant changes isolate page state", () => {
     restoreSession(tenants[0].id);
     renderApp(["/assistant"]);
     expect(await screen.findByText(userMessage.content)).toBeVisible();
-    await user.clear(screen.getByPlaceholderText("New conversation title"));
-    await user.type(screen.getByPlaceholderText("New conversation title"), "North private title");
+    await user.clear(screen.getByPlaceholderText("Título de la nueva conversación"));
+    await user.type(screen.getByPlaceholderText("Título de la nueva conversación"), "North private title");
     await user.type(screen.getByPlaceholderText(composerPlaceholder), "North private draft");
 
-    await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
+    await user.selectOptions(screen.getByRole("combobox", { name: "Ámbito de cliente" }), tenants[1].id);
     expect(screen.queryByText(userMessage.content)).not.toBeInTheDocument();
     expect(screen.queryByDisplayValue("North private draft")).not.toBeInTheDocument();
-    expect(screen.getByPlaceholderText("New conversation title")).toHaveValue("Ops review");
+    expect(screen.getByPlaceholderText("Título de la nueva conversación")).toHaveValue("Revisión operativa");
 
     await act(async () => pendingSouthList.resolve({ items: [southConversation] }));
     expect(await screen.findByText(southMessage.content)).toBeVisible();
@@ -88,20 +88,20 @@ describe("tenant changes isolate page state", () => {
       restoreSession(tenants[0].id);
       const { client } = renderApp(["/assistant"]);
       await screen.findByText(userMessage.content);
-      await user.clear(screen.getByPlaceholderText("New conversation title"));
-      await user.type(screen.getByPlaceholderText("New conversation title"), createdNorth.title);
-      await user.click(screen.getByRole("button", { name: "New" }));
+      await user.clear(screen.getByPlaceholderText("Título de la nueva conversación"));
+      await user.type(screen.getByPlaceholderText("Título de la nueva conversación"), createdNorth.title);
+      await user.click(screen.getByRole("button", { name: "Nueva" }));
       await user.type(screen.getByPlaceholderText(composerPlaceholder), "North pending message");
-      await user.click(screen.getByRole("button", { name: "Send" }));
-      expect(screen.getByRole("button", { name: "New" })).toBeDisabled();
-      expect(screen.getByRole("button", { name: "Sending..." })).toBeDisabled();
+      await user.click(screen.getByRole("button", { name: "Enviar" }));
+      expect(screen.getByRole("button", { name: "Nueva" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Enviando..." })).toBeDisabled();
 
-      await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
+      await user.selectOptions(screen.getByRole("combobox", { name: "Ámbito de cliente" }), tenants[1].id);
       expect(await screen.findByText(southMessage.content)).toBeVisible();
-      expect(screen.getByRole("button", { name: "New" })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Nueva" })).toBeEnabled();
       expect(screen.getByPlaceholderText(composerPlaceholder)).toHaveValue("");
-      await user.clear(screen.getByPlaceholderText("New conversation title"));
-      await user.type(screen.getByPlaceholderText("New conversation title"), "South new title");
+      await user.clear(screen.getByPlaceholderText("Título de la nueva conversación"));
+      await user.type(screen.getByPlaceholderText("Título de la nueva conversación"), "South new title");
       await user.type(screen.getByPlaceholderText(composerPlaceholder), "South new message");
       const southRequestCount = requests.filter((request) => request.headers.get("X-Tenant-Id") === tenants[1].id).length;
 
@@ -113,9 +113,9 @@ describe("tenant changes isolate page state", () => {
       });
       await waitFor(() => expect(client.isMutating()).toBe(0));
 
-      expect(screen.getByPlaceholderText("New conversation title")).toHaveValue("South new title");
+      expect(screen.getByPlaceholderText("Título de la nueva conversación")).toHaveValue("South new title");
       expect(screen.getByPlaceholderText(composerPlaceholder)).toHaveValue("South new message");
-      expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Enviar" })).toBeEnabled();
       expect(screen.getByText(southMessage.content)).toBeVisible();
       expect(screen.queryByText(/North (creation|sending) failed/)).not.toBeInTheDocument();
       expect(requests.filter((request) => request.headers.get("X-Tenant-Id") === tenants[1].id)).toHaveLength(southRequestCount);
@@ -136,21 +136,21 @@ describe("tenant changes isolate page state", () => {
       });
       restoreSession(tenants[0].id);
       renderApp(["/ingest"]);
-      await screen.findByRole("heading", { name: "Create ingestion job" });
-      await user.clear(screen.getByRole("textbox", { name: "Source" }));
-      await user.type(screen.getByRole("textbox", { name: "Source" }), "north-private-source");
-      await user.type(screen.getByRole("textbox", { name: "Artifact URI" }), "s3://north/private.txt");
-      await user.type(screen.getByRole("textbox", { name: "Text content" }), "North private document");
-      await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
+      await screen.findByRole("heading", { name: "Crear trabajo de ingesta" });
+      await user.clear(screen.getByRole("textbox", { name: "Origen" }));
+      await user.type(screen.getByRole("textbox", { name: "Origen" }), "north-private-source");
+      await user.type(screen.getByRole("textbox", { name: "URI del artefacto" }), "s3://north/private.txt");
+      await user.type(screen.getByRole("textbox", { name: "Contenido del texto" }), "North private document");
+      await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
       await screen.findByText(outcome === "success" ? ingestJob.job_id : /North ingestion failed/);
 
-      await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
-      expect(screen.getByRole("textbox", { name: "Source" })).toHaveValue("aws-cur");
-      expect(screen.getByRole("textbox", { name: "Artifact URI" })).toHaveValue("");
-      expect(screen.getByRole("textbox", { name: "Text content" })).toHaveValue("");
-      expect(screen.queryByRole("heading", { name: "Job accepted" })).not.toBeInTheDocument();
+      await user.selectOptions(screen.getByRole("combobox", { name: "Ámbito de cliente" }), tenants[1].id);
+      expect(screen.getByRole("textbox", { name: "Origen" })).toHaveValue("aws-cur");
+      expect(screen.getByRole("textbox", { name: "URI del artefacto" })).toHaveValue("");
+      expect(screen.getByRole("textbox", { name: "Contenido del texto" })).toHaveValue("");
+      expect(screen.queryByRole("heading", { name: "Trabajo aceptado" })).not.toBeInTheDocument();
       expect(screen.queryByText(/North ingestion failed/)).not.toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Queue ingestion" })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Encolar ingesta" })).toBeEnabled();
     }
   );
 
@@ -168,16 +168,16 @@ describe("tenant changes isolate page state", () => {
       });
       restoreSession(tenants[0].id);
       const { client } = renderApp(["/ingest"]);
-      await screen.findByRole("heading", { name: "Create ingestion job" });
-      await user.type(screen.getByRole("textbox", { name: "Text content" }), "North document");
-      await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
-      expect(screen.getByRole("button", { name: "Queueing job..." })).toBeDisabled();
+      await screen.findByRole("heading", { name: "Crear trabajo de ingesta" });
+      await user.type(screen.getByRole("textbox", { name: "Contenido del texto" }), "North document");
+      await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
+      expect(screen.getByRole("button", { name: "Encolando trabajo..." })).toBeDisabled();
 
-      await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
-      expect(screen.getByRole("textbox", { name: "Text content" })).toHaveValue("");
-      expect(screen.getByRole("button", { name: "Queue ingestion" })).toBeEnabled();
-      await user.type(screen.getByRole("textbox", { name: "Text content" }), "South document");
-      await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
+      await user.selectOptions(screen.getByRole("combobox", { name: "Ámbito de cliente" }), tenants[1].id);
+      expect(screen.getByRole("textbox", { name: "Contenido del texto" })).toHaveValue("");
+      expect(screen.getByRole("button", { name: "Encolar ingesta" })).toBeEnabled();
+      await user.type(screen.getByRole("textbox", { name: "Contenido del texto" }), "South document");
+      await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
       await act(async () => pendingSouth.resolve(southJob, 202));
       expect(await screen.findByText(southJob.job_id)).toBeVisible();
 
@@ -189,7 +189,7 @@ describe("tenant changes isolate page state", () => {
       expect(screen.getByText(southJob.job_id)).toBeVisible();
       expect(screen.queryByText(ingestJob.job_id)).not.toBeInTheDocument();
       expect(screen.queryByText(/North ingestion failed late/)).not.toBeInTheDocument();
-      expect(screen.getByRole("textbox", { name: "Text content" })).toHaveValue("South document");
+      expect(screen.getByRole("textbox", { name: "Contenido del texto" })).toHaveValue("South document");
       const submitted = requests.filter((request) => request.method === "POST" && request.path === "/jobs/ingest");
       expect(submitted).toHaveLength(2);
       for (const [index, request] of submitted.entries()) {

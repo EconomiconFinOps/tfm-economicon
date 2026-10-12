@@ -16,6 +16,8 @@ Aqui vive la parte visual del sistema:
 - chat con el asistente
 - resumen de billing y salud del sistema
 
+La interfaz esta en español. El vocabulario y las excepciones en inglés están en [GLOSARIO.md](GLOSARIO.md).
+
 ## Stack
 
 - `React` 18

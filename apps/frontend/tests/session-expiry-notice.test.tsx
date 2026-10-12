@@ -48,8 +48,8 @@ describe("JUP-098 marca de expiracion de sesion en /login", () => {
     mockBackend({ "GET /me": () => failure(401) });
     restoreSession();
     renderApp(["/"]);
-    await screen.findByRole("button", { name: "Sign in" });
-    expect(screen.getByRole("status")).toHaveTextContent("Your session has expired. Sign in again to continue.");
+    await screen.findByRole("button", { name: "Iniciar sesión" });
+    expect(screen.getByRole("status")).toHaveTextContent("Tu sesión ha caducado. Inicia sesión de nuevo para continuar.");
   });
 
   it.each([403, 503, "network"] as const)(
@@ -81,27 +81,27 @@ describe("JUP-098 marca de expiracion de sesion en /login", () => {
     }
   );
 
-  it("el cierre de sesion manual (boton Cerrar sesion) termina en /login sin marca de expiracion", async () => {
+  it("el cierre de sesion manual (boton Cerrar sesión) termina en /login sin marca de expiracion", async () => {
     // Caracterizacion (tarea 3.2): logout manual usa el motivo neutro por
     // defecto de invalidateSession, nunca "expired".
     const user = userEvent.setup();
     mockBackend();
     restoreSession();
     const { router } = renderApp(["/"]);
-    await screen.findByRole("button", { name: "Cerrar sesion" });
-    await user.click(screen.getByRole("button", { name: "Cerrar sesion" }));
+    await screen.findByRole("button", { name: "Cerrar sesión" });
+    await user.click(screen.getByRole("button", { name: "Cerrar sesión" }));
     const state = await waitForLoginState(router);
     expect(state).toBeNull();
   });
 
-  it('el boton "Reset session" tras un 403 de /tenants termina en /login sin marca de expiracion', async () => {
+  it('el boton "Restablecer sesión" tras un 403 de /tenants termina en /login sin marca de expiracion', async () => {
     // Caracterizacion (tarea 3.2): un fallo de tenants no relacionado con
     // /me tampoco debe dejar la marca de expiracion al desloguear.
     const user = userEvent.setup();
     mockBackend({ "GET /tenants": () => failure(403) });
     restoreSession();
     const { router } = renderApp(["/"]);
-    await user.click(await screen.findByRole("button", { name: "Reset session" }));
+    await user.click(await screen.findByRole("button", { name: "Restablecer sesión" }));
     const state = await waitForLoginState(router);
     expect(state).toBeNull();
   });

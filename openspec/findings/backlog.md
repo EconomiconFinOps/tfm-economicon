@@ -316,3 +316,19 @@ Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
   puede compartir color con un estado.
 - Los tooltips de las graficas fijan el color de sus items con `itemStyle`, comprobado por un guardian
   estatico pero no capturado en un navegador real.
+
+## JUP-117 — Restos de ingles y formato en el frontend
+
+Fecha: 2026-10-12. Origen: JUP-117, revision adversarial pasadas 2 y 3.
+Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
+
+- Los datos de demostracion fijos (`apps/frontend/src/data/demo`) tienen nombres de equipo, servicios y acciones en
+  ingles ("DevOps Team", "Rightsizing EC2", "Reserved Instances"). Se dejan fuera porque JUP-116 oculta esas pantallas.
+- Los importes de las pantallas de maqueta usan `toLocaleString()` sin idioma: el formato depende del navegador.
+  Pasarlo a `es-ES` cambia los numeros de cuatro cifras ("1200" sin separador) y rompe pruebas.
+- Las etiquetas de estado de salud estan duplicadas en `DashboardPage.tsx` y `SystemHealthDashboard.tsx`, con
+  distinta capitalizacion; `StatusPill` pasa todo a minusculas y un estado vacio muestra "unknown" en ingles.
+- La prueba `tests/spanish-ui.test.ts` solo detecta una lista cerrada de frases ya traducidas; valorar una lista de
+  palabras inglesas comunes (Retry, Failed, Unknown, Cancel, Save, Delete).
+- Los errores de la capa de API (`Request failed for...`, `Invalid response for...`) y los del navegador
+  (`Failed to fetch`) se muestran en ingles; decision de Lucia de dejar fuera esa capa.

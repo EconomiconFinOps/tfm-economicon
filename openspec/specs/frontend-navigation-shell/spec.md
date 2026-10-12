@@ -253,7 +253,7 @@ El frontend NO SHALL publicar, ni con dirección ni con enlace en el menú, ning
 
 #### Scenario: Ocultar no cambia las pantallas con datos reales
 
-- **WHEN** se inspeccionan Coste Global, Ingestions, Assistant y Salud del sistema
+- **WHEN** se inspeccionan Coste Global, Ingesta, Asistente y Salud del sistema
 - **THEN** siguen en sus mismas direcciones y con los mismos enlaces del menú
 - **AND** siguen tomando sus datos del backend
 

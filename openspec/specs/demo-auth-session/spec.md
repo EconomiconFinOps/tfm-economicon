@@ -203,7 +203,7 @@ outside `/me`.
 #### Scenario: Tenant bootstrap returns unauthorized
 
 - **WHEN** the current session receives `401` from `/tenants`
-- **THEN** the frontend performs the same cleanup automatically and requests login without requiring Reset session or retrying that unauthorized request.
+- **THEN** the frontend performs the same cleanup automatically and requests login without requiring the session-reset button ("Restablecer sesión") or retrying that unauthorized request.
 - **AND** a concurrent profile response from the abandoned generation cannot restore session or cache; `/me` errors themselves retain the separate strict query policy above.
 
 #### Scenario: An active authenticated request receives 401

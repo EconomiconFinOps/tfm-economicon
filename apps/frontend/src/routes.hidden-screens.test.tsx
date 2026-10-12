@@ -55,7 +55,7 @@ function renderRoutes(initialEntries: string[]) {
   return { router, ...view };
 }
 
-const selector = () => screen.getByRole("combobox", { name: /ambito de cliente/i });
+const selector = () => screen.getByRole("combobox", { name: /ámbito de cliente/i });
 
 describe("pantallas de demostración no publicadas", () => {
   it.each(hiddenAddresses)("abrir %s con sesión presenta la pantalla inicial, no la oculta", async (address) => {
@@ -63,8 +63,8 @@ describe("pantallas de demostración no publicadas", () => {
     stubBackend();
     renderRoutes([address]);
 
-    await waitFor(() => expect(screen.getByText("Dashboard Ejecutivo - Coste Global")).toBeInTheDocument());
-    expect(screen.queryByText(/Dashboard Operativo|Corte Global$|Panel de Recomendaciones/)).toBeNull();
+    await waitFor(() => expect(screen.getByText("Panel Ejecutivo - Coste Global")).toBeInTheDocument());
+    expect(screen.queryByText(/Panel Operativo|Corte Global$|Panel de Recomendaciones/)).toBeNull();
     expect(screen.queryByText(/Unexpected Application Error|404/)).toBeNull();
   });
 
@@ -73,7 +73,7 @@ describe("pantallas de demostración no publicadas", () => {
     stubBackend();
     renderRoutes(["/no-existe"]);
 
-    await waitFor(() => expect(screen.getByText("Dashboard Ejecutivo - Coste Global")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Panel Ejecutivo - Coste Global")).toBeInTheDocument());
     expect(screen.queryByText(/Unexpected Application Error|404/)).toBeNull();
   });
 
@@ -86,7 +86,7 @@ describe("pantallas de demostración no publicadas", () => {
     fireEvent.change(selector(), { target: { value: "t2" } });
     await act(async () => { await router.navigate(address); });
 
-    await waitFor(() => expect(screen.getByText("Dashboard Ejecutivo - Coste Global")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Panel Ejecutivo - Coste Global")).toBeInTheDocument());
     expect(selector()).toHaveValue("t2");
     expect(router.state.location.pathname).toBe("/");
   });
@@ -110,7 +110,7 @@ describe("pantallas de demostración no publicadas", () => {
     vi.stubGlobal("fetch", fetchSpy);
     renderRoutes([address]);
 
-    await waitFor(() => expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole("button", { name: /iniciar sesión/i })).toBeInTheDocument());
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 });
@@ -121,8 +121,8 @@ describe("vista heredada del resumen de facturación", () => {
     stubBackend({ "/billing/summary": billing, "/health": health });
     renderRoutes(["/overview-legacy"]);
 
-    await waitFor(() => expect(screen.getByText(/Tenant-aware FinOps workspace/)).toBeInTheDocument());
-    expect(screen.getByRole("combobox", { name: /ambito de cliente/i })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/Espacio FinOps por cliente/)).toBeInTheDocument());
+    expect(screen.getByRole("combobox", { name: /ámbito de cliente/i })).toBeInTheDocument();
   });
 });
 
@@ -146,7 +146,7 @@ describe("direcciones hostiles no publicadas", () => {
     stubBackend();
     renderRoutes([address]);
 
-    await waitFor(() => expect(screen.getByText("Dashboard Ejecutivo - Coste Global")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Panel Ejecutivo - Coste Global")).toBeInTheDocument());
     expect(screen.queryByText(/Unexpected Application Error|404/)).toBeNull();
   });
 });

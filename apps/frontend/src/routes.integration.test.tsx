@@ -86,13 +86,13 @@ describe("Arbol de rutas real: abrir una direccion directamente presenta su pant
     renderRoutes(["/ingest"]);
 
     await waitFor(() => {
-      expect(screen.getByText("Create ingestion job")).toBeInTheDocument();
+      expect(screen.getByText("Crear trabajo de ingesta")).toBeInTheDocument();
     });
 
     // Aserción negativa complementaria: el encabezado de la ruta indice
     // (ExecutiveCostDashboard) no debe estar presente -- confirma que se
     // presento /ingest, no "/".
-    expect(screen.queryByText("Dashboard Ejecutivo - Coste Global")).toBeNull();
+    expect(screen.queryByText("Panel Ejecutivo - Coste Global")).toBeNull();
   });
 });
 
@@ -128,24 +128,24 @@ describe("Arbol de rutas real: el ambito activo sobrevive a la navegacion", () =
     // con la lista vacia de localStorage al arrancar, auto-selecciona "t1".
     // Esperamos a que el selector este disponible antes de cambiarlo.
     await waitFor(() => {
-      expect(screen.getByRole("combobox", { name: /ambito de cliente/i })).toHaveValue("t1");
+      expect(screen.getByRole("combobox", { name: /ámbito de cliente/i })).toHaveValue("t1");
     });
 
-    const selector = screen.getByRole("combobox", { name: /ambito de cliente/i });
+    const selector = screen.getByRole("combobox", { name: /ámbito de cliente/i });
     fireEvent.change(selector, { target: { value: "t2" } });
 
     // Navegacion real via el NavLink del Layout hacia /ingest (no
-    // navegacion imperativa de prueba): "Ingestions" es la etiqueta del
+    // navegacion imperativa de prueba): "Ingesta" es la etiqueta del
     // item de navegacion a esa ruta.
-    fireEvent.click(screen.getByText("Ingestions"));
+    fireEvent.click(screen.getByText("Ingesta"));
 
     await waitFor(() => {
-      expect(screen.getByText("Create ingestion job")).toBeInTheDocument();
+      expect(screen.getByText("Crear trabajo de ingesta")).toBeInTheDocument();
     });
 
     // El selector, ya en la nueva pantalla, sigue mostrando "t2": el cambio
     // de tenant sobrevivio a la navegacion entre pantallas.
-    expect(screen.getByRole("combobox", { name: /ambito de cliente/i })).toHaveValue("t2");
+    expect(screen.getByRole("combobox", { name: /ámbito de cliente/i })).toHaveValue("t2");
   });
 });
 
@@ -165,7 +165,7 @@ describe("Arbol de rutas real: sin sesion se presenta el acceso", () => {
     renderRoutes(["/ingest"]);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /iniciar sesión/i })).toBeInTheDocument();
     });
 
     expect(fetchSpy).not.toHaveBeenCalled();
