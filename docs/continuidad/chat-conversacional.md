@@ -22,6 +22,20 @@ primera ejecución, con3 fixtures de esquema corregidas y revalidadas después.
 SQL nativo, nueva focal y full28 sobre candidato congelado pendientes. Los
 resultados históricos siguientes no constituyen aceptación de este contrato.
 
+41e2370 añade43PASS con CockroachDB nativo. La focal arithmetic8 falla017/027
+por HTTP400; captura017 confirma fase final, pero el gateway elimina el mensaje
+original. Una reproducción efímera para recuperar el error está pendiente:
+auto-review la rechazó dos veces y exige autorización específica del usuario.
+No se envió esa reproducción. Payload privado SHA256
+`50e516f69876c07fcd120be72cea0b58c8764be70210e2c0bae2174de08e4eec` verificado:
+pregunta017 exacta, prompt41e2370,10chunks del corpus sintético ya usado,
+4cálculos, sin historial/datasets ni credenciales. Destino previsto: mismo
+OpenRouter z-ai/glm-5.2/DeepInfra, techo acumulado0.50USD. Instrumentación
+retirada y runtime41e2370 restaurado. Recibos `payload8-proof-remote.log`,
+`payload8-proof-corpus-remote.log` y `error8-read-remote.log` en carpeta anterior.
+CI detectó3fixtures antiguas de schema privado; se adaptan sólo a segmentos,
+manteniendo validadores públicos y rechazo de evidence/period inválidos.
+
 ## Schema contextual (2026-10-12)
 
 99d9b47 elimino la unidad redundante en referencias; el foco027 siguio rechazando

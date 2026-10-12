@@ -82,6 +82,9 @@ def test_private_schema_requires_actionable_evidence_and_preserves_base(financia
     candidate = copy.deepcopy(ANSWER)
     candidate['scope'].pop('period')
     candidate['scope'].pop('subscription_ids')
+    candidate['answer']=[{'text':candidate['answer']}]
+    for field in ('assumptions','limitations','next_actions'):
+        candidate[field]=[[{'text':item}] for item in candidate[field]]
     for status in ('ok', 'partial'):
         candidate['status'] = status
         with pytest.raises(ValueError):

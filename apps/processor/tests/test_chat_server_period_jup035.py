@@ -2,7 +2,7 @@ import copy
 import json
 
 import pytest
-from test_chat_gateway_jup035 import ANSWER, _diagnostic_run, _diagnostic_wire
+from test_chat_gateway_jup035 import ANSWER, _provider, _diagnostic_run, _diagnostic_wire
 
 
 def provider_answer():
@@ -23,12 +23,12 @@ def test_provider_omits_period_but_public_contract_preserves_it():
 
 
 def test_gateway_accepts_periodless_model_response(monkeypatch, caplog):
-    records, events = _diagnostic_run(monkeypatch, _diagnostic_wire(json.dumps(provider_answer())), caplog)
+    records, events = _diagnostic_run(monkeypatch, _diagnostic_wire(json.dumps(_provider(ANSWER))), caplog)
     assert records[-1]['type'] == 'candidate'
     assert records[-1]['result']['scope']['period'] is None
     assert not events
     period = {'from': '2026-09-01', 'to': '2026-10-01'}
-    records, events = _diagnostic_run(monkeypatch, _diagnostic_wire(json.dumps(provider_answer())), caplog, period=period)
+    records, events = _diagnostic_run(monkeypatch, _diagnostic_wire(json.dumps(_provider(ANSWER))), caplog, period=period)
     assert records[-1]['type'] == 'candidate'
     assert records[-1]['result']['scope']['period'] == period
     assert not events
