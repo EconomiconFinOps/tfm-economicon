@@ -69,14 +69,22 @@ La aserción de mera presencia («esta cadena aparece») se encontró en cinco p
 
 - **Probados**: cifras frente al servicio real y frente a sumas exactas, límites de periodo, idempotencia, negativas, coexistencia con JUP-106 y con la ingesta pública, retirada repetible, guía repetida paso a paso, SQL real con 6 pruebas y 2 mutantes de SQL.
 - **No comprobados**: un ensayo humano de la guía, que el reloj de quien ensaye sea posterior al 15/09/2026 (la prueba lo vigila), el script movido a `scripts/` contra el stack (se movió después de repetir la guía; el contenido no cambió salvo la ruta citada) y la ejecución de la capa SQL en CI.
-- **Aceptados por Lucia**: pendiente, junto con la aprobación.
+- **Aceptados por Lucia (2026-10-11)**: `RF-107-002` y `RF-107-003`.
 
 ## Hallazgos registrados
 
-`RF-107-002` y `RF-107-003` en `openspec/findings/backlog.md`, pendientes de aceptación de Lucia.
+`RF-107-002` y `RF-107-003` en `openspec/findings/backlog.md`, aceptados por Lucia el 2026-10-11.
 
-## Pendiente
+## Human Approval
 
-- La sección `## Human Approval` se rellena solo con la aprobación explícita de Lucia tras probar la demo.
-- Registrar la ampliación en la tarjeta de Trello (decide y publica Lucia).
-- Un ensayo humano de la guía.
+- Change: jup-107-anomaly-demo-data
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia Mateo
+- Date: 2026-10-11
+- Archive decision: archive
+- Scope reviewed: este `review.md` con las dos pasadas adversariales (la segunda en `accept`), la evidencia `docs/evidence/JUP-107-validation.md` (ampliacion), la herramienta `scripts/synthetic_anomalies.py`, el fichero de esperados, la guia `docs/demo/JUP-107/anomalias.md`, el script `scripts/call_anomalies_demo.py` y las pruebas. Lucia ejecuto ella misma la guia en PowerShell contra un stack aislado y vio la tabla esperada.
+- Conditions approved: (1) `RF-107-002` y `RF-107-003` quedan registrados como hallazgos `Open`, aceptados y sin corregir en esta tarjeta. (2) El panel `/anomalies` sigue con datos de demostracion; su conexion es un cambio aparte. (3) La ampliacion se registra en la tarjeta de Trello cuando Lucia lo decida.
+- Constraints: bajo la excepcion temporal del 2026-10-11 esta aprobacion sustituye la revision y la validacion de otras personas en GitHub, no las acredita, y no autoriza fusionar: el merge requiere orden expresa de Lucia. Aprueba los dos changes de JUP-107 (el primero ya estaba aprobado el 2026-10-08).
+- Required changes before archive: ninguno.
+- Notes: decision registrada a partir de la respuesta «si» de Lucia del 2026-10-11 a la pregunta de aprobar JUP-107 y aceptar `RF-107-002` y `RF-107-003`, dada tras su prueba manual de la guia.

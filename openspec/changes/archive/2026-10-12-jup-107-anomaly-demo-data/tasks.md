@@ -23,7 +23,7 @@
 
 ## 5. Cierre y verificación
 
-- [ ] 5.1 Batería completa: `synthetic-anomalies:test`, `synthetic-demo:test`, `synthetic-costs:test`, las suites de gobernanza, `openspec:validate`, `jup:check:all`, `jup:cleanup:check` y `git diff --check`. Registrar comandos y resultados.
-- [ ] 5.2 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con la sección `## Adversarial Review`, el barrido de patrones, los riesgos y los hallazgos registrados en `openspec/findings/backlog.md`.
-- [ ] 5.3 Sección de evidencia en `docs/evidence/JUP-107-validation.md` y bloque `## Human Approval` post-review de Lucia.
-- [ ] 5.4 Archivar el change en la misma rama, revisar la documentación posterior al archivo, poner la rama al día con `develop` y abrir el PR a `develop` con el bloque de excepción temporal.
+- [x] 5.1 Batería completa: `synthetic-anomalies:test`, `synthetic-demo:test`, `synthetic-costs:test`, las suites de gobernanza, `openspec:validate`, `jup:check:all`, `jup:cleanup:check` y `git diff --check`. Registrar comandos y resultados. Resultado: ver `review.md` (seccion Validacion); tambien tras fusionar `develop` con #112 y #114.
+- [x] 5.2 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con la sección `## Adversarial Review`, el barrido de patrones, los riesgos y los hallazgos registrados en `openspec/findings/backlog.md`. Dos pasadas: la primera `changes-requested` (8 hallazgos corregidos) y la segunda `accept` (4 menores corregidos). `RF-107-002` y `RF-107-003` registrados.
+- [x] 5.3 Sección de evidencia en `docs/evidence/JUP-107-validation.md` y bloque `## Human Approval` post-review de Lucia. Seccion de ampliacion en la evidencia y `## Human Approval` de Lucia del 2026-10-11 en `review.md`.
+- [x] 5.4 Archivar el change en la misma rama, revisar la documentación posterior al archivo, poner la rama al día con `develop` y abrir el PR a `develop` con el bloque de excepción temporal. Archivado en este commit; el PR se abre despues con el bloque de excepcion temporal y sin revisores.
