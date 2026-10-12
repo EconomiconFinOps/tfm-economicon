@@ -109,7 +109,7 @@ describe("JUP-114 panel de anomalías: lectura y resumen", () => {
     await screen.findByRole("region", { name: /Lista de anomalías/ });
     fireEvent.click(screen.getAllByRole("button", { name: /Detalle/ })[0]);
     // La base del diálogo es un grid y en móvil ocupa toda la altura: sin `content-start` reparte la sobrante entre las filas.
-    expect(await screen.findByRole("dialog")).toHaveClass("content-start", "max-sm:h-full");
+    expect(await screen.findByRole("dialog")).toHaveClass("content-start", "max-sm:h-full", "[overflow-wrap:anywhere]");
   });
 
   it("enseña una línea por moneda sin total combinado", async () => {
@@ -246,6 +246,39 @@ describe("JUP-114 panel de anomalías: Detectar ahora", () => {
     expect(status).toHaveTextContent("3 anomalías nuevas · 0 siguen activas · 1 ya no se observa");
     await waitFor(() => expect(rows()).toHaveLength(3));
     expect(rows()[0]).toHaveAttribute("data-new", "true");
+  });
+
+  it("si la detección se guarda y la recarga de la lista falla, no dice que la detección falló", async () => {
+    let listed = 0;
+    stubApi({
+      list: () => (listed++ === 0 ? json(episodeList({ episodes: [], last_evaluated_date: null, open_impact_by_currency: [] })) : json({ detail: "error" }, 500)),
+      detect: completedRun,
+    });
+    renderPanel();
+    const [button] = await screen.findAllByRole("button", { name: "Detectar ahora" });
+    fireEvent.click(button);
+    const status = await screen.findByRole("status", { name: "Resultado de la detección" });
+    await waitFor(() => expect(status).toHaveTextContent("La detección se guardó, pero no se ha podido actualizar la lista"));
+    expect(status).toHaveTextContent("Detección hecha hasta el 20/09/2026");
+    expect(status).not.toHaveTextContent("No se ha podido completar la detección");
+  });
+
+  it("si se cambia de cliente mientras detecta, el resultado no aparece en el cliente nuevo y su botón sigue activo", async () => {
+    let finish: (value: Response) => void = () => undefined;
+    stubApi({
+      list: demo,
+      detect: () => new Promise<Response>((resolve) => { finish = resolve; }),
+    });
+    renderPanel();
+    const [button] = await screen.findAllByRole("button", { name: "Detectar ahora" });
+    fireEvent.click(button);
+    await screen.findByRole("button", { name: "Detectando…" });
+    fireEvent.click(screen.getByRole("button", { name: "Cambiar cliente" }));
+    const [other] = await screen.findAllByRole("button", { name: "Detectar ahora" });
+    expect(other).toBeEnabled();
+    await act(async () => finish(json(completedRun)));
+    expect(screen.queryByRole("status", { name: "Resultado de la detección" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Detección hecha hasta/)).not.toBeInTheDocument();
   });
 
   it.each([

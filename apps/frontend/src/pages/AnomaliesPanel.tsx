@@ -28,7 +28,7 @@ const selectStyle = "mt-2 w-full rounded-md border border-neutral bg-background 
 const buttonStyle = "rounded-md border border-neutral px-4 py-2.5 text-sm text-subtle-foreground hover:border-highlight hover:text-info-foreground disabled:cursor-not-allowed disabled:opacity-60";
 const primaryStyle = "rounded-md border border-highlight/50 bg-highlight/10 px-4 py-2.5 text-sm font-semibold text-info-foreground hover:bg-highlight/20 disabled:cursor-not-allowed disabled:opacity-60";
 
-type RunOutcome = { run?: AnomalyDetectionRun; error?: string };
+type RunOutcome = { run?: AnomalyDetectionRun; error?: string; reloadFailed?: boolean };
 
 function Badge({ className, children }: { className: string; children: string }) {
   return <span className={`inline-flex rounded-md border px-2 py-1 text-xs font-semibold ${className}`}>{children}</span>;
@@ -51,6 +51,7 @@ function RunResult({ outcome }: { outcome: RunOutcome }) {
             {run.skipped_days.map((item) => <li key={item.date}>{dayLabel(item.date)}: {skipReasons[item.reason]}</li>)}
           </ul>}
         </details>}
+        {outcome.reloadFailed && <p className="mt-2 text-warning-foreground">La detección se guardó, pero no se ha podido actualizar la lista. Vuelve a cargarla para ver los episodios.</p>}
       </>}
     </div>
   );
@@ -80,7 +81,7 @@ function EpisodeDetail({ episode, token, tenantId, onChanged, onReload }: {
   if (episode.closed_at) facts.push(["Cierre", `${episode.closed_at} · ${episode.closure_reason ?? ""}`]);
   return (
     <>
-      <DialogTitle className="text-lg font-semibold text-foreground">{service} · {episode.currency}</DialogTitle>
+      <DialogTitle className="pr-8 text-lg font-semibold text-foreground">{service} · {episode.currency}</DialogTitle>
       <DialogDescription asChild>
         <div className="flex flex-wrap gap-2">
           <Badge className={severityStyles[episode.severity]}>{severityLabels[episode.severity]}</Badge>
@@ -137,6 +138,8 @@ export function AnomaliesPanel() {
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const knownIds = useRef<Set<string>>(new Set());
+  const tenantInView = useRef(tenantId);
+  tenantInView.current = tenantId;
 
   const list = useQuery({
     queryKey,
@@ -151,14 +154,22 @@ export function AnomaliesPanel() {
   }, [tenantId]);
 
   const detect = useMutation({
-    mutationFn: () => detectAnomalies(token, tenantId),
+    mutationFn: (forTenant: string) => detectAnomalies(token, forTenant),
     onMutate: () => { knownIds.current = new Set((list.data?.episodes ?? []).map((item) => item.id)); },
-    onSuccess: async (run) => {
+    // El resultado solo se enseña en el cliente que lo pidió: si se cambió de cliente mientras corría, se descarta.
+    onSuccess: async (run, forTenant) => {
+      if (tenantInView.current !== forTenant) return;
       setOutcome({ run });
-      const refreshed = await queryClient.fetchQuery({ queryKey, queryFn: ({ signal }) => fetchAnomalyEpisodes(token, tenantId, signal) });
-      setNewIds(new Set(refreshed.episodes.map((item) => item.id).filter((id) => !knownIds.current.has(id))));
+      try {
+        const refreshed = await queryClient.fetchQuery({ queryKey, queryFn: ({ signal }) => fetchAnomalyEpisodes(token, forTenant, signal) });
+        if (tenantInView.current !== forTenant) return;
+        setNewIds(new Set(refreshed.episodes.map((item) => item.id).filter((id) => !knownIds.current.has(id))));
+      } catch {
+        // La detección ya está guardada: un fallo al recargar la lista no la convierte en un fallo de la detección.
+        if (tenantInView.current === forTenant) setOutcome({ run, reloadFailed: true });
+      }
     },
-    onError: (error) => setOutcome({ error: detectionMessage(error) }),
+    onError: (error, forTenant) => { if (tenantInView.current === forTenant) setOutcome({ error: detectionMessage(error) }); },
   });
 
   const data = list.data;
@@ -170,9 +181,10 @@ export function AnomaliesPanel() {
   const reload = () => queryClient.invalidateQueries({ queryKey });
   const neverDetected = data !== undefined && data.last_evaluated_date === null;
 
+  const detecting = detect.isPending && detect.variables === tenantId;
   const detectButton = (
-    <button className={primaryStyle} disabled={detect.isPending || !tenantId} onClick={() => detect.mutate()}>
-      {detect.isPending ? "Detectando…" : "Detectar ahora"}
+    <button className={primaryStyle} disabled={detecting || !tenantId} onClick={() => detect.mutate(tenantId)}>
+      {detecting ? "Detectando…" : "Detectar ahora"}
     </button>
   );
 
@@ -314,7 +326,7 @@ export function AnomaliesPanel() {
       </>}
 
       <Dialog open={selected !== null} onOpenChange={(value) => { if (!value) setSelectedId(null); }}>
-        <DialogContent className="max-h-[90vh] content-start overflow-y-auto max-sm:h-full max-sm:max-h-full max-sm:max-w-full max-sm:rounded-none">
+        <DialogContent className="max-h-[90vh] content-start overflow-y-auto [overflow-wrap:anywhere] max-sm:h-full max-sm:max-h-full max-sm:max-w-full max-sm:rounded-none">
           {selected && <EpisodeDetail key={selected.id + selected.status} episode={selected} token={token} tenantId={tenantId}
             onChanged={reload} onReload={reload} />}
         </DialogContent>
