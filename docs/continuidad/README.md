@@ -2,6 +2,12 @@
 
 ## Parche auto de PR120 — 12/10/2026
 
+Último corte: [backend corregido](chat-conversacional.md), suite completa Linux
+1671PASS/47SKIP, cero fallos/errores, exit0 sobre8294c48. Ocho fallos y tres errores
+resueltos; revisión/validación asistidas autorizadas y atribuidas a Codex.
+Evidencia reproducible y límites en el informe. Proveedor/navegador/full28 pendientes.
+Los resultados que siguen son antecedentes, no el estado actual del backend.
+
 [Chat conversacional](chat-conversacional.md): aporte local en rama propia sobre
 f63c150, contrato auto-documentation-v2 entregado en codigo 5dd1597. Focales
 processor130/backend62 pasan (15SKIP); build/OpenSpec/frontend/API pasan.

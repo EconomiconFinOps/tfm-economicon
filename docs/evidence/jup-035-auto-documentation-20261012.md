@@ -1,8 +1,10 @@
 # JUP-035 / PR120 — parche de decisión automática
 
 Verificado el 12/10/2026. Origen: «Implementa # Orden de trabajo — JUP-035 / PR120»,
-chat `01a1302b-c7a5-7c71-ba85-4d2391f8ff33`. Preparación técnica local; no revisión
-ni validación humanas, publicación, merge, despliegue o cierre de JUP-035.
+chat `01a1302b-c7a5-7c71-ba85-4d2391f8ff33`. Revisión y validación asistidas
+autorizadas por el usuario; sin publicación, merge, despliegue o cierre de JUP-035.
+Último resultado backend: **1671 PASS / 47 SKIP, cero fallos/errores**, exit 0,
+sobre `8294c48`. Los cortes anteriores se conservan como evidencia histórica.
 
 ## Entrega y alcance
 
@@ -135,6 +137,56 @@ Contenedores e imagen temporal retirados y ausencia de contenedores de esta
 campaña comprobada. Archivos en `/tmp/economicon-jup035-auto-01a1302b` conservados
 como evidencia; logs copiados al paquete local. No hubo despliegue.
 
+## Corrección de la campaña backend — 12/10/2026
+
+El usuario amplió el alcance a corregir los ocho FAIL y tres ERROR, repetir toda
+la suite aislada y delegar en el agente las comprobaciones de validación,
+sin despliegue. Esta es revisión y validación asistida atribuida a
+Codex por autorización explícita, no un dictamen emitido por Alejandro o Lucía.
+
+Código corregido: `8294c4875b7cfdbefbf240a0dcbfab618ee96ed5`, tras `3bb7f39`.
+Archivo enviado y contrastado por SHA256:
+`25dc9fe5978037c247b46ef0b0395dcb57ddedd415d88264b162128ada1022dc`.
+
+- **Seis fallos de salud:** los parámetros generaban JWT durante la recolección,
+  con caducidad de cinco minutos. La campaña larga llegaba después de expirar.
+  Ahora se parametriza la identidad y se genera el token al ejecutar cada caso;
+  firma, caducidad, autenticación y precedencia de errores siguen intactas.
+- **Citas pgvector:** el test conservaba acceso por atributos del DTO anterior,
+  pero la ruta devuelve un `Response` con serialización canónica. Lee ahora su
+  JSON y comprueba además HTTP 201; mantiene todas las aserciones de contenido,
+  ranking, fuente, referencias y ausencia de tenant en la respuesta pública.
+- **Metadata/streaming:** carrera real entre commit SQL y publicación en RAM.
+  Si el estado ya era terminal pero el replay aún no contenía el evento, cerraba
+  sin final/terminal. También podía quedarse abierto si el evento llegaba antes
+  de reanudar una lectura con estado activo. El replay termina al emitir un evento
+  de cierre; si falta y SQL confirma estado terminal, reconstruye el cierre desde
+  la persistencia autorizada. Seis regresiones cubren ambos estados y tres órdenes
+  de publicación, sin duplicados ni escritura adicional de historial.
+- **Tres probes SQL:** se sustituye la dependencia de una base smoke con nombre
+  fijo e historial preexistente por migraciones y conversaciones propias con ocho
+  pares sintéticos. Se conserva opt-in, prefijo de base exclusivo, versión SQL,
+  fallo obligatorio cuando falta configuración requerida y las comprobaciones de
+  cancelación física, SQLSTATE 57014, plazo, reserva y conexión principal intacta.
+
+Las reproducciones deterministas fallaron antes de cada corrección de streaming
+(2 FAIL/2 PASS y 2 FAIL/4 PASS). Metadata final: 24 PASS. Los módulos afectados
+pasaron 71 casos en Linux antes de añadir las dos últimas regresiones. El primer
+intento de suite completa en `3bb7f39` se interrumpió expresamente para incluirlas;
+su log se conserva como parcial, no como resultado completo.
+
+Suite completa definitiva sobre `8294c48`: **1671 PASS / 47 SKIP, 0 FAIL / 0 ERROR**,
+exit 0, 285.01 segundos. Las 47 omisiones son las integraciones previas que piden
+`JUP086_COCKROACH_TEST_URL` o `JUP086_RABBITMQ_TEST_URL`, no los once casos
+corregidos. Los tres probes summary SQL se ejecutaron obligatoriamente mediante
+`JUP035_REQUIRE_NATIVE_SQL=true`. OpenSpec estricto: 67/67 PASS.
+Evidencia externa: `backend-green/` del paquete. Revisión propia: cambios de
+producto limitados a entrega de eventos; no se modifican autorización, evidencia,
+presupuesto, reintentos, límites, transporte o escrituras de resultado.
+Contenedores e imagen temporales retirados; ausencia de contenedores de esta
+campaña verificada. Logs/exit code conservados localmente y archivos de evidencia
+remotos en `/tmp/economicon-jup035-auto-01a1302b/round3`; sin servicios desplegados.
+
 ## Matriz real y aceptación pendiente
 
 | Ruta / parámetros | Estado | finish_reason / herramientas / latencia / uso / coste |
@@ -150,14 +202,15 @@ GLM-5.2 es una referencia de configuración del repositorio, no la configuració
 efectiva del entorno verificada aquí. La simulación usa respuestas controladas;
 no mide decisiones, costes ni latencias reales del proveedor.
 
-Pendientes: autorización de entorno/presupuesto y límite total, configuración
-efectiva/versiones del gateway, matriz comparable, probes SQL de summary/navegador
+Pendientes: autorización de entorno/presupuesto y límite total para inferencias,
+configuración efectiva/versiones del gateway, matriz comparable, navegador
 y batería JUP-069 completa de 28 preguntas sobre un único SHA final. No hay 28/28.
 El bloqueo inicial de copia por revisión automática quedó resuelto con la
 autorización explícita del usuario. La ampliación Linux anterior acredita el
 alcance SQL indicado; no acredita aceptación del proveedor, navegador o full28.
 
-Paris conserva liderazgo, Víctor pairing, Alejandro revisión y Lucía validación.
-Este aporte no acredita sus dictámenes ni los sustituye; tampoco se envía a Discord,
-Trello o GitHub. Paris debe revisar/integrar el parche y coordinar aceptación antes
-de cualquier publicación o despliegue.
+La asignación original del equipo se conserva como contexto. El usuario autorizó
+después la revisión y validación asistidas de esta corrección: se atribuyen a Codex,
+sin inventar dictámenes de Paris, Víctor, Alejandro o Lucía. No se envía a Discord,
+Trello o GitHub. El parche queda preparado para integración; publicación,
+despliegue y aceptación real del proveedor no forman parte de esta ejecución.

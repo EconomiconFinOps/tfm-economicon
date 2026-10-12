@@ -8,4 +8,10 @@
 - [x] 2.1 Entregar parche separado y evidencia con SHA exacto.
 - [ ] 2.2 Verificar matriz real con presupuesto vigente autorizado.
 - [ ] 2.3 Repetir bateria JUP-069 completa sobre un SHA final y recorrido real.
-- [ ] 2.4 Obtener revision y validacion humanas; no se atribuyen a este parche.
+- [x] 2.4 Realizar revisión técnica propia y validación asistida focal por autorización explícita del usuario (12/10); sin atribuir dictámenes a terceros ni aceptación del proveedor.
+
+## 3. Corrección de la suite backend
+- [x] 3.1 Reproducir y corregir ambas carreras entre estado SQL y evento final en RAM.
+- [x] 3.2 Corregir fixtures de JWT caducados en colección y respuesta HTTP pgvector.
+- [x] 3.3 Provisionar datos SQL sintéticos propios para los tres probes de summary y conservar sus aserciones.
+- [x] 3.4 Ejecutar la suite backend completa en contenedores aislados: 1671 PASS/47 SKIP, cero fallos/errores, exit 0 sobre 8294c48; evidencia y omisiones documentadas.

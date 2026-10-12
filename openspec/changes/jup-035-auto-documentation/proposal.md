@@ -10,10 +10,13 @@ PR120 solo admite required y rechaza decisiones nativas en auto. La orden del
   cero/una busqueda backend y finalizacion estricta none, maximo dos generaciones.
 - Actualizar prompt, hashes, ambos servicios y regresiones sin relajar validadores.
 - Mantener limites, proveedor, aislamiento y autoridad financiera existentes.
+- Corregir la entrega del evento terminal ante carreras SQL/RAM y hacer
+  reproducibles los fixtures backend de autenticación, pgvector y summary SQL.
 
 ## Impact
 Processor, backend y especificacion conversational-web-interface. Despliegue
 coordinado requerido por hashes incompatibles; no compatibilidad silenciosa con
 required-documentation-v1. El archivo de la entrega previa se conserva intacto.
-La compatibilidad del proveedor, bateria real de 28 preguntas y aceptacion humana
-siguen pendientes; no se heredan presupuestos ni resultados de otros SHA.
+La compatibilidad del proveedor y batería real de 28 preguntas siguen pendientes;
+no se heredan presupuestos ni resultados de otros SHA. El usuario autoriza el
+12/10 la revisión y validación asistidas del parche, atribuidas al agente.

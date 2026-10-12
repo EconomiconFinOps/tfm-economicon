@@ -1,4 +1,25 @@
-## Parche incremental auto de PR120 — 12/10/2026
+## Backend corregido y suite verde — 12/10/2026
+
+Mismo origen JUP-035/PR120 y chat `01a1302b-c7a5-7c71-ba85-4d2391f8ff33`.
+El usuario pidió corregir 8 FAIL/3 ERROR y autorizó la validación por el agente.
+Sobre `8294c4875b7cfdbefbf240a0dcbfab618ee96ed5`, suite backend completa Linux:
+**1671 PASS/47 SKIP, cero fallos/errores, exit 0, 285.01 s**. OpenSpec67/67.
+Se resuelven JWT generados en colección que caducaban, DTO pgvector obsoleto,
+probes SQL ligados a datos smoke y carrera SQL/RAM real de cierre de streaming.
+Seis regresiones deterministas cubren evento publicado antes/después de la lectura
+y cierre sin duplicados para éxito/fallo. Summary SQL usa fixtures propios y pasa
+las tres comprobaciones nativas; ya no está pendiente en el backend.
+
+Revisión y validación asistidas atribuidas a Codex, autorizadas por el usuario;
+no se inventan dictámenes de otras personas. Este corte sustituye el estado
+backend no verde y la espera de revisión humana del corte anterior para este
+parche offline. Las47 omisiones de otras integraciones se detallan en los logs;
+proveedor, navegador y full28 siguen pendientes, sin autorización de gasto nueva.
+Ver [informe](../evidence/jup-035-auto-documentation-20261012.md) y `backend-green/`
+del paquete externo. Siguiente: integrar el parche y acordar aceptación real.
+Sin push, mensajes, merge, despliegue ni cambios en la rama de Paris.
+
+## Antecedente: parche incremental auto de PR120 — 12/10/2026
 
 Origen: «Implementa # Orden de trabajo — JUP-035 / PR120», chat
 `01a1302b-c7a5-7c71-ba85-4d2391f8ff33`. Orden externa del espacio:
