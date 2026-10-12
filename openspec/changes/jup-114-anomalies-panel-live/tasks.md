@@ -22,7 +22,7 @@ JUP: JUP-114
 
 - [x] 4.1 Guion de 3 minutos (D8): paso de Anomalías tras el aislamiento, D7 opcional, paso de límites a 5 s, total 180 s; `preguntas.md`, `README.md`, preparación y `anomalias.md`; pruebas de la demo actualizadas.
 - [x] 4.2 Receta de navegador con el paso de Anomalías (aviso sintético, «Revisado hasta 20/09», Alta (P1) Compute primero, detalle abierto) y su control positivo.
-- [ ] 4.3 Revisión documental limitada a anomalías y a la demo (mismo alcance que la 4.4 del change 1: drift, contradicciones, enlaces, nada presentado como hecho sin estarlo), nota de continuidad y hallazgos.
+- [x] 4.3 Revisión documental limitada a anomalías y a la demo (mismo alcance que la 4.4 del change 1: drift, contradicciones, enlaces, nada presentado como hecho sin estarlo), nota de continuidad y hallazgos.
 
 ## 5. Cierre y verificación
 

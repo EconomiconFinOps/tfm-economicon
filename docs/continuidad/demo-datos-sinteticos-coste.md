@@ -10,7 +10,7 @@ Verificación: 2026-10-11. [Tarjeta](https://trello.com/c/ADFz3fpR). Dos changes
 ## Estado y límites
 
 - Los datos son sintéticos: no son facturas de Azure ni vienen del dataset público. Las alertas ilustran las reglas; no demuestran calidad de detección ni causas.
-- El panel `/anomalies` sigue con datos de demostración fijos y no lee el endpoint de JUP-030: conectarlo es un cambio aparte, con su propia tarjeta y su propia segunda opción de diseño.
+- Desde JUP-114 (change `jup-114-anomalies-panel-live`, rama `feat/JUP-114-anomaly-circuit`) el panel `/anomalies` lee los episodios guardados, el conjunto de anomalías tiene un registro por servicio y día del 1 al 21 de septiembre (134 registros, mismos totales semanales para la consulta de JUP-030) y la demo de 3 minutos tiene el paso D12 de Anomalías tras el aislamiento; D7 (etiquetas) pasa a opcional y D1 se hace en el panel de Anomalías de Core Finance antes de detectar.
 - Las pruebas con CockroachDB real (6 en la parte 2) no las ejecuta la CI; se lanzan a mano con un nodo desechable (`RF-107-002`). La suite de `synthetic_costs.py` podría tener los mismos huecos que se cerraron en la nueva (`RF-107-003`).
 - La receta de navegador de la parte 1 se ejecutó el 2026-10-08 y se repitió el 2026-10-12 contra la interfaz con la identidad de marca (JUP-112): 11 pasos `pass` y control positivo válido. Es una ejecución automatizada; no hay ensayo humano.
 - No hay ensayo humano de ninguna de las dos guías.

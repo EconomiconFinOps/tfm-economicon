@@ -12,8 +12,7 @@ notificaciones ni diagnostica su causa. Desde JUP-114 es la **consulta de prueba
 sin guardar**, con reglas que manda quien llama: no crea, cambia ni lee los
 episodios guardados. Las anomalias que se guardan, priorizan y siguen son los
 episodios de [anomaly-episodes.md](anomaly-episodes.md), que aplican la regla
-diaria de negocio. El panel JUP-057 sigue mostrando su fixture de demostracion;
-no consume este endpoint.
+diaria de negocio. El panel `/anomalies` lee esos episodios, no este endpoint.
 
 ## Peticion y acceso
 

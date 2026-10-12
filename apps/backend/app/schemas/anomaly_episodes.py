@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 from app.schemas.billing import DecimalString
 
 EpisodeStatus = Literal["new", "investigating", "resolved", "false_positive"]
-_BLANK_GLYPHS = frozenset("ᅟᅠㅤﾠ⠀")
+_BLANK_GLYPHS = frozenset("\u115f\u1160\u3164\uffa0\u2800")
 
 
 class AnomalyEpisode(BaseModel):
