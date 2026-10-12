@@ -467,6 +467,9 @@ describe("JUP-114 panel de anomalías: exportación", () => {
       HTMLAnchorElement.prototype.click = originalClick;
     }
     expect(fileName).toBe("anomalias-tenant-core-revisado-2026-09-20.csv");
+    fireEvent.click(screen.getByText("Exportar Resultados"));
+    expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
+    expect(screen.queryByText("Exportar PDF")).not.toBeInTheDocument();
     const lines = (await (blob as Blob).text()).split("\n");
     expect(lines).toHaveLength(2);
     expect(lines[1]).toContain("\"Database\"");

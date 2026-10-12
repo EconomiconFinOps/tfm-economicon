@@ -26,9 +26,13 @@ function csvCell(value: string | number | undefined): string {
 interface ExportButtonProps {
   data: ExportRow[];
   filename: string;
+  // Formatos que ofrece el menu; por defecto CSV y PDF.
+  formats?: ExportFormat[];
 }
 
-export function ExportButton({ data, filename }: ExportButtonProps) {
+export type ExportFormat = "csv" | "pdf";
+
+export function ExportButton({ data, filename, formats = ["csv", "pdf"] }: ExportButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const exportToCSV = () => {
@@ -104,20 +108,20 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
             onClick={() => setIsOpen(false)}
           />
           <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-xl border border-border z-20">
-            <button
+            {formats.includes("csv") && <button
               onClick={exportToCSV}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left text-foreground"
             >
               <FileSpreadsheet className="w-4 h-4 text-success" />
               <span>Exportar CSV</span>
-            </button>
-            <button
+            </button>}
+            {formats.includes("pdf") && <button
               onClick={exportToPDF}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left border-t border-border text-foreground"
             >
               <FileText className="w-4 h-4 text-danger" />
               <span>Exportar PDF</span>
-            </button>
+            </button>}
           </div>
         </>
       )}

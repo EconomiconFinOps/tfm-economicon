@@ -203,7 +203,7 @@ export function AnomaliesPanel() {
           {data?.last_evaluated_date && <p className="text-sm text-subtle-foreground">Revisado hasta el {dayLabel(data.last_evaluated_date)}</p>}
           {visible.length > 0 && data ? <ExportButton data={exportRows(visible, {
             tenantName: activeTenant?.name ?? tenantId, synthetic: data.includes_synthetic_data, lastEvaluated: data.last_evaluated_date,
-          })} filename={`anomalias-${tenantId}-revisado-${data.last_evaluated_date ?? "sin-revision"}`} /> :
+          })} filename={`anomalias-${tenantId}-revisado-${data.last_evaluated_date ?? "sin-revision"}`} formats={["csv"]} /> :
             <button disabled className="rounded-md border border-neutral px-4 py-2 text-muted-foreground">Exportar Resultados</button>}
         </div>
       </header>

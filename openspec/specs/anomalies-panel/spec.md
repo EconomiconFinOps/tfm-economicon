@@ -1,7 +1,7 @@
 # anomalies-panel Specification
 
 ## Purpose
-Define the `/anomalies` panel that shows the active tenant's stored cost-anomaly episodes: a summary of open impact per currency, a prioritized queue with combined filters, detection on demand with an inline result, an episode detail with status actions, a warning when the data is synthetic and a safe CSV/PDF export. The panel only reads and changes what the backend returns and never invents a cause.
+Define the `/anomalies` panel that shows the active tenant's stored cost-anomaly episodes: a summary of open impact per currency, a prioritized queue with combined filters, detection on demand with an inline result, an episode detail with status actions, a warning when the data is synthetic and a safe CSV export. The panel only reads and changes what the backend returns and never invents a cause.
 ## Requirements
 ### Requirement: Combined filters and empty state
 The user SHALL be able to combine severity (all, Alta (P1), Media (P2), Baja (P3)), status (open by default, Nueva, Investigando, Resuelta, Falso positivo, all) and observation (all, still observed, no longer observed) filters and restore the initial view when no episode matches. Controls SHALL be labelled and keyboard accessible. The panel SHALL distinguish: a tenant where detection never ran (a message and a prominent detection button, without zero summary figures), a tenant with no open episodes (a message with the last evaluated day), loading (a skeleton without figures), a load error (a message with retry and no stale figures) and filters without matches (the existing message and reset action). Changing the active tenant SHALL clear the panel before the new tenant's data load.
@@ -32,11 +32,15 @@ The user SHALL be able to combine severity (all, Alta (P1), Media (P2), Baja (P3
 - **THEN** no episode of the previous tenant is visible at any moment while the new list loads
 
 ### Requirement: Matching export and responsive presentation
-Exported CSV and PDF data SHALL match the filtered ordered rows. Each row SHALL contain the tenant, the data origin ("Sintéticos" when the tenant data include synthetic data, otherwise "Ingesta de costes"), the severity label, service, currency, accumulated impact as a number, counted days, start day, last seen day, observation, status, closing reason, last evaluated day, rules version and the text "Candidata: causa no establecida". Amounts SHALL never be summed across currencies. The file name SHALL include the tenant and the last evaluated day. The panel SHALL remain usable at 390 pixels wide, with local table scrolling, a full-screen detail on small screens and textual labels independent of color.
+Exported CSV data SHALL match the filtered ordered rows. The panel SHALL NOT offer a PDF export in this version. Each row SHALL contain the tenant, the data origin ("Sintéticos" when the tenant data include synthetic data, otherwise "Ingesta de costes"), the severity label, service, currency, accumulated impact as a number, counted days, start day, last seen day, observation, status, closing reason, last evaluated day, rules version and the text "Candidata: causa no establecida". Amounts SHALL never be summed across currencies. The file name SHALL include the tenant and the last evaluated day. The panel SHALL remain usable at 390 pixels wide, with local table scrolling, a full-screen detail on small screens and textual labels independent of color.
 
 #### Scenario: Filtered export
 - **WHEN** the user exports a filtered list
 - **THEN** the export contains only its current rows in the same order with the columns above
+
+#### Scenario: CSV is the only format
+- **WHEN** the user opens the export menu
+- **THEN** only the CSV option is offered
 
 #### Scenario: Empty export
 - **WHEN** no rows match the current filters

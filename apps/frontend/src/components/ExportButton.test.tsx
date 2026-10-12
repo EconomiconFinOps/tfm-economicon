@@ -40,6 +40,13 @@ describe("ExportButton", () => {
     expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
     expect(screen.getByText("Exportar PDF")).toBeInTheDocument();
   });
+
+  it("solo ofrece los formatos pedidos", () => {
+    render(<ExportButton data={[{ columna: "valor" }]} filename="prueba" formats={["csv"]} />);
+    fireEvent.click(screen.getByText("Exportar Resultados"));
+    expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
+    expect(screen.queryByText("Exportar PDF")).toBeNull();
+  });
 });
 
 describe("ExportButton con texto escrito por usuarios", () => {
