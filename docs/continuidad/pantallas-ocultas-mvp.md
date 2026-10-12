@@ -4,7 +4,7 @@
 
 ## Estado
 
-- Rama `feat/JUP-116-hide-mockup-screens`, creada desde `develop` en `3c6517b`. OpenSpec: `openspec/changes/jup-116-hide-mockup-screens/` (delta de `frontend-navigation-shell`).
+- Rama `feat/JUP-116-hide-mockup-screens`, creada desde `develop` en `3c6517b`. OpenSpec: `openspec/changes/archive/2026-10-12-jup-116-hide-mockup-screens/` (delta de `frontend-navigation-shell`).
 - Origen: una auditoría del frontend con el stack completo (2026-10-12) comprobó que Coste Detallado, Corte Global y Recomendaciones no hacían ninguna petición al backend, enseñaban cifras inventadas sin rótulo y no tenían spec ni tarjeta. El equipo dio su conformidad por Discord, con la condición de ocultarlas sin borrar lo hecho.
 - Pendiente de integración: esta tarjeta se mergea antes que la de JUP-114, que reescribió el README de rutas, el guion y los esperados de la demo, el mapa de JUP-097 y los findings; el conflicto lo resuelve quien mergee JUP-114 después.
 

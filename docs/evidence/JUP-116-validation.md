@@ -3,7 +3,7 @@
 - Fecha: 2026-10-12.
 - Trello: https://trello.com/c/IPB2nGxa
 - Rama: `feat/JUP-116-hide-mockup-screens`, desde `origin/develop` en `3c6517b`.
-- OpenSpec: `openspec/changes/jup-116-hide-mockup-screens/` (propuesta, spec delta de `frontend-navigation-shell`, diseño, tareas y `review.md`).
+- OpenSpec: `openspec/changes/archive/2026-10-12-jup-116-hide-mockup-screens/` (propuesta, spec delta de `frontend-navigation-shell`, diseño, tareas y `review.md`).
 - Estado: evidencia técnica de esta sesión, tras dos pasadas de revisión adversarial. No sustituye la validación funcional de quien tenga ese rol en Trello.
 
 ## Qué se comprobó y cómo
@@ -53,3 +53,9 @@ Las capturas y el resultado del script quedaron en la carpeta temporal de la ses
 - El tema oscuro.
 - La suite completa del frontend sin limitar el paralelismo, mientras el equipo está saturado; no se ha comparado con `develop` sin estos cambios.
 - La validación funcional contra los criterios de la tarjeta por la persona con el rol de validación en Trello.
+
+## Nota de release
+
+| Fecha | JUP | Nota de release | Review | ADRs |
+| --- | --- | --- | --- | --- |
+| 2026-10-12 | JUP-116 | Coste Detallado, Corte Global y Recomendaciones dejan de publicarse (sin ruta ni menú, código conservado); Overview sale del menú y conserva su ruta; una dirección no publicada lleva a Coste Global. | [review.md](../../openspec/changes/archive/2026-10-12-jup-116-hide-mockup-screens/review.md) | Ninguno (reversible, sin arquitectura nueva) |
