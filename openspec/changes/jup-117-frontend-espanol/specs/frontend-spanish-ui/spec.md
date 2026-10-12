@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Textos visibles en español
-El frontend SHALL mostrar en español todo texto que la persona usuaria pueda ver o que lea una tecnología de apoyo: títulos de página y de sección, botones, etiquetas y marcadores de campo, textos de ayuda, estados de carga, estados vacíos, mensajes de error, mensajes de éxito, etiquetas de accesibilidad (`aria-label`, `title`, `alt`) y el título del documento. Esto SHALL aplicarse a todas las pantallas y componentes de `apps/frontend/src`, incluido el aviso de `main.tsx` cuando no existe el elemento raíz.
+El frontend SHALL mostrar en español todo texto que la persona usuaria pueda ver o que lea una tecnología de apoyo: títulos de página y de sección, botones, etiquetas y marcadores de campo, textos de ayuda, estados de carga, estados vacíos, mensajes de error, mensajes de éxito, etiquetas de accesibilidad (`aria-label`, `title`, `alt`) y el título del documento. Esto SHALL aplicarse a todas las pantallas y componentes de `apps/frontend/src`. Los mensajes de error internos que lanzan los servicios y los hooks sin llegar a mostrarse como texto propio de la interfaz quedan fuera.
 
 #### Scenario: Pantalla de conversaciones
 - **WHEN** se abre la pantalla de conversaciones con y sin tenant activo
@@ -11,9 +11,9 @@ El frontend SHALL mostrar en español todo texto que la persona usuaria pueda ve
 - **WHEN** se abre la pantalla de acceso, se envía el formulario y mientras la sesión se está iniciando
 - **THEN** el encabezado, la descripción, el botón en reposo y el botón en curso se muestran en español
 
-#### Scenario: Error al cargar los tenants
-- **WHEN** falla la carga de tenants al arrancar la sesión
-- **THEN** el mensaje que se muestra está en español, tanto el genérico como el de causa desconocida
+#### Scenario: Error al cargar los clientes
+- **WHEN** falla la carga de clientes al arrancar la sesión
+- **THEN** el título, el encabezado y el botón de restablecer sesión se muestran en español
 
 #### Scenario: Etiquetas de accesibilidad
 - **WHEN** un componente declara `aria-label`, `title` o `alt`
@@ -31,7 +31,7 @@ El frontend MAY mantener en inglés un término técnico únicamente si figura e
 - **THEN** se escribe igual en todas, según el nombre fijado en el glosario
 
 ### Requirement: Valores de la API sin traducir
-El frontend SHALL mostrar tal cual los valores que llegan de la API o de la persona usuaria (nombres de servicios de Azure, etiquetas de coste, títulos de conversaciones, contenido de documentos y mensajes del asistente). El cambio de idioma SHALL aplicarse solo a los textos propios de la interfaz.
+El frontend SHALL mostrar tal cual los valores que llegan de la API o de la persona usuaria (nombres de servicios de Azure, etiquetas de coste, estados de salud, roles de mensaje, títulos de conversaciones, contenido de documentos y mensajes del asistente). El cambio de idioma SHALL aplicarse solo a los textos propios de la interfaz.
 
 #### Scenario: Nombre de servicio de Azure
 - **WHEN** una tabla muestra el servicio `Virtual Machines` devuelto por la API

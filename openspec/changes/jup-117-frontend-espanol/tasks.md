@@ -1,11 +1,11 @@
 ## 1. Inventario y glosario
 
-- [x] 1.1 Inventariar por fichero los textos visibles en inglés de `apps/frontend/src` (JSX, `aria-label`, `title`, `alt`, `placeholder`, mensajes de error de servicios y hooks que acaban en pantalla, `main.tsx`), con una lista de los términos dudosos
+- [x] 1.1 Inventariar por fichero los textos visibles en inglés de `apps/frontend/src` (JSX, `aria-label`, `title`, `alt`, `placeholder`), con una lista de los términos dudosos
 - [x] 1.2 Crear `apps/frontend/GLOSARIO.md` con el nombre único de cada concepto repetido y los términos que se conservan en inglés con su motivo, y enlazarlo desde `apps/frontend/README.md`
 
 ## 2. Traducción por pantallas
 
-- [x] 2.1 Traducir acceso (`LoginPage`), arranque de sesión (`SessionGate`) y `main.tsx`
+- [x] 2.1 Traducir acceso (`LoginPage`) y arranque de sesión (`SessionGate`)
 - [x] 2.2 Traducir conversaciones (`ConversationsPage`) y el compositor de mensajes (`MessageComposer`)
 - [x] 2.3 Traducir la ingesta (`IngestPage`)
 - [x] 2.4 Traducir el panel principal (`DashboardPage`)

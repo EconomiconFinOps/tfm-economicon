@@ -7,7 +7,7 @@ El frontend mezcla español e inglés: pantallas como la de conversaciones, la i
 
 ## What Changes
 
-- Pasar al español todos los textos visibles del frontend que estén en inglés: títulos, encabezados, botones, etiquetas, marcadores de campo, estados de carga, estados vacíos, mensajes de error, textos de ayuda, etiquetas de accesibilidad y el aviso de arranque de `main.tsx`.
+- Pasar al español todos los textos visibles del frontend que estén en inglés: títulos, encabezados, botones, etiquetas, marcadores de campo, estados de carga, estados vacíos, mensajes de error, textos de ayuda, etiquetas de accesibilidad.
 - Mantener en inglés los términos técnicos sin traducción razonable o de uso habitual en español, y dejar cada excepción listada con su motivo en un glosario del frontend.
 - Fijar en ese glosario un nombre único para cada concepto que hoy se escribe de varias formas (por ejemplo, tenant, owner, ingesta, dashboard).
 - Ajustar las pruebas del frontend que comprueban textos cambiados.
@@ -27,7 +27,7 @@ Fuera de alcance: internacionalización (selector de idioma, catálogos de tradu
 
 ## Impact
 
-- Código: `apps/frontend/src/` (páginas, componentes, layouts y `main.tsx`) y sus pruebas.
+- Código: `apps/frontend/src/` (páginas, componentes y layouts) y sus pruebas.
 - Documentación: nuevo glosario `apps/frontend/GLOSARIO.md` y referencia desde `apps/frontend/README.md`.
 - Sin cambios de API, contratos, dependencias ni base de datos.
 - Coordinación: JUP-116 oculta pantallas de maqueta y puede tocar los mismos ficheros; se resuelve en la rama que se integre en segundo lugar.
