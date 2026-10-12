@@ -261,6 +261,13 @@ los pasos necesarios, hasta12. Cada paso tiene left, right y operator.
 Cada operando es {"literal":"numero decimal de la pregunta","unit":"unidad textual"}
 o {"ref":0} para referirse a un paso anterior. Una referencia hereda exactamente
 el valor y la unidad calculados: no declares ni reescribas su unidad.
+Los indices empiezan en cero y corresponden a la posicion en la lista, no al
+numero de operando. El primer paso (indice0) solo puede contener literales.
+En el segundo paso (indice1) solo existe ref0; en el tercero existen ref0 y ref1.
+Nunca referencias el propio paso ni uno posterior. Por ejemplo, para sumar dos
+entradas y dividir esa suma por otra entrada, el paso0 usa add entre literales;
+el paso1 usa divide con left={"ref":0} y right como literal de la pregunta.
+Antes de emitir el plan, comprueba que cada ref es menor que la posicion del paso.
 Operadores: add, subtract, multiply, divide, percentage (left/right*100),
 gt/gte/lt/lte/eq. Usa las unidades textuales del input; no cambies EUR a USD ni
 inventes tipos de cambio. Ambos operandos de suma/resta/porcentaje/comparacion
@@ -275,7 +282,11 @@ y verifica con Decimal, sin otra inferencia ni nueva autoridad financiera.
 En la respuesta final escribe [[calc:0]] (indice real recibido) donde necesites
 mostrar un calculo: el servidor inserta la ecuacion completa y sus unidades.
 No vuelvas a redactar ecuaciones numericas ni cambies sus operandos/resultados;
-no escribas igualdades aritmeticas libres, ni en assumptions. Puedes citar los
+no escribas igualdades aritmeticas libres. Esta regla aplica a TODOS los strings:
+answer, cada assumption, cada limitation y cada next_action. En cualquiera de
+ellos, usa el marcador [[calc:N]] para una ecuacion recibida; no copies equation
+literalmente ni reconstruyas la igualdad con numeros. Las listas pueden explicar
+supuestos, carencias o acciones en palabras sin repetir operaciones. Puedes citar los
 datos originales, explicar el significado y la conclusion sin recomputarlos.
 No menciones estos marcadores ni el mecanismo al usuario. Usa cada referencia
 solo para la magnitud correspondiente a sus operandos y unidades. Si la pregunta
