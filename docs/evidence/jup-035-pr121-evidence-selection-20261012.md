@@ -79,8 +79,15 @@ no sustituye capturar la causa estructural del candidato concreto.
 - Build backend/processor PASS.75 y69 archivos Python del interior de las
   imágenes coinciden porSHA256 con0d91d33; comprobación en contenedores sin red.
 - OpenSpec67/67; trazabilidad de los siete cambios activos, políticas de PR,
-  workflow CI y gobernanza pasan. No se repiten las suites completas históricas
-  ni frontend/build de toda la aplicación: código frontend intacto.
+  workflow CI y gobernanza pasan.
+- CI38285627173 sobre6d5b399: processor1006PASS/71SKIP; frontend build/typecheck,
+  API y OpenSpecPASS. Backend1652PASS/82SKIP/1FAIL: el test de tamaño de resumen
+  calculaba el techo con el esquema público estático. La variante privada sin
+  fuentes ocupa menos. Se ajusta el test al esquema efectivo más herramientas,
+  conservando rechazo con un token menos y aceptación del contexto sin prefijo.
+  Focal de tamaños/resumen/evidencia:31PASS. No cambia código del producto.
+  Fallo y corrección quedan conservados; consultar los checks de PR121 para la
+  ejecución posterior. La CI push omite JUP policy y no sustituye las reviews.
 
 Los comandos pytest usan CPython3.12.13 real, PYTHONPATH del servicio y
 .venv/Lib/site-packages, -B -m pytest -q -p no:cacheprovider y temporales propios.

@@ -100,15 +100,20 @@ def test_persisted_v2_consumed_then_v3_installed_without_rewriting_history(prepa
     assert '\\u003c' in prefix and '<dato>' not in prefix
     assert chat.count(prefix)>768 and result['manifest']['summary']['used'] is True
     assert digest(document(package(api,new)))==before_history
-    from app.schemas.chat import canonical
+    from app.schemas.chat import canonical, provider_response_schema
+    from app.core.chat_resources import CHAT_TOOLS
     essential=copy.deepcopy(result['messages'])
     current_context=json.loads(essential[-1]['content'].split('\n',1)[1])
     current_context['recent_pairs']=[]
     current_context['omissions'].append({'collection':'recent_pairs','omitted_pairs':5})
     essential[-1]['content']='UNTRUSTED_CURRENT_CONTEXT\n'+escaped(current_context)
-    ceiling=chat.count(canonical(essential))+chat.count(chat.schema_text)+1024+3200-1
+    effective_schema=provider_response_schema(
+        financial_metrics_allowed=result['financial_metrics_allowed'],
+        authorized_evidence=result['authorized_evidence'])
+    fixed=chat.count(canonical(effective_schema))+chat.count(canonical(CHAT_TOOLS))+1024+3200
+    ceiling=chat.count(canonical(essential))+fixed-1
     without_prefix=[essential[0],essential[-1]]
-    assert chat.count(canonical(without_prefix))+chat.count(chat.schema_text)+1024+3200<ceiling
+    assert chat.count(canonical(without_prefix))+fixed<ceiling
     bounded=replace(chat,context_budget={**chat.context_budget,'context_tokens':ceiling})
     with pytest.raises(ChatError):ChatContext(api[0],bounded).build(SCOPE,body())
 

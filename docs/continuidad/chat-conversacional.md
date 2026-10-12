@@ -9,6 +9,10 @@ relajar; diagnósticos unknown/duplicate/provenance/multiple sin contenido.
 Processor134PASS; backend108PASS tras sincronizar dos fixtures que fallaron
 por esperar30/40ms en vez de una reserva SQL observable. Fallos conservados.
 Build backend/processor y hashes75/69PASS; OpenSpec67/67 y gobernanzaPASS.
+CI6d5b399: processor1006PASS/71SKIP; backend1652PASS/82SKIP/1FAIL por un techo
+de test calculado con esquema público. Ajustado al esquema efectivo y herramientas
+sin cambiar producto: focal31PASS. Recibo fallido conservado; checks de PR121
+son la fuente de la ejecución posterior.
 
 Reproducción real previa al bloqueo:005/012 devuelven dos IDs nativos distintos;
 019/020/022 una llamada en esta muestra. No hay control compatible demostrado
