@@ -15,13 +15,15 @@ TOKENIZER_SHA = '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82
 TOKENIZER_REVISION = 'a66456a59f21345d1e5e586345c448a9106d29d7'
 BASE_SHA = 'ad44df5f061f4f128b66df1e7720b270b594846adc206fa5d7b85ed2c0ced93b'
 INPUT_SHA = 'a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42'
-ASSEMBLER_SHA = '1d0d6f425b17f6fd66a4f4f68d6bbc96e7b9eac164f306c5682514002dd684a7'
+ASSEMBLER_SHA = '12157b2b2865af749ef2092a77b01aa11a161d6743e7a284cd8e75e76663b732'
 DECISION_SCHEMA = {'type':'object','properties':{
     'action':{'type':'string','enum':['none','search']},
     'query':{'anyOf':[{'type':'string','minLength':1,'maxLength':2048},{'type':'null'}]}},
     'required':['action','query'],'additionalProperties':False,
-    'anyOf':[{'properties':{'action':{'const':'none'},'query':{'type':'null'}}},
-             {'properties':{'action':{'const':'search'},'query':{'type':'string','minLength':1,'maxLength':2048}}}]}
+    'anyOf':[{'type':'object','properties':{'action':{'type':'string','const':'none'},'query':{'type':'null'}},
+              'required':['action','query'],'additionalProperties':False},
+             {'type':'object','properties':{'action':{'type':'string','const':'search'},'query':{'type':'string','minLength':1,'maxLength':2048}},
+              'required':['action','query'],'additionalProperties':False}]}
 
 
 def validate_decision(value):

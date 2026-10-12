@@ -32,8 +32,10 @@ DECISION_SCHEMA = {'type':'object','properties':{
     'action':{'type':'string','enum':['none','search']},
     'query':{'anyOf':[{'type':'string','minLength':1,'maxLength':2048},{'type':'null'}]}},
     'required':['action','query'],'additionalProperties':False,
-    'anyOf':[{'properties':{'action':{'const':'none'},'query':{'type':'null'}}},
-             {'properties':{'action':{'const':'search'},'query':{'type':'string','minLength':1,'maxLength':2048}}}]}
+    'anyOf':[{'type':'object','properties':{'action':{'type':'string','const':'none'},'query':{'type':'null'}},
+              'required':['action','query'],'additionalProperties':False},
+             {'type':'object','properties':{'action':{'type':'string','const':'search'},'query':{'type':'string','minLength':1,'maxLength':2048}},
+              'required':['action','query'],'additionalProperties':False}]}
 
 
 def validate_decision(value):
