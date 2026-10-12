@@ -63,7 +63,7 @@ def question_text(context):
 def _literals(text):
     # Decimal comma is accepted. Ambiguous grouped numbers are not silently
     # interpreted as thousands, nor are numeric fragments taken from identifiers.
-    found=re.findall(r'(?<![\w.,])[-−]?[0-9]+(?:[.,][0-9]+)?(?![\w.,])',text)
+    found=re.findall(r'(?<![\w.,-])[-−]?[0-9]+(?:[.,][0-9]+)?(?![\w-]|[.,][0-9])',text)
     return {Decimal(item.replace('−','-').replace(',','.')) for item in found}
 
 

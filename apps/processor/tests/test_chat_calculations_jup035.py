@@ -148,3 +148,15 @@ def test_long_tail_without_sentence_boundary_respects_wire_limit(monkeypatch):
     deltas=[record['text'] for record in records if record['type']=='delta']
     assert len(deltas)>1 and all(len(text.encode())<=8192 for text in deltas)
     assert ''.join(deltas)==records[-1]['result']['answer']==value['answer']
+
+
+def test_sentence_punctuation_is_not_a_grouped_numeric_literal():
+    assert calculate(context('Calcula 73 menos 20.'),[step('73','20','subtract','','')])[0]['value']=='53'
+    with pytest.raises(ValueError,match='literal absent'):
+        calculate(context('Agrupado ambiguo 1.234.567 y 20.'),[step('1.234','20','subtract','','')])
+
+
+def test_hyphenated_identifier_is_not_a_numeric_operand():
+    assert calculate(context('73, luego 20.'),[step('73','20','subtract','','')])[0]['value']=='53'
+    with pytest.raises(ValueError,match='literal absent'):
+        calculate(context('cost-73-item y 20.'),[step('73','20','subtract','','')])
