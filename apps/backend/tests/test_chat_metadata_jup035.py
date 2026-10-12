@@ -36,8 +36,8 @@ def sources():
     return evidence,citations,returned
 
 @pytest.mark.parametrize('state',['failed','completed'])
-@pytest.mark.parametrize('published',[False,True])
-def test_initial_stream_preserves_committed_terminal_before_ram_publication(api,state,published):
+@pytest.mark.parametrize('delivery',['before_publication','published','stale_read'])
+def test_initial_stream_preserves_committed_terminal_before_ram_publication(api,monkeypatch,state,delivery):
     """Force the DB-commit/RAM-event gap without depending on thread timing."""
     from uuid import uuid4
     runtime=service(api[0]);scope={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
@@ -54,9 +54,12 @@ def test_initial_stream_preserves_committed_terminal_before_ram_publication(api,
         row=runtime.repository.complete(scope,identifier,active['current_attempt_id'],ANSWER,{},str(uuid4()))
     async def scenario():
         event='final' if state=='completed' else 'terminal'
-        if published:
+        if delivery!='before_publication':
             values=await runtime._final_values(scope,row) if state=='completed' else {'operation':runtime.public(row)}
             runtime._emit(row,event,**values)
+        if delivery=='stale_read':
+            async def stale_get(*args):return active
+            monkeypatch.setattr(runtime,'get',stale_get)
         frames=[frame async for frame in runtime.events(scope,identifier,initial=True)]
         records=frame_records(type('Reply',(),{'text':''.join(frames)})())
         assert [item['type'] for item in records]==['started','attempt_started',event]

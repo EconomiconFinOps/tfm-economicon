@@ -394,6 +394,9 @@ class ChatOperations:
             if replay is not None:
                 for frame in replay:
                     yield frame
+                    # The row read can also precede an already-published end.
+                    if any(frame.startswith(f'event: {end}\n') for end in ['final','terminal','paused','retry_scheduled']):
+                        return
                 if row['state'] in TERMINAL:
                     # SQL can commit before the producer publishes its RAM
                     # event. Never close the winning POST with only a prefix.
