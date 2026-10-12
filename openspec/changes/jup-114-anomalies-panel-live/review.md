@@ -56,3 +56,14 @@ Defectos de maquetación encontrados en el stack real y corregidos antes de la r
 ## Pendiente
 
 - Evidencia por criterio en `docs/evidence/JUP-114-validation.md` y bloque `## Human Approval` de Lucia.
+
+## Human Approval
+
+- Change: jup-114-anomalies-panel-live
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-12
+- Adversarial review: accept (pass 2) | accepted findings: ADV-2 y ADV-3 de la pasada 2 (decisiones de diseño), `RF-114-012` (primera detección sobre una historia muy larga, aceptado por Lucia como riesgo conocido del PR) y `RF-114-011`, `013`, `014` y `015` (abiertos)
+- Archive decision: archive
+- Notes: change 2 de 3 de JUP-114 (panel conectado y datos de demo diarios). Se archiva en la rama `feat/JUP-114-anomaly-circuit` sin abrir PR: los tres changes van en un solo PR al terminar el último. Pendiente en Trello: revisión y validación de las personas con esos roles, confirmación de la criticidad por impacto acumulado con la responsable de las reglas de negocio y el change 3 (ejecución periódica y avisos).
