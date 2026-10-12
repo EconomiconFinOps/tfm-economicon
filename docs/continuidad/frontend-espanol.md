@@ -1,6 +1,6 @@
 # Interfaz del frontend en español — JUP-117
 
-Actualizado: 2026-10-12. [Tarjeta](https://trello.com/c/B4832TYk). Change `jup-117-frontend-espanol` en la rama `feat/JUP-117-frontend-espanol`, sin PR todavía.
+Actualizado: 2026-10-12. [Tarjeta](https://trello.com/c/B4832TYk). Change `jup-117-frontend-espanol` en la rama `feat/JUP-117-frontend-espanol`. PR #123 abierto contra `develop` el 2026-10-12 por la excepción temporal; revisión adversarial en `accept` y archivado.
 
 ## Qué contiene
 
