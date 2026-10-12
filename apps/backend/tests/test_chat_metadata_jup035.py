@@ -155,7 +155,7 @@ def test_only_used_authorized_corpus_citations_are_preserved_without_fabricating
         assert private.status_code==404 and 'doc-two texto' not in private.text
     run(scenario,api)
 
-@pytest.mark.parametrize('problem',['foreign','duplicate','mismatch','missing','excerpt'])
+@pytest.mark.parametrize('problem',['foreign','duplicate','mismatch','missing','excerpt','candidate_source','candidate_kind','candidate_duplicate'])
 def test_unresolvable_or_mismatched_citations_reject_before_final_without_retry_or_history(api,monkeypatch,problem):
     evidence,citations,returned=sources()
     if problem=='foreign': returned[0]={**returned[0],'id':'foreign-document'}
@@ -163,6 +163,9 @@ def test_unresolvable_or_mismatched_citations_reject_before_final_without_retry_
     if problem=='mismatch': citations[1]['source']='Another private source'
     if problem=='missing': citations=[citations[0]]
     if problem=='excerpt': citations[1]['excerpt']='Invented quotation from another source'
+    if problem=='candidate_source': returned[0]['source']='Altered provenance'
+    if problem=='candidate_kind': returned[0]['kind']='user_input'
+    if problem=='candidate_duplicate': returned.append(copy.deepcopy(returned[0]))
     configure(api,monkeypatch,authorized=evidence,citations=citations,returned=returned)
     async def scenario(client):
         response=await asyncio.wait_for(client.post(path(),headers=headers(),json=body()),5)

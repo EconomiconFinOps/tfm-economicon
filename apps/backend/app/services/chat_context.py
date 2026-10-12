@@ -254,7 +254,7 @@ class ChatContext:
                 content=escaped({'evidence':corpus,'omissions':omissions})
                 messages=context['messages']+[assistant,{'role':'tool','tool_call_id':identifier,'content':content}]
                 try:
-                    counted=self.resources.count_messages(messages,financial_metrics_allowed=context['financial_metrics_allowed'])
+                    counted=self.resources.count_messages(messages,financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=initial+corpus)
                     result={'tool_call_id':identifier,'content':content,'variable_tokens':counted}
                     if len(content.encode())>1024*1024 or len(canonical({'claim_context':context,'tool_result':result}).encode())>2097152-8192:
                         raise ChatError(413,'tool_body_limit')
@@ -408,7 +408,7 @@ class ChatContext:
         # Essentials must fit before considering optional history or details.
         used_payload = summary.get('payload') if summary['used'] else None
         def measure(messages,current):
-            counted=self.resources.count_messages(messages, financial_metrics_allowed=financial_metrics_allowed)
+            counted=self.resources.count_messages(messages, financial_metrics_allowed=financial_metrics_allowed, authorized_evidence=authorized)
             manifest=self.resources.metadata(counted)
             manifest.update(summary=summary,essential_tokens=0,screen_snapshot_sha256=screen_hash,
                 omissions=current['omissions'],evidence_ids=[item['id'] for item in authorized])
@@ -443,7 +443,7 @@ class ChatContext:
             except ChatError:
                 high = middle-1
         messages,current = assemble(low,retained_recent,used_payload)
-        counted = self.resources.count_messages(messages, financial_metrics_allowed=financial_metrics_allowed)
+        counted = self.resources.count_messages(messages, financial_metrics_allowed=financial_metrics_allowed, authorized_evidence=authorized)
         manifest = self.resources.metadata(counted)
         manifest.update(summary=summary,essential_tokens=essential_tokens,screen_snapshot_sha256=screen_hash,omissions=current['omissions'],
                         evidence_ids=[item['id'] for item in authorized])

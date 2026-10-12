@@ -19,6 +19,50 @@ TOOL = {'id': 'call-auto', 'type': 'function', 'function': {
     'name': 'search_documentation', 'arguments': '{"query":"Synthetic policy"}'}}
 
 
+@pytest.mark.parametrize('fragmented', [False, True])
+def test_multiple_native_calls_fail_closed_before_search_without_retry(monkeypatch, caplog, fragmented):
+    second = {**TOOL, 'id': 'call-extra'}
+    calls = [{'index': 0, **TOOL}, {'index': 1, **second}]
+    response = wire({'tool_calls': calls}, 'tool_calls')
+    if fragmented:
+        response = wire({'tool_calls': calls[:1]}, None).replace(b'data: [DONE]\n\n', b'') + wire({'tool_calls': calls[1:]}, 'tool_calls')
+    gateway, requests = provider(monkeypatch, [response])
+    async def search(assistant): pytest.fail('Multiple calls must never dispatch a partial search')
+    async def exercise():
+        return [r async for r in gateway({'messages': [], 'tool_protocol': 'auto-documentation-v2',
+            'financial_metrics_allowed': False}, time.time()+60, tool_result=search)]
+    records = asyncio.run(exercise())
+    assert [r['type'] for r in records] == ['error']
+    assert len(requests) == 1
+    assert 'native_multiple_calls' in caplog.text
+    assert 'call-extra' not in caplog.text and 'Synthetic policy' not in caplog.text
+
+
+@pytest.mark.parametrize('search', [False, True])
+def test_final_schema_uses_only_effective_authenticated_evidence(monkeypatch, search):
+    source = {'id': 'corpus:current:0', 'kind': 'corpus', 'title': 'Current synthetic source',
+              'source': 'Current manual', 'content': 'Synthetic authorized text'}
+    delta = {'tool_calls': [{'index': 0, **TOOL}]} if search else {'content': 'Hello'}
+    gateway, requests = provider(monkeypatch, [wire(delta, 'tool_calls' if search else 'stop'),
+        wire({'content': json.dumps(_provider(ANSWER))})])
+    async def result(assistant):
+        return {'tool_call_id': TOOL['id'], 'content': json.dumps({'evidence': [source], 'omissions': []}), 'variable_tokens': 0}
+    async def exercise():
+        return [r async for r in gateway({'tool_protocol': 'auto-documentation-v2', 'financial_metrics_allowed': False,
+            'messages': [], 'authorized_evidence': []}, time.time()+60, tool_result=result)]
+    records = asyncio.run(exercise())
+    assert records[-1]['type'] == 'candidate' and len(requests) == 2
+    assert 'response_format' not in requests[0]
+    schema = requests[1]['response_format']['json_schema']['schema']
+    if search:
+        choices = schema['$defs']['Evidence']['anyOf']
+        assert len(choices) == 1
+        assert {k: v['const'] for k, v in choices[0]['properties'].items()} == {k: source[k] for k in ('id','kind','title','source')}
+    else:
+        assert schema['properties']['evidence']['maxItems'] == 0
+        assert not {'ok', 'partial'} & set(schema['properties']['status']['enum'])
+
+
 def wire(delta, finish='stop', tokens=12):
     event = {'choices': [{'index': 0, 'delta': delta, 'finish_reason': finish}],
              'usage': {'prompt_tokens': tokens-2, 'completion_tokens': 2,

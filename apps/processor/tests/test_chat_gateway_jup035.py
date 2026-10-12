@@ -12,7 +12,7 @@ import pytest
 from test_chat_private_jup035 import private,claim,run,signed
 
 
-ANSWER={'schema_version':'1.0','status':'no_data','answer':'Sin evidencia: "Azure" 😀\nFila.',
+ANSWER={'schema_version':'1.0','status':'no_data','answer':'Sin evidencia: "Azure" ðŸ˜€\nFila.',
         'scope':{'cloud':'azure','data_environment':'simulated','subscription_ids':[],'period':None},
         'evidence':[],'metrics':[],'recommendations':[],'assumptions':[],
         'limitations':['No hay datos.'],'next_actions':[]}
@@ -104,7 +104,7 @@ def test_required_native_search_then_strict_final_uses_exact_messages_and_total_
     ({'function':[]}, 'native_function_shape'),
     ({'function':{'name':12}}, 'native_fragment_type'),
     ({'function':{'arguments':[]}}, 'native_fragment_type'),
-    ({'index':1}, 'native_tool_index'),
+    ({'index':1}, 'native_multiple_calls'),
     ({'function':{'arguments':'x'*16385}}, 'native_tool_limit'),
 ])
 def test_native_envelope_closed_diagnostic_rejects_without_values(monkeypatch, caplog, change, code):
@@ -237,8 +237,8 @@ def test_private_gateway_streams_only_answer_with_roles_and_dynamic_deadline(pri
         from app.agents.schemas import chat_provider_schema
         assert payload['response_format']['json_schema']['strict'] is True
         assert payload['response_format']['json_schema']['schema'] == chat_provider_schema(
-            financial_metrics_allowed=context['financial_metrics_allowed'])
-        assert payload['response_format']['json_schema']['schema']['anyOf'][0]['properties']['evidence']['minItems'] == 1
+            financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=[])
+        assert payload['response_format']['json_schema']['schema']['properties']['evidence']['maxItems'] == 0
         assert 'period' not in payload['response_format']['json_schema']['schema']['$defs']['ResponseScope']['properties']
     send(private,scenario)
 

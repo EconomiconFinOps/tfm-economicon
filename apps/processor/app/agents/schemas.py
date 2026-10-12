@@ -96,7 +96,46 @@ class ResponseScope(StrictModel):
     period: Period | None
 
 
-def chat_provider_schema(*, financial_metrics_allowed=False):
+def _bind_chat_evidence(schema, authorized_evidence):
+    """Constrain generation to exact records from this authenticated attempt.
+
+    This is a generation constraint, not a substitute for the backend firewall.
+    None builds the static manifest template; [] authorizes no citations.
+    """
+    if authorized_evidence is None:
+        return schema
+    if not isinstance(authorized_evidence, list) or len(authorized_evidence) > 20:
+        raise ValueError('Invalid authorized evidence.')
+    choices, identifiers = [], set()
+    for source in authorized_evidence:
+        if not isinstance(source, dict):
+            raise ValueError('Invalid authorized evidence.')
+        fields = {key: source.get(key) for key in ('id', 'kind', 'title', 'source')}
+        if (any(type(value) is not str or not value for value in fields.values())
+                or fields['id'] in identifiers):
+            raise ValueError('Invalid authorized evidence.')
+        identifiers.add(fields['id'])
+        choice = copy.deepcopy(schema['$defs']['Evidence'])
+        for key, value in fields.items():
+            rule = choice['properties'][key]
+            if '$ref' in rule:
+                rule = copy.deepcopy(schema['$defs'][rule['$ref'].removeprefix('#/$defs/')])
+                choice['properties'][key] = rule
+            rule['const'] = value
+        choices.append(choice)
+    for branch in [schema, *schema['anyOf']]:
+        branch['properties']['evidence']['uniqueItems'] = True
+    if choices:
+        schema['$defs']['Evidence'] = {'anyOf': choices}
+    else:
+        # No unsatisfiable actionable branch and no fabricated citation to satisfy it.
+        abstention = schema['anyOf'][1]
+        abstention['properties']['evidence']['maxItems'] = 0
+        schema = {**abstention, '$defs': schema['$defs']}
+    return schema
+
+
+def chat_provider_schema(*, financial_metrics_allowed=False, authorized_evidence=None):
     if type(financial_metrics_allowed) is not bool:
         raise ValueError('Invalid financial authority control.')
     schema = FinOpsResponse.model_json_schema()
@@ -118,7 +157,7 @@ def chat_provider_schema(*, financial_metrics_allowed=False):
         status for status in schema['$defs']['ResponseStatus']['enum']
         if status not in ('ok', 'partial')]}
     schema['anyOf'] = [actionable, abstention]
-    return schema
+    return _bind_chat_evidence(schema, authorized_evidence)
 
 
 def assemble_chat_response(value, period, subscriptions=None):

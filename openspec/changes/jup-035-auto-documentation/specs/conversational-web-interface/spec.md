@@ -147,3 +147,28 @@ evidencia insuficiente sin inventar cifras.
 
 - **WHEN** una salida refiere evidencia desconocida o de otro tenant
 - **THEN** el backend rechaza esas referencias al validar el final, antes de guardar la respuesta como confirmada o presentar sus citas como verificadas; la evidencia de entrada se autoriza antes de generar y los fragmentos de texto visibles siguen siendo provisionales
+
+
+## ADDED Requirements
+
+### Requirement: Evidencia generada limitada al contexto efectivo
+
+La respuesta final SHALL generarse con un esquema derivado de la evidencia del
+intento autenticado, incluyendo los resultados documentales aceptados por la
+continuacion HMAC. El esquema SHALL permitir solo registros exactos de id, kind,
+title y source y excluir duplicados. El backend SHALL conservar su validacion
+independiente y SHALL rechazar candidatos invalidos sin reparar, filtrar ni
+persistir texto parcial.
+
+#### Scenario: Finalizacion sin fuentes
+- **WHEN** auto decide no buscar y no existe evidencia financiera autorizada
+- **THEN** el esquema SHALL admitir evidence vacia y estados no accionables; SHALL impedir inventar una cita para emitir ok o partial
+
+#### Scenario: Evidencia recuperada o ajena
+- **WHEN** una unica busqueda autenticada devuelve fuentes del alcance actual
+- **THEN** la finalizacion SHALL incluir esas fuentes exactas entre las opciones del esquema, sin admitir fuentes de otro usuario/tenant ni metadatos alterados; el presupuesto SHALL contar el esquema efectivo
+
+#### Scenario: Proveedor emite varias herramientas
+- **WHEN** el proveedor emite mas de una llamada nativa en una generacion
+- **THEN** el intento SHALL fallar antes de ejecutar cualquiera, sin ignorar llamadas extra ni iniciar una tercera generacion; el diagnostico SHALL distinguir cardinalidad multiple de un indice malformado sin registrar argumentos
+

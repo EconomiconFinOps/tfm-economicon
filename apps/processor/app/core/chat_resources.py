@@ -35,7 +35,8 @@ CHAT_TOOLS = [{'type':'function','function':{'name':'search_documentation','stri
 ASSEMBLER_CONTRACT.update(tool_protocol='auto-documentation-v2', tools=CHAT_TOOLS,
     continuation_roles=['assistant-tool-call','tool'], max_searches=1,
     max_generations=2, decision_format='native-auto', final_format='strict-finops',
-    no_search_policy='authorized-context-or-abstention')
+    no_search_policy='authorized-context-or-abstention',
+    evidence_selection='effective-context-exact-records-v1')
 
 
 def validate_search_call(assistant):
@@ -129,7 +130,8 @@ class ChatResources:
     def validate_tool_result(self, context, assistant, result):
         from app.agents.schemas import chat_provider_schema
         messages=continuation_messages(context,assistant,result)
-        schema=chat_provider_schema(financial_metrics_allowed=context['financial_metrics_allowed'])
+        sources=context.get('authorized_evidence',[])+json.loads(result['content'])['evidence']
+        schema=chat_provider_schema(financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=sources)
         variable=self.count(canonical(messages[1:]).decode('utf-8'))
         total=self.count(canonical(messages).decode('utf-8'))+self.count(canonical(schema).decode('utf-8'))+self.count(canonical(CHAT_TOOLS).decode('utf-8'))
         if total+1024+self.context_budget['output_tokens']>self.context_budget['context_tokens']:
@@ -151,7 +153,7 @@ class ChatResources:
             raise ValueError('Invalid financial authority control.')
         if context.get('tool_protocol') not in ('auto-documentation-v2','mock-direct-v1'):
             raise ValueError('Tool protocol missing.')
-        counted = self.check_messages(messages, chat_provider_schema(financial_metrics_allowed=allowed))
+        counted = self.check_messages(messages, chat_provider_schema(financial_metrics_allowed=allowed, authorized_evidence=context.get('authorized_evidence', [])))
         if not messages[-1]['content'].startswith('UNTRUSTED_CURRENT_CONTEXT\n'):
             raise ValueError('Current block mismatch.')
         if len(messages) == 3:

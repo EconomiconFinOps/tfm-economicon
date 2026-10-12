@@ -34,7 +34,7 @@ _diagnostic_logger = logging.getLogger(__name__)
 _NATIVE_RULES = frozenset({
     'native_tool_index', 'native_metadata_type', 'native_metadata_conflict',
     'native_function_shape', 'native_fragment_type', 'native_tool_limit',
-    'native_tool_count', 'native_final_invalid',
+    'native_tool_count', 'native_final_invalid', 'native_multiple_calls',
 })
 
 
@@ -265,7 +265,8 @@ class ChatGateway:
             # Only finalization constrains/streams the public answer schema.
             if tool_choice != 'auto':
                 payload['response_format']={'type':'json_schema','json_schema':{'name':'FinOpsResponse','strict':True,
-                    'schema':chat_provider_schema(financial_metrics_allowed=context.get('financial_metrics_allowed'))}}
+                    'schema':chat_provider_schema(financial_metrics_allowed=context.get('financial_metrics_allowed'),
+                    authorized_evidence=context.get('authorized_evidence', []))}}
             if tool_choice is not None:
                 from app.core.chat_resources import CHAT_TOOLS
                 payload.update(tools=CHAT_TOOLS,tool_choice=tool_choice)
@@ -345,8 +346,11 @@ class ChatGateway:
                             if not isinstance(delta,dict): raise ValueError('Gateway delta.')
                             if delta.get('tool_calls') is not None:
                                 parts=delta['tool_calls']
-                                if not isinstance(parts,list) or len(parts)>1: raise _NativeEnvelopeError('native_tool_count')
+                                if not isinstance(parts,list): raise _NativeEnvelopeError('native_tool_count')
+                                if len(parts)>1: raise _NativeEnvelopeError('native_multiple_calls')
                                 for part in parts:
+                                    if native_seen and isinstance(part,dict) and type(part.get('index')) is int and part['index']>0:
+                                        raise _NativeEnvelopeError('native_multiple_calls')
                                     if not isinstance(part,dict) or type(part.get('index')) is not int or part['index']!=0 or set(part)-{'index','id','type','function'}:
                                         raise _NativeEnvelopeError('native_tool_index')
                                     native_seen=True
@@ -422,6 +426,7 @@ class ChatGateway:
                     deciding=False
                     first_usage=record.get('usage')
                     messages=context['messages']
+                    evidence=context.get('authorized_evidence', [])
                     if record['type']=='tool_call':
                         yield record
                         remaining=deadline-time.time()-5
@@ -429,8 +434,10 @@ class ChatGateway:
                         result=await asyncio.wait_for(tool_result(record['assistant']),remaining)
                         from app.core.chat_resources import continuation_messages
                         messages=continuation_messages(context,record['assistant'],result)
+                        # continuation_messages validates the authenticated result first.
+                        evidence=evidence+json.loads(result['content'])['evidence']
                     if cancelled.is_set() or time.time()>=deadline-5: raise TimeoutError()
-                    iterator=self._records({**context,'messages':messages},deadline,holder,cancelled,'none')
+                    iterator=self._records({**context,'messages':messages,'authorized_evidence':evidence},deadline,holder,cancelled,'none')
                 else:
                     if record['type']=='candidate' and two_phase:
                         record={**record,'usage':combined_usage(first_usage,record.get('usage'))}

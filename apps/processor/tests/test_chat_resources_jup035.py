@@ -27,7 +27,8 @@ from app.core.chat_resources import CHAT_TOOLS
 ASSEMBLER_CONTRACT.update(tool_protocol='auto-documentation-v2', tools=copy.deepcopy(CHAT_TOOLS),
     continuation_roles=['assistant-tool-call','tool'], max_searches=1,
     max_generations=2, decision_format='native-auto', final_format='strict-finops',
-    no_search_policy='authorized-context-or-abstention')
+    no_search_policy='authorized-context-or-abstention',
+    evidence_selection='effective-context-exact-records-v1')
 
 
 def canonical(value): return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
