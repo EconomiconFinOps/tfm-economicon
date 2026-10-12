@@ -8,8 +8,8 @@ JUP: JUP-114
 
 ## 2. Datos de demo
 
-- [ ] 2.1 Rehacer `ROWS` de `scripts/synthetic_anomalies.py` con gasto diario del 1 al 21 de septiembre (D7) y `remove` que borra episodios y estado de detección del tenant; `status` con el número de episodios.
-- [ ] 2.2 `docs/demo/JUP-107/esperados-anomalias.json` con recuentos nuevos y la sección de episodios; prueba sin base de datos que recalcula de forma independiente sumas por periodo y regla diaria; pruebas con CockroachDB real de `remove` (solo su tenant, repetible) y de recarga y nueva detección; mutantes.
+- [x] 2.1 Rehacer `ROWS` de `scripts/synthetic_anomalies.py` con gasto diario del 1 al 21 de septiembre (D7) y `remove` que borra episodios y estado de detección del tenant; `status` con el número de episodios.
+- [x] 2.2 `docs/demo/JUP-107/esperados-anomalias.json` con recuentos nuevos y la sección de episodios; prueba sin base de datos que recalcula de forma independiente sumas por periodo y regla diaria; pruebas con CockroachDB real de `remove` (solo su tenant, repetible) y de recarga y nueva detección; mutantes.
 
 ## 3. Frontend
 

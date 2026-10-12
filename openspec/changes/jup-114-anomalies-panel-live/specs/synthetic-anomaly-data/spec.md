@@ -2,7 +2,7 @@
 
 ### Requirement: Self-contained synthetic anomaly dataset tool
 
-The repository SHALL provide `scripts/synthetic_anomalies.py`, a single ASCII-only file runnable through standard input in the processor container, with the commands `apply`, `status` and `remove`. It SHALL load the dataset into the tenant `tenant-core` by default, mark every ingestion run and every record with the identifier prefix `synthetic-jup107-` and with a boolean synthetic flag on the run, and SHALL state in its output that the rows are synthetic. `remove` SHALL also delete the stored anomaly episodes and the anomaly detection state of the target tenant, and only of that tenant, because they are derived from its synthetic rows; it SHALL only act on a tenant that holds no cost rows other than this tool's.
+The repository SHALL provide `scripts/synthetic_anomalies.py`, a single ASCII-only file runnable through standard input in the processor container, with the commands `apply`, `status` and `remove`. It SHALL load the dataset into the tenant `tenant-core` by default, mark every ingestion run and every record with the identifier prefix `synthetic-jup107-` and with a boolean synthetic flag on the run, and SHALL state in its output that the rows are synthetic. `remove` SHALL also delete the stored anomaly episodes and the anomaly detection state of each tenant that held this tool's rows and is left without other cost rows, because they are derived from its synthetic rows; for a tenant that still holds other cost rows it SHALL keep them and say so.
 
 #### Scenario: Load is idempotent
 - **WHEN** `apply` runs twice on an empty tenant
@@ -11,7 +11,7 @@ The repository SHALL provide `scripts/synthetic_anomalies.py`, a single ASCII-on
 
 #### Scenario: Refuses a tenant with other cost data
 - **WHEN** the target tenant already holds cost rows that do not carry the prefix and the synthetic flag of this tool, including rows of the JUP-106 dataset or of the public dataset
-- **THEN** `apply` and `remove` change nothing and exit with status 2 stating the reason
+- **THEN** `apply` loads nothing and exits with status 2 stating the reason
 - **AND** a partial or other-tenant state also refuses with its state named
 
 #### Scenario: Removal touches only its own rows
@@ -19,6 +19,10 @@ The repository SHALL provide `scripts/synthetic_anomalies.py`, a single ASCII-on
 - **THEN** the records and runs with this tool's prefix and flag, and the episodes and detection state of `tenant-core`, are deleted
 - **AND** every JUP-106 row and every episode and detection state of `tenant-growth` remain
 - **AND** repeating `remove` deletes nothing and succeeds
+
+#### Scenario: Episodes are kept when other cost data remain
+- **WHEN** cost rows that are not this tool's were added to `tenant-core` after loading, and `remove` runs
+- **THEN** only this tool's rows are deleted, the episodes and detection state of `tenant-core` are kept, and the output says why
 
 #### Scenario: Reload after removal is detected again
 - **WHEN** the dataset is loaded, detected, removed, loaded again and detected again
