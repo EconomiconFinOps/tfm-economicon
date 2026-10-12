@@ -146,6 +146,17 @@ resultado desconocido tiene tratamiento en
 [ADR-0009](adr/ADR-0009-rabbitmq-publisher-lifecycle.md). No hay transacción
 distribuida DB/cola ni outbox; no se promete exactly-once ni reintento sin duplicados.
 
+**Fallos y reintentos del worker (JUP-113,
+[ADR-0019](adr/ADR-0019-ingestion-retry-policy.md)).** `POST /jobs/ingest` rechaza con 422 un `source` que el
+processor no aceptaría, así que ese trabajo ya no se crea. En el worker, un mensaje inválido, un fallo de
+proveedor o un trabajo que rechaza el guardrail de entrada se descartan en una entrega; un fallo no
+clasificado se reencola **una vez**, usando la marca `redelivered` de RabbitMQ, y se descarta en la
+reentrega con el job en `failed`; y si no se puede leer o registrar el estado del job (base caída), el mensaje
+se reencola sin tope, porque descartarlo dejaría el job sin mensaje. La consecuencia que se asume: si pgvector o
+los embeddings fallan el tiempo suficiente para los dos intentos (unos 10 s medidos con pgvector parado), los
+jobs de ese intervalo quedan `failed` y hay que reenviarlos. Tabla completa en el
+[README del processor](../apps/processor/README.md#fallos-reintentos-y-descarte-jup-113).
+
 La fase analyze puede usar AgentRuntime/LiteLLM, schema FinOpsResponse y
 guardrails. Su entrada contiene source, status y metadatos saneados; no recibe
 la pregunta del chat, chunks ni consulta de costes. El mock produce
@@ -425,7 +436,8 @@ una decisión arquitectónica nueva.
 
 Prometheus scrapea backend/processor cada 15 s. Grafana aprovisiona dashboards
 y alerta de fallos de ingesta, **sin receptor externo**. El contador mide
-marcas de fallo persistidas, incluidos reintentos, no jobs únicos.
+marcas de fallo persistidas, incluidos reintentos, no jobs únicos: con el tope de JUP-113, un job con un
+fallo no clasificado suma como máximo 2.
 Los logs JSON con request_id y los estados de job ayudan al diagnóstico;
 no se acredita stack central de logs ni trazado distribuido completo.
 Fuentes: [monitorización](../apps/monitoring),

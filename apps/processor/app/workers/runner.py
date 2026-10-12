@@ -14,7 +14,7 @@ from app.embeddings.chunker import TextChunker
 from app.embeddings.providers import get_embedding_provider
 from app.graphs.pipeline import PipelineRunner
 from app.repositories.jobs import JobRepository
-from app.tasks.ingest import IngestTask, InvalidJobMessage
+from app.tasks.ingest import IngestTask, IngestionFailed, InvalidJobMessage
 from app.vector_store.pgvector_store import PgVectorStore
 
 
@@ -86,6 +86,33 @@ class ProcessorWorker:
         except ProviderError as exc:
             logger.warning("job_provider_failed", category=exc.category)
             self.queue.nack(message.delivery_tag, requeue=False)
+        except IngestionFailed as exc:
+            if exc.permanent:
+                # Reintentar una entrada rechazada por el guardrail fallaria igual y
+                # retendria la cola: se descarta en una entrega. Evento fijo, sin campos
+                # del trabajo (el `request_id` ya lo aporta el contexto de structlog).
+                logger.warning("job_input_rejected")
+                self.queue.nack(message.delivery_tag, requeue=False)
+                return
+            if message.redelivered:
+                # Fallo no clasificado ya registrado como `failed` en una REENTREGA: el tope
+                # es "una reentrega como maximo" y no "dos intentos siempre" porque una
+                # primera entrega interrumpida (conexion perdida sin responder) ya llega
+                # marcada como reentrega, y lo unico que importa es no reencolar sin fin.
+                # Se descarta SIN relanzar: relanzar haria que el bucle registrase
+                # `worker_loop_failed` y esperase 2 s por un mensaje ya resuelto. El evento
+                # es fijo y sin campos propios (ni origen, ni contenido, ni texto de la causa).
+                logger.warning("job_retry_exhausted")
+                self.queue.nack(message.delivery_tag, requeue=False)
+                return
+            # Primera entrega: se conserva el comportamiento de siempre (reencolar y relanzar).
+            self.queue.nack(message.delivery_tag, requeue=True)
+            raise
         except Exception:
+            # Sin tope a proposito: aqui el estado del trabajo no se pudo leer o registrar
+            # (`fetch_authorized_job`, `mark_running` o `mark_failed` fallaron), asi que no
+            # sabemos que quedo escrito. Descartar dejaria el trabajo en `queued`/`running`
+            # sin mensaje que lo recupere y sin que nadie lo vea; reencolar, aunque sea una
+            # reentrega, es lo unico que conserva la posibilidad de resolverlo.
             self.queue.nack(message.delivery_tag, requeue=True)
             raise

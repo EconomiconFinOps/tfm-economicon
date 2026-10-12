@@ -183,6 +183,18 @@ python -m pytest tests
 
 `POST /jobs/ingest` requiere `text_content` como fuente principal del pipeline de embeddings.
 
+**Formato de `source` (JUP-113).** `POST /jobs/ingest` rechaza con `422` un `source` que el processor no
+aceptaría: tras `strip()` y `lower()` debe cumplir `^[a-z0-9][a-z0-9._-]{0,63}$` (letras minúsculas o
+dígitos, con punto, guion o guion bajo, de 1 a 64 caracteres, sin espacios interiores). Valen `aws-cur`,
+`local-smoke`, `azure-cost` o ` Azure-Cost `; no vale `Azure Cost Management`. El `422` usa el cuerpo
+saneado de siempre (`{"detail":[{"type":"validation_error","msg":"Invalid request value"}]}`), no crea
+trabajo, no reserva publicación y no publica nada. El valor admitido se guarda y se publica **tal como se
+envió**, sin normalizar. Antes de este cambio ese valor recibía `202` y el processor lo reencolaba sin fin.
+Un cliente que enviara otro formato pasa de `202` a `422`. La regla está duplicada a propósito en el
+processor (`SAFE_SOURCE`); los dos servicios la prueban con la misma tabla de casos,
+[`docs/api/ingest-source-contract-cases.json`](../../docs/api/ingest-source-contract-cases.json). Decisión en
+[ADR-0019](../../docs/adr/ADR-0019-ingestion-retry-policy.md).
+
 `GET /billing/summary` devuelve el contrato v2 de JUP-026 sobre los costes Azure
 ingeridos, separados por moneda y periodo. Los importes son strings decimales;
 `savings_identified` permanece null. Las fuentes ambiguas devuelven 409.
