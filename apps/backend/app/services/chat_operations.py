@@ -1,12 +1,16 @@
 """Single-process supervised producer; observers never own its lifecycle."""
 import asyncio
 import json
+import logging
 import time
 from email.utils import parsedate_to_datetime
 from uuid import uuid4
 
 from app.db.chat_repository import ChatError, ChatRepository, TERMINAL
-from app.schemas.chat import canonical, validate_response, reported_usage, response_citations
+from app.schemas.chat import canonical, validate_response, reported_usage, response_citations, ResponseValidationError
+
+
+logger = logging.getLogger(__name__)
 
 
 class ChatOperations:
@@ -202,13 +206,27 @@ class ChatOperations:
         try:
             async def consume():
                 seq,offset=0,0
+                effective=claim['context']
+                searched=False
                 async for record in self.transport.stream(claim):
                     current=await self.get(scope,row['operation_id'])
                     if current['state']!='active' or current['current_attempt_id']!=row['current_attempt_id']:
                         return
                     if self.clock()>=row['attempt_deadline']-5:
                         raise TimeoutError()
-                    if record.get('type')=='delta':
+                    if record.get('type')=='tool_call':
+                        if searched or seq or claim['context'].get('tool_protocol')!='required-documentation-v1':
+                            raise ValueError('Unexpected tool call.')
+                        searched=True
+                        from app.services.chat_context import retrieval_diagnostic_scope
+                        with retrieval_diagnostic_scope(claim['operation_id'],claim['attempt_id']):
+                            result,effective=await self.context_builder.tool_extension(scope,claim['context'],
+                                record.get('assistant'),row['attempt_deadline']-5)
+                        current=await self.get(scope,row['operation_id'])
+                        if current['state']!='active' or current['current_attempt_id']!=row['current_attempt_id']: return
+                        if self.clock()>=row['attempt_deadline']-5: raise TimeoutError()
+                        await self.transport.tool_result(claim,result)
+                    elif record.get('type')=='delta':
                         value=record.get('text')
                         if not isinstance(value,str) or len(value.encode())>8192:
                             raise ValueError('Invalid delta.')
@@ -224,20 +242,23 @@ class ChatOperations:
                         await self._error(scope,row,transient,self._delay(record.get('retry_after'),row['attempt_count']) if transient else 0)
                         return
                     elif record.get('type')=='candidate':
+                        if claim['context'].get('tool_protocol')=='required-documentation-v1' and not searched:
+                            raise ValueError('Missing search.')
                         if record.get('finish_reason')=='length':
                             await self._error(scope,row,True,self._delay(None,row['attempt_count']),'incomplete')
                             return
                         if record.get('finish_reason')!='stop':
                             raise ValueError('Invalid finish reason.')
-                        candidate=validate_response(record.get('result'),claim['context'].get('authorized_evidence',[]),
-                            expected_period=claim['context'].get('response_period'))
+                        candidate=validate_response(record.get('result'),effective.get('authorized_evidence',[]),
+                            expected_period=claim['context'].get('response_period'),
+                            expected_subscriptions=claim['context'].get('response_subscriptions', []))
                         result_id=str(uuid4())
-                        references,citations=response_citations(candidate,claim['context'])
+                        references,citations=response_citations(candidate,effective)
                         metadata={'response':candidate,'citations':references,'source_citations':citations,
                             'generation':{'v':2,'operation_id':row['operation_id'],'attempt_id':row['current_attempt_id'],
                                 'question_message_id':row['question_message_id'],'prompt_version':claim['context']['prompt_version'],
                                 'state':'completed','input_hash':row['input_hash'],
-                                'context_manifest':claim['context'].get('manifest',{}),'usage':reported_usage(record.get('usage'))}}
+                                'context_manifest':effective.get('manifest',{}),'usage':reported_usage(record.get('usage'))}}
                         final_limit=time.monotonic()+5
                         while True:
                             try:
@@ -268,7 +289,14 @@ class ChatOperations:
             # A storage uncertainty must remain fenced for recovery, not become
             # an unverified failed state or a new upstream dispatch.
             pass
-        except Exception:
+        except Exception as error:
+            # Never include exception text, rejected values or traceback.
+            logger.warning('chat_backend_diagnostic %s', canonical({
+                'operation_id': row['operation_id'],
+                'attempt_id': row['current_attempt_id'],
+                'stage': 'response_validation' if isinstance(error, ResponseValidationError) else 'stream_processing',
+                'rule_code': error.rule_code if isinstance(error, ResponseValidationError) else 'invalid_stream',
+            }))
             await self._error(scope,row,False,reason='invalid_response')
         finally:
             async with self.lock:

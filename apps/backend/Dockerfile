@@ -11,7 +11,8 @@ RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirem
     && pip install --dry-run --no-index -r requirements.txt
 
 COPY apps/backend/app ./app
-COPY apps/processor/app/agents/prompt_resources/jup035/chat/v2 /opt/economicon/chat/v2
+COPY apps/processor/app/agents/prompt_resources/jup035/chat/v3 /opt/economicon/chat/v3
+COPY apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json /opt/economicon/chat/v3/tokenizer.json
 COPY apps/processor/app/agents/prompt_resources/jup035/summary /opt/economicon/summary
 RUN python -c "from app.core.chat_resources import load_resources; from app.core.summary_resources import load_resources as summary; load_resources(None); summary()"
 RUN find /app/app -type d -exec chmod 755 {} +

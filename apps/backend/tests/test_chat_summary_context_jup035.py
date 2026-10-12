@@ -45,7 +45,9 @@ def context_current(context):return json.loads(context['messages'][-1]['content'
 
 def test_valid_memory_is_whole_untrusted_user_before_current_and_freezes_exact_used_payload(memory):
     api,resources,output,state=memory;before=digest(document(package(api,resources)))
-    resource_hashes={name:hashlib.sha256((RESOURCE_ROOT/name).read_bytes()).hexdigest() for name in ['system.md','input.md','manifest.json','tokenizer.json']}
+    resource_paths={name:RESOURCE_ROOT/name for name in ['system.md','input.md','manifest.json']}
+    resource_paths['tokenizer.json']=RESOURCE_ROOT.parent/'v2/tokenizer.json'
+    resource_hashes={name:hashlib.sha256(resource_path.read_bytes()).hexdigest() for name,resource_path in resource_paths.items()}
     async def scenario(client):
         await initialize(api[0]);builder=ChatContext(api[0],api[0].state.chat_resources)
         context=builder.build(SCOPE,body());messages=context['messages']
@@ -62,7 +64,7 @@ def test_valid_memory_is_whole_untrusted_user_before_current_and_freezes_exact_u
         assert not any(item.get('kind')=='summary' for item in context['authorized_evidence'])
         assert digest(document(package(api,resources)))==before and api[2].claims==[]
     run(scenario,api)
-    assert resource_hashes=={name:hashlib.sha256((RESOURCE_ROOT/name).read_bytes()).hexdigest() for name in resource_hashes}
+    assert resource_hashes=={name:hashlib.sha256(resource_path.read_bytes()).hexdigest() for name,resource_path in resource_paths.items()}
 
 @pytest.mark.parametrize('defect',['foreign_scope','source_hash','version','output_hash','negation_inverted','unreferenced_topic','invalidated'])
 def test_invalid_memory_is_omitted_entirely_without_repairing_or_mutating_originals(memory,defect):

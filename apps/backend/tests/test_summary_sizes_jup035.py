@@ -29,7 +29,7 @@ def contract(r):
 
 def test_reserves_and_minimum(monkeypatch):
     assert budget('summary')['output_tokens']==10000
-    assert budget('chat')['output_tokens']==800
+    assert budget('chat')['output_tokens']==3200
     assert budget('summary')['body_limit_bytes']==1048576
     assert budget('chat')['body_limit_bytes']==2097152
     monkeypatch.setenv('SUMMARY_CONTEXT_TOKENS','11024')
@@ -63,7 +63,7 @@ def test_persisted_v2_consumed_then_v3_installed_without_rewriting_history(prepa
     before_history=digest(document(package(api,old)));before_state=copy.deepcopy(state)
     monkeypatch.setenv('SUMMARY_ENABLED','true');api[0].state.summary_resources=new
     from app.core.chat_resources import load_resources as chat_load
-    chat=chat_load(ROOT/'chat/v2')
+    chat=chat_load(ROOT/'chat/v3')
     builder=ChatContext(api[0],chat)
     context=builder.build(SCOPE,body())
     assert context['manifest']['summary']['used'] is True
@@ -106,9 +106,9 @@ def test_persisted_v2_consumed_then_v3_installed_without_rewriting_history(prepa
     current_context['recent_pairs']=[]
     current_context['omissions'].append({'collection':'recent_pairs','omitted_pairs':5})
     essential[-1]['content']='UNTRUSTED_CURRENT_CONTEXT\n'+escaped(current_context)
-    ceiling=chat.count(canonical(essential))+chat.count(chat.schema_text)+1024+800-1
+    ceiling=chat.count(canonical(essential))+chat.count(chat.schema_text)+1024+3200-1
     without_prefix=[essential[0],essential[-1]]
-    assert chat.count(canonical(without_prefix))+chat.count(chat.schema_text)+1024+800<ceiling
+    assert chat.count(canonical(without_prefix))+chat.count(chat.schema_text)+1024+3200<ceiling
     bounded=replace(chat,context_budget={**chat.context_budget,'context_tokens':ceiling})
     with pytest.raises(ChatError):ChatContext(api[0],bounded).build(SCOPE,body())
 

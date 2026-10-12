@@ -24,12 +24,26 @@ from urllib import error,request
 
 from app.agents.schemas import chat_provider_schema, assemble_chat_response
 from app.clients.chat_dns import resolve
+from app.core.context_budget import budget
 from app.clients.chat_stream_parser import AnswerJSON,SSEFrames,complete_json
 from app.clients.litellm import LiteLLMClient,_AttemptDeadline,_DeadlineHTTPConnection,_DeadlineHTTPSConnection,_RejectRedirectHandler,_transport_failure,_usage_metadata
 
 
 _diagnostic_context = ContextVar('chat_diagnostic_context', default=None)
 _diagnostic_logger = logging.getLogger(__name__)
+_NATIVE_RULES = frozenset({
+    'native_tool_index', 'native_metadata_type', 'native_metadata_conflict',
+    'native_function_shape', 'native_fragment_type', 'native_tool_limit',
+    'native_tool_count', 'native_final_invalid',
+})
+
+
+class _NativeEnvelopeError(ValueError):
+    def __init__(self, rule_code):
+        self.rule_code = rule_code if rule_code in _NATIVE_RULES else 'native_final_invalid'
+        super().__init__('Invalid native envelope.')
+
+
 _MODEL_RULES = {
     'Value error, period.from must be before period.to': 'period_order',
     'Value error, estimated_savings and currency must either both be set or both be null': 'savings_currency_pair',
@@ -106,13 +120,15 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
             'request_sha256': request_hash,
             'stage': stage if stage in {'request', 'transport', 'envelope', 'provisional_answer',
                                        'finish', 'candidate_json', 'model_validation'} else 'envelope',
-            'exception_class': None if failure is None else classes.get(type(failure), 'OtherException'),
+            'exception_class': None if failure is None else 'ValueError' if isinstance(failure, _NativeEnvelopeError) else classes.get(type(failure), 'OtherException'),
             'errors': errors,
             'finish_reason': observed_finish,
             'http_status': status if type(status) is int and 100 <= status <= 599 else None,
             'category': category if category in {'timeout', 'eof', 'transport', 'request',
                                                  'incomplete', 'invalid_response'} else None,
         }
+        if isinstance(failure, _NativeEnvelopeError):
+            event['rule_code'] = failure.rule_code
         encoded = json.dumps(event, ensure_ascii=True, separators=(',', ':'), allow_nan=False)
         if len(encoded.encode()) <= 2048:
             _diagnostic_logger.warning(encoded)
@@ -221,6 +237,7 @@ class _ChatHTTPSHandler(_ChatHandler,request.HTTPSHandler):
 
 
 class ChatGateway:
+    requires_tool_result=True
     def __init__(self,settings):
         if settings.llm_model!='economicon-chat' or settings.litellm_api_key is None:
             raise ValueError('Chat gateway configuration.')
@@ -228,7 +245,7 @@ class ChatGateway:
         self.client=LiteLLMClient(settings)
         self.client.transport=request.build_opener(request.ProxyHandler({}),_RejectRedirectHandler(),_ChatHTTPHandler(),_ChatHTTPSHandler())
 
-    def _records(self,context,deadline,holder,cancelled):
+    def _records(self,context,deadline,holder,cancelled,tool_choice=None):
         finish=None;request_hash=None;emitted=False;stage='request'
         def diagnostic(at,failure=None,**metadata):
             nonlocal emitted
@@ -241,10 +258,14 @@ class ChatGateway:
             yield {'type':'error','category':'timeout'};return
         try:
             payload={'model':'economicon-chat','messages':context['messages'],'stream':True,
-                'stream_options':{'include_usage':True},'max_tokens':800,'num_retries':0,
+                'stream_options':{'include_usage':True},'max_tokens':budget('chat')['output_tokens'],'num_retries':0,
                 'timeout':remaining,'stream_timeout':remaining,'reasoning':{'enabled':False},
                 'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True},
-                'response_format':{'type':'json_schema','json_schema':{'name':'FinOpsResponse','strict':True,'schema':chat_provider_schema()}}}
+                'response_format':{'type':'json_schema','json_schema':{'name':'FinOpsResponse','strict':True,
+                    'schema':chat_provider_schema(financial_metrics_allowed=context.get('financial_metrics_allowed'))}}}
+            if tool_choice is not None:
+                from app.core.chat_resources import CHAT_TOOLS
+                payload.update(tools=CHAT_TOOLS,tool_choice=tool_choice)
             req=request.Request(self.client.base_url+'/chat/completions',data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode(),
                 headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
             request_hash=hashlib.sha256(req.data).hexdigest()
@@ -256,6 +277,8 @@ class ChatGateway:
         frames,answer=SSEFrames(),AnswerJSON()
         decoder=codecs.getincrementaldecoder('utf-8-sig')('strict')
         candidate=[];candidate_bytes=0;usage=None
+        native={'id':'','type':'','function':{'name':'','arguments':''}}
+        native_seen=False
         try:
             stage='transport'
             with self.client.transport.open(req,timeout=min(5,remaining)) as response:
@@ -276,13 +299,25 @@ class ChatGateway:
                         stage='envelope'
                         if data=='[DONE]':
                             stage='finish'
+                            if tool_choice=='required':
+                                from app.core.chat_resources import validate_search_call
+                                if finish!='tool_calls' or not native_seen or ''.join(candidate).strip():
+                                    raise ValueError('Required native search missing.')
+                                assistant={'role':'assistant','content':None,'tool_calls':[native]}
+                                try:
+                                    validate_search_call(assistant)
+                                except ValueError as failure:
+                                    raise _NativeEnvelopeError('native_final_invalid') from failure
+                                yield {'type':'tool_call','assistant':assistant,'usage':usage}
+                                return
+                            if native_seen: raise ValueError('Second search forbidden.')
                             if finish not in ('stop','length'): raise ValueError('Gateway finish reason.')
                             raw=''.join(candidate)
                             try:
                                 stage='candidate_json'
                                 parsed=complete_json(raw)
                                 stage='model_validation'
-                                result=assemble_chat_response(parsed,context.get('response_period'))
+                                result=assemble_chat_response(parsed,context.get('response_period'), context.get('response_subscriptions', []))
                             except Exception as failure:
                                 diagnostic(stage,failure,category='incomplete' if finish=='length' else 'invalid_response')
                                 if finish=='length':
@@ -301,12 +336,36 @@ class ChatGateway:
                             if choice.get('finish_reason') is not None: finish=choice['finish_reason']
                             delta=choice.get('delta',{})
                             if not isinstance(delta,dict): raise ValueError('Gateway delta.')
+                            if delta.get('tool_calls') is not None:
+                                parts=delta['tool_calls']
+                                if not isinstance(parts,list) or len(parts)>1: raise _NativeEnvelopeError('native_tool_count')
+                                for part in parts:
+                                    if not isinstance(part,dict) or type(part.get('index')) is not int or part['index']!=0 or set(part)-{'index','id','type','function'}:
+                                        raise _NativeEnvelopeError('native_tool_index')
+                                    native_seen=True
+                                    for key in ('id','type'):
+                                        value=part.get(key)
+                                        if value is not None:
+                                            if not isinstance(value,str): raise _NativeEnvelopeError('native_metadata_type')
+                                            if native[key] and value and native[key]!=value:
+                                                raise _NativeEnvelopeError('native_metadata_conflict')
+                                            if value: native[key]=value
+                                    function=part.get('function')
+                                    if function is None: function={}
+                                    if not isinstance(function,dict) or set(function)-{'name','arguments'}: raise _NativeEnvelopeError('native_function_shape')
+                                    for key, value in function.items():
+                                        if value is None: continue
+                                        if not isinstance(value,str): raise _NativeEnvelopeError('native_fragment_type')
+                                        native['function'][key]+=value
+                                    if len(native['id'])>128 or len(native['type'])>8 or len(native['function']['name'])>64 or len(native['function']['arguments'].encode())>16384:
+                                        raise _NativeEnvelopeError('native_tool_limit')
                             fragment=delta.get('content')
                             if fragment is None: continue
                             if not isinstance(fragment,str): raise ValueError('Gateway content.')
                             candidate_bytes+=len(fragment.encode())
                             if candidate_bytes>1024*1024: raise ValueError('Candidate limit.')
                             candidate.append(fragment)
+                            if tool_choice=='required': continue
                             stage='provisional_answer'
                             provisional=answer.feed(fragment)
                             # Escape-aware decoding completes surrogate pairs;
@@ -338,19 +397,54 @@ class ChatGateway:
         finally:
             holder.pop('response',None)
 
-    async def __call__(self,context,deadline):
+    async def __call__(self,context,deadline,*,tool_result=None):
         holder={};cancelled=threading.Event()
-        iterator=self._records(context,deadline,holder,cancelled)
-        def pull(): return next(iterator,None)
         try:
+            required=context.get('tool_protocol')=='required-documentation-v1'
+            had_search=required
+            iterator=self._records(context,deadline,holder,cancelled,'required' if required else None)
+            first_usage=None
             while True:
-                record=await asyncio.to_thread(pull)
+                record=await asyncio.to_thread(next,iterator,None)
                 if record is None: return
-                yield record
+                if record['type']=='tool_call':
+                    if not required or tool_result is None:
+                        yield {'type':'error','status':422,'category':'invalid_response'};return
+                    required=False
+                    first_usage=record.get('usage')
+                    yield record
+                    remaining=deadline-time.time()-5
+                    if remaining<=0: raise TimeoutError()
+                    result=await asyncio.wait_for(tool_result(record['assistant']),remaining)
+                    from app.core.chat_resources import continuation_messages
+                    messages=continuation_messages(context,record['assistant'],result)
+                    if cancelled.is_set() or time.time()>=deadline-5: raise TimeoutError()
+                    iterator=self._records({**context,'messages':messages},deadline,holder,cancelled,'none')
+                else:
+                    if record['type']=='candidate' and had_search:
+                        record={**record,'usage':combined_usage(first_usage,record.get('usage'))}
+                    yield record
+        except TimeoutError:
+            yield {'type':'error','category':'timeout'}
         finally:
             cancelled.set()
             response=holder.get('response')
             if response is not None: interrupt(response)
+
+
+def combined_usage(first,second):
+    """Sum reported legs only; missing counters/costs are never estimated."""
+    from decimal import Decimal
+    if not isinstance(first,dict) or not isinstance(second,dict): return None
+    result={}
+    for key in ('prompt_tokens','completion_tokens','total_tokens'):
+        if type(first.get(key)) is int and type(second.get(key)) is int:
+            result[key]=first[key]+second[key]
+    if all(item.get('cost_usd') is not None for item in (first,second)):
+        values=[Decimal(str(item['cost_usd'])) for item in (first,second)]
+        if all(value.is_finite() and value>=0 for value in values):
+            result['cost_usd']=format(sum(values),'f')
+    return result or None
 
 
 def configured_gateway():

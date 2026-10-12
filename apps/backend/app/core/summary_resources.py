@@ -132,7 +132,7 @@ def load_resources(directory=None,tokenizer_file=None):
     if canonical(manifest)!=canonical(expected) or tokenizers.__version__!='0.22.1':raise ValueError('Summary contract mismatch.')
     for key,pin in [('input_contract',INPUT_SHA),('assembler_contract',ASSEMBLER_SHA),('policy',POLICY_SHA)]:
         if sha(canonical(manifest[key]).encode())!=pin:raise ValueError('Summary policy mismatch.')
-    asset=Path(tokenizer_file or '/opt/economicon/chat/v2/tokenizer.json')
+    asset=Path(tokenizer_file or '/opt/economicon/chat/v3/tokenizer.json')
     if asset.is_symlink() or not asset.is_file() or asset.stat().st_size!=20217442 or sha(asset.read_bytes())!=TOKENIZER_SHA:
         raise ValueError('Summary tokenizer mismatch.')
     counter=tokenizers.Tokenizer.from_file(str(asset))

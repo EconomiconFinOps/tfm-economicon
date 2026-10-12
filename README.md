@@ -609,11 +609,11 @@ El transporte elimina del modelo informativo cualquier reflexión de la credenci
 The active compression bundle is
 `apps/processor/app/agents/prompt_resources/jup035/summary/v3`. It preserves the
 SummaryResponse v2 JSON shape; the chat still uses FinOpsResponse 1.0 and reserves
-800 output tokens. Compression reserves 10000 output tokens independently, accepts
+3200 output tokens by default. Compression reserves 10000 output tokens independently, accepts
 at most 8192 canonical JSON tokens and 6144 textual tokens, and requests concise
 complete sentences. These are ceilings, not target lengths.
 
-Both services must agree on `CHAT_CONTEXT_TOKENS` and `SUMMARY_CONTEXT_TOKENS`;
+Both services must agree on `CHAT_CONTEXT_TOKENS`, `CHAT_MAX_OUTPUT_TOKENS` and `SUMMARY_CONTEXT_TOKENS`;
 the default is 1048576. Summary context must exceed 11024 tokens (output plus
 margin). For the bounded large-history QA run, set both variables to 32768 in
 both services. The authenticated descriptor includes the effective reserve.
@@ -675,10 +675,67 @@ docker compose --env-file /absolute/private/ai.env -p economicon-chat-ai -f dock
 ```
 
 Use separate volumes/projects for mock8 and real1536; do not change dimensions on
-an existing corpus. Real requests require an explicit budget. Chat remains 800
-output tokens; summary reserves 10000 independently. Reduced context values must
+an existing corpus. Real requests require an explicit budget. Chat reserves 3200
+output tokens by default; summary reserves 10000 independently. Reduced context values must
 match across both services. Do not change the shared gateway/model defaults for
 this deployment. Build and isolated runtime validation are distinct checks.
+
+The active chat bundle is `jup035/chat/v3`; the original v2 bundle is retained
+unchanged, including its pinned tokenizer reused by v3. Backend images package
+the v3 prompts and that tokenizer together. `CHAT_MAX_OUTPUT_TOKENS` accepts
+integers 1..3200 in both services, with 3200 as the approved default and maximum.
+Paris authorized this default directly on 11/10/2026, superseding the initial
+1600-then-escalate procedure. This does not change ingestion's 800-token configuration,
+models, retry limits, rate caps or chat deadlines.
+
+Chat retrieval keeps the configured primary hits and adds immediate neighboring
+chunks only when present in a pool of at most 20 candidates under the same tenant,
+provider and distance filters. Neighbor lookup is restricted to each primary
+document and does not recurse. IDs, content and citations remain those of the
+stored chunks. Financial evidence consumes the same 20-item evidence capacity;
+context token and byte limits still apply. The `contiguous_context_bounded`
+omission records this limitation and how many available neighbors were omitted
+for capacity. It does not assert that every continuation was found. No corpus
+changes, new SQL, reindexing or relaxed search fallback are involved.
+
+Incomplete documentary rules must not justify guessed categories or thresholds.
+Tagging explanations include team ownership and privacy restrictions; comparisons
+include absolute and relative differences only for requested amount comparisons
+when the baseline is nonzero, without adding unsolicited threshold comparisons.
+Requested percentage comparisons distinguish relative variation from percentage
+points. Existing status and financial evidence rules remain unchanged, including for hypothetical
+arithmetic that actually uses conceptual documentary evidence.
+
+Analysis completeness rules distinguish undefined ratios with zero denominators,
+cost-weighted coverage versus resource counts, identified versus implemented
+savings and estimates versus verified results. Alerts require investigation of
+cause and whether the change was expected, not automatic shutdown. Rightsizing
+requires explicit consideration of performance/SLA risk. Missing real data calls
+for an authorized tenant source, never credentials or invented integrations.
+Currency conversion requires destination currency, rate and date. Missing data
+is not a verified zero, and citations must support the specific claim, not merely
+share its topic. These prompt instructions require real semantic acceptance;
+resource hashes and authorized citation IDs alone do not establish correctness.
+
+The server incorporates period and subscription scope into FinOpsResponse 1.0;
+the model must not emit those fields. The subscription list comes only from the
+admitted screen selection, whitespace-trimmed, sorted and deduplicated after
+trimming, and is empty without a
+selection. More than 20 distinct selected subscriptions returns 422
+`subscription_scope_limit` before claiming a provider attempt; the public schema
+is unchanged. Whitespace-only selected IDs return 422 before provider claim;
+the original screen capture is not normalized or rewritten. The existing
+1..256-character input limit is retained before trimming, and the 20-ID limit
+counts distinct normalized IDs. Hypothetical calculations from user-supplied figures belong
+only in `answer`, with assumptions and a non-verified-data limitation, never in
+financial metrics or invented evidence. Without authorized evidence their status
+remains non-actionable. The backend still rejects unverified financial metrics.
+
+Backend rejection logs contain only operation, attempt, stage and a fixed rule
+code. `provider_budget_insufficient` denotes insufficient remaining provider
+wait time (120 seconds), not insufficient financial credit. Real battery runs
+must wait for completed/failed/cancelled/paused before dispatching the next case;
+SSE `retry_scheduled` is not a terminal operation result.
 
 `SUMMARY_TIMEOUT_SECONDS` sets the absolute compression-lot deadline independently
 of chat: integer 30..300 seconds, default 180, mirrored in backend and processor.

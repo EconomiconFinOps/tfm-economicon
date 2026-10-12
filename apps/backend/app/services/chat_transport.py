@@ -10,6 +10,7 @@ import http.client
 import json
 import os
 import time
+import threading
 from pathlib import Path
 from urllib.parse import urlsplit
 from uuid import uuid4
@@ -105,7 +106,7 @@ class PrivateChatTransport:
                     value=json.loads(candidate.decode('utf-8'))
                     yield {'type':'candidate','result':value,'finish_reason':record.get('finish_reason'),'usage':record.get('usage')}
                     return
-                elif kind in ('delta','error'):
+                elif kind in ('delta','error','tool_call'):
                     yield record
                     if kind=='error': return
                 else: raise ValueError('Private record.')
@@ -114,6 +115,22 @@ class PrivateChatTransport:
         finally:
             self.connections.pop(claim['attempt_id'],None)
             if connection is not None: connection.close()
+
+    async def tool_result(self,claim,result):
+        path=f"/internal/chat/v2/attempts/{claim['attempt_id']}/tool-result"
+        raw=json.dumps({'v':2,'claim':claim,'tool_result':result},ensure_ascii=False,separators=(',',':'),allow_nan=False).encode()
+        if len(raw)>2*1024*1024: raise ValueError('Tool result body limit.')
+        deadline=claim['deadline']-5
+        headers=self.headers('POST',path,raw)
+        holder={};cancelled=threading.Event()
+        try:
+            async with self.control:
+                value,status=await asyncio.wait_for(asyncio.to_thread(self.summary._exchange,
+                    'POST',path,raw,headers,deadline,holder,cancelled,16384),max(.001,deadline-time.time()))
+                if status!=200 or value!= {'v':2,'accepted':True,'tool_call_id':result['tool_call_id']}:
+                    raise ValueError('Tool response identity.')
+        finally:
+            self.summary._interrupt(holder,cancelled)
 
     async def cancel(self,claim):
         connection=self.connections.get(claim['attempt_id'])

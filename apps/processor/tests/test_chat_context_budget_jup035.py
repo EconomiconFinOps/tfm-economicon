@@ -19,7 +19,7 @@ async def exercise(resources,change=None,large=False,recount=False):
     counter.no_truncation()
     counter.no_padding()
     async with application.router.lifespan_context(application):
-        version='jup-035.chat.v2:'+digest(canonical(manifest))
+        version='jup-035.chat.v3:'+digest(canonical(manifest))
         system=(root/'system.md').read_text(encoding='utf-8')
         messages=[{'role':'system','content':system},
                   {'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'dato '*10000 if large else '¿Qué sabemos?',

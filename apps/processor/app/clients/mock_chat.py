@@ -21,7 +21,8 @@ class MockChatGateway:
             return
         result = json.loads(MockLLMProvider().invoke('', response_format={}))
         del result['scope']['period']
-        result = assemble_chat_response(result, context.get('response_period'))
+        del result['scope']['subscription_ids']
+        result = assemble_chat_response(result, context.get('response_period'), context.get('response_subscriptions', []))
         yield {'type': 'delta', 'text': result['answer']}
         await asyncio.sleep(0)
         if deadline <= time.time() + 5:

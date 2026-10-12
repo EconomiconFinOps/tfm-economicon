@@ -112,6 +112,46 @@ def test_main_health_app_never_exposes_private_chat(private):
     run(private[1],scenario)
 
 
+def test_required_result_is_owned_signed_correlated_and_single_use(private, monkeypatch):
+    async def scenario(client):
+        entered=asyncio.Event();continued=[]
+        assistant={'role':'assistant','content':None,'tool_calls':[{'id':'call-synthetic','type':'function',
+            'function':{'name':'search_documentation','arguments':'{"query":"Synthetic policy"}'}}]}
+        async def gateway(context, deadline, *, tool_result):
+            yield {'type':'tool_call','assistant':assistant}
+            entered.set()
+            result=await tool_result(assistant)
+            continued.append(result)
+            yield {'type':'candidate','result':{'synthetic':'candidate'},'finish_reason':'stop'}
+        gateway.requires_tool_result=True
+        monkeypatch.setattr(private[0].state,'chat_gateway',gateway)
+        payload=claim(context={'prompt_version':'synthetic-v2','messages':[{'role':'user','content':'Synthetic'}],
+            'tool_protocol':'required-documentation-v1','financial_metrics_allowed':False})
+        raw=json.dumps(payload).encode()
+        task=asyncio.create_task(client.post('/internal/chat/v2/attempts',content=raw,
+            headers=signed('POST','/internal/chat/v2/attempts',raw)))
+        try:
+            await asyncio.wait_for(entered.wait(),2)
+            endpoint='/internal/chat/v2/attempts/attempt/tool-result'
+            result={'tool_call_id':'call-synthetic','content':'{"evidence":[],"omissions":[]}', 'variable_tokens':0}
+            async def post(claim_value, result_value, authenticated=True):
+                body=json.dumps({'v':2,'claim':claim_value,'tool_result':result_value}).encode()
+                return await client.post(endpoint,content=body,
+                    headers=signed('POST',endpoint,body) if authenticated else {})
+            assert (await post(payload,result,False)).status_code==401
+            assert (await post({**payload,'tenant_id':'other'},result)).status_code==404
+            assert (await post(payload,{**result,'tool_call_id':'unknown'})).status_code==409
+            assert continued==[]
+            assert (await post(payload,result)).status_code==200
+            assert (await post(payload,result)).status_code==409
+            response=await asyncio.wait_for(task,2)
+            assert '"tool_call"' in response.text and '"candidate_end"' in response.text
+            assert continued==[result]
+        finally:
+            task.cancel();await asyncio.gather(task,return_exceptions=True)
+    run(private[0],scenario)
+
+
 @pytest.mark.parametrize('tamper',['signature','timestamp','body','key_id','nonce'])
 def test_private_authentication_rejects_tampering_before_dispatch(private,tamper):
     async def scenario(c):

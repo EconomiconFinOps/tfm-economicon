@@ -23,6 +23,9 @@ INPUT_CONTRACT={'version':2,'public_fields':['request_id','content','screen_cont
 ASSEMBLER_CONTRACT={'version':2,'roles':['system','user-summary-optional','user-current'],
                     'summary_label':'UNTRUSTED_DIALOGUE_SUMMARY','current_label':'UNTRUSTED_CURRENT_CONTEXT',
                     'serialization':'utf8-sorted-keys-significant-arrays','escape':'json-controls-angle-brackets'}
+from app.core.chat_resources import CHAT_TOOLS
+ASSEMBLER_CONTRACT.update(tool_protocol='required-documentation-v1', tools=copy.deepcopy(CHAT_TOOLS),
+    continuation_roles=['assistant-tool-call','tool'], max_searches=1)
 
 
 def canonical(value): return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
@@ -31,7 +34,7 @@ def digest(raw): return hashlib.sha256(raw).hexdigest()
 
 def test_packaged_prompt_explains_non_actionable_response_contract():
     from app.core.chat_resources import load_resources
-    default = Path(__file__).parents[1]/'app/agents/prompt_resources/jup035/chat/v2'
+    default = Path(__file__).parents[1]/'app/agents/prompt_resources/jup035/chat/v3'
     root = Path(os.getenv('JUP035_RESOURCE_BUNDLE', str(default)))
     system = load_resources(root).system
     assert 'no_data, insufficient_data, unsupported, refused o error' in system
@@ -41,7 +44,7 @@ def test_packaged_prompt_explains_non_actionable_response_contract():
 
 def test_packaged_prompt_requires_only_used_documentary_sources_without_user_request():
     from app.core.chat_resources import load_resources
-    default = Path(__file__).parents[1]/'app/agents/prompt_resources/jup035/chat/v2'
+    default = Path(__file__).parents[1]/'app/agents/prompt_resources/jup035/chat/v3'
     root = Path(os.getenv('JUP035_RESOURCE_BUNDLE', str(default)))
     resource = load_resources(root)
     system = ' '.join(resource.system.split())
@@ -51,7 +54,7 @@ def test_packaged_prompt_requires_only_used_documentary_sources_without_user_req
     assert 'No inventes ids, referencias, titulos ni sources; copia id, kind, title y source de la evidencia autorizada.' in system
     manifest = json.loads((root/'manifest.json').read_bytes())
     assert manifest['system_sha256'] == digest((root/'system.md').read_bytes())
-    assert resource.prompt_version == 'jup-035.chat.v2:' + digest(canonical(manifest))
+    assert resource.prompt_version == 'jup-035.chat.v3:' + digest(canonical(manifest))
 
 
 @pytest.fixture
@@ -62,14 +65,16 @@ def resources(private,tmp_path,monkeypatch):
     (root/'system.md').write_text(system,encoding='utf-8')
     (root/'input.md').write_text(input_text,encoding='utf-8')
     schema_sha=digest(canonical(FinOpsResponse.model_json_schema()))
-    manifest={'v':2,'kind':'jup-035.chat.v2','system_sha256':digest(system.encode()),'input_sha256':digest(input_text.encode()),
+    manifest={'v':3,'kind':'jup-035.chat.v3','system_sha256':digest(system.encode()),'input_sha256':digest(input_text.encode()),
               'system_base_sha256':digest(SYSTEM_PROMPT.encode()),'response_schema_sha256':schema_sha,
-              'provider_response_schema_sha256':digest(canonical(chat_provider_schema())),
+              'provider_response_schema_sha256':digest(canonical(chat_provider_schema(financial_metrics_allowed=True))),
+              'financial_metrics_policy':'server-billing-authority-empty-metrics-v1',
               'response_period_policy':'server-verified-unique-utc-v1',
+              'response_subscriptions_policy':'server-canonical-selection-v1',
               'input_contract':copy.deepcopy(INPUT_CONTRACT),'input_contract_sha256':digest(canonical(INPUT_CONTRACT)),
               'assembler_contract':copy.deepcopy(ASSEMBLER_CONTRACT),'assembler_sha256':digest(canonical(ASSEMBLER_CONTRACT)),
               'tokenizer':{'library_version':'0.22.1','revision':'a66456a59f21345d1e5e586345c448a9106d29d7','sha256':TOKENIZER_SHA,'bytes':20217442},
-              'budgets':{'variable_tokens':8192,'wrapper_margin_tokens':1024,'output_tokens':800,'model_context_tokens':1048576}}
+              'budgets':{'variable_tokens':8192,'wrapper_margin_tokens':1024,'output_tokens':3200,'model_context_tokens':1048576}}
     (root/'manifest.json').write_bytes(canonical(manifest))
     asset=Path(os.getenv('JUP035_APPROVED_TOKENIZER',str(Path(__file__).parents[1]/'app/agents/prompt_resources/jup035/chat/v2/tokenizer.json')))
     assert asset.is_file(),'Approved asset must be mounted for resource execution'
@@ -94,7 +99,7 @@ def test_valid_server_bundle_exposes_verified_versions_without_system_text(resou
     response=descriptor(resources)
     assert response.status_code==200,response.text
     manifest=resources[2]
-    assert response.json()['prompt_version']=='jup-035.chat.v2:'+digest(canonical(manifest))
+    assert response.json()['prompt_version']=='jup-035.chat.v3:'+digest(canonical(manifest))
     assert response.json()['tokenizer_sha256']==TOKENIZER_SHA
     assert response.json()['response_schema_sha256']==manifest['response_schema_sha256']
     assert 'CHAT_V2_PRIVATE_RULE' not in response.text and SYSTEM_PROMPT not in response.text
@@ -135,3 +140,26 @@ def test_fixed_contract_and_assets_cannot_be_replaced_at_server_boot(resources,m
     response=descriptor(resources)
     assert response.status_code==503,response.text
     assert private[3]==[]
+
+
+def test_financial_authority_control_is_required_and_strict_boolean():
+    from app.core.chat_resources import load_resources
+    resources = load_resources()
+    messages = [{'role': 'system', 'content': resources.system},
+        {'role': 'user', 'content': 'UNTRUSTED_CURRENT_CONTEXT\n{}'}]
+    declared = json.loads(resources.manifest_bytes)
+    context = {'prompt_version': resources.prompt_version, 'messages': messages,
+        'tool_protocol':'required-documentation-v1','manifest': {
+        'prompt_version': resources.prompt_version, 'tokenizer_sha256': resources.tokenizer_sha256,
+        'response_schema_sha256': resources.response_schema_sha256,
+        'input_contract_sha256': declared['input_contract_sha256'],
+        'assembler_sha256': declared['assembler_sha256'],
+        'variable_tokens': resources.check_messages(messages, chat_provider_schema()),
+        'context_budget': resources.context_budget}}
+    with pytest.raises(ValueError):
+        resources.validate_context(context)
+    for flag in (False, True):
+        resources.validate_context({**context, 'financial_metrics_allowed': flag})
+    for flag in (None, 0, 1, 'true', [], {}):
+        with pytest.raises(ValueError):
+            resources.validate_context({**context, 'financial_metrics_allowed': flag})

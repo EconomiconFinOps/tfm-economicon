@@ -1,4 +1,5 @@
 """Closed public request and derived canonical response validation (JUP-035)."""
+import copy
 import hashlib
 import json
 import math
@@ -40,24 +41,47 @@ def canonical(value):
 SCHEMA_PATH = Path(__file__).with_name('finops_response_v1.json')
 
 
+class ResponseValidationError(ValueError):
+    """Internal closed rule identifier; no rejected values in diagnostics."""
+    def __init__(self, rule_code):
+        self.rule_code = rule_code
+        super().__init__('Invalid response.')
+
+
 def response_schema():
     raw = SCHEMA_PATH.read_bytes()
     schema = json.loads(raw)
     return schema, hashlib.sha256(canonical(schema).encode()).hexdigest()
 
 
-def provider_response_schema():
+def provider_response_schema(*, financial_metrics_allowed=False):
+    if type(financial_metrics_allowed) is not bool:
+        raise ValueError('Invalid financial authority control.')
     schema, _ = response_schema()
     scope = schema['$defs']['ResponseScope']
     scope['properties'].pop('period')
     scope['required'].remove('period')
+    scope['properties'].pop('subscription_ids')
+    scope['required'].remove('subscription_ids')
     schema['$defs'].pop('Period')
+    if not financial_metrics_allowed:
+        schema['properties']['metrics']['maxItems'] = 0
+    # Complete branches preserve every base constraint, sharing root definitions.
+    branch_base = {key: value for key, value in schema.items() if key != '$defs'}
+    actionable = copy.deepcopy(branch_base)
+    abstention = copy.deepcopy(branch_base)
+    actionable['properties']['status'] = {'type': 'string', 'enum': ['ok', 'partial']}
+    actionable['properties']['evidence']['minItems'] = 1
+    abstention['properties']['status'] = {'type': 'string', 'enum': [
+        status for status in schema['$defs']['ResponseStatus']['enum']
+        if status not in ('ok', 'partial')]}
+    schema['anyOf'] = [actionable, abstention]
     return schema
 
 
 def _validate(value, rule, schema, depth=0):
     if depth > 32:
-        raise ValueError('Invalid response.')
+        raise ResponseValidationError('schema_depth')
     if '$ref' in rule:
         name = rule['$ref'].removeprefix('#/$defs/')
         return _validate(value,schema['$defs'][name],schema,depth+1)
@@ -68,75 +92,80 @@ def _validate(value, rule, schema, depth=0):
                 return
             except (ValueError,TypeError):
                 pass
-        raise ValueError('Invalid response union.')
+        raise ResponseValidationError('schema_union')
     kind = rule.get('type')
     valid = {'object':isinstance(value,dict),'array':isinstance(value,list),
              'string':isinstance(value,str),'boolean':type(value) is bool,
              'integer':type(value) is int,'number':type(value) in (int,float) and math.isfinite(value),
              'null':value is None}
     if kind is not None and not valid.get(kind,False):
-        raise ValueError('Invalid response type.')
+        raise ResponseValidationError('schema_type')
     if 'enum' in rule and value not in rule['enum'] or 'const' in rule and value != rule['const']:
-        raise ValueError('Invalid response enum.')
+        raise ResponseValidationError('schema_enum')
     if kind == 'object':
         if set(rule.get('required',[]))-value.keys():
-            raise ValueError('Missing response fields.')
+            raise ResponseValidationError('schema_required')
         props = rule.get('properties',{})
         if rule.get('additionalProperties') is False and value.keys()-props.keys():
-            raise ValueError('Unexpected response fields.')
+            raise ResponseValidationError('schema_extra')
         for key,item in value.items():
             if key in props:
                 _validate(item,props[key],schema,depth+1)
     if kind == 'array':
         if len(value)<rule.get('minItems',0) or len(value)>rule.get('maxItems',100000):
-            raise ValueError('Invalid response array.')
+            raise ResponseValidationError('schema_array')
         if rule.get('uniqueItems') is True and len({canonical(item) for item in value}) != len(value):
-            raise ValueError('Duplicate response array items.')
+            raise ResponseValidationError('schema_unique')
         for item in value:
             _validate(item,rule.get('items',{}),schema,depth+1)
     if kind == 'string':
         if len(value)<rule.get('minLength',0) or len(value)>rule.get('maxLength',1048576):
-            raise ValueError('Invalid response text.')
+            raise ResponseValidationError('schema_text')
         if rule.get('pattern') and re.search(rule['pattern'],value) is None:
-            raise ValueError('Invalid response format.')
+            raise ResponseValidationError('schema_format')
         if rule.get('format') == 'date':
             from datetime import date
-            date.fromisoformat(value)
+            try:
+                date.fromisoformat(value)
+            except ValueError:
+                raise ResponseValidationError('schema_date') from None
 
 
-def validate_response(value, authorized_evidence, *, expected_period=...):
+def validate_response(value, authorized_evidence, *, expected_period=..., expected_subscriptions=...):
     schema,_ = response_schema()
     _validate(value,schema,schema)
     known = {item['id']:item for item in authorized_evidence}
     returned = {item['id']:item for item in value['evidence']}
     if len(returned) != len(value['evidence']) or returned.keys()-known.keys():
-        raise ValueError('Invalid response evidence.')
+        raise ResponseValidationError('evidence_membership')
     for key,item in returned.items():
         if any(item[field] != known[key].get(field) for field in ['kind','source','title']):
-            raise ValueError('Invalid response provenance.')
+            raise ResponseValidationError('evidence_provenance')
     if value['status'] in ['ok','partial'] and not returned:
-        raise ValueError('Missing response evidence.')
+        raise ResponseValidationError('actionable_requires_evidence')
     if value['status'] in ['no_data','insufficient_data','unsupported','refused','error'] and (value['metrics'] or value['recommendations']):
-        raise ValueError('Invalid non-actionable response.')
+        raise ResponseValidationError('non_actionable_payload')
     for metric in value['metrics']:
         if set(metric['evidence_ids'])-returned.keys():
-            raise ValueError('Invalid metric reference.')
+            raise ResponseValidationError('metric_reference')
         # Financial numbers must match values in the authorized server record.
         eligible = [known[x] for x in metric['evidence_ids'] if known[x]['kind']=='cost_query']
         if not any({'name':metric['name'],'value':metric['value'],'unit':metric['unit']} in e.get('metrics',[]) for e in eligible):
-            raise ValueError('Unverified financial metric.')
+            raise ResponseValidationError('financial_metric_unverified')
     for recommendation in value['recommendations']:
         if set(recommendation['evidence_ids'])-returned.keys():
-            raise ValueError('Invalid recommendation reference.')
+            raise ResponseValidationError('recommendation_reference')
         if (recommendation['estimated_savings'] is None) != (recommendation['currency'] is None):
-            raise ValueError('Invalid savings currency.')
+            raise ResponseValidationError('savings_currency')
         if recommendation['estimated_savings'] is not None:
-            raise ValueError('Savings estimation is outside this chat scope.')
+            raise ResponseValidationError('savings_out_of_scope')
     period = value['scope']['period']
     if expected_period is not ... and period != expected_period:
-        raise ValueError('Response period differs from verified context.')
+        raise ResponseValidationError('period_context')
     if period and period['from'] >= period['to']:
-        raise ValueError('Invalid period.')
+        raise ResponseValidationError('period_order')
+    if expected_subscriptions is not ... and value['scope']['subscription_ids'] != expected_subscriptions:
+        raise ResponseValidationError('subscription_context')
     return value
 
 
@@ -170,13 +199,13 @@ def response_citations(value, context):
     selected = []
     for evidence in value['evidence']:
         if evidence['kind'] != 'corpus': continue
-        if not isinstance(frozen,list): raise ValueError('Invalid frozen citations.')
+        if not isinstance(frozen,list): raise ResponseValidationError('citation_snapshot')
         matches = [item for item in frozen if isinstance(item,dict) and item.get('evidence_id') == evidence['id']]
-        if len(matches) != 1: raise ValueError('Unresolved corpus citation.')
+        if len(matches) != 1: raise ResponseValidationError('citation_unresolved')
         citation = SourceCitation.model_validate(matches[0]).model_dump()
         source = known[evidence['id']]
         if (citation['title'] != source['title'].strip() or citation['source'] != source['source'].strip()
                 or not isinstance(source.get('content'),str) or citation['excerpt'] != source['content'][:140]):
-            raise ValueError('Mismatched corpus citation.')
+            raise ResponseValidationError('citation_provenance')
         selected.append(citation)
     return [item['evidence_id'] for item in selected], selected

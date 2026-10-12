@@ -130,6 +130,8 @@ def create_chat_app():
         try: capacity=validate_capacity(getattr(app.state,'chat_capacity',8))
         except StartupError: return signed_response(request,{'code':'capacity_invalid'},503)
         value={'v':2,'boot_id':app.state.chat_boot_id,'prompt_version':version,'capacity':capacity}
+        from app.core.config import get_settings
+        value['tool_protocol']='mock-direct-v1' if get_settings().llm_provider=='mock' else 'required-documentation-v1'
         resources=getattr(app.state,'chat_resources',None)
         if resources is not None:
             value.update(tokenizer_sha256=resources.tokenizer_sha256,response_schema_sha256=resources.response_schema_sha256,
@@ -209,6 +211,10 @@ def create_chat_app():
                 gateway=configured_gateway()
             except Exception: gateway=None
         if gateway is None: return signed_response(request,{'code':'chat_not_ready'},503)
+        if resources is not None:
+            from app.clients.mock_chat import MockChatGateway
+            if (claim['context']['tool_protocol']=='mock-direct-v1') != isinstance(gateway,MockChatGateway):
+                return signed_response(request,{'code':'tool_protocol_mismatch'},409)
         key=(claim['boot_id'],claim['attempt_id'])
         with app.state.chat_gate:
             attempts=app.state.chat_attempts
@@ -217,12 +223,23 @@ def create_chat_app():
             from app.core.chat_admission import main_allowed
             if len(attempts)>=4096 or not main_allowed(app,capacity):
                 return signed_response(request,{'code':'capacity_unavailable'},503)
-            attempts[key]={'deadline':claim['deadline']+30,'task':True}
+            attempts[key]={'deadline':claim['deadline']+30,'task':True,'claim':claim,
+                           'tool_future':None,'tool_consumed':False}
+
+        async def tool_result(assistant):
+            entry=app.state.chat_attempts[key]
+            if entry.get('assistant')!=assistant or entry['tool_future'] is None:
+                raise ValueError('Unknown pending tool.')
+            result=await asyncio.wait_for(asyncio.shield(entry['tool_future']),max(.001,claim['deadline']-time.time()-5))
+            if await asyncio.to_thread(owned,claim) is None or time.time()>=claim['deadline']-5:
+                raise ValueError('Tool claim no longer current.')
+            return result
 
         async def monitored_gateway():
             from app.clients.chat_gateway import diagnostic_scope
             with diagnostic_scope(claim.get('operation_id'),claim.get('attempt_id')):
-                iterator=gateway(claim['context'],claim['deadline']).__aiter__()
+                options={'tool_result':tool_result} if getattr(gateway,'requires_tool_result',False) and claim['context'].get('tool_protocol')=='required-documentation-v1' else {}
+                iterator=gateway(claim['context'],claim['deadline'],**options).__aiter__()
                 pending=None
                 try:
                     while True:
@@ -262,6 +279,15 @@ def create_chat_app():
                                     offset=end
                                 yield encode({'v':2,'type':'candidate_end','size':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'finish_reason':record.get('finish_reason'),'usage':record.get('usage')})+b'\n'
                                 return
+                            elif kind=='tool_call':
+                                from app.core.chat_resources import validate_search_call
+                                validate_search_call(record.get('assistant'))
+                                entry=app.state.chat_attempts[key]
+                                if claim['context'].get('tool_protocol')!='required-documentation-v1' or entry['tool_future'] is not None:
+                                    raise ValueError('Unexpected tool call.')
+                                entry['assistant']=record['assistant']
+                                entry['tool_future']=asyncio.get_running_loop().create_future()
+                                yield encode({'v':2,'type':'tool_call','assistant':record['assistant']})+b'\n'
                             elif kind=='delta':
                                 if not isinstance(record.get('text'),str) or len(record['text'].encode())>8192: raise ValueError('Delta limit.')
                                 yield encode({'v':2,'type':'delta','text':record['text']})+b'\n'
@@ -275,8 +301,43 @@ def create_chat_app():
             except Exception:
                 yield encode({'v':2,'type':'error','status':502,'category':'invalid_private_response'})+b'\n'
             finally:
-                app.state.chat_attempts[key]['task']=None
+                entry=app.state.chat_attempts[key]
+                entry['task']=None
+                if entry['tool_future'] is not None and not entry['tool_future'].done():
+                    entry['tool_future'].cancel()
         return StreamingResponse(stream(),media_type='application/x-ndjson',headers={'Cache-Control':'no-store'})
+
+    @app.post('/internal/chat/v2/attempts/{attempt_id}/tool-result')
+    async def accept_tool_result(attempt_id:str,request:Request):
+        try:
+            envelope=json.loads(request.state.chat_body)
+            if not isinstance(envelope,dict) or set(envelope)!={'v','claim','tool_result'} or envelope['v']!=2:
+                return signed_response(request,{'code':'invalid_tool_result'},409)
+            claim=envelope['claim']
+            if not isinstance(claim,dict) or claim.get('attempt_id')!=attempt_id or await asyncio.to_thread(owned,claim) is None:
+                return signed_response(request,{'code':'claim_not_current'},404)
+            entry=app.state.chat_attempts.get((claim['boot_id'],attempt_id))
+            if (entry is None or entry['task'] in (None,True) or encode(entry['claim'])!=encode(claim)
+                    or entry['tool_future'] is None or entry['tool_consumed'] or entry['tool_future'].done()
+                    or time.time()>=claim['deadline']-5):
+                return signed_response(request,{'code':'tool_not_pending'},409)
+            result=envelope['tool_result']
+            from app.core.chat_resources import continuation_messages
+            resources=getattr(app.state,'chat_resources',None)
+            if resources is None:
+                if os.getenv('CHAT_ENABLED','false').lower()=='true': raise ValueError('Resources unavailable.')
+                continuation_messages(claim['context'],entry['assistant'],result)
+            else:
+                resources.validate_tool_result(claim['context'],entry['assistant'],result)
+            if await asyncio.to_thread(owned,claim) is None or time.time()>=claim['deadline']-5:
+                return signed_response(request,{'code':'claim_not_current'},404)
+            if entry['tool_consumed'] or entry['tool_future'].done():
+                return signed_response(request,{'code':'tool_not_pending'},409)
+            entry['tool_consumed']=True
+            entry['tool_future'].set_result(result)
+            return signed_response(request,{'v':2,'accepted':True,'tool_call_id':result['tool_call_id']})
+        except Exception:
+            return signed_response(request,{'code':'invalid_tool_result'},409)
 
     @app.post('/internal/chat/v2/attempts/{attempt_id}/cancel')
     async def cancel(attempt_id:str,request:Request):

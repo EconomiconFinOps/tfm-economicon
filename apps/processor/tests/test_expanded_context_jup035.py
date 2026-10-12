@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]/'app/agents/prompt_resources/jup035'
 
 
 def test_expanded_chat_admits_over_old_ceiling():
-    resources = load_resources(ROOT/'chat/v2')
+    resources = load_resources(ROOT/'chat/v3')
     messages = [{'role': 'system', 'content': resources.system},
                 {'role': 'user', 'content': 'dato '*12000}]
     assert resources.check_messages(messages, chat_provider_schema()) > 8192
@@ -17,7 +17,7 @@ def test_expanded_chat_admits_over_old_ceiling():
 
 def test_configured_chat_limit_includes_system_schema_and_reserves(monkeypatch):
     monkeypatch.setenv('CHAT_CONTEXT_TOKENS', '16384')
-    resources = load_resources(ROOT/'chat/v2')
+    resources = load_resources(ROOT/'chat/v3')
     messages = [{'role': 'system', 'content': resources.system},
                 {'role': 'user', 'content': 'dato '*20000}]
     with pytest.raises(TokenBudgetExceeded):
@@ -47,4 +47,4 @@ def test_configured_summary_limit_counts_full_input_and_output(monkeypatch):
 def test_invalid_config_is_rejected_at_resource_load(monkeypatch, value):
     monkeypatch.setenv('CHAT_CONTEXT_TOKENS', value)
     with pytest.raises(ValueError):
-        load_resources(ROOT/'chat/v2')
+        load_resources(ROOT/'chat/v3')

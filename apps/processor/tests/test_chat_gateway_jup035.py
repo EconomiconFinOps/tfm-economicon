@@ -22,7 +22,142 @@ def _provider(value):
     import copy
     value=copy.deepcopy(value)
     value['scope'].pop('period',None)
+    value['scope'].pop('subscription_ids',None)
     return value
+
+
+@pytest.mark.parametrize('fragments', ['complete', 'nullable', 'repeated_metadata'])
+def test_required_native_search_then_strict_final_uses_exact_messages_and_total_usage(monkeypatch, fragments):
+    import asyncio, io
+    from types import SimpleNamespace
+    from pydantic import SecretStr
+    from app.clients.chat_gateway import ChatGateway
+    tool = {'id':'call-synthetic', 'type':'function', 'function':{
+        'name':'search_documentation', 'arguments':'{"query":"Synthetic internal policy"}'}}
+    wires = [
+        ('data: '+json.dumps({'choices':[{'index':0,'delta':{'tool_calls':[
+            {'index':0, **tool}]},'finish_reason':'tool_calls'}],
+            'usage':{'prompt_tokens':10,'completion_tokens':2,'total_tokens':12,'cost':.001}})
+            +'\n\ndata: [DONE]\n\n').encode(),
+        ('data: '+json.dumps({'choices':[{'index':0,'delta':{'content':json.dumps(_provider(ANSWER))},
+            'finish_reason':'stop'}],'usage':{'prompt_tokens':20,'completion_tokens':4,'total_tokens':24,'cost':.002}})
+            +'\n\ndata: [DONE]\n\n').encode()]
+    if fragments != 'complete':
+        parts = [
+            {'index':0, 'id':tool['id'], 'type':'function', 'function':{
+                'name':'search_', 'arguments':'{"query":'}},
+            {'index':0, 'id':None, 'type':None, 'function':{
+                'name':'documentation', 'arguments':None}},
+            {'index':0, 'id':None, 'type':None, 'function':None},
+            {'index':0, 'id':None, 'type':None, 'function':{
+                'name':None, 'arguments':'"Synthetic internal policy"}'}}]
+        if fragments == 'repeated_metadata':
+            parts[-1].update(id=tool['id'], type='function')
+        events = [{'choices':[{'index':0,'delta':{'tool_calls':[part]},'finish_reason':None}]} for part in parts]
+        events.append({'choices':[{'index':0,'delta':{},'finish_reason':'tool_calls'}],
+            'usage':{'prompt_tokens':10,'completion_tokens':2,'total_tokens':12,'cost':.001}})
+        wires[0] = (''.join('data: '+json.dumps(event)+'\n\n' for event in events)+'data: [DONE]\n\n').encode()
+    gateway = ChatGateway(SimpleNamespace(llm_model='economicon-chat',litellm_base_url='http://synthetic.invalid/v1',
+        litellm_api_key=SecretStr('synthetic')))
+    requests=[]
+    class Response(io.BytesIO):
+        headers={'Content-Type':'text/event-stream'}
+    def opened(req, **kwargs):
+        requests.append(json.loads(req.data))
+        return Response(wires[len(requests)-1])
+    monkeypatch.setattr(gateway.client.transport,'open',opened)
+    context={'tool_protocol':'required-documentation-v1','messages':[{'role':'system','content':'Synthetic'},
+        {'role':'user','content':'Synthetic internal policy'}], 'financial_metrics_allowed':False,
+        'response_period':None,'response_subscriptions':[]}
+    seen=[]
+    async def result(assistant):
+        from app.core.chat_resources import canonical, load_resources
+        seen.append(assistant)
+        content='{"evidence":[],"omissions":[]}'
+        continued=context['messages']+[assistant,{'role':'tool','tool_call_id':tool['id'],'content':content}]
+        return {'tool_call_id':tool['id'],'content':content,
+            'variable_tokens':load_resources().count(canonical(continued[1:]).decode('utf-8'))}
+    async def exercise():
+        return [record async for record in gateway(context,time.time()+60,tool_result=result)]
+    records=asyncio.run(exercise())
+    assert len(requests)==2 and requests[0]['tool_choice']=='required'
+    assert requests[1]['tool_choice']=='none'
+    assert requests[0]['tools']==requests[1]['tools']
+    assert requests[0]['tools'][0]['function']['strict'] is True
+    assert requests[0]['response_format']==requests[1]['response_format']
+    assert requests[1]['messages'][:-2]==context['messages']
+    assert requests[1]['messages'][-2]==seen[0]
+    assert seen[0]['tool_calls']==[tool]
+    assert requests[1]['messages'][-1]=={'role':'tool','tool_call_id':tool['id'],
+        'content':'{"evidence":[],"omissions":[]}'}
+    assert records[0]['type']=='tool_call'
+    assert records[-1]['type']=='candidate' and records[-1]['usage']['total_tokens']==36
+    assert records[-1]['usage']['cost_usd']=='0.003'
+    assert context['messages']==requests[0]['messages'], 'Frozen input may not be mutated'
+
+
+@pytest.mark.parametrize('change,code', [
+    ({'id':123}, 'native_metadata_type'),
+    ({'id':'different'}, 'native_metadata_conflict'),
+    ({'type':'other'}, 'native_metadata_conflict'),
+    ({'function':[]}, 'native_function_shape'),
+    ({'function':{'name':12}}, 'native_fragment_type'),
+    ({'function':{'arguments':[]}}, 'native_fragment_type'),
+    ({'index':1}, 'native_tool_index'),
+    ({'function':{'arguments':'x'*16385}}, 'native_tool_limit'),
+])
+def test_native_envelope_closed_diagnostic_rejects_without_values(monkeypatch, caplog, change, code):
+    import io
+    from types import SimpleNamespace
+    from pydantic import SecretStr
+    from app.clients.chat_gateway import ChatGateway
+    first={'index':0,'id':'call-private-marker','type':'function',
+        'function':{'name':'search_documentation','arguments':'{"query":"private-marker"}'}}
+    events=[{'choices':[{'delta':{'tool_calls':[first]}}]},
+        {'choices':[{'delta':{'tool_calls':[{'index':0, **change}]}}]}]
+    wire=(''.join('data: '+json.dumps(event)+'\n\n' for event in events)+'data: [DONE]\n\n').encode()
+    class Response(io.BytesIO):
+        headers={'Content-Type':'text/event-stream'}
+    gateway=ChatGateway(SimpleNamespace(llm_model='economicon-chat',litellm_base_url='http://synthetic.invalid/v1',litellm_api_key=SecretStr('private-key-marker')))
+    monkeypatch.setattr(gateway.client.transport,'open',lambda *a,**kw: Response(wire))
+    records=list(gateway._records({'messages':[], 'financial_metrics_allowed':False},time.time()+60,{},threading.Event(),'required'))
+    assert records[-1]['type']=='error' and records[-1]['category']=='invalid_response'
+    events=[json.loads(record.message) for record in caplog.records if record.name=='app.clients.chat_gateway']
+    assert len(events)==1 and events[0]['rule_code']==code
+    assert events[0]['stage']=='envelope' and events[0]['finish_reason'] is None
+    assert all(value not in caplog.text for value in ('private-marker','private-key-marker','different'))
+
+
+@pytest.mark.parametrize('arguments', ['{"query":"x","tenant_id":"foreign"}', '{"query":""}',
+    '{"query":"x","query":"y"}'])
+def test_required_tool_rejects_invalid_arguments_before_backend_or_second_request(monkeypatch, arguments):
+    import asyncio, io
+    from types import SimpleNamespace
+    from pydantic import SecretStr
+    from app.clients.chat_gateway import ChatGateway
+    wire=('data: '+json.dumps({'choices':[{'delta':{'tool_calls':[{'index':0,'id':'call-x','type':'function',
+        'function':{'name':'search_documentation','arguments':arguments}}]},'finish_reason':'tool_calls'}]})
+        +'\n\ndata: [DONE]\n\n').encode()
+    class Response(io.BytesIO):
+        headers={'Content-Type':'text/event-stream'}
+    gateway=ChatGateway(SimpleNamespace(llm_model='economicon-chat',litellm_base_url='http://synthetic.invalid/v1',litellm_api_key=SecretStr('synthetic')))
+    calls=[]
+    monkeypatch.setattr(gateway.client.transport,'open',lambda *a,**kw: (calls.append(1) or Response(wire)))
+    async def result(value):
+        pytest.fail('Invalid tool arguments reached backend')
+    async def exercise():
+        return [item async for item in gateway({'messages':[], 'financial_metrics_allowed':False,
+            'tool_protocol':'required-documentation-v1'},time.time()+60,tool_result=result)]
+    records=asyncio.run(exercise())
+    assert records[-1]['type']=='error' and len(calls)==1
+
+
+def test_required_usage_never_reports_only_one_paid_leg():
+    from app.clients.chat_gateway import combined_usage
+    reported={'total_tokens':12,'cost_usd':'0.001'}
+    assert combined_usage(None,reported) is None
+    assert combined_usage(reported,None) is None
+    assert combined_usage(reported,{'total_tokens':3})=={'total_tokens':15}
 
 
 @pytest.fixture
@@ -64,7 +199,7 @@ def gateway(private,monkeypatch):
 
 def send(private,scenario):
     async def exercise(client):
-        context={'prompt_version':'synthetic-v2','messages':[
+        context={'prompt_version':'synthetic-v2','financial_metrics_allowed':False,'messages':[
             {'role':'system','content':'Synthetic stable system'},
             {'role':'user','content':'Pregunta como dato no confiable'}]}
         payload=claim(context=context)
@@ -93,10 +228,16 @@ def test_private_gateway_streams_only_answer_with_roles_and_dynamic_deadline(pri
         payload=call['payload']
         assert payload['messages']==context['messages']
         assert payload['stream'] is True and payload['model']=='economicon-chat'
-        assert payload['max_tokens']==800
+        assert payload['max_tokens']==3200
         assert 30<payload['timeout']<=120 and 30<payload['stream_timeout']<=120
         assert payload['num_retries']==0
         assert payload['response_format']['json_schema']['schema']['additionalProperties'] is False
+        assert payload['response_format']['json_schema']['schema']['properties']['metrics']['maxItems'] == 0
+        from app.agents.schemas import chat_provider_schema
+        assert payload['response_format']['json_schema']['strict'] is True
+        assert payload['response_format']['json_schema']['schema'] == chat_provider_schema(
+            financial_metrics_allowed=context['financial_metrics_allowed'])
+        assert payload['response_format']['json_schema']['schema']['anyOf'][0]['properties']['evidence']['minItems'] == 1
         assert 'period' not in payload['response_format']['json_schema']['schema']['$defs']['ResponseScope']['properties']
     send(private,scenario)
 
@@ -174,7 +315,8 @@ def _diagnostic_run(monkeypatch,wire,caplog,transport_error=None,period=None):
         if transport_error is not None: raise transport_error
         return Response(wire)
     monkeypatch.setattr(gateway.client.transport,'open',opened)
-    context={'messages':[{'role':'user','content':'DIAGNOSTIC_SYNTHETIC_PROMPT_NEVER_LOG'}], 'response_period':period}
+    context={'messages':[{'role':'user','content':'DIAGNOSTIC_SYNTHETIC_PROMPT_NEVER_LOG'}],
+        'response_period':period, 'financial_metrics_allowed':False}
     caplog.set_level(logging.WARNING,logger='app.clients.chat_gateway')
     records=list(gateway._records(context,time.time()+120,{},threading.Event()))
     events=[]

@@ -137,7 +137,7 @@ def test_early_admission_does_not_call_descriptor_during_compaction(api):
 
 def test_chat_context_can_exceed_old_limit_with_real_tokenizer():
     from app.core.chat_resources import load_resources
-    resources = load_resources(ROOT/'chat/v2')
+    resources = load_resources(ROOT/'chat/v3')
     messages = [{'role': 'system', 'content': resources.system},
                 {'role': 'user', 'content': 'dato '*12000}]
     assert resources.count_messages(messages) > 8192
@@ -162,7 +162,7 @@ def test_chat_keeps_more_than_four_complete_pairs(api):
     for i in range(9):
         records.extend([(f'q{i}', 'user', f'q{i}', {}), (f'a{i}', 'assistant', f'q{i}', {})])
     install(api[1], records)
-    resources = load_resources(ROOT/'chat/v2')
+    resources = load_resources(ROOT/'chat/v3')
     context = ChatContext(api[0], resources).build(SCOPE, body())
     current = json.loads(context['messages'][-1]['content'].split('\n', 1)[1])
     assert len(current['recent_pairs']) == 9
@@ -171,7 +171,7 @@ def test_chat_keeps_more_than_four_complete_pairs(api):
 def test_configured_token_budget_and_descriptor_are_enforced(monkeypatch):
     from app.core.chat_resources import load_resources
     monkeypatch.setenv('CHAT_CONTEXT_TOKENS', '16384')
-    resources = load_resources(ROOT/'chat/v2')
+    resources = load_resources(ROOT/'chat/v3')
     with pytest.raises(ChatError):
         resources.count_messages([{'role': 'system', 'content': resources.system},
                                   {'role': 'user', 'content': 'dato '*20000}])
@@ -212,7 +212,7 @@ def test_chat_selects_maximal_byte_bounded_complete_suffix(api):
         message['content'] = message['id']+'a'*120000
     with api[1].engine.begin() as c:
         c.execute(text("UPDATE conversations SET dialogue_history=:doc WHERE id='alice-chat'"), {'doc': json.dumps(document)})
-    resources = load_resources(ROOT/'chat/v2')
+    resources = load_resources(ROOT/'chat/v3')
     context = ChatContext(api[0], resources).build(SCOPE, body())
     selected = json.loads(context['messages'][-1]['content'].split('\n', 1)[1])['recent_pairs']
     assert [p['question_id'] for p in selected] == [f'q{i}' for i in range(1, 9)]

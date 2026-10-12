@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from datetime import date
 from enum import Enum
 from typing import Annotated, Literal
@@ -95,21 +96,44 @@ class ResponseScope(StrictModel):
     period: Period | None
 
 
-def chat_provider_schema():
+def chat_provider_schema(*, financial_metrics_allowed=False):
+    if type(financial_metrics_allowed) is not bool:
+        raise ValueError('Invalid financial authority control.')
     schema = FinOpsResponse.model_json_schema()
     scope = schema['$defs']['ResponseScope']
     scope['properties'].pop('period')
     scope['required'].remove('period')
+    scope['properties'].pop('subscription_ids')
+    scope['required'].remove('subscription_ids')
     schema['$defs'].pop('Period')
+    if not financial_metrics_allowed:
+        schema['properties']['metrics']['maxItems'] = 0
+    # Complete branches preserve every base constraint, sharing root definitions.
+    branch_base = {key: value for key, value in schema.items() if key != '$defs'}
+    actionable = copy.deepcopy(branch_base)
+    abstention = copy.deepcopy(branch_base)
+    actionable['properties']['status'] = {'type': 'string', 'enum': ['ok', 'partial']}
+    actionable['properties']['evidence']['minItems'] = 1
+    abstention['properties']['status'] = {'type': 'string', 'enum': [
+        status for status in schema['$defs']['ResponseStatus']['enum']
+        if status not in ('ok', 'partial')]}
+    schema['anyOf'] = [actionable, abstention]
     return schema
 
 
-def assemble_chat_response(value, period):
+def assemble_chat_response(value, period, subscriptions=None):
     if not isinstance(value, dict) or not isinstance(value.get('scope'), dict):
         raise ValueError('Invalid response scope.')
     if 'period' in value['scope']:
         raise ValueError('Period is server-owned.')
-    assembled = {**value, 'scope': {**value['scope'], 'period': period}}
+    if 'subscription_ids' in value['scope']:
+        raise ValueError('Subscriptions are server-owned.')
+    selected = [] if subscriptions is None else subscriptions
+    if (not isinstance(selected, list) or len(selected) > 20
+            or any(type(item) is not str or not item or len(item) > 256 for item in selected)
+            or selected != sorted(set(selected))):
+        raise ValueError('Invalid canonical subscriptions.')
+    assembled = {**value, 'scope': {**value['scope'], 'period': period, 'subscription_ids': selected}}
     return FinOpsResponse.model_validate(assembled).model_dump(mode='json', by_alias=True)
 
 

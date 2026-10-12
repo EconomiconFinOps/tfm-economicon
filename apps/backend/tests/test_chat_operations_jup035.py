@@ -164,6 +164,51 @@ def test_completed_pair_and_stream_are_confirmed_together(api):
     run(scenario,api)
 
 
+def test_required_tool_extension_validates_and_persists_only_recovered_sources(api, monkeypatch):
+    import copy
+    source={'id':'manual:4','kind':'corpus','title':'Synthetic manual','source':'synthetic'}
+    full={**source,'content':'Review before scheduling.'}
+    citation={'evidence_id':'manual:4','title':'Synthetic manual','source':'synthetic',
+        'reference':'document:manual/chunk:4','excerpt':full['content'],
+        'kind':'corpus','document_id':'manual','section':None,'page':None}
+    calls=[];extensions=[];claims=[]
+    assistant={'role':'assistant','content':None,'tool_calls':[{'id':'call-synthetic','type':'function',
+        'function':{'name':'search_documentation','arguments':'{"query":"Review rule"}'}}]}
+    async def build(scope,payload,descriptor):
+        return {'prompt_version':'synthetic-v2','tool_protocol':'required-documentation-v1',
+            'messages':[], 'authorized_evidence':[],'source_citations':[],
+            'financial_metrics_allowed':False,'response_period':None,'response_subscriptions':[]}
+    async def extension(scope,context,call,deadline):
+        calls.append((scope,call,deadline))
+        assert context['authorized_evidence']==[] and context['financial_metrics_allowed'] is False
+        effective={**context,'authorized_evidence':[full],'source_citations':[citation]}
+        return {'tool_call_id':'call-synthetic','content':'Synthetic trusted result','variable_tokens':0},effective
+    build.tool_extension=extension
+    monkeypatch.setattr(api[0].state,'chat_context_builder',build)
+    async def stream(claim):
+        claims.append(copy.deepcopy(claim))
+        yield {'type':'tool_call','assistant':assistant}
+        assert len(extensions)==1
+        yield {'type':'candidate','finish_reason':'stop','result':{**ANSWER,'status':'partial',
+            'answer':full['content'],'evidence':[source]}}
+    async def send(claim,result):extensions.append((copy.deepcopy(claim),result))
+    monkeypatch.setattr(api[2],'stream',stream)
+    monkeypatch.setattr(api[2],'tool_result',send,raising=False)
+    async def scenario(client):
+        response=await client.post(path(),json=body(),headers=headers())
+        assert 'event: final' in response.text,response.text
+        assert len(claims)==1 and len(calls)==1
+        assert calls[0][0]=={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
+        assert extensions[0][0]==claims[0], 'Initial signed claim must stay frozen'
+        saved=messages(api[1])
+        assert len(saved)==2
+        metadata=next(item['metadata'] for item in saved if item['role']=='assistant')
+        assert metadata['citations']==['manual:4'] and metadata['source_citations']==[citation]
+        reopened=api[1].fetch_messages('alice-chat','t','alice')
+        assert len(reopened)==2
+    run(scenario,api)
+
+
 def test_reservation_idempotency_busy_and_stop_without_history(api):
     async def scenario(c):
         api[2].release=asyncio.Event()

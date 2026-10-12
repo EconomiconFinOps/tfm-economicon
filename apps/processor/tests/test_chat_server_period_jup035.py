@@ -8,6 +8,7 @@ from test_chat_gateway_jup035 import ANSWER, _diagnostic_run, _diagnostic_wire
 def provider_answer():
     value = copy.deepcopy(ANSWER)
     value['scope'].pop('period')
+    value['scope'].pop('subscription_ids')
     return value
 
 

@@ -149,7 +149,7 @@ def test_bad_summary_bundle_fails_closed_signed_and_does_not_break_main(summary_
         assert result.json()=={'code':'summary_not_ready'};response_signature(result,headers)
         assert 'SYNTHETIC_SUMMARY_PRIVATE_RULE' not in result.text and str(root) not in result.text
         main=await client.get('/internal/chat/v2/descriptor',headers=signed('GET','/internal/chat/v2/descriptor'))
-        assert main.status_code==200 and main.json()['prompt_version'].startswith('jup-035.chat.v2:')
+        assert main.status_code==200 and main.json()['prompt_version'].startswith('jup-035.chat.v3:')
         assert summary_bundle[0][3]==[]
     exercise(summary_bundle,scenario)
 

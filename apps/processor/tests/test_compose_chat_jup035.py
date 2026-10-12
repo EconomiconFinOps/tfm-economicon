@@ -49,7 +49,8 @@ def test_dockerfiles_resolve_locks_together_and_validate_bundled_assets(service)
     assert 'app.core.chat_resources' in dockerfile and 'app.core.summary_resources' in dockerfile
     assert 'USER economicon' in dockerfile
     if service == 'backend':
-        assert 'COPY apps/processor/app/agents/prompt_resources/jup035/chat/v2 /opt/economicon/chat/v2' in dockerfile
+        assert 'COPY apps/processor/app/agents/prompt_resources/jup035/chat/v3 /opt/economicon/chat/v3' in dockerfile
+        assert 'COPY apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json /opt/economicon/chat/v3/tokenizer.json' in dockerfile
         assert 'COPY apps/processor/app/agents/prompt_resources/jup035/summary /opt/economicon/summary' in dockerfile
 
 

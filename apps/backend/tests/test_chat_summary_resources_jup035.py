@@ -57,7 +57,7 @@ def summary_bundle(api,tmp_path,monkeypatch):
     for name in ['system.md','input.md','schema.json','manifest.json']:shutil.copyfile(BUNDLE/name,root/name)
     asset=ROOT/'apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json'
     monkeypatch.setenv('CHAT_ENABLED','true')
-    monkeypatch.setenv('CHAT_RESOURCE_DIRECTORY',str(asset.parent))
+    monkeypatch.setenv('CHAT_RESOURCE_DIRECTORY',str(asset.parent.parent/'v3'))
     monkeypatch.setenv('CHAT_TOKENIZER_FILE',str(asset))
     monkeypatch.setenv('SUMMARY_RESOURCE_DIRECTORY',str(root))
     monkeypatch.setattr(api[0].state,'chat_resources',None,raising=False)
