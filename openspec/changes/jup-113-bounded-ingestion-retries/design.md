@@ -232,8 +232,10 @@ decisión 2, que dejaba el límite sin definir.
 
 ## Risks / Trade-offs
 
-- **Una caída de pgvector o de los embeddings de más de unos 2 s marca `failed` los trabajos en
-  cola**, que hoy esperarían, y hay que volver a enviarlos → el fallo queda registrado y dispara la
+- **Una caída de pgvector o de los embeddings que cubra los dos intentos marca `failed` los trabajos
+  en cola**, que hoy esperarían, y hay que volver a enviarlos. Medido en el stack real con pgvector
+  parado: unos 10 s hasta el descarte (dos intentos de unos 4 s separados por la espera de 2 s); un
+  fallo que se rechace más rápido lo acortaría → el fallo queda registrado y dispara la
   alerta de JUP-045; se documenta en el ADR y en el README del processor. Distinguir esa caída de un
   fallo del trabajo queda como mejora posterior.
 - **Nadie ve en la interfaz que un trabajo quedó `failed`** (`RF-104-003`) → fuera de alcance; el

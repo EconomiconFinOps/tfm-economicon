@@ -59,10 +59,13 @@ seguro.
 
 **Más difícil o arriesgado.**
 
-- **Coste aceptado:** una caída de pgvector o de los embeddings de más de unos 2 s marca `failed`
-  los trabajos en cola, que hoy esperarían, y hay que volver a enviarlos. El fallo queda en la
-  base, en los registros y en la alerta de JUP-045; la interfaz no lo muestra porque no existe
-  lectura del estado de un trabajo (`RF-104-003`).
+- **Coste aceptado:** una caída de pgvector o de los embeddings que cubra los dos intentos marca
+  `failed` los trabajos en cola, que hoy esperarían, y hay que volver a enviarlos. Medido en el stack
+  real con pgvector parado (2026-10-12): el primer intento falla a los ~4 s, el worker espera 2 s y el
+  segundo vuelve a fallar a los ~4 s, de modo que el trabajo se descarta a los ~10 s del envío; el
+  worker se recupera solo al volver pgvector, pero el trabajo descartado queda `failed` y no se
+  reprocesa. El fallo queda en la base, en los registros y en la alerta de JUP-045; la interfaz no lo
+  muestra porque no existe lectura del estado de un trabajo (`RF-104-003`).
 - Una reentrega causada por un reinicio del worker deja ese trabajo sin reintento.
 - Sin estado legible o registrable, el reencolado sigue sin tope. Es deliberado y es el único caso
   en que el bucle original puede persistir; lo causa el almacén y no el mensaje.

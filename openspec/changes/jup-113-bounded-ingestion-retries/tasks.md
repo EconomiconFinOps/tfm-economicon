@@ -91,14 +91,16 @@ del backend (`RF-105-004`).
 
 ## 6. Comprobación con servicios reales (opt-in, fuera de CI)
 
-- [ ] 6.1 Prueba opt-in en `apps/processor/tests/test_tenant_isolation_integration.py`, con el broker
-  y las bases reales de sus fixtures: un trabajo guardado con `source` no admitido seguido de uno
+- [x] 6.1 Prueba opt-in en un archivo nuevo, `apps/processor/tests/test_ingestion_retry_integration.py`
+  (`test_tenant_isolation_integration.py` está commiteado y bloqueado, y se reutilizan sus fixtures),
+  con el broker y las bases reales de sus fixtures: un trabajo guardado con `source` no admitido seguido de uno
   válido de otro tenant; el primero queda `failed`, el segundo `completed` y la cola vacía.
-- [ ] 6.2 Prueba opt-in: un fallo no clasificado se reencola una vez, la reentrega llega con
+- [x] 6.2 Prueba opt-in: un fallo no clasificado se reencola una vez, la reentrega llega con
   `redelivered=True`, vuelve a fallar y la cola queda vacía con el trabajo en `failed`.
-- [ ] 6.3 Ejecutar las dos en contenedor con servicios aislados y anotar en la evidencia los
-  comandos, los resultados y que CI las omite (`RF-096-004`).
-- [ ] 6.4 Repetir la reproducción de 1.2 con Compose sobre la rama: la API responde 422; un trabajo
+- [x] 6.3 Ejecutar las dos con servicios aislados y anotar en la evidencia los comandos, los resultados y
+  que CI las omite (`RF-096-004`). Se ejecutaron con el entorno virtual local (Windows) contra contenedores
+  desechables, no dentro de un contenedor Linux.
+- [x] 6.4 Repetir la reproducción de 1.2 con Compose sobre la rama: la API responde 422; un trabajo
   envenenado insertado como preexistente se descarta en una entrega; un trabajo válido de otro tenant
   publicado después se completa. Anotar qué muestra la pantalla de ingesta ante el 422, sin cambiar
   su código; si no es comprensible, registrar un finding.

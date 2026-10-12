@@ -164,3 +164,14 @@ Ninguna.
 - Alcance: solo esa línea. Las cuatro aserciones de `requeue=True` siguen sin tocarse.
 - Alternativas descartadas: registrar un nombre de tipo distinto del real solo para contentar a la
   prueba, y rediseñar sin subclase (obligaba a rehacer los 32 casos del Red ya commiteado).
+
+### Adenda: corrección de la cifra del coste aceptado
+
+- Fecha: 2026-10-12. Origen: medición con pgvector parado en el stack real (tarea 6.4).
+- El texto aprobado decía «una caída de pgvector o de los embeddings de más de unos 2 s». Es inexacto: el
+  trabajo se descarta tras dos intentos, y con pgvector parado cada intento tarda unos 4 s en fallar y el
+  worker espera 2 s entre ambos, es decir, unos 10 s hasta el descarte. La caída que provoca el coste es la
+  que cubre los dos intentos, y su duración depende de cómo falle la dependencia.
+- La decisión no cambia: el coste aceptado es el mismo (trabajos en cola descartados como `failed` que hay
+  que reenviar). Se corrigen la cifra en `design.md` y en `ADR-0019`, y el texto anterior de esta aprobación
+  se conserva como registro histórico.

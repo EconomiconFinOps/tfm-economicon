@@ -538,3 +538,35 @@ comprobación opt-in con servicios reales del grupo 6. Solo se ejecuta la varian
 
 **DoD:** no se ejecutó `check-dod.mjs` completo en este grupo; el processor completo pasa (810 pasan, 65 se
 omiten, 0 fallan) y la regresión completa en contenedor Linux, lint y type-check son las tareas 8.1 y 8.3.
+
+## Grupo 6 — Comprobación con servicios reales
+
+Mutación N/A para este grupo: no cambia código de producto; las pruebas nuevas verifican con servicios
+reales lo que los grupos 2 a 5 ya implementaron, así que no hay fase Red ni Green propias. El valor del
+grupo está en que lo que antes solo se demostraba con dobles se ejecuta ahora contra el broker, la base y el
+almacén vectorial reales. Resultados y comandos en `docs/evidence/JUP-113-validation.md`
+(«Pruebas con servicios reales» y «Recorrido con Compose sobre la rama»).
+
+- **Tareas 6.1 a 6.3.** `tests/test_ingestion_retry_integration.py` (15 casos, opt-in): **15 pasan** con
+  CockroachDB `v24.1.11`, pgvector `pg17` y RabbitMQ 3.13.7 desechables; 15 se omiten sin las variables;
+  contra la **base** (`develop` en `8511fb1f`, con las mismas pruebas) **11 fallan y 4 pasan**: el envenenado se
+  entrega 10 veces y el válido de otro tenant nunca se procesa, el reintento con la marca real se ejecuta 10 veces en vez de 2,
+  y los 7 resultados JSONB que no son objeto no se rechazan (6 se aceptan con `ack` y el JSON texto `"x"`
+  se reencola 10 veces); otros 2 casos fallan por API inexistente (`QueueMessage` sin `redelivered`), no por
+  comportamiento: 9 por comportamiento y 2 por API. Un complemento temporal que fuerza `redelivered` a `False` también
+  hace fallar los casos de reintento por aserción. Las pruebas se ejecutaron con el entorno virtual local
+  (Windows) contra contenedores, no dentro de un contenedor Linux, y **CI no las ejecuta** (`RF-096-004`).
+- **Tarea 6.4.** Con Compose sobre la rama: el envenenado que seguía en la cola se descarta en una entrega
+  (`job_input_rejected` una vez, sin `worker_loop_failed`) y el trabajo válido de `tenant-growth` retenido se
+  completa; la API responde 422 a `Azure Cost Management` sin crear trabajo, 202 al valor por defecto
+  `aws-cur` y 202 a ` Azure-Cost ` guardándolo literal; y, con pgvector parado, un trabajo válido se
+  descarta como `failed` a los ~10 s tras dos intentos mientras el worker se recupera solo al volver pgvector.
+- **Correcciones a mis afirmaciones anteriores.** (1) La cifra del coste aceptado («más de unos 2 s») era
+  inexacta: son ~10 s con pgvector parado; corregida en `design.md` y en el ADR-0019, con una adenda en la
+  aprobación que conserva el texto histórico. (2) La QA del grupo 4 dijo que el escenario «reentrega sin fallo
+  anterior» quedaba para el grupo 6: queda ejecutado en el caso de la primera entrega interrumpida.
+- **Finding para la tarea 7.5.** La pantalla de ingesta muestra el cuerpo crudo del 422
+  (`{"detail":[{"type":"validation_error","msg":"Invalid request value"}]}`), sin nombrar el campo Source ni el
+  formato admitido. Leído en `IngestPage.tsx` y `services/api.ts`; no ejecutado en navegador.
+- **No cubierto, y no se afirma:** el rendimiento o la carga, un LLM o embeddings reales, un clúster de varios
+  nodos, la pantalla en navegador y la ejecución de estas pruebas en CI.
