@@ -59,7 +59,7 @@ def _payload(job: dict, *, persisted: bool = False) -> dict:
     return {"artifact_uri": None, "metadata": {}, **payload}
 
 
-def _stored_result(result) -> dict:
+def _stored_result(result, stored_as_text: bool = True) -> dict:
     """Devuelve el resultado guardado de un trabajo `completed` como objeto, o lo rechaza (RF-054-001).
 
     Se rechaza con `InvalidJobMessage` y no se relanza el error de decodificacion: el worker
@@ -68,8 +68,19 @@ def _stored_result(result) -> dict:
     se reencolaba y fallaba igual sin fin).
     Se usa `from None` y nunca se formatea el valor: el resultado guardado puede contener
     datos del tenant y no debe aparecer en el mensaje, la excepcion ni la traza.
+
+    `stored_as_text` lo declara el repositorio y decide como se interpreta un `str`:
+    - `True` (SQLite, solo pruebas): el objeto se guarda serializado como texto, asi que un
+      `str` se decodifica con `json.loads` y el resultado debe ser un objeto.
+    - `False` (JSONB sobre CockroachDB/psycopg): el controlador ya decodifico el valor, asi que
+      un `str` es una CADENA JSON y nunca un objeto. Decodificarla otra vez convertiria `{}`,
+      `{"ok":1}` o `null` en `dict`/`None` y se aceptaria un resultado que no lo es; por eso se
+      rechaza sin mirar su contenido. No basta con rechazar todo `str` siempre: SQLite lo
+      necesita decodificar.
     """
     if isinstance(result, str):
+        if not stored_as_text:
+            raise InvalidJobMessage("Invalid job message.") from None
         try:
             result = json.loads(result)
         except (ValueError, RecursionError):
@@ -110,7 +121,12 @@ class IngestTask:
         ):
             raise InvalidJobMessage("Invalid job message.")
         if stored["status"] == "completed":
-            return _stored_result(stored.get("result"))
+            # El valor por defecto es `True` y no `False`: los dobles y `MagicMock` de otras
+            # pruebas no declaran el atributo y siempre se han comportado como texto
+            # serializado; un `False` por defecto cambiaria su comportamiento sin motivo.
+            # El repositorio real (que si lo declara) es quien fija `False` sobre CockroachDB.
+            stored_as_text = getattr(self.repository, "json_stored_as_text", True)
+            return _stored_result(stored.get("result"), stored_as_text)
 
         self.repository.mark_running(job_id, **scope)
         try:
