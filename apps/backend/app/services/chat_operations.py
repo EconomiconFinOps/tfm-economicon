@@ -7,6 +7,7 @@ from email.utils import parsedate_to_datetime
 from uuid import uuid4
 
 from app.db.chat_repository import ChatError, ChatRepository, TERMINAL
+from app.core.chat_calculations import CalculationError
 from app.schemas.chat import canonical, validate_response, reported_usage, response_citations, ResponseValidationError
 
 
@@ -292,8 +293,8 @@ class ChatOperations:
             logger.warning('chat_backend_diagnostic %s', canonical({
                 'operation_id': row['operation_id'],
                 'attempt_id': row['current_attempt_id'],
-                'stage': 'response_validation' if isinstance(error, ResponseValidationError) else 'stream_processing',
-                'rule_code': error.rule_code if isinstance(error, ResponseValidationError) else 'invalid_stream',
+                'stage': 'calculation_validation' if isinstance(error, CalculationError) else 'response_validation' if isinstance(error, ResponseValidationError) else 'stream_processing',
+                'rule_code': error.rule_code if isinstance(error, (ResponseValidationError, CalculationError)) else 'invalid_stream',
             }))
             await self._error(scope,row,False,reason='invalid_response')
         finally:

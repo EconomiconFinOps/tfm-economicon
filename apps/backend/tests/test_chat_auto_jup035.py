@@ -7,6 +7,20 @@ import pytest
 from test_chat_operations_jup035 import ANSWER, api, body, headers, messages, path, run
 
 
+def test_calculation_diagnostic_is_closed_and_contains_no_rejected_text(api, monkeypatch, caplog):
+    from app.core.chat_calculations import CalculationError
+    async def stream(claim):
+        raise CalculationError('secret synthetic payload should not be logged')
+        yield
+    monkeypatch.setattr(api[2], 'stream', stream)
+    async def scenario(client):
+        response = await client.post(path(), json=body(), headers=headers())
+        assert 'event: final' not in response.text and messages(api[1]) == []
+    run(scenario, api)
+    assert 'calculation_validation' in caplog.text and 'calculation_invalid' in caplog.text
+    assert 'secret synthetic payload' not in caplog.text
+
+
 def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch):
     from app.core.chat_calculations import CalculationStream, calculate, render_text
     question = 'Ejemplo hipotético: 73 EUR y 20 EUR.'

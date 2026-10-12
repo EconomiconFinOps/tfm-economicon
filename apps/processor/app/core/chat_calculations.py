@@ -9,6 +9,17 @@ import json
 import re
 from decimal import Decimal, DecimalException, localcontext
 
+
+
+CALCULATION_RULES = {'Currency conversion unsupported.': 'calculation_currency_conversion_unsupported', 'Calculation derived unit limit.': 'calculation_derived_unit_limit', 'Calculation plan limit.': 'calculation_plan_limit', 'Calculation step shape.': 'calculation_step_shape', 'Calculation operand.': 'calculation_operand', 'Calculation forward reference.': 'calculation_forward_reference', 'Calculation unit.': 'calculation_unit', 'Calculation input unavailable.': 'calculation_input_unavailable', 'Calculation reference unit.': 'calculation_reference_unit', 'Calculation literal absent from question.': 'calculation_literal_absent_from_question', 'Calculation unit absent from question.': 'calculation_unit_absent_from_question', 'Incompatible calculation units.': 'calculation_incompatible_calculation_units', 'Dimensioned multiplication unsupported.': 'calculation_dimensioned_multiplication_unsupported', 'Calculation denominator zero.': 'calculation_denominator_zero', 'Calculation magnitude limit.': 'calculation_magnitude_limit', 'Calculation precision limit.': 'calculation_precision_limit', 'Calculation text type.': 'calculation_text_type', 'Free numeric equation forbidden.': 'calculation_free_numeric_equation_forbidden', 'Unknown calculation slot.': 'calculation_unknown_calculation_slot', 'Incomplete calculation slot.': 'calculation_incomplete_calculation_slot', 'Calculation stream limit.': 'calculation_stream_limit'}
+
+
+class CalculationError(ValueError):
+    def __init__(self, message):
+        self.rule_code = CALCULATION_RULES.get(message, 'calculation_invalid')
+        super().__init__(message)
+
+
 OPERATORS = ('add','subtract','multiply','divide','percentage','gt','gte','lt','lte','eq')
 OPERAND = r'^(?:-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,12})?|@[0-9]{1,2})$'
 PLAN_SCHEMA = {'type':'array','maxItems':12,'items':{'type':'object','properties':{
@@ -29,25 +40,25 @@ def quotient_unit(left, right):
     # conversion is deliberately absent; retain ordinary cost/count dimensions.
     lm={part for part in re.split(r'[/ *]',left.upper()) if part in MONETARY_UNITS}
     rm={part for part in re.split(r'[/ *]',right.upper()) if part in MONETARY_UNITS}
-    if lm and rm and lm!=rm: raise ValueError('Currency conversion unsupported.')
+    if lm and rm and lm!=rm: raise CalculationError('Currency conversion unsupported.')
     unit=(left or '1')+'/'+right
-    if len(unit)>32: raise ValueError('Calculation derived unit limit.')
+    if len(unit)>32: raise CalculationError('Calculation derived unit limit.')
     return unit
 
 
 def validate_plan(plan):
-    if not isinstance(plan,list) or len(plan)>12: raise ValueError('Calculation plan limit.')
+    if not isinstance(plan,list) or len(plan)>12: raise CalculationError('Calculation plan limit.')
     for index, step in enumerate(plan):
         if not isinstance(step,dict) or set(step)!=FIELDS or step['operator'] not in OPERATORS:
-            raise ValueError('Calculation step shape.')
+            raise CalculationError('Calculation step shape.')
         for side in ('left','right'):
             value=step[side];unit=step[side+'_unit']
             if not isinstance(value,str) or re.fullmatch(OPERAND,value) is None:
-                raise ValueError('Calculation operand.')
-            if value.startswith('@') and int(value[1:])>=index: raise ValueError('Calculation forward reference.')
+                raise CalculationError('Calculation operand.')
+            if value.startswith('@') and int(value[1:])>=index: raise CalculationError('Calculation forward reference.')
             if (not isinstance(unit,str) or len(unit)>32 or unit!=unit.strip()
                     or any(ord(char)<32 for char in unit)):
-                raise ValueError('Calculation unit.')
+                raise CalculationError('Calculation unit.')
     return plan
 
 
@@ -57,7 +68,7 @@ def question_text(context):
         if text.startswith('UNTRUSTED_CURRENT_CONTEXT\n'):
             value=json.loads(text.split('\n',1)[1]).get('question')
             if isinstance(value,str): return value
-    raise ValueError('Calculation input unavailable.')
+    raise CalculationError('Calculation input unavailable.')
 
 
 def _literals(text):
@@ -84,11 +95,11 @@ def calculate(context, plan):
         if raw.startswith('@'):
             index=int(raw[1:])
             value,expected=values[index]
-            if isinstance(value,bool) or expected!=unit: raise ValueError('Calculation reference unit.')
+            if isinstance(value,bool) or expected!=unit: raise CalculationError('Calculation reference unit.')
         else:
             value=Decimal(raw)
-            if value not in literals: raise ValueError('Calculation literal absent from question.')
-            if unit and unit.casefold() not in question.casefold(): raise ValueError('Calculation unit absent from question.')
+            if value not in literals: raise CalculationError('Calculation literal absent from question.')
+            if unit and unit.casefold() not in question.casefold(): raise CalculationError('Calculation unit absent from question.')
         return value,unit
     try:
         with localcontext() as precision:
@@ -96,21 +107,21 @@ def calculate(context, plan):
             for index,step in enumerate(plan):
                 left,lu=operand(step,'left');right,ru=operand(step,'right');op=step['operator']
                 if op in ('add','subtract','percentage','gt','gte','lt','lte','eq') and lu!=ru:
-                    raise ValueError('Incompatible calculation units.')
+                    raise CalculationError('Incompatible calculation units.')
                 if op=='add': value=left+right;unit=lu;symbol='+'
                 elif op=='subtract': value=left-right;unit=lu;symbol='−'
                 elif op=='multiply':
-                    if lu and ru: raise ValueError('Dimensioned multiplication unsupported.')
+                    if lu and ru: raise CalculationError('Dimensioned multiplication unsupported.')
                     value=left*right;unit=lu or ru;symbol='×'
                 elif op in ('divide','percentage'):
-                    if right==0: raise ValueError('Calculation denominator zero.')
+                    if right==0: raise CalculationError('Calculation denominator zero.')
                     value=left/right*(100 if op=='percentage' else 1)
                     unit='%' if op=='percentage' else quotient_unit(lu,ru);symbol='/'
                 else:
                     value={'gt':left>right,'gte':left>=right,'lt':left<right,'lte':left<=right,'eq':left==right}[op]
                     unit='';symbol={'gt':'>','gte':'>=','lt':'<','lte':'<=','eq':'=='}[op]
                 if not isinstance(value,bool) and (not value.is_finite() or abs(value)>Decimal('1e18')):
-                    raise ValueError('Calculation magnitude limit.')
+                    raise CalculationError('Calculation magnitude limit.')
                 values.append((value,unit))
                 shown='verdadero' if value is True else 'falso' if value is False else _display(value)
                 # Never round the operands: doing so could turn a correct
@@ -125,7 +136,7 @@ def calculate(context, plan):
                 equation=lhs+' '+relation+' '+shown+((' '+unit) if unit else '')
                 records.append({'id':str(index),'value':shown,'unit':unit,'equation':equation,'hypothetical':True})
     except DecimalException as failure:
-        raise ValueError('Calculation precision limit.') from failure
+        raise CalculationError('Calculation precision limit.') from failure
     return records
 
 
@@ -136,15 +147,15 @@ _FREE_EQUATION=re.compile(_NUMBER+_UNIT+r'\s*(?:[+×*/xX÷]|-(?!>)|>=?|<=?|==)\s
 
 
 def render_text(text, records):
-    if not isinstance(text,str): raise ValueError('Calculation text type.')
+    if not isinstance(text,str): raise CalculationError('Calculation text type.')
     normalized=text.replace('−','-').replace('**','').replace('__','').replace('`','')
-    if _FREE_EQUATION.search(normalized): raise ValueError('Free numeric equation forbidden.')
+    if _FREE_EQUATION.search(normalized): raise CalculationError('Free numeric equation forbidden.')
     def replace(match):
         identifier=match.group(1)
-        if not identifier.isdecimal() or int(identifier)>=len(records): raise ValueError('Unknown calculation slot.')
+        if not identifier.isdecimal() or int(identifier)>=len(records): raise CalculationError('Unknown calculation slot.')
         return records[int(identifier)]['equation']
     result=re.sub(r'\[\[calc:([^\]]*)\]\]',replace,text)
-    if '[[calc:' in result: raise ValueError('Incomplete calculation slot.')
+    if '[[calc:' in result: raise CalculationError('Incomplete calculation slot.')
     return result
 
 
@@ -159,7 +170,7 @@ class CalculationStream:
 
     def feed(self, text, final=False):
         self.pending+=text
-        if len(self.pending)>16384: raise ValueError('Calculation stream limit.')
+        if len(self.pending)>16384: raise CalculationError('Calculation stream limit.')
         if final:
             result=render_text(self.pending,self.records);self.pending='';return result
         # Decimal points and punctuation inside a slot cannot terminate a unit.
