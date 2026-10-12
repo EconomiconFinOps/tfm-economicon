@@ -39,7 +39,7 @@ export function ExecutiveCutDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-bold text-foreground">Dashboard Ejecutivo - Corte Global</h2>
+          <h2 className="font-bold text-foreground">Panel Ejecutivo - Corte Global</h2>
           <p className="text-sm text-muted-foreground">Seguimiento de iniciativas de optimización y ahorro</p>
         </div>
         <ExportButton data={exportData} filename="corte-global-ejecutivo" />

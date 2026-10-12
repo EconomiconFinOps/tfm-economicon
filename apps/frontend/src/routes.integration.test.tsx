@@ -60,15 +60,15 @@ function stubSession() {
 }
 
 describe("Arbol de rutas real: abrir una direccion directamente presenta su pantalla", () => {
-  it("presenta OperationalCostDashboard al abrir /operational directamente, no la ruta indice", async () => {
+  it("presenta IngestPage al abrir /ingest directamente, no la ruta indice", async () => {
     // Cubre frontend-navigation-shell: "Abrir directamente la direccion de
-    // una pantalla" -- con sesion establecida, abrir /operational debe
+    // una pantalla" -- con sesion establecida, abrir /ingest debe
     // presentar esa pantalla, no ExecutiveCostDashboard (la ruta indice de
     // "/").
     stubSession();
 
-    // OperationalCostDashboard usa datos de demostracion estaticos: solo
-    // hace falta mockear /tenants, que SessionGate consulta en su bootstrap.
+    // IngestPage no consulta nada al montarse: solo hace falta mockear
+    // /tenants, que SessionGate consulta en su bootstrap.
     vi.stubGlobal(
       "fetch",
       vi.fn<typeof fetch>(async (input) => {
@@ -83,21 +83,21 @@ describe("Arbol de rutas real: abrir una direccion directamente presenta su pant
       })
     );
 
-    renderRoutes(["/operational"]);
+    renderRoutes(["/ingest"]);
 
     await waitFor(() => {
-      expect(screen.getByText("Dashboard Operativo - Coste Detallado")).toBeInTheDocument();
+      expect(screen.getByText("Crear trabajo de ingesta")).toBeInTheDocument();
     });
 
     // Aserción negativa complementaria: el encabezado de la ruta indice
     // (ExecutiveCostDashboard) no debe estar presente -- confirma que se
-    // presento /operational, no "/".
-    expect(screen.queryByText("Dashboard Ejecutivo - Coste Global")).toBeNull();
+    // presento /ingest, no "/".
+    expect(screen.queryByText("Panel Ejecutivo - Coste Global")).toBeNull();
   });
 });
 
 describe("Arbol de rutas real: el ambito activo sobrevive a la navegacion", () => {
-  it("conserva el tenant seleccionado tras navegar de la raiz a /operational", async () => {
+  it("conserva el tenant seleccionado tras navegar de la raiz a /ingest", async () => {
     // Cubre frontend-navigation-shell: "El ambito seleccionado sobrevive a la
     // navegacion" -- se selecciona un tenant distinto del auto-seleccionado
     // y, tras navegar a otra pantalla via un enlace real del Layout, el
@@ -128,29 +128,29 @@ describe("Arbol de rutas real: el ambito activo sobrevive a la navegacion", () =
     // con la lista vacia de localStorage al arrancar, auto-selecciona "t1".
     // Esperamos a que el selector este disponible antes de cambiarlo.
     await waitFor(() => {
-      expect(screen.getByRole("combobox", { name: /ambito de cliente/i })).toHaveValue("t1");
+      expect(screen.getByRole("combobox", { name: /ámbito de cliente/i })).toHaveValue("t1");
     });
 
-    const selector = screen.getByRole("combobox", { name: /ambito de cliente/i });
+    const selector = screen.getByRole("combobox", { name: /ámbito de cliente/i });
     fireEvent.change(selector, { target: { value: "t2" } });
 
-    // Navegacion real via el NavLink del Layout hacia /operational (no
-    // navegacion imperativa de prueba): "Coste Detallado" es la etiqueta del
-    // item de navegacion a esa ruta (Layout.tsx:17).
-    fireEvent.click(screen.getByText("Coste Detallado"));
+    // Navegacion real via el NavLink del Layout hacia /ingest (no
+    // navegacion imperativa de prueba): "Ingesta" es la etiqueta del
+    // item de navegacion a esa ruta.
+    fireEvent.click(screen.getByText("Ingesta"));
 
     await waitFor(() => {
-      expect(screen.getByText("Dashboard Operativo - Coste Detallado")).toBeInTheDocument();
+      expect(screen.getByText("Crear trabajo de ingesta")).toBeInTheDocument();
     });
 
     // El selector, ya en la nueva pantalla, sigue mostrando "t2": el cambio
     // de tenant sobrevivio a la navegacion entre pantallas.
-    expect(screen.getByRole("combobox", { name: /ambito de cliente/i })).toHaveValue("t2");
+    expect(screen.getByRole("combobox", { name: /ámbito de cliente/i })).toHaveValue("t2");
   });
 });
 
 describe("Arbol de rutas real: sin sesion se presenta el acceso", () => {
-  it("redirige a /login al abrir /operational directamente sin sesion establecida", async () => {
+  it("redirige a /login al abrir /ingest directamente sin sesion establecida", async () => {
     // Cubre frontend-navigation-shell: "Sin sesion establecida se presenta el
     // acceso" -- abrir CUALQUIER direccion protegida sin sesion (no solo "/")
     // debe presentar la pantalla de acceso.
@@ -162,10 +162,10 @@ describe("Arbol de rutas real: sin sesion se presenta el acceso", () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal("fetch", fetchSpy);
 
-    renderRoutes(["/operational"]);
+    renderRoutes(["/ingest"]);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /iniciar sesión/i })).toBeInTheDocument();
     });
 
     expect(fetchSpy).not.toHaveBeenCalled();

@@ -176,7 +176,7 @@ async function waitApi(pred, ms = 15000) {
 }
 
 async function selectTenant(page, name) {
-  const sel = page.getByLabel("Ambito de cliente");
+  const sel = page.getByLabel("Ámbito de cliente");
   await sel.selectOption({ label: name });
   must((await sel.locator("option:checked").innerText()) === name, `el selector no quedo en ${name}`);
 }
@@ -208,16 +208,16 @@ async function demoMarks(page) {
   }));
 }
 async function askAssistant(page, question) {
-  await nav(page, "Assistant");
+  await nav(page, "Asistente");
   await page.getByPlaceholder("New conversation title").waitFor();
   const tNew = Date.now();
-  await page.getByRole("button", { name: "New", exact: true }).click();
+  await page.getByRole("button", { name: "Nueva", exact: true }).click();
   const created = await waitApi((e) => e.t >= tNew && e.method === "POST" && e.path === "/assistant/conversations" && e.body, 15000);
   const box = page.getByPlaceholder("Ask the assistant about the ingested tenant documents.");
   await box.waitFor();
   const t0 = Date.now();
   await box.fill(question);
-  await page.getByRole("button", { name: "Send", exact: true }).click();
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
   const reply = await waitApi((e) => e.t >= t0 && e.method === "POST" && /\/messages$/.test(e.path), 30000);
   must(reply.status === 201, `POST mensaje respondio ${reply.status}`);
   const text = reply.body.assistant_message.content;
@@ -257,19 +257,19 @@ function fragments(text) {
 
   await step("4.1", "Acceso por el formulario", [], async (obs) => {
     await page.goto(`${BASE}/login`);
-    await page.getByRole("heading", { name: "Access the tenant control tower" }).waitFor();
+    await page.getByRole("heading", { name: "Accede al centro de control de clientes" }).waitFor();
     obs(`correo precargado: ${await page.locator("#login-email").inputValue()}`);
     await page.locator("#login-password").fill(PASSWORD);
     const t0 = Date.now();
-    await page.getByRole("button", { name: "Sign in" }).click();
-    await page.getByLabel("Ambito de cliente").waitFor({ timeout: 20000 });
+    await page.getByRole("button", { name: "Iniciar sesión" }).click();
+    await page.getByLabel("Ámbito de cliente").waitFor({ timeout: 20000 });
     const login = apiSince(t0, (e) => e.path === "/auth/login")[0];
     must(login && login.status === 200, `login respondio ${login && login.status}`);
     const hasSession = await page.evaluate(() => Boolean(localStorage.getItem("finops.session")));
     must(hasSession, "la aplicacion no creo la sesion");
     obs("POST /auth/login 200 desde el navegador; sesion creada por la aplicacion (solo se comprueba que existe)");
     obs(`respuestas de /me y /tenants: ${apiSince(t0).filter((e) => ["/me", "/tenants"].includes(e.path)).map((e) => `${e.path} ${e.status}`).join(", ")}`);
-    obs(`ambitos del selector: ${(await page.getByLabel("Ambito de cliente").locator("option").allInnerTexts()).join(" | ")}`);
+    obs(`ambitos del selector: ${(await page.getByLabel("Ámbito de cliente").locator("option").allInnerTexts()).join(" | ")}`);
     obs(`identidad en la cabecera: ${(await page.locator("header p.text-xs").first().innerText())}`);
     await snap("acceso");
   });
@@ -334,15 +334,15 @@ function fragments(text) {
 
   await step("5.1", "Ingesta desde la interfaz (Growth Ops)", ["4.1"], async (obs) => {
     await selectTenant(page, "Growth Ops");
-    await nav(page, "Ingestions");
+    await nav(page, "Ingesta");
     await page.locator("#ingest-source").fill("assistant-corpus");
     await page.locator("#ingest-artifact-uri").fill(DOC_PATH);
     await page.locator("#ingest-text-content").fill(DOC);
     obs(`documento ${DOC_PATH}: ${Buffer.byteLength(DOC)} bytes, SHA-256 ${DOC_SHA}`);
     state.ingestStart = new Date().toISOString();
     const t0 = Date.now();
-    await page.getByRole("button", { name: "Queue ingestion" }).click();
-    await page.getByText("Job accepted").waitFor({ timeout: 20000 });
+    await page.getByRole("button", { name: "Encolar ingesta" }).click();
+    await page.getByText("Trabajo aceptado").waitFor({ timeout: 20000 });
     const post = apiSince(t0, (e) => e.path === "/jobs/ingest")[0];
     must(post && post.status === 202, `POST /jobs/ingest respondio ${post && post.status}`);
     const vals = await page.locator("strong").allInnerTexts();
@@ -426,11 +426,11 @@ function fragments(text) {
   await step("6.3", "Recarga del historial (RF-087-002)", ["6.1"], async (obs) => {
     const t0 = Date.now();
     await page.reload();
-    await page.getByLabel("Ambito de cliente").waitFor({ timeout: 20000 });
-    await page.getByLabel("Ambito de cliente").selectOption({ label: "Growth Ops" });
-    await nav(page, "Assistant");
+    await page.getByLabel("Ámbito de cliente").waitFor({ timeout: 20000 });
+    await page.getByLabel("Ámbito de cliente").selectOption({ label: "Growth Ops" });
+    await nav(page, "Asistente");
     const isMine = (e) => e.t >= t0 && e.method === "GET" && e.path === `/assistant/conversations/${state.growth.convId}`;
-    await page.getByText("Assistant chat").waitFor();
+    await page.getByText("Chat con el asistente").waitFor();
     await sleep(3000);
     if (!seen.some(isMine)) {
       // La aplicacion selecciona la primera conversacion de la lista; si no es la de este recorrido, se abre pulsandola.
@@ -450,16 +450,16 @@ function fragments(text) {
 
   await step("6.3b", "Segunda conversacion en el mismo ambito: el mensaje va a la conversacion nueva", ["6.1"], async (obs) => {
     await selectTenant(page, "Growth Ops");
-    await nav(page, "Assistant");
+    await nav(page, "Asistente");
     const list = await page.locator("button", { hasText: "Ops review" }).count();
     await page.getByPlaceholder("New conversation title").fill("Segunda conversacion");
     const t0 = Date.now();
-    await page.getByRole("button", { name: "New", exact: true }).click();
+    await page.getByRole("button", { name: "Nueva", exact: true }).click();
     const created = await waitApi((e) => e.t >= t0 && e.method === "POST" && e.path === "/assistant/conversations" && e.body, 15000);
     const box = page.getByPlaceholder("Ask the assistant about the ingested tenant documents.");
     await box.waitFor();
     await box.fill("Comprobacion: a que conversacion va este mensaje?");
-    await page.getByRole("button", { name: "Send", exact: true }).click();
+    await page.getByRole("button", { name: "Enviar", exact: true }).click();
     const sent = await waitApi((e) => e.t >= t0 && e.method === "POST" && e.path.endsWith("/messages"), 30000);
     const usedId = sent.path.split("/")[3];
     obs(`conversaciones previas en Growth Ops con titulo 'Ops review': ${list}; conversacion creada: ${created.body.id}; el mensaje se envio a: ${usedId}`);
@@ -486,11 +486,11 @@ function fragments(text) {
   });
 
   await step("6.5", "Cierre de sesion y ruta protegida", ["4.1"], async (obs) => {
-    await page.getByRole("button", { name: "Cerrar sesion" }).click();
-    await page.getByRole("heading", { name: "Access the tenant control tower" }).waitFor({ timeout: 10000 });
+    await page.getByRole("button", { name: "Cerrar sesión" }).click();
+    await page.getByRole("heading", { name: "Accede al centro de control de clientes" }).waitFor({ timeout: 10000 });
     obs(`tras cerrar sesion se presenta el acceso (${new URL(page.url()).pathname})`);
     await page.goto(`${BASE}/assistant`);
-    await page.getByRole("heading", { name: "Access the tenant control tower" }).waitFor({ timeout: 10000 });
+    await page.getByRole("heading", { name: "Accede al centro de control de clientes" }).waitFor({ timeout: 10000 });
     obs(`abrir /assistant directamente termina en ${new URL(page.url()).pathname}`);
     const left = await page.evaluate(() => Boolean(localStorage.getItem("finops.session")));
     must(!left, "queda sesion guardada");

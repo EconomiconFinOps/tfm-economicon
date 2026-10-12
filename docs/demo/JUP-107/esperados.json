@@ -192,8 +192,8 @@
       "screen": "none",
       "limits": true,
       "action": "Sin tocar la pantalla.",
-      "say": "Para acabar, los límites: Recomendaciones, Corte global y Coste detallado usan datos fijos de la maqueta, y el ahorro potencial no está disponible.",
-      "expect": "Nada que comprobar en pantalla. Esas pantallas (`/recommendations`, `/cuts`, `/operational`) no leen los costes cargados: no abrirlas como si lo hicieran."
+      "say": "Para ser claros con los límites: son datos sintéticos y el ahorro potencial no está disponible.",
+      "expect": "Nada que comprobar en pantalla. Coste Detallado, Corte Global y Recomendaciones (`/operational`, `/cuts`, `/recommendations`) ya no se publican: no abrirlas."
     },
     {
       "id": "D11",

@@ -80,9 +80,9 @@ describe("LoginPage", () => {
     renderRouter(router);
 
     // La password empieza vacia; el caso aporta una credencial sintetica.
-    expect(screen.getByLabelText("Password")).toHaveValue("");
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "synthetic-login-password" } });
-    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+    expect(screen.getByLabelText("Contraseña")).toHaveValue("");
+    fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "synthetic-login-password" } });
+    fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     // Tras el exito de la mutacion, LoginPage navega a "/": la sonda
     // "Area protegida" confirma que RouterProvider cambio de ruta.

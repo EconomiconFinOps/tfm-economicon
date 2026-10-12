@@ -57,10 +57,9 @@ describe("armazón de marca", () => {
   });
 
   it("las pestañas de navegación caben a 1280 px con la barra de desplazamiento vertical", () => {
-    // jsdom no mide el diseño: la anchura (1242 px frente a los 1265 disponibles) se comprobó en Chrome
-    // real; este test fija el relleno que la hace posible (con px-3 la fila necesita 1314 px).
+    // jsdom no mide el diseño: con 9 pestañas la fila medía 1242 px de 1265 en Chrome y con px-3 pasaba a 1314; se conserva el relleno compacto para que reactivar pantallas ocultas no desborde.
     const tabs = [...renderLayout().querySelectorAll("nav a")];
-    expect(tabs).toHaveLength(9);
+    expect(tabs).toHaveLength(5);
     for (const tab of tabs) {
       expect(tab.className).toContain("px-2");
       expect(tab.className).not.toContain("px-3");

@@ -422,7 +422,7 @@ class PackageTests(unittest.TestCase):
 
     def test_the_recipe_watches_failed_requests_and_error_responses_and_scopes_the_tenant_by_label(self):
         code = "\n".join(re.findall(r"(?s)```js\n(.*?)```", self.read("receta-navegador.md")))
-        for needle in ("requestfailed", "page.on('response'", "status() >= 400", "getByLabel('Ambito de cliente')"):
+        for needle in ("requestfailed", "page.on('response'", "status() >= 400", "getByLabel('Ámbito de cliente')"):
             self.assertIn(needle, code, needle)
         self.assertNotIn("locator('select')", code)
         self.assertNotRegex(code, r"addInitScript|routeFromHAR|unroute|console\.\w+\([^)]*\bPASSWORD\b")

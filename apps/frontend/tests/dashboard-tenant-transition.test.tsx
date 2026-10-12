@@ -40,7 +40,7 @@ describe("dashboard tenant transition", () => {
     // Se cambia al segundo tenant, cuya respuesta de /billing/summary queda
     // deliberadamente sin resolver (southPending.promise nunca se entrega
     // todavia).
-    await user.selectOptions(screen.getByLabelText("Ambito de cliente"), tenants[1].id);
+    await user.selectOptions(screen.getByLabelText("Ámbito de cliente"), tenants[1].id);
 
     // Comportamiento bajo prueba: mientras la respuesta del tenant nuevo
     // sigue pendiente, el dato del tenant ANTERIOR ya no debe estar visible
@@ -49,7 +49,7 @@ describe("dashboard tenant transition", () => {
     // cuando payload es null (queryKey ["billing-summary", tenantId] cambio
     // de valor, isLoading vuelve a true).
     expect(screen.queryByText(new RegExp(billing.monthly_spend))).not.toBeInTheDocument();
-    expect(await screen.findByRole("heading", { name: "Connecting to the FinOps control plane..." })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Conectando con el plano de control FinOps..." })).toBeVisible();
 
     // Al resolver la respuesta pendiente, el dashboard adopta el dato
     // correcto del tenant nuevo (y solo ese).

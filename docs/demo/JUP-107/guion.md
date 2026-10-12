@@ -80,8 +80,8 @@ Antes de empezar, seguir [preparacion.md](preparacion.md) hasta tener los datos 
 
 - **Duración:** 5 s
 - **Acción:** Sin tocar la pantalla.
-- **Qué decir:** «Para acabar, los límites: Recomendaciones, Corte global y Coste detallado usan datos fijos de la maqueta, y el ahorro potencial no está disponible.»
-- **Resultado esperado:** Nada que comprobar en pantalla. Esas pantallas (`/recommendations`, `/cuts`, `/operational`) no leen los costes cargados: no abrirlas como si lo hicieran.
+- **Qué decir:** «Para ser claros con los límites: son datos sintéticos y el ahorro potencial no está disponible.»
+- **Resultado esperado:** Nada que comprobar en pantalla. Coste Detallado, Corte Global y Recomendaciones (`/operational`, `/cuts`, `/recommendations`) ya no se publican: no abrirlas.
 
 ### D11 · Opcional: un importe fuera del rango seguro
 

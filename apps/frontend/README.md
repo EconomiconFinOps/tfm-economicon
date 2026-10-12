@@ -16,6 +16,8 @@ Aqui vive la parte visual del sistema:
 - chat con el asistente
 - resumen de billing y salud del sistema
 
+La interfaz esta en español. El vocabulario y las excepciones en inglés están en [GLOSARIO.md](GLOSARIO.md).
+
 ## Stack
 
 - `React` 18
@@ -86,22 +88,40 @@ Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el
 | --- | --- | --- | --- | --- |
 | `/login` | `LoginPage` | Backend (`POST /auth/login`) | No aplica | Fuera de `SessionGate`; crea la sesión |
 | `/` | `ExecutiveCostDashboard` | Backend (`GET /billing/summary` v2) | No aplica | Costes almacenados: intervalo mensual, desglose, tendencia y comparación del primer/último mes observado con coste no cero por moneda (JUP-055) |
-| `/operational` | `OperationalCostDashboard` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
-| `/cuts` | `ExecutiveCutDashboard` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
 | `/anomalies` | `AnomaliesPanel` | Backend (`GET /billing/anomalies/episodes`, `POST /billing/anomalies/detect`, `PATCH /billing/anomalies/episodes/{id}`) | No aplica | Episodios guardados del cliente activo; avisa «Datos sintéticos de demostración» cuando el cliente tiene ingestas sintéticas (JUP-114) |
-| `/recommendations` | `RecommendationsPanel` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
 | `/ingest` | `IngestPage` | Backend (`POST /jobs/ingest`) | No aplica | Vía `services/api.ts` |
 | `/assistant` | `ConversationsPage` | Backend (`/assistant/conversations`) | No aplica | Vía `services/api.ts` |
-| `/overview-legacy` | `DashboardPage` | Backend (`GET /billing/summary`, `GET /health`) | No aplica | Ruta puente conservada; ver `RF-105-001` en `openspec/findings/backlog.md` |
+| `/overview-legacy` | `DashboardPage` | Backend (`GET /billing/summary`, `GET /health`) | No aplica | Ruta puente sin entrada de menú (JUP-116); ver `RF-105-001` en `openspec/findings/backlog.md` |
 | `/system-health` | `SystemHealthDashboard` | Backend (`GET /health/status`, `POST /health/provider-check`) | No aplica | Rotula «Datos de ejemplo» por componente cuando su origen es `mock` (JUP-047) |
 
-**Recuento (verificado el 2026-10-12 contra `src/routes.tsx` y los imports de cada pantalla, en la rama
-`feat/JUP-114-anomaly-circuit`):** 9 rutas bajo sesión más `/login`. 6 sirven datos del backend (`/`,
-`/anomalies`, `/ingest`, `/assistant`, `/overview-legacy`, `/system-health`) y 3 son de demostración
-(`/operational`, `/cuts`, `/recommendations`), y ninguna de las tres lo indica en la interfaz
-(`RF-104-004`). Este es el único recuento de pantallas del repositorio: el backlog, el mapa de
-carencias de JUP-097 y el spike enlazan aquí en lugar de repetir cifras. Quien añada, retire o
-conecte una pantalla actualiza esta tabla y la fecha.
+**Recuento (verificado el 2026-10-13 contra `src/routes.tsx` y `src/layouts/Layout.tsx`, en la rama
+`feat/JUP-114-anomaly-circuit` sobre `develop` en `0643e1b`):** 6 rutas bajo sesión más `/login`. Las 6
+sirven datos del backend (`/`, `/anomalies`, `/ingest`, `/assistant`, `/overview-legacy`, `/system-health`) y
+ninguna es de demostración. El menú enlaza cinco: `/`, `/anomalies`,
+`/ingest`, `/assistant` y `/system-health`; `/overview-legacy` se conserva sin enlace. Otras tres
+pantallas de demostración (Coste Detallado, Corte Global y Recomendaciones) existen en el código pero no
+están publicadas: ver la sección siguiente. Una dirección que no corresponde a ninguna ruta lleva a `/`.
+Este es el único recuento de pantallas del repositorio: el backlog, el mapa de carencias de JUP-097 y el
+spike enlazan aquí en lugar de repetir cifras. Quien añada, retire o conecte una pantalla actualiza esta
+tabla y la fecha.
+
+### Pantallas no publicadas
+
+JUP-116 las ocultó del MVP sin borrarlas: no tienen ruta ni entrada de menú, pero siguen en `src/pages/`
+con sus datos de demostración en `src/data/demo/` y sus pruebas, que montan el componente directamente
+(por eso siguen pasando aunque la pantalla no sea alcanzable).
+
+| Rótulo | Antigua ruta | Pantalla | Datos |
+| --- | --- | --- | --- |
+| Coste Detallado | `/operational` | `OperationalCostDashboard` | `src/data/demo/operationalCostDashboard.ts` |
+| Corte Global | `/cuts` | `ExecutiveCutDashboard` | `src/data/demo/executiveCutDashboard.ts` |
+| Recomendaciones | `/recommendations` | `RecommendationsPanel` | `src/data/demo/recommendationsPanel.ts` |
+
+Para reactivar una, en `src/routes.tsx` se importa la pantalla y se añade su ruta junto a las demás hijas
+de `Layout`, y en `src/layouts/Layout.tsx` se añade su entrada a `navItems`. Antes hay que rotular sus datos
+como de demostración (`RF-104-004`) y ajustar las pruebas de menú de `Layout.test.tsx` y de rutas ocultas en
+`routes.hidden-screens.test.tsx`. Las capacidades de backend que necesitan para tener datos reales están en
+[`docs/planning/JUP-097-frontend-data-gap-map.md`](../../docs/planning/JUP-097-frontend-data-gap-map.md).
 
 ## Estilos y colores
 
@@ -237,8 +257,8 @@ pnpm build
   ya no muestra inventario, tendencia ni exportación de demostración. El ahorro potencial sigue
   no disponible porque el contrato no lo calcula.
 - El panel `/anomalies` lee los episodios guardados del cliente activo (JUP-114): detección bajo demanda,
-  detalle con cambio de estado y exportación; los importes se muestran como texto exacto con su moneda.
-- Las otras tres pantallas de coste (`/operational`, `/cuts`, `/recommendations`)
+  detalle con cambio de estado y exportación solo en CSV; los importes se muestran como texto exacto con su moneda.
+- Las otras pantallas de coste (Coste Detallado, Corte Global y Recomendaciones, sin ruta)
   conservan los datos de demostración estáticos (`src/data/demo/`; recuento en la sección «Rutas»);
   los gaps restantes de `RF-095-002` en `openspec/findings/backlog.md` no se dan por resueltos por
   JUP-055.

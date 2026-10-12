@@ -15,7 +15,7 @@ Está pensada para dos usos con los mismos pasos: respuesta con hechos en la ron
 
 Qué usa y qué no:
 
-- Los costes cargados los leen el dashboard ejecutivo (`/`) y la vista heredada `/overview-legacy`; la demo usa el dashboard ejecutivo. El panel de Anomalías lee los episodios guardados del cliente y se usa en D12 con el conjunto sintético de anomalías ([anomalias.md](anomalias.md)) en Core Finance. Las pantallas de Coste detallado, Corte global y Recomendaciones usan datos fijos de la maqueta y **no se usan** como evidencia.
+- Los costes cargados los leen el dashboard ejecutivo (`/`) y la vista heredada `/overview-legacy`; la demo usa el dashboard ejecutivo. El panel de Anomalías lee los episodios guardados del cliente y se usa en D12 con el conjunto sintético de anomalías ([anomalias.md](anomalias.md)) en Core Finance. Las pantallas de Coste detallado, Corte global y Recomendaciones ya no se publican (JUP-116).
 - La demo de JUP-065 y el recorrido de JUP-104 suponen `tenant-growth` sin costes: se prepara en un stack propio y termina con `remove`.
 
 Comprobación automática de las cifras (sin base de datos, también en CI):

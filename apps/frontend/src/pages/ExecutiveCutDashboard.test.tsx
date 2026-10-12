@@ -23,7 +23,7 @@ describe("ExecutiveCutDashboard", () => {
     // Encabezado de la seccion: distingue esta vista de las otras cuatro
     // (comparten estructura de KPIs, no queremos falsos positivos).
     expect(
-      screen.getByText("Dashboard Ejecutivo - Corte Global"),
+      screen.getByText("Panel Ejecutivo - Corte Global"),
     ).toBeInTheDocument();
 
     // KPI principal: valor tal cual viene en los datos de demostracion del
