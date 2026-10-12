@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "descripcion": "Valores esperados de la evaluacion de anomalias sobre el conjunto sintetico de scripts/synthetic_anomalies.py. Calculados a mano con importes enteros; una prueba los recalcula con suma exacta sin usar el servicio de anomalias. Datos sinteticos: no son facturas de Azure ni proceden del dataset publico.",
+  "tenant": "tenant-core",
+  "currency": "EUR",
+  "group_by": "service",
+  "rules": {
+    "absolute_threshold": "2000.00",
+    "deviation_threshold_percent": "50.00",
+    "min_absolute_increase": "100.00"
+  },
+  "periods": {
+    "baseline": {"start": "2026-09-01", "end": "2026-09-08"},
+    "current": {"start": "2026-09-08", "end": "2026-09-15"}
+  },
+  "groups": [
+    {
+      "service": "Compute", "baseline_cost": "1000.00", "current_cost": "2400.00",
+      "baseline_record_count": 2, "current_record_count": 3,
+      "delta_amount": "1400.00", "deviation_percent": "140.00",
+      "threshold_status": "triggered", "deviation_status": "triggered",
+      "trigger_reasons": ["absolute_threshold", "period_increase"]
+    },
+    {
+      "service": "Analytics", "baseline_cost": "2200.00", "current_cost": "2300.00",
+      "baseline_record_count": 2, "current_record_count": 2,
+      "delta_amount": "100.00", "deviation_percent": "4.55",
+      "threshold_status": "triggered", "deviation_status": "below",
+      "trigger_reasons": ["absolute_threshold"]
+    },
+    {
+      "service": "Storage", "baseline_cost": "800.00", "current_cost": "820.00",
+      "baseline_record_count": 2, "current_record_count": 2,
+      "delta_amount": "20.00", "deviation_percent": "2.50",
+      "threshold_status": "below", "deviation_status": "below",
+      "trigger_reasons": []
+    },
+    {
+      "service": "Database", "baseline_cost": "1500.00", "current_cost": "1200.00",
+      "baseline_record_count": 2, "current_record_count": 2,
+      "delta_amount": "-300.00", "deviation_percent": "-20.00",
+      "threshold_status": "below", "deviation_status": "below",
+      "trigger_reasons": []
+    },
+    {
+      "service": "Tools", "baseline_cost": "10.00", "current_cost": "40.00",
+      "baseline_record_count": 1, "current_record_count": 1,
+      "delta_amount": "30.00", "deviation_percent": "300.00",
+      "threshold_status": "below", "deviation_status": "below",
+      "trigger_reasons": []
+    },
+    {
+      "service": "Backup", "baseline_cost": "0.00", "current_cost": "300.00",
+      "baseline_record_count": 1, "current_record_count": 1,
+      "delta_amount": "300.00", "deviation_percent": null,
+      "threshold_status": "below", "deviation_status": "baseline_nonpositive",
+      "trigger_reasons": []
+    },
+    {
+      "service": "Networking", "baseline_cost": null, "current_cost": "600.00",
+      "baseline_record_count": null, "current_record_count": 1,
+      "delta_amount": null, "deviation_percent": null,
+      "threshold_status": "below", "deviation_status": "baseline_missing",
+      "trigger_reasons": []
+    }
+  ],
+  "alerts": ["Analytics", "Compute"]
+}

@@ -128,6 +128,8 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "assistant-metrics:test",
     "assistant-eval:test",
     "synthetic-costs:test",
+    "synthetic-demo:test",
+    "synthetic-anomalies:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
     "docker:validate",
