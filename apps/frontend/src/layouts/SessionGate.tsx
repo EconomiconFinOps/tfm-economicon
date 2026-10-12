@@ -239,8 +239,8 @@ export function SessionGate() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <section className="rounded-lg border border-border bg-card px-8 py-6 text-center shadow-lg">
-          <p className="text-sm uppercase tracking-wide text-muted-foreground">Tenant bootstrap</p>
-          <h1 className="mt-2 font-bold">Cargando tenants disponibles...</h1>
+          <p className="text-sm uppercase tracking-wide text-muted-foreground">Arranque de la sesión</p>
+          <h1 className="mt-2 font-bold">Cargando clientes disponibles...</h1>
         </section>
       </div>
     );
@@ -252,8 +252,8 @@ export function SessionGate() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <section className="rounded-lg border border-border bg-card px-8 py-6 text-center shadow-lg">
-          <p className="text-sm uppercase tracking-wide text-muted-foreground">Tenant bootstrap failed</p>
-          <h1 className="mt-2 font-bold">No se han podido cargar los tenants</h1>
+          <p className="text-sm uppercase tracking-wide text-muted-foreground">Fallo al arrancar la sesión</p>
+          <h1 className="mt-2 font-bold">No se han podido cargar los clientes</h1>
           <p className="mt-2 text-sm text-muted-foreground">{message}</p>
           <button
             className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
@@ -267,7 +267,7 @@ export function SessionGate() {
             // lambda garantiza el motivo neutro por defecto (tarea 3.3).
             onClick={() => handleLogout()}
           >
-            Reset session
+            Restablecer sesión
           </button>
         </section>
       </div>
@@ -286,7 +286,7 @@ export function SessionGate() {
     activeTenant,
     activeTenantId,
     onTenantChange: handleTenantChange,
-    // Envuelto igual que el boton "Reset session" (mas arriba): `onLogout`
+    // Envuelto igual que el boton "Restablecer sesión" (mas arriba): `onLogout`
     // se expone como `() => void` y `Layout.tsx` lo usa como `onClick`
     // nativo, que le pasaria el `MouseEvent` como `reason` si se reenviara
     // `handleLogout` directo. La lambda fuerza el motivo neutro por defecto.

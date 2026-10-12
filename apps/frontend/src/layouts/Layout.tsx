@@ -58,13 +58,10 @@ export function Layout() {
   // escribiendo la URL a mano. Se listan en un grupo separado, con un
   // separador visual respecto a las 5 de arriba, para no confundir datos de
   // demostracion (navItems) con datos reales del backend (backendNavItems).
-  // Etiquetas en ingles porque son las mismas que ya usan estas tres
-  // pantallas (Create ingestion job, Assistant chat...), a diferencia de las
-  // 5 de demostracion (traducidas del origen Figma).
   const backendNavItems = [
-    { path: "/ingest", label: "Ingestions", icon: Upload },
-    { path: "/assistant", label: "Assistant", icon: MessageSquare },
-    { path: "/overview-legacy", label: "Overview", icon: LayoutDashboard },
+    { path: "/ingest", label: "Ingesta", icon: Upload },
+    { path: "/assistant", label: "Asistente", icon: MessageSquare },
+    { path: "/overview-legacy", label: "Resumen", icon: LayoutDashboard },
     { path: "/system-health", label: "Salud del sistema", icon: Activity },
   ];
 
@@ -89,7 +86,7 @@ export function Layout() {
                 queda ausente, tal como exige Layout.selector.test.tsx. */}
             {tenants && activeTenantId !== undefined && onTenantChange ? (
               <select
-                aria-label="Ambito de cliente"
+                aria-label="Ámbito de cliente"
                 className="rounded-lg border border-brand-foreground/30 bg-brand px-3 py-2 text-sm text-brand-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-foreground"
                 value={activeTenantId}
                 onChange={(event) => onTenantChange(event.target.value)}
@@ -114,7 +111,7 @@ export function Layout() {
                   type="button"
                   onClick={onLogout}
                   className="ml-2 rounded-lg p-2 text-brand-foreground/75 hover:bg-brand-foreground/10 hover:text-brand-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-foreground"
-                  aria-label="Cerrar sesion"
+                  aria-label="Cerrar sesión"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>

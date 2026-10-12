@@ -28,7 +28,7 @@ describe("ExecutiveCostDashboard", () => {
     const { requests } = mockBackend({ "GET /billing/summary": (request) => jsonResponse(aligned(request, live)) });
     restoreSession();
     renderApp();
-    expect(await screen.findByText("Dashboard Ejecutivo - Coste Global")).toBeVisible();
+    expect(await screen.findByText("Panel Ejecutivo - Coste Global")).toBeVisible();
     const table = await screen.findByRole("table", { name: /desglose/i });
     expect(table).toHaveTextContent("9007199254740993.01");
     expect(table).toHaveTextContent("-1.01");
@@ -71,7 +71,7 @@ describe("ExecutiveCostDashboard", () => {
     await waitFor(() => expect(requests.at(-1)?.search.get("tag_key")).toBe("environment"));
     expect(requests.at(-1)?.search.get("start_date")).toBe("2024-06-01");
     expect(requests.at(-1)?.search.get("end_date")).toBe("2024-07-01");
-    await user.selectOptions(screen.getByLabelText("Ambito de cliente"), tenants[1].id);
+    await user.selectOptions(screen.getByLabelText("Ámbito de cliente"), tenants[1].id);
     await waitFor(() => expect(requests.at(-1)?.headers.get("X-Tenant-Id")).toBe(tenants[1].id));
     hold = false;
     await user.selectOptions(screen.getByRole("combobox", { name: /group|agrupar|desglose/i }), "project");

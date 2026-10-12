@@ -86,13 +86,13 @@ describe("Arbol de rutas real: abrir una direccion directamente presenta su pant
     renderRoutes(["/operational"]);
 
     await waitFor(() => {
-      expect(screen.getByText("Dashboard Operativo - Coste Detallado")).toBeInTheDocument();
+      expect(screen.getByText("Panel Operativo - Coste Detallado")).toBeInTheDocument();
     });
 
     // Aserción negativa complementaria: el encabezado de la ruta indice
     // (ExecutiveCostDashboard) no debe estar presente -- confirma que se
     // presento /operational, no "/".
-    expect(screen.queryByText("Dashboard Ejecutivo - Coste Global")).toBeNull();
+    expect(screen.queryByText("Panel Ejecutivo - Coste Global")).toBeNull();
   });
 });
 
@@ -128,10 +128,10 @@ describe("Arbol de rutas real: el ambito activo sobrevive a la navegacion", () =
     // con la lista vacia de localStorage al arrancar, auto-selecciona "t1".
     // Esperamos a que el selector este disponible antes de cambiarlo.
     await waitFor(() => {
-      expect(screen.getByRole("combobox", { name: /ambito de cliente/i })).toHaveValue("t1");
+      expect(screen.getByRole("combobox", { name: /ámbito de cliente/i })).toHaveValue("t1");
     });
 
-    const selector = screen.getByRole("combobox", { name: /ambito de cliente/i });
+    const selector = screen.getByRole("combobox", { name: /ámbito de cliente/i });
     fireEvent.change(selector, { target: { value: "t2" } });
 
     // Navegacion real via el NavLink del Layout hacia /operational (no
@@ -140,12 +140,12 @@ describe("Arbol de rutas real: el ambito activo sobrevive a la navegacion", () =
     fireEvent.click(screen.getByText("Coste Detallado"));
 
     await waitFor(() => {
-      expect(screen.getByText("Dashboard Operativo - Coste Detallado")).toBeInTheDocument();
+      expect(screen.getByText("Panel Operativo - Coste Detallado")).toBeInTheDocument();
     });
 
     // El selector, ya en la nueva pantalla, sigue mostrando "t2": el cambio
     // de tenant sobrevivio a la navegacion entre pantallas.
-    expect(screen.getByRole("combobox", { name: /ambito de cliente/i })).toHaveValue("t2");
+    expect(screen.getByRole("combobox", { name: /ámbito de cliente/i })).toHaveValue("t2");
   });
 });
 
@@ -165,7 +165,7 @@ describe("Arbol de rutas real: sin sesion se presenta el acceso", () => {
     renderRoutes(["/operational"]);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /iniciar sesión/i })).toBeInTheDocument();
     });
 
     expect(fetchSpy).not.toHaveBeenCalled();

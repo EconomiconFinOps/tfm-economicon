@@ -93,7 +93,7 @@ describe("IngestPage con tenant activo", () => {
 
     // Valores por defecto del formulario (source: "aws-cur", artifact_uri: "",
     // text_content: ""): basta con enviar, sin escribir en los campos.
-    fireEvent.click(screen.getByRole("button", { name: /queue ingestion/i }));
+    fireEvent.click(screen.getByRole("button", { name: /encolar ingesta/i }));
 
     // Confirma que la llamada real llego a "/jobs/ingest" con la cabecera
     // `X-Tenant-Id` construida a partir del tenant leido del Outlet context
