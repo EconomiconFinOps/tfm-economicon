@@ -92,3 +92,7 @@ origin JUP-014/JUP-069 contienen ADR-0001 a ADR-0006, sin 0007 en la lectura del
 otras ramas pueden incorporar otro ADR; no sincronizar ni renumerar hoy.
 
 Actualizacion 27/09/2026: con la implementacion integrada en develop mediante PR #43, RF-087-001 y RF-095-001 pasan a Fixed en el [backlog de findings](../../openspec/findings/backlog.md). El QA_BLOCKED_ENV que sigue abierto corresponde al reloj del entorno (RF-085-002), no a esta politica CORS.
+
+## Actualización (JUP-114, 2026-10-12)
+
+El cambio de estado de las anomalías usa `PATCH /billing/anomalies/episodes/{id}` y la preflight devolvía 400, así que la política permite ahora GET, POST y PATCH (hallazgo de la validación del PR #122). Lo demás no cambia: mismas cabeceras, sin cookies, `max-age` 600 y DELETE y PUT siguen denegados. Quien añada una ruta con otro método amplía la lista y `apps/backend/tests/test_cors.py`.

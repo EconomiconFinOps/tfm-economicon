@@ -213,7 +213,7 @@ registran ninguna herramienta del agente.
 ## Limitaciones
 
 - Un dia puede evaluarse antes de que lleguen datos tardios; no se reevalua.
-- Un servicio sin gasto previo no abre episodio su primer dia (no hay porcentaje sobre una referencia cero). Desde el segundo dia su referencia es la media de 7 dias, que incluye ese primer dia: un gasto nuevo y estable por encima de 116,67 al dia abre episodio, llega a P1 a los 16 dias (con 200,00 al dia, 2742,86 de impacto) y sigue hasta que alguien lo cierre.
+- Un servicio sin gasto previo no abre episodio su primer dia (no hay porcentaje sobre una referencia cero). Desde el segundo dia su referencia es la media de 7 dias, que incluye ese primer dia: un gasto nuevo y estable por encima de 116,67 al dia abre episodio, llega a P1 a los 12 dias (con 200,00 al dia, 2057,14 de impacto; 2742,86 a los 16) y sigue hasta que alguien lo cierre.
 - Los ciclos semanales pueden dar candidatas falsas y un pico reciente infla la
   media de 7 dias. Por ejemplo, un cargo semanal fijo de 700,00 abre un P2 nuevo
   cada semana (600,00 de impacto cada uno) y los anteriores quedan abiertos
