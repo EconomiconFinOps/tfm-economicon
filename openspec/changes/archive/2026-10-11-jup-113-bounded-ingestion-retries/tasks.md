@@ -132,5 +132,10 @@ del backend (`RF-105-004`).
   `docs/evidence/JUP-113-validation.md` con un apartado por criterio de la tarjeta y lo no validado.
 - [x] 8.5 Comprobar `origin/develop` otra vez; si hay commits que tocan los archivos de producto de
   este cambio, integrarlos y repetir 8.1.
-- [ ] 8.6 Registrar la aprobación posterior a la revisión, archivar el change en la rama y abrir la
+- [x] 8.6 Registrar la aprobación posterior a la revisión, archivar el change en la rama y abrir la
   PR contra `develop` desde `fix/JUP-113-bounded-ingestion-retries`.
+
+Nota de cierre (2026-10-11): 8.6 se cumple en sus dos primeras partes, con el bloque `## Human Approval` de
+`review.md` (instrucción expresa de Victor) y el archivo del change en esta rama. **La PR no está abierta**:
+la abre Victor después. La revisión de código, la validación funcional por las personas con esos roles en
+Trello y el CI de GitHub siguen pendientes y no se dan por hechos.

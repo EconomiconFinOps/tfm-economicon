@@ -692,3 +692,46 @@ Lo que sigue sin darse por validado, según la propia QA: la revisión y la vali
 GitHub, la ratificación del ADR-0019, las pruebas con servicios reales en CI, la decisión 4 con una caída real
 de CockroachDB, un LLM o embeddings reales, la pantalla en navegador, el mensaje que mata el proceso y la
 integración con `develop`.
+
+## Human Approval
+
+- Change: jup-113-bounded-ingestion-retries
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-11
+- Archive decision: archive
+- Origen de la decisión: instrucción expresa de Victor en la sesión («haz el gate post-revision y archiva»),
+  dada después de recibir el resumen de cierre del grupo 8 con la batería final, el alcance del diff, la QA
+  global y la lista de lo no validado. El orquestador registra la decisión; no la toma.
+- Scope reviewed: las 41 tareas de `tasks.md` (40 marcadas antes de este gate; la 8.6 se cumple con este bloque
+  y con el archivo, y su parte de abrir la PR queda para después); este `review.md` entero; las dos adendas de
+  `proposal.md`; `design.md`; las dos specs delta (`document-ingestion-handoff`, cinco requisitos añadidos, y
+  `llm-provider-routing`, uno modificado); `docs/evidence/JUP-113-validation.md` con sus apartados de
+  reproducción, servicios reales, Compose, verificación final y criterios de la tarjeta; `ADR-0019`; las filas
+  `RF-086-004`, `RF-054-001` y `RF-113-001` a `003` de `openspec/findings/backlog.md`; los READMEs del
+  processor y del backend, `docs/architecture.md` y `docs/testing/critical-flows.md`; la continuidad
+  `docs/continuidad/reintentos-ingesta.md`; los cinco archivos de producto, los ocho archivos de pruebas
+  nuevos y la única aserción modificada de `test_secret_boundaries.py`.
+- Conditions approved: (1) **`RF-086-004` y `RF-054-001` quedan `Fixed` técnico**: integración y validación
+  humana siguen pendientes y no se dan por hechas. (2) **Los veredictos de QA y los informes del tester y del
+  coder son de agentes de apoyo**: no sustituyen `Revision JUP-113` (Paris) ni `Validacion JUP-113`
+  (Alejandro), que siguen el flujo ordinario de `CONTRIBUTING.md`; la PR aún no está abierta y el CI de
+  GitHub no se ha ejecutado sobre esta rama. (3) **ADR-0019 sigue `Proposed`**: su ratificación es de la
+  revisión de la PR. (4) **Los findings `RF-113-001`, `RF-113-002` y `RF-113-003` quedan `Open`**: la pantalla
+  de ingesta muestra el cuerpo crudo del 422; el contrato `tenant-isolation` de JUP-086 y ADR-0008 siguen
+  diciendo que no hay límite de reintentos; y los jobs descartados por una caída no se reprocesan solos
+  (riesgo aceptado). (5) **El coste de ~10 s con pgvector parado se asume** con la cifra corregida; el texto
+  aprobado antes («unos 2 s») se conserva como historia en la adenda. (6) **La excepción de la aserción de
+  `test_secret_boundaries.py`** sigue registrada en la adenda de `proposal.md`. (7) Al archivar se sincronizan
+  los deltas con las specs principales (`document-ingestion-handoff` y `llm-provider-routing`). (8) Queda
+  pendiente en Trello matizar el criterio 5 de la tarjeta y rellenar la épica, y fuera del repositorio, borrar
+  el entorno `jup113-repro` con `docker compose -p jup113-repro down -v`.
+- Lo que este gate NO acredita: revisión ni validación humanas; que el CI pase; las pruebas con servicios
+  reales en CI; la decisión de reencolar sin tope ante una caída real de CockroachDB; un LLM o embeddings
+  reales; la pantalla de ingesta en navegador; el mensaje que mata el proceso antes de responder al broker; y
+  la integración con `develop`.
+- Resultado verificado antes del archivo: `corepack pnpm openspec:validate` 64 de 64, `corepack pnpm jup:check
+  -- --change jup-113-bounded-ingestion-retries` y `corepack pnpm jup:cleanup:check` correctos; batería final
+  del grupo 8 sin fallos (backend 1169 pasan y 64 omitidas, processor 816 pasan y 80 omitidas, en contenedor
+  Linux); `develop` sin cambios en `8511fb1f`.

@@ -4,7 +4,7 @@ Trello: https://trello.com/c/JaHmg0fs
 Fecha de apertura: 2026-10-11. Rama: `fix/JUP-113-bounded-ingestion-retries`.
 Base: `develop` en `8511fb1fc4141781bc76cde33b4c14855697330b` (el commit de rama
 `b09e1776942bedfc238d321cfb1ac4397b5aabfb` solo añade el change de OpenSpec). Change:
-`openspec/changes/jup-113-bounded-ingestion-retries/`.
+`openspec/changes/archive/2026-10-11-jup-113-bounded-ingestion-retries/`.
 
 Evidencia técnica de implementación; no sustituye a las reviews humanas `Revision JUP-113` y
 `Validacion JUP-113`, que siguen pendientes. PR y CI: se rellenan al abrir la PR.
@@ -16,7 +16,7 @@ principal. No se usan los volúmenes de `tfm-economicon` ni de `jup104-e2e`.
 ## Estado
 
 Grupos 1 a 8 ejecutados (reproducción y decisión, admisión del origen, fallo permanente de entrada, tope de un
-reintento, forma del resultado guardado, servicios reales, documentación y verificación final); gate posterior a la revisión, archivo y PR pendientes. Todo lo que
+reintento, forma del resultado guardado, servicios reales, documentación y verificación final); el gate posterior a la revisión (Victor, 2026-10-11) y el archivo del change están hechos; la PR, la revisión y la validación humanas y el CI de GitHub siguen pendientes. Todo lo que
 figura abajo está ejecutado; lo que no consta como ejecutado no se da por hecho. Los
 proveedores de LLM y de embeddings del stack son `mock`, y el worker es un único hilo
 (`apps/processor/app/run_all.py`).

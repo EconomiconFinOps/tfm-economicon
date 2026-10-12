@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-10-11
-- Related JUP/OpenSpec: JUP-113, [proposal](../../openspec/changes/jup-113-bounded-ingestion-retries/proposal.md), [design](../../openspec/changes/jup-113-bounded-ingestion-retries/design.md#decisions)
+- Related JUP/OpenSpec: JUP-113, [proposal](../../openspec/changes/archive/2026-10-11-jup-113-bounded-ingestion-retries/proposal.md), [design](../../openspec/changes/archive/2026-10-11-jup-113-bounded-ingestion-retries/design.md#decisions)
 - Trello: https://trello.com/c/JaHmg0fs
 - Supersedes: none; complementa la decisión 2 de [ADR-0008](ADR-0008-tenant-isolation-boundaries.md), que permanece Accepted y que dejaba sin definir el límite de reintentos.
 - Superseded by: none

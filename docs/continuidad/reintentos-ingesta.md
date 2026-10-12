@@ -5,8 +5,8 @@
 ## Estado
 
 - Rama `fix/JUP-113-bounded-ingestion-retries`, creada desde `develop` en `8511fb1f`. Cierra técnicamente `RF-086-004` (High) y `RF-054-001` (Low) de `openspec/findings/backlog.md`, que pasan a `Fixed` con la salvedad de que integración y validación humana siguen pendientes.
-- OpenSpec: `openspec/changes/jup-113-bounded-ingestion-retries/` (deltas de `document-ingestion-handoff` y `llm-provider-routing`). ADR: [ADR-0019](../adr/ADR-0019-ingestion-retry-policy.md), en `Proposed`, pendiente de ratificar en la revisión de la PR.
-- Evidencia: [JUP-113-validation.md](../evidence/JUP-113-validation.md), con la reproducción antes de corregir, las pruebas con servicios reales y el recorrido con Compose sobre la rama. La PR aún no está abierta.
+- OpenSpec: `openspec/changes/archive/2026-10-11-jup-113-bounded-ingestion-retries/` (deltas de `document-ingestion-handoff` y `llm-provider-routing`), archivado el 2026-10-11 tras el gate posterior a la revisión de Victor; las specs principales ya incluyen los cinco requisitos añadidos y el modificado. ADR: [ADR-0019](../adr/ADR-0019-ingestion-retry-policy.md), en `Proposed`, pendiente de ratificar en la revisión de la PR.
+- Evidencia: [JUP-113-validation.md](../evidence/JUP-113-validation.md), con la reproducción antes de corregir, las pruebas con servicios reales y el recorrido con Compose sobre la rama. La PR aún no está abierta (la abre Victor).
 - Producto cambiado: `apps/backend/app/schemas/jobs.py` y, en el processor, `agents/guardrails.py`, `tasks/ingest.py`, `clients/rabbitmq_queue.py` y `workers/runner.py`.
 
 ## Decisiones que no se deducen del código
