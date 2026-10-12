@@ -81,14 +81,14 @@ def test_truncated_decision_is_transient_and_diagnostic_never_contains_text(monk
     assert 'PRIVATE TRUNCATED DECISION' not in caplog.text
 
 
-def provider(monkeypatch, responses):
+def provider(monkeypatch, responses, read_size=7):
     gateway = ChatGateway(SimpleNamespace(llm_model='economicon-chat',
         litellm_base_url='http://synthetic.invalid/v1', litellm_api_key=SecretStr('synthetic')))
     requests = []
     class Response(io.BytesIO):
         headers = {'Content-Type': 'text/event-stream'}
         def read1(self, size=-1):
-            return super().read1(min(size, 7))  # split UTF-8/SSE/JSON on real byte boundaries
+            return super().read1(min(size, read_size))  # split UTF-8/SSE/JSON on real byte boundaries
     def opened(req, **kwargs):
         requests.append(json.loads(req.data))
         response = responses[len(requests)-1]
@@ -96,6 +96,18 @@ def provider(monkeypatch, responses):
         return Response(response)
     monkeypatch.setattr(gateway.client.transport, 'open', opened)
     return gateway, requests
+
+
+def test_final_raw_non_bmp_utf8_survives_one_byte_transport_chunks(monkeypatch):
+    candidate=json.dumps(_provider(ANSWER),ensure_ascii=False)
+    assert '\U0001f600' in candidate
+    event={'choices':[{'index':0,'delta':{'content':candidate},'finish_reason':'stop'}]}
+    wire_bytes=('data: '+json.dumps(event,ensure_ascii=False)+'\n\ndata: [DONE]\n\n').encode()
+    assert bytes.fromhex('f09f9880') in wire_bytes
+    gateway,_=provider(monkeypatch,[wire_bytes],read_size=1)
+    records=list(gateway._records({'messages':[],'financial_metrics_allowed':False},time.time()+60,{},threading.Event(),'none'))
+    assert records[-1]['type']=='candidate' and records[-1]['result']['answer']==ANSWER['answer']
+    assert '\U0001f600' in ''.join(r['text'] for r in records if r['type']=='delta')
 
 
 @pytest.mark.parametrize('search', [True, False])

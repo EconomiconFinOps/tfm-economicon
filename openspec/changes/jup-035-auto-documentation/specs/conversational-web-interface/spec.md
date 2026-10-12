@@ -174,3 +174,22 @@ persistir texto parcial.
 - **WHEN** el proveedor emite mas de una llamada nativa en una generacion
 - **THEN** el intento SHALL fallar antes de ejecutar cualquiera, sin ignorar llamadas extra ni iniciar una tercera generacion; el diagnostico SHALL distinguir cardinalidad multiple de un indice malformado sin registrar argumentos
 
+### Requirement: Cierre observable y truncacion transitoria
+
+El stream SHALL comunicar el estado confirmado aunque la lectura SQL y la
+publicacion RAM se crucen, tanto al POST inicial como a observadores posteriores.
+La decision truncada SHALL conservar la politica existente de reintentos y no
+exponer ni reutilizar texto provisional.
+
+#### Scenario: Transicion confirmada antes de publicacion
+- **WHEN** completed, failed, paused o waiting ya esta confirmado en SQL y su evento aun no esta publicado
+- **THEN** el consumidor SHALL recibir el estado final o de espera correspondiente y cerrar sin perderlo ni duplicarlo
+
+#### Scenario: Lectura anterior a un evento ya publicado
+- **WHEN** un observador lee active pero final, terminal, paused o retry_scheduled ya esta publicado al suscribirse
+- **THEN** el stream SHALL entregar ese cierre una sola vez en lugar de quedar abierto con heartbeats
+
+#### Scenario: Decision con finish_reason length
+- **WHEN** la decision nativa termina por longitud
+- **THEN** el processor SHALL devolver 502 incomplete, sin candidato ni texto provisional, y el backend SHALL programar un reintento dentro de su politica existente
+

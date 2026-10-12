@@ -83,6 +83,46 @@ def count_messages(sql,scope):
         return len(json.loads(value)['messages'])
 
 
+@pytest.mark.parametrize('state',['failed','completed','paused','waiting'])
+@pytest.mark.parametrize('delivery',['before_publication','published','stale_read'])
+@pytest.mark.parametrize('initial',[True,False])
+def test_native_stream_sql_commit_and_publication_order(sql,monkeypatch,state,delivery,initial):
+    """Real JSONB/transaction effects with deterministic publication barriers."""
+    import asyncio
+    from app.services.chat_operations import ChatOperations
+    scope=owned_scope(sql)
+    app=SimpleNamespace(state=SimpleNamespace(database=SimpleNamespace(engine=sql)))
+    runtime=ChatOperations(app)
+    row,_=runtime.repository.reserve(scope,request(),{'prompt_version':'synthetic'})
+    identifier=row['operation_id']
+    runtime.buffers[identifier]={'events':[],'subscribers':set(),'partial':'',
+        'initial_frame':runtime._frame(row,'started',operation=runtime.public(row))}
+    active,won=runtime.repository.claim(scope,identifier,'synthetic-boot')
+    assert won
+    runtime._emit(active,'attempt_started',attempt_id=active['current_attempt_id'],number=1,seq=0)
+    if state=='completed':
+        row=runtime.repository.complete(scope,identifier,active['current_attempt_id'],ANSWER,{},str(uuid4()))
+    else:
+        row=runtime.repository.close_attempt(scope,identifier,active['current_attempt_id'],
+            transient=state!='failed',delay=121 if state=='paused' else 1)
+    async def scenario():
+        event={'completed':'final','failed':'terminal','paused':'paused','waiting':'retry_scheduled'}[state]
+        if delivery!='before_publication':
+            values=await runtime._final_values(scope,row) if state=='completed' else {'operation':runtime.public(row)}
+            runtime._emit(row,event,**values)
+        if delivery=='stale_read':
+            async def stale_get(*args):return active
+            monkeypatch.setattr(runtime,'get',stale_get)
+        frames=[f async for f in runtime.events(scope,identifier,initial=initial)]
+        records=[json.loads(line[6:]) for f in frames for line in f.splitlines() if line.startswith('data: ')]
+        end='waiting' if state=='waiting' and (delivery=='before_publication' or not initial and delivery=='published') else event
+        prefix=['started','attempt_started'] if initial else ['started','snapshot'] if delivery=='stale_read' else ['started']
+        assert [r['type'] for r in records]==prefix+[end]
+        assert records[-1]['operation']['state']==state
+        assert count_messages(sql,scope)==(2 if state=='completed' else 0)
+    asyncio.run(asyncio.wait_for(scenario(),3))
+
+
 @pytest.mark.parametrize('incompatibility',['json_type','attempt_check','intent_unique','open_predicate','wait_predicate'])
 def test_migration_rejects_incompatible_catalog_instead_of_accepting_names(sql,tmp_path,incompatibility):
     engine=new_database(sql,tmp_path)

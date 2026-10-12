@@ -46,3 +46,16 @@ El nuevo esquema tiene regresiones offline; su aceptacion real sigue pendiente.
 La proyeccion v2 omite uniqueItems, rechazado con HTTP400 por el endpoint real.
 Se conservan las alternativas exactas y el rechazo local de IDs duplicados en
 FinOpsResponse del processor y en el firewall backend; no se normaliza salida.
+
+## Correcciones de revision (12/10/2026, 551fb81)
+El observador captura el ultimo cierre publicado al suscribirse sin await en
+medio. El POST ganador reconstruye tambien waiting/paused desde SQL cuando
+todavia falta la publicacion RAM. La decision length se clasifica 502 incomplete,
+igual que una finalizacion truncada; no se reutiliza su texto ni se añade otra
+generacion dentro del intento. Las regresiones cubren las dos entregas, cuatro
+estados y tres ordenes SQL/RAM, incluida persistencia Cockroach nativa.
+El bundle refuerza completitud y correspondencia entre reglas/citas y propone
+comprobar identidades aritmeticas antes de emitir. Es una mitigacion del productor,
+no un verificador semantico determinista ni garantia universal; la evidencia real
+de cada revision determina lo aceptado. Multiplicidad sigue fail-closed y requiere
+una decision explicita de protocolo o proveedor; no se cambia el contrato aqui.
