@@ -107,3 +107,24 @@ When a document pinned by the JUP-069 question bank changes, the change SHALL up
 
 - **WHEN** the retrieval calibration cannot be run with the real embedding provider
 - **THEN** the change records it as not run and does not publish simulated results as measurements of retrieval quality.
+
+### Requirement: Corpus does not state the figures of a specific anomaly
+
+The corpus SHALL explain how anomalies work in general and SHALL NOT state the figures of any specific anomaly (opening day, observed cost, reference, accumulated impact or status of a given episode). It SHALL use the same words as the panel and as the explanation of a stored episode (JUP-038): «Candidata: causa no establecida», the statuses «Nueva», «Investigando», «Resuelta» and «Falso positivo», and the criticality labels Alta (P1), Media (P2) and Baja (P3).
+
+#### Scenario: Specific figures are not in the corpus
+
+- **WHEN** a contributor reads the anomaly content of the corpus
+- **THEN** it contains no amount, date or identifier of a particular episode
+- **AND** it tells the user to open the detail of the anomaly in the panel to see those figures.
+
+#### Scenario: Vocabulary matches the panel and the explanation
+
+- **WHEN** a contributor compares the anomaly wording of the corpus with the panel and with the explanation of a stored episode
+- **THEN** statuses, criticality labels and the sentence «Candidata: causa no establecida» are written the same way.
+
+#### Scenario: The route to an explanation is mentioned only once it exists
+
+- **WHEN** the link «Explicar en el asistente» is not integrated in `develop` at the time the change is closed
+- **THEN** the corpus does not mention it
+- **AND** the follow-up is recorded in the change review.

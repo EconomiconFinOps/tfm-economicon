@@ -47,7 +47,8 @@ Solo lo que el producto hace hoy y consta en ADR-0020, sin implementación inter
 4. **Severidad:** sobre el impacto acumulado del episodio (suma diaria de lo que supera la referencia), en la moneda del episodio: P1 mayor que 2.000, P2 de 500 a 2.000, P3 menor que 500. Umbrales nominales en EUR y USD, sin conversión; otras monedas no se evalúan. Sigue marcado como umbral interno y calibrable.
 5. **Estados:** `new`, `investigating`, `resolved` y `false_positive`; cerrar exige un motivo y es definitivo. Se quita `acknowledged`.
 6. **Servicio sin gasto previo:** el primer día no abre episodio. Desde el segundo día su referencia incluye ese primer día, de modo que un gasto nuevo y estable por encima de unos 116,67 al día sí puede abrir uno. No se afirma que un recurso nuevo cumpla o no la regla sin datos.
-7. **Candidata:** una anomalía no tiene causa establecida, ahorro ni confianza estadística; hay que investigar y confirmar si el cambio era esperado. El panel no apaga ni cambia recursos.
+7. **Método general, no casos:** el corpus no da cifras de una anomalía concreta; remite al detalle del panel. La explicación de un episodio concreto (JUP-038, #128) la arma código con los datos guardados, sin recuperación documental, y usa las mismas palabras que el panel. Por eso el corpus y esa explicación comparten vocabulario y no se solapan.
+8. **Candidata:** una anomalía no tiene causa establecida, ahorro ni confianza estadística; hay que investigar y confirmar si el cambio era esperado. El panel no apaga ni cambia recursos.
 
 La guía de usuario (en `product-architecture`) usa los textos de la pantalla: «Anomalías», «Detectar ahora», «Revisado hasta…», Alta (P1), Media (P2), Baja (P3), «Se sigue observando» y «Ya no se observa», más el aviso de datos sintéticos. Los textos exactos se leen del código del frontend al implementar, no se copian de memoria.
 
@@ -60,7 +61,7 @@ Las etiquetas de JUP-022 nombran secciones por encabezado (por ejemplo `rules` /
 
 ### D4. Orden para volver a fijar la cadena
 
-Documentos y manifiesto, luego las huellas de las fuentes y `suite_version` de JUP-069 (la propia documentación pide incrementarlo y conservar los identificadores de los casos), luego las etiquetas de JUP-022 y por último la calibración. Cada paso se valida con las herramientas existentes (`assistant-corpus:validate`, `validation-questions:validate`, `retrieval-labels:validate` y las pruebas de calibración) antes de pasar al siguiente. Si cambia el texto de una pregunta de JUP-069 o sus puntos esperados, se rompe la regla de conservar la batería: este change no los cambia.
+Documentos y manifiesto, luego las huellas de las fuentes y `suite_version` de JUP-069 (la propia documentación pide incrementarlo y conservar los identificadores de los casos), luego las etiquetas de JUP-022 y por último la calibración. La huella de la batería también está en el ejemplo sintético de JUP-067 (`tools/fixtures/assistant-metrics/synthetic-results.json`), que se actualiza con la nueva huella y versión. Cada paso se valida con las herramientas existentes (`assistant-corpus:validate`, `validation-questions:validate`, `retrieval-labels:validate` y las pruebas de calibración) antes de pasar al siguiente. Si cambia el texto de una pregunta de JUP-069 o sus puntos esperados, se rompe la regla de conservar la batería: este change no los cambia.
 
 ### D5. Los informes de JUP-070 quedan como histórico
 
@@ -87,4 +88,5 @@ No hay migración de datos ni de código. Para revertir, basta con restaurar los
 
 1. ¿Cuándo se integra este change respecto a la campaña de aceptación de JUP-035 (#121)? Pregunta enviada al equipo.
 2. ¿Se añade una batería nueva de anomalías (6 a 8 preguntas)? Pregunta enviada al equipo.
-3. ¿Se ejecuta la calibración con el gateway real? Depende de la clave y del crédito disponibles; se decide al llegar a esa tarea.
+3. ¿Se espera a que #128 (y #127) estén en `develop` para mencionar «Explicar en el asistente» y la fecha de referencia? Por defecto no se espera: se mencionan solo si ya están integrados al cerrar.
+4. ¿Se ejecuta la calibración con el gateway real? Depende de la clave y del crédito disponibles; se decide al llegar a esa tarea.

@@ -62,6 +62,8 @@ Al abrir el detalle se ven el impacto acumulado, los dias con impacto, el valor 
 
 Desde el detalle una persona puede marcarla como "Investigando" o cerrarla como "Resuelta" o "Falso positivo". Cerrar pide un motivo, no se puede deshacer, y si el gasto vuelve a subir se abre una anomalia nueva. El panel no apaga ni modifica ningun recurso de Azure: solo informa.
 
+Este documento explica como funcionan las anomalias en general. Las cifras de una anomalia concreta (dia de apertura, valor de referencia, impacto acumulado y estado) estan en su detalle y no se pueden deducir de este documento: si el usuario pregunta por una anomalia concreta, hay que indicarle que abra su detalle en el panel y no inventar importes.
+
 ## Scope, Dataset Y Tenant
 
 El MVP trabaja con un dataset simulado y no con datos reales de un tenant de cliente. Por eso las respuestas deben diferenciar entre:

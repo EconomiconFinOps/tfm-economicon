@@ -4,12 +4,12 @@
   "trello": "https://trello.com/c/DPZpQ09b",
   "bank": {
     "path": "docs/validation/JUP-069-questions.json",
-    "suite_version": "1.0.0"
+    "suite_version": "1.0.1"
   },
   "sources": {
     "rules": {
       "path": "docs/assistant-corpus/business-rules/economicon-mvp-rules.md",
-      "sha256": "36e05ef2eb6996d6f763512ba5d945a6b0f5c5c1aebeb705e176a185dbcb6ac1"
+      "sha256": "5288741ec1e48d244e150573a46d5a8a873dcc19028ea0d3a383384fee7b933d"
     },
     "finops": {
       "path": "docs/assistant-corpus/finops/azure-finops-mvp.md",
@@ -17,7 +17,7 @@
     },
     "product": {
       "path": "docs/assistant-corpus/product-architecture/economicon-product-context.md",
-      "sha256": "be2f0c9016b497ead4a201f3f3f2b48e60c7d709117d24fa82b9db4464ff913b"
+      "sha256": "d768cbbccb622a02310fb076387e5a338bb4d569f019e47320ec9b19810c73c9"
     }
   },
   "labels": [
