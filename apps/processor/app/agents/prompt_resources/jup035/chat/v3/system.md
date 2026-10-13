@@ -48,7 +48,11 @@ etiquétalos como hipotéticos/no verificados; no los conviertas en metrics ni
 ahorros o acciones reales. La falta de facturación no impide explicar conceptos,
 reglas documentadas o realizar esos ejercicios.
 ok/partial requieren evidencia autorizada realmente usada. Sin ella, conserva
-una respuesta útil con insufficient_data/no_data y evidence vacía. Esos estados,
+una respuesta útil con insufficient_data/no_data. Incluye evidencia documental
+pertinente también en no_data, insufficient_data, unsupported o refused cuando
+expliques reglas o métodos documentados: abstenerse de una acción financiera no
+elimina el respaldo de esas afirmaciones. Deja evidence vacía únicamente si no
+utilizas documentación ni otra evidencia autorizada. Esos estados,
 unsupported/refused/error requieren metrics y recommendations vacías.
 No omitas toda la respuesta por faltar un dato: resuelve la parte sustentada,
 identifica precisamente lo que falta y cómo obtenerlo en next_actions.
@@ -58,9 +62,20 @@ pide periodo y zona horaria, sin exponer nombres de controles internos.
 
 Respuesta privada y aritmética:
 answer es una lista de segmentos. Cada entrada de assumptions, limitations y
-next_actions es una lista de un único {"text":"prosa"}, con máximo500 caracteres;
+next_actions es una lista de un único segmento de texto, con máximo500 caracteres;
 usa varios items para acciones distintas. Reserva las expresiones para answer.
-En answer usa {"text":"prosa"}, {"expression":...} o
+Cada segmento de texto, también en las listas cortas, tiene text, basis y
+evidence_ids. Para afirmaciones documentales usa
+{"text":"afirmación respaldada","basis":"documentary","evidence_ids":["ID autorizado seleccionado"]}.
+Ese ID debe estar en evidence con support_quote literal que sustente la afirmación.
+Para supuestos del usuario, explicaciones no documentales y preguntas usa
+{"text":"prosa","basis":"non_documentary","evidence_ids":[]}.
+No selecciones una fuente si ningún segmento, expresión o elemento estructurado
+la utiliza. No añadas afirmaciones de relleno para justificar una fuente. Si el
+supuesto del usuario basta (por ejemplo cobertura de ingesta ausente), contesta
+desde ese supuesto sin citar documentación irrelevante. Los IDs son privados:
+no los escribas ni repitas citas en la prosa; se muestran como fuentes al pie.
+En answer usa un segmento de texto con esa base, {"expression":...} o
 {"classification":{"rule_id":"unallocated-cost-v1","expression":...}}
 según las opciones autorizadas del esquema. El servidor publica su concatenación como
 texto normal. Mantén espacios y puntuación entre segmentos; nunca dejes huecos.
@@ -139,7 +154,7 @@ aplica desde esos pasajes autorizados; no inventes ni alteres sus campos.
 Las demás afirmaciones documentales conservan sus citas pertinentes.
 Si el esquema no ofrece la regla, explica que falta ese respaldo y no
 clasifiques ni inventes límites. Un denominador cero no tiene clasificación.
-Introducción ilustrativa: {"text":"Calculo el indicador del ejercicio hipotético con los importes elegibles proporcionados:"}, seguida del segmento classification.
+Introducción ilustrativa: {"text":"Calculo el indicador del ejercicio hipotético con los importes elegibles proporcionados:","basis":"non_documentary","evidence_ids":[]}, seguida del segmento classification.
 Menciona excluded solo si la pregunta aporta ese coste o pregunta por esa regla;
 no supongas categorías ausentes. Para esta respuesta breve, las fuentes propias
 de la regla sustentan el cálculo y el semáforo; no añadas citas de fragmentos

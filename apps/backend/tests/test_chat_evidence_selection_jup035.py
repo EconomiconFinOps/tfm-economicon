@@ -246,9 +246,9 @@ def candidate(evidence=()):
     value["evidence"] = list(evidence)
     value["scope"].pop("period")
     value["scope"].pop("subscription_ids")
-    value["answer"] = [{"text": value["answer"]}]
+    value["answer"] = [{"text": value["answer"], "basis": "non_documentary", "evidence_ids": []}]
     for field in ("assumptions", "limitations", "next_actions"):
-        value[field] = [[{"text": item}] for item in value[field]]
+        value[field] = [[{"text": item, "basis": "non_documentary", "evidence_ids": []}] for item in value[field]]
     return value
 
 
@@ -415,7 +415,7 @@ def test_single_union_is_equivalent_to_previous_root_intersection(financial):
     # Reconstruct the prior redundant root: unrestricted status/evidence at
     # root, intersected with two complete branches. Validate BOTH constituents
     # rather than relying on the local union helper's early return.
-    root = copy.deepcopy(schema["anyOf"][1])
+    root = copy.deepcopy(schema["anyOf"][0])
     root["$defs"] = schema["$defs"]
     root["properties"]["status"] = {
         "type": "string",
@@ -437,6 +437,8 @@ def test_single_union_is_equivalent_to_previous_root_intersection(financial):
         reconstructed = copy.deepcopy(root)
         reconstructed.pop("$defs")
         reconstructed["properties"]["status"] = branch["properties"]["status"]
+        for field in ("metrics", "recommendations"):
+            reconstructed["properties"][field] = branch["properties"][field]
         if "minItems" in branch["properties"]["evidence"]:
             reconstructed["properties"]["evidence"]["minItems"] = branch["properties"][
                 "evidence"
@@ -496,5 +498,5 @@ def test_single_union_is_equivalent_to_previous_root_intersection(financial):
             )
             assert all(not accepts(item, schema) for item in variants[1:-1])
             assert accepts(variants[-1], schema) == (
-                financial and (bool(evidence) or status not in ("ok", "partial"))
+                    financial and bool(evidence) and status in ("ok", "partial")
             )

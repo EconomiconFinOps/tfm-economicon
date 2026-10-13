@@ -40,7 +40,7 @@ def _provider(value):
     value["scope"].pop("subscription_ids", None)
 
     def segments(text):
-        return [{"text": text}]
+        return [{"text": text, "basis": "non_documentary", "evidence_ids": []}]
 
     value["answer"] = segments(value["answer"])
     for field in ("assumptions", "limitations", "next_actions"):
@@ -660,6 +660,8 @@ def test_diagnostic64_six_actual_model_rules_are_actionable_and_private(
         "type": "error",
         "category": "invalid_response",
         "status": 422,
+        "rule_code": rule if rule == "non_actionable_with_metrics_or_recommendations" else None,
+        "usage": None,
     }
     assert (
         len(events) == 1
@@ -795,7 +797,8 @@ def test_diagnostic64_observer_failure_cannot_change_existing_error(
         caplog,
     )
     assert (
-        records[-1] == {"type": "error", "category": "invalid_response", "status": 422}
+        records[-1] == {"type": "error", "category": "invalid_response", "status": 422,
+                       "rule_code": None, "usage": None}
         and events == []
     )
 

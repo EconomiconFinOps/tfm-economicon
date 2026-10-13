@@ -268,7 +268,17 @@ class ChatOperations:
         }
 
     async def _emit_completed(self, scope, row):
-        self._emit(row, "final", **await self._final_values(scope, row))
+        values = await self._final_values(scope, row)
+        # Only committed, validated text is observable, including reconnects.
+        answer = values["answer"]
+        offset = 0
+        for seq, start in enumerate(range(0, len(answer), 1024), 1):
+            piece = answer[start:start + 1024]
+            cursor = self.buffers.get(row["operation_id"], {}).get("cursor", {})
+            self._emit({**row, "revision": cursor.get("revision", row["revision"])}, "delta", attempt_id=row["attempts"][-1]["attempt_id"],
+                       seq=seq, offset=offset, text=piece)
+            offset += len(piece.encode("utf-16-le")) // 2
+        self._emit(row, "final", **values)
         self.summary.on_completed(
             scope, row["canonical_input"]["context"], event_id=row["result_message_id"]
         )
@@ -318,6 +328,7 @@ class ChatOperations:
                     number=claimed["attempt_count"],
                     seq=0,
                     deadline=self.public(claimed)["attempt_deadline"],
+                    corrective=bool(claimed["private_control"].get("correction")),
                 )
                 self.tasks[claimed["operation_id"]] = asyncio.create_task(
                     self._produce(scope, claimed)
@@ -342,7 +353,7 @@ class ChatOperations:
                 pass
         return fallback
 
-    async def _error(self, scope, row, transient, delay=0, reason="provider_error"):
+    async def _error(self, scope, row, transient, delay=0, reason="provider_error", usage=None):
         result = await self._db(
             self.repository.close_attempt,
             scope,
@@ -352,6 +363,7 @@ class ChatOperations:
             delay=delay,
             reason=reason,
             partial=self.buffers.get(row["operation_id"], {}).get("partial", ""),
+            usage=usage,
         )
         if result["state"] == "waiting":
             self._emit(result, "retry_scheduled", operation=self.public(result))
@@ -359,6 +371,19 @@ class ChatOperations:
             self._emit(result, "paused", operation=self.public(result))
         elif result["state"] == "failed":
             self._emit(result, "terminal", operation=self.public(result))
+
+    async def _correct(self, scope, row, code, usage):
+        if not isinstance(getattr(self.transport, "key", None), bytes):
+            return False
+        corrected = await self._db(
+            self.repository.correct, scope, row["operation_id"], row["current_attempt_id"],
+            code, usage, self.transport.key,
+        )
+        if corrected["state"] == "waiting" and corrected["private_control"].get("correction"):
+            self._emit(corrected, "retry_scheduled", operation=self.public(corrected),
+                       corrective=True)
+            return True
+        return False
 
     async def _produce(self, scope, row):
         claim = {
@@ -373,12 +398,23 @@ class ChatOperations:
             "input_hash": row["input_hash"],
             "context": row["canonical_input"]["context"],
         }
+        recovery = row["private_control"].get("correction")
+        if recovery:
+            claim["correction"] = {**recovery, "cache": row["private_control"]["recovery"]}
+        attempt_usage = None
         try:
 
             async def consume():
+                nonlocal attempt_usage
                 seq, offset = 0, 0
                 effective = claim["context"]
                 searched = False
+                provisional = ""
+                if recovery:
+                    from app.core.chat_correction import verify_cache
+                    cache = verify_cache(claim["correction"]["cache"], claim, self.transport.key)
+                    effective = cache["effective"]
+                    searched = True
                 async for record in self.transport.stream(claim):
                     current = await self._db(
                         self.repository.producer_state, scope, row["operation_id"]
@@ -421,26 +457,28 @@ class ChatOperations:
                             return
                         if self.clock() >= row["attempt_deadline"] - 5:
                             raise TimeoutError()
+                        from app.core.chat_correction import seal_cache
+                        if isinstance(getattr(self.transport, "key", None), bytes):
+                            await self._db(
+                                self.repository.cache_recovery, scope, row["operation_id"],
+                                row["current_attempt_id"],
+                                seal_cache(claim, result, effective, self.transport.key),
+                            )
                         await self.transport.tool_result(claim, result)
                     elif record.get("type") == "delta":
                         value = record.get("text")
                         if not isinstance(value, str) or len(value.encode()) > 8192:
                             raise ValueError("Invalid delta.")
-                        buffer = self.buffers[row["operation_id"]]
-                        if len(buffer["partial"] + value) > 4000:
+                        if len(provisional + value) > 4000:
                             raise ValueError("Invalid answer size.")
-                        buffer["partial"] += value
+                        provisional += value
                         seq += 1
-                        self._emit(
-                            current,
-                            "delta",
-                            attempt_id=row["current_attempt_id"],
-                            seq=seq,
-                            offset=offset,
-                            text=value,
-                        )
                         offset += len(value.encode("utf-16-le")) // 2
                     elif record.get("type") == "error":
+                        attempt_usage = reported_usage(record.get("usage"))
+                        if (record.get("category") == "invalid_response"
+                            and await self._correct(scope, row, record.get("rule_code"), record.get("usage"))):
+                            return
                         transient = record.get("status") in [
                             429,
                             502,
@@ -458,9 +496,11 @@ class ChatOperations:
                                 if transient
                                 else 0
                             ),
+                            usage=record.get("usage"),
                         )
                         return
                     elif record.get("type") == "candidate":
+                        attempt_usage = reported_usage(record.get("usage"))
                         if record.get("finish_reason") == "length":
                             await self._error(
                                 scope,
@@ -468,6 +508,7 @@ class ChatOperations:
                                 True,
                                 self._delay(None, row["attempt_count"]),
                                 "incomplete",
+                                usage=attempt_usage,
                             )
                             return
                         if record.get("finish_reason") != "stop":
@@ -507,7 +548,10 @@ class ChatOperations:
                                 "state": "completed",
                                 "input_hash": row["input_hash"],
                                 "context_manifest": effective.get("manifest", {}),
-                                "usage": reported_usage(record.get("usage")),
+                                "usage": self._total_usage(row, record.get("usage")),
+                                "attempt_usage": [
+                                    attempt.get("usage") for attempt in row["attempts"][:-1]
+                                ] + [reported_usage(record.get("usage"))],
                             },
                         }
                         final_limit = time.monotonic() + 5
@@ -537,14 +581,16 @@ class ChatOperations:
                                 ):
                                     # SQL failure never buys another model call.
                                     await self._error(
-                                        scope, row, False, reason="persistence_error"
+                                        scope, row, False, reason="persistence_error",
+                                        usage=attempt_usage,
                                     )
                                     return
                                 await asyncio.sleep(0.05)
                     else:
                         raise ValueError("Invalid stream record.")
                 await self._error(
-                    scope, row, True, self._delay(None, row["attempt_count"]), "eof"
+                    scope, row, True, self._delay(None, row["attempt_count"]), "eof",
+                    usage=attempt_usage,
                 )
 
             await asyncio.wait_for(
@@ -555,7 +601,8 @@ class ChatOperations:
             raise
         except (TimeoutError, OSError):
             await self._error(
-                scope, row, True, self._delay(None, row["attempt_count"]), "timeout"
+                scope, row, True, self._delay(None, row["attempt_count"]), "timeout",
+                usage=attempt_usage,
             )
         except ChatError:
             # A storage uncertainty must remain fenced for recovery, not become
@@ -582,13 +629,29 @@ class ChatOperations:
                     }
                 ),
             )
-            await self._error(scope, row, False, reason="invalid_response")
+            if not (isinstance(error, ResponseValidationError) and
+                    await self._correct(scope, row, error.rule_code, attempt_usage)):
+                await self._error(scope, row, False, reason="invalid_response", usage=attempt_usage)
         finally:
             async with self.lock:
                 self.occupied -= 1
                 self.tasks.pop(row["operation_id"], None)
             self.summary.wake()
             self._release_buffer(row["operation_id"])
+
+    def _total_usage(self, row, current):
+        from decimal import Decimal
+        usages = [reported_usage(a.get("usage")) for a in row["attempts"][:-1]]
+        usages.append(reported_usage(current))
+        if any(not isinstance(item, dict) for item in usages):
+            return None
+        result = {}
+        for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
+            if all(type(item.get(key)) is int for item in usages):
+                result[key] = sum(item[key] for item in usages)
+        if all(item.get("cost_usd") is not None for item in usages):
+            result["cost_usd"] = format(sum(Decimal(str(item["cost_usd"])) for item in usages), "f")
+        return result or None
 
     async def _schedule(self):
         while True:

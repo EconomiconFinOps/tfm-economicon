@@ -70,6 +70,33 @@ literalidad prueba origen, no pertinencia: esta exige revision semantica real.
 
 ## Diseños sustituidos y atribucion
 
+## Correccion de fuentes y recuperacion acotada (13/10/2026)
+
+Plan aprobado por Paris tras la campana de 28 preguntas: 003/025 omiten
+fuentes, 026 selecciona una no pertinente y 011 viola la coherencia del estado.
+Los segmentos de answer declaran basis documental o no documental; los
+documentales llevan evidence_ids autorizados con pasaje literal en evidence.
+Se rechazan referencias ausentes y evidencia corpus seleccionada sin uso.
+Abstenerse o rechazar no impide citar; estados no accionables exigen metrics
+y recommendations vacios tambien en el esquema del proveedor.
+
+Backend autoriza una sola correccion por operacion, dentro de cuatro intentos
+totales y del deadline original del intento fallido. Conserva en private_control
+la recuperacion autorizada y su huella, correlacionadas con tenant, usuario,
+operacion e input_hash. Una extension firmada transporta el codigo cerrado de
+correccion; canonical_input permanece intacto. No hay otra busqueda ni bucles
+de reintentos del processor. Si falla la correccion se termina la operacion.
+Los errores de seguridad, transporte y persistencia no habilitan la correccion.
+Uso y coste reportados de intentos rechazados se conservan y acumulan.
+
+Backend no publica borradores: mantiene progreso, valida, persiste una pareja
+y despues emite el texto aceptado. La correccion no amplia 120 s ni 6400 tokens
+por generacion. JSONB existente evita migraciones. Se actualizan contratos,
+prompts y manifiestos coordinadamente, conservando FinOpsResponse 1.0.
+La pertinencia semantica no queda demostrada por IDs ni por un filtro lexical.
+Aceptacion real focal 003/011/025/026; no repetir las 28. Presupuesto total de
+la campana 0.50 EUR, descontando gasto anterior y sin ampliar topes.
+
 Se conservan las evidencias historicas de auto-documentation-v2 y de la
 calculadora experimental; no acreditan este diseño. Quedan sustituidas la
 decision del modelo, las llamadas nativas y los planes con IDs n:/c:.

@@ -320,6 +320,19 @@ def create_chat_app():
             frozen = json.loads(frozen)
         if frozen is not None and encode(frozen["context"]) != encode(context):
             return None
+        correction = control.get("correction")
+        if correction:
+            from app.core.chat_correction import INSTRUCTIONS, verify_cache
+            expected = {**correction, "cache": control.get("recovery")}
+            if (claim.get("correction") != expected or not correction.get("claimed")
+                or correction.get("attempt_id") != claim.get("attempt_id")
+                or correction.get("number") != claim.get("number")
+                or correction.get("deadline") != deadline
+                or correction.get("code") not in INSTRUCTIONS):
+                return None
+            verify_cache(expected["cache"], claim, app.state.chat_signing_key)
+        elif claim.get("correction") is not None:
+            return None
         return row
 
     @app.post("/internal/chat/v2/attempts")
@@ -347,6 +360,8 @@ def create_chat_app():
 
             try:
                 await asyncio.to_thread(resources.validate_context, claim["context"])
+                if claim.get("correction"):
+                    await asyncio.to_thread(resources.validate_correction, claim["context"], claim["correction"])
             except TokenBudgetExceeded:
                 return signed_response(request, {"code": "context_token_limit"}, 413)
             except Exception:
@@ -421,6 +436,8 @@ def create_chat_app():
                     == "server-documentation-v4"
                     else {}
                 )
+                if claim.get("correction"):
+                    options["correction"] = claim["correction"]
                 iterator = gateway(
                     claim["context"], claim["deadline"], **options
                 ).__aiter__()
@@ -529,6 +546,8 @@ def create_chat_app():
                                         "status": record.get("status"),
                                         "category": record.get("category"),
                                         "retry_after": record.get("retry_after"),
+                                        "rule_code": record.get("rule_code"),
+                                        "usage": record.get("usage"),
                                     }
                                 ) + b"\n"
                                 return

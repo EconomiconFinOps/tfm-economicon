@@ -202,6 +202,8 @@ def chat_provider_schema(
             if status not in ("ok", "partial")
         ],
     }
+    for field in ("metrics", "recommendations"):
+        abstention["properties"][field]["maxItems"] = 0
     # A single union avoids intersecting long citation enums with identical
     # copies at root and branch (DeepInfra rejects that redundant grammar).
     schema = {
@@ -214,6 +216,7 @@ def chat_provider_schema(
         calculations,
         quantities,
         rules,
+        evidence=authorized_evidence,
     )
 
 

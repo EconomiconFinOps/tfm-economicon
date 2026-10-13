@@ -459,6 +459,11 @@ class ChatRepository:
                 row["state"] = "failed"
                 row["private_control"]["pause_reason"] = "attempts_exhausted"
                 return self._write(c, scope, row), False
+            correction = row["private_control"].get("correction")
+            if correction and (correction.get("claimed") or self.clock() >= correction["deadline"] - 5):
+                row["state"] = "failed"
+                row["private_control"]["pause_reason"] = "correction_exhausted"
+                return self._write(c, scope, row), False
             row["private_control"]["wait"]["reason"] = None
             row["private_control"]["pause_reason"] = None
             row["private_control"].update(boot_id=boot_id, capability=capability)
@@ -466,7 +471,7 @@ class ChatRepository:
                 state="active",
                 attempt_count=row["attempt_count"] + 1,
                 current_attempt_id=attempt_id,
-                attempt_deadline=durable_deadline(self.clock() + 120),
+                attempt_deadline=correction["deadline"] if correction else durable_deadline(self.clock() + 120),
                 retry_at=None,
             )
             row["attempts"].append(
@@ -477,6 +482,8 @@ class ChatRepository:
                     "outcome": "active",
                 }
             )
+            if correction:
+                correction.update(claimed=True, attempt_id=attempt_id, number=row["attempt_count"])
             return self._write(c, scope, row), True
 
         return self._transaction(scope, transition)
@@ -513,17 +520,20 @@ class ChatRepository:
         delay=0,
         reason="provider_error",
         partial="",
+        usage=None,
     ):
         def transition(c):
             row = self._row(c, scope, operation_id)
             if row["state"] != "active" or row["current_attempt_id"] != attempt_id:
                 return row
-            row["attempts"][-1].update(outcome=reason, partial=partial[:4000])
+            from app.schemas.chat import reported_usage
+            row["attempts"][-1].update(outcome=reason, partial=partial[:4000],
+                                      usage=reported_usage(usage))
             row["current_attempt_id"] = None
             row["attempt_deadline"] = None
             wait = row["private_control"]["wait"]
             wait["reason"] = None
-            if not transient or row["attempt_count"] >= 4:
+            if not transient or row["attempt_count"] >= 4 or row["private_control"].get("correction"):
                 row["state"] = "failed"
                 row["private_control"]["pause_reason"] = reason
             else:
@@ -546,6 +556,37 @@ class ChatRepository:
                     )
             return self._write(c, scope, row)
 
+        return self._transaction(scope, transition)
+
+    def cache_recovery(self, scope, operation_id, attempt_id, cache):
+        def transition(c):
+            row = self._row(c, scope, operation_id)
+            if row["state"] != "active" or row["current_attempt_id"] != attempt_id:
+                raise ChatError(409, "attempt_not_current")
+            row["private_control"]["recovery"] = cache
+            return self._write(c, scope, row)
+        return self._transaction(scope, transition)
+
+    def correct(self, scope, operation_id, attempt_id, code, usage, key):
+        from app.core.chat_correction import INSTRUCTIONS, verify_cache
+        from app.schemas.chat import reported_usage
+
+        def transition(c):
+            row = self._row(c, scope, operation_id)
+            control = row["private_control"]
+            if (row["state"] != "active" or row["current_attempt_id"] != attempt_id
+                or code not in INSTRUCTIONS or control.get("correction")
+                or row["attempt_count"] >= 4 or self.clock() >= row["attempt_deadline"] - 5
+                or not control.get("recovery")):
+                return row
+            verify_cache(control["recovery"], row, key)
+            control["correction"] = {"code": code, "deadline": row["attempt_deadline"],
+                                     "source_attempt": attempt_id, "claimed": False}
+            row["attempts"][-1].update(outcome=code, usage=reported_usage(usage))
+            row.update(state="waiting", current_attempt_id=None, attempt_deadline=None, retry_at=None)
+            control["wait"].update(reason="local_capacity", started=self.clock(),
+                                   until=control["correction"]["deadline"] - 5)
+            return self._write(c, scope, row)
         return self._transaction(scope, transition)
 
     def stop(self, scope, operation_id):

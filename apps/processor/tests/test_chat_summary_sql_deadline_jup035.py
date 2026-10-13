@@ -1,4 +1,8 @@
-"""Read-only own Cockroach probe support; no data/DDL/global settings or paid IO."""
+"""Own disposable Cockroach probes; synthetic fixture data, no global/paid IO.
+
+Creates a minimal conversations table only when absent and removes only its own
+row. This setup does not validate the complete application schema/migrations.
+"""
 import asyncio,os,threading,time
 from uuid import uuid4
 from sqlalchemy import create_engine,event,text
@@ -8,14 +12,29 @@ from sqlalchemy.pool import NullPool
 class Native:
     def __init__(self):
         url=os.environ.get('JUP035_COCKROACH_TEST_URL');assert url,'Documented own Cockroach test URL is required'
-        self.engine=create_engine(url);self.inspect_engine=create_engine(url,poolclass=NullPool);self.inspector=self.inspect_engine.connect()
-        assert self.inspector.execute(text('SELECT current_database()')).scalar_one()=='economicon_jup035_mock_smoke_479b1dcb8293'
-        row=self.inspector.execute(text("SELECT id,tenant_id,user_id FROM conversations ORDER BY jsonb_array_length(dialogue_history->'messages') DESC,id LIMIT 1")).first()
-        assert row is not None,'Own prepared runtime conversation is required'
-        self.scope={'conversation_id':row[0],'tenant_id':row[1],'user_id':row[2]}
+        self.engine=create_engine(url);self.inspect_engine=create_engine(url,poolclass=NullPool);self.inspector=None
+        self.scope={'conversation_id':'jup035-native-fixture-'+uuid4().hex,'tenant_id':str(uuid4()),'user_id':str(uuid4())}
+        self.fixture_row_created=False
         self.marker='jup035-native-job-'+str(uuid4());self.other_marker='jup035-native-main-'+str(uuid4())
         self.entered=threading.Event();self.returned=threading.Event();self.driver=None;self.code=None;self.query_seconds=0
         self.listener=None;self.fired=False;self.other_connection=None;self.other_thread=None;self.other_returned=threading.Event();self.other_success=False
+        try:
+            self.inspector=self.inspect_engine.connect()
+            assert self.inspector.execute(text('SELECT current_database()')).scalar_one()==self.engine.url.database
+            self.inspector.rollback()
+            document=source_document();document['identity']=dict(self.scope)
+            for message in document['messages']:message['author_id']=self.scope['user_id']
+            with self.engine.begin() as connection:
+                connection.execute(text('CREATE TABLE IF NOT EXISTS conversations(id STRING PRIMARY KEY,tenant_id STRING,user_id STRING,dialogue_history JSONB,dialogue_summary JSONB)'))
+                connection.execute(text('INSERT INTO conversations(id,tenant_id,user_id,dialogue_history,dialogue_summary) VALUES (:conversation_id,:tenant_id,:user_id,CAST(:document AS JSONB),NULL)'),
+                    {**self.scope,'document':canonical(document)})
+            self.fixture_row_created=True
+            row=self.inspector.execute(text('SELECT id,tenant_id,user_id FROM conversations WHERE id=:conversation_id AND tenant_id=:tenant_id AND user_id=:user_id'),self.scope).first()
+            assert row is not None,'Own prepared runtime conversation is required'
+            self.scope={'conversation_id':row[0],'tenant_id':row[1],'user_id':row[2]}
+        except BaseException:
+            self.cleanup()
+            raise
     def active(self,marker=None):
         return self.inspector.execute(text('SELECT count(*) FROM [SHOW CLUSTER QUERIES] WHERE query LIKE :pattern'),{'pattern':'%'+(marker or self.marker)+'%'}).scalar_one()>0
     def block(self,pattern,seconds=4):
@@ -56,14 +75,29 @@ class Native:
             except Exception:pass
         if self.other_thread:self.other_thread.join(5)
         if self.other_connection:self.other_connection.close()
-        self.inspector.close();self.inspect_engine.dispose();self.engine.dispose()
+        try:
+            if self.fixture_row_created:
+                with self.engine.begin() as connection:
+                    connection.execute(text('DELETE FROM conversations WHERE id=:conversation_id AND tenant_id=:tenant_id AND user_id=:user_id'),self.scope)
+                self.fixture_row_created=False
+        finally:
+            if self.inspector is not None:self.inspector.close()
+            self.inspect_engine.dispose();self.engine.dispose()
 
 from types import SimpleNamespace
 import pytest
 from test_chat_private_jup035 import private
 from test_chat_resources_jup035 import resources
 from test_chat_summary_resources_jup035 import summary_bundle
-from test_chat_summary_gateway_jup035 import summary_session,envelope,exercise,request,ROUTE
+from test_chat_summary_gateway_jup035 import summary_session,envelope,exercise,request,ROUTE,source_document,canonical
+
+async def wait_settled(job, seconds=1.5):
+    # HTTP timeout/cancel responses do not acknowledge completion of cleanup.
+    # Shield the owner so a failed test wait cannot cancel its SQL cleanup.
+    assert job.task is not None
+    await asyncio.wait_for(asyncio.shield(job.task), timeout=seconds)
+    assert job.settled and (job.pending is None or job.pending.done())
+    assert job.sql is None or job.sql.closed
 
 @pytest.fixture
 def native():
@@ -97,6 +131,7 @@ def test_existing_private_summary_closes_real_owned_sql_before_settled(summary_s
             assert native.code=='57014' and native.query_seconds<3
             await asyncio.gather(task,return_exceptions=True)
             if shutdown is not None:await shutdown
+            await wait_settled(job)
             assert job.settled and (job.pending is None or job.pending.done()) and summary_session[2]==[]
             assert application.state.chat_database.engine is native.engine
             native.verify_main()
@@ -222,7 +257,8 @@ def test_native_local_remaining_timeout_closes_owned_query_when_cancel_safe_fail
             assert faults,'The owned off-loop cancel failure was not exercised'
             assert native.code=='57014'
             assert native.query_seconds<3
-            await asyncio.gather(task,return_exceptions=True);await asyncio.sleep(0)
+            await asyncio.gather(task,return_exceptions=True)
+            await wait_settled(job)
             assert job.settled and (job.pending is None or job.pending.done())
             assert native.driver.closed and summary_session[2]==[]
             assert application.state.chat_database.engine is native.engine
@@ -245,4 +281,44 @@ def test_native_local_remaining_timeout_closes_owned_query_when_cancel_safe_fail
                 data[key+'_elapsed_seconds']=None if key not in measurements else measurements[key]-started
             data['cleanup_after_query_seconds']=None if not all(k in measurements for k in ['physical_close','query_return']) else measurements['physical_close']-measurements['query_return']
             print('SQL_CANCEL_FAILURE_MEASUREMENTS='+__import__('json').dumps(data,sort_keys=True))
+    exercise(summary_session,scenario)
+
+
+def test_http_timeout_does_not_acknowledge_pending_sql_cleanup(summary_session,monkeypatch):
+    from app.core.summary_sql import SummarySQL
+    entered=threading.Event();release=threading.Event()
+    original=SummarySQL.close
+
+    def held_close(owner):
+        original(owner)
+        entered.set()
+        assert release.wait(3), 'Test did not release completed SQL cleanup'
+
+    monkeypatch.setattr(SummarySQL,'close',held_close)
+
+    async def scenario(client,application):
+        body=envelope(summary_session,deadline=time.time()+.5)
+        task=asyncio.create_task(request(client,'POST',ROUTE,body))
+        job=None
+        try:
+            response=await asyncio.wait_for(asyncio.shield(task),2)
+            job=application.state.summary_jobs[body['job_id']]
+            assert entered.is_set() and job.sql.closed
+            assert response.status_code==504 and response.json()['settled'] is False
+            assert not job.settled and not job.task.done()
+            assert job.pending is not None and not job.pending.done()
+            control={'v':2,'scope':body['scope'],'boot_id':body['boot_id'],'input_hash':body['input_hash']}
+            status=await request(client,'GET',ROUTE+'/'+body['job_id'],control)
+            assert status.status_code==200 and status.json()['settled'] is False
+            release.set()
+            await wait_settled(job)
+            status=await request(client,'GET',ROUTE+'/'+body['job_id'],control)
+            assert status.status_code==200 and status.json()['settled'] is True
+            assert status.json()['state']=='failed' and 'output' not in status.json()
+            assert job.task.done() and not job.task.cancelled()
+        finally:
+            release.set()
+            await asyncio.gather(task,return_exceptions=True)
+            if job is not None:await asyncio.gather(job.task,return_exceptions=True)
+
     exercise(summary_session,scenario)

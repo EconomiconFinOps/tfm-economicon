@@ -203,4 +203,22 @@ evidencia insuficiente sin inventar cifras.
 #### Scenario: Fuentes ajenas
 
 - **WHEN** una salida refiere evidencia desconocida o de otro tenant
-- **THEN** el backend rechaza esas referencias al validar el final, antes de guardar la respuesta como confirmada o presentar sus citas como verificadas; la evidencia de entrada se autoriza antes de generar y los fragmentos de texto visibles siguen siendo provisionales
+- **THEN** el backend rechaza esas referencias antes de guardar o mostrar la respuesta; los borradores no SHALL emitirse a la interfaz
+
+#### Scenario: Fuente documental vinculada en cualquier estado
+
+- **WHEN** un segmento utiliza documentacion recuperada
+- **THEN** SHALL declarar base documental y referencias a evidencia autorizada con pasaje literal, incluso en no_data o refused
+- **AND** SHALL rechazarse respaldo ausente o evidencia corpus sin uso; la pertinencia semantica SHALL comprobarse en aceptacion, no mediante filtros de palabras
+
+#### Scenario: Correccion unica bajo autoridad del backend
+
+- **WHEN** una respuesta incumple coherencia de estado, respaldo obligatorio o uso de evidencia y queda margen
+- **THEN** backend SHALL autorizar como maximo una correccion dentro de cuatro intentos totales, reutilizando recuperacion autenticada y deadline del intento fallido
+- **AND** SHALL conservar contexto canonico, aislamiento, cancelacion, consumo de intentos rechazados y una pareja persistida; la correccion fallida SHALL finalizar sin encadenar reintentos
+
+#### Scenario: Presentacion posterior a validacion
+
+- **WHEN** se genera o corrige una respuesta
+- **THEN** SHALL mostrarse progreso sin borrador, y el texto SHALL emitirse solo despues de validar y persistir
+- **AND** estados no accionables SHALL exigir metrics y recommendations vacios en esquema del proveedor y validacion final

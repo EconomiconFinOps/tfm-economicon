@@ -7,6 +7,7 @@ import { PreparedScreen } from "../../services/screenCapture";
 import type { ConversationRecord, MessageRecord } from "../../services/contracts";
 
 export interface ChatCell {
+  corrective?: boolean;
   deleting?: boolean;
   manualTitle?: boolean;
   result?: { operationId: string; messageId: string };
@@ -315,6 +316,7 @@ class ChatSession {
       cell = this.value.cells[id];
     }
     if (frame.operation_id !== undefined && frame.operation_id !== cell.operation?.operation_id) throw new Error("operation_mismatch");
+    if (frame.type === "retry_scheduled" && frame.corrective === true) this.patch(id, { corrective: true, partial: "" });
     if (frame.type === "attempt_started") {
       if (typeof frame.attempt_id !== "string" || !Number.isSafeInteger(frame.number) || Number(frame.number) < 1 || Number(frame.number) > 4) throw new Error("attempt_invalid");
       if (Number(frame.number) < (cell.operation?.attempt_count ?? 0)) return;
@@ -327,7 +329,7 @@ class ChatSession {
         prior.add(cell.attempt); this.previousAttempts.set(id, prior);
       }
       this.patch(id, { attempt: frame.attempt_id, sequence: 0, partial: "", revision: Number(frame.revision), notice: "",
-        recovering: false,
+        recovering: false, corrective: frame.corrective === true,
         operation: cell.operation ? { ...cell.operation, state: "active", current_attempt_id: frame.attempt_id, attempt_count: Number(frame.number) } : null });
     }
     if (frame.type === "snapshot") {
@@ -369,7 +371,7 @@ class ChatSession {
     if (detail.conversation.tenant_id !== this.scope.tenantId || detail.conversation.user_id !== this.scope.userId
         || detail.conversation.id !== id || !Array.isArray(detail.messages)
         || !detail.messages.some(message => message.id === result.id && message.role === "assistant" && message.content === result.content)) throw new Error("result_invalid");
-    this.patch(id, { messages: detail.messages, question: "", partial: "", notice: "", starting: false,
+    this.patch(id, { messages: detail.messages, question: "", partial: "", notice: "", starting: false, corrective: false,
       result: { operationId: operation.operation_id, messageId: result.id } });
     void this.loadMemory(id);
   }

@@ -112,6 +112,10 @@ ASSEMBLER_CONTRACT.update(
     no_search_policy="authorized-context-or-abstention",
     evidence_selection="effective-context-exact-records-quoted-refs-v4",
     grounding="corpus-literal-window-enums-2048-v2",
+    segment_grounding="explicit-documentary-references-used-evidence-v1",
+    correction={"version": 1, "maximum_per_operation": 1, "total_attempts": 4,
+                "deadline": "original-remaining", "retrieval": "authenticated-cache",
+                "presentation": "validated-persisted-only"},
     arithmetic="provenance-user-document-cited-operation-root-depth4-operations12-v4",
     decision_values="server-query-no-model-decision-v1",
     reasoning={"effort": "high", "exclude": True, "shared_output_tokens": 6400},
@@ -259,6 +263,23 @@ class ChatResources:
         if variable != result["variable_tokens"]:
             raise ValueError("Tool count mismatch.")
         return messages
+
+    def validate_correction(self, context, correction):
+        from app.core.chat_correction import correction_message
+        from app.agents.schemas import chat_provider_schema
+
+        messages = self.validate_tool_result(
+            context, retrieval_control(context), correction["cache"]["result"]
+        )
+        messages.append(correction_message(correction["code"]))
+        sources = correction["cache"]["effective"].get("authorized_evidence", [])
+        effective = {"messages": messages, "authorized_evidence": sources}
+        schema = chat_provider_schema(
+            financial_metrics_allowed=context["financial_metrics_allowed"],
+            authorized_evidence=sources, quantities=context_quantities(effective),
+            rules=context_rules(effective),
+        )
+        self.check_messages(messages, schema)
 
     def validate_context(self, context):
         from app.agents.schemas import chat_provider_schema

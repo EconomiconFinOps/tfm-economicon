@@ -40,8 +40,9 @@ export function userRoleLabel(role?: string) {
   return labels[role] ?? role;
 }
 
-export function operationStatus(cell: Pick<ChatCell, "starting" | "operation" | "partial">) {
+export function operationStatus(cell: Pick<ChatCell, "starting" | "operation" | "partial" | "corrective">) {
   if (cell.starting) return "Preparando contexto";
+  if (cell.corrective && ["active", "waiting"].includes(cell.operation?.state ?? "")) return "Revisando respuesta";
   switch (cell.operation?.state) {
     case "active": return cell.partial ? "Recibiendo respuesta" : "Esperando respuesta del LLM";
     case "waiting": return cell.operation.wait_info.reason === "local_capacity" ? "Esperando capacidad disponible" : "Esperando al proveedor";

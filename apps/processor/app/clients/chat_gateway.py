@@ -272,6 +272,10 @@ def _record_diagnostic(
             "Invalid calculation collection.": "invalid_calculation_collection",
             "Invalid short prose item.": "invalid_short_prose_item",
             "Invalid response segment.": "invalid_response_segment",
+            "Documentary support missing.": "documentary_support_missing",
+            "Unused documentary evidence.": "unused_documentary_evidence",
+            "Invalid documentary provenance.": "evidence_provenance",
+            "Invalid documentary passage.": "evidence_passage",
             "Invalid segment text.": "invalid_segment_text",
             "Invalid segment reference.": "invalid_segment_reference",
             "Invalid segment collection.": "invalid_segment_collection",
@@ -584,12 +588,13 @@ class ChatGateway:
                             try:
                                 stage = "candidate_json"
                                 parsed = complete_json(raw)
+                                private_candidate = parsed
                                 stage = "model_validation"
                                 from app.core.chat_segments import render_response
 
                                 parsed = render_response(
                                     parsed,
-                                    [],
+                                    context.get("authorized_evidence", []),
                                     quantities=source_quantities,
                                     rules=source_rules,
                                 )
@@ -600,6 +605,13 @@ class ChatGateway:
                                     authorized_evidence=context.get(
                                         "authorized_evidence", []
                                     ),
+                                )
+                                # Preserve public/security validator precedence;
+                                # validate private links before releasing a candidate.
+                                render_response(
+                                    private_candidate, context.get("authorized_evidence", []),
+                                    quantities=source_quantities, rules=source_rules,
+                                    require_grounding=True,
                                 )
                             except Exception as failure:
                                 diagnostic(
@@ -693,11 +705,13 @@ class ChatGateway:
             yield {"type": "error", "category": "transport"}
         except Exception as failure:
             diagnostic(stage, failure, category="invalid_response")
-            yield {"type": "error", "category": "invalid_response", "status": 422}
+            from app.core.chat_correction import correction_code
+            yield {"type": "error", "category": "invalid_response", "status": 422,
+                   "rule_code": correction_code(failure), "usage": usage}
         finally:
             holder.pop("response", None)
 
-    async def __call__(self, context, deadline, *, tool_result=None):
+    async def __call__(self, context, deadline, *, tool_result=None, correction=None):
         holder = {}
         cancelled = threading.Event()
         try:
@@ -706,7 +720,7 @@ class ChatGateway:
                 yield {"type": "error", "status": 422, "category": "invalid_response"}
                 return
             if protocol == "server-documentation-v4":
-                if tool_result is None:
+                if tool_result is None and correction is None:
                     yield {
                         "type": "error",
                         "status": 422,
@@ -719,12 +733,17 @@ class ChatGateway:
                 )
 
                 control = retrieval_control(context)
-                yield {"type": "tool_call", "assistant": control}
+                if correction is None:
+                    yield {"type": "tool_call", "assistant": control}
                 remaining = deadline - time.time() - 5
                 if remaining <= 0:
                     raise TimeoutError()
-                result = await asyncio.wait_for(tool_result(control), remaining)
+                result = (correction["cache"]["result"] if correction is not None
+                          else await asyncio.wait_for(tool_result(control), remaining))
                 messages = continuation_messages(context, control, result)
+                if correction is not None:
+                    from app.core.chat_correction import correction_message
+                    messages.append(correction_message(correction["code"]))
                 context = {
                     **context,
                     "messages": messages,

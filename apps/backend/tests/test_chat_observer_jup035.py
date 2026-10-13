@@ -61,8 +61,8 @@ def test_snapshot_of_next_attempt_excludes_the_closed_previous_buffer(api,monkey
             _,started=frame(await anext(observer))
             assert started['operation']['attempt_count']==2
             _,snapshot=frame(await anext(observer))
-            assert snapshot['type']=='snapshot' and snapshot['text']=='🌍 nuevo'
-            assert snapshot['seq']==1 and snapshot['offset']==8 and snapshot['number']==2
+            assert snapshot['type']=='snapshot' and snapshot['text']==''
+            assert snapshot['seq']==0 and snapshot['offset']==0 and snapshot['number']==2
             assert snapshot['attempt_id']==api[2].claims[1]['attempt_id']
             assert snapshot['attempt_id']!=api[2].claims[0]['attempt_id']
             assert len(api[2].claims)==2 and messages(api[1])==[]
@@ -97,13 +97,13 @@ def test_live_observer_after_over64_deltas_starts_at_full_snapshot_and_continues
             assert started['type']=='started' and started['operation']['state']=='active'
             identifier,snapshot=frame(await anext(observer))
             assert snapshot['type']=='snapshot'
-            assert snapshot['text']=='🌍'*100 and snapshot['offset']==200 and snapshot['seq']==100
+            assert snapshot['text']=='' and snapshot['offset']==0 and snapshot['seq']==0
             assert snapshot['attempt_id']==row['current_attempt_id'] and snapshot['operation_id']==row['operation_id']
-            assert identifier==row['operation_id']+':'+row['current_attempt_id']+':100'
+            assert identifier==row['operation_id']+':'+row['current_attempt_id']+':0'
             api[2].release.set()
             _,delta=frame(await asyncio.wait_for(anext(observer),3))
-            assert delta['type']=='delta' and delta['text']==' listo'
-            assert delta['seq']==101 and delta['offset']==200 and delta['attempt_id']==snapshot['attempt_id']
+            assert delta['type']=='delta' and delta['text']==answer['answer']
+            assert delta['seq']==1 and delta['offset']==0 and delta['attempt_id']==snapshot['attempt_id']
             await until_state(client,path()+'/'+row['operation_id'],'completed')
             assert len(api[2].claims)==1 and len(messages(api[1]))==2
         finally:

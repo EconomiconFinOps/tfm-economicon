@@ -5,6 +5,30 @@ ni una validacion humana. Los responsables y el estado oficial siguen en Trello.
 
 ## Recorrido vigente
 
+Ultima bateria real de 28 preguntas: 25 aprobadas con el criterio MVP-TFM
+acordado, 005 contradictoria (amarillo/rojo) y 014/017 rechazadas por evidencia
+documental seleccionada sin uso, incluso tras la correccion. 003/011 pasan
+en esta repeticion. Las 26 respuestas entregadas coinciden con su historial
+y evento final, sin duplicados. No hubo cambios de producto durante la tanda.
+Este checkpoint conserva los fallos, no declara cierre ni publicacion. Ver
+[bateria y pendientes](../evidence/jup-035-mvp-full28-20261013.md).
+
+La ampliacion local de fuentes permite respaldo documental en abstenciones y
+rechazos, valida referencias de segmentos y autoriza una sola correccion con
+contexto reutilizado y deadline original. No muestra borradores antes de validar
+y persistir. Pasan 57 pruebas backend, 161 processor y 37 frontend. En la ronda
+focal anterior 025/026 respondian correctamente, pero 003 conservaba una cita
+incompleta y 011 un supuesto con cifra equivocada. Se preserva ese resultado
+historico, sin sustituirlo por el posterior. Ver
+[resultados y limites actuales](../evidence/jup-035-bounded-correction-20261013.md).
+
+Se ha corregido la fixture SQL del resumen: prepara datos sinteticos propios y
+espera la tarea de limpieza, en lugar de inferir su fin de la respuesta HTTP.
+La carrera se reprodujo con cierre retrasado; seis controles SQL reales y dos
+casos relacionados pasan sin omisiones. No cambio el producto. Ver
+[diagnostico y reproduccion](../evidence/jup-035-summary-sql-settlement-20261013.md).
+La revision independiente y los 12 controles/28 preguntas siguen separados.
+
 La ultima ronda real de 005/006/007/012 cumple el criterio MVP: respuestas
 coherentes con la documentacion, calculos correctos y sin datos inventados.
 Cada caso completa en un intento y persiste una pareja, con streaming igual
@@ -31,7 +55,9 @@ La interfaz assistant-ui usa operaciones `/assistant/.../generations`.
 Backend autentica al propietario, valida el contexto y consulta los costes.
 El protocolo local adaptado es `server-documentation-v4`: backend recupera una
 vez con la pregunta canonica filtrada por tenant y processor ejecuta una unica
-generacion estricta. Las expresiones tipadas y los pasajes autenticados se
+generacion estricta por intento. La correccion autorizada consume otro intento
+de los cuatro existentes, reutiliza la recuperacion y no renueva el deadline.
+Las expresiones tipadas y los pasajes autenticados se
 proyectan al formato publico existente. La respuesta validada, las
 citas y la evidencia se guardan atomicamente en el historial JSONB.
 

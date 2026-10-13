@@ -73,6 +73,27 @@ Las campañas anteriores no acreditan esta adaptacion.
 
 ## Alternativas del runtime
 
+## Decision adicional: fuentes y correccion acotada (13/10/2026)
+
+Paris aprueba vincular los segmentos documentales a evidence_ids autorizados
+y pasajes literales; evidence sigue permitida para abstencion o rechazo.
+El esquema privado prohibe metrics/recommendations en estados no accionables,
+igual que la validacion publica. No se reparan listas borrando sus elementos.
+
+Una correccion estructurada excepcional es autorizada solo por backend,
+consume uno de los cuatro intentos y conserva el deadline del intento fallido.
+Reutiliza la recuperacion autenticada en controles JSONB, sin nueva busqueda
+ni cambio del contexto canonico. Una segunda correccion nunca se admite.
+Solo se envian instrucciones fijas por codigo de error; no prosa rechazada.
+Los fallos de seguridad y almacenamiento no se convierten en reparables.
+
+Se mantiene progreso, pero el usuario solo recibe texto validado y persistido,
+no borradores rechazados. FinOpsResponse 1.0 y las fuentes pequenas no cambian.
+Este acuerdo sustituye la prohibicion anterior de inferencia reparadora solo
+para los errores recuperables enumerados; no implica un juez semantico LLM.
+La aceptacion focal comprueba pertinencia real; no se afirma que la literalidad
+o la vinculacion de IDs detecte todas las afirmaciones semanticamente incorrectas.
+
 ## Decision adicional: clasificacion documental verificada (13/10/2026)
 
 Paris aprueba un catalogo versionado de semaforo de coste no asignado, habilitado

@@ -19,6 +19,11 @@ function ChatProgress({ cell }: { cell: ChatCell }) {
 }
 
 describe("Presentación del chat", () => {
+  it("muestra la revisión correctiva sin un borrador", () => {
+    render(<ChatProgress cell={{ ...cell, operation, corrective: true, partial: "" }} />);
+    expect(screen.getByRole("status")).toHaveTextContent("Revisando respuesta");
+    expect(screen.queryByText("Recibiendo respuesta")).toBeNull();
+  });
   it("refresca la fecha relativa española conservando fecha real y tooltip absoluto", () => {
     vi.useFakeTimers();vi.setSystemTime(new Date("2026-10-11T12:00:00Z"));
     const createdAt = "2026-10-11T11:59:00Z";

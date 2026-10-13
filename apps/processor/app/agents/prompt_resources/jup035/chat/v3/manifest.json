@@ -1,58 +1,67 @@
 {
   "assembler_contract": {
-    "arithmetic": "provenance-user-document-cited-operation-root-depth4-operations12-v4",
-    "classification": {
-      "catalog_sha256": "81bebae54b0f5a08f2cd3cf5b5d9881a3c89b0c3705128f2f28b77f598e89e75",
-      "citations": "server-applied-rule-literal-passages-v1",
-      "version": "unallocated-cost-v1"
-    },
-    "continuation_roles": [
-      "user-untrusted-retrieval"
+    "version": 2,
+    "roles": [
+      "system",
+      "user-summary-optional",
+      "user-current"
     ],
+    "summary_label": "UNTRUSTED_DIALOGUE_SUMMARY",
     "current_label": "UNTRUSTED_CURRENT_CONTEXT",
-    "decision_format": "server-current-question",
+    "serialization": "utf8-sorted-keys-significant-arrays",
+    "escape": "json-controls-angle-brackets",
+    "tool_protocol": "server-documentation-v4",
     "decision_schema": {
-      "additionalProperties": false,
+      "type": "object",
       "properties": {
         "action": {
           "const": "search"
         },
         "query": {
-          "maxLength": 2048,
+          "type": "string",
           "minLength": 1,
-          "type": "string"
+          "maxLength": 2048
         }
       },
       "required": [
         "action",
         "query"
       ],
-      "type": "object"
+      "additionalProperties": false
     },
-    "decision_values": "server-query-no-model-decision-v1",
-    "escape": "json-controls-angle-brackets",
-    "evidence_selection": "effective-context-exact-records-quoted-refs-v4",
-    "final_format": "strict-finops",
-    "grounding": "corpus-literal-window-enums-2048-v2",
-    "max_generations": 1,
+    "continuation_roles": [
+      "user-untrusted-retrieval"
+    ],
     "max_searches": 1,
+    "max_generations": 1,
+    "decision_format": "server-current-question",
+    "final_format": "strict-finops",
     "no_search_policy": "authorized-context-or-abstention",
+    "evidence_selection": "effective-context-exact-records-quoted-refs-v4",
+    "grounding": "corpus-literal-window-enums-2048-v2",
+    "segment_grounding": "explicit-documentary-references-used-evidence-v1",
+    "correction": {
+      "version": 1,
+      "maximum_per_operation": 1,
+      "total_attempts": 4,
+      "deadline": "original-remaining",
+      "retrieval": "authenticated-cache",
+      "presentation": "validated-persisted-only"
+    },
+    "arithmetic": "provenance-user-document-cited-operation-root-depth4-operations12-v4",
+    "decision_values": "server-query-no-model-decision-v1",
     "reasoning": {
       "effort": "high",
       "exclude": true,
       "shared_output_tokens": 6400
     },
-    "roles": [
-      "system",
-      "user-summary-optional",
-      "user-current"
-    ],
-    "serialization": "utf8-sorted-keys-significant-arrays",
-    "summary_label": "UNTRUSTED_DIALOGUE_SUMMARY",
-    "tool_protocol": "server-documentation-v4",
-    "version": 2
+    "classification": {
+      "version": "unallocated-cost-v1",
+      "catalog_sha256": "81bebae54b0f5a08f2cd3cf5b5d9881a3c89b0c3705128f2f28b77f598e89e75",
+      "citations": "server-applied-rule-literal-passages-v1"
+    }
   },
-  "assembler_sha256": "f8a6d36420ebacc4d2c356730c5b4dd8762652f0c05ce44c718af7fe9910d703",
+  "assembler_sha256": "f3fb44ad5dd0fdf87cf68ec56200690f40253e1e418db8f5b02ac69c284e3f1b",
   "budgets": {
     "model_context_tokens": 1048576,
     "output_tokens": 6400,
@@ -88,12 +97,12 @@
   "input_contract_sha256": "a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42",
   "input_sha256": "33eaa1ebe3a5870426ceea80d16471631c93e4cb79c7d81d1b710019069d77c6",
   "kind": "jup-035.chat.v3",
-  "provider_response_schema_sha256": "6497c5ed354370cba3b2f753e981e631662f6c98c592b2819b0e06b9f2b1a99c",
+  "provider_response_schema_sha256": "c73726225a0d5943576d0741582818cf4fc5ab1e764be518ca4c96ad935afced",
   "response_period_policy": "server-verified-unique-utc-v1",
   "response_schema_sha256": "baf067ac8fe35a693848012c5358cb1c6ab8883ebaa02a63166b00f7d8298018",
   "response_subscriptions_policy": "server-canonical-selection-v1",
   "system_base_sha256": "8e3197acc5cc50b4368d547fbde9ea198cad3364414cec489cd9050f922e6edf",
-  "system_sha256": "6e318cd584d0071b0437271c461f05eae6bb21c205eeffb34e0b2cf6edbad9ac",
+  "system_sha256": "5ef73d86c116002d2c25b39a8992784b8282d5d7897d765ea30dce5c0b60dd7d",
   "tokenizer": {
     "bytes": 20217442,
     "library_version": "0.22.1",

@@ -9,7 +9,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Chat conversacional](chat-conversacional.md) | JUP-035: 005/006/007/012 cumplen el criterio MVP con fuentes, streaming e historial; salida 6400 confirmada. 019/021/022 conservan evidencia focal anterior. Cambios locales sin publicar. | 2026-10-13 |
+| [Chat conversacional](chat-conversacional.md) | JUP-035: fuentes y correccion acotada implementadas; ultima bateria real 25/28 aprobadas con criterio MVP-TFM, pendientes 005/014/017. Fixture SQL portable y limpieza corregidas. Checkpoint local, sin cierre completo. | 2026-10-13 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú; Overview conserva su ruta sin enlace. | 2026-10-13 |
 | [Interfaz del frontend en español](frontend-espanol.md) | JUP-117: textos de interfaz en español, con glosario y prueba de regresión. | 2026-10-13 |
 | [Demo con datos sintéticos de coste](demo-datos-sinteticos-coste.md) | JUP-107: demo de tres minutos con los datos de JUP-106 y conjunto sintético de anomalías con herramienta, esperados y guía; desde JUP-114 incluye el panel `/anomalies` con episodios diarios. | 2026-10-12 |

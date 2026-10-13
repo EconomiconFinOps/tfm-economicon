@@ -1,4 +1,14 @@
 ## Trabajo anterior conservado
+## Correccion aprobada de fuentes y recuperacion
+- [x] Documentar plan y aprobacion antes de implementar.
+- [x] Reproducir fallos de esquema, respaldo y flujo mediante pruebas Red.
+- [x] Implementar bases documentales, correccion acotada y presentacion validada.
+- [x] Ejecutar Green, mutaciones y regresiones afectadas; actualizar manifiestos.
+- [x] Construir imagenes y ejecutar focales 003/011/025/026; comprobar historial, fuentes e icono de reintento en navegador.
+- [ ] Aceptar contenido completo de 003/011: persisten cita incompleta y supuesto numerico incorrecto, respectivamente.
+- [ ] Observar en navegador el instante correctivo sin borrador; eventos y componentes comprobados, no captura en directo.
+- [x] Entregar cambios, recibos, presupuesto y pendientes sin publicar.
+
 Las evidencias y pruebas del diseño anterior se conservan en Git y en los
 recibos originales. No validan server-documentation-v4.
 

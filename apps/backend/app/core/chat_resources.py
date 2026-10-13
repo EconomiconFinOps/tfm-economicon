@@ -16,7 +16,7 @@ TOKENIZER_SHA = "19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82
 TOKENIZER_REVISION = "a66456a59f21345d1e5e586345c448a9106d29d7"
 BASE_SHA = "8e3197acc5cc50b4368d547fbde9ea198cad3364414cec489cd9050f922e6edf"
 INPUT_SHA = "a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42"
-ASSEMBLER_SHA = "f8a6d36420ebacc4d2c356730c5b4dd8762652f0c05ce44c718af7fe9910d703"
+ASSEMBLER_SHA = "f3fb44ad5dd0fdf87cf68ec56200690f40253e1e418db8f5b02ac69c284e3f1b"
 from app.core.chat_expressions import context_question, context_quantities
 from app.core.chat_rules import context_rules
 
