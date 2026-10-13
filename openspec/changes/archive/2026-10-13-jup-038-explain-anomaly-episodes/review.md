@@ -1392,3 +1392,23 @@ Sin registrar. El bloque `## Human Approval` con `Approval type: post-review` lo
 - Accepted findings: `RF-038-001` a `RF-038-009`, registrados en `openspec/findings/backlog.md` sin bloquear el cierre; `RF-114-001` aplazado.
 - Archive decision: archive
 - Notes: se archiva en la rama `feat/JUP-038-explain-anomaly-episodes` antes de abrir la PR contra `develop`. Pendiente en la PR: `Revision JUP-038` (Lucia Mateo) y `Validacion JUP-038` (Alejandro Aguado), pairing de Paris Arcos Martin sin acreditar, run de CI y la integración con JUP-035 (PR #120 y #121), que añade conflictos en `routes/assistant.py` y `AnswerEvidence.tsx`.
+
+
+## Adenda: corrección tras la revisión de la PR #128 (2026-10-13)
+
+`Revision JUP-038` de Lucia Mateo (`CHANGES_REQUESTED`) pidió dos cambios sobre el commit `49641cec`. No hubo comentarios en línea ni en la conversación. El change ya estaba archivado: se corrigió en la rama con el mismo ciclo (spec, Red, Green, mutación, DoD y QA) y la spec principal `openspec/specs/anomaly-episode-explanation/spec.md` recoge los escenarios nuevos; el delta archivado no se reescribe.
+
+| Petición | Respuesta |
+| --- | --- |
+| 1. Datos guardados incoherentes dan 200 con evidencia «ok» | `explain_episode` lanza `ExplanationUnavailable` (409 sin guardar nada) con observación desconocida, moneda fuera de las reglas, `impact_day_count` que no sea un entero >= 1, fecha final anterior a la de inicio, impacto acumulado menor que el exceso del día de apertura y motivo de cierre vacío o sin texto en un estado cerrado |
+| 2. NaN, Infinity o más de ~120 dígitos acaban en 500 | Los tres operandos deben ser `Decimal` finitos, no negativos, con a lo sumo 38 dígitos, exponente ajustado <= 25 y 12 decimales (los de `NUMERIC(38,12)`); además `except ArithmeticError` como defensa en profundidad |
+
+**Ciclo.** Ronda 1: spec `75ef7fc1`, Red `c64ccc6d` (140 pruebas: 96 fallan y 44 son controles o guardas), Green `099f890d`. La QA independiente pidió cambios (MEDIUM): `Decimal("1e-150")` cuenta como un dígito y hace fallar `money()`, y `Decimal("1e-999999")` lanza `decimal.Overflow`, que no es `InvalidOperation` y acababa en 500; las tres variantes «red de seguridad» que yo había clasificado como equivalentes estaban mal clasificadas. Ronda 2: spec `052d3fb9`, Red `77745606` (50 pruebas: 18 fallan, 32 son gemelos a 12 decimales y controles), Green `6ae4503c`: tope de 12 decimales y `ArithmeticError`. QA de la ronda 2: `accept`, con un fuzz de 60000 tripletas sin excepciones inesperadas.
+
+**Errores míos de esta corrección.** Pedí a la QA que esperara 318 pruebas en cinco suites cuando eran 262 (318 incluía las dos de esquema); y el Red de la ronda 1 contenía un caso (`numerador-1e25`) que incumplía su propia invariante.
+
+**Excepciones al candado de pruebas (autorizadas por Victor, cada una por separado).** (1) `test_anomaly_explanations_integrity.py`, caso `numerador-1e25`: el observado pasa de 3e24 a 1.8e24 para que el numerador sea >= al exceso. (2) `test_anomaly_explanations_mutants.py`, prueba de 30 cifras: los mismos dígitos desplazados para caber en `NUMERIC(38,12)`, numerador >= exceso y anclas literales recalculadas; sigue matando una precisión de 28 (da 50.0049… frente a 50.01). (3) `test_anomaly_explanations_integrity.py`, frontera de 38 y 39 dígitos: pasan a tripletas coherentes con 26 enteros y 12 o 13 decimales. En las tres solo cambian datos, anclas y comentarios; las aserciones se conservan.
+
+**Resultados.** Suites del explicador: 368 pasan. Backend completo como CI: 1623 pasan, 149 omitidas, 0 fallos (antes 1433 y 149: +190 exactas). Con CockroachDB v24.1.11 real y desechable: 1751 pasan, 21 omitidas, 0 fallos, es decir, los episodios reales siguen explicándose con las invariantes nuevas. `corepack pnpm lint`, `openspec:validate` y `git diff --check` correctos. Mutación manual dirigida al código nuevo: 28 de 32 muertos. Supervivientes, todos equivalentes: `value < 0` (lo cubren `triggers` y la invariante del impacto), `_MAX_DIGITS` 38 a 39 (lo implican 26 enteros y 12 decimales: ahora es código redundante y el caso `DIGITS_39` se rechaza por decimales) y las dos variantes de quitar la red de seguridad (inalcanzable tras acotar los decimales).
+
+**Lo no cubierto.** Frontend sin cambios y sin reejecutar tras esta corrección; la observación no bloqueante sobre `isAnomalyEvidence` se registra como `RF-038-010`; la atomicidad del par de mensajes sigue en `RF-038-005`. Los LOW de la QA (tipos de fecha mezclados, sustitutos Unicode aislados, `closed_at` de año 1, motivos con espacios de ancho cero que la API sí rechaza) solo se alcanzan con datos que la base o la API no guardan: `RF-038-011`. Sigue pendiente la `Validacion JUP-038`.

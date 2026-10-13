@@ -154,6 +154,15 @@ Sobre `d0095619` (la rama contiene `origin/develop` en `bfaf3983`; sin commits n
 - **Frontend completo en verde con el paralelismo por defecto:** no garantizado en esta máquina (intermitencias descritas arriba); sí con un solo worker.
 - **Corpus del asistente:** no cambia, así que el asistente no sabe que lo esperado es la media de 7 días ni cómo se calcula la criticidad (`RF-114-001`).
 
+### Corrección tras la revisión de la PR #128 (2026-10-13)
+
+`Revision JUP-038` pidió dos cambios (datos guardados incoherentes y operandos no finitos o enormes, que debían dar 409 y no 200 o 500). Se atendieron en la rama con spec, Red, Green, mutación y QA; el detalle, las tres excepciones autorizadas al candado de pruebas y los errores propios están en el apartado «Adenda» de `review.md`.
+
+- Backend como CI: **1623 pasan, 149 omitidas, 0 fallos** (antes 1433 y 149: +190 pruebas nuevas, 140 de la ronda 1 y 50 de la ronda 2). Con CockroachDB v24.1.11 real: **1751 pasan, 21 omitidas, 0 fallos**.
+- Mutación dirigida al código nuevo: 28 de 32 muertos; los 4 supervivientes son equivalentes y están justificados. QA independiente: la ronda 1 pidió cambios (exponentes negativos enormes) y la ronda 2 dio `accept` tras un fuzz de 60000 tripletas sin excepciones inesperadas.
+- Lint, `openspec:validate` y `git diff --check` correctos. El frontend no cambia y no se reejecutó.
+- Sigue sin hacerse: `Validacion JUP-038`, el run de CI de la nueva cabeza de la rama y la reverificación en navegador (no aplica: no cambia la interfaz).
+
 ## Pendiente
 
 - PR: por abrir (tarea 10.6, tras la aprobación posterior a la revisión).
