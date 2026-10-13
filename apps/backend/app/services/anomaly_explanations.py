@@ -15,7 +15,7 @@ import copy
 import hashlib
 import json
 from datetime import date, datetime, timezone
-from decimal import Decimal, InvalidOperation, localcontext
+from decimal import Decimal, localcontext
 
 # `display_label` se importa y no se copia: es el escape ya probado en JUP-037 y duplicarlo dejaría dos
 # versiones del mismo saneamiento que podrían divergir. No se mueve a un módulo común para no tocar el
@@ -50,6 +50,11 @@ _PRECISION = 120
 # Límites de los operandos guardados (spec «Operandos no finitos o fuera de rango»).
 _MAX_DIGITS = 38
 _MAX_ADJUSTED_EXPONENT = 25
+# Decimales de la columna `NUMERIC(38,12)` donde se guardan los operandos: un valor con más decimales no
+# puede venir de la base de datos. Hace falta un tope propio porque el recuento de dígitos no lo cubre: un
+# exponente negativo enorme como `1E-150` cuenta como un solo dígito y aun así hace fallar el redondeo, y
+# `1E-999999` hace saltar `decimal.Overflow`.
+_MAX_DECIMALS = 12
 OBSERVATIONS = ("observed", "no_longer_observed")
 
 
@@ -102,7 +107,10 @@ def _is_valid_operand(value) -> bool:
         return False
     # 38 dígitos y exponente ajustado <= 25 acotan la aritmética exacta (7 y 100 veces el operando caben
     # de sobra en `_PRECISION`) y mantienen `money()` lejos de su límite de precisión.
-    return len(value.as_tuple().digits) <= _MAX_DIGITS and value.adjusted() <= _MAX_ADJUSTED_EXPONENT
+    # El tope de decimales va después de `is_finite()`: solo en un `Decimal` finito el exponente es un
+    # `int`; en NaN e infinitos es un texto ("n", "F") y compararlo con un número lanzaría `TypeError`.
+    return (len(value.as_tuple().digits) <= _MAX_DIGITS and value.adjusted() <= _MAX_ADJUSTED_EXPONENT
+            and value.as_tuple().exponent >= -_MAX_DECIMALS)
 
 
 def _require_valid_operands(*operands) -> None:
@@ -190,10 +198,12 @@ def explain_episode(snapshot: dict, *, tenant_id: str, explained_at: datetime) -
             shown = {"reference": money(reference_daily), "absolute": money(absolute_increase),
                      "relative": money(relative_increase), "impact": money(impact)}
         observed_shown = money(observed)
-    except (InvalidOperation, ZeroDivisionError):
-        # Red de seguridad: la validación previa ya acota los operandos, pero si algo se le escapara es
-        # mejor un 409 sin explicación que un 500; la excepción original no se propaga porque puede
-        # arrastrar valores del cliente.
+    except ArithmeticError:
+        # Defensa en profundidad: la validación previa ya acota los operandos, pero si se le escapara otra
+        # clase de error aritmético que no prevé (`ArithmeticError` cubre `InvalidOperation`,
+        # `ZeroDivisionError` y también `decimal.Overflow`, que NO es `InvalidOperation`) es mejor un 409
+        # sin explicación que un 500; la excepción original no se propaga porque puede arrastrar valores
+        # del cliente.
         raise ExplanationUnavailable() from None
 
     rules = episode["rules"]

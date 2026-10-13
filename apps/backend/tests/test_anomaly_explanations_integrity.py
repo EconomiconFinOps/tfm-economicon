@@ -219,14 +219,29 @@ OPERANDS = ("reference_week_cost", "opening_observed_cost", "impact_numerator")
 BASE = {"reference_week_cost": Decimal("2800.00"), "opening_observed_cost": Decimal("550.00"),
         "impact_numerator": Decimal("2800.00")}
 
-# Valores con 38 cifras significativas (frontera válida) y con 39 (primer valor rechazable) para cada operando. Son
-# dígitos distintos de cero (sin ceros finales) para no depender de cómo se cuentan; el exponente es pequeño, así
-# que solo el límite de dígitos puede rechazarlos, y con los otros dos operandos base la regla de apertura y el
-# numerador >= exceso se siguen cumpliendo (p. ej. R = 2800.11..: exceso 1049.88.. <= 2800).
-DIGITS_38 = {"reference_week_cost": Decimal("2800." + "1" * 34), "opening_observed_cost": Decimal("550." + "1" * 35),
-             "impact_numerator": Decimal("2800." + "1" * 34)}
-DIGITS_39 = {"reference_week_cost": Decimal("2800." + "1" * 35), "opening_observed_cost": Decimal("550." + "1" * 36),
-             "impact_numerator": Decimal("2800." + "1" * 35)}
+# Tripletas (referencia, observado, numerador) con 38 cifras significativas en UN operando (frontera válida) y con 39
+# (primer valor rechazable). La columna es NUMERIC(38,12): 38 cifras con a lo sumo 12 decimales son 26 enteras, así que
+# el operando grande ya no puede mezclarse con los pequeños de base (2800 y 550) sin dejar de cumplir la regla de
+# apertura; por eso cada tripleta es coherente por sí sola (el observado cumple la regla y el numerador no baja del
+# exceso). Dígitos distintos de cero (sin ceros finales) para no depender de cómo se cuentan.
+ELEVEN_26 = "1" * 26
+DIGITS_38 = {
+    # R = 1.11e25; O = 3e24: exceso = 2.1e25 - 1.11e25 = 9.9e24 > 20 % de R y <= N = 2e25.
+    "reference_week_cost": (Decimal(ELEVEN_26 + "." + "1" * 12), Decimal("3000000000000000000000000"),
+                            Decimal("20000000000000000000000000")),
+    # O = 1.11e25; R = 1e25: exceso = 7.78e25 - 1e25 = 6.78e25 <= N = 7e25 (exponente ajustado 25).
+    "opening_observed_cost": (Decimal("1e25"), Decimal(ELEVEN_26 + "." + "1" * 12),
+                              Decimal("70000000000000000000000000")),
+    # R y O pequeños de base (exceso 1050 <= N); solo el numerador tiene las 38 cifras.
+    "impact_numerator": (Decimal("2800.00"), Decimal("550.00"), Decimal(ELEVEN_26 + "." + "1" * 12)),
+}
+DIGITS_39 = {
+    "reference_week_cost": (Decimal(ELEVEN_26 + "." + "1" * 13), DIGITS_38["reference_week_cost"][1],
+                            DIGITS_38["reference_week_cost"][2]),
+    "opening_observed_cost": (DIGITS_38["opening_observed_cost"][0], Decimal(ELEVEN_26 + "." + "1" * 13),
+                              DIGITS_38["opening_observed_cost"][2]),
+    "impact_numerator": (Decimal("2800.00"), Decimal("550.00"), Decimal(ELEVEN_26 + "." + "1" * 13)),
+}
 
 NOT_DECIMAL = [
     pytest.param("2800.00", id="cadena"),
@@ -275,17 +290,17 @@ def test_operando_negativo_no_se_explica(name):
 
 @pytest.mark.parametrize("name", OPERANDS)
 def test_operando_con_mas_de_38_digitos_significativos_no_se_explica(name):
-    # El límite de 38 dígitos acota el coste de la aritmética exacta. Con los otros dos operandos válidos,
-    # solo el número de dígitos (39) puede causar el rechazo.
-    assert len(DIGITS_39[name].as_tuple().digits) == 39
-    assert_unavailable(_snapshot_with(name, DIGITS_39[name]))
+    # El límite de 38 dígitos acota el coste de la aritmética exacta. Con a lo sumo 12 decimales, una cifra más
+    # solo cabe como un decimal 13 (o como un entero 27, que rechaza el exponente): la tripleta es coherente.
+    assert len(DIGITS_39[name][OPERANDS.index(name)].as_tuple().digits) == 39
+    assert_unavailable(with_operands(*DIGITS_39[name]))
 
 
 @pytest.mark.parametrize("name", OPERANDS)
 def test_control_operando_con_38_digitos_se_sigue_explicando(name):
     # Frontera: justo 38 cifras significativas es válido (evita un límite fuera de uno: `>= 38`).
-    assert len(DIGITS_38[name].as_tuple().digits) == 38
-    assert explain(_snapshot_with(name, DIGITS_38[name]))["anomaly_evidence"]["status"] == "ok"
+    assert len(DIGITS_38[name][OPERANDS.index(name)].as_tuple().digits) == 38
+    assert explain(with_operands(*DIGITS_38[name]))["anomaly_evidence"]["status"] == "ok"
 
 
 # Triples (referencia, observado, numerador) COHERENTES entre sí (el observado cumple la regla de apertura y el
