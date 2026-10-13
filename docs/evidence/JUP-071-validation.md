@@ -114,3 +114,19 @@ Paris puede integrar la contribución revisada; después de JUP-035, ejecutar tr
 campañas reales con idéntica configuración, entregar la hoja a dos personas y
 contrastar cada punto antes de concluir robustez. El cierre requiere además PR
 revisada/integrada y evidencia enlazada por quien lidera.
+
+## Actualización 13/10/2026: cabecera `run` y repetición de la plantilla
+
+El PR #90 se cerró sin integrar el 10/10. Los dos commits de la contribución se recuperaron sobre `develop` en la rama `test/JUP-071-incomplete-data-robustness`, con la autoría original. Los comandos y los resultados de arriba son los del 10/10 y se conservan como registro histórico.
+
+El informe incorpora un bloque `run` con los nombres de la cabecera de JUP-070 (`run_id`, `commit`, `date`, `provider`, `alias`, `suite_version`, `suite_sha256`, `generation`). En una ejecución con plantilla declara `provider` `template`, `alias` `none` y `plantilla-sin-modelo`. En una recogida HTTP toma esos campos de la configuración declarada, los valida con un patrón estricto y no acredita por ello que un modelo respondiera. Los campos anteriores se mantienen y no cambia ningún resultado ni denominador. El bloque es la preparación para el dashboard de JUP-121, que hará la normalización posterior; el informe sigue sin afirmar compatibilidad con el catálogo de JUP-067.
+
+Los crudos del 10/10 están fuera de Git en otro equipo y no se han podido volver a leer, así que no se regeneraron. Los dos informes de `docs/evidence/` se sustituyen por una repetición offline de la plantilla con el código del commit `8cb2a5c`, ambas con el servicio sin cambios y 0 aciertos, 8 fallos y 21 pendientes de juicio entre 29 casos, igual que el 10/10. Sus crudos están fuera del repositorio y los juicios siguen vacíos. Sigue sin ser una medición del asistente real.
+
+| Comprobación (13/10/2026, Windows, Python 3.14) | Resultado |
+| --- | --- |
+| `python tools/assistant-robustness.py validate` | 16 variantes / 29 casos; hashes válidos |
+| `corepack pnpm assistant-robustness:test` | 48 pruebas OK (10 nuevas del bloque `run`) |
+| Pruebas de JUP-070 y de métricas de JUP-067 | 109 y 103 OK |
+| `node --test tools/ci-workflow.test.mjs` | 12 OK |
+| `corepack pnpm openspec:validate`, `jup:check`, `jup:cleanup:check` | 68/68, OK, OK |

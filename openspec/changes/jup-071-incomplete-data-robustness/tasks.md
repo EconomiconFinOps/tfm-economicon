@@ -22,8 +22,8 @@
 
 ## 4. Preparación para el dashboard de resultados
 
-- [ ] 4.1 Añadir al informe el bloque `run` con los campos de la cabecera de JUP-070 y un identificador único de ejecución, declarando la ausencia de modelo en las ejecuciones con plantilla; conservar los campos actuales y no alterar resultados ni denominadores.
-- [ ] 4.2 Probar que el bloque es obligatorio y válido, que dos ejecuciones se distinguen y que regenerar el informe con el bloque no cambia ningún resultado. Regenerar los informes de plantilla de `docs/evidence/`.
+- [x] 4.1 Añadir al informe el bloque `run` con los campos de la cabecera de JUP-070 y un identificador único de ejecución, declarando la ausencia de modelo en las ejecuciones con plantilla; conservar los campos actuales y no alterar resultados ni denominadores.
+- [x] 4.2 Probar que el bloque es obligatorio y válido, que dos ejecuciones se distinguen y que regenerar el informe con el bloque no cambia ningún resultado. Regenerar los informes de plantilla de `docs/evidence/`.
 
 ## 5. Verificación pendiente fuera de la línea base offline
 

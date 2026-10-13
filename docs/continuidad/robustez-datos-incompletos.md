@@ -63,3 +63,7 @@ commit/modelo/prompt/corpus desplegados y realizar tres campañas reales iguales
 con sus juicios. `live_unverified` conserva el límite del endpoint: no atestigua
 qué modelo respondió. `generative_robustness_accepted` sigue falso. No cerrar ni
 archivar la tarjeta o el chat por tener tests del instrumento verdes.
+
+## Actualización 2026-10-13
+
+El PR #90 de Alejandro se cerró sin integrar el 10/10. La contribución se recuperó sobre `develop` actual en `test/JUP-071-incomplete-data-robustness`, con la autoría original de los commits, y se ha trabajado en local sin publicar. El informe lleva ahora un bloque `run` con los campos de la cabecera de JUP-070 y un identificador de ejecución, como preparación del dashboard de resultados de JUP-121. Las dos mediciones de plantilla se repitieron con el código actual y dieron lo mismo. La medición con el chat real sigue pendiente de JUP-035 (PR #120) y de los juicios humanos. Detalle en la [evidencia](../evidence/JUP-071-validation.md).
