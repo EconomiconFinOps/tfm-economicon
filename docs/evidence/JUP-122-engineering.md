@@ -69,6 +69,11 @@ conservan arriba. Falta la ejecución CI del candidato, SQL nativo y UI en naveg
 
 El workflow Chat engineering SQL crea una Cockroach24.1.11 desechable únicamente
 en el runner y comprueba migraciones, carreras y plazos sin credenciales externas
-ni proveedor. No usa DockerServer. Su resultado se registrará tras publicación.
+ni proveedor. No usa DockerServer. Primer candidato `2b55e1e2`: [54 pruebas
+favorables, sin omisiones](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38475631994).
+El frontend también completa su job. El candidato siguiente sólo aísla el flag
+de arranque en la fixture api: una secuencia disabled→operaciones reproducía 503
+indebido por estado global entre tests; corregida, **27 passed**. No altera producto.
+La CI vuelve a ejecutarse sobre ese commit; consultar siempre el head de la PR.
 Ninguna evidencia histórica implica aceptación de respuestas ni levanta las
 requests changes de #120/#121. La decisión de integración corresponde al equipo.
