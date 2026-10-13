@@ -350,3 +350,28 @@ Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
   palabras inglesas comunes (Retry, Failed, Unknown, Cancel, Save, Delete).
 - Los errores de la capa de API (`Request failed for...`, `Invalid response for...`) y los del navegador
   (`Failed to fetch`) se muestran en ingles; decision de Lucia de dejar fuera esa capa.
+
+## JUP-119 — Datos de demo por una sola ruta y fecha de referencia
+
+Fecha: 2026-10-13. Origen: JUP-119, sondeo con CockroachDB real y pruebas del change.
+Tipo: deuda tecnica y mejoras de producto. Severidad: Low a Medium. Estado: Open. Owner: Equipo Economicon.
+
+- RF-119-001 (producto, Medium): la ingesta acepta filas sin fecha de uso (`usage_date` es opcional) y la API simulada
+  rechaza las filas sin fecha al leer su CSV. Validar en el normalizador (por ejemplo con modelos Pydantic) que una fila
+  sin fecha o con datos raros no entre al sistema, o marcarla, es un cambio de producto fuera de JUP-119.
+- RF-119-002 (API simulada, Low): lo que no es entero se devuelve como numero en coma flotante, y un importe con
+  centimos por encima de 2^53 pierde precision (`9007199254740993.01` llega como `9007199254740994`); los enteros grandes
+  sin centimos si llegan exactos. Tambien agrupa por dos campos como mucho, como la API real.
+- RF-119-003 (documentacion, Low): en Windows, un DSN de CockroachDB con `localhost` espera hasta agotar el tiempo de
+  conexion por IPv6 (200 s medidos con `connect_timeout=200`) antes de caer en IPv4; con `127.0.0.1` tarda 0,02 s. Las
+  pruebas con CockroachDB real fallan por tiempo con `localhost`. Documentar `127.0.0.1` en la guia local.
+- RF-119-004 (entorno, Low): en esta maquina las suites de salud del proveedor (`test_health_provider_*_jup047.py`) y de
+  salud del sistema (`test_system_health_jup047.py`) fallan con `AttributeError: 'ProactorEventLoop' object has no
+  attribute '_ssock'`, con o sin los cambios de JUP-119. Comprobar la version de Python / bucle de eventos en Windows.
+- RF-119-005 (producto, Low): el aviso «Datos sinteticos» del panel de anomalias se activa por las suscripciones con el
+  prefijo `synthetic-` (o la marca antigua de la ingesta); el derivado del dataset publico con fechas desplazadas no lo
+  activa por si solo.
+- RF-119-006 (informativo): la columna `pretax_cost` guarda doce decimales y el CSV publico trae quince; cada registro
+  guardado se redondea. No afecta a billing, que redondea a dos.
+- RF-119-007 (informativo): el tope por fecha de referencia es de lectura, no de acceso: los datos posteriores existen en
+  la base y los ve quien la lea directamente.
