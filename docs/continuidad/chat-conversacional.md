@@ -864,3 +864,15 @@ incremental: REVIEW_PASS, con hashes tecnicos sin cambios tras su retorno.
 La evidencia [de correcciones CI](../evidence/jup-035-ci-corrections.md) conserva
 los fallos intermedios y las omisiones SQL nativas; la confirmacion remota sigue
 a cargo del PM.
+
+### Suite completa frontend tras reconciliación — 13/10/2026
+
+Padre ejecuta76archivos sobre731b5ea:975PASS/1FAIL (976tests). Único fallo:
+ExportButton.test.tsx usa Blob.text no implementado por jsdom. Corregida lectura
+con FileReader sin modificar producto ni aserciones CSV; módulo5/5PASS después.
+ESLintexit0 con una advertencia existente de dependencia useLayoutEffect en
+ChatPresentation. Recibos workspace expression17-parent-frontend-full.log,
+expression17-parent-export-recheck.log yexpression17-parent-eslint.log.
+Publicación ytransferencia siguen pendientes de autorización específica tras
+rechazoauto-review; no hubo nuevas inferencias. Archivo731b5ea preparado sigue
+representando código de producto idéntico; esta corrección sólo cambia tests/docs.
