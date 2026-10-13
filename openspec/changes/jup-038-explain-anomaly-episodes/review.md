@@ -769,3 +769,60 @@ commiteada en `f678ee09`: **los tres quedan idénticos byte a byte**. Los recuen
 cambian (27 y 67; 20 y 56; 8 y 26). Tras la corrección: `lint` y `typecheck` con código 0 y 272 pruebas en verde.
 
 **Pendiente del grupo 5:** mutación (5.4), DoD del frontend y QA.
+
+## Grupo 5 — Evidencia de la explicación en el frontend, mutación (tarea 5.4)
+
+**Herramienta.** Stryker (`@stryker-mutator/core` y `vitest-runner`, con `typescript@5.9.3`) por `pnpm dlx` desde
+`apps/frontend`, según `.claude/harness/mutation.md`, **más un arnés manual** para el componente (ver abajo).
+La configuración se acotó con un archivo temporal de Vitest (`vitest.stryker.config.mts`, borrado al terminar)
+que solo incluye las pruebas relevantes, con análisis por prueba. No se usó `mergeConfig`: concatena los
+arrays y volvía a ejecutar toda la suite (749 pruebas y una estimación de 1 h 30 min frente a 228 pruebas y
+unos 5 min).
+
+**Hallazgo de herramienta.** Stryker **no ejecuta las 44 pruebas de `AnomalyEvidence.test.tsx`**: la ejecución
+inicial da 228 pruebas, 44 menos que las 272 esperadas, y esas pruebas no aparecen en ningún informe. La causa
+más probable es su `import(/* @vite-ignore */ ruta)` con la ruta en una variable (lo introdujo el Red para que
+fallase cada prueba por separado), que no se instrumenta. Por eso, **la puntuación de Stryker sobre
+`AnomalyEvidence.tsx` (87.80 % en la primera pasada, 20 supervivientes) no es una medida fiable** y no se usa.
+Se midió el componente con mutantes manuales ejecutando Vitest directo, y `contracts.ts` y `AnswerEvidence` con
+Stryker, donde sus pruebas sí corren.
+
+**Primera pasada (Stryker, 3 archivos, 254 mutantes):** 87.80 %: 223 muertos, 29 supervivientes y 2 sin
+cobertura. Los de `contracts.ts` eran 3:
+
+1. `typeof value.id !== "string"` → `false`. **Hueco real.** Sin el `typeof`, `RegExp.test` convierte a texto: un
+   `id` que fuese un array `["anomaly-explanation:<64 hex>"]` cumpliría el patrón y se aceptaría.
+2. `["P1", "P2", "P3"]` → `["P1", "", "P3"]`. **Hueco real.** Ninguna prueba usaba una evidencia válida con
+   criticidad P2 (ni P1).
+3. `typeof note === "string"` → `true`. **Equivalente**: `Array.includes` usa igualdad estricta y una nota que no
+   es cadena se rechaza igualmente.
+
+**Arnés manual del componente (32 mutantes sobre `AnomalyEvidence.tsx`):** cada línea de texto vaciada, el
+singular y plural de días, el servicio nulo, las condiciones de las notas de redondeo, del aviso sintético y de
+las limitaciones (siempre, nunca, `||`, `>=`, `<=`), los elementos de la lista, el resumen, la causa y el servicio
+como texto. **30 muertos de 32.** Sobrevivían «limitaciones siempre» y «limitaciones con `>=`»: **hueco real**,
+con `limitations: []` se renderizaría una lista vacía y ninguna prueba lo comprobaba.
+
+**Remediación** por el `tester`, en dos archivos nuevos (los anteriores están commiteados), ya con `lint` y
+`typecheck` verificados y sin `any` ni `eslint-disable`:
+
+- `apps/frontend/src/services/anomalyEvidence.mutants.test.ts` (7 pruebas): rechaza el `id` como array y como
+  objeto con `toString`, con control positivo; acepta evidencias coherentes con criticidad P1, P2 y P3 y sigue
+  rechazando una P4.
+- `apps/frontend/src/components/AnomalyEvidence.mutants.test.tsx` (3 pruebas): con `limitations: []` el validador
+  acepta la evidencia, no existe ninguna lista «Limitaciones» y el resto del bloque se muestra; con una limitación
+  sí.
+
+**Segunda pasada** (reejecutada por el orquestador el 2026-10-12, Windows):
+
+- Stryker sobre `contracts.ts` (líneas 469 a 539) y la rama nueva de `AnswerEvidence` (líneas 73 y 74):
+  **212 mutantes, 211 muertos, 1 superviviente: 99.53 %.** El superviviente es el equivalente 3.
+- Arnés manual del componente: **32 de 32 muertos**, control `62 passed`, archivo restaurado sin cambios.
+- `lint` y `typecheck`: código 0 (comprobado con el código de salida real).
+
+**Superviviente justificado.** `typeof note === "string"` → `true` en `rounding_notes`: equivalente, `includes`
+rechaza cualquier valor que no sea exactamente una de las tres cadenas conocidas.
+
+**Lo que esta mutación no demuestra.** Stryker no mide el componente (ver arriba): su cobertura sale del arnés
+manual (32 mutantes dirigidos, no un barrido). No hay prueba en navegador real todavía (grupo 8). El DoD del
+frontend y el veredicto de QA del grupo siguen pendientes.
