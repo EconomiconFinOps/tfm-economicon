@@ -59,21 +59,25 @@ Every row of the demo CSV SHALL belong to a subscription listed in the dataset m
 - **WHEN** the demo guide and the manifest are read from the top
 - **THEN** the statement about shifted and synthetic data appears before the first figure
 
-### Requirement: Continuous coverage until 2026-10-30
+### Requirement: One common continuous window from 2026-07-01 to 2026-10-30
 
-For each tenant that has cost data in the demo, the dataset SHALL contain at least one record on every calendar day from 2026-09-01 to 2026-10-30 inclusive, except the days that the dataset documents as intentionally empty for a stated reason, and no record after 2026-10-30. The check SHALL be a test that recomputes the coverage from the CSV and fails naming the tenant, the subscription and the first uncovered day.
+For each tenant that has cost data in the demo, the dataset SHALL contain at least one record on every calendar day from 2026-07-01 to 2026-10-30 inclusive, except the days that the dataset documents as intentionally empty for a stated reason, and no record before 2026-07-01 or after 2026-10-30. The window is common to every demo tenant; a currency or a subscription inside a tenant MAY have gaps or recorded zeros that the dataset documents, as long as the tenant has a record on each day. The date-shifted public subscription is a documented complement with days without data and is not required to be continuous. The check SHALL be a test that recomputes the coverage from the CSV and fails naming the tenant, the subscription and the first uncovered day.
 
 #### Scenario: No gap
 - **WHEN** the coverage test runs
-- **THEN** every demo tenant has a record on each day from 2026-09-01 to 2026-10-30, apart from the documented empty days
+- **THEN** every demo tenant has a record on each day from 2026-07-01 to 2026-10-30, apart from the documented empty days
 
 #### Scenario: A removed day fails the test
 - **WHEN** all rows of one day are removed from the CSV
 - **THEN** the test fails and names the tenant, the subscription and that day
 
-#### Scenario: Nothing beyond the end
-- **WHEN** the CSV contains a record dated 2026-10-31
+#### Scenario: Nothing outside the window
+- **WHEN** the CSV contains a record dated 2026-06-30 or 2026-10-31
 - **THEN** the test fails
+
+#### Scenario: Gap and recorded zero stay distinguishable
+- **WHEN** the USD series of the cost tenant is read
+- **THEN** it has recorded zero costs in one month, no record at all in another month and costs in the others, while the tenant still has a record on every day through its EUR series
 
 ### Requirement: Safe, idempotent load and removal for the whole dataset
 
@@ -123,3 +127,23 @@ With the demo data loaded, the screens and answers that depend on fields the dem
 #### Scenario: Breakdown by resource group
 - **WHEN** the dashboard asks for the breakdown by resource group on the demo data
 - **THEN** the response is successful and the records appear as not applicable, and the page shows no error
+
+### Requirement: Loading is opt-in and never part of the default startup
+
+The default `docker compose up` SHALL NOT load demo data. The repository SHALL provide a Compose profile `demo` whose one-shot service waits for the simulated API, the database and the processor to be healthy and then runs `scripts/demo_data.py apply`; the same profile SHALL point the simulated API at the generated demo CSV. The profile SHALL refuse to run when `RUNTIME_ENVIRONMENT` is `production`. The generated CSV and the manifest SHALL be versioned, and a test SHALL regenerate them and fail if they differ.
+
+#### Scenario: Default startup loads nothing
+- **WHEN** `docker compose up` runs without the profile on empty tenants
+- **THEN** no cost run or record exists afterwards and the simulated API still serves the public sample
+
+#### Scenario: Profile loads once and is repeatable
+- **WHEN** the stack starts with the profile `demo` and starts again
+- **THEN** the first start loads the dataset and the second reports `already-present` without writing
+
+#### Scenario: Production is refused
+- **WHEN** the profile `demo` starts with `RUNTIME_ENVIRONMENT=production`
+- **THEN** the one-shot service exits with an error stating the reason and loads nothing
+
+#### Scenario: Versioned files stay reproducible
+- **WHEN** the generator runs in CI
+- **THEN** its output is byte-identical to the versioned CSV and manifest

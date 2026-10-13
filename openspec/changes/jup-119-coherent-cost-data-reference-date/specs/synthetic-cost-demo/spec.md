@@ -11,7 +11,7 @@ Every figure in the route (monthly totals per currency, the month with no data, 
 
 #### Scenario: Comparisons follow the documented rule
 - **WHEN** the comparison for a currency is computed from its first and last months with a non-zero cost inside the period
-- **THEN** the difference and the percentage equal the figures in the file and in the guide of JUP-106
+- **THEN** the difference and the percentage equal the figures in the file and in the guide of the route
 - **AND** a month with a recorded zero is not used as an endpoint
 
 #### Scenario: A drifted guide is detected
@@ -35,16 +35,16 @@ The preparation guide SHALL start from an isolated stack with its own volumes wh
 
 ### Requirement: No secrets, binaries or interference with other work
 
-The package SHALL NOT contain secrets, credentials, captures, recordings or other binaries, and the browser recipe SHALL run outside the repository, SHALL NOT intercept or fake requests, and SHALL fail on a page error, a cross-origin error or a step that does not hold. The figures of the JUP-065 and JUP-106 demonstrations for the months before September 2026 SHALL stay the same, and the route SHALL state the reference date it assumes.
+The package SHALL NOT contain secrets, credentials, captures, recordings or other binaries, and the browser recipe SHALL run outside the repository, SHALL NOT intercept or fake requests, and SHALL fail on a page error, a cross-origin error or a step that does not hold. The expected values of the route SHALL be recomputed from the dataset of the common window from 2026-07-01 to 2026-10-30, and the route SHALL state the reference date it assumes.
 
 #### Scenario: Repository hygiene
 - **WHEN** the repository hygiene check runs on the change
 - **THEN** it passes and the change contains no image, video or executable binary
 
 #### Scenario: Existing work untouched
-- **WHEN** the expected values of the route for the periods before September 2026, the original public fixtures and the JUP-065 route are compared with the base
-- **THEN** they are identical
-- **AND** the only changes to the demo guides are the load commands, the stated reference date, the provenance notice and the removal of the steps that used the fields the demo no longer carries
+- **WHEN** the original public fixtures and the JUP-065 route are compared with the base
+- **THEN** the fixtures are identical
+- **AND** the only changes to the demo guides are the load commands, the stated reference date, the provenance notice, the recomputed expected values and the removal of the steps that used the fields the demo no longer carries
 
 #### Scenario: Route names its reference date
 - **WHEN** the route is read from the top

@@ -2,7 +2,7 @@
 
 ### Requirement: Deterministic documented dataset
 
-The synthetic dataset SHALL be versioned, deterministic and identical on every generation, SHALL be part of the demo CSV of the single load path, and SHALL span the consecutive calendar months from January 2026 to 2026-10-30 with the figures of January to July 2026 that the JUP-106 reference document already states. It SHALL include, at least: months with a recorded cost of exactly zero, months with no record at all, a negative cost (credit), two currencies whose costs fall in different months, an amount whose integer value exceeds `Number.MAX_SAFE_INTEGER` and has no cents, and records without a service or without the project tag. Every record SHALL have a usage date and SHALL carry no more fields than the service and the project tag. The days from 2026-09-01 to 2026-10-30 SHALL be covered continuously as the single-path capability requires. The cases that the query API cannot deliver are listed in the requirement on automated tests and SHALL NOT be part of the demo CSV. A reference document SHALL list the expected totals per month and currency and the expected totals for each supported grouping, derived independently of the loader.
+The synthetic dataset SHALL be versioned, deterministic and identical on every generation, SHALL be part of the demo CSV of the single load path, and SHALL span the common window from 2026-07-01 to 2026-10-30, continuous in EUR. It SHALL include, at least: in USD, a month with a recorded cost of exactly zero, a month with no record at all and months with costs, so that a gap and a recorded zero stay distinguishable; a negative cost (credit); two currencies whose costs fall in different months; an amount whose integer value exceeds `Number.MAX_SAFE_INTEGER` and has no cents, in a month outside the main route; and records without a service or without the project tag. Every record SHALL have a usage date and SHALL carry no more fields than the service and the project tag. Every day of the window SHALL be covered as the single-path capability requires. The cases that the query API cannot deliver are listed in the requirement on automated tests and SHALL NOT be part of the demo CSV. A reference document SHALL list the expected totals per month and currency and the expected totals for each supported grouping, derived independently of the loader.
 
 #### Scenario: Same data on every load
 - **WHEN** the dataset is generated twice, or loaded twice on clean databases
@@ -17,12 +17,12 @@ The synthetic dataset SHALL be versioned, deterministic and identical on every g
 
 #### Scenario: Reference totals match an independent computation
 - **WHEN** the monthly and per-currency totals are computed from the dataset records with exact decimal arithmetic
-- **THEN** they equal the totals printed in the reference document, for the months of 2026 up to October
+- **THEN** they equal the totals printed in the reference document, for the months from July to October 2026
 - **AND** no total is produced by the loader's own aggregation code
 
-#### Scenario: Months before September keep their figures
-- **WHEN** the totals of January to July 2026 are compared with those of the JUP-106 reference document
-- **THEN** they are equal except the very large amount, which differs only by its cents, so the figures of the JUP-065 and JUP-106 demonstrations do not change
+#### Scenario: Window replaces the old months
+- **WHEN** the dataset is read
+- **THEN** it has no record before 2026-07-01 and the reference document states that the months of the former JUP-106 dataset were rebased into the window
 
 ### Requirement: Explicit synthetic provenance and isolation
 
