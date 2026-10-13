@@ -68,10 +68,13 @@ def test_undefined_guidance_is_server_rendered_and_streams_identically(width):
     catalog=quantities('37 EUR y 0 EUR')
     node={'operation':'relative_change','current':leaf('37 EUR'),'baseline':leaf('0 EUR')}
     segments=[{'expression':node}]
-    raw=json.dumps({'answer':segments},ensure_ascii=True)
+    value={'basis':'user_scenario','status':'insufficient_data','answer':segments,
+        'evidence':[],'metrics':[],'recommendations':[],
+        'assumptions':[],'limitations':[],'next_actions':[]}
+    raw=json.dumps(value,ensure_ascii=True)
     parser=SegmentAnswerJSON([],quantities=catalog)
     streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
-    assert streamed==parser.finish()==render_segments(segments,[],expressions=ExpressionRenderer(catalog))
+    assert streamed==parser.finish()==render_response(value,[],quantities=catalog)['answer']
     assert 'base comparable' in streamed and 'recurso nuevo' in streamed
 
 
@@ -109,11 +112,14 @@ def test_structural_or_grounding_errors_are_closed(node):
 @pytest.mark.parametrize('width',[1,7,8192])
 def test_complete_expression_blocks_stream_exactly_like_public_projection(width):
     catalog=quantities('73 EUR y 20 EUR')
-    segments=[{'text':'  Ejercicio hipotético 😀: '},{'expression':difference(leaf('73 EUR'),leaf('20 EUR'))},{'text':' Fin.  '}]
-    raw=json.dumps({'answer':segments},ensure_ascii=True)
+    segments=[{'inference':'  Ejercicio hipotético 😀: '},{'expression':difference(leaf('73 EUR'),leaf('20 EUR'))},{'inference':' Fin.  '}]
+    value={'basis':'user_scenario','status':'insufficient_data','answer':segments,
+        'evidence':[],'metrics':[],'recommendations':[],
+        'assumptions':[],'limitations':[],'next_actions':[]}
+    raw=json.dumps(value,ensure_ascii=True)
     parser=SegmentAnswerJSON([],quantities=catalog)
     streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
-    assert streamed==parser.finish()==render_segments(segments,[],expressions=ExpressionRenderer(catalog))
+    assert streamed==parser.finish()==render_response(value,[],quantities=catalog)['answer']
     assert '\nCálculo:' in streamed and '= 53 EUR.\n' in streamed
 
 
