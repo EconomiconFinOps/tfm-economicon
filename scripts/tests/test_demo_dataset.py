@@ -340,6 +340,14 @@ class ExpectedFiguresTests(unittest.TestCase):
             self.assertEqual(last.isoformat(), wanted["last_evaluated_date"], reference)
             self.assertEqual(episodes, wanted["episodes"], reference)
 
+    def test_every_case_not_in_the_csv_names_an_existing_test(self):
+        expected = json.loads(EXPECTED_COSTS_PATH.read_text("utf-8"))
+        self.assertGreaterEqual(len(expected["cases_not_in_the_csv"]), 5)
+        for case, detail in expected["cases_not_in_the_csv"].items():
+            path, _, name = detail["prueba"].partition("::")
+            source = (ROOT / path).read_text("utf-8")
+            self.assertIn(f"def {name}(", source, f"{case}: {detail['prueba']} does not exist")
+
     def test_the_calm_base_opens_no_episode_before_september(self):
         episodes, _ = independent_episodes(self.records_of_core(), date(2026, 8, 31))
         self.assertEqual(episodes, [])
@@ -364,10 +372,21 @@ def write_reference_documents() -> None:
         "descripcion": "Totales esperados del conjunto de demostracion de costes (scripts/demo_dataset.py): por tenant, mes y moneda, y por servicio y por proyecto. Una prueba los recalcula del CSV con aritmetica exacta sin usar el backend. Importes sinteticos y del dataset publico con fechas desplazadas; no son facturas de Azure.",
         "window": manifest["window"], "absent_fields": manifest["absent_fields"],
         "cases_not_in_the_csv": {
-            "fila sin fecha de uso": "la API simulada la rechaza; la cubre una prueba de billing con insercion directa",
-            "importe por encima de 2^53 con centimos": "la API lo devuelve en coma flotante y pierde precision; la cubre una prueba de billing",
-            "grupos de recurso que solo difieren en mayusculas": "la demo no lleva el grupo de recurso (la API agrupa por dos campos)",
-            "registros con grupo de recurso, centro de coste y otras etiquetas": "la demo no los lleva por la misma razon",
+            "fila sin fecha de uso": {
+                "motivo": "la API simulada la rechaza",
+                "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"},
+            "importe por encima de 2^53 con centimos": {
+                "motivo": "la API lo devuelve en coma flotante y pierde precision",
+                "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"},
+            "grupos de recurso que solo difieren en mayusculas": {
+                "motivo": "la demo no lleva el grupo de recurso: la API agrupa por dos campos",
+                "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"},
+            "registros con grupo de recurso, centro de coste y otras etiquetas": {
+                "motivo": "la demo no los lleva por la misma razon",
+                "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"},
+            "registros sin grupo de recurso, servicio ni etiquetas": {
+                "motivo": "la demo lleva servicio y proyecto, no el resto",
+                "prueba": "apps/backend/tests/test_tag_coverage.py::test_positive_weighting_adjustments_currencies_and_isolation"},
         },
         "figures": expected_costs(records),
     }

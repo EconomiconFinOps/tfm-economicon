@@ -13,10 +13,26 @@
     "environment"
   ],
   "cases_not_in_the_csv": {
-    "fila sin fecha de uso": "la API simulada la rechaza; la cubre una prueba de billing con insercion directa",
-    "importe por encima de 2^53 con centimos": "la API lo devuelve en coma flotante y pierde precision; la cubre una prueba de billing",
-    "grupos de recurso que solo difieren en mayusculas": "la demo no lleva el grupo de recurso (la API agrupa por dos campos)",
-    "registros con grupo de recurso, centro de coste y otras etiquetas": "la demo no los lleva por la misma razon"
+    "fila sin fecha de uso": {
+      "motivo": "la API simulada la rechaza",
+      "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"
+    },
+    "importe por encima de 2^53 con centimos": {
+      "motivo": "la API lo devuelve en coma flotante y pierde precision",
+      "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"
+    },
+    "grupos de recurso que solo difieren en mayusculas": {
+      "motivo": "la demo no lleva el grupo de recurso: la API agrupa por dos campos",
+      "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"
+    },
+    "registros con grupo de recurso, centro de coste y otras etiquetas": {
+      "motivo": "la demo no los lleva por la misma razon",
+      "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"
+    },
+    "registros sin grupo de recurso, servicio ni etiquetas": {
+      "motivo": "la demo lleva servicio y proyecto, no el resto",
+      "prueba": "apps/backend/tests/test_tag_coverage.py::test_positive_weighting_adjustments_currencies_and_isolation"
+    }
   },
   "figures": {
     "month_currency": {
