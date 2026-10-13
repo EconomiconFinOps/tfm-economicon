@@ -495,3 +495,44 @@ docker run --rm --network container:jup038-crdb -v "$R:/repo:ro" -v "$(cygpath -
 
 **Lo que este Red no demuestra.** Que las pruebas sean correctas contra la implementación real. Estas 9 se
 omiten en CI (`RF-096-004`); la evidencia es la ejecución local contra el nodo desechable.
+
+## Grupo 4 — Ruta del asistente, fase Green (tarea 4.6)
+
+**Producto del `coder`** (`git diff --stat`: 46 inserciones, 0 borrados, más un archivo nuevo):
+
+- `apps/backend/app/schemas/anomaly_explanations.py` (nuevo): `AnomalySelection`, sin campos adicionales y con
+  `episode_id` estricto (no coacciona otros tipos a `str`). Se valida con `re.fullmatch` en un
+  `field_validator` y no con `Field(pattern=…)`: ese patrón lo evalúa el motor de Rust de pydantic, cuyo
+  comportamiento de `$` difiere del de `re`, y con `re` un `$` aceptaría un `\n` final. Las pruebas del `\n`
+  final, mayúsculas, unicode y `int` pasan.
+- `apps/backend/app/schemas/assistant.py` (+13): `anomaly_query` y un `model_validator` que rechaza enviarlo
+  junto a `ownership_query`.
+- `apps/backend/app/api/routes/assistant.py` (+33): rama nueva entre el 404 de conversación y la rama de
+  propiedad, con el orden de la decisión 8: lectura con el cliente de la sesión, 404
+  `anomaly_episode_not_found`, explicador, 409 `anomaly_explanation_unavailable` y **solo entonces** se
+  guardan los dos mensajes. No se llama a embeddings ni al almacén vectorial y no se registra nada del
+  episodio.
+
+**Ajuste pedido por el orquestador.** El `coder` había modificado la línea
+`from pydantic import BaseModel, ConfigDict, Field, StringConstraints`, y la PR #121 (JUP-035) modifica
+exactamente esa misma línea (añade `field_validator`). Para que el diff sea puramente aditivo y ese conflicto
+no exista, `model_validator` entra ahora en una línea de import independiente. Queda el detalle de estilo de
+dos líneas `from pydantic import …` separadas; el repositorio no tiene linter de orden de imports (el lint del
+backend es `compileall`).
+
+**Evidencia Green** (2026-10-12, reejecutada por el orquestador tras el ajuste):
+
+- Como CI, sin base de datos real: **`238 passed, 3 skipped`** (esquema 45 + API 27 + ownership, aislamiento,
+  métricas y las 95 del explicador). Los 3 omitidos son preexistentes (`test_ownership_questions.py:363` y
+  `test_tenant_isolation_api.py:209` y `:224`) y necesitan `JUP086_COCKROACH_TEST_URL`.
+- Con CockroachDB v24.1.11 real: **`113 passed`**, 0 omitidas (incluye las 9 de
+  `test_anomaly_explanation_cockroach.py` más lectura, mutantes de la lectura, API y almacén de episodios).
+- Antes: `71 failed, 1 passed` (CI) y `9 failed` (CockroachDB).
+- El orquestador leyó el diff completo de producto.
+
+**Conflicto previsto con JUP-035.** Las PR #120 y #121 también modifican `routes/assistant.py` y
+`schemas/assistant.py`. Los bloques añadidos aquí no tocan ninguna línea existente, así que el conflicto es
+de contexto adyacente (los mismos puntos de inserción), no de líneas editadas. Se medirá con `git merge-tree`
+en la tarea 8.4.
+
+**Pendiente del grupo 4:** mutación (4.7), regresión completa (4.8), DoD y QA.

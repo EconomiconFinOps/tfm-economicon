@@ -81,7 +81,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   de otro cliente recibe 404 con el mismo identificador; explicar dos veces da el mismo `id`; tras
   una nueva detección que suma impacto, el `id` cambia y el mensaje anterior no. Se ejecuta contra un
   CockroachDB desechable y se anota que CI la omite (`RF-096-004`).
-- [ ] 4.6 Green: esquema de la selección `app/schemas/anomaly_explanations.py`, campo `anomaly_query` y
+- [x] 4.6 Green: esquema de la selección `app/schemas/anomaly_explanations.py`, campo `anomaly_query` y
   validador de exclusión en `app/schemas/assistant.py`, y rama nueva en `app/api/routes/assistant.py`
   con el orden de la decisión 8.
 - [ ] 4.7 Mutación sobre la rama de la ruta y el validador (quitar la exclusión, escribir antes de
