@@ -108,7 +108,16 @@ def send_message(
         # sin respuesta sería ruido y, en el 404, delataría un identificador de otro cliente.
         # El cliente sale SIEMPRE de la sesión (`tenant_id`), nunca del cuerpo: el identificador del episodio
         # es una selección, no una autorización, y el episodio ajeno es indistinguible del inexistente.
-        snapshot = database.fetch_anomaly_episode_snapshot(tenant_id, payload.anomaly_query.episode_id)
+        try:
+            snapshot = database.fetch_anomaly_episode_snapshot(tenant_id, payload.anomaly_query.episode_id)
+        except ArithmeticError:
+            # Las columnas de operandos del episodio son `DECIMAL` sin precisión: la base admite NaN, infinitos
+            # y valores enormes que el redondeo de la lectura (`money()`/`severity()`) no sabe representar y que
+            # lanza `decimal.InvalidOperation` antes de que el explicador vea los datos. Una fila ilegible es
+            # «no se puede explicar» (409), igual que los datos incoherentes que rechaza el explicador, y no un
+            # error del servidor. Se captura SOLO la lectura (no toda la rama) para no ocultar otros fallos, y
+            # `from None` evita propagar valores del cliente en la cadena de excepciones.
+            raise HTTPException(status_code=409, detail={"code": "anomaly_explanation_unavailable"}) from None
         if snapshot is None:
             raise HTTPException(status_code=404, detail={"code": "anomaly_episode_not_found"})
         try:

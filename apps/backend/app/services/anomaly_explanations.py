@@ -48,12 +48,15 @@ SEVERITY_WORDS = {"P1": "Alta (P1)", "P2": "Media (P2)", "P3": "Baja (P3)"}
 _PRECISION = 120
 
 # Límites de los operandos guardados (spec «Operandos no finitos o fuera de rango»).
+# Los 38 dígitos son los de los costes de origen (`pretax_cost DECIMAL(38, 12)`, migración 002 del procesador),
+# de los que salen los operandos del episodio por sumas y productos por 7. Las columnas del episodio, en
+# cambio, son `DECIMAL` sin precisión y admiten más, por eso el explicador acota él mismo.
 _MAX_DIGITS = 38
 _MAX_ADJUSTED_EXPONENT = 25
-# Decimales de la columna `NUMERIC(38,12)` donde se guardan los operandos: un valor con más decimales no
-# puede venir de la base de datos. Hace falta un tope propio porque el recuento de dígitos no lo cubre: un
-# exponente negativo enorme como `1E-150` cuenta como un solo dígito y aun así hace fallar el redondeo, y
-# `1E-999999` hace saltar `decimal.Overflow`.
+# Decimales de esos mismos costes de origen (12): las sumas y los productos por 7 no añaden decimales, así que
+# un valor con más no puede venir de ellos. Hace falta un tope propio porque el recuento de dígitos no lo
+# cubre: un exponente negativo enorme como `1E-150` cuenta como un solo dígito y aun así hace fallar el
+# redondeo, y `1E-999999` hace saltar `decimal.Overflow`.
 _MAX_DECIMALS = 12
 OBSERVATIONS = ("observed", "no_longer_observed")
 
