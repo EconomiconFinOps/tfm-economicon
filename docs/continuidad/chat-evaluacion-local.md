@@ -223,3 +223,23 @@ conversation_id+request_id. Rechaza identidad inconsistente y no reintenta POST.
 tras reserva/procedencia: no constituye por sí solo un ejecutor autorizado.
 Pendiente orquestación completa y adaptador de runtime/contabilidad. Claves
 caducadas siguen impidiendo inferencias; no renovadas ni gasto nuevo.
+
+
+### Ejecutor recuperable conectado — 14/10/2026
+
+`chat-eval-runner.py` conecta plan, API, reserva y recogida en pasos acotados.
+Exige banco completo original y N3/N5; antes de enviar compara commit, hashes y
+restricción de proveedor con la salida de un adaptador de verificación. Dicho
+adaptador aún no está implementado: no usar un JSON manual como prueba real.
+La reserva persiste antes de crear conversación/enviar; si la contabilidad
+caduca durante creación, se detiene conservando reserva. Reinicio observa el
+mismo handle, o lo recupera por request_id; jamás reenvía por timeout. Operación
+waiting permanece en observación. Recibos existentes deben coincidir con ledger
+y hashes; una recogida incompleta requiere reconciliación, no mejor respuesta.
+
+4pruebas específicas PASS; conjunto herramientas33PASS y scorer16PASS. Estas
+pruebas usan API simulado/loopback, no son baseline. No CLI de pago expuesta.
+Faltan adaptador real de procedencia y contabilidad, liquidación de reservas con
+cobertura demostrada de todos los intentos, credenciales vigentes y runtime B
+verificado. N3/N5 NOT_RUN; sin gasto nuevo. No declarar entrega completa ni
+bloqueo total: existe trabajo local pendiente sobre esos adaptadores.

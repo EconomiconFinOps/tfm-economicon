@@ -8,7 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Evaluación local del chat](chat-evaluacion-local.md) | JUP-123/B activo y En curso. A reconciliada; backend107PASS, frontend76PASS y tipos. Colector, agregador, admisión y registro duradero23PASS; scorer16PASS. Lectura contable confirma claves caducadas; runner, renovación y baseline pendientes; N3/N5 NOT_RUN. | 2026-10-14 |
+| [Evaluación local del chat](chat-evaluacion-local.md) | JUP-123/B activo y En curso. A reconciliada; backend107PASS, frontend76PASS y tipos. Ejecutor y herramientas33PASS; scorer16PASS. Lectura contable confirma claves caducadas; adaptadores reales, renovación y baseline pendientes; N3/N5 NOT_RUN. | 2026-10-14 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | JUP-122 prepara la base e ingeniería; JUP-123 conserva calidad y evaluación. Chat desactivado por defecto, sin aceptación semántica ni integración. | 2026-10-14 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |

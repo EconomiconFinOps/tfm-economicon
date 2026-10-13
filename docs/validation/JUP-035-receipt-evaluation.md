@@ -170,3 +170,11 @@ Ledger.dispatch después de comprobar procedencia y contabilidad. Si falla el
 envío, recover_handle usa exclusivamente GET /assistant/requests; devolver None
 no autoriza repetir POST. Se conserva la reserva hasta reconciliar el resultado.
 No usar este módulo de forma aislada para una campaña de pago.
+
+
+Orquestación: `chat-eval-runner.py` ofrece Runner.step(), una transición por llamada.
+Se inyecta un adaptador que consulta procedencia y contabilidad real; aún no se
+expone CLI de pago. Retorna OBSERVING para operaciones vivas, UNKNOWN_DISPATCH
+si no se recupera el handle y NEEDS_RESERVATION_RECONCILIATION para una reserva
+interrumpida antes de envío. Ninguno de esos estados autoriza reintentar POST.
+Una campaña COLLECTED aún necesita agregación, adjudicación y aceptación.
