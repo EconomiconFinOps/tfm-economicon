@@ -27,8 +27,8 @@ Every row of the demo CSV SHALL carry a valid usage date. Each ingestion definit
 - **THEN** every row has a date in the format the API reads and a test fails otherwise
 
 #### Scenario: Amounts survive the API
-- **WHEN** the demo dataset is loaded and each stored amount is compared with the amount of its CSV rows summed with exact decimal arithmetic by tenant, subscription, day, service, project and currency
-- **THEN** all amounts are equal and none differs by a rounding
+- **WHEN** the demo dataset is loaded and each stored amount is compared with the amount of its CSV rows summed with exact decimal arithmetic by tenant, subscription, day, service, project and currency, after rounding each CSV row to the twelve decimals that the cost column stores
+- **THEN** all amounts are equal, and the only difference allowed is that rounding of the public rows, which carry fifteen decimals (finding RF-119-006)
 
 #### Scenario: A second grouping is not used
 - **WHEN** the definition files of the demo are read
