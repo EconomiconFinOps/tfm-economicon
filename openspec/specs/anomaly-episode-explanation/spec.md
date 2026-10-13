@@ -167,6 +167,14 @@ mensaje, en lugar de generar una explicación parcial o aproximada.
 - **WHEN** el estado guardado no es uno de los cuatro conocidos, el episodio está cerrado sin fecha o sin motivo de cierre, o consta como ya no observado sin la fecha desde la que no se observa
 - **THEN** la respuesta es ese 409 y no se guarda ningún mensaje, en lugar de un error del servidor o un texto con valores vacíos
 
+#### Scenario: Datos guardados que no pueden ser de un episodio real
+- **WHEN** el episodio guardado tiene una observación distinta de `observed` y `no_longer_observed`, una moneda que sus reglas no evalúan, un número de días de impacto menor que 1, una fecha final del impacto anterior a la de inicio, un impacto acumulado menor que el exceso del día de apertura o un motivo de cierre vacío en un estado cerrado
+- **THEN** la respuesta es ese 409 y no se guarda ningún mensaje, en lugar de una explicación con una cifra imposible
+
+#### Scenario: Operandos no finitos o fuera de rango
+- **WHEN** algún operando guardado no es un número finito (`NaN`, infinito), es negativo o excede lo que admite la columna `NUMERIC(38,12)` (más de 38 dígitos o más de 26 cifras enteras)
+- **THEN** la respuesta es ese 409 y no se guarda ningún mensaje, en lugar de un error del servidor
+
 ### Requirement: Pedir y leer la explicación en el asistente
 
 El redactor de mensajes del asistente DEBE (SHALL) ofrecer el modo «Explicar una anomalía», que
