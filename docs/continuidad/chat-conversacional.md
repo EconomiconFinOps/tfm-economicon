@@ -1,3 +1,19 @@
+## Reconciliación con develop bfaf398 — 13/10/2026
+
+Se integra la navegación MVP en español y las anomalías reales de JUP114/116/117,
+preservando el panel conversacional. La captura usa episodios visibles por cliente,
+moneda/periodo por fila, sin agregado financiero; carga/error no conserva filas.
+
+Se detectó colisión histórica 002 entre chat y anomalías. El migrador exclusivo
+reconoce únicamente ese par cuando incluye005: completa ambos esquemas mediante
+DDL inspeccionable antes de003/004 y registra005 tras verificar. No renumera ni
+reescribe filas del ledger. Verify exige005 y ambos esquemas sin escribir.
+Pruebas SQLite:131PASS iniciales y7PASS ampliadas (rama actual003/004 con historial,
+summary/compaction, episodio y estado de detección, ledger y reinicio). Se añaden
+cuatro caminos Cockroach desde bases realmente vacías; ejecución nativa pendiente.
+No se ha enviado ninguna inferencia durante la reconciliación. Gasto sigue
+0.466034965/2USD; aceptación semántica de PR121 sigue pendiente.
+
 ## PR121: recuperación de servidor y expresiones locales — 13/10/2026
 
 Ensayo expression16 high4 sobre fb72da0 (producto idéntico a646175e):002 completa
@@ -20,9 +36,8 @@ CI fb72da0: processor y otros cuatro checks técnicos pasan; backend1718PASS,
 La recuperación real del test ya había terminado correctamente. Se corrige
 únicamente la llamada del fixture y se conserva el rechazo explícito sin
 autoridad; el archivo completo pasa33 pruebas. Producto byteidéntico a fb72da0.
-Su traslado a DockerServer está pendiente de autorización específica tras el
-rechazo de auto-review; no se ejecutó transferencia ni ensayo high4. Archivo
-exacto/hash/destino registrados en `expression16-transfer-proof.json` fuera de Git.
+Ese bloqueo fue resuelto por autorización específica del usuario; transferencia y
+ensayo high4 ejecutados después, descritos arriba. Archivo exacto/hash/destino registrados en `expression16-transfer-proof.json` fuera de Git.
 
 Último corte: campaña expression15 sobre192b687 completa28 casos en orden;
 23 completed/5 failed,27 HTTP429 y dos rechazos (unidades y pareja ahorro/divisa).

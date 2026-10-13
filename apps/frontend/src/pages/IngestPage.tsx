@@ -57,10 +57,10 @@ export function IngestPage() {
   if (!activeTenant) {
     return (
       <SectionCard
-        title="Tenant required"
-        subtitle="Choose a tenant before enqueuing ingestion jobs."
+        title="Cliente requerido"
+        subtitle="Elige un cliente antes de encolar trabajos de ingesta."
       >
-        <p className="text-sm text-muted-foreground">No active tenant selected.</p>
+        <p className="text-sm text-muted-foreground">No hay ningún cliente activo.</p>
       </SectionCard>
     );
   }
@@ -68,13 +68,13 @@ export function IngestPage() {
   return (
     <div className="flex flex-col gap-6">
       <SectionCard
-        title="Create ingestion job"
-        subtitle="The backend creates the job in CockroachDB and publishes it to RabbitMQ."
+        title="Crear trabajo de ingesta"
+        subtitle="El backend crea el trabajo en CockroachDB y lo publica en RabbitMQ."
       >
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1">
             <label className="text-sm text-muted-foreground" htmlFor="ingest-source">
-              Source
+              Origen
             </label>
             <input
               id="ingest-source"
@@ -88,7 +88,7 @@ export function IngestPage() {
 
           <div className="flex flex-col gap-1">
             <label className="text-sm text-muted-foreground" htmlFor="ingest-artifact-uri">
-              Artifact URI
+              URI del artefacto
             </label>
             <input
               id="ingest-artifact-uri"
@@ -103,13 +103,13 @@ export function IngestPage() {
 
           <div className="flex flex-col gap-1">
             <label className="text-sm text-muted-foreground" htmlFor="ingest-text-content">
-              Text content
+              Contenido del texto
             </label>
             <textarea
               id="ingest-text-content"
               className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-highlight"
               rows={10}
-              placeholder="Paste the document content to be chunked and embedded."
+              placeholder="Pega el contenido del documento que se dividirá en fragmentos y se vectorizará."
               value={form.text_content}
               onChange={(event) =>
                 setForm((current) => ({ ...current, text_content: event.target.value }))
@@ -126,27 +126,27 @@ export function IngestPage() {
             type="submit"
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? "Queueing job..." : "Queue ingestion"}
+            {mutation.isPending ? "Encolando trabajo..." : "Encolar ingesta"}
           </button>
         </form>
       </SectionCard>
 
       {mutation.data ? (
         <SectionCard
-          title="Job accepted"
-          subtitle="The worker will process the document, generate embeddings and update the job status."
+          title="Trabajo aceptado"
+          subtitle="El procesador tratará el documento, generará los embeddings y actualizará el estado del trabajo."
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Job ID</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">ID del trabajo</p>
               <strong className="text-foreground">{mutation.data.job_id}</strong>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Status</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Estado</p>
               <strong className="text-foreground">{mutation.data.status}</strong>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Queue</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Cola</p>
               <strong className="text-foreground">{mutation.data.queue}</strong>
             </div>
           </div>

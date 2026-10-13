@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Synthetic anomaly dataset for local demonstration: load, inspect and remove it.
 
-The rows are synthetic, are not Azure invoices and do not come from the public dataset. They give two consecutive
-seven-day periods in EUR so that the anomaly evaluation of JUP-030 produces two alerts and five non-alerts.
+The rows are synthetic, are not Azure invoices and do not come from the public dataset. They give one record per
+service and day in EUR from 2026-09-01 to 2026-09-21: the two weeks compared by the JUP-030 test query keep their
+totals (two alerts, five non-alerts), and one detection with the daily business rule of JUP-114 opens a P1, a P2 and a
+P3 episode. `remove` also deletes the anomaly episodes and detection state of a tenant left without other cost data.
 Run it inside the processor container so it uses that container's DATABASE_URL:
 
     docker compose exec -T processor python - apply < scripts/synthetic_anomalies.py
@@ -17,7 +19,7 @@ import argparse
 import os
 import re
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Callable, Mapping, Sequence
 
@@ -33,21 +35,22 @@ RUN_FLAG = "COALESCE(request->'synthetic' = 'true'::JSONB, false)"
 # A record is synthetic only when its own ingestion run is.
 SYNTHETIC_RUNS = "(SELECT id FROM azure_cost_ingestion_runs WHERE id LIKE :pattern AND " + RUN_FLAG + ")"
 
-# (day, cost, service). Baseline [2026-09-01, 2026-09-08) and current [2026-09-08, 2026-09-15), all in EUR.
-ROWS = (
-    (date(2026, 9, 2), "600.00", "Compute"), (date(2026, 9, 5), "400.00", "Compute"),
-    (date(2026, 9, 3), "1200.00", "Analytics"), (date(2026, 9, 6), "1000.00", "Analytics"),
-    (date(2026, 9, 2), "500.00", "Storage"), (date(2026, 9, 4), "300.00", "Storage"),
-    (date(2026, 9, 1), "900.00", "Database"), (date(2026, 9, 7), "600.00", "Database"),
-    (date(2026, 9, 4), "10.00", "Tools"),
-    (date(2026, 9, 5), "0.00", "Backup"),
-    (date(2026, 9, 9), "1200.00", "Compute"), (date(2026, 9, 11), "700.00", "Compute"), (date(2026, 9, 13), "500.00", "Compute"),
-    (date(2026, 9, 8), "1300.00", "Analytics"), (date(2026, 9, 12), "1000.00", "Analytics"),
-    (date(2026, 9, 9), "520.00", "Storage"), (date(2026, 9, 13), "300.00", "Storage"),
-    (date(2026, 9, 10), "700.00", "Database"), (date(2026, 9, 14), "500.00", "Database"),
-    (date(2026, 9, 11), "40.00", "Tools"),
-    (date(2026, 9, 10), "300.00", "Backup"),
-    (date(2026, 9, 12), "600.00", "Networking"),
+FIRST_DAY = date(2026, 9, 1)
+# Daily EUR cost per service for three weeks; None means no record that day. The first two weeks keep the totals of
+# the JUP-030 periods [09-01, 09-08) and [09-08, 09-15); the third week grows Compute to P1 and gives Database a P2.
+DAILY = {
+    "Compute": ["140"] * 5 + ["150"] * 2 + ["140"] + ["377"] * 4 + ["376"] * 2 + ["377"] * 7,
+    "Analytics": ["314"] * 5 + ["315"] * 2 + ["303", "303", "480", "303", "303", "304", "304"] + ["305"] * 7,
+    "Storage": ["114"] * 6 + ["116"] + ["117"] * 6 + ["118"] + ["117"] * 7,
+    "Database": ["214"] * 5 + ["215"] * 2 + ["171"] * 4 + ["172"] * 3 + ["171", "300", "300", "300", "300", "300", "171"],
+    "Tools": ["1"] * 4 + ["2"] * 3 + ["5"] * 2 + ["6"] * 5 + ["6"] * 7,
+    "Backup": ["0"] * 7 + ["0", "0", "300", "0", "0", "0", "0"] + ["0"] * 7,
+    "Networking": [None] * 13 + ["600"] + ["85"] * 7,
+}
+# (day, cost, service), all in EUR.
+ROWS = tuple(
+    (FIRST_DAY + timedelta(days=offset), value + ".00", service)
+    for service, values in DAILY.items() for offset, value in enumerate(values) if value is not None
 )
 
 
@@ -65,7 +68,7 @@ def build_dataset(tenant: str) -> tuple[list[dict], list[dict]]:
     validate_tenant(tenant)
     records: list[dict] = []
     for number, (day, cost, service) in enumerate(ROWS, start=1):
-        identifier = f"{PREFIX}rec-{number:02d}"
+        identifier = f"{PREFIX}rec-{number:03d}"
         records.append({
             "id": identifier, "ingestion_id": RUN, "tenant_id": tenant, "subscription_id": SUBSCRIPTION,
             "usage_date": day, "pretax_cost": Decimal(cost), "currency": "EUR",
@@ -74,7 +77,7 @@ def build_dataset(tenant: str) -> tuple[list[dict], list[dict]]:
         })
     runs = [{
         "id": RUN, "tenant_id": tenant, "subscription_id": SUBSCRIPTION,
-        "request": {"synthetic": True, "change": "jup-107-anomaly-demo-data"}, "status": "completed",
+        "request": {"synthetic": True, "change": "jup-114-anomalies-panel-live"}, "status": "completed",
         "page_count": 1, "retry_count": 0, "row_count": len(records),
         "started_at": CREATED_AT, "completed_at": CREATED_AT,
     }]
@@ -98,7 +101,7 @@ def status(store, tenant: str) -> dict:
         state = "partial"
     return {
         "tenant": tenant, "state": state, "runs": len(found["runs"]), "records": len(found["records"]),
-        "real_runs": real["runs"], "real_records": real["records"],
+        "real_runs": real["runs"], "real_records": real["records"], "episodes": store.count_episodes(tenant),
     }
 
 
@@ -172,6 +175,18 @@ class SqlStore:
                 "SELECT count(*) FROM azure_cost_records WHERE NOT id LIKE :pattern AND ingestion_id IN " + SYNTHETIC_RUNS),
                 {"pattern": LIKE_PATTERN}).scalar())
 
+    def _anomaly_tables(self, connection) -> bool:
+        return int(connection.execute(self._text(
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' "
+            "AND table_name IN ('anomaly_episodes', 'anomaly_detection_state')")).scalar()) == 2
+
+    def count_episodes(self, tenant: str) -> int:
+        with self.engine.connect() as connection:
+            if not self._anomaly_tables(connection):
+                return 0
+            return int(connection.execute(self._text(
+                "SELECT count(*) FROM anomaly_episodes WHERE tenant_id = :tenant"), {"tenant": tenant}).scalar())
+
     def insert(self, runs: Sequence[Mapping], records: Sequence[Mapping]) -> None:
         import json
         run_sql = self._text(
@@ -196,13 +211,28 @@ class SqlStore:
 
     def delete_synthetic(self) -> dict:
         with self.engine.begin() as connection:
+            tenants = sorted(connection.execute(self._text(
+                "SELECT DISTINCT tenant_id FROM azure_cost_ingestion_runs WHERE id LIKE :pattern AND " + RUN_FLAG),
+                {"pattern": LIKE_PATTERN}).scalars())
             records = connection.execute(self._text(
                 "DELETE FROM azure_cost_records WHERE id LIKE :pattern AND ingestion_id IN " + SYNTHETIC_RUNS),
                 {"pattern": LIKE_PATTERN}).rowcount
             runs = connection.execute(self._text(
                 "DELETE FROM azure_cost_ingestion_runs WHERE id LIKE :pattern AND " + RUN_FLAG),
                 {"pattern": LIKE_PATTERN}).rowcount
-        return {"runs": int(runs or 0), "records": int(records or 0)}
+            episodes, kept = 0, []
+            if self._anomaly_tables(connection):
+                for tenant in tenants:
+                    # Episodes of a tenant that still holds other cost data may come from those data: keep them.
+                    if sum(self._count_real(connection, tenant).values()):
+                        if connection.execute(self._text("SELECT count(*) FROM anomaly_episodes WHERE tenant_id = :t"),
+                                              {"t": tenant}).scalar():
+                            kept.append(tenant)
+                        continue
+                    episodes += int(connection.execute(self._text(
+                        "DELETE FROM anomaly_episodes WHERE tenant_id = :t"), {"t": tenant}).rowcount or 0)
+                    connection.execute(self._text("DELETE FROM anomaly_detection_state WHERE tenant_id = :t"), {"t": tenant})
+        return {"runs": int(runs or 0), "records": int(records or 0), "episodes": episodes, "kept_episode_tenants": kept}
 
 
 def parse_args(argv: Sequence[str]) -> argparse.Namespace:
@@ -237,11 +267,15 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
             if result["refused"]:
                 print(result["reason"])
                 return 2
-            print(f"Retiradas {result['runs']} ingestas y {result['records']} registros sinteticos.")
+            print(f"Retiradas {result['runs']} ingestas, {result['records']} registros sinteticos y "
+                  f"{result['episodes']} episodios de anomalia derivados de ellos.")
+            for tenant in result["kept_episode_tenants"]:
+                print(f"Se conservan los episodios de {tenant} porque tiene otros datos de coste.")
             return 0
         report = status(store, args.tenant)
         print(f"{report['tenant']}: estado {report['state']}, {report['runs']} ingestas y {report['records']} registros sinteticos; "
-              f"datos reales: {report['real_runs']} ingestas y {report['real_records']} registros.")
+              f"datos reales: {report['real_runs']} ingestas y {report['real_records']} registros; "
+              f"{report['episodes']} episodios de anomalia.")
         return 0
     except ValueError as error:
         print(str(error))

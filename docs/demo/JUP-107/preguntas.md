@@ -15,6 +15,9 @@ Respaldo para la ronda de preguntas. Cada fila dice qué paso de [guion.md](guio
 | ¿Un cliente ve los costes de otro? | D9 | No: al cambiar a Core Finance no aparece ningún coste de Growth Ops. Es una demostración visual; el aislamiento está cubierto por sus propias pruebas. |
 | ¿Por qué pone «Azure» en pantalla si los datos no son de Azure? | D1 | Los rótulos de la interfaz dicen Azure porque los datos tienen la forma de los costes de Azure, pero son sintéticos: no son facturas ni proceden del dataset público. |
 | ¿Son datos reales? | D1, D10 | No: son datos sintéticos creados para probar la aplicación; no vienen de Azure ni del dataset público. |
-| ¿Funciona el ahorro potencial, las anomalías o las recomendaciones con estos datos? | D10 | No: esas pantallas usan datos fijos de la maqueta y no salen de estos costes; el ahorro potencial no está disponible. |
+| ¿Funciona el ahorro potencial o las recomendaciones con estos datos? | D10 | No: las pantallas de recomendaciones, recortes y coste detallado no se publican y el ahorro potencial no está disponible. |
+| ¿Cómo detecta y prioriza las anomalías? | D12 | Revisa el coste de cada día de cada servicio con la regla de negocio y ordena por criticidad, calculada sobre el impacto acumulado de cada anomalía (Compute, 2807.71 EUR). |
+| ¿Una anomalía dice la causa? | D12 | No: es una candidata para investigar; la causa no está establecida y la cierra una persona con un motivo. |
+| ¿Por qué una subida no abre una anomalía? | D12 | Porque la regla exige superar lo esperado a la vez en importe y en porcentaje; un servicio nuevo, sin gasto previo, tampoco la abre. |
 
 No improvisar cifras: si una pregunta no está en la tabla, decir que no se ha comprobado con estos datos.

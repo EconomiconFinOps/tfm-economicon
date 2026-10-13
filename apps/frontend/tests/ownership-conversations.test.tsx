@@ -63,7 +63,7 @@ describe("JUP-037 ownership conversations", () => {
       [`POST ${collection}/${created.id}/messages`]: () => jsonResponse({ ...assistantReply, conversation: created }, 201)
     });
     const { user } = await start();
-    await user.click(screen.getByRole("button", { name: /^New$/ }));
+    await user.click(screen.getByRole("button", { name: /^Nueva$/ }));
     await waitFor(() => expect(requests.filter((request) => request.method === "GET"
       && request.path === collection)).toHaveLength(2));
     await act(async () => refreshed.resolve({ items: [conversation, created] }));
@@ -71,7 +71,7 @@ describe("JUP-037 ownership conversations", () => {
     await waitFor(() => expect(screen.getByRole("textbox", { name: "Pregunta" })).toHaveValue(""));
     await user.click(screen.getByRole("checkbox", { name: "Consultar costes por propiedad" }));
     await user.type(screen.getByRole("textbox", { name: "Pregunta" }), "Coste del nuevo hilo");
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
     await waitFor(() => expect(requests.some((request) => request.method === "POST"
       && request.path === `${collection}/${created.id}/messages`)).toBe(true));
     expect(requests.some((request) => request.method === "POST" && request.path === messagePath)).toBe(false);
@@ -93,7 +93,7 @@ describe("JUP-037 ownership conversations", () => {
     await user.type(screen.getByRole("textbox", { name: "Moneda (opcional)" }), "EUR");
     fireEvent.change(screen.getByLabelText("Inicio UTC (incluido)"), { target: { value: "2026-09-01" } });
     fireEvent.change(screen.getByLabelText("Fin UTC (excluido)"), { target: { value: "2026-10-01" } });
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(await screen.findByText("Gasto de la selección: 10.00 EUR.")).toBeVisible();
     expect(screen.getByText("Sin aplicación: 2.00 EUR.")).toBeVisible();
     const summary = screen.getByText("Evidencia de costes — Datos parciales");
@@ -125,7 +125,7 @@ describe("JUP-037 ownership conversations", () => {
       await user.type(screen.getByRole("textbox", { name: "Clave de etiqueta" }), "org");
       await user.selectOptions(screen.getByRole("combobox", { name: "Agrupar por" }), group);
       await user.type(screen.getByRole("textbox", { name: "Valor exacto (opcional)" }), "Team-A");
-      await user.click(screen.getByRole("button", { name: "Send" }));
+      await user.click(screen.getByRole("button", { name: "Enviar" }));
       await waitFor(() => expect(requests.find((item) => item.path === messagePath)?.body).toEqual({
         content: "¿Cuál es el coste registrado?", ownership_query: { group_by: group, value: "Team-A" }
       }));
@@ -136,19 +136,19 @@ describe("JUP-037 ownership conversations", () => {
     const { requests } = backend();
     const { user } = await start();
     fireEvent.change(screen.getByLabelText("Inicio UTC (incluido)"), { target: { value: "2026-09-01" } });
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(screen.getByRole("alert")).toHaveTextContent("Indica ambas fechas");
     fireEvent.change(screen.getByLabelText("Fin UTC (excluido)"), { target: { value: "2026-09-01" } });
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(screen.getByRole("alert")).toHaveTextContent("posterior");
     fireEvent.change(screen.getByLabelText("Inicio UTC (incluido)"), { target: { value: "" } });
     fireEvent.change(screen.getByLabelText("Fin UTC (excluido)"), { target: { value: "" } });
     await user.type(screen.getByRole("textbox", { name: "Moneda (opcional)" }), "eUr");
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(screen.getByRole("alert")).toHaveTextContent("tres letras mayúsculas");
     await user.clear(screen.getByRole("textbox", { name: "Moneda (opcional)" }));
     await user.selectOptions(screen.getByRole("combobox", { name: "Agrupar por" }), "tag");
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(screen.getByRole("alert")).toHaveTextContent("clave de la etiqueta");
     expect(requests.filter((item) => item.method === "POST")).toHaveLength(0);
   });
@@ -157,10 +157,10 @@ describe("JUP-037 ownership conversations", () => {
     backend({ [`POST ${messagePath}`]: () => jsonResponse({ detail: "Ownership unavailable" }, 503) });
     const { user } = await start();
     await user.type(screen.getByRole("textbox", { name: "Valor exacto (opcional)" }), "Private application");
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Ownership unavailable");
     expect(screen.getByRole("textbox", { name: "Valor exacto (opcional)" })).toHaveValue("Private application");
-    expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeEnabled();
     await user.click(screen.getByRole("button", { name: /Second conversation/ }));
     const checkbox = await screen.findByRole("checkbox", { name: "Consultar costes por propiedad" });
     expect(checkbox).not.toBeChecked();
@@ -174,8 +174,8 @@ describe("JUP-037 ownership conversations", () => {
     const pending = deferredResponse();
     backend({ [`POST ${messagePath}`]: () => pending.promise });
     const { user, client } = await start();
-    await user.click(screen.getByRole("button", { name: "Send" }));
-    expect(screen.getByRole("button", { name: "Sending..." })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
+    expect(screen.getByRole("button", { name: "Enviando..." })).toBeDisabled();
     await user.click(screen.getByRole("button", { name: /Second conversation/ }));
     await user.click(await screen.findByRole("checkbox", { name: "Consultar costes por propiedad" }));
     await user.type(screen.getByRole("textbox", { name: "Pregunta" }), "New question");
@@ -185,7 +185,7 @@ describe("JUP-037 ownership conversations", () => {
     expect(screen.getByRole("textbox", { name: "Pregunta" })).toHaveValue("New question");
     expect(screen.getByRole("textbox", { name: "Valor exacto (opcional)" })).toHaveValue("New value");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeEnabled();
   });
 
   it("clears ownership fields and validation errors when changing tenant", async () => {
@@ -193,9 +193,9 @@ describe("JUP-037 ownership conversations", () => {
     const { user } = await start();
     await user.type(screen.getByRole("textbox", { name: "Valor exacto (opcional)" }), "Private value");
     fireEvent.change(screen.getByLabelText("Inicio UTC (incluido)"), { target: { value: "2026-09-01" } });
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(screen.getByRole("alert")).toBeVisible();
-    await user.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
+    await user.selectOptions(screen.getByRole("combobox", { name: "Ámbito de cliente" }), tenants[1].id);
     const checkbox = await screen.findByRole("checkbox", { name: "Consultar costes por propiedad" });
     expect(checkbox).not.toBeChecked();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();

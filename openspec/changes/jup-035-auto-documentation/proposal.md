@@ -2,29 +2,31 @@ JUP: JUP-035
 Trello: https://trello.com/c/BJfABykd
 
 ## Why
-PR120 solo admite required y rechaza decisiones nativas en auto. La orden del
-12/10/2026 autoriza un parche separado sobre f63c150, sin publicar ni desplegar.
+PR121 corrige la interacción conversacional de PR120 y los fallos de multiplicidad,
+fundamentación, cálculo y recuperación observados durante la validación. Los
+protocolos auto-documentation-v2 y decision none/search son antecedentes
+sustituidos; sus ensayos negativos se conservan, no acreditan aceptación actual.
 
 ## What Changes
-- Contrato auto-documentation-v2: decision privada auto sin esquema final;
-  cero/una busqueda backend y finalizacion estricta none, maximo dos generaciones.
-- Actualizar prompt, hashes, ambos servicios y regresiones sin relajar validadores.
-- Mantener limites, proveedor, aislamiento y autoridad financiera existentes.
-- Corregir la entrega del evento terminal ante carreras SQL/RAM y hacer
-  reproducibles los fixtures backend de autenticación, pgvector y summary SQL.
+- Contrato vigente server-documentation-v4: una recuperación documental gobernada
+  por servidor y una generación final, dentro del máximo de dos generaciones.
+- Expresiones privadas tipadas, ligadas a cantidades de usuario o documentos
+  autenticados; cálculo Decimal local y proyección al FinOpsResponse público.
+- Citas con extractos literales verificados y fuente visible para cantidades
+  documentales usadas. La pertinencia y selección de operandos requieren evaluación.
+- Política chat separada de ingesta, esquema privado consistente con autoridad
+  financiera y razonamiento high/exclude dentro de la salida máxima de 3200 tokens.
+- Preservar aislamiento, HMAC, plazo, cancelación, JSONB y equivalencia SSE/final.
+- Reconciliar develop con anomalías reales y migración compatible de los dos
+  esquemas históricos 002, sin modificar registros ni datos ya aplicados.
 
 ## Impact
-Processor, backend y especificacion conversational-web-interface. Despliegue
-coordinado requerido por hashes incompatibles; no compatibilidad silenciosa con
-required-documentation-v1. El archivo de la entrega previa se conserva intacto.
-La compatibilidad del proveedor y batería real de 28 preguntas siguen pendientes;
-no se heredan presupuestos ni resultados de otros SHA. El usuario autoriza el
-12/10 la revisión y validación asistidas del parche, atribuidas al agente.
+Backend, processor, interfaz y especificación conversational-web-interface.
+Los hashes requieren despliegue coordinado en el entorno aislado de validación.
+El objetivo autorizado incluye corrección, publicación de la rama y validación
+real con datos sintéticos, con límite acumulado actual de 2 USD. No autoriza
+fusionar la PR ni publicar mensajes en Discord.
 
-## Actualizacion autorizada — 12/10/2026
-El objetivo explicito es resolver PR121 hasta ser valida. Se sustituye el
-protocolo auto nativo por decision estructurada none/search con una busqueda
-real maxima y dos generaciones. Se conserva proveedor/modelo, salida3200,
-deadline, scope HMAC y FinOpsResponse1.0. Las citas documentales llevan extracto
-literal privado verificado; la pertinencia y los calculos se aceptan solo tras
-evaluacion real completa. Los ensayos antiguos no acreditan el nuevo candidato.
+La batería completa y el navegador deben evaluarse sobre el candidato final.
+CI verde, aritmética local y ensayos históricos no sustituyen aceptación semántica.
+La documentación de diseño conserva las decisiones y limitaciones del protocolo.

@@ -23,7 +23,7 @@ export function OperationalCostDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-bold text-foreground">Dashboard Operativo - Coste Detallado</h2>
+          <h2 className="font-bold text-foreground">Panel Operativo - Coste Detallado</h2>
           <p className="text-sm text-muted-foreground">Análisis granular por servicio, proyecto y proveedor</p>
         </div>
         <ExportButton data={detailedData} filename="coste-operativo-detallado" />

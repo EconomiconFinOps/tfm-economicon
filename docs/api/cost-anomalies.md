@@ -8,8 +8,11 @@ Fuentes ejecutables: [schema](../../apps/backend/app/schemas/anomalies.py),
 `POST /billing/anomalies/evaluate` devuelve candidatos de investigacion por
 umbral de coste observado o aumento frente al periodo anterior. Es una
 evaluacion bajo demanda sobre costes normalizados; no persiste alertas, envia
-notificaciones ni diagnostica su causa. El panel JUP-057 sigue mostrando su
-fixture de demostracion; no consume este endpoint.
+notificaciones ni diagnostica su causa. Desde JUP-114 es la **consulta de prueba
+sin guardar**, con reglas que manda quien llama: no crea, cambia ni lee los
+episodios guardados. Las anomalias que se guardan, priorizan y siguen son los
+episodios de [anomaly-episodes.md](anomaly-episodes.md), que aplican la regla
+diaria de negocio. El panel `/anomalies` lee esos episodios, no este endpoint.
 
 ## Peticion y acceso
 
@@ -202,25 +205,28 @@ La respuesta completa impresa contiene `evaluation_status: evaluated`,
 
 ## Consumo por JUP-038 y contrato de agente
 
-JUP-038 puede explicar que Compute fue marcado porque 160.00 EUR alcanza el
-umbral de 150.00 EUR y aumenta 60.00 EUR (60.00%) frente a 100.00 EUR del periodo
-anterior. Debe conservar moneda, periodos, reglas, quality, limitaciones e
-`evidence_id`; el LLM explica los calculos ya realizados, sin recalcularlos o
-inventar causa, ahorro, despliegues, uso o severidad. El contexto de sesion se
-inyecta fuera de los argumentos LLM. Una respuesta provisional debe conservar
-esa condicion y cualquier baseline no evaluable.
+JUP-038 explica los **episodios guardados** de
+[anomaly-episodes.md](anomaly-episodes.md), no los candidatos de esta consulta
+de prueba: sus `id` incluyen periodo y reglas y no identifican una anomalia que
+se pueda seguir. Esta consulta sirve para probar reglas y periodos a mano; si
+alguien la usa para explicar un calculo, se aplica lo mismo que antes: por
+ejemplo, Compute fue marcado porque 160.00 EUR alcanza el umbral de 150.00 EUR y
+aumenta 60.00 EUR (60.00%) frente a 100.00 EUR del periodo anterior, conservando
+moneda, periodos, reglas, quality, limitaciones e `evidence_id`, sin recalcular
+ni inventar causa, ahorro, despliegues, uso o severidad. Una respuesta
+provisional debe conservar esa condicion y cualquier baseline no evaluable.
 
-La adaptacion al envelope comun de herramientas (correlation ID, source,
-evidence IDs, assumptions y limitations) corresponde al consumidor. Este
-endpoint no registra ni habilita por si mismo una herramienta del agente y no
-ha probado una integracion JUP-038. Su consumidor puede usar un doble explicito
-del objeto versionado mientras implementa y prueba dicha integracion.
+Este endpoint no registra ni habilita por si mismo una herramienta del agente y
+no ha probado una integracion JUP-038.
 
 La regla diaria de `detect_cost_anomaly_candidates` en
 [JUP-084](../architecture/finops-agent-tools.md#detect_cost_anomaly_candidates)
 es `relative_delta > 20% AND absolute_delta > 100 EUR/day`. Este evaluador
-compara agregados de periodo con limites inclusivos y reglas independientes;
-no cumple ni reemplaza silenciosamente aquella regla. Una futura adaptacion
-debe resolver granularidad, cobertura, igualdad y combinacion de condiciones
-mediante su cambio de contrato y pruebas. No se divide un agregado entre dias
-para afirmar que se ha verificado una serie diaria.
+compara agregados de periodo con limites inclusivos (`>=`) y reglas
+independientes; no cumple ni reemplaza aquella regla. La aplica JUP-114 en los
+episodios guardados, sobre el coste diario observado y con limites estrictos
+(`>`) y las dos condiciones a la vez
+([ADR-0020](../adr/ADR-0020-cost-anomaly-episodes.md)). Por eso una subida de
+exactamente el 20 % salta en esta consulta con `deviation_threshold_percent`
+`20.00` y no abre un episodio. No se divide un agregado entre dias para afirmar
+que se ha verificado una serie diaria.

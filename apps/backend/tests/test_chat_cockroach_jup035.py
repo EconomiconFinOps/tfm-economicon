@@ -439,3 +439,17 @@ def test_native_post_commit_lost_ack_resolves_canonical_final_without_duplicate(
         print('Post-COMMIT structural receipt:',json.dumps({'server_commit_seen':proxy.committed.is_set(),
             'ack_dropped':True,'frames':proxy.frames,'canonical_revision':1,'messages':2,'replay_identical':True}))
     finally:engine.dispose();proxy.close()
+
+
+@pytest.mark.parametrize('branch', ['fresh', 'anomaly', 'chat', 'chat_current'])
+def test_reconcile_two_published_002_histories_native(sql, tmp_path, branch):
+    from test_migration_reconciliation_jup035 import test_both_002_histories_converge_preserving_ledger_and_data
+    name = 'economicon_jup035_mock_reconcile_' + uuid4().hex
+    with sql.connect().execution_options(isolation_level='AUTOCOMMIT') as connection:
+        connection.execute(text('CREATE DATABASE ' + name))
+    engine = create_engine(sql.url.set(database=name))
+    print('Retained isolated reconciliation database:', name)
+    try:
+        test_both_002_histories_converge_preserving_ledger_and_data(engine, tmp_path, branch)
+    finally:
+        engine.dispose()

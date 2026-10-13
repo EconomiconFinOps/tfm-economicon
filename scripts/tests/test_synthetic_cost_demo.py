@@ -28,9 +28,11 @@ sys.modules[TOOL_SPEC.name] = TOOL_TESTS
 TOOL_SPEC.loader.exec_module(TOOL_TESTS)
 MAX_SECONDS = 240
 BIG_MONTH = "2026-07"
-ALLOWED_SCREENS = {"none", "billing-dashboard"}
-FIXED_DATA_ROUTES = ("/anomalies", "/recommendations", "/cuts", "/operational")
-TOPICS = ("moneda", "hueco", "cero", "crédito", "grande", "cliente", "etiqueta")
+ALLOWED_SCREENS = {"none", "billing-dashboard", "anomalies-panel"}
+FIGURE_SCREENS = {"billing-dashboard", "anomalies-panel"}
+FIXED_DATA_ROUTES = ("/recommendations", "/cuts", "/operational")
+TOPICS = ("moneda", "hueco", "cero", "crédito", "grande", "cliente", "etiqueta", "anomalía")
+ANOMALY_EXPECTED = PACKAGE / "esperados-anomalias.json"
 
 
 def month_of(day) -> str:
@@ -91,6 +93,11 @@ def computed(records, figure):
     if kind == "undated":
         rows = [r for r in records if r["currency"] == currency and r["usage_date"] is None]
         return money(total(rows)), len(rows)
+    if kind == "anomaly_episode":
+        # Verified independently by test_synthetic_anomalies.py against the JUP-107 anomaly dataset.
+        episodes = json.loads(ANOMALY_EXPECTED.read_text(encoding="utf-8"))["episodes"]
+        found = [e for e in episodes if e["service"] == figure["service"] and e["severity"] == figure["severity"]]
+        return (found[0]["accumulated_impact"], found[0]["impact_day_count"]) if len(found) == 1 else None
     raise AssertionError(f"unknown figure kind: {kind}")
 
 
@@ -117,15 +124,16 @@ STEP_CLAIMS = {
     "D4": r"[Ff]ebrero tiene un cero registrado y marzo no tiene ningún dato",
     "D5": r"[Mm]ayo es un crédito",
     "D9": r"al cambiar a Core Finance no aparece ninguno",
+    "D12": r"candidata para investigar, no una causa confirmada",
 }
 ANSWER_CLAIMS = {
     "moneda": ("EUR", "USD"), "cero": ("cero",), "crédito": ("-50.00",), "cliente": ("No:", "no aparece"),
     "etiqueta": ("Etiqueta",), "grande": ("no se dibuja",),
 }
-NAV_NAMES = ("anomalías", "recomendaciones", "corte global", "coste detallado")
+NAV_NAMES = ("recomendaciones", "corte global", "coste detallado")
 SECRET = re.compile(r"(?i)(DEMO_PASSWORD|TOKEN|SECRET|API[_-]?KEY)\s*[=:]\s*['\"]?[A-Za-z0-9][A-Za-z0-9._\-]{5,}")
 TOPIC_STEPS = {"moneda": {"D3", "D6"}, "hueco": {"D4"}, "cero": {"D4"}, "crédito": {"D5"}, "grande": {"D11"},
-               "cliente": {"D9"}, "etiqueta": {"D7"}}
+               "cliente": {"D9"}, "etiqueta": {"D7"}, "anomalía": {"D12"}}
 
 
 def quantities(text):
@@ -233,7 +241,9 @@ class PackageTests(unittest.TestCase):
 
     def test_declared_total_matches_the_main_steps_and_the_cap_holds_with_the_optional_one(self):
         main = sum(s["seconds"] for s in self.main)
+        self.assertEqual(main, 180)
         self.assertEqual(self.package["total_seconds"], main)
+        self.assertEqual(self.package["optional_seconds"], sum(s["seconds"] for s in self.optional))
         self.assertLessEqual(main + sum(s["seconds"] for s in self.optional), MAX_SECONDS)
         self.assertRegex(self.read("guion.md"), rf"Duración total:\s*{main} s")
 
@@ -252,7 +262,9 @@ class PackageTests(unittest.TestCase):
         for step in self.steps:
             self.assertIn(step["screen"], ALLOWED_SCREENS, step["id"])
             if step.get("shows_amounts"):
-                self.assertEqual(step["screen"], "billing-dashboard", step["id"])
+                self.assertIn(step["screen"], FIGURE_SCREENS, step["id"])
+                if step["screen"] == "anomalies-panel":
+                    self.assertEqual(step["id"], "D12")
         limits = [s["id"] for s in self.steps if s.get("limits")]
         self.assertEqual(len(limits), 1)
         sections = re.split(r"(?m)^### ", self.read("guion.md"))[1:]
@@ -267,8 +279,10 @@ class PackageTests(unittest.TestCase):
         for step in self.main:
             if step.get("period"):
                 self.assertLess(step["period"]["to"], BIG_MONTH, step["id"])
-        self.assertEqual(len(self.optional), 1)
-        self.assertEqual(self.optional[0]["period"], {"from": BIG_MONTH, "to": BIG_MONTH})
+        self.assertEqual({s["id"] for s in self.optional}, {"D7", "D11"})
+        big = [s for s in self.optional if s.get("period", {}).get("from") == BIG_MONTH]
+        self.assertEqual(len(big), 1)
+        self.assertEqual(big[0]["period"], {"from": BIG_MONTH, "to": BIG_MONTH})
         self.assertIn(BIG_MONTH, self.read("guion.md"))
 
     def test_every_figure_belongs_to_a_step_and_equals_the_independent_computation(self):
@@ -279,7 +293,7 @@ class PackageTests(unittest.TestCase):
             self.assertIn(figure["step"], ids, figure["id"])
         self.assertEqual(mismatches(dataset(), figures), [])
         covered = {f["kind"] for f in figures}
-        self.assertEqual(covered, {"month_total", "period_total", "group_total", "comparison", "undated"})
+        self.assertEqual(covered, {"month_total", "period_total", "group_total", "comparison", "undated", "anomaly_episode"})
 
     def test_the_route_covers_the_cases_the_dataset_exists_for(self):
         figures = self.package["figures"]
@@ -306,7 +320,8 @@ class PackageTests(unittest.TestCase):
     def test_preparation_loads_checks_removes_twice_and_does_not_share_a_stack(self):
         text = self.read("preparacion.md")
         for needle in ("python - apply < scripts/synthetic_costs.py", "python - status < scripts/synthetic_costs.py",
-                       "-p jup107", "down -v", "JUP-065"):
+                       "python - apply < scripts/synthetic_anomalies.py", "python - remove < scripts/synthetic_anomalies.py",
+                       "No pulsar «Detectar ahora» antes de la demo", "-p jup107", "down -v", "JUP-065"):
             self.assertIn(needle, text, needle)
         self.assertGreaterEqual(text.count("python - remove < scripts/synthetic_costs.py"), 2)
         self.assertLess(text.index("python - apply <"), text.index("python - remove <"))
@@ -407,7 +422,7 @@ class PackageTests(unittest.TestCase):
 
     def test_the_recipe_watches_failed_requests_and_error_responses_and_scopes_the_tenant_by_label(self):
         code = "\n".join(re.findall(r"(?s)```js\n(.*?)```", self.read("receta-navegador.md")))
-        for needle in ("requestfailed", "page.on('response'", "status() >= 400", "getByLabel('Ambito de cliente')"):
+        for needle in ("requestfailed", "page.on('response'", "status() >= 400", "getByLabel('Ámbito de cliente')"):
             self.assertIn(needle, code, needle)
         self.assertNotIn("locator('select')", code)
         self.assertNotRegex(code, r"addInitScript|routeFromHAR|unroute|console\.\w+\([^)]*\bPASSWORD\b")
@@ -521,6 +536,34 @@ class PackageTests(unittest.TestCase):
 
     def test_the_preparation_does_not_call_the_ports_fixed(self):
         self.assertNotIn("puertos fijos", self.read("preparacion.md"))
+
+    def test_the_anomalies_step_follows_isolation_and_is_tied_to_the_anomaly_dataset(self):
+        ids = [s["id"] for s in self.steps]
+        self.assertEqual(ids[ids.index("D9") + 1], "D12")
+        step = next(s for s in self.steps if s["id"] == "D12")
+        self.assertEqual(step["screen"], "anomalies-panel")
+        self.assertEqual(step["first_row"], "Compute")
+        self.assertIn("Candidata: causa no establecida", step["dialog_contains"])
+        detection = json.loads(ANOMALY_EXPECTED.read_text(encoding="utf-8"))["detection"]["last_evaluated_date"]
+        day, month, year = detection[8:10], detection[5:7], detection[:4]
+        self.assertIn(f"Revisado hasta el {day}/{month}/{year}", step["ui_contains"])
+        code = "\n".join(re.findall(r"(?s)```js\n(.*?)```", self.read("receta-navegador.md")))
+        for needle in ("first_row", "dialog_contains", "anomaly_episode", "Detectar ahora"):
+            self.assertIn(needle, code, needle)
+
+    def test_the_anomalies_panel_is_no_longer_presented_as_fixed_data(self):
+        limits = next(s for s in self.steps if s.get("limits"))
+        text = " ".join(str(limits.get(k, "")) for k in ("say", "expect"))
+        self.assertNotIn("/anomalies", text)
+        self.assertNotIn("anomal", text.lower())
+        self.assertNotIn("/anomalies", self.sections()[limits["id"]])
+        fixed = self.read("README.md").split("usan datos fijos")[0].splitlines()[-1]
+        self.assertNotIn("Anomalías", fixed.split("Las pantallas de")[-1])
+
+    def test_the_first_step_is_taken_on_the_anomalies_panel_before_any_detection(self):
+        first = self.steps[0]
+        self.assertEqual(first["screen"], "anomalies-panel")
+        self.assertIn("Todavía no se han buscado anomalías en este cliente", first["ui_contains"])
 
     def test_the_undated_amount_is_not_spoken_because_the_screen_only_shows_the_count(self):
         step = next(s for s in self.steps if s["id"] == "D8")

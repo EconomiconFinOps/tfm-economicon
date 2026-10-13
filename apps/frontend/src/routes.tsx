@@ -1,11 +1,8 @@
-import { createBrowserRouter, type RouteObject } from "react-router";
+import { createBrowserRouter, Navigate, type RouteObject } from "react-router";
 import { SessionGate } from "./layouts/SessionGate";
 import { Layout, TenantScopedOutlet } from "./layouts/Layout";
 import { ExecutiveCostDashboard } from "./pages/ExecutiveCostDashboard";
-import { OperationalCostDashboard } from "./pages/OperationalCostDashboard";
-import { ExecutiveCutDashboard } from "./pages/ExecutiveCutDashboard";
 import { AnomaliesPanel } from "./pages/AnomaliesPanel";
-import { RecommendationsPanel } from "./pages/RecommendationsPanel";
 import { LoginPage } from "./pages/LoginPage";
 import { IngestPage } from "./pages/IngestPage";
 import { ConversationsPage } from "./pages/ConversationsPage";
@@ -17,19 +14,9 @@ import { SystemHealthDashboard } from "./pages/SystemHealthDashboard";
 // sesion, es donde se crea). `SessionGate` resuelve sesion y bootstrap de
 // tenants (redirigiendo a /login si no hay sesion) antes de exponerlos via
 // Outlet context hacia `Layout` y, desde ahi, hacia el resto de pantallas.
-// Cuantas hay, y de cuales se sirven datos del backend y cuales son de
-// demostracion, cambia con cada tarjeta: el unico recuento vigente esta en
-// la seccion "Rutas" de apps/frontend/README.md, no aqui.
-//
-// `/overview-legacy` es la ruta puente que JUP-095 conservo cuando era el
-// unico dashboard con datos reales (decision 6 de su design.md), con la
-// condicion de retirarla cuando existiera un Overview real que la
-// sustituyera. Esa condicion ya se cumple: `/` consume costes almacenados
-// desde JUP-026 y JUP-055. La ruta no es ya el unico dashboard con datos
-// reales y sigue montada porque retirarla es un cambio con su ciclo de
-// pruebas (la nombran 9 archivos de pruebas y la navegacion de `Layout`),
-// no un cierre de epica. JUP-105 la dejo registrada como RF-105-001 en
-// openspec/findings/backlog.md.
+// Cuantas hay, y de cuales se sirven datos del backend, cambia con cada
+// tarjeta: el unico recuento vigente esta en la seccion "Rutas" de
+// apps/frontend/README.md, no aqui.
 // Configuración de rutas exportada por separado del router construido: para
 // que las pruebas de enrutado (JUP-095, tarea 6.5) puedan montar la MISMA
 // definición sobre `createMemoryRouter` (con distintas `initialEntries` por
@@ -46,10 +33,7 @@ export const routeConfig: RouteObject[] = [
         Component: Layout,
         children: [
           { index: true, Component: ExecutiveCostDashboard },
-          { path: "operational", Component: OperationalCostDashboard },
-          { path: "cuts", Component: ExecutiveCutDashboard },
           { path: "anomalies", Component: AnomaliesPanel },
-          { path: "recommendations", Component: RecommendationsPanel },
           {
             // Reconciliacion con develop (Punto 1): frontera de remontaje
             // por tenant, solo alrededor de las dos pantallas con estado
@@ -62,7 +46,10 @@ export const routeConfig: RouteObject[] = [
               { path: "system-health", Component: SystemHealthDashboard },
             ],
           },
+          // Ruta puente sin entrada de menu: la usan muchas pruebas y la spec exige direccion propia.
           { path: "overview-legacy", Component: DashboardPage },
+          // Las direcciones ocultas o desconocidas caen en la inicial, no en el error del enrutador.
+          { path: "*", element: <Navigate to="/" replace /> },
         ],
       },
     ],

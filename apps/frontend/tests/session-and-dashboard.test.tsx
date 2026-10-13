@@ -24,14 +24,14 @@ describe("login and session recovery", () => {
     });
     renderApp();
 
-    expect(screen.getByLabelText("Password")).toHaveValue("");
-    await user.clear(screen.getByLabelText("Email"));
-    await user.type(screen.getByLabelText("Email"), "operator@example.com");
-    await user.clear(screen.getByLabelText("Password"));
-    await user.type(screen.getByLabelText("Password"), "test-password");
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    expect(screen.getByLabelText("Contraseña")).toHaveValue("");
+    await user.clear(screen.getByLabelText("Correo electrónico"));
+    await user.type(screen.getByLabelText("Correo electrónico"), "operator@example.com");
+    await user.clear(screen.getByLabelText("Contraseña"));
+    await user.type(screen.getByLabelText("Contraseña"), "test-password");
+    await user.click(screen.getByRole("button", { name: "Iniciar sesión" }));
 
-    expect(screen.getByRole("button", { name: "Signing in..." })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Iniciando sesión..." })).toBeDisabled();
     expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
     const loginRequest = requests.find((request) => request.path === "/auth/login");
     expect(loginRequest?.body).toEqual({ email: "operator@example.com", password: "test-password" });
@@ -41,7 +41,7 @@ describe("login and session recovery", () => {
     await act(async () => authentication.resolve(loginResponse));
     // SessionGate.tsx presenta este estado en espanol (armazon nuevo de
     // JUP-095, no una pantalla portada del origen ingles).
-    expect(await screen.findByRole("heading", { name: "Cargando tenants disponibles..." })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Cargando clientes disponibles..." })).toBeVisible();
     expect(JSON.parse(window.localStorage.getItem(SESSION_KEY)!)).toEqual(session);
     await act(async () => bootstrap.resolve({ items: tenants }));
 
@@ -53,8 +53,8 @@ describe("login and session recovery", () => {
     // especifico del dashboard conectado al backend lo cubren las pruebas de
     // "tenant bootstrap and dashboard" mas abajo, que navegan explicitamente
     // a "/overview-legacy".
-    expect(await screen.findByText("Dashboard Ejecutivo - Coste Global")).toBeVisible();
-    expect(screen.getByLabelText("Ambito de cliente")).toHaveValue(tenants[0].id);
+    expect(await screen.findByText("Panel Ejecutivo - Coste Global")).toBeVisible();
+    expect(screen.getByLabelText("Ámbito de cliente")).toHaveValue(tenants[0].id);
     expect(window.localStorage.getItem(TENANT_KEY)).toBe(tenants[0].id);
   });
 
@@ -73,19 +73,19 @@ describe("login and session recovery", () => {
       }
     });
     renderApp();
-    expect(screen.getByLabelText("Password")).toHaveValue("");
-    await user.type(screen.getByLabelText("Password"), "test-password");
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    expect(screen.getByLabelText("Contraseña")).toHaveValue("");
+    await user.type(screen.getByLabelText("Contraseña"), "test-password");
+    await user.click(screen.getByRole("button", { name: "Iniciar sesión" }));
 
     expect(await screen.findByText(new RegExp(error))).toBeVisible();
     expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
     expect(window.localStorage.getItem(TENANT_KEY)).toBeNull();
-    expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Iniciar sesión" })).toBeEnabled();
 
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Iniciar sesión" }));
     // Mismo razonamiento que el test anterior: tras login, "/" muestra
     // ExecutiveCostDashboard (demo), no el dashboard conectado al backend.
-    expect(await screen.findByText("Dashboard Ejecutivo - Coste Global")).toBeVisible();
+    expect(await screen.findByText("Panel Ejecutivo - Coste Global")).toBeVisible();
   });
 
   it("restores the saved session and tenant across reloads, then clears data on logout", async () => {
@@ -97,19 +97,19 @@ describe("login and session recovery", () => {
     // conectado al backend (billing/health), no la pantalla de demostracion
     // de "/", que nunca invoca esos endpoints.
     const firstVisit = renderApp(["/overview-legacy"]);
-    await screen.findByText("Monthly Spend");
-    expect(screen.getByLabelText("Ambito de cliente")).toHaveValue(tenants[1].id);
+    await screen.findByText("Gasto mensual");
+    expect(screen.getByLabelText("Ámbito de cliente")).toHaveValue(tenants[1].id);
     firstVisit.unmount();
     firstVisit.client.clear();
 
     const reloaded = renderApp(["/overview-legacy"]);
-    await screen.findByText("Monthly Spend");
-    expect(screen.getByLabelText("Ambito de cliente")).toHaveValue(tenants[1].id);
+    await screen.findByText("Gasto mensual");
+    expect(screen.getByLabelText("Ámbito de cliente")).toHaveValue(tenants[1].id);
     expect(requests.some((request) => request.path === "/auth/login")).toBe(false);
     expect(reloaded.client.getQueryCache().getAll().some((query) => query.state.data !== undefined)).toBe(true);
 
-    await user.click(screen.getByRole("button", { name: "Cerrar sesion" }));
-    expect(screen.getByRole("heading", { name: "Access the tenant control tower" })).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Cerrar sesión" }));
+    expect(screen.getByRole("heading", { name: "Accede al centro de control de clientes" })).toBeVisible();
     expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
     expect(window.localStorage.getItem(TENANT_KEY)).toBeNull();
     expect(reloaded.client.getQueryCache().getAll().every((query) => query.state.data === undefined)).toBe(true);
@@ -121,7 +121,7 @@ describe("login and session recovery", () => {
     window.localStorage.setItem(TENANT_KEY, tenants[0].id);
     renderApp();
 
-    expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Iniciar sesión" })).toBeEnabled();
     expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
     expect(window.localStorage.getItem(TENANT_KEY)).toBeNull();
     expect(requests).toEqual([]);
@@ -141,21 +141,41 @@ describe("tenant bootstrap and dashboard", () => {
     renderApp(["/overview-legacy"]);
 
     expect(await screen.findByText(new RegExp(billing.monthly_spend))).toBeVisible();
-    expect(screen.getByLabelText("Ambito de cliente")).toHaveValue(tenants[0].id);
+    expect(screen.getByLabelText("Ámbito de cliente")).toHaveValue(tenants[0].id);
     expect(window.localStorage.getItem(TENANT_KEY)).toBe(tenants[0].id);
     const bootstrap = requests.find((request) => request.path === "/tenants");
     expect(bootstrap?.headers.get("Authorization")).toBe(`Bearer ${session.accessToken}`);
     expect(bootstrap?.headers.has("X-Tenant-Id")).toBe(false);
 
-    await user.selectOptions(screen.getByLabelText("Ambito de cliente"), tenants[1].id);
+    await user.selectOptions(screen.getByLabelText("Ámbito de cliente"), tenants[1].id);
     expect(await screen.findByText(new RegExp(southBilling.monthly_spend))).toBeVisible();
     expect(window.localStorage.getItem(TENANT_KEY)).toBe(tenants[1].id);
     const billingRequests = requests.filter((request) => request.path === "/billing/summary");
     expect(billingRequests).toHaveLength(2);
     expectTenantRequest(billingRequests[0]);
     expectTenantRequest(billingRequests[1], tenants[1].id);
-    expect(screen.getByRole("heading", { name: "Service Health" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Salud de los servicios" })).toBeVisible();
     for (const service of Object.keys(health.services)) expect(screen.getByText(service)).toBeVisible();
+  });
+
+  it("muestra en español el estado de cada servicio y deja pasar uno que no conoce", async () => {
+    mockBackend({
+      "GET /health": () => jsonResponse({
+        ...health,
+        services: { database: "ok", rabbitmq: "degraded", vector_store: "failed", queue: "unknown", cache: "paused", extra: "toString" }
+      })
+    });
+    restoreSession();
+    renderApp(["/overview-legacy"]);
+
+    await screen.findByText("correcto");
+    const row = (service: string) => screen.getByText(service).parentElement as HTMLElement;
+    expect(row("database")).toHaveTextContent("correcto");
+    expect(row("rabbitmq")).toHaveTextContent("degradado");
+    expect(row("vector_store")).toHaveTextContent("fallido");
+    expect(row("queue")).toHaveTextContent("no verificado");
+    expect(row("cache")).toHaveTextContent("paused");
+    expect(row("extra")).toHaveTextContent("tostring");
   });
 
   // Reactivado (Punto 5 implementado): Layout ya expone enlaces reales hacia
@@ -168,14 +188,14 @@ describe("tenant bootstrap and dashboard", () => {
     restoreSession();
     const { router } = renderApp(["/overview-legacy"]);
 
-    expect(await screen.findByRole("heading", { name: "Select a tenant" })).toBeVisible();
-    expect(screen.getByText("No tenant is active for this session.")).toBeVisible();
-    await user.click(screen.getByRole("link", { name: "Ingestions" }));
-    expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
-    expect(screen.queryByRole("button", { name: "Queue ingestion" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Assistant" })).toBeNull();
+    expect(await screen.findByRole("heading", { name: "Elige un cliente" })).toBeVisible();
+    expect(screen.getByText("No hay ningún cliente activo en esta sesión.")).toBeVisible();
+    await user.click(screen.getByRole("link", { name: "Ingesta" }));
+    expect(screen.getByRole("heading", { name: "Cliente requerido" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Encolar ingesta" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Asistente" })).toBeNull();
     await act(async () => { await router.navigate("/assistant"); });
-    expect(screen.getByRole("heading", { name: "Tenant required" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Cliente requerido" })).toBeVisible();
     expect(requests.every((request) => ["/tenants", "/health", "/me"].includes(request.path))).toBe(true);
   });
 
@@ -186,10 +206,10 @@ describe("tenant bootstrap and dashboard", () => {
     const { client } = renderApp();
 
     // Idem: SessionGate.tsx presenta este error en espanol.
-    expect(await screen.findByRole("heading", { name: "No se han podido cargar los tenants" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "No se han podido cargar los clientes" })).toBeVisible();
     expect(screen.getByText(/Session is no longer authorized/)).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Reset session" }));
-    expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "Restablecer sesión" }));
+    expect(screen.getByRole("button", { name: "Iniciar sesión" })).toBeEnabled();
     expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
     expect(window.localStorage.getItem(TENANT_KEY)).toBeNull();
     expect(client.getQueryCache().getAll().every((query) => query.state.data === undefined)).toBe(true);
@@ -201,10 +221,10 @@ describe("tenant bootstrap and dashboard", () => {
     restoreSession();
     renderApp(["/overview-legacy"]);
 
-    expect(await screen.findByRole("heading", { name: "Connecting to the FinOps control plane..." })).toBeVisible();
-    expect(screen.queryByText("Monthly Spend")).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Conectando con el plano de control FinOps..." })).toBeVisible();
+    expect(screen.queryByText("Gasto mensual")).not.toBeInTheDocument();
     await act(async () => pending.resolve(billing));
-    expect(await screen.findByText("Monthly Spend")).toBeVisible();
+    expect(await screen.findByText("Gasto mensual")).toBeVisible();
     expect(screen.getByText(/unavailable|no disponible/i)).toBeVisible();
   });
 
@@ -215,10 +235,10 @@ describe("tenant bootstrap and dashboard", () => {
     restoreSession();
     renderApp(["/overview-legacy"]);
 
-    expect(await screen.findByRole("heading", { name: "Backend unavailable" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Backend no disponible" })).toBeVisible();
     expect(screen.getByText("Service connection interrupted")).toBeVisible();
-    expect(screen.queryByText("Monthly Spend")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("link", { name: "Ingestions" }));
-    await waitFor(() => expect(screen.getByRole("heading", { name: "Create ingestion job" })).toBeVisible());
+    expect(screen.queryByText("Gasto mensual")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("link", { name: "Ingesta" }));
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Crear trabajo de ingesta" })).toBeVisible());
   });
 });

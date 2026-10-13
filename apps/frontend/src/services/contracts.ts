@@ -354,3 +354,116 @@ export function isSystemHealth(value: unknown): value is SystemHealth {
   components.filter((component) => component.id === "openrouter").forEach(normalizeProviderInformation);
   return true;
 }
+
+export type AnomalySeverity = "P1" | "P2" | "P3";
+export type AnomalyStatus = "new" | "investigating" | "resolved" | "false_positive";
+export type AnomalyObservation = "observed" | "no_longer_observed";
+
+export interface AnomalyEpisode {
+  id: string;
+  kind: "cost_anomaly_candidate";
+  currency: string;
+  service: string | null;
+  start_date: string;
+  last_seen_date: string;
+  observation: AnomalyObservation;
+  no_longer_observed_on: string | null;
+  reference_daily_cost: string;
+  opening_observed_cost: string;
+  accumulated_impact: string;
+  impact_day_count: number;
+  impact_through_date: string;
+  severity: AnomalySeverity;
+  status: AnomalyStatus;
+  status_changed_by: string | null;
+  status_changed_at: string | null;
+  first_reviewed_at: string | null;
+  first_reviewed_by: string | null;
+  closed_at: string | null;
+  closure_reason: string | null;
+  previous_episode_id: string | null;
+  rules_version: string;
+  rules: Record<string, unknown>;
+  cause_status: "not_established";
+  limitations: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CurrencyAmount {
+  currency: string;
+  amount: string;
+}
+
+export interface AnomalyEpisodeList {
+  contract_version: 1;
+  scope: "open" | "all";
+  episodes: AnomalyEpisode[];
+  last_evaluated_date: string | null;
+  includes_synthetic_data: boolean;
+  open_impact_by_currency: CurrencyAmount[];
+}
+
+export interface AnomalyDetectionRun {
+  status: "completed" | "up_to_date" | "insufficient_data";
+  rules_version: string;
+  last_complete_day: string | null;
+  evaluated_days: string[];
+  skipped_days: { date: string; reason: "not_observed" | "reference_incomplete" }[];
+  unsupported_currencies: string[];
+  opened: number;
+  continued: number;
+  no_longer_observed: number;
+}
+
+export interface AnomalyStatusChange {
+  status: AnomalyStatus;
+  reason?: string;
+}
+
+const anomalyObject = (item: unknown): item is Record<string, unknown> =>
+  typeof item === "object" && item !== null && !Array.isArray(item);
+const anomalyMoney = (item: unknown) => typeof item === "string" && /^-?(0|[1-9][0-9]*)\.[0-9]{2}$/.test(item) && item !== "-0.00";
+const anomalyDate = (item: unknown) => typeof item === "string" && /^\d{4}-\d{2}-\d{2}$/.test(item)
+  && !Number.isNaN(Date.parse(item)) && new Date(item).toISOString().slice(0, 10) === item;
+const anomalyInstant = (item: unknown) => typeof item === "string" && /^\d{4}-\d{2}-\d{2}T[\d:.]+(Z|[+-]\d{2}:\d{2})$/.test(item)
+  && !Number.isNaN(Date.parse(item));
+const anomalyCount = (item: unknown) => typeof item === "number" && Number.isSafeInteger(item) && item >= 0;
+const orNull = (check: (item: unknown) => boolean) => (item: unknown) => item === null || check(item);
+const nullableText = orNull((item) => typeof item === "string");
+
+export function isAnomalyEpisode(value: unknown): value is AnomalyEpisode {
+  return anomalyObject(value) && isNonemptyString(value.id) && value.kind === "cost_anomaly_candidate"
+    && isNonemptyString(value.currency) && nullableText(value.service)
+    && anomalyDate(value.start_date) && anomalyDate(value.last_seen_date)
+    && ["observed", "no_longer_observed"].includes(String(value.observation)) && orNull(anomalyDate)(value.no_longer_observed_on)
+    && anomalyMoney(value.reference_daily_cost) && anomalyMoney(value.opening_observed_cost) && anomalyMoney(value.accumulated_impact)
+    && anomalyCount(value.impact_day_count) && anomalyDate(value.impact_through_date)
+    && ["P1", "P2", "P3"].includes(String(value.severity))
+    && ["new", "investigating", "resolved", "false_positive"].includes(String(value.status))
+    && nullableText(value.status_changed_by) && orNull(anomalyInstant)(value.status_changed_at)
+    && orNull(anomalyInstant)(value.first_reviewed_at) && nullableText(value.first_reviewed_by)
+    && orNull(anomalyInstant)(value.closed_at) && nullableText(value.closure_reason) && nullableText(value.previous_episode_id)
+    && isNonemptyString(value.rules_version) && anomalyObject(value.rules) && value.cause_status === "not_established"
+    && Array.isArray(value.limitations) && value.limitations.every((item) => typeof item === "string")
+    && anomalyInstant(value.created_at) && anomalyInstant(value.updated_at);
+}
+
+export function isAnomalyEpisodeList(value: unknown): value is AnomalyEpisodeList {
+  if (!anomalyObject(value) || value.contract_version !== 1 || !["open", "all"].includes(String(value.scope))) return false;
+  const totals = value.open_impact_by_currency;
+  return Array.isArray(value.episodes) && value.episodes.every(isAnomalyEpisode)
+    && orNull(anomalyDate)(value.last_evaluated_date) && typeof value.includes_synthetic_data === "boolean"
+    && Array.isArray(totals) && totals.every((item) => anomalyObject(item) && isNonemptyString(item.currency) && anomalyMoney(item.amount))
+    && new Set(totals.map((item) => (item as CurrencyAmount).currency)).size === totals.length;
+}
+
+export function isAnomalyDetectionRun(value: unknown): value is AnomalyDetectionRun {
+  return anomalyObject(value) && ["completed", "up_to_date", "insufficient_data"].includes(String(value.status))
+    && isNonemptyString(value.rules_version) && orNull(anomalyDate)(value.last_complete_day)
+    && Array.isArray(value.evaluated_days) && value.evaluated_days.every(anomalyDate)
+    && Array.isArray(value.skipped_days) && value.skipped_days.every((item) => anomalyObject(item) && anomalyDate(item.date)
+      && ["not_observed", "reference_incomplete"].includes(String(item.reason)))
+    && Array.isArray(value.unsupported_currencies) && value.unsupported_currencies.every(isNonemptyString)
+    && anomalyCount(value.opened) && anomalyCount(value.continued) && anomalyCount(value.no_longer_observed);
+}

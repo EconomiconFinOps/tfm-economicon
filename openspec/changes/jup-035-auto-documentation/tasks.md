@@ -1,6 +1,6 @@
 ## 1. Protocolo
 - [x] 1.1 Reproducir fallos observables en baseline con SSE controlado.
-- [x] 1.2 Implementar decision estructurada none/search y finalizacion estricta, cero/una busqueda (sustituye auto nativo por decision autorizada).
+- [x] 1.2 Antecedente histórico sustituido por server-documentation-v4 (ver diseño vigente): Implementar decision estructurada none/search y finalizacion estricta, cero/una busqueda (sustituye auto nativo por decision autorizada).
 - [x] 1.3 Coordinar contexto, endpoint, operaciones, prompt y hashes.
 - [x] 1.4 Ejecutar suites afectadas y controles; registrar fallos de base, omisiones y correcciones de fixtures.
 

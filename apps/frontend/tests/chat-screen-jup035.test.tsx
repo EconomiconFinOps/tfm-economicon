@@ -5,6 +5,7 @@ import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "../src/layouts/Layout";
 import { OperationalCostDashboard } from "../src/pages/OperationalCostDashboard";
 import { ExecutiveCutDashboard } from "../src/pages/ExecutiveCutDashboard";
+import { episode, episodeList } from "../src/test/anomalyFixtures";
 import { AnomaliesPanel } from "../src/pages/AnomaliesPanel";
 import { RecommendationsPanel } from "../src/pages/RecommendationsPanel";
 import { PreparedScreen } from "../src/services/screenCapture";
@@ -35,6 +36,10 @@ beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, options: RequestInit = {}) => {
     const path = new URL(String(input), "http://test").pathname, method = options.method ?? "GET";
     requests.push({ path, method });
+    if (path.includes("/billing/anomalies/episodes")) return new Response(JSON.stringify(episodeList({ episodes: [
+      episode(), episode({ id: "p2", severity: "P2", accumulated_impact: "12.50" }),
+      episode({ id: "closed", status: "resolved", accumulated_impact: "8.20" })
+    ] })), { headers: { "Content-Type": "application/json" } });
     if (path.endsWith("/generations")) {
       captures.push(JSON.parse(String(options.body)).screen_context);
       return new Response(new ReadableStream(), { headers: { "Content-Type": "text/event-stream" } });
@@ -66,7 +71,7 @@ async function send() {
   return captures[0];
 }
 describe("Capturas funcionales preparadas antes de Send JUP-035", () => {
-  it.each(["/operational", "/cuts", "/anomalies", "/recommendations"])("prepara la vista demo %s sin consultar datos al enviar", async path => {
+  it.each(["/operational", "/cuts", "/recommendations"])("prepara la vista demo %s sin consultar datos al enviar", async path => {
     mount(path);
     const count = requests.length;
     const prepare = vi.spyOn(PreparedScreen.prototype, "prepare");
@@ -112,14 +117,11 @@ describe("Capturas funcionales preparadas antes de Send JUP-035", () => {
   });
   it("actualiza filtros de anomalías usando exclusivamente los registros visibles", async () => {
     mount("/anomalies");
-    fireEvent.change(screen.getByLabelText("Criticidad"), { target: { value: "Alta" } });
+    await screen.findByLabelText("Criticidad");
+    fireEvent.change(screen.getByLabelText("Criticidad"), { target: { value: "P1" } });
     const capture = await send();
-    expect(capture.selection).toMatchObject({ filters: { tags: expect.arrayContaining([{ key: "severity", value: "Alta" }, { key: "status", value: "Abiertas" }]) } });
-    expect(capture.datasets[0].groups).toHaveLength(2);
-    expect(capture.datasets[0].groups).toEqual(expect.arrayContaining([
-      expect.objectContaining({ amount: "15800" }),
-      expect.objectContaining({ amount: "12500" })
-    ]));
+    expect(capture.selection).toMatchObject({ filters: { severity: "P1", status: "open" } });
+    expect(capture.datasets[0].groups).toEqual([expect.objectContaining({ amount: "2807.71" })]);
   });
   it("un cambio de ruta elimina el descriptor financiero anterior", async () => {
     const mounted = mount("/operational");
@@ -129,15 +131,13 @@ describe("Capturas funcionales preparadas antes de Send JUP-035", () => {
   });
   it("captura el filtro de resueltas sin mezclar el resumen global de abiertas", async () => {
     mount("/anomalies");
-    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "Resuelto" } });
+    await screen.findByLabelText("Estado");
+    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "resolved" } });
     const capture = await send();
-    expect(capture.selection).toMatchObject({ filters: { tags: expect.arrayContaining([{ key: "status", value: "Resuelto" }]) } });
-    expect(capture.datasets[0].groups).toHaveLength(2);
-    expect(capture.datasets[0].groups).toEqual(expect.arrayContaining([
-      expect.objectContaining({ amount: "8200" }), expect.objectContaining({ amount: "5600" })
-    ]));
-    expect(capture.datasets[1].groups).toHaveLength(3);
-    expect(capture.datasets[1].totals).toEqual([{ currency: "EUR", amount: "30700" }]);
+    expect(capture.selection).toMatchObject({ filters: { status: "resolved" } });
+    expect(capture.datasets).toHaveLength(1);
+    expect(capture.datasets[0].groups).toEqual([expect.objectContaining({ amount: "8.20" })]);
+    expect(capture.datasets[0].totals).toEqual([]);
   });
   it("conserva la moneda seleccionada sin convertir ni fusionar los importes", async () => {
     mount("/");

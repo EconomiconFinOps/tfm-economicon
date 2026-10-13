@@ -1,20 +1,24 @@
 {
-  "version": 1,
+  "version": 2,
   "tenant": "tenant-growth",
   "total_seconds": 180,
-  "optional_seconds": 30,
-  "note": "Valores comprobados contra la pantalla real y contra una suma exacta con Decimal sobre scripts/synthetic_costs.py. Importes con punto decimal, como los muestra la interfaz.",
+  "optional_seconds": 50,
+  "note": "Valores comprobados contra la pantalla real y contra una suma exacta con Decimal sobre scripts/synthetic_costs.py; la cifra de anomalías (kind anomaly_episode) sale de docs/demo/JUP-107/esperados-anomalias.json, que su propia prueba recalcula de forma independiente. Importes con punto decimal, como los muestra la interfaz.",
   "steps": [
     {
       "id": "D1",
       "title": "Declarar que los datos son sintéticos",
       "seconds": 15,
-      "screen": "none",
+      "screen": "anomalies-panel",
       "declares_synthetic": true,
-      "action": "Con la aplicación abierta en el dashboard con Core Finance seleccionado (sin cifras en pantalla), sin tocar nada todavía.",
+      "action": "Con la aplicación abierta en Anomalías con Core Finance seleccionado (sin cifras en pantalla: todavía no se ha detectado), sin tocar nada todavía.",
       "say": "Todo lo que vais a ver son datos sintéticos de coste, generados por nosotros para probar la aplicación. No son facturas de Azure ni vienen del dataset público, aunque los rótulos de la pantalla digan Azure.",
-      "expect": "Nada que comprobar en pantalla; el público oye la declaración antes de ver ninguna cifra.",
-      "no_amounts": true
+      "expect": "En pantalla, el aviso «Datos sintéticos de demostración: no son facturas reales» y ninguna cifra; el público oye la declaración antes de ver ninguna cifra.",
+      "no_amounts": true,
+      "ui_contains": [
+        "Datos sintéticos de demostración: no son facturas reales",
+        "Todavía no se han buscado anomalías en este cliente"
+      ]
     },
     {
       "id": "D2",
@@ -26,7 +30,7 @@
         "from": "2026-01",
         "to": "2026-06"
       },
-      "action": "Elegir Growth Ops en el selector de cliente. Poner Mes inicial 2026-01 y Mes final 2026-06; el periodo por defecto depende de la fecha, así que se fija siempre antes de leer ninguna cifra.",
+      "action": "Ir a Coste Global y elegir Growth Ops en el selector de cliente. Poner Mes inicial 2026-01 y Mes final 2026-06; el periodo por defecto depende de la fecha, así que se fija siempre antes de leer ninguna cifra.",
       "say": "Elegimos el cliente Growth Ops y los seis primeros meses de 2026. Los dos meses extremos están incluidos.",
       "expect": "Aparece «enero de 2026 – junio de 2026 (UTC)» y los totales EUR y USD del periodo.",
       "ui_contains": [
@@ -111,7 +115,7 @@
     },
     {
       "id": "D7",
-      "title": "Desglose por etiqueta",
+      "title": "Opcional: desglose por etiqueta",
       "seconds": 20,
       "screen": "billing-dashboard",
       "shows_amounts": true,
@@ -124,7 +128,8 @@
       "expect": "Etiqueta consultada: cost_center. EUR: finance 100.00 (2), ops -20.00 (3), Sin dimensión 10.00 (1); USD: finance 10.50 y ops 25.25.",
       "ui_contains": [
         "Etiqueta consultada: cost_center"
-      ]
+      ],
+      "optional": true
     },
     {
       "id": "D8",
@@ -152,22 +157,43 @@
         "from": "2026-01",
         "to": "2026-06"
       },
-      "action": "Cambiar el selector de cliente a Core Finance y volver a Growth Ops.",
+      "action": "Cambiar el selector de cliente a Core Finance.",
       "say": "Estos costes pertenecen solo a Growth Ops: al cambiar a Core Finance no aparece ninguno.",
-      "expect": "Con Core Finance: «Sin datos de costes para este periodo.»; al volver a Growth Ops reaparecen los totales de D2. Esto muestra la separación visual entre clientes; no sustituye una prueba de autorización.",
+      "expect": "Con Core Finance: «Sin datos de costes para este periodo.». Esto muestra la separación visual entre clientes; no sustituye una prueba de autorización. Se sigue con Core Finance en el paso siguiente.",
       "ui_contains": [
         "Sin datos de costes para este periodo."
       ]
     },
     {
+      "id": "D12",
+      "title": "Anomalías detectadas en Core Finance",
+      "seconds": 30,
+      "screen": "anomalies-panel",
+      "shows_amounts": true,
+      "action": "Abrir Anomalías en el menú, con Core Finance seleccionado, pulsar «Detectar ahora» y abrir el detalle de la primera fila.",
+      "say": "En Core Finance hay otro conjunto sintético, pensado para anomalías. Al detectar, la aplicación revisa el coste de cada día con la regla de negocio y prioriza por el impacto acumulado. Compute sale primero, con criticidad alta: es una candidata para investigar, no una causa confirmada.",
+      "expect": "Aviso «Datos sintéticos de demostración: no son facturas reales» y «Revisado hasta el 20/09/2026». Primera fila Compute «Alta (P1)» con 2807.71 EUR en 12 días; después Database «Media (P2)» y Analytics «Baja (P3)». El detalle de Compute dice «Candidata: causa no establecida».",
+      "ui_contains": [
+        "Datos sintéticos de demostración: no son facturas reales",
+        "Revisado hasta el 20/09/2026",
+        "Alta (P1)",
+        "Media (P2)",
+        "Baja (P3)"
+      ],
+      "dialog_contains": [
+        "Candidata: causa no establecida"
+      ],
+      "first_row": "Compute"
+    },
+    {
       "id": "D10",
       "title": "Límites de lo que hemos enseñado",
-      "seconds": 15,
+      "seconds": 5,
       "screen": "none",
       "limits": true,
       "action": "Sin tocar la pantalla.",
-      "say": "Para ser claros con los límites: son datos sintéticos; Anomalías, Recomendaciones, Corte global y Coste detallado usan datos fijos de la maqueta y no salen de estos costes; y el ahorro potencial no está disponible.",
-      "expect": "Nada que comprobar en pantalla. Esas pantallas (`/anomalies`, `/recommendations`, `/cuts`, `/operational`) no leen los costes cargados: no abrirlas como si lo hicieran."
+      "say": "Para ser claros con los límites: son datos sintéticos y el ahorro potencial no está disponible.",
+      "expect": "Nada que comprobar en pantalla. Coste Detallado, Corte Global y Recomendaciones (`/operational`, `/cuts`, `/recommendations`) ya no se publican: no abrirlas."
     },
     {
       "id": "D11",
@@ -180,7 +206,7 @@
         "from": "2026-07",
         "to": "2026-07"
       },
-      "action": "Poner Mes inicial y Mes final en 2026-07 y la moneda USD; señalar el aviso y la tabla.",
+      "action": "Volver a Coste Global, elegir Growth Ops, poner Mes inicial y Mes final en 2026-07 y la moneda USD; señalar el aviso y la tabla.",
       "say": "Julio tiene un importe por encima de lo que un número de JavaScript representa sin perder dígitos. La aplicación no lo dibuja, avisa y conserva el valor exacto en la tabla.",
       "expect": "Aviso «Algunos importes superan el límite de representación gráfica. Sus valores exactos permanecen en la tabla.» y julio 9007199254740993.01 (1 registro). No comparar julio con febrero: el porcentaje resultante no es presentable.",
       "ui_contains": [
@@ -455,6 +481,15 @@
       "to": "2026-07",
       "expected": "9007199254740993.01",
       "records": 1
+    },
+    {
+      "id": "A01",
+      "step": "D12",
+      "kind": "anomaly_episode",
+      "service": "Compute",
+      "severity": "P1",
+      "expected": "2807.71",
+      "records": 12
     }
   ]
 }
