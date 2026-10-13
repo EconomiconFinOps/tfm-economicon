@@ -204,3 +204,22 @@ ambas claves y construye una cota conservadora max(uso upstream, suma gateway,
 suelo histórico), sin sumarlos dos veces ni afirmar atribución exacta. Sólo
 es válido si todo el gasto autorizado usa la misma cuenta OpenRouter y el runner
 verifica esa ruta.6pruebas de presupuesto PASS. No consultas de pago ni gasto nuevo.
+
+
+### Frontend reconciliado y transporte de ejecución — 14/10/2026
+
+Verificación frontend B:76PASS en7archivos chat (19.55s), más TypeScript de app,
+configuración Node y tests sin errores. Dependencias con lockfile congelado:
+instalación offline falló por metadatos ausentes; instalación normal pasó política
+de paquetes pero devolvió ERR_PNPM_IGNORED_BUILDS para openspec/esbuild. No se
+aprobaron scripts. Vitest y tsc instalados funcionaron directamente. Se restauró
+únicamente el cambio automático de pnpm a pnpm-workspace.yaml (placeholders
+allowBuilds); no hay modificación de dependencias versionadas.
+
+`tools/chat-eval-api.py`: cliente POST conversación/generación con formato actual,
+lectura del primer handle SSE/JSON y recuperación GET /assistant/requests por
+conversation_id+request_id. Rechaza identidad inconsistente y no reintenta POST.
+4pruebas HTTP loopback PASS. Su generate debe invocarse desde Ledger.dispatch,
+tras reserva/procedencia: no constituye por sí solo un ejecutor autorizado.
+Pendiente orquestación completa y adaptador de runtime/contabilidad. Claves
+caducadas siguen impidiendo inferencias; no renovadas ni gasto nuevo.

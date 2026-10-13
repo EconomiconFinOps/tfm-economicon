@@ -162,3 +162,11 @@ La reserva permanece mientras el coste sea desconocido. No existe todavía una
 ruta de liquidación contable: no eliminar filas ni abrir otro ledger para eludir
 reservas pendientes. El adaptador de contabilidad debe demostrar cobertura de
 los intentos antes de implementar esa liberación.
+
+
+Transporte de ejecución: `chat-eval-api.py` crea una conversación y recoge el
+handle inicial SSE o JSON. El ejecutor debe pasar generate como callback de
+Ledger.dispatch después de comprobar procedencia y contabilidad. Si falla el
+envío, recover_handle usa exclusivamente GET /assistant/requests; devolver None
+no autoriza repetir POST. Se conserva la reserva hasta reconciliar el resultado.
+No usar este módulo de forma aislada para una campaña de pago.
