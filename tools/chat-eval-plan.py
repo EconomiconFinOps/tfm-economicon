@@ -8,6 +8,8 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import io
+import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 BANK = ROOT / 'docs/validation/JUP-069-questions.json'
@@ -57,9 +59,15 @@ def main():
                 'docs/validation/JUP-070-evaluation-rules.json',
                 'tools/chat-receipt-eval.py', 'tools/assistant-eval.py',
                 'tools/chat-eval-*.py').splitlines()
-    hashes = {path: sha(ROOT / path) for path in paths}
+    # The transferred runtime is built from git archive, not a Windows checkout.
+    # Hash exact committed bytes; core.autocrlf may change working-tree bytes.
+    archive_bytes = subprocess.check_output(['git', 'archive', 'HEAD'], cwd=ROOT)
+    with tarfile.open(fileobj=io.BytesIO(archive_bytes)) as archive:
+        hashes = {path: hashlib.sha256(archive.extractfile(path).read()).hexdigest()
+                  for path in paths}
     data = {'version': 1, 'state': 'NOT_RUN', 'commit': git('rev-parse', 'HEAD'),
             'bank_sha256': EXPECTED_BANK, 'file_hashes': hashes,
+            'file_hash_basis': 'git-archive-committed-bytes',
             'repetitions': args.repetitions, 'samples': campaign(bank, args.repetitions),
             'provider_constraint': {'provider': 'OpenRouter', 'model': 'z-ai/glm-5.2',
                                     'routing': 'DeepInfra', 'fallbacks': False},
