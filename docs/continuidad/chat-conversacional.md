@@ -4,16 +4,30 @@ La full28 de f6c7895 terminó18 completed/10 failed. Además,010/014/016/027/028
 y otras respuestas completadas presentan problemas de completitud o citas;
 completed no es aceptación. Recibo íntegro del workspace:
 `materiales/07-evidencias/PR121-herramientas-evidencia-20261012/arithmetic12-full28-verified.json`.
-Acumulado asentado0.376770819USD; restan0.123229181 del techo0.50. No se han
-hecho llamadas después de esa campaña.
+Acumulado asentado 0.376770819 USD. El 13/10/2026 el usuario amplió el techo
+acumulado a **2 USD** (no 2 USD adicionales); restan 1.623229181 USD. No se han
+hecho llamadas después de esa campaña. El modelo y los datos sintéticos autorizados
+siguen siendo los mismos; el guard debe reservar reintentos y recorrido UI.
 
 Decisión técnica en implementación para atender el objetivo autorizado:
 `server-documentation-v4`, recuperación determinada por servidor y una generación
 final; expresiones autocontenidas con cantidades vinculadas al origen sustituyen
 la decisión/plan de índices. [ADR](../adr/JUP-035-server-retrieval-expressions.md).
 El contrato público, autoridad financiera, HMAC, límites y criterios semánticos
-se conservan. Pruebas offline de catálogo/stream iniciales pasan; suites completas,
-publicación, coste conservador, campaña limpia y recorrido UI finales pendientes.
+se conservan. Implementación congelada en 85994b8; 096b774 añade únicamente la
+explicación general de participación de categorías y actualiza el manifest.
+Imagen expression13: 78 hashes backend y 72 processor coinciden con 85994b8;
+43 pruebas SQL nativas pasan. Recursos/prompt final: 22 pasan. OpenSpec: 67 pasan.
+Suites Windows: backend 491 pasan/42 omitidas/2 errores de privilegio symlink;
+processor 451 pasan/6 omitidas/8 fallos (dos symlink, una expectativa textual ya
+corregida y cinco cancelación/capacidad aún por contrastar). La base anterior pasa
+esas cinco en Linux. La comparación Linux nueva está pendiente: durante su
+ejecución DockerServer dejó de responder al intercambio inicial SSH; no atribuir
+la espera al producto ni lanzar otra tanda sin recuperar el resultado anterior.
+Recibos del workspace: `expression13-native-remote.log`,
+`expression13-build-remote.log`, `expression-prompt-final.log` y
+`expression-openspec-final.log`, en el directorio de evidencias indicado arriba.
+Publicación/CI, runtime del HEAD final, campaña limpia y recorrido UI pendientes.
 
 Los apartados siguientes son evidencia histórica, no estado del candidato nuevo.
 
