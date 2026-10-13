@@ -81,7 +81,12 @@ describe("ExportButton con texto escrito por usuarios", () => {
     } finally {
       URL.createObjectURL = originalCreate;
     }
-    const text = await (blob as Blob).text();
+    const text = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(blob as Blob);
+    });
     const [, row] = text.split("\n");
     expect(row).toContain("\"'=HYPERLINK(\\\"http://x\\\")\"");
     expect(row).toContain("\"'+1\"");

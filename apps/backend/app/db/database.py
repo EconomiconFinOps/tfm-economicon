@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -47,6 +48,14 @@ class Database:
             "app.db.migrations",
             Path(__file__).with_name("migrations"),
         )
+        default='verify' if os.getenv('CHAT_ENABLED','false').lower()=='true' else 'migrate'
+        mode=os.getenv('BACKEND_SCHEMA_MODE',default)
+        if mode=='verify':
+            runner.verify()
+            return
+        if mode!='migrate':
+            from app.core.runtime_secrets import StartupError
+            raise StartupError('Invalid backend schema mode.')
         runner.run()
         self._seed_defaults()
 
@@ -488,6 +497,7 @@ class Database:
             raise RuntimeError("Job publication state unavailable.") from None
 
     def create_conversation(self, tenant_id: str, user_id: str, title: str) -> dict:
+        from app.db import chat_history
         now = datetime.now(timezone.utc)
         conversation = {
             "id": str(uuid.uuid4()),
@@ -501,13 +511,24 @@ class Database:
             connection.execute(
                 text(
                     """
-                    INSERT INTO conversations (id, tenant_id, user_id, title, created_at, updated_at)
-                    VALUES (:id, :tenant_id, :user_id, :title, :created_at, :updated_at)
+                    INSERT INTO conversations (id, tenant_id, user_id, title, created_at, updated_at, dialogue_history)
+                    VALUES (:id, :tenant_id, :user_id, :title, :created_at, :updated_at, :dialogue_history)
                     """
                 ),
-                conversation,
+                {**conversation, 'dialogue_history': chat_history.dumps(chat_history.empty({
+                    'tenant_id': tenant_id, 'user_id': user_id, 'conversation_id': conversation['id']}))},
             )
         return conversation
+
+    def rename_conversation(self, conversation_id: str, tenant_id: str, user_id: str, title: str) -> dict | None:
+        with self.engine.begin() as connection:
+            row = connection.execute(text("""
+                UPDATE conversations SET title = :title, updated_at = :updated_at
+                WHERE id = :conversation_id AND tenant_id = :tenant_id AND user_id = :user_id
+                RETURNING id, tenant_id, user_id, title, created_at, updated_at
+            """), {"conversation_id": conversation_id, "tenant_id": tenant_id, "user_id": user_id,
+                   "title": title, "updated_at": datetime.now(timezone.utc)}).mappings().first()
+        return dict(row) if row else None
 
     def fetch_conversations(self, tenant_id: str, user_id: str) -> list[dict]:
         with self.engine.connect() as connection:
@@ -542,93 +563,65 @@ class Database:
             ).mappings().first()
         return dict(row) if row else None
 
-    def append_message(
-        self,
-        *,
-        conversation_id: str,
-        tenant_id: str,
-        user_id: str | None,
-        requester_id: str,
-        role: str,
-        content: str,
-        metadata: dict | None = None,
-    ) -> dict:
+    def append_message(self, **kwargs):
+        # Removed isolated writer: callers must submit a complete atomic pair.
+        from app.db.chat_repository import ChatError
+        raise ChatError(409,'atomic_pair_required')
+
+    def prepare_message(self, *, conversation_id, tenant_id, user_id, requester_id, role, content, metadata=None):
         if not requester_id or (user_id is not None and user_id != requester_id):
             raise PermissionError("Conversation not found.")
-        now = datetime.now(timezone.utc)
-        message = {
-            "id": str(uuid.uuid4()),
-            "conversation_id": conversation_id,
-            "tenant_id": tenant_id,
-            "user_id": user_id,
-            "role": role,
-            "content": content,
-            "metadata": json.dumps(metadata or {}),
-            "created_at": now,
-        }
-        with self.engine.begin() as connection:
-            inserted = connection.execute(
-                text(
-                    """
-                    INSERT INTO messages (id, conversation_id, tenant_id, user_id, role, content, metadata, created_at)
-                    SELECT :id, :conversation_id, :tenant_id, :user_id, :role, :content, :metadata, :created_at
-                    FROM conversations
-                    WHERE id = :conversation_id AND tenant_id = :tenant_id
-                      AND user_id = :requester_id
-                    """
-                ),
-                {**message, "requester_id": requester_id},
-            )
-            if inserted.rowcount != 1:
-                raise PermissionError("Conversation not found.")
-            updated = connection.execute(
-                text(
-                    """
-                    UPDATE conversations
-                    SET updated_at = :updated_at
-                    WHERE id = :conversation_id AND tenant_id = :tenant_id
-                      AND user_id = :requester_id
-                    """
-                ),
-                {"updated_at": now, "conversation_id": conversation_id,
-                 "tenant_id": tenant_id, "requester_id": requester_id},
-            )
-            if updated.rowcount != 1:
-                raise PermissionError("Conversation not found.")
-        return {
-            "id": message["id"],
-            "role": role,
-            "content": content,
-            "metadata": metadata or {},
-            "created_at": now,
-        }
+        return {"id": str(uuid.uuid4()), "conversation_id": conversation_id,
+                "tenant_id": tenant_id, "user_id": user_id, "requester_id": requester_id,
+                "role": role, "content": content, "metadata": metadata or {},
+                "created_at": datetime.now(timezone.utc)}
+
+    def _chat_writer_available(self, connection, scope):
+        from sqlalchemy import inspect
+        from app.db.chat_repository import ChatError
+        # Legacy 001 remains usable when chat has never been enabled. All 035
+        # writers require 002 readiness; absence cannot hide an open operation.
+        if inspect(connection).has_table('chat_operations'):
+            opened = connection.execute(text("SELECT operation_id FROM chat_operations "
+                "WHERE tenant_id=:tenant_id AND conversation_id=:conversation_id "
+                "AND state IN ('active','waiting','paused')"), scope).first()
+            if opened is not None:
+                raise ChatError(409,'conversation_busy')
+
+    def assert_conversation_idle(self, *, conversation_id, tenant_id, user_id):
+        from app.db.chat_repository import ChatRepository
+        scope={'conversation_id':conversation_id,'tenant_id':tenant_id,'user_id':user_id}
+        return ChatRepository(self)._transaction(scope,lambda c:self._chat_writer_available(c,scope))
+
+    def append_pair(self, *, question, assistant):
+        from app.db import chat_history
+        from app.db.chat_repository import ChatError, ChatRepository
+        scope={'conversation_id':question['conversation_id'],'tenant_id':question['tenant_id'],
+               'user_id':question['requester_id']}
+        if question['role']!='user' or question['user_id']!=scope['user_id'] or assistant['role']!='assistant':
+            raise ChatError(409,'pair_integrity')
+        if any(assistant[key]!=question[key] for key in ['conversation_id','tenant_id','requester_id']):
+            raise ChatError(409,'pair_integrity')
+        if assistant['user_id'] not in (None,scope['user_id']):
+            raise ChatError(409,'pair_integrity')
+        def persist(connection):
+            self._chat_writer_available(connection,scope)
+            chat_history.append_final(connection,scope,question,assistant)
+            return question,assistant
+        return ChatRepository(self)._transaction(scope,persist)
 
     def fetch_messages(self, conversation_id: str, tenant_id: str, user_id: str) -> list[dict]:
+        from app.db import chat_history
+        scope = {'conversation_id': conversation_id, 'tenant_id': tenant_id, 'user_id': user_id}
         with self.engine.connect() as connection:
-            rows = connection.execute(
-                text(
-                    """
-                    SELECT m.id, m.role, m.content, m.metadata, m.created_at
-                    FROM messages m
-                    JOIN conversations c ON c.id = m.conversation_id AND c.tenant_id = m.tenant_id
-                    WHERE c.id = :conversation_id AND c.tenant_id = :tenant_id
-                      AND c.user_id = :user_id AND m.tenant_id = :tenant_id
-                    ORDER BY m.created_at ASC
-                    """
-                ),
-                {"conversation_id": conversation_id, "tenant_id": tenant_id, "user_id": user_id},
-            )
-            return [
-                {
-                    "id": row.id,
-                    "role": row.role,
-                    "content": row.content,
-                    "metadata": (json.loads(row.metadata) if isinstance(row.metadata, str)
-                                 else row.metadata) or {},
-                    "created_at": row.created_at,
-                }
-                for row in rows
-            ]
+            document = chat_history.read(connection, scope)
+        return [] if document is None else chat_history.projection(document)
+
+    def fetch_dialogue_history(self, conversation_id: str, tenant_id: str, user_id: str) -> dict | None:
+        from app.db import chat_history
+        scope = {'conversation_id': conversation_id, 'tenant_id': tenant_id, 'user_id': user_id}
+        with self.engine.connect() as connection:
+            return chat_history.read(connection, scope)
 
     _COMPLETED_COSTS = """
         FROM azure_cost_records r

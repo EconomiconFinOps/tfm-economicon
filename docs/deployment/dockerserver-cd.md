@@ -65,6 +65,14 @@ systemctl --user list-timers economicon-cd.timer
 ```
 
 `init` genera secretos aleatorios locales; directorio `700`, archivos `600`.
+El secreto HMAC de chat se guarda aparte en `private/chat-hmac`: directorio
+`700`, archivo `444`, porque Compose monta el archivo original y ambos servicios
+usan UID10001. El directorio impide acceso de otros usuarios del host; el montaje
+de secrets es de solo lectura. `prepare` lo crea también en instalaciones previas
+que aún no lo tienen y escribe únicamente su ruta absoluta en `CHAT_HMAC_FILE`.
+Se reutiliza entre releases: no se imprime, copia al build ni rota al preparar.
+Un archivo existente inválido provoca error y requiere intervención del operador;
+no se sustituye silenciosamente. La cuenta Docker sigue siendo de confianza.
 Se niega a sobrescribir configuración/secretos existentes. No copiar esos
 archivos al repositorio ni imprimir `compose config` en evidencias: contiene
 secretos. Antes de activar, verificar `Linger=yes` y que los puertos

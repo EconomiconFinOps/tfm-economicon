@@ -5,10 +5,13 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt requirements.lock requirements-chat.lock ./
+RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirements-chat.lock \
+    && pip check \
+    && pip install --dry-run --no-index -r requirements.txt
 
 COPY app ./app
+RUN python -c "from app.core.chat_resources import load_resources; from app.core.summary_resources import load_resources as summary; load_resources(); summary()"
 RUN find /app/app -type d -exec chmod 755 {} +
 
 RUN useradd --create-home --uid 10001 economicon

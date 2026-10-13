@@ -19,7 +19,7 @@ const demoServices = ["azure-cost-api-demo", "demo-data"];
 test("declares every MVP application, infrastructure and monitoring service", () => {
   assert.deepEqual(
     Object.keys(compose.services).sort(),
-    [...applicationServices, ...infrastructureServices, ...monitoringServices, ...demoServices].sort(),
+    [...applicationServices, ...infrastructureServices, ...monitoringServices, ...demoServices, "backend-migrate"].sort(),
   );
   assert.deepEqual(
     Object.keys(compose.volumes).sort(),
@@ -127,8 +127,8 @@ test("gives the processor a health window that covers its first migrations", () 
 
 test("waits for healthy dependencies instead of container start only", () => {
   for (const serviceName of ["backend", "processor", "frontend", ...monitoringServices]) {
-    for (const dependency of Object.values(compose.services[serviceName].depends_on)) {
-      assert.equal(dependency.condition, "service_healthy");
+    for (const [name, dependency] of Object.entries(compose.services[serviceName].depends_on)) {
+      assert.equal(dependency.condition, name === "backend-migrate" ? "service_completed_successfully" : "service_healthy");
     }
   }
 });

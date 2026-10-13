@@ -7,6 +7,6 @@
     "build": "python -m compileall app",
     "lint": "python -m compileall app",
     "test": "python -m pytest tests",
-    "docker:build": "docker build -t finops-backend ."
+    "docker:build": "docker build -f ../../apps/backend/Dockerfile -t finops-backend ../.."
   }
 }
