@@ -55,7 +55,7 @@ Every read of stored costs for a tenant (billing summary, tag coverage, budget e
 
 ### Requirement: Default periods and anomaly validity follow the reference date
 
-When a request names no period, the default period SHALL be the calendar month that contains the reference date, ending (exclusive) at the first day of the next month, with the data cut at the reference date. The anomaly test query SHALL accept only closed days up to the reference date: an end date after the reference date SHALL be rejected with the existing validation error. The daily detection SHALL treat the reference date as its "today", so the last complete day is the day before the reference date, and it SHALL NOT evaluate days that are not complete at the reference date.
+When a request names no period, the default period SHALL be the calendar month that contains the reference date, ending (exclusive) at the first day of the next month, with the data cut at the reference date. The anomaly test query SHALL accept only closed days up to the reference date: an end date after the reference date SHALL be rejected with the existing validation error. The daily detection SHALL treat the reference date as its "today", so the last complete day is the day before the earlier of the reference date and the latest day with visible data (ADR-0020), and it SHALL NOT evaluate days that are not complete at that point.
 
 #### Scenario: Default month
 - **WHEN** the reference date is 2026-10-15 and the summary is requested without a period
@@ -68,12 +68,12 @@ When a request names no period, the default period SHALL be the calendar month t
 - **AND** an end on 2026-09-22 (exclusive end, last day 2026-09-21) is accepted
 
 #### Scenario: Detection at the original reference date reproduces JUP-107
-- **WHEN** the demo dataset is loaded with data until 2026-10-30 and one detection runs on an empty detection state with the reference date 2026-09-22
-- **THEN** exactly the three episodes of the JUP-107 expected file are stored with the same figures and the last evaluated day is 2026-09-21
+- **WHEN** the demo dataset is loaded with data until 2026-10-30 and one detection runs on an empty detection state with the reference date 2026-09-21
+- **THEN** exactly the three episodes of the JUP-107 expected file are stored with the same figures and the last evaluated day is 2026-09-20
 
 #### Scenario: Advancing the date brings new days
-- **WHEN** a detection ran with the reference date 2026-09-22 and the reference date is then set to 2026-10-15 and the detection runs again
-- **THEN** the days from 2026-09-22 to 2026-10-14 are evaluated and the episodes of the extension appear with their documented figures
+- **WHEN** a detection ran with the reference date 2026-09-21 and the reference date is then set to 2026-10-15 and the detection runs again
+- **THEN** the days from 2026-09-21 to 2026-10-14 are evaluated and the episodes of the extension appear with their documented figures
 - **AND** the episodes opened before are the same ones, not duplicated
 
 ### Requirement: Stored episodes obey the reference date

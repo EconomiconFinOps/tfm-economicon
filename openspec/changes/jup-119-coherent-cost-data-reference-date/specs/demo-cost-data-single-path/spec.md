@@ -102,7 +102,7 @@ For each tenant that has cost data in the demo, the dataset SHALL contain at lea
 
 ### Requirement: The single path is shown to work end to end
 
-An automated test with the real database engine SHALL generate the dataset, serve it through the simulated API process, run the ingestion CLI for every pair, and compare the stored totals per tenant, month, currency, service and project with expected values recomputed from the CSV with exact decimal arithmetic. The same test SHALL check that a second `apply` writes nothing, that `remove` returns the tables to their previous state and that the billing summary and the daily detection read the loaded data with the reference date set to 2026-09-22 and to 2026-10-31.
+An automated test with the real database engine SHALL generate the dataset, serve it through the simulated API process, run the ingestion CLI for every pair, and compare the stored totals per tenant, month, currency, service and project with expected values recomputed from the CSV with exact decimal arithmetic. The same test SHALL check that a second `apply` writes nothing, that `remove` returns the tables to their previous state and that the billing summary and the daily detection read the loaded data with the reference date set to 2026-09-21 and to 2026-10-30.
 
 #### Scenario: Stored totals equal the file
 - **WHEN** the test compares the stored totals with the totals recomputed from the CSV

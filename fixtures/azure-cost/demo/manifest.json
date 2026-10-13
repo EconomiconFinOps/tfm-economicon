@@ -1,0 +1,73 @@
+{
+  "absent_fields": [
+    "resource_group",
+    "cost_center",
+    "owner",
+    "application",
+    "environment"
+  ],
+  "generator_version": 1,
+  "grouping": [
+    {
+      "name": "ServiceName",
+      "type": "Dimension"
+    },
+    {
+      "name": "Project",
+      "type": "Tag"
+    }
+  ],
+  "pairs": [
+    {
+      "origin": "synthetic",
+      "rows": 779,
+      "subscription": "synthetic-anomalies",
+      "tenant": "tenant-core"
+    },
+    {
+      "origin": "synthetic",
+      "rows": 490,
+      "subscription": "synthetic-growth-eur",
+      "tenant": "tenant-growth"
+    },
+    {
+      "origin": "synthetic",
+      "rows": 62,
+      "subscription": "synthetic-growth-usd",
+      "tenant": "tenant-growth"
+    },
+    {
+      "origin": "public-shifted",
+      "rows": 2,
+      "subscription": "1caaa5a3-2b66-438e-8ab4-bce37d518c5d",
+      "tenant": "tenant-growth"
+    },
+    {
+      "origin": "public-shifted",
+      "rows": 40,
+      "subscription": "64e355d7-997c-491d-b0c1-8414dccfcf42",
+      "tenant": "tenant-growth"
+    },
+    {
+      "origin": "public-shifted",
+      "rows": 6,
+      "subscription": "9ec51cfd-5ca7-4d76-8101-dd0a4abc5674",
+      "tenant": "tenant-growth"
+    },
+    {
+      "origin": "public-shifted",
+      "rows": 2,
+      "subscription": "ed570627-0265-4620-bb42-bae06bcfa914",
+      "tenant": "tenant-growth"
+    }
+  ],
+  "path": "demo-cost.csv",
+  "public_shift_days": 822,
+  "rows": 1381,
+  "schema_version": 1,
+  "sha256": "aded502bb9477baa0c2b88ab8affc75e12392993e4c1bc19acdaca70f1937256",
+  "window": {
+    "end": "2026-10-30",
+    "start": "2026-07-01"
+  }
+}

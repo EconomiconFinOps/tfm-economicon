@@ -35,7 +35,7 @@ The synthetic anomaly dataset SHALL be loaded, inspected and removed through the
 
 ### Requirement: Dataset designed for every branch of the evaluation
 
-The dataset SHALL contain, in currency `EUR` and one synthetic subscription, one record per service and day from 2026-07-01 to 2026-10-30, every record carrying a service name, except Networking, which has no record before 2026-09-14. The days from 2026-07-01 to 2026-08-31 SHALL be a calm base at the daily level of each service on 2026-09-01, so that no episode opens before September and the days from 2026-09-01 on keep their figures. The figures of the days from 2026-09-01 to 2026-09-21 SHALL be exactly those of the previous version, so the totals of the baseline period `[2026-09-01, 2026-09-08)` and the current period `[2026-09-08, 2026-09-15)` stay: Compute 1000.00 baseline and 2400.00 current; Analytics 2200.00 and 2300.00; Storage 800.00 and 820.00; Database 1500.00 and 1200.00; Tools 10.00 and 40.00; Backup a recorded zero total of 0.00 in the baseline and 300.00 current; Networking no baseline record and 600.00 current. With the reference date 2026-09-22, one detection run on an empty detection state SHALL open exactly: Compute from 2026-09-09, still observed, P1 with 2807.71 of accumulated impact over 12 days; Database from 2026-09-16, still observed, P2 with 642.86 over 5 days; Analytics from 2026-09-10, no longer observed since 2026-09-14, P3 with 168.86 over 4 days; and no episode for Storage, Tools, Backup or Networking. The days from 2026-09-22 to 2026-10-30 SHALL be designed so that a detection that reaches 2026-10-30 opens at least two further episodes, each with figures fixed in the expected file, and so that no figure of the days before 2026-09-22 changes.
+The dataset SHALL contain, in currency `EUR` and one synthetic subscription, one record per service and day from 2026-07-01 to 2026-10-30, every record carrying a service name, except Networking, which has no record before 2026-09-14. The days from 2026-07-01 to 2026-08-31 SHALL be a calm base at the daily level of each service on 2026-09-01, so that no episode opens before September and the days from 2026-09-01 on keep their figures. The figures of the days from 2026-09-01 to 2026-09-21 SHALL be exactly those of the previous version, so the totals of the baseline period `[2026-09-01, 2026-09-08)` and the current period `[2026-09-08, 2026-09-15)` stay: Compute 1000.00 baseline and 2400.00 current; Analytics 2200.00 and 2300.00; Storage 800.00 and 820.00; Database 1500.00 and 1200.00; Tools 10.00 and 40.00; Backup a recorded zero total of 0.00 in the baseline and 300.00 current; Networking no baseline record and 600.00 current. With the reference date 2026-09-21, one detection run on an empty detection state SHALL open exactly: Compute from 2026-09-09, still observed, P1 with 2807.71 of accumulated impact over 12 days; Database from 2026-09-16, still observed, P2 with 642.86 over 5 days; Analytics from 2026-09-10, no longer observed since 2026-09-14, P3 with 168.86 over 4 days; and no episode for Storage, Tools, Backup or Networking. The days from 2026-09-22 to 2026-10-30 SHALL be designed so that a detection that reaches 2026-10-30 opens at least two further episodes, each with figures fixed in the expected file, and so that no figure of the days before 2026-09-22 changes.
 
 #### Scenario: Reference rules produce exactly two alerts
 - **WHEN** the anomaly evaluation runs for the current period grouped by service in `EUR` with absolute threshold 2000.00, deviation 50.00 percent and minimum absolute increase 100.00, with the reference date 2026-09-22 or later
@@ -55,14 +55,14 @@ The dataset SHALL contain, in currency `EUR` and one synthetic subscription, one
 - **AND** the expected file states 4.55 percent only as the rounded display value
 
 #### Scenario: One detection shows every severity and both observations
-- **WHEN** a detection runs once on the loaded dataset with an empty detection state and the reference date 2026-09-22
+- **WHEN** a detection runs once on the loaded dataset with an empty detection state and the reference date 2026-09-21
 - **THEN** exactly the three episodes above are stored with those figures
-- **AND** the last evaluated day is 2026-09-21
+- **AND** the last evaluated day is 2026-09-20
 
 #### Scenario: Reaching the end of the dataset opens the further episodes
-- **WHEN** a detection runs on an empty detection state with the reference date 2026-10-31
-- **THEN** the three episodes above are stored with the same start days and the figures that the expected file gives for 2026-10-30, and at least two further episodes appear with the figures of the expected file
-- **AND** the last evaluated day is 2026-10-30
+- **WHEN** a detection runs on an empty detection state with the reference date 2026-10-30
+- **THEN** the three episodes above are stored with the same start days and the figures that the expected file gives for that date, and at least two further episodes appear with the figures of the expected file
+- **AND** the last evaluated day is 2026-10-29, because the latest day with data is never complete
 
 #### Scenario: Limitations are visible in the data
 - **WHEN** the daily figures of Tools, Backup and Networking are evaluated
@@ -70,7 +70,7 @@ The dataset SHALL contain, in currency `EUR` and one synthetic subscription, one
 
 ### Requirement: Expected values verified independently
 
-The repository SHALL contain `docs/demo/JUP-107/esperados-anomalias.json` with the reference rules, both periods, the per-service totals and record counts, each group's expected statuses and reasons, the two expected alerts, and the expected episodes after one detection at the reference date 2026-09-22 and after one detection at 2026-10-31, with their start, last seen day, observation, reference daily cost, accumulated impact, counted days and severity. A test that needs no database SHALL recompute every figure with exact `Decimal` arithmetic from the dataset rows, implementing the period sums and the daily rule independently, without using the backend services, and compare it with the file.
+The repository SHALL contain `docs/demo/JUP-107/esperados-anomalias.json` with the reference rules, both periods, the per-service totals and record counts, each group's expected statuses and reasons, the two expected alerts, and the expected episodes after one detection at the reference date 2026-09-21 and after one detection at 2026-10-30, with their start, last seen day, observation, reference daily cost, accumulated impact, counted days and severity. A test that needs no database SHALL recompute every figure with exact `Decimal` arithmetic from the dataset rows, implementing the period sums and the daily rule independently, without using the backend services, and compare it with the file.
 
 #### Scenario: Altered amount fails naming the figure
 - **WHEN** one amount of the dataset or one figure of the expected file is changed
