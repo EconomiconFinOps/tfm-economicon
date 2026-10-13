@@ -55,7 +55,7 @@ La guía de usuario (en `product-architecture`) usa los textos de la pantalla: �
 ### D3. Estabilidad de los encabezados y de los fragmentos
 
 Las etiquetas de JUP-022 nombran secciones por encabezado (por ejemplo `rules` / `Anomalias`) y los casos 016 a 019 esperan esa sección. Por eso:
-- Se conserva el encabezado `## Anomalias` y la regla con su frase de límites estrictos al principio, dentro de los primeros 500 caracteres, para que el umbral no se separe de su encabezado al trocear.
+- Se conserva el encabezado `## Anomalias`, la regla y, justo después, la frase de límites estrictos; la regla y esa frase caen en el mismo fragmento. No se mueve nada anterior a la sección: los fragmentos previos, incluido el de presupuestos, quedan idénticos a los de antes del cambio (decisión de Lucia, 2026-10-13, tras medir que mover ese fragmento hacía perder el caso 013 con la distancia máxima en uso de 0,6).
 - El contenido nuevo va después, en subsecciones con encabezado propio. Se evita alargar el texto que ya existe.
 - Las secciones posteriores (`Recomendaciones`, `Modelo Conceptual De Datos`) cambian de número de fragmento. El impacto se mide con la calibración y las etiquetas, no se supone.
 
@@ -67,9 +67,9 @@ Documentos y manifiesto, luego las huellas de las fuentes y `suite_version` de J
 
 Los informes `JUP-070-run-1` y `run-2` registran una ejecución concreta (commit, corpus y batería de ese momento). No se regeneran: se conservan tal cual y las notas de este change dicen que su huella ya no coincide con el repositorio. Se comprueba que ninguna prueba los vuelva a validar contra la batería actual.
 
-### D6. Batería nueva de anomalías: pendiente de decisión del equipo
+### D6. Batería nueva de anomalías: tarjeta aparte
 
-JUP-069 no pregunta por severidad, estados ni episodios, y no se modifica (la campaña de JUP-035 fija su huella). Hay dos caminos: una batería nueva y pequeña en otro fichero, o dejar esa parte sin cobertura. El change no la implementa; si el equipo la quiere, será una tarea posterior de esta misma tarjeta, con su propio fichero y sin tocar JUP-069.
+JUP-069 no pregunta por severidad, estados ni episodios, y no se modifica (la campaña de JUP-035 fija su huella). Decisión de Lucia (2026-10-13): la batería nueva (6 a 8 preguntas, cada una con contexto, fragmentos esperados por encabezado, puntos `required`, `forbidden` y `numbers`, y reglas de conductas prohibidas) se crea en una tarjeta aparte, porque las herramientas actuales están escritas para JUP-069 y hay que parametrizarlas, lo que añade código a un change que es solo de contenido. Consecuencia que se asume y se anota en `review.md`: este change se integra sin preguntas que midan el beneficio del texto nuevo; solo se mide que la recuperación de la batería existente no empeora.
 
 ## Risks / Trade-offs
 
@@ -87,6 +87,6 @@ No hay migración de datos ni de código. Para revertir, basta con restaurar los
 ## Open Questions
 
 1. ¿Cuándo se integra este change respecto a la campaña de aceptación de JUP-035 (#121)? Pregunta enviada al equipo.
-2. ¿Se añade una batería nueva de anomalías (6 a 8 preguntas)? Pregunta enviada al equipo.
+2. ~~¿Se añade una batería nueva de anomalías?~~ Resuelta: tarjeta aparte (D6).
 3. ¿Se espera a que #128 (y #127) estén en `develop` para mencionar «Explicar en el asistente» y la fecha de referencia? Por defecto no se espera: se mencionan solo si ya están integrados al cerrar.
 4. ¿Se ejecuta la calibración con el gateway real? Depende de la clave y del crédito disponibles; se decide al llegar a esa tarea.

@@ -7,7 +7,7 @@ The assistant document corpus SHALL describe cost anomalies as the product treat
 #### Scenario: Severity is defined on accumulated impact
 
 - **WHEN** a contributor reads the anomaly section of the business-rules document
-- **THEN** it defines P1 (above 2,000), P2 (500 to 2,000) and P3 (below 500) over the accumulated impact of the episode in its own currency, with nominal thresholds in EUR and USD and no conversion
+- **THEN** it defines P1 (above 2,000), P2 (500 to 2,000, both ends included) and P3 (below 500) over the accumulated impact of the episode in its own currency, with nominal thresholds in EUR and USD and no conversion
 - **AND** it does not define them as EUR per month.
 
 #### Scenario: Statuses match the product
@@ -23,7 +23,7 @@ The assistant document corpus SHALL describe cost anomalies as the product treat
 - **THEN** the corpus states that the expected value is the mean daily cost of the previous 7 days, or the anchored reference of the episode while it is followed
 - **AND** that the last day with data is treated as incomplete
 - **AND** that an episode is shown as no longer observed when more than 3 days have passed since the rule last triggered (on the fourth day without triggering) and is not closed automatically
-- **AND** that at least 9 days with data are needed before the first evaluation: 7 reference days, the evaluated day and the last day with data, which is treated as incomplete.
+- **AND** that at least 9 consecutive days with data are needed before the first evaluation: 7 reference days, the evaluated day and the last day with data, which is treated as incomplete.
 
 #### Scenario: A service with no previous spend is not asserted to meet the rule
 
@@ -53,10 +53,11 @@ The corpus SHALL keep the daily rule `relative_delta > 20 % AND absolute_delta >
 - **WHEN** a contributor reads the anomaly section
 - **THEN** it says that an increase of exactly 100 EUR/day does not trigger the rule.
 
-#### Scenario: Rule and strictness stay inside the first chunk of the section
+#### Scenario: Rule and strictness are in the same fragment
 
-- **WHEN** the anomaly section of the business-rules document is split by the ingestion chunker
-- **THEN** the heading `Anomalias`, the rule and the statement of strict limits appear in the first fragment of that section.
+- **WHEN** the business-rules document is split by the ingestion chunker
+- **THEN** the rule `relative_delta > 20 % AND absolute_delta > 100 EUR/day` and the statement of strict limits appear in the same fragment
+- **AND** the fragments that precede the anomaly rule, including the budgets section, are identical to those of the document before this change.
 
 ### Requirement: Corpus guides the anomaly panel in the product's wording
 

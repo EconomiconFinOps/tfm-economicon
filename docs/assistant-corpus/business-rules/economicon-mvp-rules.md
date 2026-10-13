@@ -78,7 +78,7 @@ El MVP debe poder explicar estos KPIs:
 | Unallocated Cost % | coste no asignado sobre coste elegible |
 | Tagging Compliance by Cost | coste correctamente etiquetado sobre coste etiquetable |
 | Savings Realization | ahorro verificado frente a ahorro identificado |
-| Anomaly MTTA / MTTR | tiempo hasta la primera revision (primer cambio desde Nueva) y hasta la resolucion |
+| Anomaly MTTA / MTTR | tiempo hasta reconocimiento y resolucion |
 
 KPIs opcionales si el escenario lo permite:
 
@@ -113,25 +113,27 @@ Una anomalia es un episodio: una anomalia candidata por cliente, moneda y servic
 
 El valor esperado de un dia es la media diaria de los 7 dias anteriores. Mientras un episodio esta en seguimiento, el valor esperado es su referencia anclada: la media de los 7 dias previos a su inicio. Asi una subida que se mantiene sigue viendose aunque la media reciente ya la alcance.
 
-El ultimo dia con datos del cliente se considera incompleto y no se evalua. Un dia solo se evalua si ese dia y los 7 anteriores tienen datos del cliente.
+El ultimo dia con datos del cliente se considera incompleto y no se evalua hasta que haya datos de un dia posterior. Un dia solo se evalua si ese dia y los 7 anteriores tienen datos del cliente.
 
 Cuando pasan mas de 3 dias desde la ultima vez que salto la regla (es decir, al cuarto dia sin saltar), el episodio se muestra como "Ya no se observa". No se cierra solo: una persona debe cerrarlo. Si despues vuelve a saltar, se abre un episodio nuevo enlazado al anterior.
 
 ### Servicio sin gasto previo
 
-Sin datos previos no se puede afirmar que un recurso nuevo cumpla o no cumpla la regla: con referencia cero el aumento relativo no esta definido. Por eso el primer dia de gasto de un servicio nuevo no abre un episodio. Desde el segundo dia la referencia incluye ese primer dia, de modo que un gasto nuevo y estable por encima de unos 116,67 al dia puede abrir un episodio.
+Sin datos previos no se puede afirmar que un recurso nuevo cumpla o no cumpla la regla: con referencia cero el aumento relativo no esta definido. Por eso el primer dia de gasto de un servicio nuevo no abre un episodio. Desde el segundo dia la referencia incluye ese primer dia, de modo que un gasto nuevo y estable puede abrir un episodio desde el segundo dia si es lo bastante alto.
 
 ### Severidad
 
 La severidad se calcula sobre el impacto acumulado del episodio: la suma, por cada dia evaluado mientras se sigue, de lo que el gasto observado supera la referencia. Se mide en la moneda del episodio y no se proyecta a un mes.
 
 - P1 (Alta): impacto acumulado mayor que 2.000;
-- P2 (Media): entre 500 y 2.000;
+- P2 (Media): de 500 a 2.000, ambos incluidos;
 - P3 (Baja): menor que 500.
 
 Los umbrales son nominales en EUR y USD, sin conversion entre monedas. Otras monedas no se evaluan.
 
 ### Estados
+
+Una anomalia es siempre una candidata: indica que hay que investigar si el cambio era esperado. No establece una causa, un ahorro ni una confianza estadistica. El reconocimiento que mide MTTA es el primer cambio de estado desde Nueva.
 
 - `new`: abierta y sin revisar;
 - `investigating`: una persona la esta investigando;
@@ -139,8 +141,6 @@ Los umbrales son nominales en EUR y USD, sin conversion entre monedas. Otras mon
 - `false_positive`: cerrada porque no era una anomalia.
 
 Cerrar un episodio exige un motivo y es definitivo: si el gasto vuelve a subir, se abre un episodio nuevo. No existe un estado "reconocida" (`acknowledged`).
-
-Una anomalia es siempre una candidata: indica que hay que investigar si el cambio era esperado. No establece una causa, un ahorro ni una confianza estadistica.
 
 ## Recomendaciones
 

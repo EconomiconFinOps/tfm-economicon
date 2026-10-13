@@ -44,9 +44,9 @@ El panel Anomalias de Economicon muestra las anomalias de coste del cliente acti
 
 El panel no detecta nada al abrirse: solo muestra lo ya guardado. Antes de la primera deteccion indica que todavia no se han buscado anomalias en ese cliente.
 
-El boton "Detectar ahora" revisa los costes diarios del cliente con la regla de negocio y guarda los episodios. Repetirlo es seguro. Hacen falta al menos 9 dias con datos del cliente (7 de referencia, el dia que se evalua y el ultimo, que se considera incompleto); si no los hay, el resultado dice que aun no hay datos suficientes. Si no hay dias completos nuevos, dice que ya estaba al dia.
+El boton "Detectar ahora" revisa los costes diarios del cliente con la regla de negocio y guarda los episodios. Repetirlo es seguro. Hacen falta al menos 9 dias seguidos con datos del cliente (7 de referencia, el dia que se evalua y el ultimo, que se considera incompleto); si no los hay, el resultado dice que aun no hay datos suficientes. Si no hay dias completos nuevos, dice que ya estaba al dia.
 
-El texto "Revisado hasta" indica el ultimo dia completo evaluado. El ultimo dia con datos no se evalua porque puede estar incompleto. Cuando los datos son sinteticos, el panel avisa de que son datos de demostracion y no facturas reales.
+El texto "Revisado hasta el" seguido de una fecha indica el ultimo dia completo evaluado. El ultimo dia con datos no se evalua porque puede estar incompleto. Cuando los datos son sinteticos, el panel avisa de que son datos de demostracion y no facturas reales.
 
 ### Leer el panel
 
@@ -60,7 +60,7 @@ El estado de una anomalia es Nueva, Investigando, Resuelta o Falso positivo. Se 
 
 Al abrir el detalle se ven el impacto acumulado, los dias con impacto, el valor de referencia y las reglas aplicadas, junto con la indicacion "Candidata: causa no establecida" y sus limitaciones.
 
-Desde el detalle una persona puede marcarla como "Investigando" o cerrarla como "Resuelta" o "Falso positivo". Cerrar pide un motivo, no se puede deshacer, y si el gasto vuelve a subir se abre una anomalia nueva. El panel no apaga ni modifica ningun recurso de Azure: solo informa.
+Desde el detalle una persona puede usar "Marcar en investigacion" (pasa a Investigando) o "Cerrar", que permite elegir "Resuelta" o "Falso positivo" y confirmar el cierre. Cerrar pide un motivo, no se puede deshacer, y si el gasto vuelve a subir se abre una anomalia nueva. El panel no apaga ni modifica ningun recurso de Azure: solo informa.
 
 Este documento explica como funcionan las anomalias en general. Las cifras de una anomalia concreta (dia de apertura, valor de referencia, impacto acumulado y estado) estan en su detalle y no se pueden deducir de este documento: si el usuario pregunta por una anomalia concreta, hay que indicarle que abra su detalle en el panel y no inventar importes.
 
