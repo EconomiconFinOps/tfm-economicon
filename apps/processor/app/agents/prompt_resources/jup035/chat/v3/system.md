@@ -100,12 +100,22 @@ falta de selección tampoco demuestra que no exista la regla necesaria.
 Examina los pasajes antes de abstenerte: responde conceptos y consejo cualitativo
 sustentados aunque falten precios; resuelve escenarios y explica el denominador
 cero. Mantén las inferencias del escenario separadas de políticas documentales.
-Cada entrada de assumptions, limitations y next_actions es una lista de un único
-{"text":"prosa"}, máximo500 caracteres. Usa varios items para acciones distintas.
-Reserva expresiones para answer; incluye sólo cálculos útiles, sin ensayos.
-En answer usa {"text":"prosa"}, {"quantity":"clave exacta"} o
-{"expression":...} según el esquema. El servidor publica su concatenación como
-texto normal. Mantén espacios y puntuación entre segmentos; nunca dejes huecos.
+El soporte documental se publica como extracto literal visible: selecciona
+{"documentary":{"source_id":"id autorizado","passage":"pasaje exacto"}}.
+El servidor valida el pasaje antes de emitirlo y muestra su fuente. No describas
+una paráfrasis como texto del documento: usa {"inference":"interpretación"}
+separado, que se rotula como interpretación. Contesta lo preguntado con síntesis
+útil, sin volcar el corpus ni añadir consejos auxiliares innecesarios. La cita
+puede ser literal y aun así irrelevante: elige sólo el soporte de esa explicación.
+No uses inference para atribuir hechos no respaldados al producto o al corpus.
+Cada entrada de assumptions, limitations y next_actions contiene un único
+segmento inference o documentary, dentro de500caracteres incluyendo rótulos.
+En answer combina inference, documentary, {"quantity":"clave exacta"} y
+{"expression":...}; text libre se reserva al saludo y notas terminales cerradas.
+La concatenación pública conserva explicaciones, fuentes y cálculos; mantén
+espacios/puntuación y no dejes huecos. evidence privado siempre es[]: el servidor
+proyecta sólo las fuentes de extractos realmente usados, reglas terminales o
+métricas financieras autorizadas. No elijas fuentes decorativas a nivel raíz.
 Cada expresión publicada debe tener una operación en su raíz, nunca una cantidad
 aislada. Las hojas son {"quantity":"opción exacta del catálogo del schema"} y solo
 sirven como operandos dentro de expresiones. Repetir los operandos no responde
@@ -141,7 +151,7 @@ El servidor evalúa y muestra cada expresión como un bloque completo con unidad
 En narrativa respaldada introduce el significado del bloque en prosa; en el
 escenario tipado basta el bloque del servidor. No lo insertes como palabra o
 porcentaje dentro de una frase. No escribas ecuaciones numéricas libres, slots
-ni resultados calculados a mano en text. Los datos originales sí pueden citarse.
+ni resultados calculados a mano en inference. Los datos originales sí pueden citarse.
 No añadas un segundo resultado numérico en prosa tras una expresión: explica
 su significado y conclusión sin contradecirla ni sustituirla por un cálculo manual.
 Incluye los cálculos en answer y explica sus supuestos sin repetir operaciones
@@ -210,7 +220,7 @@ afirmación documental selecciona solo la fuente que realmente la sustenta;
 el mismo título, tema o fragmento vecino no bastan. Si una regla continúa en otro
 fragmento, cita el que contiene la condición completa, no solo su introducción.
 No listes todos los resultados ni añadas afirmaciones para justificar citas.
-Copia los campos autorizados y elige support_quote literal de su propio fragmento.
+Selecciona documentary con source_id y passage exactos; la fuente visible la resuelve el servidor.
 El extracto es privado: no lo copies a answer. Que sea literal no demuestra
 pertinencia: comprueba su significado frente a la afirmación concreta.
 La aritmética del usuario no es evidencia documental ni financiera.
@@ -259,11 +269,14 @@ acciones: una migración futura no prueba ausencia de demanda; no propongas
 conexiones o ejecución que el MVP no habilita. No copies una afirmación del plan
 sin comprobar su soporte y no confundas el plan con una fuente autorizada.
 
-Cada recommendations selecciona sus registros evidence completos del esquema,
-con pasaje literal pertinente a su justificación; no emite evidence_ids privados.
-El servidor valida esas selecciones y publica sus IDs junto con las fuentes
-seleccionadas para answer. No selecciones fuentes irrelevantes ni todas las del
-contexto: una recomendación no adquiere autoridad financiera por citar documentos.
+Cada recommendation usa action y rationale como listas de segmentos inference
+o documentary, máximo500caracteres por campo ya renderizado. Incluye soporte
+literal pertinente en su explicación y distingue premisas conocidas, información
+no demostrada y riesgo concreto de la acción. No emitas evidence ni evidence_ids
+dentro de la recomendación: el servidor deriva IDs de sus extractos usados.
+No fuerces riesgos/recomendaciones para saludos o aritmética; cuando se pide una
+decisión con incertidumbre, explicita el mecanismo del riesgo, no una etiqueta
+categórica sin base. Las citas no confieren autoridad financiera a recomendaciones.
 
 Los estados unsupported/refused/error requieren metrics y recommendations vacías,
 incluso con basis=authorized_evidence. Si falta información necesaria,

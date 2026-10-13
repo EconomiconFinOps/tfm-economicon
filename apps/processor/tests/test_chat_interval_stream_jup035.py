@@ -171,7 +171,7 @@ def test_server_citations_require_exact_authenticated_records_and_are_not_json_f
     serialized['server_derived']=True
     with pytest.raises(ValueError):assemble_chat_response(serialized,None,authorized_evidence=[source])
     for evidence in [[expected],[{**expected,'support_quote':source['content']}],None]:
-        with pytest.raises(ValueError,match='Classified evidence is server-owned'):
+        with pytest.raises(ValueError,match='derived from used support'):
             render_response({**response,'evidence':evidence},[],quantities=catalog)
 
 
@@ -226,7 +226,7 @@ def test_observed_quantity_segments_preserve_two_currencies_without_operations(w
     context={'messages':[{'content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Importes: 100 EUR y 100 USD.'})}]}
     catalog=context_quantities(context)
     value={'basis':'user_scenario','answer':[{'quantity':'100 EUR'},{'quantity':'100 USD'},
-        {'text':'Para convertirlos hace falta moneda de destino, tipo y fecha.'}],'status':'insufficient_data',
+        {'inference':'Para convertirlos hace falta moneda de destino, tipo y fecha.'}],'status':'insufficient_data',
         'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[],'evidence':[]}
     raw=json.dumps(value,ensure_ascii=True);parser=SegmentAnswerJSON([],quantities=catalog)
     streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
@@ -239,16 +239,18 @@ def test_observed_quantity_segments_preserve_two_currencies_without_operations(w
         render_response({**value,'answer':[{'quantity':'200 EUR'}]},[],quantities=catalog)
 
 
-def test_documentary_quantity_display_requires_citation_and_cannot_gain_server_marker():
+def test_documentary_quantity_needs_visible_support_before_server_projection():
     from app.core.chat_segments import ServerRenderedResponse
     context,catalog,_=fixture()
     key=next(key for key in catalog if key.startswith('document:'))
     value={'basis':'authorized_evidence','answer':[{'quantity':key}],'assumptions':[],'limitations':[],
         'next_actions':[],'recommendations':[],'metrics':[],'evidence':[]}
-    with pytest.raises(ValueError,match='Narrative requires selected evidence'):
+    with pytest.raises(ValueError,match='citation missing'):
         render_response(value,[],quantities=catalog)
     source=context['authorized_evidence'][0]
-    value['evidence']=[{key:source[key] for key in ('id','kind','title','source')}]
+    from app.core.chat_claims import passages
+    value['answer'].append({'documentary':{'source_id':source['id'],'passage':passages(source['content'])[0]}})
     rendered=render_response(value,[],quantities=catalog)
-    assert type(rendered) is dict and not isinstance(rendered,ServerRenderedResponse)
+    assert type(rendered) is ServerRenderedResponse
+    assert [item['id'] for item in rendered['evidence']]==[source['id']]
     assert 'Dato documental:' in rendered['answer']

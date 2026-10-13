@@ -50,3 +50,12 @@
 - [ ] 7.4 Congelar candidato, estimar coste conservador y validar campaña íntegra dentro del techo acumulado2USD (ampliación autorizada el13/10/2026); sin muestras seleccionadas.
 - [x] 7.5 Evaluar intervalos documentales con AST, sección posicional y vínculo léxico de KPI; probar límites inclusivos, fuentes alteradas, solapamientos, etiquetas libres y paridad de esquema/conteo.
 - [ ] 7.6 Validar focal005/006/007/013/017/027 y luego full28 sobre candidato congelado; no considerar aceptación los tests locales del selector.
+
+
+## 29. Soporte visible y proyección por uso (aceptación pendiente)
+
+- [x] Implementar extractos literales autorizados e interpretación separada; rechazar evidencia decorativa y pasajes alterados antes de SSE.
+- [x] Conservar métricas financieras sólo con autoridad de servidor y proyectar fuentes de recomendaciones realmente usadas.
+- [x] Verificar streaming fragmentado, límites, citas y persistencia atómica local, con negativos de falsificación de marcador.
+- [ ] Completar regresiones, paridad final y verificación en runtime congelado.
+- [ ] Reejecutar criterios originales y batería completa con auditoría semántica, UI y presupuesto; no declarar aceptación por CI ni literalidad.

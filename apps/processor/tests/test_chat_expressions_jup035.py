@@ -171,14 +171,16 @@ def test_displayed_root_is_operation_and_short_items_are_single_bounded_prose():
     for branch in schema['anyOf']:
         item=branch['properties']['limitations']['items']
         assert item['minItems']==item['maxItems']==1
-        assert item['items']['properties']=={'text':{'type':'string','maxLength':500}}
-    response={'basis':'user_scenario','status':'insufficient_data','evidence':[],'metrics':[],'recommendations':[],'answer':[{'text':'Respuesta.'}],'assumptions':[], 'limitations':[], 'next_actions':[]}
-    for bad in ([{'text':'a'},{'text':'b'}], [{'expression':difference(leaf('73 EUR'),leaf('20 EUR'))}]):
+        options=item['items'].get('anyOf',[item['items']])
+        assert any('inference' in option.get('properties',{}) for option in options)
+        assert all('expression' not in option.get('properties',{}) for option in options)
+    response={'basis':'user_scenario','status':'insufficient_data','evidence':[],'metrics':[],'recommendations':[],'answer':[{'inference':'Respuesta.'}],'assumptions':[], 'limitations':[], 'next_actions':[]}
+    for bad in ([{'inference':'a'},{'inference':'b'}], [{'expression':difference(leaf('73 EUR'),leaf('20 EUR'))}]):
         with pytest.raises(ValueError,match='short prose'):
             render_response({**response,'limitations':[bad]},[],quantities=catalog)
     with pytest.raises(ValueError,match='text limit'):
-        render_response({**response,'limitations':[[{'text':'a'*501}]]},[],quantities=catalog)
-    assert render_response({**response,'limitations':[[{'text':'a'*500}]]},[],quantities=catalog)['limitations']==['a'*500]
+        render_response({**response,'limitations':[[{'inference':'a'*501}]]},[],quantities=catalog)
+    assert render_response({**response,'limitations':[[{'inference':'a'*482}]]},[],quantities=catalog)['limitations']==['Interpretación: '+'a'*482]
 
 
 @pytest.mark.parametrize('alteration',[
@@ -192,8 +194,8 @@ def test_one_server_retrieval_precedes_private_plan_and_reviewed_generation(monk
     from test_chat_auto_jup035 import provider,wire,review_wires
     from test_chat_gateway_jup035 import ANSWER,_provider
     value=_provider(ANSWER)
-    value.update(basis='missing_data',status='insufficient_data',answer=[{'text':'Necesito la regla de reparto aplicable.'}],
-        limitations=[],next_actions=[[{'text':'Aporta la política aplicable.'}]])
+    value.update(basis='missing_data',status='insufficient_data',answer=[{'inference':'Necesito la regla de reparto aplicable.'}],
+        limitations=[],next_actions=[[{'inference':'Aporta la política aplicable.'}]])
     gateway,requests=provider(monkeypatch,review_wires(wire({'content':json.dumps(value)})))
     ctx={**context('Explica costes'),'tool_protocol':'server-documentation-v4','financial_metrics_allowed':False,'authorized_evidence':[]}
     calls=[]

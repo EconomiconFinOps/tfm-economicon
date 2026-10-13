@@ -139,7 +139,7 @@ def test_repository_document_rule_and_full_response_fit_twelve_operations():
     schema=expression_definitions(quantities)
     assert rule['id'] in json.dumps(schema)
     assert {entry['id'] for entry in result['evidence']}==set(rule['source_ids'])
-    with pytest.raises(ValueError,match='Classified evidence is server-owned'):
+    with pytest.raises(ValueError,match='Response evidence is derived from used support'):
         render_response({**value,'evidence':[{'id':'untrusted'}]},[],quantities=quantities)
 
 
@@ -176,7 +176,7 @@ def test_previous_provider_conclusions_cannot_bypass_interval_evaluation(conclus
     document=(Path(__file__).resolve().parents[3]/'docs/assistant-corpus/business-rules/economicon-mvp-rules.md').read_text(encoding='utf-8')
     quantities=catalog('EUR: allocated 700; shared 200; unallocated 100; excluded 50.',sources(document,size=500,overlap=50))
     with pytest.raises(ValueError,match='Unverified documentary classification'):
-        render_response({'basis':'user_scenario','status':'insufficient_data','answer':[{'text':conclusion}],
+        render_response({'basis':'user_scenario','status':'insufficient_data','answer':[{'inference':conclusion}],
             'evidence':[],'metrics':[],'recommendations':[],'assumptions':[],'limitations':[],'next_actions':[]},[],quantities=quantities)
 
 
@@ -232,8 +232,8 @@ def test_explicit_classification_routing_preserves_other_requests(question,requi
     schema=provider_response_schema(authorized_evidence=records,quantities=q)
     value=copy.deepcopy(ANSWER)
     value['scope'].pop('period');value['scope'].pop('subscription_ids')
-    value.update(status='ok',answer=[{'text':'El escenario contiene dos conceptos de coste.'}],
-        evidence=[{key:records[0][key] for key in ('id','kind','title','source')}|{'support_quote':records[0]['content']}],
+    value.update(status='ok',answer=[{'inference':'El escenario contiene dos conceptos de coste.'}],
+        evidence=[],
         assumptions=[],limitations=[],next_actions=[],recommendations=[],metrics=[])
     if required:
         with pytest.raises(ValueError):_validate(value,schema,schema)
@@ -256,8 +256,15 @@ def test_explicit_classification_routing_preserves_other_requests(question,requi
         render_response(value,[],quantities=q)
     else:
         value['basis']='authorized_evidence'
+        from app.core.chat_claims import passages
+        source=next(record for record in records if passages(record['content']))
+        passage=passages(source['content'])[0]
+        value['answer'].append({'documentary':{'source_id':source['id'],'passage':passage}})
         _validate(value,schema,schema)
-        render_response(value,[],quantities=q)
+        result=render_response(value,[],quantities=q)
+        assert 'Interpretación: El escenario contiene dos conceptos de coste.' in result['answer']
+        assert '«'+passage+'»' in result['answer']
+        assert {record['id'] for record in result['evidence']}=={source['id']}
 
 
 def test_ambiguous_rules_or_unanchored_quantity_do_not_force_classification():

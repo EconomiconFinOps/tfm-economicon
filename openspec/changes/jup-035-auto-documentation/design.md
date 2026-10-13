@@ -174,3 +174,14 @@ comprobar identidades aritmeticas antes de emitir. Es una mitigacion del product
 no un verificador semantico determinista ni garantia universal; la evidencia real
 de cada revision determina lo aceptado. Multiplicidad sigue fail-closed y requiere
 una decision explicita de protocolo o proveedor; no se cambia el contrato aqui.
+
+
+### Delta29 vigente, validación real pendiente
+
+Supersede la selección de evidencia raíz por extractos literales visibles por
+fuente efectiva e interpretaciones separadas. Auxiliares y recomendaciones usan
+los mismos segmentos; se proyectan sólo fuentes usadas, sin citas decorativas.
+El plan añade cobertura/riesgos pertinentes sin imponerlos a saludos/aritmética.
+Se conservan2generaciones1000/2200,120s y contrato público. Literalidad no demuestra
+pertinencia ni entailment; el banco original y revisión semántica siguen exigidos.
+Véase revisión29 del ADR JUP-035-server-retrieval-expressions.md.

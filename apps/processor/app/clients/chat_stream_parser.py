@@ -137,7 +137,7 @@ class SegmentAnswerJSON:
     def _flush(self):
         from app.core.chat_segments import render_segment
         if not self.pending:return ''
-        result=render_segment({'text':''.join(self.pending)},self.records,self.expressions)
+        result=render_segment({('inference' if any(key=='inference' for key,_ in self.pending) else 'text'):''.join(text for _,text in self.pending)},self.records,self.expressions)
         self.pending=[]
         return result
 
@@ -178,11 +178,13 @@ class SegmentAnswerJSON:
             if self.segment is not None and not lex.string and lex.depth==2 and char=='}':
                 value=complete_json(''.join(self.segment));self.segment=None
                 rendered=render_segment(value,self.records,self.expressions)
-                self.rendered_size+=len(rendered)
+                if 'inference' in value:
+                    self.rendered_size+=len(value['inference'])+((len(rendered)-len(value['inference'])) if not any(key=='inference' for key,_ in self.pending) else 0)
+                else:self.rendered_size+=len(rendered)
                 if self.rendered_size>4000:raise ValueError('Rendered text limit.')
                 self.segments.append(value)
                 if len(self.segments)>128:raise ValueError('Invalid segment collection.')
-                if 'text' in value:self.pending.append(rendered)
+                if 'text' in value or 'inference' in value:self.pending.append(('inference' if 'inference' in value else 'text',value.get('inference',value.get('text'))))
                 else:output.extend([self._flush(),rendered])
             if closing:
                 if not self.segments:raise ValueError('Invalid segment collection.')
@@ -194,6 +196,15 @@ class SegmentAnswerJSON:
             self.deferred=result
             return ''
         self.deferred=''
+        if self.array_answer and self.basis is None:
+            from app.core.chat_rules import required_classification
+            from app.core.chat_segments import CLASSIFICATION_ABSTENTIONS
+            if (self.expressions is None or not required_classification(self.expressions.catalog)
+                    or self.segments not in [[{'text':note}] for note in CLASSIFICATION_ABSTENTIONS]):
+                raise ValueError('Invalid response basis.')
+        if self.array_answer and self.basis is not None and self.basis!='greeting':
+            if any('text' in segment for segment in self.segments):
+                raise ValueError('Explanation requires explicit interpretation or literal support.')
         result=self.trailing+result
         if not self.text:
             result=result.lstrip()

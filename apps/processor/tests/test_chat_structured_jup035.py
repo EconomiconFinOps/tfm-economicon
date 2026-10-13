@@ -54,18 +54,22 @@ def test_grounding_rejects_missing_or_foreign_passage_without_repair(quote):
         assemble_chat_response(value,None,authorized_evidence=[source])
 
 
-def test_literal_passage_is_private_and_does_not_change_public_response():
+def test_literal_passage_is_visible_and_source_metadata_is_server_owned():
     from app.agents.schemas import assemble_chat_response, chat_provider_schema
+    from app.core.chat_expressions import QuantityCatalog
+    from app.core.chat_segments import render_response
     source={'id':'s','kind':'corpus','title':'Manual','source':'manual','content':'A precise supported definition.'}
     value=_provider(ANSWER)
-    value['evidence']=[{**{k:source[k] for k in ('id','kind','title','source')},
-                       'support_quote':source['content']}]
-    from app.core.chat_segments import render_response
-    result=assemble_chat_response(render_response(value,[]),None,authorized_evidence=[source])
+    value['answer'].append({'documentary':{'source_id':'s','passage':source['content']}})
+    catalog=QuantityCatalog();catalog.authorized_sources=[source]
+    original=copy.deepcopy(value)
+    result=assemble_chat_response(render_response(value,[],quantities=catalog),None,authorized_evidence=[source])
     assert result['evidence']==[{k:source[k] for k in ('id','kind','title','source')}]
-    assert 'support_quote' in value['evidence'][0], 'Never mutate received candidate'
+    assert source['content'] in result['answer'] and 'Fuente: Manual' in result['answer']
+    assert value==original, 'Never mutate received candidate'
     schema=chat_provider_schema(authorized_evidence=[source])
-    assert 'support_quote' in schema['$defs']['Evidence']['anyOf'][0]['required']
+    assert all(branch['properties']['evidence']['maxItems']==0 for branch in schema['anyOf'])
+    assert source['content'] in json.dumps(schema)
 
 
 def test_retrieval_injection_is_only_untrusted_user_data():

@@ -1,4 +1,53 @@
-## Corte vigente: candidato28 offline — 13/10/2026
+## Corte vigente: corrección29 offline en curso — 13/10/2026
+
+Tras focal28 3PASS/4FAIL, se implementa soporte documental literal visible por
+fuente efectiva y síntesis rotulada como interpretación. Evidence privado vacío;
+proyección de fuentes realmente usadas, sin decorar la respuesta con citas raíz.
+Auxiliares y recomendaciones usan el mismo contrato; cálculos/terminales y
+FinOpsResponse1.0 permanecen. Plan privado incluye cobertura y riesgos cuando
+aplican. Máximo2llamadas1000+2200/120s intacto; no nuevas inferencias.
+
+Pruebas parciales:22PASS claims;20PASS flujo/uso;25PASS integraciónSQLite,
+incluido extracto+interpretación stream=final=historial y negativos sinpersistencia.
+Padre27PASS dosmódulosbackend,32PASS modos,42PASS gateway/diagnósticos;157PASS
+processor recursos/expresiones/contexto. Paridadfinal4contextos PASS; bundle
+`e68cf0c42d19d65b026c88287e5e829712f9fae2928438cb4184d9978ddf8001`.
+OpenSpec69PASS. Selección backend restante:514PASS/46SKIP/15FAIL; los13fixtures
+intervalares se corrigieron y su módulo46PASS. Processor restante340PASS/6SKIP/
+25FAIL: consumidores migrados con38PASS segmentos y150PASS focal+35PASS rerun
+final (corridas parcialmente solapadas, no sumar). Permanecen4symlinkWindows y
+5summary/capacidad con cancelling/TimeoutError: contraste Linux networknone
+pendiente sobre candidato congelado, sin cambiar timeouts ni atribuir causa.
+No aceptación ni nuevas llamadas de proveedor.
+Revisiónlocal posterior cerró reparación involuntaria de recommendations ausente:
+se exige lista explícita, negativos añadidos. Fuentes visibles no garantizan
+entailment; banco y auditoría semántica pendientes. Ver ADR revisión29 y recibos
+externos expression29-*. Saldo permanece0.957927619/2USD; vigencia21:26:06UTC.
+
+## Antecedente: focal28 terminada, sin aceptación — 13/10/2026
+
+Publicado/runtime `b86efd7d9a5be3ff479268e2bd84ce871747f9d2`; CI PR38454490119
+PASS. Archivo e53a50cc2c6173be386ae4d4df5ed8d97a6aba0645f97fbebd92c25a42d0d683:
+1508 blobs contrastados contra Git por el padre. Build86/76/112 hashes y bundle
+c0a33eded1aa62b7a19e314ac71e37e205355c3cde0a78ce25f5f5ec00382aa4 coinciden.
+Focal limpia siete casos originales, sesión56456 terminal0: todos completed.
+Auditoría independiente:3PASS(003/008/025),4FAIL(022/023/026/028). Persisten omisión
+del riesgo de infrautilización, atribuciones documentales sin citas y selección
+de fuentes que no respaldan afirmaciones auxiliares. Dos generaciones no han
+resuelto la calidad semántica; no ejecutar full28 ni declarar validada la PR.
+
+SQL read-only CockroachDB24.1.11 confirma JSONB7/7PASS: dos mensajes por caso y
+stream=final=historial. Recibos externos `expression28-focused.json` y
+`expression28-sql-verify.json`; auditoría semántica del padre separada. Consumo
+asentado upstream1.092818129 menos baseline0.134890510 =0.957927619USD acumulado
+sobre máximo TOTAL2USD. Claves existentes renovadas sólo en vigencia hasta
+21:26:06UTC, mismos límites/modelos. Sin nuevas inferencias tras la focal.
+Siguiente paso: revisar diseño de selección de soporte por afirmación y
+completitud antes de editar; enlace explícito no equivale a entailment probado.
+UI autenticada pendiente de validación final coordinada; revisiones formales
+siguen pendientes y no se autoriza merge.
+
+## Antecedente: candidato28 offline — 13/10/2026
 
 Plan privado1000tokens + final revisado2200 sustituyen generación única, con
 120s compartidos, una recuperación, cero reintentos locales y sin plan público.

@@ -55,6 +55,7 @@ def context_quantities(context):
     catalog.classification_requested=classification_request(context_question(context))
     catalog.rules=documentary_rules(rule_sources)
     catalog.rule_sources=rule_sources
+    catalog.authorized_sources=copy.deepcopy(context.get('authorized_evidence',[]))
     from app.core.chat_boolean_rules import boolean_catalog, boolean_request
     catalog.boolean_rules=boolean_catalog(context_question(context),rule_sources,catalog)
     catalog.boolean_requested=boolean_request(context_question(context))
@@ -244,6 +245,7 @@ class ExpressionRenderer:
         self.operations=0
         self.documentary_sources=set()
         self.documentary_operand_sources=set()
+        self.excerpt_records={}
 
     def check_prose(self,text):
         self.documentary_sources.update(check_classification_prose(text,

@@ -2,6 +2,7 @@
 import copy
 
 from app.core.chat_calculations import render_text
+from app.core.chat_claims import documentary_schema, render_documentary
 from app.core.chat_rules import required_classification
 from app.core.chat_boolean_rules import boolean_definition, render_boolean
 from app.core.chat_expressions import ExpressionRenderer, expression_definitions
@@ -25,6 +26,7 @@ def project_recommendation_citations(value,authorized_evidence):
     record already present in top-level evidence with a different quotation.
     This does not verify entailment of a recommendation's prose.
     """
+    if type(value) is ServerRenderedResponse:return value
     recommendations=value.get('recommendations')
     if recommendations==[]:return value
     if not isinstance(recommendations,list) or len(recommendations)>20:
@@ -87,8 +89,10 @@ def quote_choices(content):
 
 
 def segment_schema(records=None, *, limit=4000, quantities=None):
-    choices=[{'type':'object','properties':{'text':{'type':'string','maxLength':limit}},
-              'required':['text'],'additionalProperties':False}]
+    choices=[{'type':'object','properties':{'inference':{'type':'string','maxLength':max(1,limit-18)}},
+              'required':['inference'],'additionalProperties':False}]
+    documentary=documentary_schema(getattr(quantities,'authorized_sources',getattr(quantities,'rule_sources',())))
+    if documentary:choices.append(documentary)
     if quantities:
         choices.append({'$ref':'#/$defs/SourceQuantity'})
         choices.append({'type':'object','properties':{'expression':{'$ref':'#/$defs/RenderedExpression'}},
@@ -102,6 +106,16 @@ def segment_schema(records=None, *, limit=4000, quantities=None):
 
 def bind_segments(schema, records=None, quantities=None):
     schema=copy.deepcopy(schema)
+    recommendation=schema.get('$defs',{}).get('Recommendation')
+    if recommendation is not None:
+        recommendation['properties'].pop('evidence',None)
+        recommendation['required']=[key for key in recommendation['required'] if key!='evidence']
+        for field in ('action','rationale'):
+            short=segment_schema(limit=500,quantities=quantities)
+            short['maxItems']=2
+            options=short['items'].get('anyOf',[short['items']])
+            short['items']={'anyOf':[choice for choice in options if not ('$ref' in choice or 'expression' in choice.get('properties',{}))]}
+            recommendation['properties'][field]=short
     if quantities:schema.setdefault('$defs',{}).update(expression_definitions(quantities))
     branches=schema.get('anyOf',[schema])
     classified=[]
@@ -112,7 +126,9 @@ def bind_segments(schema, records=None, quantities=None):
             # One bounded prose segment per short public item. Arithmetic lives
             # in answer; allowing128 short segments advertised values that the
             # unchanged500-character public contract necessarily rejects.
-            item=segment_schema(limit=500)
+            item=segment_schema(limit=500,quantities=quantities)
+            # Short public items allow prose/excerpts, not arithmetic trees.
+            item['items']={'anyOf':[choice for choice in item['items'].get('anyOf',[item['items']]) if not ('$ref' in choice or 'expression' in choice.get('properties',{}))]}
             item['maxItems']=1
             properties[field]['items']=item
         if 'DocumentaryClassification' in schema.get('$defs',{}) and 'ok' in properties['status'].get('enum',[]):
@@ -155,7 +171,15 @@ def bind_segments(schema, records=None, quantities=None):
             return {**base,'$defs':schema['$defs']}
         if 'anyOf' in schema:schema['anyOf'].append(base)
         else:schema={'type':'object','anyOf':[{k:v for k,v in schema.items() if k!='$defs'},base],'$defs':schema['$defs']}
-    return schema if required_classification(quantities) else bind_modes(schema,quantities)
+    result=schema if required_classification(quantities) else bind_modes(schema,quantities)
+    for branch in result.get('anyOf',[result]):
+        branch['properties']['evidence']['minItems']=0
+        branch['properties']['evidence']['maxItems']=0
+        branch['properties']['evidence']['items']={'type':'object','properties':{},'additionalProperties':False}
+    # Old full-fragment quotation enums have no consumer in the new private
+    # contract; keeping them would charge tokens without constraining output.
+    result.get('$defs',{}).pop('Evidence',None)
+    return result
 
 
 
@@ -193,6 +217,16 @@ def render_segment(segment, records, expressions=None):
         # Slots and raw equations cannot bypass the typed reference branch.
         if expressions is not None:expressions.check_prose(text)
         return render_text(text,[])
+    if set(segment)=={'inference'}:
+        text=segment['inference']
+        if not isinstance(text,str) or not text.strip():raise ValueError('Invalid inference text.')
+        return '\nInterpretación: '+render_segment({'text':text},records,expressions)+'\n'
+    if set(segment)=={'documentary'}:
+        if expressions is None:raise ValueError('Documentary selection source unavailable.')
+        sources=getattr(expressions.catalog,'authorized_sources',getattr(expressions.catalog,'rule_sources',()))
+        text,source=render_documentary(segment['documentary'],sources)
+        expressions.excerpt_records[source['id']]=source
+        return text
     if set(segment)=={'calculation_id'}:
         if expressions is not None:raise ValueError('Invalid segment reference.')
         identifier=segment['calculation_id']
@@ -217,11 +251,12 @@ def render_segments(segments, records, *, limit=4000, expressions=None):
         # Validate shape before grouping adjacent text. Group validation closes
         # bypasses where an equation or a slot is split across text segments.
         rendered=render_segment(segment,records,expressions)
-        if 'text' in segment:pending.append(rendered)
+        if 'text' in segment or 'inference' in segment:
+            pending.append((('inference' if 'inference' in segment else 'text'),segment.get('inference',segment.get('text'))))
         else:
-            if pending:parts.append(render_segment({'text':''.join(pending)},records,expressions));pending=[]
+            if pending:parts.append(render_segment({('inference' if any(key=='inference' for key,_ in pending) else 'text'):''.join(text for _,text in pending)},records,expressions));pending=[]
             parts.append(rendered)
-    if pending:parts.append(render_segment({'text':''.join(pending)},records,expressions))
+    if pending:parts.append(render_segment({('inference' if any(key=='inference' for key,_ in pending) else 'text'):''.join(text for _,text in pending)},records,expressions))
     result=''.join(parts)
     if len(result)>limit:raise ValueError('Rendered text limit.')
     result=result.strip()
@@ -233,6 +268,9 @@ def render_response(value, records, *, quantities=None):
     if not isinstance(value,dict) or 'answer' not in value:
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
+    if value.get('evidence')!=[]:raise ValueError('Response evidence is derived from used support.')
+    if not isinstance(value.get('recommendations'),list) or len(value['recommendations'])>20:
+        raise ValueError('Invalid recommendation collection.')
     basis=value.get('basis')
     classified=isinstance(value['answer'],dict)
     boolean=classified and set(value['answer'])=={'boolean'}
@@ -242,9 +280,7 @@ def render_response(value, records, *, quantities=None):
         if 'basis' in value:raise ValueError('Terminal response cannot override basis.')
     elif not required_classification(quantities):
         response_prefix(basis)
-        if basis=='authorized_evidence':
-            if not value.get('evidence'):raise ValueError('Narrative requires selected evidence.')
-        else:
+        if basis!='authorized_evidence':
             if basis not in BASIS_STATUSES:raise ValueError('Invalid response basis.')
             if value.get('status') not in BASIS_STATUSES[basis]:raise ValueError('Response basis status mismatch.')
             restricted=('metrics','recommendations') if basis in DOCUMENTARY_BASES else ('evidence','metrics','recommendations')
@@ -268,13 +304,17 @@ def render_response(value, records, *, quantities=None):
             items=value.get(field)
             if not isinstance(items,list) or any(item not in [[{'text':note}] for note in (BOOLEAN_NOTES if boolean else CLASSIFIED_NOTES)] for item in items):
                 raise ValueError('Invalid classified auxiliary fields.')
+    if not classified and not required_classification(quantities) and basis!='greeting':
+        for collection in [value['answer'],*[item for field in ('assumptions','limitations','next_actions') for item in value.get(field,[])]]:
+            if isinstance(collection,list) and any(isinstance(item,dict) and 'text' in item for item in collection):
+                raise ValueError('Explanation requires explicit interpretation or literal support.')
     result={**value,'answer':render_classified_answer(value['answer'],expressions) if isinstance(value['answer'],dict) else render_segments(value['answer'],records,expressions=expressions)}
     for field in ('assumptions','limitations','next_actions'):
         if field not in value or not isinstance(value[field],list) or len(value[field])>10:
             raise ValueError('Invalid calculation collection.')
         for item in value[field]:
             if (not isinstance(item,list) or len(item)!=1 or
-                    not isinstance(item[0],dict) or set(item[0])!={'text'}):
+                    not isinstance(item[0],dict) or set(item[0]) not in ({'text'},{'inference'},{'documentary'})):
                 raise ValueError('Invalid short prose item.')
         result[field]=[render_segments(item,[],limit=500,expressions=None if classified else expressions) for item in value[field]]
     result.pop('basis',None)
@@ -301,16 +341,37 @@ def render_response(value, records, *, quantities=None):
             raise ValueError('Derived documentary source unavailable.')
         result['evidence']=server_evidence(records)
         return ServerRenderedResponse(result,records)
-    if expressions is not None and expressions.documentary_sources:
-        evidence=value.get('evidence')
-        if not isinstance(evidence,list) or any(not isinstance(item,dict) for item in evidence):
-            raise ValueError('Documentary calculation citation missing.')
-        cited={item.get('id') for item in evidence if item.get('kind')=='corpus'}
-        # Recommendation selections will be individually authenticated by the
-        # assembler before projection. Their IDs alone never confer authority.
-        for recommendation in value.get('recommendations',[]):
-            if isinstance(recommendation,dict) and isinstance(recommendation.get('evidence'),list):
-                cited.update(item.get('id') for item in recommendation['evidence'] if isinstance(item,dict) and item.get('kind')=='corpus')
-        if not expressions.documentary_sources<=cited:
-            raise ValueError('Documentary calculation citation missing.')
-    return result
+    # Every documentary selection was authenticated while rendering, before
+    # it can be emitted; only sources used in visible content are projected.
+    selected=dict(expressions.excerpt_records) if expressions is not None else {}
+    known={source['id']:source for source in getattr(quantities,'authorized_sources',getattr(quantities,'rule_sources',()))}
+    recommendations=[]
+    for recommendation in value.get('recommendations',[]):
+        if not isinstance(recommendation,dict) or 'evidence' in recommendation or 'evidence_ids' in recommendation:
+            raise ValueError('Recommendation support must be visible.')
+        local=ExpressionRenderer(quantities) if quantities is not None else None
+        rendered=dict(recommendation)
+        for field in ('action','rationale'):
+            segments=recommendation.get(field)
+            if not isinstance(segments,list) or not 1<=len(segments)<=2 or any(not isinstance(item,dict) or set(item) not in ({'inference'},{'documentary'}) for item in segments):
+                raise ValueError('Invalid recommendation visible support.')
+            rendered[field]=render_segments(segments,[],limit=500,expressions=local)
+        used={} if local is None else local.excerpt_records
+        if not used:raise ValueError('Recommendation requires visible documentary support.')
+        selected.update(used);rendered['evidence_ids']=list(used);recommendations.append(rendered)
+    result['recommendations']=recommendations
+    # Financial metric authority remains separately checked by the backend.
+    # A source is used only when referenced by an actual metric, not decoration.
+    for metric in value.get('metrics',[]):
+        if not isinstance(metric,dict):raise ValueError('Invalid financial metric.')
+        for identifier in metric.get('evidence_ids',[]):
+            source=known.get(identifier)
+            if source is None or source.get('kind')=='corpus':raise ValueError('Financial metric source unavailable.')
+            selected[identifier]=source
+    if expressions is not None and expressions.documentary_sources-selected.keys():
+        raise ValueError('Documentary calculation citation missing.')
+    if basis=='authorized_evidence' and not selected:raise ValueError('Narrative requires selected evidence.')
+    if basis in ('user_scenario','greeting') and selected:raise ValueError('Response basis cannot grant authority.')
+    if len(selected)>20:raise ValueError('Invalid evidence collection.')
+    result['evidence']=server_evidence(selected.values())
+    return ServerRenderedResponse(result,list(selected.values())) if selected else result

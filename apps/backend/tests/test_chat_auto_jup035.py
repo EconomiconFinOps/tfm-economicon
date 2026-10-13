@@ -23,17 +23,18 @@ def test_explicit_recommendation_evidence_projection_keeps_atomic_history_and_au
     source={'id':'sizing-policy','kind':'corpus','title':'Sizing policy','source':'guide',
         'content':'Compare observed demand before committing capacity.'}
     intro={**source,'id':'sizing-intro','content':'Sizing depends on observed demand.'}
-    selected={key:source[key] for key in ('id','kind','title','source')}
-    selected['support_quote']=source['content']
+    from app.core.chat_rules import QuantityCatalog
+    catalog=QuantityCatalog({});catalog.authorized_sources=[intro,source]
+    selected={'source_id':source['id'],'passage':source['content']}
     value=copy.deepcopy(ANSWER)
     value['scope'].pop('period');value['scope'].pop('subscription_ids')
-    value.update(basis='authorized_evidence',status='ok',answer=[{'text':'Revisar la demanda observada.'}],limitations=[],
-        evidence=[{key:intro[key] for key in ('id','kind','title','source')}|{'support_quote':intro['content']}],
-        recommendations=[{'category':'investigation','action':'Revisar la demanda.',
-            'rationale':'La política exige conocer la demanda antes del compromiso.',
+    value.update(basis='authorized_evidence',status='ok',answer=[{'documentary':{'source_id':intro['id'],'passage':intro['content']}},{'inference':'Revisar la demanda observada.'}],limitations=[],
+        evidence=[],
+        recommendations=[{'category':'investigation','action':[{'inference':'Revisar la demanda.'}],
+            'rationale':[{'documentary':selected}],
             'estimated_savings':None,'currency':None,'confidence':'medium','risk':'low',
-            'requires_human_approval':True,'evidence':[selected]}])
-    if case=='quote':selected['support_quote']='not an authorized passage'
+            'requires_human_approval':True}])
+    if case=='quote':selected['passage']='not an authorized passage'
     if case=='metadata':selected['source']='foreign source'
     if case=='metrics':value['metrics']=[{'name':'cost','value':'9','unit':'EUR','evidence_ids':[source['id']]}]
     if case=='savings':value['recommendations'][0].update(estimated_savings='9',currency='EUR')
@@ -47,11 +48,11 @@ def test_explicit_recommendation_evidence_projection_keeps_atomic_history_and_au
     monkeypatch.setattr(api[0].state,'chat_context_builder',context_builder)
     projected=[]
     async def stream(claim):
-        parser=parser_module.SegmentAnswerJSON([],quantities={})
+        parser=parser_module.SegmentAnswerJSON([],quantities=catalog)
         for char in json.dumps(value,ensure_ascii=True):
             delta=parser.feed(char)
             if delta:yield {'type':'delta','text':delta}
-        rendered=render_response(value,[],quantities={})
+        rendered=render_response(value,[],quantities=catalog)
         result=schema_module.assemble_chat_response(rendered,None,authorized_evidence=[intro,source])
         assert parser.finish()==result['answer']
         projected.append(result)
@@ -86,7 +87,7 @@ def test_calculation_diagnostic_is_closed_and_contains_no_rejected_text(api, mon
     assert 'secret synthetic payload' not in caplog.text
 
 
-@pytest.mark.parametrize('classification',[False,True,'quantities','boolean','boolean-corpus','scenario','scenario-zero','scenario-explained','request','request-specific'])
+@pytest.mark.parametrize('classification',[False,True,'quantities','boolean','boolean-corpus','scenario','scenario-zero','scenario-explained','request','request-specific','documentary'])
 def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch, classification):
     from app.core.chat_expressions import quantities,ExpressionRenderer
     from app.core.chat_segments import render_segments,render_classified_answer,render_response
@@ -100,7 +101,7 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
     catalog=quantities(question)
     difference={'operation':'difference','current':{'quantity':'73 EUR'},'baseline':{'quantity':'20 EUR'}}
     comparison={'operation':'compare','left':difference,'right':{'quantity':'20 EUR'},'relation':'gt'}
-    segments=[{'text':'  Ejemplo 😀: '},{'expression':difference},{'text':'Criterio: '},{'expression':comparison},{'text':'Resultado hipotético.  '}]
+    segments=[{'inference':'  Ejemplo 😀: '},{'expression':difference},{'inference':'Criterio: '},{'expression':comparison},{'inference':'Resultado hipotético.  '}]
     authorized=[]
     if classification is True:
         from test_chat_interval_rules_jup035 import catalog as rule_catalog, sources, percent
@@ -136,7 +137,7 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
     if classification=='scenario-explained':
         question='Sandbox-z, marzo: Compute 73 EUR y Network 20 EUR.'
         catalog=quantities(question)
-        segments={'scenario':{'segments':[{'text':'En marzo, sandbox-z, Compute tiene mayor importe que Network. 😀 Diferencia: '},
+        segments={'scenario':{'segments':[{'inference':'En marzo, sandbox-z, Compute tiene mayor importe que Network. 😀 Diferencia: '},
             {'expression':difference}]}}
     if classification=='request':
         segments={'request':{'reason':'authorized_cost_data'}}
@@ -162,6 +163,20 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
                         'section':'Changes','page':None} for source in authorized],
                     'screen_context':payload['screen_context']}
             monkeypatch.setattr(api[0].state,'chat_context_builder',context_builder)
+    if classification=='documentary':
+        from app.core.chat_rules import QuantityCatalog
+        source={'id':'guide','kind':'corpus','title':'Guide','source':'guide.md',
+                'content':'Confirm the scope before comparison.'}
+        authorized=[source];catalog=QuantityCatalog({});catalog.authorized_sources=authorized
+        segments=[{'documentary':{'source_id':'guide','passage':source['content']}},
+                  {'inference':'Conviene contrastar el ámbito aportado. 😀'}]
+        async def context_builder(scope,payload,descriptor):
+            return {'prompt_version':descriptor['prompt_version'],'messages':[],
+                'authorized_evidence':authorized,'financial_metrics_allowed':False,
+                'source_citations':[{'evidence_id':'guide','kind':'corpus','title':'Guide','source':'guide.md',
+                    'excerpt':source['content'],'document_id':'doc','reference':'document:doc/guide','section':'Scope','page':None}],
+                'screen_context':payload['screen_context']}
+        monkeypatch.setattr(api[0].state,'chat_context_builder',context_builder)
     basis=None;actions=[]
     if isinstance(segments,dict) and 'scenario' in segments:
         scenario=segments['scenario']
@@ -169,9 +184,9 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
             *[{'expression':node} for node in scenario.get('calculations',[])]])
     if classification in ('request','request-specific'):
         basis='missing_data'
-        segments=[{'text':'Necesito contrastar la fuente de costes del ámbito sandbox-z. 😀'}]
-        actions=[[{'text':'Aporta la fuente y el período aplicables.'}]]
-    elif isinstance(segments,list):basis='user_scenario'
+        segments=[{'inference':'Necesito contrastar la fuente de costes del ámbito sandbox-z. 😀'}]
+        actions=[[{'inference':'Aporta la fuente y el período aplicables.'}]]
+    elif isinstance(segments,list):basis='authorized_evidence' if classification=='documentary' else 'user_scenario'
     raw = json.dumps(({'basis':basis} if basis else {})|{'answer':segments},ensure_ascii=True)
     private_result={**copy.deepcopy(ANSWER),'answer':segments,'evidence':[],
         'assumptions':[],'limitations':[],'next_actions':actions,'recommendations':[],'metrics':[]}

@@ -92,29 +92,30 @@ def test_contextual_schema_hash_and_full_token_accounting_match_both_services():
         backend.count_messages(messages,authorized_evidence=[])
 
 
-def candidate(evidence=()):
-    value = copy.deepcopy(ANSWER)
-    value['evidence'] = list(evidence)
-    value['scope'].pop('period')
-    value['scope'].pop('subscription_ids')
-    value['answer']=[{'text':value['answer']}]
+def candidate(evidence=(),source=None):
+    value=copy.deepcopy(ANSWER)
+    value['evidence']=list(evidence)
+    value['scope'].pop('period');value['scope'].pop('subscription_ids')
+    value['answer']=[{'inference':value['answer']}]
+    if source is not None:
+        from app.core.chat_claims import passages
+        value['answer']=[{'documentary':{'source_id':source['id'],'passage':passages(source['content'])[0]}}]
     value['basis']='authorized_evidence'
     for field in ('assumptions','limitations','next_actions'):
-        value[field]=[[{'text':item}] for item in value[field]]
+        value[field]=[[{'inference':item}] for item in value[field]]
     return value
 
 
-@pytest.mark.parametrize('problem', ['unknown', 'kind', 'title', 'source', 'foreign_tenant', 'foreign_user'])
+@pytest.mark.parametrize('problem',['unknown','kind','title','source','foreign_tenant','foreign_user','passage'])
 def test_effective_schema_rejects_invalid_evidence_before_backend_firewall(problem):
-    schema = provider_response_schema(authorized_evidence=[SOURCE])
-    record = {key: SOURCE[key] for key in ('id', 'kind', 'title', 'source')}
-    record['support_quote'] = SOURCE['content']
-    values = [record]
-    _validate(candidate(values), schema, schema)
-    if problem in ('unknown', 'foreign_tenant', 'foreign_user'): record['id'] = 'corpus:' + problem
-    else: record[problem] = 'user_input' if problem == 'kind' else 'Altered provenance'
-    with pytest.raises(ResponseValidationError):
-        _validate(candidate(values), schema, schema)
+    schema=provider_response_schema(authorized_evidence=[SOURCE])
+    value=candidate(source=SOURCE)
+    _validate(value,schema,schema)
+    selection=value['answer'][0]['documentary']
+    if problem in ('unknown','foreign_tenant','foreign_user'):selection['source_id']='corpus:'+problem
+    elif problem=='passage':selection['passage']='Invented quote.'
+    else:selection[problem]='Altered provenance'
+    with pytest.raises(ResponseValidationError):_validate(value,schema,schema)
 
 
 def test_no_sources_allows_useful_greeting_but_no_invented_evidence_or_ok():
@@ -134,8 +135,7 @@ def test_no_sources_allows_useful_greeting_but_no_invented_evidence_or_ok():
 
 def test_exact_authorized_source_is_allowed_and_contract_matches_processor():
     schema = provider_response_schema(authorized_evidence=[SOURCE])
-    _validate(candidate([{**{k: SOURCE[k] for k in ('id', 'kind', 'title', 'source')},
-                          'support_quote':SOURCE['content']}]), schema, schema)
+    _validate(candidate(source=SOURCE),schema,schema)
     path = Path(__file__).parents[2] / 'processor/app/agents/schemas.py'
     spec = importlib.util.spec_from_file_location('processor_evidence_schema', path)
     module = importlib.util.module_from_spec(spec)
@@ -186,52 +186,42 @@ def test_narrative_union_preserves_root_constraints_and_neutral_branch_is_distin
     assert all(branch['additionalProperties'] is False for branch in schema['anyOf'])
     narratives=[branch for branch in schema['anyOf'] if branch['properties']['basis']['const']=='authorized_evidence']
     assert len(narratives)==2
-    # Reconstruct the unrestricted narrative base and intersect it with both
-    # authorized branches. Clarifications can cite documents without acquiring
-    # financial authority.
     root=copy.deepcopy(narratives[1]);root['$defs']=schema['$defs']
     root['properties']['status']={'type':'string','enum':['ok','partial','no_data','insufficient_data','unsupported','refused','error']}
-    root['properties']['evidence'].pop('minItems',None)
-    # Structural implication is independent of the helper validator's keyword
-    # support: branches contain the entire base, with only these two stricter
-    # conditions. Thus base AND (branchA OR branchB) == branchA OR branchB.
     for branch in narratives:
         reconstructed=copy.deepcopy(root);reconstructed.pop('$defs')
         reconstructed['properties']['status']=branch['properties']['status']
-        if 'minItems' in branch['properties']['evidence']:
-            reconstructed['properties']['evidence']['minItems']=branch['properties']['evidence']['minItems']
         assert reconstructed==branch
-    record={**{k:source[k] for k in ('id','kind','title','source')},'support_quote':source['content']}
     def accepts(value,rule):
         try:_validate(value,rule,schema);return True
         except ValueError:return False
     for status in root['properties']['status']['enum']:
-        for evidence in ([],[record]):
-            value=candidate(evidence);value['status']=status
-            variants=[value]
-            for key in ('answer','scope','evidence'):
-                bad=copy.deepcopy(value);bad.pop(key);variants.append(bad)
-            bad=copy.deepcopy(value);bad['extra']='rejected';variants.append(bad)
-            for field,replacement in [('id','foreign'),('support_quote','Invented or paraphrased quote')]:
-                bad=copy.deepcopy(value);bad['evidence']=[{**record,field:replacement}];variants.append(bad)
-            bad=copy.deepcopy(value);bad['scope']['period']=None;variants.append(bad)
-            bad=copy.deepcopy(value);bad['metrics']=[{'name':'cost','value':'1','unit':'EUR','evidence_ids':[source['id']]}];variants.append(bad)
-            for item in variants:
-                assert accepts(item,schema)==(accepts(item,root) and any(accepts(item,b) for b in narratives))
-            assert accepts(value,schema)==bool(evidence)
-            assert all(not accepts(item,schema) for item in variants[1:-1])
-            assert accepts(variants[-1],schema)==(financial and bool(evidence))
-    neutral=candidate();neutral['status']='insufficient_data';neutral['basis']='clarification'
-    neutral['answer']=[{'text':'Necesito concretar la consulta.'}];neutral['limitations']=[]
-    neutral['next_actions']=[[{'text':'Indica el período y el ámbito.'}]]
+        value=candidate(source=source);value['status']=status
+        variants=[value]
+        for key in ('answer','scope','evidence'):
+            bad=copy.deepcopy(value);bad.pop(key);variants.append(bad)
+        bad=copy.deepcopy(value);bad['extra']='rejected';variants.append(bad)
+        for field,replacement in [('source_id','foreign'),('passage','Invented or paraphrased quote'),('title','Forged title')]:
+            bad=copy.deepcopy(value);bad['answer'][0]['documentary'][field]=replacement;variants.append(bad)
+        bad=copy.deepcopy(value);bad['evidence']=[{key:source[key] for key in ('id','kind','title','source')}];variants.append(bad)
+        bad=copy.deepcopy(value);bad['scope']['period']=None;variants.append(bad)
+        bad=copy.deepcopy(value);bad['metrics']=[{'name':'cost','value':'1','unit':'EUR','evidence_ids':[source['id']]}];variants.append(bad)
+        for item in variants:
+            assert accepts(item,schema)==(accepts(item,root) and any(accepts(item,b) for b in narratives))
+        assert accepts(value,schema)
+        assert all(not accepts(item,schema) for item in variants[1:-1])
+        assert accepts(variants[-1],schema)==financial
+    neutral=candidate();neutral.update(status='insufficient_data',basis='clarification',answer=[{'inference':'Necesito concretar la consulta.'}],limitations=[])
+    neutral['next_actions']=[[{'inference':'Indica el período y el ámbito.'}]]
     assert accepts(neutral,schema) and not accepts(neutral,root)
-    for change in ({'status':'ok'}, {'answer':{'request':{'reason':'clarification'}}}, {'basis':'unknown'}):
+    for change in ({'status':'ok'},{'answer':{'request':{'reason':'clarification'}}},{'basis':'unknown'}):
         assert not accepts({**neutral,**change},schema)
     for basis,status in [('missing_data','insufficient_data'),('clarification','insufficient_data'),('refusal','refused')]:
-        documented={**neutral,'basis':basis,'status':status,'evidence':[record]}
+        documented={**neutral,'basis':basis,'status':status,'answer':candidate(source=source)['answer']}
         assert accepts(documented,schema)
-        assert accepts({**documented,'evidence':[]},schema)
-        for field,replacement in [('id','foreign'),('title','Altered title'),('source','Altered source'),('support_quote','Invented quote')]:
-            assert not accepts({**documented,'evidence':[{**record,field:replacement}]},schema)
+        assert accepts({**documented,'answer':neutral['answer']},schema)
+        for field,replacement in [('source_id','foreign'),('title','Altered title'),('source','Altered source'),('passage','Invented quote')]:
+            bad=copy.deepcopy(documented);bad['answer'][0]['documentary'][field]=replacement
+            assert not accepts(bad,schema)
         assert not accepts({**documented,'metrics':[{'name':'cost','value':'1','unit':'EUR','evidence_ids':[source['id']]}]},schema)
         assert not accepts({**documented,'recommendations':[{}]},schema)

@@ -401,3 +401,43 @@ no se exponen textos ni credenciales en diagnósticos ordinarios. Una captura
 sintética de validación debe estar acotada por pregunta, ser privada y retirarse
 al terminar; nunca captura reasoning. Los fallos008 y022 de26 conservan su causa
 cerrada observada sin atribuirles un fragmento que no quedó almacenado.
+
+
+## Revisión29: soporte visible y síntesis atribuida (13/10/2026)
+
+La focal limpia28 sobre b86efd7 completó siete respuestas y JSONB7/7, pero la
+revisión semántica aceptó sólo003/008/025.022 omitió un riesgo relevante y
+023/026/028 conservaron atribuciones sin soporte o seleccionaron fuentes ajenas
+a la afirmación. CI verde y la segunda generación no acreditan aceptación.
+
+El contrato privado29 sustituye citas raíz seleccionadas por extractos literales
+visibles `{documentary:{source_id,passage}}`; la fuente se resuelve en el contexto
+autenticado antes de emitir SSE. El catálogo ofrece spans exactos de hasta220
+caracteres, hasta96 por fuente, sin marcadores numéricos ni encabezados aislados.
+No corta una frase larga para presentarla como completa. Los propios chunks
+pueden empezar o acabar a mitad de frase: la selección sigue siendo un extracto,
+no se certifica completitud de doctrina ni pertinencia por su mera literalidad.
+
+La explicación útil permanece mediante segmentos `inference`, rotulados por el
+servidor como interpretación; `text` libre sólo sirve al saludo y a notas
+terminales cerradas. Los campos auxiliares y recomendaciones aplican los mismos
+tipos y mantienen500caracteres renderizados por campo. El límite del answer
+continúa4000 y los deltas8192bytes. La evidencia pública deriva únicamente de
+extractos usados, terminales evaluados y referencias de métricas autorizadas;
+la selección privada raíz está vacía. No se añaden citas por encontrar documentos
+ni por compartir título. Un marcador Python no serializable acredita solamente
+la proyección de fuentes efectivamente validadas, nunca autoridad financiera.
+
+El plan privado añade cobertura de lo preguntado y riesgos concretos cuando
+proceden (vacíos para saludo/aritmética). Continúan1000tokens de plan y2200final,
+120segundos comunes, una recuperación y sin tercera llamada ni reintento local.
+Las fuentes documentales no habilitan métricas financieras ni ahorros. El esquema
+público1.0 y el historial de strings no requieren migración.
+
+Límite explícito: una interpretación puede ser incorrecta y un extracto auténtico
+puede ser irrelevante. Este diseño hace visible qué texto se usa y qué es
+interpretación; no demuestra entailment ni garantiza completitud. Aceptación
+requiere las preguntas originales, comparación semántica con corpus completo,
+stream-final-JSONB, interfaz y presupuesto. No se modifica el banco para aceptar
+una respuesta limitada ni se declara que29 haya resuelto los fallos reales antes
+de ejecutarla.

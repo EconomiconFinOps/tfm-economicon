@@ -32,3 +32,14 @@ fusionar la PR ni publicar mensajes en Discord.
 La batería completa y el navegador deben evaluarse sobre el candidato final.
 CI verde, aritmética local y ensayos históricos no sustituyen aceptación semántica.
 La documentación de diseño conserva las decisiones y limitaciones del protocolo.
+
+
+### Delta29 vigente, validación real pendiente
+
+Supersede la selección de evidencia raíz por extractos literales visibles por
+fuente efectiva e interpretaciones separadas. Auxiliares y recomendaciones usan
+los mismos segmentos; se proyectan sólo fuentes usadas, sin citas decorativas.
+El plan añade cobertura/riesgos pertinentes sin imponerlos a saludos/aritmética.
+Se conservan2generaciones1000/2200,120s y contrato público. Literalidad no demuestra
+pertinencia ni entailment; el banco original y revisión semántica siguen exigidos.
+Véase revisión29 del ADR JUP-035-server-retrieval-expressions.md.

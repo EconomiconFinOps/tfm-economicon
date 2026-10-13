@@ -55,9 +55,15 @@ def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch
     assert requests[0]['timeout']<=60 and requests[0]['num_retries']==0
     schema=requests[-1]['response_format']['json_schema']['schema']
     if with_source:
-        choices=schema['$defs']['Evidence']['anyOf']
-        assert len(choices)==1
-        assert {k:v['const'] for k,v in choices[0]['properties'].items() if k!='support_quote'}=={k:source[k] for k in ('id','kind','title','source')}
+        def selections(node):
+            if isinstance(node,dict):
+                if 'documentary' in node.get('properties',{}):yield node['properties']['documentary']
+                for item in node.values():yield from selections(item)
+            elif isinstance(node,list):
+                for item in node:yield from selections(item)
+        choices=list(selections(schema));assert choices
+        assert all(choice['properties']['source_id']['const']==source['id'] and choice['properties']['passage']['enum']==[source['content']] for choice in choices)
+        assert all(branch['properties']['evidence']['maxItems']==0 for branch in schema['anyOf'])
         assert schema['$defs']['SourceQuantity']['properties']['quantity']['enum']==['document:corpus:current:0:17 %']
     else:
         assert schema['anyOf']
@@ -224,4 +230,4 @@ class SyntheticResources:
 
 
 def review_wires(final):
-    return [wire({'content':json.dumps({'claims':[], 'uncertainties':[], 'next_steps':[]})}), final]
+    return [wire({'content':json.dumps({'claims':[], 'coverage':[],'risks':[],'uncertainties':[], 'next_steps':[]})}), final]

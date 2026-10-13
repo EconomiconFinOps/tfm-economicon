@@ -59,11 +59,11 @@ def test_documentary_expression_stream_equals_final_projection(width):
     from app.clients.chat_stream_parser import SegmentAnswerJSON
     from app.core.chat_segments import render_segments
     catalog=context_quantities(context())
-    segments=[{'text':'Comparación hipotética: '},{'expression':{
+    segments=[{'inference':'Comparación hipotética: '},{'expression':{
         'operation':'compare','relation':'gt',
         'left':{'operation':'relative_change','current':{'quantity':'84 EUR'},'baseline':{'quantity':'70 EUR'}},
         'right':{'quantity':'document:corpus:experiment:1:17 %'}}}]
-    raw=json.dumps({'answer':segments},ensure_ascii=True)
+    raw=json.dumps({'basis':'authorized_evidence','answer':segments},ensure_ascii=True)
     parser=SegmentAnswerJSON([],quantities=catalog)
     streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
     assert streamed==parser.finish()==render_segments(segments,[],expressions=ExpressionRenderer(catalog))
@@ -76,10 +76,12 @@ def test_documentary_operand_requires_its_source_in_final_selected_evidence(evid
     value={'basis':'authorized_evidence','answer':[{'expression':{'operation':'sum',
         'left':{'quantity':'document:corpus:experiment:1:17 %'},
         'right':{'quantity':'document:corpus:experiment:1:17 %'}}}],
-        'assumptions':[],'limitations':[],'next_actions':[],'evidence':evidence}
-    with pytest.raises(ValueError,match='citation missing' if evidence else 'Narrative requires selected evidence'):
+        'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[],'evidence':evidence}
+    with pytest.raises(ValueError,match='derived from used support' if evidence else 'citation missing'):
         render_response(value,[],quantities=catalog)
-    value['evidence']=[{'id':'corpus:experiment:1','kind':'corpus'}]
+    value['evidence']=[]
+    source=context()['authorized_evidence'][0]
+    value['answer'].append({'documentary':{'source_id':source['id'],'passage':source['content']}})
     assert '34 %' in render_response(value,[],quantities=catalog)['answer']
 
 

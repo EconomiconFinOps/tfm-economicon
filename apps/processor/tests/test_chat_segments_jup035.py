@@ -8,7 +8,7 @@ RECORDS=[{'id':'0','equation':'73 − 20 = 53','value':'53','unit':'','hypotheti
 @pytest.mark.parametrize('size',[1,2,7,8192])
 def test_segment_stream_matches_render_with_split_escapes_surrogates(size):
     segments=[{'text':'Resultado "😀": '},{'calculation_id':'0'},{'text':'. Fin.'}]
-    raw=json.dumps({'evidence':[],'answer':segments,'next_actions':[]},ensure_ascii=True)
+    raw=json.dumps({'basis':'greeting','evidence':[],'answer':segments,'next_actions':[]},ensure_ascii=True)
     parser=SegmentAnswerJSON(RECORDS)
     streamed=''.join(parser.feed(raw[i:i+size]) for i in range(0,len(raw),size))
     assert streamed==parser.finish()==render_segments(segments,RECORDS)
@@ -25,7 +25,7 @@ def test_invalid_segments_fail_both_render_and_stream(segments):
     with pytest.raises(ValueError):render_segments(segments,RECORDS)
     parser=SegmentAnswerJSON(RECORDS)
     with pytest.raises(ValueError):
-        parser.feed(json.dumps({'answer':segments}));parser.finish()
+        parser.feed(json.dumps({'basis':'greeting','answer':segments}));parser.finish()
 
 def test_duplicate_segment_keys_and_surrogate_rejected():
     for raw in ['{"answer":[{"text":"a","text":"b"}]}',
@@ -41,9 +41,18 @@ def test_public_lengths_and_no_calculation_branch():
     source={'id':'s','kind':'corpus','title':'Manual','source':'manual','content':'Exact source.'}
     backed=chat_provider_schema(authorized_evidence=[source],calculations=[])
     narrative=[b for b in backed['anyOf'] if b['properties']['answer'].get('type')=='array']
-    assert narrative and all(set(b['properties']['answer']['items']['properties'])=={'text'} for b in narrative)
+    assert narrative
+    for branch in narrative:
+        items=branch['properties']['answer']['items']
+        choices=items.get('anyOf',[items])
+        keys=[set(choice.get('properties',{})) for choice in choices]
+        if branch['properties']['basis']['const']=='greeting':
+            assert keys==[{'text'}]
+        else:
+            assert {'inference'} in keys and {'text'} not in keys
+            if branch['properties']['basis']['const']!='user_scenario':assert {'documentary'} in keys
     with pytest.raises(ValueError):render_segments([{'calculation_id':'0'}],[])
-    value={'basis':'user_scenario','status':'insufficient_data','evidence':[],'metrics':[],'recommendations':[],'answer':[{'text':'ok'}], 'assumptions':[[{'text':'a'*501}]],'limitations':[],'next_actions':[]}
+    value={'basis':'user_scenario','status':'insufficient_data','evidence':[],'metrics':[],'recommendations':[],'answer':[{'inference':'ok'}], 'assumptions':[[{'inference':'a'*501}]],'limitations':[],'next_actions':[]}
     with pytest.raises(ValueError):render_response(value,[])
 
 def test_quotes_are_exact_nonoverlapping_source_windows():
@@ -56,14 +65,14 @@ def test_quotes_are_exact_nonoverlapping_source_windows():
 def test_escaped_emoji_limit_counts_decoded_characters():
     segments=[{'text':'😀'*4000}]
     parser=SegmentAnswerJSON([])
-    assert parser.feed(json.dumps({'answer':segments},ensure_ascii=True))=='😀'*4000
+    assert parser.feed(json.dumps({'basis':'greeting','answer':segments},ensure_ascii=True))=='😀'*4000
     assert parser.finish()==render_segments(segments,[])
 
 
 @pytest.mark.parametrize('width',[1,7,8192])
 def test_public_whitespace_normalization_preserves_internal_separators(width):
     segments=[{'text':'  Hola '},{'text':' mundo '},{'calculation_id':'0'},{'text':' !  '}]
-    raw=json.dumps({'answer':segments})
+    raw=json.dumps({'basis':'greeting','answer':segments})
     parser=SegmentAnswerJSON(RECORDS)
     stream=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
     assert stream==parser.finish()==render_segments(segments,RECORDS)=='Hola  mundo 73 − 20 = 53 !'
@@ -73,7 +82,7 @@ def test_public_whitespace_normalization_preserves_internal_separators(width):
 def test_empty_public_result_is_rejected(segments):
     with pytest.raises(ValueError):render_segments(segments,[])
     parser=SegmentAnswerJSON([])
-    with pytest.raises(ValueError):parser.feed(json.dumps({'answer':segments}));parser.finish()
+    with pytest.raises(ValueError):parser.feed(json.dumps({'basis':'greeting','answer':segments}));parser.finish()
 
 
 @pytest.mark.parametrize('width',[1,7,8192])
@@ -104,7 +113,7 @@ def test_basis_order_unicode_stream_matches_projected_public_answer(width,basis_
     from app.core.chat_expressions import quantities
     from app.core.chat_response_modes import USER_PREFIX
     catalog=quantities('Scope sandbox-z. Compute 73 EUR, Network 20 EUR.')
-    value={'status':'insufficient_data','answer':[{'text':'  Sandbox-z 😀 Compute supera Network. '},
+    value={'status':'insufficient_data','answer':[{'inference':'  Sandbox-z 😀 Compute supera Network. '},
         {'expression':{'operation':'difference','current':{'quantity':'73 EUR'},'baseline':{'quantity':'20 EUR'}}}],
         'evidence':[],'metrics':[],'recommendations':[],'assumptions':[],'limitations':[],'next_actions':[]}
     value=({'basis':'user_scenario',**value} if basis_first else {**value,'basis':'user_scenario'})
@@ -118,10 +127,10 @@ def test_basis_order_unicode_stream_matches_projected_public_answer(width,basis_
 
 def test_basis_first_streams_before_json_finishes_and_basis_last_defers():
     first=SegmentAnswerJSON([])
-    assert first.feed('{"basis":"user_scenario","answer":[{"text":"Hola"}]')
+    assert first.feed('{"basis":"user_scenario","answer":[{"inference":"Hola"}]')
     first.feed('}');assert first.finish().endswith('Hola')
     last=SegmentAnswerJSON([])
-    assert last.feed('{"answer":[{"text":"Hola"}],')==''
+    assert last.feed('{"answer":[{"inference":"Hola"}],')==''
     assert last.feed('"basis":"user_scenario"}').endswith('Hola')
     assert last.finish()==first.finish()
     with pytest.raises(ValueError):SegmentAnswerJSON([]).feed('{"basis":"foreign","answer":[]}')

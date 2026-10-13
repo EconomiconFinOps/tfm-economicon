@@ -121,15 +121,17 @@ def test_small_operands_remain_exact_when_result_is_rounded():
 
 def test_long_tail_without_sentence_boundary_respects_wire_limit(monkeypatch):
     from test_chat_gateway_jup035 import supported_provider, SOURCE
-    value=supported_provider();value['answer']=[{'text':'😀'*2400}]
+    value=supported_provider();value['answer']=[{'inference':'😀'*2400}, value['answer'][-1]]
     gateway,_=provider(monkeypatch,[wire({'content':json.dumps(value)})],read_size=100000)
     import threading
-    records=list(gateway._records({'messages':[],'financial_metrics_allowed':False,'authorized_evidence':[SOURCE]},
+    records=list(gateway._records({'messages':[{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Describe the synthetic example.'})}],'financial_metrics_allowed':False,'authorized_evidence':[SOURCE]},
         time.time()+60,{},threading.Event(),'none'))
     assert records[-1]['type']=='candidate'
     deltas=[record['text'] for record in records if record['type']=='delta']
     assert len(deltas)>1 and all(len(text.encode())<=8192 for text in deltas)
-    assert ''.join(deltas)==records[-1]['result']['answer']==value['answer'][0]['text']
+    assert ''.join(deltas)==records[-1]['result']['answer']
+    assert '😀'*2400 in ''.join(deltas)
+    assert SOURCE['content'] in ''.join(deltas)
 
 
 def test_sentence_punctuation_is_not_a_grouped_numeric_literal():

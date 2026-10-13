@@ -10,7 +10,7 @@ from pydantic import SecretStr
 from app.clients.chat_gateway import ChatGateway,diagnostic_scope
 from app.core.chat_review import validate_draft,draft_schema,phase_messages,admission_tokens
 
-PLAN={'claims':[{'claim':'The user greets us.','source_ids':[]}],'uncertainties':[],'next_steps':[]}
+PLAN={'claims':[{'claim':'The user greets us.','source_ids':[]}],'coverage':[],'risks':[],'uncertainties':[],'next_steps':[]}
 FINAL={'schema_version':'1.0','basis':'greeting','status':'no_data','answer':[{'text':'Hola 😀'}],
        'scope':{'cloud':'azure','data_environment':'simulated'},'evidence':[],'metrics':[],
        'recommendations':[],'assumptions':[],'limitations':[],'next_actions':[]}
@@ -97,7 +97,7 @@ def test_expired_attempt_never_admits_a_request(monkeypatch):
 def test_draft_schema_and_local_bounds_and_no_authority():
     assert validate_draft(PLAN,[]) is PLAN
     assert draft_schema([])['properties']['claims']['items']['properties']['source_ids']['maxItems']==0
-    for plan in ({**PLAN,'uncertainties':[' ']},{**PLAN,'next_steps':['x'*201]},
+    for plan in ({**PLAN,'coverage':['x'*201]},{**PLAN,'risks':['x']*4},{**PLAN,'uncertainties':[' ']},{**PLAN,'next_steps':['x'*201]},
                  {**PLAN,'claims':[{'claim':'x','source_ids':[]}]*7}):
         with pytest.raises(ValueError):validate_draft(plan,[])
     assert all(item['role']=='user' for item in phase_messages(CONTEXT['messages'],'final',PLAN)[1:])

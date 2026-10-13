@@ -32,9 +32,24 @@ def candidate():
     return value
 
 
+def visible_candidate():
+    value=candidate();value['evidence']=[]
+    value['answer']=[{'documentary':{'source_id':SOURCES[0]['id'],'passage':SOURCES[0]['content']}},
+                     {'inference':'Compare the current size with demand.'}]
+    rec=value['recommendations'][0]
+    rec.pop('evidence');rec['action']=[{'inference':rec['action']}]
+    rec['rationale']=[{'documentary':{'source_id':SOURCES[1]['id'],'passage':SOURCES[1]['content']}}]
+    return value
+
+
+def visible_catalog():
+    from app.core.chat_rules import QuantityCatalog
+    value=QuantityCatalog({});value.authorized_sources=copy.deepcopy(SOURCES);return value
+
+
 def test_private_records_project_exact_ids_without_changing_public_contract():
-    value=candidate();original=copy.deepcopy(value)
-    rendered=render_response(value,[],quantities={})
+    value=visible_candidate();original=copy.deepcopy(value)
+    rendered=render_response(value,[],quantities=visible_catalog())
     result=assemble_chat_response(rendered,None,authorized_evidence=SOURCES)
     assert value==original
     assert result['recommendations'][0]['evidence_ids']==['policy-b']
@@ -44,16 +59,16 @@ def test_private_records_project_exact_ids_without_changing_public_contract():
     public=FinOpsResponse.model_json_schema()['$defs']['Recommendation']
     private=chat_provider_schema(authorized_evidence=SOURCES)['$defs']['Recommendation']
     assert 'evidence_ids' in public['required'] and 'evidence' not in public['properties']
-    assert 'evidence' in private['required'] and 'evidence_ids' not in private['properties']
-    assert private['properties']['evidence']['items']=={'$ref':'#/$defs/Evidence'}
+    assert 'evidence' not in private['properties'] and 'evidence_ids' not in private['properties']
+    assert private['properties']['rationale']['type']=='array'
 
 
 @pytest.mark.parametrize('width',[1,7,8192])
 def test_recommendation_projection_preserves_streamed_answer(width):
-    value=candidate();raw=json.dumps(value,ensure_ascii=True)
-    parser=SegmentAnswerJSON([],quantities={})
+    value=visible_candidate();raw=json.dumps(value,ensure_ascii=True)
+    parser=SegmentAnswerJSON([],quantities=visible_catalog())
     streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
-    projected=assemble_chat_response(render_response(value,[],quantities={}),None,authorized_evidence=SOURCES)
+    projected=assemble_chat_response(render_response(value,[],quantities=visible_catalog()),None,authorized_evidence=SOURCES)
     assert streamed==parser.finish()==projected['answer']
     assert projected['recommendations'][0]['evidence_ids']==['policy-b']
 

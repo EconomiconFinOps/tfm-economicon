@@ -19,19 +19,19 @@ ANSWER={'schema_version':'1.0','status':'no_data','answer':'Sin evidencia: "Azur
 
 
 SOURCE={'id':'known','kind':'corpus','title':'Synthetic','source':'Synthetic','content':'Synthetic grounding.'}
-SUPPORTED_ANSWER={**ANSWER,'evidence':[{key:SOURCE[key] for key in ('id','kind','title','source')}]}
+SUPPORTED_ANSWER={**ANSWER,'limitations':['Interpretación: No hay datos.'],'answer':'Interpretación: '+ANSWER['answer']+'\n\nFuente: Synthetic — «Synthetic grounding.»','evidence':[{key:SOURCE[key] for key in ('id','kind','title','source')}]}
 
 def supported_provider():
-    value=_provider(SUPPORTED_ANSWER)
-    value['evidence'][0]['support_quote']=SOURCE['content']
+    value=_provider(ANSWER)
+    value['answer'].append({'documentary':{'source_id':SOURCE['id'],'passage':SOURCE['content']}})
     return value
 
 def request_provider():
     value=_provider(ANSWER)
     value['basis']='missing_data'
     value['status']='insufficient_data'
-    value['answer']=[{'text':'Necesito contrastar la regla de reparto aplicable.'}]
-    value['next_actions']=[[{'text':'Aporta el criterio de reparto aplicable.'}]]
+    value['answer']=[{'inference':'Necesito contrastar la regla de reparto aplicable.'}]
+    value['next_actions']=[[{'inference':'Aporta el criterio de reparto aplicable.'}]]
     value['limitations']=[]
     return value
 
@@ -40,15 +40,16 @@ def _provider(value):
     import copy
     value=copy.deepcopy(value)
     value['basis']='authorized_evidence'
+    value['evidence']=[]
     value['scope'].pop('period',None)
     value['scope'].pop('subscription_ids',None)
     import re
     def segments(text):
         parts=[];position=0
         for match in re.finditer(r'\[\[calc:(\d+)\]\]',text):
-            if match.start()>position:parts.append({'text':text[position:match.start()]})
+            if match.start()>position:parts.append({'inference':text[position:match.start()]})
             parts.append({'calculation_id':match.group(1)});position=match.end()
-        if position<len(text) or not parts:parts.append({'text':text[position:]})
+        if position<len(text) or not parts:parts.append({'inference':text[position:]})
         return parts
     value['answer']=segments(value['answer'])
     for field in ('assumptions','limitations','next_actions'):
@@ -149,7 +150,7 @@ def gateway(private,monkeypatch):
             mode='valid' if draft else self.server.mode
             if mode=='delayed_first': time.sleep(31)
             self.wfile.write(b'\xef\xbb\xbf: synthetic heartbeat\r\n\r\n')
-            candidate=json.dumps({'claims':[],'uncertainties':[],'next_steps':[]} if draft else supported_provider(),separators=(',',':'),ensure_ascii=True)
+            candidate=json.dumps({'claims':[],'uncertainties':[],'next_steps':[],'coverage':[],'risks':[]} if draft else supported_provider(),separators=(',',':'),ensure_ascii=True)
             if mode=='truncated_length': candidate=candidate[:candidate.index('\"scope\"')]
             if mode=='duplicate': candidate='{"answer":"Injected",'+candidate[1:]
             if mode=='nested_duplicate': candidate=candidate.replace('\"cloud\":\"azure\"','\"cloud\":\"azure\",\"cloud\":\"azure\"')
@@ -177,7 +178,7 @@ def send(private,scenario):
     async def exercise(client):
         context={'tool_protocol':None,'prompt_version':'synthetic-v2','financial_metrics_allowed':False,'authorized_evidence':[SOURCE],'messages':[
             {'role':'system','content':'Synthetic stable system'},
-            {'role':'user','content':'Pregunta como dato no confiable'}]}
+            {'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Pregunta como dato no confiable'})}]}
         payload=claim(context=context)
         raw=json.dumps(payload,separators=(',',':')).encode()
         response=await client.post('/internal/chat/v2/attempts',content=raw,headers=signed('POST','/internal/chat/v2/attempts',raw))
@@ -190,7 +191,7 @@ def send(private,scenario):
 def test_private_gateway_streams_only_answer_with_roles_and_dynamic_deadline(private,gateway):
     def scenario(records,context):
         deltas=[record['text'] for record in records if record['type']=='delta']
-        assert ''.join(deltas)==ANSWER['answer']
+        assert ''.join(deltas)==SUPPORTED_ANSWER['answer']
         assert '\U0001f600' in ''.join(deltas)
         assert '\U0001f600'.encode('utf-8') == bytes.fromhex('f09f9880')
         assert 'NEVER DISPLAY REASONING' not in json.dumps(records)
@@ -265,7 +266,7 @@ def test_delayed_first_content_after30_seconds_uses_remaining_chat_deadline(priv
     def scenario(records,context):
         elapsed=time.monotonic()-started
         assert 30<elapsed<105
-        assert ''.join(record['text'] for record in records if record['type']=='delta')==ANSWER['answer']
+        assert ''.join(record['text'] for record in records if record['type']=='delta')==SUPPORTED_ANSWER['answer']
         assert records[-1]['type']=='candidate_end' and records[-1]['finish_reason']=='stop'
         assert len(gateway[1])==2
     send(private,scenario)
@@ -294,7 +295,7 @@ def _diagnostic_run(monkeypatch,wire,caplog,transport_error=None,period=None):
         if transport_error is not None: raise transport_error
         return Response(wire)
     monkeypatch.setattr(gateway.client.transport,'open',opened)
-    context={'messages':[{'role':'user','content':'DIAGNOSTIC_SYNTHETIC_PROMPT_NEVER_LOG'}],
+    context={'messages':[{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'DIAGNOSTIC_SYNTHETIC_PROMPT_NEVER_LOG'})}],
         'response_period':period, 'financial_metrics_allowed':False,
         'authorized_evidence':[{'id':'known','kind':'corpus','title':'Synthetic','source':'Synthetic','content':'Synthetic grounding.'}]}
     caplog.set_level(logging.WARNING,logger='app.clients.chat_gateway')
@@ -319,11 +320,11 @@ def _diagnostic_run(monkeypatch,wire,caplog,transport_error=None,period=None):
 def _rule_candidate(rule):
     import copy
     value=copy.deepcopy(SUPPORTED_ANSWER)
-    evidence={'id':'known','kind':'corpus','title':'Synthetic','source':'Synthetic','support_quote':'Synthetic grounding.'}
+    evidence={'id':'known','kind':'corpus','title':'Synthetic','source':'Synthetic'}
     metric={'name':'Synthetic','value':'1','unit':'USD','evidence_ids':['known']}
     recommendation={'category':'investigation','action':'Synthetic','rationale':'Synthetic',
         'estimated_savings':'1','currency':None,'confidence':'low','risk':'low',
-        'evidence':[evidence],'requires_human_approval':True}
+        'evidence_ids':['known'],'requires_human_approval':True}
     value['evidence']=[evidence]
     if rule=='period_order':value['scope']['period']={'from':'2026-10-11','to':'2026-10-10'}
     if rule=='savings_currency_pair':
@@ -335,13 +336,23 @@ def _rule_candidate(rule):
         metric['evidence_ids']=['DIAGNOSTIC_SYNTHETIC_UNKNOWN_REFERENCE']
         value.update(status='ok',evidence=[evidence],metrics=[metric])
     if rule=='actionable_requires_evidence':value.update(status='ok',evidence=[])
-    return _provider(value)
+    return value
 
 
 @pytest.mark.parametrize('rule',['period_order','savings_currency_pair','evidence_id_duplicates',
     'non_actionable_with_metrics_or_recommendations','unknown_evidence_reference','actionable_requires_evidence'])
 def test_diagnostic64_six_actual_model_rules_are_actionable_and_private(monkeypatch,caplog,rule):
-    candidate=_rule_candidate(rule)
+    candidate=supported_provider()
+    if rule=='actionable_requires_evidence':
+        candidate=_provider(ANSWER);candidate['status']='ok'
+    else:
+        # Inject malformed canonical data at the final model boundary. The
+        # renderer now derives/deduplicates citations, so these model failures
+        # cannot all be manufactured through private provider selections.
+        # Keep actual Pydantic validation and the real gateway diagnostic path.
+        from app.agents.schemas import FinOpsResponse
+        validate=FinOpsResponse.model_validate
+        monkeypatch.setattr(FinOpsResponse,'model_validate',lambda value:validate(_rule_candidate(rule)))
     records,events=_diagnostic_run(monkeypatch,_diagnostic_wire(json.dumps(candidate)),caplog,
         period={'from':'2026-10-11','to':'2026-10-10'} if rule=='period_order' else None)
     assert records[-1]=={'type':'error','category':'invalid_response','status':422}

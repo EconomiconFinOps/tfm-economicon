@@ -179,6 +179,12 @@ def chat_provider_schema(*, financial_metrics_allowed=False, authorized_evidence
     # A single union avoids intersecting long citation enums with identical
     # copies at root and branch (DeepInfra rejects that redundant grammar).
     schema = {'type':'object', 'anyOf':[actionable, abstention], '$defs':schema['$defs']}
+    if authorized_evidence is not None:
+        from app.core.chat_rules import QuantityCatalog
+        if quantities is None:quantities=QuantityCatalog({})
+        elif not isinstance(quantities,QuantityCatalog):quantities=QuantityCatalog(copy.deepcopy(quantities))
+        else:quantities=copy.deepcopy(quantities)
+        quantities.authorized_sources=copy.deepcopy(authorized_evidence)
     return bind_segments(_bind_chat_evidence(schema, authorized_evidence), calculations, quantities)
 
 

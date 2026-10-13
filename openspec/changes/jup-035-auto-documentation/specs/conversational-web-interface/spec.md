@@ -297,3 +297,34 @@ persistir texto provisional como confirmado.
 - **WHEN** la finalizacion termina por longitud
 - **THEN** el processor SHALL devolver 502 incomplete, sin candidato confirmado, y el backend SHALL programar un reintento dentro de su politica existente
 
+
+
+### Requirement: Soporte documental literal visible y proyección de fuentes usadas
+
+La respuesta SHALL distinguir extractos documentales literales de interpretación.
+Cada extracto SHALL estar seleccionado de una fuente efectiva del intento y ser
+validado antes de cualquier delta SSE. El servidor SHALL generar el rótulo de
+fuente y proyectar únicamente las fuentes usadas a evidence público. Una cita
+no SHALL conferir autoridad financiera a datos del usuario o documentos.
+
+#### Scenario: Extracto y síntesis con el contrato público preservado
+- **WHEN** el proveedor selecciona un extracto literal y una interpretación
+- **THEN** el texto público incluye extracto, fuente e interpretación rotulada
+- **AND** el stream, la respuesta final y el historial persistido coinciden
+- **AND** FinOpsResponse1.0 conserva sus campos y límites existentes
+
+#### Scenario: Fuente ajena, pasaje alterado o cita decorativa
+- **WHEN** se envía una fuente ajena, un pasaje no seleccionado o evidence raíz no vacía
+- **THEN** la respuesta se rechaza sin publicar un final ni persistir mensajes
+- **AND** el diagnóstico contiene sólo un código cerrado y metadatos permitidos
+
+#### Scenario: Síntesis no equivale a entailment verificado
+- **WHEN** una interpretación acompaña a un extracto auténtico
+- **THEN** no se presenta la interpretación como contenido literal del documento
+- **AND** la validación semántica comprueba pertinencia y respuesta completa al banco original
+
+#### Scenario: Cobertura y riesgos del plan privado
+- **WHEN** la pregunta requiere consejo sujeto a incertidumbre
+- **THEN** el plan privado incluye las partes que debe cubrir y riesgos concretos pertinentes
+- **AND** saludos o ejercicios aritméticos pueden dejar riesgos vacíos
+- **AND** permanecen dos llamadas máximo,1000+2200tokens y120segundos comunes

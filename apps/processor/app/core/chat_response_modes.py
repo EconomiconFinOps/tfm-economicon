@@ -44,7 +44,7 @@ def bind_modes(schema,quantities):
     defs=result.setdefault('$defs',{})
     user={key:item for key,item in (quantities or {}).items()
           if not any(origin.get('kind')=='corpus' for origin in item.get('provenance',[]))}
-    choices=[{'type':'object','properties':{'text':{'type':'string','maxLength':4000}},'required':['text'],'additionalProperties':False}]
+    choices=[{'type':'object','properties':{'inference':{'type':'string','maxLength':3982}},'required':['inference'],'additionalProperties':False}]
     if user:
         def prefix(value):
             if isinstance(value,list):return [prefix(item) for item in value]
@@ -58,7 +58,13 @@ def bind_modes(schema,quantities):
         props=copy.deepcopy(base['properties'])
         props['basis']={'type':'string','const':basis,'description':BASIS_DESCRIPTIONS[basis]}
         props['status']={'type':'string','enum':list(statuses)}
-        props['answer']={'type':'array','minItems':1,'maxItems':128,'items':choices[0] if len(choices)==1 else {'anyOf':copy.deepcopy(choices)}}
+        options=copy.deepcopy(choices)
+        if basis in DOCUMENTARY_BASES:
+            from app.core.chat_claims import documentary_schema
+            documentary=documentary_schema(getattr(quantities,'authorized_sources',getattr(quantities,'rule_sources',())))
+            if documentary:options.append(documentary)
+        if basis=='greeting':options=[{'type':'object','properties':{'text':{'type':'string','maxLength':4000}},'required':['text'],'additionalProperties':False}]
+        props['answer']={'type':'array','minItems':1,'maxItems':128,'items':options[0] if len(options)==1 else {'anyOf':options}}
         for field in ('metrics','recommendations'):
             props[field]['minItems']=0;props[field]['maxItems']=0
         props['evidence']['minItems']=0

@@ -83,82 +83,69 @@ def test_backend_validates_subscription_scope_without_changing_public_schema():
 
 
 @pytest.mark.parametrize('financial_allowed', [False, True])
-def test_private_schema_requires_actionable_evidence_and_preserves_base(financial_allowed):
+def test_private_schema_derives_visible_evidence_and_preserves_base(financial_allowed):
     import importlib.util
     import json
     from pathlib import Path
     import sys
     from app.schemas.chat import _validate, provider_response_schema, response_schema
-    schema = provider_response_schema(financial_metrics_allowed=financial_allowed)
-    candidate = copy.deepcopy(ANSWER)
-    candidate['scope'].pop('period')
-    candidate['scope'].pop('subscription_ids')
-    candidate['answer']=[{'text':candidate['answer']}]
-    candidate['basis']='authorized_evidence'
+    from app.core.chat_expressions import context_quantities
+    from app.core.chat_segments import render_response
+    source={'id':'manual:synthetic','kind':'corpus','title':'Synthetic manual',
+            'source':'synthetic','content':'A documented synthetic rule.'}
+    catalog=context_quantities({'messages':[{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Explain the policy.'})}], 'authorized_evidence':[source]})
+    schema=provider_response_schema(financial_metrics_allowed=financial_allowed,authorized_evidence=[source],quantities=catalog)
+    candidate=copy.deepcopy(ANSWER)
+    candidate['scope'].pop('period');candidate['scope'].pop('subscription_ids')
+    candidate.update(basis='authorized_evidence',evidence=[],answer=[{'documentary':{
+        'source_id':source['id'],'passage':source['content']}}])
     for field in ('assumptions','limitations','next_actions'):
-        candidate[field]=[[{'text':item}] for item in candidate[field]]
-    for status in ('ok', 'partial', 'no_data', 'insufficient_data', 'unsupported', 'refused', 'error'):
-        candidate['status'] = status
-        with pytest.raises(ValueError):
-            _validate(candidate, schema, schema)
-        candidate['evidence'] = [{'id': 'manual:synthetic', 'kind': 'corpus',
-            'title': 'Synthetic manual', 'source': 'synthetic'}]
-        _validate(candidate, schema, schema)
-        candidate['evidence'] = []
-    neutral = copy.deepcopy(candidate)
-    neutral['status']='insufficient_data'
-    neutral['basis']='clarification'
-    neutral['answer'] = [{'text':'Necesito concretar el alcance.'}]
-    for field in ('metrics', 'recommendations', 'evidence', 'assumptions', 'limitations', 'next_actions'):
-        neutral[field] = []
-    neutral['next_actions']=[[{'text':'Indica el período y el ámbito de la consulta.'}]]
-    _validate(neutral, schema, schema)
-    # Complete branches preserve all constraints without duplicate root
-    # intersections. References remain rooted in the original $defs.
-    narratives = [branch for branch in schema['anyOf'] if branch['properties']['basis']['const']=='authorized_evidence']
-    unverified = [branch for branch in schema['anyOf'] if branch not in narratives]
-    assert len(narratives) == 2
-    assert {branch['properties']['basis']['const'] for branch in unverified} == {
+        candidate[field]=[[{'inference':item}] for item in candidate[field]]
+    for status in ('ok','partial','no_data','insufficient_data','unsupported','refused','error'):
+        candidate['status']=status
+        _validate(candidate,schema,schema)
+        rendered=render_response(candidate,[],quantities=catalog)
+        assert rendered['evidence']==[{key:source[key] for key in ('id','kind','title','source')}]
+        decorated=copy.deepcopy(candidate);decorated['evidence']=rendered['evidence']
+        with pytest.raises(ValueError):_validate(decorated,schema,schema)
+    neutral=copy.deepcopy(candidate)
+    neutral.update(status='insufficient_data',basis='clarification',answer=[{'inference':'Necesito concretar el alcance.'}])
+    for field in ('metrics','recommendations','evidence','assumptions','limitations','next_actions'):neutral[field]=[]
+    neutral['next_actions']=[[{'inference':'Indica el período y el ámbito de la consulta.'}]]
+    _validate(neutral,schema,schema)
+    narratives=[branch for branch in schema['anyOf'] if branch['properties']['basis']['const']=='authorized_evidence']
+    assert len(narratives)==2
+    assert {branch['properties']['basis']['const'] for branch in schema['anyOf'] if branch not in narratives}=={
         'user_scenario','missing_data','clarification','refusal','greeting'}
     assert all(branch['properties']['answer']['type']=='array' for branch in schema['anyOf'])
     assert 'properties' not in schema and 'required' not in schema
     public,_=response_schema()
     for branch in schema['anyOf']:
-        narrative = branch in narratives
-        assert set(branch['required']) == set(public['required']) | {'basis'}
+        narrative=branch in narratives
+        assert set(branch['required'])==set(public['required'])|{'basis'}
         assert branch['additionalProperties'] is False
-        assert branch['properties']['metrics']['maxItems'] == (20 if financial_allowed and narrative else 0)
-        valid = copy.deepcopy(candidate if narrative else neutral)
-        valid['basis']=branch['properties']['basis']['const']
-        valid['status'] = branch['properties']['status']['enum'][0]
-        if narrative:
-            valid['evidence'] = [{'id': 'manual:synthetic', 'kind': 'corpus',
-                'title': 'Synthetic manual', 'source': 'synthetic'}]
-        _validate(valid, branch, schema)
+        assert branch['properties']['metrics']['maxItems']==(20 if financial_allowed and narrative else 0)
+        valid=copy.deepcopy(candidate if narrative else neutral)
+        valid['basis']=branch['properties']['basis']['const'];valid['status']=branch['properties']['status']['enum'][0]
+        if valid['basis']=='greeting':
+            valid['answer']=[{'text':'Hola.'}];valid['next_actions']=[]
+        _validate(valid,branch,schema)
         if valid['basis'] in ('missing_data','clarification','refusal'):
-            documented = copy.deepcopy(valid)
-            documented['evidence'] = [{'id': 'manual:synthetic', 'kind': 'corpus',
-                'title': 'Synthetic manual', 'source': 'synthetic'}]
-            _validate(documented, branch, schema)
-            documented['metrics'] = [{'name': 'cost', 'value': '1', 'unit': 'EUR',
-                'evidence_ids': ['manual:synthetic']}]
-            with pytest.raises(ValueError):
-                _validate(documented, branch, schema)
-        invalid = copy.deepcopy(valid)
-        invalid['extra'] = 'not allowed'
-        with pytest.raises(ValueError):
-            _validate(invalid, {'$defs': schema['$defs'], 'anyOf': [branch]}, schema)
-    path = Path(__file__).resolve().parents[2] / 'processor/app/agents/schemas.py'
-    spec = importlib.util.spec_from_file_location('processor_schema_parity', path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
+            documented=copy.deepcopy(valid);documented['answer']=candidate['answer']
+            _validate(documented,branch,schema)
+            documented['metrics']=[{'name':'cost','value':'1','unit':'EUR','evidence_ids':[source['id']]}]
+            with pytest.raises(ValueError):_validate(documented,branch,schema)
+        invalid=copy.deepcopy(valid);invalid['extra']='not allowed'
+        with pytest.raises(ValueError):_validate(invalid,{'$defs':schema['$defs'],'anyOf':[branch]},schema)
+    path=Path(__file__).resolve().parents[2]/'processor/app/agents/schemas.py'
+    spec=importlib.util.spec_from_file_location('processor_schema_parity',path)
+    module=importlib.util.module_from_spec(spec);sys.modules[spec.name]=module
     try:
         spec.loader.exec_module(module)
-        assert schema == module.chat_provider_schema(financial_metrics_allowed=financial_allowed)
-    finally:
-        sys.modules.pop(spec.name, None)
-    assert response_schema()[1] == 'baf067ac8fe35a693848012c5358cb1c6ab8883ebaa02a63166b00f7d8298018'
-    json.dumps(schema, allow_nan=False)
+        assert schema==module.chat_provider_schema(financial_metrics_allowed=financial_allowed,authorized_evidence=[source],quantities=catalog)
+    finally:sys.modules.pop(spec.name,None)
+    assert response_schema()[1]=='baf067ac8fe35a693848012c5358cb1c6ab8883ebaa02a63166b00f7d8298018'
+    json.dumps(schema,allow_nan=False)
 
 
 def test_chat_output_budget_is_separate_from_ingestion(monkeypatch):

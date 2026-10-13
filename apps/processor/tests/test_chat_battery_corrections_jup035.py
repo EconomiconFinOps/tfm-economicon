@@ -36,12 +36,14 @@ def test_private_schema_branches_preserve_scope_and_financial_authority(financia
     for branch in neutral:
         assert 'basis' in branch['required'] and 'status' in branch['required']
         assert branch['properties']['metrics']['maxItems']==0
-        assert branch['properties']['evidence']['maxItems']==(20 if branch['properties']['basis']['const'] in ('missing_data','clarification','refusal') else 0)
+        assert branch['properties']['evidence']['maxItems'] == 0
     assert actionable['properties']['status']['enum'] == ['ok', 'partial']
-    assert actionable['properties']['evidence']['minItems'] == 1
+    assert actionable['properties']['evidence']['minItems'] == 0
+    assert actionable['properties']['evidence']['maxItems'] == 0
     assert abstention['properties']['status']['enum'] == [
         'no_data', 'insufficient_data', 'unsupported', 'refused', 'error']
-    assert abstention['properties']['evidence']['minItems'] == 1
+    assert abstention['properties']['evidence']['minItems'] == 0
+    assert abstention['properties']['evidence']['maxItems'] == 0
     public=FinOpsResponse.model_json_schema()
     assert 'properties' not in schema and 'required' not in schema
     for branch in (actionable, abstention):
@@ -49,7 +51,8 @@ def test_private_schema_branches_preserve_scope_and_financial_authority(financia
         assert branch['additionalProperties'] is False
         assert branch['properties']['metrics']['maxItems'] == (20 if financial_allowed else 0)
         assert branch['properties']['scope'] == public['properties']['scope']
-        assert branch['properties']['evidence']['items'] == {'$ref': '#/$defs/Evidence'}
+        assert branch['properties']['evidence']['items']['additionalProperties'] is False
+        assert 'Evidence' not in schema['$defs']
         assert 'period' not in schema['$defs']['ResponseScope']['properties']
         assert 'subscription_ids' not in schema['$defs']['ResponseScope']['properties']
 
