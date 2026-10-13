@@ -137,6 +137,35 @@ def provenance(suite, kind, config):
             "configuration": config, "model_execution_verified": False}
 
 
+DECLARED_TEXT = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/+-]{0,63}")
+
+
+def declared_text(value, name):
+    require(isinstance(value, str) and DECLARED_TEXT.fullmatch(value), f"invalid run {name}")
+    return value
+
+
+def run_header(execution, suite, raw_sha256):
+    """Header with the JUP-070 field names; hand-written metadata is validated and never proves a model ran."""
+    if execution["kind"] == "template_mock":
+        commit, provider, alias = execution["harness_commit"], "template", "none"
+        generation = {"model_alias": "plantilla-sin-modelo", "temperature": None}
+    else:
+        config = execution["configuration"]
+        require(isinstance(config, dict), "invalid run configuration")
+        commit = config.get("commit")
+        require(isinstance(commit, str) and re.fullmatch(r"[0-9a-f]{40}", commit), "invalid run commit")
+        provider, alias = declared_text(config.get("provider"), "provider"), declared_text(config.get("alias"), "alias")
+        declared = config.get("generation")
+        require(isinstance(declared, dict), "invalid run generation")
+        temperature = declared.get("temperature")
+        require(temperature is None or (type(temperature) in (int, float) and math.isfinite(temperature)), "invalid run temperature")
+        generation = {"model_alias": declared_text(declared.get("model_alias"), "model alias"), "temperature": temperature}
+    date = datetime.fromisoformat(execution["collected_at"]).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return {"run_id": f"JUP-071-{raw_sha256[:12]}", "commit": commit, "date": date, "provider": provider, "alias": alias,
+            "suite_version": suite["suite_version"], "suite_sha256": execution["suite_sha256"], "generation": generation}
+
+
 def offline(suite, cases, retrieval):
     require(file_digest(SERVICE) == TEMPLATE_SHA256, "service changed; review the offline adapter before executing it")
     service = module("jup071_assistant", SERVICE).AssistantService()
@@ -176,6 +205,7 @@ def validate_raw(raw, suite, cases):
     require(re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", execution["python_version"]), "invalid Python version")
     for key in ("service_sha256", "configuration_sha256", "harness_sha256"):
         require(re.fullmatch(r"[0-9a-f]{64}", execution[key]), "invalid provenance hash")
+    run_header(execution, suite, digest(raw))
     expected = {c["id"]: evaluation.prompt_text(c) for c in cases}
     seen = set()
     require(isinstance(raw.get("cases"), list), "raw cases must be a list")
@@ -271,6 +301,7 @@ def score(suite, cases, raw, judgments, provisional=False):
               "service_sha256": execution["service_sha256"], "configuration_sha256": execution["configuration_sha256"],
               "collected_at": execution["collected_at"], "provisional": provisional,
               "model_execution_verified": False, "generative_robustness_accepted": False,
+              "run": run_header(execution, suite, digest(raw)),
               "totals": counts(entries), "groups": {}, "cases": entries, "pairs": []}
     groups = {}
     for c in suite["cases"]:
@@ -309,7 +340,7 @@ def sheet(cases, raw):
 
 
 def markdown(report):
-    lines = ["# JUP-071: resultado de robustez", "", f"Ejecución: `{report['kind']}`. Provisional: `{report['provisional']}`.",
+    lines = ["# JUP-071: resultado de robustez", "", f"Ejecución: `{report['kind']}` (`{report['run']['run_id']}`). Provisional: `{report['provisional']}`.",
              "Robustez generativa: **no acreditada**. El endpoint no acredita qué modelo ejecutó.", "",
              "Los fallos conocidos se conservan aunque falten juicios. `not_run` incluye semántica pendiente.", "",
              "| Grupo | Conducta | Total | Pass | Fail | Blocked | Not run |", "| --- | --- | ---: | ---: | ---: | ---: | ---: |"]
@@ -399,6 +430,7 @@ def main(argv=None):
                 config = read(args.run_info)
                 require(isinstance(config, dict) and all(k in config for k in ("commit", "corpus", "provider", "alias", "retrieval", "generation")), "run-info requires the JUP-070 configuration fields")
                 execution = provenance(suite, "live_unverified", config)
+                run_header(execution, suite, "0" * 64)
                 raw = evaluation.collect_cases(args.base_url, args.email, password, args.tenant, inputs_for(cases), timeout=args.timeout)
                 raw["execution"] = execution
             evaluation.write_private(args.output, raw)

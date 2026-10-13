@@ -353,7 +353,9 @@ class JudgmentAndScoreTests(unittest.TestCase):
         self.assertFalse(report["generative_robustness_accepted"])
         raw["execution"]["kind"] = "live_unverified"
         raw["execution"]["model_execution_verified"] = True
-        raw["execution"]["configuration"]["model_alias"] = "handwritten-model-name"
+        raw["execution"]["configuration"].update({"model_alias": "handwritten-model-name", "commit": "a" * 40,
+                                                  "provider": "fixture", "alias": "handwritten-model-name",
+                                                  "generation": {"model_alias": "handwritten-model-name", "temperature": None}})
         raw["execution"]["configuration_sha256"] = robustness.digest(raw["execution"]["configuration"])
         report = scored(raw)
         self.assertEqual(report["totals"]["pass"], 29)
@@ -478,6 +480,111 @@ class ReviewRegressionTests(unittest.TestCase):
                 self.assertEqual(path.read_bytes(), original, str(path))
 
 
+class RunHeaderTests(unittest.TestCase):
+    RUN_KEYS = {"run_id", "commit", "date", "provider", "alias", "suite_version", "suite_sha256", "generation"}
+    LIVE_CONFIG = {"commit": "d" * 40, "corpus": {}, "provider": "gateway", "alias": "openrouter/model-x.1",
+                   "retrieval": {}, "generation": {"model_alias": "model-x.1", "temperature": 0.2}}
+
+    def live_raw(self, **overrides):
+        raw = raw_fixture()
+        config = {**self.LIVE_CONFIG, **overrides}
+        raw["execution"].update({"kind": "live_unverified", "configuration": config,
+                                 "configuration_sha256": robustness.digest(config)})
+        return raw
+
+    def test_template_report_declares_that_no_model_was_involved(self):
+        raw = raw_fixture()
+        run = scored(raw)["run"]
+        self.assertEqual(set(run), self.RUN_KEYS)
+        self.assertEqual((run["provider"], run["alias"]), ("template", "none"))
+        self.assertEqual(run["generation"], {"model_alias": "plantilla-sin-modelo", "temperature": None})
+        self.assertEqual(run["commit"], "a" * 40)
+        self.assertEqual(run["date"], "2026-10-10T08:00:00Z")
+        self.assertEqual((run["suite_version"], run["suite_sha256"]), (SUITE["suite_version"], robustness.digest(SUITE)))
+
+    def test_live_report_takes_declared_fields_but_stays_unverified(self):
+        report = scored(self.live_raw())
+        run = report["run"]
+        self.assertEqual((run["commit"], run["provider"], run["alias"]), ("d" * 40, "gateway", "openrouter/model-x.1"))
+        self.assertEqual(run["generation"], {"model_alias": "model-x.1", "temperature": 0.2})
+        self.assertFalse(report["model_execution_verified"])
+        self.assertFalse(report["generative_robustness_accepted"])
+
+    def test_run_id_is_stable_for_the_same_raw_and_differs_between_executions(self):
+        raw = raw_fixture()
+        other = raw_fixture()
+        other["execution"]["collected_at"] = "2026-10-10T08:00:01+00:00"
+        first, again, second = scored(raw)["run"]["run_id"], scored(raw)["run"]["run_id"], scored(other)["run"]["run_id"]
+        self.assertEqual(first, again)
+        self.assertNotEqual(first, second)
+        self.assertRegex(first, r"^JUP-071-[0-9a-f]{12}$")
+
+    def test_header_keeps_existing_fields_and_changes_no_outcome_or_denominator(self):
+        raw = raw_fixture()
+        report = scored(raw)
+        expected_keys = {"report_version", "jup", "suite_version", "suite_sha256", "raw_sha256", "judgments_sha256", "kind",
+                         "harness_commit", "harness_sha256", "python_version", "service_sha256", "configuration_sha256",
+                         "collected_at", "provisional", "model_execution_verified", "generative_robustness_accepted",
+                         "totals", "groups", "cases", "pairs", "perturbations", "assessment_complete"}
+        self.assertEqual(set(report), expected_keys | {"run"})
+        self.assertEqual(report["totals"], {"total": 29, "pass": 29, "fail": 0, "blocked": 0, "not_run": 0, "evaluated": 29,
+                                            "pass_over_evaluated": 1.0, "pass_over_total": 1.0})
+        withheld = scored(raw, empty_judgments := robustness.empty_judgments(raw))
+        self.assertEqual((withheld["totals"]["pass"], withheld["totals"]["not_run"]), (0, 29))
+
+    def test_declared_text_cannot_carry_arbitrary_content_into_the_public_report(self):
+        for field, value in (("provider", "Bearer TOKEN-DO-NOT-COMMIT"), ("alias", "line\nbreak"),("alias", "a" * 65),
+                             ("provider", ""), ("alias", None), ("commit", "not-a-sha"), ("commit", "D" * 40)):
+            with self.subTest(field=field, value=value):
+                with self.assertRaises(robustness.Error):
+                    scored(self.live_raw(**{field: value}))
+
+    def test_generation_is_whitelisted_and_temperature_must_be_a_real_number(self):
+        for generation in ({"model_alias": "x", "temperature": True}, {"model_alias": "x", "temperature": float("nan")},
+                           {"model_alias": "x", "temperature": "0.2"}, {"model_alias": "bad value", "temperature": None},
+                           {"temperature": None}, "template", None):
+            with self.subTest(generation=generation):
+                with self.assertRaises(robustness.Error):
+                    scored(self.live_raw(generation=generation))
+        report = scored(self.live_raw(generation={"model_alias": "x", "temperature": None, "api_key": "KEY-DO-NOT-COMMIT"}))
+        self.assertNotIn("KEY-DO-NOT-COMMIT", json.dumps(report) + robustness.markdown(report))
+
+    def test_live_header_is_validated_for_the_raw_artifact_too(self):
+        raw = self.live_raw(provider="bad provider")
+        with self.assertRaises(robustness.Error):
+            robustness.validate_raw(raw, SUITE, CASES)
+        robustness.validate_raw(self.live_raw(), SUITE, CASES)
+
+    def test_live_configuration_that_is_not_an_object_is_a_controlled_error(self):
+        for config in ([], "gateway", None, 7):
+            with self.subTest(config=config):
+                raw = raw_fixture()
+                raw["execution"].update({"kind": "live_unverified", "configuration": config,
+                                         "configuration_sha256": robustness.digest(config)})
+                with self.assertRaises(robustness.Error):
+                    robustness.validate_raw(raw, SUITE, CASES)
+                with self.assertRaises(robustness.Error):
+                    scored(raw)
+
+    def test_collect_rejects_invalid_run_info_before_any_request(self):
+        transport = TransportDouble()
+        with tempfile.TemporaryDirectory() as folder:
+            base = Path(folder)
+            run_info, output = base / "run.json", base / "raw.json"
+            run_info.write_text(json.dumps({**self.LIVE_CONFIG, "alias": "bad alias"}), encoding="utf-8")
+            with mock.patch.dict("os.environ", {"JUP071_TEST_PASSWORD": "FIXTURE-PASSWORD"}), mock.patch.object(robustness.evaluation.urllib.request, "build_opener", return_value=transport) as opener:
+                status, _, stderr = cli(["collect", "--base-url", "http://transport.invalid", "--tenant", "fixture-tenant", "--password-env", "JUP071_TEST_PASSWORD", "--run-info", run_info, "--output", output])
+            self.assertEqual(status, 2, stderr)
+            opener.assert_not_called()
+            self.assertFalse(output.exists())
+
+    def test_markdown_shows_the_run_identity_without_the_hand_written_alias_as_proof(self):
+        report = scored(self.live_raw())
+        text = robustness.markdown(report)
+        self.assertIn(report["run"]["run_id"], text)
+        self.assertIn("no acreditada", text)
+
+
 class FakeResponse:
     def __init__(self, body, status=200):
         self.body, self.status = body, status
@@ -566,7 +673,7 @@ class CliAndTransportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             base = Path(folder)
             run_info, output = base / "run.json", base / "raw.json"
-            run_info.write_text(json.dumps({"commit": "a" * 40, "corpus": {}, "provider": "fixture", "alias": "fixture", "retrieval": {}, "generation": {}}), encoding="utf-8")
+            run_info.write_text(json.dumps({"commit": "a" * 40, "corpus": {}, "provider": "fixture", "alias": "fixture", "retrieval": {}, "generation": {"model_alias": "fixture", "temperature": None}}), encoding="utf-8")
             with mock.patch.dict("os.environ", {"JUP071_TEST_PASSWORD": "FIXTURE-PASSWORD"}), mock.patch.object(robustness.evaluation.urllib.request, "build_opener", return_value=transport):
                 status, stdout, stderr = cli(["collect", "--base-url", "http://transport.invalid", "--tenant", "fixture-tenant", "--password-env", "JUP071_TEST_PASSWORD", "--run-info", run_info, "--output", output])
             self.assertEqual(status, 0, stderr)
