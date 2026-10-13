@@ -450,3 +450,48 @@ nombre; la prueba del hash compara con `explain_episode` normalizado con `json.l
 **Lo que este Red no demuestra.** Que las pruebas sean correctas contra la implementación real; que la
 métrica no suba en los fallos solo es significativo cuando la rama exista. Falta el recorrido con
 CockroachDB real (4.5).
+
+## Grupo 4 — Ruta del asistente, fase Red con CockroachDB real (tarea 4.5)
+
+**Pruebas escritas por el `tester`:** `apps/backend/tests/test_anomaly_explanation_cockroach.py` (archivo
+nuevo, 343 líneas, 9 pruebas, opt-in). Recorren la ruta sin ningún doble de la lectura: carga real de
+costes, detección real por HTTP, episodio guardado en CockroachDB, `fetch_anomaly_episode_snapshot` real,
+explicador de producción, mensajes guardados y recargados por la API. Los únicos dobles son los de la
+fixture `api` en fronteras externas (embeddings y almacén vectorial), para comprobar que no se usan.
+Cubren: el recorrido completo con operandos de 12 decimales iguales al texto de la tabla; aislamiento (otro
+cliente e id inexistente dan el mismo 404, sin guardar nada ni cambiar episodio o marca de agua); estabilidad
+del identificador, incluido un `detect` intermedio que da `up_to_date` (**recomendación del QA del grupo 3**);
+cambio de estado (la explicación nueva cambia y la guardada conserva «Nueva»); episodio cerrado con fecha UTC
+y motivo; aviso de datos sintéticos con la ingesta marcada y sin él; un 409 real con `rules_version` cambiada
+por SQL; servicio hostil escapado; y una serie en USD sin conversión.
+
+**Evidencia Red** (2026-10-12, CockroachDB v24.1.11 real y desechable, `jup054-py-backend`, Python 3.12.15):
+
+```
+docker run --rm --network container:jup038-crdb -v "$R:/repo:ro" -v "$(cygpath -w "$S"):/scr:ro" -w /work jup054-py-backend sh /scr/crdb-test.sh tests/test_anomaly_explanation_cockroach.py
+```
+
+- Resultado: **`9 failed`**, 0 omitidas. Las 9 por el mismo motivo, contado por el orquestador sin recorte:
+  `AssertionError` con el cuerpo `{"detail":[{"type":"validation_error", … "Invalid request value"}]}`, es
+  decir, `assert 422 == 201` porque `anomaly_query` aún es un campo desconocido. Antes de ese punto la
+  preparación (carga de la serie, `detect` con 200 y `GET` del episodio) ya funciona.
+- Las pruebas de fallo (404 y 409) exigen antes un 201 con una petición equivalente bien formada, para no
+  pasar por vacuidad. Los pasos posteriores al primer 201 los comprobó el `tester` con una sonda temporal
+  contra el nodo real, ya borrada: operandos `2800.000000000000`, `550.000000000000` y `1050.000000000000`;
+  `None` para otro cliente e id inexistente; `PATCH` a `investigating` y `resolved` con `closed_at`; y que los
+  `UPDATE` de la ingesta y de `rules_version` surten efecto.
+- Control: `tests/test_anomaly_episode_api.py` (54 pruebas del precedente) sigue en `54 passed`.
+- **Como CI, sin la variable:** `9 skipped` («JUP086_COCKROACH_TEST_URL absent») y ningún fallo.
+
+**Ambigüedades del `tester`** (resueltas por el orquestador):
+
+1. Fechas de `evidence["episode"]`: el explicador las escribe con `isoformat()` (`+00:00`) y la API con `Z`.
+   Es una imprecisión del contrato, no un defecto. Se **documenta en `docs/api/anomaly-explanations.md`**
+   (mismo instante, distinto desfase) en lugar de forzar un formato. La prueba 1 compara los campos de fecha y
+   hora como instantes y el resto literalmente.
+2. En USD el texto sigue diciendo «EUR y USD» en la limitación fija: la prueba busca una cifra seguida de `EUR`.
+3. La prueba de estabilidad ignora la línea `Fotografía…` (lleva la hora de cada petición). Si cambiara ese
+   prefijo habría que ajustarla.
+
+**Lo que este Red no demuestra.** Que las pruebas sean correctas contra la implementación real. Estas 9 se
+omiten en CI (`RF-096-004`); la evidencia es la ejecución local contra el nodo desechable.

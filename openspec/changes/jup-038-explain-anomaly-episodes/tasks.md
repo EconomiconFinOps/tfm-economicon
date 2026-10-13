@@ -76,7 +76,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 - [x] 4.4 Red: al reabrir una conversación con una pregunta documental, una consulta de propiedad y
   una explicación, cada mensaje conserva su evidencia; con un servicio y un motivo reconocibles, los
   registros capturados no los contienen.
-- [ ] 4.5 Red, prueba opt-in con CockroachDB real en otro archivo nuevo, de extremo a extremo: cargar
+- [x] 4.5 Red, prueba opt-in con CockroachDB real en otro archivo nuevo, de extremo a extremo: cargar
   una serie, detectar, explicar por HTTP y comprobar las cifras frente al ejemplo de 1.2; un usuario
   de otro cliente recibe 404 con el mismo identificador; explicar dos veces da el mismo `id`; tras
   una nueva detección que suma impacto, el `id` cambia y el mensaje anterior no. Se ejecuta contra un
