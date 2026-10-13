@@ -162,7 +162,11 @@ def expression_definitions(catalog):
     comparison={'type':'object','properties':{'operation':{'type':'string','const':'compare'},
         'left':ref,'right':ref,'relation':{'type':'string','enum':['gt','gte','lt','lte','eq']}},
         'required':['operation','left','right','relation'],'additionalProperties':False}
-    definitions['RenderedExpression']={'anyOf':[{'$ref':f'#/$defs/NumericExpression{MAX_DEPTH}'},comparison]}
+    # A displayed calculation must actually calculate. Source quantities are
+    # operands, not degenerate answers that can substitute a threshold for a
+    # computed variation while satisfying the structured schema.
+    definitions['RenderedExpression']={'anyOf':[
+        *definitions[f'NumericExpression{MAX_DEPTH}']['anyOf'][1:],comparison]}
     return definitions
 
 
@@ -224,6 +228,8 @@ class ExpressionRenderer:
         return value,unit,formula,None
 
     def render(self,node):
+        if not isinstance(node,dict) or 'operation' not in node:
+            raise ValueError('Rendered expression requires an operation.')
         try:
             with localcontext() as precision:
                 precision.prec=40

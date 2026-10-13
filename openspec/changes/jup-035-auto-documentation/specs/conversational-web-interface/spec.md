@@ -204,6 +204,7 @@ total entre todos los campos. Ningun calculo SHALL conferir evidencia financiera
 #### Scenario: Proyeccion y streaming de expresiones
 - **WHEN** la finalizacion incluye segmentos privados text o expression
 - **THEN** SHALL renderizar cada expresion como un bloque completo con formula, unidades y resultado o limitacion explicita, sin IDs de resultados generados ni ecuaciones arbitrarias reparadas; SHALL rechazar segmentos mixtos y ecuaciones o marcadores libres incluso partidos entre segmentos text contiguos
+- **AND** la raiz publicada SHALL ser una operacion; una cantidad aislada SHALL ser solo operando. Las expresiones SHALL aparecer solo en answer; cada elemento de assumptions, limitations y next_actions SHALL contener exactamente un segmento text de hasta500 caracteres, validado localmente sin truncar
 - **AND** SHALL conservar Unicode y escapes fragmentados,128 segmentos,4000 caracteres de answer y500 por elemento de lista, normalizar solo extremos globales, emitir deltas de hasta8192 bytes antes del fin de generacion y hacer coincidir SSE, final validado y JSONB persistido
 - **AND** la garantia SHALL limitarse a la operacion renderizada: seleccion semantica, prosa, completitud y pertinencia documental SHALL seguir requiriendo aceptacion real; no se SHALL afirmar entailment universal ni prohibir fechas o cifras originales en prosa
 

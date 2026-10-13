@@ -30,14 +30,19 @@ def test_contextual_decision_schema_enforces_exact_source_enum_and_disabled_plan
     from app.core.chat_expressions import quantities,ExpressionRenderer
     catalog=quantities('73 EUR/día y 20 EUR/día.')
     schema=provider_response_schema(quantities=catalog,authorized_evidence=[])
-    value=candidate();value['answer']=[{'expression':{'quantity':'73 EUR/día'}}]
+    value=candidate();value['answer']=[{'expression':{'operation':'difference',
+        'current':{'quantity':'73 EUR/día'},'baseline':{'quantity':'20 EUR/día'}}}]
     _validate(value,schema,schema)
     for operand in ('100 EUR/día','73 EUR'):
-        value['answer'][0]['expression']['quantity']=operand
+        value['answer'][0]['expression']['current']['quantity']=operand
         with pytest.raises(ResponseValidationError):_validate(value,schema,schema)
         with pytest.raises(ValueError):ExpressionRenderer(catalog).render(value['answer'][0]['expression'])
     disabled=provider_response_schema(quantities={},authorized_evidence=[])
     with pytest.raises(ResponseValidationError):_validate(value,disabled,disabled)
+    value['answer']=[{'expression':{'quantity':'73 EUR/día'}}]
+    with pytest.raises(ResponseValidationError):_validate(value,schema,schema)
+    with pytest.raises(ValueError,match='requires an operation'):
+        ExpressionRenderer(catalog).render(value['answer'][0]['expression'])
 
 
 def test_contextual_schema_hash_and_full_token_accounting_match_both_services():

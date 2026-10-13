@@ -33,7 +33,12 @@ def bind_segments(schema, records=None, quantities=None):
         properties=branch['properties']
         properties['answer']=segment_schema(records, quantities=quantities)
         for field in ('assumptions','limitations','next_actions'):
-            properties[field]['items']=segment_schema(records,limit=500, quantities=quantities)
+            # One bounded prose segment per short public item. Arithmetic lives
+            # in answer; allowing128 short segments advertised values that the
+            # unchanged500-character public contract necessarily rejects.
+            item=segment_schema(limit=500)
+            item['maxItems']=1
+            properties[field]['items']=item
     return schema
 
 
@@ -85,5 +90,9 @@ def render_response(value, records, *, quantities=None):
     for field in ('assumptions','limitations','next_actions'):
         if field not in value or not isinstance(value[field],list) or len(value[field])>10:
             raise ValueError('Invalid calculation collection.')
-        result[field]=[render_segments(item,records,limit=500,expressions=expressions) for item in value[field]]
+        for item in value[field]:
+            if (not isinstance(item,list) or len(item)!=1 or
+                    not isinstance(item[0],dict) or set(item[0])!={'text'}):
+                raise ValueError('Invalid short prose item.')
+        result[field]=[render_segments(item,[],limit=500) for item in value[field]]
     return result

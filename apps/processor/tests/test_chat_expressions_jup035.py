@@ -90,14 +90,36 @@ def test_complete_expression_blocks_stream_exactly_like_public_projection(width)
     assert '\nCálculo:' in streamed and '= 53 EUR.\n' in streamed
 
 
-def test_operations_count_across_all_public_fields_and_depth():
+def test_operations_count_across_answer_and_depth():
     catalog=quantities('73 EUR y 20 EUR')
     segment={'expression':difference(leaf('73 EUR'),leaf('20 EUR'))}
-    value={'answer':[segment]*10,'assumptions':[[segment]*3],'limitations':[],'next_actions':[]}
+    value={'answer':[segment]*13,'assumptions':[],'limitations':[],'next_actions':[]}
     with pytest.raises(ValueError,match='operation limit'):render_response(value,[],quantities=catalog)
     node=leaf('73 EUR')
     for _ in range(5):node=difference(node,leaf('20 EUR'))
     with pytest.raises(ValueError,match='depth'):ExpressionRenderer(catalog).render(node)
+
+
+def test_displayed_root_is_operation_and_short_items_are_single_bounded_prose():
+    catalog=quantities('73 EUR y 20 EUR')
+    with pytest.raises(ValueError,match='requires an operation'):
+        ExpressionRenderer(catalog).render(leaf('20 EUR'))
+    from app.agents.schemas import chat_provider_schema
+    from app.core.chat_expressions import expression_definitions
+    definitions=expression_definitions(catalog)
+    assert all(item.get('properties',{}).get('operation') for item in definitions['RenderedExpression']['anyOf'])
+    schema=chat_provider_schema(quantities=catalog)
+    for branch in schema['anyOf']:
+        item=branch['properties']['limitations']['items']
+        assert item['minItems']==item['maxItems']==1
+        assert item['items']['properties']=={'text':{'type':'string','maxLength':500}}
+    response={'answer':[{'text':'Respuesta.'}],'assumptions':[], 'limitations':[], 'next_actions':[]}
+    for bad in ([{'text':'a'},{'text':'b'}], [{'expression':difference(leaf('73 EUR'),leaf('20 EUR'))}]):
+        with pytest.raises(ValueError,match='short prose'):
+            render_response({**response,'limitations':[bad]},[],quantities=catalog)
+    with pytest.raises(ValueError,match='text limit'):
+        render_response({**response,'limitations':[[{'text':'a'*501}]]},[],quantities=catalog)
+    assert render_response({**response,'limitations':[[{'text':'a'*500}]]},[],quantities=catalog)['limitations']==['a'*500]
 
 
 @pytest.mark.parametrize('alteration',[

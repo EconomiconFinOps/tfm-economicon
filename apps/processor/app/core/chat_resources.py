@@ -59,7 +59,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
-    arithmetic='source-quantity-expression-depth4-operations12-v1',
+    arithmetic='source-quantity-operation-root-depth4-operations12-short-prose-v2',
     decision_values='server-query-no-model-decision-v1')
 
 

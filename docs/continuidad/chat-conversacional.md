@@ -1,12 +1,27 @@
 ## PR121: recuperación de servidor y expresiones locales — 13/10/2026
 
+Actualización posterior: CI09ad6f5 pasa los seis checks técnicos (JUP policy
+omitido por evento push; reviews oficiales siguen pendientes). La campaña
+expression14 sobre ese producto termina8 completed,19 HTTP429 waiting cancelados
+por el harness y1 fallo022 `rendered_text_limit`. Cada caso tuvo un intento;
+los ocho completados tienen stream=final=historial y los demás cero mensajes.
+014 omite los cálculos y017 confunde20% con25%: no son aceptación. El esquema
+permitía hojas aisladas como resultados; se corrige para exigir operación raíz.
+Las listas cortas pasan a un único segmento text≤500 poritem y cálculos solo
+en answer, manteniendo el contrato público y rechazo sin truncar. Pruebas
+offline de raíz/stream pasan; recursos/conteo38PASS y contraste backend17PASS.
+Recibo íntegro: `expression14-full28-verified.json` en el directorio siguiente.
+Gasto asentado actual **0.401040246 USD de2USD**. La siguiente campaña deberá
+observar los reintentos automáticos normales de429; la anterior los cancelaba
+para medir un intento y no permite concluir fallo definitivo de recuperación.
+
 La full28 de f6c7895 terminó18 completed/10 failed. Además,010/014/016/027/028
 y otras respuestas completadas presentan problemas de completitud o citas;
 completed no es aceptación. Recibo íntegro del workspace:
 `materiales/07-evidencias/PR121-herramientas-evidencia-20261012/arithmetic12-full28-verified.json`.
-Acumulado asentado 0.376770819 USD. El 13/10/2026 el usuario amplió el techo
+Antes de expression14, acumulado asentado 0.376770819 USD. El 13/10/2026 el usuario amplió el techo
 acumulado a **2 USD** (no 2 USD adicionales); restan 1.623229181 USD. No se han
-hecho llamadas después de esa campaña. El modelo y los datos sintéticos autorizados
+hecho llamadas entre esa campaña y expression14. El modelo y los datos sintéticos autorizados
 siguen siendo los mismos; el guard debe reservar reintentos y recorrido UI.
 
 Decisión técnica en implementación para atender el objetivo autorizado:

@@ -54,11 +54,15 @@ del navegador no permite resolver hoy ni un periodo financiero. Si hace falta,
 pide periodo y zona horaria, sin exponer nombres de controles internos.
 
 Respuesta privada y aritmética:
-answer es una lista de segmentos; cada entrada de assumptions, limitations y
-next_actions también es una lista de segmentos. Usa {"text":"prosa"} o
+answer es una lista de segmentos. Cada entrada de assumptions, limitations y
+next_actions es una lista de un único {"text":"prosa"}, con máximo500 caracteres;
+usa varios items para acciones distintas. Reserva las expresiones para answer.
+En answer usa {"text":"prosa"} o
 {"expression":...} según el esquema. El servidor publica su concatenación como
 texto normal. Mantén espacios y puntuación entre segmentos; nunca dejes huecos.
-Las hojas de expresión son {"quantity":"opción exacta del catálogo del schema"}.
+Cada expresión publicada debe tener una operación en su raíz, nunca una cantidad
+aislada. Las hojas son {"quantity":"opción exacta del catálogo del schema"} y solo
+sirven como operandos. Repetir los operandos no responde al cálculo solicitado.
 Cada opción vincula un valor y su unidad original; no inventes operandos, tipos
 de cambio ni constantes. Las operaciones admitidas tienen nombres semánticos:
 sum(left,right), difference(current,baseline), ratio(numerator,denominator),

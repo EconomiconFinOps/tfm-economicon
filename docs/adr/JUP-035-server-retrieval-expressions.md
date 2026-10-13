@@ -43,6 +43,15 @@ indefinido, nunca un resultado inventado. Una conversión no autorizada tampoco
 produce número. Estructuras inválidas, hojas ajenas e incompatibilidades de
 dimensión se rechazan. Las ecuaciones libres no se reparan.
 
+La campaña expression14 mostró respuestas que publicaban una hoja como
+`cantidad = cantidad` en lugar de calcular, y confundían un umbral con una
+variación. La raíz publicada exige ahora una operación; las hojas solo sirven
+como operandos. Los números originales pueden seguir apareciendo en prosa.
+Un elemento de assumptions, limitations o next_actions contiene exactamente
+un segmento de texto de hasta500 caracteres, sin expresiones. Los cálculos se
+concentran en answer. Así el esquema deja de anunciar hasta128 segmentos cuya
+suma excedería el límite público de500 y produciría rechazo al final.
+
 Cada expresión se presenta como un bloque completo que identifica una comparación
 booleana y evita sustituir opacamente IDs de resultados. La prosa circundante aún
 puede interpretar mal ese bloque y requiere revisión semántica. El mismo renderer proyecta el
