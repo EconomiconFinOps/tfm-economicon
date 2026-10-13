@@ -59,7 +59,7 @@ episodio o con datos guardados incoherentes: estado u observación desconocidos,
 no evalúan, menos de 1 día de impacto, fecha final del impacto anterior a la de inicio, impacto acumulado
 menor que el exceso del día de apertura (que el acumulado siempre incluye), cerrado sin fecha o sin motivo
 con texto, o no observado sin la fecha desde la que no se observa. También da 409 un operando que no es un
-número finito, que es negativo o que excede lo que pueden producir los costes de origen, `DECIMAL(38,12)` (más de 38 dígitos, más de
+número finito, que es negativo o que excede la cota práctica de los costes de origen, `DECIMAL(38,12)` (más de 38 dígitos, más de
 26 cifras enteras o más de 12 decimales). Las columnas de importe del episodio son `DECIMAL` sin precisión y la
 base admite en ellas `NaN`, infinitos y valores enormes, que también dan 409, en lugar de un error del servidor. En esos casos el sistema prefiere no responder a dar una explicación aproximada.
 
