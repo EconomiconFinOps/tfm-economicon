@@ -16,7 +16,10 @@ from test_chat_gateway_jup035 import gateway,private
 
 
 def gateway_instance():
-    return module.configured_gateway()
+    from test_chat_auto_jup035 import SyntheticResources
+    instance=module.configured_gateway()
+    instance.resources=SyntheticResources()
+    return instance
 
 async def collect(gateway,deadline):
     return [record async for record in gateway({'messages':[{'role':'system','content':'Synthetic'}],

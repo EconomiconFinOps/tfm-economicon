@@ -59,8 +59,8 @@ def _provider(value):
 @pytest.mark.parametrize('read_size', [1, 7, 8192])
 def test_structured_search_then_final_uses_untrusted_data_and_total_usage(monkeypatch, read_size):
     import asyncio
-    from test_chat_auto_jup035 import provider, wire, DECISION, decision_delta, decision_id
-    gateway, requests=provider(monkeypatch,[wire({'content':json.dumps(request_provider())},tokens=24)],read_size=read_size)
+    from test_chat_auto_jup035 import provider, wire, DECISION, decision_delta, decision_id, review_wires
+    gateway, requests=provider(monkeypatch,review_wires(wire({'content':json.dumps(request_provider())},tokens=24)),read_size=read_size)
     context={'tool_protocol':'server-documentation-v4','messages':[{'role':'system','content':'Synthetic'},
         {'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Synthetic policy'})}],'financial_metrics_allowed':False}
     seen=[]
@@ -70,14 +70,16 @@ def test_structured_search_then_final_uses_untrusted_data_and_total_usage(monkey
     async def exercise():
         return [record async for record in gateway(context,time.time()+60,tool_result=result)]
     records=asyncio.run(exercise())
-    assert len(requests)==1 and seen==[DECISION]
+    assert len(requests)==2 and seen==[DECISION]
+    assert requests[0]['response_format']['json_schema']['name']=='PrivateAnswerPlan'
     assert all('tools' not in item and 'tool_choice' not in item for item in requests)
-    assert requests[0]['response_format']['json_schema']['name']=='FinOpsResponse'
-    assert requests[0]['messages']==context['messages']+[{'role':'user',
+    assert requests[1]['response_format']['json_schema']['name']=='FinOpsResponse'
+    assert requests[0]['messages'][:-1]==context['messages']+[{'role':'user',
         'content':'UNTRUSTED_RETRIEVAL_CONTEXT\n{"evidence":[],"omissions":[]}'}]
     assert records[0]['type']=='tool_call' and records[-1]['type']=='candidate'
-    assert records[-1]['usage']['total_tokens']==24 and records[-1]['usage']['cost_usd']==0.001
-    assert context['messages']==requests[0]['messages'][:-1]
+    assert records[-1]['usage']['total_tokens']==36 and records[-1]['usage']['cost_usd']=='0.002'
+    assert context['messages']==requests[0]['messages'][:-2]
+    assert 'UNTRUSTED_DRAFT_PLAN' in requests[1]['messages'][-1]['content']
 
 
 @pytest.mark.parametrize('change,code', [
@@ -132,6 +134,8 @@ def test_required_usage_never_reports_only_one_paid_leg():
 
 @pytest.fixture
 def gateway(private,monkeypatch):
+    from test_chat_auto_jup035 import SyntheticResources
+    monkeypatch.setattr(private[0].state,'chat_resources',SyntheticResources(), raising=False)
     calls=[]
     class Handler(BaseHTTPRequestHandler):
         def log_message(self,*args): pass
@@ -141,21 +145,23 @@ def gateway(private,monkeypatch):
             if self.server.mode=='429':
                 self.send_response(429);self.send_header('Retry-After','121');self.end_headers();return
             self.send_response(200);self.send_header('Content-Type','text/event-stream');self.end_headers()
-            if self.server.mode=='delayed_first': time.sleep(31)
+            draft=calls[-1]['payload']['response_format']['json_schema']['name']=='PrivateAnswerPlan'
+            mode='valid' if draft else self.server.mode
+            if mode=='delayed_first': time.sleep(31)
             self.wfile.write(b'\xef\xbb\xbf: synthetic heartbeat\r\n\r\n')
-            candidate=json.dumps(supported_provider(),separators=(',',':'),ensure_ascii=True)
-            if self.server.mode=='truncated_length': candidate=candidate[:candidate.index('\"scope\"')]
-            if self.server.mode=='duplicate': candidate='{"answer":"Injected",'+candidate[1:]
-            if self.server.mode=='nested_duplicate': candidate=candidate.replace('\"cloud\":\"azure\"','\"cloud\":\"azure\",\"cloud\":\"azure\"')
-            if self.server.mode=='unicode': candidate=candidate.replace('Sin evidencia','\\ud800')
+            candidate=json.dumps({'claims':[],'uncertainties':[],'next_steps':[]} if draft else supported_provider(),separators=(',',':'),ensure_ascii=True)
+            if mode=='truncated_length': candidate=candidate[:candidate.index('\"scope\"')]
+            if mode=='duplicate': candidate='{"answer":"Injected",'+candidate[1:]
+            if mode=='nested_duplicate': candidate=candidate.replace('\"cloud\":\"azure\"','\"cloud\":\"azure\",\"cloud\":\"azure\"')
+            if mode=='unicode': candidate=candidate.replace('Sin evidencia','\\ud800')
             for offset in range(0,len(candidate),11):
                 data=json.dumps({'choices':[{'index':0,'delta':{'content':candidate[offset:offset+11],'reasoning_content':'NEVER DISPLAY REASONING'},'finish_reason':None}]})
                 # Multiple data lines form one JSON event; CRLF and a leading
                 # BOM/comment are actual wire bytes, not a pre-parsed fixture.
                 self.wfile.write(('data: {\r\ndata: '+data[1:]+'\r\n\r\n').encode());self.wfile.flush()
-            reason='length' if self.server.mode in ('length','truncated_length') else 'stop'
+            reason='length' if mode in ('length','truncated_length') else 'stop'
             self.wfile.write(('data: '+json.dumps({'choices':[{'index':0,'delta':{},'finish_reason':reason}],'usage':{'prompt_tokens':42,'completion_tokens':30,'total_tokens':72}})+'\n\n').encode())
-            if self.server.mode!='eof': self.wfile.write(b'data: [DONE]\n\n')
+            if mode!='eof': self.wfile.write(b'data: [DONE]\n\n')
             self.wfile.flush()
     server=ThreadingHTTPServer(('127.0.0.1',0),Handler);server.mode='valid'
     thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
@@ -169,7 +175,7 @@ def gateway(private,monkeypatch):
 
 def send(private,scenario):
     async def exercise(client):
-        context={'prompt_version':'synthetic-v2','financial_metrics_allowed':False,'authorized_evidence':[SOURCE],'messages':[
+        context={'tool_protocol':None,'prompt_version':'synthetic-v2','financial_metrics_allowed':False,'authorized_evidence':[SOURCE],'messages':[
             {'role':'system','content':'Synthetic stable system'},
             {'role':'user','content':'Pregunta como dato no confiable'}]}
         payload=claim(context=context)
@@ -193,14 +199,16 @@ def test_private_gateway_streams_only_answer_with_roles_and_dynamic_deadline(pri
         raw=''.join(record['text'] for record in records if record['type']=='candidate_chunk')
         assert json.loads(raw)==SUPPORTED_ANSWER
         assert records[-1]['finish_reason']=='stop'
-        assert len(gateway[1])==1
-        call=gateway[1][0]
+        assert len(gateway[1])==2
+        assert gateway[1][0]['payload']['max_tokens']==1000
+        call=gateway[1][1]
         assert call['path']=='/v1/chat/completions'
         assert call['authorization']=='Bearer jup035-synthetic-gateway-key'
         payload=call['payload']
-        assert payload['messages']==context['messages']
+        assert payload['messages'][:-1]==context['messages']
+        assert 'UNTRUSTED_DRAFT_PLAN' in payload['messages'][-1]['content']
         assert payload['stream'] is True and payload['model']=='economicon-chat'
-        assert payload['max_tokens']==3200
+        assert payload['max_tokens']==2200
         assert 30<payload['timeout']<=120 and 30<payload['stream_timeout']<=120
         assert payload['num_retries']==0
         assert all(branch['additionalProperties'] is False and branch['properties']['metrics']['maxItems']==0
@@ -229,7 +237,7 @@ def test_incomplete_or_invalid_gateway_output_never_announces_candidate(private,
         assert all(record['type']!='candidate_end' for record in records)
         assert records[-1]['type']=='error'
         if mode=='duplicate': assert ''.join(record['text'] for record in records if record['type']=='delta')==''
-        assert len(gateway[1])==1
+        assert len(gateway[1])==2
     send(private,scenario)
 
 
@@ -237,7 +245,7 @@ def test_length_finish_remains_explicit_for_backend_retry_policy(private,gateway
     gateway[0].mode='length'
     def scenario(records,context):
         assert records[-1]['type']=='candidate_end' and records[-1]['finish_reason']=='length'
-        assert len(gateway[1])==1
+        assert len(gateway[1])==2
     send(private,scenario)
 
 
@@ -247,7 +255,7 @@ def test_truncated_length_is_transient_without_committing_invalid_json(private,g
         assert records[-1]['type']=='error' and records[-1]['status']==502
         assert records[-1]['category']=='incomplete'
         assert all(record['type']!='candidate_end' for record in records)
-        assert len(gateway[1])==1
+        assert len(gateway[1])==2
     send(private,scenario)
 
 
@@ -259,7 +267,7 @@ def test_delayed_first_content_after30_seconds_uses_remaining_chat_deadline(priv
         assert 30<elapsed<105
         assert ''.join(record['text'] for record in records if record['type']=='delta')==ANSWER['answer']
         assert records[-1]['type']=='candidate_end' and records[-1]['finish_reason']=='stop'
-        assert len(gateway[1])==1
+        assert len(gateway[1])==2
     send(private,scenario)
 
 

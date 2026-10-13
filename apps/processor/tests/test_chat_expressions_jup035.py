@@ -188,13 +188,13 @@ def test_retrieval_control_is_bound_to_canonical_question(alteration):
     with pytest.raises(ValueError):validate_search_call(alteration,context('same'))
 
 
-def test_one_server_retrieval_precedes_exactly_one_generation(monkeypatch):
-    from test_chat_auto_jup035 import provider,wire
+def test_one_server_retrieval_precedes_private_plan_and_reviewed_generation(monkeypatch):
+    from test_chat_auto_jup035 import provider,wire,review_wires
     from test_chat_gateway_jup035 import ANSWER,_provider
     value=_provider(ANSWER)
     value.update(basis='missing_data',status='insufficient_data',answer=[{'text':'Necesito la regla de reparto aplicable.'}],
         limitations=[],next_actions=[[{'text':'Aporta la política aplicable.'}]])
-    gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(value)})])
+    gateway,requests=provider(monkeypatch,review_wires(wire({'content':json.dumps(value)})))
     ctx={**context('Explica costes'),'tool_protocol':'server-documentation-v4','financial_metrics_allowed':False,'authorized_evidence':[]}
     calls=[]
     async def retrieve(control):
@@ -203,8 +203,9 @@ def test_one_server_retrieval_precedes_exactly_one_generation(monkeypatch):
         return {'tool_call_id':validate_search_call(control,ctx)[0],'content':'{"evidence":[],"omissions":[]}','variable_tokens':0}
     async def exercise():return [event async for event in gateway(ctx,time.time()+60,tool_result=retrieve)]
     events=asyncio.run(exercise())
-    assert len(calls)==len(requests)==1
+    assert len(calls)==1 and len(requests)==2
     assert events[0]['type']=='tool_call'
     assert any(event['type']=='candidate' for event in events),events
-    assert requests[0]['response_format']['json_schema']['name']=='FinOpsResponse'
-    assert 'tools' not in requests[0]
+    assert requests[0]['response_format']['json_schema']['name']=='PrivateAnswerPlan'
+    assert requests[1]['response_format']['json_schema']['name']=='FinOpsResponse'
+    assert all('tools' not in item for item in requests)

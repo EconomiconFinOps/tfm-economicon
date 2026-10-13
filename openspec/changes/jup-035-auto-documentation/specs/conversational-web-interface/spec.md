@@ -13,6 +13,16 @@ evidencia insuficiente sin inventar cifras.
 - **WHEN** una pregunta autorizada dispone de evidencia relevante
 - **THEN** un modelo real mediante gateway responde dentro del contrato validado y la plantilla o mock no cuentan como aceptación
 
+#### Scenario: Plan privado y revisión final dentro del mismo intento
+
+- **WHEN** termina la única recuperación documental autenticada
+- **THEN** el sistema SHALL generar un plan privado con esquema cerrado y máximo1000tokens, sin emitir su contenido al cliente
+- **AND** SHALL validar forma, fuentes autorizadas y cotas; un plan truncado o inválido SHALL fallar sin tercera llamada ni reparación opaca
+- **AND** una segunda generación SHALL revisar ese plan como dato no confiable contra el contexto original y producir la única respuesta final incremental, con máximo2200tokens
+- **AND** ambas fases SHALL compartir120segundos, cancelación y máximo conjunto3200tokens, sin reintentos locales ni nueva recuperación
+- **AND** SHALL contar contexto real y esquema por fase, reservar ambas entradas y conservar hashes de request y uso observado correlacionados, sin publicar el plan ni razonamiento
+- **AND** el uso completo SHALL sumarse y el parcial SHALL identificarse como incompleto, incluso si la fase final falla o se cancela; no se registrará como cero ni como total completo
+
 #### Scenario: Sin evidencia
 
 - **WHEN** no existe evidencia suficiente

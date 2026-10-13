@@ -237,6 +237,8 @@ def create_chat_app():
 
         async def monitored_gateway():
             from app.clients.chat_gateway import diagnostic_scope
+            if hasattr(gateway,'resources'):
+                gateway.resources=resources
             with diagnostic_scope(claim.get('operation_id'),claim.get('attempt_id')):
                 options={'tool_result':tool_result} if getattr(gateway,'requires_tool_result',False) and claim['context'].get('tool_protocol')=='server-documentation-v4' else {}
                 iterator=gateway(claim['context'],claim['deadline'],**options).__aiter__()
@@ -277,7 +279,7 @@ def create_chat_app():
                                         except UnicodeDecodeError: end-=1
                                     yield encode({'v':2,'type':'candidate_chunk','offset':offset,'text':fragment})+b'\n'
                                     offset=end
-                                yield encode({'v':2,'type':'candidate_end','size':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'finish_reason':record.get('finish_reason'),'usage':record.get('usage')})+b'\n'
+                                yield encode({'v':2,'type':'candidate_end','size':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'finish_reason':record.get('finish_reason'),'usage':record.get('usage'),'usage_report':record.get('usage_report')})+b'\n'
                                 return
                             elif kind=='tool_call':
                                 from app.core.chat_resources import validate_search_call
@@ -292,7 +294,7 @@ def create_chat_app():
                                 if not isinstance(record.get('text'),str) or len(record['text'].encode())>8192: raise ValueError('Delta limit.')
                                 yield encode({'v':2,'type':'delta','text':record['text']})+b'\n'
                             elif kind=='error':
-                                yield encode({'v':2,'type':'error','status':record.get('status'),'category':record.get('category'),'retry_after':record.get('retry_after')})+b'\n'
+                                yield encode({'v':2,'type':'error','status':record.get('status'),'category':record.get('category'),'retry_after':record.get('retry_after'),'usage_report':record.get('usage_report')})+b'\n'
                                 return
                             else: raise ValueError('Stream record.')
             except (TimeoutError,OSError):

@@ -3,6 +3,42 @@
 Fecha: 2026-10-13. Estado: implementación autorizada; aceptación real pendiente.
 PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/121
 
+## Revisión28 vigente: plan privado y respuesta revisada
+
+Sustituye expresamente la decisión anterior de una generación final. Se mantiene
+una recuperación autenticada; después se permiten exactamente dos generaciones
+como máximo por intento: plan estructurado de1000tokens y respuesta final de2200.
+El máximo conjunto continúa siendo3200 (incluye razonamiento del proveedor), con
+el mismo plazo absoluto120s, modelo, cancelación y cero reintentos locales. No se
+añade una tercera llamada ni una recuperación para corregir un plan inválido.
+
+Motivación:27 completó7casos pero5fallaron auditoría por afirmaciones sin citas,
+incertidumbre presentada como certeza y capacidades no habilitadas. Permitir
+fuentes opcionales no resolvió esos errores. El plan enumera hasta6afirmaciones
+con IDs autorizados,4incertidumbres y3próximos pasos; no es razonamiento privado,
+evidencia nueva ni respuesta pública. JSON inválido/truncado, IDs ajenos, campos
+extra y límites excedidos fallan antes de la segunda llamada. La revisión recibe
+el plan como dato no confiable junto al contexto original; comprueba soporte de
+afirmaciones principales y auxiliares, prudencia y capacidades. Sólo esta segunda
+fase emite SSE y pasa los validadores existentes antes de persistencia.
+
+Se cuentan los mensajes y esquema reales antes de cada llamada. La admisión
+reserva ambos inputs, instrucciones y hasta32768tokens conservadores de inserción
+del plan de16384bytes (doble escape JSON); no presume que1000tokens de salida
+equivalgan al mismo número al reinsertarlos. El recibo privado incluye fase,
+hash exacto de request, tokens reales de input y límite de salida, sin contenido.
+El manifiesto identifica instrucciones, esquema y hash normalizado del módulo.
+
+El uso completo se suma en la metadata existente. Uso parcial, incluso tras fallo
+o cancelación, se conserva explícitamente como observado/incompleto en diagnóstico
+privado correlacionado; no se inventa cero ni un total completo. Ese diagnóstico
+no es un ledger financiero durable ni crea un mensaje JSONB en un intento fallido.
+La revisión por el mismo modelo no garantiza entailment ni aceptación: requiere
+pruebas reales y auditoría completa del banco original sobre el candidato limpio.
+
+Las referencias históricas siguientes a una generación describen decisiones
+sustituidas por este apartado; sus evidencias negativas se conservan.
+
 La campaña completa de f6c7895 produjo 18 respuestas completadas y 10 fallos,
 además de respuestas completadas semánticamente incompletas. La decisión previa
 del modelo y su plan con referencias introdujeron errores de unidades, referencias

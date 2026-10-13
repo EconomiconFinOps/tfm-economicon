@@ -43,16 +43,17 @@ def empty_result():
 @pytest.mark.parametrize('with_source',[False,True])
 def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch,with_source):
     source={'id':'corpus:current:0','kind':'corpus','title':'Current source','source':'Manual','content':'A supported threshold of 17%.'}
-    gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(request_provider())})])
+    gateway,requests=provider(monkeypatch,review_wires(wire({'content':json.dumps(request_provider())})))
     async def result(control):
         return {**empty_result(),'content':json.dumps({'evidence':[source] if with_source else [],'omissions':[]})}
     async def exercise():return [r async for r in gateway(retrieval_context(),time.time()+60,tool_result=result)]
     records=asyncio.run(exercise())
-    assert records[-1]['type']=='candidate' and len(requests)==1
-    assert requests[0]['reasoning']=={'effort':'high','exclude':True}
-    assert requests[0]['max_tokens']==3200
+    assert records[-1]['type']=='candidate' and len(requests)==2
+    assert requests[0]['response_format']['json_schema']['name']=='PrivateAnswerPlan'
+    assert requests[-1]['reasoning']=={'effort':'high','exclude':True}
+    assert requests[-1]['max_tokens']==2200 and requests[0]['max_tokens']==1000
     assert requests[0]['timeout']<=60 and requests[0]['num_retries']==0
-    schema=requests[0]['response_format']['json_schema']['schema']
+    schema=requests[-1]['response_format']['json_schema']['schema']
     if with_source:
         choices=schema['$defs']['Evidence']['anyOf']
         assert len(choices)==1
@@ -78,7 +79,7 @@ def test_final_failure_diagnostic_never_contains_candidate_or_secret(monkeypatch
 
 
 @pytest.mark.parametrize('failure',['native','invalid_final','eof','length','wrong_id','429'])
-def test_single_generation_failures_never_retry_or_change_provider(monkeypatch,failure):
+def test_reviewed_final_failures_never_retry_or_change_provider(monkeypatch,failure):
     from urllib.error import HTTPError
     final=wire({'content':json.dumps(request_provider())})
     if failure=='native':final=wire({'tool_calls':[{'index':0,**TOOL},{'index':1,**TOOL}]},'tool_calls')
@@ -86,7 +87,7 @@ def test_single_generation_failures_never_retry_or_change_provider(monkeypatch,f
     if failure=='eof':final=final.replace(b'data: [DONE]\n\n',b'')
     if failure=='length':final=wire({'content':'{"answer":['},'length')
     if failure=='429':final=HTTPError('http://synthetic.invalid',429,'Synthetic',{'Retry-After':'17'},io.BytesIO())
-    gateway,requests=provider(monkeypatch,[final]);searches=[]
+    gateway,requests=provider(monkeypatch,review_wires(final));searches=[]
     async def result(control):
         assert not requests
         searches.append(control)
@@ -98,7 +99,8 @@ def test_single_generation_failures_never_retry_or_change_provider(monkeypatch,f
     else:
         records=asyncio.run(exercise())
         assert records[-1]['type']=='error' and not any(r['type']=='candidate' for r in records)
-        assert len(requests)==1
+        assert len(requests)==2
+        assert all(item['num_retries']==0 for item in requests)
         assert requests[0]['num_retries']==0 and requests[0]['provider']=={'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True}
     assert searches==[DECISION]
 
@@ -136,7 +138,7 @@ def test_retrieval_does_not_reset_attempt_deadline(monkeypatch):
         monkeypatch.setattr(time,'time',lambda:deadline-4)
         return empty_result()
     async def exercise():return [r async for r in gateway(retrieval_context(),deadline,tool_result=result)]
-    assert asyncio.run(exercise())[-1]=={'type':'error','category':'timeout'}
+    assert asyncio.run(exercise())[-1]=={'type':'error','category':'timeout','usage_report':None}
     assert requests==[]
 
 
@@ -149,8 +151,9 @@ def test_legacy_protocol_cannot_silently_become_direct(monkeypatch,legacy):
 
 
 def test_private_endpoint_hmac_retrieval_then_one_final(private,monkeypatch):
-    gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(request_provider())},tokens=24)])
+    gateway,requests=provider(monkeypatch,review_wires(wire({'content':json.dumps(request_provider())},tokens=24)))
     monkeypatch.setattr(private[0].state,'chat_gateway',gateway)
+    monkeypatch.setattr(private[0].state,'chat_resources',gateway.resources, raising=False)
     async def scenario(client):
         payload=claim(context={'prompt_version':'synthetic-v2',**retrieval_context()})
         raw=json.dumps(payload).encode()
@@ -168,8 +171,8 @@ def test_private_endpoint_hmac_retrieval_then_one_final(private,monkeypatch):
             response=await asyncio.wait_for(task,3)
             records=[json.loads(line) for line in response.text.splitlines()]
             assert records[-1]['type']=='candidate_end',response.text
-            assert records[-1]['usage']['total_tokens']==24
-            assert sum(r['type']=='tool_call' for r in records)==1 and len(requests)==1
+            assert records[-1]['usage']['total_tokens']==36
+            assert sum(r['type']=='tool_call' for r in records)==1 and len(requests)==2
         finally:
             task.cancel();await asyncio.gather(task,return_exceptions=True)
     run(private[0],scenario)
@@ -191,6 +194,7 @@ def wire(delta, finish='stop', tokens=12):
 def provider(monkeypatch, responses, read_size=7):
     gateway = ChatGateway(SimpleNamespace(llm_model='economicon-chat',
         litellm_base_url='http://synthetic.invalid/v1', litellm_api_key=SecretStr('synthetic')))
+    gateway.resources = SyntheticResources()
     requests = []
     class Response(io.BytesIO):
         headers = {'Content-Type': 'text/event-stream'}
@@ -203,3 +207,21 @@ def provider(monkeypatch, responses, read_size=7):
         return Response(response)
     monkeypatch.setattr(gateway.client.transport, 'open', opened)
     return gateway, requests
+
+
+class SyntheticResources:
+    """Payload transport fixture; real tokenizer/contract checks have dedicated tests."""
+    def count(self, text): return len(text)
+    def check_messages(self, messages, schema):
+        assert isinstance(messages, list) and isinstance(schema, dict)
+        assert schema.get('type') == 'object'
+        return self.count(json.dumps(messages))
+    def validate_context(self, context):
+        assert isinstance(context['messages'], list)
+    def validate_tool_result(self, context, control, result):
+        from app.core.chat_resources import continuation_messages
+        continuation_messages(context, control, result)
+
+
+def review_wires(final):
+    return [wire({'content':json.dumps({'claims':[], 'uncertainties':[], 'next_steps':[]})}), final]

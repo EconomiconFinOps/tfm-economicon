@@ -15,7 +15,7 @@ TOKENIZER_SHA = '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82
 TOKENIZER_REVISION = 'a66456a59f21345d1e5e586345c448a9106d29d7'
 BASE_SHA = '8e3197acc5cc50b4368d547fbde9ea198cad3364414cec489cd9050f922e6edf'
 INPUT_SHA = 'a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42'
-ASSEMBLER_SHA = '30247e612d8592d6228efb3fdf58dc2d503bc8f365b8aa1613bf2308b636d07d'
+ASSEMBLER_SHA = '06587ae93575cccbe760720c05d58547e80d54de4eb1be8ba5ce154262b6bde7'
 from app.core.chat_expressions import context_question, context_quantities
 
 # This control is generated locally, never by an LLM. The entire current
@@ -62,6 +62,11 @@ class BackendChatResources:
         variable = self.count(canonical(messages[1:]))
         effective = provider_response_schema(financial_metrics_allowed=financial_metrics_allowed, authorized_evidence=authorized_evidence, quantities=context_quantities({"messages":messages,"authorized_evidence":authorized_evidence or []}))
         total = self.count(canonical(messages)) + self.count(canonical(effective))
+        from app.core.chat_review import admission_tokens
+        reserve=admission_tokens(self.count,messages,effective,authorized_evidence or [])
+        if reserve['max_context_tokens']+1024>self.context_budget['context_tokens']:
+            from app.db.chat_repository import ChatError
+            raise ChatError(413,'context_token_limit')
         if total + 1024 + self.context_budget['output_tokens'] > self.context_budget['context_tokens']:
             from app.db.chat_repository import ChatError
             raise ChatError(413, 'context_token_limit')

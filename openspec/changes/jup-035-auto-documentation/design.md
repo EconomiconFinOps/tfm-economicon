@@ -3,11 +3,18 @@ JUP: JUP-035
 ## Decisión vigente — 13/10/2026, después de la batería completa
 
 Se adopta server-documentation-v4: recuperación única determinada por el servidor
-y una generación final con expresiones locales autocontenidas. Sustituye la
+y, desde revisión28, un plan privado de1000tokens y una generación final revisada
+de2200tokens con expresiones locales autocontenidas. Las dos fases comparten
+plazo120s, uso y máximo total3200tokens; sólo la final emite SSE. Sustituye la
 decisión none/search del modelo y el plan de índices. Véase el
 [ADR](../../../docs/adr/JUP-035-server-retrieval-expressions.md) para los límites,
 origen de cantidades, coste/privacidad de recuperación en saludos, esquema
 finito con $defs, deadline, HMAC y aceptación pendiente.
+
+La revisión28 sustituye expresamente la generación única de la revisión27,
+que completó7casos pero sólo2superaron auditoría semántica. No se considera
+que una revisión por el mismo modelo garantice soporte, pertinencia o prudencia;
+la aceptación exige pruebas reales completas sin modificar preguntas ni criterios.
 
 La batería f6c7895 produjo18 completed/10 failed, con fallos semánticos también
 entre los completed. No se considera aceptada ni se ocultan los ensayos previos.

@@ -1,4 +1,45 @@
-## Corte vigente: focal26 y corrección27 offline — 13/10/2026
+## Corte vigente: candidato28 offline — 13/10/2026
+
+Plan privado1000tokens + final revisado2200 sustituyen generación única, con
+120s compartidos, una recuperación, cero reintentos locales y sin plan público.
+Draft inválido/truncado no admite la final. Conteo real por fase, reserva de
+ambas entradas y uso parcial explícito en diagnóstico correlacionado. No cambia
+FinOpsResponse1.0, fuente de autoridad financiera ni banco. ADR/OpenSpec detallan
+límites y ausencia de garantía semántica de la segunda generación.
+
+Verificación offline:20PASS flujo/uso (incluye cancelación ambas fases, logger
+fallando y deadline entre fases);57PASS gateway/auto del padre con HTTP loopback;
+59PASS backend contexto/SQLite;86PASS DNS/expresiones/contextbudget;49PASS previos
+resources/flow y único fixture de32768tokens actualizado y revalidado en86.
+Paridad4contextos: reserva38060–43359+1024, menor que contexto runtime1048576,
+sin ampliar configuración. OpenSpec69PASS. Bundle
+`c0a33eded1aa62b7a19e314ac71e37e205355c3cde0a78ce25f5f5ec00382aa4`.
+Logs externos expression28-flow2/back1/extra1/openspec
+y parent-gateway3/parity. Publicación/build/prueba
+real28 pendientes; último gasto0.916443034/2USD. Claves19:33:52UTC requieren
+comprobar/renovar sólo vigencia antes de una campaña que no quepa en ese plazo.
+
+## Antecedente: diagnóstico27 terminado, sin aceptación — 13/10/2026
+
+Publicado/runtime `54e101d8f278ba46f80ba592f67abecdc03756aa`; CI PR38450744407
+PASS. Bundle `bf85a23fc2884ead0b46349b84af8848710e364b40f5a0d04003348e6c07f648`
+y hashes85backend/75processor/112frontend verificados. Focal27 original de siete
+casos:7completed,1intento/caso. Auditoría independiente:2PASS(025/026),5FAIL:
+003/008 afirman contenido documental sin citas;022 convierte incertidumbre en
+ausencia de base estable;023 propone conexión no habilitada;028 añade requisitos
+auxiliares sin fuente pertinente. No full28 ni aceptación semántica.
+
+Campaña diagnostic_only con observación acotada a errores008/022: ninguno se
+reprodujo, captured=[]; no atribuir causa histórica. Wrapper38786 terminóexit0
+y restauró ambos hashes originales de gateway/rules. SQL real CockroachDB24.1.11:
+JSONB7/7PASS,2mensajes por caso, SSE=final=historial. Recibos externos
+`expression27-focused.json`, `expression27-capture-receipt.json` y
+`expression27-sql-verify.json`. Gasto asentado0.916443034USD del máximo total2USD;
+claves existentes vigentes hasta19:33:52UTC. No inferencias adicionales mientras
+se revisa cómo vincular afirmaciones y fuentes; un cambio a dos generaciones
+requiere reconciliar explícitamente el ADR y especificación actuales de una.
+
+## Antecedente: focal26 y corrección27 offline — 13/10/2026
 
 Publicado/runtime845d0334febe46cecadbf4fa1eb43be7ac38f492; CI PR38448348918
 PASS. Focal26 sesión55367 exit0:8 de9 casos ejecutados,5completed/2failed y

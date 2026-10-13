@@ -32,7 +32,7 @@
 - [x] 5.4 Fusionar develop3c6517b conservando JUP113; GitHubMERGEABLE y JUP policy pull_requestSUCCESS.
 - [x] 5.5 Provisionar HMAC estable en init/prepare; compose config real, UID10001/ro y55 pruebas CDLinux pasan.
 - [x] 5.6 Ejecutar focales y full28 del código congelado; publicar todos los fallos y costes, sin aceptación global.
-- [x] 5.7 Objetivo autorizado de correccion: protocolo servidor server-documentation-v4 sustituye none/search del modelo; una recuperacion y una generacion, proveedor fijo sin mensajes tool fabricados. Diseño tecnico documentado en ADR, no atribuido literalmente al usuario.
+- [x] 5.7 Antecedente: server-documentation-v4 sustituyó none/search por recuperación del servidor y una generación; revisión28 sustituye esta última por plan privado y final revisado, dentro del máximo histórico2. Proveedor fijo, sin mensajes tool fabricados.
 - [ ] 5.8 Resolver aceptación semántica:011,017,018,021,024 de la campaña actual; no otra afirmación de garantía sólo por prompts.
 - [ ] 5.9 Completar recorrido de navegador de esta revisión y reviews oficiales; no archivar el change antes de aceptación.
 
@@ -41,7 +41,7 @@
 - [ ] 6.2 Probar extracto literal por cita, contexto documental no confiable y esquema/conteo identicos en ambos servicios.
 - [ ] 6.3 Congelar SHA, desplegar solo runtime sintetico, ejecutar focales y full28 sin cambiar criterios; registrar gasto acumulado máximo2USD (ampliación autorizada el13/10/2026).
 - [ ] 6.4 Recorrido navegador sobre candidato final y evidencia de persistencia/aislamiento, sin confundir CI con reviews oficiales.
-- [ ] 6.5 Expresiones Decimal locales, recuperacion de servidor por HMAC y una generacion; probar origen de cantidades, unidades/cero/limites globales y equivalencia SSE/candidato/persistencia con UTF-8 fragmentado.
+- [ ] 6.5 Expresiones Decimal locales, recuperación de servidor por HMAC y plan privado+final revisado; probar origen de cantidades, unidades/cero/límites globales y equivalencia SSE/candidato/persistencia con UTF-8 fragmentado.
 
 ## 7. Fiabilidad tras la campaña f6c7895
 - [x] 7.1 Conservar full28:18 completed/10 failed, y defectos semánticos de respuestas completadas; no declararla aceptada.

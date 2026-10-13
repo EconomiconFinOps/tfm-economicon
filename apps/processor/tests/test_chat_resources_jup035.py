@@ -26,7 +26,7 @@ ASSEMBLER_CONTRACT={'version':2,'roles':['system','user-summary-optional','user-
 from app.core.chat_resources import DECISION_SCHEMA, decision_schema
 ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_schema=copy.deepcopy(DECISION_SCHEMA),
     continuation_roles=['user-untrusted-retrieval'], max_searches=1,
-    max_generations=1, decision_format='server-current-question', final_format='strict-finops',
+    max_generations=2, decision_format='server-current-question', final_format='strict-finops',
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
@@ -42,6 +42,13 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     interval_rules='explicit-percentage-partition-lexical-numerator-v1',
     decision_values='server-query-no-model-decision-v1',
     reasoning={'effort':'high','exclude':True,'shared_output_tokens':3200})
+from app.core.chat_review import DRAFT_INSTRUCTION,REVIEW_INSTRUCTION,draft_schema
+ASSEMBLER_CONTRACT['review']={'version':1,'draft_tokens':1000,'final_tokens':2200,
+    'draft_schema':draft_schema([]),'draft_instruction':DRAFT_INSTRUCTION,
+    'review_instruction':REVIEW_INSTRUCTION,'draft_public':False,
+    'usage':'observed-partial-explicit-legs-v1','deadline':'shared-120s',
+    'draft_max_bytes':16384,'serialized_plan_input_reserve':32768,
+    'module_sha256':hashlib.sha256((Path(__file__).parents[1]/'app/core/chat_review.py').read_text(encoding='utf-8').encode()).hexdigest()}
 
 
 def canonical(value): return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()

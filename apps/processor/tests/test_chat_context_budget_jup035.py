@@ -125,7 +125,8 @@ def summary_context_change(context, defect=None):
 
 
 def test_v3_summary_over768_dispatches_under_real_chat_budget(resources,monkeypatch):
-    monkeypatch.setenv('CHAT_CONTEXT_TOKENS','32768')
+    # Includes both phase inputs and the bounded re-encoded private plan.
+    monkeypatch.setenv('CHAT_CONTEXT_TOKENS','65536')
     response,counted=asyncio.run(exercise(resources,change=summary_context_change,recount=True))
     assert counted>768
     assert response.status_code==200,response.text

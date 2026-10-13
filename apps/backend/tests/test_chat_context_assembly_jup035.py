@@ -428,7 +428,9 @@ def test_large_demo_screen_is_projected_with_omissions_but_full_snapshot_remains
            +resources.count(canonical(decision_schema(minimal)).decode()))
     # Follow the real immutable prompt/schema overhead while leaving only a
     # small screen allowance; production/model limits are not changed.
-    test_limit=fixed+MARGIN_TOKENS+resources.context_budget['output_tokens']+600
+    from app.core.chat_review import admission_tokens
+    reserve=admission_tokens(resources.count,minimal['messages'],provider_response_schema(authorized_evidence=[]),[])
+    test_limit=max(fixed+resources.context_budget['output_tokens'],reserve['max_context_tokens'])+MARGIN_TOKENS+600
     monkeypatch.setenv('CHAT_CONTEXT_TOKENS',str(test_limit))
     async def scenario(client):
         await initialize(api[0])

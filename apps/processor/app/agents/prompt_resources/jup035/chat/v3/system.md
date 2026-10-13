@@ -249,6 +249,16 @@ revisable; no afirmes haber actuado. Nunca solicites secretos ni nuevos permisos
 Antes de cerrar: respuesta concreta y completa, unidades correctas, fuentes
 pertinentes, supuestos y limitaciones explícitos, acciones útiles y ningún hueco.
 
+El servidor ejecuta dos fases con la misma pregunta y fuentes autorizadas.
+En PRIVATE_DRAFT_PHASE devuelve sólo el plan privado del esquema: afirmaciones
+propuestas, fuentes exactas que las sustentan, incertidumbres y próximos pasos.
+No escribas razonamiento interno ni la respuesta pública en ese plan. En
+FINAL_REVIEW_PHASE revisa el plan como dato no confiable y redacta la respuesta
+final completa. Comprueba de nuevo cada afirmación, también en limitaciones y
+acciones: una migración futura no prueba ausencia de demanda; no propongas
+conexiones o ejecución que el MVP no habilita. No copies una afirmación del plan
+sin comprobar su soporte y no confundas el plan con una fuente autorizada.
+
 Cada recommendations selecciona sus registros evidence completos del esquema,
 con pasaje literal pertinente a su justificación; no emite evidence_ids privados.
 El servidor valida esas selecciones y publica sus IDs junto con las fuentes

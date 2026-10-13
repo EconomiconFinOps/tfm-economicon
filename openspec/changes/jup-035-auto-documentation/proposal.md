@@ -9,13 +9,15 @@ sustituidos; sus ensayos negativos se conservan, no acreditan aceptación actual
 
 ## What Changes
 - Contrato vigente server-documentation-v4: una recuperación documental gobernada
-  por servidor y una generación final, dentro del máximo de dos generaciones.
+  por servidor, un plan privado acotado y una respuesta revisada incremental;
+  dos generaciones como máximo, que sustituyen la decisión previa de una.
 - Expresiones privadas tipadas, ligadas a cantidades de usuario o documentos
   autenticados; cálculo Decimal local y proyección al FinOpsResponse público.
 - Citas con extractos literales verificados y fuente visible para cantidades
   documentales usadas. La pertinencia y selección de operandos requieren evaluación.
 - Política chat separada de ingesta, esquema privado consistente con autoridad
-  financiera y razonamiento high/exclude dentro de la salida máxima de 3200 tokens.
+  financiera y razonamiento high/exclude dentro de la salida máxima conjunta
+  de3200tokens por intento (1000plan/2200final), plazo120s compartido.
 - Preservar aislamiento, HMAC, plazo, cancelación, JSONB y equivalencia SSE/final.
 - Reconciliar develop con anomalías reales y migración compatible de los dos
   esquemas históricos 002, sin modificar registros ni datos ya aplicados.

@@ -55,7 +55,7 @@ def validate_search_call(value, context=None):
 
 ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_schema=DECISION_SCHEMA,
     continuation_roles=['user-untrusted-retrieval'], max_searches=1,
-    max_generations=1, decision_format='server-current-question', final_format='strict-finops',
+    max_generations=2, decision_format='server-current-question', final_format='strict-finops',
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
@@ -71,6 +71,13 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     interval_rules='explicit-percentage-partition-lexical-numerator-v1',
     decision_values='server-query-no-model-decision-v1',
     reasoning={'effort':'high','exclude':True,'shared_output_tokens':3200})
+from app.core.chat_review import DRAFT_INSTRUCTION,REVIEW_INSTRUCTION,DRAFT_MAX_BYTES,draft_schema
+ASSEMBLER_CONTRACT.update(review={'version':1,'draft_tokens':1000,'final_tokens':2200,
+    'draft_schema':draft_schema([]),'draft_instruction':DRAFT_INSTRUCTION,
+    'review_instruction':REVIEW_INSTRUCTION,'draft_public':False,
+    'usage':'observed-partial-explicit-legs-v1','deadline':'shared-120s',
+    'draft_max_bytes':DRAFT_MAX_BYTES,'serialized_plan_input_reserve':2*DRAFT_MAX_BYTES,
+    'module_sha256':hashlib.sha256(Path(__file__).with_name('chat_review.py').read_text(encoding='utf-8').encode()).hexdigest()})
 
 
 def continuation_messages(context, assistant, result):
@@ -152,6 +159,9 @@ class ChatResources:
         total=self.count(canonical(messages).decode('utf-8'))+self.count(canonical(schema).decode('utf-8'))
         if total+1024+self.context_budget['output_tokens']>self.context_budget['context_tokens']:
             raise TokenBudgetExceeded('Tool context token limit.')
+        from app.core.chat_review import admission_tokens
+        if admission_tokens(self.count,messages,schema,sources)['max_context_tokens']+1024>self.context_budget['context_tokens']:
+            raise TokenBudgetExceeded('Review context token limit.')
         if variable!=result['variable_tokens']: raise ValueError('Tool count mismatch.')
         return messages
 
@@ -170,6 +180,9 @@ class ChatResources:
         if context.get('tool_protocol') not in ('server-documentation-v4','mock-direct-v1'):
             raise ValueError('Tool protocol missing.')
         counted = self.check_messages(messages, chat_provider_schema(financial_metrics_allowed=allowed, authorized_evidence=context.get('authorized_evidence', []), quantities=context_quantities(context)))
+        from app.core.chat_review import admission_tokens
+        if admission_tokens(self.count,messages,chat_provider_schema(financial_metrics_allowed=allowed,authorized_evidence=context.get('authorized_evidence',[]),quantities=context_quantities(context)),context.get('authorized_evidence',[]))['max_context_tokens']+1024>self.context_budget['context_tokens']:
+            raise TokenBudgetExceeded('Review context token limit.')
         if not messages[-1]['content'].startswith('UNTRUSTED_CURRENT_CONTEXT\n'):
             raise ValueError('Current block mismatch.')
         if len(messages) == 3:

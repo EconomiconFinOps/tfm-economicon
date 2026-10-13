@@ -1,4 +1,4 @@
-"""One incremental gateway request under the chat attempt's remaining deadline.
+"""Private bounded plan and reviewed stream under one chat attempt deadline.
 
 No ingestion setting is changed. Backend alone decides whether another attempt
 may run. This adapter never retries, redirects, repairs JSON or falls back.
@@ -324,10 +324,14 @@ class ChatGateway:
         if settings.llm_model!='economicon-chat' or settings.litellm_api_key is None:
             raise ValueError('Chat gateway configuration.')
         self.settings=settings
+        self.resources=None
         self.client=LiteLLMClient(settings)
         self.client.transport=request.build_opener(request.ProxyHandler({}),_RejectRedirectHandler(),_ChatHTTPHandler(),_ChatHTTPSHandler())
 
     def _records(self,context,deadline,holder,cancelled,tool_choice=None):
+        from app.core.chat_review import DRAFT_TOKENS,FINAL_TOKENS,draft_schema,validate_draft
+        phase=context.get('_review_phase','final')
+        holder['usage']=None
         finish=None;request_hash=None;emitted=False;stage='request'
         def diagnostic(at,failure=None,**metadata):
             nonlocal emitted
@@ -340,7 +344,7 @@ class ChatGateway:
             yield {'type':'error','category':'timeout'};return
         try:
             payload={'model':'economicon-chat','messages':context['messages'],'stream':True,
-                'stream_options':{'include_usage':True},'max_tokens':budget('chat')['output_tokens'],'num_retries':0,
+                'stream_options':{'include_usage':True},'max_tokens':DRAFT_TOKENS if phase=='draft' else FINAL_TOKENS,'num_retries':0,
                 'timeout':remaining,'stream_timeout':remaining,'reasoning':{'effort':'high','exclude':True},
                 'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True}}
             from app.core.chat_expressions import context_quantities
@@ -350,6 +354,11 @@ class ChatGateway:
                 'schema':chat_provider_schema(
                     financial_metrics_allowed=context.get('financial_metrics_allowed'),
                     authorized_evidence=context.get('authorized_evidence', []), quantities=source_quantities)}}
+            if phase=='draft':
+                payload['response_format']['json_schema']={'name':'PrivateAnswerPlan','strict':True,
+                    'schema':draft_schema(context.get('authorized_evidence',[]))}
+            if self.resources is not None:
+                self.resources.check_messages(payload['messages'],payload['response_format']['json_schema']['schema'])
             req=request.Request(self.client.base_url+'/chat/completions',data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode(),
                 headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
             request_hash=hashlib.sha256(req.data).hexdigest()
@@ -358,11 +367,17 @@ class ChatGateway:
             raise
         req._attempt_deadline=_AttemptDeadline(max(.001,deadline-time.time()-5))
         req._chat_cancelled=cancelled
+        request_metadata={'phase':phase,'request_sha256':request_hash,'output_token_limit':payload['max_tokens']}
+        if self.resources is not None:
+            from app.core.chat_resources import canonical
+            request_metadata['input_tokens']=self.resources.count(canonical(payload['messages']).decode())+self.resources.count(canonical(payload['response_format']['json_schema']['schema']).decode())
         frames,answer=SSEFrames(),SegmentAnswerJSON([], quantities=source_quantities)
         decoder=codecs.getincrementaldecoder('utf-8-sig')('strict')
         candidate=[];candidate_bytes=0;usage=None
         try:
             stage='transport'
+            holder['attempted_legs']=holder.get('attempted_legs',0)+1
+            holder.setdefault('requests',[]).append(request_metadata)
             with self.client.transport.open(req,timeout=min(5,remaining)) as response:
                 holder['response']=response
                 if cancelled.is_set(): return
@@ -386,6 +401,11 @@ class ChatGateway:
                             try:
                                 stage='candidate_json'
                                 parsed=complete_json(raw)
+                                if phase=='draft':
+                                    if finish!='stop':raise ValueError('Private draft truncated.')
+                                    validate_draft(parsed,context.get('authorized_evidence',[]))
+                                    yield {'type':'draft','plan':parsed,'usage':usage}
+                                    return
                                 stage='model_validation'
                                 from app.core.chat_segments import render_response
                                 parsed=render_response(parsed,[],quantities=source_quantities)
@@ -401,7 +421,9 @@ class ChatGateway:
                             return
                         event=complete_json(data)
                         if not isinstance(event,dict): raise ValueError('Gateway event.')
-                        if isinstance(event.get('usage'),dict): usage=_usage_metadata(event,response.headers.get('x-litellm-response-cost'))
+                        if isinstance(event.get('usage'),dict):
+                            usage=_usage_metadata(event,response.headers.get('x-litellm-response-cost'))
+                            holder['usage']=usage
                         choices=event.get('choices',[])
                         if not isinstance(choices,list) or len(choices)>1: raise ValueError('Gateway choices.')
                         for choice in choices:
@@ -418,7 +440,7 @@ class ChatGateway:
                             if candidate_bytes>1024*1024: raise ValueError('Candidate limit.')
                             candidate.append(fragment)
                             stage='provisional_answer'
-                            provisional=answer.feed(fragment)
+                            provisional=answer.feed(fragment) if phase!='draft' else ''
                             # Escape-aware decoding completes surrogate pairs;
                             # chunking preserves codepoints and the8KiB wire bound.
                             yield from text_deltas(provisional)
@@ -444,6 +466,8 @@ class ChatGateway:
 
     async def __call__(self,context,deadline,*,tool_result=None):
         holder={};cancelled=threading.Event()
+        from app.core.chat_review import phase_messages,review_usage
+        usages=[];attempted=0
         try:
             protocol=context.get('tool_protocol')
             if protocol not in (None,'server-documentation-v4'):
@@ -461,18 +485,53 @@ class ChatGateway:
                 context={**context,'messages':messages,'authorized_evidence':
                     context.get('authorized_evidence',[])+json.loads(result['content'])['evidence']}
             if cancelled.is_set() or time.time()>=deadline-5:raise TimeoutError()
-            # Exactly one generation; no retries or model-selected routing.
-            iterator=self._records(context,deadline,holder,cancelled)
+            if self.resources is None:raise ValueError('Review token resources unavailable.')
+            draft_context={**context,'_review_phase':'draft','messages':phase_messages(context['messages'],'draft')}
+            iterator=self._records(draft_context,deadline,holder,cancelled)
+            draft=None
             while True:
                 record=await asyncio.to_thread(next,iterator,None)
+                attempted=holder.get('attempted_legs',0)
+                if record is None:break
+                if record.get('type')=='draft':
+                    draft=record['plan'];usages.append(record.get('usage'));break
+                if record.get('type')=='error':
+                    if attempted>len(usages):usages.append(holder.get('usage'))
+                    await asyncio.to_thread(iterator.close)
+                    yield {**record,'usage_report':review_usage(usages,attempted) if attempted else None};return
+                raise ValueError('Unexpected draft record.')
+            await asyncio.to_thread(iterator.close)
+            if draft is None:raise ValueError('Missing private draft.')
+            if cancelled.is_set() or time.time()>=deadline-5:raise TimeoutError()
+            final_context={**context,'_review_phase':'final','messages':phase_messages(context['messages'],'final',draft)}
+            iterator=self._records(final_context,deadline,holder,cancelled)
+            while True:
+                record=await asyncio.to_thread(next,iterator,None)
+                attempted=holder.get('attempted_legs',0)
                 if record is None:return
+                if record.get('type') in ('candidate','error'):
+                    if attempted>len(usages):usages.append(record.get('usage',holder.get('usage')))
+                    report=review_usage(usages,attempted) if attempted else None
+                    record={**record,'usage_report':report,'usage':report['observed'] if report and report['complete'] else None}
+                    await asyncio.to_thread(iterator.close)
+                    yield record
+                    return
                 yield record
         except TimeoutError:
-            yield {'type':'error','category':'timeout'}
+            attempted=holder.get('attempted_legs',0)
+            yield {'type':'error','category':'timeout','usage_report':review_usage(usages+[holder.get('usage')] if len(usages)<attempted else usages,attempted) if attempted else None}
         finally:
             cancelled.set()
             response=holder.get('response')
             if response is not None:interrupt(response)
+            try:
+                attempted=holder.get('attempted_legs',0)
+                if attempted:
+                    report=review_usage(usages+[holder.get('usage')] if len(usages)<attempted else usages,attempted)
+                    operation_id,attempt_id=_diagnostic_context.get() or (None,None)
+                    _diagnostic_logger.info('chat_review_usage %s',json.dumps({'event':'chat_review_usage','operation_id':operation_id,'attempt_id':attempt_id,'requests':holder.get('requests',[]),**report}))
+            except Exception:
+                pass
 
 
 def text_deltas(text):
