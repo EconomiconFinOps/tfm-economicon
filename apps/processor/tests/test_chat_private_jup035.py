@@ -115,7 +115,7 @@ def test_main_health_app_never_exposes_private_chat(private):
 def test_required_result_is_owned_signed_correlated_and_single_use(private, monkeypatch):
     async def scenario(client):
         entered=asyncio.Event();continued=[]
-        assistant={'action': 'search', 'query': 'Synthetic policy','calculations':[]}
+        assistant={'action': 'search', 'query': 'Synthetic policy','comparisons':[],'calculations':[]}
         async def gateway(context, deadline, *, tool_result):
             yield {'type':'tool_call','assistant':assistant}
             entered.set()

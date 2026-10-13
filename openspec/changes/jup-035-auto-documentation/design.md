@@ -14,7 +14,7 @@ compatibilidad real del esquema corregido requiere validacion posterior.
 ## Decision vigente — 12/10/2026
 El usuario autoriza sustituir auto-documentation-v2 por structured-documentation-v3.
 La primera generacion devuelve exclusivamente {action:none,query:null} o
-{action:search,query:string}, mas calculations. El esquema raiz simple acota
+{action:search,query:string}, mas calculations y comparisons. El esquema raiz simple acota
 campos y tipos; la relacion action/query se valida localmente. Se rechazan campos extra, claves duplicadas, texto libre,
 llamadas nativas y truncacion. El proveedor fijo no necesita soporte de
 parallel_tool_calls. El servidor despacha como maximo una busqueda existente.
@@ -39,8 +39,10 @@ denominadores, operadores estrictos y prohibicion de cotizaciones inventadas.
 ## Calculo hipotetico autorizado — 12/10/2026
 La focal b79e4ee termina5/5 pero017 produce500−100=100, aunque aplica bien el
 umbral. Por ello no se acepta ni se lanza full28 de ese candidato. Se añade
-calculations a la primera decision: hasta12 pasos decimales con operandos de
-la pregunta o referencias anteriores y unidades. El backend calcula y devuelve
+calculations numericos y comparisons terminales a la primera decision: hasta12
+pasos sumados, con operandos de la pregunta o referencias numericas y unidades.
+Los indices ref solo pertenecen a calculations; las comparaciones no se pueden
+reutilizar como numeros. Los IDs finales n:indice y c:indice son disjuntos. El backend calcula y devuelve
 resultados por HMAC; processor vuelve a calcular para verificar la extension.
 none con calculos usa control privado pero cero busquedas. Los resultados son
 hipoteticos, no evidence ni metrics. El manifiesto identifica esta politica.

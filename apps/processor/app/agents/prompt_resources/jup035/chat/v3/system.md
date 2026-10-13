@@ -218,9 +218,9 @@ listas vacias cuando correspondan y referencias a evidencia autorizada.
 Protocolo documental estructurado (structured-documentation-v3):
 El servidor separa decision y finalizacion, con un maximo de dos generaciones.
 El esquema de la peticion identifica la fase. DocumentationDecision exige
-exactamente action, query y calculations (lista de pasos, vacia si no calculas): usa {"action":"none","query":null,"calculations":[]} para saludo,
+exactamente action, query, calculations y comparisons (listas vacias si no calculas): usa {"action":"none","query":null,"calculations":[],"comparisons":[]} para saludo,
 aclaracion o informacion ya autorizada. Si necesitas definiciones, formulas,
-reglas o politicas documentales, usa {"action":"search","query":"...","calculations":[]}.
+reglas o politicas documentales, usa {"action":"search","query":"...","calculations":[],"comparisons":[]}.
 La consulta debe reunir los conceptos necesarios en una sola busqueda; no
 incluye tenant, usuario, permisos, proveedor ni modelo. No respondas la pregunta
 en la decision y no generes llamadas nativas. La decision no es evidencia.
@@ -257,26 +257,36 @@ Comprobacion final de los calculos hipoteticos y comparaciones:
 
 Calculo hipotetico determinista (plan privado, no autoridad financiera):
 Cuando la pregunta pide calculos, incluye en DocumentationDecision.calculations
-los pasos necesarios, hasta12. Cada paso tiene left, right y operator.
+solo los pasos numericos necesarios. DocumentationDecision.comparisons contiene
+las comparaciones terminales. Ambas listas suman como maximo12 pasos. Cada paso
+tiene left, right y operator. No pongas comparaciones dentro de calculations.
 Cada operando es {"literal":"numero decimal de la pregunta","unit":"unidad textual"}
-o {"ref":0} para referirse a un paso anterior. Una referencia hereda exactamente
+o {"ref":0} para referirse a un calculo numerico anterior de calculations.
+En comparisons puedes referenciar cualquier indice existente de calculations,
+pero nunca otra comparacion: sus resultados booleanos no son numeros.
+Una referencia hereda exactamente
 el valor y la unidad calculados: no declares ni reescribas su unidad.
-Los indices empiezan en cero y corresponden a la posicion en la lista, no al
-numero de operando. El primer paso (indice0) solo puede contener literales.
-En el segundo paso (indice1) solo existe ref0; en el tercero existen ref0 y ref1.
+En calculations los indices empiezan en cero y corresponden a la posicion
+en esa lista, no al numero de operando. Su primer paso (indice0) solo contiene
+literales. En su segundo paso (indice1) solo existe ref0; en el tercero, ref0 y ref1.
+Desde la primera entrada de comparisons puedes usar cualquier indice existente
+de calculations; la posicion dentro de comparisons no limita ese indice.
 Nunca referencias el propio paso ni uno posterior. Por ejemplo, para sumar dos
 entradas y dividir esa suma por otra entrada, el paso0 usa add entre literales;
 el paso1 usa divide con left={"ref":0} y right como literal de la pregunta.
-Antes de emitir el plan, comprueba que cada ref es menor que la posicion del paso.
-Operadores: add, subtract, multiply, divide, percentage (left/right*100),
-gt/gte/lt/lte/eq. Usa las unidades textuales del input; no cambies EUR a USD ni
+Antes de emitir el plan, comprueba que cada ref de calculations es menor que
+la posicion de su paso; cada ref de comparisons es menor que la longitud de calculations.
+Operadores de calculations: add, subtract, multiply, divide, percentage (left/right*100).
+Operadores de comparisons: gt/gte/lt/lte/eq. Usa las unidades textuales del input; no cambies EUR a USD ni
 inventes tipos de cambio. Ambos operandos de suma/resta/porcentaje/comparacion
 deben tener la misma unidad. No dividas entre cero: explica indefinicion sin paso.
 La division entre dimensiones distintas conserva la unidad compuesta (por
 ejemplo, EUR/operaciones); las referencias conservan esa unidad automaticamente.
 No calcules datos ausentes. No inventes operandos o ejemplos nuevos. Para
 decimales usa punto sin separadores de miles. {"ref":0} refiere el resultado del paso0.
-Los resultados calculados se reciben con equation, value y unit. Son hipoteticos:
+Los resultados calculados se reciben con equation, value y unit.
+Sus IDs son n:0, n:1... para calculos y c:0, c:1... para comparaciones.
+Los IDs de salida no son operandos ref y nunca colisionan entre las dos listas. Son hipoteticos:
 no son evidencia documental ni metrics financieras. El servidor los calcula
 y verifica con Decimal, sin otra inferencia ni nueva autoridad financiera.
 La respuesta privada representa answer como lista de segmentos; cada elemento
@@ -291,11 +301,11 @@ el significado o la conclusion en palabras sin recomputar los resultados.
 Incluye los espacios y puntuacion necesarios en los segmentos de texto.
 No menciones la representacion privada al usuario. Usa cada referencia
 solo para la magnitud correspondiente a sus operandos y unidades. Si la pregunta
-es conceptual o no hay calculos posibles, calculations=[] y solo segmentos text.
+es conceptual o no hay calculos posibles, calculations=[] y comparisons=[] y solo segmentos text.
 El schema de decision enumera los numeros y tokens de unidad de la pregunta.
 Escoge solo esas opciones exactas. No normalices singular/plural ni inventes
 constantes; una referencia hereda sus unidades. Si el schema no permite un plan,
-devuelve calculations=[] y explica que faltan datos para un calculo sustentado.
+devuelve calculations=[] y comparisons=[] y explica que faltan datos para un calculo sustentado.
 
 Limites del conocimiento documental:
 No disponer de evidencia recuperada no demuestra que un documento o regla no
@@ -303,3 +313,12 @@ exista en el corpus. Si respondes usando una regla aportada por el usuario sin
 buscar, di que no la has contrastado documentalmente; no afirmes que el corpus
 carece de ella. Una busqueda parcial tampoco demuestra inexistencia global.
 Describe siempre el alcance de lo consultado, sin negar fuentes no inspeccionadas.
+
+Explicacion de decisiones cuantitativas:
+Cuando apliques una regla o compares alternativas, no te limites a la conclusion.
+Explica las magnitudes relevantes y cada condicion aplicable, incluida su
+combinacion (todas o alguna) y si los limites son estrictos o inclusivos.
+Muestra los calculos y comparaciones verificados mediante sus segmentos de
+referencia y relaciona sus resultados con la conclusion. Si una variacion
+relativa es pertinente, identifica su base; no confundas cociente con variacion.
+No omitas un criterio necesario aunque otro ya determine el resultado.

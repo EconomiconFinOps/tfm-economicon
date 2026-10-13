@@ -29,13 +29,53 @@ def test_server_and_processor_arithmetic_are_identical():
 
 
 def test_decimal_operations_and_references_keep_units_and_strict_boundaries():
-    plan=[step(),step('@0','20','percentage'),step('@0','73','lt'),step('20','20','gt'),step('20','20','gte')]
-    result=calculate(context(),plan)
+    plan=[step(),step('@0','20','percentage')]
+    comparisons=[step('@0','73','lt'),step('20','20','gt'),step('20','20','gte')]
+    result=calculate(context(),plan,comparisons)
     assert [r['value'] for r in result]==['53','265','verdadero','falso','verdadero']
+    assert [r['id'] for r in result]==['n:0','n:1','c:0','c:1','c:2']
     assert result[0]['equation']=='73 EUR − 20 EUR = 53 EUR'
     assert result[1]['unit']=='%' and all(r['hypothetical'] for r in result)
     decimal=calculate(context('0,1 EUR y 0,2 EUR.'),[step('0.1','0.2','add')])
     assert decimal[0]['value']=='0.3'
+
+
+@pytest.mark.parametrize('numeric,comparisons',[
+    ([step('20','20','eq')],[]),
+    ([],[step()]),
+    ([],[step('@0','20','eq')]),
+    ([step()],[step('@1','20','eq')]),
+    ([step()],[step('20','20','eq'),step('@1','20','eq')]),
+    ([step()]*6,[step('20','20','eq')]*7),
+    ([step()], [{'left':{'ref':True},'right':{'literal':'20','unit':'EUR'},'operator':'eq'}]),
+])
+def test_terminal_comparisons_cannot_enter_numeric_reference_graph(numeric,comparisons):
+    with pytest.raises(ValueError):calculate(context(),numeric,comparisons)
+
+
+def test_terminal_only_comparison_is_authenticated_and_has_no_numeric_references():
+    initial=context()
+    decision={'action':'none','query':None,'calculations':[],
+              'comparisons':[step('20','20','gt')]}
+    validate_decision(decision,initial)
+    computed=calculate(initial,[],decision['comparisons'])
+    assert computed[0]['id']=='c:0' and computed[0]['value']=='falso'
+    content=json.dumps({'evidence':[],'omissions':[],'calculations':computed})
+    result={'tool_call_id':validate_search_call(decision)[0],'variable_tokens':0,'content':content}
+    assert continuation_messages(initial,decision,result)[-1]['content'].endswith(content)
+    decision['comparisons'][0]['operator']='gte'
+    with pytest.raises(ValueError,match='correlation'):continuation_messages(initial,decision,result)
+
+
+def test_schema_separates_operator_types_and_contextualizes_both_collections():
+    from app.core.chat_resources import decision_schema
+    schema=decision_schema(context())
+    numeric=schema['properties']['calculations']['items']['properties']
+    comparison=schema['properties']['comparisons']['items']['properties']
+    assert set(numeric['operator']['enum'])=={'add','subtract','multiply','divide','percentage'}
+    assert set(comparison['operator']['enum'])=={'gt','gte','lt','lte','eq'}
+    assert numeric['left']==comparison['left']
+    assert decision_schema(context('sin numeros'))['properties']['comparisons']['maxItems']==0
 
 
 def test_cost_per_count_ratios_preserve_dimensions_and_support_comparison():
@@ -71,7 +111,7 @@ def test_invalid_or_unfunded_plans_fail_closed(plan,question):
 
 def test_rounding_is_explicit_and_comparison_uses_unrounded_decimal():
     result=calculate(context('1 y 3 y 0.333333'),[
-        step('1','3','divide','',''),step('@0','0.333333','gt','','')])
+        step('1','3','divide','','')],[step('@0','0.333333','gt','','')])
     assert result[0]['equation']=='1 / 3 ≈ 0.333333'
     assert result[1]['value']=='verdadero'
 
@@ -88,8 +128,8 @@ def test_free_equations_and_bad_slots_are_never_repaired(text):
 def test_stream_fragmentation_unicode_escape_and_persistable_final_match(monkeypatch,width):
     computations=calculate(context(),[step()])
     value=_provider(ANSWER)
-    value['answer']=[{'text':'Hipotético 😀: '},{'calculation_id':'0'},{'text':'. La diferencia está calculada.'}]
-    value['assumptions']=[[{'text':'Datos del usuario: '},{'calculation_id':'0'},{'text':'.'}]]
+    value['answer']=[{'text':'Hipotético 😀: '},{'calculation_id':'n:0'},{'text':'. La diferencia está calculada.'}]
+    value['assumptions']=[[{'text':'Datos del usuario: '},{'calculation_id':'n:0'},{'text':'.'}]]
     event={'choices':[{'index':0,'delta':{'content':json.dumps(value,ensure_ascii=False)},'finish_reason':'stop'}]}
     data=('data: '+json.dumps(event,ensure_ascii=False)+'\n\ndata: [DONE]\n\n').encode()
     gateway,_=provider(monkeypatch,[data],read_size=width)
@@ -103,26 +143,32 @@ def test_stream_fragmentation_unicode_escape_and_persistable_final_match(monkeyp
     assert '[[calc:' not in json.dumps(records) and result['metrics']==[]
 
 
-def test_none_with_calculation_uses_authenticated_extension_without_search(monkeypatch):
-    decision={'action':'none','query':None,'calculations':[step()]}
+@pytest.mark.parametrize('numeric,comparisons,identifier',[
+    ([step()],[],'n:0'),
+    ([],[step('20','20','gt')],'c:0'),
+    ([step()],[step('@0','20','gt')],'c:0'),
+])
+def test_none_with_calculation_uses_authenticated_extension_without_search(monkeypatch,numeric,comparisons,identifier):
+    decision={'action':'none','query':None,'comparisons':comparisons,'calculations':numeric}
     assert validate_decision(decision)==decision
-    candidate=_provider(ANSWER);candidate['answer']=[{'text':'Hipotético: '},{'calculation_id':'0'},{'text':'.'}]
+    candidate=_provider(ANSWER);candidate['answer']=[{'text':'Hipotético: '},{'calculation_id':identifier},{'text':'.'}]
     gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(decision)}),wire({'content':json.dumps(candidate)})])
     initial=context();calls=[]
     async def result(value):
         calls.append(value)
-        content=json.dumps({'evidence':[],'omissions':[],'calculations':calculate(initial,value['calculations'])})
+        content=json.dumps({'evidence':[],'omissions':[],'calculations':calculate(initial,value['calculations'],value['comparisons'])})
         return {'tool_call_id':validate_search_call(value)[0],'content':content,'variable_tokens':0}
     async def exercise():
         return [r async for r in gateway(initial,time.time()+60,tool_result=result)]
     records=asyncio.run(exercise())
     assert calls==[decision] and len(requests)==2
     assert records[-1]['type']=='candidate' and records[-1]['result']['evidence']==[]
+    assert ''.join(record['text'] for record in records if record['type']=='delta')==records[-1]['result']['answer']
     assert requests[1]['messages'][-1]['content'].startswith('UNTRUSTED_RETRIEVAL_CONTEXT\n')
 
 
 def test_authenticated_result_arithmetic_cannot_be_tampered():
-    initial=context();decision={'action':'none','query':None,'calculations':[step()]}
+    initial=context();decision={'action':'none','query':None,'comparisons':[],'calculations':[step()]}
     computed=calculate(initial,decision['calculations']);computed[0]['value']='90'
     result={'tool_call_id':validate_search_call(decision)[0],'variable_tokens':0,
             'content':json.dumps({'evidence':[],'omissions':[],'calculations':computed})}
@@ -198,7 +244,7 @@ def test_contextual_schema_enumerates_source_literals_and_complete_unit_tokens()
     assert literals['literal']['enum']==['20','5','73']
     assert 'EUR/día' in literals['unit']['enum'] and '%' in literals['unit']['enum']
     assert 'EUR' not in literals['unit']['enum'] and 'EUR/day' not in literals['unit']['enum']
-    value={'action':'none','query':None,'calculations':[step('73','20','subtract','EUR/día','EUR/día')]}
+    value={'action':'none','query':None,'comparisons':[],'calculations':[step('73','20','subtract','EUR/día','EUR/día')]}
     validate_decision(value,initial)
     for operand in [{'literal':'100','unit':'EUR/día'},{'literal':'73','unit':'EUR/day'}]:
         value['calculations'][0]['left']=operand
@@ -217,7 +263,7 @@ def test_contextual_source_limit_disables_plan_without_inventing_values():
     (' '.join(str(i) for i in range(129)),[step('73','20','subtract','','')]),
 ])
 def test_provider_cannot_bypass_contextual_enums_or_disabled_plan(monkeypatch,question,plan):
-    decision={'action':'none','query':None,'calculations':plan}
+    decision={'action':'none','query':None,'comparisons':[],'calculations':plan}
     initial=context(question)
     with pytest.raises(ValueError):calculate(initial,plan)
     gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(decision)})])

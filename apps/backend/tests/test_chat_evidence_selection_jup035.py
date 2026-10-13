@@ -15,22 +15,22 @@ SOURCE = {'id': 'corpus:authorized:0', 'kind': 'corpus', 'title': 'Synthetic pol
 
 def test_simple_decision_schema_keeps_branch_coherence_in_local_validator():
     from app.core.chat_resources import DECISION_SCHEMA, validate_decision
-    for value in ({'action':'none','query':None,'calculations':[]},{'action':'search','query':'a','calculations':[]}):
+    for value in ({'action':'none','query':None,'comparisons':[],'calculations':[]},{'action':'search','query':'a','comparisons':[],'calculations':[]}):
         _validate(value,DECISION_SCHEMA,DECISION_SCHEMA)
         assert validate_decision(value)==value
-    for value in ({'action':'none','query':'a','calculations':[]},{'action':'search','query':None,'calculations':[]},
-                  {'action':'search','query':'a','tenant':'other','calculations':[]}):
+    for value in ({'action':'none','query':'a','comparisons':[],'calculations':[]},{'action':'search','query':None,'comparisons':[],'calculations':[]},
+                  {'action':'search','query':'a','tenant':'other','comparisons':[],'calculations':[]}):
         with pytest.raises(ValueError): validate_decision(value)
     assert 'anyOf' not in DECISION_SCHEMA
     with pytest.raises(ResponseValidationError):
-        _validate({'action':'none','query':None,'calculations':[],'tenant':'other'},DECISION_SCHEMA,DECISION_SCHEMA)
+        _validate({'action':'none','query':None,'comparisons':[],'calculations':[],'tenant':'other'},DECISION_SCHEMA,DECISION_SCHEMA)
 
 
 def test_contextual_decision_schema_enforces_exact_source_enum_and_disabled_plan():
     from app.core.chat_resources import decision_schema,validate_decision
     context={'messages':[{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'73 EUR/día y 20 EUR/día.'})}]}
     schema=decision_schema(context)
-    value={'action':'none','query':None,'calculations':[{'operator':'subtract',
+    value={'action':'none','query':None,'comparisons':[],'calculations':[{'operator':'subtract',
         'left':{'literal':'73','unit':'EUR/día'},'right':{'literal':'20','unit':'EUR/día'}}]}
     _validate(value,schema,schema)
     for operand in ({'literal':'100','unit':'EUR/día'},{'literal':'73','unit':'EUR'}):

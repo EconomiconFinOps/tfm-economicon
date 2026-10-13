@@ -15,13 +15,13 @@ TOKENIZER_SHA = '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82
 TOKENIZER_REVISION = 'a66456a59f21345d1e5e586345c448a9106d29d7'
 BASE_SHA = 'ad44df5f061f4f128b66df1e7720b270b594846adc206fa5d7b85ed2c0ced93b'
 INPUT_SHA = 'a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42'
-ASSEMBLER_SHA = '7cfcb7a2f364f1e6262356613b47461cc2e16caab3145466fd279173914277c3'
-from app.core.chat_calculations import PLAN_SCHEMA, validate_plan, calculate, contextual_decision_schema, validate_contextual_plan
+ASSEMBLER_SHA = '85dcf01ceb5016c1cd4b880bddd3e83b1fa4b657fb513d7faa077ff937ff736c'
+from app.core.chat_calculations import PLAN_SCHEMA, COMPARISON_SCHEMA, validate_plan, calculate, contextual_decision_schema, validate_contextual_plan
 
 DECISION_SCHEMA = {'type':'object','properties':{
-    'action':{'type':'string','enum':['none','search']},'calculations':PLAN_SCHEMA,
+    'action':{'type':'string','enum':['none','search']},'calculations':PLAN_SCHEMA,'comparisons':COMPARISON_SCHEMA,
     'query':{'anyOf':[{'type':'string','minLength':1,'maxLength':2048},{'type':'null'}]}},
-    'required':['action','query','calculations'],'additionalProperties':False
+    'required':['action','query','calculations','comparisons'],'additionalProperties':False
 }
 
 
@@ -31,10 +31,10 @@ def decision_schema(context):
 
 
 def validate_decision(value, context=None):
-    if not isinstance(value,dict) or set(value)!={'action','query','calculations'}:
+    if not isinstance(value,dict) or set(value)!={'action','query','calculations','comparisons'}:
         raise ValueError('Invalid decision fields.')
-    validate_plan(value['calculations'])
-    if context is not None:validate_contextual_plan(context,value['calculations'])
+    validate_plan(value['calculations'],value['comparisons'])
+    if context is not None:validate_contextual_plan(context,value['calculations'],value['comparisons'])
     if value['action']=='none' and value['query'] is None:
         return value
     if (value['action']=='search' and isinstance(value['query'],str)
@@ -50,7 +50,7 @@ def validate_search_call(decision):
     binds the request and its result to the operation, attempt and tenant scope.
     """
     validate_decision(decision)
-    if decision['action']!='search' and not decision['calculations']: raise ValueError('Control action required.')
+    if decision['action']!='search' and not (decision['calculations'] or decision['comparisons']): raise ValueError('Control action required.')
     raw=json.dumps(decision,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False)
     return hashlib.sha256(raw.encode()).hexdigest(),decision['query']
 

@@ -28,12 +28,12 @@ TOKENIZER = {
 }
 BUDGETS = {'variable_tokens':8192, 'wrapper_margin_tokens':1024,
            'output_tokens':3200, 'model_context_tokens':1048576}
-from app.core.chat_calculations import PLAN_SCHEMA, validate_plan, calculate, contextual_decision_schema, validate_contextual_plan
+from app.core.chat_calculations import PLAN_SCHEMA, COMPARISON_SCHEMA, validate_plan, calculate, contextual_decision_schema, validate_contextual_plan
 
 DECISION_SCHEMA = {'type':'object','properties':{
-    'action':{'type':'string','enum':['none','search']},'calculations':PLAN_SCHEMA,
+    'action':{'type':'string','enum':['none','search']},'calculations':PLAN_SCHEMA,'comparisons':COMPARISON_SCHEMA,
     'query':{'anyOf':[{'type':'string','minLength':1,'maxLength':2048},{'type':'null'}]}},
-    'required':['action','query','calculations'],'additionalProperties':False
+    'required':['action','query','calculations','comparisons'],'additionalProperties':False
 }
 
 
@@ -43,10 +43,10 @@ def decision_schema(context):
 
 
 def validate_decision(value, context=None):
-    if not isinstance(value,dict) or set(value)!={'action','query','calculations'}:
+    if not isinstance(value,dict) or set(value)!={'action','query','calculations','comparisons'}:
         raise ValueError('Invalid decision fields.')
-    validate_plan(value['calculations'])
-    if context is not None:validate_contextual_plan(context,value['calculations'])
+    validate_plan(value['calculations'],value['comparisons'])
+    if context is not None:validate_contextual_plan(context,value['calculations'],value['comparisons'])
     if value['action']=='none' and value['query'] is None:
         return value
     if (value['action']=='search' and isinstance(value['query'],str)
@@ -62,7 +62,7 @@ def validate_search_call(decision):
     binds the request and its result to the operation, attempt and tenant scope.
     """
     validate_decision(decision)
-    if decision['action']!='search' and not decision['calculations']: raise ValueError('Control action required.')
+    if decision['action']!='search' and not (decision['calculations'] or decision['comparisons']): raise ValueError('Control action required.')
     raw=json.dumps(decision,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False)
     return hashlib.sha256(raw.encode()).hexdigest(),decision['query']
 
@@ -72,7 +72,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
-    arithmetic='decimal-plan-12-typed-operands-private-segments-v3',
+    arithmetic='decimal-plan-12-numeric-refs-terminal-comparisons-v4',
     decision_values='source-number-unit-enums-128-disable-on-overflow-v1')
 
 
@@ -83,9 +83,9 @@ def continuation_messages(context, assistant, result):
     content=result['content']
     if not isinstance(content,str) or len(content.encode('utf-8'))>1024*1024: raise ValueError('Tool result limit.')
     data=json.loads(content,object_pairs_hook=unique)
-    expected_fields={'evidence','omissions','calculations'} if assistant['calculations'] else {'evidence','omissions'}
+    expected_fields={'evidence','omissions','calculations'} if (assistant['calculations'] or assistant['comparisons']) else {'evidence','omissions'}
     if not isinstance(data,dict) or set(data)!=expected_fields or not isinstance(data['omissions'],list): raise ValueError('Tool result format.')
-    if assistant['calculations'] and data['calculations']!=calculate(context,assistant['calculations']):
+    if (assistant['calculations'] or assistant['comparisons']) and data['calculations']!=calculate(context,assistant['calculations'],assistant['comparisons']):
         raise ValueError('Calculation result mismatch.')
     sources=data['evidence']
     if not isinstance(sources,list) or len(sources)+len(context.get('authorized_evidence',[]))>20: raise ValueError('Tool evidence limit.')

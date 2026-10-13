@@ -334,7 +334,7 @@ class ChatGateway:
                                     return
                                 if finish!='stop': raise ValueError('Incomplete structured decision.')
                                 decision=validate_decision(complete_json(''.join(candidate)),context)
-                                if decision['action']=='none' and not decision['calculations']:
+                                if decision['action']=='none' and not (decision['calculations'] or decision['comparisons']):
                                     yield {'type':'decision','usage':usage}
                                 else:
                                     yield {'type':'tool_call','assistant':decision,'usage':usage}

@@ -27,7 +27,7 @@ def test_none_calculation_extension_never_retrieves_or_grants_financial_authorit
     builder=ChatContext(api[0],load_resources(RESOURCE_ROOT,RESOURCE_ROOT.parent/'v2/tokenizer.json'))
     scope={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
     context=builder.build(scope,body(content='Ejercicio hipotético: 73 EUR frente a 20 EUR.'))
-    decision={'action':'none','query':None,'calculations':[{'left':{'literal':'73','unit':'EUR'},'right':{'literal':'20','unit':'EUR'},'operator':'subtract'}]}
+    decision={'action':'none','query':None,'comparisons':[],'calculations':[{'left':{'literal':'73','unit':'EUR'},'right':{'literal':'20','unit':'EUR'},'operator':'subtract'}]}
     monkeypatch.setattr(builder,'retrieve',lambda *a,**kw:pytest.fail('No-search arithmetic must not retrieve'))
     result,effective=asyncio.run(builder.tool_extension(scope,context,decision,time.time()+10))
     data=json.loads(result['content'])
@@ -125,7 +125,7 @@ def test_required_extension_runs_existing_scoped_retrieval_and_preserves_financi
     scope={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
     context=builder.build(scope,body())
     original=copy.deepcopy(context)
-    assistant={'action': 'search', 'query': 'Review rule','calculations':[]}
+    assistant={'action': 'search', 'query': 'Review rule','comparisons':[],'calculations':[]}
     result,effective=asyncio.run(builder.tool_extension(scope,context,assistant,time.time()+10))
     assert calls[0]==('embed','Review rule')
     assert calls[1][0:3]==('search','t',[1.0]) and calls[1][3]['provider']=='synthetic'
@@ -246,7 +246,7 @@ def test_required_database_wait_really_stops_worker_and_query(monkeypatch, phase
     builder=ChatContext(application,resources)
     context={'tool_protocol':'structured-documentation-v3','authorized_evidence':[],
         'messages':[],'manifest':{},'financial_metrics_allowed':False}
-    assistant={'action': 'search', 'query': 'Review rule','calculations':[]}
+    assistant={'action': 'search', 'query': 'Review rule','comparisons':[],'calculations':[]}
     async def scenario():
         task=asyncio.create_task(builder.tool_extension({'tenant_id':'t'},context,assistant,
             time.time()+(1 if cancel else .12)))
@@ -354,7 +354,7 @@ def test_required_retrieval_diagnostic_is_closed_correlated_and_private(monkeypa
     builder=chat_context.ChatContext(application,SimpleNamespace(count_messages=lambda *a,**kw:0))
     context={'tool_protocol':'structured-documentation-v3','authorized_evidence':[],
         'messages':[],'manifest':{},'financial_metrics_allowed':False}
-    assistant={'action': 'search', 'query': 'PRIVATE_QUERY_NEVER_LOG','calculations':[]}
+    assistant={'action': 'search', 'query': 'PRIVATE_QUERY_NEVER_LOG','comparisons':[],'calculations':[]}
     operation='51dfed93-9027-4f8b-a403-6a8f5931db7c'
     attempt='07435a41-9e75-4ee4-858f-eb29840027b5'
     async def scenario():

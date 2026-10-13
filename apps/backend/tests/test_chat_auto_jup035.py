@@ -32,8 +32,9 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
     question = 'Ejemplo hipotético: 73 EUR y 20 EUR.'
     context = {'messages': [{'role': 'user', 'content': 'UNTRUSTED_CURRENT_CONTEXT\n' + json.dumps({'question': question})}]}
     plan = [{'left': {'literal':'73','unit':'EUR'}, 'right': {'literal':'20','unit':'EUR'}, 'operator': 'subtract'}]
-    calculations = calculate(context, plan)
-    segments=[{'text':'  Ejemplo 😀: '},{'calculation_id':'0'},{'text':'. Resultado hipotético.  '}]
+    comparisons = [{'left':{'ref':0},'right':{'literal':'20','unit':'EUR'},'operator':'gt'}]
+    calculations = calculate(context, plan, comparisons)
+    segments=[{'text':'  Ejemplo 😀: '},{'calculation_id':'n:0'},{'text':'; criterio: '},{'calculation_id':'c:0'},{'text':'. Resultado hipotético.  '}]
     raw = json.dumps({'answer':segments},ensure_ascii=True)
     result = copy.deepcopy(ANSWER)
     result['answer'] = render_segments(segments, calculations)
@@ -110,7 +111,7 @@ def test_no_search_keeps_server_authority_and_one_pair(api, monkeypatch, case):
 
 @pytest.mark.parametrize('duplicate', [False, True])
 def test_invalid_or_second_tool_never_persists(api, monkeypatch, duplicate):
-    assistant = {'action':'search' if duplicate else 'unknown','query':'policy','calculations':[]}
+    assistant = {'action':'search' if duplicate else 'unknown','query':'policy','comparisons':[],'calculations':[]}
     calls = []
     async def build(scope, payload, descriptor):
         return {'prompt_version': 'synthetic-v2', 'tool_protocol': 'structured-documentation-v3',

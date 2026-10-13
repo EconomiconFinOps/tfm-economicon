@@ -21,7 +21,7 @@ evidencia insuficiente sin inventar cifras.
 #### Scenario: Decision documental automatica dentro del mismo intento
 
 - **WHEN** el chat IA inicia un intento autorizado
-- **THEN** SHALL usar el contrato structured-documentation-v3 y realizar una primera peticion con response_format DocumentationDecision estricto, action none con query null o action search con query no vacia de hasta2048 caracteres, junto a calculations como lista cerrada de cero a12 pasos hipoteticos; SHALL rechazar otros campos y parametros de tenant y ejecutar la recuperacion existente solo para search con el scope autenticado; SHALL mantener una operacion, un intento, un dispatch privado y el contexto/hash canonicos iniciales congelados, sin precargar corpus para simular una decision
+- **THEN** SHALL usar el contrato structured-documentation-v3 y realizar una primera peticion con response_format DocumentationDecision estricto, action none con query null o action search con query no vacia de hasta2048 caracteres, junto a calculations numericos y comparisons terminales como listas cerradas que suman de cero a12 pasos hipoteticos; SHALL rechazar otros campos y parametros de tenant y ejecutar la recuperacion existente solo para search con el scope autenticado; SHALL mantener una operacion, un intento, un dispatch privado y el contexto/hash canonicos iniciales congelados, sin precargar corpus para simular una decision
 
 #### Scenario: Decision sin herramienta y finalizacion estricta
 
@@ -185,9 +185,11 @@ persistir texto parcial.
 
 ### Requirement: Aritmetica hipotetica calculada y proyectada
 
-La decision SHALL admitir un plan privado acotado a12 pasos con operandos
-operandos tipados: objetos literal/unit de la pregunta actual o objetos ref con
-indice entero de un paso anterior. Una referencia SHALL heredar valor y unidad
+La decision SHALL admitir calculations numericos y comparisons terminales,
+acotados a12 pasos en total, con operandos tipados: objetos literal/unit de la pregunta actual o objetos ref con
+indice entero de calculations (anterior para pasos numericos). Las comparaciones
+SHALL ser terminales y nunca ser origen de una referencia numerica.
+Una referencia SHALL heredar valor y unidad
 del resultado previo, sin aceptar una unidad adicional declarada por el modelo.
 El plan SHALL usar operadores cerrados y unidades explicitas. El backend SHALL calcularlo con
 Decimal sin eval y devolverlo en la extension HMAC; el processor SHALL verificar
@@ -203,13 +205,13 @@ el mismo resultado. Ningun calculo SHALL conferir evidencia ni autoridad financi
 
 #### Scenario: Valores de decision vinculados a la pregunta
 - **WHEN** se construye el schema de decision
-- **THEN** SHALL enumerar hasta128 literales decimales canonicos y128 tokens textuales de unidad de la pregunta, incluyendo simbolos y compuestos con barra, mas la unidad vacia; sin numeros o al superar esos limites SHALL exigir calculations vacio
+- **THEN** SHALL enumerar hasta128 literales decimales canonicos y128 tokens textuales de unidad de la pregunta, incluyendo simbolos y compuestos con barra, mas la unidad vacia; sin numeros o al superar esos limites SHALL exigir calculations y comparisons vacios
 - **AND** gateway y backend SHALL validar localmente los mismos enums y el plan deshabilitado aunque el proveedor ignore el schema; el manifiesto SHALL incluir el hash del schema efectivo y ambos servicios SHALL contar ese mismo schema completo
 - **AND** SHALL conservar operandos exactos en la ecuacion visible, comparar antes de redondear y marcar con aproximacion los resultados redondeados a seis decimales; SHALL limitar precision y magnitud, sin interpretar exponentes ni separadores de miles ambiguos
 
 #### Scenario: Proyeccion de ecuaciones y streaming
 - **WHEN** la finalizacion incluye una referencia privada a un calculo autorizado
-- **THEN** SHALL usar segmentos privados text o calculation_id con IDs enumerados del intento y renderizar cada referencia como la ecuacion calculada, sin reescribir ecuaciones arbitrarias recibidas; SHALL rechazar referencias desconocidas, segmentos mixtos y ecuaciones o marcadores libres incluso partidos entre segmentos contiguos de texto
+- **THEN** SHALL usar segmentos privados text o calculation_id con IDs enumerados del intento, disjuntos n:indice y c:indice, y renderizar cada referencia como la ecuacion calculada, sin reescribir ecuaciones arbitrarias recibidas; SHALL rechazar referencias desconocidas, segmentos mixtos y ecuaciones o marcadores libres incluso partidos entre segmentos contiguos de texto
 - **AND** SHALL conservar caracteres Unicode y escapes fragmentados, limitar128 segmentos y4000 caracteres para answer y500 para cada elemento de listas, normalizar solo espacios globales como el contrato publico, limitar cada delta a8192 bytes y hacer coincidir exactamente la concatenacion SSE con answer validado y persistido; los tramos verificados SHALL llegar antes de completar la generacion
 - **AND** la exactitud garantizada SHALL limitarse a las operaciones renderizadas: seleccion semantica de operandos/unidades, pertinencia y prosa circundante SHALL seguir requiriendo aceptacion real, sin afirmar entailment universal ni prohibir globalmente fechas, identificadores o numeros originales
 

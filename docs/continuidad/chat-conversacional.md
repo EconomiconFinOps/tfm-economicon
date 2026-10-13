@@ -1,5 +1,24 @@
 ## PR121: contrato estructurado autorizado en validación — 12/10/2026
 
+## Focal d1947e6 y separación numérica (2026-10-13)
+
+Runtime arithmetic9 limpio, hashes77/71; CI técnica verde. La focal normal017
+completa sin HTTP400, con cita pertinente y dos mensajes, pero omite porcentaje
+y explicación de condiciones: no acredita aceptación semántica.027 falla antes
+del resultado con calculation_reference_unit, cuyo único guard actual detecta
+referencia a bool. No se conserva el plan privado y no se inventan sus operandos.
+Recibo arithmetic9-focused.json en la carpeta de evidencia del workspace.
+Acumulado upstream0.280110227USD, virtual0.24476610USD, techo0.50USD.
+
+Corrección en curso: calculations solo numéricos, comparisons terminales;
+referencias exclusivamente numéricas y resultados con IDs n:/c: separados.
+Máximo12 pasos sumados, dos generaciones, una búsqueda y3200 tokens intactos.
+La instrucción general exige explicar magnitudes, condiciones y combinaciones,
+sin respuestas codificadas para el banco. Pruebas offline:183 processor,60 backend,
+61 aritmética con caminos mixtos/terminales,17 recursos y67 OpenSpec pasan.
+SSE y persistencia SQL se contrastan con IDs numéricos y comparaciones juntos.
+Nueva focal y full28 pendientes.
+
 ## Diagnóstico causal de compatibilidad (2026-10-13)
 
 El usuario autorizó específicamente una reproducción del payload017 indicado

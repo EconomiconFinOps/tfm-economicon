@@ -5,6 +5,7 @@ are checked here. Decimal evaluates the selected operations. Semantic relevance
 of that selection and surrounding prose still require acceptance evaluation.
 Keep the processor copy byte-identical (separate service images).
 """
+import copy
 import json
 import re
 from decimal import Decimal, DecimalException, localcontext
@@ -20,7 +21,9 @@ class CalculationError(ValueError):
         super().__init__(message)
 
 
-OPERATORS = ('add','subtract','multiply','divide','percentage','gt','gte','lt','lte','eq')
+NUMERIC_OPERATORS = ('add','subtract','multiply','divide','percentage')
+COMPARISON_OPERATORS = ('gt','gte','lt','lte','eq')
+OPERATORS = NUMERIC_OPERATORS + COMPARISON_OPERATORS
 OPERAND = r'^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,12})?$'
 OPERAND_SCHEMA = {'anyOf':[
     {'type':'object','properties':{'literal':{'type':'string','pattern':OPERAND,'maxLength':26},
@@ -29,8 +32,10 @@ OPERAND_SCHEMA = {'anyOf':[
         'required':['ref'],'additionalProperties':False}]}
 PLAN_SCHEMA = {'type':'array','maxItems':12,'items':{'type':'object','properties':{
     'left':OPERAND_SCHEMA,'right':OPERAND_SCHEMA,
-    'operator':{'type':'string','enum':list(OPERATORS)}},
+    'operator':{'type':'string','enum':list(NUMERIC_OPERATORS)}},
     'required':['left','right','operator'],'additionalProperties':False}}
+COMPARISON_SCHEMA = copy.deepcopy(PLAN_SCHEMA)
+COMPARISON_SCHEMA['items']['properties']['operator']['enum'] = list(COMPARISON_OPERATORS)
 FIELDS={'left','right','operator'}
 MONETARY_UNITS={'EUR','USD','GBP','JPY','CHF','CAD','AUD','CNY','INR','€','$','£','¥'}
 
@@ -48,16 +53,21 @@ def quotient_unit(left, right):
     return unit
 
 
-def validate_plan(plan):
-    if not isinstance(plan,list) or len(plan)>12: raise CalculationError('Calculation plan limit.')
-    for index, step in enumerate(plan):
-        if not isinstance(step,dict) or set(step)!=FIELDS or step['operator'] not in OPERATORS:
+def validate_plan(plan, comparisons=None):
+    comparisons=[] if comparisons is None else comparisons
+    if (not isinstance(plan,list) or not isinstance(comparisons,list)
+            or len(plan)+len(comparisons)>12): raise CalculationError('Calculation plan limit.')
+    for index, step in enumerate(plan+comparisons):
+        numeric=index<len(plan)
+        allowed=NUMERIC_OPERATORS if numeric else COMPARISON_OPERATORS
+        if not isinstance(step,dict) or set(step)!=FIELDS or step['operator'] not in allowed:
             raise CalculationError('Calculation step shape.')
         for side in ('left','right'):
             operand=step[side]
             if not isinstance(operand,dict): raise CalculationError('Calculation operand.')
             if set(operand)=={'ref'}:
-                if type(operand['ref']) is not int or not 0<=operand['ref']<index:
+                limit=index if numeric else len(plan)
+                if type(operand['ref']) is not int or not 0<=operand['ref']<limit:
                     raise CalculationError('Calculation forward reference.')
             elif set(operand)=={'literal','unit'}:
                 value=operand['literal'];unit=operand['unit']
@@ -103,12 +113,13 @@ def source_choices(context):
 
 
 
-def validate_contextual_plan(context, plan):
-    validate_plan(plan)
-    if not plan:return plan
+def validate_contextual_plan(context, plan, comparisons=None):
+    comparisons=[] if comparisons is None else comparisons
+    validate_plan(plan,comparisons)
+    if not plan and not comparisons:return plan
     numbers,units=source_choices(context)
     if not numbers:raise CalculationError('Calculation literal absent from question.')
-    for step in plan:
+    for step in plan+comparisons:
         for operand in (step['left'],step['right']):
             if 'literal' in operand:
                 if operand['literal'] not in numbers:raise CalculationError('Calculation literal absent from question.')
@@ -120,16 +131,17 @@ def contextual_decision_schema(context, base):
     import copy
     schema=copy.deepcopy(base)
     numbers,units=source_choices(context)
-    plan=copy.deepcopy(PLAN_SCHEMA)
-    if not numbers:
-        plan['maxItems']=0
-    else:
-        for side in ('left','right'):
-            literal=plan['items']['properties'][side]['anyOf'][0]['properties']
-            literal['literal']['enum']=numbers
-            literal['unit']['enum']=units
-    schema['properties']['calculations']=plan
-    for branch in schema.get('anyOf',[]):branch['properties']['calculations']=copy.deepcopy(plan)
+    for field,template in (('calculations',PLAN_SCHEMA),('comparisons',COMPARISON_SCHEMA)):
+        plan=copy.deepcopy(template)
+        if not numbers:
+            plan['maxItems']=0
+        else:
+            for side in ('left','right'):
+                literal=plan['items']['properties'][side]['anyOf'][0]['properties']
+                literal['literal']['enum']=numbers
+                literal['unit']['enum']=units
+        schema['properties'][field]=plan
+        for branch in schema.get('anyOf',[]):branch['properties'][field]=copy.deepcopy(plan)
     return schema
 
 
@@ -139,9 +151,10 @@ def _display(value):
     return '0' if raw in ('','-0') else raw
 
 
-def calculate(context, plan):
-    validate_contextual_plan(context,plan)
-    if not plan: return []
+def calculate(context, plan, comparisons=None):
+    comparisons=[] if comparisons is None else comparisons
+    validate_contextual_plan(context,plan,comparisons)
+    if not plan and not comparisons: return []
     question=question_text(context)
     literals=_literals(question)
     records=[];values=[]
@@ -158,7 +171,7 @@ def calculate(context, plan):
     try:
         with localcontext() as precision:
             precision.prec=40
-            for index,step in enumerate(plan):
+            for index,step in enumerate(plan+comparisons):
                 left,lu=operand(step,'left');right,ru=operand(step,'right');op=step['operator']
                 if op in ('add','subtract','percentage','gt','gte','lt','lte','eq') and lu!=ru:
                     raise CalculationError('Incompatible calculation units.')
@@ -176,7 +189,7 @@ def calculate(context, plan):
                     unit='';symbol={'gt':'>','gte':'>=','lt':'<','lte':'<=','eq':'=='}[op]
                 if not isinstance(value,bool) and (not value.is_finite() or abs(value)>Decimal('1e18')):
                     raise CalculationError('Calculation magnitude limit.')
-                values.append((value,unit))
+                if index<len(plan):values.append((value,unit))
                 shown='verdadero' if value is True else 'falso' if value is False else _display(value)
                 # Never round the operands: doing so could turn a correct
                 # calculation into a visibly false displayed expression.
@@ -188,7 +201,8 @@ def calculate(context, plan):
                 if op=='percentage': lhs='('+lhs+') × 100'
                 relation='=' if isinstance(value,bool) or Decimal(shown)==value else '≈'
                 equation=lhs+' '+relation+' '+shown+((' '+unit) if unit else '')
-                records.append({'id':str(index),'value':shown,'unit':unit,'equation':equation,'hypothetical':True})
+                identifier='n:'+str(index) if index<len(plan) else 'c:'+str(index-len(plan))
+                records.append({'id':identifier,'value':shown,'unit':unit,'equation':equation,'hypothetical':True})
     except DecimalException as failure:
         raise CalculationError('Calculation precision limit.') from failure
     return records

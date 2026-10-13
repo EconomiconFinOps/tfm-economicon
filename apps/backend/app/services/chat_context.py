@@ -238,7 +238,7 @@ class ChatContext:
         from app.core.chat_resources import validate_search_call, calculate
         identifier,query=validate_search_call(assistant)
         if context.get('tool_protocol')!='structured-documentation-v3': raise ValueError('Tool not admitted.')
-        computations=calculate(context,assistant['calculations'])
+        computations=calculate(context,assistant['calculations'],assistant['comparisons'])
         initial=context.get('authorized_evidence',[])
         if any(item['kind']!='cost_query' for item in initial): raise ValueError('Initial corpus not allowed.')
         cancelled=threading.Event();holder={}

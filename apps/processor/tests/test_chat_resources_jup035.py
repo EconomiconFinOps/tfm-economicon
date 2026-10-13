@@ -30,7 +30,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
-    arithmetic='decimal-plan-12-typed-operands-private-segments-v3',
+    arithmetic='decimal-plan-12-numeric-refs-terminal-comparisons-v4',
     decision_values='source-number-unit-enums-128-disable-on-overflow-v1')
 
 
