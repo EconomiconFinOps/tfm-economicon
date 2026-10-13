@@ -90,3 +90,12 @@ medirse contra adjudicaciones revisadas y reserva, incluyendo falsos PASS y FAIL
 El runner histórico no se ejecuta contra el entorno compartido para simular una
 base local. El 13/10 Docker Desktop local no tiene daemon accesible; el contexto
 predeterminado apunta a DockerServer. No se ha desplegado ni cambiado ese entorno.
+
+Desde un commit local limpio, `python tools/chat-eval-plan.py --repetitions 3
+--output ../evaluacion/baseline-plan.json` congela84 entradas exactas y hashes
+del código/prompt/corpus/scorer. `--repetitions 5` prepara140 entradas sin escoger
+casos favorables. Este comando no ejecuta consultas: conserva NOT_RUN y exige
+proveniencia del runtime, contexto recuperado, parámetros y contabilidad viva al
+ejecutar. El balance histórico no basta para admitir gasto. Cada repetición debe
+recogerse íntegra y evaluarse conservando su identidad; los adaptadores de recibos
+actuales describen las campañas históricas N=1 y no son un colector del API nuevo.
