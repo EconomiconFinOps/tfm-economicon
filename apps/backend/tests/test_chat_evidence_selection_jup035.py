@@ -78,6 +78,15 @@ def test_contextual_schema_hash_and_full_token_accounting_match_both_services():
     with pytest.raises(ChatError):replace(backend,context_budget=limited).count_messages(messages,authorized_evidence=[SOURCE])
     with pytest.raises(module.TokenBudgetExceeded):replace(processor,context_budget=limited).check_messages(messages,quoted)
 
+    source={**SOURCE,'content':'Synthetic experimental threshold: 17%.'}
+    messages=messages+[{'role':'user','content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+json.dumps({'evidence':[source]})}]
+    catalog=context_quantities({'messages':messages,'authorized_evidence':[source]})
+    assert 'document:corpus:authorized:0:17 %' in catalog
+    final_schema=provider_response_schema(authorized_evidence=[source],quantities=catalog)
+    assert backend.count_messages(messages,authorized_evidence=[source])==processor.check_messages(messages,final_schema)
+    with pytest.raises(ValueError,match='not authorized'):
+        backend.count_messages(messages,authorized_evidence=[])
+
 
 def candidate(evidence=()):
     value = copy.deepcopy(ANSWER)

@@ -13,9 +13,9 @@ from app.schemas.chat import canonical, response_schema, provider_response_schem
 
 TOKENIZER_SHA = '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d'
 TOKENIZER_REVISION = 'a66456a59f21345d1e5e586345c448a9106d29d7'
-BASE_SHA = 'ad44df5f061f4f128b66df1e7720b270b594846adc206fa5d7b85ed2c0ced93b'
+BASE_SHA = '8e3197acc5cc50b4368d547fbde9ea198cad3364414cec489cd9050f922e6edf'
 INPUT_SHA = 'a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42'
-ASSEMBLER_SHA = '5e6fe10d5d19c32e4f4b25f85f248a61a3eddb63c3774c9f35286e66fe45fa9e'
+ASSEMBLER_SHA = 'a27338cbaa970a0ea905c9caca1975fe0bb270767e78cb3ef9d8985bb69db63a'
 from app.core.chat_expressions import context_question, context_quantities
 
 # This control is generated locally, never by an LLM. The entire current
@@ -60,7 +60,7 @@ class BackendChatResources:
 
     def count_messages(self, messages, *, financial_metrics_allowed=False, authorized_evidence=None, calculations=None):
         variable = self.count(canonical(messages[1:]))
-        effective = provider_response_schema(financial_metrics_allowed=financial_metrics_allowed, authorized_evidence=authorized_evidence, quantities=context_quantities({"messages":messages}))
+        effective = provider_response_schema(financial_metrics_allowed=financial_metrics_allowed, authorized_evidence=authorized_evidence, quantities=context_quantities({"messages":messages,"authorized_evidence":authorized_evidence or []}))
         total = self.count(canonical(messages)) + self.count(canonical(effective))
         if total + 1024 + self.context_budget['output_tokens'] > self.context_budget['context_tokens']:
             from app.db.chat_repository import ChatError

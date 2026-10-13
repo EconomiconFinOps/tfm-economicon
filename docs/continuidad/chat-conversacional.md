@@ -1,5 +1,18 @@
 ## PR121: recuperación de servidor y expresiones locales — 13/10/2026
 
+Último corte: campaña expression15 sobre192b687 completa28 casos en orden;
+23 completed/5 failed,27 HTTP429 y dos rechazos (unidades y pareja ahorro/divisa).
+Stream=final=historial y cero persistencia en fallidos verificados; hay errores
+semánticos confirmados en002/005/013/018/027 y omisiones, por tanto NO validada.
+Recibos `expression15-full28.json` y `expression15-full28-checks.json` en el
+directorio de evidencias del workspace indicado abajo. Gasto observado después
+**0.456318044 USD /2USD**, pendiente asentamiento del contador upstream.
+Corrección offline siguiente: política CHAT_SYSTEM_PROMPT sin contradicción
+con ejercicios, catálogo documental de unidades explícitas y provenance,
+fuentes exactas autenticadas, paridad de conteo y ahorro/divisa privados null
+según firewall previo. Pruebas processor95PASS/backend26PASS. Sin nuevas
+inferencias ni cambio de reasoning hasta revisión; CI/SQL del nuevo SHA pendientes.
+
 Actualización posterior: CI09ad6f5 pasa los seis checks técnicos (JUP policy
 omitido por evento push; reviews oficiales siguen pendientes). La campaña
 expression14 sobre ese producto termina8 completed,19 HTTP429 waiting cancelados

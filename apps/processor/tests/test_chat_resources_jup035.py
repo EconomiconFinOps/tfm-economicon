@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 
 import pytest
-from app.agents.prompts import SYSTEM_PROMPT
+from app.agents.prompts import CHAT_SYSTEM_PROMPT
 from app.agents.schemas import FinOpsResponse, chat_provider_schema
 from test_chat_private_jup035 import private,signed
 
@@ -30,7 +30,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
-    arithmetic='source-quantity-operation-root-depth4-operations12-short-prose-v2',
+    arithmetic='provenance-user-document-quantity-operation-root-depth4-operations12-v3',
     decision_values='server-query-no-model-decision-v1')
 
 
@@ -72,7 +72,7 @@ def resources(private,tmp_path,monkeypatch):
     (root/'input.md').write_bytes(input_text.encode('utf-8'))
     schema_sha=digest(canonical(FinOpsResponse.model_json_schema()))
     manifest={'v':3,'kind':'jup-035.chat.v3','system_sha256':digest(system.encode()),'input_sha256':digest(input_text.encode()),
-              'system_base_sha256':digest(SYSTEM_PROMPT.encode()),'response_schema_sha256':schema_sha,
+              'system_base_sha256':digest(CHAT_SYSTEM_PROMPT.encode()),'response_schema_sha256':schema_sha,
               'provider_response_schema_sha256':digest(canonical(chat_provider_schema(financial_metrics_allowed=True))),
               'financial_metrics_policy':'server-billing-authority-empty-metrics-v1',
               'response_period_policy':'server-verified-unique-utc-v1',
@@ -108,7 +108,7 @@ def test_valid_server_bundle_exposes_verified_versions_without_system_text(resou
     assert response.json()['prompt_version']=='jup-035.chat.v3:'+digest(canonical(manifest))
     assert response.json()['tokenizer_sha256']==TOKENIZER_SHA
     assert response.json()['response_schema_sha256']==manifest['response_schema_sha256']
-    assert 'CHAT_V2_PRIVATE_RULE' not in response.text and SYSTEM_PROMPT not in response.text
+    assert 'CHAT_V2_PRIVATE_RULE' not in response.text and CHAT_SYSTEM_PROMPT not in response.text
 
 
 @pytest.mark.parametrize('failure',['system_bytes','missing_input','schema_hash','tokenizer_hash','budgets'])

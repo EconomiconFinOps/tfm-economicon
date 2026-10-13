@@ -27,7 +27,13 @@ respuesta útil no accionable. El límite de una recuperación es por intento.
 
 El formato privado final conserva segmentos de prosa y añade expresiones
 tipadas autocontenidas. Las hojas eligen una cantidad indivisible valor/unidad
-observada en la pregunta actual, con origen conservado. Un vocabulario cerrado
+observada en la pregunta actual o en documentos efectivos autenticados, con origen
+conservado y opciones documentales separadas por identificador de fuente. El
+catálogo documental exige unidad explícita y coincidencia íntegra entre el
+fragmento del mensaje recuperado y authorized_evidence. Su límite global128
+preserva primero todos los operandos del usuario; una fuente omitida no aporta
+cantidades. La regla documental no adquiere autoridad de facturación y sólo se
+aplica al KPI y alcance definido por el propio documento. Un vocabulario cerrado
 normaliza alias inequívocos; `$` y `¥` no se convierten a monedas supuestas.
 Un encabezado monetario puede abarcar su lista dentro de una oración; un contexto
 diario solo abarca su entrada o una observación inmediatamente ligada a su
@@ -68,9 +74,18 @@ las reglas de autoridad y citas del contrato público FinOpsResponse1.0.
 
 Límites: comprobar un extracto literal acredita origen, no pertinencia. Calcular
 una expresión acredita esa operación, no que el modelo haya elegido la base
-semántica correcta. La aritmética usa la pregunta actual, no reconstruye valores
+semántica correcta. La aritmética usa pregunta y documentos efectivos, no reconstruye valores
 ambiguos de recuerdos. La respuesta completa, citas y completitud requieren una
 nueva campaña real y recorrido UI; no se afirma corrección universal de prosa.
+
+La campaña expression15 (192b687) completó23 casos y falló5, con27 HTTP429
+observados y dos rechazos de contenido. Sus respuestas completas conservan
+errores semánticos de denominador, interpretación de porcentajes y omisiones:
+no constituye aceptación. Se elimina la contradicción entre la política base
+de ingesta (toda cifra exigía evidencia financiera) y los ejercicios del chat
+mediante CHAT_SYSTEM_PROMPT separado, con base/hash propios. SYSTEM_PROMPT de
+ingesta no cambia. El esquema privado fija ahorro estimado y divisa a null,
+como ya exigía el firewall del chat; no se rellena una pareja inválida.
 
 Pruebas previstas: consulta alterada/HMAC/aislamiento, una generación después de
 retrieval, cancelación de ambas fases, uso privado y público, esquema/conteo

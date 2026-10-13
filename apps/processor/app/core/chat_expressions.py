@@ -29,7 +29,27 @@ def context_question(context):
 def context_quantities(context):
     if not any(message.get('content','').startswith('UNTRUSTED_CURRENT_CONTEXT\n') for message in context.get('messages',[])):
         return {}
-    return quantities(context_question(context))
+    catalog=quantities(context_question(context))
+    for entry in catalog.values():
+        entry['provenance']=[{'kind':'user','source':entry['source']}]
+    authorized={item['id']:item for item in context.get('authorized_evidence',[]) if item.get('kind')=='corpus'}
+    for message in context.get('messages',[]):
+        content=message.get('content','')
+        if not content.startswith('UNTRUSTED_RETRIEVAL_CONTEXT\n'):continue
+        for source in json.loads(content.split('\n',1)[1]).get('evidence',[]):
+            if source.get('kind')!='corpus' or authorized.get(source.get('id'))!=source:
+                raise ValueError('Documentary quantity source not authorized.')
+            for key,entry in quantities(source['content'],explicit_only=True).items():
+                provenance={'kind':'corpus','id':source['id'],'source':entry['source']}
+                # Numeric equality is not provenance equality: user operands and
+                # documentary rules remain distinct, even at the same value.
+                qualified='document:'+source['id']+':'+key
+                if qualified in catalog:
+                    if provenance not in catalog[qualified]['provenance']:
+                        catalog[qualified]['provenance'].append(provenance)
+                elif len(catalog)<MAX_QUANTITIES:
+                    catalog[qualified]={**entry,'display':key,'provenance':[provenance]}
+    return catalog
 NUMERIC = r'(?<![\w.,-])[-−]?[0-9]+(?:[.,][0-9]+)?(?![\w-]|[.,][0-9])'
 CURRENCIES = ('EUR','USD','GBP','JPY','CHF','CAD','AUD','CNY','INR','€','$','£','¥')
 # A closed dimensional vocabulary, not arbitrary words from the question.
@@ -69,7 +89,7 @@ def canonical_decimal(value):
     return '0' if raw in ('','-0') else raw
 
 
-def quantities(question):
+def quantities(question, *, explicit_only=False):
     """Return deterministic indivisible options with their original source span.
 
     A unique currency may scope bare monetary entries, but never dates, count
@@ -121,6 +141,7 @@ def quantities(question):
                 population={normalized_unit(m.group()) for m in COUNT_RE.finditer(population_text)}
                 if len(population)==1:
                     unit=next(iter(population));kind='context_count'
+        if explicit_only and kind!='adjacent':continue
         unit=normalized_unit(unit)
         # Time dimensions scope an entry. Only an explicitly named observed
         # value may inherit the immediately preceding daily baseline's rate;
@@ -133,7 +154,7 @@ def quantities(question):
             if re.search(r'\b(?:baseline|base)\b',prior,re.IGNORECASE):
                 daily=re.search(r'\b(?:diari[oa]s?|daily|por día|por dia|per day)\b',prior,re.IGNORECASE)
         mixed=re.search(r'\b(?:total|mensual|monthly|horari[oa]|hourly|semanal|weekly)\b',local,re.IGNORECASE)
-        if unit in CURRENCIES and daily and not mixed:
+        if not explicit_only and unit in CURRENCIES and daily and not mixed:
             unit+='/día';kind='context_daily_rate'
         key=value+(' '+unit if unit else '')
         result.setdefault(key,{'value':value,'unit':unit,'source':span,'binding':kind})
@@ -190,7 +211,7 @@ class ExpressionRenderer:
             key=node['quantity']
             if not isinstance(key,str) or key not in self.catalog:raise ValueError('Unknown source quantity.')
             entry=self.catalog[key]
-            return Decimal(entry['value']),entry['unit'],key,None
+            return Decimal(entry['value']),entry['unit'],entry.get('display',key),None
         operator=node.get('operation')
         if not isinstance(operator,str):raise ValueError('Expression operation shape.')
         names={'sum':('left','right'),'difference':('current','baseline'),

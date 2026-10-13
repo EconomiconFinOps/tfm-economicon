@@ -42,7 +42,7 @@ def empty_result():
 
 @pytest.mark.parametrize('with_source',[False,True])
 def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch,with_source):
-    source={'id':'corpus:current:0','kind':'corpus','title':'Current source','source':'Manual','content':'A supported definition.'}
+    source={'id':'corpus:current:0','kind':'corpus','title':'Current source','source':'Manual','content':'A supported threshold of 17%.'}
     gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(_provider(ANSWER))})])
     async def result(control):
         return {**empty_result(),'content':json.dumps({'evidence':[source] if with_source else [],'omissions':[]})}
@@ -54,10 +54,13 @@ def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch
         choices=schema['$defs']['Evidence']['anyOf']
         assert len(choices)==1
         assert {k:v['const'] for k,v in choices[0]['properties'].items() if k!='support_quote'}=={k:source[k] for k in ('id','kind','title','source')}
+        assert schema['$defs']['SourceQuantity']['properties']['quantity']['enum']==['document:corpus:current:0:17 %']
     else:
         assert schema['properties']['evidence']['maxItems']==0
         assert not {'ok','partial'} & set(schema['properties']['status']['enum'])
     for branch in schema.get('anyOf',[schema]):assert branch['properties']['metrics']['maxItems']==0
+    for field in ('estimated_savings','currency'):
+        assert schema['$defs']['Recommendation']['properties'][field]=={'type':'null'}
 
 
 def test_final_failure_diagnostic_never_contains_candidate_or_secret(monkeypatch,caplog):

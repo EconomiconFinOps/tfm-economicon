@@ -59,7 +59,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
-    arithmetic='source-quantity-operation-root-depth4-operations12-short-prose-v2',
+    arithmetic='provenance-user-document-quantity-operation-root-depth4-operations12-v3',
     decision_values='server-query-no-model-decision-v1')
 
 
@@ -135,7 +135,7 @@ class ChatResources:
         from app.agents.schemas import chat_provider_schema
         messages=continuation_messages(context,assistant,result)
         sources=context.get('authorized_evidence',[])+json.loads(result['content'])['evidence']
-        schema=chat_provider_schema(financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=sources, quantities=context_quantities(context))
+        schema=chat_provider_schema(financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=sources, quantities=context_quantities({'messages':messages,'authorized_evidence':sources}))
         variable=self.count(canonical(messages[1:]).decode('utf-8'))
         total=self.count(canonical(messages).decode('utf-8'))+self.count(canonical(schema).decode('utf-8'))
         if total+1024+self.context_budget['output_tokens']>self.context_budget['context_tokens']:
@@ -192,7 +192,7 @@ class ChatResources:
 
 def load_resources(directory=None, tokenizer_file=None):
     import tokenizers
-    from app.agents.prompts import SYSTEM_PROMPT
+    from app.agents.prompts import CHAT_SYSTEM_PROMPT
     from app.agents.schemas import FinOpsResponse, chat_provider_schema
     root = Path(directory) if directory else Path(__file__).parents[1] / 'agents/prompt_resources/jup035/chat/v3'
     if root.is_symlink() or not root.is_dir():
@@ -215,7 +215,7 @@ def load_resources(directory=None, tokenizer_file=None):
     expected = {
         'v':3, 'kind':'jup-035.chat.v3',
         'system_sha256':sha(system_raw), 'input_sha256':sha(input_raw),
-        'system_base_sha256':sha(SYSTEM_PROMPT.encode('utf-8')),
+        'system_base_sha256':sha(CHAT_SYSTEM_PROMPT.encode('utf-8')),
         'response_schema_sha256':sha(canonical(FinOpsResponse.model_json_schema())),
         'provider_response_schema_sha256':sha(canonical(chat_provider_schema(financial_metrics_allowed=True))),
         'financial_metrics_policy':'server-billing-authority-empty-metrics-v1',

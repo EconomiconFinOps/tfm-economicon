@@ -186,7 +186,11 @@ persistir texto parcial.
 ### Requirement: Aritmetica hipotetica calculada y proyectada
 
 La finalizacion privada SHALL representar calculos mediante expresiones tipadas
-autocontenidas sobre cantidades indivisibles valor/unidad de la pregunta actual.
+autocontenidas sobre cantidades indivisibles valor/unidad de la pregunta actual
+o de documentos efectivos autenticados. Las cantidades documentales MUST tener
+unidad explícita, identificador y contenido de origen concordantes con el mensaje
+recuperado y la evidencia autorizada. MUST NOT aportar autoridad de facturación
+ni desplazar operandos del usuario cuando se alcance el límite global128.
 SHALL evaluar con Decimal sin eval, profundidad maxima4 y doce operaciones en
 total entre todos los campos. Ningun calculo SHALL conferir evidencia financiera.
 

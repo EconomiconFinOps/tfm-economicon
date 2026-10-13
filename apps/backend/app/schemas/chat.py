@@ -113,6 +113,9 @@ def provider_response_schema(*, financial_metrics_allowed=False, authorized_evid
     schema['$defs'].pop('Period')
     if not financial_metrics_allowed:
         schema['properties']['metrics']['maxItems'] = 0
+    # Chat never authorizes estimated savings; mirror the backend firewall.
+    for field in ('estimated_savings','currency'):
+        schema['$defs']['Recommendation']['properties'][field]={'type':'null'}
     # Select documentary support before drafting prose in constrained decoding.
     schema['properties'] = {'evidence':schema['properties']['evidence'],
         **{key:value for key,value in schema['properties'].items() if key!='evidence'}}
