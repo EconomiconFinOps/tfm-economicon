@@ -1380,3 +1380,15 @@ Sin registrar. El bloque `## Human Approval` con `Approval type: post-review` lo
 ### Hallazgos abiertos
 
 `RF-038-001` a `RF-038-009` y `RF-114-001` (aplazado) en `openspec/findings/backlog.md`; ninguno bloquea el cierre de este change.
+
+## Human Approval
+
+- Change: jup-038-explain-anomaly-episodes
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-13
+- Review: QA de cada grupo con veredicto `accept` (grupos 2 a 7); validación propia con el stack real (grupo 8) y suites completas (grupo 10). No se ha hecho una revisión adversarial independiente de todo el change ni se dispone de `Revision JUP-038` ni de `Validacion JUP-038`.
+- Accepted findings: `RF-038-001` a `RF-038-009`, registrados en `openspec/findings/backlog.md` sin bloquear el cierre; `RF-114-001` aplazado.
+- Archive decision: archive
+- Notes: se archiva en la rama `feat/JUP-038-explain-anomaly-episodes` antes de abrir la PR contra `develop`. Pendiente en la PR: `Revision JUP-038` (Lucia Mateo) y `Validacion JUP-038` (Alejandro Aguado), pairing de Paris Arcos Martin sin acreditar, run de CI y la integración con JUP-035 (PR #120 y #121), que añade conflictos en `routes/assistant.py` y `AnswerEvidence.tsx`.

@@ -189,6 +189,6 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   `docs/evidence/JUP-038-validation.md` con un apartado por criterio de la tarjeta y lo no validado.
 - [x] 10.5 Comprobar `origin/develop` otra vez; si hay commits que tocan los archivos de producto de
   este cambio, integrarlos y repetir 10.1.
-- [ ] 10.6 Registrar la aprobación posterior a la revisión, archivar el change en la rama y preparar
+- [x] 10.6 Registrar la aprobación posterior a la revisión, archivar el change en la rama y preparar
   la PR contra `develop` desde `feat/JUP-038-explain-anomaly-episodes` con los cuatro roles de la
   tarjeta.
