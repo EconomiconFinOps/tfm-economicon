@@ -1335,3 +1335,48 @@ existen entre `develop` (`bfaf3983`, sin adelantarse) y cada PR. Los resultados 
 10. El Red de los grupos 4 a 7 no incluía lint ni typecheck de las pruebas; el grupo 5 lo descubrió tarde (49 errores).
 
 **Estado del grupo 8:** tareas 8.1 a 8.4 hechas; el flujo completo funciona en un navegador real con el stack aislado.
+
+## Cierre del apply (grupos 9 y 10, 2026-10-13)
+
+### Resumen por grupo
+
+| Grupo | Red | Green | Mutación | QA |
+| --- | --- | --- | --- | --- |
+| 1. Contrato | doc-only (excepción registrada) | — | — | — |
+| 2. Explicador | 75 pruebas, `75 failed` (módulo ausente) | 75 verdes | mutmut 255/256 (1 equivalente) y 18/18 manuales; +20 pruebas | `accept` |
+| 3. Lectura con operandos exactos | 13, `13 failed` (CockroachDB real) | 13 verdes tras un bypass puntual autorizado del candado (escala de 12 decimales) | 13/14 manuales (1 equivalente); +9 pruebas | `accept` |
+| 4. Ruta del asistente | 72 pruebas (`71 failed` y `1 passed`) y 9 con CockroachDB (`9 failed`) | 72 + 9 verdes | mutmut 9/11 y manuales 21/22 (3 equivalentes); +11 pruebas | `accept` |
+| 5. Evidencia en el frontend | 261, `257 failed` y `4 passed` | 271 verdes tras una excepción puntual del candado (solo tipos) | Stryker 211/212 (1 equivalente) y 32/32 manuales | `accept` |
+| 6. Modo del redactor | 38, todas en rojo | 67 verdes | Stryker 82.86 % → **92.57 %** (13 supervivientes justificados) | `accept` |
+| 7. Enlace del panel | 19, `19 failed` | 19 verdes | Stryker 4/4 y manuales 6/7 (1 equivalente) | `accept` |
+| 8. Validación con el stack real | — | — | — | — (validación propia, ver evidencia) |
+| 9. Documentación | doc-only | — | — | — |
+
+Cada fila remite a su sección de este documento, con comandos, conteos y los incidentes (dos excepciones al candado de pruebas autorizadas por Victor, scripts propios corregidos en el grupo 8 y sus lecciones). Las muestras de mutación son dirigidas, no barridos completos.
+
+### Resultado de la tarea 10 (sobre `d0095619`)
+
+| Tarea | Resultado |
+| --- | --- |
+| 10.1 | Backend como CI: 1433 pasan, 149 omitidas, 0 fallos (base 1255 y 118). Con CockroachDB real: 1561 pasan, 21 omitidas, 0 fallos. Frontend: 76 archivos y 1238 pruebas (base 66 y 881); con el paralelismo por defecto hubo fallos intermitentes ajenos al cambio (1, 0 y 2 en tres ejecuciones) y con un worker 1238 de 1238 |
+| 10.2 | 62 archivos; el producto cambiado son los del `proposal.md`; sin cambios en migraciones, dependencias, CI, processor, infraestructura ni corpus |
+| 10.3 | `lint`, `openspec:validate` (68/68), `jup:check`, `jup:cleanup:check`, `jup:check:test`, `jup:cleanup:test` y `git diff --check` correctos; typecheck y build del frontend con código 0 |
+| 10.4 | Este cierre y el apartado «Cierre» de `docs/evidence/JUP-038-validation.md`, con un apartado por criterio y lo no validado |
+| 10.5 | `origin/develop` sigue en `bfaf3983`, ya contenido en la rama (comprobado el 2026-10-13); se vuelve a comprobar justo antes de la PR |
+| 10.6 | Pendiente: aprobación posterior a la revisión de Victor, archivado y PR |
+
+### Checklist de aceptación del change
+
+- [x] Los requisitos de las tres specs tienen prueba o evidencia (grupos 2 a 8).
+- [x] Pruebas nuevas en verde en local; sin pruebas previas editadas.
+- [x] Documentación y decisiones actualizadas (grupos 1 y 9; sin ADR nuevo).
+- [ ] PR abierta y vinculada, con `Revision JUP-038` y `Validacion JUP-038`.
+- [ ] Run de CI enlazado.
+
+### Gate posterior a la revisión
+
+Sin registrar. El bloque `## Human Approval` con `Approval type: post-review` lo firma Victor al decidirlo; no se ha escrito en nombre de nadie. El archivado del change y la PR a `develop` quedan detrás de ese bloque.
+
+### Hallazgos abiertos
+
+`RF-038-001` a `RF-038-009` y `RF-114-001` (aplazado) en `openspec/findings/backlog.md`; ninguno bloquea el cierre de este change.

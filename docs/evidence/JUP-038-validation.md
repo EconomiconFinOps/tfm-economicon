@@ -12,11 +12,11 @@ La explicación es determinista: la arma código a partir del episodio guardado,
 
 | # | Criterio | Estado | Evidencia |
 | --- | --- | --- | --- |
-| 1 | Resultado funcional verificable. | Pendiente | Grupo 8 de las tareas: explicación de las tres anomalías (P1, P2, P3) de JUP-107 en el stack real, cifras frente a `docs/demo/JUP-107/esperados-anomalias.json` y recálculo a mano de una evidencia. |
-| 2 | Pruebas necesarias añadidas y en verde. | Pendiente | Grupos 2 a 7, con Red, Green y mutación por grupo, y suites completas en el grupo 10. |
-| 3 | Documentación y decisiones actualizadas. | En curso | Contrato [anomaly-explanations.md](../api/anomaly-explanations.md) y nota en ADR-0020 (grupo 1); resto en el grupo 9. |
-| 4 | Pull request revisado y vinculado. | Pendiente | Se abre al terminar el grupo 10; enlace por rellenar. |
-| 5 | Validación funcional y evidencia enlazadas. | Pendiente | Este archivo, `review.md` del change y enlaces de PR y CI por rellenar. |
+| 1 | Resultado funcional verificable. | Cumplido en la rama (validación propia; la independiente sigue pendiente) | Grupo 8 y apartado «Cierre» más abajo: las tres anomalías (P1, P2, P3) de JUP-107 se explican en el stack real con las cifras de `esperados-anomalias.json`. |
+| 2 | Pruebas necesarias añadidas y en verde. | Cumplido en local; CI por rellenar | 209 pruebas nuevas de backend y 357 de frontend, con Red, Green y mutación por grupo; suites completas en el apartado «Cierre». |
+| 3 | Documentación y decisiones actualizadas. | Cumplido | Contrato [anomaly-explanations.md](../api/anomaly-explanations.md), nota en ADR-0020, arquitectura, READMEs, demo, backlog, continuidad y pruebas críticas (grupos 1 y 9). |
+| 4 | Pull request revisado y vinculado. | Pendiente | La PR no está abierta; `Revision JUP-038` y `Validacion JUP-038` sin publicar. |
+| 5 | Validación funcional y evidencia enlazadas. | Parcial | Esta evidencia y `review.md` existen y se enlazarán en la PR; falta el enlace de CI y la `Validacion JUP-038` de Alejandro. |
 
 ## Fuentes verificadas
 
@@ -109,11 +109,53 @@ Cálculo del ejemplo del contrato (tarea 1.2): script independiente del backend,
 4. Con `playwright-core` y Chrome: `node docs/evidence/JUP-038/validar-navegador.cjs <directorio>` y `node docs/evidence/JUP-038/validar-http.cjs <directorio>`, donde `<directorio>` contiene `stack/jup038.env` (los puertos del script son los de esta validación) y `capturas/`.
 5. `docker compose -p <proyecto> --env-file <archivo> down -v --rmi local`.
 
-Nada más se ha ejecutado. Los resultados de pruebas, mutación, DoD y stack real de los demás grupos se añaden aquí al completarlos.
+## Cierre (grupo 10, 2026-10-13)
+
+Sobre `d0095619` (la rama contiene `origin/develop` en `bfaf3983`; sin commits nuevos en `develop` al comprobarlo).
+
+### Suites completas (tarea 10.1)
+
+| Suite | Base (`develop` `bfaf3983`) | Con JUP-038 | Diferencia |
+| --- | --- | --- | --- |
+| Backend como CI (Python 3.12, sin CockroachDB) | 1255 pasan, 118 omitidas, 0 fallos | **1433 pasan, 149 omitidas, 0 fallos** | +178 que pasan y +31 omitidas (las 9 de `test_anomaly_explanation_cockroach.py` y las 22 de `test_anomaly_episode_snapshot*.py`) |
+| Backend con CockroachDB v24.1.11 real | no medida con la base | **1561 pasan, 21 omitidas, 0 fallos** | las 21 omitidas son integraciones externas (RabbitMQ, pgvector…); 1561 + 21 = 1582 = 1433 + 149 |
+| Frontend (Vitest) | 66 archivos, 881 pruebas | **76 archivos, 1238 pruebas** | +10 archivos, +357 pruebas |
+
+- `compileall` del backend, lint de los cuatro paquetes, y lint, `tsc` y build del frontend: código 0.
+- Las 209 pruebas nuevas del backend son 75 + 20 (explicador), 13 + 9 (lectura del episodio), 45 + 11 (esquema), 27 (ruta) y 9 (recorrido con CockroachDB); las 357 del frontend son las de los diez archivos nuevos. Ninguna prueba que ya existía se editó (el diff contra la base solo añade archivos de prueba).
+- **Frontend intermitente en esta máquina.** Tres ejecuciones completas seguidas con el paralelismo por defecto dieron 1 fallo (`conversations.test.tsx`, formato de fecha), 0 fallos y 2 fallos (dos pruebas de JUP-098); con `--maxWorkers=1`, 1238 de 1238. Las pruebas fallidas pasan solas y ninguna toca archivos de este cambio; el control sobre `develop` ya falla las de JUP-098 (`RF-098-004`, `RF-103-005`). Es una intermitencia de plazos con carga, no un verde limpio con el paralelismo por defecto: se declara así.
+- Las pruebas de CockroachDB (31 en total) **no corren en CI** (`RF-096-004`): solo hay evidencia de la ejecución local con un nodo desechable, ya eliminado.
+
+### Alcance del diff (tarea 10.2)
+
+`git diff --stat origin/develop...HEAD`: 62 archivos, 8933 inserciones y 27 borrados. El producto cambiado son exactamente los archivos del `proposal.md`: en el backend `services/anomaly_explanations.py` y `schemas/anomaly_explanations.py` (nuevos), `database.py`, `schemas/assistant.py` y `routes/assistant.py` (solo inserciones); en el frontend `contracts.ts`, `AnomalyEvidence.tsx`, `AnomalyExplanationFields.tsx`, `AnswerEvidence.tsx`, `MessageComposer.tsx`, `ConversationsPage.tsx` y `AnomaliesPanel.tsx`. Los 27 borrados son líneas de esos archivos de producto y de documentación, no de pruebas. **No cambian** migraciones, dependencias, CI, processor, azure-cost-api, infraestructura ni el corpus del asistente (búsqueda por ruta: sin coincidencias).
+
+### Comprobaciones de higiene (tarea 10.3)
+
+`corepack pnpm lint`, `corepack pnpm openspec:validate` (68 de 68), `corepack pnpm jup:check -- --change jup-038-explain-anomaly-episodes`, `corepack pnpm jup:cleanup:check` (1334 archivos), `corepack pnpm jup:check:test` (7 de 7), `corepack pnpm jup:cleanup:test` (6 de 6) y `git diff --check`: todas correctas. Enlaces relativos de los documentos tocados: ninguno roto nuevo (`docs/continuidad/README.md` ya enlazaba a `metricas-funcionales-negocio.md` y `cobertura-etiquetado.md`, que no existen en esta rama).
+
+### Por criterio de la tarjeta
+
+1. **Resultado funcional verificable.** Grupo 8: en un navegador real, las tres anomalías explicadas con las cifras esperadas (Compute 24/24, Database 23/23, Analytics 23/23 comprobaciones), cero peticiones antes de «Enviar», 404 idéntico para un episodio ajeno y uno inexistente, y recálculo independiente de la evidencia de Compute (cifras e identificador sha256 coinciden). La explicación es determinista y siempre candidata, sin causa ni ahorro.
+2. **Pruebas.** Apartado 10.1. Mutación dirigida por grupo: explicador 255 de 256 (superviviente equivalente), esquema y ruta con `mutmut` y 22 mutantes manuales (tres supervivientes equivalentes justificados) y frontend 92.57 % con Stryker sobre el código añadido más un harness manual donde Stryker no ejecuta las pruebas. Son muestras dirigidas, no barridos completos.
+3. **Documentación y decisiones.** Contrato con ejemplo real, nota fechada en ADR-0020 (sin ADR nuevo), `architecture.md`, `finops-agent-tools.md`, READMEs, paso opcional de la demo, `critical-flows.md`, continuidad y backlog (`RF-114-001` aplazado, `RF-038-001` a `009`).
+4. **PR revisado y vinculado.** Sin cumplir: la PR aún no existe. Revisión de Lucía Mateo y validación de Alejandro Aguado pendientes; no se da por hecho ningún dictamen ni el pairing de Paris Arcos Martin.
+5. **Validación funcional y evidencia enlazadas.** Esta evidencia, `review.md`, `docs/evidence/JUP-038/` (capturas, scripts e informes) y el contrato. Falta el enlace del run de CI y la `Validacion JUP-038` independiente.
+
+### Lo que NO se ha validado
+
+- **Ningún dictamen humano:** ni la revisión, ni la validación independiente, ni el pairing. La validación de esta evidencia la hizo quien lidera la tarjeta con ayuda de agentes.
+- **CI:** no hay run de CI de este cambio. Las 31 pruebas de CockroachDB no están en CI.
+- **Navegador:** solo Chrome, tema claro y anchos de escritorio y 390 px. Sin tema oscuro, otros navegadores ni dispositivos reales; sin pruebas automáticas de navegador en el repositorio (los scripts de `docs/evidence/JUP-038/` son manuales).
+- **Datos:** solo el conjunto sintético de JUP-107; sin datos reales de Azure ni tenants reales; sin carga, concurrencia ni despliegue en la nube.
+- **Aislamiento por HTTP de un usuario sin pertenencia al cliente:** cubierto por pruebas de CI con la base doblada y con CockroachDB, no en el stack real.
+- **Integración con JUP-035:** los conflictos con las PR #120 y #121 están medidos (dos archivos nuevos), no resueltos; la herramienta `detect_cost_anomaly_candidates` no existe (`RF-038-006`) y el par de mensajes no se guarda de forma atómica (`RF-038-005`).
+- **Mutación:** muestras dirigidas, no barrido completo; Stryker no ejecuta algunas pruebas de componentes (`RF-038-007`).
+- **Frontend completo en verde con el paralelismo por defecto:** no garantizado en esta máquina (intermitencias descritas arriba); sí con un solo worker.
+- **Corpus del asistente:** no cambia, así que el asistente no sabe que lo esperado es la media de 7 días ni cómo se calcula la criticidad (`RF-114-001`).
 
 ## Pendiente
 
-- PR: por abrir.
+- PR: por abrir (tarea 10.6, tras la aprobación posterior a la revisión).
 - CI: por rellenar con el run del último commit.
-- `Revision JUP-038` y `Validacion JUP-038`: pendientes.
-- Lo no validado se lista aquí al cerrar el grupo 10.
+- `Revision JUP-038` (Lucía Mateo) y `Validacion JUP-038` (Alejandro Aguado): pendientes.

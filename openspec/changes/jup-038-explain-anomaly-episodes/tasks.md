@@ -177,17 +177,17 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 
 ## 10. Verificación y cierre
 
-- [ ] 10.1 Ejecutar las suites completas de backend y frontend y anotar aprobadas, fallidas y
+- [x] 10.1 Ejecutar las suites completas de backend y frontend y anotar aprobadas, fallidas y
   omitidas frente a la base de 1.1.
-- [ ] 10.2 Comprobar con `git diff --stat` contra la base que el producto cambiado se limita a los
+- [x] 10.2 Comprobar con `git diff --stat` contra la base que el producto cambiado se limita a los
   archivos del `proposal.md` y que no cambian migraciones, dependencias, CI, processor ni el corpus
   del asistente.
-- [ ] 10.3 Ejecutar `corepack pnpm lint`, `corepack pnpm openspec:validate`,
+- [x] 10.3 Ejecutar `corepack pnpm lint`, `corepack pnpm openspec:validate`,
   `corepack pnpm jup:check -- --change jup-038-explain-anomaly-episodes` y
   `corepack pnpm jup:cleanup:check`.
-- [ ] 10.4 Escribir `review.md` con la evidencia Red, Green y de mutación de cada grupo, y cerrar
+- [x] 10.4 Escribir `review.md` con la evidencia Red, Green y de mutación de cada grupo, y cerrar
   `docs/evidence/JUP-038-validation.md` con un apartado por criterio de la tarjeta y lo no validado.
-- [ ] 10.5 Comprobar `origin/develop` otra vez; si hay commits que tocan los archivos de producto de
+- [x] 10.5 Comprobar `origin/develop` otra vez; si hay commits que tocan los archivos de producto de
   este cambio, integrarlos y repetir 10.1.
 - [ ] 10.6 Registrar la aprobación posterior a la revisión, archivar el change en la rama y preparar
   la PR contra `develop` desde `feat/JUP-038-explain-anomaly-episodes` con los cuatro roles de la
