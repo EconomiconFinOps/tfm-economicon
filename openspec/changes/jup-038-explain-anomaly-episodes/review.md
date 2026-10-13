@@ -175,3 +175,52 @@ del 409 en el contrato. Es un refinamiento aditivo del mismo requisito: no cambi
 **Lo que esta mutación no demuestra.** Las pruebas se ejecutan solo contra el explicador puro: el
 formato real de las filas de CockroachDB (p. ej. un `closed_at` con zona horaria) se comprueba en el
 grupo 3. La regresión completa, el lint y el veredicto de QA del grupo siguen pendientes.
+
+## Grupo 2 — Definition of Done y veredicto de QA
+
+**DoD** (2026-10-12, sobre `18adbe9f`). `check-dod.mjs` ejecuta `corepack pnpm test` en Windows, donde
+fallan 145 pruebas ajenas de JUP-047 (`socketpair` de asyncio frente a su guarda de red, `RF-105-004`,
+ya rojas en `develop`). Para no mezclarlas con este cambio, cada control se ejecutó por separado:
+
+| Control | Comando | Resultado |
+| --- | --- | --- |
+| Regresión backend completa, HEAD | `python -m pytest tests` en `jup054-py-backend` (Python 3.12.15), con `apps`, `docs`, `fixtures`, `scripts`, `infra`, `tools`, `packages` y `openspec` copiados | **1350 passed, 118 skipped, 0 failed** (134 s) |
+| Control, `develop` en `bfaf3983` | mismo comando sobre `git archive bfaf3983` | 1255 passed, 118 skipped, 0 failed |
+| Diferencia | | +95 pasan = las 75 + 20 pruebas nuevas; omitidas iguales |
+| Lint backend | `python -m compileall -q app` | OK |
+| Lint frontend | `corepack pnpm --filter @finops/frontend lint` | exit 0 (el grupo no toca el frontend) |
+| Type-check frontend | `corepack pnpm --filter @finops/frontend typecheck` | exit 0 |
+| Escaneo de secretos | patrones de `check-dod.mjs` sobre las 2588 líneas añadidas desde `bfaf3983` | 0 hallazgos |
+
+No se ejecutó la suite del frontend ni la del processor: el grupo no toca ninguno de los dos. Las
+pruebas opt-in con CockroachDB, RabbitMQ y pgvector reales quedan omitidas, como en CI (`RF-096-004`).
+La primera ejecución falló en la recolección porque la suite lee `docs/` y `fixtures/` de la raíz del
+repositorio; se repitió copiándolos, igual para HEAD y para el control.
+
+**Veredicto del agente `qa`: `accept`.** Reejecutó las 95 pruebas del grupo (`95 passed`) y comprobó
+el historial (el Red solo trae pruebas, el Green solo el módulo; `test_anomaly_explanations.py` no se
+modificó tras el Red; no cambió ningún archivo ajeno al grupo), la ausencia de `skip`/`xfail`, que las
+pruebas validan comportamiento real con oráculo independiente, el alcance del módulo y los comentarios
+en español. No reejecutó la regresión completa, el lint, el type-check ni mutmut: usó los resultados
+de arriba.
+
+**Observaciones no bloqueantes del QA**, aceptadas:
+
+1. «No menciona despliegues, uso, tráfico ni ahorro como hechos» solo queda cubierto por la igualdad
+   exacta del texto con el literal, sin una aserción negativa explícita sobre esas palabras.
+2. **Supuestos de tipo que deben respetar los grupos 3 y 4** y fijarse con pruebas allí:
+   - la fotografía tiene la forma de `episode_payload` **sin `_order`** (el módulo no lo quita y
+     entraría en la evidencia y en el hash);
+   - `start_date`, `impact_through_date` y `no_longer_observed_on` son `date`;
+   - `closed_at` y `explained_at` llevan zona horaria (sin ella, `astimezone` usaría la hora local);
+   - los tres operandos son `Decimal` y salen de la misma sentencia SQL que el episodio: el explicador
+     valida que cumplan la regla, no que cuadren con él;
+   - el texto exacto del `Decimal` (escala y ceros finales) entra en `operands` y en el hash, así que
+     la escala de la columna afecta al identificador; hay que comprobar que dos lecturas del mismo
+     episodio dan el mismo `id`;
+   - `tenant_id` es `str`.
+3. La ruta debe convertir `ExplanationUnavailable` en 409 antes de guardar ningún mensaje; un
+   `KeyError` o `TypeError` por una fotografía mal formada sería un 500 (cobertura del grupo 4).
+
+**Estado del grupo 2:** tareas 2.1 a 2.6 hechas, mutación sin supervivientes salvo el equivalente
+justificado, DoD en verde y QA en `accept`.

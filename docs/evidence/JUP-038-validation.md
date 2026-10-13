@@ -36,9 +36,19 @@ La explicación es determinista: la arma código a partir del episodio guardado,
 
 Gate pre-código, 2026-10-12: `corepack pnpm openspec:validate` (68 de 68), `corepack pnpm jup:check -- --change jup-038-explain-anomaly-episodes` y `corepack pnpm jup:cleanup:check`, las tres correctas.
 
-Cálculo del ejemplo del contrato (tarea 1.2): script independiente del backend, con aritmética exacta, que da 150.00 EUR de subida absoluta, 37.50 % de subida relativa, 400.00 EUR de impacto acumulado en 2 días y criticidad P3. Coincide con la salida que ya documenta [anomaly-episodes.md](../api/anomaly-episodes.md) (`2026-09-08 2026-09-09 400.00 400.00 2 P3`). Es un cálculo de documentación: no se ha ejecutado todavía código de este change.
+Cálculo del ejemplo del contrato (tarea 1.2): script independiente del backend, con aritmética exacta, que da 150.00 EUR de subida absoluta, 37.50 % de subida relativa, 400.00 EUR de impacto acumulado en 2 días y criticidad P3. Coincide con la salida que ya documenta [anomaly-episodes.md](../api/anomaly-episodes.md) (`2026-09-08 2026-09-09 400.00 400.00 2 P3`). Es un cálculo de documentación, hecho en el grupo 1 antes de que existiera código de este change.
 
-Nada más se ha ejecutado. Los resultados de pruebas, mutación, DoD y stack real se añaden aquí al completar cada grupo.
+**Grupo 2 — explicador** (commits `4d96ff74`, `435e4df5` y `18adbe9f`, 2026-10-12):
+
+- Pruebas del explicador: 95 (75 del Red y 20 de remediación de mutantes), todas en verde en Python 3.12.15; el Red las dejó en `75 failed` por la ausencia del módulo.
+- Regresión backend completa en contenedor equivalente a CI: 1350 pasan, 118 omitidas, 0 fallos; el control sobre `develop` (`bfaf3983`) da 1255, 118 y 0, es decir, +95 exactas.
+- Mutación: mutmut 2.5.1, 256 mutantes, 255 muertos y 1 superviviente equivalente justificado (`_PRECISION` 120 a 121); 18 de 18 mutantes manuales muertos.
+- Lint (`compileall`, `eslint`), `tsc` y escaneo de secretos: sin hallazgos.
+- Revisión del agente `qa`: `accept`. Detalle en `review.md` del change.
+
+Aún no se ha ejecutado nada contra una base de datos real ni a través de la ruta del asistente: eso llega con los grupos 3 y 4.
+
+Nada más se ha ejecutado. Los resultados de pruebas, mutación, DoD y stack real de los demás grupos se añaden aquí al completarlos.
 
 ## Pendiente
 
