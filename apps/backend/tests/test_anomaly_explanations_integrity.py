@@ -316,7 +316,9 @@ IN_RANGE_BOUNDARY = [
     # Observado y numerador en la frontera: O = 9...9 (26 dígitos), R = 9e25, exceso = 7*O - R ~= 6.1e26 > 1e26,
     # no cabe en el rango; por eso la frontera del numerador se prueba con un O pequeño.
     pytest.param(Decimal("1e25"), Decimal("3e24"), Decimal("9" * 26), id="numerador-26-nueves"),
-    pytest.param(Decimal("1e25"), Decimal("3e24"), Decimal("1e25"), id="numerador-1e25"),
+    # O = 1.8e24: exceso = 1.26e25 - 1e25 = 2.6e24 > 20 % de R (2e24) y <= N = 1e25. Con O = 3e24 el exceso (1.1e25)
+    # superaría a N y lo rechazaría la invariante 5, no el rango.
+    pytest.param(Decimal("1e25"), Decimal("1.8e24"), Decimal("1e25"), id="numerador-1e25"),
 ]
 
 

@@ -188,16 +188,19 @@ def test_importes_de_treinta_cifras_se_calculan_con_aritmetica_exacta():
     # de 31-32 cifras pierden dígitos en `reference/7`, en `observed*7`, en `exceso/7`, en `exceso*100/ref` y
     # en `numerador/7`, y el texto mostraría cifras falsas.
     #
-    # Valores diseñados (en céntimos, s = 5000000000000000000000000007):
-    #   R = 140000*s  -> 7000000000000000000000000009800.00   (diaria exacta 1000000000000000000000000001400.00)
-    #   O =  30001*s  -> 1500050000000000000000000002100.07
-    # El exceso semanal (7*O - R, ~3.5e30) supera de sobra los 100 por día y el 20 % de la referencia, y la
+    # Valores diseñados (mismas cifras de antes, desplazadas 6 posiciones para caber en NUMERIC(38,12): 25 cifras
+    # enteras y 8 decimales; s = 5000000000000000000000000007):
+    #   R = 140000*s  -> 7000000000000000000000000.00980000   (diaria exacta 1000000000000000000000000.0014)
+    #   O =  30001*s  -> 1500050000000000000000000.00210007
+    # El exceso semanal (7*O - R, ~3.5e24) supera de sobra los 100 por día y el 20 % de la referencia, y la
     # subida relativa vale EXACTAMENTE 50.005 % (10001/200): justo en el medio del redondeo, con lo que
     # HALF_UP da 50.01 y cualquier pérdida de cifras (con 28 sale 50.00499999...) da 50.00. Es el caso que
-    # delata la precisión. Los valores esperados se calculan abajo con `Fraction`, sin usar el módulo.
-    reference = "7000000000000000000000000009800.00"
-    observed = "1500050000000000000000000002100.07"
-    numerator = "1400000000000000000000000000000.35"  # impacto exacto 200000000000000000000000000000.05 (P1)
+    # delata la precisión. El numerador es el exceso de apertura más un tramo posterior (un episodio de 3 días
+    # nunca acumula menos que su día de apertura) y su séptima parte no es exacta, para ejercitar también esa
+    # división. Los valores esperados se calculan abajo con `Fraction`, sin usar el módulo.
+    reference = "7000000000000000000000000.00980000"
+    observed = "1500050000000000000000000.00210007"
+    numerator = "4000350000000000000000000.00490149"  # impacto 571478571428571428571428.57 (P1)
 
     ref_f, obs_f, num_f = Fraction(reference), Fraction(observed), Fraction(numerator)
     excess = obs_f * 7 - ref_f
@@ -211,9 +214,9 @@ def test_importes_de_treinta_cifras_se_calculan_con_aritmetica_exacta():
         "impact": _two_decimals_half_up(num_f / 7),
     }
     # Anclas literales, para que un error del helper no valide un resultado erróneo a la vez.
-    assert expected["reference"] == "1000000000000000000000000001400.00"
+    assert expected["reference"] == "1000000000000000000000000.00"
     assert expected["relative"] == "50.01"
-    assert expected["impact"] == "200000000000000000000000000000.05"
+    assert expected["impact"] == "571478571428571428571428.57"
 
     result = explain(make_snapshot(reference=reference, observed=observed, numerator=numerator, days=3,
                                    through=date(2026, 9, 10)))

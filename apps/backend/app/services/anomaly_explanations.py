@@ -15,7 +15,7 @@ import copy
 import hashlib
 import json
 from datetime import date, datetime, timezone
-from decimal import Decimal, localcontext
+from decimal import Decimal, InvalidOperation, localcontext
 
 # `display_label` se importa y no se copia: es el escape ya probado en JUP-037 y duplicarlo dejaría dos
 # versiones del mismo saneamiento que podrían divergir. No se mueve a un módulo común para no tocar el
@@ -46,6 +46,11 @@ SEVERITY_WORDS = {"P1": "Alta (P1)", "P2": "Media (P2)", "P3": "Baja (P3)"}
 # Precisión holgada para las divisiones entre 7 y el porcentaje: el redondeo ocurre una sola vez, al
 # mostrar (`money`), y la división previa no debe perder cifras antes de ese momento.
 _PRECISION = 120
+
+# Límites de los operandos guardados (spec «Operandos no finitos o fuera de rango»).
+_MAX_DIGITS = 38
+_MAX_ADJUSTED_EXPONENT = 25
+OBSERVATIONS = ("observed", "no_longer_observed")
 
 
 class ExplanationUnavailable(Exception):
@@ -89,6 +94,41 @@ def _severity_label(code: str, rules: dict, currency: str) -> str:
     return f"{SEVERITY_WORDS[code]}, por debajo de {p3_limit} {currency}"
 
 
+def _is_valid_operand(value) -> bool:
+    # `type(...) is Decimal` y no `isinstance`: descarta `bool`/`int`/`float`/`str`, que no tienen la
+    # exactitud contractual, antes de llamar a métodos que solo existen en `Decimal`. `is_finite()` va
+    # primero porque NaN e infinitos rompen toda comparación posterior.
+    if type(value) is not Decimal or not value.is_finite() or value < 0:
+        return False
+    # 38 dígitos y exponente ajustado <= 25 acotan la aritmética exacta (7 y 100 veces el operando caben
+    # de sobra en `_PRECISION`) y mantienen `money()` lejos de su límite de precisión.
+    return len(value.as_tuple().digits) <= _MAX_DIGITS and value.adjusted() <= _MAX_ADJUSTED_EXPONENT
+
+
+def _require_valid_operands(*operands) -> None:
+    if not all(_is_valid_operand(operand) for operand in operands):
+        raise ExplanationUnavailable()
+
+
+def _require_coherent_episode(episode: dict) -> None:
+    """Rechaza datos guardados que no pueden ser de un episodio real, en lugar de explicarlos como válidos."""
+    days = episode["impact_day_count"]
+    if (episode["observation"] not in OBSERVATIONS
+            # Comparación exacta, sin normalizar: el contrato guarda "EUR" y " eur" no es esa moneda.
+            or episode["currency"] not in episode["rules"]["currencies"]
+            # `type(...) is int` porque `True` es un `int` para Python y no es un recuento de días.
+            or type(days) is not int or days < 1
+            or episode["impact_through_date"] < episode["start_date"]):
+        raise ExplanationUnavailable()
+
+
+def _require_impact_covers_opening(reference_total: Decimal, observed: Decimal, numerator: Decimal) -> None:
+    # El impacto acumulado incluye el día de apertura, así que no puede ser menor que su exceso. Igual es
+    # válido (episodio de un solo día). Sin tolerancia y con la precisión del resto de la aritmética.
+    if numerator < observed * REFERENCE_DAYS - reference_total:
+        raise ExplanationUnavailable()
+
+
 def _state_line(episode: dict) -> str:
     status = episode["status"]
     if status not in STATUS_WORDS:
@@ -97,7 +137,9 @@ def _state_line(episode: dict) -> str:
     if status in CLOSED_STATUSES:
         # El cierre manda sobre la observación y la fecha se da en UTC: la hora local de quien cerró
         # podría mostrar otro día. El motivo es texto libre del cliente, de ahí `display_label`.
-        if episode["closed_at"] is None or episode["closure_reason"] is None:
+        reason = episode["closure_reason"]
+        # Un cierre real exige motivo con texto (lo exige la API de estados); solo se pide al cerrar.
+        if episode["closed_at"] is None or not isinstance(reason, str) or not reason.strip():
             raise ExplanationUnavailable()
         closed = _utc(episode["closed_at"]).date().isoformat()
         return f"Estado: {word}. Cerrada el {closed} (UTC) con el motivo {display_label(episode['closure_reason'])}."
@@ -128,20 +170,31 @@ def explain_episode(snapshot: dict, *, tenant_id: str, explained_at: datetime) -
     # conoce es justo el mensaje inventado que se quiere evitar. La igualdad de `rules` es exacta.
     if episode["rules_version"] != RULES_VERSION or episode["rules"] != RULES:
         raise ExplanationUnavailable()
-    with localcontext() as context:
-        context.prec = _PRECISION
-        if not triggers(observed, reference_total):
-            raise ExplanationUnavailable()
-        # Aritmética exacta con Decimal y un único redondeo, al mostrar. Nunca se restan importes ya
-        # redondeados: 100.004 se vería como "100.00, que no supera 100".
-        reference_daily = reference_total / REFERENCE_DAYS
-        excess_week = observed * REFERENCE_DAYS - reference_total
-        absolute_increase = excess_week / REFERENCE_DAYS
-        relative_increase = excess_week * 100 / reference_total
-        impact = numerator / REFERENCE_DAYS
-        shown = {"reference": money(reference_daily), "absolute": money(absolute_increase),
-                 "relative": money(relative_increase), "impact": money(impact)}
-    observed_shown = money(observed)
+    # Los operandos se validan ANTES de cualquier comparación o cuenta: un NaN hace saltar
+    # `InvalidOperation` al comparar y una magnitud enorme al redondear, y ambos acabarían en un 500.
+    _require_valid_operands(reference_total, observed, numerator)
+    _require_coherent_episode(episode)
+    try:
+        with localcontext() as context:
+            context.prec = _PRECISION
+            if not triggers(observed, reference_total):
+                raise ExplanationUnavailable()
+            _require_impact_covers_opening(reference_total, observed, numerator)
+            # Aritmética exacta con Decimal y un único redondeo, al mostrar. Nunca se restan importes ya
+            # redondeados: 100.004 se vería como "100.00, que no supera 100".
+            reference_daily = reference_total / REFERENCE_DAYS
+            excess_week = observed * REFERENCE_DAYS - reference_total
+            absolute_increase = excess_week / REFERENCE_DAYS
+            relative_increase = excess_week * 100 / reference_total
+            impact = numerator / REFERENCE_DAYS
+            shown = {"reference": money(reference_daily), "absolute": money(absolute_increase),
+                     "relative": money(relative_increase), "impact": money(impact)}
+        observed_shown = money(observed)
+    except (InvalidOperation, ZeroDivisionError):
+        # Red de seguridad: la validación previa ya acota los operandos, pero si algo se le escapara es
+        # mejor un 409 sin explicación que un 500; la excepción original no se propaga porque puede
+        # arrastrar valores del cliente.
+        raise ExplanationUnavailable() from None
 
     rules = episode["rules"]
     currency = episode["currency"]
