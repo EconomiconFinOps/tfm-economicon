@@ -14,16 +14,49 @@ const gatewayCompose = parse(fs.readFileSync(path.join(root, "infra/litellm/dock
 const applicationServices = ["azure-cost-api", "backend", "processor", "frontend"];
 const infrastructureServices = ["cockroachdb", "rabbitmq", "postgres-pgvector"];
 const monitoringServices = ["prometheus", "grafana"];
+const demoServices = ["azure-cost-api-demo", "demo-data"];
 
 test("declares every MVP application, infrastructure and monitoring service", () => {
   assert.deepEqual(
     Object.keys(compose.services).sort(),
-    [...applicationServices, ...infrastructureServices, ...monitoringServices].sort(),
+    [...applicationServices, ...infrastructureServices, ...monitoringServices, ...demoServices].sort(),
   );
   assert.deepEqual(
     Object.keys(compose.volumes).sort(),
     ["cockroach-data", "pgvector-data", "rabbitmq-data", "prometheus-data", "grafana-data"].sort(),
   );
+});
+
+test("demo data services are opt-in, read-only and never part of the default startup (JUP-119)", () => {
+  for (const serviceName of demoServices) {
+    const service = compose.services[serviceName];
+    assert.deepEqual(service.profiles, ["demo"], `${serviceName} must belong to the demo profile only`);
+    assert.equal(service.init, true, `${serviceName} must use an init process`);
+    assert.equal(service.read_only, true, `${serviceName} must use a read-only root filesystem`);
+    assert.ok(service.tmpfs.includes("/tmp"), `${serviceName} must provide a writable /tmp`);
+    assert.ok(service.security_opt.includes("no-new-privileges:true"), `${serviceName} must disable privilege escalation`);
+    assert.equal(service.ports, undefined, `${serviceName} must not publish ports`);
+    assert.ok((service.volumes ?? []).every((volume) => volume.endsWith(":ro")), `${serviceName} must mount read-only`);
+  }
+  const demoApi = compose.services["azure-cost-api-demo"];
+  assert.ok(demoApi.healthcheck);
+  assert.equal(demoApi.environment.AZURE_COST_DATASET_PATH, "/demo/demo-cost.csv");
+  assert.deepEqual(demoApi.volumes, ["./fixtures/azure-cost/demo:/demo:ro"]);
+  const loader = compose.services["demo-data"];
+  assert.deepEqual(loader.command, ["python", "/repo/scripts/demo_data.py", "apply"]);
+  assert.equal(loader.restart, "no");
+  assert.equal(loader.environment.AZURE_COST_API_BASE_URL, "http://azure-cost-api-demo:8002");
+  assert.equal(loader.environment.RUNTIME_ENVIRONMENT, "${RUNTIME_ENVIRONMENT:-production}");
+  for (const dependency of ["azure-cost-api-demo", "cockroachdb", "processor"]) {
+    assert.equal(loader.depends_on[dependency]?.condition, "service_healthy", dependency);
+  }
+  for (const [name, service] of Object.entries(compose.services)) {
+    if (demoServices.includes(name)) continue;
+    assert.equal(service.profiles, undefined, `${name} must start with the default up`);
+    for (const dependency of Object.keys(service.depends_on ?? {})) {
+      assert.ok(!demoServices.includes(dependency), `${name} must not depend on a demo service`);
+    }
+  }
 });
 
 test("builds every application from a versioned Dockerfile", () => {
