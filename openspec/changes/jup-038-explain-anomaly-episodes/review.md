@@ -1143,3 +1143,33 @@ invalida los resultados.
 
 **Lo que este Red no demuestra.** Que las pruebas sean correctas contra la implementación real; no hay prueba en
 navegador real todavía (grupo 8).
+
+## Grupo 7 — Enlace «Explicar en el asistente» del panel de anomalías, fase Green (tareas 7.2 y 7.3)
+
+**Producto del `coder`:** solo `apps/frontend/src/pages/AnomaliesPanel.tsx` (+11/−2). En `EpisodeDetail`, entre el bloque
+de Limitaciones y el de errores, un `Link` de `react-router` con el texto `Explicar en el asistente` y destino
+``/assistant?episode=${encodeURIComponent(episode.id)}``, con el estilo de los botones secundarios, **fuera de la
+condición `isOpen`** (se ofrece también en las cerradas) y **solo si `isAnomalyEpisodeId(episode.id)`**. Solo navega:
+no hace ninguna petición ni crea conversaciones. Un comentario JSX en español justifica el porqué de cada decisión,
+incluida la de Victor del 2026-10-12 de no encadenar dos llamadas desde el panel.
+
+**Ajuste pedido por el orquestador.** El `coder` había modificado además, sin motivo, una línea existente
+(`{mutation.isError && <div …` quedó como `&&<div`, sin el espacio). La PR #120 y la #121 (JUP-035) también tocan
+este archivo (añaden la captura de pantalla para el chat), así que se le pidió restaurarla. El diff final solo
+elimina las dos líneas de `import` que se amplían (`react-router` y `@/services/contracts`); el resto son
+inserciones. Aun así habrá que reconciliar este archivo al integrar JUP-035 (se mide en la tarea 8.4).
+
+**Tarea 7.3.** `tests/spanish-ui.test.ts` pasa sin editarlo con el texto nuevo, y `apps/frontend/GLOSARIO.md` ya
+define «Asistente de IA → asistente»: el enlace no introduce ningún concepto nuevo y no se tocó.
+
+**Evidencia Green** (2026-10-13, reejecutada por el orquestador, Windows):
+
+- Pruebas nuevas: **19 de 19** (antes `19 failed`).
+- Control sin editar: `AnomaliesPanel`, `spanish-ui`, `quality-gates`, `AnomalyEvidence` y las dos de conversaciones del
+  grupo 6: en conjunto `7 archivos, 144 pruebas pasan`; solo el panel y las del enlace: `53 de 53`.
+- `lint` y `typecheck`: **código 0** (códigos de salida reales).
+- **Aviso de consola** `Function components cannot be given refs … Primitive.div.Slot`: **ya existía**. Sale también
+  con `AnomaliesPanel.test.tsx` (que no ofrece el enlace con sus ids `anomaly-1`) y su origen es un
+  `DialogDescription asChild` presente en el `develop` previo (`bfaf3983`). No es de este cambio.
+
+**Pendiente del grupo 7:** mutación, DoD del frontend (con la suite completa) y QA.

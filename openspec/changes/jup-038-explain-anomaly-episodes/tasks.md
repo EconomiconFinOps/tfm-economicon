@@ -132,8 +132,8 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   `/assistant?episode=<id>` con el identificador codificado; abrir el detalle y tener el enlace a la
   vista no añade ninguna petición al backend. `AnomaliesPanel.test.tsx` debe seguir pasando sin
   editarlo.
-- [ ] 7.2 Green: enlace en el detalle de `AnomaliesPanel.tsx`.
-- [ ] 7.3 Comprobar que `tests/spanish-ui.test.ts` recorre los componentes nuevos y pasa sin editarlo
+- [x] 7.2 Green: enlace en el detalle de `AnomaliesPanel.tsx`.
+- [x] 7.3 Comprobar que `tests/spanish-ui.test.ts` recorre los componentes nuevos y pasa sin editarlo
   (su lista es de frases en inglés ya traducidas, no de textos nuevos) y, si aparece un término que
   no esté, añadirlo a `apps/frontend/GLOSARIO.md`.
 - [ ] 7.4 Ejecutar la suite completa del frontend, `typecheck`, `lint` y `build`, con una ejecución
