@@ -66,7 +66,7 @@ def text_list(value):
 
 
 def validate(suite, baseline):
-    require(suite.get("schema_version") == 1 and suite.get("jup") == "JUP-071", "invalid JUP-071 suite")
+    require(type(suite.get("schema_version")) is int and suite["schema_version"] == 1 and suite.get("jup") == "JUP-071", "invalid JUP-071 suite")
     require(suite["baseline"]["path"] == BASELINE.relative_to(ROOT).as_posix(), "unexpected baseline path")
     require(suite["baseline"]["sha256"] == file_digest(BASELINE), "JUP-069 baseline changed; review the pairs")
     require(suite["baseline"]["suite_version"] == baseline["suite_version"], "baseline version mismatch")
@@ -80,6 +80,12 @@ def validate(suite, baseline):
     require(isinstance(suite.get("cases"), list) and len(suite["cases"]) >= 16, "at least 16 perturbations are required")
     require(all(isinstance(c, dict) for c in suite["cases"]), "every case must be an object")
     require(isinstance(suite.get("suite_version"), str) and re.fullmatch(r"\d+\.\d+\.\d+", suite["suite_version"]), "invalid suite version")
+    for position, case in enumerate(suite["cases"], 1):
+        label = case["id"] if isinstance(case.get("id"), str) else f"case #{position}"
+        for key in ("id", "baseline_id", "expected_behavior", "risk", "question", "context", "category", "perturbation"):
+            require(isinstance(case.get(key), str), f"{label}: missing or invalid {key}")
+        for key in ("required_points", "forbidden_behaviors", "sources", "expected_numbers"):
+            require(isinstance(case.get(key), list), f"{label}: missing or invalid {key}")
     require({c["expected_behavior"] for c in suite["cases"]} >= {"answer", "clarify", "abstain"}, "missing behavior controls")
     for case in suite["cases"]:
         cid = case["id"]
@@ -98,6 +104,8 @@ def validate(suite, baseline):
         for n in case["expected_numbers"]:
             require(isinstance(n, dict), f"{cid}: expected number must be an object")
             require("aliases" not in n or text_list(n["aliases"]), f"{cid}: invalid number aliases")
+            folded = [evaluation.normalize(a) for a in n.get("aliases", [])]
+            require(all(folded) and len(set(folded)) == len(folded), f"{cid}: aliases must be non-empty and unique after normalisation")
             require(isinstance(n.get("label"), str) and bool(n["label"].strip()) and
                     isinstance(n.get("unit"), str) and bool(n["unit"].strip()), f"{cid}: invalid number label/unit")
             for key in ("value", "tolerance"):
@@ -142,12 +150,12 @@ def provenance(suite, kind, config):
             "configuration": config, "model_execution_verified": False}
 
 
-DECLARED_TEXT = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/+-]{0,63}")
-SECRET_SHAPED = re.compile(r"(sk|pk|key|token|secret|bearer)[-_]", re.IGNORECASE)
+DECLARED_TEXT = re.compile(r"[a-z0-9][a-z0-9./-]{0,63}")
+SECRET_SHAPED = re.compile(r"(^|[-./])(sk|pk|xox[a-z]?|gh[pousr]|akia|eyj|key|token|secret|bearer)([-./0-9]|$)|[a-z0-9]{24,}")
 
 
 def declared_text(value, name):
-    require(isinstance(value, str) and DECLARED_TEXT.fullmatch(value) and not SECRET_SHAPED.match(value), f"invalid run {name}")
+    require(isinstance(value, str) and DECLARED_TEXT.fullmatch(value) and not SECRET_SHAPED.search(value), f"invalid run {name}")
     return value
 
 
@@ -281,11 +289,12 @@ def score(suite, cases, raw, judgments, provisional=False):
             entry.update(outcome="blocked", reason=row["failure_category"])
         else:
             entry["prompt_echo"] = evaluation.prompt_text(case) in row["answer"]
-            for n, spec in enumerate(case["expected"]["numbers"], 1):
-                aliases = numeric_rules["aliases"].get(cid, {})
-                own = spec.get("aliases") or aliases.get(str(n)) or [spec["label"]]
-                rivals = [s["label"] for i, s in enumerate(case["expected"]["numbers"], 1) if i != n]
-                result = evaluation.check_number(row["answer"], spec, own, row["prompt"], rivals)
+            numbers = case["expected"]["numbers"]
+            known = numeric_rules["aliases"].get(cid, {})
+            every = [spec.get("aliases") or known.get(str(n)) or [spec["label"]] for n, spec in enumerate(numbers, 1)]
+            for n, spec in enumerate(numbers, 1):
+                rivals = [alias for i, group in enumerate(every, 1) if i != n for alias in group]
+                result = evaluation.check_number(row["answer"], spec, every[n - 1], row["prompt"], rivals)
                 entry["checks"][f"numbers-{n}"] = "pass" if result else "fail"
             needed = 2 if case["risk"] == "critical" and not provisional else 1
             for key in human_checks(case):
@@ -367,15 +376,20 @@ def markdown(report):
     lines += ["", f"Total previsto: {totals['total']}. pass / total previsto: {percent(totals['pass_over_total'])}. "
               f"pass / (pass + fail): {percent(totals['pass_over_evaluated'])}.",
               "El denominador pass / (pass + fail) incluye fallos conocidos con juicios pendientes; no equivale a cobertura de revisión humana completa.",
+              f"Casos con cobertura reducida: {sum(1 for c in report['cases'] if c['reduced_coverage'])}. "
+              f"Evaluación completa: {'sí' if report['assessment_complete'] else 'no'}.",
               "", "## Categorías de perturbación", "",
               "| Categoría | Total | Pass | Fail | Blocked | Not run | pass / total previsto | pass / (pass + fail) |",
               "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
     for name, c in report["categories"].items():
         lines.append(f"| {name} | {c['total']} | {c['pass']} | {c['fail']} | {c['blocked']} | {c['not_run']} | "
                      f"{percent(c['pass_over_total'])} | {percent(c['pass_over_evaluated'])} |")
-    lines += ["", "## Casos", "", "| Caso | Resultado | Juicios pendientes | Eco del prompt |", "| --- | --- | ---: | --- |"]
+    lines += ["", "## Tipos de perturbación", "", "| Tipo | Pass | Fail | Blocked | Not run |", "| --- | ---: | ---: | ---: | ---: |"]
+    for name, c in report["perturbations"].items():
+        lines.append(f"| {name} | {c['pass']} | {c['fail']} | {c['blocked']} | {c['not_run']} |")
+    lines += ["", "## Casos", "", "| Caso | Resultado | Juicios pendientes | Cobertura reducida | Eco del prompt |", "| --- | --- | ---: | --- | --- |"]
     for c in report["cases"]:
-        lines.append(f"| {c['case']} | {c['outcome']} | {len(c['missing'])} | {c['prompt_echo']} |")
+        lines.append(f"| {c['case']} | {c['outcome']} | {len(c['missing'])} | {c['reduced_coverage']} | {c['prompt_echo']} |")
     lines += ["", "Identidad y parejas completas en el JSON asociado. Sin textos de respuestas ni nombres de revisores.", ""]
     return "\n".join(lines)
 
@@ -422,28 +436,38 @@ def parser():
     return cli
 
 
-def normalised(path):
+def stripped(path):
     text = str(path)
-    if text.startswith("\\\\?\\UNC\\"):
-        text = "\\\\" + text[8:]
-    elif text.startswith("\\\\?\\"):
-        text = text[4:]
-    elif text.startswith("\\?\\"):
-        text = text[3:]
+    for prefix, replacement in (("\\\\?\\UNC\\", "\\\\"), ("\\?\\UNC\\", "\\\\"), ("\\\\?\\", ""), ("\\?\\", "")):
+        if text.startswith(prefix):
+            return replacement + text[len(prefix):]
+    return text
+
+
+def is_unc(path):
+    return stripped(path).startswith(("\\\\", "//"))
+
+
+def normalised(path):
+    text = stripped(path)
+    if os.name == "nt":
+        text = os.sep.join(c.rstrip(" .") or c for c in re.split(r"[\\/]", text))
     return Path(os.path.normcase(os.path.realpath(text)))
 
 
 def outside(path):
-    return evaluation.outside_repository(path) and not normalised(path).is_relative_to(normalised(ROOT))
+    return not is_unc(path) and evaluation.outside_repository(path) and not normalised(path).is_relative_to(normalised(ROOT))
 
 
 def protect_outputs(outputs, inputs):
     """Never destroy raw evidence, judgments, code or versioned references."""
+    require(not any(is_unc(p) for p in outputs), "network share paths are not accepted for outputs")
     outputs = [normalised(p) for p in outputs]
     reserved = {normalised(p) for p in inputs}
     evidence = normalised(ROOT / "docs/evidence")
-    require(all(not p.is_relative_to(normalised(ROOT)) or p.is_relative_to(evidence) for p in outputs),
-            "outputs inside the repository are limited to docs/evidence")
+    require(all(not p.is_relative_to(normalised(ROOT)) or
+                (p.parent == evidence and re.fullmatch(r"jup-071-[a-z0-9._-]+-report\.(json|md)", p.name, re.IGNORECASE)) for p in outputs),
+            "outputs inside the repository are limited to generated JUP-071 reports in docs/evidence")
     require(len(set(outputs)) == len(outputs), "output paths must be distinct")
     require(not (set(outputs) & reserved), "output would overwrite an input or reference")
     require(all(p.parent.is_dir() for p in outputs), "create output directories before execution")

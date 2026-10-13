@@ -700,6 +700,104 @@ class AdversarialPassTests(unittest.TestCase):
             robustness.protect_outputs([hidden], [])
 
 
+class SecondPassTests(unittest.TestCase):
+    """Regression tests for the second independent review."""
+
+    def checks(self, case_id, answer):
+        raw = raw_fixture()
+        for row in raw["cases"]:
+            if row["case"] == case_id:
+                row["answer"] = answer
+        return entry(scored(raw, robustness.empty_judgments(raw)), case_id)["checks"]
+
+    def test_a_figure_under_the_rival_figures_alias_is_not_accepted(self):
+        wrong = {
+            "JUP-069-005": ("El coste elegible es 10 % y el coste no asignado es 1.000 EUR.", ("numbers-1", "numbers-2")),
+            "JUP-071-002": ("El cumplimiento es de 1.000 EUR y el coste etiquetable es del 10 %.", ("numbers-1", "numbers-2")),
+        }
+        for case_id, (answer, keys) in wrong.items():
+            for key in keys:
+                with self.subTest(case=case_id, key=key):
+                    self.assertEqual(self.checks(case_id, answer)[key], "fail")
+        mixed = "El cumplimiento ponderado por coste es 90 % y el coste total es 10 %. El coste etiquetable es 1.000 EUR."
+        self.assertEqual(self.checks("JUP-071-002", mixed)["numbers-2"], "fail")
+        right = "El coste etiquetable es de 1.000 EUR y el cumplimiento por coste es del 10 %."
+        self.assertEqual({k: v for k, v in self.checks("JUP-071-002", right).items() if k.startswith("numbers")},
+                         {"numbers-1": "pass", "numbers-2": "pass"})
+
+    def test_aliases_must_survive_normalisation_and_be_unique(self):
+        for aliases in (["*"], ["`"], ["​"], ["ok", "OK "], ["a", "*"]):
+            broken = copy.deepcopy(SUITE)
+            broken["cases"][1]["expected_numbers"][0]["aliases"] = aliases
+            with self.subTest(aliases=aliases), self.assertRaises(robustness.Error):
+                robustness.validate(broken, BASELINE)
+
+    def test_declared_values_are_lowercase_identifiers_without_credential_shapes(self):
+        for value in ("ghp_" + "a" * 36, "xoxb-1234-5678-abcd", "AKIAIOSFODNN7EXAMPLE", "eyJhbGciOiJIUzI1NiJ9",
+                      "my-sk-abcdef", "a3f9c2d4e5b6a7c8d9e0f1a2b3c4d5e6", "Model-X", "model_x"):
+            with self.subTest(value=value), self.assertRaises(robustness.Error):
+                scored(RunHeaderTests().live_raw(alias=value))
+        for value in ("openrouter/model-x.1", "gpt-4o-2024-08-06", "claude-sonnet-5-5", "handwritten-model-name"):
+            with self.subTest(value=value):
+                scored(RunHeaderTests().live_raw(alias=value))
+
+    def test_malformed_field_types_name_the_case_in_a_controlled_error(self):
+        mutations = (("expected_behavior", ["answer"]), ("baseline_id", ["x"]), ("id", 5), ("category", None),
+                     ("expected_numbers", None), ("risk", ["critical"]), ("perturbation", 3))
+        for field, value in mutations:
+            broken = copy.deepcopy(SUITE)
+            broken["cases"][1][field] = value
+            with self.subTest(field=field), self.assertRaises(robustness.Error):
+                robustness.validate(broken, BASELINE)
+        for field in ("category", "expected_numbers", "baseline_id"):
+            broken = copy.deepcopy(SUITE)
+            del broken["cases"][1][field]
+            with self.subTest(missing=field), self.assertRaises(robustness.Error):
+                robustness.validate(broken, BASELINE)
+        broken = copy.deepcopy(SUITE)
+        broken["schema_version"] = True
+        with self.assertRaises(robustness.Error):
+            robustness.validate(broken, BASELINE)
+
+    def test_only_generated_reports_can_be_written_inside_the_repository(self):
+        for name in ("JUP-071-validation.md", "README.md", "JUP-070-run-1-report.json", "JUP-071-report.txt"):
+            with self.subTest(name=name), self.assertRaises(robustness.Error):
+                robustness.protect_outputs([ROOT / "docs/evidence" / name], [])
+        robustness.protect_outputs([ROOT / "docs/evidence/JUP-071-template-empty-report.json"], [])
+        robustness.protect_outputs([ROOT / "docs/evidence/JUP-071-template-empty-report.md"], [])
+
+    def test_markdown_shows_reduced_coverage_completeness_and_every_perturbation(self):
+        raw = raw_fixture()
+        reduced = robustness.markdown(scored(raw, judgments_fixture(raw, reviewers=("only-one",)), provisional=True))
+        self.assertIn("Casos con cobertura reducida: 29", reduced)
+        self.assertIn("Evaluación completa: no", reduced)
+        full = robustness.markdown(scored(raw, judgments_fixture(raw), provisional=True))
+        self.assertIn("Casos con cobertura reducida: 0", full)
+        self.assertIn("Evaluación completa: sí", full)
+        for case in SUITE["cases"]:
+            self.assertIn(case["perturbation"], full)
+
+    @unittest.skipUnless(sys.platform == "win32", "UNC administrative shares only exist on Windows")
+    def test_unc_paths_cannot_reach_the_repository_through_an_administrative_share(self):
+        local = str(ROOT)
+        share = "\\\\localhost\\" + local[0] + "$" + local[2:]
+        for target in (share + "\\docs\\validation\\JUP-071-robustness-cases.json", share + "\\docs\\new-raw.json",
+                       "\\\\server\\share\\raw.json", "\\\\?\\UNC\\localhost\\" + local[0] + "$" + local[2:] + "\\x.json"):
+            with self.subTest(target=target):
+                self.assertFalse(robustness.outside(Path(target)))
+                with self.assertRaises(robustness.Error):
+                    robustness.protect_outputs([Path(target)], [])
+
+    @unittest.skipUnless(sys.platform == "win32", "trailing dots and spaces are Windows path semantics")
+    def test_trailing_spaces_and_dots_in_a_component_do_not_change_the_location(self):
+        local = str(ROOT)
+        for target in (local + "\\docs\\validation \\x.json", local + "\\docs\\validation.\\x.json"):
+            with self.subTest(target=target):
+                self.assertFalse(robustness.outside(Path(target)))
+        self.assertEqual(robustness.normalised(Path(local + "\\docs\\evidence \\a.json")),
+                         robustness.normalised(Path(local + "\\docs\\evidence\\a.json")))
+
+
 class FakeResponse:
     def __init__(self, body, status=200):
         self.body, self.status = body, status
