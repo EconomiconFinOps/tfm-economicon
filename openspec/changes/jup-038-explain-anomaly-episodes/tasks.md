@@ -92,12 +92,12 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 
 ## 5. Frontend: contrato y bloque de evidencia
 
-- [ ] 5.1 Red: tipo y validador de `anomaly_evidence` en `services/contracts.ts` (acepta la evidencia
+- [x] 5.1 Red: tipo y validador de `anomaly_evidence` en `services/contracts.ts` (acepta la evidencia
   del ejemplo de 1.2; rechaza otra `schema_version` o `adapter_version`, un `id` con otro formato e
   importes mal formados) y `AnomalyEvidence.test.tsx` (muestra identificador, fecha de la
   fotografía, cifras de apertura, impacto, criticidad, estado, reglas, limitaciones y aviso de datos
   sintéticos; con una evidencia irreconocible dice que no está disponible y no muestra cifras).
-- [ ] 5.2 Red, en un archivo nuevo `AnswerEvidence.anomaly.test.tsx`: `AnswerEvidence` muestra el
+- [x] 5.2 Red, en un archivo nuevo `AnswerEvidence.anomaly.test.tsx`: `AnswerEvidence` muestra el
   bloque nuevo cuando los metadatos traen `anomaly_evidence`. Las pruebas existentes de citas y de
   `cost_evidence` (`AnswerEvidence.test.tsx`, `CostEvidence.test.tsx`) deben seguir pasando sin
   editarlas.

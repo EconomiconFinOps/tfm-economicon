@@ -641,3 +641,70 @@ añaden lo que SQLite no puede ver, porque las formas, los códigos, el orden y 
 **Estado del grupo 4:** tareas 4.1 a 4.8 hechas; mutación con tres equivalentes justificados; DoD en verde y QA
 en `accept`. **El backend de la tarjeta está completo.** El contenedor `jup038-crdb` se mantiene hasta la
 validación con el stack real (grupo 8) y se apagará al terminar.
+
+## Grupo 5 — Evidencia de la explicación en el frontend, fase Red (tareas 5.1 y 5.2)
+
+**Herramientas.** Vitest 3 y Testing Library, ejecutados directamente en Windows. La suite completa del
+frontend es intermitente en esta máquina cuando corre con otra carga (ya registrado en sesiones anteriores), así
+que el Red y el control se ejecutan solo sobre los archivos del grupo.
+
+**Contrato fijado antes del Red** (lo implementará el `coder`):
+
+- `isAnomalyEvidence` y la interfaz `AnomalyEvidence` en `apps/frontend/src/services/contracts.ts`: acepta la
+  evidencia exacta que genera el backend (versión `1.0` y `anomaly-explanation-1.0`, `id` con 64 hex, episodio
+  válido según el `isAnomalyEpisode` existente, operandos como cadenas decimales de cualquier escala, importes
+  de dos decimales, `conditions_met: true`, notas de redondeo conocidas, `explained_at` con `Z` o `+00:00`) y
+  exige **coherencia interna** (la severidad, el impacto acumulado, la referencia diaria y el observado de la
+  evidencia deben coincidir con los del episodio que contiene): los metadatos del mensaje son datos no fiables y
+  una mezcla incoherente no debe mostrarse.
+- Componente `AnomalyEvidence.tsx`: un `<details>` con las palabras del panel (`severityLabels`,
+  `statusLabels`) y el texto de cada línea fijado en las pruebas; una evidencia no válida da un único párrafo
+  «La evidencia de esta explicación no está disponible.» y **ninguna cifra**. **No calcula nada**: muestra solo
+  las cadenas de la evidencia (importes, operandos con 12 decimales, fechas). El servicio se pinta como texto.
+- `AnswerEvidence`: rama nueva tras `cost_evidence` y antes de «Sin fuentes documentales utilizadas.»; las
+  citas documentales válidas y `cost_evidence` conservan su prioridad.
+
+**Pruebas escritas por el `tester`** (tres archivos nuevos, 261 pruebas):
+
+- `apps/frontend/src/services/anomalyEvidence.test.ts` (202): acepta la evidencia del ejemplo A con `+00:00` y
+  con `Z`, con operandos de 12, 2, 1 y 0 decimales y con importes de más de 15 dígitos, y rechaza cada regla del
+  contrato (versiones, `id` de 63/65 hex, mayúsculas y salto de línea final, `source`, episodio, cada operando,
+  `opening`, `impact`, notas desconocidas, tipos erróneos) y las cuatro coherencias internas con diferencias de
+  un céntimo.
+- `apps/frontend/src/components/AnomalyEvidence.test.tsx` (44): texto exacto de cada línea; las tres
+  criticidades y los cuatro estados; singular y plural de días; servicio nulo y servicio con HTML (sin crear
+  elementos); USD sin ninguna mención de EUR; notas de redondeo y aviso sintético presentes y ausentes;
+  operandos exactos tal cual; limitaciones tomadas de la evidencia y no del episodio; cifras «raras» (una
+  aritmética que a propósito no cuadra) que salen idénticas, lo que demuestra que el componente no calcula; y 17
+  formas de evidencia inválida sin ninguna cifra.
+- `apps/frontend/src/components/AnswerEvidence.anomaly.test.tsx` (15): la rama nueva, su prioridad frente a las
+  citas y a `cost_evidence`, evidencia no válida, y que las viñetas del texto no se vuelven enlaces de fuente.
+
+**Evidencia Red** (2026-10-12, Windows, Node con `corepack pnpm`):
+
+```
+corepack pnpm --filter @finops/frontend exec vitest run src/services/anomalyEvidence.test.ts src/components/AnomalyEvidence.test.tsx src/components/AnswerEvidence.anomaly.test.tsx
+```
+
+- Resultado: **`257 failed | 4 passed (261)`**, ninguna omitida ni con `skip`. Motivos, contados por el
+  orquestador: 202 por `isAnomalyEvidence is not a function`; 44 por `Cannot find module './AnomalyEvidence'`;
+  11 por la ausencia de la rama nueva en `AnswerEvidence` (8 buscan «La evidencia de esta explicación no está
+  disponible.» y 3 buscan el resumen del bloque).
+- **4 pruebas pasan de entrada, a propósito**, todas en `AnswerEvidence.anomaly.test.tsx`: las viñetas del
+  texto no se convierten en enlaces de fuente; las citas documentales válidas tienen prioridad; `cost_evidence`
+  tiene prioridad; y sin evidencia de anomalía se mantiene «Sin fuentes documentales utilizadas.». Fijan
+  comportamiento existente que la rama nueva no debe romper.
+- Control, mismo entorno: `AnswerEvidence.test.tsx` y `CostEvidence.test.tsx` siguen en `11 passed`.
+
+**Nota técnica del `tester`.** En `AnomalyEvidence.test.tsx` el import es `await import(/* @vite-ignore */ ruta)`
+con la ruta en una variable: con el literal, Vite falla al transformar el archivo entero («Failed to resolve
+import») y no llega a enumerar ninguna prueba; con la variable, cada prueba falla por separado. Comprobó con un
+archivo temporal, ya borrado, que con el módulo presente el import se resuelve.
+
+**Ambigüedades del `tester`** (contrato sin cambios): `assumptions` solo se exige que sea lista; un servicio `""`
+no se fija; los operandos con `+`, `2800.`, `.5`, espacios o salto de línea final se rechazan; la coherencia
+interna no incluye `day_count` ni `rules_version` (el contrato no las lista); y la evidencia `reference_daily_cost`
+y `observed_cost` mal formadas se rechazan por forma o por coherencia sin aislar el motivo.
+
+**Lo que este Red no demuestra.** Que las pruebas sean correctas contra la implementación real; se sabrá en el
+Green. No hay prueba en navegador real todavía (grupo 8).
