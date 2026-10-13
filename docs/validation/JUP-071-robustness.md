@@ -164,3 +164,9 @@ Los rivales de una cifra son los alias de las demás cifras del caso, igual que 
 Los valores declarados `provider`, `alias` y `model_alias` son identificadores en minúsculas (`a-z`, dígitos, `.`, `/`, `-`) de hasta 64 caracteres, sin partes con forma de clave o de token; sigue siendo una comprobación heurística. Las rutas de red (UNC), incluidas las de recursos administrativos como `\\localhost\D$`, no se aceptan como salida, y los puntos o espacios finales de un componente se descartan antes de comparar. Dentro del repositorio solo se pueden escribir los informes generados `JUP-071-*-report.json` y `.md` de `docs/evidence/`.
 
 El Markdown muestra el número de casos con cobertura reducida, si la evaluación está completa y el resultado por cada tipo de perturbación.
+
+### Límites conocidos tras la tercera pasada
+
+El lector numérico de JUP-070 solo mira la etiqueta anterior a la cifra: una respuesta correcta con la etiqueta de otra cifra antes de la propia (por ejemplo «de 10 EUR/pedido en julio a 6 EUR/pedido en agosto») puede quedar en `fail` en `numbers-N` y los juicios humanos no lo revierten. Ante un `fail` numérico en los casos con varias cifras, comprobar la respuesta a mano antes de atribuirlo al asistente. Está registrado en `openspec/findings/backlog.md`.
+
+Los valores declarados del bloque `run` se escriben en minúsculas, sin `:` ni `@`; un alias con sufijo de proveedor como `deepseek-v4-pro:free` hay que declararlo sin ese sufijo. Los alias de `infra/litellm/config.example.yaml` y de ADR-0002 se aceptan.

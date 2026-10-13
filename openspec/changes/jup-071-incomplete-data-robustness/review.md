@@ -11,13 +11,13 @@ El change queda abierto: los grupos 5.x (juicios humanos, medición con el chat 
 - El informe incorpora un bloque `run` con los campos de la cabecera de JUP-070 y un identificador derivado del hash del crudo; los campos anteriores se mantienen. El aplanado, los valores no medidos y la unificación de formatos son de JUP-121.
 - Las cifras esperadas de una variante pueden llevar `aliases` propios; el lector numérico los usa antes que las reglas de JUP-070 y que la etiqueta.
 - El informe añade un desglose por categoría, porque el desglose por tipo de perturbación tiene un solo caso por grupo.
-- Los informes de plantilla de `docs/evidence/` se sustituyen por una repetición offline con el código del commit `7e60f1d`: los crudos del 10/10 están fuera de Git y no estaban disponibles. Los resultados son los mismos (0 aciertos, 8 fallos, 21 pendientes de 29).
+- Los informes de plantilla de `docs/evidence/` se sustituyen por una repetición offline con el código del commit `76e6b1b`: los crudos del 10/10 están fuera de Git y no estaban disponibles. Los resultados son los mismos (0 aciertos, 8 fallos, 21 pendientes de 29).
 - No se sube la versión de la batería (`1.0.0`) al añadir los alias porque nunca se integró en `develop`; los crudos del 10/10 dejan de ser compatibles con su hash y no se reutilizan.
 
 ## Validation
 
 - `python tools/assistant-robustness.py validate`: 16 variantes, 29 casos, hashes válidos.
-- `corepack pnpm assistant-robustness:test`: 66 pruebas OK.
+- `corepack pnpm assistant-robustness:test`: 68 pruebas OK.
 - Pruebas de JUP-070 (109) y de métricas de JUP-067 (103): OK.
 - `node --test tools/ci-workflow.test.mjs`: 12 OK.
 - `corepack pnpm openspec:validate`, `corepack pnpm jup:check -- --change jup-071-incomplete-data-robustness` y `corepack pnpm jup:cleanup:check`: OK.
@@ -61,12 +61,32 @@ Ataques que resistieron: uniones y enlaces simbólicos hacia `docs/validation` y
 
 No probado por el revisor: nombres 8.3, enlaces duros, unidades `subst` o mapeadas y WSL.
 
+## Adversarial Review (pass 3)
+
+Revisor independiente, base `bfaf3983`, head `689a3714`. Veredicto: **accept** (sin BLOCKING ni HIGH; 3 MEDIUM y 3 LOW). Comprobó además que las 109 pruebas de JUP-070 pasan, que `tools/assistant-eval.py`, el banco JUP-069 y las reglas de JUP-070 no se modifican y que el Markdown versionado coincide byte a byte con el regenerado desde el JSON (`totals` suma 29, `categories` suma 16).
+
+| ID | Sev. | Resolución |
+| --- | --- | --- |
+| ADV-1 | MEDIUM | Registrado en `openspec/findings/backlog.md`: `labelled_by` de JUP-070 solo mira la etiqueta anterior a la cifra y rechaza respuestas correctas como «de 10 EUR/pedido en julio a 6 EUR/pedido en agosto». Es heredado del evaluador que la propuesta no modifica; el protocolo avisa de que un `fail` numérico de estos casos se mire a mano. |
+| ADV-2 | MEDIUM | Corregido: `baseline`, `methodology` y `sources` ausentes o mal formados dan un error controlado. |
+| ADV-3 | MEDIUM | Documentado en el protocolo: los valores declarados van en minúsculas y sin `:` ni `@`; los alias reales de LiteLLM y de ADR-0002 se aceptan. No se relaja la regla porque forma parte de la defensa contra credenciales. |
+| ADV-4 | LOW | Aceptado como heurística, ya documentada: no detecta toda cadena con forma de credencial. |
+| ADV-5 | LOW | Corregido: `//` solo se trata como ruta de red en Windows. |
+| ADV-6 | LOW | Corregido en parte: `stripped` e `is_unc` se prueban en cualquier plataforma con `os.name` simulado. La normalización con enlaces simbólicos reales sigue sin ejercerse en Linux. |
+
+ADV-2, ADV-5 y ADV-6 se corrigieron con prueba después del veredicto de esta pasada y no pasaron por una cuarta pasada del revisor.
+
+Ataques que resistieron: respuestas correctas con las cifras en la misma frase o en frases separadas, formato «etiqueta: valor», cifras cruzadas, alias solapados entre cifras, alias reales del repositorio, 16 variantes de rutas de salida en Windows (nombres cortos 8.3, flujos alternativos, `\\.\`, mayúsculas, `..`, UNC), unas 400 mutaciones de tipos de la batería y la coherencia entre Markdown, JSON y esquema.
+
+No probado por el revisor: ejecución real en Linux/macOS, enlaces simbólicos reales y la recogida contra un endpoint real.
+
 ## Pattern sweep
 
 - Etiquetas de cifras sin alias: solo JUP-071-002 y JUP-071-003 (JUP-071-010 se resuelve por la etiqueta «julio» y tiene prueba propia). Los baselines usan las reglas de JUP-070.
 - Normalización de rutas: el defecto está también en `outside_repository` de JUP-070 (registrado).
 - Validación de la batería: el resto de campos ya pasaba por `require`; se cubrieron los accesos que podían lanzar excepciones no controladas.
 - Valores declarados del bloque `run`: los tres campos de texto usan la misma función de validación.
+- Accesos directos sin guarda en `validate()` (pasada 3): `baseline`, `methodology` y `sources` se validan igual que los casos.
 - Rivales por alias (pasada 2): en `score` el cálculo se corrigió para todos los casos con varias cifras; JUP-071-010 tiene una sola cifra y su límite (una respuesta con la etiqueta «julio» atribuida a otro mes) queda cubierto por el juicio humano.
 - Rutas (pasada 2): el predicado `outside` lo usan `offline`, `collect`, `review-sheet` y `protect_outputs` para `score`; todos reciben la misma corrección.
 
@@ -74,6 +94,8 @@ No probado por el revisor: nombres 8.3, enlaces duros, unidades `subst` o mapead
 
 - La batería es pequeña, sintética y diseñada; no demuestra robustez universal.
 - Las ejecuciones medidas son de la plantilla offline. No hay medición con el chat real ni juicios humanos (grupo 5).
+- Los fallos numéricos de los casos con varias cifras pueden deberse a la limitación de `labelled_by` de JUP-070 (registrada); hay que mirarlos a mano antes de atribuirlos al asistente.
+- Los valores declarados del bloque `run` se validan de forma heurística y no excluyen todo secreto posible.
 - La normalización `NFD` de revisores no equipara grafías de ancho completo («Ana» y «Ａna»); la documentación ya indica que no autentica identidades.
 
 ## ADR applicability
