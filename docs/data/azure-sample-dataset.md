@@ -154,7 +154,8 @@ con las columnas `Date`, `BillingPeriodStartDate` y `BillingPeriodEndDate` despl
 que guarda la ingesta y los campos que los datos no llevan (grupo de recursos, centro de coste, propietario,
 aplicación y entorno). Se regenera con `python scripts/demo_dataset.py` y se carga con `scripts/demo_data.py`
 (ver [la guía de la demo](../demo/JUP-107/preparacion.md)); una prueba comprueba que los ficheros versionados son
-idénticos a los regenerados.
+idénticos a los regenerados. Si un stack de desarrollo se cargó con los scripts anteriores (`synthetic-jup106-*` y
+`synthetic-jup107-*`), esas filas cuentan como datos ajenos: hay que recrear el stack con volúmenes nuevos o borrarlas a mano.
 
 ## Datos sintéticos para validar costes (JUP-106, sustituido por JUP-119)
 

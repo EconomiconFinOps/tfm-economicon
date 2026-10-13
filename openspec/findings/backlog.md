@@ -379,3 +379,8 @@ Tipo: deuda tecnica y mejoras de producto. Severidad: Low a Medium. Estado: Open
   detected: unable to sync log files within 10s» al cargar y leer a la vez; el disco de Docker Desktop es lento (con un
   nodo en memoria las migraciones tardan segundos). Se arranca de nuevo con `docker compose start cockroachdb` y conserva
   los datos. Si se repite, dar al volumen una ruta mas rapida o aumentar los recursos de Docker.
+- RF-119-009 (robustez, Low): `demo_data.py apply` lee el estado y despues ingiere, sin cerrojo; dos `apply` simultaneos
+  no estan comprobados y la ingesta fallida del que pierde la carrera cuenta como propia. Probar con dos procesos.
+- RF-119-010 (informativo): no se logro construir un episodio cuyo `no_longer_observed_on` quede mas alla de la fecha de
+  referencia mientras `impact_through_date` es anterior; el filtro de visibilidad usa `impact_through_date` y la
+  spec del ocultado se apoya en que el impacto no incluye dias posteriores.

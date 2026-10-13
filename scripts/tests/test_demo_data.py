@@ -281,6 +281,40 @@ class IngestionTests(unittest.TestCase):
         self.assertEqual([Path(f).name for f in files], ["ingestion-definition.json", "other-definition.json"])
 
 
+    def test_a_hung_ingestion_times_out_and_counts_as_failed_with_a_cause(self):
+        seen = {}
+
+        def hung(command, **kwargs):
+            seen.update(kwargs)
+            raise demo.subprocess.TimeoutExpired(command, kwargs["timeout"])
+
+        original, demo.subprocess.run = demo.subprocess.run, hung
+        try:
+            ingest = demo.run_ingestion({"PROCESSOR_APP_DIR": str(ROOT)}, MANIFEST)
+            pair = MANIFEST["pairs"][0]
+            self.assertFalse(ingest(pair["tenant"], pair["subscription"]))
+        finally:
+            demo.subprocess.run = original
+        self.assertGreater(seen["timeout"], 0)
+        self.assertIn("tiempo", ingest.last_failure)
+
+    def test_a_failed_ingestion_reports_the_error_code_of_the_cli_and_never_its_environment(self):
+        class Failed:
+            returncode = 1
+            stdout = '{"error_code": "AzureCostHttpError", "status": "failed"}\n'
+            stderr = "postgres://root:TOPSECRET@host/db"
+
+        original, demo.subprocess.run = demo.subprocess.run, lambda command, **kwargs: Failed()
+        try:
+            ingest = demo.run_ingestion({"PROCESSOR_APP_DIR": str(ROOT)}, MANIFEST)
+            pair = MANIFEST["pairs"][0]
+            self.assertFalse(ingest(pair["tenant"], pair["subscription"]))
+        finally:
+            demo.subprocess.run = original
+        self.assertIn("AzureCostHttpError", ingest.last_failure)
+        self.assertNotIn("TOPSECRET", ingest.last_failure)
+
+
 class GenerateTests(unittest.TestCase):
     def test_generate_reproduces_the_versioned_files(self):
         before = {path: path.read_bytes() for path in dataset.generate()}

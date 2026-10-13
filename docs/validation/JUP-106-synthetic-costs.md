@@ -11,7 +11,7 @@ Conjunto de datos de coste de varios meses de 2026 para validar en la interfaz l
 
 El dataset público cubre del 1 al 19 de junio de 2024 y una sola moneda (USD). Con este conjunto se pueden recorrer meses con huecos, un cero registrado, un crédito, dos monedas con meses distintos, un importe fuera del rango seguro de `Number`, dimensiones ausentes, grupos de recursos que solo difieren en mayúsculas y un registro sin fecha. No ejercita la ingesta (se inserta directamente en las tablas de costes, que ya cubren JUP-076 y JUP-077) ni el simulador.
 
-## Cargar, consultar y retirar
+## Cargar, consultar y retirar (histórico: describe la herramienta retirada)
 
 Los comandos se ejecutan desde la raíz del repositorio con el stack levantado y se pasan por la entrada estándar al contenedor del processor, que ya tiene `DATABASE_URL`. El tenant por defecto es `tenant-growth` (el único tenant demo sin costes); se cambia con `--tenant`.
 

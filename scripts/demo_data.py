@@ -81,8 +81,10 @@ def apply(store, data: dict, ingest: Callable[[str, str], bool]) -> dict:
     loaded = 0
     for pair in data["pairs"]:
         if not ingest(pair["tenant"], pair["subscription"]):
+            cause = getattr(ingest, "last_failure", "")
             return {"outcome": "failed", "code": 1, "loaded": loaded,
-                    "reason": f"La ingesta de {pair['subscription']} en {pair['tenant']} fallo; el estado queda partial, ejecuta remove."}
+                    "reason": f"La ingesta de {pair['subscription']} en {pair['tenant']} fallo"
+                              + (f" ({cause})" if cause else "") + "; el estado queda partial, ejecuta remove."}
         loaded += 1
     return {"outcome": "loaded", "code": 0, "loaded": loaded, "reason": ""}
 
@@ -108,15 +110,33 @@ def processor_directory(env: Mapping[str, str]) -> Path:
     return Path("/app") if Path("/app/app/run_azure_cost_ingestion.py").exists() else ROOT / "apps" / "processor"
 
 
+INGESTION_TIMEOUT_SECONDS = 600
+
+
 def run_ingestion(env: Mapping[str, str], data: dict) -> Callable[[str, str], bool]:
     definitions = {(pair["tenant"], pair["subscription"]): dataset.DEMO_DIR / pair["definition"] for pair in data["pairs"]}
 
     def ingest(tenant: str, subscription: str) -> bool:
-        result = subprocess.run(
-            [sys.executable, "-m", "app.run_azure_cost_ingestion", "--tenant-id", tenant, "--subscription-id", subscription,
-             "--definition-file", str(definitions[(tenant, subscription)])],
-            cwd=processor_directory(env), env=dict(env), capture_output=True, text=True)
-        return result.returncode == 0
+        ingest.last_failure = ""
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "app.run_azure_cost_ingestion", "--tenant-id", tenant, "--subscription-id", subscription,
+                 "--definition-file", str(definitions[(tenant, subscription)])],
+                cwd=processor_directory(env), env=dict(env), capture_output=True, text=True, timeout=INGESTION_TIMEOUT_SECONDS)
+        except subprocess.TimeoutExpired:
+            ingest.last_failure = f"se agoto el tiempo ({INGESTION_TIMEOUT_SECONDS} s)"
+            return False
+        if result.returncode != 0:
+            # The CLI prints a JSON line with only an error code; stderr may carry the environment and is never shown.
+            lines = [line for line in (result.stdout or "").strip().splitlines() if line.startswith("{")]
+            try:
+                ingest.last_failure = "codigo de error " + str(json.loads(lines[-1]).get("error_code", "desconocido"))
+            except (IndexError, ValueError):
+                ingest.last_failure = "la CLI termino con error"
+            return False
+        return True
+
+    ingest.last_failure = ""
     return ingest
 
 

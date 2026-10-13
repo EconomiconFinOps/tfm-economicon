@@ -101,7 +101,9 @@ docker compose -p jup107 --profile demo down -v
 
 ## Si algo no coincide
 
-- `status` dice `partial` u `other-data`: ejecutar `remove` y volver a cargar.
+- `status` dice `partial`: ejecutar `remove` y volver a cargar.
+- `status` dice `other-data`: `remove` **no** retira datos ajenos a la demo, así que no basta; hay que retirar a mano esas filas o crear el stack de nuevo con volúmenes nuevos (`down -v`). Es lo que ocurre, por ejemplo, con la ingesta del dataset público original de una suscripción de la demo.
+- Si el stack venía de JUP-106 o JUP-107 (scripts ya retirados), sus filas (suscripciones `synthetic-jup106-*` y `synthetic-jup107-*`) cuentan como datos ajenos: lo más simple es `down -v` y volver a levantar; si no, borrarlas con SQL en CockroachDB (`DELETE FROM azure_cost_records WHERE id LIKE 'synthetic-jup10%'`, lo mismo en `azure_cost_ingestion_runs` y, para `tenant-core`, en `anomaly_episodes` y `anomaly_detection_state`).
 - Los totales de D3 no son los esperados: comprobar el periodo (la pantalla arranca con los seis últimos meses completos antes de la fecha de referencia) y que se ha elegido Growth Ops.
 - La cabecera no dice «Fecha simulada: 30/10/2026»: falta `COST_REFERENCE_DATE=2026-10-30` en el `.env` del stack; corregirlo y recrear el backend.
-- Un `apply` simultáneo de otra persona sobre el mismo stack no duplica datos, pero el que pierde la carrera ve un error; repetir el comando.
+- No lances dos `apply` a la vez sobre el mismo stack: la lógica lee el estado y después ingiere, sin cerrojo, y el resultado de la carrera no está comprobado (`RF-119-009`).

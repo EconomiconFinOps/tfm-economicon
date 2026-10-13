@@ -37,6 +37,22 @@ Ataques que resistieron (resumen del revisor): fecha de referencia inválida, ni
 
 Fuera de su alcance: no tenía CockroachDB ni el stack real, así que las pruebas con base de datos real, la detección de extremo a extremo y la receta de navegador no se revisaron por ejecución; esas están cubiertas por la evidencia.
 
+## Adversarial Review (pass 2)
+
+Mismo revisor, sobre `bfaf3983..ce075b7f`. Veredicto: **changes-requested**; sin BLOCKING, 2 HIGH, 2 MEDIUM, 3 LOW. Los cuatro puntos nuevos que se le pidieron atacar (distinción de ingestas propias y ajenas, lista blanca de entorno, definición por pareja y rango del validador) resistieron.
+
+| ID | Severidad | Descripción | Resolución |
+| --- | --- | --- | --- |
+| ADV-1 | HIGH | La spec decía que el panel ejecutivo abre en el mes de la fecha de referencia, pero abre (desde antes de este change) los seis meses completos anteriores. | La spec era la que se pasaba: corregida para fijar lo que el panel hace y la prueba de frontend ya comprobaba (con la referencia en 2026-10-15, abril a septiembre de 2026). El compositor del asistente enseña el mes de referencia, y eso también queda dicho. No cambia el código. |
+| ADV-2 | HIGH | La guía mandaba ejecutar `remove` ante `other-data`, pero `remove` no retira datos ajenos: bucle sin salida. | Corregida: `partial` se arregla con `remove`; `other-data` exige retirar las filas a mano o recrear el stack con volúmenes nuevos. |
+| ADV-3 | MEDIUM | Los stacks cargados con los scripts retirados dejaban filas `synthetic-jup106-*` y `synthetic-jup107-*` como datos ajenos sin aviso de migración. | Añadida la nota en la preparación y en la guía de datos (`down -v` o SQL). |
+| ADV-4 | MEDIUM | El cuerpo de la guía de JUP-106 seguía describiendo la herramienta antigua sin marcarlo como histórico. | El apartado queda titulado «histórico: describe la herramienta retirada», con la nota de comandos no ejecutables. |
+| ADV-5 | LOW | La spec decía que el mensaje nombra `COST_REFERENCE_DATE` y el mensaje nombra el campo `cost_reference_date`. | Spec ajustada a «nombra el ajuste (`cost_reference_date`)». |
+| ADV-6 | LOW | `run_ingestion` no tenía tiempo límite y descartaba la causa del fallo. | Corregido con prueba primero: tiempo límite de 600 s y causa (código de error de la CLI o «se agotó el tiempo») sin imprimir nunca el entorno ni stderr. |
+| ADV-7 | LOW | «Idempotente bajo concurrencia» no está comprobado para dos `apply` simultáneos. | Se quita la afirmación de la guía y se registra como `RF-119-009`. |
+
+Además, el revisor señaló que `.claude/skills/economicon-stack/scripts/cargar_demo.py` (local, no versionado) usaba una lista negra de `production`; se pasó a lista blanca, igual que `demo_data.py`. No pudo construir un episodio cuyo `no_longer_observed_on` quede más allá de la referencia con `impact_through_date` anterior: queda como `RF-119-010`.
+
 ## Barrido de patrones
 
 - Comparación exacta de `RUNTIME_ENVIRONMENT` (ADV-2): `scripts/demo_data.py` (corregido); el Compose usa `${RUNTIME_ENVIRONMENT:-production}`, que trata el vacío como producción; `cargar_demo.py` de la skill local no se versiona.

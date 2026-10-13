@@ -15,12 +15,12 @@ The backend SHALL resolve a single reference date from the setting `COST_REFEREN
 
 #### Scenario: Invalid value is rejected at startup
 - **WHEN** the setting is `2026-09-21T00:00:00Z`, ` 2026-09-21`, `2026-02-30` or `26-09-21`
-- **THEN** the backend does not start and the message names `COST_REFERENCE_DATE`
+- **THEN** the backend does not start and the message names the setting (`cost_reference_date`)
 - **AND** no cost, episode or conversation row has been read or written
 
 #### Scenario: Dates at the edge of the date type are rejected
 - **WHEN** the setting is `9999-12-31`, `9999-12-30`, `0001-01-01` or `1900-01-01`
-- **THEN** the backend does not start and the message names `COST_REFERENCE_DATE`
+- **THEN** the backend does not start and the message names the setting (`cost_reference_date`)
 - **AND** `1900-01-02` and `9998-12-29` are accepted and every read works with them
 
 #### Scenario: No other code decides the visible day
@@ -97,11 +97,11 @@ The list and the detail of stored anomaly episodes SHALL NOT expose an episode w
 
 ### Requirement: The frontend reads the reference date from the backend
 
-The backend SHALL expose the reference date to the authenticated frontend as `{ "reference_date": "YYYY-MM-DD", "simulated": boolean }`, where `simulated` is true exactly when `COST_REFERENCE_DATE` is set. The endpoint SHALL answer with the same tenant-independent value for every authenticated user and SHALL NOT expose any other setting. The frontend SHALL take the default month of the executive dashboard, the default period of the assistant composer and every "today" it computes from that value instead of the browser clock, and SHALL show the visible label "Fecha simulada" with the date in the page header when `simulated` is true and no label when it is false. If the endpoint fails, the frontend SHALL show an explicit error state for the period selection and SHALL NOT silently fall back to the browser clock.
+The backend SHALL expose the reference date to the authenticated frontend as `{ "reference_date": "YYYY-MM-DD", "simulated": boolean }`, where `simulated` is true exactly when `COST_REFERENCE_DATE` is set. The endpoint SHALL answer with the same tenant-independent value for every authenticated user and SHALL NOT expose any other setting. The frontend SHALL compute the default period of the executive dashboard (the six complete months before the month that contains the reference date, as before this change), the reference month shown by the assistant composer and every "today" it computes from that value instead of the browser clock, and SHALL show the visible label "Fecha simulada" with the date in the page header when `simulated` is true and no label when it is false. If the endpoint fails, the frontend SHALL show an explicit error state for the period selection and SHALL NOT silently fall back to the browser clock.
 
 #### Scenario: Simulated date is visible
 - **WHEN** `COST_REFERENCE_DATE` is `2026-10-15` and a user opens the dashboard
-- **THEN** the header shows "Fecha simulada: 15/10/2026" and the default month is October 2026
+- **THEN** the header shows "Fecha simulada: 15/10/2026" and the dashboard opens on the six complete months before October 2026, from April to September 2026
 
 #### Scenario: Real date shows no label
 - **WHEN** the setting is absent
@@ -109,7 +109,7 @@ The backend SHALL expose the reference date to the authenticated frontend as `{ 
 
 #### Scenario: Browser clock is not used
 - **WHEN** the browser clock says 2030-01-01 and the reference date is 2026-10-15
-- **THEN** the default month, the composer default period and the header date are those of 2026-10-15
+- **THEN** the dashboard period (April to September 2026), the composer reference month (October 2026) and the header date are those of 2026-10-15
 
 #### Scenario: Endpoint failure is explicit
 - **WHEN** the reference date endpoint answers an error
