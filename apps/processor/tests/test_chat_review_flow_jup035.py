@@ -67,6 +67,8 @@ def test_invalid_draft_never_emits_or_calls_final(monkeypatch,plan,finish):
     instance,requests,_=gateway(monkeypatch,[wire(plan,finish)])
     records=execute(instance)
     assert len(requests)==1 and [item['type'] for item in records]==['error']
+    assert records[0]['status']==(502 if finish=='length' else 422)
+    assert records[0]['category']==('incomplete' if finish=='length' else 'invalid_response')
     assert records[0]['usage_report']['observed']['total_tokens']==15
 
 def test_final_failure_preserves_partial_draft_usage(monkeypatch):
