@@ -1,7 +1,9 @@
 from datetime import date, datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, StringConstraints, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator, model_validator
+
+from app.schemas.ownership import OwnershipSelection
 
 
 NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -52,7 +54,14 @@ class MessageCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     content: NonEmptyText
+    ownership_query: OwnershipSelection | None = None
     cost_query: AzureCostSelection | None = None
+
+    @model_validator(mode="after")
+    def one_cost_selection(self):
+        if self.cost_query is not None and self.ownership_query is not None:
+            raise ValueError("Choose either cost_query or ownership_query, not both.")
+        return self
 
 
 class RetrievedChunk(BaseModel):
@@ -60,6 +69,20 @@ class RetrievedChunk(BaseModel):
     source: str
     content: str
     distance: float
+
+
+class SourceCitation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_id: NonEmptyText
+    kind: Literal["corpus"]
+    document_id: NonEmptyText
+    title: NonEmptyText
+    source: NonEmptyText
+    reference: NonEmptyText
+    section: NonEmptyText | None = None
+    page: int | None = Field(default=None, ge=1)
+    excerpt: str
 
 
 class MessageRecord(BaseModel):

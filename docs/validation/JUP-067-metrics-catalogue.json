@@ -1,0 +1,196 @@
+{
+  "catalogue_version": "1.0.0",
+  "definitions_sha256": "5c5fc0b5e962327e46edbf7c5487ba6ec283bf800e7a7c4a96679161e53fdedd",
+  "jup": "JUP-067",
+  "trello": "https://trello.com/c/bwvfLpUG",
+  "families": ["accuracy", "relevance", "grounding", "latency", "robustness", "availability"],
+  "metrics": [
+    {
+      "id": "ACC-1",
+      "family": "accuracy",
+      "name": "Casos con resultado pass",
+      "numerator": "casos pass",
+      "denominator": "casos pass mas fail",
+      "population": "casos answer",
+      "source": "campo outcome de cada caso",
+      "unit": "tasa",
+      "target": null
+    },
+    {
+      "id": "ACC-2",
+      "family": "accuracy",
+      "name": "Comprobaciones objetivas cumplidas",
+      "numerator": "comprobaciones objetivas (numbers y forbidden) con resultado pass",
+      "denominator": "comprobaciones objetivas evaluadas",
+      "population": "casos answer pass o fail",
+      "source": "checks de clase objective",
+      "unit": "tasa",
+      "target": {"comparator": ">=", "value": 0.9, "origin": "ADR-0002", "provisional": true}
+    },
+    {
+      "id": "ACC-3",
+      "family": "accuracy",
+      "name": "Casos clarify y abstain con resultado pass",
+      "numerator": "casos pass",
+      "denominator": "casos pass mas fail",
+      "population": "casos clarify y casos abstain, cada grupo por separado",
+      "source": "campo outcome de cada caso",
+      "unit": "tasa",
+      "target": null
+    },
+    {
+      "id": "REL-1",
+      "family": "relevance",
+      "name": "Acierto de documento",
+      "numerator": "casos con algun fragmento recuperado de un documento declarado por el caso",
+      "denominator": "casos evaluados",
+      "population": "casos answer pass o fail",
+      "source": "retrieved y fuentes del caso en la bateria",
+      "unit": "tasa",
+      "target": null
+    },
+    {
+      "id": "REL-2",
+      "family": "relevance",
+      "name": "Acierto de seccion",
+      "numerator": "casos con algun fragmento recuperado de una seccion etiquetada",
+      "denominator": "casos evaluados con cobertura direct o partial",
+      "population": "casos answer pass o fail",
+      "source": "retrieved y etiquetas de JUP-022",
+      "unit": "tasa",
+      "target": null
+    },
+    {
+      "id": "REL-3",
+      "family": "relevance",
+      "name": "Resultado vacio",
+      "numerator": "casos sin fragmento recuperado",
+      "denominator": "casos evaluados",
+      "population": "casos pass o fail, por grupo de comportamiento",
+      "source": "retrieved",
+      "unit": "tasa",
+      "target": null
+    },
+    {
+      "id": "REL-4",
+      "family": "relevance",
+      "name": "Confianza de la recuperacion",
+      "numerator": "mediana y cuartiles (rango mas cercano) de 1 menos la distancia coseno del mejor fragmento",
+      "denominator": "no aplica",
+      "population": "casos answer pass o fail con al menos un fragmento recuperado",
+      "source": "distancias de retrieved",
+      "unit": "similitud",
+      "target": null
+    },
+    {
+      "id": "GRD-1",
+      "family": "grounding",
+      "name": "Citas validas",
+      "numerator": "citas que apuntan a un fragmento recuperado para esa pregunta",
+      "denominator": "citas emitidas",
+      "population": "casos answer pass o fail con citas",
+      "source": "citations y retrieved",
+      "unit": "tasa",
+      "target": null
+    },
+    {
+      "id": "GRD-2",
+      "family": "grounding",
+      "name": "Cifras sin rastro",
+      "numerator": "cifras de la respuesta que no se rastrean al contexto, a la evidencia ni a la pregunta",
+      "denominator": "no aplica",
+      "population": "recuento por caso y total; los casos criticos se listan aparte",
+      "source": "figures",
+      "unit": "recuento",
+      "target": {"comparator": "==", "value": 0, "origin": "ADR-0002", "provisional": true, "scope": "casos criticos"}
+    },
+    {
+      "id": "GRD-3",
+      "family": "grounding",
+      "name": "Integridad de referencias de evidencia",
+      "numerator": "referencias de evidencia que existen",
+      "denominator": "referencias de evidencia emitidas",
+      "population": "casos answer pass o fail con referencias de evidencia",
+      "source": "evidence_refs",
+      "unit": "tasa",
+      "target": null
+    },
+    {
+      "id": "LAT-1",
+      "family": "latency",
+      "name": "Latencia mediana",
+      "numerator": "mediana de los milisegundos registrados",
+      "denominator": "no aplica",
+      "population": "llamadas correctas de cada etapa (embedding, retrieval, generation, total)",
+      "source": "latency_ms",
+      "unit": "ms",
+      "target": null
+    },
+    {
+      "id": "LAT-2",
+      "family": "latency",
+      "name": "Latencia percentil 95",
+      "numerator": "percentil 95 por rango mas cercano de los milisegundos registrados",
+      "denominator": "no aplica",
+      "population": "llamadas correctas de cada etapa",
+      "source": "latency_ms",
+      "unit": "ms",
+      "target": {"comparator": "<=", "value": 10000, "origin": "ADR-0002", "provisional": true, "scope": "etapa total, en desarrollo"}
+    },
+    {
+      "id": "LAT-3",
+      "family": "latency",
+      "name": "Latencia maxima",
+      "numerator": "maximo de los milisegundos registrados",
+      "denominator": "no aplica",
+      "population": "llamadas correctas de cada etapa",
+      "source": "latency_ms",
+      "unit": "ms",
+      "target": null
+    },
+    {
+      "id": "LAT-4",
+      "family": "latency",
+      "name": "Llamadas fallidas o agotadas",
+      "numerator": "llamadas fallidas de la etapa",
+      "denominator": "llamadas totales de la etapa",
+      "population": "todas las llamadas de cada etapa",
+      "source": "latency_ms y failure_stage",
+      "unit": "tasa",
+      "target": null
+    },
+    {
+      "id": "STR-1",
+      "family": "robustness",
+      "name": "Respuestas que cumplen el esquema",
+      "numerator": "respuestas con structured_ok verdadero",
+      "denominator": "respuestas estructuradas recibidas",
+      "population": "casos con structured_ok informado",
+      "source": "structured_ok",
+      "unit": "tasa",
+      "target": {"comparator": ">=", "value": 0.95, "origin": "ADR-0002", "provisional": true}
+    },
+    {
+      "id": "STR-2",
+      "family": "robustness",
+      "name": "Fallos por categoria",
+      "numerator": "fallos de cada categoria",
+      "denominator": "todos los fallos",
+      "population": "las nueve categorias del proveedor mas schema_validation",
+      "source": "failure_category",
+      "unit": "recuento",
+      "target": null
+    },
+    {
+      "id": "AVL-1",
+      "family": "availability",
+      "name": "Disponibilidad del chat",
+      "numerator": "peticiones al chat sin error del servidor (estado 500 a 599)",
+      "denominator": "peticiones al chat de la ejecucion",
+      "population": "peticiones al chat de la ejecucion",
+      "source": "availability de la cabecera de la ejecucion",
+      "unit": "tasa",
+      "target": null
+    }
+  ]
+}

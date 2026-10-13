@@ -1,5 +1,47 @@
 # JUP-036 — Evidencia de implementación
 
+Verificación: 2026-10-13. Base integrada: `bfaf39839718` (develop).
+Trello: https://trello.com/c/LxaVVLcH · PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/69
+
+## Incremento actual
+
+Resueltos los conflictos con la base actual sin sustituir consultas de propiedad,
+citas ni traducciones. La selección Azure vive en `MessageComposer`, con el mismo
+ciclo de vida por cliente/conversación. El backend rechaza dos selecciones simultáneas
+antes de leer costes o persistir; `CostEvidence` reconoce el adaptador `azure-cost-1.0`
+y presenta su procedencia con el alcance de la selección, manteniendo ownership.
+
+| Comprobación | Evidencia actual |
+| --- | --- |
+| SQL real y regresiones | 178 pruebas pasan, sin omisiones: costes, billing, presupuestos, ownership y cobertura de etiquetas. CockroachDB v24.1.2 temporal, sin datos ajenos. |
+| JUP-036 final con SQL | 32 pruebas pasan, sin omisiones. GET posterior conserva evidencia JSONB, adaptador y todos los grupos; otro cliente obtiene 404. Incluye consulta documental posterior y proveedor/vector indisponibles. |
+| Frontend completo | 882 pruebas pasan en 66 archivos, con dos workers. Incluye envío exacto por cuenta, fechas inválidas y visor Azure; suites ownership, citas y cambio de cliente conservadas. |
+| TypeScript y lint | Scripts oficiales frontend completos pasan (tres tsconfig y eslint src tests). |
+| Build | `corepack pnpm -r build` pasa. Dependencias sincronizadas con `corepack pnpm install --frozen-lockfile`; lockfile sin cambios propios. Advertencia existente de chunk >500 kB. |
+| Políticas | 82 pruebas PR/CI/gobernanza pasan; higiene y trazabilidad pasan. |
+| Backend completo | Linux: **1280 pasan, 125 omisiones** por servicios/opt-ins ausentes, sin fallos. Runtime temporal basado en la imagen backend de develop bfaf3983, copia exacta del candidato y pytest/httpx instalados en /tmp. Windows: 1135 pasan, 125 omisiones y 145 fallos concentrados en cuatro suites de salud que bloquean socket.connect e impiden crear el socketpair de asyncio. No se modifica esa protección. |
+
+Comandos SQL: `python -m pytest tests/test_azure_cost_questions.py tests/test_billing_summary.py tests/test_budget_evaluation.py tests/test_ownership_questions.py tests/test_tag_coverage.py -q --tb=short -p no:cacheprovider`, seguido del archivo JUP-036 completo con la regresión final de recarga.
+Variable opt-in `JUP086_COCKROACH_TEST_URL` hacia loopback:56636/defaultdb; organización de la instancia propia `processor-integration-tests`. Las fixtures crean y eliminan sus bases.
+
+Comandos frontend: `node node_modules/vitest/vitest.mjs run --maxWorkers=2`, `corepack pnpm --filter @finops/frontend typecheck`, `corepack pnpm --filter @finops/frontend lint`.
+
+## Límites y aceptación pendiente
+
+No se acreditan Azure real, interpretación libre, llamadas a modelos, recorrido
+conjunto con JUP-035/PR121, ni nuevas intervenciones humanas. El alcance explícito
+está confirmado por la tarjeta consultada el 13/10. PR121 continúa abierta; la
+combinación generativa necesita su propia validación.
+
+La evidencia del implementador no sustituye el contraste de liderazgo Victor,
+el pairing real ni las reviews separadas de Lucia y Paris. No se da por cerrada
+la tarjeta ni se atribuyen aprobaciones inexistentes. Los resultados inferiores
+son históricos y no se suman ni se presentan como pruebas del candidato actual.
+
+---
+
+# Evidencia histórica — 2026-10-03
+
 Verificado el 2026-10-03. Base: develop `6410950`.
 Trello: https://trello.com/c/LxaVVLcH
 

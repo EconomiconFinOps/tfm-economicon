@@ -162,7 +162,7 @@ Se uso un probe local no versionado, sin dependencias nuevas ni reescritura de
 archivos de producto. Cada ejecucion comprueba que pytest falla en el cuerpo del
 test y por la causa esperada; fallos de fixture, coleccion o herramientas no
 cuentan como mutantes detectados. El resultado de revision tecnica y los
-hallazgos cerrados estan en [review.md](../../openspec/changes/jup-013-normalize-azure-costs/review.md).
+hallazgos cerrados estan en [review.md](../../openspec/changes/archive/2026-09-18-jup-013-normalize-azure-costs/review.md).
 La auditoria tecnica local de QA dio QA_PASS el 08/09: evidencia y tareas
 coherentes, tres enlaces Markdown relativos correctos y ningun bloqueo tecnico
 pendiente. El gate local de entrada a QA y el control de higiene (404 archivos)

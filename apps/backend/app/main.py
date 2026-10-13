@@ -18,7 +18,8 @@ from app.core.request_context import RequestIdMiddleware, validation_error_handl
 from app.core.runtime_secrets import StartupError
 from app.db.database import Database
 from app.services.assistant import AssistantService
-from app.services.embedding_provider import MockEmbeddingProvider
+from app.core.embedding_startup import log_embedding_configuration
+from app.services.embedding_provider import LiteLLMEmbeddingProvider, MockEmbeddingProvider
 from app.services.rabbitmq_queue import RabbitMQQueue
 from app.services.vector_store import PgVectorQueryStore
 
@@ -44,7 +45,13 @@ async def lifespan(app: FastAPI):
             app.state.queue = queue
             app.state.vector_store = vector_store
             app.state.assistant_service = AssistantService()
-            app.state.embedding_provider = MockEmbeddingProvider(settings.embedding_dimension)
+            embedding_provider = (
+                LiteLLMEmbeddingProvider(settings) if settings.embedding_provider == "litellm"
+                else MockEmbeddingProvider(settings.embedding_dimension)
+            )
+            vector_store.verify_dimension(embedding_provider.dimension)
+            log_embedding_configuration(settings)
+            app.state.embedding_provider = embedding_provider
             yield
     except StartupError:
         raise
@@ -58,7 +65,7 @@ class RuntimeCORSMiddleware(CORSMiddleware):
         super().__init__(
             app,
             allow_origins=get_settings().cors_allowed_origins,
-            allow_methods=["GET", "POST"],
+            allow_methods=["GET", "POST", "PATCH"],
             allow_headers=["Authorization", "Content-Type", "X-Tenant-Id"],
             allow_credentials=False,
             expose_headers=[],

@@ -1,9 +1,9 @@
 # JUP-026 Validation
 
 Date: 2026-09-27. [Official card](https://trello.com/c/anUswta8).
-[Proposal and approval](../../openspec/changes/jup-026-azure-cost-kpis/proposal.md),
-[design](../../openspec/changes/jup-026-azure-cost-kpis/design.md),
-[review](../../openspec/changes/jup-026-azure-cost-kpis/review.md),
+[Proposal and approval](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/proposal.md),
+[design](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/design.md),
+[review](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/review.md),
 [ADR-0010](../adr/ADR-0010-azure-cost-source-overlap.md).
 
 ## PR52 Corrections 2026-09-30
@@ -315,7 +315,7 @@ given as recorded below. No push or PR.
 On 2026-09-28 Paris Arcos explicitly approved the final result, including
 ADR-0010, while clarifying that integration of JUP-086 and the JUP-014 fix is
 not his individual pending action. The exact reply and scope are recorded in
-[review.md](../../openspec/changes/jup-026-azure-cost-kpis/review.md#post-qa-human-approval).
+[review.md](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/review.md#post-qa-human-approval).
 These were team dependencies at approval time; they need not prevent preparing a dependent PR,
 but its inherited scope must be identified and reconciled before final merge.
 This update only records approval, changes no code/tests or acceptance outcomes,
@@ -445,3 +445,7 @@ CI results must be read from the resulting PR/run for its exact commit;
 they are not inferred from these historical local runs. Merge, archive and
 Trello updates remain separately authorized operations, and required human
 review/validation are not credited by this publication.
+
+## Archivo y cierre documental (06/10/2026)
+
+El PR #52 se integró en develop el 30/09/2026 (`1e897dc`). El change se archiva el 06/10/2026 en [2026-10-06-jup-026-azure-cost-kpis](../../openspec/changes/archive/2026-10-06-jup-026-azure-cost-kpis/review.md#human-approval), con la aprobación humana de Lucia registrada, y sus specs quedan promovidas a `openspec/specs/azure-cost-kpis/` y `openspec/specs/frontend-api-layer/`. Los enlaces a la ruta del change activo se han apuntado a la ruta archivada. Siguen abiertos RF-026-001 (diferido) y RF-026-002 (aplazamiento aprobado). La validación funcional atribuible y la revisión de otros miembros se siguen registrando en Trello. La ejecución de archivo no repite pruebas de producto.

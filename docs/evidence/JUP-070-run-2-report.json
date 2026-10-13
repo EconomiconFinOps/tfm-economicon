@@ -1,0 +1,423 @@
+{
+  "report_version": 1,
+  "catalogue_version": "1.0.0",
+  "run": {
+    "commit": "8a116df28472a30b21b996ab6fa02377dde7b2c1",
+    "date": "2026-10-08T21:01:44Z",
+    "provider": "litellm",
+    "alias": "economicon-embedding",
+    "suite_version": "1.0.0",
+    "suite_sha256": "e15349564edfa5ce6cef94ff90ee2bfd15ef17656a2c4b201ac37bcd6d44571c",
+    "corpus": {
+      "documents": 4,
+      "chunks": 52,
+      "sha256": "cf2633b96ca30a63f70952c6cb23ca8139dcb665e9a51a0d52dbcc144b00c8dc"
+    },
+    "generation": {
+      "model_alias": "plantilla-sin-modelo",
+      "temperature": null
+    },
+    "retrieval": {
+      "top_k": 4,
+      "max_distance": 0.6,
+      "chunk_size": 500,
+      "chunk_overlap": 50
+    },
+    "synthetic": false
+  },
+  "counts": {
+    "cases": 28,
+    "pass": 0,
+    "fail": 28,
+    "blocked": 0,
+    "not_run": 0
+  },
+  "metrics": {
+    "ACC-1": {
+      "k": 0,
+      "n": 20,
+      "rate": 0.0,
+      "ci95": [
+        0.0,
+        0.161125
+      ],
+      "available": true,
+      "target": null
+    },
+    "ACC-2": {
+      "k": 25,
+      "n": 51,
+      "rate": 0.490196,
+      "ci95": [
+        0.358575,
+        0.623191
+      ],
+      "available": true,
+      "judged": {
+        "k": 0,
+        "n": 30,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.113513
+        ],
+        "available": true
+      },
+      "target": {
+        "comparator": ">=",
+        "value": 0.9,
+        "origin": "ADR-0002",
+        "provisional": true,
+        "met": false
+      }
+    },
+    "ACC-3": {
+      "groups": {
+        "clarify": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.390334
+          ],
+          "available": true
+        },
+        "abstain": {
+          "k": 0,
+          "n": 2,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.65762
+          ],
+          "available": true
+        }
+      },
+      "target": null
+    },
+    "REL-1": {
+      "k": 20,
+      "n": 20,
+      "rate": 1.0,
+      "ci95": [
+        0.838875,
+        1.0
+      ],
+      "available": true,
+      "target": null
+    },
+    "REL-2": {
+      "k": 16,
+      "n": 20,
+      "rate": 0.8,
+      "ci95": [
+        0.583983,
+        0.919342
+      ],
+      "available": true,
+      "target": null
+    },
+    "REL-3": {
+      "groups": {
+        "answer": {
+          "k": 0,
+          "n": 20,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.161125
+          ],
+          "available": true
+        },
+        "clarify": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.390334
+          ],
+          "available": true
+        },
+        "abstain": {
+          "k": 0,
+          "n": 2,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.65762
+          ],
+          "available": true
+        }
+      },
+      "target": null
+    },
+    "REL-4": {
+      "n": 20,
+      "median": 0.6166171504041825,
+      "q1": 0.5578881845513168,
+      "q3": 0.635971726018935,
+      "available": true,
+      "target": null
+    },
+    "GRD-1": {
+      "k": 60,
+      "n": 60,
+      "rate": 1.0,
+      "ci95": [
+        0.939828,
+        1.0
+      ],
+      "available": true,
+      "target": null
+    },
+    "GRD-2": {
+      "total": 0,
+      "by_case": {},
+      "critical_failures": [],
+      "available": true,
+      "target": {
+        "comparator": "==",
+        "value": 0,
+        "origin": "ADR-0002",
+        "provisional": true,
+        "scope": "casos criticos",
+        "met": true
+      }
+    },
+    "GRD-3": {
+      "k": 60,
+      "n": 60,
+      "rate": 1.0,
+      "ci95": [
+        0.939828,
+        1.0
+      ],
+      "available": true,
+      "target": null
+    },
+    "LAT-1": {
+      "stages": {
+        "embedding": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "retrieval": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "generation": {
+          "n": 28,
+          "value": 3213.097,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "total": {
+          "n": 28,
+          "value": 3213.097,
+          "covers": "successful calls only",
+          "target": null
+        }
+      },
+      "corpus": {
+        "documents": 4,
+        "chunks": 52
+      }
+    },
+    "LAT-2": {
+      "stages": {
+        "embedding": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "retrieval": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "generation": {
+          "n": 28,
+          "value": 4561.659,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "total": {
+          "n": 28,
+          "value": 4561.659,
+          "covers": "successful calls only",
+          "target": {
+            "comparator": "<=",
+            "value": 10000,
+            "origin": "ADR-0002",
+            "provisional": true,
+            "scope": "etapa total, en desarrollo",
+            "met": true
+          }
+        }
+      },
+      "corpus": {
+        "documents": 4,
+        "chunks": 52
+      }
+    },
+    "LAT-3": {
+      "stages": {
+        "embedding": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "retrieval": {
+          "n": 28,
+          "value": 0,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "generation": {
+          "n": 28,
+          "value": 5679.037,
+          "covers": "successful calls only",
+          "target": null
+        },
+        "total": {
+          "n": 28,
+          "value": 5679.037,
+          "covers": "successful calls only",
+          "target": null
+        }
+      },
+      "corpus": {
+        "documents": 4,
+        "chunks": 52
+      }
+    },
+    "LAT-4": {
+      "stages": {
+        "embedding": {
+          "k": 0,
+          "n": 28,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.120643
+          ],
+          "available": true
+        },
+        "retrieval": {
+          "k": 0,
+          "n": 28,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.120643
+          ],
+          "available": true
+        },
+        "generation": {
+          "k": 0,
+          "n": 28,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.120643
+          ],
+          "available": true
+        }
+      },
+      "target": null
+    },
+    "STR-1": {
+      "k": 28,
+      "n": 28,
+      "rate": 1.0,
+      "ci95": [
+        0.879357,
+        1.0
+      ],
+      "available": true,
+      "target": {
+        "comparator": ">=",
+        "value": 0.95,
+        "origin": "ADR-0002",
+        "provisional": true,
+        "met": true
+      }
+    },
+    "STR-2": {
+      "by_category": {
+        "timeout": 0,
+        "connection": 0,
+        "transport": 0,
+        "authentication": 0,
+        "request": 0,
+        "redirect": 0,
+        "rate_limit": 0,
+        "upstream": 0,
+        "invalid_response": 0,
+        "schema_validation": 0
+      },
+      "total": 0,
+      "target": null
+    },
+    "AVL-1": {
+      "k": 56,
+      "n": 56,
+      "rate": 1.0,
+      "ci95": [
+        0.935806,
+        1.0
+      ],
+      "available": true,
+      "target": null
+    }
+  },
+  "gaps": [
+    "JUP-069-024",
+    "JUP-069-026"
+  ],
+  "critical": {
+    "cases": [
+      "JUP-069-001",
+      "JUP-069-002",
+      "JUP-069-005",
+      "JUP-069-006",
+      "JUP-069-007",
+      "JUP-069-011",
+      "JUP-069-013",
+      "JUP-069-014",
+      "JUP-069-016",
+      "JUP-069-017",
+      "JUP-069-018",
+      "JUP-069-019",
+      "JUP-069-021",
+      "JUP-069-027"
+    ],
+    "single_decider_cases": [
+      "JUP-069-001",
+      "JUP-069-002",
+      "JUP-069-005",
+      "JUP-069-006",
+      "JUP-069-007",
+      "JUP-069-011",
+      "JUP-069-013",
+      "JUP-069-014",
+      "JUP-069-016",
+      "JUP-069-017",
+      "JUP-069-018",
+      "JUP-069-019",
+      "JUP-069-021",
+      "JUP-069-027"
+    ]
+  },
+  "notes": [],
+  "generated_at": "2026-10-08T21:30:00Z"
+}

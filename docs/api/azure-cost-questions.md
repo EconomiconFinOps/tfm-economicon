@@ -36,7 +36,7 @@ Fechas incompletas/invertidas, campos extra, dimensión desconocida y valores
 vacíos/controlados se rechazan con 422 antes de consultar gasto o persistir.
 Conversaciones ajenas devuelven 404 y tenants sin membresía 403. Una selección
 válida sin filas visibles devuelve 201 con evidencia `no_data`, sin distinguir
-valores ajenos de inexistentes. Sin `cost_query` sigue la ruta documental.
+valores ajenos de inexistentes. `cost_query` y `ownership_query` son mutuamente excluyentes: enviarlos juntos devuelve 422 sin efectos. Sin ambas selecciones sigue la ruta documental.
 
 Solo se incluyen filas de ingestas completadas, con tenant y suscripción
 consistentes en ambos lados del join. Se liga cada filtro como parámetro SQL.
@@ -48,14 +48,14 @@ no oculta el conflicto. Un filtro explícito de suscripción delimita el conflic
 
 ## Evidencia y límites
 
-`assistant_message.metadata.cost_evidence` guarda versión, ID SHA-256,
+`assistant_message.metadata.cost_evidence` guarda versión de schema `1.0`, adaptador `azure-cost-1.0`, ID SHA-256,
 `queried_at`, selección resuelta, snapshot billing y procedencia (`ingestion_ids`,
 primer/último día observado y `observed_day_count`). Persiste al recargar el chat.
 El hash incluye tenant, selección, snapshot y procedencia; no incluye la hora
 de consulta. Identifica ese resultado: no es firma criptográfica de las filas.
 La respuesta visible muestra periodo, ámbito, importes, registros, ingestas y
 advertencias. Sin valor exacto muestra hasta 20 grupos, con el resto conservado
-en el snapshot. No hay ejecución LLM, embeddings ni retrieval en esta ruta.
+en el snapshot y en el desplegable de evidencia de costes. La procedencia del adaptador Azure corresponde a la selección consultada; la de ownership conserva su alcance de todo el periodo del cliente. No hay ejecución LLM, embeddings ni retrieval en esta ruta.
 
 `no_data` significa ausencia de filas, nunca gasto cero. `partial` refleja registros
 sin dimensión o sin fecha; presencia de filas tampoco demuestra cobertura
@@ -78,3 +78,17 @@ existente: no se añade transacción atómica de la pareja ni idempotencia del e
 
 Las pruebas propias no sustituyen la revisión Lucia, validación Paris ni
 participación real de Victor/Alejandro. No cerrar la tarjeta antes de ellas.
+
+## Integración con la base actual y JUP-035
+
+JUP-036 reutiliza `MessageComposer` y `CostEvidence` de la base actual. Conserva
+las consultas de propiedad JUP-037, las citas documentales y la interfaz en español.
+Cada conversación y cliente tiene su propio formulario, de modo que un envío
+pendiente no borra el borrador de otra conversación.
+
+La generación y la interpretación libre pertenecen al chat JUP-035, cuya PR121
+sigue abierta en la consulta del 13/10/2026. Esta entrega proporciona la consulta
+explícita y su evidencia; no declara terminado el recorrido generativo. Su consumo
+por JUP-035 requiere contrastar el contrato y validar la combinación de ambas PR.
+`fetch_billing_summary` conserva sus argumentos existentes y añade filtros opcionales;
+las llamadas sin filtros mantienen el comportamiento previo.

@@ -11,6 +11,7 @@ from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.core.metrics import MetricsMiddleware
 from app.core.runtime_secrets import StartupError
+from conftest import use_gateway_embeddings
 from app.core.security import create_access_token
 from conftest import SYNTHETIC_ENV
 from test_secret_boundaries import (
@@ -46,6 +47,8 @@ def test_origins_default_to_empty_without_granting_access(main_module, monkeypat
 ])
 def test_settings_preserve_exact_json_origins(monkeypatch, environment, origins):
     monkeypatch.setenv("RUNTIME_ENVIRONMENT", environment)
+    if environment == "production":
+        use_gateway_embeddings(monkeypatch)
     monkeypatch.setenv("CORS_ALLOWED_ORIGINS", json.dumps(origins))
     assert get_settings().model_dump().get("cors_allowed_origins") == origins
 
@@ -108,6 +111,7 @@ def bearer():
     ("GET", "/tenants", "Authorization"),
     ("GET", "/billing/summary", "Authorization,Content-Type,X-Tenant-Id"),
     ("POST", "/jobs/ingest", "authorization,content-type,x-tenant-id"),
+    ("PATCH", "/billing/anomalies/episodes/anomaly-1", "Authorization,Content-Type,X-Tenant-Id"),
     ("GET", "/health", "Accept,Accept-Language,Content-Language"),
 ])
 def test_native_preflight_needs_no_jwt_or_inner_middleware(cors_app, method, path, headers, capsys):
@@ -120,7 +124,7 @@ def test_native_preflight_needs_no_jwt_or_inner_middleware(cors_app, method, pat
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == ALLOWED
     assert "origin" in response.headers["vary"].lower()
-    assert set(response.headers["access-control-allow-methods"].split(", ")) == {"GET", "POST"}
+    assert set(response.headers["access-control-allow-methods"].split(", ")) == {"GET", "POST", "PATCH"}
     permitted = {value.strip().lower() for value in response.headers["access-control-allow-headers"].split(",")}
     assert {"authorization", "content-type", "x-tenant-id", "accept", "accept-language", "content-language"} <= permitted
     assert "*" not in permitted
@@ -147,7 +151,7 @@ def test_denied_preflight_does_not_grant_requested_combination(cors_app, origin,
     assert response.status_code == 400
     if origin != ALLOWED:
         assert "access-control-allow-origin" not in response.headers
-    if method not in {"GET", "POST"}:
+    if method not in {"GET", "POST", "PATCH"}:
         assert method not in response.headers.get("access-control-allow-methods", "")
     if headers == "X-Unapproved":
         assert headers.lower() not in response.headers.get("access-control-allow-headers", "").lower()

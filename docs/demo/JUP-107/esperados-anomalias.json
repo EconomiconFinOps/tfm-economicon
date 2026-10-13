@@ -1,0 +1,166 @@
+{
+  "version": 2,
+  "descripcion": "Valores esperados sobre el conjunto sintetico diario de scripts/synthetic_anomalies.py (un registro por servicio y dia del 1 al 21 de septiembre de 2026). Los periodos y reglas son los de la consulta de prueba de JUP-030; la seccion episodios es el resultado de una deteccion con la regla diaria de negocio (JUP-114) sobre un estado vacio. Una prueba recalcula todo con aritmetica exacta sin usar los servicios del backend. Datos sinteticos: no son facturas de Azure ni proceden del dataset publico.",
+  "tenant": "tenant-core",
+  "currency": "EUR",
+  "group_by": "service",
+  "rules": {
+    "absolute_threshold": "2000.00",
+    "deviation_threshold_percent": "50.00",
+    "min_absolute_increase": "100.00"
+  },
+  "periods": {
+    "baseline": {
+      "start": "2026-09-01",
+      "end": "2026-09-08"
+    },
+    "current": {
+      "start": "2026-09-08",
+      "end": "2026-09-15"
+    }
+  },
+  "groups": [
+    {
+      "service": "Compute",
+      "baseline_cost": "1000.00",
+      "current_cost": "2400.00",
+      "baseline_record_count": 7,
+      "current_record_count": 7,
+      "delta_amount": "1400.00",
+      "deviation_percent": "140.00",
+      "threshold_status": "triggered",
+      "deviation_status": "triggered",
+      "trigger_reasons": [
+        "absolute_threshold",
+        "period_increase"
+      ]
+    },
+    {
+      "service": "Analytics",
+      "baseline_cost": "2200.00",
+      "current_cost": "2300.00",
+      "baseline_record_count": 7,
+      "current_record_count": 7,
+      "delta_amount": "100.00",
+      "deviation_percent": "4.55",
+      "threshold_status": "triggered",
+      "deviation_status": "below",
+      "trigger_reasons": [
+        "absolute_threshold"
+      ]
+    },
+    {
+      "service": "Storage",
+      "baseline_cost": "800.00",
+      "current_cost": "820.00",
+      "baseline_record_count": 7,
+      "current_record_count": 7,
+      "delta_amount": "20.00",
+      "deviation_percent": "2.50",
+      "threshold_status": "below",
+      "deviation_status": "below",
+      "trigger_reasons": []
+    },
+    {
+      "service": "Database",
+      "baseline_cost": "1500.00",
+      "current_cost": "1200.00",
+      "baseline_record_count": 7,
+      "current_record_count": 7,
+      "delta_amount": "-300.00",
+      "deviation_percent": "-20.00",
+      "threshold_status": "below",
+      "deviation_status": "below",
+      "trigger_reasons": []
+    },
+    {
+      "service": "Tools",
+      "baseline_cost": "10.00",
+      "current_cost": "40.00",
+      "baseline_record_count": 7,
+      "current_record_count": 7,
+      "delta_amount": "30.00",
+      "deviation_percent": "300.00",
+      "threshold_status": "below",
+      "deviation_status": "below",
+      "trigger_reasons": []
+    },
+    {
+      "service": "Backup",
+      "baseline_cost": "0.00",
+      "current_cost": "300.00",
+      "baseline_record_count": 7,
+      "current_record_count": 7,
+      "delta_amount": "300.00",
+      "deviation_percent": null,
+      "threshold_status": "below",
+      "deviation_status": "baseline_nonpositive",
+      "trigger_reasons": []
+    },
+    {
+      "service": "Networking",
+      "baseline_cost": null,
+      "current_cost": "600.00",
+      "baseline_record_count": null,
+      "current_record_count": 1,
+      "delta_amount": null,
+      "deviation_percent": null,
+      "threshold_status": "below",
+      "deviation_status": "baseline_missing",
+      "trigger_reasons": []
+    }
+  ],
+  "alerts": [
+    "Analytics",
+    "Compute"
+  ],
+  "data_range": {
+    "first_day": "2026-09-01",
+    "last_day": "2026-09-21"
+  },
+  "detection": {
+    "last_evaluated_date": "2026-09-20",
+    "evaluated_from": "2026-09-08"
+  },
+  "episodes": [
+    {
+      "service": "Compute",
+      "start_date": "2026-09-09",
+      "last_seen_date": "2026-09-20",
+      "observation": "observed",
+      "no_longer_observed_on": null,
+      "reference_daily_cost": "142.86",
+      "accumulated_impact": "2807.71",
+      "impact_day_count": 12,
+      "severity": "P1"
+    },
+    {
+      "service": "Database",
+      "start_date": "2026-09-16",
+      "last_seen_date": "2026-09-20",
+      "observation": "observed",
+      "no_longer_observed_on": null,
+      "reference_daily_cost": "171.43",
+      "accumulated_impact": "642.86",
+      "impact_day_count": 5,
+      "severity": "P2"
+    },
+    {
+      "service": "Analytics",
+      "start_date": "2026-09-10",
+      "last_seen_date": "2026-09-10",
+      "observation": "no_longer_observed",
+      "no_longer_observed_on": "2026-09-14",
+      "reference_daily_cost": "311.14",
+      "accumulated_impact": "168.86",
+      "impact_day_count": 4,
+      "severity": "P3"
+    }
+  ],
+  "without_episode": {
+    "Storage": "estable",
+    "Tools": "la subida diaria no pasa de 100",
+    "Backup": "gasto nuevo desde una referencia cero",
+    "Networking": "servicio nuevo sin gasto previo"
+  }
+}

@@ -62,7 +62,8 @@ class AzureCostQuestionService:
         lines.append("Fuente: ingestas Azure completadas. La presencia de registros no garantiza cobertura completa del periodo ni datos actualizados.")
         lines.append(f"Evidencia: {evidence_id}.")
         return {"content": "\n".join(lines), "citations": [], "cost_evidence": {
-            "schema_version": "1.0", "id": evidence_id, "status": status,
+            "schema_version": "1.0", "adapter_version": "azure-cost-1.0",
+            "selected_groups": summary["groups"], "id": evidence_id, "status": status,
             "source": "azure_cost_records/completed", "data_environment": "simulated",
             "queried_at": datetime.now(timezone.utc).isoformat(), **evidence_payload,
         }}

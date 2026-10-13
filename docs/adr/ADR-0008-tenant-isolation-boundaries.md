@@ -205,3 +205,11 @@ Revision tecnica, QA, aprobacion humana post-QA y publicacion siguen pendientes;
 despues de reviewer. Esta sincronizacion no ejecuta tests ni nuevos validadores;
 la sesion principal validara el lote tras el handoff. No se registra ni se
 infiere una nueva aprobacion humana.
+
+## Reconciliación de estado — 01/10/2026
+
+La nota de 25/09 que denomina ADR-0009 Proposed es histórica: su estado vigente
+es [Accepted](ADR-0009-rabbitmq-publisher-lifecycle.md). La
+[PR #47](https://github.com/EconomiconFinOps/tfm-economicon/pull/47) se integró el
+28/09 y la [evidencia JUP-086](../evidence/JUP-086-validation.md) conserva las
+pruebas y límites. Esta nota no amplía las cuatro políticas de este ADR.

@@ -17,11 +17,14 @@ class MigrationRunner:
         migration_package: str,
         migrations_dir: Path,
         version_table: str,
+        *,
+        migration_kwargs: dict[str, dict[str, object]] | None = None,
     ):
         self.engine = engine
         self.migration_package = migration_package
         self.migrations_dir = migrations_dir
         self.version_table = version_table
+        self.migration_kwargs = migration_kwargs or {}
 
     def run(self) -> None:
         with _migration_lock:
@@ -50,7 +53,7 @@ class MigrationRunner:
                 with (self.engine.begin() if transactional else self.engine.connect()) as connection:
                     if not transactional:
                         connection = connection.execution_options(isolation_level="AUTOCOMMIT")
-                    module.upgrade(connection)
+                    module.upgrade(connection, **self.migration_kwargs.get(version, {}))
                     connection.execute(
                         text(f"INSERT INTO {self.version_table} (version) VALUES (:version)"),
                         {"version": version},

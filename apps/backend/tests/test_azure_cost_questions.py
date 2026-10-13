@@ -122,6 +122,13 @@ def test_real_cost_sql(cost_reference, api, group, value, subscription, totals, 
     assert evidence["provenance"]["ingestion_ids"] == ids
     assert evidence["provenance"]["observed_day_count"] == days
     assert (evidence["status"] == "no_data") == (not totals)
+    reopened = call(api, "GET", "/assistant/conversations/own", headers=headers())
+    assert reopened.status_code == 200, reopened.text
+    assert reopened.json()["messages"][-1]["metadata"]["cost_evidence"] == evidence
+    assert evidence["adapter_version"] == "azure-cost-1.0"
+    assert evidence["selected_groups"] == evidence["summary"]["groups"]
+    assert call(api, "GET", "/assistant/conversations/own", headers=headers("bob", "tenant-b")).status_code == 404
+
 
 @pytest.mark.parametrize("tenant_database", ["cockroach"], indirect=True)
 def test_filter_does_not_hide_overlap(cost_reference, api):
@@ -131,3 +138,57 @@ def test_filter_does_not_hide_overlap(cost_reference, api):
     response = call(api, "POST", PATH, headers=headers(), json={"content": "cost", "cost_query": SELECTION})
     assert response.status_code == 409, response.text
     api.spies["append_message"].assert_not_called()
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_rejects_two_cost_routes_without_effects(api):
+    response = call(api, "POST", PATH, headers=headers(), json={
+        "content": "cost", "cost_query": SELECTION,
+        "ownership_query": {"group_by": "project"},
+    })
+    assert response.status_code == 422
+    api.spies["fetch_billing_summary"].assert_not_called()
+    api.spies["append_message"].assert_not_called()
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_cost_and_document_evidence_remain_distinct_after_reload(api):
+    from test_tenant_isolation_api import citation_record
+    api.spies["fetch_billing_summary"].return_value = dataset()
+    cost = call(api, "POST", PATH, headers=headers(), json={"content": "Coste", "cost_query": SELECTION})
+    assert cost.status_code == 201, cost.text
+    cost_metadata = cost.json()["assistant_message"]["metadata"]
+    assert "source_citations" not in cost_metadata
+    api.embedding.embed.assert_not_called()
+    api.vector.search_chunks.assert_not_called()
+    api.vector.search_chunks.return_value = [citation_record()]
+    document = call(api, "POST", PATH, headers=headers(), json={"content": "Explica el coste"})
+    assert document.status_code == 201, document.text
+    document_metadata = document.json()["assistant_message"]["metadata"]
+    assert document_metadata["citations"] == ["chunk-1"]
+    assert document_metadata["source_citations"][0]["kind"] == "corpus"
+    assert document_metadata["source_citations"][0]["document_id"] == "doc-1"
+    assert "cost_evidence" not in document_metadata
+    history = call(api, "GET", "/assistant/conversations/own", headers=headers()).json()["messages"]
+    assert history[1]["metadata"] == cost_metadata
+    assert history[3]["metadata"] == document_metadata
+    api.embedding.embed.assert_called_once()
+    api.vector.search_chunks.assert_called_once()
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_cost_query_ignores_unavailable_document_provider_and_retrieval(api):
+    from app.services.embedding_provider import ProviderError
+    from app.core.metrics import retrieval_empty_total, retrieval_failures_total
+    before_empty = retrieval_empty_total._value.get()
+    before_failures = retrieval_failures_total.labels(category="transport")._value.get()
+    api.spies["fetch_billing_summary"].return_value = dataset()
+    api.embedding.embed.side_effect = ProviderError("transport")
+    api.vector.search_chunks.side_effect = RuntimeError("unavailable")
+    response = call(api, "POST", PATH, headers=headers(), json={"content": "Coste", "cost_query": SELECTION})
+    assert response.status_code == 201, response.text
+    assert response.json()["assistant_message"]["metadata"]["cost_evidence"]["summary"]["totals"] == summary()["totals"]
+    assert retrieval_empty_total._value.get() == before_empty
+    assert retrieval_failures_total.labels(category="transport")._value.get() == before_failures
+    api.embedding.embed.assert_not_called()
+    api.vector.search_chunks.assert_not_called()

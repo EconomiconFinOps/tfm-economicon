@@ -1,0 +1,399 @@
+"""JUP-114: daily reads and transactional detection runs on real CockroachDB."""
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date, timedelta
+from decimal import Decimal
+import threading
+
+import pytest
+from sqlalchemy import text
+
+from app.schemas.billing import AmbiguousCostSource
+from app.services.anomaly_episodes import DetectionConflict, EpisodeConflict, EpisodeNotFound, StatusChangeConflict
+from anomaly_episode_support import D, episode_rows, episode_store, insert_episode, load_series
+from billing_support import billing_schema, insert_cost, insert_run
+from tenant_isolation_support import tenant_cockroach_database
+
+
+TODAY = date(2026, 10, 12)
+SPIKE = ["400.00"] * 7 + ["550.00", "400.00"]
+
+
+def test_daily_read_keeps_only_completed_tenant_records_per_service_currency_and_day(episode_store):
+    db = episode_store
+    with db.engine.begin() as connection:
+        insert_run(connection, "run-a")
+        insert_run(connection, "foreign", tenant="tenant-b")
+        insert_run(connection, "running", status="running")
+        insert_cost(connection, "a1", day="2026-09-01", cost="10.004", service="Compute")
+        insert_cost(connection, "a2", day="2026-09-01", cost="0.002", service="Compute")
+        insert_cost(connection, "a3", day="2026-09-01", cost="5.00", service="compute")
+        insert_cost(connection, "a4", day="2026-09-01", cost="7.00", service=" ")
+        insert_cost(connection, "a5", day="2026-09-02", cost="-1.00", service="Compute", currency="USD")
+        insert_cost(connection, "undated", day=None, service="Compute")
+        insert_cost(connection, "outside", day="2026-09-03", service="Compute")
+        insert_cost(connection, "foreign", run="foreign", tenant="tenant-b", day="2026-09-01", service="Compute")
+        insert_cost(connection, "wrong-tenant", tenant="tenant-b", day="2026-09-01", service="Compute")
+        insert_cost(connection, "running", run="running", day="2026-09-01", service="Compute")
+    with db.engine.connect() as connection:
+        observed, daily = db.read_daily_service_costs(connection, "tenant-a", start_date=date(2026, 9, 1),
+                                                      end_date=date(2026, 9, 3))
+        earliest, latest = db.observed_cost_day_range(connection, "tenant-a")
+    assert observed == {date(2026, 9, 1), date(2026, 9, 2)}
+    assert daily == {
+        ("EUR", "Compute"): {date(2026, 9, 1): Decimal("10.006")},
+        ("EUR", "compute"): {date(2026, 9, 1): Decimal("5.00")},
+        ("EUR", None): {date(2026, 9, 1): Decimal("7.00")},
+        ("USD", "Compute"): {date(2026, 9, 2): Decimal("-1.00")},
+    }
+    assert (earliest, latest) == (date(2026, 9, 1), date(2026, 9, 3))
+
+
+def test_daily_read_rejects_overlapping_sources_inside_the_range_only(episode_store):
+    db = episode_store
+    with db.engine.begin() as connection:
+        insert_run(connection, "run-a")
+        insert_run(connection, "run-b")
+        insert_cost(connection, "a", day="2026-09-01", service="Compute")
+        insert_cost(connection, "b", run="run-b", day="2026-09-01", service="Compute")
+    with db.engine.connect() as connection:
+        with pytest.raises(AmbiguousCostSource):
+            db.read_daily_service_costs(connection, "tenant-a", start_date=date(2026, 9, 1), end_date=date(2026, 9, 2))
+        observed, _ = db.read_daily_service_costs(connection, "tenant-a", start_date=date(2026, 9, 2),
+                                                  end_date=date(2026, 9, 3))
+    assert observed == set()
+
+
+def test_run_opens_stores_and_repeats_as_up_to_date(episode_store):
+    db = episode_store
+    load_series(db, SPIKE)
+    first = db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert first["status"] == "completed"
+    assert first["opened"] == 1 and first["last_complete_day"] == D.isoformat()
+    assert first["evaluated_days"] == [D.isoformat()]
+    [row] = episode_rows(db)
+    assert (row["tenant_id"], row["currency"], row["service"], row["service_key"]) == ("tenant-a", "EUR", "Compute", '"Compute"')
+    assert (row["start_date"], row["last_seen_date"], row["status"], row["observation"]) == (D, D, "new", "observed")
+    assert (row["reference_week_cost"], row["impact_numerator"], row["severity"]) == (Decimal("2800.00"), Decimal("1050.00"), "P3")
+    assert row["rules_version"] == "jup019-daily-v1" and row["rules"]["tolerance_days"] == 3
+    second = db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert second["status"] == "up_to_date" and second["opened"] == 0
+    assert episode_rows(db) == [row]
+
+
+def test_run_continues_on_later_presses_and_stores_impact(episode_store):
+    db = episode_store
+    load_series(db, ["400.00"] * 7 + ["550.00", "650.00", "750.00", "400.00"])
+    with db.engine.begin() as connection:
+        connection.execute(text("DELETE FROM azure_cost_records WHERE usage_date > :day"), {"day": D + timedelta(days=1)})
+    db.run_anomaly_detection("tenant-a", today=TODAY)
+    load_series(db, [None, None, "750.00", "400.00"], start=D, prefix="later")
+    result = db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert result["continued"] == 1 and result["opened"] == 0
+    [row] = episode_rows(db)
+    assert row["impact_numerator"] == Decimal("5250.00") and row["impact_day_count"] == 3
+    assert row["severity"] == "P2" and row["last_seen_date"] == D + timedelta(days=2)
+
+
+def test_runs_are_tenant_scoped(episode_store):
+    db = episode_store
+    load_series(db, SPIKE)
+    load_series(db, ["400.00"] * 7 + ["9000.00", "400.00"], tenant="tenant-b", run="run-b-tenant")
+    db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert {row["tenant_id"] for row in episode_rows(db)} == {"tenant-a"}
+    db.run_anomaly_detection("tenant-b", today=TODAY)
+    a, b = episode_rows(db, "tenant-a"), episode_rows(db, "tenant-b")
+    assert len(a) == len(b) == 1 and a[0]["id"] != b[0]["id"]
+    assert b[0]["impact_numerator"] == Decimal("60200.00")
+    assert [item["id"] for item in db.fetch_anomaly_episodes("tenant-a", scope="all")] == [a[0]["id"]]
+    assert db.fetch_anomaly_episode("tenant-a", b[0]["id"]) is None
+
+
+def test_ambiguous_source_stores_nothing(episode_store):
+    db = episode_store
+    load_series(db, SPIKE)
+    load_series(db, [None] * 7 + ["1.00"], run="run-dup", prefix="dup")
+    with pytest.raises(AmbiguousCostSource):
+        db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert episode_rows(db) == []
+    with db.engine.connect() as connection:
+        assert connection.execute(text("SELECT count(*) FROM anomaly_detection_state")).scalar_one() == 0
+
+
+def test_insufficient_data_stores_nothing(episode_store):
+    db = episode_store
+    load_series(db, ["400.00", "9000.00", "400.00"], start=D)
+    result = db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert result["status"] == "insufficient_data"
+    assert episode_rows(db) == []
+    with db.engine.connect() as connection:
+        assert connection.execute(text("SELECT count(*) FROM anomaly_detection_state")).scalar_one() == 0
+
+
+def test_concurrent_runs_store_a_single_run(episode_store):
+    db = episode_store
+    load_series(db, SPIKE)
+    barrier = threading.Barrier(2)
+    original = db.read_daily_service_costs
+
+    def slow_read(*args, **kwargs):
+        result = original(*args, **kwargs)
+        barrier.wait(timeout=20)
+        return result
+
+    db.read_daily_service_costs = slow_read
+    try:
+        def press():
+            try:
+                return db.run_anomaly_detection("tenant-a", today=TODAY)["status"]
+            except DetectionConflict:
+                return "conflict"
+
+        with ThreadPoolExecutor(2) as pool:
+            outcomes = sorted(pool.map(lambda _: press(), range(2)))
+    finally:
+        del db.read_daily_service_costs
+    assert outcomes.count("completed") == 1 and outcomes.count("conflict") == 1
+    assert len(episode_rows(db)) == 1
+
+
+def test_status_change_records_traceability_and_rejects_invalid_steps(episode_store):
+    db = episode_store
+    load_series(db, SPIKE)
+    db.run_anomaly_detection("tenant-a", today=TODAY)
+    [row] = episode_rows(db)
+    investigating = db.change_anomaly_episode_status("tenant-a", row["id"], status="investigating", reason=None, actor="alice")
+    assert investigating["status"] == "investigating" and investigating["status_changed_by"] == "alice"
+    with pytest.raises(EpisodeConflict):
+        db.change_anomaly_episode_status("tenant-a", row["id"], status="new", reason=None, actor="alice")
+    resolved = db.change_anomaly_episode_status("tenant-a", row["id"], status="resolved", reason="Escalado revertido", actor="bob")
+    [stored] = episode_rows(db)
+    assert stored["status_changed_by"] == "bob" and stored["closure_reason"] == "Escalado revertido"
+    assert stored["first_reviewed_at"] == investigating["first_reviewed_at"] < stored["closed_at"]
+    assert stored["first_reviewed_by"] == "alice" and resolved["first_reviewed_by"] == "alice"
+    assert resolved["closed_at"] == stored["closed_at"]
+    for target in ("false_positive", "investigating"):
+        with pytest.raises(EpisodeConflict):
+            db.change_anomaly_episode_status("tenant-a", row["id"], status=target, reason="x", actor="alice")
+
+
+def test_status_change_never_reaches_another_tenant(episode_store):
+    db = episode_store
+    load_series(db, SPIKE, tenant="tenant-b", run="run-b-tenant")
+    db.run_anomaly_detection("tenant-b", today=TODAY)
+    [row] = episode_rows(db)
+    for identifier in (row["id"], "anomaly-" + "0" * 64):
+        with pytest.raises(EpisodeNotFound):
+            db.change_anomaly_episode_status("tenant-a", identifier, status="investigating", reason=None, actor="alice")
+    assert episode_rows(db) == [row]
+
+
+def test_serialization_failure_on_status_change_is_a_concurrency_conflict(episode_store, monkeypatch):
+    from sqlalchemy import exc
+
+    from app.services.anomaly_episodes import StatusChangeConflict
+
+    class Retry(Exception):
+        sqlstate = "40001"
+
+    db = episode_store
+    load_series(db, SPIKE)
+    db.run_anomaly_detection("tenant-a", today=TODAY)
+    [row] = episode_rows(db)
+
+    def fail(*args, **kwargs):
+        raise exc.OperationalError("UPDATE", {}, Retry())
+
+    monkeypatch.setattr(db, "_anomaly_episode_rows", fail)
+    with pytest.raises(StatusChangeConflict):
+        db.change_anomaly_episode_status("tenant-a", row["id"], status="investigating", reason=None, actor="alice")
+
+
+def test_concurrent_status_changes_have_exactly_one_winner(episode_store):
+    db = episode_store
+    load_series(db, SPIKE)
+    db.run_anomaly_detection("tenant-a", today=TODAY)
+    [row] = episode_rows(db)
+    barrier = threading.Barrier(2)
+
+    def close(target):
+        barrier.wait(timeout=20)
+        try:
+            db.change_anomaly_episode_status("tenant-a", row["id"], status=target, reason="motivo", actor=target)
+            return "ok"
+        except (EpisodeConflict, StatusChangeConflict):
+            return "conflict"
+
+    with ThreadPoolExecutor(2) as pool:
+        outcomes = sorted(pool.map(close, ["resolved", "false_positive"]))
+    assert outcomes == ["conflict", "ok"]
+    [stored] = episode_rows(db)
+    assert stored["status"] == stored["status_changed_by"]
+
+
+def test_return_after_end_links_to_the_previous_episode_through_sql(episode_store):
+    db = episode_store
+    load_series(db, ["400.00"] * 7 + ["550.00"] + ["400.00"] * 5)
+    load_series(db, ["400.00"] * 7 + ["550.00", "400.00"], service="Storage")
+    first = db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert first["opened"] == 2 and first["no_longer_observed"] == 2
+    [old_compute] = [row for row in episode_rows(db) if row["service"] == "Compute"]
+    db.change_anomaly_episode_status("tenant-a", old_compute["id"], status="resolved", reason="ok", actor="alice")
+    load_series(db, ["400.00"] * 6 + ["560.00", "400.00"], start=D + timedelta(days=6), prefix="later")
+    second = db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert second["opened"] == 1
+    compute = sorted((row for row in episode_rows(db) if row["service"] == "Compute"), key=lambda row: row["start_date"])
+    assert [row["start_date"] for row in compute] == [D, D + timedelta(days=12)]
+    assert compute[1]["previous_episode_id"] == compute[0]["id"]
+    assert len(episode_rows(db)) == 3
+    open_ids = {row["id"] for row in db.fetch_anomaly_episodes("tenant-a", scope="open")}
+    assert compute[1]["id"] in open_ids and compute[0]["id"] not in open_ids
+
+
+def test_new_episode_links_to_the_latest_own_previous_episode(episode_store):
+    db = episode_store
+    insert_episode(db, "old-first", start=D - timedelta(days=30))
+    insert_episode(db, "old-latest", start=D - timedelta(days=20), status="false_positive")
+    insert_episode(db, "foreign-later", tenant="tenant-b", start=D - timedelta(days=10), observation="no_longer_observed",
+                   status="new")
+    load_series(db, SPIKE)
+    assert db.run_anomaly_detection("tenant-a", today=TODAY)["opened"] == 1
+    [new] = [row for row in episode_rows(db, "tenant-a") if row["start_date"] == D]
+    assert new["previous_episode_id"] == "old-latest"
+    assert {row["id"] for row in episode_rows(db, "tenant-b")} == {"foreign-later"}
+
+
+def test_first_run_reaches_spikes_older_than_a_week(episode_store):
+    db = episode_store
+    load_series(db, ["400.00"] * 7 + ["550.00"] + ["400.00"] * 20)
+    result = db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert result["last_complete_day"] == (D + timedelta(days=19)).isoformat()
+    assert result["evaluated_days"][0] == D.isoformat() and len(result["evaluated_days"]) == 20
+    assert "unevaluated_range" not in result
+    [row] = episode_rows(db)
+    assert (row["start_date"], row["observation"]) == (D, "no_longer_observed")
+
+
+def mark_run(db, run, tenant="tenant-a", synthetic=True, status="completed"):
+    from datetime import datetime, timezone
+
+    with db.engine.begin() as connection:
+        connection.execute(text(
+            "INSERT INTO azure_cost_ingestion_runs (id, tenant_id, subscription_id, request, status, started_at) "
+            "VALUES (:id, :tenant, 'sub-x', CAST(:request AS JSONB), :status, :now)"
+        ), {"id": run, "tenant": tenant, "request": '{"synthetic": true}' if synthetic else "{}",
+            "status": status, "now": datetime.now(timezone.utc)})
+
+
+def test_list_overview_before_any_detection(episode_store):
+    db = episode_store
+    mark_run(db, "synthetic-run")
+    overview = db.fetch_anomaly_episode_list("tenant-a", scope="all")
+    assert overview == {"episodes": [], "last_evaluated_date": None, "includes_synthetic_data": True,
+                        "open_impact_by_currency": []}
+
+
+@pytest.mark.parametrize("runs,expected", [
+    ([("plain", "tenant-a", False, "completed")], False),
+    ([("plain", "tenant-a", False, "completed"), ("synthetic", "tenant-a", True, "completed")], True),
+    ([("synthetic-other", "tenant-b", True, "completed")], False),
+    ([("synthetic-running", "tenant-a", True, "running")], False),
+    ([], False),
+])
+def test_synthetic_indicator_is_tenant_scoped_and_needs_a_completed_marked_run(episode_store, runs, expected):
+    db = episode_store
+    for run, tenant, synthetic, status in runs:
+        mark_run(db, run, tenant=tenant, synthetic=synthetic, status=status)
+    assert db.fetch_anomaly_episode_list("tenant-a", scope="open")["includes_synthetic_data"] is expected
+
+
+@pytest.mark.parametrize("scope", ["open", "all"])
+def test_open_totals_are_exact_per_currency_and_ignore_closed_and_foreign(episode_store, scope):
+    db = episode_store
+    for n in range(3):
+        insert_episode(db, f"eur-{n}", start=D + timedelta(days=n), status="new", impact_numerator="1",
+                       service=f"S{n}")
+    insert_episode(db, "usd", start=D, status="investigating", currency="USD", impact_numerator="7000")
+    insert_episode(db, "closed", start=D, status="resolved", service="Old", impact_numerator="70000")
+    insert_episode(db, "foreign", tenant="tenant-b", start=D, status="new", impact_numerator="70000")
+    overview = db.fetch_anomaly_episode_list("tenant-a", scope=scope)
+    # Three impacts of 1/7 are shown as 0.14 each, but their exact sum 3/7 rounds to 0.43.
+    assert overview["open_impact_by_currency"] == [{"currency": "EUR", "amount": "0.43"},
+                                                   {"currency": "USD", "amount": "1000.00"}]
+    assert {item["id"] for item in overview["episodes"]} >= {"eur-0", "eur-1", "eur-2", "usd"}
+    assert "foreign" not in {item["id"] for item in overview["episodes"]}
+
+
+def test_list_overview_after_detection_reports_the_last_evaluated_day(episode_store):
+    db = episode_store
+    load_series(db, SPIKE)
+    db.run_anomaly_detection("tenant-a", today=TODAY)
+    overview = db.fetch_anomaly_episode_list("tenant-a", scope="open")
+    assert overview["last_evaluated_date"] == D
+    assert overview["includes_synthetic_data"] is False
+    assert overview["open_impact_by_currency"] == [{"currency": "EUR", "amount": "150.00"}]
+
+
+def test_equal_severity_and_impact_list_the_most_recent_start_first_then_by_id(episode_store):
+    db = episode_store
+    insert_episode(db, "old", start=D, status="new", service="Old")
+    insert_episode(db, "b-recent", start=D + timedelta(days=3), status="new", service="B")
+    insert_episode(db, "a-recent", start=D + timedelta(days=3), status="new", service="A")
+    listed = [item["id"] for item in db.fetch_anomaly_episode_list("tenant-a", scope="open")["episodes"]]
+    assert listed == ["a-recent", "b-recent", "old"]
+
+
+@pytest.mark.parametrize("sqlstate,conflict", [("40001", True), ("08006", False)])
+def test_detection_turns_only_serialization_failures_into_a_conflict(episode_store, monkeypatch, sqlstate, conflict):
+    from sqlalchemy import exc
+
+    class Failure(Exception):
+        pass
+
+    Failure.sqlstate = sqlstate
+    db = episode_store
+    load_series(db, SPIKE)
+
+    def fail(*args, **kwargs):
+        raise exc.OperationalError("SELECT 1", {}, Failure())
+
+    monkeypatch.setattr(db, "observed_cost_day_range", fail)
+    with pytest.raises(DetectionConflict if conflict else exc.OperationalError) as caught:
+        db.run_anomaly_detection("tenant-a", today=TODAY)
+    assert isinstance(caught.value, DetectionConflict) is conflict
+    assert episode_rows(db) == []
+
+
+def test_list_read_retries_a_cockroach_retry_error_and_gives_up_after_three(episode_store, monkeypatch):
+    from sqlalchemy import exc
+
+    class Retry(Exception):
+        sqlstate = "40001"
+
+    db = episode_store
+    original = db._anomaly_episode_rows
+    calls = {"count": 0}
+
+    def flaky(*args, **kwargs):
+        calls["count"] += 1
+        if calls["count"] <= 2:
+            raise exc.OperationalError("SELECT 1", {}, Retry())
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(db, "_anomaly_episode_rows", flaky)
+    assert db.fetch_anomaly_episode_list("tenant-a")["episodes"] == []
+    assert calls["count"] == 3
+
+    calls["count"] = -100
+    with pytest.raises(exc.OperationalError):
+        db.fetch_anomaly_episode_list("tenant-a")
+    assert calls["count"] == -97
+
+    class Other(Exception):
+        sqlstate = "08006"
+
+    def broken(*args, **kwargs):
+        raise exc.OperationalError("SELECT 1", {}, Other())
+
+    monkeypatch.setattr(db, "_anomaly_episode_rows", broken)
+    with pytest.raises(exc.OperationalError):
+        db.fetch_anomaly_episode_list("tenant-a")

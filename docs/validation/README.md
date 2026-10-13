@@ -1,5 +1,8 @@
 # Batería de preguntas FinOps — JUP-069
 
+Para medir tiempo ahorrado, cobertura de gasto asignado y ahorro potencial,
+consultar el [instrumento funcional JUP-068](JUP-068-business-metrics.md).
+
 [Tarjeta](https://trello.com/c/Qi5uwxgW) · [Preguntas y respuestas esperadas](JUP-069-questions.json) · [Evidencia técnica](../evidence/JUP-069-validation.md)
 
 La batería contiene **28 consultas representativas en español**, redactadas para
@@ -79,7 +82,7 @@ no contiene rúbrica, comportamiento esperado ni clave de respuestas.
    del sistema funcionando es `fail`. No omitir silenciosamente ninguno.
 8. Para comparar ejecuciones, mantener las mismas entradas/configuración y
    registrar las repeticiones; un LLM puede variar incluso con temperatura cero.
-   JUP-070 decide la metodología y los umbrales de aceptación del sistema.
+   JUP-070 decide la metodología y los umbrales de aceptación del sistema; están en [JUP-070-evaluation.md](JUP-070-evaluation.md).
 
 Plantilla de registro (una fila por ID en cada ejecución):
 
@@ -104,3 +107,11 @@ JUP-069 entrega el instrumento de prueba y su preparación determinista. La
 evaluación de respuestas frente a referencia corresponde a JUP-070; la ejecución
 de robustez, a JUP-071. No se implementan scoring con LLM, llamadas al chat,
 benchmarks de latencia, nuevas reglas de negocio ni integración con Azure real.
+
+## Métricas de las ejecuciones (JUP-067)
+
+Cómo se calculan la exactitud, la relevancia, el fundamento, la latencia, la robustez y la disponibilidad de una ejecución sobre esta batería está definido en [JUP-067-metrics.md](JUP-067-metrics.md), con el catálogo [JUP-067-metrics-catalogue.json](JUP-067-metrics-catalogue.json) y el calculador `tools/assistant-metrics.py`. Los resultados de JUP-070 y JUP-071 deben usar ese formato para que las cifras sean comparables.
+
+## Evaluación de las respuestas (JUP-070)
+
+Cómo se decide si una respuesta cumple la rúbrica de esta batería, qué decide una regla y qué una persona, cómo se ejecuta y con qué umbrales se acepta está en [JUP-070-evaluation.md](JUP-070-evaluation.md); la herramienta es [`tools/assistant-eval.py`](../../tools/assistant-eval.py) y sus reglas, [JUP-070-evaluation-rules.json](JUP-070-evaluation-rules.json).

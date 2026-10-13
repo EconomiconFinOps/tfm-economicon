@@ -1,3 +1,8 @@
+> **Nota JUP-105, 10/10/2026:** este registro conserva la evidencia histórica.
+> Desde JUP-026 y JUP-055, `/` también consume costes almacenados. La afirmación
+> inferior de que `/overview-legacy` es la única ruta con datos reales está
+> superada; el recuento vigente está en [Rutas del frontend](../../../../apps/frontend/README.md#rutas).
+
 > Cada grupo termina en un punto parable: la aplicación arranca y la batería pasa. Al cerrar cada
 > grupo se propone commit antes de empezar el siguiente. Ciclo Red/Green con Vitest en los grupos que
 > tocan código de producto (2, 3, 4). Sin `any` nuevo ni `@ts-ignore` (ADR-0003).

@@ -9,6 +9,7 @@ import { parse } from "yaml";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const compose = parse(fs.readFileSync(path.join(root, "docker-compose.yml"), "utf8"));
+const gatewayCompose = parse(fs.readFileSync(path.join(root, "infra/litellm/docker-compose.yml"), "utf8"));
 
 const applicationServices = ["azure-cost-api", "backend", "processor", "frontend"];
 const infrastructureServices = ["cockroachdb", "rabbitmq", "postgres-pgvector"];
@@ -196,6 +197,16 @@ for (const [service, field, variable] of [
   });
 }
 
+test("JUP-022 backend reads its own virtual key, never the processor key or upstream credentials", () => {
+  const environment = compose.services.backend.environment;
+  assert.equal(environment.LITELLM_API_KEY, "${BACKEND_LITELLM_API_KEY:-}");
+  assert.notEqual(environment.LITELLM_API_KEY, compose.services.processor.environment.LITELLM_API_KEY);
+  assert.equal(environment.EMBEDDING_PROVIDER, "${EMBEDDING_PROVIDER:-mock}");
+  assert.equal(environment.RETRIEVAL_TOP_K, "${RETRIEVAL_TOP_K:-4}");
+  const example = fs.readFileSync(path.join(root, ".env.example"), "utf8");
+  assert.match(example, /^BACKEND_LITELLM_API_KEY=\s*$/m);
+});
+
 test("JUP-053 mock providers do not require a gateway key or receive upstream credentials", () => {
   const environment = compose.services.processor.environment;
   assert.equal(environment.LITELLM_API_KEY, "${LITELLM_API_KEY:-}");
@@ -205,6 +216,48 @@ test("JUP-053 mock providers do not require a gateway key or receive upstream cr
       assert.equal(compose.services[name].build.args?.[field], undefined);
     }
   }
+});
+
+test("JUP-108 includes the pinned gateway only in the optional ai profile", () => {
+  assert.deepEqual(compose.include, ["./infra/litellm/docker-compose.yml"]);
+  for (const name of ["litellm", "litellm-db"]) {
+    const service = gatewayCompose.services[name];
+    assert.deepEqual(service.profiles, ["ai"], name);
+    assert.match(service.image, /@sha256:[a-f0-9]{64}$/);
+    assert.ok(service.healthcheck, `${name} must have a healthcheck`);
+  }
+  assert.deepEqual(gatewayCompose.services["litellm-db"].volumes, ["gateway-data:/var/lib/postgresql/data"]);
+  assert.equal(gatewayCompose.services["litellm-db"].ports, undefined);
+  assert.ok(gatewayCompose.services.litellm.ports.every((port) => String(port).startsWith("127.0.0.1:")));
+  assert.deepEqual(Object.keys(gatewayCompose.volumes), ["gateway-data"]);
+});
+
+test("JUP-108 lets mock consumers start without a gateway and gates real startup on health", () => {
+  for (const name of ["backend", "processor"]) {
+    assert.equal(compose.services[name].depends_on.litellm, undefined);
+    const ai = parse(fs.readFileSync(path.join(root, "infra/litellm/compose.ai.yml"), "utf8"));
+    assert.deepEqual(ai.services[name].depends_on.litellm, {
+      condition: "service_healthy",
+      required: true,
+    });
+  }
+  assert.equal(compose.services.backend.environment.LITELLM_API_KEY, "${BACKEND_LITELLM_API_KEY:-}");
+  assert.equal(compose.services.processor.environment.LITELLM_API_KEY, "${LITELLM_API_KEY:-}");
+});
+
+test("JUP-108 never requires gateway secrets while parsing the mock profile", () => {
+  const gateway = gatewayCompose.services.litellm.environment;
+  const guard = gatewayCompose.services.litellm.entrypoint[2];
+  for (const name of ["OPENROUTER_API_KEY", "LITELLM_MASTER_KEY", "LITELLM_DATABASE_PASSWORD"]) {
+    assert.match(guard, new RegExp(`\\$\\$\\{${name}:\\?`), `${name} must fail closed at runtime`);
+  }
+  assert.equal(gateway.OPENROUTER_API_KEY, "${OPENROUTER_API_KEY:-}");
+  assert.equal(gateway.LITELLM_MASTER_KEY, "${LITELLM_MASTER_KEY:-}");
+  assert.match(gateway.DATABASE_URL, /\$\{LITELLM_DATABASE_PASSWORD:-\}/);
+  assert.equal(gatewayCompose.services["litellm-db"].environment.POSTGRES_PASSWORD,
+    "${LITELLM_DATABASE_PASSWORD:-}");
+  assert.ok(gatewayCompose.services.litellm.networks.includes("default"));
+  assert.deepEqual(gatewayCompose.services["litellm-db"].networks, ["gateway"]);
 });
 
 for (const serviceName of applicationServices) {
@@ -229,7 +282,7 @@ test("JUP-053 credential examples leave real secret fields empty", () => {
     .map((line) => { const split = line.indexOf("="); return [line.slice(0, split), line.slice(split + 1).trim()]; }));
   for (const field of ["AUTH_SECRET_KEY", "DATABASE_URL", "RABBITMQ_URL", "VECTOR_DATABASE_URL",
     "POSTGRES_PASSWORD", "RABBITMQ_DEFAULT_PASS", "RABBITMQ_ERLANG_COOKIE", "DEMO_PASSWORD", "GRAFANA_ADMIN_PASSWORD",
-    "OPENROUTER_API_KEY", "LITELLM_MASTER_KEY"]) {
+    "OPENROUTER_API_KEY", "LITELLM_MASTER_KEY", "LITELLM_DATABASE_PASSWORD"]) {
     assert.ok(fields.has(field), `Missing inventory field: ${field}`);
     assert.ok(["", '""', "''"].includes(fields.get(field)), `Example field must be empty: ${field}`);
   }

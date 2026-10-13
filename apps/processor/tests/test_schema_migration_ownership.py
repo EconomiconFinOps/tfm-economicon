@@ -25,7 +25,8 @@ JOBS_COLUMNS = {
     "id", "tenant_id", "created_by", "source", "artifact_uri",
     "payload", "status", "result", "created_at", "updated_at",
 }
-BACKEND_TABLES = {"tenants", "users", "user_tenants", "jobs", "conversations", "messages"}
+BACKEND_TABLES = {"tenants", "users", "user_tenants", "jobs", "conversations", "messages",
+                  "anomaly_episodes", "anomaly_detection_state"}
 PROCESSOR_TABLES = {"azure_cost_ingestion_runs", "azure_cost_records"}
 VERSION_TABLES = {"backend": "schema_migrations", "processor": "processor_schema_migrations"}
 LEGACY_PROCESSOR_JOBS_DDL = """

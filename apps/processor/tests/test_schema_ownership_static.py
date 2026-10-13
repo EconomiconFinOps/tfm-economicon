@@ -6,7 +6,8 @@ import pytest
 
 APPS = Path(__file__).resolve().parents[2]
 OWNED_TABLES = {
-    "backend": {"tenants", "users", "user_tenants", "jobs", "conversations", "messages"},
+    "backend": {"tenants", "users", "user_tenants", "jobs", "conversations", "messages",
+                "anomaly_episodes", "anomaly_detection_state"},
     "processor": {"azure_cost_ingestion_runs", "azure_cost_records"},
 }
 NO_DDL_MIGRATIONS = {("processor", "001")}
