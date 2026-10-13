@@ -80,7 +80,7 @@ Después, por la interfaz: entrar en `http://localhost:5173` con la cuenta de de
 
 ## 4. Hacer la demo
 
-Seguir [guion.md](guion.md). Si hay que repetirla, recargar la página y volver a poner el periodo; no hace falta tocar los datos. Retroceder la fecha de referencia oculta los episodios posteriores a ella; para repetir D12 desde cero se retiran y se vuelven a cargar los datos.
+Seguir [guion.md](guion.md). Si hay que repetirla, recargar la página y volver a poner el periodo; no hace falta tocar los datos. Retroceder la fecha de referencia oculta los episodios posteriores a ella; si se retrocede la fecha, las conversaciones del asistente ya guardadas siguen mostrando sus respuestas anteriores, así que se empieza una conversación nueva; para repetir D12 desde cero se retiran y se vuelven a cargar los datos.
 
 ## 5. Volver al estado inicial
 

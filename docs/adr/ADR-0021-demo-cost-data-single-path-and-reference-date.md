@@ -29,6 +29,7 @@ Un sondeo del 2026-10-13 con CockroachDB real (nodo desechable, API y CLI locale
 - Tres pantallas muestran lo ausente con los datos de demo: la cobertura de etiquetas («Cumple: 0,00 %»: la política exige las cinco etiquetas y un registro incompleto no cumple), los responsables por centro de coste, propietario o aplicación («datos insuficientes») y el desglose por grupo de recursos (todo «Sin dimensión», por suscripción). Es una limitación de la demo y de la API, no del producto.
 - Los datos posteriores a la referencia existen en la base aunque no se lean: no es un control de acceso.
 - Retroceder la fecha oculta episodios; para repetir la demo desde cero se usa `remove` y `apply`.
+- Las respuestas del asistente ya guardadas en una conversación no se filtran al retroceder la fecha: se muestran como se guardaron. Solo ocurre al retroceder la fecha a mano, algo propio de una demo; el requisito pasa a JUP-035 (RF-119-012).
 - La carga completa es rápida: unos 15 s de ingesta más el arranque de cada una de las siete llamadas a la CLI. Medido en Docker Desktop sobre Windows; en otro entorno puede variar.
 
 ## Alternatives Considered

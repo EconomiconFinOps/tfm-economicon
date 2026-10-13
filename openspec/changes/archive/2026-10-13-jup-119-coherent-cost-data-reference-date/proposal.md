@@ -20,7 +20,7 @@ Además, el «hoy» está repartido por el backend y el frontend (`datetime.now(
 
 - **Carga opt-in.** El `docker compose up` normal no carga datos. Un perfil `demo` de Compose levanta una segunda instancia de la API simulada con el CSV de demo y un servicio de un solo uso, con la imagen del processor, que ejecuta `demo_data.py apply` (idempotente, se niega en producción); la API principal no cambia. El CSV generado y su manifiesto se versionan y una prueba comprueba que se regeneran idénticos.
 
-Fuera de alcance: el servicio de carga diaria, la ejecución periódica de la detección y los avisos (JUP-115), cambiar la fecha desde la interfaz, datos reales de Azure y conversión de moneda.
+Fuera de alcance: filtrar por la fecha de referencia las respuestas del asistente ya guardadas en una conversación (RF-119-012), el servicio de carga diaria, la ejecución periódica de la detección y los avisos (JUP-115), cambiar la fecha desde la interfaz, datos reales de Azure y conversión de moneda.
 
 ## Capabilities
 

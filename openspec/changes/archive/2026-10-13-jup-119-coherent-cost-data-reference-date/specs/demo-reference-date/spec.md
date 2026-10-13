@@ -121,7 +121,7 @@ The backend SHALL expose the reference date to the authenticated frontend as `{ 
 
 ### Requirement: The assistant answers only about visible days
 
-The cost answers of the assistant that read stored costs (the ownership question and any tool of the finops contract that reads billing) SHALL use the reference date for their default period and SHALL include in the answer the period and the reference date they used. An answer SHALL NOT quote an amount, a day or an anomaly later than the reference date, and the retrieval corpus SHALL be unchanged by this requirement.
+The cost answers of the assistant that read stored costs (the ownership question and any tool of the finops contract that reads billing) SHALL use the reference date for their default period and SHALL include in the answer the period and the reference date they used. An answer SHALL NOT quote an amount, a day or an anomaly later than the reference date, and the retrieval corpus SHALL be unchanged by this requirement. The requirement applies to answers generated while the reference date is in force; answers already stored in a conversation are shown as they were saved and are not filtered when the reference date moves backward (finding RF-119-012).
 
 #### Scenario: Ownership answer at an early date
 - **WHEN** the reference date is 2026-09-21 and the ownership question runs without a period
