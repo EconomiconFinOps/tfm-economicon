@@ -826,3 +826,47 @@ rechaza cualquier valor que no sea exactamente una de las tres cadenas conocidas
 **Lo que esta mutación no demuestra.** Stryker no mide el componente (ver arriba): su cobertura sale del arnés
 manual (32 mutantes dirigidos, no un barrido). No hay prueba en navegador real todavía (grupo 8). El DoD del
 frontend y el veredicto de QA del grupo siguen pendientes.
+
+## Grupo 5 — Definition of Done y veredicto de QA
+
+**DoD** (2026-10-13, sobre `531003d3`; máquina calmada: 3 GB de RAM libres, 9 % de CPU y ningún `node` ajeno
+en marcha, porque la suite completa del frontend es intermitente en esta máquina con otra carga):
+
+| Control | Resultado |
+| --- | --- |
+| Suite completa del frontend (`vitest run`, Windows) | **71 archivos, 1151 pruebas pasan, 0 fallos** (82 s), en la primera ejecución |
+| `corepack pnpm --filter @finops/frontend lint` | código 0 (comprobado con el código de salida real) |
+| `corepack pnpm --filter @finops/frontend typecheck` | código 0 |
+| `corepack pnpm --filter @finops/frontend build` | código 0 |
+| Escaneo de secretos | 1489 líneas añadidas desde `d0bd0e38`, 0 hallazgos |
+| Pruebas anteriores al grupo | Ninguna modificada (`AnswerEvidence.test.tsx`, `CostEvidence.test.tsx`… intactas) |
+
+No se ejecutó la regresión del backend: el grupo no toca el backend. No hizo falta un control sobre `develop`
+porque no hubo ningún fallo que atribuir.
+
+**Veredicto del agente `qa`: `accept`.** Reejecutó las 282 pruebas de los siete archivos relacionados
+(`282 passed`) y comprobó: la corrección de lint de las pruebas del Red fue solo de tipos (normalizó las tres
+contra el Green y quedan idénticas salvo el alias `Mut` y sus comentarios; recuentos de `it(` y `expect(`
+27/67, 20/56 y 8/26); no hay `skip`, `only`, `todo` ni `xit`; `isAnomalyEvidence` es la frontera de confianza
+y `AnomalyEvidence.tsx` no lee ninguna cifra antes de validarla; la coherencia interna es razonable y no
+rechaza evidencia legítima; el servicio y las limitaciones van como texto de React; el componente no tiene
+`Number(`, `parseFloat`, `toFixed` ni aritmética; `contracts.ts` solo inserta líneas y `AnswerEvidence.tsx`
+añade un import y una rama, sin cambiar citas ni `cost_evidence`. No reejecutó la suite completa ni el build:
+usó las cifras de arriba.
+
+**Observaciones del QA, aceptadas:**
+
+1. Grupos 6 y 7: el frontend debe validar `anomaly-` + 64 hex en minúscula antes de enviar y dar un mensaje
+   propio, porque el backend responde un 422 genérico.
+2. Grupos 6 y 7: los 404 y 409 de la explicación llevan `detail` como objeto `{code}` y el 404 de conversación
+   como cadena; el cliente debe tratar ambas formas.
+3. `AnswerEvidence` ya pinta la evidencia, pero la entrada para pedirla (modo «Explicar una anomalía»,
+   `?episode=`, enlace del panel) aún no existe; una prueba de integración de extremo a extremo en el grupo 6
+   cubrirá ese hueco.
+4. **Deuda de herramienta:** Stryker no ejecuta las pruebas de `AnomalyEvidence.test.tsx` por el import con ruta
+   en variable y `/* @vite-ignore */` (registrada en el apartado de mutación del grupo 5).
+5. El texto «Candidata: causa no establecida.» está fijo en el componente aunque el validador exige
+   `cause_status === "not_established"`; es coherente y hay que mantenerlo alineado si el contrato cambia.
+
+**Estado del grupo 5:** tareas 5.1 a 5.4 hechas; mutación con un único equivalente justificado y una deuda de
+herramienta documentada; DoD en verde y QA en `accept`.

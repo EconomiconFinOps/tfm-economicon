@@ -64,7 +64,16 @@ Cálculo del ejemplo del contrato (tarea 1.2): script independiente del backend,
 - Revisión del agente `qa`: `accept`.
 - **Las 9 pruebas de CockroachDB no corren en CI** (`RF-096-004`): solo existe la evidencia de la ejecución local contra un nodo desechable.
 
-Aún no se ha ejecutado nada contra el frontend ni con el stack completo de Compose: eso llega con los grupos 5 a 8.
+**Grupo 5 — evidencia de la explicación en el frontend** (commits `f678ee09`, `d31639de` y `531003d3`, 2026-10-12 y 2026-10-13):
+
+- `isAnomalyEvidence` (validador estricto con coherencia interna y frontera de confianza sobre los metadatos del mensaje), el componente `AnomalyEvidence` y su rama en `AnswerEvidence`. Producto: 70 líneas añadidas en `contracts.ts`, un componente nuevo de 52 líneas y +4/−1 en `AnswerEvidence.tsx`. El componente no calcula nada: muestra las cadenas de la evidencia, operandos de 12 decimales incluidos.
+- 271 pruebas nuevas (261 del Red y 10 de remediación de mutantes). El Red las dejó en `257 failed | 4 passed`.
+- Suite completa del frontend: 71 archivos, 1151 pruebas pasan, 0 fallos; lint, typecheck y build con código 0; escaneo de secretos sin hallazgos.
+- Mutación: Stryker sobre el validador y la rama de `AnswerEvidence` (212 mutantes, 211 muertos, 1 equivalente justificado) y 32 mutantes manuales sobre el componente (32 muertos), porque Stryker no ejecuta sus pruebas. Es una muestra dirigida, no un barrido.
+- Incidente de proceso: el lint falló en las pruebas del Red (49 errores, tipos `any` y un literal); se corrigió con una excepción puntual al candado de pruebas, autorizada por Victor y verificada (solo cambiaron tipos). El Red incluirá desde ahora lint y typecheck.
+- Revisión del agente `qa`: `accept`.
+
+Aún no se ha ejecutado nada en un navegador real ni con el stack completo de Compose, y todavía no existe en el frontend la entrada para pedir la explicación: eso llega con los grupos 6 a 8.
 
 Nada más se ha ejecutado. Los resultados de pruebas, mutación, DoD y stack real de los demás grupos se añaden aquí al completarlos.
 
