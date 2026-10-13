@@ -1,3 +1,21 @@
+## Corte vigente: focal26 y corrección27 offline — 13/10/2026
+
+Publicado/runtime845d0334febe46cecadbf4fa1eb43be7ac38f492; CI PR38448348918
+PASS. Focal26 sesión55367 exit0:8 de9 casos ejecutados,5completed/2failed y
+026EOF→cancelled alprimerreintento observado (1attempt);028 noadmitido. 001/019
+contenido correcto,003metodologíadocumentadasincita,008classification_unverified_prose,
+022invalid_recommendation_citation,023sinpedirfuenteautorizada. No aceptación.
+SQLCockroachJSONB8/8PASS; estado terminal026confirmado mediante GET separado,
+sin alterar snapshotwaiting original. Recibos externos expression26-focused,
+-sql-verify,-terminal-states y-summary.json. Gasto asentado0.881030298USD/2USD.
+
+Delta27 permite soporte autorizado opcional en missing_data/clarification/refusal,
+sinmetrics/recs nioperandoscorpus. Provenance de citas y operandos se registra
+por separado; diagnósticos de cita ahora distinguen errores cerrados. Prompt pide
+fuente real independientemente de basis y trata migración como riesgo, no certeza.
+Pruebas52backend+126processor y32modos adicionales; padre26tests de consumidores.
+ADR/OpenSpec actualizados; aceptación real y nueva campaña limpia pendientes.
+
 ## Corte vigente: focal25 terminada, sin aceptación — 13/10/2026
 
 Publicado/runtime `51671932dce727005377f42695a9423d263ef718`, hashes de imágenes

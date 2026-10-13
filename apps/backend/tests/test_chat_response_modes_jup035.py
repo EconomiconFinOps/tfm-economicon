@@ -123,3 +123,60 @@ def test_user_scenario_preserves_two_currencies_without_fabricating_a_conversion
     bad['answer']=[{'quantity':'37 USD'}]
     with pytest.raises(ResponseValidationError):_validate(bad,schema,schema)
     with pytest.raises(ValueError):render_response(bad,[],quantities=catalog)
+
+
+@pytest.mark.parametrize('basis',('missing_data','clarification','refusal'))
+def test_partial_explanation_can_cite_documentation_without_financial_or_operand_authority(basis):
+    source={'id':'guide','kind':'corpus','title':'Guide','source':'guide','content':'Confirm the scope before comparing usage. Limit: 17 %.'}
+    record={key:source[key] for key in ('id','kind','title','source')}|{'support_quote':source['content']}
+    catalog=quantities('84 EUR and 70 EUR')
+    catalog['document:guide:17 %']={'value':'17','unit':'%','source':'17 %','provenance':[{'kind':'corpus','id':'guide'}]}
+    value=candidate([{'text':'Confirma el ámbito; falta la serie de uso.'}],basis=basis,status=BASIS_STATUSES[basis][0],
+        next_actions=[[{'text':'Aporta la fuente autorizada y el período.'}]])
+    value['evidence']=[record]
+    schema=provider_response_schema(authorized_evidence=[source],financial_metrics_allowed=True,quantities=catalog)
+    _validate(value,schema,schema)
+    rendered=render_response(value,[],quantities=catalog)
+    assert rendered['evidence']==[record] and rendered['metrics']==rendered['recommendations']==[]
+    for field in ('metrics','recommendations'):
+        bad=copy.deepcopy(value);bad[field]=[{'id':'fabricated'}]
+        with pytest.raises(ResponseValidationError):_validate(bad,schema,schema)
+        with pytest.raises(ValueError):render_response(bad,[],quantities=catalog)
+    for segment in ({'quantity':'document:guide:17 %'},{'expression':{'operation':'sum',
+        'left':{'quantity':'document:guide:17 %'},'right':{'quantity':'document:guide:17 %'}}}):
+        bad=copy.deepcopy(value);bad['answer']=[segment]
+        with pytest.raises(ResponseValidationError):_validate(bad,schema,schema)
+        with pytest.raises(ValueError,match='documentary operands'):render_response(bad,[],quantities=catalog)
+
+
+@pytest.mark.parametrize('basis',('missing_data','clarification','refusal'))
+def test_partial_basis_may_reference_authorized_cost_source_without_emitting_metrics(basis):
+    source={'id':'cost-source','kind':'cost_query','title':'Verified scope','source':'billing'}
+    value=candidate([{'text':'Falta otro período para comparar la fuente seleccionada.'}],basis=basis,
+        status=BASIS_STATUSES[basis][0],next_actions=[[{'text':'Aporta el período de referencia.'}]])
+    value['evidence']=[source]
+    schema=provider_response_schema(authorized_evidence=[source],financial_metrics_allowed=True,quantities={})
+    _validate(value,schema,schema)
+    assert render_response(value,[],quantities={})['evidence']==[source]
+    value['metrics']=[{'name':'cost','value':'37','unit':'EUR','evidence_ids':['cost-source']}]
+    with pytest.raises(ResponseValidationError):_validate(value,schema,schema)
+    with pytest.raises(ValueError):render_response(value,[],quantities={})
+
+
+
+def test_literal_classification_quote_has_documentary_support_but_no_documentary_operand():
+    from test_chat_interval_rules_jup035 import sources, catalog, DOCUMENT
+    sentence='La categoría calm identifica el primer intervalo.'
+    records=sources(DOCUMENT+'\n'+sentence,size=2048)
+    q=catalog('Falta delimitar el período.',records)
+    renderer=ExpressionRenderer(q);renderer.check_prose(sentence)
+    assert renderer.documentary_sources=={records[0]['id']}
+    assert renderer.documentary_operand_sources==set()
+    value=candidate([{'text':sentence}],basis='clarification',
+        next_actions=[[{'text':'Indica el período a comparar.'}]])
+    with pytest.raises(ValueError,match='citation missing'):render_response(value,[],quantities=q)
+    source=records[0]
+    value['evidence']=[{key:source[key] for key in ('id','kind','title','source')}|{'support_quote':source['content']}]
+    schema=provider_response_schema(authorized_evidence=records,quantities=q)
+    _validate(value,schema,schema)
+    assert render_response(value,[],quantities=q)['answer']==sentence

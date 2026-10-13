@@ -89,3 +89,20 @@ def test_old_reference_shortcut_empty_selection_and_extra_fields_are_rejected(mu
     elif mutation=='extra':value['recommendations'][0]['evidence'][0]['tenant']='other'
     else:sources=SOURCES[:1]
     with pytest.raises(ValueError):project_recommendation_citations(value,sources)
+
+
+@pytest.mark.parametrize('case,message',[
+    ('shape','Recommendation citation shape invalid.'),
+    ('unknown','Recommendation citation source unknown.'),
+    ('duplicate','Recommendation citation duplicated.'),
+    ('metadata','Recommendation citation metadata mismatch.'),
+])
+def test_rejected_citations_have_closed_distinct_diagnostics(case,message):
+    value=candidate();project_recommendation_citations(value,SOURCES)
+    entries=value['recommendations'][0]['evidence']
+    if case=='shape':entries[0]='not-a-record'
+    elif case=='unknown':entries[0]['id']='outside-current-context'
+    elif case=='duplicate':entries.append(copy.deepcopy(entries[0]))
+    else:entries[0]['title']='altered metadata'
+    with pytest.raises(ValueError) as caught:project_recommendation_citations(value,SOURCES)
+    assert str(caught.value)==message

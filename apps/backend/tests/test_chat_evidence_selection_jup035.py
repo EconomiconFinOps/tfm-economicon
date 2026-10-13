@@ -187,8 +187,8 @@ def test_narrative_union_preserves_root_constraints_and_neutral_branch_is_distin
     narratives=[branch for branch in schema['anyOf'] if branch['properties']['basis']['const']=='authorized_evidence']
     assert len(narratives)==2
     # Reconstruct the unrestricted narrative base and intersect it with both
-    # authorized branches. Unverified bases share the segment shape but cannot
-    # acquire evidence or financial authority.
+    # authorized branches. Clarifications can cite documents without acquiring
+    # financial authority.
     root=copy.deepcopy(narratives[1]);root['$defs']=schema['$defs']
     root['properties']['status']={'type':'string','enum':['ok','partial','no_data','insufficient_data','unsupported','refused','error']}
     root['properties']['evidence'].pop('minItems',None)
@@ -225,5 +225,13 @@ def test_narrative_union_preserves_root_constraints_and_neutral_branch_is_distin
     neutral['answer']=[{'text':'Necesito concretar la consulta.'}];neutral['limitations']=[]
     neutral['next_actions']=[[{'text':'Indica el período y el ámbito.'}]]
     assert accepts(neutral,schema) and not accepts(neutral,root)
-    for change in ({'evidence':[record]}, {'status':'ok'}, {'answer':{'request':{'reason':'clarification'}}}, {'basis':'unknown'}):
+    for change in ({'status':'ok'}, {'answer':{'request':{'reason':'clarification'}}}, {'basis':'unknown'}):
         assert not accepts({**neutral,**change},schema)
+    for basis,status in [('missing_data','insufficient_data'),('clarification','insufficient_data'),('refusal','refused')]:
+        documented={**neutral,'basis':basis,'status':status,'evidence':[record]}
+        assert accepts(documented,schema)
+        assert accepts({**documented,'evidence':[]},schema)
+        for field,replacement in [('id','foreign'),('title','Altered title'),('source','Altered source'),('support_quote','Invented quote')]:
+            assert not accepts({**documented,'evidence':[{**record,field:replacement}]},schema)
+        assert not accepts({**documented,'metrics':[{'name':'cost','value':'1','unit':'EUR','evidence_ids':[source['id']]}]},schema)
+        assert not accepts({**documented,'recommendations':[{}]},schema)

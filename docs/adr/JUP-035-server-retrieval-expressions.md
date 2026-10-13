@@ -342,3 +342,26 @@ Se mantienen12 evaluaciones únicas, profundidad, bytes,4000 caracteres incluido
 prefijo,8KiB por delta,3200tokens,una recuperación y una generación. No se añade
 inferencia ni autoridad financiera. Pruebas de ambos órdenes, Unicode fragmentado,
 fuentes/operaciones ajenas y paridad preceden a aceptación real todavía pendiente.
+
+### Soporte autorizado en respuestas parciales v4 (13/10/2026)
+
+Focal26:001 y019 recuperan explicación y cálculo, pero003 invoca una metodología
+documentada sin citas. El contrato prohibía evidencia en missing_data/refusal,
+aunque estas respuestas puedan explicar una parte sustentada por el corpus.
+Se corrige esa restricción, sin afirmar que explique todos los fallos del modelo.
+
+missing_data, clarification y refusal admiten selección explícita opcional de
+fuentes autorizadas con los mismos controles de metadata/pasaje/IDs. No se exige
+una cita decorativa ni se cita automáticamente. También una consulta financiera
+autorizada puede ser referenciada si está presente; esas bases siguen prohibiendo
+metrics y recommendations. user_scenario/greeting mantienen evidencia vacía.
+Los operandos permanecen exclusivamente de usuario: el renderer registra por
+separado provenance de operandos y de citas literales en prosa, incluida cada
+ocurrencia recuperada de cache. Citar un extracto no habilita su cantidad como
+operando. Una cita literal tampoco prueba pertinencia semántica de la explicación.
+
+Los rechazos de cita distinguen forma, fuente desconocida, duplicado y metadata;
+no se exponen textos ni credenciales en diagnósticos ordinarios. Una captura
+sintética de validación debe estar acotada por pregunta, ser privada y retirarse
+al terminar; nunca captura reasoning. Los fallos008 y022 de26 conservan su causa
+cerrada observada sin atribuirles un fragmento que no quedó almacenado.

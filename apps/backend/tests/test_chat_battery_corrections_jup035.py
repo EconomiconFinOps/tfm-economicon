@@ -135,6 +135,15 @@ def test_private_schema_requires_actionable_evidence_and_preserves_base(financia
             valid['evidence'] = [{'id': 'manual:synthetic', 'kind': 'corpus',
                 'title': 'Synthetic manual', 'source': 'synthetic'}]
         _validate(valid, branch, schema)
+        if valid['basis'] in ('missing_data','clarification','refusal'):
+            documented = copy.deepcopy(valid)
+            documented['evidence'] = [{'id': 'manual:synthetic', 'kind': 'corpus',
+                'title': 'Synthetic manual', 'source': 'synthetic'}]
+            _validate(documented, branch, schema)
+            documented['metrics'] = [{'name': 'cost', 'value': '1', 'unit': 'EUR',
+                'evidence_ids': ['manual:synthetic']}]
+            with pytest.raises(ValueError):
+                _validate(documented, branch, schema)
         invalid = copy.deepcopy(valid)
         invalid['extra'] = 'not allowed'
         with pytest.raises(ValueError):

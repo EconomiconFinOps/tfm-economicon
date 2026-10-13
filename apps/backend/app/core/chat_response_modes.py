@@ -8,11 +8,12 @@ BASIS_STATUSES={
     'refusal':('unsupported','refused'),
     'greeting':('no_data',),
 }
+DOCUMENTARY_BASES=('missing_data','clarification','refusal')
 BASIS_DESCRIPTIONS={
     'user_scenario':'Explain the supplied hypothetical data, labels, scope and calculations; no documentary policies or verified financial claims.',
-    'missing_data':'Explain the answerable part and the specific unavailable data; request a useful next step, without claiming documents do not exist.',
-    'clarification':'Explain the ambiguity and ask a precise useful clarification.',
-    'refusal':'Explain unavailable execution or an unrelated domain, and offer a useful reviewable next step.',
+    'missing_data':'Explain the answerable part and the specific unavailable data; request a useful next step, without claiming documents do not exist. Select pertinent authorized documentary citations when used.',
+    'clarification':'Explain the ambiguity and ask a precise useful clarification, citing authorized documentary support when used.',
+    'refusal':'Explain unavailable execution or an unrelated domain, and offer a useful reviewable next step; select pertinent authorized documentary citations when used.',
     'greeting':'Respond to a greeting without financial or documentary claims.',
 }
 USER_PREFIX='Escenario hipotético aportado; no verificado financieramente.\n'
@@ -58,8 +59,10 @@ def bind_modes(schema,quantities):
         props['basis']={'type':'string','const':basis,'description':BASIS_DESCRIPTIONS[basis]}
         props['status']={'type':'string','enum':list(statuses)}
         props['answer']={'type':'array','minItems':1,'maxItems':128,'items':choices[0] if len(choices)==1 else {'anyOf':copy.deepcopy(choices)}}
-        for field in ('metrics','recommendations','evidence'):
+        for field in ('metrics','recommendations'):
             props[field]['minItems']=0;props[field]['maxItems']=0
+        props['evidence']['minItems']=0
+        if basis not in DOCUMENTARY_BASES:props['evidence']['maxItems']=0
         if basis in ('missing_data','clarification','refusal'):props['next_actions']['minItems']=1
         retained.append({**copy.deepcopy(base),'properties':{'basis':props.pop('basis'),**props},'required':[*base['required'],'basis']})
     return {'type':'object','anyOf':retained,'$defs':defs}

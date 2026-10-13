@@ -243,6 +243,7 @@ class ExpressionRenderer:
         self._numeric_cache={}
         self.operations=0
         self.documentary_sources=set()
+        self.documentary_operand_sources=set()
 
     def check_prose(self,text):
         self.documentary_sources.update(check_classification_prose(text,
@@ -290,6 +291,7 @@ class ExpressionRenderer:
             raise ValueError('Expression catalog changed.')
         sources=self._validate_numeric_occurrence(node,depth)
         self.documentary_sources.update(sources)
+        self.documentary_operand_sources.update(sources)
         key=json.dumps(node,sort_keys=True,ensure_ascii=True,separators=(',',':'))
         if key not in self._numeric_cache:self._numeric_cache[key]=self._numeric_uncached(node,depth)
         return self._numeric_cache[key]

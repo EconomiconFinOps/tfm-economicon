@@ -5,7 +5,7 @@ from app.core.chat_calculations import render_text
 from app.core.chat_rules import required_classification
 from app.core.chat_boolean_rules import boolean_definition, render_boolean
 from app.core.chat_expressions import ExpressionRenderer, expression_definitions
-from app.core.chat_response_modes import bind_modes, response_prefix, BASIS_STATUSES
+from app.core.chat_response_modes import bind_modes, response_prefix, BASIS_STATUSES, DOCUMENTARY_BASES
 
 class ServerRenderedResponse(dict):
     """In-process provenance, never a JSON flag accepted from a provider."""
@@ -38,13 +38,14 @@ def project_recommendation_citations(value,authorized_evidence):
         result=[];seen=set()
         for item in items:
             if not isinstance(item,dict) or not isinstance(item.get('id'),str):
-                raise ValueError('Invalid recommendation citation.')
+                raise ValueError('Recommendation citation shape invalid.')
             identifier=item['id'];source=known.get(identifier)
-            if source is None or identifier in seen:raise ValueError('Invalid recommendation citation.')
+            if source is None:raise ValueError('Recommendation citation source unknown.')
+            if identifier in seen:raise ValueError('Recommendation citation duplicated.')
             fields={'id','kind','title','source'}
             if source.get('kind')=='corpus':fields.add('support_quote')
             if set(item)!=fields or any(item.get(key)!=source.get(key) for key in ('id','kind','title','source')):
-                raise ValueError('Invalid recommendation citation.')
+                raise ValueError('Recommendation citation metadata mismatch.')
             if source.get('kind')=='corpus' and item['support_quote'] not in quote_choices(source.get('content')):
                 raise ValueError('Citation passage is not grounded.')
             seen.add(identifier);result.append(copy.deepcopy(item))
@@ -246,7 +247,8 @@ def render_response(value, records, *, quantities=None):
         else:
             if basis not in BASIS_STATUSES:raise ValueError('Invalid response basis.')
             if value.get('status') not in BASIS_STATUSES[basis]:raise ValueError('Response basis status mismatch.')
-            if any(value.get(field)!=[] for field in ('evidence','metrics','recommendations')):
+            restricted=('metrics','recommendations') if basis in DOCUMENTARY_BASES else ('evidence','metrics','recommendations')
+            if any(value.get(field)!=[] for field in restricted):
                 raise ValueError('Response basis cannot grant authority.')
             if basis in ('missing_data','clarification','refusal') and not value.get('next_actions'):
                 raise ValueError('Response basis requires useful next action.')
@@ -279,8 +281,9 @@ def render_response(value, records, *, quantities=None):
     if not classified:
         result['answer']=response_prefix(basis)+result['answer']
         if len(result['answer'])>4000:raise ValueError('Rendered text limit.')
-        if basis in BASIS_STATUSES and expressions is not None and expressions.documentary_sources:
-            raise ValueError('Response basis contains documentary operands.')
+        if basis in BASIS_STATUSES and expressions is not None:
+            used=expressions.documentary_operand_sources if basis in DOCUMENTARY_BASES else expressions.documentary_sources
+            if used:raise ValueError('Response basis contains documentary operands.')
     if expressions is not None:
         for recommendation in value.get('recommendations',[]):
             if isinstance(recommendation,dict):
