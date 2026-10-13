@@ -44,9 +44,7 @@
     "retrieval-calibration:test": "python -m unittest discover -s scripts/tests -p test_retrieval_calibration.py",
     "assistant-metrics:test": "python -m unittest discover -s scripts/tests -p test_assistant_metrics.py",
     "assistant-eval:test": "python -m unittest discover -s scripts/tests -p test_assistant_eval.py",
-    "synthetic-costs:test": "python -m unittest discover -s scripts/tests -p test_synthetic_costs.py",
     "synthetic-demo:test": "python -m unittest discover -s scripts/tests -p test_synthetic_cost_demo.py",
-    "synthetic-anomalies:test": "python -m unittest discover -s scripts/tests -p test_synthetic_anomalies.py",
     "demo-dataset:test": "python -m unittest discover -s scripts/tests -p test_demo_dataset.py",
     "demo-data:test": "python -m unittest discover -s scripts/tests -p test_demo_data.py"
   },

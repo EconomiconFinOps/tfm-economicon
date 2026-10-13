@@ -22,7 +22,7 @@ spec = importlib.util.spec_from_file_location("economicon_demo_dataset_backend",
 dataset = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = dataset
 spec.loader.exec_module(dataset)
-EXPECTED = json.loads((ROOT / "docs" / "demo" / "JUP-119" / "esperados-anomalias.json").read_text("utf-8"))
+EXPECTED = json.loads((ROOT / "docs" / "demo" / "JUP-107" / "esperados-anomalias.json").read_text("utf-8"))
 MANIFEST = json.loads(dataset.DEMO_MANIFEST_PATH.read_text("utf-8"))
 pytestmark = pytest.mark.parametrize("tenant_database", ["cockroach"], indirect=True)
 FIELDS = ("service", "start_date", "last_seen_date", "observation", "no_longer_observed_on", "reference_daily_cost",

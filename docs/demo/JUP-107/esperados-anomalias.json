@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "descripcion": "Valores esperados sobre el conjunto sintetico diario de scripts/synthetic_anomalies.py (un registro por servicio y dia del 1 al 21 de septiembre de 2026). Los periodos y reglas son los de la consulta de prueba de JUP-030; la seccion episodios es el resultado de una deteccion con la regla diaria de negocio (JUP-114) sobre un estado vacio. Una prueba recalcula todo con aritmetica exacta sin usar los servicios del backend. Datos sinteticos: no son facturas de Azure ni proceden del dataset publico.",
+  "version": 3,
+  "descripcion": "Valores esperados sobre el conjunto de anomalias de scripts/demo_dataset.py (un registro por servicio y dia del 1 de julio al 30 de octubre de 2026). Los periodos y reglas son los de la consulta de prueba de JUP-030 (septiembre, con la fecha de referencia en 2026-09-21 o posterior); la seccion episodes_by_reference es el resultado de una deteccion con la regla diaria de negocio (JUP-114) sobre un estado vacio con la fecha de referencia en 2026-09-21 (los tres episodios de JUP-107) y en 2026-10-30 (fin de los datos; el ultimo dia con datos nunca se da por completo). Una prueba recalcula todo con aritmetica exacta sin usar el backend.",
   "tenant": "tenant-core",
   "currency": "EUR",
   "group_by": "service",
@@ -115,48 +115,109 @@
     "Compute"
   ],
   "data_range": {
-    "first_day": "2026-09-01",
-    "last_day": "2026-09-21"
+    "first_day": "2026-07-01",
+    "last_day": "2026-10-30"
   },
-  "detection": {
-    "last_evaluated_date": "2026-09-20",
-    "evaluated_from": "2026-09-08"
-  },
-  "episodes": [
-    {
-      "service": "Compute",
-      "start_date": "2026-09-09",
-      "last_seen_date": "2026-09-20",
-      "observation": "observed",
-      "no_longer_observed_on": null,
-      "reference_daily_cost": "142.86",
-      "accumulated_impact": "2807.71",
-      "impact_day_count": 12,
-      "severity": "P1"
+  "episodes_by_reference": {
+    "2026-09-21": {
+      "last_evaluated_date": "2026-09-20",
+      "episodes": [
+        {
+          "service": "Compute",
+          "start_date": "2026-09-09",
+          "last_seen_date": "2026-09-20",
+          "observation": "observed",
+          "no_longer_observed_on": null,
+          "reference_daily_cost": "142.86",
+          "accumulated_impact": "2807.71",
+          "impact_day_count": 12,
+          "severity": "P1"
+        },
+        {
+          "service": "Database",
+          "start_date": "2026-09-16",
+          "last_seen_date": "2026-09-20",
+          "observation": "observed",
+          "no_longer_observed_on": null,
+          "reference_daily_cost": "171.43",
+          "accumulated_impact": "642.86",
+          "impact_day_count": 5,
+          "severity": "P2"
+        },
+        {
+          "service": "Analytics",
+          "start_date": "2026-09-10",
+          "last_seen_date": "2026-09-10",
+          "observation": "no_longer_observed",
+          "no_longer_observed_on": "2026-09-14",
+          "reference_daily_cost": "311.14",
+          "accumulated_impact": "168.86",
+          "impact_day_count": 4,
+          "severity": "P3"
+        }
+      ]
     },
-    {
-      "service": "Database",
-      "start_date": "2026-09-16",
-      "last_seen_date": "2026-09-20",
-      "observation": "observed",
-      "no_longer_observed_on": null,
-      "reference_daily_cost": "171.43",
-      "accumulated_impact": "642.86",
-      "impact_day_count": 5,
-      "severity": "P2"
-    },
-    {
-      "service": "Analytics",
-      "start_date": "2026-09-10",
-      "last_seen_date": "2026-09-10",
-      "observation": "no_longer_observed",
-      "no_longer_observed_on": "2026-09-14",
-      "reference_daily_cost": "311.14",
-      "accumulated_impact": "168.86",
-      "impact_day_count": 4,
-      "severity": "P3"
+    "2026-10-30": {
+      "last_evaluated_date": "2026-10-29",
+      "episodes": [
+        {
+          "service": "Compute",
+          "start_date": "2026-09-09",
+          "last_seen_date": "2026-10-03",
+          "observation": "no_longer_observed",
+          "no_longer_observed_on": "2026-10-07",
+          "reference_daily_cost": "142.86",
+          "accumulated_impact": "5851.57",
+          "impact_day_count": 28,
+          "severity": "P1"
+        },
+        {
+          "service": "Storage",
+          "start_date": "2026-10-20",
+          "last_seen_date": "2026-10-29",
+          "observation": "observed",
+          "no_longer_observed_on": null,
+          "reference_daily_cost": "117.00",
+          "accumulated_impact": "1230.00",
+          "impact_day_count": 10,
+          "severity": "P2"
+        },
+        {
+          "service": "Database",
+          "start_date": "2026-09-16",
+          "last_seen_date": "2026-09-20",
+          "observation": "no_longer_observed",
+          "no_longer_observed_on": "2026-09-24",
+          "reference_daily_cost": "171.43",
+          "accumulated_impact": "642.86",
+          "impact_day_count": 8,
+          "severity": "P2"
+        },
+        {
+          "service": "Analytics",
+          "start_date": "2026-09-10",
+          "last_seen_date": "2026-09-10",
+          "observation": "no_longer_observed",
+          "no_longer_observed_on": "2026-09-14",
+          "reference_daily_cost": "311.14",
+          "accumulated_impact": "168.86",
+          "impact_day_count": 4,
+          "severity": "P3"
+        },
+        {
+          "service": "Tools",
+          "start_date": "2026-10-08",
+          "last_seen_date": "2026-10-08",
+          "observation": "no_longer_observed",
+          "no_longer_observed_on": "2026-10-12",
+          "reference_daily_cost": "6.00",
+          "accumulated_impact": "144.00",
+          "impact_day_count": 4,
+          "severity": "P3"
+        }
+      ]
     }
-  ],
+  },
   "without_episode": {
     "Storage": "estable",
     "Tools": "la subida diaria no pasa de 100",

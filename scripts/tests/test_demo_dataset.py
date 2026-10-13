@@ -28,8 +28,8 @@ def load(name: str, path: Path):
 
 dataset = load("economicon_demo_dataset", ROOT / "scripts" / "demo_dataset.py")
 EXPECTED_COSTS_PATH = ROOT / "docs" / "demo" / "JUP-119" / "esperados-costes.json"
-EXPECTED_ANOMALIES_PATH = ROOT / "docs" / "demo" / "JUP-119" / "esperados-anomalias.json"
 JUP107_PATH = ROOT / "docs" / "demo" / "JUP-107" / "esperados-anomalias.json"
+EXPECTED_ANOMALIES_PATH = JUP107_PATH
 ORIGINAL_MANIFEST = ROOT / "fixtures" / "azure-cost" / "manifest.json"
 
 
@@ -329,7 +329,7 @@ class ExpectedFiguresTests(unittest.TestCase):
 
     def test_detection_at_the_original_reference_date_reproduces_jup_107(self):
         episodes, last = independent_episodes(self.records_of_core(), date(2026, 9, 21))
-        wanted = json.loads(JUP107_PATH.read_text("utf-8"))
+        wanted = json.loads(JUP107_PATH.read_text("utf-8"))["episodes_by_reference"]["2026-09-21"]
         self.assertEqual(last, date(2026, 9, 20))
         self.assertEqual(episodes, wanted["episodes"])
 
@@ -353,7 +353,7 @@ class ExpectedFiguresTests(unittest.TestCase):
         self.assertEqual(episodes, [])
 
     def test_the_end_of_the_window_opens_at_least_two_further_episodes(self):
-        original = {e["service"] for e in json.loads(JUP107_PATH.read_text("utf-8"))["episodes"]}
+        original = {e["service"] for e in json.loads(JUP107_PATH.read_text("utf-8"))["episodes_by_reference"]["2026-09-21"]["episodes"]}
         episodes, last = independent_episodes(self.records_of_core(), date(2026, 10, 30))
         self.assertEqual(last, date(2026, 10, 29))
         self.assertGreaterEqual(len({e["service"] for e in episodes} - original), 2)
@@ -396,13 +396,10 @@ def write_reference_documents() -> None:
     for reference in (date(2026, 9, 21), date(2026, 10, 30)):
         episodes, last = independent_episodes(core, reference)
         by_reference[reference.isoformat()] = {"last_evaluated_date": last.isoformat(), "episodes": episodes}
-    anomalies = {
-        "version": 1,
-        "descripcion": "Episodios esperados tras una deteccion con la regla diaria de negocio (JUP-114) sobre un estado vacio, con la fecha de referencia en 2026-09-21 (reproduce los tres episodios de JUP-107) y en 2026-10-30 (fin de los datos). El ultimo dia con datos nunca se da por completo. Una prueba los recalcula con fracciones sin usar el backend.",
-        "tenant": dataset.TENANT_CORE, "currency": "EUR", "data_range": {"first_day": "2026-07-01", "last_day": "2026-10-30"},
-        "episodes_by_reference": by_reference,
-    }
-    EXPECTED_ANOMALIES_PATH.write_text(json.dumps(anomalies, indent=2, ensure_ascii=True) + "\n", encoding="utf-8", newline="\n")
+    anomalies = json.loads(EXPECTED_ANOMALIES_PATH.read_text("utf-8"))
+    anomalies["data_range"] = {"first_day": "2026-07-01", "last_day": "2026-10-30"}
+    anomalies["episodes_by_reference"] = by_reference
+    EXPECTED_ANOMALIES_PATH.write_text(json.dumps(anomalies, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     print(EXPECTED_COSTS_PATH.relative_to(ROOT).as_posix())
     print(EXPECTED_ANOMALIES_PATH.relative_to(ROOT).as_posix())
 

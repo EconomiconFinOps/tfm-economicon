@@ -80,9 +80,7 @@ jobs:
           corepack pnpm retrieval-calibration:test
           corepack pnpm assistant-metrics:test
           corepack pnpm assistant-eval:test
-          corepack pnpm synthetic-costs:test
           corepack pnpm synthetic-demo:test
-          corepack pnpm synthetic-anomalies:test
           corepack pnpm demo-dataset:test
           corepack pnpm demo-data:test
           corepack pnpm llm-gateway:test
