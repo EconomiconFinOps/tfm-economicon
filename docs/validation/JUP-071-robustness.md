@@ -156,3 +156,11 @@ El informe añade un desglose `categories` (tagging, allocation, costs, anomalie
 Con `--provisional`, cada caso crítico con menos de dos revisores por punto lleva `reduced_coverage` y `assessment_complete` es falso mientras exista alguno.
 
 Los valores declarados `provider`, `alias` y `model_alias` del bloque `run` no admiten `:` ni prefijos con forma de clave (`sk-`, `key-`, `token-`...); es una comprobación heurística, no una garantía de que no haya secretos. Las salidas dentro del repositorio se limitan a `docs/evidence/`. Los prefijos de ruta extendida de Windows se normalizan antes de comparar; el CLI de JUP-070 conserva ese defecto (ver `openspec/findings/backlog.md`).
+
+### Segunda pasada (13/10/2026)
+
+Los rivales de una cifra son los alias de las demás cifras del caso, igual que en JUP-070, de modo que una cifra bajo la etiqueta de otra no se acepta. Los alias deben quedar no vacíos y ser únicos tras normalizar. La validación de la batería devuelve un error con el identificador del caso ante tipos mal formados o campos ausentes.
+
+Los valores declarados `provider`, `alias` y `model_alias` son identificadores en minúsculas (`a-z`, dígitos, `.`, `/`, `-`) de hasta 64 caracteres, sin partes con forma de clave o de token; sigue siendo una comprobación heurística. Las rutas de red (UNC), incluidas las de recursos administrativos como `\localhost\D$`, no se aceptan como salida, y los puntos o espacios finales de un componente se descartan antes de comparar. Dentro del repositorio solo se pueden escribir los informes generados `JUP-071-*-report.json` y `.md` de `docs/evidence/`.
+
+El Markdown muestra el número de casos con cobertura reducida, si la evaluación está completa y el resultado por cada tipo de perturbación.
