@@ -167,7 +167,9 @@ def chat_provider_schema(*, financial_metrics_allowed=False, authorized_evidence
     abstention['properties']['status'] = {'type': 'string', 'enum': [
         status for status in schema['$defs']['ResponseStatus']['enum']
         if status not in ('ok', 'partial')]}
-    schema['anyOf'] = [actionable, abstention]
+    # A single union avoids intersecting long citation enums with identical
+    # copies at root and branch (DeepInfra rejects that redundant grammar).
+    schema = {'type':'object', 'anyOf':[actionable, abstention], '$defs':schema['$defs']}
     return bind_segments(_bind_chat_evidence(schema, authorized_evidence), calculations)
 
 

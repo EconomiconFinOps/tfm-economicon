@@ -52,17 +52,19 @@ def test_backend_validates_subscription_scope_without_changing_public_schema():
     from app.schemas.chat import provider_response_schema, response_schema, validate_response
     assert 'subscription_ids' not in provider_response_schema()['$defs']['ResponseScope']['properties']
     assert 'subscription_ids' in response_schema()[0]['$defs']['ResponseScope']['required']
-    assert provider_response_schema()['properties']['metrics']['maxItems'] == 0
-    assert provider_response_schema(financial_metrics_allowed=True)['properties']['metrics']['maxItems'] == 20
+    assert all(b['properties']['metrics']['maxItems']==0 for b in provider_response_schema()['anyOf'])
+    assert all(b['properties']['metrics']['maxItems']==20 for b in provider_response_schema(financial_metrics_allowed=True)['anyOf'])
     assert response_schema()[0]['properties']['metrics']['maxItems'] == 20
     from app.schemas.chat import _validate
     metric = {'name': 'total_cost', 'value': '0.00', 'unit': 'EUR', 'evidence_ids': ['cost:verified']}
     restricted = provider_response_schema()
-    with pytest.raises(ValueError):
-        _validate([metric], restricted['properties']['metrics'], restricted)
-    _validate([], restricted['properties']['metrics'], restricted)
+    for branch in restricted['anyOf']:
+        with pytest.raises(ValueError):
+            _validate([metric], branch['properties']['metrics'], restricted)
+        _validate([], branch['properties']['metrics'], restricted)
     allowed = provider_response_schema(financial_metrics_allowed=True)
-    _validate([metric], allowed['properties']['metrics'], allowed)
+    for branch in allowed['anyOf']:
+        _validate([metric], branch['properties']['metrics'], allowed)
     response = copy.deepcopy(ANSWER)
     assert validate_response(response, [], expected_subscriptions=[]) == response
     response['scope']['subscription_ids'] = ['tenant-core']
@@ -96,13 +98,15 @@ def test_private_schema_requires_actionable_evidence_and_preserves_base(financia
     for status in ('no_data', 'insufficient_data', 'unsupported', 'refused', 'error'):
         candidate['status'] = status
         _validate(candidate, schema, schema)
-    # Complete branch objects preserve siblings despite the local validator's
-    # early return on anyOf. References remain rooted in the original $defs.
+    # Complete branches preserve all constraints without duplicate root
+    # intersections. References remain rooted in the original $defs.
     assert len(schema['anyOf']) == 2
+    assert 'properties' not in schema and 'required' not in schema
+    public,_=response_schema()
     for branch in schema['anyOf']:
-        assert branch['required'] == schema['required']
+        assert branch['required'] == public['required']
         assert branch['additionalProperties'] is False
-        assert branch['properties']['metrics'] == schema['properties']['metrics']
+        assert branch['properties']['metrics']['maxItems'] == (20 if financial_allowed else 0)
         invalid = copy.deepcopy(candidate)
         invalid['extra'] = 'not allowed'
         with pytest.raises(ValueError):

@@ -1,5 +1,27 @@
 ## PR121: contrato estructurado autorizado en validación — 12/10/2026
 
+## Diagnóstico causal de compatibilidad (2026-10-13)
+
+El usuario autorizó específicamente una reproducción del payload017 indicado
+abajo al mismo OpenRouter/GLM5.2/DeepInfra. El contenedor efímero usó la misma
+imagen/configuración del gateway, sin modificarlo ni compartir su base de datos.
+Un error local previo al envío tuvo coste0; se conservó su recibo y se corrigió.
+La única reproducción externa confirmó BadRequestError,HTTP400:
+`Grammar error: Unable to determine if regex is empty`, con intersección de dos
+literales idénticos del extracto autorizado. Upstream antes/después0.409028395USD,
+incremento0; acumulado desde baseline0.13489051USD:0.274137885USD, techo0.50USD.
+Credenciales temporales y contenedor retirados. No queda otra reproducción
+autorizada bajo ese consentimiento específico.
+
+La corrección elimina propiedades raíz redundantes: conserva dos objetos
+completos bajo anyOf y los mismos $defs. Cada restricción sigue en ambas ramas;
+se elimina también anyOf unario de segmentos sin cálculos. Equivalencia y
+contabilidad cruzada se prueban offline; compatibilidad real corregida y full28
+siguen pendientes. Recibo saneado: `payload8-replay-remote.log` en la carpeta
+de evidencia indicada abajo; el error original permanece privado en el host.
+CI5c071d9 fue verde (backend1717PASS106SKIP,processor1318PASS96SKIP), sin que
+ello acreditase aceptación funcional; esquema corregido requiere nuevo candidato.
+
 ## Estado actual: segmentos privados y ventanas literales (2026-10-12)
 
 Origen: subagente `/root/pr121_correccion_pendientes`, objetivo autorizado de
@@ -25,8 +47,8 @@ resultados históricos siguientes no constituyen aceptación de este contrato.
 41e2370 añade43PASS con CockroachDB nativo. La focal arithmetic8 falla017/027
 por HTTP400; captura017 confirma fase final, pero el gateway elimina el mensaje
 original. Una reproducción efímera para recuperar el error está pendiente:
-auto-review la rechazó dos veces y exige autorización específica del usuario.
-No se envió esa reproducción. Payload privado SHA256
+auto-review la rechazó dos veces y exigió autorización específica del usuario.
+Ese bloqueo quedó resuelto por el diagnóstico del13/10 arriba. Payload privado SHA256
 `50e516f69876c07fcd120be72cea0b58c8764be70210e2c0bae2174de08e4eec` verificado:
 pregunta017 exacta, prompt41e2370,10chunks del corpus sintético ya usado,
 4cálculos, sin historial/datasets ni credenciales. Destino previsto: mismo

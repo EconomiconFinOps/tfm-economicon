@@ -1,5 +1,16 @@
 JUP: JUP-035
 
+## Compatibilidad de la union final — 13/10/2026
+
+Una reproduccion sintetica autorizada confirma HTTP400 de DeepInfra al compilar
+la interseccion repetida del mismo literal de support_quote. El esquema final
+conserva las dos ramas completas anyOf y los $defs compartidos, pero elimina
+las restricciones duplicadas en la raiz. Cada rama implica el antiguo objeto
+base: la equivalencia se comprueba estructuralmente y con candidatos validos e
+invalidos, incluyendo autoridad financiera y campos obligatorios. No se cambian
+validadores locales, citas autorizadas, limites ni contrato publico. La
+compatibilidad real del esquema corregido requiere validacion posterior.
+
 ## Decision vigente — 12/10/2026
 El usuario autoriza sustituir auto-documentation-v2 por structured-documentation-v3.
 La primera generacion devuelve exclusivamente {action:none,query:null} o

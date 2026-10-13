@@ -19,12 +19,12 @@ def segment_schema(records=None, *, limit=4000):
         choices.append({'type':'object','properties':{'calculation_id':{
             'type':'string','enum':[record['id'] for record in records]}},
             'required':['calculation_id'],'additionalProperties':False})
-    return {'type':'array','minItems':1,'maxItems':128,'items':{'anyOf':choices}}
+    return {'type':'array','minItems':1,'maxItems':128,'items':choices[0] if len(choices)==1 else {'anyOf':choices}}
 
 
 def bind_segments(schema, records=None):
     schema=copy.deepcopy(schema)
-    for branch in [schema,*schema.get('anyOf',[])]:
+    for branch in schema.get('anyOf',[schema]):
         properties=branch['properties']
         properties['answer']=segment_schema(records)
         for field in ('assumptions','limitations','next_actions'):

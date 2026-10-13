@@ -134,7 +134,7 @@ evidencia insuficiente sin inventar cifras.
 #### Scenario: Estado accionable con evidencia en el esquema privado
 
 - **WHEN** el gateway prepara el esquema privado para una respuesta de chat
-- **THEN** SHALL conservar el objeto base y sus restricciones en dos ramas anyOf con referencias a los mismos $defs: ok o partial SHALL exigir evidence con minItems 1, y los otros cinco estados SHALL permitir evidence vacia
+- **THEN** SHALL conservar el objeto base y sus restricciones en dos ramas completas anyOf con referencias a los mismos $defs, sin duplicar propiedades en la raiz: ok o partial SHALL exigir evidence con minItems 1, y los otros cinco estados SHALL permitir evidence vacia
 - **AND** backend y processor SHALL derivar y contabilizar el mismo esquema efectivo, conservar la restriccion financiera autenticada y verificar el hash privado actualizado del manifiesto; el esquema publico FinOpsResponse 1.0 y los validadores SHALL permanecer intactos
 - **AND** la cardinalidad SHALL no acreditar pertinencia o autorizacion de citas; la compatibilidad anyOf del endpoint real SHALL requerir un ensayo separado, sin fallback ni reparacion posterior si el proveedor rechaza o incumple el esquema
 

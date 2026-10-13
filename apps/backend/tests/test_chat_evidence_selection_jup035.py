@@ -151,3 +151,46 @@ def test_provider_projection_omits_unsupported_uniqueness_but_processor_rejects_
     value['evidence'] = [record, copy.deepcopy(record)]
     with pytest.raises(ValidationError, match='evidence ids must be unique'):
         module.FinOpsResponse.model_validate(value)
+
+
+@pytest.mark.parametrize('financial',[False,True])
+def test_single_union_is_equivalent_to_previous_root_intersection(financial):
+    source={**SOURCE,'content':('A literal rule > 20 AND amount > 100; '*20)[:500]}
+    schema=provider_response_schema(financial_metrics_allowed=financial,authorized_evidence=[source])
+    assert set(schema)=={'type','anyOf','$defs'}
+    assert all(branch['additionalProperties'] is False for branch in schema['anyOf'])
+    # Reconstruct the prior redundant root: unrestricted status/evidence at
+    # root, intersected with two complete branches. Validate BOTH constituents
+    # rather than relying on the local union helper's early return.
+    root=copy.deepcopy(schema['anyOf'][1]);root['$defs']=schema['$defs']
+    root['properties']['status']={'type':'string','enum':['ok','partial','no_data','insufficient_data','unsupported','refused','error']}
+    root['properties']['evidence'].pop('minItems',None)
+    # Structural implication is independent of the helper validator's keyword
+    # support: branches contain the entire base, with only these two stricter
+    # conditions. Thus base AND (branchA OR branchB) == branchA OR branchB.
+    for branch in schema['anyOf']:
+        reconstructed=copy.deepcopy(root);reconstructed.pop('$defs')
+        reconstructed['properties']['status']=branch['properties']['status']
+        if 'minItems' in branch['properties']['evidence']:
+            reconstructed['properties']['evidence']['minItems']=branch['properties']['evidence']['minItems']
+        assert reconstructed==branch
+    record={**{k:source[k] for k in ('id','kind','title','source')},'support_quote':source['content']}
+    def accepts(value,rule):
+        try:_validate(value,rule,schema);return True
+        except ValueError:return False
+    for status in root['properties']['status']['enum']:
+        for evidence in ([],[record]):
+            value=candidate(evidence);value['status']=status
+            variants=[value]
+            for key in ('answer','scope','evidence'):
+                bad=copy.deepcopy(value);bad.pop(key);variants.append(bad)
+            bad=copy.deepcopy(value);bad['extra']='rejected';variants.append(bad)
+            for field,replacement in [('id','foreign'),('support_quote','Invented or paraphrased quote')]:
+                bad=copy.deepcopy(value);bad['evidence']=[{**record,field:replacement}];variants.append(bad)
+            bad=copy.deepcopy(value);bad['scope']['period']=None;variants.append(bad)
+            bad=copy.deepcopy(value);bad['metrics']=[{'name':'cost','value':'1','unit':'EUR','evidence_ids':[source['id']]}];variants.append(bad)
+            for item in variants:
+                assert accepts(item,schema)==(accepts(item,root) and any(accepts(item,b) for b in schema['anyOf']))
+            assert accepts(value,schema)==(bool(evidence) or status not in ('ok','partial'))
+            assert all(not accepts(item,schema) for item in variants[1:-1])
+            assert accepts(variants[-1],schema)==(financial and (bool(evidence) or status not in ('ok','partial')))

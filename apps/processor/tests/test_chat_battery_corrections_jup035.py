@@ -12,8 +12,8 @@ def test_scope_is_server_owned_and_model_cannot_inject_subscription():
     candidate['scope'].pop('period')
     candidate['scope'].pop('subscription_ids')
     assert 'subscription_ids' not in chat_provider_schema()['$defs']['ResponseScope']['properties']
-    assert chat_provider_schema()['properties']['metrics']['maxItems'] == 0
-    assert chat_provider_schema(financial_metrics_allowed=True)['properties']['metrics']['maxItems'] == 20
+    assert all(b['properties']['metrics']['maxItems']==0 for b in chat_provider_schema()['anyOf'])
+    assert all(b['properties']['metrics']['maxItems']==20 for b in chat_provider_schema(financial_metrics_allowed=True)['anyOf'])
     from app.agents.schemas import FinOpsResponse
     assert FinOpsResponse.model_json_schema()['properties']['metrics']['maxItems'] == 20
     assert assemble_chat_response(candidate, None, ['subscription-a'])['scope']['subscription_ids'] == ['subscription-a']
@@ -25,7 +25,7 @@ def test_scope_is_server_owned_and_model_cannot_inject_subscription():
 
 @pytest.mark.parametrize('financial_allowed', [False, True])
 def test_private_schema_branches_preserve_scope_and_financial_authority(financial_allowed):
-    from app.agents.schemas import chat_provider_schema
+    from app.agents.schemas import chat_provider_schema, FinOpsResponse
     schema = chat_provider_schema(financial_metrics_allowed=financial_allowed)
     assert 'anyOf' in schema
     actionable, abstention = schema['anyOf']
@@ -34,11 +34,13 @@ def test_private_schema_branches_preserve_scope_and_financial_authority(financia
     assert abstention['properties']['status']['enum'] == [
         'no_data', 'insufficient_data', 'unsupported', 'refused', 'error']
     assert abstention['properties']['evidence'].get('minItems', 0) == 0
+    public=FinOpsResponse.model_json_schema()
+    assert 'properties' not in schema and 'required' not in schema
     for branch in (actionable, abstention):
-        assert branch['required'] == schema['required']
+        assert branch['required'] == public['required']
         assert branch['additionalProperties'] is False
         assert branch['properties']['metrics']['maxItems'] == (20 if financial_allowed else 0)
-        assert branch['properties']['scope'] == schema['properties']['scope']
+        assert branch['properties']['scope'] == public['properties']['scope']
         assert branch['properties']['evidence']['items'] == {'$ref': '#/$defs/Evidence'}
         assert 'period' not in schema['$defs']['ResponseScope']['properties']
         assert 'subscription_ids' not in schema['$defs']['ResponseScope']['properties']
