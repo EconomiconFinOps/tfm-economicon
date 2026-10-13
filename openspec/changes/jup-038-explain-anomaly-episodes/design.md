@@ -245,7 +245,9 @@ El detalle de la anomalía en `AnomaliesPanel.tsx` añade un `Link` a `/assistan
 `ConversationsPage.tsx` lee el parámetro y lo pasa al redactor, que abre el modo con esa anomalía
 elegida si está en la lista del cliente activo; si no está, lo avisa y no elige ninguna. Tras un
 envío correcto la página quita el parámetro con `replace`, para que recargar no vuelva a armar el
-modo. El panel no hace ninguna petición nueva.
+modo. El panel no hace ninguna petición nueva. El enlace solo se
+ofrece si el identificador tiene el formato `anomaly-` + 64 hex en minúscula (el mismo `isAnomalyEpisodeId`
+que filtra la lista del redactor): con otro formato el asistente lo rechazaría.
 
 `/assistant` está bajo `TenantScopedOutlet`: al cambiar de cliente la pantalla se remonta, el
 parámetro sigue en la dirección y cae en el caso «no está en el cliente activo».

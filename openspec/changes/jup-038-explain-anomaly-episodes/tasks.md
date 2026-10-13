@@ -136,7 +136,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 - [x] 7.3 Comprobar que `tests/spanish-ui.test.ts` recorre los componentes nuevos y pasa sin editarlo
   (su lista es de frases en inglés ya traducidas, no de textos nuevos) y, si aparece un término que
   no esté, añadirlo a `apps/frontend/GLOSARIO.md`.
-- [ ] 7.4 Ejecutar la suite completa del frontend, `typecheck`, `lint` y `build`, con una ejecución
+- [x] 7.4 Ejecutar la suite completa del frontend, `typecheck`, `lint` y `build`, con una ejecución
   de control sobre la base de 1.1 antes de atribuir un fallo al cambio.
 
 ## 8. Validación con el stack real

@@ -81,7 +81,15 @@ Cálculo del ejemplo del contrato (tarea 1.2): script independiente del backend,
 - Mutación: Stryker sobre exactamente el código añadido (175 mutantes), 82.86 % antes de la remediación y **92.57 %** después; los 13 supervivientes son equivalentes o no especificados y están justificados.
 - Revisión del agente `qa`: `accept`.
 
-Aún no se ha ejecutado nada en un navegador real ni con el stack completo de Compose, y el enlace del panel de anomalías hacia el asistente todavía no existe: eso llega con los grupos 7 y 8.
+**Grupo 7 — enlace «Explicar en el asistente» del panel de anomalías** (commits `8d3834a8` y `8fddc0b3`, 2026-10-13):
+
+- Un enlace en el detalle de cada anomalía (en cualquier estado, y solo si su identificador tiene el formato real) hacia `/assistant?episode=<id>`. Solo navega: no hace ninguna petición. Producto: 11 líneas añadidas y 2 de `import` ampliadas en `AnomaliesPanel.tsx`.
+- 19 pruebas nuevas (el Red las dejó en `19 failed`).
+- Suite completa del frontend, dos ejecuciones seguidas: 76 archivos, 1238 pruebas, 0 fallos; lint, typecheck y build con código 0; escaneo de secretos sin hallazgos.
+- Mutación: Stryker 4 de 4 y 7 mutantes manuales sobre el destino y el texto (6 muertos, 1 equivalente justificado). Es una muestra dirigida.
+- Revisión del agente `qa`: `accept`. Su observación sobre el formato del identificador se incorporó a la spec del change.
+
+**El frontend queda completo.** Aún no se ha ejecutado nada en un navegador real ni con el stack completo de Compose: eso llega con el grupo 8.
 
 Nada más se ha ejecutado. Los resultados de pruebas, mutación, DoD y stack real de los demás grupos se añaden aquí al completarlos.
 

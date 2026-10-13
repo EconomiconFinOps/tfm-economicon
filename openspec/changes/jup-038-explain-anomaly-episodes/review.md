@@ -1173,3 +1173,52 @@ define «Asistente de IA → asistente»: el enlace no introduce ningún concept
   `DialogDescription asChild` presente en el `develop` previo (`bfaf3983`). No es de este cambio.
 
 **Pendiente del grupo 7:** mutación, DoD del frontend (con la suite completa) y QA.
+
+## Grupo 7 — Enlace del panel, mutación, DoD y veredicto de QA
+
+**Mutación** (2026-10-13). Stryker sobre las líneas añadidas (99 a 107 de `AnomaliesPanel.tsx`, con un Vitest temporal de
+solo dos archivos, borrado después): **4 mutantes, 4 muertos (100 %)**. Es una muestra pequeña, porque Stryker no muta el
+destino del `Link` ni el texto, así que se completó con **7 mutantes manuales** sobre exactamente eso: otro parámetro
+(`?ep=`), otra ruta, el id de otra cosa, otro texto, sin codificar el id, enlace solo para abiertas y sin comprobar el
+formato. **6 de 7 muertos.** El superviviente, «sin `encodeURIComponent`», es **equivalente**: un id válido
+(`anomaly-` más hexadecimal) no contiene caracteres reservados, así que la dirección resultante es la misma. No hubo
+supervivientes reales, por lo que no se añadieron pruebas. Es una muestra dirigida, no un barrido.
+
+**DoD (tarea 7.4)** (sobre `8fddc0b3`; máquina calmada: 5 % de CPU y 3 GB de RAM libres):
+
+| Control | Resultado |
+| --- | --- |
+| Pruebas del grupo (19) y control del panel, `spanish-ui`, `quality-gates` y las del grupo 6 | `7 archivos, 144 pruebas pasan` sin editar ninguna anterior |
+| **Suite completa del frontend** (76 archivos), **2 ejecuciones seguidas** | **1238 pruebas pasan, 0 fallos, las dos veces**. La intermitencia de JUP-098 del grupo 6 no apareció: la máquina estaba calmada |
+| `lint`, `typecheck`, `build` | código 0 los tres (códigos de salida reales) |
+| Escaneo de secretos | 310 líneas añadidas desde `d40e122b`, 0 hallazgos |
+| Archivos modificados | Solo `AnomaliesPanel.tsx` de producto (+11/−2) y la prueba nueva |
+
+**Veredicto del agente `qa`: `accept`.** Reejecutó 53 pruebas (19 del grupo y 34 de control) y comprobó: el diff de
+producto son +11/−2 y las dos líneas eliminadas son solo los `import` ampliados (se restauró la línea ajena que el
+`coder` había recortado); el Red solo trae la prueba y el Green solo el producto; los tres escenarios de la spec tienen
+prueba; el enlace es un `<a>` real dentro del diálogo y reutiliza `buttonStyle`, así que sigue los temas; solo navega
+(conteo de `fetch`, ningún `POST` ni `PATCH`); las pruebas de id inválido llevan control positivo; y no hay `skip`,
+`only`, `todo`, `any` ni `eslint-disable`. No reejecutó la suite completa, `typecheck`, `build` ni la mutación.
+
+**Observaciones del QA, atendidas o aceptadas:**
+
+1. **La desviación de la spec no constaba en ella** (la spec decía «en cualquier estado» sin la condición del formato
+   del id; solo la prueba y un comentario la documentaban). **Atendida:** se añade a
+   `specs/anomalies-panel/spec.md` del change la frase sobre el formato y el escenario «Identificador sin el formato
+   real» (4 escenarios en esa spec, 44 en total en las tres; el bloque `Human Approval` conserva las cifras del gate) y
+   una frase a la decisión 10 del `design.md`. Es una adición, no una retirada de escenarios.
+2. No hay prueba de tema claro y oscuro: no es necesaria porque el enlace reutiliza `buttonStyle`; la revisión visual del
+   grupo 8 la cubre.
+3. Para el grupo 8, comprobar en el navegador con el stack real que el clic desde el diálogo deja la anomalía
+   preseleccionada en el asistente, que **no hay ningún `POST` hasta pulsar «Enviar»**, que el caso del id que no está
+   en el cliente avisa sin elegir ninguna y que el parámetro se quita con `replace` tras un envío correcto. Los ids de
+   los datos de demostración deben tener el formato `anomaly-<64 hex>` (los genera el backend con un SHA-256, así que
+   lo cumplen).
+
+**Reconciliación con JUP-035.** Las PR #120 y #121 también modifican `AnomaliesPanel.tsx` (añaden una captura de pantalla
+para el chat). El cambio de este grupo son nueve líneas de producto en un bloque propio y dos líneas de `import`
+ampliadas; lo único que puede dar conflicto textual son esas dos líneas. Se medirá en la tarea 8.4.
+
+**Estado del grupo 7:** tareas 7.1 a 7.4 hechas; mutación sin supervivientes reales; DoD en verde; QA en `accept`.
+**El frontend de la tarjeta está completo.**
