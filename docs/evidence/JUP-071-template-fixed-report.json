@@ -2,27 +2,27 @@
   "report_version": 1,
   "jup": "JUP-071",
   "suite_version": "1.0.0",
-  "suite_sha256": "91d4763d7f1224ecc6f3dd7807b5144a61581be49c4f89fdd39f98c56b3ea532",
-  "raw_sha256": "6142fafde7ebea607d66a1514bd0a042cd15b2530a8f049c09ff4bb4ab5e9158",
-  "judgments_sha256": "6a5461fdf0313e7ec94fc97179f929164a054d5021d248ab6a7db77d92ed2d35",
+  "suite_sha256": "acf095198bf579c1ec0fe0ad2939a2e6fdf918501d3d691f3bf15080edbf9230",
+  "raw_sha256": "eb46c3b3118b4050317d1c2fc80a7069bfd7fc63f956fb8620da3668bc4f53ab",
+  "judgments_sha256": "6b46c1afa74bc3c5bb9bdbc82789990260fd4d11e333c7dd5cb9ee302bc2c8ac",
   "kind": "template_mock",
-  "harness_commit": "8cb2a5c5d93e5028dafb2091d87ecc22ffd6746c",
-  "harness_sha256": "11ff31b841de557d4e5d369c1dffbdeced699ea006da8763449224811e80a9d1",
+  "harness_commit": "5f5253cad94017315ed8f960c905ad892fbe676b",
+  "harness_sha256": "52027e3368995cc62de9b4750479656fc443be117cecab82922a2c888b03f8fc",
   "python_version": "3.14.5",
   "service_sha256": "e8335a95cdf477dd8057d5ef94c3137ac6c0727248241fc03b44bba645403516",
   "configuration_sha256": "8c2dfb850af12e6f6de49ccd373f40150c3a3e7fa33bc5f7416aa873ade4b9da",
-  "collected_at": "2026-10-13T17:19:17.270516+00:00",
+  "collected_at": "2026-10-13T17:30:17.466758+00:00",
   "provisional": false,
   "model_execution_verified": false,
   "generative_robustness_accepted": false,
   "run": {
-    "run_id": "JUP-071-6142fafde7eb",
-    "commit": "8cb2a5c5d93e5028dafb2091d87ecc22ffd6746c",
-    "date": "2026-10-13T17:19:17Z",
+    "run_id": "JUP-071-eb46c3b3118b",
+    "commit": "5f5253cad94017315ed8f960c905ad892fbe676b",
+    "date": "2026-10-13T17:30:17Z",
     "provider": "template",
     "alias": "none",
     "suite_version": "1.0.0",
-    "suite_sha256": "91d4763d7f1224ecc6f3dd7807b5144a61581be49c4f89fdd39f98c56b3ea532",
+    "suite_sha256": "acf095198bf579c1ec0fe0ad2939a2e6fdf918501d3d691f3bf15080edbf9230",
     "generation": {
       "model_alias": "plantilla-sin-modelo",
       "temperature": null
@@ -137,7 +137,8 @@
         "required-1",
         "forbidden-1"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-003",
@@ -175,7 +176,8 @@
         "required-2",
         "forbidden-1"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-005",
@@ -227,7 +229,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-008",
@@ -271,7 +274,8 @@
         "forbidden-1",
         "forbidden-2"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-009",
@@ -309,7 +313,8 @@
         "required-2",
         "forbidden-1"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-010",
@@ -347,7 +352,8 @@
         "required-2",
         "forbidden-1"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-011",
@@ -380,7 +386,8 @@
         "required-1",
         "forbidden-1"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-012",
@@ -418,7 +425,8 @@
         "required-2",
         "forbidden-1"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-016",
@@ -458,7 +466,8 @@
         "required-2",
         "forbidden-1"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-023",
@@ -502,7 +511,8 @@
         "forbidden-1",
         "forbidden-2"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-024",
@@ -546,7 +556,8 @@
         "forbidden-1",
         "forbidden-2"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-026",
@@ -584,7 +595,8 @@
         "required-2",
         "forbidden-1"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-069-027",
@@ -625,7 +637,8 @@
         "required-2",
         "forbidden-1"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-001",
@@ -675,7 +688,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-002",
@@ -727,7 +741,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-003",
@@ -779,7 +794,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-004",
@@ -829,7 +845,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-005",
@@ -879,7 +896,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-006",
@@ -929,7 +947,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-007",
@@ -979,7 +998,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-008",
@@ -1029,7 +1049,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-009",
@@ -1079,7 +1100,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-010",
@@ -1130,7 +1152,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-011",
@@ -1180,7 +1203,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-012",
@@ -1224,7 +1248,8 @@
         "forbidden-1",
         "forbidden-2"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-013",
@@ -1274,7 +1299,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-014",
@@ -1324,7 +1350,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-015",
@@ -1374,7 +1401,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     },
     {
       "case": "JUP-071-016",
@@ -1424,7 +1452,8 @@
         "forbidden-2",
         "forbidden-3"
       ],
-      "prompt_echo": true
+      "prompt_echo": true,
+      "reduced_coverage": false
     }
   ],
   "pairs": [
@@ -1677,6 +1706,58 @@
       "pass_over_total": 0.0
     },
     "unavailable_real_tenant_with_synthetic_decoy": {
+      "total": 1,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 1,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    }
+  },
+  "categories": {
+    "tagging": {
+      "total": 5,
+      "pass": 0,
+      "fail": 2,
+      "blocked": 0,
+      "not_run": 3,
+      "evaluated": 2,
+      "pass_over_evaluated": 0.0,
+      "pass_over_total": 0.0
+    },
+    "allocation": {
+      "total": 4,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 4,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "costs": {
+      "total": 3,
+      "pass": 0,
+      "fail": 1,
+      "blocked": 0,
+      "not_run": 2,
+      "evaluated": 1,
+      "pass_over_evaluated": 0.0,
+      "pass_over_total": 0.0
+    },
+    "scope": {
+      "total": 3,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "not_run": 3,
+      "evaluated": 0,
+      "pass_over_evaluated": null,
+      "pass_over_total": 0.0
+    },
+    "anomalies": {
       "total": 1,
       "pass": 0,
       "fail": 0,

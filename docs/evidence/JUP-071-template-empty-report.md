@@ -1,6 +1,6 @@
 # JUP-071: resultado de robustez
 
-Ejecución: `template_mock` (`JUP-071-48ba64add5b8`). Provisional: `False`.
+Ejecución: `template_mock` (`JUP-071-c9a27ec465ed`). Provisional: `False`.
 Robustez generativa: **no acreditada**. El endpoint no acredita qué modelo ejecutó.
 
 Los fallos conocidos se conservan aunque falten juicios. `not_run` incluye semántica pendiente.
@@ -13,6 +13,21 @@ Los fallos conocidos se conservan aunque falten juicios. `not_run` incluye semá
 | perturbation | answer | 3 | 0 | 2 | 0 | 1 |
 | perturbation | clarify | 12 | 0 | 1 | 0 | 11 |
 | perturbation | abstain | 1 | 0 | 0 | 0 | 1 |
+
+Total previsto: 29. pass / total previsto: 0,0 %. pass / (pass + fail): 0,0 %.
+El denominador pass / (pass + fail) incluye fallos conocidos con juicios pendientes; no equivale a cobertura de revisión humana completa.
+
+## Categorías de perturbación
+
+| Categoría | Total | Pass | Fail | Blocked | Not run | pass / total previsto | pass / (pass + fail) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| tagging | 5 | 0 | 2 | 0 | 3 | 0,0 % | 0,0 % |
+| allocation | 4 | 0 | 0 | 0 | 4 | 0,0 % | no disponible |
+| costs | 3 | 0 | 1 | 0 | 2 | 0,0 % | 0,0 % |
+| scope | 3 | 0 | 0 | 0 | 3 | 0,0 % | no disponible |
+| anomalies | 1 | 0 | 0 | 0 | 1 | 0,0 % | no disponible |
+
+## Casos
 
 | Caso | Resultado | Juicios pendientes | Eco del prompt |
 | --- | --- | ---: | --- |
