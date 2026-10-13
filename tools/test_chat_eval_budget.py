@@ -36,6 +36,22 @@ class BudgetTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 b.admit({**self.snapshot, **patch}, {}, 'operation', Decimal('0.1'), 100)
 
+    def test_live_snapshot_uses_upper_bound_without_double_counting(self):
+        keys = {name: {'spend': '0.1', 'max_budget': '1', 'expires': '2030-01-01T00:00:00+00:00'}
+                for name in ('backend', 'processor')}
+        snapshot = b.accounting_snapshot({'usage': '1.092818129', 'secret': 'not-retained'}, keys, 100)
+        self.assertEqual(snapshot['cumulative_usd'], '1.092818129')
+        self.assertNotIn('not-retained', str(snapshot))
+        self.assertIn('not exact task', snapshot['accounting_basis'])
+
+    def test_expired_or_missing_key_blocks_snapshot(self):
+        keys = {name: {'spend': '0.1', 'max_budget': '1', 'expires': '1970-01-01T00:01:00+00:00'}
+                for name in ('backend', 'processor')}
+        with self.assertRaisesRegex(ValueError, 'expired'):
+            b.accounting_snapshot({'usage': '1'}, keys, 100)
+        with self.assertRaisesRegex(ValueError, 'Both'):
+            b.accounting_snapshot({'usage': '1'}, {'processor': keys['processor']}, 100)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -182,3 +182,25 @@ No hay todavía liberación/reconciliación automática de reservas: sólo se ad
 cuando la contabilidad real pruebe el coste. Persistir snapshots declarados no
 los autentica. El runner y el adaptador contable siguen pendientes; NO ejecutar
 N3 usando sólo este módulo o datos históricos. Objetivo activo.
+
+
+### Contabilidad real consultada — 14/10/2026 01:18 CEST
+
+Consulta de lectura mediante el script histórico budget-inspect.py ejecutado por
+SSH, sin mostrar credenciales ni llamar al modelo. Recibo externo:
+`materiales/07-evidencias/PR121-local-evaluation/jup123-accounting-20261014.json`.
+OpenRouter usage1.092818129 USD (clave superior, no atribución exacta a la tarea).
+Claves de validación: backend0.00030238 y processor0.94782955 USD; ambas caducadas
+13/10/2026 21:26 UTC. No renovadas, revocadas ni sustituidas. No reiniciar
+contadores para recuperar presupuesto. El entorno antiguo tampoco es candidato B.
+
+Bloqueo de inferencias confirmado por primera vez en esta fase: credenciales
+caducadas. Sigue habiendo trabajo local útil (runner, comprobación de frontend,
+procedencia). No marcar objetivo bloqueado ni completo. Antes de una campaña se
+necesitan credenciales vigentes conservando contabilidad y entorno autorizado.
+
+Adaptador puro accounting_snapshot añade comprobación de caducidad/ámbito de
+ambas claves y construye una cota conservadora max(uso upstream, suma gateway,
+suelo histórico), sin sumarlos dos veces ni afirmar atribución exacta. Sólo
+es válido si todo el gasto autorizado usa la misma cuenta OpenRouter y el runner
+verifica esa ruta.6pruebas de presupuesto PASS. No consultas de pago ni gasto nuevo.

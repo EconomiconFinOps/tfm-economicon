@@ -5,9 +5,47 @@ keeps its full reservation until a provider accounting reconciliation proves cos
 """
 from decimal import Decimal, InvalidOperation
 import math
+from datetime import datetime
+import hashlib
+import json
 
 CAP = Decimal('2.00')
 HISTORICAL_FLOOR = Decimal('0.957927619')
+
+
+def accounting_snapshot(upstream, keys, now):
+    """Derive a conservative cap from actual read-only accounting responses.
+
+    Caller fetches all responses together and supplies their observation time.
+    Upstream account usage may include other work: it is an upper bound, never
+    asserted to be the exact task spend. No secret-bearing raw response is kept.
+    """
+    if set(keys) != {'backend', 'processor'}:
+        raise ValueError('Both validation keys must be accounted for')
+    usage = money(str(upstream['usage']))
+    gateway_spend = Decimal(0)
+    safe_keys = {}
+    for service, info in keys.items():
+        expiry = datetime.fromisoformat(info['expires'].replace('Z', '+00:00'))
+        if expiry.tzinfo is None or expiry.timestamp() <= now:
+            raise ValueError('Validation credentials expired; renewal requires preserved accounting')
+        spend = money(str(info['spend']))
+        maximum = money(str(info['max_budget']))
+        if spend >= maximum:
+            raise ValueError('Validation key budget exhausted')
+        gateway_spend += spend
+        safe_keys[service] = {'spend': str(spend), 'max_budget': str(maximum),
+                              'expires': info['expires']}
+    # Upper bounds cannot be added: upstream already includes gateway charges.
+    # This assumes all authorized inference goes through this OpenRouter account;
+    # a runner must verify that constraint and halt on any other route.
+    conservative = max(usage, gateway_spend, HISTORICAL_FLOOR)
+    evidence = {'upstream_usage': str(usage), 'keys': safe_keys, 'observed_at': now}
+    evidence_hash = hashlib.sha256(json.dumps(evidence, sort_keys=True).encode()).hexdigest()
+    return {'scope': 'jup035-cumulative-all-providers', 'observed_at': now,
+            'cumulative_usd': str(conservative), 'evidence_sha256': evidence_hash,
+            'accounting_basis': 'conservative OpenRouter account upper bound; not exact task attribution',
+            'evidence': evidence}
 
 
 def money(value):
