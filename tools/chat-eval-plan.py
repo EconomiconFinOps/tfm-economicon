@@ -55,7 +55,8 @@ def main():
                 'docs/validation/JUP-069-questions.json',
                 'docs/validation/JUP-035-evaluation-partition.json',
                 'docs/validation/JUP-070-evaluation-rules.json',
-                'tools/chat-receipt-eval.py', 'tools/assistant-eval.py').splitlines()
+                'tools/chat-receipt-eval.py', 'tools/assistant-eval.py',
+                'tools/chat-eval-*.py').splitlines()
     hashes = {path: sha(ROOT / path) for path in paths}
     data = {'version': 1, 'state': 'NOT_RUN', 'commit': git('rev-parse', 'HEAD'),
             'bank_sha256': EXPECTED_BANK, 'file_hashes': hashes,
