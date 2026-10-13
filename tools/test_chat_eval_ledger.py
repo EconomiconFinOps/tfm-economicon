@@ -81,6 +81,20 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(sum(value is not None for value in result), 1)
         self.assertEqual(len(self.ledger.pending()), 1)
 
+    def test_complete_cost_reduces_reserve_but_never_releases_actual_spend(self):
+        request_id = self.reserve()
+        self.ledger.attach_conversation(request_id, 'conversation')
+        self.ledger.dispatch(request_id, lambda *args: 'operation')
+        operation = {'operation_id': 'operation', 'state': 'completed', 'attempt_count': 1,
+                     'current_attempt_id': 'attempt'}
+        report = {'event': 'chat_review_usage', 'operation_id': 'operation', 'attempt_id': 'attempt',
+                  'complete': True, 'attempted_legs': 2, 'reported_legs': 2,
+                  'requests': [{}, {}], 'observed': {'cost_usd': '0.10'}}
+        self.ledger.reconcile_cost(request_id, operation, [report], '0.02')
+        self.assertIsNotNone(self.reserve('case:r2', '0.80'))
+        with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
+            self.reserve('case:r3', '0.09')
+
 
 if __name__ == '__main__':
     unittest.main()

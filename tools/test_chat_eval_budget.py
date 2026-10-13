@@ -52,6 +52,19 @@ class BudgetTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Both'):
             b.accounting_snapshot({'usage': '1'}, {'processor': keys['processor']}, 100)
 
+    def test_settlement_requires_failed_attempts_too(self):
+        operation = {'operation_id': 'o', 'current_attempt_id': 'second', 'state': 'completed', 'attempt_count': 2}
+        def report(attempt):
+            return {'event': 'chat_review_usage', 'operation_id': 'o', 'attempt_id': attempt,
+                    'complete': True, 'attempted_legs': 2, 'reported_legs': 2,
+                    'requests': [{}, {}], 'observed': {'cost_usd': '0.01'}}
+        with self.assertRaises(ValueError):
+            b.completed_attempt_cost(operation, [report('second')])
+        self.assertEqual(b.completed_attempt_cost(operation, [report('first'), report('second')]), Decimal('0.02'))
+        incomplete = report('first'); incomplete['complete'] = False
+        with self.assertRaises(ValueError):
+            b.completed_attempt_cost(operation, [incomplete, report('second')])
+
 
 if __name__ == '__main__':
     unittest.main()

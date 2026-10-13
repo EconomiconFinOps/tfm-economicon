@@ -60,6 +60,32 @@ def money(value):
     return result
 
 
+def completed_attempt_cost(operation, reports):
+    """Cost from complete observed reports for EVERY attempt, including failures.
+
+    Caller must retrieve reports from the authenticated processor logs for the
+    verified runtime. An unreported attempt cannot be treated as a free call.
+    """
+    count = operation.get('attempt_count')
+    if (operation.get('state') not in ('completed', 'failed', 'cancelled')
+            or type(count) is not int or not 1 <= count <= 4 or len(reports) != count):
+        raise ValueError('Terminal operation with all attempt reports required')
+    seen, total = set(), Decimal(0)
+    for report in reports:
+        attempt = report.get('attempt_id')
+        legs = report.get('attempted_legs')
+        if (not attempt or attempt in seen or report.get('operation_id') != operation.get('operation_id')
+                or report.get('event') != 'chat_review_usage' or report.get('complete') is not True
+                or type(legs) is not int or legs not in (1, 2) or report.get('reported_legs') != legs
+                or len(report.get('requests', [])) != legs):
+            raise ValueError('Incomplete or mismatched attempt accounting')
+        seen.add(attempt)
+        total += money(str(report['observed']['cost_usd']))
+    if operation.get('current_attempt_id') not in seen:
+        raise ValueError('Terminal attempt is missing')
+    return total
+
+
 def operation_bound(*, input_tokens_per_attempt, input_price_per_million,
                     output_price_per_million, auxiliary_bound_usd):
     # Repository limit: four attempts, each draft1000 + final2200 output tokens.

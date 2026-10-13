@@ -266,3 +266,27 @@ no modificados por este ajuste. Plan anterior superado para ejecución Linux.
 Archivos externos PR121-local-evaluation/jup123-{candidate-portable.tar,baseline-portable-plan.json}.
 No inferencias, ningún gasto nuevo; baseline sigue NOT_RUN. Falta además conexión
 real de procedencia/contabilidad y liquidación conservadora de reservas.
+
+
+### Procedencia de contenedores y conciliación conservadora — 14/10/2026
+
+`chat-eval-runtime.py` comprueba hashes del directorio fuente y archivos dentro
+de backend/processor/frontend con docker exec de sólo lectura. Backend incluye
+las copias del prompt/tokenizer/summary bajo /opt; comprueba proyecto Compose,
+estado running, imageID y estabilidad entre dos inspect sin leer variables de
+entorno.4pruebas de transporte simulado PASS; no se ha ejecutado en un runtime B.
+No verifica por sí solo proveedor, parámetros efectivos ni corpus en BD.
+
+`completed_attempt_cost` exige operación terminal y reportes chat_review_usage
+completos de todos sus intentos, no sólo el último, antes de reducir reservas.
+Ledger.reconcile_cost conserva el coste observado como reserva consumida aun
+si el contador upstream ya lo incluye (doble cómputo conservador). Coste superior
+a reserva o intento sin reporte obliga a detener/reconciliar. Costes auxiliares
+requieren prueba independiente; no asumir0si faltan. Conjunto herramientas39PASS,
+scorer16PASS del hito previo. Falta conectar lectura autenticada de esos logs.
+
+La solicitud asíncrona de autorización de entorno/claves continúa pendiente.
+No usar la continuación automática como aprobación. No nuevas transferencias,
+claves, despliegues ni inferencias. Este turno aporta código/pruebas útiles;
+objetivo activo y baseline NOT_RUN. Candidato portable ccc339a3 sigue archivado;
+las nuevas herramientas requieren congelar otro candidato al ejecutarlas.

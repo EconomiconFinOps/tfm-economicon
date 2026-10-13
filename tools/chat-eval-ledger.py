@@ -95,3 +95,23 @@ class Ledger:
     def pending(self):
         with self.connect() as db:
             return [dict(row) for row in db.execute('SELECT * FROM attempts ORDER BY rowid')]
+
+    def reconcile_cost(self, request_id, operation, reports, auxiliary_cost_usd):
+        cost = budget.completed_attempt_cost(operation, reports) + budget.money(auxiliary_cost_usd)
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT * FROM attempts WHERE request_id=?', (request_id,)).fetchone()
+            if row is None or row['state'] != 'OBSERVING' or row['operation_id'] != operation['operation_id']:
+                raise ValueError('Accounting does not match observed operation')
+            reservation = json.loads(row['reservation'])
+            if cost > budget.money(reservation['reserved_usd']):
+                raise ValueError('Observed cost exceeded reservation; halt campaign')
+            # Retain actual cost in outstanding totals even after provider counters
+            # include it. This deliberately double-counts rather than releasing
+            # money based on asynchronous upstream counter timing.
+            reservation['maximum_reserved_usd'] = reservation['reserved_usd']
+            reservation['reserved_usd'] = str(cost)
+            reservation['state'] = 'COST_OBSERVED'
+            reservation['attempt_reports'] = reports
+            db.execute('UPDATE attempts SET reservation=? WHERE request_id=?',
+                       (json.dumps(reservation), request_id))
