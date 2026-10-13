@@ -9,14 +9,14 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 
 ## 1. Preparación y contrato (antes de tocar producto)
 
-- [ ] 1.1 Comprobar `origin/develop`, fijar el SHA base y abrir `docs/evidence/JUP-038-validation.md`
+- [x] 1.1 Comprobar `origin/develop`, fijar el SHA base y abrir `docs/evidence/JUP-038-validation.md`
   con fecha, rama, SHA base, enlace a Trello y los cinco criterios de la tarjeta.
-- [ ] 1.2 Redactar `docs/api/anomaly-explanations.md`: petición con `anomaly_query`, respuestas 201,
+- [x] 1.2 Redactar `docs/api/anomaly-explanations.md`: petición con `anomaly_query`, respuestas 201,
   404, 409 y 422, campos de `anomaly_evidence` (decisión 7 del `design.md`), fórmulas de la
   decisión 4 y correspondencia con el resultado común de herramientas. Incluir un ejemplo calculado
   a mano con la serie del contrato de episodios (400.00 de referencia, 550.00 y 650.00 observados,
   inicio el 2026-09-08): servirá de resultado esperado independiente para las pruebas.
-- [ ] 1.3 Añadir a `docs/adr/ADR-0020-cost-anomaly-episodes.md` la nota fechada de la decisión 11
+- [x] 1.3 Añadir a `docs/adr/ADR-0020-cost-anomaly-episodes.md` la nota fechada de la decisión 11
   (JUP-038 entrega el explicador sin herramienta registrada; el punto 11 se aplaza con `RF-114-001`
   abierto y su motivo), sin cambiar el estado ni el texto de la decisión.
 
