@@ -60,9 +60,9 @@ describe("armazón de marca", () => {
     // jsdom checks the layout contract, not pixel widths in a real browser.
     const nav = renderLayout().querySelector("nav")!;
     const tabs = [...nav.querySelectorAll("a")];
-    expect(tabs).toHaveLength(9);
+    expect(tabs).toHaveLength(4);
     expect(nav.className).toContain("overflow-x-auto");
-    expect(tabs.some((tab) => tab.getAttribute("href") === "/ownership")).toBe(true);
+    expect(tabs.some((tab) => tab.getAttribute("href") === "/ownership")).toBe(false);
     expect(tabs.some((tab) => tab.getAttribute("href") === "/assistant")).toBe(false);
     for (const tab of tabs) {
       expect(tab.className).toContain("px-2");

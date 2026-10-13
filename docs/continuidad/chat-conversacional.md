@@ -1,15 +1,38 @@
 # Chat conversacional - JUP-035
 
-Actualizado: 12/10/2026. Este tema describe la entrega local, no un merge
+Actualizado: 13/10/2026. Este tema describe la entrega local, no un merge
 ni una validacion humana. Los responsables y el estado oficial siguen en Trello.
 
 ## Recorrido vigente
 
+La ultima ronda real de 005/006/007/012 cumple el criterio MVP: respuestas
+coherentes con la documentacion, calculos correctos y sin datos inventados.
+Cada caso completa en un intento y persiste una pareja, con streaming igual
+al resultado e historial. 005/006 conservan fuentes pequenas al reabrir.
+Se retiro el rechazo lexical de colores correctos y se simplifico el prompt;
+la comprobacion funcional conserva la responsabilidad de detectar contradicciones.
+6400 tokens de salida corrigen la truncacion acreditada de 006 con 3200.
+019/021/022 conservan sus resultados focales anteriores, no se repitieron aqui.
+El margen de reloj de 1 s sigue limitado al entorno SQL aislado y no repara
+su reloj. Gasto adicional asentado 0,083706085 USD de 0,12.
+Sin publicacion ni bateria completa repetida. Ver
+[informe y limites](../evidence/jup-035-expressions-adaptation-20261013.md).
+
+Reconciliacion local del 13/10/2026 sobre `8d98ae57`: el migrador distingue
+`002_anomaly_episodes` y `002_chat_operations` y reaplica sus pasos idempotentes
+si una base conserva solo el marcador historico `002`. La vista de propiedad
+envia siempre `ownership_query`. El panel de anomalias prepara sus filas y
+filtros para el chat sin convertirlas en evidencia financiera autorizada.
+Las suites de sesion y aislamiento conservan sus aserciones con los rotulos
+en espanol de develop. La comprobacion de arranque real requiere Docker.
+Resultados y limites: [evidencia de reconciliacion](../evidence/jup-035-checkpoint-reconciliation-20261013.md).
+
 La interfaz assistant-ui usa operaciones `/assistant/.../generations`.
 Backend autentica al propietario, valida el contexto y consulta los costes.
-Processor decide con `auto-documentation-v2` si necesita la herramienta RAG;
-backend ejecuta la busqueda solicitada filtrada por tenant. Una segunda llamada
-produce la respuesta estricta, tambien cuando no se solicita busqueda. La respuesta validada, las
+El protocolo local adaptado es `server-documentation-v4`: backend recupera una
+vez con la pregunta canonica filtrada por tenant y processor ejecuta una unica
+generacion estricta. Las expresiones tipadas y los pasajes autenticados se
+proyectan al formato publico existente. La respuesta validada, las
 citas y la evidencia se guardan atomicamente en el historial JSONB.
 
 El modo mock no llama a modelos. El modo IA utiliza LiteLLM/OpenRouter con
@@ -153,3 +176,22 @@ No es un resultado favorable ni una validacion humana. Corpus: 52 fragmentos
 reales de 1536 dimensiones; total registrado del ensayo 0.085089836 USD de 0.12.
 Detalle: [bateria RAG automatico](../evidence/jup-035-auto-rag-battery-20261012.md).
 Sin correcciones de producto ni repeticion de casos durante la tanda.
+
+## Reconciliacion del checkpoint: 2026-10-13
+
+Rama local codex/JUP-035-checkpoint-handoff, base 8d98ae5.
+Corregidas colision de migraciones, envio de ownership_query, captura del
+panel de anomalias y fixtures afectadas por la reconciliacion con develop.
+Frontend completo 977/977; comprobacion final de migraciones 22/22 con
+CockroachDB real. Compose mock y persistencia, renombrado y borrado comprobados.
+La revision local asistida no conserva hallazgos abiertos de reconciliacion;
+no declara aceptados los casos reales 005/006 ni sustituye CI o reviews humanas.
+Resultados completos, fallos iniciales y repeticiones focalizadas:
+[evidencia de reconciliacion](../evidence/jup-035-checkpoint-reconciliation-20261013.md).
+Correcciones sin commit ni publicacion.
+
+Correccion focal posterior: rechazo de resumenes sin temas/hechos y recuperacion
+de consultas de estado con reintentos acotados. Ensayo real conserva AZ-6082 y
+Equipo Abeto, desbloquea automaticamente y usa resumen mas cuatro pares en una
+respuesta posterior; doce mensajes persistidos. No se repite bateria ni se cierra
+JUP-035. Ver [evidencia de memoria](../evidence/jup-035-summary-empty-recovery-20261013.md).

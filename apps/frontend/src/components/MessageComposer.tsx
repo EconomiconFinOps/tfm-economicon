@@ -12,7 +12,6 @@ export function MessageComposer({ token, tenantId, conversationId }: {
 }) {
   const queryClient = useQueryClient();
   const [message, setMessage] = useState("");
-  const [ownership, setOwnership] = useState(false);
   const [groupBy, setGroupBy] = useState<OwnershipQuery["group_by"]>("application");
   const [tagKey, setTagKey] = useState("");
   const [value, setValue] = useState("");
@@ -39,7 +38,7 @@ export function MessageComposer({ token, tenantId, conversationId }: {
     sendMutation.reset();
     if (!message.trim()) return;
     const payload: MessageCreateRequest = { content: message };
-    if (ownership) {
+    {
       if (Boolean(startDate) !== Boolean(endDate)) {
         setValidationError("Indica ambas fechas o deja ambas vacías para consultar el mes actual UTC.");
         return;
@@ -68,15 +67,7 @@ export function MessageComposer({ token, tenantId, conversationId }: {
   }
 
   return <form className="mt-4 flex flex-col gap-4" onSubmit={handleSend}>
-    <label className="flex items-center gap-2 text-sm text-foreground">
-      <input type="checkbox" checked={ownership} onChange={(event) => {
-        setOwnership(event.target.checked);
-        setValidationError("");
-        sendMutation.reset();
-      }} disabled={sendMutation.isPending} />
-      Consultar costes por propiedad
-    </label>
-    {ownership && <fieldset className="grid gap-3 rounded-md border border-border p-3" disabled={sendMutation.isPending}>
+    <fieldset className="grid gap-3 rounded-md border border-border p-3" disabled={sendMutation.isPending}>
       <legend className="px-1 text-sm font-medium">Selección de costes</legend>
       <label className="flex flex-col gap-1 text-sm">Agrupar por
         <select className={fieldClass} value={groupBy} onChange={(event) => {
@@ -111,12 +102,12 @@ export function MessageComposer({ token, tenantId, conversationId }: {
       </div>
       <p className="text-xs text-muted-foreground">Indica ambas fechas o deja ambas vacías para el mes actual UTC. Sin moneda se muestran los totales separados por moneda.</p>
       {!startDate && !endDate && <p className="text-xs text-muted-foreground">Mes actual UTC: {defaultStart} a {defaultEnd} (fin excluido).</p>}
-    </fieldset>}
+    </fieldset>
     <textarea
       className={fieldClass}
       rows={5}
       aria-label="Pregunta"
-      placeholder={ownership ? "Pregunta sobre los costes de la selección." : "Pregunta sobre los documentos ingeridos del cliente."}
+      placeholder="Pregunta sobre los costes de la selección."
       value={message}
       disabled={sendMutation.isPending}
       onChange={(event) => setMessage(event.target.value)}

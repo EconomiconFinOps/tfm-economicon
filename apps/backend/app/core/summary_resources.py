@@ -27,7 +27,7 @@ V3_BUDGETS = {
     "payload_tokens": 8192,
     "content_tokens": 6144,
 }
-V3_MANIFEST_SHA = "b77cb54456152e08db25c57fef510b5864b0f2679db76e743cfe7a5b8a9c8634"
+V3_MANIFEST_SHA = "0284aef330cf790e3b2035b155a502c48b1c997ec322fefc57dce1608c10ccc9"
 LEGACY_MANIFEST_SHA = "f724d3fc8379d7926c667c9f5f3c43ed9074d34080a11fb5a1c76b2cd43b8b94"
 PAIR_KEYS = {"question_ref", "question", "answer_ref", "answer"}
 
@@ -84,6 +84,8 @@ class BackendSummaryResources:
     def validate_payload(self, value):
         schema = self.response_schema
         _validate(value, schema, schema)
+        if not value["topics"] and not value["facts"]:
+            raise ValueError("Summary has no retained dialogue.")
         text = "\n".join(
             [x["text"] for x in value["topics"]]
             + [x["quote"] for x in value["facts"]]

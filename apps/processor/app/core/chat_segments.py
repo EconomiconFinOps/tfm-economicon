@@ -1,0 +1,161 @@
+"""Private, bounded response segments; public response fields remain strings."""
+
+import copy
+
+from app.core.chat_calculations import render_text
+from app.core.chat_expressions import ExpressionRenderer, expression_definitions
+
+
+def quote_choices(content):
+    if not isinstance(content, str) or not content.strip():
+        raise ValueError("Invalid corpus quotation source.")
+    # Every choice is a literal passage. The context budget accounts for all of
+    # them; no generated paraphrase or automatic citation is introduced.
+    return [
+        content[i : i + 2048]
+        for i in range(0, len(content), 2048)
+        if content[i : i + 2048].strip()
+    ]
+
+
+def segment_schema(records=None, *, limit=4000, quantities=None, rules=None):
+    choices = [
+        {
+            "type": "object",
+            "properties": {"text": {"type": "string", "maxLength": limit}},
+            "required": ["text"],
+            "additionalProperties": False,
+        }
+    ]
+    if quantities:
+        choices.append(
+            {
+                "type": "object",
+                "properties": {"expression": {"$ref": "#/$defs/RenderedExpression"}},
+                "required": ["expression"],
+                "additionalProperties": False,
+            }
+        )
+    if quantities and rules:
+        from app.core.chat_rules import classification_schema
+
+        choices.append(
+            {
+                "type": "object",
+                "properties": {"classification": classification_schema(rules)},
+                "required": ["classification"],
+                "additionalProperties": False,
+            }
+        )
+    return {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 128,
+        "items": choices[0] if len(choices) == 1 else {"anyOf": choices},
+    }
+
+
+def bind_segments(schema, records=None, quantities=None, rules=None):
+    schema = copy.deepcopy(schema)
+    if quantities:
+        schema.setdefault("$defs", {}).update(expression_definitions(quantities))
+    for branch in schema.get("anyOf", [schema]):
+        properties = branch["properties"]
+        properties["answer"] = segment_schema(
+            records, quantities=quantities, rules=rules
+        )
+        for field in ("assumptions", "limitations", "next_actions"):
+            # One bounded prose segment per short public item. Arithmetic lives
+            # in answer; allowing128 short segments advertised values that the
+            # unchanged500-character public contract necessarily rejects.
+            item = segment_schema(limit=500)
+            item["maxItems"] = 1
+            properties[field]["items"] = item
+    return schema
+
+
+def render_segment(segment, records, expressions=None):
+    if not isinstance(segment, dict):
+        raise ValueError("Invalid response segment.")
+    if set(segment) == {"text"}:
+        text = segment["text"]
+        if not isinstance(text, str) or "[[calc:" in text:
+            raise ValueError("Invalid segment text.")
+        # Slots and raw equations cannot bypass the typed reference branch.
+        return render_text(text, [])
+    if set(segment) == {"expression"} and expressions is not None:
+        return expressions.render(segment["expression"])
+    if set(segment) == {"classification"} and expressions is not None:
+        return expressions.classify(segment["classification"])
+    raise ValueError("Invalid response segment.")
+
+
+def render_segments(segments, records, *, limit=4000, expressions=None):
+    if not isinstance(segments, list) or not 1 <= len(segments) <= 128:
+        raise ValueError("Invalid segment collection.")
+    parts = []
+    pending = []
+    for segment in segments:
+        # Validate shape before grouping adjacent text. Group validation closes
+        # bypasses where an equation or a slot is split across text segments.
+        rendered = render_segment(segment, records, expressions)
+        if "text" in segment:
+            pending.append(rendered)
+        else:
+            if pending:
+                parts.append(render_segment({"text": "".join(pending)}, records))
+                pending = []
+            parts.append(rendered)
+    if pending:
+        parts.append(render_segment({"text": "".join(pending)}, records))
+    result = "".join(parts)
+    if len(result) > limit:
+        raise ValueError("Rendered text limit.")
+    result = result.strip()
+    if not result:
+        raise ValueError("Empty rendered text.")
+    return result
+
+
+def render_response(value, records, *, quantities=None, rules=None):
+    if not isinstance(value, dict) or "answer" not in value:
+        raise ValueError("Invalid calculation response.")
+    expressions = (
+        ExpressionRenderer(quantities, rules=rules) if quantities is not None else None
+    )
+    result = {
+        **value,
+        "answer": render_segments(value["answer"], records, expressions=expressions),
+    }
+    for field in ("assumptions", "limitations", "next_actions"):
+        if (
+            field not in value
+            or not isinstance(value[field], list)
+            or len(value[field]) > 10
+        ):
+            raise ValueError("Invalid calculation collection.")
+        for item in value[field]:
+            if (
+                not isinstance(item, list)
+                or len(item) != 1
+                or not isinstance(item[0], dict)
+                or set(item[0]) != {"text"}
+            ):
+                raise ValueError("Invalid short prose item.")
+        result[field] = [render_segments(item, [], limit=500) for item in value[field]]
+    if expressions is not None and expressions.classification_used:
+        from app.core.chat_rules import project_classification_citations
+
+        result["evidence"] = project_classification_citations(
+            expressions.classification_supports, value.get("evidence")
+        )
+    if expressions is not None and expressions.documentary_sources:
+        evidence = result.get("evidence")
+        if not isinstance(evidence, list) or any(
+            not isinstance(item, dict) for item in evidence
+        ):
+            raise ValueError("Documentary calculation citation missing.")
+        cited = {item.get("id") for item in evidence if item.get("kind") == "corpus"}
+        if not expressions.documentary_sources <= cited:
+            raise ValueError("Documentary calculation citation missing.")
+    return result

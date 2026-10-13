@@ -215,7 +215,7 @@ def create_chat_app():
         value["tool_protocol"] = (
             "mock-direct-v1"
             if get_settings().llm_provider == "mock"
-            else "auto-documentation-v2"
+            else "server-documentation-v4"
         )
         resources = getattr(app.state, "chat_resources", None)
         if resources is not None:
@@ -417,7 +417,8 @@ def create_chat_app():
                 options = (
                     {"tool_result": tool_result}
                     if getattr(gateway, "requires_tool_result", False)
-                    and claim["context"].get("tool_protocol") == "auto-documentation-v2"
+                    and claim["context"].get("tool_protocol")
+                    == "server-documentation-v4"
                     else {}
                 )
                 iterator = gateway(
@@ -496,7 +497,7 @@ def create_chat_app():
                                 entry = app.state.chat_attempts[key]
                                 if (
                                     claim["context"].get("tool_protocol")
-                                    != "auto-documentation-v2"
+                                    != "server-documentation-v4"
                                     or entry["tool_future"] is not None
                                 ):
                                     raise ValueError("Unexpected tool call.")

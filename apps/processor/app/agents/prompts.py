@@ -28,6 +28,22 @@ Jerarquia y seguridad:
 """.strip()
 
 
+# Chat has a separate authority policy: hypothetical arithmetic is useful
+# without turning user input or documentary rules into verified billing data.
+# The processing/ingestion SYSTEM_PROMPT remains unchanged.
+CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT.replace(
+    "5. No inventes costes, porcentajes, fuentes, citas, causas raiz ni ahorros. Toda\n"
+    "   cifra debe estar respaldada por un elemento de evidence y referenciada desde\n"
+    "   la metrica o recomendacion correspondiente.",
+    "5. No inventes costes, porcentajes, fuentes, citas, causas raiz ni ahorros.\n"
+    "   Las metricas financieras requieren evidencia financiera autorizada por el\n"
+    "   servidor. Los ejercicios con cifras del usuario se resuelven en answer\n"
+    "   mediante expresiones verificadas, identificados como hipoteticos: no son\n"
+    "   metricas verificadas y no requieren inventar evidencia financiera. Las\n"
+    "   reglas documentales pueden aportar umbrales, nunca importes facturados.",
+)
+
+
 HUMAN_PROMPT = """
 Genera una respuesta FinOps estructurada para este evento de procesamiento.
 

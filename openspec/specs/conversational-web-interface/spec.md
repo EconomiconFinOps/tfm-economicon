@@ -390,6 +390,21 @@ Por elección Paris PM21:17:13, backend→processor SHALL usar red privada dedic
 
 ### Requirement: Prefijo estable de resumen como datos
 
+El sistema SHALL rechazar un resumen sin temas ni hechos retenidos antes de
+instalarlo o usarlo para excluir pares del contexto. Las limitaciones solas
+SHALL NOT sustituir el recuerdo del dialogo; los originales SHALL conservarse.
+
+#### Scenario: Resumen vacio sobre un lote no vacio
+
+- **WHEN** el proveedor devuelve topics y facts vacios para pares elegibles
+- **THEN** el resumen se rechaza sin avanzar la cobertura ni borrar originales; un artefacto vacio previo no excluye sus pares del contexto
+
+#### Scenario: Consulta transitoria de estado de memoria
+
+- **WHEN** una consulta de estado falla por red o HTTP 5xx durante la compresion
+- **THEN** el frontend conserva borrador y bloqueo, reintenta la lectura hasta tres veces sin iniciar inferencia y desbloquea al confirmar estado idle
+- **AND** si la lectura sigue fallando muestra un aviso y una accion explicita para volver a comprobar, sin reintentos automaticos indefinidos
+
 Por Paris PM21:33:08, resumen vigente SHALL permanecer como user no confiable después de system estable y antes de pantalla/pregunta/variables; SHA/revisión/versiones fijan bytes usados. Contexto necesario SHALL reenviarse en cada intento, sin promesa de hit/memoria remota ni promoción de resumen a instrucciones.
 
 #### Scenario: Cambio de resumen y cache miss

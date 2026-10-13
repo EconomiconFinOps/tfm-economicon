@@ -10,6 +10,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.schemas.chat_screen import ScreenCapture
+from app.core.chat_segments import bind_segments, quote_choices
 
 
 class GenerationRequest(BaseModel):
@@ -62,7 +63,74 @@ def response_schema():
     return schema, hashlib.sha256(canonical(schema).encode()).hexdigest()
 
 
-def provider_response_schema(*, financial_metrics_allowed=False):
+def _bind_chat_evidence(schema, authorized_evidence):
+    """Constrain generation to exact records from this authenticated attempt.
+
+    This is a generation constraint, not a substitute for the backend firewall.
+    None builds the static manifest template; [] authorizes no citations.
+    """
+    if authorized_evidence is None:
+        return schema
+    if not isinstance(authorized_evidence, list) or len(authorized_evidence) > 20:
+        raise ValueError("Invalid authorized evidence.")
+    choices, identifiers = [], set()
+    for source in authorized_evidence:
+        if not isinstance(source, dict):
+            raise ValueError("Invalid authorized evidence.")
+        fields = {key: source.get(key) for key in ("id", "kind", "title", "source")}
+        if (
+            any(type(value) is not str or not value for value in fields.values())
+            or fields["id"] in identifiers
+        ):
+            raise ValueError("Invalid authorized evidence.")
+        identifiers.add(fields["id"])
+        choice = copy.deepcopy(schema["$defs"]["Evidence"])
+        for key, value in fields.items():
+            rule = choice["properties"][key]
+            if "$ref" in rule:
+                rule = copy.deepcopy(
+                    schema["$defs"][rule["$ref"].removeprefix("#/$defs/")]
+                )
+                choice["properties"][key] = rule
+            rule["const"] = value
+        if fields["kind"] == "corpus":
+            # Provider-only grounding: force selection of an actual passage,
+            # not merely an allowed identifier with a similar document title.
+            choice["properties"]["support_quote"] = {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048,
+                "enum": quote_choices(source.get("content")),
+                "description": "Exact contiguous quotation from this fragment supporting a relevant claim in answer. Do not cite a fragment merely because it is nearby or shares a title.",
+            }
+            choice["required"].append("support_quote")
+        choices.append(choice)
+    # The endpoint rejects uniqueItems; processor and backend reject duplicates
+    # independently after generation. Keep exact provenance constraints here.
+    if choices:
+        schema["$defs"]["Evidence"] = {"anyOf": choices}
+        for name in ("Metric", "Recommendation"):
+            schema["$defs"][name]["properties"]["evidence_ids"]["items"] = {
+                "type": "string",
+                "enum": [item["id"] for item in authorized_evidence],
+                "description": "Exact authorized ID also selected in the response evidence array.",
+            }
+    else:
+        # No unsatisfiable actionable branch and no fabricated citation to satisfy it.
+        abstention = schema["anyOf"][1]
+        abstention["properties"]["evidence"]["maxItems"] = 0
+        schema = {**abstention, "$defs": schema["$defs"]}
+    return schema
+
+
+def provider_response_schema(
+    *,
+    financial_metrics_allowed=False,
+    authorized_evidence=None,
+    calculations=None,
+    quantities=None,
+    rules=None
+):
     if type(financial_metrics_allowed) is not bool:
         raise ValueError("Invalid financial authority control.")
     schema, _ = response_schema()
@@ -74,6 +142,18 @@ def provider_response_schema(*, financial_metrics_allowed=False):
     schema["$defs"].pop("Period")
     if not financial_metrics_allowed:
         schema["properties"]["metrics"]["maxItems"] = 0
+    # Chat never authorizes estimated savings; mirror the backend firewall.
+    for field in ("estimated_savings", "currency"):
+        schema["$defs"]["Recommendation"]["properties"][field] = {"type": "null"}
+    # Select documentary support before drafting prose in constrained decoding.
+    schema["properties"] = {
+        "evidence": schema["properties"]["evidence"],
+        **{
+            key: value
+            for key, value in schema["properties"].items()
+            if key != "evidence"
+        },
+    }
     # Complete branches preserve every base constraint, sharing root definitions.
     branch_base = {key: value for key, value in schema.items() if key != "$defs"}
     actionable = copy.deepcopy(branch_base)
@@ -88,8 +168,19 @@ def provider_response_schema(*, financial_metrics_allowed=False):
             if status not in ("ok", "partial")
         ],
     }
-    schema["anyOf"] = [actionable, abstention]
-    return schema
+    # A single union avoids intersecting long citation enums with identical
+    # copies at root and branch (DeepInfra rejects that redundant grammar).
+    schema = {
+        "type": "object",
+        "anyOf": [actionable, abstention],
+        "$defs": schema["$defs"],
+    }
+    return bind_segments(
+        _bind_chat_evidence(schema, authorized_evidence),
+        calculations,
+        quantities,
+        rules,
+    )
 
 
 def _validate(value, rule, schema, depth=0):
@@ -168,8 +259,10 @@ def validate_response(
     _validate(value, schema, schema)
     known = {item["id"]: item for item in authorized_evidence}
     returned = {item["id"]: item for item in value["evidence"]}
-    if len(returned) != len(value["evidence"]) or returned.keys() - known.keys():
-        raise ResponseValidationError("evidence_membership")
+    if len(returned) != len(value["evidence"]):
+        raise ResponseValidationError("evidence_duplicate_id")
+    if returned.keys() - known.keys():
+        raise ResponseValidationError("evidence_unknown_id")
     for key, item in returned.items():
         if any(
             item[field] != known[key].get(field)

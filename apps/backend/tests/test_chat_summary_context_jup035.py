@@ -66,7 +66,7 @@ def test_valid_memory_is_whole_untrusted_user_before_current_and_freezes_exact_u
     run(scenario,api)
     assert resource_hashes=={name:hashlib.sha256(resource_path.read_bytes()).hexdigest() for name,resource_path in resource_paths.items()}
 
-@pytest.mark.parametrize('defect',['foreign_scope','source_hash','version','output_hash','negation_inverted','unreferenced_topic','invalidated'])
+@pytest.mark.parametrize('defect',['foreign_scope','source_hash','version','output_hash','negation_inverted','unreferenced_topic','invalidated','empty_payload'])
 def test_invalid_memory_is_omitted_entirely_without_repairing_or_mutating_originals(memory,defect):
     api,resources,output,original=memory;state=copy.deepcopy(original)
     if defect=='foreign_scope':state['scope']['user_id']='bob'
@@ -76,7 +76,8 @@ def test_invalid_memory_is_omitted_entirely_without_repairing_or_mutating_origin
     elif defect=='invalidated':state['validity']={'valid':False,'reason':'retry_covered'}
     else:
         value=state['artifact']['exact_output']
-        if defect=='negation_inverted':value['topics'][0]['text']='Se confirmó una conclusión financiera.'
+        if defect=='empty_payload':value.update(topics=[],facts=[],limitations=[])
+        elif defect=='negation_inverted':value['topics'][0]['text']='Se confirmó una conclusión financiera.'
         else:value['topics'][0]['question_refs']=[];value['topics'][0]['answer_refs']=[]
         state['artifact']['text_sha256']=digest(value);state['artifact']['observations']['receipt']['output_hash']=digest(value)
     with api[1].engine.begin() as c:c.execute(text("UPDATE conversations SET dialogue_summary=:state WHERE id='alice-chat'"),{'state':__import__('app.db.chat_history',fromlist=['dumps']).dumps(state)})

@@ -15,6 +15,15 @@ SCHEMA=json.loads((BUNDLE/'schema.json').read_bytes())
 VALUE={'v':2,'topics':[{'text':'Intención sintética','question_refs':['q-'+'1'*64],'answer_refs':['a-'+'2'*64]}],
        'facts':[{'quote':'Texto literal','source_ref':'a-'+'2'*64}],'limitations':['Sin llamada real']}
 
+@pytest.mark.parametrize("limitations", [[], ["Sin llamada real"]])
+def test_empty_memory_cannot_replace_dialogue(summary_bundle, limitations):
+    def check(application):
+        with pytest.raises(ValueError, match="Summary has no retained dialogue"):
+            loaded(application).validate_payload(
+                {"v": 2, "topics": [], "facts": [], "limitations": limitations}
+            )
+    initialized(summary_bundle, check)
+
 def test_processor_schema_accepts_valid_closed_backend_payload():
     _validate(copy.deepcopy(VALUE),SCHEMA,SCHEMA)
 

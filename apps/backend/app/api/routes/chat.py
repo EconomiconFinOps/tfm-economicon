@@ -2,6 +2,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
+from sqlalchemy.exc import SQLAlchemyError
+import logging
 
 from app.api.dependencies import get_active_tenant, get_current_user, get_database
 from app.db.chat_repository import ChatError
@@ -47,18 +49,18 @@ async def generate(
     database=Depends(get_database),
 ):
     owned = scope(conversation_id, user, tenant)
-    if (
-        await __import__("asyncio").to_thread(
-            database.fetch_conversation, conversation_id, tenant, user["id"]
-        )
-        is None
-    ):
-        raise HTTPException(404, "not_found")
-    payload = await read_generation(request, GenerationRequest)
-    screen = payload.screen_context
-    if screen.get("identity") != {"tenant_id": tenant, "user_id": user["id"]}:
-        raise HTTPException(422, "screen_identity_invalid")
     try:
+        if (
+            await __import__("asyncio").to_thread(
+                database.fetch_conversation, conversation_id, tenant, user["id"]
+            )
+            is None
+        ):
+            raise HTTPException(404, "not_found")
+        payload = await read_generation(request, GenerationRequest)
+        screen = payload.screen_context
+        if screen.get("identity") != {"tenant_id": tenant, "user_id": user["id"]}:
+            raise HTTPException(422, "screen_identity_invalid")
         runtime = service(request.app, active=True)
         frozen = payload.model_dump(mode="json")
         if frozen["retry_of_operation_id"] is None:
@@ -78,6 +80,12 @@ async def generate(
         )
     except ChatError as error:
         failure(error)
+
+    except SQLAlchemyError:
+        # Ownership/context reads can fail before the repository transaction.
+        # Do not retry an admission or log its SQL/parameters implicitly.
+        logging.getLogger(__name__).warning("chat_admission_storage_unavailable")
+        raise HTTPException(503, "storage_unavailable") from None
 
 
 @router.get("/conversations/{conversation_id}/generations/{operation_id}")

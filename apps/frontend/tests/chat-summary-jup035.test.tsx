@@ -54,6 +54,47 @@ beforeEach(() => {
   }));
 });
 describe("Memoria derivada de diálogo JUP-035", () => {
+  it("acota los reintentos de estado y permite recuperacion manual sin inferencia", async () => {
+    const previous = globalThis.fetch;
+    let reads = 0, failing = true;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, options: RequestInit = {}) => {
+      if (String(input).endsWith("/summary")) { reads++; return failing ? json({}, 500) : json(memory()); }
+      return previous(input, options);
+    }));
+    mount(); await select();
+    fireEvent.change(screen.getByRole("textbox", { name: "Pregunta" }), { target: { value: "Borrador intacto" } });
+    await waitFor(() => expect(reads).toBe(4), { timeout: 8000 });
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 2300)); });
+    expect(reads).toBe(4);
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
+    expect(screen.getByText("No se pudo comprobar el estado de la conversación.")).toBeVisible();
+    failing = false;
+    fireEvent.click(screen.getByRole("button", { name: "Volver a comprobar estado" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Enviar" })).not.toBeDisabled());
+    expect(reads).toBe(5);
+    expect(screen.getByRole("textbox", { name: "Pregunta" })).toHaveValue("Borrador intacto");
+    expect(calls.filter(call => call.method === "POST")).toHaveLength(0);
+  }, 12000);
+  it("recupera un error 500 de estado sin reabrir ni enviar otra pregunta", async () => {
+    const previous = globalThis.fetch;
+    let reads = 0;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, options: RequestInit = {}) => {
+      if (String(input).endsWith("/summary")) {
+        reads++;
+        if (reads === 2) return json({}, 500);
+        if (reads >= 3) return json(memory());
+        return json({ ...memory(), queue: { reason: "running", state: "running", blocked: true, active: true, pending: false } });
+      }
+      return previous(input, options);
+    }));
+    mount(); await select();
+    fireEvent.change(screen.getByRole("textbox", { name: "Pregunta" }), { target: { value: "Borrador intacto" } });
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Enviar" })).not.toBeDisabled(), { timeout: 7000 });
+    expect(reads).toBe(3);
+    expect(screen.getByRole("textbox", { name: "Pregunta" })).toHaveValue("Borrador intacto");
+    expect(calls.filter(call => call.method === "POST")).toHaveLength(0);
+  }, 10000);
   it.each([false, true])("bloquea atomico al final e ignora memoria anterior pendiente=%s", async stale => {
     const previous = globalThis.fetch;
     let reader: ReadableStreamDefaultController<Uint8Array> | undefined;

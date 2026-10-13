@@ -206,7 +206,7 @@ class ChatContext:
             await asyncio.gather(worker, return_exceptions=True)
             await asyncio.to_thread(owner.close)
         protocol = descriptor.get("tool_protocol")
-        if protocol not in ("auto-documentation-v2", "mock-direct-v1"):
+        if protocol not in ("server-documentation-v4", "mock-direct-v1"):
             raise ChatError(503, "tool_contract_mismatch")
         context["tool_protocol"] = protocol
         return context
@@ -520,8 +520,8 @@ class ChatContext:
     async def tool_extension(self, scope, context, assistant, deadline):
         from app.core.chat_resources import validate_search_call
 
-        identifier, query = validate_search_call(assistant)
-        if context.get("tool_protocol") != "auto-documentation-v2":
+        identifier, query = validate_search_call(assistant, context)
+        if context.get("tool_protocol") != "server-documentation-v4":
             raise ValueError("Tool not admitted.")
         initial = context.get("authorized_evidence", [])
         if any(item["kind"] != "cost_query" for item in initial):
@@ -557,13 +557,16 @@ class ChatContext:
                     )
                 content = escaped({"evidence": corpus, "omissions": omissions})
                 messages = context["messages"] + [
-                    assistant,
-                    {"role": "tool", "tool_call_id": identifier, "content": content},
+                    {
+                        "role": "user",
+                        "content": "UNTRUSTED_RETRIEVAL_CONTEXT\n" + content,
+                    },
                 ]
                 try:
                     counted = self.resources.count_messages(
                         messages,
                         financial_metrics_allowed=context["financial_metrics_allowed"],
+                        authorized_evidence=initial + corpus,
                     )
                     result = {
                         "tool_call_id": identifier,
@@ -830,9 +833,11 @@ class ChatContext:
 
         def measure(messages, current):
             counted = self.resources.count_messages(
-                messages, financial_metrics_allowed=financial_metrics_allowed
+                messages,
+                financial_metrics_allowed=financial_metrics_allowed,
+                authorized_evidence=authorized,
             )
-            manifest = self.resources.metadata(counted)
+            manifest = self.resources.metadata(counted, messages)
             manifest.update(
                 summary=summary,
                 essential_tokens=0,
@@ -850,7 +855,7 @@ class ChatContext:
                 "response_period": verified_response_period(records),
                 "response_subscriptions": subscriptions,
                 "financial_metrics_allowed": financial_metrics_allowed,
-                "tool_protocol": "auto-documentation-v2",
+                "tool_protocol": "server-documentation-v4",
             }
             # The actual private claim is checked again by ChatTransport. Reserve
             # its bounded controls and the subsequently attached revision fence.
@@ -881,9 +886,11 @@ class ChatContext:
                 high = middle - 1
         messages, current = assemble(low, retained_recent, used_payload)
         counted = self.resources.count_messages(
-            messages, financial_metrics_allowed=financial_metrics_allowed
+            messages,
+            financial_metrics_allowed=financial_metrics_allowed,
+            authorized_evidence=authorized,
         )
-        manifest = self.resources.metadata(counted)
+        manifest = self.resources.metadata(counted, messages)
         manifest.update(
             summary=summary,
             essential_tokens=essential_tokens,
@@ -901,7 +908,7 @@ class ChatContext:
             "response_period": verified_response_period(records),
             "response_subscriptions": subscriptions,
             "financial_metrics_allowed": financial_metrics_allowed,
-            "tool_protocol": "auto-documentation-v2",
+            "tool_protocol": "server-documentation-v4",
         }
         # Leave space for authenticated claim controls within the private2MiB body.
         if len(canonical(context).encode()) > 2097152 - 8192:

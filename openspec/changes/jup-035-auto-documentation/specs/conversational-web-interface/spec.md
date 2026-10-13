@@ -29,27 +29,54 @@ evidencia insuficiente sin inventar cifras.
 - **WHEN** no existe evidencia suficiente
 - **THEN** se declara no_data o insufficient_data sin hechos financieros inventados
 
+#### Scenario: Recuperacion unica determinada por servidor
+
+- **WHEN** comienza un intento autorizado del chat
+- **THEN** SHALL utilizar server-documentation-v4, recuperar una vez con los primeros 2048 caracteres de la pregunta canonica y realizar una unica generacion final estructurada, sin decisiones ni llamadas nativas del modelo
+- **AND** SHALL conservar claim congelado, HMAC, correlacion, aislamiento, cancelacion y deadline comun; SHALL rechazar resultados ajenos o repetidos y contar contexto y esquema efectivo antes de generar
+- **AND** SHALL recuperar tambien ante saludos sin citar resultados irrelevantes; SHALL mantener reasoning high con exclude true, 6400 tokens totales y no registrar razonamiento privado
+
+#### Scenario: Expresiones y segmentos privados verificados
+
+- **WHEN** el modelo expresa un calculo en una respuesta
+- **THEN** SHALL usar segmentos privados con expresiones de raiz operacion sobre cantidades autorizadas de valor, unidad y origen; SHALL admitir suma, diferencia, cociente, porcentaje, variacion relativa y comparacion terminal
+- **AND** SHALL limitar profundidad a 4, operaciones a 12, cantidades a 128, precision Decimal a 40, entrada a 10^12, resultado a 10^18 y representacion a seis decimales; el denominador calculado SHALL reutilizar el subarbol completo
+- **AND** SHALL rechazar operandos ajenos, estructuras y unidades incompatibles sin reparacion por inferencia; cero SHALL ser indefinido y divisas incompatibles no agregables
+- **AND** SHALL usar el mismo renderer para streaming y final, conservar FinOpsResponse 1.0 y una pareja persistida; el calculo hipotetico SHALL no convertirse en evidencia financiera
+
+#### Scenario: Seleccion autenticada de citas
+
+- **WHEN** una respuesta cita corpus recuperado
+- **THEN** el esquema privado SHALL restringir IDs a registros autorizados y exigir support_quote literal; SHALL validar el pasaje antes de proyectar al formato publico
+- **AND** backend SHALL rechazar IDs ajenos o duplicados, procedencia alterada y citas distintas de las conservadas; SHALL conservar fuentes debajo de respuesta e historial
+- **AND** la aceptacion real SHALL comprobar pertinencia entre afirmacion y pasaje, no solo literalidad o pertenencia al corpus
+
+#### Scenario: Consulta documental SQL acotada realmente
+
+- **WHEN** la recuperacion documental alcanza SQL
+- **THEN** SHALL aplicar los controles de deadline y cancelacion descritos a continuacion
+
 #### Scenario: Decision documental automatica dentro del mismo intento
 
-- **WHEN** el chat IA inicia un intento autorizado
-- **THEN** SHALL usar el contrato auto-documentation-v2 y realizar una primera peticion con search_documentation estricta y tool_choice auto sin response_format final, admitir cero o una llamada nativa con query acotada sin parametros de tenant y ejecutar la recuperacion existente en backend con el scope autenticado; SHALL mantener una operacion, un intento, un dispatch privado y el contexto/hash canonicos iniciales congelados, sin precargar corpus para simular la herramienta
+- **WHEN** comienza el intento IA
+- **THEN** la decision documental SHALL corresponder al servidor bajo server-documentation-v4, usando la pregunta canonica truncada a 2048 caracteres; SHALL no solicitar una decision ni herramienta nativa al modelo
 
 #### Scenario: Decision sin herramienta y finalizacion estricta
 
-- **WHEN** la primera peticion termina con stop sin llamada nativa
-- **THEN** SHALL descartar su texto sin mostrarlo, persistirlo ni reutilizarlo como contexto; SHALL realizar una segunda y ultima generacion con el contexto autorizado original, tool_choice none y FinOpsResponse estricto; SHALL permitir respuestas con evidencia existente, saludos o aclaraciones no accionables, y exigir abstencion si falta sustento documental, sin recuperacion oculta; SHALL conservar el deadline comun y sumar el uso real de ambas generaciones, sin autoridad financiera derivada de usuario o corpus
+- **WHEN** el intento responde a un saludo o aclaracion sin necesidad documental semantica
+- **THEN** SHALL realizar igualmente la unica recuperacion del servidor y una generacion estricta, sin citar resultados irrelevantes; este escenario historico SHALL no implicar una fase de decision del modelo
 
 #### Scenario: Resultado privado y continuacion final
 
-- **WHEN** el backend obtiene fuentes para la llamada nativa vigente
-- **THEN** SHALL devolver una extension autorizada mediante el HMAC existente a un endpoint privado del processor, vinculada al intento y tool_call_id, y continuar con el mensaje assistant original mas role tool correlacionado, las mismas tools y FinOpsResponse estricto con tool_choice none; SHALL conservar la autoridad financiera exclusivamente de billing, validar citas contra las fuentes realmente recuperadas, contar herramientas y continuacion en ambos servicios y sumar el consumo de las dos peticiones sin alterar FinOpsResponse 1.0
+- **WHEN** backend obtiene la recuperacion del intento
+- **THEN** SHALL devolverla por HMAC correlacionada con el control canonico, contabilizar esquema y mensajes efectivos y autorizar una unica generacion; SHALL conservar el claim original y usar contexto recuperado como datos no confiables, no mensajes nativos de herramientas
 
 #### Scenario: Cancelacion, resultado ajeno o segunda herramienta
 
-- **WHEN** vence el plazo comun, se cancela el intento o llega un resultado ajeno, repetido, desconocido o una segunda llamada
-- **THEN** SHALL rechazar la continuacion sin segunda inferencia ni persistencia; la recuperacion y espera SHALL compartir el deadline del intento, sin reiniciarlo; una recuperacion vacia SHALL permitir una abstencion validada y nunca inventar fuentes; el modo mock SHALL seguir disponible sin llamadas pagadas
+- **WHEN** vence el plazo, se cancela el intento o llega un resultado ajeno, repetido o una segunda recuperacion
+- **THEN** SHALL rechazar la continuacion sin otra generacion ni persistencia, conservando el deadline absoluto y la politica de reintentos del backend
 
-#### Scenario: Consulta documental SQL acotada realmente
+#### Scenario: Plazo SQL de recuperacion
 
 - **WHEN** la recuperacion documental del chat esta conectando, ejecutando SQL o leyendo resultados y vence el deadline comun o se cancela el intento
 - **THEN** SHALL interrumpir la conexion/consulta propia y no dejar un worker esperando SQL tras terminar la espera asincrona; SHALL aplicar el plazo restante tambien a las lecturas de documentos y conservar tenant/proveedor/filtros; los llamadores ordinarios sin deadline SHALL conservar el camino existente, sin cambiar el pool compartido
@@ -77,7 +104,20 @@ evidencia insuficiente sin inventar cifras.
 #### Scenario: Salida truncada y diagnostico seguro
 
 - **WHEN** una salida termina por length o es rechazada por una regla del contrato
-- **THEN** el sistema SHALL distinguir truncacion, rechazo contractual y fallo HTTP en sus diagnosticos internos sin registrar prompts, valores rechazados, respuestas, secretos ni excepciones arbitrarias; el chat SHALL reservar la salida configurada, con 3200 tokens por defecto y como maximo aprobado, sin cambiar modelo, deadline ni politica de reintentos
+- **THEN** el sistema SHALL distinguir truncacion, rechazo contractual y fallo HTTP en sus diagnosticos internos sin registrar prompts, valores rechazados, respuestas, secretos ni excepciones arbitrarias; el chat SHALL reservar la salida configurada, con 6400 tokens por defecto y como maximo aprobado, sin cambiar modelo, deadline ni politica de reintentos
+
+#### Scenario: Semaforo documental verificado
+
+- **WHEN** se clasifica un porcentaje de coste no asignado con un pasaje completo efectivo y autorizado de la regla versionada
+- **THEN** SHALL usar classification con rule_id y expresion porcentaje, aplicar <=5 verde, >5 y <=10 amarillo, >10 rojo antes de redondear y renderizar conclusion e intervalo desde el servidor
+- **AND** SHALL publicar sus propias citas con pasajes completos autorizados de formula y bandas, incluso si el modelo no las enumera; SHALL rechazar citas entregadas con metadatos/pasajes incorrectos, fuentes ajenas y reglas alteradas; SHALL no emitir color si el denominador es cero o falta regla autorizada
+- **AND** SHALL admitir explicaciones y reiteraciones correctas sin exigir una redaccion concreta; la aceptacion funcional SHALL comprobar coherencia documental y ausencia de datos inventados
+- **AND** SHALL conservar aritmetica hipotetica sin promoverla a evidencia financiera, renderer comun y formato publico existente
+
+#### Scenario: Afirmaciones sobre politica de tagging
+
+- **WHEN** la respuesta enumera requisitos de tagging
+- **THEN** SHALL citar el fragmento que contiene esos requisitos; si no fue recuperado SHALL omitir esa afirmacion y conservar solo la distincion sustentada entre asignacion y cumplimiento
 
 #### Scenario: Continuacion documental acotada
 
@@ -124,7 +164,7 @@ evidencia insuficiente sin inventar cifras.
 - **WHEN** una respuesta considera convertir importes en monedas diferentes
 - **THEN** sin destino, fecha y direccion del tipo de cambio autorizados SHALL mantener importes separados y pedir esos datos, sin formular una suma que presuponga un importe ya expresado en el destino desconocido
 - **AND** un ejemplo hipotetico de formula SHALL declarar moneda de origen, destino y unidades del tipo de cambio, convirtiendo cada importe necesario al mismo destino sin inventar cotizaciones ni inferir moneda por tenant o configuracion regional
-- **AND** las instrucciones aceptadas de unidades y condiciones contractuales SHALL permanecer intactas, sin cambios de schema, validadores, retrieval, modelo, routing, plazos ni salida de 3200 tokens
+- **AND** las instrucciones aceptadas de unidades y condiciones contractuales SHALL permanecer intactas, sin relajar validadores ni cambiar modelo, routing, plazos o salida de 3200 tokens
 
 #### Scenario: Sustento antes de seleccionar estado
 
@@ -156,9 +196,9 @@ evidencia insuficiente sin inventar cifras.
 
 #### Scenario: Finalizacion sin fuentes disponibles
 
-- **WHEN** la finalizacion no dispone de evidencia autorizada inicial ni de fuentes en el resultado validado de la herramienta
+- **WHEN** la finalizacion no dispone de evidencia autorizada inicial ni de fuentes en el resultado validado de la recuperacion
 - **THEN** el esquema estricto SHALL exigir evidence vacia y conservar solo la rama de estados no accionables, sin borrar referencias despues de recibirlas ni relajar los validadores
-- **AND** con evidencia financiera o documental autorizada SHALL conservar ambas ramas del esquema anterior; la primera llamada SHALL mantener tool_choice auto
+- **AND** con evidencia financiera o documental autorizada SHALL conservar ambas ramas del esquema anterior; la unica generacion SHALL usar el esquema final sin herramientas nativas
 
 #### Scenario: Fuentes ajenas
 

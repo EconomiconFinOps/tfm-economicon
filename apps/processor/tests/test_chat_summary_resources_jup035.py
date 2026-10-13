@@ -18,6 +18,15 @@ from test_chat_resources_jup035 import resources,canonical,digest,TOKENIZER_SHA
 
 
 ROUTE='/internal/chat/v2/summary/descriptor'
+
+@pytest.mark.parametrize("limitations", [[], ["Sin llamada real"]])
+def test_empty_memory_cannot_replace_dialogue(summary_bundle, limitations):
+    async def check(client, application):
+        with pytest.raises(ValueError, match="Summary has no retained dialogue"):
+            application.state.summary_resources.validate_payload(
+                {"v": 2, "topics": [], "facts": [], "limitations": limitations}
+            )
+    exercise(summary_bundle, check)
 INPUT={'v':2,'fields':['previous_summary','pairs'],
     'pair_fields':['question_ref','question','answer_ref','answer'],
     'ref_format':'role-sha256-scope-message','serialization':'utf8-sorted-keys-significant-arrays'}

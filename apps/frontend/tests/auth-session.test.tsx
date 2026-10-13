@@ -21,13 +21,13 @@ function expectCleared(client: QueryClient) {
 }
 
 async function signIn(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(await screen.findByLabelText("Password"), "synthetic-password");
-  await user.click(screen.getByRole("button", { name: "Sign in" }));
+  await user.type(await screen.findByLabelText("Contraseña"), "synthetic-password");
+  await user.click(screen.getByRole("button", { name: "Iniciar sesión" }));
 }
 
 async function loggedOut(client: QueryClient) {
   await waitFor(() => expect(window.localStorage.getItem(SESSION_KEY)).toBeNull());
-  expect(await screen.findByRole("button", { name: "Sign in" })).toBeEnabled();
+  expect(await screen.findByRole("button", { name: "Iniciar sesión" })).toBeEnabled();
   expectCleared(client);
 }
 
@@ -60,7 +60,7 @@ describe("JUP-085 runtime session contracts", () => {
     const { requests } = mockBackend();
     const { client } = renderApp(["/"], seedPrivateCache);
     await waitFor(() => expect(window.localStorage.getItem(SESSION_KEY)).toBeNull());
-    expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Iniciar sesión" })).toBeEnabled();
     expectCleared(client);
     expect(requests).toEqual([]);
   });
@@ -89,12 +89,12 @@ describe("JUP-085 runtime session contracts", () => {
     renderApp();
     const persist = vi.spyOn(Storage.prototype, "setItem");
     await signIn(user);
-    await waitFor(() => expect(screen.queryByRole("button", { name: "Signing in..." })).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Iniciando sesión..." })).not.toBeInTheDocument());
     expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
     expect(window.localStorage.getItem(TENANT_KEY)).toBeNull();
     expect(persist.mock.calls.filter(([key]) => key === SESSION_KEY)).toEqual([]);
     expect(requests.map((request) => request.path)).toEqual(["/auth/login"]);
-    expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Iniciar sesión" })).toBeEnabled();
   });
 
   it.each(["profile-first", "tenants-first"])("restores in parallel, persists current profile and blocks product data: %s", async (order) => {
@@ -116,12 +116,12 @@ describe("JUP-085 runtime session contracts", () => {
       else bootstrap.resolve({ items: tenants });
     });
     expect(requests).toHaveLength(2);
-    expect(screen.queryByText("Monthly Spend")).not.toBeInTheDocument();
+    expect(screen.queryByText("Gasto mensual")).not.toBeInTheDocument();
     await act(async () => {
       profile.resolve(current);
       bootstrap.resolve({ items: tenants });
     });
-    await screen.findByText("Monthly Spend");
+    await screen.findByText("Gasto mensual");
     expect(JSON.parse(window.localStorage.getItem(SESSION_KEY)!)).toEqual({ ...session, user: current });
   });
 
@@ -135,7 +135,7 @@ describe("JUP-085 runtime session contracts", () => {
     await waitFor(() => expect(requests.map((request) => request.path).sort()).toEqual(["/auth/login", "/me", "/tenants"]));
     expect(screen.queryByText(operator.full_name)).not.toBeInTheDocument();
     await act(async () => { profile.resolve(operator); bootstrap.resolve({ items: tenants }); });
-    expect(await screen.findByRole("button", { name: "Cerrar sesion" })).toBeEnabled();
+    expect(await screen.findByRole("button", { name: "Cerrar sesión" })).toBeEnabled();
     expect(JSON.parse(window.localStorage.getItem(SESSION_KEY)!)).toEqual(session);
     expect(vi.mocked(fetch).mock.calls.every(([, init]) => init?.credentials !== "include")).toBe(true);
   });
@@ -156,10 +156,10 @@ describe("JUP-085 runtime session contracts", () => {
     if (order === "resolved") await act(async () => oldTenants.resolve({ items: [tenants[0]] }));
     await act(async () => profile.resolve(current));
     await waitFor(() => expect(attempts).toBe(2));
-    expect(screen.queryByText("Monthly Spend")).not.toBeInTheDocument();
+    expect(screen.queryByText("Gasto mensual")).not.toBeInTheDocument();
     expect(requests.some((request) => request.path === "/billing/summary")).toBe(false);
     await act(async () => newTenants.resolve({ items: [tenants[1]] }));
-    await screen.findByText("Monthly Spend");
+    await screen.findByText("Gasto mensual");
     await act(async () => oldTenants.resolve({ items: [tenants[0]] }));
     expect(window.localStorage.getItem(TENANT_KEY)).toBe(tenants[1].id);
     expect(JSON.parse(window.localStorage.getItem(SESSION_KEY)!)).toEqual({ ...session, user: current });
@@ -174,7 +174,7 @@ describe("JUP-097 strict profile policy regressions", () => {
     mockBackend({ "GET /me": () => revalidate ? failure(kind) : jsonResponse(operator) });
     restoreSession();
     const { client } = renderApp();
-    await screen.findByRole("button", { name: "Cerrar sesion" });
+    await screen.findByRole("button", { name: "Cerrar sesión" });
     seedPrivateCache(client);
     revalidate = true;
     await act(async () => { await client.invalidateQueries({ queryKey: ["profile"] }); });
@@ -208,7 +208,7 @@ describe("JUP-097 strict profile policy regressions", () => {
     expect(window.localStorage.getItem(SESSION_KEY)).not.toBeNull();
     expect(client.getQueryCache().find({ queryKey: ["profile"], exact: false })?.state.status).toBe("pending");
     await act(async () => retry.resolve(operator));
-    expect(await screen.findByRole("button", { name: "Cerrar sesion" })).toBeEnabled();
+    expect(await screen.findByRole("button", { name: "Cerrar sesión" })).toBeEnabled();
   });
 });
 
@@ -236,10 +236,10 @@ describe("global numeric 401 and local cleanup", () => {
     restoreSession();
     const { client } = renderApp([flow === "ingestion" ? "/ingest" : "/ownership"]);
     if (flow === "ingestion") {
-      await user.type(await screen.findByLabelText("Text content"), "synthetic cost data");
-      await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
+      await user.type(await screen.findByLabelText("Contenido del texto"), "synthetic cost data");
+      await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
     } else {
-      await user.click(await screen.findByRole("button", { name: "New" }));
+      await user.click(await screen.findByRole("button", { name: "Nueva" }));
     }
     await loggedOut(client);
     expect(requests.filter((request) => request.path === path && request.method === "POST")).toHaveLength(1);
@@ -264,21 +264,21 @@ describe("global numeric 401 and local cleanup", () => {
     mockBackend({ "GET /billing/summary": () => failure(kind), "POST /jobs/ingest": () => failure(kind) });
     restoreSession();
     renderApp(["/overview-legacy"]);
-    await screen.findByRole("heading", { name: "Backend unavailable" });
+    await screen.findByRole("heading", { name: "Backend no disponible" });
     expect(window.localStorage.getItem(SESSION_KEY)).not.toBeNull();
-    await user.click(screen.getByRole("link", { name: "Ingestions" }));
-    await user.type(screen.getByLabelText("Text content"), "retained draft");
-    await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
+    await user.click(screen.getByRole("link", { name: "Ingesta" }));
+    await user.type(screen.getByLabelText("Contenido del texto"), "retained draft");
+    await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
     await screen.findByText(/Synthetic/);
     expect(window.localStorage.getItem(SESSION_KEY)).not.toBeNull();
-    expect(screen.getByLabelText("Text content")).toHaveValue("retained draft");
+    expect(screen.getByLabelText("Contenido del texto")).toHaveValue("retained draft");
   });
 
   it.each([403, 422, 503, "network"] as const)("tenant bootstrap error %s retains the session", async (kind) => {
     mockBackend({ "GET /tenants": () => failure(kind) });
     restoreSession();
     renderApp();
-    await screen.findByRole("button", { name: "Reset session" });
+    await screen.findByRole("button", { name: "Restablecer sesión" });
     expect(window.localStorage.getItem(SESSION_KEY)).not.toBeNull();
   });
 
@@ -286,9 +286,9 @@ describe("global numeric 401 and local cleanup", () => {
     mockBackend({ "GET /health": () => failure(401) });
     restoreSession();
     renderApp(["/overview-legacy"]);
-    await screen.findByRole("heading", { name: "Backend unavailable" });
+    await screen.findByRole("heading", { name: "Backend no disponible" });
     expect(window.localStorage.getItem(SESSION_KEY)).not.toBeNull();
-    expect(screen.getByRole("button", { name: "Cerrar sesion" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Cerrar sesión" })).toBeEnabled();
   });
 
   it("public login 401 does not invalidate another persisted session", async () => {
@@ -306,10 +306,10 @@ describe("global numeric 401 and local cleanup", () => {
     const { requests } = mockBackend({ "POST /jobs/ingest": () => jsonResponse(ingestJob) });
     restoreSession();
     const { client } = renderApp(["/ingest"]);
-    await user.type(await screen.findByLabelText("Text content"), "old draft");
-    await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
+    await user.type(await screen.findByLabelText("Contenido del texto"), "old draft");
+    await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
     await screen.findByText(ingestJob.job_id);
-    await user.dblClick(screen.getByRole("button", { name: "Cerrar sesion" }));
+    await user.dblClick(screen.getByRole("button", { name: "Cerrar sesión" }));
     await loggedOut(client);
     expect(screen.queryByText(ingestJob.job_id)).not.toBeInTheDocument();
     expect(requests.some((request) => /logout|revoke/.test(request.path))).toBe(false);
@@ -354,14 +354,14 @@ describe("session generations exclude abandoned HTTP work", () => {
     restoreSession();
     const { client, unmount } = renderApp(["/ingest"]);
     try {
-      await user.type(await screen.findByLabelText("Text content"), "synthetic abandoned payload");
-      await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
+      await user.type(await screen.findByLabelText("Contenido del texto"), "synthetic abandoned payload");
+      await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
       await waitFor(() => expect(requests.filter((request) => request.path === "/jobs/ingest")).toHaveLength(1));
       const mutation = client.getMutationCache().getAll()[0];
       expect(mutation.state.status).toBe("pending");
       expect(mutation.state.variables).toMatchObject({ text_content: "synthetic abandoned payload" });
       expect(mutation.gcTime).toBe(gcInterval);
-      await user.click(screen.getByRole("button", { name: "Cerrar sesion" }));
+      await user.click(screen.getByRole("button", { name: "Cerrar sesión" }));
       await loggedOut(client);
       const requestCount = requests.length;
       await act(async () => {
@@ -380,7 +380,7 @@ describe("session generations exclude abandoned HTTP work", () => {
       }
       expectCleared(client);
       expect(requests).toHaveLength(requestCount);
-      expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Iniciar sesión" })).toBeEnabled();
       expect(gcTimers.size, "Abandoned mutation must not retain a recurring GC timer after disposal deadline").toBe(0);
     } finally {
       unmount();
@@ -409,21 +409,21 @@ describe("session generations exclude abandoned HTTP work", () => {
         ...queryClient.getDefaultOptions(), mutations: { retry: 1, retryDelay: 0 }
       });
     });
-    await user.click(await screen.findByRole("button", { name: "New" }));
+    await user.click(await screen.findByRole("button", { name: "Nueva" }));
     await waitFor(() => expect(submissions).toBe(1));
     if (kind === "body") await waitFor(() => expect(parse).toHaveBeenCalledOnce());
-    await user.click(screen.getByRole("button", { name: "Cerrar sesion" }));
+    await user.click(screen.getByRole("button", { name: "Cerrar sesión" }));
     await loggedOut(client);
     await signIn(user);
-    await screen.findByRole("button", { name: "Cerrar sesion" });
+    await screen.findByRole("button", { name: "Cerrar sesión" });
     await act(async () => { await router.navigate("/ownership"); });
-    await user.type(await screen.findByPlaceholderText("New conversation title"), "B draft");
+    await user.type(await screen.findByPlaceholderText("Título de la nueva conversación"), "B draft");
     await waitFor(() => expect(client.isFetching()).toBe(0));
     const savedSession = window.localStorage.getItem(SESSION_KEY);
     const savedTenant = window.localStorage.getItem(TENANT_KEY);
     const savedCache = cacheView(client);
     const requestCount = requests.length;
-    const draft = screen.getByPlaceholderText("New conversation title");
+    const draft = screen.getByPlaceholderText("Título de la nueva conversación");
     const draftValue = (draft as HTMLInputElement).value;
     await act(async () => {
       reject(kind === "network" ? new TypeError("Abandoned network failure") : new SyntaxError("Abandoned body parsing failure"));
@@ -473,28 +473,28 @@ describe("session generations exclude abandoned HTTP work", () => {
     restoreSession(tenants[0].id);
     const route = flow === "conversation" ? "/ownership" : "/overview-legacy";
     const { client, router } = renderApp([route]);
-    await screen.findByRole("button", { name: "Cerrar sesion" });
-    if (flow === "conversation") await screen.findByRole("button", { name: "New" });
-    else await screen.findByText("Monthly Spend");
+    await screen.findByRole("button", { name: "Cerrar sesión" });
+    if (flow === "conversation") await screen.findByRole("button", { name: "Nueva" });
+    else await screen.findByText("Gasto mensual");
     const before = requests.length;
     phase = "pending";
     if (flow === "conversation") {
-      await user.click(screen.getByRole("button", { name: "New" }));
+      await user.click(screen.getByRole("button", { name: "Nueva" }));
     } else {
       const key = flow === "billing" ? "billing-summary" : flow;
       act(() => { void client.invalidateQueries({ queryKey: [key] }); });
     }
     await waitFor(() => expect(requests.length).toBeGreaterThan(before));
     if (result === "body") await waitFor(() => expect(parse).toHaveBeenCalledOnce());
-    await user.click(screen.getByRole("button", { name: "Cerrar sesion" }));
+    await user.click(screen.getByRole("button", { name: "Cerrar sesión" }));
     await loggedOut(client);
     phase = "next";
     if (next !== "login") {
       await signIn(user);
-      await screen.findByRole("button", { name: "Cerrar sesion" });
+      await screen.findByRole("button", { name: "Cerrar sesión" });
       await act(async () => { await router.navigate(route); });
-      if (flow === "conversation") await screen.findByRole("button", { name: "New" });
-      else await screen.findByText("Monthly Spend");
+      if (flow === "conversation") await screen.findByRole("button", { name: "Nueva" });
+      else await screen.findByText("Gasto mensual");
       await waitFor(() => expect(client.isFetching()).toBe(0));
     }
     const savedSession = window.localStorage.getItem(SESSION_KEY);
@@ -537,10 +537,10 @@ describe("session generations exclude abandoned HTTP work", () => {
     await signIn(user);
     if (delay === "body") await waitFor(() => expect(parse).toHaveBeenCalledOnce());
     await act(async () => { await router.navigate("/"); });
-    await user.click(await screen.findByRole("button", { name: "Cerrar sesion" }));
+    await user.click(await screen.findByRole("button", { name: "Cerrar sesión" }));
     await loggedOut(client);
     await signIn(user);
-    await screen.findByRole("button", { name: "Cerrar sesion" });
+    await screen.findByRole("button", { name: "Cerrar sesión" });
     const saved = window.localStorage.getItem(SESSION_KEY);
     await act(async () => {
       const obsolete = { ...loginResponse, access_token: "abandoned-login-token", user: { ...operator, full_name: "Abandoned A" } };

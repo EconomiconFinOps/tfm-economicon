@@ -103,7 +103,7 @@ def test_migration_rejects_incompatible_catalog_instead_of_accepting_names(sql,t
                 index=2
             with pytest.raises(RuntimeError,match='Incompatible'):
                 MIGRATION.step_applied(connection,index)
-            assert connection.execute(text("SELECT COUNT(*) FROM schema_migrations WHERE version='002'")).scalar_one()==0
+            assert connection.execute(text("SELECT COUNT(*) FROM schema_migrations WHERE version='002_chat_operations'")).scalar_one()==0
     finally: engine.dispose()
 
 
@@ -122,11 +122,11 @@ def test_interrupted_additive_ddl_resumes_and_preserves_legacy_pair_json(sql,tmp
         for statement in MIGRATION.schema_steps()[:2]:
             with engine.connect().execution_options(isolation_level='AUTOCOMMIT') as connection: connection.execute(text(statement))
         with engine.connect() as connection:
-            assert connection.execute(text("SELECT COUNT(*) FROM schema_migrations WHERE version='002'")).scalar_one()==0
+            assert connection.execute(text("SELECT COUNT(*) FROM schema_migrations WHERE version='002_chat_operations'")).scalar_one()==0
         MigrationRunner(engine,'app.db.migrations',DIRECTORY).run()
         with engine.connect() as connection:
             MIGRATION.verify(connection)
-            assert connection.execute(text("SELECT COUNT(*) FROM schema_migrations WHERE version='002'")).scalar_one()==1
+            assert connection.execute(text("SELECT COUNT(*) FROM schema_migrations WHERE version='002_chat_operations'")).scalar_one()==1
             assert connection.execute(text('SELECT dialogue_summary FROM conversations')).scalar_one() is None
         assert history()==before
     finally: engine.dispose()

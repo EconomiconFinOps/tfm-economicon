@@ -26,7 +26,7 @@ from urllib import error, request
 from app.agents.schemas import chat_provider_schema, assemble_chat_response
 from app.clients.chat_dns import resolve
 from app.core.context_budget import budget
-from app.clients.chat_stream_parser import AnswerJSON, SSEFrames, complete_json
+from app.clients.chat_stream_parser import SegmentAnswerJSON, SSEFrames, complete_json
 from app.clients.litellm import (
     LiteLLMClient,
     _AttemptDeadline,
@@ -50,6 +50,7 @@ _NATIVE_RULES = frozenset(
         "native_tool_limit",
         "native_tool_count",
         "native_final_invalid",
+        "native_multiple_calls",
     }
 )
 
@@ -163,6 +164,8 @@ def _record_diagnostic(
 ):
     """A bounded structural event; never serialize exceptions or candidate data."""
     try:
+        from app.core.chat_calculations import CalculationError
+
         correlation = _diagnostic_context.get() or (None, None)
         classes = {
             ValidationError: "ValidationError",
@@ -249,6 +252,65 @@ def _record_diagnostic(
         }
         if isinstance(failure, _NativeEnvelopeError):
             event["rule_code"] = failure.rule_code
+        if isinstance(failure, CalculationError):
+            event["exception_class"] = "CalculationError"
+            event["rule_code"] = failure.rule_code
+        from app.core.chat_expressions import ExpressionUnitError
+
+        if isinstance(failure, ExpressionUnitError):
+            event["exception_class"] = "ValueError"
+            event["rule_code"] = "expression_incompatible_units"
+            event["expression"] = failure.diagnostic
+        assembly_rules = {
+            "Citation passage is not grounded.": "citation_passage_not_grounded",
+            "Invalid evidence collection.": "invalid_evidence_collection",
+            "Invalid evidence record.": "invalid_evidence_record",
+            "Invalid response scope.": "invalid_response_scope",
+            "Period is server-owned.": "server_owned_period",
+            "Subscriptions are server-owned.": "server_owned_subscriptions",
+            "Invalid calculation response.": "invalid_calculation_response",
+            "Invalid calculation collection.": "invalid_calculation_collection",
+            "Invalid short prose item.": "invalid_short_prose_item",
+            "Invalid response segment.": "invalid_response_segment",
+            "Invalid segment text.": "invalid_segment_text",
+            "Invalid segment reference.": "invalid_segment_reference",
+            "Invalid segment collection.": "invalid_segment_collection",
+            "Rendered text limit.": "rendered_text_limit",
+            "Empty rendered text.": "empty_rendered_text",
+            "Response segment limit.": "response_segment_limit",
+            "Incomplete segmented answer.": "incomplete_segmented_answer",
+            "Stream candidate mismatch.": "stream_candidate_mismatch",
+            "Expression input unavailable.": "expression_input_unavailable",
+            "Expression input type.": "expression_input_type",
+            "Expression source magnitude.": "expression_source_magnitude",
+            "Expression operation limit.": "expression_operation_limit",
+            "Expression shape or depth.": "expression_shape_or_depth",
+            "Expression operation shape.": "expression_operation_shape",
+            "Rendered expression requires an operation.": "expression_operation_required",
+            "Unknown source quantity.": "expression_unknown_source_quantity",
+            "Incompatible expression units.": "expression_incompatible_units",
+            "Expression magnitude or unit limit.": "expression_magnitude_or_unit_limit",
+            "Comparison expression shape.": "expression_comparison_shape",
+            "Expression precision limit.": "expression_precision_limit",
+            "Rule source not authorized.": "classification_source_unauthorized",
+            "Unknown classification rule.": "classification_rule_unknown",
+            "Classification rule version.": "classification_rule_version",
+            "Classification shape.": "classification_shape",
+            "Classification requires percentage.": "classification_percentage_required",
+            "Classification percentage range.": "classification_percentage_range",
+            "Duplicate classification.": "classification_duplicate",
+            "Invalid classification prose.": "classification_prose",
+            "Invalid classification citation.": "classification_citation",
+            "Missing classification citation.": "classification_citation_missing",
+            "Citation provenance is not grounded.": "citation_provenance",
+        }
+        if (
+            type(failure) is ValueError
+            and failure.args
+            and type(failure.args[0]) is str
+            and failure.args[0] in assembly_rules
+        ):
+            event["rule_code"] = assembly_rules[failure.args[0]]
         encoded = json.dumps(
             event, ensure_ascii=True, separators=(",", ":"), allow_nan=False
         )
@@ -385,7 +447,7 @@ class _ChatHandler:
                 cancelled=req._chat_cancelled,
             ),
             req,
-            **kwargs,
+            **kwargs
         )
 
 
@@ -412,16 +474,7 @@ class ChatGateway:
             _ChatHTTPSHandler(),
         )
 
-    def _records(
-        self,
-        context,
-        deadline,
-        holder,
-        cancelled,
-        tool_choice=None,
-        *,
-        evidence_available=None,
-    ):
+    def _records(self, context, deadline, holder, cancelled, tool_choice=None):
         finish = None
         request_hash = None
         emitted = False
@@ -449,37 +502,34 @@ class ChatGateway:
                 "num_retries": 0,
                 "timeout": remaining,
                 "stream_timeout": remaining,
-                "reasoning": {"enabled": False},
+                "reasoning": {"effort": "high", "exclude": True},
                 "provider": {
                     "order": ["deepinfra/fp4"],
                     "allow_fallbacks": False,
                     "require_parameters": True,
                 },
             }
-            # The decision is private control flow, never a FinOps answer.
-            # Only finalization constrains/streams the public answer schema.
-            if tool_choice != "auto":
-                schema = chat_provider_schema(
-                    financial_metrics_allowed=context.get("financial_metrics_allowed")
-                )
-                if evidence_available is False:
-                    # No server sources: constrain the producer, never erase
-                    # invented references or weaken final backend validation.
-                    schema["properties"]["evidence"]["maxItems"] = 0
-                    schema["anyOf"] = [schema["anyOf"][1]]
-                    schema["anyOf"][0]["properties"]["evidence"]["maxItems"] = 0
-                payload["response_format"] = {
-                    "type": "json_schema",
-                    "json_schema": {
-                        "name": "FinOpsResponse",
-                        "strict": True,
-                        "schema": schema,
-                    },
-                }
-            if tool_choice is not None:
-                from app.core.chat_resources import CHAT_TOOLS
+            from app.core.chat_expressions import context_quantities
 
-                payload.update(tools=CHAT_TOOLS, tool_choice=tool_choice)
+            source_quantities = context_quantities(context)
+            from app.core.chat_rules import context_rules
+
+            source_rules = context_rules(context)
+            payload["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "FinOpsResponse",
+                    "strict": True,
+                    "schema": chat_provider_schema(
+                        financial_metrics_allowed=context.get(
+                            "financial_metrics_allowed"
+                        ),
+                        authorized_evidence=context.get("authorized_evidence", []),
+                        quantities=source_quantities,
+                        rules=source_rules,
+                    ),
+                },
+            }
             req = request.Request(
                 self.client.base_url + "/chat/completions",
                 data=json.dumps(payload, ensure_ascii=False, allow_nan=False).encode(),
@@ -496,13 +546,13 @@ class ChatGateway:
             raise
         req._attempt_deadline = _AttemptDeadline(max(0.001, deadline - time.time() - 5))
         req._chat_cancelled = cancelled
-        frames, answer = SSEFrames(), AnswerJSON()
+        frames, answer = SSEFrames(), SegmentAnswerJSON(
+            [], quantities=source_quantities, rules=source_rules
+        )
         decoder = codecs.getincrementaldecoder("utf-8-sig")("strict")
         candidate = []
         candidate_bytes = 0
         usage = None
-        native = {"id": "", "type": "", "function": {"name": "", "arguments": ""}}
-        native_seen = False
         try:
             stage = "transport"
             with self.client.transport.open(req, timeout=min(5, remaining)) as response:
@@ -528,35 +578,6 @@ class ChatGateway:
                         stage = "envelope"
                         if data == "[DONE]":
                             stage = "finish"
-                            if tool_choice == "auto":
-                                from app.core.chat_resources import validate_search_call
-
-                                if not native_seen:
-                                    if finish != "stop":
-                                        raise ValueError("Incomplete tool decision.")
-                                    yield {"type": "decision", "usage": usage}
-                                    return
-                                if finish != "tool_calls":
-                                    raise ValueError("Incomplete native search.")
-                                assistant = {
-                                    "role": "assistant",
-                                    "content": None,
-                                    "tool_calls": [native],
-                                }
-                                try:
-                                    validate_search_call(assistant)
-                                except ValueError as failure:
-                                    raise _NativeEnvelopeError(
-                                        "native_final_invalid"
-                                    ) from failure
-                                yield {
-                                    "type": "tool_call",
-                                    "assistant": assistant,
-                                    "usage": usage,
-                                }
-                                return
-                            if native_seen:
-                                raise ValueError("Second search forbidden.")
                             if finish not in ("stop", "length"):
                                 raise ValueError("Gateway finish reason.")
                             raw = "".join(candidate)
@@ -564,10 +585,21 @@ class ChatGateway:
                                 stage = "candidate_json"
                                 parsed = complete_json(raw)
                                 stage = "model_validation"
+                                from app.core.chat_segments import render_response
+
+                                parsed = render_response(
+                                    parsed,
+                                    [],
+                                    quantities=source_quantities,
+                                    rules=source_rules,
+                                )
                                 result = assemble_chat_response(
                                     parsed,
                                     context.get("response_period"),
                                     context.get("response_subscriptions", []),
+                                    authorized_evidence=context.get(
+                                        "authorized_evidence", []
+                                    ),
                                 )
                             except Exception as failure:
                                 diagnostic(
@@ -587,6 +619,8 @@ class ChatGateway:
                                     }
                                     return
                                 raise
+                            if answer.finish() != result["answer"]:
+                                raise ValueError("Stream candidate mismatch.")
                             yield {
                                 "type": "candidate",
                                 "result": result,
@@ -615,62 +649,11 @@ class ChatGateway:
                             delta = choice.get("delta", {})
                             if not isinstance(delta, dict):
                                 raise ValueError("Gateway delta.")
-                            if delta.get("tool_calls") is not None:
-                                parts = delta["tool_calls"]
-                                if not isinstance(parts, list) or len(parts) > 1:
-                                    raise _NativeEnvelopeError("native_tool_count")
-                                for part in parts:
-                                    if (
-                                        not isinstance(part, dict)
-                                        or type(part.get("index")) is not int
-                                        or part["index"] != 0
-                                        or set(part)
-                                        - {"index", "id", "type", "function"}
-                                    ):
-                                        raise _NativeEnvelopeError("native_tool_index")
-                                    native_seen = True
-                                    for key in ("id", "type"):
-                                        value = part.get(key)
-                                        if value is not None:
-                                            if not isinstance(value, str):
-                                                raise _NativeEnvelopeError(
-                                                    "native_metadata_type"
-                                                )
-                                            if (
-                                                native[key]
-                                                and value
-                                                and native[key] != value
-                                            ):
-                                                raise _NativeEnvelopeError(
-                                                    "native_metadata_conflict"
-                                                )
-                                            if value:
-                                                native[key] = value
-                                    function = part.get("function")
-                                    if function is None:
-                                        function = {}
-                                    if not isinstance(function, dict) or set(
-                                        function
-                                    ) - {"name", "arguments"}:
-                                        raise _NativeEnvelopeError(
-                                            "native_function_shape"
-                                        )
-                                    for key, value in function.items():
-                                        if value is None:
-                                            continue
-                                        if not isinstance(value, str):
-                                            raise _NativeEnvelopeError(
-                                                "native_fragment_type"
-                                            )
-                                        native["function"][key] += value
-                                    if (
-                                        len(native["id"]) > 128
-                                        or len(native["type"]) > 8
-                                        or len(native["function"]["name"]) > 64
-                                        or len(native["function"]["arguments"].encode())
-                                        > 16384
-                                    ):
-                                        raise _NativeEnvelopeError("native_tool_limit")
+                            if (
+                                delta.get("tool_calls") is not None
+                                or delta.get("function_call") is not None
+                            ):
+                                raise _NativeEnvelopeError("native_final_invalid")
                             fragment = delta.get("content")
                             if fragment is None:
                                 continue
@@ -680,24 +663,11 @@ class ChatGateway:
                             if candidate_bytes > 1024 * 1024:
                                 raise ValueError("Candidate limit.")
                             candidate.append(fragment)
-                            if tool_choice == "auto":
-                                continue
                             stage = "provisional_answer"
                             provisional = answer.feed(fragment)
                             # Escape-aware decoding completes surrogate pairs;
                             # chunking preserves codepoints and the8KiB wire bound.
-                            piece = []
-                            size = 0
-                            for char in provisional:
-                                width = len(char.encode())
-                                if size + width > 8192:
-                                    yield {"type": "delta", "text": "".join(piece)}
-                                    piece = []
-                                    size = 0
-                                piece.append(char)
-                                size += width
-                            if piece:
-                                yield {"type": "delta", "text": "".join(piece)}
+                            yield from text_deltas(provisional)
         except error.HTTPError as failure:
             status = failure.code
             retry_after = failure.headers.get("Retry-After")
@@ -731,66 +701,45 @@ class ChatGateway:
         holder = {}
         cancelled = threading.Event()
         try:
-            if context.get("tool_protocol") not in (None, "auto-documentation-v2"):
+            protocol = context.get("tool_protocol")
+            if protocol not in (None, "server-documentation-v4"):
                 yield {"type": "error", "status": 422, "category": "invalid_response"}
                 return
-            deciding = context.get("tool_protocol") == "auto-documentation-v2"
-            two_phase = deciding
-            iterator = self._records(
-                context, deadline, holder, cancelled, "auto" if deciding else None
-            )
-            first_usage = None
+            if protocol == "server-documentation-v4":
+                if tool_result is None:
+                    yield {
+                        "type": "error",
+                        "status": 422,
+                        "category": "invalid_response",
+                    }
+                    return
+                from app.core.chat_resources import (
+                    retrieval_control,
+                    continuation_messages,
+                )
+
+                control = retrieval_control(context)
+                yield {"type": "tool_call", "assistant": control}
+                remaining = deadline - time.time() - 5
+                if remaining <= 0:
+                    raise TimeoutError()
+                result = await asyncio.wait_for(tool_result(control), remaining)
+                messages = continuation_messages(context, control, result)
+                context = {
+                    **context,
+                    "messages": messages,
+                    "authorized_evidence": context.get("authorized_evidence", [])
+                    + json.loads(result["content"])["evidence"],
+                }
+            if cancelled.is_set() or time.time() >= deadline - 5:
+                raise TimeoutError()
+            # Exactly one generation; no retries or model-selected routing.
+            iterator = self._records(context, deadline, holder, cancelled)
             while True:
                 record = await asyncio.to_thread(next, iterator, None)
                 if record is None:
                     return
-                if record["type"] in ("tool_call", "decision"):
-                    if not deciding or (
-                        record["type"] == "tool_call" and tool_result is None
-                    ):
-                        yield {
-                            "type": "error",
-                            "status": 422,
-                            "category": "invalid_response",
-                        }
-                        return
-                    deciding = False
-                    first_usage = record.get("usage")
-                    messages = context["messages"]
-                    evidence_available = bool(context.get("authorized_evidence"))
-                    if record["type"] == "tool_call":
-                        yield record
-                        remaining = deadline - time.time() - 5
-                        if remaining <= 0:
-                            raise TimeoutError()
-                        result = await asyncio.wait_for(
-                            tool_result(record["assistant"]), remaining
-                        )
-                        from app.core.chat_resources import continuation_messages
-
-                        messages = continuation_messages(
-                            context, record["assistant"], result
-                        )
-                        evidence_available = evidence_available or bool(
-                            json.loads(result["content"])["evidence"]
-                        )
-                    if cancelled.is_set() or time.time() >= deadline - 5:
-                        raise TimeoutError()
-                    iterator = self._records(
-                        {**context, "messages": messages},
-                        deadline,
-                        holder,
-                        cancelled,
-                        "none",
-                        evidence_available=evidence_available,
-                    )
-                else:
-                    if record["type"] == "candidate" and two_phase:
-                        record = {
-                            **record,
-                            "usage": combined_usage(first_usage, record.get("usage")),
-                        }
-                    yield record
+                yield record
         except TimeoutError:
             yield {"type": "error", "category": "timeout"}
         finally:
@@ -798,6 +747,21 @@ class ChatGateway:
             response = holder.get("response")
             if response is not None:
                 interrupt(response)
+
+
+def text_deltas(text):
+    piece = []
+    size = 0
+    for char in text:
+        width = len(char.encode())
+        if size + width > 8192:
+            yield {"type": "delta", "text": "".join(piece)}
+            piece = []
+            size = 0
+        piece.append(char)
+        size += width
+    if piece:
+        yield {"type": "delta", "text": "".join(piece)}
 
 
 def combined_usage(first, second):

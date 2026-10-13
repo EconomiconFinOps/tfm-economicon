@@ -60,7 +60,7 @@ describe("structured ownership consultations", () => {
     await user.type(title, conversation.title);
     await user.click(screen.getByRole("button", { name: "Nueva" }));
     expect(await screen.findByRole("button", { name: new RegExp(conversation.title) })).toBeVisible();
-    const composer = await screen.findByPlaceholderText("Pregunta sobre los documentos ingeridos del cliente.");
+    const composer = await screen.findByPlaceholderText("Pregunta sobre los costes de la selección.");
     expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
     await user.type(composer, "   ");
     expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
@@ -77,8 +77,8 @@ describe("structured ownership consultations", () => {
     const createdRequest = requests.find((request) => request.method === "POST" && request.path === collectionPath);
     const sentRequest = requests.find((request) => request.path === messagePath);
     expect(createdRequest?.body).toEqual({ title: conversation.title });
-    expect(sentRequest?.body).toEqual({ content: userMessage.content });
-    expect(screen.getByRole("checkbox", { name: "Consultar costes por propiedad" })).not.toBeChecked();
+    expect(sentRequest?.body).toEqual({ content: userMessage.content, ownership_query: { group_by: "application" } });
+    expect(screen.queryByRole("checkbox", { name: "Consultar costes por propiedad" })).toBeNull();
     for (const request of requests.filter((request) => request.path.startsWith(collectionPath))) {
       expectTenantRequest(request);
     }
@@ -145,7 +145,7 @@ describe("structured ownership consultations", () => {
     });
     restoreSession();
     renderApp(["/ownership"]);
-    const composer = await screen.findByPlaceholderText("Pregunta sobre los documentos ingeridos del cliente.");
+    const composer = await screen.findByPlaceholderText("Pregunta sobre los costes de la selección.");
     await user.type(composer, userMessage.content);
     await user.click(screen.getByRole("button", { name: "Enviar" }));
 

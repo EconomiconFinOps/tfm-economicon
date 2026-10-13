@@ -395,7 +395,7 @@ class ChatOperations:
                             searched
                             or seq
                             or claim["context"].get("tool_protocol")
-                            != "auto-documentation-v2"
+                            != "server-documentation-v4"
                         ):
                             raise ValueError("Unexpected tool call.")
                         searched = True

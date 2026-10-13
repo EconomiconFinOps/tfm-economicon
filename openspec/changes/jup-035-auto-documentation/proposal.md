@@ -2,21 +2,19 @@ JUP: JUP-035
 Trello: https://trello.com/c/BJfABykd
 
 ## Why
-PR120 solo admite required y rechaza decisiones nativas en auto. La orden del
-12/10/2026 autoriza un parche separado sobre f63c150, sin publicar ni desplegar.
+Adaptar en nuestra entrega las expresiones verificadas y citas autenticadas de
+Alejandro sin perder las correcciones propias del checkpoint ni atribuir
+aceptacion real a campañas de diseños anteriores.
 
 ## What Changes
-- Contrato auto-documentation-v2: decision privada auto sin esquema final;
-  cero/una busqueda backend y finalizacion estricta none, maximo dos generaciones.
-- Actualizar prompt, hashes, ambos servicios y regresiones sin relajar validadores.
-- Mantener limites, proveedor, aislamiento y autoridad financiera existentes.
-- Corregir la entrega del evento terminal ante carreras SQL/RAM y hacer
-  reproducibles los fixtures backend de autenticación, pgvector y summary SQL.
+- Recuperacion unica server-documentation-v4 y generacion final estructurada.
+- Catalogo autenticado, expresiones Decimal limitadas y segmentos privados.
+- Pasajes literales e IDs autorizados; formato publico y validadores conservados.
+- Prompt de chat separado de ingesta, reasoning high/exclude true, 3200 tokens.
+- Regresiones locales y aceptacion real focal de siete casos, no bateria completa.
 
 ## Impact
-Processor, backend y especificacion conversational-web-interface. Despliegue
-coordinado requerido por hashes incompatibles; no compatibilidad silenciosa con
-required-documentation-v1. El archivo de la entrega previa se conserva intacto.
-La compatibilidad del proveedor y batería real de 28 preguntas siguen pendientes;
-no se heredan presupuestos ni resultados de otros SHA. El usuario autoriza el
-12/10 la revisión y validación asistidas del parche, atribuidas al agente.
+Backend, processor, prompts, manifiestos y especificacion conversacional.
+Despliegue coordinado por hashes/protocolo incompatibles; no fallback silencioso.
+Sin migraciones nuevas ni cambios de modelo, presupuesto de contexto o API.
+La decision aprobada y los limites de propiedad estan en design.md.

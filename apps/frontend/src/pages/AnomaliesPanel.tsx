@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useOutletContext } from "react-router";
 import { AlertTriangle, FlaskConical, Radar, SlidersHorizontal } from "lucide-react";
 import { ExportButton } from "@/components/ExportButton";
+import { useFunctionalScreen } from "@/components/chat/ScreenCaptureProvider";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import type { SessionOutletContext } from "@/layouts/SessionGate";
 import { changeAnomalyEpisodeStatus, detectAnomalies, fetchAnomalyEpisodes, getSessionGeneration } from "@/services/api";
@@ -176,7 +177,32 @@ export function AnomaliesPanel() {
   // Una recarga fallida conserva en React Query los datos anteriores: no se enseñan junto al error.
   const data = list.isError ? undefined : list.data;
   const episodes = data?.episodes ?? [];
-  const visible = filterEpisodes(episodes, severity, status, observation);
+  const visible = useMemo(() => filterEpisodes(data?.episodes ?? [], severity, status, observation),
+    [data, severity, status, observation]);
+  const capture = useMemo(() => {
+    const selection = { filters: { tags: [
+      { key: "severity", value: severity }, { key: "status", value: status },
+      { key: "observation", value: observation },
+    ] } };
+    const loadState = list.isError ? "error" : !data ? "loading" : visible.length ? "loaded" : "empty";
+    return {
+      source: (list.isError ? "error" : !data ? "loading" : "loaded-screen") as "error" | "loading" | "loaded-screen",
+      selection,
+      datasets: [{
+        source: "anomaly-episodes-v1", selection, load_state: loadState,
+        loaded_at: data ? new Date(list.dataUpdatedAt).toISOString() : null,
+        data_environment: data?.includes_synthetic_data ? "simulated" : "unknown",
+        completeness: { status: !data ? "unavailable" : visible.length ? "complete" : "empty", missing_dimensions: [] },
+        totals: [], series: [],
+        groups: visible.map(item => ({
+          label: `${item.service ?? "(sin servicio)"} · ${item.severity} · ${item.status} · ${item.observation} · ${item.start_date} a ${item.last_seen_date} · causa no establecida`.slice(0, 256),
+          amount: item.accumulated_impact, currency: item.currency,
+        })),
+        counts: { records: visible.length, groups: visible.length, series: 0 },
+      }],
+    };
+  }, [data, list.isError, list.dataUpdatedAt, visible, severity, status, observation]);
+  useFunctionalScreen(capture);
   const open = episodes.filter(isOpen);
   const selected = episodes.find((item) => item.id === selectedId) ?? null;
   const reset = () => { setSeverity("all"); setStatus("open"); setObservation("all"); };

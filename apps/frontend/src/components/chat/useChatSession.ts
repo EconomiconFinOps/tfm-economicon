@@ -35,6 +35,7 @@ class ChatSession {
   private previousAttempts = new Map<string, Set<string>>();
   private intents = new Map<string, GenerationPayload>();
   private memoryEpoch = new Map<string, number>();
+  private memoryFailures = new Map<string, number>();
   private titleRevision = 0;
   private renamedTitles = new Map<string, { revision: number; record: ConversationRecord }>();
   private renaming = new Set<string>();
@@ -67,7 +68,7 @@ class ChatSession {
     this.alive = false;
     for (const reader of this.readers.keys()) reader.abort();
     for (const timer of this.timers.keys()) clearTimeout(timer);
-    this.readers.clear(); this.timers.clear(); this.previousAttempts.clear(); this.intents.clear(); this.screen.clear();
+    this.readers.clear(); this.timers.clear(); this.memoryFailures.clear(); this.previousAttempts.clear(); this.intents.clear(); this.screen.clear();
   }
   private controller(id?: string) { const value = new AbortController(); this.readers.set(value, id); return value; }
   private async json<T>(path: string, method = "GET", body?: unknown): Promise<T> {
@@ -134,14 +135,27 @@ class ChatSession {
       const value: unknown = await this.json(`/assistant/conversations/${encodeURIComponent(id)}/summary`);
       if (!this.valid() || this.memoryEpoch.get(id) !== epoch) return;
       if (!isChatMemory(value, this.scope, id)) throw new Error("summary_scope_invalid");
+      this.memoryFailures.delete(id);
       this.patch(id, { memory: value, memoryLoading: false, memoryError: false });
       if (value.queue.blocked && value.queue.state !== "failed") {
         const timer = setTimeout(() => { this.timers.delete(timer); if (this.valid()) void this.loadMemory(id); }, 2000);
         this.timers.set(timer, id);
       }
-    } catch {
-      if (this.memoryEpoch.get(id) === epoch) this.patch(id, { memoryLoading: false, memoryError: true });
+    } catch (error) {
+      if (!this.valid() || this.memoryEpoch.get(id) !== epoch || this.deleted.has(id)) return;
+      this.patch(id, { memoryLoading: false, memoryError: true });
+      const failures = (this.memoryFailures.get(id) ?? 0) + 1;
+      this.memoryFailures.set(id, failures);
+      const transient = error instanceof TypeError || error instanceof ApiError && error.status >= 500;
+      if (transient && failures <= 3) {
+        const timer = setTimeout(() => { this.timers.delete(timer); if (this.valid()) void this.loadMemory(id); }, 2000);
+        this.timers.set(timer, id);
+      }
     }
+  };
+  retryMemoryState = async () => {
+    this.memoryFailures.delete(this.value.selected);
+    await this.loadMemory();
   };
   rename = async (id: string, input: string): Promise<void> => {
     const title = normalizeConversationTitle(input);
@@ -191,6 +205,7 @@ class ChatSession {
       for (const [reader, owner] of this.readers) if (owner === id && reader !== controller) reader.abort();
       for (const [timer, owner] of this.timers) if (owner === id) { clearTimeout(timer); this.timers.delete(timer); }
       this.memoryEpoch.delete(id); this.previousAttempts.delete(id); this.intents.delete(id); this.renamedTitles.delete(id);
+      this.memoryFailures.delete(id);
       const cells = { ...this.value.cells }; delete cells[id];
       const selected = this.value.selected === id ? `draft-${crypto.randomUUID()}` : this.value.selected;
       if (!cells[selected]) cells[selected] = emptyCell(selected);

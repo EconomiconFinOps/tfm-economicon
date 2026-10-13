@@ -46,6 +46,57 @@ recurso. Cambiar modelo, revision o hash requiere una decision explicita.
 
 ## Alternativas y consecuencias
 
+## Decision adicional: recuperacion y expresiones (13/10/2026)
+
+Paris aprueba server-documentation-v4: recuperacion unica decidida por servidor
+con la pregunta canonica (2048 caracteres), seguida de una generacion final.
+Sustituye auto-documentation-v2 y el experimento de calculadora nativa.
+La adaptacion se limita a nuestra rama; PR #121 es referencia de solo lectura.
+Fuentes de Alejandro: 0d91d337, 1b7eb148, 41e23706, 85994b86, 192b6872 y
+193b785a786ab68b3b2839e5154e814571fa1319. HEAD observado: f1848e57.
+
+El catalogo autentica valor, unidad y origen; las expresiones Decimal y los
+segmentos privados se proyectan con un renderer comun al formato publico.
+Se exige pasaje literal para corpus y se conservan validadores de procedencia,
+aislamiento y autoridad financiera. Limites: profundidad 4, 12 operaciones,
+128 cantidades, precision 40, entrada 10^12, resultado 10^18, seis decimales.
+Cero es indefinido; divisas incompatibles no se agregan. No hay inferencia
+reparadora ni IDs de planes de calculo. Chat separa su prompt de ingesta.
+
+Reasoning high/exclude true conserva 3200 tokens totales y deadline vigente;
+no se registra razonamiento. Puede reducir salida util: una salida vacia o
+truncada detiene el ensayo, no autoriza ampliar limites automaticamente.
+La recuperacion siempre ejecutada aumenta coste incluso para saludos y no
+garantiza pertinencia: esta se evalua en siete focales reales nuevos.
+Ver [diseño y limites](../../openspec/changes/jup-035-auto-documentation/design.md).
+Las campañas anteriores no acreditan esta adaptacion.
+
+## Alternativas del runtime
+
+## Decision adicional: clasificacion documental verificada (13/10/2026)
+
+Paris aprueba un catalogo versionado de semaforo de coste no asignado, habilitado
+exclusivamente por formula y bandas literales de un fragmento efectivo
+autorizado. La huella del catalogo forma parte del contrato privado.
+El modelo selecciona una expresion porcentaje y regla; el servidor calcula
+sin redondear antes de clasificar, aplica limites inclusivos y publica color,
+intervalo y cita. Rechaza reglas desconocidas, pasajes alterados y fuentes
+no autorizadas. El renderer publica las citas propias de la regla aplicada
+desde sus registros y pasajes autenticados; una cita entregada con metadatos
+o pasaje invalidos se rechaza y no se reemplaza para ocultar el error.
+Formula y bandas pueden estar en dos fragmentos del mismo documento.
+La aclaracion de Paris del 13/10 retira el rechazo lexical de colores:
+explicar o reiterar correctamente una clasificacion no invalida el MVP.
+La aceptacion exige coherencia con la documentacion y no inventar datos,
+sin imponer una redaccion concreta. Seleccion de operandos, contradicciones
+y pertinencia general siguen requiriendo comprobacion funcional.
+FinOpsResponse 1.0 y una recuperacion/generacion por intento se conservan.
+
+El intento truncado de 006 agoto los 3200 tokens (registro del gateway:
+gen-1791905760-pa83ud2SxBOPaT0IGsT2). Paris autoriza 6400 tokens de salida
+para chat, incluido razonamiento. No modifica ingesta, resumen, deadline,
+modelo ni ventana. Las evidencias de los intentos anteriores se conservan.
+
 - Generacion en backend: evita un canal, pero duplica proveedor y sus permisos.
 - Mantener messages como unica tabla: no conserva juntos version, orden y
   resumen canonicos; JSONB exige validar y limitar cada documento.

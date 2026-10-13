@@ -21,7 +21,7 @@ export function ConversationsPage() {
   const { token, activeTenant } = useOutletContext<SessionOutletContext>();
   const queryClient = useQueryClient();
   const [selectedConversationId, setSelectedConversationId] = useState<string>("");
-  const [title, setTitle] = useState<string>("Ops review");
+  const [title, setTitle] = useState<string>("Revisión operativa");
 
   const conversationsQuery = useQuery({
     queryKey: ["conversations", activeTenant?.id],
@@ -70,7 +70,7 @@ export function ConversationsPage() {
       // above sees the old list and switches back to the previous conversation.
       await queryClient.invalidateQueries({ queryKey: ["conversations", activeTenant?.id] });
       setSelectedConversationId(conversation.id);
-      setTitle("Ops review");
+      setTitle("Revisión operativa");
     }
   });
 
@@ -82,10 +82,10 @@ export function ConversationsPage() {
   if (!activeTenant) {
     return (
       <SectionCard
-        title="Tenant required"
+        title="Cliente requerido"
         subtitle=""
       >
-        <p className="text-sm text-muted-foreground">No active tenant selected.</p>
+        <p className="text-sm text-muted-foreground">No hay ningún cliente activo.</p>
       </SectionCard>
     );
   }
@@ -153,7 +153,7 @@ export function ConversationsPage() {
             {conversationDetailQuery.error.message}
           </p>
         ) : conversationDetailQuery.isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading conversation...</p>
+          <p className="text-sm text-muted-foreground">Cargando conversación...</p>
         ) : selectedConversationId ? (
           <>
             <div className="flex flex-col gap-3">

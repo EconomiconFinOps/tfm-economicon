@@ -44,7 +44,6 @@ async function start() {
   const app = renderApp(["/ownership"]);
   const user = userEvent.setup();
   await user.type(await screen.findByRole("textbox", { name: "Pregunta" }), "¿Cuál es el coste registrado?");
-  await user.click(screen.getByRole("checkbox", { name: "Consultar costes por propiedad" }));
   return { ...app, user };
 }
 
@@ -161,7 +160,6 @@ describe("JUP-037 ownership conversations", () => {
     expect(screen.getByRole("textbox", { name: "Valor exacto (opcional)" })).toHaveValue("Private application");
     expect(screen.getByRole("button", { name: "Enviar" })).toBeEnabled();
     await user.click(screen.getByRole("button", { name: /Second conversation/ }));
-    await user.click(await screen.findByRole("checkbox", { name: "Consultar costes por propiedad" }));
     expect(await screen.findByRole("combobox", { name: "Agrupar por" })).toHaveValue("application");
     expect(screen.getByRole("textbox", { name: "Pregunta" })).toHaveValue("");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -175,7 +173,6 @@ describe("JUP-037 ownership conversations", () => {
     await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(screen.getByRole("button", { name: "Enviando..." })).toBeDisabled();
     await user.click(screen.getByRole("button", { name: /Second conversation/ }));
-    await user.click(await screen.findByRole("checkbox", { name: "Consultar costes por propiedad" }));
     await user.type(screen.getByRole("textbox", { name: "Pregunta" }), "New question");
     await user.type(screen.getByRole("textbox", { name: "Valor exacto (opcional)" }), "New value");
     await act(async () => pending.resolve(outcome === "success" ? assistantReply : { detail: "Old request failed" }, outcome === "success" ? 201 : 503));
@@ -194,7 +191,6 @@ describe("JUP-037 ownership conversations", () => {
     await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(screen.getByRole("alert")).toBeVisible();
     await user.selectOptions(screen.getByRole("combobox", { name: "Ámbito de cliente" }), tenants[1].id);
-    await user.click(await screen.findByRole("checkbox", { name: "Consultar costes por propiedad" }));
     expect(await screen.findByRole("combobox", { name: "Agrupar por" })).toHaveValue("application");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Pregunta" })).toHaveValue("");

@@ -25,7 +25,7 @@ def test_verify_runtime_uses_existing_completed_schema_without_mutation(api,monk
     with api[1].engine.begin() as connection:
         connection.execute(text('ALTER TABLE schema_migrations RENAME TO numeric_version_fixture_original'))
         connection.execute(text('CREATE TABLE schema_migrations(version TEXT PRIMARY KEY,applied_at TIMESTAMPTZ)'))
-        connection.execute(text("INSERT INTO schema_migrations SELECT printf('%03d',version),applied_at FROM numeric_version_fixture_original"))
+        connection.execute(text("INSERT INTO schema_migrations SELECT CASE WHEN typeof(version) IN ('integer','real') THEN printf('%03d',version) ELSE version END,applied_at FROM numeric_version_fixture_original"))
     seed=[]
     monkeypatch.setattr(api[1],'_seed_defaults',lambda:seed.append('called'))
     observed=writes(api[1].engine)
@@ -63,7 +63,7 @@ def textual_versions(database):
     with database.engine.begin() as connection:
         connection.execute(text('ALTER TABLE schema_migrations RENAME TO version_fixture_original'))
         connection.execute(text('CREATE TABLE schema_migrations(version TEXT PRIMARY KEY,applied_at TIMESTAMPTZ)'))
-        connection.execute(text("INSERT INTO schema_migrations SELECT printf('%03d',version),applied_at FROM version_fixture_original"))
+        connection.execute(text("INSERT INTO schema_migrations SELECT CASE WHEN typeof(version) IN ('integer','real') THEN printf('%03d',version) ELSE version END,applied_at FROM version_fixture_original"))
 
 
 def test_registered_version_cannot_hide_missing_chat_catalog(api,monkeypatch):
@@ -81,7 +81,8 @@ def test_complete_catalog_without_completed_marker_cannot_enable_chat(api,monkey
     monkeypatch.setenv('BACKEND_SCHEMA_MODE','verify')
     textual_versions(api[1])
     with api[1].engine.begin() as connection:
-        connection.execute(text("DELETE FROM schema_migrations WHERE version='002'"))
+        connection.execute(text("DELETE FROM schema_migrations WHERE version IN ('002','002_chat_operations')"))
+        assert connection.execute(text("SELECT COUNT(*) FROM schema_migrations WHERE version='002_anomaly_episodes'")).scalar_one() == 1
     observed=writes(api[1].engine)
     with pytest.raises(StartupError):
         api[1].initialize()

@@ -202,6 +202,12 @@ export function ChatPanel({ scope, userRole }: { scope: ChatScope; userRole?: st
         </div>
       </header>
       <Thread key={value.selected} cell={cell} send={send} stop={session.stop} captureReady={session.screen.ready(location.pathname)} userRole={userRole} activity={activity} retryMemory={session.retryMemory} retryResponse={() => session.send(cell.question, location.pathname, true)} />
+      {cell.memoryError && <div role="alert" className="flex items-center gap-2 px-4 pb-3 text-xs text-muted-foreground">
+        <span>No se pudo comprobar el estado de la conversación.</span>
+        <button type="button" title="Volver a comprobar estado" aria-label="Volver a comprobar estado"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-accent disabled:opacity-50"
+          disabled={cell.memoryLoading} onClick={() => void session.retryMemoryState()}><RotateCcw size={16} aria-hidden="true" /></button>
+      </div>}
       {cell.notice && <div className="px-4 pb-3"><p role="alert" className="text-sm text-muted-foreground">{cell.notice}</p>
         {session.canCheckSend(cell.id) && <button className={`${button} mt-2`} disabled={cell.starting} onClick={() => void session.checkSend()}>Comprobar envío</button>}
         {cell.operation && <button className={`${button} mt-2`} onClick={() => void session.reconnect()}>Recuperar conexión</button>}</div>}

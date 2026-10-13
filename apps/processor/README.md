@@ -199,6 +199,16 @@ RabbitMQ, CockroachDB y pgvector reales, en [JUP-113](../../docs/evidence/JUP-11
 
 ## Tests
 
+El chat JUP-035 usa una recuperacion documental y una generacion estructurada
+por intento. `CHAT_MAX_OUTPUT_TOKENS` admite 1–6400 (6400 por defecto),
+incluyendo razonamiento; ingesta conserva `LLM_MAX_OUTPUT_TOKENS` y resumen
+su presupuesto separado. Ambos servicios reservan la salida configurada.
+El semaforo de coste no asignado se publica mediante un segmento privado
+verificado: formula y bandas del corpus autorizado habilitan el catalogo
+versionado; el servidor aplica los limites antes de redondear y publica sus
+citas autenticas. Rechaza citas entregadas con pasajes o metadatos incorrectos.
+Un ejercicio con cifras del usuario sigue siendo hipotetico, no coste verificado.
+
 `DATABASE_URL`, `RABBITMQ_URL` y `VECTOR_DATABASE_URL` son obligatorias,
 tambien en test. `RUNTIME_ENVIRONMENT` vale production por defecto:
 `AI_EXECUTION_MODE=test` no evita estas validaciones. Las fixtures pytest

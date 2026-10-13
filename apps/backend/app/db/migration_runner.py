@@ -16,8 +16,10 @@ class MigrationRunner:
         try:
             with self.engine.connect() as connection:
                 versions={row.version for row in connection.execute(text('SELECT version FROM schema_migrations'))}
-                if not {'001','002','003','004'}.issubset(versions):
+                if not {'001','003','004'}.issubset(versions):
                     raise ValueError('Incomplete migration.')
+                if not {'002', '002_chat_operations'} & versions:
+                    raise ValueError('Chat migration is missing.')
                 for name in ('tenants','users','user_tenants','conversations','messages','jobs'):
                     if not inspect(connection).has_table(name):
                         raise ValueError('Missing legacy table.')
@@ -37,8 +39,13 @@ class MigrationRunner:
                 version STRING PRIMARY KEY,
                 applied_at TIMESTAMPTZ NOT NULL DEFAULT now())"""))
             applied={row.version for row in connection.execute(text("SELECT version FROM schema_migrations"))}
-        for migration_file in sorted(self.migrations_dir.glob("[0-9][0-9][0-9]_*.py")):
-            version=migration_file.stem.split("_",maxsplit=1)[0]
+        migration_files = sorted(self.migrations_dir.glob("[0-9][0-9][0-9]_*.py"))
+        prefixes = [path.stem.split("_", maxsplit=1)[0] for path in migration_files]
+        for migration_file in migration_files:
+            prefix = migration_file.stem.split("_", maxsplit=1)[0]
+            # Colliding legacy prefixes use the full name. Their idempotent
+            # schema steps also repair databases carrying only the old prefix.
+            version = migration_file.stem if prefixes.count(prefix) > 1 else prefix
             if version in applied: continue
             module=import_module(f"{self.migration_package}.{migration_file.stem}")
             if hasattr(module,'schema_steps'):
