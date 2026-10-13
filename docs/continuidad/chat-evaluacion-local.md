@@ -139,3 +139,25 @@ un runtime de B591b8e19. No se han cambiado contenedores ni consultado secretos.
 Sin nuevas inferencias; gasto histórico0.957927619 USD, tope2 USD. Próximo:
 verificación integrada del colector y admisión de coste, preparar candidato y
 entorno aislado para medir baseline sin usar expression28 como sustituto.
+
+
+### Agregación y admisión de presupuesto — 14/10/2026
+
+`chat-eval-aggregate.py` agrega recibos del mismo plan, exige conversación y
+operación distintas por muestra, conserva fallos y enumera ausencias. Rechaza
+selección de reintentos favorables y cambios en recursos. COLLECTED acredita
+cobertura, no aceptación. Pruebas con84 fixtures, ninguna inferencia real.
+Colector probado con HTTP loopback real, autenticación sintética y redirects
+rechazados; no equivale aún a prueba contra el backend completo.
+
+`chat-eval-budget.py` calcula reserva conservadora de operación:4intentos (límite
+confirmado en ChatRepository), cada uno con draft1000/final2200 y suma de entradas
+messages/schema; coste auxiliar adicional obligatorio. Admisión exige snapshot
+reciente <=30s, ámbito acumulado, gasto no inferior al histórico, y resta reservas
+pendientes. No libera una reserva de resultado desconocido.18pruebas PASS entre
+colector/agregador/presupuesto. Este módulo no es contabilidad real ni garantía
+operativa hasta que el runner persista reservas y vincule snapshots verificados.
+
+Pendiente adaptador contable, persistencia/recuperación, runner, procedencia y
+runtime aislado; N3/N5 siguen NOT_RUN. Ningún gasto nuevo ni despliegue. El último
+turno aporta implementación y prueba; no es espera ni bloqueo del objetivo.

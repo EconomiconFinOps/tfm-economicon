@@ -2,6 +2,9 @@ import copy
 import importlib.util
 from pathlib import Path
 import unittest
+import json
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.error import HTTPError
 
 spec = importlib.util.spec_from_file_location('collect', Path(__file__).with_name('chat-eval-collect.py'))
@@ -94,6 +97,42 @@ class CollectionTests(unittest.TestCase):
         for origin in ('http://remote.test', 'https://user:pass@host', 'https://host/path', 'https://host?x=1'):
             with self.assertRaises(ValueError):
                 c.reader(origin, 'token', 'tenant')
+
+    def test_real_http_collects_resources_and_refuses_redirects(self):
+        data, seen = self.data, []
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+            def do_GET(self):
+                seen.append((self.path, self.headers.get('Authorization'), self.headers.get('X-Tenant-Id')))
+                if self.path == '/redirect':
+                    self.send_response(302)
+                    self.send_header('Location', '/must-not-follow')
+                    self.end_headers()
+                    return
+                raw = json.dumps(data[self.path], ensure_ascii=False).encode()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(raw)))
+                self.end_headers()
+                self.wfile.write(raw)
+        server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        worker = threading.Thread(target=server.serve_forever, daemon=True)
+        worker.start()
+        try:
+            get = c.reader(f'http://127.0.0.1:{server.server_port}', 'synthetic-test-token', 'synthetic-tenant')
+            row = self.collect(get)
+            self.assertEqual(row['collection_state'], 'VERIFIED_PUBLIC_SNAPSHOT')
+            self.assertTrue(all(item[1:] == ('Bearer synthetic-test-token', 'synthetic-tenant') for item in seen))
+            self.assertNotIn('synthetic-test-token', json.dumps(row))
+            with self.assertRaises(HTTPError) as raised:
+                get('/redirect')
+            raised.exception.close()
+            self.assertNotIn('/must-not-follow', [item[0] for item in seen])
+        finally:
+            server.shutdown()
+            server.server_close()
+            worker.join(2)
 
 
 if __name__ == '__main__':

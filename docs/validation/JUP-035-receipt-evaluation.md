@@ -138,3 +138,17 @@ semántico, commit, proveedor, payload completo ni contabilidad. El evaluador bl
 PASS si la recogida es incompleta, incluso con juicios manuales positivos.
 Pendiente agregar recibos, verificar entorno/coste y ejecutar N3: este componente
 no es todavía el ejecutor de campañas.
+
+
+Agregación: `python tools/chat-eval-aggregate.py --plan PLAN --output NUEVO_JSON
+RECIBO1 RECIBO2 ...`. El agregador mantiene el hash canónico del plan y de cada
+recibo; no acepta conversaciones reutilizadas ni duplicados caso/repetición.
+La salida COLLECTED puede contener fallos técnicos y no implica PASS.
+
+Admisión de coste: `tools/chat-eval-budget.py` calcula el máximo de4intentos por
+operación, con3200tokens de salida por intento y entrada total de ambas fases.
+Las tarifas y cota de entrada deben verificarse, no estimarse a partir de medias.
+Costes auxiliares incluyen embeddings u otros servicios facturables. El runner
+pendiente debe guardar la reserva antes de POST y conservarla ante timeout o
+caída; sólo reconciliación contable prueba el coste final. El módulo no consulta
+proveedores y no convierte una afirmación de snapshot en evidencia autenticada.
