@@ -91,3 +91,46 @@ R="$(cygpath -w "$PWD")"; docker run --rm -v "$R:/repo:ro" -w /work jup054-py-ba
 **Lo que este Red no demuestra.** Que las pruebas sean correctas contra una implementación real:
 nunca se han ejecutado contra una. Si en el Green aparece un fallo atribuible a una prueba, el
 `coder` no la toca; se escala al `tester`.
+
+## Grupo 2 — Explicador, fase Green (tarea 2.5)
+
+**Producto creado por el `coder`:** `apps/backend/app/services/anomaly_explanations.py` (228 líneas),
+el único archivo de producto del grupo hasta ahora. Importa de `anomaly_episodes.py` y
+`ownership_questions.py` sin modificarlos. Ninguna prueba ni otro archivo existente se tocó
+(`git status` solo muestra el archivo nuevo y `tasks.md`).
+
+**Evidencia Green** (2026-10-12, mismo comando y entorno que el Red):
+
+- `tests/test_anomaly_explanations.py`: `75 passed` (antes `75 failed`).
+- Control: `tests/test_anomaly_episode_rules.py` y `tests/test_ownership_questions.py` siguen en
+  `104 passed, 1 skipped`.
+- El orquestador reejecutó ambas y leyó el módulo completo.
+
+**Ajuste de tareas.** El esquema de la selección (`app/schemas/anomaly_explanations.py`) pasa de la
+2.5 a la 4.6: no tiene pruebas hasta la 4.1 y crearlo ahora sería código sin pruebas.
+
+**Decisiones del `coder` que no estaban en el encargo** (revisadas por el orquestador):
+
+1. `ExplanationUnavailable` también se lanza con un `status` desconocido, con un estado cerrado sin
+   `closed_at` o sin `closure_reason`, y con `no_longer_observed` sin fecha. Evita un `TypeError` o un
+   texto con «None», que en la ruta sería un 500. **Ninguna prueba lo cubre todavía:** son ramas
+   sin test, así que la mutación de la 2.6 las señalará y el `tester` las cubre con casos nuevos en
+   un archivo nuevo. Amplían el 409 más allá de los tres casos de la spec; al cubrirlas se añadirá a
+   `specs/anomaly-episode-explanation/spec.md` un escenario «Episodio con datos incoherentes».
+2. Los tramos de criticidad del texto (500.00 y 2000.00) se leen de `episode["rules"]["severity"]`
+   cortando su texto (`"> X"`, `"A to B"`, `"< Y"`). Es seguro porque `rules` debe ser igual a `RULES`
+   antes de llegar ahí; cumple la decisión 5 del diseño (los umbrales salen de las reglas del
+   episodio).
+3. `triggers` se evalúa con precisión 120 para que `O × 7` y los productos no se redondeen con la
+   precisión por defecto (28).
+4. `LIMITATIONS` no se importa: la evidencia usa `LIMITATIONS_ES` y conserva las limitaciones en
+   inglés de `episode["limitations"]`.
+5. El identificador de la anomalía anterior se escribe sin `display_label`: tiene formato
+   `anomaly-<hex>` y la prueba espera texto plano.
+
+**Observación para la tarea 3.1.** `_utc(closed_at)` supone un `datetime` con zona horaria, que es lo
+que devuelve CockroachDB. Con un `datetime` sin zona, `astimezone` lo interpretaría en la hora local
+del proceso. La prueba con CockroachDB real (3.1) debe incluir un episodio cerrado para confirmarlo.
+
+**Lo que este Green no demuestra todavía.** Que las pruebas maten mutantes (2.6), que la regresión
+completa y el lint pasen (DoD) ni el veredicto de QA. El grupo sigue abierto.

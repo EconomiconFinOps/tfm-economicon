@@ -39,9 +39,9 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   `explained_at`, cambia con el cliente y con cualquier campo del episodio u operando; versión de
   reglas desconocida, `rules` distintas de las de la versión y operandos que no cumplen `triggers`
   lanzan `ExplanationUnavailable` sin devolver texto.
-- [ ] 2.5 Green: `app/schemas/anomaly_explanations.py` (selección) y
-  `app/services/anomaly_explanations.py` (explicador puro, decisiones 2, 4, 5, 6 y 7), sin modificar
-  `anomaly_episodes.py` ni `ownership_questions.py`.
+- [x] 2.5 Green: `app/services/anomaly_explanations.py` (explicador puro, decisiones 2, 4, 5, 6 y 7),
+  sin modificar `anomaly_episodes.py` ni `ownership_questions.py`. El esquema de la selección
+  (`app/schemas/anomaly_explanations.py`) pasa a la 4.6: no tiene pruebas hasta la 4.1.
 - [ ] 2.6 Mutación sobre el explicador (invertir comparaciones, cambiar el redondeo, quitar la nota
   de redondeo, quitar el cliente o un campo de la huella, saltarse la comprobación de versión o de
   `triggers`, quitar el entrecomillado) y cubrir los mutantes que sobrevivan.
@@ -81,8 +81,9 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   de otro cliente recibe 404 con el mismo identificador; explicar dos veces da el mismo `id`; tras
   una nueva detección que suma impacto, el `id` cambia y el mensaje anterior no. Se ejecuta contra un
   CockroachDB desechable y se anota que CI la omite (`RF-096-004`).
-- [ ] 4.6 Green: campo `anomaly_query` y validador de exclusión en `app/schemas/assistant.py`, y rama
-  nueva en `app/api/routes/assistant.py` con el orden de la decisión 8.
+- [ ] 4.6 Green: esquema de la selección `app/schemas/anomaly_explanations.py`, campo `anomaly_query` y
+  validador de exclusión en `app/schemas/assistant.py`, y rama nueva en `app/api/routes/assistant.py`
+  con el orden de la decisión 8.
 - [ ] 4.7 Mutación sobre la rama de la ruta y el validador (quitar la exclusión, escribir antes de
   explicar, cambiar los códigos, pasar un cliente distinto del de la sesión) y cubrir los mutantes
   que sobrevivan.
