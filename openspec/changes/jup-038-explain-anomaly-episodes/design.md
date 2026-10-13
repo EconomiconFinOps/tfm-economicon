@@ -309,6 +309,18 @@ Windows fallan pruebas ajenas del backend (`RF-105-004`).
   `database.py`] → el cambio en esos archivos es una rama, un campo y un método; lo demás va en
   archivos nuevos. Antes de abrir la PR se comprueba con `git merge-tree` contra las dos cabeceras y
   se anota el resultado para quien integre después.
+- [Al integrarse JUP-035, la pantalla `/assistant` pierde su entrada de menú] → comprobado el
+  2026-10-12 en las cabeceras de las PR #120 (`f63c1503`) y #121 (`5c071d93`), ambas abiertas y en
+  conflicto con `develop`: no borran la ruta `/assistant`, `ConversationsPage` ni `MessageComposer`,
+  pero `Layout.tsx` quita «Asistente» del menú y monta un panel de chat nuevo en todas las
+  pantallas. El enlace «Explicar en el asistente» del panel de anomalías seguiría funcionando y
+  pasaría a ser la entrada principal. El chat nuevo lee las mismas conversaciones y pinta los
+  mensajes con `AnswerEvidence`, así que la explicación y su evidencia se verían también allí si el
+  merge conserva la rama de `anomaly_evidence`. Ese chat envía por `/generations`, no por la ruta
+  de mensajes, y no tiene herramienta de anomalías: pedir la explicación desde él es trabajo
+  posterior. La ruta de mensajes se conserva, pero guarda el par con `prepare_message` y
+  `append_pair`; la rama de este cambio habrá que adaptarla a eso en el merge (y el par pasa a ser
+  atómico). No cambia el alcance de este cambio; se registra como hallazgo en la tarea 9.5.
 - [La redacción en español de las limitaciones se desincroniza de `LIMITATIONS`] → prueba que falla
   si cambia el número, y 409 para cualquier versión de reglas que no sea la conocida.
 - [La explicación solo cuenta el día de apertura y los acumulados] → el texto lo dice. Explicar la
