@@ -39,6 +39,8 @@ class RunnerTests(unittest.TestCase):
         row = json.loads(receipts[0].read_text())['results'][0]
         self.assertEqual(row['state'], 'failed')
         self.assertEqual(row['repetition'], 1)
+        self.assertEqual(self.runner().step()['state'], 'NEEDS_ACCOUNTING')
+        self.assertEqual(self.api.posts, 1)
 
     def test_lost_response_recovers_handle_without_new_post(self):
         self.api.lose_response = True

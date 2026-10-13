@@ -29,7 +29,7 @@ def validate_plan(plan):
 
 
 class Runner:
-    def __init__(self, plan, api, ledger, output, preflight, clock=time.time):
+    def __init__(self, plan, api, ledger, output, preflight, clock=time.time, accounting=None):
         validate_plan(plan)
         self.plan, self.api, self.ledger = plan, api, ledger
         self.plan_hash = collect.digest(plan)
@@ -39,6 +39,7 @@ class Runner:
             raise ValueError('Receipts must be outside the checkout')
         self.output.mkdir(parents=True, exist_ok=True)
         self.preflight, self.clock = preflight, clock
+        self.accounting = accounting
 
     def step(self):
         """Perform one dispatch OR one observation; caller schedules next step."""
@@ -58,6 +59,14 @@ class Runner:
                     raise ValueError('Existing receipt lacks matching durable operation evidence')
                 if receipt['results'][0].get('collection_state') != 'VERIFIED_PUBLIC_SNAPSHOT':
                     return {'state': 'NEEDS_EVIDENCE_RECONCILIATION', 'sample_id': sample['sample_id']}
+                row = rows[sample['sample_id']]
+                if json.loads(row['reservation'])['state'] != 'COST_OBSERVED':
+                    if self.accounting is None:
+                        return {'state': 'NEEDS_ACCOUNTING', 'operation_id': row['operation_id']}
+                    costs = self.accounting(saved['operation'])
+                    self.ledger.reconcile_cost(row['request_id'], saved['operation'],
+                                               costs['reports'], costs['auxiliary_cost_usd'])
+                    return {'state': 'COST_RECONCILED', 'operation_id': row['operation_id']}
                 continue
             row = rows.get(sample['sample_id'])
             if row is None:

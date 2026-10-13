@@ -290,3 +290,20 @@ No usar la continuación automática como aprobación. No nuevas transferencias,
 claves, despliegues ni inferencias. Este turno aporta código/pruebas útiles;
 objetivo activo y baseline NOT_RUN. Candidato portable ccc339a3 sigue archivado;
 las nuevas herramientas requieren congelar otro candidato al ejecutarlas.
+
+
+### Lectura real de informes y puerta de contabilidad — 14/10/2026
+
+`chat-eval-usage.py` lee docker logs del processor verificado y extrae únicamente
+campos de chat_review_usage, con hash de petición/fase y contadores observados;
+no guarda logs completos ni contenido ajeno. Reportes idénticos se deduplican
+con contador explícito; intentos distintos permanecen separados.43pruebas de
+herramientas PASS. Runner exige COST_OBSERVED antes de pasar de un recibo a
+la siguiente muestra; ausencia de adaptador retorna NEEDS_ACCOUNTING.
+
+Prueba de lectura real por SSH sobre processor histórico expression28, ventana
+2026-10-13T00:00:00Z:7operaciones,7reportes de intento,7completos,0duplicados.
+Sólo conteos en salida; no se transfirieron archivos ni modificó runtime. Esto
+valida formato de logs, no procedencia/coste de B ni una baseline nueva. Sigue
+pendiente el adaptador de costes auxiliares y la comprobación efectiva de ruta
+modelo/proveedor. Gasto nuevo0 y permiso asíncrono del entorno sin respuesta.

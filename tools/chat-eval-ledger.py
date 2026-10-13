@@ -113,5 +113,6 @@ class Ledger:
             reservation['reserved_usd'] = str(cost)
             reservation['state'] = 'COST_OBSERVED'
             reservation['attempt_reports'] = reports
+            reservation['auxiliary_cost_usd'] = auxiliary_cost_usd
             db.execute('UPDATE attempts SET reservation=? WHERE request_id=?',
                        (json.dumps(reservation), request_id))
