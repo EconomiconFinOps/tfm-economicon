@@ -99,3 +99,14 @@ proveniencia del runtime, contexto recuperado, parámetros y contabilidad viva a
 ejecutar. El balance histórico no basta para admitir gasto. Cada repetición debe
 recogerse íntegra y evaluarse conservando su identidad; los adaptadores de recibos
 actuales describen las campañas históricas N=1 y no son un colector del API nuevo.
+
+
+## Adaptador repetido JUP-123 — 14/10/2026
+
+El recibo puede declarar `repetitions: 3` o `5`; cada fila debe incluir
+`repetition` entero entre 1 y N. El par caso/repetición es único. No se admiten
+recibos repetidos vacíos ni sustitución de fallos por reintentos favorables.
+Los intentos adicionales se preservan en sus propios recibos de ejecución.
+`missing_samples` y `samples_expected` hacen visibles repeticiones omitidas aunque
+aparezcan todos los casos. N1 mantiene los identificadores históricos. El colector
+API sigue pendiente: las 15 pruebas unitarias no constituyen una campaña N3.

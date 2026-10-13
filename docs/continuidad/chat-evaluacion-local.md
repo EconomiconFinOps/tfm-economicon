@@ -75,3 +75,25 @@ juicios, comparaciónhistórica ylimitaciones. Esta sección sustituye pendiente
 de diagnóstico/corrección anteriores: cancelaciónya resuelta en pruebaslocales.
 Sin N3/N5real, sinLinuxsymlink niaceptaciónPR. Siguiente fase requiereentorno
 aislado ycriteriosdeequipo; no sepuede usaruntimecompartido anterior comobase.
+
+
+## Inicio de JUP-123/B — 14/10/2026
+
+Objetivo activo por solicitud del usuario en la tarea 01a1270c-e332-7462-9c90-706d49ade92c
+(título no disponible). Rama `feat/JUP-123-chat-semantic`, base local50e169fa.
+[Trello B](https://trello.com/c/TqtcumIN) actualizado a En curso mediante la
+integración oficial de DockerServer. Lectura actual: A #130 sigue OPEN,
+REVIEW_REQUIRED, head318a56f3; develop sigue c30a7d0f. No merge ni publicación B.
+
+Primer cambio: `tools/chat-receipt-eval.py` admite recibos con repetitions3/5
+más repetition por fila, conserva las muestras fallidas, rechaza duplicados y
+repeticiones ambiguas, enumera muestras ausentes y mantiene los identificadores
+históricos N1. 15 pruebas correctas con unittest (incluidas cuatro regresiones
+nuevas). Las muestras repetidas de prueba son fixtures, no inferencias reales.
+
+Pendiente: reconciliar B con la ingeniería A y develop119, colector API actual,
+procedencia del runtime y contabilidad viva, congelar baseline N3 y medir antes
+de retocar arquitectura. Criterios de aceptación del equipo pendientes; no
+atribuir aprobación a la división A/B. N3/N5 reales siguen NOT_RUN. Gasto nuevo0;
+último gasto histórico0.957927619 USD, tope acumulado2 USD. El objetivo permanece
+activo; este inicio no equivale a entrega validada.

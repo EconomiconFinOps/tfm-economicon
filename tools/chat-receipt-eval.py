@@ -60,12 +60,21 @@ def normalize(receipt, bank, bank_hash, receipt_hash, section):
     if not isinstance(rows, list):
         raise ValueError(f'missing receipt section: {section}')
     cases = {case['id']: case for case in bank['cases']}
+    repetitions = receipt.get('repetitions', 1)
+    if type(repetitions) is not int or repetitions not in (1, 3, 5):
+        raise ValueError('invalid declared repetitions')
+    if repetitions > 1 and not rows:
+        raise ValueError('empty repeated receipt; no execution evidence')
     samples, seen = [], set()
     for row in rows:
         case_id = row['id']
-        if case_id not in cases or case_id in seen:
+        repetition = row.get('repetition', 1 if repetitions == 1 else None)
+        if type(repetition) is not int or not 1 <= repetition <= repetitions:
+            raise ValueError('invalid or missing sample repetition')
+        identity = (case_id, repetition)
+        if case_id not in cases or identity in seen:
             raise ValueError(f'unknown/duplicate case: {case_id}')
-        seen.add(case_id)
+        seen.add(identity)
         case = cases[case_id]
         result = row.get('result') or {}
         metadata = result.get('metadata') or {}
@@ -86,8 +95,10 @@ def normalize(receipt, bank, bank_hash, receipt_hash, section):
         else:
             input_match = None
         samples.append({
-            'sample_id': f'{receipt_hash}:{section}:{case_id}', 'case_id': case_id,
-            'receipt_sha256': receipt_hash, 'section': section, 'repetition': 1,
+            'sample_id': (f'{receipt_hash}:{section}:{case_id}' +
+                          (f':r{repetition}' if repetitions > 1 else '')), 'case_id': case_id,
+            'receipt_sha256': receipt_hash, 'section': section, 'repetition': repetition,
+            'repetitions_expected': repetitions,
             'state': row.get('state', (row.get('operation') or {}).get('state', 'unknown')),
             'answer': answer, 'response': response, 'cited_chunks': row.get('cited_chunks', []),
             'input_matches_bank': input_match,
@@ -128,6 +139,13 @@ def diagnostics(case, answer, rules, evaluator):
 
 def score(samples, bank, judgments, manifest, evaluator=None, rules=None):
     cases = {c['id']: c for c in bank['cases']}
+    declared = {s.get('repetitions_expected', 1) for s in samples}
+    if len(declared) > 1:
+        raise ValueError('mixed repetition plans')
+    repetitions = next(iter(declared), 1)
+    observed = {(s['case_id'], s['repetition']) for s in samples}
+    if len(observed) != len(samples):
+        raise ValueError('duplicate paired sample')
     known = {s['sample_id']: s for s in samples}
     if set(judgments) - set(known):
         raise ValueError('judgments reference a sample outside this receipt')
@@ -169,6 +187,12 @@ def score(samples, bank, judgments, manifest, evaluator=None, rules=None):
     return {'version': VERSION, 'bank_sha256': manifest['bank_sha256'],
             'partition_sha256': digest(manifest), 'samples': output,
             'summary': {'cases_expected': len(cases), 'samples': len(output),
+                        'repetitions_expected': repetitions,
+                        'samples_expected': len(cases) * repetitions,
+                        'missing_samples': [{'case_id': case_id, 'repetition': repeat}
+                                            for repeat in range(1, repetitions + 1)
+                                            for case_id in cases
+                                            if (case_id, repeat) not in observed],
                         'verdicts': dict(counts), 'requirements': dict(requirement_counts),
                         'response_failure_clusters': sum(len(r['failure_clusters']) for r in output),
                         'missing_cases': sorted(set(cases) - {r['case_id'] for r in output}),

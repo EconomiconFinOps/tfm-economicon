@@ -107,6 +107,53 @@ class ReceiptEvaluationTests(unittest.TestCase):
             self.assertEqual(result['heuristic_match'], expected)
             self.assertEqual(result['semantic_status'], 'unreviewed')
 
+    def repeated_receipt(self):
+        receipt = copy.deepcopy(self.receipt)
+        receipt['repetitions'] = 3
+        receipt['results'] = [dict(copy.deepcopy(row), repetition=repeat)
+                              for repeat in range(1, 4)
+                              for row in self.receipt['results']]
+        return receipt
+
+    def test_all_repetitions_preserve_failures_without_best_of_selection(self):
+        samples = ev.normalize(self.repeated_receipt(), self.bank, self.bank_hash, 'n3', 'results')
+        report = ev.score(samples, self.bank, {}, self.manifest)
+        self.assertEqual(len({s['sample_id'] for s in samples}), 84)
+        self.assertEqual(report['summary']['samples_expected'], 84)
+        self.assertEqual(report['summary']['missing_samples'], [])
+        self.assertEqual(report['summary']['verdicts'], {'pending': 69, 'technical_failure': 15})
+
+    def test_missing_repetition_is_visible_even_when_all_cases_present(self):
+        receipt = self.repeated_receipt()
+        receipt['results'].pop()
+        samples = ev.normalize(receipt, self.bank, self.bank_hash, 'n3', 'results')
+        summary = ev.score(samples, self.bank, {}, self.manifest)['summary']
+        self.assertEqual(summary['missing_cases'], [])
+        self.assertEqual(summary['missing_samples'], [{'case_id': 'JUP-069-028', 'repetition': 3}])
+
+    def test_repeated_receipts_reject_ambiguous_or_duplicate_slots(self):
+        empty = dict(self.repeated_receipt(), results=[])
+        with self.assertRaisesRegex(ValueError, 'empty'):
+            ev.normalize(empty, self.bank, self.bank_hash, 'n3', 'results')
+        for value in (None, True, 0, 4, '2'):
+            receipt = self.repeated_receipt()
+            receipt['results'][0]['repetition'] = value
+            with self.assertRaisesRegex(ValueError, 'repetition'):
+                ev.normalize(receipt, self.bank, self.bank_hash, 'n3', 'results')
+        receipt = self.repeated_receipt()
+        receipt['results'].append(copy.deepcopy(receipt['results'][0]))
+        with self.assertRaisesRegex(ValueError, 'duplicate'):
+            ev.normalize(receipt, self.bank, self.bank_hash, 'n3', 'results')
+
+    def test_regression_is_paired_to_exact_repetition(self):
+        samples = ev.normalize(self.repeated_receipt(), self.bank, self.bank_hash, 'n3', 'results')
+        target = samples[28]
+        before = ev.score(samples, self.bank, {target['sample_id']: self.labels(target)}, self.manifest)
+        after = ev.score(samples, self.bank, {target['sample_id']: self.labels(target, 'fail')}, self.manifest)
+        for report in (before, after):
+            report.update(scorer_sha256='same', rules_sha256='same', heuristic_sha256='same')
+        self.assertEqual(ev.compare(before, after)['regressed_responses'], [('JUP-069-001', 2)])
+
 
 if __name__ == '__main__':
     unittest.main()
