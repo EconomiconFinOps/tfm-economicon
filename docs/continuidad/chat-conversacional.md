@@ -1,4 +1,21 @@
-## PR121: contrato estructurado autorizado en validación — 12/10/2026
+## PR121: recuperación de servidor y expresiones locales — 13/10/2026
+
+La full28 de f6c7895 terminó18 completed/10 failed. Además,010/014/016/027/028
+y otras respuestas completadas presentan problemas de completitud o citas;
+completed no es aceptación. Recibo íntegro del workspace:
+`materiales/07-evidencias/PR121-herramientas-evidencia-20261012/arithmetic12-full28-verified.json`.
+Acumulado asentado0.376770819USD; restan0.123229181 del techo0.50. No se han
+hecho llamadas después de esa campaña.
+
+Decisión técnica en implementación para atender el objetivo autorizado:
+`server-documentation-v4`, recuperación determinada por servidor y una generación
+final; expresiones autocontenidas con cantidades vinculadas al origen sustituyen
+la decisión/plan de índices. [ADR](../adr/JUP-035-server-retrieval-expressions.md).
+El contrato público, autoridad financiera, HMAC, límites y criterios semánticos
+se conservan. Pruebas offline de catálogo/stream iniciales pasan; suites completas,
+publicación, coste conservador, campaña limpia y recorrido UI finales pendientes.
+
+Los apartados siguientes son evidencia histórica, no estado del candidato nuevo.
 
 ## Evaluación de fiabilidad pendiente (2026-10-13)
 

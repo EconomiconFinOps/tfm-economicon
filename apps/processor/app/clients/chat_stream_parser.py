@@ -125,8 +125,10 @@ class SegmentAnswerJSON:
     form explicit boundaries and never pass through the free-equation scanner.
     The underlying lexer preserves duplicate-root/escape/surrogate checks.
     """
-    def __init__(self, records):
+    def __init__(self, records, *, quantities=None):
         self.lexer=AnswerJSON();self.records=records
+        from app.core.chat_expressions import ExpressionRenderer
+        self.expressions=ExpressionRenderer(quantities) if quantities is not None else None
         self.segment=None;self.segments=[];self.pending=[]
         self.text='';self.closed=False;self.trailing='';self.rendered_size=0
 
@@ -151,7 +153,7 @@ class SegmentAnswerJSON:
                 raise ValueError('Response segment limit.')
             if self.segment is not None and not lex.string and lex.depth==2 and char=='}':
                 value=complete_json(''.join(self.segment));self.segment=None
-                rendered=render_segment(value,self.records)
+                rendered=render_segment(value,self.records,self.expressions)
                 self.rendered_size+=len(rendered)
                 if self.rendered_size>4000:raise ValueError('Rendered text limit.')
                 self.segments.append(value)

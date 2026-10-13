@@ -216,7 +216,7 @@ class ChatOperations:
                     if self.clock()>=row['attempt_deadline']-5:
                         raise TimeoutError()
                     if record.get('type')=='tool_call':
-                        if searched or seq or claim['context'].get('tool_protocol')!='structured-documentation-v3':
+                        if searched or seq or claim['context'].get('tool_protocol')!='server-documentation-v4':
                             raise ValueError('Unexpected tool call.')
                         searched=True
                         from app.services.chat_context import retrieval_diagnostic_scope

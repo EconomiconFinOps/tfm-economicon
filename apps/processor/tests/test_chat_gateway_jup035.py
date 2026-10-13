@@ -41,10 +41,9 @@ def _provider(value):
 def test_structured_search_then_final_uses_untrusted_data_and_total_usage(monkeypatch, read_size):
     import asyncio
     from test_chat_auto_jup035 import provider, wire, DECISION, decision_delta, decision_id
-    gateway, requests=provider(monkeypatch,[wire(decision_delta(True)),
-        wire({'content':json.dumps(_provider(ANSWER))},tokens=24)],read_size=read_size)
-    context={'tool_protocol':'structured-documentation-v3','messages':[{'role':'system','content':'Synthetic'},
-        {'role':'user','content':'Synthetic policy'}],'financial_metrics_allowed':False}
+    gateway, requests=provider(monkeypatch,[wire({'content':json.dumps(_provider(ANSWER))},tokens=24)],read_size=read_size)
+    context={'tool_protocol':'server-documentation-v4','messages':[{'role':'system','content':'Synthetic'},
+        {'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Synthetic policy'})}],'financial_metrics_allowed':False}
     seen=[]
     async def result(decision):
         seen.append(decision)
@@ -52,15 +51,14 @@ def test_structured_search_then_final_uses_untrusted_data_and_total_usage(monkey
     async def exercise():
         return [record async for record in gateway(context,time.time()+60,tool_result=result)]
     records=asyncio.run(exercise())
-    assert len(requests)==2 and seen==[DECISION]
+    assert len(requests)==1 and seen==[DECISION]
     assert all('tools' not in item and 'tool_choice' not in item for item in requests)
-    assert requests[0]['response_format']['json_schema']['name']=='DocumentationDecision'
-    assert requests[1]['response_format']['json_schema']['name']=='FinOpsResponse'
-    assert requests[1]['messages']==context['messages']+[{'role':'user',
+    assert requests[0]['response_format']['json_schema']['name']=='FinOpsResponse'
+    assert requests[0]['messages']==context['messages']+[{'role':'user',
         'content':'UNTRUSTED_RETRIEVAL_CONTEXT\n{"evidence":[],"omissions":[]}'}]
     assert records[0]['type']=='tool_call' and records[-1]['type']=='candidate'
-    assert records[-1]['usage']['total_tokens']==36 and records[-1]['usage']['cost_usd']=='0.002'
-    assert context['messages']==requests[0]['messages']
+    assert records[-1]['usage']['total_tokens']==24 and records[-1]['usage']['cost_usd']==0.001
+    assert context['messages']==requests[0]['messages'][:-1]
 
 
 @pytest.mark.parametrize('change,code', [
@@ -95,28 +93,14 @@ def test_native_envelope_closed_diagnostic_rejects_without_values(monkeypatch, c
     assert all(value not in caplog.text for value in ('private-marker','private-key-marker','different'))
 
 
-@pytest.mark.parametrize('arguments', ['{"query":"x","tenant_id":"foreign"}', '{"query":""}',
-    '{"query":"x","query":"y"}'])
-def test_required_tool_rejects_invalid_arguments_before_backend_or_second_request(monkeypatch, arguments):
-    import asyncio, io
-    from types import SimpleNamespace
-    from pydantic import SecretStr
-    from app.clients.chat_gateway import ChatGateway
-    wire=('data: '+json.dumps({'choices':[{'delta':{'tool_calls':[{'index':0,'id':'call-x','type':'function',
-        'function':{'name':'search_documentation','arguments':arguments}}]},'finish_reason':'tool_calls'}]})
-        +'\n\ndata: [DONE]\n\n').encode()
-    class Response(io.BytesIO):
-        headers={'Content-Type':'text/event-stream'}
-    gateway=ChatGateway(SimpleNamespace(llm_model='economicon-chat',litellm_base_url='http://synthetic.invalid/v1',litellm_api_key=SecretStr('synthetic')))
-    calls=[]
-    monkeypatch.setattr(gateway.client.transport,'open',lambda *a,**kw: (calls.append(1) or Response(wire)))
-    async def result(value):
-        pytest.fail('Invalid tool arguments reached backend')
-    async def exercise():
-        return [item async for item in gateway({'messages':[], 'financial_metrics_allowed':False,
-            'tool_protocol':'structured-documentation-v3'},time.time()+60,tool_result=result)]
-    records=asyncio.run(exercise())
+@pytest.mark.parametrize('arguments',['{"query":"x","tenant_id":"foreign"}', '{"query":""}', '{"query":"x","query":"y"}'])
+def test_required_tool_rejects_invalid_arguments_before_backend_or_second_request(monkeypatch,arguments):
+    from test_chat_auto_jup035 import provider,wire,TOOL
+    tool={**TOOL,'function':{'name':'search_documentation','arguments':arguments}}
+    gateway,calls=provider(monkeypatch,[wire({'tool_calls':[{'index':0,**tool}]},'tool_calls')])
+    records=list(gateway._records({'messages':[],'financial_metrics_allowed':False},time.time()+60,{},threading.Event()))
     assert records[-1]['type']=='error' and len(calls)==1
+    assert not any(record['type'] in ('candidate','tool_call') for record in records)
 
 
 def test_required_usage_never_reports_only_one_paid_leg():

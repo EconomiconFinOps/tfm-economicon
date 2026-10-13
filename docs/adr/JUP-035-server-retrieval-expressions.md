@@ -1,0 +1,72 @@
+# JUP-035: recuperación del servidor y expresiones locales
+
+Fecha: 2026-10-13. Estado: implementación autorizada; aceptación real pendiente.
+PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/121
+
+La campaña completa de f6c7895 produjo 18 respuestas completadas y 10 fallos,
+además de respuestas completadas semánticamente incompletas. La decisión previa
+del modelo y su plan con referencias introdujeron errores de unidades, referencias
+y selección de resultados. Los recibos negativos se conservan; CI verde no es
+aceptación. Se sustituye `structured-documentation-v3` por
+`server-documentation-v4`, como decisión técnica para atender la solicitud del
+usuario de corregir y validar PR121 dentro del presupuesto autorizado.
+
+El servidor determina una consulta con los primeros 2048 caracteres de la
+pregunta canónica. Bajo el intento ya activo ejecuta una recuperación documental
+con el tenant autenticado y el deadline original. El control privado conserva
+el nombre de transporte `tool_call`, pero no representa una llamada del modelo:
+su digest vincula la consulta exacta y el transporte HMAC vincula claim, tenant,
+usuario e intento. No se envían mensajes assistant/tool fabricados al proveedor.
+Después se hace una sola generación final, sin reintentos locales ni fallback.
+
+Esto recupera también para saludos y aclaraciones: añade coste de embedding y
+latencia, y comparte la pregunta con el mismo proveedor de embedding ya
+configurado. No amplía destinatarios ni permisos. El contenido recuperado es dato
+no confiable y no obliga a citarlo. Si no hay fuentes pertinentes se conserva una
+respuesta útil no accionable. El límite de una recuperación es por intento.
+
+El formato privado final conserva segmentos de prosa y añade expresiones
+tipadas autocontenidas. Las hojas eligen una cantidad indivisible valor/unidad
+observada en la pregunta actual, con origen conservado. Un vocabulario cerrado
+normaliza alias inequívocos; `$` y `¥` no se convierten a monedas supuestas.
+Un encabezado monetario puede abarcar su lista dentro de una oración; un contexto
+diario solo abarca su entrada o una observación inmediatamente ligada a su
+baseline diario. Cardinales escritos de cero a veinte pueden heredar una
+población inequívoca próxima; ordinales no se convierten en recuentos. Fechas,
+conteos y umbrales no heredan moneda. Entradas ambiguas permanecen sin dimensión.
+
+Las operaciones son suma, diferencia, cociente, porcentaje, variación relativa
+con base explícita y comparación terminal. Decimal evalúa sin `eval`, con
+profundidad máxima4, doce operaciones globales, 128 cantidades y cotas de
+magnitud y precisión. Un cero denominador genera un bloque explícitamente
+indefinido, nunca un resultado inventado. Una conversión no autorizada tampoco
+produce número. Estructuras inválidas, hojas ajenas e incompatibilidades de
+dimensión se rechazan. Las ecuaciones libres no se reparan.
+
+Cada expresión se presenta como un bloque completo que identifica una comparación
+booleana y evita sustituir opacamente IDs de resultados. La prosa circundante aún
+puede interpretar mal ese bloque y requiere revisión semántica. El mismo renderer proyecta el
+stream y el candidato final. Se mantienen Unicode, rechazo de duplicados,
+normalización global de espacios, 4000 caracteres de answer, 500 por elemento
+de lista y deltas de 8192 bytes. La pareja y metadata se persisten atómicamente
+solo tras validar el final. Las expresiones no autorizan métricas financieras.
+
+El esquema usa `$defs` por nivel y un único catálogo, sin intersecciones
+redundantes de literales. Backend y processor cuentan exactamente el esquema
+final efectivo y el contexto; ya no reservan una segunda petición de decisión.
+Se mantiene salida máxima3200, modelo y proveedor, deadline/cancelación y todas
+las reglas de autoridad y citas del contrato público FinOpsResponse1.0.
+
+Límites: comprobar un extracto literal acredita origen, no pertinencia. Calcular
+una expresión acredita esa operación, no que el modelo haya elegido la base
+semántica correcta. La aritmética usa la pregunta actual, no reconstruye valores
+ambiguos de recuerdos. La respuesta completa, citas y completitud requieren una
+nueva campaña real y recorrido UI; no se afirma corrección universal de prosa.
+
+Pruebas previstas: consulta alterada/HMAC/aislamiento, una generación después de
+retrieval, cancelación de ambas fases, uso privado y público, esquema/conteo
+idénticos, límites y unidades, texto/expresión partido, stream=final=JSONB,
+fuentes efectivas y rechazo sin reparación. El banco JUP-069 no se modifica.
+
+Véase [diseño OpenSpec](../../openspec/changes/jup-035-auto-documentation/design.md)
+y [continuidad](../continuidad/chat-conversacional.md).

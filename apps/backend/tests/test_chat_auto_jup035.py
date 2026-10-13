@@ -22,7 +22,7 @@ def test_calculation_diagnostic_is_closed_and_contains_no_rejected_text(api, mon
 
 
 def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch):
-    from app.core.chat_calculations import calculate
+    from app.core.chat_expressions import quantities,ExpressionRenderer
     from app.core.chat_segments import render_segments
     import importlib.util
     from pathlib import Path
@@ -31,15 +31,15 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
     question = 'Ejemplo hipotético: 73 EUR y 20 EUR.'
     context = {'messages': [{'role': 'user', 'content': 'UNTRUSTED_CURRENT_CONTEXT\n' + json.dumps({'question': question})}]}
-    plan = [{'left': {'literal':'73','unit':'EUR'}, 'right': {'literal':'20','unit':'EUR'}, 'operator': 'subtract'}]
-    comparisons = [{'left':{'ref':0},'right':{'literal':'20','unit':'EUR'},'operator':'gt'}]
-    calculations = calculate(context, plan, comparisons)
-    segments=[{'text':'  Ejemplo 😀: '},{'calculation_id':'n:0'},{'text':'; criterio: '},{'calculation_id':'c:0'},{'text':'. Resultado hipotético.  '}]
+    catalog=quantities(question)
+    difference={'operation':'difference','current':{'quantity':'73 EUR'},'baseline':{'quantity':'20 EUR'}}
+    comparison={'operation':'compare','left':difference,'right':{'quantity':'20 EUR'},'relation':'gt'}
+    segments=[{'text':'  Ejemplo 😀: '},{'expression':difference},{'text':'Criterio: '},{'expression':comparison},{'text':'Resultado hipotético.  '}]
     raw = json.dumps({'answer':segments},ensure_ascii=True)
     result = copy.deepcopy(ANSWER)
-    result['answer'] = render_segments(segments, calculations)
+    result['answer'] = render_segments(segments, [], expressions=ExpressionRenderer(catalog))
     async def stream(claim):
-        renderer = module.SegmentAnswerJSON(calculations)
+        renderer = module.SegmentAnswerJSON([],quantities=catalog)
         for char in raw:
             text = renderer.feed(char)
             if text: yield {'type': 'delta', 'text': text}
@@ -79,7 +79,7 @@ def test_no_search_keeps_server_authority_and_one_pair(api, monkeypatch, case):
     if case in ('billing', 'user_number', 'corpus_number'):
         answer['metrics'] = [{**source['metrics'][0], 'evidence_ids': ['authorized']}]
     async def build(scope, payload, descriptor):
-        return {'prompt_version': 'synthetic-v2', 'tool_protocol': 'structured-documentation-v3',
+        return {'prompt_version': 'synthetic-v2', 'tool_protocol': 'server-documentation-v4',
                 'messages': [], 'authorized_evidence': authorized, 'source_citations': [],
                 'financial_metrics_allowed': case == 'billing', 'response_period': None,
                 'response_subscriptions': []}
@@ -111,10 +111,10 @@ def test_no_search_keeps_server_authority_and_one_pair(api, monkeypatch, case):
 
 @pytest.mark.parametrize('duplicate', [False, True])
 def test_invalid_or_second_tool_never_persists(api, monkeypatch, duplicate):
-    assistant = {'action':'search' if duplicate else 'unknown','query':'policy','comparisons':[],'calculations':[]}
+    assistant = {'action':'search' if duplicate else 'unknown','query':'policy'}
     calls = []
     async def build(scope, payload, descriptor):
-        return {'prompt_version': 'synthetic-v2', 'tool_protocol': 'structured-documentation-v3',
+        return {'prompt_version': 'synthetic-v2', 'tool_protocol': 'server-documentation-v4',
                 'messages': [], 'authorized_evidence': []}
     async def extension(scope, context, call, deadline):
         from app.core.chat_resources import validate_search_call

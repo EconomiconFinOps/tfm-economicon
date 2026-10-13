@@ -115,7 +115,7 @@ def test_main_health_app_never_exposes_private_chat(private):
 def test_required_result_is_owned_signed_correlated_and_single_use(private, monkeypatch):
     async def scenario(client):
         entered=asyncio.Event();continued=[]
-        assistant={'action': 'search', 'query': 'Synthetic policy','comparisons':[],'calculations':[]}
+        assistant={'action': 'search', 'query': 'Synthetic policy'}
         async def gateway(context, deadline, *, tool_result):
             yield {'type':'tool_call','assistant':assistant}
             entered.set()
@@ -124,8 +124,8 @@ def test_required_result_is_owned_signed_correlated_and_single_use(private, monk
             yield {'type':'candidate','result':{'synthetic':'candidate'},'finish_reason':'stop'}
         gateway.requires_tool_result=True
         monkeypatch.setattr(private[0].state,'chat_gateway',gateway)
-        payload=claim(context={'prompt_version':'synthetic-v2','messages':[{'role':'user','content':'Synthetic'}],
-            'tool_protocol':'structured-documentation-v3','financial_metrics_allowed':False})
+        payload=claim(context={'prompt_version':'synthetic-v2','messages':[{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Synthetic policy'})}],
+            'tool_protocol':'server-documentation-v4','financial_metrics_allowed':False})
         raw=json.dumps(payload).encode()
         task=asyncio.create_task(client.post('/internal/chat/v2/attempts',content=raw,
             headers=signed('POST','/internal/chat/v2/attempts',raw)))

@@ -2,6 +2,7 @@
 import copy
 
 from app.core.chat_calculations import render_text
+from app.core.chat_expressions import ExpressionRenderer, expression_definitions
 
 
 def quote_choices(content):
@@ -12,27 +13,31 @@ def quote_choices(content):
     return [content[i:i+2048] for i in range(0,len(content),2048) if content[i:i+2048].strip()]
 
 
-def segment_schema(records=None, *, limit=4000):
+def segment_schema(records=None, *, limit=4000, quantities=None):
     choices=[{'type':'object','properties':{'text':{'type':'string','maxLength':limit}},
               'required':['text'],'additionalProperties':False}]
-    if records:
+    if quantities:
+        choices.append({'type':'object','properties':{'expression':{'$ref':'#/$defs/RenderedExpression'}},
+                        'required':['expression'],'additionalProperties':False})
+    elif records:
         choices.append({'type':'object','properties':{'calculation_id':{
             'type':'string','enum':[record['id'] for record in records]}},
             'required':['calculation_id'],'additionalProperties':False})
     return {'type':'array','minItems':1,'maxItems':128,'items':choices[0] if len(choices)==1 else {'anyOf':choices}}
 
 
-def bind_segments(schema, records=None):
+def bind_segments(schema, records=None, quantities=None):
     schema=copy.deepcopy(schema)
+    if quantities:schema.setdefault('$defs',{}).update(expression_definitions(quantities))
     for branch in schema.get('anyOf',[schema]):
         properties=branch['properties']
-        properties['answer']=segment_schema(records)
+        properties['answer']=segment_schema(records, quantities=quantities)
         for field in ('assumptions','limitations','next_actions'):
-            properties[field]['items']=segment_schema(records,limit=500)
+            properties[field]['items']=segment_schema(records,limit=500, quantities=quantities)
     return schema
 
 
-def render_segment(segment, records):
+def render_segment(segment, records, expressions=None):
     if not isinstance(segment,dict):raise ValueError('Invalid response segment.')
     if set(segment)=={'text'}:
         text=segment['text']
@@ -41,22 +46,25 @@ def render_segment(segment, records):
         # Slots and raw equations cannot bypass the typed reference branch.
         return render_text(text,[])
     if set(segment)=={'calculation_id'}:
+        if expressions is not None:raise ValueError('Invalid segment reference.')
         identifier=segment['calculation_id']
         if not isinstance(identifier,str):raise ValueError('Invalid segment reference.')
         matches=[record for record in records if record['id']==identifier]
         if len(matches)!=1:raise ValueError('Invalid segment reference.')
         return matches[0]['equation']
+    if set(segment)=={'expression'} and expressions is not None:
+        return expressions.render(segment['expression'])
     raise ValueError('Invalid response segment.')
 
 
-def render_segments(segments, records, *, limit=4000):
+def render_segments(segments, records, *, limit=4000, expressions=None):
     if not isinstance(segments,list) or not 1<=len(segments)<=128:
         raise ValueError('Invalid segment collection.')
     parts=[];pending=[]
     for segment in segments:
         # Validate shape before grouping adjacent text. Group validation closes
         # bypasses where an equation or a slot is split across text segments.
-        rendered=render_segment(segment,records)
+        rendered=render_segment(segment,records,expressions)
         if 'text' in segment:pending.append(rendered)
         else:
             if pending:parts.append(render_segment({'text':''.join(pending)},records));pending=[]
@@ -69,12 +77,13 @@ def render_segments(segments, records, *, limit=4000):
     return result
 
 
-def render_response(value, records):
+def render_response(value, records, *, quantities=None):
     if not isinstance(value,dict) or 'answer' not in value:
         raise ValueError('Invalid calculation response.')
-    result={**value,'answer':render_segments(value['answer'],records)}
+    expressions=ExpressionRenderer(quantities) if quantities is not None else None
+    result={**value,'answer':render_segments(value['answer'],records,expressions=expressions)}
     for field in ('assumptions','limitations','next_actions'):
         if field not in value or not isinstance(value[field],list) or len(value[field])>10:
             raise ValueError('Invalid calculation collection.')
-        result[field]=[render_segments(item,records,limit=500) for item in value[field]]
+        result[field]=[render_segments(item,records,limit=500,expressions=expressions) for item in value[field]]
     return result

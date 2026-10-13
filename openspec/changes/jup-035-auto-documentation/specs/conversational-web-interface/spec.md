@@ -21,17 +21,17 @@ evidencia insuficiente sin inventar cifras.
 #### Scenario: Decision documental automatica dentro del mismo intento
 
 - **WHEN** el chat IA inicia un intento autorizado
-- **THEN** SHALL usar el contrato structured-documentation-v3 y realizar una primera peticion con response_format DocumentationDecision estricto, action none con query null o action search con query no vacia de hasta2048 caracteres, junto a calculations numericos y comparisons terminales como listas cerradas que suman de cero a12 pasos hipoteticos; SHALL rechazar otros campos y parametros de tenant y ejecutar la recuperacion existente solo para search con el scope autenticado; SHALL mantener una operacion, un intento, un dispatch privado y el contexto/hash canonicos iniciales congelados, sin precargar corpus para simular una decision
+- **THEN** SHALL usar server-documentation-v4 y derivar la consulta de los primeros2048 caracteres de la pregunta canonica, sin peticion de decision al modelo; SHALL ejecutar como maximo una recuperacion existente con scope autenticado, una operacion y un intento; SHALL conservar contexto/hash inicial congelado y no recuperar antes de iniciar el deadline del intento
 
 #### Scenario: Decision sin herramienta y finalizacion estricta
 
-- **WHEN** la primera peticion termina con stop y una decision valida action none y query null
-- **THEN** SHALL descartar su texto sin mostrarlo, persistirlo ni reutilizarlo como contexto; SHALL realizar una segunda y ultima generacion con el contexto autorizado original, FinOpsResponse estricto y sin herramientas nativas; SHALL permitir respuestas con evidencia existente, saludos o aclaraciones no accionables, y exigir abstencion si falta sustento documental, sin recuperacion oculta; SHALL conservar el deadline comun y sumar el uso real de ambas generaciones, sin autoridad financiera derivada de usuario o corpus
+- **WHEN** termina la recuperacion unica, incluso sin fuentes pertinentes
+- **THEN** SHALL realizar una sola generacion FinOpsResponse estricta y sin herramientas nativas; SHALL permitir saludos, aclaraciones, definiciones documentadas y ejercicios hipoteticos utiles sin confundir ausencia de costes reales con imposibilidad de responder; SHALL mantener estados/evidencia y autoridad financiera existentes, deadline comun y uso real de esa unica generacion
 
 #### Scenario: Resultado privado y continuacion final
 
-- **WHEN** el backend obtiene fuentes para la unica decision search vigente
-- **THEN** SHALL devolver una extension autorizada mediante el HMAC existente a un endpoint privado del processor, vinculada al intento y digest canonico de la decision (campo privado tool_call_id), y continuar con un bloque user UNTRUSTED_RETRIEVAL_CONTEXT y FinOpsResponse estricto sin tools, tool_choice ni mensajes assistant/tool fabricados; SHALL conservar la autoridad financiera exclusivamente de billing, validar citas contra las fuentes realmente recuperadas, contar esquema de decision y continuacion en ambos servicios y sumar el consumo de las dos peticiones sin alterar FinOpsResponse 1.0
+- **WHEN** el backend obtiene fuentes para el control de recuperacion vigente
+- **THEN** SHALL devolver la extension mediante HMAC vinculada al intento, tenant y digest de consulta canonica; SHALL rechazar una consulta que difiera de la derivada del contexto, y continuar con user UNTRUSTED_RETRIEVAL_CONTEXT sin mensajes assistant/tool fabricados; SHALL contar el contexto y esquema final efectivo identicos en ambos servicios y conservar FinOpsResponse1.0 y autoridad exclusiva de billing
 
 #### Scenario: Cancelacion, resultado ajeno o segunda herramienta
 
@@ -163,16 +163,16 @@ independiente y SHALL rechazar candidatos invalidos sin reparar, filtrar ni
 persistir texto parcial.
 
 #### Scenario: Finalizacion sin fuentes
-- **WHEN** la decision estructurada indica none y no existe evidencia financiera autorizada
-- **THEN** el esquema SHALL admitir evidence vacia y estados no accionables; SHALL impedir inventar una cita para emitir ok o partial
+- **WHEN** no hay fuentes pertinentes ni evidencia financiera autorizada
+- **THEN** el esquema SHALL admitir evidence vacia y estados no accionables; SHALL impedir inventar una cita para emitir ok o partial, conservando la respuesta util que pueda sustentarse
 
 #### Scenario: Evidencia recuperada o ajena
 - **WHEN** una unica busqueda autenticada devuelve fuentes del alcance actual
 - **THEN** la finalizacion SHALL incluir esas fuentes exactas entre las opciones del esquema, sin admitir fuentes de otro usuario/tenant ni metadatos alterados; el presupuesto SHALL contar el esquema efectivo
 
 #### Scenario: Control estructurado cerrado
-- **WHEN** el proveedor emite una llamada nativa, campos extra, JSON duplicado, una decision truncada o una combinacion invalida de action y query
-- **THEN** el intento SHALL rechazarla antes de recuperar fuentes, sin reinterpretar llamadas, mostrar texto privado ni iniciar una tercera generacion; length SHALL conservar502 incomplete y la politica de reintentos existente
+- **WHEN** llega un control alterado, extra, duplicado o ajeno, o el proveedor genera llamadas nativas o JSON final invalido
+- **THEN** SHALL rechazarlo sin reparacion ni inferencia adicional; una consulta alterada SHALL rechazarse antes de retrieval y una salida invalida antes de persistir; length SHALL conservar502 incomplete y la politica de reintentos existente
 
 #### Scenario: Sustento literal y pertinencia
 - **WHEN** el proveedor selecciona una cita de corpus en la respuesta final
@@ -185,42 +185,34 @@ persistir texto parcial.
 
 ### Requirement: Aritmetica hipotetica calculada y proyectada
 
-La decision SHALL admitir calculations numericos y comparisons terminales,
-acotados a12 pasos en total, con operandos tipados: objetos literal/unit de la pregunta actual o objetos ref con
-indice entero de calculations (anterior para pasos numericos). Las comparaciones
-SHALL ser terminales y nunca ser origen de una referencia numerica.
-Una referencia SHALL heredar valor y unidad
-del resultado previo, sin aceptar una unidad adicional declarada por el modelo.
-El plan SHALL usar operadores cerrados y unidades explicitas. El backend SHALL calcularlo con
-Decimal sin eval y devolverlo en la extension HMAC; el processor SHALL verificar
-el mismo resultado. Ningun calculo SHALL conferir evidencia ni autoridad financiera.
+La finalizacion privada SHALL representar calculos mediante expresiones tipadas
+autocontenidas sobre cantidades indivisibles valor/unidad de la pregunta actual.
+SHALL evaluar con Decimal sin eval, profundidad maxima4 y doce operaciones en
+total entre todos los campos. Ningun calculo SHALL conferir evidencia financiera.
 
-#### Scenario: Decision none con calculo
-- **WHEN** no se necesita corpus pero existe un plan aritmetico valido
-- **THEN** SHALL usar la extension privada autenticada sin ejecutar retrieval; SHALL conservar dos generaciones, deadline comun, uso agregado y conteo canonico del resultado y ambos esquemas
+#### Scenario: Cantidades vinculadas al origen
+- **WHEN** se construye el esquema final efectivo
+- **THEN** SHALL enumerar hasta128 cantidades con origen conservado, unidades adyacentes o contexto monetario/temporal/poblacional inequívoco y aliases no ambiguos; fechas, recuentos y umbrales SHALL no heredar moneda por su mera coexistencia; sin cantidades o al superar128 SHALL no ofrecer expresiones
+- **AND** el catalogo SHALL aparecer una sola vez mediante $defs compartidos y niveles finitos; ambos servicios SHALL contar el esquema completo identico, sin intersecciones redundantes de literales
 
 #### Scenario: Operandos, unidades y limites
-- **WHEN** un plan usa operandos ausentes, referencias futuras, unidades incompatibles, division por cero, mas de12 pasos o magnitudes fuera del limite
-- **THEN** SHALL rechazarlo sin inferencia adicional ni reparacion; SHALL permitir suma/resta, producto con al menos un operando adimensional, division compatible, porcentaje y comparaciones estrictas/inclusivas entre unidades iguales
+- **WHEN** una expresion usa una hoja ajena, forma mixta, operacion no admitida, unidades incompatibles, mas de12 operaciones, profundidad excesiva o magnitud fuera de limite
+- **THEN** SHALL rechazarla sin reparar operandos ni comprar otra inferencia; SHALL conservar suma/diferencia, cociente dimensional, porcentaje, variacion relativa con baseline explicita y comparacion terminal sin reutilizar booleanos como numeros
+- **AND** denominador cero SHALL producir una limitacion explicita de resultado indefinido sin inventar numero; conversion no autorizada SHALL no producir numero y SHALL conservar monedas separadas y solicitud de datos necesarios
+- **AND** SHALL comparar sin redondear operandos y marcar aproximacion cuando la salida se redondee a seis decimales; diferencias de porcentajes SHALL mostrarse como puntos porcentuales
 
-#### Scenario: Valores de decision vinculados a la pregunta
-- **WHEN** se construye el schema de decision
-- **THEN** SHALL enumerar hasta128 literales decimales canonicos y128 tokens textuales de unidad de la pregunta, incluyendo simbolos y compuestos con barra, mas la unidad vacia; sin numeros o al superar esos limites SHALL exigir calculations y comparisons vacios
-- **AND** gateway y backend SHALL validar localmente los mismos enums y el plan deshabilitado aunque el proveedor ignore el schema; el manifiesto SHALL incluir el hash del schema efectivo y ambos servicios SHALL contar ese mismo schema completo
-- **AND** SHALL conservar operandos exactos en la ecuacion visible, comparar antes de redondear y marcar con aproximacion los resultados redondeados a seis decimales; SHALL limitar precision y magnitud, sin interpretar exponentes ni separadores de miles ambiguos
-
-#### Scenario: Proyeccion de ecuaciones y streaming
-- **WHEN** la finalizacion incluye una referencia privada a un calculo autorizado
-- **THEN** SHALL usar segmentos privados text o calculation_id con IDs enumerados del intento, disjuntos n:indice y c:indice, y renderizar cada referencia como la ecuacion calculada, sin reescribir ecuaciones arbitrarias recibidas; SHALL rechazar referencias desconocidas, segmentos mixtos y ecuaciones o marcadores libres incluso partidos entre segmentos contiguos de texto
-- **AND** SHALL conservar caracteres Unicode y escapes fragmentados, limitar128 segmentos y4000 caracteres para answer y500 para cada elemento de listas, normalizar solo espacios globales como el contrato publico, limitar cada delta a8192 bytes y hacer coincidir exactamente la concatenacion SSE con answer validado y persistido; los tramos verificados SHALL llegar antes de completar la generacion
-- **AND** la exactitud garantizada SHALL limitarse a las operaciones renderizadas: seleccion semantica de operandos/unidades, pertinencia y prosa circundante SHALL seguir requiriendo aceptacion real, sin afirmar entailment universal ni prohibir globalmente fechas, identificadores o numeros originales
+#### Scenario: Proyeccion y streaming de expresiones
+- **WHEN** la finalizacion incluye segmentos privados text o expression
+- **THEN** SHALL renderizar cada expresion como un bloque completo con formula, unidades y resultado o limitacion explicita, sin IDs de resultados generados ni ecuaciones arbitrarias reparadas; SHALL rechazar segmentos mixtos y ecuaciones o marcadores libres incluso partidos entre segmentos text contiguos
+- **AND** SHALL conservar Unicode y escapes fragmentados,128 segmentos,4000 caracteres de answer y500 por elemento de lista, normalizar solo extremos globales, emitir deltas de hasta8192 bytes antes del fin de generacion y hacer coincidir SSE, final validado y JSONB persistido
+- **AND** la garantia SHALL limitarse a la operacion renderizada: seleccion semantica, prosa, completitud y pertinencia documental SHALL seguir requiriendo aceptacion real; no se SHALL afirmar entailment universal ni prohibir fechas o cifras originales en prosa
 
 ### Requirement: Cierre observable y truncacion transitoria
 
 El stream SHALL comunicar el estado confirmado aunque la lectura SQL y la
 publicacion RAM se crucen, tanto al POST inicial como a observadores posteriores.
-La decision truncada SHALL conservar la politica existente de reintentos y no
-exponer ni reutilizar texto provisional.
+La respuesta final truncada SHALL conservar la politica existente de reintentos y no
+persistir texto provisional como confirmado.
 
 #### Scenario: Transicion confirmada antes de publicacion
 - **WHEN** completed, failed, paused o waiting ya esta confirmado en SQL y su evento aun no esta publicado
@@ -230,7 +222,7 @@ exponer ni reutilizar texto provisional.
 - **WHEN** un observador lee active pero final, terminal, paused o retry_scheduled ya esta publicado al suscribirse
 - **THEN** el stream SHALL entregar ese cierre una sola vez en lugar de quedar abierto con heartbeats
 
-#### Scenario: Decision con finish_reason length
-- **WHEN** la decision estructurada termina por longitud
-- **THEN** el processor SHALL devolver 502 incomplete, sin candidato ni texto provisional, y el backend SHALL programar un reintento dentro de su politica existente
+#### Scenario: Final con finish_reason length
+- **WHEN** la finalizacion termina por longitud
+- **THEN** el processor SHALL devolver 502 incomplete, sin candidato confirmado, y el backend SHALL programar un reintento dentro de su politica existente
 

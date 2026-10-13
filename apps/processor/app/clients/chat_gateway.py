@@ -151,6 +151,17 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
             'Response segment limit.':'response_segment_limit',
             'Incomplete segmented answer.':'incomplete_segmented_answer',
             'Stream candidate mismatch.':'stream_candidate_mismatch',
+            'Expression input unavailable.':'expression_input_unavailable',
+            'Expression input type.':'expression_input_type',
+            'Expression source magnitude.':'expression_source_magnitude',
+            'Expression operation limit.':'expression_operation_limit',
+            'Expression shape or depth.':'expression_shape_or_depth',
+            'Expression operation shape.':'expression_operation_shape',
+            'Unknown source quantity.':'expression_unknown_source_quantity',
+            'Incompatible expression units.':'expression_incompatible_units',
+            'Expression magnitude or unit limit.':'expression_magnitude_or_unit_limit',
+            'Comparison expression shape.':'expression_comparison_shape',
+            'Expression precision limit.':'expression_precision_limit',
         }
         if type(failure) is ValueError and failure.args and type(failure.args[0]) is str and failure.args[0] in assembly_rules:
             event['rule_code'] = assembly_rules[failure.args[0]]
@@ -286,15 +297,13 @@ class ChatGateway:
                 'stream_options':{'include_usage':True},'max_tokens':budget('chat')['output_tokens'],'num_retries':0,
                 'timeout':remaining,'stream_timeout':remaining,'reasoning':{'enabled':False},
                 'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True}}
-            # Both phases use structured output. No native tools or fabricated
-            # assistant/tool messages are sent to the provider.
-            from app.core.chat_resources import decision_schema
-            deciding=tool_choice=='auto'
+            from app.core.chat_expressions import context_quantities
+            source_quantities=context_quantities(context)
             payload['response_format']={'type':'json_schema','json_schema':{
-                'name':'DocumentationDecision' if deciding else 'FinOpsResponse','strict':True,
-                'schema':decision_schema(context) if deciding else chat_provider_schema(
+                'name':'FinOpsResponse','strict':True,
+                'schema':chat_provider_schema(
                     financial_metrics_allowed=context.get('financial_metrics_allowed'),
-                    authorized_evidence=context.get('authorized_evidence', []), calculations=context.get('calculations',[]))}}
+                    authorized_evidence=context.get('authorized_evidence', []), quantities=source_quantities)}}
             req=request.Request(self.client.base_url+'/chat/completions',data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode(),
                 headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
             request_hash=hashlib.sha256(req.data).hexdigest()
@@ -303,7 +312,7 @@ class ChatGateway:
             raise
         req._attempt_deadline=_AttemptDeadline(max(.001,deadline-time.time()-5))
         req._chat_cancelled=cancelled
-        frames,answer=SSEFrames(),SegmentAnswerJSON(context.get('calculations',[]))
+        frames,answer=SSEFrames(),SegmentAnswerJSON([], quantities=source_quantities)
         decoder=codecs.getincrementaldecoder('utf-8-sig')('strict')
         candidate=[];candidate_bytes=0;usage=None
         try:
@@ -326,19 +335,6 @@ class ChatGateway:
                         stage='envelope'
                         if data=='[DONE]':
                             stage='finish'
-                            if tool_choice=='auto':
-                                from app.core.chat_resources import validate_decision
-                                if finish=='length':
-                                    diagnostic('finish',category='incomplete')
-                                    yield {'type':'error','status':502,'category':'incomplete'}
-                                    return
-                                if finish!='stop': raise ValueError('Incomplete structured decision.')
-                                decision=validate_decision(complete_json(''.join(candidate)),context)
-                                if decision['action']=='none' and not (decision['calculations'] or decision['comparisons']):
-                                    yield {'type':'decision','usage':usage}
-                                else:
-                                    yield {'type':'tool_call','assistant':decision,'usage':usage}
-                                return
                             if finish not in ('stop','length'): raise ValueError('Gateway finish reason.')
                             raw=''.join(candidate)
                             try:
@@ -346,7 +342,7 @@ class ChatGateway:
                                 parsed=complete_json(raw)
                                 stage='model_validation'
                                 from app.core.chat_segments import render_response
-                                parsed=render_response(parsed,context.get('calculations',[]))
+                                parsed=render_response(parsed,[],quantities=source_quantities)
                                 result=assemble_chat_response(parsed,context.get('response_period'), context.get('response_subscriptions', []), authorized_evidence=context.get('authorized_evidence', []))
                             except Exception as failure:
                                 diagnostic(stage,failure,category='incomplete' if finish=='length' else 'invalid_response')
@@ -375,7 +371,6 @@ class ChatGateway:
                             candidate_bytes+=len(fragment.encode())
                             if candidate_bytes>1024*1024: raise ValueError('Candidate limit.')
                             candidate.append(fragment)
-                            if tool_choice=='auto': continue
                             stage='provisional_answer'
                             provisional=answer.feed(fragment)
                             # Escape-aware decoding completes surrogate pairs;
@@ -404,45 +399,34 @@ class ChatGateway:
     async def __call__(self,context,deadline,*,tool_result=None):
         holder={};cancelled=threading.Event()
         try:
-            if context.get('tool_protocol') not in (None,'structured-documentation-v3'):
+            protocol=context.get('tool_protocol')
+            if protocol not in (None,'server-documentation-v4'):
                 yield {'type':'error','status':422,'category':'invalid_response'};return
-            deciding=context.get('tool_protocol')=='structured-documentation-v3'
-            two_phase=deciding
-            iterator=self._records(context,deadline,holder,cancelled,'auto' if deciding else None)
-            first_usage=None
+            if protocol=='server-documentation-v4':
+                if tool_result is None:
+                    yield {'type':'error','status':422,'category':'invalid_response'};return
+                from app.core.chat_resources import retrieval_control,continuation_messages
+                control=retrieval_control(context)
+                yield {'type':'tool_call','assistant':control}
+                remaining=deadline-time.time()-5
+                if remaining<=0:raise TimeoutError()
+                result=await asyncio.wait_for(tool_result(control),remaining)
+                messages=continuation_messages(context,control,result)
+                context={**context,'messages':messages,'authorized_evidence':
+                    context.get('authorized_evidence',[])+json.loads(result['content'])['evidence']}
+            if cancelled.is_set() or time.time()>=deadline-5:raise TimeoutError()
+            # Exactly one generation; no retries or model-selected routing.
+            iterator=self._records(context,deadline,holder,cancelled)
             while True:
                 record=await asyncio.to_thread(next,iterator,None)
-                if record is None: return
-                if record['type'] in ('tool_call','decision'):
-                    if not deciding or (record['type']=='tool_call' and tool_result is None):
-                        yield {'type':'error','status':422,'category':'invalid_response'};return
-                    deciding=False
-                    first_usage=record.get('usage')
-                    messages=context['messages']
-                    evidence=context.get('authorized_evidence', [])
-                    computations=[]
-                    if record['type']=='tool_call':
-                        yield record
-                        remaining=deadline-time.time()-5
-                        if remaining<=0: raise TimeoutError()
-                        result=await asyncio.wait_for(tool_result(record['assistant']),remaining)
-                        from app.core.chat_resources import continuation_messages
-                        messages=continuation_messages(context,record['assistant'],result)
-                        # continuation_messages validates the authenticated result first.
-                        evidence=evidence+json.loads(result['content'])['evidence']
-                        computations=json.loads(result['content']).get('calculations',[])
-                    if cancelled.is_set() or time.time()>=deadline-5: raise TimeoutError()
-                    iterator=self._records({**context,'messages':messages,'authorized_evidence':evidence,'calculations':computations},deadline,holder,cancelled,'none')
-                else:
-                    if record['type']=='candidate' and two_phase:
-                        record={**record,'usage':combined_usage(first_usage,record.get('usage'))}
-                    yield record
+                if record is None:return
+                yield record
         except TimeoutError:
             yield {'type':'error','category':'timeout'}
         finally:
             cancelled.set()
             response=holder.get('response')
-            if response is not None: interrupt(response)
+            if response is not None:interrupt(response)
 
 
 def text_deltas(text):

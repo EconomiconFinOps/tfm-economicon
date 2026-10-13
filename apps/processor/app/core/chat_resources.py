@@ -28,65 +28,49 @@ TOKENIZER = {
 }
 BUDGETS = {'variable_tokens':8192, 'wrapper_margin_tokens':1024,
            'output_tokens':3200, 'model_context_tokens':1048576}
-from app.core.chat_calculations import PLAN_SCHEMA, COMPARISON_SCHEMA, validate_plan, calculate, contextual_decision_schema, validate_contextual_plan
+from app.core.chat_expressions import context_question, context_quantities
 
-DECISION_SCHEMA = {'type':'object','properties':{
-    'action':{'type':'string','enum':['none','search']},'calculations':PLAN_SCHEMA,'comparisons':COMPARISON_SCHEMA,
-    'query':{'anyOf':[{'type':'string','minLength':1,'maxLength':2048},{'type':'null'}]}},
-    'required':['action','query','calculations','comparisons'],'additionalProperties':False
-}
-
-
+# This control is generated locally, never by an LLM. The entire current
+# question (bounded to the retrieval input contract) is deterministically used.
+DECISION_SCHEMA = {'type':'object','properties':{'action':{'const':'search'},
+    'query':{'type':'string','minLength':1,'maxLength':2048}},
+    'required':['action','query'],'additionalProperties':False}
 
 def decision_schema(context):
-    return contextual_decision_schema(context,DECISION_SCHEMA)
+    return DECISION_SCHEMA
+
+def retrieval_control(context):
+    return {'action':'search','query':context_question(context)[:2048]}
+
+def validate_search_call(value, context=None):
+    if (not isinstance(value,dict) or set(value)!={'action','query'}
+            or value['action']!='search' or not isinstance(value['query'],str)
+            or not value['query'].strip() or len(value['query'])>2048):
+        raise ValueError('Invalid retrieval control.')
+    if context is not None and value!=retrieval_control(context):
+        raise ValueError('Retrieval query mismatch.')
+    raw=json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False)
+    return hashlib.sha256(raw.encode()).hexdigest(),value['query']
 
 
-def validate_decision(value, context=None):
-    if not isinstance(value,dict) or set(value)!={'action','query','calculations','comparisons'}:
-        raise ValueError('Invalid decision fields.')
-    validate_plan(value['calculations'],value['comparisons'])
-    if context is not None:validate_contextual_plan(context,value['calculations'],value['comparisons'])
-    if value['action']=='none' and value['query'] is None:
-        return value
-    if (value['action']=='search' and isinstance(value['query'],str)
-            and value['query'].strip() and len(value['query'])<=2048):
-        return value
-    raise ValueError('Invalid decision branch.')
-
-
-def validate_search_call(decision):
-    """Private retrieval request, never an assistant/tool conversation message.
-
-    The digest correlates the exact validated query; the signed transport also
-    binds the request and its result to the operation, attempt and tenant scope.
-    """
-    validate_decision(decision)
-    if decision['action']!='search' and not (decision['calculations'] or decision['comparisons']): raise ValueError('Control action required.')
-    raw=json.dumps(decision,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False)
-    return hashlib.sha256(raw.encode()).hexdigest(),decision['query']
-
-ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_schema=DECISION_SCHEMA,
+ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_schema=DECISION_SCHEMA,
     continuation_roles=['user-untrusted-retrieval'], max_searches=1,
-    max_generations=2, decision_format='strict-none-search', final_format='strict-finops',
+    max_generations=1, decision_format='server-current-question', final_format='strict-finops',
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
-    arithmetic='decimal-plan-12-numeric-refs-terminal-comparisons-v4',
-    decision_values='source-number-unit-enums-128-disable-on-overflow-v1')
+    arithmetic='source-quantity-expression-depth4-operations12-v1',
+    decision_values='server-query-no-model-decision-v1')
 
 
 def continuation_messages(context, assistant, result):
-    identifier,_=validate_search_call(assistant)
+    identifier,_=validate_search_call(assistant,context)
     if not isinstance(result,dict) or set(result)!={'tool_call_id','content','variable_tokens'} or result['tool_call_id']!=identifier:
         raise ValueError('Tool result correlation.')
     content=result['content']
     if not isinstance(content,str) or len(content.encode('utf-8'))>1024*1024: raise ValueError('Tool result limit.')
     data=json.loads(content,object_pairs_hook=unique)
-    expected_fields={'evidence','omissions','calculations'} if (assistant['calculations'] or assistant['comparisons']) else {'evidence','omissions'}
-    if not isinstance(data,dict) or set(data)!=expected_fields or not isinstance(data['omissions'],list): raise ValueError('Tool result format.')
-    if (assistant['calculations'] or assistant['comparisons']) and data['calculations']!=calculate(context,assistant['calculations'],assistant['comparisons']):
-        raise ValueError('Calculation result mismatch.')
+    if not isinstance(data,dict) or set(data)!={'evidence','omissions'} or not isinstance(data['omissions'],list): raise ValueError('Tool result format.')
     sources=data['evidence']
     if not isinstance(sources,list) or len(sources)+len(context.get('authorized_evidence',[]))>20: raise ValueError('Tool evidence limit.')
     ids=set(item['id'] for item in context.get('authorized_evidence',[]))
@@ -142,7 +126,7 @@ class ChatResources:
                for message in messages[1:]):
             raise ValueError('Invalid variable roles.')
         variable = self.count(canonical(messages[1:]).decode('utf-8'))
-        total = self.count(canonical(messages).decode('utf-8')) + self.count(canonical(schema).decode('utf-8')) + self.count(canonical(decision_schema({"messages":messages})).decode('utf-8'))
+        total = self.count(canonical(messages).decode('utf-8')) + self.count(canonical(schema).decode('utf-8'))
         if total + 1024 + self.context_budget['output_tokens'] > self.context_budget['context_tokens']:
             raise TokenBudgetExceeded('Token budget exceeded.')
         return variable
@@ -151,9 +135,9 @@ class ChatResources:
         from app.agents.schemas import chat_provider_schema
         messages=continuation_messages(context,assistant,result)
         sources=context.get('authorized_evidence',[])+json.loads(result['content'])['evidence']
-        schema=chat_provider_schema(financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=sources, calculations=json.loads(result['content']).get('calculations',[]))
+        schema=chat_provider_schema(financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=sources, quantities=context_quantities(context))
         variable=self.count(canonical(messages[1:]).decode('utf-8'))
-        total=self.count(canonical(messages).decode('utf-8'))+self.count(canonical(schema).decode('utf-8'))+self.count(canonical(decision_schema({"messages":messages})).decode('utf-8'))
+        total=self.count(canonical(messages).decode('utf-8'))+self.count(canonical(schema).decode('utf-8'))
         if total+1024+self.context_budget['output_tokens']>self.context_budget['context_tokens']:
             raise TokenBudgetExceeded('Tool context token limit.')
         if variable!=result['variable_tokens']: raise ValueError('Tool count mismatch.')
@@ -171,9 +155,9 @@ class ChatResources:
         allowed = context.get('financial_metrics_allowed')
         if type(allowed) is not bool:
             raise ValueError('Invalid financial authority control.')
-        if context.get('tool_protocol') not in ('structured-documentation-v3','mock-direct-v1'):
+        if context.get('tool_protocol') not in ('server-documentation-v4','mock-direct-v1'):
             raise ValueError('Tool protocol missing.')
-        counted = self.check_messages(messages, chat_provider_schema(financial_metrics_allowed=allowed, authorized_evidence=context.get('authorized_evidence', [])))
+        counted = self.check_messages(messages, chat_provider_schema(financial_metrics_allowed=allowed, authorized_evidence=context.get('authorized_evidence', []), quantities=context_quantities(context)))
         if not messages[-1]['content'].startswith('UNTRUSTED_CURRENT_CONTEXT\n'):
             raise ValueError('Current block mismatch.')
         if len(messages) == 3:

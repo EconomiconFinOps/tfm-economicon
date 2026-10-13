@@ -1,5 +1,20 @@
 JUP: JUP-035
 
+## Decisión vigente — 13/10/2026, después de la batería completa
+
+Se adopta server-documentation-v4: recuperación única determinada por el servidor
+y una generación final con expresiones locales autocontenidas. Sustituye la
+decisión none/search del modelo y el plan de índices. Véase el
+[ADR](../../../docs/adr/JUP-035-server-retrieval-expressions.md) para los límites,
+origen de cantidades, coste/privacidad de recuperación en saludos, esquema
+finito con $defs, deadline, HMAC y aceptación pendiente.
+
+La batería f6c7895 produjo18 completed/10 failed, con fallos semánticos también
+entre los completed. No se considera aceptada ni se ocultan los ensayos previos.
+Las secciones siguientes conservan decisiones históricas sustituidas; no definen
+el protocolo vigente. El contrato público, autoridad financiera y requisitos de
+completitud/evidencia siguen vigentes.
+
 ## Compatibilidad de la union final — 13/10/2026
 
 Una reproduccion sintetica autorizada confirma HTTP400 de DeepInfra al compilar
@@ -11,7 +26,7 @@ invalidos, incluyendo autoridad financiera y campos obligatorios. No se cambian
 validadores locales, citas autorizadas, limites ni contrato publico. La
 compatibilidad real del esquema corregido requiere validacion posterior.
 
-## Decision vigente — 12/10/2026
+## Antecedente sustituido — 12/10/2026
 El usuario autoriza sustituir auto-documentation-v2 por structured-documentation-v3.
 La primera generacion devuelve exclusivamente {action:none,query:null} o
 {action:search,query:string}, mas calculations y comparisons. El esquema raiz simple acota

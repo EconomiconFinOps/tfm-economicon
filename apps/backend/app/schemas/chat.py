@@ -101,7 +101,7 @@ def _bind_chat_evidence(schema, authorized_evidence):
     return schema
 
 
-def provider_response_schema(*, financial_metrics_allowed=False, authorized_evidence=None, calculations=None):
+def provider_response_schema(*, financial_metrics_allowed=False, authorized_evidence=None, calculations=None, quantities=None):
     if type(financial_metrics_allowed) is not bool:
         raise ValueError('Invalid financial authority control.')
     schema, _ = response_schema()
@@ -128,7 +128,7 @@ def provider_response_schema(*, financial_metrics_allowed=False, authorized_evid
     # A single union avoids intersecting long citation enums with identical
     # copies at root and branch (DeepInfra rejects that redundant grammar).
     schema = {'type':'object', 'anyOf':[actionable, abstention], '$defs':schema['$defs']}
-    return bind_segments(_bind_chat_evidence(schema, authorized_evidence), calculations)
+    return bind_segments(_bind_chat_evidence(schema, authorized_evidence), calculations, quantities)
 
 
 def _validate(value, rule, schema, depth=0):

@@ -24,14 +24,14 @@ ASSEMBLER_CONTRACT={'version':2,'roles':['system','user-summary-optional','user-
                     'summary_label':'UNTRUSTED_DIALOGUE_SUMMARY','current_label':'UNTRUSTED_CURRENT_CONTEXT',
                     'serialization':'utf8-sorted-keys-significant-arrays','escape':'json-controls-angle-brackets'}
 from app.core.chat_resources import DECISION_SCHEMA, decision_schema
-ASSEMBLER_CONTRACT.update(tool_protocol='structured-documentation-v3', decision_schema=copy.deepcopy(DECISION_SCHEMA),
+ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_schema=copy.deepcopy(DECISION_SCHEMA),
     continuation_roles=['user-untrusted-retrieval'], max_searches=1,
-    max_generations=2, decision_format='strict-none-search', final_format='strict-finops',
+    max_generations=1, decision_format='server-current-question', final_format='strict-finops',
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
-    arithmetic='decimal-plan-12-numeric-refs-terminal-comparisons-v4',
-    decision_values='source-number-unit-enums-128-disable-on-overflow-v1')
+    arithmetic='source-quantity-expression-depth4-operations12-v1',
+    decision_values='server-query-no-model-decision-v1')
 
 
 def canonical(value): return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
@@ -43,9 +43,9 @@ def test_packaged_prompt_explains_non_actionable_response_contract():
     default = Path(__file__).parents[1]/'app/agents/prompt_resources/jup035/chat/v3'
     root = Path(os.getenv('JUP035_RESOURCE_BUNDLE', str(default)))
     system = load_resources(root).system
-    assert 'no_data, insufficient_data, unsupported, refused o error' in system
-    assert 'metrics y recommendations deben ser listas vacias ([]).' in system
-    assert 'Indicaciones para obtener datos: usa next_actions, no recommendations.' in system
+    assert 'unsupported/refused/error requieren metrics y recommendations vacías' in system
+    assert 'unsupported/refused/error requieren metrics y recommendations vacías' in system
+    assert 'identifica precisamente lo que falta y cómo obtenerlo en next_actions.' in system
 
 
 def test_packaged_prompt_requires_only_used_documentary_sources_without_user_request():
@@ -54,10 +54,10 @@ def test_packaged_prompt_requires_only_used_documentary_sources_without_user_req
     root = Path(os.getenv('JUP035_RESOURCE_BUNDLE', str(default)))
     resource = load_resources(root)
     system = ' '.join(resource.system.split())
-    assert 'Citas documentales obligatorias, aunque el usuario no las solicite:' in system
-    assert 'Toda afirmacion de answer apoyada en corpus debe incluir en evidence el id exacto de cada fuente realmente usada' in system
-    assert 'Recuperar un documento no implica usarlo: no listes todo el corpus recuperado ni fuentes no usadas.' in system
-    assert 'No inventes ids, referencias, titulos ni sources; copia id, kind, title y source de la evidencia autorizada.' in system
+    assert 'Evidencia pertinente:' in system
+    assert 'Para cada afirmación documental selecciona solo la fuente que realmente la sustenta;' in system
+    assert 'No listes todos los resultados ni añadas afirmaciones para justificar citas.' in system
+    assert 'Copia los campos autorizados y elige support_quote literal de su propio fragmento.' in system
     manifest = json.loads((root/'manifest.json').read_bytes())
     assert manifest['system_sha256'] == digest((root/'system.md').read_bytes())
     assert resource.prompt_version == 'jup-035.chat.v3:' + digest(canonical(manifest))
@@ -152,10 +152,10 @@ def test_financial_authority_control_is_required_and_strict_boolean():
     from app.core.chat_resources import load_resources
     resources = load_resources()
     messages = [{'role': 'system', 'content': resources.system},
-        {'role': 'user', 'content': 'UNTRUSTED_CURRENT_CONTEXT\n{}'}]
+        {'role': 'user', 'content': 'UNTRUSTED_CURRENT_CONTEXT\n{"question":"Consulta"}'}]
     declared = json.loads(resources.manifest_bytes)
     context = {'prompt_version': resources.prompt_version, 'messages': messages,
-        'tool_protocol':'structured-documentation-v3','manifest': {
+        'tool_protocol':'server-documentation-v4','manifest': {
         'prompt_version': resources.prompt_version, 'tokenizer_sha256': resources.tokenizer_sha256,
         'response_schema_sha256': resources.response_schema_sha256,
         'input_contract_sha256': declared['input_contract_sha256'],

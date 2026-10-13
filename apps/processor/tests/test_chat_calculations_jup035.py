@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 
 from app.core.chat_calculations import calculate, CalculationStream, render_text
-from app.core.chat_resources import validate_decision, validate_search_call, continuation_messages
 from test_chat_auto_jup035 import provider, wire
 from test_chat_gateway_jup035 import ANSWER, _provider
 
@@ -53,29 +52,8 @@ def test_terminal_comparisons_cannot_enter_numeric_reference_graph(numeric,compa
     with pytest.raises(ValueError):calculate(context(),numeric,comparisons)
 
 
-def test_terminal_only_comparison_is_authenticated_and_has_no_numeric_references():
-    initial=context()
-    decision={'action':'none','query':None,'calculations':[],
-              'comparisons':[step('20','20','gt')]}
-    validate_decision(decision,initial)
-    computed=calculate(initial,[],decision['comparisons'])
-    assert computed[0]['id']=='c:0' and computed[0]['value']=='falso'
-    content=json.dumps({'evidence':[],'omissions':[],'calculations':computed})
-    result={'tool_call_id':validate_search_call(decision)[0],'variable_tokens':0,'content':content}
-    assert continuation_messages(initial,decision,result)[-1]['content'].endswith(content)
-    decision['comparisons'][0]['operator']='gte'
-    with pytest.raises(ValueError,match='correlation'):continuation_messages(initial,decision,result)
 
 
-def test_schema_separates_operator_types_and_contextualizes_both_collections():
-    from app.core.chat_resources import decision_schema
-    schema=decision_schema(context())
-    numeric=schema['properties']['calculations']['items']['properties']
-    comparison=schema['properties']['comparisons']['items']['properties']
-    assert set(numeric['operator']['enum'])=={'add','subtract','multiply','divide','percentage'}
-    assert set(comparison['operator']['enum'])=={'gt','gte','lt','lte','eq'}
-    assert numeric['left']==comparison['left']
-    assert decision_schema(context('sin numeros'))['properties']['comparisons']['maxItems']==0
 
 
 def test_cost_per_count_ratios_preserve_dimensions_and_support_comparison():
@@ -124,55 +102,10 @@ def test_free_equations_and_bad_slots_are_never_repaired(text):
     with pytest.raises(ValueError):render_text(text,calculate(context(),[step()]))
 
 
-@pytest.mark.parametrize('width',[1,2,7,8192])
-def test_stream_fragmentation_unicode_escape_and_persistable_final_match(monkeypatch,width):
-    computations=calculate(context(),[step()])
-    value=_provider(ANSWER)
-    value['answer']=[{'text':'Hipotético 😀: '},{'calculation_id':'n:0'},{'text':'. La diferencia está calculada.'}]
-    value['assumptions']=[[{'text':'Datos del usuario: '},{'calculation_id':'n:0'},{'text':'.'}]]
-    event={'choices':[{'index':0,'delta':{'content':json.dumps(value,ensure_ascii=False)},'finish_reason':'stop'}]}
-    data=('data: '+json.dumps(event,ensure_ascii=False)+'\n\ndata: [DONE]\n\n').encode()
-    gateway,_=provider(monkeypatch,[data],read_size=width)
-    async def exercise():
-        return [r async for r in gateway({**context(),'tool_protocol':None,'calculations':computations},time.time()+60)]
-    records=asyncio.run(exercise())
-    result=records[-1]['result']
-    assert records[-1]['type']=='candidate'
-    assert ''.join(r['text'] for r in records if r['type']=='delta')==result['answer']
-    assert result['answer']=='Hipotético 😀: 73 EUR − 20 EUR = 53 EUR. La diferencia está calculada.'
-    assert '[[calc:' not in json.dumps(records) and result['metrics']==[]
 
 
-@pytest.mark.parametrize('numeric,comparisons,identifier',[
-    ([step()],[],'n:0'),
-    ([],[step('20','20','gt')],'c:0'),
-    ([step()],[step('@0','20','gt')],'c:0'),
-])
-def test_none_with_calculation_uses_authenticated_extension_without_search(monkeypatch,numeric,comparisons,identifier):
-    decision={'action':'none','query':None,'comparisons':comparisons,'calculations':numeric}
-    assert validate_decision(decision)==decision
-    candidate=_provider(ANSWER);candidate['answer']=[{'text':'Hipotético: '},{'calculation_id':identifier},{'text':'.'}]
-    gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(decision)}),wire({'content':json.dumps(candidate)})])
-    initial=context();calls=[]
-    async def result(value):
-        calls.append(value)
-        content=json.dumps({'evidence':[],'omissions':[],'calculations':calculate(initial,value['calculations'],value['comparisons'])})
-        return {'tool_call_id':validate_search_call(value)[0],'content':content,'variable_tokens':0}
-    async def exercise():
-        return [r async for r in gateway(initial,time.time()+60,tool_result=result)]
-    records=asyncio.run(exercise())
-    assert calls==[decision] and len(requests)==2
-    assert records[-1]['type']=='candidate' and records[-1]['result']['evidence']==[]
-    assert ''.join(record['text'] for record in records if record['type']=='delta')==records[-1]['result']['answer']
-    assert requests[1]['messages'][-1]['content'].startswith('UNTRUSTED_RETRIEVAL_CONTEXT\n')
 
 
-def test_authenticated_result_arithmetic_cannot_be_tampered():
-    initial=context();decision={'action':'none','query':None,'comparisons':[],'calculations':[step()]}
-    computed=calculate(initial,decision['calculations']);computed[0]['value']='90'
-    result={'tool_call_id':validate_search_call(decision)[0],'variable_tokens':0,
-            'content':json.dumps({'evidence':[],'omissions':[],'calculations':computed})}
-    with pytest.raises(ValueError,match='Calculation result mismatch'):continuation_messages(initial,decision,result)
 
 
 def test_decimal_point_at_fragment_boundary_does_not_bypass_equation_rejection():
@@ -234,40 +167,3 @@ def test_gateway_assembly_diagnostic_uses_only_closed_messages(caplog):
 def test_typed_reference_rejects_extra_units_mixed_branches_and_invalid_indices(operand):
     plan=[step(),{'left':operand,'right':{'literal':'20','unit':'EUR'},'operator':'subtract'}]
     with pytest.raises(ValueError):calculate(context(),plan)
-
-
-def test_contextual_schema_enumerates_source_literals_and_complete_unit_tokens():
-    from app.core.chat_resources import decision_schema
-    initial=context('Ejemplo: 73 EUR/día y 20 EUR/día. Variación 5 %.')
-    schema=decision_schema(initial)
-    literals=schema['properties']['calculations']['items']['properties']['left']['anyOf'][0]['properties']
-    assert literals['literal']['enum']==['20','5','73']
-    assert 'EUR/día' in literals['unit']['enum'] and '%' in literals['unit']['enum']
-    assert 'EUR' not in literals['unit']['enum'] and 'EUR/day' not in literals['unit']['enum']
-    value={'action':'none','query':None,'comparisons':[],'calculations':[step('73','20','subtract','EUR/día','EUR/día')]}
-    validate_decision(value,initial)
-    for operand in [{'literal':'100','unit':'EUR/día'},{'literal':'73','unit':'EUR/day'}]:
-        value['calculations'][0]['left']=operand
-        with pytest.raises(ValueError):validate_decision(value,initial)
-
-
-def test_contextual_source_limit_disables_plan_without_inventing_values():
-    from app.core.chat_resources import decision_schema
-    assert decision_schema(context('No hay números.'))['properties']['calculations']['maxItems']==0
-    assert decision_schema(context(' '.join(str(i) for i in range(129))))['properties']['calculations']['maxItems']==0
-
-
-@pytest.mark.parametrize('question,plan',[
-    ('73 EUR/día y 20 EUR/día',[step('73','20','subtract','EUR','EUR')]),
-    ('73 EUR y 20 EUR',[step('73.0','20')]),
-    (' '.join(str(i) for i in range(129)),[step('73','20','subtract','','')]),
-])
-def test_provider_cannot_bypass_contextual_enums_or_disabled_plan(monkeypatch,question,plan):
-    decision={'action':'none','query':None,'comparisons':[],'calculations':plan}
-    initial=context(question)
-    with pytest.raises(ValueError):calculate(initial,plan)
-    gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(decision)})])
-    async def exercise():return [record async for record in gateway(initial,time.time()+60)]
-    records=asyncio.run(exercise())
-    assert records[-1]['type']=='error' and len(requests)==1
-    assert not any(record['type'] in ('tool_call','candidate','delta') for record in records)

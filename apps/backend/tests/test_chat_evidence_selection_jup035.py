@@ -14,30 +14,29 @@ SOURCE = {'id': 'corpus:authorized:0', 'kind': 'corpus', 'title': 'Synthetic pol
 
 
 def test_simple_decision_schema_keeps_branch_coherence_in_local_validator():
-    from app.core.chat_resources import DECISION_SCHEMA, validate_decision
-    for value in ({'action':'none','query':None,'comparisons':[],'calculations':[]},{'action':'search','query':'a','comparisons':[],'calculations':[]}):
-        _validate(value,DECISION_SCHEMA,DECISION_SCHEMA)
-        assert validate_decision(value)==value
-    for value in ({'action':'none','query':'a','comparisons':[],'calculations':[]},{'action':'search','query':None,'comparisons':[],'calculations':[]},
-                  {'action':'search','query':'a','tenant':'other','comparisons':[],'calculations':[]}):
-        with pytest.raises(ValueError): validate_decision(value)
+    from app.core.chat_resources import DECISION_SCHEMA, validate_search_call
+    value={'action':'search','query':'a'}
+    _validate(value,DECISION_SCHEMA,DECISION_SCHEMA)
+    assert validate_search_call(value)[1]=='a'
+    for value in ({'action':'none','query':'a'},{'action':'search','query':None},
+                  {'action':'search','query':'a','tenant':'other'}):
+        with pytest.raises(ValueError):validate_search_call(value)
     assert 'anyOf' not in DECISION_SCHEMA
     with pytest.raises(ResponseValidationError):
         _validate({'action':'none','query':None,'comparisons':[],'calculations':[],'tenant':'other'},DECISION_SCHEMA,DECISION_SCHEMA)
 
 
 def test_contextual_decision_schema_enforces_exact_source_enum_and_disabled_plan():
-    from app.core.chat_resources import decision_schema,validate_decision
-    context={'messages':[{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'73 EUR/día y 20 EUR/día.'})}]}
-    schema=decision_schema(context)
-    value={'action':'none','query':None,'comparisons':[],'calculations':[{'operator':'subtract',
-        'left':{'literal':'73','unit':'EUR/día'},'right':{'literal':'20','unit':'EUR/día'}}]}
+    from app.core.chat_expressions import quantities,ExpressionRenderer
+    catalog=quantities('73 EUR/día y 20 EUR/día.')
+    schema=provider_response_schema(quantities=catalog,authorized_evidence=[])
+    value=candidate();value['answer']=[{'expression':{'quantity':'73 EUR/día'}}]
     _validate(value,schema,schema)
-    for operand in ({'literal':'100','unit':'EUR/día'},{'literal':'73','unit':'EUR'}):
-        value['calculations'][0]['left']=operand
+    for operand in ('100 EUR/día','73 EUR'):
+        value['answer'][0]['expression']['quantity']=operand
         with pytest.raises(ResponseValidationError):_validate(value,schema,schema)
-        with pytest.raises(ValueError):validate_decision(value,context)
-    disabled=decision_schema({'messages':[]})
+        with pytest.raises(ValueError):ExpressionRenderer(catalog).render(value['answer'][0]['expression'])
+    disabled=provider_response_schema(quantities={},authorized_evidence=[])
     with pytest.raises(ResponseValidationError):_validate(value,disabled,disabled)
 
 
@@ -56,21 +55,22 @@ def test_contextual_schema_hash_and_full_token_accounting_match_both_services():
     messages=[{'role':'system','content':backend.system},{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({
         'question':'Importes EUR/día '+', '.join(str(i) for i in range(64))})}]
     context={'messages':messages}
-    schema=decision_schema(context);final_schema=provider_response_schema()
+    from app.core.chat_expressions import context_quantities
+    catalog=context_quantities(context)
+    schema=decision_schema(context);final_schema=provider_response_schema(quantities=catalog)
     assert schema==module.decision_schema(context)
     assert backend.count_messages(messages)==processor.check_messages(messages,final_schema)
     assert backend.metadata(backend.count_messages(messages),messages)['decision_schema_sha256']==module.sha(module.canonical(schema))
-    required=sum(backend.count(canonical(value)) for value in (messages,final_schema,schema))+1024+3200
+    required=sum(backend.count(canonical(value)) for value in (messages,final_schema))+1024+3200
     assert required<backend.context_budget['context_tokens']
     limited={**backend.context_budget,'context_tokens':required-1}
     with pytest.raises(ChatError):replace(backend,context_budget=limited).count_messages(messages)
     with pytest.raises(module.TokenBudgetExceeded):replace(processor,context_budget=limited).check_messages(messages,final_schema)
-    records=[{'id':'0','equation':'3 + 4 = 7','value':'7','unit':'','hypothetical':True}]
-    quoted=provider_response_schema(authorized_evidence=[SOURCE],calculations=records)
-    assert backend.count_messages(messages,authorized_evidence=[SOURCE],calculations=records)==processor.check_messages(messages,quoted)
-    required=sum(backend.count(canonical(value)) for value in (messages,quoted,schema))+1024+3200
+    quoted=provider_response_schema(authorized_evidence=[SOURCE],quantities=catalog)
+    assert backend.count_messages(messages,authorized_evidence=[SOURCE])==processor.check_messages(messages,quoted)
+    required=sum(backend.count(canonical(value)) for value in (messages,quoted))+1024+3200
     limited={**backend.context_budget,'context_tokens':required-1}
-    with pytest.raises(ChatError):replace(backend,context_budget=limited).count_messages(messages,authorized_evidence=[SOURCE],calculations=records)
+    with pytest.raises(ChatError):replace(backend,context_budget=limited).count_messages(messages,authorized_evidence=[SOURCE])
     with pytest.raises(module.TokenBudgetExceeded):replace(processor,context_budget=limited).check_messages(messages,quoted)
 
 

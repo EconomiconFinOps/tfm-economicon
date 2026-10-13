@@ -19,10 +19,10 @@ POLICY='jup-035.summary-one-reserve-five.v2'
 
 def main_context(application):
     r=application.state.chat_resources;m=json.loads(r.manifest_bytes)
-    messages=[{'role':'system','content':r.system},{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n{}'}]
+    messages=[{'role':'system','content':r.system},{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n{"question":"Consulta"}'}]
     count=r.check_messages(messages,FinOpsResponse.model_json_schema())
     return {'prompt_version':r.prompt_version,'messages':messages,
-        'financial_metrics_allowed':False,'tool_protocol':'structured-documentation-v3','manifest':{
+        'financial_metrics_allowed':False,'tool_protocol':'server-documentation-v4','manifest':{
         'prompt_version':r.prompt_version,'tokenizer_sha256':r.tokenizer_sha256,'response_schema_sha256':r.response_schema_sha256,
         'input_contract_sha256':m['input_contract_sha256'],'assembler_sha256':m['assembler_sha256'],'variable_tokens':count,
         'decision_schema_sha256':sha(canonical(decision_schema({'messages':messages})).encode()),
