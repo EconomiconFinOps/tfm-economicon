@@ -109,6 +109,21 @@ def normalize(receipt, bank, bank_hash, receipt_hash, section):
         })
         samples[-1]['evidence_sha256'] = digest({k: samples[-1][k] for k in
             ('answer', 'response', 'cited_chunks', 'input_matches_bank', 'state')})
+        if 'collection_state' in row:
+            resources = row.get('resources')
+            collection_verified = (isinstance(resources, dict)
+                                   and digest(resources) == row.get('resources_sha256')
+                                   and all(verification.get(key) is True for key in
+                                           ('stable_snapshot', 'input_matches_bank', 'citation_ids_known'))
+                                   and (samples[-1]['state'] != 'completed' or
+                                        verification.get('public_history_parity') is True))
+            samples[-1]['collection_state'] = (row['collection_state'] if collection_verified
+                                                else 'INCOMPLETE')
+            samples[-1]['collection_verification'] = verification
+            samples[-1]['evidence_sha256'] = digest({
+                'response_evidence_sha256': samples[-1]['evidence_sha256'],
+                'collection_state': row['collection_state'], 'verification': verification,
+                'resources_sha256': row.get('resources_sha256')})
     return samples
 
 
@@ -173,6 +188,7 @@ def score(samples, bank, judgments, manifest, evaluator=None, rules=None):
         operational = sample['state'] == 'completed' and bool(sample['answer'])
         states = Counter(c['status'] for c in checks.values())
         verdict = ('technical_failure' if not operational else
+                   'evidence_incomplete' if sample.get('collection_state', 'VERIFIED_PUBLIC_SNAPSHOT') != 'VERIFIED_PUBLIC_SNAPSHOT' else
                    'input_unverified' if sample['input_matches_bank'] is not True else
                    'fail' if states['fail'] else
                    'pending' if states['unreviewed'] or states['uncertain'] else 'pass')

@@ -154,6 +154,14 @@ class ReceiptEvaluationTests(unittest.TestCase):
             report.update(scorer_sha256='same', rules_sha256='same', heuristic_sha256='same')
         self.assertEqual(ev.compare(before, after)['regressed_responses'], [('JUP-069-001', 2)])
 
+    def test_incomplete_collection_cannot_be_overridden_by_manual_pass(self):
+        self.receipt['results'][0]['collection_state'] = 'VERIFIED_PUBLIC_SNAPSHOT'
+        # A label without resources or integrity/parity checks is insufficient.
+        samples = ev.normalize(self.receipt, self.bank, self.bank_hash, 'collected', 'results')
+        row = samples[0]
+        report = ev.score(samples, self.bank, {row['sample_id']: self.labels(row)}, self.manifest)
+        self.assertEqual(report['samples'][0]['verdict'], 'evidence_incomplete')
+
 
 if __name__ == '__main__':
     unittest.main()

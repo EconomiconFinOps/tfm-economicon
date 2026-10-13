@@ -121,3 +121,21 @@ sockets; no causaron otros fallos de prueba. No hubo inferencias externas.
 OpenSpec JUP-123 creado y trazabilidad correcta; validación estricta73PASS.
 Pendiente completar verificación frontend y otras superficies reconciliadas,
 colector y baseline. Objetivo activo; presupuesto y NOT_RUN sin cambios.
+
+
+### Colector de operaciones existentes — 14/10/2026
+
+`tools/chat-eval-collect.py` implementado: sólo GET sobre operación terminal,
+contexto, evidencia, historial y resultado. Snapshot estable, entrada única,
+paridad pública/JSONB y separación entre fuentes recuperadas y citadas; conserva
+fallos y salidas exclusivas. No invoca generación/reintentos. 8 pruebas unitarias
+PASS. Scorer ampliado para impedir aceptación de recogida incompleta:16PASS.
+Aún falta prueba integrada del transporte/API, agregador, runner y reserva de coste.
+No declarar N3 ejecutado ni procedencia validada a partir del colector.
+
+Lectura actual de DockerServer mediante docker ps: continúan el despliegue develop
+c30a7d0f en19257 y el entorno antiguo expression28 en28657; la lista no acredita
+un runtime de B591b8e19. No se han cambiado contenedores ni consultado secretos.
+Sin nuevas inferencias; gasto histórico0.957927619 USD, tope2 USD. Próximo:
+verificación integrada del colector y admisión de coste, preparar candidato y
+entorno aislado para medir baseline sin usar expression28 como sustituto.

@@ -110,3 +110,31 @@ Los intentos adicionales se preservan en sus propios recibos de ejecución.
 `missing_samples` y `samples_expected` hacen visibles repeticiones omitidas aunque
 aparezcan todos los casos. N1 mantiene los identificadores históricos. El colector
 API sigue pendiente: las 15 pruebas unitarias no constituyen una campaña N3.
+
+
+## Recogida pública del API — JUP-123
+
+`tools/chat-eval-collect.py` recoge una operación existente y terminal mediante
+GET: estado antes/después, contexto, evidencia, historial y resultado. No inicia
+ni reanuda inferencias. Los identificadores se validan; los redirects se rechazan;
+el token y tenant se leen de CHAT_EVAL_TOKEN y CHAT_EVAL_TENANT y no se guardan.
+
+Ejemplo (variables de autenticación ya configuradas, sin ponerlas en comandos):
+
+```sh
+python tools/chat-eval-collect.py --plan ../evaluacion/plan.json --sample JUP-069-001:r1 --conversation ID --operation ID --base-url http://127.0.0.1:28657 --output ../evaluacion/001-r1.json
+```
+
+Ese puerto es sólo un ejemplo, no identifica el runtime B. Es obligatorio verificar
+procedencia antes de generar una campaña. La herramienta exige salida nueva fuera
+del checkout. Conserva fallos HTTP por clase/código sin texto de error sensible;
+rechaza estados no terminales y deja el handle disponible para observación posterior.
+No reemplaza un intento fallido por otro. Cada recibo parcial se puede inspeccionar
+con el scorer: las otras muestras constarán ausentes hasta agregarlas.
+
+VERIFIED_PUBLIC_SNAPSHOT significa igualdad de resultado/historial, entrada única
+correcta, snapshot estable y citas con identificadores conocidos. No prueba soporte
+semántico, commit, proveedor, payload completo ni contabilidad. El evaluador bloquea
+PASS si la recogida es incompleta, incluso con juicios manuales positivos.
+Pendiente agregar recibos, verificar entorno/coste y ejecutar N3: este componente
+no es todavía el ejecutor de campañas.
