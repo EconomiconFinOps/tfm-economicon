@@ -48,7 +48,7 @@ Trello: https://trello.com/c/HtjtmPaJ
 
 ## 8. Cierre y verificación
 
-- [ ] 8.1 Batería completa: pruebas de backend, processor, API simulada y frontend, pruebas con CockroachDB real en local (nodo desechable), `openspec:validate`, `jup:check:all`, `jup:cleanup:check`, `corepack pnpm lint` y `git diff --check`. Registrar comandos y resultados.
-- [ ] 8.2 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con la sección `## Adversarial Review`, el barrido de patrones, los riesgos y los hallazgos registrados.
+- [x] 8.1 Batería completa: pruebas de backend, processor, API simulada y frontend, pruebas con CockroachDB real en local (nodo desechable), `openspec:validate`, `jup:check:all`, `jup:cleanup:check`, `corepack pnpm lint` y `git diff --check`. Registrar comandos y resultados. Hecho el 2026-10-13 (resultados en `docs/evidence/JUP-119-validation.md`): backend 1161 pasan con CockroachDB real; fallan en esta máquina las 4 suites de salud (`ProactorEventLoop`) y, por un plazo de 3 s con la máquina cargada, 10 pruebas de `test_managed_resolver.py` (pasan en solitario); un plazo del processor (`test_agent_runtime`) igual.
+- [x] 8.2 Revisión adversarial (agente `adversarial-reviewer`) hasta `accept` o aceptación explícita de Lucia, y `review.md` con la sección `## Adversarial Review`, el barrido de patrones, los riesgos y los hallazgos registrados. Hecho el 2026-10-13: tres pasadas; la tercera dio `accept` (sin BLOCKING ni HIGH) y sus tres MEDIUM y cuatro de sus cinco LOW se corrigieron con prueba primero; el último queda como `RF-119-011`.
 - [ ] 8.3 Evidencia en `docs/evidence/JUP-119-validation.md` (el código de producto cambia) y bloque `## Human Approval` post-review de Lucia.
 - [ ] 8.4 Archivar el change en la misma rama, revisar la documentación posterior al archivo y abrir el PR a `develop`.

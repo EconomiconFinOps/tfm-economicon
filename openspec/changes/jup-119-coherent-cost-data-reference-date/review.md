@@ -85,7 +85,7 @@ Fuera de su alcance: receta de navegador y UI con otra referencia, dos `apply` a
 
 - El tope por fecha es de lectura, no de acceso: los datos posteriores existen en la base (`RF-119-007`). Probado en lo que cubre (11 + 4 pruebas con CockroachDB real) y documentado.
 - Sin ensayo humano de la demo: la receta de navegador es una ejecución automatizada.
-- La interfaz con una referencia distinta de 2026-10-30 no se ha recorrido en el navegador real; lo cubren las pruebas de backend y de frontend.
+- La interfaz con una referencia distinta de 2026-10-30 solo se recorrió en la guía de anomalías con 2026-09-21 (tres episodios, «Revisado hasta el 20/09/2026»); las pantallas de costes y el asistente con otra fecha, y el retroceso de la fecha con episodios ya detectados, los cubren las pruebas de backend y de frontend.
 - Hallazgos del change registrados en `openspec/findings/backlog.md` (`RF-119-001` a `RF-119-011`).
 
 ## ADR

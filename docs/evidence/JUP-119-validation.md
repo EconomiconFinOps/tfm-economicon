@@ -39,7 +39,7 @@ Stack aislado `docker compose -p jup119` con volúmenes nuevos, `.env` de siempr
 ## Qué no se validó
 
 - Ensayo humano de la demo: no hay; la receta es una ejecución automatizada.
-- La interfaz con una fecha de referencia distinta de 2026-10-30 no se ha recorrido en el navegador real (la guía de anomalías con la referencia en 2026-09-21); lo cubren las pruebas del backend con CockroachDB real y las del frontend.
+- La interfaz con una fecha de referencia distinta de 2026-10-30 se recorrió solo en parte: con la referencia en 2026-09-21 (stack aislado nuevo, imágenes reconstruidas tras la pasada 3 y carga con `demo_data.py apply`) se pulsó «Detectar ahora» en Core Finance y la pantalla mostró «Fecha simulada: 21/09/2026», «Revisado hasta el 20/09/2026», 3 anomalías nuevas (Compute 2807.71 EUR en 12 días, Database 642.86 EUR en 5, Analytics 168.86 EUR en 4, este «ya no se observa desde 14/09/2026») y ninguna respuesta con error ni error de página. No se recorrieron con esa fecha las pantallas de costes ni el asistente (los cubren las pruebas del backend con CockroachDB real y las del frontend), ni se retrocedió la fecha sobre un stack con episodios ya detectados.
 - El arranque por el perfil `demo` en un entorno que no sea esta máquina (Linux) y el tiempo de carga fuera de ella.
 - Las cuatro suites de salud del proveedor y el servicio de carga diaria o el batch periódico (fuera de alcance, JUP-115).
 - Revisión, validación y aprobación de otras personas: se siguen en Trello.
