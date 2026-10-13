@@ -243,3 +243,26 @@ Faltan adaptador real de procedencia y contabilidad, liquidación de reservas co
 cobertura demostrada de todos los intentos, credenciales vigentes y runtime B
 verificado. N3/N5 NOT_RUN; sin gasto nuevo. No declarar entrega completa ni
 bloqueo total: existe trabajo local pendiente sobre esos adaptadores.
+
+
+### Candidato portable y autorización pendiente — 14/10/2026
+
+Preparado archive f06beb9e (SHA211db404ca315b967ed348299a0a2349571d3104a055c403bba3bbb6927b7748)
+y plan84NOT_RUN. Se solicitó autorización asíncrona al usuario para transferir
+ese candidato y correcciones posteriores con hash registrado, crear entorno B
+con volúmenes propios y dos claves24h con máximo conjunto0.90USD, conservando
+el límite acumulado2USD y contabilidad anterior. Sin respuesta al registrar este
+hito: no transferir, desplegar ni crear claves basándose en tiempo transcurrido.
+La pregunta explica que aprobaciones anteriores estaban delimitadas a commits
+de PR121 y el objetivo actual condiciona despliegue a autorización aplicable.
+
+Auditoría de procedencia encontró1hash distinto entre working tree y archive:
+partición JSON CRLF frente a LF. Corregido freezer para hashes de bytes exactos
+de git archive. Nuevo candidato ccc339a3b24fde194c1be6ab809d786d055637a6;
+archiveSHA44a715f5862b2921e07db9c1e5d9fe5b718f6e8bd30cd5288aeba2f862beb69f.
+PlanSHA3224518f33a5c8e8b5aa7d5dd25f35f0e2a55ad1f9b426fd8abbee8b9d5dfc8f;
+317/317hashes contrastados con archive,0discrepancias. Banco/prompt/producto
+no modificados por este ajuste. Plan anterior superado para ejecución Linux.
+Archivos externos PR121-local-evaluation/jup123-{candidate-portable.tar,baseline-portable-plan.json}.
+No inferencias, ningún gasto nuevo; baseline sigue NOT_RUN. Falta además conexión
+real de procedencia/contabilidad y liquidación conservadora de reservas.
