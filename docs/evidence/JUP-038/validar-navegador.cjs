@@ -56,7 +56,10 @@ const log = (...a) => console.log(...a);
 
   // 3. Por cada anomalía esperada: detalle -> enlace -> asistente -> enviar -> verificar
   let primera = true;
-  for (const esp of esperados.episodes) {
+  // JUP-119 agrupó los episodios por fecha de referencia: los tres de JUP-107 son los de 2026-09-21 (la versión 2 del
+  // archivo los tenía en `episodes`). El stack debe arrancar con COST_REFERENCE_DATE=2026-09-21.
+  const esperadosEpisodios = esperados.episodes ?? esperados.episodes_by_reference["2026-09-21"].episodes;
+  for (const esp of esperadosEpisodios) {
     const svc = esp.service;
     const r = (report.servicios[svc] = { esperado: esp, comprobaciones: {} });
     const ok = (k, v, extra) => { r.comprobaciones[k] = v; if (!v) log("  ✗", svc, k, extra ?? ""); };
