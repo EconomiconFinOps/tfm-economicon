@@ -11,7 +11,7 @@
 
 Los datos de coste de la demostración entraban por dos caminos: la CLI de ingesta, a través de la API Azure simulada ([ADR-0001](ADR-0001-azure-cost-api-simulation.md)), con el dataset público de junio de 2024 (50 filas), y dos scripts (`synthetic_costs.py` de JUP-106 y `synthetic_anomalies.py` de JUP-107) que escribían directamente en `azure_cost_records`. Los datos eran de tres épocas distintas, acababan el 21 de septiembre de 2026 y no avanzaban con la fecha. Además, el «hoy» se decidía con el reloj en varias rutas del backend y del frontend.
 
-Un sondeo del 2026-10-13 con CockroachDB real (nodo desechable, API y CLI locales) midió qué puede cruzar la ruta API → CLI: la API agrupa como máximo por dos campos; devuelve como número decimal en coma flotante lo que no es entero (`9007199254740993.01` se guardó como `9007199254740994`); rechaza una fila sin fecha y la etiqueta `dataset_origin` (no está en el mapa de etiquetas); y cada ejecución de la CLI tarda unos 133 s.
+Un sondeo del 2026-10-13 con CockroachDB real (nodo desechable, API y CLI locales) midió qué puede cruzar la ruta API → CLI: la API agrupa como máximo por dos campos; devuelve como número decimal en coma flotante lo que no es entero (`9007199254740993.01` se guardó como `9007199254740994`); rechaza una fila sin fecha y la etiqueta `dataset_origin` (no está en el mapa de etiquetas); y la ingesta de las siete parejas de la demo tarda unos 15 s (una primera medida de 133 s por llamada de la CLI era un artefacto de usar `localhost` en el DSN en Windows, que espera a agotar el tiempo de conexión por IPv6; con `127.0.0.1`, la inicialización de la base tarda 0,4 s).
 
 ## Decision
 
@@ -29,7 +29,7 @@ Un sondeo del 2026-10-13 con CockroachDB real (nodo desechable, API y CLI locale
 - Tres pantallas muestran lo ausente con los datos de demo: la cobertura de etiquetas (cuatro de cinco etiquetas sin cubrir), los responsables por centro de coste, propietario o aplicación («datos insuficientes») y el desglose por grupo de recursos («no aplica»). Es una limitación de la demo y de la API, no del producto.
 - Los datos posteriores a la referencia existen en la base aunque no se lean: no es un control de acceso.
 - Retroceder la fecha oculta episodios; para repetir la demo desde cero se usa `remove` y `apply`.
-- La carga completa es lenta (unos 133 s por pareja tenant/suscripción, casi todo la inicialización de la base de la CLI).
+- La carga completa es rápida: unos 15 s de ingesta más el arranque de cada una de las siete llamadas a la CLI. Medido en Docker Desktop sobre Windows; en otro entorno puede variar.
 
 ## Alternatives Considered
 

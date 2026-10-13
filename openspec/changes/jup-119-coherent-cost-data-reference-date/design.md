@@ -43,7 +43,7 @@ Ver `proposal.md` (Why) y las specs `demo-cost-data-single-path` y `demo-referen
 - [La ruta de demo de 3 minutos cambia] → Las cifras se rehacen sobre la ventana común; se recalculan los esperados, se retiran los pasos que usaban el registro sin fecha y el grupo de recurso y hay que re-ejecutar la receta del navegador.
 - [Ocultar episodios al retroceder puede sorprender] → Documentado en la guía (retroceder oculta, `remove`/`apply` reinicia) y probado.
 - [Los datos futuros existen en la base aunque no se vean] → Es una limitación honesta de la demo; la documentación lo dice. No es un control de acceso: quien lea la base directamente los ve.
-- [Rendimiento de la carga: unos 133 s por pareja tenant/suscripción medidos, casi todo la inicialización de la base de la CLI] → Se documenta el tiempo total; reducirlo (por ejemplo, reutilizar una sola inicialización) es trabajo futuro si molesta.
+- [Rendimiento de la carga] → Medido el 2026-10-13 con `127.0.0.1`: `initialize()` tarda 2,6 s en una base nueva y 0,4 s ya migrada, y la ingesta de las siete parejas, 15 s en un proceso; siete llamadas a la CLI cuestan unos segundos cada una. Una primera medida de 133 s por llamada era un artefacto de usar `localhost` en el DSN en Windows (espera de IPv6 hasta agotar el tiempo de conexión). Se documenta el tiempo total medido.
 - [Cambio de nombre y de comandos de los scripts] → Los scripts antiguos se retiran y las guías se actualizan en el mismo change; la skill local del equipo no se versiona y se avisa a Lucia.
 
 ## Migration Plan

@@ -130,7 +130,7 @@ With the demo data loaded, the screens and answers that depend on fields the dem
 
 ### Requirement: Loading is opt-in and never part of the default startup
 
-The default `docker compose up` SHALL NOT load demo data. The repository SHALL provide a Compose profile `demo` whose one-shot service waits for the simulated API, the database and the processor to be healthy and then runs `scripts/demo_data.py apply`; the same profile SHALL point the simulated API at the generated demo CSV. The profile SHALL refuse to run when `RUNTIME_ENVIRONMENT` is `production`. The generated CSV and the manifest SHALL be versioned, and a test SHALL regenerate them and fail if they differ.
+The default `docker compose up` SHALL NOT load demo data. The repository SHALL provide a Compose profile `demo` whose one-shot service waits for the simulated API, the database and the processor to be healthy and then runs `scripts/demo_data.py apply`; the same profile SHALL start a second instance of the simulated API that serves the generated demo CSV, and the default instance SHALL keep serving the public sample. The profile SHALL refuse to run when `RUNTIME_ENVIRONMENT` is `production`. The generated CSV and the manifest SHALL be versioned, and a test SHALL regenerate them and fail if they differ.
 
 #### Scenario: Default startup loads nothing
 - **WHEN** `docker compose up` runs without the profile on empty tenants
