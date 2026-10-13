@@ -350,3 +350,12 @@ Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
   palabras inglesas comunes (Retry, Failed, Unknown, Cancel, Save, Delete).
 - Los errores de la capa de API (`Request failed for...`, `Invalid response for...`) y los del navegador
   (`Failed to fetch`) se muestran en ingles; decision de Lucia de dejar fuera esa capa.
+
+## JUP-071 — `outside_repository` del evaluador JUP-070 acepta rutas Windows con prefijo extendido
+
+Fecha: 2026-10-13. Origen: JUP-071, revision adversarial pasada 1 (ADV-4).
+Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
+
+- `outside_repository` de `tools/assistant-eval.py` compara la ruta sin normalizar el prefijo `\?\` de Windows: una ruta de ese tipo que apunta dentro del repositorio se acepta como exterior. `write_private` y `run_collect` de JUP-070 la usan, de modo que el CLI de JUP-070 puede escribir respuestas o fragmentos dentro del repositorio con esa ruta.
+- JUP-071 lo cubre en su propio CLI con una normalizacion previa (`normalised`/`outside` en `tools/assistant-robustness.py`) porque la propuesta no modifica el evaluador de JUP-070. La correccion de raiz es normalizar en `outside_repository` y aplicar el mismo criterio en los dos CLI.
+- Solo aplica a Windows y a un uso deliberado, no accidental; la CI de Linux no lo ejerce.

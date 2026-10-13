@@ -78,6 +78,8 @@ def validate(suite, baseline):
     base_ids = {c["id"] for c in baseline["cases"]}
     ids = set()
     require(isinstance(suite.get("cases"), list) and len(suite["cases"]) >= 16, "at least 16 perturbations are required")
+    require(all(isinstance(c, dict) for c in suite["cases"]), "every case must be an object")
+    require(isinstance(suite.get("suite_version"), str) and re.fullmatch(r"\d+\.\d+\.\d+", suite["suite_version"]), "invalid suite version")
     require({c["expected_behavior"] for c in suite["cases"]} >= {"answer", "clarify", "abstain"}, "missing behavior controls")
     for case in suite["cases"]:
         cid = case["id"]
@@ -92,7 +94,10 @@ def validate(suite, baseline):
             require(text_list(case[key]), f"{cid}: empty {key}")
         require(set(case["sources"]) <= set(suite["sources"]), f"{cid}: unknown source")
         require(isinstance(case["expected_numbers"], list), f"{cid}: invalid expected_numbers")
+        require(not case["expected_numbers"] or case["risk"] == "critical", f"{cid}: cases with expected figures must be critical")
         for n in case["expected_numbers"]:
+            require(isinstance(n, dict), f"{cid}: expected number must be an object")
+            require("aliases" not in n or text_list(n["aliases"]), f"{cid}: invalid number aliases")
             require(isinstance(n.get("label"), str) and bool(n["label"].strip()) and
                     isinstance(n.get("unit"), str) and bool(n["unit"].strip()), f"{cid}: invalid number label/unit")
             for key in ("value", "tolerance"):
@@ -137,11 +142,12 @@ def provenance(suite, kind, config):
             "configuration": config, "model_execution_verified": False}
 
 
-DECLARED_TEXT = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/+-]{0,63}")
+DECLARED_TEXT = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/+-]{0,63}")
+SECRET_SHAPED = re.compile(r"(sk|pk|key|token|secret|bearer)[-_]", re.IGNORECASE)
 
 
 def declared_text(value, name):
-    require(isinstance(value, str) and DECLARED_TEXT.fullmatch(value), f"invalid run {name}")
+    require(isinstance(value, str) and DECLARED_TEXT.fullmatch(value) and not SECRET_SHAPED.match(value), f"invalid run {name}")
     return value
 
 
@@ -267,7 +273,8 @@ def score(suite, cases, raw, judgments, provisional=False):
         decisions = judgments["cases"].get(cid, {})
         require(isinstance(decisions, dict) and set(decisions) <= set(human_checks(case)), f"{cid}: unknown judgment point")
         entry = {"case": cid, "baseline_id": case["baseline_id"], "group": case["group"],
-                 "behavior": case["behavior"], "outcome": "not_run", "checks": {}, "reviewer_coverage": {}, "missing": [], "prompt_echo": False}
+                 "behavior": case["behavior"], "outcome": "not_run", "checks": {}, "reviewer_coverage": {}, "missing": [], "prompt_echo": False,
+                 "reduced_coverage": False}
         if row is None:
             entry["reason"] = "missing_response"
         elif row.get("failure_category"):
@@ -276,7 +283,7 @@ def score(suite, cases, raw, judgments, provisional=False):
             entry["prompt_echo"] = evaluation.prompt_text(case) in row["answer"]
             for n, spec in enumerate(case["expected"]["numbers"], 1):
                 aliases = numeric_rules["aliases"].get(cid, {})
-                own = aliases.get(str(n)) or [spec["label"]]
+                own = spec.get("aliases") or aliases.get(str(n)) or [spec["label"]]
                 rivals = [s["label"] for i, s in enumerate(case["expected"]["numbers"], 1) if i != n]
                 result = evaluation.check_number(row["answer"], spec, own, row["prompt"], rivals)
                 entry["checks"][f"numbers-{n}"] = "pass" if result else "fail"
@@ -286,6 +293,7 @@ def score(suite, cases, raw, judgments, provisional=False):
                 entry["checks"][key] = judge(values, needed)
                 entry["reviewer_coverage"][key] = {"received": len(values), "required": needed}
             entry["missing"] = [key for key, coverage in entry["reviewer_coverage"].items() if coverage["received"] < needed]
+            entry["reduced_coverage"] = provisional and case["risk"] == "critical" and any(c["received"] < 2 for c in entry["reviewer_coverage"].values())
             if "fail" in entry["checks"].values():
                 entry["outcome"] = "fail"
             elif not entry["missing"]:
@@ -314,7 +322,11 @@ def score(suite, cases, raw, judgments, provisional=False):
     for case in suite["cases"]:
         report["pairs"].append({"baseline": case["baseline_id"], "perturbation": case["id"],
                                 "before": by_id[case["baseline_id"]]["outcome"], "after": by_id[case["id"]]["outcome"]})
-    report["assessment_complete"] = not any(e["missing"] or e["outcome"] in ("blocked", "not_run") for e in entries)
+    categories = {}
+    for c in suite["cases"]:
+        categories.setdefault(c["category"], set()).add(c["id"])
+    report["categories"] = {name: counts([e for e in entries if e["case"] in ids]) for name, ids in categories.items()}
+    report["assessment_complete"] = not any(e["missing"] or e["reduced_coverage"] or e["outcome"] in ("blocked", "not_run") for e in entries)
     return report
 
 
@@ -339,6 +351,10 @@ def sheet(cases, raw):
     return "\n".join(lines)
 
 
+def percent(value):
+    return "no disponible" if value is None else f"{value * 100:.1f} %".replace(".", ",")
+
+
 def markdown(report):
     lines = ["# JUP-071: resultado de robustez", "", f"Ejecución: `{report['kind']}` (`{report['run']['run_id']}`). Provisional: `{report['provisional']}`.",
              "Robustez generativa: **no acreditada**. El endpoint no acredita qué modelo ejecutó.", "",
@@ -347,7 +363,17 @@ def markdown(report):
     for group, behaviors in report["groups"].items():
         for behavior, c in behaviors.items():
             lines.append(f"| {group} | {behavior} | {c['total']} | {c['pass']} | {c['fail']} | {c['blocked']} | {c['not_run']} |")
-    lines += ["", "| Caso | Resultado | Juicios pendientes | Eco del prompt |", "| --- | --- | ---: | --- |"]
+    totals = report["totals"]
+    lines += ["", f"Total previsto: {totals['total']}. pass / total previsto: {percent(totals['pass_over_total'])}. "
+              f"pass / (pass + fail): {percent(totals['pass_over_evaluated'])}.",
+              "El denominador pass / (pass + fail) incluye fallos conocidos con juicios pendientes; no equivale a cobertura de revisión humana completa.",
+              "", "## Categorías de perturbación", "",
+              "| Categoría | Total | Pass | Fail | Blocked | Not run | pass / total previsto | pass / (pass + fail) |",
+              "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
+    for name, c in report["categories"].items():
+        lines.append(f"| {name} | {c['total']} | {c['pass']} | {c['fail']} | {c['blocked']} | {c['not_run']} | "
+                     f"{percent(c['pass_over_total'])} | {percent(c['pass_over_evaluated'])} |")
+    lines += ["", "## Casos", "", "| Caso | Resultado | Juicios pendientes | Eco del prompt |", "| --- | --- | ---: | --- |"]
     for c in report["cases"]:
         lines.append(f"| {c['case']} | {c['outcome']} | {len(c['missing'])} | {c['prompt_echo']} |")
     lines += ["", "Identidad y parejas completas en el JSON asociado. Sin textos de respuestas ni nombres de revisores.", ""]
@@ -396,10 +422,28 @@ def parser():
     return cli
 
 
+def normalised(path):
+    text = str(path)
+    if text.startswith("\\\\?\\UNC\\"):
+        text = "\\\\" + text[8:]
+    elif text.startswith("\\\\?\\"):
+        text = text[4:]
+    elif text.startswith("\\?\\"):
+        text = text[3:]
+    return Path(os.path.normcase(os.path.realpath(text)))
+
+
+def outside(path):
+    return evaluation.outside_repository(path) and not normalised(path).is_relative_to(normalised(ROOT))
+
+
 def protect_outputs(outputs, inputs):
     """Never destroy raw evidence, judgments, code or versioned references."""
-    outputs = [p.resolve() for p in outputs]
-    reserved = {p.resolve() for p in inputs}
+    outputs = [normalised(p) for p in outputs]
+    reserved = {normalised(p) for p in inputs}
+    evidence = normalised(ROOT / "docs/evidence")
+    require(all(not p.is_relative_to(normalised(ROOT)) or p.is_relative_to(evidence) for p in outputs),
+            "outputs inside the repository are limited to docs/evidence")
     require(len(set(outputs)) == len(outputs), "output paths must be distinct")
     require(not (set(outputs) & reserved), "output would overwrite an input or reference")
     require(all(p.parent.is_dir() for p in outputs), "create output directories before execution")
@@ -420,7 +464,7 @@ def main(argv=None):
         elif args.command == "prepare":
             evaluation.write_private(args.output, inputs_for(cases))
         elif args.command in ("offline", "collect"):
-            require(evaluation.outside_repository(args.output), "raw output must be outside repository")
+            require(outside(args.output), "raw output must be outside repository")
             if args.command == "offline":
                 raw = offline(suite, cases, args.retrieval)
             else:
@@ -438,7 +482,7 @@ def main(argv=None):
             raw = read(args.raw)
             validate_raw(raw, suite, cases)
             if args.command == "review-sheet":
-                require(evaluation.outside_repository(args.output) and evaluation.outside_repository(args.judgments_template), "review files must be outside repository")
+                require(outside(args.output) and outside(args.judgments_template), "review files must be outside repository")
                 evaluation.write_private(args.output, sheet(cases, raw))
                 template = empty_judgments(raw)
                 template["cases"] = {c["id"]: {key: [] for key in human_checks(c)} for c in cases}

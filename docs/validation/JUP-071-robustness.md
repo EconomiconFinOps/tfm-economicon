@@ -146,3 +146,13 @@ juicios independientes. Entonces el equipo debe revisar explícitamente el contr
 de procedencia y la interpretación de resultados; no editar el booleano a mano.
 La presente entrega completa el instrumento y su evaluación local acotada. No
 declara la tarjeta aceptada, las revisiones humanas hechas ni robustez generativa.
+
+## Cambios tras la revisión adversarial (13/10/2026)
+
+Las cifras esperadas de una variante pueden llevar una lista `aliases` propia en la batería (obligatoria de facto cuando el caso no hereda las reglas de JUP-070, como en JUP-071-002 y JUP-071-003); el lector numérico las usa antes que las reglas del banco y que la etiqueta. La validación exige riesgo `critical` en todo caso con cifras esperadas y una versión de batería con formato `x.y.z`.
+
+El informe añade un desglose `categories` (tagging, allocation, costs, anomalies, scope) además del desglose por tipo de perturbación, que tiene un solo caso por grupo. El Markdown muestra el total previsto, `pass / total previsto`, `pass / (pass + fail)` o «no disponible» si no hay casos evaluados, y advierte de que el denominador `pass + fail` incluye fallos conocidos con juicios pendientes.
+
+Con `--provisional`, cada caso crítico con menos de dos revisores por punto lleva `reduced_coverage` y `assessment_complete` es falso mientras exista alguno.
+
+Los valores declarados `provider`, `alias` y `model_alias` del bloque `run` no admiten `:` ni prefijos con forma de clave (`sk-`, `key-`, `token-`...); es una comprobación heurística, no una garantía de que no haya secretos. Las salidas dentro del repositorio se limitan a `docs/evidence/`. Los prefijos de ruta extendida de Windows se normalizan antes de comparar; el CLI de JUP-070 conserva ese defecto (ver `openspec/findings/backlog.md`).

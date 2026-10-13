@@ -525,7 +525,7 @@ class RunHeaderTests(unittest.TestCase):
         expected_keys = {"report_version", "jup", "suite_version", "suite_sha256", "raw_sha256", "judgments_sha256", "kind",
                          "harness_commit", "harness_sha256", "python_version", "service_sha256", "configuration_sha256",
                          "collected_at", "provisional", "model_execution_verified", "generative_robustness_accepted",
-                         "totals", "groups", "cases", "pairs", "perturbations", "assessment_complete"}
+                         "totals", "groups", "cases", "pairs", "perturbations", "categories", "assessment_complete"}
         self.assertEqual(set(report), expected_keys | {"run"})
         self.assertEqual(report["totals"], {"total": 29, "pass": 29, "fail": 0, "blocked": 0, "not_run": 0, "evaluated": 29,
                                             "pass_over_evaluated": 1.0, "pass_over_total": 1.0})
@@ -583,6 +583,121 @@ class RunHeaderTests(unittest.TestCase):
         text = robustness.markdown(report)
         self.assertIn(report["run"]["run_id"], text)
         self.assertIn("no acreditada", text)
+
+
+class AdversarialPassTests(unittest.TestCase):
+    """Regression tests for the independent review findings."""
+
+    def number_result(self, case_id, answer):
+        raw = raw_fixture()
+        for row in raw["cases"]:
+            if row["case"] == case_id:
+                row["answer"] = answer
+        return entry(scored(raw, robustness.empty_judgments(raw)), case_id)["checks"]
+
+    def test_paraphrased_correct_answers_pass_the_numbers_like_the_baseline(self):
+        answers = {
+            "JUP-071-002": ["El cumplimiento de tagging por coste es del 10 %.",
+                            "El cumplimiento es del 10 %.",
+                            "El cumplimiento de tagging por coste es del 10 % (100 EUR de 1.000 EUR de coste etiquetable)."],
+            "JUP-071-003": ["El cumplimiento de tagging por coste es del 10 %.",
+                            "El cumplimiento por coste es del 10 %, sobre 1.000 EUR de coste etiquetable."],
+            "JUP-071-010": ["En julio el coste por pedido fue de 10 EUR/pedido.",
+                            "El coste unitario de julio fue 10 EUR por pedido."],
+        }
+        for case_id, options in answers.items():
+            for answer in options:
+                with self.subTest(case=case_id, answer=answer):
+                    checks = self.number_result(case_id, answer)
+                    self.assertIn("pass", checks["numbers-1" if case_id.endswith("010") else "numbers-2"])
+        self.assertEqual(self.number_result("JUP-071-002", "El cumplimiento es del 90 %.")["numbers-2"], "fail")
+
+    def test_declared_aliases_are_validated_and_hash_bound(self):
+        broken = copy.deepcopy(SUITE)
+        broken["cases"][1]["expected_numbers"][0]["aliases"] = ["", 3]
+        with self.assertRaises(robustness.Error):
+            robustness.validate(broken, BASELINE)
+        for aliases in ("coste", [], {"a": 1}):
+            broken = copy.deepcopy(SUITE)
+            broken["cases"][1]["expected_numbers"][0]["aliases"] = aliases
+            with self.subTest(aliases=aliases), self.assertRaises(robustness.Error):
+                robustness.validate(broken, BASELINE)
+
+    def test_markdown_states_both_rates_the_unavailable_denominator_and_the_pending_warning(self):
+        text = robustness.markdown(scored(raw_fixture(), robustness.empty_judgments(raw_fixture())))
+        self.assertIn("pass / total previsto", text)
+        self.assertIn("pass / (pass + fail)", text)
+        self.assertIn("no disponible", text)
+        self.assertIn("juicios pendientes", text)
+        complete = robustness.markdown(scored())
+        self.assertIn("100,0 %", complete)
+        self.assertNotIn("no disponible", complete.split("## Categorías")[0])
+
+    def test_categories_aggregate_the_sixteen_variants_into_real_groups(self):
+        report = scored(raw_fixture(), robustness.empty_judgments(raw_fixture()))
+        categories = report["categories"]
+        self.assertEqual(sum(c["total"] for c in categories.values()), 16)
+        self.assertEqual(set(categories), {c["category"] for c in SUITE["cases"]})
+        self.assertTrue(any(c["total"] > 1 for c in categories.values()))
+        self.assertEqual(sum(c["pass"] + c["fail"] + c["blocked"] + c["not_run"] for c in categories.values()), 16)
+        self.assertIn("allocation", robustness.markdown(report))
+
+    def test_critical_risk_is_enforced_for_expected_figures_and_suite_version_is_semver(self):
+        broken = copy.deepcopy(SUITE)
+        target = next(c for c in broken["cases"] if c["expected_numbers"])
+        target["risk"] = "standard"
+        with self.assertRaises(robustness.Error):
+            robustness.validate(broken, BASELINE)
+        for version in (None, "1", "v1.0.0", "1.0"):
+            broken = copy.deepcopy(SUITE)
+            if version is None:
+                del broken["suite_version"]
+            else:
+                broken["suite_version"] = version
+            with self.subTest(version=version), self.assertRaises(robustness.Error):
+                robustness.validate(broken, BASELINE)
+
+    def test_malformed_suite_entries_are_controlled_errors_not_tracebacks(self):
+        for mutate in (lambda s: s["cases"][1].__setitem__("expected_numbers", ["x"]),
+                       lambda s: s["cases"].__setitem__(0, "not-an-object"),
+                       lambda s: s["cases"][1].__setitem__("expected_numbers", [None]),
+                       lambda s: s.__setitem__("cases", {})):
+            broken = copy.deepcopy(SUITE)
+            mutate(broken)
+            with self.subTest(), self.assertRaises(robustness.Error):
+                robustness.validate(broken, BASELINE)
+
+    def test_declared_text_rejects_urls_and_key_shaped_values(self):
+        for value in ("https://gw.internal.corp/v1", "sk-proj-A1b2C3d4A1b2C3d4", "SK-abc", "token-abc", "key-abc"):
+            for field in ("provider", "alias"):
+                with self.subTest(field=field, value=value), self.assertRaises(robustness.Error):
+                    scored(RunHeaderTests().live_raw(**{field: value}))
+        scored(RunHeaderTests().live_raw(alias="openrouter/model-x.1"))
+
+    def test_provisional_review_marks_reduced_coverage_per_case_and_is_never_complete(self):
+        raw = raw_fixture()
+        report = scored(raw, judgments_fixture(raw, reviewers=("fixture-person-a",)), provisional=True)
+        self.assertEqual(entry(report, "JUP-071-001")["outcome"], "pass")
+        self.assertTrue(all(e["reduced_coverage"] for e in report["cases"]))
+        self.assertFalse(report["assessment_complete"])
+        full = scored(raw, judgments_fixture(raw), provisional=True)
+        self.assertFalse(any(e["reduced_coverage"] for e in full["cases"]))
+        self.assertTrue(full["assessment_complete"])
+
+    def test_outputs_inside_the_repository_are_limited_to_the_evidence_folder(self):
+        for target in (ROOT / "apps/backend/app/main.py", ROOT / "tools/assistant-eval.py", ROOT / "docs/validation/JUP-069-questions.json",
+                       ROOT / "docs/new-file.json", ROOT / "docs/evidence/../validation/x.json"):
+            with self.subTest(target=str(target)), self.assertRaises(robustness.Error):
+                robustness.protect_outputs([target], [])
+        robustness.protect_outputs([ROOT / "docs/evidence/JUP-071-new-report.json"], [])
+
+    @unittest.skipUnless(sys.platform == "win32", "extended-length prefix only exists on Windows")
+    def test_extended_length_windows_paths_cannot_hide_a_repository_location(self):
+        hidden = Path("\\?\\" + str(ROOT / "package.json"))
+        self.assertFalse(robustness.outside(hidden))
+        self.assertTrue(robustness.outside(Path(tempfile.gettempdir()) / "x.json"))
+        with self.assertRaises(robustness.Error):
+            robustness.protect_outputs([hidden], [])
 
 
 class FakeResponse:
