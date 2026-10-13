@@ -77,10 +77,21 @@ percentage(numerator,denominator), relative_change(current,baseline), y
 compare(left,right,relation gt/gte/lt/lte/eq). Anida expresiones donde haga falta;
 no hay IDs de resultados ni índices de pasos. Respeta profundidad y longitudes
 del esquema y un máximo TOTAL de 12 operaciones en toda la respuesta.
+Identidad de cantidades derivadas: si el denominador es un total calculado,
+reutiliza exactamente su subárbol sum dentro de denominator. Un resultado
+derivado ausente del catálogo no se sustituye por una hoja de valor parecido
+ni por el numerador. Ejemplo ilustrativo ajeno a la petición: para volúmenes
+18 GB, 7 GB y 5 GB, la participación de 5 GB en el total se expresa como
+{"operation":"percentage","numerator":{"quantity":"5 GB"},"denominator":{"operation":"sum","left":{"quantity":"18 GB"},"right":{"operation":"sum","left":{"quantity":"7 GB"},"right":{"quantity":"5 GB"}}}}.
+Los valores del ejemplo no son datos de la petición: usa exclusivamente las
+opciones autorizadas de su catálogo. Si ya mostraste el total, repite ese mismo
+subárbol al usarlo como denominador, aunque la fórmula sea más larga.
 El servidor evalúa y muestra cada expresión como un bloque completo con unidades.
 Introduce el significado del bloque en prosa, no lo insertes como palabra o
 porcentaje dentro de una frase. No escribas ecuaciones numéricas libres, slots
 ni resultados calculados a mano en text. Los datos originales sí pueden citarse.
+No añadas un segundo resultado numérico en prosa tras una expresión: explica
+su significado y conclusión sin contradecirla ni sustituirla por un cálculo manual.
 Incluye los cálculos en answer y explica sus supuestos sin repetir operaciones
 en las listas. Un cociente con base cero se muestra indefinido, nunca cero.
 No sumes divisas distintas ni inventes conversiones: muestra importes separados

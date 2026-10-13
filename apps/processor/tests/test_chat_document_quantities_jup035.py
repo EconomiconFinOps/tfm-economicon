@@ -80,3 +80,17 @@ def test_documentary_operand_requires_its_source_in_final_selected_evidence(evid
     with pytest.raises(ValueError,match='citation missing'):render_response(value,[],quantities=catalog)
     value['evidence']=[{'id':'corpus:experiment:1','kind':'corpus'}]
     assert '34 %' in render_response(value,[],quantities=catalog)['answer']
+
+
+def test_reused_compound_denominator_fits_existing_depth_and_operation_budget():
+    # Contract capacity, not an assertion about the model's semantic choices.
+    from app.core.chat_expressions import quantities
+    from app.core.chat_segments import render_segments
+    catalog=quantities('Volúmenes: 18 GB; 7 GB; 5 GB.')
+    total={'operation':'sum','left':{'quantity':'18 GB'},
+        'right':{'operation':'sum','left':{'quantity':'7 GB'},'right':{'quantity':'5 GB'}}}
+    part={'operation':'percentage','numerator':{'quantity':'5 GB'},'denominator':copy.deepcopy(total)}
+    renderer=ExpressionRenderer(catalog)
+    answer=render_segments([{'expression':total},{'text':'Participación: '},{'expression':part}],[],expressions=renderer)
+    assert '30 GB' in answer and '16.666667 %' in answer
+    assert renderer.operations==5

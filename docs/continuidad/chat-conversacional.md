@@ -1,5 +1,20 @@
 ## PR121: recuperación de servidor y expresiones locales — 13/10/2026
 
+Ensayo expression16 high4 sobre fb72da0 (producto idéntico a646175e):002 completa
+200/25 correctamente;005 falla por ecuación libre y no persiste mensajes.
+El harness confundió fallo sin deltas con respuesta vacía y detuvo013/027;
+clasificación corregida fuera de producto. Único diagnóstico005 autorizado no
+reproduce rechazo, pero devuelve porcentaje100/100 incorrecto pese total1000:
+NO aceptación ni prueba causal del fallo anterior. Overlay diagnóstico retirado
+y hash original restaurado. Gasto asentado **0.466034965 USD /2USD**.
+Recibos `expression16-high4.json`, `expression16-diagnostic005.json` y logs del
+workspace. SQL nativo43PASS; imagen78/72 hashes verificados.
+La siguiente corrección conserva AST y aclara reutilizar el subárbol completo
+del total como denominador; ejemplo18/7/5GB, sin cambiar banco.44 pruebas pasan.
+Mock offline de la misma imagen LiteLLM1.103.2 con red deshabilitada confirma
+forwarding reasoning high/exclude,3200 y proveedor fijo; no prueba razonamiento
+interno efectivo. Próxima focal005/013/027 pendiente en nuevo SHA congelado.
+
 CI fb72da0: processor y otros cuatro checks técnicos pasan; backend1718PASS,
 106 omitidas y un fixture de conteo falla porque no pasa authorized_evidence.
 La recuperación real del test ya había terminado correctamente. Se corrige
