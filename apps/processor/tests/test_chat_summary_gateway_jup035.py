@@ -67,10 +67,12 @@ def summary_session(summary_bundle,monkeypatch,tmp_path):
             self.send_response(status);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(raw)))
             if behavior=='redirect':self.send_header('Location','/must-not-follow')
             self.end_headers()
-            if behavior=='stall_body':release.wait(5)
+            if behavior=='stall_body':
+                self.server.body_started.set()
+                release.wait(5)
             try:self.wfile.write(raw);self.wfile.flush()
             except (BrokenPipeError,ConnectionResetError):pass
-    server=ThreadingHTTPServer(('127.0.0.1',0),Handler);server.behavior='success';worker=threading.Thread(target=server.serve_forever,daemon=True);worker.start()
+    server=ThreadingHTTPServer(('127.0.0.1',0),Handler);server.behavior='success';server.body_started=threading.Event();worker=threading.Thread(target=server.serve_forever,daemon=True);worker.start()
     file=tmp_path/'summary-only-synthetic-key';file.write_text(SUMMARY_KEY,encoding='utf-8')
     for key,value in {'SUMMARY_ENABLED':'true','SUMMARY_API_KEY_FILE':str(file),'LLM_PROVIDER':'litellm','LLM_MODEL':'economicon-chat',
         'LITELLM_BASE_URL':f'http://127.0.0.1:{server.server_port}/v1','LITELLM_API_KEY':MAIN_KEY}.items():monkeypatch.setenv(key,value)

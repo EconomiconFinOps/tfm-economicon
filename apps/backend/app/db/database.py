@@ -1,7 +1,7 @@
 import json
 import os
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from sqlalchemy import create_engine, text
@@ -10,6 +10,7 @@ from app.core.config import get_settings
 from app.core.runtime_secrets import DemoRotationRequired
 from app.core.security import hash_password, verify_password
 from app.db.migration_runner import MigrationRunner
+from app.services import reference_date
 
 
 LIST_READ_ATTEMPTS = 3
@@ -261,7 +262,7 @@ class Database:
         with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
             with connection.begin():
                 rows = connection.execute(query, {
-                    "tenant_id": tenant_id, "start_date": start_date, "end_date": end_date,
+                    "tenant_id": tenant_id, "start_date": start_date, "end_date": reference_date.visible_end(end_date),
                     "tag_key": tag_key,
                 }).mappings().all()
                 job_count = connection.execute(
@@ -360,7 +361,7 @@ class Database:
         with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
             with connection.begin():
                 rows = connection.execute(query, {
-                    "tenant_id": tenant_id, "start_date": start_date, "end_date": end_date,
+                    "tenant_id": tenant_id, "start_date": start_date, "end_date": reference_date.visible_end(end_date),
                 }).mappings().all()
         if rows[0]["ambiguous"]:
             raise AmbiguousCostSource()
@@ -633,15 +634,16 @@ class Database:
 
     def observed_cost_day_range(self, connection, tenant_id: str) -> tuple:
         row = connection.execute(
-            text("SELECT min(r.usage_date), max(r.usage_date) " + self._COMPLETED_COSTS),
-            {"tenant_id": tenant_id},
+            text("SELECT min(r.usage_date), max(r.usage_date) " + self._COMPLETED_COSTS
+                 + " AND r.usage_date < :visible_end"),
+            {"tenant_id": tenant_id, "visible_end": reference_date.visible_end(date.max)},
         ).one()
         return row[0], row[1]
 
     def read_daily_service_costs(self, connection, tenant_id: str, *, start_date, end_date) -> tuple[set, dict]:
         from app.schemas.billing import AmbiguousCostSource
 
-        scope = {"tenant_id": tenant_id, "start_date": start_date, "end_date": end_date}
+        scope = {"tenant_id": tenant_id, "start_date": start_date, "end_date": reference_date.visible_end(end_date)}
         period = " AND r.usage_date >= :start_date AND r.usage_date < :end_date"
         ambiguous = connection.execute(text(
             "SELECT count(*) FROM (SELECT r.subscription_id, r.usage_date " + self._COMPLETED_COSTS + period
@@ -661,12 +663,16 @@ class Database:
 
     def _anomaly_episode_rows(self, connection, tenant_id: str, episode_id: str | None = None,
                               *, open_only: bool = False) -> list:
-        query = "SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id"
+        # An episode whose impact, or the day it stopped being observed, reaches the reference day would show days not complete yet.
+        query = ("SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id AND impact_through_date < :reference_day "
+                 "AND COALESCE(no_longer_observed_on, impact_through_date) < :reference_day")
         if episode_id is not None:
             query += " AND id = :id"
         if open_only:
             query += " AND status IN ('new', 'investigating')"
-        return connection.execute(text(query), {"tenant_id": tenant_id, "id": episode_id}).mappings().all()
+        return connection.execute(text(query), {
+            "tenant_id": tenant_id, "id": episode_id, "reference_day": reference_date.today(),
+        }).mappings().all()
 
     def _anomaly_episodes_for_detection(self, connection, tenant_id: str) -> list:
         # Detection only needs tracking episodes and the latest episode of each group, not the whole history.
@@ -758,7 +764,8 @@ class Database:
                         ), params).scalar_one_or_none()
                         synthetic = connection.execute(text(
                             "SELECT EXISTS (SELECT 1 FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant_id "
-                            "AND status = 'completed' AND COALESCE(request->'synthetic' = 'true'::JSONB, false))"
+                            "AND status = 'completed' AND (COALESCE(request->'synthetic' = 'true'::JSONB, false) "
+                            "OR subscription_id LIKE 'synthetic-%'))"
                         ), params).scalar_one()
                 break
             except exc.OperationalError as error:
@@ -766,7 +773,7 @@ class Database:
                     raise
         return {
             "episodes": rules.order_payloads([rules.episode_payload(row) for row in rows]),
-            "last_evaluated_date": last_evaluated,
+            "last_evaluated_date": None if last_evaluated is None else min(last_evaluated, reference_date.today() - timedelta(days=1)),
             "includes_synthetic_data": bool(synthetic),
             "open_impact_by_currency": rules.open_impact_by_currency(
                 [rules.episode_from_row(row) for row in rows if row["status"] in rules.TRACKING_STATUSES]),

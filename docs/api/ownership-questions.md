@@ -35,7 +35,7 @@ Los valores observados, incluidos `Unknown`, no implican catálogo aprobado.
 importes. No se combinan múltiples etiquetas. `value`/`tag_key`: 1–256 caracteres
 sin controles. Campos adicionales, tenant o SQL en la selección se rechazan.
 
-Las fechas son ambas ISO `YYYY-MM-DD` o ambas omitidas (mes actual UTC). El
+Las fechas son ambas ISO `YYYY-MM-DD` o ambas omitidas (el mes UTC que contiene la [fecha de referencia](reference-date.md), que es el dia real salvo que `COST_REFERENCE_DATE` la fije; la respuesta incluye `reference_date` y la linea «Fecha de referencia»; si el periodo llega mas alla de esa fecha, añade «Solo se cuentan los dias hasta el ..., inclusive»). El
 intervalo es `[inicio, fin)`. La UI muestra el periodo resuelto al enviar. Scope:
 tenant completo autorizado, con conversación perteneciente al usuario actual.
 

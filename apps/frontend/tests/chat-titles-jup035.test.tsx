@@ -132,3 +132,6 @@ it("history editor prevents duplicate save, displays errors and preserves select
   fireEvent.click(within(dialog).getByRole("button", { name: "Cerrar historial" }));
   await waitFor(() => expect(screen.getByText("Nueva conversación", { selector: "p" })).toBeVisible());
 });
+
+// Chat fixtures freeze the new JUP-119 clock dependency; its HTTP/cache contract has separate tests.
+vi.mock("../src/hooks/useReferenceDate", () => ({ useReferenceDate: () => ({ data: { reference_date: "2026-10-10", simulated: false } }) }));

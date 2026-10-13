@@ -31,6 +31,8 @@ async def requests(request:Request,user=Depends(get_current_user),tenant=Depends
 @router.post('/conversations/{conversation_id}/generations')
 async def generate(conversation_id:str,request:Request,
                    user=Depends(get_current_user),tenant=Depends(get_active_tenant),database=Depends(get_database)):
+    if getattr(request.app.state,'chat_enabled',True) is False:
+        raise HTTPException(503,'chat_unavailable')
     owned=scope(conversation_id,user,tenant)
     if await __import__('asyncio').to_thread(database.fetch_conversation,conversation_id,tenant,user['id']) is None:
         raise HTTPException(404,'not_found')
@@ -80,6 +82,8 @@ async def stop(conversation_id:str,operation_id:str,request:Request,user=Depends
 
 @router.post('/conversations/{conversation_id}/generations/{operation_id}/resume')
 async def resume(conversation_id:str,operation_id:str,request:Request,user=Depends(get_current_user),tenant=Depends(get_active_tenant)):
+    if getattr(request.app.state,'chat_enabled',True) is False:
+        raise HTTPException(503,'chat_unavailable')
     try:
         runtime=service(request.app)
         runtime.start()
@@ -121,6 +125,8 @@ async def summary(conversation_id:str,request:Request,user=Depends(get_current_u
 
 @router.post('/conversations/{conversation_id}/summary/retry')
 async def retry_summary(conversation_id:str,request:Request,user=Depends(get_current_user),tenant=Depends(get_active_tenant)):
+    if getattr(request.app.state,'chat_enabled',True) is False:
+        raise HTTPException(503,'chat_unavailable')
     try:
         runtime=service(request.app,active=True)
         owned=scope(conversation_id,user,tenant)

@@ -5,6 +5,7 @@ import unicodedata
 from datetime import datetime, timezone
 
 from app.schemas.billing import BillingSummary
+from app.services import reference_date
 from app.schemas.ownership import OwnershipSelection
 
 
@@ -24,7 +25,7 @@ class OwnershipQuestionService:
     def answer(self, database, tenant_id: str, selection: OwnershipSelection) -> dict:
         start, end = selection.start_date, selection.end_date
         if start is None:
-            start = datetime.now(timezone.utc).date().replace(day=1)
+            start = reference_date.today().replace(day=1)
             end = (start.replace(year=start.year + 1, month=1) if start.month == 12
                    else start.replace(month=start.month + 1))
         resolved = selection.model_dump(mode="json") | {
@@ -64,7 +65,8 @@ class OwnershipQuestionService:
             status = "partial" if missing or summary["excluded_undated_count"] else "ok"
 
         payload = {
-            "adapter_version": "ownership-1.0", "selection": resolved, "summary": summary,
+            "adapter_version": "ownership-1.0", "selection": resolved, "reference_date": reference_date.today().isoformat(),
+            "summary": summary,
             "selected_groups": selected_groups, "selected_totals": selected_totals,
             "missing_groups": missing, "provenance": raw["provenance"],
             "status": status, "reason": reason,
@@ -83,7 +85,10 @@ class OwnershipQuestionService:
                   "cost_center": "centro de coste", "tag": f"etiqueta {tag_key}"}
         label = labels[selection.group_by]
         lines = [f"Coste registrado por {label}: {display_label(selection.value) if selection.value is not None else 'todos los valores'}.",
-                 f"Periodo UTC: {start.isoformat()} a {end.isoformat()} (fin excluido)."]
+                 f"Periodo UTC: {start.isoformat()} a {end.isoformat()} (fin excluido).",
+                 f"Fecha de referencia: {payload['reference_date']}."]
+        if start < reference_date.visible_end(end) < end:
+            lines.append(f"Solo se cuentan los días hasta el {payload['reference_date']}, inclusive.")
         if reason == "empty_period":
             lines.append("No hay registros completados en el periodo; no equivale a gasto cero.")
         elif reason == "currency_not_found":

@@ -3,6 +3,7 @@ import json
 import math
 import os
 import re
+from datetime import date, datetime
 from typing import Literal
 from urllib.parse import urlsplit
 
@@ -19,6 +20,7 @@ MAX_QUESTION_ATTEMPT_SECONDS = 60
 REPORTABLE_SETTINGS = frozenset({
     "embedding_provider", "embedding_dimension", "embedding_model", "embedding_timeout_seconds",
     "health_probe_timeout_seconds", "embedding_max_retries", "litellm_base_url", "litellm_api_key", "retrieval_top_k", "retrieval_max_distance",
+    "cost_reference_date",
 })
 
 
@@ -47,6 +49,22 @@ class Settings(BaseSettings):
     health_provider_enabled: bool = False
     health_provider_api_key: SecretStr | None = None
     health_provider_policy_path: str | None = None
+    cost_reference_date: date | None = None
+
+    @field_validator("cost_reference_date", mode="before")
+    @classmethod
+    def validate_cost_reference_date(cls, value):
+        if value is None or value == "":
+            return None
+        if isinstance(value, date) and not isinstance(value, datetime):
+            return value
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+            raise ValueError("cost_reference_date must be a calendar date YYYY-MM-DD")
+        parsed = date.fromisoformat(value)
+        # One day of slack on each side keeps "the day before" and "the day after" inside the date type.
+        if not date(1900, 1, 2) <= parsed <= date(9998, 12, 29):
+            raise ValueError("cost_reference_date must be between 1900-01-02 and 9998-12-29")
+        return parsed
 
     @field_validator("processor_health_base_url", "azure_cost_health_base_url")
     @classmethod

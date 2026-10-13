@@ -167,3 +167,6 @@ describe("Capturas funcionales preparadas antes de Send JUP-035", () => {
     expect(() => registry.freeze("/operational")).toThrow("screen_limit");
   });
 });
+
+// Chat fixtures freeze the new JUP-119 clock dependency; its HTTP/cache contract has separate tests.
+vi.mock("../src/hooks/useReferenceDate", () => ({ useReferenceDate: () => ({ data: { reference_date: "2026-10-10", simulated: false } }) }));

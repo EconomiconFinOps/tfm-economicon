@@ -162,15 +162,7 @@ def test_empty_unobserved_and_unmatched_data_do_not_become_zero_spend(raw, query
 
 
 def test_default_period_is_utc_calendar_month_with_exclusive_year_boundary(monkeypatch):
-    import app.services.ownership_questions as service_module
-
-    class FrozenDateTime(datetime):
-        @classmethod
-        def now(cls, tz=None):
-            assert tz is timezone.utc
-            return cls(2024, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
-
-    monkeypatch.setattr(service_module, "datetime", FrozenDateTime)
+    monkeypatch.setattr("app.services.reference_date._utc_now", lambda: datetime(2024, 12, 31, 23, 59, 59, tzinfo=timezone.utc))
     result, db = answer(selected=OwnershipSelection(group_by="project"))
     assert db.fetch_billing_summary.call_args.kwargs["start_date"] == date(2024, 12, 1)
     assert db.fetch_billing_summary.call_args.kwargs["end_date"] == date(2025, 1, 1)

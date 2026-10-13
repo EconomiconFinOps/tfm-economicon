@@ -10,6 +10,8 @@ import type { SessionOutletContext } from "./SessionGate";
 import { ChatPanel } from "../components/chat/ChatPanel";
 import { ScreenCaptureProvider } from "../components/chat/ScreenCaptureProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useReferenceDate } from "@/hooks/useReferenceDate";
+import { formatReferenceDate, referenceDay } from "@/lib/referenceDate";
 import logoInverse from "@/assets/brand/economicon-inverse.png";
 
 // TenantScopedOutlet: frontera de remontaje por tenant (reconciliacion con
@@ -31,6 +33,30 @@ export function TenantScopedOutlet() {
   return <Outlet key={ctx.activeTenant?.id ?? "no-tenant"} context={ctx} />;
 }
 
+// Mounted only with a session: the date comes from the backend, never from the browser clock.
+function ReferenceDateNotice({ token }: { token: string }) {
+  const reference = useReferenceDate(token);
+  if (!reference.data) return null;
+  return (
+    <>
+      {reference.data.simulated && (
+        <div className="rounded-lg border border-brand-foreground/60 bg-brand-foreground/10 px-4 py-2 text-sm font-medium text-brand-foreground">
+          Fecha simulada: {formatReferenceDate(reference.data)}
+        </div>
+      )}
+      <div className="hidden rounded-lg border border-brand-foreground/30 px-4 py-2 text-sm text-brand-foreground/80 lg:block">
+        {referenceDay(reference.data).toLocaleDateString('es-ES', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          timeZone: 'UTC'
+        })}
+      </div>
+    </>
+  );
+}
+
 export function Layout() {
   // Contexto defensivo: `Layout` puede montarse sin `SessionGate` por encima
   // (test del grupo 5, ya commiteado, que renderiza <Layout /> dentro de un
@@ -39,7 +65,7 @@ export function Layout() {
   // sobre `undefined`. `Partial<...>` porque, sin el contexto real, ninguno
   // de los campos esta garantizado.
   const ctx = useOutletContext<Partial<SessionOutletContext>>() ?? {};
-  const { tenants, activeTenantId, onTenantChange, user, onLogout } = ctx;
+  const { tenants, activeTenantId, onTenantChange, user, onLogout, token } = ctx;
 
   const navItems = [
     { path: "/", label: "Coste Global", icon: DollarSign },
@@ -102,14 +128,7 @@ export function Layout() {
               </div>
             ) : null}
 
-            <div className="hidden rounded-lg border border-brand-foreground/30 px-4 py-2 text-sm text-brand-foreground/80 lg:block">
-              {new Date().toLocaleDateString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </div>
+            {token ? <ReferenceDateNotice token={token} /> : null}
           </div>
         </div>
       </header>

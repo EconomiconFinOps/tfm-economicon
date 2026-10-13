@@ -92,6 +92,9 @@ def api(tmp_path, monkeypatch):
     monkeypatch.setattr(app.state,'database',db,raising=False)
     monkeypatch.setattr(app.state,'chat_transport',processor,raising=False)
     monkeypatch.setattr(app.state,'chat_clock',clock,raising=False)
+    # This fixture models an enabled runtime; startup/disabled tests must not
+    # leak their global app.state flag into subsequent operation tests.
+    monkeypatch.setattr(app.state,'chat_enabled',True,raising=False)
     monkeypatch.setattr(app.state,'chat_max_active',8,raising=False)
     monkeypatch.setattr(app.state,'chat_scheduler_interval',0.005,raising=False)
     # Isolate operations from retrieval/tokenizer with a scoped frozen contract.

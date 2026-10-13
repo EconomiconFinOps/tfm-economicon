@@ -317,6 +317,22 @@ def _diagnostic_run(monkeypatch,wire,caplog,transport_error=None,period=None):
     return records,events
 
 
+def test_real_four_byte_utf8_survives_single_byte_transport(monkeypatch,caplog):
+    import io
+    original=io.BytesIO
+    class SingleByte(original):
+        def read1(self,size=-1): return super().read(1 if size!=0 else 0)
+    monkeypatch.setattr(io,'BytesIO',SingleByte)
+    raw=json.dumps(supported_provider(),ensure_ascii=False)
+    event={'choices':[{'index':0,'delta':{'content':raw},'finish_reason':'stop'}]}
+    wire=('data: '+json.dumps(event,ensure_ascii=False)+'\n\ndata: [DONE]\n\n').encode('utf-8')
+    assert bytes.fromhex('f09f9880') in wire
+    records,events=_diagnostic_run(monkeypatch,wire,caplog)
+    assert records[-1]['result']['answer']==SUPPORTED_ANSWER['answer']
+    assert ''.join(r['text'] for r in records if r['type']=='delta')==SUPPORTED_ANSWER['answer']
+    assert events==[]
+
+
 def _rule_candidate(rule):
     import copy
     value=copy.deepcopy(SUPPORTED_ANSWER)

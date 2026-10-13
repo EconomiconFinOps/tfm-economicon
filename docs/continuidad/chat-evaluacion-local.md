@@ -97,3 +97,27 @@ de retocar arquitectura. Criterios de aceptación del equipo pendientes; no
 atribuir aprobación a la división A/B. N3/N5 reales siguen NOT_RUN. Gasto nuevo0;
 último gasto histórico0.957927619 USD, tope acumulado2 USD. El objetivo permanece
 activo; este inicio no equivale a entrega validada.
+
+
+### Reconciliación local con A — 14/10/2026
+
+Avance confirmado: incorporación local de A318a56f3 y developc30a7d0f mediante
+merge, usando f63c150 como base de contenido para adiciones paralelas. Se
+conserva v4, prompt y cálculos B; se incorporan CHAT_ENABLED=false, bloqueo de
+rutas desactivadas, fecha de referencia119, fixtures frontend y barrera de inicio
+del cuerpo en pruebas de resumen. No se ha modificado el runtime compartido.
+
+Validación: backend107PASS (disabled, operations, metadata, context assembly).
+Processor: ejecución inicial128PASS/2FAIL en184s. Ambos fallos eran pruebas
+heredadas del contrato A: búsqueda nativa (etapa finish frente a candidate_json
+v4) y respuesta sin evidencia. Se retira exclusivamente la prueba de búsqueda
+nativa que B no ejecuta; las pruebas de truncación v4 existentes se conservan.
+Unicode se adapta a respuesta sustentada y sobreescribe read1, que es la lectura
+real del transporte. Repetición focal3PASS (Unicode, length y truncated_length).
+No declarar suite completa verde a partir de estas comprobaciones acotadas.
+Los servidores de prueba Windows imprimieron ConnectionAbortedError al cortar
+sockets; no causaron otros fallos de prueba. No hubo inferencias externas.
+
+OpenSpec JUP-123 creado y trazabilidad correcta; validación estricta73PASS.
+Pendiente completar verificación frontend y otras superficies reconciliadas,
+colector y baseline. Objetivo activo; presupuesto y NOT_RUN sin cambios.

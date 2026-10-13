@@ -222,3 +222,6 @@ describe("Memoria derivada de diálogo JUP-035", () => {
     expect(calls.some(call => call.path.endsWith("/summary") || call.method === "POST")).toBe(false);
   });
 });
+
+// Chat fixtures freeze the new JUP-119 clock dependency; its HTTP/cache contract has separate tests.
+vi.mock("../src/hooks/useReferenceDate", () => ({ useReferenceDate: () => ({ data: { reference_date: "2026-10-10", simulated: false } }) }));

@@ -136,3 +136,6 @@ it("exact confirmation, No/Escape cancel without delete, focus restored, Yes pen
   expect(within(history).queryByRole("button", { name: "Original" })).toBeNull();
   expect(within(history).getByRole("button", { name: "Cerrar historial" })).toHaveFocus();
 });
+
+// Chat fixtures freeze the new JUP-119 clock dependency; its HTTP/cache contract has separate tests.
+vi.mock("../src/hooks/useReferenceDate", () => ({ useReferenceDate: () => ({ data: { reference_date: "2026-10-10", simulated: false } }) }));

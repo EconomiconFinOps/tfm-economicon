@@ -4,8 +4,8 @@ Guion que recorre la [demo](guion.md) en un navegador real y comprueba lo que mu
 
 ## Qué hace y qué no
 
-- Entra por el formulario de acceso con la cuenta de demostración, recorre los pasos en el orden del guion (D7 y D11 si no se desactivan los opcionales) y, en cada uno, comprueba los textos y las cifras de la interfaz: totales por periodo, filas de desglose, filas de la tabla mensual (incluido el mes sin datos), comparaciones, aviso de registros sin fecha, el cambio de cliente y, en D12, la detección de anomalías (aviso sintético, «Revisado hasta», primera fila y detalle).
-- D12 pulsa «Detectar ahora», que guarda episodios: para repetir la receta desde cero, retirar y volver a cargar el conjunto de anomalías como dice la preparación.
+- Entra por el formulario de acceso con la cuenta de demostración, recorre los pasos en el orden del guion (D7 y D11 si no se desactivan los opcionales) y, en cada uno, comprueba los textos y las cifras de la interfaz: la etiqueta «Fecha simulada» de la cabecera, totales por periodo, filas de desglose, filas de la tabla mensual (incluido el mes sin datos), comparaciones (también la que no está disponible), aviso de datos parciales, el cambio de cliente y, en D12, la detección de anomalías (aviso sintético, «Revisado hasta», primera fila y detalle).
+- D12 pulsa «Detectar ahora», que guarda episodios: para repetir la receta desde cero, retirar y volver a cargar los datos como dice la preparación.
 - Guarda una captura por paso, un vídeo mudo de la sesión y `resultado.json` con `pass`, `fail` o `not_run` por paso. Si un paso falla, los siguientes quedan como `not_run`.
 - **No carga ni retira datos**: `apply` y `remove` son comandos explícitos de [preparacion.md](preparacion.md).
 - **No intercepta ni responde peticiones** y no escribe la sesión en el almacenamiento: solo observa lo que la interfaz recibe del backend. Falla ante un error de página o de origen cruzado.
@@ -14,7 +14,7 @@ Guion que recorre la [demo](guion.md) en un navegador real y comprueba lo que mu
 
 ## Requisitos
 
-- El stack de [preparacion.md](preparacion.md) levantado y con los datos cargados (`status` en `present`).
+- El stack de [preparacion.md](preparacion.md) levantado, con `COST_REFERENCE_DATE=2026-10-30` y con los datos cargados (`status` en `present`).
 - Node.js 22 o superior. Verificado con Node `v24.15.0`, Playwright `1.63.0` y Chromium `153.0.8010.12` (revisión `1243` de Playwright).
 
 ## Preparación
@@ -44,12 +44,12 @@ Variables opcionales: `BASE_URL` (por defecto `http://localhost:5173`) y `WITH_O
 
 ## Control positivo
 
-Para comprobar que la receta detecta un desajuste, apuntar `EXPECTED_JSON` a una copia de `esperados.json` con una cifra alterada (por ejemplo el `expected` de `F03`, el `percent` de `F17` o el `expected` de `A01`): el paso correspondiente debe salir `fail` nombrando la cifra y los siguientes `not_run`.
+Para comprobar que la receta detecta un desajuste, apuntar `EXPECTED_JSON` a una copia de `esperados.json` con una cifra alterada (por ejemplo el `expected` de `F03`, el `percent` de `F14` o el `expected` de `A01`): el paso correspondiente debe salir `fail` nombrando la cifra y los siguientes `not_run`.
 
 ## Script
 
 ```js
-// Recorre la demo de JUP-107 en un navegador real y comprueba lo que muestra la interfaz.
+// Recorre la demo de JUP-107 (rehecha con JUP-119) en un navegador real y comprueba lo que muestra la interfaz.
 // Se ejecuta fuera del repositorio. No carga ni retira datos, no intercepta peticiones y no imprime la contraseña.
 const { chromium } = require('playwright-core');
 const fs = require('fs');
@@ -89,12 +89,12 @@ function checkFigure(text, f) {
       ? new RegExp(`^${label(f.month)}\\t${f.currency}\\t—\\t—\\tSin datos de esta moneda\\.`, 'm')
       : new RegExp(`^${label(f.month)}\\t${f.currency}\\t${escape(f.expected)}\\t${f.records}\\t`, 'm');
     if (!row.test(text)) out.push(`falta la fila mensual ${f.month} ${f.currency} ${f.expected === null ? 'sin datos' : f.expected}`);
+  } else if (f.kind === 'comparison' && f.unavailable) {
+    if (!text.includes('Comparación no disponible')) out.push('falta el aviso de comparación no disponible');
   } else if (f.kind === 'comparison') {
     if (!text.includes(`Comparación: ${label(f.last_month)} frente a ${label(f.first_month)} · ${f.currency}`)) out.push('falta el título de la comparación');
     if (!standalone(`${signed(f.difference)} ${f.currency}`).test(text)) out.push('falta la variación absoluta ' + signed(f.difference));
     if (!standalone(`${signed(f.percent)} %`).test(text)) out.push('falta la variación porcentual ' + signed(f.percent));
-  } else if (f.kind === 'undated') {
-    if (!new RegExp(`(?<![\\d])${f.records} registros sin fecha excluidos`).test(text)) out.push('falta el aviso de registros sin fecha');
   } else if (f.kind === 'anomaly_episode') {
     if (!standalone(`${f.expected} EUR`).test(text)) out.push(`falta el impacto ${f.expected} EUR de ${f.service}`);
     if (!text.includes(`en ${f.records} días`)) out.push(`falta «en ${f.records} días» de ${f.service}`);
@@ -129,13 +129,13 @@ async function main() {
   const go = async (name) => { await page.getByRole('link', { name }).click(); await settle(); };
   const actions = {
     D1: async () => { await go('Anomalías'); await tenant().selectOption('tenant-core'); },
-    D2: async () => { await go('Coste Global'); await tenant().selectOption('tenant-growth'); await settle(); await setPeriod('2026-01', '2026-06'); },
+    D2: async () => { await go('Coste Global'); await tenant().selectOption('tenant-growth'); await settle(); await setPeriod('2026-07', '2026-09'); },
     D3: async () => { await page.getByLabel('Agrupar por').selectOption('service'); },
-    D4: async () => { await page.getByLabel('Moneda').selectOption('EUR'); },
-    D5: async () => {},
+    D4: async () => { await page.getByLabel('Moneda').selectOption('USD'); },
+    D5: async () => { await page.getByLabel('Moneda').selectOption('EUR'); },
     D6: async () => { await page.getByLabel('Moneda').selectOption('USD'); },
-    D7: async () => { await page.getByLabel('Agrupar por').selectOption('tag'); await page.getByLabel('Clave de etiqueta').fill('cost_center'); },
-    D8: async () => {},
+    D7: async () => { await page.getByLabel('Agrupar por').selectOption('tag'); await page.getByLabel('Clave de etiqueta').fill('project'); },
+    D8: async () => { await page.getByLabel('Agrupar por').selectOption('service'); await page.getByLabel('Moneda').selectOption('EUR'); },
     D9: async () => { await tenant().selectOption('tenant-core'); },
     D12: async () => {
       await go('Anomalías');
@@ -143,7 +143,7 @@ async function main() {
       await page.getByRole('status', { name: 'Resultado de la detección' }).waitFor({ timeout: 60000 });
     },
     D10: async () => {},
-    D11: async () => { await go('Coste Global'); await tenant().selectOption('tenant-growth'); await settle(); await setPeriod('2026-07', '2026-07'); await settle(); await page.getByLabel('Moneda').selectOption('USD'); },
+    D11: async () => { await go('Coste Global'); await tenant().selectOption('tenant-growth'); await settle(); await setPeriod('2026-10', '2026-10'); await settle(); await page.getByLabel('Agrupar por').selectOption('service'); await page.getByLabel('Moneda').selectOption('USD'); },
   };
 
   await page.goto(BASE_URL);
@@ -171,7 +171,9 @@ async function main() {
       await actions[step.id]();
       await settle();
       const text = await main();
-      for (const needle of step.ui_contains || []) if (!text.includes(needle)) notes.push(`no aparece «${needle}»`);
+      // La cabecera (fecha simulada) queda fuera de <main>: los textos de la pantalla se buscan en todo el cuerpo.
+      const body = await page.innerText('body');
+      for (const needle of step.ui_contains || []) if (!body.includes(needle)) notes.push(`no aparece «${needle}»`);
       for (const f of pack.figures.filter((x) => x.step === step.id)) notes.push(...checkFigure(text, f));
       if (step.no_amounts) {
         // La declaración de datos sintéticos va antes de ver ninguna cifra.
@@ -180,10 +182,12 @@ async function main() {
         else info.push('comprobado: Core Finance activo y sin importes en pantalla');
       } else if (step.screen === 'none') info.push('paso hablado: sin comprobación de interfaz');
       if (step.chart_gap) {
-        // Un hueco en la serie parte la curva del área en varios trazos (varios comandos M).
-        const curve = await page.locator('path.recharts-area-curve').first().getAttribute('d');
-        if (!curve || (curve.match(/M/g) || []).length < 2) notes.push('el gráfico no deja hueco en el mes sin datos');
-        else info.push('comprobado: la curva del gráfico se interrumpe');
+        // Un mes sin datos no tiene punto en la curva: hay menos puntos que meses, tanto si el hueco está al principio como en medio.
+        const dots = await page.locator('.recharts-area-dot').count();
+        const index = (ym) => Number(ym.slice(0, 4)) * 12 + Number(ym.slice(5, 7));
+        const months = index(step.period.to) - index(step.period.from) + 1;
+        if (dots >= months) notes.push('el gráfico dibuja un punto en cada mes, también en el que no tiene datos');
+        else info.push(`comprobado: ${dots} puntos para ${months} meses`);
       }
       if (step.first_row) {
         // La primera fila de la tabla es la de mayor prioridad y su detalle se abre en un diálogo fuera de <main>.
