@@ -49,6 +49,7 @@ def render_segment(segment, records, expressions=None):
         if not isinstance(text,str) or '[[calc:' in text:
             raise ValueError('Invalid segment text.')
         # Slots and raw equations cannot bypass the typed reference branch.
+        if expressions is not None:expressions.check_prose(text)
         return render_text(text,[])
     if set(segment)=={'calculation_id'}:
         if expressions is not None:raise ValueError('Invalid segment reference.')
@@ -72,9 +73,9 @@ def render_segments(segments, records, *, limit=4000, expressions=None):
         rendered=render_segment(segment,records,expressions)
         if 'text' in segment:pending.append(rendered)
         else:
-            if pending:parts.append(render_segment({'text':''.join(pending)},records));pending=[]
+            if pending:parts.append(render_segment({'text':''.join(pending)},records,expressions));pending=[]
             parts.append(rendered)
-    if pending:parts.append(render_segment({'text':''.join(pending)},records))
+    if pending:parts.append(render_segment({'text':''.join(pending)},records,expressions))
     result=''.join(parts)
     if len(result)>limit:raise ValueError('Rendered text limit.')
     result=result.strip()
@@ -94,7 +95,12 @@ def render_response(value, records, *, quantities=None):
             if (not isinstance(item,list) or len(item)!=1 or
                     not isinstance(item[0],dict) or set(item[0])!={'text'}):
                 raise ValueError('Invalid short prose item.')
-        result[field]=[render_segments(item,[],limit=500) for item in value[field]]
+        result[field]=[render_segments(item,[],limit=500,expressions=expressions) for item in value[field]]
+    if expressions is not None:
+        for recommendation in value.get('recommendations',[]):
+            if isinstance(recommendation,dict):
+                for field in ('action','rationale'):
+                    if isinstance(recommendation.get(field),str):expressions.check_prose(recommendation[field])
     if expressions is not None and expressions.documentary_sources:
         evidence=value.get('evidence')
         if not isinstance(evidence,list) or any(not isinstance(item,dict) for item in evidence):

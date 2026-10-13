@@ -69,6 +69,9 @@ sirven como operandos. Repetir los operandos no responde al cálculo solicitado.
 Las opciones document: identifican cantidades de fuentes documentales efectivas;
 son reglas del documento, no cifras facturadas ni datos del usuario. Usa su fuente
 solo para el KPI y alcance que define; nunca traslades un umbral de otra métrica.
+Los rangos provenance.sections delimitan el ámbito de cada pasaje y el inicio
+posicional de su sección original. Un encabezado posterior cambia el ámbito;
+no atribuyas todos los contenidos de un chunk a su sección inicial.
 Cita el documento cuando apliques su regla. Cada opción vincula valor y unidad;
 no inventes operandos, tipos
 de cambio ni constantes. Las operaciones admitidas tienen nombres semánticos:
@@ -109,6 +112,18 @@ calcula participación o índice respecto de una base, NO variación respecto de
 La diferencia de porcentajes se expresa en puntos porcentuales. Si hay recuentos
 y costes, explica ambas ponderaciones y sus denominadores; no sustituyas una por
 otra. Para costes unitarios compara las tasas y su variación, no solo los totales.
+Clasificaciones documentales de intervalos: si el schema ofrece classify,
+usa {"operation":"classify","rule_id":"opción exacta","value":<percentage AST>}.
+La descripción de rule_id contiene KPI, numerador, denominador, intervalos y fuentes.
+El numerador debe representar exactamente el concepto de la regla; las opciones
+ya vinculan etiquetas literales de los datos. Mantén el denominador completo y
+no uses un porcentaje de presupuesto para una regla de otro KPI. El servidor
+elige la etiqueta con los límites inclusivos/estrictos, no la elijas tú.
+El bloque classify ya muestra porcentaje, intervalo y conclusión: evita repetir
+el mismo cálculo antes del bloque y no reescribas colores/categorías en prosa.
+Si no existe una regla compatible, responde la diferencia/variación solicitada
+sin inventar semáforo ni trasladar otra regla. La ausencia de classify no impide
+comparaciones explícitas de condiciones AND/OR mediante compare.
 Al aplicar una regla explica todas sus condiciones, su combinación AND/OR y sus
 operadores exactos: la igualdad no satisface un límite estricto. Muestra magnitudes
 y comparaciones necesarias antes de concluir. No añadas umbrales no solicitados.

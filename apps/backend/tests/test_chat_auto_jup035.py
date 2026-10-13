@@ -21,7 +21,8 @@ def test_calculation_diagnostic_is_closed_and_contains_no_rejected_text(api, mon
     assert 'secret synthetic payload' not in caplog.text
 
 
-def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch):
+@pytest.mark.parametrize('classification',[False,True])
+def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch, classification):
     from app.core.chat_expressions import quantities,ExpressionRenderer
     from app.core.chat_segments import render_segments
     import importlib.util
@@ -35,9 +36,29 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
     difference={'operation':'difference','current':{'quantity':'73 EUR'},'baseline':{'quantity':'20 EUR'}}
     comparison={'operation':'compare','left':difference,'right':{'quantity':'20 EUR'},'relation':'gt'}
     segments=[{'text':'  Ejemplo 😀: '},{'expression':difference},{'text':'Criterio: '},{'expression':comparison},{'text':'Resultado hipotético.  '}]
+    authorized=[]
+    if classification:
+        from test_chat_interval_rules_jup035 import catalog as rule_catalog, sources, percent
+        question='rework 7 EUR; remaining 93 EUR.'
+        authorized=sources()
+        catalog=rule_catalog(question,authorized)
+        segments=[{'text':'Escenario 😀: '},{'expression':{'operation':'classify',
+            'rule_id':catalog.rules[0]['id'],'value':percent('7','93')}}]
+        async def context_builder(scope,payload,descriptor):
+            return {'prompt_version':descriptor['prompt_version'],'messages':[],
+                'authorized_evidence':authorized,'financial_metrics_allowed':False,
+                'source_citations':[{'evidence_id':source['id'],'kind':'corpus',
+                    'title':source['title'],'source':source['source'],'excerpt':source['content'][:140],
+                    'document_id':'doc','reference':'document:doc/'+source['id'],
+                    'section':'Rework','page':None} for source in authorized],
+                'screen_context':payload['screen_context']}
+        monkeypatch.setattr(api[0].state,'chat_context_builder',context_builder)
     raw = json.dumps({'answer':segments},ensure_ascii=True)
     result = copy.deepcopy(ANSWER)
     result['answer'] = render_segments(segments, [], expressions=ExpressionRenderer(catalog))
+    if classification:
+        result['evidence']=[{key:source[key] for key in ('id','kind','title','source')}
+            for source in authorized if source['id'] in catalog.rules[0]['source_ids']]
     async def stream(claim):
         renderer = module.SegmentAnswerJSON([],quantities=catalog)
         for char in raw:

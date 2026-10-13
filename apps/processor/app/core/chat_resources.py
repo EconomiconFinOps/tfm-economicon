@@ -59,7 +59,9 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
-    arithmetic='provenance-user-document-cited-operation-root-depth4-operations12-v4',
+    arithmetic='provenance-user-document-cited-interval-scope-depth4-operations12-v5',
+    documentary_sections='original-markdown-positional-contiguous-ranges-v1',
+    interval_rules='explicit-percentage-partition-lexical-numerator-v1',
     decision_values='server-query-no-model-decision-v1',
     reasoning={'effort':'high','exclude':True,'shared_output_tokens':3200})
 
@@ -76,9 +78,11 @@ def continuation_messages(context, assistant, result):
     if not isinstance(sources,list) or len(sources)+len(context.get('authorized_evidence',[]))>20: raise ValueError('Tool evidence limit.')
     ids=set(item['id'] for item in context.get('authorized_evidence',[]))
     for source in sources:
-        if not isinstance(source,dict) or set(source)!={'id','kind','title','source','content'} or source['kind']!='corpus': raise ValueError('Corpus only extension.')
+        if not isinstance(source,dict) or set(source) not in ({'id','kind','title','source','content'},{'id','kind','title','source','content','provenance'}) or source['kind']!='corpus': raise ValueError('Corpus only extension.')
         if any(not isinstance(source[k],str) or not source[k].strip() for k in ('id','title','source','content')) or source['id'] in ids:
             raise ValueError('Invalid corpus source.')
+        from app.core.chat_rules import validate_provenance
+        validate_provenance(source)
         ids.add(source['id'])
     if type(result['variable_tokens']) is not int or result['variable_tokens']<0: raise ValueError('Tool token count.')
     return context['messages']+[{'role':'user','content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+content}]

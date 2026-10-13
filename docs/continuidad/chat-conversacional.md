@@ -1,4 +1,27 @@
-## Reconciliación con develop bfaf398 — 13/10/2026
+## Corte actual: intervalos documentales — 13/10/2026
+
+Publicado f1848e5, producto idéntico731b5ea, transferido con autorización específica.
+CI técnica y47 pruebas Cockroach pasan, incluidos cuatro caminos de migración y
+preservación de datos. Runtime expression17 tiene82/72/112 hashes de fuentes
+backend/processor/frontend comprobados. UI del padre verifica historial027 y
+cambio de cliente sin arrastrar conversación; no fue una inferencia pagada.
+
+Focal005/013/027: tres respuestas completas, SSE=final=historial, pero005 clasifica
+incorrectamente10% como rojo y013 aplica semáforo de otro KPI a presupuesto.
+027 pasa contraste semántico y de citas independiente. PR121 NO validada.
+Gasto conservador0.4756863025/2USD, pendiente asentamiento del contador upstream.
+Recibos externos expression17-focused.json y expression17-focused-checks.json.
+
+Corrección offline en curso: rangos de sección auténticos y selector `classify`
+de gramática cerrada, sin modificar corpus/banco. Véase
+[ADR](../adr/JUP-035-server-retrieval-expressions.md). Regresiones de límites,
+conclusiones reales y citas; recursos/contextbudget/stream49PASS. Paridad del
+padre en procesos separados: esquema4561 tokens, mensajes3637, variables747,
+hash de esquema idéntico. Evidencia expression18-parent-parity-* fuera de Git.
+No se ha enviado este candidato al proveedor. Próximos pasos: cerrar persistencia,
+revisión, congelar/build y focal005/006/007/013/017/027 antes de full28.
+
+## Reconciliación con develop bfaf398 — 13/10/2026 (corte previo)
 
 Se integra la navegación MVP en español y las anomalías reales de JUP114/116/117,
 preservando el panel conversacional. La captura usa episodios visibles por cliente,

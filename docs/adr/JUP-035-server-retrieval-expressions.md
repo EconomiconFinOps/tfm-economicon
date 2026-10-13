@@ -102,5 +102,34 @@ retrieval, cancelación de ambas fases, uso privado y público, esquema/conteo
 idénticos, límites y unidades, texto/expresión partido, stream=final=JSONB,
 fuentes efectivas y rechazo sin reparación. El banco JUP-069 no se modifica.
 
+### Clasificación por intervalos documentales (13/10/2026)
+
+La focal expression17 corrigió el denominador de005 y027, pero005 llamó rojo al
+10% y013 trasladó esos umbrales a presupuesto. Se añade `classify` al AST privado:
+el servidor evalúa intervalos y devuelve etiqueta y comparaciones como un bloque.
+No cambia FinOpsResponse, JSONB ni el límite global de12 operaciones.
+
+La extracción admite una gramática cerrada: fórmula explícita `KPI: nombre % =
+numerador / denominador * 100` y lista de2 a8 intervalos porcentuales con límites
+abiertos/cerrados. Exige partición completa sin huecos/solapamientos; cualquier
+fila no interpretable invalida la regla. No presupone etiquetas ni umbrales.
+Los rangos del Markdown original conservan identidad posicional de sección;
+encabezados internos cambian el alcance. Sólo se reconstruyen fragmentos contiguos
+con solapamiento idéntico. Secciones homónimas distintas no se unen.
+
+El catálogo visible al modelo incluye KPI, sección, límites y fuentes. El
+numerador exige una etiqueta léxica inequívoca en la misma cantidad del usuario;
+no se traduce semánticamente ni se permite aplicar reglas de un KPI a otro.
+El denominador sigue siendo elegido por el modelo: se comprueba su aritmética y
+dimensión, pero este vínculo no garantiza universalmente su pertinencia.
+Las fuentes de la regla deben figurar en la evidencia final seleccionada.
+
+Un control acotado rechaza conclusiones libres que usan vocabulario explícito
+de clasificación y etiquetas de las reglas disponibles, incluso sin `classify`;
+las citas literales requieren su fuente. No prohíbe palabras genéricas fuera de
+ese contexto ni promete detección universal de contradicciones en prosa.
+Ambigüedad documental significa no clasificar, no inventar una regla. Las pruebas
+locales no sustituyen la próxima focal ni la batería semántica completa.
+
 Véase [diseño OpenSpec](../../openspec/changes/jup-035-auto-documentation/design.md)
 y [continuidad](../continuidad/chat-conversacional.md).

@@ -222,7 +222,9 @@ class ChatContext:
             stage='citations'
             citations = resolve_citations([item['chunk_id'] for item in chunks],chunks,scope['tenant_id'])
             evidence = [{'id':item['chunk_id'],'kind':'corpus','title':item['title'],'source':item['source'],
-                         'content':item['content']} for item in chunks]
+                         'content':item['content'], 'provenance':{
+                             'document_id':item['document_id'], 'chunk_index':item['chunk_index'],
+                             'sections':item.get('section_spans',[])}} for item in chunks]
             omission = {'collection':'corpus','reason':'contiguous_context_bounded',
                         'candidate_limit':20,'omitted_neighbors':len(omitted)} if candidates else None
             return evidence, citations, omission

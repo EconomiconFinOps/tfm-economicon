@@ -48,3 +48,5 @@
 - [x] 7.2 Documentar ADR de recuperación única del servidor y expresiones autocontenidas, sin referencias de planes previos.
 - [ ] 7.3 Completar regresiones de contrato, HMAC, esquema/conteo, límites, citas, persistencia y cancelación del nuevo protocolo.
 - [ ] 7.4 Congelar candidato, estimar coste conservador y validar campaña íntegra dentro del techo acumulado2USD (ampliación autorizada el13/10/2026); sin muestras seleccionadas.
+- [x] 7.5 Evaluar intervalos documentales con AST, sección posicional y vínculo léxico de KPI; probar límites inclusivos, fuentes alteradas, solapamientos, etiquetas libres y paridad de esquema/conteo.
+- [ ] 7.6 Validar focal005/006/007/013/017/027 y luego full28 sobre candidato congelado; no considerar aceptación los tests locales del selector.

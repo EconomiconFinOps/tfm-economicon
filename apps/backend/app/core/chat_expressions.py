@@ -8,6 +8,7 @@ import copy
 import json
 import re
 from decimal import Decimal, DecimalException, localcontext
+from app.core.chat_rules import QuantityCatalog, documentary_rules, concept, numerator_matches, check_classification_prose
 
 MAX_OPERATIONS = 12
 MAX_DEPTH = 4
@@ -29,7 +30,8 @@ def context_question(context):
 def context_quantities(context):
     if not any(message.get('content','').startswith('UNTRUSTED_CURRENT_CONTEXT\n') for message in context.get('messages',[])):
         return {}
-    catalog=quantities(context_question(context))
+    catalog=QuantityCatalog(quantities(context_question(context)))
+    rule_sources=[]
     for entry in catalog.values():
         entry['provenance']=[{'kind':'user','source':entry['source']}]
     authorized={item['id']:item for item in context.get('authorized_evidence',[]) if item.get('kind')=='corpus'}
@@ -39,6 +41,7 @@ def context_quantities(context):
         for source in json.loads(content.split('\n',1)[1]).get('evidence',[]):
             if source.get('kind')!='corpus' or authorized.get(source.get('id'))!=source:
                 raise ValueError('Documentary quantity source not authorized.')
+            rule_sources.append(source)
             for key,entry in quantities(source['content'],explicit_only=True).items():
                 provenance={'kind':'corpus','id':source['id'],'source':entry['source']}
                 # Numeric equality is not provenance equality: user operands and
@@ -49,6 +52,8 @@ def context_quantities(context):
                         catalog[qualified]['provenance'].append(provenance)
                 elif len(catalog)<MAX_QUANTITIES:
                     catalog[qualified]={**entry,'display':key,'provenance':[provenance]}
+    catalog.rules=documentary_rules(rule_sources)
+    catalog.rule_sources=rule_sources
     return catalog
 NUMERIC = r'(?<![\w.,-])[-−]?[0-9]+(?:[.,][0-9]+)?(?![\w-]|[.,][0-9])'
 CURRENCIES = ('EUR','USD','GBP','JPY','CHF','CAD','AUD','CNY','INR','€','$','£','¥')
@@ -157,7 +162,19 @@ def quantities(question, *, explicit_only=False):
         if not explicit_only and unit in CURRENCIES and daily and not mixed:
             unit+='/día';kind='context_daily_rate'
         key=value+(' '+unit if unit else '')
-        result.setdefault(key,{'value':value,'unit':unit,'source':span,'binding':kind})
+        entry=result.setdefault(key,{'value':value,'unit':unit,'source':span,'binding':kind})
+        if not explicit_only:
+            left=before[:prefix.start()] if prefix else before
+            right=after[suffix.end():] if suffix else after
+            anchors=[]
+            left_match=re.search(r'(?:^|[;:\n])\s*([A-Za-zÁÉÍÓÚáéíóúÑñ_][A-Za-zÁÉÍÓÚáéíóúÑñ_ -]{0,50})\s*[:=]?\s*$',left)
+            right_match=re.match(r'\s+([A-Za-zÁÉÍÓÚáéíóúÑñ_][A-Za-zÁÉÍÓÚáéíóúÑñ_ -]{0,50})\s*(?=;|[.!?](?:\s|$)|$)',right)
+            for match_anchor in (left_match,right_match):
+                if match_anchor and concept(match_anchor.group(1)):
+                    anchors.append(list(concept(match_anchor.group(1))))
+            existing=entry.setdefault('concept_anchors',[])
+            for anchor in anchors:
+                if anchor not in existing:existing.append(anchor)
         if len(result)>MAX_QUANTITIES:return {}
     return result
 
@@ -186,8 +203,22 @@ def expression_definitions(catalog):
     # A displayed calculation must actually calculate. Source quantities are
     # operands, not degenerate answers that can substitute a threshold for a
     # computed variation while satisfying the structured schema.
-    definitions['RenderedExpression']={'anyOf':[
-        *definitions[f'NumericExpression{MAX_DEPTH}']['anyOf'][1:],comparison]}
+    alternatives=[*definitions[f'NumericExpression{MAX_DEPTH}']['anyOf'][1:],comparison]
+    rules=getattr(catalog,'rules',())
+    for rule in rules:
+        eligible=[key for key,entry in catalog.items() if len(entry.get('concept_anchors',[]))==1
+                  and tuple(entry['concept_anchors'][0])==tuple(rule['anchor'])]
+        if not eligible:continue
+        numerator={'type':'object','properties':{'quantity':{'type':'string','enum':eligible}},
+                   'required':['quantity'],'additionalProperties':False}
+        value={'type':'object','properties':{'operation':{'type':'string','const':'percentage'},
+            'numerator':numerator,'denominator':{'$ref':f'#/$defs/NumericExpression{MAX_DEPTH-2}'}},
+            'required':['operation','numerator','denominator'],'additionalProperties':False}
+        alternatives.append({'type':'object','properties':{
+            'operation':{'type':'string','const':'classify'},
+            'rule_id':{'type':'string','const':rule['id'],'description':json.dumps(rule,ensure_ascii=False)},
+            'value':value},'required':['operation','rule_id','value'],'additionalProperties':False})
+    definitions['RenderedExpression']={'anyOf':alternatives}
     return definitions
 
 
@@ -201,6 +232,40 @@ class ExpressionRenderer:
         self.catalog=copy.deepcopy(catalog)
         self.operations=0
         self.documentary_sources=set()
+
+    def check_prose(self,text):
+        self.documentary_sources.update(check_classification_prose(text,
+            getattr(self.catalog,'rules',()),getattr(self.catalog,'rule_sources',())))
+
+    def _classify(self,node):
+        if set(node)!={'operation','rule_id','value'}:raise ValueError('Classification shape.')
+        rules=[rule for rule in getattr(self.catalog,'rules',()) if rule['id']==node['rule_id']]
+        if len(rules)!=1:raise ValueError('Unknown documentary interval rule.')
+        rule=rules[0]
+        if not numerator_matches(node['value'],self.catalog,rule):
+            raise ValueError('Documentary KPI value mismatch.')
+        value,unit,formula,reason=self._numeric(node['value'],1)
+        self.documentary_sources.update(rule['source_ids'])
+        if reason:return '\nClasificación no definida: '+reason+'.\n'
+        if unit!=rule['unit']:raise ValueError('Documentary interval unit mismatch.')
+        matches=[]
+        for interval in rule['intervals']:
+            valid=True
+            for bound in interval['bounds']:
+                self._count()
+                limit=Decimal(bound['value'])
+                valid=valid and ((value>=limit if bound['inclusive'] else value>limit) if bound['side']=='lower' else (value<=limit if bound['inclusive'] else value<limit))
+            if valid:matches.append(interval)
+        if len(matches)!=1:raise ValueError('Ambiguous documentary interval.')
+        interval=matches[0]
+        exact=format(value,'f')
+        if '.' in exact:exact=exact.rstrip('0').rstrip('.')
+        conditions=[]
+        for bound in interval['bounds']:
+            symbol=('>=' if bound['inclusive'] else '>') if bound['side']=='lower' else ('<=' if bound['inclusive'] else '<')
+            conditions.append(exact+' '+unit+' '+symbol+' '+bound['value']+' '+unit)
+        shown=display(value);equality='=' if Decimal(shown)==value else '≈'
+        return '\nClasificación según la regla ('+rule['metric']+'; '+rule['section']+'): '+interval['label']+'. '+formula+' '+equality+' '+shown+' '+unit+'. Intervalo: '+' y '.join(conditions)+'.\n'
 
     def _count(self):
         self.operations+=1
@@ -256,6 +321,7 @@ class ExpressionRenderer:
         try:
             with localcontext() as precision:
                 precision.prec=40
+                if node.get('operation')=='classify':return self._classify(node)
                 if isinstance(node,dict) and node.get('operation')=='compare':
                     if set(node)!={'operation','left','right','relation'} or node['relation'] not in ('gt','gte','lt','lte','eq'):
                         raise ValueError('Comparison expression shape.')

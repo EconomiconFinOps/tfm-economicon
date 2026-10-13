@@ -30,7 +30,9 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     no_search_policy='authorized-context-or-abstention',
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
-    arithmetic='provenance-user-document-cited-operation-root-depth4-operations12-v4',
+    arithmetic='provenance-user-document-cited-interval-scope-depth4-operations12-v5',
+    documentary_sections='original-markdown-positional-contiguous-ranges-v1',
+    interval_rules='explicit-percentage-partition-lexical-numerator-v1',
     decision_values='server-query-no-model-decision-v1',
     reasoning={'effort':'high','exclude':True,'shared_output_tokens':3200})
 

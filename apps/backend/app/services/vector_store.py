@@ -117,6 +117,7 @@ class PgVectorQueryStore:
                     "title": locations[row.document_id].title or row.source.strip(),
                     "chunk_index": row.chunk_index,
                     "section": locations[row.document_id].section(row.content),
+                    "section_spans": locations[row.document_id].section_spans(row.content),
                     "source": row.source,
                     "content": row.content,
                     "distance": float(row.distance),

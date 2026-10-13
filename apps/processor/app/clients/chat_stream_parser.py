@@ -135,7 +135,7 @@ class SegmentAnswerJSON:
     def _flush(self):
         from app.core.chat_segments import render_segment
         if not self.pending:return ''
-        result=render_segment({'text':''.join(self.pending)},self.records)
+        result=render_segment({'text':''.join(self.pending)},self.records,self.expressions)
         self.pending=[]
         return result
 

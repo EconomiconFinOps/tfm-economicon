@@ -212,6 +212,28 @@ total entre todos los campos. Ningun calculo SHALL conferir evidencia financiera
 - **AND** SHALL conservar Unicode y escapes fragmentados,128 segmentos,4000 caracteres de answer y500 por elemento de lista, normalizar solo extremos globales, emitir deltas de hasta8192 bytes antes del fin de generacion y hacer coincidir SSE, final validado y JSONB persistido
 - **AND** la garantia SHALL limitarse a la operacion renderizada: seleccion semantica, prosa, completitud y pertinencia documental SHALL seguir requiriendo aceptacion real; no se SHALL afirmar entailment universal ni prohibir fechas o cifras originales en prosa
 
+### Requirement: Clasificación documental de intervalos con alcance explícito
+
+El servidor SHALL evaluar las etiquetas de intervalos documentales mediante una
+expresión privada `classify`, conservando el esquema público y el máximo global
+de12 operaciones. La gramática SHALL exigir fórmula porcentual explícita y una
+partición completa de2 a8 intervalos sin huecos ni solapamientos.
+
+#### Scenario: Límite incluido y KPI inequívoco
+- **WHEN** una regla documental efectiva tiene un límite incluido y el numerador del escenario tiene una etiqueta léxica inequívoca del mismo KPI
+- **THEN** el servidor SHALL calcular el porcentaje y seleccionar la etiqueta con comparaciones Decimal exactas, mostrando la sección y las condiciones en un bloque
+- **AND** SHALL exigir las fuentes de la regla en evidence, sin otorgar autoridad financiera a los datos hipotéticos
+
+#### Scenario: Fragmentos ambiguos o clasificación de otro KPI
+- **WHEN** faltan rangos contiguos, el solapamiento difiere, hay una fila no interpretable, o el numerador pertenece a otro KPI
+- **THEN** el servidor SHALL rechazar la clasificación y no reparar la regla ni trasladar sus umbrales
+- **AND** SHALL distinguir secciones por posición original, aunque compartan título, y respetar los encabezados internos del fragmento
+
+#### Scenario: Conclusión libre y límites de la garantía
+- **WHEN** una conclusión libre usa vocabulario explícito de clasificación y etiquetas de las reglas disponibles
+- **THEN** SHALL rechazarse salvo cita literal respaldada por su fuente, incluso si no existe segmento classify
+- **AND** la aceptación semántica SHALL seguir comprobando denominador, pertinencia y prosa; este control acotado no constituye garantía universal de interpretación
+
 ### Requirement: Cierre observable y truncacion transitoria
 
 El stream SHALL comunicar el estado confirmado aunque la lectura SQL y la
