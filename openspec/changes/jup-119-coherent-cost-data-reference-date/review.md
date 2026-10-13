@@ -91,3 +91,14 @@ Fuera de su alcance: receta de navegador y UI con otra referencia, dos `apply` a
 ## ADR
 
 Sí aplica: ADR-0021 (nuevo). Enlaza ADR-0001 (la API simulada pasa a servir también un CSV de demo) y ADR-0020 (los episodios obedecen a la fecha de referencia).
+
+## Human Approval
+
+- Change: jup-119-coherent-cost-data-reference-date
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-13
+- Adversarial review: accept (pass 3) | accepted findings: none; RF-119-011 queda en el backlog como observación
+- Archive decision: archive
+- Notes: Alcance revisado: ruta única de carga de la demo, ventana común 1/7–30/10/2026, fecha de referencia configurable (`COST_REFERENCE_DATE`) en backend y frontend, episodios ocultos al retroceder la fecha y paquete de demo rehecho. Excepción temporal del 2026-10-11: sin revisión ni validación de compañeras; siguen pendientes en Trello, bajo los roles rotatorios de la tarjeta. Limitaciones conocidas: ver la evidencia (fallos de entorno de las pruebas, interfaz con otra fecha solo recorrida en la guía de anomalías con 2026-09-21).
