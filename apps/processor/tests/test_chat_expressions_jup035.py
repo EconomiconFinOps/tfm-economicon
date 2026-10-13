@@ -119,7 +119,8 @@ def test_complete_expression_blocks_stream_exactly_like_public_projection(width)
 
 def test_operations_count_across_answer_and_depth():
     catalog=quantities('73 EUR; '+ '; '.join(str(i)+' EUR' for i in range(20,33)))
-    value={'answer':[{'expression':difference(leaf('73 EUR'),leaf(str(i)+' EUR'))} for i in range(20,33)],
+    value={'basis':'user_scenario','status':'insufficient_data','evidence':[],'metrics':[],'recommendations':[],
+        'answer':[{'expression':difference(leaf('73 EUR'),leaf(str(i)+' EUR'))} for i in range(20,33)],
         'assumptions':[],'limitations':[],'next_actions':[]}
     with pytest.raises(ValueError,match='operation limit'):render_response(value,[],quantities=catalog)
     node=leaf('73 EUR')
@@ -171,7 +172,7 @@ def test_displayed_root_is_operation_and_short_items_are_single_bounded_prose():
         item=branch['properties']['limitations']['items']
         assert item['minItems']==item['maxItems']==1
         assert item['items']['properties']=={'text':{'type':'string','maxLength':500}}
-    response={'answer':[{'text':'Respuesta.'}],'assumptions':[], 'limitations':[], 'next_actions':[]}
+    response={'basis':'user_scenario','status':'insufficient_data','evidence':[],'metrics':[],'recommendations':[],'answer':[{'text':'Respuesta.'}],'assumptions':[], 'limitations':[], 'next_actions':[]}
     for bad in ([{'text':'a'},{'text':'b'}], [{'expression':difference(leaf('73 EUR'),leaf('20 EUR'))}]):
         with pytest.raises(ValueError,match='short prose'):
             render_response({**response,'limitations':[bad]},[],quantities=catalog)
@@ -191,8 +192,8 @@ def test_one_server_retrieval_precedes_exactly_one_generation(monkeypatch):
     from test_chat_auto_jup035 import provider,wire
     from test_chat_gateway_jup035 import ANSWER,_provider
     value=_provider(ANSWER)
-    value.pop('status')
-    value.update(answer={'request':{'reason':'missing_documentation','missing_requirement':'La regla de reparto aplicable.'}},limitations=[])
+    value.update(basis='missing_data',status='insufficient_data',answer=[{'text':'Necesito la regla de reparto aplicable.'}],
+        limitations=[],next_actions=[[{'text':'Aporta la política aplicable.'}]])
     gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(value)})])
     ctx={**context('Explica costes'),'tool_protocol':'server-documentation-v4','financial_metrics_allowed':False,'authorized_evidence':[]}
     calls=[]

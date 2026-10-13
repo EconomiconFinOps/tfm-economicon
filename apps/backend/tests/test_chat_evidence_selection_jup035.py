@@ -33,7 +33,8 @@ def test_contextual_decision_schema_enforces_exact_source_enum_and_disabled_plan
     value=candidate();value['status']='insufficient_data';value['limitations']=[]
     expression={'operation':'difference',
         'current':{'quantity':'73 EUR/día'},'baseline':{'quantity':'20 EUR/día'}}
-    value['answer']={'scenario':{'calculations':[expression],'quantities':[]}}
+    value['basis']='user_scenario'
+    value['answer']=[{'expression':expression}]
     _validate(value,schema,schema)
     for operand in ('100 EUR/día','73 EUR'):
         expression['current']['quantity']=operand
@@ -42,10 +43,10 @@ def test_contextual_decision_schema_enforces_exact_source_enum_and_disabled_plan
     expression['current']['quantity']='73 EUR/día'
     disabled=provider_response_schema(quantities={},authorized_evidence=[])
     with pytest.raises(ResponseValidationError):_validate(value,disabled,disabled)
-    value['answer']['scenario']['calculations']=[{'quantity':'73 EUR/día'}]
+    value['answer']=[{'expression':{'quantity':'73 EUR/día'}}]
     with pytest.raises(ResponseValidationError):_validate(value,schema,schema)
     with pytest.raises(ValueError,match='requires an operation'):
-        ExpressionRenderer(catalog).render(value['answer']['scenario']['calculations'][0])
+        ExpressionRenderer(catalog).render(value['answer'][0]['expression'])
 
 
 def test_contextual_schema_hash_and_full_token_accounting_match_both_services():
@@ -97,6 +98,7 @@ def candidate(evidence=()):
     value['scope'].pop('period')
     value['scope'].pop('subscription_ids')
     value['answer']=[{'text':value['answer']}]
+    value['basis']='authorized_evidence'
     for field in ('assumptions','limitations','next_actions'):
         value[field]=[[{'text':item}] for item in value[field]]
     return value
@@ -118,8 +120,9 @@ def test_effective_schema_rejects_invalid_evidence_before_backend_firewall(probl
 def test_no_sources_allows_useful_greeting_but_no_invented_evidence_or_ok():
     schema = provider_response_schema(authorized_evidence=[])
     value = candidate()
-    value.pop('status')
-    value['answer'] = {'request': {'reason': 'greeting'}}
+    value['status']='no_data'
+    value['basis']='greeting'
+    value['answer'] = [{'text':'Hola. ¿Qué consulta FinOps necesitas resolver?'}]
     value['limitations'] = []
     _validate(value, schema, schema)
     value['evidence'] = [{k: SOURCE[k] for k in ('id', 'kind', 'title', 'source')}]
@@ -181,11 +184,11 @@ def test_narrative_union_preserves_root_constraints_and_neutral_branch_is_distin
     schema=provider_response_schema(financial_metrics_allowed=financial,authorized_evidence=[source])
     assert set(schema)=={'type','anyOf','$defs'}
     assert all(branch['additionalProperties'] is False for branch in schema['anyOf'])
-    narratives=[branch for branch in schema['anyOf'] if branch['properties']['answer'].get('type')=='array']
+    narratives=[branch for branch in schema['anyOf'] if branch['properties']['basis']['const']=='authorized_evidence']
     assert len(narratives)==2
     # Reconstruct the unrestricted narrative base and intersect it with both
-    # complete narrative branches. The closed request variant has a different
-    # private shape and must not be mistaken for a narrative branch.
+    # authorized branches. Unverified bases share the segment shape but cannot
+    # acquire evidence or financial authority.
     root=copy.deepcopy(narratives[1]);root['$defs']=schema['$defs']
     root['properties']['status']={'type':'string','enum':['ok','partial','no_data','insufficient_data','unsupported','refused','error']}
     root['properties']['evidence'].pop('minItems',None)
@@ -218,8 +221,9 @@ def test_narrative_union_preserves_root_constraints_and_neutral_branch_is_distin
             assert accepts(value,schema)==bool(evidence)
             assert all(not accepts(item,schema) for item in variants[1:-1])
             assert accepts(variants[-1],schema)==(financial and bool(evidence))
-    neutral=candidate();neutral.pop('status')
-    neutral['answer']={'request':{'reason':'clarification'}};neutral['limitations']=[]
+    neutral=candidate();neutral['status']='insufficient_data';neutral['basis']='clarification'
+    neutral['answer']=[{'text':'Necesito concretar la consulta.'}];neutral['limitations']=[]
+    neutral['next_actions']=[[{'text':'Indica el período y el ámbito.'}]]
     assert accepts(neutral,schema) and not accepts(neutral,root)
-    for change in ({'evidence':[record]}, {'status':'ok'}, {'answer':[{'text':'Unsupported claim'}]}):
+    for change in ({'evidence':[record]}, {'status':'ok'}, {'answer':{'request':{'reason':'clarification'}}}, {'basis':'unknown'}):
         assert not accepts({**neutral,**change},schema)

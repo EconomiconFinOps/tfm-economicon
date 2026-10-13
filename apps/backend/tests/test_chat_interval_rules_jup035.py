@@ -176,7 +176,8 @@ def test_previous_provider_conclusions_cannot_bypass_interval_evaluation(conclus
     document=(Path(__file__).resolve().parents[3]/'docs/assistant-corpus/business-rules/economicon-mvp-rules.md').read_text(encoding='utf-8')
     quantities=catalog('EUR: allocated 700; shared 200; unallocated 100; excluded 50.',sources(document,size=500,overlap=50))
     with pytest.raises(ValueError,match='Unverified documentary classification'):
-        render_response({'answer':[{'text':conclusion}]},[],quantities=quantities)
+        render_response({'basis':'user_scenario','status':'insufficient_data','answer':[{'text':conclusion}],
+            'evidence':[],'metrics':[],'recommendations':[],'assumptions':[],'limitations':[],'next_actions':[]},[],quantities=quantities)
 
 
 @pytest.mark.parametrize('change',[{'rule_id':'unknown'},{'label':'alert'}])
@@ -254,6 +255,7 @@ def test_explicit_classification_routing_preserves_other_requests(question,requi
         _validate(value,schema,schema)
         render_response(value,[],quantities=q)
     else:
+        value['basis']='authorized_evidence'
         _validate(value,schema,schema)
         render_response(value,[],quantities=q)
 

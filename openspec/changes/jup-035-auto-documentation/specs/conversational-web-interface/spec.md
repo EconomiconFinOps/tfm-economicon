@@ -213,18 +213,19 @@ total entre todos los campos. Ningun calculo SHALL conferir evidencia financiera
 
 #### Scenario: Separación de narrativa y escenario sin fuentes
 - **WHEN** la respuesta no selecciona evidencia autorizada
-- **THEN** SHALL usar un escenario tipado con cantidades/expresiones exclusivamente del usuario o una solicitud neutral cerrada, sin prosa documental libre
-- **AND** SHALL conservar el cálculo hipotético completo sin afirmar carencia de operandos y derivar el estado y próximo paso de las solicitudes neutrales en servidor
+- **THEN** SHALL usar segmentos explicativos con procedencia privada no autorizada y cantidades/expresiones exclusivamente del usuario, sin atribuir políticas documentales ni generar métricas financieras o recomendaciones
+- **AND** SHALL conservar el cálculo hipotético completo sin afirmar carencia de operandos; solicitudes por datos faltantes, aclaración o rechazo SHALL incluir un próximo paso concreto
 
 #### Scenario: Explicación de datos aportados sin autoridad documental
 - **WHEN** el escenario requiere conservar etiquetas, período, ámbito o una interpretación de sus cifras aportadas
 - **THEN** SHALL permitir segmentos explicativos con expresiones y cantidades exclusivamente del usuario, anteponer su origen hipotético y mantener evidencia documental, métricas financieras y recomendaciones vacías
 - **AND** SHALL conservar controles de ecuaciones, clasificación, profundidad, tamaño y unidades; el prefijo no SHALL considerarse prueba de pertinencia semántica ni autorizar políticas documentales
 
-#### Scenario: Carencia documental concreta
-- **WHEN** se selecciona una solicitud por documentación necesaria no contrastada
-- **THEN** SHALL exigir un requisito específico no vacío de hasta300 caracteres, validar los controles de texto y renderizar la misma solicitud en stream, resultado e historial
-- **AND** SHALL permitir esa solicitud con fuentes irrelevantes o incompletas, sin inferir suficiencia por la mera existencia de chunks; SHALL rechazar campos extra, requisitos en motivos distintos y autoridad financiera añadida
+#### Scenario: Procedencia explicativa privada y streaming
+- **WHEN** una explicación usa basis authorized_evidence, user_scenario, missing_data, clarification, refusal o greeting
+- **THEN** SHALL retirar basis antes del contrato público; authorized_evidence SHALL exigir fuentes seleccionadas y verificadas, y las demás procedencias SHALL prohibir operandos documentales, evidencia, métricas y recomendaciones
+- **AND** user_scenario SHALL anteponer el origen hipotético exactamente una vez; basis antes o después de answer SHALL producir idéntico SSE, final y JSONB, reteniendo texto sólo mientras la procedencia sea desconocida
+- **AND** SHALL ofrecer basis antes de answer para streaming incremental, conservar límites incluidos4000 caracteres con prefijo y8KiB por delta, y rechazar los objetos privados request/scenario como nuevas respuestas sin migrar historial público existente
 
 #### Scenario: Referencias de recomendaciones seleccionadas explícitamente
 - **WHEN** una recomendación selecciona registros privados de evidencia

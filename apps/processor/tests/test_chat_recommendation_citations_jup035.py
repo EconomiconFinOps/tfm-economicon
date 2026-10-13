@@ -23,7 +23,7 @@ def selected(index=0):
 def candidate():
     value=copy.deepcopy(ANSWER)
     for key in ('period','subscription_ids'):value['scope'].pop(key)
-    value.update(status='ok',answer=[{'text':'Compare the current size with demand.'}],
+    value.update(basis='authorized_evidence',status='ok',answer=[{'text':'Compare the current size with demand.'}],
         assumptions=[],limitations=[],next_actions=[],evidence=[selected(0)],
         recommendations=[{'category':'investigation','action':'Review resource sizing.',
             'rationale':'Observed demand is needed to assess the size.',

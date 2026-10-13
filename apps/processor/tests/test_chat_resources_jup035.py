@@ -31,7 +31,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     evidence_selection='effective-context-exact-records-quoted-v3',
     grounding='corpus-literal-window-enums-2048-v2',
     arithmetic='provenance-user-document-depth4-unique-numeric12-v10',
-    response_modes='cited-narrative-explained-user-scenario-specific-request-v2',
+    response_modes='unified-segmented-explanation-private-basis-v3',
     recommendation_citations='explicit-authorized-records-union-v1',
     undefined_guidance='evaluated-zero-domain-absolute-and-next-step-v2',
     quantity_display='observed-value-unit-provenance-no-operation-v1',
@@ -54,7 +54,7 @@ def test_packaged_prompt_explains_non_actionable_response_contract():
     root = Path(os.getenv('JUP035_RESOURCE_BUNDLE', str(default)))
     system = load_resources(root).system
     assert 'unsupported/refused/error requieren metrics y recommendations vacías' in system
-    assert 'unsupported/refused/error requieren metrics y recommendations vacías' in system
+    assert 'incluso con basis=authorized_evidence.' in system
     assert 'identifica precisamente lo que falta y cómo obtenerlo en next_actions.' in system
 
 

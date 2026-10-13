@@ -13,7 +13,7 @@ def test_scope_is_server_owned_and_model_cannot_inject_subscription():
     candidate['scope'].pop('subscription_ids')
     assert 'subscription_ids' not in chat_provider_schema()['$defs']['ResponseScope']['properties']
     assert all(b['properties']['metrics']['maxItems']==0 for b in chat_provider_schema()['anyOf'])
-    assert all(b['properties']['metrics']['maxItems']==(20 if b['properties']['answer'].get('type')=='array' else 0)
+    assert all(b['properties']['metrics']['maxItems']==(20 if b['properties']['basis']['const']=='authorized_evidence' else 0)
         for b in chat_provider_schema(financial_metrics_allowed=True)['anyOf'])
     from app.agents.schemas import FinOpsResponse
     assert FinOpsResponse.model_json_schema()['properties']['metrics']['maxItems'] == 20
@@ -30,11 +30,13 @@ def test_private_schema_branches_preserve_scope_and_financial_authority(financia
     schema = chat_provider_schema(financial_metrics_allowed=financial_allowed)
     assert 'anyOf' in schema
     actionable, abstention = [branch for branch in schema['anyOf']
-        if branch['properties']['answer'].get('type')=='array']
+        if branch['properties']['basis']['const']=='authorized_evidence']
     neutral=[branch for branch in schema['anyOf'] if branch not in (actionable,abstention)]
-    assert len(neutral)==1 and 'status' not in neutral[0]['required']
-    assert neutral[0]['properties']['metrics']['maxItems']==0
-    assert neutral[0]['properties']['evidence']['maxItems']==0
+    assert len(neutral)==5
+    for branch in neutral:
+        assert 'basis' in branch['required'] and 'status' in branch['required']
+        assert branch['properties']['metrics']['maxItems']==0
+        assert branch['properties']['evidence']['maxItems']==0
     assert actionable['properties']['status']['enum'] == ['ok', 'partial']
     assert actionable['properties']['evidence']['minItems'] == 1
     assert abstention['properties']['status']['enum'] == [
@@ -43,7 +45,7 @@ def test_private_schema_branches_preserve_scope_and_financial_authority(financia
     public=FinOpsResponse.model_json_schema()
     assert 'properties' not in schema and 'required' not in schema
     for branch in (actionable, abstention):
-        assert branch['required'] == public['required']
+        assert set(branch['required']) == set(public['required']) | {'basis'}
         assert branch['additionalProperties'] is False
         assert branch['properties']['metrics']['maxItems'] == (20 if financial_allowed else 0)
         assert branch['properties']['scope'] == public['properties']['scope']
@@ -81,7 +83,7 @@ def test_v3_prompt_has_general_hypothetical_and_documentary_rules():
         'conservando importes/categorías relevantes y sus comparaciones',
         'moneda de destino, tipo/dirección del cambio y fecha',
         'Ausencia de datos no es cero', 'período elegible',
-        'Una captura del navegador no permite resolver hoy', 'pide periodo y zona horaria',
+        'Una captura no resuelve hoy ni un período financiero', 'pide período/zona horaria si hacen falta',
         'No listes todos los resultados ni añadas afirmaciones para justificar citas',
         'el mismo título, tema o fragmento vecino no bastan',
         'La aritmética del usuario no es evidencia documental ni financiera',

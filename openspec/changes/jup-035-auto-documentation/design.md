@@ -17,11 +17,12 @@ completitud/evidencia siguen vigentes.
 
 ## Refinamiento vigente tras survey22
 
-El refinamiento posterior25 amplía el escenario de usuario con segmentos
-explicativos bajo el mismo renderer y controles, conservando autoridad financiera
-y documental vacías. Las solicitudes documentales exigen una carencia concreta
-revisable; tener chunks no demuestra suficiencia. El ADR describe límites y
-evidencia negativa de focal24. La aceptación semántica continúa pendiente.
+El refinamiento26 sustituye los objetos privados request/scenario por segmentos
+explicativos con basis de procedencia: evidencia autorizada, escenario de usuario,
+datos faltantes, aclaración, rechazo o saludo. Las fuentes seleccionadas siguen
+verificadas; las ramas no autorizadas no producen métricas ni recomendaciones y
+usan sólo operandos del usuario. Los detalles del estado y de streaming por orden
+de basis se documentan en el ADR. Focal25:3/9 PASS semánticos; no aceptada.
 
 Reglas booleanas con descriptores autenticados y operandos inequívocos producen
 condiciones y conclusión terminal servidor; no prosa libre que contradiga AND/OR.
@@ -32,7 +33,7 @@ embedding/recuperación y una generación,3200tokens y evaluación íntegra pend
 Detalles, limitaciones y motivación en el ADR vigente; ninguna aceptación se
 infiere de tests offline o de completed en la batería.
 
-## Refinamiento v10 tras survey23
+## Antecedente v10 tras survey23, modos sustituidos por26
 
 La narrativa libre requiere fuentes seleccionadas incluso en abstención. Sin
 fuentes, un escenario tipado resuelve aritmética del usuario sin prosa documental,

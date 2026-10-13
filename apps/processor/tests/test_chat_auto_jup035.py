@@ -59,8 +59,9 @@ def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch
         assert {k:v['const'] for k,v in choices[0]['properties'].items() if k!='support_quote'}=={k:source[k] for k in ('id','kind','title','source')}
         assert schema['$defs']['SourceQuantity']['properties']['quantity']['enum']==['document:corpus:current:0:17 %']
     else:
-        assert schema['properties']['evidence']['maxItems']==0
-        assert 'status' not in schema['properties'] and 'status' not in schema['required']
+        assert schema['anyOf']
+        assert all(branch['properties']['evidence']['maxItems']==0 for branch in schema['anyOf'])
+        assert all('status' in branch['required'] and 'basis' in branch['required'] for branch in schema['anyOf'])
     for branch in schema.get('anyOf',[schema]):assert branch['properties']['metrics']['maxItems']==0
     for field in ('estimated_savings','currency'):
         assert schema['$defs']['Recommendation']['properties'][field]=={'type':'null'}

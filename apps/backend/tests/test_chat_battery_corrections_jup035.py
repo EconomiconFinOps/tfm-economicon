@@ -56,8 +56,8 @@ def test_backend_validates_subscription_scope_without_changing_public_schema():
     allowed_branches = provider_response_schema(financial_metrics_allowed=True)['anyOf']
     assert any(b['properties']['answer'].get('type') == 'array' for b in allowed_branches)
     for branch in allowed_branches:
-        narrative = branch['properties']['answer'].get('type') == 'array'
-        assert branch['properties']['metrics']['maxItems'] == (20 if narrative else 0)
+        authorized = branch['properties']['basis']['const'] == 'authorized_evidence'
+        assert branch['properties']['metrics']['maxItems'] == (20 if authorized else 0)
     assert response_schema()[0]['properties']['metrics']['maxItems'] == 20
     from app.schemas.chat import _validate
     metric = {'name': 'total_cost', 'value': '0.00', 'unit': 'EUR', 'evidence_ids': ['cost:verified']}
@@ -68,7 +68,7 @@ def test_backend_validates_subscription_scope_without_changing_public_schema():
         _validate([], branch['properties']['metrics'], restricted)
     allowed = provider_response_schema(financial_metrics_allowed=True)
     for branch in allowed['anyOf']:
-        if branch['properties']['answer'].get('type') == 'array':
+        if branch['properties']['basis']['const'] == 'authorized_evidence':
             _validate([metric], branch['properties']['metrics'], allowed)
         else:
             with pytest.raises(ValueError):
@@ -94,6 +94,7 @@ def test_private_schema_requires_actionable_evidence_and_preserves_base(financia
     candidate['scope'].pop('period')
     candidate['scope'].pop('subscription_ids')
     candidate['answer']=[{'text':candidate['answer']}]
+    candidate['basis']='authorized_evidence'
     for field in ('assumptions','limitations','next_actions'):
         candidate[field]=[[{'text':item}] for item in candidate[field]]
     for status in ('ok', 'partial', 'no_data', 'insufficient_data', 'unsupported', 'refused', 'error'):
@@ -105,28 +106,32 @@ def test_private_schema_requires_actionable_evidence_and_preserves_base(financia
         _validate(candidate, schema, schema)
         candidate['evidence'] = []
     neutral = copy.deepcopy(candidate)
-    neutral.pop('status')
-    neutral['answer'] = {'request': {'reason': 'clarification'}}
+    neutral['status']='insufficient_data'
+    neutral['basis']='clarification'
+    neutral['answer'] = [{'text':'Necesito concretar el alcance.'}]
     for field in ('metrics', 'recommendations', 'evidence', 'assumptions', 'limitations', 'next_actions'):
         neutral[field] = []
+    neutral['next_actions']=[[{'text':'Indica el período y el ámbito de la consulta.'}]]
     _validate(neutral, schema, schema)
     # Complete branches preserve all constraints without duplicate root
     # intersections. References remain rooted in the original $defs.
-    narratives = [branch for branch in schema['anyOf'] if branch['properties']['answer'].get('type') == 'array']
-    requests = [branch for branch in schema['anyOf'] if 'request' in branch['properties']['answer'].get('properties', {})]
-    assert len(narratives) == 2 and len(requests) == 1
-    assert len(schema['anyOf']) == len(narratives) + len(requests)
+    narratives = [branch for branch in schema['anyOf'] if branch['properties']['basis']['const']=='authorized_evidence']
+    unverified = [branch for branch in schema['anyOf'] if branch not in narratives]
+    assert len(narratives) == 2
+    assert {branch['properties']['basis']['const'] for branch in unverified} == {
+        'user_scenario','missing_data','clarification','refusal','greeting'}
+    assert all(branch['properties']['answer']['type']=='array' for branch in schema['anyOf'])
     assert 'properties' not in schema and 'required' not in schema
     public,_=response_schema()
     for branch in schema['anyOf']:
         narrative = branch in narratives
-        expected_required = public['required'] if narrative else [key for key in public['required'] if key != 'status']
-        assert branch['required'] == expected_required
+        assert set(branch['required']) == set(public['required']) | {'basis'}
         assert branch['additionalProperties'] is False
         assert branch['properties']['metrics']['maxItems'] == (20 if financial_allowed and narrative else 0)
         valid = copy.deepcopy(candidate if narrative else neutral)
+        valid['basis']=branch['properties']['basis']['const']
+        valid['status'] = branch['properties']['status']['enum'][0]
         if narrative:
-            valid['status'] = branch['properties']['status']['enum'][0]
             valid['evidence'] = [{'id': 'manual:synthetic', 'kind': 'corpus',
                 'title': 'Synthetic manual', 'source': 'synthetic'}]
         _validate(valid, branch, schema)

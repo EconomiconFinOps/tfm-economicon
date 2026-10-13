@@ -304,3 +304,41 @@ investigación por servicio/recurso, sin afirmar una causa. La verificación
 mantiene el límite12 y no inventa operaciones para mostrar cantidades originales.
 Pruebas offline verifican esquema, controles, streaming y persistencia; no
 sustituyen una nueva evaluación semántica del banco original.
+
+### Explicación unificada y procedencia privada v3 (13/10/2026)
+
+Sustituye los objetos generativos request/scenario de v2. La focal25 original
+obtuvo3 PASS/6 FAIL semánticos pese a9 operaciones completadas y JSONB correcto:
+las solicitudes prefabricadas siguieron omitiendo respuestas disponibles. La
+inspección SQL confirmó contexto y cantidades de001 completos; no se conservó
+el payload upstream exacto ni se atribuye causalidad estadística al esquema.
+
+Toda respuesta explicativa usa los mismos segmentos de texto/cantidad/expresión
+con basis privado: authorized_evidence, user_scenario, missing_data,
+clarification, refusal o greeting. authorized_evidence exige fuentes seleccionadas
+verificadas, incluidas las financieras cuando el servidor las autoriza. Las otras
+procedencias prohíben operandos documentales, evidencia, métricas y recomendaciones;
+missing_data/clarification/refusal exigen un próximo paso. No confundir dominio
+ajeno, ejecución no habilitada y falta de datos de coste. La respuesta sigue siendo
+redactada y debe explicar la carencia concreta, no seleccionar una frase cerrada.
+
+El origen user_scenario recibe un prefijo hipotético del servidor. Conservar sus
+etiquetas, ámbito y período no convierte una inferencia en hecho documental. El
+prefijo y basis no garantizan entailment ni evitan todas las omisiones: corresponde
+al banco real comprobar contenido, pertinencia y completitud. Las divisas se
+pueden mostrar por separado sin operaciones inventadas; una suma incompatible
+sigue sin producir un número. La petición de fecha/tipo/destino en prosa necesita
+evaluación semántica, no se acredita con una prueba del renderer.
+
+basis se ofrece antes de answer para emitir segmentos incrementalmente. Si llega
+después, el parser retiene el texto hasta conocerlo; ambos órdenes producen el
+mismo prefijo una sola vez, SSE, final y JSONB. basis se retira antes del contrato
+público1.0. Los terminales booleanos/clasificados y sus controles no se sustituyen.
+Historial antiguo ya persistido como texto público continúa legible sin migración;
+objetos privados antiguos no son nuevas rutas generativas. HMAC/bundle impide
+reinterpretar una operación pendiente con recursos de otra versión.
+
+Se mantienen12 evaluaciones únicas, profundidad, bytes,4000 caracteres incluido
+prefijo,8KiB por delta,3200tokens,una recuperación y una generación. No se añade
+inferencia ni autoridad financiera. Pruebas de ambos órdenes, Unicode fragmentado,
+fuentes/operaciones ajenas y paridad preceden a aceptación real todavía pendiente.

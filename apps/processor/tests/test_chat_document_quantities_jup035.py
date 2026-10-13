@@ -73,7 +73,7 @@ def test_documentary_expression_stream_equals_final_projection(width):
 def test_documentary_operand_requires_its_source_in_final_selected_evidence(evidence):
     from app.core.chat_segments import render_response
     catalog=context_quantities(context())
-    value={'answer':[{'expression':{'operation':'sum',
+    value={'basis':'authorized_evidence','answer':[{'expression':{'operation':'sum',
         'left':{'quantity':'document:corpus:experiment:1:17 %'},
         'right':{'quantity':'document:corpus:experiment:1:17 %'}}}],
         'assumptions':[],'limitations':[],'next_actions':[],'evidence':evidence}

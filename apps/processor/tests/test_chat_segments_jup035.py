@@ -36,13 +36,14 @@ def test_duplicate_segment_keys_and_surrogate_rejected():
 def test_public_lengths_and_no_calculation_branch():
     from app.agents.schemas import chat_provider_schema
     schema=chat_provider_schema(authorized_evidence=[],calculations=[])
-    assert set(schema['properties']['answer']['properties'])=={'request'}
+    assert all(branch['properties']['answer']['type']=='array' for branch in schema['anyOf'])
+    assert all('basis' in branch['required'] for branch in schema['anyOf'])
     source={'id':'s','kind':'corpus','title':'Manual','source':'manual','content':'Exact source.'}
     backed=chat_provider_schema(authorized_evidence=[source],calculations=[])
     narrative=[b for b in backed['anyOf'] if b['properties']['answer'].get('type')=='array']
     assert narrative and all(set(b['properties']['answer']['items']['properties'])=={'text'} for b in narrative)
     with pytest.raises(ValueError):render_segments([{'calculation_id':'0'}],[])
-    value={'answer':[{'text':'ok'}], 'assumptions':[[{'text':'a'*501}]],'limitations':[],'next_actions':[]}
+    value={'basis':'user_scenario','status':'insufficient_data','evidence':[],'metrics':[],'recommendations':[],'answer':[{'text':'ok'}], 'assumptions':[[{'text':'a'*501}]],'limitations':[],'next_actions':[]}
     with pytest.raises(ValueError):render_response(value,[])
 
 def test_quotes_are_exact_nonoverlapping_source_windows():
@@ -94,3 +95,34 @@ def test_boolean_terminal_stream_matches_final_and_cannot_append_prose(width):
     with pytest.raises(ValueError):render_response(bad,[],quantities=q)
     duplicate=raw.replace('"boolean":','"boolean": {}, "boolean":',1)
     with pytest.raises(ValueError):SegmentAnswerJSON([],quantities=q).feed(duplicate)
+
+
+@pytest.mark.parametrize('width',[1,7,8192])
+@pytest.mark.parametrize('basis_first',[True,False])
+@pytest.mark.parametrize('escaped',[True,False])
+def test_basis_order_unicode_stream_matches_projected_public_answer(width,basis_first,escaped):
+    from app.core.chat_expressions import quantities
+    from app.core.chat_response_modes import USER_PREFIX
+    catalog=quantities('Scope sandbox-z. Compute 73 EUR, Network 20 EUR.')
+    value={'status':'insufficient_data','answer':[{'text':'  Sandbox-z 😀 Compute supera Network. '},
+        {'expression':{'operation':'difference','current':{'quantity':'73 EUR'},'baseline':{'quantity':'20 EUR'}}}],
+        'evidence':[],'metrics':[],'recommendations':[],'assumptions':[],'limitations':[],'next_actions':[]}
+    value=({'basis':'user_scenario',**value} if basis_first else {**value,'basis':'user_scenario'})
+    raw=json.dumps(value,ensure_ascii=escaped)
+    parser=SegmentAnswerJSON([],quantities=catalog)
+    streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
+    assert streamed==parser.finish()==render_response(value,[],quantities=catalog)['answer']
+    assert streamed.count(USER_PREFIX)==1
+    assert 'basis' not in render_response(value,[],quantities=catalog)
+
+
+def test_basis_first_streams_before_json_finishes_and_basis_last_defers():
+    first=SegmentAnswerJSON([])
+    assert first.feed('{"basis":"user_scenario","answer":[{"text":"Hola"}]')
+    first.feed('}');assert first.finish().endswith('Hola')
+    last=SegmentAnswerJSON([])
+    assert last.feed('{"answer":[{"text":"Hola"}],')==''
+    assert last.feed('"basis":"user_scenario"}').endswith('Hola')
+    assert last.finish()==first.finish()
+    with pytest.raises(ValueError):SegmentAnswerJSON([]).feed('{"basis":"foreign","answer":[]}')
+    with pytest.raises(ValueError):SegmentAnswerJSON([]).feed('{"basis":"greeting","basis":"user_scenario"}')

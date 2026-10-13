@@ -28,8 +28,10 @@ def supported_provider():
 
 def request_provider():
     value=_provider(ANSWER)
-    value.pop('status')
-    value['answer']={'request':{'reason':'missing_documentation','missing_requirement':'La regla de reparto aplicable.'}}
+    value['basis']='missing_data'
+    value['status']='insufficient_data'
+    value['answer']=[{'text':'Necesito contrastar la regla de reparto aplicable.'}]
+    value['next_actions']=[[{'text':'Aporta el criterio de reparto aplicable.'}]]
     value['limitations']=[]
     return value
 
@@ -37,6 +39,7 @@ def request_provider():
 def _provider(value):
     import copy
     value=copy.deepcopy(value)
+    value['basis']='authorized_evidence'
     value['scope'].pop('period',None)
     value['scope'].pop('subscription_ids',None)
     import re

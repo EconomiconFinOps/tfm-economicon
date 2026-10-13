@@ -5,7 +5,7 @@ from app.core.chat_calculations import render_text
 from app.core.chat_rules import required_classification
 from app.core.chat_boolean_rules import boolean_definition, render_boolean
 from app.core.chat_expressions import ExpressionRenderer, expression_definitions
-from app.core.chat_response_modes import bind_modes, mode, render_mode, REQUESTS
+from app.core.chat_response_modes import bind_modes, response_prefix, BASIS_STATUSES
 
 class ServerRenderedResponse(dict):
     """In-process provenance, never a JSON flag accepted from a provider."""
@@ -159,7 +159,6 @@ def bind_segments(schema, records=None, quantities=None):
 
 
 def render_classified_answer(value,expressions):
-    if mode(value):return render_mode(value,expressions)
     if isinstance(value,dict) and set(value)=={'boolean'}:
         if expressions is None:raise ValueError('Boolean rule not grounded.')
         from decimal import localcontext
@@ -233,20 +232,24 @@ def render_response(value, records, *, quantities=None):
     if not isinstance(value,dict) or 'answer' not in value:
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
-    response_mode=mode(value['answer'])
-    classified=isinstance(value['answer'],dict) and response_mode is None
+    basis=value.get('basis')
+    classified=isinstance(value['answer'],dict)
     boolean=classified and set(value['answer'])=={'boolean'}
     if getattr(quantities,'boolean_rules',()) and getattr(quantities,'boolean_requested',False) and not boolean:
         raise ValueError('Explicit boolean rule requires typed answer.')
-    if response_mode:
-        if any(value.get(field)!=[] for field in ('evidence','metrics','recommendations','assumptions','limitations','next_actions')):
-            raise ValueError('Invalid neutral auxiliary fields.')
-        if response_mode=='request' and 'status' in value:
-            raise ValueError('Neutral request status is server-owned.')
-        if response_mode=='scenario' and value.get('status')!='insufficient_data':
-            raise ValueError('User scenario status requires no financial authority.')
-    elif not classified and value.get('evidence')==[] and not required_classification(quantities):
-        raise ValueError('Narrative requires selected evidence.')
+    if classified:
+        if 'basis' in value:raise ValueError('Terminal response cannot override basis.')
+    elif not required_classification(quantities):
+        response_prefix(basis)
+        if basis=='authorized_evidence':
+            if not value.get('evidence'):raise ValueError('Narrative requires selected evidence.')
+        else:
+            if basis not in BASIS_STATUSES:raise ValueError('Invalid response basis.')
+            if value.get('status') not in BASIS_STATUSES[basis]:raise ValueError('Response basis status mismatch.')
+            if any(value.get(field)!=[] for field in ('evidence','metrics','recommendations')):
+                raise ValueError('Response basis cannot grant authority.')
+            if basis in ('missing_data','clarification','refusal') and not value.get('next_actions'):
+                raise ValueError('Response basis requires useful next action.')
 
     if required_classification(quantities) and not classified:
         if value['answer'] not in [[{'text':note}] for note in CLASSIFICATION_ABSTENTIONS]:
@@ -272,10 +275,12 @@ def render_response(value, records, *, quantities=None):
                     not isinstance(item[0],dict) or set(item[0])!={'text'}):
                 raise ValueError('Invalid short prose item.')
         result[field]=[render_segments(item,[],limit=500,expressions=None if classified else expressions) for item in value[field]]
-    if response_mode=='request':
-        status,_,action=REQUESTS[value['answer']['request']['reason']]
-        result['status']=status
-        result['next_actions']=[action]
+    result.pop('basis',None)
+    if not classified:
+        result['answer']=response_prefix(basis)+result['answer']
+        if len(result['answer'])>4000:raise ValueError('Rendered text limit.')
+        if basis in BASIS_STATUSES and expressions is not None and expressions.documentary_sources:
+            raise ValueError('Response basis contains documentary operands.')
     if expressions is not None:
         for recommendation in value.get('recommendations',[]):
             if isinstance(recommendation,dict):

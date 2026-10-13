@@ -27,7 +27,7 @@ def test_explicit_recommendation_evidence_projection_keeps_atomic_history_and_au
     selected['support_quote']=source['content']
     value=copy.deepcopy(ANSWER)
     value['scope'].pop('period');value['scope'].pop('subscription_ids')
-    value.update(status='ok',answer=[{'text':'Revisar la demanda observada.'}],limitations=[],
+    value.update(basis='authorized_evidence',status='ok',answer=[{'text':'Revisar la demanda observada.'}],limitations=[],
         evidence=[{key:intro[key] for key in ('id','kind','title','source')}|{'support_quote':intro['content']}],
         recommendations=[{'category':'investigation','action':'Revisar la demanda.',
             'rationale':'La política exige conocer la demanda antes del compromiso.',
@@ -162,16 +162,25 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
                         'section':'Changes','page':None} for source in authorized],
                     'screen_context':payload['screen_context']}
             monkeypatch.setattr(api[0].state,'chat_context_builder',context_builder)
-    raw = json.dumps({'answer':segments},ensure_ascii=True)
-    result = copy.deepcopy(ANSWER)
-    result['answer'] = render_classified_answer(segments,ExpressionRenderer(catalog)) if isinstance(segments,dict) else render_segments(segments, [], expressions=ExpressionRenderer(catalog))
-    if classification=='boolean':result['status']='insufficient_data'
-    if classification=='boolean-corpus':result['status']='ok'
-    if classification in ('scenario','scenario-zero','scenario-explained'):result['status']='insufficient_data'
-    if classification in ('request','request-specific'):result.pop('status')
-    if isinstance(segments,dict):
-        result=render_response({**result,'answer':segments,'evidence':[],
-            'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[]},[],quantities=catalog)
+    basis=None;actions=[]
+    if isinstance(segments,dict) and 'scenario' in segments:
+        scenario=segments['scenario']
+        segments=scenario.get('segments',[*[{'quantity':key} for key in scenario.get('quantities',[])],
+            *[{'expression':node} for node in scenario.get('calculations',[])]])
+    if classification in ('request','request-specific'):
+        basis='missing_data'
+        segments=[{'text':'Necesito contrastar la fuente de costes del ámbito sandbox-z. 😀'}]
+        actions=[[{'text':'Aporta la fuente y el período aplicables.'}]]
+    elif isinstance(segments,list):basis='user_scenario'
+    raw = json.dumps(({'basis':basis} if basis else {})|{'answer':segments},ensure_ascii=True)
+    private_result={**copy.deepcopy(ANSWER),'answer':segments,'evidence':[],
+        'assumptions':[],'limitations':[],'next_actions':actions,'recommendations':[],'metrics':[]}
+    if basis:
+        private_result['basis']=basis
+        private_result['status']='insufficient_data'
+    if classification=='boolean':private_result['status']='insufficient_data'
+    if classification=='boolean-corpus':private_result['status']='ok'
+    result=render_response(private_result,[],quantities=catalog)
     async def stream(claim):
         renderer = module.SegmentAnswerJSON([],quantities=catalog)
         for char in raw:

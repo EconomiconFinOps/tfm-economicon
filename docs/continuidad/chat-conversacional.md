@@ -1,4 +1,32 @@
-## Corte vigente: candidato24 y corrección25 — 13/10/2026
+## Corte vigente: focal25 terminada, sin aceptación — 13/10/2026
+
+Publicado/runtime `51671932dce727005377f42695a9423d263ef718`, hashes de imágenes
+85 backend/75 processor/112 frontend y bundle25 verificados. Focal original de
+nueve casos, sesión25340 exit0:9 completed,1intento/caso; semántica3 PASS
+(023/025/026),6 FAIL (001/003/008/019/022/028). Las rutas neutrales siguen
+omitiendo contenido disponible.001 conserva input SQL completo y catálogo
+600/250/150EUR; el esquema sí ofrece scenario.segments y el bundle es25.
+No se conserva el payload final upstream: el recibo no afirma haberlo recuperado.
+
+Persistencia real CockroachDB JSONB9/9PASS por lectura SQL de esas conversaciones,
+2mensajes/caso y stream=resultado=contenido/metadata guardados. Recibos externos
+`expression25-focused.json`, `expression25-input-proof.json` y
+`expression25-sql-verify.json`. Gasto asentado0.850350162USD de2USD. No full28 de25
+ni nueva inferencia tras el mapa. CI25 PR38444339106 PASS. Delta26 aprobado
+técnicamente en curso: explicación segmentada unificada con procedencia privada;
+no objetos generativos request/scenario. ADR y OpenSpec conservan límites y
+aceptación pendiente. Padre verificó24 combinaciones de streaming y paridad en
+cuatro contextos; bundle293cf2502d25eea221bacf775f9340caf181d0945adab4dbca6c6d7c297decd4.
+Regresiones cerradas:425 backend PASS; processor417 casos con407 PASS iniciales
+y10 fixtures de consumidores adaptados, tres módulos revalidados62/62 PASS.
+OpenSpec69 PASS; nuevos modos/divisas25 PASS. Logs externos expression26-allback,
+-allproc, -rest y-openspec conservan resultados anteriores y correcciones.
+Resumen/capacidad de resumen y suites nativas no se repitieron en esta selección;
+rutas de resumen y SQL/vector de producto no cambiaron. La integración SQLite
+usa parser real y compara SSE/final/historial; JSONB real26 y semántica pendientes.
+No hubo nueva llamada pagada.
+
+## Antecedente: candidato24 y corrección25 — 13/10/2026
 
 Publicado y probado `794ab1735d367746ace4a15a462642756a45876a`; CI PR
 `38440203902` PASS (la anterior fue cancelada por concurrencia, no por producto).

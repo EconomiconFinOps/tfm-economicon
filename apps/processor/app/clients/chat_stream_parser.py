@@ -132,6 +132,7 @@ class SegmentAnswerJSON:
         self.segment=None;self.segments=[];self.pending=[]
         self.text='';self.closed=False;self.trailing='';self.rendered_size=0
         self.classified=None
+        self.basis=None;self.basis_raw=None;self.array_answer=False;self.deferred=''
 
     def _flush(self):
         from app.core.chat_segments import render_segment
@@ -145,6 +146,18 @@ class SegmentAnswerJSON:
         output=[]
         for char in fragment:
             lex=self.lexer
+            if not lex.string and lex.depth==1 and lex.phase=='value' and lex.key=='basis' and char=='"':
+                self.basis_raw=[]
+            if self.basis_raw is not None:
+                self.basis_raw.append(char);lex.feed(char)
+                if len(self.basis_raw)>128:raise ValueError('Invalid response basis.')
+                if not lex.string:
+                    from app.core.chat_response_modes import response_prefix
+                    self.basis=complete_json(''.join(self.basis_raw));self.basis_raw=None
+                    response_prefix(self.basis)
+                continue
+            if not lex.string and lex.depth==1 and lex.key=='answer' and char=='[':
+                self.array_answer=True
             if not lex.string and lex.depth==1 and lex.key=='answer' and char=='{':
                 self.classified=[]
             if self.classified is not None:
@@ -176,15 +189,25 @@ class SegmentAnswerJSON:
                 output.append(self._flush());self.closed=True
         # Match the existing public strip_whitespace contract across chunks,
         # retaining internal spaces and withholding only a possible final tail.
-        result=self.trailing+''.join(output)
-        if not self.text:result=result.lstrip()
+        result=self.deferred+''.join(output)
+        if self.array_answer and self.basis is None and self.lexer.depth>0:
+            self.deferred=result
+            return ''
+        self.deferred=''
+        result=self.trailing+result
+        if not self.text:
+            result=result.lstrip()
+            if result:
+                from app.core.chat_response_modes import response_prefix
+                result=(response_prefix(self.basis) if self.array_answer else '')+result
         emitted=result.rstrip()
         self.trailing=result[len(emitted):]
         result=emitted;self.text+=result
+        if len(self.text)>4000:raise ValueError('Rendered text limit.')
         return result
 
     def finish(self):
-        if not self.closed or self.segment is not None or self.pending or self.classified is not None:
+        if not self.closed or self.segment is not None or self.pending or self.classified is not None or self.basis_raw is not None or self.deferred:
             raise ValueError('Incomplete segmented answer.')
         if not self.text:raise ValueError('Empty rendered text.')
         return self.text

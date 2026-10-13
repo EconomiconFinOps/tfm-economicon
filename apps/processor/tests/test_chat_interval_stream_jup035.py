@@ -225,7 +225,8 @@ def test_additional_documentary_operand_adds_only_its_authenticated_source():
 def test_observed_quantity_segments_preserve_two_currencies_without_operations(width):
     context={'messages':[{'content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Importes: 100 EUR y 100 USD.'})}]}
     catalog=context_quantities(context)
-    value={'answer':{'scenario':{'quantities':['100 EUR','100 USD'],'calculations':[]}},'status':'insufficient_data',
+    value={'basis':'user_scenario','answer':[{'quantity':'100 EUR'},{'quantity':'100 USD'},
+        {'text':'Para convertirlos hace falta moneda de destino, tipo y fecha.'}],'status':'insufficient_data',
         'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[],'evidence':[]}
     raw=json.dumps(value,ensure_ascii=True);parser=SegmentAnswerJSON([],quantities=catalog)
     streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
@@ -235,14 +236,14 @@ def test_observed_quantity_segments_preserve_two_currencies_without_operations(w
     assert 'moneda de destino' in streamed and '200' not in streamed
     assert rendered['evidence']==[]
     with pytest.raises(ValueError,match='Unknown source quantity'):
-        render_response({**value,'answer':{'scenario':{'quantities':['200 EUR'],'calculations':[]}}},[],quantities=catalog)
+        render_response({**value,'answer':[{'quantity':'200 EUR'}]},[],quantities=catalog)
 
 
 def test_documentary_quantity_display_requires_citation_and_cannot_gain_server_marker():
     from app.core.chat_segments import ServerRenderedResponse
     context,catalog,_=fixture()
     key=next(key for key in catalog if key.startswith('document:'))
-    value={'answer':[{'quantity':key}],'assumptions':[],'limitations':[],
+    value={'basis':'authorized_evidence','answer':[{'quantity':key}],'assumptions':[],'limitations':[],
         'next_actions':[],'recommendations':[],'metrics':[],'evidence':[]}
     with pytest.raises(ValueError,match='Narrative requires selected evidence'):
         render_response(value,[],quantities=catalog)
