@@ -161,3 +161,24 @@ operativa hasta que el runner persista reservas y vincule snapshots verificados.
 Pendiente adaptador contable, persistencia/recuperación, runner, procedencia y
 runtime aislado; N3/N5 siguen NOT_RUN. Ningún gasto nuevo ni despliegue. El último
 turno aporta implementación y prueba; no es espera ni bloqueo del objetivo.
+
+
+### Reservas duraderas y recuperación — 14/10/2026
+
+`tools/chat-eval-ledger.py` añade SQLite fuera del checkout, transacciones
+BEGIN IMMEDIATE y synchronous FULL. Guarda reserva y request_id únicos por
+plan/muestra, vincula conversación y confirma DISPATCHING antes del callback de
+envío. Timeout/caída no liberan dinero ni habilitan un segundo POST. Un handle
+recuperado por lectura se registra sin permitir cambio de operation_id.
+La contabilidad de todas las campañas debe compartir el mismo ledger.
+
+Cinco pruebas específicas PASS: reinicio, límite compartido entre planes,
+persistencia anterior al envío, timeout sin reenvío, identidad y competencia
+concurrente por saldo. Primera ejecución detectó conexiones SQLite sin cerrar
+(WinError32 al limpiar); corregido con cierre explícito en finally. Conjunto
+actual de herramientas23PASS y scorer16PASS. Sin llamadas externas, gasto nuevo0.
+
+No hay todavía liberación/reconciliación automática de reservas: sólo se admite
+cuando la contabilidad real pruebe el coste. Persistir snapshots declarados no
+los autentica. El runner y el adaptador contable siguen pendientes; NO ejecutar
+N3 usando sólo este módulo o datos históricos. Objetivo activo.

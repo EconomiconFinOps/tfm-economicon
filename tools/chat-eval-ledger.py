@@ -1,0 +1,97 @@
+"""Durable admission and at-most-once dispatch for the local evaluation runner.
+
+All campaigns in the authorized spend scope MUST share this database. Recording
+DISPATCHING precedes the network call: a crash requires read-only reconciliation,
+never an automatic POST retry. Provider reconciliation is deliberately separate.
+"""
+import importlib.util
+import json
+from pathlib import Path
+import sqlite3
+from contextlib import contextmanager
+from uuid import uuid4
+
+spec = importlib.util.spec_from_file_location('budget', Path(__file__).with_name('chat-eval-budget.py'))
+budget = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(budget)
+
+
+class Ledger:
+    def __init__(self, path):
+        self.path = Path(path).resolve()
+        root = Path(__file__).resolve().parents[1]
+        if self.path == root or root in self.path.parents:
+            raise ValueError('Ledger must be outside the checkout')
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        with self.connect() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS attempts ('
+                       'request_id TEXT PRIMARY KEY, plan_hash TEXT NOT NULL, sample_id TEXT NOT NULL, '
+                       'reservation TEXT NOT NULL, state TEXT NOT NULL, conversation_id TEXT, '
+                       'operation_id TEXT, UNIQUE(plan_hash,sample_id))')
+
+    @contextmanager
+    def connect(self):
+        db = sqlite3.connect(self.path, timeout=10)
+        try:
+            db.row_factory = sqlite3.Row
+            db.execute('PRAGMA synchronous=FULL')
+            with db:
+                yield db
+        finally:
+            db.close()
+
+    def reserve(self, plan_hash, sample_id, snapshot, bound, now):
+        if not plan_hash or not sample_id:
+            raise ValueError('Plan and sample identity required')
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            if db.execute('SELECT 1 FROM attempts WHERE plan_hash=? AND sample_id=?',
+                          (plan_hash, sample_id)).fetchone():
+                raise ValueError('Sample already reserved; reconcile existing handle')
+            pending = {r['request_id']: json.loads(r['reservation'])
+                       for r in db.execute('SELECT * FROM attempts')}
+            request_id = str(uuid4())
+            reservation = budget.admit(snapshot, pending, request_id, bound, now)[request_id]
+            db.execute('INSERT INTO attempts VALUES (?,?,?,?,?,?,?)',
+                       (request_id, plan_hash, sample_id, json.dumps(reservation), 'RESERVED', None, None))
+        return request_id
+
+    def attach_conversation(self, request_id, conversation_id):
+        if not conversation_id:
+            raise ValueError('Conversation identity required')
+        with self.connect() as db:
+            count = db.execute('UPDATE attempts SET conversation_id=? WHERE request_id=? '
+                               "AND state='RESERVED' AND conversation_id IS NULL",
+                               (conversation_id, request_id)).rowcount
+            if count != 1:
+                raise ValueError('Conversation already set or request not reserved')
+
+    def dispatch(self, request_id, send):
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT * FROM attempts WHERE request_id=?', (request_id,)).fetchone()
+            if row is None or row['state'] != 'RESERVED' or not row['conversation_id']:
+                raise ValueError('Do not resend: reconcile existing operation')
+            db.execute("UPDATE attempts SET state='DISPATCHING' WHERE request_id=?", (request_id,))
+        # Commit/fsync happens before side effects. Neither exceptions nor missing
+        # response IDs release money or reset dispatch state.
+        operation_id = send(row['conversation_id'], request_id)
+        if not isinstance(operation_id, str) or not operation_id:
+            raise ValueError('Missing operation handle; read-only reconciliation required')
+        self.observe_handle(request_id, operation_id)
+        return operation_id
+
+    def observe_handle(self, request_id, operation_id):
+        if not isinstance(operation_id, str) or not operation_id:
+            raise ValueError('Operation identity required')
+        with self.connect() as db:
+            count = db.execute("UPDATE attempts SET operation_id=?, state='OBSERVING' WHERE request_id=? "
+                               "AND state IN ('DISPATCHING','OBSERVING') "
+                               'AND (operation_id IS NULL OR operation_id=?)',
+                               (operation_id, request_id, operation_id)).rowcount
+            if count != 1:
+                raise ValueError('Operation identity changed or request not dispatched')
+
+    def pending(self):
+        with self.connect() as db:
+            return [dict(row) for row in db.execute('SELECT * FROM attempts ORDER BY rowid')]

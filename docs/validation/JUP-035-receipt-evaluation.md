@@ -152,3 +152,13 @@ Costes auxiliares incluyen embeddings u otros servicios facturables. El runner
 pendiente debe guardar la reserva antes de POST y conservarla ante timeout o
 caída; sólo reconciliación contable prueba el coste final. El módulo no consulta
 proveedores y no convierte una afirmación de snapshot en evidencia autenticada.
+
+
+Registro duradero: `tools/chat-eval-ledger.py` serializa reservas en SQLite con
+BEGIN IMMEDIATE; todas las campañas del límite acumulado usan el mismo fichero.
+Antes del callback de envío confirma DISPATCHING. Tras timeout se recupera la
+operación por lectura usando request_id; nunca se vuelve a enviar automáticamente.
+La reserva permanece mientras el coste sea desconocido. No existe todavía una
+ruta de liquidación contable: no eliminar filas ni abrir otro ledger para eludir
+reservas pendientes. El adaptador de contabilidad debe demostrar cobertura de
+los intentos antes de implementar esa liberación.
