@@ -20,9 +20,14 @@
 - [x] 3.4 Ejecutar la línea base disponible, registrar versiones, commit, resultados, limitaciones y comandos reales por criterio de tarjeta.
 - [x] 3.5 Validar OpenSpec, trazabilidad, pruebas relevantes y limpieza del delta; actualizar metodología y continuidad.
 
-## 4. Verificación pendiente fuera de la línea base offline
+## 4. Preparación para el dashboard de resultados
 
-- [ ] 4.1 Incorporar juicios reales de las personas correspondientes y mantener `not_run` donde falten; no atribuirles pruebas unitarias ni opiniones del agente.
-- [ ] 4.2 Verificar el runtime generativo integrado de JUP-035 y documentar configuración y evidencia de generación antes de reclamar una medición con modelo real.
-- [ ] 4.3 Realizar las tres mediciones finales con idéntica batería/configuración y conservarlas todas, con revisión semántica y limitaciones por ejecución.
-- [ ] 4.4 Obtener revisión y validación independientes de la contribución, vincular la evidencia a la tarjeta por la integración autorizada y archivar el cambio sólo cuando corresponda a su cierre real.
+- [ ] 4.1 Añadir al informe el bloque `run` con los campos de la cabecera de JUP-070 y un identificador único de ejecución, declarando la ausencia de modelo en las ejecuciones con plantilla; conservar los campos actuales y no alterar resultados ni denominadores.
+- [ ] 4.2 Probar que el bloque es obligatorio y válido, que dos ejecuciones se distinguen y que regenerar el informe con el bloque no cambia ningún resultado. Regenerar los informes de plantilla de `docs/evidence/`.
+
+## 5. Verificación pendiente fuera de la línea base offline
+
+- [ ] 5.1 Incorporar juicios reales de las personas correspondientes y mantener `not_run` donde falten; no atribuirles pruebas unitarias ni opiniones del agente.
+- [ ] 5.2 Verificar el runtime generativo integrado de JUP-035 y documentar configuración y evidencia de generación antes de reclamar una medición con modelo real.
+- [ ] 5.3 Realizar las tres mediciones finales con idéntica batería/configuración y conservarlas todas, con revisión semántica y limitaciones por ejecución.
+- [ ] 5.4 Obtener revisión y validación independientes de la contribución, vincular la evidencia a la tarjeta por la integración autorizada y archivar el cambio sólo cuando corresponda a su cierre real.

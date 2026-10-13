@@ -55,6 +55,12 @@ Los resultados versionables excluyen texto de preguntas, respuestas, fragmentos 
 
 Una medición final con modelo requiere tres recogidas independientes con la misma batería y configuración, todas publicadas, con los juicios requeridos. No se elige la mejor. La línea base offline es ejecutable ahora y la herramienta HTTP deja preparado el siguiente paso; ningún resultado de la primera completa el pendiente generativo.
 
+### 7. Informe preparado para un consumidor posterior
+
+Los resultados de las tarjetas de evaluación se mostrarán más adelante en un dashboard común (tarjeta JUP-121). Para no reescribir informes ya publicados, el informe propio incorpora ahora un bloque `run` con los mismos nombres que la cabecera de JUP-070 (`commit`, `date`, `provider`, `alias`, `suite_version`, `suite_sha256`, `generation`) y un identificador único de ejecución. Una ejecución con plantilla declara que no hay modelo en lugar de omitir `provider` y `alias`. Los campos actuales se conservan y no cambia ningún resultado ni denominador.
+
+Quedan fuera, y pasan a JUP-121: aplanar los grupos anidados, decidir cómo se muestran los valores no medidos (`null`) y unificar los formatos de JUP-067, JUP-070, JUP-071 y JUP-078. El informe sigue sin afirmar compatibilidad con el catálogo de JUP-067.
+
 ## Risks / Trade-offs
 
 - La batería es pequeña, sintética y diseñada; no demuestra robustez universal ni del tenant real. Se publican tamaños y casos concretos.

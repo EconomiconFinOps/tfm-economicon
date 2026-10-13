@@ -90,6 +90,19 @@ The report SHALL retain one outcome per planned case from pass, fail, blocked an
 - **WHEN** a group's cases are all blocked or not_run
 - **THEN** that group's success rate is unavailable and its non-evaluated counts remain visible
 
+### Requirement: Report identity aligned with the JUP-070 run header
+
+Each versionable report SHALL carry a unique run identifier and a `run` object with the same field names as the JUP-070 report header (`commit`, `date`, `provider`, `alias`, `suite_version`, `suite_sha256`, `generation`), so a later consumer can compare runs of different suites without suite-specific knowledge. For an offline template run, `provider` and `alias` SHALL state that no model was involved instead of being omitted or left empty. The existing top-level fields SHALL be kept. Adding the header SHALL NOT change any outcome, count or denominator, and the report SHALL NOT claim compatibility with the JUP-067 metric catalogue.
+
+#### Scenario: Two runs of the same suite on the same day
+- **WHEN** two reports are produced from the same suite version on the same date
+- **THEN** their run identifiers differ
+- **AND** each report names its provider and alias, or states that none applies
+
+#### Scenario: Header added without changing results
+- **WHEN** a report is regenerated from the same raw material and judgments with the header present
+- **THEN** every outcome, count and denominator equals the previous report's
+
 ### Requirement: Reproducible evidence with a real-model verification boundary
 
 Evidence SHALL identify the execution date, application commit, suite version and digest, relevant source versions, runtime configuration and evidence level. Final evaluation of a generative system SHALL require three independent collections with the same suite and configuration and the required human judgments; all repetitions SHALL be preserved. Evidence SHALL distinguish technical instrument checks, template or mock results and verified model runs. When JUP-035 generation is not verified, the generative evaluation SHALL remain explicitly pending.
