@@ -8,7 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Evaluación local del chat](chat-evaluacion-local.md) | Fixtures38PASS, backend68PASS, scorer11PASS y253juicios. Cancelación corregida97e8e043:90PASS+4socket+3TLS; N3 pendiente de entorno aislado. | 2026-10-13 |
+| [Evaluación local del chat](chat-evaluacion-local.md) | Fixtures38PASS, backend68PASS, scorer11PASS y253juicios. Cancelación corregida97e8e043:90PASS+4socket+3TLS; Entrega local auditada; planesN3/N5 NOT_RUN por entorno. | 2026-10-13 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |
 | [Interfaz del frontend en español](frontend-espanol.md) | JUP-117: textos de la interfaz en español con glosario y prueba de regresión; recorrido visual de las nueve pantallas en claro, oscuro y móvil. Los errores de la capa de API y los valores de la API se dejan fuera. Mergeado en `develop` el 2026-10-12 (#123) por la excepción temporal. | 2026-10-13 |

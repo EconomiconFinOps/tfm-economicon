@@ -66,3 +66,12 @@ y3PASSprobesTLSrealesloopback. No cambiarprompt/evaluador ni reiterarcampañaLLM
 Informeoffline ampliado; productoya difiere defc0f469 sólo eneste transporte.
 Suitecompleta no repetida; symlinksWindows aúnlimitados. Siguiente:paquete de
 medición reproducible e informe/auditoría deentrega, manteniendo N3/N5NOT_RUN.
+
+
+Entrega local preparada13/10/2026: [auditoría final](../evidence/jup-035-local-delivery-audit.md).
+Commits97e8e043(cancelación) y5dce752e(planesrepetidos). Planes84/140entradas
+NOT_RUN verificadoscontra banco y304hashes. Paquete localincluye parchesseparados,
+juicios, comparaciónhistórica ylimitaciones. Esta sección sustituye pendientes
+de diagnóstico/corrección anteriores: cancelaciónya resuelta en pruebaslocales.
+Sin N3/N5real, sinLinuxsymlink niaceptaciónPR. Siguiente fase requiereentorno
+aislado ycriteriosdeequipo; no sepuede usaruntimecompartido anterior comobase.
