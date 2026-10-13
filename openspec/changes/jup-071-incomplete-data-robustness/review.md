@@ -47,7 +47,7 @@ Revisor independiente, base `bfaf3983`, head `93eb7d47`. Veredicto: changes-requ
 
 | ID | Sev. | Resolución |
 | --- | --- | --- |
-| ADV-1 | HIGH | Corregido: una ruta UNC de recurso administrativo (`\localhost\D$\...`) apuntaba al propio repositorio y `offline` sobrescribía la batería con el crudo. Reproducido en un clon temporal por el revisor. Las rutas de red no se aceptan como salida. |
+| ADV-1 | HIGH | Corregido: una ruta UNC de recurso administrativo (`\\localhost\D$\...`) apuntaba al propio repositorio y `offline` sobrescribía la batería con el crudo. Reproducido en un clon temporal por el revisor. Las rutas de red no se aceptan como salida. |
 | ADV-2 | HIGH | Corregido: `reduced_coverage` y `assessment_complete` no aparecían en el Markdown versionable. El informe indica el número de casos con cobertura reducida, si la evaluación está completa y una columna por caso. |
 | ADV-3 | HIGH | Corregido: los rivales eran solo las etiquetas de las demás cifras y no sus alias, a diferencia de JUP-070, y una respuesta con las cifras cambiadas pasaba. Los rivales son ahora los alias de las otras cifras. |
 | ADV-4 | MEDIUM | Corregido: alias como `*`, `` ` `` o un carácter de ancho cero normalizaban a vacío y casaban con cualquier frase. Se exige que no estén vacíos ni repetidos tras normalizar. |
