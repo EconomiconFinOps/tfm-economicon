@@ -982,3 +982,62 @@ nuevo):
   el cliente: lo cubre el 404 del backend con su mensaje fijo.
 
 **Pendiente del grupo 6:** mutación (6.6), DoD del frontend y QA.
+
+## Grupo 6 — Modo «Explicar una anomalía» del redactor, mutación (tarea 6.6)
+
+**Herramienta.** Stryker por `pnpm dlx` desde `apps/frontend` (`.claude/harness/mutation.md`), con un Vitest
+temporal (`vitest.stryker.config.mts`, borrado al terminar) que solo incluye las pruebas nuevas y las de control
+(se sustituye el `include` en vez de usar `mergeConfig`, que concatena los arrays y volvería a ejecutar toda la
+suite) y análisis por prueba. Acotado a **exactamente el código que añadió la tarea**: el componente nuevo entero
+y solo los bloques añadidos de `MessageComposer.tsx`, `ConversationsPage.tsx` y `contracts.ts`, con los rangos de
+líneas sacados del diff del commit Green. 175 mutantes. Las pruebas del grupo son de integración (montan la
+aplicación con el enrutador) y usan imports estáticos, así que **aquí Stryker sí las ejecuta** (65 pruebas en la
+ejecución inicial), a diferencia de lo ocurrido con el componente del grupo 5.
+
+**Primera pasada** (38 pruebas nuevas + 27 de control): **82.86 %**, 145 muertos, 29 supervivientes y 1 sin
+cobertura. Clasificados uno a uno:
+
+- **Huecos reales (16):**
+  - `linkApplied.current`: la preselección del enlace se aplica **una sola vez**; sin eso, volver a «Elige una
+    anomalía» reimpondría la del enlace.
+  - `if (!episodeId) return`: un envío del formulario forzado sin anomalía elegida no debe salir, aunque el
+    botón esté deshabilitado.
+  - Reinicio de la elección al pasar a propiedad y al apagar el modo (sin él se arrastra una elección vieja).
+  - No volver a proponer la pregunta al apagar el modo con el cuadro vacío; sustituir un texto de solo espacios.
+  - `sendMutation.reset()`: cambiar de modo borra el error anterior.
+  - El marcador del cuadro en el modo de propiedad (texto existente cuya línea se reestructuró).
+  - La guarda `enabled: Boolean(token && tenantId)`: sin token o sin cliente no se pide la lista.
+  - El valor por defecto de `initialEpisodeId` y `onSent?.()`: el redactor funciona sin esas props opcionales.
+  - `onSent` de la página: el resto de parámetros de la dirección se conservan y la navegación es de **reemplazo**.
+  - `isAnomalyEpisodeId`: **mismo hueco que en el grupo 5**; un array `["anomaly-<hex>"]` pasaba el `RegExp.test`
+    porque se convierte a texto.
+- **Equivalentes o no especificados (13), sin remediar** (ver abajo).
+
+**Remediación** por el `tester`, en dos archivos nuevos (los anteriores están commiteados), con `lint` y
+`typecheck` ya verificados y sin `any` ni `eslint-disable`:
+
+- `apps/frontend/src/services/anomalyEpisodeId.mutants.test.ts` (10): acepta el id válido y rechaza el array, el
+  objeto con `toString`, números, `null`, `undefined`, mayúsculas, 63 y 65 hex y el `\n` final.
+- `apps/frontend/tests/anomaly-explanation-conversations.mutants.test.tsx` (19): una prueba o más por cada hueco
+  de arriba, con controles positivos. Para afirmar que algo **no** ocurre usa una espera real de 40 ms
+  (determinista en la práctica, pero tiempo real y no un reloj simulado). Para el mutante de la preselección
+  única fuerza un refetch con datos distintos, porque un nuevo render por sí solo no vuelve a ejecutar el efecto.
+
+**Segunda pasada** (reejecutada por el orquestador el 2026-10-13, 175 mutantes, 67 pruebas incluyendo las nuevas):
+**92.57 %: 162 muertos, 13 supervivientes y 0 sin cobertura.** Son **exactamente los 13** clasificados de antemano
+como equivalentes o no especificados:
+
+1. `queryKey` con otro nombre de la clave de caché: equivalente, solo afecta al nombre interno.
+2. `fieldClass = ""`: equivalente en comportamiento (solo cambia el estilo).
+3. `query.isError || !options` → `&&`: solo difiere si falla un **refetch** teniendo ya datos (se vería la lista
+   anterior en vez del error). Ese caso no está especificado; la spec cubre el fallo de la primera carga.
+4. `if (!(error instanceof ApiError)) return error.message` → `false`: equivalente; un error que no es `ApiError`
+   cae igualmente en el `catch` del `JSON.parse` y devuelve el mismo `message`.
+5. Ocho controles de tipo (`typeof … === "object"`, `!== null`) dentro de `anomalyErrorText`: equivalentes; el
+   `try/catch` absorbe cualquier excepción y el resultado es el mismo mensaje.
+6. `if (event.target.checked)` de la casilla de propiedad → `true`: equivalente; con la propiedad apagada la
+   anomalía ya está apagada, así que el reinicio es redundante.
+
+**Lo que esta mutación no demuestra.** Es una medida de Stryker sobre el código añadido por la tarea, no sobre los
+archivos enteros; las esperas de 40 ms son tiempo real. No hay prueba en navegador real todavía (grupo 8). El
+DoD del frontend y el veredicto de QA del grupo siguen pendientes.

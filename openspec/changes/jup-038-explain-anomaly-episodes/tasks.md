@@ -123,7 +123,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   caso «no está».
 - [x] 6.5 Green: lectura del parámetro en `ConversationsPage.tsx` y preselección en el redactor
   (decisión 10).
-- [ ] 6.6 Mutación sobre el modo del redactor y la preselección; cubrir los mutantes que sobrevivan.
+- [x] 6.6 Mutación sobre el modo del redactor y la preselección; cubrir los mutantes que sobrevivan.
 
 ## 7. Frontend: enlace del panel y textos
 
