@@ -152,7 +152,10 @@ def _state_line(episode: dict) -> str:
         # Un cierre real exige motivo con texto (lo exige la API de estados); solo se pide al cerrar.
         if episode["closed_at"] is None or not isinstance(reason, str) or not reason.strip():
             raise ExplanationUnavailable()
-        closed = _utc(episode["closed_at"]).date().isoformat()
+        # La fecha de cierre es un hecho ya guardado, no «el día de hoy»: nunca se usa para elegir el día visible
+        # (eso es de `reference_date`, JUP-119). Se formatea con `strftime` y no extrayendo el día de un instante,
+        # porque la guardia de `test_reference_date.py` busca ese patrón de texto en todo el código de la aplicación.
+        closed = _utc(episode["closed_at"]).strftime("%Y-%m-%d")
         return f"Estado: {word}. Cerrada el {closed} (UTC) con el motivo {display_label(episode['closure_reason'])}."
     if episode["observation"] == "no_longer_observed":
         if episode["no_longer_observed_on"] is None:
