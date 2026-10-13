@@ -46,7 +46,16 @@ Cálculo del ejemplo del contrato (tarea 1.2): script independiente del backend,
 - Lint (`compileall`, `eslint`), `tsc` y escaneo de secretos: sin hallazgos.
 - Revisión del agente `qa`: `accept`. Detalle en `review.md` del change.
 
-Aún no se ha ejecutado nada contra una base de datos real ni a través de la ruta del asistente: eso llega con los grupos 3 y 4.
+**Grupo 3 — lectura con operandos exactos** (commits `356012c4`, `95dc4bac` y `35cf49c0`, 2026-10-12):
+
+- `Database.fetch_anomaly_episode_snapshot`: una sola sentencia SQL, filtrada por cliente, que devuelve el episodio, los operandos exactos y la marca sintética. 22 pruebas contra CockroachDB v24.1.11 real (13 del Red y 9 de remediación de mutantes), 0 omitidas; el Red las dejó en `13 failed`.
+- Hallazgo: la base guarda los importes con 12 decimales (`NUMERIC(38,12)`), así que los operandos de la evidencia son p. ej. `2800.000000000000`. Decisión de Victor: se conservan tal cual; la corrección de una prueba commiteada fue un bypass puntual del candado, autorizado y registrado en `review.md`.
+- Regresión backend completa: como CI, 1350 pasan, 140 omitidas, 0 fallos; con CockroachDB real, 1469 pasan, 21 omitidas (integraciones externas), 0 fallos.
+- Mutación: 14 mutantes manuales dirigidos al método, 13 muertos y 1 equivalente justificado (`SERIALIZABLE`, que CockroachDB ya usa por defecto). Es una muestra dirigida, no un barrido.
+- Revisión del agente `qa`: `accept`.
+- **Estas pruebas no corren en CI** (`RF-096-004`): solo existe la evidencia de la ejecución local contra un nodo desechable.
+
+Aún no se ha ejecutado nada a través de la ruta del asistente: eso llega con el grupo 4.
 
 Nada más se ha ejecutado. Los resultados de pruebas, mutación, DoD y stack real de los demás grupos se añaden aquí al completarlos.
 

@@ -350,3 +350,47 @@ y no hay comportamiento que probar. Es equivalente.
 **Lo que esta mutación no demuestra.** Es una muestra dirigida de 14 mutantes sobre un método, no un
 barrido con una herramienta. No cubre concurrencia (el nodo es de un solo proceso). La regresión
 completa, el lint y el veredicto de QA del grupo siguen pendientes.
+
+## Grupo 3 — Definition of Done y veredicto de QA
+
+**DoD** (2026-10-12, sobre `35cf49c0`). Como en el grupo 2, `corepack pnpm test` en Windows no es fiable
+(145 fallos ajenos de JUP-047, `RF-105-004`), así que se ejecutó cada control por separado. Este grupo toca
+`database.py`, que usa casi todo el backend, por lo que se hizo además una regresión con la base real:
+
+| Control | Resultado |
+| --- | --- |
+| Regresión backend completa **como CI** (sin base de datos real), Python 3.12.15 | **1350 passed, 140 skipped, 0 failed** (129 s). Respecto a `develop` (1255 y 118): +95 del explicador; las 22 nuevas de este grupo necesitan CockroachDB y se omiten sin él, de ahí 118 + 22 = 140 |
+| Regresión backend completa **con CockroachDB v24.1.11 real** (`jup038-crdb`) | **1469 passed, 21 skipped, 0 failed** (201 s). Las 21 omitidas son integraciones externas (RabbitMQ, pgvector…); 1469 + 21 = 1490 = 1350 + 140 |
+| Lint backend | `python -m compileall -q app` OK |
+| Escaneo de secretos | 490 líneas añadidas desde `a75817fe`, 0 hallazgos |
+
+No se repitieron `eslint` ni `tsc` del frontend: el grupo no cambia ningún archivo del frontend desde el DoD
+del grupo 2 (`git diff --stat` solo muestra `database.py`, dos archivos de pruebas, el contrato, `review.md`
+y `tasks.md`). No se ejecutó un control sobre `develop` con la base real porque no hubo ningún fallo que
+atribuir. Con CockroachDB activado la ejecución incluye las pruebas opt-in de aislamiento, episodios y
+tenants, que CI omite (`RF-096-004`).
+
+**Veredicto del agente `qa`: `accept`.** Reejecutó las 22 pruebas del grupo contra CockroachDB real
+(`22 passed`, 0 omitidas) y comprobó: el cambio de producto es un único bloque aditivo de 30 líneas, una
+sola sentencia, siempre filtrada por cliente y de solo lectura, sin nada más allá de lo que piden las
+pruebas; el producto no cambió entre el Green y el último commit; el oráculo de operandos es independiente
+(SQL directo a la tabla); no hay `skip` ni `xfail`; el diff del bypass del candado es exactamente +8/−2 y no
+debilita la prueba (sigue detectando la pérdida de un decimal significativo); y los supuestos de tipo que el
+QA del grupo 2 anotó para este grupo quedan fijados con pruebas (sin `_order`, `date` puro, `closed_at` con
+zona horaria, `Decimal` de la misma sentencia, `id` estable entre lecturas). No reejecutó las regresiones
+completas: usó las cifras de arriba.
+
+**Observaciones no bloqueantes del QA**, aceptadas:
+
+1. Estas 22 pruebas se omiten en CI (`RF-096-004`): la lectura no tiene red de seguridad automática allí.
+   La ruta del grupo 4 debe llevar sus propias pruebas con un doble en memoria (que sí corren en CI), y el
+   DoD final lo recordará.
+2. La estabilidad del `id` solo se comprueba entre dos lecturas seguidas. No se comprueba que una nueva
+   ejecución de la detección, sin datos nuevos, deje los operandos con el mismo texto. Conviene cubrirlo en
+   la ruta (tarea 4.5, con la base real) porque el `id` se muestra al usuario.
+3. La mutación fue dirigida (14 mutantes manuales), no un barrido con herramienta, y no hay prueba de
+   concurrencia: ya constaba en la sección de mutación.
+
+**Estado del grupo 3:** tareas 3.1 a 3.3 hechas, mutación con un único superviviente equivalente justificado,
+DoD en verde y QA en `accept`. El contenedor `jup038-crdb` sigue en marcha porque el grupo 4 (tarea 4.5) lo
+necesita; se apagará al cerrar ese grupo.
