@@ -130,3 +130,11 @@ Los crudos del 10/10 están fuera de Git en otro equipo y no se han podido volve
 | Pruebas de JUP-070 y de métricas de JUP-067 | 109 y 103 OK |
 | `node --test tools/ci-workflow.test.mjs` | 12 OK |
 | `corepack pnpm openspec:validate`, `jup:check`, `jup:cleanup:check` | 68/68, OK, OK |
+
+## Recogida HTTP contra el chat de `develop` (13/10/2026)
+
+Primera ejecución de `collect` contra un servidor real y no contra dobles: stack local en modo mock con la rama `test/JUP-071-incomplete-data-robustness` (commit `7943b97`), corpus de `tenant-core` con 52 fragmentos y embeddings mock, y `AssistantService` en su versión de plantilla. Es el nivel «plantilla vía HTTP» del diseño: no hay modelo, no hay gasto y no prueba robustez generativa.
+
+Resultado: 29 de 29 casos respondidos, sin fallos de infraestructura, con citas y fragmentos en todos, latencia total entre 737 ms y 1653 ms (mediana 1183 ms). Las 29 respuestas tienen la forma de la plantilla («He encontrado contexto relacionado…»). La puntuación sin juicios es idéntica caso por caso a la de la plantilla offline con recuperación fija: 0 aciertos, 8 fallos y 21 pendientes de juicio. El informe declara `live_unverified` y `model_execution_verified` falso. Se comprobó que la contraseña de la demo no aparece en el crudo, la hoja de revisión, los juicios ni el informe.
+
+Crudos, hoja e informe están fuera de Git. Lo que queda por medir sigue siendo el chat generativo de JUP-035.
