@@ -87,7 +87,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 - [x] 4.7 Mutación sobre la rama de la ruta y el validador (quitar la exclusión, escribir antes de
   explicar, cambiar los códigos, pasar un cliente distinto del de la sesión) y cubrir los mutantes
   que sobrevivan.
-- [ ] 4.8 Ejecutar la suite completa del backend y comprobar que las pruebas de
+- [x] 4.8 Ejecutar la suite completa del backend y comprobar que las pruebas de
   `test_ownership_questions.py` y de la rama documental pasan sin editarlas. Si alguna falla, parar.
 
 ## 5. Frontend: contrato y bloque de evidencia

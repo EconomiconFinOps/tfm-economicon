@@ -55,7 +55,16 @@ Cálculo del ejemplo del contrato (tarea 1.2): script independiente del backend,
 - Revisión del agente `qa`: `accept`.
 - **Estas pruebas no corren en CI** (`RF-096-004`): solo existe la evidencia de la ejecución local contra un nodo desechable.
 
-Aún no se ha ejecutado nada a través de la ruta del asistente: eso llega con el grupo 4.
+**Grupo 4 — ruta del asistente** (commits `f055eed6`, `cd52cc17`, `cef8a152` y `367e96f0`, 2026-10-12):
+
+- `POST /assistant/conversations/{id}/messages` acepta `anomaly_query` y responde con la explicación guardada y su evidencia. Tres archivos de producto, solo inserciones: esquema `AnomalySelection`, el campo con su exclusión frente a `ownership_query` y la rama de la ruta.
+- 92 pruebas nuevas: 83 corren en CI (esquema 45, ruta 27 con SQLite y un doble de la lectura, y 11 de mutantes del esquema) y 9 contra CockroachDB real (recorrido completo por HTTP, solo opt-in). El Red las dejó en `71 failed, 1 passed` y `9 failed`.
+- Regresión backend completa: como CI, 1433 pasan, 149 omitidas, 0 fallos; con CockroachDB real, 1561 pasan, 21 omitidas (integraciones externas), 0 fallos. Ninguna prueba ya existente se editó.
+- Mutación: `mutmut` sobre el esquema (11 mutantes, 9 muertos) y 22 mutantes manuales dirigidos a la ruta y al validador (21 muertos); los tres supervivientes son equivalentes y están justificados en `review.md`. Es una muestra dirigida, no un barrido.
+- Revisión del agente `qa`: `accept`.
+- **Las 9 pruebas de CockroachDB no corren en CI** (`RF-096-004`): solo existe la evidencia de la ejecución local contra un nodo desechable.
+
+Aún no se ha ejecutado nada contra el frontend ni con el stack completo de Compose: eso llega con los grupos 5 a 8.
 
 Nada más se ha ejecutado. Los resultados de pruebas, mutación, DoD y stack real de los demás grupos se añaden aquí al completarlos.
 

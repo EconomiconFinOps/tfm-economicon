@@ -587,3 +587,57 @@ Contra el mutante, los 4 casos de bytes fallan con `DID NOT RAISE`.
 de todo `routes/assistant.py` ni de `schemas/assistant.py`; no hay prueba de concurrencia y el nodo de
 CockroachDB es de un solo proceso. La regresión completa (4.8), el DoD y el veredicto de QA del grupo siguen
 pendientes.
+
+## Grupo 4 — Regresión completa (4.8), Definition of Done y veredicto de QA
+
+**DoD** (2026-10-12, sobre `367e96f0`). Igual que en los grupos 2 y 3, `corepack pnpm test` en Windows no es
+fiable (145 fallos ajenos de JUP-047, `RF-105-004`), así que cada control se ejecutó por separado:
+
+| Control | Resultado |
+| --- | --- |
+| Regresión backend completa **como CI** (sin base real), Python 3.12.15 | **1433 passed, 149 skipped, 0 failed** (132 s). Respecto al cierre del grupo 3 (1350 y 140): +83 pasan (45 + 27 + 11 de CI) y +9 omitidas (las de CockroachDB) |
+| Regresión backend completa **con CockroachDB v24.1.11 real** | **1561 passed, 21 skipped, 0 failed** (198 s). Las 21 omitidas son integraciones externas; 1561 + 21 = 1582 = 1433 + 149 |
+| Pruebas ya existentes (ownership, aislamiento, métricas, episodios) | Pasan **sin editarlas** (`git diff e68e3f6d..HEAD -- apps/backend/tests` solo contiene archivos nuevos) |
+| Lint backend | `python -m compileall -q app` OK |
+| Escaneo de secretos | 1314 líneas añadidas desde `e68e3f6d`, 0 hallazgos |
+
+No se repitieron `eslint` ni `tsc`: el grupo no toca el frontend. No se ejecutó un control sobre `develop`
+porque no hubo ningún fallo que atribuir. Las 9 pruebas de `test_anomaly_explanation_cockroach.py` se omiten en
+CI (`RF-096-004`); la evidencia de esa parte es la ejecución local contra el nodo desechable.
+
+**Veredicto del agente `qa`: `accept`.** Reejecutó las 83 pruebas de CI del grupo (`83 passed`) y las 9 de
+CockroachDB real (`9 passed`), y comprobó: `git diff e68e3f6d..HEAD -- apps/backend` son 1113 inserciones y 0
+borrados; los cuatro archivos de pruebas son nuevos; el producto entra solo en el Green, después de los dos
+Red; no hay `skip` ni `xfail`; el cliente sale siempre de la sesión y el cuerpo no puede traerlo; el 404 de una
+anomalía ajena e inexistente es idéntico byte a byte; la conversación se comprueba antes de leer ninguna
+anomalía; la rama no registra nada; nada se guarda antes de tener la explicación y la métrica sube solo tras
+guardar los dos mensajes; la prueba que pasaba en el Red (401/403) es legítima; y las 9 de CockroachDB solo
+añaden lo que SQLite no puede ver, porque las formas, los códigos, el orden y el aislamiento ya están en las
+27 de CI. No reejecutó las regresiones completas ni la mutación: usó las cifras de arriba.
+
+**Observaciones del QA, aceptadas:**
+
+1. `from pydantic import model_validator` queda en un `import` suelto. Se mantiene así a propósito para no
+   tocar la línea que modifica la PR #121; quien integre puede unificarlos.
+2. **Integración con JUP-035 (PR #120 y #121).** Conflictos previsibles: los `import` y el cuerpo de
+   `send_message`. La rama nueva va antes de la de propiedad y devuelve `AssistantReply` por su cuenta: si
+   JUP-035 cambia `AssistantReply` o los metadatos, hay que revisarla. Si JUP-035 añade otra selección
+   estructurada, `reject_two_structured_queries` debe ampliarse (hoy cubre dos campos). Se medirá con
+   `git merge-tree` en la tarea 8.4.
+3. Los dos `append_message` no son atómicos: si falla el segundo queda un mensaje de usuario sin respuesta. La
+   rama de propiedad existente funciona igual; no es un hallazgo de este grupo. Las PR #120 y #121 lo
+   resuelven con `append_pair`. Se registrará como riesgo conocido (tarea 9.5).
+4. **Para los grupos 5 a 9 (frontend y validación):**
+   - Un `episode_id` inválido da un 422 con cuerpo saneado genérico (`Invalid request value`), sin código
+     `anomaly_…`: el frontend debe validar el formato `anomaly-` + 64 hex en minúscula **antes** de enviar.
+   - Los 404 y 409 llevan `detail` como objeto `{"code": …}`, mientras que el 404 de conversación lleva
+     `detail` como cadena: el cliente HTTP del frontend debe tratar ambas formas.
+   - Evidencia: los operandos son cadenas con 12 decimales exactos (`"2800.000000000000"`) y las horas del
+     episodio llevan `+00:00` donde la API de episodios escribe `Z`. El validador del frontend (tarea 5.1)
+     debe aceptar ambas formas de fecha y no comparar texto contra la API de episodios.
+   - Las cifras de apertura salen redondeadas a 2 decimales en el texto; los exactos solo están en
+     `anomaly_evidence.operands`.
+
+**Estado del grupo 4:** tareas 4.1 a 4.8 hechas; mutación con tres equivalentes justificados; DoD en verde y QA
+en `accept`. **El backend de la tarjeta está completo.** El contenedor `jup038-crdb` se mantiene hasta la
+validación con el stack real (grupo 8) y se apagará al terminar.
