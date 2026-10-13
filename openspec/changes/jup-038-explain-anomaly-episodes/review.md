@@ -313,3 +313,40 @@ Victor: no se tocó la configuración de los hooks y solo se cambiaron dos líne
 columna (`2800.000000000000`) y que los ejemplos usan dos decimales por claridad.
 
 **Pendiente del grupo 3:** mutación sobre el método, DoD y QA.
+
+## Grupo 3 — Lectura con operandos exactos, mutación
+
+**Herramienta.** `mutmut` no se usa aquí: el método es un único bloque de 30 líneas dentro de
+`database.py` (800 líneas), y mutar el archivo entero costaría mucho tiempo y ruido (cientos de
+mutantes de métodos ajenos) para medir 30 líneas. Se usan 14 **mutantes manuales dirigidos** al método,
+cada uno aplicado solo dentro de su texto (así un fragmento repetido en `fetch_anomaly_episode_list` no
+se confunde con el del método nuevo), con un control sin mutar al principio. Corren contra CockroachDB
+real, con el código copiado dentro del contenedor; el arnés edita la copia y nunca el repositorio. Es
+una muestra dirigida, no un barrido: cubre el filtro por cliente, los tres criterios de la marca
+sintética, el `None`, la exactitud de cada operando, la clave `_order` y el número de sentencias.
+
+**Antes de la remediación** (13 pruebas): 12 muertos de 14. Sobrevivían:
+
+1. **`COALESCE(request->'synthetic' = 'true'::JSONB, false)` → `(request->'synthetic' IS NOT NULL)`.**
+   Hueco real: una ingesta completada con `{"synthetic": false}`, `"true"` (cadena), `null`, `1` o sin la
+   clave contaría como sintética y el explicador avisaría de datos de demostración que no lo son.
+2. **Aislamiento SERIALIZABLE** (mutante informativo, se añadió para saber si la prueba de una sola
+   sentencia lo detecta).
+
+**Remediación** por el `tester`, en un archivo nuevo (el anterior está commiteado):
+`apps/backend/tests/test_anomaly_episode_snapshot_mutants.py`, 9 pruebas: siete valores del campo que
+no son el booleano `true` (`false`, `"true"`, `null`, `1`, `"yes"`, otra clave y `{}`), un control positivo
+con `{"synthetic": true}` y un caso mixto con dos ingestas completadas (basta una sintética).
+
+**Después** (22 pruebas, reejecutado por el orquestador el 2026-10-12, CockroachDB real, 0 omitidas):
+
+- Control sin mutar: `22 passed`.
+- **13 de 14 mutantes muertos.** El mutante 1 muere en el caso `{"synthetic": false}`.
+
+**Superviviente justificado.** El aislamiento `SERIALIZABLE` no produce ninguna diferencia observable:
+CockroachDB ejecuta todas las transacciones en `SERIALIZABLE` por defecto, así que el resultado es el mismo
+y no hay comportamiento que probar. Es equivalente.
+
+**Lo que esta mutación no demuestra.** Es una muestra dirigida de 14 mutantes sobre un método, no un
+barrido con una herramienta. No cubre concurrencia (el nodo es de un solo proceso). La regresión
+completa, el lint y el veredicto de QA del grupo siguen pendientes.
