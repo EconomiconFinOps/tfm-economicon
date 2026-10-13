@@ -41,8 +41,8 @@ Alternativas descartadas:
 
 Solo lo que el producto hace hoy y consta en ADR-0020, sin implementación interna (el documento de producto prohíbe exponer endpoints, tablas, colas o despliegue):
 
-1. **Episodio:** una anomalía candidata por cliente, moneda y servicio; se abre el día en que salta la regla y sigue siendo la misma mientras vuelva a saltar dentro de 3 días. Pasados 3 días sin saltar queda «Ya no se observa»; no se cierra sola.
-2. **Lo esperado:** la media diaria de los 7 días anteriores, o la referencia anclada (media de los 7 días previos al inicio) mientras el episodio se sigue. Solo se evalúan días completos: el último día con datos se considera incompleto.
+1. **Episodio:** una anomalía candidata por cliente, moneda y servicio; se abre el día en que salta la regla y sigue siendo la misma mientras vuelva a saltar dentro de 3 días. Si pasan más de 3 días desde la última vez que saltó (al cuarto día sin saltar) queda «Ya no se observa»; no se cierra sola.
+2. **Lo esperado:** la media diaria de los 7 días anteriores, o la referencia anclada (media de los 7 días previos al inicio) mientras el episodio se sigue. Solo se evalúan días completos: el último día con datos se considera incompleto. Por eso hacen falta al menos 9 días con datos antes de la primera evaluación (7 de referencia, el día evaluado y el último).
 3. **Regla:** sin cambios; ambos límites son estrictos, de modo que exactamente 100 al día o exactamente 20 % no activan la regla. Esta frase va junto a la regla, antes del contenido nuevo.
 4. **Severidad:** sobre el impacto acumulado del episodio (suma diaria de lo que supera la referencia), en la moneda del episodio: P1 mayor que 2.000, P2 de 500 a 2.000, P3 menor que 500. Umbrales nominales en EUR y USD, sin conversión; otras monedas no se evalúan. Sigue marcado como umbral interno y calibrable.
 5. **Estados:** `new`, `investigating`, `resolved` y `false_positive`; cerrar exige un motivo y es definitivo. Se quita `acknowledged`.

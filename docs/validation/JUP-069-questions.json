@@ -8,7 +8,7 @@
   "sources": {
     "rules": {
       "path": "docs/assistant-corpus/business-rules/economicon-mvp-rules.md",
-      "sha256": "5288741ec1e48d244e150573a46d5a8a873dcc19028ea0d3a383384fee7b933d"
+      "sha256": "1428ffb34d1b3e0430bd06282449ecb3c8af16cc69623f70cf1c93f110fc594e"
     },
     "finops": {
       "path": "docs/assistant-corpus/finops/azure-finops-mvp.md",
@@ -16,7 +16,7 @@
     },
     "product": {
       "path": "docs/assistant-corpus/product-architecture/economicon-product-context.md",
-      "sha256": "d768cbbccb622a02310fb076387e5a338bb4d569f019e47320ec9b19810c73c9"
+      "sha256": "43fc997746d88fa603df0f994cb2c41cb25bfbb90ead58b1445ac63034c0a377"
     }
   },
   "cases": [

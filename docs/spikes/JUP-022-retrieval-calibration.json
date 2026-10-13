@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "jup": "JUP-022",
-  "generated_at": "2026-10-13T15:09:16.882156+00:00",
+  "generated_at": "2026-10-13T15:34:27.900859+00:00",
   "provider": {
     "name": "litellm",
     "alias": "economicon-embedding",
@@ -10,7 +10,7 @@
   "corpus": {
     "rules": {
       "path": "docs/assistant-corpus/business-rules/economicon-mvp-rules.md",
-      "sha256": "5288741ec1e48d244e150573a46d5a8a873dcc19028ea0d3a383384fee7b933d"
+      "sha256": "1428ffb34d1b3e0430bd06282449ecb3c8af16cc69623f70cf1c93f110fc594e"
     },
     "finops": {
       "path": "docs/assistant-corpus/finops/azure-finops-mvp.md",
@@ -18,7 +18,7 @@
     },
     "product": {
       "path": "docs/assistant-corpus/product-architecture/economicon-product-context.md",
-      "sha256": "d768cbbccb622a02310fb076387e5a338bb4d569f019e47320ec9b19810c73c9"
+      "sha256": "43fc997746d88fa603df0f994cb2c41cb25bfbb90ead58b1445ac63034c0a377"
     },
     "glossary": {
       "path": "docs/assistant-corpus/glossary/glossary.md",
@@ -41,9 +41,9 @@
   "chunking": {
     "size": 500,
     "overlap": 50,
-    "chunks": 62
+    "chunks": 63
   },
-  "planned_calls": 90,
+  "planned_calls": 91,
   "sweep": {
     "top_k": [
       3,
@@ -70,19 +70,19 @@
         "document_hit_rate": 0.95,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.75
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.75,
+        "document_hit_rate": 0.875,
         "empty_rate": 0.0
       },
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 1.0,
+        "budgets": 0.6667,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -91,10 +91,10 @@
       "max_distance": 0.5,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.55,
-        "empty_rate": 0.45,
+        "document_hit_rate": 0.5,
+        "empty_rate": 0.5,
         "section_cases": 20,
-        "section_hit_rate": 0.45
+        "section_hit_rate": 0.4
       },
       "non_answer": {
         "cases": 8,
@@ -103,10 +103,10 @@
       },
       "by_category": {
         "allocation": 1.0,
-        "anomalies": 1.0,
+        "anomalies": 0.3333,
         "budgets": 0.0,
         "costs": 0.25,
-        "recommendations": 0.0,
+        "recommendations": 0.3333,
         "tagging": 1.0
       }
     },
@@ -122,15 +122,15 @@
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.125,
+        "document_hit_rate": 0.25,
         "empty_rate": 0.5
       },
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 0.6667,
+        "budgets": 0.3333,
         "costs": 0.5,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -139,22 +139,22 @@
       "max_distance": 0.6,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.9,
-        "empty_rate": 0.0,
+        "document_hit_rate": 0.85,
+        "empty_rate": 0.05,
         "section_cases": 20,
-        "section_hit_rate": 0.75
+        "section_hit_rate": 0.65
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.75,
+        "document_hit_rate": 0.875,
         "empty_rate": 0.0
       },
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 1.0,
+        "budgets": 0.3333,
         "costs": 0.75,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -166,19 +166,19 @@
         "document_hit_rate": 0.95,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.75
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.75,
+        "document_hit_rate": 0.875,
         "empty_rate": 0.0
       },
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 1.0,
+        "budgets": 0.6667,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -190,19 +190,19 @@
         "document_hit_rate": 0.95,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.75
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.75,
+        "document_hit_rate": 0.875,
         "empty_rate": 0.0
       },
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 1.0,
+        "budgets": 0.6667,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -214,19 +214,19 @@
         "document_hit_rate": 0.95,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.75
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.75,
+        "document_hit_rate": 0.875,
         "empty_rate": 0.0
       },
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 1.0,
+        "budgets": 0.6667,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -235,14 +235,14 @@
       "max_distance": null,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.75,
+        "document_hit_rate": 0.875,
         "empty_rate": 0.0
       },
       "by_category": {
@@ -250,7 +250,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -259,10 +259,10 @@
       "max_distance": 0.5,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.55,
-        "empty_rate": 0.45,
+        "document_hit_rate": 0.5,
+        "empty_rate": 0.5,
         "section_cases": 20,
-        "section_hit_rate": 0.45
+        "section_hit_rate": 0.4
       },
       "non_answer": {
         "cases": 8,
@@ -271,10 +271,10 @@
       },
       "by_category": {
         "allocation": 1.0,
-        "anomalies": 1.0,
+        "anomalies": 0.3333,
         "budgets": 0.0,
         "costs": 0.25,
-        "recommendations": 0.0,
+        "recommendations": 0.3333,
         "tagging": 1.0
       }
     },
@@ -290,15 +290,15 @@
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.125,
+        "document_hit_rate": 0.25,
         "empty_rate": 0.5
       },
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 0.6667,
+        "budgets": 0.3333,
         "costs": 0.5,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -308,21 +308,21 @@
       "answer": {
         "cases": 20,
         "document_hit_rate": 0.9,
-        "empty_rate": 0.0,
+        "empty_rate": 0.05,
         "section_cases": 20,
         "section_hit_rate": 0.75
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.75,
+        "document_hit_rate": 0.875,
         "empty_rate": 0.0
       },
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 1.0,
+        "budgets": 0.6667,
         "costs": 0.75,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -331,14 +331,14 @@
       "max_distance": 0.65,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.75,
+        "document_hit_rate": 0.875,
         "empty_rate": 0.0
       },
       "by_category": {
@@ -346,7 +346,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -355,14 +355,14 @@
       "max_distance": 0.7,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.75,
+        "document_hit_rate": 0.875,
         "empty_rate": 0.0
       },
       "by_category": {
@@ -370,7 +370,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -379,14 +379,14 @@
       "max_distance": 0.75,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.75,
+        "document_hit_rate": 0.875,
         "empty_rate": 0.0
       },
       "by_category": {
@@ -394,7 +394,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -403,10 +403,10 @@
       "max_distance": null,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
@@ -418,7 +418,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -427,10 +427,10 @@
       "max_distance": 0.5,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.55,
-        "empty_rate": 0.45,
+        "document_hit_rate": 0.5,
+        "empty_rate": 0.5,
         "section_cases": 20,
-        "section_hit_rate": 0.45
+        "section_hit_rate": 0.4
       },
       "non_answer": {
         "cases": 8,
@@ -439,10 +439,10 @@
       },
       "by_category": {
         "allocation": 1.0,
-        "anomalies": 1.0,
+        "anomalies": 0.3333,
         "budgets": 0.0,
         "costs": 0.25,
-        "recommendations": 0.0,
+        "recommendations": 0.3333,
         "tagging": 1.0
       }
     },
@@ -458,15 +458,15 @@
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.125,
+        "document_hit_rate": 0.25,
         "empty_rate": 0.5
       },
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 0.6667,
+        "budgets": 0.3333,
         "costs": 0.5,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -476,7 +476,7 @@
       "answer": {
         "cases": 20,
         "document_hit_rate": 0.9,
-        "empty_rate": 0.0,
+        "empty_rate": 0.05,
         "section_cases": 20,
         "section_hit_rate": 0.75
       },
@@ -488,9 +488,9 @@
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 1.0,
+        "budgets": 0.6667,
         "costs": 0.75,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -499,10 +499,10 @@
       "max_distance": 0.65,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
@@ -514,7 +514,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -523,10 +523,10 @@
       "max_distance": 0.7,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
@@ -538,7 +538,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -547,10 +547,10 @@
       "max_distance": 0.75,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
@@ -562,7 +562,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -571,10 +571,10 @@
       "max_distance": null,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
@@ -586,7 +586,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -595,10 +595,10 @@
       "max_distance": 0.5,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.55,
-        "empty_rate": 0.45,
+        "document_hit_rate": 0.5,
+        "empty_rate": 0.5,
         "section_cases": 20,
-        "section_hit_rate": 0.45
+        "section_hit_rate": 0.4
       },
       "non_answer": {
         "cases": 8,
@@ -607,10 +607,10 @@
       },
       "by_category": {
         "allocation": 1.0,
-        "anomalies": 1.0,
+        "anomalies": 0.3333,
         "budgets": 0.0,
         "costs": 0.25,
-        "recommendations": 0.0,
+        "recommendations": 0.3333,
         "tagging": 1.0
       }
     },
@@ -626,15 +626,15 @@
       },
       "non_answer": {
         "cases": 8,
-        "document_hit_rate": 0.125,
+        "document_hit_rate": 0.25,
         "empty_rate": 0.5
       },
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 0.6667,
+        "budgets": 0.3333,
         "costs": 0.5,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -644,7 +644,7 @@
       "answer": {
         "cases": 20,
         "document_hit_rate": 0.9,
-        "empty_rate": 0.0,
+        "empty_rate": 0.05,
         "section_cases": 20,
         "section_hit_rate": 0.75
       },
@@ -656,9 +656,9 @@
       "by_category": {
         "allocation": 1.0,
         "anomalies": 1.0,
-        "budgets": 1.0,
+        "budgets": 0.6667,
         "costs": 0.75,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -667,10 +667,10 @@
       "max_distance": 0.65,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
@@ -682,7 +682,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -691,10 +691,10 @@
       "max_distance": 0.7,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
@@ -706,7 +706,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     },
@@ -715,10 +715,10 @@
       "max_distance": 0.75,
       "answer": {
         "cases": 20,
-        "document_hit_rate": 0.95,
+        "document_hit_rate": 1.0,
         "empty_rate": 0.0,
         "section_cases": 20,
-        "section_hit_rate": 0.8
+        "section_hit_rate": 0.85
       },
       "non_answer": {
         "cases": 8,
@@ -730,7 +730,7 @@
         "anomalies": 1.0,
         "budgets": 1.0,
         "costs": 1.0,
-        "recommendations": 0.6667,
+        "recommendations": 1.0,
         "tagging": 1.0
       }
     }
@@ -748,6 +748,11 @@
           "source": "glossary",
           "section": "Amortized Cost",
           "distance": 0.5172
+        },
+        {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.5685
         },
         {
           "source": "finops",
@@ -778,11 +783,6 @@
           "source": "finops",
           "section": "Conceptos FinOps Basicos",
           "distance": 0.5877
-        },
-        {
-          "source": "rules",
-          "section": "Servicio sin gasto previo",
-          "distance": 0.5883
         }
       ]
     },
@@ -792,13 +792,8 @@
       "category": "costs",
       "coverage": "partial",
       "best_expected_distance": 0.6096,
-      "best_other_distance": 0.5864,
+      "best_other_distance": 0.6101,
       "retrieved": [
-        {
-          "source": "rules",
-          "section": "Severidad",
-          "distance": 0.5864
-        },
         {
           "source": "finops",
           "section": "Cost Management Y Cost Analysis",
@@ -807,7 +802,17 @@
         {
           "source": "rules",
           "section": "Servicio sin gasto previo",
-          "distance": 0.6204
+          "distance": 0.6101
+        },
+        {
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.612
+        },
+        {
+          "source": "rules",
+          "section": "Severidad",
+          "distance": 0.6171
         },
         {
           "source": "glossary",
@@ -828,11 +833,6 @@
           "source": "finops",
           "section": "Cost Management Y Cost Analysis",
           "distance": 0.6688
-        },
-        {
-          "source": "rules",
-          "section": "Anomalias",
-          "distance": 0.6793
         }
       ]
     },
@@ -857,12 +857,12 @@
         {
           "source": "rules",
           "section": "Servicio sin gasto previo",
-          "distance": 0.5885
+          "distance": 0.5828
         },
         {
-          "source": "rules",
-          "section": "Severidad",
-          "distance": 0.5932
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.5941
         },
         {
           "source": "finops",
@@ -875,14 +875,14 @@
           "distance": 0.6252
         },
         {
+          "source": "rules",
+          "section": "Severidad",
+          "distance": 0.6309
+        },
+        {
           "source": "finops",
           "section": "Showback Y Chargeback",
           "distance": 0.6345
-        },
-        {
-          "source": "rules",
-          "section": "Anomalias",
-          "distance": 0.636
         }
       ]
     },
@@ -912,7 +912,7 @@
         {
           "source": "finops",
           "section": "Coste No Asignado Y Coste Compartido",
-          "distance": 0.4512
+          "distance": 0.4513
         },
         {
           "source": "finops",
@@ -927,7 +927,7 @@
         {
           "source": "rules",
           "section": "KPIs Minimos",
-          "distance": 0.4885
+          "distance": 0.4917
         },
         {
           "source": "finops",
@@ -965,14 +965,14 @@
           "distance": 0.5739
         },
         {
-          "source": "rules",
-          "section": "Reglas De Tagging",
-          "distance": 0.6003
-        },
-        {
           "source": "product",
           "section": "Leer el panel",
-          "distance": 0.6097
+          "distance": 0.5979
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.6002
         },
         {
           "source": "finops",
@@ -981,8 +981,8 @@
         },
         {
           "source": "product",
-          "section": "Revisar una anomalia",
-          "distance": 0.6155
+          "section": "Leer el panel",
+          "distance": 0.616
         }
       ]
     },
@@ -1016,11 +1016,6 @@
         },
         {
           "source": "rules",
-          "section": "KPIs Minimos",
-          "distance": 0.5367
-        },
-        {
-          "source": "rules",
           "section": "Reglas De Tagging",
           "distance": 0.5396
         },
@@ -1028,6 +1023,11 @@
           "source": "finops",
           "section": "Showback Y Chargeback",
           "distance": 0.5404
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.5549
         },
         {
           "source": "finops",
@@ -1042,17 +1042,17 @@
       "category": "allocation",
       "coverage": "direct",
       "best_expected_distance": null,
-      "best_other_distance": 0.4413,
+      "best_other_distance": 0.4411,
       "retrieved": [
         {
           "source": "finops",
           "section": "Coste No Asignado Y Coste Compartido",
-          "distance": 0.4413
+          "distance": 0.4411
         },
         {
           "source": "glossary",
           "section": "Allocated Cost",
-          "distance": 0.46
+          "distance": 0.4598
         },
         {
           "source": "rules",
@@ -1062,27 +1062,27 @@
         {
           "source": "rules",
           "section": "Reglas De Tagging",
-          "distance": 0.5099
-        },
-        {
-          "source": "rules",
-          "section": "KPIs Minimos",
-          "distance": 0.5192
+          "distance": 0.5102
         },
         {
           "source": "finops",
           "section": "Conceptos FinOps Basicos",
-          "distance": 0.5299
+          "distance": 0.5302
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.5344
         },
         {
           "source": "finops",
           "section": "Cost Management Y Cost Analysis",
-          "distance": 0.5392
+          "distance": 0.5391
         },
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.5431
+          "distance": 0.543
         }
       ]
     },
@@ -1117,7 +1117,7 @@
         {
           "source": "rules",
           "section": "KPIs Minimos",
-          "distance": 0.4988
+          "distance": 0.5105
         },
         {
           "source": "rules",
@@ -1142,12 +1142,12 @@
       "category": "allocation",
       "coverage": "direct",
       "best_expected_distance": 0.6255,
-      "best_other_distance": 0.5683,
+      "best_other_distance": 0.5682,
       "retrieved": [
         {
           "source": "rules",
           "section": "Reglas De Tagging",
-          "distance": 0.5683
+          "distance": 0.5682
         },
         {
           "source": "glossary",
@@ -1206,33 +1206,33 @@
         },
         {
           "source": "rules",
-          "section": "Recomendaciones",
-          "distance": 0.4223
-        },
-        {
-          "source": "rules",
           "section": "Alcance",
           "distance": 0.4371
         },
         {
-          "source": "product",
-          "section": "Vision Del Producto",
-          "distance": 0.5154
-        },
-        {
           "source": "rules",
-          "section": "KPIs Minimos",
-          "distance": 0.522
+          "section": "Recomendaciones",
+          "distance": 0.4892
         },
         {
-          "source": "finops",
-          "section": "Alcance Del MVP",
-          "distance": 0.5237
+          "source": "product",
+          "section": "Lo Que El Asistente No Debe Exponer",
+          "distance": 0.4905
         },
         {
           "source": "product",
           "section": "Scope, Dataset Y Tenant",
-          "distance": 0.5243
+          "distance": 0.5025
+        },
+        {
+          "source": "rules",
+          "section": "CostRecord",
+          "distance": 0.5061
+        },
+        {
+          "source": "rules",
+          "section": "Nota Sobre Reglas Internas",
+          "distance": 0.5146
         }
       ]
     },
@@ -1242,12 +1242,12 @@
       "category": "tagging",
       "coverage": "direct",
       "best_expected_distance": 0.4631,
-      "best_other_distance": 0.4013,
+      "best_other_distance": 0.4014,
       "retrieved": [
         {
           "source": "finops",
           "section": "Tagging Y Allocation",
-          "distance": 0.4013
+          "distance": 0.4014
         },
         {
           "source": "finops",
@@ -1267,12 +1267,12 @@
         {
           "source": "rules",
           "section": "KPIs Minimos",
-          "distance": 0.488
+          "distance": 0.5115
         },
         {
           "source": "rules",
           "section": "Nota Sobre Reglas Internas",
-          "distance": 0.5184
+          "distance": 0.5179
         },
         {
           "source": "rules",
@@ -1312,7 +1312,7 @@
         {
           "source": "rules",
           "section": "Reglas De Tagging",
-          "distance": 0.4313
+          "distance": 0.4312
         },
         {
           "source": "product",
@@ -1341,23 +1341,18 @@
       "behavior": "answer",
       "category": "budgets",
       "coverage": "direct",
-      "best_expected_distance": 0.5688,
-      "best_other_distance": 0.5892,
+      "best_expected_distance": 0.609,
+      "best_other_distance": 0.5958,
       "retrieved": [
-        {
-          "source": "rules",
-          "section": "Budgets Y Forecast",
-          "distance": 0.5688
-        },
-        {
-          "source": "rules",
-          "section": "Severidad",
-          "distance": 0.5892
-        },
         {
           "source": "glossary",
           "section": "Anomaly",
           "distance": 0.5958
+        },
+        {
+          "source": "rules",
+          "section": "Budgets Y Forecast",
+          "distance": 0.609
         },
         {
           "source": "finops",
@@ -1366,8 +1361,13 @@
         },
         {
           "source": "rules",
-          "section": "Servicio sin gasto previo",
-          "distance": 0.6309
+          "section": "Severidad",
+          "distance": 0.6207
+        },
+        {
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.6344
         },
         {
           "source": "finops",
@@ -1382,7 +1382,7 @@
         {
           "source": "rules",
           "section": "KPIs Minimos",
-          "distance": 0.644
+          "distance": 0.6424
         }
       ]
     },
@@ -1391,18 +1391,13 @@
       "behavior": "answer",
       "category": "budgets",
       "coverage": "direct",
-      "best_expected_distance": 0.5471,
+      "best_expected_distance": 0.5922,
       "best_other_distance": 0.5435,
       "retrieved": [
         {
           "source": "glossary",
           "section": "Anomaly",
           "distance": 0.5435
-        },
-        {
-          "source": "rules",
-          "section": "Budgets Y Forecast",
-          "distance": 0.5471
         },
         {
           "source": "finops",
@@ -1416,13 +1411,18 @@
         },
         {
           "source": "rules",
-          "section": "Severidad",
-          "distance": 0.5786
+          "section": "Budgets Y Forecast",
+          "distance": 0.5922
         },
         {
           "source": "rules",
           "section": "Servicio sin gasto previo",
-          "distance": 0.6039
+          "distance": 0.6093
+        },
+        {
+          "source": "rules",
+          "section": "Severidad",
+          "distance": 0.6122
         },
         {
           "source": "finops",
@@ -1430,9 +1430,9 @@
           "distance": 0.6148
         },
         {
-          "source": "product",
-          "section": "Revisar una anomalia",
-          "distance": 0.6173
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.6192
         }
       ]
     },
@@ -1455,14 +1455,14 @@
           "distance": 0.5118
         },
         {
-          "source": "rules",
-          "section": "Budgets Y Forecast",
-          "distance": 0.5274
-        },
-        {
           "source": "glossary",
           "section": "Anomaly",
           "distance": 0.559
+        },
+        {
+          "source": "rules",
+          "section": "Budgets Y Forecast",
+          "distance": 0.5604
         },
         {
           "source": "finops",
@@ -1475,14 +1475,14 @@
           "distance": 0.5965
         },
         {
-          "source": "finops",
-          "section": "Idea Fundamental De FinOps",
-          "distance": 0.6011
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.5976
         },
         {
           "source": "finops",
-          "section": "Conceptos FinOps Basicos",
-          "distance": 0.6106
+          "section": "Idea Fundamental De FinOps",
+          "distance": 0.6011
         }
       ]
     },
@@ -1491,18 +1491,18 @@
       "behavior": "answer",
       "category": "anomalies",
       "coverage": "direct",
-      "best_expected_distance": 0.3546,
+      "best_expected_distance": 0.4554,
       "best_other_distance": 0.4446,
       "retrieved": [
-        {
-          "source": "rules",
-          "section": "Anomalias",
-          "distance": 0.3546
-        },
         {
           "source": "finops",
           "section": "Anomalias De Coste",
           "distance": 0.4446
+        },
+        {
+          "source": "rules",
+          "section": "Anomalias",
+          "distance": 0.4554
         },
         {
           "source": "product",
@@ -1541,28 +1541,38 @@
       "behavior": "answer",
       "category": "anomalies",
       "coverage": "direct",
-      "best_expected_distance": 0.4429,
-      "best_other_distance": 0.4836,
+      "best_expected_distance": 0.5159,
+      "best_other_distance": 0.5435,
       "retrieved": [
         {
           "source": "rules",
           "section": "Anomalias",
-          "distance": 0.4429
+          "distance": 0.5159
         },
         {
           "source": "rules",
           "section": "Episodio y valor esperado",
-          "distance": 0.4836
+          "distance": 0.5435
         },
         {
           "source": "rules",
           "section": "Servicio sin gasto previo",
-          "distance": 0.5317
+          "distance": 0.5654
+        },
+        {
+          "source": "rules",
+          "section": "Severidad",
+          "distance": 0.5895
         },
         {
           "source": "rules",
           "section": "Episodio y valor esperado",
-          "distance": 0.5459
+          "distance": 0.5904
+        },
+        {
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.6183
         },
         {
           "source": "finops",
@@ -1570,19 +1580,9 @@
           "distance": 0.6198
         },
         {
-          "source": "rules",
-          "section": "Severidad",
-          "distance": 0.633
-        },
-        {
           "source": "product",
           "section": "Detectar anomalias",
-          "distance": 0.6387
-        },
-        {
-          "source": "finops",
-          "section": "Anomalias De Coste",
-          "distance": 0.6565
+          "distance": 0.6333
         }
       ]
     },
@@ -1591,28 +1591,28 @@
       "behavior": "answer",
       "category": "anomalies",
       "coverage": "direct",
-      "best_expected_distance": 0.4795,
-      "best_other_distance": 0.5008,
+      "best_expected_distance": 0.5009,
+      "best_other_distance": 0.5795,
       "retrieved": [
         {
           "source": "rules",
           "section": "Anomalias",
-          "distance": 0.4795
+          "distance": 0.5009
         },
         {
           "source": "rules",
           "section": "Episodio y valor esperado",
-          "distance": 0.5008
+          "distance": 0.5795
         },
         {
           "source": "rules",
           "section": "Episodio y valor esperado",
-          "distance": 0.5892
+          "distance": 0.5968
         },
         {
           "source": "rules",
           "section": "Servicio sin gasto previo",
-          "distance": 0.6118
+          "distance": 0.6024
         },
         {
           "source": "finops",
@@ -1622,17 +1622,17 @@
         {
           "source": "product",
           "section": "Detectar anomalias",
-          "distance": 0.6445
+          "distance": 0.6401
+        },
+        {
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.6681
         },
         {
           "source": "rules",
           "section": "Severidad",
-          "distance": 0.6601
-        },
-        {
-          "source": "product",
-          "section": "Leer el panel",
-          "distance": 0.6677
+          "distance": 0.6737
         }
       ]
     },
@@ -1641,28 +1641,33 @@
       "behavior": "clarify",
       "category": "anomalies",
       "coverage": "partial",
-      "best_expected_distance": 0.672,
-      "best_other_distance": 0.5242,
+      "best_expected_distance": 0.7691,
+      "best_other_distance": 0.522,
       "retrieved": [
+        {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.522
+        },
         {
           "source": "finops",
           "section": "Cost Management Y Cost Analysis",
           "distance": 0.5242
         },
         {
-          "source": "rules",
-          "section": "Servicio sin gasto previo",
-          "distance": 0.5536
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.6078
+        },
+        {
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.6138
         },
         {
           "source": "rules",
           "section": "Severidad",
-          "distance": 0.6056
-        },
-        {
-          "source": "finops",
-          "section": "Inform",
-          "distance": 0.6078
+          "distance": 0.6259
         },
         {
           "source": "rules",
@@ -1678,11 +1683,6 @@
           "source": "glossary",
           "section": "Anomaly",
           "distance": 0.634
-        },
-        {
-          "source": "glossary",
-          "section": "Allocated Cost",
-          "distance": 0.6459
         }
       ]
     },
@@ -1715,6 +1715,11 @@
           "distance": 0.5923
         },
         {
+          "source": "rules",
+          "section": "Recomendaciones",
+          "distance": 0.6004
+        },
+        {
           "source": "product",
           "section": "Vision Del Producto",
           "distance": 0.6138
@@ -1728,11 +1733,6 @@
           "source": "finops",
           "section": "Referencias De Contexto",
           "distance": 0.6157
-        },
-        {
-          "source": "glossary",
-          "section": "Subscription",
-          "distance": 0.6217
         }
       ]
     },
@@ -1741,9 +1741,14 @@
       "behavior": "answer",
       "category": "recommendations",
       "coverage": "direct",
-      "best_expected_distance": 0.6264,
+      "best_expected_distance": 0.4978,
       "best_other_distance": 0.5288,
       "retrieved": [
+        {
+          "source": "rules",
+          "section": "Recomendaciones",
+          "distance": 0.4978
+        },
         {
           "source": "finops",
           "section": "Errores Comunes",
@@ -1767,22 +1772,17 @@
         {
           "source": "finops",
           "section": "Referencias De Contexto",
-          "distance": 0.607
+          "distance": 0.6071
+        },
+        {
+          "source": "rules",
+          "section": "Nota Sobre Reglas Internas",
+          "distance": 0.6078
         },
         {
           "source": "finops",
           "section": "Optimize",
-          "distance": 0.6109
-        },
-        {
-          "source": "glossary",
-          "section": "Azure Advisor",
-          "distance": 0.6111
-        },
-        {
-          "source": "glossary",
-          "section": "Rightsizing",
-          "distance": 0.6121
+          "distance": 0.611
         }
       ]
     },
@@ -1900,14 +1900,14 @@
           "distance": 0.5532
         },
         {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.561
+        },
+        {
           "source": "glossary",
           "section": "Amortized Cost",
           "distance": 0.5634
-        },
-        {
-          "source": "rules",
-          "section": "KPIs Minimos",
-          "distance": 0.5665
         },
         {
           "source": "finops",
@@ -1915,24 +1915,24 @@
           "distance": 0.5712
         },
         {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.5734
+        },
+        {
           "source": "finops",
           "section": "Conceptos FinOps Basicos",
           "distance": 0.5795
         },
         {
-          "source": "rules",
-          "section": "CostRecord",
-          "distance": 0.5798
-        },
-        {
-          "source": "rules",
-          "section": "Servicio sin gasto previo",
-          "distance": 0.5817
-        },
-        {
           "source": "glossary",
           "section": "Allocated Cost",
           "distance": 0.5842
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5857
         }
       ]
     },
@@ -1957,7 +1957,7 @@
         {
           "source": "finops",
           "section": "Idea Fundamental De FinOps",
-          "distance": 0.6151
+          "distance": 0.615
         },
         {
           "source": "finops",
@@ -1977,12 +1977,12 @@
         {
           "source": "finops",
           "section": "Budgets, Forecast Y Alertas",
-          "distance": 0.6331
+          "distance": 0.633
         },
         {
-          "source": "product",
-          "section": "Revisar una anomalia",
-          "distance": 0.6457
+          "source": "glossary",
+          "section": "Rightsizing",
+          "distance": 0.6474
         }
       ]
     },
@@ -1992,17 +1992,12 @@
       "category": "scope",
       "coverage": "none",
       "best_expected_distance": null,
-      "best_other_distance": 0.5319,
+      "best_other_distance": 0.5431,
       "retrieved": [
         {
           "source": "rules",
-          "section": "Severidad",
-          "distance": 0.5319
-        },
-        {
-          "source": "rules",
           "section": "Servicio sin gasto previo",
-          "distance": 0.5514
+          "distance": 0.5431
         },
         {
           "source": "glossary",
@@ -2010,14 +2005,19 @@
           "distance": 0.5865
         },
         {
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.5887
+        },
+        {
           "source": "rules",
-          "section": "Episodio y valor esperado",
-          "distance": 0.5874
+          "section": "Severidad",
+          "distance": 0.5929
         },
         {
           "source": "product",
           "section": "Leer el panel",
-          "distance": 0.5978
+          "distance": 0.5933
         },
         {
           "source": "finops",
@@ -2025,14 +2025,14 @@
           "distance": 0.6102
         },
         {
-          "source": "product",
-          "section": "Revisar una anomalia",
-          "distance": 0.6129
+          "source": "glossary",
+          "section": "Amortized Cost",
+          "distance": 0.6229
         },
         {
-          "source": "rules",
-          "section": "KPIs Minimos",
-          "distance": 0.6227
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.626
         }
       ]
     },
@@ -2070,14 +2070,14 @@
           "distance": 0.5731
         },
         {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.5799
+        },
+        {
           "source": "glossary",
           "section": "Rightsizing",
           "distance": 0.586
-        },
-        {
-          "source": "rules",
-          "section": "Anomalias",
-          "distance": 0.5895
         },
         {
           "source": "rules",
@@ -2091,48 +2091,48 @@
       "behavior": "answer",
       "category": "allocation",
       "coverage": "direct",
-      "best_expected_distance": 0.3994,
-      "best_other_distance": 0.5594,
+      "best_expected_distance": 0.3995,
+      "best_other_distance": 0.5595,
       "retrieved": [
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.3994
+          "distance": 0.3995
         },
         {
           "source": "glossary",
           "section": "Budget",
-          "distance": 0.5594
+          "distance": 0.5595
         },
         {
           "source": "glossary",
           "section": "Allocated Cost",
-          "distance": 0.6068
+          "distance": 0.6069
         },
         {
           "source": "product",
           "section": "Guia Del Panel De Anomalias",
-          "distance": 0.6116
-        },
-        {
-          "source": "product",
-          "section": "Revisar una anomalia",
-          "distance": 0.6163
-        },
-        {
-          "source": "rules",
-          "section": "KPIs Minimos",
-          "distance": 0.6163
+          "distance": 0.6117
         },
         {
           "source": "rules",
           "section": "Estados De Allocation",
-          "distance": 0.6171
+          "distance": 0.6172
         },
         {
           "source": "finops",
           "section": "Coste No Asignado Y Coste Compartido",
-          "distance": 0.6301
+          "distance": 0.6302
+        },
+        {
+          "source": "finops",
+          "section": "Anomalias De Coste",
+          "distance": 0.6324
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.6326
         }
       ]
     }
@@ -2147,26 +2147,26 @@
     "candidates": [
       {
         "top_k": 3,
-        "max_distance": 0.6,
+        "max_distance": 0.65,
         "section_hit_rate": 0.75,
         "empty_rate": 0.0
       },
       {
         "top_k": 4,
-        "max_distance": 0.6,
-        "section_hit_rate": 0.75,
+        "max_distance": 0.65,
+        "section_hit_rate": 0.85,
         "empty_rate": 0.0
       },
       {
         "top_k": 5,
-        "max_distance": 0.6,
-        "section_hit_rate": 0.75,
+        "max_distance": 0.65,
+        "section_hit_rate": 0.85,
         "empty_rate": 0.0
       },
       {
         "top_k": 6,
-        "max_distance": 0.6,
-        "section_hit_rate": 0.75,
+        "max_distance": 0.65,
+        "section_hit_rate": 0.85,
         "empty_rate": 0.0
       }
     ]

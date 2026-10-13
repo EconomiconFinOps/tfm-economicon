@@ -1,7 +1,7 @@
 # Calibracion de la recuperacion (JUP-022)
 
-Generado: 2026-10-13T15:09:16.882156+00:00. Proveedor: `litellm`, alias `economicon-embedding`, dimension 1536.
-Banco: docs/validation/JUP-069-questions.json v1.0.1. Troceado: 500 caracteres con solape 50 (62 fragmentos). Llamadas previstas: 90.
+Generado: 2026-10-13T15:34:27.900859+00:00. Proveedor: `litellm`, alias `economicon-embedding`, dimension 1536.
+Banco: docs/validation/JUP-069-questions.json v1.0.1. Troceado: 500 caracteres con solape 50 (63 fragmentos). Llamadas previstas: 91.
 
 ## Regla de seleccion
 
@@ -11,43 +11,43 @@ Para cada top_k, la menor distancia maxima del barrido que conserva al menos 90%
 
 | top_k | Distancia maxima | Acierto por seccion | Resultados vacios |
 | --- | --- | --- | --- |
-| 3 | 0.6 | 75% | 0% |
-| 4 | 0.6 | 75% | 0% |
-| 5 | 0.6 | 75% | 0% |
-| 6 | 0.6 | 75% | 0% |
+| 3 | 0.65 | 75% | 0% |
+| 4 | 0.65 | 85% | 0% |
+| 5 | 0.65 | 85% | 0% |
+| 6 | 0.65 | 85% | 0% |
 
 ## Barrido (casos answer)
 
 | top_k | Distancia maxima | Acierto por documento | Acierto por seccion | Vacios | Casos clarify/abstain: documento | Casos clarify/abstain: vacios |
 | --- | --- | --- | --- | --- | --- | --- |
-| 3 | sin umbral | 95% | 80% | 0% | 75% | 0% |
-| 3 | 0.5 | 55% | 45% | 45% | 12% | 75% |
-| 3 | 0.55 | 80% | 65% | 10% | 12% | 50% |
-| 3 | 0.6 | 90% | 75% | 0% | 75% | 0% |
-| 3 | 0.65 | 95% | 80% | 0% | 75% | 0% |
-| 3 | 0.7 | 95% | 80% | 0% | 75% | 0% |
-| 3 | 0.75 | 95% | 80% | 0% | 75% | 0% |
-| 4 | sin umbral | 95% | 80% | 0% | 75% | 0% |
-| 4 | 0.5 | 55% | 45% | 45% | 12% | 75% |
-| 4 | 0.55 | 80% | 65% | 10% | 12% | 50% |
-| 4 | 0.6 | 90% | 75% | 0% | 75% | 0% |
-| 4 | 0.65 | 95% | 80% | 0% | 75% | 0% |
-| 4 | 0.7 | 95% | 80% | 0% | 75% | 0% |
-| 4 | 0.75 | 95% | 80% | 0% | 75% | 0% |
-| 5 | sin umbral | 95% | 80% | 0% | 88% | 0% |
-| 5 | 0.5 | 55% | 45% | 45% | 12% | 75% |
-| 5 | 0.55 | 80% | 65% | 10% | 12% | 50% |
-| 5 | 0.6 | 90% | 75% | 0% | 88% | 0% |
-| 5 | 0.65 | 95% | 80% | 0% | 88% | 0% |
-| 5 | 0.7 | 95% | 80% | 0% | 88% | 0% |
-| 5 | 0.75 | 95% | 80% | 0% | 88% | 0% |
-| 6 | sin umbral | 95% | 80% | 0% | 88% | 0% |
-| 6 | 0.5 | 55% | 45% | 45% | 12% | 75% |
-| 6 | 0.55 | 80% | 65% | 10% | 12% | 50% |
-| 6 | 0.6 | 90% | 75% | 0% | 88% | 0% |
-| 6 | 0.65 | 95% | 80% | 0% | 88% | 0% |
-| 6 | 0.7 | 95% | 80% | 0% | 88% | 0% |
-| 6 | 0.75 | 95% | 80% | 0% | 88% | 0% |
+| 3 | sin umbral | 95% | 75% | 0% | 88% | 0% |
+| 3 | 0.5 | 50% | 40% | 50% | 12% | 75% |
+| 3 | 0.55 | 80% | 65% | 10% | 25% | 50% |
+| 3 | 0.6 | 85% | 65% | 5% | 88% | 0% |
+| 3 | 0.65 | 95% | 75% | 0% | 88% | 0% |
+| 3 | 0.7 | 95% | 75% | 0% | 88% | 0% |
+| 3 | 0.75 | 95% | 75% | 0% | 88% | 0% |
+| 4 | sin umbral | 100% | 85% | 0% | 88% | 0% |
+| 4 | 0.5 | 50% | 40% | 50% | 12% | 75% |
+| 4 | 0.55 | 80% | 65% | 10% | 25% | 50% |
+| 4 | 0.6 | 90% | 75% | 5% | 88% | 0% |
+| 4 | 0.65 | 100% | 85% | 0% | 88% | 0% |
+| 4 | 0.7 | 100% | 85% | 0% | 88% | 0% |
+| 4 | 0.75 | 100% | 85% | 0% | 88% | 0% |
+| 5 | sin umbral | 100% | 85% | 0% | 88% | 0% |
+| 5 | 0.5 | 50% | 40% | 50% | 12% | 75% |
+| 5 | 0.55 | 80% | 65% | 10% | 25% | 50% |
+| 5 | 0.6 | 90% | 75% | 5% | 88% | 0% |
+| 5 | 0.65 | 100% | 85% | 0% | 88% | 0% |
+| 5 | 0.7 | 100% | 85% | 0% | 88% | 0% |
+| 5 | 0.75 | 100% | 85% | 0% | 88% | 0% |
+| 6 | sin umbral | 100% | 85% | 0% | 88% | 0% |
+| 6 | 0.5 | 50% | 40% | 50% | 12% | 75% |
+| 6 | 0.55 | 80% | 65% | 10% | 25% | 50% |
+| 6 | 0.6 | 90% | 75% | 5% | 88% | 0% |
+| 6 | 0.65 | 100% | 85% | 0% | 88% | 0% |
+| 6 | 0.7 | 100% | 85% | 0% | 88% | 0% |
+| 6 | 0.75 | 100% | 85% | 0% | 88% | 0% |
 
 ## Huecos del corpus (sin cobertura)
 
@@ -59,33 +59,33 @@ Para cada top_k, la menor distancia maxima del barrido que conserva al menos 90%
 | Caso | Tipo | Cobertura | Esperado | Otros |
 | --- | --- | --- | --- | --- |
 | JUP-069-001 | answer | partial | 0.5699 | 0.5172 |
-| JUP-069-002 | answer | partial | 0.6096 | 0.5864 |
+| JUP-069-002 | answer | partial | 0.6096 | 0.6101 |
 | JUP-069-003 | clarify | direct | 0.5627 | 0.5766 |
 | JUP-069-004 | answer | direct | 0.4483 | 0.4287 |
 | JUP-069-005 | answer | direct | 0.4891 | 0.5468 |
 | JUP-069-006 | answer | direct | None | 0.4409 |
-| JUP-069-007 | answer | direct | None | 0.4413 |
+| JUP-069-007 | answer | direct | None | 0.4411 |
 | JUP-069-008 | clarify | direct | None | 0.3658 |
-| JUP-069-009 | clarify | direct | 0.6255 | 0.5683 |
+| JUP-069-009 | clarify | direct | 0.6255 | 0.5682 |
 | JUP-069-010 | answer | direct | 0.3825 | 0.388 |
-| JUP-069-011 | answer | direct | 0.4631 | 0.4013 |
+| JUP-069-011 | answer | direct | 0.4631 | 0.4014 |
 | JUP-069-012 | answer | direct | 0.3316 | 0.3815 |
-| JUP-069-013 | answer | direct | 0.5688 | 0.5892 |
-| JUP-069-014 | answer | direct | 0.5471 | 0.5435 |
+| JUP-069-013 | answer | direct | 0.609 | 0.5958 |
+| JUP-069-014 | answer | direct | 0.5922 | 0.5435 |
 | JUP-069-015 | answer | direct | 0.5113 | 0.5118 |
-| JUP-069-016 | answer | direct | 0.3546 | 0.4446 |
-| JUP-069-017 | answer | direct | 0.4429 | 0.4836 |
-| JUP-069-018 | answer | direct | 0.4795 | 0.5008 |
-| JUP-069-019 | clarify | partial | 0.672 | 0.5242 |
+| JUP-069-016 | answer | direct | 0.4554 | 0.4446 |
+| JUP-069-017 | answer | direct | 0.5159 | 0.5435 |
+| JUP-069-018 | answer | direct | 0.5009 | 0.5795 |
+| JUP-069-019 | clarify | partial | 0.7691 | 0.522 |
 | JUP-069-020 | answer | direct | 0.5318 | 0.5407 |
-| JUP-069-021 | answer | direct | 0.6264 | 0.5288 |
+| JUP-069-021 | answer | direct | 0.4978 | 0.5288 |
 | JUP-069-022 | answer | direct | 0.5483 | 0.56 |
 | JUP-069-023 | abstain | direct | 0.5056 | 0.4193 |
 | JUP-069-024 | clarify | none | None | 0.5532 |
 | JUP-069-025 | abstain | direct | 0.6196 | 0.5553 |
-| JUP-069-026 | clarify | none | None | 0.5319 |
+| JUP-069-026 | clarify | none | None | 0.5431 |
 | JUP-069-027 | answer | direct | 0.5994 | 0.5126 |
-| JUP-069-028 | answer | direct | 0.3994 | 0.5594 |
+| JUP-069-028 | answer | direct | 0.3995 | 0.5595 |
 
 ## Limites
 

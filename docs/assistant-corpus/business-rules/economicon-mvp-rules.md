@@ -78,7 +78,7 @@ El MVP debe poder explicar estos KPIs:
 | Unallocated Cost % | coste no asignado sobre coste elegible |
 | Tagging Compliance by Cost | coste correctamente etiquetado sobre coste etiquetable |
 | Savings Realization | ahorro verificado frente a ahorro identificado |
-| Anomaly MTTA / MTTR | tiempo hasta reconocimiento y resolucion |
+| Anomaly MTTA / MTTR | tiempo hasta la primera revision (primer cambio desde Nueva) y hasta la resolucion |
 
 KPIs opcionales si el escenario lo permite:
 
@@ -94,7 +94,6 @@ Reglas de interpretacion:
 - forecast por encima de budget indica riesgo de overspend futuro;
 - superar un umbral de budget debe generar investigacion, no apagado automatico;
 - forecast y budget no deben mezclarse como si fueran la misma metrica.
-- superar un budget o un forecast no es una anomalia: la anomalia se detecta sobre el gasto diario observado.
 
 ## Anomalias
 
@@ -116,11 +115,11 @@ El valor esperado de un dia es la media diaria de los 7 dias anteriores. Mientra
 
 El ultimo dia con datos del cliente se considera incompleto y no se evalua. Un dia solo se evalua si ese dia y los 7 anteriores tienen datos del cliente.
 
-Si pasan 3 dias sin que la regla salte, el episodio se muestra como "Ya no se observa". No se cierra solo: una persona debe cerrarlo.
+Cuando pasan mas de 3 dias desde la ultima vez que salto la regla (es decir, al cuarto dia sin saltar), el episodio se muestra como "Ya no se observa". No se cierra solo: una persona debe cerrarlo. Si despues vuelve a saltar, se abre un episodio nuevo enlazado al anterior.
 
 ### Servicio sin gasto previo
 
-El primer dia de gasto de un servicio nuevo no abre un episodio, porque no hay gasto esperado con el que comparar. Desde el segundo dia la referencia incluye ese primer dia, de modo que un gasto nuevo y estable por encima de unos 116,67 al dia puede abrir un episodio. Sin datos previos no se puede afirmar que un recurso nuevo cumpla o no cumpla la regla.
+Sin datos previos no se puede afirmar que un recurso nuevo cumpla o no cumpla la regla: con referencia cero el aumento relativo no esta definido. Por eso el primer dia de gasto de un servicio nuevo no abre un episodio. Desde el segundo dia la referencia incluye ese primer dia, de modo que un gasto nuevo y estable por encima de unos 116,67 al dia puede abrir un episodio.
 
 ### Severidad
 

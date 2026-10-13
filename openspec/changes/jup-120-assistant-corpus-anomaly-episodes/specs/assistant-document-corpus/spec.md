@@ -22,7 +22,8 @@ The assistant document corpus SHALL describe cost anomalies as the product treat
 - **WHEN** a contributor reads how an episode is detected and followed
 - **THEN** the corpus states that the expected value is the mean daily cost of the previous 7 days, or the anchored reference of the episode while it is followed
 - **AND** that the last day with data is treated as incomplete
-- **AND** that an episode that stops triggering for 3 days is shown as no longer observed and is not closed automatically.
+- **AND** that an episode is shown as no longer observed when more than 3 days have passed since the rule last triggered (on the fourth day without triggering) and is not closed automatically
+- **AND** that at least 9 days with data are needed before the first evaluation: 7 reference days, the evaluated day and the last day with data, which is treated as incomplete.
 
 #### Scenario: A service with no previous spend is not asserted to meet the rule
 
@@ -70,6 +71,12 @@ The product-architecture document SHALL include a user guide of the anomaly pane
 
 - **WHEN** corpus validation or review scans the guide
 - **THEN** it contains no endpoint paths, header names, table names or service names.
+
+#### Scenario: Guide states what the summary counts
+
+- **WHEN** the guide describes the summary at the top of the panel
+- **THEN** it says that the open, Alta (P1) and no-longer-observed figures count only open anomalies (Nueva or Investigando)
+- **AND** that closed anomalies are not included.
 
 #### Scenario: Guide covers only integrated features
 

@@ -44,13 +44,13 @@ El panel Anomalias de Economicon muestra las anomalias de coste del cliente acti
 
 El panel no detecta nada al abrirse: solo muestra lo ya guardado. Antes de la primera deteccion indica que todavia no se han buscado anomalias en ese cliente.
 
-El boton "Detectar ahora" revisa los costes diarios del cliente con la regla de negocio y guarda los episodios. Repetirlo es seguro. Hacen falta al menos 8 dias seguidos con datos del cliente; si no los hay, el resultado dice que aun no hay datos suficientes. Si no hay dias completos nuevos, dice que ya estaba al dia.
+El boton "Detectar ahora" revisa los costes diarios del cliente con la regla de negocio y guarda los episodios. Repetirlo es seguro. Hacen falta al menos 9 dias con datos del cliente (7 de referencia, el dia que se evalua y el ultimo, que se considera incompleto); si no los hay, el resultado dice que aun no hay datos suficientes. Si no hay dias completos nuevos, dice que ya estaba al dia.
 
 El texto "Revisado hasta" indica el ultimo dia completo evaluado. El ultimo dia con datos no se evalua porque puede estar incompleto. Cuando los datos son sinteticos, el panel avisa de que son datos de demostracion y no facturas reales.
 
 ### Leer el panel
 
-El resumen de arriba cuenta todas las anomalias del cliente y no cambia con los filtros: el impacto acumulado de las abiertas por moneda (las monedas no se suman), cuantas estan abiertas, cuantas son Alta (P1) y cuantas "Ya no se observan".
+El resumen de arriba no cambia con los filtros y solo cuenta las anomalias abiertas (Nueva o Investigando): el impacto acumulado por moneda (las monedas no se suman), cuantas hay abiertas y, de ellas, cuantas son Alta (P1) y cuantas "Ya no se observan". Las cerradas no entran en estas cifras.
 
 La criticidad se muestra como Alta (P1), Media (P2) o Baja (P3), segun el impacto acumulado. La observacion indica si "Se sigue observando" o "Ya no se observa" desde una fecha. Una anomalia que ya no se observa sigue abierta hasta que una persona la cierre.
 
