@@ -26,6 +26,17 @@ embedding/recuperación y una generación,3200tokens y evaluación íntegra pend
 Detalles, limitaciones y motivación en el ADR vigente; ninguna aceptación se
 infiere de tests offline o de completed en la batería.
 
+## Refinamiento v10 tras survey23
+
+La narrativa libre requiere fuentes seleccionadas incluso en abstención. Sin
+fuentes, un escenario tipado resuelve aritmética del usuario sin prosa documental,
+o una solicitud neutral deriva estado y paso útil del servidor. Recommendation
+elige registros privados verificados antes de proyectar IDs públicos y unir
+selecciones explícitas. El guard12 cuenta evaluaciones numéricas únicas mediante
+cache estructural, manteniendo validación de profundidad/provenance por ocurrencia
+y conteo de comparaciones. Véase ADR para límites y motivos; ni esa memoización
+ni una cita literal garantizan pertinencia semántica. Survey23 19/28PASS, no aceptada.
+
 ## Compatibilidad de la union final — 13/10/2026
 
 Una reproduccion sintetica autorizada confirma HTTP400 de DeepInfra al compilar

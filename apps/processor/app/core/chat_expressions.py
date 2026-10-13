@@ -239,6 +239,8 @@ def display(value):
 class ExpressionRenderer:
     def __init__(self,catalog):
         self.catalog=copy.deepcopy(catalog)
+        self._catalog_identity=json.dumps(self.catalog,sort_keys=True,ensure_ascii=True,separators=(',',':'))
+        self._numeric_cache={}
         self.operations=0
         self.documentary_sources=set()
 
@@ -281,6 +283,34 @@ class ExpressionRenderer:
         if self.operations>MAX_OPERATIONS:raise ValueError('Expression operation limit.')
 
     def _numeric(self,node,depth=0):
+        # Validate every occurrence at its actual depth before using the cache.
+        # Identical arithmetic subtrees reuse an evaluation, not validation or
+        # authority. Display/segment bounds still count all repeated output.
+        if json.dumps(self.catalog,sort_keys=True,ensure_ascii=True,separators=(',',':'))!=self._catalog_identity:
+            raise ValueError('Expression catalog changed.')
+        sources=self._validate_numeric_occurrence(node,depth)
+        self.documentary_sources.update(sources)
+        key=json.dumps(node,sort_keys=True,ensure_ascii=True,separators=(',',':'))
+        if key not in self._numeric_cache:self._numeric_cache[key]=self._numeric_uncached(node,depth)
+        return self._numeric_cache[key]
+
+    def _validate_numeric_occurrence(self,node,depth):
+        if not isinstance(node,dict) or depth>MAX_DEPTH:raise ValueError('Expression shape or depth.')
+        if set(node)=={'quantity'}:
+            key=node['quantity']
+            if not isinstance(key,str) or key not in self.catalog:raise ValueError('Unknown source quantity.')
+            return {origin['id'] for origin in self.catalog[key].get('provenance',[]) if origin['kind']=='corpus'}
+        operator=node.get('operation')
+        if not isinstance(operator,str):raise ValueError('Expression operation shape.')
+        names={'sum':('left','right'),'difference':('current','baseline'),
+               'ratio':('numerator','denominator'),'percentage':('numerator','denominator'),
+               'relative_change':('current','baseline')}.get(operator)
+        if names is None or set(node)!={'operation',*names}:raise ValueError('Expression operation shape.')
+        sources=set()
+        for name in names:sources.update(self._validate_numeric_occurrence(node[name],depth+1))
+        return sources
+
+    def _numeric_uncached(self,node,depth=0):
         if not isinstance(node,dict) or depth>MAX_DEPTH:raise ValueError('Expression shape or depth.')
         if set(node)=={'quantity'}:
             key=node['quantity']
@@ -332,6 +362,18 @@ class ExpressionRenderer:
         label='Dato documental' if any(origin.get('kind')=='corpus' for origin in entry.get('provenance',[])) else 'Dato aportado'
         return '\n'+label+': '+entry['value']+(' '+unit if unit else '')+'.\n'
 
+    @staticmethod
+    def undefined_guidance(reason):
+        # This follows the evaluated domain error, not a model-selected reason
+        # or a question identifier. Zero does not prove missing ingestion, and
+        # a later period is not guaranteed to have a positive denominator.
+        return {
+            'variación relativa indefinida porque la base es cero':
+                ' Necesito una base comparable con datos aplicables; si se trata de un recurso nuevo, investiga su aparición antes de interpretar la variación.',
+            'cociente indefinido porque el denominador es cero':
+                ' Necesito confirmar la cobertura de los datos y un período con un denominador aplicable antes de interpretar ese cociente.',
+        }.get(reason,'')
+
     def render(self,node):
         if not isinstance(node,dict) or 'operation' not in node:
             raise ValueError('Rendered expression requires an operation.')
@@ -344,7 +386,7 @@ class ExpressionRenderer:
                         raise ValueError('Comparison expression shape.')
                     self._count()
                     a,au,at,ae=self._numeric(node['left'],1);b,bu,bt,be=self._numeric(node['right'],1)
-                    if ae or be:return '\nComparación no definida: '+(ae or be)+'.\n'
+                    if ae or be:return '\nComparación no definida: '+(ae or be)+'.'+self.undefined_guidance(ae or be)+'\n'
                     if au!=bu:raise ValueError('Incompatible expression units.')
                     relation=node['relation'];symbol={'gt':'>','gte':'>=','lt':'<','lte':'<=','eq':'=='}[relation]
                     valid={'gt':a>b,'gte':a>=b,'lt':a<b,'lte':a<=b,'eq':a==b}[relation]
@@ -352,7 +394,7 @@ class ExpressionRenderer:
                     evaluated=exact(a)+(' '+au if au else '')+' '+symbol+' '+exact(b)+(' '+bu if bu else '')
                     return '\nComparación: '+at+' '+symbol+' '+bt+'; valores evaluados: '+evaluated+' → '+('verdadero' if valid else 'falso')+'.\n'
                 value,unit,formula,reason=self._numeric(node)
-                if reason:return '\n'+formula+': '+reason+'.\n'
+                if reason:return '\n'+formula+': '+reason+'.'+self.undefined_guidance(reason)+'\n'
                 shown=display(value);symbol='=' if Decimal(shown)==value else '≈'
                 if node.get('operation')=='difference' and unit=='%':unit='puntos porcentuales'
                 return '\nCálculo: '+formula+' '+symbol+' '+shown+(' '+unit if unit else '')+'.\n'

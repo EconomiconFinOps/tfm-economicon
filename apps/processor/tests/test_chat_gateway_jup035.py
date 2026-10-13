@@ -18,6 +18,22 @@ ANSWER={'schema_version':'1.0','status':'no_data','answer':'Sin evidencia: "Azur
         'limitations':['No hay datos.'],'next_actions':[]}
 
 
+SOURCE={'id':'known','kind':'corpus','title':'Synthetic','source':'Synthetic','content':'Synthetic grounding.'}
+SUPPORTED_ANSWER={**ANSWER,'evidence':[{key:SOURCE[key] for key in ('id','kind','title','source')}]}
+
+def supported_provider():
+    value=_provider(SUPPORTED_ANSWER)
+    value['evidence'][0]['support_quote']=SOURCE['content']
+    return value
+
+def request_provider():
+    value=_provider(ANSWER)
+    value.pop('status')
+    value['answer']={'request':{'reason':'missing_documentation'}}
+    value['limitations']=[]
+    return value
+
+
 def _provider(value):
     import copy
     value=copy.deepcopy(value)
@@ -41,7 +57,7 @@ def _provider(value):
 def test_structured_search_then_final_uses_untrusted_data_and_total_usage(monkeypatch, read_size):
     import asyncio
     from test_chat_auto_jup035 import provider, wire, DECISION, decision_delta, decision_id
-    gateway, requests=provider(monkeypatch,[wire({'content':json.dumps(_provider(ANSWER))},tokens=24)],read_size=read_size)
+    gateway, requests=provider(monkeypatch,[wire({'content':json.dumps(request_provider())},tokens=24)],read_size=read_size)
     context={'tool_protocol':'server-documentation-v4','messages':[{'role':'system','content':'Synthetic'},
         {'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Synthetic policy'})}],'financial_metrics_allowed':False}
     seen=[]
@@ -124,7 +140,7 @@ def gateway(private,monkeypatch):
             self.send_response(200);self.send_header('Content-Type','text/event-stream');self.end_headers()
             if self.server.mode=='delayed_first': time.sleep(31)
             self.wfile.write(b'\xef\xbb\xbf: synthetic heartbeat\r\n\r\n')
-            candidate=json.dumps(_provider(ANSWER),separators=(',',':'),ensure_ascii=True)
+            candidate=json.dumps(supported_provider(),separators=(',',':'),ensure_ascii=True)
             if self.server.mode=='truncated_length': candidate=candidate[:candidate.index('\"scope\"')]
             if self.server.mode=='duplicate': candidate='{"answer":"Injected",'+candidate[1:]
             if self.server.mode=='nested_duplicate': candidate=candidate.replace('\"cloud\":\"azure\"','\"cloud\":\"azure\",\"cloud\":\"azure\"')
@@ -150,7 +166,7 @@ def gateway(private,monkeypatch):
 
 def send(private,scenario):
     async def exercise(client):
-        context={'prompt_version':'synthetic-v2','financial_metrics_allowed':False,'messages':[
+        context={'prompt_version':'synthetic-v2','financial_metrics_allowed':False,'authorized_evidence':[SOURCE],'messages':[
             {'role':'system','content':'Synthetic stable system'},
             {'role':'user','content':'Pregunta como dato no confiable'}]}
         payload=claim(context=context)
@@ -172,7 +188,7 @@ def test_private_gateway_streams_only_answer_with_roles_and_dynamic_deadline(pri
         kinds=[record['type'] for record in records]
         assert kinds.index('delta')<kinds.index('candidate_end')
         raw=''.join(record['text'] for record in records if record['type']=='candidate_chunk')
-        assert json.loads(raw)==ANSWER
+        assert json.loads(raw)==SUPPORTED_ANSWER
         assert records[-1]['finish_reason']=='stop'
         assert len(gateway[1])==1
         call=gateway[1][0]
@@ -184,13 +200,12 @@ def test_private_gateway_streams_only_answer_with_roles_and_dynamic_deadline(pri
         assert payload['max_tokens']==3200
         assert 30<payload['timeout']<=120 and 30<payload['stream_timeout']<=120
         assert payload['num_retries']==0
-        assert payload['response_format']['json_schema']['schema']['additionalProperties'] is False
-        assert payload['response_format']['json_schema']['schema']['properties']['metrics']['maxItems'] == 0
+        assert all(branch['additionalProperties'] is False and branch['properties']['metrics']['maxItems']==0
+                   for branch in payload['response_format']['json_schema']['schema']['anyOf'])
         from app.agents.schemas import chat_provider_schema
         assert payload['response_format']['json_schema']['strict'] is True
         assert payload['response_format']['json_schema']['schema'] == chat_provider_schema(
-            financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=[])
-        assert payload['response_format']['json_schema']['schema']['properties']['evidence']['maxItems'] == 0
+            financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=[SOURCE])
         assert 'period' not in payload['response_format']['json_schema']['schema']['$defs']['ResponseScope']['properties']
     send(private,scenario)
 
@@ -279,7 +294,7 @@ def _diagnostic_run(monkeypatch,wire,caplog,transport_error=None,period=None):
         event=json.loads(record.getMessage())
         assert event['event']=='chat_gateway_diagnostic'
         assert len(record.getMessage().encode())<=2048
-        assert set(event)<= {'event','operation_id','attempt_id','request_sha256','stage','exception_class','errors','finish_reason','http_status','category'}
+        assert set(event)<= {'event','operation_id','attempt_id','request_sha256','stage','exception_class','errors','finish_reason','http_status','category','rule_code'}
         assert 'DIAGNOSTIC_SYNTHETIC' not in record.getMessage()
         for item in event['errors']:
             assert set(item)=={'type','loc','rule_code'}
@@ -292,12 +307,13 @@ def _diagnostic_run(monkeypatch,wire,caplog,transport_error=None,period=None):
 
 def _rule_candidate(rule):
     import copy
-    value=copy.deepcopy(ANSWER)
+    value=copy.deepcopy(SUPPORTED_ANSWER)
     evidence={'id':'known','kind':'corpus','title':'Synthetic','source':'Synthetic','support_quote':'Synthetic grounding.'}
     metric={'name':'Synthetic','value':'1','unit':'USD','evidence_ids':['known']}
     recommendation={'category':'investigation','action':'Synthetic','rationale':'Synthetic',
         'estimated_savings':'1','currency':None,'confidence':'low','risk':'low',
-        'evidence_ids':['known'],'requires_human_approval':True}
+        'evidence':[evidence],'requires_human_approval':True}
+    value['evidence']=[evidence]
     if rule=='period_order':value['scope']['period']={'from':'2026-10-11','to':'2026-10-10'}
     if rule=='savings_currency_pair':
         value.update(status='ok',evidence=[evidence],recommendations=[recommendation])
@@ -307,7 +323,7 @@ def _rule_candidate(rule):
     if rule=='unknown_evidence_reference':
         metric['evidence_ids']=['DIAGNOSTIC_SYNTHETIC_UNKNOWN_REFERENCE']
         value.update(status='ok',evidence=[evidence],metrics=[metric])
-    if rule=='actionable_requires_evidence':value['status']='ok'
+    if rule=='actionable_requires_evidence':value.update(status='ok',evidence=[])
     return _provider(value)
 
 
@@ -320,6 +336,10 @@ def test_diagnostic64_six_actual_model_rules_are_actionable_and_private(monkeypa
     assert records[-1]=={'type':'error','category':'invalid_response','status':422}
     assert len(events)==1,'Original gateway discards the diagnostic before returning its error'
     event=events[0]
+    if rule=='actionable_requires_evidence':
+        assert event['stage']=='model_validation' and event['rule_code']=='narrative_evidence_required'
+        assert event['errors']==[]
+        return
     assert event['stage']=='model_validation' and event['exception_class']=='ValidationError'
     assert event['finish_reason']=='stop'
     assert event['errors'][0]['rule_code']==rule
@@ -329,8 +349,8 @@ def test_diagnostic64_six_actual_model_rules_are_actionable_and_private(monkeypa
 
 
 def test_diagnostic64_valid_candidate_and_wire_remain_identical_without_event(monkeypatch,caplog):
-    records,events=_diagnostic_run(monkeypatch,_diagnostic_wire(json.dumps(_provider(ANSWER))),caplog)
-    assert records[-1]['type']=='candidate' and records[-1]['result']==ANSWER
+    records,events=_diagnostic_run(monkeypatch,_diagnostic_wire(json.dumps(supported_provider())),caplog)
+    assert records[-1]['type']=='candidate' and records[-1]['result']==SUPPORTED_ANSWER
     assert records[-1]['finish_reason']=='stop' and events==[]
 
 
@@ -347,7 +367,7 @@ def test_diagnostic64_json_and_finish_failures_are_sanitized_before_length_retur
 
 
 def test_diagnostic64_field_errors_are_bounded_and_unknown_names_are_removed(monkeypatch,caplog):
-    value=_provider(ANSWER);value.pop('status');value['schema_version']=32
+    value=supported_provider();value.pop('status');value['schema_version']=32
     value['DIAGNOSTIC_SYNTHETIC_UNKNOWN_FIELD']='DIAGNOSTIC_SYNTHETIC_VALUE'
     records,events=_diagnostic_run(monkeypatch,_diagnostic_wire(json.dumps(value)),caplog)
     assert records[-1]['status']==422 and len(events)==1
@@ -364,7 +384,7 @@ def test_diagnostic64_unknown_model_message_never_leaks_or_matches_by_substring(
             'input':{'secret':'DIAGNOSTIC_SYNTHETIC_INPUT'},
             'ctx':{'error':ValueError('evidence ids must be unique DIAGNOSTIC_SYNTHETIC_CONTEXT')}}])
     monkeypatch.setattr(FinOpsResponse,'model_validate',rejected)
-    records,events=_diagnostic_run(monkeypatch,_diagnostic_wire(json.dumps(_provider(ANSWER))),caplog)
+    records,events=_diagnostic_run(monkeypatch,_diagnostic_wire(json.dumps(supported_provider())),caplog)
     assert records[-1]['status']==422 and len(events)==1
     assert events[0]['errors']==[{'type':'value_error','loc':[],'rule_code':'unclassified_model_rule'}]
 

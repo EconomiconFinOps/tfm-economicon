@@ -13,7 +13,8 @@ def test_scope_is_server_owned_and_model_cannot_inject_subscription():
     candidate['scope'].pop('subscription_ids')
     assert 'subscription_ids' not in chat_provider_schema()['$defs']['ResponseScope']['properties']
     assert all(b['properties']['metrics']['maxItems']==0 for b in chat_provider_schema()['anyOf'])
-    assert all(b['properties']['metrics']['maxItems']==20 for b in chat_provider_schema(financial_metrics_allowed=True)['anyOf'])
+    assert all(b['properties']['metrics']['maxItems']==(20 if b['properties']['answer'].get('type')=='array' else 0)
+        for b in chat_provider_schema(financial_metrics_allowed=True)['anyOf'])
     from app.agents.schemas import FinOpsResponse
     assert FinOpsResponse.model_json_schema()['properties']['metrics']['maxItems'] == 20
     assert assemble_chat_response(candidate, None, ['subscription-a'])['scope']['subscription_ids'] == ['subscription-a']
@@ -28,12 +29,17 @@ def test_private_schema_branches_preserve_scope_and_financial_authority(financia
     from app.agents.schemas import chat_provider_schema, FinOpsResponse
     schema = chat_provider_schema(financial_metrics_allowed=financial_allowed)
     assert 'anyOf' in schema
-    actionable, abstention = schema['anyOf']
+    actionable, abstention = [branch for branch in schema['anyOf']
+        if branch['properties']['answer'].get('type')=='array']
+    neutral=[branch for branch in schema['anyOf'] if branch not in (actionable,abstention)]
+    assert len(neutral)==1 and 'status' not in neutral[0]['required']
+    assert neutral[0]['properties']['metrics']['maxItems']==0
+    assert neutral[0]['properties']['evidence']['maxItems']==0
     assert actionable['properties']['status']['enum'] == ['ok', 'partial']
     assert actionable['properties']['evidence']['minItems'] == 1
     assert abstention['properties']['status']['enum'] == [
         'no_data', 'insufficient_data', 'unsupported', 'refused', 'error']
-    assert abstention['properties']['evidence'].get('minItems', 0) == 0
+    assert abstention['properties']['evidence']['minItems'] == 1
     public=FinOpsResponse.model_json_schema()
     assert 'properties' not in schema and 'required' not in schema
     for branch in (actionable, abstention):

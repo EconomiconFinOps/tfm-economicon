@@ -113,6 +113,15 @@ def test_classified_calculations_and_terminal_share_operation_budget():
     node={'operation':'sum','left':{'operation':'sum','left':leaf,'right':leaf},
           'right':{'operation':'sum','left':leaf,'right':leaf}}
     response['answer']['calculations']=[node]*4
+    assert render_response(response,[],quantities=catalog)['answer']
+    # Four distinct depth-three trees plus terminal bounds exceed twelve
+    # real evaluations, even though their leaves and some children repeat.
+    def binary(operation,a,b):
+        keys=('left','right') if operation=='sum' else ('current','baseline')
+        return {'operation':operation,keys[0]:a,keys[1]:b}
+    response['answer']['calculations']=[
+        binary(outer,binary(inner,binary('sum',leaf,leaf),leaf),{'quantity':'92 EUR'})
+        for outer in ('sum','difference') for inner in ('sum','difference')]
     with pytest.raises(ValueError,match='operation limit'):
         render_response(response,[],quantities=catalog)
     with pytest.raises(ValueError,match='operation limit'):
@@ -216,16 +225,17 @@ def test_additional_documentary_operand_adds_only_its_authenticated_source():
 def test_observed_quantity_segments_preserve_two_currencies_without_operations(width):
     context={'messages':[{'content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Importes: 100 EUR y 100 USD.'})}]}
     catalog=context_quantities(context)
-    value={'answer':[{'quantity':'100 EUR'},{'quantity':'100 USD'}],
+    value={'answer':{'scenario':{'quantities':['100 EUR','100 USD'],'calculations':[]}},'status':'insufficient_data',
         'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[],'evidence':[]}
     raw=json.dumps(value,ensure_ascii=True);parser=SegmentAnswerJSON([],quantities=catalog)
     streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
     rendered=render_response(value,[],quantities=catalog)
     assert streamed==parser.finish()==rendered['answer']
-    assert streamed.strip()=='Dato aportado: 100 EUR.\n\nDato aportado: 100 USD.'
+    assert 'Dato aportado: 100 EUR.' in streamed and 'Dato aportado: 100 USD.' in streamed
+    assert 'moneda de destino' in streamed and '200' not in streamed
     assert rendered['evidence']==[]
     with pytest.raises(ValueError,match='Unknown source quantity'):
-        render_response({**value,'answer':[{'quantity':'200 EUR'}]},[],quantities=catalog)
+        render_response({**value,'answer':{'scenario':{'quantities':['200 EUR'],'calculations':[]}}},[],quantities=catalog)
 
 
 def test_documentary_quantity_display_requires_citation_and_cannot_gain_server_marker():
@@ -234,7 +244,7 @@ def test_documentary_quantity_display_requires_citation_and_cannot_gain_server_m
     key=next(key for key in catalog if key.startswith('document:'))
     value={'answer':[{'quantity':key}],'assumptions':[],'limitations':[],
         'next_actions':[],'recommendations':[],'metrics':[],'evidence':[]}
-    with pytest.raises(ValueError,match='Documentary calculation citation missing'):
+    with pytest.raises(ValueError,match='Narrative requires selected evidence'):
         render_response(value,[],quantities=catalog)
     source=context['authorized_evidence'][0]
     value['evidence']=[{key:source[key] for key in ('id','kind','title','source')}]

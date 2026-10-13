@@ -30,19 +30,22 @@ def test_contextual_decision_schema_enforces_exact_source_enum_and_disabled_plan
     from app.core.chat_expressions import quantities,ExpressionRenderer
     catalog=quantities('73 EUR/día y 20 EUR/día.')
     schema=provider_response_schema(quantities=catalog,authorized_evidence=[])
-    value=candidate();value['answer']=[{'expression':{'operation':'difference',
-        'current':{'quantity':'73 EUR/día'},'baseline':{'quantity':'20 EUR/día'}}}]
+    value=candidate();value['status']='insufficient_data';value['limitations']=[]
+    expression={'operation':'difference',
+        'current':{'quantity':'73 EUR/día'},'baseline':{'quantity':'20 EUR/día'}}
+    value['answer']={'scenario':{'calculations':[expression],'quantities':[]}}
     _validate(value,schema,schema)
     for operand in ('100 EUR/día','73 EUR'):
-        value['answer'][0]['expression']['current']['quantity']=operand
+        expression['current']['quantity']=operand
         with pytest.raises(ResponseValidationError):_validate(value,schema,schema)
-        with pytest.raises(ValueError):ExpressionRenderer(catalog).render(value['answer'][0]['expression'])
+        with pytest.raises(ValueError):ExpressionRenderer(catalog).render(expression)
+    expression['current']['quantity']='73 EUR/día'
     disabled=provider_response_schema(quantities={},authorized_evidence=[])
     with pytest.raises(ResponseValidationError):_validate(value,disabled,disabled)
-    value['answer']=[{'expression':{'quantity':'73 EUR/día'}}]
+    value['answer']['scenario']['calculations']=[{'quantity':'73 EUR/día'}]
     with pytest.raises(ResponseValidationError):_validate(value,schema,schema)
     with pytest.raises(ValueError,match='requires an operation'):
-        ExpressionRenderer(catalog).render(value['answer'][0]['expression'])
+        ExpressionRenderer(catalog).render(value['answer']['scenario']['calculations'][0])
 
 
 def test_contextual_schema_hash_and_full_token_accounting_match_both_services():
@@ -103,7 +106,9 @@ def candidate(evidence=()):
 def test_effective_schema_rejects_invalid_evidence_before_backend_firewall(problem):
     schema = provider_response_schema(authorized_evidence=[SOURCE])
     record = {key: SOURCE[key] for key in ('id', 'kind', 'title', 'source')}
+    record['support_quote'] = SOURCE['content']
     values = [record]
+    _validate(candidate(values), schema, schema)
     if problem in ('unknown', 'foreign_tenant', 'foreign_user'): record['id'] = 'corpus:' + problem
     else: record[problem] = 'user_input' if problem == 'kind' else 'Altered provenance'
     with pytest.raises(ResponseValidationError):
@@ -113,6 +118,9 @@ def test_effective_schema_rejects_invalid_evidence_before_backend_firewall(probl
 def test_no_sources_allows_useful_greeting_but_no_invented_evidence_or_ok():
     schema = provider_response_schema(authorized_evidence=[])
     value = candidate()
+    value.pop('status')
+    value['answer'] = {'request': {'reason': 'greeting'}}
+    value['limitations'] = []
     _validate(value, schema, schema)
     value['evidence'] = [{k: SOURCE[k] for k in ('id', 'kind', 'title', 'source')}]
     with pytest.raises(ResponseValidationError): _validate(value, schema, schema)
@@ -168,21 +176,23 @@ def test_provider_projection_omits_unsupported_uniqueness_but_processor_rejects_
 
 
 @pytest.mark.parametrize('financial',[False,True])
-def test_single_union_is_equivalent_to_previous_root_intersection(financial):
+def test_narrative_union_preserves_root_constraints_and_neutral_branch_is_distinct(financial):
     source={**SOURCE,'content':('A literal rule > 20 AND amount > 100; '*20)[:500]}
     schema=provider_response_schema(financial_metrics_allowed=financial,authorized_evidence=[source])
     assert set(schema)=={'type','anyOf','$defs'}
     assert all(branch['additionalProperties'] is False for branch in schema['anyOf'])
-    # Reconstruct the prior redundant root: unrestricted status/evidence at
-    # root, intersected with two complete branches. Validate BOTH constituents
-    # rather than relying on the local union helper's early return.
-    root=copy.deepcopy(schema['anyOf'][1]);root['$defs']=schema['$defs']
+    narratives=[branch for branch in schema['anyOf'] if branch['properties']['answer'].get('type')=='array']
+    assert len(narratives)==2
+    # Reconstruct the unrestricted narrative base and intersect it with both
+    # complete narrative branches. The closed request variant has a different
+    # private shape and must not be mistaken for a narrative branch.
+    root=copy.deepcopy(narratives[1]);root['$defs']=schema['$defs']
     root['properties']['status']={'type':'string','enum':['ok','partial','no_data','insufficient_data','unsupported','refused','error']}
     root['properties']['evidence'].pop('minItems',None)
     # Structural implication is independent of the helper validator's keyword
     # support: branches contain the entire base, with only these two stricter
     # conditions. Thus base AND (branchA OR branchB) == branchA OR branchB.
-    for branch in schema['anyOf']:
+    for branch in narratives:
         reconstructed=copy.deepcopy(root);reconstructed.pop('$defs')
         reconstructed['properties']['status']=branch['properties']['status']
         if 'minItems' in branch['properties']['evidence']:
@@ -204,7 +214,12 @@ def test_single_union_is_equivalent_to_previous_root_intersection(financial):
             bad=copy.deepcopy(value);bad['scope']['period']=None;variants.append(bad)
             bad=copy.deepcopy(value);bad['metrics']=[{'name':'cost','value':'1','unit':'EUR','evidence_ids':[source['id']]}];variants.append(bad)
             for item in variants:
-                assert accepts(item,schema)==(accepts(item,root) and any(accepts(item,b) for b in schema['anyOf']))
-            assert accepts(value,schema)==(bool(evidence) or status not in ('ok','partial'))
+                assert accepts(item,schema)==(accepts(item,root) and any(accepts(item,b) for b in narratives))
+            assert accepts(value,schema)==bool(evidence)
             assert all(not accepts(item,schema) for item in variants[1:-1])
-            assert accepts(variants[-1],schema)==(financial and (bool(evidence) or status not in ('ok','partial')))
+            assert accepts(variants[-1],schema)==(financial and bool(evidence))
+    neutral=candidate();neutral.pop('status')
+    neutral['answer']={'request':{'reason':'clarification'}};neutral['limitations']=[]
+    assert accepts(neutral,schema) and not accepts(neutral,root)
+    for change in ({'evidence':[record]}, {'status':'ok'}, {'answer':[{'text':'Unsupported claim'}]}):
+        assert not accepts({**neutral,**change},schema)

@@ -53,7 +53,11 @@ def test_backend_validates_subscription_scope_without_changing_public_schema():
     assert 'subscription_ids' not in provider_response_schema()['$defs']['ResponseScope']['properties']
     assert 'subscription_ids' in response_schema()[0]['$defs']['ResponseScope']['required']
     assert all(b['properties']['metrics']['maxItems']==0 for b in provider_response_schema()['anyOf'])
-    assert all(b['properties']['metrics']['maxItems']==20 for b in provider_response_schema(financial_metrics_allowed=True)['anyOf'])
+    allowed_branches = provider_response_schema(financial_metrics_allowed=True)['anyOf']
+    assert any(b['properties']['answer'].get('type') == 'array' for b in allowed_branches)
+    for branch in allowed_branches:
+        narrative = branch['properties']['answer'].get('type') == 'array'
+        assert branch['properties']['metrics']['maxItems'] == (20 if narrative else 0)
     assert response_schema()[0]['properties']['metrics']['maxItems'] == 20
     from app.schemas.chat import _validate
     metric = {'name': 'total_cost', 'value': '0.00', 'unit': 'EUR', 'evidence_ids': ['cost:verified']}
@@ -64,7 +68,12 @@ def test_backend_validates_subscription_scope_without_changing_public_schema():
         _validate([], branch['properties']['metrics'], restricted)
     allowed = provider_response_schema(financial_metrics_allowed=True)
     for branch in allowed['anyOf']:
-        _validate([metric], branch['properties']['metrics'], allowed)
+        if branch['properties']['answer'].get('type') == 'array':
+            _validate([metric], branch['properties']['metrics'], allowed)
+        else:
+            with pytest.raises(ValueError):
+                _validate([metric], branch['properties']['metrics'], allowed)
+        _validate([], branch['properties']['metrics'], allowed)
     response = copy.deepcopy(ANSWER)
     assert validate_response(response, [], expected_subscriptions=[]) == response
     response['scope']['subscription_ids'] = ['tenant-core']
@@ -87,7 +96,7 @@ def test_private_schema_requires_actionable_evidence_and_preserves_base(financia
     candidate['answer']=[{'text':candidate['answer']}]
     for field in ('assumptions','limitations','next_actions'):
         candidate[field]=[[{'text':item}] for item in candidate[field]]
-    for status in ('ok', 'partial'):
+    for status in ('ok', 'partial', 'no_data', 'insufficient_data', 'unsupported', 'refused', 'error'):
         candidate['status'] = status
         with pytest.raises(ValueError):
             _validate(candidate, schema, schema)
@@ -95,19 +104,33 @@ def test_private_schema_requires_actionable_evidence_and_preserves_base(financia
             'title': 'Synthetic manual', 'source': 'synthetic'}]
         _validate(candidate, schema, schema)
         candidate['evidence'] = []
-    for status in ('no_data', 'insufficient_data', 'unsupported', 'refused', 'error'):
-        candidate['status'] = status
-        _validate(candidate, schema, schema)
+    neutral = copy.deepcopy(candidate)
+    neutral.pop('status')
+    neutral['answer'] = {'request': {'reason': 'clarification'}}
+    for field in ('metrics', 'recommendations', 'evidence', 'assumptions', 'limitations', 'next_actions'):
+        neutral[field] = []
+    _validate(neutral, schema, schema)
     # Complete branches preserve all constraints without duplicate root
     # intersections. References remain rooted in the original $defs.
-    assert len(schema['anyOf']) == 2
+    narratives = [branch for branch in schema['anyOf'] if branch['properties']['answer'].get('type') == 'array']
+    requests = [branch for branch in schema['anyOf'] if 'request' in branch['properties']['answer'].get('properties', {})]
+    assert len(narratives) == 2 and len(requests) == 1
+    assert len(schema['anyOf']) == len(narratives) + len(requests)
     assert 'properties' not in schema and 'required' not in schema
     public,_=response_schema()
     for branch in schema['anyOf']:
-        assert branch['required'] == public['required']
+        narrative = branch in narratives
+        expected_required = public['required'] if narrative else [key for key in public['required'] if key != 'status']
+        assert branch['required'] == expected_required
         assert branch['additionalProperties'] is False
-        assert branch['properties']['metrics']['maxItems'] == (20 if financial_allowed else 0)
-        invalid = copy.deepcopy(candidate)
+        assert branch['properties']['metrics']['maxItems'] == (20 if financial_allowed and narrative else 0)
+        valid = copy.deepcopy(candidate if narrative else neutral)
+        if narrative:
+            valid['status'] = branch['properties']['status']['enum'][0]
+            valid['evidence'] = [{'id': 'manual:synthetic', 'kind': 'corpus',
+                'title': 'Synthetic manual', 'source': 'synthetic'}]
+        _validate(valid, branch, schema)
+        invalid = copy.deepcopy(valid)
         invalid['extra'] = 'not allowed'
         with pytest.raises(ValueError):
             _validate(invalid, {'$defs': schema['$defs'], 'anyOf': [branch]}, schema)

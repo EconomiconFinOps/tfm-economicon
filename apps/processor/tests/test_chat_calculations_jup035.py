@@ -120,10 +120,11 @@ def test_small_operands_remain_exact_when_result_is_rounded():
 
 
 def test_long_tail_without_sentence_boundary_respects_wire_limit(monkeypatch):
-    value=_provider(ANSWER);value['answer']=[{'text':'😀'*2400}]
+    from test_chat_gateway_jup035 import supported_provider, SOURCE
+    value=supported_provider();value['answer']=[{'text':'😀'*2400}]
     gateway,_=provider(monkeypatch,[wire({'content':json.dumps(value)})],read_size=100000)
     import threading
-    records=list(gateway._records({'messages':[],'financial_metrics_allowed':False},
+    records=list(gateway._records({'messages':[],'financial_metrics_allowed':False,'authorized_evidence':[SOURCE]},
         time.time()+60,{},threading.Event(),'none'))
     assert records[-1]['type']=='candidate'
     deltas=[record['text'] for record in records if record['type']=='delta']

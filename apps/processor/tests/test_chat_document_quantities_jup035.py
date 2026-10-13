@@ -77,7 +77,8 @@ def test_documentary_operand_requires_its_source_in_final_selected_evidence(evid
         'left':{'quantity':'document:corpus:experiment:1:17 %'},
         'right':{'quantity':'document:corpus:experiment:1:17 %'}}}],
         'assumptions':[],'limitations':[],'next_actions':[],'evidence':evidence}
-    with pytest.raises(ValueError,match='citation missing'):render_response(value,[],quantities=catalog)
+    with pytest.raises(ValueError,match='citation missing' if evidence else 'Narrative requires selected evidence'):
+        render_response(value,[],quantities=catalog)
     value['evidence']=[{'id':'corpus:experiment:1','kind':'corpus'}]
     assert '34 %' in render_response(value,[],quantities=catalog)['answer']
 
@@ -93,4 +94,4 @@ def test_reused_compound_denominator_fits_existing_depth_and_operation_budget():
     renderer=ExpressionRenderer(catalog)
     answer=render_segments([{'expression':total},{'text':'Participación: '},{'expression':part}],[],expressions=renderer)
     assert '30 GB' in answer and '16.666667 %' in answer
-    assert renderer.operations==5
+    assert renderer.operations==3  # two distinct sums plus percentage; repeated denominator is cached

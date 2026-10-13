@@ -200,10 +200,26 @@ total entre todos los campos. Ningun calculo SHALL conferir evidencia financiera
 - **AND** el catalogo SHALL aparecer una sola vez mediante $defs compartidos y niveles finitos; ambos servicios SHALL contar el esquema completo identico, sin intersecciones redundantes de literales
 
 #### Scenario: Operandos, unidades y limites
-- **WHEN** una expresion usa una hoja ajena, forma mixta, operacion no admitida, unidades incompatibles, mas de12 operaciones, profundidad excesiva o magnitud fuera de limite
+- **WHEN** una expresion usa una hoja ajena, forma mixta, operacion no admitida, unidades incompatibles, mas de12 evaluaciones numericas distintas mas comparaciones/comprobaciones, profundidad excesiva o magnitud fuera de limite
 - **THEN** SHALL rechazarla sin reparar operandos ni comprar otra inferencia; SHALL conservar suma/diferencia, cociente dimensional, porcentaje, variacion relativa con baseline explicita y comparacion terminal sin reutilizar booleanos como numeros
+
 - **AND** denominador cero SHALL producir una limitacion explicita de resultado indefinido sin inventar numero; conversion no autorizada SHALL no producir numero y SHALL conservar monedas separadas y solicitud de datos necesarios
 - **AND** SHALL comparar sin redondear operandos y marcar aproximacion cuando la salida se redondee a seis decimales; diferencias de porcentajes SHALL mostrarse como puntos porcentuales
+
+#### Scenario: Reutilización numérica acotada
+- **WHEN** un subárbol numérico idéntico aparece varias veces
+- **THEN** SHALL reutilizar su evaluación sólo después de validar cada ocurrencia a su profundidad real y acumular su provenance
+- **AND** SHALL rechazar mutación del catálogo, trece evaluaciones distintas, exceso de profundidad o de salida; comparaciones SHALL seguir contando
+
+#### Scenario: Separación de narrativa y escenario sin fuentes
+- **WHEN** la respuesta no selecciona evidencia autorizada
+- **THEN** SHALL usar un escenario tipado con cantidades/expresiones exclusivamente del usuario o una solicitud neutral cerrada, sin prosa documental libre
+- **AND** SHALL conservar el cálculo hipotético completo sin afirmar carencia de operandos y derivar el estado y próximo paso de las solicitudes neutrales en servidor
+
+#### Scenario: Referencias de recomendaciones seleccionadas explícitamente
+- **WHEN** una recomendación selecciona registros privados de evidencia
+- **THEN** SHALL validar cada registro y pasaje contra las fuentes autorizadas antes de deduplicar, proyectar los IDs públicos y unir únicamente esas selecciones
+- **AND** SHALL rechazar registros alterados, ajenos o sin pasaje válido sin persistencia; la selección SHALL NOT conceder autoridad financiera ni demostrar pertinencia semántica
 
 #### Scenario: Proyeccion y streaming de expresiones
 - **WHEN** la finalizacion incluye segmentos privados text o expression

@@ -158,6 +158,11 @@ def chat_provider_schema(*, financial_metrics_allowed=False, authorized_evidence
     # Chat never authorizes estimated savings; mirror the backend firewall.
     for field in ('estimated_savings','currency'):
         schema['$defs']['Recommendation']['properties'][field]={'type':'null'}
+    recommendation=schema['$defs']['Recommendation']
+    recommendation['properties'].pop('evidence_ids')
+    recommendation['required'].remove('evidence_ids')
+    recommendation['properties']['evidence']={'type':'array','minItems':1,'maxItems':20,'items':{'$ref':'#/$defs/Evidence'}}
+    recommendation['required'].append('evidence')
     # Select literal support after drafting the claims it must substantiate.
     # Selection remains constrained and verified; ordering is not entailment.
     schema['properties'] = {**{key:value for key,value in schema['properties'].items() if key!='evidence'},
@@ -184,6 +189,9 @@ def assemble_chat_response(value, period, subscriptions=None, *, authorized_evid
         raise ValueError('Period is server-owned.')
     if 'subscription_ids' in value['scope']:
         raise ValueError('Subscriptions are server-owned.')
+    if authorized_evidence is not None:
+        from app.core.chat_segments import project_recommendation_citations
+        value=project_recommendation_citations(value,authorized_evidence)
     selected = [] if subscriptions is None else subscriptions
     if (not isinstance(selected, list) or len(selected) > 20
             or any(type(item) is not str or not item or len(item) > 256 for item in selected)

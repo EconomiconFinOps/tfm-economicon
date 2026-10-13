@@ -36,7 +36,11 @@ def test_duplicate_segment_keys_and_surrogate_rejected():
 def test_public_lengths_and_no_calculation_branch():
     from app.agents.schemas import chat_provider_schema
     schema=chat_provider_schema(authorized_evidence=[],calculations=[])
-    assert set(schema['properties']['answer']['items']['properties'])=={'text'}
+    assert set(schema['properties']['answer']['properties'])=={'request'}
+    source={'id':'s','kind':'corpus','title':'Manual','source':'manual','content':'Exact source.'}
+    backed=chat_provider_schema(authorized_evidence=[source],calculations=[])
+    narrative=[b for b in backed['anyOf'] if b['properties']['answer'].get('type')=='array']
+    assert narrative and all(set(b['properties']['answer']['items']['properties'])=={'text'} for b in narrative)
     with pytest.raises(ValueError):render_segments([{'calculation_id':'0'}],[])
     value={'answer':[{'text':'ok'}], 'assumptions':[[{'text':'a'*501}]],'limitations':[],'next_actions':[]}
     with pytest.raises(ValueError):render_response(value,[])

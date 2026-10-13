@@ -11,7 +11,7 @@ import pytest
 from pydantic import SecretStr
 
 from app.clients.chat_gateway import ChatGateway
-from test_chat_gateway_jup035 import ANSWER, _provider
+from test_chat_gateway_jup035 import ANSWER, _provider, request_provider
 from test_chat_private_jup035 import private, claim, run, signed
 
 
@@ -43,7 +43,7 @@ def empty_result():
 @pytest.mark.parametrize('with_source',[False,True])
 def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch,with_source):
     source={'id':'corpus:current:0','kind':'corpus','title':'Current source','source':'Manual','content':'A supported threshold of 17%.'}
-    gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(_provider(ANSWER))})])
+    gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(request_provider())})])
     async def result(control):
         return {**empty_result(),'content':json.dumps({'evidence':[source] if with_source else [],'omissions':[]})}
     async def exercise():return [r async for r in gateway(retrieval_context(),time.time()+60,tool_result=result)]
@@ -60,7 +60,7 @@ def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch
         assert schema['$defs']['SourceQuantity']['properties']['quantity']['enum']==['document:corpus:current:0:17 %']
     else:
         assert schema['properties']['evidence']['maxItems']==0
-        assert not {'ok','partial'} & set(schema['properties']['status']['enum'])
+        assert 'status' not in schema['properties'] and 'status' not in schema['required']
     for branch in schema.get('anyOf',[schema]):assert branch['properties']['metrics']['maxItems']==0
     for field in ('estimated_savings','currency'):
         assert schema['$defs']['Recommendation']['properties'][field]=={'type':'null'}
@@ -79,7 +79,7 @@ def test_final_failure_diagnostic_never_contains_candidate_or_secret(monkeypatch
 @pytest.mark.parametrize('failure',['native','invalid_final','eof','length','wrong_id','429'])
 def test_single_generation_failures_never_retry_or_change_provider(monkeypatch,failure):
     from urllib.error import HTTPError
-    final=wire({'content':json.dumps(_provider(ANSWER))})
+    final=wire({'content':json.dumps(request_provider())})
     if failure=='native':final=wire({'tool_calls':[{'index':0,**TOOL},{'index':1,**TOOL}]},'tool_calls')
     if failure=='invalid_final':final=wire({'content':'{"answer":"not strict"}'})
     if failure=='eof':final=final.replace(b'data: [DONE]\n\n',b'')
@@ -148,7 +148,7 @@ def test_legacy_protocol_cannot_silently_become_direct(monkeypatch,legacy):
 
 
 def test_private_endpoint_hmac_retrieval_then_one_final(private,monkeypatch):
-    gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(_provider(ANSWER))},tokens=24)])
+    gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(request_provider())},tokens=24)])
     monkeypatch.setattr(private[0].state,'chat_gateway',gateway)
     async def scenario(client):
         payload=claim(context={'prompt_version':'synthetic-v2',**retrieval_context()})

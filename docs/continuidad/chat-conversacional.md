@@ -1,4 +1,68 @@
-## Corte vigente: survey22 y corrección23 — 13/10/2026
+## Delta24 offline en preparación — 13/10/2026
+
+Sobre runtime23 inmutable: orientación útil derivada de cocientes/base cero;
+selección privada explícita de citas en recomendaciones y unión verificada;
+narrativa libre sólo con evidencia, escenario tipado de cantidades de usuario
+y solicitudes neutrales con estado/próximo paso derivados. FinOpsResponse público
+intacto. Memoización cuenta hasta12 evaluaciones numéricas distintas más
+comparaciones, valida cada ocurrencia/profundidad y conserva provenance; no
+soluciona por sí sola prosa incoherente del001. ADR v10 documenta límites.
+Pruebas locales nuevas:19 modos,41 modos/persistencia,52 citas/aritmética PASS;
+revisión independiente30 combinaciones de streaming y rechazo de13 operaciones
+PASS. Paridad independiente4 contextos PASS, bundle
+`18bbae2104524d40f5fb0c5ddfe5b8108c5b94e1ea72aed49f6c162162fc0f30`.
+Regresión completa local test_chat: backend587PASS/46SKIP/9FAIL iniciales;
+cuatro fixtures de evidencia corregidos (17PASS), tres fallos de bundle durante
+edición del prompt revalidados con recursos congelados (35PASS); quedan dos
+WinError1314 al crear symlinks. Processor506PASS/6SKIP/15FAIL iniciales: ocho
+fixtures antiguos corregidos (cola UTF8, modos, fuentes y conteo de repeticiones;
+91PASS y último módulo34PASS). Permanecen cinco fallos de cancelación/capacidad
+summary (TimeoutError/cancelling, WinError10053) y dos symlink1314: requieren
+contraste Linux sobre el candidato, sin cambiar tiempos ni añadir omisiones.
+Gateway/diagnósticos50PASS, auto/segmentos40PASS, boolean/modos35PASS,
+OpenSpec69PASS. Bundle final `ffe9aeda5bbd68792f9f68f30d81701c95e3856352c640b165bdc0b5d39b3a3d`;
+paridad independiente4 contextos PASS. Banco SHA256
+`0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7` intacto.
+Pendiente construir congelado, resolver contraste Linux y renovar vigencia
+existente antes de focal001/003/008/019/022/023/025/026/028 y full28 original.
+No evidencia semántica nueva ni gasto desde0.796833638USD. UI login pendiente.
+
+## Corte vigente: candidato23 y batería completa terminada — 13/10/2026
+
+Publicado `9603370a2b1266040d8359f7c5b9eb695dc623a3`. CI PR `38430111305`
+PASS; imágenes expression23 verificadas contra 84 archivos backend,74 processor
+y112 frontend. Paridad de esquema/conteo entre servicios y bundle
+`jup-035.chat.v3:561f6f9d49a1958837ec1a79a2d79fe8f334d25bc2996777d2b09f94418af857`.
+Pruebas:132 backend,63 processor,14 persistencia SSE/JSONB,6 cancelación,
+69 OpenSpec y54 pgvector nativo PASS. La suite pgvector usa un contenedor
+desechable sin red externa y verifica vecinos fuera del pool vectorial,
+aislamiento tenant/proveedor, snapshot y límite/deadline; no datos reales.
+
+Focal003/005/007/017:4/4 PASS semánticos y mecánicos auditados por el padre.
+017 muestra100>100 falso,25>20 verdadero y AND no cumplido, sin prosa de
+conclusión elegida por modelo. Recibo externo `expression23-focused.json`.
+Esta muestra no sustituye la batería completa ni borra fallos históricos.
+Full28 original terminada sobre ese mismo runtime inmutable, sin reintentos
+manuales y un intento por caso:26completed/2failed. Recibo `expression23-full28.json`.
+001 falla por `expression_operation_limit` tras cálculos redundantes y prosa
+aritmética incoherente;022 por `unknown_evidence_reference` al validar el resultado.
+No se conoce si esa referencia era inventada o autorizada pero omitida de la
+selección final. Ningún400, truncado o reintento. Auditoría semántica final independiente:19PASS/9FAIL. Además de001/022,
+fallan003 (atribución documental sin citas),008/019 (petición útil ante cero),
+023 (fuente autorizada),025 (propuesta revisable),026 (cobertura) y028
+(requisitos adicionales sin soporte).016/017/018 y027 pasan esta muestra.
+Invariantes mecánicas28PASS; NO aceptación global. No ocultar esos fallos.
+Gasto acumulado posterior:0.796833638USD; techo TOTAL2USD y reserva0.25,
+comprobados antes de cada caso. Claves existentes hasta17:21:51UTC sin cambios
+de modelos, cuotas ni presupuestos. Aislamiento API sobre candidato23:Core200 y
+Growth404 en conversación/status/result/events (`expression23-isolation-remote.log`).
+UI017 no ejecutada: sesión caducada y login humano pendiente; no consumo UI.
+La coordinación de consumo vuelve al implementador, sin nueva campaña hasta
+congelar y revisar candidato24. Renovar sólo vigencia de claves existentes antes
+de otra batería (17:21:51UTC no permite una campaña tardía completa).
+No merge, Discord ni reviews ficticias.
+
+## Antecedente: survey22 y corrección23 — 13/10/2026
 
 PR121 publica `8d897c4` (sólo fixture CI posterior a producto `f5af693`).
 CI técnica PASS según comprobación del padre. Runtime expression22 conserva

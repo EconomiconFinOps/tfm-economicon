@@ -5,6 +5,7 @@ from app.core.chat_calculations import render_text
 from app.core.chat_rules import required_classification
 from app.core.chat_boolean_rules import boolean_definition, render_boolean
 from app.core.chat_expressions import ExpressionRenderer, expression_definitions
+from app.core.chat_response_modes import bind_modes, mode, render_mode, REQUESTS
 
 class ServerRenderedResponse(dict):
     """In-process provenance, never a JSON flag accepted from a provider."""
@@ -17,15 +18,61 @@ def server_evidence(records):
     return [{key:record[key] for key in ('id','kind','title','source')} for record in records]
 
 
+def project_recommendation_citations(value,authorized_evidence):
+    """Project explicit private selections, never infer a supporting source.
+
+    Every selected record is checked before union/deduplication, including a
+    record already present in top-level evidence with a different quotation.
+    This does not verify entailment of a recommendation's prose.
+    """
+    recommendations=value.get('recommendations')
+    if recommendations==[]:return value
+    if not isinstance(recommendations,list) or len(recommendations)>20:
+        raise ValueError('Invalid recommendation collection.')
+    known={source['id']:source for source in authorized_evidence}
+    evidence=value.get('evidence')
+    if not isinstance(evidence,list):raise ValueError('Invalid evidence collection.')
+
+    def checked(items):
+        if not isinstance(items,list) or len(items)>20:raise ValueError('Invalid recommendation citations.')
+        result=[];seen=set()
+        for item in items:
+            if not isinstance(item,dict) or not isinstance(item.get('id'),str):
+                raise ValueError('Invalid recommendation citation.')
+            identifier=item['id'];source=known.get(identifier)
+            if source is None or identifier in seen:raise ValueError('Invalid recommendation citation.')
+            fields={'id','kind','title','source'}
+            if source.get('kind')=='corpus':fields.add('support_quote')
+            if set(item)!=fields or any(item.get(key)!=source.get(key) for key in ('id','kind','title','source')):
+                raise ValueError('Invalid recommendation citation.')
+            if source.get('kind')=='corpus' and item['support_quote'] not in quote_choices(source.get('content')):
+                raise ValueError('Citation passage is not grounded.')
+            seen.add(identifier);result.append(copy.deepcopy(item))
+        return result
+
+    combined=checked(evidence);seen={item['id'] for item in combined};projected=[]
+    for recommendation in recommendations:
+        if not isinstance(recommendation,dict) or 'evidence_ids' in recommendation or 'evidence' not in recommendation:
+            raise ValueError('Recommendation citations must be explicit records.')
+        chosen=checked(recommendation['evidence'])
+        if not chosen:raise ValueError('Invalid recommendation citations.')
+        projected.append({**{key:item for key,item in recommendation.items() if key!='evidence'},
+            'evidence_ids':[item['id'] for item in chosen]})
+        for item in chosen:
+            if item['id'] not in seen:combined.append(item);seen.add(item['id'])
+    if len(combined)>20:raise ValueError('Invalid recommendation citations.')
+    return {**value,'recommendations':projected,'evidence':combined}
+
+
 CLASSIFIED_NOTES=(
-    'Las cantidades proceden del escenario aportado; no son métricas financieras verificadas.',
-    'La clasificación aplica únicamente al KPI y a la sección documental indicados.',
-    'El denominador es el mostrado en la fórmula; debe corresponder a los conceptos elegibles del escenario.',
+    'Las cantidades proceden del escenario aportado; no son mÃ©tricas financieras verificadas.',
+    'La clasificaciÃ³n aplica Ãºnicamente al KPI y a la secciÃ³n documental indicados.',
+    'El denominador es el mostrado en la fÃ³rmula; debe corresponder a los conceptos elegibles del escenario.',
 )
 
 
-BOOLEAN_NOTES=('Las cantidades y la regla se aplican únicamente al escenario indicado.',
-    'Una condición indefinida no se convierte en un resultado numérico inventado.',)
+BOOLEAN_NOTES=('Las cantidades y la regla se aplican Ãºnicamente al escenario indicado.',
+    'Una condiciÃ³n indefinida no se convierte en un resultado numÃ©rico inventado.',)
 CLASSIFICATION_ABSTENTIONS=('No puedo clasificar de forma fundada: necesito identificar los componentes del coste elegible y el numerador del KPI.',
     'No puedo clasificar de forma fundada: necesito una regla completa y aplicable al KPI solicitado.',)
 
@@ -107,11 +154,12 @@ def bind_segments(schema, records=None, quantities=None):
             return {**base,'$defs':schema['$defs']}
         if 'anyOf' in schema:schema['anyOf'].append(base)
         else:schema={'type':'object','anyOf':[{k:v for k,v in schema.items() if k!='$defs'},base],'$defs':schema['$defs']}
-    return schema
+    return schema if required_classification(quantities) else bind_modes(schema,quantities)
 
 
 
 def render_classified_answer(value,expressions):
+    if mode(value):return render_mode(value,expressions)
     if isinstance(value,dict) and set(value)=={'boolean'}:
         if expressions is None:raise ValueError('Boolean rule not grounded.')
         from decimal import localcontext
@@ -185,10 +233,21 @@ def render_response(value, records, *, quantities=None):
     if not isinstance(value,dict) or 'answer' not in value:
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
-    classified=isinstance(value['answer'],dict)
+    response_mode=mode(value['answer'])
+    classified=isinstance(value['answer'],dict) and response_mode is None
     boolean=classified and set(value['answer'])=={'boolean'}
     if getattr(quantities,'boolean_rules',()) and getattr(quantities,'boolean_requested',False) and not boolean:
         raise ValueError('Explicit boolean rule requires typed answer.')
+    if response_mode:
+        if any(value.get(field)!=[] for field in ('evidence','metrics','recommendations','assumptions','limitations','next_actions')):
+            raise ValueError('Invalid neutral auxiliary fields.')
+        if response_mode=='request' and 'status' in value:
+            raise ValueError('Neutral request status is server-owned.')
+        if response_mode=='scenario' and value.get('status')!='insufficient_data':
+            raise ValueError('User scenario status requires no financial authority.')
+    elif not classified and value.get('evidence')==[] and not required_classification(quantities):
+        raise ValueError('Narrative requires selected evidence.')
+
     if required_classification(quantities) and not classified:
         if value['answer'] not in [[{'text':note}] for note in CLASSIFICATION_ABSTENTIONS]:
             raise ValueError('Explicit classification requires typed answer.')
@@ -204,7 +263,7 @@ def render_response(value, records, *, quantities=None):
             items=value.get(field)
             if not isinstance(items,list) or any(item not in [[{'text':note}] for note in (BOOLEAN_NOTES if boolean else CLASSIFIED_NOTES)] for item in items):
                 raise ValueError('Invalid classified auxiliary fields.')
-    result={**value,'answer':render_classified_answer(value['answer'],expressions) if classified else render_segments(value['answer'],records,expressions=expressions)}
+    result={**value,'answer':render_classified_answer(value['answer'],expressions) if isinstance(value['answer'],dict) else render_segments(value['answer'],records,expressions=expressions)}
     for field in ('assumptions','limitations','next_actions'):
         if field not in value or not isinstance(value[field],list) or len(value[field])>10:
             raise ValueError('Invalid calculation collection.')
@@ -213,6 +272,10 @@ def render_response(value, records, *, quantities=None):
                     not isinstance(item[0],dict) or set(item[0])!={'text'}):
                 raise ValueError('Invalid short prose item.')
         result[field]=[render_segments(item,[],limit=500,expressions=None if classified else expressions) for item in value[field]]
+    if response_mode=='request':
+        status,_,action=REQUESTS[value['answer']['request']['reason']]
+        result['status']=status
+        result['next_actions']=[action]
     if expressions is not None:
         for recommendation in value.get('recommendations',[]):
             if isinstance(recommendation,dict):
@@ -235,6 +298,11 @@ def render_response(value, records, *, quantities=None):
         if not isinstance(evidence,list) or any(not isinstance(item,dict) for item in evidence):
             raise ValueError('Documentary calculation citation missing.')
         cited={item.get('id') for item in evidence if item.get('kind')=='corpus'}
+        # Recommendation selections will be individually authenticated by the
+        # assembler before projection. Their IDs alone never confer authority.
+        for recommendation in value.get('recommendations',[]):
+            if isinstance(recommendation,dict) and isinstance(recommendation.get('evidence'),list):
+                cited.update(item.get('id') for item in recommendation['evidence'] if isinstance(item,dict) and item.get('kind')=='corpus')
         if not expressions.documentary_sources<=cited:
             raise ValueError('Documentary calculation citation missing.')
     return result

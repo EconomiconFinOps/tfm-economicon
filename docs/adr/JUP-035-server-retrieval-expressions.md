@@ -227,3 +227,46 @@ Esto corrige una carencia demostrable, no prueba la causa exacta del fallo005/00
 Evidence se ordena después del texto en el esquema privado para permitir elegir
 soporte de afirmaciones ya redactadas. Const/enums y verificación literal siguen
 intactos; cambiar el orden no demuestra entailment ni aceptación semántica.
+
+### Narrativa respaldada y escenarios sin fuentes (13/10/2026, survey23)
+
+Survey23 pasó19/28 criterios semánticos; los28 recibos conservaron los límites
+y la atomicidad. No está aceptada. La narrativa de003 atribuyó un método a
+documentos pero seleccionó evidence vacía;001 repitió cálculos y redactó una
+suma incoherente;022 terminó con una referencia de recomendación ausente de las
+fuentes seleccionadas. No se conoce si ese ID era inventado o autorizado pero
+omitido: no se atribuye una causa más concreta que el error observado.
+
+El contrato privado v10 separa narrativa libre respaldada (al menos una fuente
+seleccionada, también en estados de abstención) de `answer.scenario`, compuesto
+por cantidades originales y expresiones de datos aportados por el usuario. Esta
+última rama prohíbe prosa libre y operandos documentales, conserva evidence vacía
+y status insufficient_data por el contrato público vigente, pero presenta el
+cálculo completo como hipotético sin afirmar que falten sus operandos.
+`answer.request.reason` ofrece motivos genéricos cerrados; el servidor deriva
+status y un siguiente paso útil, sin que JSON pueda sobrescribirlos. Incluye
+saludo, aclaración, datos autorizados, cobertura/ingesta, base comparable,
+documentación no contrastada, fuera de alcance y ejecución no habilitada.
+El modelo aún puede seleccionar un motivo improcedente: esa necesidad sigue
+sujeta a evaluación semántica. No se eliminan las explicaciones documentales.
+
+Recommendation selecciona registros de evidencia privados completos. Cada uno
+se contrasta con el registro y la ventana literal autorizados antes de deduplicar;
+el servidor une sólo esas selecciones explícitas y proyecta los evidence_ids
+públicos. No autocita el retrieval, no fabrica citas para una afirmación y no
+demuestra entailment. No concede autoridad para métricas ni ahorro estimado.
+
+El límite12 pasa a contar evaluaciones numéricas estructuralmente distintas,
+más cada comparación/comprobación de clasificación, con memoización de los
+subárboles idénticos. Sustituye el conteo de cada repetición descrito arriba:
+no se aumenta el tope12 ni se afirma que el cache corrija prosa falsa. Cada
+ocurrencia se valida de nuevo a su profundidad real antes del cache, restaura
+provenance y usa un catálogo aislado cuya mutación se rechaza. Trece operaciones
+distintas siguen fallando; segmentos, bytes, caracteres, profundidad y magnitud
+mantienen sus límites. La salida repetida sigue contando para el límite textual.
+
+Una razón evaluada de denominador/base cero añade una petición de cobertura o
+base comparable; no supone que cero sea ausencia de ingesta ni garantiza un
+denominador futuro positivo. El resultado público, SSE y JSONB siguen idénticos.
+No cambia el modelo/proveedor, una recuperación/generación,3200tokens, deadline
+ni el presupuesto autorizado. La batería completa del candidato sigue pendiente.

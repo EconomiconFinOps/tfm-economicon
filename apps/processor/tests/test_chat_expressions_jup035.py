@@ -56,12 +56,39 @@ def test_zero_denominator_is_explicit_undefined_not_fabricated(operator,fields):
     renderer=ExpressionRenderer(quantities('10 EUR; 0 EUR'))
     text=renderer.render({'operation':operator,fields[0]:leaf('10 EUR'),fields[1]:leaf('0 EUR')})
     assert 'indefinid' in text and 'cero' in text and '= 0' not in text
+    if operator=='relative_change':
+        assert 'base comparable' in text and 'recurso nuevo' in text
+    else:
+        assert 'confirmar la cobertura' in text and 'período' in text
+    assert 'será positivo' not in text
+
+
+@pytest.mark.parametrize('width',[1,7,8192])
+def test_undefined_guidance_is_server_rendered_and_streams_identically(width):
+    catalog=quantities('37 EUR y 0 EUR')
+    node={'operation':'relative_change','current':leaf('37 EUR'),'baseline':leaf('0 EUR')}
+    segments=[{'expression':node}]
+    raw=json.dumps({'answer':segments},ensure_ascii=True)
+    parser=SegmentAnswerJSON([],quantities=catalog)
+    streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
+    assert streamed==parser.finish()==render_segments(segments,[],expressions=ExpressionRenderer(catalog))
+    assert 'base comparable' in streamed and 'recurso nuevo' in streamed
+
+
+def test_undefined_guidance_propagates_through_comparison_without_false_zero():
+    renderer=ExpressionRenderer(quantities('37 EUR; 0 EUR; 8 %'))
+    node={'operation':'compare','relation':'gt','left':{
+        'operation':'relative_change','current':leaf('37 EUR'),'baseline':leaf('0 EUR')},'right':leaf('8 %')}
+    text=renderer.render(node)
+    assert 'Comparación no definida' in text and 'base comparable' in text
+    assert 'verdadero' not in text and 'falso' not in text
 
 
 def test_currency_conversion_cannot_hide_in_rate_dimensions():
     r=ExpressionRenderer(quantities('100 EUR/día y 200 USD/día'))
     text=r.render({'operation':'ratio','numerator':leaf('100 EUR/día'),'denominator':leaf('200 USD/día')})
     assert 'no autorizada' in text and '0.5' not in text
+    assert 'base comparable' not in text and 'cobertura' not in text
 
 
 def test_percentage_difference_is_displayed_as_percentage_points():
@@ -91,13 +118,44 @@ def test_complete_expression_blocks_stream_exactly_like_public_projection(width)
 
 
 def test_operations_count_across_answer_and_depth():
-    catalog=quantities('73 EUR y 20 EUR')
-    segment={'expression':difference(leaf('73 EUR'),leaf('20 EUR'))}
-    value={'answer':[segment]*13,'assumptions':[],'limitations':[],'next_actions':[]}
+    catalog=quantities('73 EUR; '+ '; '.join(str(i)+' EUR' for i in range(20,33)))
+    value={'answer':[{'expression':difference(leaf('73 EUR'),leaf(str(i)+' EUR'))} for i in range(20,33)],
+        'assumptions':[],'limitations':[],'next_actions':[]}
     with pytest.raises(ValueError,match='operation limit'):render_response(value,[],quantities=catalog)
     node=leaf('73 EUR')
     for _ in range(5):node=difference(node,leaf('20 EUR'))
     with pytest.raises(ValueError,match='depth'):ExpressionRenderer(catalog).render(node)
+
+
+def test_numeric_memoization_preserves_depth_provenance_and_catalog_identity():
+    catalog=quantities('73 EUR y 20 EUR')
+    catalog['20 EUR']['provenance']=[{'kind':'corpus','id':'authorized'}]
+    renderer=ExpressionRenderer(catalog)
+    expression=difference(leaf('73 EUR'),leaf('20 EUR'))
+    first=renderer.render(expression)
+    renderer.documentary_sources.clear()
+    assert renderer.render(expression)==first and renderer.operations==1
+    assert renderer.documentary_sources=={'authorized'}
+    catalog['20 EUR']['value']='999'
+    assert renderer.render(expression)==first  # Caller mutation cannot alter its snapshot.
+    nested=expression
+    for _ in range(4):nested=difference(nested,leaf('20 EUR'))
+    with pytest.raises(ValueError,match='depth'):renderer.render(nested)
+    renderer.catalog['20 EUR']['value']='999'
+    with pytest.raises(ValueError,match='catalog changed'):renderer.render(expression)
+
+
+def test_repeated_denominator_counts_unique_evaluations_but_comparisons_still_count():
+    renderer=ExpressionRenderer(quantities('18 GB; 7 GB; 5 GB'))
+    total={'operation':'sum','left':leaf('18 GB'),'right':{
+        'operation':'sum','left':leaf('7 GB'),'right':leaf('5 GB')}}
+    assert '= 30 GB' in renderer.render(total)
+    for key in ('18 GB','7 GB','5 GB'):
+        renderer.render({'operation':'percentage','numerator':leaf(key),'denominator':total})
+    assert renderer.operations==5  # Two sums, three percentages.
+    comparison={'operation':'compare','left':total,'right':total,'relation':'eq'}
+    renderer.render(comparison);renderer.render(comparison)
+    assert renderer.operations==7
 
 
 def test_displayed_root_is_operation_and_short_items_are_single_bounded_prose():
@@ -133,6 +191,8 @@ def test_one_server_retrieval_precedes_exactly_one_generation(monkeypatch):
     from test_chat_auto_jup035 import provider,wire
     from test_chat_gateway_jup035 import ANSWER,_provider
     value=_provider(ANSWER)
+    value.pop('status')
+    value.update(answer={'request':{'reason':'missing_documentation'}},limitations=[])
     gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(value)})])
     ctx={**context('Explica costes'),'tool_protocol':'server-documentation-v4','financial_metrics_allowed':False,'authorized_evidence':[]}
     calls=[]

@@ -7,6 +7,71 @@ import pytest
 from test_chat_operations_jup035 import ANSWER, api, body, headers, messages, path, run
 
 
+@pytest.mark.parametrize('case',['valid','quote','metadata','metrics','savings'])
+def test_explicit_recommendation_evidence_projection_keeps_atomic_history_and_authority(api,monkeypatch,case):
+    import importlib.util
+    import sys
+    from pathlib import Path
+    from app.core.chat_segments import render_response
+    base=Path(__file__).parents[2]/'processor/app'
+    def load(name,location):
+        spec=importlib.util.spec_from_file_location(name,location)
+        module=importlib.util.module_from_spec(spec);sys.modules[name]=module;spec.loader.exec_module(module)
+        return module
+    parser_module=load('recommendation_stream_parser',base/'clients/chat_stream_parser.py')
+    schema_module=load('recommendation_provider_schema',base/'agents/schemas.py')
+    source={'id':'sizing-policy','kind':'corpus','title':'Sizing policy','source':'guide',
+        'content':'Compare observed demand before committing capacity.'}
+    intro={**source,'id':'sizing-intro','content':'Sizing depends on observed demand.'}
+    selected={key:source[key] for key in ('id','kind','title','source')}
+    selected['support_quote']=source['content']
+    value=copy.deepcopy(ANSWER)
+    value['scope'].pop('period');value['scope'].pop('subscription_ids')
+    value.update(status='ok',answer=[{'text':'Revisar la demanda observada.'}],limitations=[],
+        evidence=[{key:intro[key] for key in ('id','kind','title','source')}|{'support_quote':intro['content']}],
+        recommendations=[{'category':'investigation','action':'Revisar la demanda.',
+            'rationale':'La política exige conocer la demanda antes del compromiso.',
+            'estimated_savings':None,'currency':None,'confidence':'medium','risk':'low',
+            'requires_human_approval':True,'evidence':[selected]}])
+    if case=='quote':selected['support_quote']='not an authorized passage'
+    if case=='metadata':selected['source']='foreign source'
+    if case=='metrics':value['metrics']=[{'name':'cost','value':'9','unit':'EUR','evidence_ids':[source['id']]}]
+    if case=='savings':value['recommendations'][0].update(estimated_savings='9',currency='EUR')
+    async def context_builder(scope,payload,descriptor):
+        return {'prompt_version':descriptor['prompt_version'],'messages':[],
+            'authorized_evidence':[intro,source],'financial_metrics_allowed':False,
+            'source_citations':[{'evidence_id':item['id'],'kind':'corpus','title':item['title'],
+                'source':item['source'],'excerpt':item['content'],'document_id':'doc',
+                'reference':'document:doc/'+item['id'],'section':'Sizing','page':None} for item in (intro,source)],
+            'screen_context':payload['screen_context']}
+    monkeypatch.setattr(api[0].state,'chat_context_builder',context_builder)
+    projected=[]
+    async def stream(claim):
+        parser=parser_module.SegmentAnswerJSON([],quantities={})
+        for char in json.dumps(value,ensure_ascii=True):
+            delta=parser.feed(char)
+            if delta:yield {'type':'delta','text':delta}
+        rendered=render_response(value,[],quantities={})
+        result=schema_module.assemble_chat_response(rendered,None,authorized_evidence=[intro,source])
+        assert parser.finish()==result['answer']
+        projected.append(result)
+        yield {'type':'candidate','result':result,'finish_reason':'stop'}
+    monkeypatch.setattr(api[2],'stream',stream)
+    async def scenario(client):
+        response=await client.post(path(),json=body(),headers=headers())
+        saved=messages(api[1])
+        if case!='valid':
+            assert 'event: final' not in response.text and saved==[]
+        else:
+            assert 'event: final' in response.text and len(saved)==2
+            assistant=next(item for item in saved if item['role']=='assistant')
+            assert assistant['content']==projected[0]['answer']
+            assert assistant['metadata']['response']==projected[0]
+            assert projected[0]['recommendations'][0]['evidence_ids']==['sizing-policy']
+            assert projected[0]['metrics']==[]
+    run(scenario,api)
+
+
 def test_calculation_diagnostic_is_closed_and_contains_no_rejected_text(api, monkeypatch, caplog):
     from app.core.chat_calculations import CalculationError
     async def stream(claim):
@@ -21,7 +86,7 @@ def test_calculation_diagnostic_is_closed_and_contains_no_rejected_text(api, mon
     assert 'secret synthetic payload' not in caplog.text
 
 
-@pytest.mark.parametrize('classification',[False,True,'quantities','boolean','boolean-corpus'])
+@pytest.mark.parametrize('classification',[False,True,'quantities','boolean','boolean-corpus','scenario','scenario-zero','request'])
 def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch, classification):
     from app.core.chat_expressions import quantities,ExpressionRenderer
     from app.core.chat_segments import render_segments,render_classified_answer,render_response
@@ -57,6 +122,19 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
         question='Importes: 100 EUR y 100 USD.'
         catalog=quantities(question)
         segments=[{'quantity':'100 EUR'},{'quantity':'100 USD'}]
+    if classification=='scenario':
+        question='Importes separados: 37 EUR y 42 USD.'
+        catalog=quantities(question)
+        segments={'scenario':{'calculations':[],'quantities':['37 EUR','42 USD']}}
+    if classification=='scenario-zero':
+        question='Base 0 EUR; observado 37 EUR.'
+        catalog=quantities(question)
+        segments={'scenario':{'calculations':[
+            {'operation':'difference','current':{'quantity':'37 EUR'},'baseline':{'quantity':'0 EUR'}},
+            {'operation':'relative_change','current':{'quantity':'37 EUR'},'baseline':{'quantity':'0 EUR'}}],
+            'quantities':[]}}
+    if classification=='request':
+        segments={'request':{'reason':'authorized_cost_data'}}
     if classification in ('boolean','boolean-corpus'):
         from test_chat_boolean_rules_jup035 import catalog as boolean_catalog, request, answer
         question=request()
@@ -82,6 +160,8 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
     result['answer'] = render_classified_answer(segments,ExpressionRenderer(catalog)) if isinstance(segments,dict) else render_segments(segments, [], expressions=ExpressionRenderer(catalog))
     if classification=='boolean':result['status']='insufficient_data'
     if classification=='boolean-corpus':result['status']='ok'
+    if classification in ('scenario','scenario-zero'):result['status']='insufficient_data'
+    if classification=='request':result.pop('status')
     if isinstance(segments,dict):
         result=render_response({**result,'answer':segments,'evidence':[],
             'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[]},[],quantities=catalog)
