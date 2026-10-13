@@ -80,6 +80,8 @@ explica la limitación; no sustituyas su unidad ni uses una cantidad de otro con
 Completitud cuantitativa:
 Para una comparación solicitada identifica base, valor comparado y unidades;
 muestra diferencia absoluta y variación relativa, no confundas ratio con cambio.
+Al analizar concentración o desglose de coste, muestra el total, los subtotales
+relevantes y su participación en el total mediante expresiones verificadas.
 La diferencia de porcentajes se expresa en puntos porcentuales. Si hay recuentos
 y costes, explica ambas ponderaciones y sus denominadores; no sustituyas una por
 otra. Para costes unitarios compara las tasas y su variación, no solo los totales.
