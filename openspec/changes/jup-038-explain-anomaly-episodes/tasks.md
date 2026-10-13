@@ -22,20 +22,20 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 
 ## 2. Explicador (backend, sin base de datos)
 
-- [ ] 2.1 Red, `apps/backend/tests/test_anomaly_explanations.py`: con la fotografía del ejemplo de
+- [x] 2.1 Red, `apps/backend/tests/test_anomaly_explanations.py`: con la fotografía del ejemplo de
   1.2, el texto dice día de apertura, referencia, observado, subida absoluta y relativa, las dos
   condiciones con los umbrales de las `rules` del episodio y la versión; las cifras salen de los
   operandos exactos; los dos bordes de redondeo del día de apertura añaden la nota y aparecen en
   `rounding_notes`.
-- [ ] 2.2 Red: impacto acumulado, días y último día; criticidad con su tramo y los bordes 499.996
+- [x] 2.2 Red: impacto acumulado, días y último día; criticidad con su tramo y los bordes 499.996
   (P3) y 2000.004 (P1); cada estado con las palabras del panel; «se sigue observando» y «ya no se
   observa desde»; cierre con fecha y motivo; anomalía anterior; USD sin conversión.
-- [ ] 2.3 Red: causa no establecida y limitaciones en español, una por cada entrada de
+- [x] 2.3 Red: causa no establecida y limitaciones en español, una por cada entrada de
   `LIMITATIONS`; aviso de datos sintéticos solo cuando la marca es cierta; línea de alcance (día de
   apertura y acumulados); servicio `null`; servicio y motivo de cierre hostiles (salto de línea,
   comillas, caracteres invisibles y una frase con aspecto de respuesta) en una sola línea y
   escapados.
-- [ ] 2.4 Red: forma completa de la evidencia; el `id` cumple su formato, no cambia con
+- [x] 2.4 Red: forma completa de la evidencia; el `id` cumple su formato, no cambia con
   `explained_at`, cambia con el cliente y con cualquier campo del episodio u operando; versión de
   reglas desconocida, `rules` distintas de las de la versión y operandos que no cumplen `triggers`
   lanzan `ExplanationUnavailable` sin devolver texto.

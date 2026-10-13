@@ -142,7 +142,7 @@ dentro de los metadatos del mensaje. Es una evidencia distinta de las citas docu
 | `source` | `kind: "anomaly_episodes"`, `rules_version` y `data_as_of` (= `impact_through_date`) |
 | `episode` | El episodio tal como lo devuelve la API en ese momento |
 | `operands` | `reference_seven_day_total`, `opening_observed_cost` y `accumulated_impact_times_seven`, como cadenas decimales exactas, sin redondear |
-| `opening` | Referencia diaria, observado, subida absoluta y relativa, umbrales y `conditions_met: true` |
+| `opening` | Referencia diaria, observado, subida absoluta y subida relativa (cadenas con dos decimales), umbrales (cadenas tomadas de las `rules` del episodio) y `conditions_met: true` |
 | `impact` | Impacto acumulado, días, último día, criticidad y tramo |
 | `rounding_notes` | Cifras a las que se aplicó la nota de redondeo (vacío si ninguna) |
 | `includes_synthetic_data` | Booleano |

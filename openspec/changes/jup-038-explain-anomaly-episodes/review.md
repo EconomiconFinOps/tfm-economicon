@@ -39,3 +39,55 @@ ejecutado todavía ningún código de este change.
 **Lo que este grupo no demuestra.** Que el explicador produzca esas cifras (grupo 2), que la ruta
 las guarde (grupo 4) o que la interfaz las muestre (grupos 5 a 7). El contrato describe lo acordado,
 no comportamiento implementado, y así lo dice su cabecera.
+
+## Grupo 2 — Explicador, fase Red (tareas 2.1 a 2.4)
+
+**Pruebas escritas por el `tester`:** `apps/backend/tests/test_anomaly_explanations.py` (archivo
+nuevo, 653 líneas, 75 casos con las parametrizaciones). Cubre el texto completo del ejemplo A frente
+a un literal, los bordes de redondeo del contrato (100.004, 20.0002 %, 499.996 y 2000.004), el
+redondeo HALF_UP en un solo paso, los cuatro estados con y sin observación, el cierre con fecha en
+UTC, la anomalía anterior, USD, las limitaciones en español, el aviso sintético, el servicio nulo,
+los datos hostiles (salto de línea, comillas, U+202E, U+200B, U+2028), que no se escribe nada en
+registros ni en salida, que no se muta la fotografía, la forma de la evidencia, el identificador
+recalculado por el propio test con `hashlib` y diez casos de `ExplanationUnavailable`. Todas las
+cifras esperadas están calculadas a mano; el código de producción no actúa como oráculo.
+
+**Interfaz fijada antes del Red** (la implementará el `coder`): `explain_episode(snapshot, *,
+tenant_id, explained_at) -> {"content", "anomaly_evidence"}`, `ExplanationUnavailable` y
+`LIMITATIONS_ES` (tupla) en `app.services.anomaly_explanations`. Las frases exactas de la respuesta
+son las de los literales del archivo de pruebas.
+
+**Evidencia Red** (2026-10-12, imagen `jup054-py-backend`, Python 3.12.15):
+
+```
+export MSYS_NO_PATHCONV=1
+R="$(cygpath -w "$PWD")"; docker run --rm -v "$R:/repo:ro" -w /work jup054-py-backend sh -c "mkdir -p /work && cp -r /repo/apps /work/apps && cd /work/apps/backend && python -m pytest tests/test_anomaly_explanations.py -q -p no:cacheprovider --tb=line"
+```
+
+- Resultado: `75 failed`, 0 pasan. Con `--tb=line` el único motivo es
+  `No module named 'app.services.anomaly_explanations'`. Los 75 fallan por separado porque el
+  módulo se importa dentro de cada prueba.
+- Control, mismo entorno: `tests/test_anomaly_episode_rules.py` y `tests/test_ownership_questions.py`
+  siguen en `104 passed, 1 skipped`.
+- El orquestador reejecutó el comando y leyó el archivo completo antes de aceptar el Red.
+
+**Resolución de las ambigüedades que señaló el `tester`** (ninguna cambia el alcance aprobado):
+
+1. En USD el texto sigue diciendo «EUR y USD» en la limitación 5, que es texto fijo: se acepta; el
+   resto de líneas va en la moneda del episodio.
+2. La línea de impacto termina siempre en un punto tras el tramo, también en P2 y P1: se acepta.
+3. En `opening`, los importes y porcentajes son cadenas con dos decimales y los umbrales cadenas
+   tomadas de `rules`: se acepta y se añade al contrato (`docs/api/anomaly-explanations.md`).
+4. `operands` son el texto exacto del `Decimal` recibido (`"2800.00"`, `"500.004"`), sin normalizar:
+   al implementar hay que usar `format(valor, "f")` y no `str`, que podría dar notación científica.
+5. `closed_at` en la evidencia sale como lo devuelve la API; el texto lo convierte a UTC: se acepta.
+6. Limitaciones del episodio distintas de `LIMITATIONS`: no es motivo de `ExplanationUnavailable`;
+   solo cambia el identificador. Se acepta.
+7. **Sin cubrir:** una fotografía incoherente (operandos que no cuadran con el episodio). La lectura
+   de la tarea 3.2 trae las dos partes de una sola sentencia SQL, así que no debería darse; el
+   explicador usa los operandos para las cifras y el episodio para lo demás.
+8. Reglas con una clave de más se tratan como distintas y dan `ExplanationUnavailable`: se acepta.
+
+**Lo que este Red no demuestra.** Que las pruebas sean correctas contra una implementación real:
+nunca se han ejecutado contra una. Si en el Green aparece un fallo atribuible a una prueba, el
+`coder` no la toca; se escala al `tester`.
