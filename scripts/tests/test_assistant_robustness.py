@@ -798,6 +798,33 @@ class SecondPassTests(unittest.TestCase):
                          robustness.normalised(Path(local + "\\docs\\evidence\\a.json")))
 
 
+class ThirdPassTests(unittest.TestCase):
+    def test_missing_or_malformed_reference_blocks_are_controlled_errors(self):
+        mutations = (lambda s: s.__delitem__("baseline"), lambda s: s.__setitem__("baseline", None),
+                     lambda s: s.__setitem__("baseline", []), lambda s: s["baseline"].__delitem__("sha256"),
+                     lambda s: s["baseline"].__setitem__("path", 7), lambda s: s.__delitem__("methodology"),
+                     lambda s: s["methodology"].__delitem__("path"), lambda s: s["methodology"].__setitem__("sha256", None),
+                     lambda s: s.__delitem__("sources"), lambda s: s.__setitem__("sources", "x"))
+        for mutate in mutations:
+            broken = copy.deepcopy(SUITE)
+            mutate(broken)
+            with self.subTest(), self.assertRaises(robustness.Error):
+                robustness.validate(broken, BASELINE)
+
+    def test_path_prefix_helpers_work_on_any_platform(self):
+        self.assertEqual(robustness.stripped("\\\\?\\C:\\x\\y.json"), "C:\\x\\y.json")
+        self.assertEqual(robustness.stripped("\\?\\C:\\x"), "C:\\x")
+        self.assertEqual(robustness.stripped("\\\\?\\UNC\\host\\share\\x"), "\\\\host\\share\\x")
+        self.assertEqual(robustness.stripped("/tmp/x"), "/tmp/x")
+        with mock.patch.object(robustness.os, "name", "nt"):
+            for text in ("\\\\localhost\\D$\\x", "\\\\?\\UNC\\host\\share\\x", "//host/share/x"):
+                self.assertTrue(robustness.is_unc(text), text)
+            self.assertFalse(robustness.is_unc("C:\\x\\y.json"))
+        with mock.patch.object(robustness.os, "name", "posix"):
+            for text in ("//tmp/x", "/tmp/x", "\\\\odd-file-name"):
+                self.assertFalse(robustness.is_unc(text), text)
+
+
 class FakeResponse:
     def __init__(self, body, status=200):
         self.body, self.status = body, status

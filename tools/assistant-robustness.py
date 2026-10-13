@@ -67,6 +67,9 @@ def text_list(value):
 
 def validate(suite, baseline):
     require(type(suite.get("schema_version")) is int and suite["schema_version"] == 1 and suite.get("jup") == "JUP-071", "invalid JUP-071 suite")
+    for block, keys in (("baseline", ("path", "suite_version", "sha256")), ("methodology", ("path", "sha256"))):
+        require(isinstance(suite.get(block), dict) and all(isinstance(suite[block].get(k), str) for k in keys), f"invalid {block} reference")
+    require(isinstance(suite.get("sources"), dict) and isinstance(baseline.get("sources"), dict), "invalid sources reference")
     require(suite["baseline"]["path"] == BASELINE.relative_to(ROOT).as_posix(), "unexpected baseline path")
     require(suite["baseline"]["sha256"] == file_digest(BASELINE), "JUP-069 baseline changed; review the pairs")
     require(suite["baseline"]["suite_version"] == baseline["suite_version"], "baseline version mismatch")
@@ -445,7 +448,7 @@ def stripped(path):
 
 
 def is_unc(path):
-    return stripped(path).startswith(("\\\\", "//"))
+    return os.name == "nt" and stripped(path).startswith(("\\\\", "//"))
 
 
 def normalised(path):
