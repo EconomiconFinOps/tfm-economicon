@@ -3,9 +3,7 @@
 ## Purpose
 
 Provide a short, rehearsable and reproducible demo of the cost features on the synthetic cost data of JUP-106, so that the team can show several months, two currencies, gaps, zeros and credits to an evaluation panel and answer questions with facts, without presenting the data as real.
-
 ## Requirements
-
 ### Requirement: Visible synthetic provenance and honest limits
 
 The demo SHALL state, before the first figure is shown, that every amount comes from synthetic datasets (JUP-106 for the cost route and JUP-107 for the anomalies step) and not from Azure or from the public dataset. The guide and the supporting material SHALL carry the same statement. The demo SHALL name which application screens do not read these data (the screens fed by fixed frontend data) and SHALL NOT use them to illustrate any step. The anomalies panel SHALL only be used in the anomalies step, with the JUP-107 anomaly dataset loaded in `tenant-core`, and its synthetic data warning SHALL be visible.
@@ -53,7 +51,7 @@ The main route SHALL use periods that end before the month whose amount exceeds 
 
 ### Requirement: Expected values verified independently
 
-Every figure in the route (monthly totals per currency, the month with no data, the recorded zero, the credit, the comparisons between months, the grouped totals and the excluded undated record) SHALL be listed in a machine-readable file and SHALL equal an exact decimal computation over the records of the synthetic dataset. No expected value SHALL be produced by the loader's own aggregation code or by the application.
+Every figure in the route (monthly totals per currency, the month with no data, the recorded zero, the credit, the comparisons between months and the grouped totals) SHALL be listed in a machine-readable file and SHALL equal an exact decimal computation over the records of the synthetic dataset. No expected value SHALL be produced by the loader's own aggregation code or by the application. The route SHALL NOT show an excluded undated record, because the demo dataset contains none; that case is covered by an automated test.
 
 #### Scenario: Values match an exact computation
 - **WHEN** the expected values are compared with the sums computed from the dataset records using exact decimal arithmetic
@@ -62,7 +60,7 @@ Every figure in the route (monthly totals per currency, the month with no data, 
 
 #### Scenario: Comparisons follow the documented rule
 - **WHEN** the comparison for a currency is computed from its first and last months with a non-zero cost inside the period
-- **THEN** the difference and the percentage equal the figures in the file and in the guide of JUP-106
+- **THEN** the difference and the percentage equal the figures in the file and in the guide of the route
 - **AND** a month with a recorded zero is not used as an endpoint
 
 #### Scenario: A drifted guide is detected
@@ -71,13 +69,13 @@ Every figure in the route (monthly totals per currency, the month with no data, 
 
 ### Requirement: Preparation and return to the initial state
 
-The preparation guide SHALL start from an isolated stack with its own volumes where the demo tenants have no cost data, SHALL load the JUP-106 data in `tenant-growth` with the JUP-106 tool and the JUP-107 anomaly data in `tenant-core` with its tool, SHALL confirm the loaded state and the expected summary before the route, SHALL NOT run a detection before the route, and SHALL end with the removal of both synthetic datasets and the confirmation that both tenants are empty again, without episodes or detection state. It SHALL NOT use the stack of another task and SHALL state that the JUP-065 demo requires the same tenant to be empty.
+The preparation guide SHALL start from an isolated stack with its own volumes where the demo tenants have no cost data, SHALL load the cost and anomaly datasets with the single entry point `scripts/demo_data.py`, SHALL state the reference date to set for the route, SHALL confirm the loaded state and the expected summary before the route, SHALL NOT run a detection before the route, and SHALL end with the removal of the datasets and the confirmation that both tenants are empty again, without episodes or detection state. It SHALL NOT use the stack of another task and SHALL state that the JUP-065 demo requires the same tenant to be empty.
 
 #### Scenario: Preparation confirms the loaded state
 - **WHEN** the preparation steps are followed on a fresh isolated stack
-- **THEN** both tools report their datasets present and the billing summary for the main period equals the expected values
+- **THEN** the entry point reports the datasets present and the billing summary for the main period equals the expected values
 - **AND** the anomalies panel of `tenant-core` shows the never-detected state
-- **AND** the loading is refused by the tools, not worked around, if a tenant already has data that are not synthetic
+- **AND** the loading is refused by the entry point, not worked around, if a tenant already has cost data outside the manifest
 
 #### Scenario: Return to the initial state
 - **WHEN** the final steps are followed
@@ -112,12 +110,18 @@ The package SHALL include a rehearsal record template with the person, the commi
 
 ### Requirement: No secrets, binaries or interference with other work
 
-The package SHALL NOT contain secrets, credentials, captures, recordings or other binaries, and the browser recipe SHALL run outside the repository, SHALL NOT intercept or fake requests, and SHALL fail on a page error, a cross-origin error or a step that does not hold. The change SHALL leave the JUP-106 tool, the public dataset, the application code and the JUP-065 demo package byte-identical.
+The package SHALL NOT contain secrets, credentials, captures, recordings or other binaries, and the browser recipe SHALL run outside the repository, SHALL NOT intercept or fake requests, and SHALL fail on a page error, a cross-origin error or a step that does not hold. The expected values of the route SHALL be recomputed from the dataset of the common window from 2026-07-01 to 2026-10-30, and the route SHALL state the reference date it assumes.
 
 #### Scenario: Repository hygiene
 - **WHEN** the repository hygiene check runs on the change
 - **THEN** it passes and the change contains no image, video or executable binary
 
 #### Scenario: Existing work untouched
-- **WHEN** the files of the JUP-106 tool, the public dataset, `apps/` and the JUP-065 package are compared with the base
-- **THEN** they are identical
+- **WHEN** the original public fixtures and the JUP-065 route are compared with the base
+- **THEN** the fixtures are identical
+- **AND** the only changes to the demo guides are the load commands, the stated reference date, the provenance notice, the recomputed expected values and the removal of the steps that used the fields the demo no longer carries
+
+#### Scenario: Route names its reference date
+- **WHEN** the route is read from the top
+- **THEN** it states the reference date to set for the route and that the dashboard opens on the month that contains it
+

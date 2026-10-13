@@ -1,5 +1,5 @@
 """Versioned, observed-cost evidence for JUP-030 and consumers such as JUP-038."""
-from datetime import date, datetime, timezone
+from datetime import date
 from decimal import Decimal
 import re
 from typing import Annotated, Literal
@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from app.schemas.billing import BillingPeriod, DecimalString
 from app.schemas.budget import BudgetAmount, ThresholdPercent
+from app.services import reference_date
 
 
 class AnomalyDefinition(BaseModel):
@@ -35,7 +36,7 @@ class AnomalyDefinition(BaseModel):
         days = (self.end_date - self.start_date).days
         if not 1 <= days <= 366:
             raise ValueError("Expected an interval of 1 to 366 days")
-        if self.end_date > datetime.now(timezone.utc).date():
+        if self.end_date > reference_date.today():
             raise ValueError("Only closed UTC days can be evaluated")
         if self.absolute_threshold is None and self.deviation_threshold_percent is None:
             raise ValueError("At least one detection rule is required")

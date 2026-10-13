@@ -16,10 +16,11 @@ import type {
   LoginRequest,
   LoginResponse,
   MessageCreateRequest,
+  ReferenceDateInfo,
   TenantCollection,
   UserProfile
 } from "./contracts";
-import { isBillingSummary, isTagCoverage, isLoginResponse, isUserProfile } from "./contracts";
+import { isBillingSummary, isTagCoverage, isLoginResponse, isReferenceDateInfo, isUserProfile } from "./contracts";
 import type { AnomalyDetectionRun, AnomalyEpisode, AnomalyEpisodeList, AnomalyStatusChange } from "./contracts";
 import { isAnomalyDetectionRun, isAnomalyEpisode, isAnomalyEpisodeList } from "./contracts";
 
@@ -155,6 +156,10 @@ export function fetchHealth() {
 
 export function fetchProfile(token: string) {
   return fetchJson<UserProfile>("/me", { token, validate: isUserProfile });
+}
+
+export function fetchReferenceDate(token: string, signal?: AbortSignal) {
+  return fetchJson<ReferenceDateInfo>("/billing/reference-date", { token, signal, validate: isReferenceDateInfo });
 }
 
 export function fetchTenants(token: string) {

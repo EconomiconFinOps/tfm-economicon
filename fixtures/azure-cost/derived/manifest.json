@@ -1,0 +1,11 @@
+{
+  "kind": "derived",
+  "path": "EA-Cost-Actual.shifted-2026-09.sample.csv",
+  "rows": 50,
+  "schema_version": 1,
+  "sha256": "77ea8c9d5fcafe17a02cf94694e38dde6e18b3bb5caf4c92089084f2fe1a9310",
+  "shift_days": 822,
+  "shifted_first_day": "2026-09-01",
+  "source_fixture": "fixtures/azure-cost/EA-Cost-Actual.sample.csv",
+  "transformation": "The columns Date, BillingPeriodStartDate, BillingPeriodEndDate are shifted by a fixed number of days; every other value is the public value."
+}

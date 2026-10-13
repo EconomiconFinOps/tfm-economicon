@@ -350,3 +350,39 @@ Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
   palabras inglesas comunes (Retry, Failed, Unknown, Cancel, Save, Delete).
 - Los errores de la capa de API (`Request failed for...`, `Invalid response for...`) y los del navegador
   (`Failed to fetch`) se muestran en ingles; decision de Lucia de dejar fuera esa capa.
+
+## JUP-119 — Datos de demo por una sola ruta y fecha de referencia
+
+Fecha: 2026-10-13. Origen: JUP-119, sondeo con CockroachDB real y pruebas del change.
+Tipo: deuda tecnica y mejoras de producto. Severidad: Low a Medium. Estado: Open. Owner: Equipo Economicon.
+
+- RF-119-001 (producto, Medium): la ingesta acepta filas sin fecha de uso (`usage_date` es opcional) y la API simulada
+  rechaza las filas sin fecha al leer su CSV. Validar en el normalizador (por ejemplo con modelos Pydantic) que una fila
+  sin fecha o con datos raros no entre al sistema, o marcarla, es un cambio de producto fuera de JUP-119.
+- RF-119-002 (API simulada, Low): lo que no es entero se devuelve como numero en coma flotante, y un importe con
+  centimos por encima de 2^53 pierde precision (`9007199254740993.01` llega como `9007199254740994`); los enteros grandes
+  sin centimos si llegan exactos. Tambien agrupa por dos campos como mucho, como la API real.
+- RF-119-003 (documentacion, Low): en Windows, un DSN de CockroachDB con `localhost` espera hasta agotar el tiempo de
+  conexion por IPv6 (200 s medidos con `connect_timeout=200`) antes de caer en IPv4; con `127.0.0.1` tarda 0,02 s. Las
+  pruebas con CockroachDB real fallan por tiempo con `localhost`. Documentar `127.0.0.1` en la guia local.
+- RF-119-004 (entorno, Low): en esta maquina las suites de salud del proveedor (`test_health_provider_*_jup047.py`) y de
+  salud del sistema (`test_system_health_jup047.py`) fallan con `AttributeError: 'ProactorEventLoop' object has no
+  attribute '_ssock'`, con o sin los cambios de JUP-119. Comprobar la version de Python / bucle de eventos en Windows.
+- RF-119-005 (producto, Low): el aviso «Datos sinteticos» del panel de anomalias se activa por las suscripciones con el
+  prefijo `synthetic-` (o la marca antigua de la ingesta); el derivado del dataset publico con fechas desplazadas no lo
+  activa por si solo.
+- RF-119-006 (informativo): la columna `pretax_cost` guarda doce decimales y el CSV publico trae quince; cada registro
+  guardado se redondea. No afecta a billing, que redondea a dos.
+- RF-119-007 (informativo): el tope por fecha de referencia es de lectura, no de acceso: los datos posteriores existen en
+  la base y los ve quien la lea directamente.
+- RF-119-008 (entorno, Low): en esta maquina el CockroachDB del Compose se detuvo solo (codigo 7) con «disk slowness
+  detected: unable to sync log files within 10s» al cargar y leer a la vez; el disco de Docker Desktop es lento (con un
+  nodo en memoria las migraciones tardan segundos). Se arranca de nuevo con `docker compose start cockroachdb` y conserva
+  los datos. Si se repite, dar al volumen una ruta mas rapida o aumentar los recursos de Docker.
+- RF-119-009 (robustez, Low): `demo_data.py apply` lee el estado y despues ingiere, sin cerrojo; dos `apply` simultaneos
+  no estan comprobados y la ingesta fallida del que pierde la carrera cuenta como propia. Probar con dos procesos.
+- RF-119-010 (resuelto en la pasada 3): con la referencia igual a `no_longer_observed_on` el episodio se listaba como «ya no observado»
+  desde un dia incompleto; el filtro ahora exige que `impact_through_date` y `no_longer_observed_on` sean anteriores a la referencia.
+- RF-119-011 (observacion, Low): `COST_REFERENCE_DATE` no se limita por entorno; una fecha olvidada en produccion congela los costes
+  visibles (la cabecera lo avisa con «Fecha simulada»). Valorar un aviso en el arranque si `RUNTIME_ENVIRONMENT=production` y hay fecha fija.
+- RF-119-012 (producto, Low, para JUP-035): las respuestas economicas del asistente ya guardadas en una conversacion se leen tal como se guardaron; si la fecha de referencia retrocede, siguen mostrando importes y evidencia posteriores a ella (reproducido en la revision del PR #127). Queda fuera de JUP-119 porque solo ocurre al retroceder la fecha a mano. Al definir cómo JUP-035 guarda las respuestas, aplicar la fecha vigente al leerlas (por ejemplo, ocultar los importes y la evidencia cuyo periodo termina despues de la referencia y mostrar un aviso) y cubrirlo con una prueba de guardar, retroceder y reabrir.
