@@ -6,7 +6,7 @@ The synthetic anomaly dataset SHALL be loaded, inspected and removed through the
 
 #### Scenario: Load is idempotent
 - **WHEN** `apply` runs twice on an empty tenant
-- **THEN** the first call loads the ingestion runs and records through the ingestion CLI and reports `loaded`
+- **THEN** the first call loads the ingestion runs and records through the ingestion of the processor and reports `loaded`
 - **AND** the second call writes nothing and reports `already-present`
 
 #### Scenario: Refuses a tenant with other cost data
