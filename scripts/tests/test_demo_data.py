@@ -34,6 +34,7 @@ class FakeStore:
         self.runs: dict[tuple[str, str], int] = {}
         self.records: dict[tuple[str, str], int] = {}
         self.episodes: dict[str, int] = {}
+        self.foreign: dict[tuple[str, str], int] = {}
         self.writes = 0
 
     def add(self, tenant, subscription, records, runs=1):
@@ -41,8 +42,13 @@ class FakeStore:
         self.records[(tenant, subscription)] = records
 
     def subscription_counts(self, tenant):
-        keys = {k[1] for k in list(self.runs) + list(self.records) if k[0] == tenant}
-        return {sub: {"runs": self.runs.get((tenant, sub), 0), "records": self.records.get((tenant, sub), 0)} for sub in keys}
+        keys = {k[1] for k in list(self.runs) + list(self.records) + list(self.foreign) if k[0] == tenant}
+        return {sub: {"runs": self.runs.get((tenant, sub), 0), "records": self.records.get((tenant, sub), 0),
+                      "foreign": self.foreign.get((tenant, sub), 0)} for sub in keys}
+
+    def add_foreign_to(self, tenant, subscription, count=1):
+        """Rows of a subscription of the manifest that another ingestion wrote (for example the original public dataset)."""
+        self.foreign[(tenant, subscription)] = count
 
     def remove_subscriptions(self, tenant, subscriptions):
         self.writes += 1
@@ -147,13 +153,13 @@ class RemoveTests(unittest.TestCase):
         store.add("tenant-growth", "foreign-subscription", 5)
         code, out = run("remove", store)
         self.assertEqual(code, 0, out)
-        self.assertEqual(store.subscription_counts("tenant-growth"), {"foreign-subscription": {"runs": 1, "records": 5}})
+        self.assertEqual(store.subscription_counts("tenant-growth"), {"foreign-subscription": {"runs": 1, "records": 5, "foreign": 0}})
         self.assertEqual(store.subscription_counts("tenant-core"), {})
         writes = store.writes
         again, message = run("remove", store)
         self.assertEqual(again, 0)
         self.assertIn("0", message)
-        self.assertEqual(store.subscription_counts("tenant-growth"), {"foreign-subscription": {"runs": 1, "records": 5}})
+        self.assertEqual(store.subscription_counts("tenant-growth"), {"foreign-subscription": {"runs": 1, "records": 5, "foreign": 0}})
         self.assertGreaterEqual(store.writes, writes)
 
     def test_drops_episodes_of_a_tenant_left_without_cost_data_and_keeps_those_of_a_tenant_that_still_has_some(self):
@@ -181,7 +187,23 @@ class GuardTests(unittest.TestCase):
             code, out = run(command, store, ingest, env={"RUNTIME_ENVIRONMENT": "production"})
             self.assertEqual(code, 2, command)
             self.assertEqual((ingest.calls, store.writes), ([], 0))
-            self.assertIn("production", out)
+            self.assertIn("RUNTIME_ENVIRONMENT", out)
+
+    def test_only_development_and_test_allow_loading_or_removing(self):
+        for value in ("Production", "PRODUCTION", " production", "production ", "prod", "staging", "", "Development", "dev"):
+            for command in ("apply", "remove"):
+                store = FakeStore()
+                ingest = FakeIngest(store)
+                code, out = run(command, store, ingest, env={"RUNTIME_ENVIRONMENT": value})
+                self.assertEqual((code, ingest.calls, store.writes), (2, [], 0), (value, command))
+                self.assertIn("RUNTIME_ENVIRONMENT", out)
+        for value in ("development", "test"):
+            store = FakeStore()
+            self.assertEqual(run("apply", store, FakeIngest(store), env={"RUNTIME_ENVIRONMENT": value})[0], 0, value)
+
+    def test_status_does_not_need_a_non_production_environment(self):
+        code, _ = run("status", FakeStore(), env={"RUNTIME_ENVIRONMENT": "production"})
+        self.assertEqual(code, 0)
 
     def test_missing_database_url_is_reported_without_a_traceback(self):
         output = io.StringIO()
@@ -211,6 +233,52 @@ class StatusTests(unittest.TestCase):
         self.assertIn("tenant-growth: present", out)
         store.add("tenant-growth", "foreign-subscription", 1)
         self.assertIn("tenant-growth: other-data", run("status", store)[1])
+
+
+class ForeignIngestionTests(unittest.TestCase):
+    """Rows of a subscription of the manifest that belong to another ingestion are foreign data."""
+
+    def test_an_original_ingestion_of_a_manifest_subscription_makes_the_tenant_other_data(self):
+        public = next(p for p in PAIRS if p["origin"] == "public-shifted")
+        store = FakeStore()
+        store.add_foreign_to(public["tenant"], public["subscription"])
+        ingest = FakeIngest(store)
+        code, out = run("apply", store, ingest)
+        self.assertEqual((code, ingest.calls), (2, []))
+        self.assertIn("other-data", out)
+        self.assertIn(f"{public['tenant']}: other-data", run("status", store)[1])
+
+    def test_remove_keeps_the_foreign_rows_of_a_manifest_subscription(self):
+        public = next(p for p in PAIRS if p["origin"] == "public-shifted")
+        store = FakeStore()
+        run("apply", store)
+        store.add_foreign_to(public["tenant"], public["subscription"], 3)
+        self.assertEqual(run("remove", store)[0], 0)
+        self.assertEqual(store.subscription_counts(public["tenant"])[public["subscription"]]["foreign"], 3)
+
+
+class IngestionTests(unittest.TestCase):
+    def test_each_pair_is_ingested_with_the_definition_the_manifest_names(self):
+        captured = []
+
+        class Done:
+            returncode = 0
+
+        def fake_run(command, **kwargs):
+            captured.append(command)
+            return Done()
+
+        data = json.loads(json.dumps(MANIFEST))
+        data["pairs"][1]["definition"] = "other-definition.json"
+        original, demo.subprocess.run = demo.subprocess.run, fake_run
+        try:
+            ingest = demo.run_ingestion({"PROCESSOR_APP_DIR": str(ROOT)}, data)
+            for pair in data["pairs"][:2]:
+                self.assertTrue(ingest(pair["tenant"], pair["subscription"]))
+        finally:
+            demo.subprocess.run = original
+        files = [command[command.index("--definition-file") + 1] for command in captured]
+        self.assertEqual([Path(f).name for f in files], ["ingestion-definition.json", "other-definition.json"])
 
 
 class GenerateTests(unittest.TestCase):

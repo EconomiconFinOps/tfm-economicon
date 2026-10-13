@@ -37,7 +37,7 @@ docker compose -p jup107 --profile demo run --rm demo-data python scripts/demo_d
 
 Esperado: el primer `status` dice `tenant-core: absent` y `tenant-growth: absent`; `apply` termina con `loaded: 7 parejas tenant/suscripcion con datos sinteticos o de fechas desplazadas, no son facturas de Azure.`; el último `status` dice `present` en los dos clientes. Si el primer `status` informa `other-data`, **parar**: el cargador se niega a cargar sobre costes que no son los suyos y no hay que saltarse esa negativa. La carga completa tarda unos 25 segundos medidos en un equipo de desarrollo.
 
-`demo_data.py` se niega con `RUNTIME_ENVIRONMENT=production` o sin esa variable. En PowerShell los comandos valen igual: no usan `<`.
+`demo_data.py` solo carga o retira con `RUNTIME_ENVIRONMENT=development` o `test` (valor exacto, en minúsculas); con cualquier otro valor, o sin él, se niega. También trata como datos ajenos una ingesta del dataset público original de una de sus suscripciones y no la borra. En PowerShell los comandos valen igual: no usan `<`.
 
 ## 3. Comprobar los valores antes de la demo
 

@@ -81,7 +81,7 @@ For each tenant that has cost data in the demo, the dataset SHALL contain at lea
 
 ### Requirement: Safe, idempotent load and removal for the whole dataset
 
-`apply` SHALL be idempotent: a second call on loaded tenants writes nothing and reports `already-present`. It SHALL refuse, writing nothing, when a target tenant already holds cost rows whose subscription is not in the manifest and SHALL name the tenant and the reason. `status` SHALL report per tenant `absent`, `present`, `partial` or `other-data`. `remove` SHALL delete only the runs and records of the manifest's subscriptions, and the anomaly episodes and detection state of a tenant left with no other cost data; it SHALL be repeatable and SHALL leave other tenants untouched. A load interrupted before the end SHALL leave a `partial` state that `apply` refuses to complete silently. The documentation SHALL state the measured time of a complete load.
+`apply` SHALL be idempotent: a second call on loaded tenants writes nothing and reports `already-present`. It SHALL refuse, writing nothing, when a target tenant already holds cost rows whose subscription is not in the manifest, or rows of a listed subscription that another ingestion wrote (for example the original public dataset, whose ingestion request differs from the demo definition), and SHALL name the tenant and the reason. `status` SHALL report per tenant `absent`, `present`, `partial` or `other-data`. `remove` SHALL delete only the runs and records of the manifest's subscriptions, and the anomaly episodes and detection state of a tenant left with no other cost data; it SHALL be repeatable and SHALL leave other tenants untouched. A load interrupted before the end SHALL leave a `partial` state that `apply` refuses to complete silently. The documentation SHALL state the measured time of a complete load.
 
 #### Scenario: Second apply writes nothing
 - **WHEN** `apply` runs twice
@@ -90,6 +90,10 @@ For each tenant that has cost data in the demo, the dataset SHALL contain at lea
 #### Scenario: Tenant with other cost data is protected
 - **WHEN** a target tenant holds a run whose subscription is not in the manifest
 - **THEN** `apply` exits with status 2, loads nothing for any tenant and names the tenant
+
+#### Scenario: The original ingestion of a listed subscription is foreign data
+- **WHEN** a tenant holds the ingestion of the original public dataset for a subscription that the manifest also lists
+- **THEN** `status` reports `other-data` for the tenant, `apply` exits with status 2 and loads nothing, and `remove` never deletes that original ingestion or its records
 
 #### Scenario: Removal is exact and repeatable
 - **WHEN** `remove` runs twice after a load and a detection
@@ -130,7 +134,7 @@ With the demo data loaded, the screens and answers that depend on fields the dem
 
 ### Requirement: Loading is opt-in and never part of the default startup
 
-The default `docker compose up` SHALL NOT load demo data. The repository SHALL provide a Compose profile `demo` whose one-shot service waits for the simulated API, the database and the processor to be healthy and then runs `scripts/demo_data.py apply`; the same profile SHALL start a second instance of the simulated API that serves the generated demo CSV, and the default instance SHALL keep serving the public sample. The profile SHALL refuse to run when `RUNTIME_ENVIRONMENT` is `production`. The generated CSV and the manifest SHALL be versioned, and a test SHALL regenerate them and fail if they differ.
+The default `docker compose up` SHALL NOT load demo data. The repository SHALL provide a Compose profile `demo` whose one-shot service waits for the simulated API, the database and the processor to be healthy and then runs `scripts/demo_data.py apply`; the same profile SHALL start a second instance of the simulated API that serves the generated demo CSV, and the default instance SHALL keep serving the public sample. The profile SHALL refuse to run unless `RUNTIME_ENVIRONMENT` is exactly `development` or `test`. The generated CSV and the manifest SHALL be versioned, and a test SHALL regenerate them and fail if they differ.
 
 #### Scenario: Default startup loads nothing
 - **WHEN** `docker compose up` runs without the profile on empty tenants
@@ -140,9 +144,9 @@ The default `docker compose up` SHALL NOT load demo data. The repository SHALL p
 - **WHEN** the stack starts with the profile `demo` and starts again
 - **THEN** the first start loads the dataset and the second reports `already-present` without writing
 
-#### Scenario: Production is refused
-- **WHEN** the profile `demo` starts with `RUNTIME_ENVIRONMENT=production`
-- **THEN** the one-shot service exits with an error stating the reason and loads nothing
+#### Scenario: Any other environment is refused
+- **WHEN** the profile `demo` starts with `RUNTIME_ENVIRONMENT` set to `production`, `Production`, `PRODUCTION`, ` production`, `prod`, `staging`, an empty value or no value
+- **THEN** the one-shot service exits with status 2 and an error stating the reason, and neither loads nor removes anything
 
 #### Scenario: Versioned files stay reproducible
 - **WHEN** the generator runs in CI

@@ -19,6 +19,7 @@
   ],
   "pairs": [
     {
+      "definition": "ingestion-definition.json",
       "origin": "synthetic",
       "rows": 779,
       "stored_rows": 779,
@@ -26,6 +27,7 @@
       "tenant": "tenant-core"
     },
     {
+      "definition": "ingestion-definition.json",
       "origin": "synthetic",
       "rows": 490,
       "stored_rows": 490,
@@ -33,6 +35,7 @@
       "tenant": "tenant-growth"
     },
     {
+      "definition": "ingestion-definition.json",
       "origin": "synthetic",
       "rows": 62,
       "stored_rows": 62,
@@ -40,6 +43,7 @@
       "tenant": "tenant-growth"
     },
     {
+      "definition": "ingestion-definition.json",
       "origin": "public-shifted",
       "rows": 2,
       "stored_rows": 2,
@@ -47,6 +51,7 @@
       "tenant": "tenant-growth"
     },
     {
+      "definition": "ingestion-definition.json",
       "origin": "public-shifted",
       "rows": 40,
       "stored_rows": 29,
@@ -54,6 +59,7 @@
       "tenant": "tenant-growth"
     },
     {
+      "definition": "ingestion-definition.json",
       "origin": "public-shifted",
       "rows": 6,
       "stored_rows": 6,
@@ -61,6 +67,7 @@
       "tenant": "tenant-growth"
     },
     {
+      "definition": "ingestion-definition.json",
       "origin": "public-shifted",
       "rows": 2,
       "stored_rows": 2,

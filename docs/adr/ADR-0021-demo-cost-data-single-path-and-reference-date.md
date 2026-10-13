@@ -21,7 +21,7 @@ Un sondeo del 2026-10-13 con CockroachDB real (nodo desechable, API y CLI locale
 4. **Procedencia por suscripción**, no por etiqueta: suscripciones con prefijo `synthetic-` o la pública del manifiesto. `apply` se niega si un tenant tiene datos de una suscripción ajena al manifiesto.
 5. **Una ventana común de 1/7 a 30/10/2026** para los tenants de la demo, con el dataset público desplazado (1 a 19/9) como complemento documentado. El derivado público desplaza las fechas un número fijo de días, deja el fixture original intacto y se declara como derivado.
 6. **Fecha de referencia** (`COST_REFERENCE_DATE`; vacío, el día UTC real) resuelta por un único servicio del backend. El tope vive en la capa de lectura (`Database`) para que ninguna ruta pueda olvidarlo, y los episodios cuyo último día visto no es anterior a la referencia se ocultan con el mismo 404 que un id desconocido. El frontend la lee del backend y muestra «Fecha simulada» cuando está fijada.
-7. **Carga opt-in:** el `docker compose up` normal no carga nada; un perfil `demo` ejecuta `apply` una vez, es idempotente y se niega en producción.
+7. **Carga opt-in:** el `docker compose up` normal no carga nada; un perfil `demo` ejecuta `apply` una vez, es idempotente y solo funciona con `RUNTIME_ENVIRONMENT=development` o `test` (valor exacto). Una ingesta original del dataset público de una suscripción de la demo cuenta como datos ajenos y no se borra.
 
 ## Consequences
 

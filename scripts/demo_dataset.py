@@ -42,6 +42,7 @@ ORIGIN_PUBLIC = "public-shifted"
 ORIGIN_SYNTHETIC = "synthetic"
 # The query API groups by two fields at most; the demo carries the service and the Project tag.
 GROUPING = (("Dimension", "ServiceName"), ("Tag", "Project"))
+DEFINITION_FILE = "ingestion-definition.json"
 ABSENT_FIELDS = ("resource_group", "cost_center", "owner", "application", "environment")
 BIG_INTEGER = "9007199254740993"
 
@@ -218,7 +219,8 @@ def subscription_pairs() -> list[dict[str, str]]:
         {"tenant": TENANT_GROWTH, "subscription": GROWTH_USD_SUBSCRIPTION, "origin": ORIGIN_SYNTHETIC},
     ]
     public = sorted({row["SubscriptionId"] for row in public_shifted_rows()})
-    return pairs + [{"tenant": TENANT_GROWTH, "subscription": item, "origin": ORIGIN_PUBLIC} for item in public]
+    pairs += [{"tenant": TENANT_GROWTH, "subscription": item, "origin": ORIGIN_PUBLIC} for item in public]
+    return [{**pair, "definition": DEFINITION_FILE} for pair in pairs]
 
 
 def checksum(content: bytes) -> str:
@@ -289,7 +291,7 @@ def generate() -> dict[Path, bytes]:
         DERIVED_MANIFEST_PATH: render_json(derived_manifest(derived, len(public))),
         DEMO_PATH: demo,
         DEMO_MANIFEST_PATH: render_json(demo_manifest(demo, rows)),
-        DEMO_DIR / "ingestion-definition.json": render_json(ingestion_definition()),
+        DEMO_DIR / DEFINITION_FILE: render_json(ingestion_definition()),
     }
 
 

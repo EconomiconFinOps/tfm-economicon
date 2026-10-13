@@ -152,3 +152,44 @@ def test_the_whole_path_loads_the_totals_of_the_file_and_is_repeatable_and_remov
         assert counts(database) == (0, 0)
         assert operator("remove", url, api_url).returncode == 0
         assert counts(database) == (0, 0)
+
+
+ORIGINAL_DEFINITION = json.dumps({"type": "ActualCost", "timeframe": "Custom",
+                                  "timePeriod": {"from": "2024-06-01T00:00:00Z", "to": "2024-06-20T00:00:00Z"}})
+
+
+def insert_original_ingestion(database, subscription):
+    """The ingestion of the original public dataset for a subscription that the demo also uses."""
+    with database.engine.begin() as connection:
+        connection.execute(text(
+            "INSERT INTO azure_cost_ingestion_runs (id, tenant_id, subscription_id, request, status, started_at) "
+            "VALUES ('original-run', 'tenant-growth', :sub, CAST(:request AS JSONB), 'completed', now())"),
+            {"sub": subscription, "request": ORIGINAL_DEFINITION})
+        connection.execute(text(
+            "INSERT INTO azure_cost_records (id, ingestion_id, tenant_id, subscription_id, usage_date, pretax_cost, currency, "
+            "dimensions, source_row_hash, created_at) VALUES ('original-record', 'original-run', 'tenant-growth', :sub, "
+            "DATE '2024-06-12', 0.1, 'USD', '{}'::JSONB, 'original-record', now())"), {"sub": subscription})
+
+
+def test_the_original_public_ingestion_of_a_demo_subscription_is_foreign_data(database_factory):
+    manifest = json.loads(dataset.DEMO_MANIFEST_PATH.read_text("utf-8"))
+    public = next(p["subscription"] for p in manifest["pairs"] if p["origin"] == dataset.ORIGIN_PUBLIC)
+    with database_factory() as database, simulated_api() as api_url:
+        database.initialize()
+        url = database.engine.url.render_as_string(hide_password=False)
+        insert_original_ingestion(database, public)
+
+        status = operator("status", url, api_url)
+        assert "tenant-growth: other-data" in status.stdout, status.stdout
+        refused = operator("apply", url, api_url)
+        assert refused.returncode == 2 and "other-data" in refused.stdout, refused.stdout
+        assert counts(database) == (1, 1)
+
+        with database.engine.begin() as connection:
+            connection.execute(text("DELETE FROM azure_cost_records WHERE id = 'original-record'"))
+            connection.execute(text("DELETE FROM azure_cost_ingestion_runs WHERE id = 'original-run'"))
+        assert operator("apply", url, api_url).returncode == 0
+        insert_original_ingestion(database, public)
+        removed = operator("remove", url, api_url)
+        assert removed.returncode == 0, removed.stdout
+        assert counts(database) == (1, 1), "remove must keep the original ingestion of the same subscription"

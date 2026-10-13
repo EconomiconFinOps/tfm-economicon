@@ -2,7 +2,7 @@
 
 ### Requirement: One configurable reference date decides what "today" is
 
-The backend SHALL resolve a single reference date from the setting `COST_REFERENCE_DATE`. When the setting is absent or empty the reference date SHALL be the current UTC date; when it holds a calendar date `YYYY-MM-DD` it SHALL be that date; any other value (a datetime, a date with spaces, a non-existent day such as `2026-02-30`, a two-digit year) SHALL stop the backend at startup with a message that names the setting and does not print the value of any other setting. The reference date SHALL be read through one service, and no billing, anomaly or ownership code SHALL read the system clock to decide which days are visible.
+The backend SHALL resolve a single reference date from the setting `COST_REFERENCE_DATE`. When the setting is absent or empty the reference date SHALL be the current UTC date; when it holds a calendar date `YYYY-MM-DD` it SHALL be that date; any other value (a datetime, a date with spaces, a non-existent day such as `2026-02-30`, a two-digit year, or a date earlier than 1900-01-02 or later than 9998-12-29, whose neighbouring days the date type cannot represent) SHALL stop the backend at startup with a message that names the setting and does not print the value of any other setting. The reference date SHALL be read through one service, and no billing, anomaly or ownership code SHALL read the system clock to decide which days are visible.
 
 #### Scenario: Default is the real UTC day
 - **WHEN** the setting is absent and the clock reads 2026-10-13T23:59:59Z
@@ -17,6 +17,11 @@ The backend SHALL resolve a single reference date from the setting `COST_REFEREN
 - **WHEN** the setting is `2026-09-21T00:00:00Z`, ` 2026-09-21`, `2026-02-30` or `26-09-21`
 - **THEN** the backend does not start and the message names `COST_REFERENCE_DATE`
 - **AND** no cost, episode or conversation row has been read or written
+
+#### Scenario: Dates at the edge of the date type are rejected
+- **WHEN** the setting is `9999-12-31`, `9999-12-30`, `0001-01-01` or `1900-01-01`
+- **THEN** the backend does not start and the message names `COST_REFERENCE_DATE`
+- **AND** `1900-01-02` and `9998-12-29` are accepted and every read works with them
 
 #### Scenario: No other code decides the visible day
 - **WHEN** the code of the billing routes, the anomaly services, the ownership question service and the anomaly request schema is searched for `datetime.now`, `date.today` and `utcnow`

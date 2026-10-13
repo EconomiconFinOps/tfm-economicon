@@ -161,22 +161,23 @@ def weekly_totals(records: list[dict]) -> dict[str, dict[str, tuple[Decimal, int
 
 
 def coverage_gaps(records: list[dict], manifest: dict) -> list[str]:
-    """One message per tenant day without any record inside the window, naming the tenant and the day."""
+    """One message per tenant day without any record inside the window, naming the tenant, its subscriptions and the day."""
     first, last = date.fromisoformat(manifest["window"]["start"]), date.fromisoformat(manifest["window"]["end"])
-    seen = defaultdict(set)
+    seen, subscriptions = defaultdict(set), defaultdict(set)
     for record in records:
         seen[record["tenant"]].add(record["usage_date"])
+        subscriptions[record["tenant"]].add(record["subscription"])
     problems = []
     for tenant in sorted({pair["tenant"] for pair in manifest["pairs"]}):
         day = first
         while day <= last:
             if day not in seen[tenant]:
-                problems.append(f"{tenant}: no record on {day.isoformat()}")
+                problems.append(f"{tenant}: no record on {day.isoformat()} (subscriptions: {', '.join(sorted(subscriptions[tenant]))})")
                 break
             day += timedelta(days=1)
     for record in records:
-        if not first <= record["usage_date"] <= last and record["subscription"].startswith(dataset.PREFIX):
-            problems.append(f"{record['tenant']}: record on {record['usage_date'].isoformat()} outside the window")
+        if not first <= record["usage_date"] <= last:
+            problems.append(f"{record['tenant']}: record of {record['subscription']} on {record['usage_date'].isoformat()} outside the window")
             break
     return problems
 
@@ -259,12 +260,25 @@ class DemoDatasetTests(unittest.TestCase):
 
     def test_a_removed_day_fails_naming_tenant_and_day(self):
         trimmed = [r for r in self.records if not (r["tenant"] == dataset.TENANT_CORE and r["usage_date"] == date(2026, 8, 15))]
-        self.assertEqual(coverage_gaps(trimmed, self.manifest), ["tenant-core: no record on 2026-08-15"])
+        problems = coverage_gaps(trimmed, self.manifest)
+        self.assertEqual(len(problems), 1)
+        self.assertTrue(problems[0].startswith("tenant-core: no record on 2026-08-15"), problems)
+        self.assertIn("synthetic-anomalies", problems[0])
 
     def test_a_record_outside_the_window_fails(self):
         for day in (date(2026, 6, 30), date(2026, 10, 31)):
             extra = self.records + [{**self.records[0], "tenant": dataset.TENANT_CORE, "subscription": dataset.ANOMALIES_SUBSCRIPTION, "usage_date": day}]
-            self.assertEqual(coverage_gaps(extra, self.manifest), [f"tenant-core: record on {day.isoformat()} outside the window"])
+            self.assertEqual(coverage_gaps(extra, self.manifest),
+                             [f"tenant-core: record of {dataset.ANOMALIES_SUBSCRIPTION} on {day.isoformat()} outside the window"])
+
+    def test_a_public_row_outside_the_window_fails_too(self):
+        public = next(r for r in self.records if not r["subscription"].startswith(dataset.PREFIX))
+        for day in (date(2026, 6, 1), date(2026, 11, 15)):
+            extra = self.records + [{**public, "usage_date": day}]
+            problems = coverage_gaps(extra, self.manifest)
+            self.assertEqual(len(problems), 1, day)
+            self.assertIn(public["subscription"], problems[0])
+            self.assertIn(day.isoformat(), problems[0])
 
     def test_usd_series_tells_a_gap_from_a_recorded_zero(self):
         usd = [r for r in self.records if r["tenant"] == dataset.TENANT_GROWTH and r["currency"] == "USD"]
@@ -286,6 +300,14 @@ class DemoDatasetTests(unittest.TestCase):
         self.assertEqual(len(big), 1)
         self.assertEqual(big[0]["pretax_cost"] % 1, 0)
         self.assertEqual(big[0]["usage_date"].month, 10)
+
+    def test_every_pair_names_the_definition_that_ingests_it_and_it_groups_by_two_fields(self):
+        for pair in self.manifest["pairs"]:
+            self.assertIn("definition", pair, pair["subscription"])
+            path = dataset.DEMO_DIR / pair["definition"]
+            self.assertTrue(path.is_file(), pair["definition"])
+            grouping = json.loads(path.read_text("utf-8"))["dataset"]["grouping"]
+            self.assertEqual([(g["type"], g["name"]) for g in grouping], [("Dimension", "ServiceName"), ("Tag", "Project")])
 
     def test_grouping_uses_the_two_fields_the_api_allows(self):
         definition = json.loads((dataset.DEMO_DIR / "ingestion-definition.json").read_text("utf-8"))

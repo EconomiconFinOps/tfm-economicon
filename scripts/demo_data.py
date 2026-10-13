@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import demo_dataset as dataset  # noqa: E402
 
 ROOT = dataset.ROOT
-DEFINITION = dataset.DEMO_DIR / "ingestion-definition.json"
+LOADING_ENVIRONMENTS = ("development", "test")
 
 
 def manifest() -> dict:
@@ -38,7 +38,9 @@ def pairs_by_tenant(data: dict) -> dict[str, list[dict]]:
 def tenant_state(store, tenant: str, pairs: list[dict]) -> dict:
     counts = store.subscription_counts(tenant)
     listed = {pair["subscription"] for pair in pairs}
-    foreign = sum(item["records"] + item["runs"] for sub, item in counts.items() if sub not in listed)
+    # Another ingestion of a listed subscription (for example the original public dataset) is foreign data too.
+    foreign = sum((item["records"] + item["runs"] if sub not in listed else 0) + item.get("foreign", 0)
+                  for sub, item in counts.items())
     states = {}
     for pair in pairs:
         found = counts.get(pair["subscription"], {"runs": 0, "records": 0})
@@ -106,41 +108,57 @@ def processor_directory(env: Mapping[str, str]) -> Path:
     return Path("/app") if Path("/app/app/run_azure_cost_ingestion.py").exists() else ROOT / "apps" / "processor"
 
 
-def run_ingestion(env: Mapping[str, str]) -> Callable[[str, str], bool]:
+def run_ingestion(env: Mapping[str, str], data: dict) -> Callable[[str, str], bool]:
+    definitions = {(pair["tenant"], pair["subscription"]): dataset.DEMO_DIR / pair["definition"] for pair in data["pairs"]}
+
     def ingest(tenant: str, subscription: str) -> bool:
         result = subprocess.run(
             [sys.executable, "-m", "app.run_azure_cost_ingestion", "--tenant-id", tenant, "--subscription-id", subscription,
-             "--definition-file", str(DEFINITION)],
+             "--definition-file", str(definitions[(tenant, subscription)])],
             cwd=processor_directory(env), env=dict(env), capture_output=True, text=True)
         return result.returncode == 0
     return ingest
 
 
 class SqlStore:
-    def __init__(self, url: str | None = None, engine=None):
+    """State of the demo rows; an ingestion is the demo's only when its stored request is one of the demo definitions."""
+
+    def __init__(self, url: str | None = None, engine=None, definitions: Sequence[dict] = ()):
         if engine is None:
             from sqlalchemy import create_engine
             engine = create_engine(url, future=True)
         self.engine = engine
+        self.definitions = [json.dumps(definition, sort_keys=True) for definition in definitions]
 
     @staticmethod
     def _text(sql: str):
         from sqlalchemy import text
         return text(sql)
 
+    def _ours(self) -> tuple[str, dict]:
+        """SQL condition on a run alias `i` that holds for the demo's ingestions, and its parameters."""
+        names = [f"d{n}" for n in range(len(self.definitions))]
+        condition = " OR ".join(f"i.request = CAST(:{name} AS JSONB)" for name in names) or "FALSE"
+        return f"({condition})", dict(zip(names, self.definitions))
+
     def subscription_counts(self, tenant: str) -> dict:
+        ours, definitions = self._ours()
         with self.engine.connect() as connection:
             runs = connection.execute(self._text(
-                "SELECT subscription_id, count(*) AS n FROM azure_cost_ingestion_runs WHERE tenant_id = :t GROUP BY 1"),
-                {"t": tenant}).mappings().all()
+                f"SELECT i.subscription_id, count(*) FILTER (WHERE {ours}) AS ours, count(*) FILTER (WHERE NOT ({ours})) AS other "
+                "FROM azure_cost_ingestion_runs i WHERE i.tenant_id = :t GROUP BY 1"),
+                {"t": tenant, **definitions}).mappings().all()
             records = connection.execute(self._text(
-                "SELECT subscription_id, count(*) AS n FROM azure_cost_records WHERE tenant_id = :t GROUP BY 1"),
-                {"t": tenant}).mappings().all()
+                f"SELECT r.subscription_id, count(*) FILTER (WHERE {ours}) AS ours, count(*) FILTER (WHERE NOT ({ours})) AS other "
+                "FROM azure_cost_records r JOIN azure_cost_ingestion_runs i ON i.id = r.ingestion_id AND i.tenant_id = r.tenant_id "
+                "WHERE r.tenant_id = :t GROUP BY 1"),
+                {"t": tenant, **definitions}).mappings().all()
         counts: dict[str, dict] = {}
-        for row in runs:
-            counts.setdefault(row["subscription_id"], {"runs": 0, "records": 0})["runs"] = int(row["n"])
-        for row in records:
-            counts.setdefault(row["subscription_id"], {"runs": 0, "records": 0})["records"] = int(row["n"])
+        for kind, rows in (("runs", runs), ("records", records)):
+            for row in rows:
+                item = counts.setdefault(row["subscription_id"], {"runs": 0, "records": 0, "foreign": 0})
+                item[kind] += int(row["ours"])
+                item["foreign"] += int(row["other"])
         return counts
 
     def tenant_cost_records(self, tenant: str) -> int:
@@ -151,13 +169,16 @@ class SqlStore:
 
     def remove_subscriptions(self, tenant: str, subscriptions: Sequence[str]) -> dict:
         from sqlalchemy import bindparam
-        parameters = {"t": tenant, "subs": list(subscriptions)}
+        ours, definitions = self._ours()
+        parameters = {"t": tenant, "subs": list(subscriptions), **definitions}
+        runs_of_ours = ("SELECT i.id FROM azure_cost_ingestion_runs i "
+                        f"WHERE i.tenant_id = :t AND i.subscription_id IN :subs AND {ours}")
         with self.engine.begin() as connection:
             records = connection.execute(self._text(
-                "DELETE FROM azure_cost_records WHERE tenant_id = :t AND subscription_id IN :subs"
+                f"DELETE FROM azure_cost_records WHERE tenant_id = :t AND ingestion_id IN ({runs_of_ours})"
             ).bindparams(bindparam("subs", expanding=True)), parameters).rowcount
             runs = connection.execute(self._text(
-                "DELETE FROM azure_cost_ingestion_runs WHERE tenant_id = :t AND subscription_id IN :subs"
+                f"DELETE FROM azure_cost_ingestion_runs WHERE tenant_id = :t AND id IN ({runs_of_ours})"
             ).bindparams(bindparam("subs", expanding=True)), parameters).rowcount
         return {"runs": int(runs or 0), "records": int(records or 0)}
 
@@ -171,6 +192,11 @@ class SqlStore:
             episodes = connection.execute(self._text("DELETE FROM anomaly_episodes WHERE tenant_id = :t"), {"t": tenant}).rowcount
             connection.execute(self._text("DELETE FROM anomaly_detection_state WHERE tenant_id = :t"), {"t": tenant})
         return int(episodes or 0)
+
+
+def demo_definitions(data: dict) -> list[dict]:
+    names = sorted({pair["definition"] for pair in data["pairs"]})
+    return [json.loads((dataset.DEMO_DIR / name).read_text("utf-8")) for name in names]
 
 
 def parse_args(argv: Sequence[str]) -> argparse.Namespace:
@@ -193,17 +219,18 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
         if args.tenant is not None:
             print("Los comandos actuan sobre todos los tenants del manifiesto y no aceptan --tenant.")
             return 2
-        if args.command in ("apply", "remove") and env.get("RUNTIME_ENVIRONMENT", "production") == "production":
-            print("Los datos de demostracion no se cargan ni se retiran con RUNTIME_ENVIRONMENT=production.")
+        if args.command in ("apply", "remove") and env.get("RUNTIME_ENVIRONMENT") not in LOADING_ENVIRONMENTS:
+            print("Los datos de demostracion solo se cargan o se retiran con RUNTIME_ENVIRONMENT=development o test "
+                  "(valor exacto, en minusculas).")
             return 2
         url = env.get("DATABASE_URL")
         if not url:
             print("Falta DATABASE_URL en el entorno.")
             return 2
-        store = (store_factory or SqlStore)(url)
         data = manifest()
+        store = store_factory(url) if store_factory else SqlStore(url, definitions=demo_definitions(data))
         if args.command == "apply":
-            result = apply(store, data, ingest or run_ingestion(env))
+            result = apply(store, data, ingest or run_ingestion(env, data))
             print(f"{result['outcome']}: {result.get('loaded', 0)} parejas tenant/suscripcion con datos sinteticos "
                   f"o de fechas desplazadas, no son facturas de Azure. {result['reason']}".strip())
             return result["code"]

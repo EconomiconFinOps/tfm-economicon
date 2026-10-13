@@ -59,7 +59,11 @@ class Settings(BaseSettings):
             return value
         if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
             raise ValueError("cost_reference_date must be a calendar date YYYY-MM-DD")
-        return date.fromisoformat(value)
+        parsed = date.fromisoformat(value)
+        # One day of slack on each side keeps "the day before" and "the day after" inside the date type.
+        if not date(1900, 1, 2) <= parsed <= date(9998, 12, 29):
+            raise ValueError("cost_reference_date must be between 1900-01-02 and 9998-12-29")
+        return parsed
 
     @field_validator("processor_health_base_url", "azure_cost_health_base_url")
     @classmethod

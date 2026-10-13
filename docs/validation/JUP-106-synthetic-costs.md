@@ -15,13 +15,9 @@ El dataset público cubre del 1 al 19 de junio de 2024 y una sola moneda (USD). 
 
 Los comandos se ejecutan desde la raíz del repositorio con el stack levantado y se pasan por la entrada estándar al contenedor del processor, que ya tiene `DATABASE_URL`. El tenant por defecto es `tenant-growth` (el único tenant demo sin costes); se cambia con `--tenant`.
 
-```sh
-docker compose exec -T processor python - apply < scripts/synthetic_costs.py
-docker compose exec -T processor python - status < scripts/synthetic_costs.py
-docker compose exec -T processor python - remove < scripts/synthetic_costs.py
-```
+**Comandos históricos, ya no ejecutables:** los de JUP-106 pasaban por la entrada estándar el script `scripts/synthetic_costs.py`, que ya no existe. Hoy se usa `scripts/demo_data.py` con el perfil `demo` de Compose (`docker compose --profile demo run --rm demo-data python scripts/demo_data.py status|apply|remove`); ver [la preparación de la demo](../demo/JUP-107/preparacion.md).
 
-En PowerShell no existe `<`: `Get-Content -Raw scripts/synthetic_costs.py | docker compose exec -T processor python - apply`. El fichero es solo ASCII para que la codificación de la tubería no lo altere. Con un proyecto Compose aislado, añade `-p <proyecto>` tras `docker compose`.
+En PowerShell, `demo_data.py` se invoca igual: no usa `<`.
 
 - `apply` es idempotente: la segunda vez informa `already-present` y no escribe nada. Se niega (salida 2) si el tenant ya tiene datos de coste que no son sintéticos o si hay un estado parcial o en otro tenant; en esos casos hay que ejecutar `remove` primero. La comprobación de datos reales se repite dentro de la transacción de escritura, de modo que una ingesta real que llegue justo antes de escribir también aborta la carga sin dejar nada.
 - `status` informa del estado (`absent`, `present`, `partial` o `other-tenant`) y de las filas reales del tenant.

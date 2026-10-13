@@ -8,7 +8,7 @@ JUP-119 ([ADR-0021](../adr/ADR-0021-demo-cost-data-single-path-and-reference-dat
 | Valor | Efecto |
 | --- | --- |
 | vacío o ausente | La fecha de referencia es el día UTC real y avanza sola con el reloj. |
-| `AAAA-MM-DD` | Fecha fija (por ejemplo `2026-10-30`). Cualquier otro valor (fecha y hora, espacios, un día que no existe, un año de dos cifras) detiene el arranque con un mensaje que nombra `cost_reference_date` y no muestra el valor. |
+| `AAAA-MM-DD` | Fecha fija (por ejemplo `2026-10-30`). Cualquier otro valor (fecha y hora, espacios, un día que no existe, un año de dos cifras) detiene el arranque con un mensaje que nombra `cost_reference_date` y no muestra el valor. Tampoco se aceptan fechas anteriores al 1900-01-02 ni posteriores al 9998-12-29 (el tipo de fecha no representa los días contiguos). |
 
 ## Qué cambia
 

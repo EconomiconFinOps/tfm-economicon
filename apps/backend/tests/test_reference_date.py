@@ -1,6 +1,6 @@
 """JUP-119: one reference date decides which day is "today" for costs, detection and the assistant."""
 import re
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -87,3 +87,20 @@ def test_only_the_reference_service_reads_the_clock_for_the_day():
     pattern = re.compile(r"\.now\([^)]*\)\.date\(\)|(?<!\w)date\.today\(|utcnow\(")
     found = sorted(path.relative_to(APP).as_posix() for path in APP.rglob("*.py") if pattern.search(path.read_text("utf-8")))
     assert found == []
+
+
+@pytest.mark.parametrize("value", ["9999-12-31", "9999-12-30", "0001-01-01", "1899-12-31", "1900-01-01"])
+def test_a_date_outside_the_supported_range_stops_startup(monkeypatch, value):
+    monkeypatch.setenv("COST_REFERENCE_DATE", value)
+    with pytest.raises(StartupError) as raised:
+        get_settings()
+    assert "cost_reference_date" in str(raised.value)
+
+
+@pytest.mark.parametrize("value", ["1900-01-02", "9998-12-29"])
+def test_the_boundary_dates_are_accepted_and_the_arithmetic_around_them_works(monkeypatch, value):
+    monkeypatch.setenv("COST_REFERENCE_DATE", value)
+    chosen = get_settings().cost_reference_date
+    reference_date.configure(chosen)
+    assert reference_date.visible_end(date.max) == chosen + timedelta(days=1)
+    assert reference_date.today() - timedelta(days=1) < chosen
