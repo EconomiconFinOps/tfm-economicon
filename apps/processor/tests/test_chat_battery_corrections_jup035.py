@@ -74,7 +74,7 @@ def test_v3_prompt_has_general_hypothetical_and_documentary_rules():
         'ahorro identificado, implementado estimado y verificado',
         'conservando importes/categorías relevantes y sus comparaciones',
         'moneda de destino, tipo/dirección del cambio y fecha',
-        'Ausencia de datos no es cero', 'periodo elegible',
+        'Ausencia de datos no es cero', 'período elegible',
         'Una captura del navegador no permite resolver hoy', 'pide periodo y zona horaria',
         'No listes todos los resultados ni añadas afirmaciones para justificar citas',
         'el mismo título, tema o fragmento vecino no bastan',
