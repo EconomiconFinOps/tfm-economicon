@@ -152,8 +152,8 @@ documentales y de la evidencia de costes por propiedad.
 
 ### Requirement: Explicación no disponible sin inventar
 
-Cuando el episodio no se puede explicar con las reglas que el sistema conoce, el sistema DEBE
-(SHALL) responder `409 {"detail":{"code":"anomaly_explanation_unavailable"}}` sin guardar ningún
+Cuando el episodio no se puede explicar con las reglas que el sistema conoce o sus datos guardados
+son incoherentes, el sistema DEBE (SHALL) responder `409 {"detail":{"code":"anomaly_explanation_unavailable"}}` sin guardar ningún
 mensaje, en lugar de generar una explicación parcial o aproximada.
 
 #### Scenario: Versión de reglas desconocida
@@ -163,6 +163,10 @@ mensaje, en lugar de generar una explicación parcial o aproximada.
 #### Scenario: Cifras que no cumplen la regla guardada
 - **WHEN** los valores guardados del día de apertura no superan las dos condiciones de la regla del episodio
 - **THEN** la respuesta es ese 409 y no se guarda ningún mensaje
+
+#### Scenario: Episodio con datos incoherentes
+- **WHEN** el estado guardado no es uno de los cuatro conocidos, el episodio está cerrado sin fecha o sin motivo de cierre, o consta como ya no observado sin la fecha desde la que no se observa
+- **THEN** la respuesta es ese 409 y no se guarda ningún mensaje, en lugar de un error del servidor o un texto con valores vacíos
 
 ### Requirement: Pedir y leer la explicación en el asistente
 

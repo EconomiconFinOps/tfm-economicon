@@ -52,8 +52,9 @@ preguntas del asistente. El mensaje lleva la selección estructurada de una anom
 El 404 de una anomalía de otro cliente y el de una inexistente son idénticos, como en
 `GET /billing/anomalies/episodes/{id}`: la respuesta no dice si el identificador existe en otro
 cliente. El 409 se da con una versión de reglas distinta de `jup019-daily-v1`, con `rules` guardadas
-que no son las de esa versión o con valores del día de apertura que no cumplen la regla del
-episodio. En esos casos el sistema prefiere no responder a dar una explicación aproximada.
+que no son las de esa versión, con valores del día de apertura que no cumplen la regla del
+episodio o con datos guardados incoherentes (estado desconocido, cerrado sin fecha o sin motivo, o
+no observado sin la fecha desde la que no se observa). En esos casos el sistema prefiere no responder a dar una explicación aproximada.
 
 ## Qué dice la explicación
 

@@ -134,3 +134,44 @@ del proceso. La prueba con CockroachDB real (3.1) debe incluir un episodio cerra
 
 **Lo que este Green no demuestra todavía.** Que las pruebas maten mutantes (2.6), que la regresión
 completa y el lint pasen (DoD) ni el veredicto de QA. El grupo sigue abierto.
+
+## Grupo 2 — Explicador, mutación (tarea 2.6)
+
+**Herramienta.** `mutmut 2.5.1` en el contenedor Python 3.12.15 (no hay `pipx` en esta máquina),
+acotado al único archivo de producto del grupo, más 18 mutantes manuales propios que mutmut no genera
+(borrado de guardas, hash sin el cliente, criticidad sobre la cifra redondeada, precisión por defecto,
+`str` en lugar de `format`, entre otros), con control sin mutar. El arnés manual vive en el espacio de
+trabajo temporal y no se versiona.
+
+**Antes de la remediación** (solo `test_anomaly_explanations.py`, 75 pruebas):
+
+- mutmut: 256 mutantes, 253 muertos, 3 supervivientes (31, 34 y 67).
+- Manuales: 13 muertos de 16 aplicados; sobrevivían el borrado de las tres guardas sin prueba y `str`
+  en lugar de `format(…, "f")`. Un mutante no se aplicó por una ancla ambigua y se corrigió.
+
+**Remediación** por el `tester`, en un archivo nuevo (el anterior está bloqueado):
+`apps/backend/tests/test_anomaly_explanations_mutants.py`, 20 pruebas: guardas de estado desconocido,
+cierre incompleto y no observada sin fecha (con control positivo); aliasing entre la evidencia y la
+fotografía en los dos sentidos; operandos con exponente (`2.8E+3`) sin notación científica; y un caso
+de importes de 30 cifras con valores esperados calculados con `fractions.Fraction` y un HALF_UP hecho
+a mano, donde una subida relativa exacta de 50.005 delata la precisión por defecto.
+
+**Después** (95 pruebas, reejecutado por el orquestador el 2026-10-12):
+
+- Contra el código real: `95 passed` (75 existentes y 20 nuevas).
+- mutmut: **256 mutantes, 255 muertos, 1 superviviente** (el 31).
+- Manuales: **18 de 18 muertos**, control `95 passed`.
+
+**Superviviente justificado.** El mutante 31 cambia `_PRECISION = 120` por `121`. Es equivalente: la
+precisión solo tiene que ser holgada para que `O × 7`, la división entre 7 y el porcentaje no pierdan
+cifras antes del único redondeo, y una cifra más de 120 no cambia ningún resultado observable. El
+mutante `_PRECISION = 28` sí está matado, por la prueba de 30 cifras.
+
+**Spec actualizada.** Al cubrir las guardas que el `coder` añadió se añade el escenario «Episodio con
+datos incoherentes» a `specs/anomaly-episode-explanation/spec.md` (ahora 34 escenarios en esa spec y
+43 en total; el bloque `Human Approval` conserva las cifras del gate, 33 y 42) y se amplía la frase
+del 409 en el contrato. Es un refinamiento aditivo del mismo requisito: no cambia el alcance aprobado.
+
+**Lo que esta mutación no demuestra.** Las pruebas se ejecutan solo contra el explicador puro: el
+formato real de las filas de CockroachDB (p. ej. un `closed_at` con zona horaria) se comprueba en el
+grupo 3. La regresión completa, el lint y el veredicto de QA del grupo siguen pendientes.

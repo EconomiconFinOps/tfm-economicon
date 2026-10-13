@@ -42,7 +42,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 - [x] 2.5 Green: `app/services/anomaly_explanations.py` (explicador puro, decisiones 2, 4, 5, 6 y 7),
   sin modificar `anomaly_episodes.py` ni `ownership_questions.py`. El esquema de la selección
   (`app/schemas/anomaly_explanations.py`) pasa a la 4.6: no tiene pruebas hasta la 4.1.
-- [ ] 2.6 Mutación sobre el explicador (invertir comparaciones, cambiar el redondeo, quitar la nota
+- [x] 2.6 Mutación sobre el explicador (invertir comparaciones, cambiar el redondeo, quitar la nota
   de redondeo, quitar el cliente o un campo de la huella, saltarse la comprobación de versión o de
   `triggers`, quitar el entrecomillado) y cubrir los mutantes que sobrevivan.
 
