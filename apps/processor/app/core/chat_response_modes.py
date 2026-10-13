@@ -14,7 +14,7 @@ REQUESTS={
     'ingestion_coverage':('no_data','La ausencia de registros no demuestra un coste cero.',
         'Confirma la cobertura del período y del ámbito, completa o revisa la ingesta y vuelve a consultar los datos.'),
     'comparable_baseline':('insufficient_data','No puedo interpretar la variación sin una base comparable aplicable.',
-        'Aporta el período base y el observado; si el recurso es nuevo, investiga su aparición y confirma el contexto.'),
+        'Confirma el ámbito y los períodos base y observado; investiga el cambio por servicio y recurso. Si el recurso es nuevo, investiga su aparición antes de atribuir una causa.'),
     'clarification':('insufficient_data','Necesito concretar la consulta antes de responder de forma fundada.',
         'Indica la métrica o el concepto, el ámbito y, cuando proceda, el período y los datos del escenario.'),
     'missing_documentation':('insufficient_data','No he contrastado documentalmente la regla necesaria para esta consulta.',
@@ -25,6 +25,18 @@ REQUESTS={
         'Puedo preparar un análisis o una propuesta revisable; aporta los datos y las restricciones para que una persona autorice cualquier cambio.'),
     'temporary_unavailable':('error','No puedo completar la consulta con la información o los servicios disponibles en este momento.',
         'Vuelve a intentarlo más tarde o solicita una revisión humana si el problema persiste.'),
+}
+
+REQUEST_CRITERIA={
+    'greeting':'Saludo sin consulta sustantiva.',
+    'authorized_cost_data':'Consulta FinOps pertinente que exige datos financieros reales no autorizados o no disponibles; no es fuera de dominio.',
+    'ingestion_coverage':'Ausencia de registros cuya cobertura o ingesta hay que confirmar; no demuestra coste cero.',
+    'comparable_baseline':'Faltan datos de comparación necesarios. Si los operandos están aportados, calcula incluso si el denominador es cero.',
+    'clarification':'Pregunta ambigua que no permite identificar qué se solicita.',
+    'missing_documentation':'Después de examinar los pasajes disponibles falta un hecho o regla documental específico necesario. No usar para omitir conceptos o consejo cualitativo sustentados porque falten costes reales.',
+    'outside_mvp':'Consulta fuera del dominio Azure/FinOps. Falta de acceso a costes reales no es fuera de dominio.',
+    'execution_not_enabled':'Se pide ejecutar una modificación de recursos, no sólo analizar o preparar una propuesta.',
+    'temporary_unavailable':'Un fallo temporal de los servicios impide completar la consulta.',
 }
 
 
@@ -67,6 +79,13 @@ def bind_modes(schema,quantities):
             fields[first]['minItems']=1
             if first=='quantities':fields['calculations']['maxItems']=0
             alternatives.append({'type':'object','properties':fields,'required':list(fields),'additionalProperties':False})
+        segments={'type':'array','minItems':1,'maxItems':128,'items':{'anyOf':[
+            {'type':'object','properties':{'text':{'type':'string','maxLength':4000}},'required':['text'],'additionalProperties':False},
+            {'type':'object','properties':{'quantity':{'type':'string','enum':list(user)}},'required':['quantity'],'additionalProperties':False},
+            {'type':'object','properties':{'expression':{'$ref':'#/$defs/UserRenderedExpression'}},'required':['expression'],'additionalProperties':False},
+        ]}}
+        alternatives.insert(0,{'type':'object','properties':{'segments':segments},
+            'required':['segments'],'additionalProperties':False})
         props['answer']={'type':'object','properties':{'scenario':{'anyOf':alternatives}},
             'required':['scenario'],'additionalProperties':False}
         for field in ('metrics','recommendations','evidence','assumptions','limitations','next_actions'):
@@ -74,9 +93,14 @@ def bind_modes(schema,quantities):
         retained.append({**copy.deepcopy(base),'properties':props})
     props=copy.deepcopy(base['properties'])
     props.pop('status')
-    props['answer']={'type':'object','properties':{'request':{
-        'type':'object','properties':{'reason':{'type':'string','enum':list(REQUESTS)}},
-        'required':['reason'],'additionalProperties':False}},'required':['request'],'additionalProperties':False}
+    requests=[]
+    for reason in REQUESTS:
+        fields={'reason':{'type':'string','const':reason,'description':REQUEST_CRITERIA[reason]}}
+        if reason=='missing_documentation':
+            fields['missing_requirement']={'type':'string','minLength':1,'maxLength':300,
+                'description':'Hecho o regla precisa pendiente de contrastar, no una afirmación de que no existe documentación.'}
+        requests.append({'type':'object','properties':fields,'required':list(fields),'additionalProperties':False})
+    props['answer']={'type':'object','properties':{'request':{'anyOf':requests}},'required':['request'],'additionalProperties':False}
     for field in ('metrics','recommendations','evidence','assumptions','limitations','next_actions'):
         props[field]['minItems']=0;props[field]['maxItems']=0
     request={**copy.deepcopy(base),'properties':props,'required':[key for key in base['required'] if key!='status']}
@@ -89,28 +113,41 @@ def render_mode(value,expressions):
     kind=mode(value)
     if kind=='request':
         request=value['request']
-        if not isinstance(request,dict) or set(request)!={'reason'} or not isinstance(request['reason'],str) or request['reason'] not in REQUESTS:
+        if not isinstance(request,dict) or not isinstance(request.get('reason'),str) or request['reason'] not in REQUESTS:
             raise ValueError('Invalid neutral request.')
+        fields={'reason','missing_requirement'} if request['reason']=='missing_documentation' else {'reason'}
+        if set(request)!=fields:raise ValueError('Invalid neutral request.')
+        if request['reason']=='missing_documentation':
+            requirement=request['missing_requirement']
+            if not isinstance(requirement,str) or not requirement.strip() or len(requirement)>300:
+                raise ValueError('Invalid neutral request.')
+            from app.core.chat_segments import render_segments
+            checked=render_segments([{'text':requirement}],[],limit=300,expressions=expressions)
+            return 'Necesito contrastar este requisito específico para completar la consulta: '+checked
         return REQUESTS[request['reason']][1]
     if kind!='scenario' or expressions is None:raise ValueError('Invalid user scenario.')
     scenario=value['scenario']
-    if not isinstance(scenario,dict) or set(scenario)!={'calculations','quantities'}:
+    if not isinstance(scenario,dict) or set(scenario) not in ({'calculations','quantities'},{'segments'}):
         raise ValueError('Invalid user scenario.')
-    calculations=scenario['calculations'];values=scenario['quantities']
+    calculations=scenario.get('calculations',[]);values=scenario.get('quantities',[])
     if (not isinstance(calculations,list) or not isinstance(values,list) or len(calculations)>8
-            or len(values)>8 or not (calculations or values)):
+            or len(values)>8 or not (calculations or values or 'segments' in scenario)):
         raise ValueError('Invalid user scenario.')
     parts=['Escenario hipotético aportado; no verificado financieramente.\n']
+    if 'segments' in scenario:
+        from app.core.chat_segments import render_segments
+        parts.append(render_segments(scenario['segments'],[],expressions=expressions))
     for key in values:parts.append(expressions.render_quantity(key))
     for node in calculations:parts.append(expressions.render(node))
     if expressions.documentary_sources:raise ValueError('User scenario contains documentary operands.')
     from app.core.chat_expressions import CURRENCIES
     def leaves(node):
+        if isinstance(node,list):return [key for item in node for key in leaves(item)]
         if isinstance(node,dict):
             if set(node)=={'quantity'}:return [node['quantity']]
             return [key for item in node.values() for key in leaves(item)]
         return []
-    used=[*values,*[key for node in calculations for key in leaves(node)]]
+    used=[*values,*[key for node in calculations for key in leaves(node)],*leaves(scenario.get('segments',[]))]
     currencies={expressions.catalog[key]['unit'].split('/')[0].upper() for key in used
         if expressions.catalog[key]['unit'].split('/')[0].upper() in CURRENCIES}
     if len(currencies)>1:

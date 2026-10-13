@@ -1,4 +1,43 @@
-## Delta24 offline en preparación — 13/10/2026
+## Corte vigente: candidato24 y corrección25 — 13/10/2026
+
+Publicado y probado `794ab1735d367746ace4a15a462642756a45876a`; CI PR
+`38440203902` PASS (la anterior fue cancelada por concurrencia, no por producto).
+Contraste Linux sin red:134 processor/54 backend PASS, incluidos los cinco
+summary/capacidad y cuatro symlink que fallaban localmente. Nativo pgvector y
+contexto:54/54 PASS en procesos independientes con memoria acotada, sesión58547
+exit0; recibo externo `expression24-vector-bounded.json`.
+
+La primera tanda nativa simultánea a focal sufrió OOM global y exit137. El
+Cockroach aislado salió por protección de disk stall; se arrancó el mismo
+contenedor conservando volumen/configuración. Backend/processor sin reinicios.
+Desde entonces suites nativas pesadas y proveedor se ejecutan secuencialmente.
+No atribuir PASS a la primera tanda. Caso008 se recuperó automáticamente con
+dos intentos y dos mensajes; evidencia GET, no prueba de SSE observado.
+
+Focal24 de nueve casos:2 PASS (025/026),7 FAIL semánticos.001 pierde etiquetas,
+ámbito y conclusión aunque calcula;003 solicitud incompleta;008 omite cociente
+indefinido;019 omite delta absoluto;022/028 abstención documental injustificada;
+023 confunde falta de datos reales con fuera de dominio. Se conservan recibos
+`expression24-focused.json`, `expression24-008-recovered.json` y
+`expression24-focused-remaining.json`; remaining6 sesión12531 exit0,1intento/caso.
+No se ejecutó full28 de24 ni se acepta la PR. Coste asentado0.823623283USD;
+reserva conservadora0.826118859 mientras asienta contador, techo TOTAL2USD.
+Claves existentes renovadas sólo en vigencia hasta19:33:52UTC, mismos límites.
+
+Delta25 offline autorizado: explicación del escenario con segmentos existentes,
+operandos sólo de usuario y prefijo hipotético, sin autoridad financiera ni
+documental; diferencia absoluta incluso cuando relativo es indefinido; solicitud
+de baseline con ámbito e investigación por servicio/recurso; motivos de petición
+desambiguados y carencia documental concreta revisable. Verificado offline:118
+backend (incluye parser→SSE→persistencia SQLite de ambos modos nuevos),143
+processor efectivos (141 primera tanda y2 recursos revalidados tras estabilizar
+bundle),69 OpenSpec. Paridad independiente4 contextos y33 combinaciones de
+streaming PASS; bundle
+`abc079682ff622aca28cdd0528cce928bf751bf7d55987237d21e2ac98d1795d`.
+Pendientes build, pruebas reales y UI tras nuevo login. El texto libre no obtiene garantía
+automática de entailment por llevar prefijo. Runtime24 permanece congelado.
+
+## Antecedente: preparación de delta24 — 13/10/2026
 
 Sobre runtime23 inmutable: orientación útil derivada de cocientes/base cero;
 selección privada explícita de citas en recomendaciones y unión verificada;
@@ -27,7 +66,7 @@ Pendiente construir congelado, resolver contraste Linux y renovar vigencia
 existente antes de focal001/003/008/019/022/023/025/026/028 y full28 original.
 No evidencia semántica nueva ni gasto desde0.796833638USD. UI login pendiente.
 
-## Corte vigente: candidato23 y batería completa terminada — 13/10/2026
+## Antecedente: candidato23 y batería completa terminada — 13/10/2026
 
 Publicado `9603370a2b1266040d8359f7c5b9eb695dc623a3`. CI PR `38430111305`
 PASS; imágenes expression23 verificadas contra 84 archivos backend,74 processor

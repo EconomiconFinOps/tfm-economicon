@@ -17,6 +17,12 @@ completitud/evidencia siguen vigentes.
 
 ## Refinamiento vigente tras survey22
 
+El refinamiento posterior25 amplía el escenario de usuario con segmentos
+explicativos bajo el mismo renderer y controles, conservando autoridad financiera
+y documental vacías. Las solicitudes documentales exigen una carencia concreta
+revisable; tener chunks no demuestra suficiencia. El ADR describe límites y
+evidencia negativa de focal24. La aceptación semántica continúa pendiente.
+
 Reglas booleanas con descriptores autenticados y operandos inequívocos producen
 condiciones y conclusión terminal servidor; no prosa libre que contradiga AND/OR.
 Vecinos inmediatos se obtienen tenant/provider-scoped en la misma recuperación

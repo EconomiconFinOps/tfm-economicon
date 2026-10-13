@@ -216,6 +216,16 @@ total entre todos los campos. Ningun calculo SHALL conferir evidencia financiera
 - **THEN** SHALL usar un escenario tipado con cantidades/expresiones exclusivamente del usuario o una solicitud neutral cerrada, sin prosa documental libre
 - **AND** SHALL conservar el cálculo hipotético completo sin afirmar carencia de operandos y derivar el estado y próximo paso de las solicitudes neutrales en servidor
 
+#### Scenario: Explicación de datos aportados sin autoridad documental
+- **WHEN** el escenario requiere conservar etiquetas, período, ámbito o una interpretación de sus cifras aportadas
+- **THEN** SHALL permitir segmentos explicativos con expresiones y cantidades exclusivamente del usuario, anteponer su origen hipotético y mantener evidencia documental, métricas financieras y recomendaciones vacías
+- **AND** SHALL conservar controles de ecuaciones, clasificación, profundidad, tamaño y unidades; el prefijo no SHALL considerarse prueba de pertinencia semántica ni autorizar políticas documentales
+
+#### Scenario: Carencia documental concreta
+- **WHEN** se selecciona una solicitud por documentación necesaria no contrastada
+- **THEN** SHALL exigir un requisito específico no vacío de hasta300 caracteres, validar los controles de texto y renderizar la misma solicitud en stream, resultado e historial
+- **AND** SHALL permitir esa solicitud con fuentes irrelevantes o incompletas, sin inferir suficiencia por la mera existencia de chunks; SHALL rechazar campos extra, requisitos en motivos distintos y autoridad financiera añadida
+
 #### Scenario: Referencias de recomendaciones seleccionadas explícitamente
 - **WHEN** una recomendación selecciona registros privados de evidencia
 - **THEN** SHALL validar cada registro y pasaje contra las fuentes autorizadas antes de deduplicar, proyectar los IDs públicos y unir únicamente esas selecciones

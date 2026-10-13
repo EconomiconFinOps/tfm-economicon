@@ -19,12 +19,15 @@ def candidate(answer,*,status=None):
 
 @pytest.mark.parametrize('reason',list(REQUESTS))
 def test_neutral_request_derives_status_and_useful_action_without_documentary_authority(reason):
-    value=candidate({'request':{'reason':reason}})
+    request={'reason':reason}
+    if reason=='missing_documentation':request['missing_requirement']='La política de asignación aplicable.'
+    value=candidate({'request':request})
     schema=provider_response_schema(authorized_evidence=[],quantities={})
     _validate(value,schema,schema)
     result=render_response(value,[],quantities={})
     assert result['status']==REQUESTS[reason][0]
-    assert result['answer']==REQUESTS[reason][1]
+    assert result['answer']==(REQUESTS[reason][1] if reason!='missing_documentation' else
+        'Necesito contrastar este requisito específico para completar la consulta: La política de asignación aplicable.')
     assert result['next_actions']==[REQUESTS[reason][2]]
     assert result['evidence']==result['metrics']==result['recommendations']==[]
     assert 'status' not in value
@@ -82,3 +85,64 @@ def test_scenario_schema_and_local_guard_exclude_documentary_operands():
     schema=provider_response_schema(authorized_evidence=[],quantities=catalog)
     with pytest.raises(ResponseValidationError):_validate(value,schema,schema)
     with pytest.raises(ValueError,match='documentary operands'):render_response(value,[],quantities=catalog)
+
+
+def test_explanatory_scenario_keeps_user_labels_scope_and_calculation():
+    catalog=quantities('Workspace sandbox-z, marzo. Compute 72 EUR; Network 28 EUR.')
+    value=candidate({'scenario':{'segments':[
+        {'text':'En marzo, para sandbox-z, Compute es la categoría de mayor coste aportado. Total: '},
+        {'expression':{'operation':'sum','left':{'quantity':'72 EUR'},'right':{'quantity':'28 EUR'}}},
+    ]}},status='insufficient_data')
+    schema=provider_response_schema(authorized_evidence=[],quantities=catalog)
+    _validate(value,schema,schema)
+    result=render_response(value,[],quantities=catalog)
+    assert all(text in result['answer'] for text in ('hipotético','marzo','sandbox-z','Compute','100 EUR'))
+    assert result['evidence']==result['metrics']==result['recommendations']==[]
+    for field in ('metrics','recommendations','evidence'):
+        bad=copy.deepcopy(value);bad[field]=[{'id':'invented'}]
+        with pytest.raises(ResponseValidationError):_validate(bad,schema,schema)
+        with pytest.raises(ValueError):render_response(bad,[],quantities=catalog)
+
+
+@pytest.mark.parametrize('segments',[
+    [{'text':'7 + '},{'text':'2 = 100'}],
+    [{'text':'[[ca'},{'text':'lc:0]]'}],
+    [{'quantity':'document:guide:5 EUR'}],
+])
+def test_explanatory_scenario_preserves_equation_protocol_and_source_guards(segments):
+    catalog=quantities('7 EUR y 2 EUR')
+    catalog['document:guide:5 EUR']={'value':'5','unit':'EUR','source':'5 EUR',
+        'provenance':[{'kind':'corpus','id':'guide'}]}
+    value=candidate({'scenario':{'segments':segments}},status='insufficient_data')
+    with pytest.raises(ValueError):render_response(value,[],quantities=catalog)
+
+
+@pytest.mark.parametrize('requirement',['','   ','x'*301,'7 + 2 = 100','[[calc:0]]'])
+def test_missing_documentation_rejects_empty_long_or_unverified_requirement(requirement):
+    value=candidate({'request':{'reason':'missing_documentation','missing_requirement':requirement}})
+    with pytest.raises(ValueError):render_response(value,[],quantities={})
+
+
+def test_specific_documentary_request_remains_available_with_irrelevant_retrieval():
+    source={'id':'unrelated','kind':'corpus','title':'Manual','source':'manual','content':'The interface has a dark theme.'}
+    value=candidate({'request':{'reason':'missing_documentation','missing_requirement':'El criterio de reparto de costes compartidos.'}})
+    schema=provider_response_schema(authorized_evidence=[source],quantities={})
+    _validate(value,schema,schema)
+    result=render_response(value,[],quantities={})
+    assert 'criterio de reparto' in result['answer']
+    assert result['evidence']==result['metrics']==[]
+    for request in ({'reason':'missing_documentation'},
+        {'reason':'clarification','missing_requirement':'unneeded'},
+        {'reason':'missing_documentation','missing_requirement':'criterion','extra':True}):
+        bad=candidate({'request':request})
+        with pytest.raises(ResponseValidationError):_validate(bad,schema,schema)
+        with pytest.raises(ValueError):render_response(bad,[],quantities={})
+
+
+@pytest.mark.parametrize('current,unit,expected',[('73','EUR','73 EUR'),('-12','EUR','-12 EUR'),('7','%','7 puntos porcentuales')])
+def test_zero_baseline_relative_change_also_explains_absolute_difference(current,unit,expected):
+    from app.core.chat_expressions import ExpressionRenderer
+    catalog=quantities(f'{current} {unit} y 0 {unit}')
+    result=ExpressionRenderer(catalog).render({'operation':'relative_change',
+        'current':{'quantity':f'{current} {unit}'},'baseline':{'quantity':f'0 {unit}'}})
+    assert 'indefinida' in result and 'Diferencia absoluta = '+expected in result

@@ -394,7 +394,18 @@ class ExpressionRenderer:
                     evaluated=exact(a)+(' '+au if au else '')+' '+symbol+' '+exact(b)+(' '+bu if bu else '')
                     return '\nComparación: '+at+' '+symbol+' '+bt+'; valores evaluados: '+evaluated+' → '+('verdadero' if valid else 'falso')+'.\n'
                 value,unit,formula,reason=self._numeric(node)
-                if reason:return '\n'+formula+': '+reason+'.'+self.undefined_guidance(reason)+'\n'
+                if reason:
+                    absolute=''
+                    if node.get('operation')=='relative_change' and reason=='variación relativa indefinida porque la base es cero':
+                        current,cu,_,ce=self._numeric(node['current'],1)
+                        baseline,bu,_,be=self._numeric(node['baseline'],1)
+                        if not ce and not be and cu==bu:
+                            # Subtraction is already part of relative_change; it
+                            # remains defined even when its division is not.
+                            delta=current-baseline;shown=display(delta)
+                            delta_unit='puntos porcentuales' if cu=='%' else cu
+                            absolute=' Diferencia absoluta '+('=' if Decimal(shown)==delta else '≈')+' '+shown+(' '+delta_unit if delta_unit else '')+'.'
+                    return '\n'+formula+': '+reason+'.'+absolute+self.undefined_guidance(reason)+'\n'
                 shown=display(value);symbol='=' if Decimal(shown)==value else '≈'
                 if node.get('operation')=='difference' and unit=='%':unit='puntos porcentuales'
                 return '\nCálculo: '+formula+' '+symbol+' '+shown+(' '+unit if unit else '')+'.\n'

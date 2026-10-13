@@ -29,7 +29,7 @@ def supported_provider():
 def request_provider():
     value=_provider(ANSWER)
     value.pop('status')
-    value['answer']={'request':{'reason':'missing_documentation'}}
+    value['answer']={'request':{'reason':'missing_documentation','missing_requirement':'La regla de reparto aplicable.'}}
     value['limitations']=[]
     return value
 

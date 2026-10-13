@@ -192,7 +192,7 @@ def test_one_server_retrieval_precedes_exactly_one_generation(monkeypatch):
     from test_chat_gateway_jup035 import ANSWER,_provider
     value=_provider(ANSWER)
     value.pop('status')
-    value.update(answer={'request':{'reason':'missing_documentation'}},limitations=[])
+    value.update(answer={'request':{'reason':'missing_documentation','missing_requirement':'La regla de reparto aplicable.'}},limitations=[])
     gateway,requests=provider(monkeypatch,[wire({'content':json.dumps(value)})])
     ctx={**context('Explica costes'),'tool_protocol':'server-documentation-v4','financial_metrics_allowed':False,'authorized_evidence':[]}
     calls=[]

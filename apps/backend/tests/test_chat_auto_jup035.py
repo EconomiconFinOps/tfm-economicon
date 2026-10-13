@@ -86,7 +86,7 @@ def test_calculation_diagnostic_is_closed_and_contains_no_rejected_text(api, mon
     assert 'secret synthetic payload' not in caplog.text
 
 
-@pytest.mark.parametrize('classification',[False,True,'quantities','boolean','boolean-corpus','scenario','scenario-zero','request'])
+@pytest.mark.parametrize('classification',[False,True,'quantities','boolean','boolean-corpus','scenario','scenario-zero','scenario-explained','request','request-specific'])
 def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch, classification):
     from app.core.chat_expressions import quantities,ExpressionRenderer
     from app.core.chat_segments import render_segments,render_classified_answer,render_response
@@ -133,8 +133,15 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
             {'operation':'difference','current':{'quantity':'37 EUR'},'baseline':{'quantity':'0 EUR'}},
             {'operation':'relative_change','current':{'quantity':'37 EUR'},'baseline':{'quantity':'0 EUR'}}],
             'quantities':[]}}
+    if classification=='scenario-explained':
+        question='Sandbox-z, marzo: Compute 73 EUR y Network 20 EUR.'
+        catalog=quantities(question)
+        segments={'scenario':{'segments':[{'text':'En marzo, sandbox-z, Compute tiene mayor importe que Network. 😀 Diferencia: '},
+            {'expression':difference}]}}
     if classification=='request':
         segments={'request':{'reason':'authorized_cost_data'}}
+    if classification=='request-specific':
+        segments={'request':{'reason':'missing_documentation','missing_requirement':'La política del ámbito sandbox-z. 😀'}}
     if classification in ('boolean','boolean-corpus'):
         from test_chat_boolean_rules_jup035 import catalog as boolean_catalog, request, answer
         question=request()
@@ -160,8 +167,8 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
     result['answer'] = render_classified_answer(segments,ExpressionRenderer(catalog)) if isinstance(segments,dict) else render_segments(segments, [], expressions=ExpressionRenderer(catalog))
     if classification=='boolean':result['status']='insufficient_data'
     if classification=='boolean-corpus':result['status']='ok'
-    if classification in ('scenario','scenario-zero'):result['status']='insufficient_data'
-    if classification=='request':result.pop('status')
+    if classification in ('scenario','scenario-zero','scenario-explained'):result['status']='insufficient_data'
+    if classification in ('request','request-specific'):result.pop('status')
     if isinstance(segments,dict):
         result=render_response({**result,'answer':segments,'evidence':[],
             'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[]},[],quantities=catalog)

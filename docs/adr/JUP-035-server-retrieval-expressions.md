@@ -270,3 +270,37 @@ base comparable; no supone que cero sea ausencia de ingesta ni garantiza un
 denominador futuro positivo. El resultado público, SSE y JSONB siguen idénticos.
 No cambia el modelo/proveedor, una recuperación/generación,3200tokens, deadline
 ni el presupuesto autorizado. La batería completa del candidato sigue pendiente.
+
+### Explicación del escenario y carencia documental específica (13/10/2026)
+
+La focal24 obtuvo2 PASS/7 FAIL semánticos: la rama sin prosa representaba los
+cálculos de001, pero no sus etiquetas, período, ámbito ni conclusión. Las rutas
+neutrales también omitieron respuestas sustentadas en022/028 y confundieron la
+falta de fuente financiera con fuera de dominio en023. No se atribuye una causa
+estocástica concreta al modelo por esas muestras.
+
+response_modes v2 permite `scenario.segments` con el mismo renderer de texto,
+expresiones y cantidades, exclusivamente con operandos del usuario. El servidor
+antepone el origen hipotético; evidence, metrics, recommendations y auxiliares
+permanecen vacíos. Se conservan límites y guards de ecuaciones/clasificación.
+Esto permite describir e interpretar etiquetas y ámbito aportados, pero no
+demuestra entailment universal ni autoriza políticas documentales: éstas siguen
+en la narrativa con fuentes seleccionadas. Los escenarios puramente calculados
+anteriores permanecen válidos. No cambia FinOpsResponse público.
+
+Cada motivo de request tiene una rama const con criterio semántico explícito.
+missing_documentation exige missing_requirement no vacío de hasta300 caracteres,
+validado por los mismos controles de texto; la salida lo presenta como requisito
+pendiente de contrastar, no como inexistencia de documentación. La presencia de
+chunks no impide esa solicitud porque pueden ser irrelevantes o incompletos. La
+elección de un motivo y la necesidad del requisito aún requieren revisión real.
+Una consulta FinOps sin acceso financiero no equivale a fuera de dominio, y
+pedir una ejecución no equivale a pedir análisis.
+
+Una variación relativa indefinida por base cero muestra también la diferencia
+absoluta de sus operandos ya evaluados, con signo/unidades (puntos porcentuales
+si eran porcentajes). La guía de base comparable solicita ámbito, períodos e
+investigación por servicio/recurso, sin afirmar una causa. La verificación
+mantiene el límite12 y no inventa operaciones para mostrar cantidades originales.
+Pruebas offline verifican esquema, controles, streaming y persistencia; no
+sustituyen una nueva evaluación semántica del banco original.
