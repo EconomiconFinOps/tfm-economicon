@@ -65,7 +65,8 @@ class OwnershipQuestionService:
             status = "partial" if missing or summary["excluded_undated_count"] else "ok"
 
         payload = {
-            "adapter_version": "ownership-1.0", "selection": resolved, "summary": summary,
+            "adapter_version": "ownership-1.0", "selection": resolved, "reference_date": reference_date.today().isoformat(),
+            "summary": summary,
             "selected_groups": selected_groups, "selected_totals": selected_totals,
             "missing_groups": missing, "provenance": raw["provenance"],
             "status": status, "reason": reason,
@@ -84,7 +85,8 @@ class OwnershipQuestionService:
                   "cost_center": "centro de coste", "tag": f"etiqueta {tag_key}"}
         label = labels[selection.group_by]
         lines = [f"Coste registrado por {label}: {display_label(selection.value) if selection.value is not None else 'todos los valores'}.",
-                 f"Periodo UTC: {start.isoformat()} a {end.isoformat()} (fin excluido)."]
+                 f"Periodo UTC: {start.isoformat()} a {end.isoformat()} (fin excluido).",
+                 f"Fecha de referencia: {payload['reference_date']}; no se muestran datos posteriores."]
         if reason == "empty_period":
             lines.append("No hay registros completados en el periodo; no equivale a gasto cero.")
         elif reason == "currency_not_found":
