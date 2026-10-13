@@ -46,3 +46,15 @@ apunta a DockerServer compartido. No se despliega ni se modifica ese entorno.
 N=3 y N=5 NOT_RUN. Pendiente completar adjudicaciones, prueba de reserva e informe
 de entrega. Último gasto confirmado0,957927619; no nuevas inferencias locales.
 No afirmar que38PASS u11PASS equivalen a CI completa ni aceptación semántica.
+
+
+Hito siguiente13/10/2026: [informe offline](../evidence/jup-035-local-offline-review.md).
+Revisadas44respuestas completas/253controles,9inciertos.12fallos técnicos sin
+respuesta no recibenjuicio semántico. Reserva revisada despuésde congelar
+scorer/rúbrica ycalibración;sinajuste posterior. Corpus3/3hashesidénticos albanco.
+Suiteprocessor terminada:1454PASS/13FAIL/4ERROR/96SKIP en400.51s.10incidencias
+resueltas en repetición con intérpretevenv(10PASS/6SKIP),sin cambiarproducto;
+2fallosporprivilegios symlinkWindows y5cancelación/capacidad resumen pendientes.
+Cancelación reproducida aislada; shutdownsocket retornaéxito pero trabajador
+siguebloqueado antesdecabeceras. No cerrar capacidad antesdelasalida física.
+Siguiente:diagnóstico/corrección acotada e informe final;N3/N5siguenNOT_RUN.
