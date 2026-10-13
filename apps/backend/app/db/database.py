@@ -786,6 +786,36 @@ class Database:
             rows = self._anomaly_episode_rows(connection, tenant_id, episode_id)
         return rules.order_payloads([rules.episode_payload(rows[0])])[0] if rows else None
 
+    def fetch_anomaly_episode_snapshot(self, tenant_id: str, episode_id: str) -> dict | None:
+        from app.services import anomaly_episodes as rules
+
+        # Una sola sentencia SQL: la fila del episodio y la marca sintetica salen de la misma fotografia que
+        # ofrece CockroachDB por sentencia, sin transaccion explicita, nivel de aislamiento ni reintentos.
+        # Descartado: dos lecturas (episodio y marca) por separado, porque podrian ver estados distintos.
+        # El criterio de la marca sintetica es el mismo que usa fetch_anomaly_episode_list.
+        # Se filtra siempre por cliente: otro cliente e inexistente son indistinguibles (ambos devuelven None).
+        with self.engine.connect() as connection:
+            row = connection.execute(text(
+                "SELECT e.*, EXISTS (SELECT 1 FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant_id "
+                "AND status = 'completed' AND COALESCE(request->'synthetic' = 'true'::JSONB, false)) "
+                "AS includes_synthetic_data FROM anomaly_episodes e WHERE e.tenant_id = :tenant_id AND e.id = :id"
+            ), {"tenant_id": tenant_id, "id": episode_id}).mappings().first()
+        if row is None:
+            return None
+        return {
+            # episode_payload solo lee las columnas que necesita, asi que la columna extra no le afecta y el
+            # payload es identico al de fetch_anomaly_episode.
+            "episode": rules.order_payloads([rules.episode_payload(row)])[0],
+            # Operandos exactos de la tabla: el payload redondea a dos decimales (100.004 se mostraria 100.00)
+            # y el explicador necesita el valor sin redondear ni normalizar para comparar con los umbrales.
+            "operands": {
+                "reference_week_cost": row["reference_week_cost"],
+                "opening_observed_cost": row["opening_observed_cost"],
+                "impact_numerator": row["impact_numerator"],
+            },
+            "includes_synthetic_data": bool(row["includes_synthetic_data"]),
+        }
+
     def change_anomaly_episode_status(self, tenant_id: str, episode_id: str, *, status: str,
                                       reason: str | None, actor: str) -> dict:
         from sqlalchemy import exc

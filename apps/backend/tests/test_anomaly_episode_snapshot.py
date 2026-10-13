@@ -93,8 +93,14 @@ def test_snapshot_operands_keep_extra_decimals_while_the_payload_rounds(episode_
     operands = snapshot["operands"]
     assert operands["opening_observed_cost"] == Decimal("500.004")
     assert operands["impact_numerator"] == Decimal("700.028")
-    assert format(operands["opening_observed_cost"], "f") == "500.004"
-    assert format(operands["impact_numerator"], "f") == "700.028"
+    # La tabla guarda los importes con 12 decimales (NUMERIC(38,12)), asi que el texto exacto lleva ceros finales
+    # ("500.004000000000"). Se fija que el texto es el de la propia columna, sin normalizar, y que no se pierde
+    # ningun decimal significativo. (Correccion autorizada por Victor el 2026-10-12: el literal "500.004" ignoraba la escala.)
+    [row] = episode_rows(db, "tenant-a")
+    assert format(operands["opening_observed_cost"], "f") == format(row["opening_observed_cost"], "f")
+    assert format(operands["impact_numerator"], "f") == format(row["impact_numerator"], "f")
+    assert format(operands["opening_observed_cost"], "f").startswith("500.004")
+    assert format(operands["impact_numerator"], "f").startswith("700.028")
     assert snapshot["episode"]["opening_observed_cost"] == "500.00"
     assert snapshot["episode"]["accumulated_impact"] == "100.00"
 

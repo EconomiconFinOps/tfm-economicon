@@ -268,3 +268,48 @@ docker run --rm --network container:jup038-crdb -v "$R:/repo:ro" -v "$(cygpath -
 
 **Lo que este Red no demuestra.** Que las pruebas sean correctas contra una implementación real; se
 sabrá en el Green. El nodo es de un solo proceso y no prueba concurrencia.
+
+## Grupo 3 — Lectura con operandos exactos, fase Green (tareas 3.2 y 3.3)
+
+**Producto del `coder`:** `Database.fetch_anomaly_episode_snapshot` en `apps/backend/app/db/database.py`,
+un único bloque aditivo de 30 líneas colocado tras `fetch_anomaly_episode` (`git diff --stat`: 1 archivo,
+30 inserciones). Una sola sentencia `SELECT e.*, EXISTS (…) AS includes_synthetic_data FROM anomaly_episodes e
+WHERE e.tenant_id = … AND e.id = …`, con `engine.connect()` y sin transacción, aislamiento ni reintentos; el
+`episode` sale de `episode_payload` y `order_payloads`, igual que `fetch_anomaly_episode`.
+
+**El `coder` se paró con 12 de 13** y escaló una prueba que consideraba incorrecta, que es lo que debe
+hacer. El orquestador lo verificó: `azure_cost_records.pretax_cost` es `NUMERIC(38,12)` y la detección guarda
+sumas con esa escala, de modo que las columnas del episodio valen `2800.000000000000`, `500.004000000000` y
+`700.028000000000`. La prueba 2 exigía que el texto del operando coincidiera con el de la columna y la 3 exigía
+el literal `"500.004"`: incompatibles entre sí.
+
+**Decisión de Victor, 2026-10-12.** (a) Los operandos de la evidencia se escriben **tal como los guarda la
+tabla**, sin normalizar, con 12 decimales; es el valor exacto, coincide con el diseño aprobado y no añade
+código. El identificador depende de ese texto, que es estable porque la columna tiene una escala fija. (b)
+Corrección de la prueba 13 con un **bypass puntual del candado del harness**, autorizado expresamente por
+Victor: no se tocó la configuración de los hooks y solo se cambiaron dos líneas de
+`apps/backend/tests/test_anomaly_episode_snapshot.py`.
+
+**Adenda a la regla «no se edita ninguna prueba ya commiteada».**
+
+- Qué cambió: las dos aserciones `format(operando, "f") == "500.004"` y `== "700.028"` pasan a comparar con el
+  texto de la propia columna (leída con SQL directo, como el resto del archivo) y a exigir que empiece por
+  `500.004` y `700.028`. Es +8/−2 líneas, con un comentario que lo explica.
+- Qué no cambió: las otras 12 pruebas y el resto de la prueba 13 (valores `Decimal` y payload redondeado).
+- Por qué es legítimo: el literal ignoraba la escala real de la columna; lo que protege la prueba (que no se
+  pierde ningún decimal significativo y que el texto es el exacto de la tabla) se mantiene y gana precisión.
+- No se debilitó para pasar: el método no cambió entre el Red y esta corrección.
+
+**Evidencia Green** (2026-10-12, CockroachDB real, 0 omitidas):
+
+- `tests/test_anomaly_episode_snapshot.py`: `13 passed` (antes `13 failed`).
+- Junto a `test_anomaly_episode_store.py`, `test_anomaly_episode_api.py` y las dos del explicador:
+  `190 passed` (13 + 82 + 95).
+- **3.3:** las pruebas se ejecutaron contra un CockroachDB v24.1.11 desechable (`jup038-crdb`), con el
+  comando del Red. CI las omite (`RF-096-004`): sin `JUP086_COCKROACH_TEST_URL` los `skip` de las guardas las
+  dejan fuera, así que este resultado no está cubierto por CI.
+
+**Contrato.** Se añade al de `docs/api/anomaly-explanations.md` que `operands` conserva la escala de la
+columna (`2800.000000000000`) y que los ejemplos usan dos decimales por claridad.
+
+**Pendiente del grupo 3:** mutación sobre el método, DoD y QA.

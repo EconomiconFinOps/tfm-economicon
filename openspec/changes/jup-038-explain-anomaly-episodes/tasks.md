@@ -53,9 +53,9 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   devuelve el mismo episodio que `fetch_anomaly_episode`, los tres operandos exactos y la marca de
   datos sintéticos (falsa, y cierta con una ingesta marcada); devuelve `None` para otro cliente y
   para un identificador inexistente; no cambia episodios ni la marca de agua.
-- [ ] 3.2 Green: método `fetch_anomaly_episode_snapshot` en `app/db/database.py`, en una sola
+- [x] 3.2 Green: método `fetch_anomaly_episode_snapshot` en `app/db/database.py`, en una sola
   sentencia SQL filtrada por cliente (decisión 3).
-- [ ] 3.3 Ejecutar 3.1 contra un CockroachDB desechable y anotar en la evidencia el comando, el
+- [x] 3.3 Ejecutar 3.1 contra un CockroachDB desechable y anotar en la evidencia el comando, el
   resultado y que CI la omite (`RF-096-004`).
 
 ## 4. Ruta del asistente
