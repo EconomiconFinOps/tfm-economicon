@@ -1,5 +1,22 @@
 ## Corte actual: intervalos documentales — 13/10/2026
 
+Actualización posterior:00fd4ab publicado y runtime expression18 verificado
+(83/73/112 hashes;47 pruebas Cockroach PASS). Focal005/006 falla después de emitir
+classify correcto;007/013/017 completas con criterios correctos.027 calcula bien,
+pero cita insuficiente para una explicación adicional de metodología. Todos los
+completados conservan SSE=final=JSONB; fallidos con historial vacío. NO validada.
+Diagnóstico único005 posterior completa sin reproducir el error: no acredita
+causa ni reemplaza la muestra fallida. Hook retirado y hashes originales
+restaurados. Recibos expression18-focused.json, -focused-checks.json y
+-diagnostic005.json en el workspace. Gasto observado0.49419398/2USD, sujeto a
+asentamiento. No full28 ni nuevas inferencias tras ese diagnóstico.
+
+Se añaden códigos cerrados para los nuevos errores del selector (18testsPASS,
+sin texto rechazado) y se corrige la fixture de retrieval para comprobar sus
+rangos nuevos exactos (29testsPASS). CI00fd4ab había fallado únicamente esa
+fixture:1840PASS/164SKIP/1FAIL; no un fallo de producto. Pendiente resolver la
+fiabilidad de005/006 con evidencia suficiente y la pertinencia documental027.
+
 Publicado f1848e5, producto idéntico731b5ea, transferido con autorización específica.
 CI técnica y47 pruebas Cockroach pasan, incluidos cuatro caminos de migración y
 preservación de datos. Runtime expression17 tiene82/72/112 hashes de fuentes

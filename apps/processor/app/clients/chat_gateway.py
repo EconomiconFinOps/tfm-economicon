@@ -164,6 +164,12 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
             'Expression magnitude or unit limit.':'expression_magnitude_or_unit_limit',
             'Comparison expression shape.':'expression_comparison_shape',
             'Expression precision limit.':'expression_precision_limit',
+            'Classification shape.':'classification_shape',
+            'Unknown documentary interval rule.':'classification_unknown_rule',
+            'Documentary KPI value mismatch.':'classification_kpi_mismatch',
+            'Documentary interval unit mismatch.':'classification_unit_mismatch',
+            'Ambiguous documentary interval.':'classification_ambiguous_interval',
+            'Unverified documentary classification prose.':'classification_unverified_prose',
         }
         if type(failure) is ValueError and failure.args and type(failure.args[0]) is str and failure.args[0] in assembly_rules:
             event['rule_code'] = assembly_rules[failure.args[0]]

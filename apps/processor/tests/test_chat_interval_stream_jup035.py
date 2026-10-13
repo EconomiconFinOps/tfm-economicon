@@ -73,3 +73,20 @@ def test_non_partitioned_section_metadata_is_rejected():
     source=context['authorized_evidence'][0]
     source['provenance']['sections'][0]['end']-=1
     with pytest.raises(ValueError,match='Incomplete'):validate_provenance(source)
+
+
+@pytest.mark.parametrize('message,code',[
+    ('Classification shape.','classification_shape'),
+    ('Unknown documentary interval rule.','classification_unknown_rule'),
+    ('Documentary KPI value mismatch.','classification_kpi_mismatch'),
+    ('Documentary interval unit mismatch.','classification_unit_mismatch'),
+    ('Ambiguous documentary interval.','classification_ambiguous_interval'),
+    ('Unverified documentary classification prose.','classification_unverified_prose'),
+    ('Unverified documentary classification prose. SECRET',None),
+])
+def test_interval_diagnostics_are_exact_closed_codes_without_rejected_text(message,code,caplog):
+    from app.clients.chat_gateway import _record_diagnostic
+    _record_diagnostic('provisional_answer',ValueError(message),'0'*64,None)
+    event=json.loads(caplog.records[-1].message)
+    assert event.get('rule_code')==code
+    assert 'SECRET' not in caplog.text and message not in caplog.text
