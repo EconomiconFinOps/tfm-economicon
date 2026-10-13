@@ -870,3 +870,72 @@ usó las cifras de arriba.
 
 **Estado del grupo 5:** tareas 5.1 a 5.4 hechas; mutación con un único equivalente justificado y una deuda de
 herramienta documentada; DoD en verde y QA en `accept`.
+
+## Grupo 6 — Modo «Explicar una anomalía» del redactor, fase Red (tareas 6.1, 6.2 y 6.4)
+
+**Contrato visible fijado antes del Red** (lo implementará el `coder`; son decisiones de diseño del
+orquestador, recogidas aquí porque no estaban en el `design.md`):
+
+- **Redactor.** Segunda casilla `Explicar una anomalía`, excluyente con `Consultar costes por propiedad` en los
+  dos sentidos. Al activarla se pide `GET /billing/anomalies/episodes?scope=all` (con el modo apagado no se hace
+  ninguna petición de anomalías). Mientras carga, `Cargando anomalías...`. Un `<select>` `Anomalía` con la
+  opción vacía `Elige una anomalía` y una opción por episodio, `{servicio} · {moneda} · desde {fecha ISO} ·
+  {criticidad} · {estado}`; solo se ofrecen los episodios cuyo `id` cumple `^anomaly-[0-9a-f]{64}$`. Sin
+  anomalías válidas, `Este cliente no tiene anomalías guardadas. Se detectan desde el panel de Anomalías.`; si
+  la lista falla, un `alert` `No se han podido cargar las anomalías.`; `Enviar` queda deshabilitado en ambos
+  casos y mientras no haya una elegida. La pregunta vacía se rellena con `¿Por qué se ha marcado esta anomalía?`
+  (editable, sin sobrescribir texto previo). El `POST` lleva exactamente `{content, anomaly_query:
+  {episode_id}}`, sin `ownership_query`.
+- **Errores del servidor.** `anomaly_episode_not_found` → `No se ha encontrado esa anomalía en el cliente activo.
+  Actualiza la lista y elige otra.`; `anomaly_explanation_unavailable` → `Esta anomalía no se puede explicar con
+  las reglas actuales.`; cualquier otro error conserva el mensaje genérico que ya mostraba el redactor. En todos
+  se conservan la pregunta y la elección y no se añade ningún mensaje a la conversación.
+- **Entrada por dirección** (`/assistant?episode=<id>`). Con parámetro no vacío y una conversación seleccionada,
+  el redactor aparece con el modo activo y, cuando la lista carga y el id está entre las del cliente, esa opción
+  elegida; si no está (otro cliente, inexistente o formato inválido) un `status` `La anomalía indicada en el
+  enlace no está entre las de este cliente.` y ninguna elegida. Tras un envío correcto el parámetro desaparece;
+  tras uno fallido se conserva. Sin parámetro el redactor es el de hoy.
+
+**Pruebas escritas por el `tester`** (dos archivos nuevos, 38 pruebas de integración montando la aplicación real
+con el enrutador y un servidor simulado en el que cualquier petición no prevista falla):
+
+- `apps/frontend/tests/anomaly-explanation-conversations.test.tsx` (6.1 y 6.2, 22): modo apagado sin peticiones;
+  carga con la cabecera del cliente; `Cargando…`; contenido y orden de las opciones (con un orden que no
+  coincide con fecha, criticidad, servicio ni id); siete formas de identificador inválido filtradas; `Enviar`
+  deshabilitado; cuerpo exacto del `POST`; éxito con recarga y bloque `Evidencia de la anomalía — Baja (P3)`;
+  lista vacía y solo con ids inválidos; fallo de carga por 500 y por forma inválida; exclusión entre modos en los
+  dos sentidos; y los errores 404, 409, 404 de conversación, 422 y 503 con el texto exacto, pregunta y elección
+  conservadas, sin artículos nuevos, cada uno con un reintento correcto como control positivo.
+- `apps/frontend/tests/anomaly-explanation-link.test.tsx` (6.4, 16): preselección de una anomalía que no es la
+  primera; aviso con id ausente, de formato inválido (aunque esté listado), con mayúsculas y con lista vacía;
+  sin aviso mientras la lista carga; el parámetro desaparece tras un éxito y se conserva tras un fallo; sin
+  parámetro o con `?episode=` vacío todo queda como hoy; cambio de cliente; y que sin conversación seleccionada
+  el parámetro sobrevive hasta montar el redactor.
+
+**Evidencia Red** (2026-10-13, Windows, reejecutada por el orquestador):
+
+```
+corepack pnpm --filter @finops/frontend exec vitest run tests/anomaly-explanation-conversations.test.tsx tests/anomaly-explanation-link.test.tsx
+```
+
+- Resultado: **`38 failed (38)`**, ninguna omitida ni con `skip`. **Las 38 por el mismo motivo**: `Unable to find
+  role="checkbox" and name "Explicar una anomalía"`; ninguna por preparación, carga del archivo ni petición sin
+  interceptar (0 `Unmocked HTTP request`).
+- Control: `ownership-conversations`, `conversations` y `tenant-switching`: `26 passed`.
+- `lint` y `typecheck` con los dos archivos nuevos: **código 0** (comprobado con el código de salida real).
+  Es la lección del grupo 5: ahora el Red ya lo exige.
+- **Comprobación extra del `tester`:** copió `apps/frontend` a un directorio temporal **fuera del repositorio**,
+  escribió allí una implementación mínima de referencia y las 38 pruebas pasaron (y las 26 de control
+  también). Demuestra que son satisfacibles y que el Red no falla por una aserción imposible. Esa
+  implementación es suya, no el trabajo del `coder`, y no queda nada en el repositorio.
+
+**Ambigüedades del `tester`** (contrato sin cambios): la pregunta queda vacía tras un éxito (el modo la vuelve a
+proponer al reactivarse); no se muestra el aviso del enlace mientras la lista carga; con lista vacía y parámetro
+se exigen a la vez el aviso del enlace y el texto de «no hay anomalías guardadas»; para el 404 de conversación, el
+422 y el 503 el mensaje es el cuerpo crudo de la respuesta, como ya hacía el redactor; el parámetro sigue en la
+dirección tras cambiar de cliente; y las etiquetas de las opciones se escriben literalmente en las pruebas, sin
+importar `severityLabels` ni `statusLabels`, para que un cambio de etiquetas en el producto las haga fallar. No se
+incluyó la prueba opcional de «un envío en curso no pierde la elección si cambia la lista».
+
+**Lo que este Red no demuestra.** Que las pruebas sean correctas contra la implementación real del producto; no
+hay prueba en navegador real todavía (grupo 8).

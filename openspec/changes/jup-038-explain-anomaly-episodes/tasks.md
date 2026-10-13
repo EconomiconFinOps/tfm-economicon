@@ -106,18 +106,18 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 
 ## 6. Frontend: modo «Explicar una anomalía» del redactor
 
-- [ ] 6.1 Red, en un archivo nuevo `apps/frontend/tests/anomaly-explanation-conversations.test.tsx`
+- [x] 6.1 Red, en un archivo nuevo `apps/frontend/tests/anomaly-explanation-conversations.test.tsx`
   (las pruebas de `tests/ownership-conversations.test.tsx` deben seguir pasando sin editarlas): con
   el modo activo se cargan las anomalías del cliente y se listan con servicio,
   moneda, día de inicio, criticidad y estado; elegir una y enviar manda `content` y
   `anomaly_query.episode_id`, sin `ownership_query`; sin anomalía elegida no se envía; la pregunta
   vacía recibe el texto propuesto y se puede cambiar.
-- [ ] 6.2 Red: cliente sin anomalías (mensaje y envío bloqueado), fallo al cargar la lista (error y
+- [x] 6.2 Red: cliente sin anomalías (mensaje y envío bloqueado), fallo al cargar la lista (error y
   envío bloqueado), exclusión con «Consultar costes por propiedad» en los dos sentidos, y error 404
   o 409 del backend (se muestra, se conserva la pregunta y no aparece ninguna respuesta).
 - [ ] 6.3 Green: `AnomalyExplanationFields.tsx` y la segunda casilla en `MessageComposer.tsx`
   (decisión 9), sin cambiar la casilla existente ni sus pruebas.
-- [ ] 6.4 Red, en otro archivo nuevo (el de 6.1 ya está commiteado): `/assistant?episode=<id>` abre el modo con esa anomalía elegida cuando está en la
+- [x] 6.4 Red, en otro archivo nuevo (el de 6.1 ya está commiteado): `/assistant?episode=<id>` abre el modo con esa anomalía elegida cuando está en la
   lista del cliente activo; si no está, lo avisa y no elige ninguna; tras un envío correcto el
   parámetro desaparece de la dirección; al cambiar de cliente con el parámetro puesto se aplica el
   caso «no está».
