@@ -1,5 +1,16 @@
 ## PR121: contrato estructurado autorizado en validación — 12/10/2026
 
+## Focal 7f1a150 (2026-10-13)
+
+Autorizacion externa especifica confirmada por el usuario; bloqueo anterior
+resuelto. Arithmetic10 completa017/027.027 cumple10/6EUR por pedido y reduccion40%,
+con fuentes pertinentes, stream=final e historial2.017 explica AND y limite
+estricto pero deja huecos en las magnitudes: no pasa. Su decision privada no se
+conserva y no se atribuye una causa no observada. Se aclara la instruccion general:
+aplicar reglas cuantitativas tambien exige planificar magnitudes/comparaciones,
+aunque no se pida calcular explicitamente; nunca omitir valores mediante huecos.
+La proxima focal017 y full28 requieren candidato nuevo. Recibo arithmetic10-focused.json.
+
 ## Focal d1947e6 y separación numérica (2026-10-13)
 
 Runtime arithmetic9 limpio, hashes77/71; CI técnica verde. La focal normal017
@@ -17,7 +28,12 @@ La instrucción general exige explicar magnitudes, condiciones y combinaciones,
 sin respuestas codificadas para el banco. Pruebas offline:183 processor,60 backend,
 61 aritmética con caminos mixtos/terminales,17 recursos y67 OpenSpec pasan.
 SSE y persistencia SQL se contrastan con IDs numéricos y comparaciones juntos.
-Nueva focal y full28 pendientes.
+Nueva focal y full28 pendientes. Candidato7f1a150 publicado, runtime arithmetic10
+con hashes77/71 idénticos y43 pruebas SQL nativas pasan. El intento de ejecutar
+focal017/027 fue rechazado por auto-review antes de CreateProcess: interpretó
+el permiso como limitado a la reproducción específica017 anterior. No hubo
+inferencia ni gasto. Pendiente reconciliar la autorización humana más reciente;
+no se intenta una variante del envío. Recibo arithmetic10-focal-approval-rejection.json.
 
 ## Diagnóstico causal de compatibilidad (2026-10-13)
 

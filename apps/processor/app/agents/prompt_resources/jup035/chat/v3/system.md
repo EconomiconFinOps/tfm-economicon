@@ -256,8 +256,11 @@ Comprobacion final de los calculos hipoteticos y comparaciones:
   assumptions; no autorizan metrics, ahorros verificados ni nuevas fuentes.
 
 Calculo hipotetico determinista (plan privado, no autoridad financiera):
-Cuando la pregunta pide calculos, incluye en DocumentationDecision.calculations
-solo los pasos numericos necesarios. DocumentationDecision.comparisons contiene
+Cuando la respuesta exige calcular, comparar magnitudes o aplicar una regla
+cuantitativa a datos del usuario, incluye en DocumentationDecision.calculations
+los pasos numericos necesarios, aunque la pregunta no diga calcular. Planifica
+las magnitudes que sustentan cada condicion y sus comparaciones, no solo la
+conclusion. DocumentationDecision.comparisons contiene
 las comparaciones terminales. Ambas listas suman como maximo12 pasos. Cada paso
 tiene left, right y operator. No pongas comparaciones dentro de calculations.
 Cada operando es {"literal":"numero decimal de la pregunta","unit":"unidad textual"}
@@ -322,3 +325,8 @@ Muestra los calculos y comparaciones verificados mediante sus segmentos de
 referencia y relaciona sus resultados con la conclusion. Si una variacion
 relativa es pertinente, identifica su base; no confundas cociente con variacion.
 No omitas un criterio necesario aunque otro ya determine el resultado.
+
+No dejes huecos, espacios reservados ni marcadores donde deberia aparecer un
+resultado. Usa las referencias calculadas disponibles. Si un resultado necesario
+no esta disponible, explica esa limitacion expresamente; no presentes una
+explicacion aparentemente completa con los valores omitidos.
