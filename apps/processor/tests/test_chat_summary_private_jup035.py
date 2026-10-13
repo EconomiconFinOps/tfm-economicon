@@ -91,8 +91,9 @@ def test_unavailable_optional_summary_keeps_main_descriptor_and_makes_no_call(su
         assert summary_session[2]==[]
     exercise(summary_session,run)
 
-def test_private_summary_cancel_reconciles_own_job_and_never_redispatches(summary_session):
-    summary_session[1].behavior='stall';body=envelope(summary_session)
+@pytest.mark.parametrize('stall_phase',['stall','stall_body'])
+def test_private_summary_cancel_reconciles_own_job_and_never_redispatches(summary_session,stall_phase):
+    summary_session[1].behavior=stall_phase;body=envelope(summary_session)
     async def run(client,application):
         task=asyncio.create_task(request(client,'POST',ROUTE,body))
         for _ in range(100):

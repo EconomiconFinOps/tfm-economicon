@@ -2,7 +2,8 @@
 import asyncio
 import hashlib
 from functools import partial
-from http.client import HTTPSConnection
+from http.client import HTTPSConnection,HTTPResponse
+import io
 import json
 import os
 from pathlib import Path
@@ -13,7 +14,7 @@ from urllib import request,error
 from pydantic import SecretStr
 from app.clients.chat_gateway import _ChatHTTPConnection,_ChatHTTPSConnection,interrupt
 from app.clients.chat_stream_parser import complete_json
-from app.clients.litellm import _AttemptDeadline,_RejectRedirectHandler,_usage_metadata,LiteLLMClient
+from app.clients.litellm import _AttemptDeadline,_DeadlineReader,_RejectRedirectHandler,_usage_metadata,LiteLLMClient
 from app.core.chat_resources import canonical
 
 class SummaryGatewayError(Exception):
@@ -21,9 +22,41 @@ class SummaryGatewayError(Exception):
         self.status,self.code=status,code
         super().__init__(code)
 
+class _SummaryReader(_DeadlineReader):
+    def __init__(self,sock,deadline,cancelled):
+        super().__init__(sock,deadline)
+        self.cancelled=cancelled
+
+    def readinto(self,buffer):
+        # shutdown from another thread need not wake a timed Windows recv.
+        # Poll the owned socket, not SocketIO: a timeout poisons SocketIO's
+        # subsequent reads. Keep its file reference solely for socket lifetime.
+        while True:
+            if self.cancelled.is_set():raise SummaryGatewayError(503,'summary_cancelled')
+            self.sock.settimeout(min(.1,self.deadline.remaining()))
+            try:
+                count=self.sock.recv_into(buffer)
+            except socket.timeout:
+                continue
+            self.deadline.remaining()
+            if self.cancelled.is_set():raise SummaryGatewayError(503,'summary_cancelled')
+            return count
+
+class _SummarySocket:
+    def __init__(self,sock,deadline,cancelled):
+        self.sock,self.deadline,self.cancelled=sock,deadline,cancelled
+
+    def makefile(self,mode):
+        return io.BufferedReader(_SummaryReader(self.sock,self.deadline,self.cancelled))
+
+class _SummaryResponse(HTTPResponse):
+    def __init__(self,sock,*args,deadline,cancelled,**kwargs):
+        super().__init__(_SummarySocket(sock,deadline,cancelled),*args,**kwargs)
+
 class _OwnedConnection:
     def __init__(self,*args,holder,**kwargs):
         super().__init__(*args,**kwargs)
+        self.response_class=partial(_SummaryResponse,deadline=self.deadline,cancelled=self.cancelled)
         holder['connection']=self
 
 class _HTTP(_OwnedConnection,_ChatHTTPConnection):pass

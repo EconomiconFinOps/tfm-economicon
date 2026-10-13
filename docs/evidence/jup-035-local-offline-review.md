@@ -97,10 +97,33 @@ No se ha usado ese servidor para desplegar una nueva base. **N=3/N=5 NOT_RUN**;
 sin base repetida no se inicia otra serie de parches semánticos. Gasto nuevo0;
 último acumulado confirmado0,957927619USD, techo2USD.
 
+## Corrección de cancelación verificada después de ese corte
+
+El transporte de resumen usa ahora lecturas directas del socket con esperas
+máximas de100ms y comprueba cancelación y plazo absoluto entre ellas. Se conserva
+la referencia de archivo que mantiene vivo el socket; no se reutiliza SocketIO
+tras un timeout, porque quedaría inutilizado. No cambia el transporte de ingesta
+ni el flujo principal de generación, y la capacidad se libera tras terminar el
+trabajador, no sólo al cancelar el waiter asyncio.
+
+Los tres archivos de resumen/capacidad/privado pasan: **90PASS** en176,54s,
+incluyendo los cinco casos que fallaban y una variante nueva durante el cuerpo.
+Cuatro pruebas nuevas con socketpair verifican pausas repetidas sin perder bytes,
+cancelación sin depender de shutdown, independencia de otra conexión y plazo
+absoluto. Tres probes TLS reales en loopback con certificado sintético pasan:
+lectura fragmentada, cancelación antes de cabeceras y durante el cuerpo.
+
+Recibos: `summary-cancel-fixed.log`, `summary-reader.log`,
+`summary-fixed-isolated.log`, `tls-summary-probe.py`/`.log` en el mismo directorio
+externo. El certificado y su clave son exclusivamente sintéticos y no se versionan.
+Los errores de servidor ConnectionAbortedError impresos durante cancelaciones
+son del fixture al escribir sobre una conexión cerrada; las aserciones pasan.
+No se ha repetido toda la suite processor ni probado Linux: sus dos casos de
+symlink siguen pendientes de un entorno con soporte/permisos adecuados.
+
 ## Trabajo aún pendiente
 
-Diagnosticar/corregir la cancelación conservando propiedad del trabajador y
-capacidad; contrastar Linux cuando exista entorno local viable. Preparar medición
+Contrastar Linux cuando exista entorno local viable. Preparar medición
 repetida reproducible para la base exacta y cerrar el informe de entrega con sus
 limitaciones. Acuerdo de criterios y estrategia de integración corresponde a
 revisores/equipo; no se ha contactado con ellos ni cambiado las PR remotas.

@@ -58,3 +58,11 @@ resueltas en repetición con intérpretevenv(10PASS/6SKIP),sin cambiarproducto;
 Cancelación reproducida aislada; shutdownsocket retornaéxito pero trabajador
 siguebloqueado antesdecabeceras. No cerrar capacidad antesdelasalida física.
 Siguiente:diagnóstico/corrección acotada e informe final;N3/N5siguenNOT_RUN.
+
+Cancelación corregida en hito posterior13/10: sólo SummaryGateway usa lectura
+directa del socket con polls100ms, cancelación ydeadlineabsoluto; conservaownership
+deltrabajador.90PASS de tresarchivos (los5fallos previos incluidos),4PASSsocketpair
+y3PASSprobesTLSrealesloopback. No cambiarprompt/evaluador ni reiterarcampañaLLM.
+Informeoffline ampliado; productoya difiere defc0f469 sólo eneste transporte.
+Suitecompleta no repetida; symlinksWindows aúnlimitados. Siguiente:paquete de
+medición reproducible e informe/auditoría deentrega, manteniendo N3/N5NOT_RUN.

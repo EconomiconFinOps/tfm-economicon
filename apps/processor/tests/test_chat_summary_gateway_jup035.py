@@ -67,6 +67,7 @@ def summary_session(summary_bundle,monkeypatch,tmp_path):
             self.send_response(status);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(raw)))
             if behavior=='redirect':self.send_header('Location','/must-not-follow')
             self.end_headers()
+            if behavior=='stall_body':release.wait(5)
             try:self.wfile.write(raw);self.wfile.flush()
             except (BrokenPipeError,ConnectionResetError):pass
     server=ThreadingHTTPServer(('127.0.0.1',0),Handler);server.behavior='success';worker=threading.Thread(target=server.serve_forever,daemon=True);worker.start()
