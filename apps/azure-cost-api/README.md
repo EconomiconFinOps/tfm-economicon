@@ -25,6 +25,15 @@ Endpoints:
 - `GET http://localhost:8002/openapi.json`
 - `POST http://localhost:8002/subscriptions/{subscriptionId}/providers/Microsoft.CostManagement/query?api-version=2025-03-01`
 
+## Servir un CSV distinto (datos de demo)
+
+`AZURE_COST_DATASET_PATH` apunta a cualquier CSV con el formato de exportación de Azure. El perfil `demo` de Compose
+(`docker compose --profile demo ...`) levanta una segunda instancia, `azure-cost-api-demo`, que sirve
+`fixtures/azure-cost/demo/demo-cost.csv` (montado en solo lectura) y no publica puertos; la instancia normal sigue
+sirviendo el fixture público. La API agrupa por dos campos como mucho y devuelve en coma flotante lo que no es un
+entero, así que un importe con céntimos por encima de 2^53 pierde precisión; una fila sin fecha hace que no arranque.
+Ver [la guía de datos](../../docs/data/azure-sample-dataset.md).
+
 ## Capacidades
 
 - scope de suscripción;

@@ -105,7 +105,7 @@ Cálculo del ejemplo del contrato (tarea 1.2): script independiente del backend,
 
 1. Crear un archivo de entorno privado **fuera del repositorio** a partir de `.env.example` (`RUNTIME_ENVIRONMENT=development`, `ALLOW_INSECURE_LOCAL_DATABASE=true`, `DEMO_SEED_ENABLED=true`, secretos aleatorios, `COMPOSE_PROJECT_NAME` y puertos propios, `CORS_ALLOWED_ORIGINS` con el origen del frontend y el DSN de CockroachDB `cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable`).
 2. `docker compose -p <proyecto> --env-file <archivo> up -d --build --wait backend processor frontend`.
-3. `docker exec -i <proyecto>-processor-1 python - apply < scripts/synthetic_anomalies.py`.
+3. Cargar el conjunto de demo: `docker compose -p <proyecto> --env-file <archivo> --profile demo run --rm demo-data python scripts/demo_data.py apply`. La validación original se hizo antes de JUP-119 con `scripts/synthetic_anomalies.py` (retirado por esa tarjeta); el conjunto de septiembre da las mismas tres anomalías, con las cifras de `docs/demo/JUP-107/esperados-anomalias.json`.
 4. Con `playwright-core` y Chrome: `node docs/evidence/JUP-038/validar-navegador.cjs <directorio>` y `node docs/evidence/JUP-038/validar-http.cjs <directorio>`, donde `<directorio>` contiene `stack/jup038.env` (los puertos del script son los de esta validación) y `capturas/`.
 5. `docker compose -p <proyecto> --env-file <archivo> down -v --rmi local`.
 

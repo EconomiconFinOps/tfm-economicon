@@ -5,7 +5,7 @@ Estado: implementado y validado en JUP-077 para integración en `develop`.
 ## Recorrido
 
 ```text
-dataset público de Microsoft
+dataset público de Microsoft (o el CSV de demo, JUP-119)
   → Azure Cost fake API
   → cliente paginado y resiliente
   → normalización

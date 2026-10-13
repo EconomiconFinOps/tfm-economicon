@@ -22,6 +22,20 @@ export function isNonemptyString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0;
 }
 
+export interface ReferenceDateInfo {
+  reference_date: string;
+  simulated: boolean;
+}
+
+export function isReferenceDateInfo(value: unknown): value is ReferenceDateInfo {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    && "reference_date" in value && typeof value.reference_date === "string"
+    && /^\d{4}-\d{2}-\d{2}$/.test(value.reference_date)
+    && !Number.isNaN(Date.parse(value.reference_date))
+    && new Date(value.reference_date).toISOString().slice(0, 10) === value.reference_date
+    && "simulated" in value && typeof value.simulated === "boolean";
+}
+
 export function isUserProfile(value: unknown): value is UserProfile {
   return typeof value === "object" && value !== null && !Array.isArray(value)
     && "id" in value && isNonemptyString(value.id)

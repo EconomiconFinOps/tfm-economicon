@@ -220,6 +220,16 @@ JUP-114 sí: «Detectar ahora» aplica la regla diaria de negocio sobre el coste
 diario por servicio y guarda episodios con criticidad y estado
 ([API](api/anomaly-episodes.md), [ADR-0020](adr/ADR-0020-cost-anomaly-episodes.md)).
 El panel `/anomalies` los lee, detecta bajo demanda y cambia estados. No hay ejecución periódica ni avisos.
+
+**Datos de demostración y fecha de referencia (JUP-119, [ADR-0021](adr/ADR-0021-demo-cost-data-single-path-and-reference-date.md)).**
+Los datos de la demo entran por la misma ruta que cualquier coste: `scripts/demo_dataset.py` genera un CSV con el
+formato de exportación de Azure (dataset público con las fechas desplazadas a septiembre de 2026 y series sintéticas,
+todo en la ventana del 1 de julio al 30 de octubre de 2026), una segunda instancia de la API simulada lo sirve
+(perfil `demo` de Compose) y `scripts/demo_data.py` lo carga con la ingesta del processor, nunca insertando filas.
+La consulta agrupa por dos campos (servicio y etiqueta `Project`), así que la demo no lleva grupo de recursos,
+centro de coste ni el resto de etiquetas. El «hoy» de la aplicación lo decide un solo servicio del backend,
+`COST_REFERENCE_DATE` (sin valor, el día UTC real): las lecturas de coste y los episodios no muestran nada posterior y
+el frontend lee la fecha de `GET /billing/reference-date` ([API](api/reference-date.md)).
 [Contrato billing](../openspec/specs/azure-cost-kpis/spec.md) y
 [consulta SQL](../apps/backend/app/db/database.py).
 
