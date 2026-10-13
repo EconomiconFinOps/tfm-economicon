@@ -78,7 +78,7 @@ When a request names no period, the default period SHALL be the calendar month t
 
 ### Requirement: Stored episodes obey the reference date
 
-The list and the detail of stored anomaly episodes SHALL NOT expose an episode whose opening day, or any day of its accumulated impact, is later than the reference date as it is at the time of the request. When the reference date is moved earlier than a stored episode's last seen day, the episode SHALL be reported as it would have been at the reference date or SHALL be hidden; it SHALL never show impact for days that have not happened yet. The status change of a hidden episode SHALL answer the same not-found response as an unknown identifier.
+The list and the detail of stored anomaly episodes SHALL NOT expose an episode whose opening day, or any day of its accumulated impact, is later than the reference date as it is at the time of the request. An episode SHALL be visible only when the last day of its accumulated impact (`impact_through_date`) is earlier than the reference date; otherwise it SHALL be hidden, never reported as it would have been, so it never shows impact for days that have not happened yet. The last evaluated day shown with the list SHALL NOT be later than the day before the reference date. The status change of a hidden episode SHALL answer the same not-found response as an unknown identifier.
 
 #### Scenario: Moving the date backwards hides the future
 - **WHEN** an episode opened on 2026-10-10 exists and the reference date is changed to 2026-09-21
@@ -87,8 +87,8 @@ The list and the detail of stored anomaly episodes SHALL NOT expose an episode w
 
 #### Scenario: Episode that spans the reference date
 - **WHEN** an episode opened on 2026-09-09 and was last seen on 2026-10-05, and the reference date is 2026-09-30
-- **THEN** its impact and counted days include only the days up to 2026-09-30 or the episode is hidden, and the choice is the one documented in the design
-- **AND** a test fixes that behaviour
+- **THEN** the episode is hidden, because its impact reaches days after the reference date
+- **AND** the day on which the reference date is one day after the last day of its impact makes it visible again
 
 ### Requirement: The frontend reads the reference date from the backend
 

@@ -1,6 +1,6 @@
 import json
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from sqlalchemy import create_engine, text
@@ -670,12 +670,15 @@ class Database:
 
     def _anomaly_episode_rows(self, connection, tenant_id: str, episode_id: str | None = None,
                               *, open_only: bool = False) -> list:
-        query = "SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id"
+        # An episode whose impact reaches the reference day or later would show days that have not happened yet.
+        query = "SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id AND impact_through_date < :reference_day"
         if episode_id is not None:
             query += " AND id = :id"
         if open_only:
             query += " AND status IN ('new', 'investigating')"
-        return connection.execute(text(query), {"tenant_id": tenant_id, "id": episode_id}).mappings().all()
+        return connection.execute(text(query), {
+            "tenant_id": tenant_id, "id": episode_id, "reference_day": reference_date.today(),
+        }).mappings().all()
 
     def _anomaly_episodes_for_detection(self, connection, tenant_id: str) -> list:
         # Detection only needs tracking episodes and the latest episode of each group, not the whole history.
@@ -775,7 +778,7 @@ class Database:
                     raise
         return {
             "episodes": rules.order_payloads([rules.episode_payload(row) for row in rows]),
-            "last_evaluated_date": last_evaluated,
+            "last_evaluated_date": None if last_evaluated is None else min(last_evaluated, reference_date.today() - timedelta(days=1)),
             "includes_synthetic_data": bool(synthetic),
             "open_impact_by_currency": rules.open_impact_by_currency(
                 [rules.episode_from_row(row) for row in rows if row["status"] in rules.TRACKING_STATUSES]),
