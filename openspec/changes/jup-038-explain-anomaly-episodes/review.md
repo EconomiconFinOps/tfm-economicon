@@ -394,3 +394,59 @@ completas: usó las cifras de arriba.
 **Estado del grupo 3:** tareas 3.1 a 3.3 hechas, mutación con un único superviviente equivalente justificado,
 DoD en verde y QA en `accept`. El contenedor `jup038-crdb` sigue en marcha porque el grupo 4 (tarea 4.5) lo
 necesita; se apagará al cerrar ese grupo.
+
+## Grupo 4 — Ruta del asistente, fase Red (tareas 4.1 a 4.4)
+
+El grupo se parte en dos Red para tener commits pequeños: este (4.1 a 4.4, pruebas que **sí corren en CI**
+porque usan SQLite y un doble de la lectura) y después la 4.5 (recorrido con CockroachDB real, que CI
+omite). El Green (4.6) cubre las dos.
+
+**Contrato fijado antes del Red** (lo implementará el `coder`): esquema `AnomalySelection` en
+`app/schemas/anomaly_explanations.py` (`episode_id` con `^anomaly-[0-9a-f]{64}$` por coincidencia completa,
+sin campos adicionales); `MessageCreateRequest.anomaly_query` y rechazo de las dos selecciones a la vez;
+rama de la ruta con el orden de la decisión 8 (conversación, lectura con el cliente de la sesión, 404
+`anomaly_episode_not_found`, explicador, 409 `anomaly_explanation_unavailable`, y solo entonces se guardan
+los dos mensajes).
+
+**Pruebas escritas por el `tester`** (archivos nuevos, 72 pruebas):
+
+- `apps/backend/tests/test_anomaly_explanation_schema.py` (4.1, 45 pruebas, sin HTTP): 26 ids inválidos
+  (vacío, longitudes, mayúsculas hex, `\n` final, espacios, unicode, tipos no `str`…), campos adicionales,
+  exclusión con `ownership_query` y que las peticiones sin `anomaly_query` validan como hoy.
+- `apps/backend/tests/test_anomaly_explanation_api.py` (4.2 a 4.4, 27 pruebas, SQLite con auténticas
+  autenticación y mensajes y un doble de `fetch_anomaly_episode_snapshot` que devuelve una fotografía real
+  construida con el ayudante del explicador): 201 con la forma de metadatos exacta y la evidencia igual a la
+  del explicador real con el cliente de la sesión; usuario con dos clientes; el texto de la pregunta no filtra
+  ni autoriza nada; 404 de anomalía (otro cliente e inexistente, cuerpos idénticos), 409, 422, 401/403 y 404
+  de conversación sin leer ninguna anomalía y sin guardar nada; recarga de una conversación mixta
+  (documental, propiedad y anomalía) con cada evidencia separada; nada del cliente en los registros; servicio
+  y motivo hostiles escapados en una línea.
+- Una prueba de las 72 **pasa de entrada** a propósito: `test_sin_sesion_o_con_cliente_ajeno_se_rechaza_antes_de_leer_nada`
+  (401 sin token y 403 con cliente ajeno). Fija un comportamiento que ya existe, porque las dependencias
+  resuelven 401/403 antes de validar el cuerpo, y protege que la rama nueva no lo altere.
+- Para que las pruebas de rechazo no pasen por el motivo equivocado (hoy el modelo ya rechaza
+  `anomaly_query` como campo desconocido), cada una exige antes que la misma petición bien formada se acepte.
+
+**Evidencia Red** (2026-10-12, como CI: sin base de datos real, Python 3.12.15):
+
+```
+S="C:/Users/victo/AppData/Local/Temp/claude/c--Users-victo-Pontia-tfm-economicon/1f99f606-320c-4e2b-aaaa-58c034f436e4/scratchpad"; R="$(cygpath -w "$PWD")"
+docker run --rm -v "$R:/repo:ro" -v "$(cygpath -w "$S"):/scr:ro" -w /work jup054-py-backend sh /scr/ci-test.sh tests/test_anomaly_explanation_schema.py tests/test_anomaly_explanation_api.py
+```
+
+- Resultado: **`71 failed, 1 passed`**, 0 omitidas. Motivos, contados por el orquestador: 33 por
+  `ModuleNotFoundError` (`app.schemas.anomaly_explanations`), 21 + 4 por un 422 `Invalid request value`
+  donde se esperaba 201 o 404 (el campo `anomaly_query` no existe), 11 + 1 por la validación de
+  `MessageCreateRequest` (`ValidationError` en el control previo y campo ausente en `model_fields`).
+- Control, mismo entorno: `test_ownership_questions.py`, `test_tenant_isolation_api.py` y
+  `test_domain_metrics.py`: `71 passed, 3 skipped` (los 3 omitidos son del CockroachDB opt-in), igual que antes.
+- El orquestador reejecutó el comando, agrupó los motivos y comprobó que no hay `skip` ni `xfail`.
+
+**Decisiones del `tester`** (contrato sin cambios): la pregunta documental del caso mixto usa
+`citation_record()` en lugar de `search_chunks=[]`, para que `source_citations` no esté vacío y se compruebe
+de verdad que la evidencia documental queda separada; los argumentos del doble se leen por posición o por
+nombre; la prueba del hash compara con `explain_episode` normalizado con `json.loads(json.dumps(...))`.
+
+**Lo que este Red no demuestra.** Que las pruebas sean correctas contra la implementación real; que la
+métrica no suba en los fallos solo es significativo cuando la rama exista. Falta el recorrido con
+CockroachDB real (4.5).

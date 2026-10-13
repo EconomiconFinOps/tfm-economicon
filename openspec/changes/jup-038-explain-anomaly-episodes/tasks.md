@@ -60,20 +60,20 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 
 ## 4. Ruta del asistente
 
-- [ ] 4.1 Red, en un archivo nuevo `apps/backend/tests/test_anomaly_explanation_api.py`, esquema:
+- [x] 4.1 Red, en un archivo nuevo `apps/backend/tests/test_anomaly_explanation_api.py`, esquema:
   `anomaly_query` con identificador de otro formato, con campos adicionales (incluidos `tenant_id` y
   `user_id`) o junto con `ownership_query` da 422; un mensaje sin `anomaly_query` sigue validando
   igual que hoy.
-- [ ] 4.2 Red, ruta en SQLite con autenticación y mensajes reales y un doble de
+- [x] 4.2 Red, ruta en SQLite con autenticación y mensajes reales y un doble de
   `fetch_anomaly_episode_snapshot`: 201 con los dos mensajes guardados, `anomaly_query` en los
   metadatos del usuario, `anomaly_evidence` en los del asistente y `retrieved_context` vacío; el
   doble recibe el cliente de la sesión; no se llama al proveedor de embeddings ni al almacén
   vectorial; `assistant_queries_total` sube en uno.
-- [ ] 4.3 Red, fallos: fotografía `None` da `404 anomaly_episode_not_found`; `ExplanationUnavailable`
+- [x] 4.3 Red, fallos: fotografía `None` da `404 anomaly_episode_not_found`; `ExplanationUnavailable`
   da `409 anomaly_explanation_unavailable`; conversación de otro usuario o cliente da el 404 de
   conversación sin llamar al doble; en todos, y en los 422 de 4.1, la conversación queda sin
   mensajes nuevos.
-- [ ] 4.4 Red: al reabrir una conversación con una pregunta documental, una consulta de propiedad y
+- [x] 4.4 Red: al reabrir una conversación con una pregunta documental, una consulta de propiedad y
   una explicación, cada mensaje conserva su evidencia; con un servicio y un motivo reconocibles, los
   registros capturados no los contienen.
 - [ ] 4.5 Red, prueba opt-in con CockroachDB real en otro archivo nuevo, de extremo a extremo: cargar
