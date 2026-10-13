@@ -165,6 +165,8 @@ Sobre `d0095619` (la rama contiene `origin/develop` en `bfaf3983`; sin commits n
 
 - **Con CockroachDB real (validación de Paris sobre `49641cec`):** una prueba nueva corrompe filas con SQL (`NaN`, `Infinity`, `1E+200`, `-5`, `1E-150`, días 0 y -1, fecha final anterior, motivo vacío, `JPY`) y pide la explicación por HTTP: 16 casos, de los que 6 daban 500 (`InvalidOperation` en la lectura, antes del explicador) y ahora dan 409 sin guardar mensajes. Con la corrección: 25 de 25 con la base real (16 + las 9 del recorrido completo). Mutación de la ruta: 5 de 5 muertos.
 
+- **Cifras finales tras las dos revisiones (cabeza `46f4fc79`):** backend como CI, **1623 pasan, 165 omitidas, 0 fallos** (las 16 pruebas nuevas con CockroachDB se omiten sin base; antes del PR #128: 1433 y 149); con CockroachDB v24.1.11 real, **1767 pasan, 21 omitidas, 0 fallos** (antes 1561). `corepack pnpm lint`, `openspec:validate`, `jup:check:all`, `jup:cleanup:check` y `git diff --check` correctos. Frontend sin cambios y sin reejecutar. Contenedor de la base eliminado.
+
 ## Pendiente
 
 - PR: por abrir (tarea 10.6, tras la aprobación posterior a la revisión).
