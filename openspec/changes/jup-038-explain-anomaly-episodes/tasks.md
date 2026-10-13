@@ -84,7 +84,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 - [x] 4.6 Green: esquema de la selección `app/schemas/anomaly_explanations.py`, campo `anomaly_query` y
   validador de exclusión en `app/schemas/assistant.py`, y rama nueva en `app/api/routes/assistant.py`
   con el orden de la decisión 8.
-- [ ] 4.7 Mutación sobre la rama de la ruta y el validador (quitar la exclusión, escribir antes de
+- [x] 4.7 Mutación sobre la rama de la ruta y el validador (quitar la exclusión, escribir antes de
   explicar, cambiar los códigos, pasar un cliente distinto del de la sesión) y cubrir los mutantes
   que sobrevivan.
 - [ ] 4.8 Ejecutar la suite completa del backend y comprobar que las pruebas de

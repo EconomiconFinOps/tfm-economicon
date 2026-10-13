@@ -536,3 +536,54 @@ de contexto adyacente (los mismos puntos de inserción), no de líneas editadas.
 en la tarea 8.4.
 
 **Pendiente del grupo 4:** mutación (4.7), regresión completa (4.8), DoD y QA.
+
+## Grupo 4 — Ruta del asistente, mutación (tarea 4.7)
+
+**Herramientas.** `mutmut 2.5.1` sobre el esquema nuevo (`app/schemas/anomaly_explanations.py`, 11 mutantes) y
+22 **mutantes manuales dirigidos** a la rama nueva de `routes/assistant.py` y al validador de exclusión de
+`schemas/assistant.py`. Cada mutación manual se aplica solo dentro de su región (la rama de anomalías o el
+validador) para que un fragmento repetido en la rama de propiedad no se confunda con el de la rama nueva;
+hay un control sin mutar al principio y el arnés trabaja sobre una copia dentro del contenedor, con
+CockroachDB real para que corran también las 9 pruebas opt-in. Es una muestra dirigida, no un barrido: cubre
+el cliente de la sesión, los códigos y estados del 404 y del 409, que no se guarde nada antes de explicar, la
+métrica (omitida y duplicada), embeddings, registros, los metadatos de cada mensaje, el contexto recuperado y
+la exclusión entre las dos selecciones.
+
+**Primera pasada** (72 pruebas de CI y 9 de CockroachDB): manuales 20 de 22 muertos; `mutmut` 8 de 11.
+
+- **Mutante «se registra el servicio del episodio»: falso superviviente, defecto del mutante.** El mutante
+  escribía `logger.info(…, service=…)`, pero `_add_service_name` (`app/core/logging.py`) **sobrescribe** la
+  clave `service` con `"backend"`, así que el nombre del cliente nunca llegaba a la salida. Rehecho con otra
+  clave (`afectado=`), la prueba `test_servicio_y_motivo_de_cierre_del_cliente_no_salen_en_los_registros` lo
+  mata: la prueba de que el nombre no se filtra es sólida.
+- **Mutante 5 de `mutmut`: `Field(strict=True)` → `Field(strict=False)`.** Hueco real: el modo laxo de
+  pydantic decodifica `bytes` y `bytearray` a `str`, y ninguna prueba los enviaba.
+
+**Remediación** por el `tester`, en un archivo nuevo (los anteriores están commiteados):
+`apps/backend/tests/test_anomaly_explanation_schema_mutants.py`, 11 pruebas: `bytes` y `bytearray` con un
+identificador por lo demás válido se rechazan, tanto en `AnomalySelection` como a través de
+`MessageCreateRequest.anomaly_query` (con control positivo con `str`); otros tipos laxos (`int`, `float`,
+`Decimal`, `bool`, `None`, lista) se rechazan; y una subclase de `str` con un identificador válido se acepta.
+Contra el mutante, los 4 casos de bytes fallan con `DID NOT RAISE`.
+
+**Segunda pasada** (92 pruebas, reejecutada por el orquestador el 2026-10-12, CockroachDB real):
+
+- Control sin mutar: `92 passed`.
+- `mutmut`: **11 mutantes, 9 muertos, 2 supervivientes** (el 9 y el 11, justificados abajo).
+- Manuales: **21 de 22 muertos**; sobrevive el informativo «hora de la explicación sin zona».
+
+**Supervivientes justificados:**
+
+1. **`mutmut` 9: quitar `@classmethod` del validador.** Equivalente: `field_validator` de pydantic v2 envuelve la
+   función como método de clase internamente, y el comportamiento es el mismo con o sin el decorador.
+2. **`mutmut` 11: cambiar el texto del `ValueError`.** El mensaje nunca es observable: el 422 de la API está
+   saneado (`Invalid request value`) y el texto no forma parte del contrato.
+3. **Manual «hora de la explicación sin zona» (`datetime.now()` en lugar de `datetime.now(timezone.utc)`).**
+   Equivalente en la práctica: el explicador pasa la hora con `astimezone`, que interpreta una hora sin zona
+   como local y la convierte al mismo instante UTC; solo difiere en la ambigüedad de un cambio de hora de
+   verano. El código usa una hora con zona UTC a propósito. No se persigue con una prueba.
+
+**Lo que esta mutación no demuestra.** Es una muestra dirigida (11 de `mutmut` y 22 manuales), no un barrido
+de todo `routes/assistant.py` ni de `schemas/assistant.py`; no hay prueba de concurrencia y el nodo de
+CockroachDB es de un solo proceso. La regresión completa (4.8), el DoD y el veredicto de QA del grupo siguen
+pendientes.
