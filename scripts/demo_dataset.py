@@ -261,6 +261,7 @@ def demo_manifest(content: bytes, rows: list[dict[str, str]]) -> dict:
         "rows": len(rows), "sha256": checksum(content),
         "window": {"start": WINDOW_START.isoformat(), "end": WINDOW_END.isoformat()},
         "public_shift_days": SHIFT_DAYS,
+        "notice": "Demo data: the synthetic subscriptions are generated and the public ones are the public dataset with shifted dates; this is not real 2026 billing.",
         "grouping": [{"type": kind, "name": name} for kind, name in GROUPING],
         "absent_fields": list(ABSENT_FIELDS),
         "pairs": pairs,

@@ -249,6 +249,11 @@ class DemoDatasetTests(unittest.TestCase):
         self.assertEqual(sum(pair["rows"] for pair in self.manifest["pairs"]), len(self.rows))
         self.assertEqual(self.manifest["sha256"], hashlib.sha256(dataset.DEMO_PATH.read_bytes()).hexdigest())
 
+    def test_the_manifest_declares_that_the_data_are_synthetic_or_shifted_and_not_real_2026_billing(self):
+        notice = self.manifest["notice"].lower()
+        for words in ("synthetic", "shifted", "not real"):
+            self.assertIn(words, notice)
+
     def test_public_rows_are_exactly_the_shifted_derivative(self):
         public = {pair["subscription"] for pair in self.manifest["pairs"] if pair["origin"] == dataset.ORIGIN_PUBLIC}
         in_demo = sorted((r for r in self.rows if r["SubscriptionId"] in public), key=dataset.sort_key)

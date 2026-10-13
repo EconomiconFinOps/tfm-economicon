@@ -127,6 +127,7 @@ def test_the_ownership_answer_uses_the_reference_month_and_never_quotes_later_am
     assert (evidence["start_date"], evidence["end_date"]) == ("2026-10-01", "2026-11-01")
     assert "50.00" in answer["content"] and "60.00" not in answer["content"] and "100.00" not in answer["content"]
     assert "Fecha de referencia: 2026-10-05" in answer["content"] and answer["cost_evidence"]["reference_date"] == "2026-10-05"
+    assert "Solo se cuentan los días hasta el 2026-10-05, inclusive." in answer["content"]
 
 
 def test_a_question_about_a_month_after_the_reference_reports_no_data(series):
@@ -134,7 +135,8 @@ def test_a_question_about_a_month_after_the_reference_reports_no_data(series):
     answer = OwnershipQuestionService().answer(series.db, "tenant-a", OwnershipSelection(
         group_by="project", start_date=date(2026, 10, 1), end_date=date(2026, 11, 1)))
     assert answer["cost_evidence"]["status"] == "no_data" and answer["cost_evidence"]["reason"] == "empty_period"
-    assert DAILY not in answer["content"] and "datos posteriores" in answer["content"]
+    assert DAILY not in answer["content"] and "posteriores" not in answer["content"]
+    assert "Fecha de referencia: 2026-09-21" in answer["content"] and "Solo se cuentan" not in answer["content"]
 
 
 def test_overlapping_sources_after_the_reference_do_not_refuse_the_request(series):

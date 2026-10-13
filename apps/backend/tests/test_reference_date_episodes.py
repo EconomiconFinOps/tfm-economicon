@@ -49,15 +49,19 @@ def test_moving_the_date_back_hides_the_episode_and_advancing_shows_it_again(epi
     assert listing(api)["episodes"] == [seen]
 
 
-def test_an_episode_is_visible_from_the_day_after_the_last_day_of_its_impact(episode_store, api):
+def test_an_episode_that_ended_is_hidden_until_the_day_it_stopped_being_observed_is_complete(episode_store, api):
     load_series(episode_store, SPIKE_THEN_CALM)
     reference_date.configure(END)
     detect(api)
     [seen] = listing(api)["episodes"]
-    through = date.fromisoformat(seen["impact_through_date"])
-    reference_date.configure(through)
+    stopped = date.fromisoformat(seen["no_longer_observed_on"])
+    assert seen["observation"] == "no_longer_observed" and stopped > date.fromisoformat(seen["impact_through_date"])
+    reference_date.configure(date.fromisoformat(seen["impact_through_date"]))
     assert listing(api)["episodes"] == []
-    reference_date.configure(through + timedelta(days=1))
+    reference_date.configure(stopped)
+    assert listing(api)["episodes"] == []
+    assert call(api, "GET", f"{EPISODES}/{seen['id']}", headers=headers()).status_code == 404
+    reference_date.configure(stopped + timedelta(days=1))
     assert [item["id"] for item in listing(api)["episodes"]] == [seen["id"]]
 
 

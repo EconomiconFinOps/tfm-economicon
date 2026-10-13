@@ -381,6 +381,7 @@ Tipo: deuda tecnica y mejoras de producto. Severidad: Low a Medium. Estado: Open
   los datos. Si se repite, dar al volumen una ruta mas rapida o aumentar los recursos de Docker.
 - RF-119-009 (robustez, Low): `demo_data.py apply` lee el estado y despues ingiere, sin cerrojo; dos `apply` simultaneos
   no estan comprobados y la ingesta fallida del que pierde la carrera cuenta como propia. Probar con dos procesos.
-- RF-119-010 (informativo): no se logro construir un episodio cuyo `no_longer_observed_on` quede mas alla de la fecha de
-  referencia mientras `impact_through_date` es anterior; el filtro de visibilidad usa `impact_through_date` y la
-  spec del ocultado se apoya en que el impacto no incluye dias posteriores.
+- RF-119-010 (resuelto en la pasada 3): con la referencia igual a `no_longer_observed_on` el episodio se listaba como «ya no observado»
+  desde un dia incompleto; el filtro ahora exige que `impact_through_date` y `no_longer_observed_on` sean anteriores a la referencia.
+- RF-119-011 (observacion, Low): `COST_REFERENCE_DATE` no se limita por entorno; una fecha olvidada en produccion congela los costes
+  visibles (la cabecera lo avisa con «Fecha simulada»). Valorar un aviso en el arranque si `RUNTIME_ENVIRONMENT=production` y hay fecha fija.

@@ -20,7 +20,7 @@ JUP-119 ([ADR-0021](../adr/ADR-0021-demo-cost-data-single-path-and-reference-dat
   aceptando solo días cerrados: su fin no puede pasar de la fecha de referencia.
 - La detección usa la fecha de referencia como «hoy»: el último día completo es el anterior al menor entre la fecha de
   referencia y el último día con datos visibles (el último día con datos nunca se da por completo).
-- Los episodios guardados solo se ven si el último día de su impacto es anterior a la fecha de referencia; al retroceder
+- Los episodios guardados solo se ven si el último día de su impacto y, si terminó, el día en que dejó de observarse son anteriores a la fecha de referencia; al retroceder
   la fecha se ocultan con el mismo 404 que un identificador desconocido y reaparecen al avanzarla. La «última evaluación»
   del listado no pasa del día anterior a la fecha de referencia.
 - La respuesta de responsables incluye `reference_date` en la evidencia y la línea «Fecha de referencia».

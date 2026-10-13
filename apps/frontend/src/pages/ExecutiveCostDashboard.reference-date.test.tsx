@@ -1,5 +1,6 @@
-import { screen, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { act, screen, waitFor } from "@testing-library/react";
+import { focusManager } from "@tanstack/react-query";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { billing } from "../../tests/fixtures";
 import { jsonResponse, mockBackend, renderApp, restoreSession } from "../../tests/test-support";
 
@@ -11,6 +12,8 @@ function aligned(search: URLSearchParams) {
     group_by: search.get("group_by") ?? "service", tag_key: null
   };
 }
+
+afterEach(() => { vi.useRealTimers(); focusManager.setFocused(undefined); });
 
 describe("fecha de referencia en el panel ejecutivo", () => {
   it("abre el periodo por defecto en los meses anteriores a la fecha de referencia, no a la del navegador", async () => {
@@ -67,5 +70,25 @@ describe("fecha de referencia en el panel ejecutivo", () => {
     renderApp();
     expect(await screen.findByText(/no se pudo cargar la fecha de referencia/i)).toBeVisible();
     expect(requests.some((item) => item.path === "/billing/summary")).toBe(false);
+  });
+
+  it("conserva el panel y la fecha ya cargada si un refresco posterior de la fecha de referencia falla", async () => {
+    let calls = 0;
+    const { requests } = mockBackend({
+      "GET /billing/reference-date": () => (++calls === 1
+        ? jsonResponse({ reference_date: "2026-10-15", simulated: true })
+        : jsonResponse({ detail: "boom" }, 500)),
+      "GET /billing/summary": (request) => jsonResponse(aligned(request.search))
+    });
+    restoreSession();
+    renderApp();
+    await screen.findByRole("table", { name: /desglose/i });
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(Date.now() + 5 * 60_000);
+    await act(async () => { focusManager.setFocused(false); focusManager.setFocused(true); });
+    await waitFor(() => expect(requests.filter((item) => item.path === "/billing/reference-date")).toHaveLength(2));
+    expect(screen.queryByText(/no se pudo cargar la fecha de referencia/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("table", { name: /desglose/i })).toBeVisible();
+    expect(screen.getByText("Fecha simulada: 15/10/2026")).toBeVisible();
   });
 });

@@ -75,9 +75,9 @@ def apply(store, data: dict, ingest: Callable[[str, str], bool]) -> dict:
     if all(item["state"] == "present" for item in states):
         return {"outcome": "already-present", "code": 0, "loaded": 0, "reason": ""}
     if any(item["state"] != "absent" for item in states):
-        names = ", ".join(f"{item['tenant']} ({item['state']})" for item in states if item["state"] != "absent")
+        names = ", ".join(f"{item['tenant']}: {item['state']}" for item in states)
         return {"outcome": "refused", "code": 2,
-                "reason": f"Estado partial en {names}: ejecuta remove antes de volver a cargar el conjunto."}
+                "reason": f"Estado partial del conjunto ({names}): ejecuta remove antes de volver a cargar el conjunto."}
     loaded = 0
     for pair in data["pairs"]:
         if not ingest(pair["tenant"], pair["subscription"]):

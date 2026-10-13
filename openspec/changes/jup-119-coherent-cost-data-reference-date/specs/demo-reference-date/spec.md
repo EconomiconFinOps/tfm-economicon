@@ -83,7 +83,7 @@ When a request names no period, the default period SHALL be the calendar month t
 
 ### Requirement: Stored episodes obey the reference date
 
-The list and the detail of stored anomaly episodes SHALL NOT expose an episode whose opening day, or any day of its accumulated impact, is later than the reference date as it is at the time of the request. An episode SHALL be visible only when the last day of its accumulated impact (`impact_through_date`) is earlier than the reference date; otherwise it SHALL be hidden, never reported as it would have been, so it never shows impact for days that have not happened yet. The last evaluated day shown with the list SHALL NOT be later than the day before the reference date. The status change of a hidden episode SHALL answer the same not-found response as an unknown identifier.
+The list and the detail of stored anomaly episodes SHALL NOT expose an episode whose opening day, or any day of its accumulated impact, is later than the reference date as it is at the time of the request. An episode SHALL be visible only when the last day of its accumulated impact (`impact_through_date`) and, if it ended, the day it stopped being observed (`no_longer_observed_on`) are both earlier than the reference date; otherwise it SHALL be hidden, never reported as it would have been, so it never shows impact for days that have not happened yet. The last evaluated day shown with the list SHALL NOT be later than the day before the reference date. The status change of a hidden episode SHALL answer the same not-found response as an unknown identifier.
 
 #### Scenario: Moving the date backwards hides the future
 - **WHEN** an episode opened on 2026-10-10 exists and the reference date is changed to 2026-09-21

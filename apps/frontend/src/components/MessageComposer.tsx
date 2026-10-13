@@ -112,7 +112,7 @@ export function MessageComposer({ token, tenantId, conversationId }: {
       </div>
       <p className="text-xs text-muted-foreground">Indica ambas fechas o deja ambas vacías para el mes actual UTC. Sin moneda se muestran los totales separados por moneda.</p>
       {!startDate && !endDate && referencePeriod && <p className="text-xs text-muted-foreground">Mes de referencia UTC: {referencePeriod.start} a {referencePeriod.end} (fin excluido).</p>}
-      {!startDate && !endDate && reference.isError && <p role="alert" className="text-xs text-destructive">No se pudo cargar la fecha de referencia.</p>}
+      {!startDate && !endDate && reference.isError && !reference.data && <p role="alert" className="text-xs text-destructive">No se pudo cargar la fecha de referencia.</p>}
     </fieldset>}
     <textarea
       className={fieldClass}

@@ -53,6 +53,25 @@ Mismo revisor, sobre `bfaf3983..ce075b7f`. Veredicto: **changes-requested**; sin
 
 Además, el revisor señaló que `.claude/skills/economicon-stack/scripts/cargar_demo.py` (local, no versionado) usaba una lista negra de `production`; se pasó a lista blanca, igual que `demo_data.py`. No pudo construir un episodio cuyo `no_longer_observed_on` quede más allá de la referencia con `impact_through_date` anterior: queda como `RF-119-010`.
 
+## Adversarial Review (pass 3)
+
+Mismo revisor, sobre `bfaf3983..d89cf402`, con CockroachDB real. Veredicto: **accept**; sin BLOCKING ni HIGH, 3 MEDIUM, 5 LOW. Se atendieron todos con prueba primero salvo ADV-8, que queda como observación en el backlog.
+
+| ID | Severidad | Descripción | Resolución |
+| --- | --- | --- | --- |
+| ADV-1 | MEDIUM | Con la referencia igual a `no_longer_observed_on`, un episodio se listaba como «ya no observado» desde un día incompleto (el filtro solo miraba `impact_through_date`). | Reproducido con CockroachDB real y corregido: el episodio es visible si `impact_through_date` y `no_longer_observed_on` son anteriores a la referencia. Una prueba lo cubre (y sustituye la anterior, que fijaba la regla vieja); spec, diseño y guía actualizados; `RF-119-010` queda resuelto. |
+| ADV-2 | MEDIUM | El texto de la pregunta de responsables decía «no se muestran datos posteriores» (sugiere que existen) y no indicaba el tramo contado. | Reproducido y corregido: el texto ya no lo dice y añade «Solo se cuentan los días hasta el ..., inclusive» cuando el periodo pedido pasa de la referencia; un mes futuro no añade nada. Pruebas ajustadas y guía de la API actualizada. |
+| ADV-3 | MEDIUM | Un refresco fallido de la fecha de referencia, con el dato ya cargado, sustituía el panel ejecutivo por el error. | Reproducido con una prueba de componente (foco de ventana + fallo del segundo GET) y corregido: el error solo sustituye al panel si no hay dato. Mismo patrón en el compositor del asistente. |
+| ADV-4 | LOW | Diseño y tareas citaban un `_clamp_end` único que no existe. | Texto corregido: el tope se aplica en los puntos de lectura con el helper único `visible_end`. |
+| ADV-5 | LOW | La guarda del reloj no veía `now.date()` ni el reloj de SQL. | Nueva guarda sobre `.date()`, `CURRENT_DATE`, `current_date` y `now()` con un control positivo. |
+| ADV-6 | LOW | El manifiesto de la demo no declaraba que los datos son sintéticos o desplazados. | Campo `notice` en el manifiesto con prueba; la propuesta ya no habla de una etiqueta por fila. |
+| ADV-7 | LOW | `apply` con un tenant presente y otro ausente decía «partial en tenant-core (present)». | El mensaje lista cada tenant con su estado; prueba nueva. |
+| ADV-8 | LOW | `COST_REFERENCE_DATE` no se limita por entorno. | Observación sin requisito: `RF-119-011`. |
+
+Ataques que resistieron (resumen del revisor): fechas inválidas y sus extremos, las siete lecturas con el tope, episodios ocultos con el mismo 404 y detección con la referencia retrocedida, cifras de las guías recalculadas desde el CSV, cuatro mutaciones del generador, cargador con la API equivocada y con DSN rotos, lista blanca de entorno y Compose.
+
+Fuera de su alcance: receta de navegador y UI con otra referencia, dos `apply` a la vez (`RF-119-009`) y el perfil `demo` levantado de verdad.
+
 ## Barrido de patrones
 
 - Comparación exacta de `RUNTIME_ENVIRONMENT` (ADV-2): `scripts/demo_data.py` (corregido); el Compose usa `${RUNTIME_ENVIRONMENT:-production}`, que trata el vacío como producción; `cargar_demo.py` de la skill local no se versiona.
@@ -67,7 +86,7 @@ Además, el revisor señaló que `.claude/skills/economicon-stack/scripts/cargar
 - El tope por fecha es de lectura, no de acceso: los datos posteriores existen en la base (`RF-119-007`). Probado en lo que cubre (11 + 4 pruebas con CockroachDB real) y documentado.
 - Sin ensayo humano de la demo: la receta de navegador es una ejecución automatizada.
 - La interfaz con una referencia distinta de 2026-10-30 no se ha recorrido en el navegador real; lo cubren las pruebas de backend y de frontend.
-- Hallazgos del change registrados en `openspec/findings/backlog.md` (`RF-119-001` a `RF-119-008`).
+- Hallazgos del change registrados en `openspec/findings/backlog.md` (`RF-119-001` a `RF-119-011`).
 
 ## ADR
 

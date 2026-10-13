@@ -24,7 +24,7 @@ const buttonClass = "inline-flex items-center gap-2 rounded-lg bg-primary px-4 p
 export function ExecutiveCostDashboard() {
   const { token } = useOutletContext<SessionOutletContext>();
   const reference = useReferenceDate(token);
-  if (reference.isError) {
+  if (reference.isError && !reference.data) {
     return <div className="p-6"><p role="alert" className="rounded-md border border-destructive/40 p-4 text-sm text-destructive">
       No se pudo cargar la fecha de referencia. Los costes no se piden hasta conocerla.
     </p></div>;

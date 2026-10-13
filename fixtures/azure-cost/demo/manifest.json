@@ -17,6 +17,7 @@
       "type": "Tag"
     }
   ],
+  "notice": "Demo data: the synthetic subscriptions are generated and the public ones are the public dataset with shifted dates; this is not real 2026 billing.",
   "pairs": [
     {
       "definition": "ingestion-definition.json",

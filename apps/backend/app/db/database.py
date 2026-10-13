@@ -670,8 +670,9 @@ class Database:
 
     def _anomaly_episode_rows(self, connection, tenant_id: str, episode_id: str | None = None,
                               *, open_only: bool = False) -> list:
-        # An episode whose impact reaches the reference day or later would show days that have not happened yet.
-        query = "SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id AND impact_through_date < :reference_day"
+        # An episode whose impact, or the day it stopped being observed, reaches the reference day would show days not complete yet.
+        query = ("SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id AND impact_through_date < :reference_day "
+                 "AND COALESCE(no_longer_observed_on, impact_through_date) < :reference_day")
         if episode_id is not None:
             query += " AND id = :id"
         if open_only:

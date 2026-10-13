@@ -86,7 +86,9 @@ class OwnershipQuestionService:
         label = labels[selection.group_by]
         lines = [f"Coste registrado por {label}: {display_label(selection.value) if selection.value is not None else 'todos los valores'}.",
                  f"Periodo UTC: {start.isoformat()} a {end.isoformat()} (fin excluido).",
-                 f"Fecha de referencia: {payload['reference_date']}; no se muestran datos posteriores."]
+                 f"Fecha de referencia: {payload['reference_date']}."]
+        if start < reference_date.visible_end(end) < end:
+            lines.append(f"Solo se cuentan los días hasta el {payload['reference_date']}, inclusive.")
         if reason == "empty_period":
             lines.append("No hay registros completados en el periodo; no equivale a gasto cero.")
         elif reason == "currency_not_found":

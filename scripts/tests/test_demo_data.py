@@ -127,6 +127,15 @@ class ApplyTests(unittest.TestCase):
         self.assertIn("partial", out)
         self.assertIn("remove", out)
 
+    def test_the_refusal_names_every_tenant_with_its_state_when_one_is_complete_and_another_is_absent(self):
+        store = FakeStore()
+        first = PAIRS[0]
+        store.add(first["tenant"], first["subscription"], first["stored_rows"])
+        code, out = run("apply", store)
+        self.assertEqual(code, 2)
+        self.assertIn(f"{first['tenant']}: present", out)
+        self.assertTrue(any(f"{item['tenant']}: absent" in out for item in PAIRS if item["tenant"] != first["tenant"]))
+
     def test_a_failure_in_the_middle_leaves_a_partial_state_that_apply_then_refuses(self):
         store = FakeStore()
         code, out = run("apply", store, FakeIngest(store, fail_on=3))

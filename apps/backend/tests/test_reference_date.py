@@ -89,6 +89,20 @@ def test_only_the_reference_service_reads_the_clock_for_the_day():
     assert found == []
 
 
+DAY_FROM_CLOCK = re.compile(r"\.date\(\)|CURRENT_DATE|current_date|\bnow\(\)")
+
+
+def test_the_guard_also_sees_a_day_taken_from_a_stored_clock_reading_or_from_sql():
+    for line in ["today = now.date()", "WHERE d < CURRENT_DATE", "AND d < now()", "x = current_date"]:
+        assert DAY_FROM_CLOCK.search(line), line
+
+
+def test_no_code_turns_a_clock_reading_into_a_day_nor_uses_the_sql_clock_for_one():
+    found = sorted(path.relative_to(APP).as_posix() for path in APP.rglob("*.py")
+                   if path.name != "reference_date.py" and DAY_FROM_CLOCK.search(path.read_text("utf-8")))
+    assert found == ["db/migration_runner.py"]  # DEFAULT now() of a TIMESTAMPTZ column, not a day
+
+
 @pytest.mark.parametrize("value", ["9999-12-31", "9999-12-30", "0001-01-01", "1899-12-31", "1900-01-01"])
 def test_a_date_outside_the_supported_range_stops_startup(monkeypatch, value):
     monkeypatch.setenv("COST_REFERENCE_DATE", value)
