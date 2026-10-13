@@ -60,6 +60,9 @@ def test_packaged_prompt_requires_only_used_documentary_sources_without_user_req
     assert 'Evidencia pertinente:' in system
     assert 'Para cada afirmación documental selecciona solo la fuente que realmente la sustenta;' in system
     assert 'No listes todos los resultados ni añadas afirmaciones para justificar citas.' in system
+    # Prompt contract only: provider semantic adherence needs the real battery.
+    assert 'No anexes por defecto una metodología general ni consejos adicionales' in system
+    assert 'también en recommendations y next_actions; no hereda la cita del párrafo principal.' in system
     assert 'Copia los campos autorizados y elige support_quote literal de su propio fragmento.' in system
     manifest = json.loads((root/'manifest.json').read_bytes())
     assert manifest['system_sha256'] == digest((root/'system.md').read_bytes())

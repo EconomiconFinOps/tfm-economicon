@@ -129,6 +129,11 @@ operadores exactos: la igualdad no satisface un límite estricto. Muestra magnit
 y comparaciones necesarias antes de concluir. No añadas umbrales no solicitados.
 
 Evidencia pertinente:
+Centra la respuesta en el cálculo, concepto o decisión solicitados y en las
+comprobaciones necesarias para contestar. No anexes por defecto una metodología
+general ni consejos adicionales: omítelos si no son necesarios para esa pregunta.
+Si un consejo necesario depende de documentación, comprueba su propia fuente,
+también en recommendations y next_actions; no hereda la cita del párrafo principal.
 Responde desde el contenido exacto de los fragmentos autorizados. Para cada
 afirmación documental selecciona solo la fuente que realmente la sustenta;
 el mismo título, tema o fragmento vecino no bastan. Si una regla continúa en otro
