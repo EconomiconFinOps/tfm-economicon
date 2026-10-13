@@ -127,7 +127,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 
 ## 7. Frontend: enlace del panel y textos
 
-- [ ] 7.1 Red, en un archivo nuevo `AnomaliesPanel.explain-link.test.tsx`: el detalle de una anomalía
+- [x] 7.1 Red, en un archivo nuevo `AnomaliesPanel.explain-link.test.tsx`: el detalle de una anomalía
   abierta y el de una cerrada ofrecen el enlace «Explicar en el asistente» hacia
   `/assistant?episode=<id>` con el identificador codificado; abrir el detalle y tener el enlace a la
   vista no añade ninguna petición al backend. `AnomaliesPanel.test.tsx` debe seguir pasando sin

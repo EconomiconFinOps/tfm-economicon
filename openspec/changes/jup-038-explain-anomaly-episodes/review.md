@@ -1098,3 +1098,48 @@ justificación de los 13 supervivientes es razonable. No reejecutó la suite com
 
 **Estado del grupo 6:** tareas 6.1 a 6.6 hechas; mutación con 13 supervivientes equivalentes o no especificados
 justificados; DoD en verde salvo los fallos intermitentes de la base, atribuidos con control; QA en `accept`.
+
+## Grupo 7 — Enlace «Explicar en el asistente» del panel de anomalías, fase Red (tarea 7.1)
+
+**Contrato visible fijado antes del Red** (lo implementará el `coder`):
+
+- En el detalle de una anomalía, un enlace (`role="link"`) con nombre exacto `Explicar en el asistente` y `href`
+  `/assistant?episode=<id>` (el id con `encodeURIComponent`), en **cualquier** estado (`new`, `investigating`,
+  `resolved`, `false_positive`) y con observación `observed` o `no_longer_observed`, también cuando ya no hay
+  acciones de estado.
+- **Solo si el `id` cumple `^anomaly-[0-9a-f]{64}$`.** Con otro formato el detalle no ofrece el enlace, porque el
+  asistente rechazaría ese id y llevaría a un aviso y no a una explicación. Esto recoge la observación 4 del QA
+  del grupo 6 y matiza el requisito de `anomalies-panel` («en cualquier estado»), que habla de estados y no de
+  formatos de identificador; los ids reales siempre tienen ese formato.
+- El enlace **solo navega**: lleva a `/assistant` con la búsqueda `?episode=<id>` y no envía ninguna petición
+  HTTP (ni lectura, ni `POST`, ni `PATCH`). El resto del detalle no cambia.
+
+**Pruebas escritas por el `tester`** (un archivo nuevo, 19 pruebas, con lint y typecheck ya verificados y sin `any`
+ni `eslint-disable`): `apps/frontend/src/pages/AnomaliesPanel.explain-link.test.tsx`.
+
+- 7 casos de presencia y `href` exacto (nueva, en investigación, resuelta y falso positivo, con y sin observación).
+- 1 de que el resto del detalle no cambia (acciones de estado para las abiertas y ninguna para las cerradas).
+- 8 de ausencia con ids inválidos (`anomaly-1`, mayúsculas, 63 y 65 hex, un carácter `g`, sin prefijo, espacio
+  final y salto de línea final), cada una con el control positivo de una anomalía válida en la misma lista.
+- 1 de navegación (monta un enrutador con una ruta `/assistant`): la ruta y la búsqueda correctas y ninguna
+  llamada nueva a `fetch` tras cargar la lista.
+- 1 con tres anomalías (el enlace apunta al id de la fila abierta) y 1 de cerrar y reabrir otra (cada detalle
+  muestra el suyo).
+
+**Evidencia Red** (2026-10-13, Windows, reejecutada por el orquestador):
+
+- `corepack pnpm --filter @finops/frontend exec vitest run src/pages/AnomaliesPanel.explain-link.test.tsx`:
+  **`19 failed (19)`**, ninguna omitida ni con `skip`, **todas por el mismo motivo**: `Unable to find role="link"
+  and name "Explicar en el asistente"`. Las de ausencia fallan en su control positivo, no por vacuidad.
+- Control: `AnomaliesPanel.test.tsx`: **34 de 34 en verde**.
+- `lint` y `typecheck`: **código 0** (códigos de salida reales).
+
+**Notas del `tester`:** las anomalías cerradas solo salen en la tabla con el filtro «Todos los estados» (por defecto
+es «Abiertas»), así que las pruebas cambian el filtro y esperan al selector; el botón de cerrar el diálogo se llama
+`Cerrar` y se distingue de la acción `Cerrar…`; los ids con espacio o salto de línea final se consideran inválidos,
+lo que depende de que el producto use `^…$` sin `m` y no un `trim()`; y el comando de Vitest imprime al final
+`ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL … "vitest" not found`, una rareza de `pnpm exec` en este entorno que no
+invalida los resultados.
+
+**Lo que este Red no demuestra.** Que las pruebas sean correctas contra la implementación real; no hay prueba en
+navegador real todavía (grupo 8).
