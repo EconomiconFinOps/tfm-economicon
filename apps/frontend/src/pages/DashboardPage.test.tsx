@@ -68,7 +68,7 @@ describe("DashboardPage sin tenant activo", () => {
     renderRouter(router);
 
     // Aserción negativa robusta: sin tenant activo, un texto que dependa de
-    // los datos de facturacion ("Monthly Spend", ver DashboardPage.jsx:64) no
+    // los datos de facturacion ("Gasto mensual", ver DashboardPage.jsx:64) no
     // debe estar presente. No dependemos del texto exacto del mensaje de
     // "sin tenant" (eso lo decide el coder en fase Green y puede cambiar en
     // la reconstruccion), sino de que el resumen de billing real no se

@@ -113,6 +113,7 @@ def bearer():
     ("POST", "/jobs/ingest", "authorization,content-type,x-tenant-id"),
     ("PATCH", "/assistant/conversations/owned", "authorization,content-type,x-tenant-id"),
     ("DELETE", "/assistant/conversations/owned", "authorization,content-type,x-tenant-id"),
+    ("PATCH", "/billing/anomalies/episodes/anomaly-1", "Authorization,Content-Type,X-Tenant-Id"),
     ("GET", "/health", "Accept,Accept-Language,Content-Language"),
 ])
 def test_native_preflight_needs_no_jwt_or_inner_middleware(cors_app, method, path, headers, capsys):
@@ -152,7 +153,7 @@ def test_denied_preflight_does_not_grant_requested_combination(cors_app, origin,
     assert response.status_code == 400
     if origin != ALLOWED:
         assert "access-control-allow-origin" not in response.headers
-    if method not in {"GET", "POST"}:
+    if method not in {"GET", "POST", "PATCH"}:
         assert method not in response.headers.get("access-control-allow-methods", "")
     if headers == "X-Unapproved":
         assert headers.lower() not in response.headers.get("access-control-allow-headers", "").lower()

@@ -31,7 +31,6 @@
   --accent: #e4e1fb;
   --accent-foreground: var(--foreground);
   --border: #d9d5f2;
-  --muted: var(--border);
   --input: #7f7a9c;
   --input-background: #ffffff;
   --muted-foreground: #524e6b;
@@ -87,7 +86,6 @@
   --accent: #2b2359;
   --accent-foreground: var(--foreground);
   --border: #3a3470;
-  --muted: var(--border);
   --input: #8a86a8;
   --input-background: #2b2359;
   --muted-foreground: #b3afcc;
@@ -141,7 +139,6 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
-  --color-muted: var(--muted);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
   --color-muted-foreground: var(--muted-foreground);

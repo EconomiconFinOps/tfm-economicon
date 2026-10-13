@@ -27,7 +27,7 @@ describe("structured ownership consultations", () => {
     expect(router.state.location).toMatchObject({ pathname: "/", search: "?chat=open" });
     expect(requests.some(request => request.path.includes("/assistant/"))).toBe(false);
     expect(screen.queryByRole("heading", { name: "Assistant chat" })).toBeNull();
-    expect(screen.getByRole("link", { name: "Costes por propiedad" })).toHaveAttribute("href", "/ownership");
+    expect(screen.queryByRole("link", { name: "Costes por propiedad" })).toBeNull();
   });
 
   it("creates a conversation from an empty list and sends a message with a visible reply", async () => {
@@ -55,30 +55,30 @@ describe("structured ownership consultations", () => {
     renderApp(["/ownership"]);
     expect(await screen.findByText("Crea una consulta de propiedad.")).toBeVisible();
 
-    const title = screen.getByPlaceholderText("New conversation title");
+    const title = screen.getByPlaceholderText("Título de la nueva conversación");
     await user.clear(title);
     await user.type(title, conversation.title);
-    await user.click(screen.getByRole("button", { name: "New" }));
+    await user.click(screen.getByRole("button", { name: "Nueva" }));
     expect(await screen.findByRole("button", { name: new RegExp(conversation.title) })).toBeVisible();
-    const composer = await screen.findByPlaceholderText("Pregunta sobre los costes de la selección.");
-    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    const composer = await screen.findByPlaceholderText("Pregunta sobre los documentos ingeridos del cliente.");
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
     await user.type(composer, "   ");
-    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
     await user.clear(composer);
     await user.type(composer, userMessage.content);
-    await user.click(screen.getByRole("button", { name: "Send" }));
-    expect(screen.getByRole("button", { name: "Sending..." })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
+    expect(screen.getByRole("button", { name: "Enviando..." })).toBeDisabled();
 
     await act(async () => pendingReply.resolve(assistantReply, 201));
     expect(await screen.findByText(assistantMessage.content)).toBeVisible();
     expect(screen.getByText(userMessage.content)).toBeVisible();
     expect(composer).toHaveValue("");
-    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeDisabled();
     const createdRequest = requests.find((request) => request.method === "POST" && request.path === collectionPath);
     const sentRequest = requests.find((request) => request.path === messagePath);
     expect(createdRequest?.body).toEqual({ title: conversation.title });
-    expect(sentRequest?.body).toEqual({ content: userMessage.content, ownership_query: { group_by: "application" } });
-    expect(screen.queryByRole("checkbox", { name: "Consultar costes por propiedad" })).toBeNull();
+    expect(sentRequest?.body).toEqual({ content: userMessage.content });
+    expect(screen.getByRole("checkbox", { name: "Consultar costes por propiedad" })).not.toBeChecked();
     for (const request of requests.filter((request) => request.path.startsWith(collectionPath))) {
       expectTenantRequest(request);
     }
@@ -97,7 +97,6 @@ describe("structured ownership consultations", () => {
     renderApp(["/ownership"]);
     expect(await screen.findByText(userMessage.content)).toBeVisible();
     await user.click(screen.getByRole("button", { name: /Storage review/ }));
-    expect(await screen.findByText("Loading conversation...")).toBeVisible();
     expect(screen.queryByText(userMessage.content)).not.toBeInTheDocument();
 
     await act(async () => pendingDetail.resolve({
@@ -116,15 +115,15 @@ describe("structured ownership consultations", () => {
     });
     restoreSession();
     renderApp(["/ownership"]);
-    const title = await screen.findByPlaceholderText("New conversation title");
+    const title = await screen.findByPlaceholderText("Título de la nueva conversación");
     await user.clear(title);
     await user.type(title, "Retain this cost investigation");
-    await user.click(screen.getByRole("button", { name: "New" }));
+    await user.click(screen.getByRole("button", { name: "Nueva" }));
 
     expect(await screen.findByText(/Conversation creation unavailable/)).toBeVisible();
     expect(title).toHaveValue("Retain this cost investigation");
-    expect(screen.getByRole("button", { name: "New" })).toBeEnabled();
-    expect(screen.queryByRole("button", { name: "Send" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Nueva" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Enviar" })).not.toBeInTheDocument();
   });
 
   it("retains an unsent message after a send error and permits retry", async () => {
@@ -146,15 +145,15 @@ describe("structured ownership consultations", () => {
     });
     restoreSession();
     renderApp(["/ownership"]);
-    const composer = await screen.findByPlaceholderText("Pregunta sobre los costes de la selección.");
+    const composer = await screen.findByPlaceholderText("Pregunta sobre los documentos ingeridos del cliente.");
     await user.type(composer, userMessage.content);
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
 
     expect(await screen.findByText("Assistant connection interrupted")).toBeVisible();
     expect(composer).toHaveValue(userMessage.content);
-    expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeEnabled();
     expect(screen.queryByText(assistantMessage.content)).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "Enviar" }));
     expect(await screen.findByText(assistantMessage.content)).toBeVisible();
     await waitFor(() => expect(composer).toHaveValue(""));
     expect(screen.queryByText("Assistant connection interrupted")).not.toBeInTheDocument();
@@ -185,9 +184,9 @@ describe("structured ownership consultations", () => {
     renderApp(["/ownership"]);
 
     expect(await screen.findByText(/Conversation not found/)).toBeVisible();
-    expect(screen.queryByRole("button", { name: "Send" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Enviar" })).not.toBeInTheDocument();
     // "Logout" no existe como texto visible en el Layout real: el boton usa
     // aria-label="Cerrar sesion" (icono sin texto).
-    expect(screen.getByRole("button", { name: "Cerrar sesion" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Cerrar sesión" })).toBeEnabled();
   });
 });

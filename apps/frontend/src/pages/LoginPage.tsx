@@ -108,17 +108,17 @@ export function LoginPage() {
           <img src={logoInverse} alt="" className="hidden size-12 object-contain dark:block" />
           <span className="font-heading text-2xl font-bold text-highlight">Economicon</span>
         </div>
-        <p className="mt-6 text-sm uppercase tracking-wide text-muted-foreground">Operator login</p>
-        <h1 className="mt-2 text-xl font-bold text-foreground">Access the tenant control tower</h1>
+        <p className="mt-6 text-sm uppercase tracking-wide text-muted-foreground">Acceso de operadores</p>
+        <h1 className="mt-2 text-xl font-bold text-foreground">Accede al centro de control de clientes</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          This demo build uses the seeded operator account so the team can validate
-          auth, tenant isolation and assistant flows end-to-end.
+          Esta versión de demostración usa la cuenta de operador precargada para que el equipo
+          valide de extremo a extremo el acceso, el aislamiento entre clientes y los flujos del asistente.
         </p>
 
         <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1">
             <label className="text-sm text-muted-foreground" htmlFor="login-email">
-              Email
+              Correo electrónico
             </label>
             <input
               id="login-email"
@@ -133,7 +133,7 @@ export function LoginPage() {
 
           <div className="flex flex-col gap-1">
             <label className="text-sm text-muted-foreground" htmlFor="login-password">
-              Password
+              Contraseña
             </label>
             <input
               id="login-password"
@@ -152,7 +152,7 @@ export function LoginPage() {
             // en cuanto el operador reintenta el acceso, la mutacion deja de
             // estar idle y este aviso desaparece sin ningun efecto extra.
             <p className="text-sm text-warning" role="status">
-              Your session has expired. Sign in again to continue.
+              Tu sesión ha caducado. Inicia sesión de nuevo para continuar.
             </p>
           ) : null}
 
@@ -165,7 +165,7 @@ export function LoginPage() {
             type="submit"
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? "Signing in..." : "Sign in"}
+            {mutation.isPending ? "Iniciando sesión..." : "Iniciar sesión"}
           </button>
         </form>
       </section>

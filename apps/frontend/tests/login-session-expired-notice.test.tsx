@@ -32,7 +32,7 @@ import { mockBackend, renderApp, restoreSession, SESSION_KEY } from "./test-supp
 // constante para no repetir el literal en cada asercion y para que un typo
 // futuro en el codigo de produccion (o en el propio test) se note como un
 // diff de string, no como un "casi coincide".
-const SESSION_EXPIRED_MESSAGE = "Your session has expired. Sign in again to continue.";
+const SESSION_EXPIRED_MESSAGE = "Tu sesión ha caducado. Inicia sesión de nuevo para continuar.";
 
 // Replica local de la utilidad `failure` de auth-session.test.tsx / grupo 3
 // (session-expiry-notice.test.tsx): no esta exportada desde ninguno de los
@@ -56,7 +56,7 @@ describe("JUP-098 aviso de sesion expirada en /login", () => {
     restoreSession();
     renderApp(["/overview-legacy"]);
 
-    await screen.findByRole("button", { name: "Sign in" });
+    await screen.findByRole("button", { name: "Iniciar sesión" });
 
     expect(screen.getByRole("status")).toHaveTextContent(SESSION_EXPIRED_MESSAGE);
   });
@@ -72,10 +72,10 @@ describe("JUP-098 aviso de sesion expirada en /login", () => {
     restoreSession();
     renderApp(["/ingest"]);
 
-    await user.type(await screen.findByLabelText("Text content"), "synthetic cost data");
-    await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
+    await user.type(await screen.findByLabelText("Contenido del texto"), "synthetic cost data");
+    await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
 
-    await screen.findByRole("button", { name: "Sign in" });
+    await screen.findByRole("button", { name: "Iniciar sesión" });
 
     expect(screen.getByRole("status")).toHaveTextContent(SESSION_EXPIRED_MESSAGE);
   });
@@ -99,12 +99,12 @@ describe("JUP-098 aviso de sesion expirada en /login", () => {
     restoreSession();
     renderApp(["/overview-legacy"]);
 
-    await screen.findByRole("button", { name: "Sign in" });
+    await screen.findByRole("button", { name: "Iniciar sesión" });
     // Precondicion explicita: el aviso esta presente antes del reintento.
     expect(screen.getByRole("status")).toHaveTextContent(SESSION_EXPIRED_MESSAGE);
 
-    await user.type(screen.getByLabelText("Password"), "wrong-password");
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.type(screen.getByLabelText("Contraseña"), "wrong-password");
+    await user.click(screen.getByRole("button", { name: "Iniciar sesión" }));
 
     // El intento falla con el mismo cuerpo sintetico que usan
     // auth-session.test.tsx y session-expiry-notice.test.tsx para un 401 de
@@ -135,7 +135,7 @@ describe("JUP-098 aviso de sesion expirada en /login", () => {
     // Se espera a que la navegacion a /login se complete usando una señal
     // que no depende del aviso (que hoy no existe): el propio formulario de
     // acceso ya identifica que la redireccion ocurrio.
-    await screen.findByRole("button", { name: "Sign in" });
+    await screen.findByRole("button", { name: "Iniciar sesión" });
 
     expect(router.state.location.pathname).toBe("/login");
     expect(router.state.location.state).toBeNull();
@@ -153,7 +153,7 @@ describe("JUP-098 aviso de sesion expirada en /login", () => {
     restoreSession();
     renderApp(["/overview-legacy"]);
 
-    await screen.findByRole("button", { name: "Sign in" });
+    await screen.findByRole("button", { name: "Iniciar sesión" });
 
     const localKeys = Object.keys(window.localStorage);
     const sessionKeys = Object.keys(window.sessionStorage);
@@ -175,7 +175,7 @@ describe("JUP-098 aviso de sesion expirada en /login", () => {
     mockBackend();
     renderApp(["/login"]);
 
-    await screen.findByRole("button", { name: "Sign in" });
+    await screen.findByRole("button", { name: "Iniciar sesión" });
 
     expect(screen.queryByRole("status")).toBeNull();
   });
@@ -191,7 +191,7 @@ describe("JUP-098 aviso de sesion expirada en /login", () => {
       restoreSession();
       const { router } = renderApp(["/overview-legacy"]);
 
-      await screen.findByRole("heading", { name: "Backend unavailable" });
+      await screen.findByRole("heading", { name: "Backend no disponible" });
 
       expect(window.localStorage.getItem(SESSION_KEY)).not.toBeNull();
       expect(router.state.location.pathname).not.toBe("/login");

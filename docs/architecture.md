@@ -51,8 +51,8 @@ flowchart TB
 
 | Componente | Responsabilidad y límite | Implementación |
 | --- | --- | --- |
-| Frontend | Sesión, tenant, conversaciones y dashboard ejecutivo conectado a billing. Paneles operativo, recortes, anomalías y recomendaciones conservan fixtures demo. No accede a DB, cola ni claves del proveedor. | [Cliente HTTP](../apps/frontend/src/services/api.ts), [rutas](../apps/frontend/src/routes.tsx) |
-| Backend | Autenticación, autorización, costes/presupuesto, publicación de jobs, conversaciones, recuperación/citas, ownership SQL, cobertura de etiquetas y salud agregada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
+| Frontend | Sesión, tenant, conversaciones y dashboard ejecutivo conectado a billing. Panel de anomalías conectado a los episodios guardados. Los paneles operativo, de recortes y de recomendaciones siguen en el código sin ruta ni menú (JUP-116). No accede a DB, cola ni claves del proveedor. | [Cliente HTTP](../apps/frontend/src/services/api.ts), [rutas](../apps/frontend/src/routes.tsx) |
+| Backend | Autenticación, autorización, costes/presupuesto, episodios de anomalías, publicación de jobs, conversaciones, recuperación/citas, ownership SQL, cobertura de etiquetas y salud agregada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
 | Processor | Worker documental y pipeline LangGraph; CLI independiente para costes Azure. API de salud/métricas interna. AgentRuntime es módulo Python, no servicio de red. | [Pipeline](../apps/processor/app/graphs/pipeline.py), [CLI Azure](../apps/processor/app/run_azure_cost_ingestion.py), [agentes](../apps/processor/app/agents/service.py) |
 | API Azure simulada | HTTP posicional, bearer local, paginación y errores reproducibles sobre CSV público. No autentica contra Azure ni representa una factura completa. | [README](../apps/azure-cost-api/README.md), [fixture](../fixtures/azure-cost/README.md) |
 | LiteLLM, opcional | Proxy del processor y de embeddings del backend; claves virtuales separadas y DB propia. OpenRouter es el upstream configurado. | [Configuración](../infra/litellm/config.example.yaml), [operación](../infra/litellm/README.md) |
@@ -135,6 +135,17 @@ resultado desconocido tiene tratamiento en
 [ADR-0009](adr/ADR-0009-rabbitmq-publisher-lifecycle.md). No hay transacción
 distribuida DB/cola ni outbox; no se promete exactly-once ni reintento sin duplicados.
 
+**Fallos y reintentos del worker (JUP-113,
+[ADR-0019](adr/ADR-0019-ingestion-retry-policy.md)).** `POST /jobs/ingest` rechaza con 422 un `source` que el
+processor no aceptaría, así que ese trabajo ya no se crea. En el worker, un mensaje inválido, un fallo de
+proveedor o un trabajo que rechaza el guardrail de entrada se descartan en una entrega; un fallo no
+clasificado se reencola **una vez**, usando la marca `redelivered` de RabbitMQ, y se descarta en la
+reentrega con el job en `failed`; y si no se puede leer o registrar el estado del job (base caída), el mensaje
+se reencola sin tope, porque descartarlo dejaría el job sin mensaje. La consecuencia que se asume: si pgvector o
+los embeddings fallan el tiempo suficiente para los dos intentos (unos 10 s medidos con pgvector parado), los
+jobs de ese intervalo quedan `failed` y hay que reenviarlos. Tabla completa en el
+[README del processor](../apps/processor/README.md#fallos-reintentos-y-descarte-jup-113).
+
 La fase analyze puede usar AgentRuntime/LiteLLM, schema FinOpsResponse y
 guardrails. Su entrada contiene source, status y metadatos saneados; no recibe
 la pregunta del chat, chunks ni consulta de costes. El mock produce
@@ -154,6 +165,10 @@ flowchart LR
   R --> E[POST /billing/budget/evaluate]
   R --> T[GET /billing/tag-coverage]
   T --> D
+  R --> Q[POST /billing/anomalies/evaluate: consulta de prueba]
+  R --> X[POST /billing/anomalies/detect]
+  X --> P[(Episodios de anomalía por tenant)]
+  P --> L[GET y PATCH /billing/anomalies/episodes]
 ```
 
 La entrada comprobable es `python -m app.run_azure_cost_ingestion --tenant-id …
@@ -170,6 +185,11 @@ separados por moneda. Rechaza solapamientos ambiguos con 409 según
 `savings_identified` es null; no hay ahorro realizado calculado.
 `open_ingestions` cuenta todos los jobs del tenant en esta base, pese a su
 nombre. Evaluar presupuesto no lo persiste ni envía notificaciones.
+La evaluación de anomalías de JUP-030 tampoco guarda nada; los episodios de
+JUP-114 sí: «Detectar ahora» aplica la regla diaria de negocio sobre el coste
+diario por servicio y guarda episodios con criticidad y estado
+([API](api/anomaly-episodes.md), [ADR-0020](adr/ADR-0020-cost-anomaly-episodes.md)).
+El panel `/anomalies` los lee, detecta bajo demanda y cambia estados. No hay ejecución periódica ni avisos.
 [Contrato billing](../openspec/specs/azure-cost-kpis/spec.md) y
 [consulta SQL](../apps/backend/app/db/database.py).
 
@@ -213,6 +233,7 @@ proxy certifican la calidad financiera del recorrido.
 flowchart TB
   B[Backend: dueño del esquema operativo] --> U[users, tenants, user_tenants]
   B --> J[jobs, conversations, messages]
+  B --> A[anomaly_episodes, anomaly_detection_state]
   P[Processor: dueño del esquema Azure] --> R[azure_cost_ingestion_runs]
   P --> C[azure_cost_records]
   U -->|Autoridad de acceso| J
@@ -221,6 +242,7 @@ flowchart TB
   D --> E[Embeddings por provider y dimensión]
   J -->|Referencia del job documental| D
   B -->|Lectura autorizada| C
+  C -->|Coste diario por servicio| A
   B -->|Recuperación autorizada| D
 ```
 
@@ -229,7 +251,7 @@ foráneas entre bases**. CockroachDB guarda estado transaccional; pgvector
 el índice recuperable; RabbitMQ transporta envelopes y conserva la cola
 durable. La DB del gateway es independiente: no almacena costes FinOps.
 
-Según [ADR-0011](adr/ADR-0011-single-owner-per-table.md), backend migra sus seis
+Según [ADR-0011](adr/ADR-0011-single-owner-per-table.md), backend migra sus ocho
 tablas y processor las dos de Azure; cada servicio tiene su registro de
 migraciones. Processor también actualiza estados de jobs, pero no es dueño de
 su DDL: espera a backend sano después de migrar. El índice vectorial lo migra
@@ -403,7 +425,8 @@ una decisión arquitectónica nueva.
 
 Prometheus scrapea backend/processor cada 15 s. Grafana aprovisiona dashboards
 y alerta de fallos de ingesta, **sin receptor externo**. El contador mide
-marcas de fallo persistidas, incluidos reintentos, no jobs únicos.
+marcas de fallo persistidas, incluidos reintentos, no jobs únicos: con el tope de JUP-113, un job con un
+fallo no clasificado suma como máximo 2.
 Los logs JSON con request_id y los estados de job ayudan al diagnóstico;
 no se acredita stack central de logs ni trazado distribuido completo.
 Fuentes: [monitorización](../apps/monitoring),

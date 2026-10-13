@@ -77,7 +77,7 @@ describe("DashboardPage (mutacion: optional chaining sobre user)", () => {
         // `SessionOutletContext.user?: UserProfile` (p.ej. la consulta `/me`
         // en SessionGate todavia no resolvio). Con `user?.full_name` (codigo
         // real) esto no revienta; con el mutante `user.full_name` lanzaria un
-        // TypeError durante el render y "Monthly Spend" nunca aparecería.
+        // TypeError durante el render y "Gasto mensual" nunca aparecería.
         Component: makeContextProvider({
           token: "tok",
           user: undefined,
@@ -90,7 +90,7 @@ describe("DashboardPage (mutacion: optional chaining sobre user)", () => {
 
     renderRouter(router);
 
-    await waitFor(() => expect(screen.getByText("Monthly Spend")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Gasto mensual")).toBeInTheDocument());
     // El nombre del operador no puede aparecer (no hay datos que mostrar),
     // pero eso no debe impedir que el resto del dashboard se renderice.
     expect(screen.queryByText(/Ada|Lovelace/)).not.toBeInTheDocument();
@@ -143,7 +143,7 @@ describe("DashboardPage (mutacion: condicion de bootstrapping)", () => {
 
     await waitFor(() => expect(fetchCalls.some((url) => url.includes("/health"))).toBe(true));
     expect(
-      await screen.findByRole("heading", { name: "Connecting to the FinOps control plane..." })
+      await screen.findByRole("heading", { name: "Conectando con el plano de control FinOps..." })
     ).toBeVisible();
     expect(fetchCalls.some((url) => url.includes("/billing/summary"))).toBe(false);
   });
