@@ -20,14 +20,19 @@ Imagen expression13: 78 hashes backend y 72 processor coinciden con 85994b8;
 43 pruebas SQL nativas pasan. Recursos/prompt final: 22 pasan. OpenSpec: 67 pasan.
 Suites Windows: backend 491 pasan/42 omitidas/2 errores de privilegio symlink;
 processor 451 pasan/6 omitidas/8 fallos (dos symlink, una expectativa textual ya
-corregida y cinco cancelación/capacidad aún por contrastar). La base anterior pasa
-esas cinco en Linux. La comparación Linux nueva está pendiente: durante su
-ejecución DockerServer dejó de responder al intercambio inicial SSH; no atribuir
-la espera al producto ni lanzar otra tanda sin recuperar el resultado anterior.
+corregida y cinco cancelación/capacidad). La comparación Linux nueva termina
+127 PASS processor y 54 PASS backend, incluyendo esos cinco y los symlinks.
+La caída temporal SSH se resolvió sin repetir la tanda. CI 9c5fada: processor
+PASS y backend 1718 PASS/106 omitidas/1 fallo: un fixture de presupuesto de
+resumen aún sumaba la reserva de decisión retirada. Corregido para contar el
+esquema efectivo con catálogo; conserva el rechazo por faltar un token y la
+preservación del historial. Sus seis pruebas pasan; no cambia producto.
 Recibos del workspace: `expression13-native-remote.log`,
 `expression13-build-remote.log`, `expression-prompt-final.log` y
 `expression-openspec-final.log`, en el directorio de evidencias indicado arriba.
-Publicación/CI, runtime del HEAD final, campaña limpia y recorrido UI pendientes.
+Runtime expression14 activo con producto y bundle 9c5fada verificados; claves
+aisladas renovadas únicamente en vigencia hasta 12:08:58 UTC. CI final, campaña
+limpia y recorrido UI pendientes; ninguna nueva inferencia hasta este registro.
 
 Los apartados siguientes son evidencia histórica, no estado del candidato nuevo.
 

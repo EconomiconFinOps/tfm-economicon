@@ -39,7 +39,7 @@
 ## 6. Contrato estructurado autorizado
 - [ ] 6.1 Probar ramas, campos extra, duplicados, truncacion, llamadas nativas inesperadas, correlacion HMAC y plazo comun.
 - [ ] 6.2 Probar extracto literal por cita, contexto documental no confiable y esquema/conteo identicos en ambos servicios.
-- [ ] 6.3 Congelar SHA, desplegar solo runtime sintetico, ejecutar focales y full28 sin cambiar criterios; registrar gasto acumulado maximo0.50USD.
+- [ ] 6.3 Congelar SHA, desplegar solo runtime sintetico, ejecutar focales y full28 sin cambiar criterios; registrar gasto acumulado máximo2USD (ampliación autorizada el13/10/2026).
 - [ ] 6.4 Recorrido navegador sobre candidato final y evidencia de persistencia/aislamiento, sin confundir CI con reviews oficiales.
 - [ ] 6.5 Expresiones Decimal locales, recuperacion de servidor por HMAC y una generacion; probar origen de cantidades, unidades/cero/limites globales y equivalencia SSE/candidato/persistencia con UTF-8 fragmentado.
 
@@ -47,4 +47,4 @@
 - [x] 7.1 Conservar full28:18 completed/10 failed, y defectos semánticos de respuestas completadas; no declararla aceptada.
 - [x] 7.2 Documentar ADR de recuperación única del servidor y expresiones autocontenidas, sin referencias de planes previos.
 - [ ] 7.3 Completar regresiones de contrato, HMAC, esquema/conteo, límites, citas, persistencia y cancelación del nuevo protocolo.
-- [ ] 7.4 Congelar candidato, estimar coste conservador y validar campaña íntegra dentro del techo acumulado0.50USD; sin muestras seleccionadas.
+- [ ] 7.4 Congelar candidato, estimar coste conservador y validar campaña íntegra dentro del techo acumulado2USD (ampliación autorizada el13/10/2026); sin muestras seleccionadas.
