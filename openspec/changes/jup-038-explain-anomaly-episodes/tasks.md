@@ -171,7 +171,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   `Open`) y registrar como `RF-038-NNN` lo que quede fuera, al menos la herramienta del agente
   pendiente de JUP-035, el par de mensajes no atómico si no está ya registrado y lo que aparezca en
   la validación.
-- [ ] 9.6 Actualizar `docs/continuidad/deteccion-anomalias-coste.md` con un apartado de JUP-038 y su
+- [x] 9.6 Actualizar `docs/continuidad/deteccion-anomalias-coste.md` con un apartado de JUP-038 y su
   fila en `docs/continuidad/README.md`.
 - [ ] 9.7 `docs/testing/critical-flows.md`: suites nuevas y qué queda opt-in.
 
