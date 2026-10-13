@@ -143,3 +143,21 @@ def test_the_resource_group_breakdown_answers_without_error_and_every_record_is_
     body = response.json()
     assert body["groups"] and all(group["value"] is None for group in body["groups"])
     assert body["missing_dimension_count"] == sum(group["record_count"] for group in body["groups"])
+
+
+def test_the_panel_flags_demo_data_loaded_through_the_ingestion(demo_tenant_a):
+    api, load = demo_tenant_a
+    load("tenant-core")
+    reference_date.configure(date(2026, 10, 30))
+    body = call(api, "GET", "/billing/anomalies/episodes", headers=headers()).json()
+    assert body["includes_synthetic_data"] is True
+
+
+def test_costs_of_an_ordinary_subscription_are_not_flagged_as_synthetic(demo_tenant_a):
+    api, _ = demo_tenant_a
+    with api.db.engine.begin() as connection:
+        insert_run(connection, "run-ordinary", subscription="64e355d7-997c-491d-b0c1-8414dccfcf42")
+        insert_cost(connection, "ordinary", run="run-ordinary", subscription="64e355d7-997c-491d-b0c1-8414dccfcf42",
+                    day="2026-09-01", cost="1.00", service="Compute")
+    reference_date.configure(date(2026, 10, 30))
+    assert call(api, "GET", "/billing/anomalies/episodes", headers=headers()).json()["includes_synthetic_data"] is False

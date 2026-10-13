@@ -770,7 +770,8 @@ class Database:
                         ), params).scalar_one_or_none()
                         synthetic = connection.execute(text(
                             "SELECT EXISTS (SELECT 1 FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant_id "
-                            "AND status = 'completed' AND COALESCE(request->'synthetic' = 'true'::JSONB, false))"
+                            "AND status = 'completed' AND (COALESCE(request->'synthetic' = 'true'::JSONB, false) "
+                            "OR subscription_id LIKE 'synthetic-%'))"
                         ), params).scalar_one()
                 break
             except exc.OperationalError as error:
