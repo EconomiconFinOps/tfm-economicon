@@ -167,7 +167,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   (filas de `/assistant` y `/anomalies`).
 - [x] 9.4 `docs/demo/JUP-107/anomalias.md`: paso opcional para pedir la explicación de Compute desde
   el detalle, con lo que se debe ver. El guion de tres minutos no cambia.
-- [ ] 9.5 `openspec/findings/backlog.md`: actualizar `RF-114-001` con la decisión de aplazarlo (sigue
+- [x] 9.5 `openspec/findings/backlog.md`: actualizar `RF-114-001` con la decisión de aplazarlo (sigue
   `Open`) y registrar como `RF-038-NNN` lo que quede fuera, al menos la herramienta del agente
   pendiente de JUP-035, el par de mensajes no atómico si no está ya registrado y lo que aparezca en
   la validación.
