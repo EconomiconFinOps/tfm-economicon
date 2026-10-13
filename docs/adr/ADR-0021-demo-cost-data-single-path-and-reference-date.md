@@ -1,8 +1,8 @@
 # ADR-0021 — Datos de demostración por una sola ruta y fecha de referencia configurable
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-10-13
-- Related JUP/OpenSpec: JUP-119, [jup-119-coherent-cost-data-reference-date](../../openspec/changes/jup-119-coherent-cost-data-reference-date/design.md)
+- Related JUP/OpenSpec: JUP-119, [jup-119-coherent-cost-data-reference-date](../../openspec/changes/archive/2026-10-13-jup-119-coherent-cost-data-reference-date/design.md)
 - Trello: https://trello.com/c/HtjtmPaJ
 - Supersedes: none
 - Superseded by: none
@@ -41,6 +41,6 @@ Un sondeo del 2026-10-13 con CockroachDB real (nodo desechable, API y CLI locale
 
 ## Evidence And Follow-up
 
-- Sondeo y decisiones: [design.md](../../openspec/changes/jup-119-coherent-cost-data-reference-date/design.md) (D2 y D6).
+- Sondeo y decisiones: [design.md](../../openspec/changes/archive/2026-10-13-jup-119-coherent-cost-data-reference-date/design.md) (D2 y D6).
 - Pendiente de comprobar al implementar: que un importe entero grande sin céntimos cruza la API y la CLI sin pérdida (tarea 2.1).
 - Trabajo futuro, registrado en `openspec/findings/backlog.md`: validación de las filas en la ingesta, importes en coma flotante en la API y tiempo de inicialización de la CLI.
