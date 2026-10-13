@@ -2,7 +2,7 @@
 
 ### Requirement: Self-contained synthetic anomaly dataset tool
 
-The synthetic anomaly dataset SHALL be loaded, inspected and removed through the single entry point `scripts/demo_data.py` of the demo data capability, with the commands `apply`, `status` and `remove`, and SHALL NOT be loaded by a separate script that writes rows into the database. The dataset SHALL be loaded into the tenant `tenant-core` by default, every row SHALL carry a subscription identifier with the reserved prefix `synthetic-` and the tag `dataset_origin` with the value `synthetic`, and the tool SHALL state in its output that the rows are synthetic. `remove` SHALL also delete the stored anomaly episodes and the anomaly detection state of each tenant that held this dataset's rows and is left without other cost rows, because they are derived from its synthetic rows; for a tenant that still holds other cost rows it SHALL keep them and say so.
+The synthetic anomaly dataset SHALL be loaded, inspected and removed through the single entry point `scripts/demo_data.py` of the demo data capability, with the commands `apply`, `status` and `remove`, and SHALL NOT be loaded by a separate script that writes rows into the database. The dataset SHALL be loaded into the tenant `tenant-core` by default, every row SHALL belong to a subscription with the reserved prefix `synthetic-` listed in the demo manifest, and the tool SHALL state in its output that the rows are synthetic. `remove` SHALL also delete the stored anomaly episodes and the anomaly detection state of each tenant that held this dataset's rows and is left without other cost rows, because they are derived from its synthetic rows; for a tenant that still holds other cost rows it SHALL keep them and say so.
 
 #### Scenario: Load is idempotent
 - **WHEN** `apply` runs twice on an empty tenant
@@ -10,7 +10,7 @@ The synthetic anomaly dataset SHALL be loaded, inspected and removed through the
 - **AND** the second call writes nothing and reports `already-present`
 
 #### Scenario: Refuses a tenant with other cost data
-- **WHEN** the target tenant already holds cost rows that do not carry the reserved prefix and the synthetic origin tag, including rows of the public dataset
+- **WHEN** the target tenant already holds cost rows of a subscription that is not in the manifest, including rows of the public dataset
 - **THEN** `apply` loads nothing and exits with status 2 stating the reason
 - **AND** a partial or other-tenant state also refuses with its state named
 

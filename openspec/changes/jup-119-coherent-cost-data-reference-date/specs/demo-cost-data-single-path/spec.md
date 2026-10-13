@@ -2,15 +2,15 @@
 
 ### Requirement: Demo data enters only through the simulated API and the ingestion CLI
 
-The repository SHALL provide one demo dataset in the Azure cost export CSV format, served by the simulated Azure Cost API through its configured dataset path and loaded into a tenant only by the ingestion CLI of the processor. No script, test helper used for the demonstration or loader SHALL write rows into `azure_cost_records` or `azure_cost_ingestion_runs` for the demonstration other than through that CLI. The single entry point `scripts/demo_data.py` SHALL offer `generate`, `apply`, `status` and `remove`; `apply` SHALL run the ingestion CLI for each tenant and subscription pair named in the dataset manifest and SHALL NOT insert rows by itself.
+The repository SHALL provide one demo dataset in the Azure cost export CSV format, served by the simulated Azure Cost API through its configured dataset path and loaded into a tenant only by the ingestion CLI of the processor. No script or loader used for the demonstration SHALL write rows into `azure_cost_records` or `azure_cost_ingestion_runs` other than through that CLI. The single entry point `scripts/demo_data.py` SHALL offer `generate`, `apply`, `status` and `remove`; `apply` SHALL run the ingestion CLI for each tenant and subscription pair named in the dataset manifest and SHALL NOT insert rows by itself.
 
 #### Scenario: Loaded rows come from the CLI
 - **WHEN** `apply` loads the demo dataset on empty tenants
 - **THEN** every stored run was written by the ingestion CLI with a definition file stored in the repository
-- **AND** the normalised columns (service, resource group, project, tags) of the stored rows equal what the normaliser produces from the CSV rows
+- **AND** the stored columns (service, project, tags, usage date, amount, currency) of the rows equal what the normaliser produces from the API response for the CSV rows
 
 #### Scenario: Both former loaders are replaced
-- **WHEN** the repository is searched for code that inserts into `azure_cost_records` outside the processor repository, its migrations and the tests of those
+- **WHEN** the repository is searched for code that inserts into `azure_cost_records` outside the processor repository, its migrations and automated tests
 - **THEN** `scripts/synthetic_costs.py` and `scripts/synthetic_anomalies.py` no longer exist or only forward to `scripts/demo_data.py`
 - **AND** no demo guide documents a direct-insert command
 
@@ -18,9 +18,29 @@ The repository SHALL provide one demo dataset in the Azure cost export CSV forma
 - **WHEN** `generate` runs twice, on different machines and days
 - **THEN** both CSV files and the manifest are byte-identical, no value depends on the clock or on a random seed that is not fixed in the file, and the checksum in the manifest matches
 
-### Requirement: Every demo row states where it comes from
+### Requirement: Demo data uses only what the query API can deliver
 
-Every row of the demo CSV SHALL carry, in its tags, `dataset_origin` with exactly one of `public-shifted` or `synthetic`, and the ingestion SHALL preserve it as a stored tag. Rows of the public origin SHALL keep the original public values of every column except the date columns, which SHALL be shifted by one fixed number of days recorded in the manifest. Synthetic rows SHALL use subscription identifiers with the reserved prefix `synthetic-` and SHALL NOT reuse a public subscription identifier. The documentation SHALL state that the dates of the public rows are shifted, that no row is an invoice of 2026 and that synthetic rows are not Azure invoices.
+Every row of the demo CSV SHALL carry a valid usage date. Each ingestion definition of the demo SHALL group by exactly two fields, the dimension `ServiceName` and the tag `Project`, because the simulated API accepts at most two groupings and a second definition over the same subscription would overlap the first. Amounts SHALL be integers or decimals that the API returns without loss: an amount SHALL be exact through the API, and an amount above 2^53 SHALL be an integer without cents. The dataset SHALL NOT contain a row without a usage date, an amount above 2^53 with cents, or a field that only exists in a different grouping. The manifest SHALL list the fields that are absent in the loaded rows (resource group, cost center, owner, application, environment) so that the guides and screens can state them.
+
+#### Scenario: Rows without a date are not generated
+- **WHEN** the generated CSV is validated
+- **THEN** every row has a date in the format the API reads and a test fails otherwise
+
+#### Scenario: Amounts survive the API
+- **WHEN** the demo dataset is loaded and each stored amount is compared with the amount of its CSV rows summed with exact decimal arithmetic by tenant, subscription, day, service, project and currency
+- **THEN** all amounts are equal and none differs by a rounding
+
+#### Scenario: A second grouping is not used
+- **WHEN** the definition files of the demo are read
+- **THEN** each has exactly the two groupings above, and the dataset manifest names one definition per subscription
+
+#### Scenario: Absent fields are declared
+- **WHEN** the manifest and the demo guide are read
+- **THEN** both list the fields that the loaded rows do not carry and say that the screens show them as absent
+
+### Requirement: Origin is identified by the subscription
+
+Every row of the demo CSV SHALL belong to a subscription listed in the dataset manifest with its origin, `public-shifted` or `synthetic`. Synthetic subscriptions SHALL use the reserved prefix `synthetic-` and SHALL NOT reuse a public subscription identifier. Rows of the public origin SHALL keep the original public values of every column except the date columns, which SHALL be shifted by one fixed number of days recorded in the manifest. The documentation SHALL state that the dates of the public rows are shifted, that no row is an invoice of 2026 and that synthetic rows are not Azure invoices.
 
 #### Scenario: Public rows only change in their dates
 - **WHEN** the shifted file is compared row by row with `EA-Cost-Actual.sample.csv`
@@ -31,9 +51,9 @@ Every row of the demo CSV SHALL carry, in its tags, `dataset_origin` with exactl
 - **WHEN** the change is applied
 - **THEN** `fixtures/azure-cost/EA-Cost-Actual.sample.csv`, its manifest entry and the other original fixtures are byte-identical to the base
 
-#### Scenario: Origin survives ingestion
-- **WHEN** the demo dataset has been loaded
-- **THEN** every stored record carries the tag `dataset_origin` and a query by that tag returns the public-shifted and the synthetic rows separately, with counts equal to the manifest
+#### Scenario: Every subscription has a declared origin
+- **WHEN** the demo CSV is read
+- **THEN** every subscription identifier is in the manifest with its origin, and synthetic ones carry the prefix
 
 #### Scenario: No row passes for real 2026 billing
 - **WHEN** the demo guide and the manifest are read from the top
@@ -57,14 +77,14 @@ For each tenant that has cost data in the demo, the dataset SHALL contain at lea
 
 ### Requirement: Safe, idempotent load and removal for the whole dataset
 
-`apply` SHALL be idempotent: a second call on loaded tenants writes nothing and reports `already-present`. It SHALL refuse, writing nothing, when a target tenant already holds cost rows that do not belong to this dataset (identified by the reserved `synthetic-` subscription prefix or the `dataset_origin` tag) and SHALL name the tenant and the reason. `status` SHALL report per tenant `absent`, `present`, `partial` or `other-data`. `remove` SHALL delete only the runs and records of this dataset, and the anomaly episodes and detection state of a tenant left with no other cost data; it SHALL be repeatable and SHALL leave other tenants untouched. A load interrupted before the end SHALL leave a `partial` state that `apply` refuses to complete silently.
+`apply` SHALL be idempotent: a second call on loaded tenants writes nothing and reports `already-present`. It SHALL refuse, writing nothing, when a target tenant already holds cost rows whose subscription is not in the manifest and SHALL name the tenant and the reason. `status` SHALL report per tenant `absent`, `present`, `partial` or `other-data`. `remove` SHALL delete only the runs and records of the manifest's subscriptions, and the anomaly episodes and detection state of a tenant left with no other cost data; it SHALL be repeatable and SHALL leave other tenants untouched. A load interrupted before the end SHALL leave a `partial` state that `apply` refuses to complete silently. The documentation SHALL state the measured time of a complete load.
 
 #### Scenario: Second apply writes nothing
 - **WHEN** `apply` runs twice
 - **THEN** the second run reports `already-present` and the counts of runs and records are the same as after the first
 
 #### Scenario: Tenant with other cost data is protected
-- **WHEN** a target tenant holds a run whose subscription does not carry the reserved prefix or the origin tag
+- **WHEN** a target tenant holds a run whose subscription is not in the manifest
 - **THEN** `apply` exits with status 2, loads nothing for any tenant and names the tenant
 
 #### Scenario: Removal is exact and repeatable
@@ -78,12 +98,28 @@ For each tenant that has cost data in the demo, the dataset SHALL contain at lea
 
 ### Requirement: The single path is shown to work end to end
 
-An automated test with the real database engine SHALL generate the dataset, serve it through the simulated API process, run the ingestion CLI for every pair, and compare the stored totals per tenant, month, currency and `dataset_origin` with expected values recomputed from the CSV with exact decimal arithmetic. The same test SHALL check that a second `apply` writes nothing, that `remove` returns the tables to their previous state and that the billing summary and the daily detection read the loaded data with the reference date set to 2026-09-21 and to 2026-10-30.
+An automated test with the real database engine SHALL generate the dataset, serve it through the simulated API process, run the ingestion CLI for every pair, and compare the stored totals per tenant, month, currency, service and project with expected values recomputed from the CSV with exact decimal arithmetic. The same test SHALL check that a second `apply` writes nothing, that `remove` returns the tables to their previous state and that the billing summary and the daily detection read the loaded data with the reference date set to 2026-09-22 and to 2026-10-31.
 
 #### Scenario: Stored totals equal the file
 - **WHEN** the test compares the stored totals with the totals recomputed from the CSV
-- **THEN** they are equal for every tenant, month, currency and origin, without using the backend aggregation to compute the expected value
+- **THEN** they are equal for every tenant, month, currency, service and project, without using the backend aggregation to compute the expected value
 
 #### Scenario: Altered amount fails naming the figure
 - **WHEN** one amount of the CSV is changed
 - **THEN** the test fails and names the tenant, month and currency whose total differs
+
+### Requirement: Screens with absent fields show them as absent
+
+With the demo data loaded, the screens and answers that depend on fields the demo does not carry SHALL show them as absent and SHALL NOT fail: the tag coverage SHALL report the tags `owner`, `environment`, `application` and `cost_center` as not covered in every record and `project` as covered where present; the ownership question by cost center, owner or application SHALL answer that the dimension has not been observed; the dashboard breakdown by resource group SHALL show the records as not applicable. A test or a recorded check on the real stack SHALL cover each of the three.
+
+#### Scenario: Tag coverage with only the project tag
+- **WHEN** the demo data are loaded and the tag coverage is requested for a period with records
+- **THEN** the response lists the five required tags, reports four of them missing in every record, and `project` covered in the records that carry it, with HTTP 200
+
+#### Scenario: Ownership by an absent dimension
+- **WHEN** the ownership question is asked by cost center on the demo data
+- **THEN** the answer has status `insufficient_data` with reason `dimension_unobserved` and contains no amount attributed to a cost center
+
+#### Scenario: Breakdown by resource group
+- **WHEN** the dashboard asks for the breakdown by resource group on the demo data
+- **THEN** the response is successful and the records appear as not applicable, and the page shows no error
