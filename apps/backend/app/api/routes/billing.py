@@ -12,6 +12,7 @@ from app.services.anomaly_episodes import (
 )
 from app.schemas.billing import AmbiguousCostSource, BillingGrouping, BillingSummary, canonical_tag_key
 from app.schemas.tag_coverage import TagCoverage
+from app.schemas.reference_date import ReferenceDateInfo
 from app.schemas.budget import BudgetDefinition, BudgetEvaluation
 from app.services.budget import evaluate_budget
 from app.schemas.anomalies import AnomalyDefinition, AnomalyEvaluation
@@ -34,6 +35,11 @@ def _billing_period(start_date: str | None, end_date: str | None) -> tuple[date,
     if start >= end:
         raise ValueError()
     return start, end
+
+
+@router.get("/reference-date", response_model=ReferenceDateInfo)
+def get_reference_date(current_user: dict = Depends(get_current_user)) -> ReferenceDateInfo:
+    return ReferenceDateInfo(reference_date=reference_date.today(), simulated=reference_date.simulated())
 
 
 @router.get("/tag-coverage", response_model=TagCoverage)
