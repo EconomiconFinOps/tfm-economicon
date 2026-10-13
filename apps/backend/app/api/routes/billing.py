@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -15,6 +15,7 @@ from app.schemas.tag_coverage import TagCoverage
 from app.schemas.budget import BudgetDefinition, BudgetEvaluation
 from app.services.budget import evaluate_budget
 from app.schemas.anomalies import AnomalyDefinition, AnomalyEvaluation
+from app.services import reference_date
 from app.services.anomalies import evaluate_anomalies
 
 
@@ -23,7 +24,7 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 def _billing_period(start_date: str | None, end_date: str | None) -> tuple[date, date]:
     if start_date is None and end_date is None:
-        start = datetime.now(timezone.utc).date().replace(day=1)
+        start = reference_date.today().replace(day=1)
         end = (start.replace(year=start.year + 1, month=1) if start.month == 12
                else start.replace(month=start.month + 1))
     elif start_date is not None and end_date is not None:
@@ -88,7 +89,7 @@ def detect_anomaly_episodes(
     database=Depends(get_database),
 ) -> AnomalyDetectionRun:
     try:
-        result = database.run_anomaly_detection(tenant_id, today=datetime.now(timezone.utc).date())
+        result = database.run_anomaly_detection(tenant_id, today=reference_date.today())
     except AmbiguousCostSource:
         raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
     except DetectionConflict:

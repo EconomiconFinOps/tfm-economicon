@@ -2,6 +2,7 @@
 import pytest
 
 from app.core.config import Settings, get_settings
+from app.services import reference_date
 
 SYNTHETIC_ENV = {
     "RUNTIME_ENVIRONMENT": "test",
@@ -34,8 +35,10 @@ def isolated_runtime(monkeypatch, tmp_path):
         monkeypatch.setenv(name, value)
     monkeypatch.chdir(tmp_path)
     get_settings.cache_clear()
+    reference_date.configure(None)
     yield
     get_settings.cache_clear()
+    reference_date.configure(None)
 
 
 @pytest.fixture

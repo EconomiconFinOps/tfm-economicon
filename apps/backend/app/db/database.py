@@ -1,6 +1,6 @@
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from sqlalchemy import create_engine, text
@@ -9,6 +9,7 @@ from app.core.config import get_settings
 from app.core.runtime_secrets import DemoRotationRequired
 from app.core.security import hash_password, verify_password
 from app.db.migration_runner import MigrationRunner
+from app.services import reference_date
 
 
 LIST_READ_ATTEMPTS = 3
@@ -252,7 +253,7 @@ class Database:
         with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
             with connection.begin():
                 rows = connection.execute(query, {
-                    "tenant_id": tenant_id, "start_date": start_date, "end_date": end_date,
+                    "tenant_id": tenant_id, "start_date": start_date, "end_date": reference_date.visible_end(end_date),
                     "tag_key": tag_key,
                 }).mappings().all()
                 job_count = connection.execute(
@@ -351,7 +352,7 @@ class Database:
         with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
             with connection.begin():
                 rows = connection.execute(query, {
-                    "tenant_id": tenant_id, "start_date": start_date, "end_date": end_date,
+                    "tenant_id": tenant_id, "start_date": start_date, "end_date": reference_date.visible_end(end_date),
                 }).mappings().all()
         if rows[0]["ambiguous"]:
             raise AmbiguousCostSource()
@@ -640,15 +641,16 @@ class Database:
 
     def observed_cost_day_range(self, connection, tenant_id: str) -> tuple:
         row = connection.execute(
-            text("SELECT min(r.usage_date), max(r.usage_date) " + self._COMPLETED_COSTS),
-            {"tenant_id": tenant_id},
+            text("SELECT min(r.usage_date), max(r.usage_date) " + self._COMPLETED_COSTS
+                 + " AND r.usage_date < :visible_end"),
+            {"tenant_id": tenant_id, "visible_end": reference_date.visible_end(date.max)},
         ).one()
         return row[0], row[1]
 
     def read_daily_service_costs(self, connection, tenant_id: str, *, start_date, end_date) -> tuple[set, dict]:
         from app.schemas.billing import AmbiguousCostSource
 
-        scope = {"tenant_id": tenant_id, "start_date": start_date, "end_date": end_date}
+        scope = {"tenant_id": tenant_id, "start_date": start_date, "end_date": reference_date.visible_end(end_date)}
         period = " AND r.usage_date >= :start_date AND r.usage_date < :end_date"
         ambiguous = connection.execute(text(
             "SELECT count(*) FROM (SELECT r.subscription_id, r.usage_date " + self._COMPLETED_COSTS + period

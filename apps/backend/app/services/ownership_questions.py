@@ -5,6 +5,7 @@ import unicodedata
 from datetime import datetime, timezone
 
 from app.schemas.billing import BillingSummary
+from app.services import reference_date
 from app.schemas.ownership import OwnershipSelection
 
 
@@ -24,7 +25,7 @@ class OwnershipQuestionService:
     def answer(self, database, tenant_id: str, selection: OwnershipSelection) -> dict:
         start, end = selection.start_date, selection.end_date
         if start is None:
-            start = datetime.now(timezone.utc).date().replace(day=1)
+            start = reference_date.today().replace(day=1)
             end = (start.replace(year=start.year + 1, month=1) if start.month == 12
                    else start.replace(month=start.month + 1))
         resolved = selection.model_dump(mode="json") | {

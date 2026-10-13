@@ -63,9 +63,9 @@ When a request names no period, the default period SHALL be the calendar month t
 - **AND** with the reference date 2026-09-21 the period is 2026-09-01 to 2026-10-01
 
 #### Scenario: Test query rejects a future end
-- **WHEN** the reference date is 2026-09-21 and the test query ends on 2026-09-23
-- **THEN** it answers the existing validation error for "closed UTC days"
-- **AND** an end on 2026-09-22 (exclusive end, last day 2026-09-21) is accepted
+- **WHEN** the reference date is 2026-09-21 and the test query ends on 2026-09-22
+- **THEN** it answers the existing validation error for "closed UTC days", because the reference day is not closed
+- **AND** an end on 2026-09-21 (exclusive end, last day 2026-09-20) is accepted
 
 #### Scenario: Detection at the original reference date reproduces JUP-107
 - **WHEN** the demo dataset is loaded with data until 2026-10-30 and one detection runs on an empty detection state with the reference date 2026-09-21
