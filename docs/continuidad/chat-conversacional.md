@@ -1,5 +1,14 @@
 ## PR121: recuperación de servidor y expresiones locales — 13/10/2026
 
+CI fb72da0: processor y otros cuatro checks técnicos pasan; backend1718PASS,
+106 omitidas y un fixture de conteo falla porque no pasa authorized_evidence.
+La recuperación real del test ya había terminado correctamente. Se corrige
+únicamente la llamada del fixture y se conserva el rechazo explícito sin
+autoridad; el archivo completo pasa33 pruebas. Producto byteidéntico a fb72da0.
+Su traslado a DockerServer está pendiente de autorización específica tras el
+rechazo de auto-review; no se ejecutó transferencia ni ensayo high4. Archivo
+exacto/hash/destino registrados en `expression16-transfer-proof.json` fuera de Git.
+
 Último corte: campaña expression15 sobre192b687 completa28 casos en orden;
 23 completed/5 failed,27 HTTP429 y dos rechazos (unidades y pareja ahorro/divisa).
 Stream=final=historial y cero persistencia en fallidos verificados; hay errores

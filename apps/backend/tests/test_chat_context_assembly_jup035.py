@@ -142,7 +142,11 @@ def test_required_extension_runs_existing_scoped_retrieval_and_preserves_financi
     assert effective['authorized_evidence']==content['evidence']
     assert [item['evidence_id'] for item in effective['source_citations']]==([] if empty else ['manual:4'])
     continuation=context['messages']+[{'role':'user','content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+result['content']}]
-    assert result['variable_tokens']==builder.resources.count_messages(continuation,financial_metrics_allowed=False)
+    assert result['variable_tokens']==builder.resources.count_messages(continuation,
+        financial_metrics_allowed=False,authorized_evidence=effective['authorized_evidence'])
+    if not empty:
+        with pytest.raises(ValueError,match='not authorized'):
+            builder.resources.count_messages(continuation,financial_metrics_allowed=False)
     calls.clear()
     with pytest.raises(TimeoutError):
         asyncio.run(builder.tool_extension(scope,context,assistant,time.time()-1))
