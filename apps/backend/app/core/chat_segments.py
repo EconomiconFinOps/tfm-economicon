@@ -95,4 +95,11 @@ def render_response(value, records, *, quantities=None):
                     not isinstance(item[0],dict) or set(item[0])!={'text'}):
                 raise ValueError('Invalid short prose item.')
         result[field]=[render_segments(item,[],limit=500) for item in value[field]]
+    if expressions is not None and expressions.documentary_sources:
+        evidence=value.get('evidence')
+        if not isinstance(evidence,list) or any(not isinstance(item,dict) for item in evidence):
+            raise ValueError('Documentary calculation citation missing.')
+        cited={item.get('id') for item in evidence if item.get('kind')=='corpus'}
+        if not expressions.documentary_sources<=cited:
+            raise ValueError('Documentary calculation citation missing.')
     return result

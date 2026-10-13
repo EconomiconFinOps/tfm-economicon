@@ -200,6 +200,7 @@ class ExpressionRenderer:
     def __init__(self,catalog):
         self.catalog=copy.deepcopy(catalog)
         self.operations=0
+        self.documentary_sources=set()
 
     def _count(self):
         self.operations+=1
@@ -211,6 +212,7 @@ class ExpressionRenderer:
             key=node['quantity']
             if not isinstance(key,str) or key not in self.catalog:raise ValueError('Unknown source quantity.')
             entry=self.catalog[key]
+            self.documentary_sources.update(origin['id'] for origin in entry.get('provenance',[]) if origin['kind']=='corpus')
             return Decimal(entry['value']),entry['unit'],entry.get('display',key),None
         operator=node.get('operation')
         if not isinstance(operator,str):raise ValueError('Expression operation shape.')

@@ -67,3 +67,16 @@ def test_documentary_expression_stream_equals_final_projection(width):
     parser=SegmentAnswerJSON([],quantities=catalog)
     streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
     assert streamed==parser.finish()==render_segments(segments,[],expressions=ExpressionRenderer(catalog))
+
+
+@pytest.mark.parametrize('evidence',[[],[{'id':'corpus:other:1','kind':'corpus'}]])
+def test_documentary_operand_requires_its_source_in_final_selected_evidence(evidence):
+    from app.core.chat_segments import render_response
+    catalog=context_quantities(context())
+    value={'answer':[{'expression':{'operation':'sum',
+        'left':{'quantity':'document:corpus:experiment:1:17 %'},
+        'right':{'quantity':'document:corpus:experiment:1:17 %'}}}],
+        'assumptions':[],'limitations':[],'next_actions':[],'evidence':evidence}
+    with pytest.raises(ValueError,match='citation missing'):render_response(value,[],quantities=catalog)
+    value['evidence']=[{'id':'corpus:experiment:1','kind':'corpus'}]
+    assert '34 %' in render_response(value,[],quantities=catalog)['answer']

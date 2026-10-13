@@ -87,6 +87,16 @@ mediante CHAT_SYSTEM_PROMPT separado, con base/hash propios. SYSTEM_PROMPT de
 ingesta no cambia. El esquema privado fija ahorro estimado y divisa a null,
 como ya exigía el firewall del chat; no se rellena una pareja inválida.
 
+Ensayo posterior acotado: reasoning high con exclude=true, declarado en el
+manifest/assembler. Conserva3200 tokens totales (razonamiento y salida comparten
+el límite),120 segundos y el mismo endpoint GLM5.2/DeepInfra. No se expone ni
+guarda razonamiento privado; se miden uso, finish_reason y respuesta pública.
+La primera salida vacía/truncada detiene el ensayo para evaluar el límite, sin
+repetirla idéntica. Es una hipótesis de mejora semántica, no una causa demostrada
+de los fallos anteriores ni una aceptación anticipada. Referencias primarias:
+https://openrouter.ai/docs/guides/best-practices/reasoning-tokens y
+https://docs.z.ai/guides/capabilities/thinking .
+
 Pruebas previstas: consulta alterada/HMAC/aislamiento, una generación después de
 retrieval, cancelación de ambas fases, uso privado y público, esquema/conteo
 idénticos, límites y unidades, texto/expresión partido, stream=final=JSONB,

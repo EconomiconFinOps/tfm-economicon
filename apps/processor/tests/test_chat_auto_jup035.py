@@ -49,6 +49,9 @@ def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch
     async def exercise():return [r async for r in gateway(retrieval_context(),time.time()+60,tool_result=result)]
     records=asyncio.run(exercise())
     assert records[-1]['type']=='candidate' and len(requests)==1
+    assert requests[0]['reasoning']=={'effort':'high','exclude':True}
+    assert requests[0]['max_tokens']==3200
+    assert requests[0]['timeout']<=60 and requests[0]['num_retries']==0
     schema=requests[0]['response_format']['json_schema']['schema']
     if with_source:
         choices=schema['$defs']['Evidence']['anyOf']

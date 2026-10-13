@@ -297,7 +297,7 @@ class ChatGateway:
         try:
             payload={'model':'economicon-chat','messages':context['messages'],'stream':True,
                 'stream_options':{'include_usage':True},'max_tokens':budget('chat')['output_tokens'],'num_retries':0,
-                'timeout':remaining,'stream_timeout':remaining,'reasoning':{'enabled':False},
+                'timeout':remaining,'stream_timeout':remaining,'reasoning':{'effort':'high','exclude':True},
                 'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True}}
             from app.core.chat_expressions import context_quantities
             source_quantities=context_quantities(context)
