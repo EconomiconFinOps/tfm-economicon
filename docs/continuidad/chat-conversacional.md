@@ -1,5 +1,19 @@
 ## PR121: contrato estructurado autorizado en validación — 12/10/2026
 
+## Evaluación de fiabilidad pendiente (2026-10-13)
+
+7bc8f7c falla017 en2,62s por unidades incompatibles, sin salida ni historial.
+Una captura única posterior017 completó con unidades coherentes; no reprodujo
+el fallo y NO sustituye aceptación ni borra la muestra fallida. Instrumentación
+retirada en finally, hash del backend limpio restaurado. Acumulado asentado
+0.296226621USD, techo0.50USD. No habrá más capturas/repeticiones aleatorias.
+
+La fixture de pantalla grande ahora deriva el presupuesto del overhead real
+(prompt y esquemas) más600 tokens para datos, conserva proyección/omisiones y
+snapshot completo; pasa offline. No cambia código funcional ni cap de producción.
+La siguiente full28 será una campaña íntegra sobre runtime limpio, evaluada caso
+a caso y junto con la fiabilidad histórica; nunca se equipara completed a PASS.
+
 ## Focal 7f1a150 (2026-10-13)
 
 Autorizacion externa especifica confirmada por el usuario; bloqueo anterior

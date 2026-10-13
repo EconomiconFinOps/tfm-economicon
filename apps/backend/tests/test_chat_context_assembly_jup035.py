@@ -405,18 +405,34 @@ def test_default_context_uses_fixed_system_and_real_shared_count(prepared):
 
 
 def test_large_demo_screen_is_projected_with_omissions_but_full_snapshot_remains(prepared,monkeypatch):
-    monkeypatch.setenv('CHAT_CONTEXT_TOKENS','12000')
+    from app.core.chat_resources import load_resources, decision_schema
+    from app.core.context_budget import MARGIN_TOKENS
+    from app.schemas.chat import provider_response_schema
+    from app.services.chat_context import ChatContext
     api,_=prepared
+    resources=load_resources(RESOURCE_ROOT,RESOURCE_ROOT.parent/'v2/tokenizer.json')
+    minimal=ChatContext(api[0],resources).build(
+        {'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'},body())
+    fixed=(resources.count(canonical(minimal['messages']).decode())
+           +resources.count(canonical(provider_response_schema(authorized_evidence=[])).decode())
+           +resources.count(canonical(decision_schema(minimal)).decode()))
+    # Follow the real immutable prompt/schema overhead while leaving only a
+    # small screen allowance; production/model limits are not changed.
+    test_limit=fixed+MARGIN_TOKENS+resources.context_budget['output_tokens']+600
+    monkeypatch.setenv('CHAT_CONTEXT_TOKENS',str(test_limit))
     async def scenario(client):
         await initialize(api[0])
         payload=body()
         payload['screen_context']['datasets']=[demo_dataset([
             {'label':'Servicio '+str(index)+' '+'dato '*40,'currency':'EUR','amount':'1.00'} for index in range(2500)])]
         assert len(canonical(payload['screen_context']))<1048576
+        assert resources.count(canonical(payload['screen_context']).decode())>test_limit
         response=await client.post(path(),json=payload,headers=headers())
         assert response.status_code==200,response.text
         context,value=current(api)
-        assert context['manifest']['variable_tokens']+1824<=12000
+        admitted=api[0].state.chat_context_builder.resources
+        assert admitted.context_budget['context_tokens']==test_limit
+        assert admitted.count_messages(context['messages'],authorized_evidence=[])==context['manifest']['variable_tokens']
         assert value['omissions']
         assert all(item['kind']!='cost_query' for item in context['authorized_evidence'])
         operation=await existing(client,payload)
