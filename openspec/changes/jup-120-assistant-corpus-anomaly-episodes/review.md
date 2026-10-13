@@ -108,4 +108,11 @@ No hace falta un ADR nuevo: no hay una decisión arquitectónica. Se añade una 
 
 ## Human Approval
 
-Pendiente de la aprobación explícita de Lucia tras esta revisión.
+- Change: jup-120-assistant-corpus-anomaly-episodes
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-13
+- Adversarial review: accept (pass 3) | accepted findings: ADV-3, ADV-4 y ADV-5 de la pasada 3 (todos Baja: hueco de datos tras un pico, «servicio» frente a «recurso» en el caso 019 y las salvedades de top_k 3), aceptados al aprobar este `review.md`, que los registra
+- Archive decision: archive
+- Notes: change de contenido y de huellas, sin código de producción. Lucia avisó a Alejandro y a Paris (JUP-035) el 2026-10-13, antes de mergear; queda por acordar con ellos la fecha de integración respecto a su pasada de aceptación. Pendiente fuera de este change: tarjeta aparte para la batería de preguntas de anomalías, y añadir a la guía la fecha de referencia (#127) y «Explicar en el asistente» (#128) cuando estén en `develop`. Sin revisión ni validación de compañeras: el trabajo va por la excepción temporal del 2026-10-11.
