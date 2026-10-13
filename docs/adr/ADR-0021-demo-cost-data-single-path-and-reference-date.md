@@ -15,7 +15,7 @@ Un sondeo del 2026-10-13 con CockroachDB real (nodo desechable, API y CLI locale
 
 ## Decision
 
-1. **Una sola ruta para los datos de demostración:** un generador determinista produce un CSV en formato de exportación de Azure y un manifiesto; la API simulada lo sirve con `AZURE_COST_DATASET_PATH`; la ingesta del processor (el mismo código que ejecuta su CLI) lo carga para todas las parejas tenant/suscripción en un solo proceso. `scripts/demo_data.py` (`generate`, `apply`, `status`, `remove`) es el único punto de entrada y no inserta filas por sí mismo.
+1. **Una sola ruta para los datos de demostración:** un generador determinista produce un CSV en formato de exportación de Azure y un manifiesto; la API simulada lo sirve con `AZURE_COST_DATASET_PATH`; la CLI de ingesta lo carga por pareja tenant/suscripción. `scripts/demo_data.py` (`generate`, `apply`, `status`, `remove`) es el único punto de entrada y no inserta filas por sí mismo.
 2. **Dos agrupaciones por consulta: servicio y etiqueta `Project`.** Es el máximo que admite la API y lo que necesitan el dashboard, las anomalías y los responsables por proyecto. Una segunda definición sobre la misma suscripción solaparía ingestas (ADR-0010).
 3. **La demo solo lleva lo que una API de Azure puede entregar.** La fila sin fecha, el importe con céntimos por encima de 2^53 y los grupos de recurso que solo difieren en mayúsculas pasan a pruebas de inserción directa, con CockroachDB real y su propio tenant, y no se cargan en ningún tenant de la demo. Que esas filas no entren al sistema (validación en la ingesta) es un cambio de producto y se registra como hallazgo.
 4. **Procedencia por suscripción**, no por etiqueta: suscripciones con prefijo `synthetic-` o la pública del manifiesto. `apply` se niega si un tenant tiene datos de una suscripción ajena al manifiesto.
@@ -29,11 +29,10 @@ Un sondeo del 2026-10-13 con CockroachDB real (nodo desechable, API y CLI locale
 - Tres pantallas muestran lo ausente con los datos de demo: la cobertura de etiquetas (cuatro de cinco etiquetas sin cubrir), los responsables por centro de coste, propietario o aplicación («datos insuficientes») y el desglose por grupo de recursos («no aplica»). Es una limitación de la demo y de la API, no del producto.
 - Los datos posteriores a la referencia existen en la base aunque no se lean: no es un control de acceso.
 - Retroceder la fecha oculta episodios; para repetir la demo desde cero se usa `remove` y `apply`.
-- La carga completa tarda unos 2,5 minutos: `Database.initialize()` tarda 130 s en cada proceso nuevo, también con la base migrada, y la ingesta de las siete parejas, 15 s. Por eso la carga usa un solo proceso en vez de siete llamadas a la CLI (unos 15 minutos). Medido en Docker Desktop sobre Windows; en otro entorno puede variar.
+- La carga completa es lenta (unos 133 s por pareja tenant/suscripción, casi todo la inicialización de la base de la CLI).
 
 ## Alternatives Considered
 
-- **Siete llamadas a la CLI de ingesta, una por pareja:** descartada por la espera (unos 15 minutos); sigue siendo posible si se arregla la inicialización.
 - **Mantener los inserts directos y compartir solo el generador:** descartada; deja dos caminos y la ingesta real nunca ve los datos de demo.
 - **Un endpoint de importación masiva en el backend:** descartada; superficie nueva de escritura sin necesidad.
 - **Ampliar la API simulada con más agrupaciones e importes exactos:** descartada; se aleja de la API real de Azure, que es lo que ADR-0001 quería imitar.

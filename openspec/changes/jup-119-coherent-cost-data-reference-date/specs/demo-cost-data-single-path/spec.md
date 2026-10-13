@@ -1,12 +1,12 @@
 ## ADDED Requirements
 
-### Requirement: Demo data enters only through the simulated API and the ingestion of the processor
+### Requirement: Demo data enters only through the simulated API and the ingestion CLI
 
-The repository SHALL provide one demo dataset in the Azure cost export CSV format, served by the simulated Azure Cost API through its configured dataset path and loaded into a tenant only by the ingestion pipeline of the processor (client, normalizer and repository), the same code that its CLI runs. No script or loader used for the demonstration SHALL write rows into `azure_cost_records` or `azure_cost_ingestion_runs` other than through that pipeline. The single entry point `scripts/demo_data.py` SHALL offer `generate`, `apply`, `status` and `remove`; `apply` SHALL run that ingestion for each tenant and subscription pair named in the dataset manifest inside a single process, so the database is initialised once, and SHALL NOT insert rows by itself.
+The repository SHALL provide one demo dataset in the Azure cost export CSV format, served by the simulated Azure Cost API through its configured dataset path and loaded into a tenant only by the ingestion CLI of the processor. No script or loader used for the demonstration SHALL write rows into `azure_cost_records` or `azure_cost_ingestion_runs` other than through that CLI. The single entry point `scripts/demo_data.py` SHALL offer `generate`, `apply`, `status` and `remove`; `apply` SHALL run the ingestion CLI for each tenant and subscription pair named in the dataset manifest and SHALL NOT insert rows by itself.
 
-#### Scenario: Loaded rows come from the ingestion pipeline
+#### Scenario: Loaded rows come from the CLI
 - **WHEN** `apply` loads the demo dataset on empty tenants
-- **THEN** every stored run was written by the ingestion pipeline of the processor with a definition file stored in the repository
+- **THEN** every stored run was written by the ingestion CLI with a definition file stored in the repository
 - **AND** the stored columns (service, project, tags, usage date, amount, currency) of the rows equal what the normaliser produces from the API response for the CSV rows
 
 #### Scenario: Both former loaders are replaced
@@ -97,12 +97,12 @@ For each tenant that has cost data in the demo, the dataset SHALL contain at lea
 - **AND** rows of a tenant that is not in the dataset are unchanged
 
 #### Scenario: Interrupted load
-- **WHEN** the ingestion fails on the third pair of tenant and subscription
+- **WHEN** the CLI fails on the third pair of tenant and subscription
 - **THEN** `status` reports `partial` for the affected tenant, `apply` refuses and tells the user to run `remove` first
 
 ### Requirement: The single path is shown to work end to end
 
-An automated test with the real database engine SHALL generate the dataset, serve it through the simulated API process, run the ingestion of the processor for every pair, and compare the stored totals per tenant, month, currency, service and project with expected values recomputed from the CSV with exact decimal arithmetic. The same test SHALL check that a second `apply` writes nothing, that `remove` returns the tables to their previous state and that the billing summary and the daily detection read the loaded data with the reference date set to 2026-09-21 and to 2026-10-30.
+An automated test with the real database engine SHALL generate the dataset, serve it through the simulated API process, run the ingestion CLI for every pair, and compare the stored totals per tenant, month, currency, service and project with expected values recomputed from the CSV with exact decimal arithmetic. The same test SHALL check that a second `apply` writes nothing, that `remove` returns the tables to their previous state and that the billing summary and the daily detection read the loaded data with the reference date set to 2026-09-21 and to 2026-10-30.
 
 #### Scenario: Stored totals equal the file
 - **WHEN** the test compares the stored totals with the totals recomputed from the CSV
@@ -130,7 +130,7 @@ With the demo data loaded, the screens and answers that depend on fields the dem
 
 ### Requirement: Loading is opt-in and never part of the default startup
 
-The default `docker compose up` SHALL NOT load demo data. The repository SHALL provide a Compose profile `demo` whose one-shot service waits for the simulated API, the database and the processor to be healthy and then runs `scripts/demo_data.py apply`; the same profile SHALL start a second instance of the simulated API that serves the generated demo CSV, and the default instance SHALL keep serving the public sample. The profile SHALL refuse to run when `RUNTIME_ENVIRONMENT` is `production`. The generated CSV and the manifest SHALL be versioned, and a test SHALL regenerate them and fail if they differ.
+The default `docker compose up` SHALL NOT load demo data. The repository SHALL provide a Compose profile `demo` whose one-shot service waits for the simulated API, the database and the processor to be healthy and then runs `scripts/demo_data.py apply`; the same profile SHALL point the simulated API at the generated demo CSV. The profile SHALL refuse to run when `RUNTIME_ENVIRONMENT` is `production`. The generated CSV and the manifest SHALL be versioned, and a test SHALL regenerate them and fail if they differ.
 
 #### Scenario: Default startup loads nothing
 - **WHEN** `docker compose up` runs without the profile on empty tenants
