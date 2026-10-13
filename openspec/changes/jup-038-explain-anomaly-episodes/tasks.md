@@ -173,7 +173,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   la validación.
 - [x] 9.6 Actualizar `docs/continuidad/deteccion-anomalias-coste.md` con un apartado de JUP-038 y su
   fila en `docs/continuidad/README.md`.
-- [ ] 9.7 `docs/testing/critical-flows.md`: suites nuevas y qué queda opt-in.
+- [x] 9.7 `docs/testing/critical-flows.md`: suites nuevas y qué queda opt-in.
 
 ## 10. Verificación y cierre
 
