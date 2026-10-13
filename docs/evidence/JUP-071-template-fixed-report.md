@@ -1,6 +1,6 @@
 # JUP-071: resultado de robustez
 
-Ejecución: `template_mock` (`JUP-071-bb04508a2bb4`). Provisional: `False`.
+Ejecución: `template_mock` (`JUP-071-2aa30076f23e`). Provisional: `False`.
 Robustez generativa: **no acreditada**. El endpoint no acredita qué modelo ejecutó.
 
 Los fallos conocidos se conservan aunque falten juicios. `not_run` incluye semántica pendiente.

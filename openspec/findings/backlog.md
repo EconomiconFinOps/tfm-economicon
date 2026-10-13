@@ -359,3 +359,12 @@ Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
 - `outside_repository` de `tools/assistant-eval.py` compara la ruta sin normalizar el prefijo `\?\` de Windows: una ruta de ese tipo que apunta dentro del repositorio se acepta como exterior. `write_private` y `run_collect` de JUP-070 la usan, de modo que el CLI de JUP-070 puede escribir respuestas o fragmentos dentro del repositorio con esa ruta.
 - JUP-071 lo cubre en su propio CLI con una normalizacion previa (`normalised`/`outside` en `tools/assistant-robustness.py`) porque la propuesta no modifica el evaluador de JUP-070. La correccion de raiz es normalizar en `outside_repository` y aplicar el mismo criterio en los dos CLI.
 - Solo aplica a Windows y a un uso deliberado, no accidental; la CI de Linux no lo ejerce.
+
+## JUP-071 — El lector numérico de JUP-070 rechaza respuestas correctas con la etiqueta de otra cifra antes de la propia
+
+Fecha: 2026-10-13. Origen: JUP-071, revision adversarial pasada 3 (ADV-1).
+Tipo: deuda tecnica. Severidad: Medium. Estado: Open. Owner: Equipo Economicon.
+
+- `labelled_by` de `tools/assistant-eval.py` solo mira la etiqueta anterior a la cifra, aunque `docs/validation/JUP-070-evaluation.md` dice «antes, o después si lo de antes nombra otra cifra». Una respuesta como «El coste unitario pasa de 10 EUR/pedido en julio a 6 EUR/pedido en agosto, una reducción del 40 %» falla la cifra de agosto en `JUP-069-027` porque «julio» queda a la izquierda del 6. En JUP-071-002, «Del coste total, solo el 10 % cumple los tags mínimos» falla la cifra 2 porque «coste total» es alias de la cifra 1.
+- El fallo numérico es duro: los juicios humanos no lo revierten. Afecta a los baselines con varias cifras (001, 002, 005, 011, 013, 014, 016-018, 021, 027) y a JUP-071-002 y JUP-071-003.
+- JUP-071 hereda el comportamiento porque reutiliza `check_number`; la propuesta no modifica el evaluador. Al revisar los resultados de una campaña real, un `numbers-N` en `fail` de estos casos se debe mirar a mano antes de leerlo como error del asistente.
