@@ -75,5 +75,16 @@ El frontend también completa su job. El candidato siguiente sólo aísla el fla
 de arranque en la fixture api: una secuencia disabled→operaciones reproducía 503
 indebido por estado global entre tests; corregida, **27 passed**. No altera producto.
 La CI vuelve a ejecutarse sobre ese commit; consultar siempre el head de la PR.
+
+CI `3cdd0f64` ([run38475972374](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38475972374)):
+backend **1811 passed/191 skipped**, Azure **81 passed**, frontend favorable.
+Processor **1195 passed/98 skipped/1 failed**: la extracción había trasladado
+la parametrización stall_body pero no la pausa posterior a las cabeceras de su
+servidor simulado. El test completaba antes de cancelar en Linux. Se traslada
+la pausa de 97e8e043 y se añade un Event explícito que verifica haber alcanzado
+esa fase antes de cancelar. Focales de cancelación/lector: **6 passed**.
+Es una corrección de fixture, sin modificar el transporte ni ampliar tiempos.
+El verde local94 anterior no demostraba por sí solo la variante posterior a
+cabeceras; este límite queda registrado. Se ejecuta nuevamente CI completa.
 Ninguna evidencia histórica implica aceptación de respuestas ni levanta las
 requests changes de #120/#121. La decisión de integración corresponde al equipo.

@@ -97,9 +97,10 @@ def test_private_summary_cancel_reconciles_own_job_and_never_redispatches(summar
     async def run(client,application):
         task=asyncio.create_task(request(client,'POST',ROUTE,body))
         for _ in range(100):
-            if summary_session[2]:break
+            if summary_session[2] and (stall_phase!='stall_body' or summary_session[1].body_started.is_set()):break
             await asyncio.sleep(.005)
         assert len(summary_session[2])==1
+        if stall_phase=='stall_body':assert summary_session[1].body_started.is_set()
         control={'v':2,'scope':SCOPE,'boot_id':'synthetic-boot','input_hash':body['input_hash']}
         cancel=await request(client,'POST',ROUTE+'/'+body['job_id']+'/cancel',control);assert cancel.status_code in [200,202],cancel.text
         for _ in range(40):
