@@ -172,7 +172,7 @@ mensaje, en lugar de generar una explicación parcial o aproximada.
 - **THEN** la respuesta es ese 409 y no se guarda ningún mensaje, en lugar de una explicación con una cifra imposible
 
 #### Scenario: Operandos no finitos o fuera de rango
-- **WHEN** algún operando guardado no es un número finito (`NaN`, infinito), es negativo o excede lo que admite la columna `NUMERIC(38,12)` (más de 38 dígitos o más de 26 cifras enteras)
+- **WHEN** algún operando guardado no es un número finito (`NaN`, infinito), es negativo o excede lo que admite la columna `NUMERIC(38,12)` (más de 38 dígitos, más de 26 cifras enteras o más de 12 decimales, incluidos los exponentes negativos enormes como `1E-150`)
 - **THEN** la respuesta es ese 409 y no se guarda ningún mensaje, en lugar de un error del servidor
 
 ### Requirement: Pedir y leer la explicación en el asistente
