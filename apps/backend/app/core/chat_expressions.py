@@ -321,6 +321,14 @@ class ExpressionRenderer:
             raise ValueError('Expression magnitude or unit limit.')
         return value,unit,formula,None
 
+    def render_quantity(self,key):
+        # Display an observed amount without fabricating an arithmetic operation.
+        # _numeric validates the catalog key and propagates documentary provenance.
+        value,unit,_,_=self._numeric({'quantity':key})
+        entry=self.catalog[key]
+        label='Dato documental' if any(origin.get('kind')=='corpus' for origin in entry.get('provenance',[])) else 'Dato aportado'
+        return '\n'+label+': '+entry['value']+(' '+unit if unit else '')+'.\n'
+
     def render(self,node):
         if not isinstance(node,dict) or 'operation' not in node:
             raise ValueError('Rendered expression requires an operation.')
@@ -337,7 +345,9 @@ class ExpressionRenderer:
                     if au!=bu:raise ValueError('Incompatible expression units.')
                     relation=node['relation'];symbol={'gt':'>','gte':'>=','lt':'<','lte':'<=','eq':'=='}[relation]
                     valid={'gt':a>b,'gte':a>=b,'lt':a<b,'lte':a<=b,'eq':a==b}[relation]
-                    return '\nComparación: '+at+' '+symbol+' '+bt+' → '+('verdadero' if valid else 'falso')+'.\n'
+                    exact=lambda number:format(number,'f').rstrip('0').rstrip('.') if '.' in format(number,'f') else format(number,'f')
+                    evaluated=exact(a)+(' '+au if au else '')+' '+symbol+' '+exact(b)+(' '+bu if bu else '')
+                    return '\nComparación: '+at+' '+symbol+' '+bt+'; valores evaluados: '+evaluated+' → '+('verdadero' if valid else 'falso')+'.\n'
                 value,unit,formula,reason=self._numeric(node)
                 if reason:return '\n'+formula+': '+reason+'.\n'
                 shown=display(value);symbol='=' if Decimal(shown)==value else '≈'

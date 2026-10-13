@@ -132,14 +132,15 @@ def test_repository_document_rule_and_full_response_fit_twelve_operations():
     value={'answer':{'calculations':[total,percentage],
         'classification':{'operation':'classify','rule_id':rule['id'],'value':percentage}},
         'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[],
-        'evidence':[{'id':identifier,'kind':'corpus'} for identifier in rule['source_ids']]}
+        'evidence':[]}
     result=render_response(value,[],quantities=quantities)
     assert '): amarillo.' in result['answer']
     assert '10 % <= 10 %' in result['answer']
     schema=expression_definitions(quantities)
     assert rule['id'] in json.dumps(schema)
-    with pytest.raises(ValueError,match='Documentary calculation citation'):
-        render_response({**value,'evidence':[]},[],quantities=quantities)
+    assert {entry['id'] for entry in result['evidence']}==set(rule['source_ids'])
+    with pytest.raises(ValueError,match='Classified evidence is server-owned'):
+        render_response({**value,'evidence':[{'id':'untrusted'}]},[],quantities=quantities)
 
 
 def test_near_boundary_does_not_render_false_rounded_inequality():
@@ -195,8 +196,7 @@ def test_private_schema_separates_narrative_and_terminal_classification(status):
     value=copy.deepcopy(ANSWER)
     value['scope'].pop('period');value['scope'].pop('subscription_ids')
     value.update(status=status,answer={'calculations':[],'classification':node},
-        evidence=[{key:source[key] for key in ('id','kind','title','source')}|{'support_quote':source['content']}
-                  for source in records],assumptions=[],limitations=[],next_actions=[],recommendations=[],metrics=[])
+        evidence=[],assumptions=[],limitations=[],next_actions=[],recommendations=[],metrics=[])
     _validate(value,schema,schema)
     for field in ('before','after'):
         changed=copy.deepcopy(value);changed['answer'][field]='La clasificación es alert.'
@@ -240,7 +240,7 @@ def test_explicit_classification_routing_preserves_other_requests(question,requi
             render_response(value,[],quantities=q)
         classified=copy.deepcopy(value)
         classified['answer']={'calculations':[],'classification':{'operation':'classify','rule_id':q.rules[0]['id'],'value':percent('7','93')}}
-        classified['evidence']=[{key:source[key] for key in ('id','kind','title','source')}|{'support_quote':source['content']} for source in records]
+        classified['evidence']=[]
         _validate(classified,schema,schema)
         assert '): calm.' in render_response(classified,[],quantities=q)['answer']
         value['status']='insufficient_data'
@@ -277,3 +277,36 @@ def test_multiple_period_numerators_keep_narrative_comparison_available():
     eligible=[entry for entry in q.values() if entry.get('concept_anchors')==[['rework']]]
     assert len(eligible)==2
     assert not required_classification(q)
+
+
+def test_partial_documentary_intervals_guard_does_not_authorize_other_kpi():
+    from app.core.chat_rules import check_classification_prose
+    document=(Path(__file__).resolve().parents[3]/'docs/assistant-corpus/business-rules/economicon-mvp-rules.md').read_text(encoding='utf-8')
+    records=sources(document,size=500,overlap=50)
+    partial=[record for record in records if 'rojo: mayor que 10 %' in record['content']]
+    assert len(partial)==1
+    q=catalog('budget 1000 EUR; actual 1200 EUR.',partial)
+    assert q.rules==[]
+    assert 'DocumentaryClassification' not in expression_definitions(q)
+    with pytest.raises(ValueError,match='Unverified documentary classification'):
+        check_classification_prose('La desviación presupuestaria corresponde al intervalo rojo.',q.rules,q.rule_sources)
+    assert check_classification_prose('El coste es alto y necesita investigación.',q.rules,q.rule_sources)==set()
+    assert check_classification_prose('El recurso rojo corresponde al equipo de pruebas.',q.rules,q.rule_sources)==set()
+    # No classification authority is created by malformed or absent provenance.
+    bad=copy.deepcopy(partial);bad[0]['provenance']['sections'][0]['start']=999
+    with pytest.raises(ValueError):check_classification_prose('El semáforo es rojo.',[],bad)
+
+
+def test_comparison_displays_evaluated_operands_without_rounding_its_truth():
+    q=catalog('baseline 400 EUR; actual 550 EUR; umbral 100 EUR; tasa 20 %.')
+    result=ExpressionRenderer(q).render({'operation':'compare',
+        'left':{'operation':'difference','current':{'quantity':'550 EUR'},'baseline':{'quantity':'400 EUR'}},
+        'right':{'quantity':'100 EUR'},'relation':'gt'})
+    assert 'valores evaluados: 150 EUR > 100 EUR → verdadero' in result
+    relative=ExpressionRenderer(q).render({'operation':'compare',
+        'left':{'operation':'relative_change','current':{'quantity':'550 EUR'},'baseline':{'quantity':'400 EUR'}},
+        'right':{'quantity':'20 %'},'relation':'gt'})
+    assert 'valores evaluados: 37.5 % > 20 % → verdadero' in relative
+    tiny=catalog('0.0000004 EUR y 0.0000003 EUR.')
+    shown=ExpressionRenderer(tiny).render({'operation':'compare','left':{'quantity':'0.0000004 EUR'},'right':{'quantity':'0.0000003 EUR'},'relation':'gt'})
+    assert 'valores evaluados: 0.0000004 EUR > 0.0000003 EUR' in shown

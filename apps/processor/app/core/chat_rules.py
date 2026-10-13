@@ -205,10 +205,15 @@ def check_classification_prose(text, rules, sources):
     This is a bounded conclusion guard, not universal natural-language entailment.
     """
     cited = set()
+    labels = {row['label'] for rule in rules for row in rule['intervals']}
+    # Partial authenticated interval rows can forbid an unsupported prose claim;
+    # they never become executable rules without the complete formula/partition.
+    for source in sources:
+        for span in validate_provenance(source):
+            labels.update(row['label'] for row in intervals(source['content'][span['start']:span['end']]))
     for sentence in re.split(r'(?<=[.!?])\s+|\n', text):
-        if not re.search(r'\b(?:semaforo|clasific\w*|franja|nivel|rango|categoria)\b', normalized(sentence)):
+        if not re.search(r'\b(?:semaforo|clasific\w*|franja|intervalo|nivel|rango|categoria)\b', normalized(sentence)):
             continue
-        labels = {row['label'] for rule in rules for row in rule['intervals']}
         variants={normalized(label) for label in labels}
         variants.update(value[:-1]+'a' for value in list(variants) if value.endswith('o'))
         if not any(re.search(r'(?<!\w)' + re.escape(label) + r'(?!\w)', normalized(sentence)) for label in variants):

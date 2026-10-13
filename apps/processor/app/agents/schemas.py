@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
-from app.core.chat_segments import bind_segments, quote_choices
+from app.core.chat_segments import bind_segments, quote_choices, ServerRenderedResponse, server_evidence
 
 
 ShortText = Annotated[
@@ -188,6 +188,14 @@ def assemble_chat_response(value, period, subscriptions=None, *, authorized_evid
             or any(type(item) is not str or not item or len(item) > 256 for item in selected)
             or selected != sorted(set(selected))):
         raise ValueError('Invalid canonical subscriptions.')
+    derived=type(value) is ServerRenderedResponse
+    if derived:
+        known={item['id']:item for item in authorized_evidence or []}
+        records=value.documentary_records
+        if (not records or len(records)>20 or len({item['id'] for item in records})!=len(records)
+                or any(known.get(item['id'])!=item for item in records)
+                or value.get('evidence')!=server_evidence(records)):
+            raise ValueError('Derived documentary evidence mismatch.')
     if authorized_evidence is not None:
         known={item['id']:item for item in authorized_evidence}
         if 'evidence' not in value or not isinstance(value['evidence'],list):
@@ -196,7 +204,7 @@ def assemble_chat_response(value, period, subscriptions=None, *, authorized_evid
         for item in value['evidence']:
             if not isinstance(item,dict): raise ValueError('Invalid evidence record.')
             item=dict(item)
-            if item.get('kind')=='corpus':
+            if item.get('kind')=='corpus' and not derived:
                 quote=item.pop('support_quote',None)
                 source=known.get(item.get('id'),{})
                 if (not isinstance(quote,str) or not quote.strip() or len(quote)>2048

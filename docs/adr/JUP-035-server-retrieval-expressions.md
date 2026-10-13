@@ -163,3 +163,36 @@ no comprensión universal de intención. La misma restricción se valida localme
 y en el esquema privado. La abstención permanece disponible si faltan datos.
 Esto no identifica el ValueError no reproducido de la focal20 ni garantiza la
 pertinencia de consejos narrativos: ambos siguen pendientes de evaluación real.
+
+
+Corrección offline posterior a smoke21: el error cerrado de006 confirma ausencia
+de una cita necesaria para el cálculo documental. En la variante totalmente
+servidor, `evidence=[]` es obligatorio en la entrada privada. Tras validar todos
+los AST y las notas enumeradas, el servidor proyecta exclusivamente los registros
+usados por las operaciones y la regla desde el contexto documental autenticado.
+No añade fuentes no utilizadas ni asigna una cita textual de la primera ventana.
+Un resultado Python interno conserva esos registros; no hay bandera JSON que el
+proveedor pueda enviar. El ensamblador exige igualdad exacta de registros y de
+metadatos públicos contra authorized_evidence. Serializar y volver a leer el
+resultado pierde esa capacidad interna y activa la validación narrativa ordinaria,
+que sigue exigiendo support_quote. El contrato público y la autoridad financiera
+no cambian; las citas se refieren al bloque calculado, no a prosa libre del modelo.
+La rama terminal aparece primero sólo cuando la intención explícita la requiere;
+la abstención permanece disponible. Esto no garantiza que el modelo elija bien
+operandos o se abstenga correctamente: continúa la evaluación semántica.
+
+
+El caso024 del survey21 mostró una operación artificial para volver a presentar
+un importe de cada moneda. Se incorpora el segmento privado `{quantity:clave}`:
+publica el valor y la unidad observados con origen «Dato aportado» o «Dato
+documental», sin fabricar una suma ni una identidad aritmética. Una cantidad
+documental conserva la obligación de citar su fuente; una cantidad del usuario
+no crea evidencia ni autoridad financiera. Las hojas siguen excluidas como
+operaciones de cálculo. El parser y render usan el mismo camino, con los límites
+existentes de segmentos, caracteres y deltas. La comparación también publica los
+valores evaluados exactos junto a la fórmula, sin redondear la verdad del límite.
+
+El guard de clasificación libre usa asimismo etiquetas de filas intervalares
+con provenance válida aunque falte la fórmula o partición completa. Esas filas
+sólo amplían detección de conclusiones no verificadas, nunca el catálogo ejecutable;
+no se prohíben palabras genéricas fuera de una conclusión de clasificación.

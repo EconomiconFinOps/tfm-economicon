@@ -5,6 +5,17 @@ from app.core.chat_calculations import render_text
 from app.core.chat_rules import required_classification
 from app.core.chat_expressions import ExpressionRenderer, expression_definitions
 
+class ServerRenderedResponse(dict):
+    """In-process provenance, never a JSON flag accepted from a provider."""
+    def __init__(self, value, records):
+        super().__init__(value)
+        self.documentary_records=tuple(copy.deepcopy(records))
+
+
+def server_evidence(records):
+    return [{key:record[key] for key in ('id','kind','title','source')} for record in records]
+
+
 CLASSIFIED_NOTES=(
     'Las cantidades proceden del escenario aportado; no son métricas financieras verificadas.',
     'La clasificación aplica únicamente al KPI y a la sección documental indicados.',
@@ -24,6 +35,7 @@ def segment_schema(records=None, *, limit=4000, quantities=None):
     choices=[{'type':'object','properties':{'text':{'type':'string','maxLength':limit}},
               'required':['text'],'additionalProperties':False}]
     if quantities:
+        choices.append({'$ref':'#/$defs/SourceQuantity'})
         choices.append({'type':'object','properties':{'expression':{'$ref':'#/$defs/RenderedExpression'}},
                         'required':['expression'],'additionalProperties':False})
     elif records:
@@ -60,11 +72,13 @@ def bind_segments(schema, records=None, quantities=None):
                     'type':'object','properties':{'text':{'type':'string','enum':list(CLASSIFIED_NOTES)}},
                     'required':['text'],'additionalProperties':False}}
             for field in ('next_actions','recommendations','metrics'):props[field]['maxItems']=0
+            props['evidence']['minItems']=0
+            props['evidence']['maxItems']=0
             classified.append(variant)
     if classified:
         retained=[branch for branch in branches if not (required_classification(quantities)
             and 'ok' in branch['properties']['status'].get('enum',[]))]
-        schema['anyOf']=retained+classified
+        schema['anyOf']=classified+retained if required_classification(quantities) else retained+classified
     return schema
 
 
@@ -101,6 +115,8 @@ def render_segment(segment, records, expressions=None):
         matches=[record for record in records if record['id']==identifier]
         if len(matches)!=1:raise ValueError('Invalid segment reference.')
         return matches[0]['equation']
+    if set(segment)=={'quantity'} and expressions is not None:
+        return expressions.render_quantity(segment['quantity'])
     if set(segment)=={'expression'} and expressions is not None:
         if isinstance(segment['expression'],dict) and segment['expression'].get('operation')=='classify':
             raise ValueError('Classification requires typed answer.')
@@ -136,6 +152,7 @@ def render_response(value, records, *, quantities=None):
     if required_classification(quantities) and value.get('status') in ('ok','partial') and not classified:
         raise ValueError('Explicit classification requires typed answer.')
     if classified:
+        if value.get('evidence')!=[]:raise ValueError('Classified evidence is server-owned.')
         for field in ('next_actions','recommendations','metrics'):
             if value.get(field)!=[]:raise ValueError('Invalid classified auxiliary fields.')
         for field in ('assumptions','limitations'):
@@ -156,6 +173,15 @@ def render_response(value, records, *, quantities=None):
             if isinstance(recommendation,dict):
                 for field in ('action','rationale'):
                     if isinstance(recommendation.get(field),str):expressions.check_prose(recommendation[field])
+    if classified:
+        known={record['id']:record for record in getattr(quantities,'rule_sources',())}
+        if not expressions.documentary_sources or not expressions.documentary_sources<=known.keys():
+            raise ValueError('Derived documentary source unavailable.')
+        records=[known[identifier] for identifier in sorted(expressions.documentary_sources)]
+        if len(records)>20 or any(record.get('kind')!='corpus' for record in records):
+            raise ValueError('Derived documentary source unavailable.')
+        result['evidence']=server_evidence(records)
+        return ServerRenderedResponse(result,records)
     if expressions is not None and expressions.documentary_sources:
         evidence=value.get('evidence')
         if not isinstance(evidence,list) or any(not isinstance(item,dict) for item in evidence):

@@ -1,3 +1,33 @@
+## Corte vigente: survey21 y corrección22 offline — 13/10/2026
+
+Publicado `c12083ad0251a7f790010a05d71e425813337d90`, runtime expression21.
+Survey íntegro del banco original:27completed/1failed006. Mecánica28/28PASS
+(SSE=final=JSONB, historial vacío al fallar, fuentes autorizadas y límites).
+Auditoría independiente:18PASS/10FAIL semánticos; NO validada. Recibos externos
+`expression21-full28.json`, `expression21-parent-semantic-audit.json` y su informe
+de invariantes. El smoke previo no sustituye este resultado. Gasto acumulado
+observado0.621675526 USD de TOTAL2USD; claves existentes hasta17:21:51UTC con
+modelos, límites y presupuestos intactos. No capturas de razonamiento.
+
+Corrección22 offline:006 confirma `documentary_calculation_citation_missing`.
+La respuesta íntegramente calculada por servidor recibe únicamente sus fuentes
+realmente usadas, mediante marcador Python interno y registros autenticados
+exactos; JSON no puede obtener esa capacidad. Narrativa conserva citas literales.
+013motiva guard sobre filas intervalares parciales sin ampliar autoridad de reglas.
+Comparaciones muestran valores evaluados.024motiva segmento de cantidad original
+sin operaciones inventadas, con moneda/origen y obligaciones de evidencia.
+Prompt aclara no extrapolar reglas, no prometer denominadores futuros positivos,
+pedir fuente/cobertura/ingesta y explicitar riesgo de infrautilización. Ningún
+cambio en banco/corpus ni criterios.017/018 y demás fallos exigen nueva evaluación,
+no se declaran solucionados por pruebas offline. ADR detalla límites.
+
+Pruebas37processorPASS del núcleo/ensamblador, backend58PASS incluyendo parser
+real→SSE→JSONB para dos monedas separadas. Recursos/gateway/expresiones112PASS y paridad final
+comprobada:4981tokensesquema, mensajes4311, variables760. Próximo paso autorizado: publicar/build22, smoke006/024
+y nueva full28 si no hay errores estructurales; no merge ni Discord.
+
+Los apartados siguientes son cortes históricos, no el estado actual.
+
 ### Candidato siguiente: intención explícita acotada
 
 Restricción privada sólo ante petición explícita en primer párrafo, una regla y

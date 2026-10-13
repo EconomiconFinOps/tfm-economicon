@@ -21,10 +21,10 @@ def test_calculation_diagnostic_is_closed_and_contains_no_rejected_text(api, mon
     assert 'secret synthetic payload' not in caplog.text
 
 
-@pytest.mark.parametrize('classification',[False,True])
+@pytest.mark.parametrize('classification',[False,True,'quantities'])
 def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch, classification):
     from app.core.chat_expressions import quantities,ExpressionRenderer
-    from app.core.chat_segments import render_segments,render_classified_answer
+    from app.core.chat_segments import render_segments,render_classified_answer,render_response
     import importlib.util
     from pathlib import Path
     location=Path(__file__).parents[2]/'processor/app/clients/chat_stream_parser.py'
@@ -37,7 +37,7 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
     comparison={'operation':'compare','left':difference,'right':{'quantity':'20 EUR'},'relation':'gt'}
     segments=[{'text':'  Ejemplo 😀: '},{'expression':difference},{'text':'Criterio: '},{'expression':comparison},{'text':'Resultado hipotético.  '}]
     authorized=[]
-    if classification:
+    if classification is True:
         from test_chat_interval_rules_jup035 import catalog as rule_catalog, sources, percent
         question='rework 7 EUR; remaining 93 EUR.'
         authorized=sources()
@@ -53,12 +53,16 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
                     'section':'Rework','page':None} for source in authorized],
                 'screen_context':payload['screen_context']}
         monkeypatch.setattr(api[0].state,'chat_context_builder',context_builder)
+    if classification=='quantities':
+        question='Importes: 100 EUR y 100 USD.'
+        catalog=quantities(question)
+        segments=[{'quantity':'100 EUR'},{'quantity':'100 USD'}]
     raw = json.dumps({'answer':segments},ensure_ascii=True)
     result = copy.deepcopy(ANSWER)
-    result['answer'] = render_classified_answer(segments,ExpressionRenderer(catalog)) if classification else render_segments(segments, [], expressions=ExpressionRenderer(catalog))
-    if classification:
-        result['evidence']=[{key:source[key] for key in ('id','kind','title','source')}
-            for source in authorized if source['id'] in catalog.rules[0]['source_ids']]
+    result['answer'] = render_classified_answer(segments,ExpressionRenderer(catalog)) if classification is True else render_segments(segments, [], expressions=ExpressionRenderer(catalog))
+    if classification is True:
+        result=render_response({**result,'answer':segments,'evidence':[],
+            'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[]},[],quantities=catalog)
     async def stream(claim):
         renderer = module.SegmentAnswerJSON([],quantities=catalog)
         for char in raw:

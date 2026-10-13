@@ -25,7 +25,7 @@ def fixture():
         'denominator':{'operation':'sum','left':leaf('8'),'right':leaf('92')}}}
     response={'answer':{'calculations':[],'classification':classification},
         'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[],
-        'evidence':[{'id':source['id'],'kind':'corpus'}]}
+        'evidence':[]}
     return context,catalog,response
 
 
@@ -134,3 +134,110 @@ def test_all_classified_notes_are_closed_server_wording_not_new_assertions():
     response['limitations']=[[{'text':note}] for note in CLASSIFIED_NOTES]
     rendered=render_response(response,[],quantities=catalog)
     assert rendered['assumptions']==rendered['limitations']==list(CLASSIFIED_NOTES)
+
+
+def test_server_citations_require_exact_authenticated_records_and_are_not_json_flags():
+    from app.agents.schemas import assemble_chat_response
+    from app.core.chat_segments import ServerRenderedResponse
+    from test_chat_server_period_jup035 import provider_answer
+    context,catalog,response=fixture()
+    response={**provider_answer(),**response,'status':'ok'}
+    rendered=render_response(response,[],quantities=catalog)
+    assert type(rendered) is ServerRenderedResponse
+    source=context['authorized_evidence'][0]
+    expected={key:source[key] for key in ('id','kind','title','source')}
+    assert rendered['evidence']==[expected]
+    assert 'support_quote' not in rendered['evidence'][0]
+    result=assemble_chat_response(rendered,None,authorized_evidence=[source])
+    assert result['evidence']==[expected]
+    for authorized in [[],[{**source,'id':'other-tenant'}],[{**source,'title':'changed'}],[{**source,'content':source['content']+' altered'}]]:
+        with pytest.raises(ValueError,match='Derived documentary evidence mismatch'):
+            assemble_chat_response(rendered,None,authorized_evidence=authorized)
+    changed=copy.deepcopy(rendered);changed['evidence'][0]['extra']='untrusted'
+    with pytest.raises(ValueError,match='Derived documentary evidence mismatch'):
+        assemble_chat_response(changed,None,authorized_evidence=[source])
+    serialized=json.loads(json.dumps(rendered))
+    with pytest.raises(ValueError,match='Citation passage is not grounded'):
+        assemble_chat_response(serialized,None,authorized_evidence=[source])
+    serialized['server_derived']=True
+    with pytest.raises(ValueError):assemble_chat_response(serialized,None,authorized_evidence=[source])
+    for evidence in [[expected],[{**expected,'support_quote':source['content']}],None]:
+        with pytest.raises(ValueError,match='Classified evidence is server-owned'):
+            render_response({**response,'evidence':evidence},[],quantities=catalog)
+
+
+def test_server_citations_do_not_include_unused_rules_or_user_quantities():
+    context,catalog,response=fixture()
+    source=context['authorized_evidence'][0]
+    unused={**source,'id':'unused-source','content':'Unrelated reference 17 EUR.'}
+    catalog.rule_sources=[*catalog.rule_sources,unused]
+    rendered=render_response(response,[],quantities=catalog)
+    assert [item['id'] for item in rendered['evidence']]==[source['id']]
+    catalog.rule_sources=[]
+    with pytest.raises(ValueError,match='Derived documentary source unavailable'):
+        render_response(response,[],quantities=catalog)
+
+
+def test_long_source_server_citation_does_not_fabricate_a_first_window_quote():
+    from app.agents.schemas import assemble_chat_response
+    from test_chat_server_period_jup035 import provider_answer
+    context,catalog,response=fixture()
+    original=context['authorized_evidence'][0]
+    source={**original,'content':'x'*3000+' '+original['content']}
+    # The catalog retains the exact authenticated source used during rendering;
+    # no model quotation or arbitrary 2048-character prefix is manufactured.
+    source['provenance']=copy.deepcopy(original['provenance'])
+    source['provenance']['sections'][0]['end']=len(source['content'])
+    context['authorized_evidence']=[source]
+    context['messages'][-1]['content']='UNTRUSTED_RETRIEVAL_CONTEXT\n'+json.dumps({'evidence':[source]})
+    catalog=context_quantities(context)
+    assert len(catalog.rules)==1
+    response={**provider_answer(),**response,'status':'ok'}
+    rendered=render_response(response,[],quantities=catalog)
+    result=assemble_chat_response(rendered,None,authorized_evidence=[source])
+    assert result['evidence'][0]['id']==source['id']
+    assert all('support_quote' not in item for item in rendered['evidence'])
+
+
+def test_additional_documentary_operand_adds_only_its_authenticated_source():
+    context,catalog,response=fixture()
+    extra={'id':'operand-source','kind':'corpus','title':'Operand','source':'manual','content':'Coste observado: 23 EUR.'}
+    records=[*context['authorized_evidence'],extra]
+    context['authorized_evidence']=records
+    context['messages'][-1]['content']='UNTRUSTED_RETRIEVAL_CONTEXT\n'+json.dumps({'evidence':records})
+    catalog=context_quantities(context)
+    key=next(key for key in catalog if key.startswith('document:operand-source:'))
+    response['answer']['calculations']=[{'operation':'sum','left':{'quantity':key},'right':{'quantity':'92 EUR'}}]
+    rendered=render_response(response,[],quantities=catalog)
+    assert {item['id'] for item in rendered['evidence']}=={'operand-source','synthetic:rule'}
+
+
+@pytest.mark.parametrize('width',[1,7,8192])
+def test_observed_quantity_segments_preserve_two_currencies_without_operations(width):
+    context={'messages':[{'content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Importes: 100 EUR y 100 USD.'})}]}
+    catalog=context_quantities(context)
+    value={'answer':[{'quantity':'100 EUR'},{'quantity':'100 USD'}],
+        'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[],'evidence':[]}
+    raw=json.dumps(value,ensure_ascii=True);parser=SegmentAnswerJSON([],quantities=catalog)
+    streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
+    rendered=render_response(value,[],quantities=catalog)
+    assert streamed==parser.finish()==rendered['answer']
+    assert streamed.strip()=='Dato aportado: 100 EUR.\n\nDato aportado: 100 USD.'
+    assert rendered['evidence']==[]
+    with pytest.raises(ValueError,match='Unknown source quantity'):
+        render_response({**value,'answer':[{'quantity':'200 EUR'}]},[],quantities=catalog)
+
+
+def test_documentary_quantity_display_requires_citation_and_cannot_gain_server_marker():
+    from app.core.chat_segments import ServerRenderedResponse
+    context,catalog,_=fixture()
+    key=next(key for key in catalog if key.startswith('document:'))
+    value={'answer':[{'quantity':key}],'assumptions':[],'limitations':[],
+        'next_actions':[],'recommendations':[],'metrics':[],'evidence':[]}
+    with pytest.raises(ValueError,match='Documentary calculation citation missing'):
+        render_response(value,[],quantities=catalog)
+    source=context['authorized_evidence'][0]
+    value['evidence']=[{key:source[key] for key in ('id','kind','title','source')}]
+    rendered=render_response(value,[],quantities=catalog)
+    assert type(rendered) is dict and not isinstance(rendered,ServerRenderedResponse)
+    assert 'Dato documental:' in rendered['answer']
