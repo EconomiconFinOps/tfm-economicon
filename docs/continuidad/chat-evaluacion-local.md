@@ -307,3 +307,37 @@ Sólo conteos en salida; no se transfirieron archivos ni modificó runtime. Esto
 valida formato de logs, no procedencia/coste de B ni una baseline nueva. Sigue
 pendiente el adaptador de costes auxiliares y la comprobación efectiva de ruta
 modelo/proveedor. Gasto nuevo0 y permiso asíncrono del entorno sin respuesta.
+
+
+### Auditoría del objetivo y punto de bloqueo — 14/10/2026
+
+Estado revisado: checkout limpio en4e6096fa antes de esta nota. No hay campaña
+B ejecutándose ni resultados N3/N5 reales. La solicitud de autorización de entorno
+ha permanecido sin respuesta durante más de tres continuaciones consecutivas.
+No equivale a aprobación y las claves de validación consultadas siguen caducadas.
+Se ha agotado el avance útil previo a verificar el entorno real: añadir más
+adaptadores basados en supuestos no acreditaría procedencia, costes ni calidad.
+Objetivo a marcar BLOCKED por autorización pendiente, no complete ni paused.
+
+Auditoría de alcance:
+- Reconciliación A/develop: código incorporado; backend107PASS, frontend76PASS y
+  tipos, processor128PASS inicial y3focales tras corregir dos incompatibilidades.
+  Verificación integral/SQL/runtime de B aún pendiente; no heredar CI de A.
+- Evaluación/recogida: implementadas piezas y ejecutor local; herramientas43PASS,
+  scorer16PASS, lector comprobado contra7reportes históricos. No es campaña real.
+- Entorno/coste: falta conectar los adaptadores al entorno aislado aprobado,
+  verificar proveedor/parámetros/corpus en BD y costes auxiliares por intento.
+  Las comprobaciones de archivos y reservas no prueban esos elementos por sí solas.
+- Línea base N3, correcciones semánticas basadas en ella, comparación y N5:
+  NOT_RUN. No afirmar mejora de017/027 ni aceptación semántica.
+- Criterios de revisores y9juicios históricos inciertos: pendientes, sin
+  aprobaciones humanas inventadas. Candidato final para revisión no completado.
+
+Reanudación tras respuesta del usuario: registrar autorización exacta, congelar
+nuevo plan/archive con las herramientas posteriores a ccc339a3, construir entorno
+B aislado y verificar317+hashes. Consultar nuevamente contabilidad, crear claves
+exclusivas autorizadas sin reset del gasto histórico, terminar adaptadores contra
+ese runtime y hacer prueba integrada antes de N3. Conservar techo2USD, todos los
+intentos y reservas desconocidas. No activar producto compartido ni publicar B.
+Gasto nuevo de esta fase0USD. Pregunta pendiente: entorno aislado+claves24h máximo
+conjunto0.90USD, candidato y correcciones versionadas con hashes registrados.
