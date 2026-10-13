@@ -191,6 +191,8 @@ class ChatContext:
             stage='vector_query'
             from app.services.vector_store import PgVectorQueryStore
             bounded={'deadline':deadline,'cancelled':cancelled} if deadline is not None and isinstance(store,PgVectorQueryStore) else {}
+            if isinstance(store,PgVectorQueryStore):
+                bounded['neighbor_seed_count']=min(settings.retrieval_top_k,evidence_limit,20)
             candidates = store.search_chunks(scope['tenant_id'],vector,top_k=20,
                                          max_distance=settings.retrieval_max_distance,provider=provider.name,**bounded)
             stage='candidate_validation'

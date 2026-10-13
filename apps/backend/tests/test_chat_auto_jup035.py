@@ -21,7 +21,7 @@ def test_calculation_diagnostic_is_closed_and_contains_no_rejected_text(api, mon
     assert 'secret synthetic payload' not in caplog.text
 
 
-@pytest.mark.parametrize('classification',[False,True,'quantities'])
+@pytest.mark.parametrize('classification',[False,True,'quantities','boolean','boolean-corpus'])
 def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, monkeypatch, classification):
     from app.core.chat_expressions import quantities,ExpressionRenderer
     from app.core.chat_segments import render_segments,render_classified_answer,render_response
@@ -57,10 +57,32 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
         question='Importes: 100 EUR y 100 USD.'
         catalog=quantities(question)
         segments=[{'quantity':'100 EUR'},{'quantity':'100 USD'}]
+    if classification in ('boolean','boolean-corpus'):
+        from test_chat_boolean_rules_jup035 import catalog as boolean_catalog, request, answer
+        question=request()
+        document=None
+        if classification=='boolean-corpus':
+            question='¿Se cumple la regla?\n\nBaseline 80 EUR/día; observado 96 EUR/día.'
+            document='# Policy\n## Changes\nrelative_delta >20 % AND absolute_delta >12 EUR/day'
+        catalog=boolean_catalog(question,document)
+        authorized=catalog.rule_sources
+        segments=answer(catalog)
+        if authorized:
+            async def context_builder(scope,payload,descriptor):
+                return {'prompt_version':descriptor['prompt_version'],'messages':[],
+                    'authorized_evidence':authorized,'financial_metrics_allowed':False,
+                    'source_citations':[{'evidence_id':source['id'],'kind':'corpus',
+                        'title':source['title'],'source':source['source'],'excerpt':source['content'][:140],
+                        'document_id':'doc','reference':'document:doc/'+source['id'],
+                        'section':'Changes','page':None} for source in authorized],
+                    'screen_context':payload['screen_context']}
+            monkeypatch.setattr(api[0].state,'chat_context_builder',context_builder)
     raw = json.dumps({'answer':segments},ensure_ascii=True)
     result = copy.deepcopy(ANSWER)
-    result['answer'] = render_classified_answer(segments,ExpressionRenderer(catalog)) if classification is True else render_segments(segments, [], expressions=ExpressionRenderer(catalog))
-    if classification is True:
+    result['answer'] = render_classified_answer(segments,ExpressionRenderer(catalog)) if isinstance(segments,dict) else render_segments(segments, [], expressions=ExpressionRenderer(catalog))
+    if classification=='boolean':result['status']='insufficient_data'
+    if classification=='boolean-corpus':result['status']='ok'
+    if isinstance(segments,dict):
         result=render_response({**result,'answer':segments,'evidence':[],
             'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[]},[],quantities=catalog)
     async def stream(claim):

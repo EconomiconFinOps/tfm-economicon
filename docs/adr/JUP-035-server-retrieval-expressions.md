@@ -196,3 +196,34 @@ El guard de clasificación libre usa asimismo etiquetas de filas intervalares
 con provenance válida aunque falte la fórmula o partición completa. Esas filas
 sólo amplían detección de conclusiones no verificadas, nunca el catálogo ejecutable;
 no se prohíben palabras genéricas fuera de una conclusión de clasificación.
+
+
+### Regla booleana terminal y contexto vecino (13/10/2026, survey22)
+
+Una respuesta mostró comparaciones correctas pero una conclusión AND falsa.
+La variante `answer.boolean` fija regla, baseline y observado a un descriptor
+servidor: gramática acotada de delta relativo/absoluto, comparadores explícitos
+y AND/Y u OR/O. No hay umbrales del banco codificados. El servidor construye
+ambos deltas, evalúa límites y combinador y redacta toda la conclusión. Base cero
+es indefinida, con lógica ternaria; no se reemplaza por un número. Roles ambiguos,
+monedas incompatibles, reglas contradictorias, negaciones o cadenas adicionales
+no autorizan esa variante. Dos condiciones deben caber en un span documental
+autenticado: una regla cortada se rechaza sin completarla por inferencia.
+Reglas usuario/corpus se deduplican sólo con igualdad semántica exacta; la regla
+aportada por usuario no necesita una cita artificial. El contrato público sigue
+exigiendo evidencia para ok, por lo que un cálculo user-only conserva
+insufficient_data sin inventar autoridad financiera. Las variantes terminales
+prohíben prosa libre auxiliar; la abstención de clasificación requerida sólo
+admite mensajes neutrales cerrados, sin saltar el guard mediante status.
+
+La recuperación anterior sólo expandía vecinos presentes en top20 vectoriales.
+Ahora una consulta posicional inmediata bounded en la misma transacción
+REPEATABLE READ carga vecinos de seeds sin otra embedding ni búsqueda semántica.
+Tenant, proveedor, documentos/índices y top_k permanecen vinculados; no recursión.
+El timeout/cancelación común se aplica antes de cada consulta. Los vecinos pueden
+estar fuera del umbral vectorial: son contexto contiguo, no nuevos hits relevantes.
+Esto corrige una carencia demostrable, no prueba la causa exacta del fallo005/007.
+
+Evidence se ordena después del texto en el esquema privado para permitir elegir
+soporte de afirmaciones ya redactadas. Const/enums y verificación literal siguen
+intactos; cambiar el orden no demuestra entailment ni aceptación semántica.

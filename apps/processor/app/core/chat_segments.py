@@ -3,6 +3,7 @@ import copy
 
 from app.core.chat_calculations import render_text
 from app.core.chat_rules import required_classification
+from app.core.chat_boolean_rules import boolean_definition, render_boolean
 from app.core.chat_expressions import ExpressionRenderer, expression_definitions
 
 class ServerRenderedResponse(dict):
@@ -21,6 +22,12 @@ CLASSIFIED_NOTES=(
     'La clasificación aplica únicamente al KPI y a la sección documental indicados.',
     'El denominador es el mostrado en la fórmula; debe corresponder a los conceptos elegibles del escenario.',
 )
+
+
+BOOLEAN_NOTES=('Las cantidades y la regla se aplican únicamente al escenario indicado.',
+    'Una condición indefinida no se convierte en un resultado numérico inventado.',)
+CLASSIFICATION_ABSTENTIONS=('No puedo clasificar de forma fundada: necesito identificar los componentes del coste elegible y el numerador del KPI.',
+    'No puedo clasificar de forma fundada: necesito una regla completa y aplicable al KPI solicitado.',)
 
 
 def quote_choices(content):
@@ -76,13 +83,43 @@ def bind_segments(schema, records=None, quantities=None):
             props['evidence']['maxItems']=0
             classified.append(variant)
     if classified:
+        if required_classification(quantities):
+            for branch in branches:
+                if 'ok' not in branch['properties']['status'].get('enum',[]):
+                    branch['properties']['answer']={'type':'array','minItems':1,'maxItems':1,'items':{'type':'object','properties':{'text':{'type':'string','enum':list(CLASSIFICATION_ABSTENTIONS)}},'required':['text'],'additionalProperties':False}}
+                    for field in ('assumptions','limitations','next_actions','recommendations','metrics','evidence'):
+                        branch['properties'][field]['maxItems']=0
         retained=[branch for branch in branches if not (required_classification(quantities)
             and 'ok' in branch['properties']['status'].get('enum',[]))]
         schema['anyOf']=classified+retained if required_classification(quantities) else retained+classified
+    rules=getattr(quantities,'boolean_rules',())
+    if rules:
+        # Rule/operator/operands are all grounded before generation. The model
+        # selects a typed terminal, never the condition or its conclusion.
+        base=copy.deepcopy(branches[-1]);props=base['properties']
+        props['answer']={'type':'object','properties':{'boolean':boolean_definition(rules)},'required':['boolean'],'additionalProperties':False}
+        props['status']={'type':'string','enum':['ok'] if rules[0]['source_ids'] else ['insufficient_data']}
+        props['evidence']['minItems']=0;props['evidence']['maxItems']=0
+        for field in ('next_actions','recommendations','metrics'):props[field]['maxItems']=0
+        for field in ('assumptions','limitations'):
+            props[field]['items']={'type':'array','minItems':1,'maxItems':1,'items':{'type':'object','properties':{'text':{'type':'string','enum':list(BOOLEAN_NOTES)}},'required':['text'],'additionalProperties':False}}
+        if getattr(quantities,'boolean_requested',False):
+            return {**base,'$defs':schema['$defs']}
+        if 'anyOf' in schema:schema['anyOf'].append(base)
+        else:schema={'type':'object','anyOf':[{k:v for k,v in schema.items() if k!='$defs'},base],'$defs':schema['$defs']}
     return schema
 
 
+
 def render_classified_answer(value,expressions):
+    if isinstance(value,dict) and set(value)=={'boolean'}:
+        if expressions is None:raise ValueError('Boolean rule not grounded.')
+        from decimal import localcontext
+        with localcontext() as precision:
+            precision.prec=40
+            result=render_boolean(value['boolean'],expressions)
+        if len(result)>4000:raise ValueError('Rendered text limit.')
+        return result
     if (not isinstance(value,dict) or set(value)!={'calculations','classification'}
             or expressions is None or not isinstance(value['calculations'],list)
             or len(value['calculations'])>4):raise ValueError('Invalid classified answer.')
@@ -149,6 +186,14 @@ def render_response(value, records, *, quantities=None):
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
     classified=isinstance(value['answer'],dict)
+    boolean=classified and set(value['answer'])=={'boolean'}
+    if getattr(quantities,'boolean_rules',()) and getattr(quantities,'boolean_requested',False) and not boolean:
+        raise ValueError('Explicit boolean rule requires typed answer.')
+    if required_classification(quantities) and not classified:
+        if value['answer'] not in [[{'text':note}] for note in CLASSIFICATION_ABSTENTIONS]:
+            raise ValueError('Explicit classification requires typed answer.')
+        if any(value.get(field)!=[] for field in ('assumptions','limitations','next_actions','recommendations','metrics','evidence')):
+            raise ValueError('Invalid classified auxiliary fields.')
     if required_classification(quantities) and value.get('status') in ('ok','partial') and not classified:
         raise ValueError('Explicit classification requires typed answer.')
     if classified:
@@ -157,7 +202,7 @@ def render_response(value, records, *, quantities=None):
             if value.get(field)!=[]:raise ValueError('Invalid classified auxiliary fields.')
         for field in ('assumptions','limitations'):
             items=value.get(field)
-            if not isinstance(items,list) or any(item not in [[{'text':note}] for note in CLASSIFIED_NOTES] for item in items):
+            if not isinstance(items,list) or any(item not in [[{'text':note}] for note in (BOOLEAN_NOTES if boolean else CLASSIFIED_NOTES)] for item in items):
                 raise ValueError('Invalid classified auxiliary fields.')
     result={**value,'answer':render_classified_answer(value['answer'],expressions) if classified else render_segments(value['answer'],records,expressions=expressions)}
     for field in ('assumptions','limitations','next_actions'):
@@ -175,6 +220,9 @@ def render_response(value, records, *, quantities=None):
                     if isinstance(recommendation.get(field),str):expressions.check_prose(recommendation[field])
     if classified:
         known={record['id']:record for record in getattr(quantities,'rule_sources',())}
+        if boolean and not expressions.documentary_sources:
+            if value.get('status')!='insufficient_data':raise ValueError('User rule status requires no financial authority.')
+            return result
         if not expressions.documentary_sources or not expressions.documentary_sources<=known.keys():
             raise ValueError('Derived documentary source unavailable.')
         records=[known[identifier] for identifier in sorted(expressions.documentary_sources)]

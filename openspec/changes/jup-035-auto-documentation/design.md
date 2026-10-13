@@ -15,6 +15,17 @@ Las secciones siguientes conservan decisiones históricas sustituidas; no define
 el protocolo vigente. El contrato público, autoridad financiera y requisitos de
 completitud/evidencia siguen vigentes.
 
+## Refinamiento vigente tras survey22
+
+Reglas booleanas con descriptores autenticados y operandos inequívocos producen
+condiciones y conclusión terminal servidor; no prosa libre que contradiga AND/OR.
+Vecinos inmediatos se obtienen tenant/provider-scoped en la misma recuperación
+lógica y snapshot, con cota20 y deadline común. La abstención requerida de
+clasificación es neutral y cerrada. Se mantienen FinOpsResponse público, una
+embedding/recuperación y una generación,3200tokens y evaluación íntegra pendiente.
+Detalles, limitaciones y motivación en el ADR vigente; ninguna aceptación se
+infiere de tests offline o de completed en la batería.
+
 ## Compatibilidad de la union final — 13/10/2026
 
 Una reproduccion sintetica autorizada confirma HTTP400 de DeepInfra al compilar

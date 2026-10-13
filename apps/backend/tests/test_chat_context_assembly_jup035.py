@@ -153,7 +153,7 @@ def test_required_extension_runs_existing_scoped_retrieval_and_preserves_financi
     assert calls==[], 'Expired recovery must not embed or search'
 
 
-@pytest.mark.parametrize(('phase','cancel'), [('connect',False),('ranked',False),('ranked',True),('documents',True)])
+@pytest.mark.parametrize(('phase','cancel'), [('connect',False),('ranked',False),('ranked',True),('neighbors',False),('neighbors',True),('documents',True)])
 def test_required_database_wait_really_stops_worker_and_query(monkeypatch, phase, cancel):
     import threading, time
     from types import SimpleNamespace
@@ -198,14 +198,14 @@ def test_required_database_wait_really_stops_worker_and_query(monkeypatch, phase
                 timeouts.append(parameters)
                 return Result([])
             calls.append(parameters)
-            current='ranked' if 'ORDER BY distance' in sql else 'documents'
+            current='neighbors' if 'neighbor_limit' in parameters else 'ranked' if 'ORDER BY distance' in sql else 'documents'
             if current==phase:
                 if self.bounded: await_only(blocked())
                 else:
                     entered.set();active.set()
                     try: release.wait(2)
                     finally: active.clear();stopped.set()
-            return Result([row] if current=='ranked' else [SimpleNamespace(id='manual',text_content='# Manual\nReview before scheduling.')])
+            return Result([row] if current in ('ranked','neighbors') else [SimpleNamespace(id='manual',text_content='# Manual\nReview before scheduling.')])
     class Ordinary(SQL):
         def __init__(self): super().__init__(False)
         connection=SimpleNamespace(driver_connection=driver)

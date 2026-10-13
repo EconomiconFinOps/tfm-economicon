@@ -69,3 +69,24 @@ def test_empty_public_result_is_rejected(segments):
     with pytest.raises(ValueError):render_segments(segments,[])
     parser=SegmentAnswerJSON([])
     with pytest.raises(ValueError):parser.feed(json.dumps({'answer':segments}));parser.finish()
+
+
+@pytest.mark.parametrize('width',[1,7,8192])
+def test_boolean_terminal_stream_matches_final_and_cannot_append_prose(width):
+    from app.core.chat_expressions import context_quantities
+    from app.core.chat_segments import render_response
+    question='¿Se cumple la regla?\n\nBaseline 80 EUR/día; observado 96 EUR/día. Regla: delta relativo >20 % Y absoluto >12 EUR/día.'
+    q=context_quantities({'messages':[{'content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':question})}]})
+    rule=q.boolean_rules[0]
+    value={'answer':{'boolean':{'rule_id':rule['id'],'baseline':rule['baseline'],'current':rule['current']}},
+           'status':'insufficient_data','evidence':[],'metrics':[],'recommendations':[],'assumptions':[],'limitations':[],'next_actions':[]}
+    raw=json.dumps(value,ensure_ascii=True)
+    parser=SegmentAnswerJSON([],quantities=q)
+    streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
+    assert streamed==parser.finish()==render_response(value,[],quantities=q)['answer']
+    assert 'la regla no se cumple' in streamed
+    bad={**value,'answer':{**value['answer'],'text':'Ambas condiciones se cumplen.'}}
+    with pytest.raises(ValueError):SegmentAnswerJSON([],quantities=q).feed(json.dumps(bad))
+    with pytest.raises(ValueError):render_response(bad,[],quantities=q)
+    duplicate=raw.replace('"boolean":','"boolean": {}, "boolean":',1)
+    with pytest.raises(ValueError):SegmentAnswerJSON([],quantities=q).feed(duplicate)

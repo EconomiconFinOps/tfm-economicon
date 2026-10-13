@@ -44,7 +44,7 @@ class PgVectorQueryStore:
 
     def search_chunks(
         self, tenant_id: str, query_embedding: list[float], top_k: int = 4, max_distance: float | None = None,
-        provider: str | None = None, *, deadline: float | None = None, cancelled=None,
+        provider: str | None = None, *, deadline: float | None = None, cancelled=None, neighbor_seed_count: int = 0,
     ) -> list[dict]:
         if isinstance(top_k, bool) or not isinstance(top_k, int) or not 1 <= top_k <= MAX_TOP_K:
             raise ValueError(f"top_k must be an integer between 1 and {MAX_TOP_K}")
@@ -53,6 +53,8 @@ class PgVectorQueryStore:
             or not math.isfinite(max_distance) or not 0 < max_distance <= MAX_COSINE_DISTANCE
         ):
             raise ValueError("max_distance must be greater than 0 and at most 2")
+        if type(neighbor_seed_count) is not int or not 0 <= neighbor_seed_count <= top_k:
+            raise ValueError('Invalid neighbor seed count.')
         vector = "[" + ",".join(f"{value:.6f}" for value in query_embedding) + "]"
         threshold = "WHERE distance <= :max_distance" if max_distance is not None else ""
         provider_filter = "AND ce.provider = :provider" if provider is not None else ""
@@ -98,6 +100,45 @@ class PgVectorQueryStore:
             ).all()
             if not rows:
                 return []
+            if neighbor_seed_count:
+                # One semantic retrieval, followed by bounded positional expansion
+                # in this same tenant/provider/snapshot; never another embedding.
+                seeds = rows[:neighbor_seed_count]
+                pairs = list(dict.fromkeys((row.document_id, index) for row in seeds
+                    for index in (row.chunk_index - 1, row.chunk_index + 1) if index >= 0))
+                if pairs:
+                    timeout()
+                    neighbor_params = {'tenant_id': tenant_id, 'neighbor_limit': 2 * neighbor_seed_count, 'query_embedding': vector}
+                    predicates = []
+                    for index, (document, chunk_index) in enumerate(pairs):
+                        predicates.append(f'(dc.document_id = :document_{index} AND dc.chunk_index = :index_{index})')
+                        neighbor_params[f'document_{index}'] = document
+                        neighbor_params[f'index_{index}'] = chunk_index
+                    neighbor_provider = ''
+                    if provider is not None:
+                        neighbor_params['provider'] = provider
+                        neighbor_provider = 'AND ce.provider = :provider'
+                    neighbors = connection.execute(text(f"""
+                        SELECT DISTINCT dc.id AS chunk_id, kd.id AS document_id,
+                            kd.tenant_id AS tenant_id, dc.chunk_index AS chunk_index,
+                            kd.source AS source, dc.content AS content,
+                            (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
+                        FROM knowledge_documents kd
+                        JOIN document_chunks dc ON dc.document_id = kd.id
+                        JOIN chunk_embeddings ce ON ce.chunk_id = dc.id
+                        WHERE kd.tenant_id = :tenant_id {neighbor_provider}
+                            AND ({' OR '.join(predicates)})
+                        ORDER BY document_id, chunk_index, chunk_id
+                        LIMIT :neighbor_limit
+                    """), neighbor_params).all()
+                    by_location = {(row.document_id, row.chunk_index): row for row in neighbors}
+                    expanded, selected = list(seeds), {row.chunk_id for row in seeds}
+                    for location in pairs:
+                        row = by_location.get(location)
+                        if row is not None and row.chunk_id not in selected:
+                            expanded.append(row); selected.add(row.chunk_id)
+                    expanded.extend(row for row in rows if row.chunk_id not in selected)
+                    rows = expanded[:top_k]
             # Fetch each source document once, scoped to the same tenant and
             # transaction snapshot as retrieval (including concurrent reingestion).
             timeout()

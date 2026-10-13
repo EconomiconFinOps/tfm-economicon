@@ -1,0 +1,129 @@
+"""Closed, grounded two-condition change rules; no model-authored conclusions."""
+import hashlib
+import json
+import re
+from decimal import Decimal
+from app.core.chat_rules import normalized, validate_provenance
+
+_NUMBER = r"-?\d+(?:[.,]\d+)?"
+_UNIT = r"(?:%|[A-Za-z€£$¥]{1,8}(?:/(?:día|dia|day|hora|hour|mes|month))?)(?![\w/])"
+_METRIC = r"(?:relative_delta|absolute_delta|delta\s+relativo|delta\s+absoluto|relativo|absoluto)"
+_CONDITION = rf"({_METRIC})\s*(>=|<=|>|<|==|=|≥|≤)\s*({_NUMBER})\s*({_UNIT})"
+_RULE = re.compile(_CONDITION + r"\s+(AND|OR|Y|O)\s+" + _CONDITION, re.I)
+_ROLE = re.compile(r"\b(baseline|base|observado|observada|observed|current)\b(?:\s+(?:diario|diaria|daily))?(?:\s+el\s+\d{4}-\d{2}-\d{2})?\s*[:=]?\s*("+_NUMBER+r")\s*("+_UNIT+r")", re.I)
+
+
+def _parse(text):
+    from app.core.chat_expressions import normalized_unit, canonical_decimal
+    result=[]
+    for match in _RULE.finditer(text):
+        prefix=re.split(r'[.;!?\n]',text[:match.start()])[-1]
+        if re.search(r'\b(?:no|not|never|nunca|sin)\b',prefix,re.I):continue
+        if (re.match(r'\s+(?:AND|OR|Y|O)\b',text[match.end():],re.I)
+                or re.search(r'\b(?:AND|OR|Y|O|not|no|sin)\s*$',text[:match.start()],re.I)):
+            continue
+        groups=match.groups(); conditions=[]
+        for metric,operator,value,unit in (groups[:4],groups[5:]):
+            metric='relative_change' if normalized(metric) in ('relative_delta','delta relativo','relativo') else 'difference'
+            unit=normalized_unit(unit)
+            if (metric=='relative_change') != (unit=='%'):break
+            try:value=canonical_decimal(value)
+            except ValueError:break
+            conditions.append({'metric':metric,'relation':{'=':'eq','==':'eq','>':'gt','<':'lt','>=':'gte','<=':'lte','≥':'gte','≤':'lte'}[operator],'value':value,'unit':unit})
+        if len(conditions)!=2 or {c['metric'] for c in conditions}!={'relative_change','difference'}:continue
+        conditions.sort(key=lambda item:item['metric'])
+        result.append({'conditions':conditions,'combinator':'AND' if groups[4].upper() in ('AND','Y') else 'OR','literal':match.group(),'start':match.start(),'end':match.end()})
+    return result
+
+
+def boolean_catalog(question,sources,catalog):
+    """Only explicit named deltas and explicitly labelled baseline/current pairs.
+
+    Unsupported/ambiguous rules do not authorize a classification. A documentary
+    rule must fit a verified section span; neighboring unrelated text is not its
+    provenance. Identical semantics deduplicate; conflicting semantics disable
+    the terminal rather than selecting a convenient rule.
+    """
+    from app.core.chat_expressions import normalized_unit, canonical_decimal
+    candidates=[]
+    for rule in _parse(question):candidates.append({**rule,'origin':'user','source_ids':[]})
+    for source in sources:
+        for span in validate_provenance(source):
+            text=source['content'][span['start']:span['end']]
+            for rule in _parse(text):
+                candidates.append({**rule,'origin':'corpus','source_ids':[source['id']]})
+    grouped={}
+    for candidate in candidates:
+        identity=json.dumps([candidate['conditions'],candidate['combinator']],sort_keys=True)
+        if identity not in grouped:grouped[identity]=candidate
+        elif candidate['origin']=='user':grouped[identity]=candidate
+        # A user-stated rule is sufficient; do not manufacture a documentary
+        # citation to duplicate it. Identical corpus overlaps retain one source.
+    if len(grouped)!=1:return []
+    roles={'baseline':set(),'current':set()}
+    for match in _ROLE.finditer(question):
+        role='baseline' if match[1].casefold() in ('baseline','base') else 'current'
+        try:value=canonical_decimal(match[2])
+        except ValueError:continue
+        unit=normalized_unit(match[3])
+        keys=[key for key,entry in catalog.items() if entry['value']==value
+            and (entry['unit']==unit or (entry.get('binding')=='context_daily_rate' and entry['unit']==unit+'/día'))
+            and any(p.get('kind')=='user' for p in entry.get('provenance',[]))]
+        if len(keys)!=1:return []
+        roles[role].add(keys[0])
+    if any(len(values)!=1 for values in roles.values()):return []
+    baseline=next(iter(roles['baseline']));current=next(iter(roles['current']))
+    candidate=next(iter(grouped.values()))
+    absolute=next(c for c in candidate['conditions'] if c['metric']=='difference')
+    if catalog[baseline]['unit']!=catalog[current]['unit'] or catalog[current]['unit']!=absolute['unit']:return []
+    identity=next(iter(grouped))
+    return [{**candidate,'id':'boolean:'+hashlib.sha256(identity.encode()).hexdigest()[:24],
+             'baseline':baseline,'current':current}]
+
+
+def boolean_request(question):
+    request=normalized(question.split('\n\n',1)[0])
+    return bool(re.search(r'\b(?:activa|cumple|anomalia candidata|candidata|trigger|satisfies)\b',request)) and not re.search(r'\b(?:sin|no eval|significa|define|what is)\b',request)
+
+
+def boolean_definition(rules):
+    variants=[]
+    for rule in rules:
+        props={name:{'type':'string','const':rule[name]} for name in ('baseline','current')}
+        props['rule_id']={'type':'string','const':rule['id'],'description':json.dumps(rule,ensure_ascii=False)}
+        variants.append({'type':'object','properties':props,'required':list(props),'additionalProperties':False})
+    return variants[0] if len(variants)==1 else {'anyOf':variants}
+
+
+def render_boolean(value,renderer):
+    if not isinstance(value,dict) or set(value)!={'rule_id','baseline','current'}:raise ValueError('Boolean rule answer shape.')
+    matches=[rule for rule in getattr(renderer.catalog,'boolean_rules',())
+             if rule['id']==value['rule_id'] and all(rule[key]==value[key] for key in ('baseline','current'))]
+    if len(matches)!=1:raise ValueError('Boolean rule not grounded.')
+    rule=matches[0];renderer.documentary_sources.update(rule['source_ids'])
+    pieces=[];outcomes=[]
+    symbols={'gt':'>','gte':'>=','lt':'<','lte':'<=','eq':'=='}
+    for condition in rule['conditions']:
+        node={'operation':condition['metric'],'baseline':{'quantity':rule['baseline']},'current':{'quantity':rule['current']}}
+        number,unit,formula,reason=renderer._numeric(node)
+        renderer._count()
+        label='Delta absoluto' if condition['metric']=='difference' else 'Delta relativo'
+        if reason:
+            pieces.append(label+': '+reason+'.');outcomes.append(None);continue
+        if unit!=condition['unit']:raise ValueError('Boolean rule unit mismatch.')
+        bound=Decimal(condition['value']);relation=condition['relation']
+        valid={'gt':number>bound,'gte':number>=bound,'lt':number<bound,'lte':number<=bound,'eq':number==bound}[relation]
+        exact=format(number,'f');exact=exact.rstrip('0').rstrip('.') if '.' in exact else exact
+        pieces.append(label+': '+formula+' = '+exact+' '+unit+'. Condición: '+exact+' '+unit+' '+symbols[relation]+' '+condition['value']+' '+unit+' → '+('verdadero' if valid else 'falso')+'.')
+        outcomes.append(valid)
+    renderer._count()
+    if rule['combinator']=='AND':result=False if False in outcomes else None if None in outcomes else True
+    else:result=True if True in outcomes else None if None in outcomes else False
+    conclusion='no se puede determinar' if result is None else 'se cumple' if result else 'no se cumple'
+    pieces.append('Resultado '+rule['combinator']+': la regla '+conclusion+'.')
+    pieces.append('Regla aportada por el usuario; escenario hipotético.' if rule['origin']=='user' else 'Regla documental aplicada al escenario hipotético.')
+    if result is True:
+        pieces.append('El resultado no demuestra una causa: investigue el cambio y confirme si era esperado.')
+    elif result is None:
+        pieces.append('Se necesita una base comparable con datos aplicables; investigue si el recurso o el consumo son nuevos.')
+    return '\n'.join(pieces)

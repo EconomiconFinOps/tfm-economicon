@@ -1,3 +1,37 @@
+## Corte vigente: survey22 y corrección23 — 13/10/2026
+
+PR121 publica `8d897c4` (sólo fixture CI posterior a producto `f5af693`).
+CI técnica PASS según comprobación del padre. Runtime expression22 conserva
+f5af693 y su campaña íntegra:25completed/3failed005,007,013; mecánica28PASS,
+NO aceptación semántica.017 muestra condiciones correctas con conclusión AND
+contradictoria;005/007 narrativa rechazada;003 cita insuficiente,004 incompleta,
+008/009/018/019/020/022/023 con fallos de contenido según auditoría.027 y024
+pasan esta muestra, sin sustituir fallos anteriores. Recibos externos
+`expression22-full28.json` y auditoría/invariantes del padre.
+Gasto observado0.701478144USD, techo TOTAL2USD; claves hasta17:21:51UTC,
+settings intactos. La autorización de publicar/transferir/validar sigue vigente;
+las notas inferiores de autorizaciones pendientes son antecedentes superados.
+
+Corrección23 en preparación: conclusión AND/OR íntegramente servidor desde regla
+explícita autenticada, baseline/observado inequívocos, sin operandos/comparadores
+ni prosa de conclusión elegidos por modelo. Usuario no genera cita ficticia;
+regla documental conserva fuente exacta. La abstención de clasificación requerida
+se limita a mensajes neutrales cerrados, sin reabrir prosa por cambiar status.
+Vecinos documentales se consultan por posición exacta en la misma transacción,
+tenant/proveedor y cota20, no sólo dentro del pool vectorial. Evidence pasa al
+final del esquema privado; no se considera prueba de mejor pertinencia.
+Probe offline005/006/007 muestra routing requerido con rules3+4, pero no con
+rules4 solo. Falta el contexto efectivo fallido: esa reconstrucción condicional
+NO acredita la causa exacta de005/007. No se hizo otra inferencia diagnóstica.
+
+Pruebas iniciales23:132backendPASS,63processorPASS,14SQL/SSE/JSONB localPASS,
+incluyendo terminal booleano user/corpus; SQL pgvector nativo y paridad final
+pendientes antes publicación/build. Padre revisa delta, sin nueva llamada pagada.
+Siguiente: completar paridad/docs, congelar/build, SQLnativo y smoke003005007017;
+full28 sólo según contrato y evaluación, sin declarar validada por completed.
+
+Los apartados siguientes son cortes históricos, no el estado actual.
+
 ## Corte vigente: survey21 y corrección22 offline — 13/10/2026
 
 Publicado `c12083ad0251a7f790010a05d71e425813337d90`, runtime expression21.

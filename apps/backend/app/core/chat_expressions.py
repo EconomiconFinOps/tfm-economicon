@@ -55,6 +55,9 @@ def context_quantities(context):
     catalog.classification_requested=classification_request(context_question(context))
     catalog.rules=documentary_rules(rule_sources)
     catalog.rule_sources=rule_sources
+    from app.core.chat_boolean_rules import boolean_catalog, boolean_request
+    catalog.boolean_rules=boolean_catalog(context_question(context),rule_sources,catalog)
+    catalog.boolean_requested=boolean_request(context_question(context))
     return catalog
 NUMERIC = r'(?<![\w.,-])[-−]?[0-9]+(?:[.,][0-9]+)?(?![\w-]|[.,][0-9])'
 CURRENCIES = ('EUR','USD','GBP','JPY','CHF','CAD','AUD','CNY','INR','€','$','£','¥')

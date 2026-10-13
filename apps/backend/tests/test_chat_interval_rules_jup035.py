@@ -244,7 +244,13 @@ def test_explicit_classification_routing_preserves_other_requests(question,requi
         _validate(classified,schema,schema)
         assert '): calm.' in render_response(classified,[],quantities=q)['answer']
         value['status']='insufficient_data'
-        # Abstention remains representable and is never rewritten as a result.
+        # Status cannot reopen free classification prose. Only a neutral,
+        # explicit request for the missing inputs remains representable.
+        with pytest.raises(ValueError):_validate(value,schema,schema)
+        with pytest.raises(ValueError):render_response(value,[],quantities=q)
+        from app.core.chat_segments import CLASSIFICATION_ABSTENTIONS
+        value['answer']=[{'text':CLASSIFICATION_ABSTENTIONS[0]}]
+        value['evidence']=[]
         _validate(value,schema,schema)
         render_response(value,[],quantities=q)
     else:
