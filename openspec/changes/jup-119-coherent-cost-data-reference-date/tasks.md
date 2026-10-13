@@ -32,7 +32,7 @@ Trello: https://trello.com/c/HtjtmPaJ
 
 ## 5. Frontend
 
-- [ ] 5.1 Proveedor de la fecha de referencia cargada tras el login; `defaultMonthSelection`, el compositor del asistente y la cabecera la usan en vez de `new Date()`; aviso «Fecha simulada: dd/mm/aaaa» solo cuando `simulated`; estado de error explícito si falla el endpoint, sin volver al reloj del navegador. Pruebas del componente con el reloj del navegador fijado en una fecha distinta, y actualizar los contratos de `services/contracts.ts` y el cliente.
+- [x] 5.1 Proveedor de la fecha de referencia cargada tras el login; `defaultMonthSelection`, el compositor del asistente y la cabecera la usan en vez de `new Date()`; aviso «Fecha simulada: dd/mm/aaaa» solo cuando `simulated`; estado de error explícito si falla el endpoint, sin volver al reloj del navegador. Pruebas del componente con el reloj del navegador fijado en una fecha distinta, y actualizar los contratos de `services/contracts.ts` y el cliente. Hecho el 2026-10-13: `useReferenceDate`, `lib/referenceDate.ts`, aviso en la cabecera (solo con sesión), panel ejecutivo que espera la fecha o muestra el error y compositor del asistente con «Mes de referencia UTC»; 7 pruebas nuevas (`*.reference-date.test.tsx`), valor por defecto de la fecha en `mockBackend` y 886 pruebas, `typecheck`, `lint` y `build` en verde. `quality-gates.test.ts` agotó el tiempo una vez dentro de la batería completa y pasa en solitario.
 
 ## 6. Verificación en el stack real
 

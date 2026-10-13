@@ -195,7 +195,8 @@ describe("tenant bootstrap and dashboard", () => {
     expect(screen.queryByRole("button", { name: "Encolar ingesta" })).not.toBeInTheDocument();
     await user.click(screen.getByRole("link", { name: "Asistente" }));
     expect(screen.getByRole("heading", { name: "Cliente requerido" })).toBeVisible();
-    expect(requests.every((request) => ["/tenants", "/health", "/me"].includes(request.path))).toBe(true);
+    // The reference date is the same for every client, so it is not a tenant-scoped product request.
+    expect(requests.every((request) => ["/tenants", "/health", "/me", "/billing/reference-date"].includes(request.path))).toBe(true);
   });
 
   it("shows tenant authorization failure and resets the expired session", async () => {

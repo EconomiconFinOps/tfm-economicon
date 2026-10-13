@@ -12,6 +12,8 @@ import {
   compareEndpoints, currentUtcMonth, defaultMonthSelection, describeCostError,
   monthlyCostPoint, monthLabel, selectedMonthRange, snapshotCurrencies
 } from "@/lib/executiveCostDashboard";
+import { useReferenceDate } from "@/hooks/useReferenceDate";
+import { referenceDay } from "@/lib/referenceDate";
 import type { MonthlyCostPoint } from "@/lib/executiveCostDashboard";
 import type { SessionOutletContext } from "@/layouts/SessionGate";
 import type { BillingGrouping } from "@/services/contracts";
@@ -20,9 +22,21 @@ const inputClass = "mt-1 block w-full min-w-0 rounded-md border border-input bg-
 const buttonClass = "inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-50";
 
 export function ExecutiveCostDashboard() {
+  const { token } = useOutletContext<SessionOutletContext>();
+  const reference = useReferenceDate(token);
+  if (reference.isError) {
+    return <div className="p-6"><p role="alert" className="rounded-md border border-destructive/40 p-4 text-sm text-destructive">
+      No se pudo cargar la fecha de referencia. Los costes no se piden hasta conocerla.
+    </p></div>;
+  }
+  if (!reference.data) return <div className="p-6"><p role="status" className="text-sm text-muted-foreground">Cargando la fecha de referencia…</p></div>;
+  return <ExecutiveCostBody today={referenceDay(reference.data)} />;
+}
+
+function ExecutiveCostBody({ today: referenceNow }: { today: Date }) {
   const queryClient = useQueryClient();
   const { token, activeTenant } = useOutletContext<SessionOutletContext>();
-  const [period, setPeriod] = useState(defaultMonthSelection);
+  const [period, setPeriod] = useState(() => defaultMonthSelection(referenceNow));
   const [groupBy, setGroupBy] = useState<BillingGrouping>("service");
   const [tagKey, setTagKey] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("");
@@ -55,7 +69,7 @@ export function ExecutiveCostDashboard() {
   const monthlyErrors = snapshot?.months.some(({ result }) => result.kind === "error") ?? false;
   const aggregateError = snapshot?.aggregate.kind === "error" ? snapshot.aggregate.error : query.error;
   const hasError = query.isError || snapshot?.aggregate.kind === "error" || monthlyErrors;
-  const today = currentUtcMonth();
+  const today = currentUtcMonth(referenceNow);
   const labels = period.first && period.last && range ? monthLabel(period.first) + " – " + monthLabel(period.last) : "";
   const periodNotice = range?.months.some((month) => month >= today);
   const partialMonths = points.some((point) => point.partial);
