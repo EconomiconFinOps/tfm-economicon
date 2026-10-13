@@ -1,5 +1,10 @@
 # Datos sintéticos de coste (JUP-106)
 
+> **Sustituida por JUP-119 (2026-10-13).** `scripts/synthetic_costs.py` y `scripts/synthetic_anomalies.py` ya no existen:
+> los datos de la demo se generan con `scripts/demo_dataset.py` y se cargan con `scripts/demo_data.py` por la API
+> simulada y la ingesta del processor (ver [la guía de datos](../data/azure-sample-dataset.md)). Esta guía se conserva
+> como registro de lo que se validó entonces; sus comandos ya no funcionan.
+
 Conjunto de datos de coste de varios meses de 2026 para validar en la interfaz la funcionalidad de costes que el dataset público no cubre. **Son datos sintéticos: no son facturas de Azure, no proceden del dataset público versionado y no deben usarse en una demo como si lo fueran.** Los registros y las ingestas llevan el prefijo reservado `synthetic-jup106-`, cada ingesta guarda `{"synthetic": true}` en su petición y el simulador y su fixture no se tocan.
 
 ## Para qué sirve
