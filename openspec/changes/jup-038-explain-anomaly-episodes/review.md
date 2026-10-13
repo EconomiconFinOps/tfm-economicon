@@ -224,3 +224,47 @@ de arriba.
 
 **Estado del grupo 2:** tareas 2.1 a 2.6 hechas, mutación sin supervivientes salvo el equivalente
 justificado, DoD en verde y QA en `accept`.
+
+## Grupo 3 — Lectura con operandos exactos, fase Red (tarea 3.1)
+
+**Entorno.** CockroachDB v24.1.11 desechable en un contenedor propio (`jup038-crdb`, puerto 36415, almacén
+en disco con caché de 256 MiB porque había 1.8 GB de RAM libres), marcado con
+`cluster.organization = 'processor-integration-tests'` como exigen las guardas de las pruebas. Las
+pruebas se ejecutan en `jup054-py-backend` (Python 3.12.15) con `--network container:jup038-crdb` y el
+código copiado dentro del contenedor, no desde un montaje de Windows. **Control del entorno:**
+`tests/test_anomaly_episode_store.py` y `tests/test_anomaly_episode_api.py`, que ya existían, dan
+`82 passed` y 0 omitidas contra ese nodo.
+
+**Pruebas escritas por el `tester`:** `apps/backend/tests/test_anomaly_episode_snapshot.py` (archivo
+nuevo, 234 líneas, 13 pruebas): el `episode` es idéntico a `fetch_anomaly_episode` y sin `_order`; tipos
+`date`, `datetime` con zona horaria y `Decimal`; operandos iguales a las columnas de la tabla leídas con
+SQL directo, por valor y por texto; importes con más de dos decimales (500.004 y 700.028, mientras la API
+muestra 500.00 y 100.00); marca sintética solo con una ingesta completada del mismo cliente; aislamiento
+(`None` para otro cliente y para un id inexistente); la lectura no cambia episodios ni
+`anomaly_detection_state`; **una sola sentencia SQL**, contada con el evento `before_cursor_execute`;
+episodio cerrado con `closed_at` con zona horaria; tres integraciones con `explain_episode` sobre la
+fotografía real (serie base, nota de redondeo y episodio cerrado con fecha UTC); y estabilidad del `id`
+de evidencia entre dos lecturas.
+
+**Evidencia Red** (2026-10-12):
+
+```
+S="C:/Users/victo/AppData/Local/Temp/claude/c--Users-victo-Pontia-tfm-economicon/1f99f606-320c-4e2b-aaaa-58c034f436e4/scratchpad"; R="$(cygpath -w "$PWD")"
+docker run --rm --network container:jup038-crdb -v "$R:/repo:ro" -v "$(cygpath -w "$S"):/scr:ro" -w /work jup054-py-backend sh /scr/crdb-test.sh tests/test_anomaly_episode_snapshot.py
+```
+
+- Resultado: `13 failed`, 0 pasan, **0 omitidas**. Los 13 por el mismo motivo,
+  `AttributeError: 'Database' object has no attribute 'fetch_anomaly_episode_snapshot'`; ninguno por la
+  preparación de datos (series, detección e ids ya funcionan antes de llamar al método nuevo).
+- El orquestador reejecutó el comando y leyó el archivo.
+
+**Ambigüedades señaladas por el `tester`** (sin cambiar el contrato):
+
+1. La prueba de una sola sentencia exige exactamente 1 ejecución de cursor. Si el `coder` usara una
+   transacción explícita o aislamiento SERIALIZABLE, el driver podría emitir sentencias extra: se
+   resuelve con una lectura simple de un solo `SELECT` (`engine.connect()`).
+2. `status_changed_at` es `None` en un episodio sin cambios; solo se exige zona horaria cuando existe.
+3. `fetch_anomaly_episode` ya devuelve el payload sin `_order` (lo quita `order_payloads`).
+
+**Lo que este Red no demuestra.** Que las pruebas sean correctas contra una implementación real; se
+sabrá en el Green. El nodo es de un solo proceso y no prueba concurrencia.

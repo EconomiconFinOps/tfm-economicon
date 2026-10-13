@@ -48,7 +48,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 
 ## 3. Lectura del episodio con operandos exactos
 
-- [ ] 3.1 Red, prueba opt-in con CockroachDB real en un archivo nuevo que reutiliza
+- [x] 3.1 Red, prueba opt-in con CockroachDB real en un archivo nuevo que reutiliza
   `anomaly_episode_support.py`: tras cargar una serie y detectar, `fetch_anomaly_episode_snapshot`
   devuelve el mismo episodio que `fetch_anomaly_episode`, los tres operandos exactos y la marca de
   datos sintéticos (falsa, y cierta con una ingesta marcada); devuelve `None` para otro cliente y
