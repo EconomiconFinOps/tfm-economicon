@@ -1,6 +1,6 @@
 # Revisión de jup-119-coherent-cost-data-reference-date
 
-JUP: JUP-119 · [Trello](https://trello.com/c/HtjtmPaJ) · ADR: [ADR-0021](../../../docs/adr/ADR-0021-demo-cost-data-single-path-and-reference-date.md) · Evidencia: [JUP-119-validation.md](../../../docs/evidence/JUP-119-validation.md)
+JUP: JUP-119 · [Trello](https://trello.com/c/HtjtmPaJ) · ADR: [ADR-0021](../../../../docs/adr/ADR-0021-demo-cost-data-single-path-and-reference-date.md) · Evidencia: [JUP-119-validation.md](../../../../docs/evidence/JUP-119-validation.md)
 
 ## Resumen
 
@@ -16,7 +16,7 @@ Los datos de demostración entran por una sola ruta (generador → API simulada 
 
 ## Validación
 
-Ver [la evidencia](../../../docs/evidence/JUP-119-validation.md): batería completa (backend con CockroachDB real, processor, API simulada, frontend, scripts, Compose y comprobaciones del repositorio), stack aislado real con la receta de navegador (12 pasos `pass` y control positivo) y las tres pantallas con campos ausentes vistas en la interfaz real.
+Ver [la evidencia](../../../../docs/evidence/JUP-119-validation.md): batería completa (backend con CockroachDB real, processor, API simulada, frontend, scripts, Compose y comprobaciones del repositorio), stack aislado real con la receta de navegador (12 pasos `pass` y control positivo) y las tres pantallas con campos ausentes vistas en la interfaz real.
 
 Fallos de entorno que no son de este change: las cuatro suites de salud del proveedor del backend (`ProactorEventLoop`, `RF-119-004`), un reinicio del CockroachDB del Compose por lentitud de disco (`RF-119-008`) y una prueba del frontend con tiempo de espera ajustado (`quality-gates`) que falla bajo carga de CPU y pasa en solitario.
 

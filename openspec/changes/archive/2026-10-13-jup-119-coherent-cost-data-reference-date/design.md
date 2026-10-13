@@ -1,4 +1,4 @@
-JUP: JUP-119 · ADR: [ADR-0021](../../../docs/adr/ADR-0021-demo-cost-data-single-path-and-reference-date.md) (nuevo en este change)
+JUP: JUP-119 · ADR: [ADR-0021](../../../../docs/adr/ADR-0021-demo-cost-data-single-path-and-reference-date.md) (nuevo en este change)
 
 ## Context
 
