@@ -34,6 +34,7 @@ Fuera de alcance: el servicio de carga diaria, la ejecución periódica de la de
 - `synthetic-cost-data`: el conjunto de costes se genera como CSV de la ruta única, cubre hasta el 30/10/2026, no lleva fila sin fecha ni importes con céntimos por encima de 2^53, y los casos raros pasan a pruebas automáticas.
 - `synthetic-anomaly-data`: el conjunto de anomalías se genera como CSV de la ruta única, se amplía hasta el 30/10/2026 y conserva los esperados de JUP-107 con la fecha de referencia en el 21/09/2026 (último día evaluado: 20/09); se retira el requisito de «no interferir» de aquel change.
 - `azure-public-cost-dataset`: se añade el derivado con fechas desplazadas junto al fixture original sin modificar.
+- `cost-anomaly-episodes`: el indicador de datos sintéticos del listado de episodios también reconoce las suscripciones con el prefijo reservado `synthetic-`, porque los datos de demo entran por la ingesta y su petición ya no lleva la marca.
 - `synthetic-cost-demo`: la ruta de demo se prepara con `demo_data.py`, declara la fecha de referencia que supone, deja de mostrar el registro sin fecha excluido y deja de exigir que el cargador de JUP-106 quede byte a byte igual.
 
 ## Impact

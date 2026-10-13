@@ -161,3 +161,13 @@ def test_costs_of_an_ordinary_subscription_are_not_flagged_as_synthetic(demo_ten
                     day="2026-09-01", cost="1.00", service="Compute")
     reference_date.configure(date(2026, 10, 30))
     assert call(api, "GET", "/billing/anomalies/episodes", headers=headers()).json()["includes_synthetic_data"] is False
+
+
+def test_demo_data_of_another_tenant_do_not_set_the_indicator(demo_tenant_a):
+    api, _ = demo_tenant_a
+    with api.db.engine.begin() as connection:
+        insert_run(connection, "run-other", tenant="tenant-b", subscription="synthetic-anomalies")
+        insert_cost(connection, "other", run="run-other", tenant="tenant-b", subscription="synthetic-anomalies",
+                    day="2026-09-01", cost="1.00", service="Compute")
+    reference_date.configure(date(2026, 10, 30))
+    assert call(api, "GET", "/billing/anomalies/episodes", headers=headers()).json()["includes_synthetic_data"] is False
