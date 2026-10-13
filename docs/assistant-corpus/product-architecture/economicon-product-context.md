@@ -19,7 +19,7 @@ El asistente puede apoyarse en este contexto para explicar las areas principales
 - visibilidad de costes por periodo, servicio, suscripcion, grupo de recursos, entorno o etiqueta;
 - asignacion de costes mediante tags y estados de allocation;
 - seguimiento de presupuestos, forecasts y desviaciones;
-- deteccion conceptual de anomalias sobre gasto observado;
+- deteccion de anomalias de coste como episodios candidatos, con criticidad y seguimiento de estado;
 - recomendaciones FinOps de optimizacion, rightsizing, compromisos y mejora de etiquetado;
 - explicacion de terminos FinOps y conceptos propios de Economicon.
 
@@ -35,6 +35,32 @@ El producto organiza la informacion alrededor de cuatro ideas:
 - accion recomendada: oportunidades priorizadas con impacto estimado, esfuerzo, riesgo y estado de seguimiento.
 
 El asistente debe usar estos conceptos para responder de forma consistente con las reglas del MVP.
+
+## Guia Del Panel De Anomalias
+
+El panel Anomalias de Economicon muestra las anomalias de coste del cliente activo, ordenadas por criticidad e impacto. Cada anomalia es un episodio candidato: indica que hay que investigar, no que se haya demostrado una causa.
+
+### Detectar anomalias
+
+El panel no detecta nada al abrirse: solo muestra lo ya guardado. Antes de la primera deteccion indica que todavia no se han buscado anomalias en ese cliente.
+
+El boton "Detectar ahora" revisa los costes diarios del cliente con la regla de negocio y guarda los episodios. Repetirlo es seguro. Hacen falta al menos 8 dias seguidos con datos del cliente; si no los hay, el resultado dice que aun no hay datos suficientes. Si no hay dias completos nuevos, dice que ya estaba al dia.
+
+El texto "Revisado hasta" indica el ultimo dia completo evaluado. El ultimo dia con datos no se evalua porque puede estar incompleto. Cuando los datos son sinteticos, el panel avisa de que son datos de demostracion y no facturas reales.
+
+### Leer el panel
+
+El resumen de arriba cuenta todas las anomalias del cliente y no cambia con los filtros: el impacto acumulado de las abiertas por moneda (las monedas no se suman), cuantas estan abiertas, cuantas son Alta (P1) y cuantas "Ya no se observan".
+
+La criticidad se muestra como Alta (P1), Media (P2) o Baja (P3), segun el impacto acumulado. La observacion indica si "Se sigue observando" o "Ya no se observa" desde una fecha. Una anomalia que ya no se observa sigue abierta hasta que una persona la cierre.
+
+El estado de una anomalia es Nueva, Investigando, Resuelta o Falso positivo. Se puede filtrar por criticidad, estado y observacion. El boton de exportar descarga las filas filtradas.
+
+### Revisar una anomalia
+
+Al abrir el detalle se ven el impacto acumulado, los dias con impacto, el valor de referencia y las reglas aplicadas, junto con la indicacion "Candidata: causa no establecida" y sus limitaciones.
+
+Desde el detalle una persona puede marcarla como "Investigando" o cerrarla como "Resuelta" o "Falso positivo". Cerrar pide un motivo, no se puede deshacer, y si el gasto vuelve a subir se abre una anomalia nueva. El panel no apaga ni modifica ningun recurso de Azure: solo informa.
 
 ## Scope, Dataset Y Tenant
 

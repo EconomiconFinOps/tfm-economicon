@@ -37,12 +37,12 @@ documents:
       - anomalies
       - recommendations
     language: es
-    version: "1.0.0"
+    version: "1.1.0"
     scope: dataset
     tenant_id: null
     dataset_id: economicon-mvp-azure-simulated
     source_type: internal_business_rules
-    updated_at: "2026-08-12"
+    updated_at: "2026-10-13"
   - id: glossary.economicon-mvp
     title: Glosario Del Asistente Economicon
     path: docs/assistant-corpus/glossary/glossary.md
@@ -55,12 +55,12 @@ documents:
       - economicon
       - rag
     language: es
-    version: "1.0.0"
+    version: "1.1.0"
     scope: global
     tenant_id: null
     dataset_id: null
     source_type: curated_reference
-    updated_at: "2026-08-12"
+    updated_at: "2026-10-13"
   - id: product-architecture.economicon-functional
     title: Arquitectura Funcional Del Producto Economicon
     path: docs/assistant-corpus/product-architecture/economicon-product-context.md
@@ -73,9 +73,9 @@ documents:
       - dataset
       - tenant-scope
     language: es
-    version: "1.0.0"
+    version: "1.1.0"
     scope: global
     tenant_id: null
     dataset_id: null
     source_type: product_context
-    updated_at: "2026-08-12"
+    updated_at: "2026-10-13"
