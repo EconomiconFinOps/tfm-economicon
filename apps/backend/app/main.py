@@ -20,6 +20,7 @@ from app.db.database import Database
 from app.services.assistant import AssistantService
 from app.core.embedding_startup import log_embedding_configuration
 from app.services.embedding_provider import LiteLLMEmbeddingProvider, MockEmbeddingProvider
+from app.services import reference_date
 from app.services.rabbitmq_queue import RabbitMQQueue
 from app.services.vector_store import PgVectorQueryStore
 
@@ -32,6 +33,7 @@ async def lifespan(app: FastAPI):
     try:
         settings = get_settings()
         configure_logging()
+        reference_date.configure(settings.cost_reference_date)
         with ExitStack() as resources:
             database = Database(settings.database_url.get_secret_value())
             resources.callback(database.dispose)

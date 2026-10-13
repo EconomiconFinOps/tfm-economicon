@@ -1,0 +1,381 @@
+{
+  "version": 1,
+  "descripcion": "Totales esperados del conjunto de demostracion de costes (scripts/demo_dataset.py): por tenant, mes y moneda, y por servicio y por proyecto. Una prueba los recalcula del CSV con aritmetica exacta sin usar el backend. Importes sinteticos y del dataset publico con fechas desplazadas; no son facturas de Azure.",
+  "window": {
+    "end": "2026-10-30",
+    "start": "2026-07-01"
+  },
+  "absent_fields": [
+    "resource_group",
+    "cost_center",
+    "owner",
+    "application",
+    "environment"
+  ],
+  "cases_not_in_the_csv": {
+    "fila sin fecha de uso": {
+      "motivo": "la API simulada la rechaza",
+      "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"
+    },
+    "importe por encima de 2^53 con centimos": {
+      "motivo": "la API lo devuelve en coma flotante y pierde precision",
+      "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"
+    },
+    "grupos de recurso que solo difieren en mayusculas": {
+      "motivo": "la demo no lleva el grupo de recurso: la API agrupa por dos campos",
+      "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"
+    },
+    "registros con grupo de recurso, centro de coste y otras etiquetas": {
+      "motivo": "la demo no los lleva por la misma razon",
+      "prueba": "apps/backend/tests/test_billing_summary.py::test_scoped_sql_reference_for_each_dimension"
+    },
+    "registros sin grupo de recurso, servicio ni etiquetas": {
+      "motivo": "la demo lleva servicio y proyecto, no el resto",
+      "prueba": "apps/backend/tests/test_tag_coverage.py::test_positive_weighting_adjustments_currencies_and_isolation"
+    }
+  },
+  "figures": {
+    "month_currency": {
+      "tenant-core|2026-07|EUR": {
+        "total": "24273.00",
+        "records": 186
+      },
+      "tenant-core|2026-08|EUR": {
+        "total": "24273.00",
+        "records": 186
+      },
+      "tenant-core|2026-09|EUR": {
+        "total": "30791.00",
+        "records": 197
+      },
+      "tenant-core|2026-10|EUR": {
+        "total": "26928.00",
+        "records": 210
+      },
+      "tenant-growth|2026-07|EUR": {
+        "total": "19404.00",
+        "records": 124
+      },
+      "tenant-growth|2026-08|EUR": {
+        "total": "20421.20",
+        "records": 125
+      },
+      "tenant-growth|2026-08|USD": {
+        "total": "0.00",
+        "records": 31
+      },
+      "tenant-growth|2026-09|EUR": {
+        "total": "21755.54",
+        "records": 121
+      },
+      "tenant-growth|2026-09|USD": {
+        "total": "0.872894883589830",
+        "records": 50
+      },
+      "tenant-growth|2026-10|EUR": {
+        "total": "23242.56",
+        "records": 120
+      },
+      "tenant-growth|2026-10|USD": {
+        "total": "9007199254741837.50",
+        "records": 31
+      }
+    },
+    "month_currency_service": {
+      "tenant-core|2026-07|EUR|Analytics": {
+        "total": "9734.00",
+        "records": 31
+      },
+      "tenant-core|2026-07|EUR|Backup": {
+        "total": "0.00",
+        "records": 31
+      },
+      "tenant-core|2026-07|EUR|Compute": {
+        "total": "4340.00",
+        "records": 31
+      },
+      "tenant-core|2026-07|EUR|Database": {
+        "total": "6634.00",
+        "records": 31
+      },
+      "tenant-core|2026-07|EUR|Storage": {
+        "total": "3534.00",
+        "records": 31
+      },
+      "tenant-core|2026-07|EUR|Tools": {
+        "total": "31.00",
+        "records": 31
+      },
+      "tenant-core|2026-08|EUR|Analytics": {
+        "total": "9734.00",
+        "records": 31
+      },
+      "tenant-core|2026-08|EUR|Backup": {
+        "total": "0.00",
+        "records": 31
+      },
+      "tenant-core|2026-08|EUR|Compute": {
+        "total": "4340.00",
+        "records": 31
+      },
+      "tenant-core|2026-08|EUR|Database": {
+        "total": "6634.00",
+        "records": 31
+      },
+      "tenant-core|2026-08|EUR|Storage": {
+        "total": "3534.00",
+        "records": 31
+      },
+      "tenant-core|2026-08|EUR|Tools": {
+        "total": "31.00",
+        "records": 31
+      },
+      "tenant-core|2026-09|EUR|Analytics": {
+        "total": "9380.00",
+        "records": 30
+      },
+      "tenant-core|2026-09|EUR|Backup": {
+        "total": "300.00",
+        "records": 30
+      },
+      "tenant-core|2026-09|EUR|Compute": {
+        "total": "9432.00",
+        "records": 30
+      },
+      "tenant-core|2026-09|EUR|Database": {
+        "total": "6081.00",
+        "records": 30
+      },
+      "tenant-core|2026-09|EUR|Networking": {
+        "total": "1960.00",
+        "records": 17
+      },
+      "tenant-core|2026-09|EUR|Storage": {
+        "total": "3492.00",
+        "records": 30
+      },
+      "tenant-core|2026-09|EUR|Tools": {
+        "total": "146.00",
+        "records": 30
+      },
+      "tenant-core|2026-10|EUR|Analytics": {
+        "total": "9150.00",
+        "records": 30
+      },
+      "tenant-core|2026-10|EUR|Backup": {
+        "total": "0.00",
+        "records": 30
+      },
+      "tenant-core|2026-10|EUR|Compute": {
+        "total": "4911.00",
+        "records": 30
+      },
+      "tenant-core|2026-10|EUR|Database": {
+        "total": "5130.00",
+        "records": 30
+      },
+      "tenant-core|2026-10|EUR|Networking": {
+        "total": "2550.00",
+        "records": 30
+      },
+      "tenant-core|2026-10|EUR|Storage": {
+        "total": "4863.00",
+        "records": 30
+      },
+      "tenant-core|2026-10|EUR|Tools": {
+        "total": "324.00",
+        "records": 30
+      },
+      "tenant-growth|2026-07|EUR|Compute": {
+        "total": "8820.00",
+        "records": 31
+      },
+      "tenant-growth|2026-07|EUR|Database": {
+        "total": "5292.00",
+        "records": 31
+      },
+      "tenant-growth|2026-07|EUR|Networking": {
+        "total": "1764.00",
+        "records": 31
+      },
+      "tenant-growth|2026-07|EUR|Storage": {
+        "total": "3528.00",
+        "records": 31
+      },
+      "tenant-growth|2026-08|EUR|Compute": {
+        "total": "9396.00",
+        "records": 31
+      },
+      "tenant-growth|2026-08|EUR|Credits": {
+        "total": "-250.00",
+        "records": 1
+      },
+      "tenant-growth|2026-08|EUR|Database": {
+        "total": "5637.60",
+        "records": 31
+      },
+      "tenant-growth|2026-08|EUR|Networking": {
+        "total": "1879.20",
+        "records": 31
+      },
+      "tenant-growth|2026-08|EUR|Storage": {
+        "total": "3758.40",
+        "records": 31
+      },
+      "tenant-growth|2026-08|USD|Compute": {
+        "total": "0.00",
+        "records": 31
+      },
+      "tenant-growth|2026-09|EUR|(sin servicio)": {
+        "total": "12.50",
+        "records": 1
+      },
+      "tenant-growth|2026-09|EUR|Compute": {
+        "total": "9883.20",
+        "records": 30
+      },
+      "tenant-growth|2026-09|EUR|Database": {
+        "total": "5929.92",
+        "records": 30
+      },
+      "tenant-growth|2026-09|EUR|Networking": {
+        "total": "1976.64",
+        "records": 30
+      },
+      "tenant-growth|2026-09|EUR|Storage": {
+        "total": "3953.28",
+        "records": 30
+      },
+      "tenant-growth|2026-09|USD|Bandwidth": {
+        "total": "0.003076697589830",
+        "records": 5
+      },
+      "tenant-growth|2026-09|USD|Load Balancer": {
+        "total": "0.050",
+        "records": 2
+      },
+      "tenant-growth|2026-09|USD|Logic Apps": {
+        "total": "0.00025",
+        "records": 1
+      },
+      "tenant-growth|2026-09|USD|Microsoft Defender for Cloud": {
+        "total": "0.701696",
+        "records": 11
+      },
+      "tenant-growth|2026-09|USD|Storage": {
+        "total": "-0.012127814",
+        "records": 26
+      },
+      "tenant-growth|2026-09|USD|Virtual Network": {
+        "total": "0.130",
+        "records": 5
+      },
+      "tenant-growth|2026-10|EUR|Compute": {
+        "total": "10564.80",
+        "records": 30
+      },
+      "tenant-growth|2026-10|EUR|Database": {
+        "total": "6338.88",
+        "records": 30
+      },
+      "tenant-growth|2026-10|EUR|Networking": {
+        "total": "2112.96",
+        "records": 30
+      },
+      "tenant-growth|2026-10|EUR|Storage": {
+        "total": "4225.92",
+        "records": 30
+      },
+      "tenant-growth|2026-10|USD|Archive": {
+        "total": "9007199254740993",
+        "records": 1
+      },
+      "tenant-growth|2026-10|USD|Storage": {
+        "total": "844.50",
+        "records": 30
+      }
+    },
+    "month_currency_project": {
+      "tenant-core|2026-07|EUR|Demo": {
+        "total": "24273.00",
+        "records": 186
+      },
+      "tenant-core|2026-08|EUR|Demo": {
+        "total": "24273.00",
+        "records": 186
+      },
+      "tenant-core|2026-09|EUR|Demo": {
+        "total": "30791.00",
+        "records": 197
+      },
+      "tenant-core|2026-10|EUR|Demo": {
+        "total": "26928.00",
+        "records": 210
+      },
+      "tenant-growth|2026-07|EUR|(sin proyecto)": {
+        "total": "192.00",
+        "records": 4
+      },
+      "tenant-growth|2026-07|EUR|Alpha": {
+        "total": "14112.00",
+        "records": 62
+      },
+      "tenant-growth|2026-07|EUR|Beta": {
+        "total": "5100.00",
+        "records": 58
+      },
+      "tenant-growth|2026-08|EUR|(sin proyecto)": {
+        "total": "259.20",
+        "records": 5
+      },
+      "tenant-growth|2026-08|EUR|Alpha": {
+        "total": "15033.60",
+        "records": 62
+      },
+      "tenant-growth|2026-08|EUR|Beta": {
+        "total": "5128.40",
+        "records": 58
+      },
+      "tenant-growth|2026-08|USD|Alpha": {
+        "total": "0.00",
+        "records": 31
+      },
+      "tenant-growth|2026-09|EUR|(sin proyecto)": {
+        "total": "222.72",
+        "records": 4
+      },
+      "tenant-growth|2026-09|EUR|Alpha": {
+        "total": "15825.62",
+        "records": 61
+      },
+      "tenant-growth|2026-09|EUR|Beta": {
+        "total": "5707.20",
+        "records": 56
+      },
+      "tenant-growth|2026-09|USD|(sin proyecto)": {
+        "total": "0.443381321589830",
+        "records": 23
+      },
+      "tenant-growth|2026-09|USD|Foo": {
+        "total": "0.429513562",
+        "records": 27
+      },
+      "tenant-growth|2026-10|EUR|(sin proyecto)": {
+        "total": "238.08",
+        "records": 4
+      },
+      "tenant-growth|2026-10|EUR|Alpha": {
+        "total": "16903.68",
+        "records": 60
+      },
+      "tenant-growth|2026-10|EUR|Beta": {
+        "total": "6100.80",
+        "records": 56
+      },
+      "tenant-growth|2026-10|USD|Beta": {
+        "total": "9007199254741837.50",
+        "records": 31
+      }
+    }
+  }
+}

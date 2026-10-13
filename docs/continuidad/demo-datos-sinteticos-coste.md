@@ -1,5 +1,11 @@
 # Demo con datos sintéticos de coste — JUP-107
 
+> **Actualización JUP-119 (2026-10-13):** los datos y el paquete de demo se rehicieron. Una sola ruta de carga
+> (`scripts/demo_dataset.py` → API simulada de demo → ingesta del processor, con `scripts/demo_data.py`), una ventana común
+> del 1 de julio al 30 de octubre de 2026, datos solo por servicio y etiqueta `Project`, y una fecha de referencia
+> configurable (`COST_REFERENCE_DATE`). `synthetic_costs.py` y `synthetic_anomalies.py` ya no existen. Ver
+> [fecha-referencia-datos-demo.md](fecha-referencia-datos-demo.md); lo que sigue es el histórico de JUP-107.
+
 Verificación: 2026-10-11. [Tarjeta](https://trello.com/c/ADFz3fpR). Dos changes de OpenSpec en una sola rama (`feat/JUP-107-synthetic-cost-demo`) y un solo pull request.
 
 ## Qué contiene
