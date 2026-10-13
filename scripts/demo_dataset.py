@@ -238,11 +238,22 @@ def derived_manifest(content: bytes, row_count: int) -> dict:
     }
 
 
+def project_of(row: dict[str, str]) -> str | None:
+    if not row["Tags"]:
+        return None
+    return next((value for key, value in json.loads("{" + row["Tags"] + "}").items() if key.lower() == "project"), None)
+
+
 def demo_manifest(content: bytes, rows: list[dict[str, str]]) -> dict:
     counts: dict[str, int] = {}
+    groups: dict[str, set] = {}
     for row in rows:
         counts[row["SubscriptionId"]] = counts.get(row["SubscriptionId"], 0) + 1
-    pairs = [{**pair, "rows": counts[pair["subscription"]]} for pair in subscription_pairs()]
+        # The query API sums the rows of one day, service, project and currency into one stored record.
+        groups.setdefault(row["SubscriptionId"], set()).add(
+            (row["Date"], row["MeterCategory"], project_of(row), row["BillingCurrencyCode"]))
+    pairs = [{**pair, "rows": counts[pair["subscription"]], "stored_rows": len(groups[pair["subscription"]])}
+             for pair in subscription_pairs()]
     return {
         "schema_version": 1, "generator_version": GENERATOR_VERSION, "path": DEMO_PATH.name,
         "rows": len(rows), "sha256": checksum(content),

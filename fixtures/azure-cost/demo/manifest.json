@@ -21,42 +21,49 @@
     {
       "origin": "synthetic",
       "rows": 779,
+      "stored_rows": 779,
       "subscription": "synthetic-anomalies",
       "tenant": "tenant-core"
     },
     {
       "origin": "synthetic",
       "rows": 490,
+      "stored_rows": 490,
       "subscription": "synthetic-growth-eur",
       "tenant": "tenant-growth"
     },
     {
       "origin": "synthetic",
       "rows": 62,
+      "stored_rows": 62,
       "subscription": "synthetic-growth-usd",
       "tenant": "tenant-growth"
     },
     {
       "origin": "public-shifted",
       "rows": 2,
+      "stored_rows": 2,
       "subscription": "1caaa5a3-2b66-438e-8ab4-bce37d518c5d",
       "tenant": "tenant-growth"
     },
     {
       "origin": "public-shifted",
       "rows": 40,
+      "stored_rows": 29,
       "subscription": "64e355d7-997c-491d-b0c1-8414dccfcf42",
       "tenant": "tenant-growth"
     },
     {
       "origin": "public-shifted",
       "rows": 6,
+      "stored_rows": 6,
       "subscription": "9ec51cfd-5ca7-4d76-8101-dd0a4abc5674",
       "tenant": "tenant-growth"
     },
     {
       "origin": "public-shifted",
       "rows": 2,
+      "stored_rows": 2,
       "subscription": "ed570627-0265-4620-bb42-bae06bcfa914",
       "tenant": "tenant-growth"
     }
