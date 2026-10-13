@@ -20,7 +20,11 @@ const LIMITACIONES = [
 
 // Ejemplo A del backend: Compute, EUR, apertura 2026-09-08, referencia 400.00, observado 550.00,
 // subida 150.00 (37.50 %), impacto 400.00 en 2 días hasta 2026-09-09, P3, estado "new".
-function evidenceA(): Record<string, any> {
+// Evidencia JSON que las pruebas mutan a mano: cada nivel anidado es otro objeto laxo. Se tipa asi y no con
+// `any` (lint) para conservar la comprobacion de tipos; las mutaciones anidadas usan un cast puntual a `Mut`.
+type Mut = { [key: string]: unknown };
+
+function evidenceA(): Mut {
   return {
     schema_version: "1.0",
     adapter_version: "anomaly-explanation-1.0",
@@ -56,7 +60,7 @@ function evidenceA(): Record<string, any> {
   };
 }
 
-function mutated(change: (copy: Record<string, any>) => void): Record<string, any> {
+function mutated(change: (copy: Mut) => void): Mut {
   const copy = structuredClone(evidenceA());
   change(copy);
   return copy;
@@ -96,7 +100,7 @@ describe("JUP-038 AnomalyEvidence: evidencia válida", () => {
   ])("usa la palabra del panel para la criticidad %s en el resumen y en la línea de criticidad", async (severity, etiqueta, tramo) => {
     // La criticidad se escribe con las mismas palabras que el panel /anomalies (severityLabels).
     await renderEvidence(mutated((e) => {
-      e.episode.severity = severity; e.impact.severity = severity; e.impact.severity_band = tramo;
+      (e.episode as Mut).severity = severity; (e.impact as Mut).severity = severity; (e.impact as Mut).severity_band = tramo;
     }), false);
     fireEvent.click(screen.getByText(`Evidencia de la anomalía — ${etiqueta}`));
     expect(screen.getByText(`Criticidad: ${etiqueta} (tramo ${tramo}).`)).toBeVisible();
@@ -108,7 +112,7 @@ describe("JUP-038 AnomalyEvidence: evidencia válida", () => {
     ["resolved", "Resuelta"],
     ["false_positive", "Falso positivo"],
   ])("escribe el estado %s con la palabra del panel", async (status, etiqueta) => {
-    await renderEvidence(mutated((e) => { e.episode.status = status; }));
+    await renderEvidence(mutated((e) => { (e.episode as Mut).status = status; }));
     expect(screen.getByText(`Estado: ${etiqueta}`)).toBeVisible();
   });
 
@@ -136,18 +140,18 @@ describe("JUP-038 AnomalyEvidence: evidencia válida", () => {
 
   it("escribe '1 día' en singular y '0 días' y '2 días' en plural", async () => {
     // Edge case de concordancia: solo el 1 es singular; el 0 se escribe en plural.
-    const { unmount } = await renderEvidence(mutated((e) => { e.impact.day_count = 1; e.episode.impact_day_count = 1; }));
+    const { unmount } = await renderEvidence(mutated((e) => { (e.impact as Mut).day_count = 1; (e.episode as Mut).impact_day_count = 1; }));
     expect(screen.getByText("Impacto acumulado: 400.00 EUR en 1 día, hasta 2026-09-09.")).toBeVisible();
     unmount();
-    const cero = await renderEvidence(mutated((e) => { e.impact.day_count = 0; e.episode.impact_day_count = 0; }));
+    const cero = await renderEvidence(mutated((e) => { (e.impact as Mut).day_count = 0; (e.episode as Mut).impact_day_count = 0; }));
     expect(screen.getByText("Impacto acumulado: 400.00 EUR en 0 días, hasta 2026-09-09.")).toBeVisible();
     cero.unmount();
-    await renderEvidence(mutated((e) => { e.impact.day_count = 12; e.episode.impact_day_count = 12; }));
+    await renderEvidence(mutated((e) => { (e.impact as Mut).day_count = 12; (e.episode as Mut).impact_day_count = 12; }));
     expect(screen.getByText("Impacto acumulado: 400.00 EUR en 12 días, hasta 2026-09-09.")).toBeVisible();
   });
 
   it("dice 'sin servicio informado' cuando el servicio es nulo", async () => {
-    await renderEvidence(mutated((e) => { e.episode.service = null; }));
+    await renderEvidence(mutated((e) => { (e.episode as Mut).service = null; }));
     expect(screen.getByText("Servicio: sin servicio informado · Moneda: EUR")).toBeVisible();
     expect(screen.queryByText(/null/)).not.toBeInTheDocument();
   });
@@ -155,7 +159,7 @@ describe("JUP-038 AnomalyEvidence: evidencia válida", () => {
   it("pinta el servicio como texto: el HTML del nombre no crea ningún elemento", async () => {
     // El nombre del servicio viene de datos del cliente y no es de confianza (riesgo de XSS).
     const hostil = "<img src=x onerror=alert(1)>";
-    const { container } = await renderEvidence(mutated((e) => { e.episode.service = hostil; }));
+    const { container } = await renderEvidence(mutated((e) => { (e.episode as Mut).service = hostil; }));
     expect(container.querySelector("img")).toBeNull();
     expect(screen.getByText(`Servicio: ${hostil} · Moneda: EUR`)).toBeVisible();
   });
@@ -163,7 +167,7 @@ describe("JUP-038 AnomalyEvidence: evidencia válida", () => {
   it("usa la moneda del episodio (USD) en todas las líneas con importe y no menciona EUR", async () => {
     // Sin conversión: la moneda es la del episodio. Las limitaciones se sustituyen para que no citen EUR.
     const { container } = await renderEvidence(mutated((e) => {
-      e.episode.currency = "USD"; e.episode.limitations = ["Limitación de prueba."]; e.limitations = ["Limitación de prueba."];
+      (e.episode as Mut).currency = "USD"; (e.episode as Mut).limitations = ["Limitación de prueba."]; e.limitations = ["Limitación de prueba."];
     }));
     expect(screen.getByText("Servicio: Compute · Moneda: USD")).toBeVisible();
     expect(screen.getByText("Regla jup019-daily-v1: más de 100.00 USD y más de un 20 % sobre la referencia, las dos a la vez.")).toBeVisible();
@@ -174,8 +178,8 @@ describe("JUP-038 AnomalyEvidence: evidencia válida", () => {
 
   it("muestra la regla con la versión y los umbrales que trae la evidencia", async () => {
     await renderEvidence(mutated((e) => {
-      e.source.rules_version = "jup019-daily-v2"; e.episode.rules_version = "jup019-daily-v2";
-      e.opening.absolute_threshold = "250.50"; e.opening.relative_threshold_percent = "35";
+      (e.source as Mut).rules_version = "jup019-daily-v2"; (e.episode as Mut).rules_version = "jup019-daily-v2";
+      (e.opening as Mut).absolute_threshold = "250.50"; (e.opening as Mut).relative_threshold_percent = "35";
     }));
     expect(screen.getByText("Regla jup019-daily-v2: más de 250.50 EUR y más de un 35 % sobre la referencia, las dos a la vez.")).toBeVisible();
   });
@@ -212,7 +216,7 @@ describe("JUP-038 AnomalyEvidence: evidencia válida", () => {
   it("toma las limitaciones de la evidencia y no las del episodio embebido", async () => {
     // Cada fuente tiene su texto; el bloque debe leer evidence.limitations.
     await renderEvidence(mutated((e) => {
-      e.episode.limitations = ["Texto del episodio."]; e.limitations = ["Texto de la evidencia."];
+      (e.episode as Mut).limitations = ["Texto del episodio."]; e.limitations = ["Texto de la evidencia."];
     }));
     const lista = screen.getByRole("list", { name: "Limitaciones" });
     expect(within(lista).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["Texto de la evidencia."]);
@@ -276,10 +280,10 @@ describe("JUP-038 AnomalyEvidence: sin aritmética propia", () => {
     const grande = "9007199254740993.01";
     const observado = "9007199254740995.03";
     await renderEvidence(mutated((e) => {
-      e.episode.reference_daily_cost = grande; e.opening.reference_daily_cost = grande;
-      e.episode.opening_observed_cost = observado; e.opening.observed_cost = observado;
-      e.opening.absolute_increase = "7.77"; e.opening.relative_increase_percent = "999.99";
-      e.episode.accumulated_impact = grande; e.impact.accumulated_impact = grande;
+      (e.episode as Mut).reference_daily_cost = grande; (e.opening as Mut).reference_daily_cost = grande;
+      (e.episode as Mut).opening_observed_cost = observado; (e.opening as Mut).observed_cost = observado;
+      (e.opening as Mut).absolute_increase = "7.77"; (e.opening as Mut).relative_increase_percent = "999.99";
+      (e.episode as Mut).accumulated_impact = grande; (e.impact as Mut).accumulated_impact = grande;
       e.operands = {
         reference_seven_day_total: "63050394783186951.070000000001",
         opening_observed_cost: "9007199254740995.030000000001",
@@ -296,12 +300,12 @@ describe("JUP-038 AnomalyEvidence: sin aritmética propia", () => {
 
   it("no recalcula los días: usa day_count de la evidencia aunque el rango de fechas diga otra cosa", async () => {
     // Del 2026-09-08 al 2026-09-09 hay 2 días; la evidencia dice 5 y debe mostrarse 5, no un valor derivado.
-    await renderEvidence(mutated((e) => { e.impact.day_count = 5; e.episode.impact_day_count = 5; }));
+    await renderEvidence(mutated((e) => { (e.impact as Mut).day_count = 5; (e.episode as Mut).impact_day_count = 5; }));
     expect(screen.getByText("Impacto acumulado: 400.00 EUR en 5 días, hasta 2026-09-09.")).toBeVisible();
   });
 
   it("no recalcula la subida a partir del observado y la referencia", async () => {
-    await renderEvidence(mutated((e) => { e.opening.absolute_increase = "149.99"; e.opening.relative_increase_percent = "37.49"; }));
+    await renderEvidence(mutated((e) => { (e.opening as Mut).absolute_increase = "149.99"; (e.opening as Mut).relative_increase_percent = "37.49"; }));
     expect(screen.getByText("Día de apertura 2026-09-08: observado 550.00 EUR, referencia diaria 400.00 EUR. Subida 149.99 EUR (37.49 %).")).toBeVisible();
   });
 });
@@ -319,12 +323,12 @@ describe("JUP-038 AnomalyEvidence: evidencia no válida", () => {
     ["adapter_version distinta", () => mutated((e) => { e.adapter_version = "otro-1.0"; })],
     ["id con otro formato", () => mutated((e) => { e.id = "anomaly-explanation:xyz"; })],
     ["estado partial", () => mutated((e) => { e.status = "partial"; })],
-    ["conditions_met falso", () => mutated((e) => { e.opening.conditions_met = false; })],
-    ["operando con notación científica", () => mutated((e) => { e.operands.reference_seven_day_total = "2.8e3"; })],
+    ["conditions_met falso", () => mutated((e) => { (e.opening as Mut).conditions_met = false; })],
+    ["operando con notación científica", () => mutated((e) => { (e.operands as Mut).reference_seven_day_total = "2.8e3"; })],
     ["nota de redondeo desconocida", () => mutated((e) => { e.rounding_notes = ["otra"]; })],
-    ["criticidad del impacto incoherente con el episodio", () => mutated((e) => { e.impact.severity = "P1"; })],
-    ["importe de apertura incoherente con el episodio", () => mutated((e) => { e.opening.observed_cost = "551.00"; })],
-    ["fecha imposible", () => mutated((e) => { e.impact.through_date = "2026-02-30"; })],
+    ["criticidad del impacto incoherente con el episodio", () => mutated((e) => { (e.impact as Mut).severity = "P1"; })],
+    ["importe de apertura incoherente con el episodio", () => mutated((e) => { (e.opening as Mut).observed_cost = "551.00"; })],
+    ["fecha imposible", () => mutated((e) => { (e.impact as Mut).through_date = "2026-02-30"; })],
     ["causa establecida", () => mutated((e) => { e.cause_status = "established"; })],
   ];
 

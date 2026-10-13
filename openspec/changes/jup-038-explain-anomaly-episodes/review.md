@@ -708,3 +708,64 @@ y `observed_cost` mal formadas se rechazan por forma o por coherencia sin aislar
 
 **Lo que este Red no demuestra.** Que las pruebas sean correctas contra la implementación real; se sabrá en el
 Green. No hay prueba en navegador real todavía (grupo 8).
+
+## Grupo 5 — Evidencia de la explicación en el frontend, fase Green (tarea 5.3)
+
+**Producto del `coder`:**
+
+- `apps/frontend/src/services/contracts.ts` (+70, 0 borradas): `AnomalyEvidence`, `AnomalyRoundingNote` e
+  `isAnomalyEvidence`, que reutiliza `anomalyObject`, `anomalyMoney`, `anomalyDate`, `anomalyInstant`,
+  `anomalyCount` e `isAnomalyEpisode` y añade solo dos ayudantes locales (`anomalyExact` y `anomalyThreshold`).
+  Aplica las cuatro coherencias internas con el episodio.
+- `apps/frontend/src/components/AnomalyEvidence.tsx` (nuevo): usa `severityLabels` y `statusLabels` del panel,
+  no calcula nada y pinta el servicio y las limitaciones como texto de React. Con evidencia no válida da un
+  único párrafo y ninguna cifra.
+- `apps/frontend/src/components/AnswerEvidence.tsx` (+4/−1): un import y la rama nueva del ternario. Hubo que
+  partir en dos líneas la línea existente `</section> : "cost_evidence" in metadata ? … : <p …>` para insertarla;
+  la PR #121 (JUP-035) reescribe esas mismas líneas, de modo que ahí habrá conflicto de contenido que resolver
+  al integrar (tarea 8.4).
+
+**Decisiones del `coder` no cubiertas por el encargo** (revisadas): `Date.parse` de V8 acepta
+`2026-02-30T00:00:00Z`, así que `anomalyInstant` por sí sola no rechaza un `explained_at` con día imposible; se
+añade `anomalyDate(explained_at.slice(0, 10))` con su comentario, sin modificar `anomalyInstant`. Los umbrales
+son `^\d+(\.\d+)?$` y los operandos `^-?\d+(\.\d+)?$`. `rules_version` y `severity_band` se rechazan si están
+vacíos o solo con espacios (`isNonemptyString` no hace `trim`). No se exige coherencia entre
+`source.rules_version` y `episode.rules_version` porque las pruebas no la fijan.
+
+**Evidencia Green** (2026-10-12, reejecutada por el orquestador, Windows):
+
+- Pruebas nuevas: **261 de 261** (`anomalyEvidence` 202, `AnomalyEvidence` 44, `AnswerEvidence.anomaly` 15);
+  antes `257 failed | 4 passed`. El import dinámico con `/* @vite-ignore */` resuelve ahora que el módulo existe.
+- Control (`AnswerEvidence`, `CostEvidence`, y los de episodios y panel): sigue en verde; en conjunto con las
+  nuevas, `5 archivos, 272 pruebas pasan`.
+- `corepack pnpm --filter @finops/frontend typecheck`: código 0.
+- `corepack pnpm --filter @finops/frontend lint`: código 0 **tras la corrección de abajo**.
+
+### Adenda: lint de las pruebas del Red y segunda excepción al candado
+
+**Qué pasó.** El Green dejó al descubierto que `lint` fallaba con **49 errores, todos en las tres pruebas del
+Red** (44 + 3 + 1 `no-explicit-any` y 1 `no-loss-of-precision`); el producto pasaba `eslint` limpio. Es un fallo
+del **proceso**: el Red no incluyó lint ni typecheck de los archivos de pruebas nuevos. Desde ahora el encargo al
+`tester` exige `lint` y `typecheck` de sus archivos ya en la fase Red.
+
+**Decisiones de Victor, 2026-10-12.** Eligió el bypass puntual del candado (frente a relajar la regla de ESLint,
+que debilitaría el lint de todo el equipo, o corregirlo a mano). El sistema de permisos de Claude Code
+**denegó** el primer intento, hecho por el `tester` ("Auto-Mode Bypass"); el `tester` no insistió y lo escaló.
+Victor autorizó entonces **directamente al orquestador** a aplicar la corrección, y así se hizo. No se tocó la
+configuración de hooks ni `.claude/`.
+
+**Qué cambió.** Solo los tres archivos de pruebas, y solo tipos:
+
+- `Record<string, any>` → un alias `type Mut = { [key: string]: unknown }` con su comentario (48 sustituciones) y
+  86 casts puntuales `(e.episode as Mut).x` en las mutaciones anidadas.
+- El literal `9007199254740993` → `Number("9007199254740993")` con un comentario: se evalúa al mismo valor,
+  `9007199254740992`, fuera del rango seguro.
+- No se usó `eslint-disable`: `LoginPage.tsx` documenta que en este repositorio un `eslint-disable` hace
+  crashear el linter entero.
+
+**Verificación independiente de que solo cambiaron tipos.** Se deshicieron las sustituciones (los casts, el
+alias y su comentario, `Mut` → `Record<string, any>` y el literal) sobre cada archivo y se comparó con la versión
+commiteada en `f678ee09`: **los tres quedan idénticos byte a byte**. Los recuentos de `it(` y `expect(` no
+cambian (27 y 67; 20 y 56; 8 y 26). Tras la corrección: `lint` y `typecheck` con código 0 y 272 pruebas en verde.
+
+**Pendiente del grupo 5:** mutación (5.4), DoD del frontend y QA.

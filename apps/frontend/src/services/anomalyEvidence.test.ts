@@ -14,7 +14,11 @@ const LIMITATIONS = [
 ];
 
 // Evidencia válida base. Los operandos llevan 12 decimales, como los guarda la base de datos en la práctica.
-function evidenceA(): Record<string, any> {
+// Evidencia JSON que las pruebas mutan a mano: cada nivel anidado es otro objeto laxo. Se tipa asi y no con
+// `any` (lint) para conservar la comprobacion de tipos; las mutaciones anidadas usan un cast puntual a `Mut`.
+type Mut = { [key: string]: unknown };
+
+function evidenceA(): Mut {
   return {
     schema_version: "1.0",
     adapter_version: "anomaly-explanation-1.0",
@@ -52,7 +56,7 @@ function evidenceA(): Record<string, any> {
 
 // Devuelve una copia de la evidencia base tras aplicar una única mutación: cada caso de rechazo rompe
 // una sola regla para que el motivo del rechazo sea inequívoco.
-function mutated(change: (copy: Record<string, any>) => void): Record<string, any> {
+function mutated(change: (copy: Mut) => void): Mut {
   const copy = structuredClone(evidenceA());
   change(copy);
   return copy;
@@ -72,7 +76,7 @@ describe("JUP-038 isAnomalyEvidence: casos válidos", () => {
 
   it("acepta las horas del episodio con Z (la API de episodios las escribe así)", () => {
     expect(isAnomalyEvidence(mutated((e) => {
-      e.episode.created_at = "2026-09-10T03:00:00Z"; e.episode.updated_at = "2026-09-10T03:00:00Z";
+      (e.episode as Mut).created_at = "2026-09-10T03:00:00Z"; (e.episode as Mut).updated_at = "2026-09-10T03:00:00Z";
     }))).toBe(true);
   });
 
@@ -91,9 +95,9 @@ describe("JUP-038 isAnomalyEvidence: casos válidos", () => {
 
   it("acepta un servicio nulo, otra criticidad coherente y un impacto de 0 días", () => {
     expect(isAnomalyEvidence(mutated((e) => {
-      e.episode.service = null;
-      e.episode.severity = "P1"; e.impact.severity = "P1"; e.impact.severity_band = "> 2000.00";
-      e.episode.impact_day_count = 0; e.impact.day_count = 0;
+      (e.episode as Mut).service = null;
+      (e.episode as Mut).severity = "P1"; (e.impact as Mut).severity = "P1"; (e.impact as Mut).severity_band = "> 2000.00";
+      (e.episode as Mut).impact_day_count = 0; (e.impact as Mut).day_count = 0;
     }))).toBe(true);
   });
 
@@ -108,8 +112,8 @@ describe("JUP-038 isAnomalyEvidence: casos válidos", () => {
     // Se valida el texto, nunca se convierte a número: 9007199254740993.01 es mayor que MAX_SAFE_INTEGER.
     expect(isAnomalyEvidence(mutated((e) => {
       const big = "9007199254740993.01";
-      e.episode.accumulated_impact = big; e.impact.accumulated_impact = big;
-      e.episode.reference_daily_cost = big; e.opening.reference_daily_cost = big;
+      (e.episode as Mut).accumulated_impact = big; (e.impact as Mut).accumulated_impact = big;
+      (e.episode as Mut).reference_daily_cost = big; (e.opening as Mut).reference_daily_cost = big;
     }))).toBe(true);
   });
 });
@@ -131,25 +135,25 @@ describe("JUP-038 isAnomalyEvidence: valores que no son un objeto de evidencia",
 
 describe("JUP-038 isAnomalyEvidence: versiones, identificador y estado", () => {
   it.each([
-    ["schema_version distinta", (e: Record<string, any>) => { e.schema_version = "2.0"; }],
-    ["schema_version numérica", (e: Record<string, any>) => { e.schema_version = 1; }],
-    ["sin schema_version", (e: Record<string, any>) => { delete e.schema_version; }],
-    ["adapter_version distinta", (e: Record<string, any>) => { e.adapter_version = "anomaly-explanation-2.0"; }],
-    ["adapter_version de costes", (e: Record<string, any>) => { e.adapter_version = "ownership-1.0"; }],
-    ["sin adapter_version", (e: Record<string, any>) => { delete e.adapter_version; }],
-    ["id sin prefijo", (e: Record<string, any>) => { e.id = "a".repeat(64); }],
-    ["id con prefijo de costes", (e: Record<string, any>) => { e.id = `cost:${"a".repeat(64)}`; }],
-    ["id con 63 hex", (e: Record<string, any>) => { e.id = `anomaly-explanation:${"a".repeat(63)}`; }],
-    ["id con 65 hex", (e: Record<string, any>) => { e.id = `anomaly-explanation:${"a".repeat(65)}`; }],
-    ["id con hex en mayúscula", (e: Record<string, any>) => { e.id = `anomaly-explanation:${"A".repeat(64)}`; }],
-    ["id con carácter no hex", (e: Record<string, any>) => { e.id = `anomaly-explanation:${"g".repeat(64)}`; }],
-    ["id con salto de línea final", (e: Record<string, any>) => { e.id = `anomaly-explanation:${"a".repeat(64)}\n`; }],
-    ["id con texto antes", (e: Record<string, any>) => { e.id = `x anomaly-explanation:${"a".repeat(64)}`; }],
-    ["id numérico", (e: Record<string, any>) => { e.id = 7; }],
-    ["sin id", (e: Record<string, any>) => { delete e.id; }],
-    ["status partial", (e: Record<string, any>) => { e.status = "partial"; }],
-    ["status no_data", (e: Record<string, any>) => { e.status = "no_data"; }],
-    ["sin status", (e: Record<string, any>) => { delete e.status; }],
+    ["schema_version distinta", (e: Mut) => { e.schema_version = "2.0"; }],
+    ["schema_version numérica", (e: Mut) => { e.schema_version = 1; }],
+    ["sin schema_version", (e: Mut) => { delete e.schema_version; }],
+    ["adapter_version distinta", (e: Mut) => { e.adapter_version = "anomaly-explanation-2.0"; }],
+    ["adapter_version de costes", (e: Mut) => { e.adapter_version = "ownership-1.0"; }],
+    ["sin adapter_version", (e: Mut) => { delete e.adapter_version; }],
+    ["id sin prefijo", (e: Mut) => { e.id = "a".repeat(64); }],
+    ["id con prefijo de costes", (e: Mut) => { e.id = `cost:${"a".repeat(64)}`; }],
+    ["id con 63 hex", (e: Mut) => { e.id = `anomaly-explanation:${"a".repeat(63)}`; }],
+    ["id con 65 hex", (e: Mut) => { e.id = `anomaly-explanation:${"a".repeat(65)}`; }],
+    ["id con hex en mayúscula", (e: Mut) => { e.id = `anomaly-explanation:${"A".repeat(64)}`; }],
+    ["id con carácter no hex", (e: Mut) => { e.id = `anomaly-explanation:${"g".repeat(64)}`; }],
+    ["id con salto de línea final", (e: Mut) => { e.id = `anomaly-explanation:${"a".repeat(64)}\n`; }],
+    ["id con texto antes", (e: Mut) => { e.id = `x anomaly-explanation:${"a".repeat(64)}`; }],
+    ["id numérico", (e: Mut) => { e.id = 7; }],
+    ["sin id", (e: Mut) => { delete e.id; }],
+    ["status partial", (e: Mut) => { e.status = "partial"; }],
+    ["status no_data", (e: Mut) => { e.status = "no_data"; }],
+    ["sin status", (e: Mut) => { delete e.status; }],
   ])("rechaza: %s", (_nombre, cambio) => {
     expect(isAnomalyEvidence(mutated(cambio))).toBe(false);
   });
@@ -157,19 +161,19 @@ describe("JUP-038 isAnomalyEvidence: versiones, identificador y estado", () => {
 
 describe("JUP-038 isAnomalyEvidence: fuente", () => {
   it.each([
-    ["source ausente", (e: Record<string, any>) => { delete e.source; }],
-    ["source nulo", (e: Record<string, any>) => { e.source = null; }],
-    ["source como cadena de costes", (e: Record<string, any>) => { e.source = "azure_cost_records/completed"; }],
-    ["kind distinto", (e: Record<string, any>) => { e.source.kind = "azure_cost_records"; }],
-    ["sin kind", (e: Record<string, any>) => { delete e.source.kind; }],
-    ["rules_version vacío", (e: Record<string, any>) => { e.source.rules_version = ""; }],
-    ["rules_version solo espacios", (e: Record<string, any>) => { e.source.rules_version = "   "; }],
-    ["rules_version numérico", (e: Record<string, any>) => { e.source.rules_version = 1; }],
-    ["sin rules_version", (e: Record<string, any>) => { delete e.source.rules_version; }],
-    ["data_as_of imposible", (e: Record<string, any>) => { e.source.data_as_of = "2026-02-30"; }],
-    ["data_as_of con hora", (e: Record<string, any>) => { e.source.data_as_of = "2026-09-09T00:00:00Z"; }],
-    ["data_as_of nulo", (e: Record<string, any>) => { e.source.data_as_of = null; }],
-    ["sin data_as_of", (e: Record<string, any>) => { delete e.source.data_as_of; }],
+    ["source ausente", (e: Mut) => { delete e.source; }],
+    ["source nulo", (e: Mut) => { e.source = null; }],
+    ["source como cadena de costes", (e: Mut) => { e.source = "azure_cost_records/completed"; }],
+    ["kind distinto", (e: Mut) => { (e.source as Mut).kind = "azure_cost_records"; }],
+    ["sin kind", (e: Mut) => { delete (e.source as Mut).kind; }],
+    ["rules_version vacío", (e: Mut) => { (e.source as Mut).rules_version = ""; }],
+    ["rules_version solo espacios", (e: Mut) => { (e.source as Mut).rules_version = "   "; }],
+    ["rules_version numérico", (e: Mut) => { (e.source as Mut).rules_version = 1; }],
+    ["sin rules_version", (e: Mut) => { delete (e.source as Mut).rules_version; }],
+    ["data_as_of imposible", (e: Mut) => { (e.source as Mut).data_as_of = "2026-02-30"; }],
+    ["data_as_of con hora", (e: Mut) => { (e.source as Mut).data_as_of = "2026-09-09T00:00:00Z"; }],
+    ["data_as_of nulo", (e: Mut) => { (e.source as Mut).data_as_of = null; }],
+    ["sin data_as_of", (e: Mut) => { delete (e.source as Mut).data_as_of; }],
   ])("rechaza: %s", (_nombre, cambio) => {
     expect(isAnomalyEvidence(mutated(cambio))).toBe(false);
   });
@@ -177,15 +181,15 @@ describe("JUP-038 isAnomalyEvidence: fuente", () => {
 
 describe("JUP-038 isAnomalyEvidence: episodio", () => {
   it.each([
-    ["episodio ausente", (e: Record<string, any>) => { delete e.episode; }],
-    ["episodio nulo", (e: Record<string, any>) => { e.episode = null; }],
-    ["episodio como lista", (e: Record<string, any>) => { e.episode = []; }],
-    ["criticidad desconocida (P4)", (e: Record<string, any>) => { e.episode.severity = "P4"; }],
-    ["estado desconocido", (e: Record<string, any>) => { e.episode.status = "acknowledged"; }],
-    ["importe del episodio sin dos decimales", (e: Record<string, any>) => { e.episode.reference_daily_cost = "400.0"; }],
-    ["fecha de inicio imposible", (e: Record<string, any>) => { e.episode.start_date = "2026-02-30"; }],
-    ["moneda vacía", (e: Record<string, any>) => { e.episode.currency = ""; }],
-    ["causa del episodio establecida", (e: Record<string, any>) => { e.episode.cause_status = "established"; }],
+    ["episodio ausente", (e: Mut) => { delete e.episode; }],
+    ["episodio nulo", (e: Mut) => { e.episode = null; }],
+    ["episodio como lista", (e: Mut) => { e.episode = []; }],
+    ["criticidad desconocida (P4)", (e: Mut) => { (e.episode as Mut).severity = "P4"; }],
+    ["estado desconocido", (e: Mut) => { (e.episode as Mut).status = "acknowledged"; }],
+    ["importe del episodio sin dos decimales", (e: Mut) => { (e.episode as Mut).reference_daily_cost = "400.0"; }],
+    ["fecha de inicio imposible", (e: Mut) => { (e.episode as Mut).start_date = "2026-02-30"; }],
+    ["moneda vacía", (e: Mut) => { (e.episode as Mut).currency = ""; }],
+    ["causa del episodio establecida", (e: Mut) => { (e.episode as Mut).cause_status = "established"; }],
   ])("rechaza, vía isAnomalyEpisode: %s", (_nombre, cambio) => {
     expect(isAnomalyEvidence(mutated(cambio))).toBe(false);
   });
@@ -201,7 +205,7 @@ describe("JUP-038 isAnomalyEvidence: operandos exactos", () => {
   });
 
   it.each(claves)("rechaza que falte el operando %s", (clave) => {
-    expect(isAnomalyEvidence(mutated((e) => { delete e.operands[clave]; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { delete (e.operands as Mut)[clave]; }))).toBe(false);
   });
 
   // Cada valor malformado se prueba en cada una de las tres claves para que ninguna quede sin validar.
@@ -221,7 +225,7 @@ describe("JUP-038 isAnomalyEvidence: operandos exactos", () => {
   ];
   for (const clave of claves) {
     it.each(malos)(`rechaza ${clave} con %s`, (_nombre, valor) => {
-      expect(isAnomalyEvidence(mutated((e) => { e.operands[clave] = valor; }))).toBe(false);
+      expect(isAnomalyEvidence(mutated((e) => { (e.operands as Mut)[clave] = valor; }))).toBe(false);
     });
   }
 });
@@ -247,32 +251,32 @@ describe("JUP-038 isAnomalyEvidence: apertura", () => {
 
   for (const clave of importes) {
     it.each(importesMalos)(`rechaza ${clave} con %s`, (_nombre, valor) => {
-      expect(isAnomalyEvidence(mutated((e) => { e.opening[clave] = valor; }))).toBe(false);
+      expect(isAnomalyEvidence(mutated((e) => { (e.opening as Mut)[clave] = valor; }))).toBe(false);
     });
     it(`rechaza que falte ${clave}`, () => {
-      expect(isAnomalyEvidence(mutated((e) => { delete e.opening[clave]; }))).toBe(false);
+      expect(isAnomalyEvidence(mutated((e) => { delete (e.opening as Mut)[clave]; }))).toBe(false);
     });
   }
 
   // reference_daily_cost y observed_cost también deben ser importes de 2 decimales; además deben coincidir
   // con el episodio (coherencia, más abajo), así que aquí solo se prueba el rechazo de la forma.
   it.each(["reference_daily_cost", "observed_cost"])("rechaza %s con un solo decimal o numérico", (clave) => {
-    expect(isAnomalyEvidence(mutated((e) => { e.opening[clave] = "400.0"; }))).toBe(false);
-    expect(isAnomalyEvidence(mutated((e) => { e.opening[clave] = 400; }))).toBe(false);
-    expect(isAnomalyEvidence(mutated((e) => { delete e.opening[clave]; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.opening as Mut)[clave] = "400.0"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.opening as Mut)[clave] = 400; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { delete (e.opening as Mut)[clave]; }))).toBe(false);
   });
 
   it.each(["absolute_threshold", "relative_threshold_percent"])("rechaza %s mal formado", (clave) => {
     for (const malo of ["1e2", "2e1", "", "100,00", "20 %", 20, null, " 20", "20."]) {
-      expect(isAnomalyEvidence(mutated((e) => { e.opening[clave] = malo; })), `valor ${String(malo)}`).toBe(false);
+      expect(isAnomalyEvidence(mutated((e) => { (e.opening as Mut)[clave] = malo; })), `valor ${String(malo)}`).toBe(false);
     }
-    expect(isAnomalyEvidence(mutated((e) => { delete e.opening[clave]; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { delete (e.opening as Mut)[clave]; }))).toBe(false);
   });
 
   it.each(["absolute_threshold", "relative_threshold_percent"])("acepta %s con cualquier número de decimales", (clave) => {
     // Los umbrales salen tal cual de las reglas del episodio: "20" o "100.00" son igual de válidos.
     for (const bueno of ["20", "100.00", "0.5", "12.123456"]) {
-      expect(isAnomalyEvidence(mutated((e) => { e.opening[clave] = bueno; })), `valor ${bueno}`).toBe(true);
+      expect(isAnomalyEvidence(mutated((e) => { (e.opening as Mut)[clave] = bueno; })), `valor ${bueno}`).toBe(true);
     }
   });
 
@@ -282,11 +286,11 @@ describe("JUP-038 isAnomalyEvidence: apertura", () => {
     ["conditions_met como 1", 1],
     ["conditions_met nulo", null],
   ])("rechaza %s: solo se guarda evidencia de aperturas que cumplieron la regla", (_nombre, valor) => {
-    expect(isAnomalyEvidence(mutated((e) => { e.opening.conditions_met = valor; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.opening as Mut).conditions_met = valor; }))).toBe(false);
   });
 
   it("rechaza que falte conditions_met", () => {
-    expect(isAnomalyEvidence(mutated((e) => { delete e.opening.conditions_met; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { delete (e.opening as Mut).conditions_met; }))).toBe(false);
   });
 });
 
@@ -304,11 +308,11 @@ describe("JUP-038 isAnomalyEvidence: impacto", () => {
     ["número", 400],
     ["nulo", null],
   ])("rechaza accumulated_impact con %s", (_nombre, valor) => {
-    expect(isAnomalyEvidence(mutated((e) => { e.impact.accumulated_impact = valor; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.impact as Mut).accumulated_impact = valor; }))).toBe(false);
   });
 
   it("rechaza que falte accumulated_impact", () => {
-    expect(isAnomalyEvidence(mutated((e) => { delete e.impact.accumulated_impact; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { delete (e.impact as Mut).accumulated_impact; }))).toBe(false);
   });
 
   it.each([
@@ -318,13 +322,15 @@ describe("JUP-038 isAnomalyEvidence: impacto", () => {
     ["NaN", Number.NaN],
     ["infinito", Number.POSITIVE_INFINITY],
     ["nulo", null],
-    ["no seguro", 9007199254740993],
+    // 9007199254740993 no es representable en JavaScript (se evalua como 9007199254740992, fuera del rango seguro):
+    // se escribe como cadena convertida para que el lint no avise de perdida de precision y el valor sea el mismo.
+    ["no seguro", Number("9007199254740993")],
   ])("rechaza day_count %s", (_nombre, valor) => {
-    expect(isAnomalyEvidence(mutated((e) => { e.impact.day_count = valor; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.impact as Mut).day_count = valor; }))).toBe(false);
   });
 
   it("rechaza que falte day_count", () => {
-    expect(isAnomalyEvidence(mutated((e) => { delete e.impact.day_count; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { delete (e.impact as Mut).day_count; }))).toBe(false);
   });
 
   it.each([
@@ -333,11 +339,11 @@ describe("JUP-038 isAnomalyEvidence: impacto", () => {
     ["formato europeo", "09/09/2026"],
     ["nula", null],
   ])("rechaza through_date %s", (_nombre, valor) => {
-    expect(isAnomalyEvidence(mutated((e) => { e.impact.through_date = valor; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.impact as Mut).through_date = valor; }))).toBe(false);
   });
 
   it("rechaza que falte through_date", () => {
-    expect(isAnomalyEvidence(mutated((e) => { delete e.impact.through_date; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { delete (e.impact as Mut).through_date; }))).toBe(false);
   });
 
   it.each([
@@ -346,7 +352,7 @@ describe("JUP-038 isAnomalyEvidence: impacto", () => {
     ["Alta", "Alta (P1)"],
     ["nula", null],
   ])("rechaza severity %s", (_nombre, valor) => {
-    expect(isAnomalyEvidence(mutated((e) => { e.impact.severity = valor; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.impact as Mut).severity = valor; }))).toBe(false);
   });
 
   it.each([
@@ -355,12 +361,12 @@ describe("JUP-038 isAnomalyEvidence: impacto", () => {
     ["número", 500],
     ["nulo", null],
   ])("rechaza severity_band %s", (_nombre, valor) => {
-    expect(isAnomalyEvidence(mutated((e) => { e.impact.severity_band = valor; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.impact as Mut).severity_band = valor; }))).toBe(false);
   });
 
   it("rechaza que falte severity o severity_band", () => {
-    expect(isAnomalyEvidence(mutated((e) => { delete e.impact.severity; }))).toBe(false);
-    expect(isAnomalyEvidence(mutated((e) => { delete e.impact.severity_band; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { delete (e.impact as Mut).severity; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { delete (e.impact as Mut).severity_band; }))).toBe(false);
   });
 });
 
@@ -368,28 +374,28 @@ describe("JUP-038 isAnomalyEvidence: coherencia interna con el episodio", () => 
   // La evidencia es la fotografía de un solo episodio: si el bloque de apertura o de impacto no coincide
   // con el episodio embebido, la evidencia mezcla datos de dos momentos y no se debe mostrar.
   it("rechaza una criticidad del impacto distinta de la del episodio", () => {
-    expect(isAnomalyEvidence(mutated((e) => { e.impact.severity = "P1"; }))).toBe(false);
-    expect(isAnomalyEvidence(mutated((e) => { e.episode.severity = "P2"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.impact as Mut).severity = "P1"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.episode as Mut).severity = "P2"; }))).toBe(false);
   });
 
   it("rechaza un impacto acumulado distinto del del episodio", () => {
-    expect(isAnomalyEvidence(mutated((e) => { e.impact.accumulated_impact = "401.00"; }))).toBe(false);
-    expect(isAnomalyEvidence(mutated((e) => { e.episode.accumulated_impact = "399.99"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.impact as Mut).accumulated_impact = "401.00"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.episode as Mut).accumulated_impact = "399.99"; }))).toBe(false);
   });
 
   it("rechaza una referencia diaria de la apertura distinta de la del episodio", () => {
-    expect(isAnomalyEvidence(mutated((e) => { e.opening.reference_daily_cost = "399.00"; }))).toBe(false);
-    expect(isAnomalyEvidence(mutated((e) => { e.episode.reference_daily_cost = "401.00"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.opening as Mut).reference_daily_cost = "399.00"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.episode as Mut).reference_daily_cost = "401.00"; }))).toBe(false);
   });
 
   it("rechaza un observado de la apertura distinto del observado de apertura del episodio", () => {
-    expect(isAnomalyEvidence(mutated((e) => { e.opening.observed_cost = "551.00"; }))).toBe(false);
-    expect(isAnomalyEvidence(mutated((e) => { e.episode.opening_observed_cost = "549.99"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.opening as Mut).observed_cost = "551.00"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.episode as Mut).opening_observed_cost = "549.99"; }))).toBe(false);
   });
 
   it("la coherencia compara importes exactos: una diferencia de un céntimo basta", () => {
-    expect(isAnomalyEvidence(mutated((e) => { e.impact.accumulated_impact = "400.01"; }))).toBe(false);
-    expect(isAnomalyEvidence(mutated((e) => { e.opening.observed_cost = "550.01"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.impact as Mut).accumulated_impact = "400.01"; }))).toBe(false);
+    expect(isAnomalyEvidence(mutated((e) => { (e.opening as Mut).observed_cost = "550.01"; }))).toBe(false);
   });
 });
 

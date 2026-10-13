@@ -101,7 +101,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
   bloque nuevo cuando los metadatos traen `anomaly_evidence`. Las pruebas existentes de citas y de
   `cost_evidence` (`AnswerEvidence.test.tsx`, `CostEvidence.test.tsx`) deben seguir pasando sin
   editarlas.
-- [ ] 5.3 Green: `AnomalyEvidence.tsx`, tipos y validador, y la rama en `AnswerEvidence.tsx`.
+- [x] 5.3 Green: `AnomalyEvidence.tsx`, tipos y validador, y la rama en `AnswerEvidence.tsx`.
 - [ ] 5.4 Mutación sobre el validador y el componente; cubrir los mutantes que sobrevivan.
 
 ## 6. Frontend: modo «Explicar una anomalía» del redactor

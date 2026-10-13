@@ -20,7 +20,11 @@ const CONTENIDO = [
   "- No se verifica que los datos de coste estén completos.",
 ].join("\n");
 
-function evidenceA(): Record<string, any> {
+// Evidencia JSON que las pruebas mutan a mano: cada nivel anidado es otro objeto laxo. Se tipa asi y no con
+// `any` (lint) para conservar la comprobacion de tipos; las mutaciones anidadas usan un cast puntual a `Mut`.
+type Mut = { [key: string]: unknown };
+
+function evidenceA(): Mut {
   return {
     schema_version: "1.0",
     adapter_version: "anomaly-explanation-1.0",
@@ -99,8 +103,8 @@ describe("JUP-038 AnswerEvidence: rama de evidencia de anomalía", () => {
   it.each([
     ["schema_version futura", () => ({ ...evidenceA(), schema_version: "2.0" })],
     ["id con otro formato", () => ({ ...evidenceA(), id: "anomaly-explanation:xyz" })],
-    ["conditions_met falso", () => { const e = evidenceA(); e.opening.conditions_met = false; return e; }],
-    ["incoherente con el episodio", () => { const e = evidenceA(); e.impact.severity = "P1"; return e; }],
+    ["conditions_met falso", () => { const e = evidenceA(); (e.opening as Mut).conditions_met = false; return e; }],
+    ["incoherente con el episodio", () => { const e = evidenceA(); (e.impact as Mut).severity = "P1"; return e; }],
     ["null", () => null],
     ["una cadena", () => "anomaly-explanation"],
     ["una lista", () => []],
