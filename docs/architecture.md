@@ -60,7 +60,7 @@ flowchart TB
 
 ## 3. Flujos implementados y vertical objetivo
 
-### 3.1 Chat síncrono: recuperación documental y consultas de ownership
+### 3.1 Chat síncrono: recuperación documental, consultas de ownership y explicación de anomalías
 
 ```mermaid
 sequenceDiagram
@@ -73,7 +73,12 @@ sequenceDiagram
   U->>UI: Pregunta en conversación
   UI->>B: POST /assistant/conversations/{id}/messages
   B->>DB: Usuario, membership y propietario de conversación
-  alt ownership_query explícito
+  alt anomaly_query explícito
+    B->>DB: Lectura del episodio del tenant y marca de datos sintéticos (una sentencia)
+    DB-->>B: Episodio y operandos exactos
+    B->>B: Explicación determinista y anomaly_evidence
+    B->>DB: Persistir mensaje de usuario tras explicar
+  else ownership_query explícito
     B->>DB: Agregación SQL por tenant, periodo, moneda y dimensiones
     DB-->>B: Costes y procedencia
     B->>B: Respuesta determinista y cost_evidence
@@ -87,9 +92,23 @@ sequenceDiagram
   B->>B: Plantilla determinista y validación de citas
   end
   B->>DB: Persistir mensaje de asistente
-  B-->>UI: Respuesta con citations o cost_evidence
+  B-->>UI: Respuesta con citations, cost_evidence o anomaly_evidence
   UI-->>U: Texto y fuentes
 ```
+
+Cuando el mensaje lleva `anomaly_query` (JUP-038), la ruta lee el episodio del
+tenant de la sesión con `Database.fetch_anomaly_episode_snapshot` (una sola
+sentencia SQL: episodio, operandos exactos y marca de datos sintéticos) y arma la
+explicación con el explicador puro
+[anomaly_explanations.py](../apps/backend/app/services/anomaly_explanations.py):
+texto determinista y `anomaly_evidence` con las cifras exactas y un identificador
+reproducible. No usa embeddings, recuperación documental ni modelo generativo, y
+solo guarda los dos mensajes cuando la explicación está calculada: un episodio
+inexistente o de otro cliente da el mismo 404 y uno que no se sabe explicar da
+409, sin dejar nada en la conversación. Es excluyente con `ownership_query`.
+Véase [contrato de la explicación](api/anomaly-explanations.md). La explicación
+no es una herramienta del agente todavía: el chat con modelo generativo es
+JUP-035.
 
 La [ruta](../apps/backend/app/api/routes/assistant.py) no llama al processor ni
 a la cola. Cuando recibe `ownership_query`, usa
@@ -219,7 +238,7 @@ flowchart LR
   U[Usuario] -.-> UI[UI]
   UI -.-> B[Backend: identidad y tenant]
   B -.-> O[Orquestación conversacional pendiente]
-  O -.-> T[Tools deterministas de costes y ownership]
+  O -.-> T[Tools deterministas de costes, ownership y anomalías]
   O -.-> R[RAG del mismo tenant]
   T -.-> G[Contexto y respuesta estructurada]
   R -.-> G

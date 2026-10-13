@@ -161,11 +161,11 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 - [x] 9.1 Completar `docs/api/anomaly-explanations.md` con un ejemplo real de 8.1 y actualizar las
   secciones «Consumo por JUP-038» de `docs/api/anomaly-episodes.md` y `docs/api/cost-anomalies.md`
   para que enlacen con él.
-- [ ] 9.2 `docs/architecture/finops-agent-tools.md` (la herramienta no la implementa JUP-038; existe
+- [x] 9.2 `docs/architecture/finops-agent-tools.md` (la herramienta no la implementa JUP-038; existe
   el explicador que deberá usar) y `docs/architecture.md` (tercera rama del chat síncrono).
-- [ ] 9.3 `apps/backend/README.md` (campo `anomaly_query` y sus errores) y `apps/frontend/README.md`
+- [x] 9.3 `apps/backend/README.md` (campo `anomaly_query` y sus errores) y `apps/frontend/README.md`
   (filas de `/assistant` y `/anomalies`).
-- [ ] 9.4 `docs/demo/JUP-107/anomalias.md`: paso opcional para pedir la explicación de Compute desde
+- [x] 9.4 `docs/demo/JUP-107/anomalias.md`: paso opcional para pedir la explicación de Compute desde
   el detalle, con lo que se debe ver. El guion de tres minutos no cambia.
 - [ ] 9.5 `openspec/findings/backlog.md`: actualizar `RF-114-001` con la decisión de aplazarlo (sigue
   `Open`) y registrar como `RF-038-NNN` lo que quede fuera, al menos la herramienta del agente

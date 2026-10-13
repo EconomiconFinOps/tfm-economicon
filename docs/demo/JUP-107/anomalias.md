@@ -101,6 +101,18 @@ Por qué el resto no abre anomalía, aunque la consulta de prueba diga otra cosa
 
 Abre el detalle de Compute: enseña la referencia, el impacto, las reglas y «Candidata: causa no establecida». Desde ahí se puede marcar en investigación o cerrar con un motivo.
 
+### Opcional: pedir la explicación en el asistente (JUP-038)
+
+No forma parte de los tres minutos del [guion](guion.md) (que no cambia); es un paso aparte de unos 40 segundos para quien pregunte «¿por qué se marcó esta?».
+
+1. En el detalle de Compute pulsa **Explicar en el asistente**. El enlace solo navega: abre `/assistant?episode=…` y no envía nada.
+2. Si no hay ninguna conversación, pulsa **Nueva**. El redactor aparece con **Explicar una anomalía** activado, la anomalía de Compute ya elegida y la pregunta «¿Por qué se ha marcado esta anomalía?» propuesta. Sigue sin enviarse nada.
+3. Pulsa **Enviar**. La respuesta no la redacta un modelo: es una explicación determinista con las cifras del episodio.
+
+Con estos datos debe leerse: el 2026-09-09 el coste observado fue **377.00 EUR** frente a una referencia de **142.86 EUR** al día, subió **234.14 EUR (163.90 %)**, el impacto acumulado es **2807.71 EUR en 12 días**, criticidad **Alta (P1)**, estado «Nueva. Se sigue observando» y, al final, el aviso de datos sintéticos. Database y Analytics salen con sus cifras de la tabla de arriba. Despliega **Evidencia de la anomalía** y **Operandos exactos** para enseñar que las cifras se pueden recalcular (los operandos salen con 12 decimales, tal como los guarda la base).
+
+Lo que hay que decir: es un candidato para investigar, **no** una causa ni un ahorro; la explicación solo cubre el día de apertura y los acumulados; no usa embeddings ni modelo, así que funciona aunque pgvector esté caído. Al cambiar el estado de la anomalía y volver a explicarla, la explicación nueva lleva otro identificador y la anterior se conserva tal cual. Ejemplo real y comprobaciones: [anomaly-explanations.md](../../api/anomaly-explanations.md#ejemplo-real) y [la evidencia de JUP-038](../../evidence/JUP-038-validation.md).
+
 ## Limitaciones que hay que decir
 
 - Los importes son inventados para ilustrar las reglas; no se ha medido la calidad de la detección ni se afirma que un caso real se comporte igual.
@@ -120,4 +132,4 @@ docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defa
 docker compose -p jup107b down -v
 ```
 
-El segundo `remove` debe retirar 0 ingestas y 0 registros (es seguro repetirlo); `status` debe decir `absent` y las dos consultas devolver 0: `remove` borra también los episodios y la marca «Revisado hasta» del cliente, porque salen de estos datos (si el cliente tuviera otros costes, los conserva y lo dice). `down -v` borra el stack y sus volúmenes. La herramienta solo retira sus propias filas: los datos de JUP-106 en `tenant-growth` no se tocan. `remove` actúa sobre todos los tenants a la vez y no acepta `--tenant` (sale con error); `status` te dice en cuál estaba el conjunto.
+El segundo `remove` debe retirar 0 ingestas y 0 registros (es seguro repetirlo); `status` debe decir `absent` y las dos consultas devolver 0: `remove` borra también los episodios y la marca «Revisado hasta» del cliente, porque salen de estos datos (**no** borra las conversaciones: las explicaciones pedidas en el asistente se conservan con su evidencia aunque el episodio ya no exista) (si el cliente tuviera otros costes, los conserva y lo dice). `down -v` borra el stack y sus volúmenes. La herramienta solo retira sus propias filas: los datos de JUP-106 en `tenant-growth` no se tocan. `remove` actúa sobre todos los tenants a la vez y no acepta `--tenant` (sale con error); `status` te dice en cuál estaba el conjunto.

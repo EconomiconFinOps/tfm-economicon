@@ -293,8 +293,24 @@ anteriores o, con un episodio en seguimiento, su referencia anclada; los limites
 son estrictos y las dos condiciones van juntas. La severidad P1/P2/P3 se calcula
 sobre el impacto acumulado del episodio en su moneda (sin conversion y sin
 «impacto critico») y cada episodio guarda la version de las reglas. La
-herramienta, cuando se implemente con JUP-038, lee esos episodios del tenant
-autorizado en lugar de recalcularlos o de usar la consulta de prueba de JUP-030.
+herramienta, cuando se registre, lee esos episodios del tenant autorizado en
+lugar de recalcularlos o de usar la consulta de prueba de JUP-030.
+
+**Estado tras JUP-038.** JUP-038 **no registra esta herramienta**: el chat con
+modelo generativo es JUP-035 (PR #120 y #121, abiertas) y el backend sigue sin
+registro de herramientas. Lo que entrega JUP-038 es la parte determinista que
+la herramienta deberá usar: el explicador
+`explain_episode` de
+[anomaly_explanations.py](../../apps/backend/app/services/anomaly_explanations.py),
+una funcion pura que recibe la fotografia de un episodio (lo que devuelve
+`Database.fetch_anomaly_episode_snapshot`) y devuelve el texto y la evidencia
+`anomaly_evidence`. Esa evidencia ya usa los nombres del resultado comun
+(`status`, `source`, `evidence_ids` como `[id]`, `assumptions`, `limitations`);
+solo le faltaria `correlation_id`. Hoy la explicacion se pide por seleccion
+estructurada en el mensaje (`anomaly_query`), sin modelo, como la de ownership
+de JUP-037; ver [anomaly-explanations.md](../api/anomaly-explanations.md). Al
+registrar la herramienta, el spec exige las mismas cifras y el mismo
+identificador de evidencia por las dos vias.
 
 ## Herramientas futuras
 
