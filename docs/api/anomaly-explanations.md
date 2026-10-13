@@ -4,9 +4,11 @@ JUP-038 — [Trello](https://trello.com/c/QzkjVY7P). Contrato HTTP versión 1 de
 episodio de anomalía guardado. Change: `jup-038-explain-anomaly-episodes`. Fuente de los episodios:
 [anomaly-episodes.md](anomaly-episodes.md) y [ADR-0020](../adr/ADR-0020-cost-anomaly-episodes.md).
 
-**Estado: contrato acordado en el change; la implementación llega con los grupos 2 a 4 de sus
-tareas.** Este documento todavía no describe comportamiento ejecutado. El ejemplo de abajo está
-calculado a mano; el ejemplo real con una evidencia guardada se añade en la tarea 9.1.
+**Estado: implementado y validado con datos sintéticos (2026-10-13).** Backend en
+`apps/backend/app/services/anomaly_explanations.py` y la ruta del asistente; frontend en el redactor y el
+panel de anomalías. La sección «Ejemplo real» muestra una explicación guardada por un navegador real contra
+un stack aislado; el ejemplo de «Cifras» está calculado a mano. Evidencia y límites de la validación en
+[JUP-038-validation.md](../evidence/JUP-038-validation.md).
 
 El asistente explica con palabras y cifras exactas por qué se marcó una anomalía guardada, cuánto
 lleva y en qué estado está. **La explicación es determinista: la arma código a partir de los datos
@@ -164,6 +166,77 @@ entra en el hash y no se guarda en claro en la evidencia, como en `cost_evidence
 Con los `operands` y las reglas publicadas aquí se puede recalcular todo a mano, cifras e
 identificador, sin acceso al backend.
 
+## Ejemplo real
+
+Salida de la validación del 2026-10-13: stack aislado de Compose con el conjunto **sintético** de JUP-107
+(cliente `tenant-core`; son datos de demostración, no facturas de Azure), «Detectar ahora» y el enlace del
+panel hacia el asistente. Petición, con el identificador de la anomalía de Compute:
+
+```json
+{
+  "content": "¿Por qué se ha marcado esta anomalía?",
+  "anomaly_query": {
+    "episode_id": "anomaly-33b468f4cd0e1bc998899927f3d8b2eef5f220cedb42c23883c3b10acb91a699"
+  }
+}
+```
+
+Respuesta `201` (`AssistantReply`, con `retrieved_context: []`). Los metadatos del mensaje del asistente, con el
+episodio y las limitaciones abreviados (`…`):
+
+```json
+{
+  "citations": [],
+  "anomaly_evidence": {
+    "schema_version": "1.0",
+    "adapter_version": "anomaly-explanation-1.0",
+    "id": "anomaly-explanation:1bf475eb797ed5e61a76cba335925f274e6295887f7ea4e2e67c54f2fef5da52",
+    "status": "ok",
+    "source": { "kind": "anomaly_episodes", "rules_version": "jup019-daily-v1", "data_as_of": "2026-09-20" },
+    "episode": { "id": "anomaly-33b468f4…a699", "service": "Compute", "currency": "EUR", "start_date": "2026-09-09", "…": "…" },
+    "operands": {
+      "reference_seven_day_total": "1000.000000000000",
+      "opening_observed_cost": "377.000000000000",
+      "accumulated_impact_times_seven": "19654.000000000000"
+    },
+    "opening": {
+      "reference_daily_cost": "142.86", "observed_cost": "377.00",
+      "absolute_increase": "234.14", "relative_increase_percent": "163.90",
+      "absolute_threshold": "100.00", "relative_threshold_percent": "20", "conditions_met": true
+    },
+    "impact": { "accumulated_impact": "2807.71", "day_count": 12, "through_date": "2026-09-20", "severity": "P1", "severity_band": "> 2000.00" },
+    "rounding_notes": [],
+    "includes_synthetic_data": true,
+    "cause_status": "not_established",
+    "assumptions": [],
+    "limitations": ["Es un candidato para investigar, …", "…"],
+    "explained_at": "2026-10-13T05:19:25.518738+00:00"
+  }
+}
+```
+
+El texto del mensaje del asistente (`content`), línea a línea, con las cinco limitaciones abreviadas:
+
+```text
+Anomalía candidata en el servicio "Compute" (EUR).
+Por qué se marcó: el 2026-09-09 el coste observado fue 377.00 EUR frente a una referencia de 142.86 EUR al día (media de los 7 días anteriores a la apertura). Subió 234.14 EUR (163.90 %).
+Regla jup019-daily-v1: un día se marca solo si supera la referencia en más de 100.00 EUR y en más de un 20 %, las dos condiciones a la vez. Este día cumple las dos.
+Impacto acumulado: 2807.71 EUR en 12 días, hasta el 2026-09-20. Criticidad: Alta (P1), por encima de 2000.00 EUR.
+Estado: Nueva. Se sigue observando.
+Causa no establecida: es un candidato para investigar, no una causa demostrada ni un ahorro.
+Limitaciones:
+- Es un candidato para investigar, no una causa demostrada, un ahorro ni una confianza estadística.
+- … (otras cuatro limitaciones)
+Aviso: los datos de este cliente incluyen datos sintéticos de demostración.
+Alcance: esta explicación cubre el día de apertura y los acumulados; no hay detalle día a día.
+Fotografía tomada el 2026-10-13T05:19:25.518738+00:00 (UTC).
+Evidencia: anomaly-explanation:1bf475eb797ed5e61a76cba335925f274e6295887f7ea4e2e67c54f2fef5da52.
+```
+
+Comprobaciones hechas sobre esta misma evidencia, con un script independiente del backend (`BigInt` y
+`crypto`): 142.857… → `142.86`, (377 × 7 − 1000) / 7 → `234.14`, 1639 × 100 / 1000 → `163.90 %`, 19654 / 7 →
+`2807.71` y el sha256 del JSON canónico coincide con el `id`.
+
 ## Correspondencia con el resultado común de herramientas
 
 El contrato de herramientas del agente ([finops-agent-tools.md](../architecture/finops-agent-tools.md#resultado-comun))
@@ -187,10 +260,18 @@ herramienta `detect_cost_anomaly_candidates` puede llamarla y devolver las misma
 ## Entrada desde la interfaz
 
 El redactor del asistente tiene el modo «Explicar una anomalía», excluyente con «Consultar costes
-por propiedad». El detalle de una anomalía en el panel `/anomalies` ofrece el enlace «Explicar en el
-asistente», que abre `/assistant?episode=<id>`; el panel solo navega y no hace peticiones nuevas. El
-identificador de la dirección no autoriza nada: el backend filtra siempre por el cliente de la
-sesión.
+por propiedad». Al activarlo carga las anomalías del cliente activo (`GET /billing/anomalies/episodes?scope=all`)
+y solo ofrece las que tienen un identificador con el formato real, `anomaly-` más 64 caracteres
+hexadecimales en minúscula; un `episode_id` con otro formato da un 422 genérico, así que el frontend lo
+valida antes de enviar. Los errores se traducen por `detail.code`: `anomaly_episode_not_found` y
+`anomaly_explanation_unavailable` tienen texto propio; cualquier otro error conserva el mensaje genérico.
+
+El detalle de una anomalía en el panel `/anomalies` ofrece el enlace «Explicar en el asistente», que abre
+`/assistant?episode=<id>`, **solo si el identificador tiene ese formato**; el panel solo navega y no hace
+peticiones nuevas. El parámetro solo **preselecciona**: el envío ocurre únicamente al pulsar «Enviar» (la
+validación en navegador comprobó que no hay ningún `POST` antes) y el parámetro se quita de la dirección tras
+un envío correcto. El identificador de la dirección no autoriza nada: el backend filtra siempre por el
+cliente de la sesión.
 
 ## Límites
 

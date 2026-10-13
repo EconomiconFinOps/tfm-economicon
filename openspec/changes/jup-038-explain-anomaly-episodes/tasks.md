@@ -158,7 +158,7 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 
 ## 9. Documentación
 
-- [ ] 9.1 Completar `docs/api/anomaly-explanations.md` con un ejemplo real de 8.1 y actualizar las
+- [x] 9.1 Completar `docs/api/anomaly-explanations.md` con un ejemplo real de 8.1 y actualizar las
   secciones «Consumo por JUP-038» de `docs/api/anomaly-episodes.md` y `docs/api/cost-anomalies.md`
   para que enlacen con él.
 - [ ] 9.2 `docs/architecture/finops-agent-tools.md` (la herramienta no la implementa JUP-038; existe
