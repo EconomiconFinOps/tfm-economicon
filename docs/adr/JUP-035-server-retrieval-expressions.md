@@ -131,5 +131,22 @@ ese contexto ni promete detección universal de contradicciones en prosa.
 Ambigüedad documental significa no clasificar, no inventar una regla. Las pruebas
 locales no sustituyen la próxima focal ni la batería semántica completa.
 
+La focal expression19 mostró que el modelo añadió una conclusión roja después
+del bloque amarillo correctamente calculado. Captura sintética de la oración
+rechazada confirmó el defecto; el guard se conserva. Se separan dos variantes
+privadas: narrativa (segmentos sin classify) y clasificación terminal
+`answer={calculations:[AST],classification:classify}`. Esta última no contiene
+texto libre; admite sólo notas neutrales enumeradas, sin métricas, recomendaciones
+ni acciones adicionales. El servidor concatena los cálculos y la clasificación;
+no elimina ni reescribe una conclusión equivocada del modelo.
+
+El parser almacena el objeto privado acotado hasta su cierre, lo valida y emite
+su respuesta antes del evento final. Mantiene4000 caracteres públicos,8KiB por
+delta y12 operaciones compartidas. El coste es menor flexibilidad narrativa en
+una respuesta clasificadora; los consejos libres pertenecen a una respuesta
+narrativa posterior. Fuentes seleccionadas y correspondencia del denominador
+siguen requiriendo comprobación semántica. Las notas enumeradas no declaran
+que los datos del escenario sean facturación verificada.
+
 Véase [diseño OpenSpec](../../openspec/changes/jup-035-auto-documentation/design.md)
 y [continuidad](../continuidad/chat-conversacional.md).

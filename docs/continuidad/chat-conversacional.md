@@ -1,5 +1,24 @@
 ## Corte actual: intervalos documentales — 13/10/2026
 
+Corte posterior expression19/a5f702b:005/006/007 rechazadas por clasificación libre;
+captura005 confirma conclusión roja después del bloque amarillo correcto.013/017/
+027 completan técnicamente, pero auditoría detecta clasificación indebida sin color,
+status/consejo innecesario y evidencia insuficiente respectivamente. NO aceptación.
+Hook retirado con hashes originales; lectura directa preservada en
+expression19-diagnostic005-observed.json (copiafinaldelwrapper no recuperó archivo).
+Gasto observado0.518084255/2USD. CIa5f702b pasa. Se implementa offline variante
+privada de clasificación terminal sin prosa libre; narrativa excluye classify.
+ADR documenta límites. Pruebas iniciales41backend/64processorPASS y paridad de
+esquema5409tokens/mensajes4007/variable747, sin proveedor. Pendiente pruebas finales,
+congelación y nueva focal; no interpretar pruebas de contrato como semántica.
+Comprobaciones finales:42backendPASS (incluye persistencia),64processorPASS
+gateway/parser y61PASS recursos/presupuesto/stream, OpenSpec69PASS. Tras aclarar
+la apertura narrativa del prompt, paridad final5409tokensesquema/4013mensajes/
+747variables y bundled7f8a112…f490848 coinciden entre servicios.
+El padre corrige retorno del foco al cerrar ChatPanel: se realiza tras el commit
+que vuelve visible el botón, sin robar foco inicial.16pruebas yESLint pasan;
+recomprobar Escape en navegador final. Focal6 pendiente, sin nueva inferencia.
+
 Actualización posterior:00fd4ab publicado y runtime expression18 verificado
 (83/73/112 hashes;47 pruebas Cockroach PASS). Focal005/006 falla después de emitir
 classify correcto;007/013/017 completas con criterios correctos.027 calcula bien,

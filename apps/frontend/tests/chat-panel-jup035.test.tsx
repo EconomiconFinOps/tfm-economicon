@@ -175,7 +175,14 @@ describe("Panel conversacional propio JUP-035", () => {
 
   it("devuelve foco al control al ocultar por Escape sin detener", async () => {
     mount();
-    fireEvent.click(screen.getByRole("button", { name: "Abrir asistente" }));
+    const trigger = screen.getByRole("button", { name: "Abrir asistente" });
+    expect(trigger).not.toHaveFocus();
+    const focus = trigger.focus.bind(trigger);
+    // Browsers ignore focus on display:none; jsdom otherwise masks this bug.
+    vi.spyOn(trigger, "focus").mockImplementation(options => {
+      if (trigger.style.display !== "none") focus(options);
+    });
+    fireEvent.click(trigger);
     const input = await screen.findByRole("textbox", { name: "Pregunta" });
     await waitFor(() => expect(input).toHaveFocus());
     fireEvent.keyDown(input, { key: "Escape" });

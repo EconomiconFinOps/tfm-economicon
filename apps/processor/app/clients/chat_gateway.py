@@ -170,6 +170,10 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
             'Documentary interval unit mismatch.':'classification_unit_mismatch',
             'Ambiguous documentary interval.':'classification_ambiguous_interval',
             'Unverified documentary classification prose.':'classification_unverified_prose',
+            'Invalid classified answer.':'classified_answer_invalid',
+            'Invalid classified calculation.':'classified_calculation_invalid',
+            'Invalid classified auxiliary fields.':'classified_auxiliary_invalid',
+            'Classification requires typed answer.':'classification_requires_typed_answer',
         }
         if type(failure) is ValueError and failure.args and type(failure.args[0]) is str and failure.args[0] in assembly_rules:
             event['rule_code'] = assembly_rules[failure.args[0]]

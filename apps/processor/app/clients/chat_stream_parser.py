@@ -131,6 +131,7 @@ class SegmentAnswerJSON:
         self.expressions=ExpressionRenderer(quantities) if quantities is not None else None
         self.segment=None;self.segments=[];self.pending=[]
         self.text='';self.closed=False;self.trailing='';self.rendered_size=0
+        self.classified=None
 
     def _flush(self):
         from app.core.chat_segments import render_segment
@@ -140,10 +141,20 @@ class SegmentAnswerJSON:
         return result
 
     def feed(self, fragment):
-        from app.core.chat_segments import render_segment
+        from app.core.chat_segments import render_segment,render_classified_answer
         output=[]
         for char in fragment:
             lex=self.lexer
+            if not lex.string and lex.depth==1 and lex.key=='answer' and char=='{':
+                self.classified=[]
+            if self.classified is not None:
+                self.classified.append(char);lex.feed(char)
+                if len(self.classified)>262144:raise ValueError('Response segment limit.')
+                if not lex.string and lex.depth==1 and char=='}':
+                    answer=complete_json(''.join(self.classified))
+                    output.append(render_classified_answer(answer,self.expressions))
+                    self.classified=None;self.closed=True
+                continue
             opening=(not lex.string and lex.depth==2 and lex.key=='answer' and char=='{')
             closing=(not lex.string and lex.depth==2 and lex.key=='answer' and char==']')
             if opening:self.segment=[]
@@ -173,7 +184,7 @@ class SegmentAnswerJSON:
         return result
 
     def finish(self):
-        if not self.closed or self.segment is not None or self.pending:
+        if not self.closed or self.segment is not None or self.pending or self.classified is not None:
             raise ValueError('Incomplete segmented answer.')
         if not self.text:raise ValueError('Empty rendered text.')
         return self.text

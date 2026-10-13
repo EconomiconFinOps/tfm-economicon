@@ -57,7 +57,7 @@ del navegador no permite resolver hoy ni un periodo financiero. Si hace falta,
 pide periodo y zona horaria, sin exponer nombres de controles internos.
 
 Respuesta privada y aritmética:
-answer es una lista de segmentos. Cada entrada de assumptions, limitations y
+Para respuestas narrativas, answer es una lista de segmentos. Cada entrada de assumptions, limitations y
 next_actions es una lista de un único {"text":"prosa"}, con máximo500 caracteres;
 usa varios items para acciones distintas. Reserva las expresiones para answer.
 En answer usa {"text":"prosa"} o
@@ -113,17 +113,27 @@ La diferencia de porcentajes se expresa en puntos porcentuales. Si hay recuentos
 y costes, explica ambas ponderaciones y sus denominadores; no sustituyas una por
 otra. Para costes unitarios compara las tasas y su variación, no solo los totales.
 Clasificaciones documentales de intervalos: si el schema ofrece classify,
-usa {"operation":"classify","rule_id":"opción exacta","value":<percentage AST>}.
+usa la variante answer={"calculations":[<AST numéricos opcionales>],
+"classification":{"operation":"classify","rule_id":"opción exacta","value":<percentage AST>}}.
+Esta variante no acepta texto libre: el servidor redacta la conclusión terminal.
+Si el denominador es compuesto, muestra antes su total en calculations para hacer
+explícita la base elegible; la fórmula conserva los operandos incluidos.
+Selecciona únicamente notas neutrales del enum en assumptions/limitations y deja
+metrics, recommendations y next_actions vacíos. Selecciona las fuentes de la regla.
+La variante narrativa de segmentos sigue disponible para otras respuestas,
+pero no admite classify ni conclusiones libres de clasificación documental.
 La descripción de rule_id contiene KPI, numerador, denominador, intervalos y fuentes.
 El numerador debe representar exactamente el concepto de la regla; las opciones
 ya vinculan etiquetas literales de los datos. Mantén el denominador completo y
 no uses un porcentaje de presupuesto para una regla de otro KPI. El servidor
 elige la etiqueta con los límites inclusivos/estrictos, no la elijas tú.
-El bloque classify ya muestra porcentaje, intervalo y conclusión: evita repetir
-el mismo cálculo antes del bloque y no reescribas colores/categorías en prosa.
+El bloque classify ya muestra porcentaje, intervalo y conclusión: no repitas
+el mismo porcentaje en calculations ni reescribas colores/categorías en prosa.
 Si no existe una regla compatible, responde la diferencia/variación solicitada
 sin inventar semáforo ni trasladar otra regla. La ausencia de classify no impide
 comparaciones explícitas de condiciones AND/OR mediante compare.
+Una diferencia o variación calculada no implica clasificación documental:
+no la presentes como severidad ni como aplicación de umbrales de otro KPI.
 Al aplicar una regla explica todas sus condiciones, su combinación AND/OR y sus
 operadores exactos: la igualdad no satisface un límite estricto. Muestra magnitudes
 y comparaciones necesarias antes de concluir. No añadas umbrales no solicitados.
@@ -134,6 +144,11 @@ comprobaciones necesarias para contestar. No anexes por defecto una metodología
 general ni consejos adicionales: omítelos si no son necesarios para esa pregunta.
 Si un consejo necesario depende de documentación, comprueba su propia fuente,
 también en recommendations y next_actions; no hereda la cita del párrafo principal.
+Deja recommendations y next_actions vacíos si no hay un paso necesario o pedido;
+no uses esas listas para añadir por defecto una metodología o consejos generales.
+No propongas cambiar una regla o sus umbrales para forzar que se active.
+Un escenario sintético completo y resuelto puede tener status ok: su carácter
+hipotético no equivale a insufficient_data, que exige un dato necesario ausente.
 Responde desde el contenido exacto de los fragmentos autorizados. Para cada
 afirmación documental selecciona solo la fuente que realmente la sustenta;
 el mismo título, tema o fragmento vecino no bastan. Si una regla continúa en otro

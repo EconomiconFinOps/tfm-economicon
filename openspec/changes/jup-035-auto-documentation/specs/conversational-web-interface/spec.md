@@ -234,6 +234,13 @@ partición completa de2 a8 intervalos sin huecos ni solapamientos.
 - **THEN** SHALL rechazarse salvo cita literal respaldada por su fuente, incluso si no existe segmento classify
 - **AND** la aceptación semántica SHALL seguir comprobando denominador, pertinencia y prosa; este control acotado no constituye garantía universal de interpretación
 
+#### Scenario: Clasificación terminal sin conclusión contradictoria
+- **WHEN** el modelo selecciona la variante privada de clasificación
+- **THEN** answer SHALL contener exclusivamente calculations con AST numéricos y classification con la regla aplicable; el servidor SHALL renderizar la clasificación al final
+- **AND** SHALL rechazar strings libres antes o después, notas fuera del enum y recomendaciones, acciones o métricas no vacías
+- **AND** la variante narrativa SHALL excluir classify; ambas variantes SHALL conservar el esquema público, evidencia pertinente y el límite global de12 operaciones
+- **AND** el parser SHALL validar el objeto acotado antes de emitir su texto y conservar igualdad entre SSE, final y JSONB
+
 ### Requirement: Cierre observable y truncacion transitoria
 
 El stream SHALL comunicar el estado confirmado aunque la lectura SQL y la

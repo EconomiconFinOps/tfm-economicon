@@ -129,9 +129,9 @@ def test_repository_document_rule_and_full_response_fit_twelve_operations():
     leaf = lambda key:{'quantity':key+' EUR'}
     total={'operation':'sum','left':leaf('700'),'right':{'operation':'sum','left':leaf('200'),'right':leaf('100')}}
     percentage={'operation':'percentage','numerator':leaf('100'),'denominator':total}
-    value={'answer':[{'expression':total},{'expression':percentage},
-        {'expression':{'operation':'classify','rule_id':rule['id'],'value':percentage}}],
-        'assumptions':[],'limitations':[],'next_actions':[],
+    value={'answer':{'calculations':[total,percentage],
+        'classification':{'operation':'classify','rule_id':rule['id'],'value':percentage}},
+        'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[],
         'evidence':[{'id':identifier,'kind':'corpus'} for identifier in rule['source_ids']]}
     result=render_response(value,[],quantities=quantities)
     assert '): amarillo.' in result['answer']
@@ -183,3 +183,27 @@ def test_unknown_rule_or_model_supplied_label_is_not_repaired(change):
     quantities=catalog()
     node={'operation':'classify','rule_id':quantities.rules[0]['id'],'value':percent('7','93'),**change}
     with pytest.raises(ValueError):ExpressionRenderer(quantities).render(node)
+
+
+@pytest.mark.parametrize('status',['ok','partial'])
+def test_private_schema_separates_narrative_and_terminal_classification(status):
+    from app.schemas.chat import _validate,provider_response_schema
+    from test_chat_operations_jup035 import ANSWER
+    records=sources();quantities=catalog(records=records)
+    schema=provider_response_schema(authorized_evidence=records,quantities=quantities)
+    node={'operation':'classify','rule_id':quantities.rules[0]['id'],'value':percent('7','93')}
+    value=copy.deepcopy(ANSWER)
+    value['scope'].pop('period');value['scope'].pop('subscription_ids')
+    value.update(status=status,answer={'calculations':[],'classification':node},
+        evidence=[{key:source[key] for key in ('id','kind','title','source')}|{'support_quote':source['content']}
+                  for source in records],assumptions=[],limitations=[],next_actions=[],recommendations=[],metrics=[])
+    _validate(value,schema,schema)
+    for field in ('before','after'):
+        changed=copy.deepcopy(value);changed['answer'][field]='La clasificación es alert.'
+        with pytest.raises(ValueError):_validate(changed,schema,schema)
+    changed=copy.deepcopy(value);changed['answer']=[{'expression':node}]
+    with pytest.raises(ValueError):_validate(changed,schema,schema)
+    changed=copy.deepcopy(value);changed['limitations']=[[{'text':'La clasificación es alert.'}]]
+    with pytest.raises(ValueError):_validate(changed,schema,schema)
+    changed=copy.deepcopy(value);changed['next_actions']=[[{'text':'Investigate.'}]]
+    with pytest.raises(ValueError):_validate(changed,schema,schema)

@@ -14,7 +14,7 @@ def fixture():
         '- low: <= 3 %; - middle: > 3 % and <= 8 %; - high: > 8 %.')
     source={'id':'synthetic:rule','kind':'corpus','title':'Synthetic','source':'manual','content':content,
         'provenance':{'document_id':'synthetic','chunk_index':0,'sections':[
-            {'start':0,'end':len(content),'section':'Waste','document_start':12,'section_start':0}]}}
+            {'start':0,'end':len(content),'section':'Waste 😀','document_start':12,'section_start':0}]}}
     context={'authorized_evidence':[source],'messages':[
         {'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'waste: 8 EUR; remaining: 92 EUR.'})},
         {'role':'user','content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+json.dumps({'evidence':[source]})}]}
@@ -23,8 +23,8 @@ def fixture():
     classification={'operation':'classify','rule_id':catalog.rules[0]['id'],'value':{
         'operation':'percentage','numerator':leaf('8'),
         'denominator':{'operation':'sum','left':leaf('8'),'right':leaf('92')}}}
-    response={'answer':[{'text':'Escenario "😀": '},{'expression':classification}],
-        'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],
+    response={'answer':{'calculations':[],'classification':classification},
+        'assumptions':[],'limitations':[],'next_actions':[],'recommendations':[],'metrics':[],
         'evidence':[{'id':source['id'],'kind':'corpus'}]}
     return context,catalog,response
 
@@ -37,16 +37,17 @@ def test_classification_stream_equals_final_with_split_json_unicode(width):
     streamed=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
     assert streamed==parser.finish()==render_response(response,[],quantities=catalog)['answer']
     assert '): middle.' in streamed and '8 % <= 8 %' in streamed
+    assert 'Waste 😀' in streamed
 
 
 @pytest.mark.parametrize('field',['answer','limitations','recommendations'])
 def test_contradictory_conclusion_cannot_hide_in_other_public_fields(field):
     _,catalog,response=fixture()
     text='La clasificación es high.'
-    if field=='answer':response[field]+=[{'text':text}]
+    if field=='answer':response[field]['conclusion']=text
     elif field=='recommendations':response[field]=[{'action':text,'rationale':'Review'}]
     else:response[field]=[[{'text':text}]]
-    with pytest.raises(ValueError,match='Unverified documentary classification'):
+    with pytest.raises(ValueError,match='Invalid classified'):
         render_response(response,[],quantities=catalog)
 
 
@@ -90,3 +91,43 @@ def test_interval_diagnostics_are_exact_closed_codes_without_rejected_text(messa
     event=json.loads(caplog.records[-1].message)
     assert event.get('rule_code')==code
     assert 'SECRET' not in caplog.text and message not in caplog.text
+
+
+def test_classified_duplicate_and_truncated_object_never_finishes():
+    _,catalog,response=fixture()
+    raw=json.dumps({'answer':response['answer']})
+    duplicate=raw.replace('"calculations": []','"calculations": [], "calculations": []')
+    with pytest.raises(ValueError,match='Duplicate'):
+        SegmentAnswerJSON([],quantities=catalog).feed(duplicate)
+    parser=SegmentAnswerJSON([],quantities=catalog)
+    parser.feed(raw[:-2])
+    with pytest.raises(ValueError,match='Incomplete'):parser.finish()
+
+
+def test_classified_calculations_and_terminal_share_operation_budget():
+    _,catalog,response=fixture()
+    leaf={'quantity':'8 EUR'}
+    node={'operation':'sum','left':{'operation':'sum','left':leaf,'right':leaf},
+          'right':{'operation':'sum','left':leaf,'right':leaf}}
+    response['answer']['calculations']=[node]*4
+    with pytest.raises(ValueError,match='operation limit'):
+        render_response(response,[],quantities=catalog)
+    with pytest.raises(ValueError,match='operation limit'):
+        SegmentAnswerJSON([],quantities=catalog).feed(json.dumps(response))
+
+
+@pytest.mark.parametrize('field',['before','after'])
+def test_classified_object_rejects_prose_in_either_position(field):
+    _,catalog,response=fixture()
+    response['answer']={field:'La clasificación es high.',**response['answer']}
+    with pytest.raises(ValueError,match='Invalid classified answer'):
+        SegmentAnswerJSON([],quantities=catalog).feed(json.dumps(response))
+
+
+def test_all_classified_notes_are_closed_server_wording_not_new_assertions():
+    from app.core.chat_segments import CLASSIFIED_NOTES
+    _,catalog,response=fixture()
+    response['assumptions']=[[{'text':note}] for note in CLASSIFIED_NOTES]
+    response['limitations']=[[{'text':note}] for note in CLASSIFIED_NOTES]
+    rendered=render_response(response,[],quantities=catalog)
+    assert rendered['assumptions']==rendered['limitations']==list(CLASSIFIED_NOTES)

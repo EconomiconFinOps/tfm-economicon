@@ -203,7 +203,10 @@ def expression_definitions(catalog):
     # A displayed calculation must actually calculate. Source quantities are
     # operands, not degenerate answers that can substitute a threshold for a
     # computed variation while satisfying the structured schema.
-    alternatives=[*definitions[f'NumericExpression{MAX_DEPTH}']['anyOf'][1:],comparison]
+    numeric=definitions[f'NumericExpression{MAX_DEPTH}']['anyOf'][1:]
+    definitions['NumericRenderedExpression']={'anyOf':numeric}
+    alternatives=[*numeric,comparison]
+    classifications=[]
     rules=getattr(catalog,'rules',())
     for rule in rules:
         eligible=[key for key,entry in catalog.items() if len(entry.get('concept_anchors',[]))==1
@@ -214,11 +217,13 @@ def expression_definitions(catalog):
         value={'type':'object','properties':{'operation':{'type':'string','const':'percentage'},
             'numerator':numerator,'denominator':{'$ref':f'#/$defs/NumericExpression{MAX_DEPTH-2}'}},
             'required':['operation','numerator','denominator'],'additionalProperties':False}
-        alternatives.append({'type':'object','properties':{
+        classifications.append({'type':'object','properties':{
             'operation':{'type':'string','const':'classify'},
             'rule_id':{'type':'string','const':rule['id'],'description':json.dumps(rule,ensure_ascii=False)},
             'value':value},'required':['operation','rule_id','value'],'additionalProperties':False})
     definitions['RenderedExpression']={'anyOf':alternatives}
+    if classifications:
+        definitions['DocumentaryClassification']=classifications[0] if len(classifications)==1 else {'anyOf':classifications}
     return definitions
 
 

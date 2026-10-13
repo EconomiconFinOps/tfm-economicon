@@ -116,10 +116,17 @@ export function ChatPanel({ scope, userRole }: { scope: ChatScope; userRole?: st
     return () => clearTimeout(timer);
   }, [value.selected, cell.operation?.operation_id, retryAt, deadlineTick]);
   const trigger = useRef<HTMLButtonElement>(null);
+  const restoreTriggerFocus = useRef(false);
   const panel = useRef<HTMLElement>(null);
   useLayoutEffect(() => { session.screen.ensureRoute(location.pathname); }, [session, location.pathname]);
-  useEffect(() => { if (shown) panel.current?.querySelector<HTMLTextAreaElement>("textarea")?.focus(); }, [shown]);
-  const hide = () => { setShown(false); setHistoryShown(false); trigger.current?.focus(); };
+  useEffect(() => {
+    if (shown) panel.current?.querySelector<HTMLTextAreaElement>("textarea")?.focus();
+    else if (restoreTriggerFocus.current) {
+      restoreTriggerFocus.current = false;
+      trigger.current?.focus();
+    }
+  }, [shown]);
+  const hide = () => { restoreTriggerFocus.current = true; setShown(false); setHistoryShown(false); };
   const send = async (message: AppendMessage) => {
     const content = message.content.filter(part => part.type === "text").map(part => part.text).join("");
     await session.send(content, location.pathname);

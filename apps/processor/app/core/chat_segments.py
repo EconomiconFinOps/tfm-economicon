@@ -4,6 +4,12 @@ import copy
 from app.core.chat_calculations import render_text
 from app.core.chat_expressions import ExpressionRenderer, expression_definitions
 
+CLASSIFIED_NOTES=(
+    'Las cantidades proceden del escenario aportado; no son métricas financieras verificadas.',
+    'La clasificación aplica únicamente al KPI y a la sección documental indicados.',
+    'El denominador es el mostrado en la fórmula; debe corresponder a los conceptos elegibles del escenario.',
+)
+
 
 def quote_choices(content):
     if not isinstance(content,str) or not content.strip():
@@ -29,7 +35,9 @@ def segment_schema(records=None, *, limit=4000, quantities=None):
 def bind_segments(schema, records=None, quantities=None):
     schema=copy.deepcopy(schema)
     if quantities:schema.setdefault('$defs',{}).update(expression_definitions(quantities))
-    for branch in schema.get('anyOf',[schema]):
+    branches=schema.get('anyOf',[schema])
+    classified=[]
+    for branch in branches:
         properties=branch['properties']
         properties['answer']=segment_schema(records, quantities=quantities)
         for field in ('assumptions','limitations','next_actions'):
@@ -39,7 +47,38 @@ def bind_segments(schema, records=None, quantities=None):
             item=segment_schema(limit=500)
             item['maxItems']=1
             properties[field]['items']=item
+        if 'DocumentaryClassification' in schema.get('$defs',{}) and 'ok' in properties['status'].get('enum',[]):
+            variant=copy.deepcopy(branch)
+            props=variant['properties']
+            props['answer']={'type':'object','properties':{
+                'calculations':{'type':'array','maxItems':4,'items':{'$ref':'#/$defs/NumericRenderedExpression'}},
+                'classification':{'$ref':'#/$defs/DocumentaryClassification'}},
+                'required':['calculations','classification'],'additionalProperties':False}
+            for field in ('assumptions','limitations'):
+                props[field]['items']={'type':'array','minItems':1,'maxItems':1,'items':{
+                    'type':'object','properties':{'text':{'type':'string','enum':list(CLASSIFIED_NOTES)}},
+                    'required':['text'],'additionalProperties':False}}
+            for field in ('next_actions','recommendations','metrics'):props[field]['maxItems']=0
+            classified.append(variant)
+    if classified:schema['anyOf']=branches+classified
     return schema
+
+
+def render_classified_answer(value,expressions):
+    if (not isinstance(value,dict) or set(value)!={'calculations','classification'}
+            or expressions is None or not isinstance(value['calculations'],list)
+            or len(value['calculations'])>4):raise ValueError('Invalid classified answer.')
+    parts=[]
+    for node in value['calculations']:
+        if not isinstance(node,dict) or node.get('operation') in (None,'classify','compare'):
+            raise ValueError('Invalid classified calculation.')
+        parts.append(expressions.render(node))
+    node=value['classification']
+    if not isinstance(node,dict) or node.get('operation')!='classify':raise ValueError('Invalid classified answer.')
+    parts.append(expressions.render(node))
+    text=''.join(parts).strip()
+    if len(text)>4000:raise ValueError('Rendered text limit.')
+    return text
 
 
 def render_segment(segment, records, expressions=None):
@@ -59,6 +98,8 @@ def render_segment(segment, records, expressions=None):
         if len(matches)!=1:raise ValueError('Invalid segment reference.')
         return matches[0]['equation']
     if set(segment)=={'expression'} and expressions is not None:
+        if isinstance(segment['expression'],dict) and segment['expression'].get('operation')=='classify':
+            raise ValueError('Classification requires typed answer.')
         return expressions.render(segment['expression'])
     raise ValueError('Invalid response segment.')
 
@@ -87,7 +128,15 @@ def render_response(value, records, *, quantities=None):
     if not isinstance(value,dict) or 'answer' not in value:
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
-    result={**value,'answer':render_segments(value['answer'],records,expressions=expressions)}
+    classified=isinstance(value['answer'],dict)
+    if classified:
+        for field in ('next_actions','recommendations','metrics'):
+            if value.get(field)!=[]:raise ValueError('Invalid classified auxiliary fields.')
+        for field in ('assumptions','limitations'):
+            items=value.get(field)
+            if not isinstance(items,list) or any(item not in [[{'text':note}] for note in CLASSIFIED_NOTES] for item in items):
+                raise ValueError('Invalid classified auxiliary fields.')
+    result={**value,'answer':render_classified_answer(value['answer'],expressions) if classified else render_segments(value['answer'],records,expressions=expressions)}
     for field in ('assumptions','limitations','next_actions'):
         if field not in value or not isinstance(value[field],list) or len(value[field])>10:
             raise ValueError('Invalid calculation collection.')
@@ -95,7 +144,7 @@ def render_response(value, records, *, quantities=None):
             if (not isinstance(item,list) or len(item)!=1 or
                     not isinstance(item[0],dict) or set(item[0])!={'text'}):
                 raise ValueError('Invalid short prose item.')
-        result[field]=[render_segments(item,[],limit=500,expressions=expressions) for item in value[field]]
+        result[field]=[render_segments(item,[],limit=500,expressions=None if classified else expressions) for item in value[field]]
     if expressions is not None:
         for recommendation in value.get('recommendations',[]):
             if isinstance(recommendation,dict):
