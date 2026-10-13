@@ -73,7 +73,15 @@ Cálculo del ejemplo del contrato (tarea 1.2): script independiente del backend,
 - Incidente de proceso: el lint falló en las pruebas del Red (49 errores, tipos `any` y un literal); se corrigió con una excepción puntual al candado de pruebas, autorizada por Victor y verificada (solo cambiaron tipos). El Red incluirá desde ahora lint y typecheck.
 - Revisión del agente `qa`: `accept`.
 
-Aún no se ha ejecutado nada en un navegador real ni con el stack completo de Compose, y todavía no existe en el frontend la entrada para pedir la explicación: eso llega con los grupos 6 a 8.
+**Grupo 6 — modo «Explicar una anomalía» del redactor** (commits `1a22a1ae`, `2ac1d794` y `1ae0e1d9`, 2026-10-13):
+
+- Segunda casilla del redactor, excluyente con la de propiedad; el `select` de anomalías del cliente activo (solo ids con formato válido); el `POST` con `anomaly_query`; errores traducidos por `detail.code`; y la entrada `/assistant?episode=<id>`, que solo preselecciona y exige pulsar «Enviar». Producto: un componente nuevo y +88/−9 líneas en tres archivos existentes, con props opcionales que no cambian los usos anteriores.
+- 67 pruebas nuevas en cuatro archivos (38 de integración del Red, que fallaban todas por la casilla inexistente, y 29 de remediación de mutantes). Las de integración montan la aplicación con el enrutador y un servidor simulado en el que cualquier petición no prevista hace fallar la prueba.
+- Lint, typecheck y build con código 0; escaneo de secretos sin hallazgos. Suite completa del frontend: 1218 de 1219 en cada una de dos ejecuciones; el único fallo de cada ejecución es una prueba distinta de JUP-098, y el `develop` previo a JUP-038 falla esas mismas dos pruebas en el control (no atribuibles a este cambio).
+- Mutación: Stryker sobre exactamente el código añadido (175 mutantes), 82.86 % antes de la remediación y **92.57 %** después; los 13 supervivientes son equivalentes o no especificados y están justificados.
+- Revisión del agente `qa`: `accept`.
+
+Aún no se ha ejecutado nada en un navegador real ni con el stack completo de Compose, y el enlace del panel de anomalías hacia el asistente todavía no existe: eso llega con los grupos 7 y 8.
 
 Nada más se ha ejecutado. Los resultados de pruebas, mutación, DoD y stack real de los demás grupos se añaden aquí al completarlos.
 

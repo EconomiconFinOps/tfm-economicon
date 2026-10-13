@@ -1041,3 +1041,60 @@ como equivalentes o no especificados:
 **Lo que esta mutación no demuestra.** Es una medida de Stryker sobre el código añadido por la tarea, no sobre los
 archivos enteros; las esperas de 40 ms son tiempo real. No hay prueba en navegador real todavía (grupo 8). El
 DoD del frontend y el veredicto de QA del grupo siguen pendientes.
+
+## Grupo 6 — Definition of Done y veredicto de QA
+
+**DoD** (2026-10-13, sobre `1ae0e1d9`; máquina calmada: 3 GB de RAM libres, 18 % de CPU y ningún `node` ajeno):
+
+| Control | Resultado |
+| --- | --- |
+| Pruebas del grupo (4 archivos, 67 pruebas) y de control (ownership, conversations, tenant-switching, ConversationsPage, AnswerEvidence, AnomalyEvidence) | Todas en verde, sin editar ninguna anterior (8 archivos, 117 pruebas en el Green; el `qa` reejecutó 94) |
+| `corepack pnpm --filter @finops/frontend lint` | código 0 (código de salida real) |
+| `corepack pnpm --filter @finops/frontend typecheck` | código 0 |
+| `corepack pnpm --filter @finops/frontend build` | código 0 |
+| Escaneo de secretos | 1561 líneas añadidas desde `e9a7a152`, 0 hallazgos |
+| **Suite completa del frontend** (75 archivos, 1219 pruebas), 2 ejecuciones | **1218 pasan y 1 falla en cada una, y el fallo es distinto cada vez** (ver abajo) |
+| Archivos de producto modificados | Solo los tres previstos: `MessageComposer.tsx`, `ConversationsPage.tsx` y `contracts.ts` |
+
+**Los fallos de la suite completa no son de este cambio.**
+
+- Primera ejecución: falla `tests/login-session-expired-notice.pending-attempt.test.tsx`. Segunda: falla
+  `tests/login-session-expired-notice.test.tsx` (tarea 4.1). Las dos son de JUP-098 (aviso de sesión expirada en
+  `/login`). Ese primer archivo pasa 3 de 3 ejecutado solo.
+- **Control** sobre el `develop` previo a JUP-038 (`bfaf3983`), en un árbol aparte con sus dependencias instaladas:
+  la **misma suite falla esas dos mismas pruebas en las dos ejecuciones** (2 de 66 archivos). Es decir, son
+  intermitencias o fallos de la base en esta máquina, ya registradas (`RF-098-004` y `RF-103-005` en el backlog),
+  y no se atribuyen a JUP-038. Ninguna prueba del grupo falló en ninguna ejecución completa.
+- El árbol del control se retiró con `git worktree remove` (queda un directorio parcial sin registrar en el
+  espacio temporal, por la ruta larga de Windows, inofensivo y fuera del repositorio).
+- Los mensajes «The URL path "/%E0%A4%A" could not be decoded» del registro son salida esperada de una prueba que
+  comprueba direcciones mal formadas, no errores.
+
+**Veredicto del agente `qa`: `accept`.** Reejecutó 8 archivos (`94 passed`) y comprobó: el historial (el Red solo
+trae pruebas, el producto entra en el Green y la mutación solo trae pruebas; ninguna prueba anterior modificada);
+que cada escenario de la spec tiene una prueba que falla si se rompe (elegir y enviar, cliente sin anomalías,
+lista que no carga, anomalía en la dirección, anomalía ajena, modos excluyentes y error al pedir la explicación);
+que el parámetro solo preselecciona y exige pulsar «Enviar», que solo se ofrecen y envían ids válidos, que un
+envío forzado queda bloqueado y que los textos van como nodos de React; que las props nuevas son opcionales y
+nada anterior cambia; que la atribución del fallo de la suite completa a la base es correcta; y que la
+justificación de los 13 supervivientes es razonable. No reejecutó la suite completa ni lint, typecheck o build.
+
+**Observaciones del QA, aceptadas:**
+
+1. Las esperas reales de 40 ms de las pruebas de mutantes solo afirman que algo **no** ocurre: el fallo sería un
+   falso verde, no un falso rojo; riesgo de intermitencia bajo y ya declarado.
+2. **Ninguna prueba afirma explícitamente «cero `POST` antes de pulsar Enviar» al llegar por enlace**; el código
+   no autoenvía. Se comprobará en la receta de navegador del grupo 8 (tarea 8.1).
+3. Si un id de formato inválido estuviera en la lista del cliente, se filtra y el aviso diría «no está entre las
+   de este cliente», algo impreciso; caso poco realista, relevante para el grupo 7.
+4. **Para el grupo 7:** `isAnomalyEpisodeId` ya garantiza `anomaly-<64 hex>`, que no necesita escape, pero el enlace
+   debe generarse con `encodeURIComponent` o `URLSearchParams` por coherencia con `api.ts`, y solo debe renderizarse
+   para episodios con id válido; si no, llevaría a un aviso y no a un error.
+5. Un fallo de refetch teniendo ya datos (mutante `isError ||`) no está especificado: se mostraría la lista
+   anterior en vez del error. No bloquea.
+6. Al cambiar de conversación con `?episode=` aún en la dirección, el redactor se vuelve a armar con la
+   preselección, porque el parámetro solo se limpia tras un envío correcto. Es coherente con la spec («en cuanto hay
+   una conversación seleccionada») y se tendrá en cuenta en el grupo 8.
+
+**Estado del grupo 6:** tareas 6.1 a 6.6 hechas; mutación con 13 supervivientes equivalentes o no especificados
+justificados; DoD en verde salvo los fallos intermitentes de la base, atribuidos con control; QA en `accept`.
