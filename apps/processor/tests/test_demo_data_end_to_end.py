@@ -115,7 +115,9 @@ def test_the_whole_path_loads_the_totals_of_the_file_and_is_repeatable_and_remov
         database.initialize()
         url = database.engine.url.render_as_string(hide_password=False)
 
+        started = time.monotonic()
         loaded = operator("apply", url, api_url)
+        print(f"complete load of {len(manifest['pairs'])} pairs: {time.monotonic() - started:.1f}s")
         assert loaded.returncode == 0, loaded.stdout + loaded.stderr
         assert "loaded" in loaded.stdout
         runs, records = counts(database)
