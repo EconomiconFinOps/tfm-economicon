@@ -33,4 +33,4 @@ JUP: JUP-120
 - [x] 4.3 Redactar `review.md` con lo que se comprobó, lo que no y los límites de la evidencia. Hecho: `review.md` con las tres pasadas, la validación, los límites de la evidencia, los seguimientos y la aplicabilidad de ADR.
 - [x] 4.4 `## Human Approval` posterior a la revisión, por Lucia. Hecho: Lucia aprobó explícitamente el 2026-10-13; bloque `Human Approval` en `review.md`.
 - [x] 4.5 **AVISAR a Lucia antes de mergear** para que avise a Alejandro y a Paris (JUP-035): el merge cambia la huella de la batería JUP-069 y de ahí en adelante sus pasadas no son comparables con las anteriores; acordar la fecha respecto a su pasada de aceptación. Hecho: Lucia avisó a Alejandro y a Paris el 2026-10-13 antes de mergear; la fecha de integración queda por acordar con ellos.
-- [ ] 4.6 Archivar el change en el mismo PR y abrir el PR contra `develop`.
+- [x] 4.6 Archivar el change en el mismo PR y abrir el PR contra `develop`. Hecho el archivo (2026-10-13) con las specs sincronizadas; el PR **no se ha abierto**: Lucia lo pedirá aparte, con el bloque de excepción temporal de `pr-lead` y sin asignar revisores.
