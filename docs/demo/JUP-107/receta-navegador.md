@@ -182,10 +182,12 @@ async function main() {
         else info.push('comprobado: Core Finance activo y sin importes en pantalla');
       } else if (step.screen === 'none') info.push('paso hablado: sin comprobación de interfaz');
       if (step.chart_gap) {
-        // Un hueco en la serie parte la curva del área en varios trazos (varios comandos M).
-        const curve = await page.locator('path.recharts-area-curve').first().getAttribute('d');
-        if (!curve || (curve.match(/M/g) || []).length < 2) notes.push('el gráfico no deja hueco en el mes sin datos');
-        else info.push('comprobado: la curva del gráfico se interrumpe');
+        // Un mes sin datos no tiene punto en la curva: hay menos puntos que meses, tanto si el hueco está al principio como en medio.
+        const dots = await page.locator('.recharts-area-dot').count();
+        const index = (ym) => Number(ym.slice(0, 4)) * 12 + Number(ym.slice(5, 7));
+        const months = index(step.period.to) - index(step.period.from) + 1;
+        if (dots >= months) notes.push('el gráfico dibuja un punto en cada mes, también en el que no tiene datos');
+        else info.push(`comprobado: ${dots} puntos para ${months} meses`);
       }
       if (step.first_row) {
         // La primera fila de la tabla es la de mayor prioridad y su detalle se abre en un diálogo fuera de <main>.

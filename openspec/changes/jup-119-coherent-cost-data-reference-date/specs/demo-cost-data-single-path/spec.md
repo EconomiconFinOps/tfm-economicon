@@ -126,7 +126,7 @@ With the demo data loaded, the screens and answers that depend on fields the dem
 
 #### Scenario: Breakdown by resource group
 - **WHEN** the dashboard asks for the breakdown by resource group on the demo data
-- **THEN** the response is successful and the records appear as not applicable, and the page shows no error
+- **THEN** the response is successful and every record appears in a group without dimension (shown as "Sin dimensión" by subscription), and the page shows no error
 
 ### Requirement: Loading is opt-in and never part of the default startup
 

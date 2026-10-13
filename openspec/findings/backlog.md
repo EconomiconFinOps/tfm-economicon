@@ -375,3 +375,7 @@ Tipo: deuda tecnica y mejoras de producto. Severidad: Low a Medium. Estado: Open
   guardado se redondea. No afecta a billing, que redondea a dos.
 - RF-119-007 (informativo): el tope por fecha de referencia es de lectura, no de acceso: los datos posteriores existen en
   la base y los ve quien la lea directamente.
+- RF-119-008 (entorno, Low): en esta maquina el CockroachDB del Compose se detuvo solo (codigo 7) con «disk slowness
+  detected: unable to sync log files within 10s» al cargar y leer a la vez; el disco de Docker Desktop es lento (con un
+  nodo en memoria las migraciones tardan segundos). Se arranca de nuevo con `docker compose start cockroachdb` y conserva
+  los datos. Si se repite, dar al volumen una ruta mas rapida o aumentar los recursos de Docker.

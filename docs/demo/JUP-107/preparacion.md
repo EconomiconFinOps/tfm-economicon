@@ -30,9 +30,9 @@ Esperar a que backend, processor, base de datos y frontend estén sanos. La apli
 El perfil `demo` de Compose levanta una segunda API simulada que sirve el CSV de demo y un cargador de un solo uso. Los comandos son los de `demo_data.py`:
 
 ```sh
-docker compose -p jup107 --profile demo run --rm demo-data python /repo/scripts/demo_data.py status
-docker compose -p jup107 --profile demo run --rm demo-data python /repo/scripts/demo_data.py apply
-docker compose -p jup107 --profile demo run --rm demo-data python /repo/scripts/demo_data.py status
+docker compose -p jup107 --profile demo run --rm demo-data python scripts/demo_data.py status
+docker compose -p jup107 --profile demo run --rm demo-data python scripts/demo_data.py apply
+docker compose -p jup107 --profile demo run --rm demo-data python scripts/demo_data.py status
 ```
 
 Esperado: el primer `status` dice `tenant-core: absent` y `tenant-growth: absent`; `apply` termina con `loaded: 7 parejas tenant/suscripcion con datos sinteticos o de fechas desplazadas, no son facturas de Azure.`; el último `status` dice `present` en los dos clientes. Si el primer `status` informa `other-data`, **parar**: el cargador se niega a cargar sobre costes que no son los suyos y no hay que saltarse esa negativa. La carga completa tarda unos 25 segundos medidos en un equipo de desarrollo.
@@ -85,9 +85,9 @@ Seguir [guion.md](guion.md). Si hay que repetirla, recargar la página y volver 
 ## 5. Volver al estado inicial
 
 ```sh
-docker compose -p jup107 --profile demo run --rm demo-data python /repo/scripts/demo_data.py remove
-docker compose -p jup107 --profile demo run --rm demo-data python /repo/scripts/demo_data.py remove
-docker compose -p jup107 --profile demo run --rm demo-data python /repo/scripts/demo_data.py status
+docker compose -p jup107 --profile demo run --rm demo-data python scripts/demo_data.py remove
+docker compose -p jup107 --profile demo run --rm demo-data python scripts/demo_data.py remove
+docker compose -p jup107 --profile demo run --rm demo-data python scripts/demo_data.py status
 docker compose -p jup107 exec -T backend python - < resumen.py
 ```
 

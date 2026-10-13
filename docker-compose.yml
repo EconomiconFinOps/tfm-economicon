@@ -132,7 +132,10 @@ services:
     profiles: ["demo"]
     build:
       context: ./apps/processor
-    command: ["python", "/repo/scripts/demo_data.py", "apply"]
+    command: ["python", "scripts/demo_data.py", "apply"]
+    working_dir: /repo
+    healthcheck:
+      disable: true
     environment:
       RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
       ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}

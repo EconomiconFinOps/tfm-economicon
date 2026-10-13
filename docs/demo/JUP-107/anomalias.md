@@ -32,8 +32,8 @@ Si RabbitMQ sale con `eacces` o el processor aún no está sano, repite el mismo
    ```
 2. Carga los datos y comprueba su estado (`status` debe decir `present` en `tenant-core` y en `tenant-growth`). `apply` carga el conjunto completo de la demo y es idempotente: repetirlo responde `already-present`.
    ```sh
-   docker compose -p jup107b --profile demo run --rm demo-data python /repo/scripts/demo_data.py apply
-   docker compose -p jup107b --profile demo run --rm demo-data python /repo/scripts/demo_data.py status
+   docker compose -p jup107b --profile demo run --rm demo-data python scripts/demo_data.py apply
+   docker compose -p jup107b --profile demo run --rm demo-data python scripts/demo_data.py status
    ```
 
 ## La petición de referencia
@@ -126,9 +126,9 @@ Una sola pulsación revisa todos los días pendientes hasta el último completo.
 ## Vuelta al estado inicial
 
 ```sh
-docker compose -p jup107b --profile demo run --rm demo-data python /repo/scripts/demo_data.py remove
-docker compose -p jup107b --profile demo run --rm demo-data python /repo/scripts/demo_data.py remove
-docker compose -p jup107b --profile demo run --rm demo-data python /repo/scripts/demo_data.py status
+docker compose -p jup107b --profile demo run --rm demo-data python scripts/demo_data.py remove
+docker compose -p jup107b --profile demo run --rm demo-data python scripts/demo_data.py remove
+docker compose -p jup107b --profile demo run --rm demo-data python scripts/demo_data.py status
 docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defaultdb -e "SELECT count(*) FROM azure_cost_records WHERE tenant_id = 'tenant-core'"
 docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defaultdb -e "SELECT count(*) FROM anomaly_episodes WHERE tenant_id = 'tenant-core'"
 docker compose -p jup107b --profile demo down -v

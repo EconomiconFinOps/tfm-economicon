@@ -43,7 +43,9 @@ test("demo data services are opt-in, read-only and never part of the default sta
   assert.equal(demoApi.environment.AZURE_COST_DATASET_PATH, "/demo/demo-cost.csv");
   assert.deepEqual(demoApi.volumes, ["./fixtures/azure-cost/demo:/demo:ro"]);
   const loader = compose.services["demo-data"];
-  assert.deepEqual(loader.command, ["python", "/repo/scripts/demo_data.py", "apply"]);
+  assert.deepEqual(loader.command, ["python", "scripts/demo_data.py", "apply"]);
+  assert.equal(loader.working_dir, "/repo");
+  assert.deepEqual(loader.healthcheck, { disable: true });
   assert.equal(loader.restart, "no");
   assert.equal(loader.environment.AZURE_COST_API_BASE_URL, "http://azure-cost-api-demo:8002");
   assert.equal(loader.environment.RUNTIME_ENVIRONMENT, "${RUNTIME_ENVIRONMENT:-production}");
