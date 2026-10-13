@@ -13,10 +13,44 @@ from decimal import Decimal
 class QuantityCatalog(dict):
     rules = ()
     rule_sources = ()
+    classification_requested = False
 
 
 def normalized(value):
     return ''.join(c for c in unicodedata.normalize('NFKD', value.casefold()) if not unicodedata.combining(c))
+
+
+def classification_request(question):
+    """Conservative lexical routing of the current request, never retrieved text.
+
+    Only the first paragraph is a request candidate; subsequent supplied context
+    cannot force a response variant. Ambiguous/conceptual/negated wording retains
+    narrative capability. This is routing, not inferred financial authority.
+    """
+    request = normalized(question.split('\n\n', 1)[0])
+    if re.search(r'\b(?:sin\s+(?:un\s+)?semaforo|no\s+(?:lo\s+)?clasifi\w*|without\s+(?:a\s+)?traffic|do\s+not\s+classif\w*)', request):
+        return False
+    if re.search(r'\b(?:significa|significado|definicion|define|meaning|definition|what\s+is|que\s+es|como\s+funciona)\b', request):
+        return False
+    return bool(re.search(r'(?:^|[¿?!.]\s*)(?:por\s+favor[, ]+)?(?:clasifica\b|classify\b)', request)
+                or re.search(r'\b(?:que|cual|what|which)\b[^?!.]{0,100}\b(?:semaforo|clasificacion|classification|traffic[- ]light)\b', request))
+
+
+def applicable_rules(catalog):
+    return [rule for rule in getattr(catalog, 'rules', ()) if any(
+        len(entry.get('concept_anchors', [])) == 1
+        and tuple(entry['concept_anchors'][0]) == tuple(rule['anchor'])
+        for entry in catalog.values())]
+
+
+def required_classification(catalog):
+    if not getattr(catalog, 'classification_requested', False):return False
+    rules=applicable_rules(catalog)
+    if len(rules)!=1:return False
+    return sum(len(entry.get('concept_anchors', [])) == 1
+        and tuple(entry['concept_anchors'][0]) == tuple(rules[0]['anchor'])
+        and any(origin.get('kind')=='user' for origin in entry.get('provenance', []))
+        for entry in catalog.values()) == 1
 
 
 def concept(value):

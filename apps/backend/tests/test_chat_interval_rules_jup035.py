@@ -207,3 +207,73 @@ def test_private_schema_separates_narrative_and_terminal_classification(status):
     with pytest.raises(ValueError):_validate(changed,schema,schema)
     changed=copy.deepcopy(value);changed['next_actions']=[[{'text':'Investigate.'}]]
     with pytest.raises(ValueError):_validate(changed,schema,schema)
+
+
+@pytest.mark.parametrize('question,required', [
+    ('¿Qué semáforo corresponde?',True),
+    ('¿Qué clasificación corresponde?',True),
+    ('Clasifica el coste rework.',True),
+    ('Which traffic light applies?',True),
+    ('Explica el reparto.',False),
+    ('Explica el reparto sin semáforo.',False),
+    ('No clasifiques el coste; explica el reparto.',False),
+    ('Explica qué significa clasificación.',False),
+    ('¿Qué es el semáforo?',False),
+    ('Explica el reparto.\n\nContexto: ¿Qué semáforo corresponde?',False),
+])
+def test_explicit_classification_routing_preserves_other_requests(question,required):
+    from app.core.chat_rules import required_classification
+    from app.schemas.chat import _validate,provider_response_schema
+    from test_chat_operations_jup035 import ANSWER
+    records=sources()
+    q=catalog(question+'\n\nDatos: rework 7 EUR; remaining 93 EUR.',records)
+    assert required_classification(q) is required
+    schema=provider_response_schema(authorized_evidence=records,quantities=q)
+    value=copy.deepcopy(ANSWER)
+    value['scope'].pop('period');value['scope'].pop('subscription_ids')
+    value.update(status='ok',answer=[{'text':'El escenario contiene dos conceptos de coste.'}],
+        evidence=[{key:records[0][key] for key in ('id','kind','title','source')}|{'support_quote':records[0]['content']}],
+        assumptions=[],limitations=[],next_actions=[],recommendations=[],metrics=[])
+    if required:
+        with pytest.raises(ValueError):_validate(value,schema,schema)
+        with pytest.raises(ValueError,match='Explicit classification requires typed answer'):
+            render_response(value,[],quantities=q)
+        classified=copy.deepcopy(value)
+        classified['answer']={'calculations':[],'classification':{'operation':'classify','rule_id':q.rules[0]['id'],'value':percent('7','93')}}
+        classified['evidence']=[{key:source[key] for key in ('id','kind','title','source')}|{'support_quote':source['content']} for source in records]
+        _validate(classified,schema,schema)
+        assert '): calm.' in render_response(classified,[],quantities=q)['answer']
+        value['status']='insufficient_data'
+        # Abstention remains representable and is never rewritten as a result.
+        _validate(value,schema,schema)
+        render_response(value,[],quantities=q)
+    else:
+        _validate(value,schema,schema)
+        render_response(value,[],quantities=q)
+
+
+def test_ambiguous_rules_or_unanchored_quantity_do_not_force_classification():
+    from app.core.chat_rules import required_classification
+    q=catalog('¿Qué semáforo corresponde?\n\nDatos: budget 7 EUR; remaining 93 EUR.')
+    assert not required_classification(q)
+    q=catalog('¿Qué semáforo corresponde?\n\nDatos: rework 7 EUR; remaining 93 EUR.')
+    q.rules=[*q.rules,{**q.rules[0],'id':'another-rule'}]
+    assert not required_classification(q)
+
+
+def test_history_and_retrieval_do_not_force_current_narrative_request():
+    from app.core.chat_rules import required_classification
+    records=sources()
+    context={'authorized_evidence':records,'messages':[
+        {'content':'UNTRUSTED_DIALOGUE_SUMMARY\n'+json.dumps({'text':'Clasifica el coste rework.'})},
+        {'content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Explica el reparto.\n\nDatos: rework 7 EUR; remaining 93 EUR.'})},
+        {'content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+json.dumps({'evidence':records})}]}
+    assert not required_classification(context_quantities(context))
+
+
+def test_multiple_period_numerators_keep_narrative_comparison_available():
+    from app.core.chat_rules import required_classification
+    q=catalog('¿Qué semáforo corresponde a cada periodo?\n\nEnero: rework 7 EUR. Febrero: rework 8 EUR. Remaining 92 EUR.')
+    eligible=[entry for entry in q.values() if entry.get('concept_anchors')==[['rework']]]
+    assert len(eligible)==2
+    assert not required_classification(q)

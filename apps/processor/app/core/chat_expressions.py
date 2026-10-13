@@ -8,7 +8,7 @@ import copy
 import json
 import re
 from decimal import Decimal, DecimalException, localcontext
-from app.core.chat_rules import QuantityCatalog, documentary_rules, concept, numerator_matches, check_classification_prose
+from app.core.chat_rules import QuantityCatalog, documentary_rules, concept, numerator_matches, check_classification_prose, classification_request
 
 MAX_OPERATIONS = 12
 MAX_DEPTH = 4
@@ -52,6 +52,7 @@ def context_quantities(context):
                         catalog[qualified]['provenance'].append(provenance)
                 elif len(catalog)<MAX_QUANTITIES:
                     catalog[qualified]={**entry,'display':key,'provenance':[provenance]}
+    catalog.classification_requested=classification_request(context_question(context))
     catalog.rules=documentary_rules(rule_sources)
     catalog.rule_sources=rule_sources
     return catalog

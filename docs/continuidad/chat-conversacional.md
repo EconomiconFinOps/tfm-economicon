@@ -1,3 +1,43 @@
+### Candidato siguiente: intención explícita acotada
+
+Restricción privada sólo ante petición explícita en primer párrafo, una regla y
+un numerador de usuario inequívocos; narrativa/abstención conservadas para los
+otros casos. Pruebas53backend con persistencia; suite ampliada de intención44PASS;
+64processor recursos/parser/presupuesto PASS; OpenSpec69PASS. Paridad final:
+4971tokens esquema,4026mensajes,760variables; schema87989582…0daa18a y bundle
+f087dd07…2f227 iguales. No cambia prompt ni corpus/banco.013/027 y el ValueError
+anterior siguen pendientes. Próxima validación: smoke005/006 y una full28 de
+cobertura diagnóstica, sin declarar aceptación por sólo completarse.
+
+## Corte vigente: focal terminal tipada — 13/10/2026
+
+Publicado `daaffbfe64d2f612a0c1716fdd7d277ec499fa93`, runtime expression20
+con hashes backend/processor/frontend comprobados; CI técnica PASS. Focal20:
+005/006/007 fallan en validación final, 013 rechaza unidades incompatibles y
+además atribuye indebidamente semáforo Unallocated a Budget Variance; 017 PASS
+semántico según auditoría independiente; 027 calcula bien pero sus listas añaden
+metodología sin las citas pertinentes. NO validada; no se ejecuta full28.
+Invariantes de las seis respuestas PASS: SSE/resultado/JSONB, límites, fuentes e
+historial vacío al fallar. Recibos externos `expression20-focused.json` y
+`expression20-focused-parent-invariants.json`; no equivalen a aceptación semántica.
+
+Diagnóstico único005 posterior añade sólo tres códigos cerrados temporalmente;
+esta vez elige narrativa y falla `classification_unverified_prose`, sin reproducir
+el ValueError no identificado de la focal. NO confirma la hipótesis de cita
+faltante. Runtime original restaurado y hash verificado; cero mensajes guardados.
+Recibos `expression20-diagnostic005.json` y `expression20-diagnostic005-remote.log`.
+Gasto acumulado observado 0.541537388 USD, techo TOTAL autorizado 2 USD. No nuevas
+inferencias hasta revisar corrección y causa pendiente. Tres códigos cerrados
+adicionales probados offline (26 PASS), aún sin publicar.
+
+Aislamiento real de lectura: conversación, estado, resultado y eventos devuelven
+200 con Core y 404 con Growth para la misma conversación; sin inferencia ni
+exportar credenciales (`expression20-isolation-remote.log`). Navegador confirma
+retorno de foco al botón tras Escape en este runtime. Próximo paso: restringir la
+variante de clasificación sólo ante petición explícita y regla aplicable inequívoca,
+sin secuestrar consultas narrativas; resolver pertinencia de auxiliares y reglas
+parciales. Los cortes siguientes son antecedentes, no estado vigente.
+
 ## Corte actual: intervalos documentales — 13/10/2026
 
 Corte posterior expression19/a5f702b:005/006/007 rechazadas por clasificación libre;

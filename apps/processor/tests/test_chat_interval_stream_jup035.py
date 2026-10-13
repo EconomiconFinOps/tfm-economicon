@@ -83,6 +83,9 @@ def test_non_partitioned_section_metadata_is_rejected():
     ('Documentary interval unit mismatch.','classification_unit_mismatch'),
     ('Ambiguous documentary interval.','classification_ambiguous_interval'),
     ('Unverified documentary classification prose.','classification_unverified_prose'),
+    ('Documentary calculation citation missing.','documentary_calculation_citation_missing'),
+    ('Invalid canonical subscriptions.','invalid_canonical_subscriptions'),
+    ('Invalid authorized evidence.','invalid_authorized_evidence'),
     ('Unverified documentary classification prose. SECRET',None),
 ])
 def test_interval_diagnostics_are_exact_closed_codes_without_rejected_text(message,code,caplog):

@@ -150,3 +150,16 @@ que los datos del escenario sean facturación verificada.
 
 Véase [diseño OpenSpec](../../openspec/changes/jup-035-auto-documentation/design.md)
 y [continuidad](../continuidad/chat-conversacional.md).
+
+
+La focal20 confirmó que ofrecer ambas variantes permite elegir narrativa y volver
+a clasificar mediante prosa. La versión de contrato v7 restringe las respuestas
+ok/partial a la variante terminal únicamente cuando el primer párrafo de la
+pregunta actual solicita explícitamente clasificar o un semáforo y existe una
+sola regla documental con numerador anclado. Preguntas conceptuales, negaciones,
+ambigüedad y datos sin regla conservan narrativa; historial, documentos y párrafos
+posteriores no pueden activar esta ruta. Es una detección léxica conservadora,
+no comprensión universal de intención. La misma restricción se valida localmente
+y en el esquema privado. La abstención permanece disponible si faltan datos.
+Esto no identifica el ValueError no reproducido de la focal20 ni garantiza la
+pertinencia de consejos narrativos: ambos siguen pendientes de evaluación real.

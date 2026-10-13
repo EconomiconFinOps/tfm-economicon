@@ -2,6 +2,7 @@
 import copy
 
 from app.core.chat_calculations import render_text
+from app.core.chat_rules import required_classification
 from app.core.chat_expressions import ExpressionRenderer, expression_definitions
 
 CLASSIFIED_NOTES=(
@@ -60,7 +61,10 @@ def bind_segments(schema, records=None, quantities=None):
                     'required':['text'],'additionalProperties':False}}
             for field in ('next_actions','recommendations','metrics'):props[field]['maxItems']=0
             classified.append(variant)
-    if classified:schema['anyOf']=branches+classified
+    if classified:
+        retained=[branch for branch in branches if not (required_classification(quantities)
+            and 'ok' in branch['properties']['status'].get('enum',[]))]
+        schema['anyOf']=retained+classified
     return schema
 
 
@@ -129,6 +133,8 @@ def render_response(value, records, *, quantities=None):
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
     classified=isinstance(value['answer'],dict)
+    if required_classification(quantities) and value.get('status') in ('ok','partial') and not classified:
+        raise ValueError('Explicit classification requires typed answer.')
     if classified:
         for field in ('next_actions','recommendations','metrics'):
             if value.get(field)!=[]:raise ValueError('Invalid classified auxiliary fields.')
