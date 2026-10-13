@@ -22,9 +22,9 @@ JUP: JUP-120
 
 ## 3. Documentación y hallazgos
 
-- [ ] 3.1 Marcar `RF-114-001` como resuelto en `openspec/findings/backlog.md` y registrar lo que queda abierto: batería de anomalías (D6), fecha de referencia y enlace «Explicar en el asistente» si no estaban integrados.
-- [ ] 3.2 Nota de continuidad en `docs/continuidad/` y actualización de `docs/validation/README.md` si menciona la huella o la versión de la batería.
-- [ ] 3.3 Actualizar la nota fechada de ADR-0020 que aplazaba el corpus, sin ADR nuevo.
+- [x] 3.1 Marcar `RF-114-001` como resuelto en `openspec/findings/backlog.md` y registrar lo que queda abierto: batería de anomalías (D6), fecha de referencia y enlace «Explicar en el asistente» si no estaban integrados. Hecho: `RF-114-001` pasa a Fixed (resuelto por JUP-120, no por JUP-038). Queda abierto en el `review.md`: la batería de anomalías (D6) y, si #127/#128 no estaban integrados, la fecha de referencia y «Explicar en el asistente».
+- [x] 3.2 Nota de continuidad en `docs/continuidad/` y actualización de `docs/validation/README.md` si menciona la huella o la versión de la batería. Hecho: nota en `docs/continuidad/deteccion-anomalias-coste.md` y frase en `docs/validation/README.md` sobre la huella en el ejemplo de JUP-067.
+- [x] 3.3 Actualizar la nota fechada de ADR-0020 que aplazaba el corpus, sin ADR nuevo. Hecho: nota fechada en ADR-0020, sin ADR nuevo.
 
 ## 4. Cierre y verificación
 
