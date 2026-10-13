@@ -115,13 +115,13 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 - [x] 6.2 Red: cliente sin anomalías (mensaje y envío bloqueado), fallo al cargar la lista (error y
   envío bloqueado), exclusión con «Consultar costes por propiedad» en los dos sentidos, y error 404
   o 409 del backend (se muestra, se conserva la pregunta y no aparece ninguna respuesta).
-- [ ] 6.3 Green: `AnomalyExplanationFields.tsx` y la segunda casilla en `MessageComposer.tsx`
+- [x] 6.3 Green: `AnomalyExplanationFields.tsx` y la segunda casilla en `MessageComposer.tsx`
   (decisión 9), sin cambiar la casilla existente ni sus pruebas.
 - [x] 6.4 Red, en otro archivo nuevo (el de 6.1 ya está commiteado): `/assistant?episode=<id>` abre el modo con esa anomalía elegida cuando está en la
   lista del cliente activo; si no está, lo avisa y no elige ninguna; tras un envío correcto el
   parámetro desaparece de la dirección; al cambiar de cliente con el parámetro puesto se aplica el
   caso «no está».
-- [ ] 6.5 Green: lectura del parámetro en `ConversationsPage.tsx` y preselección en el redactor
+- [x] 6.5 Green: lectura del parámetro en `ConversationsPage.tsx` y preselección en el redactor
   (decisión 10).
 - [ ] 6.6 Mutación sobre el modo del redactor y la preselección; cubrir los mutantes que sobrevivan.
 

@@ -939,3 +939,46 @@ incluyó la prueba opcional de «un envío en curso no pierde la elección si ca
 
 **Lo que este Red no demuestra.** Que las pruebas sean correctas contra la implementación real del producto; no
 hay prueba en navegador real todavía (grupo 8).
+
+## Grupo 6 — Modo «Explicar una anomalía» del redactor, fase Green (tareas 6.3 y 6.5)
+
+**Producto del `coder`** (`git diff --stat`: 3 archivos modificados con 88 inserciones y 9 borrados, más un archivo
+nuevo):
+
+- `apps/frontend/src/components/AnomalyExplanationFields.tsx` (nuevo): carga la lista del cliente con
+  `useQuery` (clave `["anomaly-episodes-for-explanation", tenantId]`, `retry: false`), solo cuando el modo está
+  activo; los estados `Cargando anomalías...`, error (`alert` con texto fijo, sin el cuerpo del servidor), vacío y
+  el `select` «Anomalía» con los textos de las pruebas, en el orden del backend y solo con ids válidos; el aviso del
+  enlace (`status`) únicamente con la lista ya cargada. La preselección desde el enlace se aplica **una sola vez**,
+  al llegar la primera lista (con un `ref`), para no reimponerla si la persona vuelve a «Elige una anomalía».
+- `apps/frontend/src/components/MessageComposer.tsx` (+71): la segunda casilla, excluyente en los dos sentidos;
+  la pregunta propuesta solo con el cuadro vacío; `Enviar` deshabilitado sin elegir; el `POST` con exactamente
+  `{content, anomaly_query: {episode_id}}`; `anomalyErrorText`, que traduce **por `detail.code`** y no por estado
+  HTTP (un 404 también lo da la conversación inexistente, con `detail` como cadena); y las props opcionales
+  `initialEpisodeId` y `onSent`, para no romper los usos actuales.
+- `apps/frontend/src/pages/ConversationsPage.tsx` (+17): lee `episode` con `useSearchParams` en la **página** y no
+  en el redactor, porque este solo existe con una conversación seleccionada y el parámetro debe sobrevivir hasta
+  entonces; tras un envío correcto lo quita con `replace`.
+- `apps/frontend/src/services/contracts.ts` (+9, solo inserciones): `anomaly_query?` en `MessageCreateRequest` e
+  `isAnomalyEpisodeId`, con coincidencia completa `^anomaly-[0-9a-f]{64}$` y sin la bandera `m`.
+- Estos archivos, a diferencia de `AnswerEvidence.tsx`, **no los modifican las PR #120 y #121** de JUP-035 (no
+  aparecen en su lista de archivos del frontend): no se prevé conflicto de contenido en ellos.
+
+**Evidencia Green** (2026-10-13, reejecutada por el orquestador, Windows):
+
+- Pruebas nuevas: **38 de 38** (22 de conversaciones y 16 del enlace); antes `38 failed`.
+- Control, sin editar ninguna prueba: `ownership-conversations`, `conversations`, `tenant-switching`,
+  `ConversationsPage`, `AnswerEvidence` y `AnomalyEvidence`: en conjunto con las nuevas, `8 archivos, 117 pruebas
+  pasan`. El `coder` comprobó además `spanish-ui.test.ts` (7 de 7).
+- `lint` y `typecheck`: **código 0** los dos (código de salida real).
+
+**Decisiones del `coder` no cubiertas por el encargo** (revisadas):
+
+- Al apagar el modo de anomalía, o al activar el de propiedad, se reinicia la anomalía elegida. Con el enlace aún
+  en la dirección, al reactivar el modo vuelve a preseleccionarse la del enlace (el componente se remonta); tras
+  un envío correcto el parámetro desaparece y eso deja de ocurrir.
+- Tras un envío correcto la anomalía elegida **se conserva**; solo se limpia la pregunta, como hoy.
+- Si la lista se vuelve a pedir (p. ej. al recuperar el foco) y la anomalía elegida ya no está, no se corrige en
+  el cliente: lo cubre el 404 del backend con su mensaje fijo.
+
+**Pendiente del grupo 6:** mutación (6.6), DoD del frontend y QA.

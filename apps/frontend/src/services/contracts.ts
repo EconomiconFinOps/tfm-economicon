@@ -186,6 +186,7 @@ export interface ConversationCreateRequest {
 export interface MessageCreateRequest {
   content: string;
   ownership_query?: OwnershipQuery;
+  anomaly_query?: { episode_id: string };
 }
 
 export interface OwnershipQuery {
@@ -447,6 +448,14 @@ export function isAnomalyEpisode(value: unknown): value is AnomalyEpisode {
     && isNonemptyString(value.rules_version) && anomalyObject(value.rules) && value.cause_status === "not_established"
     && Array.isArray(value.limitations) && value.limitations.every((item) => typeof item === "string")
     && anomalyInstant(value.created_at) && anomalyInstant(value.updated_at);
+}
+
+// Formato del identificador de episodio que acepta el backend (`anomaly_query.episode_id`, JUP-038).
+// Coincidencia COMPLETA con `^...$` y sin la bandera `m`: en JS `$` no admite un salto de linea final
+// (a diferencia de Python), asi que "anomaly-<hex>\n" se rechaza. Se exige aqui, antes de ofrecer una
+// opcion o de enviar, para no mandar al servidor un id que el contrato ya sabe invalido.
+export function isAnomalyEpisodeId(value: unknown): value is string {
+  return typeof value === "string" && /^anomaly-[0-9a-f]{64}$/.test(value);
 }
 
 export function isAnomalyEpisodeList(value: unknown): value is AnomalyEpisodeList {
