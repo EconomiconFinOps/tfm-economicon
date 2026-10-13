@@ -141,19 +141,19 @@ commit Red, antes del Green; los casos que pida la mutación van en otro archivo
 
 ## 8. Validación con el stack real
 
-- [ ] 8.1 Levantar un proyecto de Compose aislado con volúmenes nuevos, cargar el conjunto sintético
+- [x] 8.1 Levantar un proyecto de Compose aislado con volúmenes nuevos, cargar el conjunto sintético
   de JUP-107 (`scripts/synthetic_anomalies.py`), pulsar «Detectar ahora» y explicar en el navegador
   las tres anomalías (P1, P2 y P3) entrando por el enlace del panel. Comparar referencia, impacto,
   días y criticidad con `docs/demo/JUP-107/esperados-anomalias.json` y guardar capturas a 1280 y
   390 px.
-- [ ] 8.2 Recalcular a mano una de las evidencias guardadas, con un script independiente del
+- [x] 8.2 Recalcular a mano una de las evidencias guardadas, con un script independiente del
   backend: cifras a partir de `operands` e `id` a partir del JSON canónico. Anotar el script y el
   resultado.
-- [ ] 8.3 Comprobar por HTTP: identificador de otro cliente e inexistente dan el mismo 404; la
+- [x] 8.3 Comprobar por HTTP: identificador de otro cliente e inexistente dan el mismo 404; la
   explicación responde con pgvector parado; tras cambiar el estado de una anomalía y explicarla de
   nuevo, el `id` cambia y el mensaje anterior se conserva; ningún registro del backend contiene un
   nombre de servicio.
-- [ ] 8.4 Comprobar con `git merge-tree` la rama contra las cabeceras de las PR #120 y #121 y anotar
+- [x] 8.4 Comprobar con `git merge-tree` la rama contra las cabeceras de las PR #120 y #121 y anotar
   los archivos en conflicto para quien integre después. No se resuelve aquí.
 
 ## 9. Documentación

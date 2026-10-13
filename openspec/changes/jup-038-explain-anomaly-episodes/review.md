@@ -1222,3 +1222,116 @@ ampliadas; lo único que puede dar conflicto textual son esas dos líneas. Se me
 
 **Estado del grupo 7:** tareas 7.1 a 7.4 hechas; mutación sin supervivientes reales; DoD en verde; QA en `accept`.
 **El frontend de la tarjeta está completo.**
+
+## Grupo 8 — Validación con el stack real (tareas 8.1 a 8.4)
+
+Es validación del orquestador, sin ciclo Red/Green (no escribe producto ni pruebas del repositorio). Los scripts, las
+capturas y los informes están en `docs/evidence/JUP-038/`. **No sustituye a `Validacion JUP-038` de Alejandro Aguado.**
+
+**Entorno** (2026-10-13): proyecto de Compose aislado `jup038v` (7 servicios sanos: `azure-cost-api`, `backend`,
+`cockroachdb`, `frontend`, `postgres-pgvector`, `processor`, `rabbitmq`) construido desde el árbol limpio en `df65c3ca`
+(comprobado: el backend desplegado contiene `anomaly_query` y el explicador), con volúmenes nuevos, puertos 18741 a 18751,
+secretos aleatorios en un archivo **fuera del repositorio** (borrado después) y datos sintéticos de JUP-107 cargados con
+`scripts/synthetic_anomalies.py` (1 ingesta y 134 registros en `tenant-core`, 0 episodios al empezar). Al terminar se
+ejecutó `docker compose down -v --rmi local`: no queda ningún contenedor, volumen, imagen ni red del proyecto. Chrome real
+vía Playwright (`channel: "chrome"`).
+
+### 8.1 Navegador: las tres anomalías por el enlace del panel
+
+«Detectar ahora» abrió **3 anomalías** (detección hecha hasta el 20/09/2026, 13 días evaluados, 1 ya no se observa), con
+las filas del panel idénticas a `docs/demo/JUP-107/esperados-anomalias.json`. Para cada una se recorrió: detalle →
+enlace «Explicar en el asistente» → `/assistant?episode=<id>` → crear la conversación (no había ninguna: la entrada por el
+enlace sobrevive hasta montar el redactor) → modo activado y anomalía preseleccionada → **cero `POST` antes de pulsar
+«Enviar»** → un único `POST` 201 con el cuerpo exacto `{content, anomaly_query}` → el parámetro desaparece de la dirección
+→ explicación y bloque de evidencia.
+
+| Anomalía | Comprobaciones | Cifras verificadas contra lo esperado |
+| --- | --- | --- |
+| Compute (P1) | 24 de 24 | referencia 142.86, impacto 2807.71 en 12 días, «Alta (P1)», «Se sigue observando» |
+| Database (P2) | 23 de 23 | referencia 171.43, impacto 642.86 en 5 días, «Media (P2)», «Se sigue observando» |
+| Analytics (P3) | 23 de 23 | referencia 311.14, impacto 168.86 en 4 días, «Baja (P3)», «Ya no se observa desde 2026-09-14» |
+
+Además: servicio entrecomillado, día de apertura, causa no establecida, aviso de datos sintéticos, 5 limitaciones,
+operandos con 12 decimales visibles en «Operandos exactos», **0 errores o avisos de consola y 0 peticiones fallidas**, y a
+390 px **sin desbordamiento horizontal** (Compute). Capturas: `01-panel-1280`, `02-detalle-con-enlace-1280`,
+`03-explicacion-{compute,database,analytics}-1280` y `04-explicacion-compute-390`.
+
+**Primera pasada fallida, corregida.** El primer intento falló en las tres anomalías por un selector de **mi script**
+(`getByLabel("Anomalía")` coincidía también con la casilla «Explicar una anomalía»); el producto funcionaba (las tres
+primeras comprobaciones de cada una pasaban). Se corrigió el selector y se repitió el recorrido completo. Las capturas de
+error de esa pasada se descartaron.
+
+### 8.2 Recálculo independiente
+
+Con un script que **no importa nada del backend** (aritmética con `BigInt` a escala 12 y `crypto` de Node) se recalculó la
+evidencia guardada de Compute a partir de sus `operands` (referencia de 7 días `1000.000000000000`, observado
+`377.000000000000`, impacto × 7 `19654.000000000000`): referencia diaria 142.86, subida absoluta 234.14, subida relativa
+163.90 %, impacto 2807.71, criticidad P1 y regla estricta cumplida; y el **identificador `anomaly-explanation:1bf475eb…5da52`
+coincide con el sha256 del JSON canónico** (claves ordenadas, sin espacios, UTF-8 sin escapar) de
+`{"tenant": "tenant-core", …evidencia sin id ni explained_at}`. **10 de 10.**
+
+**Primera pasada con dos fallos, ambos del oráculo y no del producto:** mi redondeo sumaba `den` en lugar de `den·U`
+(truncaba: 142.857… daba 142.85) y el porcentaje no corregía la escala (daba 0.00). El hash, el impacto, la subida absoluta
+y la criticidad ya coincidían. Se corrigió el script y se repitió solo el 8.2 (las comprobaciones del 8.3 cambian el
+estado y no se pueden repetir tal cual).
+
+### 8.3 Comprobaciones por HTTP (todas las propias del 8.3 pasaron en la primera pasada)
+
+- **Aislamiento:** pedir la anomalía de `tenant-core` con la cabecera de `tenant-growth` y pedir un id inexistente dan el
+  **mismo 404 byte a byte**, `{"detail":{"code":"anomaly_episode_not_found"}}`, y la conversación del otro cliente queda sin
+  mensajes. Un id de formato inválido da 422 y ambas selecciones a la vez dan 422; no se guarda nada.
+- **Sin pgvector:** con `postgres-pgvector` **parado** la explicación responde 201, y (control) una pregunta documental sí
+  falla; el identificador de la misma anomalía es el mismo con y sin pgvector.
+- **Cambio de estado:** tras `PATCH` a `investigating`, la explicación nueva tiene **otro `id`** y dice «Investigando»; el
+  mensaje anterior se conserva con su `id` original y «Nueva» (3 explicaciones guardadas).
+- **Cierre real:** cerrar Database con el motivo `Cierre "prueba" ñ Ünicode` da una explicación con la fecha UTC y el motivo
+  escapado con JSON: confirma con la base real que `closed_at` llega con zona horaria (el riesgo anotado en el grupo 2).
+- **Registros:** 289 líneas del backend, ninguna contiene `Compute`, `Database`, `Analytics` ni el motivo de cierre.
+
+### 8.4 Conflictos con las PR #120 y #121 (JUP-035), medidos el 2026-10-13
+
+`git merge-tree` contra las cabeceras actuales (#120 `f63c1503` y #121 `5c071d93`), restando los conflictos que ya
+existen entre `develop` (`bfaf3983`, sin adelantarse) y cada PR. Los resultados de #120 y #121 son idénticos.
+
+- **Preexistentes (8, no son de este cambio):** `apps/backend/app/main.py`, `apps/backend/tests/test_cors.py`,
+  `apps/frontend/src/layouts/Layout.tsx`, `apps/frontend/src/pages/AnomaliesPanel.tsx`,
+  `apps/frontend/src/test/brand-spec.guard.test.tsx`, `apps/frontend/tests/session-and-dashboard.test.tsx`,
+  `apps/processor/tests/test_schema_ownership_static.py` y `docs/continuidad/README.md`.
+- **Añadidos por este cambio (2 archivos):** `apps/backend/app/api/routes/assistant.py` (un conflicto: el bloque de la rama
+  de anomalías frente a su reescritura con `prepare_message` y `append_pair`) y `apps/frontend/src/components/AnswerEvidence.tsx`
+  (dos: el import y el ternario final, que la PR reescribe). **Quien integre segundo debe conservar la rama
+  `anomaly_query` y adaptar el guardado del par de mensajes a `append_pair`**, y conservar la rama `anomaly_evidence`
+  del ternario de `AnswerEvidence`.
+- **No dan conflicto:** `schemas/assistant.py`, `database.py`, `ConversationsPage.tsx`, `MessageComposer.tsx` y
+  `contracts.ts`. `AnomaliesPanel.tsx` ya conflictaba (la PR añade la captura de pantalla del chat) y este cambio añade
+  una línea de import y un bloque que habrá que conservar. No se resuelve aquí.
+
+### Lo que NO se ha validado
+
+- **El tema oscuro** y otros anchos distintos de 1280 y 390 px; la captura móvil es solo de Compute.
+- **Otros navegadores** (solo Chrome) y lectores de pantalla.
+- Un usuario **sin** pertenencia al cliente (401, 403) por HTTP: lo cubren las pruebas de CI, no esta validación; el
+  aislamiento se probó con un operador que sí pertenece a ambos clientes.
+- El estado vacío del panel antes de detectar (JUP-114): mi comprobación leyó la página antes de que cargase la lista y
+  no concluyó nada; no es de esta tarjeta.
+- La concurrencia, el rendimiento y una explicación pedida con datos reales de un cliente (solo datos sintéticos).
+
+### Hallazgos para registrar en el backlog (tarea 9.5)
+
+1. `anomalyInstant` (frontend, de JUP-114) acepta fechas imposibles: `Date.parse` de V8 desplaza `2026-02-30` a marzo.
+   Afecta a la validación de episodios y de listas; se evitó en `isAnomalyEvidence` con una comprobación aparte.
+2. La hora de la fotografía en el texto de la explicación sale con microsegundos y desfase
+   (`2026-10-13T05:19:25.518738+00:00 (UTC)`): exacta pero poco legible.
+3. El texto de la explicación y su bloque de evidencia repiten las limitaciones, y en móvil la respuesta ocupa unos 3000 px.
+4. Para pedir una explicación desde el enlace hace falta crear antes una conversación («Nueva») si no hay ninguna.
+5. Los dos mensajes (pregunta y respuesta) no se guardan de forma atómica en la ruta nueva, igual que en las otras ramas
+   del asistente; las PR de JUP-035 lo resuelven con `append_pair`.
+6. La herramienta `detect_cost_anomaly_candidates` del agente sigue sin registrarse: depende de JUP-035.
+7. Stryker no ejecuta las pruebas que importan con ruta en variable y `/* @vite-ignore */` (deuda de herramienta).
+8. Las pruebas de JUP-098 (`login-session-expired-notice*`) fallan de forma intermitente en esta máquina, también en
+   `develop` (ya registrado como `RF-098-004` y `RF-103-005`).
+9. Un fallo de refetch teniendo ya datos en la lista del redactor muestra la lista anterior en lugar del error
+   (comportamiento no especificado).
+10. El Red de los grupos 4 a 7 no incluía lint ni typecheck de las pruebas; el grupo 5 lo descubrió tarde (49 errores).
+
+**Estado del grupo 8:** tareas 8.1 a 8.4 hechas; el flujo completo funciona en un navegador real con el stack aislado.

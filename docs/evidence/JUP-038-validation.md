@@ -89,7 +89,25 @@ Cálculo del ejemplo del contrato (tarea 1.2): script independiente del backend,
 - Mutación: Stryker 4 de 4 y 7 mutantes manuales sobre el destino y el texto (6 muertos, 1 equivalente justificado). Es una muestra dirigida.
 - Revisión del agente `qa`: `accept`. Su observación sobre el formato del identificador se incorporó a la spec del change.
 
-**El frontend queda completo.** Aún no se ha ejecutado nada en un navegador real ni con el stack completo de Compose: eso llega con el grupo 8.
+**El frontend queda completo.**
+
+**Grupo 8 — validación con el stack real** (2026-10-13, sobre `df65c3ca`; archivos en `docs/evidence/JUP-038/`):
+
+- Stack aislado de Compose (`-p jup038v`, 7 servicios sanos, volúmenes nuevos, secretos aleatorios fuera del repositorio) con el conjunto sintético de JUP-107; borrado al terminar (`down -v --rmi local`, sin restos).
+- **Navegador (Chrome real):** «Detectar ahora» abre las 3 anomalías esperadas; por cada una, enlace del panel → asistente con la anomalía preseleccionada → **cero `POST` antes de «Enviar»** → un `POST` 201 → explicación y evidencia con las cifras de `esperados-anomalias.json`: Compute (P1) 24/24, Database (P2) 23/23, Analytics (P3) 23/23 comprobaciones; 0 errores de consola; sin desbordamiento a 390 px. Capturas `01` a `04`.
+- **Recálculo independiente** (script con `BigInt` y `crypto`, sin código del backend) de la evidencia de Compute: cifras e **identificador sha256 coinciden**, 10/10.
+- **HTTP:** el 404 de otro cliente y el de un id inexistente son idénticos byte a byte; con pgvector parado la explicación responde; tras cambiar el estado el `id` cambia y el mensaje anterior se conserva; el cierre real con un motivo con comillas y acentos sale escapado y con la fecha UTC; ningún registro del backend contiene un nombre de servicio ni un motivo.
+- **Conflictos con JUP-035 (#120 y #121):** este cambio añade conflicto en solo 2 archivos, `routes/assistant.py` y `AnswerEvidence.tsx`; los otros 8 ya existían entre `develop` y esas PR.
+- Dos fallos de la primera pasada fueron **de mis scripts, no del producto** (un selector ambiguo y un error de redondeo del oráculo); se corrigieron y se repitieron. Detalle en `review.md`.
+- **No validado:** tema oscuro, otros anchos y navegadores, un usuario sin pertenencia al cliente por HTTP (lo cubren las pruebas de CI) y datos reales. No sustituye a `Validacion JUP-038`.
+
+### Cómo reproducir la validación
+
+1. Crear un archivo de entorno privado **fuera del repositorio** a partir de `.env.example` (`RUNTIME_ENVIRONMENT=development`, `ALLOW_INSECURE_LOCAL_DATABASE=true`, `DEMO_SEED_ENABLED=true`, secretos aleatorios, `COMPOSE_PROJECT_NAME` y puertos propios, `CORS_ALLOWED_ORIGINS` con el origen del frontend y el DSN de CockroachDB `cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable`).
+2. `docker compose -p <proyecto> --env-file <archivo> up -d --build --wait backend processor frontend`.
+3. `docker exec -i <proyecto>-processor-1 python - apply < scripts/synthetic_anomalies.py`.
+4. Con `playwright-core` y Chrome: `node docs/evidence/JUP-038/validar-navegador.cjs <directorio>` y `node docs/evidence/JUP-038/validar-http.cjs <directorio>`, donde `<directorio>` contiene `stack/jup038.env` (los puertos del script son los de esta validación) y `capturas/`.
+5. `docker compose -p <proyecto> --env-file <archivo> down -v --rmi local`.
 
 Nada más se ha ejecutado. Los resultados de pruebas, mutación, DoD y stack real de los demás grupos se añaden aquí al completarlos.
 
