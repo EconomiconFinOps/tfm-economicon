@@ -113,7 +113,7 @@ Una anomalia es un episodio: una anomalia candidata por cliente, moneda y servic
 
 El valor esperado de un dia es la media diaria de los 7 dias anteriores. Mientras un episodio esta en seguimiento, el valor esperado es su referencia anclada: la media de los 7 dias previos a su inicio. Asi una subida que se mantiene sigue viendose aunque la media reciente ya la alcance.
 
-El ultimo dia con datos del cliente se considera incompleto y no se evalua hasta que haya datos de un dia posterior. Un dia solo se evalua si ese dia y los 7 anteriores tienen datos del cliente.
+El ultimo dia con datos del cliente se considera incompleto y no se evalua, ni el dia tomado como hoy ni los posteriores. Un dia solo se evalua si el y los 7 anteriores tienen datos del cliente.
 
 Cuando pasan mas de 3 dias desde la ultima vez que salto la regla (es decir, al cuarto dia sin saltar), el episodio se muestra como "Ya no se observa". No se cierra solo: una persona debe cerrarlo. Si despues vuelve a saltar, se abre un episodio nuevo enlazado al anterior.
 

@@ -48,6 +48,8 @@ El boton "Detectar ahora" revisa los costes diarios del cliente con la regla de 
 
 El texto "Revisado hasta el" seguido de una fecha indica el ultimo dia completo evaluado. El ultimo dia con datos no se evalua porque puede estar incompleto. Cuando los datos son sinteticos, el panel avisa de que son datos de demostracion y no facturas reales.
 
+La fecha de referencia es el dia que la aplicacion toma como hoy; normalmente es el dia de hoy (UTC). Si arriba se ve "Fecha simulada" seguido de una fecha, la aplicacion trabaja como si hoy fuera ese dia. Con fecha simulada no se ven costes posteriores (un periodo posterior sale sin datos), la deteccion no evalua esa fecha ni las siguientes y no aparecen las anomalias calculadas con datos de esa fecha o posteriores, aunque hayan empezado antes.
+
 ### Leer el panel
 
 El resumen de arriba no cambia con los filtros y solo cuenta las anomalias abiertas (Nueva o Investigando): el impacto acumulado por moneda (las monedas no se suman), cuantas hay abiertas y, de ellas, cuantas son Alta (P1) y cuantas "Ya no se observan". Las cerradas no entran en estas cifras.

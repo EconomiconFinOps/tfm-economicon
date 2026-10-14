@@ -99,8 +99,22 @@ Coste de las llamadas de embeddings de las cuatro pasadas: muy inferior a 0,01 U
 
 Pendiente fuera de este change:
 - **Batería de preguntas de anomalías** (tarjeta aparte, por crear): 6 a 8 preguntas con contexto, fragmentos esperados por encabezado, rúbrica y reglas de conductas prohibidas, en un fichero distinto de JUP-069 y con las herramientas de validación parametrizadas.
-- **La fecha de referencia (#127) y «Explicar en el asistente» (#128)** no están en `develop`; cuando se integren hay que añadirlos a la guía y volver a fijar la huella de `product`.
-- **Aviso a Alejandro y a Paris (JUP-035) antes de mergear**: el merge cambia la huella del corpus, la huella y la versión de la batería JUP-069 y el número de fragmentos (de 52 a 64), así que sus pasadas anteriores y posteriores dejan de ser comparables.
+- **«Explicar en el asistente» (#128)** no está en `develop`; cuando se integre hay que añadirlo a la guía y volver a fijar la huella de `product`. La fecha de referencia (#127) se añadió el 2026-10-14 (ver la adenda).
+- **Aviso a Alejandro y a Paris (JUP-035) antes de mergear**: el merge cambia la huella del corpus, la huella y la versión de la batería JUP-069 y el número de fragmentos (de 52 a 65), así que sus pasadas anteriores y posteriores dejan de ser comparables.
+
+## Adenda 2026-10-14: fecha de referencia
+
+La revisión del PR #129 señaló que #127 (JUP-119) ya estaba en `develop` y que la frase de reglas «no se evalua hasta que haya datos de un dia posterior» no describe el modo con fecha de referencia, que es el de la demo de JUP-107. Lucia decidió añadirlo en este PR sin esperar a #128 (tareas 5.1 a 5.5).
+
+| Comprobación | Resultado |
+| --- | --- |
+| Texto frente a `docs/api/reference-date.md` y `docs/api/anomaly-episodes.md` | la detección no evalúa la fecha de referencia ni días posteriores; las lecturas incluyen el día de referencia y no los posteriores; los episodios que dependen de días a partir de esa fecha se ocultan |
+| Troceado | reglas: 18 fragmentos, solo cambia el 9; producto: 16 fragmentos, cambian el 7 y el 8 y el resto coincide con los anteriores |
+| Calibración real con el texto final (93 llamadas) | `answer`, selección y caso 019 sin cambios; con distancia 0,6, acierto por documento de clarify/abstain 0,75 → 0,875 por el 026 |
+| Revisión adversarial (`adversarial-reviewer`) | `accept-with-changes`, sin afirmaciones falsas; ADV-1 a ADV-6 (dos Media, cuatro Baja) atendidos sin mover los cortes (tarea 5.6) |
+| Validadores y pruebas | corpus, batería, etiquetas, calibración, `assistant-eval` (110) y `assistant-metrics` (103) en verde |
+
+Límite: igual que en la calibración anterior, mide qué fragmentos se recuperan, no lo que dice el modelo.
 
 ## Aplicabilidad de ADR
 

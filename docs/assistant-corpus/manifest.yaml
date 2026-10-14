@@ -42,7 +42,7 @@ documents:
     tenant_id: null
     dataset_id: economicon-mvp-azure-simulated
     source_type: internal_business_rules
-    updated_at: "2026-10-13"
+    updated_at: "2026-10-14"
   - id: glossary.economicon-mvp
     title: Glosario Del Asistente Economicon
     path: docs/assistant-corpus/glossary/glossary.md
@@ -78,4 +78,4 @@ documents:
     tenant_id: null
     dataset_id: null
     source_type: product_context
-    updated_at: "2026-10-13"
+    updated_at: "2026-10-14"

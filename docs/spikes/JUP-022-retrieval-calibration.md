@@ -1,7 +1,7 @@
 # Calibracion de la recuperacion (JUP-022)
 
-Generado: 2026-10-13T15:55:25.150828+00:00. Proveedor: `litellm`, alias `economicon-embedding`, dimension 1536.
-Banco: docs/validation/JUP-069-questions.json v1.0.1. Troceado: 500 caracteres con solape 50 (64 fragmentos). Llamadas previstas: 92.
+Generado: 2026-10-14T05:26:36.814103+00:00. Proveedor: `litellm`, alias `economicon-embedding`, dimension 1536.
+Banco: docs/validation/JUP-069-questions.json v1.0.1. Troceado: 500 caracteres con solape 50 (65 fragmentos). Llamadas previstas: 93.
 
 ## Regla de seleccion
 
@@ -23,28 +23,28 @@ Para cada top_k, la menor distancia maxima del barrido que conserva al menos 90%
 | 3 | sin umbral | 90% | 75% | 0% | 88% | 0% |
 | 3 | 0.5 | 50% | 40% | 45% | 12% | 75% |
 | 3 | 0.55 | 70% | 55% | 10% | 12% | 62% |
-| 3 | 0.6 | 85% | 70% | 5% | 75% | 0% |
+| 3 | 0.6 | 85% | 70% | 5% | 88% | 0% |
 | 3 | 0.65 | 90% | 75% | 0% | 88% | 0% |
 | 3 | 0.7 | 90% | 75% | 0% | 88% | 0% |
 | 3 | 0.75 | 90% | 75% | 0% | 88% | 0% |
 | 4 | sin umbral | 95% | 80% | 0% | 88% | 0% |
 | 4 | 0.5 | 55% | 45% | 45% | 12% | 75% |
 | 4 | 0.55 | 75% | 60% | 10% | 12% | 62% |
-| 4 | 0.6 | 90% | 75% | 5% | 75% | 0% |
+| 4 | 0.6 | 90% | 75% | 5% | 88% | 0% |
 | 4 | 0.65 | 95% | 80% | 0% | 88% | 0% |
 | 4 | 0.7 | 95% | 80% | 0% | 88% | 0% |
 | 4 | 0.75 | 95% | 80% | 0% | 88% | 0% |
 | 5 | sin umbral | 95% | 80% | 0% | 88% | 0% |
 | 5 | 0.5 | 55% | 45% | 45% | 12% | 75% |
 | 5 | 0.55 | 75% | 60% | 10% | 12% | 62% |
-| 5 | 0.6 | 90% | 75% | 5% | 75% | 0% |
+| 5 | 0.6 | 90% | 75% | 5% | 88% | 0% |
 | 5 | 0.65 | 95% | 80% | 0% | 88% | 0% |
 | 5 | 0.7 | 95% | 80% | 0% | 88% | 0% |
 | 5 | 0.75 | 95% | 80% | 0% | 88% | 0% |
 | 6 | sin umbral | 95% | 80% | 0% | 88% | 0% |
 | 6 | 0.5 | 55% | 45% | 45% | 12% | 75% |
 | 6 | 0.55 | 75% | 60% | 10% | 12% | 62% |
-| 6 | 0.6 | 90% | 75% | 5% | 75% | 0% |
+| 6 | 0.6 | 90% | 75% | 5% | 88% | 0% |
 | 6 | 0.65 | 95% | 80% | 0% | 88% | 0% |
 | 6 | 0.7 | 95% | 80% | 0% | 88% | 0% |
 | 6 | 0.75 | 95% | 80% | 0% | 88% | 0% |
@@ -66,7 +66,7 @@ Para cada top_k, la menor distancia maxima del barrido que conserva al menos 90%
 | JUP-069-006 | answer | direct | None | 0.4409 |
 | JUP-069-007 | answer | direct | None | 0.4411 |
 | JUP-069-008 | clarify | direct | None | 0.3658 |
-| JUP-069-009 | clarify | direct | 0.6255 | 0.5682 |
+| JUP-069-009 | clarify | direct | 0.6255 | 0.5683 |
 | JUP-069-010 | answer | direct | 0.3825 | 0.388 |
 | JUP-069-011 | answer | direct | 0.4631 | 0.4014 |
 | JUP-069-012 | answer | direct | 0.3316 | 0.3815 |
@@ -81,7 +81,7 @@ Para cada top_k, la menor distancia maxima del barrido que conserva al menos 90%
 | JUP-069-021 | answer | direct | 0.6285 | 0.5288 |
 | JUP-069-022 | answer | direct | 0.5483 | 0.56 |
 | JUP-069-023 | abstain | direct | 0.5056 | 0.4193 |
-| JUP-069-024 | clarify | none | None | 0.5532 |
+| JUP-069-024 | clarify | none | None | 0.5531 |
 | JUP-069-025 | abstain | direct | 0.6196 | 0.5553 |
 | JUP-069-026 | clarify | none | None | 0.5754 |
 | JUP-069-027 | answer | direct | 0.5994 | 0.5126 |
