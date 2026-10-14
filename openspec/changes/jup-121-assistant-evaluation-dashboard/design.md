@@ -1,4 +1,4 @@
-JUP: JUP-121 · ADR: `docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md` (se crea en este change)
+JUP: JUP-121 · ADR: [ADR-0022](../../../docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md)
 
 ## Context
 

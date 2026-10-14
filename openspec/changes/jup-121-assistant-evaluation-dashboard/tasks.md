@@ -1,6 +1,6 @@
 ## 1. Decisión, contrato y manifiesto (documentación)
 
-- [ ] 1.1 Redactar `docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md` con la plantilla `docs/templates/adr.md`: PostgreSQL con esquema `evaluation` y datasource integrado, alternativas descartadas (Pushgateway, promtool, TestData, Infinity, PostgreSQL aparte), Git solo para ejecuciones de hito, comando único de regeneración. Añadir su fila a `docs/adr/README.md`
+- [x] 1.1 Redactar `docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md` con la plantilla `docs/templates/adr.md`: PostgreSQL con esquema `evaluation` y datasource integrado, alternativas descartadas (Pushgateway, promtool, TestData, Infinity, PostgreSQL aparte), Git solo para ejecuciones de hito, comando único de regeneración. Añadir su fila a `docs/adr/README.md`
 - [ ] 1.2 Escribir `docs/validation/evaluation-dashboard.md` con:
   - el contrato `rows-v1` (campos de ejecución y de fila, estados, `NULL` para lo no medido, sin texto libre);
   - el formato del manifiesto y los formatos admitidos;
