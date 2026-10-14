@@ -8,6 +8,7 @@ import math
 from datetime import datetime
 import hashlib
 import json
+import re
 
 # User raised the cumulative limit to USD5 on 2026-10-14; prior spend remains.
 CAP = Decimal('5.00')
@@ -133,3 +134,23 @@ def admit(snapshot, reservations, operation_id, bound, now):
     return {**reservations, operation_id: {'reserved_usd': str(bound),
                                          'accounting_evidence_sha256': snapshot['evidence_sha256'],
                                          'admitted_at': now, 'state': 'RESERVED'}}
+
+
+def retained_failure(reservation, operation_id, receipt=None):
+    """Verify identity/full bound; this NEVER establishes or releases actual cost."""
+    proof = reservation.get('terminal_failure', {})
+    if (reservation.get('state') != 'COST_UNKNOWN_RESERVED'
+            or money(reservation.get('reserved_usd')) <= 0
+            or reservation.get('reserved_usd') != reservation.get('maximum_reserved_usd')
+            or proof.get('state') != 'failed' or proof.get('operation_id') != operation_id
+            or not re.fullmatch('[a-f0-9]{64}', str(proof.get('receipt_sha256', '')))):
+        raise ValueError('Invalid retained terminal failure')
+    if receipt is not None:
+        digest = hashlib.sha256(json.dumps(receipt, sort_keys=True, ensure_ascii=False,
+            separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+        if (receipt.get('operation', {}).get('state') != 'failed'
+                or receipt.get('operation', {}).get('operation_id') != operation_id
+                or receipt.get('collection_state') != 'VERIFIED_PUBLIC_SNAPSHOT'
+                or digest != proof['receipt_sha256']):
+            raise ValueError('Retained failure receipt mismatch')
+    return True

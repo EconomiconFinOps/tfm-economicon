@@ -42,6 +42,17 @@ class CoverageTests(unittest.TestCase):
         self.rows[0]['reservation'] = json.dumps({'state': 'RESERVED'})
         with self.assertRaises(ValueError): c.campaign_prefix(self.rows, [self.a, self.b])
 
+    def test_retained_failure_requires_identity_and_full_bound(self):
+        reservation = {'state': 'COST_UNKNOWN_RESERVED', 'reserved_usd': '.32',
+            'maximum_reserved_usd': '.32', 'terminal_failure': {
+                'operation_id': 'new1', 'state': 'failed', 'receipt_sha256': 'a'*64}}
+        self.rows[-1]['reservation'] = json.dumps(reservation)
+        self.assertEqual(c.campaign_prefix(self.rows, [self.a, self.b]), self.rows)
+        for change in ({'reserved_usd': '0'}, {'reserved_usd': '.01'},
+                       {'terminal_failure': {'operation_id': 'different', 'state': 'failed', 'receipt_sha256': 'a'*64}}):
+            self.rows[-1]['reservation'] = json.dumps({**reservation, **change})
+            with self.assertRaises(ValueError): c.campaign_prefix(self.rows, [self.a, self.b])
+
     def test_duplicate_operation_rejected(self):
         self.rows[-1]['operation_id'] = 'old1'
         with self.assertRaises(ValueError): c.campaign_prefix(self.rows, [self.a, self.b])

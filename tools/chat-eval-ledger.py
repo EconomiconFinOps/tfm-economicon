@@ -6,6 +6,7 @@ never an automatic POST retry. Provider reconciliation is deliberately separate.
 """
 import importlib.util
 import json
+import hashlib
 from pathlib import Path
 import sqlite3
 from contextlib import contextmanager
@@ -95,6 +96,36 @@ class Ledger:
     def pending(self):
         with self.connect() as db:
             return [dict(row) for row in db.execute('SELECT * FROM attempts ORDER BY rowid')]
+
+
+    def retain_failed_cost(self, request_id, receipt):
+        """Keep the entire bound for a proved terminal failure with unknown cost."""
+        operation = receipt.get('operation', {})
+        checks = receipt.get('verification', {})
+        if (operation.get('state') != 'failed'
+                or receipt.get('collection_state') != 'VERIFIED_PUBLIC_SNAPSHOT'
+                or checks.get('input_matches_bank') is not True
+                or checks.get('stable_snapshot') is not True
+                or not receipt.get('durable_input_supplement')):
+            raise ValueError('Verified durable terminal failure required')
+        digest = hashlib.sha256(json.dumps(receipt, sort_keys=True, ensure_ascii=False,
+            separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT * FROM attempts WHERE request_id=?', (request_id,)).fetchone()
+            if (row is None or row['state'] != 'OBSERVING'
+                    or row['operation_id'] != operation.get('operation_id')
+                    or receipt.get('conversation_id') != row['conversation_id']):
+                raise ValueError('Failure does not match observed operation')
+            reservation = json.loads(row['reservation'])
+            if reservation['state'] != 'RESERVED':
+                raise ValueError('Only an untouched full reservation can be retained')
+            reservation.update(state='COST_UNKNOWN_RESERVED',
+                maximum_reserved_usd=reservation['reserved_usd'],
+                terminal_failure={'operation_id': row['operation_id'], 'state': 'failed',
+                                  'receipt_sha256': digest})
+            db.execute('UPDATE attempts SET reservation=? WHERE request_id=?',
+                (json.dumps(reservation), request_id))
 
     def reconcile_cost(self, request_id, operation, reports, auxiliary_cost_usd):
         cost = budget.completed_attempt_cost(operation, reports) + budget.money(auxiliary_cost_usd)

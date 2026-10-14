@@ -31,7 +31,10 @@ def campaign_prefix(rows, plans):
             raise ValueError('Unknown campaign or duplicate operation')
         operations.add(row['operation_id'])
         seen[row['plan_hash']].append(row['sample_id'])
-        if json.loads(row['reservation'])['state'] != 'COST_OBSERVED':
+        reservation = json.loads(row['reservation'])
+        if reservation['state'] == 'COST_UNKNOWN_RESERVED':
+            load('failure_budget', Path(__file__).with_name('chat-eval-budget.py')).retained_failure(reservation, row['operation_id'])
+        elif reservation['state'] != 'COST_OBSERVED':
             raise ValueError('Previous operation cost unresolved')
     for digest, samples in seen.items():
         if samples != identities[digest][:len(samples)]:
@@ -76,7 +79,8 @@ with create_engine(Settings().database_url.get_secret_value()).connect() as c:
         }
         return value
     budget.accounting_snapshot = audited_snapshot
-    original.module = lambda name: budget if name == 'budget' else ledger if name == 'ledger' else old_module(name)
+    original.module = lambda name: (budget if name == 'budget' else ledger if name == 'ledger'
+        else load('covered_runner', Path(__file__).with_name('chat-eval-runner.py')) if name == 'runner' else old_module(name))
     try: original.main()
     except original.AccountingPending:
         print(json.dumps({'state': 'WAITING_ACCOUNTING', 'action': 'read counters again; no new generation'}))

@@ -16,7 +16,41 @@ memoria/cacheSQL limitadas y gasto preservado; ampliar límites de claves exclus
 únicamente dentro de5USD sin extender caducidad. Criterios de revisores siguen
 pendientes; ampliación económica no equivale a aceptación semántica.
 
-### Campaña corregida activa — 14/10/2026, 18:07Europe/Paris
+### Control de fallo terminal con coste desconocido — 14/10/2026
+
+Herramientas de evaluación añaden COST_UNKNOWN_RESERVED: fallo terminal con
+entrada durable verificada yrecibo ligado porSHA, reserva original íntegra,
+contabilidad real UNKNOWN. No es COST_OBSERVED niPASS yno libera presupuesto.
+Prefijo admite esa disposición explícita; runner valida SHA/identidad/fallo antes
+deavanzar. Recuperador sólo ofrece opt-in para404 upstream tras validar operación,
+SQL,preflight yconteo defases; errores deidentidad/u otrosHTTP siguen bloqueando.
+El gastoindeterminado sigue sumándose completo al próximo preflight.
+
+81pruebas del evaluador pasan; pruebas nuevas verifican retenciónreinicio,
+rechazo deactivo/incompleto,reserva parcial oidentidadalterada yavance sinrepetir
+POSTdelcasofallido. Primer intento encontró importjsonausente en test ylectura
+Windows noUTF8; corregidos sin modificar recibos reales. Producto e23 permanece
+congelado; controlador usará herramientas posteriores porcommit/hash registrado,
+sinatribuir cambios deherramientas arespuesta semántica.
+
+### Parada verificable de cap5 por contabilidad003 — 14/10/2026
+
+PID2240955 ausente; logSTOPPED evidence/costreconciliation. 001/002r1 completados,
+recibos VERIFIED_PUBLIC_SNAPSHOT ycostes conciliados.003r1 failed(provider_error),
+1intento/2fases; borradorusage0.0021540075USD, finalsinusagecompleto. Gateway
+finalgen-1791993967-mgywGTZfzoVwIlPsa5lU registrado0, pero OpenRoutergeneration404.
+No asumir coste0: reserva original0.319952USD sigue retenida, sin nuevo POST.
+Contadoresprocessor0.577984435/backend0.0001469. Informe externo
+candidate-cap5-failure003-pending.json y snapshot3recibos/ledger en
+candidate-cap5-progress. 003INCOMPLETE conserva fallo; no selección demejores.
+
+La parada es terminal delcontrolador, no sólo timeout deobservación. Siguiente
+paso: reconsulta sólo lectura de la misma generación/fallo para conciliar; si
+sigueindeterminado, diseñar admisión que retenga la reserva completa sin convertir
+faltadeusage en coste0. No reanudar automáticamente ni cambiar producto conN3
+parcial. No declarar valoración semántica concluida (2completed/1failed,3/84).
+
+### Arranque histórico de la campaña corregida — 14/10/2026, 18:07Europe/Paris
 
 Candidato e23e495b24fae76decacf7d030468b75cd52b5f8;plan84/N3 físicoSHA
 5345066d3b87733f59d796d2d877ef48fcbc9ae58f02bb2ba6a3e2ff15132e5b,

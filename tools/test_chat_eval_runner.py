@@ -42,6 +42,21 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(self.runner().step()['state'], 'NEEDS_ACCOUNTING')
         self.assertEqual(self.api.posts, 1)
 
+    def test_verified_failed_sample_advances_without_retry_or_releasing_bound(self):
+        self.runner().step(); self.runner().step()
+        path = next((Path(self.temp.name) / 'receipts').glob('*.json'))
+        receipt = json.loads(path.read_text(encoding='utf-8')); saved = receipt['results'][0]
+        saved['verification']['input_matches_bank'] = True
+        saved['collection_state'] = 'VERIFIED_PUBLIC_SNAPSHOT'
+        saved['durable_input_supplement'] = {'state': 'failed'}
+        path.write_text(json.dumps(receipt), encoding='utf-8')
+        self.ledger.retain_failed_cost(self.ledger.pending()[0]['request_id'], saved)
+        self.assertEqual(saved['resources_sha256'], r.collect.digest(saved['resources']))
+        self.assertEqual(self.runner().step()['state'], 'OBSERVING')
+        self.assertEqual(self.api.posts, 2)
+        self.assertEqual(json.loads(self.ledger.pending()[0]['reservation'])['reserved_usd'], '0.1')
+        self.assertEqual(len(self.ledger.pending()), 2)
+
     def test_lost_response_recovers_handle_without_new_post(self):
         self.api.lose_response = True
         with self.assertRaises(TimeoutError):

@@ -60,7 +60,11 @@ class Runner:
                 if receipt['results'][0].get('collection_state') != 'VERIFIED_PUBLIC_SNAPSHOT':
                     return {'state': 'NEEDS_EVIDENCE_RECONCILIATION', 'sample_id': sample['sample_id']}
                 row = rows[sample['sample_id']]
-                if json.loads(row['reservation'])['state'] != 'COST_OBSERVED':
+                reservation = json.loads(row['reservation'])
+                if reservation['state'] == 'COST_UNKNOWN_RESERVED':
+                    module('chat-eval-budget').retained_failure(reservation, row['operation_id'], saved)
+                    continue
+                if reservation['state'] != 'COST_OBSERVED':
                     if self.accounting is None:
                         return {'state': 'NEEDS_ACCOUNTING', 'operation_id': row['operation_id']}
                     costs = self.accounting(saved['operation'])

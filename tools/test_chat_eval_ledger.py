@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from decimal import Decimal
 from pathlib import Path
 import tempfile
@@ -31,6 +32,35 @@ class LedgerTests(unittest.TestCase):
             self.reserve()
         with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
             reopened.reserve('another-plan', 'case:r1', self.snapshot, Decimal('0.5'), 100)
+
+    def test_terminal_failure_keeps_entire_bound_across_restart(self):
+        request_id = self.reserve()
+        self.ledger.attach_conversation(request_id, 'conversation')
+        self.ledger.dispatch(request_id, lambda *args: 'operation')
+        receipt = {'operation': {'operation_id': 'operation', 'state': 'failed'},
+                   'conversation_id': 'conversation', 'collection_state': 'VERIFIED_PUBLIC_SNAPSHOT',
+                   'verification': {'input_matches_bank': True, 'stable_snapshot': True},
+                   'durable_input_supplement': {'state': 'failed'}}
+        self.ledger.retain_failed_cost(request_id, receipt)
+        reservation = json.loads(l.Ledger(self.path).pending()[0]['reservation'])
+        self.assertEqual(reservation['reserved_usd'], '0.60')
+        l.budget.retained_failure(reservation, 'operation', receipt)
+        with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
+            self.reserve('next', '.41')
+        changed = {**receipt, 'conversation_id': 'different'}
+        with self.assertRaisesRegex(ValueError, 'receipt mismatch'):
+            l.budget.retained_failure(reservation, 'operation', changed)
+
+    def test_active_or_unverified_failure_cannot_be_skipped(self):
+        request_id = self.reserve()
+        self.ledger.attach_conversation(request_id, 'conversation')
+        self.ledger.dispatch(request_id, lambda *args: 'operation')
+        for state in ('active', 'completed', 'failed'):
+            receipt = {'operation': {'operation_id': 'operation', 'state': state},
+                       'conversation_id': 'conversation', 'collection_state': 'INCOMPLETE'}
+            with self.assertRaisesRegex(ValueError, 'Verified durable terminal failure'):
+                self.ledger.retain_failed_cost(request_id, receipt)
+        self.assertEqual(json.loads(self.ledger.pending()[0]['reservation'])['state'], 'RESERVED')
 
     def test_reservation_is_durable_before_post(self):
         request_id = self.reserve()

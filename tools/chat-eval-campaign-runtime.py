@@ -7,7 +7,7 @@ import sys
 import time
 
 
-def main(root, covered_step=False, additional_plans=(), adapter_path=None, retrieval_path=None):
+def main(root, covered_step=False, additional_plans=(), adapter_path=None, retrieval_path=None, retain_unknown_cost=False):
     if additional_plans and not covered_step:
         raise ValueError('Additional campaigns require audited coverage')
     if adapter_path and (not covered_step or not retrieval_path):
@@ -17,6 +17,8 @@ def main(root, covered_step=False, additional_plans=(), adapter_path=None, retri
             [sys.executable, str(retrieval_path or root / 'recover-retrieval.py')],
             [sys.executable, str(Path(__file__).with_name('chat-eval-recover-failed-runtime.py')), '--root', str(root)],
         ]
+        if retain_unknown_cost:
+            commands[1].append('--retain-unknown-cost')
         if adapter_path:
             commands[1].extend(['--adapter', str(adapter_path)])
         for command in commands:
@@ -48,8 +50,9 @@ if __name__ == '__main__':
     parser.add_argument('--additional-plan', type=Path, action='append', default=[])
     parser.add_argument('--adapter', type=Path)
     parser.add_argument('--retrieval-recovery', type=Path)
+    parser.add_argument('--retain-unknown-cost', action='store_true')
     args = parser.parse_args()
-    try: main(args.root, args.covered_step, args.additional_plan, args.adapter, args.retrieval_recovery)
+    try: main(args.root, args.covered_step, args.additional_plan, args.adapter, args.retrieval_recovery, args.retain_unknown_cost)
     except Exception as exc:
         print(json.dumps({'campaign': 'STOPPED', 'exception_class': type(exc).__name__}), flush=True)
         raise SystemExit(1)

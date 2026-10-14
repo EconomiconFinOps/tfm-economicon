@@ -12,6 +12,7 @@ import subprocess
 from datetime import datetime
 from decimal import Decimal
 from urllib.parse import urlencode
+from urllib.error import HTTPError
 
 
 def load(name, path):
@@ -56,12 +57,12 @@ def attempt_totals(snapshot, usage):
     return legs, cost
 
 
-def main(root, adapter_path=None):
+def main(root, adapter_path=None, retain_unknown_cost=False):
     adapter = load('operator_adapter', adapter_path or root / 'live-step.py')
     failed = load('failed', Path(__file__).with_name('chat-eval-failed.py'))
-    ledger = adapter.module('ledger').Ledger(root / 'evaluation-ledger.sqlite')
+    ledger = load('failure_ledger', Path(__file__).with_name('chat-eval-ledger.py')).Ledger(root / 'evaluation-ledger.sqlite')
     entries = ledger.pending()
-    pending = [e for e in entries if e['operation_id'] and json.loads(e['reservation'])['state'] != 'COST_OBSERVED']
+    pending = [e for e in entries if e['operation_id'] and json.loads(e['reservation'])['state'] not in ('COST_OBSERVED', 'COST_UNKNOWN_RESERVED')]
     if not pending:
         return {'state': 'NO_PENDING_FAILURE'}
     if len(pending) != 1 or pending[0] != entries[-1]:
@@ -100,7 +101,34 @@ def main(root, adapter_path=None):
         raise ValueError('Gateway phase count mismatch')
     upstream = []
     for item in gateway:
-        data = adapter.request('https://openrouter.ai/api/v1/generation?' + urlencode({'id': item['request_id']}), token=ge['OPENROUTER_API_KEY'])['data']
+        try:
+            data = adapter.request('https://openrouter.ai/api/v1/generation?' + urlencode({'id': item['request_id']}), token=ge['OPENROUTER_API_KEY'])['data']
+        except HTTPError as error:
+            if error.code != 404 or not retain_unknown_cost:
+                raise
+            rawpath = getattr(adapter, 'RAW_RECEIPTS_DIR', root / 'baseline-raw-api') / path.name
+            rawpath.parent.mkdir(parents=True, exist_ok=True)
+            if rawpath.exists():
+                original = json.loads(rawpath.read_bytes())['results'][0]
+                if failed.collect.digest(original) != derived['derivation']['original_row_sha256']:
+                    raise ValueError('Original receipt differs from failed derivative')
+            else:
+                with rawpath.open('xb') as handle:
+                    handle.write(raw); handle.flush(); os.fsync(handle.fileno())
+            proof = {'disposition': 'FULL_BOUND_RETAINED_NOT_SETTLED',
+                'upstream_lookup_status': 404, 'operation_id': entry['operation_id'],
+                'durable_input': snapshot, 'usage': usage, 'gateway': gateway, 'preflight': pre,
+                'maximum_reserved_usd': json.loads(entry['reservation'])['reserved_usd']}
+            (root / ('unknown-cost-' + entry['operation_id'] + '.json')).write_text(json.dumps(proof))
+            receipt['results'] = [derived]
+            temp = path.with_suffix('.reconciled.tmp')
+            with temp.open('w') as handle:
+                json.dump(receipt, handle, ensure_ascii=False, indent=2); handle.flush(); os.fsync(handle.fileno())
+            os.replace(temp, path)
+            ledger.retain_failed_cost(entry['request_id'], derived)
+            return {'state': 'FAILED_COST_RETAINED', 'sample_id': entry['sample_id'],
+                    'reserved_usd': json.loads(entry['reservation'])['reserved_usd'],
+                    'actual_cost': 'UNKNOWN'}
         if (data['id'] != item['request_id'] or data['provider_name'] != 'DeepInfra'
                 or not data['model'].startswith('z-ai/glm-5.2') or item['model'] != 'openrouter/z-ai/glm-5.2'):
             raise ValueError('Provider mismatch')
@@ -146,8 +174,9 @@ def main(root, adapter_path=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(); parser.add_argument('--root', type=Path, required=True)
     parser.add_argument('--adapter', type=Path)
+    parser.add_argument('--retain-unknown-cost', action='store_true')
     args = parser.parse_args()
-    try: print(json.dumps(main(args.root, args.adapter)))
+    try: print(json.dumps(main(args.root, args.adapter, args.retain_unknown_cost)))
     except Exception as exc:
         # Never print URL-bearing exception messages: gateway URLs contain keys.
         print(json.dumps({'state': 'RECONCILIATION_STOPPED', 'exception_class': type(exc).__name__}))
