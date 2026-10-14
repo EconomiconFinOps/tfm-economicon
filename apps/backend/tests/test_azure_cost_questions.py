@@ -47,14 +47,9 @@ def test_empty_zero_and_credit(totals, status, phrase):
     assert result["cost_evidence"]["status"] == status
     assert phrase in result["content"]
 
-def test_december_default_month(monkeypatch):
-    from app.services import azure_cost_questions
-    from datetime import datetime, timezone
-    class Clock:
-        @staticmethod
-        def now(tz):
-            return datetime(2026, 12, 31, tzinfo=timezone.utc)
-    monkeypatch.setattr(azure_cost_questions, "datetime", Clock)
+def test_december_default_month():
+    from app.services import reference_date
+    reference_date.configure(date(2026, 12, 31))
     db = Mock()
     db.fetch_billing_summary.return_value = dataset()
     result = AzureCostQuestionService().answer(db, "tenant-a", AzureCostSelection(group_by="account"))

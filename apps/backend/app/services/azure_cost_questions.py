@@ -5,13 +5,14 @@ from datetime import datetime, timezone
 
 from app.schemas.assistant import AzureCostSelection
 from app.schemas.billing import BillingSummary
+from app.services import reference_date
 
 
 class AzureCostQuestionService:
     def answer(self, database, tenant_id: str, selection: AzureCostSelection) -> dict:
         start, end = selection.start_date, selection.end_date
         if start is None:
-            start = datetime.now(timezone.utc).date().replace(day=1)
+            start = reference_date.today().replace(day=1)
             end = (start.replace(year=start.year + 1, month=1) if start.month == 12
                    else start.replace(month=start.month + 1))
         resolved = selection.model_dump(mode="json") | {
@@ -24,7 +25,8 @@ class AzureCostQuestionService:
         )
         summary = BillingSummary.model_validate(raw).model_dump(mode="json")
         provenance = raw["provenance"]
-        evidence_payload = {"selection": resolved, "summary": summary, "provenance": provenance}
+        evidence_payload = {"selection": resolved, "summary": summary, "provenance": provenance,
+                            "reference_date": reference_date.today().isoformat()}
         evidence_id = "cost:" + hashlib.sha256(json.dumps(
             {"tenant": tenant_id, **evidence_payload}, sort_keys=True,
             separators=(",", ":"), ensure_ascii=False,
@@ -36,7 +38,10 @@ class AzureCostQuestionService:
         if selection.subscription_id:
             scope += f"; suscripción: {selection.subscription_id}"
         lines = [f"Coste real Azure simulado — {scope}.",
-                 f"Periodo UTC: {start.isoformat()} a {end.isoformat()} (fin excluido)."]
+                 f"Periodo UTC: {start.isoformat()} a {end.isoformat()} (fin excluido).",
+                 f"Fecha de referencia: {evidence_payload['reference_date']}."]
+        if start < reference_date.visible_end(end) < end:
+            lines.append(f"Solo se cuentan los días hasta el {evidence_payload['reference_date']}, inclusive.")
         if not summary["totals"]:
             lines.append("No hay registros de coste completados para esta selección; no equivale a gasto cero.")
         else:

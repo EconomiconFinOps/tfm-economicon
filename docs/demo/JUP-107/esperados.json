@@ -1,22 +1,24 @@
 {
-  "version": 2,
+  "version": 3,
   "tenant": "tenant-growth",
+  "reference_date": "2026-10-30",
   "total_seconds": 180,
   "optional_seconds": 50,
-  "note": "Valores comprobados contra la pantalla real y contra una suma exacta con Decimal sobre scripts/synthetic_costs.py; la cifra de anomalías (kind anomaly_episode) sale de docs/demo/JUP-107/esperados-anomalias.json, que su propia prueba recalcula de forma independiente. Importes con punto decimal, como los muestra la interfaz.",
+  "note": "Valores comprobados contra la pantalla real y contra una suma exacta con Decimal sobre fixtures/azure-cost/demo/demo-cost.csv (cada registro guardado es la suma del dia, servicio, proyecto y moneda); la cifra de anomalias (kind anomaly_episode) sale de docs/demo/JUP-119/esperados-anomalias.json. Importes con punto decimal, como los muestra la interfaz.",
   "steps": [
     {
       "id": "D1",
-      "title": "Declarar que los datos son sintéticos",
+      "title": "Declarar que los datos son de demostración",
       "seconds": 15,
       "screen": "anomalies-panel",
       "declares_synthetic": true,
       "action": "Con la aplicación abierta en Anomalías con Core Finance seleccionado (sin cifras en pantalla: todavía no se ha detectado), sin tocar nada todavía.",
-      "say": "Todo lo que vais a ver son datos sintéticos de coste, generados por nosotros para probar la aplicación. No son facturas de Azure ni vienen del dataset público, aunque los rótulos de la pantalla digan Azure.",
-      "expect": "En pantalla, el aviso «Datos sintéticos de demostración: no son facturas reales» y ninguna cifra; el público oye la declaración antes de ver ninguna cifra.",
+      "say": "Todo lo que vais a ver son datos de demostración: sintéticos, generados por nosotros para probar la aplicación, o del dataset público de Microsoft con las fechas desplazadas a 2026. No son facturas de Azure de 2026, aunque los rótulos de la pantalla digan Azure.",
+      "expect": "En pantalla, el aviso «Datos sintéticos de demostración: no son facturas reales», la etiqueta «Fecha simulada: 30/10/2026» en la cabecera y ninguna cifra; el público oye la declaración antes de ver ninguna cifra.",
       "no_amounts": true,
       "ui_contains": [
         "Datos sintéticos de demostración: no son facturas reales",
+        "Fecha simulada: 30/10/2026",
         "Todavía no se han buscado anomalías en este cliente"
       ]
     },
@@ -27,14 +29,14 @@
       "screen": "billing-dashboard",
       "shows_amounts": true,
       "period": {
-        "from": "2026-01",
-        "to": "2026-06"
+        "from": "2026-07",
+        "to": "2026-09"
       },
-      "action": "Ir a Coste Global y elegir Growth Ops en el selector de cliente. Poner Mes inicial 2026-01 y Mes final 2026-06; el periodo por defecto depende de la fecha, así que se fija siempre antes de leer ninguna cifra.",
-      "say": "Elegimos el cliente Growth Ops y los seis primeros meses de 2026. Los dos meses extremos están incluidos.",
-      "expect": "Aparece «enero de 2026 – junio de 2026 (UTC)» y los totales EUR y USD del periodo.",
+      "action": "Ir a Coste Global y elegir Growth Ops en el selector de cliente. Poner Mes inicial 2026-07 y Mes final 2026-09; el periodo por defecto depende de la fecha de referencia, así que se fija siempre antes de leer ninguna cifra.",
+      "say": "Elegimos el cliente Growth Ops y de julio a septiembre de 2026. Los dos meses extremos están incluidos.",
+      "expect": "Aparece «julio de 2026 – septiembre de 2026 (UTC)» y los totales EUR y USD del periodo.",
       "ui_contains": [
-        "enero de 2026 – junio de 2026 (UTC)",
+        "julio de 2026 – septiembre de 2026 (UTC)",
         "TOTAL EUR",
         "TOTAL USD"
       ]
@@ -46,19 +48,19 @@
       "screen": "billing-dashboard",
       "shows_amounts": true,
       "period": {
-        "from": "2026-01",
-        "to": "2026-06"
+        "from": "2026-07",
+        "to": "2026-09"
       },
-      "action": "Agrupar por Servicio.",
-      "say": "Hay dos monedas y no se mezclan: 90 euros en seis registros y 35,75 dólares en dos. El desglose separa Compute, Storage, Credits y un grupo sin dimensión.",
-      "expect": "Total EUR 90.00 (6 registros) y total USD 35.75 (2 registros). Filas EUR: Compute 100.00, Credits -50.00, Storage 30.00 y Sin dimensión 10.00; filas USD: Compute 10.50 y Storage 25.25.",
-      "ui_contains": [
-        "90.00 EUR",
-        "35.75 USD",
-        "Sin dimensión"
-      ],
       "reuses": [
         "D2"
+      ],
+      "action": "Agrupar por Servicio.",
+      "say": "Hay dos monedas y no se mezclan: 61580,74 euros en 370 registros y 0,87 dólares en 70. El desglose reparte los euros entre Compute, Database, Storage y Networking, con un crédito aparte y un grupo sin servicio.",
+      "expect": "Total EUR 61580.74 (370 registros) y total USD 0.87 (70 registros). Filas EUR: Compute 28099.20, Database 16859.52, Storage 11239.68, Networking 5619.84, Credits -250.00 y Sin dimensión 12.50.",
+      "ui_contains": [
+        "61580.74 EUR",
+        "0.87 USD",
+        "Sin dimensión"
       ]
     },
     {
@@ -68,16 +70,16 @@
       "screen": "billing-dashboard",
       "shows_amounts": true,
       "period": {
-        "from": "2026-01",
-        "to": "2026-06"
+        "from": "2026-07",
+        "to": "2026-09"
       },
-      "action": "Con la moneda EUR, señalar el gráfico y la tabla de costes mensuales.",
-      "say": "Febrero tiene un cero registrado y marzo no tiene ningún dato: la aplicación no los confunde. El gráfico deja un hueco en marzo en vez de dibujar un cero inventado.",
-      "expect": "Febrero 0.00 con 1 registro; marzo con «—» y «Sin datos de esta moneda.»; enero 100.00 (2) y abril 40.00 (2).",
+      "chart_gap": true,
+      "action": "Cambiar la moneda a USD y señalar el gráfico y la tabla de costes mensuales.",
+      "say": "En dólares, julio no tiene ningún dato y agosto tiene un cero registrado: la aplicación no los confunde. El gráfico deja un hueco en julio en vez de dibujar un cero inventado.",
+      "expect": "Julio con «—» y «Sin datos de esta moneda.»; agosto 0.00 con 31 registros; septiembre 0.87 con 39 registros.",
       "ui_contains": [
         "Sin datos de esta moneda."
-      ],
-      "chart_gap": true
+      ]
     },
     {
       "id": "D5",
@@ -86,66 +88,75 @@
       "screen": "billing-dashboard",
       "shows_amounts": true,
       "period": {
-        "from": "2026-01",
-        "to": "2026-06"
+        "from": "2026-07",
+        "to": "2026-09"
       },
-      "action": "Señalar mayo en la tabla y la comparación en euros.",
-      "say": "Mayo es un crédito, un importe negativo. La comparación usa el primer y el último mes con coste: de enero a mayo bajan 150 euros, un 150 por ciento, porque el último mes es negativo.",
-      "expect": "Mayo -50.00 (1 registro). «Comparación: mayo de 2026 frente a enero de 2026 · EUR» con variación absoluta -150.00 EUR y porcentual -150.00 %.",
+      "reuses": [
+        "D3"
+      ],
+      "action": "Cambiar la moneda a EUR y señalar la fila Credits del desglose y la comparación de meses.",
+      "say": "Agosto incluye un crédito de 250 euros negativos, en el grupo Credits. La comparación usa el primer y el último mes con coste: de julio a septiembre suben 2351,54 euros, un 12,12 por ciento.",
+      "expect": "Credits -250.00 (1 registro). «Comparación: septiembre de 2026 frente a julio de 2026 · EUR» con variación absoluta +2351.54 EUR y porcentual +12.12 %.",
       "ui_contains": [
-        "mayo de 2026 frente a enero de 2026"
+        "Comparación: septiembre de 2026 frente a julio de 2026",
+        "+2351.54 EUR",
+        "+12.12 %"
       ]
     },
     {
       "id": "D6",
-      "title": "Cambiar de moneda: la comparación en dólares",
+      "title": "Cuando no hay comparación posible",
       "seconds": 20,
       "screen": "billing-dashboard",
       "shows_amounts": true,
       "period": {
-        "from": "2026-01",
-        "to": "2026-06"
+        "from": "2026-07",
+        "to": "2026-09"
       },
-      "action": "Cambiar el selector de Moneda a USD.",
-      "say": "En dólares la serie es distinta: febrero y junio. De febrero a junio suben 14,75 dólares, un 140,48 por ciento.",
-      "expect": "Febrero 10.50 (1) y junio 25.25 (1). «Comparación: junio de 2026 frente a febrero de 2026 · USD» con +14.75 USD y +140.48 %.",
+      "action": "Cambiar la moneda a USD y señalar la comparación de meses.",
+      "say": "En dólares no hay comparación posible: agosto es un cero registrado, que no cuenta como extremo, y julio no tiene datos; solo septiembre tiene coste.",
+      "expect": "«Comparación no disponible: Solo hay un mes con coste para comparar».",
       "ui_contains": [
-        "junio de 2026 frente a febrero de 2026"
+        "Comparación no disponible",
+        "Solo hay un mes con coste para comparar"
       ]
     },
     {
       "id": "D7",
       "title": "Opcional: desglose por etiqueta",
       "seconds": 20,
+      "optional": true,
       "screen": "billing-dashboard",
       "shows_amounts": true,
       "period": {
-        "from": "2026-01",
-        "to": "2026-06"
+        "from": "2026-07",
+        "to": "2026-09"
       },
-      "action": "Agrupar por Etiqueta y escribir la clave cost_center.",
-      "say": "Podemos repartir el coste por etiqueta: finance y ops, y lo que no tiene etiqueta queda aparte en vez de perderse.",
-      "expect": "Etiqueta consultada: cost_center. EUR: finance 100.00 (2), ops -20.00 (3), Sin dimensión 10.00 (1); USD: finance 10.50 y ops 25.25.",
+      "action": "Agrupar por Etiqueta y escribir la clave project.",
+      "say": "Podemos repartir el coste por etiqueta: Alpha, Beta, y lo que no tiene etiqueta queda aparte en vez de perderse.",
+      "expect": "Etiqueta consultada: project. EUR: Alpha 44971.22 (185), Beta 15935.60 (172) y Sin dimensión 673.92 (13); USD: Alpha 0.00, Foo 0.43 y Sin dimensión 0.44.",
       "ui_contains": [
-        "Etiqueta consultada: cost_center"
-      ],
-      "optional": true
+        "Etiqueta consultada: project"
+      ]
     },
     {
       "id": "D8",
-      "title": "Lo que queda fuera: el registro sin fecha",
+      "title": "Lo que queda sin clasificar: un registro sin servicio",
       "seconds": 10,
       "screen": "billing-dashboard",
       "shows_amounts": true,
       "period": {
-        "from": "2026-01",
-        "to": "2026-06"
+        "from": "2026-07",
+        "to": "2026-09"
       },
-      "action": "Señalar el aviso amarillo de datos parciales.",
-      "say": "Hay un registro sin fecha. No entra en ningún mes y la aplicación lo avisa en vez de repartirlo.",
-      "expect": "Aviso «Datos parciales: ... 1 registros sin fecha excluidos». Los totales de D3 no incluyen ese registro; su importe (7.77 EUR) sale del conjunto de datos y no se muestra en pantalla.",
+      "reuses": [
+        "D3"
+      ],
+      "action": "Con el desglose por servicio, señalar el aviso amarillo de datos parciales y la fila Sin dimensión.",
+      "say": "Hay un registro sin servicio. La aplicación no lo reparte ni lo esconde: lo avisa y lo deja en su propio grupo.",
+      "expect": "Aviso «Datos parciales: 1 registros sin dimensión; 0 registros sin fecha excluidos.» y fila Sin dimensión 12.50 EUR (1 registro).",
       "ui_contains": [
-        "1 registros sin fecha excluidos"
+        "Datos parciales: 1 registros sin dimensión; 0 registros sin fecha excluidos."
       ]
     },
     {
@@ -153,15 +164,16 @@
       "title": "Aislamiento entre clientes",
       "seconds": 15,
       "screen": "billing-dashboard",
+      "shows_amounts": true,
       "period": {
-        "from": "2026-01",
-        "to": "2026-06"
+        "from": "2026-07",
+        "to": "2026-09"
       },
       "action": "Cambiar el selector de cliente a Core Finance.",
-      "say": "Estos costes pertenecen solo a Growth Ops: al cambiar a Core Finance no aparece ninguno.",
-      "expect": "Con Core Finance: «Sin datos de costes para este periodo.». Esto muestra la separación visual entre clientes; no sustituye una prueba de autorización. Se sigue con Core Finance en el paso siguiente.",
+      "say": "Core Finance tiene sus propios costes: al cambiar de cliente aparecen otras cifras y no se mezclan con las de Growth Ops.",
+      "expect": "Con Core Finance y el mismo periodo, total EUR 79337.00 (569 registros) y ningún total USD. Esto muestra la separación visual entre clientes; no sustituye una prueba de autorización. Se sigue con Core Finance en el paso siguiente.",
       "ui_contains": [
-        "Sin datos de costes para este periodo."
+        "79337.00 EUR"
       ]
     },
     {
@@ -170,20 +182,17 @@
       "seconds": 30,
       "screen": "anomalies-panel",
       "shows_amounts": true,
+      "first_row": "Compute",
       "action": "Abrir Anomalías en el menú, con Core Finance seleccionado, pulsar «Detectar ahora» y abrir el detalle de la primera fila.",
-      "say": "En Core Finance hay otro conjunto sintético, pensado para anomalías. Al detectar, la aplicación revisa el coste de cada día con la regla de negocio y prioriza por el impacto acumulado. Compute sale primero, con criticidad alta: es una candidata para investigar, no una causa confirmada.",
-      "expect": "Aviso «Datos sintéticos de demostración: no son facturas reales» y «Revisado hasta el 20/09/2026». Primera fila Compute «Alta (P1)» con 2807.71 EUR en 12 días; después Database «Media (P2)» y Analytics «Baja (P3)». El detalle de Compute dice «Candidata: causa no establecida».",
+      "say": "En Core Finance hay otro conjunto de demostración, pensado para anomalías. Al detectar, la aplicación revisa el coste de cada día con la regla de negocio y prioriza por el impacto acumulado. Compute sale primero, con criticidad alta: es una candidata para investigar, no una causa confirmada.",
+      "expect": "Aviso «Datos sintéticos de demostración: no son facturas reales» y «Revisado hasta el 29/10/2026». Primera fila Compute «Alta (P1)» con 5851.57 EUR en 28 días; después Storage y Database «Media (P2)», y Analytics y Tools «Baja (P3)». El detalle de Compute dice «Candidata: causa no establecida».",
       "ui_contains": [
         "Datos sintéticos de demostración: no son facturas reales",
-        "Revisado hasta el 20/09/2026",
-        "Alta (P1)",
-        "Media (P2)",
-        "Baja (P3)"
+        "Revisado hasta el 29/10/2026"
       ],
       "dialog_contains": [
         "Candidata: causa no establecida"
-      ],
-      "first_row": "Compute"
+      ]
     },
     {
       "id": "D10",
@@ -192,8 +201,8 @@
       "screen": "none",
       "limits": true,
       "action": "Sin tocar la pantalla.",
-      "say": "Para ser claros con los límites: son datos sintéticos y el ahorro potencial no está disponible.",
-      "expect": "Nada que comprobar en pantalla. Coste Detallado, Corte Global y Recomendaciones (`/operational`, `/cuts`, `/recommendations`) ya no se publican: no abrirlas."
+      "say": "Para ser claros con los límites: son datos de demostración, solo traen servicio y proyecto, y el ahorro potencial no está disponible.",
+      "expect": "Nada que comprobar en pantalla. La cobertura de etiquetas y los responsables por centro de coste, propietario o aplicación no tienen datos en esta demo, y Coste Detallado, Corte Global y Recomendaciones (`/operational`, `/cuts`, `/recommendations`) ya no se publican: no abrirlas."
     },
     {
       "id": "D11",
@@ -203,15 +212,15 @@
       "screen": "billing-dashboard",
       "shows_amounts": true,
       "period": {
-        "from": "2026-07",
-        "to": "2026-07"
+        "from": "2026-10",
+        "to": "2026-10"
       },
-      "action": "Volver a Coste Global, elegir Growth Ops, poner Mes inicial y Mes final en 2026-07 y la moneda USD; señalar el aviso y la tabla.",
-      "say": "Julio tiene un importe por encima de lo que un número de JavaScript representa sin perder dígitos. La aplicación no lo dibuja, avisa y conserva el valor exacto en la tabla.",
-      "expect": "Aviso «Algunos importes superan el límite de representación gráfica. Sus valores exactos permanecen en la tabla.» y julio 9007199254740993.01 (1 registro). No comparar julio con febrero: el porcentaje resultante no es presentable.",
+      "action": "Volver a Coste Global, elegir Growth Ops, poner Mes inicial y Mes final en 2026-10 y la moneda USD; señalar el aviso, la tabla y, con el desglose por servicio, la fila Archive.",
+      "say": "Octubre tiene un importe por encima de lo que un número de JavaScript representa sin perder dígitos. La aplicación no lo dibuja, avisa y conserva el valor exacto en la tabla.",
+      "expect": "Aviso «Algunos importes superan el límite de representación gráfica. Sus valores exactos permanecen en la tabla.» y octubre 9007199254741837.50 (31 registros); con el desglose por servicio, Archive 9007199254740993.00 (1 registro). No comparar octubre con septiembre: el porcentaje resultante no es presentable.",
       "ui_contains": [
         "Algunos importes superan el límite de representación gráfica",
-        "9007199254740993.01"
+        "9007199254741837.50"
       ]
     }
   ],
@@ -221,275 +230,272 @@
       "step": "D2",
       "kind": "period_total",
       "currency": "EUR",
-      "from": "2026-01",
-      "to": "2026-06",
-      "expected": "90.00",
-      "records": 6
+      "from": "2026-07",
+      "to": "2026-09",
+      "expected": "61580.74",
+      "records": 370
     },
     {
       "id": "F02",
       "step": "D2",
       "kind": "period_total",
       "currency": "USD",
-      "from": "2026-01",
-      "to": "2026-06",
-      "expected": "35.75",
-      "records": 2
+      "from": "2026-07",
+      "to": "2026-09",
+      "expected": "0.87",
+      "records": 70
     },
     {
       "id": "F03",
       "step": "D3",
       "kind": "group_total",
       "currency": "EUR",
-      "from": "2026-01",
-      "to": "2026-06",
+      "from": "2026-07",
+      "to": "2026-09",
       "group_by": "service",
       "key": "Compute",
-      "expected": "100.00",
-      "records": 2
+      "expected": "28099.20",
+      "records": 92
     },
     {
       "id": "F04",
       "step": "D3",
       "kind": "group_total",
       "currency": "EUR",
-      "from": "2026-01",
-      "to": "2026-06",
+      "from": "2026-07",
+      "to": "2026-09",
       "group_by": "service",
-      "key": "Credits",
-      "expected": "-50.00",
-      "records": 1
+      "key": "Database",
+      "expected": "16859.52",
+      "records": 92
     },
     {
       "id": "F05",
       "step": "D3",
       "kind": "group_total",
       "currency": "EUR",
-      "from": "2026-01",
-      "to": "2026-06",
+      "from": "2026-07",
+      "to": "2026-09",
       "group_by": "service",
       "key": "Storage",
-      "expected": "30.00",
-      "records": 2
+      "expected": "11239.68",
+      "records": 92
     },
     {
       "id": "F06",
       "step": "D3",
       "kind": "group_total",
       "currency": "EUR",
-      "from": "2026-01",
-      "to": "2026-06",
+      "from": "2026-07",
+      "to": "2026-09",
       "group_by": "service",
-      "key": null,
-      "expected": "10.00",
-      "records": 1
+      "key": "Networking",
+      "expected": "5619.84",
+      "records": 92
     },
     {
       "id": "F07",
       "step": "D3",
       "kind": "group_total",
-      "currency": "USD",
-      "from": "2026-01",
-      "to": "2026-06",
+      "currency": "EUR",
+      "from": "2026-07",
+      "to": "2026-09",
       "group_by": "service",
-      "key": "Compute",
-      "expected": "10.50",
+      "key": "Credits",
+      "expected": "-250.00",
       "records": 1
     },
     {
       "id": "F08",
       "step": "D3",
       "kind": "group_total",
-      "currency": "USD",
-      "from": "2026-01",
-      "to": "2026-06",
+      "currency": "EUR",
+      "from": "2026-07",
+      "to": "2026-09",
       "group_by": "service",
-      "key": "Storage",
-      "expected": "25.25",
+      "key": null,
+      "expected": "12.50",
       "records": 1
     },
     {
       "id": "F09",
       "step": "D4",
       "kind": "month_total",
-      "currency": "EUR",
-      "month": "2026-01",
-      "expected": "100.00",
-      "records": 2
+      "currency": "USD",
+      "month": "2026-07",
+      "expected": null,
+      "records": 0
     },
     {
       "id": "F10",
       "step": "D4",
       "kind": "month_total",
-      "currency": "EUR",
-      "month": "2026-02",
+      "currency": "USD",
+      "month": "2026-08",
       "expected": "0.00",
-      "records": 1
+      "records": 31
     },
     {
       "id": "F11",
       "step": "D4",
       "kind": "month_total",
-      "currency": "EUR",
-      "month": "2026-03",
-      "expected": null,
-      "records": 0
+      "currency": "USD",
+      "month": "2026-09",
+      "expected": "0.87",
+      "records": 39
     },
     {
       "id": "F12",
-      "step": "D4",
+      "step": "D5",
       "kind": "month_total",
       "currency": "EUR",
-      "month": "2026-04",
-      "expected": "40.00",
-      "records": 2
+      "month": "2026-07",
+      "expected": "19404.00",
+      "records": 124
     },
     {
       "id": "F13",
       "step": "D5",
       "kind": "month_total",
       "currency": "EUR",
-      "month": "2026-05",
-      "expected": "-50.00",
-      "records": 1
+      "month": "2026-09",
+      "expected": "21755.54",
+      "records": 121
     },
     {
       "id": "F14",
       "step": "D5",
       "kind": "comparison",
       "currency": "EUR",
-      "from": "2026-01",
-      "to": "2026-06",
-      "first_month": "2026-01",
-      "last_month": "2026-05",
-      "difference": "-150.00",
-      "percent": "-150.00"
+      "from": "2026-07",
+      "to": "2026-09",
+      "first_month": "2026-07",
+      "last_month": "2026-09",
+      "difference": "2351.54",
+      "percent": "12.12"
     },
     {
       "id": "F15",
       "step": "D6",
-      "kind": "month_total",
+      "kind": "comparison",
       "currency": "USD",
-      "month": "2026-02",
-      "expected": "10.50",
-      "records": 1
+      "from": "2026-07",
+      "to": "2026-09",
+      "unavailable": true
     },
     {
       "id": "F16",
-      "step": "D6",
-      "kind": "month_total",
-      "currency": "USD",
-      "month": "2026-06",
-      "expected": "25.25",
-      "records": 1
+      "step": "D7",
+      "kind": "group_total",
+      "currency": "EUR",
+      "from": "2026-07",
+      "to": "2026-09",
+      "group_by": "project",
+      "key": "Alpha",
+      "expected": "44971.22",
+      "records": 185
     },
     {
       "id": "F17",
-      "step": "D6",
-      "kind": "comparison",
-      "currency": "USD",
-      "from": "2026-01",
-      "to": "2026-06",
-      "first_month": "2026-02",
-      "last_month": "2026-06",
-      "difference": "14.75",
-      "percent": "140.48"
+      "step": "D7",
+      "kind": "group_total",
+      "currency": "EUR",
+      "from": "2026-07",
+      "to": "2026-09",
+      "group_by": "project",
+      "key": "Beta",
+      "expected": "15935.60",
+      "records": 172
     },
     {
       "id": "F18",
       "step": "D7",
       "kind": "group_total",
       "currency": "EUR",
-      "from": "2026-01",
-      "to": "2026-06",
-      "group_by": "cost_center",
-      "key": "finance",
-      "expected": "100.00",
-      "records": 2
+      "from": "2026-07",
+      "to": "2026-09",
+      "group_by": "project",
+      "key": null,
+      "expected": "673.92",
+      "records": 13
     },
     {
       "id": "F19",
       "step": "D7",
       "kind": "group_total",
-      "currency": "EUR",
-      "from": "2026-01",
-      "to": "2026-06",
-      "group_by": "cost_center",
-      "key": "ops",
-      "expected": "-20.00",
-      "records": 3
+      "currency": "USD",
+      "from": "2026-07",
+      "to": "2026-09",
+      "group_by": "project",
+      "key": "Alpha",
+      "expected": "0.00",
+      "records": 31
     },
     {
       "id": "F20",
       "step": "D7",
       "kind": "group_total",
-      "currency": "EUR",
-      "from": "2026-01",
-      "to": "2026-06",
-      "group_by": "cost_center",
-      "key": null,
-      "expected": "10.00",
-      "records": 1
+      "currency": "USD",
+      "from": "2026-07",
+      "to": "2026-09",
+      "group_by": "project",
+      "key": "Foo",
+      "expected": "0.43",
+      "records": 20
     },
     {
       "id": "F21",
       "step": "D7",
       "kind": "group_total",
       "currency": "USD",
-      "from": "2026-01",
-      "to": "2026-06",
-      "group_by": "cost_center",
-      "key": "finance",
-      "expected": "10.50",
-      "records": 1
+      "from": "2026-07",
+      "to": "2026-09",
+      "group_by": "project",
+      "key": null,
+      "expected": "0.44",
+      "records": 19
     },
     {
       "id": "F22",
-      "step": "D7",
-      "kind": "group_total",
-      "currency": "USD",
-      "from": "2026-01",
-      "to": "2026-06",
-      "group_by": "cost_center",
-      "key": "ops",
-      "expected": "25.25",
-      "records": 1
+      "step": "D9",
+      "kind": "period_total",
+      "tenant": "tenant-core",
+      "currency": "EUR",
+      "from": "2026-07",
+      "to": "2026-09",
+      "expected": "79337.00",
+      "records": 569
     },
     {
       "id": "F23",
-      "step": "D8",
-      "kind": "undated",
-      "currency": "EUR",
-      "expected": "7.77",
-      "records": 1
+      "step": "D11",
+      "kind": "month_total",
+      "currency": "USD",
+      "month": "2026-10",
+      "expected": "9007199254741837.50",
+      "records": 31
     },
     {
       "id": "F24",
       "step": "D11",
-      "kind": "month_total",
+      "kind": "group_total",
       "currency": "USD",
-      "month": "2026-07",
-      "expected": "9007199254740993.01",
-      "records": 1
-    },
-    {
-      "id": "F25",
-      "step": "D11",
-      "kind": "period_total",
-      "currency": "USD",
-      "from": "2026-07",
-      "to": "2026-07",
-      "expected": "9007199254740993.01",
+      "from": "2026-10",
+      "to": "2026-10",
+      "group_by": "service",
+      "key": "Archive",
+      "expected": "9007199254740993.00",
       "records": 1
     },
     {
       "id": "A01",
       "step": "D12",
       "kind": "anomaly_episode",
+      "reference": "2026-10-30",
       "service": "Compute",
       "severity": "P1",
-      "expected": "2807.71",
-      "records": 12
+      "expected": "5851.57",
+      "records": 28
     }
   ]
 }

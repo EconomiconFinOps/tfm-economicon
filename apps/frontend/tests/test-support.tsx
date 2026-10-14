@@ -53,6 +53,8 @@ export function mockBackend(overrides: Routes = {}) {
     "GET /tenants": () => jsonResponse({ items: tenants }),
     "GET /health": () => jsonResponse(health),
     "GET /billing/summary": () => jsonResponse(billing),
+    // The real day keeps the suites that predate JUP-119 independent of a fixed date.
+    "GET /billing/reference-date": () => jsonResponse({ reference_date: new Date().toISOString().slice(0, 10), simulated: false }),
     ...overrides
   };
 

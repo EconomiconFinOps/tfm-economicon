@@ -38,6 +38,7 @@ function stubBackend(extra: Record<string, unknown> = {}) {
           ]
         } satisfies TenantCollection);
       }
+      if (path === "/billing/reference-date") return Response.json({ reference_date: new Date().toISOString().slice(0, 10), simulated: false });
       if (path in extra) return Response.json(extra[path]);
       return Response.json({ detail: "not under test" }, { status: 500 });
     })

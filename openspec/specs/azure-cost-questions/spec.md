@@ -7,7 +7,7 @@ Permitir consultas explícitas de gasto Azure ingerido por suscripción, cuenta 
 El chat SHALL aceptar selección estricta de suscripción, cuenta o servicio y periodo UTC [inicio, fin), con tenant y usuario obtenidos de la sesión.
 #### Scenario: Periodo omitido
 - **WHEN** la selección omite las dos fechas
-- **THEN** se consulta el mes UTC actual y se muestra el periodo resuelto
+- **THEN** se consulta el mes UTC de la fecha de referencia compartida (el día real UTC si no hay fecha simulada) y se muestra el periodo resuelto
 #### Scenario: Selección inválida o conversación ajena
 - **WHEN** las fechas son inválidas, hay campos extra o la conversación no pertenece al usuario/tenant
 - **THEN** se rechaza antes de consultar gasto o escribir mensajes
@@ -33,3 +33,7 @@ La respuesta SHALL conservar selección, snapshot del resultado, ID de evidencia
 #### Scenario: Evidencia Azure en el visor compartido
 - **WHEN** se abre la evidencia persistida de una consulta de cuenta
 - **THEN** se muestran el desglose exacto y la procedencia de esa selección, conservando el soporte de evidencia de propiedad
+
+#### Scenario: Fecha de referencia anterior al fin solicitado
+- **WHEN** el periodo de una selección Azure se extiende más allá de la fecha de referencia
+- **THEN** solo se cuentan las filas hasta ese día inclusive, se conservan los filtros y se registra la fecha de referencia en la evidencia

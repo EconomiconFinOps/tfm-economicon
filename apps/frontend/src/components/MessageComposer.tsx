@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useReferenceDate } from "../hooks/useReferenceDate";
+import { referenceMonth } from "../lib/referenceDate";
 import { sendConversationMessage } from "../services/api";
 import type { AzureCostSelection, MessageCreateRequest, OwnershipQuery } from "../services/contracts";
 
@@ -23,9 +25,8 @@ export function MessageComposer({ token, tenantId, conversationId }: {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [validationError, setValidationError] = useState("");
-  const now = new Date();
-  const defaultStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10);
-  const defaultEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString().slice(0, 10);
+  const reference = useReferenceDate(token);
+  const referencePeriod = reference.data ? referenceMonth(reference.data) : null;
   const sendMutation = useMutation({
     mutationFn: (payload: MessageCreateRequest) =>
       sendConversationMessage(token, tenantId, conversationId, payload),
@@ -146,7 +147,8 @@ export function MessageComposer({ token, tenantId, conversationId }: {
         </label>
       </div>
       <p className="text-xs text-muted-foreground">Indica ambas fechas o deja ambas vacías para el mes actual UTC. Sin moneda se muestran los totales separados por moneda.</p>
-      {!startDate && !endDate && <p className="text-xs text-muted-foreground">Mes actual UTC: {defaultStart} a {defaultEnd} (fin excluido).</p>}
+      {!startDate && !endDate && referencePeriod && <p className="text-xs text-muted-foreground">Mes de referencia UTC: {referencePeriod.start} a {referencePeriod.end} (fin excluido).</p>}
+      {!startDate && !endDate && reference.isError && !reference.data && <p role="alert" className="text-xs text-destructive">No se pudo cargar la fecha de referencia.</p>}
     </fieldset>}
     <textarea
       className={fieldClass}

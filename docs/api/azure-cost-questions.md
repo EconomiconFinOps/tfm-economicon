@@ -92,3 +92,13 @@ explícita y su evidencia; no declara terminado el recorrido generativo. Su cons
 por JUP-035 requiere contrastar el contrato y validar la combinación de ambas PR.
 `fetch_billing_summary` conserva sus argumentos existentes y añade filtros opcionales;
 las llamadas sin filtros mantienen el comportamiento previo.
+
+
+## Fecha de referencia compartida (JUP-119)
+
+El periodo por defecto es el mes UTC de la fecha de referencia del backend.
+Sin `COST_REFERENCE_DATE`, se usa el día real UTC. Con una fecha simulada, el
+formulario y la respuesta usan ese mismo mes. La consulta conserva el periodo
+solicitado y limita las filas al día de referencia inclusive, también cuando
+se filtra por cuenta, suscripción o servicio. La evidencia registra `reference_date`
+y la respuesta indica el corte cuando el periodo se extiende más allá de él.

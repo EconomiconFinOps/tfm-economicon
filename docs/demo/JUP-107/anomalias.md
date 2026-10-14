@@ -1,8 +1,8 @@
-# Demo de alertas de anomalías de coste con datos sintéticos
+# Demo de alertas de anomalías de coste con datos de demostración
 
-**Todos los importes de esta guía son datos sintéticos**: los genera [`scripts/synthetic_anomalies.py`](../../../scripts/synthetic_anomalies.py), no son facturas de Azure y no proceden del dataset público. Existen para enseñar cómo se comportan las reglas de la consulta de prueba de [JUP-030](../../api/cost-anomalies.md) y la regla diaria de negocio de los [episodios de JUP-114](../../api/anomaly-episodes.md); no demuestran que la detección acierte con gasto real ni explican causas.
+**Todos los importes de esta guía son datos sintéticos**: los genera [`scripts/demo_dataset.py`](../../../scripts/demo_dataset.py) y se cargan con [`scripts/demo_data.py`](../../../scripts/demo_data.py) por la ingesta del processor; no son facturas de Azure y no proceden del dataset público. Existen para enseñar cómo se comportan las reglas de la consulta de prueba de [JUP-030](../../api/cost-anomalies.md) y la regla diaria de negocio de los [episodios de JUP-114](../../api/anomaly-episodes.md); no demuestran que la detección acierte con gasto real ni explican causas.
 
-Esta guía es la segunda parte de JUP-107 (la primera, [guion.md](guion.md), recorre el dashboard de costes con los datos de JUP-106). Los valores esperados están en [`esperados-anomalias.json`](esperados-anomalias.json) y una prueba los recalcula con aritmética exacta, sin usar el backend. El conjunto tiene un registro por servicio y día del 1 al 21 de septiembre de 2026; las dos primeras semanas son los periodos de la consulta de prueba.
+Esta guía es la segunda parte de JUP-107 (la primera, [guion.md](guion.md), recorre el dashboard de costes). Los valores esperados están en [`esperados-anomalias.json`](esperados-anomalias.json) y una prueba los recalcula con aritmética exacta, sin usar el backend. El conjunto tiene un registro por servicio y día del 1 de julio al 30 de octubre de 2026: julio y agosto son una base tranquila, las cifras del 1 al 21 de septiembre son las de siempre (las dos primeras semanas son los periodos de la consulta de prueba) y del 22 de septiembre al 30 de octubre hay más variaciones. **Qué se ve depende de la fecha de referencia**: esta guía usa `COST_REFERENCE_DATE=2026-09-21` (las cifras de JUP-107) y la sección [Avanzar la fecha](#avanzar-la-fecha-de-referencia) enseña qué cambia con `2026-10-30`.
 
 ## Qué se enseña
 
@@ -15,7 +15,7 @@ Son reglas distintas y dan resultados distintos: la consulta mira semanas entera
 
 ## Preparación
 
-Usa un stack aislado, con volúmenes nuevos, para no mezclar estos datos con los de otras demos. Desde la raíz del repositorio:
+Usa un stack aislado, con volúmenes nuevos, para no mezclar estos datos con los de otras demos. Pon `COST_REFERENCE_DATE=2026-09-21` en el `.env` y, desde la raíz del repositorio:
 
 ```sh
 docker compose -p jup107b build
@@ -24,21 +24,21 @@ docker compose -p jup107b up -d --wait --wait-timeout 900
 
 Si RabbitMQ sale con `eacces` o el processor aún no está sano, repite el mismo `up -d --wait`.
 
-**Si usas PowerShell:** no existe el operador `<`. Todos los comandos de esta guía que lo llevan (`apply`, `status`, `remove` y la llamada al endpoint) se escriben con una tubería: `Get-Content -Raw <fichero> | docker compose -p jup107b exec -T <servicio> python - <argumentos>`. Por ejemplo, para cargar los datos: `Get-Content -Raw scripts/synthetic_anomalies.py | docker compose -p jup107b exec -T processor python - apply`, y para la llamada: `Get-Content -Raw scripts/call_anomalies_demo.py | docker compose -p jup107b exec -T backend python -`. Las consultas a CockroachDB no llevan `<` y valen igual.
+**Si usas PowerShell:** no existe el operador `<`. La llamada al endpoint, que lo lleva, se escribe con una tubería: `Get-Content -Raw scripts/call_anomalies_demo.py | docker compose -p jup107b exec -T backend python -`. Los comandos de carga (`demo_data.py`) y las consultas a CockroachDB no llevan `<` y valen igual.
 
-1. Comprueba que `tenant-core` no tiene costes (debe devolver 0 filas). Si tuviera la ingesta del dataset público, la herramienta se negará a cargar:
+1. Comprueba que `tenant-core` no tiene costes (debe devolver 0 filas). Si tuviera costes que no son los de la demo, el cargador se negará a cargar:
    ```sh
    docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defaultdb -e "SELECT count(*) FROM azure_cost_records WHERE tenant_id = 'tenant-core'"
    ```
-2. Carga los datos y comprueba su estado (`status` debe decir `present`, 1 ingesta y 134 registros sintéticos, 0 datos reales y 0 episodios de anomalía). `apply` es idempotente: repetirlo responde `already-present`.
+2. Carga los datos y comprueba su estado (`status` debe decir `present` en `tenant-core` y en `tenant-growth`). `apply` carga el conjunto completo de la demo y es idempotente: repetirlo responde `already-present`.
    ```sh
-   docker compose -p jup107b exec -T processor python - apply < scripts/synthetic_anomalies.py
-   docker compose -p jup107b exec -T processor python - status < scripts/synthetic_anomalies.py
+   docker compose -p jup107b --profile demo run --rm demo-data python scripts/demo_data.py apply
+   docker compose -p jup107b --profile demo run --rm demo-data python scripts/demo_data.py status
    ```
 
 ## La petición de referencia
 
-Dos periodos consecutivos de siete días, uno por servicio y en euros, con estas reglas: umbral absoluto de 2000,00, subida del 50 % frente al periodo anterior y un incremento mínimo de 100,00.
+Dos periodos consecutivos de siete días, uno por servicio y en euros, con estas reglas (la fecha de referencia debe ser el 21/09/2026 o posterior, porque la consulta de prueba solo acepta días cerrados): umbral absoluto de 2000,00, subida del 50 % frente al periodo anterior y un incremento mínimo de 100,00.
 
 ```json
 {
@@ -83,7 +83,7 @@ Se cambia un campo de la petición de referencia y se vuelve a llamar:
 
 ## En el panel: episodios con la regla diaria
 
-Con los datos cargados, entra en la aplicación, elige **Core Finance** y abre **Anomalías**. Antes de detectar, el panel dice «Todavía no se han buscado anomalías en este cliente» y enseña el aviso «Datos sintéticos de demostración: no son facturas reales». Pulsa **Detectar ahora**: el resultado dice que se revisó hasta el 20/09/2026 (el 21 es el último día con datos y se considera incompleto) y que hay 3 anomalías nuevas.
+Con los datos cargados, entra en la aplicación, elige **Core Finance** y abre **Anomalías**. Antes de detectar, el panel dice «Todavía no se han buscado anomalías en este cliente» y enseña el aviso «Datos sintéticos de demostración: no son facturas reales». Pulsa **Detectar ahora**: el resultado dice que se revisó hasta el 20/09/2026 (con la referencia en el 21/09 ese es el último día con datos visibles y se considera incompleto) y que hay 3 anomalías nuevas.
 
 | Servicio | Criticidad | Impacto acumulado | Periodo | Observación |
 | --- | --- | --- | --- | --- |
@@ -101,23 +101,37 @@ Por qué el resto no abre anomalía, aunque la consulta de prueba diga otra cosa
 
 Abre el detalle de Compute: enseña la referencia, el impacto, las reglas y «Candidata: causa no establecida». Desde ahí se puede marcar en investigación o cerrar con un motivo.
 
+## Avanzar la fecha de referencia
+
+Con `COST_REFERENCE_DATE=2026-10-30` (y recreado el backend) el panel enseña lo mismo que la demo de [guion.md](guion.md): al pulsar **Detectar ahora** dice «Revisado hasta el 29/10/2026» (el 30 es el último día con datos y se considera incompleto) y salen cinco anomalías. Las tres de arriba siguen ahí con sus cifras actualizadas; Compute y Database ya no se observan, y aparecen Storage (subida sostenida desde el 20/10) y Tools (un pico el 08/10):
+
+| Servicio | Criticidad | Impacto acumulado | Periodo | Observación |
+| --- | --- | --- | --- | --- |
+| Compute | Alta (P1) | 5851.57 EUR en 28 días | 09/09 → 03/10 | Ya no se observa desde 07/10 |
+| Storage | Media (P2) | 1230.00 EUR en 10 días | 20/10 → 29/10 | Se sigue observando |
+| Database | Media (P2) | 642.86 EUR en 8 días | 16/09 → 20/09 | Ya no se observa desde 24/09 |
+| Analytics | Baja (P3) | 168.86 EUR en 4 días | 10/09 → 10/09 | Ya no se observa desde 14/09 |
+| Tools | Baja (P3) | 144.00 EUR en 4 días | 08/10 → 08/10 | Ya no se observa desde 12/10 |
+
+Una sola pulsación revisa todos los días pendientes hasta el último completo. Al retroceder la fecha, las anomalías que llegan más allá de ella se ocultan y reaparecen al volver a avanzarla; para repetir la demo desde cero se retiran y se vuelven a cargar los datos.
+
 ## Limitaciones que hay que decir
 
 - Los importes son inventados para ilustrar las reglas; no se ha medido la calidad de la detección ni se afirma que un caso real se comporte igual.
 - Las alertas son candidatos a investigar, no una causa ni un ahorro demostrado.
 - La consulta de prueba y el panel aplican reglas distintas (semanas con umbrales a mano frente a días con la regla de negocio): no hay que presentar sus resultados como la misma cosa.
-- «Detectar ahora» guarda episodios: para repetir la demo desde cero hay que retirar y volver a cargar el conjunto.
+- «Detectar ahora» guarda episodios: para repetir la demo desde cero hay que retirar y volver a cargar los datos.
 - Mientras estén cargados, `tenant-core` deja de estar vacío: la demo de JUP-065 y los recorridos que lo suponen vacío no deben usarlo a la vez.
 
 ## Vuelta al estado inicial
 
 ```sh
-docker compose -p jup107b exec -T processor python - remove < scripts/synthetic_anomalies.py
-docker compose -p jup107b exec -T processor python - remove < scripts/synthetic_anomalies.py
-docker compose -p jup107b exec -T processor python - status < scripts/synthetic_anomalies.py
+docker compose -p jup107b --profile demo run --rm demo-data python scripts/demo_data.py remove
+docker compose -p jup107b --profile demo run --rm demo-data python scripts/demo_data.py remove
+docker compose -p jup107b --profile demo run --rm demo-data python scripts/demo_data.py status
 docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defaultdb -e "SELECT count(*) FROM azure_cost_records WHERE tenant_id = 'tenant-core'"
 docker compose -p jup107b exec -T cockroachdb ./cockroach sql --insecure -d defaultdb -e "SELECT count(*) FROM anomaly_episodes WHERE tenant_id = 'tenant-core'"
-docker compose -p jup107b down -v
+docker compose -p jup107b --profile demo down -v
 ```
 
-El segundo `remove` debe retirar 0 ingestas y 0 registros (es seguro repetirlo); `status` debe decir `absent` y las dos consultas devolver 0: `remove` borra también los episodios y la marca «Revisado hasta» del cliente, porque salen de estos datos (si el cliente tuviera otros costes, los conserva y lo dice). `down -v` borra el stack y sus volúmenes. La herramienta solo retira sus propias filas: los datos de JUP-106 en `tenant-growth` no se tocan. `remove` actúa sobre todos los tenants a la vez y no acepta `--tenant` (sale con error); `status` te dice en cuál estaba el conjunto.
+El segundo `remove` debe retirar 0 ingestas y 0 registros (es seguro repetirlo); `status` debe decir `absent` y las dos consultas devolver 0: `remove` borra también los episodios y la marca «Revisado hasta» del cliente, porque salen de estos datos (si el cliente tuviera otros costes, los conserva y lo dice). `down -v` borra el stack y sus volúmenes. El cargador solo retira las filas de las suscripciones de la demo, en los dos clientes a la vez: `remove` no acepta `--tenant` (sale con error) y `status` te dice en qué estado está cada cliente.

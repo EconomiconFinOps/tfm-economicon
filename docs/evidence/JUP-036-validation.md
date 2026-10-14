@@ -93,3 +93,23 @@ Instancia SQL efímera dedicada, loopback remoto 56436 y túnel SSH. La fixture
 crea y elimina sus propias bases. No se prueba Azure real, parsing NL libre,
 proveedor LLM, ensayo visual manual ni el stack completo. Esta evidencia es del
 implementador; no acredita pairing real, revisión Lucia ni validación Paris.
+
+
+## Resolución de conflictos con JUP-119 — 2026-10-14
+
+Base nueva: develop `c30a7d0f` (PR127). El único conflicto textual en
+`fetch_billing_summary` combina el tope `reference_date.visible_end(end_date)`
+con los filtros parametrizados `selected_subscription` y `selected_value` de JUP-036.
+La selección de cuenta y la procedencia del subconjunto se conservan.
+
+La fusión automática introduce la fecha de referencia en el formulario. Se adapta
+`AzureCostQuestionService` al mismo reloj para su mes por defecto y se registra
+`reference_date` en el hash/evidencia y en la respuesta. Así, omitir fechas con
+una demo de diciembre consulta diciembre y conserva el corte de filas visible.
+
+Nuevas regresiones: las tres dimensiones Azure devuelven cinco registros/50.00EUR
+con referencia05/10 aunque la base contenga días posteriores; se verifica la recarga
+del mismo JSONB. El formulario se prueba en ambos modos con fecha simulada y fallo
+de carga de referencia. Typecheck, lint, build, higiene y OpenSpec70/70 pasan.
+Resultados SQL: **195 pasan, cero omisiones** en costes Azure, fecha de referencia, billing, presupuestos, ownership y etiquetas. Publicación/CI pendientes en este corte. No se repite ni atribuye
+al candidato nuevo la suite completa registrada para c1d4ef51 el13/10.
