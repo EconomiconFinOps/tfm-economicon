@@ -39,7 +39,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     retrieval_neighbors='same-snapshot-tenant-provider-immediate-bounded20-contiguous-priority-v2',
     evidence_order='local-visible-support-no-root-decoration-v2',
     documentary_sections='original-markdown-positional-contiguous-ranges-v1',
-    interval_rules='explicit-percentage-partition-resolved-eligible-total-v2',
+    interval_rules='explicit-percentage-partition-eligible-total-or-allocation-v3',
     decision_values='server-query-no-model-decision-v1',
     reasoning={'effort':'high','exclude':True,'shared_output_tokens':3200})
 from app.core.chat_review import DRAFT_INSTRUCTION,REVIEW_INSTRUCTION,draft_schema

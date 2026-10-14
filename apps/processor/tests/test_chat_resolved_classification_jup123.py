@@ -62,3 +62,77 @@ def test_schema_keeps_only_classified_answer_when_operands_are_resolved():
     catalog = catalog_for(QUESTION)
     schema = chat_provider_schema(authorized_evidence=list(catalog.authorized_sources), calculations=[], quantities=catalog)
     assert all('classification' in b['properties']['answer']['properties'] for b in schema['anyOf'])
+
+
+PARTITION = ('Clasifica unallocated.\n\nEscenario EUR: allocated 70; shared 20; '
+             'unallocated 10; excluded 5. La regla del escenario excluye esos 5 '
+             'del coste elegible; el resto es elegible.')
+
+
+def partition_catalog(question):
+    context, _, _ = fixture()
+    source = context['authorized_evidence'][0]
+    source['content'] = source['content'].replace('Waste Cost', 'Unallocated Cost')
+    source['provenance']['sections'][0]['end'] = len(source['content'])
+    context['messages'][0]['content'] = 'UNTRUSTED_CURRENT_CONTEXT\n' + json.dumps({'question': question})
+    context['messages'][1]['content'] = 'UNTRUSTED_RETRIEVAL_CONTEXT\n' + json.dumps({'evidence': [source]})
+    return context_quantities(context)
+
+
+def test_explicit_allocation_partition_excludes_only_excluded_and_keeps_shared():
+    catalog = partition_catalog(PARTITION)
+    node = resolved_classification(catalog)
+    assert node is not None
+    rendered = ExpressionRenderer(catalog).render(node)
+    assert '10 %' in rendered and '): high.' in rendered
+    assert '= 100 EUR.' in rendered
+    assert '5 EUR' not in rendered
+    assert node['value']['denominator'] == {'operation': 'sum', 'left': {'quantity': '70 EUR'},
+        'right': {'operation': 'sum', 'left': {'quantity': '20 EUR'}, 'right': {'quantity': '10 EUR'}}}
+    changed = copy.deepcopy(node)
+    changed['value']['denominator']['right']['right'] = {'quantity': '5 EUR'}
+    with pytest.raises(ValueError, match='KPI value mismatch'):
+        ExpressionRenderer(catalog).render(changed)
+
+
+@pytest.mark.parametrize('question', [
+    PARTITION.split('. La regla')[0] + '.',
+    PARTITION.replace('el resto es elegible', 'el resto puede ser elegible'),
+    PARTITION.replace('excluye esos 5', 'excluye esos 6'),
+    PARTITION.replace('excluye esos 5', 'no excluye esos 5'),
+    PARTITION.replace('shared 20', 'shared 20 USD'),
+    PARTITION.replace('shared 20', 'shared -20'),
+    PARTITION.replace('shared 20', 'shared 70'),
+    PARTITION.replace('shared 20;', 'shared 20; other 30;'),
+    PARTITION + ' Otro periodo: allocated 70; shared 20; unallocated 10; excluded 5.',
+    PARTITION.replace('Clasifica', 'Define'),
+])
+def test_allocation_partition_without_closed_unambiguous_policy_is_not_resolved(question):
+    assert resolved_classification(partition_catalog(question)) is None
+
+
+def test_partition_supports_another_currency_and_does_not_embed_business_thresholds():
+    catalog = partition_catalog(PARTITION.replace('EUR', 'USD').replace('allocated 70;', 'allocated 170;'))
+    node = resolved_classification(catalog)
+    rendered = ExpressionRenderer(catalog).render(node)
+    assert '5 %' in rendered and '): middle.' in rendered
+    assert 'USD' in rendered
+
+
+@pytest.mark.parametrize('width', [1, 11, 8192])
+def test_partition_stream_matches_final_with_visible_eligible_total(width):
+    from app.clients.chat_stream_parser import SegmentAnswerJSON
+    catalog = partition_catalog(PARTITION)
+    response = {'answer': {'calculations': [], 'classification': resolved_classification(catalog)},
+        'assumptions': [], 'limitations': [], 'next_actions': [], 'recommendations': [], 'metrics': [], 'evidence': []}
+    raw = json.dumps(response)
+    parser = SegmentAnswerJSON([], quantities=catalog)
+    streamed = ''.join(parser.feed(raw[i:i+width]) for i in range(0, len(raw), width))
+    assert streamed == parser.finish() == render_response(response, [], quantities=catalog)['answer']
+    assert '= 100 EUR.' in streamed and '): high.' in streamed
+
+
+def test_partition_visible_total_does_not_claim_exact_equality_after_rounding():
+    catalog = partition_catalog(PARTITION.replace('allocated 70;', 'allocated 70.0000001;'))
+    node = resolved_classification(catalog)
+    assert '≈ 100 EUR.' in ExpressionRenderer(catalog).render(node)

@@ -1060,3 +1060,68 @@ sin aprobar por coincidencia numérica. Fuentes r3 contrastadas con finops9.
 Juiciosv7/reviewed-v7:24PASS,42pending,11FAIL,7technical_failure;
 200requisitosPASS,9uncertain,43FAIL,243sin revisar,12clusters. Preliminar local,
 no revisión independiente ni aceptación. No nueva inferencia ni cambio de gasto.
+
+
+### Adjudicación de alcance y equivalencias — 14/10/2026
+
+023/025:r1–r3PASS preliminar (sin acceso real ni apagados inventados; fuentes
+product1/finops0,1,15,17/rules0 contrastadas).026r1PASS; r2/r3FAILgrounding por
+citas Inform/actual cost no pertinentes para ingesta incompleta; causalidad en
+assumptions quedauncertain, sin reclasificar la conclusión correcta sobre ausencia
+de datos. Juiciosv8 preservados.006r3 y017r3 trasladados desde r1 sólo tras verificar
+igualdad exacta response/cited_chunks, mismo hash payloadRAG, entradas verificadas
+contra banco, colección verificada y criterios iguales; prueba explícita en
+baseline-n3-equivalence-v9.json. No son dictámenes humanos independientes.
+Últimos artifacts judgments-v9/reviewed-v9:32PASS,31pending,14FAIL,7técnicos;
+252requisitosPASS,11uncertain,49FAIL,183sin revisar,15clusters. Banco/campaña
+inmutables; ningún coste nuevo. Pendientes calibración011/012/018r3/024r3/027/028,
+dudas anteriores y reserva013–015/020–022, sin usar reserva para ajustar evaluador.
+
+
+### Continuación de etiquetas de calibración — 14/10/2026
+
+018r3PASS (20>20 falso, ANDfalse, delta200) y024r3PASS (100EUR/100USD separados,
+sin tasa inventada).012r1–r3 cumple requisitos conceptuales; groundinguncertain
+por cita de minusculas en apoyo de reglaowner aunque el chunk completo sí la
+contiene, consistente con duda009.011r2/r3PASS:10% por coste y90% por recursos
+explícitos; formula y advertencia contrastadas con rules5/finops10 suministrados.
+Artifacts judgments-v10/v11 y reviewed-v10/v11 externos, sin sobrescribir anteriores.
+Último36PASS,27pending,14FAIL,7técnicos;286requisitosPASS,14uncertain,49FAIL,
+146sin revisar. AceptaciónNOT_ASSESSED. No inferencias, gasto ni publicación.
+
+
+### Calibración preliminar congelada — 14/10/2026
+
+027r2/r3PASS tras contrastar KPI opcional con rules5 y metodología con finops9;
+028r2/r3PASS, finops11 contiene distinción showback/chargeback. Juiciosv12:
+40PASS/23pending/14FAIL/7técnicos globales. Todos los requisitos de respuestas
+completed de calibración están revisados:66muestras =40PASS,9pending por dudas,
+14FAIL,3técnicos. Reserva18muestras (14completed/4failed) permanece sin adjudicar
+para diseñar correcciones; no usar sus respuestas para afinar código/evaluador.
+Freeze externo baseline-calibration-freeze-v1.json SHA256
+7af862ac1a0122531e1d0296a14253fa7322ff0fc984d575948854be99f84c28 registra hashes
+agregado/juicios/scoring e incertidumbres. No equivale a calibración de juezLLM,
+adjudicación humana ni aceptación. Próximo: corregir005 con composición elegible
+explícita y operandos con procedencia, abordar omisión de delta019 y contradicción
+008 sin prompt gigante, comparar candidato; reserva se evalúa al cierre con rúbrica
+fija. Incertidumbres de citas por pasaje y criterio011 siguen abiertas. Sin gasto.
+
+
+### Composición determinista de coste elegible — 14/10/2026
+
+chat_rules.allocation_denominator añade gramática cerrada de cuatro partidas
+allocated/shared/unallocated/excluded con moneda única, anclas inequívocas y
+política explícita de exclusión/remaindereligible. Suma las tres primeras; usa
+unallocated como numerador y umbrales de regla documental, sin IDs/cifras del banco.
+Valores negativos, divisas mezcladas, cantidades extra/repetidas, política ausente,
+contradictoria o ambigua conservan fallback. No es parser universal de políticas.
+Renderer exige AST fijado, muestra denominador calculado y usa≈ si redondeado.
+Backend/processor byteidénticos. Manifest/pin/fixture interval_rules actualizados;
+assembler SHAcef131e0295c709a5439cd14c1a490d6b0a95318a0e9f76347cad74bba264d91.
+Pruebas:114PASS processor recursos/expresiones/intervalos antes de4pruebas nuevas;
+archivo ampliado29PASS (incluye streaming1/11/8192bytes y redondeo);78PASS backend
+intervalos/modos. Replay0053contextos resuelve10%,amarillo; artifact externo
+case005-partition-resolved-offline-v1.json anterior a añadir nota del totalvisible.
+El totalvisible1000 se deriva del AST; tests sintéticos comprueban total100 con
+otras cantidades/umbrales. No revalidación con modelo, SQL ni navegador.
+Baseline congelada permaneceFAIL; runtime siguea817382b, sin transferencia nueva.

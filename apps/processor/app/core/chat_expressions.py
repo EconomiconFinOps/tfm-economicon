@@ -286,7 +286,15 @@ class ExpressionRenderer:
             symbol=('>=' if bound['inclusive'] else '>') if bound['side']=='lower' else ('<=' if bound['inclusive'] else '<')
             conditions.append(exact+' '+unit+' '+symbol+' '+bound['value']+' '+unit)
         shown=display(value);equality='=' if Decimal(shown)==value else '≈'
-        return '\nClasificación según la regla ('+rule['metric']+'; '+rule['section']+'): '+interval['label']+'. '+formula+' '+equality+' '+shown+' '+unit+'. Intervalo: '+' y '.join(conditions)+'.\n'
+        denominator_note = ''
+        if resolved and node['value']['denominator'].get('operation') == 'sum':
+            total, total_unit, total_formula, total_reason = self._numeric(node['value']['denominator'], 2)
+            if total_reason:
+                raise ValueError('Resolved denominator undefined.')
+            total_shown = display(total)
+            total_symbol = '=' if Decimal(total_shown) == total else '≈'
+            denominator_note = 'Denominador (' + rule['denominator'] + '): ' + total_formula + ' ' + total_symbol + ' ' + total_shown + ' ' + total_unit + '.\n'
+        return '\n' + denominator_note + 'Clasificación según la regla ('+rule['metric']+'; '+rule['section']+'): '+interval['label']+'. '+formula+' '+equality+' '+shown+' '+unit+'. Intervalo: '+' y '.join(conditions)+'.\n'
 
     def _count(self):
         self.operations+=1

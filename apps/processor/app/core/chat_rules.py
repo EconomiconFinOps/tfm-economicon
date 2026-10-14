@@ -225,12 +225,64 @@ def check_classification_prose(text, rules, sources):
     return cited
 
 
+def allocation_denominator(catalog, users, rule):
+    """Bind a closed allocation partition only with an explicit exclusion policy.
+
+    Status names identify operands, never thresholds. All amounts must have one
+    currency and distinct, unambiguous provenance. The trailing policy must
+    explicitly exclude the stated amount and declare the remainder eligible.
+    Unsupported prose or extra financial quantities retain the unresolved path.
+    """
+    if tuple(rule['anchor']) != ('unallocated',):
+        return None
+    statuses = ('allocated', 'shared', 'unallocated', 'excluded')
+    money = {key: entry for key, entry in users.items() if entry['unit']}
+    if len(money) != 4 or len({entry['unit'] for entry in money.values()}) != 1:
+        return None
+    bound = {}
+    for status in statuses:
+        matches = [(key, entry) for key, entry in money.items()
+                   if entry.get('concept_anchors') == [[status]]]
+        if len(matches) != 1 or Decimal(matches[0][1]['value']) < 0:
+            return None
+        bound[status] = matches[0]
+    question = normalized(getattr(catalog, 'classification_question', ''))
+    spans = []
+    for status, (key, entry) in bound.items():
+        # Match labelled entries, not a number mentioned elsewhere in prose.
+        source = re.escape(normalized(entry['source']))
+        currency = re.escape(normalized(entry['unit']))
+        matches = list(re.finditer(r'(?<![\w-])' + status + r'\s*[:=]?\s+' + source
+            + r'(?:\s+' + currency + r')?(?=\s*(?:;|[.!?]|$))', question))
+        if len(matches) != 1:
+            return None
+        spans.append(matches[0])
+    spans.sort(key=lambda match: match.start())
+    # Only separators may occur between the four entries. A second scenario,
+    # qualification, or an intervening instruction cannot become a partition.
+    if any(question[a.end():b.start()].strip() != ';' for a, b in zip(spans, spans[1:])):
+        return None
+    tail = question[spans[-1].end():].strip()
+    excluded = bound['excluded'][1]
+    amount = re.escape(normalized(excluded['source']))
+    unit = re.escape(normalized(excluded['unit']))
+    policy = (r'[.;]\s*(?:(?:la regla(?: del escenario)? )?excluye (?:esos )?'
+        + amount + r'(?:\s+' + unit + r')? del coste elegible;\s*el resto es elegible'
+        + r'|excluded is excluded from eligible cost;\s*the remainder is eligible)[.]?')
+    if not re.fullmatch(policy, tail):
+        return None
+    if sum(Decimal(bound[name][1]['value']) for name in statuses[:3]) <= 0:
+        return None
+    leaf = lambda name: {'quantity': bound[name][0]}
+    return {'operation': 'sum', 'left': leaf('allocated'), 'right': {
+        'operation': 'sum', 'left': leaf('shared'), 'right': leaf('unallocated')}}
+
+
 def resolved_classification(catalog):
     """Bind an explicit eligible total before removing the abstention branch.
 
-    This closed bilingual grammar accepts an amount immediately labelled as an
-    eligible total. It never constructs a total from components or treats any
-    other amount as the denominator. Ambiguity retains the existing fallback.
+    Accept an explicitly labelled eligible total or a closed allocation
+    partition with an explicit exclusion policy. Ambiguity retains the fallback.
     """
     if not required_classification(catalog):
         return None
@@ -252,7 +304,12 @@ def resolved_classification(catalog):
     money = {key: entry for key, entry in users.items()
              if entry['unit'] and entry['unit'] != '%'}
     if len(money) != 2:
-        return None
+        denominator = allocation_denominator(catalog, users, rule)
+        if denominator is None:
+            return None
+        return {'operation': 'classify', 'rule_id': rule['id'], 'value': {
+            'operation': 'percentage', 'numerator': {'quantity': numerator},
+            'denominator': denominator}}
     denominator, d = next((key, entry) for key, entry in money.items() if key != numerator)
     if d['unit'] != n['unit'] or not Decimal('0') <= Decimal(n['value']) <= Decimal(d['value']) or Decimal(d['value']) <= 0:
         return None
