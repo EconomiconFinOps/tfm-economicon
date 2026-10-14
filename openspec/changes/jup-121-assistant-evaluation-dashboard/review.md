@@ -75,3 +75,17 @@ En la pasada de la 2.2 la regresión falló por 145 pruebas del backend en las s
 Decisión de contrato: con `successful == 0`, `tools/llm-benchmark.py::summarize` escribe `mean_keyword_score: 0` y ese 0 significa «sin datos», así que `keyword_score`, `latency_p95` y `cost` salen no medidos aunque el informe traiga un número; con `successful > 0` un cero sí es una medición.
 
 Hallazgos LOW del QA, resueltos en el contrato: `synthetic` de JUP-078 es siempre `false` (sus «casos sintéticos» son preguntas públicas, no una ejecución sintética) y el vocabulario nuevo (`keyword_score`, `latency_p95`, `cost`, `puntuacion`, `usd`) queda en la fila de JUP-078 de «Qué toma cada adaptador».
+
+### 2.4 Adaptador de la calibración de JUP-022
+
+| Fase | Evidencia |
+| --- | --- |
+| Red | `scripts/tests/test_evaluation_adapter_jup022.py` (118 tests), commit `905e47af`; los 377 errores (con `subTest`) son `AttributeError` por `adapt_jup022` ausente. El tester comprobó con una implementación de referencia fuera del repositorio que los esperados son alcanzables y que 12 de 13 mutantes de ella morían (el otro es equivalente) |
+| Green | `adapt_jup022` y su sección en `tools/evaluation-dashboard.py`, commit `ac6685c0`; 382/382 |
+| Mutación | Solo la sección nueva: **222/242 = 91,7 %**. Los 20 supervivientes son prosa de mensajes tras el prefijo `<campo>: `, revisados uno a uno con su diff |
+| QA | `accept`, sin hallazgos BLOCKING. Recalculó por su cuenta las 140 filas (28 puntos × 5), los numeradores, los 20 `selected` y la huella del corpus con 0 diferencias, y mató 58 de 58 mutantes manuales de lógica |
+| DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend idénticos a los de 2.2 y 2.3 (`RF-119-004`) |
+
+Decisiones de contrato: una tasa sobre cero casos es «sin datos», no 0; el numerador solo se reconstruye cuando `round(rate × casos)` reproduce la tasa con tolerancia 5e-5 (el informe redondea a 4 decimales); `by_category` no se publica porque trae tasas sin denominador; la huella `corpus_sha256` se deriva (sha256 de las líneas `clave=sha256` ordenadas por clave) y no depende de rutas; `points` vacía solo es válida si `selection.candidates` también lo está.
+
+Hallazgos del QA resueltos o trasladados: M1, la clave de comparabilidad incluye ahora `suite_version` porque JUP-022 no trae `suite_sha256` (documentado y añadido a la tarea 2.7); L1 y L2, contrato aclarado (varios candidatos seleccionados; `retrieval` del `run` solo con el troceado); L3, el `behavior` de un `top_k` absurdo lo recogerá la validación común de 2.6; L4, qué hacer con un informe sin filas, trasladado a la tarea 2.8; L5 se acepta (se copia, no se recalcula).

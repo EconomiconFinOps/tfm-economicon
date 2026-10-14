@@ -24,15 +24,15 @@
   - por modelo, `pass` = `successful` y `fail` = `cases - successful`;
   - puntuación, p95 y coste como valores con unidad;
   - commit y fecha `NULL`.
-- [ ] 2.4 Adaptador `jup-022-calibration-v1`: filas de acierto de documento, de sección y vacío por punto del barrido, con `top_k`, `max_distance`, casos como denominador y el candidato de `selection` marcado
+- [x] 2.4 Adaptador `jup-022-calibration-v1`: filas de acierto de documento, de sección y vacío por punto del barrido, con `top_k`, `max_distance`, casos como denominador y el candidato de `selection` marcado
 - [ ] 2.5 Adaptador `jup-068-input-v1`: ejecutar `node tools/business-metrics.mjs report`, normalizar como tipo B los estados y las cifras de tiempo, asignación y oportunidades con sus denominadores, y conservar `provenance`
 - [ ] 2.6 Adaptador `rows-v1` y validación común de filas que se aplica TAMBIÉN a la salida de los demás adaptadores, no solo a la entrada `rows-v1` (hallazgo M2 del QA de 2.2, el adaptador de JUP-070 copia sin validar tipos ni alfabeto): tipos numéricos en `value`, `numerator`, `denominator`, `ci_*` y `count`; `fullmatch` de `IDENTIFIER_RE` en `behavior`, `grp`, `metric_id`, `run_id` y en las cadenas de `run` salvo `run_at`; `status` frente a `CASE_STATUSES`/`VALUE_STATUSES`; rechazo de cualquier campo de texto libre fuera de identificadores y unidades. Decidir también si se rechazan `k` o recuentos negativos y `k > n` (hallazgo L2)
 - [ ] 2.7 Clasificación de ejecuciones y comparabilidad:
   - motivos `plantilla`, `doble`, `sintetica` y `sin_modelo_verificado`;
-  - clave de comparabilidad (las ejecuciones 1 y 2 de JUP-070 dan claves distintas);
+  - clave de comparabilidad con `suite_version` además de `suite_sha256` (JUP-022 no trae huella de la batería; las ejecuciones 1 y 2 de JUP-070 dan claves distintas);
   - tabla de juicio humano (recuentos `pass`/`fail`, ACC-1, ACC-3) o automático;
   - prueba que falla si el catálogo de JUP-067 tiene un identificador sin clasificar.
-- [ ] 2.8 Subcomando `rows` que escribe ejecuciones y filas normalizadas en JSON sin tocar la base
+- [ ] 2.8 Subcomando `rows` que escribe ejecuciones y filas normalizadas en JSON sin tocar la base; antepone el fichero a los mensajes de `AdapterError`, deriva `run_id` y `report_sha256` y decide qué hacer con un informe sin filas (hallazgo L4 del QA de 2.4: error o aviso)
 
 ## 3. Generación de SQL y carga
 
