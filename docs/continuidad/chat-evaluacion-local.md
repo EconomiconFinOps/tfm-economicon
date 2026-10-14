@@ -16,6 +16,28 @@ memoria/cacheSQL limitadas y gasto preservado; ampliar límites de claves exclus
 únicamente dentro de5USD sin extender caducidad. Criterios de revisores siguen
 pendientes; ampliación económica no equivale a aceptación semántica.
 
+### Campaña corregida activa — 14/10/2026, 18:07Europe/Paris
+
+Candidato e23e495b24fae76decacf7d030468b75cd52b5f8;plan84/N3 físicoSHA
+5345066d3b87733f59d796d2d877ef48fcbc9ae58f02bb2ba6a3e2ff15132e5b,
+archivo ytransferencia en candidate-cap5-transfer.json fuera del repositorio.
+Build secuencial backend/processorEXIT0, hashes fuente ycontenedores verificados
+(candidate-cap5-runtime-verified.json). CockroachB recuperado sólo en proyecto
+exclusivo:800MB/cache64MiB/sql128MiB;backend500MB/processor900MB,cpus1, sinswap.
+VolumenB original yledger conservados; claves mismas, backend0.10/processor3.50,
+spend/caducidad intactos; cap5-key-budget-update.json. No renuevan vigencia.
+
+ControladorPID2240955 confirmadoS/live, logcandidate-cap5-campaign.log. Primer
+recibo001r1 VERIFIED_PUBLIC_SNAPSHOT ycoste conciliado;002r1 active. NO reiniciar
+ni repetir campañas por observación lenta. Directoriosnuevos candidate-cap5-n3
+/raw-api; planbaseline, e94 ycap5 cubiertos porledger común/SQL deoperaciones.
+Los41recibos e94 siguen congelados yno cuentan como resultados delcandidato nuevo.
+
+Informe candidate-cap5-live-status.json es snapshot, no garantía de actividad
+posterior. Inspeccionar mismoPID/log/operación antes decontinuar. Objetivo activo,
+aceptación NOT_ASSESSED. Sin publicaciónGitHub/Discord. Conservar separación
+entre recogida completa, criterios acordados yjuicios externos aún pendientes.
+
 ## Estado vigente — 14/10/2026, 11:15 UTC
 
 JUP-123/B activa, sin aceptación final. Producto e94f6e54 en entorno B, hashes
