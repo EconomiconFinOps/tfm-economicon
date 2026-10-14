@@ -8,7 +8,7 @@
   - la tabla de juicio humano o automático;
   - el comando de regeneración;
   - la nota de que JUP-071 entra por `rows-v1`.
-- [ ] 1.3 Crear `docs/validation/evaluation-runs.json` (`manifest_version` 1) con las dos ejecuciones de JUP-070, el benchmark de JUP-078, la calibración de JUP-022 y la entrada de JUP-068, todas con `milestone: true`
+- [x] 1.3 Crear `docs/validation/evaluation-runs.json` (`manifest_version` 1) con las dos ejecuciones de JUP-070, el benchmark de JUP-078, la calibración de JUP-022 y la entrada de JUP-068, todas con `milestone: true`
 
 ## 2. Normalización de informes (`tools/evaluation-dashboard.py`, pruebas en `scripts/tests/test_evaluation_dashboard.py`)
 
