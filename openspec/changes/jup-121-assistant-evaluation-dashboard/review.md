@@ -42,3 +42,22 @@ La regresión de `check-dod.mjs` no se ha podido dejar en verde por causas ajena
 3. `git diff origin/develop --stat -- apps packages package.json pnpm-lock.yaml turbo.json` está vacío: la rama solo añade ficheros de documentación, OpenSpec, `tools/` y tests, así que no puede afectar a esas pruebas.
 
 El QA valoró la excepción como bien justificada.
+
+### 2.2 Adaptador del informe de JUP-070
+
+| Fase | Evidencia |
+| --- | --- |
+| Red | `scripts/tests/test_evaluation_adapter_jup070.py` (87 tests), commit `c6323257`; todos fallan por `adapt_jup070`, `AdapterError` y `RUN_KEYS` ausentes, ninguno pasa por accidente |
+| Green | `adapt_jup070` y constantes en `tools/evaluation-dashboard.py`, commit `06d215b7`; 149/149 con la capa de manifiestos |
+| Mutación (1.ª) | 202/226 (89,4 %). Huecos reales: catálogo ilegible sin test, nombre de campo en errores de forma, fila `behavior="all"` de GRD-2 no medida, y un **defecto**: una métrica conocida con forma interna rota lanzaba `KeyError`/`TypeError`/`AttributeError` crudos |
+| Remediación | `test_evaluation_adapter_jup070_robustness.py` (27 tests; 16 en rojo por el defecto, commit `9aa280f6`) y Green de la validación de forma explícita (más quitar la rama `Z`→`+00:00`, muerta desde Python 3.11), commit `64cee586`; 176/176 |
+| Mutación (2.ª) | 234/263 (89,0 %) sobre todo el módulo salvo los manifiestos |
+| QA (1.ª) | `changes-requested`: M1, un `raise` de `k`/`n` no enteros sin test (yo había ocultado ese superviviente al filtrar los de prosa; ahora se revisan todos uno a uno). `test_evaluation_adapter_jup070_counts.py` (8 tests, commit `2f07a377`) lo cubre y fija la ruta anidada en el mensaje |
+| Mutación (final) | **237/263 = 90,1 %**, 184 tests. Los 26 supervivientes son prosa de mensajes o la etiqueta de ruta dentro del texto (`'XXjudged'`, `'XXgroups'`, `'XXstages'`: el campo sigue en el mensaje) |
+| DoD | Lint, type-check y secretos en verde. Regresión: la excepción de entorno de abajo |
+
+Hallazgos del QA trasladados: M2 (validar también la salida de los adaptadores en 2.6, ya añadido a esa tarea), L1 (un catálogo sin `metrics` daría `KeyError`; riesgo de integridad del repositorio, se deja), L2 (negativos y `k > n` se copian; decidir en 2.6), L4 (dos reglas añadidas al contrato) y L5 (el estado del documento se actualiza en la tarea 6.2).
+
+### Excepción de entorno del DoD, ampliada
+
+En la pasada de la 2.2 la regresión falló por 145 pruebas del backend en las suites de salud del proveedor (`test_system_health_jup047.py` y `test_health_provider_*_jup047.py`), que es exactamente el hallazgo `RF-119-004` ya registrado (`AttributeError: 'ProactorEventLoop' object has no attribute '_ssock'` en esta máquina, con o sin los cambios). Con la de la 2.1 (una prueba inestable del frontend que pasa sola), la regresión completa no puede quedar en verde en este entorno por causas ajenas al change. Mientras `git diff origin/develop --stat -- apps packages package.json pnpm-lock.yaml turbo.json` siga vacío, el DoD de cada tarea exige lint, type-check, escaneo de secretos y todas las suites de `scripts/tests/test_evaluation_*.py` en verde, y que la regresión completa solo falle en esos casos conocidos.

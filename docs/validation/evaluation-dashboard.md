@@ -116,6 +116,8 @@ Todo campo que el informe no trae se guarda como `null` y el dashboard lo muestr
 2. **Estados con denominador.** Un resultado de casos lleva sus cuatro recuentos y el total como denominador. `blocked` y `not_run` no se suman a `fail`.
 3. **Sin texto libre.** Los campos de texto solo admiten identificadores y unidades: empiezan por letra o dígito, contienen `A-Z a-z 0-9 . _ : = , / + @ -`, no llevan espacios y tienen como máximo 80 caracteres. Los identificadores de caso (`JUP-069-024`) caben. Un enunciado, una respuesta, un fragmento recuperado o la nota de un revisor no.
 4. **Los adaptadores copian, no recalculan.** El valor de cada fila es el del informe original; la conciliación de JUP-121 comprueba que los recuentos coinciden.
+5. **Una métrica no medida conserva su denominador.** Si el informe trae `n` (aunque sea 0), la fila `not_measured` lo guarda en `denominator`; `value`, `numerator`, `ci_low`, `ci_high` y `count` quedan a `null`.
+6. **`available` manda sobre el valor.** Una métrica con `available: false` es `not_measured` aunque el informe traiga un `rate`. En GRD-2, si no está disponible, solo sale la fila `all` como no medida y el desglose por caso del informe no se publica. Un cero medido (`rate` 0.0, `k` 0, una latencia de 0 ms) sigue siendo `measured`.
 
 ## Qué toma cada adaptador
 
