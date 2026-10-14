@@ -15,11 +15,27 @@ El scorer previo conserva 253 juicios históricos y nueve incertidumbres.
 3. Identidad por campaña, caso y repetición; banco y corpus inmutables. Conservar
    commit, hashes, entradas, fragmentos realmente usados, parámetros y costes.
 4. Contabilidad viva y reserva conservadora antes de inferencias. Tope acumulado
-   de 2 USD, incluyendo intentos fallidos y servicios auxiliares facturables.
+   de 5 USD (ampliación explícita del usuario el 2026-10-14 desde 2 USD),
+   incluyendo intentos fallidos y servicios auxiliares facturables.
 5. Las coincidencias de palabras/números son diagnósticos, no veredictos semánticos.
    Citas requieren soporte de la afirmación, no sólo solapamiento léxico.
 6. Las correcciones se evalúan contra la misma rúbrica congelada. Ninguna media
    compensa una regresión obligatoria; umbrales aún pendientes de revisores.
+
+### Coste desconocido de un fallo terminal
+
+COST_UNKNOWN_RESERVED conserva íntegra la cota original de una operación fallida
+con entrada durable y recibo verificados. No es coste observado, no mejora el
+resultado técnico y no libera saldo. El siguiente preflight suma esa reserva
+completa, además de los contadores conservadores y la cota siguiente. El runner
+sólo avanza tras verificar identidad, estado failed, SHA del recibo y que la
+reserva no fue reducida. Operaciones activas o evidencia inconsistente bloquean.
+
+El recuperador ofrece este tratamiento explícito cuando la consulta de una
+generación devuelve404 después de verificar operaciónSQL, fases y preflight.
+Un404 o un spend0 en el gateway no demuestra gratuidad. El recibo original y
+la prueba del coste indeterminado se conservan. La campaña mantiene el fallo
+como tal y no repite suPOST. Los artefactos distinguen gasto conocido y reservas.
 
 ## Risks and open questions
 

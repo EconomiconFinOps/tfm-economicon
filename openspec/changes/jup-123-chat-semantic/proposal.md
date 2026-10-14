@@ -24,6 +24,8 @@ Dependencia: JUP-122, PR https://github.com/EconomiconFinOps/tfm-economicon/pull
 
 ## Impact
 
-Backend, processor y herramientas de evaluación. No se publica ni despliega B
-por esta fase local. N3/N5 no ejecutados y criterios de aceptación del equipo
-pendientes: no se inventa un porcentaje aprobado ni se reemplazan reviews.
+Backend, processor y herramientas de evaluación. B se conserva sin publicar en
+GitHub; el usuario autorizó un entorno aislado en DockerServer y amplió el máximo
+acumulado a5USD. La baseline N3 está recogida; la N3 del candidato corregido está
+en curso. N5 y criterios de aceptación del equipo siguen pendientes: no se inventa
+un porcentaje aprobado ni se reemplazan reviews.

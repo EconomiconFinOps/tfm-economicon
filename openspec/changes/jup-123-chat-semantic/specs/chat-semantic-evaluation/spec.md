@@ -33,3 +33,9 @@ iniciar gasto, preservar todos los intentos y respetar el máximo acumulado auto
 #### Scenario: Reserva insuficiente
 - **WHEN** el máximo de coste del siguiente intento supera el saldo autorizado
 - **THEN** no se envía la inferencia y se conserva la campaña parcial
+
+#### Scenario: Fallo terminal con coste upstream todavía indeterminado
+- **WHEN** la entrada durable y el recibo de un fallo técnico están verificados pero falta prueba completa del coste
+- **THEN** el evaluador mantiene el fallo y conserva íntegra su reserva máxima sin considerarlo gratuito o coste conciliado
+- **AND** sólo avanza si la contabilidad viva y todas las reservas completas admiten la siguiente operación
+- **AND** no repite la operación fallida ni permite este tratamiento para una operación activa

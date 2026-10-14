@@ -20,6 +20,16 @@ pendientes; ampliación económica no equivale a aceptación semántica.
 023r1active. Observaciónguardada en candidate-cap5-observation.json externo;
 021/022familiareservada sinadjudicar. Continúa mismo controlador/producto.
 
+### Contrato de contabilidad reconciliado — 14/10/2026
+
+OpenSpec proposal/design/spec actualizados a autorización5USD, baselineN3recogida
+yN3candidataencurso. Escenario de fallo terminal exige retenercotaentera yfallo,
+noinferirgratuidad ni repetición, bloquearactivo/evidenciainconsistente yavanzar
+sóloconcontabilidadviva+reservascompletas. ValidaciónestrictaJUP123PASS.
+Herramientas e926 mantienen81testsPASS previos; no cambio deproducto/runtime.
+ÚltimaobservaciónPID2642423S:33/84recibosverificados,31completed/2failed,
+006r2active. No sehaevaluado semánticaN3 ni levantadopendientesderevisores.
+
 ### Primera ronda cap5 congelada y027/028 — 14/10/2026
 
 28/28recibosr1,26completed/2failed,todosVERIFIED_PUBLIC_SNAPSHOT, recursosSHA
