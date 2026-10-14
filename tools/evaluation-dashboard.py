@@ -1,18 +1,21 @@
 """Carga de los resultados de evaluación del asistente en la base del dashboard de Grafana (JUP-121).
 
-Por ahora este módulo contiene tres capas. La primera es la de manifiestos: lee y valida los manifiestos
+Por ahora este módulo contiene cuatro capas. La primera es la de manifiestos: lee y valida los manifiestos
 que dicen qué informes alimentan el dashboard (`docs/validation/evaluation-runs.json` y los locales). La
 segunda es el adaptador del informe JSON de JUP-070 (`adapt_jup070`), que normaliza ese informe al
 contrato de filas planas `rows-v1` de `docs/validation/evaluation-dashboard.md`. La tercera es el
 adaptador del benchmark de modelos de JUP-078 (`adapt_jup078`), que produce el mismo contrato a partir
-del informe de `tools/llm-benchmark.py`. Usa solo la biblioteca estándar, no tiene efectos al importarse
-y nunca abre una conexión de red ni a la base de datos. Los demás adaptadores y la carga a la base los
-añaden las tareas siguientes del change.
+del informe de `tools/llm-benchmark.py`. La cuarta es el adaptador de la calibración de la recuperación
+de JUP-022 (`adapt_jup022`), que convierte cada punto del barrido (`top_k`, `max_distance`) en cinco
+filas del mismo contrato. Usa solo la biblioteca estándar, no tiene efectos al importarse y nunca abre
+una conexión de red ni a la base de datos. Los demás adaptadores y la carga a la base los añaden las
+tareas siguientes del change.
 """
 
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import math
 import re
@@ -621,3 +624,210 @@ def adapt_jup078(report, run_id: str) -> tuple[dict, list[dict]]:
     for index, model in enumerate(models):
         results += _benchmark_model_rows(_check_benchmark_model(model, index, seen_aliases))
     return _benchmark_run(run_id), results
+
+
+# --- Adaptador de la calibración de JUP-022 -----------------------------------------------------------
+
+CALIBRATION_SCHEMA_VERSION = 1
+CALIBRATION_JUP = "JUP-022"
+# El informe redondea las tasas a 4 decimales, así que `round(k / n, 4)` se aleja como mucho 5e-5 de `k / n`.
+# Esa es la tolerancia con la que se acepta que `round(tasa * casos)` reproduce la tasa publicada: más
+# estricta rechazaría tasas legítimas (1/3 se escribe 0.3333) y más laxa inventaría numeradores que el
+# informe no respalda (regla 5 del contrato: el numerador se publica solo si es exacto).
+CALIBRATION_TOLERANCE = 5e-5
+# (metric_id, grupo del punto, campo de la tasa, campo del denominador). El orden es el de las cinco filas de
+# cada punto y es parte del contrato. La sección de los casos `answer` tiene su propio denominador
+# (`section_cases`) porque no todos los casos tienen sección esperada; mezclarlo con `cases` falsearía la tasa.
+CALIBRATION_METRICS = (
+    ("document_hit_answer", "answer", "document_hit_rate", "cases"),
+    ("section_hit_answer", "answer", "section_hit_rate", "section_cases"),
+    ("empty_answer", "answer", "empty_rate", "cases"),
+    ("document_hit_non_answer", "non_answer", "document_hit_rate", "cases"),
+    ("empty_non_answer", "non_answer", "empty_rate", "cases"),
+)
+# Recuentos de casos que cada grupo debe traer; `non_answer` no tiene sección y no se le exige.
+CALIBRATION_CASE_FIELDS = (("answer", ("cases", "section_cases")), ("non_answer", ("cases",)))
+
+
+def _check_identifier_field(parent: dict, key: str, where: str) -> None:
+    # Lo que acaba en `run` no puede ser texto libre (regla 3): se exige un identificador. La clave ausente
+    # da None y se rechaza por la misma vía, así que no hace falta una rama aparte para «falta».
+    if not _is_identifier(parent.get(key)):
+        raise _bad(f"{where}.{key}", "debe ser un identificador (alfabeto cerrado, máximo 80 caracteres)")
+
+
+def _check_calibration_header(report: object) -> None:
+    if not isinstance(report, dict):
+        raise _bad("report", "debe ser un objeto")
+    version = report.get("schema_version")
+    if type(version) is not int or version != CALIBRATION_SCHEMA_VERSION:
+        raise _bad("schema_version", f"debe ser {CALIBRATION_SCHEMA_VERSION}")
+    # Solo un informe de JUP-022 se interpreta como calibración: otro con la misma forma significaría otra cosa.
+    if report.get("jup") != CALIBRATION_JUP:
+        raise _bad("jup", f"debe ser {CALIBRATION_JUP!r}")
+    date = report.get("generated_at")
+    try:
+        if not isinstance(date, str):
+            raise ValueError("no es una cadena")
+        datetime.fromisoformat(date)
+    except ValueError as error:
+        raise _bad("generated_at", f"debe ser una fecha ISO 8601 ({error})") from error
+
+
+def _check_calibration_sections(report: dict) -> None:
+    # Solo se valida lo que se usa. Rutas, textos y el resto de claves del informe se ignoran a propósito: no
+    # se copian a la salida (regla 3) y exigirlas haría fallar el adaptador por datos que no publica.
+    provider = _check_object(report.get("provider"), "provider")
+    _check_identifier_field(provider, "name", "provider")
+    _check_identifier_field(provider, "alias", "provider")
+    corpus = _check_object(report.get("corpus"), "corpus")
+    if not corpus:
+        raise _bad("corpus", "debe tener al menos un documento")
+    for key, entry in corpus.items():
+        entry = _check_object(entry, f"corpus.{key}")
+        sha = entry.get("sha256")
+        if not isinstance(sha, str) or not sha:
+            raise _bad(f"corpus.{key}.sha256", "debe ser una cadena no vacía")
+    _check_identifier_field(_check_object(report.get("bank"), "bank"), "suite_version", "bank")
+    chunking = _check_object(report.get("chunking"), "chunking")
+    for field in ("size", "overlap"):
+        if not _is_count(chunking.get(field)) or chunking[field] < 0:
+            raise _bad(f"chunking.{field}", "debe ser un entero mayor o igual que 0")
+
+
+def _check_top_k(parent: dict, where: str) -> None:
+    value = parent.get("top_k")
+    if not _is_count(value) or value < 1:
+        raise _bad(f"{where}.top_k", "debe ser un entero mayor o igual que 1")
+
+
+def _check_max_distance(parent: dict, where: str) -> None:
+    # None es «sin umbral» y es válido; la clave AUSENTE no, porque podría ser un informe incompleto.
+    if "max_distance" not in parent:
+        raise _bad(f"{where}.max_distance", "campo obligatorio ausente")
+    value = parent["max_distance"]
+    if value is not None and (not _is_number(value) or value <= 0):
+        raise _bad(f"{where}.max_distance", "debe ser un número finito mayor que 0 o null")
+
+
+def _check_calibration_group(point: dict, group: str, case_fields: tuple, where: str) -> None:
+    where = f"{where}.{group}"
+    data = _check_object(point.get(group), where)
+    for field in case_fields:
+        if not _is_count(data.get(field)) or data[field] < 0:
+            raise _bad(f"{where}.{field}", "debe ser un entero mayor o igual que 0")
+    for _, rate_group, rate_key, _ in CALIBRATION_METRICS:
+        if rate_group != group:
+            continue
+        if rate_key not in data:
+            raise _bad(f"{where}.{rate_key}", "campo obligatorio ausente")
+        rate = data[rate_key]
+        # None es «no medido»; un valor fuera de [0, 1] no es una tasa (un 2 o un NaN no deben publicarse).
+        if rate is not None and (not _is_number(rate) or not 0 <= rate <= 1):
+            raise _bad(f"{where}.{rate_key}", "debe ser un número entre 0 y 1 o null")
+
+
+def _check_calibration_points(report: dict) -> list:
+    points = report.get("points")
+    if not isinstance(points, list):
+        raise _bad("points", "debe ser una lista")
+    seen: set = set()
+    for index, point in enumerate(points):
+        where = f"points[{index}]"
+        _check_object(point, where)
+        _check_top_k(point, where)
+        _check_max_distance(point, where)
+        for group, case_fields in CALIBRATION_CASE_FIELDS:
+            _check_calibration_group(point, group, case_fields, where)
+        # Dos puntos con la misma pareja serían filas con el mismo `behavior`, y la base no admite duplicados.
+        key = (point["top_k"], point["max_distance"])
+        if key in seen:
+            raise _bad(where, "punto repetido (mismos top_k y max_distance)")
+        seen.add(key)
+    return points
+
+
+def _check_calibration_candidates(report: dict, swept: set) -> set:
+    selection = _check_object(report.get("selection"), "selection")
+    candidates = selection.get("candidates")
+    if not isinstance(candidates, list):
+        raise _bad("selection.candidates", "debe ser una lista")
+    chosen: set = set()
+    for index, candidate in enumerate(candidates):
+        where = f"selection.candidates[{index}]"
+        _check_object(candidate, where)
+        _check_top_k(candidate, where)
+        _check_max_distance(candidate, where)
+        key = (candidate["top_k"], candidate["max_distance"])
+        # Un candidato que no está en el barrido es un informe incoherente: no habría fila que marcar.
+        if key not in swept:
+            raise _bad(where, "el candidato no corresponde a ningún punto del barrido")
+        chosen.add(key)
+    return chosen
+
+
+def _corpus_sha256(corpus: dict) -> str:
+    # El informe lista varios documentos, pero `rows-v1` tiene una sola huella de corpus. Se deriva de las
+    # líneas `<clave>=<sha256>` ordenadas por clave: así no depende del orden del JSON ni de las rutas (que
+    # cambian entre máquinas sin que cambie el contenido) y cambia si cambia el contenido de cualquier
+    # documento. Se descarta tomar solo un sha (ignoraría los demás) o hashear el JSON entero (arrastraría rutas).
+    lines = [f"{key}={corpus[key]['sha256']}" for key in sorted(corpus)]
+    return hashlib.sha256("\n".join(lines).encode("utf-8")).hexdigest()
+
+
+def _calibration_run(report: dict, run_id: str) -> dict:
+    run = dict.fromkeys(RUN_KEYS)
+    run.update(
+        run_id=run_id, source=CALIBRATION_JUP, run_at=report["generated_at"], suite="JUP-069",
+        suite_version=report["bank"]["suite_version"], corpus_sha256=_corpus_sha256(report["corpus"]),
+        embedding_provider=report["provider"]["name"], embedding_alias=report["provider"]["alias"],
+        # `top_k` y `max_distance` varían por punto y van en cada fila; aquí solo lo común a todo el barrido.
+        retrieval={"chunk_size": report["chunking"]["size"], "chunk_overlap": report["chunking"]["overlap"]},
+        # La calibración no registra commit, huella de la batería, modelo de generación ni prompt.
+        synthetic=False,
+    )
+    return run
+
+
+def _calibration_row(metric_id: str, behavior: str, selected: bool, rate, denominator: int) -> dict:
+    # Una tasa sobre cero casos es «sin datos» aunque el informe traiga un número (incluso 0.0): publicarlo
+    # como medido violaría la regla 1 (lo no medido nunca es cero). Con casos, un 0.0 SÍ es una medición.
+    if rate is None or denominator == 0:
+        return _row("calibration", metric_id, behavior, "tasa", "automatic", status="not_measured",
+                    denominator=denominator, selected=selected)
+    # Regla 5: el numerador no se inventa. Se publica solo si `round(tasa * casos)` reproduce la tasa dentro
+    # del redondeo del informe; una tasa que no es ninguna fracción k/n queda sin numerador.
+    numerator = round(rate * denominator)
+    if abs(numerator / denominator - rate) > CALIBRATION_TOLERANCE:
+        numerator = None
+    return _row("calibration", metric_id, behavior, "tasa", "automatic", status="measured", value=rate,
+                numerator=numerator, denominator=denominator, selected=selected)
+
+
+def _calibration_point_rows(point: dict, chosen: set) -> list[dict]:
+    top_k, max_distance = point["top_k"], point["max_distance"]
+    distance = "none" if max_distance is None else str(max_distance)
+    behavior = f"top_k={top_k},max_distance={distance}"
+    selected = (top_k, max_distance) in chosen
+    return [
+        _calibration_row(metric_id, behavior, selected, point[group][rate_key], point[group][cases_key])
+        for metric_id, group, rate_key, cases_key in CALIBRATION_METRICS
+    ]
+
+
+def adapt_jup022(report, run_id: str) -> tuple[dict, list[dict]]:
+    """Normaliza el informe de calibración de JUP-022 (ya parseado) a `(run, results)` de `rows-v1`.
+
+    Función pura: no lee ficheros, no muta el informe ni comparte estructuras con él. Por cada punto del
+    barrido, en el orden del informe, produce cinco filas: acierto de documento y de sección y resultado
+    vacío de los casos `answer`, y acierto de documento y resultado vacío de los `non_answer`. Copia las
+    tasas sin recalcularlas; no publica `by_category` (no trae denominador) ni rutas ni texto libre.
+    """
+    _check_calibration_header(report)
+    _check_calibration_sections(report)
+    points = _check_calibration_points(report)
+    chosen = _check_calibration_candidates(report, {(p["top_k"], p["max_distance"]) for p in points})
+    results: list[dict] = []
+    for point in points:
+        results += _calibration_point_rows(point, chosen)
+    return _calibration_run(report, run_id), results
