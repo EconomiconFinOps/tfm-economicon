@@ -25,6 +25,22 @@ candidate-e94f6e54-campaign-resume1.log y anterior preservados. Plan84 congelado
 evaluation-ledger.sqlite común conserva baseline y candidato. Todo coste de las
 operaciones concluidas conciliado; ninguna nueva generación tras rechazo.
 
+### Auditoría de preparación para revisión9f52e2cd
+
+OpenSpec design.md contiene matriz requisito/evidencia/pendiente, sin marcar
+objetivo logrado. AncestrosA318a56f/developc30a7d0 comprobados por merge-base.
+OpenSpec JUP123 estricto válido y jup-cleanup1609archivosOK. Primera invocación
+OpenSpec no encontró binario local; usada CLI existente del checkoutauto. Higiene
+requirió permiso de ejecución para git (sandboxEPERM inicial); control intacto.
+Pregunta async pendiente sobre criterios realmente acordados con Víctor/Lucía
+(tarea1.4), no petición de publicación ni mensaje a revisores.
+
+Host DockerServer:4CPU,2.9GBMemAvailable,SwapFree97MB de4GB,load9.12/247/269,
+pressure memoryavg60=1.56/full0.95. No iniciar más pruebas mientras la capacidad
+no sea suficiente; no atribuir causa ni modificar servicios ajenos. Sin nuevas
+llamadas/transferencias. Falta Linux actual, runtime/SQL/browser del candidato,
+N3/N5 dentro del presupuesto, juicios independientes y cierre de dependenciaA.
+
 ### Gateway y Linux — verificación adicional
 
 Pruebas Linuxc76 concluidas en las sesiones originales:46770 backend100PASS

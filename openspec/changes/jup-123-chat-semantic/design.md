@@ -126,3 +126,34 @@ No toma prioridad sobre evidencia financiera del servidor. Otras formulaciones,
 periodos contradictorios o datos añadidos retienen la ruta narrativa; esta ruta
 cerrada no constituye una solución general de comprensión semántica. Replay026
 y verificación de selección sobre calibración preservados fuera del repositorio.
+
+## Auditoría de preparación para revisión — candidato9f52e2cd, 2026-10-14
+
+Esta tabla describe evidencias y pendientes; no modifica los criterios ni
+convierte pruebas sintéticas en validación del modelo.
+
+| Requisito | Evidencia comprobada | Estado / paso pendiente |
+| --- | --- | --- |
+| Reconciliar A/develop | merge-base confirma318a56f y c30a7d0 ancestros del candidato | Base actual incorporada; A/PR130 sigue abierta con tokenizer/reviews pendientes; revalidar si cambia |
+| Identidades caso/repetición y ausencias | Baseline84/84 y candidato41/84 con hashes y agregados;43ausencias explícitas | Implementado; no declarar completa la campaña candidata |
+| Contabilidad y procedencia | Ledger común, controles de hash/runtime y reserva que detuvo nuevas llamadas | Preservados; contador histórico conservador1.683584087 no es lectura viva actual |
+| Línea base repetida |84recibos baseline,77completed/7failed conservados | Recogida completa; adjudicación independiente pendiente |
+| Comparación emparejada |41muestras de e94:29fail→pass y regresión026r1 | Descriptiva/parcial; no acredita al candidato posterior |
+| Correcciones semánticas |005determinista,026/028replay local,110/134pruebas focales y108gateway | Gramáticas cerradas; variantes no reconocidas conservan ruta general; aceptación no demostrada |
+| Gateway y contrato público |12pruebas nuevas en108PASS; esquemas, streaming/final y rechazo de contradicciones | Probado con proveedor simulado, no ejecución final pagada |
+| Linux | c76:100backend/111processorPASS,exit0 | Validar commits posteriores; no reutilizar resultados como si fuesen actuales |
+| SQL/navegador | e94:43SQLPASS y recuperación de historial017 | No validan candidato9f52 ni nueva generación en navegador |
+| Especificación e higiene | OpenSpec estricto JUP123 válido; higiene1609archivosOK | Comprobado en9f52; CLI instalada en checkoutauto, sin instalar red |
+| Criterios y N5 | Tareas1.4/2.4/3.3 abiertas; pregunta al usuario sobre acuerdo existente | No inventar acuerdo, porcentaje ni dispensa de revisores |
+| Revisión externa/publicación | B no publicada; borrador técnico y evidencia local disponibles | No integrar ni afirmar listo para aprobación mientras faltan los puntos anteriores |
+
+Comandos de comprobación local:
+- `git merge-base --is-ancestor 318a56f31828be50f8960860f69172f51046734d HEAD`
+- `git merge-base --is-ancestor c30a7d0f28c04cae757b424222b34b232814303e HEAD`
+- `../tfm-economicon-jup035-auto/node_modules/.bin/openspec.cmd validate jup-123-chat-semantic --strict --no-interactive`
+- `node tools/jup-cleanup-check.mjs`
+
+La comprobación de higiene necesitó ejecución fuera del sandbox para invocar
+`git` (EPERM inicial); no hubo una modificación del control ni descarga de paquetes.
+El ejecutable openspec no está instalado en este checkout: se usó el ya instalado
+en el workspace. Los fallos iniciales de herramientas no cuentan como aprobados.
