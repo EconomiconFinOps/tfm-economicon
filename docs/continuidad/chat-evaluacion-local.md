@@ -39,6 +39,44 @@ lectura posterior exacta y lista conservada: `jup123-trello-A8ea-regression-upda
 descripción SHA256 `1e0a82452c8cde5621baf6ee06eab04b04a5c259ef5d360508697bc79c53cb6f`.
 No se enviaron mensajes Discord ni se publicó B.
 
+Siguiente corte de observación:874 identidades ejecutadas, sin fallos, errores u
+omisiones todavía; PID de regresión confirmado vivo. No es cobertura completa.
+Controladores SQL/pgvector preparados, transferidos con SHA y confirmados vivos
+en espera: PID599596/start_ticks61713735 espera la regresión; PID627951/
+start_ticks61735480 espera la liberación de recursos SQL. No ejecutan bases
+simultáneamente ni pausan B. SQL cubrirá las141 omisiones de anomalías y los
+contratos nativos del chat; pgvector ejecutará20 casos (6 de políticas y14 del
+contrato existente). No sumar repeticiones sin contrastar identidades JUnit.
+Ambos usan fuentes7be, imágenes públicas cacheadas verificadas, bases propias
+sin red/puertos publicados y limpieza por ID/etiqueta. Aún sin resultados nativos.
+Recibos `final-native-sql-launch-v1.json`, `final-pgvector-launch-v1.json` y
+`final-validation-latest-observation.json`; observador local
+`observe-b-final-validation.py` exporta sólo campos permitidos, nunca logs/env.
+
+Plan N3 nuevo congelado,84 muestras NOT_RUN y365 hashes verificados contra el
+archivo7be. El generador se ejecutó desde3064a68d (sólo documentación posterior),
+pero cada fichero planeado y pin generado se contrastó contra el archivo exacto
+7be antes de registrar ese commit: no se traslada una medición entre versiones.
+`candidate-7be57c05-n3-plan.json`, SHA256
+`1316e2ffaa2cae57b99fd1ce3c282e972692c24a0f059ac671a1e9139957af52`.
+Compose propio preparado y validado, sin construir ni activar; cambia únicamente
+contextos de build y etiquetas de las tres imágenes. Puertos, volúmenes, secretos,
+configuración de ejecución y servicios auxiliares idénticos al entorno B anterior.
+Prueba `candidate-7be57c05-compose-preparation-v1.json`. El fichero privado permanece
+en DockerServer; no se copia su contenido a la evidencia ni al repositorio.
+
+Build preparado como paso posterior, no activación: PID652065/start_ticks61754852
+confirmado vivo en espera de las tres validaciones. El controlador sólo construye
+si todos los resultados son conformes y cada omisión offline tiene una identidad
+JUnit nativa conforme; no basta con que exista un complete.json. Verifica de nuevo
+el archivo7be y Compose privado, construye backend/processor/frontend uno a uno
+con builder clásico disponible comprobado, límite1024MiB/1CPU, y contrasta hashes
+dentro de cada imagen sin red. No tiene paso de activación ni inferencia.
+Recibo `final-build-launch-v1.json`; el build aún no ha comenzado.
+Observación posterior:918 pruebas ejecutadas sin fallos, errores ni omisiones;
+los cuatro PIDs vivos, tres en espera. OpenSpec estricto74/74 conforme tras
+actualizar proposal/design a la base actual; no modifica criterios de aceptación.
+
 A avanzó a8ea5a0c4 sobre develop0543c5ee, que incorpora JUP-038/#128. B integra
 ese develop por merge local; resuelve dos conflictos con los bloques ya reconciliados
 en A y cinco adaptaciones de pruebas/fixture.39 archivos de aplicación idénticos

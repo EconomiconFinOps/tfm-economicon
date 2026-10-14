@@ -8,8 +8,11 @@ El scorer previo conserva 253 juicios históricos y nueve incertidumbres.
 
 ## Decisions
 
-Base de ingeniería actual reconciliada por bloques: A/11f84334 sobre develop/c30a7d0,
-incorporada en B/ab66f90c. No importa el estado de sus reviews ni sustituye su CI.
+Base de ingeniería actual: A/8ea5a0c4 sobre develop0543c5ee/JUP-038, reconciliada
+localmente en B/7be57c05. Los39 archivos de aplicación afectados coinciden con
+los bloques de A; la semántica B se conserva. Pruebas propias frontend/backend
+conformes; regresión Linux/SQL del conjunto en curso. No importa el estado de sus
+reviews ni sustituye su CI. La reconciliación A11f/Bab66f90c queda como antecedente.
 Compatibilidad de disponibilidad/slots comprobada en API, frontend y CD; los rangos
 libres siguen siendo prerrequisito de despliegue y el navegador final de B queda
 para el candidato completo. Ver [continuidad A/B](../../../docs/continuidad/chat-entregas-a-b.md).
