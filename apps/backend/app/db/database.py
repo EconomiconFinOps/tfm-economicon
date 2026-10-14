@@ -14,6 +14,16 @@ from app.services import reference_date
 
 LIST_READ_ATTEMPTS = 3
 
+# Criterio UNICO de "datos sinteticos de demostracion" para una ingesta de costes: la peticion lleva la marca
+# `synthetic: true` o la suscripcion usa el prefijo `synthetic-` (JUP-119 anadio el prefijo: el cargador de la demo
+# deja `subscription_id='synthetic-anomalies'` y la peticion sin marca). La lista del panel y la explicacion de un
+# episodio comparten esta constante para que no puedan volver a divergir (en JUP-038 la explicacion solo miraba la
+# marca y no avisaba). Se concatena en el SQL en lugar de duplicar el predicado en cada sentencia; el `LIKE`
+# distingue mayusculas a proposito y se mantiene tal cual, porque cambiarlo alteraria el resultado de la lista.
+SYNTHETIC_INGESTION_CONDITION = (
+    "(COALESCE(request->'synthetic' = 'true'::JSONB, false) OR subscription_id LIKE 'synthetic-%')"
+)
+
 TENANT_SEED = [
     {
         "id": "tenant-core",
@@ -771,8 +781,7 @@ class Database:
                         ), params).scalar_one_or_none()
                         synthetic = connection.execute(text(
                             "SELECT EXISTS (SELECT 1 FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant_id "
-                            "AND status = 'completed' AND (COALESCE(request->'synthetic' = 'true'::JSONB, false) "
-                            "OR subscription_id LIKE 'synthetic-%'))"
+                            "AND status = 'completed' AND " + SYNTHETIC_INGESTION_CONDITION + ")"
                         ), params).scalar_one()
                 break
             except exc.OperationalError as error:
@@ -799,12 +808,13 @@ class Database:
         # Una sola sentencia SQL: la fila del episodio y la marca sintetica salen de la misma fotografia que
         # ofrece CockroachDB por sentencia, sin transaccion explicita, nivel de aislamiento ni reintentos.
         # Descartado: dos lecturas (episodio y marca) por separado, porque podrian ver estados distintos.
-        # El criterio de la marca sintetica es el mismo que usa fetch_anomaly_episode_list.
+        # El criterio de la marca sintetica es el mismo que el de fetch_anomaly_episode_list por construccion:
+        # ambas sentencias concatenan SYNTHETIC_INGESTION_CONDITION, asi que no pueden divergir.
         # Se filtra siempre por cliente: otro cliente e inexistente son indistinguibles (ambos devuelven None).
         with self.engine.connect() as connection:
             row = connection.execute(text(
                 "SELECT e.*, EXISTS (SELECT 1 FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant_id "
-                "AND status = 'completed' AND COALESCE(request->'synthetic' = 'true'::JSONB, false)) "
+                "AND status = 'completed' AND " + SYNTHETIC_INGESTION_CONDITION + ") "
                 "AS includes_synthetic_data FROM anomaly_episodes e WHERE e.tenant_id = :tenant_id AND e.id = :id"
             ), {"tenant_id": tenant_id, "id": episode_id}).mappings().first()
         if row is None:
