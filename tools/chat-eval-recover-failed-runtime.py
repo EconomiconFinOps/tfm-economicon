@@ -56,8 +56,8 @@ def attempt_totals(snapshot, usage):
     return legs, cost
 
 
-def main(root):
-    adapter = load('operator_adapter', root / 'live-step.py')
+def main(root, adapter_path=None):
+    adapter = load('operator_adapter', adapter_path or root / 'live-step.py')
     failed = load('failed', Path(__file__).with_name('chat-eval-failed.py'))
     ledger = adapter.module('ledger').Ledger(root / 'evaluation-ledger.sqlite')
     entries = ledger.pending()
@@ -67,11 +67,11 @@ def main(root):
     if len(pending) != 1 or pending[0] != entries[-1]:
         raise ValueError('Only the latest exclusive operation can be reconciled')
     entry = pending[0]
-    path = root / 'baseline-n3' / (entry['sample_id'].replace(':', '-') + '.json')
+    path = getattr(adapter, 'RECEIPTS_DIR', root / 'baseline-n3') / (entry['sample_id'].replace(':', '-') + '.json')
     if not path.exists(): return {'state': 'NO_TERMINAL_RECEIPT'}
     raw = path.read_bytes(); receipt = json.loads(raw); row = receipt['results'][0]
     if row['operation']['state'] != 'failed': return {'state': 'NOT_FAILED'}
-    plan = json.loads((root / 'baseline-plan-temperature0.json').read_text())
+    plan = json.loads(getattr(adapter, 'PLAN_PATH', root / 'baseline-plan-temperature0.json').read_text())
     sample = next(s for s in plan['samples'] if s['sample_id'] == entry['sample_id'])
     if receipt['plan_sha256'] != entry['plan_hash'] or failed.collect.digest(plan) != entry['plan_hash']:
         raise ValueError('Plan differs from ledger')
@@ -119,7 +119,7 @@ def main(root):
     if not 0 <= auxiliary <= Decimal('.002'): raise ValueError('Auxiliary cost mismatch')
     proof = {'durable_input': snapshot, 'usage': usage, 'gateway': gateway, 'upstream': upstream,
              'auxiliary_cost_usd': str(auxiliary), 'total_cost_usd': str(chat + auxiliary), 'preflight': pre}
-    rawpath = root / 'baseline-raw-api' / path.name
+    rawpath = getattr(adapter, 'RAW_RECEIPTS_DIR', root / 'baseline-raw-api') / path.name
     if rawpath.exists():
         if rawpath.read_bytes() != raw: raise ValueError('Different original receipt already preserved')
     else:
@@ -145,8 +145,9 @@ def main(root):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(); parser.add_argument('--root', type=Path, required=True)
+    parser.add_argument('--adapter', type=Path)
     args = parser.parse_args()
-    try: print(json.dumps(main(args.root)))
+    try: print(json.dumps(main(args.root, args.adapter)))
     except Exception as exc:
         # Never print URL-bearing exception messages: gateway URLs contain keys.
         print(json.dumps({'state': 'RECONCILIATION_STOPPED', 'exception_class': type(exc).__name__}))

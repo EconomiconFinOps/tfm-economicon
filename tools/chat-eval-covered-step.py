@@ -39,8 +39,8 @@ def campaign_prefix(rows, plans):
     return chat
 
 
-def main(root, additional_plans=()):
-    original = load('operator_adapter', root / 'live-step.py')
+def main(root, additional_plans=(), adapter_path=None):
+    original = load('operator_adapter', adapter_path or root / 'live-step.py')
     old_module = original.module
     budget = load('covered_budget', Path(__file__).with_name('chat-eval-budget.py'))
     ledger = load('covered_ledger', Path(__file__).with_name('chat-eval-ledger.py'))
@@ -85,8 +85,9 @@ with create_engine(Settings().database_url.get_secret_value()).connect() as c:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(); parser.add_argument('--root', type=Path, required=True)
     parser.add_argument('--additional-plan', type=Path, action='append', default=[])
+    parser.add_argument('--adapter', type=Path)
     args = parser.parse_args()
-    try: main(args.root, args.additional_plan)
+    try: main(args.root, args.additional_plan, args.adapter)
     except Exception as exc:
         print(json.dumps({'error': type(exc).__name__, 'action': 'preserve ledger; inspect coverage or budget'}))
         raise SystemExit(1)

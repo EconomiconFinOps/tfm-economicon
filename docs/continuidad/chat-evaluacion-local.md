@@ -1188,3 +1188,51 @@ conservadas, coste observado 0.399209016 USD. DockerServer consultado a las
 Pendiente adaptar/verificar el adaptador operativo del candidato, consultar
 contadores vivos y ejecutar comparación; estas pruebas no autorizan ni acreditan
 por sí solas una nueva campaña. Cambios aún locales.
+
+
+### Candidato comparativo transferido y regresión en curso — 14/10/2026
+
+Plan N3 congelado para e94f6e54f69eef7962249989222327c8378f3f9a, 84 muestras,
+NOT_RUN; jup123-candidate-e94f6e54-plan.json fuera del repo, SHA256
+c58dcd9db620eeae04eb53e1b31ef0b1d7c930573cc328dbefef622bf059dfed.
+Archive transferido/verificado en DockerServer, candidate-e94f6e54 bajo el root B;
+SHA256 e04453670fc655f47faad31f5ea55374b5b7a275a71bb704aaf4fdbc0b388205.
+Registro externo candidate-e94f6e54-transfer.json. No modificación de despliegues.
+
+Consulta viva de contabilidad: global OpenRouter1.492618162USD (cota conservadora,
+no atribución exclusiva); claves B backend0.00009768/0.02 y
+processor0.382437475/0.88, vencimiento15/10 08:02:20UTC. No gasto nuevo.
+La admisión debe volver a consultar estos contadores antes de cada operación.
+
+Regresión Linux iniciada en regression-e94f6e54 del root remoto, PID342286
+confirmado vivo a10:34UTC. run.py ejecuta todos test_chat*.py de processor/backend
+secuencialmente, contenedores sin red ni secretos, memoria2500m/CPU1, fuente sólo
+lectura. results.json conserva estado/OOM por archivo y logs; complete.json será
+la señal terminal. No reiniciar por timeout: inspeccionar PID y resultados.
+Pendientes resultado integral, construir/verificar runtime corregido y adaptar
+harness comparativo conservando ledger/baseline. Aún no aceptación semántica.
+
+
+### Arnés separado y build condicionado — 14/10/2026
+
+Herramientas cubiertas/controlador/recuperación de fallos admiten --adapter.
+La recuperación usa PLAN_PATH, RECEIPTS_DIR y RAW_RECEIPTS_DIR declarados por el
+adaptador; defaults antiguos conservados. Controlador exige recuperador documental
+explícito si se cambia adaptador, evitando mezclar recibos de campañas con iguales
+sample_id. 22 pruebas focales PASS (14 runtime/controlador, 8 cobertura).
+
+Preparados remotamente candidate-e94f6e54-step.py y
+candidate-e94f6e54-retrieval.py, plan congelado copiado/verificado. No ejecutados.
+Comparten evaluation-ledger.sqlite; salidas candidate-e94f6e54-n3 y
+candidate-e94f6e54-raw-api, archivos anteriores intactos. SOURCE apunta al archive
+verificado. Proyecto Docker conserva nombre a817382b por continuidad de volúmenes;
+la identidad de código se verificará por hashes del plan, no por ese nombre.
+
+candidate-e94f6e54-compose.json privado conserva configuración/volúmenes/puertos
+y sólo cambia build e imágenes de backend/processor. Controlador de build PID363983
+espera complete.json sin fallos de regresión PID342286 (10archivos sin fallos en
+última consulta); no inicia servicios. Logs candidate-e94f6e54-build.log y resultado
+candidate-e94f6e54-build-result.json. Ante desaparición sin resultado o fallo de
+regresión no construye. Pendiente verificar ambos procesos, transferir herramientas
+versionadas nuevas y arrancar/verificar exclusivamente los dos servicios B antes
+de cualquier inferencia. Runtime vigente conserva código baseline. Sin gasto nuevo.

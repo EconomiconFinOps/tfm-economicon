@@ -13,6 +13,20 @@ def result(code=0, output=''):
 
 
 class CampaignTests(unittest.TestCase):
+    def test_candidate_requires_its_retrieval_recovery(self):
+        with patch.object(c.subprocess, 'run') as run:
+            with self.assertRaises(ValueError):
+                c.main(Path('/isolated'), covered_step=True, adapter_path=Path('/candidate.py'))
+        run.assert_not_called()
+
+    def test_candidate_paths_reach_both_recoveries_and_step(self):
+        with patch.object(c.subprocess, 'run', side_effect=[result(), result(), result(output='{"state":"COLLECTED"}')]) as run, patch('builtins.print'):
+            c.main(Path('/isolated'), covered_step=True, adapter_path=Path('/candidate.py'), retrieval_path=Path('/retrieval.py'))
+        calls=[x.args[0] for x in run.call_args_list]
+        self.assertEqual(calls[0][-1], str(Path('/retrieval.py')))
+        self.assertEqual(calls[1][-2:], ['--adapter', str(Path('/candidate.py'))])
+        self.assertEqual(calls[2][-2:], ['--adapter', str(Path('/candidate.py'))])
+
     def test_additional_plan_requires_audited_step(self):
         with patch.object(c.subprocess, 'run') as run:
             with self.assertRaises(ValueError):
