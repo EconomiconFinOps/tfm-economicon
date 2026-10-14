@@ -10,6 +10,35 @@ ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
 #### Base actualizada antes de la regresión completa — 15/10/2026
 
+Merge local congelado `7be57c059ef740ae5f525d98ebe631271144f1fb`; archivo versionado
+SHA256 `efe8c644e4fefb9e17fefaa55e3c5e2275c8195dae06ebe2b7923389ec2444ff`.
+Regresión de1747 identidades recogidas:152 PASS verificados antes de dos OOM
+de arnés, no fallos de aserción. El primero ocurrió en el archivo
+capacity; el segundo en un lote de ocho casos de context_budget que cargan
+tokenizer. No se modifican aserciones ni se eligen mejores intentos. V4 reutiliza
+los152 recibos sólo tras comprobar JUnit/log SHA y todos los bytes versionados,
+y separa por proceso las pruebas que dependen del tokenizer/recursos. Al arrancar,
+PID553272/start_ticks61678984 confirmado vivo; no equivale a suite terminada.
+Recibos externos `final-linux-regression-launch-v4.json`,
+`final-linux-regression-v3-sanitized-detail.json` y selección fallida de v3.
+
+La revisión automática rechazó la variante inicial que pausaba backend/processor
+por falta de autorización para interrumpir el entorno; esa variante nunca se
+ejecutó. La alternativa mantiene los servicios existentes activos e intactos.
+También rechazó copiar logs remotos sin filtrar por posible información sensible;
+se sustituyó por una lista permitida de rutas de pruebas, códigos y conteos.
+Resultados completos se conservan en el root B remoto. Ninguna inferencia nueva.
+
+Contabilidad nuevamente consultada: contador conservador2.501327035USD y reservas
+desconocidas1.921712USD, cota conjunta4.423039035/5USD;295 filas del ledger,
+sin reinicio ni liberación de reservas. Claves vigentes hasta15/10 08:02UTC.
+`accounting-before-7be57c05-readonly.json` conserva sólo costes/caducidades y sus
+hashes, sin secretos. Es una lectura previa, no admisión para futuras llamadas.
+Trello actualizado por la integración DockerServer con hash previo coincidente,
+lectura posterior exacta y lista conservada: `jup123-trello-A8ea-regression-update-v1.json`,
+descripción SHA256 `1e0a82452c8cde5621baf6ee06eab04b04a5c259ef5d360508697bc79c53cb6f`.
+No se enviaron mensajes Discord ni se publicó B.
+
 A avanzó a8ea5a0c4 sobre develop0543c5ee, que incorpora JUP-038/#128. B integra
 ese develop por merge local; resuelve dos conflictos con los bloques ya reconciliados
 en A y cinco adaptaciones de pruebas/fixture.39 archivos de aplicación idénticos
