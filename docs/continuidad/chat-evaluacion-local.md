@@ -29,6 +29,11 @@ y`-local-reviewed-v1.json`:65checks pass,8uncertain,422unreviewed;8respuestaspas
 aceptación final. Corrección de referencia:011 está soportado porFinOps10,
 noRules2; la etiqueta mantiene su estado y razón corregida en el informe completo.
 
+Trello JUP123 actualizado mediante el puente autorizado a recogida84/84 y cota
+final, conservando historial, rol de revisores y aceptación pendiente. Prueba
+externa `jup123-trello-n3-complete-update.json`; verificación previa de concurrencia
+y respuesta confirmada. No se movió la tarjeta a terminada ni se publicó B.
+
 Pendientes: terminar contraste por requisito y comparación emparejada con baseline;
 resolver incertidumbres mediante juicio independiente; criterios/N5 acordados con
 revisores y presupuesto; dependenciaA/PR130 (tokenizer/reviews). No cambiar el
