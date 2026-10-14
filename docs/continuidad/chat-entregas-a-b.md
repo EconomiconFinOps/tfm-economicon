@@ -41,3 +41,7 @@ funcionales de JUP-122; falta Revision. Sin comentarios inline ni conversación
 adicionales en la consulta. Evidencia externa pr130-base-check-20261014.json en
 materiales/07-evidencias/PR121-local-evaluation. No se ha modificado A desde B.
 B puede medir su candidato, pero reconciliación y aceptación de A siguen abiertas.
+
+Reconsulta posterior a las pruebas Linux/SQL de B: PR130 conserva los mismos
+SHA318a56f/c30a7d0 y CHANGES_REQUESTED; reviewlmatsan sigue solicitando tokenizer.
+No se ha incorporado una corrección nueva de A ni hay aprobación inferida.

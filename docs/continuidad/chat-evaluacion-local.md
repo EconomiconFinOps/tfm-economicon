@@ -25,6 +25,79 @@ candidate-e94f6e54-campaign-resume1.log y anterior preservados. Plan84 congelado
 evaluation-ledger.sqlite común conserva baseline y candidato. Todo coste de las
 operaciones concluidas conciliado; ninguna nueva generación tras rechazo.
 
+### Alcance de la evidencia y dependenciaA — 2026-10-14
+
+Reconsulta gh pr view130 confirma cabeza318a56f/basec30a7d0,OPEN,
+CHANGES_REQUESTED; no nuevo cambio de A para reconciliar. Matriz en design.md
+actualizada con308Linux+43SQL de fa5e9527. Diff apps/frontend e94..HEAD vacío;
+la prueba histórica017 conserva su alcance sobre ese frontend. No repetirla
+sobre e94 para afirmar validación de respuestas026/028 nuevas. La verificación
+pendiente en navegador debe usar el candidato actual y datos de salida actuales.
+Sigue faltando aceptación repetida del proveedor y acuerdo/adjudicación externa;
+no sustituirlos por más ejecuciones redundantes de pruebas locales ya aprobadas.
+
+### SQL del candidato actual fa5e9527 — 2026-10-14
+
+43PASS58.30s/exit0 en test_chat_cockroach_jup035.py contra nueva instancia
+exclusiva jup123-sql-fa5e-db2; DB economicon_jup035_mock_fa5e9527. SQL800MB,
+cache64MiB,sql-memory128MiB; runner600MB; sin swap,red interna sin puertos,
+loopback compartido sólo por runner. Primer contenedor rechazó listen0.0.0.0;
+segundo usó127.0.0.1. No reiniciado ni alterado Cockroach del runtimeB.
+
+Registro externo candidate-fa5e9527-native-result.json. Tras PASS, docker stop
+-t20 terminó auxiliar con137/OOMfalse; no afirmar apagado limpio. Volumen
+jup123-sql-fa5e-data y bases preservados, sin carga activa. Los43PASS acreditan
+contratos JSONB/transacciones/concurrencia/migraciones del candidato actual;
+no navegador,fallo de red trasCOMMIT ni calidad del proveedor. Supera pendiente
+SQL descrito abajo; runtimeB sigue detenido y navegador actual pendiente.
+
+### Preflight SQL actual — 2026-10-14
+
+La base exclusivaB economicon-cd-d29fd64fc938-a817382bfefb-cockroachdb-1
+está exited137,OOMKilledtrue,fin2026-10-14T11:43:30.664485071Z. Sin límite
+Docker de memoria/swap; comando no fija cache/sql-memory. Host2392MB disponibles,
+swap97MB. No reiniciada ni modificada, volumen conservado. Esto confirma cierre
+por memoria, no identifica qué carga provocó la presión. Backend/processor healthy
+no prueban disponibilidad SQL. Registro candidate-fa5e9527-sql-preflight.json.
+
+Siguiente paso seguro: instancia SQL exclusiva de pruebas con límites explícitos
+de memoria/cache/SQL, sin reutilizar ni alterar el volumenB, y ejecutar contratos
+Cockroach del candidato actual. No se ejecutaron aún;43PASS anteriores siguen
+perteneciendo a e94. Browser actual también depende de recuperación del runtime.
+
+### Linux del candidato actual fa5e9527 — 2026-10-14
+
+Archivo versionado fa5e952716daed10d96024e2e5aee28bf69d3f40 transferido y
+verificado SHA256 fceb53cf8f55c163c2646f1024b4e766098d6fb216d7141a8a32cfcb84d225f3.
+Root remoto offline-fa5e9527 bajo el entorno exclusivoB. Capacidad previa:
+load1min1.22,MemAvailable2302MB; pruebas secuenciales,1CPU/1400MB/sinswap,
+networknone,user10001,capdropALL,código readonly; contenedores --rm finalizados.
+Processor244PASS39.56s(exit0,sesión43980): terminales026/028,premisas,005,
+gateway focal y existente,segmentos,intervalstream. Backend64PASS0.70s(exit0):
+booleanos e intervalos. Informe externo offline-fa5e9527-complete.json registra
+archivos e imágenes por SHA; transferencia en offline-fa5e9527-transfer.json.
+
+Supera el pendiente Linux para estas superficies actuales; no acredita toda la
+suite,SQL/browser actuales ni calidad semántica real. No gasto LLM ni cambios
+en despliegues. Los pendientes históricos Linuxc76 se conservan como historia.
+
+### Auditoría de la reserva presupuestaria — 2026-10-14
+
+Recalculada offline la reserva desde tools/chat-eval-budget.py y los parámetros
+conservados en jup123-live-step.py:4intentos ×(131072tokens entrada a0.5625USD/M
++3200salida a1.8USD/M)+0.002auxiliar=0.319952USD. El snapshot histórico
+11:14:48UTC más seed0.002 y esa reserva suma2.005536087USD; exceso0.005536087.
+No es una lectura nueva de gasto ni de precios. Informe externo
+`materiales/07-evidencias/PR121-local-evaluation/budget-admission-audit-v1.json`
+con SHA del preflight. Se conserva el bloqueo; ninguna llamada pagada.
+
+La admisión de contexto reserva salida y margen1024 por fase, pero no se ha
+probado una cota menor de tokens facturados por el proveedor. No sustituir esa
+prueba por el promedio observado ni reanudar las43muestras pendientes del
+candidato antiguo como si validaran el producto actual. Quedan validaciónLinux
+actual y aceptación repetida del nuevo candidato. La autorización vigente no
+amplía el tope ni reinicia la contabilidad.
+
 ### Auditoría de preparación para revisión9f52e2cd
 
 OpenSpec design.md contiene matriz requisito/evidencia/pendiente, sin marcar

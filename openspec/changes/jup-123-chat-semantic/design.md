@@ -127,7 +127,7 @@ periodos contradictorios o datos añadidos retienen la ruta narrativa; esta ruta
 cerrada no constituye una solución general de comprensión semántica. Replay026
 y verificación de selección sobre calibración preservados fuera del repositorio.
 
-## Auditoría de preparación para revisión — candidato9f52e2cd, 2026-10-14
+## Auditoría de preparación para revisión — candidatofa5e9527, 2026-10-14
 
 Esta tabla describe evidencias y pendientes; no modifica los criterios ni
 convierte pruebas sintéticas en validación del modelo.
@@ -141,8 +141,9 @@ convierte pruebas sintéticas en validación del modelo.
 | Comparación emparejada |41muestras de e94:29fail→pass y regresión026r1 | Descriptiva/parcial; no acredita al candidato posterior |
 | Correcciones semánticas |005determinista,026/028replay local,110/134pruebas focales y108gateway | Gramáticas cerradas; variantes no reconocidas conservan ruta general; aceptación no demostrada |
 | Gateway y contrato público |12pruebas nuevas en108PASS; esquemas, streaming/final y rechazo de contradicciones | Probado con proveedor simulado, no ejecución final pagada |
-| Linux | c76:100backend/111processorPASS,exit0 | Validar commits posteriores; no reutilizar resultados como si fuesen actuales |
-| SQL/navegador | e94:43SQLPASS y recuperación de historial017 | No validan candidato9f52 ni nueva generación en navegador |
+| Linux | fa5e9527:244processor/64backendPASS,exit0; archivo e imágenes registrados | Superficies modificadas verificadas; no equivale a suite completa ni calidad real |
+| SQL | fa5e9527:43PASS58.30s en instancia exclusiva limitada | Contratos SQL verificados; no prueba pérdida de red después deCOMMIT |
+| Navegador | e94:recuperación historial017; diff frontend e94..fa5 vacío | Evidencia histórica conservada; nuevas respuestas no verificadas en navegador; runtimeB con SQL detenido porOOM |
 | Especificación e higiene | OpenSpec estricto JUP123 válido; higiene1609archivosOK | Comprobado en9f52; CLI instalada en checkoutauto, sin instalar red |
 | Criterios y N5 | Tareas1.4/2.4/3.3 abiertas; pregunta al usuario sobre acuerdo existente | No inventar acuerdo, porcentaje ni dispensa de revisores |
 | Revisión externa/publicación | B no publicada; borrador técnico y evidencia local disponibles | No integrar ni afirmar listo para aprobación mientras faltan los puntos anteriores |
