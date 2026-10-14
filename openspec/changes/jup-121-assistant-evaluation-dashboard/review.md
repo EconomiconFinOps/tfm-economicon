@@ -89,3 +89,18 @@ Hallazgos LOW del QA, resueltos en el contrato: `synthetic` de JUP-078 es siempr
 Decisiones de contrato: una tasa sobre cero casos es «sin datos», no 0; el numerador solo se reconstruye cuando `round(rate × casos)` reproduce la tasa con tolerancia 5e-5 (el informe redondea a 4 decimales); `by_category` no se publica porque trae tasas sin denominador; la huella `corpus_sha256` se deriva (sha256 de las líneas `clave=sha256` ordenadas por clave) y no depende de rutas; `points` vacía solo es válida si `selection.candidates` también lo está.
 
 Hallazgos del QA resueltos o trasladados: M1, la clave de comparabilidad incluye ahora `suite_version` porque JUP-022 no trae `suite_sha256` (documentado y añadido a la tarea 2.7); L1 y L2, contrato aclarado (varios candidatos seleccionados; `retrieval` del `run` solo con el troceado); L3, el `behavior` de un `top_k` absurdo lo recogerá la validación común de 2.6; L4, qué hacer con un informe sin filas, trasladado a la tarea 2.8; L5 se acepta (se copia, no se recalcula).
+
+### 2.5 Adaptador de las métricas de negocio de JUP-068
+
+| Fase | Evidencia |
+| --- | --- |
+| Red | `scripts/tests/test_evaluation_adapter_jup068.py` (103 tests), commit `8b698abe`; 496 errores (con `subTest`), todos `AttributeError` por `adapt_jup068`, `read_business_report` y `subprocess` ausentes, ninguno pasa por accidente. Los esperados se comprobaron con una implementación de referencia fuera del repositorio |
+| Green | `adapt_jup068` y `read_business_report` con su sección en `tools/evaluation-dashboard.py`, commit `06852dc7`; 485/485 |
+| Mutación (1.ª) | 227/249 (91,2 %). Superviviente de lógica: `pairs > 0` → `pairs > 1` (ningún test usaba exactamente una pareja elegible). Además se encontró un **defecto latente** en `_is_number`, compartido por los adaptadores de JUP-078, JUP-022 y JUP-068: un entero como `10**400` lanzaba `OverflowError` crudo |
+| Remediación | `test_evaluation_adapter_jup068_gaps.py` (9 tests: 4 de una pareja y 5 en rojo del defecto, commit `eacfb7e2`) y Green de `_is_number` (commit `533cfae6`); 494/494 |
+| Mutación (final) | Sección de JUP-068: **228/249 = 91,6 %**, 21 supervivientes de prosa. `_is_number`: 5/7, los 2 restantes son equivalentes (`return False` → `return None`, igual de falsos para quien llama) |
+| QA | `accept`, sin hallazgos BLOCKING. Recalculó por su cuenta las 23 filas con Node real (y 6 casos extremos) con 0 diferencias, probó rutas con `&`, `;` y `$(…)` sin inyección y mató 56 de 63 mutantes manuales de lógica; los supervivientes eran equivalentes salvo `shell=True` y tres excepciones sin test |
+| Tests del QA | `test_evaluation_adapter_jup068_cli.py` (9 tests, commit `66a728ec`): la llamada es una lista sin `shell` con la ruta intacta, la primera línea no vacía de `stderr`, `ValueError`/`OSError`/`SubprocessError` al ejecutar, `RecursionError` al parsear y la ruta relativa desde la raíz; cada uno mata su mutante. Total 503/503 |
+| DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend idénticos (`RF-119-004`) |
+
+Hallazgos del QA trasladados: `run_id` del informe de JUP-068 es texto libre en Node y el cargador de 2.8 deberá pasarlo (2.6 lo rechaza si no cabe en `IDENTIFIER_RE`); `suite_sha256` es la huella del registro entero, así que dos ejecuciones de negocio con el mismo `dataset_version` y datos distintos no comparten clave (hoy no hay serie de tipo B); `run_at` `null` deja las ejecuciones de negocio fuera de las series y los paneles de tipo B deben mostrar «fecha no registrada»; el contrato describe ya el criterio no uniforme de «no medido» (sumas de nada frente a importes copiados).
