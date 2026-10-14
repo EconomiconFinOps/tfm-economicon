@@ -13,6 +13,17 @@ def result(code=0, output=''):
 
 
 class CampaignTests(unittest.TestCase):
+    def test_additional_plan_requires_audited_step(self):
+        with patch.object(c.subprocess, 'run') as run:
+            with self.assertRaises(ValueError):
+                c.main(Path('/isolated'), additional_plans=[Path('/candidate.json')])
+        run.assert_not_called()
+
+    def test_additional_plan_reaches_coverage_check(self):
+        with patch.object(c.subprocess, 'run', side_effect=[result(), result(), result(output='{"state":"COLLECTED"}')]) as run, patch('builtins.print'):
+            c.main(Path('/isolated'), covered_step=True, additional_plans=[Path('/candidate.json')])
+        self.assertEqual(run.call_args.args[0][-2:], ['--additional-plan', str(Path('/candidate.json'))])
+
     def test_reconciliation_failure_prevents_dispatch(self):
         with patch.object(c.subprocess, 'run', side_effect=[result(), result(1)]) as run, patch('builtins.print'):
             c.main(Path('/isolated'))

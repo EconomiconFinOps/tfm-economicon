@@ -1170,3 +1170,21 @@ Siguiente: preparar comparación del candidato conservando el ledger de todas la
 campañas, consultar gasto/validez de claves antes de inferencia y ejecutar sólo lo
 que permita el techo acumulado de 2 USD. No resetear contabilidad ni renovar claves
 sin autorización aplicable. Reserva continúa separada del ajuste del candidato.
+
+
+### Cobertura contable de varias campañas — 14/10/2026
+
+chat-eval-covered-step admite --additional-plan conservando obligatoriamente el
+plan original. Valida hashes canónicos (misma identidad del runner), prefijos
+ordenados por campaña, operaciones únicas y todos los costes observados. Mantiene
+las dos reservas no-chat y el contraste con las operaciones SQL del entorno.
+chat-eval-campaign-runtime propaga planes adicionales sólo con --covered-step.
+No cambia el techo, la fórmula presupuestaria, las claves ni el ledger.
+
+24 pruebas pasan (8 cobertura, 5 controlador, 11 presupuesto). Contraste de sólo
+lectura con ledger real: 84 operaciones verificadas, 2 reservas adicionales
+conservadas, coste observado 0.399209016 USD. DockerServer consultado a las
+10:31 UTC; runtime B a817382b sigue activo. Sin inferencia ni gasto nuevo.
+Pendiente adaptar/verificar el adaptador operativo del candidato, consultar
+contadores vivos y ejecutar comparación; estas pruebas no autorizan ni acreditan
+por sí solas una nueva campaña. Cambios aún locales.

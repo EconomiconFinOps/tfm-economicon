@@ -13,7 +13,33 @@ def load(name, path):
     return value
 
 
-def main(root):
+def campaign_prefix(rows, plans):
+    """Verify ordered, settled prefixes without dropping earlier campaigns."""
+    identities = {}
+    for plan in plans:
+        digest = hashlib.sha256(json.dumps(plan, sort_keys=True, ensure_ascii=False,
+                                          separators=(',', ':')).encode()).hexdigest()
+        samples = [sample['sample_id'] for sample in plan['samples']]
+        if digest in identities or not samples or len(samples) != len(set(samples)):
+            raise ValueError('Duplicate plan or sample identity')
+        identities[digest] = samples
+    chat = [row for row in rows if row['operation_id']]
+    seen = {digest: [] for digest in identities}
+    operations = set()
+    for row in chat:
+        if row['plan_hash'] not in identities or row['operation_id'] in operations:
+            raise ValueError('Unknown campaign or duplicate operation')
+        operations.add(row['operation_id'])
+        seen[row['plan_hash']].append(row['sample_id'])
+        if json.loads(row['reservation'])['state'] != 'COST_OBSERVED':
+            raise ValueError('Previous operation cost unresolved')
+    for digest, samples in seen.items():
+        if samples != identities[digest][:len(samples)]:
+            raise ValueError('Ledger is not the complete campaign prefix')
+    return chat
+
+
+def main(root, additional_plans=()):
     original = load('operator_adapter', root / 'live-step.py')
     old_module = original.module
     budget = load('covered_budget', Path(__file__).with_name('chat-eval-budget.py'))
@@ -22,12 +48,9 @@ def main(root):
     def audited_snapshot(upstream, keys, now):
         value = snapshot(upstream, keys, now)
         rows = ledger.Ledger(root / 'evaluation-ledger.sqlite').pending()
-        plan = json.loads((root / 'baseline-plan-temperature0.json').read_text())
-        chat = [row for row in rows if row['operation_id']]
-        if [row['sample_id'] for row in chat] != [s['sample_id'] for s in plan['samples'][:len(chat)]]:
-            raise ValueError('Ledger is not the complete campaign prefix')
-        if any(json.loads(row['reservation'])['state'] != 'COST_OBSERVED' for row in chat):
-            raise ValueError('Previous operation cost unresolved')
+        paths = [root / 'baseline-plan-temperature0.json', *additional_plans]
+        plans = [json.loads(path.read_text()) for path in paths]
+        chat = campaign_prefix(rows, plans)
         nonchat = [row for row in rows if not row['operation_id']]
         if len(nonchat) != 2:
             raise ValueError('Unexpected non-chat reservation')
@@ -61,8 +84,9 @@ with create_engine(Settings().database_url.get_secret_value()).connect() as c:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(); parser.add_argument('--root', type=Path, required=True)
+    parser.add_argument('--additional-plan', type=Path, action='append', default=[])
     args = parser.parse_args()
-    try: main(args.root)
+    try: main(args.root, args.additional_plan)
     except Exception as exc:
         print(json.dumps({'error': type(exc).__name__, 'action': 'preserve ledger; inspect coverage or budget'}))
         raise SystemExit(1)
