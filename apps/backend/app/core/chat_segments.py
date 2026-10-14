@@ -3,7 +3,7 @@ import copy
 
 from app.core.chat_calculations import render_text
 from app.core.chat_claims import documentary_schema, render_documentary
-from app.core.chat_rules import required_classification
+from app.core.chat_rules import required_classification, resolved_classification
 from app.core.chat_boolean_rules import boolean_definition, render_boolean
 from app.core.chat_expressions import ExpressionRenderer, expression_definitions
 from app.core.chat_response_modes import bind_modes, response_prefix, BASIS_STATUSES, DOCUMENTARY_BASES
@@ -156,6 +156,8 @@ def bind_segments(schema, records=None, quantities=None):
         retained=[branch for branch in branches if not (required_classification(quantities)
             and 'ok' in branch['properties']['status'].get('enum',[]))]
         schema['anyOf']=classified+retained if required_classification(quantities) else retained+classified
+        if resolved_classification(quantities):
+            schema['anyOf'] = classified
     rules=getattr(quantities,'boolean_rules',())
     if rules:
         # Rule/operator/operands are all grounded before generation. The model
@@ -289,6 +291,8 @@ def render_response(value, records, *, quantities=None):
             if basis in ('missing_data','clarification','refusal') and not value.get('next_actions'):
                 raise ValueError('Response basis requires useful next action.')
 
+    if resolved_classification(quantities) and not classified:
+        raise ValueError('Resolved classification requires typed answer.')
     if required_classification(quantities) and not classified:
         if value['answer'] not in [[{'text':note}] for note in CLASSIFICATION_ABSTENTIONS]:
             raise ValueError('Explicit classification requires typed answer.')

@@ -8,7 +8,7 @@ import copy
 import json
 import re
 from decimal import Decimal, DecimalException, localcontext
-from app.core.chat_rules import QuantityCatalog, documentary_rules, concept, numerator_matches, check_classification_prose, classification_request
+from app.core.chat_rules import QuantityCatalog, documentary_rules, concept, numerator_matches, check_classification_prose, classification_request, resolved_classification
 
 MAX_OPERATIONS = 12
 MAX_DEPTH = 4
@@ -52,7 +52,8 @@ def context_quantities(context):
                         catalog[qualified]['provenance'].append(provenance)
                 elif len(catalog)<MAX_QUANTITIES:
                     catalog[qualified]={**entry,'display':key,'provenance':[provenance]}
-    catalog.classification_requested=classification_request(context_question(context))
+    catalog.classification_question=context_question(context)
+    catalog.classification_requested=classification_request(catalog.classification_question)
     catalog.rules=documentary_rules(rule_sources)
     catalog.rule_sources=rule_sources
     catalog.authorized_sources=copy.deepcopy(context.get('authorized_evidence',[]))
@@ -226,6 +227,9 @@ def expression_definitions(catalog):
             'operation':{'type':'string','const':'classify'},
             'rule_id':{'type':'string','const':rule['id'],'description':json.dumps(rule,ensure_ascii=False)},
             'value':value},'required':['operation','rule_id','value'],'additionalProperties':False})
+    resolved = resolved_classification(catalog)
+    if resolved:
+        classifications = [{'const': resolved}]
     definitions['RenderedExpression']={'anyOf':alternatives}
     if classifications:
         definitions['DocumentaryClassification']=classifications[0] if len(classifications)==1 else {'anyOf':classifications}
@@ -256,6 +260,9 @@ class ExpressionRenderer:
         rules=[rule for rule in getattr(self.catalog,'rules',()) if rule['id']==node['rule_id']]
         if len(rules)!=1:raise ValueError('Unknown documentary interval rule.')
         rule=rules[0]
+        resolved = resolved_classification(self.catalog)
+        if resolved and node != resolved:
+            raise ValueError('Documentary KPI value mismatch.')
         if not numerator_matches(node['value'],self.catalog,rule):
             raise ValueError('Documentary KPI value mismatch.')
         value,unit,formula,reason=self._numeric(node['value'],1)

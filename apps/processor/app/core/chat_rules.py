@@ -223,3 +223,50 @@ def check_classification_prose(text, rules, sources):
             raise ValueError('Unverified documentary classification prose.')
         cited.update(matches)
     return cited
+
+
+def resolved_classification(catalog):
+    """Bind an explicit eligible total before removing the abstention branch.
+
+    This closed bilingual grammar accepts an amount immediately labelled as an
+    eligible total. It never constructs a total from components or treats any
+    other amount as the denominator. Ambiguity retains the existing fallback.
+    """
+    if not required_classification(catalog):
+        return None
+    rule = applicable_rules(catalog)[0]
+    if normalized(rule['denominator']).strip() not in {
+        'eligible cost', 'total eligible cost', 'coste elegible', 'coste total elegible',
+    }:
+        return None
+    question = getattr(catalog, 'classification_question', '')
+    users = {key: entry for key, entry in catalog.items()
+             if any(p.get('kind') == 'user' for p in entry.get('provenance', []))}
+    numerators = [(key, entry) for key, entry in users.items()
+                  if entry.get('concept_anchors') == [list(rule['anchor'])]]
+    if len(numerators) != 1:
+        return None
+    numerator, n = numerators[0]
+    if n['unit'] not in {'EUR', 'USD', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'CNY', 'INR'}:
+        return None
+    money = {key: entry for key, entry in users.items()
+             if entry['unit'] and entry['unit'] != '%'}
+    if len(money) != 2:
+        return None
+    denominator, d = next((key, entry) for key, entry in money.items() if key != numerator)
+    if d['unit'] != n['unit'] or not Decimal('0') <= Decimal(n['value']) <= Decimal(d['value']) or Decimal(d['value']) <= 0:
+        return None
+    # Duplicate amounts can denote distinct periods/entities; deduplication in
+    # the quantity catalog must not turn them into a unique scenario.
+    spans = {}
+    for key, entry in ((numerator, n), (denominator, d)):
+        matches = list(re.finditer(r'(?<![\w.,])' + re.escape(entry['source']) + r'(?!\w)', question, re.I))
+        if len(matches) != 1:
+            return None
+        spans[key] = matches[0]
+    suffix = normalized(question[spans[denominator].end():])
+    if not re.match(r'\s+(?:elegibles|de coste (?:total )?elegible|(?:total )?eligible cost)\s*(?=y\b|and\b|[;.!?]|$)', suffix):
+        return None
+    return {'operation': 'classify', 'rule_id': rule['id'], 'value': {
+        'operation': 'percentage', 'numerator': {'quantity': numerator},
+        'denominator': {'quantity': denominator}}}
