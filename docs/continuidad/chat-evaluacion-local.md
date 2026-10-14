@@ -8,6 +8,51 @@ ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
 ### Corte vigente: c7 N3 terminada — 14/10/2026 20:37 UTC
 
+#### Calificadores004 y premisas022 — producto local2c79b32d, 15/10/2026
+
+`chat_documentary_decisions.py` conserva definiciones completas de actual/amortized
+cost, hasta la siguiente definición e incluyendo frases limitantes. No sustituye
+«se aproxima»/«suele» por conclusiones categóricas ni promete reparto equitativo.
+El consejo sobre commitments exige la sección completa, con definición, verificaciones
+de rightsizing y consejo literal. Una excepción nueva o una gramática de política
+no interpretada impide compilar sólo las frases favorables. La demanda futura se
+conserva estable/inestable/desconocida, separada del estado de rightsizing; una
+conjunción falsa no hace falsa la premisa desconocida. La respuesta aplica consejo
+condicional, muestra las citas y pide datos sin inventar descuentos/plazos/ahorros.
+No crea tarjetas con severidad/confianza financieras no evaluadas; otras preguntas
+y escenarios conservan la ruta general. No hay autorización ni ejecución de compra.
+
+468 pruebas focales processor y32 backend PASS, incluidas las nuevas con corpus
+original y gateway simulado.51 pruebas nuevas Linux PASS sin omisiones/OOM
+(49processor/2backend); dos contenedores propios sin red, fuente sólo lectura y
+JUnit durable, retirados porID/etiqueta. IDs/imágenes del runtime B sin cambios;
+no sumar las51 a las locales. Fallos iniciales del arnés preservados: parámetro
+pytest reservado y fixture con espacios en límites de chunks, que correctamente
+carecía de rangos. El fixture se normaliza como ingesta y exige rangos no vacíos.
+
+Replay de84recibos sólo selecciona004/022r1/r2/r3; conserva literalidad, modalidad,
+premisas y paridad streaming/final/público. No adjudica sus etiquetas históricas
+ni prueba al proveedor. Producto2c79b32d62420e0ca0c2603ee87eb853bd85047d;
+archivo sin.env transferido a DockerServer/candidate-2c79b32d bajo root B, SHA256
+6b2d77021c05e90bf138ee9d95e8f644e24fa5626b0eb6acc2599c1d16ab395c.
+Ambos loaders propios aceptan `jup-035.chat.v3:c43f48ad863e03e7227b51591af37ea69a1ee31a10ab352204ee163db5b49007`,
+assembler4c5709d4c17b1cdce9538c10704d86865426ab924c90c17898524b560bf0b56a.
+Evidencia externa `documentary-decisions-assessment-v1.json`,
+`documentary-decisions-linux-2c79b32d/`, `documentary-decisions-replay-v2.json`
+y`documentary-decisions-cold-load-v2.json`; cortes anteriores intactos.
+
+Siguiente: congelar el candidato completo para regresión integral/build de los
+tres servicios B, comprobar procedencia/tokenizer y medir bajo admisión viva5USD.
+No se ha activado ni medido este candidato. Criterios, adjudicación independiente,
+navegador yN5 siguen pendientes;3.1/3.2 abiertas. Contabilidad histórica20:37UTC14/10
+4.423039035USD con reservas retenidas; no saldo nuevo ni liberación de costes
+desconocidos. Claves sin renovar, caducidad15/10 08:02UTC. Sin inferencias nuevas,
+publicación GitHub ni mensajes Discord.
+Trello actualizado por la integración DockerServer, con lista conservada y lectura
+exacta: `jup123-trello-documentary-update-v1.json`, descripción
+SHA907b08ac4b1e5579258474b4c66906678651f1dbe42c8e5b562fe4005df9b230.
+OpenSpec estricto conforme.
+
 #### Etapas de ahorro021 — producto local1afa3815, 15/10/2026
 
 `chat_savings_realization.py` conserva tres roles explícitos de ahorro y su unidad

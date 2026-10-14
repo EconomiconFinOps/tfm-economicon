@@ -228,3 +228,32 @@ del ejercicio es la verificada; no se suman etapas ni se acreditan ahorros reale
 - **WHEN** faltan roles, se duplican, difieren moneda o unidad temporal, o cambia la fórmula o ámbito
 - **THEN** esa ruta no infiere los datos faltantes ni convierte unidades y conserva el flujo general
 - **AND** una observación financiera del servidor no se sustituye por el escenario del usuario
+
+### Requirement: Definiciones completas sin reforzar sus calificadores
+El servidor MUST conservar íntegramente las definiciones documentales pertinentes
+al comparar coste actual y amortizado, incluidas sus frases limitantes. Sólo compila
+una sección completa, única, autorizada y con pasajes citables en fragmentos reales.
+
+#### Scenario: La fuente usa una conclusión matizada
+- **WHEN** la definición dice que actual cost se aproxima a facturación y amortized cost suele ser más útil para showback
+- **THEN** se muestran ambas definiciones sin convertirlas en una prohibición o asignación equitativa garantizada
+- **AND** una limitación posterior dentro de la definición no se descarta al primer punto
+
+#### Scenario: Sección incompleta o ambigua
+- **WHEN** faltan sus límites, hay huecos/solapamientos contradictorios o dos documentos candidatos
+- **THEN** no se ofrece el terminal documental ni se inventa una definición de respaldo
+
+### Requirement: Recomendaciones matizadas y premisas desconocidas
+El servidor MUST mantener el carácter de consejo de una política que usa conviene,
+se recomienda o se aconseja. Al aplicarla a un escenario explícito, conserva por
+separado el estado de rightsizing y la demanda estable/inestable/desconocida.
+
+#### Scenario: Rightsizing pendiente y demanda desconocida
+- **WHEN** se consulta una compra inmediata con migración prevista, sin precios ni términos
+- **THEN** se recomienda resolver los pendientes y evaluar el compromiso sin afirmar que la demanda desconocida es inestable o inexistente
+- **AND** se explica el riesgo de infrautilización como condicional, sin inventar plazos, descuentos ni ahorros
+- **AND** la falsedad de una conjunción no cambia a falso un operando desconocido
+
+#### Scenario: La política contiene una excepción no interpretada
+- **WHEN** la sección añade una excepción o cambia el consejo a otra modalidad o acciones
+- **THEN** no se compilan únicamente las frases favorables y se conserva el flujo general

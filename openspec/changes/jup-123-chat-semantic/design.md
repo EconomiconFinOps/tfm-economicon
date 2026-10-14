@@ -45,6 +45,31 @@ como tal y no repite suPOST. Los artefactos distinguen gasto conocido y reservas
 
 ## Risks and open questions
 
+### Calificadores documentales y tres valores — 2026-10-15
+
+Producto2c79b32d: `chat_documentary_decisions.py` compila dos usos limitados de
+secciones completas y autorizadas. La comparación conceptual conserva todos los
+bloques de definición de actual/amortized cost, hasta la siguiente definición,
+incluidas limitaciones posteriores. No reescribe «se aproxima»/«suele» como certeza
+ni infiere un reparto equitativo. El consejo sobre commitments exige la gramática
+completa de la sección: definición, comprobaciones de rightsizing y recomendación
+con modalidad positiva de consejo, copiadas literalmente. Una excepción añadida
+o política no reconocida no se aplica parcialmente.
+
+El escenario explícito conserva demanda futura en tres valores y estado de
+rightsizing con soporte de entrada. Se evalúa su conjunción sin convertir una
+premisa desconocida en falsa cuando otra la decide. Eso es preparación declarada,
+no autorización de compra. La respuesta ofrece consejo condicional y próximos
+pasos; no crea métricas ni tarjetas de recomendaciones con severidad/ahorro no
+evaluados. Otras preguntas/escenarios mantienen la ruta general. La incertidumbre
+histórica no se adjudica por hacer este cambio.
+
+468 pruebas focales processor/32 backend conformes, con el corpus original y
+gateway simulado. Replay de84 sólo selecciona004/022r1/r2/r3, con citas, modalidad,
+premisas y paridad pública preservadas; no modifica etiquetas históricas ni mide
+al proveedor. Loader/pin actualizados. Linux, transferencia y limitaciones en
+continuidad; aceptación real, criterios y adjudicación siguen pendientes.
+
 ### Etapas de ahorro y ecuación de realization — 2026-10-15
 
 Producto1afa3815 compila tres roles monetarios explícitos, con moneda/unidad temporal
