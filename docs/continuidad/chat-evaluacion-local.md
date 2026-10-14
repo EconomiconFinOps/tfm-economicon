@@ -16,6 +16,28 @@ memoria/cacheSQL limitadas y gasto preservado; ampliar límites de claves exclus
 únicamente dentro de5USD sin extender caducidad. Criterios de revisores siguen
 pendientes; ampliación económica no equivale a aceptación semántica.
 
+### Reanudación actual de cap5 tras OOMbackend — 14/10/2026
+
+Controladore92628df aplicado sin cambiardiffapps frente ae23.003r1 derivado
+VERIFIED_PUBLIC_SNAPSHOT mediante entradaSQLdurable; continúa failed yreserva
+0.319952USD en COST_UNKNOWN_RESERVED. Archivo externo
+candidate-cap5-failure003-retained.json, herramientasySHA en
+candidate-cap5-operator-transfer.json. No se repitió003.
+
+PIDresume12311135 terminó tras014r1: backend exited137/OOMtrue al límite500MiB.
+Últimoledger014COST_OBSERVED0.006513180USD, sin015reservado al diagnosticar.
+Recuperado sólo backendB con1024MiB/sinswap, imagen/código/volumen iguales,
+composepersistido; Cockroach800MiB/processor900MiB siguen healthy. Health200 y
+hashes de los tres servicios verificados antes decontinuar. No atribuir OOM a
+semántica ni ocultarlo como llamadafallida inexistente.
+
+NuevoPID2642423 confirmadoS/live, logcandidate-cap5-campaign-resume2.log;
+15/84recibos:14completed/1failed,15VERIFIED_PUBLIC_SNAPSHOT,016r1active.
+Snapshot externo candidate-cap5-progress-after-oom contiene agregadoPARTIAL,
+69ausencias explícitas, ledger/preflight/recuperación; reserva yfamiliasreservadas
+sinadjudicar. AcceptanceNOT_ASSESSED. No reiniciar porobservación lenta; inspeccionar
+mismoPIDylog. El estado vigente económico sigue5USDacumulados autorizado porusuario.
+
 ### Control de fallo terminal con coste desconocido — 14/10/2026
 
 Herramientas de evaluación añaden COST_UNKNOWN_RESERVED: fallo terminal con
@@ -72,7 +94,7 @@ posterior. Inspeccionar mismoPID/log/operación antes decontinuar. Objetivo acti
 aceptación NOT_ASSESSED. Sin publicaciónGitHub/Discord. Conservar separación
 entre recogida completa, criterios acordados yjuicios externos aún pendientes.
 
-## Estado vigente — 14/10/2026, 11:15 UTC
+## Corte histórico superado — 14/10/2026, 11:15 UTC
 
 JUP-123/B activa, sin aceptación final. Producto e94f6e54 en entorno B, hashes
 verificados; herramientas8215a2b7, fixture1651b8fa. Regresión1282PASS/52SKIP y
