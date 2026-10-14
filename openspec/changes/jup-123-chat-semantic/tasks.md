@@ -12,12 +12,14 @@
 - [x] 2.3 Congelar y recoger baseline N3 completa (84/84, con 7 fallos preservados).
 - [ ] 2.4 Resolver incertidumbres con adjudicación independiente.
 - [x] 2.5 Recoger N3 del candidato e23e495b:84/84 recibos verificados,78completed/6failed conservados; costes desconocidos con reserva íntegra, no aceptación semántica.
+- [x] 2.6 Recoger y revisar localmente N3 de c7e2d561:84/84 recibos,83 completed/1 failed;70 conformes/7 inciertas/6 fallos de contenido/1 técnico. Snapshot258 hashes; no adjudicación independiente ni aceptación.
 
 ## 3. Correcciones y entrega
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.
-  - Correcciones 014/003 y contratos de soporte/autoridad guardados en c7e2d561; pasan offline y SQL. Falta medirlos con proveedor real y contrastar las regresiones, sin cambiar etiquetas históricas.
-  - Primera ronda c7 revisada:22conformes/3inciertas/3fallidas. Regresionesr1 frentee23:009cita ajena,010omisión de minúsculas,015omisión de investigar. Aún no decidir por una repetición ni aceptar por media; campañaN3 continúa con el mismo producto.
+  - Correcciones014/003 medidas en c7 N3:014 conforme3/3,003 completa3/3. Las1470 pruebas Linux/SQL conservan su alcance; no validan calidad por sí solas.
+  - Persisten regresiones001r2/009r1/010r1/011r3/015r1/r2;021r3 falla por ecuación libre, sin candidato privado exacto. Priorizar cobertura tipada y premisas/modalidad; no relajar validadores ni reconocer sólo preguntas del banco.
 - [ ] 3.2 Comparar por requisito/repetición y descartar regresiones obligatorias.
+  - Comparación c7/e23 registrada:438 pass→pass,7 pass→fail,7 uncertain→uncertain,6 uncertain→pass,2 fail→pass; técnicos aparte. No se cumple ausencia de regresiones; casilla abierta.
 - [ ] 3.3 Confirmar N5 según alcance acordado y presupuesto.
 - [ ] 3.4 Preparar candidato local con pruebas, evidencias y limitaciones.
 

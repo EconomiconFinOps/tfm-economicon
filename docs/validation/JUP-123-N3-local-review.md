@@ -65,7 +65,10 @@ Este apartado conserva el corte de `06be1f1a`; los pasos posteriores están en l
 deduplicación de citas, con 1470 pruebas únicas Linux/SQL correctas en procesos
 separados. Los OOM originales se conservan; no fue una ejecución monolítica
 Linux completa. Sus imágenes se han construido y su contenido real se ha verificado
-en B. **La campaña real de ese candidato está en marcha**, sin resultado N3 final:
+en B. **La campaña real de ese candidato ya terminó**:83 respuestas/1 fallo técnico,
+revisión local70 conformes/7 inciertas/6 fallos de contenido. Ver el
+[informe N3 de c7](JUP-123-c7e2d561-N3-local-review.md) para evidencia,
+regresiones y contabilidad final. El texto siguiente conserva el corte anterior:
 estos resultados no cambian los veredictos de e23. UI001/003/014 comprobada en
 escritorio/móvil y tras recarga, sin generar desde navegador.
 

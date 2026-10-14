@@ -6,6 +6,59 @@ El usuario amplió el máximo acumulado a **5 USD** («Amplia a5$»). Ese permis
 sustituye el límite de2USD de los cortes históricos inferiores; no reinicia gasto,
 ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
+### Corte vigente: c7 N3 terminada — 14/10/2026 20:37 UTC
+
+Supera el avance 47/84 y la revisión sólo r1 descritos más abajo. Producto
+c7e2d5616d3ba3d4e6fa467f27f272a05595a621: 84/84 recibos verificados,
+83 completed/1 failed. Controlador 3607245 terminado COLLECTED/NOT_ASSESSED;
+no reiniciar ni escoger nuevos intentos. [Informe completo](../validation/JUP-123-c7e2d561-N3-local-review.md).
+
+Revisión local provisional: **70 conformes/7 inciertas/6 fallos de contenido/
+1 técnico**. Comprobaciones: 470 pass/12 uncertain/7 fail/6 sin respuesta.
+Fallos: 001r2 niega coste actual aportado; 009r1 cita ajena; 010r1 omite minúsculas;
+011r3 no entrega 10% por coste; 015r1/r2 omiten investigación. Dudas en 004 las
+tres veces, 011r1 y 022 las tres veces. 021r3 falla por ecuación libre en
+provisional_answer: el parser sólo procesa answer, pero no se conservó el
+candidato privado ni se conoce el segmento o ecuación exactos.
+014/017/027 conformes 3/3; 003 también completa 3/3, con deuda de presentación.
+
+Pares contra e23: 438 pass→pass, 7 pass→fail (seis respuestas; cinco
+comprobaciones del banco y dos de calidad provisional), 7 uncertain→uncertain,
+6 uncertain→pass, 2 fail→pass. 003r1/013r3 técnico→conforme; 022 técnico→incierto;
+021r3 técnico→técnico. Originales reconsultados, etiquetas históricas intactas.
+No causalidad ni aceptación por media; criterios/adjudicación siguen pendientes.
+
+Snapshot externo candidate-c7e2d561-n3-complete-v2: 258 SHA verificados,
+manifest 48de0d4b745a8640ae6540243691f1c4f91affd7ba55396f122daded26b65cbd.
+Primer intento de congelación incompleto preservado y marcado: no puntuarlo.
+56 filas anteriores y sus 168 archivos raw/derivado/coste idénticos.
+score-c7e2d561-n3.py normaliza cada recibo con scorer sin cambios. Juicios/revisión
+candidate-c7e2d561-n3-local-{judgments,reviewed}-v1.json; comparación paired-e23-v1
+y assessment-v2. Este último corrige sólo la extracción de nonpass en el resumen,
+sin cambiar etiquetas ni totales. Evidencia bajo materiales/07-evidencias/
+PR121-local-evaluation del workspace padre; detalle en el informe enlazado.
+
+Contadores finales: 2.501327035 USD + 1.921712 USD reservas = **4.423039035/5 USD
+conservadores**. Seis costes fallidos desconocidos y seed retenidos; 021r3 añade
+0.319952 USD íntegros. 404 upstream/spend0 no prueban gratuidad. No liberar reservas,
+renovar claves ni lanzar otra campaña por el resto aparente. Claves exclusivas
+mantienen vencimiento 15/10 08:02 UTC. Ninguna inferencia posterior a este cierre.
+
+Trello actualizado sólo por puente DockerServer, concurrencia/lectura posterior
+exactas; En curso sin mover. Prueba jup123-trello-c7e2d561-n3-complete-update.json,
+descripción SHA 104c3afd285de429a669d413c2a3c16d126d4f1764f9088212bf37144e121e77.
+Sin mensaje Discord ni publicación GitHub de B. La reconciliación final de A
+conserva sus dos solicitudes; sus reviews no se reconsultaron en este corte.
+
+Siguiente: cobertura explícita de hechos/reglas/resultados por servidor,
+preservar premisas/modalidad y diagnóstico de campo sin contenido privado.
+Contraejemplos offline antes de otra campaña; no más reglas de prompt por caso.
+OpenSpec estricto del cambio validado con CLI instalada mediante Node directo;
+el wrapper pnpm intentó resolver dependencias por red y abortó sin completar.
+No se repiten las 1470 pruebas por cambios sólo documentales en este corte.
+
+### Corte anterior: N3 de e23
+
 **Recogida N3 completa del candidato e23e495b24fae76decacf7d030468b75cd52b5f8:**
 84/84 recibos verificados,78 operaciones completadas y6 fallidas conservadas.
 Controlador2878413 terminado conCOLLECTED/NOT_ASSESSED; último caso028r3 con

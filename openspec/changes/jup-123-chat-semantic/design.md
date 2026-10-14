@@ -39,6 +39,36 @@ como tal y no repite suPOST. Los artefactos distinguen gasto conocido y reservas
 
 ## Risks and open questions
 
+### Corte vigente después de N3 c7 — 2026-10-14
+
+Supera los estados «pendiente de medir» de los cortes históricos inferiores.
+La medición de c7 terminó: 83 respuestas y 1 fallo técnico; revisión local
+70 conformes, 7 inciertas y 6 fallos de contenido. No permite aceptación.
+Ver [informe y comparación](../../../docs/validation/JUP-123-c7e2d561-N3-local-review.md).
+
+El siguiente contrato debe separar tres responsabilidades: extraer hechos
+con fuente y ámbito, determinar resultados/reglas que deben cubrirse y redactar
+sobre esos hechos. Que una expresión sea correcta no garantiza que el modelo
+la seleccione (011r3); que una cita sea literal no garantiza que seleccione el
+pasaje pertinente (009r1). No resolverlo añadiendo preguntas del banco a un router
+de expresiones regulares ni degradando validadores para que termine la operación.
+
+Hechos aportados mantienen autoridad hipotética, distinta de facturación
+contrastada. Atributos conocidos no pueden reaparecer como ausentes (001r2).
+Los calificadores documentales deben conservarse en conclusión y auxiliares:
+«conviene» no se convierte en «exige» y no confirmado no se convierte en falso.
+La cobertura debe distinguir sección recuperada incompleta de política ausente;
+015 necesita la regla de investigación, no otro ajuste global de estilo.
+
+Antes de otra campaña: implementar y contrastar fuera del banco ejemplos de
+valores/monedas/ámbitos alternativos, fuentes incompletas y contradicciones;
+comprobar streaming/final/backend. Registrar explícitamente qué parte de la
+extracción sigue siendo semántica y no atribuirle garantías deterministas.
+La cota final 4.423039035/5USD incluye reservas completas desconocidas; no basta
+restar esa cifra para autorizar otra N3. Cada operación exige admisión viva.
+
+### Cortes históricos previos a la medición de c7
+
 Correcciones locales posteriores a00dc: el prefijo de modo hipotético incluye
 comparación aritmética derivada de campos explícitos adyacentes forecast/budget
 en la misma moneda. Es cobertura numérica, no extractor general de hechos,
