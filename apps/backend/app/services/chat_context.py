@@ -215,6 +215,10 @@ class ChatContext:
             bounded={'deadline':deadline,'cancelled':cancelled} if deadline is not None and isinstance(store,PgVectorQueryStore) else {}
             if isinstance(store,PgVectorQueryStore):
                 bounded['neighbor_seed_count']=min(settings.retrieval_top_k,evidence_limit,20)
+                from app.core.chat_policy_sections import policy_topic, SECTIONS
+                section = SECTIONS.get(policy_topic(question))
+                if section is not None:
+                    bounded['policy_section'] = section
             candidates = store.search_chunks(scope['tenant_id'],vector,top_k=20,
                                          max_distance=settings.retrieval_max_distance,provider=provider.name,**bounded)
             stage='candidate_validation'
@@ -229,7 +233,10 @@ class ChatContext:
                     raise ValueError('Invalid candidate location.')
                 locations[(document, index)] = item
             current()
-            chunks = list(candidates[:min(settings.retrieval_top_k,evidence_limit)])
+            policy = [item for item in candidates if item.get('policy_priority') is True]
+            ordinary = [item for item in candidates if item.get('policy_priority') is not True]
+            count = min(evidence_limit, max(settings.retrieval_top_k, len(policy)))
+            chunks = (policy + ordinary)[:count]
             primary = list(chunks)
             selected = {item['chunk_id'] for item in chunks}
             omitted = set()
@@ -253,6 +260,8 @@ class ChatContext:
                              'sections':item.get('section_spans',[])}} for item in chunks]
             omission = {'collection':'corpus','reason':'contiguous_context_bounded',
                         'candidate_limit':20,'omitted_neighbors':len(omitted)} if candidates else None
+            if omission is not None and policy:
+                omission['omitted_policy_chunks'] = sum(item['chunk_id'] not in selected for item in policy)
             return evidence, citations, omission
         except TimeoutError as failure:
             _retrieval_diagnostic(stage,failure)
