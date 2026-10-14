@@ -16,6 +16,51 @@ memoria/cacheSQL limitadas y gasto preservado; ampliar límites de claves exclus
 únicamente dentro de5USD sin extender caducidad. Criterios de revisores siguen
 pendientes; ampliación económica no equivale a aceptación semántica.
 
+Última observación:PID2642423S/live,22recibos(20completed/2failed),22verificados,
+023r1active. Observaciónguardada en candidate-cap5-observation.json externo;
+021/022familiareservada sinadjudicar. Continúa mismo controlador/producto.
+
+### Primera ronda cap5 congelada y027/028 — 14/10/2026
+
+28/28recibosr1,26completed/2failed,todosVERIFIED_PUBLIC_SNAPSHOT, recursosSHA
+verificados. Congelados fuera deGit en candidate-cap5-r1-frozen conmanifestSHA;
+familiasreservadas013–015/020–022 sinadjudicar. MismoPID2642423S/live,
+001r2active: quedan56muestras, no aceptarN3porr1.
+
+028r1real coincide campoacampo conreplaydeterminista:showback, calidadallocation
+noevaluada, sólocita finopschunk11.027r1 aritmética10→6EUR/pedido/−40%correcta,
+pero textoatribuye afirmaciones aldocumentoFinOps con response.evidencevacío;
+soportedocumental pendiente, noPASSsemántico. Informefocal-027-028-provisional.json
+conhashes. No retocar arquitectura poruna sola muestra ni filtrar fallos.
+
+###005/026r1 actuales contrastados — 14/10/2026
+
+005r1real:1000EUR elegibles,10%unallocated,amarillo; distingue explícitamente
+shared/unallocated yexcluded fuera dedenominador. Provisionalconforme a requisitos
+básicos; entailment decitas no adjudicado.026r1real coincide campoacampo con
+replaydeterminista previo (answer/status/evidence/metrics/auxiliares): no concluye
+cero nipositivo, sin citas/métricasdecorativas, insufficient_data. RecursosSHA
+verificados ypublichistoryparitytrue. Evidencia en candidate-cap5-calibration-observed
+conrecibos ychecks. Faltanr2/r3 yadjudicaciónindependiente; no declararPASSglobal.
+
+Última observación del mismoPID2642423S:26recibos,026costeconciliado; servidor
+continúa sin cambios. Conteos previos22/19 son cortes históricos. Mantener5USD.
+
+###017r1 actual contrastado — 14/10/2026
+
+Recibo e23 actual017r1 establece100>100falso,25>20verdadero,ANDfalso;
+inputmatchesbank/stablesnapshot/publichistoryparity/citationknown verdaderos.
+Comprobación provisional porrequisito; faltanr2/r3 yjuicioindependiente. Archivo
+candidate-cap5-017-r1.json y-check.json externos, hashresources verificado.
+Primera captura local porstdoutSSH fue decodificada conWindowsCP yse conserva
+como -encoding-invalid.json; recopiada desdeoriginalremoto inalterado conUTF8
+explícito ychecksumcorrecto. No es un defecto delproducto ni se alterórespuesta.
+
+Controlador2642423 confirmadoS/live al corte17/84(16completed/1failed), todos
+recibosverificados. Últimopreflight17:12UTC conservador1.750741071USD más reservas
+pendientes0.641904USD(incluye003y017aúnporconciliar eneseinstante), máspróxima
+cota0.319952 dentrode5. Son cortes históricos, no gastoactualgarantizado.
+
 ### Reanudación actual de cap5 tras OOMbackend — 14/10/2026
 
 Controladore92628df aplicado sin cambiardiffapps frente ae23.003r1 derivado
