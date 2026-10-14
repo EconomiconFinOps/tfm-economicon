@@ -65,10 +65,10 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     undefined_guidance='evaluated-zero-domain-absolute-and-next-step-v2',
     quantity_display='observed-value-unit-provenance-no-operation-v1',
     boolean_rules='grounded-named-delta-pair-terminal-v1',
-    retrieval_neighbors='same-snapshot-tenant-provider-immediate-bounded20-v1',
+    retrieval_neighbors='same-snapshot-tenant-provider-immediate-bounded20-contiguous-priority-v2',
     evidence_order='local-visible-support-no-root-decoration-v2',
     documentary_sections='original-markdown-positional-contiguous-ranges-v1',
-    interval_rules='explicit-percentage-partition-lexical-numerator-v1',
+    interval_rules='explicit-percentage-partition-resolved-eligible-total-v2',
     decision_values='server-query-no-model-decision-v1',
     reasoning={'effort':'high','exclude':True,'shared_output_tokens':3200})
 from app.core.chat_review import DRAFT_INSTRUCTION,REVIEW_INSTRUCTION,DRAFT_MAX_BYTES,draft_schema

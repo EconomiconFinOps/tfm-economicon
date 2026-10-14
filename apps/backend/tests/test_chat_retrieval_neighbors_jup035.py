@@ -67,3 +67,24 @@ def test_default_contract_does_not_add_positional_lookup():
     instance=store([row(4)],[row(3)])
     assert [r['chunk_id'] for r in instance.search_chunks('tenant-a',[1.])]==['doc:4']
     assert len(instance.engine.calls)==2
+
+
+
+def test_context_tail_trim_keeps_first_hit_continuation_before_unrelated_hits():
+    from app.services.chat_context import contiguous_priority
+    def chunk(doc, index): return {'chunk_id': f'{doc}:{index}', 'document_id': doc, 'chunk_index': index}
+    primary = [chunk('rules', 1), chunk('finops', 10), chunk('rules', 0), chunk('rules', 11)]
+    chunks = primary + [chunk('rules', 2), chunk('finops', 11), chunk('finops', 9)]
+    ordered = contiguous_priority(chunks, primary)
+    assert [x['chunk_id'] for x in ordered[:4]] == ['rules:1', 'rules:2', 'rules:0', 'finops:10']
+    assert {x['chunk_id'] for x in ordered} == {x['chunk_id'] for x in chunks}
+    assert len(ordered) == len(chunks)
+
+
+def test_context_reordering_does_not_expand_neighbors_recursively_or_cross_documents():
+    from app.services.chat_context import contiguous_priority
+    def chunk(doc, index): return {'chunk_id': f'{doc}:{index}', 'document_id': doc, 'chunk_index': index}
+    primary = [chunk('a', 1), chunk('b', 8)]
+    chunks = primary + [chunk('a', 2), chunk('a', 3), chunk('b', 2)]
+    ordered = contiguous_priority(chunks, primary)
+    assert [x['chunk_id'] for x in ordered] == ['a:1', 'a:2', 'b:8', 'a:3', 'b:2']

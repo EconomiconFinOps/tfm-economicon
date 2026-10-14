@@ -20,6 +20,28 @@ from app.schemas.chat import canonical
 from app.services.citations import resolve_citations, validate_context
 
 
+def contiguous_priority(chunks, primary):
+    """Keep selected immediate neighbors next to their hit before tail trimming.
+
+    This only reorders already authorized selections. It neither expands the
+    retrieval pool nor recursively walks a document. Prefer continuation before
+    preceding context because chunk tails may cut a rule/table mid-sentence.
+    """
+    locations = {(x['document_id'], x['chunk_index']): x for x in chunks}
+    selected = {x['chunk_id'] for x in chunks}
+    ordered, seen = [], set()
+    def append(item):
+        if item is not None and item['chunk_id'] in selected and item['chunk_id'] not in seen:
+            ordered.append(item); seen.add(item['chunk_id'])
+    for seed in primary:
+        append(seed)
+        for index in (seed['chunk_index'] + 1, seed['chunk_index'] - 1):
+            append(locations.get((seed['document_id'], index)))
+    for item in chunks:
+        append(item)
+    return ordered
+
+
 _retrieval_correlation=ContextVar('chat_retrieval_correlation',default=(None,None))
 _retrieval_logger=logging.getLogger(__name__)
 
@@ -208,6 +230,7 @@ class ChatContext:
                 locations[(document, index)] = item
             current()
             chunks = list(candidates[:min(settings.retrieval_top_k,evidence_limit)])
+            primary = list(chunks)
             selected = {item['chunk_id'] for item in chunks}
             omitted = set()
             # Expand only primary hits, never recursively or beyond this scoped pool.
@@ -221,6 +244,7 @@ class ChatContext:
                         continue
                     chunks.append(neighbor)
                     selected.add(neighbor['chunk_id'])
+            chunks = contiguous_priority(chunks, primary)
             stage='citations'
             citations = resolve_citations([item['chunk_id'] for item in chunks],chunks,scope['tenant_id'])
             evidence = [{'id':item['chunk_id'],'kind':'corpus','title':item['title'],'source':item['source'],
