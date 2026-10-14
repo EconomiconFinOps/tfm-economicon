@@ -12,7 +12,7 @@
 
 ## 2. Normalización de informes (`tools/evaluation-dashboard.py`, pruebas en `scripts/tests/test_evaluation_dashboard.py`)
 
-- [ ] 2.1 Lectura y validación de manifiestos: varios `--manifest`, formatos admitidos, error por formato desconocido, por ruta inexistente o por `run_id` duplicado, y `milestone` por entrada
+- [x] 2.1 Lectura y validación de manifiestos: varios `--manifest`, formatos admitidos, error por formato desconocido, por ruta inexistente o por `run_id` duplicado, y `milestone` por entrada
 - [ ] 2.2 Adaptador `jup-070-report-v1`:
   - metadatos del bloque `run`;
   - filas de `counts` con `cases` como denominador;
