@@ -25,7 +25,48 @@ candidate-e94f6e54-campaign-resume1.log y anterior preservados. Plan84 congelado
 evaluation-ledger.sqlite común conserva baseline y candidato. Todo coste de las
 operaciones concluidas conciliado; ninguna nueva generación tras rechazo.
 
-### Núcleo de premisas — local, aún no conectado al chat
+### Integración numérica del motor de premisas — local
+
+El evaluador trivalente se usa ahora en render_boolean de backend y processor.
+Las premisas se construyen únicamente después de evaluar expresiones y límites
+verificados por el servidor; no se aceptan valores de verdad del proveedor.
+Referencias internas de comparación no añaden citas al corpus. La combinación
+mantiene la semántica anterior: no atribuir a este refactor corrección nueva de
+026/028. Ambos módulos permanecen idénticos byte a byte entre aplicaciones.
+
+18pruebas backend y77processor pasan. Doce pruebas de streaming cubren AND/OR,
+condición absoluta verdadera/falsa con relativa indefinida y chunks1/17/8192;
+streaming=final y fuentes vacías para regla del usuario. Backend carga el nuevo
+manifiesto. AssemblerSHA3117e0b8242344982399f4e2270c83fc5d460428a721eadb0cdad8da410a3423.
+El núcleo ya está integrado en comparaciones numéricas, NO en premisas textuales
+ni recomendaciones. No transferido/desplegado, ninguna llamada pagada. Las
+sesiones Linux46770/25679 previas de c76 siguen sin salida final, no reiniciadas.
+
+### Verificación Linux c76e4423 — observación pendiente
+
+Transferido git archive c76e4423b52a405723568a47f68343867054a861 a
+/home/danteadmin/economicon-jup123-20261014/offline-c76e4423; SHA256
+bd0a3d91f002d4c6c96c0ca976eaeaa3b1a68afbde3e4f3a9378834eeb2de0e1.
+Registro externo offline-c76e4423-transfer.json. Contenedores sin red/claves,
+montaje sólo lectura, usuario10001,cap-dropALL,1CPU/2500m cada uno:
+- jup123-offline-c76e4423-backend, sesión46770: interval_rules + summary_resources.
+- jup123-offline-c76e4423-processor, sesión25679: premises,resolved_classification,
+  interval_stream y resources.
+Ambos emitieron progreso pero no resumen ni exit; no contar como PASS. Consulta
+Docker stats sesión37837 también sin resultado. Nueva conexión SSH acotada
+falló durante banner exchange. No se demuestra que los contenedores acabaran;
+no reiniciar por timeout. Inspeccionar mismos handles al recuperar acceso.
+Artefacto offline-c76e4423-pending.json preserva observación. No atribuir causa
+al código, OOM o caída del host sin evidencia. No modificar otros servicios.
+
+PR130 comprobada de nuevo:OPEN,head318a56f/basec30a7d0,CHANGES_REQUESTED;
+la review mantiene tokenizer pendiente y no valida aún criteriosA. Sin nueva
+base que reconciliar. Inspección de ChatContext.billing:verifica consulta y
+pantalla, pero no acredita cobertura completa de ingesta. Diseño OpenSpec
+actualizado para separar query_has_rows,queried_total_is_zero,coverage y gasto
+del periodo.026 hipotético no puede acceder a autoridad financiera del backend.
+
+### Núcleo inicial de premisas — antecedente previo a integración numérica
 
 `apps/processor/app/core/chat_premises.py`: decisión trivalenteAND/OR/NOT,
 procedencia obligatoria para hechos conocidos, desconocidos explícitos, árboles

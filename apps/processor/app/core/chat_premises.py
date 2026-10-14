@@ -3,8 +3,8 @@
 This evaluator does not extract facts or establish entailment from prose. Its
 caller must bind premises to the captured request or authorized evidence before
 evaluation. Provider-supplied truth values must never be passed as bound facts.
-Not yet connected to the response gateway: the binder and renderer are separate
-integration requirements, not guarantees supplied by this module.
+Grounded numeric comparisons use this evaluator. Free-prose scenario binding
+and recommendation rendering remain separate integration requirements.
 """
 from dataclasses import dataclass
 from types import MappingProxyType

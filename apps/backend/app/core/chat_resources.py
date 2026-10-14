@@ -15,7 +15,7 @@ TOKENIZER_SHA = '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82
 TOKENIZER_REVISION = 'a66456a59f21345d1e5e586345c448a9106d29d7'
 BASE_SHA = '8e3197acc5cc50b4368d547fbde9ea198cad3364414cec489cd9050f922e6edf'
 INPUT_SHA = 'a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42'
-ASSEMBLER_SHA = 'd4c1f8bb5f8aea98baccb1cf5d5144b2848b6cc68546b1d24dfdedca1b16d96e'
+ASSEMBLER_SHA = '3117e0b8242344982399f4e2270c83fc5d460428a721eadb0cdad8da410a3423'
 from app.core.chat_expressions import context_question, context_quantities
 
 # This control is generated locally, never by an LLM. The entire current

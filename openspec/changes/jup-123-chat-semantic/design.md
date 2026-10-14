@@ -34,8 +34,8 @@ No afirmar cierre por superar pruebas unitarias ni por reunir 84 recibos.
 ## Premisas y conclusiones — integración en curso, 2026-10-14
 
 Los fallos026/028 no se resuelven comprobando sólo que una cita sea literal.
-Se introduce un evaluador trivalente acotado (`chat_premises.py`), todavía sin
-activar en el gateway. Una premisa conocida tiene procedencia; una premisa
+Se introduce un evaluador trivalente acotado (`chat_premises.py`), integrado primero en la combinación de comparaciones numéricas
+verificadas; la ruta de premisas textuales continúa pendiente. Una premisa conocida tiene procedencia; una premisa
 no evaluada conserva valor desconocido, sin evidencia negativa inventada.
 AND/OR/NOT usan lógica de Kleene. Se validan todas las ramas y se conservan
 las premisas desconocidas aunque otra condición determine el resultado.
@@ -63,3 +63,36 @@ Integración pendiente, por orden:
 Treinta pruebas del núcleo cubren las tablas de verdad y límites, pero no
 acreditan el enlazador, extracción, redacción ni la corrección del producto.
 No se cambia el candidato desplegado ni la campaña congelada para este trabajo.
+
+### Fuente disponible para el enlazador de cobertura
+
+Inspección de `apps/backend/app/services/chat_context.py::ChatContext.billing`
+(14/10/2026): la consulta se ejecuta por tenant y periodo; `BillingSummary`
+valida resultados, y la comparación con pantalla incluye importes, grupos,
+conteos y estado. La evidencia cost_query expone métricas, periodo, agrupación
+y data_status. Ese contrato no aporta una certificación de cobertura de ingesta
+para el periodo completo. `available` y `matched_at_verification` no autorizan
+inferirla. Tampoco los fragmentos FinOps generales acreditan cobertura financiera.
+
+El enlazador debe separar como mínimo:
+- `query_has_rows`: observación de la consulta contrastada, con su scope.
+- `queried_total_is_zero`: sólo un total explícito contrastado para una moneda;
+  no se construye a partir de una lista vacía ni mezcla monedas.
+- `period_coverage_complete`: desconocido mientras no exista evidencia específica.
+- `period_spend_is_zero`: no se deriva de query_has_rows=false; requiere total y
+  cobertura completos en el mismo scope/periodo/moneda.
+
+Los escenarios textuales del usuario, incluido026, mantienen procedencia
+hipotética y no pasan a este canal de autoridad financiera. La integración
+requiere además una ruta de escenario explícita y sus contraejemplos; no usar
+una mera coincidencia de palabras para simular observaciones autenticadas.
+
+### Integración numérica verificada
+
+render_boolean construye premisas a partir de resultados de _numeric y del
+comparador de la regla ya ligada al catálogo. evaluate combina esos resultados;
+no recibe la verdad escrita por el modelo. Conserva la semántica anterior y
+no cambia las fuentes documentales. Las pruebas de streaming/final incluyen
+falso AND desconocido=falso y falso OR desconocido=desconocido, sin convertir
+el operando desconocido en falso. Queda pendiente el enlace textual descrito
+arriba; esta integración no cierra026/028 ni suple la campaña real incompleta.

@@ -117,8 +117,16 @@ def render_boolean(value,renderer):
         pieces.append(label+': '+formula+' = '+exact+' '+unit+'. Condición: '+exact+' '+unit+' '+symbols[relation]+' '+condition['value']+' '+unit+' → '+('verdadero' if valid else 'falso')+'.')
         outcomes.append(valid)
     renderer._count()
-    if rule['combinator']=='AND':result=False if False in outcomes else None if None in outcomes else True
-    else:result=True if True in outcomes else None if None in outcomes else False
+    # Values enter the premise evaluator only after the grounded numeric
+    # expressions above have been evaluated by the server. These references
+    # identify comparisons, not extra documentary citations.
+    from app.core.chat_premises import Premise, evaluate
+    premises = {str(index): Premise(outcome, () if outcome is None else
+                (rule['id'] + ':condition:' + str(index),))
+                for index, outcome in enumerate(outcomes)}
+    decision = evaluate({'all' if rule['combinator'] == 'AND' else 'any':
+                         [{'premise': key} for key in premises]}, premises)
+    result = decision.value
     conclusion='no se puede determinar' if result is None else 'se cumple' if result else 'no se cumple'
     pieces.append('Resultado '+rule['combinator']+': la regla '+conclusion+'.')
     pieces.append('Regla aportada por el usuario; escenario hipotético.' if rule['origin']=='user' else 'Regla documental aplicada al escenario hipotético.')

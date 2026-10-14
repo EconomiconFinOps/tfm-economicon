@@ -105,3 +105,13 @@ def test_rule_split_across_authenticated_spans_is_not_guessed():
     question='¿Se cumple la regla?\n\nBaseline 80 EUR/día; observado 96 EUR/día.'
     document='# Policy\n## Relative\nrelative_delta >20 % AND\n## Absolute\nabsolute_delta >12 EUR/day'
     assert catalog(question,document).boolean_rules==[]
+
+
+@pytest.mark.parametrize('combinator,result', [('AND', 'no se cumple'), ('OR', 'no se puede determinar')])
+def test_false_absolute_condition_does_not_change_unknown_relative_condition(combinator, result):
+    q = catalog(request(current=6, baseline=0, combinator=combinator))
+    rendered = render_response(response(q), [], quantities=q)
+    assert 'base es cero' in rendered['answer']
+    assert '6 EUR/día > 12 EUR/día → falso' in rendered['answer']
+    assert f'Resultado {combinator}: la regla {result}.' in rendered['answer']
+    assert rendered['evidence'] == []

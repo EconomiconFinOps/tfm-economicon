@@ -80,3 +80,34 @@ def test_cyclic_or_excessive_trees_are_bounded():
     many = {'all': [{'all': [{'premise': 'p'}] * 16}] * 16}
     with pytest.raises(ValueError):
         evaluate(many, {'p': fact(True)})
+
+
+@pytest.mark.parametrize('width', [1, 17, 8192])
+@pytest.mark.parametrize('operator,current,expected', [
+    ('AND', 6, 'no se cumple'), ('OR', 6, 'no se puede determinar'),
+    ('AND', 30, 'no se puede determinar'), ('OR', 30, 'se cumple'),
+])
+def test_grounded_numeric_decision_stream_and_final_preserve_unknown(width, operator, current, expected):
+    import json
+    from app.core.chat_expressions import context_quantities
+    from app.core.chat_segments import render_response
+    from app.clients.chat_stream_parser import SegmentAnswerJSON
+
+    question = (f'¿Se cumple la regla?\n\nBaseline 0 EUR/día; observado {current} EUR/día. '
+                f'Regla: delta relativo >20 % {operator} delta absoluto >12 EUR/día.')
+    catalog = context_quantities({'messages': [{'content': 'UNTRUSTED_CURRENT_CONTEXT\n'
+                                              + json.dumps({'question': question})}],
+                                  'authorized_evidence': []})
+    rule = catalog.boolean_rules[0]
+    value = {'answer': {'boolean': {'rule_id': rule['id'], 'baseline': rule['baseline'],
+                                   'current': rule['current']}},
+             'status': 'insufficient_data', 'evidence': [], 'metrics': [],
+             'recommendations': [], 'assumptions': [], 'limitations': [], 'next_actions': []}
+    parser = SegmentAnswerJSON([], quantities=catalog)
+    raw = json.dumps(value)
+    streamed = ''.join(parser.feed(raw[i:i + width]) for i in range(0, len(raw), width))
+    result = render_response(value, [], quantities=catalog)
+    assert streamed == parser.finish() == result['answer']
+    assert 'base es cero' in streamed
+    assert f'Resultado {operator}: la regla {expected}.' in streamed
+    assert result['evidence'] == []
