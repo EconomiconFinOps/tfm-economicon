@@ -100,6 +100,32 @@ completa en la prueba de corpus real. Siguiente bloque: recuperación de la secc
 por tenant/provider en el mismo snapshot SQL, con límites y cancelación existentes.
 No sustituir esta prueba por un JSON local presentado como retrieval real.
 
+### Recuperación exacta de la sección — comprobada con pgvector
+
+Backend añade una expansión opcional según el tema conceptual admitido, dentro
+de la conexión REPEATABLE READ de la búsqueda actual. No hay otro embedding.
+Los encabezados candidatos se localizan en documentos del tenant con embeddings
+del proveedor activo; el parser original de Markdown debe confirmar un único
+encabezado real y su cierre. Se permiten dos candidatos como centinela de
+ambigüedad, documentos de hasta65536 bytes y seis chunks como máximo; el séptimo
+es centinela de presupuesto, no una muestra que pueda recortarse silenciosamente.
+
+La consulta de chunks usa posiciones literales en el texto normalizado del mismo
+documento/snapshot y comprueba continuidad antes de dar prioridad. Conserva las
+distancias reales; el filtro de similitud del ranking no impide obtener una
+política por su sección explícita. La selección total sigue limitada a20,
+con omisiones explícitas si el límite de evidencia es inferior. Los pasos SQL
+reutilizan el control de plazo/cancelación existente y no abren otra conexión.
+
+Producto fb7d9ea0, pruebas adicionalesddb64eb5:46 casos Linux/pgvector correctos,
+sin omisiones, con XML durable. Incluyen actualización concurrente de texto y
+chunks (se conserva una sola versión), tenant/proveedor, límite de seis, byte
+limit con UTF8 y ambigüedad entre dos documentos. Los servicios B vigentes no
+cambiaron; sólo PostgreSQL/runner desechables sin red externa. La sección de
+presupuestos llega completa al compilador, incluida investigación/no apagado.
+Esto no es una campaña LLM de015 ni aceptación de B; no se alteran sus recibos.
+17 pruebas de recursos y carga independiente de ambos servicios conformes.
+
 ### Cortes históricos previos a la medición de c7
 
 Correcciones locales posteriores a00dc: el prefijo de modo hipotético incluye

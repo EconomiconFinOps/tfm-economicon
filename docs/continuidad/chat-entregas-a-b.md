@@ -4,6 +4,24 @@ Actualizado: 2026-10-14. Origen: chat 01a1270c-e332-7462-9c90-706d49ade92c.
 El usuario confirma aprobación del equipo y autoriza actualizar Trello, publicar
 A y cerrar #120/#121 sin integrar. No autoriza despliegue ni mensajes Discord.
 
+## Corte vigente: nueva cabeza11f84334
+
+Consulta posterior al bloque SQL de B: PR130 OPEN, no integrada, head
+11f8433404f786c065ad35f13f673465fa26caf5 sobre develop/c30a7d0. Se leyeron todas
+las reviews, conversación e inline y el diff incremental de27 archivos frente
+a28ee5b1c: redes por slot; GET autenticado `/assistant/capabilities`, no-store y
+booleano estricto; acceso frontend condicionado al estado efectivo y comprobación
+antes de crear conversación. Añade pruebas y evidencia propia de A, no validación
+semántica. Las dos reviews anteriores siguen CHANGES_REQUESTED, sin aprobación
+nueva ni inline threads. Consultas de runs/status por SHA vacías: CI de esta cabeza
+no verificada, sin trasladar su verde anterior.
+
+Pendiente incorporar sólo bloques técnicos a B y verificar superficies afectadas;
+no importar sus resúmenes/OpenSpec ni dar por aceptada A. El commit aún no estaba
+en el object store local de B al consultar. Evidencia externa en PR121-local-evaluation:
+jup122-pr130-current-11f84334.json y jup122-pr130-11f84334-commit.json. Nada publicado
+ni modificado en A desde este trabajo. Cortes de28ee5b1c siguientes son históricos.
+
 - Padre: [JUP-035](https://trello.com/c/BJfABykd), continúa pendiente.
 - A: [JUP-122](https://trello.com/c/gFYKmcLT), ingeniería/base del chat.
 - B: [JUP-123](https://trello.com/c/TqtcumIN), calidad semántica/evaluación.

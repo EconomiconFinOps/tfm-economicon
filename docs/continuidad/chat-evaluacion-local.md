@@ -8,7 +8,63 @@ ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
 ### Corte vigente: c7 N3 terminada — 14/10/2026 20:37 UTC
 
-Trabajo local posterior, aún sin medir ni transferir: compilador de secciones
+#### Recuperación de políticas comprobada con SQL real
+
+Producto local posterior `fb7d9ea0bcef30b7994451c74d5d1fb7f596a8f7` y pruebas
+adicionales `ddb64eb513fef5d05badb2857a4e73ff421ed0ac` (sólo cambia un fichero
+de tests entre ambos). Se recupera la sección solicitada por tenant y proveedor
+en la misma transacción REPEATABLE READ, sin otro embedding. El máximo sigue
+siendo20 fragmentos; la expansión de política admite como máximo6. Dos documentos
+candidatos, un documento de más de65536 bytes, sección sin cierre o huecos no
+ganan prioridad. La distancia se conserva, aunque la selección exacta de una
+política esté fuera del umbral de similitud. Las omisiones por límite se declaran.
+
+**46 pruebas Linux/pgvector PASS, sin omisiones**, con JUnit durable y nodos únicos:
+6 nuevas SQL (presupuestos/tagging, aislamiento, ambigüedad, actualización concurrente,
+tope6 y límite en bytes UTF8),14 de contrato pgvector y26 focales del contexto/
+compilador/vecinos. La actualización concurrente prueba que textos, chunks y citas
+leen la misma versión aunque otro escritor confirme una política distinta.
+Dos primeras tandas acabaron43PASS y3PASS pero perdieron JUnit al terminar el
+tmpfs; se conservan sus logs y el fallo de recogida. La tanda46 completa usa una
+carpeta de evidencia propia para XML persistente; no sumar las repeticiones.
+
+Se usaron PostgreSQL y runner desechables con red sin salida, datos en tmpfs y
+fuente sólo lectura; sin credenciales de IA. IDs/imágenes de backend, processor
+y pgvector del B vigente iguales antes/después; contenedores propios retirados,
+sin OOM. No se activó el nuevo candidato. Archivo ddb SHA256
+667d282f06cc4b97919a633d7133ff959aeb0eb41cd01123ccfe4b57b346bc7c; fuente
+remota `/home/danteadmin/economicon-jup123-20261014/candidate-ddb64eb5`.
+Pruebas/hashes: `policy-retrieval-sql-assessment-v1.json`,
+`policy-retrieval-native-ddb64eb5-durable/` y `policy-retrieval-transfer-proof-v2.json`,
+en la evidencia externa habitual. La prueba de presupuestos recupera y compila
+«investigacion, no apagado automatico»; esto todavía no es aceptación LLM de015.
+
+17 pruebas de recursos processor PASS y carga en frío independiente de ambos
+servicios con versión `jup-035.chat.v3:a4709b0622e7321221bd6923d6822e68f4651e5d452f659cfaeb14f1dab2d19b`;
+assembler3361ddbac0491efe050200a57c111a9a2ca48b8fe491a5dc32219799a7191872.
+Evidencias `policy-retrieval-resource-tests-v1.{xml,log}` y
+`policy-retrieval-cold-load-both-v1.json`. No prompt de sistema nuevo, inferencias,
+consumo ni publicación. Runtime medido sigue c7; contabilidad histórica más abajo.
+
+Nueva consulta de A: PR130 avanza a11f8433404f786c065ad35f13f673465fa26caf5,
+añade red/IP por slot y capacidades autenticadas para ocultar el chat y comprobar
+antes de crear conversación. Diff de27 ficheros respecto a28ee5b1c. Reviews siguen
+las dos solicitudes de cambios; sin inline threads nuevos. CI de esta cabeza no
+verificada: consultas por SHA devuelven listas vacías, no un PASS. Falta incorporar
+sus bloques a B y probarlos; no sustituir nuestros resúmenes con la documentación
+histórica de A. Recibos `jup122-pr130-current-11f84334.json` y
+`jup122-pr130-11f84334-commit.json`, con reviews/conversación/inline leídos.
+
+Siguiente: reconciliar ese nuevo A y continuar001/009/011/021 y las incertidumbres
+004/022. Ninguna casilla de aceptación de B se da por completada por este bloque.
+Trello actualizado por la integración DockerServer, sin mover deEn curso,
+concurrencia y lectura posterior exactas. Prueba `jup123-trello-policy-sql-update-v1.json`;
+descripción SHA db910a52e222ce211de7cad1e61e7b3b5f811e8311818507f06fc7d90937a936.
+Ningún mensaje Discord. OpenSpec estricto del bloque conforme.
+
+#### Corte anterior: compilador de políticas (79e6a22d)
+
+En este corte, aún sin medir ni transferir: compilador de secciones
 completas `chat_policy_sections.py`, integrado en esquema privado, streaming y
 renderer de ambos servicios. No cambia el runtime c7 ni sus recibos. Ver el
 [diseño](../../openspec/changes/jup-123-chat-semantic/design.md#compilador-local-de-secciones-completas--2026-10-14).

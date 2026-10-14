@@ -20,6 +20,25 @@ ausente, mezclar políticas o conceder autoridad financiera.
 - **WHEN** la pregunta es conceptual y el contexto contiene costes contrastados
 - **THEN** la respuesta de política conserva sólo sus fuentes documentales y no genera métricas financieras
 
+### Requirement: Recuperación de política en un solo snapshot
+La recuperación MUST enlazar encabezado, texto y chunks de una política en la
+misma transacción por tenant y proveedor, conservando plazos y límites. No solicita
+otro embedding ni convierte una política parcial en completa por truncamiento.
+
+#### Scenario: El ranking no incluye la sección solicitada
+- **WHEN** una pregunta conceptual admitida corresponde a una única sección completa del corpus autorizado
+- **THEN** la búsqueda exacta por sección puede recuperar sus chunks aunque estén fuera del umbral de similitud
+- **AND** conserva la distancia real y el máximo total de20 fragmentos
+
+#### Scenario: El documento cambia durante la recuperación
+- **WHEN** otro escritor confirma cambios de texto y chunks entre las lecturas
+- **THEN** la búsqueda y las citas conservan la misma versión transaccional de la política
+
+#### Scenario: La política excede los límites o es ambigua
+- **WHEN** hay dos documentos candidatos, el documento excede65536 bytes o la expansión requiere más de6 chunks
+- **THEN** no se da prioridad a una selección parcial ni se elige arbitrariamente un documento
+- **AND** todas las consultas adicionales quedan sujetas al plazo y cancelación existentes
+
 ### Requirement: Campaña repetida identificable
 El evaluador MUST conservar cada caso y repetición del banco original con una
 identidad única y hacer visibles las muestras ausentes y los fallos técnicos.
