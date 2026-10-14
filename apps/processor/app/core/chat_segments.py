@@ -68,14 +68,14 @@ def project_recommendation_citations(value,authorized_evidence):
 
 
 CLASSIFIED_NOTES=(
-    'Las cantidades proceden del escenario aportado; no son mÃ©tricas financieras verificadas.',
-    'La clasificaciÃ³n aplica Ãºnicamente al KPI y a la secciÃ³n documental indicados.',
-    'El denominador es el mostrado en la fÃ³rmula; debe corresponder a los conceptos elegibles del escenario.',
+    'Las cantidades proceden del escenario aportado; no son métricas financieras verificadas.',
+    'La clasificación aplica únicamente al KPI y a la sección documental indicados.',
+    'El denominador es el mostrado en la fórmula; debe corresponder a los conceptos elegibles del escenario.',
 )
 
 
-BOOLEAN_NOTES=('Las cantidades y la regla se aplican Ãºnicamente al escenario indicado.',
-    'Una condiciÃ³n indefinida no se convierte en un resultado numÃ©rico inventado.',)
+BOOLEAN_NOTES=('Las cantidades y la regla se aplican únicamente al escenario indicado.',
+    'Una condición indefinida no se convierte en un resultado numérico inventado.',)
 CLASSIFICATION_ABSTENTIONS=('No puedo clasificar de forma fundada: necesito identificar los componentes del coste elegible y el numerador del KPI.',
     'No puedo clasificar de forma fundada: necesito una regla completa y aplicable al KPI solicitado.',)
 
