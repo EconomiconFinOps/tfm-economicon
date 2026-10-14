@@ -67,6 +67,39 @@ extracción sigue siendo semántica y no atribuirle garantías deterministas.
 La cota final 4.423039035/5USD incluye reservas completas desconocidas; no basta
 restar esa cifra para autorizar otra N3. Cada operación exige admisión viva.
 
+### Compilador local de secciones completas — 2026-10-14
+
+Primer bloque implementado después de medir c7. `chat_policy_sections.py`
+reconstruye una sección desde rangos posicionales autorizados, con encabezado
+inicial y siguiente encabezado que cierre su extremo. Comprueba cada carácter
+solapado; no rellena huecos ni considera el final del chunk como final de política.
+Tablas y listas se compilan como unidades literales, cada una contenida íntegra
+en un fragmento real. Conserva valores, negaciones y calificadores como datos.
+El contrato no contiene una copia de los tags o reglas del banco.
+
+El enrutador léxico reconoce temas conceptuales de reglas de tagging y apagado
+por presupuesto; no compara preguntas completas del banco. Rechaza negaciones,
+peticiones múltiples, cálculos, configuraciones reales y otras políticas.
+Sus límites son explícitos: preguntas fuera de esas rutas conservan la síntesis
+general, que aún necesita evaluación. La garantía de cobertura no se extiende
+a una extracción semántica arbitraria.
+
+Una sección completa y única produce un terminal privado ligado al hash de
+pregunta, sección y fuentes. El esquema sólo admite ese terminal y auxiliares
+vacíos; servidor y parser producen todas las unidades y las mismas citas.
+Un contexto financiero de pantalla no convierte una definición en métrica.
+Con secciones parciales, incompatibles, ambiguas, demasiado largas o no citables,
+no se fuerza el terminal ni se inventa el texto ausente.
+
+247 pruebas focales processor y dos backend con corpus real correctas. Ambos
+loaders propios cargan en frío la misma nueva versión. Replay de los84 recibos
+c7 activa sólo010r1/r2/r3 y conserva once unidades/streaming/final/ensamblado;
+no mide al proveedor ni cambia etiquetas históricas. 015 carece de la sección
+completa en esos recibos: sigue pendiente, aunque el compiler ya admite su lista
+completa en la prueba de corpus real. Siguiente bloque: recuperación de la sección
+por tenant/provider en el mismo snapshot SQL, con límites y cancelación existentes.
+No sustituir esta prueba por un JSON local presentado como retrieval real.
+
 ### Cortes históricos previos a la medición de c7
 
 Correcciones locales posteriores a00dc: el prefijo de modo hipotético incluye

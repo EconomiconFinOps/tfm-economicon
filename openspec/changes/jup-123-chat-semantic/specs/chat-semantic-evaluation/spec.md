@@ -1,5 +1,25 @@
 ## ADDED Requirements
 
+### Requirement: Cobertura de listas documentales completas
+El servidor MUST conservar todas las unidades de una sección de reglas en las
+rutas conceptuales admitidas de tagging y operación de presupuestos. La compilación
+exige rangos originales contiguos y ambos límites de sección, sin rellenar texto
+ausente, mezclar políticas o conceder autoridad financiera.
+
+#### Scenario: Una lista completa tiene tabla y reglas adicionales
+- **WHEN** una pregunta conceptual admitida tiene una única sección completa y autorizada con lista y tabla citables
+- **THEN** el esquema admite sólo el terminal ligado a esa pregunta y sección y el servidor muestra todas sus unidades literales
+- **AND** streaming y final conservan paridad y el proveedor no puede añadir auxiliares que contradigan la política
+
+#### Scenario: Falta un extremo o hay contradicción entre fragmentos
+- **WHEN** la sección carece de comienzo o cierre original, presenta un hueco o un solapamiento incompatible, o hay dos documentos candidatos
+- **THEN** no se compila un terminal completo ni se inventan reglas para rellenarlo
+- **AND** permanece la ruta general sin atribuirle las garantías de ese terminal
+
+#### Scenario: La pantalla tiene datos financieros además de la política
+- **WHEN** la pregunta es conceptual y el contexto contiene costes contrastados
+- **THEN** la respuesta de política conserva sólo sus fuentes documentales y no genera métricas financieras
+
 ### Requirement: Campaña repetida identificable
 El evaluador MUST conservar cada caso y repetición del banco original con una
 identidad única y hacer visibles las muestras ausentes y los fallos técnicos.

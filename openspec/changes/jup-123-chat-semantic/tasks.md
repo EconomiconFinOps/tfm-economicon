@@ -18,6 +18,7 @@
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.
   - Correcciones014/003 medidas en c7 N3:014 conforme3/3,003 completa3/3. Las1470 pruebas Linux/SQL conservan su alcance; no validan calidad por sí solas.
   - Persisten regresiones001r2/009r1/010r1/011r3/015r1/r2;021r3 falla por ecuación libre, sin candidato privado exacto. Priorizar cobertura tipada y premisas/modalidad; no relajar validadores ni reconocer sólo preguntas del banco.
+  - Compilador de secciones completas integrado localmente:247 pruebas processor y2 backend PASS, cargas en frío propias y replay010r1/r2/r3 con once unidades correctos. Sin medición ni despliegue.015 aún necesita recuperar su sección; otros defectos y variantes pendientes. No cerrar3.1 por este bloque.
 - [ ] 3.2 Comparar por requisito/repetición y descartar regresiones obligatorias.
   - Comparación c7/e23 registrada:438 pass→pass,7 pass→fail,7 uncertain→uncertain,6 uncertain→pass,2 fail→pass; técnicos aparte. No se cumple ausencia de regresiones; casilla abierta.
 - [ ] 3.3 Confirmar N5 según alcance acordado y presupuesto.

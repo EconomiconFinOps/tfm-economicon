@@ -106,14 +106,16 @@ def segment_schema(records=None, *, limit=4000, quantities=None):
 
 def bind_segments(schema, records=None, quantities=None):
     schema=copy.deepcopy(schema)
+    from app.core.chat_policy_sections import required_policy
     from app.core.chat_reporting import required_reporting
     from app.core.chat_missing_spend import required_missing_spend
     reporting = required_reporting(quantities)
     missing = required_missing_spend(quantities)
-    terminal = 'reporting_basis' if reporting is not None else 'missing_spend'
-    bound = reporting if reporting is not None else missing
+    policy = required_policy(quantities)
+    terminal = 'policy_section' if policy is not None else 'reporting_basis' if reporting is not None else 'missing_spend'
+    bound = policy if policy is not None else reporting if reporting is not None else missing
     if bound is not None:
-        status = 'ok' if reporting is not None else 'insufficient_data'
+        status = 'ok' if policy is not None or reporting is not None else 'insufficient_data'
         base = copy.deepcopy(next(branch for branch in schema.get('anyOf', [schema])
                                   if status in branch['properties']['status'].get('enum', [])))
         props = base['properties']
@@ -226,6 +228,11 @@ def bind_segments(schema, records=None, quantities=None):
 
 
 def render_classified_answer(value,expressions):
+    if isinstance(value, dict) and set(value) == {'policy_section'}:
+        from app.core.chat_policy_sections import policy_answer
+        text, sources = policy_answer(value, expressions.catalog if expressions else None)
+        expressions.documentary_sources.update(source['id'] for source in sources)
+        return text
     if isinstance(value, dict) and set(value) == {'missing_spend'}:
         from app.core.chat_missing_spend import missing_spend_answer
         return missing_spend_answer(value, expressions.catalog if expressions else None)
@@ -333,6 +340,14 @@ def render_response(value, records, *, quantities=None):
     if not isinstance(value,dict) or 'answer' not in value:
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
+    from app.core.chat_policy_sections import required_policy, policy_answer
+    if required_policy(quantities) is not None:
+        if ('basis' in value or value.get('status') != 'ok'
+                or any(value.get(field) != [] for field in
+                       ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'))):
+            raise ValueError('Invalid policy authority or auxiliary fields.')
+        text, sources = policy_answer(value['answer'], quantities)
+        return ServerRenderedResponse({**value, 'answer': text, 'evidence': server_evidence(sources)}, sources)
     from app.core.chat_missing_spend import required_missing_spend, missing_spend_answer
     if required_missing_spend(quantities) is not None:
         if ('basis' in value or value.get('status') != 'insufficient_data'

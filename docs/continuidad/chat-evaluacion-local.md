@@ -8,6 +8,49 @@ ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
 ### Corte vigente: c7 N3 terminada — 14/10/2026 20:37 UTC
 
+Trabajo local posterior, aún sin medir ni transferir: compilador de secciones
+completas `chat_policy_sections.py`, integrado en esquema privado, streaming y
+renderer de ambos servicios. No cambia el runtime c7 ni sus recibos. Ver el
+[diseño](../../openspec/changes/jup-123-chat-semantic/design.md#compilador-local-de-secciones-completas--2026-10-14).
+Lee listas/tablas y conserva literalmente todas las reglas, valores y modalidades
+del corpus autorizado; no copia las cinco etiquetas del banco a Python. Las
+preguntas conceptuales de tagging y operación de budgets se enrutan por tema;
+otros pedidos, negaciones, cálculos y consultas múltiples siguen la ruta general.
+
+La compilación exige encabezado original, siguiente encabezado que cierre la
+sección, rangos contiguos y coincidencia de solapamientos. Ambigüedad entre dos
+documentos, huecos, tabla dañada o cita que no quepa íntegra en un fragmento no
+producen un terminal autorizado. Su hash liga pregunta, sección completa y fuentes;
+el proveedor sólo puede devolver ese terminal, sin añadir limitaciones o métricas.
+Un contexto financiero de pantalla no desactiva la pregunta de política ni le
+otorga autoridad financiera. No hay un parser semántico general ni una garantía
+para formulaciones fuera de la ruta admitida.
+
+Verificaciones finales del bloque:247 pruebas focales del processor PASS y dos
+del backend con corpus real PASS; carga en frío propia de ambos servicios con
+la misma versión de recursos. El verificador backend conserva su implementación
+independiente; sólo avanza ASSEMBLER_SHA, no se sustituye por el loader processor.
+Versión `jup-035.chat.v3:28d964a6749790021d80037a99905c6696f15bf25ab54b960585a6a7ae74d8b4`;
+assembler13b1bf57d91e5ca5f64dff1dc809a86fc83dbced2a72fa42235570eec9674368.
+
+Replay de selección sobre los84 recibos c7: la ruta nueva selecciona sólo las
+tres muestras010, con once unidades literales completas, mismo streaming/final
+y ensamblado público correcto. No es una nueva campaña ni reemplaza etiquetas.
+015 sigue sin compilar por faltar su sección completa en los recibos originales;
+con la sección completa del corpus, la prueba backend conserva investigación y
+ausencia de apagado. Resta recuperar esa sección en el mismo snapshot SQL y
+dentro del plazo y presupuesto existentes, antes de afirmar corregido015.
+
+Evidencias externas `policy-sections-focused-final-v5.{xml,log}`,
+`policy-sections-backend-final-v5.{xml,log}`,
+`policy-sections-{resource-load,backend-cold-load}-v5.json` y
+`policy-sections-replay-v2.json`. Fallos previos de arnés y el test negativo que
+detectó una captura de cálculo quedan conservados. No cambió el prompt de sistema.
+Sin inferencias, consumo nuevo, transferencia, despliegue ni publicación.
+Resumen con hashes y alcance: `policy-sections-local-block-v1.json`. OpenSpec
+estricto PASS e higiene1620 archivos PASS; estas comprobaciones no sustituyen
+la medición pendiente ni las pruebas SQL/Linux del próximo bloque de retrieval.
+
 Supera el avance 47/84 y la revisión sólo r1 descritos más abajo. Producto
 c7e2d5616d3ba3d4e6fa467f27f272a05595a621: 84/84 recibos verificados,
 83 completed/1 failed. Controlador 3607245 terminado COLLECTED/NOT_ASSESSED;
