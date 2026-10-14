@@ -260,13 +260,13 @@ def _check_run(report: dict) -> dict:
         if inner not in _check_object(run[field], f"run.{field}"):
             raise _bad(f"run.{field}.{inner}", "campo obligatorio ausente")
     _check_object(run["retrieval"], "run.retrieval")
-    # Una ejecución sin fecha no se puede ordenar en las series, así que `date` no admite null. Se acepta
-    # la `Z` final porque datetime.fromisoformat no la entiende en las versiones de Python anteriores a 3.11.
+    # Una ejecución sin fecha no se puede ordenar en las series, así que `date` no admite null. No se
+    # normaliza la `Z` final: desde Python 3.11 datetime.fromisoformat la acepta y el repositorio exige 3.12+.
     date = run["date"]
     try:
         if not isinstance(date, str):
             raise ValueError("no es una cadena")
-        datetime.fromisoformat(date[:-1] + "+00:00" if date.endswith("Z") else date)
+        datetime.fromisoformat(date)
     except ValueError as error:
         raise _bad("run.date", f"debe ser una fecha ISO 8601 ({error})") from error
     if type(run["synthetic"]) is not bool:
@@ -354,14 +354,55 @@ def _not_measured(item: dict, behavior: str, denominator) -> dict:
     return _metric_row(item, behavior, status="not_measured", denominator=denominator)
 
 
-def _proportion_row(item: dict, behavior: str, data: dict) -> dict:
+def _shape_error(item: dict, path: tuple[str, ...], problem: str) -> AdapterError:
+    # Todo mensaje de forma rota empieza por `metrics.<ID>: ` (campo exacto de la métrica, como exige el spec) y
+    # el elemento anidado concreto va después, en el problema: `metrics.ACC-3: groups.clarify debe ser un objeto`.
+    where = ".".join(path)
+    return _bad(f"metrics.{item['id']}", f"{where} {problem}" if where else problem)
+
+
+def _object_at(item: dict, value: object, *path: str) -> dict:
+    if not isinstance(value, dict):
+        raise _shape_error(item, path, "debe ser un objeto")
+    return value
+
+
+def _object_field(item: dict, data: dict, key: str) -> dict:
+    # Comprobación explícita en lugar de un `try/except` genérico alrededor del adaptador: ese capturaría
+    # también errores de programación (un KeyError nuestro) y los disfrazaría de «informe mal formado».
+    if key not in data:
+        raise _bad(f"metrics.{item['id']}", f"falta {key!r}")
+    return _object_at(item, data[key], key)
+
+
+def _is_count(value: object) -> bool:
+    # `type(...) is int`: bool es subclase de int y `True` no es un recuento (mismo criterio que `counts`).
+    return type(value) is int
+
+
+def _proportion_row(item: dict, behavior: str, data: dict, path: tuple[str, ...] = ()) -> dict:
+    # `path` es la ubicación de la proporción dentro de la métrica (vacía si la métrica es la proporción).
+    _object_at(item, data, *path)
     # `available` False manda sobre `rate`: un informe incoherente no debe publicar como medido un 0.0 que
     # en realidad significa «sin datos». Con rate None tampoco hay nada que copiar.
     if data.get("available") is False or data.get("rate") is None:
+        # Lo no medido no copia `k` ni `ci95`, así que su ausencia no es un error.
         return _not_measured(item, behavior, data.get("n"))
+    # Una proporción medida copia `k`, `n` y `ci95`: se exige antes de construir la fila para no inventar
+    # un 0 ni publicar como intervalo algo que no lo es (p. ej. una cadena de dos caracteres).
+    for key in ("k", "n"):
+        if key not in data:
+            raise _shape_error(item, path, f"falta {key!r}")
+        if not _is_count(data[key]):
+            raise _shape_error(item, path, f"{key!r} debe ser un entero")
     # Un 0.0 o un k=0 con `available` True SÍ es una medición (cero fallos), y sigue siendo `measured`.
     ci = data.get("ci95")
-    ci_low, ci_high = ci if ci else (None, None)
+    if ci is None:
+        ci_low, ci_high = None, None
+    elif isinstance(ci, list) and len(ci) == 2:
+        ci_low, ci_high = ci
+    else:
+        raise _shape_error(item, path, "'ci95' debe ser null o una lista de exactamente 2 límites")
     return _metric_row(item, behavior, status="measured", value=data["rate"], numerator=data["k"],
                        denominator=data["n"], ci_low=ci_low, ci_high=ci_high)
 
@@ -382,12 +423,13 @@ def _acc_2_rows(item: dict, data: dict) -> list[dict]:
     rows = _single_proportion(item, data)
     # `judged` es el sub-objeto con los puntos juzgados por personas; si el informe no lo trae no se inventa.
     if "judged" in data:
-        rows.append(_proportion_row(item, "judged", data["judged"]))
+        rows.append(_proportion_row(item, "judged", data["judged"], ("judged",)))
     return rows
 
 
 def _group_rows(item: dict, data: dict) -> list[dict]:
-    return [_proportion_row(item, name, group) for name, group in data["groups"].items()]
+    groups = _object_field(item, data, "groups")
+    return [_proportion_row(item, name, group, ("groups", name)) for name, group in groups.items()]
 
 
 def _rel_4_rows(item: dict, data: dict) -> list[dict]:
@@ -402,21 +444,31 @@ def _grd_2_rows(item: dict, data: dict) -> list[dict]:
     if data.get("available") is False:
         return [_not_measured(item, "all", None)]
     rows = [_value_row(item, "all", data.get("total"))]
-    rows += [_value_row(item, case, count) for case, count in data["by_case"].items()]
+    by_case = _object_field(item, data, "by_case")
+    rows += [_value_row(item, case, count) for case, count in by_case.items()]
     return rows
+
+
+def _check_stages(item: dict, stages: dict) -> list[tuple[str, dict]]:
+    # Cada etapa debe ser un objeto antes de leerle `value`/`n`; se valida toda la lista antes de construir filas.
+    return [(stage, _object_at(item, entry, "stages", stage)) for stage, entry in stages.items()]
 
 
 def _stage_value_rows(item: dict, data: dict) -> list[dict]:
     # LAT-1..3: la ausencia de una etapa no contamina a las demás, cada una decide su propio estado.
-    return [_value_row(item, stage, entry.get("value"), entry.get("n")) for stage, entry in data["stages"].items()]
+    stages = _object_field(item, data, "stages")
+    return [_value_row(item, stage, entry.get("value"), entry.get("n"))
+            for stage, entry in _check_stages(item, stages)]
 
 
 def _stage_rate_rows(item: dict, data: dict) -> list[dict]:
-    return [_proportion_row(item, stage, entry) for stage, entry in data["stages"].items()]
+    stages = _object_field(item, data, "stages")
+    return [_proportion_row(item, stage, entry, ("stages", stage)) for stage, entry in stages.items()]
 
 
 def _str_2_rows(item: dict, data: dict) -> list[dict]:
-    rows = [_value_row(item, name, count) for name, count in data["by_category"].items()]
+    by_category = _object_field(item, data, "by_category")
+    rows = [_value_row(item, name, count) for name, count in by_category.items()]
     return rows + [_value_row(item, "all", data.get("total"))]
 
 
