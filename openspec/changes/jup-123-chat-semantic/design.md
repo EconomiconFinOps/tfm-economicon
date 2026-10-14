@@ -143,7 +143,7 @@ convierte pruebas sintéticas en validación del modelo.
 | Gateway y contrato público |12pruebas nuevas en108PASS; esquemas, streaming/final y rechazo de contradicciones | Probado con proveedor simulado, no ejecución final pagada |
 | Linux | fa5e9527:244processor/64backendPASS,exit0; archivo e imágenes registrados | Superficies modificadas verificadas; no equivale a suite completa ni calidad real |
 | SQL | fa5e9527:43PASS58.30s en instancia exclusiva limitada | Contratos SQL verificados; no prueba pérdida de red después deCOMMIT |
-| Navegador | e94:recuperación historial017; diff frontend e94..fa5 vacío | Evidencia histórica conservada; nuevas respuestas no verificadas en navegador; runtimeB con SQL detenido porOOM |
+| Navegador | e94:historial017; frontend sin cambios; replays026/028 en1280/390px con texto íntegro normalizando espacios | Presentación simulada verificada; falta integración con backend/citas y proveedor actual; runtimeB SQL detenido porOOM |
 | Especificación e higiene | OpenSpec estricto JUP123 válido; higiene1609archivosOK | Comprobado en9f52; CLI instalada en checkoutauto, sin instalar red |
 | Criterios y N5 | Tareas1.4/2.4/3.3 abiertas; pregunta al usuario sobre acuerdo existente | No inventar acuerdo, porcentaje ni dispensa de revisores |
 | Revisión externa/publicación | B no publicada; borrador técnico y evidencia local disponibles | No integrar ni afirmar listo para aprobación mientras faltan los puntos anteriores |

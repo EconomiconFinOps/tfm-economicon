@@ -25,6 +25,21 @@ candidate-e94f6e54-campaign-resume1.log y anterior preservados. Plan84 congelado
 evaluation-ledger.sqlite común conserva baseline y candidato. Todo coste de las
 operaciones concluidas conciliado; ninguna nueva generación tras rechazo.
 
+### Presentación navegador de replays026/028 — 2026-10-14
+
+Frontend local Vite127.0.0.1:29770 del árbol actual, Playwright visible, API
+interceptada con sesión sintética y respuestas de los replays locales originales.
+026/028 a1280px y390px conservan texto tras normalizar espacios DOM;4comprobaciones,
+0mutacionesAPI. Capturas replay-ui-026/028-1280/390.png e informe replay-ui-result.json
+externos. Captura028móvil inspeccionada: texto legible, citas literales conservan
+marcadores markdown. Primer locator exacto multilínea falló por normalización;
+segunda comparación normaliza sólo espacios, no palabras ni conclusiones.
+
+Alcance: presentación del contenido en historial simulado; NO backend/persistencia,
+streaming real,metadatos source_citations ni proveedor. No convertir esta prueba
+en aceptación end-to-end. RuntimeB SQL sigue detenido; no nuevo consumo ni datos
+reales. Script temporal playwright-test-jup123-replay.js, fuera del repositorio.
+
 ### Alcance de la evidencia y dependenciaA — 2026-10-14
 
 Reconsulta gh pr view130 confirma cabeza318a56f/basec30a7d0,OPEN,
