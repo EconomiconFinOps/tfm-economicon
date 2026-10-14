@@ -294,6 +294,11 @@ class ExpressionRenderer:
             total_shown = display(total)
             total_symbol = '=' if Decimal(total_shown) == total else '≈'
             denominator_note = 'Denominador (' + rule['denominator'] + '): ' + total_formula + ' ' + total_symbol + ' ' + total_shown + ' ' + total_unit + '.\n'
+            denominator_note += ('En la partición aportada, shared (coste compartido) y '
+                'unallocated (coste sin asignar) son categorías separadas. '
+                'Shared forma parte del denominador elegible, pero no del numerador '
+                'unallocated. Excluded queda fuera del denominador según la exclusión '
+                'explícita del escenario.\n')
         return '\n' + denominator_note + 'Clasificación según la regla ('+rule['metric']+'; '+rule['section']+'): '+interval['label']+'. '+formula+' '+equality+' '+shown+' '+unit+'. Intervalo: '+' y '.join(conditions)+'.\n'
 
     def _count(self):

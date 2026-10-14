@@ -1,5 +1,137 @@
 # Evaluación local de JUP-035
 
+## Estado vigente — 14/10/2026, 11:15 UTC
+
+JUP-123/B activa, sin aceptación final. Producto e94f6e54 en entorno B, hashes
+verificados; herramientas8215a2b7, fixture1651b8fa. Regresión1282PASS/52SKIP y
+43SQLPASS por separado; no equivalen a aceptación semántica.
+
+Campaña candidata detenida, PID491260 terminó. Corte inmutable externo
+`materiales/07-evidencias/PR121-local-evaluation/candidate-budget-stop-41/`
+(relativo al workspace padre): 41/84 muestras,38completed/3failed,41 recibos
+VERIFIED_PUBLIC_SNAPSHOT. Incluye r1 completa y001–013r2. Ledger y preflight
+congelados; manifest con SHA256 por archivo. Reserva sin adjudicar.
+013r2 falló y su coste quedó conciliado por lectura:0.004260287USD; no repetido.
+Tras conciliación el paso auditado rechaza explícitamente
+`Insufficient budget for worst-case operation`.
+Contador conservador global1.683584087USD a11:14:48UTC (no atribución exacta a B).
+Más seed reservado0.002 y cota por operación0.319952 da2.005536087USD > tope2.
+No reiniciar campaña, renovar claves, rebajar la cota sin demostración ni generar
+más llamadas pagadas. Continuar análisis y correcciones offline. N3 incompleta;
+no presentar la campaña como validación final ni seleccionar mejores intentos.
+
+Root remoto /home/danteadmin/economicon-jup123-20261014; logs
+candidate-e94f6e54-campaign-resume1.log y anterior preservados. Plan84 congelado;
+evaluation-ledger.sqlite común conserva baseline y candidato. Todo coste de las
+operaciones concluidas conciliado; ninguna nueva generación tras rechazo.
+
+### Corrección local posterior al corte — separación shared/unallocated
+
+El renderer de la partición cerrada añade explicación de los roles: shared
+pertenece al denominador elegible pero no al numerador unallocated; excluded
+queda fuera por la política explícita del escenario. No se aplica a totales
+explícitos sin partición ni cambia cálculo, umbrales o extracción. Prueba nueva
+comprueba el contenido, igualdad streaming/final y ausencia fuera de la ruta.
+Backend/processor sincronizados. Contrato interval_rules v4; assemblerSHA
+`d4c1f8bb5f8aea98baccb1cf5d5144b2848b6cc68546b1d24dfdedca1b16d96e`.
+Processor81PASS; backend98PASS/2fallos de entorno Windows1314 al crear symlinks
+en pruebas de summary v2 (no comportamiento de producto). No se omiten ni alteran
+las pruebas; su ejecución Linux sigue pendiente para este candidato. Primer ensayo tras cambio de contrato detectó3 fallos de
+manifiesto desactualizado; actualizado y repetido81PASS. No transferido ni
+validado con modelo: las41muestras siguen acreditando e94f6e54, no esta corrección.
+
+### Navegador — historial sin inferencia
+
+Skill Playwright, Chromium visible, entornoB loopback29660 por SSH. Login,
+lista de conversaciones, apertura017r1, recarga y reapertura verificados.
+Contenido idéntico antes/después;100>100false,25>20true,ANDfalse. La recarga
+limpia selección pero no pierde el historial. Captura inspeccionada visualmente:
+`candidate-browser-017-top.png` en raíz externa de evidencia. Las capturas previas
+history/reopened conservadas; reopened quedó desplazada a la lista. Lista larga
+hace scroll de página completa. No se validó streaming nuevo ni móvil; peticiones
+noGET a conversaciones bloqueadas por el script. Sin consumo LLM de navegador.
+Scripts temporales playwright-test-jup123-{history,reload,reopened,top}.js.
+
+Pendientes: analizar r2 emparejada, resolver005/026/028 y dudas, pruebas offline,
+validación real restante dentro de presupuesto demostrable, criterios revisores
+y reconciliación A(tokenizer/reviews). No publicar. Historial inferior conserva
+cortes anteriores, superados sólo en lo descrito aquí.
+
+### SQL nativo del candidato — 14/10/2026
+
+43PASS en44.60s, Cockroach24.1.11; test_chat_cockroach_jup035.py con producto
+e94f6e54 y fixture1651b8fa. Base nueva economicon_jup035_mock_b_e94f6e54, prefijo
+exclusivo de pruebas y scopes UUID; bases creadas conservadas para inspección.
+Proceso523486 y contenedor jup123-native-e94f6e54 terminados0/OOMfalse, contenedor
+eliminado. Sin claves ni llamadas modelo. Registro externo
+candidate-e94f6e54-native-result.json contiene log y estado Docker. Verifica
+transiciones JSONB, orden publicación/commit y concurrencia; no navegador ni
+calidad semántica, ni pérdida de red tras COMMIT. No alterar el conteo1282/52 de
+regresión offline: estas43 estaban omitidas allí, ahora verificadas aparte.
+
+### Observaciones preliminares del candidato
+
+r1 completa congelada en candidate-r1-frozen/ con ledger-snapshot.json y agregado
+candidate-r1-aggregate.json (PARTIAL frente al plan84,56pendientes). Primera
+agregación local rechazó hash porque read_text usó encodingWindows; repetida con
+UTF-8 explícito y hash físico del plan c58dcd9d verificado, sin alterar archivos.
+Juicios/score candidate-r1-calibration-judgments-v1.json y candidate-r1-reviewed-v1.json:
+calibración22=14PASS/4pending/3FAIL/1técnico. Reserva6 sin adjudicar, incluida013failed.
+02710→6EUR/pedido/-40%PASS, fuentesfinops2/3 contrastadas.028 requisito showback
+cumplido pero consistencyFAIL: rationale afirma calidad allocation insuficiente
+mientras limitations dice no evaluada. Fallos semánticos005/026/028; técnico003.
+No afirmar cierre ni mejora estable con r1; restantes repeticiones en curso.
+
+
+Revisados023–026r1, notas externas candidate-e94f6e54-preliminary-notes-023-026.json
+vinculadas a recibos.023 sin gasto Azure inventado;024 no inventa FX ni suma divisas;
+025 no ejecuta cambios y ofrece análisis revisable. Hay citas truncadas y frases
+fragmentadas.026 mantiene conclusión correcta pero cita finops3/Inform irrelevante:
+fallo grounding confirmado, no compensado por respuesta correcta. Persisten
+problemas de pertinencia documental; no cambiar código durante campaña.
+
+
+Último snapshot calibration16-v1 añade016–019r1:10PASS/4pending/1FAIL/1técnico.
+016:150EUR/día,37.5%,ANDtrue e investigación.017:100>100false y25%>20true,
+ANDfalse.018:200EUR/día,20>20false,ANDfalse.019:150EUR/día absoluto explícito,
+relativo indefinido por base0 y petición de base comparable/recurso nuevo. Los
+cuatro pasan preliminarmente con fuentes del usuario, sin citas sobrantes;
+respuestas/auxiliares contrastados. Artefactos candidate-calibration16-* externos.
+Son r1 únicamente; reserva013–015/020–022 permanece sin adjudicar ni usar para
+corregir. No modificar producto hasta acabar esta medición.
+
+
+Último snapshot revisado: first12-v1,6PASS/4pending/1FAIL/1técnico; notas/juicios
+anteriores preservados.010 cumple tags+reglas, contraste literal rules1/2.011
+mantiene duda9de10 vs90% explícito;012 duda por pedir confirmar regla ya estipulada.
+Requisitos comparados:13fail->pass,36pass->pass,3uncertain->pass,5pass->uncertain,
+1fail->fail,1uncertain->uncertain;003regresión técnica.010baseline r1 técnico no
+se convierte en ganancia semántica cuantificada. Artefactos candidate-first12-*
+externos;72muestras ausentes de este snapshot. Reserva013–015 sin adjudicación.
+
+
+Comparación offline first9-v1 (sólo001–009r1):5PASS,2pending,1FAIL,1técnico;
+45requisitosPASS,3uncertain,1FAIL,5sin revisar del caso técnico. Juicios vinculados
+a hashes/criterios; preliminares locales, no adjudicación independiente.
+Contra baseline:13fail->pass,30pass->pass,2uncertain->pass,3pass->uncertain,
+1fail->fail.003pass->technical_failure cuenta como regresión técnica; no afirmar
+sin regresiones por ausencia de transiciones pass->fail.75muestras faltan en
+este snapshot, aunque campaña siga avanzando. Artifacts externos
+candidate-first9-{aggregate,judgments-v1,reviewed-v1,comparison-v1}.json.
+00710.1%rojo y008cociente indefinido verifican correcciones en r1; no N3 completo.
+
+
+Notas externas candidate-e94f6e54-preliminary-notes-v1.json vinculadas a hashes de
+recibos. 001/002 cumplen cálculos requeridos;003 fallo técnico preservado.004
+contiene distinción conceptual, pero cita visible parcial y formulación categórica
+requieren adjudicación.005 calcula1000EUR/10%/amarillo con reglas3/4, pero no
+explica expresamente shared vs unallocated: no dar required-1 por cumplido por
+aritmética solamente.006 muestra5%/verde y límite inclusivo. Una repetición no
+acredita mejora estable ni aceptación. No tocar código durante esta campaña ni
+usar reserva para afinar correcciones. Snapshots externos first4 y005-006.
+
+## Historial de evidencia
+
 13/10/2026. Rama `local/JUP-035-evaluation`, referencia preservada `fc0f4697`.
 No hay publicación, despliegue ni cambios en el runtime compartido.
 
@@ -1271,3 +1403,30 @@ No cambia código de producto ni demuestra bloqueo correcto en SQL nativo.
 Pendiente repetir archivo corregido en Linux, conservar fallo original y resumir
 regresión completa; sólo entonces habilitar build del producto e94f6e54.
 No inferencias nuevas ni cambios del runtime existente.
+
+
+### Candidato activo verificado — 14/10/2026
+
+Fixture1651b8fa transferido SHA256
+c876432f2dfd2555df871fc87707a51a2ef8406a04713dcce47eedbb58536852;
+Linux22PASS, OOMfalse. Regresión resumida sin duplicar repetición:
+processor663PASS/6SKIP (29archivos), backend619PASS/46SKIP (35archivos).
+Logs, fallo original, repetición y summary.json copiados a evidencia externa
+linux-regression-e94f6e54. Producto e94f6e54 sin cambios por el fixture.
+Build backend/processor terminó0; resultado y log candidate-e94f6e54-build-verified.
+
+Primer compose rechazado por auto-review por aislamiento no demostrado. Inspección
+posterior acredita root B exclusivo,5volúmenes sin consumidores ajenos y puertos
+loopback29657/29658/29660; segundo intento admitido se detuvo antes de compose por
+BD no disponible. Cockroach B había salido7 a09:52UTC por disk stall (sync logs>20s),
+OOMfalse,30GB libres. Se arrancó sólo ese contenedor conservando volumen. SQL
+confirmó0operaciones abiertas; ledger86filas/84operaciones con costes observados.
+Después compose up --no-deps --no-build backend processor terminó0 en el proyecto
+B. Ningún otro despliegue modificado. No inferencias ni coste nuevo.
+
+candidate-e94f6e54-runtime-verification.json confirma324hashes fuente y contenido
+en contenedores backend102/processor93/frontend116. El nombre de proyecto sigue
+incluyendo a817382b para conservar volúmenes; código ejecutado confirmado e94f6e54.
+Plan N3 congelado sigueNOT_RUN. Siguiente: preflight/admisión viva con herramientas
+8215a2b7, adaptador candidate-e94f6e54-step.py, recuperación candidata separada y
+ledger común. Mantener2USD; no afirmar disponibilidad de presupuesto por saldo viejo.

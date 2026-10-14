@@ -136,3 +136,22 @@ def test_partition_visible_total_does_not_claim_exact_equality_after_rounding():
     catalog = partition_catalog(PARTITION.replace('allocated 70;', 'allocated 70.0000001;'))
     node = resolved_classification(catalog)
     assert '≈ 100 EUR.' in ExpressionRenderer(catalog).render(node)
+
+
+def test_allocation_explanation_is_scoped_to_verified_partition_and_streamed():
+    from app.clients.chat_stream_parser import SegmentAnswerJSON
+    catalog = partition_catalog(PARTITION)
+    response = {'answer': {'calculations': [], 'classification': resolved_classification(catalog)},
+        'assumptions': [], 'limitations': [], 'next_actions': [], 'recommendations': [], 'metrics': [], 'evidence': []}
+    parser = SegmentAnswerJSON([], quantities=catalog)
+    raw = json.dumps(response)
+    streamed = ''.join(parser.feed(char) for char in raw)
+    final = render_response(response, [], quantities=catalog)['answer']
+    assert streamed == parser.finish() == final
+    assert 'shared (coste compartido)' in final
+    assert 'unallocated (coste sin asignar) son categorías separadas' in final
+    assert 'Shared forma parte del denominador elegible, pero no del numerador unallocated' in final
+    assert 'Excluded queda fuera del denominador según la exclusión explícita del escenario' in final
+    # An explicit eligible total carries no evidence of a four-status partition.
+    explicit = catalog_for(QUESTION)
+    assert 'shared' not in ExpressionRenderer(explicit).render(resolved_classification(explicit)).lower()
