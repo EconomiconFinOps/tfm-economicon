@@ -9,7 +9,8 @@ from datetime import datetime
 import hashlib
 import json
 
-CAP = Decimal('2.00')
+# User raised the cumulative limit to USD5 on 2026-10-14; prior spend remains.
+CAP = Decimal('5.00')
 HISTORICAL_FLOOR = Decimal('0.957927619')
 
 

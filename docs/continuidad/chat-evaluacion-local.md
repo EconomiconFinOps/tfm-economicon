@@ -1,5 +1,21 @@
 # Evaluación local de JUP-035
 
+## Autorización vigente — 14/10/2026, ampliación a5USD
+
+El usuario respondió «Amplia a5$» a la solicitud de presupuesto. Máximo acumulado
+actual5USD; supera el tope2USD de los cortes históricos siguientes. No reinicia
+histórico ni ledger. Lectura nueva15:59UTC conserva upperbound1.683584087USD;
+clavesB backend0.00014362/0.02 yprocessor0.566091115/0.88, vigencia15/10 08:02UTC.
+CAP del runner pasa5; pruebas presupuesto11PASS yledger6PASS. Primer intento
+ledger con Python3.14 falló por TEMP/sandbox; segundo3.12 con temporal encheckout
+fue rechazado porcontrato; tercero usa temporal externo autorizado y pasa.
+
+Continúa preparación del candidato actual para nueva N3; no reanudar la campaña
+e94 antigua como si validara código nuevo. Recuperar sólo runtimeB autorizado,
+memoria/cacheSQL limitadas y gasto preservado; ampliar límites de claves exclusivas
+únicamente dentro de5USD sin extender caducidad. Criterios de revisores siguen
+pendientes; ampliación económica no equivale a aceptación semántica.
+
 ## Estado vigente — 14/10/2026, 11:15 UTC
 
 JUP-123/B activa, sin aceptación final. Producto e94f6e54 en entorno B, hashes

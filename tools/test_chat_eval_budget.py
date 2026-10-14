@@ -11,7 +11,7 @@ spec.loader.exec_module(b)
 class BudgetTests(unittest.TestCase):
     def setUp(self):
         self.snapshot = {'observed_at': 100, 'scope': 'jup035-cumulative-all-providers',
-                         'evidence_sha256': 'observed', 'cumulative_usd': '1.00'}
+                         'evidence_sha256': 'observed', 'cumulative_usd': str(b.CAP - Decimal('1.00'))}
 
     def test_four_attempts_and_both_generation_legs_are_reserved(self):
         bound = b.operation_bound(input_tokens_per_attempt=10000,
@@ -65,8 +65,9 @@ class BudgetTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             b.completed_attempt_cost(operation, [incomplete, report('second')])
 
-    def covered(self, reservations, spent='1.386110415'):
+    def covered(self, reservations, spent=None):
         import hashlib, json
+        if spent is None: spent = str(b.CAP - Decimal('.613889585'))
         return {**self.snapshot, 'cumulative_usd': spent, 'complete_ledger_history': {
             'historical_floor_usd': str(b.HISTORICAL_FLOOR),
             'request_ids_sha256': hashlib.sha256(json.dumps(sorted(reservations)).encode()).hexdigest()}}
@@ -81,7 +82,7 @@ class BudgetTests(unittest.TestCase):
             b.admit(self.covered(reservations), reservations, 'next', Decimal('.62'), 100)
 
     def test_lagging_counter_cannot_hide_settled_cost(self):
-        reservations = {'charged': {'state': 'COST_OBSERVED', 'reserved_usd': '1.00'}}
+        reservations = {'charged': {'state': 'COST_OBSERVED', 'reserved_usd': str(b.CAP - b.HISTORICAL_FLOOR - Decimal('.02'))}}
         with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
             b.admit(self.covered(reservations, '1.00'), reservations, 'next', Decimal('.05'), 100)
 

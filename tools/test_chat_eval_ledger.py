@@ -18,7 +18,7 @@ class LedgerTests(unittest.TestCase):
         self.path = Path(self.temp.name) / 'ledger.sqlite'
         self.ledger = l.Ledger(self.path)
         self.snapshot = {'observed_at': 100, 'scope': 'jup035-cumulative-all-providers',
-                         'evidence_sha256': 'synthetic', 'cumulative_usd': '1.00'}
+                         'evidence_sha256': 'synthetic', 'cumulative_usd': str(l.budget.CAP - Decimal('1.00'))}
 
     def reserve(self, sample='case:r1', bound='0.60'):
         return self.ledger.reserve('plan', sample, self.snapshot, Decimal(bound), 100)
