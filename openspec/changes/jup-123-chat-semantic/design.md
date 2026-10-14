@@ -45,6 +45,31 @@ como tal y no repite suPOST. Los artefactos distinguen gasto conocido y reservas
 
 ## Risks and open questions
 
+### Etapas de ahorro y ecuación de realization — 2026-10-15
+
+Producto1afa3815 compila tres roles monetarios explícitos, con moneda/unidad temporal
+idénticas y fórmula verificado/identificado×100 aportada por el usuario. Permite
+reordenar los campos y conservar cantidades iguales con roles distintos; no presume
+que las etapas sean monótonas. El importe realizado del ejercicio es el verificado,
+no el estimado ni la suma. Denominador cero queda indefinido y el redondeo usa≈;
+porcentajes superiores a100no se recortan. Declaraciones incompletas, otros ámbitos,
+unidades incompatibles o evidencia financiera del servidor conservan la ruta general.
+El escenario sigue siendo hipotético: no confirma implementación, ahorro o causalidad.
+
+`chat_savings_realization.py` se integra en el registro de terminales de escenario.
+El esquema privado sólo permite el ID ligado a toda la entrada, status insuficiente
+y auxiliares vacíos. El servidor calcula/renderiza; no se permite que el proveedor
+redacte una ecuación libre.419 pruebas focales processor/30 backend conformes,
+incluidos seis recorridos de gateway simulado con lectura1/7/8192bytes y rechazo
+de la ecuación libre. No se relaja esa invariante.
+
+El replay de84recibos selecciona sólo021r1/r2/r3 y produce80EUR/mes/40% con paridad
+de streaming/final/público.021r3 histórico permanece failed y su reserva íntegra:
+no se recuperó la ecuación privada original ni se acredita haber reproducido su
+causa exacta. Esto corrige localmente la posibilidad de generar esa ecuación para
+el escenario admitido, sin probar al proveedor real. Ver continuidad para Linux,
+hashes y medición pendiente;004/022 siguen requiriendo tratamiento/adjudicación.
+
 ### Atributos del desglose y regla de reparto ausente — 2026-10-15
 
 Producto localb3528bcf añade dos compiladores de escenarios explícitos, con

@@ -8,6 +8,49 @@ ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
 ### Corte vigente: c7 N3 terminada — 14/10/2026 20:37 UTC
 
+#### Etapas de ahorro021 — producto local1afa3815, 15/10/2026
+
+`chat_savings_realization.py` conserva tres roles explícitos de ahorro y su unidad
+común, y calcula la fórmula verificado/identificado×100 aportada en el escenario.
+No presume monotonía entre etapas ni suma sus importes. Denominador cero queda
+indefinido y redondeo se marca≈; no se recorta un resultado superior a100%. Roles
+duplicados/incompletos, ámbitos añadidos, unidades distintas o evidencia financiera
+del servidor conservan la ruta general. El resultado es hipotético y no acredita
+ahorro real, causalidad ni comparabilidad. El esquema sólo ofrece el terminal ligado
+a la entrada, status insuficiente y auxiliares vacíos: no genera ecuaciones libres.
+
+419 pruebas focales processor/30 backend PASS. Incluyen seis recorridos completos
+del gateway simulado, lectura1/7/8192bytes, terminal válido con paridad pública y
+ecuación libre rechazada con la regla original.47 pruebas Linux PASS sin omisiones
+ni OOM (44processor/3backend), en dos contenedores propios sin red y fuente sólo
+lectura, retirados porID/etiqueta. Runtime B con mismos IDs/imágenes antes/después;
+JUnit/logs durables recogidos con hashes. No sumar esas47 a las pruebas locales.
+Primer cortev1 tuvo dos aserciones de texto que esperaban «no» frente a «No»
+real: conservado; v2 corrige la prueba, no la lógica de división por cero.
+
+Replay de84recibos sólo selecciona021r1/r2/r3 y entrega80EUR/mes realizado del
+ejercicio y40%, con paridad streaming/final/público.021r3 permanece failed en el
+histórico, su ecuación privada exacta sigue desconocida y la reserva0.319952USD
+no se libera. El replay no es respuesta del proveedor ni aceptación de la campaña.
+Producto1afa381548ddeeda5fcdb556974afb546fa54884; archivo versionado transferido
+a DockerServer/candidate-1afa3815 bajo root B, SHA256
+bb0b21894a51f9b92062fe25e5cd13cab4b2e271dbb1180d4e68b95184e41547.
+Recursos de ambos loaders propios: `jup-035.chat.v3:7732ca7948a5d8fcf51e052d0233bd74921ceaa5fb35931ca1d87d1175f77903`,
+assembler829c43a4617d08dc02219ecacf3033b3e9cba0c17c4b4e5542378b8f24020d5a.
+Pruebas/hash/alcance en evidencia externa `savings-realization-assessment-v1.json`,
+`savings-realization-linux-1afa3815/`, `savings-realization-replay-v1.json` y
+`savings-realization-cold-load-v1.json`. Sin activación, inferencias ni gasto nuevo.
+
+Siguiente: tratar las incertidumbres004/022 y después construir/verificar el
+candidato completo, nueva admisión viva y medir las correcciones. Criterios,
+adjudicación, navegador yN5 permanecen pendientes. Última cota4.423039035/5USD es
+histórica (20:37UTC14/10); no libera reservas ni acredita saldo actual. Las claves
+caducan15/10 08:02UTC y no se renuevan automáticamente.
+Trello sincronizado por la integración DockerServer, con lista conservada y lectura
+exacta: `jup123-trello-savings-update-v1.json`, descripción
+SHAc31f7ea8da51b41c1b74ba88061d48a10a990ebefb16a29eca340a90194e6962.
+OpenSpec estricto conforme; ninguna publicación GitHub/Discord.
+
 #### Atributos001 y decisión shared009 — producto localb3528bcf, 15/10/2026
 
 Verificación enUTC14/10 22:00 (fecha local15/10). `chat_cost_breakdown.py` conserva

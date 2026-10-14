@@ -206,3 +206,25 @@ porcentajes ni selecciona citas generales como sustituto de esa regla.
 #### Scenario: Los operandos difieren o sí se aporta una regla
 - **WHEN** la petición contradice importe, moneda o activo, o la declaración incluye una regla o datos adicionales
 - **THEN** no se fuerza la decisión de regla ausente y se conserva el flujo general
+
+### Requirement: Etapas de ahorro y realization ligadas a la entrada
+El servidor MUST distinguir ahorro identificado, implementado estimado y verificado
+cuando el escenario declara las tres cantidades en una unidad común y define
+realization como verificado dividido entre identificado por100. La cantidad realizada
+del ejercicio es la verificada; no se suman etapas ni se acreditan ahorros reales.
+
+#### Scenario: Hay tres etapas y una fórmula explícita
+- **WHEN** se declaran identificado200EUR/mes, estimado150EUR/mes y verificado80EUR/mes
+- **THEN** el terminal conserva las tres etiquetas y muestra80EUR/mes realizado en el ejercicio y40% realization
+- **AND** el modelo no puede sustituir esas cantidades o emitir la ecuación como prosa libre
+- **AND** streaming, resultado del gateway y respuesta final mantienen paridad
+
+#### Scenario: Denominador cero o resultado redondeado
+- **WHEN** el ahorro identificado es cero o el porcentaje no admite representación exacta en seis decimales
+- **THEN** la división por cero queda indefinida o el porcentaje redondeado se marca aproximado
+- **AND** no se convierte la estimación en ahorro verificado ni se fuerza un máximo de100%
+
+#### Scenario: La declaración de etapas no es coherente o completa
+- **WHEN** faltan roles, se duplican, difieren moneda o unidad temporal, o cambia la fórmula o ámbito
+- **THEN** esa ruta no infiere los datos faltantes ni convierte unidades y conserva el flujo general
+- **AND** una observación financiera del servidor no se sustituye por el escenario del usuario
