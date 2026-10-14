@@ -37,11 +37,29 @@ final, conservando historial, rol de revisores y aceptación pendiente. Prueba
 externa `jup123-trello-n3-complete-update.json`; verificación previa de concurrencia
 y respuesta confirmada. No se movió la tarjeta a terminada ni se publicó B.
 
-Pendientes: terminar contraste por requisito y comparación emparejada con baseline;
-resolver incertidumbres mediante juicio independiente; criterios/N5 acordados con
-revisores y presupuesto; dependenciaA/PR130 (tokenizer/reviews). No cambiar el
+Revisión local porrequisito ycomparación emparejada realizadas(v6); aceptación
+pendiente. Restan correcciones014/003, regresión durable delnuevo00dc, mediciónreal,
+incertidumbres mediante juicioindependiente, criterios/N5 ydependenciaA/PR130
+(reviews yverificación delosbloques incorporados). No cambiar el
 producto basándose en una sola repetición. Leer los límites de los contrastes
 focales y la evidencia de UI real más abajo antes de declarar algo validado.
+
+### Regresión corregida en ejecución — 14/10/2026
+
+Producto local00dc2e0fd768fd855175ddf92ee292e48cf4eab6: A reconciliada ymanifest
+refrescado. Copia inmutablegitarchive usada para regresión Windowsmonolítica,
+SHA115deee643bd7cda4d1551357cf204b79fb35fa75b75b928809664d9bc1eab34.
+Sesiónexec49786 sigueejecutándose; PID18676, metadata/status/logs binarios yJUnit
+porpaquete en materiales/07-evidencias/PR121-local-evaluation/regression-00dc2e0f-windows/.
+Se retiraron credenciales delentorno deltest yse bloquearonproxies externos;
+fixturessintéticos. Verificar mismasesión/PID yresultados, no reiniciar por silencio.
+No resultadofinal todavía. LosintentosLinuxanteriores sonterminales ysiguen
+preservados con24archivos/hash en candidate-a294f7e1-linux-attempts/.
+
+Pendientes funcionales siguen014(excesorelativo) y003(presupuestotexto), pruebas
+reales delcontrato nuevo, adjudicación/N5/criterios yreconciliaciónverificadaSQL/A.
+No heredar N3e23 a00dc ni dar porresueltos guardrails porpasar comprobaciones
+focales. Ninguna inferencia nueva; cota anterior3.679871791USD, máximo5USD.
 
 ### Reconciliación A y defecto de manifest corregido — 14/10/2026
 
