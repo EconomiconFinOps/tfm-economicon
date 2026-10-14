@@ -1236,3 +1236,38 @@ candidate-e94f6e54-build-result.json. Ante desaparición sin resultado o fallo d
 regresión no construye. Pendiente verificar ambos procesos, transferir herramientas
 versionadas nuevas y arrancar/verificar exclusivamente los dos servicios B antes
 de cualquier inferencia. Runtime vigente conserva código baseline. Sin gasto nuevo.
+
+
+### Herramientas y dependencia A contrastadas — 14/10/2026
+
+Transferido tools del commit8215a2b74dcf7d0843aadc3001f76ffe1485083d a
+DockerServer/evaluation-tools-8215a2b7 bajo root B. SHA256 archive
+943beb5f89ce4eda1d3bb698fa779e4b4c996ae048d720bf41c427f5c6ed34ce.
+22 pruebas focales también PASS en Linux. Registro externo
+candidate-tools-8215a2b7-transfer.json. Runtime de producto sigue baseline;
+regresión candidata PID342286 comprobada viva con25archivos sin fallos,
+build PID363983 sigue condicionado al resultado integral. No inferencias nuevas.
+
+A comprobada en GitHub: PR130 OPEN/CHANGES_REQUESTED, head318a56f3; CI técnica
+SUCCESS pero JUP reviews FAILURE. Pendiente retirar tokenizer versionado y
+validación funcional/revisión; ver chat-entregas-a-b.md y recibo externo de consulta.
+No marcar1.3 completada ni atribuir a B la aceptación de A.
+
+
+### Regresión candidata terminada; fixture SQLite — 14/10/2026
+
+regression-e94f6e54/complete.json:64archivos,1archivo fallido. Build no iniciado:
+controlador detuvo correctamente ante ese resultado. Fallo en
+backend/test_chat_operations_jup035.py::test_required_tool_extension_validates_and_persists_only_recovered_sources:
+409 operation_changed,21tests del archivo PASS. Repositorio/transiciones/fixture
+sin cambios entre621c6a78 y e94f6e54; SQLite omite FOR UPDATE y su modo legacy no
+abre transacción con SELECT, permitiendo revisiones obsoletas concurrentes.
+
+Fixture ajustado para BEGIN IMMEDIATE después de migraciones/seed. Aplicarlo
+antes de migraciones causaba22errores de setup y se corrigió. Las3pruebas de
+arbitraje UNIQUE retiran expresamente el bloqueo del fixture para conservar sus
+colisiones reales; no se relajaron expectativas. Archivo final22PASS en Windows.
+No cambia código de producto ni demuestra bloqueo correcto en SQL nativo.
+Pendiente repetir archivo corregido en Linux, conservar fallo original y resumir
+regresión completa; sólo entonces habilitar build del producto e94f6e54.
+No inferencias nuevas ni cambios del runtime existente.

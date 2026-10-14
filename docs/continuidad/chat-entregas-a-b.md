@@ -28,3 +28,16 @@ Sin nuevas inferencias ni consumo. Último gasto histórico 0,957927619 USD / 2 
 
 Pendientes: CI final de A y UI, reviews de A; después colector, criterios
 acordados y campañas N=3/N=5 de B. No activar ni integrar automáticamente.
+
+
+## Comprobación de A — 14/10/2026
+
+PR130 sigue OPEN en318a56f31828be50f8960860f69172f51046734d, base develop
+c30a7d0. Pruebas Python, frontend, OpenSpec y SQL nativo SUCCESS; JUP reviews
+FAILURE y reviewDecision CHANGES_REQUESTED. Review5513304503 exige retirar
+chat/v2/tokenizer.json del repositorio y generarlo en build/CI con revisión,
+tamaño y SHA256 fijos (referencia a8f4dddc). No acredita todavía los criterios
+funcionales de JUP-122; falta Revision. Sin comentarios inline ni conversación
+adicionales en la consulta. Evidencia externa pr130-base-check-20261014.json en
+materiales/07-evidencias/PR121-local-evaluation. No se ha modificado A desde B.
+B puede medir su candidato, pero reconciliación y aceptación de A siguen abiertas.

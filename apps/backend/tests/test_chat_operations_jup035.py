@@ -85,6 +85,15 @@ def api(tmp_path, monkeypatch):
             c.execute(text("INSERT INTO user_tenants VALUES (:id,'t','member',:now)"),{'id':owner,'now':now})
             history={'schema_version':1,'identity':{'tenant_id':'t','user_id':owner,'conversation_id':owner+'-chat'},'revision':0,'next_ordinal':0,'messages':[]}
             c.execute(text("INSERT INTO conversations (id,tenant_id,user_id,title,created_at,updated_at,dialogue_history) VALUES (:id,'t',:owner,'Chat',:now,:now,:history)"),{'id':owner+'-chat','owner':owner,'now':now,'history':json.dumps(history)})
+    # Production serializes transitions with SELECT FOR UPDATE on the parent.
+    # SQLite omits that clause and its legacy transaction mode does not begin
+    # on SELECT. Acquire its database write lock before the first read so the
+    # scheduler and POST cannot both mutate the same stale revision in this
+    # fixture. Native SQL tests remain responsible for production lock scope.
+    @event.listens_for(db.engine, 'begin')
+    def sqlite_serialized_transition(connection):
+        connection.exec_driver_sql('BEGIN IMMEDIATE')
+    db.test_sqlite_transition_lock = sqlite_serialized_transition
     async def identity(request: __import__('fastapi').Request):
         return {'id': request.headers.get('X-Test-User','alice')}
     app.dependency_overrides[get_current_user] = identity
@@ -509,6 +518,9 @@ def test_concurrent_reserve_resolves_unique_conflict_without_duplicate_intent(ap
     its actual SQLite2067 category rather than claiming database equivalence.
     """
     from concurrent.futures import ThreadPoolExecutor
+    # This test deliberately bypasses parent-lock serialization to exercise the
+    # UNIQUE fallback itself; retain its real two-writer constraint conflict.
+    event.remove(api[1].engine, 'begin', api[1].test_sqlite_transition_lock)
     from threading import Barrier
     from app.db.chat_repository import ChatError, ChatRepository
     repository=ChatRepository(api[1],api[3])
