@@ -1,0 +1,80 @@
+## 1. Decisión, contrato y manifiesto (documentación)
+
+- [ ] 1.1 Redactar `docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md` con la plantilla `docs/templates/adr.md`: PostgreSQL con esquema `evaluation` y datasource integrado, alternativas descartadas (Pushgateway, promtool, TestData, Infinity, PostgreSQL aparte), Git solo para ejecuciones de hito, comando único de regeneración. Añadir su fila a `docs/adr/README.md`
+- [ ] 1.2 Escribir `docs/validation/evaluation-dashboard.md` con:
+  - el contrato `rows-v1` (campos de ejecución y de fila, estados, `NULL` para lo no medido, sin texto libre);
+  - el formato del manifiesto y los formatos admitidos;
+  - la clasificación de ejecuciones no reales y la clave de comparabilidad;
+  - la tabla de juicio humano o automático;
+  - el comando de regeneración;
+  - la nota de que JUP-071 entra por `rows-v1`.
+- [ ] 1.3 Crear `docs/validation/evaluation-runs.json` (`manifest_version` 1) con las dos ejecuciones de JUP-070, el benchmark de JUP-078, la calibración de JUP-022 y la entrada de JUP-068, todas con `milestone: true`
+
+## 2. Normalización de informes (`tools/evaluation-dashboard.py`, pruebas en `scripts/tests/test_evaluation_dashboard.py`)
+
+- [ ] 2.1 Lectura y validación de manifiestos: varios `--manifest`, formatos admitidos, error por formato desconocido, por ruta inexistente o por `run_id` duplicado, y `milestone` por entrada
+- [ ] 2.2 Adaptador `jup-070-report-v1`:
+  - metadatos del bloque `run`;
+  - filas de `counts` con `cases` como denominador;
+  - una fila por métrica con `k`, `n`, `rate` e `ci95`;
+  - filas por etapa de latencia;
+  - `available=false` o `rate` nulo pasan a `not_measured` con valor `NULL`;
+  - error si falta un campo obligatorio o la versión es desconocida.
+- [ ] 2.3 Adaptador `jup-078-benchmark-v1`:
+  - por modelo, `pass` = `successful` y `fail` = `cases - successful`;
+  - puntuación, p95 y coste como valores con unidad;
+  - commit y fecha `NULL`.
+- [ ] 2.4 Adaptador `jup-022-calibration-v1`: filas de acierto de documento, de sección y vacío por punto del barrido, con `top_k`, `max_distance`, casos como denominador y el candidato de `selection` marcado
+- [ ] 2.5 Adaptador `jup-068-input-v1`: ejecutar `node tools/business-metrics.mjs report`, normalizar como tipo B los estados y las cifras de tiempo, asignación y oportunidades con sus denominadores, y conservar `provenance`
+- [ ] 2.6 Adaptador `rows-v1`, validación común de filas para todos los adaptadores y rechazo de cualquier campo de texto libre fuera de identificadores y unidades
+- [ ] 2.7 Clasificación de ejecuciones y comparabilidad:
+  - motivos `plantilla`, `doble`, `sintetica` y `sin_modelo_verificado`;
+  - clave de comparabilidad (las ejecuciones 1 y 2 de JUP-070 dan claves distintas);
+  - tabla de juicio humano (ACC-1, ACC-3) o automático;
+  - prueba que falla si el catálogo de JUP-067 tiene un identificador sin clasificar.
+- [ ] 2.8 Subcomando `rows` que escribe ejecuciones y filas normalizadas en JSON sin tocar la base
+
+## 3. Generación de SQL y carga
+
+- [ ] 3.1 Subcomando `sql`:
+  - script transaccional e idempotente con `CREATE SCHEMA/TABLE IF NOT EXISTS`, vaciado e inserción dentro de la misma transacción;
+  - `NULL` conservados y escapado seguro de literales;
+  - sin credenciales en la salida.
+- [ ] 3.2 Vista `evaluation.config_changes` (cambios de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente; sin anotación de prompt cuando no está registrado) y consultas de comparabilidad (series con al menos dos ejecuciones)
+- [ ] 3.3 Subcomando `load`:
+  - pasa el script al `psql` de `postgres-pgvector` por la entrada estándar con `ON_ERROR_STOP`;
+  - crea o actualiza el rol `grafana_evaluation_reader` con `USAGE` y `SELECT` solo sobre `evaluation`;
+  - toma la contraseña de `GRAFANA_EVALUATION_DB_PASSWORD` y la envía solo por la entrada estándar;
+  - termina con error claro si falta la variable.
+- [ ] 3.4 Scripts `evaluation-dashboard:load`, `evaluation-dashboard:rows` y `evaluation-dashboard:test` en `package.json`, y `evaluation-dashboard:test` en el paso «Validate governance tooling» de `.github/workflows/ci.yml`
+
+## 4. Grafana y compose
+
+- [ ] 4.1 Datasource `apps/monitoring/grafana/provisioning/datasources/evaluation-postgres.yml` (uid `evaluation-postgres`, rol de lectura, contraseña por variable). `GRAFANA_EVALUATION_DB_PASSWORD: ${GRAFANA_EVALUATION_DB_PASSWORD:?required}` en Grafana dentro de `docker-compose.yml`, la variable sin valor en `.env.example` y `tools/docker-topology.test.mjs` actualizado
+- [ ] 4.2 Prueba estructural del dashboard (en `scripts/tests/test_evaluation_dashboard.py`) escrita antes que el JSON. Comprueba:
+  - cada panel tiene `Tipo: A|B|C`, `Mide:` y `No demuestra:`;
+  - ningún panel mezcla `prometheus` y `evaluation-postgres`;
+  - los paneles de evolución tienen `noValue` «Sin datos: no hay con qué comparar»;
+  - los paneles de valor muestran «No medido» para `NULL`;
+  - existen las secciones A, B y C y la sección de robustez.
+- [ ] 4.3 Dashboard `apps/monitoring/grafana/dashboards/assistant-evaluation.json` (uid `economicon-assistant-evaluation`):
+  - sección A: ejecuciones con metadatos y motivos de no real, estados con denominadores, ACC/REL/GRD, evolución automática y de juicio humano con anotaciones de `config_changes`, LAT/STR/AVL de campaña, calibración, benchmark y robustez vacía;
+  - sección B: negocio;
+  - sección C: síntomas en vivo con las expresiones del diseño y enlace al dashboard técnico.
+
+## 5. Pruebas con base real
+
+- [ ] 5.1 Conciliación: tras cargar el manifiesto versionado en un PostgreSQL real, las mismas consultas SQL de los paneles devuelven los recuentos de estado y los `k`/`n` de cada informe original. La prueba se omite si no hay base, igual que las pruebas existentes con servicios reales
+- [ ] 5.2 Permisos: el rol de Grafana no puede escribir en `evaluation` ni leer las tablas de embeddings
+- [ ] 5.3 Idempotencia y atomicidad: dos cargas seguidas dejan los mismos recuentos y una carga que falla a mitad conserva la carga anterior
+
+## 6. Validación de extremo a extremo y documentación
+
+- [ ] 6.1 Validación con `docker compose up` y `corepack pnpm evaluation-dashboard:load`. Comprobar y capturar:
+  - el dashboard provisionado junto al técnico;
+  - la ejecución 2 de JUP-070 (plantilla) con sus 28 casos por estado y rotulada como no real;
+  - las ejecuciones 1 y 2 con «Sin datos: no hay con qué comparar» en evolución;
+  - la robustez y los no medidos sin 0 %;
+  - la sección C con y sin tráfico.
+- [ ] 6.2 Actualizar la documentación: guía de arranque y regeneración (README de monitorización o `docs/validation/README.md`), nota de despliegue sobre la variable nueva para DockerServer, y fila del tema en `docs/continuidad/README.md` con su resumen
+- [ ] 6.3 Crear `docs/evidence/JUP-121-validation.md` con evidencia por criterio de aceptación de la tarjeta, lo no validado y por qué (robustez de JUP-071, despliegue en DockerServer). Ejecutar `corepack pnpm openspec:validate`, `corepack pnpm jup:check -- --change jup-121-assistant-evaluation-dashboard` y `corepack pnpm jup:cleanup:check`
