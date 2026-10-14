@@ -59,6 +59,16 @@ independiente necesita nuevos ejemplos o criterios acordados explícitamente.
 
 ## Correcciones posteriores a la medición
 
+Este apartado conserva el corte de `06be1f1a`; los pasos posteriores están en la
+[continuidad de B](../continuidad/chat-evaluacion-local.md). El candidato
+`c7e2d561` ya añade cobertura determinista de desviación de presupuesto y
+deduplicación de citas, con 1470 pruebas únicas Linux/SQL correctas en procesos
+separados. Los OOM originales se conservan; no fue una ejecución monolítica
+Linux completa. Sus imágenes se han construido y su contenido real se ha verificado
+en B. **La campaña real de ese candidato está en marcha**, sin resultado N3 final:
+estos resultados no cambian los veredictos de e23. UI001/003/014 comprobada en
+escritorio/móvil y tras recarga, sin generar desde navegador.
+
 El esquema privado exige una única selección documental literal como `rationale`
 de cada recomendación; la interpretación sigue disponible en `action`. Si no hay
 soporte documental seleccionable, no ofrece recomendaciones. Los modos

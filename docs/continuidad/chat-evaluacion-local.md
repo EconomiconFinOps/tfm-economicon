@@ -37,12 +37,131 @@ final, conservando historial, rol de revisores y aceptación pendiente. Prueba
 externa `jup123-trello-n3-complete-update.json`; verificación previa de concurrencia
 y respuesta confirmada. No se movió la tarjeta a terminada ni se publicó B.
 
-Revisión local porrequisito ycomparación emparejada realizadas(v6); aceptación
-pendiente. Restan correcciones014/003, regresión durable delnuevo00dc, mediciónreal,
+Revisión local por requisito y comparación emparejada realizadas (v6); aceptación
+pendiente. Las correcciones 014/003 están guardadas en c7e2d561; Linux/SQL pasan y resta su medición real,
 incertidumbres mediante juicioindependiente, criterios/N5 ydependenciaA/PR130
 (reviews yverificación delosbloques incorporados). No cambiar el
 producto basándose en una sola repetición. Leer los límites de los contrastes
 focales y la evidencia de UI real más abajo antes de declarar algo validado.
+
+### Candidato c7e2d561: transferencia y comprobaciones en curso — 14/10/2026
+
+Commit `c7e2d5616d3ba3d4e6fa467f27f272a05595a621`, archive Git
+SHA256 `0b18edaf6f256e4d2880a9322b5874ca079bb670276e0562fa640320a5e270d2`.
+Transferencia y plan verificados en DockerServer bajo el root exclusivo B
+`/home/danteadmin/economicon-jup123-20261014`. Plan
+`candidate-c7e2d561-offline-plan.json`, SHA256
+`280ae38fea4a7122dfb12be768e35bc54e7e34d1253ad4e9cabb1b7aab28fe26`:
+84 muestras; el estado NOT_RUN pertenece al plan congelado y no se modifica:
+la ejecución real posterior se registra en el ledger. No heredar la medición e23.
+
+Primer preflight detenido al consultar una base antigua de fixtures; ningún
+servicio detenido en ese intento. Corregido para derivar el nombre de base del
+entorno efectivo del backend (`defaultdb`), con 193 completed/16 failed y cero
+operaciones abiertas. Segundo intento conjunto Linux terminó OOM137 en processor
+con 1500 MiB, sin JUnit final: no es PASS. Ambos intentos originales preservados
+con 12 hashes en evidencia externa `candidate-c7e2d561-failed-attempts/`.
+Los dos contenedores originales B fueron restaurados y comprobados por ID/imagen.
+
+Regresión por archivo `regression-c7e2d561-per-file` terminó tras otro OOM137 en
+backend/context_assembly: 41 archivos superados y un archivo incompleto, sin fallo
+de aserciones demostrado. Servicios originales restaurados por ID/imagen.
+SQL/build iniciales se detuvieron por su condición de dependencia, sin ejecutarse.
+Ninguno de esos controladores sigue pendiente; no reiniciarlos.
+
+Recuperación `regression-c7e2d561-recovery`, PID3536339, TERMINADA: reutilizó los
+41 resultados íntegros por hash, ejecutó los 35 nodos exactos de context_assembly
+en procesos distintos y los 28 archivos restantes. Mismas aserciones y fuente,
+sin omitir casos ni elegir mejores intentos. Cobertura verificada: 70 archivos,
+1470 identidades únicas; **1418 PASS, 52 SKIP nativos, cero FAIL/ERROR**. Los cuatro
+symlinks que Windows rechazó pasan realmente en Linux. Contenedores sin red,
+secretos ni escritura en fuente, UID10001/1500 MiB. Ambos intentos OOM permanecen
+registrados y no se cuentan como PASS. Logs/JUnit y controladores copiados con
+225 hashes a `candidate-c7e2d561-linux-evidence/manifest-unit.json`.
+
+SQL `native-c7e2d561-v2`, PID3540297, TERMINADO: processor8/8, backend47/47 PASS,
+sin omisiones ni OOM, en dos bases nuevas del entorno B. Las 52 identidades
+omitidas offline están entre esas 55 (3 ya pasaban offline); total combinado
+**1470 pruebas únicas PASS**, no sumar duplicados. Fixture processor deja cero
+filas propias; servicios originales restaurados por ID/imagen. Pruebas de
+cobertura `candidate-c7e2d561-{offline,native}-coverage.json`.
+
+Build `build-c7e2d561-v2`, PID3540298, TERMINADO: backend/processor exit0, bundles
+reales cargados en build. Imágenes backend
+`sha256:bb84a117e36f7c8c7c052e5ace2c3b4caa542fe2b6b1ed938caef201889f6b5b`,
+processor `sha256:55197cd8d9f811db577b5c301725347a226fd215921225685204deba3964162b`.
+Activación exclusiva B terminada: `ACTIVE_VERIFIED_NO_INFERENCE` en su recibo de
+activación, antes de iniciar la campaña. 340 hashes de fuente y tokenizer real de
+ambos servicios verificados. Prueba `candidate-c7e2d561-activation.json` copiada
+dentro de `candidate-c7e2d561-linux-evidence/`; 31 archivos adicionales de SQL,
+build y runtime con `manifest-native-build-runtime.json`. No se modificó ningún
+despliegue ajeno a B. Ese estado de activación es histórico, no niega el inicio
+posterior de inferencias descrito debajo.
+OpenSpec JUP-123 validado estricto nuevamente. La partición es una limitación del
+entorno de pruebas; no acredita una ejecución monolítica Linux sin OOM.
+
+Adaptadores específicos preparados sin dispatch: `candidate-c7e2d561-step.py`,
+`candidate-c7e2d561-retrieval.py`; salidas propias y mismo ledger. Preflight nuevo
+exige pins del tokenizer generado tras verificar ambos contenedores reales.
+Prueba de preparación externa `candidate-c7e2d561-operators-proof.json`.
+Adaptador actualizado antes de usarlo: SHA256
+`363404e9c2f34ce0d938cb64fcae0410a36109f6dddd500e51d84fa4b21f2e4e`;
+comprueba política viva DeepInfra/fp4, sin fallbacks, ZDR, sin recopilación de datos
+y razonamiento desactivado antes de cada admisión. Versión previa preservada;
+pruebas `candidate-c7e2d561-{routing-readonly,operator-routing-guard}.json`.
+Contabilidad consultada a 19:26 UTC: contador 2.078111791 USD, reservas desconocidas
+1.601760 USD, cota 3.679871791/5 USD; claves sin renovar, vigencia 15/10 08:02 UTC.
+Evidencia `accounting-before-c7e2d561-readonly.json`. Releer antes de cada dispatch.
+
+### Campaña c7e2d561 iniciada y UI comprobada — 14/10/2026
+
+Controlador **PID3607245** en `candidate-c7e2d561-campaign/` del root remoto B.
+`launch.json` conserva argv y hashes. Usa herramientas del archive c7, adaptador
+SHA363404e9 y recuperación propia; `--retain-unknown-cost` conserva toda reserva
+sin coste probado. Los tres planes previos conocidos siguen en la cobertura del
+ledger, sin borrar intentos ni reiniciar contadores. Salidas nuevas
+`candidate-c7e2d561-n3/` y `candidate-c7e2d561-raw-api/`.
+**No iniciar otro controlador**: consultar PID, log, recibos y ledger antes de
+cualquier recuperación. Sólo un dispatch a la vez; cada uno comprueba fuente,
+proveedor, contabilidad viva, caducidad y admisión antes de reservar/enviar.
+
+Último corte guardado en `candidate-c7e2d561-progress.json`: 18/84 respuestas
+001–018r1 completed y VERIFIED_PUBLIC_SNAPSHOT; no aceptación semántica ni
+comparación N3 terminadas. 003r1 ya completa sin el fallo técnico previo; no basta
+para declarar corregidas sus tres repeticiones. Última admisión observada
+19:52:58 UTC: cota de cuenta2.150134987 USD + reservas1.601760 USD =
+**3.751894987/5 USD** conservadores en ese corte, no gasto exacto atribuible ni
+saldo actual garantizado. Las reservas activas posteriores añaden su límite antes
+del dispatch; el controlador se detiene si el siguiente paso no cabe o caducan
+las claves. Sigue vigente15/10 08:02 UTC, sin renovación.
+
+Trello actualizado exclusivamente por el puente DockerServer con verificación
+previa de concurrencia y lectura posterior; descripciónSHA
+`3c9bef7cabae5b772f2ca9a63b1e2a8d35248cbcb3697d5e2f0a6533fa30ea11`.
+Prueba externa `jup123-trello-c7e2d561-update.json`. Tarjeta sigue En curso;
+sin publicación B ni mensajes Discord. Criterios y juicio independiente pendientes.
+
+UI real c7: login demo en memoria, lectura de conversaciones exactas001r1/003r1/
+014r1, escritorio1280/móvil390 y recarga/reapertura. Contenido coincide con sus
+recibos normalizando espacios y la presentación de marcadores de cita; hashes
+de ambos en `c7e2d561-ui-result.json`. Cero escrituras del asistente intentadas,
+todas bloqueadas por el test; no inferencia desde navegador. Capturas
+`c7e2d561-ui-JUP-069-{001,003,014}-{1280,390}.png`; inspeccionadas visualmente las
+dos014:200EUR/20% visibles, sin métricas reales inventadas. No es validación de
+streaming visual, de todos los casos ni de calidad semántica completa.
+
+agent-browser no estaba instalado; se usó skillPlaywright disponible. Se conservan
+los errores de arnés (lector usaba campo inexistente y navegación antes de cargar
+el cliente), sin atribuirlos al producto ni repetir inferencias. Ejecutor copiado
+sin cambios a un temporal propio para no limpiar temporales de otros agentes;
+clave nunca guardada ni impresa. Túnel local29657/29660 PID28688 cerrado tras
+comprobar identidad; SSH del usuario y puerto28660 intactos.
+
+Siguiente: observar el mismo controlador hasta cierre/parada, congelar todos los
+recibos y costes con hashes, revisar por requisito y comparar las repeticiones
+con e23/baseline sin cambiar etiquetas históricas. Conservar incertidumbres para
+adjudicación independiente y acordar alcanceN5. No declarar PASS global por
+completar operaciones ni cambiar el producto durante esta campaña.
 
 ### Correcciones014/003 locales y regresión00dc terminada — 14/10/2026
 
@@ -81,7 +200,7 @@ considerar detener temporalmente sóloesosservicios B inactivos yrestaurar mismo
 contenedores/imágenes después; no se han detenido todavía. Ningún otrodespliegue
 puede usarse para liberar memoria. Evidencia b-exclusive-idle-resource-audit.json.
 
-### Regresión corregida en ejecución — 14/10/2026
+### Regresión corregida en ejecución — corte histórico superado del 14/10/2026
 
 Producto local00dc2e0fd768fd855175ddf92ee292e48cf4eab6: A reconciliada ymanifest
 refrescado. Copia inmutablegitarchive usada para regresión Windowsmonolítica,
