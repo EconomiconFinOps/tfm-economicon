@@ -44,6 +44,69 @@ incertidumbres mediante juicioindependiente, criterios/N5 ydependenciaA/PR130
 producto basándose en una sola repetición. Leer los límites de los contrastes
 focales y la evidencia de UI real más abajo antes de declarar algo validado.
 
+### Primera ronda c7 revisada; nueva dependencia de A — 14/10/2026
+
+Campaña PID3607245 comprobada viva por `ps`, mismo argv/commit, sin reiniciarla.
+Corte20:13UTC:47/84 recibos verificados,47completed/0failed;20r2 en observación.
+Última admisión: cuenta2.306321630 USD + reservas retenidas/activas1.921712 USD =
+4.228033630/5 USD conservadores. Incluye la reserva completa del paso activo;
+no es gasto exacto ni saldo garantizado. Prueba externa
+`candidate-c7e2d561-r1-review-progress.json`. No cambios de producto durante N3.
+
+Congelados cortes21 y primera ronda28 en `candidate-c7e2d561-first21/` (65hashes)
+y `candidate-c7e2d561-r1-frozen/` (86hashes): originales, derivados y pruebas de
+coste. Todos comprobados tras transferencia. Los21 recibos son byte a byte los
+mismos en ambos cortes; ningún mejor intento ni etiqueta de completed=PASS.
+Scorer/banco/rúbrica/partición sin cambios. Adaptador offline normaliza cada
+recibo por separado para conservar IDs al añadir muestras; prueba de identidad
+de las21 filas completas en `candidate-c7e2d561-first21-to-r1-identity.json`.
+
+Revisión local provisional de las28 respuestas/165requisitos terminada:
+**22 conformes,3 inciertas,3 fallidas;157 requisitos PASS,5 inciertos,3 FAIL**.
+No es adjudicación independiente ni aceptación N3. Evidencia versionada fueraGit:
+`candidate-c7e2d561-r1-{judgments-v2,reviewed-v2,paired-e23-v1,assessment-v1}.json`
+y `score-c7e2d561-r1.py`. Se mantienen los cortes previos, no se sobrescriben.
+
+Fallos r1:009 selecciona una cita sobre minúsculas sin relación con el reparto;
+010 omite explicar normalización de claves en minúsculas;015 omite investigación
+al superar umbral. Incertidumbres:004 inferencias categóricas sobre actual/
+amortizado;011 no explicita90% por recursos;022 afirma base actual no estable a
+partir de rightsizing pendiente y usa un rationale definitorio de alcance dudoso.
+006 repite diez veces una limitación: deuda de presentación, sin inventar una
+infracción semántica del banco por esa repetición. 014r1 incluye200EUR/20% y
+003r1 completa; faltan sus otras repeticiones para juzgar estabilidad.
+
+Paresr1 contra e23 con los mismos hashes de criterio:146pass→pass,3uncertain→
+uncertain,2uncertain→pass y3pass→fail (009/010/015).003 técnico→conforme y022
+técnico→incierto, fuera del conteo de requisitos comparables. Se releyeron las
+respuestas e23 de009/010/015 y sus etiquetas: las citas eran pertinentes y las
+reglas omitidas ahora sí aparecían antes. No se ajustaron etiquetas históricas
+para ocultar regresiones; tampoco se atribuye causalidad al cambio con sólo r1.
+
+Consulta GitHub posterior: A/PR130 sigue28ee5b1c sobre develop/c30a7d0, pero hay
+review oficial nueva de Víctor a18:58UTC con CHANGES_REQUESTED. Pide subred/IP
+distintas por slot del CD (solapan al segundo despliegue) y UX correcta al estar
+el chat desactivado. Sus cinco puntos anteriores se consideran resueltos/no
+aplicables por él; no es aprobación de A. Lucía conserva su solicitud de cambios
+anterior y aún no ha validado los criterios. Reviews, conversación e inline
+leídos y guardados en `jup122-pr130-current-20261014-night.json` (sin publicación).
+Se reabre1.3 para reconciliar las correcciones finales de A cuando existan;
+las pruebas positivas propias conservan su alcance, no cubrían esos dos defectos.
+No cambiar A ni el candidato medido mientras termina esta N3.
+
+Trello consultado sólo por el puente autorizado: descripción mantiene criterios
+propuestos; sin comentarios de esta tarjeta en las últimas100acciones del board.
+Ese límite no prueba ausencia de comentarios más antiguos ni acuerdo externo.
+Prueba `jup123-trello-criteria-readonly-20261014-night.json`; no hay criterio humano
+aprobado que permita cerrar por tasa media. Siguiente: terminar N3, comparar por
+requisito/repetición y sólo entonces seleccionar correcciones deterministas;
+mantener la adjudicación independiente y el alcanceN5 pendientes.
+
+Trello actualizado tras esta revisión parcial, con concurrencia y lectura
+posterior verificadas por el mismo puente. DescripciónSHA
+`f310531e21664def9c66a98aa099bb1a8f3c0a0d85a71bb582d7262eede04532`, prueba
+`jup123-trello-c7e2d561-r1-update.json`; estado sin mover, ningún mensaje Discord.
+
 ### Candidato c7e2d561: transferencia y comprobaciones en curso — 14/10/2026
 
 Commit `c7e2d5616d3ba3d4e6fa467f27f272a05595a621`, archive Git

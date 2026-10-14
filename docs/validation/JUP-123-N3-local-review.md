@@ -69,6 +69,34 @@ en B. **La campaña real de ese candidato está en marcha**, sin resultado N3 fi
 estos resultados no cambian los veredictos de e23. UI001/003/014 comprobada en
 escritorio/móvil y tras recarga, sin generar desde navegador.
 
+### Corte posterior: primera ronda de c7e2d561
+
+Sólo r1 está revisada en este corte: 28 respuestas, 22 conformes, 3 inciertas y
+3 fallidas. Son 157 requisitos conformes, 5 inciertos y 3 fallidos. Faltan las
+otras 56 ejecuciones para la evaluación N3; esta revisión sigue siendo local y
+provisional. Producto, banco, scorer y rúbrica permanecen congelados durante la
+campaña. Los IDs de evaluación se atan al hash de cada recibo para añadir las
+rondas sin cambiar la identidad de las etiquetas existentes.
+
+| Caso r1 | Hallazgo local |
+| --- | --- |
+| 009 | Cita una regla de normalización de tags que no apoya la respuesta de reparto. |
+| 010 | Omite explicar normalización de claves en minúsculas; owner y ausencia de PII sí están. |
+| 015 | Explica alertas y niega apagado automático, pero omite investigar al superar umbrales. |
+| 004, 011, 022 | Dudas de fuerza documental, explicitud del 90 % por recursos y estabilidad de uso no confirmada, respectivamente. |
+
+La comparación con **la misma r1** de e23 identifica tres requisitos
+`pass→fail` (009/010/015), tras releer sus originales; dos son `required` del banco
+y otro es pertinencia de cita de la rúbrica provisional. 003 pasa de fallo técnico
+a respuesta conforme y 022 de fallo técnico a incierta. No atribuir causalidad a
+un único par ni compensar estos fallos con una media global.
+
+Snapshot externo `candidate-c7e2d561-r1-frozen/`, 86 archivos verificados por hash;
+revisión `candidate-c7e2d561-r1-reviewed-v2.json` y evaluación resumida
+`candidate-c7e2d561-r1-assessment-v1.json`. Las dos campañas y sus recibos
+originales permanecen intactos. Ver continuidad para avance vivo, contabilidad y
+las nuevas solicitudes de cambios de A/PR130; no hay aceptación final de B.
+
 El esquema privado exige una única selección documental literal como `rationale`
 de cada recomendación; la interpretación sigue disponible en `action`. Si no hay
 soporte documental seleccionable, no ofrece recomendaciones. Los modos

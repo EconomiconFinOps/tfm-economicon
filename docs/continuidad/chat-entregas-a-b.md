@@ -76,3 +76,21 @@ dereservar/enviar. Planes/recibos antiguos intactos.86pruebas evaluaciónPASS,
 --test-isolation=none porEPERM deprocesos ensandbox. Logs/resultados externos
 reconcile-a-{eval-tools,tokenizer,cd}.log yreconcile-a-tools-result.json.
 Sin inferencias, build, transferencia, publicación ni cambio dedespliegues.
+
+## Review oficial posterior y base final pendiente — 14/10/2026
+
+Consulta posterior conserva head28ee5b1c y develop/c30a7d0. Víctor publicó
+`Revision JUP-122` a18:58:43UTC con CHANGES_REQUESTED: pide subred/IP distintas
+por slot del CD (segundo despliegue solapa la red privada) y corregir la UX cuando
+el backend mantiene el chat desactivado. Sus cinco puntos anteriores los da por
+resueltos/no aplicables; la review no aprueba A. También advierte del orden de
+actualización manual del agente CD antes del merge, sin que ese despliegue esté
+autorizado ni realizado por B. Lucía aún conserva CHANGES_REQUESTED de318a56f.
+Se leyeron todas las reviews/conversación/inline; no se publicaron comentarios.
+Evidencia externa `jup122-pr130-current-20261014-night.json`.
+
+B validó su base congelada mediante1470identidades únicas Linux/SQL y builds/
+runtime reales, pero esas pruebas no cubrían el segundo slot ni el chat desactivado
+en UI. Se reabre reconciliación1.3 para incorporar/verificar la corrección final
+de A cuando esté disponible. No modificar el candidato c7 durante su campaña N3.
+Ver [evaluación local](chat-evaluacion-local.md) para pruebas, costes y estados.
