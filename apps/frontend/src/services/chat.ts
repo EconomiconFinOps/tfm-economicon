@@ -2,6 +2,17 @@ import { fetchChatResponse } from "./api";
 import { readChatEvents, type ChatFrame } from "./chatStream";
 import type { ScreenCapture } from "./screenCapture";
 export interface ChatScope { token: string; tenantId: string; userId: string }
+export interface ChatCapabilities { chat_enabled: boolean }
+export function isChatCapabilities(value: unknown): value is ChatCapabilities {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const item = value as Record<string, unknown>;
+  return Object.keys(item).length === 1 && typeof item.chat_enabled === 'boolean';
+}
+export async function fetchChatCapabilities(scope: ChatScope, signal: AbortSignal): Promise<ChatCapabilities> {
+  const value: unknown = await chatJson(scope, '/assistant/capabilities', signal);
+  if (!isChatCapabilities(value)) throw new Error('capabilities_invalid');
+  return value;
+}
 export interface GenerationPayload { request_id: string; content: string; screen_context: ScreenCapture; retry_of_operation_id?: string }
 export interface SavedChatRequest { tenant_id: string; user_id: string; conversation_id: string; question: string; operation: ChatOperation }
 export function isSavedChatRequest(value: unknown, scope: ChatScope): value is SavedChatRequest {

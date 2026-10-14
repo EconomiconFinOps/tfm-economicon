@@ -127,6 +127,22 @@ class RuntimeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             deploy.prepare(self.root, self.source, self.new, 0)
 
+    @patch.object(deploy, "run", return_value='{"services": {}}')
+    def test_prepare_gives_each_slot_its_own_chat_private_network(self, run):
+        environments = []
+        original_hmac = (self.root / "private" / "chat-hmac").read_bytes()
+        for sha, slot in ((self.old, 0), (self.new, 1)):
+            release = deploy.prepare(self.root, self.source, sha, slot)
+            environments.append(dict(
+                line.split("=", 1) for line in (release / ".env").read_text().splitlines()
+            ))
+        self.assertEqual(environments[0]["CHAT_PRIVATE_SUBNET"], "'172.30.35.0/24'")
+        self.assertEqual(environments[1]["CHAT_PRIVATE_SUBNET"], "'172.30.36.0/24'")
+        self.assertEqual(environments[0]["PROCESSOR_CHAT_PRIVATE_IP"], "'172.30.35.3'")
+        self.assertEqual(environments[1]["PROCESSOR_CHAT_PRIVATE_IP"], "'172.30.36.3'")
+        self.assertEqual(environments[0]["CHAT_HMAC_FILE"], environments[1]["CHAT_HMAC_FILE"])
+        self.assertEqual((self.root / "private" / "chat-hmac").read_bytes(), original_hmac)
+
     def test_invalid_sha_never_copies_source(self):
         with self.assertRaises(ValueError):
             deploy.prepare(self.root, self.source, "../../outside", 0)

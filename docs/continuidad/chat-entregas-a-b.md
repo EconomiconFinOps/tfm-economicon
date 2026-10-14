@@ -37,3 +37,23 @@ Sin nuevas inferencias ni consumo. Último gasto histórico 0,957927619 USD / 2 
 
 Pendientes: CI final de A y UI, reviews de A; después colector, criterios
 acordados y campañas N=3/N=5 de B. No activar ni integrar automáticamente.
+
+## Correcciones de la revision del 14/10
+
+Sobre `feat/JUP-122-chat-engineering`, HEAD `28ee5b1c`, se preparan localmente
+los dos cambios pedidos por Victor: subred/IP privadas por slot de CD y
+acceso al chat condicionado a una consulta autenticada del estado efectivo
+del backend. Paris aprueba el contrato `GET /assistant/capabilities` antes
+de implementarlo. El chat sigue desactivado por defecto.
+
+CD afectado: 56 pruebas pasan y dos controles POSIX heredados se omiten en
+Windows; ambos slots se renderizan con Compose real y las redes privadas
+coexisten con los rangos exactos. Backend 32/32 y frontend afectado 120/120
+pasan. Navegador off/on/off con processor controlado: sin conversaciones
+vacias en off, una sola pareja persistida en on. Recursos propios retirados;
+sin modelos ni gasto. Se conservan los fallos de preparacion y fixtures.
+
+La [evidencia incremental](../evidence/JUP-122-review-fixes-20261014.md)
+distingue comprobaciones locales de las reviews humanas y CI posteriores.
+No commit, push, despliegue compartido ni ampliacion a las diez notas no
+bloqueantes. La entrega local permite al PM coordinar los siguientes controles.

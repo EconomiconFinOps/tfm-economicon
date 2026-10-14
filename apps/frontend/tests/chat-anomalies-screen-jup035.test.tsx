@@ -1,3 +1,4 @@
+import './chat-enabled-runtime';
 import { useState } from "react";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";

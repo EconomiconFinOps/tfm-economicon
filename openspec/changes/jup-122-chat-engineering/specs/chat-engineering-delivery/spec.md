@@ -9,6 +9,20 @@ entrega semántica JUP-123, sin iniciar inferencias ni recuperación automática
 - **THEN** no se crea el planificador del chat
 - **AND** generate, resume y summary/retry devuelven 503 sin contactar al proveedor
 
+#### Scenario: Disponibilidad autenticada del chat
+- **WHEN** una sesion valida con tenant autorizado consulta GET /assistant/capabilities
+- **THEN** recibe solo chat_enabled booleano desde el estado efectivo del backend y Cache-Control no-store
+- **AND** la consulta no crea conversaciones, planificador ni inferencias
+
+#### Scenario: Acceso condicionado al backend
+- **WHEN** el estado es pendiente, falso, invalido o la consulta falla
+- **THEN** no se monta el panel ni su acceso
+- **AND** antes de crear una conversacion o enviar una pregunta se comprueba de nuevo la disponibilidad sin reutilizar respuestas de otra sesion o tenant
+
+#### Scenario: Chat habilitado
+- **WHEN** el backend confirma chat_enabled true para la sesion y el tenant activos
+- **THEN** se conserva el recorrido del chat habilitado y sus guardas de autorizacion
+
 ### Requirement: Recuperación y streaming coherentes
 El sistema MUST conservar estados duraderos y cerrar el stream correctamente
 cuando la confirmación SQL y la publicación RAM ocurran en cualquier orden.
@@ -43,6 +57,11 @@ provisión idempotente del secreto HMAC en CD.
 - **WHEN** se prepara una revisión con un secreto válido ya provisionado
 - **THEN** se reutiliza sin rotación ni copia al árbol del release
 - **AND** un secreto inválido se rechaza
+
+#### Scenario: Release actual y candidato coexistentes
+- **WHEN** CD prepara los slots 0 y 1 y mantiene el release actual mientras comprueba el candidato
+- **THEN** cada slot recibe una subred privada distinta y una IP del processor perteneciente a esa subred
+- **AND** ambos conservan red interna, puerto privado sin publicar y el mismo HMAC valido sin rotacion
 
 ### Requirement: Tokenizer fijo incluido durante build
 El tokenizer MUST quedar fuera de Git y descargarse solo durante build o

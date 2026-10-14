@@ -150,6 +150,9 @@ def prepare(root, source, sha, slot):
         values = json.loads((root / "secrets.json").read_text())
         # Also upgrades pre-chat roots without replacing any existing secret.
         values['CHAT_HMAC_FILE'] = str(chat_hmac_file(root))
+        # The candidate is checked while the current release remains running.
+        values.update(CHAT_PRIVATE_SUBNET=f"172.30.{35 + slot}.0/24",
+                      PROCESSOR_CHAT_PRIVATE_IP=f"172.30.{35 + slot}.3")
         values.update({name: str(base + offset) for name, offset in PORTS.items()})
         namespace = hashlib.sha256(str(root.resolve()).encode()).hexdigest()[:12]
         values.update(COMPOSE_PROJECT_NAME=f"economicon-cd-{namespace}-{sha[:12]}",

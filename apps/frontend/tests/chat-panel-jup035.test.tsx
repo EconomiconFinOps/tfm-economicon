@@ -1,3 +1,4 @@
+import './chat-enabled-runtime';
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
@@ -82,6 +83,7 @@ describe("Panel conversacional propio JUP-035", () => {
     const activity = () => within(screen.getByRole("log", { name: "Mensajes" }))
       .getByRole("status", { name: "Actividad de la conversación" });
     expect(activity()).toHaveTextContent("Preparando contexto");
+    await waitFor(() => expect(create).toBeTypeOf('function'));
     await act(async () => create());
     await waitFor(() => expect(controller).toBeDefined());
     expect(activity()).toHaveTextContent("Preparando contexto");

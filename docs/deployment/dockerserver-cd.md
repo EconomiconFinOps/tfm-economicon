@@ -78,6 +78,15 @@ archivos al repositorio ni imprimir `compose config` en evidencias: contiene
 secretos. Antes de activar, verificar `Linger=yes` y que los puertos
 19252–19262 y 19352–19362 estén libres. Otras bases se eligen en `init`.
 
+`prepare` asigna a la red interna de chat una subred distinta por slot:
+`172.30.35.0/24` con processor `172.30.35.3` en A, y `172.30.36.0/24`
+con processor `172.30.36.3` en B. Esto permite comprobar el candidato
+mientras la release actual sigue activa, sin publicar el puerto privado
+ni cambiar el secreto HMAC. Verificar que ambos rangos estén libres de otras
+redes del host antes de desplegar; el agente no elimina redes ajenas.
+Esta asignación cubre los dos slots de un root de CD, no varios agentes
+independientes en el mismo motor Docker.
+
 El timer espera cinco minutos desde el fin de cada ejecución; el lock impide
 despliegues concurrentes. Si CD todavía no se ha integrado, registra espera
 sin desplegar. No modifica otros stacks ni usa `docker system prune`.

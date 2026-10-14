@@ -69,3 +69,29 @@ ni deadlines del producto. `CHAT_ENABLED=false` y el comportamiento de A
 permanecen vigentes. Sin baterias LLM/full28 ni aceptacion semantica. Si una
 dependencia o fallo exige ampliar el alcance se comunica antes de corregirlo.
 Revision/validacion humanas y publicacion siguen siendo pasos separados.
+
+## Correccion de la revision de CD (14/10/2026)
+
+Durante el smoke del candidato siguen levantados los dos slots de CD. Al
+preparar cada release, el slot 0 usa `172.30.35.0/24` y processor
+`172.30.35.3`; el slot 1 usa `172.30.36.0/24` y processor `172.30.36.3`.
+Se conserva el secreto HMAC compartido y valido, la red interna y los puertos
+publicados solo en loopback. Los releases ya preparados siguen inmutables.
+La correccion no despliega ni actualiza el agente remoto del DockerServer.
+
+## Estado efectivo del chat en la interfaz
+
+Paris aprobo el 14/10/2026 el contrato adicional y su implementacion local,
+confirmandolo directamente en este chat de ejecucion tras la aprobacion del PM.
+GET `/assistant/capabilities` reutiliza autenticacion y autorizacion de tenant,
+devuelve unicamente `chat_enabled: boolean` y `Cache-Control: no-store` desde
+el estado efectivo del backend. No inicia recursos del chat ni escribe datos.
+
+La consulta frontend se aisla por generacion de sesion, usuario y tenant; solo
+una respuesta valida true monta ChatPanel y su acceso. Pendiente, error,
+false o respuesta incompatible no lo montan. Antes de crear una conversacion
+o enviar una pregunta se consulta de nuevo, evitando POST cuando false. Una
+lectura no es una autorizacion atomica frente a un reinicio concurrente;
+se conservan las guardas 503 del backend. No se cambia /health ni se introduce
+un flag exclusivo de build. El modo habilitado se comprueba con mocks, sin
+proveedor real. Esta aprobacion no autoriza commit, push ni despliegue.

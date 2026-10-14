@@ -1,3 +1,4 @@
+import './chat-enabled-runtime';
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { useState } from "react";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";

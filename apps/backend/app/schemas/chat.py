@@ -11,6 +11,11 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.schemas.chat_screen import ScreenCapture
 
 
+class ChatCapabilities(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    chat_enabled: bool
+
+
 class GenerationRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     request_id: UUID

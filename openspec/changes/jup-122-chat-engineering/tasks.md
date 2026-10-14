@@ -29,3 +29,27 @@ JWT creados en collection y caducados antes del caso; los ocho controles de
 autorizacion pasan en ejecucion focal. No se modifica esa fixture fuera de
 alcance ni se declara una unica tanda completa verde. Ver
 [resultados y limites](../../../docs/evidence/JUP-122-checkpoint-improvements-20261014.md).
+
+## Correcciones bloqueantes de la revision de PR130
+
+- [x] 5.1 Asignar subred privada e IP del processor distintas por slot de CD, con regresion significativa y render real de ambos slots.
+- [x] 5.2 Comprobar coexistencia de redes propias, sin tocar redes ajenas ni desplegar en DockerServer.
+- [x] 5.3 Aprobar el contrato minimo de estado efectivo para ocultar el acceso del chat desactivado antes de producto/tests de UI.
+- [x] 5.4 Ocultar el panel sin confirmar activacion y evitar conversaciones vacias/peticiones de generacion; comprobar modo activado mock y autenticacion.
+- [x] 5.5 Entregar diff, evidencias focales, limites y respuesta a Victor sin commit/push/publicacion.
+
+5.1: Red detecta la ausencia de las variables; Green de `test_deploy` pasa
+19/19. La suite CD afectada pasa 56 casos y omite los dos controles POSIX
+heredados en Windows. `init` y `prepare` reales renderizan ambos slots con
+Compose, conservando HMAC, red interna, loopback y chat desactivado. Mutar
+la asignacion para ignorar el slot hace fallar la nueva regresion. La
+coexistencia real de 5.2 estuvo pendiente de liberar una red ajena. Tras
+retirarla PM con autorizacion de Paris, las dos redes propias se crean a
+la vez con los pools exactos y se retiran sin tocar otros recursos.
+
+5.3-5.5: contrato aprobado directamente por Paris antes de producto/tests.
+Backend 32/32, frontend afectado 120/120, tres typechecks y build pasan;
+lint conserva un aviso previo. Navegador con backend real, SQLite y
+processor controlado verifica off/on/off, sin POST ni conversaciones
+vacias en off, y una sola pareja persistida en on. No acredita DockerServer
+ni proveedor real. Ver [entrega y limites](../../../docs/evidence/JUP-122-review-fixes-20261014.md).
