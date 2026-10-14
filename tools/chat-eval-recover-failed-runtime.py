@@ -35,6 +35,27 @@ with create_engine(Settings().database_url.get_secret_value()).connect() as c:
 """
 
 
+def attempt_totals(snapshot, usage):
+    ids = snapshot['attempt_ids']
+    reports = usage['reports']
+    if (not 1 <= len(ids) <= 4 or len(set(ids)) != len(ids)
+            or len(reports) != len(ids) or {r['attempt_id'] for r in reports} != set(ids)):
+        raise ValueError('Incomplete attempt history')
+    legs = 0
+    cost = Decimal(0)
+    for report in reports:
+        if (report['attempted_legs'] != len(report['requests'])
+                or not 1 <= report['attempted_legs'] <= 2
+                or len({r['phase'] for r in report['requests']}) != len(report['requests'])):
+            raise ValueError('Attempt leg mismatch')
+        observed = Decimal(str(report['observed']['cost_usd']))
+        if not observed.is_finite() or observed < 0:
+            raise ValueError('Invalid observed cost')
+        cost += observed
+        legs += report['attempted_legs']
+    return legs, cost
+
+
 def main(root):
     adapter = load('operator_adapter', root / 'live-step.py')
     failed = load('failed', Path(__file__).with_name('chat-eval-failed.py'))
@@ -67,11 +88,7 @@ def main(root):
     if pre['accounting']['evidence_sha256'] != json.loads(entry['reservation'])['accounting_evidence_sha256']:
         raise ValueError('Preflight does not belong to latest reservation')
     usage = adapter.module('usage').read(adapter.PROJECT + '-processor-1', entry['operation_id'], pre['observed_at'])
-    if len(snapshot['attempt_ids']) != 1 or len(usage['reports']) != 1:
-        raise ValueError('Multiple/missing attempts require manual reconciliation')
-    report = usage['reports'][0]
-    if report['attempt_id'] != snapshot['attempt_ids'][0] or report['attempted_legs'] != len(report['requests']):
-        raise ValueError('Attempt/leg mismatch')
+    attempted_legs, sdk_observed = attempt_totals(snapshot, usage)
     ge = adapter.envfile(Path('/home/danteadmin/economicon-jup078-gateway/.env'))
     keys = json.loads((root / 'validation-keys.json').read_text())
     since = datetime.fromisoformat(pre['observed_at'])
@@ -79,7 +96,7 @@ def main(root):
         'api_key': keys['processor'], 'start_date': since.date().isoformat(), 'summarize': 'false'}), token=ge['LITELLM_MASTER_KEY'])
     gateway = [{k: x.get(k) for k in ('request_id', 'spend', 'startTime', 'endTime', 'model')}
                for x in logs if datetime.fromisoformat(x['startTime'].replace('Z', '+00:00')) >= since]
-    if len(gateway) != report['attempted_legs'] or len({x['request_id'] for x in gateway}) != len(gateway):
+    if len(gateway) != attempted_legs or len({x['request_id'] for x in gateway}) != len(gateway):
         raise ValueError('Gateway phase count mismatch')
     upstream = []
     for item in gateway:
@@ -97,7 +114,7 @@ def main(root):
     observed = sum((money(x['spend']) for x in gateway), Decimal(0))
     if abs(delta - observed) > Decimal('0.000000001'): raise ValueError('Gateway key spend not settled')
     chat = sum((max(money(g['spend']), money(u['total_cost'])) for g, u in zip(gateway, upstream)), Decimal(0))
-    if chat < money(report['observed']['cost_usd']): raise ValueError('Upstream costs below SDK observed cost')
+    if chat < sdk_observed: raise ValueError('Upstream costs below SDK observed cost')
     auxiliary = money(infos['backend']['spend']) - money(before['backend']['spend'])
     if not 0 <= auxiliary <= Decimal('.002'): raise ValueError('Auxiliary cost mismatch')
     proof = {'durable_input': snapshot, 'usage': usage, 'gateway': gateway, 'upstream': upstream,
