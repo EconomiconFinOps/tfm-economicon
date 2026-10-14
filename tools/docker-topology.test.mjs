@@ -323,6 +323,16 @@ test("JUP-053 credential examples leave real secret fields empty", () => {
   }
 });
 
+test("JUP-122 root and processor contexts exclude nested private files and generated tokenizer", () => {
+  for (const context of [".", "apps/processor"]) {
+    const rules = fs.readFileSync(path.join(root, context, ".dockerignore"), "utf8")
+      .split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    assert.ok(rules.includes(".secrets") && rules.includes("**/.secrets"));
+    assert.ok(rules.some((rule) => rule.endsWith("chat/v2/tokenizer.json")));
+    assert.ok(!rules.some((rule) => rule.startsWith("!") && rule.includes(".secrets")));
+  }
+});
+
 test("JUP-053 login form initializes with the unchanged email and a blank password", () => {
   const source = fs.readFileSync(path.join(root, "apps/frontend/src/pages/LoginPage.tsx"), "utf8");
   const initializer = source.match(/useState\((\{[\s\S]*?\})\)/);

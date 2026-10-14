@@ -636,6 +636,39 @@ schema, output and margin, and rejects insufficient context rather than truncati
 
 ## Project Compose chat (JUP-035)
 
+### Pinned tokenizer preparation (JUP-122)
+
+The 20 MB tokenizer is generated, not versioned. Backend and processor image
+builds download it from the official `zai-org/GLM-5.2` repository at revision
+`a66456a59f21345d1e5e586345c448a9106d29d7`, then verify 20217442 bytes and SHA256
+`19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d` before installing
+it. Chat and summary retain their existing tokenizer pins. A corrupt download
+fails the build; neither runtime downloads model assets.
+
+Before running Python tests outside Docker, prepare the same local artifact:
+
+```sh
+corepack pnpm tokenizer:prepare
+corepack pnpm tokenizer:test
+```
+
+Preparation reuses a verified local cache without network and replaces an
+artifact only after successful verification. Its default path is
+`apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json`, excluded
+from Git and Docker contexts. Image builds fetch their own verified copy.
+CI prepares the resource before backend/processor tests, including native SQL.
+Build requires access to the pinned source; application startup does not.
+
+The existing mock and AI preparation below remains unchanged. The delivery A
+default is `CHAT_ENABLED=false`; packaging checks do not enable the chat or
+certify semantic quality. AI deployment uses the existing gateway configuration
+and credentials; these engineering checks require no paid requests.
+
+CD excludes `.secrets` directories at any depth from releases. Docker contexts
+also exclude them. The private CD HMAC remains outside each release, retains its
+existing bytes and permissions, and still rejects symbolic links. This does not
+introduce automatic local HMAC preparation.
+
 Use an isolated Compose project and an external environment file populated from
 `.env.example`; the example intentionally has no usable secrets. Supply
 `CHAT_HMAC_FILE` as an absolute path to an operator-owned private file containing
@@ -681,7 +714,7 @@ match across both services. Do not change the shared gateway/model defaults for
 this deployment. Build and isolated runtime validation are distinct checks.
 
 The active chat bundle is `jup035/chat/v3`; the original v2 bundle is retained
-unchanged, including its pinned tokenizer reused by v3. Backend images package
+unchanged; its generated pinned tokenizer is reused by v3. Backend images package
 the v3 prompts and that tokenizer together. `CHAT_MAX_OUTPUT_TOKENS` accepts
 integers 1..3200 in both services, with 3200 as the approved default and maximum.
 Paris authorized this default directly on 11/10/2026, superseding the initial

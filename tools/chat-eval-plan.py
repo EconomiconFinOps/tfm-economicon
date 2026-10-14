@@ -58,16 +58,28 @@ def main():
                 'docs/validation/JUP-035-evaluation-partition.json',
                 'docs/validation/JUP-070-evaluation-rules.json',
                 'tools/chat-receipt-eval.py', 'tools/assistant-eval.py',
-                'tools/chat-eval-*.py').splitlines()
+                'tools/chat-eval-*.py', 'apps/processor/build_tokenizer.py',
+                'apps/backend/Dockerfile', 'apps/processor/Dockerfile',
+                'apps/backend/requirements*.lock', 'apps/processor/requirements*.lock',
+                '.dockerignore', 'apps/processor/.dockerignore').splitlines()
     # The transferred runtime is built from git archive, not a Windows checkout.
     # Hash exact committed bytes; core.autocrlf may change working-tree bytes.
     archive_bytes = subprocess.check_output(['git', 'archive', 'HEAD'], cwd=ROOT)
     with tarfile.open(fileobj=io.BytesIO(archive_bytes)) as archive:
         hashes = {path: hashlib.sha256(archive.extractfile(path).read()).hexdigest()
                   for path in paths}
+        prompt_root = 'apps/processor/app/agents/prompt_resources/jup035/'
+        pins = [json.load(archive.extractfile(prompt_root + bundle + '/manifest.json'))['tokenizer']
+                for bundle in ('chat/v3', 'summary/v3')]
+        if any({key:pin[key] for key in ('revision','sha256','bytes')} !=
+               {key:pins[0][key] for key in ('revision','sha256','bytes')} for pin in pins):
+            raise ValueError('Chat and summary tokenizer pins differ')
+        artifacts = {prompt_root + 'chat/v2/tokenizer.json':
+                     {key:pins[0][key] for key in ('revision','sha256','bytes')}}
     data = {'version': 1, 'state': 'NOT_RUN', 'commit': git('rev-parse', 'HEAD'),
             'bank_sha256': EXPECTED_BANK, 'file_hashes': hashes,
             'file_hash_basis': 'git-archive-committed-bytes',
+            'generated_artifacts': artifacts,
             'repetitions': args.repetitions, 'samples': campaign(bank, args.repetitions),
             'provider_constraint': {'provider': 'OpenRouter', 'model': 'z-ai/glm-5.2',
                                     'routing': 'DeepInfra', 'fallbacks': False},

@@ -45,6 +45,14 @@ focales y la evidencia de UI real más abajo antes de declarar algo validado.
 
 ### Revisión N3 completa y ajustes de contrato — 14/10/2026
 
+Avance posterior: incorporados localmente losbloques deingeniería A/28ee5b1c
+(tokenizer generado/build/CI/CD/fixtureSQL), conservando gatewayv4 ysemánticaB.
+Planes nuevos incluyenpin deartifact generado yverificación delarchivo real
+backend/processor; preflight incompleto bloqueaantes de reserva/inferencia.
+86pruebas herramientasPASS,4tokenizerPASS,CD55PASS/2SKIP,51CI/topologíaPASS.
+Ver chat-entregas-a-b.md. Pendientes regresión completa durable, SQL nativo y
+build sobreestecandidato; no trasladar laCI deA ni las pruebas e23 como propias.
+
 [Informe de resultados y pendientes](../validation/JUP-123-N3-local-review.md).
 Revisión localv6 de78respuestas:68pass/8pending/2fail/6technical_failure globales;
 445checks pass,13uncertain,2fail,35unreviewed porfallos técnicos sinrespuesta.

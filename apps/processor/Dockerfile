@@ -11,6 +11,8 @@ RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirem
     && pip install --dry-run --no-index -r requirements.txt
 
 COPY app ./app
+COPY build_tokenizer.py /tmp/build_tokenizer.py
+RUN python /tmp/build_tokenizer.py --output /app/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json
 RUN python -c "from app.core.chat_resources import load_resources; from app.core.summary_resources import load_resources as summary; load_resources(); summary()"
 RUN find /app/app -type d -exec chmod 755 {} +
 

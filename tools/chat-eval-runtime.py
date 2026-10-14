@@ -9,8 +9,28 @@ from pathlib import Path, PurePosixPath
 import re
 import subprocess
 
+TOKENIZER = 'apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json'
+TOKENIZER_BUILDER = 'apps/processor/build_tokenizer.py'
+
+
+def generated_hashes(plan):
+    artifacts = plan.get('generated_artifacts', {})
+    if (not isinstance(artifacts, dict) or set(artifacts) - {TOKENIZER}
+            or artifacts and TOKENIZER_BUILDER not in plan['file_hashes']
+            or TOKENIZER_BUILDER in plan['file_hashes'] and TOKENIZER not in artifacts):
+        raise ValueError('Missing or unknown generated runtime artifact')
+    for name, pin in artifacts.items():
+        if (name in plan['file_hashes'] or not isinstance(pin, dict)
+                or set(pin) != {'revision', 'sha256', 'bytes'}
+                or not isinstance(pin['sha256'], str) or not re.fullmatch(r'[0-9a-f]{64}', pin['sha256'])
+                or not isinstance(pin['revision'], str) or not re.fullmatch(r'[0-9a-f]{40}', pin['revision'])
+                or type(pin['bytes']) is not int or pin['bytes'] <= 0):
+            raise ValueError('Invalid generated runtime artifact pin')
+    return {name:pin['sha256'] for name,pin in artifacts.items()}
+
 
 def source_hashes(plan, source):
+    generated_hashes(plan)
     root = Path(source).resolve()
     observed = {}
     for name, expected in plan['file_hashes'].items():
@@ -35,6 +55,9 @@ def container_paths(plan, service):
     prefix = f'apps/{service}/' + ('src/' if service == 'frontend' else 'app/')
     target = '/workspace/apps/frontend/src/' if service == 'frontend' else '/app/app/'
     paths = {name: target + name[len(prefix):] for name in plan['file_hashes'] if name.startswith(prefix)}
+    if generated_hashes(plan) and service in ('backend', 'processor'):
+        paths[TOKENIZER] = ('/opt/economicon/chat/v3/tokenizer.json' if service == 'backend'
+                            else '/app/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json')
     if service == 'backend':
         prompt = 'apps/processor/app/agents/prompt_resources/jup035/'
         for name in plan['file_hashes']:
@@ -82,10 +105,13 @@ def verify_container(plan, service, container, project, run=command):
                   'for k,p in paths.items()}))')
         invocation = ['python', '-c', script]
     actual = run(['docker', 'exec', '-i', container, *invocation], json.dumps(paths).encode())
-    expected = {name: plan['file_hashes'][name] for name in paths}
+    frozen_hashes = {**plan['file_hashes'], **generated_hashes(plan)}
+    expected = {name: frozen_hashes[name] for name in paths}
     if actual != expected:
         raise ValueError('Running container code differs from frozen plan')
     after = run(inspect)
     if after != before:
         raise ValueError('Container changed during verification')
-    return {'service': service, **before, 'verified_file_hashes': actual}
+    return {'service': service, **before, 'verified_file_hashes': actual,
+            'verified_generated_artifacts': plan.get('generated_artifacts', {})
+            if service in ('backend', 'processor') else {}}

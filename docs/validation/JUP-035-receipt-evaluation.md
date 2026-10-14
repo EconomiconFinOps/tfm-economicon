@@ -204,3 +204,19 @@ alterados, operación ajena, citas desconocidas, pregunta/historial distintos y
 recursos modificados. Conjunto herramientas49PASS. Esta verificación demuestra
 identidad de los fragmentos, no pertinencia semántica de las citas. La aceptación
 continúa pendiente de adjudicación y de los criterios de revisores.
+
+## Tokenizer generado y procedencia — 14/10/2026
+
+Tras reconciliar A/28ee5b1c, el tokenizer ya no pertenece al archivo Git. El plan
+congela también helper, Dockerfiles y locks, y declara `generated_artifacts` con
+revisión, bytes y SHA256 comunes de los manifests de chat y summary. El verificador
+comprueba el hash del archivo instalado en backend y processor, en sus rutas
+propias. Un archive fuente no tiene que contener el artefacto generado.
+
+Los planes nuevos que incluyen el helper no pueden omitir el pin generado;
+tampoco se admiten rutas arbitrarias, identidades duplicadas o metadatos inválidos.
+El preflight del adaptador debe devolver esos pins después de verificar ambos
+contenedores. Runner rechaza su ausencia antes de reservar o enviar una petición.
+Los planes históricos permanecen intactos y conservan su contrato anterior con
+el tokenizer versionado. Esta compatibilidad no permite omitir el artefacto en
+planes nuevos. Las pruebas son offline; no acreditan un runtime nuevo ni gasto.

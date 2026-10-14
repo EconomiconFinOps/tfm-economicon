@@ -21,6 +21,7 @@ planning = module('chat-eval-plan')
 
 
 def validate_plan(plan):
+    module('chat-eval-runtime').generated_hashes(plan)
     bank = json.loads(planning.BANK.read_text(encoding='utf-8'))
     if (planning.sha(planning.BANK) != planning.EXPECTED_BANK
             or plan.get('bank_sha256') != planning.EXPECTED_BANK
@@ -79,6 +80,7 @@ class Runner:
                 verified = self.preflight(self.plan)
                 if (verified['commit'] != self.plan['commit']
                         or verified['file_hashes'] != self.plan['file_hashes']
+                        or verified.get('generated_artifacts', {}) != self.plan.get('generated_artifacts', {})
                         or verified['provider_constraint'] != self.plan['provider_constraint']):
                     raise ValueError('Runtime does not match the frozen plan')
                 request_id = self.ledger.reserve(self.plan_hash, sample['sample_id'],

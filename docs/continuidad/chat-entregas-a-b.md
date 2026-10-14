@@ -59,3 +59,20 @@ Sin inlinecomments. Se consultaron reviews,conversación ydiffmetadata; no es
 revisiónfuncional nueva. Recibo fueraGit jup122-pr130-current-20261014-evening.json.
 B todavía debe reconciliar esos bloques respetando v4 y los planes congelados;
 no cherry-pick ciego de ficheros/documentación. No merge ni mensajes externos.
+
+## Bloques de A incorporados localmente a B — 14/10/2026
+
+Comparación de14archivos afectados con318a56f acreditó igualdad deB conla base;
+se aplicó sólo eldiff de17archivos de28ee5b1c másla retirada deltokenizer delíndice.
+No se copiaron losresúmenes/OpenSpec deA ni se cambió elgateway v4 deB.
+Helper/build/CI/CD yfixtureSQL conservan sus bloques deParis; README incorpora
+preparación delasset. Elcache físico local se conserva, ahora ignorado, con pin
+idéntico alchat/summary. Reconciliación funcional/SQL/runtime aúnpendiente.
+
+Herramientas B ahora congelan helper/Dockerfiles/locks ypin deartifact generado;
+verifican eltokenizer real enambos contenedores yexigen pins enpreflight antes
+dereservar/enviar. Planes/recibos antiguos intactos.86pruebas evaluaciónPASS,
+4helperPASS,CD55PASS/2SKIP y51comprobaciones CI/topologíaPASS. Node usó
+--test-isolation=none porEPERM deprocesos ensandbox. Logs/resultados externos
+reconcile-a-{eval-tools,tokenizer,cd}.log yreconcile-a-tools-result.json.
+Sin inferencias, build, transferencia, publicación ni cambio dedespliegues.

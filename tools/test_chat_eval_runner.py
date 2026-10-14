@@ -78,6 +78,19 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(result['operation_state'], 'waiting')
         self.assertEqual(self.api.posts, 1)
 
+    def test_generated_runtime_proof_is_required_before_reserving_or_posting(self):
+        runtime=r.module('chat-eval-runtime')
+        self.plan['file_hashes'][runtime.TOKENIZER_BUILDER]='builder'
+        pins={runtime.TOKENIZER:{'sha256':'a'*64,'revision':'b'*40,'bytes':17}}
+        self.plan['generated_artifacts']=pins
+        with self.assertRaisesRegex(ValueError,'Runtime'):
+            self.runner().step()
+        self.assertEqual(self.ledger.pending(),[])
+        self.assertEqual(self.api.created,0)
+        self.verified['generated_artifacts']=pins
+        self.assertEqual(self.runner().step()['state'],'OBSERVING')
+        self.assertEqual(self.api.posts,1)
+
 
 class FakeAPI:
     def __init__(self):

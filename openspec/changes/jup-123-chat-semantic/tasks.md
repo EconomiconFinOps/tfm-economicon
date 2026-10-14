@@ -2,6 +2,7 @@
 - [x] 1.1 Recuperar B y activar JUP-123 en Trello.
 - [x] 1.2 Admitir recibos repetidos y detectar ausencias/duplicados (15 pruebas).
 - [ ] 1.3 Reconciliar A/develop y verificar las superficies afectadas.
+  - Incorporados bloques de A/28ee5b1c en B; herramientas86PASS, tokenizer4PASS, CD55PASS/2SKIP, CI/topología51PASS. Pendientes SQL/runtime y regresión completa propia.
 - [ ] 1.4 Acordar criterios obligatorios y calidad con revisores.
 
 ## 2. Medición
