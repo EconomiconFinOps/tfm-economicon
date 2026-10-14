@@ -61,6 +61,14 @@ Los resultados de las tarjetas de evaluación se mostrarán más adelante en un 
 
 Quedan fuera, y pasan a JUP-121: aplanar los grupos anidados, decidir cómo se muestran los valores no medidos (`null`) y unificar los formatos de JUP-067, JUP-070, JUP-071 y JUP-078. El informe sigue sin afirmar compatibilidad con el catálogo de JUP-067.
 
+### 8. El chat generativo de JUP-035 no usa el contrato de mensajes
+
+Inspección del 2026-10-14 sobre #130 (JUP-122, entrega A de JUP-035, head `318a56f`): el chat generativo se sirve por `POST /assistant/conversations/{id}/generations`, una respuesta en streaming con cuerpo propio (contenido y contexto de pantalla con la identidad del usuario y el tenant). La ruta `POST .../messages`, que reutiliza `collect_cases` de JUP-070, sigue llamando a la plantilla. Además el chat entra desactivado (`CHAT_ENABLED=false`, la ruta nueva responde `503 chat_unavailable`) hasta que se acepte la entrega B (JUP-123).
+
+Consecuencias: `collect` solo mide la plantilla, aunque el chat generativo esté activo; una campaña con modelo real necesita un colector de `/generations`. JUP-123 prevé un colector del API actual, que aún no está publicado; se reutiliza si encaja y, si no, se escribe un adaptador propio probado con un doble del servidor. El presupuesto de inferencia es compartido con B (techo acumulado de 2 USD según la tarjeta de JUP-123), de modo que ninguna campaña con modelo se lanza sin comprobar su contabilidad ni sin acordarlo con quien lidera B.
+
+Reparto: JUP-071 entrega el instrumento, la batería, las líneas base y las limitaciones conocidas; la medición con modelo real se ejecuta cuando exista el colector de B y el chat esté activado, y no se declara robustez generativa antes.
+
 ## Risks / Trade-offs
 
 - La batería es pequeña, sintética y diseñada; no demuestra robustez universal ni del tenant real. Se publican tamaños y casos concretos.
