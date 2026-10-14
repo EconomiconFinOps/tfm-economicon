@@ -8,6 +8,49 @@ ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
 ### Corte vigente: c7 N3 terminada — 14/10/2026 20:37 UTC
 
+#### Cobertura de011 y diagnóstico de021 — producto local654298d4
+
+`chat_weighted_coverage.py` liga los datos de una partición completa de recursos
+conformes/no conformes y costes en moneda única. Calcula ambos denominadores y
+porcentajes en servidor; en los tres recibos originales011 entrega10% por coste y
+90% por recursos, con paridad streaming/final/público. El replay de84sólo selecciona
+esas tres muestras. No cambia sus etiquetas históricas ni prueba al proveedor.
+La gramática exige declaración completa, cuenta consistente y coste etiquetable;
+otras formulaciones/ámbitos o evidencia financiera conservan la ruta general.
+Coste total cero queda indefinido. No audita etiquetas ni convierte el escenario
+en medición financiera. Terminal ligado al hash sólo admite auxiliares vacíos.
+
+El parser/gateway ahora registra campo, modo, tipo e índices acotados de un rechazo
+en answer, incluidos textos unidos; no guarda texto, ecuación ni hashes de prosa.
+No se relaja el validador de ecuaciones libres.021 continúa pendiente: el diagnóstico
+servirá para otra ejecución, no reconstruye el candidato histórico no conservado.
+
+226 pruebas focales processor PASS,24 backend y6nuevas de fragmentación PASS.
+Las49identidades nuevas también PASS en Linux sin omisiones/OOM, usando cuatro
+contenedores propios sin red, fuente sólo lectura y JUnit durable. Retirados por
+ID/etiqueta; IDs/imágenes del runtime B iguales antes/después. Sin activar candidato,
+inferencia o gasto nuevos; no sumar las49repetidas a las pruebas locales.
+Manifest/pin actualizados y ambos loaders propios aceptan versión
+`jup-035.chat.v3:b6aa3330f1ea2f6d0cea1a12dc67ba17a1ce090cf19a99f97eba5b78a8b649c8`,
+assembler7dcbcbc53754a50cc7758655884b82c74cd5ed0c2e7e4514e539b965c4b9896b.
+
+Commit654298d4ddebc44909ca0ee100e210dd9cefcc66; archivo versionado transferido
+SHA812151d811d25e90d6df05e28d9c5802294ae9c12ac265c76f642f758d475dc6 a
+DockerServer/candidate-654298d4 bajo el root B, sin.env ni credenciales. Evidencia
+externa `weighted-diagnostic-assessment-v1.json`, `weighted-linux-654298d4/`,
+`weighted-coverage-replay-v1.json` y`weighted-coverage-cold-load-v1.json`.
+Fallos de arnés/ruta, manifest inicialmente desactualizado, impresióncp1252
+posterior a226PASS y ACL de tmp quedan preservados, no contados como aprobados.
+
+Siguiente:001/009, resolución de021 y dudas004/022; luego build/activación propia
+del candidato completo (incluido frontend de A), admisión viva y medición que
+permita el máximo5USD. Última cota4.423039035 es del corte20:37UTC, no saldo nuevo.
+Criterios, adjudicación independiente, navegador final y N5 siguen pendientes.
+Trello sincronizado por la integración DockerServer, con lectura exacta y estado
+conservado: `jup123-trello-weighted-update-v1.json`, descripción
+SHA2a52f6e45840f359d5041d5f64627754b7e3cfb46f7b06965179def3f5148eb2.
+OpenSpec estricto conforme. Ninguna publicación GitHub/Discord.
+
 #### A/11f84334 incorporada y comprobada en B/ab66f90c
 
 Descargado el commit exacto de A y aplicado su diff por bloques sobre la rama B.

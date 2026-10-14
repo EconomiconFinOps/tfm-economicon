@@ -45,6 +45,32 @@ como tal y no repite suPOST. Los artefactos distinguen gasto conocido y reservas
 
 ## Risks and open questions
 
+### Cobertura ponderada y diagnóstico estructural — 2026-10-14
+
+Producto local654298d4: `chat_weighted_coverage.py` compila una partición explícita
+de recursos conformes/no conformes y sus costes en moneda común. Admite cantidades
+variables, cardinales y un ordinal sólo cuando identifica el único recurso restante.
+Exige cerrar toda la declaración; ambigüedad, negaciones, tareas múltiples, grupos
+que no suman o datos financieros autorizados conservan la ruta general. Es una
+gramática limitada de escenarios, no un extractor semántico universal ni una política
+de tagging codificada. El usuario declara qué recursos cumplen y que todo el coste
+es etiquetable. El servidor calcula ambos denominadores y ambos porcentajes con
+Decimal; coste cero queda indefinido. El terminal ligado al hash de pregunta/datos
+sólo admite status insuficiente y auxiliares vacíos, evitando omisiones del resultado
+o contradicciones generadas. No convierte datos hipotéticos en métricas reales.
+
+El parser anota únicamente campo, tipo, modo e índices0..127 cuando falla un render
+de segmento, grupo de prosa o terminal. El gateway reconstruye ese pequeño evento
+desde listas cerradas; no conserva contenido privado. El rechazo de ecuaciones
+libres permanece. Esto permite diagnosticar una futura021; no reconstruye su
+candidato histórico ni acredita que la causa semántica de021 esté corregida.
+
+226 pruebas focales processor,24 backend y seis nuevas de fragmentación conformes.
+Replay de84recibos c7 selecciona sólo011r1/r2/r3 y entrega10%/90% con paridad pública;
+no altera juicios históricos ni sustituye medición pagada. Ambos loaders propios
+aceptan versiónb6aa3330f1ea2f6d0cea1a12dc67ba17a1ce090cf19a99f97eba5b78a8b649c8.
+Ver continuidad para evidencia, pruebas Linux y pendientes001/009/021/004/022.
+
 ### Corte vigente después de N3 c7 — 2026-10-14
 
 Supera los estados «pendiente de medir» de los cortes históricos inferiores.

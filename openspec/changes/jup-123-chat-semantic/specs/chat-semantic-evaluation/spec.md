@@ -137,3 +137,37 @@ límite público de4000caracteres; no trunca silenciosamente contenido único.
 - **WHEN** el modelo repite una selección source_id/passage ya usada en answer
 - **THEN** la repetición no añade otra copia al texto público ni a su cómputo de longitud
 - **AND** streaming y final mantienen paridad y una cita inventada sigue siendo rechazada
+
+### Requirement: Cobertura completa por coste y número de recursos
+El servidor MUST calcular y mostrar ambos porcentajes cuando una petición de
+cumplimiento por coste contiene un escenario completo de dos grupos disjuntos,
+con número total y conforme, costes de ambos grupos en la misma moneda y
+declaración explícita de que todo el coste es etiquetable. Los resultados son
+hipotéticos; no verifican las etiquetas ni conceden autoridad financiera.
+
+#### Scenario: El texto del modelo omitiría el resultado ponderado
+- **WHEN** nueve de diez recursos cumplen, cuestan100EUR y el restante cuesta900EUR
+- **THEN** el terminal de servidor entrega10% por coste y90% por número de recursos
+- **AND** no permite reemplazar esos resultados con prosa ni auxiliares contradictorios
+- **AND** streaming y final muestran los mismos resultados
+
+#### Scenario: Coste total cero
+- **WHEN** el escenario completo declara coste total cero
+- **THEN** el cumplimiento por coste queda indefinido y se conserva el porcentaje por recursos
+- **AND** no se inventa cumplimiento del0% o100%
+
+#### Scenario: No se puede cerrar la partición o el ámbito
+- **WHEN** las cantidades de recursos no suman el total, hay monedas distintas o información adicional no interpretada
+- **THEN** no se activa ese terminal y se conserva la ruta general
+
+### Requirement: Localización estructural de fallos del streaming
+El diagnóstico MUST identificar el índice de segmento o el intervalo de textos
+adyacentes que provoca un rechazo del renderer durante answer, cuando esa
+localización es conocida. No registra el texto, la ecuación ni sus hashes y no
+relaja el validador ni modifica el error público.
+
+#### Scenario: Ecuación libre fragmentada entre segmentos
+- **WHEN** una ecuación prohibida se forma al unir dos segmentos de texto
+- **THEN** el rechazo conserva la regla original y registra el intervalo de índices y tipo
+- **AND** la localización es estable aunque la trama llegue byte a byte
+- **AND** las claves y valores arbitrarios del proveedor nunca forman parte del evento
