@@ -327,3 +327,67 @@ def resolved_classification(catalog):
     return {'operation': 'classify', 'rule_id': rule['id'], 'value': {
         'operation': 'percentage', 'numerator': {'quantity': numerator},
         'denominator': {'quantity': denominator}}}
+
+
+
+def required_zero_percentage(catalog):
+    """Closed unallocated/eligible ratio with a verified formula and zero total.
+
+    A complete percentage formula is enough to explain undefined division; no
+    interval classification is inferred from a missing/truncated threshold list.
+    """
+    from app.core.chat_expressions import canonical_decimal, normalized_unit
+    question = getattr(catalog, 'classification_question', '')
+    request = normalized(question.split('\n\n', 1)[0])
+    if not re.fullmatch(r'[¿]?[^?!.;\n]+[?!.]?', request):
+        return None
+    if re.search(r'\b(?:y|and|ademas|also|not|define|definicion|significa|no\s+(?:calcules|quiero))\b', request):
+        return None
+    if not (re.search(r'\b(?:porcentaje|percentage|percent)\b', request)
+            and re.search(r'\b(?:sin asignar|no asignado|unallocated)\b', request)):
+        return None
+    if getattr(catalog, 'classification_requested', False) or getattr(catalog, 'boolean_requested', False):
+        return None
+    source_ids = []
+    for source in getattr(catalog, 'rule_sources', ()):
+        for span in validate_provenance(source):
+            if span['section'] is None:
+                continue
+            text = source['content'][span['start']:span['end']]
+            for formula in FORMULA.finditer(text):
+                metric, numerator, denominator = (normalized(v.strip()) for v in formula.groups())
+                if concept(numerator) != ('unallocated',):
+                    continue
+                if '%' not in metric or denominator not in ('eligible cost', 'total eligible cost', 'coste elegible', 'coste total elegible'):
+                    return None
+                if source['id'] not in source_ids:
+                    source_ids.append(source['id'])
+    if not source_ids:
+        return None
+    pattern = re.compile(r'\b(total elegible|coste total elegible|total eligible cost|eligible cost|unallocated)\s*[:=]?\s*(-?\d+(?:[.,]\d+)?)\s*(EUR|USD|GBP|JPY|CHF|CAD|AUD|CNY|INR)\b', re.I)
+    matches = list(pattern.finditer(question))
+    if len(matches) != 2:
+        return None
+    users = {key: entry for key, entry in catalog.items()
+             if any(p.get('kind') == 'user' for p in entry.get('provenance', []))}
+    roles = {}
+    for match in matches:
+        if re.search(r'\b(?:no|non|not|sin)\s*$', normalized(question[:match.start()])):
+            return None
+        role = 'numerator' if normalized(match[1]) == 'unallocated' else 'denominator'
+        if role in roles:
+            return None
+        value = canonical_decimal(match[2]); unit = normalized_unit(match[3])
+        keys = [key for key, entry in users.items() if entry['value'] == value and entry['unit'] == unit]
+        if len(keys) != 1:
+            return None
+        roles[role] = keys[0]
+    if set(roles) != {'numerator', 'denominator'}:
+        return None
+    n, d = users[roles['numerator']], users[roles['denominator']]
+    if Decimal(d['value']) != 0 or Decimal(n['value']) < 0 or n['unit'] != d['unit']:
+        return None
+    if {key for key, entry in users.items() if entry['unit']} != set(roles.values()):
+        return None
+    return {'expression': {'operation': 'percentage', **{key: {'quantity': value} for key, value in roles.items()}},
+            'source_ids': source_ids[:1]}

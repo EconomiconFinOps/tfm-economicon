@@ -1145,3 +1145,28 @@ indefinido; case019-zero-baseline-offline-v1.json conserva salida y hashes módu
 No llamada al modelo ni nueva validación integral. Manifest/pin/fixture actualizados,
 assemblerSHA3ae4057abb4234acb8deb0305d2dc164e8a3f0e2269d10bc48a92809689daca8.
 008 (cociente0/0 sin baseline/current) no queda cubierto por esta ruta; sigue pendiente.
+
+
+### Cociente con denominador cero — 14/10/2026
+
+008 corregido localmente: required_zero_percentage reconoce una petición simple
+unallocated/total elegible con operandos explícitos del usuario, moneda única y
+fórmula documental completa y verificada. No necesita inventar intervalos para
+explicar que dividir por cero es indefinido. Ambigüedad, intención compuesta,
+negación, otras cantidades o fórmula incompleta conservan el flujo existente.
+Respuesta tipada zero_percentage fija el AST, insufficient_data y auxiliares
+vacíos; servidor redacta la explicación y cita la fórmula. No exige numerador
+positivo ni convierte 0/0 en 0%. Módulos backend/processor idénticos.
+
+Verificación: 104 PASS processor en segmentos/clasificación/rutas cero;
+51 PASS recursos/streaming; 94 PASS backend modos/intervalos/booleanos.
+Replay de los tres contextos originales en case008-zero-denominator-offline-v1.json
+(externo) produce cociente indefinido y pide período con denominador aplicable.
+Assembler SHA256 63dcc4d3529256777bd52e1967b54d1060581ede875fbae7be235cda23b52f2e.
+Estas pruebas son offline: no alteran etiquetas de baseline ni prueban aceptación
+con modelo, SQL o navegador. Runtime sigue a817382b; sin gasto nuevo.
+
+Siguiente: preparar comparación del candidato conservando el ledger de todas las
+campañas, consultar gasto/validez de claves antes de inferencia y ejecutar sólo lo
+que permita el techo acumulado de 2 USD. No resetear contabilidad ni renovar claves
+sin autorización aplicable. Reserva continúa separada del ajuste del candidato.
