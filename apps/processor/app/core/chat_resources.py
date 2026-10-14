@@ -76,7 +76,8 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     scenario_accounts={name:{'version':version,
         'module_sha256':hashlib.sha256(Path(__file__).with_name('chat_'+name+'.py').read_text(encoding='utf-8').encode()).hexdigest()}
         for name,version in (('cost_breakdown','complete-service-list-with-period-scope-basis-v1'),
-                             ('shared_allocation','declared-shared-missing-approved-rule-v1'))},
+                             ('shared_allocation','declared-shared-missing-approved-rule-v1'),
+                             ('savings_realization','complete-staged-savings-explicit-verified-identified-rule-v1'))},
     weighted_coverage={'version':'complete-two-group-user-count-cost-coverage-v1',
         'module_sha256':hashlib.sha256(Path(__file__).with_name('chat_weighted_coverage.py').read_text(encoding='utf-8').encode()).hexdigest()},
     policy_sections={'version':'complete-positional-list-table-policy-v1',
