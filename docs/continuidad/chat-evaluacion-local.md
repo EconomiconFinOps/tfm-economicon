@@ -20,6 +20,49 @@ pendientes; ampliación económica no equivale a aceptación semántica.
 023r1active. Observaciónguardada en candidate-cap5-observation.json externo;
 021/022familiareservada sinadjudicar. Continúa mismo controlador/producto.
 
+### Reanudación tras conciliación de 013r3 — 14/10/2026
+
+PID2642423 terminal tras 69 recibos:65completed/4failed,68verificados antes de
+conciliar. Recuperador leído de nuevo sobre la misma operación
+ a9555e3f-f2dd-4e3d-a8b7-c4518b5ec6f1 devolvió FAILED_RECONCILED,
+0.0050725375USD. No se repitió inferencia ni adjudicó semántica de familiareservada.
+Backend/processor running,OOMfalse. La primera parada no prueba coste0; nuevo
+readback permitió la conciliación completa, conservando el fallo técnico.
+
+NuevoPID2878413 live confirmado, logcandidate-cap5-campaign-resume3.log,
+pidfilecandidate-cap5-campaign-resume3.pid. Continúa después de013r3 con e23 y
+herramientase926,plan/ledger/cap5 iguales. Para futurasobservaciones usar este
+PID, no2642423 ausente. Lecturas/juiciosprovisionales locales no cambian producto.
+
+### Revisión provisional de fuentes y primeros requisitos — 14/10/2026
+
+Contrastadas respuestas completas y chunks originales de 001/002 r1/r2 y 003r2.
+33 etiquetas locales en5muestras: provisionalpass según banco y rúbrica escrita;
+no adjudicación independiente. Artefactos candidate-cap5-first56-local-judgments-v1
+.json y-local-reviewed-v1.json; informe parcial queda5pass/48pending/3técnicos,
+297checks aúnunreviewed. No hay aceptación global ni evidencia sobre todasr3.
+
+Precisado el hallazgo027: las afirmaciones sí están soportadas por FinOps2/3 en
+losfragmentos autorizados.002r2 tiene su método en FinOps8/9. Evidencevisible[]
+no prueba por sísolo contenido inventado/ausencia desoporte. Cuestiónseparada:
+selección/visibilidad decitas y formato, pendiente criterio derevisores. Informe
+candidate-cap5-documentary-support-clarification.json. Los juicios anteriores
+“soporte pendiente” quedan precisados con esta lectura, no se declara fallo de
+contenido basándose sólo en evidencevacío. Sin cambio del producto duranteN3.
+
+### Informe parcial y005 con tres repeticiones — 14/10/2026
+
+Agregado de56recibos congeladosr1+r2 yscoreoffline sinjuicios nuevos en
+candidate-cap5-first56-aggregate.json y-unreviewed.json:53pending/3technical_failure,
+330comprobacionesunreviewed,28muestrasfaltantes. No se heredanPASS deheurísticas
+ni decampañas anteriores. Datasetreserva sigue sinadjudicar.
+
+005r3completado: r1/r2/r3 cumplen todos loschecks focales de1000EUR/10%/amarillo,
+sharedseparado yexcludedfuera. Informe005-n3-core-checks.json en
+candidate-cap5-calibration-observed conSHArecibos; no verificaentailmentdecada
+cita niadjudicaciónindependiente. ÚltimoPID2642423S:63/84verificados,
+60completed/3failed,008r3active. Continúa el mismocandidato bajo5USD.
+
 ### Segunda ronda cap5 congelada — 14/10/2026
 
 28/28recibosr2 congelados fuera deGit en candidate-cap5-r2-frozen conmanifestSHA;
