@@ -1,15 +1,17 @@
 """Carga de los resultados de evaluación del asistente en la base del dashboard de Grafana (JUP-121).
 
-Por ahora este módulo contiene cuatro capas. La primera es la de manifiestos: lee y valida los manifiestos
+Por ahora este módulo contiene cinco capas. La primera es la de manifiestos: lee y valida los manifiestos
 que dicen qué informes alimentan el dashboard (`docs/validation/evaluation-runs.json` y los locales). La
 segunda es el adaptador del informe JSON de JUP-070 (`adapt_jup070`), que normaliza ese informe al
 contrato de filas planas `rows-v1` de `docs/validation/evaluation-dashboard.md`. La tercera es el
 adaptador del benchmark de modelos de JUP-078 (`adapt_jup078`), que produce el mismo contrato a partir
 del informe de `tools/llm-benchmark.py`. La cuarta es el adaptador de la calibración de la recuperación
 de JUP-022 (`adapt_jup022`), que convierte cada punto del barrido (`top_k`, `max_distance`) en cinco
-filas del mismo contrato. Usa solo la biblioteca estándar, no tiene efectos al importarse y nunca abre
-una conexión de red ni a la base de datos. Los demás adaptadores y la carga a la base los añaden las
-tareas siguientes del change.
+filas del mismo contrato. La quinta es el adaptador de las métricas de negocio de JUP-068
+(`adapt_jup068`), que convierte el informe de `tools/business-metrics.mjs` en 23 filas de tipo B, junto con
+`read_business_report`, que ejecuta ese generador de Node. Usa solo la biblioteca estándar, no tiene
+efectos al importarse y nunca abre una conexión de red ni a la base de datos. La carga a la base la
+añaden las tareas siguientes del change.
 """
 
 from __future__ import annotations
@@ -19,6 +21,7 @@ import hashlib
 import json
 import math
 import re
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -831,3 +834,245 @@ def adapt_jup022(report, run_id: str) -> tuple[dict, list[dict]]:
     for point in points:
         results += _calibration_point_rows(point, chosen)
     return _calibration_run(report, run_id), results
+
+
+# --- Adaptador de las métricas de negocio de JUP-068 --------------------------------------------------
+
+BUSINESS_SCHEMA_VERSION = 1
+BUSINESS_JUP = "JUP-068"
+# Generador de Node: el informe se obtiene ejecutándolo y no reimplementando sus fórmulas en Python, para
+# que el dashboard no pueda divergir de él (regla 4: los adaptadores copian, no recalculan).
+BUSINESS_CLI = ROOT / "tools" / "business-metrics.mjs"
+# Plazo máximo del generador: evita que un `node` colgado bloquee la carga entera.
+BUSINESS_TIMEOUT_SECONDS = 60
+# Solo `synthetic` marca la ejecución como sintética; `measured` es una ejecución con datos observados.
+BUSINESS_PROVENANCES = ("synthetic", "measured")
+# Moneda en mayúsculas de tres letras. Se valida con `fullmatch` por la misma razón que los identificadores:
+# un `$` casaría antes de un salto de línea final y dejaría pasar "EUR\n".
+CURRENCY_RE = re.compile(r"[A-Z]{3}")
+# Campos que se publican, por bloque. Todo lo demás del informe se ignora a propósito: `scope`,
+# `configuration`, `reviewer`, `evidence` y `cost_basis` son texto libre, `period` son fechas de calendario y
+# `pairs` y `estimates` llevan identificadores arbitrarios de parejas, recursos y estimaciones (regla 3). Los
+# agregados que sí se publican ya resumen todo lo que esas listas contienen.
+BUSINESS_TIME_COUNTS = ("eligible_pairs", "manual_ms", "assisted_ms")
+BUSINESS_ALLOCATION_COUNTS = ("allocated", "shared", "unallocated", "excluded", "total_minor", "eligible_minor")
+BUSINESS_SAVINGS_COUNTS = ("estimated_count", "candidate_count", "not_evaluable_count")
+# Enteros que pueden ser null: `saved_ms` (null sin parejas elegibles; puede ser negativo si el asistente
+# tardó más), `potential_minor` (null sin estimaciones) y `realized_minor` (ver `_business_savings_rows`).
+BUSINESS_NULLABLE_INTS = (
+    ("time", "saved_ms"), ("savings", "potential_minor"), ("savings", "realized_minor"),
+)
+# Porcentajes que pueden ser null (división por cero o magnitud ausente). Pueden ser negativos o mayores de
+# 100, y un entero del JSON (40) es tan válido como un flotante (14.000000000000002).
+BUSINESS_NULLABLE_NUMBERS = (
+    ("time", "saved_percent"), ("allocation", "assigned_percent"), ("allocation", "governed_percent"),
+    ("allocation", "unallocated_percent"), ("savings", "potential_percent"),
+)
+# (etiqueta de `behavior`, campo del informe) de los tres recuentos de oportunidades.
+BUSINESS_OPPORTUNITIES = (
+    ("estimated", "estimated_count"), ("candidate", "candidate_count"),
+    ("not_evaluable", "not_evaluable_count"),
+)
+# (metric_id, campo del informe) de los seis importes de asignación, en el orden del contrato.
+BUSINESS_AMOUNTS = (
+    ("allocated", "allocated"), ("shared", "shared"), ("unallocated", "unallocated"),
+    ("excluded", "excluded"), ("total", "total_minor"), ("eligible", "eligible_minor"),
+)
+
+
+def _check_business_header(report: object) -> None:
+    if not isinstance(report, dict):
+        raise _bad("report", "debe ser un objeto")
+    version = report.get("schema_version")
+    if type(version) is not int or version != BUSINESS_SCHEMA_VERSION:
+        raise _bad("schema_version", f"debe ser {BUSINESS_SCHEMA_VERSION}")
+    # Solo un informe de JUP-068 se interpreta como negocio: otro con la misma forma significaría otra cosa.
+    if report.get("jup") != BUSINESS_JUP:
+        raise _bad("jup", f"debe ser {BUSINESS_JUP!r}")
+    if report.get("provenance") not in BUSINESS_PROVENANCES:
+        raise _bad("provenance", f"debe ser uno de {', '.join(BUSINESS_PROVENANCES)}")
+    # Commit, versión del dataset y huella acaban en `run`, donde la regla 3 solo admite identificadores.
+    for field in ("commit", "dataset_version", "input_sha256"):
+        if not _is_identifier(report.get(field)):
+            raise _bad(field, "debe ser un identificador (alfabeto cerrado, máximo 80 caracteres)")
+    currency = report.get("currency")
+    if not isinstance(currency, str) or CURRENCY_RE.fullmatch(currency) is None:
+        raise _bad("currency", "debe ser un código de moneda de tres letras mayúsculas")
+    digits = report.get("minor_unit_digits")
+    if not _is_count(digits) or digits < 0:
+        raise _bad("minor_unit_digits", "debe ser un entero mayor o igual que 0")
+
+
+def _check_business_counts(parent: dict, keys: tuple, where: str) -> None:
+    for key in keys:
+        value = parent.get(key)
+        # `_is_count` exige `type(...) is int`: bool y los flotantes, incluso 1.0, no son recuentos. La clave
+        # ausente da None y se rechaza por la misma vía.
+        if not _is_count(value) or value < 0:
+            raise _bad(f"{where}.{key}", "debe ser un entero mayor o igual que 0")
+
+
+def _check_business_nullable(report: dict, paths: tuple, valid, problem: str) -> None:
+    for block, key in paths:
+        parent = report[block]
+        # La clave AUSENTE no vale aunque null sí: sería un informe incompleto y no «no medido».
+        if key not in parent:
+            raise _bad(f"{block}.{key}", "campo obligatorio ausente")
+        if parent[key] is not None and not valid(parent[key]):
+            raise _bad(f"{block}.{key}", problem)
+
+
+def _check_business_blocks(report: dict) -> None:
+    time = _check_object(report.get("time"), "time")
+    results = _check_object(time.get("results"), "time.results")
+    allocation = _check_object(report.get("allocation"), "allocation")
+    savings = _check_object(report.get("savings"), "savings")
+    _check_business_counts(results, CASE_STATUSES, "time.results")
+    _check_business_counts(time, BUSINESS_TIME_COUNTS, "time")
+    _check_business_counts(allocation, BUSINESS_ALLOCATION_COUNTS, "allocation")
+    _check_business_counts(savings, BUSINESS_SAVINGS_COUNTS, "savings")
+    _check_business_nullable(report, BUSINESS_NULLABLE_INTS, _is_count, "debe ser un entero o null")
+    _check_business_nullable(report, BUSINESS_NULLABLE_NUMBERS, _is_number, "debe ser un número finito o null")
+
+
+def _business_run(report: dict, run_id: str) -> dict:
+    # Solo lo que el informe registra de verdad; corpus, embeddings, recuperación, modelo y prompt no existen
+    # en JUP-068 y quedan en None («no registrado»). `run_at` también: el informe trae un periodo (fechas
+    # de calendario del registro), no la marca de ejecución, y no se inventa una a partir de él.
+    run = dict.fromkeys(RUN_KEYS)
+    run.update(
+        run_id=run_id, source=BUSINESS_JUP, commit=report["commit"], suite=BUSINESS_JUP,
+        suite_version=report["dataset_version"], suite_sha256=report["input_sha256"],
+        # Solo `synthetic` es sintético: una ejecución medida no puede esconderse de las series reales.
+        synthetic=report["provenance"] == "synthetic",
+    )
+    return run
+
+
+def _business_row(grp: str, metric_id: str, unit: str, behavior: str = "all", **fields) -> dict:
+    # Tipo B: `judgment` es None porque «automático o humano» solo describe el juicio sobre los casos de una
+    # rúbrica (tipo A); aquí no hay rúbrica ni revisor por fila, y la tabla del contrato fija null.
+    return _row(grp, metric_id, behavior, unit, None, measure_type="B", **fields)
+
+
+def _business_value(grp: str, metric_id: str, unit: str, value, denominator=None, numerator=None,
+                    behavior: str = "all", measured: bool = True) -> dict:
+    # `measured` False manda sobre el valor (regla 6): una suma de nada que el informe escribe como 0 no es una
+    # medición. Un 0 con `measured` True SÍ lo es y se copia. Lo no medido conserva el denominador (regla 5)
+    # y deja valor y numerador a None (regla 1). El valor se copia con su tipo, sin redondear (regla 4).
+    if not measured or value is None:
+        return _business_row(grp, metric_id, unit, behavior, status="not_measured", denominator=denominator)
+    return _business_row(grp, metric_id, unit, behavior, status="measured", value=value,
+                         numerator=numerator, denominator=denominator)
+
+
+def _business_time_rows(time: dict) -> list[dict]:
+    results = time["results"]
+    trials = sum(results[status] for status in CASE_STATUSES)
+    # Los cuatro estados son recuentos de parejas con el total de intentos como denominador, igual que los
+    # estados de casos (regla 2): `blocked` y `not_run` no se suman a `fail`.
+    rows = [_business_row("time", "time_trials", "parejas", status=status, count=results[status],
+                          denominator=trials) for status in CASE_STATUSES]
+    pairs, manual = time["eligible_pairs"], time["manual_ms"]
+    # Sin parejas elegibles (ninguna `pass`) el tiempo manual y el asistido son sumas de nada: el generador
+    # escribe 0, pero ese 0 significa «sin datos», no «cero milisegundos», y publicarlo como medido violaría
+    # la regla 1. Con parejas elegibles un 0 sí es una medición. Lo decide `eligible_pairs`, no que valga 0;
+    # el ahorro y su porcentaje dependen de esas mismas parejas, así que comparten el criterio.
+    measured = pairs > 0
+    return rows + [
+        _business_value("time", "manual_time", "ms", manual, pairs, measured=measured),
+        _business_value("time", "assisted_time", "ms", time["assisted_ms"], pairs, measured=measured),
+        _business_value("time", "time_saved", "ms", time["saved_ms"], pairs, measured=measured),
+        # El porcentaje es proporción del tiempo manual: ese es su denominador aunque valga 0, y su numerador
+        # es el ahorro. Con manual 0 el informe lo deja en null y queda no medido con denominador 0.
+        _business_value("time", "time_saved_percent", "porcentaje", time["saved_percent"], manual,
+                        numerator=time["saved_ms"], measured=measured),
+    ]
+
+
+def _business_allocation_rows(allocation: dict, money: str) -> list[dict]:
+    # Los importes van en la unidad `<moneda en minúsculas>_minor_<dígitos>` (p. ej. `eur_minor_2`: importes
+    # enteros en céntimos). Se publican en unidad menor y enteros para no perder exactitud con flotantes, y la
+    # moneda y la escala forman parte de la unidad para que nunca se sumen ni comparen importes de monedas o
+    # escalas distintas. Va en minúsculas porque la regla 3 usa el mismo alfabeto para unidades e identificadores.
+    rows = [_business_value("allocation", metric, money, allocation[key]) for metric, key in BUSINESS_AMOUNTS]
+    eligible = allocation["eligible_minor"]
+    # Numeradores: lo que `tools/business-metrics.mjs` divide entre el gasto elegible. «Gobernado» es lo
+    # asignado más lo compartido; el gasto excluido queda fuera de los tres porcentajes.
+    for metric, numerator in (
+        ("assigned_percent", allocation["allocated"]),
+        ("governed_percent", allocation["allocated"] + allocation["shared"]),
+        ("unallocated_percent", allocation["unallocated"]),
+    ):
+        rows.append(_business_value("allocation", metric, "porcentaje", allocation[metric], eligible,
+                                    numerator=numerator))
+    return rows
+
+
+def _business_savings_rows(savings: dict, eligible: int, money: str) -> list[dict]:
+    rows = [_business_value("savings", "opportunities", "recuento", savings[key], behavior=behavior)
+            for behavior, key in BUSINESS_OPPORTUNITIES]
+    return rows + [
+        _business_value("savings", "potential_savings", money, savings["potential_minor"]),
+        _business_value("savings", "potential_savings_percent", "porcentaje", savings["potential_percent"],
+                        eligible, numerator=savings["potential_minor"]),
+        # El informe de hoy deja `realized_minor` SIEMPRE en null por diseño: el beneficio realizado está fuera
+        # de alcance mientras no haya un piloto real, así que la fila sale no medida («beneficio realizado no
+        # medido») y nunca como 0. Si un informe futuro trae un entero, es una medición y se copia.
+        _business_value("savings", "realized_savings", money, savings["realized_minor"]),
+    ]
+
+
+def adapt_jup068(report, run_id: str) -> tuple[dict, list[dict]]:
+    """Normaliza el informe de JUP-068 (ya parseado) a `(run, results)` del contrato `rows-v1`.
+
+    Función pura: no lee ficheros, no muta el informe ni comparte estructuras con él. Produce 23 filas de
+    tipo B en este orden: 8 de tiempo (estados de las parejas, tiempo manual, asistido, ahorrado y su
+    porcentaje), 9 de asignación (seis importes y tres porcentajes) y 6 de ahorro (tres recuentos de
+    oportunidades, ahorro potencial, su porcentaje y ahorro realizado). Copia los valores sin recalcularlos;
+    no publica texto libre (`scope`, `configuration`, `reviewer`, `evidence`), el periodo ni las listas de
+    parejas y estimaciones.
+    """
+    _check_business_header(report)
+    _check_business_blocks(report)
+    money = f"{report['currency'].lower()}_minor_{report['minor_unit_digits']}"
+    results = _business_time_rows(report["time"])
+    results += _business_allocation_rows(report["allocation"], money)
+    results += _business_savings_rows(report["savings"], report["allocation"]["eligible_minor"], money)
+    return _business_run(report, run_id), results
+
+
+def _business_failure(path, problem: str) -> AdapterError:
+    # Todo fallo del generador sale con el mismo prefijo y el nombre del fichero, para que quien edita el
+    # manifiesto sepa qué registro de negocio falló sin abrir el código.
+    return AdapterError(f"business-metrics: {Path(path).name}: {problem}")
+
+
+def read_business_report(path) -> dict:
+    """Ejecuta `node tools/business-metrics.mjs report <ruta>` y devuelve el informe como dict.
+
+    Cualquier fallo (Node ausente, plazo agotado, código de salida distinto de 0, salida que no es un objeto
+    JSON) es un `AdapterError` que empieza por `business-metrics: ` y nombra el fichero.
+    """
+    command = ["node", str(BUSINESS_CLI), "report", str(path)]
+    try:
+        # Sin `shell` y con la ruta como argumento propio: nada se interpreta ni se escapa. `cwd=ROOT` para que
+        # el generador se ejecute igual desde cualquier directorio de trabajo.
+        completed = subprocess.run(command, capture_output=True, text=True, encoding="utf-8",
+                                   timeout=BUSINESS_TIMEOUT_SECONDS, cwd=ROOT)
+    except (OSError, subprocess.SubprocessError, ValueError) as error:
+        # Aquí SÍ se capturan excepciones concretas: son las fronteras del proceso (Node no instalado, permisos,
+        # plazo agotado, argumentos con caracteres nulos), no errores de programación que deban salir tal cual.
+        raise _business_failure(path, f"no se pudo ejecutar el generador ({error})") from error
+    if completed.returncode != 0:
+        # El código de salida manda sobre el stdout aunque parezca un informe. Se incluye la primera línea no
+        # vacía del stderr (el motivo del generador); el resto suele ser una traza que no ayuda a quien edita.
+        reason = next((line for line in completed.stderr.splitlines() if line.strip()), "sin mensaje")
+        raise _business_failure(path, f"el generador terminó con código {completed.returncode}: {reason}")
+    try:
+        report = json.loads(completed.stdout)
+    except (ValueError, RecursionError) as error:
+        raise _business_failure(path, f"la salida del generador no es JSON ({error})") from error
+    if not isinstance(report, dict):
+        raise _business_failure(path, "la salida del generador debe ser un objeto JSON")
+    return report
