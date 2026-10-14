@@ -61,3 +61,17 @@ Hallazgos del QA trasladados: M2 (validar también la salida de los adaptadores 
 ### Excepción de entorno del DoD, ampliada
 
 En la pasada de la 2.2 la regresión falló por 145 pruebas del backend en las suites de salud del proveedor (`test_system_health_jup047.py` y `test_health_provider_*_jup047.py`), que es exactamente el hallazgo `RF-119-004` ya registrado (`AttributeError: 'ProactorEventLoop' object has no attribute '_ssock'` en esta máquina, con o sin los cambios). Con la de la 2.1 (una prueba inestable del frontend que pasa sola), la regresión completa no puede quedar en verde en este entorno por causas ajenas al change. Mientras `git diff origin/develop --stat -- apps packages package.json pnpm-lock.yaml turbo.json` siga vacío, el DoD de cada tarea exige lint, type-check, escaneo de secretos y todas las suites de `scripts/tests/test_evaluation_*.py` en verde, y que la regresión completa solo falle en esos casos conocidos.
+
+### 2.3 Adaptador del benchmark de JUP-078
+
+| Fase | Evidencia |
+| --- | --- |
+| Red | `scripts/tests/test_evaluation_adapter_jup078.py` (80 tests), commit `c5006620`; los 170 errores (con `subTest`) son `AttributeError` por `adapt_jup078` ausente, ninguno pasa por accidente. El tester comprobó que los esperados son alcanzables con una implementación de referencia fuera del repositorio |
+| Green | `adapt_jup078` y su sección en `tools/evaluation-dashboard.py`, commit `cb7a61da`; 264/264 |
+| Mutación | Solo la sección nueva (`--from-line`): **115/127 = 90,6 %**. Los 12 supervivientes son prosa de mensajes tras el prefijo `<campo>: `. Esta vez no hizo falta remediación: el tester endureció los tests desde el principio (fronteras `successful` = `cases` ± 1, bool frente a entero, tres modelos con valores distintos, denominador `successful` frente a `cases`) |
+| QA | `accept`, sin hallazgos BLOCKING ni MEDIUM. Reconstruyó las 10 filas del informe real por su cuenta, reprodujo la mutación (115/127) y mató 37 de 38 mutantes manuales de lógica; el superviviente es `models` aceptando una tupla, equivalente porque `json.loads` nunca la produce |
+| DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend, idénticos a los de la 2.2 (`RF-119-004`); el frontend pasó entero esta vez |
+
+Decisión de contrato: con `successful == 0`, `tools/llm-benchmark.py::summarize` escribe `mean_keyword_score: 0` y ese 0 significa «sin datos», así que `keyword_score`, `latency_p95` y `cost` salen no medidos aunque el informe traiga un número; con `successful > 0` un cero sí es una medición.
+
+Hallazgos LOW del QA, resueltos en el contrato: `synthetic` de JUP-078 es siempre `false` (sus «casos sintéticos» son preguntas públicas, no una ejecución sintética) y el vocabulario nuevo (`keyword_score`, `latency_p95`, `cost`, `puntuacion`, `usd`) queda en la fila de JUP-078 de «Qué toma cada adaptador».

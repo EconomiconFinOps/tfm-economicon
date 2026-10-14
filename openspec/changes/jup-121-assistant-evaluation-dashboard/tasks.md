@@ -20,7 +20,7 @@
   - filas por etapa de latencia;
   - `available=false` o `rate` nulo pasan a `not_measured` con valor `NULL`;
   - error si falta un campo obligatorio o la versión es desconocida.
-- [ ] 2.3 Adaptador `jup-078-benchmark-v1`:
+- [x] 2.3 Adaptador `jup-078-benchmark-v1`:
   - por modelo, `pass` = `successful` y `fail` = `cases - successful`;
   - puntuación, p95 y coste como valores con unidad;
   - commit y fecha `NULL`.
