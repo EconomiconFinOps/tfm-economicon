@@ -22,10 +22,12 @@ que retienen toda su cota, másseed0.002; no equivalen a coste0 ni gasto concili
 Claves exclusivasB mantienen vigencia15/10 08:02UTC; no renovadas.
 
 Evaluación completa normalizada en `candidate-cap5-n3-unreviewed.json`.
-Remapeadas13muestras revisadas localmente desde el corte56 sólo tras igualdad
-exacta de hashes de evidencia/criterio. `candidate-cap5-n3-local-judgments-v1.json`
-y`-local-reviewed-v1.json`:65checks pass,8uncertain,422unreviewed;8respuestaspass,
-70pending y6technical_failure. Revisión local provisional, no independiente ni
+Remapeadas13muestras desde el corte56 con hashes de evidencia/criterio iguales;
+además se comprobó igualdad de la fila completa en las56muestras del corte
+(incluye fragmentos autorizados y auxiliares). Prueba externa
+`candidate-cap5-first56-to-full-row-identity.json`. Última revisión local:22muestras,
+`candidate-cap5-n3-local-judgments-v2.json` y`-local-reviewed-v2.json`:111checks pass,
+10uncertain,374unreviewed;16respuestaspass,62pending y6technical_failure. Revisión local provisional, no independiente ni
 aceptación final. Corrección de referencia:011 está soportado porFinOps10,
 noRules2; la etiqueta mantiene su estado y razón corregida en el informe completo.
 
@@ -39,6 +41,20 @@ resolver incertidumbres mediante juicio independiente; criterios/N5 acordados co
 revisores y presupuesto; dependenciaA/PR130 (tokenizer/reviews). No cambiar el
 producto basándose en una sola repetición. Leer los límites de los contrastes
 focales y la evidencia de UI real más abajo antes de declarar algo validado.
+
+### Contraste 007–009 y trazabilidad de los juicios — 14/10/2026
+
+Revisadas las tres repeticiones de007/008/009 contra respuestas completas,
+auxiliares y fragmentos.007 conserva10.1%rojo, sin redondear;008 explica0/0
+indefinido sin entregar0%válido ni verde y pide periodo con datos.009r2/r3 piden
+regla y base;009r1 conserva incertidumbre en petición“regla o consumo” frente a
+criterio conjunto, sin etiquetar un fallo inequívoco. No cambian banco ni rúbrica.
+
+007r3 repite diez veces la misma limitación del denominador: observado como deuda
+de presentación en `candidate-cap5-formatting-observations.json`, sin inventar un
+criterio semántico de concisión ni modificar producto. No se compensan con ese
+juicio las incertidumbres reales. v2 local suma22muestras revisadas; los restantes
+juicios y la revisión independiente siguen pendientes. Sin nuevas inferencias.
 
 ### Reanudación tras conciliación de 013r3 — 14/10/2026
 
