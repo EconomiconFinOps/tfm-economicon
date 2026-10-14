@@ -164,3 +164,28 @@ def test_omitted_basis_cannot_release_an_unattributed_provisional_answer():
     parser=SegmentAnswerJSON([],quantities=catalog())
     with pytest.raises(ValueError,match='basis'):parser.feed(json.dumps(value))
     assert parser.text==''
+
+
+
+def test_flattened_table_offers_complete_literal_rows_without_rewriting():
+    from app.core.chat_claims import passages, table_rows
+    table = ('Other paragraph. ## Tags | Tag | Example | Use | | --- | --- | --- | '
+             '| `owner` | `team` | Responsible | | `environment` | `prod` | Context | More prose.')
+    expected = ['| `owner` | `team` | Responsible |', '| `environment` | `prod` | Context |']
+    assert table_rows(table) == expected
+    assert all(row in table and row in passages(table) for row in expected)
+    assert not any('---' in quote for quote in passages(table))
+
+
+def test_table_partial_row_and_wrong_column_count_are_not_offered():
+    from app.core.chat_claims import table_rows
+    prefix = '| A | B | C | | --- | --- | --- | '
+    assert table_rows(prefix + '| first | second | cut') == []
+    assert table_rows(prefix + '| first | second |') == []
+    assert table_rows('| first | second | third |') == []
+
+
+def test_long_table_row_is_not_truncated_into_a_quote():
+    from app.core.chat_claims import passages
+    content = '| A | B | | --- | --- | | ' + 'x' * 230 + ' | value |'
+    assert not any('value' in quote for quote in passages(content))

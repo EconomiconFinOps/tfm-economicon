@@ -9,6 +9,38 @@ PASSAGE_LIMIT=220
 PASSAGE_COUNT=96
 
 
+def table_rows(content):
+    """Recover complete literal rows from whitespace-flattened Markdown tables.
+
+    A separator establishes the column count. Partial rows and rows with a
+    different width are not offered; labels/values are never reconstructed.
+    """
+    parts = re.split(r'(?<=\|)\s+(?=\|)', content)
+    width = None
+    rows = []
+    for part in parts:
+        if not part.startswith('|'):
+            width = None
+            continue
+        end = part.rfind('|')
+        if end == 0:
+            width = None
+            continue
+        cells = part[1:end].split('|')
+        if len(cells) >= 2 and all(re.fullmatch(r'\s*:?-{3,}:?\s*', cell) for cell in cells):
+            width = len(cells)
+            continue
+        if width is None:
+            continue
+        if len(cells) != width or any(not cell.strip() for cell in cells):
+            width = None
+            continue
+        rows.append(part[:end+1])
+        if part[end+1:].strip():
+            width = None
+    return rows
+
+
 def passages(content):
     if not isinstance(content,str) or not content.strip():return []
     # Preserve exact bytes/characters of each selected contiguous span. Long
@@ -21,6 +53,9 @@ def passages(content):
         if (value and len(value)<=PASSAGE_LIMIT and value not in result
                 and not re.fullmatch(r'[\W\d_]+',value) and not value.startswith('#')):
             result.append(value)
+    for row in table_rows(content):
+        if len(row) <= PASSAGE_LIMIT and row not in result:
+            result.append(row)
     return result[:PASSAGE_COUNT]
 
 
