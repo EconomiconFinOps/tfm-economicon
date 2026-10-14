@@ -42,3 +42,23 @@ Ninguna. El dashboard de métricas técnicas de JUP-043 (`technical-metrics`) no
 - **Documentación**: ADR-0022, guía del dashboard y del comando de regeneración, contrato de filas planas para JUP-071 y fila en `docs/continuidad/`.
 - **Dependencias**: ninguna librería ni plugin nuevo. Se usan la biblioteca estándar de Python, `psql` del contenedor existente y el datasource PostgreSQL que ya trae Grafana 11.3.
 - **Relacionadas**: JUP-071 (consumirá el contrato), JUP-046 (alertas, fuera de alcance), JUP-035, JUP-109 y JUP-065 (figura para la memoria y la demo).
+
+## Human Approval
+
+- Change: jup-121-assistant-evaluation-dashboard
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-14
+- Carril: standard
+- Scope reviewed: PRD/proposal, TD/design, specs, tasks
+- Decisión de arquitectura aprobada: los resultados se guardan en el esquema `evaluation` de
+  `postgres-pgvector` y Grafana los lee con su datasource PostgreSQL integrado y un rol de solo
+  lectura (ADR-0022, por redactar en la tarea 1.1). Victor eligió esta opción frente a Pushgateway,
+  TestData con CSV embebido y el plugin Infinity con endpoint.
+- Scope adjustment approved: JUP-071 no está hecha, así que este change no depende de ella. El
+  formato `rows-v1` queda como su vía de entrada, la sección de robustez muestra «Sin datos» y la
+  prueba de extremo a extremo usa la ejecución 2 de JUP-070 (plantilla) en lugar del informe de
+  plantilla de JUP-071 que cita la tarjeta. La calibración de la recuperación se toma de JUP-022, no
+  de JUP-078.
+- Pendiente fuera de este gate: `Revision JUP-121` y `Validacion JUP-121` en el pull request.
