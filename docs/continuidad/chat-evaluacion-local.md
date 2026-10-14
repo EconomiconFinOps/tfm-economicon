@@ -20,6 +20,39 @@ pendientes; ampliación económica no equivale a aceptación semántica.
 023r1active. Observaciónguardada en candidate-cap5-observation.json externo;
 021/022familiareservada sinadjudicar. Continúa mismo controlador/producto.
 
+### Trello e historial real del candidato — 14/10/2026
+
+JUP123 consultada exclusivamente con integraciónDockerServer. Tarjeta aún no
+registra acuerdo derevisores; criteriospropuestos siguen pendientes. Seactualizó
+sólo párrafoEstado desfasado(N3NOTRUN/tope2) a baseline84recogida/candidatoN3encurso/
+autorización5USD, conservandohistorial yroles; comprobaciónprevia evita sobrescribir
+cambiosconcurrentes. Readback/update externos jup123-trello-criteria-readback.json
+yjup123-trello-current-status-update.json. Corte de tarjeta39/84 es histórico.
+
+Playwright visible contra API/backend real delcandidatoB:017/026/028r1 a1280px
+y390px,6checks; textocoincide normalizandoespacios,0mutacionesbloqueadas/0pageerrors;
+028sección Fuentesutilizadas presente. Capturamóvil028inspeccionada legible con
+fuentedocumental. Informe real-ui-current-result.json y6capturasexternas. Túnel
+SSHloopback usado sólo para B; autenticacióndemo legítima sóloenmemoria, sin
+credencialespersistidas. No nueva generación,pruebastreaming niaceptaciónN3.
+
+Primer selector omitíaprefijoJUP123; segundo mostró3títuloshomónimos entrecampañas.
+Corregido usando IDdeconversación delrecibo yordinaldelAPI,verificando peticiónGET
+aeseID; no basta seleccionarprimertítuloigual para validarproductonuevo.
+
+ÚltimoPID2642423S:52/84verificados(49completed/3failed),025r2active. Corte
+conservador1.915786191USD+reservas1.281808USD incluyeoperaciónactiva; próximo
+preflight debe volveraleer. No confundirreservas concosteefectivo ni liberar003.
+
+### Ruta del proveedor revalidada — 14/10/2026
+
+Readback seguro de model/info:alias economicon-chat→openrouter/z-ai/glm-5.2,
+onlydeepinfra/fp4,allowfallbacksfalse,requireparameterstrue; requestcodee23 fuerza
+mismaorder/temperatura0/numretries0. Reciboexternocandidate-cap5-routing-readback.json.
+No seleyeron claves ensalida ni cambióconfiguración. PID2642423S,36recibos
+(34completed/2failed),009r2active. Este readbackactual no es elrecibodefacturación
+de cada generación; nolevanta costesdesconocidos nirevisiónsemántica.
+
 ### Contrato de contabilidad reconciliado — 14/10/2026
 
 OpenSpec proposal/design/spec actualizados a autorización5USD, baselineN3recogida
