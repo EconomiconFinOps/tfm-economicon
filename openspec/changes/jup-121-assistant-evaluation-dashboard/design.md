@@ -89,9 +89,9 @@ Todo campo que el informe no trae queda `NULL`.
 **`evaluation.results`**, una fila por resultado:
 - Origen: `run_id`, `measure_type` (`A` o `B`), `grp` (familia o bloque), `metric_id`, `behavior` (conducta, etapa o modelo).
 - Resultado: `status`, que vale `pass`, `fail`, `blocked` o `not_run` en los recuentos y `measured` o `not_measured` en los valores; `count`, `value`, `numerator`, `denominator`, `unit`, `ci_low`, `ci_high`.
-- Juicio: `judgment` (`automatic` o `human`).
+- Juicio: `judgment` (`automatic` o `human`; nulo en el tipo B) y `selected` (candidato elegido por la calibración de JUP-022).
 
-Ninguna columna admite texto libre más allá de identificadores y unidades.
+Los campos de texto solo admiten identificadores y unidades (sin espacios, hasta 80 caracteres), lo que impide que entre un enunciado o una respuesta. Si el informe no trae `run_id`, se deriva de la fuente, la fecha y el sha256 del informe; una ejecución sin fecha no entra en ninguna serie temporal.
 
 **`evaluation.config_changes`** es una vista que alimenta las anotaciones: compara cada ejecución con la anterior de la misma fuente y nombra lo que cambió.
 
@@ -107,7 +107,7 @@ El contrato `rows-v1` es un JSON con `contract_version: 1`, una ejecución y sus
 
 **Clave de comparabilidad:** es la huella de fuente, `suite_sha256`, `corpus_sha256`, `embedding_provider`, `embedding_alias`, `retrieval`, `generation_model`, `prompt_sha256` y `non_real_reasons`. Con los datos actuales, las ejecuciones 1 y 2 de JUP-070 tienen claves distintas, porque cambian el proveedor de embeddings y `max_distance`. Por eso las dos muestran «Sin datos: no hay con qué comparar», que es el comportamiento que pide la tarjeta.
 
-**Juicio humano:** ACC-1 y ACC-3 dependen del juicio humano (el `outcome` de cada caso sale de los juicios de los puntos `required-N`). Las demás métricas de JUP-070 son automáticas.
+**Juicio humano:** el `outcome` de cada caso combina comprobaciones objetivas por regla y los juicios de los puntos `required-N`, así que los recuentos `pass` y `fail`, ACC-1 y ACC-3 dependen del juicio humano. Las demás métricas de JUP-070 (y los recuentos `blocked` y `not_run`) son automáticas.
 
 - La herramienta tiene una tabla fija que asigna cada métrica a un tipo de juicio.
 - Una prueba falla si el catálogo de JUP-067 tiene un identificador que la tabla no clasifica.
@@ -161,7 +161,7 @@ Una prueba estructural del JSON comprueba que:
 - **[Antes de la primera carga los paneles de la sección A y B dan error de relación inexistente]** → La guía pone `evaluation-dashboard:load` justo después de `docker compose up`. `load` crea el esquema aunque el manifiesto esté vacío.
 - **[DockerServer y la CD necesitan la variable nueva o Compose no arranca]** → Se añade a `.env.example` y a la guía de despliegue. La evidencia de validación lo deja como requisito de despliegue para que se avise a quien mantiene DockerServer antes del merge.
 - **[Hoy casi todo son ejecuciones de plantilla o sintéticas]** → Es lo honesto. El dashboard lo rotula y la evidencia lo dice; no se presenta como calidad del asistente.
-- **[El juicio humano de ACC-1 y ACC-3 se deduce por diseño, no viene marcado en el informe]** → Tabla fija probada contra el catálogo y documentada. Si JUP-067 cambia el catálogo, la prueba avisa.
+- **[La dependencia de juicio humano (recuentos `pass`/`fail`, ACC-1 y ACC-3) se deduce por diseño, no viene marcada en el informe]** → Tabla fija probada contra el catálogo y documentada. Si JUP-067 cambia el catálogo, la prueba avisa.
 - **[La proporción de búsquedas vacías es un límite inferior]** → Lo explica la descripción del panel. No se cambian las métricas del backend en este change.
 - **[El dashboard JSON escrito a mano puede desviarse de la spec]** → La prueba estructural y la conciliación ejecutan las mismas consultas SQL que los paneles.
 

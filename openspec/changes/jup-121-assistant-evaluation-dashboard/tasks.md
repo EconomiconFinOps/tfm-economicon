@@ -1,7 +1,7 @@
 ## 1. Decisión, contrato y manifiesto (documentación)
 
 - [x] 1.1 Redactar `docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md` con la plantilla `docs/templates/adr.md`: PostgreSQL con esquema `evaluation` y datasource integrado, alternativas descartadas (Pushgateway, promtool, TestData, Infinity, PostgreSQL aparte), Git solo para ejecuciones de hito, comando único de regeneración. Añadir su fila a `docs/adr/README.md`
-- [ ] 1.2 Escribir `docs/validation/evaluation-dashboard.md` con:
+- [x] 1.2 Escribir `docs/validation/evaluation-dashboard.md` con:
   - el contrato `rows-v1` (campos de ejecución y de fila, estados, `NULL` para lo no medido, sin texto libre);
   - el formato del manifiesto y los formatos admitidos;
   - la clasificación de ejecuciones no reales y la clave de comparabilidad;
@@ -30,7 +30,7 @@
 - [ ] 2.7 Clasificación de ejecuciones y comparabilidad:
   - motivos `plantilla`, `doble`, `sintetica` y `sin_modelo_verificado`;
   - clave de comparabilidad (las ejecuciones 1 y 2 de JUP-070 dan claves distintas);
-  - tabla de juicio humano (ACC-1, ACC-3) o automático;
+  - tabla de juicio humano (recuentos `pass`/`fail`, ACC-1, ACC-3) o automático;
   - prueba que falla si el catálogo de JUP-067 tiene un identificador sin clasificar.
 - [ ] 2.8 Subcomando `rows` que escribe ejecuciones y filas normalizadas en JSON sin tocar la base
 
