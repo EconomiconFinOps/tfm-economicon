@@ -133,6 +133,17 @@ def bind_segments(schema, records=None, quantities=None):
             options=short['items'].get('anyOf',[short['items']])
             short['items']={'anyOf':[choice for choice in options if not ('$ref' in choice or 'expression' in choice.get('properties',{}))]}
             recommendation['properties'][field]=short
+        # The renderer requires support inside each recommendation, rather than
+        # borrowing an unrelated quotation from the answer. Advertise that
+        # requirement in the private grammar too. Keep interpretation in action;
+        # one literal passage fits the unchanged 500-character rationale limit.
+        support=documentary_schema(getattr(quantities,'authorized_sources',getattr(quantities,'rule_sources',())))
+        if support:
+            recommendation['properties']['rationale']={
+                'type':'array','minItems':1,'maxItems':1,'items':support}
+        else:
+            for branch in schema.get('anyOf',[schema]):
+                branch['properties']['recommendations']['maxItems']=0
     if quantities:schema.setdefault('$defs',{}).update(expression_definitions(quantities))
     branches=schema.get('anyOf',[schema])
     classified=[]

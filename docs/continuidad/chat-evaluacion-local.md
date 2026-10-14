@@ -25,10 +25,11 @@ Evaluación completa normalizada en `candidate-cap5-n3-unreviewed.json`.
 Remapeadas13muestras desde el corte56 con hashes de evidencia/criterio iguales;
 además se comprobó igualdad de la fila completa en las56muestras del corte
 (incluye fragmentos autorizados y auxiliares). Prueba externa
-`candidate-cap5-first56-to-full-row-identity.json`. Última revisión local:22muestras,
-`candidate-cap5-n3-local-judgments-v2.json` y`-local-reviewed-v2.json`:111checks pass,
-10uncertain,374unreviewed;16respuestaspass,62pending y6technical_failure. Revisión local provisional, no independiente ni
-aceptación final. Corrección de referencia:011 está soportado porFinOps10,
+`candidate-cap5-first56-to-full-row-identity.json`. Ese corte v2 fue ampliado:
+la revisión local v6 cubre las78respuestas disponibles y queda68pass/8pending/
+2fail/6technical_failure globales.445checks pass,13uncertain,2fail y35sinrespuesta
+porfallo técnico; no sonPASS. Ver informe enlazado másabajo. Revisión local
+provisional, no independiente ni aceptación final. Corrección de referencia:011 está soportado porFinOps10,
 noRules2; la etiqueta mantiene su estado y razón corregida en el informe completo.
 
 Trello JUP123 actualizado mediante el puente autorizado a recogida84/84 y cota
@@ -41,6 +42,43 @@ resolver incertidumbres mediante juicio independiente; criterios/N5 acordados co
 revisores y presupuesto; dependenciaA/PR130 (tokenizer/reviews). No cambiar el
 producto basándose en una sola repetición. Leer los límites de los contrastes
 focales y la evidencia de UI real más abajo antes de declarar algo validado.
+
+### Revisión N3 completa y ajustes de contrato — 14/10/2026
+
+[Informe de resultados y pendientes](../validation/JUP-123-N3-local-review.md).
+Revisión localv6 de78respuestas:68pass/8pending/2fail/6technical_failure globales;
+445checks pass,13uncertain,2fail,35unreviewed porfallos técnicos sinrespuesta.
+014r2/r3 omite20% excesorelativo(muestra120%ratioforecast/budget). Calibración
+congelada antesderevisarreserva; reserva históricamente conocida,nocegada.
+Comparaciónv6:48fail→pass y0pass→fail confirmados,pero9pass→uncertain y003r1
+pass→technical_failure impiden afirmar ausencia deregresión obligatoria.
+Baseline intacta;004/009 posible diferencia decriterio necesitaadjudicación.
+
+Diagnósticos estructurados deDockerServer:022tresveces recommendation_documentary_support_required;
+013r3/021r3 response_basis_authority;003r1 rendered_text_limit. Artefacto externo
+candidate-cap5-failure-diagnostics-v1.json. No se leyó candidatoprivado ni llamó almodelo.
+Ajuste local deesquema exige rationale documental literal yretira citasauxiliares
+enuser_scenario/greeting. No relaja validadores.118pruebas focalesprocessor y69backend
+PASS. Regresión completa deprocessor terminó,pero arnés perdiósalida por
+UnicodeDecodeError destderrWindows; resultado noverificable, noPASS. Repetir con
+salidabinaria/JUnit persistente. No transferido/desplegado; N3e23 no validaesteajuste. OpenSpec estrictoPASS. Trello actualizado yreadbackconforme
+mediantepuente autorizado (jup123-trello-review-update.json).
+
+Integridad posterior:257/257SHA del snapshot N3 coinciden, originalintacto;
+candidate-cap5-post-review-integrity-v1.json. Los6diagnósticos enlazados con
+operaciones ySHA depeticiones enpruebas deuso;candidate-cap5-failure-correlation-v1.json.
+El código deinvariante no demuestra elcampo exacto delcandidato privadorechazado.
+
+Artefactos externos: candidate-cap5-n3-local-{judgments,reviewed}-v6.json,
+candidate-cap5-n3-paired-local-v6.json,candidate-cap5-n3-assessment-v1.json,
+candidate-cap5-calibration-freeze-v1.json. Sin inferencias ni gasto nuevo;
+cota anterior3.679871791USD conserva todasreservas. Próximo: corregir cobertura014,
+limite003; verificar esquema/autoridad enreal con nueva admisión; acordarcriterios,
+adjudicarincertidumbres,N5 ydependenciaA. ReconsultaGitHub18:28UTC: Aavanza a
+28ee5b1c44389aa8643c1c4deca6c0c834c09f7d, tokenizerfueraGit yhelperbuild;
+CItecnicaverde peroJUP reviewsFAILURE/CHANGES_REQUESTED. Evidenciaexterna
+jup122-pr130-current-20261014-evening.json. Falta reconciliar nuevosbloques conB;
+no atribuir resolución pendiente deltokenizer a uncódigoactual sinconsultarlo.
 
 ### Contraste 007–009 y trazabilidad de los juicios — 14/10/2026
 

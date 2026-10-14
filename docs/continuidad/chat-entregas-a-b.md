@@ -45,3 +45,17 @@ B puede medir su candidato, pero reconciliación y aceptación de A siguen abier
 Reconsulta posterior a las pruebas Linux/SQL de B: PR130 conserva los mismos
 SHA318a56f/c30a7d0 y CHANGES_REQUESTED; reviewlmatsan sigue solicitando tokenizer.
 No se ha incorporado una corrección nueva de A ni hay aprobación inferida.
+
+
+## Nueva cabeza de A — comprobación 14/10/2026 18:28 UTC
+
+Supera la cabeza318a56f de las observaciones previas: ahora28ee5b1c44389aa8643c1c4deca6c0c834c09f7d.
+Paris retiró tokenizer.json versionado, añadió build_tokenizer.py y pruebas,
+modificó Dockerfiles/CI, exclusión .secrets enrelease y limpieza de fixtureSQL.
+CI técnicaSUCCESS, peroJUP reviewsFAILURE yreviewDecisionCHANGES_REQUESTED;
+única review oficial sigue solicituddeLucía sobre318a56f. Comentario deParis
+reporta comprobacionesinternas; no sustituye Revision/Validacion oficiales.
+Sin inlinecomments. Se consultaron reviews,conversación ydiffmetadata; no es
+revisiónfuncional nueva. Recibo fueraGit jup122-pr130-current-20261014-evening.json.
+B todavía debe reconciliar esos bloques respetando v4 y los planes congelados;
+no cherry-pick ciego de ficheros/documentación. No merge ni mensajes externos.

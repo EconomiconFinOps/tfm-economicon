@@ -69,6 +69,15 @@ def bind_modes(schema,quantities):
             props[field]['minItems']=0;props[field]['maxItems']=0
         props['evidence']['minItems']=0
         if basis not in DOCUMENTARY_BASES:props['evidence']['maxItems']=0
+        if basis in ('user_scenario','greeting'):
+            # These modes cannot consume documentary authority in *any* field.
+            # Inheriting the general auxiliary schema advertised excerpts that
+            # render_response necessarily rejects after generation.
+            for field in ('assumptions','limitations','next_actions'):
+                props[field]['items']={'type':'array','minItems':1,'maxItems':1,
+                    'items':{'type':'object','properties':{
+                        'inference':{'type':'string','maxLength':482}},
+                        'required':['inference'],'additionalProperties':False}}
         if basis in ('missing_data','clarification','refusal'):props['next_actions']['minItems']=1
         retained.append({**copy.deepcopy(base),'properties':{'basis':props.pop('basis'),**props},'required':[*base['required'],'basis']})
     return {'type':'object','anyOf':retained,'$defs':defs}

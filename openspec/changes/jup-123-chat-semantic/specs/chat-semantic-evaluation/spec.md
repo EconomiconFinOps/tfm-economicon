@@ -39,3 +39,19 @@ iniciar gasto, preservar todos los intentos y respetar el máximo acumulado auto
 - **THEN** el evaluador mantiene el fallo y conserva íntegra su reserva máxima sin considerarlo gratuito o coste conciliado
 - **AND** sólo avanza si la contabilidad viva y todas las reservas completas admiten la siguiente operación
 - **AND** no repite la operación fallida ni permite este tratamiento para una operación activa
+
+### Requirement: Contrato privado compatible con autoridad y soporte
+El esquema de generación MUST exigir soporte documental visible propio para
+cada recomendación y no ofrecer selecciones documentales en campos de modos
+que no pueden consumir esa autoridad. Los validadores de servidor siguen siendo
+obligatorios; la selección literal no acredita por sí sola pertinencia semántica.
+
+#### Scenario: Recomendación sin fuente propia
+- **WHEN** se ofrece una recomendación en el contrato privado
+- **THEN** su justificación exige seleccionar un pasaje literal autorizado y visible
+- **AND** una cita independiente en la respuesta no sustituye ese soporte
+
+#### Scenario: Escenario hipotético sin autoridad documental
+- **WHEN** se usa el modo user_scenario o greeting
+- **THEN** sus campos auxiliares no ofrecen selecciones documentales que contradigan el modo
+- **AND** no se concede autoridad financiera ni se relajan las comprobaciones de servidor

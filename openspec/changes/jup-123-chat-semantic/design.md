@@ -39,6 +39,21 @@ como tal y no repite suPOST. Los artefactos distinguen gasto conocido y reservas
 
 ## Risks and open questions
 
+Corte actual N3 e23e495b:84recibos,78respuestas/6fallos técnicos. Revisión local
+de todas las respuestas terminada:68conformes/8inciertas/2fallosdecontenido.
+014r2/r3 omite el exceso relativo;022 falla3veces por soporte visible propio
+de recomendaciones. Ver [informe local](../../../docs/validation/JUP-123-N3-local-review.md).
+La reserva se revisó después de congelar calibración, sin ajustes intermedios;
+era históricamente conocida. Ajustarla después exige nueva evidencia independiente.
+
+Corrección posterior aún local: rationale de recomendación selecciona un único
+pasaje documental autorizado; interpretación en action. Los modos sin autoridad
+documental no ofrecen citas en auxiliares. No se corrige una salida inválida
+asignándole fuentes inferidas ni se debilita el renderer. Los diagnósticos de
+013r3/021r3 identifican la invariante de autoridad, no el campo privado exacto:
+esta inconsistencia del esquema es comprobada, su causalidad en esos dos intentos
+es hipótesis pendiente de medición. El runtime e23 permanece sin modificar.
+
 El entorno compartido anterior no demuestra procedencia del candidato nuevo.
 Colector y baseline real N3 completados el 2026-10-14: 84 recibos, 77 operaciones
 completadas y 7 fallidas preservadas. Pendientes adjudicación independiente,

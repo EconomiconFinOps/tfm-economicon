@@ -63,6 +63,30 @@ def test_private_records_project_exact_ids_without_changing_public_contract():
     assert private['properties']['rationale']['type']=='array'
 
 
+def test_advertised_recommendation_rationale_renders_its_own_support():
+    schema=chat_provider_schema(authorized_evidence=SOURCES,quantities=visible_catalog())
+    rationale=schema['$defs']['Recommendation']['properties']['rationale']
+    assert rationale['minItems']==rationale['maxItems']==1
+    selections=rationale['items']['properties']['documentary']['anyOf']
+    for selection in selections:
+        value=visible_candidate()
+        source=selection['properties']['source_id']['const']
+        passage=selection['properties']['passage']['enum'][0]
+        value['recommendations'][0]['rationale']=[{
+            'documentary':{'source_id':source,'passage':passage}}]
+        result=render_response(value,[],quantities=visible_catalog())
+        rec=result['recommendations'][0]
+        assert rec['evidence_ids']==[source]
+        assert passage in rec['rationale'] and len(rec['rationale'])<=500
+        assert 'inference' not in rationale['items']['properties']
+
+
+def test_recommendations_are_not_offered_without_selectable_documentary_support():
+    schema=chat_provider_schema(authorized_evidence=[])
+    assert all(branch['properties']['recommendations']['maxItems']==0
+               for branch in schema.get('anyOf',[schema]))
+
+
 @pytest.mark.parametrize('width',[1,7,8192])
 def test_recommendation_projection_preserves_streamed_answer(width):
     value=visible_candidate();raw=json.dumps(value,ensure_ascii=True)

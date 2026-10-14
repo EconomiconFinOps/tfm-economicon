@@ -74,6 +74,23 @@ def test_private_schema_has_no_root_citation_admission():
     schema=chat_provider_schema(authorized_evidence=[SOURCE],quantities=catalog())
     assert all(branch['properties']['evidence']['maxItems']==0 for branch in schema.get('anyOf',[schema]))
 
+
+@pytest.mark.parametrize('basis,status',[('user_scenario','insufficient_data'),('greeting','no_data')])
+@pytest.mark.parametrize('field',['assumptions','limitations','next_actions'])
+def test_non_documentary_modes_never_offer_unrenderable_auxiliary_citations(basis,status,field):
+    schema=chat_provider_schema(authorized_evidence=[SOURCE],quantities=catalog())
+    branch=next(b for b in schema['anyOf'] if b['properties']['basis']['const']==basis)
+    item=branch['properties'][field]['items']['items']
+    assert set(item['properties'])=={'inference'}
+    assert item['additionalProperties'] is False
+    value=candidate();value.update(basis=basis,status=status,evidence=[])
+    value['answer']=[{'inference':'Escenario aportado.'}] if basis=='user_scenario' else [{'text':'Hola.'}]
+    value[field]=[[{'inference':'Confirma el alcance.'}]]
+    assert 'Confirma el alcance.' in render_response(value,[],quantities=catalog())[field][0]
+    value[field]=[[{'documentary':{'source_id':'guide','passage':'Costs are observations.'}}]]
+    with pytest.raises(ValueError,match='cannot grant authority'):
+        render_response(value,[],quantities=catalog())
+
 @pytest.mark.parametrize('basis_first',[True,False])
 def test_plain_text_cannot_be_emitted_before_final_rejection(basis_first):
     value=candidate();value['answer']=[{'text':'An unsupported purported policy.'}]
