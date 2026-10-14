@@ -25,6 +25,33 @@ candidate-e94f6e54-campaign-resume1.log y anterior preservados. Plan84 congelado
 evaluation-ledger.sqlite común conserva baseline y candidato. Todo coste de las
 operaciones concluidas conciliado; ninguna nueva generación tras rechazo.
 
+###026 — falta de cobertura, terminal local y replay
+
+chat_missing_spend.py reconoce pregunta de gasto cero y escenario explícito
+consulta vacía+ingesta incompleta para el mismo mes/año. Usa premisa gasto cero
+DESCONOCIDA; no infiere gasto positivo ni cifra. Sin citas decorativas o métricas.
+Coincidencia de periodo obligatoria, declaración completa sin negaciones extra,
+hipótesis múltiples ni condiciones añadidas. Si existe evidencia no documental
+(p.ej.cost_query), no la descarta para forzar este terminal. Fuera de gramática
+se conserva ruta general; no se afirma resolver universalmente preguntas de gasto.
+
+Streaming/final y esquema usan mismo terminal ligado a hash de pregunta. El
+modelo no puede añadir conclusiones/citas/auxiliares en esta ruta. Requiere
+insufficient_data. Próximo paso en el propio texto: verificar/completar cobertura
+y consulta autorizada del mismo ámbito/periodo/moneda. Replay con entradas026r1
+originales en missing-spend-026-offline-replay-v1.json, hash de recibo preservado.
+33muestras completadas de calibración inspeccionadas por router: sólo026/028
+activan rutas nuevas.003r1 sin historial se registra fuera de esa comprobación;
+reserva no usada. Primer script encontró ese historial vacío y se detuvo; segundo
+registra la exclusión técnica explícitamente, sin tocar recibos ni resultados.
+
+134processor/64backend PASS; carga del manifiesto backend PASS. AssemblerSHA
+8373a021a8558c43d9cf745cd3b88ecb4da6f468d2a448493353cc0c96575741.
+No despliegue, transferencia nueva ni inferencia.026/028 corregidos en rutas
+locales reconocidas; API/modelo, Linux actual, repetición y generalización aún
+pendientes. DockerServer sigue con timeout de bannerSSH; sesiones antiguas no
+se reinician ni se consideran completadas. Tope2USD intacto.
+
 ###028 — terminal de reporting local y replay
 
 Nueva ruta chat_reporting.py en backend/processor; bind_segments expone un

@@ -114,3 +114,15 @@ no se consideran equivalentes automáticamente. Su soporte requiere ampliación
 justificada con pruebas; la ruta general no hereda garantías de este terminal.
 El replay028 prueba selección y renderizado con entradas originales, no una
 nueva respuesta del proveedor ni todo el espacio de preguntas conceptuales.
+
+### Terminal de gasto desconocido en escenario incompleto
+
+Implementado para una declaración completa de consulta vacía e ingesta incompleta
+con pregunta de gasto cero y periodo coincidente. No acredita cobertura real ni
+incorpora documentos generales como evidencia financiera. La premisa de gasto
+cero es desconocida; el resultado explica qué falta sin afirmar un gasto positivo.
+El terminal rechaza auxiliares del modelo y queda ligado al hash de la pregunta.
+No toma prioridad sobre evidencia financiera del servidor. Otras formulaciones,
+periodos contradictorios o datos añadidos retienen la ruta narrativa; esta ruta
+cerrada no constituye una solución general de comprensión semántica. Replay026
+y verificación de selección sobre calibración preservados fuera del repositorio.

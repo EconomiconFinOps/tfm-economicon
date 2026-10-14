@@ -107,13 +107,18 @@ def segment_schema(records=None, *, limit=4000, quantities=None):
 def bind_segments(schema, records=None, quantities=None):
     schema=copy.deepcopy(schema)
     from app.core.chat_reporting import required_reporting
+    from app.core.chat_missing_spend import required_missing_spend
     reporting = required_reporting(quantities)
-    if reporting is not None:
+    missing = required_missing_spend(quantities)
+    terminal = 'reporting_basis' if reporting is not None else 'missing_spend'
+    bound = reporting if reporting is not None else missing
+    if bound is not None:
+        status = 'ok' if reporting is not None else 'insufficient_data'
         base = copy.deepcopy(next(branch for branch in schema.get('anyOf', [schema])
-                                  if 'ok' in branch['properties']['status'].get('enum', [])))
+                                  if status in branch['properties']['status'].get('enum', [])))
         props = base['properties']
-        props['answer'] = {'const': {'reporting_basis': reporting['id']}}
-        props['status'] = {'type': 'string', 'enum': ['ok']}
+        props['answer'] = {'const': {terminal: bound['id']}}
+        props['status'] = {'type': 'string', 'enum': [status]}
         for field in ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'):
             props[field]['minItems'] = 0
             props[field]['maxItems'] = 0
@@ -210,6 +215,9 @@ def bind_segments(schema, records=None, quantities=None):
 
 
 def render_classified_answer(value,expressions):
+    if isinstance(value, dict) and set(value) == {'missing_spend'}:
+        from app.core.chat_missing_spend import missing_spend_answer
+        return missing_spend_answer(value, expressions.catalog if expressions else None)
     if isinstance(value, dict) and set(value) == {'reporting_basis'}:
         from app.core.chat_reporting import reporting_answer
         text, sources = reporting_answer(value, expressions.catalog if expressions else None)
@@ -310,6 +318,13 @@ def render_response(value, records, *, quantities=None):
     if not isinstance(value,dict) or 'answer' not in value:
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
+    from app.core.chat_missing_spend import required_missing_spend, missing_spend_answer
+    if required_missing_spend(quantities) is not None:
+        if ('basis' in value or value.get('status') != 'insufficient_data'
+                or any(value.get(field) != [] for field in
+                       ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'))):
+            raise ValueError('Invalid missing-spend authority or auxiliary fields.')
+        return {**value, 'answer': missing_spend_answer(value['answer'], quantities)}
     from app.core.chat_reporting import required_reporting, reporting_answer
     if required_reporting(quantities) is not None:
         if ('basis' in value or value.get('status') != 'ok'
