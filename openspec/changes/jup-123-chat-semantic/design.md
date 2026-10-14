@@ -26,6 +26,40 @@ El scorer previo conserva 253 juicios históricos y nueve incertidumbres.
 El entorno compartido anterior no demuestra procedencia del candidato nuevo.
 Colector y baseline real N3 completados el 2026-10-14: 84 recibos, 77 operaciones
 completadas y 7 fallidas preservadas. Pendientes adjudicación independiente,
-acuerdo de criterios y comparación del candidato corregido. La regresión Linux
-sigue en curso y las pruebas SQL/navegador no se consideran cubiertas por mocks.
+acuerdo de criterios y comparación del candidato corregido. El candidato e94 completó regresión Linux y43pruebas SQL reales; el historial017
+se verificó en navegador, sin nueva generación. El candidato posterior requiere
+su propia validación. La campaña comparativa quedó parcial41/84 por presupuesto.
 No afirmar cierre por superar pruebas unitarias ni por reunir 84 recibos.
+
+## Premisas y conclusiones — integración en curso, 2026-10-14
+
+Los fallos026/028 no se resuelven comprobando sólo que una cita sea literal.
+Se introduce un evaluador trivalente acotado (`chat_premises.py`), todavía sin
+activar en el gateway. Una premisa conocida tiene procedencia; una premisa
+no evaluada conserva valor desconocido, sin evidencia negativa inventada.
+AND/OR/NOT usan lógica de Kleene. Se validan todas las ramas y se conservan
+las premisas desconocidas aunque otra condición determine el resultado.
+
+La frontera de confianza es explícita: el evaluador NO interpreta lenguaje
+natural ni demuestra implicación documental. Sólo admite objetos construidos
+por código de servidor; no diccionarios de verdad/procedencia del proveedor.
+El enlazador deberá contrastar identidad, ámbito, instante y soporte semántico
+con la entrada capturada o la fuente autorizada. Citar una frase literal no
+basta para establecer su valor. Una regla ambigua no produce una premisa falsa.
+
+Integración pendiente, por orden:
+1. Enlazar hechos tipados con observaciones/fragmentos originales. Registrar
+   lo que no se ha medido como desconocido. No deducir gasto cero de cero filas.
+2. Aplicar reglas explícitas con sus propias fuentes, separando evidencia de
+   la regla de evidencia de los hechos; la regla general no verifica al cliente.
+3. Una misma decisión alimenta respuesta, limitaciones y recomendaciones.
+   La redacción de esos terminales no puede sustituir desconocido por falso.
+   Conservar el resto de la síntesis útil y el alcance original del chat.
+4. Derivar citas de reglas y premisas utilizadas; nunca añadir fuentes sólo
+   por aparecer en el retrieval. No declarar resuelta la pertinencia general.
+5. Verificar por replay de026/028, contraejemplos, streaming/final y backend;
+   actualizar el contrato de recursos sólo cuando la ruta esté integrada.
+
+Treinta pruebas del núcleo cubren las tablas de verdad y límites, pero no
+acreditan el enlazador, extracción, redacción ni la corrección del producto.
+No se cambia el candidato desplegado ni la campaña congelada para este trabajo.

@@ -25,6 +25,49 @@ candidate-e94f6e54-campaign-resume1.log y anterior preservados. Plan84 congelado
 evaluation-ledger.sqlite común conserva baseline y candidato. Todo coste de las
 operaciones concluidas conciliado; ninguna nueva generación tras rechazo.
 
+### Núcleo de premisas — local, aún no conectado al chat
+
+`apps/processor/app/core/chat_premises.py`: decisión trivalenteAND/OR/NOT,
+procedencia obligatoria para hechos conocidos, desconocidos explícitos, árboles
+acotados y rechazo de diccionarios del proveedor. Resultado inmutable conserva
+premisas desconocidas y omite fuentes de hechos no consultados.30pruebas pasan.
+Diseño/enlazador/renderizado pendientes detallados en OpenSpec design.md. Los
+casos de prueba026/028 modelan sus premisas, NO reproducen todavía sus respuestas
+por el gateway. No afirmar corregidos esos casos. No cambia manifiesto/runtime;
+ninguna nueva llamada, transferencia o publicación. Siguiente paso: binder de
+hechos/reglas con alcance y soporte semántico, después terminal compartido por
+respuesta y recomendaciones y replay end-to-end. No aceptar verdad del LLM
+ni confundir existencia de cita con implicación. El núcleo por sí solo no evita
+las citas irrelevantes del chat actual ni sus contradicciones de prosa libre.
+
+### Comparación parcial de41muestras — 14/10/2026
+
+Artefactos externos candidate-41-{aggregate,calibration-judgments-v1,reviewed-v1,
+comparison-v1}.json y candidate-41-review-freeze-v1.json con hashes. Etiquetasr1
+remapeadas sólo al coincidir hashes de evidencia y criterio; r2 revisada contra
+respuesta completa, auxiliares y fragmentos originales. Reserva sin adjudicar.
+Calibración r2(001–012):9PASS/2pending(004,011)/1FAIL(005). La separación shared
+sigue omitida en005r2 del candidatoe94; no contiene la corrección localf4c80ebf.
+012r2 reconoce allocated de forma explícita; pedir la fuente como trazabilidad
+no anula la conclusión hipotética.011 mantiene9de10 sin90%porrecursos explícito:
+misma incertidumbre que r1, no modificar rúbrica para obtener un aprobado.
+Total41:23PASS/11pending(incluye reserva)/4FAIL/3técnicos. Faltan43muestras.
+Comparación emparejada con baselinev12:136pass->pass,29fail->pass,2fail->fail,
+7uncertain->pass,8pass->uncertain,1uncertain->uncertain,1pass->fail(026r1).
+003r1 sigue regresión técnica;013r1/r2 son fallos técnicos de reserva sin juicio
+semántico.028r1 pasa de fallo técnico baseline a fallo semántico, no mejora plena.
+
+026: cita finops3/Inform auténtica pero sin apoyo a conclusión de ingesta vacía.
+028: rationale afirma calidad insuficiente mientras limitation declara no evaluada.
+Código chat_claims sólo verifica literalidad/procedencia; chat_segments valida
+estructura y soporte visible, no implicación semántica ni consistencia entre
+premisas. No se han corregido026/028. No introducir un filtro de solapamiento
+léxico como si probase pertinencia/consistencia. Próximo trabajo de producto:
+representar premisas verificadas/desconocidas y conclusiones condicionadas, con
+un contrato compartido por respuesta y recomendaciones; comprobar contra estos
+recibos y casos contrarios antes de integrar una ruta determinista. Mantener
+síntesis útil y no sustituir el objetivo por respuestas sólo extractivas.
+
 ### Corrección local posterior al corte — separación shared/unallocated
 
 El renderer de la partición cerrada añade explicación de los roles: shared
@@ -52,7 +95,7 @@ hace scroll de página completa. No se validó streaming nuevo ni móvil; petici
 noGET a conversaciones bloqueadas por el script. Sin consumo LLM de navegador.
 Scripts temporales playwright-test-jup123-{history,reload,reopened,top}.js.
 
-Pendientes: analizar r2 emparejada, resolver005/026/028 y dudas, pruebas offline,
+Pendientes: resolver026/028 y dudas, validar005local, pruebas offline,
 validación real restante dentro de presupuesto demostrable, criterios revisores
 y reconciliación A(tokenizer/reviews). No publicar. Historial inferior conserva
 cortes anteriores, superados sólo en lo descrito aquí.
