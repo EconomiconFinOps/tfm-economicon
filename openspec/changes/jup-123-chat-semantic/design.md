@@ -8,6 +8,12 @@ El scorer previo conserva 253 juicios históricos y nueve incertidumbres.
 
 ## Decisions
 
+Base de ingeniería actual reconciliada por bloques: A/11f84334 sobre develop/c30a7d0,
+incorporada en B/ab66f90c. No importa el estado de sus reviews ni sustituye su CI.
+Compatibilidad de disponibilidad/slots comprobada en API, frontend y CD; los rangos
+libres siguen siendo prerrequisito de despliegue y el navegador final de B queda
+para el candidato completo. Ver [continuidad A/B](../../../docs/continuidad/chat-entregas-a-b.md).
+
 1. Reconciliar A por bloques usando la base Paris f63c150 para adiciones paralelas;
    mantener semántica B y controles de activación, cancelación y fecha de A.
 2. N=3 inicial, N=5 de confirmación según criterios obligatorios y presupuesto.

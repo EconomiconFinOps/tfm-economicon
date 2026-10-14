@@ -16,9 +16,34 @@ semántica. Las dos reviews anteriores siguen CHANGES_REQUESTED, sin aprobación
 nueva ni inline threads. Consultas de runs/status por SHA vacías: CI de esta cabeza
 no verificada, sin trasladar su verde anterior.
 
-Pendiente incorporar sólo bloques técnicos a B y verificar superficies afectadas;
-no importar sus resúmenes/OpenSpec ni dar por aceptada A. El commit aún no estaba
-en el object store local de B al consultar. Evidencia externa en PR121-local-evaluation:
+Bloques incorporados después en B/ab66f90c86a2095039331630aa167f5f17b910bd:
+20 archivos exactamente iguales a A/11f84334 y sólo la clase ChatCapabilities
+adaptada sobre el esquema semántico de B, que se conserva íntegro. No se copiaron
+sus resúmenes, evidencias ni OpenSpec.34 pruebas backend y120 frontend PASS;
+tres typechecks, lint y build conformes (un aviso previo de hook y avisos previos
+de bundle conservados). CD:58 pruebas Linux PASS, sin omisiones, y40 de topología/
+workflow PASS. Carga propia de recursos backend/processor con la misma versión.
+
+`init`/`prepare` y Compose reales renderizan ambos slots con subred/IP distintas,
+HMAC reutilizado444 dentro de directorio700, loopback y puerto privado sin publicar.
+No se arrancaron servicios. La coexistencia de redes en este DockerServer no se
+ejecutó porque existe una red ajena172.30.0.0/16 que solapa ambos pools; no se tocó.
+El root temporal con secretos de prueba fue retirado y los servicios B conservan
+sus IDs/imágenes. No confundir el render y las pruebas Linux con un despliegue.
+El agente CD instalado no se actualizó; eso y los rangos libres son prerrequisitos
+de cualquier futura integración/despliegue, fuera de esta validación local de B.
+
+Reconsulta de PR confirma el mismo head11f84334/basec30a7d0, OPEN y sin merge;
+siguen las dos solicitudes de cambios. Ninguna aprobación o CI se trasladan a B.
+Queda la aceptación independiente de A y la validación final de B, incluido navegador
+sobre el candidato completo cuando se active en su entorno aislado.
+Evidencia externa en PR121-local-evaluation: `reconcile-a11-assessment-v1.json`,
+`reconcile-a11-block-identity-v1.json`, `reconcile-a11-linux-ab66f90c/` y
+`jup122-pr130-after-reconcile-a11.json`. Los primeros3 tests de Node eran sólo
+workflow por una opción omitida; la ejecución corregida cubre40, no sumarlos.
+
+Corte de consulta previo a la incorporación: el objeto aún no estaba en B y se
+descargó después por su SHA exacto. Recibos:
 jup122-pr130-current-11f84334.json y jup122-pr130-11f84334-commit.json. Nada publicado
 ni modificado en A desde este trabajo. Cortes de28ee5b1c siguientes son históricos.
 

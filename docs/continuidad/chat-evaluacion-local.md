@@ -8,6 +8,35 @@ ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
 ### Corte vigente: c7 N3 terminada — 14/10/2026 20:37 UTC
 
+#### A/11f84334 incorporada y comprobada en B/ab66f90c
+
+Descargado el commit exacto de A y aplicado su diff por bloques sobre la rama B.
+20 archivos coinciden por blob con A; el esquema conserva sus79 líneas de diferencia
+semántica y sólo añade ChatCapabilities. Nuevos endpoint/flag, frontend y CD
+no sustituyen v4 ni expresiones/políticas. No se copiaron resúmenes/OpenSpec de A.
+Prueba `reconcile-a11-block-identity-v1.json`; producto ab66f90c86a2095039331630aa167f5f17b910bd.
+
+34 pruebas de backend,120 de frontend y58 de CD en Linux PASS, sin omisiones;
+40 topología/workflow PASS. Tres typechecks y build correctos, lint sin errores y
+un aviso previo. `init`/`prepare` y Compose reales renderizan ambos slots, con
+subred/IP separadas, HMAC reutilizado444 en directorio700 y puertos privados.
+La prueba de crear ambas redes no se ejecutó: pool ajeno172.30.0.0/16 existente.
+No se modificó ni retiró esa red. Secretos sintéticos/root de render retirados;
+servicios B mantienen IDs/imágenes, sin activación del candidato ni inferencias.
+
+Ambos loaders propios conservan versióna4709b0622e7321221bd6923d6822e68f4651e5d452f659cfaeb14f1dab2d19b.
+`reconcile-a11-assessment-v1.json` resume alcances, JUnit y hashes;
+`reconcile-a11-linux-ab66f90c/` conserva prueba POSIX/render;
+`reconcile-a11-frontend-build-checks-v1.json` ylogs registran tipos/lint/build.
+No sumar los dos skips Windows a los58 Linux ni los3 Node iniciales a los40 finales.
+
+Se cierra1.3 como reconciliación de código y comprobaciones de sus superficies
+sobre el pin A/11f84334 y develop/c30a7d0. No significa aceptación de A, despliegue
+viable en ese pool ocupado ni validación de navegador del candidato B completo.
+Reconsulta `jup122-pr130-after-reconcile-a11.json`: misma cabeza/base, OPEN y dos
+CHANGES_REQUESTED, sin aprobación nueva. Si A cambia de nuevo, revisar sus bloques.
+Aceptación, navegador final, criterios, adjudicación y N3/N5 de B siguen pendientes.
+
 #### Recuperación de políticas comprobada con SQL real
 
 Producto local posterior `fb7d9ea0bcef30b7994451c74d5d1fb7f596a8f7` y pruebas
@@ -50,16 +79,18 @@ Nueva consulta de A: PR130 avanza a11f8433404f786c065ad35f13f673465fa26caf5,
 añade red/IP por slot y capacidades autenticadas para ocultar el chat y comprobar
 antes de crear conversación. Diff de27 ficheros respecto a28ee5b1c. Reviews siguen
 las dos solicitudes de cambios; sin inline threads nuevos. CI de esta cabeza no
-verificada: consultas por SHA devuelven listas vacías, no un PASS. Falta incorporar
-sus bloques a B y probarlos; no sustituir nuestros resúmenes con la documentación
+verificada: consultas por SHA devuelven listas vacías, no un PASS. En este corte previo faltaba incorporar
+sus bloques a B y probarlos; superado por ab66f90c arriba. No sustituir nuestros resúmenes con la documentación
 histórica de A. Recibos `jup122-pr130-current-11f84334.json` y
 `jup122-pr130-11f84334-commit.json`, con reviews/conversación/inline leídos.
 
-Siguiente: reconciliar ese nuevo A y continuar001/009/011/021 y las incertidumbres
+Siguiente tras reconciliar A: continuar001/009/011/021 y las incertidumbres
 004/022. Ninguna casilla de aceptación de B se da por completada por este bloque.
 Trello actualizado por la integración DockerServer, sin mover deEn curso,
 concurrencia y lectura posterior exactas. Prueba `jup123-trello-policy-sql-update-v1.json`;
 descripción SHA db910a52e222ce211de7cad1e61e7b3b5f811e8311818507f06fc7d90937a936.
+Actualización posterior de A incorporada: `jup123-trello-a11-update-v1.json`, lectura
+exacta y lista conservada; descripción SHA6618ad8fda3f0d44dd741653c552f3bf85872062c33f52ebd29b9720a25be75f.
 Ningún mensaje Discord. OpenSpec estricto del bloque conforme.
 
 #### Corte anterior: compilador de políticas (79e6a22d)

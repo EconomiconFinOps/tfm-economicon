@@ -1,5 +1,22 @@
 ## ADDED Requirements
 
+### Requirement: Compatibilidad con activación y aislamiento de A
+La entrega semántica MUST conservar los controles de disponibilidad de A:
+capacidad autenticada por tenant con booleano efectivo y Cache-Control no-store,
+panel oculto salvo confirmación válida y nueva comprobación antes de crear una
+conversación. La preparación de CD conserva subred e IP distintas por slot,
+HMAC estable y puertos privados. Esto no autoriza activar o desplegar el chat.
+
+#### Scenario: Backend desactivado o disponibilidad no confirmada
+- **WHEN** el estado es falso, inválido, está pendiente o falla la consulta
+- **THEN** no se monta el acceso del chat ni se crea una conversación por el envío
+- **AND** la consulta de capacidades no inicia planificador ni inferencias
+
+#### Scenario: Dos slots preparados con la base de B
+- **WHEN** se renderizan ambos slots desde el código reconciliado de B
+- **THEN** reciben subred e IP diferentes, HMAC reutilizado y puertos loopback
+- **AND** no se declara desplegable un pool que solape una red existente del host
+
 ### Requirement: Cobertura de listas documentales completas
 El servidor MUST conservar todas las unidades de una sección de reglas en las
 rutas conceptuales admitidas de tagging y operación de presupuestos. La compilación
