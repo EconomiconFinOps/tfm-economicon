@@ -355,7 +355,7 @@ class ChatGateway:
             yield {'type':'error','category':'timeout'};return
         try:
             payload={'model':'economicon-chat','messages':context['messages'],'stream':True,
-                'stream_options':{'include_usage':True},'max_tokens':DRAFT_TOKENS if phase=='draft' else FINAL_TOKENS,'num_retries':0,
+                'stream_options':{'include_usage':True},'max_tokens':DRAFT_TOKENS if phase=='draft' else FINAL_TOKENS,'num_retries':0,'temperature':0,
                 'timeout':remaining,'stream_timeout':remaining,'reasoning':{'effort':'high','exclude':True},
                 'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True}}
             from app.core.chat_expressions import context_quantities

@@ -49,6 +49,7 @@ def test_private_plan_then_only_final_stream_and_aggregate_usage(monkeypatch,cap
         records=execute(instance)
     assert len(requests)==2 and [item['max_tokens'] for item in requests]==[1000,2200]
     assert all(item['num_retries']==0 for item in requests)
+    assert all(item['temperature']==0 for item in requests)
     assert requests[0]['response_format']['json_schema']['name']=='PrivateAnswerPlan'
     assert 'UNTRUSTED_DRAFT_PLAN' in requests[1]['messages'][-1]['content']
     assert ''.join(item['text'] for item in records if item['type']=='delta')=='Hola 😀'

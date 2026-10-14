@@ -341,3 +341,41 @@ ese runtime y hacer prueba integrada antes de N3. Conservar techo2USD, todos los
 intentos y reservas desconocidas. No activar producto compartido ni publicar B.
 Gasto nuevo de esta fase0USD. Pregunta pendiente: entorno aislado+claves24h máximo
 conjunto0.90USD, candidato y correcciones versionadas con hashes registrados.
+
+
+### Autorización y entorno B construido — 14/10/2026
+
+El usuario autorizó expresamente el entorno aislado, dos claves exclusivas B
+de24h y máximo conjunto0.90USD, manteniendo2USD acumulados, además de futuras
+transferencias de correcciones versionadas con hash. Queda superado el bloqueo
+por autorización descrito arriba. Trello JUP-123 movido a En curso mediante
+la integración obligatoria de DockerServer. Sin publicación GitHub/Discord.
+
+Candidato transferido y verificado:06a889bcf598f62cd30f52c7b5b6878b17ea307d.
+Archive SHA256:365eb027a38e6ce82c3de88c2fa8210b06b0940812bc4a1a2cd4bfaf2ec5588b.
+Plan N3:980c0e07e034543f6685e893ef61fc545f4099bcec015ad936e7e929ad31b267.
+Ambos en materiales/07-evidencias/PR121-local-evaluation, fuera del repositorio.
+DockerServer:/home/danteadmin/economicon-jup123-20261014; proyecto
+economicon-cd-d29fd64fc938-06a889bcf598, puertos loopback29652–29662,
+subred10.231.123.0/24 verificada sin solapamiento Docker. Se descartó
+172.30.123.0/24 por solapamiento antes de crear servicios.
+
+Build de frontend/backend/processor/migraciones/azure-cost-api terminado.
+Arranque aislado iniciado (startup.log); salud todavía pendiente de verificar.
+Proveedores mock durante preparación; CHAT_ENABLED=true y SUMMARY_ENABLED=false
+sólo en este entorno. No claves nuevas emitidas ni inferencias de pago.
+Próximo: verificar salud, contabilidad viva, claves autorizadas, configuración
+real y adaptadores; ejecutar N3. Las84muestras siguen NOT_RUN.
+
+Verificación posterior del mismo hito: todos los servicios con healthcheck
+Healthy y migrador Exited; hashes de319archivos de fuente verificados y
+contenido ejecutado backend102/processor93/frontend116 conforme al plan.
+Evidencia remota: runtime-verification.json. Contabilidad OpenRouter consultada:
+usage1.093313029USD (global, no atribución exacta a la tarea); claves anteriores
+caducadas y sin cambios de gasto. Aún no se han emitido las claves B.
+
+Preparación N3: endpoint oficial OpenRouter de GLM5.2 confirma DeepInfra/fp4,
+temperatura soportada, prompt0.0000005625USD/token y completion0.0000018.
+Evidencia remota provider-endpoints.json. Se fija temperature=0 en draft/final;
+12pruebas de flujo PASS. Primer intento de tests bloqueado por permisos tmp,
+repetición con acceso autorizado pasa. Requiere nuevo candidato antes de N3.
