@@ -106,6 +106,18 @@ def segment_schema(records=None, *, limit=4000, quantities=None):
 
 def bind_segments(schema, records=None, quantities=None):
     schema=copy.deepcopy(schema)
+    from app.core.chat_reporting import required_reporting
+    reporting = required_reporting(quantities)
+    if reporting is not None:
+        base = copy.deepcopy(next(branch for branch in schema.get('anyOf', [schema])
+                                  if 'ok' in branch['properties']['status'].get('enum', [])))
+        props = base['properties']
+        props['answer'] = {'const': {'reporting_basis': reporting['id']}}
+        props['status'] = {'type': 'string', 'enum': ['ok']}
+        for field in ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'):
+            props[field]['minItems'] = 0
+            props[field]['maxItems'] = 0
+        return {**base, '$defs': schema.get('$defs', {})}
     recommendation=schema.get('$defs',{}).get('Recommendation')
     if recommendation is not None:
         recommendation['properties'].pop('evidence',None)
@@ -198,6 +210,11 @@ def bind_segments(schema, records=None, quantities=None):
 
 
 def render_classified_answer(value,expressions):
+    if isinstance(value, dict) and set(value) == {'reporting_basis'}:
+        from app.core.chat_reporting import reporting_answer
+        text, sources = reporting_answer(value, expressions.catalog if expressions else None)
+        expressions.documentary_sources.update(source['id'] for source in sources)
+        return text
     if isinstance(value, dict) and set(value) == {'zero_percentage'}:
         expected = required_zero_percentage(expressions.catalog) if expressions is not None else None
         if expected is None or value['zero_percentage'] != expected['expression']:
@@ -293,6 +310,14 @@ def render_response(value, records, *, quantities=None):
     if not isinstance(value,dict) or 'answer' not in value:
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
+    from app.core.chat_reporting import required_reporting, reporting_answer
+    if required_reporting(quantities) is not None:
+        if ('basis' in value or value.get('status') != 'ok'
+                or any(value.get(field) != [] for field in
+                       ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'))):
+            raise ValueError('Invalid reporting decision authority or auxiliary fields.')
+        text, sources = reporting_answer(value['answer'], quantities)
+        return ServerRenderedResponse({**value, 'answer': text, 'evidence': server_evidence(sources)}, sources)
     if value.get('evidence')!=[]:raise ValueError('Response evidence is derived from used support.')
     if not isinstance(value.get('recommendations'),list) or len(value['recommendations'])>20:
         raise ValueError('Invalid recommendation collection.')

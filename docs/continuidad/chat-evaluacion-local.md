@@ -25,6 +25,29 @@ candidate-e94f6e54-campaign-resume1.log y anterior preservados. Plan84 congelado
 evaluation-ledger.sqlite común conserva baseline y candidato. Todo coste de las
 operaciones concluidas conciliado; ninguna nueva generación tras rechazo.
 
+###028 — terminal de reporting local y replay
+
+Nueva ruta chat_reporting.py en backend/processor; bind_segments expone un
+terminal ligado al hash de pregunta+fuente. Sólo reconoce una declaración
+completa de costes mostrados/asignados a equipos/unidades con/sin repercusión
+contable y una pregunta de clasificación admitida. Requiere el bloque completo
+de definiciones Showback Y Chargeback con procedencia; cambios/negaciones,
+fragmentos parciales, escenarios múltiples y premisas adicionales conservan
+la ruta general. Limitación deliberada de gramática; no solución universal de
+implicación semántica. No se deriva calidad insuficiente de calidad no evaluada.
+
+Renderer compartido genera conclusión, incertidumbre y citas literales pertinentes;
+auxiliares del modelo deben estar vacíos, impidiendo rationale contradictorio.
+Esto no elimina recomendaciones generales de otras rutas.21pruebas focales,
+110processor con regresiones y64backend pasan; carga backend del manifiesto pasa.
+AssemblerSHA55b67ccc895cd21457632a2a22b1f3cc34730f9b0a04a3e56cb702fe3fc19e12.
+Replay offline de pregunta+authorized_evidence originales028r1 produce showback,
+calidad no evaluada y sólo finops11. Artefacto externo reporting-028-offline-replay-v1.json
+contiene hash de recibo y resultado. No es ejecución del modelo/API, no cambia
+veredictos de campañae94.028 corregido en esa ruta local; aceptación real y
+variantes fuera de gramática pendientes.026 sigue abierto. Sin consumo adicional,
+transferencia o despliegue de este cambio. Pruebas Linuxc76 previas sin resultado.
+
 ### Integración numérica del motor de premisas — local
 
 El evaluador trivalente se usa ahora en render_boolean de backend y processor.

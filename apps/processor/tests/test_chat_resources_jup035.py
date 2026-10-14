@@ -34,6 +34,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     response_modes='unified-visible-support-labelled-inference-v5',
     recommendation_citations='visible-excerpts-derived-source-union-v2',
     undefined_guidance='evaluated-zero-domain-absolute-and-next-step-v2',
+    reporting_basis='complete-reporting-policy-closed-scenario-unknown-quality-v1',
     zero_change='explicit-user-zero-baseline-relative-terminal-v1',
     zero_percentage='documented-eligible-zero-denominator-terminal-v1',
     quantity_display='observed-value-unit-provenance-no-operation-v1',

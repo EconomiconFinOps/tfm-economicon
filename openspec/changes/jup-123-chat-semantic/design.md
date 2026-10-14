@@ -96,3 +96,21 @@ no cambia las fuentes documentales. Las pruebas de streaming/final incluyen
 falso AND desconocido=falso y falso OR desconocido=desconocido, sin convertir
 el operando desconocido en falso. Queda pendiente el enlace textual descrito
 arriba; esta integración no cierra026/028 ni suple la campaña real incompleta.
+
+### Terminal documental de reporting (implementado localmente)
+
+Para clasificación showback/chargeback, una gramática cerrada enlaza el escenario
+completo con la presencia/ausencia explícita de repercusión contable. No extrae
+ese hecho de una frase aislada ni acepta instrucciones o condiciones adicionales.
+Un bloque completo de definiciones y sección documental autentificada proporciona
+la regla; un hash de entrada+fuente liga el terminal privado. La respuesta usa
+la decisión del servidor, explicita que la calidad no se evaluó y conserva citas
+literales. Se rechazan auxiliares libres en ese terminal, incluido el rationale
+que causó028. El resto de rutas conserva su capacidad narrativa/recomendaciones.
+
+La política admitida está codificada como una gramática documental, con términos
+explícitos del corpus. Una política modificada o un escenario fuera de gramática
+no se consideran equivalentes automáticamente. Su soporte requiere ampliación
+justificada con pruebas; la ruta general no hereda garantías de este terminal.
+El replay028 prueba selección y renderizado con entradas originales, no una
+nueva respuesta del proveedor ni todo el espacio de preguntas conceptuales.
