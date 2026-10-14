@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useOutletContext } from "react-router";
+import { Link, useOutletContext } from "react-router";
 import { AlertTriangle, FlaskConical, Radar, SlidersHorizontal } from "lucide-react";
 import { ExportButton } from "@/components/ExportButton";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import type { SessionOutletContext } from "@/layouts/SessionGate";
 import { changeAnomalyEpisodeStatus, detectAnomalies, fetchAnomalyEpisodes, getSessionGeneration } from "@/services/api";
-import type { AnomalyDetectionRun, AnomalyEpisode, AnomalySeverity, AnomalyStatus, AnomalyStatusChange } from "@/services/contracts";
+import { isAnomalyEpisodeId, type AnomalyDetectionRun, type AnomalyEpisode, type AnomalySeverity, type AnomalyStatus, type AnomalyStatusChange } from "@/services/contracts";
 import {
   dayLabel, detectionMessage, exportRows, filterEpisodes, isOpen, money, observationText, openingExcess, runCounts,
   runHeadline, severityLabels, skipReasons, statusChangeMessage, statusLabels, trimLikeBackend, validClosingReason,
@@ -96,6 +96,15 @@ function EpisodeDetail({ episode, token, tenantId, onChanged, onReload }: {
       <details className="text-sm text-subtle-foreground"><summary className="cursor-pointer">Limitaciones</summary>
         <ul className="mt-1 list-disc pl-5">{episode.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
       </details>
+      {/* Enlace al asistente (JUP-038, decision 10). Solo se ofrece con un id de formato real: el asistente rechaza
+          cualquier otro y el enlace llevaria a un error. Va fuera de la condicion `isOpen` porque explicar una
+          anomalia tiene sentido en cualquier estado, tambien cerrada. Es un Link y no un boton que cree la
+          conversacion: encadenar dos llamadas desde el panel (crear + enviar) dejaria fallos a medias y
+          conversaciones duplicadas (decision de Victor, 2026-10-12), asi que aqui solo se navega y el asistente
+          se encarga de todo. `encodeURIComponent` evita que un id con caracteres reservados rompa la query. */}
+      {isAnomalyEpisodeId(episode.id) && <div className="flex flex-wrap gap-3">
+        <Link className={buttonStyle} to={`/assistant?episode=${encodeURIComponent(episode.id)}`}>Explicar en el asistente</Link>
+      </div>}
       {mutation.isError && <div role="alert" className="rounded-md border border-danger/30 bg-danger-tint/10 p-3 text-sm text-danger-foreground">
         <p>{statusChangeMessage(mutation.error)}</p>
         <button className={`${buttonStyle} mt-2`} onClick={() => { mutation.reset(); onReload(); }}>Recargar la anomalía</button>

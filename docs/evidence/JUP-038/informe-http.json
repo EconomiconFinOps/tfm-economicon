@@ -1,0 +1,57 @@
+{
+  "nota": "8.3 de la primera pasada completa; 8.2 repetido tras corregir el redondeo y la escala del oráculo (el error estaba en el script, no en el producto)",
+  "8.2": {
+    "login": true,
+    "3 episodios en tenant-core": true,
+    "hay explicaciones guardadas por el navegador (3)": true,
+    "referencia diaria recalculada": true,
+    "subida absoluta recalculada": true,
+    "subida relativa recalculada": true,
+    "impacto acumulado recalculado": true,
+    "criticidad recalculada": true,
+    "regla estricta cumplida (>100 y >20 %)": true,
+    "identificador recalculado desde el JSON canónico (sha256)": true
+  },
+  "8.2-recalculo": [
+    {
+      "operandos": {
+        "accumulated_impact_times_seven": "19654.000000000000",
+        "opening_observed_cost": "377.000000000000",
+        "reference_seven_day_total": "1000.000000000000"
+      },
+      "recalculado": {
+        "refDaily": "142.86",
+        "abs": "234.14",
+        "rel": "163.90",
+        "impacto": "2807.71",
+        "sev": "P1"
+      },
+      "id": "anomaly-explanation:1bf475eb797ed5e61a76cba335925f274e6295887f7ea4e2e67c54f2fef5da52",
+      "hashRecalculado": "anomaly-explanation:1bf475eb797ed5e61a76cba335925f274e6295887f7ea4e2e67c54f2fef5da52"
+    }
+  ],
+  "8.3": {
+    "login": true,
+    "3 episodios en tenant-core": true,
+    "hay explicaciones guardadas por el navegador (3)": true,
+    "id de otro cliente -> 404": true,
+    "id inexistente -> 404": true,
+    "misma respuesta byte a byte (otro cliente = inexistente)": true,
+    "cuerpo exacto del 404": true,
+    "la conversación del otro cliente sigue sin mensajes": true,
+    "formato inválido -> 422": true,
+    "ambas selecciones a la vez -> 422": true,
+    "nada guardado tras 404/422": true,
+    "con pgvector PARADO la explicación responde 201": true,
+    "(control) una pregunta documental SÍ falla sin pgvector": true,
+    "misma anomalía sin cambios -> mismo id (con y sin pgvector)": true,
+    "PATCH a investigating = 200": true,
+    "tras cambiar el estado el id CAMBIA": true,
+    "el texto nuevo dice «Investigando»": true,
+    "el mensaje anterior se conserva con su id y «Nueva»": true,
+    "3 explicaciones guardadas en la conversación": true,
+    "cerrar Database con motivo = 200": true,
+    "la explicación del cierre lleva la fecha UTC y el motivo escapado": true,
+    "ningún nombre de servicio ni motivo en los registros del backend": true
+  }
+}

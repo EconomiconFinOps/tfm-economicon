@@ -1,4 +1,5 @@
 import math
+from datetime import datetime, timezone
 from time import perf_counter
 
 import structlog
@@ -14,6 +15,7 @@ from app.api.dependencies import (
 )
 from app.core.config import get_settings
 from app.core.metrics import assistant_queries_total, retrieval_empty_total, retrieval_failures_total
+from app.services.anomaly_explanations import ExplanationUnavailable, explain_episode
 from app.services.citations import InvalidCitation, resolve_citations, validate_context
 from app.services.embedding_provider import PROVIDER_ERROR_CATEGORIES, ProviderError
 from app.schemas.billing import AmbiguousCostSource
@@ -99,6 +101,46 @@ def send_message(
     conversation = database.fetch_conversation(conversation_id, tenant_id, current_user["id"])
     if conversation is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found.")
+
+    if payload.anomaly_query is not None:
+        # Orden de la decisión 8 del diseño: leer, explicar y SOLO ENTONCES guardar. Si el episodio no existe
+        # (404) o no se puede explicar (409) no queda ni el mensaje del usuario: un historial con preguntas
+        # sin respuesta sería ruido y, en el 404, delataría un identificador de otro cliente.
+        # El cliente sale SIEMPRE de la sesión (`tenant_id`), nunca del cuerpo: el identificador del episodio
+        # es una selección, no una autorización, y el episodio ajeno es indistinguible del inexistente.
+        try:
+            snapshot = database.fetch_anomaly_episode_snapshot(tenant_id, payload.anomaly_query.episode_id)
+        except ArithmeticError:
+            # Las columnas de operandos del episodio son `DECIMAL` sin precisión: la base admite NaN, infinitos
+            # y valores enormes que el redondeo de la lectura (`money()`/`severity()`) no sabe representar y que
+            # lanza `decimal.InvalidOperation` antes de que el explicador vea los datos. Una fila ilegible es
+            # «no se puede explicar» (409), igual que los datos incoherentes que rechaza el explicador, y no un
+            # error del servidor. Se captura SOLO la lectura (no toda la rama) para no ocultar otros fallos, y
+            # `from None` evita propagar valores del cliente en la cadena de excepciones.
+            raise HTTPException(status_code=409, detail={"code": "anomaly_explanation_unavailable"}) from None
+        if snapshot is None:
+            raise HTTPException(status_code=404, detail={"code": "anomaly_episode_not_found"})
+        try:
+            explanation = explain_episode(snapshot, tenant_id=tenant_id, explained_at=datetime.now(timezone.utc))
+        except ExplanationUnavailable:
+            raise HTTPException(status_code=409, detail={"code": "anomaly_explanation_unavailable"}) from None
+        # Misma forma de guardado que la rama de propiedad. No se registra (`logger`) nada del episodio ni de
+        # la explicación: el nombre del servicio y el motivo de cierre son datos del cliente.
+        user_message = database.append_message(
+            conversation_id=conversation_id, tenant_id=tenant_id, user_id=current_user["id"],
+            requester_id=current_user["id"], role="user", content=payload.content,
+            metadata={"anomaly_query": {"episode_id": payload.anomaly_query.episode_id}},
+        )
+        assistant_message = database.append_message(
+            conversation_id=conversation_id, tenant_id=tenant_id, user_id=None,
+            requester_id=current_user["id"], role="assistant", content=explanation["content"],
+            metadata={"citations": [], "anomaly_evidence": explanation["anomaly_evidence"]},
+        )
+        assistant_queries_total.inc()
+        return AssistantReply(
+            conversation=ConversationRecord(**conversation), user_message=user_message,
+            assistant_message=assistant_message, retrieved_context=[],
+        )
 
     if payload.ownership_query is not None:
         try:
