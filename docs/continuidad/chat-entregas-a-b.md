@@ -4,6 +4,15 @@ Actualizado: 2026-10-14. Origen: chat 01a1270c-e332-7462-9c90-706d49ade92c.
 El usuario confirma aprobación del equipo y autoriza actualizar Trello, publicar
 A y cerrar #120/#121 sin integrar. No autoriza despliegue ni mensajes Discord.
 
+El 14/10 Paris limita la adaptacion local a tres mejoras en
+`codex/JUP-122-checkpoint-improvements`, base PR130 `318a56f`: tokenizer generado
+con revision/SHA256 fijos, `.secrets` excluido de releases/contextos y fixture SQL
+portable que espera limpieza real. Las pruebas focales y las imagenes offline
+pasan; la tanda amplia backend conserva seis fallos por tokens de fixture JUP-047
+caducados durante la espera. No se modifica esa fixture fuera de alcance.
+Sin commit/push, activacion ni aceptacion semantica. Ver
+[entrega local y limites](../evidence/JUP-122-checkpoint-improvements-20261014.md).
+
 - Padre: [JUP-035](https://trello.com/c/BJfABykd), continúa pendiente.
 - A: [JUP-122](https://trello.com/c/gFYKmcLT), ingeniería/base del chat.
 - B: [JUP-123](https://trello.com/c/TqtcumIN), calidad semántica/evaluación.

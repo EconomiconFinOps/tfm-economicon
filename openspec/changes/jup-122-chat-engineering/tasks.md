@@ -11,3 +11,21 @@
 - [ ] 3.2 Obtener Revision JUP-122 y Validacion JUP-122 oficiales.
 
 La aceptación semántica y la activación pertenecen a JUP-123/B.
+
+## Adaptacion acotada de tres mejoras
+Este bloque sustituye el borrador anterior de siete puntos; no autoriza sus
+otras cuatro mejoras ni cambios semanticos de JUP-123/B.
+
+- [x] 4.1 Aprobar el alcance de tres puntos y validar estrictamente OpenSpec antes de producto/tests.
+- [x] 4.2 Adaptar el descargador fijo/verificado y pruebas; sacar tokenizer de Git y ajustar Docker, CI, exclusiones y documentacion.
+- [x] 4.3 Excluir .secrets de releases y contextos sin cambiar provision HMAC ni controles de symlinks.
+- [x] 4.4 Hacer portable la fixture SQL del processor y esperar su tarea de limpieza real, conservando aserciones y tiempos del producto.
+- [ ] 4.5 Conservar Red/Green focales y ejecutar SQL aislado sin omisiones, build offline, regresiones afectadas y controles obligatorios.
+- [x] 4.6 Entregar matriz tres puntos/archivos/resultados/limites y guard; revision humana y publicacion permanecen separadas.
+
+4.5: controles ejecutados. Las pruebas focales, imagenes offline, build y
+gobernanza pasan. La tanda amplia backend conserva seis fallos de JUP-047 por
+JWT creados en collection y caducados antes del caso; los ocho controles de
+autorizacion pasan en ejecucion focal. No se modifica esa fixture fuera de
+alcance ni se declara una unica tanda completa verde. Ver
+[resultados y limites](../../../docs/evidence/JUP-122-checkpoint-improvements-20261014.md).

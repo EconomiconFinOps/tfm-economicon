@@ -131,6 +131,48 @@ class RuntimeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             deploy.prepare(self.root, self.source, "../../outside", 0)
 
+    @patch.object(deploy, "run", return_value='{"services": {}}')
+    def test_prepare_excludes_root_and_nested_secrets_and_preserves_hmac(self, run):
+        secret = self.root / "private" / "chat-hmac"
+        original = secret.read_bytes()
+        for parent in (self.source, self.source / "apps" / "processor"):
+            directory = parent / ".secrets"
+            directory.mkdir(parents=True)
+            (directory / "application-key").write_text("synthetic-never-copy")
+        (self.source / "ordinary.txt").write_text("keep-source")
+        release = deploy.prepare(self.root, self.source, self.new, 0)
+        self.assertFalse((release / ".secrets").exists())
+        self.assertFalse((release / "apps" / "processor" / ".secrets").exists())
+        self.assertEqual((release / "ordinary.txt").read_text(), "keep-source")
+        self.assertEqual(secret.read_bytes(), original)
+
+    def test_chat_hmac_rejects_symlink_file_or_directory(self):
+        for link_directory in (False, True):
+            with self.subTest(directory=link_directory):
+                root = self.root / ("directory-link" if link_directory else "file-link")
+                root.mkdir()
+                target = self.root / ("target-dir" if link_directory else "target-key")
+                if link_directory:
+                    target.mkdir()
+                    link = root / "private"
+                else:
+                    target.write_bytes(b"s" * 64)
+                    (root / "private").mkdir()
+                    link = root / "private" / "chat-hmac"
+                try:
+                    link.symlink_to(target, target_is_directory=link_directory)
+                except OSError as error:
+                    if getattr(error, "winerror", None) != 1314:
+                        raise
+                    # Windows without link privilege still exercises both guards.
+                    # Linux/CI exercises real filesystem links without this path.
+                    with patch.object(Path, "is_symlink", lambda candidate: candidate == link):
+                        with self.assertRaisesRegex(ValueError, "symlink"):
+                            deploy.chat_hmac_file(root)
+                    continue
+                with self.assertRaisesRegex(ValueError, "symlink"):
+                    deploy.chat_hmac_file(root)
+
     @patch.object(deploy, "smoke")
     @patch.object(deploy, "compose")
     def test_success_switches_only_after_smoke_and_preserves_volumes(self, compose, smoke):

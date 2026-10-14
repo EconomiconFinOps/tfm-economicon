@@ -134,7 +134,7 @@ def prepare(root, source, sha, slot):
     temporary.mkdir(parents=True, mode=0o700)
     try:
         shutil.copytree(source, temporary, dirs_exist_ok=True,
-                        ignore=shutil.ignore_patterns(".git", "node_modules", ".venv", ".env*", "__pycache__"))
+                        ignore=shutil.ignore_patterns(".git", "node_modules", ".venv", ".env*", ".secrets", "__pycache__"))
         # data-filtered Git archives extracted under our private umask have
         # 0700 directories. Docker COPY preserves those modes, preventing the
         # non-root app user from traversing its code inside the image.

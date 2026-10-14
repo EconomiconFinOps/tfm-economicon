@@ -43,3 +43,40 @@ provisión idempotente del secreto HMAC en CD.
 - **WHEN** se prepara una revisión con un secreto válido ya provisionado
 - **THEN** se reutiliza sin rotación ni copia al árbol del release
 - **AND** un secreto inválido se rechaza
+
+### Requirement: Tokenizer fijo incluido durante build
+El tokenizer MUST quedar fuera de Git y descargarse solo durante build o
+preparacion explicita, desde la revision oficial fija y con SHA256 y tamano
+verificados. El artefacto efectivo y sus pins MUST permanecer identicos.
+
+#### Scenario: Cache verificada y runtime offline
+- **WHEN** existe cache verificada o se construye una imagen con el recurso descargado
+- **THEN** la cache se reutiliza sin red y runtime usa el tokenizer incluido sin descargarlo
+
+#### Scenario: Descarga corrupta
+- **WHEN** el recurso descargado no coincide con el SHA256 o tamano fijado
+- **THEN** la preparacion falla sin reemplazar un archivo existente por el recurso corrupto
+- **AND** backend, processor y CI no aceptan ese recurso para iniciar sus comprobaciones
+
+### Requirement: Secretos locales excluidos del release
+El copiado de releases y los contextos Docker MUST excluir .secrets en cualquier
+nivel y preservar la provision y permisos actuales del HMAC privado de CD.
+
+#### Scenario: Fuente con secretos locales
+- **WHEN** el arbol de origen contiene .secrets en raiz o subdirectorios
+- **THEN** ningun secreto de esos directorios se copia al release o al contexto Docker
+- **AND** el HMAC valido del directorio privado sigue intacto y los symlinks siguen rechazados
+
+### Requirement: Fixture SQL reproducible y finalizacion real
+Las pruebas SQL MUST crear su propio escenario en la base configurada, esperar
+la tarea de limpieza real sin cancelarla y mantener las aserciones del producto.
+
+#### Scenario: HTTP terminado con limpieza pendiente
+- **WHEN** una respuesta de timeout llega antes de settled y el cierre fisico
+- **THEN** la prueba espera con shield y limite acotado la tarea propietaria antes de comprobar finalizacion
+- **AND** la espera no cambia los deadlines del producto ni cancela la tarea de limpieza
+
+#### Scenario: Base SQL aislada configurada
+- **WHEN** las pruebas obligatorias reciben una base CockroachDB desechable configurada
+- **THEN** crean datos sinteticos propios, los limpian y ejecutan los escenarios sin omisiones
+- **AND** no dependen de nombres o filas historicas del equipo del autor
