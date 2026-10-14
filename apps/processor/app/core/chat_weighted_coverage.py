@@ -9,6 +9,7 @@ import hashlib
 import json
 import re
 from decimal import Decimal, localcontext
+from fractions import Fraction
 
 from app.core.chat_rules import normalized
 
@@ -93,7 +94,16 @@ def weighted_coverage_answer(value, catalog):
         return text.rstrip('0').rstrip('.') if '.' in text else text
 
     yes, no, total = (show(bound[key]) for key in ('yes_cost', 'no_cost', 'cost_total'))
-    unit, count = bound['currency'], show(bound['by_count'])
+    def percentage(value, numerator, denominator):
+        from app.core.chat_expressions import display
+        with localcontext() as precision:
+            precision.prec = 80
+            shown = display(value)
+        relation = '=' if Fraction(Decimal(shown)) * Fraction(denominator) == Fraction(numerator) * 100 else '≈'
+        return relation + ' ' + shown
+
+    unit = bound['currency']
+    count = percentage(bound['by_count'], bound['compliant'], bound['total'])
     text = ('Escenario hipotético aportado; no verificado financieramente.\n'
             'Se toma del escenario la declaración de qué recursos cumplen todos los tags '
             'y de que todo el coste es etiquetable; no se ha auditado el etiquetado.\n'
@@ -103,9 +113,9 @@ def weighted_coverage_answer(value, catalog):
         text += ('Cumplimiento por coste indefinido: el denominador es cero; '
                  'no se convierte en un cumplimiento del 0 % ni del 100 %.\n')
     else:
-        text += (f'Cumplimiento de tagging por coste: {yes} / {total} × 100 = '
-                 f'{show(bound["by_cost"])} %.\n')
-    text += (f'Por número de recursos: {bound["compliant"]} / {bound["total"]} × 100 = {count} %. '
+        result = percentage(bound['by_cost'], bound['yes_cost'], bound['cost_total'])
+        text += (f'Cumplimiento de tagging por coste: {yes} / {total} × 100 {result} %.\n')
+    text += (f'Por número de recursos: {bound["compliant"]} / {bound["total"]} × 100 {count} %. '
              'Este porcentaje cuenta recursos; no sustituye al resultado ponderado por coste. '
              'Para una medición real deben verificarse coste, etiquetas, período y ámbito.')
     return text

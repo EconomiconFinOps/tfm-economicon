@@ -66,6 +66,8 @@ def test_different_costs_counts_currency_and_rounding_come_from_input(total, yes
     else:
         assert str(bound['by_cost']).startswith('33.333333333333333')
         assert bound['by_cost'] == bound['by_count']
+        text=weighted_coverage_answer(candidate(q)['answer'],q)
+        assert text.count('≈ 33.333333 %')==2
 
 
 def test_cost_zero_is_undefined_even_when_count_coverage_exists():

@@ -88,6 +88,16 @@ def quote_choices(content):
     return [content[i:i+2048] for i in range(0,len(content),2048) if content[i:i+2048].strip()]
 
 
+def scenario_terminals(catalog):
+    from app.core.chat_cost_breakdown import required_cost_breakdown, cost_breakdown_answer
+    from app.core.chat_shared_allocation import required_shared_allocation, shared_allocation_answer
+    from app.core.chat_weighted_coverage import required_weighted_coverage, weighted_coverage_answer
+    return [(key, bind(catalog), render) for key, bind, render in (
+        ('cost_breakdown', required_cost_breakdown, cost_breakdown_answer),
+        ('shared_allocation', required_shared_allocation, shared_allocation_answer),
+        ('weighted_coverage', required_weighted_coverage, weighted_coverage_answer))]
+
+
 def segment_schema(records=None, *, limit=4000, quantities=None):
     choices=[{'type':'object','properties':{'inference':{'type':'string','maxLength':max(1,limit-18)}},
               'required':['inference'],'additionalProperties':False}]
@@ -109,15 +119,14 @@ def bind_segments(schema, records=None, quantities=None):
     from app.core.chat_policy_sections import required_policy
     from app.core.chat_reporting import required_reporting
     from app.core.chat_missing_spend import required_missing_spend
-    from app.core.chat_weighted_coverage import required_weighted_coverage
     reporting = required_reporting(quantities)
     missing = required_missing_spend(quantities)
     policy = required_policy(quantities)
-    weighted = required_weighted_coverage(quantities)
-    terminal = 'weighted_coverage' if weighted is not None else 'policy_section' if policy is not None else 'reporting_basis' if reporting is not None else 'missing_spend'
-    bound = weighted if weighted is not None else policy if policy is not None else reporting if reporting is not None else missing
+    selected = next(((key, bound) for key, bound, _ in scenario_terminals(quantities) if bound is not None), None)
+    terminal = selected[0] if selected else 'policy_section' if policy is not None else 'reporting_basis' if reporting is not None else 'missing_spend'
+    bound = selected[1] if selected else policy if policy is not None else reporting if reporting is not None else missing
     if bound is not None:
-        status = 'ok' if policy is not None or reporting is not None else 'insufficient_data'
+        status = 'ok' if selected is None and (policy is not None or reporting is not None) else 'insufficient_data'
         base = copy.deepcopy(next(branch for branch in schema.get('anyOf', [schema])
                                   if status in branch['properties']['status'].get('enum', [])))
         props = base['properties']
@@ -230,9 +239,9 @@ def bind_segments(schema, records=None, quantities=None):
 
 
 def render_classified_answer(value,expressions):
-    if isinstance(value, dict) and set(value) == {'weighted_coverage'}:
-        from app.core.chat_weighted_coverage import weighted_coverage_answer
-        return weighted_coverage_answer(value, expressions.catalog if expressions else None)
+    for key, _, render in scenario_terminals(expressions.catalog if expressions else None):
+        if isinstance(value, dict) and set(value) == {key}:
+            return render(value, expressions.catalog if expressions else None)
     if isinstance(value, dict) and set(value) == {'policy_section'}:
         from app.core.chat_policy_sections import policy_answer
         text, sources = policy_answer(value, expressions.catalog if expressions else None)
@@ -345,13 +354,13 @@ def render_response(value, records, *, quantities=None):
     if not isinstance(value,dict) or 'answer' not in value:
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
-    from app.core.chat_weighted_coverage import required_weighted_coverage, weighted_coverage_answer
-    if required_weighted_coverage(quantities) is not None:
-        if ('basis' in value or value.get('status') != 'insufficient_data'
-                or any(value.get(field) != [] for field in
-                       ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'))):
-            raise ValueError('Invalid weighted-coverage authority or auxiliary fields.')
-        return {**value, 'answer': weighted_coverage_answer(value['answer'], quantities)}
+    for _, bound, render in scenario_terminals(quantities):
+        if bound is not None:
+            if ('basis' in value or value.get('status') != 'insufficient_data'
+                    or any(value.get(field) != [] for field in
+                           ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'))):
+                raise ValueError('Invalid scenario authority or auxiliary fields.')
+            return {**value, 'answer': render(value['answer'], quantities)}
     from app.core.chat_policy_sections import required_policy, policy_answer
     if required_policy(quantities) is not None:
         if ('basis' in value or value.get('status') != 'ok'

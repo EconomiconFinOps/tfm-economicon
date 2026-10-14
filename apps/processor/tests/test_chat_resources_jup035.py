@@ -44,6 +44,10 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     evidence_order='local-visible-support-no-root-decoration-v2',
     excerpt_repetition='deduplicate-source-and-literal-passage-in-main-answer-v1',
     answer_generation_blocks=24,
+    scenario_accounts={name:{'version':version,
+        'module_sha256':hashlib.sha256((Path(__file__).parents[1]/('app/core/chat_'+name+'.py')).read_text(encoding='utf-8').encode()).hexdigest()}
+        for name,version in (('cost_breakdown','complete-service-list-with-period-scope-basis-v1'),
+                             ('shared_allocation','declared-shared-missing-approved-rule-v1'))},
     weighted_coverage={'version':'complete-two-group-user-count-cost-coverage-v1',
         'module_sha256':hashlib.sha256((Path(__file__).parents[1]/'app/core/chat_weighted_coverage.py').read_text(encoding='utf-8').encode()).hexdigest()},
     policy_sections={'version':'complete-positional-list-table-policy-v1',
