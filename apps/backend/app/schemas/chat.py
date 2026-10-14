@@ -12,6 +12,11 @@ from app.schemas.chat_screen import ScreenCapture
 from app.core.chat_segments import bind_segments, quote_choices
 
 
+class ChatCapabilities(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    chat_enabled: bool
+
+
 class GenerationRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     request_id: UUID

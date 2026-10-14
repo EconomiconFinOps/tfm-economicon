@@ -1,11 +1,11 @@
 """Owner-scoped operation API, with history separate from pending requests."""
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.api.dependencies import get_active_tenant,get_current_user,get_database
 from app.db.chat_repository import ChatError
 from app.db import chat_history
-from app.schemas.chat import GenerationRequest
+from app.schemas.chat import ChatCapabilities, GenerationRequest
 from app.schemas.chat_screen import read_generation
 from app.services.chat_operations import service
 
@@ -19,6 +19,13 @@ def scope(conversation_id,user,tenant):
 
 def failure(error):
     raise HTTPException(status_code=error.status,detail=error.code) from None
+
+
+@router.get('/capabilities', response_model=ChatCapabilities)
+async def capabilities(request: Request, response: Response,
+                       user=Depends(get_current_user), tenant=Depends(get_active_tenant)):
+    response.headers['Cache-Control'] = 'no-store'
+    return ChatCapabilities(chat_enabled=getattr(request.app.state, 'chat_enabled', False) is True)
 
 
 @router.get('/requests')

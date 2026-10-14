@@ -7,7 +7,7 @@ import {
   Upload,
 } from "lucide-react";
 import type { SessionOutletContext } from "./SessionGate";
-import { ChatPanel } from "../components/chat/ChatPanel";
+import { AvailableChatPanel } from "../components/chat/ChatAvailability";
 import { ScreenCaptureProvider } from "../components/chat/ScreenCaptureProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useReferenceDate } from "@/hooks/useReferenceDate";
@@ -180,7 +180,7 @@ export function Layout() {
         <Outlet context={ctx} />
       </main>
       {ctx.token && user?.id && ctx.activeTenant?.id && ctx.activeTenantId === ctx.activeTenant.id
-        ? <ChatPanel key={JSON.stringify([ctx.token, user.id, ctx.activeTenant.id])}
+        ? <AvailableChatPanel key={JSON.stringify([ctx.token, user.id, ctx.activeTenant.id])}
             scope={{ token: ctx.token, tenantId: ctx.activeTenant.id, userId: user.id }} userRole={user.role} />
         : null}
       </div>

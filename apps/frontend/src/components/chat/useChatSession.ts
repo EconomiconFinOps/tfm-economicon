@@ -1,4 +1,4 @@
-import { isChatMemory, type ChatMemory } from "../../services/chat";
+import { fetchChatCapabilities, isChatMemory, type ChatMemory } from "../../services/chat";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { chatJson, chatPath, generateChat, isChatOperation, isSavedChatRequest, type ChatOperation, type ChatScope, type GenerationPayload, type SavedChatRequest } from "../../services/chat";
 import { ApiError, fetchChatResponse, getSessionGeneration } from "../../services/api";
@@ -246,6 +246,18 @@ class ChatSession {
     this.patch(id, { starting: true, operation: null, question: content, partial: "", attempt: null, sequence: 0, revision: 0, notice: "" });
     const payload: GenerationPayload = Object.freeze({ request_id: crypto.randomUUID(), content, screen_context: capture,
       ...(retryOf ? { retry_of_operation_id: retryOf } : {}) });
+    const availabilityController = this.controller(id);
+    try {
+      const capability = await fetchChatCapabilities(this.scope, availabilityController.signal);
+      if (!this.valid() || this.deleted.has(id)) return;
+      if (!capability.chat_enabled) {
+        this.patch(id, { starting: false, notice: 'El asistente no está activado.' });
+        return;
+      }
+    } catch {
+      this.patch(id, { starting: false, notice: 'No se pudo comprobar la disponibilidad del asistente.' });
+      return;
+    } finally { this.readers.delete(availabilityController); }
     try {
       if (id.startsWith("draft-")) {
         const title = cell.manualTitle ? cell.title : Array.from(normalizeConversationTitle(content)).slice(0, 60).join("");

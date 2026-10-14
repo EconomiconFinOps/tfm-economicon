@@ -30,3 +30,31 @@ def test_disabled_chat_cannot_start_work(api,monkeypatch,suffix):
         assert api[2].claims==[]
         assert not hasattr(api[0].state,'chat_service')
     asyncio.run(scenario())
+
+
+@pytest.mark.parametrize('enabled,expected', [(True, True), (False, False), ('true', False), (1, False), (None, False)])
+def test_capabilities_reports_only_effective_boolean_without_starting_chat(api, monkeypatch, enabled, expected):
+    monkeypatch.setattr(api[0].state, 'chat_enabled', enabled, raising=False)
+    async def scenario():
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=api[0]), base_url='http://test') as client:
+            response = await client.get('/assistant/capabilities', headers=headers())
+            assert response.status_code == 200
+            assert response.json() == {'chat_enabled': expected}
+            assert response.headers['cache-control'] == 'no-store'
+        assert api[2].claims == []
+        assert not hasattr(api[0].state, 'chat_service')
+        assert len(api[1].fetch_messages('alice-chat', 't', 'alice')) == 0
+    asyncio.run(scenario())
+
+
+def test_capabilities_requires_session_and_authorized_tenant(api):
+    from app.api.dependencies import get_current_user
+    async def scenario():
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=api[0]), base_url='http://test') as client:
+            assert (await client.get('/assistant/capabilities', headers={**headers(), 'X-Tenant-Id': 'other'})).status_code == 403
+            assert (await client.get('/assistant/capabilities', headers={'Authorization': 'Bearer synthetic'})).status_code == 400
+            api[0].dependency_overrides.pop(get_current_user)
+            assert (await client.get('/assistant/capabilities')).status_code == 401
+        assert api[2].claims == []
+        assert not hasattr(api[0].state, 'chat_service')
+    asyncio.run(scenario())
