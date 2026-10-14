@@ -43,6 +43,29 @@ revisores y presupuesto; dependenciaA/PR130 (tokenizer/reviews). No cambiar el
 producto basándose en una sola repetición. Leer los límites de los contrastes
 focales y la evidencia de UI real más abajo antes de declarar algo validado.
 
+### Reconciliación A y defecto de manifest corregido — 14/10/2026
+
+Candidato a294f7e1a9904da2b9cd8b8a80e3ccececd0f8d4 transferido porarchiveGit;
+SHA256dbd21808e38a67755d659cf52ffdbffd6cab15298e1080a4c8ffef8efe6bde2b.
+338hashes fuenteverificados, tokenizer generado público idéntico. Planoffline
+NOT_RUN SHA6527f8e9b554dce5277fe41c41b5ef9f91be5d93b39a03b9d4c0289ef109dda9;
+no campaña pagada. Fuente remota candidate-a294f7e1 bajo rootB.
+
+MonolíticoLinuxPID3206932 terminalOOM137 a768MiB, sinJUnit. PorarchivoPID3219856
+terminal tras6archivos:151PASS,1FAIL ycontext_budget OOM137. Elfallo realde
+battery_corrections fue Resource contract mismatch delbundle real; noes fallo
+semántico delLLM. Windowsmonolítico sesión46457 se interrumpió expresamente
+tras confirmar ese defecto; PID25048 e hijos ausentes, logsconservados sinPASS.
+No reintentar esosprocesos ni presentar sus resultadoscomo regresióncompleta.
+
+Corregido manifest real: provider_response_schema_sha256 cambia de69303e6c…
+a d5774bc8e24164594523981ab077216c62f8a2c1aa0a38d09b6a14cd683e3ea2.
+Assembler ypromptsinvariación. Cargaenfrío realPASS enbackend/processor, nueva
+prompt_version jup-035.chat.v3:c0fc781abdfaa74f45a8232df2855bf5bfc7a5e539b259d3732598af7d1faaf4.
+Pruebaque fallaba5/5PASS conJUnit (manifest-refresh-result.json yXML externo).
+Pendiente nueva regresión durable sobreestehash, no heredar pruebas deA/e23.
+Sin inferencias ni coste nuevo; runtimeB e23 sigueintacto.
+
 ### Revisión N3 completa y ajustes de contrato — 14/10/2026
 
 Avance posterior: incorporados localmente losbloques deingeniería A/28ee5b1c
