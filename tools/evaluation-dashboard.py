@@ -1,6 +1,6 @@
 """Carga de los resultados de evaluación del asistente en la base del dashboard de Grafana (JUP-121).
 
-Por ahora este módulo contiene cinco capas. La primera es la de manifiestos: lee y valida los manifiestos
+Por ahora este módulo contiene siete capas. La primera es la de manifiestos: lee y valida los manifiestos
 que dicen qué informes alimentan el dashboard (`docs/validation/evaluation-runs.json` y los locales). La
 segunda es el adaptador del informe JSON de JUP-070 (`adapt_jup070`), que normaliza ese informe al
 contrato de filas planas `rows-v1` de `docs/validation/evaluation-dashboard.md`. La tercera es el
@@ -9,9 +9,12 @@ del informe de `tools/llm-benchmark.py`. La cuarta es el adaptador de la calibra
 de JUP-022 (`adapt_jup022`), que convierte cada punto del barrido (`top_k`, `max_distance`) en cinco
 filas del mismo contrato. La quinta es el adaptador de las métricas de negocio de JUP-068
 (`adapt_jup068`), que convierte el informe de `tools/business-metrics.mjs` en 23 filas de tipo B, junto con
-`read_business_report`, que ejecuta ese generador de Node. Usa solo la biblioteca estándar, no tiene
-efectos al importarse y nunca abre una conexión de red ni a la base de datos. La carga a la base la
-añaden las tareas siguientes del change.
+`read_business_report`, que ejecuta ese generador de Node. La sexta es la validación común de filas
+(`validate_rows`), la barrera final del contrato `rows-v1` que se aplica a la salida de todos los
+adaptadores y a la entrada `rows-v1`. La séptima es el adaptador `adapt_rows_v1`, que normaliza un
+documento `rows-v1` ya escrito (por ejemplo, el informe de robustez de JUP-071) y lo pasa por esa misma
+validación. Usa solo la biblioteca estándar, no tiene efectos al importarse y nunca abre una conexión de
+red ni a la base de datos. La carga a la base la añaden las tareas siguientes del change.
 """
 
 from __future__ import annotations
@@ -1086,3 +1089,271 @@ def read_business_report(path) -> dict:
     if not isinstance(report, dict):
         raise _business_failure(path, "la salida del generador debe ser un objeto JSON")
     return report
+
+
+# --- Validación común de filas y adaptador rows-v1 ----------------------------------------------------
+
+ROWS_CONTRACT_VERSION = 1
+# Claves de primer nivel de un documento `rows-v1`, en el orden en que se exigen.
+ROWS_DOCUMENT_KEYS = ("contract_version", "run", "results")
+# Los únicos campos de `run.retrieval`. Se rechaza cualquier otra clave para que una errata (`topk`) o un texto
+# libre no lleguen a la base; no se exigen las cuatro porque JUP-022 solo publica el troceado (`top_k` y
+# `max_distance` van por fila) y un informe puede traer solo algunas.
+RETRIEVAL_KEYS = ("top_k", "max_distance", "chunk_size", "chunk_overlap")
+MEASURE_TYPES = ("A", "B")
+JUDGMENTS = ("automatic", "human")
+ROW_STATUSES = CASE_STATUSES + VALUE_STATUSES
+# Campos de la fila por clase de validación; el orden de la validación es el de RESULT_KEYS, no el de estas tuplas.
+ROW_IDENTIFIERS = ("grp", "metric_id", "behavior", "unit")
+ROW_COUNTS = ("count", "denominator")
+ROW_NUMBERS = ("value", "numerator", "ci_low", "ci_high")
+# Única unidad cuyo numerador es un recuento de aciertos acotado por el denominador (0 <= numerador <=
+# denominador). En `porcentaje` o `ms` el numerador puede ser negativo (un ahorro de tiempo) o mayor.
+RATE_UNIT = "tasa"
+# Campos del formato `rows-v1` de entrada que el documento no puede omitir. El resto es opcional: se rellena con
+# None (`synthetic` y `selected` con False, el valor del contrato para «no declarado») y la validación común
+# decide después si esa fila lo admite. `unit` y `judgment` son opcionales en el formato, pero la validación
+# común los exige en las filas que los necesitan.
+ROWS_RUN_REQUIRED = ("run_id", "source")
+ROWS_RESULT_REQUIRED = ("measure_type", "grp", "metric_id", "behavior", "status")
+ROWS_FALSE_DEFAULTS = frozenset({"synthetic", "selected"})
+
+
+def _check_keys(item: dict, expected: tuple, where: str) -> None:
+    # Primero las claves desconocidas y después las ausentes, cada una en la ruta de ESA clave. Un único
+    # ayudante para `run` y para las filas evita dos versiones de la misma regla. `milestone` es una clave
+    # desconocida de `run`: aunque la documentación la lista, la fija el manifiesto y no el informe, y aceptarla
+    # dejaría que un informe se declarara de hito por su cuenta.
+    for key in item:
+        if key not in expected:
+            raise _bad(f"{where}.{key}", "clave desconocida")
+    for key in expected:
+        if key not in item:
+            raise _bad(f"{where}.{key}", "campo obligatorio ausente")
+
+
+def _check_member(parent: dict, key: str, allowed: tuple, where: str) -> None:
+    value = parent[key]
+    # `isinstance(value, str)` antes de `in`: así un 1 o un True no se comparan con cadenas ni se cuelan.
+    if not (isinstance(value, str) and value in allowed):
+        raise _bad(f"{where}.{key}", f"debe ser uno de {', '.join(allowed)}")
+
+
+def _check_bool(parent: dict, key: str, where: str) -> None:
+    # `type(...) is bool`: 1, 0 o "true" no son booleanos del contrato JSON.
+    if type(parent[key]) is not bool:
+        raise _bad(f"{where}.{key}", "debe ser un booleano true o false")
+
+
+def _check_count_or_null(parent: dict, key: str, where: str) -> None:
+    value = parent[key]
+    # `_is_count` exige `type(...) is int`: bool y los flotantes, incluso 3.0, no son recuentos.
+    if value is not None and (not _is_count(value) or value < 0):
+        raise _bad(f"{where}.{key}", "debe ser un entero mayor o igual que 0 o null")
+
+
+def _check_number_or_null(parent: dict, key: str, where: str) -> None:
+    value = parent[key]
+    # `_is_number` ya rechaza bool, NaN, infinito y los enteros que no caben en un float (sin OverflowError).
+    if value is not None and not _is_number(value):
+        raise _bad(f"{where}.{key}", "debe ser un número finito o null")
+
+
+def _validate_run_at(run: dict) -> None:
+    value = run["run_at"]
+    if value is None:
+        return
+    try:
+        if not isinstance(value, str):
+            raise ValueError("no es una cadena")
+        datetime.fromisoformat(value)
+    except ValueError as error:
+        raise _bad("run.run_at", f"debe ser una fecha ISO 8601 o null ({error})") from error
+
+
+def _validate_run_retrieval(run: dict) -> None:
+    retrieval = run["retrieval"]
+    if retrieval is None:
+        return
+    _check_object(retrieval, "run.retrieval")
+    for key in retrieval:
+        if key not in RETRIEVAL_KEYS:
+            raise _bad(f"run.retrieval.{key}", "clave desconocida")
+    for key in RETRIEVAL_KEYS:
+        # Se recorre RETRIEVAL_KEYS y no el dict para que el orden del error no dependa del orden del documento.
+        if key in retrieval:
+            _check_number_or_null(retrieval, key, "run.retrieval")
+
+
+def _validate_run_values(run: dict) -> None:
+    # Los campos se validan en el orden de RUN_KEYS (no en el del dict del documento) para que el primer
+    # error sea siempre el mismo con independencia de cómo llegue ordenado.
+    for key in RUN_KEYS:
+        if key in ("run_id", "source"):
+            _check_identifier_field(run, key, "run")
+        elif key == "run_at":
+            _validate_run_at(run)
+        elif key == "retrieval":
+            _validate_run_retrieval(run)
+        elif key == "synthetic":
+            _check_bool(run, key, "run")
+        elif run[key] is not None:
+            # El resto son huellas, versiones y alias: opcionales (None es «no registrado»), pero nunca texto libre.
+            _check_identifier_field(run, key, "run")
+
+
+def _validate_row_judgment(row: dict, where: str) -> None:
+    # El tipo A es `automatic` o `human`; el B no tiene rúbrica y su juicio es null (tabla del contrato).
+    # Cuando se llega aquí `measure_type` ya está validado, así que la comparación con "A" es segura.
+    if row["measure_type"] == "A":
+        _check_member(row, "judgment", JUDGMENTS, where)
+    elif row["judgment"] is not None:
+        raise _bad(f"{where}.judgment", "debe ser null en el tipo B")
+
+
+def _validate_row_types(row: dict, where: str) -> None:
+    # Orden de RESULT_KEYS. Los tipos van antes que la coherencia: un campo mal tipado no se puede comparar.
+    for key in RESULT_KEYS:
+        if key == "measure_type":
+            _check_member(row, key, MEASURE_TYPES, where)
+        elif key in ROW_IDENTIFIERS:
+            _check_identifier_field(row, key, where)
+        elif key == "status":
+            _check_member(row, key, ROW_STATUSES, where)
+        elif key in ROW_COUNTS:
+            _check_count_or_null(row, key, where)
+        elif key in ROW_NUMBERS:
+            _check_number_or_null(row, key, where)
+        elif key == "judgment":
+            _validate_row_judgment(row, where)
+        else:
+            _check_bool(row, key, where)
+
+
+def _status_rules(status: str) -> tuple[tuple, tuple]:
+    # (campos que no pueden ser None, campos que deben ser None) según el estado. Regla 2: los estados de caso
+    # llevan recuento y no valor ni numerador. Regla 1: lo medido lleva valor y no recuento; lo no medido no
+    # lleva ni valor, ni numerador, ni recuento, ni intervalo, pero SÍ conserva el denominador (regla 5).
+    if status in CASE_STATUSES:
+        return ("count",), ("value", "numerator")
+    if status == "measured":
+        return ("value",), ("count",)
+    return (), ("count", "value", "numerator", "ci_low", "ci_high")
+
+
+def _validate_row_status_fields(row: dict, where: str) -> None:
+    required, forbidden = _status_rules(row["status"])
+    for key in RESULT_KEYS:
+        # `is None` y no la veracidad: un 0 o un 0.0 no son None y publicarlos como «no medido» sería un cero.
+        if key in required and row[key] is None:
+            raise _bad(f"{where}.{key}", f"obligatorio en el estado {row['status']}")
+        if key in forbidden and row[key] is not None:
+            raise _bad(f"{where}.{key}", f"debe ser null en el estado {row['status']}")
+
+
+def _validate_row_interval(row: dict, where: str) -> None:
+    # Un intervalo con un solo límite no es un intervalo. Se informa en el límite que falta.
+    if row["ci_low"] is None and row["ci_high"] is not None:
+        raise _bad(f"{where}.ci_low", "falta el límite inferior: el intervalo lleva los dos límites o ninguno")
+    if row["ci_high"] is None and row["ci_low"] is not None:
+        raise _bad(f"{where}.ci_high", "falta el límite superior: el intervalo lleva los dos límites o ninguno")
+
+
+def _validate_row_rate(row: dict, where: str) -> None:
+    numerator, denominator = row["numerator"], row["denominator"]
+    # Sin numerador o sin denominador no hay nada que comparar: el numerador solo se publica cuando es exacto
+    # (regla 5). Solo la unidad `tasa` acota el numerador; en las demás puede ser negativo o mayor.
+    if row["unit"] != RATE_UNIT or numerator is None or denominator is None:
+        return
+    if not 0 <= numerator <= denominator:
+        raise _bad(f"{where}.numerator", "en una tasa debe cumplirse 0 <= numerador <= denominador")
+
+
+def _validate_row(row: dict, where: str) -> None:
+    _check_keys(row, RESULT_KEYS, where)
+    _validate_row_types(row, where)
+    _validate_row_status_fields(row, where)
+    _validate_row_interval(row, where)
+    _validate_row_rate(row, where)
+
+
+def validate_rows(run, results) -> None:
+    """Valida `run` y `results` con el contrato de filas planas `rows-v1` (reglas 1 a 6 del contrato).
+
+    Es la barrera final de los adaptadores: ellos copian valores sin comprobar su tipo ni su alfabeto (regla
+    4), así que un texto libre o una tasa que no es un número llegarían a la base sin esta validación. No
+    devuelve nada ni muta nada; ante el primer incumplimiento lanza `AdapterError` cuyo mensaje empieza por la
+    ruta exacta del campo (`run.commit`, `run.retrieval.top_k`, `results[3].value`...). Orden: primero `run` y
+    después las filas en el orden de la lista; en cada una, claves, tipos, coherencia entre campos y, por último,
+    duplicados. Se prefiere fallar en el primer error a acumularlos: la carga es atómica y quien corrige el
+    informe repite la ejecución, así que un único error accionable basta y el código se mantiene simple.
+    """
+    _check_object(run, "run")
+    _check_keys(run, RUN_KEYS, "run")
+    _validate_run_values(run)
+    if not isinstance(results, list):
+        raise _bad("results", "debe ser una lista")
+    seen: dict = {}
+    for index, row in enumerate(results):
+        where = f"results[{index}]"
+        _validate_row(_check_object(row, where), where)
+        # La base no admite dos filas con la misma clave natural. `measure_type` no forma parte de ella; la clave
+        # es una tupla de cuatro componentes y no una concatenación para que `a`+`bc` y `ab`+`c` no choquen.
+        key = (row["grp"], row["metric_id"], row["behavior"], row["status"])
+        if key in seen:
+            raise _bad(where, f"fila duplicada: mismos grp, metric_id, behavior y status que results[{seen[key]}]")
+        seen[key] = index
+
+
+def _document_field(document: dict, key: str):
+    if key not in document:
+        raise _bad(key, "campo obligatorio ausente")
+    return document[key]
+
+
+def _fill_optional(item: dict, keys: tuple, required: tuple) -> dict:
+    # Copia superficial con lo opcional ausente rellenado. Las claves desconocidas se CONSERVAN a propósito: así
+    # las rechaza `validate_rows` con su ruta y su orden, en lugar de que el adaptador las compruebe aparte (o,
+    # peor, las descarte en silencio al construir la salida).
+    filled = dict(item)
+    for key in keys:
+        if key not in required and key not in filled:
+            filled[key] = False if key in ROWS_FALSE_DEFAULTS else None
+    return filled
+
+
+def adapt_rows_v1(document, run_id=None) -> tuple[dict, list[dict]]:
+    """Normaliza un documento `rows-v1` (ya parseado) a `(run, results)`.
+
+    Función pura: no muta el documento ni comparte estructuras con él. Rellena con None lo opcional que falta
+    (`synthetic` y `selected` con False), devuelve `run` con exactamente RUN_KEYS y las filas con exactamente
+    RESULT_KEYS en ese orden, y valida lo construido con `validate_rows`, cuyo `AdapterError` propaga. Si
+    `run_id` no es None sustituye al `run_id` del documento (un hito de un informe repetido necesita otro
+    identificador); la cadena vacía SÍ sustituye y se rechaza como identificador.
+    """
+    document = _check_object(document, "document")
+    for key in document:
+        if key not in ROWS_DOCUMENT_KEYS:
+            raise _bad(f"document.{key}", "clave desconocida")
+    # `type(...) is int`: True == 1 y 1.0 == 1 en Python, y solo el entero 1 exacto es la versión del contrato.
+    version = _document_field(document, "contract_version")
+    if type(version) is not int or version != ROWS_CONTRACT_VERSION:
+        raise _bad("contract_version", f"debe ser {ROWS_CONTRACT_VERSION}")
+    run = _fill_optional(_check_object(_document_field(document, "run"), "run"), RUN_KEYS, ROWS_RUN_REQUIRED)
+    results = _document_field(document, "results")
+    if not isinstance(results, list):
+        raise _bad("results", "debe ser una lista")
+    # `is not None` y no la veracidad: "" es un identificador inválido que hay que rechazar, no ignorar.
+    if run_id is not None:
+        run["run_id"] = run_id
+    # Lo que no es un objeto pasa tal cual: `validate_rows` lo informa en `results[i]` sin que el adaptador
+    # duplique esa comprobación ni adelante el error de una fila al de la ejecución.
+    rows = [_fill_optional(row, RESULT_KEYS, ROWS_RESULT_REQUIRED) if isinstance(row, dict) else row
+            for row in results]
+    validate_rows(run, rows)
+    # Tras validar, todo valor de la fila es un escalar inmutable; solo `retrieval` es un objeto mutable y se
+    # copia en profundidad para que la salida no comparta estructura con el documento.
+    return (
+        {key: copy.deepcopy(run[key]) for key in RUN_KEYS},
+        [{key: row[key] for key in RESULT_KEYS} for row in rows],
+    )
