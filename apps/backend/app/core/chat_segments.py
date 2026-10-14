@@ -4,7 +4,7 @@ import copy
 from app.core.chat_calculations import render_text
 from app.core.chat_claims import documentary_schema, render_documentary
 from app.core.chat_rules import required_classification, resolved_classification
-from app.core.chat_boolean_rules import boolean_definition, render_boolean
+from app.core.chat_boolean_rules import boolean_definition, render_boolean, required_zero_change
 from app.core.chat_expressions import ExpressionRenderer, expression_definitions
 from app.core.chat_response_modes import bind_modes, response_prefix, BASIS_STATUSES, DOCUMENTARY_BASES
 
@@ -173,6 +173,15 @@ def bind_segments(schema, records=None, quantities=None):
             return {**base,'$defs':schema['$defs']}
         if 'anyOf' in schema:schema['anyOf'].append(base)
         else:schema={'type':'object','anyOf':[{k:v for k,v in schema.items() if k!='$defs'},base],'$defs':schema['$defs']}
+    zero_change = required_zero_change(quantities)
+    if zero_change is not None:
+        base = copy.deepcopy(branches[-1]); props = base['properties']
+        props['answer'] = {'type': 'object', 'properties': {'zero_change': {'const': zero_change}},
+                           'required': ['zero_change'], 'additionalProperties': False}
+        props['status'] = {'type': 'string', 'enum': ['insufficient_data']}
+        for field in ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'):
+            props[field]['minItems'] = 0; props[field]['maxItems'] = 0
+        return {**base, '$defs': schema['$defs']}
     result=schema if required_classification(quantities) else bind_modes(schema,quantities)
     for branch in result.get('anyOf',[result]):
         branch['properties']['evidence']['minItems']=0
@@ -186,6 +195,11 @@ def bind_segments(schema, records=None, quantities=None):
 
 
 def render_classified_answer(value,expressions):
+    if isinstance(value, dict) and set(value) == {'zero_change'}:
+        expected = required_zero_change(expressions.catalog) if expressions is not None else None
+        if expected is None or value['zero_change'] != expected:
+            raise ValueError('Zero-baseline change is not grounded.')
+        return 'Escenario hipotético aportado; no verificado financieramente.\n' + expressions.render(expected).strip()
     if isinstance(value,dict) and set(value)=={'boolean'}:
         if expressions is None:raise ValueError('Boolean rule not grounded.')
         from decimal import localcontext
@@ -276,6 +290,11 @@ def render_response(value, records, *, quantities=None):
     basis=value.get('basis')
     classified=isinstance(value['answer'],dict)
     boolean=classified and set(value['answer'])=={'boolean'}
+    zero_change = classified and set(value['answer']) == {'zero_change'}
+    if required_zero_change(quantities) is not None and not zero_change:
+        raise ValueError('Zero-baseline change requires typed answer.')
+    if zero_change and (value.get('status') != 'insufficient_data' or any(value.get(field) != [] for field in ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'))):
+        raise ValueError('Invalid zero-baseline change authority or auxiliary fields.')
     if getattr(quantities,'boolean_rules',()) and getattr(quantities,'boolean_requested',False) and not boolean:
         raise ValueError('Explicit boolean rule requires typed answer.')
     if classified:
@@ -335,7 +354,7 @@ def render_response(value, records, *, quantities=None):
                     if isinstance(recommendation.get(field),str):expressions.check_prose(recommendation[field])
     if classified:
         known={record['id']:record for record in getattr(quantities,'rule_sources',())}
-        if boolean and not expressions.documentary_sources:
+        if (boolean or zero_change) and not expressions.documentary_sources:
             if value.get('status')!='insufficient_data':raise ValueError('User rule status requires no financial authority.')
             return result
         if not expressions.documentary_sources or not expressions.documentary_sources<=known.keys():

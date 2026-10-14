@@ -127,3 +127,51 @@ def render_boolean(value,renderer):
     elif result is None:
         pieces.append('Se necesita una base comparable con datos aplicables; investigue si el recurso o el consumo son nuevos.')
     return '\n'.join(pieces)
+
+
+
+def required_zero_change(catalog):
+    """Resolve an explicit baseline/current pair for a relative-change request.
+
+    This terminal supplies the defined absolute difference even when division
+    by the user's zero baseline is undefined. It does not infer a baseline,
+    borrow documentary values, or decide whether an anomaly rule is satisfied.
+    """
+    from app.core.chat_expressions import normalized_unit, canonical_decimal
+    question = getattr(catalog, 'classification_question', '')
+    request = normalized(question.split('\n\n', 1)[0])
+    if getattr(catalog, 'boolean_requested', False) or getattr(catalog, 'classification_requested', False):
+        return None
+    if not re.fullmatch(r'[¿]?[^?!.;\n]+[?!.]?', request) or re.search(r'\b(?:y|and|ademas|also)\b', request):
+        return None
+    if not (re.search(r'\b(?:porcentaje|percentage|percent|relativ[oa]s?|relative)\b', request)
+            and re.search(r'\b(?:aument\w*|increment\w*|variacion|cambio|increase|change|growth)\b', request)):
+        return None
+    if re.search(r'\b(?:no|not|sin|without|define|definicion|significa|meaning)\b', request):
+        return None
+    users = {key: entry for key, entry in catalog.items()
+             if any(p.get('kind') == 'user' for p in entry.get('provenance', []))}
+    matches = list(_ROLE.finditer(question))
+    if len(matches) != 2:
+        return None
+    roles = {}
+    for match in matches:
+        role = 'baseline' if match[1].casefold() in ('baseline', 'base') else 'current'
+        if role in roles:
+            return None
+        value = canonical_decimal(match[2]); unit = normalized_unit(match[3])
+        keys = [key for key, entry in users.items() if entry['value'] == value
+                and (entry['unit'] == unit or (entry.get('binding') == 'context_daily_rate'
+                     and entry['unit'] == unit + '/día'))]
+        if len(keys) != 1:
+            return None
+        roles[role] = keys[0]
+    if set(roles) != {'baseline', 'current'}:
+        return None
+    baseline, current = users[roles['baseline']], users[roles['current']]
+    if Decimal(baseline['value']) != 0 or not baseline['unit'] or baseline['unit'] != current['unit']:
+        return None
+    if {key for key, entry in users.items() if entry['unit']} != set(roles.values()):
+        return None
+    return {'operation': 'relative_change', 'baseline': {'quantity': roles['baseline']},
+            'current': {'quantity': roles['current']}}

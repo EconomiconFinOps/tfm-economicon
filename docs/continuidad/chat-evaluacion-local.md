@@ -1125,3 +1125,23 @@ case005-partition-resolved-offline-v1.json anterior a añadir nota del totalvisi
 El totalvisible1000 se deriva del AST; tests sintéticos comprueban total100 con
 otras cantidades/umbrales. No revalidación con modelo, SQL ni navegador.
 Baseline congelada permaneceFAIL; runtime siguea817382b, sin transferencia nueva.
+
+
+### Variación con base cero completa en servidor — 14/10/2026
+
+required_zero_change resuelve sólo petición simple de porcentaje/variación con
+par explícito baseline/current, base0, unidades iguales y sin otras cantidades
+con unidad. Pregunta compuesta, definición, negación, duplicados, divisas mezcladas
+o base no cero conservan modos existentes. No usa valores del corpus. Nueva
+respuesta tipada zero_change fija expresión; renderer incluye diferencia absoluta,
+porcentaje indefinido, naturaleza hipotética y petición de base comparable.
+Auxiliares vacíos obligatorios y statusinsufficient_data; sin citas fabricadas.
+Schema, render final y streaming verifican operandos. Ambos módulos byteidénticos.
+
+Pruebas134PASS processor segmentos/intervalos/recursos/clasificación, luego18PASS
+archivozero tras añadir2casos de preguntas compuestas;48PASS backendboolean/modos.
+Replay offline019 en3contextos originales devuelve diferencia150EUR/día y porcentaje
+indefinido; case019-zero-baseline-offline-v1.json conserva salida y hashes módulos.
+No llamada al modelo ni nueva validación integral. Manifest/pin/fixture actualizados,
+assemblerSHA3ae4057abb4234acb8deb0305d2dc164e8a3f0e2269d10bc48a92809689daca8.
+008 (cociente0/0 sin baseline/current) no queda cubierto por esta ruta; sigue pendiente.
