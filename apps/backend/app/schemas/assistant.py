@@ -3,6 +3,9 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
+from pydantic import model_validator
+
+from app.schemas.anomaly_explanations import AnomalySelection
 from app.schemas.ownership import OwnershipSelection
 
 
@@ -20,6 +23,16 @@ class MessageCreateRequest(BaseModel):
 
     content: NonEmptyText
     ownership_query: OwnershipSelection | None = None
+    # JUP-038: la explicación de anomalías se pide con una selección explícita, nunca interpretando el
+    # texto libre. Es excluyente con `ownership_query`: cada petición dispara una sola ruta y así nunca
+    # hay que decidir cuál gana ni se mezclan dos evidencias en un mismo mensaje.
+    anomaly_query: AnomalySelection | None = None
+
+    @model_validator(mode="after")
+    def reject_two_structured_queries(self):
+        if self.anomaly_query is not None and self.ownership_query is not None:
+            raise ValueError("anomaly_query and ownership_query are mutually exclusive")
+        return self
 
 
 class RetrievedChunk(BaseModel):

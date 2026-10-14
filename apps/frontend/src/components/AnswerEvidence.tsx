@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { AnomalyEvidence } from "./AnomalyEvidence";
 import { CostEvidence } from "./CostEvidence";
 
 interface Citation {
@@ -68,7 +69,9 @@ export function AnswerEvidence({ content, metadata }: {
         <p className="break-all">Referencia: {citation.reference}</p>
         <blockquote className="mt-2 whitespace-pre-wrap border-l-2 border-info pl-3">{citation.excerpt}</blockquote>
       </details>)}
-    </section> : "cost_evidence" in metadata ? <CostEvidence evidence={metadata.cost_evidence} /> : <p className="mt-2 text-xs text-muted-foreground">
+    </section> : "cost_evidence" in metadata ? <CostEvidence evidence={metadata.cost_evidence} />
+      // JUP-038: la explicación de una anomalía no usa documentos; su evidencia propia va después de la de costes.
+      : "anomaly_evidence" in metadata ? <AnomalyEvidence evidence={metadata.anomaly_evidence} /> : <p className="mt-2 text-xs text-muted-foreground">
       {Array.isArray(references) && references.length > 0
         ? "La evidencia de esta respuesta no está disponible."
         : "Sin fuentes documentales utilizadas."}
