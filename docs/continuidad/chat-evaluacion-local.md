@@ -44,6 +44,43 @@ incertidumbres mediante juicioindependiente, criterios/N5 ydependenciaA/PR130
 producto basándose en una sola repetición. Leer los límites de los contrastes
 focales y la evidencia de UI real más abajo antes de declarar algo validado.
 
+### Correcciones014/003 locales y regresión00dc terminada — 14/10/2026
+
+Windows00dc terminó: processor770PASS/6SKIP/2FAIL ybackend619PASS/46SKIP/2FAIL.
+Los4fallos sonWinError1314, falta deprivilegio para crear symlinks; no se omiten
+ni se llamanPASS. JUnit/logs binarios completos enregression-00dc2e0f-windows/.
+Sesión49786 terminal, no volver aconsultarla comoviva. Falta comprobar enLinux.
+
+Leída parcial durable003r1, sólo operación/tenant sintéticos:3918caracteres con
+19repeticiones deun pasaje. La deduplicación local valida antesde suprimir copias
+idénticas source_id/passage sólo enanswer; auxiliares/pasajesdistintos intactos.
+Gramática delproveedor limitada a24bloques, límite público4000 yrender legacy128
+conservados. Simulación delrender de parcialreduce3918→1410conparidadstream/final;
+no prueba cierre real delmodelo ni recuperación de su privado completo. Comoel
+recibo fallido no retiene su conjuntoRAG final, se usaron referencias delcorpus
+inmutable conocido; no presentar esa simulación comoprocedenciaRAG de003r1.
+
+014: helperderiva diferencia absoluta yporcentaje sobrepresupuesto cuandohay campos
+forecast/budget explícitos, adyacentes ycompatibles enmodo hipotético. No cambia
+facturación,fuentesfinancieras ni ruta general para datosambiguos; no es extractor
+universal ni verificador deperiodos. Tres entradas014 delN3 producen200EUR/20%
+offline; recibos/veredictos viejos intactos. coverage-014-003-offline-v1.json.
+
+Nuevaspruebas:143processor focales(original141+2contraejemplos),65backendPASS;
+selección amplia295PASS/2FAIL: dos404del fixture porplazo deSQL iniciado antesde
+preparación; ajustado sólodel fixture a fenceexacto conclaim traspreparación,
+sin relajar409/413. Repetición pertinente final50/50PASS, JUnit/log en
+coverage-014-003-final-v2.{json,xml,log}. Código contrato24 validadoenfrío enambos
+servicios: prompt_version jup-035.chat.v3:7bb89154fd095e91422cdb80ee4cf6066e557986efa4fb5cd890e17ce4024791;
+assembler567aa36a17e455f61a7b9a9a8f3b29db54e7ea7d34669b486559d4e1122bfe77.
+Sin inferencias reales nuevas; no heredar campañae23 a estecandidato.
+
+Auditoría exclusivaB: backend497MiB/processor537MiB;193completed/16failed,
+0operaciones abiertas. Host1545MiB disponibles enúltimocorte. ParaLinux esseguro
+considerar detener temporalmente sóloesosservicios B inactivos yrestaurar mismos
+contenedores/imágenes después; no se han detenido todavía. Ningún otrodespliegue
+puede usarse para liberar memoria. Evidencia b-exclusive-idle-resource-audit.json.
+
 ### Regresión corregida en ejecución — 14/10/2026
 
 Producto local00dc2e0fd768fd855175ddf92ee292e48cf4eab6: A reconciliada ymanifest

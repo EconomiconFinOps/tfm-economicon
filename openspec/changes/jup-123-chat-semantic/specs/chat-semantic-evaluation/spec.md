@@ -55,3 +55,29 @@ obligatorios; la selección literal no acredita por sí sola pertinencia semánt
 - **WHEN** se usa el modo user_scenario o greeting
 - **THEN** sus campos auxiliares no ofrecen selecciones documentales que contradigan el modo
 - **AND** no se concede autoridad financiera ni se relajan las comprobaciones de servidor
+
+### Requirement: Cobertura aritmética de comparaciones explícitas
+El servidor MUST conservar la diferencia absoluta y la desviación relativa sobre
+el presupuesto al explicar un escenario hipotético con campos adyacentes y
+explícitos de forecast y presupuesto en la misma moneda. No genera el forecast
+ni acredita que los valores correspondan a costes reales.
+
+#### Scenario: El modelo omite el porcentaje de exceso
+- **WHEN** el modo hipotético recibe forecast1200EUR y presupuesto1000EUR como campos explícitos compatibles
+- **THEN** el servidor muestra diferencia200EUR y desviación relativa20% aunque el texto del modelo sólo muestre el ratio120%
+- **AND** streaming y respuesta final contienen la misma comparación sin conceder autoridad financiera
+
+#### Scenario: Operandos ambiguos o incompatibles
+- **WHEN** hay roles duplicados, moneda distinta, base no positiva o calificadores interpuestos de ámbito o periodo
+- **THEN** esa comparación determinista no se aplica y se conserva la ruta general
+
+### Requirement: Citas repetidas sin desbordamiento artificial
+El renderer MUST conservar una sola instancia visible de una selección literal
+idéntica de la misma fuente dentro de answer, validando cada selección antes de
+deduplicar. Conserva los pasajes distintos, el soporte de campos auxiliares y el
+límite público de4000caracteres; no trunca silenciosamente contenido único.
+
+#### Scenario: Una cita literal se repite durante la generación
+- **WHEN** el modelo repite una selección source_id/passage ya usada en answer
+- **THEN** la repetición no añade otra copia al texto público ni a su cómputo de longitud
+- **AND** streaming y final mantienen paridad y una cita inventada sigue siendo rechazada

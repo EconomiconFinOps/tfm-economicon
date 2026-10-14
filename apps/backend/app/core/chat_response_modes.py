@@ -19,10 +19,12 @@ BASIS_DESCRIPTIONS={
 USER_PREFIX='Escenario hipotético aportado; no verificado financieramente.\n'
 
 
-def response_prefix(basis):
+def response_prefix(basis, catalog=None):
     if basis is not None and basis not in (*BASIS_STATUSES,'authorized_evidence'):
         raise ValueError('Invalid response basis.')
-    return USER_PREFIX if basis=='user_scenario' else ''
+    if basis != 'user_scenario':return ''
+    from app.core.chat_budget_comparison import comparison_text
+    return USER_PREFIX + comparison_text(catalog)
 
 
 def bind_modes(schema,quantities):
@@ -64,7 +66,7 @@ def bind_modes(schema,quantities):
             documentary=documentary_schema(getattr(quantities,'authorized_sources',getattr(quantities,'rule_sources',())))
             if documentary:options.append(documentary)
         if basis=='greeting':options=[{'type':'object','properties':{'text':{'type':'string','maxLength':4000}},'required':['text'],'additionalProperties':False}]
-        props['answer']={'type':'array','minItems':1,'maxItems':128,'items':options[0] if len(options)==1 else {'anyOf':options}}
+        props['answer']={'type':'array','minItems':1,'maxItems':24,'items':options[0] if len(options)==1 else {'anyOf':options}}
         for field in ('metrics','recommendations'):
             props[field]['minItems']=0;props[field]['maxItems']=0
         props['evidence']['minItems']=0

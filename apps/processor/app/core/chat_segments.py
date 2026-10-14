@@ -101,7 +101,7 @@ def segment_schema(records=None, *, limit=4000, quantities=None):
         choices.append({'type':'object','properties':{'calculation_id':{
             'type':'string','enum':[record['id'] for record in records]}},
             'required':['calculation_id'],'additionalProperties':False})
-    return {'type':'array','minItems':1,'maxItems':128,'items':choices[0] if len(choices)==1 else {'anyOf':choices}}
+    return {'type':'array','minItems':1,'maxItems':24,'items':choices[0] if len(choices)==1 else {'anyOf':choices}}
 
 
 def bind_segments(schema, records=None, quantities=None):
@@ -286,6 +286,10 @@ def render_segment(segment, records, expressions=None):
         if expressions is None:raise ValueError('Documentary selection source unavailable.')
         sources=getattr(expressions.catalog,'authorized_sources',getattr(expressions.catalog,'rule_sources',()))
         text,source=render_documentary(segment['documentary'],sources)
+        selection=(source['id'],segment['documentary']['passage'])
+        if expressions.deduplicate_excerpts and selection in expressions.excerpt_selections:
+            return ''
+        expressions.excerpt_selections.add(selection)
         expressions.excerpt_records[source['id']]=source
         return text
     if set(segment)=={'calculation_id'}:
@@ -394,7 +398,9 @@ def render_response(value, records, *, quantities=None):
         for collection in [value['answer'],*[item for field in ('assumptions','limitations','next_actions') for item in value.get(field,[])]]:
             if isinstance(collection,list) and any(isinstance(item,dict) and 'text' in item for item in collection):
                 raise ValueError('Explanation requires explicit interpretation or literal support.')
+    if expressions is not None:expressions.deduplicate_excerpts=True
     result={**value,'answer':render_classified_answer(value['answer'],expressions) if isinstance(value['answer'],dict) else render_segments(value['answer'],records,expressions=expressions)}
+    if expressions is not None:expressions.deduplicate_excerpts=False
     for field in ('assumptions','limitations','next_actions'):
         if field not in value or not isinstance(value[field],list) or len(value[field])>10:
             raise ValueError('Invalid calculation collection.')
@@ -405,7 +411,7 @@ def render_response(value, records, *, quantities=None):
         result[field]=[render_segments(item,[],limit=500,expressions=None if classified else expressions) for item in value[field]]
     result.pop('basis',None)
     if not classified:
-        result['answer']=response_prefix(basis)+result['answer']
+        result['answer']=response_prefix(basis,quantities)+result['answer']
         if len(result['answer'])>4000:raise ValueError('Rendered text limit.')
         if basis in BASIS_STATUSES and expressions is not None:
             used=expressions.documentary_operand_sources if basis in DOCUMENTARY_BASES else expressions.documentary_sources

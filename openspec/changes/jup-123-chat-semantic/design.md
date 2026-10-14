@@ -39,6 +39,27 @@ como tal y no repite suPOST. Los artefactos distinguen gasto conocido y reservas
 
 ## Risks and open questions
 
+Correcciones locales posteriores a00dc: el prefijo de modo hipotético incluye
+comparación aritmética derivada de campos explícitos adyacentes forecast/budget
+en la misma moneda. Es cobertura numérica, no extractor general de hechos,
+verificador de ámbito/periodo ni predictor. Conserva el resto de la respuesta y
+no actúa con fuentes financieras del servidor. Roles ambiguos o unidades distintas
+mantienen la ruta general. Casos cambiados/negativos cubiertos por contraejemplos.
+
+003r1 conservaba19repeticiones de un mismo pasaje en una parcial de3918caracteres.
+Deduplicación por(source_id,passage) sólo en answer, después de validar la cita;
+no elimina pasajes únicos ni deja vacíos auxiliares/recomendaciones. La gramática
+de generación ofrece24bloques (hasta20referencias y espacio de síntesis), mientras
+los límites de compatibilidad del renderer y los4000caracteres públicos siguen
+vigentes. No se acepta una final truncada ni se finge que se evitó un finish=length.
+El mecanismo todavía necesita medición real del proveedor.
+
+Los hashes de contrato/manifest se regeneran al cambiar esquema, módulos y prompt;
+los activos se guardan enLF para que Windows ygitarchive coincidan. Cargaenfrío
+backend/processor conforme. El fixture de contexto arranca su plazo sintético
+después de preparar/tokenizar datos y usa el mismo fenceSQL ypayload; expectativas
+409/413 intactas. No cambia plazos ni controles de producción.
+
 Corte actual N3 e23e495b:84recibos,78respuestas/6fallos técnicos. Revisión local
 de todas las respuestas terminada:68conformes/8inciertas/2fallosdecontenido.
 014r2/r3 omite el exceso relativo;022 falla3veces por soporte visible propio

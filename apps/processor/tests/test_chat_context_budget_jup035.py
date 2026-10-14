@@ -2,6 +2,7 @@
 import asyncio
 import hashlib
 import json
+import time
 
 import httpx
 import pytest
@@ -41,11 +42,16 @@ async def exercise(resources,change=None,large=False,recount=False):
         frozen={'request':{'content':'pregunta sintética'},'context':context}
         frozen_raw=canonical(frozen)
         input_hash=hashlib.sha256(frozen_raw).hexdigest()
+        # Building/tokenizing the real fixture can exceed the ten-second gap
+        # between private()'s SQL deadline and claim()'s default. Start this
+        # synthetic attempt after preparation and use the exact same SQL fence;
+        # otherwise a404 tests stale claims instead of the intended context409.
+        deadline=time.time()+120
         with private[2].begin() as connection:
             connection.execute(text('ALTER TABLE chat_operations ADD COLUMN canonical_input JSONB'))
-            connection.execute(text('UPDATE chat_operations SET input_hash=:hash,canonical_input=:frozen'),
-                               {'hash':input_hash,'frozen':frozen_raw.decode()})
-        payload=claim(input_hash=input_hash,context=context)
+            connection.execute(text('UPDATE chat_operations SET input_hash=:hash,canonical_input=:frozen,attempt_deadline=:deadline'),
+                               {'hash':input_hash,'frozen':frozen_raw.decode(),'deadline':deadline})
+        payload=claim(input_hash=input_hash,context=context,deadline=deadline)
         raw=canonical(payload)
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=application),base_url='http://private') as client:
             response=await client.post('/internal/chat/v2/attempts',content=raw,headers=signed('POST','/internal/chat/v2/attempts',raw))

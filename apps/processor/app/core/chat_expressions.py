@@ -250,6 +250,8 @@ class ExpressionRenderer:
         self.documentary_sources=set()
         self.documentary_operand_sources=set()
         self.excerpt_records={}
+        self.excerpt_selections=set()
+        self.deduplicate_excerpts=False
 
     def check_prose(self,text):
         self.documentary_sources.update(check_classification_prose(text,

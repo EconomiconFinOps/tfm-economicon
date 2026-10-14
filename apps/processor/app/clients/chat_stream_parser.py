@@ -129,6 +129,7 @@ class SegmentAnswerJSON:
         self.lexer=AnswerJSON();self.records=records
         from app.core.chat_expressions import ExpressionRenderer
         self.expressions=ExpressionRenderer(quantities) if quantities is not None else None
+        if self.expressions is not None:self.expressions.deduplicate_excerpts=True
         self.segment=None;self.segments=[];self.pending=[]
         self.text='';self.closed=False;self.trailing='';self.rendered_size=0
         self.classified=None
@@ -210,7 +211,7 @@ class SegmentAnswerJSON:
             result=result.lstrip()
             if result:
                 from app.core.chat_response_modes import response_prefix
-                result=(response_prefix(self.basis) if self.array_answer else '')+result
+                result=(response_prefix(self.basis,self.expressions.catalog if self.expressions is not None else None) if self.array_answer else '')+result
         emitted=result.rstrip()
         self.trailing=result[len(emitted):]
         result=emitted;self.text+=result
