@@ -65,6 +65,39 @@ class BudgetTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             b.completed_attempt_cost(operation, [incomplete, report('second')])
 
+    def covered(self, reservations, spent='1.386110415'):
+        import hashlib, json
+        return {**self.snapshot, 'cumulative_usd': spent, 'complete_ledger_history': {
+            'historical_floor_usd': str(b.HISTORICAL_FLOOR),
+            'request_ids_sha256': hashlib.sha256(json.dumps(sorted(reservations)).encode()).hexdigest()}}
+
+    def test_audited_settled_cost_is_preserved_without_counting_twice(self):
+        reservations = {'charged': {'state': 'COST_OBSERVED', 'reserved_usd': '.296203837'},
+                        'seed': {'state': 'RESERVED', 'reserved_usd': '.002'}}
+        result = b.admit(self.covered(reservations), reservations, 'next', Decimal('.319952'), 100)
+        self.assertEqual(result['charged'], reservations['charged'])
+        self.assertEqual(result['seed'], reservations['seed'])
+        with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
+            b.admit(self.covered(reservations), reservations, 'next', Decimal('.62'), 100)
+
+    def test_lagging_counter_cannot_hide_settled_cost(self):
+        reservations = {'charged': {'state': 'COST_OBSERVED', 'reserved_usd': '1.00'}}
+        with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
+            b.admit(self.covered(reservations, '1.00'), reservations, 'next', Decimal('.05'), 100)
+
+    def test_history_identity_and_floor_must_match(self):
+        reservations = {'charged': {'state': 'COST_OBSERVED', 'reserved_usd': '.2'}}
+        snapshot = self.covered(reservations)
+        for patch in ({'request_ids_sha256': 'wrong'}, {'historical_floor_usd': '0'}):
+            with self.assertRaisesRegex(ValueError, 'ledger history'):
+                b.admit({**snapshot, 'complete_ledger_history': {**snapshot['complete_ledger_history'], **patch}},
+                        reservations, 'next', Decimal('.1'), 100)
+
+    def test_unknown_outcome_still_reserves_its_entire_bound(self):
+        reservations = {'unknown': {'state': 'RESERVED', 'reserved_usd': '.7'}}
+        with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
+            b.admit(self.covered(reservations), reservations, 'next', Decimal('.01'), 100)
+
 
 if __name__ == '__main__':
     unittest.main()

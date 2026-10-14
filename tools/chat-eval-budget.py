@@ -113,6 +113,20 @@ def admit(snapshot, reservations, operation_id, bound, now):
     if not isinstance(bound, Decimal) or not bound.is_finite() or bound <= 0:
         raise ValueError('Require a positive bounded operation cost')
     outstanding = sum((money(value['reserved_usd']) for value in reservations.values()), Decimal(0))
+    coverage = snapshot.get('complete_ledger_history')
+    if coverage is not None:
+        # Explicit opt-in only after the operator has audited that the historical
+        # floor covers all prior work and this ledger covers every later charge.
+        # Keep independent upper bounds: upstream may lag, while its global
+        # counter may also include unrelated work. Never delete settled costs.
+        identity = hashlib.sha256(json.dumps(sorted(reservations)).encode()).hexdigest()
+        if (coverage.get('historical_floor_usd') != str(HISTORICAL_FLOOR)
+                or coverage.get('request_ids_sha256') != identity):
+            raise ValueError('Incomplete or mismatched ledger history')
+        settled = sum((money(value['reserved_usd']) for value in reservations.values()
+                       if value.get('state') == 'COST_OBSERVED'), Decimal(0))
+        outstanding -= settled
+        spent = max(spent, HISTORICAL_FLOOR + settled)
     if spent + outstanding + bound > CAP:
         raise ValueError('Insufficient budget for worst-case operation')
     return {**reservations, operation_id: {'reserved_usd': str(bound),

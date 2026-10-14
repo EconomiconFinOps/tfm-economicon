@@ -7,7 +7,7 @@ import sys
 import time
 
 
-def main(root):
+def main(root, covered_step=False):
     for _ in range(3000):
         commands = [
             [sys.executable, str(root / 'recover-retrieval.py')],
@@ -18,7 +18,9 @@ def main(root):
             if result.returncode:
                 print(json.dumps({'campaign': 'STOPPED', 'reason': 'evidence/cost reconciliation requires inspection'}), flush=True)
                 return
-        result = subprocess.run([sys.executable, str(root / 'live-step.py')], capture_output=True, text=True, timeout=90)
+        step = ([sys.executable, str(Path(__file__).with_name('chat-eval-covered-step.py')), '--root', str(root)]
+                if covered_step else [sys.executable, str(root / 'live-step.py')])
+        result = subprocess.run(step, capture_output=True, text=True, timeout=90)
         if result.returncode:
             print(json.dumps({'campaign': 'STOPPED', 'reason': 'step error; preserve ledger and inspect'}), flush=True)
             return
@@ -32,8 +34,9 @@ def main(root):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(); parser.add_argument('--root', type=Path, required=True)
+    parser.add_argument('--covered-step', action='store_true')
     args = parser.parse_args()
-    try: main(args.root)
+    try: main(args.root, args.covered_step)
     except Exception as exc:
         print(json.dumps({'campaign': 'STOPPED', 'exception_class': type(exc).__name__}), flush=True)
         raise SystemExit(1)
