@@ -79,7 +79,9 @@ tareas; aquí se define el contenido.
    su identificador.
 5. **Causa no establecida** y las limitaciones del episodio, redactadas en español.
 6. **Aviso de datos sintéticos**, solo cuando el cliente tiene alguna ingesta completada marcada
-   como sintética.
+   como sintética: con la marca `synthetic` en la petición **o** con una suscripción cuyo identificador
+   empieza por `synthetic-` (el cargador de la demo). Es el mismo criterio que usa el panel de anomalías,
+   definido una sola vez en `SYNTHETIC_INGESTION_CONDITION` (`app/db/database.py`).
 7. **Alcance:** la explicación cubre el día de apertura y los acumulados. No hay serie diaria
    guardada, así que no cuenta la evolución día a día.
 8. **Fotografía:** fecha y hora de la explicación e identificador de la evidencia.

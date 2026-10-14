@@ -98,6 +98,14 @@ sintéticos de demostración, la explicación DEBE (SHALL) avisarlo.
 - **WHEN** el cliente tiene alguna ingesta completada marcada como sintética
 - **THEN** la explicación avisa de que los datos del cliente incluyen datos sintéticos de demostración
 
+#### Scenario: Datos sintéticos reconocidos por el prefijo de la suscripción
+- **WHEN** el cliente tiene una ingesta completada cuya suscripción empieza por `synthetic-` y cuya petición no lleva la marca (el cargador de la demo)
+- **THEN** la explicación avisa igual que el panel de anomalías, con la marca `includes_synthetic_data` a verdadero en la evidencia, y el aviso se conserva al recuperar la conversación
+
+#### Scenario: Mismo criterio que el panel
+- **WHEN** el panel de anomalías y la explicación de un episodio del mismo cliente evalúan si hay datos sintéticos
+- **THEN** ambos aplican el mismo criterio (una ingesta completada del cliente con la marca en la petición o con el prefijo `synthetic-` en la suscripción) y no pueden dar resultados distintos
+
 #### Scenario: Recuperación documental no disponible
 - **WHEN** el proveedor de embeddings o el almacén vectorial no responden
 - **THEN** la explicación de una anomalía se responde igual, sin contexto documental
