@@ -25,6 +25,27 @@ candidate-e94f6e54-campaign-resume1.log y anterior preservados. Plan84 congelado
 evaluation-ledger.sqlite común conserva baseline y candidato. Todo coste de las
 operaciones concluidas conciliado; ninguna nueva generación tras rechazo.
 
+### Gateway y Linux — verificación adicional
+
+Pruebas Linuxc76 concluidas en las sesiones originales:46770 backend100PASS
+883.60s/exit0;25679 processor111PASS845.11s/exit0. No reiniciadas. Registro
+externo offline-c76e4423-complete.json supera pending.json (preservado). No
+acreditan los commits posteriores026/028. SSH vuelve a responder; uptime
+13:45:54 muestra carga48.50/350.91/301.12, causa no determinada. Evitar lanzar
+más carga remota sin comprobar capacidad; no modificar servicios ajenos.
+
+Nueva test_chat_premise_gateway_jup123.py:12PASS usando transporte sintético
+retrieval→draft→final, esquema y ensamblado público.026/028 producen candidatos;
+auxiliares contradictorios fallan sin publicar candidato.3tamaños de lectura,
+una búsqueda y dos generaciones simuladas, sin herramientas/reintentos ni pago.
+Regresión existente gateway/auto/segments dio87PASS/9FAIL al usar python del venv
+Windows: ValueError Resolver ownership protocol, antes de llegar al HTTPsimulado.
+Reproducción mínima127.0.0.1 falla con lanzadorvenv y pasa con Pythonbase3.12
+usando las mismas site-packages. No debilitar checkPID ni atribuir a terminales.
+Repetición completa con intérpretebase en sesión8822:108PASS40.83s/exit0.
+Registro premise-gateway-regression-local-v1.json. Mantener lanzador directo
+3.12 y mismas site-packages para pruebas HTTPWindows; no cambiar controlPID.
+
 ###026 — falta de cobertura, terminal local y replay
 
 chat_missing_spend.py reconoce pregunta de gasto cero y escenario explícito
