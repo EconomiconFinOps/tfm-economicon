@@ -20,6 +20,19 @@ pendientes; ampliación económica no equivale a aceptación semántica.
 023r1active. Observaciónguardada en candidate-cap5-observation.json externo;
 021/022familiareservada sinadjudicar. Continúa mismo controlador/producto.
 
+### Segunda ronda cap5 congelada — 14/10/2026
+
+28/28recibosr2 congelados fuera deGit en candidate-cap5-r2-frozen conmanifestSHA;
+27completed/1failed,28verificados. MismoPID2642423S/live;002r3active. r1+r2:
+56recibos(53completed/3failed),r3encurso. Ningún intento seleccionado/repetido.
+
+005/017/026 mantienenr2 checks correctos der1 (roles/umbral/100>100falso/gasto
+desconocido); checksindividuales ySHA en candidate-cap5-calibration-observed.
+028r2 coincide conreplay.027r2 calcula10→6/−40% pero vuelve a
+explicar conceptoFinOps conevidencevacío; dosobservaciones, noPASSdocumental ni
+cambioarquitectónicoantesdefinN3. Focal027/028provisional yr2summary externos.
+Siguen pendientesr3,juicioindependiente ycriteriosderevisores.
+
 ### Trello e historial real del candidato — 14/10/2026
 
 JUP123 consultada exclusivamente con integraciónDockerServer. Tarjeta aún no
