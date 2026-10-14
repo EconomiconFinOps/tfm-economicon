@@ -57,3 +57,20 @@ La [evidencia incremental](../evidence/JUP-122-review-fixes-20261014.md)
 distingue comprobaciones locales de las reviews humanas y CI posteriores.
 No commit, push, despliegue compartido ni ampliacion a las diez notas no
 bloqueantes. La entrega local permite al PM coordinar los siguientes controles.
+
+## Reconciliacion de base del 14/10
+
+Tras publicarse `11f84334`, Paris autoriza integrar `develop` fijado en
+`0543c5ee` (JUP-038/#128). El merge local conserva su explicador y snapshot
+sin cambios, adapta la escritura de anomalias al turno atomico de A y mantiene
+su evidencia junto a las fuentes documentales compactas. Las pruebas se
+adaptan a JSONB/append_pair y a la disponibilidad false del backend de prueba.
+
+Backend focal 191/191 y frontend 138/138 pasan; consumidores de fixture
+compartida 38/38 adicionales. Tipos y build correctos; lint conserva un aviso
+previo. Chat, capabilities, preflight, redes CD, tokenizer y limpieza SQL
+permanecen identicos al HEAD anterior. Sin proveedor, nueva infraestructura
+ni bateria completa. La [evidencia del merge](../evidence/JUP-122-reconcile-develop-20261014.md)
+conserva fallos iniciales, padres y plan minimo de revalidacion.
+El merge queda preparado sin commit/push para los controles independientes
+y la gestion final del PM; reviews humanas y CI no se declaran resueltas.

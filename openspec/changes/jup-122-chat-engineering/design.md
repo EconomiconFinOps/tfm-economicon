@@ -95,3 +95,24 @@ lectura no es una autorizacion atomica frente a un reinicio concurrente;
 se conservan las guardas 503 del backend. No se cambia /health ni se introduce
 un flag exclusivo de build. El modo habilitado se comprueba con mocks, sin
 proveedor real. Esta aprobacion no autoriza commit, push ni despliegue.
+
+## Reconciliacion con develop del 14/10
+
+Paris autoriza integrar `develop` mediante merge local sin commit sobre
+`11f8433404f786c065ad35f13f673465fa26caf5`. Base fijada tras fetch:
+`0543c5ee671cb1b400254561f5bdc6e419664510`, que incorpora JUP-038/#128.
+No se modifica el explicador, sus reglas ni la consulta de snapshot.
+
+La ruta de mensajes conserva la lectura y explicacion de anomalias, pero
+usa el escritor atomico ya vigente en A. Mantiene la guarda de conversacion
+ocupada antes de leer el episodio y la correlacion tecnica `generation`
+del historial, con igualdad entre respuesta e historial. Fallar la
+persistencia no deja medio turno ni incrementa la metrica de consultas.
+
+AnswerEvidence conserva fuentes compactas y foco accesible, e incorpora
+la evidencia de anomalia despues de la de costes. La ausencia de fuentes
+no reintroduce el aviso redundante eliminado por A. Las pruebas de #128
+se adaptan al historial JSONB y append_pair sin quitar controles de scope,
+integridad, cifras o procedencia; la fixture HTTP declara capabilities false.
+No hay contrato material nuevo, cambios B ni nuevas dependencias/migraciones.
+Commit/push finales y controles independientes permanecen a cargo del PM.

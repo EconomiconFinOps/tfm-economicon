@@ -63,6 +63,16 @@ provisión idempotente del secreto HMAC en CD.
 - **THEN** cada slot recibe una subred privada distinta y una IP del processor perteneciente a esa subred
 - **AND** ambos conservan red interna, puerto privado sin publicar y el mismo HMAC valido sin rotacion
 
+#### Scenario: Explicacion de anomalia integrada con historial atomico
+- **WHEN** una conversacion autorizada solicita la explicacion determinista de JUP-038
+- **THEN** conserva el snapshot del tenant y su evidencia de anomalia, con una sola pareja atomica y correlacion de historial
+- **AND** una conversacion ocupada o un fallo de persistencia no deja mensajes parciales ni incrementa consultas completadas
+
+#### Scenario: Evidencias coexistentes
+- **WHEN** la respuesta contiene fuentes documentales validas, costes o evidencia de anomalia
+- **THEN** la interfaz conserva la prioridad documental, costes y anomalia sin mezclar fuentes incompatibles
+- **AND** las fuentes documentales mantienen su presentacion compacta y no se muestra un aviso redundante cuando no hay fuentes
+
 ### Requirement: Tokenizer fijo incluido durante build
 El tokenizer MUST quedar fuera de Git y descargarse solo durante build o
 preparacion explicita, desde la revision oficial fija y con SHA256 y tamano

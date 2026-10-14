@@ -1,5 +1,6 @@
 import { useId } from "react";
 import { FileText } from "lucide-react";
+import { AnomalyEvidence } from "./AnomalyEvidence";
 import { CostEvidence } from "./CostEvidence";
 
 interface Citation {
@@ -68,6 +69,7 @@ export function AnswerEvidence({ content, metadata }: {
         </li>)}
       </ul>
     </section> : "cost_evidence" in metadata ? <CostEvidence evidence={metadata.cost_evidence} />
+      : "anomaly_evidence" in metadata ? <AnomalyEvidence evidence={metadata.anomaly_evidence} />
       : Array.isArray(references) && references.length > 0 &&
       <p className="mt-2 text-xs text-muted-foreground">La evidencia de esta respuesta no está disponible.</p>}
   </>;
