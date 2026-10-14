@@ -121,14 +121,17 @@ def bind_segments(schema, records=None, quantities=None):
     from app.core.chat_policy_sections import required_policy
     from app.core.chat_reporting import required_reporting
     from app.core.chat_missing_spend import required_missing_spend
+    from app.core.chat_documentary_decisions import required_documentary_answer
     reporting = required_reporting(quantities)
     missing = required_missing_spend(quantities)
     policy = required_policy(quantities)
-    selected = next(((key, bound) for key, bound, _ in scenario_terminals(quantities) if bound is not None), None)
-    terminal = selected[0] if selected else 'policy_section' if policy is not None else 'reporting_basis' if reporting is not None else 'missing_spend'
-    bound = selected[1] if selected else policy if policy is not None else reporting if reporting is not None else missing
+    documentary = required_documentary_answer(quantities)
+    candidates = [(key, bound, 'insufficient_data') for key, bound, _ in scenario_terminals(quantities)]
+    candidates += [('documentary_answer', documentary, documentary['public_fields']['status'] if documentary else None),
+                   ('policy_section', policy, 'ok'), ('reporting_basis', reporting, 'ok'),
+                   ('missing_spend', missing, 'insufficient_data')]
+    terminal, bound, status = next((item for item in candidates if item[1] is not None), (None, None, None))
     if bound is not None:
-        status = 'ok' if selected is None and (policy is not None or reporting is not None) else 'insufficient_data'
         base = copy.deepcopy(next(branch for branch in schema.get('anyOf', [schema])
                                   if status in branch['properties']['status'].get('enum', [])))
         props = base['properties']
@@ -244,6 +247,11 @@ def render_classified_answer(value,expressions):
     for key, _, render in scenario_terminals(expressions.catalog if expressions else None):
         if isinstance(value, dict) and set(value) == {key}:
             return render(value, expressions.catalog if expressions else None)
+    if isinstance(value, dict) and set(value) == {'documentary_answer'}:
+        from app.core.chat_documentary_decisions import documentary_answer
+        fields, sources = documentary_answer(value, expressions.catalog if expressions else None)
+        expressions.documentary_sources.update(source['id'] for source in sources)
+        return fields['answer']
     if isinstance(value, dict) and set(value) == {'policy_section'}:
         from app.core.chat_policy_sections import policy_answer
         text, sources = policy_answer(value, expressions.catalog if expressions else None)
@@ -363,6 +371,15 @@ def render_response(value, records, *, quantities=None):
                            ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'))):
                 raise ValueError('Invalid scenario authority or auxiliary fields.')
             return {**value, 'answer': render(value['answer'], quantities)}
+    from app.core.chat_documentary_decisions import required_documentary_answer, documentary_answer
+    documentary = required_documentary_answer(quantities)
+    if documentary is not None:
+        if ('basis' in value or value.get('status') != documentary['public_fields']['status']
+                or any(value.get(field) != [] for field in
+                       ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'))):
+            raise ValueError('Invalid documentary decision authority or auxiliary fields.')
+        fields, sources = documentary_answer(value['answer'], quantities)
+        return ServerRenderedResponse({**value, **fields, 'evidence': server_evidence(sources)}, sources)
     from app.core.chat_policy_sections import required_policy, policy_answer
     if required_policy(quantities) is not None:
         if ('basis' in value or value.get('status') != 'ok'

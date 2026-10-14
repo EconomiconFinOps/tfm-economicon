@@ -73,6 +73,8 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     evidence_order='local-visible-support-no-root-decoration-v2',
     excerpt_repetition='deduplicate-source-and-literal-passage-in-main-answer-v1',
     answer_generation_blocks=24,
+    documentary_decisions={'version':'complete-definitions-qualified-advice-three-valued-premises-v1',
+        'module_sha256':hashlib.sha256(Path(__file__).with_name('chat_documentary_decisions.py').read_text(encoding='utf-8').encode()).hexdigest()},
     scenario_accounts={name:{'version':version,
         'module_sha256':hashlib.sha256(Path(__file__).with_name('chat_'+name+'.py').read_text(encoding='utf-8').encode()).hexdigest()}
         for name,version in (('cost_breakdown','complete-service-list-with-period-scope-basis-v1'),
