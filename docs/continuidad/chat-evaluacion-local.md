@@ -8,6 +8,22 @@ ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
 ### Corte vigente: c7 N3 terminada — 14/10/2026 20:37 UTC
 
+#### Base actualizada antes de la regresión completa — 15/10/2026
+
+A avanzó a8ea5a0c4 sobre develop0543c5ee, que incorpora JUP-038/#128. B integra
+ese develop por merge local; resuelve dos conflictos con los bloques ya reconciliados
+en A y cinco adaptaciones de pruebas/fixture.39 archivos de aplicación idénticos
+por blob a A8ea; módulos semánticos B intactos. Ver [entregas A/B](chat-entregas-a-b.md)
+y `reconcile-A8ea-block-identity-v1.json` para el alcance y pruebas de identidad.
+
+550 pruebas backend conformes,141 omitidas por SQL nativo; frontend completo1354
+conformes sin omisiones. Tipos, lint y build correctos (avisos conservados). No
+trasladar la evidencia propia de A ni el CI anterior. Ambas reviews oficiales
+siguen solicitando cambios. Antes de inferencia queda probar el candidato conjunto
+en Linux/SQL, construir los tres servicios B y comprobar procedencia/tokenizer.
+Runtime B aún c7,0 operaciones activas confirmado por SQL, sin llamadas nuevas.
+Máximo5USD y reservas históricas intactos; falta admisión viva para cualquier gasto.
+
 #### Calificadores004 y premisas022 — producto local2c79b32d, 15/10/2026
 
 `chat_documentary_decisions.py` conserva definiciones completas de actual/amortized

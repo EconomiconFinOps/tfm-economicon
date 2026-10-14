@@ -1,10 +1,36 @@
 # División de JUP-035 en A y B
 
-Actualizado: 2026-10-14. Origen: chat 01a1270c-e332-7462-9c90-706d49ade92c.
+Actualizado: 2026-10-15. Origen: chat 01a1270c-e332-7462-9c90-706d49ade92c.
 El usuario confirma aprobación del equipo y autoriza actualizar Trello, publicar
 A y cerrar #120/#121 sin integrar. No autoriza despliegue ni mensajes Discord.
 
-## Corte vigente: nueva cabeza11f84334
+## Corte vigente: A8ea5a0c4 y develop0543c5ee
+
+Reconsulta previa a la validación completa: PR130 sigue OPEN/sin merge, ahora
+head8ea5a0c43d181be3206fbc1a8ff9c28788807556, base0543c5ee671cb1b400254561f5bdc6e419664510.
+Se leyeron todas las reviews, conversación e inline: mismas dos solicitudes de
+cambios, sin aprobación nueva ni hilos inline. CI de esta cabeza no consultada.
+El segundo padre es develop0543: JUP-038/#128, explicación determinista de anomalías.
+Por eso el corte11f/c30 inferior es histórico, no la base actual.
+
+B integra develop0543 por merge local. Los dos conflictos (assistant.py y
+AnswerEvidence.tsx) conservan el caller atómico/serializador y evidencia de A.
+Antes del merge esos archivos coincidían con A11f; se adoptan las resoluciones
+de A8ea y cinco adaptaciones de tests/fixture. Los39 archivos de aplicación del
+delta coinciden por blob con A8ea. Ningún módulo semántico de B cambia; no se
+copian el resumen de A ni sus estados de aceptación. Prueba externa
+`reconcile-A8ea-block-identity-v1.json`; consulta `A-pre-final-2c79b32d.json`.
+
+Backend:550 PASS/141 omisiones que requieren SQL nativo (incluye pruebas previas
+de anomalías); no se afirma que ese SQL esté validado. Frontend completo1354 PASS
+sin omisiones; tres typechecks, lint y build correctos, avisos previos conservados.
+Recibos `A8ea-anomaly-backend-v1.{xml,log}`, `A8ea-frontend-full-v1.{xml,log}` y
+`A8ea-frontend-checks-v1.json`. La ruta inicial de evidencia frontend se corrigió
+moviendo sólo sus dos archivos a la carpeta externa; no se repitió la suite.
+Faltan regresión integral B y SQL nativo del candidato conjunto, build/activación
+propia y medición real. No se ha publicado B ni modificado A desde este trabajo.
+
+## Corte anterior: cabeza11f84334
 
 Consulta posterior al bloque SQL de B: PR130 OPEN, no integrada, head
 11f8433404f786c065ad35f13f673465fa26caf5 sobre develop/c30a7d0. Se leyeron todas

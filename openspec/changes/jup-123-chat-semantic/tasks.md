@@ -1,11 +1,12 @@
 ## 1. Base y contratos
 - [x] 1.1 Recuperar B y activar JUP-123 en Trello.
 - [x] 1.2 Admitir recibos repetidos y detectar ausencias/duplicados (15 pruebas).
-- [x] 1.3 Reconciliar A/develop y verificar las superficies afectadas.
+- [ ] 1.3 Reconciliar A/develop y verificar las superficies afectadas.
   - Base comprobada A/28ee5b1c sobre develop/c30a7d0; no afirma una actualización posterior de esas ramas. Bloques incorporados en B; herramientas86PASS, tokenizer4PASS, CD55PASS/2SKIP, CI/topología51PASS. Candidato c7e2d561: 70 archivos, 1470 identidades únicas Linux/SQL PASS mediante procesos separados (OOM anteriores conservados); builds reales y 340 hashes de fuente más tokenizer de ambos contenedores verificados. UI001/003/014 en escritorio/móvil y recarga correcta. Aceptación/reviews de A independientes, no trasladadas a B.
   - Reabierto tras leer review oficial de Víctor18:58UTC sobre28ee5b1c: red/IP por slot del CD y UX con chat desactivado pendientes de corregir en A y reconciliar en B. Las pruebas previas no cubrían esos dos defectos; no se modifica c7 durante N3.
   - Consulta posterior: A avanza11f84334 con esos bloques y27 archivos incrementales; reviews siguen solicitando cambios y CI nueva no verificada. Falta incorporar y probar en B; no cerrar por leer el diff.
   - Completado después en B/ab66f90c:20 archivos idénticos a A y clase de capacidades adaptada conservando el esquema B.34 backend/120 frontend/58 CD Linux/40 topología PASS; tipos/lint/build y ambos loaders conformes. Compose real de ambos slots correcto; creación de redes no ejecutada por pool ajeno172.30.0.0/16. No aceptación de A ni despliegue, ni navegador final de B; esos límites siguen explícitos.
+  - Reabierto al congelar la regresión: A8ea5a0c4/develop0543c5ee incorporan JUP-038. Merge local de develop con dos resoluciones y cinco adaptaciones de A;39 archivos de aplicación idénticos, semántica B intacta.550 backend PASS/141 omisiones SQL y1354 frontend PASS; tipos/lint/build conformes. Pendientes Linux/SQL del candidato conjunto antes de cerrar de nuevo1.3.
 - [ ] 1.4 Acordar criterios obligatorios y calidad con revisores.
 
 ## 2. Medición

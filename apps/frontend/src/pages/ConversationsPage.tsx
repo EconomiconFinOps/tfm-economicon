@@ -6,7 +6,7 @@
 // preserving document retrieval alongside structured ownership questions.
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useOutletContext } from "react-router";
+import { useOutletContext, useSearchParams } from "react-router";
 import { SectionCard } from "../components/SectionCard";
 import { AnswerEvidence } from "../components/AnswerEvidence";
 import { MessageComposer } from "../components/MessageComposer";
@@ -23,6 +23,11 @@ const ROLE_LABELS: Record<string, string> = { user: "Usuario", assistant: "Asist
 export function ConversationsPage() {
   const { token, activeTenant } = useOutletContext<SessionOutletContext>();
   const queryClient = useQueryClient();
+  // `?episode=<id>` (enlace «Explicar en el asistente» del panel de anomalias, JUP-038). Se lee aqui, en
+  // la pagina, y no en el redactor: este solo existe con una conversacion seleccionada y el parametro debe
+  // sobrevivir mientras no la haya. Es un dato no fiable: solo preselecciona, no autoriza nada.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const linkedEpisodeId = searchParams.get("episode") ?? "";
   const [selectedConversationId, setSelectedConversationId] = useState<string>("");
   const [title, setTitle] = useState<string>("Revisión operativa");
 
@@ -174,7 +179,15 @@ export function ConversationsPage() {
             </div>
 
             <MessageComposer key={`${activeTenant.id}:${selectedConversationId}`}
-              token={token} tenantId={activeTenant.id} conversationId={selectedConversationId} />
+              token={token} tenantId={activeTenant.id} conversationId={selectedConversationId}
+              initialEpisodeId={linkedEpisodeId}
+              // Tras un envio correcto se quita el parametro (con `replace`, sin dejar entrada en el
+              // historial) para que recargar la pagina no vuelva a armar el modo. Tras un fallo se conserva.
+              onSent={() => setSearchParams((previous) => {
+                const next = new URLSearchParams(previous);
+                next.delete("episode");
+                return next;
+              }, { replace: true })} />
           </>
         ) : conversationsQuery.error ? null : (
           <p className="text-sm text-muted-foreground">Crea una conversación para empezar a usar el asistente.</p>
