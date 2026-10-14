@@ -88,7 +88,9 @@ def main(root):
                 or not data['model'].startswith('z-ai/glm-5.2') or item['model'] != 'openrouter/z-ai/glm-5.2'):
             raise ValueError('Provider mismatch')
         upstream.append({k: data.get(k) for k in ('id', 'total_cost', 'provider_name', 'model', 'created_at', 'finish_reason')})
-    money = adapter.module('budget').money
+    validate_money = adapter.module('budget').money
+    def money(value):
+        return validate_money(str(value))
     infos = {k: adapter.request('http://127.0.0.1:44000/key/info?' + urlencode({'key': v}), token=ge['LITELLM_MASTER_KEY'])['info'] for k, v in keys.items()}
     before = pre['accounting']['evidence']['keys']
     delta = money(infos['processor']['spend']) - money(before['processor']['spend'])
