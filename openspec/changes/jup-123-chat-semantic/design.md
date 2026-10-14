@@ -174,3 +174,22 @@ La comprobación de higiene necesitó ejecución fuera del sandbox para invocar
 `git` (EPERM inicial); no hubo una modificación del control ni descarga de paquetes.
 El ejecutable openspec no está instalado en este checkout: se usó el ya instalado
 en el workspace. Los fallos iniciales de herramientas no cuentan como aprobados.
+
+
+## Cierre de recogida del candidato e23e495b — 2026-10-14
+
+N3 recogida por completo:84recibos/78completed/6failed, sin selección del mejor
+intento. Todos VERIFIED_PUBLIC_SNAPSHOT y sin ausencias ni duplicados según el
+agregador. Snapshot externo inmutable candidate-cap5-n3-complete con originales,
+derivados, pruebas de coste y backupSQLite;manifestSHA de257archivos. El controlador
+terminó conCOLLECTED y aceptaciónNOT_ASSESSED. No atribuir estas métricas a
+aceptación semántica ni al código posterior sólo por compartir rama.
+
+Contador final conservador2.078111791USD; reservas íntegramente retenidas1.601760USD
+incluyen5fallos de coste desconocido yseed0.002. Cota conjunta3.679871791USD dentro
+del máximo5 autorizado. Mantener esos costes/reservas en nuevas decisiones; no
+reiniciar contabilidad ni asumir que los costes desconocidos fueron gratuitos.
+
+La comparación por requisitos aún requiere juicios:13muestras locales provisionales
+remapeadas por hashes idénticos,65pass/8uncertain/422unreviewed. Los revisores no
+han acordado un umbral nuevo; N5 y adjudicación independiente continúan pendientes.

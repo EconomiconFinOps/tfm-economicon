@@ -9,6 +9,7 @@
 - [x] 2.2 Verificar entorno aislado y contabilidad viva para la baseline a817382b.
 - [x] 2.3 Congelar y recoger baseline N3 completa (84/84, con 7 fallos preservados).
 - [ ] 2.4 Resolver incertidumbres con adjudicación independiente.
+- [x] 2.5 Recoger N3 del candidato e23e495b:84/84 recibos verificados,78completed/6failed conservados; costes desconocidos con reserva íntegra, no aceptación semántica.
 
 ## 3. Correcciones y entrega
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.

@@ -1,24 +1,39 @@
 # Evaluación local de JUP-035
 
-## Autorización vigente — 14/10/2026, ampliación a5USD
+## Estado actual y autorización — 14/10/2026
 
-El usuario respondió «Amplia a5$» a la solicitud de presupuesto. Máximo acumulado
-actual5USD; supera el tope2USD de los cortes históricos siguientes. No reinicia
-histórico ni ledger. Lectura nueva15:59UTC conserva upperbound1.683584087USD;
-clavesB backend0.00014362/0.02 yprocessor0.566091115/0.88, vigencia15/10 08:02UTC.
-CAP del runner pasa5; pruebas presupuesto11PASS yledger6PASS. Primer intento
-ledger con Python3.14 falló por TEMP/sandbox; segundo3.12 con temporal encheckout
-fue rechazado porcontrato; tercero usa temporal externo autorizado y pasa.
+El usuario amplió el máximo acumulado a **5 USD** («Amplia a5$»). Ese permiso
+sustituye el límite de2USD de los cortes históricos inferiores; no reinicia gasto,
+ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
-Continúa preparación del candidato actual para nueva N3; no reanudar la campaña
-e94 antigua como si validara código nuevo. Recuperar sólo runtimeB autorizado,
-memoria/cacheSQL limitadas y gasto preservado; ampliar límites de claves exclusivas
-únicamente dentro de5USD sin extender caducidad. Criterios de revisores siguen
-pendientes; ampliación económica no equivale a aceptación semántica.
+**Recogida N3 completa del candidato e23e495b24fae76decacf7d030468b75cd52b5f8:**
+84/84 recibos verificados,78 operaciones completadas y6 fallidas conservadas.
+Controlador2878413 terminado conCOLLECTED/NOT_ASSESSED; último caso028r3 con
+COST_OBSERVED. No volver a lanzar esta campaña ni escoger mejores intentos.
+Herramientas de control e92628df; producto e23 congelado durante las tres rondas.
 
-Última observación:PID2642423S/live,22recibos(20completed/2failed),22verificados,
-023r1active. Observaciónguardada en candidate-cap5-observation.json externo;
-021/022familiareservada sinadjudicar. Continúa mismo controlador/producto.
+Snapshot final externo: `materiales/07-evidencias/PR121-local-evaluation/`
+`candidate-cap5-n3-complete/` relativo al workspace padre. Contiene84recibos
+originales(raw),84derivados,84pruebas de coste,backupSQLite consistente y agregado
+sin ausencias;manifest registra257archivos porSHA256. No modificar el snapshot.
+Contabilidad viva final: cota delcontador2.078111791USD + reservas1.601760USD =
+**3.679871791USD** conservadores dentrode5. Hay5fallos conCOST_UNKNOWN_RESERVED
+que retienen toda su cota, másseed0.002; no equivalen a coste0 ni gasto conciliado.
+Claves exclusivasB mantienen vigencia15/10 08:02UTC; no renovadas.
+
+Evaluación completa normalizada en `candidate-cap5-n3-unreviewed.json`.
+Remapeadas13muestras revisadas localmente desde el corte56 sólo tras igualdad
+exacta de hashes de evidencia/criterio. `candidate-cap5-n3-local-judgments-v1.json`
+y`-local-reviewed-v1.json`:65checks pass,8uncertain,422unreviewed;8respuestaspass,
+70pending y6technical_failure. Revisión local provisional, no independiente ni
+aceptación final. Corrección de referencia:011 está soportado porFinOps10,
+noRules2; la etiqueta mantiene su estado y razón corregida en el informe completo.
+
+Pendientes: terminar contraste por requisito y comparación emparejada con baseline;
+resolver incertidumbres mediante juicio independiente; criterios/N5 acordados con
+revisores y presupuesto; dependenciaA/PR130 (tokenizer/reviews). No cambiar el
+producto basándose en una sola repetición. Leer los límites de los contrastes
+focales y la evidencia de UI real más abajo antes de declarar algo validado.
 
 ### Reanudación tras conciliación de 013r3 — 14/10/2026
 
