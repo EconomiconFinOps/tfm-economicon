@@ -306,7 +306,7 @@ def _diagnostic_run(monkeypatch,wire,caplog,transport_error=None,period=None):
         event=json.loads(record.getMessage())
         assert event['event']=='chat_gateway_diagnostic'
         assert len(record.getMessage().encode())<=2048
-        assert set(event)<= {'event','operation_id','attempt_id','request_sha256','stage','exception_class','errors','finish_reason','http_status','category','rule_code'}
+        assert set(event)<= {'event','operation_id','attempt_id','request_sha256','stage','exception_class','errors','finish_reason','http_status','category','rule_code','stream_location'}
         assert 'DIAGNOSTIC_SYNTHETIC' not in record.getMessage()
         for item in event['errors']:
             assert set(item)=={'type','loc','rule_code'}
@@ -459,3 +459,40 @@ def test_diagnostic64_actual_transport_error_is_structural_only(monkeypatch,capl
     assert records[-1]['type']=='error' and len(events)==1
     assert events[0]['stage']=='transport' and events[0]['finish_reason'] is None
     assert events[0]['exception_class']=='OtherException'
+
+
+@pytest.mark.parametrize('split', [False, True])
+def test_provisional_equation_failure_identifies_only_segment_or_adjacent_group(monkeypatch,caplog,split):
+    value=supported_provider()
+    prose='DIAGNOSTIC_SYNTHETIC_SEGMENT_NEVER_LOG '
+    if split:
+        value['answer']=[value['answer'][-1],{'inference':prose+'80 /'}, {'inference':' 200 = 40'}]
+        expected={'field':'answer','mode':'adjacent_prose','kind':'inference','first_segment':1,'last_segment':2}
+    else:
+        value['answer']=[value['answer'][0],value['answer'][-1],{'inference':prose+'80 / 200 = 40'}]
+        expected={'field':'answer','mode':'segment','kind':'inference','first_segment':2,'last_segment':2}
+    records,events=_diagnostic_run(monkeypatch,_diagnostic_wire(json.dumps(value)),caplog)
+    assert records[-1]=={'type':'error','category':'invalid_response','status':422}
+    assert len(events)==1 and events[0]['rule_code']=='calculation_free_numeric_equation_forbidden'
+    assert events[0]['stage']=='provisional_answer' and events[0]['stream_location']==expected
+    assert '80' not in json.dumps(events[0]['stream_location'])
+
+
+def test_provisional_location_never_copies_untrusted_keys_values_or_out_of_range_indexes(caplog):
+    from app.clients.chat_gateway import _record_diagnostic
+    from app.core.chat_calculations import CalculationError
+    import logging
+    caplog.set_level(logging.WARNING,logger='app.clients.chat_gateway')
+    failure=CalculationError('Free numeric equation forbidden.')
+    _record_diagnostic('provisional_answer',failure,None,None,stream_location={
+        'field':'answer','mode':'segment','kind':'inference','first_segment':True,
+        'last_segment':999,'DIAGNOSTIC_SYNTHETIC_PRIVATE_KEY':'DIAGNOSTIC_SYNTHETIC_PRIVATE_VALUE'})
+    event=json.loads(caplog.records[-1].message)
+    assert event['stream_location']=={'field':'answer','mode':'segment','kind':'inference'}
+    assert 'DIAGNOSTIC_SYNTHETIC' not in caplog.text
+    _record_diagnostic('model_validation',failure,None,None,stream_location={
+        'field':'answer','mode':'segment','kind':'inference','first_segment':0,'last_segment':0})
+    assert 'stream_location' not in json.loads(caplog.records[-1].message)
+    _record_diagnostic('provisional_answer',failure,None,None,stream_location={
+        'field':'answer','mode':'segment','kind':['DIAGNOSTIC_SYNTHETIC_PRIVATE_VALUE']})
+    assert 'stream_location' not in json.loads(caplog.records[-1].message)

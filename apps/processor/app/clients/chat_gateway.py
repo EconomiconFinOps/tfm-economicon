@@ -88,7 +88,7 @@ def diagnostic_scope(operation_id, attempt_id):
         _diagnostic_context.reset(token)
 
 
-def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, category=None):
+def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, category=None, stream_location=None):
     """A bounded structural event; never serialize exceptions or candidate data."""
     try:
         from app.core.chat_calculations import CalculationError
@@ -133,6 +133,20 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
         if isinstance(failure, CalculationError):
             event['exception_class'] = 'CalculationError'
             event['rule_code'] = failure.rule_code
+        # Reconstruct a closed structural value; never serialize an exception's
+        # attributes, a segment, its prose, a hash of prose, or arbitrary keys.
+        if stage == 'provisional_answer' and type(stream_location) is dict:
+            location={}
+            if stream_location.get('field') == 'answer':location['field']='answer'
+            for key,allowed in (
+                ('mode',{'segment','adjacent_prose','terminal'}),
+                ('kind',{'text','inference','documentary','expression','quantity','calculation_id','terminal','unknown'})):
+                item=stream_location.get(key)
+                if type(item) is str and item in allowed:location[key]=item
+            first,last=stream_location.get('first_segment'),stream_location.get('last_segment')
+            if type(first) is int and type(last) is int and 0<=first<=last<128:
+                location.update(first_segment=first,last_segment=last)
+            if {'field','mode','kind'}<=location.keys():event['stream_location']=location
         assembly_rules = {
             'Citation passage is not grounded.':'citation_passage_not_grounded',
             'Invalid evidence collection.':'invalid_evidence_collection',
@@ -470,7 +484,8 @@ class ChatGateway:
             diagnostic('transport',failure,category='transport')
             yield {'type':'error','category':'transport'}
         except Exception as failure:
-            diagnostic(stage,failure,category='invalid_response')
+            diagnostic(stage,failure,category='invalid_response',
+                       stream_location=answer.failure_location if stage=='provisional_answer' else None)
             yield {'type':'error','category':'invalid_response','status':422}
         finally:
             holder.pop('response',None)

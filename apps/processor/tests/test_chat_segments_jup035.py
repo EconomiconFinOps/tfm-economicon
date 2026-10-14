@@ -27,6 +27,19 @@ def test_invalid_segments_fail_both_render_and_stream(segments):
     with pytest.raises(ValueError):
         parser.feed(json.dumps({'basis':'greeting','answer':segments}));parser.finish()
 
+
+@pytest.mark.parametrize('width',[1,7,8192])
+@pytest.mark.parametrize('split',[False,True])
+def test_failure_location_survives_wire_fragmentation_without_segment_text(width,split):
+    segments=([{'text':'1 +'}, {'text':' 1 = 3'}] if split else [{'text':'1 + 1 = 3'}])
+    parser=SegmentAnswerJSON(RECORDS)
+    raw=json.dumps({'basis':'greeting','answer':segments})
+    with pytest.raises(ValueError):
+        for offset in range(0,len(raw),width):parser.feed(raw[offset:offset+width])
+    assert parser.failure_location=={'field':'answer','mode':'adjacent_prose' if split else 'segment',
+                                     'kind':'text','first_segment':0,'last_segment':1 if split else 0}
+    assert set(parser.failure_location)=={'field','mode','kind','first_segment','last_segment'}
+
 def test_duplicate_segment_keys_and_surrogate_rejected():
     for raw in ['{"answer":[{"text":"a","text":"b"}]}',
                 '{"answer":[{"text":"\\ud800x"}]}',

@@ -134,16 +134,34 @@ class SegmentAnswerJSON:
         self.text='';self.closed=False;self.trailing='';self.rendered_size=0
         self.classified=None
         self.basis=None;self.basis_raw=None;self.array_answer=False;self.deferred=''
+        self.failure_location=None;self.pending_start=None
+
+    def _checked_render(self, renderer, value, *, mode, first=None, last=None):
+        try:
+            return renderer(value)
+        except ValueError:
+            kinds={'text','inference','documentary','expression','quantity','calculation_id'}
+            kind=next(iter(value)) if isinstance(value,dict) and len(value)==1 else None
+            location={'field':'answer','mode':mode,
+                      'kind':kind if type(kind) is str and kind in kinds else 'terminal' if mode=='terminal' else 'unknown'}
+            if type(first) is int and type(last) is int and 0<=first<=last<128:
+                location.update(first_segment=first,last_segment=last)
+            self.failure_location=location
+            raise
 
     def _flush(self):
         from app.core.chat_segments import render_segment
         if not self.pending:return ''
-        result=render_segment({('inference' if any(key=='inference' for key,_ in self.pending) else 'text'):''.join(text for _,text in self.pending)},self.records,self.expressions)
-        self.pending=[]
+        value={('inference' if any(key=='inference' for key,_ in self.pending) else 'text'):''.join(text for _,text in self.pending)}
+        result=self._checked_render(lambda node:render_segment(node,self.records,self.expressions),value,
+                                    mode='adjacent_prose',first=self.pending_start,
+                                    last=self.pending_start+len(self.pending)-1)
+        self.pending=[];self.pending_start=None
         return result
 
     def feed(self, fragment):
         from app.core.chat_segments import render_segment,render_classified_answer
+        self.failure_location=None
         output=[]
         for char in fragment:
             lex=self.lexer
@@ -166,7 +184,8 @@ class SegmentAnswerJSON:
                 if len(self.classified)>262144:raise ValueError('Response segment limit.')
                 if not lex.string and lex.depth==1 and char=='}':
                     answer=complete_json(''.join(self.classified))
-                    output.append(render_classified_answer(answer,self.expressions))
+                    output.append(self._checked_render(lambda node:render_classified_answer(node,self.expressions),
+                                                       answer,mode='terminal'))
                     self.classified=None;self.closed=True
                 continue
             opening=(not lex.string and lex.depth==2 and lex.key=='answer' and char=='{')
@@ -178,14 +197,17 @@ class SegmentAnswerJSON:
                 raise ValueError('Response segment limit.')
             if self.segment is not None and not lex.string and lex.depth==2 and char=='}':
                 value=complete_json(''.join(self.segment));self.segment=None
-                rendered=render_segment(value,self.records,self.expressions)
+                rendered=self._checked_render(lambda node:render_segment(node,self.records,self.expressions),value,
+                                              mode='segment',first=len(self.segments),last=len(self.segments))
                 if 'inference' in value:
                     self.rendered_size+=len(value['inference'])+((len(rendered)-len(value['inference'])) if not any(key=='inference' for key,_ in self.pending) else 0)
                 else:self.rendered_size+=len(rendered)
                 if self.rendered_size>4000:raise ValueError('Rendered text limit.')
                 self.segments.append(value)
                 if len(self.segments)>128:raise ValueError('Invalid segment collection.')
-                if 'text' in value or 'inference' in value:self.pending.append(('inference' if 'inference' in value else 'text',value.get('inference',value.get('text'))))
+                if 'text' in value or 'inference' in value:
+                    if not self.pending:self.pending_start=len(self.segments)-1
+                    self.pending.append(('inference' if 'inference' in value else 'text',value.get('inference',value.get('text'))))
                 else:output.extend([self._flush(),rendered])
             if closing:
                 if not self.segments:raise ValueError('Invalid segment collection.')
