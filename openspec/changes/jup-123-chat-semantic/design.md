@@ -45,6 +45,33 @@ como tal y no repite suPOST. Los artefactos distinguen gasto conocido y reservas
 
 ## Risks and open questions
 
+### Atributos del desglose y regla de reparto ausente — 2026-10-15
+
+Producto localb3528bcf añade dos compiladores de escenarios explícitos, con
+cantidades y nombres variables. `chat_cost_breakdown.py` consume una declaración
+completa de período/suscripción/moneda/vista y hasta12 servicios únicos; calcula
+suma, máximo, empates y participación. Retiene créditos con signo, no interpreta
+una participación sobre total no positivo y marca aproximación al redondear.
+La declaración de cobertura completa se conserva como dato no verificado.
+`chat_shared_allocation.py` exige coincidencia de importe/moneda/activo entre
+petición y escenario, equipos distintos y la declaración de regla aprobada ausente
+y consumo desconocido. Conserva el coste shared, pide regla/base/datos y no asigna
+cargos. Usa hechos del escenario: no elige citas documentales como justificación
+ni afirma haber comprobado una política real. Evidencia financiera del servidor
+tiene prioridad: impide sustituirla por esas rutas hipotéticas.
+
+Los terminales de escenario comparten selección/esquema/renderizado en
+`chat_segments.py`, con ID ligado a la entrada y auxiliares vacíos. No se silencian
+contradicciones de prosa después de emitirse: el proveedor recibe el terminal
+cerrado. Esto no resuelve interpretación general de cualquier relato; preguntas
+compuestas, datos incompatibles o declaraciones fuera de las gramáticas conservan
+la ruta existente. No se declara aceptación por reconocer los ejemplos del banco.
+
+375 pruebas focales processor/27 backend conformes y replay de84recibos que sólo
+selecciona001/009r1/r2/r3, con paridad streaming/final/público; etiquetas históricas
+intactas. Ver continuidad para las pruebas Linux y pin de recursos. Cambios aún
+sin activar ni medir con proveedor;021 y las incertidumbres004/022 siguen abiertas.
+
 ### Cobertura ponderada y diagnóstico estructural — 2026-10-14
 
 Producto local654298d4: `chat_weighted_coverage.py` compila una partición explícita

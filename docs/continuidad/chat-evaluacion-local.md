@@ -1,12 +1,55 @@
 # Evaluación local de JUP-035
 
-## Estado actual y autorización — 14/10/2026
+## Estado actual y autorización — 15/10/2026
 
 El usuario amplió el máximo acumulado a **5 USD** («Amplia a5$»). Ese permiso
 sustituye el límite de2USD de los cortes históricos inferiores; no reinicia gasto,
 ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
 ### Corte vigente: c7 N3 terminada — 14/10/2026 20:37 UTC
+
+#### Atributos001 y decisión shared009 — producto localb3528bcf, 15/10/2026
+
+Verificación enUTC14/10 22:00 (fecha local15/10). `chat_cost_breakdown.py` conserva
+período, suscripción, moneda y vista declarados en un desglose completo de hasta12
+servicios únicos; agrega importes variables, máximos y empates. No verifica cobertura
+ni facturación. Créditos se suman con signo y un total no positivo no genera una
+participación del gasto. Porcentajes redondeados se marcan≈, también en cobertura011.
+`chat_shared_allocation.py` conserva el importe compartido y equipos del escenario
+que declara regla aprobada ausente y consumo desconocido. Exige coincidencia de
+importe/moneda/activo, pide regla/base/datos y no asigna cargos por defecto. Usa
+hechos del usuario: no selecciona pasajes generales para aparentar soporte de una
+regla inexistente. Evidencia financiera del servidor impide sustituirla por estas
+rutas hipotéticas. Otras formulaciones o datos contradictorios siguen la ruta general.
+
+375 pruebas focales processor y27 backend PASS, con recursos reales cargados por
+ambos loaders propios.93 pruebas Linux PASS sin omisiones ni OOM:50 de escenarios,
+37 de cobertura y6 de sus contratos backend; no sumarlas a las locales. Cuatro
+contenedores propios sin red, fuente sólo lectura, resultados durables recogidos
+con hashes, retirados porID/etiqueta. IDs/imágenes del runtime B iguales antes/después.
+Replay sobre84recibos sólo selecciona001/009r1/r2/r3, conserva coste actual y devuelve
+total1000EUR/60%, o shared con solicitud de regla/base sin cita de tagging ajena.
+Streaming/final/público coinciden; juicios históricos no alterados. Es replay de
+compilación, no nueva respuesta del modelo ni aceptación semántica.
+
+Producto b3528bcf695238ba8c1a7b8b7e6e10ad06292250; archivo versionado sin.env
+transferido a DockerServer/candidate-b3528bcf bajo el root B, SHA256
+cdb34464138f86706df34fc5aecfc6797be7587c21da3aae352367b67d9b196b.
+Recursos: `jup-035.chat.v3:2bad1b2b07e3022f7c23c23130c8dd5ffe7b0c67b91a49e6974c7b707e19f651`,
+assembler8568288010fa348c407e080db4cc1a6810b58862cd6d28cd9b49cd6c23dd505f.
+Evidencia externa `scenario-accounts-assessment-v1.json`, `scenario-accounts-linux-b3528bcf/`,
+`scenario-accounts-replay-v2.json` y`scenario-accounts-cold-load-v2.json`.
+Versionesv1 conservan el corte anterior al formato≈; v2 prueba el producto final.
+
+Sin build/activación, inferencia, gasto nuevo ni publicación. Siguen021 y dudas004/022;
+la medición de todas las correcciones, navegador final, criterios, adjudicación yN5
+permanecen pendientes. El saldo no se ha releído: cota histórica4.423039035/5USD,
+no admisión actual. Antes de inferencia, comprobar contador, reservas y claves;
+caducidad prevista15/10 08:02UTC, sin renovación automática.
+Trello actualizado por la integración DockerServer, lectura exacta y lista conservada;
+`jup123-trello-scenario-accounts-update-v1.json`, descripción
+SHA852a0a6c53a72c3322534b9607d4a0a4ed64070433d38a58b705a8e995275030.
+OpenSpec estricto conforme; sin mensajes Discord.
 
 #### Cobertura de011 y diagnóstico de021 — producto local654298d4
 

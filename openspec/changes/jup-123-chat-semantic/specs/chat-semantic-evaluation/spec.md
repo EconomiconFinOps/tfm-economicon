@@ -171,3 +171,38 @@ relaja el validador ni modifica el error público.
 - **THEN** el rechazo conserva la regla original y registra el intervalo de índices y tipo
 - **AND** la localización es estable aunque la trama llegue byte a byte
 - **AND** las claves y valores arbitrarios del proveedor nunca forman parte del evento
+
+### Requirement: Atributos y cálculos de un desglose completo de servicios
+El servidor MUST conservar período, suscripción, moneda y vista de coste aportados
+cuando agrega una lista explícita y completa de importes por servicio. Los nombres
+y cantidades son datos variables del escenario; no se convierten en costes verificados.
+
+#### Scenario: Se declara coste actual y se pide total y servicio principal
+- **WHEN** se aporta un desglose completo de600/250/150EUR con vista actual
+- **THEN** el resultado conserva esa vista, suma1000EUR y muestra el servicio de600EUR con60%
+- **AND** no permite añadir una limitación que niegue el atributo declarado
+
+#### Scenario: Hay créditos, empate o total no positivo
+- **WHEN** las líneas contienen ajustes negativos o comparten el mayor importe
+- **THEN** se conserva la suma con signo y se muestran todos los servicios empatados
+- **AND** no se interpreta participación del gasto si el total neto no es positivo
+- **AND** un porcentaje redondeado se marca aproximado
+
+#### Scenario: El desglose no es completo o el período no coincide
+- **WHEN** hay servicios duplicados, unidades incompatibles, alcance adicional o diferencia de período entre petición y declaración
+- **THEN** esa ruta no agrega datos ni borra la ambigüedad y conserva el flujo general
+
+### Requirement: Coste shared sin regla aprobada
+El servidor MUST mantener el coste compartido identificado cuando el escenario
+declara expresamente que no existe regla aprobada ni consumo por equipo. No infiere
+porcentajes ni selecciona citas generales como sustituto de esa regla.
+
+#### Scenario: Se solicita cuánto cargar por equipo sin base de reparto
+- **WHEN** la petición y declaración coinciden en importe, moneda y activo compartido
+- **THEN** se conserva el coste shared y se pide la regla, su base y los datos que requiera
+- **AND** no se reparten importes iguales ni se presentan como aprobados
+- **AND** no se añaden citas documentales ajenas para justificar los hechos del usuario
+
+#### Scenario: Los operandos difieren o sí se aporta una regla
+- **WHEN** la petición contradice importe, moneda o activo, o la declaración incluye una regla o datos adicionales
+- **THEN** no se fuerza la decisión de regla ausente y se conserva el flujo general
