@@ -1,17 +1,20 @@
 """Carga de los resultados de evaluación del asistente en la base del dashboard de Grafana (JUP-121).
 
-Por ahora este módulo contiene dos capas. La primera es la de manifiestos: lee y valida los manifiestos
+Por ahora este módulo contiene tres capas. La primera es la de manifiestos: lee y valida los manifiestos
 que dicen qué informes alimentan el dashboard (`docs/validation/evaluation-runs.json` y los locales). La
 segunda es el adaptador del informe JSON de JUP-070 (`adapt_jup070`), que normaliza ese informe al
-contrato de filas planas `rows-v1` de `docs/validation/evaluation-dashboard.md`. Usa solo la biblioteca
-estándar, no tiene efectos al importarse y nunca abre una conexión de red ni a la base de datos. Los
-demás adaptadores y la carga a la base los añaden las tareas siguientes del change.
+contrato de filas planas `rows-v1` de `docs/validation/evaluation-dashboard.md`. La tercera es el
+adaptador del benchmark de modelos de JUP-078 (`adapt_jup078`), que produce el mismo contrato a partir
+del informe de `tools/llm-benchmark.py`. Usa solo la biblioteca estándar, no tiene efectos al importarse
+y nunca abre una conexión de red ni a la base de datos. Los demás adaptadores y la carga a la base los
+añaden las tareas siguientes del change.
 """
 
 from __future__ import annotations
 
 import copy
 import json
+import math
 import re
 from datetime import datetime
 from pathlib import Path
@@ -499,3 +502,122 @@ def adapt_jup070(report, run_id: str) -> tuple[dict, list[dict]]:
     for metric_id, data in metrics.items():
         results += METRIC_ROWS[metric_id](catalogue_by_id[metric_id], data)
     return _adapt_run(run, run_id), results
+
+
+# --- Adaptador del benchmark de JUP-078 ---------------------------------------------------------------
+
+BENCHMARK_SCHEMA_VERSION = 1
+# Campos que cada modelo del informe debe traer. El orden fija cuál se reporta primero si faltan varios.
+MODEL_REQUIRED = ("alias", "cases", "successful", "mean_keyword_score", "p95_latency_ms", "cost_usd")
+# (campo del informe, metric_id de la fila, unidad, ¿el denominador es `successful`?). El coste no lleva
+# denominador: es un total del modelo, no una media sobre las llamadas correctas.
+BENCHMARK_MEASURES = (
+    ("mean_keyword_score", "keyword_score", "puntuacion", True),
+    ("p95_latency_ms", "latency_p95", "ms", True),
+    ("cost_usd", "cost", "usd", False),
+)
+
+
+def _is_number(value: object) -> bool:
+    # Solo int o float exactos: bool es subclase de int y `True` no es una medición. NaN e infinito no son
+    # mediciones y se rechazan en lugar de publicarse como valores.
+    return type(value) in (int, float) and math.isfinite(value)
+
+
+def _benchmark_run(run_id: str) -> dict:
+    # El benchmark no registra commit, fecha, batería, corpus, embeddings ni prompt, y un informe trae varios
+    # modelos, así que ni siquiera `generation_model` se rellena: el alias de cada modelo va en `behavior`.
+    run = dict.fromkeys(RUN_KEYS)
+    run.update(run_id=run_id, source="JUP-078", synthetic=False)
+    return run
+
+
+def _check_benchmark_header(report: object) -> list:
+    if not isinstance(report, dict):
+        raise _bad("report", "debe ser un objeto")
+    version = report.get("schema_version")
+    if type(version) is not int or version != BENCHMARK_SCHEMA_VERSION:
+        raise _bad("schema_version", f"debe ser {BENCHMARK_SCHEMA_VERSION}")
+    # Solo el booleano False garantiza que el informe no guarda texto de las respuestas (privacidad): un
+    # informe que no lo declara no se carga, no se supone nada.
+    if report.get("content_retained") is not False:
+        raise _bad("content_retained", "debe ser false: el informe no puede retener texto")
+    models = report.get("models")
+    if not isinstance(models, list):
+        raise _bad("models", "debe ser una lista")
+    return models
+
+
+def _check_benchmark_model(model: object, index: int, seen_aliases: set) -> dict:
+    where = f"models[{index}]"
+    if not isinstance(model, dict):
+        raise _bad(where, "debe ser un objeto")
+    for field in MODEL_REQUIRED:
+        if field not in model:
+            raise _bad(f"{where}.{field}", "campo obligatorio ausente")
+    alias = model["alias"]
+    # El alias acaba en `behavior`, y la regla 3 del contrato prohíbe en él el texto libre.
+    if not _is_identifier(alias):
+        raise _bad(f"{where}.alias", "debe ser un identificador (alfabeto cerrado, máximo 80 caracteres)")
+    if alias in seen_aliases:
+        raise _bad(f"{where}.alias", f"alias {alias!r} repetido")
+    seen_aliases.add(alias)
+    for field in ("cases", "successful"):
+        if not _is_count(model[field]) or model[field] < 0:
+            raise _bad(f"{where}.{field}", "debe ser un entero mayor o igual que 0")
+    if model["successful"] > model["cases"]:
+        raise _bad(f"{where}.successful", "no puede ser mayor que cases")
+    # Se validan siempre, también sin llamadas correctas: un NaN no debe esconderse como «no medido».
+    for field, _, _, _ in BENCHMARK_MEASURES:
+        if model[field] is not None and not _is_number(model[field]):
+            raise _bad(f"{where}.{field}", "debe ser un número finito o null")
+    return model
+
+
+def _benchmark_row(metric_id: str, alias: str, unit: str, **fields) -> dict:
+    return _row("benchmark", metric_id, alias, unit, "automatic", **fields)
+
+
+def _benchmark_measure_rows(model: dict) -> list[dict]:
+    alias, successful = model["alias"], model["successful"]
+    rows = []
+    for field, metric_id, unit, per_successful in BENCHMARK_MEASURES:
+        denominator = successful if per_successful else None
+        value = model[field]
+        # Con `successful == 0` el generador (`summarize` de tools/llm-benchmark.py) escribe
+        # `mean_keyword_score = 0` porque no tiene qué promediar: ese 0 significa «sin datos», no «puntuación
+        # nula», y publicarlo como medido violaría la regla 1 (lo no medido nunca es cero). Sin llamadas
+        # correctas tampoco puede haber latencia ni coste, así que se descartan aunque el informe traiga un
+        # número. Con `successful > 0` un 0 sí es una medición y se copia tal cual.
+        if successful == 0 or value is None:
+            rows.append(_benchmark_row(metric_id, alias, unit, status="not_measured", denominator=denominator))
+        else:
+            rows.append(_benchmark_row(metric_id, alias, unit, status="measured", value=value,
+                                       denominator=denominator))
+    return rows
+
+
+def _benchmark_model_rows(model: dict) -> list[dict]:
+    alias, cases, successful = model["alias"], model["cases"], model["successful"]
+    # `pass` = successful y `fail` = cases - successful, con `cases` de denominador: el benchmark solo
+    # distingue llamadas correctas de las que no lo fueron.
+    rows = [
+        _benchmark_row("cases", alias, "casos", status="pass", count=successful, denominator=cases),
+        _benchmark_row("cases", alias, "casos", status="fail", count=cases - successful, denominator=cases),
+    ]
+    return rows + _benchmark_measure_rows(model)
+
+
+def adapt_jup078(report, run_id: str) -> tuple[dict, list[dict]]:
+    """Normaliza el informe del benchmark de JUP-078 (ya parseado) a `(run, results)` de `rows-v1`.
+
+    Función pura: no lee ficheros, no muta el informe ni comparte estructuras con él. Por cada modelo, en
+    el orden del informe, produce cinco filas: casos `pass`, casos `fail`, puntuación de palabras clave,
+    latencia p95 y coste. No copia texto libre: ni los resultados por caso ni los tipos de error.
+    """
+    models = _check_benchmark_header(report)
+    seen_aliases: set = set()
+    results: list[dict] = []
+    for index, model in enumerate(models):
+        results += _benchmark_model_rows(_check_benchmark_model(model, index, seen_aliases))
+    return _benchmark_run(run_id), results
