@@ -527,7 +527,17 @@ BENCHMARK_MEASURES = (
 def _is_number(value: object) -> bool:
     # Solo int o float exactos: bool es subclase de int y `True` no es una medición. NaN e infinito no son
     # mediciones y se rechazan en lugar de publicarse como valores.
-    return type(value) in (int, float) and math.isfinite(value)
+    if type(value) not in (int, float):
+        return False
+    # `json.loads` produce enteros de Python de precisión arbitraria (p. ej. 10**400), y `math.isfinite` los
+    # convierte a float internamente: si no caben lanza OverflowError crudo y se escaparía del contrato de los
+    # adaptadores (AdapterError con prefijo de campo). Un entero no representable como float no es una medición
+    # que ningún informe real produzca, así que se rechaza igual que NaN o infinito. Se captura aquí, en el
+    # único predicado compartido, en lugar de comprobar el tamaño en cada adaptador (duplicaría la regla).
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
 
 
 def _benchmark_run(run_id: str) -> dict:
