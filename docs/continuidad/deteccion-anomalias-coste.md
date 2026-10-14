@@ -85,7 +85,22 @@ Exploración hecha el 12/10, para retomarla sin repetir la investigación:
 - **Qué sería «avisar»:** nivel 1, dentro de la app (insignia «N nuevas, M P1» con el estado `new`, que ya significa «nadie lo ha mirado», y aviso en el panel); nivel 2, nivel 1 más una regla de Grafana sobre una métrica de P1 abiertas, como JUP-045; nivel 3, salida externa (webhook, correo, Discord), que choca con JUP-081 y exige secretos y reintentos. Recomendación: nivel 1 como primer incremento.
 - **«Antes de cierre»:** se interpretó como detectar a diario para que aparezca días antes del cierre mensual, sin cuenta atrás; una cuenta atrás exigiría modelar un calendario de cierre que no existe.
 
-## Explicar anomalías detectadas — JUP-038 (2026-10-13)
+## Incorporación en la base de B — 2026-10-15
+
+Al reconciliar JUP-123 se comprobó que la base develop de A/8ea5a0c4 es
+`0543c5ee671cb1b400254561f5bdc6e419664510`, cuyo commit incorpora la explicación
+de anomalías de #128. El estado «sin PR» del corte13/10 inferior es histórico.
+No se han vuelto a comprobar las reviews o la CI de #128 en este corte.
+
+B/7be57c05 incluye ese código y las resoluciones de A en assistant.py y
+AnswerEvidence.tsx, conservando el caller atómico y la evidencia. Pruebas propias
+del conjunto:550 backend PASS/141 omisiones que necesitan SQL nativo y1354 frontend
+PASS; regresión Linux/SQL aún en curso. No trasladar las validaciones históricas
+de JUP-038 al conjunto B. Origen: chat `01a1270c-e332-7462-9c90-706d49ade92c`;
+alcance, hashes y siguiente paso en [evaluación local](chat-evaluacion-local.md)
+y [división A/B](chat-entregas-a-b.md).
+
+## Corte histórico: explicar anomalías — JUP-038 (2026-10-13)
 
 [Tarjeta JUP-038](https://trello.com/c/QzkjVY7P), liderada por Víctor Mendez (pairing Paris Arcos Martin, revisión Lucía Mateo, validación, pruebas y documentación Alejandro Aguado). El PR #94 se cerró sin integrar el 10/10 y **no se reutiliza ni su rama ni su código**: se reinició desde `develop` (`2175c60`, con el PR #122 de JUP-114) en la rama `feat/JUP-038-explain-anomaly-episodes`, change `jup-038-explain-anomaly-episodes`. Estado: implementado y validado en la rama, change archivado el 13/10 (`openspec/changes/archive/2026-10-13-jup-038-explain-anomaly-episodes/`), **sin PR abierta todavía**; la revisión de Lucía y la validación independiente de Alejandro siguen pendientes.
 

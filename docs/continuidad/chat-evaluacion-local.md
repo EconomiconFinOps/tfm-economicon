@@ -12,15 +12,19 @@ ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
 Merge local congelado `7be57c059ef740ae5f525d98ebe631271144f1fb`; archivo versionado
 SHA256 `efe8c644e4fefb9e17fefaa55e3c5e2275c8195dae06ebe2b7923389ec2444ff`.
-Regresión de1747 identidades recogidas:152 PASS verificados antes de dos OOM
-de arnés, no fallos de aserción. El primero ocurrió en el archivo
-capacity; el segundo en un lote de ocho casos de context_budget que cargan
-tokenizer. No se modifican aserciones ni se eligen mejores intentos. V4 reutiliza
-los152 recibos sólo tras comprobar JUnit/log SHA y todos los bytes versionados,
-y separa por proceso las pruebas que dependen del tokenizer/recursos. Al arrancar,
-PID553272/start_ticks61678984 confirmado vivo; no equivale a suite terminada.
-Recibos externos `final-linux-regression-launch-v4.json`,
-`final-linux-regression-v3-sanitized-detail.json` y selección fallida de v3.
+Regresión de1747 identidades recogidas. Tres OOM de arnés conservados, sin fallos
+de aserción en resultados completos: archivo capacity, lote de ocho context_budget
+y lote de ocho summary_context backend. V4 terminó con1558 identidades ejecutadas,
+55 omisiones SQL y ningún fallo/error de JUnit; servicios B intactos. Los pasos
+SQL/pgvector/buildv1 se detuvieron sin preflight, resultados ni recursos creados.
+La falta de coverage.json hizo que SQLv1 registrase FileNotFoundError; v2 comprueba
+primero el estado terminal de regresión y no confunde ausencia de cobertura con éxito.
+
+V5 reutiliza las1558 identidades sólo tras verificar JUnit/log SHA y todos los bytes
+versionados, y ejecuta únicamente las189 restantes, una por proceso, mismos límites
+768MiB y sin cambiar aserciones. PID743475/start_ticks61824830 confirmado vivo;
+no equivale a suite terminada. Recibos `final-linux-regression-launch-v5.json`,
+`final-linux-regression-v4-failed-selection.json` y cortes anteriores conservados.
 
 La revisión automática rechazó la variante inicial que pausaba backend/processor
 por falta de autorización para interrumpir el entorno; esa variante nunca se
@@ -35,21 +39,22 @@ sin reinicio ni liberación de reservas. Claves vigentes hasta15/10 08:02UTC.
 `accounting-before-7be57c05-readonly.json` conserva sólo costes/caducidades y sus
 hashes, sin secretos. Es una lectura previa, no admisión para futuras llamadas.
 Trello actualizado por la integración DockerServer con hash previo coincidente,
-lectura posterior exacta y lista conservada: `jup123-trello-A8ea-regression-update-v1.json`,
-descripción SHA256 `1e0a82452c8cde5621baf6ee06eab04b04a5c259ef5d360508697bc79c53cb6f`.
+lectura posterior exacta y lista conservada: `jup123-trello-regression-v5-update-v1.json`,
+descripción SHA256 `fbaffdc61961130dd0661e7becde55f4ea1184602a90a12d15c6f307ca3e1b49`.
 No se enviaron mensajes Discord ni se publicó B.
 
-Siguiente corte de observación:874 identidades ejecutadas, sin fallos, errores u
-omisiones todavía; PID de regresión confirmado vivo. No es cobertura completa.
+Observación posterior:1664 identidades ejecutadas, sin fallos ni errores,
+55 omisiones SQL aún pendientes; PID de regresión confirmado vivo. No es cobertura
+completa. Corte inmutable `final-validation-observation-1792019649149.json`.
 Controladores SQL/pgvector preparados, transferidos con SHA y confirmados vivos
-en espera: PID599596/start_ticks61713735 espera la regresión; PID627951/
-start_ticks61735480 espera la liberación de recursos SQL. No ejecutan bases
+en espera: SQLv2 PID751930/start_ticks61831859 espera la regresión; pgvectorv2
+PID752243/start_ticks61832027 espera la liberación de recursos SQL. No ejecutan bases
 simultáneamente ni pausan B. SQL cubrirá las141 omisiones de anomalías y los
 contratos nativos del chat; pgvector ejecutará20 casos (6 de políticas y14 del
 contrato existente). No sumar repeticiones sin contrastar identidades JUnit.
 Ambos usan fuentes7be, imágenes públicas cacheadas verificadas, bases propias
 sin red/puertos publicados y limpieza por ID/etiqueta. Aún sin resultados nativos.
-Recibos `final-native-sql-launch-v1.json`, `final-pgvector-launch-v1.json` y
+Recibos `final-native-sql-launch-v2.json`, `final-pgvector-launch-v2.json` y
 `final-validation-latest-observation.json`; observador local
 `observe-b-final-validation.py` exporta sólo campos permitidos, nunca logs/env.
 
@@ -65,17 +70,37 @@ configuración de ejecución y servicios auxiliares idénticos al entorno B ante
 Prueba `candidate-7be57c05-compose-preparation-v1.json`. El fichero privado permanece
 en DockerServer; no se copia su contenido a la evidencia ni al repositorio.
 
-Build preparado como paso posterior, no activación: PID652065/start_ticks61754852
+Buildv2 preparado como paso posterior, no activación: PID752581/start_ticks61832195
 confirmado vivo en espera de las tres validaciones. El controlador sólo construye
 si todos los resultados son conformes y cada omisión offline tiene una identidad
 JUnit nativa conforme; no basta con que exista un complete.json. Verifica de nuevo
 el archivo7be y Compose privado, construye backend/processor/frontend uno a uno
 con builder clásico disponible comprobado, límite1024MiB/1CPU, y contrasta hashes
 dentro de cada imagen sin red. No tiene paso de activación ni inferencia.
-Recibo `final-build-launch-v1.json`; el build aún no ha comenzado.
-Observación posterior:918 pruebas ejecutadas sin fallos, errores ni omisiones;
-los cuatro PIDs vivos, tres en espera. OpenSpec estricto74/74 conforme tras
+Recibo `final-build-launch-v2.json`; el build aún no ha comenzado.
+Los cuatro PIDs confirmados vivos, tres en espera. OpenSpec estricto74/74 conforme tras
 actualizar proposal/design a la base actual; no modifica criterios de aceptación.
+
+Colector y recuperación de evidencia preparados y transferidos, **sin ejecutar
+una campaña nueva**. La entrada exige build completo del commit exacto y las
+tres imágenes activas coincidentes antes de leer credenciales. Dos comprobaciones
+con fixtures locales rechazan build pendiente e imagen anterior sin red, SQL ni
+acceso a secretos; el primer arnés falló antes por ACL de temporales Windows y
+se conserva como fallo de entorno, no fallo de producto. La recuperación contrasta
+las fuentes y los tres contenedores, conserva API original y deriva sólo con
+hash exacto de contexto/corpus. Transferencia verificada por SHA y sintaxis, modo600.
+El operadorv2 exige el intento de buildv2, porque v1 terminó sin construir.
+Ver `candidate-7be57c05-prepared-adapter-safety-v3.json`,
+`candidate-7be57c05-prepared-harness-transfer-v2.json` y comando NOT_RUN en
+`candidate-7be57c05-campaign-prepared-v2.json`. Versiones anteriores preservadas.
+
+Auditoría previa de cobertura contable, sin escritura:295 filas del ledger,
+293 operaciones SQL del tenant sintético coincidentes, cuatro prefijos históricos
+completos y quinto plan nuevo todavía vacío. Seed/admisión413 intactos; reserva
+desconocida1.921712USD íntegra, sin liberación ni reinicio. Evidencia
+`candidate-7be57c05-prepared-coverage-audit-v1.json`; índice de planes
+`final-evaluation-prior-campaign-index.json`. No sustituye la admisión viva por
+operación ni garantiza que el presupuesto alcance para acabar84 muestras.
 
 A avanzó a8ea5a0c4 sobre develop0543c5ee, que incorpora JUP-038/#128. B integra
 ese develop por merge local; resuelve dos conflictos con los bloques ya reconciliados
