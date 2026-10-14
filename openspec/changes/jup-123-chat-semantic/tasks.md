@@ -5,9 +5,9 @@
 - [ ] 1.4 Acordar criterios obligatorios y calidad con revisores.
 
 ## 2. Medición
-- [ ] 2.1 Implementar colector del API, procedencia y reserva de coste.
-- [ ] 2.2 Verificar entorno aislado y contabilidad viva.
-- [ ] 2.3 Congelar y recoger baseline N3 completa.
+- [x] 2.1 Implementar colector del API, procedencia y reserva de coste.
+- [x] 2.2 Verificar entorno aislado y contabilidad viva para la baseline a817382b.
+- [x] 2.3 Congelar y recoger baseline N3 completa (84/84, con 7 fallos preservados).
 - [ ] 2.4 Resolver incertidumbres con adjudicación independiente.
 
 ## 3. Correcciones y entrega
@@ -15,3 +15,11 @@
 - [ ] 3.2 Comparar por requisito/repetición y descartar regresiones obligatorias.
 - [ ] 3.3 Confirmar N5 según alcance acordado y presupuesto.
 - [ ] 3.4 Preparar candidato local con pruebas, evidencias y limitaciones.
+
+## Evidencia de medición — 2026-10-14
+
+Ver [continuidad](../../../docs/continuidad/chat-evaluacion-local.md) para hashes,
+recibos originales y derivados, conciliación de todos los intentos y costes.
+Las casillas 2.1–2.3 acreditan recogida reproducible, no aceptación semántica.
+El candidato corregido todavía requiere verificación de procedencia, nueva
+admisión presupuestaria y comparación; no hereda la validación del runtime anterior.

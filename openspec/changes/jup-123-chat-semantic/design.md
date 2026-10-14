@@ -24,5 +24,8 @@ El scorer previo conserva 253 juicios históricos y nueve incertidumbres.
 ## Risks and open questions
 
 El entorno compartido anterior no demuestra procedencia del candidato nuevo.
-Falta colector actual, medición real y acuerdo de criterios. No afirmar cierre
-por superar pruebas unitarias o por completar un plan NOT_RUN.
+Colector y baseline real N3 completados el 2026-10-14: 84 recibos, 77 operaciones
+completadas y 7 fallidas preservadas. Pendientes adjudicación independiente,
+acuerdo de criterios y comparación del candidato corregido. La regresión Linux
+sigue en curso y las pruebas SQL/navegador no se consideran cubiertas por mocks.
+No afirmar cierre por superar pruebas unitarias ni por reunir 84 recibos.

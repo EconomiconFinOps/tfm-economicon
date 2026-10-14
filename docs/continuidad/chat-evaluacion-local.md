@@ -379,3 +379,684 @@ temperatura soportada, prompt0.0000005625USD/token y completion0.0000018.
 Evidencia remota provider-endpoints.json. Se fija temperature=0 en draft/final;
 12pruebas de flujo PASS. Primer intento de tests bloqueado por permisos tmp,
 repetición con acceso autorizado pasa. Requiere nuevo candidato antes de N3.
+
+
+### Entorno real B, corpus y primer rechazo de admisión — 14/10/2026
+
+Turno previo clasificado progreso: entorno construido y hashes contrastados.
+Candidato vigente a817382bfefb8ca9bd903d1c3d4d07cce8b2e272 (temperatura0);
+archive e995d05f1cd7e910712cbc5fe474caefcd2f8c677ba78ac8eda9705505d61138,
+plan28cf8170213a8fc546d7d565f12d75d5b7f5f93ff018e1ddc37bcceb668b7e56.
+Build y hashes319/3servicios verificados en DockerServer; anterior stack B
+mock detenido únicamente, otros despliegues intactos. Proyecto vigente
+economicon-cd-d29fd64fc938-a817382bfefb, mismo root/puertos propios.
+
+Claves B emitidas con autorización: backend0.02USD/processor0.88USD, caducan
+2026-10-15T08:02:20Z. Referencias privadas bajo root remoto, nunca valores en
+documentación. key-provision-evidence.json registra políticas y consumo
+OpenRouter global previo1.093313029USD, referencia conservadora no atribuida
+exactamente a tarea. Proveedores reales conectados sólo en este entorno.
+
+Corpus original cargado: rules12, finops19, product9fragmentos (40total),
+hashes documentales originales verificados, dimensión1536, tenant-core.
+Una llamada embeddings,4808tokens, coste observado0.00009616USD; evidencia
+seed-result.json y reserva persistente0.002USD en evaluation-ledger.sqlite.
+No repetir seed: reserva corpus-original-jup069/seed-once permanece conservadora.
+
+Dos incidencias previas a inferencia del chat:
+1. Plan leído localmente sin encoding UTF8 provocó mojibake al serializarlo
+para transferencia. Banco original intacto; validate_plan rechazó. Corregida
+copia remota por bytes exactos; hash del plan verificado antes del siguiente envío.
+2. Primer POST de generación respondió413: CHAT_CONTEXT_TOKENS32768 no admite
+la reserva adicional32768 del draft más prompt/schema/output. Conversación
+7f4b3b24-e9ce-4076-a7b7-5499b7ca3472; request
+c59429db-b02b-48da-a4c6-9d159f083b6c. GET /assistant/requests no contiene
+operación de esa conversación; first-admission-rejected.json y logs413.
+Ledger conserva DISPATCHING sin operation_id, reserva0.172496USD. No rePOST
+ni crear muestra nueva hasta conciliar explícitamente este rechazo; no fue
+un fallo semántico del modelo. No liberar reserva por mera ausencia del handle.
+
+Se corrigió configuración aislada a CHAT_CONTEXT_TOKENS65536 en backend y
+processor; reinicio lanzado, comprobar context65536-startup.log y estado real.
+Próximo: conciliación del rechazo con contabilidad/logs, reserva actualizada
+para65536, conectar adaptador persistente de recogida/costes auxiliares y
+ejecutar N3. Baseline0/84 recogidas; no inferencia chat realizada aún.
+El plan original y todos los intentos previos se preservan, sin best-of.
+
+
+### Primera muestra real y campaña secuencial activa — 14/10/2026
+
+Reinicio65536 confirmado Healthy. Reconciliación del413: API volvió a confirmar
+ninguna operación para la conversación; ledger conserva fila requestc59429db
+como ADMISSION_REJECTED, sample_id terminado :admission413, original_sample_id
+y evidencia dentro de reservation. No se borró el intento ni se liberó dinero:
+reserva0.172496USD sigue retenida. No es una repetición semántica seleccionada.
+
+Primera muestra JUP-069-001:r1 completada y recogida, operación
+bb541fbe-81f4-4754-bdaf-ae0e4d31cd13, un intento/dos fases.
+VERIFIED_PUBLIC_SNAPSHOT, respuesta1000EUR/VM600EUR/60%, hipótesis claramente
+marcada; aceptación semántica aún no adjudicada. Coste chat0.005899560USD y
+embedding backend0.00000138USD, total0.005900940USD. Informes por fase y
+contadores de claves exclusivas coinciden; COST_OBSERVED persistido.
+Contadores B tras esta muestra: backend0.00000138, processor0.00599572
+(incluye seed0.00009616). Evidencia local fuera del repo:
+materiales/07-evidencias/PR121-local-evaluation/jup123-first-real-evidence.json.
+
+Harness operador reutilizable en esa misma carpeta: jup123-live-step.py.
+Verifica hashes/servicios/modelos/precios/contexto antes de cada envío;
+reserva máxima65536tokens/fase/4intentos0.319952USD. Costes auxiliares mediante
+delta backend exclusivo, todas las fases mediante logs más delta processor.
+No admitir siguiente muestra sin conciliación. Falta llevar este adaptador
+a herramienta versionada general y cubrir fallos contables con pruebas.
+
+Campaña remota iniciada: root/home/danteadmin/economicon-jup123-20261014,
+campaign.py/live-step.py, campaign.log, PID3684299 confirmado vivo al cierre
+de esta comprobación. No reiniciar por timeout de observación. Último estado:
+1recibo completed/84; operación2 activa66448aa3-31bb-4d67-8587-0f72909712fb.
+Bucle secuencial con pausas10s sólo de observación y parada ante cualquier
+error/gate. No publica ni cambia despliegues ajenos. Revisar estado real, log
+y ledger antes de retomar; si termina, diagnosticar antes de relanzar.
+
+Limitación presupuestaria conservadora: ledger aún cuenta coste observado
+además del contador upstream y retiene reserva del413 y seed; puede detenerse
+antes de84aunque haya saldo real. No elevar límite ni borrar reservas para
+forzar campaña. Implementar conciliación acreditada si ocurre, conservando
+historial, sin asumir coste cero ni descargar cargos aún no observados.
+
+
+### Retraso de contador y contexto RAG posterior — 14/10/2026
+
+PID3684299 ya terminal/missing,2recibos completed: el contador gateway aún
+no reflejaba todos los cargos al conciliar muestra2. Lectura posterior concilia
+sin generación adicional. Harness distingue AccountingPending cuando delta
+processor<coste de todas las fases; salida WAITING_ACCOUNTING sólo relee.
+Exceso/discrepancia sigue siendo error. Reanudado PID3699466 tras confirmar
+terminación anterior, conservando ambos recibos.
+
+Se guardaron2recibos en materiales/07-evidencias/PR121-local-evaluation/
+baseline-receipts y agregado/score baseline-partial-02*.json:2/84,82ausentes,
+14requisitos sin adjudicar. No es aceptación ni N3 completo.
+
+Hallazgo real de colector: GET operación/evidence devuelve contexto inicial
+(canonical_input), no authorized_evidence añadido por tool_extension. El
+manifest final sí guarda evidence_ids y tool_result.content_sha256/omissions.
+Se recuperaron3snapshots exactos SIN nuevas inferencias: leer document_chunks
+y knowledge_documents del tenant-core por los IDs ordenados del manifest,
+comprobar hash del documento contra banco original, construir título y spans
+con DocumentCitations y campos exactos de chat_context.retrieve; serializar
+escaped({'evidence':corpus,'omissions':manifest.tool_result.omissions}).
+Los3hashes resultantes coinciden exactamente con content_sha256 registrado.
+Sidecars remotos root/retrieval-evidence/JUP-069-00N-r1.json. No se sustituyeron
+recibos públicos ni se fingió que el endpoint devolviera esos fragmentos.
+
+Última comprobación: PID3699466 missing, campaña detenida explícitamente con
+NEEDS_EVIDENCE_RECONCILIATION en003:r1.3recibos completed; tercero INCOMPLETE
+por citation_ids_known=false, demás verificaciones true. Sus citas finops
+chunk9 y chunk14 SÍ figuran en snapshot RAG reconstruido y verificado.
+No repetir la generación. Próximo: corregir colector/normalizador para admitir
+snapshot suplementario validado por hash, conservando recibo inicial y trazando
+derivación; pruebas de fuente manipulada/cita desconocida. Conciliar coste003
+antes de reanudar desde su ledger. Campaña ahora detenida, no describirla activa.
+También pendiente mejorar conciliación de reservas ya contabilizadas sin
+eliminar evidencias ni superar2USD. Objetivo incompleto; no bloqueo externo.
+
+
+### Recuperación trazable implementada y N3 reanudada — 14/10/2026
+
+Commit local f129f8b8 añade tools/chat-eval-retrieval.py y6tests. Conjunto
+herramientas49PASS. Sólo herramientas suplementarias transferidas a
+root/evaluation-tools-f129f8b8, archive SHA256
+493715063cc99e5bd3e36aaddf4bb159da707be529a657c34f949b349dfe765c.
+Código del chat medido sigue a817382b y plan28cf8170; no se alteró el runtime.
+
+Tres recibos derivados recuperados: originales íntegros en baseline-raw-api/,
+vistas en baseline-n3/ con derivation/original_row_sha256/tool_sha256 y snapshot
+suplementario. Recursos API originales inalterados. Coste003 conciliado sin
+nueva inferencia, operación76acbb07-816a-42a0-ba1f-00d4f1ec79e0.
+Harness local fuera del repo: materiales/07-evidencias/PR121-local-evaluation/
+jup123-recover-retrieval.py; copia remota recover-retrieval.py. Consulta sólo
+corpus sintético tenant-core, compara hashes documentales y payload final.
+Actualmente exige evidencia inicial vacía (se cumple en estas muestras); si
+aparece otro contexto, detiene y exige adaptar en vez de ignorarlo.
+
+Tras verificar PID3699466 missing se reanuda PID3748498 desde cuarta muestra.
+Bucle ejecuta recuperación antes de cada paso, parada en cualquier discrepancia.
+Contadores eventualmente rezagados causan WAITING_ACCOUNTING, sólo lecturas.
+Revisar proceso/log actuales antes de cualquier relanzamiento. Criterios
+semánticos, N3 íntegro, comparación/correcciones y N5 siguen pendientes.
+
+Comprobación posterior del mismo hito: PID3748498 estadoS (vivo),5/84recibos
+recogidos; última acción WAITING_ACCOUNTING de005, sin nueva generación mientras
+se espera el contador. No confundir recogida con aceptación semántica.
+
+
+### Fallo010 y cargo upstream omitido en gateway — 14/10/2026
+
+Turno previo fue progreso. PID3748498 confirmado missing/STOPPED tras10recibos:
+9completed y010failed. Fallo real: diagnóstico processor rendered_text_limit
+en provisional_answer; el proveedor terminó final por length (2200tokens).
+No se repitió ni sustituyó el fallo. Operacióndb582481-85a6-403d-acf0-d7d909f8ad08,
+intento d498348c-685c-4b37-8c4c-ad37916bf749. Reporte SDK parcial:2fases
+intentadas/1reportada,0.0024870075USD; nunca se convirtió en reporte completo.
+
+Gateway /spend/logs filtrado por clave exclusiva B proporciona IDs y ventanas:
+draft gen-1791966533-LpyAz7eiQYp1VGQwp3kb,
+final gen-1791966547-A2ZEJfg6TGC1GC7MtWy6. Gateway marcó final0USD al cortarse
+stream, pero GET OpenRouter/api/v1/generation confirma0.005041027USD,
+DeepInfra/z-ai/glm-5.2-20260616. Draft upstream0.002487007USD (redondeo);
+se conserva mayor coste gateway0.0024870075. Auxiliar backend0.00000082USD.
+Coste conservador total010:0.0075288545USD, retenido en ledger COST_OBSERVED
+mediante upstream_reconciliation separado. Reservas/cargos anteriores intactos.
+Evidencias remotas: gateway-spend-B.json (sólo campos seguros),
+case010-upstream-cost.json, case010-durable-input.json. Sin credenciales.
+
+El historial público omite preguntas fallidas: input_matches_bank era falso
+por ausencia, no por pregunta distinta. Consulta SELECT acotada por
+operation_id+tenant-core a chat_operations confirmó question_content exacto,
+identidades, estado y único intento. Se preservó recibo original en
+baseline-raw-api/JUP-069-010-r1.json y derivado con durable_input_supplement,
+original_verification y accounting_supplement; estado failed intacto. Esto
+verifica el fallo/entrada, no genera respuesta ni aceptación semántica.
+
+Reanudación desde011: PID3804917; no relanzar sin comprobar proceso actual.
+Si otros fallos interrumpen stream, no asumir cargo0 ni inventar tokens:
+leer logs de clave exclusiva y confirmar generaciones en upstream. El gate
+sigue usando gasto upstream y reservas conservadoras bajo2USD. Falta
+generalizar y probar esta conciliación operativa de fallos en herramientas.
+
+
+### Primera adjudicación por requisito y diagnóstico006 — 14/10/2026
+
+PID3804917 verificado vivo al inicio (11recibos) y al final (estadoS,19recibos:
+18completed/1failed,020:r1 activo d7c0874d-87d7-4ec5-b4ff-37357cfe3db1).
+No relanzamientos ni nuevas llamadas manuales. Se descargaron12derivados
+verificados a materiales/07-evidencias/PR121-local-evaluation/baseline-derived/.
+Agregado baseline-derived-12.json, score, judgments y reviewed en misma carpeta.
+No sobrescribir baseline-receipts/ anteriores, que conservan vistas previas.
+
+Adjudicación preliminar local, no humana ni independiente, de006y011:4FAIL,
+5PASS,1uncertain; los4FAIL pertenecen a UN solo grupo causal en006, no cuatro
+regresiones independientes.010 sigue technical_failure; resto pendiente.
+006 se abstiene afirmando necesitar regla completa, pese a recibir rules3/4
+con formula y partición completa verde<=5/amarillo(5,10]/rojo>10. Ejecución
+offline de documentary_rules sobre los fragmentos exactos devuelve1regla.
+Reconstrucción de context_quantities con pregunta original+RAG verificado:
+1regla aplicable, required_classification=True, numerador50EUR anclado
+unallocated. chat_segments.py líneas150–158 mantiene CLASSIFICATION_ABSTENTIONS
+aun cuando required_classification es true. Es una ruta permitida por esquema,
+no ausencia del documento. No se modificó aún producto/prompt de baseline.
+Próxima corrección debe cerrar decisión determinista cuando numerador Y
+denominador estén inequívocamente fundados, conservando abstención en ambigüedad.
+No basta con prohibir toda abstención porque required_classification sólo
+prueba actualmente unicidad del numerador, no del denominador.
+
+011 calcula10% por coste y dice9de10recursos;90% se atribuye correctamente al
+gasto incumplidor. El requisito de contraste explícito por recursos queda
+uncertain:9/10puede satisfacerlo semánticamente. No convertir diferencia de
+redacción en fallo automático ni cambiar banco para mejorar nota. Fuentes y
+campos auxiliares revisados; razones/hash de requisito/evidencia en judgments.
+Campaña N3 sigue incompleta y no hay conclusión de estabilidad ni comparación.
+
+
+### Umbrales017/018 y corrección UTF8 local — 14/10/2026
+
+PID3804917 verificado vivo; corte final26recibos (25completed/1failed), siguiente
+operación activa dd160be4-2e53-4eab-b395-b9d486f83997. No se relanzó campaña.
+Contabilidad consultada en corte previo: OpenRouter global1.197967359USD,
+backendB0.00002626/0.02 y processorB0.099588355/0.88; reserva conservadora
+0.599006182 incluía operación en curso, cargos ya observados y413 retenido.
+No atribuir contador global íntegro a B. Puede exigir conciliación antes de84;
+no eliminar reservas ni subir tope para forzar ejecución.
+
+Se descargaron23recibos derivados inmutables y generaron baseline-derived-23
+(agregado,score,judgments,reviewed) fuera del repo. Juicios de006/011 trasladados
+del agregado12 sólo tras verificar igualdad de evidence_sha256 y requisitos.
+017:r1 y018:r1 adjudicados PASS preliminar local por requisito: comparadores
+estrictos y AND correctos,100EUR/dia/25% y200EUR/dia/20%, sin citas ajenas ni
+afirmar que no quepa investigar bajo otra regla. No generalizar a N3 o al
+modelo por esta repetición. Resumen23:2PASS,1FAIL,1technical_failure,19pending;
+18requisitosPASS,4FAIL(un grupo006),1uncertain,114unreviewed.
+
+Defecto confirmado en notas deterministas: cinco literales de chat_segments.py
+tenían mojibake (metricas/clasificacion/unicamente/seccion/formula/condicion/
+numerico). Corrección local6017cb73 en backend y processor, copias byte-idénticas.
+38pruebas existentes de segmentos PASS. No se transfirió ni desplegó la
+corrección: runtime y baseline siguen a817382b. Preparada para candidato
+posterior a baseline, manteniendo procedencia clara. No modifica comparadores,
+esquema de decisiones ni reglas; corrige sólo texto visible fijo.
+
+
+### Primera repetición íntegra y segunda en marcha — 14/10/2026
+
+PID3804917 terminal confirmado:28recibos r1,26completed/2failed (010y028).
+028 operaciónabd4513c-7aab-42d2-8ea5-278e7643846e, intento
+990b4e5c-dca7-4147-bc68-070979d618e9; SDK2fases completas0.00454074USD.
+SQL acotado confirma entrada exacta e ID del intento; current_attempt_id
+público null se conserva, copia sólo para validar coste usa último ID durable.
+Delta clave processor coincide; auxiliar0.00000084,total0.00454158USD.
+Original028 guardado baseline-raw-api; derivado conserva failed y suplementos
+de entrada/coste. No repetir fallo ni etiquetar completado semántico.
+
+Reserva413 de0.172496USD conciliada a0 sólo después de SELECT count(*)=0
+para client_request_id+tenant y prueba independiente: contadores exclusivos
+antes del primer chat real eran backend0/processor0.00009616, exactamente el
+seed ya registrado. Estado reserva VERIFIED_NO_DISPATCH_COST, importe máximo
+anterior e historial intactos. Ningún gasto consumido se redujo o reseteó.
+
+Primera repetición consolidada local:28recibos en baseline-derived y archivos
+baseline-r1-complete{,-score,-judgments,-reviewed}.json en carpeta de evidencia.
+El agregado conserva repetitions3,56muestras aún ausentes (no se finge N3).
+Juicios23 anteriores trasladados únicamente con igualdad de hashes de evidencia
+y requisitos:23pending,1FAIL006,2technical_failure,2PASS017/018.
+027:r1 contesta10y6EUR/pedido,-40% y mejora unitaria, con límites expresados;
+su adjudicación completa permanece pendiente, no extrapolar a repeticiones.
+
+Segunda repetición reanudada PID3888175 y comprobado vivo estadoS. Último corte:
+29/84recibos,002:r2 activo9a93a6ae-f387-4d4a-849f-077dbeca82e6. Mismo código
+a817382b/plan/prompt/corpus;6017cb73UTF8 sigue sólo local. Techo2USD vigente.
+
+
+### Segunda repetición y diagnóstico de operandos — 14/10/2026
+
+Campaña PID3888175 comprobada viva; corte observado41/84recibos,013:r2
+conciliado. Recogida posterior local42recibos en baseline-derived, preservando
+los ya existentes. No se relanzó ni cambió el runtime a817382b.
+Consulta remota: contador global OpenRouter1.28703508USD (incluye historial,
+no atribuir íntegro a B); claves B backend0.00004834 y processor0.193221505.
+Límite2USD y reservas conservadoras permanecen intactos.
+
+Revisión preliminar local de024:r1 y027:r1 guardada en
+baseline-r1-judgments-v2.json y baseline-r1-reviewed-v2.json, fuera del repo.
+024 mantiene monedas separadas y pide destino/tipo/fecha.027 calcula10→6
+EUR/pedido y−40%, sin equiparar eficiencia unitaria a gasto absoluto.
+R1:4PASS preliminares(017/018/024/027),1FAIL006,2fallos técnicos010/028,
+21pendientes; requisitos32PASS,4FAIL(un grupo causal006),1uncertain011,
+128sin revisar. No son adjudicaciones humanas independientes ni aceptación.
+
+006:r2 reproduce la abstención falsa sobre ausencia de regla, operación
+4fee6392-9e8f-4289-aed6-497896382c68. Reproducción offline con su recuperación
+exacta: documentary_rules detecta regla completa, applicable_rules una regla,
+required_classification=True. El catálogo liga50EUR a unallocated, pero1000EUR
+queda anclado a las palabras «escenario sintetico con», sin reconocer elegibles.
+Confirmado problema adicional de extracción de denominador; no basta eliminar
+la abstención del esquema. Próxima corrección debe demostrar numerador,
+denominador elegible, moneda compatible y ausencia de ambigüedad antes de
+forzar clasificación. No se ha implementado aún esa corrección semántica.
+
+
+### Corrección local de006 y parada verificable en021:r2 — 14/10/2026
+
+Implementado resolved_classification en chat_rules.py, igual en backend y
+processor. Gramática cerrada para total elegible explícito en español/inglés;
+exige regla completa única, numerador único, dos importes, moneda compatible,
+0<=numerador<=denominador y denominador positivo. Cantidades repetidas,
+monedas distintas, total sin etiqueta o componentes adicionales conservan
+abstención. No suma componentes ni inventa denominadores. No es un parser
+universal: otras formulaciones siguen por la ruta anterior.
+Cuando se demuestra la vinculación, el esquema fija el árbol de clasificación,
+retira la abstención y el renderer rechaza operandos alternativos/abstención.
+La pregunta original se conserva sólo en el catálogo en memoria.
+
+13pruebas nuevas y135focales PASS (expresiones, intervalos, documentos,
+segmentos y nuevas salvaguardas). Pytest requirió ejecución fuera del sandbox
+por permisos de carpetas temporales Windows; aviso conocido PydanticV1/Python3.14.
+Reproducción offline con recuperación exacta de006:r2 produce50/1000*100=5%,
+verde. Evidencia externa case006-resolved-offline.json con hashes de código y
+recuperación. No es campaña del modelo ni sustituye los fallos de baseline.
+
+PID3888175 ya ausente, log terminal STOPPED NEEDS_EVIDENCE_RECONCILIATION.
+021:r2 operación47fc9d18-000e-415d-ac43-ef1b07060cc2 failed/provider_error,
+current_attempt_idnull, input_matches_bankfalse porque historial omite fallos.
+49muestras alcanzadas (r1completa+r2hasta021); no reanudado. Próximo paso:
+consultar entrada/intento durable por SQL, conciliar SDK y coste upstream como
+028, conservar fallo original y sólo entonces continuar. Runtime siguea817382b;
+corrección006 únicamente local, sin transferencia ni llamadas adicionales.
+
+
+### Conciliación021:r2 y verificador de fallos — 14/10/2026
+
+021:r2 conciliado con SQL tenant-core: entrada exacta y único intento
+35212c7e-9a2f-4425-884b-c95dbcb2844c. SDK incompleto2fases/1reportada.
+Gateway final0, pero OpenRouter gen-1791968330-u3Tl6RQpMOGieFqtQsnW cobró
+0.00175269USD. Draft gen-1791968325-oBA0RxyoAmcpNBIyyjCo se conserva al máximo
+SDK/gateway0.0018723075. Auxiliar0.00000152; total0.0036265175USD.
+Reserva COST_OBSERVED con reportes parciales originales y reconciliación
+upstream separada. Recibo original preservado baseline-raw-api; derivado sigue
+failed, sin falsear current_attempt_idnull ni reemplazarlo por una repetición.
+Evidencias remotas case021-r2-{durable-input,usage,upstream-cost}.json.
+
+Diagnósticos acotados:021:r2 calculation_free_numeric_equation_forbidden en
+provisional_answer;028:r1 recommendation_documentary_support_required en
+model_validation. provider_error público no demuestra caída del proveedor:
+en estos casos identifica salida inválida para el contrato local. Mantener
+validadores; corregir generación/esquema con evidencia, no suavizar criterio.
+
+Nuevo tools/chat-eval-failed.py commit90e78975 verifica suplemento SQL scoped
+a tenant e identidades, entrada literal, intentos y recursos públicos estables;
+preserva failed y hashes, no concilia dinero ni certifica autenticidad de un
+archivo arbitrario.6pruebas nuevas y55herramientas chat_eval PASS.
+Aún no transferido/integrado en el adaptador remoto; próximo paso automatizar
+recogida+conciliación segura para no repetir manipulación operativa por fallo.
+
+Reanudado PID4003140 sólo después de conciliación021. Ahora PID ausente y log
+STOPPED NEEDS_EVIDENCE_RECONCILIATION:022:r2 failed/provider_error operación
+c08af9da-a6da-4e55-b692-77198d3d1de8, requesta8f0dd10-bbed-40d8-bd4d-640fd9586165,
+conversación0f98356e-b2ff-4a0e-95cf-2b57c22097ea.50/84muestras alcanzadas.
+Entrada faltante en historial, stable_snapshottrue y sin errores HTTP.
+No reanudado después de022; falta su entrada durable, diagnóstico y coste.
+Baseline siguea817382b y corrección006 locald6aba1b6 sin desplegar.
+
+
+### Conciliación automática aislada y reanudación — 14/10/2026
+
+Añadido tools/chat-eval-recover-failed-runtime.py: sólo última operación
+exclusiva, terminal failed, un intento, fuente SQL tenant-core y hashes/IDs del
+plan y reserva; verifica backend contra manifiesto antes de leer. Consulta
+costes OpenRouter por cada request_id del gateway desde preflight; exige
+DeepInfra/GLM, número de fases, delta de clave conciliado y cargo dentro de
+reserva. Conserva máximo gateway/upstream, recibo original, fallo y SDK parcial.
+No reenvía preguntas ni elimina cargos. Discrepancias detienen ejecución.
+Primera ejecución paró antes de mutar por importes JSON float frente a contrato
+Decimal string; corregido713c42dc.022:r2 conciliado0.005868985USD con prueba
+failed-reconciliation-c08af9da-a6da-4e55-b692-77198d3d1de8.json en servidor.
+
+Controlador versionado tools/chat-eval-campaign-runtime.py commitc484ba7c
+recupera RAG y fallos antes de cada paso del runner. Transferencia git archive
+SHA256000641ebce2ef93a2a7be8f9d1f9bb357e7017f2e00d28173b4ab4a204cdebdd
+al directorio evaluation-tools-c484ba7c; producto baselinea817382b sin modificar.
+Transferencias previas: b1ac1fc7 SHA097bc09c013a7dea070480c85c86cb17e35c000154be2f9307d12e6655aae879;
+713c42dc SHA933e70519e5dd8212b11616923e11fb1ae909aa312633331297ac1771a430661.
+Recibos locales failed-tools-transfer-*.json en carpeta de evidencia.
+
+PID4055211 confirmado vivo estadoS:023:r2 recogido/conciliado,024:r2 activo
+b377aa13-d749-45c5-8e64-5cc4343d0ccd.51recibos alcanzados; N3 incompleta.
+Pruebas del controlador0f35402c: no despacho tras fallo de conciliación,
+parada al terminar y orden de reconciliaciones antes de observar.58pruebas
+herramientas PASS. No se han transferido nuevos cambios de producto ni tocado
+límites; todavía falta finalizar baseline, adjudicación y comparación semántica.
+
+
+### Citas de tablas y comparación preliminar r2 — 14/10/2026
+
+Runtime permanece a817382b. Contador global consultado1.344617407USD;
+claves backend0.00006366/processor0.24673444 (corte55recibos, no coste final).
+PID4055211 vivo al último corte:008:r3 recogido y conciliado,64muestras
+alcanzadas. Hubo WAITING_ACCOUNTING y después conciliación sin nueva generación.
+
+Corte inmutable local snapshot-60 con agregado,score,judgments,reviewed:
+60/84muestras,24faltantes. Juicios anteriores r1 trasladados sólo con hashes
+iguales; r2 revisados006,010,017,018,024. Preliminar local:7PASS,3FAIL,
+4technical_failure,46pending;54requisitosPASS,10FAIL,2uncertain,288unreviewed.
+No aceptación ni estimación fiable de tasa global; faltan adjudicaciones.
+006 vuelve a abstenerse;017/018 respetan comparadores estrictos y024 no inventa
+FX.010 omite owner-equipo/PII y cita una frase ajena al etiquetado.
+
+Causa parcial010 confirmada: chunk rules1 tiene la tabla completa de cinco tags,
+pero passages() descartaba su bloque por encabezado/longitud y sólo ofrecía
+una frase sobre funciones fuera del MVP. Corrección localb75b3cdb agrega filas
+Markdown literales cuando un separador fija el número de columnas; rechaza
+filas incompletas, anchos distintos y filas largas sin truncarlas. Backend y
+processor idénticos.109pruebas focales PASS. Evidencia externa
+case010-table-passages-offline.json: las cinco filas exactas quedan seleccionables.
+Esto corrige disponibilidad, no garantiza entailment/selección del modelo.
+Recuperación de reglas restantes (chunk2) y uso correcto de citas pendientes;
+no presentar010 como resuelto. No transferido/desplegado cambio de producto.
+
+
+### Admisión sin duplicar cargos conciliados — 14/10/2026
+
+PID4055211 terminal confirmado tras008:r3 (64recibos). Gate anterior sumaba
+contador global1.386110415 + reservas0.298203837 + próxima cota0.319952 =
+2.004266252USD. Reservas incluían64COST_OBSERVED y seed0.002; no era gasto
+real2USD ni un fallo de producto. Todo el historial permanece sin modificar.
+
+Cambio6a90e65a opt-in complete_ledger_history en budget.admit: si el historial
+completo está auditado, compara max(contador global,0.957927619 histórico+
+cargos conciliados) + reservas no conciliadas + cota próxima. Ambos primeros
+son límites superiores independientes del gasto de tarea; evita sumarlos.
+No se afirma que el proveedor ya refleje cada cargo, no se ponen reservas a0,
+no se borra dinero ni se modificaCAP2USD. Sin opt-in se conserva fórmula anterior.
+Identidad del conjunto de request_ids y suelo histórico comprobados. Pruebas
+cubren contador retrasado, identidad/suelo incorrectos, cargo retenido y reserva
+desconocida completa;62pruebas herramientas PASS.
+
+chat-eval-covered-step.py audita en cada preflight que el libro es prefijo
+completo del plan, operaciones anteriores conciliadas, seed0.002 y413verificado
+intactos, y conjunto de IDs igual a TODAS las operaciones tenant-core del backend
+B aislado verificado. Esta auditoría más exclusividad de claves B sustenta el
+opt-in; si se usa otra ruta/clave/historial debe invalidarse y detenerse.
+
+Transferencia git archive6a90e65a SHA
+14f612186e9b93a580dddbb591e3839787754f60eb038fc6ebbf7d262a414bdd,
+directorio evaluation-tools-6a90e65a. Adapter original/producto no modificados.
+Auditoría real superada y009:r3 iniciado d7da6808-df7f-4d74-9752-1595eefca665.
+Nuevo controlador PID4127622 vivo confirmado estadoR, usa --covered-step.
+Baseline producto siguea817382b. Recuperación de chunk2 para010 pendiente;
+este turno resolvió primero el gate contable que impedía completar la batería.
+
+
+### Continuidad documental bajo recorte y conciliación multiintento — 14/10/2026
+
+Aclaración causa010:r2: tool_result.omissions declara4fragmentos omitidos por
+context_budget de8recuperados; no era ausencia en búsqueda. Primarios precedían
+a todos sus vecinos y el recorte de cola eliminaba continuación.1fe1ebb2 agrega
+contiguous_priority: sólo reordena seleccionados autorizados, cada primario con
+siguiente/anterior inmediato antes de restantes; sin nueva búsqueda, recursión,
+ampliación de límites ni IDs adicionales. Mantiene conjuntos y unicidad.
+Contrato assembler actualizado para ordenación y clasificación006; SHA
+1239d94e0434e191a9aadcec85a23810fe735dc1cb3ad015de3a22ab708900e4.
+Manifest v3, backend pin y fixture de contrato processor sincronizados.
+
+Primer ensayo backend con Python3.14/tokenizers0.23.1:18fallos de contrato,
+27PASS; no se rebajó la comprobación. Se reutilizó entorno existente
+../tfm-economicon-jup035-auto/.venv/Scripts/python.exe (3.12,tokenizers0.22.1).
+Resultado backend vecinos+ensamblado45PASS. Processor inicialmente detectó
+fixture con identificadores anteriores; actualizados explícitamente a contrato
+nuevo, recursos+presupuesto+clasificación+citas88PASS. Correcciones sólo locales;
+no equivalen a revalidación real con modelo ni prueba SQL de recuperación completa.
+
+Baseline llegó a020:r3 (76/84), PID4127622 ausente con parada verificable.
+020operaciónec8b2c8b-2e14-4835-90a4-e878c9d6a13a tuvo2intentos:
+3b464f09-acba-4ff4-afab-c752942e89a5 y4e89e6b2-70d1-4983-9c0f-30b01bf5d347.
+Adaptador antes limitado a1 se detuvo correctamente.abe8b49a amplía conciliación
+hasta4 exigiendo conjunto exacto de intentos y todas las fases/costes; faltantes,
+duplicados, importes inválidos se rechazan.65pruebas herramientas PASS.
+
+Transferencia versionadaabe8b49a SHA
+2651cc8769cbf357c6f8c47d20d53b449ec675261658534ed34bbafda4d774e0
+al directorio evaluation-tools-abe8b49a.020:r3 conciliado0.0141712045USD
+(valor Decimal persistido0.01417120449999999999 por lectura JSON del contador),
+con cuatro cargos upstream y recibo failed preservado. No se reejecutó muestra.
+Nuevo controlador PID4193295 vivo confirmadoR con --covered-step para8restantes.
+Producto runtime siguea817382b; HEADlocal1fe1ebb2, sin publicar ni desplegar.
+
+
+### Línea base N3 completa y regresión amplia local — 14/10/2026
+
+PID4193295 terminó con COLLECTED/NOT_ASSESSED y ya no existe.84/84recibos,
+77completed/7failed; por repetición26/2,26/2,25/3. Fallos:010:r1,028:r1,
+021:r2,022:r2,010:r3,020:r3,022:r3. Los84tienen recogida verificada (fallos con
+suplemento SQL explícito) y84reservas COST_OBSERVED; no se sustituyó ningún fallo.
+Archivos externos snapshot-84,ledger-snapshot-84.json,
+baseline-n3-complete{,-score,-judgments,-reviewed}.json,completion-summary.
+SHA agregado870a71617efd60b7d586522a0d0a4d437fcaf8fd3242cbf87529e165e0735a1a.
+Cargos conciliados de84operaciones0.399209016USD. Histórico0.957927619+
+operaciones+reserva seed0.002 da cota de tarea1.359136635USD; no es contador
+OpenRouter global ni coste exacto de seed (reserva se conserva). Último contador
+global consultado1.468513827 fue al corte78, no saldo final. CAP2USD intacto.
+
+Juiciosprevios trasladados con hashes iguales, y001r1/r2/r3 y002r1/r2/r3
+revisados completos.001 suma1000EUR,VM600/60%,periodo/moneda/escenario correctos.
+002 calcula200EUR/25% con julio denominador; r1 grounding queda uncertain por
+metodología adicional pendiente de contrastar. Guardados judgments-v2 y
+reviewed-v2:12PASS preliminares,62pending,3FAILsemánticos,7technical_failure.
+No se convierte cobertura84 en aprobación ni se infiere calidad de tests verdes.
+
+Regresión de todos los test_chat*.py con Python3.12/tokenizers0.22.1:
+backend terminó616PASS,46SKIP,3FAIL. Un fallo esperaba orden antiguo de citas;
+fixture corregido621c6a78, archivo completo5PASS sin cambiar producto. Los otros
+2fallaron al crear symlinks (WinError1314), no en el rechazo del loader: ejecutar
+en Linux antes de afirmar cobertura. Logcandidate-1fe1ebb2-backend-chat.log.
+Processor sigue ejecutándose en sesiónexec46175, último avance81% con fallos
+visibles aún sin resumen; no interrumpido ni relanzado. Log externo
+candidate-1fe1ebb2-processor-chat.log. Próximo paso inspeccionar salida terminal,
+corregir fallos reales/fixtures aplicables, ejecutar pendientes Linux/SQL,
+congelar candidato corregido y comparar dentro del presupuesto restante.
+
+
+### Reproducción Linux de la regresión — 14/10/2026
+
+La sesión Windows46175 terminó: processor558PASS,6SKIP,52FAIL. Los fallos
+se concentran en resolución DNS/transportes y resúmenes sin despacho HTTP local,
+además de2symlinks sin privilegios. La atribución al entorno es hipótesis hasta
+contrastar Linux; no se cambian ni omiten las pruebas para conseguir verde.
+
+Candidato621c6a78325029c93d5a94f4fa50a0ba07cc45d9 transferido mediante git archive,
+SHA2567a9e2eb1142098373f34edb0c84d18277b31db4583fb2e9046546154969074f5,
+a /home/danteadmin/economicon-jup123-20261014/test-621c6a78. Registro local externo
+linux-test-transfer-621c6a78.json. Exclusivamente archivos versionados.
+Imágenes de prueba independientes reutilizan dependencias de las imágenes B
+backend9dc45286eb79 y processor2b80f3a8ded1, agregando pytest9.1.1,
+httpx0.28.1 y PyJWT2.15.1. Ejecutan como10001, filesystem de sólo lectura,
+/tmp propio, --network none, sin claves ni variables de los despliegues.
+Iniciados35archivos backend y27processor (PID89988/89989); logs remotos
+ test-621c6a78-backend-chat.log y test-621c6a78-processor-chat.log.
+Resultado Linux pendiente de recoger. Sin llamadas al proveedor ni nuevo gasto.
+
+
+Después de iniciar ambas pruebas, dos conexiones SSH acotadas terminaron con
+«Connection timed out during banner exchange». Resultado y estado de los procesos
+remotos desconocidos; no asumir que terminaron ni que falló el código. No se
+reiniciaron servicios ni se lanzaron campañas adicionales. Próxima conexión debe
+recoger los logs existentes antes de repetir pruebas. La causa de la indisponibilidad
+SSH aún no está demostrada. La adjudicación local y preparación documental pueden
+continuar sin el servidor; la validación real del candidato sigue pendiente.
+
+
+### Linux con recursos acotados y adjudicación003 — 14/10/2026
+
+SSH recuperado. Backend89988 observado vivo y avanzando hasta64%; processor89989
+ausente y log sin resumen. No se obtuvo causa ni código de salida del processor;
+no se cuenta como PASS ni fallo funcional. Host observado con6465/7940MiB usados
+y3995/4095MiB de swap. Docker events no devolvió eventoOOM en ventana15min;
+no afirmar OOM como causa. Ante nuevos atascos SSH se detuvo sólo el contenedor
+propio4cdab045fd76, docker stop confirmado. La ejecución amplia inicial queda
+incompleta y conservada.
+
+Ensayo Linux focal processor DNS+summary_resources:54PASS, exit0,24.39s,
+2026-10-14T09:55:49Z. Prueba --network none, memoria/swap1200m,CPU1,pids128,
+filesystem readonly y tmpfs256m. Log remoto test-621c6a78-processor-dns-resources-bounded.log
+más JSON de salida. Esto verifica en Linux esos fallos Windows, no toda la regresión.
+
+Regresión completa secuencial por archivo iniciada sesiónexec97081, sobre mismo
+archive621c6a78, mismas cotas y aislamiento. Directorio remoto
+/home/danteadmin/economicon-jup123-20261014/test-621c6a78-bounded-regression.
+results.json se actualiza tras cada archivo y complete.json sólo al finalizar;
+logs individuales conservados incluso si exit!=0. Primeros3archivos processor
+(auto,battery_corrections,calculations) exit0 confirmados. No relanzar hasta
+consultar sesión y archivos; aún no hay resultado completo. Sin gasto de modelo.
+
+Adjudicación preliminar003:r1/r2/r3 contra respuesta, auxiliares, entrada y chunks:
+requisitos de pedir datos e investigar sin inventar causa cumplen en las3.
+r1/r2PASS; r3uncertain en grounding/consistency por presentar campos conceptuales,
+incluido root_cause, como necesarios para evaluar desviación, y cita truncada e`;
+no se transforma duda en aprobación. Artefactos externos judgments-v3/reviewed-v3:
+14PASS,60pending,3FAIL,7technical_failure;108requisitosPASS,5uncertain,
+372sin revisar,10FAIL agrupados en4clusters. AceptaciónNOT_ASSESSED; no es revisión
+humana independiente ni criterio pactado. Historial y artefactosv2 preservados.
+
+
+### Diagnóstico005/007 y revisión004 — 14/10/2026
+
+Continuación de sesión97081 verificada viva. Archivos processor hasta
+summary_gateway terminaron exit0, excepto summary_capacity exit137 bajo límite
+1200m (sin resumenpytest; no atribuir aún a fallo funcional). Hay que recoger su
+log y reproducir aisladamente con recursos suficientes o por casos. El resto
+continúa; no reiniciar el controlador ni modificar el runtime del modelo.
+
+Revisión004:r1/r2/r3PASS: distingue actual/amortizado y showback; fuentes finops6/11
+respaldan las afirmaciones.005:r1/r2/r3FAIL: abstención injustificada con fórmula,
+partición y componentes explícitos; todos reciben mismo payloadRAG067c06eb…
+con rules3/4 completos. Diagnóstico offline case005-unresolved-offline-621c6a78.json:
+required=True, resolved=None. Catálogo reconoce700/200/100/50EUR y sus estados;
+resolver actual sólo soporta total explícito, no composición y exclusión declarada.
+Corrección006 no resuelve005; pendiente diseño determinista de suma con procedencia,
+exclusión explícita y rechazo de escenarios ambiguos, sin reconocer IDs del banco.
+
+007:r1/r2/r3 también abstienen en baseline y sonFAIL. El candidato actual sí resuelve
+101/1000*100=10.1%, rojo, en replayoffline de los tres contextos originales,
+guardado case007-resolved-offline-621c6a78.json. No equivale a ejecución real del
+modelo corregido; conserva FAIL de baseline. Artefactos judgments-v4/v5 y reviewed-v4/v5
+externos; último17PASS,51pending,9FAIL,7technical_failure;135requisitosPASS,
+5uncertain,40FAIL,315sin revisar;10clusters por respuesta. No aceptación global.
+008/009 respuestas leídas, todavía sin adjudicación final de grounding/auxiliares.
+Sin nuevo gasto ni publicación. Próximo: recuperar regresión completa, resolver
+summary_capacity y avanzar adjudicación antes de congelar comparación corregida.
+
+
+### Regresión Linux parcial y adjudicación008/009 — 14/10/2026
+
+Sesión97081 sigue viva. Corte45archivos: processor27archivos,589PASS/6SKIP,
+summary_capacity exit137 sin resumen (sólo7puntos); backend18archivos,
+242PASS/43SKIP, context_assembly también exit137 bajo1200m. Ningún fallo de
+aserción informado en archivos terminados; esto no acredita los dos incompletos.
+Esperar final, recoger todos los logs y repetir exclusivamente incompletos con
+memoria suficiente y diagnóstico OOM/exit, manteniendo ejecución secuencial.
+Los43SKIP backend corresponden a ausencia de servicios SQL en --network none;
+la integración SQL permanece pendiente, no se cuenta cubierta.
+
+008:r1/r3PASS preliminar: explica denominador cero y solicita periodo/datos.
+008:r2 cumple banco peroFAILquality-consistency: next_actions exige tanto total
+como unallocated positivos, aunque numerador cero es válido con denominador
+positivo; clusterpositive-numerator-required. Formula/definiciones contrastadas
+con rules3/finops12 realmente suministrados.009 conserva prohibición de reparto
+inventado y pide regla/base; groundinguncertain en3repeticiones por pasajes
+truncados de tagging ajenos al reparto dentro de chunks relevantes.009:r2 también
+uncertain al no confirmar expresamente mantener shared pese a falta de regla.
+No endurecer retrospectivamente rúbrica: estas dudas requieren adjudicación.
+Artefactos externos judgments-v6/reviewed-v6:19PASS,48pending,10FAIL,
+7technical_failure;163requisitosPASS,9uncertain,41FAIL,282sin revisar,
+11clusters. SigueNOT_ASSESSED; no aceptación ni nueva campaña/modelocoste.
+
+
+Regresión por archivos terminó REGRESSION_COMPLETE, sesión97081 exit0 del
+controlador (no significa todos los archivosPASS). Los únicos archivos noexit0
+son summary_capacity processor y context_assembly backend, ambos137. Reproducción
+exclusiva secuencial iniciada sesión7467,2500m sin swap adicional,CPU1,sin red,
+con docker inspect .State tras terminar para capturarOOMKilled/ExitCode. Logs
+processor-retest-2500m.log y backend-retest-2500m.log conJSON acompañante dentro
+del directorio bounded-regression. Contenedores propios jup123-retest-{app}-621c6a78
+se eliminan sólo tras registrar estado; aún pendiente resultado. No lanzar otra
+campaña ni repetición hasta recogerlo.
+
+OpenSpec tasks2.1–2.3 actualizadas como completadas con alcance de recogida y
+procedencia de baseline; design elimina la afirmación obsoleta de que falta
+colector. Criterios de revisión, adjudicación y comparación permanecen abiertos.
+git diff --check sin errores de whitespace (sólo advertenciasCRLF).
+
+
+### Regresión Linux cerrada sobre621c6a78 — 14/10/2026
+
+Sesión7467 terminó exit0. Repeticiones2500m: processor summary_capacity21PASS
+(34.29s), backend context_assembly exit0; ambasState.ExitCode0/OOMKilledfalse.
+Los estados Health unhealthy proceden del healthcheck HTTP heredado de imagen
+servidor, mientras entrypoint ejecuta pytest sin servidor; no son fallospytest.
+Los logs iniciales137 permanecen; no hay evidencia directa OOM de esos contenedores
+--rm anteriores, así que no afirmar causa demostrada sólo a partir del137.
+
+Totales sin duplicar repeticiones: processor610PASS/6SKIP/0FAIL en27archivos;
+backend619PASS/46SKIP/0FAIL en35archivos. Todos los archivos test_chat*.py del
+archive621c6a78325029c93d5a94f4fa50a0ba07cc45d9 cubiertos. Evidencia local externa:
+materiales/07-evidencias/PR121-local-evaluation/linux-regression-621c6a78/summary.json,
+logs individuales, results.json, complete.json y estados de repetición. Summary
+registra SHA256 de cada log aceptado y referencias a fallos iniciales. Sin red,
+sin modelo ni credenciales. SQL real, navegador y calidad semántica siguen pendientes.
+
+Adjudicación016 completa3PASS: deltas150EUR/dia y37.5%, ANDtrue y petición de
+investigar; mojibake ya conocido no cambia semántica, corregido sólo en candidato.
+019r1/r3PASS; r2FAIL por omitir incremento absoluto: muestra150 como dato observado,
+no como diferencia. Agrupados required-1/numbers-1 bajo absolute-delta-omitted,
+sin aprobar por coincidencia numérica. Fuentes r3 contrastadas con finops9.
+Juiciosv7/reviewed-v7:24PASS,42pending,11FAIL,7technical_failure;
+200requisitosPASS,9uncertain,43FAIL,243sin revisar,12clusters. Preliminar local,
+no revisión independiente ni aceptación. No nueva inferencia ni cambio de gasto.

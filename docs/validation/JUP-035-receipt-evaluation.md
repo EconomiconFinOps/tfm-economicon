@@ -178,3 +178,29 @@ expone CLI de pago. Retorna OBSERVING para operaciones vivas, UNKNOWN_DISPATCH
 si no se recupera el handle y NEEDS_RESERVATION_RECONCILIATION para una reserva
 interrumpida antes de envío. Ninguno de esos estados autoriza reintentar POST.
 Una campaña COLLECTED aún necesita agregación, adjudicación y aceptación.
+
+
+## Evidencia RAG posterior al contexto inicial — 14/10/2026
+
+Verificado en B: el endpoint de evidencia conserva el contexto inicial; los
+fragmentos recuperados durante la operación no aparecen allí. El manifest del
+resultado conserva sus IDs ordenados y el hash exacto del payload de recuperación.
+`chat-eval-retrieval.py` admite un snapshot suplementario sólo cuando coincide
+con ese hash (incluido escape de ángulos, orden de fragmentos y omisiones), la
+identidad de operación y la lista de evidencias del manifest. Recalcula las
+comprobaciones de pregunta/historial/estado desde los recursos originales.
+Una cita desconocida o un historial diferente siguen dejando INCOMPLETE.
+
+El recibo derivado conserva íntegros `resources` y su hash; incorpora snapshot,
+hash suplementario y derivación que apunta al hash de la fila original. El
+operador guarda primero la copia original separada antes de instalar la vista
+derivada. La recuperación SQL del corpus de B verifica además el hash de cada
+documento contra el banco original y reconstruye título/spans con el mismo
+código versionado; no vuelve a ejecutar embeddings ni el modelo. Una discrepancia
+no se corrige buscando otro fragmento parecido: detiene la recogida.
+
+Seis pruebas cubren recuperación exacta/escape UTF8, fragmentos u omisiones
+alterados, operación ajena, citas desconocidas, pregunta/historial distintos y
+recursos modificados. Conjunto herramientas49PASS. Esta verificación demuestra
+identidad de los fragmentos, no pertinencia semántica de las citas. La aceptación
+continúa pendiente de adjudicación y de los criterios de revisores.
