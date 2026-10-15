@@ -137,6 +137,15 @@ Dos `CHECK` impiden en la propia base lo que el contrato prohíbe: una fila `not
 
 Para escribir el script, los valores se convierten a literales SQL con una función única que duplica las comillas simples, fija `standard_conforming_strings` en la transacción, rechaza el carácter NUL y los números no finitos, y escribe `retrieval` como JSON canónico con cast a `jsonb`; nunca se interpola una cadena sin escapar. Los textos no admitidos por la regla 3 ya los rechaza la validación común, pero el escapado no depende de ella. Como las tablas se crean con `IF NOT EXISTS`, un cambio futuro del esquema no migra una base ya cargada: en desarrollo basta con borrar el esquema `evaluation` y volver a cargar.
 
+### Vistas
+
+El mismo script crea dos vistas (`CREATE OR REPLACE VIEW`) de las que beben los paneles:
+
+- **`evaluation.config_changes`**: una fila por cada par de ejecuciones consecutivas de la misma fuente (ordenadas por `run_at`, solo las que tienen fecha) en el que cambió algo. Columnas: `run_id` (la posterior), `previous_run_id`, `source`, `run_at`, `changes` (`text[]` con `bateria`, `modelo`, `prompt` o `corpus`, en ese orden) y `annotation` (`Cambia: bateria, modelo`). Cambia la batería si lo hacen `suite_version` o `suite_sha256`, el modelo si cambia `generation_model`, el corpus si cambia `corpus_sha256`; el prompt solo si las dos huellas están registradas y son distintas (un prompt no registrado no genera anotación). Un par sin cambios no genera fila. Con los datos versionados hoy está vacía: las dos ejecuciones de JUP-070 solo difieren en el proveedor de embeddings y en los parámetros de recuperación.
+- **`evaluation.comparable_runs`**: las ejecuciones con fecha cuya clave de comparabilidad tiene al menos dos ejecuciones con fecha. Columnas: `comparability_key`, `run_id`, `source`, `run_at`, `is_real`, `milestone` y `series_runs`. Una clave con una sola ejecución no aparece: de ahí sale el «Sin datos: no hay con qué comparar» de los paneles de evolución (cada panel declara además su `noValue`).
+
+Para usarlas en Grafana: `run_at AS time` directamente (es `timestamptz`), `array_to_string(changes, ',') AS tags` para las anotaciones (una `text[]` llegaría como `{a,b}`) y `'modelo' = ANY(changes)` para filtrar por tipo de cambio.
+
 ## Qué toma cada adaptador
 
 | Informe | Ejecución | Filas |

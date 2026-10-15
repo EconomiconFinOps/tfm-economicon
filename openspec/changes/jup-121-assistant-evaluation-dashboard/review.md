@@ -165,3 +165,15 @@ Hallazgos LOW trasladados: los mensajes de JUP-068 repiten el nombre del fichero
 Esto adelanta la mayor parte de la comprobación manual de la tarea 5.1 (conciliación con PostgreSQL real), que aun así se automatizará como prueba repetible.
 
 Hallazgos LOW trasladados: las dos `CHECK` no tienen nombre (los mensajes de PostgreSQL son `results_check` y `results_check1`; no se cambia para no tocar tests que comparan el DDL exacto); las tablas con `IF NOT EXISTS` no migran bases ya cargadas (documentado en la guía); a la tarea 3.3: el rol y los permisos van en un script aparte y después del esquema, `CREATE ROLE` no tiene `IF NOT EXISTS`, `load` pasa bytes UTF-8 a `psql` y el `TRUNCATE` bloquea brevemente la lectura de Grafana; a la 3.2: `CREATE OR REPLACE VIEW` no puede cambiar las columnas de una vista ya creada, y los paneles deben filtrar `run_at IS NOT NULL`.
+
+### 3.2 Vistas `evaluation.config_changes` y `evaluation.comparable_runs`
+
+| Fase | Evidencia |
+| --- | --- |
+| Red | `scripts/tests/evaluation_pg_helper.py` (ayudante reutilizable: PostgreSQL desechable con la imagen exacta de `docker-compose.yml`, nombre y contraseña aleatorios, puerto efímero en `127.0.0.1`, espera con tope de 90 s y limpieza con `atexit` y `tearDownModule`) y `scripts/tests/test_evaluation_views.py` (42 tests: 5 sin base y 37 con **PostgreSQL real**), commit `f462df80`. Los 42 fallan por `VIEWS_DDL` ausente o por «relation … does not exist». El tester comprobó con una referencia fuera del repositorio que los esperados son alcanzables y que sus 38 mutantes del SQL morían (dos de ellos hicieron añadir casos: una serie por fuente y el cambio de hora del 25-10-2026 en Europa/Madrid) |
+| Green | `VIEWS_DDL` y `DDL_BLOCKS = (SCHEMA_DDL, VIEWS_DDL)`, commit `e1412ef0`; 1124/1124 (~35 s con el contenedor) |
+| Mutación | La mutación automática no aplica a una constante SQL (cualquier cambio del literal rompe la sintaxis y «mata» por razones triviales). Se sustituye por 38 mutantes de SQL del tester y 35 del QA sobre `VIEWS_DDL`: 33 muertos y 2 equivalentes (`prompt` con solo una de las dos guardas `IS NOT NULL`: con un NULL, `<>` ya da NULL) |
+| QA | `accept`, sin BLOCKING ni MEDIUM. Con PostgreSQL real: con los datos versionados las dos vistas salen vacías (cada clave tiene una sola ejecución con fecha; las dos de JUP-070 solo difieren en el proveedor de embeddings); datos sintéticos con cambio de modelo, de batería y corpus a la vez, prompt nulo→valor (sin anotación) y valor→valor distinto (con anotación), una ejecución sin fecha entre dos con fecha (no rompe la cadena), recarga repetida con `CREATE OR REPLACE VIEW`. No quedan contenedores ni volúmenes |
+| DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend idénticos (`RF-119-004`) |
+
+Hallazgos LOW trasladados a la tarea 4.3 (ya anotados en `tasks.md`): `array_to_string(changes, ',')` para las etiquetas de las anotaciones, `noValue` en cada panel de evolución (el mensaje no sale de la vista), filtrar por `comparability_key` y `is_real`, y castear los `bigint` si un panel los mezcla con `value`.

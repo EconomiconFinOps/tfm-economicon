@@ -40,7 +40,7 @@
   - script transaccional e idempotente con `CREATE SCHEMA/TABLE IF NOT EXISTS`, vaciado e inserción dentro de la misma transacción;
   - `NULL` conservados y escapado seguro de literales;
   - sin credenciales en la salida.
-- [ ] 3.2 Vista `evaluation.config_changes` (cambios de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente; sin anotación de prompt cuando no está registrado) y consultas de comparabilidad (series con al menos dos ejecuciones)
+- [x] 3.2 Vista `evaluation.config_changes` (cambios de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente; sin anotación de prompt cuando no está registrado) y consultas de comparabilidad (series con al menos dos ejecuciones)
 - [ ] 3.3 Subcomando `load` (hallazgos del QA de 3.1: el rol y los permisos van en un script APARTE del de `build_sql`, que no puede contener `GRANT`, `PASSWORD`, `CREATE ROLE` ni `DROP`; se ejecuta después de crear el esquema y en el mismo `psql`; `CREATE ROLE` no tiene `IF NOT EXISTS`, se usa un `DO` que mira `pg_roles` o `ALTER ROLE`; la contraseña se escribe con `sql_literal` con `standard_conforming_strings` activo en esa sesión; se pasan a `psql` bytes UTF-8, con `PGCLIENTENCODING=UTF8` si hace falta; el `TRUNCATE` bloquea brevemente la lectura de Grafana hasta el `COMMIT`):
   - pasa el script al `psql` de `postgres-pgvector` por la entrada estándar con `ON_ERROR_STOP`;
   - crea o actualiza el rol `grafana_evaluation_reader` con `USAGE` y `SELECT` solo sobre `evaluation`;
@@ -57,7 +57,7 @@
   - los paneles de evolución tienen `noValue` «Sin datos: no hay con qué comparar»;
   - los paneles de valor muestran «No medido» para `NULL`;
   - existen las secciones A, B y C y la sección de robustez.
-- [ ] 4.3 Dashboard `apps/monitoring/grafana/dashboards/assistant-evaluation.json` (uid `economicon-assistant-evaluation`):
+- [ ] 4.3 (hallazgos del QA de 3.2: las anotaciones usan `run_at AS time, annotation AS text, array_to_string(changes, ',') AS tags` de `evaluation.config_changes`; cada panel de evolución define `noValue` «Sin datos: no hay con qué comparar» y se alimenta de `evaluation.comparable_runs`, filtrando por `comparability_key`, y por `is_real` donde convenga, porque la vista incluye ejecuciones no reales y varias claves; hay que castear `case_count`/`denominator` (`bigint`) si un panel los mezcla con `value` (`double precision`)) Dashboard `apps/monitoring/grafana/dashboards/assistant-evaluation.json` (uid `economicon-assistant-evaluation`):
   - sección A: ejecuciones con metadatos y motivos de no real, estados con denominadores, ACC/REL/GRD, evolución automática y de juicio humano con anotaciones de `config_changes`, LAT/STR/AVL de campaña, calibración, benchmark y robustez vacía;
   - sección B: negocio;
   - sección C: síntomas en vivo con las expresiones del diseño y enlace al dashboard técnico.
