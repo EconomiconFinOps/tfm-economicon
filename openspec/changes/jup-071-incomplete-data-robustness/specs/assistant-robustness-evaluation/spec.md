@@ -15,11 +15,11 @@ The robustness suite SHALL contain at least sixteen meaningful incomplete or amb
 #### Scenario: The reference bank is updated upstream
 - **WHEN** the reference bank, its methodology or its corpus sources change in the integration branch
 - **THEN** the suite references are updated only after confirming that the questions and the rules its variants rely on are unchanged
-- **AND** the suite keeps its own version and the report states the digests it was scored with
+- **AND** the suite keeps its own version and the report records the suite digest, which covers the pinned digests of the bank, the methodology and the sources
 
 ### Requirement: Strict suite validation with controlled errors
 
-The evaluator SHALL validate the structure of the suite before use: the schema version SHALL be the integer one and not a boolean, the suite version SHALL have the form major.minor.patch, every case SHALL be an object whose identifier, base identifier, behavior, risk, question, context, category and perturbation are text and whose required points, forbidden behaviors, sources and expected numbers are lists, and the baseline, methodology and sources reference blocks SHALL be present and well formed. Cases with expected figures SHALL be declared critical. Each expected figure SHALL be an object and any aliases it declares SHALL be non-empty and unique after normalization. Any violation SHALL stop evaluation with an error that names the case or block, and SHALL NOT produce an unhandled exception or traceback.
+The evaluator SHALL validate the structure of the suite before use: the schema version SHALL be the integer one and not a boolean, the suite version SHALL have the form major.minor.patch, every case SHALL be an object whose identifier, base identifier, behavior, risk, question, context, category and perturbation are text and whose required points, forbidden behaviors, sources and expected numbers are lists, and the baseline, methodology and sources reference blocks SHALL be present and well formed. Case identifiers SHALL have the form JUP-071 followed by three digits, the behavior SHALL be one of answer, clarify or abstain and the risk one of critical or standard, and all three behaviors SHALL be present. Cases with expected figures SHALL be declared critical. Each expected figure SHALL be an object whose value and tolerance are finite JSON numbers, so booleans and integers too large to represent are refused, and any aliases it declares SHALL be non-empty and unique after normalization. Any violation SHALL stop evaluation with an error that names the case or block. Hostile input, such as numbers too large for a float or documents nested far beyond the usual depth, SHALL end in the same controlled error and SHALL NOT produce an unhandled exception or traceback.
 
 #### Scenario: Malformed case
 - **WHEN** a case is not an object, a text field holds a list, a required list is missing or an expected figure is not an object
@@ -28,6 +28,10 @@ The evaluator SHALL validate the structure of the suite before use: the schema v
 #### Scenario: Standard-risk case with expected figures
 - **WHEN** a case with expected figures is declared with a risk other than critical
 - **THEN** validation fails, so a single reviewer cannot be enough for a case that carries figures
+
+#### Scenario: Number or document beyond representable limits
+- **WHEN** an expected figure, a declared temperature, a retrieved distance or a duration is an integer too large for a float, or a document is nested thousands of levels deep
+- **THEN** the command ends with a controlled error and exit code two, and writes nothing
 
 #### Scenario: Alias that normalizes to nothing
 - **WHEN** a declared alias is empty after normalization, for example only emphasis marks, or repeats another alias after normalization
@@ -48,7 +52,7 @@ The suite SHALL cover absent or conflicting tags, shared costs without sufficien
 
 ### Requirement: Prompt fidelity and faithful HTTP collection
 
-The adapter SHALL prepare prompts from only the context and question and SHALL reuse the relevant collection functions of JUP-070. HTTP collection SHALL send the prepared prompt exactly, use a new conversation for every case and record the response, citations, retrieved context, HTTP status and total duration. It SHALL NOT transmit expected behavior, rubric or answer keys, SHALL NOT retry failed cases and SHALL classify infrastructure errors as blocked. Credentials SHALL be read from the environment and SHALL NOT be printed or stored in the run artifacts. The run description supplied for a collection SHALL be validated before the first request is sent.
+The adapter SHALL prepare prompts from only the context and question and SHALL reuse the relevant collection functions of JUP-070. HTTP collection SHALL send the prepared prompt exactly, use a new conversation for every case and record the response, citations, retrieved context, HTTP status and total duration. It SHALL NOT transmit expected behavior, rubric or answer keys, SHALL NOT retry failed cases and SHALL classify infrastructure errors as blocked. Credentials SHALL be read from the environment and SHALL NOT be printed or stored in the run artifacts. A prepare command SHALL write the prepared prompts, and only them, to a file outside the repository. The run description supplied for a collection SHALL contain the six declared fields and no others and SHALL be validated before the first request is sent; an unexpected field SHALL be refused naming the field and not its value, because the description is stored with the raw collection.
 
 #### Scenario: Rubric stays outside the request
 - **WHEN** a case is prepared and sent to the chat
@@ -60,8 +64,9 @@ The adapter SHALL prepare prompts from only the context and question and SHALL r
 - **AND** it is excluded from the pass/fail denominator without disappearing from the report
 
 #### Scenario: Invalid run description
-- **WHEN** the run description names an invalid commit, provider, alias or generation
+- **WHEN** the run description names an invalid commit, provider, alias or generation, or carries a field outside the six declared ones
 - **THEN** collection stops before any request is made and nothing is written
+- **AND** an unexpected field is named in the error without echoing its value
 
 ### Requirement: Offline template execution is labelled as such
 
@@ -115,6 +120,18 @@ The evaluator SHALL provide a review sheet containing each case's rubric, origin
 - **THEN** the case is marked with reduced reviewer coverage in the machine-readable and the human-readable report
 - **AND** assessment completeness is false while any case has reduced coverage
 
+### Requirement: Judgments bound to one validated collection
+
+A raw collection SHALL be validated before it is reviewed or scored: every prompt SHALL equal the prepared prompt of its versioned case, case identifiers SHALL be known and unique, the configuration digest SHALL match its content, failure categories SHALL belong to a closed list, citations and retrieved fragments SHALL have the expected shape, distances and durations SHALL be finite and durations non-negative, and the collection time SHALL be a calendar-valid UTC timestamp. Human judgments SHALL carry the digest of the exact collection they judge and SHALL be refused for any other, SHALL refer only to known cases and judgment points, and SHALL have at most two distinct reviewers per point. Reviewer identities SHALL be compared after normalization, which is not an authentication of identity.
+
+#### Scenario: Judgments for another collection
+- **WHEN** a judgments file declares the digest of a different raw collection
+- **THEN** scoring is refused and no report is written
+
+#### Scenario: Altered collection
+- **WHEN** a prompt differs from its versioned case, a case repeats or a configuration digest no longer matches
+- **THEN** the collection is refused with an error that names the case
+
 ### Requirement: Complete grouped reports and private raw material
 
 The report SHALL retain one outcome per planned case from pass, fail, blocked and not_run. It SHALL show the planned total and all four counts, group baselines separately from variants, and break down results by perturbation type, by category and by expected behavior. The category breakdown SHALL aggregate the variants that share a category, in addition to the per-perturbation breakdown whose groups hold a single case each, and SHALL state the number of cases of every group so that a rate over a very small group is not read as a general result. Reported success rates SHALL distinguish pass divided by the planned total from pass divided by pass plus fail, and SHALL expose unavailable denominators rather than replace them with zero or success. The report SHALL state that known failures with pending judgments can belong to the pass/fail denominator, which SHALL NOT be described as completed human review coverage, and SHALL state the number of cases with reduced reviewer coverage and whether the assessment is complete. Versionable results SHALL exclude question, answer and retrieved-fragment text, reviewer names and private judgment notes; raw responses and review material SHALL be written outside the repository.
@@ -150,11 +167,15 @@ Raw collections, review sheets and judgment templates SHALL be written outside t
 
 ### Requirement: Declared run metadata is restricted and never certifies a model
 
-Provider, alias and generation identifiers written by the operator SHALL be lowercase identifiers of up to sixty-four characters made of letters, digits, dots, slashes and hyphens, and SHALL NOT contain credential-shaped parts or unbroken alphanumeric runs of twenty-four characters or more. A declared commit SHALL be seven to forty lowercase hexadecimal characters. A declared temperature SHALL be absent or a finite number and not a boolean. Only these validated fields SHALL reach the versionable report; other configuration fields SHALL NOT be copied. This validation is a heuristic against accidental disclosure and SHALL NOT be described as a guarantee that no secret can be written. No declared field, and no all-pass set of judgments, SHALL set model verification or generative robustness acceptance to true.
+Provider, alias and generation identifiers written by the operator SHALL be lowercase identifiers of up to sixty-four characters made of letters, digits, dots, slashes and hyphens, and SHALL NOT contain credential-shaped parts or unbroken alphanumeric runs of twenty-four characters or more. A declared commit SHALL be seven to forty lowercase hexadecimal characters. A declared temperature SHALL be absent or a finite number, not a boolean and not an integer too large for a float. Only these validated fields SHALL reach the versionable report; other configuration fields SHALL NOT be copied. This validation is a heuristic against accidental disclosure and SHALL NOT be described as a guarantee that no secret can be written. No declared field, and no all-pass set of judgments, SHALL set model verification or generative robustness acceptance to true.
 
 #### Scenario: Credential-shaped or descriptive value
-- **WHEN** a declared provider, alias or generation identifier is a URL, has uppercase letters or spaces, starts with a credential prefix or is a placeholder
+- **WHEN** a declared provider, alias or generation identifier is a URL, has uppercase letters, spaces or underscores, starts with a credential prefix or exceeds the length limit, as the descriptive markers of the collector guide do
 - **THEN** the report is not produced and the error names the field
+
+#### Scenario: Plain words that look like placeholders
+- **WHEN** a declared identifier satisfies the pattern but is a word such as to-be-defined or unknown
+- **THEN** it is accepted, because the validation checks shape and not meaning, and declaring real values remains the operator's responsibility
 
 #### Scenario: Extra configuration fields
 - **WHEN** the operator configuration holds fields such as an API key or collector hashes
@@ -195,3 +216,4 @@ Evidence SHALL identify the execution date, application commit, suite version an
 #### Scenario: Mixed or repeated collections
 - **WHEN** three reports are compared and they differ in suite, configuration, code or provisional status, or two of them share the same raw collection
 - **THEN** the comparison is refused
+- **AND** a summary that lacks the expected fields is refused with a controlled error
