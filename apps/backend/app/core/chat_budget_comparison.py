@@ -72,7 +72,9 @@ def budget_variance_answer(value, catalog):
         answer += 'Porcentaje indefinido: el presupuesto es cero; no se inventa una desviación relativa.\n'
     else:
         from fractions import Fraction
-        shown = display(bound['relative'])
+        with localcontext() as precision:
+            precision.prec = 80
+            shown = display(bound['relative'])
         equality = '=' if Fraction(Decimal(shown))*Fraction(bound['amounts']['budget']) == Fraction(bound['difference'])*100 else '≈'
         answer += f'Desviación relativa sobre presupuesto: ({d} / {b}) × 100 {equality} {shown} %.\n'
     return answer + 'Se compara el coste actual final declarado, no un forecast ni una causa probada.'
