@@ -203,6 +203,7 @@ class Database:
     def fetch_billing_summary(
         self, tenant_id: str, *, start_date, end_date,
         group_by: str = "subscription", tag_key: str | None = None,
+        selected_subscription: str | None = None, selected_value: str | None = None,
         include_provenance: bool = False,
     ) -> dict:
         from decimal import Decimal, ROUND_HALF_UP, localcontext
@@ -215,6 +216,7 @@ class Database:
         project_tag = present("r.tags ->> 'project'")
         dimensions = {
             "subscription": present("r.subscription_id"),
+            "account": present("r.billing_account_id"),
             "resource_group": present("r.resource_group"),
             "service": present("r.service_name"),
             "project": f"COALESCE({present('r.project')}, {project_tag})",
@@ -237,6 +239,7 @@ class Database:
                  AND i.subscription_id = r.subscription_id
                 WHERE r.tenant_id = :tenant_id AND i.tenant_id = :tenant_id
                   AND i.status = 'completed'
+                  AND (CAST(:selected_subscription AS STRING) IS NULL OR r.subscription_id = :selected_subscription)
             ), period_records AS (
                 SELECT * FROM completed
                 WHERE usage_date >= :start_date AND usage_date < :end_date
@@ -244,27 +247,28 @@ class Database:
                 SELECT subscription_id, usage_date FROM period_records
                 GROUP BY subscription_id, usage_date
                 HAVING count(DISTINCT ingestion_id) > 1
+            ), selected_records AS (
+                SELECT * FROM period_records WHERE CAST(:selected_value AS STRING) IS NULL OR value = :selected_value
             ), metadata AS (
                 SELECT (SELECT count(*) FROM completed WHERE usage_date IS NULL) AS undated,
-                       (SELECT count(*) FROM period_records WHERE value IS NULL) AS missing,
+                       (SELECT count(*) FROM selected_records WHERE value IS NULL) AS missing,
                        (SELECT count(*) FROM conflicts) AS ambiguous,
-                       (SELECT array_agg(DISTINCT ingestion_id) FROM period_records) AS source_ids,
-                       (SELECT min(usage_date) FROM period_records) AS first_date,
-                       (SELECT max(usage_date) FROM period_records) AS last_date,
-                       (SELECT count(DISTINCT usage_date) FROM period_records) AS observed_days
+                       (SELECT array_agg(DISTINCT ingestion_id) FROM selected_records) AS source_ids,
+                       (SELECT min(usage_date) FROM selected_records) AS first_date,
+                       (SELECT max(usage_date) FROM selected_records) AS last_date,
+                       (SELECT count(DISTINCT usage_date) FROM selected_records) AS observed_days
             ), aggregates AS (
                 SELECT 'total' AS kind, currency, CAST(NULL AS STRING) AS subscription_id,
                        CAST(NULL AS STRING) AS value, sum(pretax_cost) AS cost,
                        count(*) AS record_count
-                FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
+                FROM selected_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
                 GROUP BY currency
                 UNION ALL
                 SELECT 'group', currency, group_subscription, {display_value}, sum(pretax_cost), count(*)
-                FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
+                FROM selected_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
                 GROUP BY currency, group_subscription, {group_value}
             )
-            SELECT a.*, m.undated, m.missing, m.ambiguous,
-                   m.source_ids, m.first_date, m.last_date, m.observed_days
+            SELECT a.*, m.undated, m.missing, m.ambiguous, m.source_ids, m.first_date, m.last_date, m.observed_days
             FROM metadata m LEFT JOIN aggregates a ON TRUE
             ORDER BY a.currency ASC NULLS LAST, a.subscription_id ASC NULLS LAST,
                      a.value ASC NULLS LAST, a.kind
@@ -272,8 +276,10 @@ class Database:
         with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
             with connection.begin():
                 rows = connection.execute(query, {
-                    "tenant_id": tenant_id, "start_date": start_date, "end_date": reference_date.visible_end(end_date),
-                    "tag_key": tag_key,
+                    "tenant_id": tenant_id, "start_date": start_date,
+                    "end_date": reference_date.visible_end(end_date),
+                    "tag_key": tag_key, "selected_subscription": selected_subscription,
+                    "selected_value": selected_value,
                 }).mappings().all()
                 job_count = connection.execute(
                     text("SELECT count(*) FROM jobs WHERE tenant_id = :tenant_id"),

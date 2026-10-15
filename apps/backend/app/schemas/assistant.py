@@ -1,4 +1,5 @@
-from datetime import datetime
+import re
+from datetime import date, datetime
 from typing import Annotated, Literal, Any
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
@@ -32,11 +33,54 @@ class ConversationRenameRequest(BaseModel):
         return value
 
 
+SelectionText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=256)]
+
+
+class AzureCostSelection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    group_by: Literal["subscription", "account", "service"]
+    value: SelectionText | None = None
+    subscription_id: SelectionText | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+
+    @field_validator("value", "subscription_id", mode="before")
+    @classmethod
+    def validate_control_characters(cls, value):
+        if isinstance(value, str) and any(ord(c) < 32 or ord(c) == 127 for c in value):
+            raise ValueError("Control characters are unsupported")
+        return value
+
+    @field_validator("start_date", "end_date", mode="before")
+    @classmethod
+    def validate_date_type(cls, value):
+        if value is not None and not (
+            type(value) is date or
+            isinstance(value, str) and re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value)
+        ):
+            raise ValueError("Expected an ISO date")
+        return value
+
+    @model_validator(mode="after")
+    def validate_selection(self):
+        if (self.start_date is None) != (self.end_date is None):
+            raise ValueError("Both period dates are required")
+        if self.start_date is not None and self.start_date >= self.end_date:
+            raise ValueError("start_date must precede end_date")
+        if self.subscription_id is not None:
+            self.subscription_id = self.subscription_id.casefold()
+        if self.group_by == "subscription" and self.value is not None:
+            self.value = self.value.casefold()
+        return self
+
+
 class MessageCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     content: NonEmptyText
     ownership_query: OwnershipSelection | None = None
+    cost_query: AzureCostSelection | None = None
     # JUP-038: la explicación de anomalías se pide con una selección explícita, nunca interpretando el
     # texto libre. Es excluyente con `ownership_query`: cada petición dispara una sola ruta y así nunca
     # hay que decidir cuál gana ni se mezclan dos evidencias en un mismo mensaje.
@@ -44,8 +88,8 @@ class MessageCreateRequest(BaseModel):
 
     @model_validator(mode="after")
     def reject_two_structured_queries(self):
-        if self.anomaly_query is not None and self.ownership_query is not None:
-            raise ValueError("anomaly_query and ownership_query are mutually exclusive")
+        if sum(query is not None for query in (self.anomaly_query, self.ownership_query, self.cost_query)) > 1:
+            raise ValueError("anomaly_query, ownership_query and cost_query are mutually exclusive")
         return self
 
 

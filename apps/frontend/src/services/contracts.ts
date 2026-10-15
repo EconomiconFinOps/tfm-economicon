@@ -62,7 +62,7 @@ export interface TenantCollection {
   items: TenantRecord[];
 }
 
-export type BillingGrouping = "subscription" | "resource_group" | "service" | "project" | "tag";
+export type BillingGrouping = "account" | "subscription" | "resource_group" | "service" | "project" | "tag";
 
 export interface BillingSelection {
   start_date?: string;
@@ -110,7 +110,7 @@ export function isBillingSummary(value: unknown): value is BillingSummary {
   return object(value) && value.contract_version === 2
     && object(value.period) && isoDate(value.period.start_date) && isoDate(value.period.end_date)
     && String(value.period.start_date) < String(value.period.end_date) && value.period.timezone === "UTC"
-    && ["subscription", "resource_group", "service", "project", "tag"].includes(String(value.group_by))
+    && ["account", "subscription", "resource_group", "service", "project", "tag"].includes(String(value.group_by))
     && (value.group_by === "tag" ? typeof value.tag_key === "string" && value.tag_key.trim().length > 0 : value.tag_key === null)
     && ["available", "partial", "empty"].includes(String(value.data_status))
     && Array.isArray(value.totals) && value.totals.every(total)
@@ -197,9 +197,18 @@ export interface ConversationCreateRequest {
   title: string;
 }
 
+export interface AzureCostSelection {
+  group_by: "subscription" | "account" | "service";
+  value?: string;
+  subscription_id?: string;
+  start_date?: string;
+  end_date?: string;
+}
+
 export interface MessageCreateRequest {
   content: string;
   ownership_query?: OwnershipQuery;
+  cost_query?: AzureCostSelection;
   anomaly_query?: { episode_id: string };
 }
 

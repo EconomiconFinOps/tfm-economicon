@@ -44,7 +44,7 @@ export function CostEvidence({ evidence }: { evidence: unknown }) {
   // Display only fields whose contract is understood, never calculate totals
   // here or reinterpret a missing selection as zero cost.
   if (!object(evidence) || evidence.schema_version !== "1.0"
-    || evidence.adapter_version !== "ownership-1.0"
+    || !["ownership-1.0", "azure-cost-1.0"].includes(String(evidence.adapter_version))
     || evidence.source !== "azure_cost_records/completed"
     || typeof evidence.id !== "string" || !/^cost:[a-f0-9]{64}$/.test(evidence.id)
     || typeof evidence.status !== "string" || !Object.hasOwn(statusLabels, evidence.status)
@@ -61,7 +61,7 @@ export function CostEvidence({ evidence }: { evidence: unknown }) {
     <p>Fuente registrada: ingestas Azure completadas.</p>
     <p>Periodo UTC: {summary.period.start_date} a {summary.period.end_date} (fin excluido).</p>
     <p>Registros sin dimensión en el periodo: {summary.missing_dimension_count}.</p>
-    <p>Registros sin fecha excluidos del cliente, todas las fechas: {summary.excluded_undated_count}.</p>
+    <p>{evidence.adapter_version === "azure-cost-1.0" ? "Registros sin fecha excluidos del ámbito de suscripción" : "Registros sin fecha excluidos del cliente, todas las fechas"}: {summary.excluded_undated_count}.</p>
     {groups ? <details className="mt-2 rounded border border-border p-2">
       <summary className="cursor-pointer">Todos los grupos seleccionados ({groups.length})</summary>
       {groups.length > 0 ? <div className="mt-2 overflow-x-auto">
@@ -76,7 +76,7 @@ export function CostEvidence({ evidence }: { evidence: unknown }) {
       </div> : <p>Sin grupos en la selección; no equivale a gasto cero.</p>}
     </details> : <p className="mt-2">El desglose guardado no está disponible.</p>}
     {provenance ? <div className="mt-2">
-      <p className="font-medium">Procedencia del periodo del cliente (todos los valores y monedas)</p>
+      <p className="font-medium">{evidence.adapter_version === "azure-cost-1.0" ? "Procedencia de la selección consultada" : "Procedencia del periodo del cliente (todos los valores y monedas)"}</p>
       <p>Días con registros observados: {provenance.observed_day_count}.</p>
       <p>Primera fecha de uso: {provenance.first_usage_date ?? "Sin fecha observada"}.</p>
       <p>Última fecha de uso: {provenance.last_usage_date ?? "Sin fecha observada"}.</p>
