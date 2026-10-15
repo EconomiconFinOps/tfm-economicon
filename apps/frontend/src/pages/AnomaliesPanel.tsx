@@ -5,6 +5,7 @@ import { AlertTriangle, FlaskConical, Radar, SlidersHorizontal } from "lucide-re
 import { ExportButton } from "@/components/ExportButton";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import type { SessionOutletContext } from "@/layouts/SessionGate";
+import { useFunctionalScreen, type FunctionalScreen } from "@/components/chat/ScreenCaptureProvider";
 import { changeAnomalyEpisodeStatus, detectAnomalies, fetchAnomalyEpisodes, getSessionGeneration } from "@/services/api";
 import { isAnomalyEpisodeId, type AnomalyDetectionRun, type AnomalyEpisode, type AnomalySeverity, type AnomalyStatus, type AnomalyStatusChange } from "@/services/contracts";
 import {
@@ -191,6 +192,35 @@ export function AnomaliesPanel() {
   const reset = () => { setSeverity("all"); setStatus("open"); setObservation("all"); };
   const reload = () => queryClient.invalidateQueries({ queryKey });
   const neverDetected = data !== undefined && data.last_evaluated_date === null;
+
+  const capture = useMemo<FunctionalScreen>(() => {
+    const selection = { filters: { severity, status, observation } };
+    // No previous-tenant or stale failed-query rows enter the chat snapshot.
+    if (list.isError) return { source: "error", selection, datasets: [] };
+    if (!data) return { source: "loading", selection, datasets: [] };
+    const rows = filterEpisodes(data.episodes, severity, status, observation);
+    return { source: "loaded-screen", selection, datasets: [{
+      source: "anomaly-episodes-v1", load_state: rows.length ? "loaded" : "empty",
+      loaded_at: new Date(list.dataUpdatedAt).toISOString(),
+      data_environment: data.includes_synthetic_data ? "demo" : "unknown",
+      selection, last_evaluated_date: data.last_evaluated_date,
+      completeness: { status: data.last_evaluated_date === null ? "unavailable" : "partial",
+        missing_dimensions: ["confirmed_root_cause", "verified_financial_query"] },
+      // Impacts may span different periods; preserve each row's currency and
+      // period rather than fabricating one combined total or billing amount.
+      totals: [], series: [], groups: rows.map((row) => ({
+        label: row.service ?? "(sin servicio)", episode_id: row.id,
+        amount: row.accumulated_impact, currency: row.currency,
+        measure: "accumulated_candidate_impact", severity: row.severity,
+        status: row.status, observation: row.observation, cause_status: row.cause_status,
+        period: { start_date: row.start_date, end_date: row.impact_through_date, timezone: "UTC" },
+        reference_daily_cost: row.reference_daily_cost,
+        opening_observed_cost: row.opening_observed_cost,
+        rules_version: row.rules_version, limitations: row.limitations,
+      })), counts: { records: rows.length, groups: rows.length, series: 0 },
+    }] };
+  }, [data, list.isError, list.dataUpdatedAt, severity, status, observation]);
+  useFunctionalScreen(capture);
 
   const detecting = detect.isPending && detect.variables === tenantId;
   const detectButton = (

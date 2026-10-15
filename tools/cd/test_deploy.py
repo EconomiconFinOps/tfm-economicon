@@ -88,6 +88,21 @@ class RuntimeTests(unittest.TestCase):
                 deploy.init(self.root / "invalid", port)
         self.assertFalse((self.root / "invalid").exists())
 
+    def test_chat_hmac_initialization_reuse_and_legacy_root(self):
+        path = self.root / 'private' / 'chat-hmac'
+        original = path.read_bytes()
+        self.assertEqual(len(original), 64)
+        self.assertEqual(deploy.chat_hmac_file(self.root), path.resolve())
+        self.assertEqual(path.read_bytes(), original)
+        legacy = self.root / 'legacy'
+        legacy.mkdir()
+        self.assertEqual(len(deploy.chat_hmac_file(legacy).read_bytes()), 64)
+        path.chmod(0o600)
+        path.write_bytes(b'invalid')
+        with self.assertRaisesRegex(ValueError, 'refusing to rotate'):
+            deploy.chat_hmac_file(self.root)
+        self.assertEqual(path.read_bytes(), b'invalid')
+
     @patch.object(deploy, "run")
     def test_prepare_private_ports_absolute_paths_and_shell_dollars(self, run):
         def render(*args, **kwargs):
@@ -107,12 +122,72 @@ class RuntimeTests(unittest.TestCase):
         self.assertNotIn("$$$$", backend["entrypoint"][2])
         self.assertNotIn("do-not-copy", (release / ".env").read_text())
         self.assertIn("API_HOST_PORT='19357'", (release / ".env").read_text())
+        self.assertIn("CHAT_HMAC_FILE='" + str((self.root / 'private' / 'chat-hmac').resolve()) + "'", (release / '.env').read_text())
+        self.assertFalse((release / 'private' / 'chat-hmac').exists())
         with self.assertRaises(ValueError):
             deploy.prepare(self.root, self.source, self.new, 0)
+
+    @patch.object(deploy, "run", return_value='{"services": {}}')
+    def test_prepare_gives_each_slot_its_own_chat_private_network(self, run):
+        environments = []
+        original_hmac = (self.root / "private" / "chat-hmac").read_bytes()
+        for sha, slot in ((self.old, 0), (self.new, 1)):
+            release = deploy.prepare(self.root, self.source, sha, slot)
+            environments.append(dict(
+                line.split("=", 1) for line in (release / ".env").read_text().splitlines()
+            ))
+        self.assertEqual(environments[0]["CHAT_PRIVATE_SUBNET"], "'172.30.35.0/24'")
+        self.assertEqual(environments[1]["CHAT_PRIVATE_SUBNET"], "'172.30.36.0/24'")
+        self.assertEqual(environments[0]["PROCESSOR_CHAT_PRIVATE_IP"], "'172.30.35.3'")
+        self.assertEqual(environments[1]["PROCESSOR_CHAT_PRIVATE_IP"], "'172.30.36.3'")
+        self.assertEqual(environments[0]["CHAT_HMAC_FILE"], environments[1]["CHAT_HMAC_FILE"])
+        self.assertEqual((self.root / "private" / "chat-hmac").read_bytes(), original_hmac)
 
     def test_invalid_sha_never_copies_source(self):
         with self.assertRaises(ValueError):
             deploy.prepare(self.root, self.source, "../../outside", 0)
+
+    @patch.object(deploy, "run", return_value='{"services": {}}')
+    def test_prepare_excludes_root_and_nested_secrets_and_preserves_hmac(self, run):
+        secret = self.root / "private" / "chat-hmac"
+        original = secret.read_bytes()
+        for parent in (self.source, self.source / "apps" / "processor"):
+            directory = parent / ".secrets"
+            directory.mkdir(parents=True)
+            (directory / "application-key").write_text("synthetic-never-copy")
+        (self.source / "ordinary.txt").write_text("keep-source")
+        release = deploy.prepare(self.root, self.source, self.new, 0)
+        self.assertFalse((release / ".secrets").exists())
+        self.assertFalse((release / "apps" / "processor" / ".secrets").exists())
+        self.assertEqual((release / "ordinary.txt").read_text(), "keep-source")
+        self.assertEqual(secret.read_bytes(), original)
+
+    def test_chat_hmac_rejects_symlink_file_or_directory(self):
+        for link_directory in (False, True):
+            with self.subTest(directory=link_directory):
+                root = self.root / ("directory-link" if link_directory else "file-link")
+                root.mkdir()
+                target = self.root / ("target-dir" if link_directory else "target-key")
+                if link_directory:
+                    target.mkdir()
+                    link = root / "private"
+                else:
+                    target.write_bytes(b"s" * 64)
+                    (root / "private").mkdir()
+                    link = root / "private" / "chat-hmac"
+                try:
+                    link.symlink_to(target, target_is_directory=link_directory)
+                except OSError as error:
+                    if getattr(error, "winerror", None) != 1314:
+                        raise
+                    # Windows without link privilege still exercises both guards.
+                    # Linux/CI exercises real filesystem links without this path.
+                    with patch.object(Path, "is_symlink", lambda candidate: candidate == link):
+                        with self.assertRaisesRegex(ValueError, "symlink"):
+                            deploy.chat_hmac_file(root)
+                    continue
+                with self.assertRaisesRegex(ValueError, "symlink"):
+                    deploy.chat_hmac_file(root)
 
     @patch.object(deploy, "smoke")
     @patch.object(deploy, "compose")

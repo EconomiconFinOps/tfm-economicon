@@ -1,0 +1,367 @@
+{
+  "$defs": {
+    "Confidence": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/EvidenceKind"
+        },
+        "title": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "source"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "EvidenceKind": {
+      "enum": [
+        "cost_query",
+        "corpus",
+        "user_input"
+      ],
+      "title": "EvidenceKind",
+      "type": "string"
+    },
+    "Metric": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d{1,12})?$",
+          "title": "Value",
+          "type": "string"
+        },
+        "unit": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "unit",
+        "evidence_ids"
+      ],
+      "title": "Metric",
+      "type": "object"
+    },
+    "Period": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "format": "date",
+          "title": "From",
+          "type": "string"
+        },
+        "to": {
+          "format": "date",
+          "title": "To",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "title": "Period",
+      "type": "object"
+    },
+    "Recommendation": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/RecommendationCategory"
+        },
+        "action": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "rationale": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "estimated_savings": {
+          "anyOf": [
+            {
+              "pattern": "^(?:0|[1-9]\\d*)(?:\\.\\d{1,12})?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Estimated Savings"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Currency"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "risk": {
+          "$ref": "#/$defs/Risk"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "requires_human_approval": {
+          "const": true,
+          "title": "Requires Human Approval",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "category",
+        "action",
+        "rationale",
+        "estimated_savings",
+        "currency",
+        "confidence",
+        "risk",
+        "evidence_ids",
+        "requires_human_approval"
+      ],
+      "title": "Recommendation",
+      "type": "object"
+    },
+    "RecommendationCategory": {
+      "enum": [
+        "tagging",
+        "investigation",
+        "rightsizing",
+        "scheduling",
+        "orphan_cleanup",
+        "storage_optimization",
+        "observability_optimization",
+        "rate_optimization"
+      ],
+      "title": "RecommendationCategory",
+      "type": "string"
+    },
+    "ResponseScope": {
+      "additionalProperties": false,
+      "properties": {
+        "cloud": {
+          "const": "azure",
+          "title": "Cloud",
+          "type": "string"
+        },
+        "data_environment": {
+          "const": "simulated",
+          "title": "Data Environment",
+          "type": "string"
+        },
+        "subscription_ids": {
+          "items": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Subscription Ids",
+          "type": "array"
+        },
+        "period": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Period"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "cloud",
+        "data_environment",
+        "subscription_ids",
+        "period"
+      ],
+      "title": "ResponseScope",
+      "type": "object"
+    },
+    "ResponseStatus": {
+      "enum": [
+        "ok",
+        "partial",
+        "no_data",
+        "insufficient_data",
+        "unsupported",
+        "refused",
+        "error"
+      ],
+      "title": "ResponseStatus",
+      "type": "string"
+    },
+    "Risk": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "Risk",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/ResponseStatus"
+    },
+    "answer": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Answer",
+      "type": "string"
+    },
+    "scope": {
+      "$ref": "#/$defs/ResponseScope"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/Evidence"
+      },
+      "maxItems": 20,
+      "title": "Evidence",
+      "type": "array"
+    },
+    "metrics": {
+      "items": {
+        "$ref": "#/$defs/Metric"
+      },
+      "maxItems": 20,
+      "title": "Metrics",
+      "type": "array"
+    },
+    "recommendations": {
+      "items": {
+        "$ref": "#/$defs/Recommendation"
+      },
+      "maxItems": 10,
+      "title": "Recommendations",
+      "type": "array"
+    },
+    "assumptions": {
+      "items": {
+        "maxLength": 500,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 10,
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "maxLength": 500,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 10,
+      "title": "Limitations",
+      "type": "array"
+    },
+    "next_actions": {
+      "items": {
+        "maxLength": 500,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 10,
+      "title": "Next Actions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "answer",
+    "scope",
+    "evidence",
+    "metrics",
+    "recommendations",
+    "assumptions",
+    "limitations",
+    "next_actions"
+  ],
+  "title": "FinOpsResponse",
+  "type": "object"
+}

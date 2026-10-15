@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { AnswerEvidence } from "./AnswerEvidence";
 
@@ -15,12 +15,21 @@ describe("AnswerEvidence", () => {
     expect(document.getElementById(link.getAttribute("href")!.slice(1))).toBeInTheDocument();
     expect(fireEvent.click(link)).toBe(false);
     const evidence = document.getElementById(link.getAttribute("href")!.slice(1));
-    expect(evidence).toHaveAttribute("open");
-    expect(evidence?.querySelector("summary")).toHaveFocus();
+    expect(evidence).toHaveFocus();
+    expect(evidence).toHaveAttribute("tabindex", "-1");
+    const sources = screen.getByRole("region", { name: "Fuentes utilizadas" });
+    expect(within(sources).getAllByRole("listitem")).toHaveLength(1);
+    expect(sources).toHaveTextContent("Guía Azure · FinOps");
+    expect(sources.querySelector(".lucide-file-text")).not.toBeNull();
+    expect(sources.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(container.querySelector("details, summary, blockquote")).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Fuentes utilizadas" })).toBeNull();
     expect(screen.getByText(/Guía Azure/)).toBeInTheDocument();
-    expect(screen.getByText("Página: 4")).toBeInTheDocument();
-    expect(screen.getByText("Sección: Costes")).toBeInTheDocument();
-    expect(screen.getByText(citation.excerpt)).toBeInTheDocument();
+    expect(screen.queryByText("Página: 4")).toBeNull();
+    expect(screen.queryByText("Sección: Costes")).toBeNull();
+    expect(sources).not.toHaveTextContent(citation.excerpt);
+    expect(sources).not.toHaveTextContent(citation.document_id);
+    expect(sources).not.toHaveTextContent(citation.reference);
     expect(container.querySelector("script")).toBeNull();
   });
 
@@ -39,6 +48,15 @@ describe("AnswerEvidence", () => {
     render(<AnswerEvidence content="- [1] Respuesta" metadata={{ citations: ["chunk-1"], source_citations: [{ ...citation, page: null, section: null }] }} />);
     expect(screen.queryByText(/Página:/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Sección:/)).not.toBeInTheDocument();
+  });
+
+  it("omits redundant source names and renders no empty sources notice", () => {
+    const { rerender } = render(<AnswerEvidence content="Respuesta" metadata={{ citations: ["chunk-1"], source_citations: [{ ...citation, source: "guía azure" }] }} />);
+    expect(screen.getByRole("listitem")).toHaveTextContent(/^Guía Azure$/);
+    rerender(<AnswerEvidence content="Respuesta" metadata={{ citations: [], source_citations: [] }} />);
+    expect(screen.queryByRole("region", { name: "Fuentes utilizadas" })).toBeNull();
+    expect(screen.queryByText("Sin fuentes documentales utilizadas.")).toBeNull();
+    expect(screen.queryByText("La evidencia de esta respuesta no está disponible.")).toBeNull();
   });
 
   it("does not turn an echoed user citation marker into a supported claim", () => {

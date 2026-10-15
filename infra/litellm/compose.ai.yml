@@ -6,7 +6,15 @@ services:
         condition: service_healthy
         required: true
   processor:
+    environment:
+      SUMMARY_API_KEY_FILE: /run/secrets/summary-api-key
+    secrets:
+      - summary-api-key
     depends_on:
       litellm:
         condition: service_healthy
         required: true
+
+secrets:
+  summary-api-key:
+    file: ${SUMMARY_API_KEY_FILE:?required separate summary virtual-key file}

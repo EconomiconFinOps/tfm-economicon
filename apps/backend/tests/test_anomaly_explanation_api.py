@@ -73,6 +73,11 @@ def normalized(value):
     return json.loads(json.dumps(value))
 
 
+def stored_messages(database):
+    return [message for conversation in rows(database, "conversations")
+            for message in database.fetch_messages(conversation["id"], conversation["tenant_id"], conversation["user_id"])]
+
+
 # --------------------------------------------------------------------------------------------------
 # 4.2 Éxito
 # --------------------------------------------------------------------------------------------------
@@ -80,10 +85,10 @@ def normalized(value):
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
 def test_explicacion_guarda_los_dos_mensajes_con_la_forma_de_metadatos_exacta(api, monkeypatch):
     # Caso feliz de punta a punta: 201 con el mensaje del usuario (tal cual, con su selección como
-    # metadatos) y el del asistente (texto del explicador y SOLO citations + anomaly_evidence).
+    # metadatos) y el del asistente (evidencia y correlacion del historial atomico).
     snapshot = make_snapshot()
     double = stub_store(api, monkeypatch, snapshot)
-    before = rows(api.db, "messages")
+    before = stored_messages(api.db)
     counter = queries()
 
     response = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
@@ -96,7 +101,8 @@ def test_explicacion_guarda_los_dos_mensajes_con_la_forma_de_metadatos_exacta(ap
     assert user["role"] == "user" and user["content"] == QUESTION
     assert user["metadata"] == {"anomaly_query": {"episode_id": EPISODE_ID}}
     assert assistant["role"] == "assistant"
-    assert set(assistant["metadata"]) == {"citations", "anomaly_evidence"}
+    assert set(assistant["metadata"]) == {"citations", "anomaly_evidence", "generation"}
+    assert assistant["metadata"]["generation"] == {"question_message_id": user["id"]}
     assert assistant["metadata"]["citations"] == []
     assert "source_citations" not in assistant["metadata"] and "cost_evidence" not in assistant["metadata"]
     evidence = assistant["metadata"]["anomaly_evidence"]
@@ -108,17 +114,59 @@ def test_explicacion_guarda_los_dos_mensajes_con_la_forma_de_metadatos_exacta(ap
     # La métrica de preguntas del asistente sube exactamente 1 (una sola respuesta).
     assert queries() == counter + 1
     assert_no_retrieval_or_cost(api)
-    # Se guardaron exactamente dos filas nuevas (una de cada rol); el orden usuario -> asistente se fija con las llamadas a `append_message`.
-    stored = rows(api.db, "messages")
+    # Una sola escritura atomica conserva los dos mensajes en orden y con el mismo scope.
+    stored = stored_messages(api.db)
     assert len(stored) == len(before) + 2
     assert sorted(item["role"] for item in stored[len(before):]) == ["assistant", "user"]
-    assert api.spies["append_message"].call_count == 2
-    first, second = (item.kwargs for item in api.spies["append_message"].call_args_list)
+    assert api.spies["append_pair"].call_count == 1
+    pair = api.spies["append_pair"].call_args.kwargs
+    first, second = pair["question"], pair["assistant"]
     assert (first["role"], first["user_id"], first["requester_id"]) == ("user", "alice", "alice")
     assert (second["role"], second["user_id"], second["requester_id"]) == ("assistant", None, "alice")
     assert first["tenant_id"] == second["tenant_id"] == "tenant-a"
     assert first["conversation_id"] == second["conversation_id"] == "own"
     assert double.call_count == 1
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_anomaly_pair_rolls_back_when_persistence_fails(api, monkeypatch):
+    from app.db import chat_history
+    from app.db.chat_repository import ChatError
+    stub_store(api, monkeypatch)
+    before, counter = stored_messages(api.db), queries()
+    original = chat_history.append_final
+
+    def fail_after_write(*args, **kwargs):
+        original(*args, **kwargs)
+        raise ChatError(503, 'db_unavailable')
+
+    monkeypatch.setattr(chat_history, 'append_final', fail_after_write)
+    response = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
+    assert response.status_code == 503
+    assert stored_messages(api.db) == before
+    assert queries() == counter
+    assert api.spies['append_pair'].call_count == 1
+    assert_no_retrieval_or_cost(api)
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_busy_conversation_does_not_read_anomaly_or_append_pair(api, monkeypatch):
+    from app.db.chat_repository import ChatError
+    double = stub_store(api, monkeypatch)
+    before, counter = stored_messages(api.db), queries()
+
+    def busy(**scope):
+        assert scope == {'conversation_id': 'own', 'tenant_id': 'tenant-a', 'user_id': 'alice'}
+        raise ChatError(409, 'conversation_busy')
+
+    monkeypatch.setattr(api.db, 'assert_conversation_idle', busy)
+    response = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
+    assert response.status_code == 409 and response.json()['detail'] == 'conversation_busy'
+    double.assert_not_called()
+    api.spies['append_pair'].assert_not_called()
+    assert stored_messages(api.db) == before
+    assert queries() == counter
+    assert_no_retrieval_or_cost(api)
 
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
@@ -198,8 +246,8 @@ def test_el_texto_de_la_pregunta_no_filtra_ni_autoriza_nada(api, monkeypatch, qu
 # --------------------------------------------------------------------------------------------------
 
 def assert_nothing_stored(api, before, counter):
-    api.spies["append_message"].assert_not_called()
-    assert rows(api.db, "messages") == before
+    api.spies["append_pair"].assert_not_called()
+    assert stored_messages(api.db) == before
     assert queries() == counter
     assert_no_retrieval_or_cost(api)
 
@@ -208,7 +256,7 @@ def assert_nothing_stored(api, before, counter):
 def test_anomalia_inexistente_o_de_otro_cliente_da_404_sin_guardar_nada(api, monkeypatch):
     double = stub_store(api, monkeypatch)
     double.return_value = None  # no existe o es de otro cliente: la lectura filtrada por cliente no devuelve nada
-    before, counter = rows(api.db, "messages"), queries()
+    before, counter = stored_messages(api.db), queries()
     response = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
     assert response.status_code == 404
     assert response.json() == NOT_FOUND
@@ -223,7 +271,7 @@ def test_otro_cliente_e_inexistente_dan_exactamente_la_misma_respuesta(api, monk
     snapshot = make_snapshot()
     owned_by_b = stub_store(api, monkeypatch, side_effect=lambda tenant_id, episode_id: (
         copy.deepcopy(snapshot) if (tenant_id, episode_id) == ("tenant-b", EPISODE_ID) else None))
-    before, counter = rows(api.db, "messages"), queries()
+    before, counter = stored_messages(api.db), queries()
     foreign = call(api, "POST", PATH, headers=headers(), json=anomaly_body(EPISODE_ID))
     missing = call(api, "POST", PATH, headers=headers(), json=anomaly_body(OTHER_ID))
     assert owned_by_b.call_count == 2
@@ -243,7 +291,7 @@ def test_episodio_no_explicable_da_409_sin_guardar_nada(api, monkeypatch, change
     # `ExplanationUnavailable` REAL: el explicador de producción rechaza la fotografía y la ruta lo
     # traduce al 409 del contrato, sin texto parcial ni mensajes guardados.
     double = stub_store(api, monkeypatch, make_snapshot(**changes))
-    before, counter = rows(api.db, "messages"), queries()
+    before, counter = stored_messages(api.db), queries()
     response = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
     assert response.status_code == 409, response.text
     assert response.json() == UNAVAILABLE
@@ -272,8 +320,8 @@ def test_cuerpo_invalido_da_422_sin_leer_conversacion_ni_anomalia_ni_guardar(api
     # Control: el mismo mensaje bien formado sí se acepta, así que el 422 de abajo no es "campo desconocido".
     control = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
     assert control.status_code == 201, control.text
-    reads = (double.call_count, api.spies["fetch_conversation"].call_count, api.spies["append_message"].call_count)
-    before, counter = rows(api.db, "messages"), queries()
+    reads = (double.call_count, api.spies["fetch_conversation"].call_count, api.spies["append_pair"].call_count)
+    before, counter = stored_messages(api.db), queries()
     embeds = api.embedding.embed.call_count
 
     response = call(api, "POST", PATH, headers=headers(), json=body)
@@ -281,8 +329,8 @@ def test_cuerpo_invalido_da_422_sin_leer_conversacion_ni_anomalia_ni_guardar(api
     assert response.status_code == 422, response.text
     # 422 antes de cualquier lectura o escritura: ni el doble, ni la conversación, ni mensajes.
     assert (double.call_count, api.spies["fetch_conversation"].call_count,
-            api.spies["append_message"].call_count) == reads
-    assert rows(api.db, "messages") == before
+            api.spies["append_pair"].call_count) == reads
+    assert stored_messages(api.db) == before
     assert queries() == counter
     assert api.embedding.embed.call_count == embeds
     api.vector.search_chunks.assert_not_called()
@@ -295,7 +343,7 @@ def test_sin_sesion_o_con_cliente_ajeno_se_rechaza_antes_de_leer_nada(api, monke
     # dos comprobaciones ya se cumplen sin la rama nueva (comportamiento existente que se fija para que
     # la rama no lo altere).
     double = stub_store(api, monkeypatch)
-    before, counter = rows(api.db, "messages"), queries()
+    before, counter = stored_messages(api.db), queries()
     unauthorized = call(api, "POST", PATH, json=anomaly_body())
     assert unauthorized.status_code == 401
     forbidden = call(api, "POST", PATH, headers=headers(tenant="tenant-b"), json=anomaly_body())
@@ -311,7 +359,7 @@ def test_conversacion_ajena_o_inexistente_da_404_sin_leer_ninguna_anomalia(api, 
     # `foreign-marker` es de otro cliente, `other-owner` de otro usuario del mismo cliente. Se resuelve
     # ANTES de leer la anomalía: no se debe poder sondear anomalías desde una conversación ajena.
     double = stub_store(api, monkeypatch)
-    before, counter = rows(api.db, "messages"), queries()
+    before, counter = stored_messages(api.db), queries()
     response = call(api, "POST", f"/assistant/conversations/{identifier}/messages",
                     headers=headers(), json=anomaly_body())
     assert response.status_code == 404
@@ -345,7 +393,8 @@ def test_cada_mensaje_del_asistente_conserva_su_propia_evidencia_tras_recargar(a
     anomaly_meta = anomaly.json()["assistant_message"]["metadata"]
     doc_meta = documentary.json()["assistant_message"]["metadata"]
     assert "cost_evidence" in owned_meta and "anomaly_evidence" not in owned_meta
-    assert set(anomaly_meta) == {"citations", "anomaly_evidence"}
+    assert set(anomaly_meta) == {"citations", "anomaly_evidence", "generation"}
+    assert anomaly_meta["generation"] == {"question_message_id": anomaly.json()["user_message"]["id"]}
     assert "source_citations" in doc_meta and "cost_evidence" not in doc_meta and "anomaly_evidence" not in doc_meta
     assert doc_meta["source_citations"][0]["evidence_id"] == "chunk-1"
 

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from time import perf_counter
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from app.api.dependencies import (
     get_active_tenant,
@@ -14,6 +14,8 @@ from app.api.dependencies import (
     get_database,
 )
 from app.core.config import get_settings
+from app.db.chat_repository import ChatError, ChatRepository
+from app.db import chat_history
 from app.core.metrics import assistant_queries_total, retrieval_empty_total, retrieval_failures_total
 from app.services.anomaly_explanations import ExplanationUnavailable, explain_episode
 from app.services.citations import InvalidCitation, resolve_citations, validate_context
@@ -26,6 +28,7 @@ from app.schemas.assistant import (
     ConversationCreateRequest,
     ConversationDetail,
     ConversationRecord,
+    ConversationRenameRequest,
     MessageCreateRequest,
 )
 
@@ -67,6 +70,35 @@ def create_conversation(
     )
 
 
+@router.patch("/conversations/{conversation_id}", response_model=ConversationRecord)
+def rename_conversation(
+    conversation_id: str,
+    payload: ConversationRenameRequest,
+    current_user=Depends(get_current_user),
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> ConversationRecord:
+    conversation = database.rename_conversation(conversation_id, tenant_id, current_user["id"], payload.title)
+    if conversation is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found.")
+    return ConversationRecord(**conversation)
+
+
+@router.delete("/conversations/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_conversation(
+    conversation_id: str,
+    current_user=Depends(get_current_user),
+    tenant_id: str = Depends(get_active_tenant),
+    database=Depends(get_database),
+) -> Response:
+    try:
+        ChatRepository(database).delete_conversation({"conversation_id": conversation_id,
+            "tenant_id": tenant_id, "user_id": current_user["id"]})
+    except ChatError as exc:
+        raise HTTPException(exc.status, exc.code) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @router.get("/conversations/{conversation_id}", response_model=ConversationDetail)
 def get_conversation(
     conversation_id: str,
@@ -77,10 +109,14 @@ def get_conversation(
     conversation = database.fetch_conversation(conversation_id, tenant_id, current_user["id"])
     if conversation is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found.")
-    return ConversationDetail(
-        conversation=ConversationRecord(**conversation),
-        messages=database.fetch_messages(conversation_id, tenant_id, current_user["id"]),
-    )
+    try:
+        detail = ConversationDetail(
+            conversation=ConversationRecord(**conversation),
+            messages=database.fetch_messages(conversation_id, tenant_id, current_user["id"]),
+        )
+        return chat_history.http_response(detail.model_dump(mode='python'))
+    except ChatError as exc:
+        raise HTTPException(exc.status, exc.code) from None
 
 
 @router.post(
@@ -101,6 +137,11 @@ def send_message(
     conversation = database.fetch_conversation(conversation_id, tenant_id, current_user["id"])
     if conversation is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found.")
+
+    try:
+        database.assert_conversation_idle(conversation_id=conversation_id, tenant_id=tenant_id, user_id=current_user["id"])
+    except ChatError as exc:
+        raise HTTPException(exc.status, exc.code) from None
 
     if payload.anomaly_query is not None:
         # Orden de la decisión 8 del diseño: leer, explicar y SOLO ENTONCES guardar. Si el episodio no existe
@@ -126,21 +167,27 @@ def send_message(
             raise HTTPException(status_code=409, detail={"code": "anomaly_explanation_unavailable"}) from None
         # Misma forma de guardado que la rama de propiedad. No se registra (`logger`) nada del episodio ni de
         # la explicación: el nombre del servicio y el motivo de cierre son datos del cliente.
-        user_message = database.append_message(
+        user_message = database.prepare_message(
             conversation_id=conversation_id, tenant_id=tenant_id, user_id=current_user["id"],
             requester_id=current_user["id"], role="user", content=payload.content,
             metadata={"anomaly_query": {"episode_id": payload.anomaly_query.episode_id}},
         )
-        assistant_message = database.append_message(
+        assistant_message = database.prepare_message(
             conversation_id=conversation_id, tenant_id=tenant_id, user_id=None,
             requester_id=current_user["id"], role="assistant", content=explanation["content"],
-            metadata={"citations": [], "anomaly_evidence": explanation["anomaly_evidence"]},
+            metadata={"citations": [], "anomaly_evidence": explanation["anomaly_evidence"],
+                      "generation": {"question_message_id": user_message["id"]}},
         )
+        try:
+            user_message, assistant_message = database.append_pair(question=user_message, assistant=assistant_message)
+        except ChatError as exc:
+            raise HTTPException(exc.status, exc.code) from None
         assistant_queries_total.inc()
-        return AssistantReply(
+        reply = AssistantReply(
             conversation=ConversationRecord(**conversation), user_message=user_message,
             assistant_message=assistant_message, retrieved_context=[],
         )
+        return chat_history.http_response(reply.model_dump(mode='python'), status_code=201)
 
     if payload.ownership_query is not None:
         try:
@@ -149,23 +196,29 @@ def send_message(
             raise HTTPException(status_code=409, detail={"code": "ambiguous_cost_source"}) from None
         except OwnershipResultTooLarge:
             raise HTTPException(status_code=422, detail={"code": "ownership_result_too_large"}) from None
-        user_message = database.append_message(
+        user_message = database.prepare_message(
             conversation_id=conversation_id, tenant_id=tenant_id, user_id=current_user["id"],
             requester_id=current_user["id"], role="user", content=payload.content,
             metadata={"ownership_query": output["cost_evidence"]["selection"]},
         )
-        assistant_message = database.append_message(
+        assistant_message = database.prepare_message(
             conversation_id=conversation_id, tenant_id=tenant_id, user_id=None,
             requester_id=current_user["id"], role="assistant", content=output["content"],
-            metadata={"citations": [], "cost_evidence": output["cost_evidence"]},
+            metadata={"citations": [], "cost_evidence": output["cost_evidence"],
+                "generation": {"question_message_id": user_message["id"]}},
         )
+        try:
+            user_message, assistant_message = database.append_pair(question=user_message, assistant=assistant_message)
+        except ChatError as exc:
+            raise HTTPException(exc.status, exc.code) from None
         assistant_queries_total.inc()
-        return AssistantReply(
+        reply = AssistantReply(
             conversation=ConversationRecord(**conversation), user_message=user_message,
             assistant_message=assistant_message, retrieved_context=[],
         )
+        return chat_history.http_response(reply.model_dump(mode='python'), status_code=201)
 
-    user_message = database.append_message(
+    user_message = database.prepare_message(
         conversation_id=conversation_id,
         tenant_id=tenant_id,
         user_id=current_user["id"],
@@ -217,24 +270,31 @@ def send_message(
     except InvalidCitation:
         raise HTTPException(status_code=502, detail="Invalid response evidence.") from None
 
-    assistant_message = database.append_message(
+    assistant_message = database.prepare_message(
         conversation_id=conversation_id,
         tenant_id=tenant_id,
         user_id=None,
         requester_id=current_user["id"],
         role="assistant",
         content=assistant_output["content"],
-        metadata={"citations": assistant_output["citations"], "source_citations": source_citations},
+        metadata={"citations": assistant_output["citations"], "source_citations": source_citations,
+            "generation": {"question_message_id": user_message["id"]}},
     )
+
+    try:
+        user_message, assistant_message = database.append_pair(question=user_message, assistant=assistant_message)
+    except ChatError as exc:
+        raise HTTPException(exc.status, exc.code) from None
 
     assistant_queries_total.inc()
 
-    return AssistantReply(
+    reply = AssistantReply(
         conversation=ConversationRecord(**conversation),
         user_message=user_message,
         assistant_message=assistant_message,
         retrieved_context=retrieved_chunks,
     )
+    return chat_history.http_response(reply.model_dump(mode='python'), status_code=201)
 
 
 def _retrieval_failed(category: str, trace: dict, started: float) -> None:

@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     rabbitmq_url: SecretStr
     vector_database_url: SecretStr
     processor_queue_name: str = "processor:jobs"
+    summary_timeout_seconds: int = Field(default=180, ge=30, le=300)
     embedding_provider: str = "mock"
     embedding_dimension: int = 8
     embedding_model: str = "economicon-embedding"

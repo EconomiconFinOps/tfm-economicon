@@ -140,8 +140,11 @@ Bordes de redondeo que el explicador debe tratar (cálculo en el mismo script):
 ## Evidencia guardada
 
 El mensaje del usuario se guarda con `metadata = {"anomaly_query": {"episode_id": "..."}}` y el del
-asistente con `metadata = {"citations": [], "anomaly_evidence": {...}}`. No hay migración: es JSON
-dentro de los metadatos del mensaje. Es una evidencia distinta de las citas documentales
+asistente con `metadata = {"citations": [], "anomaly_evidence": {...}, "generation": {"question_message_id": "..."}}`.
+La correlacion tecnica pertenece al historial de JUP-035, no al contrato de
+`anomaly_evidence`. Ambos mensajes se persisten como una pareja atomica en
+el historial JSONB; un fallo de escritura no deja un turno parcial. No hay
+migracion adicional. Es una evidencia distinta de las citas documentales
 (`source_citations`) y de la evidencia de costes por propiedad (`cost_evidence`).
 
 | Campo | Contenido |
@@ -194,6 +197,7 @@ episodio y las limitaciones abreviados (`…`):
 ```json
 {
   "citations": [],
+  "generation": { "question_message_id": "id-del-mensaje-de-usuario" },
   "anomaly_evidence": {
     "schema_version": "1.0",
     "adapter_version": "anomaly-explanation-1.0",
