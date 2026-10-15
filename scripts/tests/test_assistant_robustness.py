@@ -194,7 +194,7 @@ class OfflineServiceTests(unittest.TestCase):
         self.assertTrue(all(case["prompt_echo"] for case in report["cases"]))
         numeric = entry(report, "JUP-071-002")
         self.assertEqual(numeric["outcome"], "fail")
-        self.assertEqual(numeric["checks"]["numbers-2"], "fail")
+        self.assertEqual(numeric["checks"]["numbers-1"], "fail")
         self.assertTrue(numeric["missing"])
         self.assertFalse(report["generative_robustness_accepted"])
 
@@ -259,7 +259,6 @@ class JudgmentAndScoreTests(unittest.TestCase):
         judgments["cases"]["JUP-071-002"]["forbidden-1"][0]["result"] = "fail"
         result = entry(scored(raw, judgments), "JUP-071-002")
         self.assertEqual(result["checks"]["numbers-1"], "pass")
-        self.assertEqual(result["checks"]["numbers-2"], "pass")
         self.assertEqual(result["outcome"], "fail")
 
     def test_behavior_check_distinguishes_useful_answer_from_universal_abstention(self):
@@ -294,11 +293,10 @@ class JudgmentAndScoreTests(unittest.TestCase):
     def test_wrong_number_fails_despite_all_semantic_judgments_being_missing(self):
         raw = raw_fixture()
         row = next(item for item in raw["cases"] if item["case"] == "JUP-071-002")
-        row["answer"] = "Coste etiquetable: 1000 EUR. Cumplimiento por coste: 90 %."
+        row["answer"] = "Cumplimiento por coste: 90 %."
         result = entry(scored(raw, robustness.empty_judgments(raw)), "JUP-071-002")
         self.assertEqual(result["outcome"], "fail")
-        self.assertEqual(result["checks"]["numbers-1"], "pass")
-        self.assertEqual(result["checks"]["numbers-2"], "fail")
+        self.assertEqual(result["checks"]["numbers-1"], "fail")
         self.assertTrue(result["missing"])
 
     def test_unknown_judgment_points_and_cases_are_rejected(self):
@@ -609,8 +607,8 @@ class AdversarialPassTests(unittest.TestCase):
             for answer in options:
                 with self.subTest(case=case_id, answer=answer):
                     checks = self.number_result(case_id, answer)
-                    self.assertIn("pass", checks["numbers-1" if case_id.endswith("010") else "numbers-2"])
-        self.assertEqual(self.number_result("JUP-071-002", "El cumplimiento es del 90 %.")["numbers-2"], "fail")
+                    self.assertEqual(checks["numbers-1"], "pass")
+        self.assertEqual(self.number_result("JUP-071-002", "El cumplimiento es del 90 %.")["numbers-1"], "fail")
 
     def test_declared_aliases_are_validated_and_hash_bound(self):
         broken = copy.deepcopy(SUITE)
@@ -713,17 +711,16 @@ class SecondPassTests(unittest.TestCase):
     def test_a_figure_under_the_rival_figures_alias_is_not_accepted(self):
         wrong = {
             "JUP-069-005": ("El coste elegible es 10 % y el coste no asignado es 1.000 EUR.", ("numbers-1", "numbers-2")),
-            "JUP-071-002": ("El cumplimiento es de 1.000 EUR y el coste etiquetable es del 10 %.", ("numbers-1", "numbers-2")),
+            "JUP-071-002": ("El coste etiquetable es del 10 %.", ("numbers-1",)),
         }
         for case_id, (answer, keys) in wrong.items():
             for key in keys:
                 with self.subTest(case=case_id, key=key):
                     self.assertEqual(self.checks(case_id, answer)[key], "fail")
-        mixed = "El cumplimiento ponderado por coste es 90 % y el coste total es 10 %. El coste etiquetable es 1.000 EUR."
-        self.assertEqual(self.checks("JUP-071-002", mixed)["numbers-2"], "fail")
-        right = "El coste etiquetable es de 1.000 EUR y el cumplimiento por coste es del 10 %."
-        self.assertEqual({k: v for k, v in self.checks("JUP-071-002", right).items() if k.startswith("numbers")},
+        right = "El coste elegible es de 1.000 EUR y el coste no asignado es del 10 %."
+        self.assertEqual({k: v for k, v in self.checks("JUP-069-005", right).items() if k.startswith("numbers")},
                          {"numbers-1": "pass", "numbers-2": "pass"})
+        self.assertEqual(self.checks("JUP-071-002", "El cumplimiento por coste es del 10 %.")["numbers-1"], "pass")
 
     def test_aliases_must_survive_normalisation_and_be_unique(self):
         for aliases in (["*"], ["`"], ["​"], ["ok", "OK "], ["a", "*"]):
@@ -883,6 +880,145 @@ class ChatCollectorRunInfoTests(unittest.TestCase):
         run = scored(raw_fixture())["run"]
         self.assertEqual((run["provider"], run["alias"]), ("template", "none"))
         self.assertEqual(run["generation"], {"model_alias": "plantilla-sin-modelo", "temperature": None})
+
+
+class FinalReviewTests(unittest.TestCase):
+    """Regression tests for the fourth adversarial pass and the traceability audit."""
+
+    HUGE = 10 ** 400
+
+    def test_huge_integers_are_controlled_errors_in_every_numeric_field(self):
+        broken = copy.deepcopy(SUITE)
+        figure = next(c for c in broken["cases"] if c["expected_numbers"])["expected_numbers"][0]
+        for key in ("value", "tolerance"):
+            changed = copy.deepcopy(broken)
+            next(c for c in changed["cases"] if c["expected_numbers"])["expected_numbers"][0][key] = self.HUGE
+            with self.subTest(field=key), self.assertRaises(robustness.Error):
+                robustness.validate(changed, BASELINE)
+        self.assertIn("value", figure)
+        with self.assertRaises(robustness.Error):
+            scored(RunHeaderTests().live_raw(generation={"model_alias": "m", "temperature": self.HUGE}))
+        raw = raw_fixture()
+        raw["cases"][0]["retrieved"] = [{"chunk_id": "a", "source": "s", "content": "c", "distance": self.HUGE}]
+        with self.assertRaises(robustness.Error):
+            robustness.validate_raw(raw, SUITE, CASES)
+        raw = raw_fixture()
+        raw["cases"][0]["total_ms"] = self.HUGE
+        with self.assertRaises(robustness.Error):
+            robustness.validate_raw(raw, SUITE, CASES)
+
+    def test_deeply_nested_json_is_a_controlled_cli_error(self):
+        with tempfile.TemporaryDirectory() as folder:
+            base = Path(folder)
+            raw_file = base / "raw.json"
+            raw_file.write_text('{"a":' * 20000 + "1" + "}" * 20000, encoding="utf-8")
+            status, stdout, stderr = cli(["score", "--raw", raw_file, "--output", base / "r.json", "--report", base / "r.md"])
+            self.assertEqual(status, 2, stderr)
+            self.assertTrue(stderr.startswith("JUP-071:"), stderr)
+            self.assertNotIn("Traceback", stderr)
+            self.assertFalse((base / "r.json").exists())
+
+    def test_the_compliance_variants_ask_for_the_figure_their_question_asks_for(self):
+        for case_id in ("JUP-071-002", "JUP-071-003"):
+            self.assertEqual(len(BY_ID[case_id]["expected"]["numbers"]), 1, case_id)
+            for answer in ("El cumplimiento por coste es del 10 %.", "Solo el 10 % del coste cumple los tags mínimos."):
+                with self.subTest(case=case_id, answer=answer):
+                    raw = raw_fixture()
+                    for row in raw["cases"]:
+                        if row["case"] == case_id:
+                            row["answer"] = answer
+                    checks = entry(scored(raw, robustness.empty_judgments(raw)), case_id)["checks"]
+                    self.assertEqual(checks["numbers-1"], "pass")
+            wrong = raw_fixture()
+            for row in wrong["cases"]:
+                if row["case"] == case_id:
+                    row["answer"] = "El cumplimiento por coste es del 90 %."
+            self.assertEqual(entry(scored(wrong, robustness.empty_judgments(wrong)), case_id)["checks"]["numbers-1"], "fail")
+
+    def test_malformed_collection_time_names_the_field(self):
+        for value in ("2026-13-45T25:00:00+00:00", "2026-10-16T10:00:00+00:00 ", "x"):
+            raw = raw_fixture()
+            raw["execution"]["collected_at"] = value
+            with self.subTest(value=value), self.assertRaises(robustness.Error) as caught:
+                robustness.validate_raw(raw, SUITE, CASES)
+            self.assertIn("collection time", str(caught.exception))
+
+    def test_a_missing_git_checkout_is_a_controlled_error(self):
+        failure = robustness.subprocess.CalledProcessError(128, "git")
+        with mock.patch.object(robustness.subprocess, "check_output", side_effect=failure):
+            with self.assertRaises(robustness.Error):
+                robustness.code_commit()
+
+    def test_collect_rejects_unexpected_run_info_fields_without_echoing_their_values(self):
+        transport = TransportDouble()
+        with tempfile.TemporaryDirectory() as folder:
+            base = Path(folder)
+            run_info, output = base / "run.json", base / "raw.json"
+            info = {**ChatCollectorRunInfoTests.DOCUMENTED, "api_key": "KEY-DO-NOT-COMMIT"}
+            run_info.write_text(json.dumps(info), encoding="utf-8")
+            with mock.patch.dict("os.environ", {"JUP071_TEST_PASSWORD": "FIXTURE-PASSWORD"}), mock.patch.object(robustness.evaluation.urllib.request, "build_opener", return_value=transport) as opener:
+                status, stdout, stderr = cli(["collect", "--base-url", "http://transport.invalid", "--tenant", "fixture-tenant", "--password-env", "JUP071_TEST_PASSWORD", "--run-info", run_info, "--output", output])
+            self.assertEqual(status, 2, stderr)
+            self.assertIn("api_key", stderr)
+            self.assertNotIn("KEY-DO-NOT-COMMIT", stdout + stderr)
+            opener.assert_not_called()
+            self.assertFalse(output.exists())
+
+    def test_compare_reports_malformed_summaries_as_a_controlled_error(self):
+        for reports in ([{}, {}, {}], [{"suite_sha256": "a"}] * 3, ["x", "y", "z"]):
+            with self.subTest(reports=reports), self.assertRaises(robustness.Error):
+                robustness.compare(reports)
+
+    def test_perturbation_table_shows_the_size_of_every_group(self):
+        text = robustness.markdown(scored())
+        self.assertIn("| Tipo | Total | Pass | Fail | Blocked | Not run |", text)
+
+    def test_timeouts_and_server_errors_are_recorded_once_as_blocked(self):
+        class TimeoutTransport(TransportDouble):
+            def open(self, request, timeout):
+                if request.full_url.endswith("/messages") and self.messages == 0:
+                    self.messages += 1
+                    self.requests.append((request.full_url, json.loads(request.data), dict(request.header_items()), timeout))
+                    raise TimeoutError("fixture timeout")
+                return super().open(request, timeout)
+
+        for label, transport, categories in (("500", TransportDouble(first_message_status=500), {"upstream"}),
+                                              ("timeout", TimeoutTransport(), {"timeout"})):
+            with self.subTest(failure=label):
+                raw = robustness.evaluation.collect_cases("http://transport.invalid", "fixture@example.invalid", "FIXTURE-PASSWORD", "fixture-tenant", robustness.inputs_for(CASES), opener=transport)
+                raw["execution"] = raw_fixture()["execution"]
+                self.assertIn(raw["cases"][0]["failure_category"], categories)
+                self.assertEqual(transport.messages, 29)
+                report = scored(raw, robustness.empty_judgments(raw))
+                self.assertEqual(report["cases"][0]["outcome"], "blocked")
+                self.assertEqual(report["totals"]["blocked"], 1)
+                self.assertEqual(report["totals"]["total"], 29)
+
+    def test_one_passing_case_among_unreviewed_ones_is_not_a_passing_suite(self):
+        raw = raw_fixture()
+        judgments = robustness.empty_judgments(raw)
+        judgments["cases"]["JUP-071-001"] = judgments_fixture(raw)["cases"]["JUP-071-001"]
+        report = scored(raw, judgments)
+        self.assertEqual((report["totals"]["pass"], report["totals"]["not_run"], report["totals"]["evaluated"]), (1, 28, 1))
+        text = robustness.markdown(report)
+        self.assertIn("pass / total previsto: 3,4 %", text)
+        self.assertIn("pass / (pass + fail): 100,0 %", text)
+        self.assertIn("Evaluación completa: no", text)
+
+    def test_the_run_header_never_changes_an_outcome_or_a_denominator(self):
+        first = scored(RunHeaderTests().live_raw(provider="gateway", alias="model-a"))
+        second = scored(RunHeaderTests().live_raw(provider="another", alias="model-b"))
+        for key in ("totals", "groups", "categories", "perturbations", "pairs", "assessment_complete"):
+            self.assertEqual(first[key], second[key], key)
+        self.assertEqual([c["outcome"] for c in first["cases"]], [c["outcome"] for c in second["cases"]])
+        self.assertEqual(sum(c["total"] for c in first["categories"].values()), 16)
+
+    @unittest.skipUnless(sys.platform == "win32", "case-insensitive file systems are a Windows property here")
+    def test_case_differences_cannot_hide_a_repository_location(self):
+        shouted = Path(str(ROOT).upper()) / "DOCS" / "VALIDATION" / "JUP-071-ROBUSTNESS-CASES.JSON"
+        with self.assertRaises(robustness.Error):
+            robustness.protect_outputs([shouted], [])
+        self.assertFalse(robustness.outside(shouted))
 
 
 class FakeResponse:

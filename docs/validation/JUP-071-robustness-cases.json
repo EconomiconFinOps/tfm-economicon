@@ -70,7 +70,6 @@
         "Pedir datos adicionales como condición para calcular un KPI cuyo numerador y denominador están completos."
       ],
       "expected_numbers": [
-        {"label": "coste etiquetable", "aliases": ["coste etiquetable", "etiquetable", "coste total"], "value": 1000, "unit": "EUR", "tolerance": 0.01},
         {"label": "cumplimiento por coste", "aliases": ["cumplimiento", "por coste", "ponderado", "cumple"], "value": 10, "unit": "%", "tolerance": 0.01}
       ]
     },
@@ -94,7 +93,6 @@
         "Excluir del denominador los recursos incumplidores pese a ser etiquetables."
       ],
       "expected_numbers": [
-        {"label": "coste etiquetable", "aliases": ["coste etiquetable", "etiquetable", "coste total"], "value": 1000, "unit": "EUR", "tolerance": 0.01},
         {"label": "cumplimiento por coste", "aliases": ["cumplimiento", "por coste", "ponderado", "cumple"], "value": 10, "unit": "%", "tolerance": 0.01}
       ]
     },

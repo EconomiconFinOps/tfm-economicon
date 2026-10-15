@@ -61,6 +61,16 @@ def require(condition, message):
         raise Error(message)
 
 
+def finite(value):
+    """A finite JSON number; booleans and integers too large for a float are not."""
+    if type(value) not in (int, float):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
+
+
 def text_list(value):
     return isinstance(value, list) and bool(value) and all(isinstance(x, str) and x.strip() for x in value)
 
@@ -112,7 +122,7 @@ def validate(suite, baseline):
             require(isinstance(n.get("label"), str) and bool(n["label"].strip()) and
                     isinstance(n.get("unit"), str) and bool(n["unit"].strip()), f"{cid}: invalid number label/unit")
             for key in ("value", "tolerance"):
-                require(type(n.get(key)) in (int, float) and math.isfinite(n[key]), f"{cid}: non-finite number")
+                require(finite(n.get(key)), f"{cid}: non-finite number")
             require(n["tolerance"] >= 0, f"{cid}: negative tolerance")
 
 
@@ -140,7 +150,10 @@ def inputs_for(cases):
 
 
 def code_commit():
-    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    except (subprocess.CalledProcessError, OSError):
+        raise Error("cannot read the git commit of this tool") from None
 
 
 def provenance(suite, kind, config):
@@ -154,6 +167,7 @@ def provenance(suite, kind, config):
 
 
 DECLARED_TEXT = re.compile(r"[a-z0-9][a-z0-9./-]{0,63}")
+RUN_INFO_FIELDS = ("commit", "corpus", "provider", "alias", "retrieval", "generation")
 DECLARED_COMMIT = re.compile(r"[0-9a-f]{7,40}")
 SECRET_SHAPED = re.compile(r"(^|[-./])(sk|pk|xox[a-z]?|gh[pousr]|akia|eyj|key|token|secret|bearer)([-./0-9]|$)|[a-z0-9]{24,}")
 
@@ -180,7 +194,7 @@ def run_header(execution, suite, raw_sha256):
             declared = {"model_alias": declared, "temperature": None}
         require(isinstance(declared, dict), "invalid run generation")
         temperature = declared.get("temperature")
-        require(temperature is None or (type(temperature) in (int, float) and math.isfinite(temperature)), "invalid run temperature")
+        require(temperature is None or finite(temperature), "invalid run temperature")
         generation = {"model_alias": declared_text(declared.get("model_alias"), "model alias"), "temperature": temperature}
     date = datetime.fromisoformat(execution["collected_at"]).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     return {"run_id": f"JUP-071-{raw_sha256[:12]}", "commit": commit, "date": date, "provider": provider, "alias": alias,
@@ -214,6 +228,16 @@ def human_checks(case):
     return checks
 
 
+def utc_time(value):
+    if not (isinstance(value, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}T[0-9:.]+\+00:00", value, re.ASCII)):
+        return False
+    try:
+        datetime.fromisoformat(value)
+    except ValueError:
+        return False
+    return True
+
+
 def validate_raw(raw, suite, cases):
     require(isinstance(raw, dict) and raw.get("raw_version") == 1, "invalid raw version")
     execution = raw["execution"]
@@ -221,8 +245,7 @@ def validate_raw(raw, suite, cases):
     require(execution["suite_sha256"] == digest(suite), "raw data belongs to a different suite")
     require(execution["configuration_sha256"] == digest(execution["configuration"]), "configuration hash mismatch")
     require(re.fullmatch(r"[0-9a-f]{40}", execution["harness_commit"]), "invalid harness commit")
-    require(isinstance(execution["collected_at"], str) and
-            re.fullmatch(r"\d{4}-\d{2}-\d{2}T[0-9:.]+\+00:00", execution["collected_at"]), "invalid UTC collection time")
+    require(utc_time(execution["collected_at"]), "invalid UTC collection time")
     require(re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", execution["python_version"]), "invalid Python version")
     for key in ("service_sha256", "configuration_sha256", "harness_sha256"):
         require(re.fullmatch(r"[0-9a-f]{64}", execution[key]), "invalid provenance hash")
@@ -243,9 +266,9 @@ def validate_raw(raw, suite, cases):
         for fragment in row["retrieved"]:
             require(isinstance(fragment, dict) and all(isinstance(fragment.get(k), str) for k in ("chunk_id", "source", "content")), f"{cid}: invalid fragment fields")
             distance = fragment.get("distance")
-            require(type(distance) in (float, int) and math.isfinite(distance), f"{cid}: invalid distance")
+            require(finite(distance), f"{cid}: invalid distance")
         total = row.get("total_ms")
-        require(total is None or (type(total) in (float, int) and math.isfinite(total) and total >= 0), f"{cid}: invalid latency")
+        require(total is None or (finite(total) and total >= 0), f"{cid}: invalid latency")
 
 
 def judge(values, needed):
@@ -391,9 +414,9 @@ def markdown(report):
     for name, c in report["categories"].items():
         lines.append(f"| {name} | {c['total']} | {c['pass']} | {c['fail']} | {c['blocked']} | {c['not_run']} | "
                      f"{percent(c['pass_over_total'])} | {percent(c['pass_over_evaluated'])} |")
-    lines += ["", "## Tipos de perturbación", "", "| Tipo | Pass | Fail | Blocked | Not run |", "| --- | ---: | ---: | ---: | ---: |"]
+    lines += ["", "## Tipos de perturbación", "", "| Tipo | Total | Pass | Fail | Blocked | Not run |", "| --- | ---: | ---: | ---: | ---: | ---: |"]
     for name, c in report["perturbations"].items():
-        lines.append(f"| {name} | {c['pass']} | {c['fail']} | {c['blocked']} | {c['not_run']} |")
+        lines.append(f"| {name} | {c['total']} | {c['pass']} | {c['fail']} | {c['blocked']} | {c['not_run']} |")
     lines += ["", "## Casos", "", "| Caso | Resultado | Juicios pendientes | Cobertura reducida | Eco del prompt |", "| --- | --- | ---: | --- | --- |"]
     for c in report["cases"]:
         lines.append(f"| {c['case']} | {c['outcome']} | {len(c['missing'])} | {c['reduced_coverage']} | {c['prompt_echo']} |")
@@ -403,8 +426,10 @@ def markdown(report):
 
 def compare(reports):
     require(len(reports) >= 3, "three separate executions are required")
-    first = reports[0]
     keys = ("suite_sha256", "service_sha256", "configuration_sha256", "kind", "provisional", "harness_commit", "harness_sha256", "python_version")
+    needed = (*keys, "raw_sha256", "kind", "totals", "assessment_complete")
+    require(all(isinstance(r, dict) and all(k in r for k in needed) for r in reports), "every report must be a JUP-071 score report")
+    first = reports[0]
     require(all(all(r[k] == first[k] for k in keys) for r in reports), "incompatible execution configurations")
     require(len({r["raw_sha256"] for r in reports}) == len(reports), "repeated raw artifact is not an independent execution")
     return {"executions": len(reports), "kind": first["kind"], "generative_robustness_accepted": False,
@@ -503,7 +528,9 @@ def main(argv=None):
                 password = os.environ.get(args.password_env)
                 require(bool(password), "missing password environment variable")
                 config = read(args.run_info)
-                require(isinstance(config, dict) and all(k in config for k in ("commit", "corpus", "provider", "alias", "retrieval", "generation")), "run-info requires the JUP-070 configuration fields")
+                require(isinstance(config, dict) and all(k in config for k in RUN_INFO_FIELDS), "run-info requires the JUP-070 configuration fields")
+                extra = sorted(re.sub(r"[^A-Za-z0-9_.-]", "?", str(k))[:40] for k in set(config) - set(RUN_INFO_FIELDS))
+                require(not extra, "run-info has unexpected fields: " + ", ".join(extra))
                 execution = provenance(suite, "live_unverified", config)
                 run_header(execution, suite, "0" * 64)
                 raw = evaluation.collect_cases(args.base_url, args.email, password, args.tenant, inputs_for(cases), timeout=args.timeout)
@@ -526,7 +553,7 @@ def main(argv=None):
         else:
             print(evaluation.dumps(compare([read(p) for p in args.reports])))
         return 0
-    except (Error, ValueError, KeyError, TypeError, OSError) as error:
+    except (Error, ValueError, KeyError, TypeError, OSError, ArithmeticError, RecursionError) as error:
         # Do not echo raw answer/credential-bearing JSON or provider exception text.
         print(f"JUP-071: {error if isinstance(error, Error) else type(error).__name__}", file=sys.stderr)
         return 2
