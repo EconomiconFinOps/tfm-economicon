@@ -1,7 +1,12 @@
 # JUP-123: candidato técnico conforme y medición N3 parcial
 
 Verificado el 15/10/2026. Origen: chat 01a1270c-e332-7462-9c90-706d49ade92c.
-**B no está aceptada.** Máximo acumulado autorizado 5 USD, sin reiniciar reservas.
+**B no está aceptada.** Este informe conserva el corte histórico8/84 bajo5USD.
+El15/10 el usuario amplió a10USD y autorizó continuar desde009 sin repetir el
+prefijo ni liberar reservas. Herramientas5f32ea08/109PASS en directorio separado,
+008 completed con máximo íntegro0.319952 y302 filas anteriores idénticas;
+ocho recibos idénticos por SHA. Controladorv2 reanudado, producto/plan intactos.
+Estado posterior en [continuidad](../continuidad/chat-evaluacion-local.md).
 
 ## Código y cobertura técnica
 

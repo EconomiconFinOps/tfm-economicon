@@ -2,9 +2,36 @@
 
 ## Estado actual y autorización — 15/10/2026
 
-El usuario amplió el máximo acumulado a **5 USD** («Amplia a5$»). Ese permiso
-sustituye el límite de2USD de los cortes históricos inferiores; no reinicia gasto,
-ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
+El usuario amplió explícitamente el máximo acumulado a **10 USD** el15/10:
+continuar desde009 usando la corrección contable, sin repetir las ocho muestras
+anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
+no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
+
+### Reanudación autorizada desde009 — 15/10/2026 07:12 UTC
+
+Herramientas5f32ea0869aaf1e9ff00d5d0b0faa3fb676c364c: CAP10 y retención
+completed con coste desconocido;109 pruebas PASS, log SHA
+3ee6e28a23d6972cf492f11f1486abe777fa59dca6797880241ca440749df97d.
+Archivo versionado transferido a directorio separado accounting-tools-5f32ea08,
+SHA1a413055b970bc93ccb602d87f693bc4c9e20288cd5379863a8f28c6ddb7ae3d.
+Producto7be,365 hashes, plan N3 original y adaptadorv7 permanecen inmutables.
+
+Aplicada retain_completed_cost al recibo original008r1: completed sigue completed,
+reserva íntegra0.319952 COST_UNKNOWN_RESERVED.303 filas;302 anteriores idénticas;
+todos los importes y ocho recibos idénticos por SHA contra snapshot congelado.
+Reservas desconocidas previas2.241664 USD sin liberar. Contador vivo07:10UTC
+2.548894402; cota antes de0094.790558402/10USD. No es gasto exacto atribuible.
+
+Controladorv2 PID3717406/start_ticks64724227 activo y009r1 OBSERVING comprobado.
+Mismo ledger, mismo plan84, prefijo8 reutilizado; quedan76 muestras previstas.
+Las repeticiones r2/r3 del plan no son reenvíos de los ocho recibos r1.
+Claves actuales caducan08:02UTC, sin renovación automática. Admisión viva y
+reserva completa antes de cada operación; detener ante ambigüedad o caducidad.
+Pruebas externas candidate-7be57c05-cap10-retention-v2.json,
+candidate-7be57c05-n3-launch-v2.json y observación1792048356756.
+N3/revisión completa, criterios humanos y adjudicación todavía pendientes.
+
+### Corte histórico anterior: superado por la autorización y reanudación anteriores
 
 ### Corte vigente: técnico conforme, nueva N3 detenida8/84 — 15/10/2026
 

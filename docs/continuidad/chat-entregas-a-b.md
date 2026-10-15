@@ -32,6 +32,12 @@ con tres OOM previos conservados y procesos separados sin cambiar aserciones.
 Pgvector20 PASS cubre6 de esas omisiones; Cockroachv5 terminó196 ensayos con194 PASS/2 FAIL conservados. fba415f2 modifica sólo las dos pruebas; repetición completa17 SQL PASS y8 offline (2 PASS/6 SKIP), producto7be intacto. Verificador confirma1747 chat conformes con todos58 SKIP cubiertos nativamente y216 ejecuciones SQL/pgvector conformes. Helpers importados, aplicación/build y JUnit/log SHA contrastados; no es una corrida monolítica ni se borran los fallos. Buildv7 completado y B propio activo con365 hashes/tokenizer verificados y bases intactas. UI001/006/007/008 conforme en escritorio/móvil/recarga. N3 detenida8/84 por consumo incompleto de una fase de008, con reserva íntegra: cota4.790558402/5USD; una nueva ejecución exigiría5.110510402. Ocho respuestas/49 requisitos provisionales conformes no validan el conjunto. Pruebas e IDs en [evaluación local](chat-evaluacion-local.md).
 No se ha publicado B ni modificado A desde este trabajo.
 
+Actualización15/10: máximo10USD autorizado; herramientas contables5f32ea08
+separadas del producto congelado7be.008 conserva su máximo íntegro, todas las
+reservas previas y los ocho recibos intactos; N3 reanudada desde009, sin volver
+a generar el prefijo. El bloqueo por máximo5USD del párrafo anterior es histórico.
+N3 completa/aceptación siguen pendientes; ver evaluación local para estado vivo.
+
 ## Corte anterior: cabeza11f84334
 
 Consulta posterior al bloque SQL de B: PR130 OPEN, no integrada, head
