@@ -105,11 +105,11 @@ El contrato `rows-v1` es un JSON con `contract_version: 1`, una ejecución y sus
 - `sintetica`: el informe declara `synthetic: true` o `provenance: synthetic`.
 - `sin_modelo_verificado`: no hay modelo de generación registrado en una fuente que lo exige.
 
-**Clave de comparabilidad:** es la huella de fuente, `suite_sha256`, `corpus_sha256`, `embedding_provider`, `embedding_alias`, `retrieval`, `generation_model`, `prompt_sha256` y `non_real_reasons`. Con los datos actuales, las ejecuciones 1 y 2 de JUP-070 tienen claves distintas, porque cambian el proveedor de embeddings y `max_distance`. Por eso las dos muestran «Sin datos: no hay con qué comparar», que es el comportamiento que pide la tarjeta.
+**Clave de comparabilidad:** es la huella (sha256 del JSON canónico) de fuente, `suite_version`, `suite_sha256`, `corpus_sha256`, `embedding_provider`, `embedding_alias`, `retrieval`, `generation_model`, `prompt_sha256` y `non_real_reasons`. Con los datos actuales, las ejecuciones 1 y 2 de JUP-070 tienen claves distintas, porque cambian el proveedor de embeddings y `max_distance`. Por eso las dos muestran «Sin datos: no hay con qué comparar», que es el comportamiento que pide la tarjeta.
 
 **Juicio humano:** el `outcome` de cada caso combina comprobaciones objetivas por regla y los juicios de los puntos `required-N`, así que los recuentos `pass` y `fail`, ACC-1 y ACC-3 dependen del juicio humano. Las demás métricas de JUP-070 (y los recuentos `blocked` y `not_run`) son automáticas.
 
-- La herramienta tiene una tabla fija que asigna cada métrica a un tipo de juicio.
+- La herramienta tiene una tabla fija (`HUMAN_METRICS` y `AUTOMATIC_METRICS`) que asigna cada métrica del catálogo a un tipo de juicio, y una función que lista las que quedan sin clasificar.
 - Una prueba falla si el catálogo de JUP-067 tiene un identificador que la tabla no clasifica.
 - Las series de juicio humano solo usan ejecuciones con `milestone = true`.
 

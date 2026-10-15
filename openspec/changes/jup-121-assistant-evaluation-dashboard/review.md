@@ -120,3 +120,18 @@ Hallazgos del QA trasladados: `run_id` del informe de JUP-068 es texto libre en 
 | DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend idénticos (`RF-119-004`) |
 
 Hallazgos LOW trasladados: nombres de clave desconocidos dentro de los mensajes (2.8 los escapa o trunca); `run.retrieval` sin cota de enteros (3.1 lo guarda como `jsonb`); los identificadores admiten `--` y `,` en medio, inofensivo con literales escapados (3.1 nunca interpola sin escapar).
+
+### 2.7 Clasificación de ejecuciones, clave de comparabilidad y tabla de juicio
+
+| Fase | Evidencia |
+| --- | --- |
+| Red | `scripts/tests/test_evaluation_classification.py` (88 tests), commit `73185b5c`; 235 errores, todos `AttributeError` por símbolos ausentes (el único fallo de aserción es el de determinismo entre procesos, que falla porque el proceso hijo no encuentra `comparability_key`). Esperados comprobados con una referencia fuera del repositorio |
+| Green | Sección «Clasificación de ejecuciones y clave de comparabilidad» (`NON_REAL_REASONS`, `classify_run`, `comparability_key`, `AUTOMATIC_METRICS`, `unclassified_metrics`, `CLASSIFICATION_KEYS`, `classify_run_row`), commit `b8777894`; 790/790 |
+| Mutación | **92/97 = 94,8 %**. 5 supervivientes: 4 de prosa y `ensure_ascii=True` → `False`, equivalente para ejecuciones válidas (todos los campos son ASCII por la regla 3) |
+| QA | `accept`, sin hallazgos BLOCKING ni MEDIUM. Recalculó por su cuenta los motivos y las cinco claves con `hashlib`, verificó el determinismo con `PYTHONHASHSEED` 0, 1 y 12345, que las dos ejecuciones de JUP-070 no forman serie y que `AUTOMATIC_METRICS ∪ HUMAN_METRICS` es el catálogo exacto; mató 66 de 71 mutantes manuales (los 5 restantes, equivalentes) |
+| Tests del QA | `test_evaluation_classification_gaps.py` (6 tests) fija `ensure_ascii=True` con un valor no ASCII y que `unclassified_metrics({})` no carga el catálogo real; cada uno mata su mutante |
+| DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend idénticos (`RF-119-004`) |
+
+Resultado con los datos reales: JUP-070 run-1 `("plantilla","doble")`, run-2 `("plantilla",)`, JUP-078 y JUP-022 reales, JUP-068 `("sintetica",)`; las cinco claves de comparabilidad son distintas. La clave incluye `suite_version` (hallazgo M1 del QA de 2.4) y `design.md` queda alineado.
+
+Hallazgos trasladados: la tabla de juicio por fila (calibración, benchmark, recuentos de casos) no pasa por `unclassified_metrics`, que solo cubre el catálogo de JUP-067; `classify_run_row` debe aplicarse al `run` crudo (tarea 2.8), y `comparability_key` no revalida el `run` (lo hace `classify_run`).
