@@ -75,3 +75,7 @@ JUP-035 se dividió: #130 (JUP-122) es la entrega A, con el chat desactivado por
 ## Actualización 2026-10-15
 
 `develop` integró #130 (JUP-122, entrega A del chat) y la rama de JUP-071 se actualizó con un merge: referencias de la batería al banco de JUP-069 `1.0.1`, informes de plantilla regenerados con el mismo resultado y conflictos de CI resueltos. El chat generativo entra desactivado y se sirve por `/generations`; el colector actual sigue midiendo la plantilla. Las campañas con modelo real esperan al colector y a la aceptación de la entrega B (JUP-123). Detalle en la [evidencia](../evidence/JUP-071-validation.md).
+
+## Actualización 2026-10-16
+
+El colector de JUP-123 (PR #131, de solo lectura) se probó contra un backend real con el chat activado y modelo simulado: las operaciones se leen y se exportan al evaluador de esta rama. Para que la exportación fuera válida, el bloque `run` acepta ahora la descripción de seis cadenas de ese colector (commit declarado de 7 a 40 hexadecimales y `generation` como cadena). Sigue sin haber ninguna medición con un modelo real: el proveedor externo estaba caído en las pruebas de terceros y la campaña de 29 casos por tres repeticiones no se ha ejecutado. Detalle en la [evidencia](../evidence/JUP-071-validation.md).

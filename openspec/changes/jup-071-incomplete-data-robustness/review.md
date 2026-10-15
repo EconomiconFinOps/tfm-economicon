@@ -101,3 +101,9 @@ No probado por el revisor: ejecución real en Linux/macOS, enlaces simbólicos r
 ## ADR applicability
 
 No aplica: no se introduce ninguna decisión arquitectónica duradera. La decisión de cómo llegan los informes a Grafana es de JUP-121 y se recogerá en su ADR.
+
+## Cambios posteriores a la pasada 3 (2026-10-16)
+
+Tras integrar #130 y probar el colector de JUP-123 (PR #131) contra un backend real, la exportación fallaba porque el `run-info` de seis cadenas de ese colector no era válido para el bloque `run`: ninguna combinación de valores servía a ambas partes. Se relajó la cabecera para aceptar un commit declarado de 7 a 40 hexadecimales en minúscula y `generation` como una sola cadena (alias del modelo, sin temperatura). Provider, alias y la cadena de `generation` mantienen el patrón restringido, y la forma de objeto sigue siendo válida.
+
+Se añadieron 6 pruebas (74 en total), entre ellas el rechazo de marcadores descriptivos, de cadenas con forma de clave y de mayúsculas, y la comprobación de que la plantilla y los campos de provider y alias no se aflojan. Se actualizó una prueba previa que daba por inválida la cadena `template`. El cambio ocurrió después del veredicto `accept` de la pasada 3 y no pasó por una cuarta pasada del revisor independiente. Como control positivo se ejecutó la cadena completa del #131 con herramientas sin parchear (ver la evidencia).
