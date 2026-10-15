@@ -2475,6 +2475,18 @@ def main(argv=None) -> int:
         if not password:
             print(f"error: falta la variable de entorno {PASSWORD_ENV}", file=sys.stderr)
             return 1
+        # También se VALIDA (longitud, caracteres de control, sustitutos) antes de leer nada: `run_load` solo lo hace
+        # al construir el script del rol, es decir después de leer los manifiestos y montar el conjunto de datos, y
+        # una contraseña inválida quedaba tapada por un error de manifiesto (o tras un trabajo inútil). Se llama a
+        # `_check_password` y no a `build_role_sql` (descartando el resultado) para no generar un script que lleva
+        # el secreto solo para tirarlo. `run_load` conserva su orden interno (datos antes que contraseña): sigue
+        # siendo la defensa de quien lo use como biblioteca. El mensaje es el de `LoadError` (`password: ...`) y no
+        # cita el valor.
+        try:
+            _check_password(password)
+        except LoadError as error:
+            print(f"error: {error}", file=sys.stderr)
+            return 1
         command = _split_psql_command(parser, args.psql_command)
     manifests = ([] if args.no_versioned else [DEFAULT_MANIFEST]) + args.manifest
     try:
