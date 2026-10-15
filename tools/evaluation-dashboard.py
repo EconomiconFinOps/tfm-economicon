@@ -1110,6 +1110,15 @@ ROW_NUMBERS = ("value", "numerator", "ci_low", "ci_high")
 # Única unidad cuyo numerador es un recuento de aciertos acotado por el denominador (0 <= numerador <=
 # denominador). En `porcentaje` o `ms` el numerador puede ser negativo (un ahorro de tiempo) o mayor.
 RATE_UNIT = "tasa"
+# Mayor entero seguro (2**53 - 1): el que un float de doble precisión representa sin pérdida y la misma cota que
+# impone `tools/business-metrics.mjs`. Acota los enteros de las filas para que la carga SQL no los trunque:
+# `count` y `denominator` caben en `bigint` y `value`, `numerator` y el intervalo en `double precision` sin
+# perder enteros. Los floats finitos no tienen cota nueva.
+ROW_MAX_INTEGER = 2 ** 53 - 1
+# Formato exacto de `run.run_at`: `AAAA-MM-DDThh:mm:ss[.f{1,6}](Z|±hh:mm)`. Se usa con `fullmatch`. `re.ASCII`
+# para que `\d` solo case 0-9 y no los dígitos de otros alfabetos que Unicode también llama dígitos.
+RUN_AT_PATTERN = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})", re.ASCII)
+RUN_AT_PROBLEM = "debe ser null o una fecha AAAA-MM-DDThh:mm:ss[.ffffff](Z|+hh:mm) real"
 # Campos del formato `rows-v1` de entrada que el documento no puede omitir. El resto es opcional: se rellena con
 # None (`synthetic` y `selected` con False, el valor del contrato para «no declarado») y la validación común
 # decide después si esa fila lo admite. `unit` y `judgment` son opcionales en el formato, pero la validación
@@ -1150,6 +1159,11 @@ def _check_count_or_null(parent: dict, key: str, where: str) -> None:
     # `_is_count` exige `type(...) is int`: bool y los flotantes, incluso 3.0, no son recuentos.
     if value is not None and (not _is_count(value) or value < 0):
         raise _bad(f"{where}.{key}", "debe ser un entero mayor o igual que 0 o null")
+    # La cota va aquí y no en `_is_count`: ese predicado lo comparten los adaptadores de informes y su
+    # comportamiento ya está cubierto; esta función solo la usan las filas. Con ella `count` y `denominator`
+    # caben en una columna `bigint` sin desbordar. El mensaje no incluye el valor recibido.
+    if value is not None and value > ROW_MAX_INTEGER:
+        raise _bad(f"{where}.{key}", f"debe ser un entero menor o igual que {ROW_MAX_INTEGER}")
 
 
 def _check_number_or_null(parent: dict, key: str, where: str) -> None:
@@ -1159,16 +1173,35 @@ def _check_number_or_null(parent: dict, key: str, where: str) -> None:
         raise _bad(f"{where}.{key}", "debe ser un número finito o null")
 
 
+def _check_row_number_or_null(row: dict, key: str, where: str) -> None:
+    # Número de una fila: lo de `_check_number_or_null` más la cota de enteros. Función aparte porque
+    # `_check_number_or_null` también valida `run.retrieval`, que no lleva esta cota. Solo se acotan los ENTEROS
+    # (`type(...) is int`; un bool ya lo rechazó `_is_number`): un float finito, aunque enorme (1e308), cabe en
+    # `double precision` y no pierde nada que el float no hubiera perdido ya al parsearse. Con `abs(x) <=
+    # ROW_MAX_INTEGER` los enteros de `value`, `numerator` y del intervalo se guardan en `double precision` sin
+    # pérdida. El mensaje no incluye el valor recibido.
+    _check_number_or_null(row, key, where)
+    value = row[key]
+    if type(value) is int and abs(value) > ROW_MAX_INTEGER:
+        raise _bad(f"{where}.{key}", f"un entero debe cumplir |valor| <= {ROW_MAX_INTEGER}")
+
+
 def _validate_run_at(run: dict) -> None:
     value = run["run_at"]
     if value is None:
         return
+    # Formato exacto y, además, fecha real. `datetime.fromisoformat` de Python 3.13 por sí solo no basta: acepta
+    # CUALQUIER carácter como separador entre fecha y hora (comillas, `;`, NUL) y formas como `2026-W42-3` o
+    # `20261014`, y este texto acabará dentro de un script SQL. La expresión regular fija la forma
+    # (`fullmatch`, para que ni un salto de línea final se cuele como haría `$`) y `fromisoformat` descarta lo
+    # que cumple el patrón de dígitos pero no existe (mes 13, 30 de febrero, hora 25). El mensaje NO cita el valor
+    # ni el texto de la excepción de `fromisoformat` (que lo repite): sería volcar texto de un informe en un error.
+    if not (isinstance(value, str) and RUN_AT_PATTERN.fullmatch(value)):
+        raise _bad("run.run_at", RUN_AT_PROBLEM)
     try:
-        if not isinstance(value, str):
-            raise ValueError("no es una cadena")
         datetime.fromisoformat(value)
-    except ValueError as error:
-        raise _bad("run.run_at", f"debe ser una fecha ISO 8601 o null ({error})") from error
+    except ValueError:
+        raise _bad("run.run_at", RUN_AT_PROBLEM) from None
 
 
 def _validate_run_retrieval(run: dict) -> None:
@@ -1223,7 +1256,7 @@ def _validate_row_types(row: dict, where: str) -> None:
         elif key in ROW_COUNTS:
             _check_count_or_null(row, key, where)
         elif key in ROW_NUMBERS:
-            _check_number_or_null(row, key, where)
+            _check_row_number_or_null(row, key, where)
         elif key == "judgment":
             _validate_row_judgment(row, where)
         else:
@@ -1278,7 +1311,7 @@ def _validate_row(row: dict, where: str) -> None:
 
 
 def validate_rows(run, results) -> None:
-    """Valida `run` y `results` con el contrato de filas planas `rows-v1` (reglas 1 a 6 del contrato).
+    """Valida `run` y `results` con el contrato de filas planas `rows-v1` (reglas 7 y 8 del contrato).
 
     Es la barrera final de los adaptadores: ellos copian valores sin comprobar su tipo ni su alfabeto (regla
     4), así que un texto libre o una tasa que no es un número llegarían a la base sin esta validación. No
