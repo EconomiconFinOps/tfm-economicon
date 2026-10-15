@@ -70,7 +70,7 @@
 
 ## 6. Validación de extremo a extremo y documentación
 
-- [ ] 6.1 Validación con `docker compose up` y `corepack pnpm evaluation-dashboard:load`. Comprobar y capturar:
+- [x] 6.1 Validación con `docker compose up` y `corepack pnpm evaluation-dashboard:load`. Comprobar y capturar:
   - el dashboard provisionado junto al técnico;
   - la ejecución 2 de JUP-070 (plantilla) con sus 28 casos por estado y rotulada como no real;
   - las ejecuciones 1 y 2 con «Sin datos: no hay con qué comparar» en evolución;

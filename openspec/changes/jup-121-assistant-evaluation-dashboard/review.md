@@ -255,3 +255,44 @@ QA: `accept`, sin BLOCKING. Ejecutó cada módulo 3 veces (deterministas) y los 
 **Hallazgo real de producto (diferido): cargas simultáneas.** Dos `load` a la vez hacen que una falle en 28 de 30 rondas con `tuple concurrently updated` o `deadlock detected` (nunca las dos, y sin dejar datos a medias): el script del rol y el de las vistas, que son transacciones de catálogo, actualizan las mismas tuplas. El arreglo validado en una copia es anteponer `SELECT pg_advisory_lock(<clave>);` a la entrada de `psql`, pero cambiaría la entrada exacta que fijan tests ya commiteados y congelados; queda como limitación documentada y el test fija el comportamiento real y seguro (al menos una carga termina bien, la otra bien o con un error limpio de motivo conocido, contenido de una sola carga y rol intacto).
 
 Riesgos para la CI (QA): primera descarga de la imagen de PostgreSQL por digest (~630 MB, 30 a 90 s) compartida por los 9 módulos con contenedor, y arranque de cada contenedor con tope de 90 s; se estima 3 a 5 minutos para `evaluation-dashboard:test` en un runner de GitHub (`timeout-minutes: 20`). Falta confirmarlo en la primera ejecución real de la CI.
+
+### 6.1 Validación de extremo a extremo con la pila real
+
+Se levantó un proyecto de Compose aislado (nombres y puertos propios, sin tocar los contenedores ajenos ni el `.env` real: se usó un fichero de entorno sintético) con las imágenes ya presentes (`pgvector/pgvector:pg17`, `grafana/grafana:11.3.0`, `prom/prometheus:v2.55.1`), se cargó el manifiesto con `evaluation-dashboard:load` y se consultó cada panel por la API de Grafana (`/api/ds/query`) además de capturarlo en un navegador. Se desmontó todo al terminar.
+
+| Comprobación pedida | Resultado | Evidencia |
+| --- | --- | --- |
+| Dashboard provisionado junto al técnico, sin errores de provisioning | Los dos dashboards y los dos datasources aparecen; sin la variable `GRAFANA_EVALUATION_DB_PASSWORD`, `docker compose` se niega a arrancar con el mensaje `required` | `docs/evidence/JUP-121/` capturas 02 a 07 |
+| Ejecución 2 de JUP-070 (plantilla): 28 casos por estado y rotulada como no real | Panel «Estado de los casos por ejecución» con sus 28 casos y el motivo `plantilla` | captura 02 |
+| Ejecuciones 1 y 2 sin línea de evolución | Los dos paneles de evolución devuelven 0 filas y muestran «Sin datos: no hay con qué comparar» | captura 06 |
+| Robustez y no medidos sin 0 % | Robustez: «Sin datos: todavía no hay informe de robustez de JUP-071»; las métricas no medidas se muestran como «No medido» | capturas 02 y 06 |
+| Línea discontinua para no reales y anotación de cambio de modelo | Con un manifiesto local de prueba (no versionado) con dos ejecuciones comparables | captura 07 |
+| Sección B | 23 filas de negocio, rotuladas como sintéticas | captura 03 |
+| Sección C con y sin tráfico | Sin tráfico: consultas por minuto en 0 y el resto sin datos. Con tráfico real al backend (59 mensajes al asistente con respuesta 201, `/health` y 404) consultas por minuto, p95 y las dos proporciones tienen valor; con PostgreSQL parado (7 mensajes con 503) aparecen los fallos de recuperación y la proporción de fallos sube; tras recuperar la base vuelve a bajar | captura 04 |
+| Rol de solo lectura | `SELECT` en el esquema `evaluation` y nada más (consultas de permisos reales) | pruebas de 5.2 |
+
+**Defecto hallado por la validación independiente (QA, `changes-requested`): paneles 20 y 21 en «Sin datos» aunque hubiera consultas.** `backend_retrieval_failures_total` tiene la etiqueta `category`; un contador con etiqueta no expone ninguna serie hasta el primer fallo, así que `sum(rate(...))` daba un vector vacío y las dos proporciones (búsquedas sin contexto y fallos de recuperación sobre consultas terminadas) quedaban vacías con 80 consultas y 0 fallos (capturado en la pila real, captura 05 retirada porque muestra el defecto).
+
+| Fase | Commit | Evidencia |
+| --- | --- | --- |
+| Red | `d804ebdb` | `apps/backend/tests/test_retrieval_failure_series.py`, 29 tests: 26 fallan antes del cambio (la exposición solo trae `# HELP` y `# TYPE`). 3 pasan porque fijan el contrato del conjunto de categorías y los contadores sin etiqueta. Subproceso limpio para el caso «recién importada». 9 mutantes del arreglo (solo una categoría, `.inc()` en vez de `.labels()`, categoría de más, sin `vector_store`, sin `redirect`, valor inicial 0,5, inicializar tras el primer fallo, sin normalizar, función sin llamar) muertos y la versión correcta pasa 29/29 |
+| Green | `18c3b902` | `assistant.py`: un bucle sobre `sorted(FAILURE_CATEGORIES)` que llama a `retrieval_failures_total.labels(category=…)` al importar el módulo; 29/29 y 203 pasan en los 9 ficheros relacionados (`test_metrics`, `test_domain_metrics`, `test_retrieval_failures`, etc.) |
+| Re-validación de las dos proporciones | sin commit propio | `docs/evidence/JUP-121/section-c-promql-test.yml` con `promtool test rules` (imagen `prom/prometheus:v2.55.1`, SUCCESS): con consultas y series de fallos a 0 la proporción de fallos vale 0 y la de búsquedas sin contexto 0,1; sin ninguna consulta no devuelve nada (nunca 0 % inventado); sin las series de fallos (comportamiento anterior) devuelve vacío, que reproduce el defecto |
+
+No se repitió la captura en navegador de la sección C tras el arreglo: la pila ya estaba desmontada y la prueba de `promtool` cubre la misma expresión con las mismas series que expone ahora el backend.
+
+**Hallazgos de la validación que no se corrigen en este change (severidad baja):**
+
+- Panel 19 (tasa de error del backend) viene de JUP-043 y devuelve vacío mientras no haya respuestas 5xx (la serie con `status_code=~"5.."` no existe). No se toca: es el panel heredado del dashboard técnico y no pertenece al alcance.
+- «Consultas al asistente por minuto» muestra 0 plano sin tráfico, que es un valor medido real (cero consultas), no una falta de dato.
+- El servicio `grafana` de `docker-compose.yml` no define `healthcheck`, así que nada puede esperar a que esté listo (no lo exige este change).
+- La publicación de puertos en `0.0.0.0` y el privilegio `CONNECT` a `PUBLIC` sobre la base son configuración heredada del compose y de PostgreSQL, no se cambian aquí.
+- Mensaje de la guía sobre el error previo a la carga cuando falta la contraseña: se corrige en 6.2.
+
+### Excepción de entorno del DoD tras integrar develop (6.1)
+
+Tras el merge de develop (JUP-122) la regresión de `check-dod.mjs` seguía en rojo por causas ajenas a este change, ya con el entorno local alineado:
+
+1. Se instalaron las dependencias nuevas del workspace (`corepack pnpm install --frozen-lockfile`, que añadía `@assistant-ui/react`) y `tokenizers==0.22.1` en el entorno virtual (está en `apps/backend/requirements.txt`); con ello `lint` y `type-check` pasan.
+2. Fallan 11 pruebas del processor de JUP-035 (`test_chat_gateway_jup035`, `test_chat_resources_jup035`, `test_compose_chat_jup035`, `test_expanded_context_jup035`) por `FileNotFoundError` de `apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json`. Ese fichero está en `.gitignore` y se genera con `apps/processor/build_tokenizer.py`; no se ha generado en esta máquina.
+3. `git diff origin/develop --stat -- apps/processor` está vacío y los cambios de este change en `apps/backend` solo son `assistant.py` (8 líneas) y el test nuevo, sin relación con el tokenizador ni con el processor.
