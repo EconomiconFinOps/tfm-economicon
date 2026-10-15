@@ -4,7 +4,9 @@ JUP: JUP-121 · [Trello](https://trello.com/c/aIdxwsXR) · ADR: [ADR-0022](../..
 
 ## Resumen
 
-Pendiente hasta cerrar la implementación.
+Implementación completa: 24 de 24 tareas. El dashboard `assistant-evaluation.json` (21 paneles, secciones A, B y C y robustez sin datos) se alimenta del esquema `evaluation` de PostgreSQL con un único comando (`corepack pnpm evaluation-dashboard:load`) a partir de los informes existentes; se validó con la pila real (Grafana 11.3.0, PostgreSQL 17, Prometheus 2.55.1). `corepack pnpm evaluation-dashboard:test`: 1623 pruebas OK (257 s) y 29 pruebas de backend nuevas. La validación de extremo a extremo encontró un defecto (proporciones de la sección C sin datos hasta el primer fallo) que se corrigió con TDD en el backend (tarea 6.1). Evidencia compartida en `docs/evidence/JUP-121-validation.md`; hallazgos diferidos en `RF-121-001` de `openspec/findings/backlog.md`.
+
+Pendiente de personas: revisión y validación independientes, gate posterior a la revisión, archivo y PR a `develop`. Fuera de este change: robustez de JUP-071, despliegue en DockerServer y primera ejecución de la CI en GitHub.
 
 ## Excepciones doc-only
 

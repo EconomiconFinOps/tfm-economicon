@@ -402,3 +402,22 @@ Tipo: deuda tecnica y mejoras de producto. Severidad: Low a Medium. Estado: Open
 - RF-119-011 (observacion, Low): `COST_REFERENCE_DATE` no se limita por entorno; una fecha olvidada en produccion congela los costes
   visibles (la cabecera lo avisa con «Fecha simulada»). Valorar un aviso en el arranque si `RUNTIME_ENVIRONMENT=production` y hay fecha fija.
 - RF-119-012 (producto, Low, para JUP-035): las respuestas economicas del asistente ya guardadas en una conversacion se leen tal como se guardaron; si la fecha de referencia retrocede, siguen mostrando importes y evidencia posteriores a ella (reproducido en la revision del PR #127). Queda fuera de JUP-119 porque solo ocurre al retroceder la fecha a mano. Al definir cómo JUP-035 guarda las respuestas, aplicar la fecha vigente al leerlas (por ejemplo, ocultar los importes y la evidencia cuyo periodo termina despues de la referencia y mostrar un aviso) y cubrirlo con una prueba de guardar, retroceder y reabrir.
+
+## RF-121-001 Cabos sueltos de menor severidad tras JUP-121
+
+Fecha: 2026-10-15. Origen: JUP-121, validacion independiente y QA por tarea (`review.md` del change).
+Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
+
+- `evaluation-dashboard.py load`: dos cargas simultaneas hacen que una falle con `tuple concurrently updated` o
+  `deadlock detected` (nunca las dos, y sin dejar datos a medias). Se evita con un bloqueo asesor al inicio del
+  script del rol y el de las vistas; no se hizo porque cambiaba pruebas de entrada ya congeladas.
+- La sentencia `ALTER ROLE ... PASSWORD` lleva la contrasena en claro: si el servidor registra sentencias
+  (`log_statement` en `ddl` o `all`) quedaria en su registro. Mejora: enviar el hash SCRAM calculado en Python.
+- El detalle de un error de `psql` usa la ultima linea de la salida y no la que empieza por `ERROR:`.
+- Las restricciones CHECK de las tablas `evaluation.*` no tienen nombre (el mensaje de violacion es poco claro).
+- El manifiesto versionado cita rutas absolutas en los mensajes de error de la capa de manifiestos.
+- El panel 19 (tasa de error del backend, heredado de JUP-043) queda vacio mientras no haya respuestas 5xx porque la
+  serie no existe; las series con etiqueta de `backend_http_requests_total` no se inicializan.
+- `grafana` en `docker-compose.yml` no define `healthcheck`; los puertos de los servicios se publican en `0.0.0.0`
+  y `PUBLIC` conserva `CONNECT` sobre la base, ambos heredados de la configuracion existente.
+- La robustez por categoria y perturbacion (JUP-071) sigue sin datos: la seccion existe y muestra «Sin datos».

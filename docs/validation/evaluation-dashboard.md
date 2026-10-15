@@ -2,7 +2,7 @@
 
 Contrato de datos y guía de uso del dashboard de Grafana que reúne los resultados de evaluación del asistente. Tarjeta: [JUP-121](https://trello.com/c/aIdxwsXR). Decisión: [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md). Requisitos: [spec](../../openspec/changes/jup-121-assistant-evaluation-dashboard/specs/assistant-evaluation-dashboard/spec.md).
 
-> **Estado:** este documento fija el contrato de datos y describe el dashboard (`apps/monitoring/grafana/dashboards/assistant-evaluation.json`, uid `economicon-assistant-evaluation`). La herramienta `tools/evaluation-dashboard.py` ya existe y los comandos de abajo funcionan.
+> **Estado:** implementado. Este documento fija el contrato de datos y describe el dashboard (`apps/monitoring/grafana/dashboards/assistant-evaluation.json`, uid `economicon-assistant-evaluation`). La herramienta `tools/evaluation-dashboard.py` y los comandos de abajo funcionan; la sección de robustez espera el informe de JUP-071.
 
 ## Qué muestra y qué no demuestra
 
@@ -32,6 +32,15 @@ Cómo leerlo:
 - **Las ejecuciones «no real»** (plantilla, dobles de prueba, sintéticas o sin modelo verificado) llevan «no real» y su motivo en la columna Estado, en morado, y sus series de evolución se dibujan discontinuas. Son pruebas del flujo, no calidad del asistente.
 - **La evolución** solo dibuja una serie (métrica, conducta y clave de comparabilidad; la leyenda la nombra con la métrica, la fuente y «serie» seguido de los 8 primeros caracteres de la clave) con al menos dos puntos medidos; una con un solo punto no se dibuja. El selector de tiempo solo acota estas gráficas; las tablas muestran siempre todo lo cargado.
 
+## Puesta en marcha
+
+1. Añadir `GRAFANA_EVALUATION_DB_PASSWORD` al `.env` (el ejemplo está en `.env.example`, sin valor). **Es obligatoria**: `docker compose up` se niega a arrancar sin ella. En un despliegue existente (DockerServer incluido) hay que añadirla al `.env` del servidor **antes** de actualizar la pila, con el valor que se usará al cargar; no se cambia ninguna otra variable.
+2. Levantar la pila: `docker compose up -d`. Grafana provisiona los dos dashboards («Economicon — Métricas técnicas» y «Economicon — Evaluación del asistente») y el datasource `Evaluacion`.
+3. Cargar los resultados: `corepack pnpm evaluation-dashboard:load` con la misma variable en el entorno de la terminal. Es el paso que crea el rol y los datos; hasta entonces las secciones A y B muestran el error de autenticación descrito abajo.
+4. Abrir Grafana (puerto 3000) y el dashboard de uid `economicon-assistant-evaluation`.
+
+La contraseña de Grafana y la de `load` son la misma variable: si se rota, hay que repetir la carga (fija la contraseña del rol) y reiniciar Grafana.
+
 ## Regenerar los datos
 
 Un único comando carga los informes en la base. Con el entorno levantado (`docker compose up -d`):
@@ -43,7 +52,7 @@ corepack pnpm evaluation-dashboard:load
 - Lee el manifiesto versionado [evaluation-runs.json](evaluation-runs.json) y reemplaza los datos anteriores de forma atómica e idempotente: dos cargas seguidas dejan lo mismo, y una carga que falla conserva la anterior.
 - Necesita `GRAFANA_EVALUATION_DB_PASSWORD` en el entorno (la contraseña del rol de lectura de Grafana, la misma variable que recibe Grafana). Si falta, o es inválida (vacía, de más de 200 caracteres o con caracteres de control), termina con un error que nombra la variable o el campo `password` —nunca el valor— y no lee ni ejecuta nada.
 - Carga con un único `psql` y un único flujo de entrada: primero el script de datos y después el script del rol. Por defecto ejecuta `docker compose exec -T -e PGCLIENTENCODING=UTF8 postgres-pgvector psql -U postgres -d embeddings -v ON_ERROR_STOP=1 -X -q` desde la raíz del repositorio, así que necesita la pila de Compose levantada y el `.env` completo (Compose interpola todo `docker-compose.yml`). Para otra base, para un contenedor concreto (`docker exec -i <contenedor> psql -U postgres -d embeddings`) o para un `psql` local se pasa `--psql-command "<comando>"` (se parte con `shlex`: en Windows, rutas con `/`); un comando vacío es un error de uso. `load` no admite `--output`.
-- Grafana lee los resultados con un datasource PostgreSQL provisionado desde `apps/monitoring/grafana/provisioning/datasources/evaluation-postgres.yml` (nombre `Evaluacion`, uid `evaluation-postgres`, tipo `grafana-postgresql-datasource`, usuario `grafana_evaluation_reader`, base `embeddings`). Su contraseña llega por la variable de entorno `GRAFANA_EVALUATION_DB_PASSWORD`, que el servicio `grafana` de Compose declara como obligatoria (`${GRAFANA_EVALUATION_DB_PASSWORD:?required}`): sin ella `docker compose up` se niega a arrancar e indica la variable. El datasource predeterminado sigue siendo Prometheus, y Grafana no depende de PostgreSQL para arrancar (el datasource se conecta al primer uso: antes de la primera carga, que crea el rol y el esquema, la conexión falla y los paneles de las secciones A y B muestran un error de conexión o de relación inexistente).
+- Grafana lee los resultados con un datasource PostgreSQL provisionado desde `apps/monitoring/grafana/provisioning/datasources/evaluation-postgres.yml` (nombre `Evaluacion`, uid `evaluation-postgres`, tipo `grafana-postgresql-datasource`, usuario `grafana_evaluation_reader`, base `embeddings`). Su contraseña llega por la variable de entorno `GRAFANA_EVALUATION_DB_PASSWORD`, que el servicio `grafana` de Compose declara como obligatoria (`${GRAFANA_EVALUATION_DB_PASSWORD:?required}`): sin ella `docker compose up` se niega a arrancar e indica la variable. El datasource predeterminado sigue siendo Prometheus, y Grafana no depende de PostgreSQL para arrancar (el datasource se conecta al primer uso: antes de la primera carga, que crea el rol y el esquema, el rol aún no existe y los paneles de las secciones A y B muestran el error `password authentication failed for user "grafana_evaluation_reader"`; tras cargar, un recargado de Grafana basta).
 - El script del rol (aparte del de datos, que no lleva credenciales) crea `grafana_evaluation_reader` si no existe, fija siempre su contraseña (así se rota con otra carga) y le da solo `CONNECT`, `USAGE` del esquema `evaluation` y `SELECT` de sus tablas y vistas (y de las que se creen después). No puede escribir ni leer otros esquemas ni catálogos sensibles, y no es superusuario. La contraseña solo viaja por la entrada estándar de `psql`; si `psql` falla y repite la sentencia, el mensaje sale con la contraseña sustituida por `***`.
 - Limitación conocida: la sentencia `ALTER ROLE … PASSWORD` lleva la contraseña en claro, como cualquier `ALTER ROLE` sin hash previo. Si el servidor registra sentencias (`log_statement` en `ddl` o `all`, o un error de la propia sentencia con `log_min_error_statement`), quedará en su registro; con la configuración por defecto de PostgreSQL no se registra. Mejora posible: enviar el hash SCRAM calculado en Python.
 - Para añadir ejecuciones que no son de hito, sin tocar Git, se pasa un manifiesto local: `corepack pnpm evaluation-dashboard:load -- --manifest ../evaluacion/manifiesto.json`. Se pueden pasar varios `--manifest`.
@@ -212,6 +221,8 @@ La herramienta lleva esta tabla fija y una prueba falla si el catálogo de JUP-0
 ## Señales en vivo (sección C)
 
 Son los síntomas de salud que ya emite el backend, leídos de Prometheus y no de esta base: consultas por minuto, latencia p95, tasa de error y las proporciones de búsquedas vacías y de fallos de recuperación sobre las consultas que terminaron. La sección enlaza al [dashboard de métricas técnicas](../../apps/monitoring/grafana/dashboards/technical-metrics.json) y no mezcla sus consultas con las de las campañas.
+
+Los contadores de fallos de recuperación nacen a 0 al arrancar el backend (una serie por categoría conocida), de modo que las proporciones valen 0 mientras haya consultas y no haya fallos, y solo muestran «Sin datos» si no ha terminado ninguna consulta en la ventana. La gráfica de consultas por minuto muestra 0 sin tráfico (es un cero medido). La tasa de error del backend es la del dashboard técnico (JUP-043) y queda vacía mientras no haya respuestas 5xx.
 
 La proporción de búsquedas vacías es un límite inferior: el denominador incluye consultas respondidas sin pasar por la recuperación. Sin consultas en la ventana el panel muestra «Sin datos».
 

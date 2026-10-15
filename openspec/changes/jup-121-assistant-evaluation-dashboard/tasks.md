@@ -76,5 +76,5 @@
   - las ejecuciones 1 y 2 con «Sin datos: no hay con qué comparar» en evolución;
   - la robustez y los no medidos sin 0 %;
   - la sección C con y sin tráfico.
-- [ ] 6.2 Actualizar la documentación: guía de arranque y regeneración (README de monitorización o `docs/validation/README.md`), nota de despliegue sobre la variable nueva para DockerServer, y fila del tema en `docs/continuidad/README.md` con su resumen
-- [ ] 6.3 Crear `docs/evidence/JUP-121-validation.md` con evidencia por criterio de aceptación de la tarjeta, lo no validado y por qué (robustez de JUP-071, despliegue en DockerServer). Ejecutar `corepack pnpm openspec:validate`, `corepack pnpm jup:check -- --change jup-121-assistant-evaluation-dashboard` y `corepack pnpm jup:cleanup:check`
+- [x] 6.2 Actualizar la documentación: guía de arranque y regeneración (README de monitorización o `docs/validation/README.md`), nota de despliegue sobre la variable nueva para DockerServer, y fila del tema en `docs/continuidad/README.md` con su resumen
+- [x] 6.3 Crear `docs/evidence/JUP-121-validation.md` con evidencia por criterio de aceptación de la tarjeta, lo no validado y por qué (robustez de JUP-071, despliegue en DockerServer). Ejecutar `corepack pnpm openspec:validate`, `corepack pnpm jup:check -- --change jup-121-assistant-evaluation-dashboard` y `corepack pnpm jup:cleanup:check`
