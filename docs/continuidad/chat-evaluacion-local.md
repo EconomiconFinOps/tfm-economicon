@@ -6,101 +6,135 @@ El usuario amplió el máximo acumulado a **5 USD** («Amplia a5$»). Ese permis
 sustituye el límite de2USD de los cortes históricos inferiores; no reinicia gasto,
 ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
-### Corte vigente: c7 N3 terminada — 14/10/2026 20:37 UTC
+### Última medición semántica real completa: c7 N3 — 14/10/2026 20:37 UTC
 
-#### Base actualizada antes de la regresión completa — 15/10/2026
+#### Base congelada y verificación técnica — 15/10/2026
 
-Merge local congelado `7be57c059ef740ae5f525d98ebe631271144f1fb`; archivo versionado
-SHA256 `efe8c644e4fefb9e17fefaa55e3c5e2275c8195dae06ebe2b7923389ec2444ff`.
-Regresión de1747 identidades recogidas. Tres OOM de arnés conservados, sin fallos
-de aserción en resultados completos: archivo capacity, lote de ocho context_budget
-y lote de ocho summary_context backend. V4 terminó con1558 identidades ejecutadas,
-55 omisiones SQL y ningún fallo/error de JUnit; servicios B intactos. Los pasos
-SQL/pgvector/buildv1 se detuvieron sin preflight, resultados ni recursos creados.
-La falta de coverage.json hizo que SQLv1 registrase FileNotFoundError; v2 comprueba
-primero el estado terminal de regresión y no confunde ausencia de cobertura con éxito.
+Producto congelado7be57c059ef740ae5f525d98ebe631271144f1fb, archivo versionado
+SHA256 efe8c644e4fefb9e17fefaa55e3c5e2275c8195dae06ebe2b7923389ec2444ff.
+Los commits posteriores hasta ef2958df son documentación. fba415f2220f5eb8945da75efd0496809e8c0755 cambia sólo dos pruebas; producto sigue idéntico a7be, con equivalencia de archivo y helpers comprobada antes de reutilizar evidencia.
 
-V5 reutiliza las1558 identidades sólo tras verificar JUnit/log SHA y todos los bytes
-versionados, y ejecuta únicamente las189 restantes, una por proceso, mismos límites
-768MiB y sin cambiar aserciones. PID743475/start_ticks61824830 confirmado vivo;
-no equivale a suite terminada. Recibos `final-linux-regression-launch-v5.json`,
-`final-linux-regression-v4-failed-selection.json` y cortes anteriores conservados.
+**Regresión offline terminada:**1747 identidades únicas,1689 PASS/58 SKIP,
+0 FAIL/ERROR. Las omisiones no cuentan como aprobadas. V5 ejecutó las189 últimas
+una por proceso, reutilizando1558 resultados sólo tras comprobar JUnit/log SHA
+y todos los bytes versionados. Tres OOM previos conservados (capacity, lote de
+ocho context_budget y lote de ocho summary_context); no acredita una ejecución
+monolítica sin OOM. Fuente y aserciones intactas, servicios B sin interrupciones.
+Prueba pública derivada sólo con IDs/estados/hashes, sin mensajes o logs:
+final-regression-7be57c05-public-proof.json, SHA256
+6ec8444324f7d2cd1704d3e4eb8bcc802d7980d7f0a3293a21893d593a9b5f0e.
+Originales completos permanecen en DockerServer.
 
-La revisión automática rechazó la variante inicial que pausaba backend/processor
-por falta de autorización para interrumpir el entorno; esa variante nunca se
-ejecutó. La alternativa mantiene los servicios existentes activos e intactos.
-También rechazó copiar logs remotos sin filtrar por posible información sensible;
-se sustituyó por una lista permitida de rutas de pruebas, códigos y conteos.
-Resultados completos se conservan en el root B remoto. Ninguna inferencia nueva.
+**Pgvector terminado:**20 PASS/0 omisiones, fuente7be; incluye6 contratos de
+política que cubren6 de los58 SKIP y14 pruebas del contrato existente, no sumarlas
+como20 casos adicionales del chat. Recursos propios retirados, runtime B intacto.
+final-pgvector-7be57c05-public-proof.json, SHA256
+48e2fdc47392779000c84808d94a367a599136d5f4284a70f08bb72ada424a54.
+Quedan52 identidades del chat por comprobar con Cockroach y las141 omisiones
+nativas del barrido de anomalías (distintas de la colección chat1747).
 
-Contabilidad nuevamente consultada: contador conservador2.501327035USD y reservas
-desconocidas1.921712USD, cota conjunta4.423039035/5USD;295 filas del ledger,
-sin reinicio ni liberación de reservas. Claves vigentes hasta15/10 08:02UTC.
-`accounting-before-7be57c05-readonly.json` conserva sólo costes/caducidades y sus
-hashes, sin secretos. Es una lectura previa, no admisión para futuras llamadas.
-Trello actualizado por la integración DockerServer con hash previo coincidente,
-lectura posterior exacta y lista conservada: `jup123-trello-regression-v5-update-v1.json`,
-descripción SHA256 `fbaffdc61961130dd0661e7becde55f4ea1184602a90a12d15c6f307ca3e1b49`.
-No se enviaron mensajes Discord ni se publicó B.
+**SQL nativo original terminado:**v5 recogió196 ejecuciones,194 PASS/2 FAIL,
+0 ERROR/SKIP. No es aceptación. Fallos conservados: anomalía de extremo a extremo
+en línea118 por el conjunto de metadatos antiguo (faltaba generation); processor
+deadline en línea58, al no observar la consulta activa antes de vencer0.35s.
+El primero no alcanzó las aserciones numéricas; el segundo no prueba por sí solo
+un defecto de cancelación. Buildv5 se detuvo antes de construir por esos fallos.
+Corte final-validation-observation-1792023277417.json.
 
-Observación posterior:1664 identidades ejecutadas, sin fallos ni errores,
-55 omisiones SQL aún pendientes; PID de regresión confirmado vivo. No es cobertura
-completa. Corte inmutable `final-validation-observation-1792019649149.json`.
-Controladores SQL/pgvector preparados, transferidos con SHA y confirmados vivos
-en espera: SQLv2 PID751930/start_ticks61831859 espera la regresión; pgvectorv2
-PID752243/start_ticks61832027 espera la liberación de recursos SQL. No ejecutan bases
-simultáneamente ni pausan B. SQL cubrirá las141 omisiones de anomalías y los
-contratos nativos del chat; pgvector ejecutará20 casos (6 de políticas y14 del
-contrato existente). No sumar repeticiones sin contrastar identidades JUnit.
-Ambos usan fuentes7be, imágenes públicas cacheadas verificadas, bases propias
-sin red/puertos publicados y limpieza por ID/etiqueta. Aún sin resultados nativos.
-Recibos `final-native-sql-launch-v2.json`, `final-pgvector-launch-v2.json` y
-`final-validation-latest-observation.json`; observador local
-`observe-b-final-validation.py` exporta sólo campos permitidos, nunca logs/env.
+Corrección de pruebas fba415f2: exigir también generation.question_message_id;
+permitir1s para preparar/observar la consulta, manteniendo cierre físico, SQLSTATE,
+duración<3s y el ensayo separado de fallback real0.35s, y añadir HTTP504/código
+summary_deadline. Sin cambios de aplicación. Archivo versionado SHA256
+d34f355d2e2de156e9dc2e07b238beeb7d835a989b391d0358dc2887025301b9.
+Repetición completa de ambos ficheros:17 nativas y8 offline, no sólo los dos fallos.
+V6 no inició recursos por RAM insuficiente; v7 llegó al contenedor, sin JUnit por
+permiso700 de la raíz de la copia pública. Sólo esa raíz se hizo755; usuario10001
+y montaje de sólo lectura conservados. No son fallos nuevos de producto.
+V8 pasó9 anomalías, pero las8 processor no ejecutaron por tokenizer generado
+ausente; comprobado con frames de preparación en línea130. Se repuso el artifact
+público ya aprobado desde7be, con SHA/bytes exactos, sin descarga ni añadirlo a Git.
+V9 terminó:17 nativas PASS/0 SKIP/FAIL/ERROR y8 offline (2 PASS/6 SKIP), mismos
+ficheros completos. DB y volumen propios retirados, B5 servicios con mismos IDs/
+inicios, sin inferencias. final-native-sql-launch-v9.json y
+final-validation-observation-1792024518361.json.
 
-Plan N3 nuevo congelado,84 muestras NOT_RUN y365 hashes verificados contra el
-archivo7be. El generador se ejecutó desde3064a68d (sólo documentación posterior),
-pero cada fichero planeado y pin generado se contrastó contra el archivo exacto
-7be antes de registrar ese commit: no se traslada una medición entre versiones.
-`candidate-7be57c05-n3-plan.json`, SHA256
-`1316e2ffaa2cae57b99fd1ce3c282e972692c24a0f059ac671a1e9139957af52`.
-Compose propio preparado y validado, sin construir ni activar; cambia únicamente
-contextos de build y etiquetas de las tres imágenes. Puertos, volúmenes, secretos,
-configuración de ejecución y servicios auxiliares idénticos al entorno B anterior.
-Prueba `candidate-7be57c05-compose-preparation-v1.json`. El fichero privado permanece
-en DockerServer; no se copia su contenido a la evidencia ni al repositorio.
+**Cobertura técnica conjunta conforme:** prueba pública
+final-7be57c05-testfix-fba415f2-technical-proof.json, SHA256
+36903ccf52f9469f4ea065d2ff2fadd81e62559815b392e8dac55a41d9c2f4b9.
+1747 identidades chat conformes al combinar offline y todos sus58 SKIP probados
+nativamente;196 ejecuciones Cockroach y20 pgvector conformes (216 ejecuciones,
+no216 casos nuevos del chat). Se sustituyen exactamente17 identidades nativas y8
+offline de ambos ficheros modificados. Resto de bytes de código/build y AST de
+helpers importados iguales; todos los JUnit/log SHA revalidados. Dos fallos
+originales y errores de preparación quedan preservados; no es selección de
+mejores respuestas del modelo ni ejecución monolítica sin OOM. Revisiones
+producto7be/pruebasfba explícitas. No aceptación semántica.
 
-Buildv2 preparado como paso posterior, no activación: PID752581/start_ticks61832195
-confirmado vivo en espera de las tres validaciones. El controlador sólo construye
-si todos los resultados son conformes y cada omisión offline tiene una identidad
-JUnit nativa conforme; no basta con que exista un complete.json. Verifica de nuevo
-el archivo7be y Compose privado, construye backend/processor/frontend uno a uno
-con builder clásico disponible comprobado, límite1024MiB/1CPU, y contrasta hashes
-dentro de cada imagen sin red. No tiene paso de activación ni inferencia.
-Recibo `final-build-launch-v2.json`; el build aún no ha comenzado.
-Los cuatro PIDs confirmados vivos, tres en espera. OpenSpec estricto74/74 conforme tras
-actualizar proposal/design a la base actual; no modifica criterios de aceptación.
+La cadena anterior se conserva: SQLv1 no llegó al preflight tras el OOM de
+regresión; v2 se detuvo sin crear recursos por margen de RAM insuficiente; v3
+se paró en readiness. Diagnósticos propios, vacíos y sin credenciales:
+servidor384MiB solo arrancó, pero el CLI Go ejecutado dentro del mismo cgroup
+reprodujo exit137/OOM. V4 sustituyó ese control por Python externo y llegó a pytest, pero agotó1200s
+en la preparación: job de cambio de esquema con backfill al0% tras1040s, sin
+JUnit completo. Se retiraron sus tres recursos y B siguió intacto. V5 conserva
+ese intento y aumenta RAM/SQL; terminó con194 conformes y2 fallos de pruebas descritos arriba. La atribución
+a un parámetro concreto no está aislada. Ver native-v4-schema-wait-metadata.json
+y native-startup-diagnostic-v1.json/v2.json. El ejemplo de SQL128MiB y la relación
+con la memoria del nodo se contrastaron en la [documentación v24.1](https://docs.cockroachlabs.com/docs/v24.1/cockroach-start-single-node),
+sin convertir esa recomendación en prueba de aceptación. WSL local sin distribuciones;
+no se instaló software ni se usó otro servidor.
+Los errores de sintaxis de invocaciones locales no ejecutaron comandos.
+Los intentos hasta7be conservaron las aserciones. fba modifica únicamente las dos pruebas descritas; B existente y despliegues ajenos siguen intactos.
 
-Colector y recuperación de evidencia preparados y transferidos, **sin ejecutar
-una campaña nueva**. La entrada exige build completo del commit exacto y las
-tres imágenes activas coincidentes antes de leer credenciales. Dos comprobaciones
-con fixtures locales rechazan build pendiente e imagen anterior sin red, SQL ni
-acceso a secretos; el primer arnés falló antes por ACL de temporales Windows y
-se conserva como fallo de entorno, no fallo de producto. La recuperación contrasta
-las fuentes y los tres contenedores, conserva API original y deriva sólo con
-hash exacto de contexto/corpus. Transferencia verificada por SHA y sintaxis, modo600.
-El operadorv2 exige el intento de buildv2, porque v1 terminó sin construir.
-Ver `candidate-7be57c05-prepared-adapter-safety-v3.json`,
-`candidate-7be57c05-prepared-harness-transfer-v2.json` y comando NOT_RUN en
-`candidate-7be57c05-campaign-prepared-v2.json`. Versiones anteriores preservadas.
+**Buildv6 condicionado, sin construir al último corte:**PID1259827/start_ticks62307469,
+final-build-launch-v6.json. Verificador con SHA fijo comprueba todos los JUnit/logs
+originales, equivalencia de aplicación/build, helpers importados y sustitución
+exacta de los17 nodos SQL y8 offline afectados. Conserva ambos fallos históricos.
+Sólo construye si todos los58 SKIP del chat tienen prueba nativa conforme; ninguna
+omisión se declara aprobada por su ausencia. Fuente de producto7be y revisión de
+pruebas fba se registran separadas. Imágenes secuenciales1024MiB/1CPU y hashes
+internos, sin activación ni inferencia. Buildsv1–v6 no construyeron ninguna imagen. V6 se cerró por los errores de preparación de v8, sin construir.
 
-Auditoría previa de cobertura contable, sin escritura:295 filas del ledger,
-293 operaciones SQL del tenant sintético coincidentes, cuatro prefijos históricos
-completos y quinto plan nuevo todavía vacío. Seed/admisión413 intactos; reserva
-desconocida1.921712USD íntegra, sin liberación ni reinicio. Evidencia
-`candidate-7be57c05-prepared-coverage-audit-v1.json`; índice de planes
-`final-evaluation-prior-campaign-index.json`. No sustituye la admisión viva por
-operación ni garantiza que el presupuesto alcance para acabar84 muestras.
+Lectura contable renovada1792024359: mismos295 registros y cota4.423039035/5USD\ncon1.921712 retenidos; accounting-final-readonly-1792024359.json. Trello actualizado\npor integración DockerServer, SHA08396a1f972c5bd2af49765c195015fd5a06db0cf7d4da21dcc346adb12b8144,\nlectura exacta y lista intacta; jup123-trello-testfix-progress-update-v1.json.\n\n**Nueva N3 preparada, no ejecutada:**84 muestras y365 hashes contrastados contra
+el archivo exacto7be, incluso pin generado. El generador se ejecutó desde3064a68d
+(sólo documentación posterior); no se intercambia un resultado entre commits.
+candidate-7be57c05-n3-plan.json, SHA256
+1316e2ffaa2cae57b99fd1ce3c282e972692c24a0f059ac671a1e9139957af52.
+Compose privado validado, únicamente contextos/imágenes nuevos; parámetros,
+puertos, volúmenes, secretos y servicios auxiliares anteriores conservados.
+Prueba candidate-7be57c05-compose-preparation-v1.json; su contenido privado
+permanece en DockerServer.
+
+Colector/recuperación transferidos con SHA/sintaxis y modo600; conserva API original
+y sólo deriva con hash exacto de contexto/corpus. Guardas probadas con fixtures
+rechazan build pendiente e imagen anterior antes de leer secretos o gastar.
+Primer arnés local falló antes por ACL de temporales Windows, conservado como
+fallo de entorno. La preparaciónv2 **apunta al buildv2 fallido** y queda bloqueada:
+antes de medir, vincular el operador al build final realmente exitoso y comprobar
+las tres imágenes activas. No ejecutar el comando preparadov2 como si estuviera
+listo. Ver candidate-7be57c05-prepared-adapter-safety-v3.json,
+candidate-7be57c05-prepared-harness-transfer-v2.json y
+candidate-7be57c05-campaign-prepared-v2.json. Sin campaña nueva ni nuevos POST.
+
+Auditoría previa de contabilidad sin escritura:295 filas del ledger/293 operaciones
+SQL sintéticas coincidentes, cuatro prefijos históricos completos y quinto plan
+nuevo vacío. Seed/admisión413 intactos. Contador conservador2.501327035USD y reserva
+desconocida1.921712USD =4.423039035/5USD; ninguna reserva liberada ni reinicio.
+Claves vigentes hasta15/10 08:02UTC, sin renovación automática. Es un corte anterior,
+no admisión para futuras llamadas ni garantía de acabar84 muestras. Antes de cada
+operación se exige precio/contabilidad viva y reserva completa. Ver
+accounting-before-7be57c05-readonly.json,
+candidate-7be57c05-prepared-coverage-audit-v1.json y
+final-evaluation-prior-campaign-index.json. No guardar secretos en esta documentación.
+
+Trello actualizado por la integración oficial, hash previo y lectura exacta, lista
+conservada: jup123-trello-offline-native-v4-update-v1.json, descripción SHA256
+e01e94412e402389aef77658b402f1e9aafb603c5a659ef75ac9cab6f9bf714b.
+No publicaciones B en GitHub ni mensajes Discord. La revisión automática rechazó
+la variante que pausaba B y copiar logs sin filtrar; ninguna se ejecutó. Alternativas:
+B activo, datos exportados con lista permitida y logs completos privados remotos.
+OpenSpec estricto74/74 conforme tras actualizar proposal/design a la base actual;
+no se modificaron criterios ni se atribuyeron reviews humanas.
 
 A avanzó a8ea5a0c4 sobre develop0543c5ee, que incorpora JUP-038/#128. B integra
 ese develop por merge local; resuelve dos conflictos con los bloques ya reconciliados
@@ -111,8 +145,8 @@ y `reconcile-A8ea-block-identity-v1.json` para el alcance y pruebas de identidad
 550 pruebas backend conformes,141 omitidas por SQL nativo; frontend completo1354
 conformes sin omisiones. Tipos, lint y build correctos (avisos conservados). No
 trasladar la evidencia propia de A ni el CI anterior. Ambas reviews oficiales
-siguen solicitando cambios. Antes de inferencia queda probar el candidato conjunto
-en Linux/SQL, construir los tres servicios B y comprobar procedencia/tokenizer.
+siguen solicitando cambios en la última consulta. Antes de inferencia queda
+completar Cockroach, construir los tres servicios B y comprobar procedencia/tokenizer.
 Runtime B aún c7,0 operaciones activas confirmado por SQL, sin llamadas nuevas.
 Máximo5USD y reservas históricas intactos; falta admisión viva para cualquier gasto.
 
