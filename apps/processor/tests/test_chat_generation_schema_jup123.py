@@ -50,6 +50,17 @@ def test_constraints_and_modes_are_never_dropped():
 
 
 @pytest.mark.parametrize('schema', [
+    {'const': None, 'type': 'string'}, {'const': None, 'type': ['string', 'null']},
+    {'const': 1, 'enum': [1.0, 2]}, {'const': 1.0, 'enum': [1, 2]},
+    {'const': True, 'type': 'integer'}, {'const': 0, 'type': 'string'},
+])
+def test_scalar_intersections_preserve_null_and_json_number_semantics(schema):
+    wire = generation_schema(schema)
+    for value in (None, '', 'x', 0, 1, 1.0, 2, True, False):
+        assert Draft202012Validator(schema).is_valid(value) == Draft202012Validator(wire).is_valid(value)
+
+
+@pytest.mark.parametrize('schema', [
     {'const': {'id': 'real'}, 'properties': {'other': {'type': 'string'}}},
     {'const': ['a'], 'maxItems': 0}, {'const': {'a': 1}, 'type': 'array'},
     {'const': True, 'enum': [1]}, {'const': 'a', 'enum': ['b']},

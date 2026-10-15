@@ -50,12 +50,13 @@ def expand_constants(schema):
             if 'enum' in result:
                 # JSON Schema does not identify true with the number one.
                 matches = [item for item in result['enum']
-                           if type(item) is type(value) and item == value]
+                           if (type(item) is type(value) or
+                               type(item) in (int, float) and type(value) in (int, float))
+                           and item == value]
                 if not matches:
                     raise ValueError('Incompatible constant enum.')
             result = {**exact, **result}
-            if value is not None:
-                result['enum'] = [value]
+            result['enum'] = [value]
     for key in ('$defs', 'definitions', 'properties', 'patternProperties', 'dependentSchemas'):
         if key in result:
             result[key] = {name: expand_constants(item) for name, item in result[key].items()}
