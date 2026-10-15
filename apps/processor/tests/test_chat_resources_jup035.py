@@ -52,7 +52,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
         'module_sha256':hashlib.sha256((Path(__file__).parents[1]/'app/core/chat_unit_cost.py').read_text(encoding='utf-8').encode()).hexdigest()},
     scenario_accounts={name:{'version':version,
         'module_sha256':hashlib.sha256((Path(__file__).parents[1]/('app/core/chat_'+name+'.py')).read_text(encoding='utf-8').encode()).hexdigest()}
-        for name,version in (('cost_breakdown','complete-service-list-with-period-scope-basis-v1'),
+        for name,version in (('cost_breakdown','complete-user-breakdown-and-monthly-comparison-v2'),
                              ('shared_allocation','declared-shared-missing-approved-rule-v1'),
                              ('savings_realization','complete-staged-savings-explicit-verified-identified-rule-v1'))},
     weighted_coverage={'version':'complete-two-group-user-count-cost-coverage-v1',
@@ -62,7 +62,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     policy_retrieval={'version':'same-tenant-provider-snapshot-exact-heading-companion-v2',
         'document_candidates':2,'document_bytes':65536,'max_chunks':6,
         'incomplete_policy':'no-priority','distance':'observed-not-replaced'},
-    budget_comparison={'version':'labelled-hypothetical-forecast-and-actual-budget-v2',
+    budget_comparison={'version':'complete-dated-user-forecast-actual-and-budget-v3',
         'module_sha256':hashlib.sha256((Path(__file__).parents[1]/'app/core/chat_budget_comparison.py').read_text(encoding='utf-8').encode()).hexdigest()},
     documentary_sections='original-markdown-positional-contiguous-ranges-v1',
     interval_rules='explicit-percentage-partition-eligible-total-or-allocation-role-explanation-v4',

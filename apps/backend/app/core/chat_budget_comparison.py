@@ -10,6 +10,92 @@ import json
 from decimal import Decimal, localcontext
 
 
+def required_forecast_budget(catalog):
+    """Bind a complete dated user scenario; never generate a forecast or policy.
+
+    The entire declaration and request must match. Uncertain roles, extra prose,
+    invalid dates, mixed periods/currencies and server financial evidence keep
+    the ordinary route. Scope, dates and amounts are data, not fixed examples.
+    """
+    import calendar
+    from app.core.chat_missing_spend import MONTH, MONTHS
+    from app.core.chat_rules import normalized
+    parts = getattr(catalog, 'classification_question', '').split('\n\n')
+    if len(parts) != 2 or any(s.get('kind') != 'corpus'
+                             for s in getattr(catalog, 'authorized_sources', ())):
+        return None
+    request = re.fullmatch(
+        r'¿?(?:estamos en riesgo de pasarnos del presupuesto al cierre'
+        r'|hay riesgo de superar el presupuesto al cierre'
+        r'|compara el forecast al cierre con el presupuesto y el gasto acumulado)[?.]?',
+        normalized(parts[0]))
+    if request is None:
+        return None
+    number = r'[0-9]{1,12}(?:[.,][0-9]{1,12})?'
+    currency = r'EUR|USD|GBP|CHF|CAD|AUD|JPY'
+    declaration = re.fullmatch(
+        rf'(?:Contexto del escenario:\s*)?Escenario sint[eé]tico (?P<month>{MONTH}) '
+        r'(?P<year>[0-9]{4}) (?P<scope>[A-Za-z0-9][A-Za-z0-9_-]{0,63}), '
+        rf'a fecha (?P<day>[0-9]{{1,2}}) de (?P<asof_month>{MONTH}): '
+        rf'gasto acumulado (?P<actual>{number}) (?P<actual_currency>{currency}); '
+        rf'forecast al cierre (?P<forecast>{number}) (?P<forecast_currency>{currency}); '
+        rf'(?:budget|presupuesto) mensual (?P<budget>{number}) (?P<budget_currency>{currency})[.] '
+        r'El forecast ya est[aá] suministrado, no hay que calcularlo[.]?', parts[1], re.I)
+    if declaration is None:
+        return None
+    month = normalized(declaration['month']);year = int(declaration['year'])
+    if (not 1900 <= year <= 2200 or normalized(declaration['asof_month']) != month
+            or not 1 <= int(declaration['day']) <= calendar.monthrange(year, MONTHS.index(month)+1)[1]):
+        return None
+    units = {declaration[k+'_currency'].upper() for k in ('actual', 'forecast', 'budget')}
+    amounts = {k:Decimal(declaration[k].replace(',', '.')) for k in ('actual', 'forecast', 'budget')}
+    if len(units) != 1 or any(v > Decimal('1e12') for v in amounts.values()):
+        return None
+    with localcontext() as precision:
+        precision.prec = 80
+        difference = amounts['forecast'] - amounts['budget']
+        relative = difference / amounts['budget'] * 100 if amounts['budget'] else None
+    question = getattr(catalog, 'classification_question', '')
+    identity = hashlib.sha256(json.dumps({'question':question}, sort_keys=True,
+                                         ensure_ascii=False).encode()).hexdigest()
+    return {'id':identity, 'amounts':amounts, 'currency':units.pop(),
+            'month':month, 'year':year, 'scope':declaration['scope'],
+            'day':int(declaration['day']), 'difference':difference, 'relative':relative}
+
+
+def forecast_budget_answer(value, catalog):
+    bound = required_forecast_budget(catalog)
+    if bound is None or value != {'forecast_budget':bound['id']}:
+        raise ValueError('Forecast comparison is not grounded.')
+    from fractions import Fraction
+    from app.core.chat_expressions import display
+    def exact(number):
+        text = format(number, 'f')
+        return text.rstrip('0').rstrip('.') if '.' in text else text
+    actual,forecast,budget = (exact(bound['amounts'][k]) for k in ('actual','forecast','budget'))
+    delta=exact(bound['difference']);unit=bound['currency']
+    answer = ('Escenario hipotético aportado; no verificado financieramente.\n'
+        f'Período aportado: {bound["month"]} de {bound["year"]}; ámbito: {bound["scope"]}.\n'
+        f'Gasto acumulado a {bound["day"]} de {bound["month"]}: {actual} {unit}; '
+        'es el importe acumulado declarado a esa fecha, no el gasto final del mes.\n'
+        f'Forecast al cierre suministrado: {forecast} {unit}; '
+        'es una predicción del gasto final, no gasto ya realizado ni un cierre garantizado.\n'
+        f'Presupuesto mensual aportado: {budget} {unit}.\n'
+        f'Desviación prevista (forecast menos presupuesto): {forecast} − {budget} = {delta} {unit}.\n')
+    if bound['relative'] is None:
+        answer += 'Porcentaje de desviación indefinido: el presupuesto es cero; no se inventa una tasa.\n'
+    else:
+        with localcontext() as precision:
+            precision.prec=80
+            shown=display(bound['relative'])
+        equality='=' if Fraction(Decimal(shown))*Fraction(bound['amounts']['budget']) == Fraction(bound['difference'])*100 else '≈'
+        answer += f'Desviación relativa prevista sobre presupuesto: ({delta} / {budget}) × 100 {equality} {shown} %.\n'
+    answer += ('Según el forecast aportado existe riesgo previsto de exceder el presupuesto al cierre.\n'
+               if bound['difference'] > 0 else
+               'El forecast aportado no proyecta exceso sobre el presupuesto; no garantiza el gasto final.\n')
+    return answer + 'No se recalcula el forecast ni se confirma una causa o una métrica financiera real.'
+
+
 def required_budget_variance(catalog):
     """Bind only a complete, explicitly labelled hypothetical actual/budget pair."""
     from app.core.chat_rules import normalized

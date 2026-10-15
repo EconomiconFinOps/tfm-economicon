@@ -25,9 +25,9 @@ para el candidato completo. Ver [continuidad A/B](../../../docs/continuidad/chat
 3. Identidad por campaña, caso y repetición; banco y corpus inmutables. Conservar
    commit, hashes, entradas, fragmentos realmente usados, parámetros y costes.
 4. Contabilidad viva y reserva conservadora antes de inferencias. Tope acumulado
-   de10USD (ampliación explícita del usuario el15/10, posterior a2/5USD),
+   de 20 USD (ampliación explícita del usuario el 15/10, posterior a 2/5/10 USD),
    incluyendo intentos fallidos, servicios auxiliares y todas las reservas anteriores.
-   La vigencia de claves se autoriza por separado: mismas claves hasta15/10 a18:00París,
+   La vigencia de claves se autoriza por separado: mismas claves hasta el 16/10 a las 18:00 de París,
    sin reiniciar contadores ni liberar reservas pendientes.
 5. Las coincidencias de palabras/números son diagnósticos, no veredictos semánticos.
    Citas requieren soporte de la afirmación, no sólo solapamiento léxico.
@@ -48,6 +48,36 @@ generación devuelve404 después de verificar operaciónSQL, fases y preflight.
 Un404 o un spend0 en el gateway no demuestra gratuidad. El recibo original y
 la prueba del coste indeterminado se conservan. La campaña mantiene el fallo
 como tal y no repite suPOST. Los artefactos distinguen gasto conocido y reservas.
+
+### Comparación completa del forecast aportado — corrección local del 16/10
+
+El corte posterior también conserva GLM002r3: cálculo correcto, pero método
+documental añadido en next_actions sin soporte visible. Una segunda gramática
+completa liga meses, año, ámbito, moneda y base de coste; el servidor calcula la
+comparación mensual con el mes de referencia pedido y auxiliares vacíos. El orden
+de las cantidades no cambia sus roles. Cero deja el porcentaje indefinido; datos
+incompatibles conservan la ruta general. No se amplía el prompt ni se corrigen
+retroactivamente etiquetas de la campaña congelada.
+
+La comparación congelada de modelos conserva el fallo de GLM014r2: omite la
+distinción del acumulado actual y añade política de alertas sin soporte visible.
+El producto local añade un terminal para una declaración hipotética completa de
+mes/año/ámbito, fecha de corte, gasto acumulado, forecast ya suministrado y budget.
+El servidor conserva los tres roles y calcula la desviación con Decimal; no
+recalcula la proyección ni incorpora una política documental a esa respuesta.
+
+La gramática consume toda la petición y la declaración. Fechas imposibles,
+períodos o monedas diferentes, roles ausentes/duplicados, instrucciones añadidas
+y evidencia financiera autorizada conservan la ruta general. Los valores, moneda,
+fecha y ámbito son variables; no hay IDs del banco ni importes de ejemplo en el
+compilador. Respuesta, ID y auxiliares vacíos se comprueban en stream y final.
+
+258 pruebas locales de los contratos afectados pasan, incluidas las 57 nuevas;
+backend/processor cargan en frío la misma identidad y concuerdan en 56 contextos.
+El contrafactual por esquema contra el código archivado anterior conserva 52 de
+esos contextos exactamente iguales; cambian sólo 002 y 014, con y sin recuperación.
+Esto no modifica la campaña congelada ni sus etiquetas. Linux, build y medición
+del candidato corregido quedan pendientes; no acredita aceptación por replay.
 
 ## Risks and open questions
 

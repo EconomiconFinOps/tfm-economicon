@@ -1,4 +1,4 @@
-"""Aggregate a complete user-declared service breakdown without losing scope.
+"""Compute complete user-declared service and monthly comparisons with scope.
 
 Only a closed, fully consumed declaration of a period, subscription, currency,
 cost basis and service amounts qualifies. Service names and amounts are input
@@ -22,6 +22,77 @@ DECLARATION = re.compile(
     r'(?P<currency>EUR|USD|GBP|CHF|CAD|AUD|JPY), coste '
     r'(?P<basis>actual|amortizado): (?P<items>[^\n]+)[.] No hay otras l[ií]neas[.]?', re.I)
 ITEM = re.compile(rf'(?P<service>[^;:<>"`\n]{{1,80}}?)\s+(?P<value>{AMOUNT})')
+
+
+def required_monthly_comparison(catalog):
+    """Bind explicit full months and comparable amounts, not arbitrary prose."""
+    question = getattr(catalog, 'classification_question', '')
+    parts = question.split('\n\n')
+    if len(parts) != 2 or any(s.get('kind') != 'corpus'
+                             for s in getattr(catalog, 'authorized_sources', ())):
+        return None
+    request = re.fullmatch(
+        r'¿?(?:(?:cuanto subio|como cambio) el gasto|calcula la variacion del gasto) entre '
+        rf'(?P<baseline>{MONTH}) y (?P<current>{MONTH})[?.]?', normalized(parts[0]))
+    number = r'[0-9]{1,12}(?:[.,][0-9]{1,12})?'
+    currency = r'EUR|USD|GBP|CHF|CAD|AUD|JPY'
+    declaration = re.fullmatch(
+        r'(?:Contexto del escenario:\s*)?Escenario sint[eé]tico, mismo alcance '
+        r'(?P<scope>[A-Za-z0-9][A-Za-z0-9_-]{0,63}) y meses completos de (?P<year>[0-9]{4}): '
+        rf'(?P<first_month>{MONTH}) (?P<first>{number}) (?P<first_currency>{currency}); '
+        rf'(?P<second_month>{MONTH}) (?P<second>{number}) (?P<second_currency>{currency}) '
+        r'de coste (?P<basis>actual|amortizado)[.]?', parts[1], re.I)
+    if request is None or declaration is None or not 1900 <= int(declaration['year']) <= 2200:
+        return None
+    baseline,current=request['baseline'],request['current']
+    first,second=normalized(declaration['first_month']),normalized(declaration['second_month'])
+    if (baseline==current or first==second or {baseline,current}!={first,second}
+            or declaration['first_currency'].upper()!=declaration['second_currency'].upper()):
+        return None
+    amounts={first:Decimal(declaration['first'].replace(',','.')),
+             second:Decimal(declaration['second'].replace(',','.'))}
+    if any(v>Decimal('1e12') for v in amounts.values()):
+        return None
+    with localcontext() as precision:
+        precision.prec=80
+        difference=amounts[current]-amounts[baseline]
+        relative=difference/amounts[baseline]*100 if amounts[baseline] else None
+    identity=hashlib.sha256(json.dumps({'question':question},sort_keys=True,ensure_ascii=False).encode()).hexdigest()
+    return {'id':identity,'baseline_month':baseline,'current_month':current,
+            'baseline':amounts[baseline],'current':amounts[current],
+            'difference':difference,'relative':relative,'year':int(declaration['year']),
+            'scope':declaration['scope'],'basis':declaration['basis'].lower(),
+            'currency':declaration['first_currency'].upper()}
+
+
+def monthly_comparison_answer(value,catalog):
+    bound=required_monthly_comparison(catalog)
+    if bound is None or value!={'monthly_comparison':bound['id']}:
+        raise ValueError('Monthly comparison is not grounded.')
+    from app.core.chat_expressions import display
+    def exact(number):
+        text=format(number,'f')
+        return text.rstrip('0').rstrip('.') if '.' in text else text
+    baseline,current,delta=(exact(bound[k]) for k in ('baseline','current','difference'))
+    unit=bound['currency']
+    answer=('Escenario hipotético aportado; no verificado financieramente.\n'
+        f'Ámbito aportado: {bound["scope"]}; meses completos de {bound["year"]}; coste {bound["basis"]}.\n'
+        f'Baseline de {bound["baseline_month"]}: {baseline} {unit}. '
+        f'Gasto de {bound["current_month"]}: {current} {unit}.\n'
+        f'Variación absoluta ({bound["current_month"]} menos {bound["baseline_month"]}): '
+        f'{current} − {baseline} = {delta} {unit}.\n')
+    if bound['relative'] is None:
+        answer+='Variación relativa indefinida: el baseline es cero; no se inventa un porcentaje de crecimiento.\n'
+    else:
+        with localcontext() as precision:
+            precision.prec=80
+            shown=display(bound['relative'])
+        equality='=' if Fraction(Decimal(shown))*Fraction(bound['baseline'])==Fraction(bound['difference'])*100 else '≈'
+        answer+=(f'Variación relativa sobre {bound["baseline_month"]}: '
+                 f'({delta} / {baseline}) × 100 {equality} {shown} %.\n')
+    trend='aumentó' if bound['difference']>0 else 'disminuyó' if bound['difference']<0 else 'no varió'
+    return answer+(f'El gasto declarado {trend}; el cálculo no confirma una causa, '
+                   'severidad ni facturación real.')
 
 
 def required_cost_breakdown(catalog):

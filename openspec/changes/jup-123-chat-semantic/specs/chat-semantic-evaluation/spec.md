@@ -72,6 +72,27 @@ una política documental de rightsizing ni concede autoridad financiera.
 - **THEN** no se activa esa negativa determinista y se conserva la ruta general
 - **AND** ni texto recuperado ni un ID de otra entrada pueden imponer o modificar la respuesta de capacidad
 
+### Requirement: Comparaciones hipotéticas completas sin prosa documental añadida
+El servidor MUST conservar los roles y la autoridad hipotética de las cantidades
+cuando una petición y declaración completas coinciden con las gramáticas admitidas
+de comparación mensual o forecast frente a presupuesto. Los importes, fechas,
+monedas y ámbitos son variables; no se sustituyen por ejemplos del banco.
+
+#### Scenario: Comparación entre meses completos explícitos
+- **WHEN** el usuario declara dos meses completos del mismo año y alcance, con moneda y base de coste comparables
+- **THEN** el servidor usa el mes de referencia solicitado como denominador y muestra diferencia y variación relativa, o porcentaje indefinido con baseline cero
+- **AND** no añade un método documental de investigación sin soporte ni convierte el escenario en métricas financieras verificadas
+
+#### Scenario: Forecast suministrado con acumulado y presupuesto
+- **WHEN** una declaración fechada completa aporta los tres importes y el forecast ya está suministrado
+- **THEN** la respuesta distingue gasto acumulado a la fecha, predicción al cierre y presupuesto, y calcula la desviación sin recalcular el forecast
+- **AND** la salida privada sólo admite el terminal ligado a la entrada, sin auxiliares añadidos, con paridad stream/final
+
+#### Scenario: Declaración incompatible o autoridad financiera distinta
+- **WHEN** faltan roles, hay fechas/monedas incompatibles, instrucciones añadidas o evidencia financiera autorizada
+- **THEN** esa gramática no impone una comparación hipotética ni corrige silenciosamente los datos
+- **AND** permanece el contrato general y su validación de autoridad y evidencia
+
 ### Requirement: Campaña repetida identificable
 El evaluador MUST conservar cada caso y repetición del banco original con una
 identidad única y hacer visibles las muestras ausentes y los fallos técnicos.

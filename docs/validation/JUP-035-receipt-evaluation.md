@@ -200,6 +200,38 @@ interrumpida antes de envío. Ninguno de esos estados autoriza reintentar POST.
 Una campaña COLLECTED aún necesita agregación, adjudicación y aceptación.
 
 
+## Forecast completo aportado — corrección local del 16/10/2026
+
+La comparación mensual completa usa `monthly_comparison`: dos meses explícitos,
+mismo año/ámbito, meses completos, moneda y base de coste comparables. El mes de
+referencia pedido es el denominador aunque se invierta el orden de las cantidades
+en la declaración; baseline cero conserva diferencia y porcentaje indefinido.
+La salida sólo explica esos datos y cálculos, sin poder añadir el método documental
+de investigación que falló en GLM002r3. Cantidades, meses, ámbito y base de coste
+son variables. Declaraciones parciales, monedas mezcladas o autoridad financiera
+distinta conservan la ruta general. No es un extractor universal.
+
+La ruta `forecast_budget` acepta únicamente una petición completa de comparación
+al cierre y una declaración hipotética fechada con acumulado, forecast suministrado,
+presupuesto, moneda y ámbito inequívocos. Conserva el acumulado como dato de la
+fecha de corte, el forecast como predicción no garantizada y el presupuesto como
+base de la desviación. El servidor calcula diferencia y porcentaje; un presupuesto
+cero deja el porcentaje indefinido. No genera un forecast ni añade políticas de
+alerta o apagado sin evidencia. La salida mantiene `insufficient_data` y métricas
+y evidencias vacías: no convierte datos del usuario en facturación verificada.
+
+No es un extractor universal de lenguaje natural. El módulo consume la declaración
+completa y rechaza esa ruta ante fechas/monedas incompatibles, partes ausentes,
+roles duplicados, instrucciones añadidas o evidencia financiera de otra autoridad.
+Esos casos siguen el contrato general, sin corregir sus datos silenciosamente.
+Las 28 pruebas de forecast y las 29 de comparación mensual cubren datos variables,
+límites y rechazo de ID o auxiliares forjados; 258 pruebas locales de los contratos
+afectados conformes, incluidas las 57 nuevas. El primer intento conjunto no llegó
+a ejecutar pruebas por un parámetro reservado de pytest; se corrigió sólo su nombre
+y se conserva ese recibo de error junto con la pasada posterior completa.
+La medición y la regresión nativa del candidato nuevo siguen pendientes. Se
+conserva el fallo medido de GLM014r2 y no se reetiqueta con el resultado del código.
+
 ## Evidencia RAG posterior al contexto inicial — 14/10/2026
 
 Verificado en B: el endpoint de evidencia conserva el contexto inicial; los
