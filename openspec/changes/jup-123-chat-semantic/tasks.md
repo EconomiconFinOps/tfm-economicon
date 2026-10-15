@@ -24,6 +24,8 @@
 
   - Corrección local4d3 de herramientas: retención íntegra para respuestas completadas con consumo desconocido, sin falsear estado;109 pruebas y ensayo de303 filas conformes,302 anteriores/importes intactos y009 aún rechazado con5USD. Sin transferir/aplicar a campaña/ledger real. Plan7be intacto; revisión de herramientas separada antes de continuar. Consulta6USD pendiente, no autorización.
 
+  - Autorización15/10 máximo10USD. Herramientas5f32/109PASS separadas del producto7be; retención completed008/018 aplicada sin liberar importe alguno. Ocho recibos r1 inmutables; mismo plan/ledger, continuación desde009. Primera ronda27 conformes/1 fallo015 (seguimiento/alertas); segunda ronda en curso y003r2 con afirmación documental no sustentada.35 revisadas33 conformes/2 fallidas; no N3 completa ni aceptación. Ver continuidad para SHA/costes/UI.
+
 ## 3. Correcciones y entrega
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.
   - Correcciones014/003 medidas en c7 N3:014 conforme3/3,003 completa3/3. Las1470 pruebas Linux/SQL conservan su alcance; no validan calidad por sí solas.

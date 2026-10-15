@@ -31,6 +31,49 @@ Pruebas externas candidate-7be57c05-cap10-retention-v2.json,
 candidate-7be57c05-n3-launch-v2.json y observación1792048356756.
 N3/revisión completa, criterios humanos y adjudicación todavía pendientes.
 
+### Avance de la misma N3 — 15/10/2026 07:35 UTC
+
+Primera ronda28/28 completed/verificadas: revisión local27 conformes y1 fallo
+015r1 (omite seguimiento/alertas aunque incorpora investigación y no apagado).
+No se rebaja el requisito compuesto. Código inspeccionado: la ruta budget_operation
+compila sólo la sección Budgets Y Forecast de rules; completar esa lista no
+equivale a cubrir el flujo de seguimiento/alertas que vive en otra sección.
+Pendiente combinación de fuentes autorizadas, sin inventar frases ni cambiar el
+banco. No se modifica producto7be durante la medición.
+
+Segunda ronda en curso. Corte35 respuestas revisadas:33 conformes,2 fallidas;
+205 requisitos conformes y3 fallidos, agrupados en2 respuestas.003r2 eleva los
+campos conceptuales de Anomaly a requisitos previos para evaluar/clasificar,
+incluyendo root_cause: dos checks del mismo grupo causal, provisional y sujeto
+a adjudicación. c7r2 sólo decía contempla campos; no se cambió su etiqueta antigua.
+Comparación parcial:195 pass→pass,3 fail→pass,7 uncertain→pass,2 pass→fail,
+1 fail→fail. No atribuir causalidad a una repetición ni declarar cero regresiones.
+
+018r1 completó en3 intentos,2 sin informes completos de coste. Controladorv2
+se detuvo; diagnóstico1792048830 y retención íntegra0.319952 aplicados por la
+misma corrección, con312 filas anteriores/todos importes y18 recibos intactos.
+Controladorv3 PID3781874/start_ticks64776436 sigue desde019, mismo plan/ledger.
+Reservas desconocidas retenidas2.561616; corte07:32:592.651207265 del contador
++2.561616 retenido +0.319952 activo =5.532775265/10USD conservadores.
+No es gasto exacto atribuible.008 y018 no se reenvían ni se liquidan como gratis.
+
+UI visible de009/010/011,016/017/018 y021/022/027/028:paridad de contenido con
+recibos,1280/390px y recarga,cero errores/escrituras del asistente e inferencias.
+No demuestra streaming de todas las muestras ni perfección de presentación.
+Pruebas externas7be57c05-cap10-{first,boundaries,final-r1}-ui-result.json;
+capturas inspeccionadas. Prosa repetida/citas residuales siguen siendo deuda.
+
+Sólo se reutiliza un juicio provisional entre repeticiones si coinciden exactamente
+pregunta,contexto,respuesta completa,auxiliares y fragmentos citados; SHA semántico
+y de ambas vistas registrados en candidate-7be57c05-identical-review-carry.json.
+Las otras muestras se revisan expresamente. Vistas anteriores a la recuperación
+RAG se preservan en public-view-history antes de actualizar las derivadas;
+igualdad de respuesta obligatoria y los ocho originales congelados no cambian.
+
+Claves originales hasta08:02UTC. Procedimiento de ampliar sólo su vigencia
+hasta10:02UTC preparado; consulta al usuario pendiente, sin ampliar aún.
+No crea claves/counters/servicios ni cambia reservas. N3/aceptación pendientes.
+
 ### Corte histórico anterior: superado por la autorización y reanudación anteriores
 
 ### Corte vigente: técnico conforme, nueva N3 detenida8/84 — 15/10/2026
