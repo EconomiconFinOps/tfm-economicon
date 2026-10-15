@@ -99,6 +99,11 @@ Each versionable report SHALL carry a unique run identifier and a `run` object w
 - **THEN** their run identifiers differ
 - **AND** each report names its provider and alias, or states that none applies
 
+#### Scenario: Run description from the chat collector
+- **WHEN** a live run is described with a short declared commit (7 to 40 lowercase hexadecimal characters) and `generation` as a single identifier string, as the JUP-123 chat collector writes it
+- **THEN** the report records that string as the model alias with no temperature
+- **AND** provider, alias and the identifier remain subject to the same restricted pattern, so a descriptive placeholder or a credential-shaped value is rejected
+
 #### Scenario: Header added without changing results
 - **WHEN** a report is regenerated from the same raw material and judgments with the header present
 - **THEN** every outcome, count and denominator equals the previous report's

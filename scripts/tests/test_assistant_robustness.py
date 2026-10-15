@@ -542,7 +542,7 @@ class RunHeaderTests(unittest.TestCase):
     def test_generation_is_whitelisted_and_temperature_must_be_a_real_number(self):
         for generation in ({"model_alias": "x", "temperature": True}, {"model_alias": "x", "temperature": float("nan")},
                            {"model_alias": "x", "temperature": "0.2"}, {"model_alias": "bad value", "temperature": None},
-                           {"temperature": None}, "template", None):
+                           {"temperature": None}, "Bad Value", "x" * 70, None):
             with self.subTest(generation=generation):
                 with self.assertRaises(robustness.Error):
                     scored(self.live_raw(generation=generation))
@@ -823,6 +823,66 @@ class ThirdPassTests(unittest.TestCase):
         with mock.patch.object(robustness.os, "name", "posix"):
             for text in ("//tmp/x", "/tmp/x", "\\\\odd-file-name"):
                 self.assertFalse(robustness.is_unc(text), text)
+
+
+class ChatCollectorRunInfoTests(unittest.TestCase):
+    """The chat collector of JUP-123 describes a run with six strings; the report header must accept that shape."""
+
+    DOCUMENTED = {"commit": "a1b2c3d", "corpus": "corpus-demo-66", "provider": "mock", "alias": "mock",
+                  "retrieval": "mock-embeddings", "generation": "mock-direct-v1"}
+
+    def live(self, **overrides):
+        return RunHeaderTests().live_raw(**{**self.DOCUMENTED, **overrides})
+
+    def test_the_six_string_run_info_of_the_collector_is_accepted(self):
+        report = scored(self.live())
+        run = report["run"]
+        self.assertEqual((run["commit"], run["provider"], run["alias"]), ("a1b2c3d", "mock", "mock"))
+        self.assertEqual(run["generation"], {"model_alias": "mock-direct-v1", "temperature": None})
+        self.assertFalse(report["model_execution_verified"])
+        self.assertFalse(report["generative_robustness_accepted"])
+        robustness.validate_raw(self.live(), SUITE, CASES)
+
+    def test_a_string_generation_is_held_to_the_same_rules_as_an_object_alias(self):
+        for value in ("", "Mock Direct", "MOCK", "x" * 65, "sk-abc", "token-abc", "a3f9c2d4e5b6a7c8d9e0f1a2b3c4d5e6",
+                      "line\nbreak", "https://gateway.internal/v1"):
+            with self.subTest(generation=value), self.assertRaises(robustness.Error):
+                scored(self.live(generation=value))
+        for value in (7, ["mock-direct-v1"], None, True):
+            with self.subTest(generation=value), self.assertRaises(robustness.Error):
+                scored(self.live(generation=value))
+
+    def test_declared_commit_accepts_seven_to_forty_lowercase_hex_only(self):
+        for commit in ("a" * 7, "a1b2c3d4e5f6", "d" * 39, "d" * 40):
+            with self.subTest(commit=commit):
+                self.assertEqual(scored(self.live(commit=commit))["run"]["commit"], commit)
+        for commit in ("a" * 6, "d" * 41, "A1B2C3D", "SHA_DESPLEGADO_DECLARADO", " a1b2c3d", "a1b2c3d\n", "g1b2c3d", "", None, 1234567):
+            with self.subTest(commit=commit), self.assertRaises(robustness.Error):
+                scored(self.live(commit=commit))
+
+    def test_relaxed_generation_and_commit_do_not_loosen_provider_alias_or_the_object_form(self):
+        for field, value in (("provider", "Mock"), ("alias", "GLM-5.2"), ("alias", "has space"), ("provider", "")):
+            with self.subTest(field=field, value=value), self.assertRaises(robustness.Error):
+                scored(self.live(**{field: value}))
+        scored(self.live(generation={"model_alias": "model-x", "temperature": 0.2}, commit="d" * 40))
+        for generation in ({"model_alias": "x", "temperature": True}, {"temperature": None}, {"model_alias": "Bad Value", "temperature": None}):
+            with self.subTest(generation=generation), self.assertRaises(robustness.Error):
+                scored(self.live(generation=generation))
+
+    def test_extra_collector_fields_never_reach_the_public_report(self):
+        config = {**self.DOCUMENTED, "collector_manifest_sha256": "a" * 64, "collector_commit": "b" * 40,
+                  "api_key": "KEY-DO-NOT-COMMIT"}
+        raw = raw_fixture()
+        raw["execution"].update({"kind": "live_unverified", "configuration": config,
+                                 "configuration_sha256": robustness.digest(config)})
+        report = scored(raw)
+        self.assertNotIn("KEY-DO-NOT-COMMIT", json.dumps(report) + robustness.markdown(report))
+        self.assertEqual(set(report["run"]), RunHeaderTests.RUN_KEYS)
+
+    def test_the_template_run_is_unchanged_by_the_relaxation(self):
+        run = scored(raw_fixture())["run"]
+        self.assertEqual((run["provider"], run["alias"]), ("template", "none"))
+        self.assertEqual(run["generation"], {"model_alias": "plantilla-sin-modelo", "temperature": None})
 
 
 class FakeResponse:

@@ -154,6 +154,7 @@ def provenance(suite, kind, config):
 
 
 DECLARED_TEXT = re.compile(r"[a-z0-9][a-z0-9./-]{0,63}")
+DECLARED_COMMIT = re.compile(r"[0-9a-f]{7,40}")
 SECRET_SHAPED = re.compile(r"(^|[-./])(sk|pk|xox[a-z]?|gh[pousr]|akia|eyj|key|token|secret|bearer)([-./0-9]|$)|[a-z0-9]{24,}")
 
 
@@ -171,9 +172,12 @@ def run_header(execution, suite, raw_sha256):
         config = execution["configuration"]
         require(isinstance(config, dict), "invalid run configuration")
         commit = config.get("commit")
-        require(isinstance(commit, str) and re.fullmatch(r"[0-9a-f]{40}", commit), "invalid run commit")
+        require(isinstance(commit, str) and DECLARED_COMMIT.fullmatch(commit), "invalid run commit")
         provider, alias = declared_text(config.get("provider"), "provider"), declared_text(config.get("alias"), "alias")
         declared = config.get("generation")
+        if isinstance(declared, str):
+            # The chat collector describes generation with one string; it names the model, not a measured temperature.
+            declared = {"model_alias": declared, "temperature": None}
         require(isinstance(declared, dict), "invalid run generation")
         temperature = declared.get("temperature")
         require(temperature is None or (type(temperature) in (int, float) and math.isfinite(temperature)), "invalid run temperature")

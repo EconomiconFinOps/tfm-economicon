@@ -59,6 +59,8 @@ Una medición final con modelo requiere tres recogidas independientes con la mis
 
 Los resultados de las tarjetas de evaluación se mostrarán más adelante en un dashboard común (tarjeta JUP-121). Para no reescribir informes ya publicados, el informe propio incorpora ahora un bloque `run` con los mismos nombres que la cabecera de JUP-070 (`commit`, `date`, `provider`, `alias`, `suite_version`, `suite_sha256`, `generation`) y un identificador único de ejecución. Una ejecución con plantilla declara que no hay modelo en lugar de omitir `provider` y `alias`. Los campos actuales se conservan y no cambia ningún resultado ni denominador.
 
+El colector de JUP-123 (PR #131) describe la ejecución con seis cadenas. Para que su exportación sea válida aquí, el bloque `run` acepta un commit declarado de 7 a 40 caracteres hexadecimales en minúscula y `generation` como una sola cadena, que se registra como alias del modelo sin temperatura. El alias y el proveedor conservan el mismo patrón restringido, y el commit descriptivo de la guía de ese colector no vale: hay que escribir un identificador real.
+
 Quedan fuera, y pasan a JUP-121: aplanar los grupos anidados, decidir cómo se muestran los valores no medidos (`null`) y unificar los formatos de JUP-067, JUP-070, JUP-071 y JUP-078. El informe sigue sin afirmar compatibilidad con el catálogo de JUP-067.
 
 ### 8. El chat generativo de JUP-035 no usa el contrato de mensajes
