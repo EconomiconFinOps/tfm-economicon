@@ -88,13 +88,15 @@ Todo campo que el informe no trae se guarda como `null` y el dashboard lo muestr
 | `suite`, `suite_version`, `suite_sha256` | no | Batería: identificador, versión y huella |
 | `corpus_sha256` | no | Huella del corpus. Para JUP-022, que lista varios documentos, es el sha256 de las líneas `<clave>=<sha256>` ordenadas y unidas con saltos de línea |
 | `embedding_provider`, `embedding_alias` | no | Proveedor y alias de embeddings |
-| `retrieval` | no | Objeto con `top_k`, `max_distance`, `chunk_size` y `chunk_overlap` |
+| `retrieval` | no | Objeto con algunas de las claves `top_k`, `max_distance`, `chunk_size` y `chunk_overlap` (no se exigen las cuatro: la calibración de JUP-022 solo lleva el troceado porque `top_k` y `max_distance` van por fila); valores numéricos o `null` |
 | `generation_model` | no | Alias del modelo de generación |
 | `prompt_sha256` | no | Huella del prompt. Ningún informe actual la registra |
 | `synthetic` | no | `true` si el informe declara ser sintético |
-| `milestone` | no | Lo fija el manifiesto, no el informe |
+| `milestone` | no | Lo fija el manifiesto, no el informe; en un `rows-v1` es una clave desconocida y se rechaza |
 
 ### Resultado (`results`)
+
+En un fichero `rows-v1` son obligatorias `measure_type`, `grp`, `metric_id`, `behavior` y `status`; el resto puede omitirse (queda `null`, y `selected` queda `false`), pero la validación común exige además `unit` en todas las filas y `judgment` en las de tipo A, así que en la práctica también hay que escribirlas.
 
 | Campo | Contenido |
 | --- | --- |
@@ -118,6 +120,8 @@ Todo campo que el informe no trae se guarda como `null` y el dashboard lo muestr
 4. **Los adaptadores copian, no recalculan.** El valor de cada fila es el del informe original; la conciliación de JUP-121 comprueba que los recuentos coinciden.
 5. **Una métrica no medida conserva su denominador.** Si el informe trae `n` (aunque sea 0), la fila `not_measured` lo guarda en `denominator`; `value`, `numerator`, `ci_low`, `ci_high` y `count` quedan a `null`.
 6. **`available` manda sobre el valor.** Una métrica con `available: false` es `not_measured` aunque el informe traiga un `rate`. En GRD-2, si no está disponible, solo sale la fila `all` como no medida y el desglose por caso del informe no se publica. Un cero medido (`rate` 0.0, `k` 0, una latencia de 0 ms) sigue siendo `measured`.
+7. **Validación común.** Se aplica a la salida de todos los adaptadores y a la entrada `rows-v1`, y para en el primer error con la ruta del campo como prefijo (`run.<campo>`, `results[i].<campo>`). Reglas: `run` lleva exactamente las claves del contrato y `results` es una lista de filas con exactamente las suyas; `run_id`, `source`, `grp`, `metric_id`, `behavior`, `unit` y las cadenas de la ejecución son identificadores (regla 3); `run_at` es `null` o una fecha y hora UTC con formato exacto `AAAA-MM-DDThh:mm:ss[.f{1,6}](Z|±hh:mm)` (separador `T`, segundos y zona obligatorios, fecha real), porque el texto acaba en un script SQL y `fromisoformat` de Python acepta cualquier separador; `count` y `denominator` son enteros no negativos y `value`, `numerator` e intervalo son números finitos (el numerador puede ser negativo: un tiempo ahorrado negativo es un dato); un entero no puede superar `ROW_MAX_INTEGER = 2^53 - 1` en valor absoluto (la misma cota de enteros seguros de `business-metrics.mjs`), de modo que `count` y `denominator` caben en `bigint` y el resto en `double precision` sin pérdida; los números en coma flotante finitos no tienen cota nueva; `judgment` es `automatic` o `human` en el tipo A y `null` en el tipo B.
+8. **Coherencia por estado.** Un estado de caso (`pass`, `fail`, `blocked`, `not_run`) exige `count` y no lleva `value` ni `numerator`; `measured` exige `value` y no lleva `count`; `not_measured` no lleva `count`, `value`, `numerator` ni intervalo, y puede conservar el `denominator`. El intervalo lleva siempre sus dos límites. Con unidad `tasa`, `0 <= numerator <= denominator`. No puede haber dos filas con la misma `(grp, metric_id, behavior, status)` en una ejecución.
 
 ## Qué toma cada adaptador
 

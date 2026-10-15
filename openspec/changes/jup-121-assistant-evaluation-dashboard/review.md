@@ -104,3 +104,19 @@ Hallazgos del QA resueltos o trasladados: M1, la clave de comparabilidad incluye
 | DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend idénticos (`RF-119-004`) |
 
 Hallazgos del QA trasladados: `run_id` del informe de JUP-068 es texto libre en Node y el cargador de 2.8 deberá pasarlo (2.6 lo rechaza si no cabe en `IDENTIFIER_RE`); `suite_sha256` es la huella del registro entero, así que dos ejecuciones de negocio con el mismo `dataset_version` y datos distintos no comparten clave (hoy no hay serie de tipo B); `run_at` `null` deja las ejecuciones de negocio fuera de las series y los paneles de tipo B deben mostrar «fecha no registrada»; el contrato describe ya el criterio no uniforme de «no medido» (sumas de nada frente a importes copiados).
+
+### 2.6 Validación común de filas y adaptador rows-v1
+
+| Fase | Evidencia |
+| --- | --- |
+| Red | `scripts/tests/test_evaluation_rows_contract.py` (150 tests), commit `51aaaa9d`; 1050 errores (con `subTest`), todos `AttributeError` por `validate_rows` y `adapt_rows_v1` ausentes. El tester comprobó con una referencia fuera del repositorio que los esperados son alcanzables y que 37 mutantes de ella morían |
+| Green | `validate_rows` y `adapt_rows_v1` con su sección en `tools/evaluation-dashboard.py`; 653/653. La validación se aplica a la **salida de los cuatro adaptadores** (hallazgo M2 del QA de 2.2) además de a la entrada `rows-v1` |
+| Mutación (1.ª) | 235/267 (88,0 %). De los 32 supervivientes: 25 de prosa de mensajes, 5 sobre las tuplas de claves «obligatorias» de la entrada (equivalentes: la clave que falta se rellena con `None` y `validate_rows` la rechaza con el mismo prefijo de ruta) y 2 de lógica real: la tupla de campos prohibidos de `not_measured` no probaba `ci_low`/`ci_high`. `test_evaluation_rows_contract_gaps.py` (13 tests, commit `c65ac7da`) los cubre |
+| QA (1.ª) | `accept` con 3 MEDIUM. M1: `datetime.fromisoformat` de Python 3.13 acepta cualquier separador (comilla, `;`, NUL) y `run_at` acaba en un script SQL. M2: ni `count` ni `denominator` tenían cota (`10**400`, `2**63`) y no caben en una columna `bigint`. M3: el contrato sin commitear |
+| Remediación | `test_evaluation_rows_contract_bounds.py` (36 tests, 97 fallos en rojo, commit `2735168c`): `run_at` con formato exacto sin citar el valor recibido, `ROW_MAX_INTEGER = 2^53 - 1` y los órdenes de error con dos defectos a la vez. Fix en `tools/evaluation-dashboard.py` (commit `f06be2e2`) |
+| Excepción de proceso | Dos tests antiguos de `test_evaluation_rows_contract.py` (un `run_at` sin zona y `value = 10**300`) contradecían el contrato endurecido y el candado del harness impide editar tests commiteados. Lo cambió el usuario a mano, quitando exactamente `"2026-10-08T20:13:54"` y `10 ** 300` (commit `afef8419`); no se debilitó nada más |
+| Mutación (final) | Funciones tocadas: 31/34 = 91,2 %, los 3 supervivientes son prosa. El QA mató 22 de 28 mutantes manuales nuevos; los 6 restantes son equivalentes (defensa en profundidad de la regex frente a `fromisoformat`) |
+| QA (final) | `accept` sin hallazgos BLOCKING ni MEDIUM. Acepta las salidas reales (`2026-10-08T21:01:44Z`, `2026-10-03T07:15:32.826486+00:00`) y rechaza la inyección; el alfabeto de identificadores deja fuera comillas, NUL, saltos de línea, espacios y caracteres no ASCII |
+| DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend idénticos (`RF-119-004`) |
+
+Hallazgos LOW trasladados: nombres de clave desconocidos dentro de los mensajes (2.8 los escapa o trunca); `run.retrieval` sin cota de enteros (3.1 lo guarda como `jsonb`); los identificadores admiten `--` y `,` en medio, inofensivo con literales escapados (3.1 nunca interpola sin escapar).
