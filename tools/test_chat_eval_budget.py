@@ -120,12 +120,18 @@ class BudgetTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             b.retained_cost(reservation, 'another', receipt)
 
-    def test_real_partial_campaign_numbers_cannot_admit_a_ninth_operation(self):
+    def test_real_partial_campaign_preserves_all_reserves_under_raised_cap(self):
+        from unittest.mock import patch
         reservations = {'prior': {'state': 'COST_UNKNOWN_RESERVED', 'reserved_usd': '1.921712'},
                         'completed_eof': {'state': 'COST_UNKNOWN_RESERVED', 'reserved_usd': '.319952'}}
         snapshot = self.covered(reservations, '2.548894402')
-        with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
-            b.admit(snapshot, reservations, 'ninth', Decimal('.319952'), 100)
+        with patch.object(b, 'CAP', Decimal('5.00')):
+            with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
+                b.admit(snapshot, reservations, 'ninth', Decimal('.319952'), 100)
+        self.assertEqual(b.CAP, Decimal('10.00'))
+        admitted = b.admit(snapshot, reservations, 'ninth', Decimal('.319952'), 100)
+        self.assertEqual({k: admitted[k] for k in reservations}, reservations)
+        self.assertEqual(admitted['ninth']['reserved_usd'], '0.319952')
         self.assertEqual(reservations['completed_eof']['reserved_usd'], '.319952')
 
 
