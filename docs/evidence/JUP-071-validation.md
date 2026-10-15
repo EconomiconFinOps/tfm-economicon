@@ -13,7 +13,7 @@ Se añaden 16 variantes con 13 referencias JUP-069 (29 casos), un runner que reu
 | [Plantilla con fragmento fijo](JUP-071-template-fixed-report.json) | 29 | 0 | 8 | 0 | 21 | Pendiente |
 | [Plantilla sin contexto](JUP-071-template-empty-report.json) | 29 | 0 | 8 | 0 | 21 | Pendiente |
 
-Los dos informes se generaron con el commit `cfd81778` de la herramienta. También quedan juicios pendientes en los ocho casos con fallo conocido. Los resultados no son una tasa de alucinación ni una evaluación humana: en modo fijo el servicio repite el prompt en los 29 casos y en modo vacío entrega el mismo aviso sin contexto, y las cifras requeridas no se obtienen de ese eco. No se ejecutan red, gateway, embeddings, base de datos ni modelo. Los dos perfiles no son tres repeticiones equivalentes.
+Los dos informes se generaron con el commit `2486d44d` de la herramienta. También quedan juicios pendientes en los ocho casos con fallo conocido. Los resultados no son una tasa de alucinación ni una evaluación humana: en modo fijo el servicio repite el prompt en los 29 casos y en modo vacío entrega el mismo aviso sin contexto, y las cifras requeridas no se obtienen de ese eco. No se ejecutan red, gateway, embeddings, base de datos ni modelo. Los dos perfiles no son tres repeticiones equivalentes.
 
 ### Registro de regeneraciones de los informes de plantilla
 
@@ -28,6 +28,7 @@ Los informes versionados se han regenerado cada vez que cambiaron la herramienta
 | 15/10 | `32ddc696` | Integración de `develop` y banco de JUP-069 `1.0.1` |
 | 16/10 | `2befecb4` | Cabecera `run` con la descripción del colector de JUP-123 |
 | 16/10 | `cfd81778` | Revisión final: una sola cifra en las variantes de cumplimiento |
+| 16/10 | `2486d44d` | Pasada 5: `prepare` fuera del repositorio y `run-info` acotado |
 
 Los crudos de las ejecuciones originales del 10/10 no están disponibles y no se regeneraron. Cada repetición se hizo con un crudo propio, fuera del repositorio, y los juicios están vacíos.
 
