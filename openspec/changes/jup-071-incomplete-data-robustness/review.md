@@ -93,7 +93,7 @@ No probado por el revisor: ejecución real en Linux/macOS, enlaces simbólicos r
 ## Risks
 
 - La batería es pequeña, sintética y diseñada; no demuestra robustez universal.
-- Las ejecuciones medidas son de la plantilla offline. No hay medición con el chat real ni juicios humanos (grupo 5).
+- Las ejecuciones medidas son de la plantilla offline. No hay medición con el chat real ni juicios humanos (grupo 6).
 - Los fallos numéricos de los casos con varias cifras pueden deberse a la limitación de `labelled_by` de JUP-070 (registrada); hay que mirarlos a mano antes de atribuirlos al asistente.
 - Los valores declarados del bloque `run` se validan de forma heurística y no excluyen todo secreto posible.
 - La normalización `NFD` de revisores no equipara grafías de ancho completo («Ana» y «Ａna»); la documentación ya indica que no autentica identidades.
