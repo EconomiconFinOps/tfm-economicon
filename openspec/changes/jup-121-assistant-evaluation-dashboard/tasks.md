@@ -64,9 +64,9 @@
 
 ## 5. Pruebas con base real
 
-- [ ] 5.1 Conciliación: tras cargar el manifiesto versionado en un PostgreSQL real, las mismas consultas SQL de los paneles devuelven los recuentos de estado y los `k`/`n` de cada informe original. La prueba se omite si no hay base, igual que las pruebas existentes con servicios reales
-- [ ] 5.2 Permisos: el rol de Grafana no puede escribir en `evaluation` ni leer las tablas de embeddings
-- [ ] 5.3 Idempotencia y atomicidad: dos cargas seguidas dejan los mismos recuentos y una carga que falla a mitad conserva la carga anterior
+- [x] 5.1 Conciliación: tras cargar el manifiesto versionado en un PostgreSQL real, las mismas consultas SQL de los paneles devuelven los recuentos de estado y los `k`/`n` de cada informe original. La prueba se omite si no hay base, igual que las pruebas existentes con servicios reales
+- [x] 5.2 Permisos: el rol de Grafana no puede escribir en `evaluation` ni leer las tablas de embeddings
+- [x] 5.3 Idempotencia y atomicidad: dos cargas seguidas dejan los mismos recuentos y una carga que falla a mitad conserva la carga anterior
 
 ## 6. Validación de extremo a extremo y documentación
 
